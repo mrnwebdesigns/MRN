@@ -40,6 +40,7 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - Fresh private repos were created where no matching GitHub repo existed.
   - Remaining repo work, if any, is theme/stack-specific housekeeping rather than plugin-recovery work.
 - The local stack test site at `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content` now points to the rebuilt workspace via symlinks for the MRN plugin and MU plugin set.
+- The local stack test site's active theme slug `default-configs` now symlinks to the canonical stack theme source at `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack` instead of the old `/Users/khofmeyer/Sites/MRNPlugins/...` path.
 - Local WP-CLI is available through Local's bundled binary:
   - `/Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/posix/wp`
 - Server rollout QA after the rebuild was completed on `2026-03-27`.
@@ -51,6 +52,118 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - CloudPanel stack files should be written as `mrndev-stack-manager:mrndev-stack-manager`
   - `kyle` is the SSH/operator user, not the final file owner
   - preferred sync pattern is `rsync --rsync-path='sudo -n -u mrndev-stack-manager rsync'`
+- Theme rollout manifest now uses the packaged stack theme zip path rather than a bare slug:
+  - `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
+  - This avoids WordPress.org slug install attempts for `mrn-base-stack` during bootstrap.
+- Reusable content strategy:
+  - The theme owns the universal `MRN Content Builder` experience for `post` and `page`.
+  - The reusable block library must not register a duplicate page/post builder field group.
+  - Reusable blocks are plugin/MU-owned content primitives for shared, centrally managed content patterns.
+  - ACF layouts in the theme are page/post-owned composition tools for one-off or page-specific content assembly.
+  - If content should be edited once and reused in multiple places, prefer a reusable block type.
+  - If content belongs only to the current page/post, prefer an ACF builder layout in the theme.
+  - Converting a reusable block into page-specific content is supported as a theme-level in-editor action, not as a persistent toggle field.
+  - The theme is responsible for builder-aware rendering and template parts; the reusable block library is responsible for reusable block data models, block post types, and reusable block admin UX.
+
+## Thread: 2026-03-26 Theme Manifest Repair For Stack Rollout
+- Goal:
+  - Fix theme install warnings during server rollout where bootstrap attempted to install `mrn-base-stack` as a WordPress.org slug.
+- Decisions made:
+  - Theme rollout should install the packaged stack theme zip, not a bare theme slug.
+  - `stack/manifests/themes.txt` should use:
+    - `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
+- Files changed:
+  - `/Users/khofmeyer/Development/MRN/stack/manifests/themes.txt`
+- Server-side repairs applied:
+  - Updated `/home/mrndev-stack-manager/stack/manifests/themes.txt` to:
+    - `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
+- Validation:
+  - Confirmed `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip` exists on the server.
+  - Confirmed local and server `themes.txt` now point at the zip path instead of `mrn-base-stack|active`.
+  - Confirmed the earlier failed site `rebuilt.mrdev.io` did not receive the MRN theme and currently only has default Twenty Twenty themes, so it may need a one-time theme repair or rerun after the manifest fix.
+- Risks/gotchas:
+  - This fixes future rollouts and reruns; it does not retroactively repair a site that already skipped theme install.
+  - `ame-license.json` was still missing on the server during the same rollout and remains a separate unresolved warning.
+
+## Thread: 2026-03-26 AME License Mapping Correction
+- Goal:
+  - Reconcile the stack's AME license mapping with the actual AME licensing model.
+- Decisions made:
+  - AME should be treated as a plain-text license key source in stack rollout, not an export-side JSON file.
+  - `stack/manifests/licenses.txt` now maps AME as:
+    - `admin-menu-editor-pro/menu-editor.php|wsh_license_manager-admin-menu-editor-pro|secretfile:ame-license.txt`
+  - The existing AME bootstrap helper in `site-bootstrap.sh` already supports raw text keys and builds the site-aware payload itself.
+- Files changed:
+  - `/Users/khofmeyer/Development/MRN/stack/manifests/licenses.txt`
+- Server-side repairs applied:
+  - Updated `/home/mrndev-stack-manager/stack/manifests/licenses.txt` to use `secretfile:ame-license.txt`
+- Validation:
+  - Confirmed local and server manifests now use `secretfile:ame-license.txt` for AME.
+  - Confirmed neither local nor server stack currently has the actual secret file yet:
+    - `/Users/khofmeyer/Development/MRN/stack/secrets/ame-license.txt`
+    - `/home/mrndev-stack-manager/stack/secrets/ame-license.txt`
+- Risks/gotchas:
+  - Future warnings will now correctly point at a missing secret key file instead of the old `ame-license.json` path.
+  - `rebuilt.mrdev.io` should still be repaired after the AME secret is added, since the earlier rollout already missed both the license and the theme install.
+
+## Thread: 2026-03-26 rebuilt.mrdev.io Theme + AME Repair
+- Goal:
+  - Repair the specific site `rebuilt.mrdev.io` after an earlier rollout completed with warnings for theme install and AME license mapping.
+- Decisions made:
+  - Since the site already had `.mrn_bootstrapped`, a normal `site-bootstrap.sh` rerun would skip.
+  - The least risky repair path was to manually apply the missing theme and AME option state on the site rather than removing the marker and replaying full bootstrap.
+- Server-side repairs applied:
+  - Added the AME key to stack secrets:
+    - local: `/Users/khofmeyer/Development/MRN/stack/secrets/ame-license.txt`
+    - server: `/home/mrndev-stack-manager/stack/secrets/ame-license.txt`
+  - Installed `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip` on `rebuilt.mrdev.io`
+  - Cloned the starter theme into the site-specific slug `rebuilt`
+  - Updated `style.css` header for the site theme:
+    - `Theme Name: Rebuilt`
+    - `Text Domain: rebuilt`
+    - `Author: MRN Web Designs`
+  - Activated the `rebuilt` theme and removed the source `mrn-base-stack` folder from the site after cloning
+  - Applied the AME option payload to `wsh_license_manager-admin-menu-editor-pro` using the stack secret key and site-aware `site_url`
+- Validation:
+  - `template` = `rebuilt`
+  - `stylesheet` = `rebuilt`
+  - Theme list on `rebuilt.mrdev.io` shows:
+    - `rebuilt` active at `1.0.0`
+  - Verified AME license option is present and populated for the site.
+- Risks/gotchas:
+  - WP-CLI on this server/site still emits `chmod(): Operation not permitted` warnings during some operations, but the theme repair and AME option update completed successfully despite those warnings.
+
+## Thread: 2026-03-26 Content Builder Basic Layout
+- Goal:
+  - Add a simple theme-owned `Basic` ACF layout to the `Content` field group for posts and pages.
+- Decisions made:
+  - Keep the existing `basic_block` page-only conversion layout intact because it is tied to reusable-block conversion.
+  - Add a separate simpler `basic` layout for direct ACF composition in the theme-owned builder.
+  - The `Basic` layout currently includes:
+    - text field
+    - HTML tag selector for that text field
+    - WYSIWYG content field
+    - buttons repeater with label + link
+    - background color selector
+- Files changed:
+  - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/basic.php`
+- Validation:
+  - `php -l` passed for both updated theme files.
+
+## Thread: 2026-03-27 Builder Menu UI Overrides
+- Goal:
+  - Add a flexible theme-level admin override layer for builder menu presentation, starting with a visual divider before reusable/shared layouts.
+- Decisions made:
+  - Builder menu presentation overrides should live in the stack theme admin assets, not in a plugin.
+  - The override layer should stay generic enough to support future builder/editor menu decorations, not only ACF-specific one-offs.
+  - The current first use adds a divider and label before `Reusable Block` in the `Content` flexible-content layout menu.
+- Files changed:
+  - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/content-builder-admin.js`
+- Validation:
+  - `php -l` passed for `functions.php`
+  - JS parse check passed for `content-builder-admin.js`
 
 ## Thread: 2026-02-28 - Memory Workflow Setup
 - Goal:
@@ -700,6 +813,36 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - Existing `.mrn_bootstrapped` markers were present for the expected stack-managed sites, including `default-configs.mrndev.io`.
 - Risks/gotchas:
   - Running the scanner as `kyle` can still produce permission warnings when writing `/home/mrndev-stack-manager/stack/runtime/bootstrap-status.env` because the stack runtime area is app-owned. This is consistent with the intended model rather than a new blocker.
+
+## Thread: 2026-03-26 Editor Tools ACF TinyMCE Packaging
+- Goal:
+  - Finish the `mrn-editor-tools` ACF TinyMCE improvements and package the plugin.
+- Decisions made:
+  - `mrn-editor-tools` should attach its TinyMCE runtime broadly in classic-editor admin contexts, not only on the main post editor screen.
+  - ACF WYSIWYG toolbars should receive the modal/snippet controls as well as the TinyMCE plugin runtime/settings payload.
+  - The native TinyMCE `Styles` control should remain named `Styles`.
+  - MRN-provided entries should appear inside that control under a grouped submenu titled `Enhanced Styles`.
+  - Fresh/default plugin state should be empty:
+    - no default classes
+    - no default buttons
+    - no default snippets
+    - no default text colors
+  - The `Snippets` control should still appear even when empty and show `No snippets yet`.
+  - `mrn-editor-tools` version was bumped to `1.8.13`.
+- Validation:
+  - `php -l` passed for `plugins/mrn-editor-tools/mrn-editor-tools.php`.
+  - JS parse checks passed for:
+    - `plugins/mrn-editor-tools/mrn-editor-tools.js`
+    - `plugins/mrn-editor-tools/editor-toolbar-actions.js`
+  - `git diff --check` passed before release.
+  - Risky-pattern scan found only the pre-existing editor-style file writes in plugin PHP plus vendor-library matches under bundled assets; no new high-risk release change was identified in the edited runtime paths.
+  - Commit pushed:
+    - `plugins/mrn-editor-tools` -> `d695f15` `Improve ACF TinyMCE editor integrations and empty states`
+  - Packaged zip rebuilt at:
+    - `/Users/khofmeyer/Development/MRN/releases/plugins/mrn-editor-tools.zip`
+  - Packaged header verification confirmed:
+    - `Plugin Name: Editor Enhancements`
+    - `Version: 1.8.13`
   - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/template-parts/content.php`
   - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/template-parts/content-page.php`
   - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/page.php`
@@ -3890,3 +4033,190 @@ After you get each summary back:
       - `mrn-site-colors`
       - `mrn-svg-support`
     - `/Users/khofmeyer/Development/MRN/stack/mu-plugins/*` now references those top-level MU plugin sources via symlinks for the shared directories, while keeping stack-specific bootstrap files like `mrn-loader.php` and the root loader stubs.
+
+## Thread: 2026-03-27 Reusable Link Treatment For CTA And Basic
+- Goal:
+  - Normalize reusable block link handling so CTA and Basic use real ACF link data with config-driven rendering, matching the direction already started in Content Grid.
+- Decisions made:
+  - `mrn_reusable_cta` is now a real canonical reusable block type in the MU plugin, not just a post type shell pointing at a missing template.
+  - CTA now has a canonical ACF field group with:
+    - heading
+    - heading tag
+    - WYSIWYG copy
+    - link field
+    - link style config (`link` or `button`)
+    - site-color-backed background and link color configs
+  - CTA now renders through a canonical MU plugin template at:
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/cta.php`
+  - Reusable Basic blocks now use the same link-data pattern:
+    - each Basic item has an ACF `link` field
+    - block-level config controls whether those links render as `link` or `button`
+    - the old button-color-specific config was replaced with link-oriented config naming
+  - Shared `link` versus `button` choices are now centralized in a helper function so CTA, Basic, and Content Grid can stay aligned.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/basic-block.php`
+  - Added:
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/cta.php`
+- Validation:
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/basic-block.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/cta.php`
+
+## Thread: 2026-03-27 Basic Block Config Cleanup
+- Goal:
+  - Simplify the reusable Basic block config area so it keeps only bottom-accent enablement plus a future-ready chooser, and remove the round-swoop control.
+- Decisions made:
+  - Reusable Basic block config no longer exposes `Round Swoop`.
+  - Reusable Basic block now keeps:
+    - `Bottom Accent` on/off
+    - `Bottom Accent Style` chooser
+  - The new `Bottom Accent Style` chooser is intentionally a placeholder and is not wired to rendering yet.
+  - The old `has-round-swoop` render path was removed from the canonical Basic block template.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/basic-block.php`
+- Validation:
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/basic-block.php`
+
+## Thread: 2026-03-27 Site Colors Renamed To Site Styles
+- Goal:
+  - Evolve the Site Colors MU plugin into a broader Site Styles registry, including reusable graphic elements that can feed accent-style dropdowns later.
+- Decisions made:
+  - The MU plugin is now presented as `Site Styles` in the plugin header and WordPress settings UI.
+  - Existing color helper APIs remain intact for compatibility:
+    - `mrn_site_colors_get_all()`
+    - `mrn_site_colors_get_value()`
+    - `mrn_site_colors_get_css_var()`
+    - `mrn_site_colors_get_map()`
+  - Site Styles now stores a second registry for `Graphic Elements`, each with:
+    - name
+    - slug
+    - raw CSS
+  - Graphic element CSS is printed globally in a dedicated `<style>` block for front-end, admin, and login screens.
+  - New helper APIs exist for future builder/plugin usage:
+    - `mrn_site_styles_get_graphic_elements()`
+    - `mrn_site_styles_get_graphic_element_map()`
+    - `mrn_site_styles_get_graphic_element_choices()`
+  - The reusable Basic block `Bottom Accent Style` chooser now pulls its choices from `mrn_site_styles_get_graphic_element_choices()`, but the selected value is still not wired to frontend rendering yet.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-site-colors/mrn-site-colors.php`
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+- Validation:
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-site-colors/mrn-site-colors.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+
+## Thread: 2026-03-27 Shared Bottom Accent Contract
+- Goal:
+  - Make bottom accent elements a shared stack concept that works across reusable blocks and ACF layouts using the Site Styles graphic-element registry.
+- Decisions made:
+  - Site Styles now owns the shared bottom-accent contract.
+  - New helper functions in the Site Styles MU plugin:
+    - `mrn_site_styles_get_bottom_accent_slug()`
+    - `mrn_site_styles_get_bottom_accent_contract()`
+  - The shared render contract is:
+    - class `has-bottom-accent`
+    - attribute `data-bottom-accent="<graphic-element-slug>"`
+  - Site Styles now prints a small global base CSS rule so any section with that contract gets a positioned `::after` pseudo-element hook.
+  - The shared base accent CSS now uses `margin-bottom: var(--mrn-accent-space, 3em)` so accents get default spacing automatically.
+  - Each Site Styles graphic element can now optionally set its own spacing override value, which is emitted as `--mrn-accent-space` for that selected accent slug.
+  - Reusable `Basic` and reusable `CTA` now both support:
+    - `Bottom Accent`
+    - `Bottom Accent Style`
+    - shared render output via the Site Styles helper contract
+  - The theme-owned ACF `Basic - title|text` layout now also supports:
+    - `Bottom Accent`
+    - `Bottom Accent Style`
+    - the same shared render contract
+  - The theme-owned ACF `Body Text` layout now also supports:
+    - `Bottom Accent`
+    - `Bottom Accent Style`
+    - the same shared render contract
+  - Reusable `Content Grid` now also supports:
+    - `Bottom Accent`
+    - `Bottom Accent Style`
+    - the same shared render contract
+  - The theme builder's `Reusable Block` picker row should not add its own accent wrapper/attributes, because the selected reusable block may already carry accent styling internally and should not be double-wrapped.
+  - This creates one reusable accent system for stack sections rather than a Basic-block-only implementation.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-site-colors/mrn-site-colors.php`
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/basic-block.php`
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/cta.php`
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/content-grid.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/body-text.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/basic.php`
+- Validation:
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-site-colors/mrn-site-colors.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/basic-block.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/cta.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/content-grid.php`
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/body-text.php`
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/basic.php`
+
+## Thread: 2026-03-27 Separate Hero Builder Group
+- Goal:
+  - Keep Hero separate from the main `Content` flexible content builder by creating a dedicated Hero field group that renders above Content on posts and pages.
+- Decisions made:
+  - Hero should not live inside the `Content` field group.
+  - The stack theme now has a separate `Hero` ACF field group above `Content`.
+  - The Hero field group uses its own flexible content field:
+    - `page_hero_rows`
+  - The first Hero layout is a theme-owned `hero` layout with:
+    - eyebrow
+    - heading override
+    - heading tag
+    - WYSIWYG content
+    - link
+    - image
+    - background color
+    - bottom accent toggle/style
+  - Hero renders through:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/hero.php`
+  - On singular posts/pages, the hero builder now renders before the native entry header, and the native title header is skipped when a hero row is present to avoid duplicate headings.
+  - The `Content` field group remains separate and now has `menu_order` after Hero.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content-page.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content.php`
+  - Added:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/hero.php`
+- Validation:
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content-page.php`
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content.php`
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/hero.php`
+
+## Thread: 2026-03-27 Packaging Pass
+- Goal:
+  - Package the work completed across reusable blocks, Site Styles, and the stack theme foundation work.
+- Results:
+  - `mrn-reusable-block-library` packaged as `0.1.3`
+    - commit: `174a74f`
+    - release zip: `/Users/khofmeyer/Development/MRN/releases/mu-plugins/mrn-reusable-block-library.zip`
+  - `mrn-site-colors` packaged as `0.1.2` while presenting as `Site Styles`
+    - commit: `0808448`
+    - release zip: `/Users/khofmeyer/Development/MRN/releases/mu-plugins/mrn-site-colors.zip`
+  - `mrn-base-stack` theme artifact rebuilt as `1.0.1`
+    - local stack zip: `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack.zip`
+    - release zip: `/Users/khofmeyer/Development/MRN/releases/stack/mrn-base-stack.zip`
+- Validation:
+  - `php -l` passed for all changed PHP files in the packaged MU plugins and theme files touched in this thread
+  - `git diff --check` passed in:
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library`
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-site-colors`
+  - packaged headers verified in release archives:
+    - `mrn-reusable-block-library` -> `0.1.3`
+    - `mrn-site-colors` -> `0.1.2`
+    - `mrn-base-stack` -> `1.0.1`
+- Notes:
+  - The stack theme source is not currently attached to its own Git remote, so the theme work was version-bumped and zipped, but not pushed to a dedicated theme repo.
