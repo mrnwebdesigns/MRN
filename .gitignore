@@ -15,4 +15,5 @@
 !/shared/README.md
 !/stack/
 !/stack/README.md
-!.DS_Store
+.DS_Store
+*/.DS_Store
