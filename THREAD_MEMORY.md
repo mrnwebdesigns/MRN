@@ -64,6 +64,47 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - If content belongs only to the current page/post, prefer an ACF builder layout in the theme.
   - Converting a reusable block into page-specific content is supported as a theme-level in-editor action, not as a persistent toggle field.
   - The theme is responsible for builder-aware rendering and template parts; the reusable block library is responsible for reusable block data models, block post types, and reusable block admin UX.
+- `mrn-reusable-block-library` no longer contains the old accidentally tracked nested duplicate folder `mrn-reusable-block-library/` inside the repo root.
+  - Cleanup commit: `dac1783` (`Remove duplicate nested template files`)
+- `default-configs.mrndev.io` has been manually refreshed from the current stack baseline after the latest builder/foundation work.
+  - Updated live copies include:
+    - `wp-content/mu-plugins/mrn-reusable-block-library` -> `0.1.3`
+    - `wp-content/mu-plugins/mrn-site-colors` -> `0.1.2`
+    - `wp-content/themes/default-configs` -> theme content from `mrn-base-stack` `1.0.1` while preserving `Theme Name: default configs` and `Text Domain: default-configs`
+
+## Thread: 2026-03-27 default-configs Manual Refresh + Reusable Block Repo Cleanup
+- Goal:
+  - Push the latest stack foundation work into `default-configs.mrndev.io` and clean up lingering repository structure issues discovered during that manual update.
+- Decisions made:
+  - `default-configs` should be manually refreshed from current canonical source instead of waiting for a fresh rollout.
+  - The site-specific theme slug `default-configs` should preserve its site identity strings while receiving the latest stack theme contents.
+  - The accidentally tracked nested duplicate folder inside `mu-plugins/mrn-reusable-block-library` was junk and should be deleted from source control.
+- Source cleanup applied:
+  - Removed tracked duplicate files from:
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library/mrn-reusable-block-library.php`
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library/templates/basic-block.php`
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library/templates/generic-block.php`
+  - Committed and pushed the cleanup:
+    - repo: `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library`
+    - commit: `dac1783`
+- Server/site update details:
+  - Staged updated source on the server under:
+    - `/home/mrn-ops/default-configs-stage`
+  - Backed up the current site copy before replacement under:
+    - `/home/mrn-ops/default-configs-backup-20260327192219`
+  - Synced refreshed source into:
+    - `/home/mrndev-stack-manager/stack/mu-plugins/mrn-reusable-block-library`
+    - `/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io/wp-content/mu-plugins/mrn-reusable-block-library`
+    - `/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io/wp-content/mu-plugins/mrn-site-colors`
+    - `/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io/wp-content/themes/default-configs`
+- Validation:
+  - Confirmed stack copy of `mrn-reusable-block-library` is clean and no longer contains the nested duplicate folder.
+  - Confirmed `default-configs` live versions:
+    - `mrn-reusable-block-library` -> `0.1.3`
+    - `mrn-site-colors` -> `0.1.2`
+    - `default-configs` theme -> `Version: 1.0.1`
+  - Confirmed site ownership is correct for the refreshed copies:
+    - `mrndev-default-configs-stack:mrndev-default-configs-stack`
 
 ## Thread: 2026-03-26 Theme Manifest Repair For Stack Rollout
 - Goal:
@@ -4220,3 +4261,8 @@ After you get each summary back:
     - `mrn-base-stack` -> `1.0.1`
 - Notes:
   - The stack theme source is not currently attached to its own Git remote, so the theme work was version-bumped and zipped, but not pushed to a dedicated theme repo.
+  - After packaging, the updated stack assets were synced to the live server stack under `/home/mrndev-stack-manager/stack` using `mrndev-ops` + `rsync --rsync-path='sudo -n -u mrndev-stack-manager rsync'`.
+  - Verified on server after sync:
+    - `mrn-reusable-block-library` -> `0.1.3`
+    - `mrn-site-colors`/Site Styles -> `0.1.2`
+    - `mrn-base-stack.zip` -> `1.0.1`
