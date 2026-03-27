@@ -1,0 +1,18 @@
+# Top-level workspace repo tracks shared metadata only.
+*
+!/.gitignore
+!/AGENTS.md
+!/MRN.code-workspace
+!/README.md
+!/THREAD_MEMORY.md
+!/clone/
+!/clone/README.md
+!/releases/
+!/releases/README.md
+!/server/
+!/server/README.md
+!/shared/
+!/shared/README.md
+!/stack/
+!/stack/README.md
+!.DS_Store

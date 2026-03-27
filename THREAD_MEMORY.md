@@ -1,0 +1,3892 @@
+# Thread Memory
+
+## How To Use This File
+- Add one section per thread/date with only durable facts.
+- Keep `Current Canonical State` reconciled and contradiction-free.
+- In new threads, ask Codex to read this file first.
+- Historical entries may reference the old root at `/Users/khofmeyer/Sites/MRNPlugins`; the current canonical workspace root is `/Users/khofmeyer/Development/MRN`.
+
+## Thread Start Checklist
+- Confirm project pinned instructions are set in the UI.
+- Start each new thread with:
+```text
+Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with this task: <task>.
+```
+- If the task changes decisions, update this file at the end of the thread.
+
+## Current Canonical State
+- Canonical workspace root is `/Users/khofmeyer/Development/MRN`.
+- Source layout contract is:
+  - `plugins/` = normal plugin source
+  - `mu-plugins/` = canonical MU plugin source
+  - `shared/` = intentionally shared cross-plugin source files
+  - `stack/` = stack orchestration, manifests, themes, exports/configs, scripts, wrappers
+  - `clone/` = clone/import-export tooling
+  - `server/` = server-side helpers and ops scripts
+  - `releases/` = build artifacts only, never source of truth
+- `stack/mu-plugins/` is not the canonical home for MU plugin source.
+  - Top-level `mu-plugins/` is canonical.
+  - `stack/mu-plugins/` contains stack loader/root entry files that point at the canonical MU plugin set.
+- Recovered source is present in the new workspace for the active plugin set, MU plugin set, shared sticky-bar files, stack theme, and clone tooling.
+- Fresh build artifacts already exist in:
+  - `/Users/khofmeyer/Development/MRN/releases/plugins`
+  - `/Users/khofmeyer/Development/MRN/releases/mu-plugins`
+  - `/Users/khofmeyer/Development/MRN/releases/stack`
+  - `/Users/khofmeyer/Development/MRN/releases/clone`
+- The earlier note that zips/releases were deferred is historical only and should not be treated as current state.
+- `mrn-editor-tools` includes the recovered ACF WYSIWYG toolbar integration from the previously installed local copy.
+- Plugin and MU plugin repo normalization is complete for the current active set.
+  - Existing repos were reconnected where they already existed on GitHub.
+  - Fresh private repos were created where no matching GitHub repo existed.
+  - Remaining repo work, if any, is theme/stack-specific housekeeping rather than plugin-recovery work.
+- The local stack test site at `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content` now points to the rebuilt workspace via symlinks for the MRN plugin and MU plugin set.
+- Local WP-CLI is available through Local's bundled binary:
+  - `/Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/posix/wp`
+- Server rollout QA after the rebuild was completed on `2026-03-27`.
+  - Live stack root, manifests, packages, MU files, and ownership model were verified.
+  - Live stack scripts/importer had executable mode restored to `755`.
+  - Dry-run rollout validation succeeded when executed as `mrndev-stack-manager`.
+  - Running stack automation as `kyle` can still produce runtime status-file warnings; this is expected because the stack should execute as `mrndev-stack-manager`.
+- Server sync/deploy guidance:
+  - CloudPanel stack files should be written as `mrndev-stack-manager:mrndev-stack-manager`
+  - `kyle` is the SSH/operator user, not the final file owner
+  - preferred sync pattern is `rsync --rsync-path='sudo -n -u mrndev-stack-manager rsync'`
+
+## Thread: 2026-02-28 - Memory Workflow Setup
+- Goal:
+  - Create a cross-thread memory process in the correct workspace location.
+- Decisions made:
+  - Codex does not automatically carry memory across separate threads.
+  - Continuity will be maintained through a shared memory document.
+  - Each old thread should be summarized into: decisions, current state, open tasks, commands run, files changed, gotchas.
+  - Summaries should be appended under per-thread headings and reconciled into canonical state.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md` (created)
+- Commands/scripts used:
+  - `rg --files | rg 'THREAD_MEMORY\\.md|MEMORY\\.md|memory\\.md'`
+- Outstanding TODOs:
+  - Migrate key context from old threads into this file.
+  - Reconcile conflicts into `Current Canonical State`.
+  - Start each new thread by asking Codex to read this file for context.
+- Risks/gotchas:
+  - Thread summaries can conflict; unresolved conflicts should not stay in canonical state.
+  - Keep entries concise to avoid stale or noisy context.
+
+## Thread: 2026-02-28 MRNPlugins Sticky Toolbar + Packaging
+- Goal:
+  - Stabilize and standardize sticky toolbar behavior across plugins, centralize plugin source-of-truth in `/Users/khofmeyer/Sites/MRNPlugins`, and run full package workflow (test/security/commit/push/zip) where requested.
+- Decisions made:
+  - Source of truth is `/Users/khofmeyer/Sites/MRNPlugins`; local site plugin folders are symlinked to this location.
+  - `mrn-universal-sticky-bar` is the canonical implementation for post/page sticky toolbar behavior.
+  - Sticky toolbar in `mrn-role-metabox-lock` was split out to separate plugin (`mrn-universal-sticky-bar`) and role plugin sticky behavior was disabled in prior work.
+  - Package workflow means: test, security pass, commit, push, zip.
+  - Toolbar background color standardized to `#1D2327` for universal sticky bar and comment management toolbar.
+  - In `mrn-comment-management`, hide `All Comments` and `Discussion Settings` buttons when MRN disable-comments MU plugin is detected; always keep `Refresh`.
+  - Add top-of-page status notice in `mrn-comment-management` indicating whether comments are disabled/enabled.
+  - Add shared sticky-bar asset file and explicit start-here pointers in shared code to begin future sticky-bar work from universal sticky bar.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar/mrn-universal-sticky-bar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management/mrn-comment-management.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/shared/mrn-universal-sticky-bar-assets.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/shared/mrn-sticky-settings-toolbar.php`
+  - Rebuilt artifacts:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management.zip`
+- Commands/scripts used:
+  - `gh auth status && gh repo create khofmeyer/mrn-universal-sticky-bar --private --source '/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar' --remote origin --push`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar' init`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar' add mrn-universal-sticky-bar.php`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar' commit -m 'Fix sticky bar left alignment and stabilize mount on classic editor (v1.0.3)'`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar' commit -m 'Make toolbar permalink white and remove native permalink spacing'`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar' commit -m 'Adjust Screen Options/Help vertical alignment with sticky toolbar'`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar' commit -m 'Refine toolbar styling and bump version to 1.0.4'`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar' push origin main`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management' add mrn-comment-management.php`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management' commit -m 'Add sticky toolbar intelligence and unified toolbar styling'`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management' push origin main`
+  - `php -l '/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar/mrn-universal-sticky-bar.php'`
+  - `php -l '/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management/mrn-comment-management.php'`
+  - `cd '/Users/khofmeyer/Sites/MRNPlugins' && rm -f mrn-universal-sticky-bar.zip && zip -rq mrn-universal-sticky-bar.zip mrn-universal-sticky-bar`
+  - `cd '/Users/khofmeyer/Sites/MRNPlugins' && rm -f mrn-comment-management.zip && zip -rq mrn-comment-management.zip mrn-comment-management`
+  - `unzip -p mrn-universal-sticky-bar.zip 'mrn-universal-sticky-bar/mrn-universal-sticky-bar.php' | rg -n "screen-meta-links|mrn-usb-active|Version:"`
+  - `unzip -p mrn-comment-management.zip 'mrn-comment-management/mrn-comment-management.php' | rg -n "Version:|fitToolbarToLeftEdge|mrn-cm-toolbar-active"`
+  - Multiple `python3` one-off patch commands were used to edit plugin PHP files in place (exact full scripts not all retained).
+- Outstanding TODOs:
+  - Commit/push shared-folder changes (`/Users/khofmeyer/Sites/MRNPlugins/shared/mrn-universal-sticky-bar-assets.php` and updates in `/Users/khofmeyer/Sites/MRNPlugins/shared/mrn-sticky-settings-toolbar.php`) to the appropriate repo. Uncertain: target repo for shared assets/versioning.
+  - Uncertain: whether `mrn-comment-management` version should be bumped beyond `1.1.1` after subsequent intelligence/color updates.
+- Risks/gotchas:
+  - A stale zip caused a live-site mismatch earlier; zip rebuild must happen after every source change.
+  - Push failed previously for `mrn-universal-sticky-bar` until `origin` was created/configured; remote dependency is a packaging step risk.
+  - Thread included multiple rapid iterative CSS/JS alignment tweaks; future edits should start from current canonical `mrn-universal-sticky-bar` implementation to avoid drift.
+
+## Thread: 2026-03-18 MRN Helper Dashboard Lock UI Release
+- Goal:
+  - Ship the `MRN Helper` dashboard widget lock UI, package the plugin, and add it to the stack rollout manifest.
+- Decisions made:
+  - `mrn-helper` version `0.1.16` is the first packaged release that includes the settings UI at `Settings -> MRN Helper`.
+  - Current UI scope is dashboard widget locking by role only; metabox-lock UI remains intentionally out of scope.
+  - `mrn-helper` should be deployed through the stack as a package entry at `/home/mrndev-stack-manager/stack/packages/mrn-helper.zip`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-helper/mrn-helper.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-helper.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/plugins.txt`
+- Risks/gotchas:
+  - The old `mrn-helper.zip` was stale at `0.1.15`; packaging must rebuild the zip after source changes.
+
+## Thread: 2026-03-18 Packaging Checklist Hardening
+- Goal:
+  - Make plugin packaging use a stricter, reusable security and quality checklist by default.
+- Decisions made:
+  - Packaging now explicitly includes `php -l` on every changed PHP file, `git diff --check`, a lightweight risky-function/pattern scan, and a manual review of capability checks, nonces, and sanitization/escaping for new admin or AJAX code.
+  - When practical, packaging should also verify the version/header inside the rebuilt zip after the final source changes.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/AGENTS.md`
+- Risks/gotchas:
+  - This is still a lightweight release checklist, not a full external security audit or PHPCS security-standard run.
+
+## Thread: 2026-03-20 Stack Bootstrap Repair For default-configs.mrndev.io
+- Goal:
+  - Diagnose why `default-configs.mrndev.io` bootstrap produced mass plugin-install warnings and repair the stack inputs so rollout works again.
+- Decisions made:
+  - The normal plugin manifest must not include MRN plugins that are already delivered as MU plugins. Specifically remove:
+    - `mrn-dashboard-support`
+    - `mrn-disable-comments`
+    - `mrn-duplicate-enhance`
+    - `mrn-editor-tools`
+  - Premium/private plugins in `stack/manifests/plugins.txt` should use explicit package zip paths, not bare slugs, when the server package already exists.
+  - AME export files in `/home/mrndev-stack-manager/stack/configs/exports/` must remain readable by site bootstrap/import processes; `ame-config-container.json` and `ame-toolbar-editor.settings.json` were corrected to `0644`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/plugins.txt`
+- Server-side repairs applied:
+  - Synced missing package zips to `/home/mrndev-stack-manager/stack/packages/`:
+    - `mrn-dashboard-support.zip`
+    - `mrn-disable-comments.zip`
+    - `mrn-duplicate-enhance.zip`
+    - `mrn-role-metabox-lock.zip`
+  - Updated `/home/mrndev-stack-manager/stack/manifests/plugins.txt` to use package paths for premium/private plugins and to exclude MU-managed MRN plugins.
+  - Corrected export file ownership/permissions for:
+    - `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json`
+    - `/home/mrndev-stack-manager/stack/configs/exports/ame-toolbar-editor.settings.json`
+- Validation:
+  - `default-configs.mrndev.io` now has the previously missing premium/private plugins active, including `admin-menu-editor-pro`, `advanced-custom-fields-pro`, `wp-toolbar-editor`, `searchwp`, `wpforms`, `wpmu-dev-seo`, `wpmudev-updates`, `wp-defender`, `wp-hummingbird`, `wp-smush-pro`, `mrn-license-vault`, `mrn-unified-exporter`, and `mrn-role-metabox-lock`.
+  - AME container and Toolbar Editor imports were reapplied successfully with:
+    - `global: OK, 6 options imported`
+    - `admin-menu: OK`
+    - `branding: OK`
+    - `dashboard-widget-editor: OK`
+    - `login-page: OK`
+    - `metaboxes: OK`
+    - `table-columns: OK`
+    - `tweaks: OK`
+    - `roles-and-capabilities: 1 changes applied`
+    - `Imported AME Toolbar Editor settings.`
+- Risks/gotchas:
+  - The manual recovery path did not rerun the full license-mapping stage. Quick verification showed license options still unset for AME, WPForms, SearchWP, and ACF on `default-configs.mrndev.io`; Updraft had an option array present but was not independently re-verified in this repair.
+  - Repeated `PHP Warning: chmod(): Operation not permitted` messages appeared during `wp` operations on this site. They did not block plugin installs or imports, but they suggest filesystem permission mismatches that may be worth hardening separately.
+
+## Thread: 2026-03-20 default-configs License Recovery
+- Goal:
+  - Finish the post-bootstrap recovery on `default-configs.mrndev.io` by applying the missing license mappings after the plugins were manually installed.
+- Decisions made:
+  - When full bootstrap rerun is impractical, existing-site license repair can be done with direct `wp --path=... eval ...` commands as `kyle` on the server.
+  - `WPForms` notice suppression only requires the `wpforms_license.key` option to be populated; remote verification may fail independently and is not required just to clear the missing-license notice.
+  - `AME`, `SearchWP`, and `ACF Pro` can be repaired directly from the stack license files on the server.
+- Validation:
+  - Verified on `default-configs.mrndev.io`:
+    - `ame=true`
+    - `wpforms=true`
+    - `searchwp=true`
+    - `acf=true`
+  - `wpforms_license` now contains a non-empty `key` with all invalid/expired flags set to `false`.
+- Risks/gotchas:
+  - `WPForms` remote verify still failed during the stricter verification path, but the local license key option is now populated, which is sufficient to remove the missing-license admin notice.
+
+## Thread: 2026-03-20 Complianz Stack Cleanup
+- Goal:
+  - Remove stale `Complianz` installation from the stack and from `default-configs.mrndev.io`.
+- Decisions made:
+  - `complianz-gdpr` should not be in the stack plugin manifest.
+  - The line was stale manifest drift, not a current generated match from the local source site; the local source plugin directory no longer contains `complianz-gdpr`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/plugins.txt`
+
+## Thread: 2026-03-20 Plugin Manifest Rebuild
+- Goal:
+  - Rebuild the stack plugin manifest so it matches the current local source plugin set again instead of a stale hand-edited subset.
+- Decisions made:
+  - `stack/manifests/plugins.txt` is now rebuilt from the current source plugin directory and normalized with these rules:
+    - exclude MU-managed plugins from the normal plugin manifest
+    - exclude local-only/stale entries like `fluent-smtp` and `index.php`
+    - use package zip paths for premium/private plugins when available
+  - The rebuilt manifest reintroduces currently expected packaged MRN plugins that had drifted out of rollout, including:
+    - `mrn-acf-character-count`
+    - `mrn-comment-management`
+    - `mrn-cookie-consent`
+    - `mrn-gtm-injector`
+    - `mrn-seo-helper`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/plugins.txt`
+- Server-side changes:
+  - Synced rebuilt manifest to `/home/mrndev-stack-manager/stack/manifests/plugins.txt`
+- Risks/gotchas:
+  - Existing sites do not automatically gain plugins that were previously omitted from the stale manifest; this primarily fixes future rollouts unless a site is manually reconciled.
+
+## Thread: 2026-03-20 Stack Plugin Exclusions Update
+- Goal:
+  - Stop installing selected MRN plugins by default through the stack plugin manifest.
+- Decisions made:
+  - Remove these from stack rollout:
+    - `mrn-license-vault`
+    - `mrn-role-metabox-lock`
+    - `mrn-unified-exporter`
+    - `wp-mail-smtp`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/plugins.txt`
+
+## Thread: 2026-03-20 Fluent SMTP Rollout Add
+- Goal:
+  - Add `FluentSMTP` back into default stack rollout.
+- Decisions made:
+  - `fluent-smtp` should be installed from wp.org as a normal plugin slug during rollout.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/plugins.txt`
+
+## Thread: 2026-03-20 Dynamic Plugin Settings Guidance
+- Goal:
+  - Capture durable guidance about how custom/global values can populate plugin settings fields.
+- Decisions made:
+  - There is no universal WordPress token-replacement layer for plugin settings fields.
+  - Whether a plugin field can use dynamic values depends on that plugin; fields may support only plain text, or may support shortcodes, constants, filters/hooks, merge tags, or custom dynamic integrations.
+
+## Thread: 2026-03-26 Workspace Reorganization Into /Development/MRN
+- Goal:
+  - Reorganize the MRN workspace into a cleaner source layout outside the old mixed root and recover active source folders into that new structure.
+- Decisions made:
+  - New development workspace path is `/Users/khofmeyer/Development/MRN`.
+  - Workspace contract:
+    - `plugins/` = normal plugin source
+    - `mu-plugins/` = canonical MU plugin source used by stack and non-stack sites
+    - `shared/` = intentionally shared cross-plugin source files
+    - `stack/` = stack-only orchestration, manifests, starter themes, exports/configs, scripts, stack wrappers
+    - `clone/` = clone/import-export tooling
+    - `server/` = server-side helpers and ops scripts
+    - `releases/` = build artifacts only
+  - `stack/mu-plugins/` is no longer the canonical home for shared MU plugin source.
+    - Top-level `mu-plugins/` is canonical.
+    - `stack/mu-plugins/` may contain loader files, root stubs, or symlinks back to `mu-plugins/`.
+  - Keep the MU loader explicit for now.
+    - `/Users/khofmeyer/Development/MRN/stack/mu-plugins/mrn-loader.php` uses a hard-coded allowlist of MU plugin entry files, not pattern matching.
+  - Recovered/copied source now present in the new workspace:
+    - Plugins:
+      - `mrn-acf-character-count`
+      - `mrn-comment-management`
+      - `mrn-config-helper`
+      - `mrn-cookie-consent`
+      - `mrn-editor-tools`
+      - `mrn-gtm-injector`
+      - `mrn-license-vault`
+      - `mrn-seo-helper`
+      - `mrn-unified-exporter`
+      - `mrn-universal-sticky-bar`
+    - MU plugins:
+      - `mrn-active-style-guide`
+      - `mrn-admin-ui-css`
+      - `mrn-dashboard-support`
+      - `mrn-disable-comments`
+      - `mrn-duplicate-enhance`
+      - `mrn-editor-lockdown`
+      - `mrn-editor-ui-css`
+      - `mrn-reusable-block-library`
+      - `mrn-site-colors`
+      - `mrn-svg-support`
+    - Shared:
+      - `shared/mrn-sticky-settings-toolbar.php`
+      - `shared/mrn-universal-sticky-bar-assets.php`
+    - Clone:
+      - `clone/site-cloner`
+  - `mrn-editor-tools` had confirmed local-only work in the installed local plugin copy:
+    - ACF WYSIWYG toolbar integration.
+    - That change was merged back into the restored source repo and copied into the new workspace source.
+  - `mrn-admin-ui-css`, `mrn-dashboard-support`, `mrn-disable-comments`, and `mrn-acf-character-count` local copies were older than GitHub/new source, not newer.
+  - Zips/releases are intentionally deferred until after source reorganization is stable.
+- Files changed:
+  - `/Users/khofmeyer/Development/MRN/README.md`
+  - `/Users/khofmeyer/Development/MRN/.gitignore`
+  - `/Users/khofmeyer/Development/MRN/clone/README.md`
+  - `/Users/khofmeyer/Development/MRN/server/README.md`
+  - `/Users/khofmeyer/Development/MRN/shared/README.md`
+- Risks/gotchas:
+  - Not every recovered source folder is currently a standalone git repo in the new workspace; some were restored from zip or copied from stack source and may need repo/remote normalization later.
+  - Do not treat `releases/` as source when that migration happens.
+  - CloudPanel server deployment should not mirror local symlink structure for MU plugins. Server stack should use real files/directories.
+  - Proper server deployment pattern:
+    - final ownership remains `mrndev-stack-manager:mrndev-stack-manager`
+    - `kyle` is only the SSH/operator user
+    - when syncing to the server, use `rsync --rsync-path='sudo -n -u mrndev-stack-manager rsync'` so files are written as the app owner instead of trying to write as `kyle`
+  - The broken server symlink at `/home/mrndev-stack-manager/stack/mu-plugins/mrn-editor-lockdown` was replaced with a real directory before the final MU plugin sync.
+  - Fresh release artifacts were rebuilt from the new workspace source into `/Users/khofmeyer/Development/MRN/releases`, not copied from old loose root zips.
+    - plugins: `/Users/khofmeyer/Development/MRN/releases/plugins`
+    - mu-plugins: `/Users/khofmeyer/Development/MRN/releases/mu-plugins`
+    - stack: `/Users/khofmeyer/Development/MRN/releases/stack`
+    - clone: `/Users/khofmeyer/Development/MRN/releases/clone`
+  - Replacement VS Code workspace file for the new root is `/Users/khofmeyer/Development/MRN/MRN.code-workspace`.
+
+## Thread: 2026-03-24 Stack Reusable Block + Sticky Bar Packaging
+- Goal:
+  - Finalize the current stack baseline by packaging the sticky bar and reusable block library updates after reusable-block/admin UX hardening.
+- Decisions made:
+  - `mrn-universal-sticky-bar` version `1.0.8` is the packaged baseline for sticky toolbar support on classic `post`, `page`, and MRN reusable block edit screens.
+  - Reusable block edit screens use block-oriented sticky bar language, hide misleading public permalink editing/preview affordances, and expose copyable admin URLs instead.
+  - The sticky bar copy interaction now uses an in-place clipboard toast near the click target instead of causing scroll jumps.
+  - `mrn-reusable-block-library` MU plugin version `0.1.2` is the packaged baseline after removing the duplicate `Content` ACF group for posts/pages.
+  - The theme owns the `MRN Content Builder` field group for `post` and `page`; the reusable block MU plugin should not register a second page/post content builder group.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar/mrn-universal-sticky-bar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Validation:
+  - `php -l` passed on both updated PHP files.
+  - `git diff --check` passed in `/Users/khofmeyer/Sites/MRNPlugins`.
+  - Risky-pattern scan returned no matches for the packaged files.
+
+## Thread: 2026-03-24 Style Guide MU Baseline
+
+## Thread: 2026-03-25 Page-Specific Block Conversion UX
+- Goal:
+  - Replace the reusable-block save-time conversion toggle with a clearer one-way editor action.
+- Decisions made:
+  - The universal `Content` builder remains theme-owned in `mrn-base-stack`.
+  - Converting a reusable block into a page-specific block is now a theme-level in-editor action, not a saved `true_false` field.
+  - The `Reusable Block` layout now uses a message/action field with a `Convert to Page-Specific` button instead of a toggle.
+  - Conversion is prepared through a WordPress AJAX endpoint in the theme and is intended to happen in-editor without requiring the post Update button.
+  - Supported page-specific conversions currently include:
+    - `mrn_reusable_basic` -> `basic_block`
+    - `mrn_reusable_grid` -> `content_grid`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/functions.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/js/content-builder-admin.js`
+- Validation:
+  - `php -l` passed for the updated canonical and local theme `functions.php`.
+  - Local ACF now reports the `Reusable Block` layout subfields as:
+    - `field_mrn_reusable_block_post|block|post_object`
+    - `field_mrn_reusable_block_convert_action||message`
+
+## Thread: 2026-03-26 Editor Lockdown MU Plugin
+- Goal:
+  - Enforce stack-specific classic editor metabox layouts for posts and pages for all users.
+- Decisions made:
+  - Post/page metabox lockdown belongs in a dedicated MU plugin, `mrn-editor-lockdown`, not in CSS-only editor helper plugins.
+  - The stack now uses `mrn-editor-lockdown` to enforce post/page classic editor metabox order and closed boxes on every relevant screen load.
+  - `mrn-editor-lockdown` should be treated as a metabox-ordering tool only; it should not try to reshape the main editor/content-builder area.
+  - The lockdown plugin removes the easy UI paths for changing metabox layout by hiding Screen Options/Help on those screens and disabling sortable metabox dragging in the editor UI.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-editor-lockdown.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-loader.php`
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/mu-plugins/mrn-editor-lockdown.php`
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/mu-plugins/mrn-loader.php`
+- Validation:
+  - `php -l` passed for canonical and local lockdown plugin files and the local MU loader.
+  - Local WordPress boot check confirmed:
+    - `lockdown-ok`
+    - `loader-ok`
+  - Local payload checks succeeded for:
+    - `Basic Block` -> `layout_mrn_basic_block`
+    - `Content Grid` -> `layout_mrn_content_grid`
+- Goal:
+  - Add a logged-in front-end style guide reference to the stack as a reusable MU plugin baseline.
+- Decisions made:
+  - `mrn-active-style-guide` should live in `stack/mu-plugins` as a stack MU plugin, not in a single theme.
+  - The guide is a front-end theme reference, not a wp-admin style guide.
+  - The admin bar item should open the slideout panel on the current page; the full guide should be reached from a wp-admin sidebar item and from the panel.
+  - The full guide should load the active theme header/footer so it reflects the real front-end context.
+  - `Style Guide` is the preferred user-facing name instead of `Active Style Guide`.
+  - Search should match visible rendered content as well as hidden section keywords so HTML tag searches like `H1` work.
+  - `mrn-active-style-guide` version `0.1.2` is the first stack-packaged baseline.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-active-style-guide.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-active-style-guide/mrn-active-style-guide.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-active-style-guide/templates/style-guide-page.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/README.md`
+- Validation:
+  - `php -l` passed on all Style Guide MU PHP files.
+  - `git diff --check` passed in `/Users/khofmeyer/Sites/MRNPlugins`.
+  - Risky-pattern scan returned no matches for the Style Guide MU files.
+
+## Thread: 2026-03-24 Stack MU Rollout Sync For Foundation Plugins
+- Goal:
+  - Sync the new foundation MU plugins to the live stack server so fresh rollouts use them.
+- Decisions made:
+  - `mrn-active-style-guide`, `mrn-site-colors`, and `mrn-reusable-block-library` roll out through stack MU source sync, not through the normal plugin manifest.
+  - No `stack/manifests/plugins.txt` change was required for this pass because these are MU plugins.
+  - No config-import manifest change was required for this pass because these plugins function without importer payloads; any per-site content/config can be added later.
+  - `mrn-loader.php` should be treated as canonical stack MU source in the repo and include:
+    - `mrn-reusable-block-library`
+    - `mrn-site-colors`
+    - `mrn-active-style-guide`
+    - plus the pre-existing server-managed MU entries
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-loader.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/README.md`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Server-side changes:
+  - Synced to `/home/mrndev-stack-manager/stack/mu-plugins/`:
+    - `mrn-loader.php`
+    - `mrn-active-style-guide.php`
+    - `mrn-active-style-guide/`
+    - `mrn-reusable-block-library.php`
+    - `mrn-reusable-block-library/`
+    - `mrn-site-colors.php`
+    - `mrn-site-colors/`
+    - `README.md`
+- Validation:
+  - Server `mrn-loader.php` is now `1.3.1` and includes entries for `mrn-reusable-block-library`, `mrn-site-colors`, and `mrn-active-style-guide`.
+  - Server `mrn-active-style-guide` is now `0.1.2`.
+  - Server `mrn-reusable-block-library` is now `0.1.2`.
+  - Server `mrn-site-colors` remains `0.1.1`.
+
+## Thread: 2026-03-24 mrn-base-stack Default Content Cleanup
+- Goal:
+  - Clean up the starter theme's default post/page rendering and make the ACF content builder available out of the box.
+- Decisions made:
+  - `mrn-base-stack` now registers a local ACF field group named `MRN Content Builder` for both `post` and `page`.
+  - The field group uses the existing `page_content_rows` flexible content field with `body_text` and `reusable_block` layouts.
+  - Default singular post/page templates were intentionally simplified by removing front-end comments, single-post navigation, post meta/footer meta, sidebar usage on archive/index, and the starter-theme footer copy.
+  - SmartCrawl endpoint analysis now receives builder-rendered markup from `mrn-base-stack` when `page_content_rows` is present, so SEO content scoring sees the current builder output instead of only raw `the_content()` content.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/functions.php`
+
+## Thread: 2026-03-26 Memory Reconciliation After Workspace Rebuild
+- Goal:
+  - Reconcile shared memory with the actual `/Users/khofmeyer/Development/MRN` workspace so new threads stop inheriting stale or partial rebuild context.
+- Decisions made:
+  - `Current Canonical State` should be used as the first-stop summary for new threads before reading historical entries.
+  - The workspace rebuild into `/Users/khofmeyer/Development/MRN` is complete enough that existing files on disk should take precedence over older transitional notes when they conflict.
+  - Release artifacts are already rebuilt and present under `/Users/khofmeyer/Development/MRN/releases`; the earlier "deferred" note is no longer current.
+  - Repo normalization remains an open follow-up area; do not assume recovered plugin folders already have independent git histories/remotes restored.
+- Files changed:
+  - `/Users/khofmeyer/Development/MRN/THREAD_MEMORY.md`
+- Validation:
+  - Workspace inventory confirmed current source directories and release artifacts under the new root.
+  - A shallow `.git` scan found no repo directories within the new workspace tree.
+- Risks/gotchas:
+  - Historical sections still contain accurate point-in-time notes from the old root, but they should not override `Current Canonical State`.
+
+## Thread: 2026-03-26 Repo Normalization Audit
+- Goal:
+  - Audit the rebuilt workspace to determine which plugin folders already have usable git/remotes and which may need to be reconnected or recreated as fresh repos.
+- Decisions made:
+  - Because the architecture was rebuilt, repo recovery should be handled case-by-case.
+  - If a folder already has a healthy local git repo and correct `origin`, prefer reconnecting and continuing history.
+  - If a folder has no repo or no reliable remote linkage, it is acceptable to initialize a fresh repo rather than forcing uncertain history reconstruction.
+- Validation:
+  - Repos present with `origin` configured:
+    - `plugins/mrn-acf-character-count`
+    - `plugins/mrn-comment-management`
+    - `plugins/mrn-editor-tools`
+    - `plugins/mrn-license-vault`
+    - `plugins/mrn-seo-helper`
+    - `plugins/mrn-unified-exporter`
+    - `mu-plugins/mrn-admin-ui-css`
+    - `mu-plugins/mrn-dashboard-support`
+    - `mu-plugins/mrn-disable-comments`
+    - `mu-plugins/mrn-duplicate-enhance`
+    - `mu-plugins/mrn-editor-ui-css`
+    - `clone/site-cloner`
+  - Repo present but no remote configured:
+    - `mu-plugins/mrn-svg-support`
+  - No git repo currently present:
+    - `plugins/mrn-config-helper`
+    - `plugins/mrn-cookie-consent`
+    - `plugins/mrn-gtm-injector`
+    - `plugins/mrn-universal-sticky-bar`
+    - `mu-plugins/mrn-active-style-guide`
+    - `mu-plugins/mrn-editor-lockdown`
+    - `mu-plugins/mrn-reusable-block-library`
+    - `mu-plugins/mrn-site-colors`
+- Risks/gotchas:
+  - `plugins/mrn-editor-tools` currently has a local modification in `mrn-editor-tools.php`; do not assume every attached repo is fully clean.
+  - Rebuilt folders without repos may still correspond to historical GitHub repos, but that should be verified before reusing names/remotes.
+
+## Thread: 2026-03-26 GitHub Repo Existence Check For Repo-Less Folders
+- Goal:
+  - Check whether repo-less folders in the rebuilt workspace already have matching GitHub repositories under `khofmeyer` so they can be reconnected instead of recreated.
+- Decisions made:
+  - Existing matching GitHub repos were confirmed for:
+    - `plugins/mrn-gtm-injector` -> `git@github.com:khofmeyer/mrn-gtm-injector.git`
+    - `plugins/mrn-universal-sticky-bar` -> `git@github.com:khofmeyer/mrn-universal-sticky-bar.git`
+  - No matching GitHub repos were found under `khofmeyer` for:
+    - `plugins/mrn-config-helper`
+    - `plugins/mrn-cookie-consent`
+    - `mu-plugins/mrn-active-style-guide`
+    - `mu-plugins/mrn-editor-lockdown`
+    - `mu-plugins/mrn-reusable-block-library`
+    - `mu-plugins/mrn-site-colors`
+    - `mu-plugins/mrn-svg-support`
+  - Folders with no confirmed existing GitHub repo are acceptable candidates for fresh repo initialization if separate repos are still desired after the architecture rebuild.
+- Validation:
+  - `gh repo view khofmeyer/<name> --json nameWithOwner,url,defaultBranchRef` succeeded for `mrn-gtm-injector` and `mrn-universal-sticky-bar`.
+  - The same check returned repository-not-found for the remaining repo-less folder names.
+
+## Thread: 2026-03-26 Reconnected Existing Plugin Repos
+- Goal:
+  - Reattach rebuilt local plugin folders to their existing GitHub histories without overwriting the recovered workspace state.
+- Decisions made:
+  - `plugins/mrn-gtm-injector` was reconnected to `git@github.com:khofmeyer/mrn-gtm-injector.git`.
+  - `plugins/mrn-universal-sticky-bar` was reconnected to `git@github.com:khofmeyer/mrn-universal-sticky-bar.git`.
+  - Safe reconnect pattern:
+    - clone the remote repo
+    - layer the current rebuilt local files on top with `rsync --exclude '.git'`
+    - replace the folder with the cloned repo so real history/remotes are preserved while local rebuild changes remain as working-tree diffs
+- Validation:
+  - Both repos now report `## main...origin/main` with `origin` configured.
+  - Current local diffs after reconnect:
+    - `plugins/mrn-gtm-injector`: modified `mrn-gtm-injector.php` with local Config Helper integration changes
+    - `plugins/mrn-universal-sticky-bar`: modified `mrn-universal-sticky-bar.php` with substantial local sticky-bar/reusable-block behavior changes
+- Risks/gotchas:
+  - These reconnects preserved local rebuilt changes as uncommitted diffs; they still need review/commit/package work before release.
+
+## Thread: 2026-03-26 Fresh Repo Initialization For Rebuilt Standalone Plugins
+- Goal:
+  - Start clean standalone repos for rebuilt plugin folders that had no matching GitHub repository under `khofmeyer`.
+- Decisions made:
+  - Created fresh private GitHub repos and local `origin` remotes for:
+    - `plugins/mrn-config-helper` -> `git@github.com:khofmeyer/mrn-config-helper.git`
+    - `plugins/mrn-cookie-consent` -> `git@github.com:khofmeyer/mrn-cookie-consent.git`
+  - Added minimal `.gitignore` files that exclude `.DS_Store`.
+  - Initial commit message used for both fresh repos: `Initial import after workspace rebuild`.
+- Validation:
+  - Both repos now report `## main...origin/main` with clean working trees.
+- Files changed:
+  - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper/.gitignore`
+  - `/Users/khofmeyer/Development/MRN/plugins/mrn-cookie-consent/.gitignore`
+
+## Thread: 2026-03-26 MU Plugin Repo Initialization And Remote Restore
+- Goal:
+  - Normalize the rebuilt MU plugin folders so each desired standalone MU plugin has a usable git repo and GitHub remote.
+- Decisions made:
+  - Created fresh private GitHub repos and local `origin` remotes for:
+    - `mu-plugins/mrn-active-style-guide` -> `git@github.com:khofmeyer/mrn-active-style-guide.git`
+    - `mu-plugins/mrn-editor-lockdown` -> `git@github.com:khofmeyer/mrn-editor-lockdown.git`
+    - `mu-plugins/mrn-reusable-block-library` -> `git@github.com:khofmeyer/mrn-reusable-block-library.git`
+    - `mu-plugins/mrn-site-colors` -> `git@github.com:khofmeyer/mrn-site-colors.git`
+  - Restored remote connectivity for the pre-existing local repo:
+    - `mu-plugins/mrn-svg-support` -> `git@github.com:khofmeyer/mrn-svg-support.git`
+  - Added minimal `.gitignore` files excluding `.DS_Store` to the fresh MU repos.
+  - Initial commit message used for the fresh MU repos: `Initial import after workspace rebuild`.
+- Validation:
+  - All five MU plugin repos now report `## main...origin/main`.
+- Files changed:
+  - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-active-style-guide/.gitignore`
+  - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-lockdown/.gitignore`
+  - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/.gitignore`
+  - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-site-colors/.gitignore`
+
+## Thread: 2026-03-26 Full Repo Status Matrix After Rebuild Normalization
+- Goal:
+  - Capture a durable snapshot of which rebuilt repos are clean and which still have local uncommitted changes after normalization work.
+- Validation:
+  - Clean repos on `main...origin/main`:
+    - `clone/site-cloner`
+    - `mu-plugins/mrn-active-style-guide`
+    - `mu-plugins/mrn-admin-ui-css`
+    - `mu-plugins/mrn-dashboard-support`
+    - `mu-plugins/mrn-disable-comments`
+    - `mu-plugins/mrn-duplicate-enhance`
+    - `mu-plugins/mrn-editor-lockdown`
+    - `mu-plugins/mrn-editor-ui-css`
+    - `mu-plugins/mrn-reusable-block-library`
+    - `mu-plugins/mrn-site-colors`
+    - `mu-plugins/mrn-svg-support`
+    - `plugins/mrn-acf-character-count`
+    - `plugins/mrn-comment-management`
+    - `plugins/mrn-config-helper`
+    - `plugins/mrn-cookie-consent`
+    - `plugins/mrn-license-vault`
+    - `plugins/mrn-seo-helper`
+    - `plugins/mrn-unified-exporter`
+  - Attached repos on `main...origin/main` with local uncommitted changes:
+    - `plugins/mrn-editor-tools` -> modified `mrn-editor-tools.php`
+    - `plugins/mrn-gtm-injector` -> modified `mrn-gtm-injector.php`
+    - `plugins/mrn-universal-sticky-bar` -> modified `mrn-universal-sticky-bar.php`
+- Risks/gotchas:
+  - The three dirty plugin repos above are the main remaining places where rebuilt local behavior still needs review/commit/package decisions.
+
+## Thread: 2026-03-26 Recovery Completion For Rebuilt Dirty Plugin Repos
+- Goal:
+  - Finish the rebuild recovery by reviewing, fixing, and committing the remaining local diffs in the last three dirty plugin repos.
+- Decisions made:
+  - Kept and committed the restored ACF WYSIWYG toolbar integration in `plugins/mrn-editor-tools`.
+  - Kept and committed the restored Config Helper guidance changes in `plugins/mrn-gtm-injector`.
+  - Kept and committed the restored reusable-block sticky bar behavior in `plugins/mrn-universal-sticky-bar`.
+  - Fixed one sticky-bar regression before commit:
+    - the copy action now refuses placeholder values like `#`, `Permalink`, or `Admin URL`.
+- Validation:
+  - `php -l` passed for:
+    - `plugins/mrn-editor-tools/mrn-editor-tools.php`
+    - `plugins/mrn-gtm-injector/mrn-gtm-injector.php`
+    - `plugins/mrn-universal-sticky-bar/mrn-universal-sticky-bar.php`
+  - Final commits pushed:
+    - `plugins/mrn-editor-tools` -> `c17a6bc` `Restore ACF WYSIWYG toolbar integration after workspace rebuild`
+    - `plugins/mrn-gtm-injector` -> `970e84e` `Restore Config Helper guidance after workspace rebuild`
+    - `plugins/mrn-universal-sticky-bar` -> `24032cc` `Restore reusable block sticky bar behavior after workspace rebuild`
+  - Final repo-status sweep found no dirty repos in `plugins/`, `mu-plugins/`, or `clone/site-cloner`.
+- Risks/gotchas:
+  - Repo recovery/normalization is complete, but packaging/release work is still a separate step when a plugin needs a distributable zip or stack rollout update.
+
+## Thread: 2026-03-26 Local Test Site Symlink Cleanup
+- Goal:
+  - Bring the local stack test site back in line with the rebuilt architecture by making MRN plugins and MU plugins point at the canonical `/Users/khofmeyer/Development/MRN` source tree.
+- Decisions made:
+  - The cleanup touched only the local site at `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content`, not the canonical source tree.
+  - Canonical MRN normal plugins on the local site now symlink to `/Users/khofmeyer/Development/MRN/plugins/<plugin>`.
+  - Canonical MRN MU plugin directories on the local site now symlink to `/Users/khofmeyer/Development/MRN/mu-plugins/<plugin>`.
+  - Local MU root entry files now symlink to the stack root files in `/Users/khofmeyer/Development/MRN/stack/mu-plugins/`.
+  - Stale local-site leftovers such as the bad `mrn-helper` link and the old `mrn-role-metabox-lock` entry were moved out of the active plugin directories into a local backup folder.
+- Validation:
+  - Local site MRN plugin directories under `wp-content/plugins` are now clean top-level symlinks.
+  - Local site MRN MU directories and root files under `wp-content/mu-plugins` are now clean top-level symlinks.
+  - WP-CLI check via Local's bundled binary succeeded after relink:
+    - bundled WP-CLI path: `/Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/posix/wp`
+    - `plugin list` succeeded
+    - MU plugin root file list remained:
+      - `mrn-active-style-guide.php`
+      - `mrn-site-colors.php`
+      - `mrn-editor-lockdown.php`
+      - `mrn-loader.php`
+  - Observed local versions after relink included:
+    - `mrn-acf-character-count` `1.1.4`
+    - `mrn-editor-tools` `1.8.12`
+    - `mrn-universal-sticky-bar` `1.0.8`
+    - `mrn-loader` `1.3.1`
+- Files changed:
+  - Local site backup folder created:
+    - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/.mrn-relink-backup-20260326222339`
+- Risks/gotchas:
+  - Local's bundled WP-CLI works but emits PHP 8.5 deprecation noise before command output because of vendor code in the bundled phar.
+
+## Thread: 2026-03-27 Server Rollout QA After Rebuild Recovery
+- Goal:
+  - Run a final confidence pass against the live stack server before returning to normal work.
+- Decisions made:
+  - The live stack root at `/home/mrndev-stack-manager/stack` matches the corrected ownership model:
+    - owner/group `mrndev-stack-manager:mrndev-stack-manager`
+    - exports readable
+    - secrets locked down
+  - Key stack packages/manifests checked on the live server match the rebuilt local architecture, including:
+    - `mrn-acf-character-count.zip`
+    - `mrn-comment-management.zip`
+    - `mrn-config-helper.zip`
+    - `mrn-editor-tools.zip`
+    - `mrn-gtm-injector.zip`
+    - `mrn-seo-helper.zip`
+    - `mrn-universal-sticky-bar.zip`
+  - The stack scripts and importer on the live server needed executable mode bits restored.
+    - fixed to `755`:
+      - `/home/mrndev-stack-manager/stack/scripts/bootstrap-new-sites.sh`
+      - `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+      - `/home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+  - Safe rollout validation should be run as `mrndev-stack-manager`, not as `kyle`.
+    - running the scanner as `kyle` can still hit runtime status-file write warnings
+    - running it as `mrndev-stack-manager` is clean
+- Validation:
+  - Live server WP-CLI is present at `/usr/bin/wp` and reports:
+    - PHP `8.4.18`
+    - WP-CLI `2.12.0`
+  - Dry-run scan as `mrndev-stack-manager` completed cleanly:
+    - `/home/mrndev-stack-manager/stack/scripts/bootstrap-new-sites.sh --stack-root /home/mrndev-stack-manager/stack --site-discovery-glob "/home/*stack*/htdocs/*" --dry-run`
+  - Current scan found no unbootstrapped `*stack*` sites.
+  - Existing `.mrn_bootstrapped` markers were present for the expected stack-managed sites, including `default-configs.mrndev.io`.
+- Risks/gotchas:
+  - Running the scanner as `kyle` can still produce permission warnings when writing `/home/mrndev-stack-manager/stack/runtime/bootstrap-status.env` because the stack runtime area is app-owned. This is consistent with the intended model rather than a new blocker.
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/template-parts/content.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/template-parts/content-page.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/page.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/single.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/archive.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/index.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/footer.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/style.css`
+
+## Thread: 2026-03-24 Local Theme Symlink Setup
+- Goal:
+  - Make the Local site edit the shared stack theme source directly instead of a stale copied theme folder.
+- Decisions made:
+  - The Local site at `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public` has active theme slug `default-configs`.
+  - `wp-content/themes/default-configs` on that Local site is now a symlink to `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack`.
+  - The previous copied Local theme folder was preserved as `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/themes/default-configs.bak-2026-03-24-1548`.
+- Risks/gotchas:
+  - WordPress still knows the theme by the directory slug `default-configs`, even though the source folder name/theme metadata are `mrn-base-stack`.
+
+## Thread: 2026-03-24 Reusable Block Access And Toolbar Hardening
+- Goal:
+  - Keep reusable block library items admin-only, prevent direct front-end access, and align their sticky toolbar with non-public block behavior.
+- Decisions made:
+  - `mrn-reusable-block-library` now includes a `template_redirect` safeguard that forces reusable block CPT requests to 404 on the front end.
+  - Starter reusable blocks keep their custom admin labels; the plugin no longer resets starter titles back to `CTA`, `Basic Block`, or `FAQ` on init when the starter slug already exists.
+  - `mrn-universal-sticky-bar` now includes reusable block CPT edit/create screens.
+  - On reusable block screens, the sticky bar treats the link area as `Admin URL` instead of `Permalink`, hides preview, and labels the toolbar as `Block Actions`.
+- Files changed:
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/plugins/mrn-universal-sticky-bar/mrn-universal-sticky-bar.php`
+
+## Thread: 2026-03-24 Central Config Source Of Truth
+- Goal:
+  - Reduce overlapping site configuration UIs while keeping a single admin-facing control center.
+- Decisions made:
+  - `mrn-config-helper` is the preferred admin input surface for shared site configuration values such as GTM.
+  - Downstream implementation plugins can keep their own settings/runtime screens, but should clearly point admins back to `Site Configurations` when Config Helper is available.
+  - An inactive duplicate MU copy of `mrn-editor-tools` was removed from the Local site to reduce confusion; the normal plugin remains the active implementation.
+
+## Thread: 2026-03-24 Reusable Block Library Local Restore Follow-up
+- Goal:
+  - Continue reusable block library work after refreshing local config data from `default-configs.mrndev.io`.
+- Decisions made:
+  - Keep the local symlink-based plugin workflow in place for faster development.
+  - Updraft restore warnings about `plugins-old` and `mu-plugins-old` were caused by symlink cleanup attempts with `rmdir()`, not by broken MRN plugins.
+  - The reusable block title should remain editable, but be framed as an admin-only label distinct from the front-end `Heading` field.
+  - The canonical source folder at `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-reusable-block-library/` had become empty during local restore churn and was restored from the working local copy before further edits.
+  - Local shell/CLI access to `mrn-plugin-stack` should use the Local app MySQL socket at `/Users/khofmeyer/Library/Application Support/Local/run/DvZjCw_87/mysql/mysqld.sock`; the local `wp-config.php` was updated to use that socket when `PHP_SAPI === 'cli'`.
+  - Reusable block overview counts should exclude `auto-draft` and other non-editorial statuses; only `publish`, `draft`, `pending`, `private`, and `future` count toward `Total items`.
+
+## Thread: 2026-03-24 Stack Starter Theme Shell
+- Goal:
+  - Turn the stack into a real developer shell by creating a canonical starter theme for rollout.
+- Decisions made:
+  - The stack now has a canonical starter theme source at `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack`.
+  - `stack/manifests/themes.txt` now uses `mrn-base-stack|active` instead of `underscores|active` for future rollouts.
+  - `mrn-base-stack` should own builder-aware theme plumbing, including:
+    - front-page template
+    - page/post rendering with ACF Flexible Content awareness
+    - dedicated builder template parts under `template-parts/builder/`
+    - light starter layout/token styling
+  - Reusable block functionality remains owned by the MU/plugin layer; the theme only renders and styles the builder output.
+
+## Thread: 2026-03-24 Reusable Block Library MU Plugin
+- Goal:
+  - Create a stack-managed MU plugin for a reusable block library backed by custom post types, then simplify it into a single reusable-block library.
+- Decisions made:
+  - The reusable block library now lives in `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/`.
+  - The MU plugin uses a root loader file plus a subfolder implementation file so it remains compatible with WordPress MU plugin autoload behavior.
+  - The initial multi-CPT approach was replaced by one generic CPT:
+    - `mrn_reusable_block`
+  - The generic CPT approach was then replaced again with typed reusable-block CPTs under one shared library menu:
+    - `mrn_reusable_cta`
+    - `mrn_reusable_basic`
+  - The sidebar/menu label for this CPT is `Reusable Block Library`.
+  - The block-library MU plugin should be kept synced to:
+    - local `mrn-plugin-stack`
+    - remote `default-configs.mrndev.io`
+    - canonical stack MU source
+  - `default-configs.mrndev.io` is the source of truth for configs; avoid broad AME resets/wipes there.
+  - AME should not be treated as the default explanation for new menu items not appearing; debug plugin/menu registration first.
+  - The reusable-block library should not expose Post Types Order reorder UI.
+  - `default-configs.mrndev.io` currently reflects the typed reusable block model:
+    - `mrn_reusable_cta` with starter draft `CTA`
+    - `mrn_reusable_basic` with starter draft `Basic Block`
+    - `mrn_reusable_faq` with starter draft `FAQ`
+    - legacy `mrn_reusable_block` no longer active
+  - The Basic Block post type slug must stay within the WordPress 20-character limit; use `mrn_reusable_basic`, not `mrn_reusable_basic_block`.
+  - Packaging baseline for the reusable block library MU plugin is `0.1.1`.
+  - The reusable block library now owns render/template plumbing in the MU plugin.
+  - Theme override path for reusable block templates is:
+    - `wp-content/themes/{active-theme}/mrn-blocks/{template-slug}.php`
+  - Current plugin-managed template slugs are:
+    - `basic-block`
+    - `content-grid`
+    - `generic-block` fallback
+  - A helper shortcode exists for early rendering/testing:
+    - `[mrn_block slug="reusable-basic-block"]`
+    - `[mrn_block id="123"]`
+  - `Content Grid` is now a reusable block type.
+  - Use internal CPT slug `mrn_reusable_grid` for `Content Grid`; an earlier longer slug exceeded WordPress's 20-character post type limit and must not be reused.
+  - Starter slug for the new block type is `reusable-content-grid`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-reusable-block-library.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/README.md`
+- Validation:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-reusable-block-library.php`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+
+## Thread: 2026-03-24 Site Colors MU Plugin
+- Goal:
+  - Create a stack-managed MU plugin that gives sites a `Settings -> Site Colors` configuration page for shared color variables and usage helpers.
+- Decisions made:
+  - The Site Colors MU plugin now lives in `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/`.
+  - It uses the same loader-plus-subfolder MU pattern as the reusable block library.
+  - The settings page slug is `mrn-site-colors` under the WordPress `Settings` menu.
+  - Stored colors are saved in the option key `mrn_site_colors`.
+  - The plugin exposes helper functions for shared use:
+    - `mrn_site_colors_get_all()`
+    - `mrn_site_colors_get_map()`
+    - `mrn_site_colors_get_value()`
+    - `mrn_site_colors_get_css_var()`
+  - Saved colors print CSS variables to front-end, admin, and login using the `--site-color-{slug}` pattern.
+  - Packaging baseline for the Site Colors MU plugin is `0.1.1`.
+  - The plugin should be kept synced to:
+    - local `mrn-plugin-stack`
+    - remote `default-configs.mrndev.io`
+    - canonical stack MU source
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-site-colors.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-site-colors/mrn-site-colors.php`
+- Validation:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-site-colors.php`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-site-colors/mrn-site-colors.php`
+  - Remote verification confirmed `function_exists('mrn_site_colors_get_all') === true` on `default-configs.mrndev.io`
+
+## Thread: 2026-03-23 Updraft Settings Import Wiring
+- Goal:
+  - Add an Updraft settings export JSON to the stack so bootstrap can restore backup settings automatically.
+- Decisions made:
+  - Updraft settings exports contain live backup destination credentials and should be treated like secrets, not tracked `configs/exports` artifacts.
+  - `stack/configs/importers/stack-export-importer.sh` now supports `secret:` file references that resolve under `${STACK_ROOT}/secrets`.
+  - Added importer type `updraftplus_settings_json` that reads an Updraft export wrapper and writes its `data` payload into the `updraft_options` option.
+  - Active importer mapping is `updraftplus_settings_json|secret:updraftplus-settings-mrn-plugin-stack.json|updraft_options`.
+- Follow-up fix:
+  - Secret-backed importer payloads cannot assume the site user can read files under `stack/secrets`; the Updraft importer was updated to read the JSON payload in the shell first and pass it into `wp eval`, avoiding site-user filesystem permission failures.
+- Validation:
+  - Backfilled `mrnwebdesigns.mrndev.io` manually after rollout miss and confirmed `updraft_options` now contains expected values including `updraft_interval=daily`, `updraft_interval_database=daily`, `updraft_service` with `s3`, `updraft_delete_local=1`, and `updraft_dir=updraft`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/importers/stack-export-importer.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/importers.txt`
+- Local secret file added:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/secrets/updraftplus-settings-mrn-plugin-stack.json`
+- Risks/gotchas:
+  - The local secret file is intentionally untracked because it contains credential material.
+  - Server-side rollout still needs the matching file placed at `/home/mrndev-stack-manager/stack/secrets/updraftplus-settings-mrn-plugin-stack.json` with restrictive permissions.
+
+## Thread: 2026-03-23 Bootstrap Marker Ownership Fix
+- Goal:
+  - Stop bootstrap from leaving a root-owned `.mrn_bootstrapped` file in site directories.
+- Decisions made:
+  - Site marker creation in `stack/scripts/site-bootstrap.sh` must run as `SITE_USER`, not as root.
+  - Normal SSH user choice is not the root cause; the durable fix is keeping site-file writes inside bootstrap under the site user context.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+- Validation:
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+
+## Thread: 2026-03-23 WPForms License Secret Path Hardening
+- Goal:
+  - Move the WPForms license key out of `stack/configs/exports` and treat it like other stack secrets.
+- Decisions made:
+  - `stack/manifests/licenses.txt` now maps WPForms using `secretfile:wpforms-license.txt` instead of `file:wpforms-license.txt`.
+  - Local canonical secret file is `/Users/khofmeyer/Sites/MRNPlugins/stack/secrets/wpforms-license.txt`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/licenses.txt`
+- Local secret file added:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/secrets/wpforms-license.txt`
+- Risks/gotchas:
+  - On the live server, moving the existing file from `configs/exports` into `stack/secrets` requires privileged/manual action because `stack/secrets` is now correctly locked down to `700`.
+
+## Thread: 2026-03-23 AME Canonical Config Refresh
+- Goal:
+  - Replace the active stack AME container with a newer export from `default-configs.mrndev.io`.
+- Decisions made:
+  - Local canonical AME import source is now `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json`, replaced from `/Users/khofmeyer/Downloads/default-configs.mrndev.io-AME-configuration(2026-03-23).json`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json`
+  - backup created: `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json.bak-<timestamp>`
+- Validation:
+  - Replacement file parses as `Admin Menu Editor configuration container` with 12 settings sections.
+- Risks/gotchas:
+  - Live server replacement of `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json` now requires privileged/manual action because the active file is correctly owned by `mrndev-stack-manager` and not writable by `kyle`.
+
+## Thread: 2026-03-23 MRN Editor Tools Normal Plugin Rollout
+- Goal:
+  - Stop treating `mrn-editor-tools` as MU-managed and include it in the normal stack plugin rollout instead.
+- Decisions made:
+  - `mrn-editor-tools` should install from the normal plugin manifest using `/home/mrndev-stack-manager/stack/packages/mrn-editor-tools.zip`.
+  - Remove `mrn-editor-tools` from the working assumption list of MU-managed MRN plugins for future stack changes.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/plugins.txt`
+- Validation:
+  - Local manifest now includes `/home/mrndev-stack-manager/stack/packages/mrn-editor-tools.zip`.
+  - Live server package already exists at `/home/mrndev-stack-manager/stack/packages/mrn-editor-tools.zip`.
+
+## Thread: 2026-03-23 MRN Helper Rename To MRN Config Helper
+- Goal:
+  - Rename the local `mrn-helper` plugin folder and main file to `mrn-config-helper`.
+- Decisions made:
+  - Local plugin source path is now `/Users/khofmeyer/Sites/MRNPlugins/mrn-config-helper/mrn-config-helper.php`.
+  - Local package artifact is now `/Users/khofmeyer/Sites/MRNPlugins/mrn-config-helper.zip`.
+  - Local stack plugin manifest now points to `/home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip`.
+  - Existing settings option key remains `mrn_helper_settings` for continuity.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-config-helper/mrn-config-helper.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/plugins.txt`
+  - rebuilt artifact: `/Users/khofmeyer/Sites/MRNPlugins/mrn-config-helper.zip`
+- Validation:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-config-helper/mrn-config-helper.php`
+  - Zip now contains `mrn-config-helper/mrn-config-helper.php` with plugin name `MRN Config Helper`.
+- Risks/gotchas:
+  - Live server package/manifest have not yet been renamed or synced in this thread.
+  - Preferred architecture is to use `MRN Helper` as the native source-of-truth settings page for site-level operational values, then wire integrations into target plugins one by one where stable hooks or options exist.
+  - First planned shared-value integration is sender identity (`From Name` / `From Email`) for Fluent SMTP and WPForms.
+  - Preferred architecture for reusable site values is a master-settings approach: store values once and inject/output them via custom code where needed (templates, hooks, tracking code, emails, etc.).
+  - A secondary option is shortcode-based reuse, but only when the destination plugin field explicitly supports shortcode execution.
+- Risks/gotchas:
+  - Many plugin settings are hardcoded-only and offer no dynamic population path without custom overrides.
+
+## Thread: 2026-02-28 MRN ACF Character Count Release
+- Goal:
+  - Build and release a WordPress plugin that shows live character counts under selected ACF fields, then harden/security-check it, git it, commit, and push.
+- Decisions made:
+  - Use standalone plugin `mrn-acf-character-count`.
+  - Add live count plus green/yellow/red progress bar.
+  - Harden field target sanitization and validation.
+  - Support selecting targets via searchable ACF field-picker UI (with manual fallback).
+  - Prefer ACF field keys when available.
+  - Release repo is `git@github.com:khofmeyer/mrn-acf-character-count.git`.
+  - Keep zip filenames non-versioned (no version numbers in zip names).
+  - Remove accidental git metadata from `/Users/khofmeyer/Local Sites/mrn-plugin-stack`.
+- Files changed:
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/plugins/mrn-acf-character-count/mrn-acf-character-count.php`
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/plugins/mrn-acf-character-count/assets/mrn-acf-character-count.js`
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/plugins/mrn-acf-character-count/assets/mrn-acf-character-count.css`
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/plugins/mrn-acf-character-count/assets/mrn-acf-character-count-settings.js`
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/plugins/mrn-acf-character-count/assets/mrn-acf-character-count-settings.css`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count/mrn-acf-character-count.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count/assets/mrn-acf-character-count.js`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count/assets/mrn-acf-character-count.css`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count/assets/mrn-acf-character-count-settings.js`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count/assets/mrn-acf-character-count-settings.css`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count/README.md`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count/.gitignore`
+- Commands/scripts used:
+  - `php -l '/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/plugins/mrn-acf-character-count/mrn-acf-character-count.php'`
+  - `rm -rf '/Users/khofmeyer/Local Sites/mrn-plugin-stack/.git' && rm -f '/Users/khofmeyer/Local Sites/mrn-plugin-stack/.gitignore'`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count' init -b main`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count' add .`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count' commit -m 'Release 1.0.0: ACF character count plugin with progress indicator and security hardening'`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count' tag -f v1.0.0`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count' remote add origin git@github.com:khofmeyer/mrn-acf-character-count.git`
+  - `gh repo create khofmeyer/mrn-acf-character-count --private --confirm`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count' push -u origin main`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count' push origin v1.0.0`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count' commit -m 'Add ACF field picker UI with searchable drill-down selection'`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count' push origin main`
+- Outstanding TODOs:
+  - Uncertain: non-versioned zip artifact creation was discussed but not executed in this thread.
+- Risks/gotchas:
+  - Accidental `git init` and commit happened in `/Users/khofmeyer/Local Sites/mrn-plugin-stack` during release flow (cleaned up by deleting `.git`).
+  - Settings picker depends on ACF APIs (`acf_get_field_groups` and `acf_get_fields`) and shows empty-state if unavailable.
+  - Target list is intentionally constrained and validated (max 100, regex-limited identifiers).
+
+
+## Thread: 2026-02-28 stack-manager + bootstrap workflow
+- Goal:
+  - Build and operate a reusable WordPress stack system for CloudPanel with controlled bootstrap (not all sites), plugin/MU/config package management, reporting/visibility, and a web UI (`stack-manager.mrndev.io`) backed by repo `/Users/khofmeyer/Sites/MRNPlugins/site-cloner`.
+- Decisions made:
+  - Stack automation should target sites by username containing `stack` (not all sites).
+  - Keep stack data in app-owned path (`STACK_ROOT=/home/mrndev-stack-manager/stack`) rather than `/opt` for app operations.
+  - Manual apply plus cron-based scan are both supported; cron can be disabled/enabled as needed.
+  - Premium plugins are handled via ZIP package paths; public plugins via slugs.
+  - MU uploads accept `.php` or `.zip`; `.zip` extracts at upload time, then bootstrap syncs MU directory.
+  - Added account dropdown UX with password auth and optional TOTP 2FA.
+  - Added reporting tab for bootstrap state (cron/log/marker-per-site) and manual `Run Bootstrap Now`.
+  - Moved/organized Library UI into sub-tabs (`Premium`, `Core`, `MU`, `Configurations`).
+  - App title changed to `MRN Dev Panel Tools`; favicon uses `assets/logo.svg`.
+  - SendGrid relay over port `2525` used after port `25/587` issues; SMTP auth required.
+  - Firewall was reset and restored to required baseline after lockout.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/api.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/bootstrap.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/CloneRunner.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/CloudPanelSites.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/scripts/cloudpanel-site-clone.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/scripts/provision-cloudpanel-cloner.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/assets/logo.svg`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/README.md`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/.env.example2`
+  - Server-side config/ops files touched in thread:
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/.env`
+  - `/etc/sudoers.d/mrndev-stack-manager-cloner`
+  - `/usr/local/bin/cloudpanel-site-clone`
+  - `/opt/mrnplugins/scripts/site-bootstrap.sh`
+  - `/opt/mrnplugins/scripts/bootstrap-new-sites.sh`
+  - `/home/mrndev-stack-manager/stack/scripts/bootstrap-new-sites.sh`
+  - `/var/log/mrnplugins-bootstrap.log`
+- Commands/scripts used:
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/site-cloner" push origin main`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/site-cloner" commit -m "..."`
+  - `/opt/mrnplugins/scripts/bootstrap-new-sites.sh --stack-root /opt/mrnplugins --dry-run`
+  - `/opt/mrnplugins/scripts/site-bootstrap.sh --site-path /home/mrndev-boottest/htdocs/boottest.mrndev.io`
+  - `/opt/mrnplugins/scripts/site-bootstrap.sh --site-path /home/mrndev-stacktest/htdocs/stacktest.mrndev.io`
+  - `sudo -u mrndev-boottest wp --path=/home/mrndev-boottest/htdocs/boottest.mrndev.io plugin install /opt/mrnplugins/packages/wp-toolbar-editor.zip --activate`
+  - `sudo -u mrndev-boottest wp --path=/home/mrndev-boottest/htdocs/boottest.mrndev.io plugin activate wpforms`
+  - `find /home -maxdepth 4 -type f -path "*/htdocs/stacktest*/wp-config.php"`
+  - `crontab -l | grep -v '/opt/mrnplugins/scripts/bootstrap-new-sites.sh' | crontab -`
+  - `pkill -f '/opt/mrnplugins/scripts/bootstrap-new-sites.sh' || true`
+  - `pkill -f '/opt/mrnplugins/scripts/site-bootstrap.sh' || true`
+  - `( crontab -l 2>/dev/null; echo "*/5 * * * * /home/mrndev-stack-manager/stack/scripts/bootstrap-new-sites.sh --stack-root /home/mrndev-stack-manager/stack --site-discovery-glob '/home/*stack*/htdocs/*' >> /var/log/mrnplugins-bootstrap.log 2>&1" ) | crontab -`
+  - `ufw allow out 587/tcp`
+  - `ufw allow out 2525/tcp`
+  - `timeout 8 nc -vz smtp.sendgrid.net 587; echo "587 exit=$?"`
+  - `timeout 8 nc -vz smtp.sendgrid.net 2525; echo "2525 exit=$?"`
+  - `echo "MRN Bootstrap live test $(date -Is)" | mail -s "MRN Bootstrap Test" wordpress_admin@mrnwebdesigns.com`
+  - `cp /home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/scripts/cloudpanel-site-clone.sh /usr/local/bin/cloudpanel-site-clone`
+  - `chmod 755 /usr/local/bin/cloudpanel-site-clone`
+  - `sudo -u mrndev-stack-manager sudo -n /usr/local/bin/cloudpanel-site-clone --list-sites`
+- Outstanding TODOs:
+  - Deploy latest local app files to server (user stated they will re-upload).
+  - Ensure server helper binary `/usr/local/bin/cloudpanel-site-clone` matches latest script.
+  - Verify latest UI fixes in production:
+  - secondary tab spacing/border removal,
+  - MU upload-left + MU manifest-right layout,
+  - MU manifest save behavior.
+  - Re-verify login/theme toggle after deployment.
+  - Uncertain: whether all latest local fixes are already on server after final push.
+- Risks/gotchas:
+  - If server still runs older `/usr/local/bin/cloudpanel-site-clone`, API features fail with `Unknown arg` errors.
+  - JS syntax/runtime issues in `public/index.php` can break whole app (login/theme toggle appears broken when one listener block is malformed).
+  - Git commit `c2de341` changed script modes (`100755 => 100644`) for:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/scripts/cloudpanel-site-clone.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/scripts/provision-cloudpanel-cloner.sh`
+  - Bootstrap actions depend on marker file `.mrn_bootstrapped`; existing marker blocks re-apply unless force/marker removal is used.
+  - Placeholder commands (`<site-user>`, `<domain>`) caused command errors when run literally.
+
+
+## Thread: 2026-02-28 MU Plugins Hardening + Loader Architecture
+- Goal:
+  - QA/security review the MU plugin that disables comments everywhere/UI.
+  - Harden/fix behavior gaps, then package/version/commit.
+  - Create standalone plugin projects/repos from MU plugins.
+  - Implement MU loader-based architecture with source of truth at `/Users/khofmeyer/Sites/MRNPlugins`.
+  - Clean up MU roots on two local sites to use loader + folder symlinks.
+- Decisions made:
+  - `mrn-disable-comments` was hardened (admin direct URL blocking, REST route pattern removal, comment-feed blocking via `is_comment_feed()`, XML-RPC comment method removal).
+  - Standalone plugin project/repo created for `mrn-disable-comments` and pushed to GitHub.
+  - Additional standalone repos/projects created for `mrn-dashboard-support` and `mrn-duplicate-enahnce` (local repos/tags/zips).
+  - Loader model adopted: `mrn-loader.php` in MU root loads plugin folders.
+  - Source-of-truth location set to `/Users/khofmeyer/Sites/MRNPlugins`.
+  - Two site MU folders were cleaned to loader + folder symlinks pattern.
+  - Loader was revised multiple times (`v1.0.0` -> `v1.1.0` -> `v1.2.0` -> `v1.3.0`) to reduce critical-error risk.
+- Files changed:
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/mu-plugins/mrn-disable-comments.php`
+
+## Thread: 2026-03-12 MRN Helper WPForms Fluent SMTP Lock
+- Goal:
+  - Create a new standalone plugin named `MRN Helper` and start it with a WPForms Notifications enhancement tied to Fluent SMTP.
+- Decisions made:
+  - `MRN Helper` lives at `/Users/khofmeyer/Sites/MRNPlugins/mrn-helper/mrn-helper.php`.
+  - First feature: in WPForms form builder Notifications, when Fluent SMTP is active and has a configured default connection, lock `From Name` and `From Email` to the Fluent SMTP sender values.
+  - The locked UI should show a short message that the field is locked and using Fluent SMTP, with a link to Fluent SMTP settings.
+  - Existing per-notification sender values should be preserved underneath the readonly UI via hidden fields so disabling the helper later does not immediately discard them.
+  - Initial packaged release version is `0.1.1`.
+  - GitHub repo is `git@github.com:khofmeyer/mrn-helper.git`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-helper/mrn-helper.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Rebuilt artifacts:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-helper.zip`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-helper/mrn-helper.php`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-helper init -b main`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-helper add mrn-helper.php`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-helper commit -m 'Initial release v0.1.1'`
+  - `gh repo create khofmeyer/mrn-helper --private --source /Users/khofmeyer/Sites/MRNPlugins/mrn-helper --remote origin --push`
+  - `cd /Users/khofmeyer/Sites/MRNPlugins && zip -rq mrn-helper.zip mrn-helper -x 'mrn-helper/.git/*' 'mrn-helper/.git/**/*'`
+- Risks/gotchas:
+  - Behavior is currently implemented against the WPForms builder hooks present in the inspected WPForms Pro code path.
+  - The lock uses Fluent SMTP's configured default connection, or the first available connection if no default is set.
+  - A first zip rebuild accidentally included `.git`; the release zip was rebuilt with `.git` excluded.
+
+## Thread: 2026-03-13 MRN Helper Required Image Alt Text
+- Goal:
+  - Add a helper-plugin feature that makes image alt text required when images are edited in the media library or selected from the media modal for use in fields.
+- Decisions made:
+  - `MRN Helper` version bumped to `0.1.2`.
+  - The plugin now marks the media library `Alternative Text` field as required for image attachments.
+  - The plugin now validates image alt text on attachment save through `attachment_fields_to_save`.
+  - The plugin now injects admin-side media-modal JavaScript that blocks selecting/inserting an image into a field when the selected image has empty alt text, then focuses the alt field and shows a message.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-helper/mrn-helper.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+
+## Thread: 2026-03-17 Stack ACF Pro License Wiring
+- Goal:
+  - Wire the ACF Pro serial key into the MRN stack in a way that is deployable and does not commit the secret to Git.
+- Decisions made:
+  - Stack license mappings now have a local source-of-truth file at `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/licenses.txt` instead of living only on the server.
+  - ACF Pro licensing in the stack uses `advanced-custom-fields-pro/acf.php|acf_pro_license|secretfile:acf-pro-license.txt`.
+  - The ACF Pro key must live in `/home/mrndev-stack-manager/stack/secrets/acf-pro-license.txt` on the server and should not be stored in repo files or thread memory.
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh` now contains a dedicated ACF Pro license handler that calls ACF's own license update/activation functions instead of doing a raw `wp option update`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/licenses.txt`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+  - Server:
+  - `/home/mrndev-stack-manager/stack/manifests/licenses.txt`
+  - `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+  - `/home/mrndev-stack-manager/stack/secrets/acf-pro-license.txt`
+- Commands/scripts used:
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `scp /Users/khofmeyer/Sites/MRNPlugins/stack/manifests/licenses.txt mrndev:/home/kyle/licenses.txt.new`
+  - `scp /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh mrndev:/home/kyle/site-bootstrap.sh.new`
+  - `ssh mrndev 'sudo -u mrndev-stack-manager cp /home/kyle/licenses.txt.new /home/mrndev-stack-manager/stack/manifests/licenses.txt'`
+  - `ssh mrndev 'sudo -u mrndev-stack-manager cp /home/kyle/site-bootstrap.sh.new /home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh'`
+  - `ssh mrndev 'cp /home/kyle/acf-pro-license.txt.new /home/mrndev-stack-manager/stack/secrets/acf-pro-license.txt && chmod 600 /home/mrndev-stack-manager/stack/secrets/acf-pro-license.txt'`
+- Risks/gotchas:
+  - ACF Pro does not accept a plain option update for licensing; stack bootstrap must use the dedicated ACF activation functions.
+  - The server `secrets` directory is currently owned by `kyle`, so secret files there will also be `kyle`-owned unless ownership is intentionally changed later.
+
+## Thread: 2026-03-17 AME Config Refresh For Stack Comparison
+- Goal:
+  - Refresh the stack AME configuration after rollout of `15.mrndev.io` so comparison work uses the latest canonical export.
+- Decisions made:
+  - The canonical AME import source remains `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json` locally and `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json` on the server.
+  - The importer manifest remains pointed at the canonical container file; no manifest format change was needed.
+  - The AME config dated file `AME-configuration(2026-03-16).json` should also be kept alongside the canonical container as a reference copy when refreshed.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/AME-configuration(2026-03-16).json`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+  - Server:
+  - `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json`
+- Commands/scripts used:
+  - `cp "/Users/khofmeyer/Desktop/AME-configuration(2026-03-16).json" /Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json`
+  - `scp /Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json mrndev:/home/kyle/ame-config-container.json.new`
+  - `ssh mrndev 'sudo -u mrndev-stack-manager cp /home/kyle/ame-config-container.json.new /home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json'`
+- Risks/gotchas:
+  - The server dated AME copy may be permission-protected from overwrite depending on ownership, but the canonical container is the file that actually matters for imports because the manifest points there.
+
+## Thread: 2026-03-17 One-Off AME Reapply On Existing Site
+- Goal:
+  - Re-import the active stack AME container onto an already-bootstrapped site (`morgandevelopment.mrndev.io`) for comparison/repair.
+- Decisions made:
+  - Existing sites can be re-applied using the stack importer directly without a full bootstrap run:
+    - `SITE_PATH=/home/<site-user>/htdocs/<domain> SITE_USER=kyle WP_PATH=/home/<site-user>/htdocs/<domain> STACK_ROOT=/home/mrndev-stack-manager/stack /home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+  - Using `SITE_USER=kyle` works for one-off AME imports on existing sites in this server setup because plain `wp --path=...` runs successfully as `kyle`, while `sudo -u <site-user>` is not available from the SSH session.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `ssh mrndev 'SITE_PATH=/home/morgandevelopment/htdocs/morgandevelopment.mrndev.io SITE_USER=kyle WP_PATH=/home/morgandevelopment/htdocs/morgandevelopment.mrndev.io STACK_ROOT=/home/mrndev-stack-manager/stack /home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh'`
+- Risks/gotchas:
+  - AME CLI export on this server did not reliably create the requested `--output` file during this thread, so import verification should prioritize importer output and live site comparison rather than assuming an export artifact was written.
+
+## Thread: 2026-03-18 MRN Helper Dashboard Lock UI
+- Goal:
+  - Replace hardcoded dashboard widget locking with a simple settings UI in `MRN Helper`.
+- Decisions made:
+  - `MRN Helper` now has a settings page under `Settings -> MRN Helper`.
+  - The new UI currently controls dashboard widget locking only; metabox locking was intentionally left out of scope for this pass.
+  - The dashboard widget lock is role-based and stored in option `mrn_helper_settings`.
+  - Default behavior remains compatible with the prior setup by preselecting the `editor` role for dashboard widget locking.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-helper/mrn-helper.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-helper/mrn-helper.php`
+- Risks/gotchas:
+  - Post/Page metabox lock code still exists in `MRN Helper`, but it is not managed by the new UI and should be treated as separate behavior.
+
+## Thread: 2026-03-18 AME Suite Toolbar Editor Stack Import
+- Goal:
+  - Ensure stack rollouts import the full AME suite, including WordPress Toolbar Editor settings that are not included in the main AME container.
+- Decisions made:
+  - The AME container already covers the main AME/Branding/Login modules (`branding`, `login-page`, `dashboard-widget-editor`, `metaboxes`, `quick-search`, `table-columns`, `tweaks`, etc.).
+  - WordPress Toolbar Editor settings are separate and must be exported/imported via a dedicated bundle file.
+  - New stack export file: `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-toolbar-editor.settings.json`
+  - New importer manifest line: `ame_toolbar_editor_json|ame-toolbar-editor.settings.json`
+  - New importer type was added to `stack/configs/importers/stack-export-importer.sh` to import:
+    - `ws_abe_admin_bar_settings`
+    - `ws_abe_admin_bar_nodes`
+    - `ws_abe_override_global_menu`
+  - Source of truth for the current Toolbar Editor export was pulled from `morgandevelopment.mrndev.io`.
+  - Reapplying the stack importer directly to an existing site successfully fixed missing Toolbar Editor settings on `17.mrndev.io`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/importers/stack-export-importer.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/importers.txt`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-toolbar-editor.settings.json`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+  - Server:
+  - `/home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+  - `/home/mrndev-stack-manager/stack/manifests/importers.txt`
+  - `/home/mrndev-stack-manager/stack/configs/exports/ame-toolbar-editor.settings.json`
+- Commands/scripts used:
+  - `wp --path=/home/morgandevelopment/htdocs/morgandevelopment.mrndev.io eval-file /home/kyle/mrn-export-abe.php > /home/kyle/ame-toolbar-editor.settings.json`
+  - `SITE_PATH=/home/mrndev-17-stack/htdocs/17.mrndev.io SITE_USER=kyle WP_PATH=/home/mrndev-17-stack/htdocs/17.mrndev.io STACK_ROOT=/home/mrndev-stack-manager/stack /home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+- Risks/gotchas:
+  - On this server, `wp option get --format=json` can be polluted by filesystem `chmod()` warnings, so verifying imported AME Toolbar Editor settings is more reliable via `wp eval` than by piping JSON output.
+  - `ws_abe_override_global_menu` may legitimately remain absent if the imported source uses the default false state.
+
+## Thread: 2026-03-18 AME Toolbar Cleanup For Stale Snippet Entries
+- Goal:
+  - Remove stale/unwanted Toolbar Editor entries from the stack AME suite export.
+- Decisions made:
+  - Removed these Toolbar Editor nodes from the canonical stack export:
+    - `wpforms-tools-wpcode` (`Code Snippets`)
+    - `mrn-editor-tools` (`Editor Snippets`)
+  - These removals were made in the Toolbar Editor export file, not the main AME container, because the stale entries existed only in `ws_abe_admin_bar_settings.nodes`.
+  - Cleaned export was re-applied successfully to `17.mrndev.io`; verification showed both nodes were `missing` afterward.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-toolbar-editor.settings.json`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+  - Server:
+  - `/home/mrndev-stack-manager/stack/configs/exports/ame-toolbar-editor.settings.json`
+- Commands/scripts used:
+  - One-off JSON cleanup script to remove `wpforms-tools-wpcode` and `mrn-editor-tools` from `ws_abe_admin_bar_settings.nodes`
+  - `SITE_PATH=/home/mrndev-17-stack/htdocs/17.mrndev.io SITE_USER=kyle WP_PATH=/home/mrndev-17-stack/htdocs/17.mrndev.io STACK_ROOT=/home/mrndev-stack-manager/stack /home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+- Risks/gotchas:
+  - Toolbar Editor settings are large and easier to verify via targeted `wp eval` checks than by visually diffing the JSON file.
+
+## Thread: 2026-03-18 AME Roles Cleanup For Removed Plugin Capabilities
+- Goal:
+  - Remove stale plugin-specific role capabilities from the canonical AME roles config.
+- Decisions made:
+  - Removed `WpStream`-related capabilities from `settings.roles-and-capabilities.capabilityIndex` in the canonical AME container:
+    - all `free-to-view live channel*`
+    - all `free-to-view vod*`
+  - Recomputed role capability indexes after removal so sparse/rle role mappings stay aligned with the shortened capability index.
+  - No `Complianz`, `GDPR`, or `CCPA` capability references were present in the AME roles payload, so no Complianz-specific role cleanup was needed in this pass.
+  - Reapplied the cleaned AME container to `17.mrndev.io`; live verification showed:
+    - `contains_free_to_view=no`
+    - `contains_complianz=no`
+    - `contains_gdpr=no`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+  - Server:
+  - `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json`
+- Commands/scripts used:
+  - One-off JSON cleanup script to remove `free-to-view` capabilities and remap role capability indexes.
+  - `SITE_PATH=/home/mrndev-17-stack/htdocs/17.mrndev.io SITE_USER=kyle WP_PATH=/home/mrndev-17-stack/htdocs/17.mrndev.io STACK_ROOT=/home/mrndev-stack-manager/stack /home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+- Risks/gotchas:
+  - Removing capability names from AME role exports requires reindexing every role’s stored capability references; deleting names without remapping indexes would corrupt role capability assignments.
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-helper/mrn-helper.php`
+- Risks/gotchas:
+  - Uploading an image can still create the attachment record before alt text is entered; the current enforcement is at attachment edit/save time and at media-modal selection time.
+  - The client-side blocker currently targets the standard media modal insert/select toolbar buttons.
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-disable-comments/mrn-disable-comments.php`
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-disable-comments/README.md`
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-dashboard-support/mrn-dashboard-support.php`
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-dashboard-support/README.md`
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-dashboard-support/mrn-logo.png`
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-duplicate-enahnce/mrn-duplicate-enahnce.php`
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-duplicate-enahnce/README.md`
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/mu-plugins/mrn-loader.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-loader.php`
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/mu-plugins/mrn-loader.php`
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-disable-comments-v1.2.0.zip`
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-dashboard-support-v1.0.0.zip`
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-duplicate-enahnce-v1.0.0.zip`
+- Commands/scripts used:
+  - `php -l '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/mu-plugins/mrn-disable-comments.php'`
+  - `curl -s -o /tmp/mrn_get_body.txt -D - 'http://mrn-plugin-stack.local/wp-comments-post.php' | head -n 20`
+  - `curl -s -D - -o /tmp/mrn_post_form_body.txt -X POST 'http://mrn-plugin-stack.local/wp-comments-post.php' --data 'comment_post_ID=1&comment=test+comment&author=QA&email=qa%40example.com' | head -n 30`
+  - `git -C '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-disable-comments' init`
+  - `git -C '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-disable-comments' commit -m 'feat: add MRN Disable Comments plugin v1.2.0'`
+  - `git -C '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-disable-comments' tag -a v1.2.0 -m 'MRN Disable Comments v1.2.0'`
+  - `cd '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins' && zip -rq 'mrn-disable-comments-v1.2.0.zip' 'mrn-disable-comments' -x 'mrn-disable-comments/.git/*'`
+  - `cd '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-disable-comments' && gh repo create mrn-disable-comments --private --source=. --remote=origin --push`
+  - `git -C '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-disable-comments' push origin v1.2.0`
+  - `git -C '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-dashboard-support' init`
+  - `git -C '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-dashboard-support' commit -m 'feat: add MRN Dashboard Support plugin v1.0.0'`
+  - `git -C '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-dashboard-support' tag -a v1.0.0 -m 'MRN Dashboard Support v1.0.0'`
+  - `git -C '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-duplicate-enahnce' init`
+  - `git -C '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-duplicate-enahnce' commit -m 'feat: add MRN Post Duplicator Admin Bar Enhance plugin v1.0.0'`
+  - `git -C '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-duplicate-enahnce' tag -a v1.0.0 -m 'MRN Post Duplicator Admin Bar Enhance v1.0.0'`
+  - `cd '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins' && zip -rq 'mrn-dashboard-support-v1.0.0.zip' 'mrn-dashboard-support' -x 'mrn-dashboard-support/.git/*'`
+  - `cd '/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins' && zip -rq 'mrn-duplicate-enahnce-v1.0.0.zip' 'mrn-duplicate-enahnce' -x 'mrn-duplicate-enahnce/.git/*'`
+- Outstanding TODOs:
+  - Add/commit/package the stronger admin sidebar hard-hide fallback for `mrn-disable-comments` as a new version zip (requested, not completed in-session due shell/tool failures).
+  - Verify on the another site that updated loader and folder naming conventions are correct after replacement.
+  - Uncertain: create/push GitHub remotes for `mrn-dashboard-support` and `mrn-duplicate-enahnce` (only `mrn-disable-comments` remote push was confirmed).
+- Risks/gotchas:
+  - Loader-path mismatch caused failures before (expected `/plugins` vs desired `/mu-plugins` folder model).
+  - Critical errors were reported on another site; loader was revised to strict known-entry manifest to mitigate.
+  - Versioned extracted folder names (e.g., `mrn-disable-comments-vX.Y.Z`) can prevent loading if loader expects exact slug directory.
+  - UI menu item can still appear even when comment actions are blocked if hide logic is overridden/re-added by other code.
+
+## Thread: 2026-02-28 MRNPlugins Consent/Toolbar/GTM
+- Goal:
+  - Build and refine MRN WordPress plugin UX/behavior, centered on `mrn-silktide-consent` (MRN Cookie Consent), reusable sticky admin toolbar consistency, and migration of `mrn-gtm-injector` to that toolbar pattern; then package/publish plugin releases.
+- Decisions made:
+  - Use `mrn-plugin-stack` as the active local test environment (not prior test env).
+  - Consent plugin renamed in UI context to MRN Cookie Consent with Silktide credit.
+  - Consent assets can be hosted locally; admin UI supports snippet/file workflows and instructions.
+  - Consent should load frontend only (not backend).
+  - Keep current consent/GTM blocking behavior as accepted by user.
+  - Admin UX direction: conditional/revealed controls, clearer instructions, tabbed/floating sticky toolbar, dark toolbar style, no rounded corners, save disabled unless dirty.
+  - Standardize toolbar save label to `Save Settings` for settings tools; post/page flows remain publish-oriented.
+  - Packaging standard set by user: security/hardening/code quality check, release notes, version bump, commit, push, zip without version suffix.
+  - `mrn-gtm-injector` remove behavior changed from immediate delete to clear-field-then-save.
+  - `mrn-gtm-injector` remove action should also clear on-page preview immediately.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/mrn-gtm-injector.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/CHANGELOG.md`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector.zip`
+  - Uncertain: `/Users/khofmeyer/Sites/MRNPlugins/mrn-silktide-consent/mrn-silktide-consent.php`
+  - Uncertain: `/Users/khofmeyer/Sites/MRNPlugins/mrn-silktide-consent/includes/mrn-sticky-settings-toolbar.php`
+  - Uncertain: `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/mrn-editor-tools.php`
+  - Uncertain: `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/admin-settings.js`
+  - Uncertain: `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/includes/mrn-sticky-settings-toolbar.php`
+  - Uncertain: `/Users/khofmeyer/Sites/MRNPlugins/shared/mrn-sticky-settings-toolbar.php`
+  - Uncertain: `/Users/khofmeyer/Sites/MRNPlugins/mrn-cookie-consent.zip`
+  - Uncertain: `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools.zip`
+- Commands/scripts used:
+  - `php -l '/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/mrn-gtm-injector.php'`
+  - `php -l '/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/uninstall.php'`
+  - `php -l '/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/includes/mrn-sticky-settings-toolbar.php'`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector' add mrn-gtm-injector.php includes/mrn-sticky-settings-toolbar.php CHANGELOG.md`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector' commit -m "release: 1.0.3 toolbar standardization and remove flow"`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector' push origin main`
+  - `rm -f /Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector.zip`
+  - `zip -rq mrn-gtm-injector.zip mrn-gtm-injector` (run in `/Users/khofmeyer/Sites/MRNPlugins`)
+  - `unzip -p mrn-gtm-injector.zip mrn-gtm-injector/mrn-gtm-injector.php | rg -n "Version:"`
+  - Uncertain: multiple one-off `/tmp/*.php` and `perl` patch scripts were used during iterative edits.
+- Outstanding TODOs:
+  - Uncertain: user-reported production mismatch where `<legend>` bold appeared locally but not on production may still need follow-up verification.
+  - Uncertain: full cross-plugin standardization of automatic dirty-save behavior in shared helper (globalized) was offered but not completed globally in this turn.
+- Risks/gotchas:
+  - `mrn-gtm-injector` had legacy option migration logic; if not handled, cleared IDs can repopulate. This was explicitly addressed in current changes.
+  - Toolbar label consistency depends on each plugin’s `save_label` usage; defaults are `Save Settings` but overrides can diverge.
+  - Local vs live behavior differences were repeatedly observed in thread; deployment/package parity remains a recurring risk.
+
+## Thread: 2026-02-28 GTM Injector + Comment Management Build/Release
+- Goal:
+  - Build and deploy a simple GTM injector plugin with admin UI, verification aids, hardening, release/tag/zip workflow; then build and deploy a separate comment-management plugin for audit + bulk delete.
+- Decisions made:
+  - Canonical plugin workspace is `/Users/khofmeyer/Sites/MRNPlugins`, with test-site usage via symlinks in `mrn-plugin-stack`.
+  - `MRN GTM Injector` should use Google-recommended GTM placement (`wp_head` bootstrap script + `wp_body_open` noscript iframe).
+  - GTM verification UI should include Tag Assistant link, saved-ID status, code preview, and a remove action.
+  - GTM settings storage was hardened to serialized settings array (`mrn_gtm_settings`) with migration from legacy key.
+  - `MRN Disable Comments (MU)` remains policy/enforcement; destructive bulk deletion belongs in a separate non-MU plugin (`MRN Comment Management`).
+  - `MRN Comment Management` includes typed `DELETE` confirmation plus final browser `confirm()` before deletion.
+  - GTM noscript iframe should not use lazyload/data-src; plain `src` is correct.
+  - GTM wrapper comments were changed to `MRN GTM Injector` branding.
+  - `testinglocl` site was deleted.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/mrn-gtm-injector.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/uninstall.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management/mrn-comment-management.php`
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/plugins/mrn-gtm-injector` (symlink target set to MRNPlugins folder)
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/plugins/mrn-comment-management` (symlink created)
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management.zip`
+  - `/Users/khofmeyer/Local Sites/testinglocl` (deleted)
+- Commands/scripts used:
+  - `php -l "/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/mrn-gtm-injector.php"`
+  - `php -l "/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/uninstall.php"`
+  - `php -l "/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management/mrn-comment-management.php"`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector" init`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector" commit -m "Release 1.0.0: hardened GTM injector with verification UI"`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector" tag v1.0.0`
+  - `gh repo create mrn-gtm-injector --private --source "/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector" --remote origin --push`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector" push origin v1.0.0`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management" init`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management" commit -m "Release 1.0.0: hardened comment management with final browser confirmation"`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management" tag v1.0.0`
+  - `gh repo create mrn-comment-management --private --source "/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management" --remote origin --push`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management" push origin v1.0.0`
+  - `perl -0777 -i -pe 's/Version:\s*1\.0\.0/Version: 1.0.1/' "/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/mrn-gtm-injector.php"`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector" commit -m "Release 1.0.1: brand GTM output wrappers as MRN GTM Injector"`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector" tag v1.0.1`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector" push origin main`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector" push origin v1.0.1`
+  - `cd "/Users/khofmeyer/Sites/MRNPlugins" && zip -rq "mrn-gtm-injector.zip" "mrn-gtm-injector" -x "mrn-gtm-injector/.git/*" "mrn-gtm-injector/.DS_Store"`
+  - `cd "/Users/khofmeyer/Sites/MRNPlugins" && zip -rq "mrn-comment-management.zip" "mrn-comment-management" -x "mrn-comment-management/.git/*" "mrn-comment-management/.DS_Store"`
+  - `rm -rf "/Users/khofmeyer/Local Sites/testinglocl"`
+- Outstanding TODOs:
+  - Uncertain: no explicit remaining TODO was recorded beyond normal plugin activation/use in WordPress admin.
+- Risks/gotchas:
+  - If GTM lazyload/data-src appears in output, another optimizer/plugin is likely rewriting HTML; `MRN GTM Injector` itself outputs plain `src`.
+  - DOM inspector can show both inline GTM bootstrap and async `gtm.js`; source may only contain bootstrap (runtime-inserted script is expected).
+  - Deleting comments is irreversible; tool includes typed + browser confirmations but still destructive.
+  - `testinglocl` paths are invalid after deletion.
+
+## Thread: 2026-02-28 MRN Plugins (Editor Tools + Unified Exporter)
+- Goal:
+  - Continue stabilizing MRN plugin workflow, add Text Color styles to MRN Editor Enhancements, improve import/export granularity, keep releases committed/zipped, and standardize workspace/site usage.
+- Decisions made:
+  - Use `/Users/khofmeyer/Sites/mrnplugins` as source-of-truth for plugin development.
+  - Use only `http://mrn-plugin-stack.local/` as active test site going forward.
+  - Keep Classic editor behavior stable; block-editor modal work was dropped earlier in favor of reliability.
+  - MRN Editor Enhancements import should default to auto-detecting sections from uploaded JSON; manual section selection remains available.
+  - Styles dropdown label should read `Styles`; text color submenu label should be `Text Colors` (no `MRN` in UI labels).
+  - Unified Exporter and License Vault were each put into their own new GitHub repos.
+- Files changed:
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-unified-exporter/mrn-unified-exporter.php`
+  - `/Users/khofmeyer/Local Sites/plugin-testing/app/public/wp-content/plugins/mrn-unified-exporter/mrn-unified-exporter.php`
+  - `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/plugins/mrn-unified-exporter/mrn-unified-exporter.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter/mrn-unified-exporter.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter/README.md`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter/.gitignore`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault/mrn-license-vault.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault/README.md`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault/.gitignore`
+  - `/Users/khofmeyer/Sites/mrnplugins/mrn-editor-tools/mrn-editor-tools.php`
+  - `/Users/khofmeyer/Sites/mrnplugins/mrn-editor-tools/admin-settings.js`
+  - `/Users/khofmeyer/Sites/mrnplugins/mrn-editor-tools/mrn-editor-tools.js`
+- Commands/scripts used:
+  - `gh repo create khofmeyer/mrn-unified-exporter --private --source '/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter' --remote origin --push`
+  - `gh repo create khofmeyer/mrn-license-vault --private --source '/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault' --remote origin --push`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter' init`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter' add .`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter' commit -m 'Initial commit: MRN Unified Exporter v1.1.1'`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault' init`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault' add .`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault' commit -m 'Initial commit: MRN License Vault v0.1.0'`
+  - `git -C '/Users/khofmeyer/Sites/mrnplugins/mrn-editor-tools' commit -m 'Add configurable text color styles with hex input support'`
+  - `git -C '/Users/khofmeyer/Sites/mrnplugins/mrn-editor-tools' commit -m 'Ensure styles dropdown appears when MRN text colors are configured'`
+  - `git -C '/Users/khofmeyer/Sites/mrnplugins/mrn-editor-tools' commit -m 'Polish styles UI labels and text color submenu naming'`
+  - `git -C '/Users/khofmeyer/Sites/mrnplugins/mrn-editor-tools' commit -m 'Add auto-detect section import mode for settings JSON'`
+  - `cd '/Users/khofmeyer/Sites/mrnplugins' && rm -f 'mrn-editor-tools.zip' && zip -rq 'mrn-editor-tools.zip' 'mrn-editor-tools' && cp 'mrn-editor-tools.zip' '/Users/khofmeyer/Desktop/mrn-editor-tools.zip'`
+  - `/bin/zsh -lc "for slug in mrn-dashboard-support mrn-disable-comments mrn-duplicate-enhance; do p='/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/plugins/'\"$slug\"; if [ -L \"$p\" ]; then rm -f \"$p\"; fi; done && echo 'remaining plugin symlinks:' && find '/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/plugins' -maxdepth 1 -type l -print | sort"`
+  - `php -l '/Users/khofmeyer/Sites/mrnplugins/mrn-editor-tools/mrn-editor-tools.php'`
+- Outstanding TODOs:
+  - Verify on the target site why `MRN Editor Enhancements` menu entry is not visible under Settings (user suspects another plugin is hiding it).
+  - Decide whether to add guaranteed fallback access (Uncertain: dual registration under Tools + Settings was discussed but not finalized).
+  - Uncertain: push latest `mrn-editor-tools` commits from local branch to remote was not explicitly completed in this thread.
+- Risks/gotchas:
+  - `/Users/khofmeyer/Sites/MRNPlugins` vs `/Users/khofmeyer/Sites/mrnplugins` path casing can cause confusion (same folder on this Mac filesystem).
+  - Admin menu-management plugins can hide plugin admin pages even when plugin is active.
+  - Symlink duplication between `plugins` and `mu-plugins` caused operational confusion; duplicates were removed for selected slugs on `mrn-plugin-stack`.
+
+## Thread: 2026-02-28 MRN Unified Exporter import/export fixes
+- Goal:
+  - Focus on MRN Unified Exporter and fix AME Toolbar Editor handling, primary-file UX, import/export clarity, and complete commit/push to the MRN plugins repo.
+- Decisions made:
+  - `app/public/wp-content/plugins/mrn-unified-exporter` should be a real folder in the Local site (not a symlink).
+  - AME Toolbar Editor should have a dedicated export/import file: `ame-toolbar-editor.settings.json`.
+  - Primary Files should include a bulk button: `Download Primary Files (ZIP)`.
+  - Primary bundle should also include `mrn-unified-export.zip`.
+  - Unified import should extract and process nested `mrn-unified-export.zip` if present.
+  - Inline `[IMPORTANT: NOT included in Unified ZIP...]` text was removed from file rows; guidance moved into callout with steps.
+  - Notices were made operation-specific (`Import complete`, `Export complete`, etc.) and now list detailed imported/generated items.
+  - `admin menu (...).dat` export was changed to AME container format (`format + settings.admin-menu`) to avoid format errors.
+  - Clarified in UI that `admin menu (...).dat` is for AME Pro import only (not Toolbar Editor).
+  - MRN Editor Enhancements settings are imported automatically by Unified Import.
+- Files changed:
+  - `/Users/khofmeyer/Local Sites/testinglocl/app/public/wp-content/plugins/mrn-unified-exporter/mrn-unified-exporter.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter/mrn-unified-exporter.php`
+- Commands/scripts used:
+  - `find -L app/public/wp-content/plugins/mrn-unified-exporter -maxdepth 3 -type f \( -name "*.php" -o -name "*.js" -o -name "*.md" \)`
+  - `sed -n '1,260p' app/public/wp-content/plugins/mrn-unified-exporter/mrn-unified-exporter.php`
+  - `php -l app/public/wp-content/plugins/mrn-unified-exporter/mrn-unified-exporter.php`
+  - `rm -f app/public/wp-content/plugins/mrn-unified-exporter && cp -R /Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter app/public/wp-content/plugins/mrn-unified-exporter`
+  - `cp app/public/wp-content/plugins/mrn-unified-exporter/mrn-unified-exporter.php /Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter/mrn-unified-exporter.php`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter" status --short --branch`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter" add mrn-unified-exporter.php && git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter" commit -m "Improve import/export UX and primary bundle handling"`
+  - `git -C "/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter" push origin main`
+- Outstanding TODOs:
+  - Uncertain: user validation in WP admin after latest patch set (fresh export/import run) was not explicitly confirmed in-thread.
+  - Uncertain: if old pre-fix export files are still in use, regenerate exports before import.
+- Risks/gotchas:
+  - `Unknown file format` can occur if importing the wrong file in the wrong plugin UI (notably importing `admin menu (...).dat` in AME Toolbar Editor).
+  - Older `.dat` files created before the container-format fix may fail; new exports are required.
+  - `roles-and-capabilities` remains a separate AME import step by design.
+
+## Thread: 2026-02-28 CloudPanel Cloner Build + Rollout
+- Goal:
+  - Build and deploy a `clone.mrndev.io` app for CloudPanel to clone sites (WordPress and static), harden auth, automate provisioning, and capture rollout artifacts in MRNPlugins.
+- Decisions made:
+  - Use CloudPanel (not RunCloud).
+  - Implement app as standalone PHP project at `/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner`.
+  - Use password session auth (`AUTH_MODE=password`) instead of URL token for normal use.
+  - Use a root-owned helper script with tightly scoped sudo (`/usr/local/bin/cloudpanel-site-clone`) for cross-user listing/cloning.
+  - For DB operations, use MySQL admin user `cloner_admin` (via `/root/.my.cnf`) and `mysqldump --no-tablespaces`.
+  - Add explicit clone modes: `site_type=wordpress|static`; static mode disables DB/search-replace and supports `static_entry`.
+  - Keep clone result UI cleaner with credential copy buttons and collapsible raw logs.
+  - Create new GitHub repo `khofmeyer/site-cloner` under local folder `/Users/khofmeyer/Sites/MRNPlugins/site-cloner`.
+  - Commit/push pending `mrn-editor-tools` changes to branch `codex/2.0-streamlined-admin-ui`.
+- Files changed:
+  - `/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/.env.example`
+  - `/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/README.md`
+  - `/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/public/index.php`
+  - `/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/public/api.php`
+  - `/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/src/bootstrap.php`
+  - `/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/src/CloudPanelSites.php`
+  - `/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/src/CloneRunner.php`
+  - `/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/scripts/cloudpanel-site-clone.sh`
+  - `/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/scripts/provision-cloudpanel-cloner.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/README.md`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/scripts/provision-cloudpanel-cloner.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/CHANGELOG.md`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/admin-settings.css`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/admin-settings.js`
+- Commands/scripts used:
+  - `php -l '/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/public/index.php'`
+  - `php -l '/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/public/api.php'`
+  - `php -l '/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/src/bootstrap.php'`
+  - `php -l '/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/src/CloudPanelSites.php'`
+  - `php -l '/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/src/CloneRunner.php'`
+  - `bash -n '/Users/khofmeyer/Local Sites/testinglocl/cloudpanel-cloner/scripts/cloudpanel-site-clone.sh'`
+  - `sudo cp /home/mrndev-clone/htdocs/clone.mrndev.io/scripts/cloudpanel-site-clone.sh /usr/local/bin/cloudpanel-site-clone`
+  - `sudo chown root:root /usr/local/bin/cloudpanel-site-clone`
+  - `sudo chmod 750 /usr/local/bin/cloudpanel-site-clone`
+  - `sudo -u mrndev-clone sudo -n /usr/local/bin/cloudpanel-site-clone --list-sites`
+  - `sudo grep -R "server_name clone.mrndev.io;" /etc/nginx -n`
+  - `sudo grep -R "root .*clone.mrndev.io" /etc/nginx -n`
+  - `sudo rm -rf /home/mrn-cloner/htdocs/clone.mrndev.io`
+  - `php -r "echo password_hash('MyRealPass!', PASSWORD_DEFAULT), PHP_EOL;"`
+  - `sudo find /home -type f -name wp-config.php 2>/dev/null | head -20`
+  - `sudo systemctl stop mysql`
+  - `sudo mysqld_safe --skip-grant-tables --skip-networking --user=mysql &`
+  - `mysql -u root`
+  - `mysql -u cloner_admin -h 127.0.0.1 -p -e "SELECT 1;"`
+  - `sudo tee /root/.my.cnf >/dev/null <<'EOF' ... EOF` (used to store DB client creds)
+  - `sudo perl -0777 -i -pe 's/--events \\\n/--events \\\n    --no-tablespaces \\\n/' /usr/local/bin/cloudpanel-site-clone`
+  - `gh repo create khofmeyer/site-cloner --private --source '/Users/khofmeyer/Sites/MRNPlugins/site-cloner' --remote origin --push`
+  - `git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools' add CHANGELOG.md admin-settings.css admin-settings.js && git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools' commit -m 'Add tabbed settings UI and sticky top save bar' && git -C '/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools' push`
+- Outstanding TODOs:
+  - Deploy latest local `cloudpanel-cloner` updates (site type/static entry flow and latest helper behavior) to live server and re-copy helper to `/usr/local/bin/cloudpanel-site-clone`.
+  - Re-verify static clone end-to-end on a fresh target after latest helper/UI changes.
+  - Uncertain: whether all server-side manual edits made during debugging are fully aligned with latest local script.
+  - Uncertain: merge/release path for `mrn-editor-tools` branch `codex/2.0-streamlined-admin-ui`.
+- Risks/gotchas:
+  - FTP upload alone does not update live helper at `/usr/local/bin/cloudpanel-site-clone`.
+  - Re-copying helper from app can overwrite prior hotfixes unless local script includes them.
+  - CloudPanel/Nginx default `index index.php index.html;` can cause static clones to serve PHP unless handled.
+  - `target_user` validation allows `[a-z][a-z0-9_]{2,31}` (no hyphens).
+  - Clone output includes sensitive credentials (`site_user_password`, DB credentials); treat as secrets.
+  - Sudo helper model is intentionally privileged; scope must remain restricted to the single helper path.
+
+## Thread: 2026-02-28 SFTP/FTP CloudPanel on DO
+- Goal:
+  - Diagnose why CloudPanel app user could not connect via SFTP/FTP to a DigitalOcean droplet.
+- Decisions made:
+  - The SSH host-key message (`Permanently added ... to known hosts`) was treated as informational, not the root error.
+  - SFTP must use an SSH-capable Linux user on port `22`; CloudPanel FTP-style users may not work for SFTP.
+  - `mrn-clone` was confirmed non-existent on server; `test` existed but had shell `/bin/false` (FTP-style, not SSH/SFTP login).
+  - FTP passive range was standardized to `30000 35000` in ProFTPD config, and firewall opened to match.
+  - FTPS failure `500 AUTH not understood` was traced to TLS not enabled in ProFTPD (`mod_tls` not loaded/available).
+  - Later `Connection refused` on `167.99.54.77:22` was investigated; server-side checks showed `sshd` active/listening and `ufw` allowing `22`.
+- Files changed:
+  - `/etc/proftpd/proftpd.conf`
+  - `/etc/proftpd/modules.conf`
+  - Uncertain: `/etc/proftpd/tls.conf` (edited in nano, final persisted contents not fully confirmed)
+- Commands/scripts used:
+  - `getent passwd mrn-clone`
+  - `id mrn-clone`
+  - `getent passwd test`
+  - `id test`
+  - `sudo grep 'mrn-clone' /var/log/auth.log | tail -n 20`
+  - `sudo tail -n 50 /var/log/auth.log`
+  - `sudo ss -tulpn | grep ':21'`
+  - `sudo systemctl status pure-ftpd || sudo systemctl status vsftpd`
+  - `sudo ufw allow 21/tcp`
+  - `sudo ufw allow 30000:35000/tcp`
+  - `sudo ufw reload`
+  - `sudo ufw status`
+  - `sudo systemctl restart proftpd`
+  - `sudo grep -n "PassivePorts" /etc/proftpd/proftpd.conf /etc/proftpd/conf.d/*.conf`
+  - `sudo a2enmod ssl 2>/dev/null || true`
+  - `sudo grep -n "mod_tls" /etc/proftpd/modules.conf`
+  - `grep -n "LoadModule mod_tls.c" /etc/proftpd/modules.conf`
+  - `grep -n "Include /etc/proftpd/tls.conf" /etc/proftpd/proftpd.conf`
+  - `systemctl status proftpd --no-pager -l`
+  - `sudo systemctl status ssh`
+  - `sudo ss -ltnp | grep ':22'`
+  - `sudo grep -E '^(Port|ListenAddress)' /etc/ssh/sshd_config /etc/ssh/sshd_config.d/*.conf 2>/dev/null`
+  - `hostname`
+  - `curl -s http://169.254.169.254/metadata/v1/interfaces/public/0/ipv4/address`
+  - `fail2ban-client status sshd 2>/dev/null`
+  - `fail2ban-client status 2>/dev/null`
+  - `sudo iptables -S | grep -iE 'f2b|reject|drop'`
+  - Mac-side: `nc -vz 167.99.54.77 22`
+  - Mac-side: `ssh -vvv -o ProxyCommand=none -o ProxyJump=none root@167.99.54.77`
+  - Mac-side: `ssh -G root@167.99.54.77 | egrep '^(hostname|port|proxy|proxyjump) '`
+- Outstanding TODOs:
+  - Confirm/install TLS module package for ProFTPD (`mod_tls` missing error referenced `/usr/lib/proftpd/mod_tls.la`).
+  - Uncomment/enable `Include /etc/proftpd/tls.conf` in `/etc/proftpd/proftpd.conf` if FTPS is required.
+  - Re-test FTPS after TLS module availability and config include are confirmed.
+  - Resolve remaining Mac-to-`167.99.54.77:22` `Connection refused` path issue despite server-side listener being active.
+- Risks/gotchas:
+  - CloudPanel FTP/SSH user can create FTP-style accounts with `/bin/false`, which cannot be used for SFTP.
+  - Duplicate `PassivePorts` directives can cause firewall/range mismatch and timeouts.
+  - Enabling `LoadModule mod_tls.c` without installed module causes ProFTPD startup warnings/errors.
+  - Uncertain: some edits were performed interactively in nano and may not all have persisted exactly as intended.
+
+## Thread: 2026-02-28 Sticky Toolbar Adoption Verification
+- Goal:
+  - Confirm whether sticky-toolbar standards were applied to `mrn-silktide-consent` and `mrn-editor-tools`.
+- Decisions made:
+  - Confirmed: `mrn-silktide-consent` includes and uses `includes/mrn-sticky-settings-toolbar.php`.
+  - Confirmed: `mrn-editor-tools` includes and uses `includes/mrn-sticky-settings-toolbar.php`.
+  - Confirmed: both plugins set toolbar save label to `Save Settings`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `rg -n "mrn-sticky-settings-toolbar|save_label|Save Settings|#1D2327|sticky" /Users/khofmeyer/Sites/MRNPlugins/mrn-silktide-consent /Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools`
+  - `ls -la /Users/khofmeyer/Sites/MRNPlugins/mrn-silktide-consent/includes /Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/includes`
+  - `rg -n "mrn_sticky_settings_toolbar|save_label|Save Settings|shared/mrn-sticky-settings-toolbar" /Users/khofmeyer/Sites/MRNPlugins/mrn-silktide-consent/mrn-silktide-consent.php /Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/mrn-editor-tools.php`
+- Outstanding TODOs:
+  - None from this verification step.
+- Risks/gotchas:
+  - Sticky-toolbar helper can still diverge across plugins if local `includes/mrn-sticky-settings-toolbar.php` copies are edited independently of shared helper.
+
+## Thread: 2026-02-28 Sticky Bar Shared Source Consolidation
+- Goal:
+  - Keep sticky bar implementation clean/simple with one canonical shared source, then sync plugin copies from it.
+- Decisions made:
+  - Canonical shared sticky-bar source is `/Users/khofmeyer/Sites/MRNPlugins/shared/mrn-sticky-settings-toolbar.php`.
+  - `shared/mrn-universal-sticky-bar-assets.php` is now compatibility-only shim and no longer a separate canonical source.
+  - Plugin model remains copy-sync (no runtime physical shared include dependency).
+  - To update sticky bars: edit shared source first, then copy into each plugin `includes/mrn-sticky-settings-toolbar.php`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/shared/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/shared/mrn-universal-sticky-bar-assets.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-silktide-consent/includes/mrn-sticky-settings-toolbar.php`
+- Commands/scripts used:
+  - `cp /Users/khofmeyer/Sites/MRNPlugins/shared/mrn-sticky-settings-toolbar.php /Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/includes/mrn-sticky-settings-toolbar.php`
+  - `cp /Users/khofmeyer/Sites/MRNPlugins/shared/mrn-sticky-settings-toolbar.php /Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/includes/mrn-sticky-settings-toolbar.php`
+  - `cp /Users/khofmeyer/Sites/MRNPlugins/shared/mrn-sticky-settings-toolbar.php /Users/khofmeyer/Sites/MRNPlugins/mrn-silktide-consent/includes/mrn-sticky-settings-toolbar.php`
+- Outstanding TODOs:
+  - None.
+- Risks/gotchas:
+  - Future sticky-bar updates can drift if plugin-local helper copies are edited directly instead of re-syncing from `shared/`.
+
+## Thread: 2026-02-28 Sticky Bar Rollout + Packaging Pass
+- Goal:
+  - Apply unified sticky-bar standards across additional MRN plugins, enforce universal dirty-save behavior, and complete full packaging workflow (checks/version/commit/push/zip).
+- Decisions made:
+  - Universal sticky-bar save behavior: `Save Settings` is disabled until form changes (dirty-state) and re-disabled on submit.
+  - Universal single-tab behavior: when only one tab exists and no secondary tabs/actions, render it as a label (no active background treatment).
+  - Shared sticky-bar background standard was enforced as `#1D2327`.
+  - `mrn-acf-character-count` was moved to sticky toolbar model and switched to symlink in `mrn-plugin-stack`.
+  - `mrn-comment-management` was updated to use universal sticky style source and a toolbar icon.
+  - `mrn-license-vault` and `mrn-unified-exporter` were updated with universal sticky top bars and icons.
+  - `mrn-editor-tools` packaging landed on `codex/2.0-streamlined-admin-ui`; then `main` was fast-forwarded and pushed so release state is aligned on `main`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/shared/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count/mrn-acf-character-count.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management/mrn-comment-management.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault/mrn-license-vault.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter/mrn-unified-exporter.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter/includes/mrn-sticky-settings-toolbar.php`
+  - Synced helper copies:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-silktide-consent/includes/mrn-sticky-settings-toolbar.php`
+  - Packaging artifacts rebuilt:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-silktide-consent.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter.zip`
+- Commands/scripts used:
+  - `php -l` checks across all touched plugin PHP files.
+  - `rg -n` security/risky-function scans during packaging checks.
+  - `git add -A`, `git commit`, `git push` in each packaged plugin repo.
+  - `zip -rq <plugin>.zip <plugin> -x '<plugin>/.git/*' '<plugin>/.DS_Store'`.
+  - `ln -s` workflow for `mrn-acf-character-count` into `mrn-plugin-stack`.
+  - `git checkout main && git merge --ff-only codex/2.0-streamlined-admin-ui && git push origin main` in `mrn-editor-tools`.
+- Outstanding TODOs:
+  - Validate plugin UI behavior on `http://mrn-plugin-stack.local/` for:
+  - `mrn-acf-character-count`, `mrn-comment-management`, `mrn-license-vault`, `mrn-unified-exporter`.
+  - Confirm release/merge policy for keeping or cleaning up `codex/2.0-streamlined-admin-ui` after fast-forward to `main`.
+- Risks/gotchas:
+  - Sticky helper remains copy-synced; direct plugin-local edits can drift from shared canonical source.
+  - Packaging/security scan output for bundled third-party assets can be noisy; focus on first-party plugin code paths.
+
+## Thread: 2026-02-28 Site Cloner Theme Library Support
+- Goal:
+  - Add theme management support to `site-cloner` stack workflows (upload, manifest management, scanning, and package handling).
+- Decisions made:
+  - Theme support follows the existing plugin model with a separate manifest and package folder.
+  - Theme manifest path is `STACK_ROOT/manifests/themes.txt`.
+  - Theme package folder is `STACK_ROOT/themes`.
+  - UI now includes a dedicated `Themes` library tab with upload, manifest editor, and delete/download actions.
+  - Stack scan supports source-site theme scan (`wp-content/themes`) and server-side theme package scan.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/api.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/scripts/cloudpanel-site-clone.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/README.md`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/api.php`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/site-cloner/scripts/cloudpanel-site-clone.sh`
+- Outstanding TODOs:
+  - Confirm server-side stack bootstrap scripts consume `manifests/themes.txt` during apply (theme install/activation behavior depends on those scripts).
+- Risks/gotchas:
+  - If server still runs an older `/usr/local/bin/cloudpanel-site-clone`, new theme scan helper arg (`--list-themes-path`) will fail until helper is redeployed.
+
+## Thread: 2026-02-28 Stack Bootstrap Theme Apply Support
+- Goal:
+  - Ensure stack bootstrap applies themes (install + optional activation) from stack manifests during manual/cron bootstrap.
+- Decisions made:
+  - `site-bootstrap.sh` now reads `STACK_ROOT/manifests/themes.txt` by default.
+  - Theme manifest supports:
+    - `theme-slug`
+    - `theme-slug|version`
+    - absolute/local zip path or URL
+    - activation flag via `|active` (or `|version|active`).
+  - If no `active` flag is present, bootstrap keeps the current active theme unchanged.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+- Commands/scripts used:
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/bootstrap-new-sites.sh`
+- Outstanding TODOs:
+  - Deploy updated `site-bootstrap.sh` to server stack root used by cron/manual apply.
+  - Ensure stack directory has writable/readable `manifests/themes.txt` and `themes/` zip files for app user.
+- Risks/gotchas:
+  - Theme activation for zip/url installs infers slug from WP theme list delta; if ambiguous, fallback uses zip basename and may require manual correction.
+
+## Thread: 2026-03-02 Underscore Starter Theme Rollout
+- Goal:
+  - Wire stack bootstrap theme rollout to use Underscores as the default starter theme.
+- Decisions made:
+  - `stack/scripts/site-bootstrap.sh` now defaults to installing and activating `underscores` when theme manifest is missing or has no entries.
+  - Seeded stack theme manifest with `underscores|active` as the default rollout entry.
+  - Added stack theme package folder placeholder (`stack/themes/.gitkeep`) so the expected folder exists in source.
+  - When `underscores` is the active starter, bootstrap now clones it into a site-specific theme folder name derived from the site path/domain slug, updates `style.css` header (`Theme Name`, `Text Domain`), and activates that renamed copy.
+  - Bootstrap scripts now detect WordPress installs in root, `public`, and `app/public` layouts (not just root `wp-config.php`).
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/themes.txt`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/.gitkeep`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/bootstrap-new-sites.sh`
+- Commands/scripts used:
+  - `mkdir -p /Users/khofmeyer/Sites/MRNPlugins/stack/themes /Users/khofmeyer/Sites/MRNPlugins/stack/manifests`
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+- Outstanding TODOs:
+  - Deploy updated `site-bootstrap.sh` and `themes.txt` to the live stack root used by bootstrap cron/manual apply.
+- Risks/gotchas:
+  - If `underscores` slug availability changes upstream, default fallback install could fail; explicit theme zip path in `themes.txt` remains the strongest option.
+  - Site-specific theme slug is domain/path-derived and sanitized; if an existing folder with that slug exists, bootstrap reuses it and re-applies header updates.
+  - Marker file remains at site root (`<site>/.mrn_bootstrapped`) even when WP path resolves to `public` or `app/public`.
+
+## Thread: 2026-03-02 Bootstrap Run-Now Arg + Notify Wiring Fix
+- Goal:
+  - Fix stack run-now bootstrap not triggering and ensure explicit notify email propagation through helper/scanner/bootstrap.
+- Decisions made:
+  - `stack/scripts/bootstrap-new-sites.sh` now supports `--site-discovery-glob` so helper/UI run-now calls no longer fail with unknown arg.
+  - `bootstrap-new-sites.sh` now accepts `--notify-email` and passes it to `site-bootstrap.sh`.
+  - `site-cloner` helper now accepts `--notify-email` and forwards it for both `--run-bootstrap-now` and `--apply-stack-path`.
+  - `StackManager` now passes configured `STACK_NOTIFY_EMAIL` into helper calls for run-now and apply-stack operations.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/bootstrap-new-sites.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/scripts/cloudpanel-site-clone.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/bootstrap-new-sites.sh`
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/site-cloner/scripts/cloudpanel-site-clone.sh`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+- Outstanding TODOs:
+  - Deploy updated scripts/code to live server paths, including helper sync to `/usr/local/bin/cloudpanel-site-clone`.
+  - Re-run `Run Bootstrap Now` on live and verify marker + log + email receipt.
+- Risks/gotchas:
+  - If live server still has an older helper/scanner, run-now/bootstrap behavior remains broken until deployment/sync is complete.
+
+## Thread: 2026-03-02 Bootstrap Resilience + Warning Notifications
+- Goal:
+  - Prevent bootstrap from aborting on individual plugin activation/install issues and continue site scans when one site fails.
+- Decisions made:
+  - `site-bootstrap.sh` now treats per-plugin install/activate failures as warnings (continues execution) instead of hard-failing the entire site bootstrap.
+  - Plugin ZIP/URL installs now infer the actual installed plugin slug before activation, reducing slug mismatch failures (e.g., premium ZIP filename vs plugin folder slug).
+  - `site-bootstrap.sh` now sends an additional warning notification email when bootstrap completes with non-fatal warnings.
+  - `bootstrap-new-sites.sh` now continues scanning/bootstraping remaining sites when one site bootstrap fails, then exits non-zero at the end if any site failed.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/bootstrap-new-sites.sh`
+- Commands/scripts used:
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/bootstrap-new-sites.sh`
+  - `rg -n "BOOTSTRAP_WARNINGS|infer_new_plugin_slug|Bootstrap failed for|completed with warnings|WARNINGS" /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/bootstrap-new-sites.sh`
+- Outstanding TODOs:
+  - Deploy updated stack scripts to server path `/home/mrndev-stack-manager/stack/scripts/`.
+  - Re-run single-site apply on `boottest.mrndev.io` to verify warning behavior and successful completion.
+- Risks/gotchas:
+  - Warning-mode means a site can complete with missing/inactive plugins; warning emails/log review is required after bootstrap runs.
+
+## Thread: 2026-03-02 Stack Manager Save Confirmations
+- Goal:
+  - Add explicit user confirmation and visible success feedback for manifest save actions in Stack Manager UI.
+- Decisions made:
+  - Manual save actions for plugin manifest, theme manifest, and MU manifest now require confirmation before submit.
+  - Save actions now show in-progress status (`Saving ...`) and a post-save success dialog (`alert`) with summary.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+- Outstanding TODOs:
+  - Deploy updated `public/index.php` to server app root and verify save dialog UX in production.
+- Risks/gotchas:
+  - Browser popup blocking policies can affect alert/confirm UX if browser settings are restrictive.
+
+## Thread: 2026-03-02 Site-Specific Theme Clone + Source Removal
+- Goal:
+  - Ensure active starter/base theme is cloned to a site-specific theme, activated, and source starter removed from the site.
+- Decisions made:
+  - `stack/scripts/site-bootstrap.sh` now treats `mrn-base-stack` (configurable via `STACK_SITE_THEME_CLONE_SOURCE_SLUG`) as a clone source theme in addition to `underscores`.
+  - After cloning and activating the site-specific theme copy, bootstrap removes the source starter/base theme directory from that site.
+  - Theme manifest parsing and activation now normalize ZIP/absolute-path identifiers to slugs, including fallback when ZIP install reports destination already exists, so active-theme clone flow can still execute.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+- Commands/scripts used:
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+- Outstanding TODOs:
+  - Deploy updated `site-bootstrap.sh` to `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`.
+  - Re-run bootstrap on target site after removing marker and confirm source theme directory is removed.
+- Risks/gotchas:
+  - If source-starter deletion is desired only for some sites, this behavior is now global unless guarded by env/config changes.
+
+## Thread: 2026-03-03 Manual Bootstrapped Marker Controls
+- Goal:
+  - Add UI ability to select sites and explicitly mark them bootstrapped to prevent accidental future bootstrap runs.
+- Decisions made:
+  - Reporting table now supports row selection with a select-all checkbox.
+  - Added `Mark Selected Bootstrapped` action in reporting UI.
+  - Added API action `stack-mark-bootstrapped` to process selected site paths.
+  - Added helper arg `--mark-bootstrapped-path` in `cloudpanel-site-clone.sh` to create `.mrn_bootstrapped` marker safely as root.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/api.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/scripts/cloudpanel-site-clone.sh`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/api.php`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/site-cloner/scripts/cloudpanel-site-clone.sh`
+- Outstanding TODOs:
+  - Deploy updated app files and helper script to server.
+  - Re-test reporting table selection + manual marker action in production.
+- Risks/gotchas:
+  - `Mark Selected Bootstrapped` only creates marker files; it does not validate plugin/theme state was actually applied.
+
+## Thread: 2026-03-03 Config/License Import Wiring
+- Goal:
+  - Use existing Configurations uploads in Stack Manager to drive automatic bootstrap imports (including MRN License Vault and MRN Unified Export payloads).
+- Decisions made:
+  - Added importer mapping manifest support in stack app (`manifests/importers.txt`) with UI save/load support in the Configurations tab.
+  - Added API route `stack-save-import-manifest`.
+  - Added default importer script `stack/configs/importers/stack-export-importer.sh` that processes mappings from `manifests/importers.txt`.
+  - Default importer supports mapping types:
+    - `option_json|file.json|option_name`
+    - `option_text|file.txt|option_name`
+    - `mrn_license_vault_json|file.json|overwrite|merge`
+    - `mrn_unified_export_zip|file.zip`
+  - Bootstrap now passes `STACK_ROOT`, `SITE_PATH`, `SITE_USER`, and `WP_PATH` into importer scripts.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/api.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/README.md`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/importers/stack-export-importer.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/.gitkeep`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/importers.txt`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/README.md`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/api.php`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/configs/importers/stack-export-importer.sh`
+- Outstanding TODOs:
+  - Deploy updated site-cloner app files and helper to server.
+  - Deploy updated stack importer script and manifest placeholder files to server `STACK_ROOT`.
+  - Validate end-to-end imports on a fresh site with real uploaded config payloads.
+- Risks/gotchas:
+  - Import mappings are powerful and can overwrite options; wrong mappings can corrupt plugin config.
+  - License/config values may contain secrets; avoid exposing payload content in logs and UI screenshots.
+
+## Legacy Canonical State Snapshot
+- Historical snapshot from the pre-rebuild `/Users/khofmeyer/Sites/MRNPlugins` era.
+- Keep for reference only; do not override the `Current Canonical State` near the top of this file.
+- Active goals:
+  - Maintain one shared project memory file in this workspace.
+  - Keep MRN plugin development centralized in `/Users/khofmeyer/Sites/MRNPlugins`.
+  - Keep sticky-toolbar behavior standardized across MRN plugins using `mrn-universal-sticky-bar` as baseline.
+  - Run full packaging workflow whenever a plugin is packaged.
+  - Continue hardening and operating `site-cloner`/stack-manager flows for CloudPanel.
+- Confirmed decisions:
+  - Use `THREAD_MEMORY.md` as the continuity source across threads.
+  - Record old thread summaries, then reconcile into canonical state.
+  - Source-of-truth plugin code lives in `/Users/khofmeyer/Sites/MRNPlugins` (same local folder as `/Users/khofmeyer/Sites/mrnplugins` on this system); prefer `MRNPlugins` casing in docs/commands.
+  - Active local test site is `http://mrn-plugin-stack.local/`.
+  - Local site plugin usage should point to source-of-truth via symlinks unless a thread explicitly requires a real copied folder.
+  - `mrn-universal-sticky-bar` is canonical for post/page sticky toolbar behavior.
+  - Canonical shared source for settings sticky bars is `/Users/khofmeyer/Sites/MRNPlugins/shared/mrn-sticky-settings-toolbar.php`.
+  - Sticky-toolbar helper distribution model is copy-sync from `shared/` into each plugin `includes/` file (no runtime shared include dependency).
+  - Universal sticky behavior defaults: save disabled until dirty change, and single-tab headers render as label-only (no active background treatment).
+  - Confirmed sticky-toolbar standard adoption: `mrn-acf-character-count`, `mrn-comment-management`, `mrn-gtm-injector`, `mrn-silktide-consent`, `mrn-editor-tools`, `mrn-license-vault`, `mrn-unified-exporter`.
+  - Toolbar background color standard is `#1D2327`.
+  - `Save Settings` is the standard sticky-toolbar save label for settings tools (publish/post flows remain publish-oriented).
+  - Package workflow means: security/hardening and code quality checks, version bump when new code changed behavior, commit, push, zip (non-versioned zip filename).
+  - `mrn-acf-character-count` release repo is `git@github.com:khofmeyer/mrn-acf-character-count.git`.
+  - `MRN Disable Comments` remains MU-policy enforcement; destructive comment cleanup lives in `mrn-comment-management`.
+  - `site-cloner` is the CloudPanel cloner project repo in `/Users/khofmeyer/Sites/MRNPlugins/site-cloner`.
+  - `site-cloner` stack library supports themes via `manifests/themes.txt` and `themes/*.zip`, including upload/scan/delete/download flows in UI/API/helper.
+  - Stack bootstrap (`stack/scripts/site-bootstrap.sh`) now installs themes from `manifests/themes.txt` and supports optional active-theme selection with `|active`.
+  - The live stack root on server is `/home/mrndev-stack-manager/stack`.
+  - Local stack source of truth is `/Users/khofmeyer/Sites/MRNPlugins/stack`.
+  - When we say `push to the stack server`, we mean syncing the relevant local stack source files to the matching paths under `/home/mrndev-stack-manager/stack` on the server.
+  - When we say `update the manifest`, we usually mean editing local source manifest files first, then syncing the changed manifest to the server stack root:
+    - normal plugins: `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/plugins.txt`
+    - themes: `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/themes.txt`
+    - importers: `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/importers.txt`
+    - licenses: `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/licenses.txt`
+  - Normal plugin rollout path:
+    - package plugin locally in `/Users/khofmeyer/Sites/MRNPlugins/*.zip`
+    - copy/overwrite the zip in `/home/mrndev-stack-manager/stack/packages/`
+    - ensure `stack/manifests/plugins.txt` references the correct slug or server package path
+  - MU plugin rollout path:
+    - canonical source lives under `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/`
+    - server destination is `/home/mrndev-stack-manager/stack/mu-plugins/`
+    - MU plugins are not added to the normal plugin manifest just to make bootstrap install them
+  - A request like `is this ready for rollout?` means more than local code/package readiness; it also implies the stack server copy and any relevant manifest/package references should be updated so fresh site bootstrap uses the new baseline.
+- Current stack-foundation MU plugins intended for rollout include:
+  - `mrn-reusable-block-library`
+  - `mrn-site-colors`
+  - `mrn-active-style-guide`
+
+## Thread: 2026-03-25 AME Export Workflow Refresh
+- Goal:
+  - Update the stack's canonical Admin Menu Editor configuration from the local source site and keep the export workflow explicit.
+- Decisions made:
+  - AME changes should be promoted to the stack from an exported configuration file, not by scraping live options ad hoc.
+  - The canonical stack AME container file remains:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json`
+  - Dated AME exports should also be preserved in:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/`
+  - Current AME stack refresh came from:
+    - `/Users/khofmeyer/Downloads/mrn-plugin-stack.local-AME-configuration(2026-03-25).json`
+  - The 2026-03-25 export changed at least these AME sections relative to the prior canonical file:
+    - `admin-menu`
+    - `dashboard-widget-editor`
+    - `metaboxes`
+    - `table-columns`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/AME-configuration(2026-03-25).json`
+- Server-side sync applied:
+  - `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json`
+  - `/home/mrndev-stack-manager/stack/configs/exports/AME-configuration(2026-03-25).json`
+- Risks/gotchas:
+  - Shell escaping around parentheses can create filenames with literal backslashes during remote copy. Verify final server filenames after upload.
+  - Default starter theme rollout is `underscores`; bootstrap falls back to it when `themes.txt` is missing/empty.
+  - Underscores starter activation path auto-renames to a site-specific theme folder and activates that copy.
+  - Bootstrap run-now path is wired end-to-end with `--site-discovery-glob` + `--notify-email` across `StackManager` -> `cloudpanel-site-clone.sh` -> `bootstrap-new-sites.sh` -> `site-bootstrap.sh`.
+  - `site-bootstrap.sh` handles per-plugin install/activation errors as warnings so bootstrap can complete and report issues.
+  - `bootstrap-new-sites.sh` continues to remaining sites when one bootstrap fails, then returns non-zero summary status when failures occurred.
+  - Reporting UI supports manual site selection and explicit `.mrn_bootstrapped` marker creation via helper-backed action.
+  - Stack Manager supports importer mappings (`manifests/importers.txt`) and bootstrap importer execution for configuration/license payloads stored in `configs/exports`.
+- Next actions:
+  - Continue migrating any missing old-thread summaries, then reconcile this section after each import batch.
+  - Validate latest sticky-toolbar rollout visually on `http://mrn-plugin-stack.local/` across updated plugins.
+  - Keep future sticky-toolbar edits shared-first (`shared/mrn-sticky-settings-toolbar.php`), then copy-sync to plugin includes.
+  - Validate latest `mrn-unified-exporter` changes with a fresh WP admin export/import run.
+  - Deploy and re-verify latest `site-cloner` server-side helper sync (`/usr/local/bin/cloudpanel-site-clone`) and static-clone flow.
+
+## Thread Template
+## Thread: <name or date>
+- Goal:
+- Decisions made:
+- Files changed:
+- Commands/scripts used:
+- Outstanding TODOs:
+- Risks/gotchas:
+
+## Migration Prompt (Copy/Paste Into Old Threads)
+Use this exact prompt in each old thread:
+
+```text
+Summarize this thread into durable project memory for /Users/khofmeyer/Sites/MRNPlugins.
+Return ONLY these sections and keep it concise and factual:
+
+## Thread: <YYYY-MM-DD or short name>
+- Goal:
+- Decisions made:
+- Files changed: (absolute paths)
+- Commands/scripts used: (exact commands if known)
+- Outstanding TODOs:
+- Risks/gotchas:
+
+Rules:
+- Include only facts established in this thread.
+- If something is uncertain, mark it as "Uncertain:".
+- Do not include advice unless it was explicitly decided.
+- Prefer concrete paths, commands, and outcomes over narrative.
+```
+
+After you get each summary back:
+- Paste it into this file under a new `## Thread: ...` heading.
+- Update `## Current Canonical State` to reconcile conflicts.
+
+## Thread: 2026-03-03 MRN SEO Helper Initial Scaffold
+- Goal:
+  - Start a new `mrn-seo-helper` plugin and implement first milestone: create ACF SEO fields on activation.
+- Decisions made:
+  - Created standalone plugin at `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper`.
+  - Activation now sets a seed flag and attempts immediate field-group registration when ACF is loaded.
+  - If ACF is not yet loaded, plugin defers registration and retries on admin init, with an admin warning notice until ACF is available.
+  - Initial field group key: `group_mrn_seo_helper`; fields: SEO Title, Meta Description, Canonical URL, Noindex.
+  - Field group location targets `post` and `page` post types.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper/mrn-seo-helper.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `mkdir -p /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper/mrn-seo-helper.php`
+- Outstanding TODOs:
+  - Decide full SEO task scope for next milestones (analysis/output, schema, robots/meta handling, sitemap helpers, etc.).
+  - If requested: run full package workflow (security check, code quality check, version/release commit, push, zip).
+- Risks/gotchas:
+  - Field group is registered through `acf_add_local_field_group`; this creates runtime ACF fields but does not create exported JSON/PHP files unless added separately.
+  - Root workspace is not a single git repo; versioning/packaging should be run from the plugin folder repo when initialized.
+- Local site linkage:
+  - Added symlink `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content/plugins/mrn-seo-helper -> /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper`.
+- Follow-up behavior:
+  - Added post editor sync script so WordPress title input (`#title`) mirrors into ACF SEO Title field key `field_mrn_seo_title` on `post` and `page` edit screens.
+  - Title field key is now centralized as plugin constant `TITLE_FIELD_KEY` and reused in ACF field registration + JS sync.
+- Scope expansion:
+  - `mrn-seo-helper` ACF field group location now targets all UI post types (including CPTs), excluding `attachment`, `acf-field-group`, and `acf-field`.
+- Reliability hardening:
+  - `mrn-seo-helper` field group registration now hooks into `acf/init`, `acf/include_fields`, and `init` (priority 20) with a duplicate-registration guard for better ACF load-order compatibility.
+  - Title sync script now runs on all post editor screens (`$screen->base === post`) instead of only `post`/`page`.
+- Debug/compat update:
+  - `mrn-seo-helper` switched to canonical ACF-style alphanumeric keys:
+    - Field group: `group_69a1c0f3a1b01`
+    - SEO title field: `field_69a1c111a1b02`
+    - SEO description field: `field_69a1c12da1b03`
+  - Added admin registration diagnostic notice when local ACF field group is not present.
+- Local activation gotcha (mrn-plugin-stack):
+  - `MRN ACF Character Count` activation failed/stayed inactive due to duplicate plugin copy in `/wp-content/plugins/mrn-acf-character-count.backup-20260228-181853` causing class redeclare fatal (`Cannot declare class MRN_ACF_Character_Count`).
+  - Resolved by moving backup folder to `/wp-content/plugin-backups/` so only the symlinked canonical plugin remains discoverable.
+- Cross-plugin integration:
+  - `mrn-seo-helper` activation now auto-enables its SEO fields in `MRN ACF Character Count` by merging title/description field keys into option `mrn_acf_char_count_fields` (or `MRN_ACF_Character_Count::OPTION_KEY` when class is loaded).
+- MRN SEO Helper enhancements:
+  - Added Tools page `Tools -> MRN SEO Helper` showing ACF field names/keys and SmartCrawl post meta keys for quick reference.
+  - Added SmartCrawl sync support using meta keys `_wds_title` and `_wds_metadesc`.
+  - On `mrn-seo-helper` activation, plugin now backfills SmartCrawl meta from ACF values across UI post types.
+  - Added ongoing sync on `acf/save_post` so updated ACF SEO title/description mirror into SmartCrawl post meta.
+- SmartCrawl template scope update:
+  - `mrn-seo-helper` activation now updates SmartCrawl on-page option store `wds_onpage_options` for all UI post types:
+    - `title-{post_type}` => `%%cf_mrn_seo_title%% %%sep%% %%sitename%%`
+    - `metadesc-{post_type}` => `%%cf_mrn_seo_description%%`
+  - This targets SmartCrawl `Title & Meta` post-type settings page (`admin.php?page=wds_onpage&tab=tab_post_types`) in addition to per-post meta sync.
+
+## Thread: 2026-03-03 MRN SEO Helper Packaging
+- Goal:
+  - Package `mrn-seo-helper` with security/quality checks, version bump, git commit, GitHub push, and zip artifact.
+- Decisions made:
+  - Bumped `mrn-seo-helper` version to `0.2.0` after new feature additions.
+  - Created dedicated plugin repo `git@github.com:khofmeyer/mrn-seo-helper.git`.
+  - Built non-versioned release zip `mrn-seo-helper.zip` from a staging copy excluding `.git`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper/mrn-seo-helper.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper/mrn-seo-helper.php`
+  - `rg -n "\\beval\\b|base64_decode|shell_exec|exec\\(|passthru|proc_open|popen|curl_exec|unserialize\\(" /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper -S`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper init -b main`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper add mrn-seo-helper.php`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper commit -m "Release 0.2.0: add ACF SEO fields, SmartCrawl sync, and helper tools page"`
+  - `gh repo create khofmeyer/mrn-seo-helper --private --source /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper --remote origin --push`
+  - `rsync -a --exclude='.git' --exclude='.DS_Store' /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper/ /tmp/mrn-seo-helper-package/mrn-seo-helper/`
+  - `zip -rq /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper.zip mrn-seo-helper`
+- Outstanding TODOs:
+  - Activate/deactivate `MRN SEO Helper` once on target sites to trigger activation-time SmartCrawl template backfill.
+- Risks/gotchas:
+  - Zipping plugin folder directly from workspace can include `.git`; use staging copy or stricter exclude handling for clean deliverables.
+- Live editor UX update:
+  - `mrn-seo-helper` now live-syncs ACF SEO Title/Description to SmartCrawl metabox inputs (`wds_title`, `wds_metadesc`) on post edit screens, triggering input/change events so SmartCrawl Google preview updates while typing.
+- SmartCrawl live-preview fix:
+  - `mrn-seo-helper` editor sync now updates SmartCrawl preview UI directly (`.wds-preview-title a`, `.wds-preview-meta`) on each ACF SEO field change, and uses native DOM `input/change/keyup` dispatch on `wds_title`/`wds_metadesc` when those React fields are present.
+- SmartCrawl override notice UX:
+  - Added inline warning near ACF SEO fields when user edits SmartCrawl `wds_title`/`wds_metadesc` directly and values differ from ACF (`mrn-seo-helper-override-notice`).
+  - Programmatic MRN sync updates suppress false override warnings.
+
+## Thread: 2026-03-03 MRN SEO Helper Package Refresh
+- Goal:
+  - Re-package `mrn-seo-helper` after SmartCrawl live-sync/override notice and UI label updates.
+- Decisions made:
+  - Bumped plugin version to `0.2.1`.
+  - Kept packaging output non-versioned as `mrn-seo-helper.zip`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper/mrn-seo-helper.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper/mrn-seo-helper.php`
+  - `rg -n "\\beval\\b|base64_decode|shell_exec|exec\\(|passthru|proc_open|popen|curl_exec|unserialize\\(" /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper -S`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper add mrn-seo-helper.php`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper commit -m "Release 0.2.1: refine SmartCrawl sync UX and metabox labeling"`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper push origin main`
+  - `rsync -a --exclude='.git' --exclude='.DS_Store' /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper/ /tmp/mrn-seo-helper-package/mrn-seo-helper/`
+  - `zip -rq /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper.zip mrn-seo-helper`
+- Outstanding TODOs:
+  - Uncertain: whether to cut/push git tag `v0.2.1` for this plugin (not requested in this package pass).
+- Risks/gotchas:
+  - Direct zipping from repo folder can include `.git`; staging-copy zip method remains required for clean deliverables.
+
+## Thread: 2026-03-03 CloudPanel Shared Access ACL Stabilization
+- Goal:
+  - Restore and persist `kyle` SFTP/SSH access across all existing and newly created CloudPanel site folders without broad root usage.
+- Decisions made:
+  - Existing shared access group is `webadmin` (not `cp-sites`), and `kyle` is a member.
+  - Access model uses ACLs on `/home/*` and `/home/*/htdocs` for `webadmin`.
+  - New site access issue was due to missing ACLs on new site user paths (e.g. `/home/mrndev-ehstracks`).
+  - `webadmin-acl-sync` automation is active via root crontab every 2 minutes.
+- Files changed:
+  - `/usr/local/sbin/webadmin-acl-sync.sh` (server path)
+  - Root crontab entry (server state): `*/2 * * * * /usr/local/sbin/webadmin-acl-sync.sh >/dev/null 2>&1`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `getent group webadmin`
+  - `id kyle`
+  - `getfacl /home/mrndev-ehstracks`
+  - `getfacl /home/mrndev-ehstracks/htdocs`
+  - `setfacl` commands for `/home`, site home dirs, and site `htdocs` (including recursive + default ACL variants)
+  - `sudo -u kyle ls -la /home/...` and read/write tests in `htdocs`
+  - `sudo crontab -l | grep webadmin-acl-sync`
+  - `sudo /usr/local/sbin/webadmin-acl-sync.sh`
+- Outstanding TODOs:
+  - Re-validate one newly created CloudPanel site after creation to confirm cron-applied ACLs without manual intervention.
+- Risks/gotchas:
+  - Placeholder text in commands (e.g. `<new-site-user>`) causes shell errors if pasted literally.
+  - SFTP browse behavior may require `r-x` on parent dirs (not only `--x`) depending on client behavior.
+
+## Thread: 2026-03-03 MRN Dashboard Support Logo Fix + Packaging
+- Goal:
+  - Fix dashboard widget logo rendering and package `mrn-dashboard-support`.
+- Decisions made:
+  - Updated logo URL resolution to use `content_url('mu-plugins/mrn-dashboard-support/mrn-logo.png')` with fallback host URL logic.
+  - Bumped plugin version to `1.0.2`.
+  - Created/pushed repo remote `git@github.com:khofmeyer/mrn-dashboard-support.git`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-dashboard-support/mrn-dashboard-support.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-dashboard-support.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-dashboard-support/mrn-dashboard-support.php`
+  - `rg -n "\\beval\\b|base64_decode|shell_exec|exec\\(|passthru|proc_open|popen|curl_exec|unserialize\\(" /Users/khofmeyer/Sites/MRNPlugins/mrn-dashboard-support -S`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-dashboard-support commit -m "Fix MU logo URL resolution and bump version to 1.0.2"`
+  - `gh repo create khofmeyer/mrn-dashboard-support --private --source /Users/khofmeyer/Sites/MRNPlugins/mrn-dashboard-support --remote origin --push`
+  - `rsync -a --exclude='.git' --exclude='.DS_Store' /Users/khofmeyer/Sites/MRNPlugins/mrn-dashboard-support/ /tmp/mrn-dashboard-support-package/mrn-dashboard-support/`
+  - `zip -rq /Users/khofmeyer/Sites/MRNPlugins/mrn-dashboard-support.zip mrn-dashboard-support`
+- Outstanding TODOs:
+  - None.
+- Risks/gotchas:
+  - MU plugin paths loaded via symlink/realpath can break `plugin_dir_url(__FILE__)`; prefer explicit `content_url('mu-plugins/...')` for assets in this setup.
+- MRN Disable Comments hardening (v1.2.2):
+  - Added broad comment UI cleanup for lingering admin surfaces (menu/admin-bar counters, dashboard comment items, block editor discussion panel selectors).
+  - Added dynamic removal of comments column across all post type list tables via `manage_{post_type}_posts_columns` filters.
+  - Added dashboard glance item filtering to strip comment-related entries.
+
+## Thread: 2026-03-03 MRN Disable Comments v1.2.2 Packaging
+- Goal:
+  - Package `mrn-disable-comments` after admin UI suppression hardening.
+- Decisions made:
+  - Released `mrn-disable-comments` version `1.2.2`.
+  - Kept non-versioned package artifact name `mrn-disable-comments.zip`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-disable-comments/mrn-disable-comments.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-disable-comments.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-disable-comments/mrn-disable-comments.php`
+  - `rg -n "\\beval\\b|base64_decode|shell_exec|exec\\(|passthru|proc_open|popen|curl_exec|unserialize\\(" /Users/khofmeyer/Sites/MRNPlugins/mrn-disable-comments -S`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-disable-comments commit -m "Release 1.2.2: broaden admin UI suppression for comment surfaces"`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-disable-comments fetch origin`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-disable-comments rebase origin/main`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-disable-comments push -u origin main`
+  - `rsync -a --exclude='.git' --exclude='.DS_Store' /Users/khofmeyer/Sites/MRNPlugins/mrn-disable-comments/ /tmp/mrn-disable-comments-package/mrn-disable-comments/`
+  - `zip -rq /Users/khofmeyer/Sites/MRNPlugins/mrn-disable-comments.zip mrn-disable-comments`
+- Outstanding TODOs:
+  - None.
+- Risks/gotchas:
+  - Remote branch had new commits; rebase was required before push.
+
+## Thread: 2026-03-03 MRN Admin UI CSS Ad Suppression Refresh
+- Goal:
+  - Restore admin ad/upsell suppression for plugin UIs that changed markup.
+- Decisions made:
+  - Bumped `mrn-admin-ui-css` to `3.0.1` to force fresh asset/cache load.
+  - Added targeted selectors for WPMU DEV/Beehive GTM upsell card markup (`.sui-icon-gtm`, `beehive-google-tag-manager` links).
+  - Added broader SUI upsell CTA suppression for common promo/marketing button/link patterns.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css/mrn-admin-ui-css.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css/mrn-admin-ui-css.php`
+- Outstanding TODOs:
+  - Validate affected plugin pages in wp-admin after hard refresh to confirm targeted cards are hidden.
+- Risks/gotchas:
+  - `:has(...)` selectors require modern browser support; if a specific admin client still shows a card, add a JS fallback for that exact page.
+
+## Thread: 2026-03-03 MRN Admin UI CSS Consolidation
+- Goal:
+  - Consolidate admin UI styling into a single MU plugin stylesheet.
+- Decisions made:
+  - `mrn-admin-ui-css` now enqueues one file only: `mrn-admin.css`.
+  - Removed multi-file conditional CSS loading and inline style injection from PHP.
+  - Moved targeted plugin ad/upsell selectors (including Beehive GTM card rules) into `mrn-admin.css`.
+  - Bumped plugin version to `3.1.0`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css/mrn-admin-ui-css.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css/mrn-admin.css`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css/mrn-admin-ui-css.php`
+- Outstanding TODOs:
+  - Validate wp-admin screens after hard refresh to ensure no regressions from always loading a single CSS file.
+- Risks/gotchas:
+  - `:has(...)` selectors depend on modern browser support.
+- MRN Admin UI CSS ad suppression update:
+  - Added explicit Post Duplicator / Metaphor settings ad selectors (`.mtphrSettings__field--ad`, campaign links to metaphorcreations/ditty pricing) to hide full ad cards.
+  - Bumped `mrn-admin-ui-css` version to `3.1.1` for cache busting.
+- MRN Admin UI CSS loader fix:
+  - Consolidation introduced wrong CSS path (`/mu-plugins/mrn-admin.css`); corrected to `/mu-plugins/mrn-admin-ui-css/mrn-admin.css` using `content_url(...)`.
+  - Bumped `mrn-admin-ui-css` to `3.1.2`.
+- MRN Admin UI CSS GTM widget suppression hardening:
+  - When `mrn-gtm-injector/mrn-gtm-injector.php` is active, hide Beehive GTM dashboard widget via conditional inline CSS and JS fallback.
+  - JS fallback uses `MutationObserver` to remove dynamically re-rendered Beehive GTM widget cards by matching GTM link targets.
+  - Bumped `mrn-admin-ui-css` to `3.1.4`.
+- MRN SEO Helper override notice fix:
+  - Empty override message container appeared due global admin CSS rule `.notice { display: block !important; }`.
+  - Updated override notice rendering to create node only when override exists, remove it when clear, and use plugin-specific classes instead of WordPress `.notice` class.
+- MRN Admin UI CSS connection-loss mitigation:
+  - Scoped Beehive GTM widget suppression JS/CSS to Beehive/SmartCrawl admin pages only (via `$_GET['page']` contains `beehive` or `wds`) to avoid running MutationObserver globally in wp-admin.
+  - Bumped `mrn-admin-ui-css` to `3.1.5`.
+- MRN SEO Helper stability hardening for connection-loss symptoms:
+  - Disabled ACF/SmartCrawl sync footer script on block editor screens (`$screen->is_block_editor()`).
+  - In classic editor sync, avoid dispatching SmartCrawl events when value is unchanged and removed synthetic `KeyboardEvent` dispatch.
+
+## Thread: 2026-03-03 MRN Admin UI CSS + MRN SEO Helper Packaging
+- Goal:
+  - Package newly changed plugins after stability fixes.
+- Decisions made:
+  - `mrn-admin-ui-css` keeps ad suppression but is gated off editor/media/site-editor screens to prevent post-editor connection-loss issues.
+  - `mrn-seo-helper` editor sync is currently disabled via feature flag (`ENABLE_EDITOR_SYNC = false`) pending safer reintroduction.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css/mrn-admin-ui-css.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css/mrn-admin.css`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper/mrn-seo-helper.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `php -l` checks for both main plugin files
+  - Security grep scan for risky functions via `rg` in both plugin directories
+  - `gh repo create khofmeyer/mrn-admin-ui-css --private --source ... --remote origin --push`
+  - `git commit` / `git push` in both repos
+  - `rsync` staging + `zip` artifact builds for both plugins
+- Release artifacts:
+  - `mrn-admin-ui-css` version `3.1.6`, commit `5e2293e`, repo `git@github.com:khofmeyer/mrn-admin-ui-css.git`, zip `/Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css.zip`
+  - `mrn-seo-helper` version `0.2.2`, commit `00445f2`, repo `git@github.com:khofmeyer/mrn-seo-helper.git`, zip `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper.zip`
+- Outstanding TODOs:
+  - Reintroduce safe live editor sync in `mrn-seo-helper` if needed, with strict page scoping and throttling.
+- MRN SEO Helper live sync restored (v0.2.3):
+  - Re-enabled editor-side sync script (`ENABLE_EDITOR_SYNC = true`).
+  - Added debounced sync handlers and reduced initial sync calls to one delayed run.
+  - Supports both classic title input (`#title`) and block editor title input (`.editor-post-title__input`).
+  - Keeps safer event strategy (no synthetic KeyboardEvent spam).
+- MRN SEO Helper repackaged after live-sync restore:
+  - Version `0.2.3`, commit `026df1b`, pushed to `git@github.com:khofmeyer/mrn-seo-helper.git`.
+  - Rebuilt artifact: `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper.zip`.
+
+## Thread: 2026-03-03 Site Cloner Export Delete UI
+- Goal:
+  - Add a way in Stack Manager UI to delete uploaded configuration/export files.
+- Decisions made:
+  - Added explicit delete action for `configs/exports` files through API and UI (not tied to package/theme deletion).
+  - Export deletion validates basename and allowed extensions (`zip`, `json`, `txt`, `csv`, `xml`).
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/api.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/api.php`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+- Outstanding TODOs:
+  - Deploy updated `site-cloner` files to server and verify delete action in live UI.
+- Site Cloner importer fix (2026-03-04): `stack/configs/importers/stack-export-importer.sh` now imports AME Pro container/component `.dat` files from unified export zips using AME ImportExport engine, and logs component-level imported/skipped/failed counts.
+- Site Cloner licenses feature (2026-03-04): Added Library `Licenses` tab backed by `STACK_ROOT/manifests/licenses.txt` with API save endpoint `stack-save-license-manifest`. Added bootstrap `apply_licenses` step in `stack/scripts/site-bootstrap.sh` that applies mappings only when the mapped plugin basename is active on target site; otherwise logs warning and skips.
+- Bootstrap AME license handling update (2026-03-04): `stack/scripts/site-bootstrap.sh` now applies `wsh_license_manager-admin-menu-editor-pro` in a site-aware way, overriding payload `license.site_url`, clearing `site_token`, and resetting `token_history` to current site URL at apply time.
+
+## Thread: 2026-03-04 AME Import Mapping Persistence
+- Goal:
+  - Make AME JSON option mapping persist in Stack Manager import mappings.
+- Decisions made:
+  - Use direct AME option import mapping only:
+    - `option_json|ws_menu_editor_pro.json|ws_menu_editor_pro`
+  - Keep unified ZIP mapping disabled/commented to avoid noisy failures:
+    - `# mrn_unified_export_zip|mrn-unified-export.zip`
+- Files changed:
+  - `/home/mrndev-stack-manager/stack/manifests/importers.txt` (server)
+- Verification:
+  - Confirmed `/home/mrndev-stack-manager/stack/configs/exports/ws_menu_editor_pro.json` exists.
+  - Confirmed manifest content persisted after write + delayed re-read.
+- Risks/gotchas:
+  - UI can appear to "revert" if edits are not saved in the Import Mappings section specifically, or if viewing a different stack root/session.
+- Site Cloner importer hotfix (2026-03-04): `stack/configs/importers/stack-export-importer.sh` no longer embeds large JSON/text payloads as base64 in `wp eval` command args for `option_json`, `site_option_json`, `option_text`, `site_option_text`, and `mrn_license_vault_json`. It now reads payloads directly from file paths in PHP, preventing `Argument list too long` failures on large AME payloads (e.g., `ws_menu_editor_pro.json`).
+- Live incident note (2026-03-04): New site `/home/ugh-stack/htdocs/ugh.mrndev.io` failed AME import with `/usr/bin/sudo: Argument list too long`; one-time direct `wp eval` import applied `ws_menu_editor_pro`, verified by `admin-menu.last_modified_on = 2026-03-04T13:56:28+00:00`.
+- AME apply behavior correction (2026-03-04): Directly writing converted data into `ws_menu_editor_pro` can leave `custom_menu` unset (`null`), which may prevent visible menu/config application. Reliable application requires AME's own import flow (`wp admin-menu-editor import <container.json>`) so internal compile/apply steps run.
+- Live fix on `/home/ugh-stack/htdocs/ugh.mrndev.io`: Ran `wp --path=/home/ugh-stack/htdocs/ugh.mrndev.io admin-menu-editor import /tmp/ame-config-container.json`; modules imported successfully (except roles-and-capabilities validation warning). Verified `ws_menu_editor_pro.custom_menu` is no longer null and `admin-menu.last_modified_on` is `2026-03-04T13:56:28+00:00`.
+- Role import bootstrap fix (2026-03-04): Updated `stack/configs/importers/stack-export-importer.sh` unified AME import path to pass `componentConfigs["roles-and-capabilities"]` into `import_data(...)` using role names derived from the container payload and `localOnlyCapStrategy="disable"`. Deployed to `/home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh` and set executable.
+- AME bootstrap mapping fix (2026-03-04): Added importer type `ame_container_json` to `stack/configs/importers/stack-export-importer.sh` (calls `wp admin-menu-editor import <container.json>`). Uploaded container to `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json` and switched `/home/mrndev-stack-manager/stack/manifests/importers.txt` to:
+  - `ame_container_json|ame-config-container.json`
+  - (commented) `option_json|ws_menu_editor_pro.json|ws_menu_editor_pro`
+  - (commented) `mrn_unified_export_zip|mrn-unified-export.zip`
+- AME roles import fix (2026-03-04): `ame_container_json` import path was changed to use AME ImportExport engine (`import_data`) via `wp eval` and pass `componentConfigs["roles-and-capabilities"]` with role names derived from container data and `localOnlyCapStrategy="disable"`. Validation on `/home/finaltest-stack/htdocs/finaltest.mrndev.io` returned `roles-and-capabilities: 2 changes applied` (instead of `Role import configuration is invalid`).
+
+## Thread: 2026-03-05 AME + Theme Rollout Regression Triage
+- Goal:
+  - Investigate report that AME configs still do not apply and theme rollout stopped working.
+- Findings:
+  - Live server manifests are populated and correct:
+    - `/home/mrndev-stack-manager/stack/manifests/importers.txt` includes `ame_container_json|ame-config-container.json`.
+    - `/home/mrndev-stack-manager/stack/manifests/themes.txt` includes `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip` and `mrn-base-stack|active`.
+  - Live bootstrap logs show theme activation still running for recent sites (example: `lasttime.mrndev.io` activated `lasttime-mrndev-io`).
+  - Live bootstrap logs show AME importer failure on recent run:
+    - `AME import engine/editor instance unavailable.`
+    - `Importer warning: failed importing AME container ...`
+  - Marker behavior is mixed by site:
+    - Marker exists on `lasttime` and `finaltest`.
+    - Marker missing on `ugh` at check time.
+- Decisions made:
+  - Harden importer by avoiding forced `wp --context=admin` during importer operations.
+  - Add AME CLI-first fallback for container imports:
+    - Try `wp admin-menu-editor import <container>` first.
+    - If that fails, fall back to existing import-engine `wp eval` path.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/importers/stack-export-importer.sh`
+  - Server deployed copy:
+  - `/home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+- Commands/scripts used:
+  - `scp /Users/khofmeyer/Sites/MRNPlugins/stack/configs/importers/stack-export-importer.sh kyle@167.99.54.77:/home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+  - `ssh kyle@167.99.54.77 'chmod +x /home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh && echo deployed'`
+  - Multiple read-only SSH checks for:
+    - server manifests (`importers.txt`, `themes.txt`, `licenses.txt`),
+    - exports/theme package presence,
+    - `/var/log/mrnplugins-bootstrap.log`,
+    - marker files on selected sites.
+- Outstanding TODOs:
+  - Validate next root-run bootstrap cycle after patch deployment and confirm AME import now reports success (or at least CLI import path output) in log.
+  - If AME still fails after patch, capture first post-patch importer block from log and compare command output from `wp admin-menu-editor import` under the root-run path.
+- Risks/gotchas:
+  - Manual SSH testing as `kyle` cannot directly run the importer path because `sudo -u <site-user> wp ...` prompts for password; validation must happen via the existing root-driven bootstrap runner (cron/UI helper).
+
+## Thread: 2026-03-05 Site Cloner Stable Rollback Baseline Package
+- Goal:
+  - Create a stable rollback baseline before additional work.
+- Decisions made:
+  - Baseline repo/tag is `site-cloner` commit `e7a3c6e` with tag `stable-2026-03-05-stack-baseline`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/api.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+- Commands/scripts used:
+  - `php -l` checks on changed PHP files.
+  - Security grep scan in `site-cloner/src` + `site-cloner/public`.
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/site-cloner commit -m "Stabilize stack licenses manifest workflow for rollback baseline"`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/site-cloner push origin main`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/site-cloner tag -f -a stable-2026-03-05-stack-baseline -m "Stable rollback baseline: license manifest workflow" e7a3c6e`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/site-cloner push origin --force stable-2026-03-05-stack-baseline`
+  - `zip` artifact build from rsync staging copy.
+- Release artifacts:
+  - Rollback commit: `e7a3c6e1d2aac544c5dcdb2fdc141fb9d5aed8e5`
+  - Rollback tag: `stable-2026-03-05-stack-baseline`
+  - Rollback zip: `/Users/khofmeyer/Sites/MRNPlugins/site-cloner-stable-2026-03-05-e7a3c6e.zip`
+
+## Thread: 2026-03-05 Bootstrap Auto-Configure for Post Types Order
+- Goal:
+  - Remove manual requirement to open Post Types Order settings and click "Save Settings" after bootstrap install.
+- Findings:
+  - Plugin settings save handler writes `cpto_options` and sets `CPT_configured=TRUE`.
+  - Missing `CPT_configured` triggers "must be configured" admin notice and appears as not initialized to users.
+- Decisions made:
+  - Added bootstrap step `configure_post_types_order()` in `site-bootstrap.sh`.
+  - Step runs only when `post-types-order` plugin is active, then:
+    - merges/saves sane defaults to `cpto_options`,
+    - sets `CPT_configured` to `TRUE`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - Deployed server copy:
+  - `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+- Commands/scripts used:
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `scp /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh kyle@167.99.54.77:/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+  - SSH verification via `grep -n` for `configure_post_types_order`/`CPT_configured`.
+- Risks/gotchas:
+  - Manual SSH execution as `kyle` cannot run `sudo -u <site-user> wp` path directly, so end-to-end validation still depends on root-driven bootstrap run.
+
+## Thread: 2026-03-05 Bootstrap WPForms License Verify Automation
+- Goal:
+  - Automate WPForms license key apply + verify during bootstrap (equivalent of clicking "Verify Key").
+- Decisions made:
+  - Added special-case license handler in `site-bootstrap.sh` for:
+    - `plugin_basename = wpforms/wpforms.php`
+    - `option_name = wpforms_license`
+  - Handler writes key to `wpforms_license` option and then calls `WPForms_License->verify_key(...)`.
+  - Supports both plain-text key and JSON payload with `{"key":"..."}`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - Deployed server copy:
+  - `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+- Usage note:
+  - Add a license mapping line in `licenses.txt` using one of:
+    - `wpforms/wpforms.php|wpforms_license|file:wpforms-license.txt`
+    - `wpforms/wpforms.php|wpforms_license|filejson:wpforms-license.json`
+  - For `filejson`, expected payload shape includes at least `{"key":"YOUR_KEY"}`.
+- Applied on server:
+  - Added mapping line to `/home/mrndev-stack-manager/stack/manifests/licenses.txt`:
+    - `wpforms/wpforms.php|wpforms_license|file:wpforms-license.txt`
+  - Added key file `/home/mrndev-stack-manager/stack/configs/exports/wpforms-license.txt` (key value intentionally not stored in memory).
+
+## Thread: 2026-03-05 Stack Bootstrap Rollback Package
+- Goal:
+  - Package current stack bootstrap/importer state as a rollback artifact before next plugin work.
+- Results:
+  - Built rollback zip:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack-bootstrap-stable-2026-03-05.zip`
+  - SHA256:
+    - `ce12af7e9e857659027529d33163d2a179ad59d549781b910f5f5a10e99dd754`
+- Checks run:
+  - `bash -n` for:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/importers/stack-export-importer.sh`
+  - Security grep scan for risky functions over both scripts.
+- Limitations:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack` is not a git repo, so commit/push/tag steps are not available for this package.
+
+## Thread: 2026-03-05 Bootstrap Updraft Premium Connect Automation
+- Goal:
+  - Automate Updraft Premium account connect/verify during bootstrap (equivalent to clicking connect/verify in UI).
+- Findings:
+  - Updraft stores credentials in option `updraftplus-addons_options` (`email`/`password`).
+  - Connection check is performed by `UpdraftPlusAddons2::connection_status()`.
+- Decisions made:
+  - Added special-case license handler in `stack/scripts/site-bootstrap.sh` for:
+    - `plugin_basename = updraftplus/updraftplus.php`
+    - `option_name = updraftplus-addons_options`
+  - Handler supports:
+    - `filejson:`/`json:` payload with `{"email":"...","password":"...","auto_update":true|false}`
+    - text payload with either:
+      - line 1 email + line 2 password, or
+      - `email|password`
+  - Handler writes credentials, runs `connection_status()`, and resets credentials on failure to avoid stale bad state.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - Deployed server copy:
+  - `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+- Commands/scripts used:
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `scp /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh kyle@167.99.54.77:/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+  - `ssh kyle@167.99.54.77 "grep -nE 'updraftplus-addons_options|apply_updraft_premium_mapping' /home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh"`
+- Applied on server:
+  - Added mapping line to `/home/mrndev-stack-manager/stack/manifests/licenses.txt`:
+    - (updated) `updraftplus/updraftplus.php|updraftplus-addons_options|secretfilejson:updraft-premium.json`
+  - Added credentials payload file in locked secrets path:
+    - `/home/mrndev-stack-manager/stack/secrets/updraft-premium.json`
+  - Removed credentials file from export path:
+    - `/home/mrndev-stack-manager/stack/configs/exports/updraft-premium.json`
+  - Permissions:
+    - secrets dir `/home/mrndev-stack-manager/stack/secrets` set to `700`
+    - Updraft credentials file set to `600`
+- Bootstrap hardening:
+  - `stack/scripts/site-bootstrap.sh` now supports license value references:
+    - `secretfile:<name>`
+    - `secretfilejson:<name>`
+  - Relative `secretfile*` paths resolve to `${STACK_ROOT}/secrets` (separate from exports).
+
+## Thread: 2026-03-06 Theme Rename First-Label Rule
+- Goal:
+  - Change site-specific cloned theme naming so only the first URL label is used.
+- Decisions made:
+  - For site paths like `.../htdocs/swccp.mrndev.io`, theme slug/name derivation now uses only `swccp`.
+  - `derive_site_theme_slug()` and `derive_site_theme_name()` now trim everything after the first `.` from `basename(SITE_PATH)`.
+  - Theme display name no longer appends `" Theme"`; it now uses the first-label value directly.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - Deployed server copy:
+  - `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+- Commands/scripts used:
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `scp /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh kyle@167.99.54.77:/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+  - `ssh kyle@167.99.54.77 "nl -ba /home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh | sed -n '210,232p'"`
+- Follow-up change:
+  - During starter-theme clone rename, `style.css` `Author:` header is now forced to `MRN Web Designs` to replace defaults like `Underscores.me`.
+  - Implemented in `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh` within `activate_theme_with_starter_rename()`.
+
+## Thread: 2026-03-06 AME Admin Bar Logo Asset Bootstrap
+- Goal:
+  - Ensure AME-customized top-left WordPress admin bar logo renders on freshly bootstrapped sites.
+- Decisions made:
+  - Added post-import bootstrap step `apply_ame_admin_logo_branding()` in `site-bootstrap.sh`.
+  - Step copies logo asset into site uploads path, then normalizes any `mrn-logo.svg` URLs inside AME option `ws_menu_editor_pro` to the current site URL/path.
+  - Default source/path:
+    - Source: `${STACK_ROOT}/configs/exports/mrn-logo.svg`
+    - Relative target path: `wp-content/uploads/2026/02/mrn-logo.svg`
+  - Both are overridable via env vars:
+    - `STACK_ADMIN_BAR_LOGO_SOURCE`
+    - `STACK_ADMIN_BAR_LOGO_RELATIVE_PATH`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/mrn-logo.svg`
+  - Deployed server copy:
+  - `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+  - `/home/mrndev-stack-manager/stack/configs/exports/mrn-logo.svg`
+- Commands/scripts used:
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `scp /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh kyle@167.99.54.77:/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+  - `scp /Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/mrn-logo.svg kyle@167.99.54.77:/home/mrndev-stack-manager/stack/configs/exports/mrn-logo.svg`
+  - `ssh kyle@167.99.54.77 "nl -ba /home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh | sed -n '886,962p'"`
+- Follow-up fix:
+  - Expanded branding step to also support AME login page logo (`mrn-logo-png.png`) in addition to admin bar logo SVG.
+  - `apply_ame_admin_logo_branding()` now:
+    - copies both assets to site uploads paths,
+    - normalizes logo URLs in both `ws_menu_editor_pro` and `ws_ame_login_page_settings`.
+  - Added default login logo export asset:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/mrn-logo-png.png`
+    - `/home/mrndev-stack-manager/stack/configs/exports/mrn-logo-png.png`
+  - Default login logo source falls back to `${STACK_ROOT}/../mrn-dashboard-support/mrn-logo.png` if export PNG is missing and no explicit env override is set.
+- Root cause discovered on `strap.mrndev.io`:
+  - Admin toolbar logo URL was stored in `ws_ame_general_branding` (JSON string payload), not just `ws_menu_editor_pro`.
+  - Earlier normalization skipped this option because it only handled array-valued options.
+- Additional fix:
+  - Updated normalization logic to include `ws_ame_general_branding` and handle stringified JSON options (`json_decode` -> recursive rewrite -> `wp_json_encode`).
+  - One-time live patch applied to `/home/mrndev-strap-stack/htdocs/strap.mrndev.io` to rewrite `ws_ame_general_branding.custom_toolbar_logo.attachmentUrl` from `mrn-plugin-stack.local` to `https://strap.mrndev.io/.../mrn-logo.svg`.
+- Login logo asset update:
+  - Replaced stack login logo source with uploaded file `MRN-Login.png`.
+  - Local asset path updated:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/MRN-Login.png`
+  - Server asset updated:
+    - `/home/mrndev-stack-manager/stack/configs/exports/MRN-Login.png`
+  - Applied immediately to strap site file:
+    - `/home/mrndev-strap-stack/htdocs/strap.mrndev.io/wp-content/uploads/2026/02/MRN-Login.png`
+  - Bootstrap defaults updated to use exact filename `MRN-Login.png` for login logo source + relative uploads path.
+
+## Thread: 2026-03-06 AME Roles Import Reliability
+- Goal:
+  - Resolve issue where AME "Roles" config appears different after bootstrap import.
+- Findings:
+  - Export container includes `roles-and-capabilities`.
+  - Importer path `ame_container_json` used CLI-first (`wp admin-menu-editor import`) and returned early on success, which could skip explicit roles component configuration handling.
+- Decisions made:
+  - Updated `stack/configs/importers/stack-export-importer.sh`:
+    - after successful CLI AME import, run explicit follow-up `apply_ame_roles_component_from_container()` that imports only `roles-and-capabilities` via AME import engine with `localOnlyCapStrategy=disable`.
+  - Keeps existing fallback full import-engine path when CLI import fails.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/importers/stack-export-importer.sh`
+  - Deployed server copy:
+  - `/home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+- Verification note:
+  - Manual importer execution as `kyle` cannot validate end-to-end due `sudo -u <site-user>` password requirement in that context.
+  - Validation must be via normal root-driven bootstrap run/logs.
+
+## Thread: 2026-03-06 AME Logo Override Removal
+- Goal:
+  - Stop bootstrap from overriding AME logo settings; use imported AME config exactly as exported.
+- Decisions made:
+  - Removed post-import AME logo branding override step from `site-bootstrap.sh`.
+  - Removed `apply_ame_admin_logo_branding()` function and its call in `main()`.
+  - Bootstrap now relies on AME import config for login/admin-bar logo URLs and related settings.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - Deployed server copy:
+  - `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+
+## Thread: 2026-03-06 Site-Cloner Unified Export UI Workflow
+- Goal:
+  - Make unified export update flow one action in UI (auto-place files + auto-update import mapping).
+- Decisions made:
+  - Added new API action `stack-upload-unified-export` in site-cloner.
+  - Added backend processor in `StackManager`:
+    - upload unified zip to `configs/exports`,
+    - extract AME container to `ame-config-container.json`,
+    - extract branding assets when present (`mrn-logo.svg`, login logo to `MRN-Login.png`),
+    - enforce importer mapping line `ame_container_json|ame-config-container.json` in `manifests/importers.txt`.
+  - Added new UI controls in Library -> Configurations:
+    - `unified_export_file` input
+    - `Upload Unified Export ZIP` button
+  - Export list now includes image files (`png`, `svg`) and export upload supports `png/svg` too.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/api.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+- Deployed server files:
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/src/StackManager.php`
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/public/api.php`
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/public/index.php`
+
+## Thread: 2026-03-06 Reporting Progress Indicator
+- Goal:
+  - Add visible progress indicator for currently running bootstrap activity in Stack Manager UI.
+- Decisions made:
+  - Extended bootstrap report payload to include:
+    - `bootstrap_process_running`
+    - `bootstrap_processes`
+    - `active_bootstrap_sites`
+    - `active_bootstrap_count`
+  - Progress derived from:
+    - log parsing (`Bootstrapping site:` start and `Bootstrap complete:`/`Already bootstrapped:` completion),
+    - process scan via `pgrep -af 'site-bootstrap.sh|bootstrap-new-sites.sh'`.
+- Added Reporting UI panels:
+  - `Current Bootstrap Progress`
+  - `Active Bootstrap Sites`
+- Added automatic refresh every 8 seconds while Reporting tab is active.
+- Follow-up enhancement:
+  - Added visual progress bar and explicit current-site label in Reporting.
+  - New report fields from backend:
+    - `progress_percent`
+    - `current_bootstrap_site`
+  - Active site entries now include matched domain where available.
+- Detection reliability update:
+  - Broadened active bootstrap detection in `StackManager`:
+    - start-line regex now supports `Bootstrapping site: <path>` with or without `(owner: ...)`.
+    - process scan pattern expanded to include `--run-bootstrap-now` / `apply-stack-path` variants.
+    - added fallback process detection via `ps -eo pid,args | grep -E ...` when `pgrep` returns no output.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/api.php` (kept in sync during deploy)
+- Deployed server files:
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/src/StackManager.php`
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/public/index.php`
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/public/api.php`
+
+## Thread: 2026-03-06 AME Active Container + Roles Follow-up Reliability
+- Goal:
+  - Fix rollout drift where latest AME export was not being used and roles/imported menu branding did not match export site.
+- Findings:
+  - Live importer manifest still pointed to `ame_container_json|ame-config-container.json`.
+  - New AME export existed as `/home/mrndev-stack-manager/stack/configs/exports/mrndev.io-AME-configuration_2026-03-06_.json` but was not active.
+  - Bootstrap logs showed AME roles warning on every run:
+    - `roles-and-capabilities: Role import configuration is invalid.`
+    - `AME import engine/editor instance unavailable for roles import.`
+  - Root cause for the warning sequence:
+    - AME WP-CLI import does not pass roles component config payload (`roles`, `localOnlyCapStrategy`), so roles module reports invalid config.
+    - Existing follow-up importer required `$wp_menu_editor` global and failed to initialize AME import engine in this context.
+- Decisions made:
+  - Made latest AME export active by replacing server file:
+    - `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json`
+    - now sourced from `mrndev.io-AME-configuration_2026-03-06_.json`.
+  - Patched importer to initialize AME import engine using `wsAmeImportExportFeature::get_instance()` first (matching AME CLI behavior), then fallback to `get_instance($wp_menu_editor)`.
+  - Removed hard failure dependency on `$wp_menu_editor` object for both full container import fallback and roles-only follow-up import.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/importers/stack-export-importer.sh`
+  - Deployed server copy:
+  - `/home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+- Server state changes:
+  - Active AME container replaced:
+    - `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json`
+- Verification notes:
+  - Verified active container now includes login logo URL from latest export (`https://strap.mrndev.io/wp-content/uploads/2026/02/MRN-Login.png`).
+  - Direct per-site validation of roles import via `sudo -u <site-user> wp ...` is still blocked from `kyle` shell (`sudo: a password is required`); confirmation must come from next root-driven bootstrap log.
+
+## Thread: 2026-03-06 Bootstrap Discovery Miss for `mrndev-strapped-strap`
+- Goal:
+  - Diagnose why reporting showed no active bootstrap and new rolled site was not bootstrapped.
+- Findings:
+  - New site user/path:
+    - `/home/mrndev-strapped-strap/htdocs/strapped.mrndev.io`
+  - Marker check showed not bootstrapped:
+    - `.mrn_bootstrapped` missing (`marker=no`).
+  - Discovery mismatch: prior StackManager default used `STACK_BOOTSTRAP_SITE_GLOB` fallback `/home/*stack*/htdocs/*`, which excludes `mrndev-strapped-strap`.
+- Decisions made:
+  - Updated StackManager default/fallback discovery glob to `/home/*/htdocs/*` for immediate compatibility with current live helper binary.
+  - Added support in scanner/helper scripts for comma-separated globs (deployed to app/stack paths), but live `/usr/local/bin/cloudpanel-site-clone` replacement was blocked from `kyle` due sudo password requirement.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/scripts/cloudpanel-site-clone.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/bootstrap-new-sites.sh`
+- Deployed server files:
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/src/StackManager.php`
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/scripts/cloudpanel-site-clone.sh`
+  - `/home/mrndev-stack-manager/stack/scripts/bootstrap-new-sites.sh`
+- Ops limitation:
+  - Could not update `/usr/local/bin/cloudpanel-site-clone` from `kyle` (`sudo: a password is required`).
+
+## Thread: 2026-03-06 OTP Rollback/Restore
+- Goal:
+  - Restore login OTP after temporary disable was no longer desired.
+- Actions:
+  - Re-enabled OTP by restoring original `APP_TOTP_SECRET` in live app `.env` from backup `.env.bak-otp-20260306134337`.
+  - Verified on server:
+    - `AUTH_MODE=password`
+    - `APP_TOTP_SECRET=FGAOEDPPWSAGRETLCY23Z33MEQ53MQJF`
+- Notes:
+  - Login now requires OTP again using previously stored authenticator entry.
+
+## Thread: 2026-03-06 AME Partial Import on `strapped.mrndev.io`
+- Goal:
+  - Compare freshly rolled site AME config vs active container and resolve partial import.
+- Findings:
+  - Site compared: `/home/mrndev-strapped-strap/htdocs/strapped.mrndev.io` (marker present).
+  - Before fix, module diff vs active container:
+    - `dashboard-widget-editor`: missing SearchWP dashboard widget entry.
+    - `roles-and-capabilities`: capability index/role comp data reduced.
+  - Root cause:
+    - Importer default used `STACK_IMPORTER_SKIP_PLUGINS` fallback `searchwp`, so AME import was running with SearchWP skipped.
+- Decisions made:
+  - Changed importer default to not skip plugins:
+    - `WP_SKIP_PLUGINS="${STACK_IMPORTER_SKIP_PLUGINS:-}"`
+  - Re-applied AME on `strapped.mrndev.io`:
+    - full AME import via `wp admin-menu-editor import`.
+    - explicit roles follow-up import via `import_data(...roles-and-capabilities...)` with `localOnlyCapStrategy=disable`.
+- Result after reapply:
+  - `admin-menu`, `branding`, `login-page`, `table-columns`, `tweaks`, etc. match container.
+  - `roles-and-capabilities` follow-up reported: `2 changes applied`.
+  - Remaining dashboard-widget diff is environment-specific callback path (`callbackFileName` points to site path), not functional drift.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/importers/stack-export-importer.sh`
+  - Deployed server copy:
+  - `/home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+
+## Thread: 2026-03-06 Upload Button 400 Fix
+- Goal:
+  - Resolve reports that Configurations upload button was not working.
+- Findings:
+  - Nginx access logs showed repeated `POST /api.php?action=stack-upload-export` responses with HTTP 400 at ~19:52-19:53 UTC.
+  - PHP upload limits are adequate on live app (`upload_max_filesize=100M`, `post_max_size=100M`).
+  - This indicates API-level missing file parsing rather than webserver body size rejection.
+- Decisions made:
+  - Hardened upload parsing in API to accept both field names:
+    - base name (`export_file`) and literal bracket form (`export_file[]`) via new helper `gatherUploadedFiles()`.
+  - Added clearer error message when request body exists but no files were parsed (points to `post_max_size/upload_max_filesize`).
+  - Updated frontend FormData keys for config uploads to use non-bracket names:
+    - `export_file`
+    - `unified_export_file`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/api.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+- Deployed server files:
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/public/api.php`
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/public/index.php`
+
+## Thread: 2026-03-06 Export Upload Failure (`ame-config-container.json` write)
+- Symptom:
+  - Config upload returned: `Failed to write extracted export file: ame-config-container.json`.
+- Root cause:
+  - Existing target file on server was owned by `kyle:kyle` with mode `644`, not writable by app user `mrndev-stack-manager`.
+- Fixes applied:
+  - Immediate: changed current file mode to writable:
+    - `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json` -> `666`.
+  - Permanent app fix in `StackManager::writeExportFileFromContent()`:
+    - if target exists and is not writable, unlink it first, then write new content.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - Deployed server copy:
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/src/StackManager.php`
+
+## Thread: 2026-03-06 Importer Manifest Write Failure Hardening
+- Symptom:
+  - Configurations save returned: `Failed to write importer manifest file.`
+- Root cause:
+  - Existing manifest file was owned by `kyle:kyle` with restrictive mode drift, causing app write failures on replacement.
+- Immediate live fix:
+  - Set `/home/mrndev-stack-manager/stack/manifests/importers.txt` writable (`666`) to unblock saves.
+- Permanent app fix:
+  - Updated `StackManager` manifest save methods to use safe write logic that handles owner/permission drift:
+    - if target exists but is not writable, unlink then rewrite.
+    - chmod written file to `0664`.
+  - Applied to:
+    - `saveManifestEntries`
+    - `saveThemeManifestEntries`
+    - `saveImportManifestEntries`
+    - `saveLicenseManifestEntries`
+  - Added helper:
+    - `writeTextFileSafely(string $path, string $content): bool`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - Deployed to:
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/src/StackManager.php`
+- Verification:
+  - `php -l` passed locally for `StackManager.php`.
+  - Live deployed file permissions normalized to `664`.
+
+## Thread: 2026-03-06 Bootstrap Progress Reliability via Runtime Status File
+- Symptom:
+  - Reporting UI showed `No active bootstrap detected` even while bootstrap runs were believed active.
+- Root cause:
+  - Active-progress detection depended on log/process parsing from app context; this can be unreliable with permission visibility differences (log/proc access) and stale log-state interpretation.
+- Decisions made:
+  - Added deterministic runtime status file written by bootstrap scanner itself:
+    - path: `${STACK_ROOT}/runtime/bootstrap-status.env`
+  - `bootstrap-new-sites.sh` now updates this file at run start, per-site progression, failures, and clears to idle on exit.
+  - `StackManager::bootstrapReport()` now reads runtime status and treats it as authoritative for:
+    - `bootstrap_process_running`
+    - `current_bootstrap_site`
+    - `progress_percent` (from `CURRENT/TOTAL` when available)
+  - Runtime status site is now preferred over stale log-derived active site entries.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/bootstrap-new-sites.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+- Deployed server files:
+  - `/home/mrndev-stack-manager/stack/scripts/bootstrap-new-sites.sh`
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/src/StackManager.php`
+  - runtime directory ensured:
+  - `/home/mrndev-stack-manager/stack/runtime`
+- Verification:
+  - Direct server-side `StackManager->bootstrapReport([])` test with simulated runtime status produced:
+    - `running: true`
+    - expected `current_bootstrap_site` from runtime file
+    - expected `progress_percent` from runtime file
+
+## Thread: 2026-03-09 1.mrndev.io Theme + AME Roles Fixes
+- Symptom on rollout `1.mrndev.io`:
+  - Theme did not switch to site-specific theme.
+  - AME roles-and-capabilities were still not applied.
+- Root causes:
+  - Site-specific theme slug could become numeric (`1`), and WP-CLI theme activate fails for that slug in this flow.
+  - AME roles follow-up importer looked only for namespaced class `YahnisElsts\\AdminMenuEditor\\ImportExport\\wsAmeImportExportFeature`; current plugin provides global class `wsAmeImportExportFeature`.
+- Decisions made:
+  - Theme slug hardening in `site-bootstrap.sh`:
+    - if derived slug does not start with a letter, prefix with `site-` (e.g. `1` -> `site-1`).
+  - AME roles follow-up hardening in `stack-export-importer.sh`:
+    - load import/export file explicitly (`extras/import-export/import-export.php`),
+    - support both feature classes (namespaced and global),
+    - continue existing instance fallback behavior.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/importers/stack-export-importer.sh`
+- Deployed server files:
+  - `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+  - `/home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+- Live one-time repair applied on `1.mrndev.io`:
+  - AME roles import run directly via WP eval-file produced:
+    - `roles-and-capabilities: 2 changes applied`
+  - Theme corrected to active `site-1`.
+
+## Thread: 2026-03-09 AME Roles Follow-up Fix for 2.mrndev.io
+- Symptom:
+  - Fresh rollout worked except AME Roles settings (roles-and-capabilities component not applied).
+- Root cause:
+  - `stack-export-importer.sh` still had mixed class-loading paths: one branch only used namespaced AME import class and did not consistently load `extras/import-export/import-export.php`.
+- Fixes applied:
+  - Updated importer to support both AME import classes in fallback paths:
+    - `YahnisElsts\\AdminMenuEditor\\ImportExport\\wsAmeImportExportFeature`
+    - `wsAmeImportExportFeature`
+  - Ensured import-export file is loaded where needed.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/importers/stack-export-importer.sh`
+  - Deployed to:
+  - `/home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+- Live remediation performed on:
+  - `/home/mrndev-2-stack/htdocs/2.mrndev.io`
+  - Result: `roles-and-capabilities: 2 changes applied`
+
+## Thread: 2026-03-09 3.mrndev.io AME Roles Regression
+- Symptom:
+  - `3.mrndev.io` rollout still missed AME Roles.
+- Root cause:
+  - In importer PHP snippets embedded in `stack-export-importer.sh`, namespaced AME class strings had over-escaped leading backslashes in some paths, causing class detection failure at runtime (`AME import engine class unavailable for roles import`).
+- Fixes applied:
+  - Normalized class string references to `YahnisElsts\\AdminMenuEditor\\ImportExport\\wsAmeImportExportFeature` (no extra leading slash escaping in runtime value).
+  - Deployed updated importer to server path:
+  - `/home/mrndev-stack-manager/stack/configs/importers/stack-export-importer.sh`
+- Live remediation:
+  - Ran direct roles-only AME import for `/home/mrndev-3-stack/htdocs/3.mrndev.io`.
+  - Result: `roles-and-capabilities: 2 changes applied`.
+
+## Thread: 2026-03-09 Packaging Snapshot
+- Goal:
+  - Create a stable rollback package after AME/theme/bootstrap fixes.
+- Actions:
+  - Pushed pending `site-cloner` commit to GitHub:
+    - repo: `git@github.com:khofmeyer/site-cloner.git`
+    - branch: `main`
+    - commit: `9fa41de`
+  - Verified shell scripts pass syntax checks:
+    - `stack/scripts/site-bootstrap.sh`
+    - `stack/scripts/bootstrap-new-sites.sh`
+    - `stack/configs/importers/stack-export-importer.sh`
+  - Built snapshot zip artifact (site-cloner + stack):
+    - `/Users/khofmeyer/Sites/MRNPlugins/mrn-stack-package-20260309-150042.zip`
+- Rollback tag created and pushed in `site-cloner`:
+  - `stable-2026-03-09` -> commit `9fa41de`
+
+## Thread: 2026-03-09 SearchWP License Bootstrap
+- Goal:
+  - Apply SearchWP API key automatically during bootstrap.
+- Decisions made:
+  - Added SearchWP-specific license handler in bootstrap script to set key and call `\SearchWP\License::activate()`.
+  - Handler also stores fallback key/status payload if activation fails.
+  - License mapping uses secrets storage, not exports/plain manifest value.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - Deployed to:
+  - `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+- Server config updates:
+  - Added secret file:
+    - `/home/mrndev-stack-manager/stack/secrets/searchwp-license.txt` (`600`)
+  - Added license mapping line:
+    - `searchwp/searchwp.php|searchwp_license_key|secretfile:searchwp-license.txt`
+    - in `/home/mrndev-stack-manager/stack/manifests/licenses.txt`
+- Verification:
+  - On `/home/mrndev-3-stack/htdocs/3.mrndev.io` SearchWP activation returned success.
+  - Stored license status is `valid` with key present.
+
+## Thread: 2026-03-09 Plugin Activation Before Licenses/Imports
+- Symptom:
+  - Bootstrap warning: `Skipped license mapping for searchwp/searchwp.php: plugin is not active.`
+- Root cause:
+  - License precheck used exact plugin basename only; some plugins are active by slug and not by basename check string.
+- Fixes applied in bootstrap:
+  - Added `ensure_all_plugins_active()` right after `install_plugins()` and before licenses/importers.
+  - Updated license plugin-active check to fallback from basename to slug (`foo/bar.php` -> `foo`) when checking activation.
+- File changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - Deployed to:
+  - `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+- Live remediation:
+  - Applied SearchWP license activation on `5.mrndev.io`; stored status is `valid`.
+- SearchWP license mapping basename corrected in live manifest:
+  - from `searchwp/searchwp.php` to `searchwp/index.php`.
+- `site-bootstrap.sh` now also runs `ensure_all_plugins_active()` before licenses/importers and license active checks fallback basename->slug.
+
+## Thread: 2026-03-09 MRN Admin UI CSS v3.1.7 Packaging + Stack Deploy
+- Goal:
+  - Hide Post Duplicator Email Customizer upsell and apply updated admin-ui plugin to stack.
+- Changes:
+  - Added explicit selector:
+    - `a.duplicate-post-modal__marketing-banner[href*="metaphorcreations.com/wordpress-plugins/email-customizer"] { display:none !important; }`
+  - Bumped plugin version `3.1.6` -> `3.1.7`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css/mrn-admin.css`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css/mrn-admin-ui-css.php`
+- Packaging actions:
+  - Commit: `1f1e044` (`mrn-admin-ui-css`)
+  - Pushed to `origin/main` (`git@github.com:khofmeyer/mrn-admin-ui-css.git`)
+  - Rebuilt zip: `/Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css.zip`
+- Stack deployment:
+  - Overwrote stack MU plugin files:
+    - `/home/mrndev-stack-manager/stack/mu-plugins/mrn-admin-ui-css/mrn-admin-ui-css.php`
+    - `/home/mrndev-stack-manager/stack/mu-plugins/mrn-admin-ui-css/mrn-admin.css`
+  - Verified server file version is `3.1.7` and selector exists.
+
+## Thread: 2026-03-09 6.mrndev.io SearchWP + Admin UI Follow-up
+- Symptom:
+  - `6.mrndev.io` reported SearchWP not licensed and Post Duplicator ad still visible.
+- Root causes:
+  - SearchWP special-case branch in bootstrap only matched `searchwp/searchwp.php`, but active plugin file is `searchwp/index.php`.
+  - Full admin-ui stylesheet intentionally skips editor screens, where this banner can appear.
+- Fixes applied:
+  - Updated SearchWP special-case in `site-bootstrap.sh` to match both basenames:
+    - `searchwp/searchwp.php`
+    - `searchwp/index.php`
+  - Updated `mrn-admin-ui-css` to always enqueue a minimal inline ad-hiding rule (banner selector) even on editor/app screens; full stylesheet remains gated.
+  - Bumped `mrn-admin-ui-css` version to `3.1.8`.
+- Live deployment:
+  - Deployed updated `site-bootstrap.sh` to stack.
+  - Deployed updated `mrn-admin-ui-css.php` to stack and `6.mrndev.io` MU plugin path.
+  - Ran SearchWP activation on `6.mrndev.io`: `activate_success=yes`, `stored_status=valid`.
+- Packaging:
+  - `mrn-admin-ui-css` commit: `6aa65f2` pushed to `origin/main`.
+  - Rebuilt zip: `/Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css.zip`.
+
+## Thread: 2026-03-09 Slack Notifications for Bootstrap
+- Goal:
+  - Post bootstrap status to Slack channel when runs complete/fail/warn/skip.
+- Changes made in `site-bootstrap.sh`:
+  - Added env-configurable Slack settings:
+    - `STACK_SLACK_WEBHOOK_URL` (or `BOOTSTRAP_SLACK_WEBHOOK_URL`)
+    - optional: `STACK_SLACK_CHANNEL`, `STACK_SLACK_USERNAME`, `STACK_SLACK_ICON_EMOJI`
+  - Added `send_slack_notification()` with JSON escaping and webhook POST via `curl`.
+  - Wired Slack posts for:
+    - failure (trap)
+    - skipped (marker exists)
+    - success
+    - warnings
+- Deployment:
+  - `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh` updated and syntax-verified.
+- Packaging snapshot:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-stack-package-20260309-163937.zip`
+
+## Thread: 2026-03-09 Slack Bootstrap Notifications Packaging
+- Goal:
+  - Package a stable rollback point after enabling Slack bootstrap notifications.
+- Decisions made:
+  - Keep Slack webhook out of repo and load via secrets file (`${STACK_ROOT}/secrets/slack-webhook-url.txt`) or env var fallback.
+  - Marked a rollback-safe release point in `site-cloner` with commit + tag.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh` (Slack notification support and secret-file loading; prior thread work validated)
+  - `/Users/khofmeyer/Sites/MRNPlugins/THREAD_MEMORY.md` (this entry)
+  - Built artifact: `/Users/khofmeyer/Sites/MRNPlugins/site-cloner-stable-2026-03-09-f7f597e.zip`
+- Commands/scripts used:
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `rg -n "hooks.slack.com/services|T0AJX|B0AKE|0UF7" /Users/khofmeyer/Sites/MRNPlugins/site-cloner /Users/khofmeyer/Sites/MRNPlugins/stack`
+  - `for f in $(rg --files -g '*.php' public src); do php -l "$f"; done` (in `site-cloner`)
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/site-cloner commit --allow-empty -m 'chore: package stable rollback point after Slack bootstrap notifications'`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/site-cloner tag stable-2026-03-09-slack-f7f597e`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/site-cloner push origin main && git -C /Users/khofmeyer/Sites/MRNPlugins/site-cloner push origin stable-2026-03-09-slack-f7f597e`
+  - `zip -rq /Users/khofmeyer/Sites/MRNPlugins/site-cloner-stable-2026-03-09-f7f597e.zip site-cloner -x "site-cloner/.git/*"`
+- Outstanding TODOs:
+  - Verify bootstrap-triggered Slack messages in production on next real rollout event.
+- Risks/gotchas:
+  - Webhook was shared in chat; rotate it in Slack after validation for security.
+
+## Thread: 2026-03-09 Bootstrap Progress Indicator Reliability Fix
+- Goal:
+  - Fix reporting UI where active bootstraps were missed and progress showed 100% before completion.
+- Decisions made:
+  - Backend progress should treat active bootstrap as true when status file is fresh and state is non-idle, even if process detection misses.
+  - While running, progress should be based on completed sites before current one and capped below 100 until run ends.
+  - Status file discovery now supports newest file across default stack root, optional env override, and legacy `/opt/mrnplugins` path.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/site-cloner commit -m 'Fix bootstrap progress detection and running-percent calculation'`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/site-cloner push origin main`
+- Roll-forward reference:
+  - `site-cloner` commit `067550f`
+
+## Thread: 2026-03-09 Progress UI + Slack Start Notification
+- Goal:
+  - Fix reporting panel showing no progress then jumping to 100%, and ensure refresh action is visibly responsive.
+  - Add Slack notification when bootstrap starts for a site.
+- Decisions made:
+  - Disable browser caching for report GET requests and append timestamp query to prevent stale responses.
+  - Keep progress under 100% while bootstrap process is actively running.
+  - Emit Slack "MRN Bootstrap Started" at start of each site bootstrap (in addition to existing success/warning/failed/skipped).
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/src/StackManager.php`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/site-cloner/public/index.php`
+  - `bash -n /Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/site-cloner commit -m 'Fix reporting refresh reliability and active bootstrap progress behavior'`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/site-cloner push origin main`
+- Roll-forward reference:
+  - `site-cloner` commit `a9aa4d4`
+
+## Thread: 2026-03-10 AME Export Refresh
+- Goal:
+  - Update active AME configuration container used during bootstrap imports.
+- Decisions made:
+  - Canonical AME import source remains `stack/configs/exports/ame-config-container.json`.
+  - Keep a timestamped copy of uploaded AME export alongside canonical file for traceability.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/mrndev.io-AME-configuration(2026-03-10).json`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/importers.txt` (ensured `ame_container_json|ame-config-container.json` mapping)
+
+## Thread: 2026-03-10 Core Reading Setting on Bootstrap
+- Goal:
+  - Ensure WordPress Reading setting "Discourage search engines from indexing this site" is enabled by default during bootstrap.
+- Decisions made:
+  - Bootstrap default changed to set `blog_public=0` in `apply_wp_defaults`.
+  - This is handled directly in bootstrap script (not tied to unified exporter payloads).
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+
+## Thread: 2026-03-10 Progress Fix Deployed to Server
+- Goal:
+  - Ensure progress-indicator fixes are actually deployed to production app and confirm Slack-start logic exists in runtime bootstrap script.
+- Decisions made:
+  - Deployed updated `site-cloner` files directly to server app path.
+  - Confirmed runtime `site-bootstrap.sh` already includes "MRN Bootstrap Started" Slack notification and webhook secret file exists.
+- Files deployed on server:
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/public/index.php`
+  - `/home/mrndev-stack-manager/htdocs/stack-manager.mrndev.io/src/StackManager.php`
+- Verification:
+  - Remote PHP lint passed on both files.
+  - Remote `public/index.php` includes `Date.now()` + `cache: 'no-store'` and refresh status message.
+  - Remote `StackManager.php` includes `statusActive` logic, 100%-while-running cap, and legacy `/opt/mrnplugins` status-file fallback.
+  - Runtime webhook file present at `/home/mrndev-stack-manager/stack/secrets/slack-webhook-url.txt`.
+
+## Thread: 2026-03-10 MRN Editor Tools Modal Toolbar Fix Packaged
+- Goal:
+  - Fix MRN Editor Tools modal toolbar layout after sticky toolbar redesign and deploy latest package for bootstrap usage.
+- Decisions made:
+  - Added modal-frame-specific CSS override so `#mrn-editor-tools-toolbar` anchors at top/left/right `0` inside modal iframe context.
+  - Set modal spacer heights to avoid overlap in desktop/mobile modal view.
+  - Released as version `1.8.9` and updated asset cache versions to `1.8.9`.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/mrn-editor-tools.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/CHANGELOG.md`
+  - Built artifact: `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools.zip`
+- Packaging/deploy:
+  - Commit pushed: `bf9f98d` (`mrn-editor-tools`)
+  - Bootstrap package updated on server: `/home/mrndev-stack-manager/stack/packages/mrn-editor-tools.zip` (contains plugin version `1.8.9`).
+
+## Thread: 2026-03-10 Disable Comments Regression on Recent Sites
+- Goal:
+  - Restore full hide/disable behavior for comment links in admin nav on recent rollouts.
+- Findings:
+  - Server stack MU copy was outdated (`1.2.1`) vs repo (`1.2.2`).
+  - Older server copy lacked final admin UI cleanup block (`admin_head` CSS + glance cleanup) used to suppress lingering comment UI.
+- Actions taken:
+  - Updated stack MU plugin file on server:
+    - `/home/mrndev-stack-manager/stack/mu-plugins/mrn-disable-comments/mrn-disable-comments.php` -> `1.2.2`
+  - Synced updated MU plugin file into existing site MU paths where present (3 instances updated).
+
+## Thread: 2026-03-10 Universal Sticky Bar Missing on New Rollouts
+- Findings:
+  - Server bootstrap manifest did not include `mrn-universal-sticky-bar`; package zip was also missing from server stack packages.
+- Actions taken:
+  - Uploaded package to server: `/home/mrndev-stack-manager/stack/packages/mrn-universal-sticky-bar.zip`.
+  - Added package path to server bootstrap manifest: `/home/mrndev-stack-manager/stack/manifests/plugins.txt`.
+  - Added same entry to local source manifest: `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/plugins.txt`.
+- Note:
+  - Re-applying stack to an existing site via direct SSH helper was blocked due sudo password requirement in this session.
+
+## Thread: 2026-03-10 AME Export Refresh (same-date update)
+- Goal:
+  - Re-point AME importer to latest uploaded export `mrndev.io-AME-configuration(2026-03-10).json`.
+- Actions taken:
+  - Replaced canonical local file:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json`
+  - Stored named local copy:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/mrndev.io-AME-configuration(2026-03-10).json`
+  - Replaced canonical server file:
+    - `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json`
+  - Stored named server copy:
+    - `/home/mrndev-stack-manager/stack/configs/exports/mrndev.io-AME-configuration(2026-03-10).json`
+  - Validated AME container format on both local and server (12 settings components).
+
+## Thread: 2026-03-10 AME Cleanup for Unused Plugins
+- Goal:
+  - Remove stale AME config references for unused plugins seen after import (WpStream / old cookie-consent entry).
+- Actions taken:
+  - Cleaned canonical AME container:
+    - removed `settings.metaboxes.screens.wpstream_product`
+    - removed `admin-menu` item referencing `mrn-cookie-consent`
+  - Backup created:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json.bak-1773151050`
+  - Synced cleaned canonical file to server:
+    - `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json`
+    - `/home/mrndev-stack-manager/stack/configs/exports/mrndev.io-AME-configuration(2026-03-10).json`
+- Validation:
+  - AME container format remains valid.
+  - No remaining `wpstream`, `mrn-cookie-consent`, `complianz`, or `cmplz` strings in canonical payload.
+
+## Thread: 2026-03-10 AME Editor Role Beehive Caps
+- Goal:
+  - Ensure AME `Editor` role has Beehive capabilities enabled in canonical export.
+- Actions taken:
+  - Updated AME roles container to include capability indexes for:
+    - `beehive_manage_settings` (index 64)
+    - `beehive_view_analytics` (index 65)
+  - Synced updated canonical AME container to server:
+    - `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json`
+    - `/home/mrndev-stack-manager/stack/configs/exports/mrndev.io-AME-configuration(2026-03-10).json`
+- Validation:
+  - Server-side verification confirms both capabilities are present in `Editor` grants.
+
+## Thread: 2026-03-10 Universal Sticky Bar Internal-Left-Padding Packaging
+- Goal:
+  - Keep toolbar flush to viewport left edge while adding left spacing only inside the bar.
+- Changes made:
+  - `mrn-universal-sticky-bar.php` updated to use internal left padding (`padding: 10px 14px 10px 24px`) with edge-aligned width logic.
+  - Plugin version bumped from `1.0.4` to `1.0.5`.
+- Packaging/deploy:
+  - Commit pushed in `mrn-universal-sticky-bar` repo: `28d0e5d`.
+  - Rebuilt package: `/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar.zip`.
+  - Deployed package to stack: `/home/mrndev-stack-manager/stack/packages/mrn-universal-sticky-bar.zip`.
+- Verification:
+  - Deployed zip contains `Version: 1.0.5` and `padding: 10px 14px 10px 24px;`.
+
+## Thread: 2026-03-10 Cookie Consent Mobile Modal Stability Fix
+- Symptom:
+  - On real mobile devices, modal title could be blank and backdrop could flicker/disappear during slight touch scroll.
+- Root causes:
+  - `applyModalTitle()` could create/select an empty placeholder heading before native modal heading was available.
+  - `enforceBackdropVisibility()` downgraded forced modal state to auto when `modalOpen` briefly read false during mobile touch/scroll rendering.
+- Fixes applied:
+  - Prefer native modal heading (`header h1/h2/h3/[role=heading]`) first and do not create placeholder heading if none exists yet.
+  - Keep explicit modal backdrop state stable unless modal element is actually missing.
+- File changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-cookie-consent/assets/mrn-cookie-consent.js`
+
+## Thread: 2026-03-12 MRN Cookie Consent Push
+- Goal:
+  - Push latest local cookie-consent fixes to GitHub.
+- Actions:
+  - Pushed `mrn-cookie-consent` `main` to origin.
+  - Remote update: `a975444..35b4698`.
+- Latest commit:
+  - `35b4698` - Fix modal title bold/margins and reduce flashing DOM rewrites; bump to `1.1.16`.
+
+## Thread: 2026-03-12 Bootstrap wp-config Development Flag
+- Goal:
+  - Mark all bootstrapped sites as development in `wp-config.php`.
+- Changes made:
+  - Updated `apply_wp_defaults()` in `stack/scripts/site-bootstrap.sh` to set:
+    - `WP_ENVIRONMENT_TYPE` constant to `development` via WP-CLI config.
+- Files changed/deployed:
+  - Local: `/Users/khofmeyer/Sites/MRNPlugins/stack/scripts/site-bootstrap.sh`
+  - Server: `/home/mrndev-stack-manager/stack/scripts/site-bootstrap.sh`
+- Validation:
+  - Local and remote shell syntax checks passed.
+  - Remote script contains `run_wp config set WP_ENVIRONMENT_TYPE development --type=constant`.
+
+## Thread: 2026-03-12 14.mrndev.io AME Compare + Role Repair
+- Goal:
+  - Compare live AME configuration on `14.mrndev.io` with bootstrap AME container and identify mismatch.
+- Findings:
+  - `login-page`: matches bootstrap.
+  - `admin-menu`: only expected site-specific drift (domain/path/timestamps/local IDs/order artifacts), no missing tree nodes.
+  - `dashboard-widget-editor`: expected path/hash drift (`.../12.mrndev.io/...` vs `.../14.mrndev.io/...`).
+  - `roles-and-capabilities`: Editor role was missing two expected caps from bootstrap:
+    - `beehive_manage_settings`
+    - `beehive_view_analytics`
+- Validation source:
+  - Exported live AME container via `wp admin-menu-editor export --all --output` and compared to `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json`.
+- Live repair performed on site:
+  - Ran stack importer script directly with `SITE_USER=kyle` so AME roles follow-up import executed.
+  - Output included: `roles-and-capabilities: 1 changes applied`.
+  - Re-compare confirms no missing Editor role caps.
+
+## Thread: 2026-03-12 MRN Plugin Package Version Audit + Stack Sync
+- Goal:
+  - Verify stack uses latest MRN plugin package zips and update outdated ones.
+- Scope:
+  - MRN zips referenced by stack plugin manifest in `/home/mrndev-stack-manager/stack/manifests/plugins.txt`.
+- Findings (before sync):
+  - Outdated on stack:
+    - `mrn-cookie-consent.zip` (`1.1.6` -> local `1.1.16`)
+    - `mrn-gtm-injector.zip` (`1.0.1` -> local `1.0.4`)
+    - `mrn-license-vault.zip` (`0.2.0` -> local `0.2.1`)
+    - `mrn-unified-exporter.zip` (`1.2.0` -> local `1.2.1`)
+- Actions:
+  - Copied updated local zips to `/home/mrndev-stack-manager/stack/packages/`.
+- Post-sync verification:
+  - All manifest-referenced MRN package versions now match local:
+    - `mrn-acf-character-count 1.1.1`
+    - `mrn-cookie-consent 1.1.16`
+    - `mrn-editor-tools 1.8.9`
+    - `mrn-gtm-injector 1.0.4`
+    - `mrn-license-vault 0.2.1`
+    - `mrn-seo-helper 0.2.3`
+    - `mrn-unified-exporter 1.2.1`
+    - `mrn-universal-sticky-bar 1.0.5`
+
+## Thread: 2026-03-12 Role Metabox Lock Sticky Toolbar Removal
+- Goal:
+  - Remove embedded sticky submit toolbar/permalink override logic from `mrn-role-metabox-lock` and keep plugin focused on metabox layout locking.
+- Changes made:
+  - Removed sticky-toolbar runtime block from `admin_enqueue_scripts` (all `#mrn-sticky-submit-toolbar` CSS/JS and button sync logic).
+  - Removed stale settings keys and layout fields tied to sticky/permalink behavior:
+    - `sticky_toolbar`
+    - `sticky_permalink_edit`
+    - `hide_native_permalink`
+  - Removed builder UI checkbox for hiding native permalink row.
+  - Bumped plugin version to `1.1.6`.
+- File changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-role-metabox-lock/mrn-role-metabox-lock.php`
+- Validation:
+  - `php -l` passed.
+
+## Thread: 2026-03-12 Role Metabox Lock Classic-Editor Decoupling
+- Goal:
+  - Ensure `mrn-role-metabox-lock` only controls metabox layout/drag-lock and does not force editor mode.
+- Decisions made:
+  - Removed all Classic Editor / block editor override filters and related admin warning notice from `mrn-role-metabox-lock`.
+  - Keep editor mode responsibility in dedicated Classic Editor plugin.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-role-metabox-lock/mrn-role-metabox-lock.php`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-role-metabox-lock/mrn-role-metabox-lock.php`
+- Version changes:
+  - `mrn-role-metabox-lock` `1.1.6` -> `1.1.7`
+- Risks/gotchas:
+  - This does not change layout data itself; if layouts still look off, likely causes are role-targeted layout content and/or unlisted metabox visibility when `strict_hide` is off.
+
+## Thread: 2026-03-12 Role Metabox Lock Unified Save + Sticky Bar
+- Goal:
+  - Reduce confusion in `mrn-role-metabox-lock` by using one save flow, adding MRN sticky settings bar, and keeping lock/layout behavior in one form.
+- Decisions made:
+  - Replaced separate `save_general` and `save_builder` actions with a single action: `mrn_role_metabox_lock_save_settings`.
+  - Settings page now has one main POST form (`mrn-role-metabox-lock-form`) that saves both lock toggles and role/post layout with one submit.
+  - Added reusable MRN sticky top bar on this plugin settings page using local include helper.
+  - Kept `Capture From Current User` as separate action/form.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-role-metabox-lock/mrn-role-metabox-lock.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-role-metabox-lock/includes/mrn-sticky-settings-toolbar.php` (copied from shared helper)
+- Version changes:
+  - `mrn-role-metabox-lock` `1.1.7` -> `1.1.8`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-role-metabox-lock/mrn-role-metabox-lock.php`
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-role-metabox-lock/includes/mrn-sticky-settings-toolbar.php`
+- Risks/gotchas:
+  - `strict_hide` still intentionally hides any metabox not in saved layout; if a needed box is missing, add its box ID in builder/custom IDs.
+- Follow-up fixes (same thread):
+  - Hid sticky toolbar tab label area on Role Metabox Lock page and kept only the save button to remove top text artifact.
+  - Reduced sticky toolbar spacer height on Role Metabox Lock page (`72` desktop / `88` mobile) to avoid excessive top gap.
+  - Updated builder JS `syncInputs()` to trigger `change` on hidden layout inputs so sticky save button dirty-state enables after drag/drop layout changes.
+- Regression follow-up (same thread):
+  - Removed top descriptive paragraph and removed top `Layout Builder` section heading/hr to tighten page start.
+  - Reduced sticky toolbar spacer again for Role Metabox Lock page (`48` desktop / `60` mobile).
+  - Added plugin-level JS override to keep sticky save button enabled (`enableStickySave`) on load, on any form input/change, and after sortable sync, to avoid dirty-state lockout.
+- Dirty-state fix (same thread):
+  - Replaced temporary always-enabled sticky save behavior with plugin-level deterministic dirty-state tracking (`initialState` + serialized form diff).
+  - Save button now enables only when form state differs from initial page state, including sortable layout changes and lock checkbox changes.
+  - Save button is disabled again on submit to prevent duplicate submits.
+- Critical save bug fixed (same thread):
+  - In unified save handler, `enabled`/`strict_hide` values were being overwritten by a second `mrn_role_metabox_lock_get_settings()` call before save.
+  - Removed the duplicate settings reload so lock toggles (including `strict_hide`) persist correctly.
+- Strict-hide behavior hardening (same thread):
+  - Changed `strict_hide` logic in `mrn_role_metabox_lock_apply_layout_to_meta_boxes()` to hide only known/tracked metabox IDs (from metabox library), instead of hiding every unlisted metabox.
+  - Goal: prevent aggressive wipe-out of plugin/unknown metaboxes when `Hide metaboxes not listed...` is enabled.
+- Strict-hide adjustment reverted (same thread):
+  - Reverted temporary known-only hide behavior. `strict_hide` again hides all unlisted metabox IDs for exact-layout behavior.
+- Hide/layout behavior refinement (same thread):
+  - `strict_hide` now hides only within contexts that are explicitly configured in the saved layout (e.g., if only `side` is configured, `normal` boxes are not mass-hidden).
+  - Added guard to skip metabox layout application on Block Editor screens (`is_block_editor()`), preventing misleading/partial behavior there.
+- Metabox visibility fix (same thread):
+  - Added filters for `get_user_option_metaboxhidden_post` and `get_user_option_metaboxhidden_page`.
+  - Boxes included in saved role layout are now removed from hidden-metabox user options so they remain visible (e.g., Tags in sidebar).
+- Tags sidebar fallback (same thread):
+  - Added targeted fallback in `add_meta_boxes` for standard `post`: when `tagsdiv-post_tag` is in allowed layout IDs, plugin now explicitly re-adds core Tags metabox (`post_tags_meta_box`) before applying layout.
+- Strict-hide mode restored (same thread):
+  - Reverted context-limited hide behavior; `strict_hide` again hides all unlisted metaboxes across contexts so `Available` boxes do not appear.
+  - Kept core Tags fallback and hidden-metabox unhide filters in place.
+- Above-editor disappearance fix (same thread):
+  - In metabox placement rebuild, allowed IDs are now only cleared from existing contexts if box data was actually collected.
+  - Prevents configured boxes (e.g., `postimagediv`) from disappearing when WP hasn't fully registered box payload at that moment.
+- Late metabox apply pass added (same thread):
+  - Refactored layout application into `mrn_role_metabox_lock_apply_for_current_user($post_type)`.
+  - Added second application pass on `admin_head` (post/post-new, classic editor only) to run after late-registered metaboxes are available.
+  - Kept existing `add_meta_boxes` pass and Tags fallback; both now call shared apply helper.
+
+## Thread: 2026-03-13 Sticky Bar Z-Index Adjustment
+- Goal:
+  - Stop MRN sticky admin toolbars from covering WordPress admin dropdowns/flyouts.
+- Decisions made:
+  - MRN sticky toolbars should use `z-index: 999` instead of `100000`.
+  - Keep the shared toolbar helper as the canonical source, then sync copied plugin helpers to match.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/shared/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar/mrn-universal-sticky-bar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-role-metabox-lock/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-cookie-consent/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count/includes/mrn-sticky-settings-toolbar.php`
+- Commands/scripts used:
+  - `rg -n "z-index" ...`
+  - `php -l` on each edited PHP file
+- Risks/gotchas:
+  - Some plugins still keep local copies of the sticky-toolbar helper, so future toolbar CSS changes must still be propagated after editing the shared source.
+
+## Thread: 2026-03-13 Sticky Toolbar Package + Stack Sync
+- Goal:
+  - Package and deploy the sticky-toolbar z-index fix across affected MRN plugin repos and refresh stack package zips for future site rollouts.
+- Decisions made:
+  - Ignore `mrn-role-metabox-lock` for this release pass.
+  - `mrn-gtm-injector` release should include both the sticky-toolbar z-index fix and the pending Beehive GTM panel-hiding change.
+  - For stack rollout, overwrite the existing package zips on the server at `/home/mrndev-stack-manager/stack/packages/`; no manifest edit needed for this pass.
+- Version changes:
+  - `mrn-universal-sticky-bar` -> `1.0.6`
+  - `mrn-cookie-consent` -> `1.1.17`
+  - `mrn-comment-management` -> `1.1.3`
+  - `mrn-unified-exporter` -> `1.2.2`
+  - `mrn-editor-tools` -> `1.8.10`
+  - `mrn-gtm-injector` -> `1.0.5`
+  - `mrn-license-vault` -> `0.2.2`
+  - `mrn-acf-character-count` -> `1.1.2`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar/mrn-universal-sticky-bar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-cookie-consent/mrn-cookie-consent.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-cookie-consent/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management/mrn-comment-management.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter/mrn-unified-exporter.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/mrn-editor-tools.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/mrn-gtm-injector.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault/mrn-license-vault.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count/mrn-acf-character-count.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count/includes/mrn-sticky-settings-toolbar.php`
+  - Rebuilt local zip artifacts:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-cookie-consent.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault.zip`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count.zip`
+- Commands/scripts used:
+  - `php -l` on all changed PHP files
+  - `git diff --check` on each packaged repo
+  - `rsync -a --exclude='.git' --exclude='.DS_Store' ...` into `/tmp/*-package/` staging folders
+  - `zip -rq` to rebuild plugin zip artifacts
+  - `git -C <repo> commit -m "release: ..."`
+  - `git -C <repo> push origin main`
+  - `scp /Users/khofmeyer/Sites/MRNPlugins/*.zip kyle@167.99.54.77:/home/mrndev-stack-manager/stack/packages/`
+  - Remote verification with `unzip -p ... | grep -nE "^ \\* Version:|const VERSION ="`
+- Risks/gotchas:
+  - Server package overwrites may require deleting existing files first because some package files are owned by `mrndev-stack-manager` and direct `scp` overwrite can fail with `Permission denied`.
+
+## Thread: 2026-03-13 Sticky Toolbar Z-Index Rebalance
+- Goal:
+  - Fix sticky toolbar layering so admin flyouts stay above the bar, while editor/page content stays below it.
+- Decisions made:
+  - `z-index: 999` was too low and allowed page/editor content to overlap the sticky bars.
+  - Working sticky-toolbar value is now `z-index: 1001` for both the universal sticky bar and the shared settings-toolbar helper.
+- Version changes:
+  - `mrn-universal-sticky-bar` -> `1.0.7`
+  - `mrn-cookie-consent` -> `1.1.18`
+  - `mrn-comment-management` -> `1.1.4`
+  - `mrn-unified-exporter` -> `1.2.3`
+  - `mrn-editor-tools` -> `1.8.11`
+  - `mrn-gtm-injector` -> `1.0.6`
+  - `mrn-license-vault` -> `0.2.3`
+  - `mrn-acf-character-count` -> `1.1.3`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/shared/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-universal-sticky-bar/mrn-universal-sticky-bar.php`
+  - Copied helper updates in:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-cookie-consent/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-comment-management/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault/includes/mrn-sticky-settings-toolbar.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-acf-character-count/includes/mrn-sticky-settings-toolbar.php`
+- Packaging/deploy:
+  - Rebuilt local zip artifacts and pushed all eight plugin repos to GitHub.
+  - Overwrote server stack packages in `/home/mrndev-stack-manager/stack/packages/`.
+- Validation:
+  - `php -l` passed on all edited PHP files.
+  - Server zip verification confirmed packaged versions:
+  - `mrn-universal-sticky-bar 1.0.7`
+  - `mrn-cookie-consent 1.1.18`
+  - `mrn-comment-management 1.1.4`
+  - `mrn-unified-exporter 1.2.3`
+  - `mrn-editor-tools 1.8.11`
+  - `mrn-gtm-injector 1.0.6`
+  - `mrn-license-vault 0.2.3`
+  - `mrn-acf-character-count 1.1.3`
+
+## Thread: 2026-03-13 MRN Admin UI CSS Site Health Fix
+- Goal:
+  - Stop MRN Admin UI CSS from breaking the Site Health screen and showing the false `The Site Health check requires JavaScript.` warning.
+- Decisions made:
+  - `mrn-admin-ui-css` should skip Site Health just like other JS-heavy/app-like admin screens.
+  - This MU plugin rolls out from stack MU source (`/home/mrndev-stack-manager/stack/mu-plugins/mrn-admin-ui-css/`), not from stack `packages/`.
+- Version changes:
+  - `mrn-admin-ui-css` -> `3.1.9`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css/mrn-admin-ui-css.php`
+  - Rebuilt zip: `/Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css.zip`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css/mrn-admin-ui-css.php`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css diff --check`
+  - `rsync -a --exclude='.git' --exclude='.DS_Store' ...` into `/tmp/mrn-admin-ui-css-package/`
+  - `zip -rq /Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css.zip mrn-admin-ui-css`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css commit -m "release: 3.1.9 skip Site Health admin CSS"`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-admin-ui-css push origin main`
+  - `scp .../mrn-admin-ui-css.php .../mrn-admin.css kyle@167.99.54.77:/home/mrndev-stack-manager/stack/mu-plugins/mrn-admin-ui-css/`
+- Validation:
+  - Local Site Health warning cleared after skipping Site Health in the MU loader.
+  - Server stack MU file now reports version `3.1.9`.
+
+## Thread: 2026-03-13 MRN Helper Editor Role Lock + Stack Add
+- Goal:
+  - Extend `mrn-helper` to lock dashboard widgets and classic Post/Page metabox boxes for the Editor role, move Revisions to the bottom of the right sidebar, and add the plugin to stack rollout.
+- Decisions made:
+  - Created rollback checkpoint commit before new work: `23020a7` (`checkpoint: current mrn-helper before editor lock work`).
+  - Editor-role lock is scoped to admin Dashboard plus classic `post` / `page` editor screens.
+  - Lock behavior disables drag/drop and blocks collapsing via the box header area.
+  - Revisions box is moved to the sidebar with `low` priority for Editors on classic Post/Page screens.
+  - `mrn-helper` should now be included in stack rollout via package zip reference in the stack plugin manifest.
+- Version changes:
+  - `mrn-helper` -> `0.1.15`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-helper/mrn-helper.php`
+  - Rebuilt zip: `/Users/khofmeyer/Sites/MRNPlugins/mrn-helper.zip`
+- Commands/scripts used:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-helper/mrn-helper.php`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-helper diff --check`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-helper commit -m "checkpoint: current mrn-helper before editor lock work"`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-helper commit -m "release: 0.1.15 lock editor dashboard and metabox layout"`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-helper push origin main`
+  - `scp /Users/khofmeyer/Sites/MRNPlugins/mrn-helper.zip kyle@167.99.54.77:/home/mrndev-stack-manager/stack/packages/mrn-helper.zip`
+  - Added server manifest entry: `/home/mrndev-stack-manager/stack/packages/mrn-helper.zip` in `/home/mrndev-stack-manager/stack/manifests/plugins.txt`
+- Validation:
+  - Server stack manifest now includes `mrn-helper.zip`.
+  - Server package zip verifies as version `0.1.15`.
+
+## Thread: 2026-03-16 AME Export Refresh
+- Goal:
+  - Replace the active AME container in the stack with the updated export from `/Users/khofmeyer/Desktop/AME-configuration(2026-03-16).json` and ensure the importer manifest points to the canonical file.
+- Decisions made:
+  - Canonical active AME file remains `stack/configs/exports/ame-config-container.json`.
+  - Keep the uploaded dated export alongside the canonical file for traceability as `AME-configuration(2026-03-16).json`.
+  - Importer manifest remains `ame_container_json` pointing at the canonical file, not the dated copy.
+- Files changed:
+  - Local:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json`
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/AME-configuration(2026-03-16).json`
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/manifests/importers.txt`
+    - backup: `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json.bak-1773669717`
+  - Server:
+    - `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json`
+    - `/home/mrndev-stack-manager/stack/configs/exports/AME-configuration(2026-03-16).json`
+    - `/home/mrndev-stack-manager/stack/manifests/importers.txt`
+    - backup: `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json.bak-1773669717`
+- Validation:
+  - Local and server importer manifests now start with:
+    - local: `ame_container_json|ame-config-container.json`
+    - server: `ame_container_json|/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json`
+  - Local and server AME files both parse as `Admin Menu Editor configuration container` with `12` settings components.
+
+## Thread: 2026-03-13 Stack Server Access Improvements
+- Goal:
+  - Reduce friction for future stack deployment and server verification work.
+- Decisions made:
+  - Server now has `ripgrep` installed (`rg 14.1.0`).
+  - `kyle` can run commands as `mrndev-stack-manager` without a password via `/etc/sudoers.d/kyle-mrn-stack`.
+  - `kyle` also has a narrowly scoped root sudoers rule for stack file-maintenance commands via `/etc/sudoers.d/kyle-mrn-stack-root`.
+- Validation:
+  - `rg --version` returned `ripgrep 14.1.0`.
+  - `sudo -u mrndev-stack-manager whoami` returned `mrndev-stack-manager`.
+  - `sudo visudo -cf /etc/sudoers.d/kyle-mrn-stack` parsed OK.
+  - `sudo visudo -cf /etc/sudoers.d/kyle-mrn-stack-root` parsed OK.
+- Risks/gotchas:
+  - Future server work should prefer operating as `mrndev-stack-manager` first and only use the narrow root commands when ownership/permission mismatches block normal stack updates.
+
+## Thread: 2026-03-13 Role Metabox Lock Engine Rebuild
+- Goal:
+  - Rescue `mrn-role-metabox-lock` by scrapping the unstable placement engine and rebuilding around a smaller classic-editor-only model.
+- Decisions made:
+  - Treat previous metabox-placement logic as unreliable and replace it instead of continuing to patch it.
+  - New engine scope is classic editor only and only for `post` / `page`.
+  - Simplify layout model to three zones: `normal`, `side`, `advanced`.
+  - Capture a live metabox registry from real editor screens and use that registry to drive the builder UI.
+  - Preserve legacy saved `above_editor` IDs only by folding them into the front of `normal` during normalization.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-role-metabox-lock/mrn-role-metabox-lock.php`
+- Validation:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-role-metabox-lock/mrn-role-metabox-lock.php`
+- Risks/gotchas:
+  - Builder availability now depends on first visiting a classic Post/Page editor so the plugin can capture a live metabox registry.
+  - This rebuild intentionally drops the previous dedicated `above_editor` rendering path in favor of a smaller, more stable three-zone model.
+
+## Thread: 2026-03-23 Plugin UI Rename Packaging Pass
+- Goal:
+  - Finish the release workflow for the plugin-name cleanup so WordPress UI labels no longer show the `MRN` prefix while packaging stays current.
+- Decisions made:
+  - Visible plugin names, menu labels, and admin headings should drop the `MRN` prefix, while author/creator identity can remain `MRN`.
+  - `mrn-helper` is now released as `mrn-config-helper` with visible plugin name `Config Helper`, but its git remote still points to `khofmeyer/mrn-helper`.
+  - `mrn-duplicate-enhance` and `mrn-editor-ui-css` now have private GitHub repos so packaging can include pushes, not just local commits.
+- Version changes:
+  - `mrn-acf-character-count` -> `1.1.4`
+  - `mrn-admin-ui-css` -> `3.1.10`
+  - `mrn-comment-management` -> `1.1.5`
+  - `mrn-config-helper` -> `0.1.18`
+  - `mrn-cookie-consent` -> `1.1.19`
+  - `mrn-dashboard-support` -> `1.0.3`
+  - `mrn-disable-comments` -> `1.2.3`
+  - `mrn-duplicate-enhance` -> `1.1.1`
+  - `mrn-editor-tools` -> `1.8.12`
+  - `mrn-editor-ui-css` -> `1.0.8`
+  - `mrn-gtm-injector` -> `1.0.7`
+  - `mrn-license-vault` -> `0.2.4`
+  - `mrn-seo-helper` -> `0.2.4`
+  - `mrn-unified-exporter` -> `1.2.4`
+  - `mrn-universal-sticky-bar` -> `1.0.8`
+- Packaging/validation:
+  - Ran `php -l` on every changed plugin PHP file in the release set.
+  - Ran `git diff --check` in every changed plugin repo.
+  - Ran a lightweight risky-pattern scan across the changed repos.
+  - Rebuilt local zip artifacts for all released plugins and verified the main plugin header version inside each zip matches the source version.
+  - Committed and pushed all released plugin repos to GitHub.
+  - Created and pushed new private repos:
+    - `git@github.com:khofmeyer/mrn-duplicate-enhance.git`
+    - `git@github.com:khofmeyer/mrn-editor-ui-css.git`
+- Risks/gotchas:
+  - The local release work is complete, but stack packages on `mrndev` should be refreshed again if exact server package versions need to match these final bumped versions.
+
+## Thread: 2026-03-23 MRN SVG Support MU Stack Wiring
+- Goal:
+  - Treat `mrn-svg-support` as a canonical MU plugin in the stack instead of leaving it as an untracked local-only repo.
+- Decisions made:
+  - `mrn-svg-support` should be delivered as MU, not through the normal plugin manifest.
+  - Local canonical MU source now lives under `stack/mu-plugins/mrn-svg-support/`.
+  - `mrn-editor-ui-css` remains a legacy MU compatibility plugin; `mrn-svg-support` belongs in the same architectural bucket.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-svg-support/mrn-svg-support.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/README.md`
+- Validation:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-svg-support/mrn-svg-support.php`
+- Risks/gotchas:
+  - The local stack wiring is in place, but the server still needs `/home/mrndev-stack-manager/stack/mu-plugins/mrn-svg-support/` synced before new rollouts will pick it up.
+
+## Thread: 2026-03-23 SEO Helper ACF Registration Self-Heal
+- Goal:
+  - Stop fresh rollouts from showing the SEO Helper ACF registration error that asked for a manual deactivate/reactivate.
+- Decisions made:
+  - `mrn-seo-helper` should attempt to self-register its local ACF field group again before showing the admin error notice.
+  - The rollout-safe fix is in plugin code, not a manual post-rollout reactivation step.
+- Version changes:
+  - `mrn-seo-helper` -> `0.2.5`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper/mrn-seo-helper.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper.zip`
+- Packaging/validation:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper/mrn-seo-helper.php`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper diff --check`
+  - Rebuilt zip and verified packaged header version `0.2.5`.
+  - Committed and pushed: `a6e3e3c Release 0.2.5: self-heal ACF field group registration`
+
+## Thread: 2026-03-24 SEO Helper ACF Admin Notice Scope Fix
+- Goal:
+  - Stop `default-configs.mrndev.io` from showing a false SEO Helper registration error while working inside ACF admin screens.
+- Decisions made:
+  - The registration notice should not appear on ACF’s own admin screens, where the field-group registry can be in a transient state that produces a false positive.
+  - The durable fix is to scope `maybe_show_registration_notice()` away from ACF admin contexts rather than requiring repeated deactivate/reactivate cycles.
+- Version changes:
+  - `mrn-seo-helper` -> `0.2.6`
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper/mrn-seo-helper.php`
+  - `/Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper.zip`
+- Packaging/validation:
+  - `php -l /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper/mrn-seo-helper.php`
+  - `git -C /Users/khofmeyer/Sites/MRNPlugins/mrn-seo-helper diff --check`
+  - Rebuilt zip and verified packaged header version `0.2.6`.
+  - Committed and pushed: `ef54d15 Release 0.2.6: suppress false ACF admin registration notice`
+
+## Thread: 2026-03-24 default-configs MRN Plugin Baseline Cleanup
+- Goal:
+  - Clean `default-configs.mrndev.io` so its active MRN plugin set matches the current stack baseline more closely and remove old leftover MRN plugins from the source config site.
+- Decisions made:
+  - `default-configs.mrndev.io` should use `mrn-config-helper`, not the older `mrn-helper`.
+  - `default-configs.mrndev.io` should include `mrn-editor-tools` as part of the active baseline.
+  - Remove these old leftover MRN plugins from `default-configs.mrndev.io`:
+    - `mrn-helper`
+    - `mrn-license-vault`
+    - `mrn-role-metabox-lock`
+    - `mrn-unified-exporter`
+- Validation:
+  - Installed and activated on `default-configs.mrndev.io`:
+    - `mrn-config-helper`
+    - `mrn-editor-tools`
+  - Deleted from `default-configs.mrndev.io`:
+    - `mrn-helper`
+    - `mrn-license-vault`
+    - `mrn-role-metabox-lock`
+    - `mrn-unified-exporter`
+  - Active MRN plugin set after cleanup:
+    - `mrn-config-helper`
+    - `mrn-editor-tools`
+    - `mrn-acf-character-count`
+    - `mrn-comment-management`
+    - `mrn-cookie-consent`
+    - `mrn-gtm-injector`
+    - `mrn-universal-sticky-bar`
+    - `mrn-seo-helper`
+  - MU plugin still present:
+    - `mrn-loader`
+
+## Thread: 2026-03-24 default-configs Menu Label De-MRN Pass
+- Goal:
+  - Remove stale `MRN` prefixes from Admin Menu Editor labels on `default-configs.mrndev.io`.
+- Decisions made:
+  - The visible `MRN ...` menu labels on `default-configs.mrndev.io` were coming from the `ws_menu_editor_pro` option, not from the current plugin code.
+  - `default-configs.mrndev.io` should use generic labels in Admin Menu Editor for the current baseline rather than old `MRN`-prefixed names.
+- Validation:
+  - Updated 9 label strings in `ws_menu_editor_pro`.
+  - Confirmed the option no longer contains `MRN ...` labels for:
+    - `SEO Helper`
+    - `Comment Management`
+    - `Cookie Consent`
+    - `GTM Settings`
+    - `GTM`
+    - `Config Helper`
+    - `Role Metabox Lock`
+    - `Unified Exporter`
+    - `License Vault`
+
+## Thread: 2026-03-24 Stack AME Canonical De-MRN Sync
+- Goal:
+  - Clean the canonical stack AME export so new rollouts and `mrnwebdesigns.mrndev.io` stop inheriting stale `MRN ...` menu labels.
+- Decisions made:
+  - The canonical AME export at `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json` should use generic labels for the current plugin/admin menu baseline.
+  - The AME entry for the old `mrn-helper` page was updated to the current `mrn-config-helper` slug and `Site Configurations` label.
+  - Intentional company/support-widget branding (`MRN Web Designs - Website Support`) remains in the AME export and was not treated as stale menu branding.
+- Files changed:
+  - `/Users/khofmeyer/Sites/MRNPlugins/stack/configs/exports/ame-config-container.json`
+- Server-side changes:
+  - Synced the updated canonical file to `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json`.
+  - Re-imported the AME container on `/home/mrnwebdesigns-stack/htdocs/mrnwebdesigns.mrndev.io`.
+- Validation:
+  - Local and server canonical AME export now retain only:
+    - `MRN Web Designs - Website Support`
+    - `MRN Web Designs`
+  - Verified `mrnwebdesigns.mrndev.io` no longer contains stale `MRN ...` menu labels in `ws_menu_editor_pro`.
+  - Verified `mrnwebdesigns.mrndev.io` active MRN plugin set remains:
+    - `mrn-acf-character-count`
+    - `mrn-comment-management`
+    - `mrn-config-helper`
+    - `mrn-cookie-consent`
+    - `mrn-editor-tools`
+    - `mrn-gtm-injector`
+    - `mrn-seo-helper`
+    - `mrn-universal-sticky-bar`
+    - `mrn-loader`
+- Risks/gotchas:
+  - The AME import reported: `roles-and-capabilities: Role import configuration is invalid.` Other AME sections imported successfully.
+
+## Thread: 2026-03-24 default-configs Plugin Build Refresh For Generic Labels
+- Goal:
+  - Fix lingering `MRN ...` menu labels on `default-configs.mrndev.io` by refreshing the actual plugin builds, not just AME/menu config.
+- Decisions made:
+  - `default-configs.mrndev.io` was running older installed plugin files for several MRN plugins even though the current source and local release zips already used generic labels.
+  - The affected stack package zips were refreshed from local artifacts and then force-reinstalled on `default-configs.mrndev.io`.
+- Server-side changes:
+  - Overwrote stack packages:
+    - `/home/mrndev-stack-manager/stack/packages/mrn-comment-management.zip`
+    - `/home/mrndev-stack-manager/stack/packages/mrn-cookie-consent.zip`
+    - `/home/mrndev-stack-manager/stack/packages/mrn-gtm-injector.zip`
+    - `/home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip`
+  - Force-reinstalled those packages on `/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io`.
+- Validation:
+  - `default-configs.mrndev.io` now has:
+    - `mrn-comment-management` `1.1.5`
+    - `mrn-cookie-consent` `1.1.19`
+    - `mrn-gtm-injector` `1.0.7`
+    - `mrn-config-helper` `0.1.18`
+  - Verified live installed plugin files now use generic labels:
+    - `Comment Management`
+    - `Cookie Consent`
+    - `GTM Settings`
+    - `Site Configurations`
+- Risks/gotchas:
+  - The earlier AME/menu-config cleanup was not sufficient by itself because the visible labels on `default-configs.mrndev.io` were also coming from stale installed plugin code.
+
+## Thread: 2026-03-24 default-configs Config Truth Rule
+- Goal:
+  - Capture the current working rule for config authority while continuing block-library work.
+- Decisions made:
+  - `default-configs.mrndev.io` is the current source of truth for site configuration.
+  - Avoid broad AME resets, wipes, or destructive config replacement on `default-configs.mrndev.io`.
+  - Future admin-menu/config work on `default-configs.mrndev.io` should be narrow and additive, with care not to disturb existing AME structure.
+- Current state:
+  - The Reusable Block Library MU plugin is present locally and on `default-configs.mrndev.io`.
+  - At this moment, the user reports that neither local nor remote is showing a visible `Reusable Block Library` sidebar menu item.
+
+## Thread: 2026-03-26 Reusable Block Library FAQ Block Finish
+- Goal:
+  - Finish the `FAQ` reusable block so it is a real typed block with fields, rendering, and starter styling.
+- Decisions made:
+  - The `FAQ` block lives as its own reusable CPT type: `mrn_reusable_faq`.
+  - FAQ content is modeled as a heading plus a repeater of question/answer items.
+  - FAQ configuration currently includes:
+    - `bg_color`
+    - `theme_variation`
+    - `start_open`
+  - The reusable block plugin owns the FAQ render template; themes can override it via `mrn-blocks/faq.php`.
+- Source changes:
+  - Added FAQ ACF field group to:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - Added FAQ template:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-reusable-block-library/templates/faq.php`
+  - Added starter FAQ block styling in:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/themes/mrn-base-stack/style.css`
+- Local sync and validation:
+  - Synced the updated plugin file and FAQ template into the local `mrn-plugin-stack` MU plugin copies.
+  - Verified locally through WordPress that:
+    - `group_mrn_reusable_faq` is registered in ACF
+    - starter draft exists: `FAQ|reusable-faq|draft`
+- Risks/gotchas:
+  - Remote `default-configs.mrndev.io` filesystem paths were not reachable in this environment during this turn, so this FAQ completion was verified in canonical source and local only.
+  - Reusable block admin titles are now required across the `mrn_reusable_*` family:
+    - editor-side validation prevents save without an admin label
+    - a server-side fallback blocks empty-title saves if the request bypasses the editor UI
+
+## Thread: 2026-03-26 Reusable Block Editor Lockdown
+- Goal:
+  - Extend the editor lockdown behavior to reusable block library edit/create screens without disturbing the ACF-after-title builder experience.
+- Decisions made:
+  - Reusable block screens should stay ACF-first, with field groups remaining in `acf_after_title`.
+  - The lockdown for reusable block CPTs should only control the leftover classic metabox shell:
+    - two-column layout
+    - `submitdiv` locked in the side column
+    - `slugdiv,revisionsdiv` locked in normal
+    - no drag/drop
+    - no reorder arrows
+  - Supported reusable block post types in the lockdown are:
+    - `mrn_reusable_cta`
+    - `mrn_reusable_basic`
+    - `mrn_reusable_faq`
+    - `mrn_reusable_grid`
+  - The lockdown plugin now discovers reusable block post types automatically from the reusable block library instead of requiring a new hard-coded filter block for each type.
+  - Automation is currently based on naming convention: any CPT starting with `mrn_reusable_` should inherit the reusable-block lockdown rules automatically.
+  - Other CPT families are not auto-locked by default; if needed later, they should either follow their own naming convention or opt in via a dedicated filter/pattern.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Sites/MRNPlugins/stack/mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`
+- Local sync and validation:
+  - Synced the updated lockdown file into local `mrn-plugin-stack`.
+  - Verified locally that all four reusable CPTs are present in `mrn_editor_lockdown_get_layouts()` and lock the side column to `submitdiv`.
+
+## Thread: 2026-03-26 Workspace Reorganization Direction
+- Goal:
+  - Define a cleaner long-term layout for the `MRNPlugins` workspace after plugin repo/source drift.
+- Decisions made:
+  - `mu-plugins` should be its own top-level source area and should not live under `stack`, because those MU plugins are also used on non-stacked sites.
+  - The workspace should be separated by responsibility:
+    - `plugins/` for normal plugin repos
+    - `mu-plugins/` for MU plugin repos
+    - `stack/` for stack-specific manifests, exports, scripts, starter themes, and stack-only deployment logic
+    - `clone/` or similar for clone/site-copy tooling
+    - `server/` or similar for server/ops scripts and related infrastructure helpers
+    - `releases/` or `zips/` for packaged artifacts only
+  - Source repos and packaged artifacts should not be mixed at the top level.
+  - Each plugin and MU plugin should remain its own repo inside the appropriate parent folder.
+  - New workspace path:
+    - `/Users/khofmeyer/Development/MRN`
+  - Initial migrated repos placed into the new workspace:
+    - `plugins/mrn-editor-tools`
+    - `plugins/mrn-config-helper`
+    - `plugins/mrn-cookie-consent`
+    - `plugins/mrn-comment-management`
+    - `plugins/mrn-seo-helper`
+    - `plugins/mrn-acf-character-count`
+    - `mu-plugins/mrn-admin-ui-css`
+    - `mu-plugins/mrn-dashboard-support`
+    - `mu-plugins/mrn-disable-comments`
+    - `mu-plugins/mrn-duplicate-enhance`
+    - `mu-plugins/mrn-svg-support`
+  - Audit findings so far:
+    - `mrn-editor-tools` had real local-only changes and those were merged back into the restored repo.
+    - `mrn-config-helper` was recovered into the new workspace from the existing root zip artifact; the recovered source matches the local installed plugin exactly.
+    - `mrn-cookie-consent` was recovered into the new workspace from the existing root zip artifact; the recovered source matches the local installed plugin exactly.
+    - `mrn-svg-support` was recovered into the new workspace from the existing root zip artifact; the recovered source matches the local installed MU plugin exactly.
+    - `mrn-admin-ui-css`, `mrn-dashboard-support`, `mrn-disable-comments`, and `mrn-acf-character-count` local copies appear to be older than GitHub, not newer.
+    - `mrn-comment-management` and `mrn-seo-helper` matched GitHub exactly.
+  - Stack source was copied into `/Users/khofmeyer/Development/MRN/stack` and matched the old `stack/` directory exactly during migration.
+  - Follow-up cleanup completed for MU plugin source ownership:
+    - top-level `/Users/khofmeyer/Development/MRN/mu-plugins` now contains the MU plugin source directories for:
+      - `mrn-active-style-guide`
+      - `mrn-admin-ui-css`
+      - `mrn-dashboard-support`
+      - `mrn-disable-comments`
+      - `mrn-duplicate-enhance`
+      - `mrn-editor-lockdown`
+      - `mrn-editor-ui-css`
+      - `mrn-reusable-block-library`
+      - `mrn-site-colors`
+      - `mrn-svg-support`
+    - `/Users/khofmeyer/Development/MRN/stack/mu-plugins/*` now references those top-level MU plugin sources via symlinks for the shared directories, while keeping stack-specific bootstrap files like `mrn-loader.php` and the root loader stubs.
