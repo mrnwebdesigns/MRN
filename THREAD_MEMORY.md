@@ -71,6 +71,9 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - `wp-content/mu-plugins/mrn-reusable-block-library` -> `0.1.3`
     - `wp-content/mu-plugins/mrn-site-colors` -> `0.1.2`
     - `wp-content/themes/default-configs` -> theme content from `mrn-base-stack` `1.0.1` while preserving `Theme Name: default configs` and `Text Domain: default-configs`
+- The stack now has lightweight stack-wide version notes:
+  - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
+  - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
 
 ## Thread: 2026-03-27 default-configs Manual Refresh + Reusable Block Repo Cleanup
 - Goal:

@@ -15,5 +15,7 @@
 !/shared/README.md
 !/stack/
 !/stack/README.md
+!/stack/STACK_VERSION.md
+!/stack/CHANGELOG.md
 .DS_Store
 */.DS_Store
