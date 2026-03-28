@@ -1,0 +1,208 @@
+<?php
+/**
+ * Builder row: Slider.
+ *
+ * @package mrn-base-stack
+ */
+
+$context          = is_array( $args ?? null ) ? $args : array();
+$row              = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
+$row_index        = isset( $context['index'] ) ? (int) $context['index'] : 0;
+$label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
+$heading          = isset( $row['text_field'] ) ? trim( (string) $row['text_field'] ) : '';
+$heading_tag      = isset( $row['text_field_tag'] ) ? strtolower( (string) $row['text_field_tag'] ) : 'h2';
+$items            = isset( $row['slider_items'] ) && is_array( $row['slider_items'] ) ? $row['slider_items'] : array();
+$link_style       = isset( $row['link_style'] ) ? sanitize_key( (string) $row['link_style'] ) : 'link';
+$link_color       = isset( $row['link_color'] ) ? trim( (string) $row['link_color'] ) : '';
+$background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
+$bottom_accent    = ! empty( $row['bottom_accent'] );
+$accent_slug      = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
+$per_page         = isset( $row['per_page'] ) ? max( 1, min( 3, (int) $row['per_page'] ) ) : 1;
+$show_arrows      = ! empty( $row['show_arrows'] );
+$show_pagination  = ! empty( $row['show_pagination'] );
+$pause_on_hover   = ! array_key_exists( 'pause_on_hover', $row ) || ! empty( $row['pause_on_hover'] );
+$autoplay         = ! empty( $row['autoplay'] );
+$delay_start      = isset( $row['delay_start'] ) ? max( 0, (float) $row['delay_start'] ) : 0;
+$delay_time       = isset( $row['delay_time'] ) ? max( 1, (float) $row['delay_time'] ) : 5;
+$time_on_slide    = isset( $row['time_on_slide'] ) ? max( 100, (int) $row['time_on_slide'] ) : 600;
+
+$allowed_tags = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
+if ( ! in_array( $heading_tag, $allowed_tags, true ) ) {
+	$heading_tag = 'h2';
+}
+
+if ( ! in_array( $link_style, array( 'link', 'button' ), true ) ) {
+	$link_style = 'link';
+}
+
+$has_items = false;
+foreach ( $items as $item ) {
+	if ( ! is_array( $item ) ) {
+		continue;
+	}
+
+	$item_label   = isset( $item['label'] ) ? (string) $item['label'] : '';
+	$item_heading = isset( $item['title'] ) ? (string) $item['title'] : '';
+	$item_content = isset( $item['content'] ) ? (string) $item['content'] : '';
+	$item_link    = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
+	$item_image   = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+
+	if (
+		'' !== trim( wp_strip_all_tags( $item_label ) ) ||
+		'' !== trim( wp_strip_all_tags( $item_heading ) ) ||
+		'' !== trim( wp_strip_all_tags( $item_content ) ) ||
+		! empty( $item_link['url'] ) ||
+		! empty( $item_image['ID'] ) ||
+		! empty( $item_image['url'] )
+	) {
+		$has_items = true;
+		break;
+	}
+}
+
+if ( '' === $label && '' === $heading && ! $has_items ) {
+	return;
+}
+
+$slider_id       = 'mrn-slider-' . $row_index . '-' . wp_generate_password( 6, false, false );
+$section_classes = array(
+	'mrn-content-builder__row',
+	'mrn-content-builder__row--slider',
+	'mrn-content-builder__row--slider-link-' . sanitize_html_class( $link_style ),
+);
+$section_attrs   = array();
+$section_styles  = array();
+
+if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
+	$section_styles[] = '--mrn-slider-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
+}
+
+if ( '' !== $link_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
+	$section_styles[] = '--mrn-slider-row-link-color: var(' . mrn_site_colors_get_css_var( $link_color ) . ')';
+}
+
+$accent_contract = function_exists( 'mrn_site_styles_get_bottom_accent_contract' )
+	? mrn_site_styles_get_bottom_accent_contract( $bottom_accent, $accent_slug )
+	: array(
+		'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
+		'attributes' => array(),
+	);
+
+if ( isset( $accent_contract['classes'] ) && is_array( $accent_contract['classes'] ) ) {
+	$section_classes = array_merge( $section_classes, $accent_contract['classes'] );
+}
+
+if ( isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ) {
+	$section_attrs = $accent_contract['attributes'];
+}
+?>
+<section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php foreach ( $section_attrs as $attribute_name => $attribute_value ) : ?><?php if ( '' !== $attribute_name && '' !== $attribute_value ) : ?> <?php echo esc_attr( $attribute_name ); ?>="<?php echo esc_attr( $attribute_value ); ?>"<?php endif; ?><?php endforeach; ?><?php echo ! empty( $section_styles ) ? ' style="' . esc_attr( implode( '; ', $section_styles ) ) . '"' : ''; ?>>
+	<div class="mrn-shell-section mrn-shell-section--slider">
+		<?php if ( '' !== $label || '' !== $heading ) : ?>
+			<header class="mrn-slider-row__header">
+				<?php if ( '' !== $label ) : ?>
+					<div class="mrn-slider-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+				<?php endif; ?>
+				<?php if ( '' !== $heading ) : ?>
+					<<?php echo esc_html( $heading_tag ); ?> class="mrn-slider-row__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+				<?php endif; ?>
+			</header>
+		<?php endif; ?>
+
+		<?php if ( $has_items ) : ?>
+			<div
+				id="<?php echo esc_attr( $slider_id ); ?>"
+				class="splide mrn-slider-row__splide"
+				aria-label="<?php echo esc_attr( '' !== $heading ? wp_strip_all_tags( $heading ) : 'Content slider' ); ?>"
+				data-per-page="<?php echo esc_attr( (string) $per_page ); ?>"
+				data-arrows="<?php echo esc_attr( $show_arrows ? 'true' : 'false' ); ?>"
+				data-pagination="<?php echo esc_attr( $show_pagination ? 'true' : 'false' ); ?>"
+				data-pause-on-hover="<?php echo esc_attr( $pause_on_hover ? 'true' : 'false' ); ?>"
+				data-autoplay="<?php echo esc_attr( $autoplay ? 'true' : 'false' ); ?>"
+				data-delay-start="<?php echo esc_attr( (string) $delay_start ); ?>"
+				data-delay-time="<?php echo esc_attr( (string) $delay_time ); ?>"
+				data-time-on-slide="<?php echo esc_attr( (string) $time_on_slide ); ?>"
+			>
+				<div class="splide__track">
+					<ul class="splide__list">
+						<?php foreach ( $items as $item ) : ?>
+							<?php
+							if ( ! is_array( $item ) ) {
+								continue;
+							}
+
+							$item_label   = isset( $item['label'] ) ? trim( (string) $item['label'] ) : '';
+							$item_heading = isset( $item['title'] ) ? trim( (string) $item['title'] ) : '';
+							$item_tag     = isset( $item['title_tag'] ) ? strtolower( (string) $item['title_tag'] ) : 'h3';
+							$item_content = isset( $item['content'] ) ? (string) $item['content'] : '';
+							$item_link    = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
+							$item_image   = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+
+							if ( ! in_array( $item_tag, $allowed_tags, true ) ) {
+								$item_tag = 'h3';
+							}
+
+							if (
+								'' === $item_label &&
+								'' === $item_heading &&
+								'' === trim( wp_strip_all_tags( $item_content ) ) &&
+								empty( $item_link['url'] ) &&
+								empty( $item_image['ID'] ) &&
+								empty( $item_image['url'] )
+							) {
+								continue;
+							}
+							?>
+							<li class="splide__slide">
+								<article class="mrn-slider-row__slide">
+									<?php if ( ! empty( $item_image['ID'] ) ) : ?>
+										<div class="mrn-slider-row__media">
+											<?php echo wp_get_attachment_image( (int) $item_image['ID'], 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+										</div>
+									<?php elseif ( ! empty( $item_image['url'] ) ) : ?>
+										<div class="mrn-slider-row__media">
+											<img src="<?php echo esc_url( $item_image['url'] ); ?>" alt="<?php echo esc_attr( $item_image['alt'] ?? '' ); ?>">
+										</div>
+									<?php endif; ?>
+
+									<div class="mrn-slider-row__slide-content">
+										<?php if ( '' !== $item_label ) : ?>
+											<div class="mrn-slider-row__slide-label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $item_label ) : esc_html( $item_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+										<?php endif; ?>
+
+										<?php if ( '' !== $item_heading ) : ?>
+											<<?php echo esc_html( $item_tag ); ?> class="mrn-slider-row__slide-heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $item_heading ) : esc_html( $item_heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $item_tag ); ?>>
+										<?php endif; ?>
+
+										<?php if ( '' !== trim( $item_content ) ) : ?>
+											<div class="mrn-slider-row__slide-text">
+												<?php echo apply_filters( 'the_content', $item_content ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+											</div>
+										<?php endif; ?>
+
+										<?php if ( ! empty( $item_link['url'] ) ) : ?>
+											<p class="mrn-slider-row__slide-link-wrap">
+												<a
+													class="mrn-slider-row__slide-link <?php echo 'button' === $link_style ? 'mrn-slider-row__slide-link--button' : 'mrn-slider-row__slide-link--text'; ?>"
+													href="<?php echo esc_url( $item_link['url'] ); ?>"
+													<?php if ( ! empty( $item_link['target'] ) ) : ?>
+														target="<?php echo esc_attr( $item_link['target'] ); ?>"
+													<?php endif; ?>
+													<?php if ( ! empty( $item_link['target'] ) && '_blank' === $item_link['target'] ) : ?>
+														rel="noopener noreferrer"
+													<?php endif; ?>
+												>
+													<?php echo esc_html( $item_link['title'] ?? 'Learn More' ); ?>
+												</a>
+											</p>
+										<?php endif; ?>
+									</div>
+								</article>
+							</li>
+						<?php endforeach; ?>
+					</ul>
+				</div>
+			</div>
+		<?php endif; ?>
+	</div>
+</section>
