@@ -74,6 +74,178 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
 - The stack now has lightweight stack-wide version notes:
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
+- The stack now also has a developer-facing builder/conventions doc:
+  - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
+  - Use it as the canonical reference for:
+    - theme layout vs reusable block ownership
+    - front-end token ownership via Site Styles
+    - field naming conventions
+    - heading inline HTML rules
+    - link presentation rules
+    - accent contract rules
+    - builder UI and collapsed-title rules
+- The stack now also has a separate operations guide:
+  - `/Users/khofmeyer/Development/MRN/stack/STACK_OPERATIONS.md`
+  - Use it as the canonical reference for:
+    - local symlink workflow
+    - stack/server ownership expectations
+    - sync/deploy rules
+    - stack update workflow
+- The stack now also has plugin documentation scaffolding:
+  - `/Users/khofmeyer/Development/MRN/stack/PLUGIN_CATALOG.md`
+  - `/Users/khofmeyer/Development/MRN/stack/PLUGIN_DOC_TEMPLATE.md`
+  - Use the catalog as the current inventory and the template for future deep-dive plugin docs.
+- The first deep-dive plugin docs now exist under:
+  - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/`
+  - Current deep docs:
+    - `mrn-reusable-block-library.md`
+    - `mrn-site-styles.md`
+    - `mrn-editor-enhancements.md`
+    - `mrn-editor-lockdown.md`
+- In the theme-owned `Content` builder, the page-specific clone layouts for reusable blocks are intentionally parked/commented out for now.
+  - Do not offer page-only conversion targets in the ACF picker.
+  - Hidden page-only target layouts now exist for all current reusable block types:
+    - `CTA`
+    - `Basic Block`
+    - `Content Grid`
+    - `FAQ`
+  - These hidden layouts are used by the conversion flow only and are hidden from the normal `Add Content Row` menu with builder admin JS.
+- The `Reusable Block` selector in the page/post builder now filters to published reusable blocks only.
+  - Current picker query allows `publish` only.
+- Hidden page-only conversion targets must be hidden only in the popup menu, not in the full admin DOM.
+  - The hide selector in `content-builder-admin.js` should target menu-item markup (`li [data-layout]`) so converted rows like `faq_block` do not disappear immediately after insertion.
+- The reusable-block convert action should switch to a white icon state when the active ACF layout bar is blue.
+- The theme-owned `Content` builder now includes a `Card - image|text|link` layout.
+  - Fields:
+    - top-level text field + HTML tag
+    - repeater with image, text, and link
+    - top-level link
+    - configs for background color and shared bottom accent
+  - Render template:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/card.php`
+- The theme-owned `Content` builder now includes a visible `Grid - label|title|repeater` layout.
+  - It clones the reusable Grid field group so direct page layout authoring and reusable/page-only conversion all share the same field contract.
+  - Current Grid shape:
+    - top-level `Label`
+    - `Title field`
+    - `HTML tag for text field`
+    - repeater items with:
+      - `Label`
+      - `Title field`
+      - `HTML tag for title field`
+      - `Text area with editor`
+      - `Link`
+    - configs:
+      - `Link style`
+      - `Link color`
+      - `Background color`
+      - shared bottom accent
+  - Collapsed row titles now support `Grid: <text_field>`.
+- Theme heading-style text fields now support a limited inline HTML subset by contract.
+  - Current allowlist: `span`, `strong`, `em`, `br`
+  - Shared renderer helper:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php` -> `mrn_base_stack_format_heading_inline_html()`
+  - Applied to current theme builder outputs for:
+    - Hero label
+    - Hero heading override
+    - Basic text field heading
+    - Card text field heading
+- The same limited-inline heading contract is now applied to current reusable block templates too.
+  - Applied to:
+    - reusable Basic block headings
+    - reusable CTA headings
+    - reusable Content Grid heading and item titles
+    - reusable FAQ heading and question text
+- Reusable block editor fields now also include inline help text for the limited heading markup contract.
+  - Current help text: `Limited inline HTML allowed: span, strong, em, br.`
+- The theme-owned `Content` builder now includes an advanced `Two Column Split` layout.
+  - Each column is its own nested flexible-content field with `max = 1`, so each side gets exactly one nested layout.
+  - Current nested layout set includes:
+    - `Body Text`
+    - `Basic - label|title|text with editor|image|link`
+    - `Card - image|text|link`
+    - `Reusable Block`
+  - Current width presets:
+    - `50 / 50`
+    - `60 / 40`
+    - `40 / 60`
+    - `67 / 33`
+    - `33 / 67`
+  - Nested reusable rows inside the split do not get the top-level conversion action icon.
+  - Render template:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/two-column-split.php`
+- The old `Body Text` layout has been upgraded into:
+  - `Text - label|title|text with editor`
+  - Fields:
+    - `Label`
+    - `Title field`
+    - `HTML tag for text field`
+    - `Text area with editor`
+  - Configs:
+    - `Background color`
+    - shared bottom accent
+- The theme-owned `Content` builder now includes an `External - widget/iFrame` layout.
+  - Fields:
+    - `Snippet/Code`
+  - Configs:
+    - `Background color`
+    - shared bottom accent
+  - Intended use:
+    - trusted third-party widget, iframe, or embed markup that should render directly in the page layout
+  - Render template:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/external-widget.php`
+- The theme-owned `Content` builder now includes an `Image - label|title|text with editor` layout.
+  - Fields:
+    - `Image`
+    - `Label`
+    - `Title field`
+    - `HTML tag for text field`
+    - `Text area with editor`
+  - Configs:
+    - `Background color`
+    - shared bottom accent
+    - `Full width`
+    - `Image position`
+    - `Image size`
+    - `Image alignment`
+  - Front-end documentation for control meanings and markup hooks lives in:
+    - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
+  - Render template:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/image-content.php`
+- The theme-owned `Content` builder now includes a phase-1 `Slider - repeater` layout.
+  - Current slider framework:
+    - `Splide` `4.1.4`, vendored locally in the stack theme
+  - Fields:
+    - `Label`
+    - `Title field`
+    - `HTML tag for text field`
+    - `Slides` repeater with:
+      - `Image`
+      - `Label`
+      - `Title field`
+      - `HTML tag for title field`
+      - `Text area with editor`
+      - `Link`
+  - Configs:
+    - `Link style`
+    - `Link color`
+    - `Background color`
+    - shared bottom accent
+    - `Slides per view`
+    - `Show arrows`
+    - `Show pagination`
+    - `Autoplay`
+    - `Pause on hover`
+    - `Delay start`
+    - `Delay time`
+    - `Time on slide`
+  - Phase-1 slider rule:
+    - keep slider content structured
+    - do not treat slides as nested mini-builders yet
+  - Front-end documentation for slider controls, data attributes, and styling hooks lives in:
+    - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
+  - Render template:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/slider.php`
 
 ## Thread: 2026-03-27 default-configs Manual Refresh + Reusable Block Repo Cleanup
 - Goal:
@@ -4172,7 +4344,7 @@ After you get each summary back:
     - `Bottom Accent`
     - `Bottom Accent Style`
     - shared render output via the Site Styles helper contract
-  - The theme-owned ACF `Basic - title|text` layout now also supports:
+  - The theme-owned ACF `Basic - label|title|text with editor` layout now also supports:
     - `Bottom Accent`
     - `Bottom Accent Style`
     - the same shared render contract
@@ -4269,3 +4441,91 @@ After you get each summary back:
     - `mrn-reusable-block-library` -> `0.1.3`
     - `mrn-site-colors`/Site Styles -> `0.1.2`
     - `mrn-base-stack.zip` -> `1.0.1`
+
+## Thread: 2026-03-27 Basic Contract Simplification
+- Goal:
+  - Align the theme `Basic` layout and reusable `Basic` block to the same simpler content model.
+- New shared Basic shape:
+  - `Label`
+  - `Title field`
+  - `HTML tag for text field`
+  - `Text area with editor`
+  - configs:
+    - `Link style`
+    - `Link color`
+    - `Background color`
+    - `Accent`
+- Theme changes:
+  - Updated the `basic` content layout in `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - Updated `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/basic.php`
+  - Kept the field name `text_field` so the existing collapsed-row title filter still works without extra remapping.
+- Reusable changes:
+  - Replaced the old repeater/image-based Basic Block field group in `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - Rewrote `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/basic-block.php` to match the simpler single-block content model
+- Notes:
+  - `Link style` and `Link color` now act as presentation config for links inside the rich text content rather than introducing a separate standalone link field.
+  - The old Basic Block repeater/image/style/theme-variation shape is no longer the canonical model.
+- Validation:
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/basic.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/basic-block.php`
+
+## Thread: 2026-03-28 Basic Image + Link Upgrade
+- Goal:
+  - Extend `Basic` in both the theme and reusable library to support an image, a real link, and image placement config.
+- Updated Basic shape:
+  - `Label`
+  - `Title field`
+  - `HTML tag for text field`
+  - `Text area with editor`
+  - `Image`
+  - `Link`
+  - configs:
+    - `Link style`
+    - `Link color`
+    - `Image placement`
+    - `Background color`
+    - `Accent`
+- Theme changes:
+  - Updated the main `Basic` content layout in `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - Updated the nested `Basic` layout used inside `Two Column Split` in the same file so nested and top-level Basic stay aligned
+  - Updated `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/basic.php`
+- Reusable changes:
+  - Updated `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - Updated `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/basic-block.php`
+- Notes:
+  - Image placement currently supports `left` and `right`.
+  - `Link style` and `Link color` now apply to the real Basic link, not only to inline content links.
+- Validation:
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/basic.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/basic-block.php`
+
+## Thread: 2026-03-27 CTA Contract Alignment
+- Goal:
+  - Update reusable `CTA` to the same simpler pattern and add a matching theme `CTA` layout in the Content builder.
+- Shared CTA shape:
+  - `Label`
+  - `Title field`
+  - `HTML tag for text field`
+  - `Text area with editor`
+  - `Link`
+  - configs:
+    - `Link style`
+    - `Link color`
+    - `Background color`
+    - `Accent`
+- Reusable changes:
+  - Updated `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - Updated `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/cta.php`
+- Theme changes:
+  - Added visible `CTA` layout to the main `Content` builder in `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - The visible layout clones `group_mrn_reusable_cta` so direct layout authoring, reusable blocks, and page-only conversion all use the same field contract.
+  - Rendering for the theme `cta` layout is handled through `mrn_rbl_render_fields_as_block( 'mrn_reusable_cta', ... )`.
+  - Collapsed row titles now support `CTA: <text_field>` in the Content builder.
+- Validation:
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/cta.php`

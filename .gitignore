@@ -17,5 +17,11 @@
 !/stack/README.md
 !/stack/STACK_VERSION.md
 !/stack/CHANGELOG.md
+!/stack/BUILDER_CONVENTIONS.md
+!/stack/STACK_OPERATIONS.md
+!/stack/PLUGIN_CATALOG.md
+!/stack/PLUGIN_DOC_TEMPLATE.md
+!/stack/plugin-docs/
+!/stack/plugin-docs/*.md
 .DS_Store
 */.DS_Store

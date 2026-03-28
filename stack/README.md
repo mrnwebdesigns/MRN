@@ -6,6 +6,10 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 
 - A plugin manifest (`manifests/plugins.txt`) for install/activate.
 - A stack release snapshot (`STACK_VERSION.md`) and stack-wide notes (`CHANGELOG.md`).
+- A builder/dev conventions guide (`BUILDER_CONVENTIONS.md`) for theme layouts, reusable blocks, and shared content rules.
+- A stack workflow/ops guide (`STACK_OPERATIONS.md`) for local symlink workflow, server ownership, and sync/deploy rules.
+- A plugin inventory (`PLUGIN_CATALOG.md`) and plugin doc template (`PLUGIN_DOC_TEMPLATE.md`) for documenting MRN plugins and MU plugins.
+- First deep-dive plugin docs live in `plugin-docs/`.
 - A per-site bootstrap script (`scripts/site-bootstrap.sh`).
 - A CloudPanel cron scanner (`scripts/bootstrap-new-sites.sh`) that bootstraps only once per site.
 - A checklist for non-portable plugin configs (`configs/plugin-config-checklist.md`).
