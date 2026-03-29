@@ -4739,3 +4739,14 @@ After you get each summary back:
     - reusable block library owns reusable block data models
     - Site Styles owns shared tokens and graphic-element choices
   - Future builder work should go into the `inc/builder/` split files rather than rebuilding `functions.php` into a large single-file implementation.
+
+## Thread: 2026-03-29 Reusable Block Library Security Hardening
+- Goal:
+  - Tighten the reusable block library against unpublished-content leakage and unnecessary content mutation on normal traffic.
+- Durable security rules:
+  - Reusable block rendering must not expose `draft` or `private` reusable blocks to anonymous/public requests.
+  - Unpublished reusable blocks may only render for users who can edit the specific block.
+  - One-time reusable block maintenance routines must not run on anonymous front-end traffic.
+  - Legacy reusable cleanup and starter-block seeding are now treated as admin/CLI maintenance work, not normal-request behavior.
+  - Starter-block seeding now uses an option-backed signature guard so it only reruns when the typed starter definitions actually change.
+  - Reusable block template resolution now uses a `realpath()` containment check against approved theme/plugin template roots before including a template file.
