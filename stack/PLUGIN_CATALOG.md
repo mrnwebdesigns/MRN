@@ -57,11 +57,14 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
   - WPForms notification locking behavior
 - Front-end / theming:
   - not primarily a front-end/theming plugin
+  - exposes site-wide social links for theme consumption via `mrn_config_helper_get_social_links()`
+  - social rows can now use either media-library icons or Font Awesome classes
 - Developer-facing hooks:
-  - no custom MRN hooks identified in the main file
+  - `mrn_config_helper_get_social_links()`
   - integrates heavily with WPForms and WordPress hooks
 - Notes:
   - cross-cutting admin utility plugin
+  - deep doc: [`mrn-config-helper.md`](./plugin-docs/mrn-config-helper.md)
 
 ### `mrn-cookie-consent`
 
@@ -84,7 +87,7 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 ### `mrn-editor-tools`
 
 - Name: `Editor Enhancements`
-- Version: `1.8.13`
+- Version: `1.8.14`
 - Purpose:
   - classic editor and ACF WYSIWYG enhancements
   - snippets, wrap buttons, style helpers, icon tools
@@ -95,6 +98,7 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 - Front-end / theming:
   - editor-style support and shortcode handling
   - not a primary front-end design-token plugin
+  - now consumes shared Font Awesome assets from `mrn-shared-assets` when available
 - Developer-facing hooks:
   - no obvious custom MRN hooks in the main file
   - extends TinyMCE through WordPress/ACF hook points
@@ -215,6 +219,28 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
   - no custom public hook inventory captured yet
 - Notes:
   - should be documented carefully because admin CSS can become broad-impact
+
+### `mrn-shared-assets`
+
+- Name: `Shared Assets (MU)`
+- Version: `0.1.0`
+- Purpose:
+  - owns stack-wide runtime assets that should not belong to one feature plugin
+  - currently provides the shared Font Awesome bundle and icon metadata
+- Admin/UI:
+  - none directly
+- Front-end / theming:
+  - provides shared asset helpers for intentional theme or plugin consumption
+  - does not print Font Awesome globally by itself
+- Developer-facing hooks:
+  - `mrn_shared_assets_fontawesome_version()`
+  - `mrn_shared_assets_fontawesome_css_url()`
+  - `mrn_shared_assets_enqueue_fontawesome()`
+  - `mrn_shared_assets_get_fontawesome_icons()`
+- Notes:
+  - stack asset-owner MU plugin
+  - deep doc:
+    - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-shared-assets.md`
 
 ### `mrn-dashboard-support`
 

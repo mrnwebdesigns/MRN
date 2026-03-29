@@ -99,10 +99,32 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/`
   - Current deep docs:
     - `mrn-active-style-guide.md`
+    - `mrn-config-helper.md`
+    - `mrn-shared-assets.md`
     - `mrn-reusable-block-library.md`
     - `mrn-site-styles.md`
     - `mrn-editor-enhancements.md`
     - `mrn-editor-lockdown.md`
+- Font Awesome is now treated as a shared stack runtime asset rather than being conceptually owned by `mrn-editor-tools`.
+  - Canonical asset owner:
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`
+  - Runtime loader wiring:
+    - `/Users/khofmeyer/Development/MRN/stack/mu-plugins/mrn-shared-assets.php`
+    - `/Users/khofmeyer/Development/MRN/stack/mu-plugins/mrn-loader.php`
+  - `mrn-editor-tools` now prefers the shared asset helper functions for Font Awesome CSS and icon metadata and falls back to its local bundle only if the shared MU plugin is unavailable.
+  - This keeps editor/admin and future front-end consumers from depending on `Editor Enhancements` as the asset owner.
+- `mrn-config-helper` social links now support two icon sources:
+  - media-library images
+  - Font Awesome classes from the shared asset layer
+  - current social row contract returned by `mrn_config_helper_get_social_links()`:
+    - `icon_type`
+    - `icon_id`
+    - `icon_url`
+    - `fa_style`
+    - `fa_name`
+    - `fa_class`
+    - `url`
+  - theme/front-end renderers should branch on `icon_type` instead of assuming image-only social icons.
 - In the theme-owned `Content` builder, the page-specific clone layouts for reusable blocks are intentionally parked/commented out for now.
   - Do not offer page-only conversion targets in the ACF picker.
   - Hidden page-only target layouts now exist for all current reusable block types:
@@ -4752,3 +4774,19 @@ After you get each summary back:
   - Legacy reusable cleanup and starter-block seeding are now treated as admin/CLI maintenance work, not normal-request behavior.
   - Starter-block seeding now uses an option-backed signature guard so it only reruns when the typed starter definitions actually change.
   - Reusable block template resolution now uses a `realpath()` containment check against approved theme/plugin template roots before including a template file.
+
+## Thread: 2026-03-29 Config Helper Social Links
+- Goal:
+  - Expand Config Helper so site-wide social media links can be managed centrally with media-backed icons.
+- Durable plugin behavior:
+  - `Config Helper` now stores `social_links` inside `mrn_helper_settings`.
+  - Each social link row currently includes:
+    - media-library icon
+    - destination URL
+  - The settings UI uses the WordPress media modal on the `Settings -> Site Configurations` screen only.
+  - `Config Helper` now exposes a getter:
+    - `MRN_Config_Helper::get_social_links()`
+    - `mrn_config_helper_get_social_links()`
+  - Social links are a site-configuration concern, not a theme-specific field group.
+  - Front-end/plugin documentation for this contract now lives in:
+    - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-config-helper.md`

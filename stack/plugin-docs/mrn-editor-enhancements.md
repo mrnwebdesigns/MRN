@@ -5,7 +5,7 @@
 - Name: `Editor Enhancements`
 - Slug: `mrn-editor-tools`
 - Type: standard plugin
-- Current version: `1.8.13`
+- Current version: `1.8.14`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-editor-tools`
 
@@ -20,6 +20,8 @@ It exists to give editors a more powerful, stack-standard authoring experience t
 - text color/style formats
 - icon helpers
 - editor modal tools
+
+It is now a consumer of the shared Font Awesome runtime asset, not the long-term owner of that asset bundle.
 
 ## Admin Surface Area
 
@@ -79,6 +81,12 @@ This is primarily an editor/admin plugin, but it does have some front-end implic
 
 It is not the stack’s design-token source of truth, but it does influence editor styling and reusable text-format behavior.
 
+For icon previews and icon metadata, it now prefers the shared MU plugin:
+
+- `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`
+
+and only falls back to its local bundled copy if the shared runtime layer is unavailable.
+
 ## Developer Hooks / Extension Points
 
 This plugin currently leans more on WordPress/TinyMCE hook integration than on custom public MRN hooks.
@@ -90,6 +98,7 @@ Important reusable functions include:
 - `mrn_editor_tools_sanitize_settings()`
 - `mrn_editor_tools_get_text_color_style_formats()`
 - `mrn_editor_tools_enqueue_editor_runtime_assets()`
+- `mrn_editor_tools_enqueue_fontawesome()`
 
 ## Data / Storage
 
@@ -106,13 +115,14 @@ Secondary behavior:
 
 - This is a standard packaged plugin, not a stack MU plugin.
 - It should install through the normal plugin manifest/package path in stack rollout.
-- Durable baseline in memory: `1.8.13`
+- Durable baseline in memory: `1.8.14`
 
 ## Special Rules
 
 - It should enhance classic editor contexts broadly, not only one specific screen.
 - ACF WYSIWYG support is a first-class requirement.
 - The plugin should stay focused on editor capability, not become a general front-end theming system.
+- Shared runtime assets like Font Awesome should live in the shared MU asset layer when they are used outside the editor plugin itself.
 
 ## Risks / Gotchas
 
