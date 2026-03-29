@@ -62,6 +62,8 @@ Use consistent names whenever possible.
 - For background token selection:
   - `background_color` in theme layouts
   - `bg_color` in reusable blocks where that field name already exists
+- For background images on section-style layouts:
+  - `background_image`
 - For accent controls:
   - `bottom_accent`
   - `bottom_accent_style`
@@ -117,6 +119,18 @@ Those graphic elements feed accent dropdowns and render through the shared accen
 
 These are the current preferred content patterns in the stack.
 
+### Hero
+
+- Current hero layouts:
+  - `Basic - label|heading|text with editor|link|image`
+  - `Two Column Split`
+- Hero layouts are theme-owned and render above the main `Content` builder.
+- Hero currently supports:
+  - `Background color`
+  - `Background image`
+  - `Background video`
+  - accent controls when the specific hero layout exposes them
+
 ### Text
 
 - Label
@@ -140,6 +154,7 @@ These are the current preferred content patterns in the stack.
   - Link color
   - Image placement
   - Background color
+  - Background image
   - Accent
 
 ### CTA
@@ -148,11 +163,13 @@ These are the current preferred content patterns in the stack.
 - Title field
 - HTML tag for text field
 - Text area with editor
-- Link
+- Primary Link
+- Secondary Link
 - Configs:
   - Link style
   - Link color
   - Background color
+  - Background image
   - Accent
 
 ### Grid
@@ -198,6 +215,27 @@ These are the current preferred content patterns in the stack.
   - Delay time
   - Time on slide
 
+### Logos
+
+- Label
+- Heading
+- HTML tag for heading
+- Logos repeater:
+  - Image
+  - Link
+- Configs:
+  - Display mode
+  - Logos per row/view
+  - Show arrows
+  - Show pagination
+  - Autoplay
+  - Pause on hover
+  - Delay start
+  - Delay time
+  - Time on slide
+  - Background color
+  - Accent
+
 ### Image
 
 - Label
@@ -212,6 +250,18 @@ These are the current preferred content patterns in the stack.
   - Image position
   - Image size
   - Image alignment
+
+### Video
+
+- Label
+- Title field
+- HTML tag for text field
+- Text area with editor
+- Remote video URL
+- Video upload
+- Configs:
+  - Background color
+  - Accent
 
 ### Image Layout Rule
 
@@ -286,7 +336,7 @@ Front-enders should rely on these hooks:
 
 - Phase 1 sliders should stay structured, not fully generic.
 - The current stack slider uses `Splide` and a slide repeater rather than nested layouts inside each slide.
-- Use the theme-owned `Slider - repeater` layout when slides need:
+- Use the theme-owned `Slider - label|title|slides` layout when slides need:
   - image
   - label
   - title
@@ -367,6 +417,116 @@ These are the JS initialization contract for the current phase-1 slider.
   - destination stays in the slide `link` field
   - visual treatment is controlled at the section level by `link_style` and `link_color`
 
+## Logos Rule
+
+- Use `Logos - label|heading|image|link` for logo rails, partner lists, or trust/association sections.
+- This layout intentionally supports two display modes:
+  - `Grid`
+  - `Slider`
+- Use `Grid` for static logo clouds like sponsor or partner sections.
+- Use `Slider` when the logo count is large or motion is preferred.
+
+### Logo Control Meanings
+
+- `Display mode`
+  - Switches between static grid rendering and Splide slider rendering
+- `Logos per row/view`
+  - In grid mode, controls the intended column count on large screens
+  - In slider mode, controls visible logos per view on large screens
+- `Show arrows`
+  - Slider mode only
+- `Show pagination`
+  - Slider mode only
+- `Autoplay`
+  - Slider mode only
+- `Pause on hover`
+  - Slider mode only
+- `Delay start`
+  - Slider mode only
+- `Delay time`
+  - Slider mode only
+- `Time on slide`
+  - Slider mode only
+
+### Logo Front-End Contract
+
+Front-enders should rely on these hooks:
+
+- wrapper classes:
+  - `mrn-content-builder__row--logos`
+  - `mrn-content-builder__row--logos-grid`
+  - `mrn-content-builder__row--logos-slider`
+- content hooks:
+  - `.mrn-logos-row__label`
+  - `.mrn-logos-row__heading`
+  - `.mrn-logos-row__grid`
+  - `.mrn-logos-row__item`
+  - `.mrn-logos-row__link`
+- slider hook when in slider mode:
+  - `.mrn-logos-row__splide`
+  - `.mrn-splide`
+
+### Logo Token And Styling Rules
+
+- Background color should come from Site Styles color choices.
+- Accent should use the shared bottom accent contract.
+- Logo items stay intentionally simple:
+  - image
+  - optional link
+- This layout does not add per-logo presentation controls beyond the chosen display mode.
+
+## Video Rule
+
+- Use `Video - remote|upload` for a normal foreground video section, not for arbitrary snippet embeds.
+- This is a theme-owned page/post layout.
+- It reuses the stack’s deferred video-loading path, but it is not a background-video layout.
+
+### Video Source Contract
+
+- remote field:
+  - `video_remote`
+- local upload field:
+  - `video_upload`
+- precedence:
+  - if both are set, `video_upload` wins over `video_remote`
+
+### Video Rendering Rule
+
+- Remote URLs support:
+  - YouTube
+  - Vimeo
+- Uploaded files support:
+  - `mp4`
+  - `webm`
+  - `mov`
+- This layout renders video as normal foreground media inside the content section.
+- Unlike hero background video, it does not autoplay by default.
+
+### Video Front-End Contract
+
+Front-enders should rely on:
+
+- wrapper classes:
+  - `mrn-content-builder__row--video`
+- content hooks:
+  - `.mrn-video-row__label`
+  - `.mrn-video-row__heading`
+  - `.mrn-video-row__text`
+  - `.mrn-video-row__media`
+- deferred media frame:
+  - `.mrn-deferred-media__frame`
+
+### Video Performance Rule
+
+- Video layout reuses the deferred-loading path:
+  - wait until the section is in or near view
+  - then inject the real iframe or `<video>` element
+- Current defaults:
+  - no autoplay
+  - no loop
+  - controls enabled
+  - uploaded local files use `preload=\"metadata\"`
+
 ## Heading Markup Rule
 
 Heading-style text fields intentionally support a limited inline HTML subset.
@@ -425,6 +585,131 @@ Typical pattern:
 
 This lets one layout-level decision style all links inside that section consistently.
 
+## Background Image Rule
+
+Background images are intentionally limited to the strong single-section layouts:
+
+- Hero
+- Basic
+- CTA
+
+These are the current “strong yes” layouts for background-image support because they read as one narrative section and do not compete with collection-style content models.
+
+### Field Contract
+
+- field name:
+  - `background_image`
+- current behavior:
+  - the selected image is rendered as a CSS background image on the outer section container
+  - the section still keeps its background color token as a fallback/base layer
+
+### Front-End Contract
+
+Front-enders should rely on:
+
+- shared class:
+  - `has-background-image`
+- section-specific CSS variables:
+  - Hero:
+    - `--mrn-hero-bg-image`
+  - Basic:
+    - `--mrn-basic-row-bg-image`
+  - CTA:
+    - `--mrn-cta-bg-image`
+
+### Current Rendering Defaults
+
+The current stack theme applies these defaults when a background image is present:
+
+- `background-position: center`
+- `background-repeat: no-repeat`
+- `background-size: cover`
+
+### Color + Image Layering Rule
+
+- Keep using `Background color` even when a background image is set.
+- Treat the background color token as the fallback/base layer.
+- Treat the background image as presentation on top of that token-driven base.
+- Do not invent separate overlay fields unless a future thread establishes a more advanced background-image system.
+
+## Hero Background Video Rule
+
+Background video is intentionally limited to the current hero layouts only:
+
+- `Basic - label|heading|text with editor|link|image`
+- `Two Column Split`
+
+This is not a generic section/video system. It is currently a hero-only presentation feature.
+
+### Field Contract
+
+- remote field:
+  - `background_video`
+- local upload field:
+  - `background_video_upload`
+- remote supported providers:
+  - YouTube
+  - Vimeo
+- local supported formats:
+  - `mp4`
+  - `webm`
+  - `mov`
+- precedence:
+  - if both are set, `background_video_upload` wins over `background_video`
+
+### Rendering Rule
+
+- Background video is decorative.
+- It renders as a deferred normalized background `<iframe>` embed behind the hero content.
+- Local uploaded video renders as a deferred background `<video>` element behind the hero content.
+- It should not be treated as editorial foreground media.
+- Hero content remains the semantic/interactive layer above the video.
+
+### Front-End Contract
+
+Front-enders should rely on:
+
+- shared class:
+  - `has-background-video`
+- shared media class:
+  - `.mrn-section-background-media`
+- injected iframe class:
+  - `.mrn-section-background-media__frame`
+- hero-specific hooks:
+  - `.mrn-hero__background-media`
+  - `.mrn-hero__inner`
+- two-column hero hooks:
+  - `.mrn-two-column-split__background-media`
+  - `.mrn-two-column-split`
+
+### Current Rendering Defaults
+
+- normalized provider embed URL for remote sources
+- autoplaying, muted, looping provider params
+- local uploads render with:
+  - `autoplay`
+  - `muted`
+  - `loop`
+  - `playsinline`
+  - `preload="none"`
+- absolute full-bleed positioning inside the hero section
+- image-first behavior:
+  - background image remains visible on initial paint
+  - background media is not inserted immediately
+- current performance guards:
+  - wait until the hero is near/in view
+  - defer iframe insertion by about `2000ms`
+  - skip on `prefers-reduced-motion: reduce`
+  - skip on small screens by default
+  - skip when `Save-Data` is enabled
+
+### Layering Rule
+
+- Background color remains the base layer.
+- Background image remains an optional image layer.
+- Background video sits as the decorative moving media layer behind the hero content.
+- The content wrapper is positioned above the video so links and editor content remain readable and interactive.
+
 ### Data vs Presentation Rule
 
 - Store destination data in a `link` field.
@@ -481,9 +766,94 @@ Current conversion targets:
 - CTA
 - Basic Block
 - Content Grid
-- FAQ
+- FAQs/Accordion
 
 The hidden-layout filtering in admin JS must only affect popup menu items, not full builder row DOM.
+
+## FAQs/Accordion Rule
+
+Do not create a second accordion content system when the FAQ model already fits the behavior.
+
+Use the shared pattern:
+
+- reusable block name:
+  - `FAQs/Accordion`
+- visible content layout:
+  - `FAQs/Accordion - label|title|items`
+
+Current field treatment:
+
+- `Label`
+- `Title field`
+- `HTML tag for text field`
+- `Items` repeater
+  - `Question / Heading`
+  - `Answer / Text`
+
+Current configs that make sense for this pattern:
+
+- `Background color`
+- `First Item Open`
+- `Accent`
+
+This keeps FAQ and collapsible/accordion content under one rendering model instead of splitting them into separate near-duplicate systems.
+
+## Stats Layout Rule
+
+Use a dedicated stats layout when the content pattern is:
+
+- repeated metrics
+- large values
+- short supporting labels
+- simple repeated presentation
+
+Current visible layout:
+
+- `Stats - label|heading|items`
+
+Current field treatment:
+
+- `Label`
+- `Heading`
+- `HTML tag for heading`
+- `Items`
+  - `Stat`
+  - `Label`
+
+Current configs:
+
+- `Columns`
+- `Show dividers`
+- `Background color`
+- `Accent`
+
+Do not force this into `Grid` just because both use repeaters. `Stats` is a specific content pattern with a clearer front-end contract.
+
+## Showcase Layout Rule
+
+Use `Showcase` for screenshot-driven collage sections with hover interaction.
+
+Current visible layout:
+
+- `Showcase - label|heading|image|link`
+
+Current field treatment:
+
+- `Label`
+- `Heading`
+- `HTML tag for heading`
+- `Items`
+  - `Image`
+  - `Link`
+
+Current configs:
+
+- `Hover effect`
+- `Stagger style`
+- `Background color`
+- `Accent`
+
+This is not a carousel, slider, or gallery. It is a fixed repeated showcase composition for featured screenshots/work examples.
 
 ### Direct Picker Rule
 
@@ -548,8 +918,22 @@ Current approved advanced pattern:
 - `Two Column Split`
   - one nested layout in the left column
   - one nested layout in the right column
+  - includes `Background color` as a standard section-level config
+  - should still not add extra presentation controls to the `Reusable Block` wrapper used inside the columns
+  - current allowed nested layout set:
+    - `Text - label|title|text with editor`
+    - `Basic - label|title|text with editor|image|link`
+    - `Card - image|text|link`
+    - `CTA - label|title|text with editor|link`
+    - `Grid - label|title|repeater`
+    - `Image - label|title|text with editor`
+    - `Video - remote|upload`
+    - `Logos - label|heading|image|link`
+    - `External - widget/iFrame`
+    - `Reusable Block`
 
 Avoid turning nested columns into full multi-row mini-builders unless there is a strong reason.
+Do not add recursive split-inside-split layouts unless a future thread makes that an explicit decision.
 
 ## Documentation Habit
 

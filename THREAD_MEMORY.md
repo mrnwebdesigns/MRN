@@ -98,6 +98,7 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
 - The first deep-dive plugin docs now exist under:
   - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/`
   - Current deep docs:
+    - `mrn-active-style-guide.md`
     - `mrn-reusable-block-library.md`
     - `mrn-site-styles.md`
     - `mrn-editor-enhancements.md`
@@ -112,6 +113,22 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - These hidden layouts are used by the conversion flow only and are hidden from the normal `Add Content Row` menu with builder admin JS.
 - The `Reusable Block` selector in the page/post builder now filters to published reusable blocks only.
   - Current picker query allows `publish` only.
+- The reusable FAQ pattern has been broadened into `FAQs/Accordion` rather than creating a separate accordion system.
+  - Reusable labels now use `FAQs/Accordion`.
+  - The theme `Content` builder now includes a visible layout:
+    - `FAQs/Accordion - label|title|items`
+  - Shared field treatment:
+    - `Label`
+    - `Title field`
+    - `HTML tag for text field`
+    - `Items` repeater with:
+      - `Question / Heading`
+      - `Answer / Text`
+  - Current configs:
+    - `Background color`
+    - `First Item Open`
+    - `Accent`
+  - The hidden page-only conversion target still exists, now labeled `FAQs/Accordion (Page Only)`.
 - Hidden page-only conversion targets must be hidden only in the popup menu, not in the full admin DOM.
   - The hide selector in `content-builder-admin.js` should target menu-item markup (`li [data-layout]`) so converted rows like `faq_block` do not disappear immediately after insertion.
 - The reusable-block convert action should switch to a white icon state when the active ACF layout bar is blue.
@@ -161,9 +178,15 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
 - The theme-owned `Content` builder now includes an advanced `Two Column Split` layout.
   - Each column is its own nested flexible-content field with `max = 1`, so each side gets exactly one nested layout.
   - Current nested layout set includes:
-    - `Body Text`
+    - `Text - label|title|text with editor`
     - `Basic - label|title|text with editor|image|link`
     - `Card - image|text|link`
+    - `CTA - label|title|text with editor|link`
+    - `Grid - label|title|repeater`
+    - `Image - label|title|text with editor`
+    - `Video - remote|upload`
+    - `Logos - label|heading|image|link`
+    - `External - widget/iFrame`
     - `Reusable Block`
   - Current width presets:
     - `50 / 50`
@@ -171,6 +194,7 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - `40 / 60`
     - `67 / 33`
     - `33 / 67`
+  - The main `Two Column Split` layout now also includes `Background color`, aligning it with the standard section-level config pattern.
   - Nested reusable rows inside the split do not get the top-level conversion action icon.
   - Render template:
     - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/two-column-split.php`
@@ -184,6 +208,10 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - Configs:
     - `Background color`
     - shared bottom accent
+- The separate `Hero` field group above `Content` currently uses one layout labeled:
+  - `Basic - label|heading|text with editor|link|image`
+  - `Two Column Split`
+  - The hero field key remains `page_hero_rows` and is still limited to one row.
 - The theme-owned `Content` builder now includes an `External - widget/iFrame` layout.
   - Fields:
     - `Snippet/Code`
@@ -212,7 +240,44 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
   - Render template:
     - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/image-content.php`
-- The theme-owned `Content` builder now includes a phase-1 `Slider - repeater` layout.
+- Background-image support is intentionally limited to the current “strong yes” single-section layouts:
+  - Hero
+  - Basic
+  - CTA
+  - Current field contract:
+    - `background_image`
+    - shared class `has-background-image`
+    - section-specific CSS vars:
+      - Hero -> `--mrn-hero-bg-image`
+      - Basic -> `--mrn-basic-row-bg-image`
+      - CTA -> `--mrn-cta-bg-image`
+  - Front-end defaults:
+    - `background-position: center`
+    - `background-repeat: no-repeat`
+    - `background-size: cover`
+  - Background color remains the token-driven base layer underneath the image.
+- Background video is currently hero-only.
+  - Supported hero layouts:
+    - `Basic - label|heading|text with editor|link|image`
+    - `Two Column Split`
+  - Current field contract:
+    - `background_video`
+    - `background_video_upload`
+    - shared class `has-background-video`
+    - shared render hook `.mrn-section-background-media`
+  - Current render behavior:
+    - YouTube/Vimeo remote URL supported
+    - local uploaded video supported
+    - local upload takes precedence when both are set
+    - normalized provider iframe embed for remote sources
+    - deferred local `<video>` for uploaded sources
+    - decorative autoplay/muted/loop background video
+    - image-first and deferred:
+      - iframe loads only when the hero is in/near view
+      - current delay is about `2000ms`
+      - skipped on small screens, reduced-motion, and Save-Data
+    - hero content remains the foreground semantic layer above the video
+- The theme-owned `Content` builder now includes a phase-1 `Slider - label|title|slides` layout.
   - Current slider framework:
     - `Splide` `4.1.4`, vendored locally in the stack theme
   - Fields:
@@ -246,6 +311,53 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
   - Render template:
     - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/slider.php`
+- The theme-owned `Content` builder now includes a `Logos - label|heading|image|link` layout.
+  - Fields:
+    - `Label`
+    - `Heading`
+    - `HTML tag for heading`
+    - `Logos` repeater with:
+      - `Image`
+      - `Link`
+  - Configs:
+    - `Display mode`
+    - `Logos per row/view`
+    - slider controls:
+      - `Show arrows`
+      - `Show pagination`
+      - `Autoplay`
+      - `Pause on hover`
+      - `Delay start`
+      - `Delay time`
+      - `Time on slide`
+    - `Background color`
+    - shared bottom accent
+  - It supports both:
+    - `Grid`
+    - `Slider`
+  - Render template:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/logos.php`
+- The theme-owned `Content` builder now includes a `Video - remote|upload` layout.
+  - Fields:
+    - `Label`
+    - `Title field`
+    - `HTML tag for text field`
+    - `Text area with editor`
+    - `Remote video URL`
+    - `Video upload`
+  - Configs:
+    - `Background color`
+    - shared bottom accent
+  - Source precedence:
+    - local upload wins over remote URL when both are set
+  - Current rendering model:
+    - foreground video section, not a background-video section
+    - remote supports YouTube/Vimeo
+    - local supports uploaded video files
+    - uses the shared deferred media boot path
+    - no autoplay by default
+  - Render template:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/video.php`
 
 ## Thread: 2026-03-27 default-configs Manual Refresh + Reusable Block Repo Cleanup
 - Goal:
@@ -4511,7 +4623,8 @@ After you get each summary back:
   - `Title field`
   - `HTML tag for text field`
   - `Text area with editor`
-  - `Link`
+  - `Primary Link`
+  - `Secondary Link`
   - configs:
     - `Link style`
     - `Link color`
@@ -4529,3 +4642,100 @@ After you get each summary back:
   - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
   - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
   - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/cta.php`
+
+## Thread: 2026-03-28 CTA Dual Links
+- Goal:
+  - Extend CTA to support the common two-action pattern without creating a second CTA layout.
+- Updated CTA action model:
+  - `Primary Link`
+  - `Secondary Link`
+- Notes:
+  - The theme CTA layout clones the reusable CTA field group, so the change applies to both reusable CTA and the theme layout CTA.
+  - `Link style` and `Link color` remain shared section-level configs for CTA actions.
+  - CTA actions now render inside:
+    - `mrn-reusable-block__actions`
+  - The secondary action now exposes:
+    - `mrn-reusable-block__link--secondary`
+- Validation:
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/cta.php`
+
+## Thread: 2026-03-28 Stats Layout
+- Goal:
+  - Add a dedicated stats layout for repeated metrics instead of forcing the pattern into `Grid`.
+- Added theme layout:
+  - `Stats - label|heading|items`
+- Field treatment:
+  - `Label`
+  - `Heading`
+  - `HTML tag for heading`
+  - `Items` repeater with:
+    - `Stat`
+    - `Label`
+- Configs:
+  - `Columns`
+  - `Show dividers`
+  - `Background color`
+  - `Accent`
+- Theme changes:
+  - Updated `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - Added `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/stats.php`
+  - Updated `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css`
+- Notes:
+  - This pattern is for reputation/results/metrics sections with large values and short labels.
+  - It should remain its own layout instead of being folded into `Grid`.
+
+## Thread: 2026-03-29 Showcase Layout
+- Goal:
+  - Add a dedicated showcase layout for screenshot-driven collage sections with hover interaction, distinct from logos, sliders, and galleries.
+- Added theme layout:
+  - `Showcase - label|heading|image|link`
+- Field treatment:
+  - `Label`
+  - `Heading`
+  - `HTML tag for heading`
+  - `Items` repeater with:
+    - `Image`
+    - `Link`
+- Configs:
+  - `Hover effect`
+  - `Stagger style`
+  - `Background color`
+  - `Accent`
+- Notes:
+  - This is not a carousel or gallery.
+  - It is intended for fixed repeated showcase compositions with hover effects.
+  - Current stagger presets:
+    - `Collage`
+    - `Stacked`
+    - `Flat`
+  - Current hover presets:
+    - `Lift`
+    - `Scale`
+    - `None`
+
+## Thread: 2026-03-29 Theme Builder Refactor
+- Goal:
+  - Reduce risk and maintenance overhead in the stack theme by moving the builder system out of the monolithic `functions.php`.
+- Durable theme architecture change:
+  - The stack theme builder is no longer defined inline only in `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`.
+  - `functions.php` now bootstraps the builder layer through:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/boot.php`
+- Current builder file split:
+  - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/admin.php`
+    - builder admin assets, admin UI behavior, native editor hiding
+  - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/helpers.php`
+    - shared builder helper functions and nested-layout definitions
+  - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/render.php`
+    - front-end builder rendering, conversion helpers, AJAX conversion, picker filtering, collapsed-title filters, SmartCrawl integration
+  - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/field-groups.php`
+    - local ACF field-group registration for Hero and Content
+  - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/boot.php`
+    - central include point for the builder subsystem
+- Notes:
+  - This is a file-organization refactor, not a strategy change.
+  - Theme ownership boundaries remain the same:
+    - theme owns post/page builder layouts and rendering
+    - reusable block library owns reusable block data models
+    - Site Styles owns shared tokens and graphic-element choices
+  - Future builder work should go into the `inc/builder/` split files rather than rebuilding `functions.php` into a large single-file implementation.

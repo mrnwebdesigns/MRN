@@ -112,7 +112,7 @@ if ( isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attr
 		<?php if ( $has_items ) : ?>
 			<div
 				id="<?php echo esc_attr( $slider_id ); ?>"
-				class="splide mrn-slider-row__splide"
+				class="splide mrn-splide mrn-slider-row__splide"
 				aria-label="<?php echo esc_attr( '' !== $heading ? wp_strip_all_tags( $heading ) : 'Content slider' ); ?>"
 				data-per-page="<?php echo esc_attr( (string) $per_page ); ?>"
 				data-arrows="<?php echo esc_attr( $show_arrows ? 'true' : 'false' ); ?>"

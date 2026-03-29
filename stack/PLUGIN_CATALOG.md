@@ -195,9 +195,11 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
   - yes, explicitly front-end oriented
   - uses the live active theme header/footer context
 - Developer-facing hooks:
-  - no custom public hook inventory captured yet
+  - function-oriented integration surface, but no major custom public hook API yet
 - Notes:
   - reference tool for reviewing front-end styling in live context
+  - deep doc:
+    - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-active-style-guide.md`
 
 ### `mrn-admin-ui-css`
 

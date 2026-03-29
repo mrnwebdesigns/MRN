@@ -27,6 +27,9 @@
 !/stack/themes/mrn-base-stack/
 !/stack/themes/mrn-base-stack/functions.php
 !/stack/themes/mrn-base-stack/style.css
+!/stack/themes/mrn-base-stack/inc/
+!/stack/themes/mrn-base-stack/inc/builder/
+!/stack/themes/mrn-base-stack/inc/builder/*.php
 !/stack/themes/mrn-base-stack/js/
 !/stack/themes/mrn-base-stack/js/front-end-slider.js
 !/stack/themes/mrn-base-stack/js/vendor/
