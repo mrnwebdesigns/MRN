@@ -4746,6 +4746,8 @@ After you get each summary back:
 - Durable security rules:
   - Reusable block rendering must not expose `draft` or `private` reusable blocks to anonymous/public requests.
   - Unpublished reusable blocks may only render for users who can edit the specific block.
+  - Reusable block REST routes are editor-only.
+  - Anonymous REST access to reusable block collections and single-item endpoints is intentionally blocked, including published items.
   - One-time reusable block maintenance routines must not run on anonymous front-end traffic.
   - Legacy reusable cleanup and starter-block seeding are now treated as admin/CLI maintenance work, not normal-request behavior.
   - Starter-block seeding now uses an option-backed signature guard so it only reruns when the typed starter definitions actually change.
