@@ -209,8 +209,8 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - Footer business/logo data should come from:
     - `mrn_base_stack_get_business_information()`
     - `mrn_base_stack_get_business_logo( 'footer' )`
-  - Footer social links should come from:
-    - `mrn_config_helper_get_social_links()`
+- Footer social links should come from:
+  - `mrn_config_helper_get_social_links()`
   - Theme helpers now include:
     - `mrn_base_stack_get_business_address_lines()`
     - `mrn_base_stack_get_business_hours_display_rows()`
@@ -218,6 +218,45 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - `mrn_base_stack_render_social_links()`
 - The stack now also has a tactical theme execution doc:
   - `/Users/khofmeyer/Development/MRN/stack/THEME_TASKLIST.md`
+
+## 2026-03-30 Width System Pass
+
+- The stack theme width pass is being normalized by layout family rather than one-off template tweaks.
+  - text-led families:
+    - `Text`
+    - `External Widget`
+  - media/content families:
+    - `Basic`
+    - `Image Content`
+    - `Video`
+    - `Slider`
+  - collection/grid families:
+    - `Card`
+    - `Logos`
+    - `Stats`
+    - `Showcase`
+  - reusable block families rendered through the theme shell:
+    - direct `Reusable Block`
+    - page-only `Basic Block`
+    - page-only `CTA Block`
+    - page-only `Content Grid`
+    - page-only `FAQ Block`
+- Reusable block rows rendered inside the theme builder should use the same shell width helpers as native theme layouts.
+- The direct `Reusable Block` layout now has a `Section Width` field.
+- Page-only `Basic Block` and `FAQ Block` now also expose `Section Width` so reusable-derived layouts use the same width vocabulary as the rest of the builder.
+- The local stack QA harness now includes dedicated page coverage for the remaining width-sensitive gaps:
+  - `qa-text-widths`
+  - `qa-external-widget-widths`
+  - `qa-reusable-basic-widths`
+  - `qa-reusable-cta-widths`
+  - `qa-reusable-grid-widths`
+  - `qa-reusable-faq-widths`
+  - `qa-after-content-widths`
+- The local stack QA harness also now includes dedicated reusable block fixtures:
+  - `qa-reusable-basic-block`
+  - `qa-reusable-cta-block`
+  - `qa-reusable-grid-block`
+  - `qa-reusable-faq-block`
   - Use it as the practical ticket/checklist layer for:
     - theme system foundation work
     - template coverage work
@@ -4711,6 +4750,120 @@ After you get each summary back:
   - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content.php`
   - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/hero.php`
 
+## Thread: 2026-03-30 After Content Builder Group
+- Goal:
+  - Add a second flexible-content area after the main `Content` builder on posts and pages without creating a new layout vocabulary yet.
+- Decisions made:
+  - The new field group is named `After Content`.
+  - `After Content` is a placement bucket, not a new contract.
+  - For now, `After Content` intentionally exposes the same layout set as `Content`.
+  - The new flexible-content field name is:
+    - `page_after_content_rows`
+  - `After Content` renders after the main `Content` builder on singular posts and pages.
+  - Collapsed layout-title behavior now applies to both:
+    - `page_content_rows`
+    - `page_after_content_rows`
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/helpers.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/field-groups.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/render.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content-page.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content.php`
+    - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
+    - `/Users/khofmeyer/Development/MRN/stack/DEV_HANDOFF.md`
+    - `/Users/khofmeyer/Development/MRN/stack/THEME_ROADMAP.md`
+    - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md`
+- Validation:
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/helpers.php`
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/field-groups.php`
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/render.php`
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content-page.php`
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content.php`
+
+## Thread: 2026-03-30 Page Shell Modernization
+- Goal:
+  - Modernize the overall singular page/post shell so sections can go full width when needed while most content remains centered in containers with better mobile behavior.
+- Decisions made:
+  - The page shell should remain full width overall rather than boxing the entire article into a narrow column.
+  - Reading content should stay centered in a constrained content container.
+  - Builder sections should be allowed to span the page flow and manage their own inner max-width containers.
+  - Shared shell gutters should control mobile/desktop horizontal spacing instead of relying on article-level padding alone.
+  - Header/footer remain full-width bands with centered inner content.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content-page.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css`
+    - `/Users/khofmeyer/Development/MRN/stack/DEV_HANDOFF.md`
+    - `/Users/khofmeyer/Development/MRN/stack/THEME_ROADMAP.md`
+    - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md`
+- Validation:
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content-page.php`
+  - `php -l /Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content.php`
+  - `git -C /Users/khofmeyer/Development/MRN diff --check`
+
+## Thread: 2026-03-30 Shared Section Width Contract
+- Goal:
+  - Replace one-off width behavior with a shared layout-level width contract for theme-owned builder sections.
+- Decisions made:
+  - Theme-owned layouts should use a shared `Section Width` setting where width matters visually.
+  - Current supported width values are:
+    - `Content`
+    - `Wide`
+    - `Full Width`
+  - `Content` is for tighter reading-width sections.
+  - `Wide` is for broader centered sections.
+  - `Full Width` is for intentional edge-to-edge section treatments.
+  - Existing saved `Image Content` rows with the old `full_width` toggle still fall back to `Full Width` on the front end when no new `section_width` value exists.
+  - Theme-owned builder templates should route width resolution, accent attributes, and inline style serialization through shared helper functions instead of duplicating wrapper logic per layout.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/helpers.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/field-groups.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/body-text.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/basic.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/card.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/external-widget.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/image-content.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/logos.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/showcase.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/slider.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/stats.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/two-column-split.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/video.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css`
+
+## Thread: 2026-03-30 Builder Wrapper Helper Cleanup
+- Goal:
+  - Make the builder easier to maintain by centralizing shared wrapper concerns instead of repeating them in each template.
+- Decisions made:
+  - Theme-owned builder templates should keep layout markup/content local but defer generic wrapper behavior to shared helpers.
+  - Shared helpers now cover:
+    - section width resolution
+    - accent contract normalization
+    - class merging
+    - HTML attribute serialization
+    - inline style serialization
+  - The preferred extension path is to add new layout fields/contracts in ACF definitions, then reuse helper-driven wrapper behavior in the template.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/helpers.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/body-text.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/basic.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/card.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/external-widget.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/image-content.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/logos.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/showcase.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/slider.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/stats.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/two-column-split.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/video.php`
+    - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
+    - `/Users/khofmeyer/Development/MRN/stack/DEV_HANDOFF.md`
+    - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md`
+
 ## Thread: 2026-03-27 Packaging Pass
 - Goal:
   - Package the work completed across reusable blocks, Site Styles, and the stack theme foundation work.
@@ -5021,3 +5174,200 @@ After you get each summary back:
   - ACF local field groups now include:
     - `Theme Header/Footer`
     - `Business Information`
+
+## Thread: 2026-03-30 VS Code Migration Source-Of-Truth Sync
+- Goal:
+  - Treat the user-provided migration brief as the canonical source of truth for in-flight stack theme work.
+- Durable decisions confirmed:
+  - Workspace root and startup order remain:
+    - `/Users/khofmeyer/Development/MRN`
+    - read `THREAD_MEMORY.md` first, then `AGENTS.md`
+  - Active work area is:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack`
+  - Page-shell direction remains:
+    - full-width overall shell
+    - centered inner containers for most content
+    - shared shell tokens/gutters/spacing in theme CSS
+  - `After Content` remains:
+    - a placement bucket (not a new layout system)
+    - rendered after `Content`
+    - using the same layout set as `Content`
+  - Shared `Section Width` contract remains:
+    - `Content`
+    - `Wide`
+    - `Full Width`
+    - legacy `Image Content` `full_width` values still supported as fallback
+  - Architecture direction remains:
+    - central shared wrapper/helper logic
+    - layout-specific content markup stays in templates
+    - normalize in batches by layout family, not random one-off patches
+- Current QA status captured:
+  - Width classes render correctly in output HTML:
+    - `mrn-shell-section--width-content`
+    - `mrn-shell-section--width-wide`
+    - `mrn-shell-section--width-full`
+  - Primary open issue is visual differentiation, not field persistence/rendering:
+    - some layouts (especially `Basic`) do not yet make `Wide` vs `Full Width` feel distinct enough
+- Local QA harness captured (temporary, non-production):
+  - `http://mrn-plugin-stack.local/qa-basic-widths/`
+  - `http://mrn-plugin-stack.local/qa-image-content-widths/`
+  - `http://mrn-plugin-stack.local/qa-card-widths/`
+  - `http://mrn-plugin-stack.local/qa-logos-widths/`
+  - `http://mrn-plugin-stack.local/qa-stats-widths/`
+  - `http://mrn-plugin-stack.local/qa-showcase-widths/`
+  - `http://mrn-plugin-stack.local/qa-slider-widths/`
+  - `http://mrn-plugin-stack.local/qa-video-widths/`
+  - `http://mrn-plugin-stack.local/qa-two-column-split-widths/`
+  - each page repeats one layout three times (`Content`, `Wide`, `Full Width`) for visual comparison and mobile/accent/spacing checks
+- Utility note:
+  - One-off local QA seeding script path recorded for context only:
+    - `/tmp/create_layout_qa_pages.php`
+  - Script is intentionally not source-controlled.
+- Verification state captured:
+  - During current shell/width work, `php -l` and `git diff --check` have been repeatedly passing.
+  - Current builder/page-shell/width changes are still local and uncommitted.
+- Next-agent direction:
+  - Treat width-field rendering as solved.
+  - Continue with layout-family normalization to improve visual width expression.
+  - Start with `Basic` and likely `Image Content`.
+  - Use seeded QA pages as the acceptance harness.
+
+## Thread: 2026-03-30 Layout Family Width Normalization (QA Process)
+- Adjusted focus to complete visual QA across all layouts.
+- Goal:
+  - Start the first intentional layout-family normalization pass so width modes (`Content`, `Wide`, `Full Width`) feel visually distinct, not just technically correct.
+- Decisions made:
+  - Keep width-field rendering contract unchanged; improve perception through stronger internal layout primitives.
+  - Start with:
+    - `Basic`
+    - `Image Content`
+  - Keep all changes in theme CSS for this pass (no field contract changes).
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css`
+- `Basic` normalization outcomes:
+  - Added dedicated internal structure styling (`mrn-basic-row__*`) that previously did not exist.
+  - Added width-aware behavior:
+    - `Content`: constrained inner width
+    - `Wide`: two-column media/content composition
+    - `Full Width`: larger two-column ratio and spacing so extra width reads clearly
+  - Added mobile fallback to collapse width-specific two-column layouts back to one column.
+- `Image Content` normalization outcomes:
+  - Added width-aware inner max-width treatment for `Content`, `Wide`, and `Full Width`.
+  - Added width-aware image scaling rules for contained images so modes are easier to compare on QA pages.
+  - Added `Full Width` cover-image treatment (`aspect-ratio` + `object-fit`) to better use available horizontal space when that mode is selected.
+- Notes:
+  - This pass is intentionally architecture-aligned with the agreed plan:
+    - shared shell/width contract remains centralized
+    - layout-level expression is improved in batches by family
+    - QA harness pages remain the acceptance layer
+
+## Thread: 2026-03-30 Layout Family Width Normalization (Card)
+- Goal:
+  - Continue layout-family normalization by making the `Card` layout clearly express `Content`, `Wide`, and `Full Width` on the seeded QA page.
+- Decisions made:
+  - Keep the existing builder width contract and wrapper helpers unchanged.
+  - Improve width-mode perception by strengthening Card’s internal grid and item styling.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css`
+    - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
+- Card layout outcomes:
+  - Implemented `.mrn-card-row__grid` as a responsive CSS grid.
+  - Width-aware behavior:
+    - `Content`: single column
+    - `Wide`: two columns
+    - `Full Width`: three columns with larger gap so the mode reads distinctly
+  - Added baseline Card item presentation (`border`, `radius`, padding, image treatment) so the grid is easy to QA.
+  - Mobile behavior: all widths collapse to one column at the theme breakpoint.
+
+## Thread: 2026-03-30 Layout Family Width Normalization (Logos + Stats + Showcase)
+- Goal:
+  - Continue the “collection/grid” family pass so these layouts clearly express `Content`, `Wide`, and `Full Width` on the seeded QA pages.
+- Decisions made:
+  - Remove older hardcoded width/padding rules that override the new shared shell/width contract.
+  - Use width-mode wrapper classes to drive internal grid density and spacing.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css`
+    - `/Users/khofmeyer/Development/MRN/stack/DEV_HANDOFF.md`
+    - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md`
+- `Logos` outcomes:
+  - Adjusted `.mrn-logos-row__grid` spacing/max-width per width mode:
+    - `Content`: narrower and tighter
+    - `Wide`: broader centered max-width
+    - `Full Width`: larger gap and no internal max-width cap
+- `Stats` outcomes:
+  - Removed legacy `.mrn-shell-section--stats` hardcoded width rules.
+  - Adjusted `.mrn-stats-row__grid` gap by width mode so `Full Width` reads larger.
+- `Showcase` outcomes:
+  - Removed legacy `.mrn-shell-section--showcase` hardcoded width rules.
+  - Adjusted `.mrn-showcase-row__grid` columns/gap by width mode so `Content` is visibly tighter than `Wide/Full Width`.
+
+## Thread: 2026-03-30 Layout Family Width Normalization (Slider)
+- Goal:
+  - Continue the width-mode visual differentiation work on `Slider` using the seeded QA page.
+- Decisions made:
+  - Keep slider data/config behavior unchanged; improve width-mode perception using internal max-width + track padding and slide presentation.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css`
+- Slider outcomes:
+  - `Content` / `Wide`:
+    - slider “stage” is capped to a centered max-width so it reads as contained content
+  - `Full Width`:
+    - slider stage goes edge-to-edge and adds track padding so slides don’t touch the viewport edges
+  - Slides now have a consistent “card” presentation (border/radius/padding) so the carousel reads clearly at all widths.
+
+## Thread: 2026-03-30 Layout Family Width Normalization (Text + External)
+- Goal:
+  - Continue layout-family normalization for the “textual/utility” layouts so `Wide` and `Full Width` feel meaningfully different in the QA harness.
+- Decisions made:
+  - Keep `Text` readable by constraining inner content width even when the section wrapper is wide/full.
+  - Allow `Text` wide/full modes to present as an intentional “band” (light panel treatment) instead of silently behaving like `Content`.
+  - Add baseline defensive embed styling for `External` so full-width widgets are less likely to overflow.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css`
+    - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
+
+## Thread: 2026-03-30 Layout Family Width Normalization (Video + Two Column Split) + Dev Docs
+- Goal:
+  - Finish the remaining high-visibility builder layouts for width-mode QA (`qa-video-widths`, `qa-two-column-split-widths`) and record handoff for dev teams.
+- `Video` outcomes:
+  - Width-scoped section padding: tighter for `Content`, standard for `Wide`, larger for `Full Width`.
+  - Width-scoped row gap and header max-width so copy and media scale with the mode.
+  - `Full Width`: stronger video frame (radius + shadow) so full bleed reads intentional.
+- `Two Column Split` outcomes:
+  - Width-scoped column gap on `.mrn-two-column-split` inside `.mrn-shell-section--two-column-split` so `Full Width` uses more horizontal rhythm than `Content`.
+- Documentation for devs:
+  - `BUILDER_CONVENTIONS.md`: **Developer reference: layouts with width-mode CSS** (FE hooks, BE note on `section_width`, note on not-yet-normalized layouts).
+  - `DEV_HANDOFF.md`: pointer to conventions + running list of normalized layouts.
+  - `THEME_ROADMAP.md`: short paragraph tying `Section Width`, QA pages, and CSS normalization together.
+  - `CHANGELOG.md`: entries for Video/Two Column + doc updates.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css`
+    - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
+    - `/Users/khofmeyer/Development/MRN/stack/DEV_HANDOFF.md`
+    - `/Users/khofmeyer/Development/MRN/stack/THEME_ROADMAP.md`
+    - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md`
+    - `/Users/khofmeyer/Development/MRN/THREAD_MEMORY.md`
+
+## Thread: 2026-03-30 CTA + Grid Section Width (Cloned Reusable Rows)
+- Goal:
+  - Bring **CTA** and **Grid** (reusable-field clones in the theme builder) into the same `Section Width` contract and visual normalization as native layouts.
+- Decisions made:
+  - Add `section_width` to flexible rows that only cloned reusable groups (main builder + page-only clones + nested Two Column variants).
+  - Wrap `mrn_rbl_render_fields_as_block()` output in a standard builder row + `mrn-shell-section` so `.mrn-shell-section--width-*` and `.mrn-shell-section > *` rules apply.
+  - Use dedicated shell classes for FE: `mrn-shell-section--reusable-cta`, `mrn-shell-section--reusable-grid`.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/render.php` — `mrn_base_stack_wrap_cloned_reusable_builder_markup()`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/field-groups.php` — section width fields on CTA, Grid, CTA (Page Only), Content Grid (Page Only)
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/helpers.php` — nested CTA/Grid section width
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css` — width-scoped rules for embedded CTA/Grid
+    - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`, `DEV_HANDOFF.md`, `THEME_ROADMAP.md`, `CHANGELOG.md`
+- Notes:
+  - **Reusable Block** picker rows and other cloned layouts (e.g. FAQ) remain outside this pattern until explicitly extended.
+  - Existing rows without a stored `section_width` fall back to `wide` (helper default).

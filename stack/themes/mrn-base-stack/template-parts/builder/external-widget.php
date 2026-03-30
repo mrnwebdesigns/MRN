@@ -11,6 +11,7 @@ $embed_code       = isset( $row['embed_code'] ) ? trim( (string) $row['embed_cod
 $background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
 $bottom_accent    = ! empty( $row['bottom_accent'] );
 $accent_slug      = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
+$section_width    = function_exists( 'mrn_base_stack_get_row_section_width_class' ) ? mrn_base_stack_get_row_section_width_class( $row, 'wide' ) : 'mrn-shell-section--width-wide';
 
 if ( '' === $embed_code ) {
 	return;
@@ -20,30 +21,23 @@ $section_classes = array(
 	'mrn-content-builder__row',
 	'mrn-content-builder__row--external-widget',
 );
-$section_attrs   = array();
 $section_styles  = array();
 
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-external-widget-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
-$accent_contract = function_exists( 'mrn_site_styles_get_bottom_accent_contract' )
-	? mrn_site_styles_get_bottom_accent_contract( $bottom_accent, $accent_slug )
-	: array(
-		'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
-		'attributes' => array(),
-	);
-
-if ( isset( $accent_contract['classes'] ) && is_array( $accent_contract['classes'] ) ) {
-	$section_classes = array_merge( $section_classes, $accent_contract['classes'] );
-}
-
-if ( isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ) {
-	$section_attrs = $accent_contract['attributes'];
-}
+$accent_contract = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
+	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
+	'attributes' => array(),
+);
+$section_classes = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
+$section_attrs   = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
+$section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
+$section_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 ?>
-<section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php foreach ( $section_attrs as $attribute_name => $attribute_value ) : ?><?php if ( '' !== $attribute_name && '' !== $attribute_value ) : ?> <?php echo esc_attr( $attribute_name ); ?>="<?php echo esc_attr( $attribute_value ); ?>"<?php endif; ?><?php endforeach; ?><?php echo ! empty( $section_styles ) ? ' style="' . esc_attr( implode( '; ', $section_styles ) ) . '"' : ''; ?>>
-	<div class="mrn-shell-section mrn-shell-section--external-widget">
+<section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php echo '' !== $section_style ? ' style="' . esc_attr( $section_style ) . '"' : ''; ?>>
+	<div class="mrn-shell-section mrn-shell-section--external-widget <?php echo esc_attr( $section_width ); ?>">
 		<div class="mrn-external-widget-row__content">
 			<?php echo do_shortcode( $embed_code ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</div>

@@ -419,6 +419,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'allow_null'    => 1,
 									'instructions'  => 'Select from Site Colors when available.',
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_body_text_section_width', 'section_width', 'wide' ),
 								array(
 									'key'           => 'field_mrn_body_text_bottom_accent',
 									'label'         => 'Bottom Accent',
@@ -612,6 +613,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'width' => '50',
 									),
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_basic_section_width', 'section_width', 'wide' ),
 								array(
 									'key'           => 'field_mrn_basic_background_image',
 									'label'         => 'Background image',
@@ -674,6 +676,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'prefix_label' => 0,
 									'prefix_name'  => 0,
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_page_cta_section_width', 'section_width', 'wide' ),
 							),
 						),
 						'layout_mrn_grid'           => array(
@@ -694,6 +697,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'prefix_label' => 0,
 									'prefix_name'  => 0,
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_page_grid_section_width', 'section_width', 'wide' ),
 							),
 						),
 						'layout_mrn_slider'         => array(
@@ -888,6 +892,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'allow_null'    => 1,
 									'instructions'  => 'Select from Site Colors when available.',
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_slider_section_width', 'section_width', 'wide' ),
 								array(
 									'key'           => 'field_mrn_slider_bottom_accent',
 									'label'         => 'Accent',
@@ -1131,6 +1136,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'allow_null'    => 1,
 									'instructions'  => 'Select from Site Colors when available.',
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_image_content_section_width', 'section_width', 'wide' ),
 								array(
 									'key'           => 'field_mrn_image_content_bottom_accent',
 									'label'         => 'Accent',
@@ -1158,20 +1164,6 @@ function mrn_base_stack_register_acf_field_groups() {
 									'instructions'  => 'Choose a saved graphic element from Site Styles.',
 									'wrapper'       => array(
 										'width' => '50',
-									),
-								),
-								array(
-									'key'           => 'field_mrn_image_content_full_width',
-									'label'         => 'Full width',
-									'name'          => 'full_width',
-									'aria-label'    => '',
-									'type'          => 'true_false',
-									'ui'            => 1,
-									'default_value' => 0,
-									'ui_on_text'    => 'On',
-									'ui_off_text'   => 'Off',
-									'wrapper'       => array(
-										'width' => '25',
 									),
 								),
 								array(
@@ -1269,6 +1261,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'allow_null'    => 1,
 									'instructions'  => 'Select from Site Colors when available.',
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_external_widget_section_width', 'section_width', 'wide' ),
 								array(
 									'key'           => 'field_mrn_external_widget_bottom_accent',
 									'label'         => 'Accent',
@@ -1313,6 +1306,17 @@ function mrn_base_stack_register_acf_field_groups() {
 									'aria-label' => '',
 									'type'       => 'tab',
 									'placement'  => 'top',
+								),
+								array(
+									'key'        => 'field_mrn_card_label',
+									'label'      => 'Label',
+									'name'       => 'label',
+									'aria-label' => '',
+									'type'       => 'text',
+									'instructions'=> 'Limited inline HTML allowed: span, strong, em, br.',
+									'wrapper'    => array(
+										'width' => '50',
+									),
 								),
 								array(
 									'key'        => 'field_mrn_card_heading',
@@ -1426,6 +1430,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'allow_null'    => 1,
 									'instructions'  => 'Select from Site Colors when available.',
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_card_section_width', 'section_width', 'wide' ),
 								array(
 									'key'           => 'field_mrn_card_bottom_accent',
 									'label'         => 'Accent',
@@ -1532,6 +1537,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'allow_null'    => 1,
 									'instructions'  => 'Select from Site Colors when available.',
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_two_column_split_section_width', 'section_width', 'wide' ),
 							),
 						),
 						'layout_mrn_video'          => array(
@@ -1649,6 +1655,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'width' => '50',
 									),
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_video_section_width', 'section_width', 'wide' ),
 								array(
 									'key'           => 'field_mrn_video_bottom_accent',
 									'label'         => 'Accent',
@@ -1928,6 +1935,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'width' => '50',
 									),
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_logos_section_width', 'section_width', 'wide' ),
 								array(
 									'key'           => 'field_mrn_logos_bottom_accent',
 									'label'         => 'Accent',
@@ -2104,6 +2112,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'width' => '25',
 									),
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_stats_section_width', 'section_width', 'wide' ),
 								array(
 									'key'           => 'field_mrn_stats_bottom_accent',
 									'label'         => 'Accent',
@@ -2285,6 +2294,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'width' => '25',
 									),
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_showcase_section_width', 'section_width', 'wide' ),
 								array(
 									'key'           => 'field_mrn_showcase_bottom_accent',
 									'label'         => 'Accent',
@@ -2355,6 +2365,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'multiple'          => 0,
 									'instructions'      => 'Choose a reusable block from the library. Editing that block updates it everywhere it is used.',
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_reusable_block_section_width' ),
 							),
 						),
 						'layout_mrn_cta_block'      => array(
@@ -2375,6 +2386,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'prefix_label' => 0,
 									'prefix_name'  => 0,
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_page_cta_block_section_width' ),
 							),
 						),
 						'layout_mrn_basic_block'    => array(
@@ -2395,6 +2407,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'prefix_label' => 0,
 									'prefix_name'  => 0,
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_page_basic_block_section_width' ),
 							),
 						),
 						'layout_mrn_content_grid'   => array(
@@ -2415,6 +2428,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'prefix_label' => 0,
 									'prefix_name'  => 0,
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_page_content_grid_section_width' ),
 							),
 						),
 						'layout_mrn_faq_block'      => array(
@@ -2435,6 +2449,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'prefix_label' => 0,
 									'prefix_name'  => 0,
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_page_faq_block_section_width' ),
 							),
 						),
 					),
@@ -2467,6 +2482,57 @@ function mrn_base_stack_register_acf_field_groups() {
 			),
 			'active'                => true,
 			'description'           => 'Universal starter content builder for posts and pages.',
+			'show_in_rest'          => 1,
+		)
+	);
+
+	$content_builder_fields  = function_exists( 'acf_get_fields' ) ? acf_get_fields( 'group_mrn_content_builder' ) : array();
+	$after_content_layouts   = array();
+	$after_content_field_key = 'field_mrn_page_after_content_rows';
+
+	if ( is_array( $content_builder_fields ) && ! empty( $content_builder_fields[0]['layouts'] ) && is_array( $content_builder_fields[0]['layouts'] ) ) {
+		$after_content_layouts = mrn_base_stack_clone_acf_keys_with_prefix( $content_builder_fields[0]['layouts'], 'after_content_' );
+	}
+
+	acf_add_local_field_group(
+		array(
+			'key'                   => 'group_mrn_after_content_builder',
+			'title'                 => 'After Content',
+			'menu_order'            => 20,
+			'fields'                => array(
+				array(
+					'key'               => $after_content_field_key,
+					'label'             => 'After Content',
+					'name'              => 'page_after_content_rows',
+					'aria-label'        => '',
+					'type'              => 'flexible_content',
+					'button_label'      => 'Add After Content Row',
+					'layouts'           => $after_content_layouts,
+				),
+			),
+			'location'              => array(
+				array(
+					array(
+						'param'    => 'post_type',
+						'operator' => '==',
+						'value'    => 'page',
+					),
+				),
+				array(
+					array(
+						'param'    => 'post_type',
+						'operator' => '==',
+						'value'    => 'post',
+					),
+				),
+			),
+			'menu_order'            => 20,
+			'position'              => 'acf_after_title',
+			'style'                 => 'default',
+			'label_placement'       => 'top',
+			'instruction_placement' => 'label',
+			'active'                => true,
+			'description'           => 'Secondary flexible-content area that renders after the main Content builder.',
 			'show_in_rest'          => 1,
 		)
 	);

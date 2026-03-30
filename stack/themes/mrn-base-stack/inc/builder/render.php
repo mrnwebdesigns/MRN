@@ -68,6 +68,95 @@ function mrn_base_stack_render_hero_builder( $post_id = null ) {
 }
 
 /**
+ * Wrap cloned reusable-block markup in the same builder row + section width shell as native layouts.
+ *
+ * @param string               $inner_markup HTML from `mrn_rbl_render_fields_as_block()`.
+ * @param array<string, mixed> $row Flexible content row (may include `section_width`).
+ * @param string               $row_modifier Extra class on `.mrn-content-builder__row`.
+ * @param string               $shell_modifier Extra class on `.mrn-shell-section` (e.g. `mrn-shell-section--reusable-cta`).
+ * @param string               $default_width Default width when `section_width` is empty.
+ * @return string
+ */
+function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, array $row, $row_modifier, $shell_modifier, $default_width = 'wide' ) {
+	$inner_markup = is_string( $inner_markup ) ? $inner_markup : '';
+	if ( '' === trim( $inner_markup ) ) {
+		return '';
+	}
+
+	$section_width = function_exists( 'mrn_base_stack_get_row_section_width_class' )
+		? mrn_base_stack_get_row_section_width_class( $row, $default_width )
+		: 'mrn-shell-section--width-wide';
+
+	$row_classes   = trim( 'mrn-content-builder__row ' . $row_modifier );
+	$shell_classes = trim( 'mrn-shell-section ' . $shell_modifier );
+
+	return sprintf(
+		'<div class="%1$s"><div class="%2$s %3$s">%4$s</div></div>',
+		esc_attr( $row_classes ),
+		esc_attr( $shell_classes ),
+		esc_attr( $section_width ),
+		$inner_markup // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	);
+}
+
+/**
+ * Map reusable block post types to the theme's shared shell modifier classes.
+ *
+ * @param string $post_type Reusable block post type.
+ * @return string
+ */
+function mrn_base_stack_get_reusable_block_shell_modifier( $post_type ) {
+	$map = array(
+		'mrn_reusable_basic' => 'mrn-shell-section--reusable-basic',
+		'mrn_reusable_cta'   => 'mrn-shell-section--reusable-cta',
+		'mrn_reusable_faq'   => 'mrn-shell-section--reusable-faq',
+		'mrn_reusable_grid'  => 'mrn-shell-section--reusable-grid',
+	);
+
+	$post_type = sanitize_key( (string) $post_type );
+
+	return $map[ $post_type ] ?? 'mrn-shell-section--reusable-block';
+}
+
+/**
+ * Map reusable block post types to shared row modifier classes.
+ *
+ * @param string $post_type Reusable block post type.
+ * @return string
+ */
+function mrn_base_stack_get_reusable_block_row_modifier( $post_type ) {
+	$map = array(
+		'mrn_reusable_basic' => 'mrn-content-builder__row--basic-block',
+		'mrn_reusable_cta'   => 'mrn-content-builder__row--cta',
+		'mrn_reusable_faq'   => 'mrn-content-builder__row--faq-block',
+		'mrn_reusable_grid'  => 'mrn-content-builder__row--content-grid',
+	);
+
+	$post_type = sanitize_key( (string) $post_type );
+
+	return $map[ $post_type ] ?? 'mrn-content-builder__row--reusable-block';
+}
+
+/**
+ * Wrap reusable block markup in the standard builder width shell.
+ *
+ * @param string               $inner_markup Reusable block HTML.
+ * @param array<string, mixed> $row Flexible content row.
+ * @param string               $post_type Reusable block post type.
+ * @param string               $default_width Default width when none is stored.
+ * @return string
+ */
+function mrn_base_stack_wrap_reusable_builder_markup( $inner_markup, array $row, $post_type, $default_width = 'wide' ) {
+	return mrn_base_stack_wrap_cloned_reusable_builder_markup(
+		$inner_markup,
+		$row,
+		mrn_base_stack_get_reusable_block_row_modifier( $post_type ),
+		mrn_base_stack_get_reusable_block_shell_modifier( $post_type ),
+		$default_width
+	);
+}
+
+/**
  * Render a single builder row.
  *
  * @param array<string, mixed> $row Flexible Content row.
@@ -100,7 +189,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'cta' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			echo mrn_rbl_render_fields_as_block( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$markup = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_cta',
 				$row,
 				array(
@@ -109,6 +198,12 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page CTA',
 				)
 			);
+			echo mrn_base_stack_wrap_reusable_builder_markup(
+				$markup,
+				$row,
+				'mrn_reusable_cta',
+				'wide'
+			); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return true;
 		}
 
@@ -117,7 +212,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'grid' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			echo mrn_rbl_render_fields_as_block( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$markup = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_grid',
 				$row,
 				array(
@@ -126,6 +221,12 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page Grid',
 				)
 			);
+			echo mrn_base_stack_wrap_reusable_builder_markup(
+				$markup,
+				$row,
+				'mrn_reusable_grid',
+				'wide'
+			); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return true;
 		}
 
@@ -134,7 +235,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'faq' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			echo mrn_rbl_render_fields_as_block( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$markup = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_faq',
 				$row,
 				array(
@@ -143,6 +244,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page FAQs/Accordion',
 				)
 			);
+			echo mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_faq', 'wide' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return true;
 		}
 
@@ -201,7 +303,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'basic_block' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			echo mrn_rbl_render_fields_as_block( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$markup = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_basic',
 				$row,
 				array(
@@ -210,6 +312,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page Basic Block',
 				)
 			);
+			echo mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_basic', 'wide' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return true;
 		}
 
@@ -218,7 +321,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'content_grid' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			echo mrn_rbl_render_fields_as_block( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$markup = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_grid',
 				$row,
 				array(
@@ -227,6 +330,12 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page Content Grid',
 				)
 			);
+			echo mrn_base_stack_wrap_reusable_builder_markup(
+				$markup,
+				$row,
+				'mrn_reusable_grid',
+				'wide'
+			); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return true;
 		}
 
@@ -235,7 +344,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'cta_block' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			echo mrn_rbl_render_fields_as_block( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$markup = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_cta',
 				$row,
 				array(
@@ -244,6 +353,12 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page CTA Block',
 				)
 			);
+			echo mrn_base_stack_wrap_reusable_builder_markup(
+				$markup,
+				$row,
+				'mrn_reusable_cta',
+				'wide'
+			); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return true;
 		}
 
@@ -252,7 +367,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'faq_block' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			echo mrn_rbl_render_fields_as_block( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$markup = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_faq',
 				$row,
 				array(
@@ -261,6 +376,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page FAQ Block',
 				)
 			);
+			echo mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_faq', 'wide' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			return true;
 		}
 
@@ -514,7 +630,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 			return $title;
 		}
 
-		return 'Logos: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return '<div class="mrn-shell-section mrn-shell-section--logos '. esc_attr( $section_width ). '">Logos: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
 	}
 
 	if ( 'stats' === $layout_name ) {
@@ -524,7 +640,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 			return $title;
 		}
 
-		return 'Stats: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return '<div class="mrn-shell-section mrn-shell-section--stats '. esc_attr( $section_width ). '">Stats: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
 	}
 
 	if ( 'showcase' === $layout_name ) {
@@ -534,7 +650,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 			return $title;
 		}
 
-		return 'Showcase: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return '<div class="mrn-shell-section mrn-shell-section--showcase '. esc_attr( $section_width ). '">Showcase: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
 	}
 
 	if ( 'image_content' === $layout_name ) {
@@ -574,20 +690,23 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 			return $title;
 		}
 
-		return 'Card: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return '<div class="mrn-shell-section mrn-shell-section--card '. esc_attr( $section_width ). '">Card: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
 	}
 
 	return $title;
 }
 add_filter( 'acf/fields/flexible_content/layout_title/name=page_content_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/name=page_after_content_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 
 /**
- * Render the ACF content builder rows for posts and pages.
+ * Render a flexible-content builder field for posts and pages.
  *
+ * @param string   $field_name ACF field name.
  * @param int|null $post_id Post ID to render. Defaults to current post.
+ * @param string   $wrapper_class Wrapper class for the builder markup.
  * @return bool True when at least one builder row was rendered.
  */
-function mrn_base_stack_render_content_builder( $post_id = null ) {
+function mrn_base_stack_render_builder_field( $field_name, $post_id = null, $wrapper_class = 'mrn-content-builder' ) {
 	if ( ! function_exists( 'get_field' ) ) {
 		return false;
 	}
@@ -597,21 +716,19 @@ function mrn_base_stack_render_content_builder( $post_id = null ) {
 		return false;
 	}
 
-	$rows = get_field( 'page_content_rows', $post_id );
+	$rows = get_field( $field_name, $post_id );
 	if ( ! is_array( $rows ) || empty( $rows ) ) {
 		return false;
 	}
 
-	echo '<div class="mrn-content-builder">';
+	echo '<div class="' . esc_attr( trim( $wrapper_class ) ) . '">';
 
 	foreach ( $rows as $index => $row ) {
 		if ( ! is_array( $row ) ) {
 			continue;
 		}
 
-		if ( mrn_base_stack_render_builder_row( $row, $post_id, $index ) ) {
-			continue;
-		}
+		mrn_base_stack_render_builder_row( $row, $post_id, $index );
 	}
 
 	echo '</div>';
@@ -620,19 +737,41 @@ function mrn_base_stack_render_content_builder( $post_id = null ) {
 }
 
 /**
- * Get the rendered builder markup for a post without echoing it.
+ * Render the ACF content builder rows for posts and pages.
  *
  * @param int|null $post_id Post ID to render. Defaults to current post.
+ * @return bool True when at least one builder row was rendered.
+ */
+function mrn_base_stack_render_content_builder( $post_id = null ) {
+	return mrn_base_stack_render_builder_field( 'page_content_rows', $post_id, 'mrn-content-builder' );
+}
+
+/**
+ * Render the ACF after-content builder rows for posts and pages.
+ *
+ * @param int|null $post_id Post ID to render. Defaults to current post.
+ * @return bool True when at least one builder row was rendered.
+ */
+function mrn_base_stack_render_after_content_builder( $post_id = null ) {
+	return mrn_base_stack_render_builder_field( 'page_after_content_rows', $post_id, 'mrn-content-builder mrn-content-builder--after-content' );
+}
+
+/**
+ * Get the rendered builder markup for a post without echoing it.
+ *
+ * @param string   $field_name ACF field name.
+ * @param int|null $post_id Post ID to render. Defaults to current post.
+ * @param string   $wrapper_class Wrapper class for the builder markup.
  * @return string Rendered builder markup, or an empty string when unavailable.
  */
-function mrn_base_stack_get_content_builder_markup( $post_id = null ) {
+function mrn_base_stack_get_builder_markup( $field_name, $post_id = null, $wrapper_class = 'mrn-content-builder' ) {
 	$post_id = $post_id ? (int) $post_id : get_the_ID();
 	if ( ! $post_id ) {
 		return '';
 	}
 
 	ob_start();
-	$rendered = mrn_base_stack_render_content_builder( $post_id );
+	$rendered = mrn_base_stack_render_builder_field( $field_name, $post_id, $wrapper_class );
 	$markup   = ob_get_clean();
 
 	if ( ! $rendered || ! is_string( $markup ) ) {
@@ -640,6 +779,26 @@ function mrn_base_stack_get_content_builder_markup( $post_id = null ) {
 	}
 
 	return trim( $markup );
+}
+
+/**
+ * Get the rendered main content builder markup for a post without echoing it.
+ *
+ * @param int|null $post_id Post ID to render. Defaults to current post.
+ * @return string Rendered builder markup, or an empty string when unavailable.
+ */
+function mrn_base_stack_get_content_builder_markup( $post_id = null ) {
+	return mrn_base_stack_get_builder_markup( 'page_content_rows', $post_id, 'mrn-content-builder' );
+}
+
+/**
+ * Get the rendered after-content builder markup for a post without echoing it.
+ *
+ * @param int|null $post_id Post ID to render. Defaults to current post.
+ * @return string Rendered builder markup, or an empty string when unavailable.
+ */
+function mrn_base_stack_get_after_content_builder_markup( $post_id = null ) {
+	return mrn_base_stack_get_builder_markup( 'page_after_content_rows', $post_id, 'mrn-content-builder mrn-content-builder--after-content' );
 }
 
 /**
@@ -659,7 +818,9 @@ function mrn_base_stack_get_smartcrawl_markup( $post_id ) {
 	}
 
 	$builder_markup = mrn_base_stack_get_content_builder_markup( $post->ID );
-	if ( '' === $builder_markup ) {
+	$after_markup   = mrn_base_stack_get_after_content_builder_markup( $post->ID );
+
+	if ( '' === $builder_markup && '' === $after_markup ) {
 		return '';
 	}
 
@@ -668,7 +829,7 @@ function mrn_base_stack_get_smartcrawl_markup( $post_id ) {
 		esc_html( get_the_title( $post ) )
 	);
 
-	return $title_markup . "\n" . $builder_markup;
+	return trim( $title_markup . "\n" . $builder_markup . "\n" . $after_markup );
 }
 
 /**

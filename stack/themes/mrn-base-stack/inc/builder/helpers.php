@@ -19,6 +19,208 @@ function mrn_base_stack_get_builder_row_context( array $row, $post_id, $index ) 
 }
 
 /**
+ * Clone an ACF layout tree while making every `key` unique.
+ *
+ * @param array<string, mixed> $value ACF layout or field tree.
+ * @param string               $prefix Prefix to prepend to each ACF key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_clone_acf_keys_with_prefix( array $value, $prefix ) {
+	foreach ( $value as $item_key => $item_value ) {
+		if ( 'key' === $item_key && is_string( $item_value ) ) {
+			$value[ $item_key ] = $prefix . $item_value;
+			continue;
+		}
+
+		if ( is_array( $item_value ) ) {
+			$value[ $item_key ] = mrn_base_stack_clone_acf_keys_with_prefix( $item_value, $prefix );
+		}
+	}
+
+	return $value;
+}
+
+/**
+ * Shared section-width choices for theme-owned builder layouts.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_section_width_choices() {
+	return array(
+		'content'    => 'Content',
+		'wide'       => 'Wide',
+		'full-width' => 'Full Width',
+	);
+}
+
+/**
+ * Build a standard section-width ACF field definition.
+ *
+ * @param string $key Unique ACF field key.
+ * @param string $name Field name.
+ * @param string $default Default width choice.
+ * @param string $label Field label.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_section_width_field( $key, $name = 'section_width', $default = 'wide', $label = 'Section Width' ) {
+	return array(
+		'key'           => $key,
+		'label'         => $label,
+		'name'          => $name,
+		'aria-label'    => '',
+		'type'          => 'select',
+		'choices'       => mrn_base_stack_get_section_width_choices(),
+		'default_value' => $default,
+		'ui'            => 1,
+		'wrapper'       => array(
+			'width' => '50',
+		),
+	);
+}
+
+/**
+ * Normalize a raw section-width setting to a supported value.
+ *
+ * @param mixed  $value Raw stored value.
+ * @param string $default Default width.
+ * @return string
+ */
+function mrn_base_stack_normalize_section_width( $value, $default = 'wide' ) {
+	$width = is_string( $value ) ? sanitize_key( $value ) : '';
+
+	if ( in_array( $value, array( 1, '1', true, 'true' ), true ) ) {
+		$width = 'full-width';
+	}
+
+	if ( ! in_array( $width, array( 'content', 'wide', 'full-width' ), true ) ) {
+		$width = $default;
+	}
+
+	return $width;
+}
+
+/**
+ * Convert a section-width setting into a shell modifier class.
+ *
+ * @param mixed  $value Raw stored value.
+ * @param string $default Default width.
+ * @return string
+ */
+function mrn_base_stack_get_section_width_class( $value, $default = 'wide' ) {
+	$width = mrn_base_stack_normalize_section_width( $value, $default );
+
+	if ( 'content' === $width ) {
+		return 'mrn-shell-section--width-content';
+	}
+
+	if ( 'full-width' === $width ) {
+		return 'mrn-shell-section--width-full';
+	}
+
+	return 'mrn-shell-section--width-wide';
+}
+
+/**
+ * Resolve a builder row width setting into the shell modifier class.
+ *
+ * Supports legacy boolean full-width fields when requested.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @param string               $default Default width choice.
+ * @param string               $legacy_full_width_key Optional legacy field name.
+ * @return string
+ */
+function mrn_base_stack_get_row_section_width_class( array $row, $default = 'wide', $legacy_full_width_key = '' ) {
+	$value = $row['section_width'] ?? '';
+
+	if ( '' === $value && '' !== $legacy_full_width_key && ! empty( $row[ $legacy_full_width_key ] ) ) {
+		$value = 'full-width';
+	}
+
+	return mrn_base_stack_get_section_width_class( $value, $default );
+}
+
+/**
+ * Get the standard accent contract for a builder section.
+ *
+ * @param bool   $enabled Whether the bottom accent is enabled.
+ * @param string $accent_slug Optional accent style slug.
+ * @return array{classes:array<int,string>,attributes:array<string,string>}
+ */
+function mrn_base_stack_get_builder_accent_contract( $enabled, $accent_slug = '' ) {
+	if ( function_exists( 'mrn_site_styles_get_bottom_accent_contract' ) ) {
+		$contract = mrn_site_styles_get_bottom_accent_contract( (bool) $enabled, (string) $accent_slug );
+		$classes  = isset( $contract['classes'] ) && is_array( $contract['classes'] ) ? array_values( $contract['classes'] ) : array();
+		$attrs    = isset( $contract['attributes'] ) && is_array( $contract['attributes'] ) ? $contract['attributes'] : array();
+
+		return array(
+			'classes'    => $classes,
+			'attributes' => $attrs,
+		);
+	}
+
+	return array(
+		'classes'    => $enabled ? array( 'has-bottom-accent' ) : array(),
+		'attributes' => array(),
+	);
+}
+
+/**
+ * Append accent classes to a builder section class list.
+ *
+ * @param array<int, string>                 $classes Existing section classes.
+ * @param array{classes?:array<int,string>}  $accent_contract Accent contract array.
+ * @return array<int, string>
+ */
+function mrn_base_stack_merge_builder_section_classes( array $classes, array $accent_contract ) {
+	if ( ! empty( $accent_contract['classes'] ) && is_array( $accent_contract['classes'] ) ) {
+		$classes = array_merge( $classes, $accent_contract['classes'] );
+	}
+
+	return array_values( array_unique( array_filter( $classes, 'strlen' ) ) );
+}
+
+/**
+ * Convert an array of CSS declarations into a style attribute value.
+ *
+ * @param array<int, string> $styles CSS declarations.
+ * @return string
+ */
+function mrn_base_stack_get_inline_style_attribute( array $styles ) {
+	$styles = array_values(
+		array_filter(
+			array_map( 'trim', $styles ),
+			'strlen'
+		)
+	);
+
+	return implode( '; ', $styles );
+}
+
+/**
+ * Convert an associative array into escaped HTML attributes.
+ *
+ * @param array<string, scalar> $attributes Associative attribute map.
+ * @return string
+ */
+function mrn_base_stack_get_html_attributes( array $attributes ) {
+	$parts = array();
+
+	foreach ( $attributes as $attribute_name => $attribute_value ) {
+		$attribute_name  = is_string( $attribute_name ) ? trim( $attribute_name ) : '';
+		$attribute_value = is_scalar( $attribute_value ) ? trim( (string) $attribute_value ) : '';
+
+		if ( '' === $attribute_name || '' === $attribute_value ) {
+			continue;
+		}
+
+		$parts[] = sprintf( '%s="%s"', esc_attr( $attribute_name ), esc_attr( $attribute_value ) );
+	}
+
+	return implode( ' ', $parts );
+}
+
+/**
  * Allow a small, intentional inline HTML subset for heading-style fields.
  *
  * @param string $value Raw heading text value.
@@ -578,6 +780,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'prefix_label' => 0,
 					'prefix_name'  => 0,
 				),
+				mrn_base_stack_get_section_width_field( 'field_mrn_nested_cta_section_width' ),
 			),
 		),
 		'layout_mrn_nested_grid'           => array(
@@ -598,6 +801,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'prefix_label' => 0,
 					'prefix_name'  => 0,
 				),
+				mrn_base_stack_get_section_width_field( 'field_mrn_nested_grid_section_width' ),
 			),
 		),
 		'layout_mrn_nested_image_content'  => array(

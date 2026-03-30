@@ -18,6 +18,25 @@ If memory and current request conflict, ask which should win.
 - Prefer concrete file paths and exact commands in summaries.
 - Update `/Users/khofmeyer/Development/MRN/THREAD_MEMORY.md` when durable decisions are made.
 
+## Current Source Of Truth (2026-03-30 VS Code Migration)
+- Workspace root: `/Users/khofmeyer/Development/MRN`.
+- Startup order remains mandatory:
+  - read `/Users/khofmeyer/Development/MRN/THREAD_MEMORY.md` first
+  - then read `/Users/khofmeyer/Development/MRN/AGENTS.md`
+- Active implementation scope is the stack theme:
+  - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack`
+- Current phase focus:
+  - modernize builder/page shell behavior
+  - enforce shared `Section Width` (`Content`, `Wide`, `Full Width`)
+  - keep `After Content` as a placement bucket using the same layout vocabulary as `Content`
+  - centralize wrapper logic in shared helpers
+  - use seeded local QA pages as the acceptance harness
+- Next implementation direction:
+  - treat width-class rendering as solved
+  - improve visual expression of width modes by layout family (starting with `Basic` and likely `Image Content`)
+  - avoid one-off random layout patching
+  - continue updating `THREAD_MEMORY.md` when durable decisions change
+
 ## Packaging Definition
 - To "package" a plugin, perform all of the following:
 - Do a security check.

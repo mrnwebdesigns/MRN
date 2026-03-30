@@ -8,6 +8,15 @@
 - Added canonical business-logo priority and logo variants for header/footer usage.
 - Added canonical business phone, text/SMS, address, weekday hours, and holiday hours data to the theme layer.
 - Added theme-owned business JSON-LD output sourced from the canonical business-information contract.
+- Added a separate `After Content` field group after the main `Content` builder for posts and pages.
+- Modernized the singular page shell so builder sections can use centered containers and intentional wide/full-width behavior more cleanly on mobile and desktop.
+- Added a shared `Section Width` contract for theme-owned builder layouts (`Content`, `Wide`, `Full Width`).
+- Consolidated theme-owned builder wrapper behavior behind shared helper functions for width classes, accent attributes, and inline style output.
+- Began layout-family normalization so key layouts visually express `Section Width` modes (first pass: Basic, Image Content, Card, Logos, Stats, Showcase).
+- Extended layout-family normalization to include `Slider` so `Content/Wide/Full Width` differences are visually clearer on the QA harness pages.
+- Extended layout-family normalization to `Video` and `Two Column Split` (width-aware padding, gaps, and header/video presentation).
+- Documented width-mode QA and the list of CSS-normalized layouts for frontend/backend handoff in `BUILDER_CONVENTIONS.md`, `DEV_HANDOFF.md`, and `THEME_ROADMAP.md`.
+- Added `Section Width` to theme builder **CTA** and **Grid** layouts (including page-only clones and nested Two Column variants), wrapped cloned reusable output with the shared shell in `render.php`, and added width-scoped CSS for `mrn-shell-section--reusable-cta` / `--reusable-grid`.
 - Added a curated developer handoff doc plus theme roadmap/tasklist docs for backend/frontend delivery.
 
 ## 2026.03.27-foundation

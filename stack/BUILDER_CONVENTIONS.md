@@ -131,6 +131,103 @@ These are the current preferred content patterns in the stack.
   - `Background video`
   - accent controls when the specific hero layout exposes them
 
+### After Content
+
+- `After Content` is a separate theme-owned field group that renders after the main `Content` builder on posts and pages.
+- For now, `After Content` intentionally exposes the same layout set as `Content`.
+- This is a placement distinction, not a new layout contract.
+- Use `Content` for the main narrative body flow.
+- Use `After Content` for sections that should land after the main body flow.
+
+### Section Width
+
+- Theme-owned layouts now use a shared `Section Width` setting where width matters visually.
+- Current choices are:
+  - `Content`
+  - `Wide`
+  - `Full Width`
+- `Content` is for tighter reading-width sections.
+- `Wide` is for centered sections that should breathe more than body copy.
+- `Full Width` is for intentional edge-to-edge section treatments.
+- `Image Content` still honors older saved `Full width` values as a legacy fallback, but the current contract should use `Section Width`.
+- Theme-owned builder templates should resolve width classes, accent attributes, and inline style serialization through shared helper functions rather than rebuilding that wrapper logic per layout.
+- This keeps shell behavior consistent and makes the builder easier to extend without layout-by-layout drift.
+
+Width is expressed through wrapper classes added by the theme:
+
+- `mrn-shell-section--width-content`
+- `mrn-shell-section--width-wide`
+- `mrn-shell-section--width-full`
+
+Layout templates should not hardcode one-off max-width containers. Instead, they should rely on those shell classes and then add layout-specific internal structure so the difference between `Wide` and `Full Width` is visually meaningful.
+
+### Width Family Rule
+
+- Width behavior should be normalized by layout family, not by one-off template exceptions.
+- Current family grouping:
+  - text-led layouts:
+    - `Text`
+    - `External Widget`
+  - media/content layouts:
+    - `Basic`
+    - `Image Content`
+    - `Video`
+    - `Slider`
+  - collection/grid layouts:
+    - `Card`
+    - `Logos`
+    - `Stats`
+    - `Showcase`
+  - reusable block layouts rendered through theme shell helpers:
+    - direct `Reusable Block`
+    - page-only `Basic Block`
+    - page-only `CTA Block`
+    - page-only `Content Grid`
+    - page-only `FAQ Block`
+- The shell owns the width contract.
+- Each family should then use its own internal grid, padding, and media rules so:
+  - `Content` reads tighter
+  - `Wide` feels intentionally roomier
+  - `Full Width` feels meaningfully more expansive than `Wide`
+- Hero layouts are still a separate contract and should not be forced into the body-section width model just to match naming.
+
+### Reusable Block Width Rule
+
+- Reusable block markup rendered inside the page/post builder should be wrapped in the same theme shell classes as native layouts.
+- Theme wrapper helpers should assign reusable-block family shell modifiers by reusable block post type, instead of each render path inventing its own wrapper.
+- The direct `Reusable Block` builder layout now has its own `Section Width` control.
+- Page-only reusable block clones should expose `Section Width` anywhere the visual shell matters, including:
+  - `Basic Block`
+  - `CTA Block`
+  - `Content Grid`
+  - `FAQ Block`
+
+### QA Harness
+
+- Local QA acceptance pages on the stack test site should cover every width-sensitive layout family and reusable block family.
+- Current local QA page slugs include:
+  - `qa-text-widths`
+  - `qa-basic-widths`
+  - `qa-image-content-widths`
+  - `qa-card-widths`
+  - `qa-logos-widths`
+  - `qa-stats-widths`
+  - `qa-showcase-widths`
+  - `qa-slider-widths`
+  - `qa-video-widths`
+  - `qa-two-column-split-widths`
+  - `qa-external-widget-widths`
+  - `qa-reusable-basic-widths`
+  - `qa-reusable-cta-widths`
+  - `qa-reusable-grid-widths`
+  - `qa-reusable-faq-widths`
+  - `qa-after-content-widths`
+- Current seeded reusable block fixtures for the reusable-block QA pages:
+  - `qa-reusable-basic-block`
+  - `qa-reusable-cta-block`
+  - `qa-reusable-grid-block`
+  - `qa-reusable-faq-block`
+
 ### Text
 
 - Label
@@ -942,3 +1039,44 @@ When a durable content-model rule changes:
 1. update this file
 2. update `/Users/khofmeyer/Development/MRN/THREAD_MEMORY.md`
 3. if it affects release expectations, update stack release notes too
+
+## QA Harness Pages (Local Only)
+
+To make `Section Width` QA repeatable, the current workflow uses a set of Local-only QA pages (not production content).
+
+- Each QA page repeats the same layout three times:
+  - `Content`
+  - `Wide`
+  - `Full Width`
+- Purpose:
+  - verify the width classes render correctly
+  - verify the layout *visually expresses* the difference between modes
+  - verify mobile behavior, background colors, and accents
+
+This supports the agreed architecture direction:
+
+- treat width-field rendering as solved
+- normalize layouts in batches by family
+- rely on stable wrapper classes:
+  - `mrn-shell-section--width-content`
+  - `mrn-shell-section--width-wide`
+  - `mrn-shell-section--width-full`
+
+### Developer reference: layouts with width-mode CSS
+
+**Front-end:** theme CSS under `stack/themes/mrn-base-stack/style.css` adds layout-specific rules scoped to those width classes so `Wide` and `Full Width` read clearly on QA pages. Stable inner shells include:
+
+- `mrn-shell-section--text` (Body Text)
+- `mrn-shell-section--basic`, `mrn-shell-section--image-content`, `mrn-shell-section--card`
+- `mrn-shell-section--logos`, `mrn-shell-section--stats`, `mrn-shell-section--showcase`
+- `mrn-shell-section--video`, `mrn-shell-section--external-widget`
+- `mrn-shell-section--two-column-split`
+- `mrn-shell-section--reusable-cta` — theme-owned **`CTA`**, **`CTA (Page Only)`**, and nested **`CTA`** inside **Two Column Split**. The flexible row adds `section_width`; `render.php` wraps the cloned reusable output in `.mrn-content-builder__row--cta` (or `--cta-block`) + this shell + width class. Inner markup remains `.mrn-reusable-block--cta`.
+- `mrn-shell-section--reusable-grid` — theme-owned **`Grid`**, **`Content Grid (Page Only)`**, and nested **`Grid`** in Two Column Split. Same wrapping pattern; inner markup remains `.mrn-reusable-block--content-grid`.
+- Slider uses `.mrn-slider-row__splide` inside `mrn-shell-section--slider` (width classes on the same shell as other layouts).
+
+**Back-end / ACF:** the field remains `section_width` (plus legacy `Image Content` `full_width` fallback). No separate width vocabulary per layout. **CTA** and **Grid** (including page-only clones and nested column variants) now include **`Section Width`** on the flexible row alongside the cloned reusable fields.
+
+**Front-end / PHP:** wrapping is implemented in `mrn_base_stack_wrap_cloned_reusable_builder_markup()` in `stack/themes/mrn-base-stack/inc/builder/render.php`. Do not duplicate that wrapper in templates.
+
+**Not width-normalized in this pass:** layouts that still render a reusable template without this shell (e.g. **`Reusable Block`** picker row, **`Basic Block (Page Only)`**, **`FAQ`** / **`FAQs/Accordion (Page Only)`** until a future decision). Treat those separately in QA.

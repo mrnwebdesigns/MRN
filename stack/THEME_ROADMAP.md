@@ -32,6 +32,8 @@ The theme should:
 - feel complete enough that a dev team is not rebuilding the basics every time
 - stay neutral enough that site-specific branding and styling can still be layered on intentionally
 - work cleanly with the MRN builder, reusable blocks, and Site Styles token system
+- use a modern page shell where sections can go full width while most reading content stays in centered containers
+- keep builder wrapper behavior centralized in shared theme helpers so spacing, width, and accent behavior do not drift layout-by-layout
 
 ## What The Theme Should Not Be
 
@@ -88,6 +90,18 @@ Current builder structure:
 - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/field-groups.php`
 
 This is the pattern to continue. New theme builder work should extend that structure instead of pushing more system logic back into one giant file.
+
+The builder now has three placement buckets for singular posts/pages:
+
+- `Hero`
+  - separate field group rendered above the native entry header/content flow
+- `Content`
+  - the main flexible-content body
+- `After Content`
+  - a second flexible-content area rendered after the main `Content` builder
+  - currently uses the same layout set as `Content`
+
+`Section Width` (`Content`, `Wide`, `Full Width`) is implemented in PHP helpers and emitted as `mrn-shell-section--width-*` on layout inner shells. Cloned reusable layouts in the builder (**CTA**, **Grid**, and page-only / nested equivalents) use the same contract: extra fields on the flexible row plus `mrn_base_stack_wrap_cloned_reusable_builder_markup()` in `render.php`, then width-scoped CSS on `mrn-shell-section--reusable-cta` and `mrn-shell-section--reusable-grid`. Further QA detail: `BUILDER_CONVENTIONS.md`.
 
 Theme-owned options now also live in:
 

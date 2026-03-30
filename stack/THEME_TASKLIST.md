@@ -202,6 +202,12 @@ Current standard layouts to review:
   - token usage
   - accessibility review
 
+Current width-system QA harness baseline:
+
+- local QA pages now cover every current width-sensitive theme layout family plus reusable block families
+- reusable block QA is seeded through dedicated reusable block fixtures and direct `Reusable Block` layout pages
+- `After Content` now has a dedicated QA page so the cloned bucket can be checked against the same width vocabulary as `Content`
+
 ## Suggested First Tickets
 
 - Create a shared theme spacing and container system.

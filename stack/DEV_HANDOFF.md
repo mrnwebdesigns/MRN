@@ -108,6 +108,18 @@ Each site may still end up with its own deployed theme identity, but the source 
 - neutral enough that sites can still get distinct front-end treatment
 - strong enough to work as the theme framework for builder-driven sites
 
+### Page Shell Direction
+
+- singular page/post templates should use a centered container system rather than a permanently boxed page shell
+- the overall page flow should stay full width
+- most content should sit inside centered max-width containers
+- selected sections can intentionally go wide or full bleed when the layout calls for it
+- mobile spacing should come from shared shell gutters instead of one-off per-template padding
+- theme-owned layouts should prefer the shared `Section Width` contract:
+  - `Content`
+  - `Wide`
+  - `Full Width`
+
 ### Theme Architecture
 
 The builder/theme system should not grow as one giant `functions.php`.
@@ -149,10 +161,24 @@ Current standard layouts include:
 - `External - widget/iFrame`
 - `Two Column Split`
 
+Theme-owned builder templates should use the shared helper layer for section width resolution, accent attributes, and inline style serialization so wrapper behavior stays consistent across layouts.
+
+Width-mode QA note:
+
+- `Section Width` (`Content`, `Wide`, `Full Width`) is treated as a solved field/rendering contract.
+- The ongoing theme work is to ensure layouts *visually express* the width modes (through internal grids/wrappers), using the seeded local QA pages as the acceptance harness.
+- Canonical developer detail for which layouts have width-scoped CSS and how QA works: `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md` (sections **Section Width** and **QA Harness Pages**).
+- As of the current theme pass, width-mode visual normalization includes: Body Text, Basic, Image Content, Card, Logos, Stats, Showcase, Slider, External, Video, Two Column Split, plus **CTA** and **Grid** (including **Content Grid (Page Only)** / **CTA (Page Only)** and the same layouts nested in **Two Column Split** via a reusable wrapper + `section_width` on the flexible row). See `BUILDER_CONVENTIONS.md` for shells (`mrn-shell-section--reusable-cta`, `mrn-shell-section--reusable-grid`) and for layouts still outside this pattern (e.g. **Reusable Block** picker).
+
 Hero is a separate field group above Content and currently supports:
 
 - `Basic - label|heading|text with editor|link|image`
 - `Two Column Split`
+
+After Content is a separate field group that renders after the main Content builder.
+
+- For now, it intentionally exposes the same layout set as `Content`.
+- Treat it as a placement bucket, not as a separate layout system.
 
 ### Reusable Blocks
 
