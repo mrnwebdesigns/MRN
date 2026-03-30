@@ -46,8 +46,6 @@
 !/stack/themes/mrn-base-stack/css/vendor/splide.min.css
 !/stack/themes/mrn-base-stack/template-parts/
 !/stack/themes/mrn-base-stack/template-parts/builder/
-!/stack/themes/mrn-base-stack/template-parts/builder/slider.php
-!/stack/themes/mrn-base-stack/template-parts/builder/image-content.php
-!/stack/themes/mrn-base-stack/template-parts/builder/external-widget.php
+!/stack/themes/mrn-base-stack/template-parts/builder/*.php
 .DS_Store
 */.DS_Store

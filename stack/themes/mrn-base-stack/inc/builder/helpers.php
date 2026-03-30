@@ -121,6 +121,41 @@ function mrn_base_stack_get_section_width_class( $value, $default = 'wide' ) {
 }
 
 /**
+ * Resolve section-width UI choice into section and container layer classes.
+ *
+ * `content` and `wide` are container-width choices inside a contained section.
+ * `full-width` is a full-bleed section with a layout-owned inner container.
+ *
+ * @param mixed  $value Raw stored value.
+ * @param string $default Default width choice.
+ * @param string $full_container_width Inner container width to use when the section is full bleed.
+ * @return array{width:string,section_class:string,container_class:string}
+ */
+function mrn_base_stack_get_section_width_layers( $value, $default = 'wide', $full_container_width = 'wide' ) {
+	$width                = mrn_base_stack_normalize_section_width( $value, $default );
+	$full_container_width = mrn_base_stack_normalize_section_width( $full_container_width, 'wide' );
+
+	$section_class = 'mrn-layout-section--contained';
+	$container_map = array(
+		'content'    => 'mrn-layout-container--content',
+		'wide'       => 'mrn-layout-container--wide',
+		'full-width' => 'mrn-layout-container--full',
+	);
+	$container_key = $width;
+
+	if ( 'full-width' === $width ) {
+		$section_class = 'mrn-layout-section--full';
+		$container_key = $full_container_width;
+	}
+
+	return array(
+		'width'           => $width,
+		'section_class'   => $section_class,
+		'container_class' => $container_map[ $container_key ] ?? $container_map['wide'],
+	);
+}
+
+/**
  * Resolve a builder row width setting into the shell modifier class.
  *
  * Supports legacy boolean full-width fields when requested.

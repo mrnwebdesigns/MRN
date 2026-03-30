@@ -19,7 +19,14 @@ $legacy_full_width = ! empty( $row['full_width'] );
 $image_position   = isset( $row['image_position'] ) ? sanitize_key( (string) $row['image_position'] ) : 'top';
 $image_size       = isset( $row['image_size'] ) ? sanitize_key( (string) $row['image_size'] ) : 'contained';
 $image_alignment  = isset( $row['image_alignment'] ) ? sanitize_key( (string) $row['image_alignment'] ) : 'center';
-$section_width    = function_exists( 'mrn_base_stack_get_row_section_width_class' ) ? mrn_base_stack_get_row_section_width_class( $row, 'wide', 'full_width' ) : ( $legacy_full_width ? 'mrn-shell-section--width-full' : 'mrn-shell-section--width-wide' );
+$width_value      = $row['section_width'] ?? ( $legacy_full_width ? 'full-width' : '' );
+$width_layers     = function_exists( 'mrn_base_stack_get_section_width_layers' )
+	? mrn_base_stack_get_section_width_layers( $width_value, 'wide', 'full-width' )
+	: array(
+		'width'           => $legacy_full_width ? 'full-width' : 'wide',
+		'section_class'   => $legacy_full_width ? 'mrn-layout-section--full' : 'mrn-layout-section--contained',
+		'container_class' => $legacy_full_width ? 'mrn-layout-container--full' : 'mrn-layout-container--wide',
+	);
 
 $allowed_tags = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
 if ( ! in_array( $heading_tag, $allowed_tags, true ) ) {
@@ -63,13 +70,15 @@ $accent_contract = function_exists( 'mrn_base_stack_get_builder_accent_contract'
 $section_classes = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
 $section_attrs   = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
-$section_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
+$surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
+$is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 ?>
-<section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php echo '' !== $section_style ? ' style="' . esc_attr( $section_style ) . '"' : ''; ?>>
-	<div class="mrn-shell-section mrn-shell-section--image-content <?php echo esc_attr( $section_width ); ?>">
-		<div class="mrn-image-content-row__inner">
+<section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+	<div class="mrn-layout-section mrn-layout-section--image-content <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
+		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
+			<div class="mrn-layout-grid mrn-layout-grid--image-content mrn-image-content-row__inner">
 			<?php if ( 'top' === $image_position && $has_image ) : ?>
-				<div class="mrn-image-content-row__media">
+				<div class="mrn-layout-content mrn-layout-content--media mrn-image-content-row__media">
 					<?php if ( ! empty( $image['ID'] ) ) : ?>
 						<?php echo wp_get_attachment_image( (int) $image['ID'], 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<?php else : ?>
@@ -78,7 +87,7 @@ $section_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute
 				</div>
 			<?php endif; ?>
 
-			<div class="mrn-image-content-row__content">
+			<div class="mrn-layout-content mrn-layout-content--text mrn-image-content-row__content">
 				<?php if ( '' !== $label ) : ?>
 					<div class="mrn-image-content-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 				<?php endif; ?>
@@ -95,7 +104,7 @@ $section_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute
 			</div>
 
 			<?php if ( 'bottom' === $image_position && $has_image ) : ?>
-				<div class="mrn-image-content-row__media">
+				<div class="mrn-layout-content mrn-layout-content--media mrn-image-content-row__media">
 					<?php if ( ! empty( $image['ID'] ) ) : ?>
 						<?php echo wp_get_attachment_image( (int) $image['ID'], 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<?php else : ?>
@@ -103,6 +112,7 @@ $section_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute
 					<?php endif; ?>
 				</div>
 			<?php endif; ?>
+			</div>
 		</div>
 	</div>
 </section>

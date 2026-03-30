@@ -257,6 +257,54 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - `qa-reusable-cta-block`
   - `qa-reusable-grid-block`
   - `qa-reusable-faq-block`
+- The stack is now prototyping a clearer width-system contract built around 4 wrapper layers:
+  - `Section`
+  - `Container`
+  - `Grid`
+  - `Content`
+- Current prototype interpretation of the existing `Section Width` dropdown:
+  - `Content`:
+    - contained section
+    - content-width container
+  - `Wide`:
+    - contained section
+    - wide container
+  - `Full Width`:
+    - full-bleed section
+    - layout-owned inner container choice
+- First live prototype families for that wrapper model:
+  - `Basic`
+  - `Image Content`
+- Current prototype details:
+  - `Basic` full width uses a full-bleed section with a wide inner container
+  - `Image Content` full width uses a full-bleed section with a full media container and a separate inner text wrapper
+- The width-system direction was then clarified further:
+  - the base theme should provide sensible, minimal fallback styling
+  - it should not over-design every width mode
+  - `Content` and `Wide` can be subtly different
+  - `Full Width` should be behaviorally different because the section shell/background can go edge to edge
+  - `Wide` should not paint a full-bleed background band
+- The broader builder rollout now follows the same layered rule across the remaining theme layouts:
+  - `Body Text`
+  - `External Widget`
+  - `Video`
+  - `Slider`
+  - `Card`
+  - `Logos`
+  - `Stats`
+  - `Showcase`
+  - `Two Column Split`
+- Reusable block wrappers now follow the same layered width contract too:
+  - direct `Reusable Block`
+  - page-only `Basic Block`
+  - page-only `CTA Block`
+  - page-only `Content Grid`
+  - page-only `FAQ Block`
+- Durable reusable-block width rule:
+  - reusable blocks rendered through the builder must use the theme's 4-layer wrapper model
+  - `Full Width` uses a full-bleed section plus a full-width reusable-block container
+  - the reusable block template itself owns any inner readable-content constraint
+- Going forward, all new theme layouts and all new reusable-block builder wrappers should start from the 4-layer `Section > Container > Grid > Content` contract rather than the older shell-width class pattern.
   - Use it as the practical ticket/checklist layer for:
     - theme system foundation work
     - template coverage work

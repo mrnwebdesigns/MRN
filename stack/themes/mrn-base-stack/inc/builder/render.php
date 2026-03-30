@@ -68,54 +68,59 @@ function mrn_base_stack_render_hero_builder( $post_id = null ) {
 }
 
 /**
- * Wrap cloned reusable-block markup in the same builder row + section width shell as native layouts.
+ * Wrap cloned reusable-block markup in the same layered width shell as native layouts.
  *
  * @param string               $inner_markup HTML from `mrn_rbl_render_fields_as_block()`.
  * @param array<string, mixed> $row Flexible content row (may include `section_width`).
  * @param string               $row_modifier Extra class on `.mrn-content-builder__row`.
- * @param string               $shell_modifier Extra class on `.mrn-shell-section` (e.g. `mrn-shell-section--reusable-cta`).
+ * @param string               $section_modifier Extra class on `.mrn-layout-section` (e.g. `mrn-layout-section--reusable-cta`).
  * @param string               $default_width Default width when `section_width` is empty.
  * @return string
  */
-function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, array $row, $row_modifier, $shell_modifier, $default_width = 'wide' ) {
+function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, array $row, $row_modifier, $section_modifier, $default_width = 'wide' ) {
 	$inner_markup = is_string( $inner_markup ) ? $inner_markup : '';
 	if ( '' === trim( $inner_markup ) ) {
 		return '';
 	}
 
-	$section_width = function_exists( 'mrn_base_stack_get_row_section_width_class' )
-		? mrn_base_stack_get_row_section_width_class( $row, $default_width )
-		: 'mrn-shell-section--width-wide';
+	$width_layers = function_exists( 'mrn_base_stack_get_section_width_layers' )
+		? mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', $default_width, 'full-width' )
+		: array(
+			'width'           => 'wide',
+			'section_class'   => 'mrn-layout-section--contained',
+			'container_class' => 'mrn-layout-container--wide',
+		);
 
-	$row_classes   = trim( 'mrn-content-builder__row ' . $row_modifier );
-	$shell_classes = trim( 'mrn-shell-section ' . $shell_modifier );
+	$row_classes       = trim( 'mrn-content-builder__row ' . $row_modifier );
+	$section_classes   = trim( 'mrn-layout-section ' . $section_modifier . ' ' . ( $width_layers['section_class'] ?? 'mrn-layout-section--contained' ) );
+	$container_classes = trim( 'mrn-layout-container ' . ( $width_layers['container_class'] ?? 'mrn-layout-container--wide' ) );
 
 	return sprintf(
-		'<div class="%1$s"><div class="%2$s %3$s">%4$s</div></div>',
+		'<div class="%1$s"><div class="%2$s"><div class="%3$s"><div class="mrn-layout-grid mrn-layout-grid--reusable"><div class="mrn-layout-content mrn-layout-content--reusable">%4$s</div></div></div></div></div>',
 		esc_attr( $row_classes ),
-		esc_attr( $shell_classes ),
-		esc_attr( $section_width ),
+		esc_attr( $section_classes ),
+		esc_attr( $container_classes ),
 		$inner_markup // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	);
 }
 
 /**
- * Map reusable block post types to the theme's shared shell modifier classes.
+ * Map reusable block post types to the theme's shared layered section modifier classes.
  *
  * @param string $post_type Reusable block post type.
  * @return string
  */
 function mrn_base_stack_get_reusable_block_shell_modifier( $post_type ) {
 	$map = array(
-		'mrn_reusable_basic' => 'mrn-shell-section--reusable-basic',
-		'mrn_reusable_cta'   => 'mrn-shell-section--reusable-cta',
-		'mrn_reusable_faq'   => 'mrn-shell-section--reusable-faq',
-		'mrn_reusable_grid'  => 'mrn-shell-section--reusable-grid',
+		'mrn_reusable_basic' => 'mrn-layout-section--reusable-basic',
+		'mrn_reusable_cta'   => 'mrn-layout-section--reusable-cta',
+		'mrn_reusable_faq'   => 'mrn-layout-section--reusable-faq',
+		'mrn_reusable_grid'  => 'mrn-layout-section--reusable-grid',
 	);
 
 	$post_type = sanitize_key( (string) $post_type );
 
-	return $map[ $post_type ] ?? 'mrn-shell-section--reusable-block';
+	return $map[ $post_type ] ?? 'mrn-layout-section--reusable-block';
 }
 
 /**

@@ -17,7 +17,13 @@ $link_color       = isset( $row['link_color'] ) ? trim( (string) $row['link_colo
 $background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
 $bottom_accent    = ! empty( $row['bottom_accent'] );
 $accent_slug      = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
-$section_width    = function_exists( 'mrn_base_stack_get_row_section_width_class' ) ? mrn_base_stack_get_row_section_width_class( $row, 'wide' ) : 'mrn-shell-section--width-wide';
+$width_layers     = function_exists( 'mrn_base_stack_get_section_width_layers' )
+	? mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'wide', 'wide' )
+	: array(
+		'width'           => 'wide',
+		'section_class'   => 'mrn-layout-section--contained',
+		'container_class' => 'mrn-layout-container--wide',
+	);
 $per_page         = isset( $row['per_page'] ) ? max( 1, min( 3, (int) $row['per_page'] ) ) : 1;
 $show_arrows      = ! empty( $row['show_arrows'] );
 $show_pagination  = ! empty( $row['show_pagination'] );
@@ -88,12 +94,15 @@ $accent_contract = function_exists( 'mrn_base_stack_get_builder_accent_contract'
 $section_classes = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
 $section_attrs   = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
-$section_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
+$surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
+$is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 ?>
-<section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php echo '' !== $section_style ? ' style="' . esc_attr( $section_style ) . '"' : ''; ?>>
-	<div class="mrn-shell-section mrn-shell-section--slider <?php echo esc_attr( $section_width ); ?>">
+<section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+	<div class="mrn-layout-section mrn-layout-section--slider <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
+		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
+			<div class="mrn-layout-grid mrn-layout-grid--slider">
 		<?php if ( '' !== $label || '' !== $heading ) : ?>
-			<header class="mrn-slider-row__header">
+			<header class="mrn-layout-content mrn-layout-content--text mrn-slider-row__header">
 				<?php if ( '' !== $label ) : ?>
 					<div class="mrn-slider-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 				<?php endif; ?>
@@ -198,5 +207,7 @@ $section_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute
 				</div>
 			</div>
 		<?php endif; ?>
+			</div>
+		</div>
 	</div>
 </section>

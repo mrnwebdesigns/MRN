@@ -164,6 +164,22 @@ Layout templates should not hardcode one-off max-width containers. Instead, they
 ### Width Family Rule
 
 - Width behavior should be normalized by layout family, not by one-off template exceptions.
+- The builder should follow a 4-layer wrapper model:
+  - `Section`
+  - `Container`
+  - `Grid`
+  - `Content`
+- Responsibilities by layer:
+  - `Section`
+    - outer visual band
+    - background and accent behavior
+    - full-bleed vs contained shell behavior
+  - `Container`
+    - horizontal max-width and gutters
+  - `Grid`
+    - internal layout relationship between content pieces
+  - `Content`
+    - the actual payload blocks inside the grid
 - Current family grouping:
   - text-led layouts:
     - `Text`
@@ -184,17 +200,54 @@ Layout templates should not hardcode one-off max-width containers. Instead, they
     - page-only `CTA Block`
     - page-only `Content Grid`
     - page-only `FAQ Block`
+- This 4-layer wrapper model is now the required default for all new theme layouts and all new reusable-block builder wrappers going forward.
 - The shell owns the width contract.
 - Each family should then use its own internal grid, padding, and media rules so:
   - `Content` reads tighter
-  - `Wide` feels intentionally roomier
-  - `Full Width` feels meaningfully more expansive than `Wide`
+  - `Wide` uses a larger contained working width
+  - `Full Width` is behaviorally different because the section shell goes full bleed
+- In the base theme, `Content` and `Wide` can be subtly different.
+- The fallback responsibility is structural first and visual second.
+- The base theme should keep fallback styling minimal and readable, not over-design every width mode.
 - Hero layouts are still a separate contract and should not be forced into the body-section width model just to match naming.
+
+### Width Dropdown Meaning
+
+- The existing `Section Width` dropdown should not try to fully style a layout by itself.
+- In the 4-layer model it should primarily control `Section` and `Container`.
+- Current intended meaning:
+  - `Content`
+    - contained section
+    - content-width container
+  - `Wide`
+    - contained section
+    - wide container
+  - `Full Width`
+    - full-bleed section
+    - layout-owned inner container choice
+- `Full Width` should not be interpreted as “all inner content stretches forever.”
+- `Wide` should not paint its background like a full-bleed band.
+- Only `Full Width` should get true edge-to-edge section/background behavior.
+- A full-width section can still contain:
+  - a wide inner container
+  - a reading-width text wrapper
+  - a full-bleed media track
 
 ### Reusable Block Width Rule
 
 - Reusable block markup rendered inside the page/post builder should be wrapped in the same theme shell classes as native layouts.
-- Theme wrapper helpers should assign reusable-block family shell modifiers by reusable block post type, instead of each render path inventing its own wrapper.
+- Reusable block wrapper helpers should assign reusable-block family section/container modifiers by reusable block post type, instead of each render path inventing its own wrapper.
+- Reusable blocks should use the same layered width contract as native layouts:
+  - `Content`
+    - contained section
+    - content-width container
+  - `Wide`
+    - contained section
+    - wide container
+  - `Full Width`
+    - full-bleed section
+    - reusable block gets a full-width container so its own background can go edge to edge
+    - inner content remains the reusable block template's responsibility
 - The direct `Reusable Block` builder layout now has its own `Section Width` control.
 - Page-only reusable block clones should expose `Section Width` anywhere the visual shell matters, including:
   - `Basic Block`
