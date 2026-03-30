@@ -74,6 +74,12 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
 - The stack now has lightweight stack-wide version notes:
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
+  - Current baseline:
+    - `2026.03.29-theme-foundation`
+    - `mrn-base-stack` `1.0.2`
+    - `mrn-config-helper` `0.1.19`
+    - `mrn-editor-tools` `1.8.14`
+    - `mrn-shared-assets` `0.1.0`
 - The stack now also has a developer-facing builder/conventions doc:
   - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
   - Use it as the canonical reference for:
@@ -4731,6 +4737,42 @@ After you get each summary back:
     - `mrn-reusable-block-library` -> `0.1.3`
     - `mrn-site-colors`/Site Styles -> `0.1.2`
     - `mrn-base-stack.zip` -> `1.0.1`
+
+## Thread: 2026-03-29 Stack Sync
+- Goal:
+  - Sync the latest packaged stack inputs to the live server stack, including updated standard-plugin packages, the new shared-assets MU plugin, and the `mrn-base-stack` `1.0.2` theme payload.
+- Synced to `/home/mrndev-stack-manager/stack` using:
+  - `mrndev-ops`
+  - `rsync --rsync-path='sudo -n -u mrndev-stack-manager rsync'`
+- Updated server stack assets:
+  - packages:
+    - `mrn-config-helper.zip` -> `0.1.19`
+    - `mrn-editor-tools.zip` -> `1.8.14`
+  - MU stack source:
+    - `mrn-shared-assets` -> `0.1.0`
+    - `mrn-loader.php`
+    - `mrn-shared-assets.php`
+  - theme:
+    - `mrn-base-stack/` source refreshed
+    - `mrn-base-stack.zip` -> `1.0.2`
+  - stack docs refreshed on server:
+    - `STACK_VERSION.md`
+    - `CHANGELOG.md`
+    - `README.md`
+- Validation:
+  - Server package headers verified:
+    - `mrn-config-helper` -> `0.1.19`
+    - `mrn-editor-tools` -> `1.8.14`
+    - `mrn-base-stack` -> `1.0.2`
+  - Server MU plugin file verified:
+    - `mrn-shared-assets` -> `0.1.0`
+  - Final ownership verified as:
+    - `mrndev-stack-manager:mrndev-stack-manager`
+- Cleanup:
+  - Removed accidental server-side `.git` copy from `mrn-shared-assets`.
+  - Removed accidentally misplaced root copies of:
+    - `/home/mrndev-stack-manager/stack/mrn-loader.php`
+    - `/home/mrndev-stack-manager/stack/mrn-shared-assets.php`
 
 ## Thread: 2026-03-27 Basic Contract Simplification
 - Goal:

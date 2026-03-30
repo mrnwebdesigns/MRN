@@ -1,18 +1,20 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.03.27-foundation`
-- Release date: `2026-03-27`
+- Stack release: `2026.03.29-theme-foundation`
+- Release date: `2026-03-29`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
   - `mrn-base-stack` `1.0.2`
 - MU plugins:
+  - `mrn-shared-assets` `0.1.0`
   - `mrn-reusable-block-library` `0.1.3`
   - `mrn-site-colors` / `Site Styles` `0.1.2`
 - Standard plugins:
-  - `mrn-editor-tools` `1.8.13`
+  - `mrn-config-helper` `0.1.19`
+  - `mrn-editor-tools` `1.8.14`
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)
