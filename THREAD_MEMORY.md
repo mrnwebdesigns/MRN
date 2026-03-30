@@ -68,9 +68,12 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - Cleanup commit: `dac1783` (`Remove duplicate nested template files`)
 - `default-configs.mrndev.io` has been manually refreshed from the current stack baseline after the latest builder/foundation work.
   - Updated live copies include:
+    - `wp-content/mu-plugins/mrn-shared-assets` -> `0.1.0`
     - `wp-content/mu-plugins/mrn-reusable-block-library` -> `0.1.3`
     - `wp-content/mu-plugins/mrn-site-colors` -> `0.1.2`
-    - `wp-content/themes/default-configs` -> theme content from `mrn-base-stack` `1.0.1` while preserving `Theme Name: default configs` and `Text Domain: default-configs`
+    - `wp-content/plugins/mrn-config-helper` -> `0.1.19`
+    - `wp-content/plugins/mrn-editor-tools` -> `1.8.14`
+    - `wp-content/themes/default-configs` -> theme content from `mrn-base-stack` `1.0.2` while preserving `Theme Name: default configs` and `Text Domain: default-configs`
 - The stack now has lightweight stack-wide version notes:
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
@@ -4988,3 +4991,33 @@ After you get each summary back:
   - Social links are a site-configuration concern, not a theme-specific field group.
   - Front-end/plugin documentation for this contract now lives in:
     - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-config-helper.md`
+
+## Thread: 2026-03-30 default-configs Baseline Refresh
+- Goal:
+  - Make sure the live `default-configs.mrndev.io` site is actually running the current `2026.03.29-theme-foundation` stack baseline and exposing the new theme/configuration contracts at runtime.
+- Findings:
+  - The stack root on the server was already current, but the live site had drifted behind:
+    - theme `default-configs` was still on content from `mrn-base-stack` `1.0.1`
+    - `mrn-config-helper` was `0.1.18`
+    - `mrn-editor-tools` was `1.8.11`
+    - `mrn-shared-assets` was missing from site `wp-content/mu-plugins`
+- Refresh work:
+  - Refreshed the live site from the current server stack baseline:
+    - synced stack `mu-plugins/` into site `wp-content/mu-plugins/`
+    - synced stack theme `mrn-base-stack/` into site `wp-content/themes/default-configs/`
+    - preserved site theme identity in `style.css`:
+      - `Theme Name: default configs`
+      - `Text Domain: default-configs`
+    - refreshed site plugin copies from stack packages:
+      - `mrn-config-helper` -> `0.1.19`
+      - `mrn-editor-tools` -> `1.8.14`
+- Runtime verification on `default-configs.mrndev.io`:
+  - `function_exists( 'mrn_config_helper_get_social_links' ) === true`
+  - `function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) === true`
+  - `function_exists( 'mrn_base_stack_render_social_links' ) === true`
+  - registered nav menus now include:
+    - `menu-3` -> `Footer`
+    - `menu-4` -> `Legal`
+  - ACF local field groups now include:
+    - `Theme Header/Footer`
+    - `Business Information`
