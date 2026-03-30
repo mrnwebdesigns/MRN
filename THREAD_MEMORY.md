@@ -84,6 +84,162 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - link presentation rules
     - accent contract rules
     - builder UI and collapsed-title rules
+- The stack now also has a theme direction/handoff doc:
+  - `/Users/khofmeyer/Development/MRN/stack/THEME_ROADMAP.md`
+  - Use it as the canonical reference for:
+    - what `mrn-base-stack` is supposed to be
+    - what belongs in the base theme versus plugins/MU plugins/Site Styles
+    - the team handoff model for backend, frontend, and Figma-driven work
+    - the phased roadmap for strengthening the starter theme
+- Header/footer options should be theme-owned, not Config Helper-owned.
+  - Canonical theme module:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/theme-options.php`
+  - Current theme-owned ACF options page shell:
+    - `Theme Header/Footer`
+    - slug: `mrn-theme-header-footer`
+  - Current theme-owned business information options page:
+    - `Business Information`
+    - slug: `mrn-business-information`
+  - Current canonical business information field contract:
+    - `business_profile`
+    - `years_in_business`
+    - `logo`
+    - `logo_inverted`
+    - `logo_footer`
+    - `logo_footer_inverted`
+    - `phone`
+    - `text_phone`
+    - address fields:
+      - `address_line_1`
+      - `address_line_2`
+      - `address_city`
+      - `address_state`
+      - `address_postal_code`
+      - `address_country`
+    - `address_state` is now a controlled US-state dropdown instead of free text to reduce typos in theme/business data
+    - weekday business hours for:
+      - `monday`
+      - `tuesday`
+      - `wednesday`
+      - `thursday`
+      - `friday`
+      - each day stores `open` and `close`
+    - `holiday_hours` repeater with:
+      - `name`
+      - `date`
+      - `status`
+      - `open`
+      - `close`
+      - `note`
+  - Theme helper for shared business information reads:
+    - `mrn_base_stack_get_business_information()`
+    - `mrn_base_stack_get_business_logo( $context )`
+    - `mrn_base_stack_get_business_schema_data()`
+  - Current helper return payload also includes:
+    - `phone_uri`
+    - `text_phone_uri`
+    - `address`
+    - `business_hours`
+    - `holiday_hours`
+  - ACF does not have a native phone field in this stack, so business phone inputs currently use source-controlled `text` fields upgraded with:
+    - `type="tel"` admin input behavior
+    - live phone-number formatting while typing
+    - 10-digit US-style input limiting with no country code
+    - phone-style validation
+    - theme helpers that return display-formatted phone values plus normalized clickable `tel:` URIs
+  - The theme now prints a JSON-LD business schema block in `wp_head` from the canonical business-information source.
+    - current schema can include:
+      - business profile
+      - logo
+      - phone and text contact points
+      - address
+      - weekday opening hours
+      - social `sameAs` URLs from Config Helper
+    - current schema output id:
+      - `mrn-business-schema`
+    - QA should watch for possible duplication with SEO-plugin-generated organization schema.
+  - This is now the correct rollout path for header/footer option-page registration.
+  - If header/footer or business information fields should ship with the stack, they need to be defined in canonical theme source too, not left only in a site's database.
+- The first stack theme header contract is now in place.
+  - Native WP/the theme own:
+    - custom logo
+    - primary menu location `menu-1`
+    - utility menu location `menu-2`
+  - Theme-owned header option toggles currently live on `Theme Header/Footer`:
+    - `header_show_utility_menu`
+    - `header_show_search`
+    - `header_show_business_phone`
+    - `header_show_business_profile`
+  - Header business phone/profile display values should come from:
+    - `mrn_base_stack_get_business_information()`
+  - Header logo priority is now:
+    - `Business Information` logo
+    - WordPress custom logo
+    - site title
+  - Header search is currently a theme hook contract, not a hardcoded native search form:
+    - `mrn_base_stack_header_search`
+  - Current default hook implementation renders a SearchWP-friendly header search form so the header toggle works now even if no dedicated SearchWP form IDs have been configured yet.
+  - Theme helper:
+    - `mrn_base_stack_get_theme_header_footer_options()`
+- The first stack theme footer contract is now in place.
+  - Native WP/the theme own:
+    - footer menu location `menu-3`
+    - legal menu location `menu-4`
+  - Theme-owned footer option toggles currently live on `Theme Header/Footer`:
+    - `footer_show_footer_menu`
+    - `footer_show_legal_menu`
+    - `footer_show_business_profile`
+    - `footer_show_business_phone`
+    - `footer_show_text_phone`
+    - `footer_show_address`
+    - `footer_show_business_hours`
+    - `footer_show_social_links`
+  - Theme-owned footer text fields:
+    - `footer_copyright_text`
+    - `footer_legal_text`
+  - Footer business/logo data should come from:
+    - `mrn_base_stack_get_business_information()`
+    - `mrn_base_stack_get_business_logo( 'footer' )`
+  - Footer social links should come from:
+    - `mrn_config_helper_get_social_links()`
+  - Theme helpers now include:
+    - `mrn_base_stack_get_business_address_lines()`
+    - `mrn_base_stack_get_business_hours_display_rows()`
+    - `mrn_base_stack_get_footer_copyright_text()`
+    - `mrn_base_stack_render_social_links()`
+- The stack now also has a tactical theme execution doc:
+  - `/Users/khofmeyer/Development/MRN/stack/THEME_TASKLIST.md`
+  - Use it as the practical ticket/checklist layer for:
+    - theme system foundation work
+    - template coverage work
+    - builder presentation polish
+    - backend/frontend/Figma handoff readiness
+- The stack now also has a curated developer handoff doc:
+  - `/Users/khofmeyer/Development/MRN/stack/DEV_HANDOFF.md`
+  - Use it as the single best source for:
+    - backend/frontend handoff
+    - theme/business-information/header-footer contract handoff
+    - frontend integration expectations before moving content into Google Docs
+- The canonical stack theme is now at `mrn-base-stack` `1.0.2`.
+  - This baseline includes the first source-controlled theme shell for:
+    - `Business Information`
+    - `Theme Header/Footer`
+    - starter header/footer rendering
+    - business-schema output
+    - theme roadmap/tasklist/handoff docs
+    - Google Docs export
+    - high-level theme/builder/plugin/rollout orientation for the dev team
+- The first system-foundation pass on the stack theme has started in the base CSS.
+  - `mrn-base-stack` now has shared shell tokens for:
+    - gutters
+    - section spacing
+    - row gaps
+    - wide/content container widths
+  - Starter container helpers now exist in theme CSS:
+    - `.mrn-shell-container`
+    - `.mrn-shell-container--content`
+    - `.mrn-shell-container--wide`
+  - The base theme shell, content builder, reusable block inner spacing, and two-column split now inherit from the shared spacing/container token layer instead of using only hardcoded one-off values.
 - The stack now also has a separate operations guide:
   - `/Users/khofmeyer/Development/MRN/stack/STACK_OPERATIONS.md`
   - Use it as the canonical reference for:

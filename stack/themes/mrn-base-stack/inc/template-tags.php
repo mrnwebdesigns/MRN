@@ -1,0 +1,366 @@
+<?php
+/**
+ * Custom template tags for this theme
+ *
+ * Eventually, some of the functionality here could be replaced by core features.
+ *
+ * @package mrn-base-stack
+ */
+
+if ( ! function_exists( 'mrn_base_stack_posted_on' ) ) :
+	/**
+	 * Prints HTML with meta information for the current post-date/time.
+	 */
+	function mrn_base_stack_posted_on() {
+		$time_string = '<time class="entry-date published updated" datetime="%1$s">%2$s</time>';
+		if ( get_the_time( 'U' ) !== get_the_modified_time( 'U' ) ) {
+			$time_string = '<time class="entry-date published" datetime="%1$s">%2$s</time><time class="updated" datetime="%3$s">%4$s</time>';
+		}
+
+		$time_string = sprintf(
+			$time_string,
+			esc_attr( get_the_date( DATE_W3C ) ),
+			esc_html( get_the_date() ),
+			esc_attr( get_the_modified_date( DATE_W3C ) ),
+			esc_html( get_the_modified_date() )
+		);
+
+		$posted_on = sprintf(
+			/* translators: %s: post date. */
+			esc_html_x( 'Posted on %s', 'post date', 'mrn-base-stack' ),
+			'<a href="' . esc_url( get_permalink() ) . '" rel="bookmark">' . $time_string . '</a>'
+		);
+
+		echo '<span class="posted-on">' . $posted_on . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_posted_by' ) ) :
+	/**
+	 * Prints HTML with meta information for the current author.
+	 */
+	function mrn_base_stack_posted_by() {
+		$byline = sprintf(
+			/* translators: %s: post author. */
+			esc_html_x( 'by %s', 'post author', 'mrn-base-stack' ),
+			'<span class="author vcard"><a class="url fn n" href="' . esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ) . '">' . esc_html( get_the_author() ) . '</a></span>'
+		);
+
+		echo '<span class="byline"> ' . $byline . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_entry_footer' ) ) :
+	/**
+	 * Prints HTML with meta information for the categories, tags and comments.
+	 */
+	function mrn_base_stack_entry_footer() {
+		// Hide category and tag text for pages.
+		if ( 'post' === get_post_type() ) {
+			/* translators: used between list items, there is a space after the comma */
+			$categories_list = get_the_category_list( esc_html__( ', ', 'mrn-base-stack' ) );
+			if ( $categories_list ) {
+				/* translators: 1: list of categories. */
+				printf( '<span class="cat-links">' . esc_html__( 'Posted in %1$s', 'mrn-base-stack' ) . '</span>', $categories_list ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+
+			/* translators: used between list items, there is a space after the comma */
+			$tags_list = get_the_tag_list( '', esc_html_x( ', ', 'list item separator', 'mrn-base-stack' ) );
+			if ( $tags_list ) {
+				/* translators: 1: list of tags. */
+				printf( '<span class="tags-links">' . esc_html__( 'Tagged %1$s', 'mrn-base-stack' ) . '</span>', $tags_list ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+		}
+
+		if ( ! is_single() && ! post_password_required() && ( comments_open() || get_comments_number() ) ) {
+			echo '<span class="comments-link">';
+			comments_popup_link(
+				sprintf(
+					wp_kses(
+						/* translators: %s: post title */
+						__( 'Leave a Comment<span class="screen-reader-text"> on %s</span>', 'mrn-base-stack' ),
+						array(
+							'span' => array(
+								'class' => array(),
+							),
+						)
+					),
+					wp_kses_post( get_the_title() )
+				)
+			);
+			echo '</span>';
+		}
+
+		edit_post_link(
+			sprintf(
+				wp_kses(
+					/* translators: %s: Name of current post. Only visible to screen readers */
+					__( 'Edit <span class="screen-reader-text">%s</span>', 'mrn-base-stack' ),
+					array(
+						'span' => array(
+							'class' => array(),
+						),
+					)
+				),
+				wp_kses_post( get_the_title() )
+			),
+			'<span class="edit-link">',
+			'</span>'
+		);
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_post_thumbnail' ) ) :
+	/**
+	 * Displays an optional post thumbnail.
+	 *
+	 * Wraps the post thumbnail in an anchor element on index views, or a div
+	 * element when on single views.
+	 */
+	function mrn_base_stack_post_thumbnail() {
+		if ( post_password_required() || is_attachment() || ! has_post_thumbnail() ) {
+			return;
+		}
+
+		if ( is_singular() ) :
+			?>
+
+			<div class="post-thumbnail">
+				<?php the_post_thumbnail(); ?>
+			</div><!-- .post-thumbnail -->
+
+		<?php else : ?>
+
+			<a class="post-thumbnail" href="<?php the_permalink(); ?>" aria-hidden="true" tabindex="-1">
+				<?php
+					the_post_thumbnail(
+						'post-thumbnail',
+						array(
+							'alt' => the_title_attribute(
+								array(
+									'echo' => false,
+								)
+							),
+						)
+					);
+				?>
+			</a>
+
+			<?php
+		endif; // End is_singular().
+	}
+endif;
+
+if ( ! function_exists( 'wp_body_open' ) ) :
+	/**
+	 * Shim for sites older than 5.2.
+	 *
+	 * @link https://core.trac.wordpress.org/ticket/12563
+	 */
+	function wp_body_open() {
+		do_action( 'wp_body_open' );
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_has_action' ) ) :
+	/**
+	 * Determine whether a hook has callable listeners.
+	 *
+	 * @param string $hook_name Hook name.
+	 * @return bool
+	 */
+	function mrn_base_stack_has_action( $hook_name ) {
+		return (bool) has_action( $hook_name );
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_render_header_search' ) ) :
+	/**
+	 * Render the header search area using the stack search hook.
+	 */
+	function mrn_base_stack_render_header_search() {
+		if ( ! mrn_base_stack_has_action( 'mrn_base_stack_header_search' ) ) {
+			return;
+		}
+
+		echo '<div class="mrn-site-header__search">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		do_action( 'mrn_base_stack_header_search' );
+		echo '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_render_search_form_markup' ) ) :
+	/**
+	 * Render the stack header search form.
+	 */
+	function mrn_base_stack_render_search_form_markup() {
+		$search_query = get_search_query();
+		?>
+		<form role="search" method="get" class="mrn-site-search searchwp-form" action="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'Search site content', 'mrn-base-stack' ); ?>">
+			<label class="screen-reader-text" for="mrn-header-search-input"><?php esc_html_e( 'Search for:', 'mrn-base-stack' ); ?></label>
+			<div class="mrn-site-search__input-wrap">
+				<input
+					type="search"
+					id="mrn-header-search-input"
+					class="mrn-site-search__input"
+					placeholder="<?php esc_attr_e( 'Search…', 'mrn-base-stack' ); ?>"
+					value="<?php echo esc_attr( $search_query ); ?>"
+					name="s"
+					autocomplete="off"
+				/>
+				<button type="submit" class="mrn-site-search__button"><?php esc_html_e( 'Search', 'mrn-base-stack' ); ?></button>
+			</div>
+		</form>
+		<?php
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_default_header_search' ) ) :
+	/**
+	 * Default header search implementation.
+	 */
+	function mrn_base_stack_default_header_search() {
+		mrn_base_stack_render_search_form_markup();
+	}
+endif;
+add_action( 'mrn_base_stack_header_search', 'mrn_base_stack_default_header_search' );
+
+if ( ! function_exists( 'mrn_base_stack_get_business_address_lines' ) ) :
+	/**
+	 * Return formatted business address lines.
+	 *
+	 * @return array<int, string>
+	 */
+	function mrn_base_stack_get_business_address_lines() {
+		$business_information = function_exists( 'mrn_base_stack_get_business_information' ) ? mrn_base_stack_get_business_information() : array();
+		$address              = isset( $business_information['address'] ) && is_array( $business_information['address'] ) ? $business_information['address'] : array();
+
+		$lines = array_filter(
+			array(
+				isset( $address['line_1'] ) ? (string) $address['line_1'] : '',
+				isset( $address['line_2'] ) ? (string) $address['line_2'] : '',
+				trim(
+					implode(
+						', ',
+						array_filter(
+							array(
+								isset( $address['city'] ) ? (string) $address['city'] : '',
+								isset( $address['state'] ) ? (string) $address['state'] : '',
+								isset( $address['postal_code'] ) ? (string) $address['postal_code'] : '',
+							)
+						)
+					)
+				),
+				isset( $address['country'] ) ? (string) $address['country'] : '',
+			)
+		);
+
+		return array_values( $lines );
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_get_business_hours_display_rows' ) ) :
+	/**
+	 * Return formatted weekday business hours rows.
+	 *
+	 * @return array<int, array<string, string>>
+	 */
+	function mrn_base_stack_get_business_hours_display_rows() {
+		$business_information = function_exists( 'mrn_base_stack_get_business_information' ) ? mrn_base_stack_get_business_information() : array();
+		$business_hours       = isset( $business_information['business_hours'] ) && is_array( $business_information['business_hours'] ) ? $business_information['business_hours'] : array();
+		$labels               = array(
+			'monday'    => __( 'Monday', 'mrn-base-stack' ),
+			'tuesday'   => __( 'Tuesday', 'mrn-base-stack' ),
+			'wednesday' => __( 'Wednesday', 'mrn-base-stack' ),
+			'thursday'  => __( 'Thursday', 'mrn-base-stack' ),
+			'friday'    => __( 'Friday', 'mrn-base-stack' ),
+		);
+		$rows                 = array();
+
+		foreach ( $labels as $day => $label ) {
+			$hours = isset( $business_hours[ $day ] ) && is_array( $business_hours[ $day ] ) ? $business_hours[ $day ] : array();
+			$open  = isset( $hours['open'] ) ? trim( (string) $hours['open'] ) : '';
+			$close = isset( $hours['close'] ) ? trim( (string) $hours['close'] ) : '';
+
+			if ( '' === $open || '' === $close ) {
+				continue;
+			}
+
+			$rows[] = array(
+				'label' => $label,
+				'hours' => $open . ' - ' . $close,
+			);
+		}
+
+		return $rows;
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_get_footer_copyright_text' ) ) :
+	/**
+	 * Return the footer copyright line.
+	 *
+	 * @return string
+	 */
+	function mrn_base_stack_get_footer_copyright_text() {
+		$options = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+
+		if ( ! empty( $options['footer_copyright_text'] ) ) {
+			return (string) $options['footer_copyright_text'];
+		}
+
+		return sprintf(
+			/* translators: 1: year, 2: site name. */
+			__( 'Copyright %1$s %2$s. All rights reserved.', 'mrn-base-stack' ),
+			wp_date( 'Y' ),
+			get_bloginfo( 'name' )
+		);
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_render_social_links' ) ) :
+	/**
+	 * Render configured social links.
+	 */
+	function mrn_base_stack_render_social_links() {
+		if ( ! function_exists( 'mrn_config_helper_get_social_links' ) ) {
+			return;
+		}
+
+		$social_links = mrn_config_helper_get_social_links();
+
+		if ( ! is_array( $social_links ) || empty( $social_links ) ) {
+			return;
+		}
+
+		echo '<ul class="mrn-social-links">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+		foreach ( $social_links as $row ) {
+			if ( ! is_array( $row ) || empty( $row['url'] ) ) {
+				continue;
+			}
+
+			$url       = esc_url( (string) $row['url'] );
+			$icon_type = isset( $row['icon_type'] ) ? (string) $row['icon_type'] : '';
+			$label     = isset( $row['fa_name'] ) && '' !== $row['fa_name'] ? (string) $row['fa_name'] : __( 'Social link', 'mrn-base-stack' );
+
+			echo '<li class="mrn-social-links__item">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '<a class="mrn-social-links__link" href="' . $url . '" target="_blank" rel="noopener noreferrer" aria-label="' . esc_attr( ucwords( str_replace( '-', ' ', $label ) ) ) . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+			if ( 'fontawesome' === $icon_type && ! empty( $row['fa_class'] ) ) {
+				echo '<span class="mrn-social-links__icon" aria-hidden="true"><i class="' . esc_attr( (string) $row['fa_class'] ) . '"></i></span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			} elseif ( 'media' === $icon_type && ! empty( $row['icon_url'] ) ) {
+				echo '<img class="mrn-social-links__image" src="' . esc_url( (string) $row['icon_url'] ) . '" alt="" />'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			} else {
+				echo '<span class="mrn-social-links__text">' . esc_html( ucwords( str_replace( '-', ' ', $label ) ) ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+
+			echo '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+
+		echo '</ul>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+endif;

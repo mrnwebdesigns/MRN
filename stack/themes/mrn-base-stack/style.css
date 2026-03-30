@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.0.1
+Version: 1.0.2
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -30,8 +30,13 @@ Nicolas Gallagher and Jonathan Neal https://necolas.github.io/normalize.css/
 	--mrn-shell-border: transparent;
 	--mrn-shell-accent: #1f2328;
 	--mrn-shell-accent-soft: #ffffff;
+	--mrn-shell-wide-width: 1320px;
 	--mrn-shell-max-width: 1100px;
 	--mrn-shell-content-width: 760px;
+	--mrn-shell-gutter: clamp(1rem, 2.5vw, 1.5rem);
+	--mrn-shell-section-space-tight: clamp(1.5rem, 3vw, 2.5rem);
+	--mrn-shell-section-space: clamp(2.5rem, 5vw, 4.5rem);
+	--mrn-shell-row-gap: clamp(1.5rem, 3vw, 2.5rem);
 	--mrn-shell-radius: 0;
 	--mrn-shell-shadow: none;
 }
@@ -773,14 +778,87 @@ body {
 .site-header,
 .site-footer,
 .site-main {
-	padding-left: 1.5rem;
-	padding-right: 1.5rem;
+	padding-left: var(--mrn-shell-gutter);
+	padding-right: var(--mrn-shell-gutter);
 }
 
 .site-header {
-	padding-top: 1.5rem;
+	padding-top: var(--mrn-shell-section-space-tight);
 }
 
+.site-header {
+	display: grid;
+	gap: 1rem;
+}
+
+.mrn-site-header__utility-row,
+.mrn-site-header__meta,
+.mrn-site-header__main {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.mrn-site-header__meta {
+	font-size: 0.95rem;
+	color: var(--mrn-shell-muted);
+}
+
+.mrn-site-header__utility-nav .menu,
+.mrn-site-header__utility-nav ul {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem 1rem;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.mrn-site-header__phone,
+.mrn-site-header__utility-nav a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.mrn-site-header__phone:hover,
+.mrn-site-header__phone:focus,
+.mrn-site-header__utility-nav a:hover,
+.mrn-site-header__utility-nav a:focus {
+	text-decoration: underline;
+}
+
+.mrn-site-header__search {
+	flex: 1 1 18rem;
+	max-width: 28rem;
+}
+
+.mrn-site-search {
+	margin: 0;
+}
+
+.mrn-site-search__input-wrap {
+	display: flex;
+	align-items: stretch;
+	gap: 0.5rem;
+}
+
+.mrn-site-search__input {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.mrn-site-search__button {
+	flex: 0 0 auto;
+}
+
+.mrn-site-header__main {
+	gap: 1.5rem;
+}
+
+.mrn-shell-container,
 .site-header,
 .site-footer .site-info,
 .site-main > article,
@@ -793,7 +871,18 @@ body {
 .mrn-content-builder {
 	margin-left: auto;
 	margin-right: auto;
+	width: min(100%, var(--mrn-shell-max-width));
 	max-width: var(--mrn-shell-max-width);
+}
+
+.mrn-shell-container--content {
+	width: min(100%, var(--mrn-shell-content-width));
+	max-width: var(--mrn-shell-content-width);
+}
+
+.mrn-shell-container--wide {
+	width: min(100%, var(--mrn-shell-wide-width));
+	max-width: var(--mrn-shell-wide-width);
 }
 
 .site-branding,
@@ -825,14 +914,19 @@ body {
 	margin-bottom: 2rem;
 }
 
+.mrn-site-header__main .site-branding,
+.mrn-site-header__main .main-navigation {
+	margin-bottom: 0;
+}
+
 .site-main {
-	padding-bottom: 3rem;
+	padding-bottom: var(--mrn-shell-section-space);
 }
 
 .entry-header,
 .entry-content,
 .entry-footer {
-	margin-bottom: 1.5rem;
+	margin-bottom: var(--mrn-shell-section-space-tight);
 }
 
 .entry-content,
@@ -861,17 +955,21 @@ body {
 
 .mrn-content-builder {
 	display: grid;
-	gap: 1.5rem;
+	gap: var(--mrn-shell-row-gap);
 }
 
 .mrn-content-builder__row {
 	width: 100%;
 }
 
+.mrn-shell-section {
+	padding-block: var(--mrn-shell-section-space-tight);
+}
+
 .mrn-two-column-split {
 	display: grid;
 	grid-template-columns: var(--mrn-two-column-template, minmax(0, 1fr) minmax(0, 1fr));
-	gap: 1.5rem;
+	gap: var(--mrn-shell-row-gap);
 }
 
 .mrn-two-column-split__column {
@@ -888,7 +986,7 @@ body {
 	border: 0;
 	border-radius: 0;
 	box-shadow: none;
-	padding: 0;
+	padding-inline: 0;
 }
 
 .mrn-reusable-block {
@@ -901,7 +999,7 @@ body {
 
 .mrn-reusable-block__inner {
 	display: grid;
-	gap: 1.5rem;
+	gap: var(--mrn-shell-row-gap);
 }
 
 .mrn-reusable-block__actions {
@@ -1121,7 +1219,115 @@ body {
 }
 
 .site-footer {
-	padding-bottom: 2rem;
+	padding-bottom: var(--mrn-shell-section-space-tight);
+}
+
+.site-footer {
+	display: grid;
+	gap: 1.5rem;
+}
+
+.mrn-site-footer__top {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1.5rem;
+	padding-block: var(--mrn-shell-section-space-tight);
+}
+
+.mrn-site-footer__brand,
+.mrn-site-footer__contact,
+.mrn-site-footer__nav,
+.mrn-site-footer__legal-nav {
+	min-width: 0;
+}
+
+.mrn-site-footer__profile {
+	margin: 1rem 0 0;
+	color: var(--mrn-shell-muted);
+}
+
+.mrn-site-footer__contact-item,
+.mrn-site-footer__address,
+.mrn-site-footer__hours {
+	margin: 0 0 0.85rem;
+}
+
+.mrn-site-footer__hours-row {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.mrn-site-footer__nav .menu,
+.mrn-site-footer__nav ul,
+.mrn-site-footer__legal-nav .menu,
+.mrn-site-footer__legal-nav ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 0.5rem;
+}
+
+.mrn-site-footer__nav a,
+.mrn-site-footer__legal-nav a,
+.mrn-site-footer__contact a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.mrn-site-footer__nav a:hover,
+.mrn-site-footer__nav a:focus,
+.mrn-site-footer__legal-nav a:hover,
+.mrn-site-footer__legal-nav a:focus,
+.mrn-site-footer__contact a:hover,
+.mrn-site-footer__contact a:focus {
+	text-decoration: underline;
+}
+
+.mrn-social-links {
+	list-style: none;
+	margin: 1rem 0 0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+}
+
+.mrn-social-links__link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 2.25rem;
+	min-height: 2.25rem;
+	color: inherit;
+	text-decoration: none;
+}
+
+.mrn-social-links__image {
+	display: block;
+	max-width: 1.5rem;
+	max-height: 1.5rem;
+	width: auto;
+	height: auto;
+}
+
+.mrn-social-links__icon {
+	font-size: 1.25rem;
+	line-height: 1;
+}
+
+.mrn-site-footer__bottom {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.mrn-site-footer__legal-text {
+	margin-top: 0.75rem;
+	color: var(--mrn-shell-muted);
 }
 
 .site-footer .site-info:empty {
@@ -1132,8 +1338,8 @@ body {
 	.site-header,
 	.site-footer,
 	.site-main {
-		padding-left: 1rem;
-		padding-right: 1rem;
+		padding-left: max(1rem, calc(var(--mrn-shell-gutter) - 0.25rem));
+		padding-right: max(1rem, calc(var(--mrn-shell-gutter) - 0.25rem));
 	}
 
 	.site-branding,
@@ -1156,6 +1362,16 @@ body {
 
 	.mrn-two-column-split {
 		grid-template-columns: 1fr;
+	}
+
+	.mrn-site-footer__top {
+		grid-template-columns: 1fr;
+	}
+
+	.mrn-site-footer__bottom,
+	.mrn-site-footer__hours-row {
+		flex-direction: column;
+		align-items: flex-start;
 	}
 
 	.mrn-content-grid__heading {

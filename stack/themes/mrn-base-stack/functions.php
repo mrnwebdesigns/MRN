@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.0.0' );
+	define( '_S_VERSION', '1.0.2' );
 }
 
 /**
@@ -49,7 +49,10 @@ function mrn_base_stack_setup() {
 	// This theme uses wp_nav_menu() in one location.
 	register_nav_menus(
 		array(
+			'menu-2' => esc_html__( 'Utility', 'mrn-base-stack' ),
 			'menu-1' => esc_html__( 'Primary', 'mrn-base-stack' ),
+			'menu-3' => esc_html__( 'Footer', 'mrn-base-stack' ),
+			'menu-4' => esc_html__( 'Legal', 'mrn-base-stack' ),
 		)
 	);
 
@@ -141,6 +144,19 @@ function mrn_base_stack_scripts() {
 	wp_enqueue_style( 'mrn-base-stack-style', get_stylesheet_uri(), array(), _S_VERSION );
 	wp_style_add_data( 'mrn-base-stack-style', 'rtl', 'replace' );
 
+	if ( function_exists( 'mrn_config_helper_get_social_links' ) && function_exists( 'mrn_shared_assets_enqueue_fontawesome' ) ) {
+		$social_links = mrn_config_helper_get_social_links();
+
+		if ( is_array( $social_links ) ) {
+			foreach ( $social_links as $social_link ) {
+				if ( is_array( $social_link ) && isset( $social_link['icon_type'] ) && 'fontawesome' === $social_link['icon_type'] ) {
+					mrn_shared_assets_enqueue_fontawesome( 'mrn-base-stack-fontawesome' );
+					break;
+				}
+			}
+		}
+	}
+
 	wp_enqueue_script( 'mrn-base-stack-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
 
 	if ( is_singular( array( 'post', 'page' ) ) ) {
@@ -174,6 +190,11 @@ add_action( 'wp_enqueue_scripts', 'mrn_base_stack_scripts' );
  * Load builder modules.
  */
 require_once get_template_directory() . '/inc/builder/boot.php';
+
+/**
+ * Load theme options modules.
+ */
+require_once get_template_directory() . '/inc/theme-options.php';
 
 /**
  * Implement the Custom Header feature.

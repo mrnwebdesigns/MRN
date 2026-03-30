@@ -1,5 +1,15 @@
 # Stack Changelog
 
+## 2026.03.29-theme-foundation
+- Expanded `mrn-base-stack` to `1.0.2`.
+- Added a source-controlled `Business Information` options page to the canonical theme.
+- Added a source-controlled `Theme Header/Footer` options page to the canonical theme.
+- Added starter header and footer rendering contracts backed by theme options, native menu locations, and business-information helpers.
+- Added canonical business-logo priority and logo variants for header/footer usage.
+- Added canonical business phone, text/SMS, address, weekday hours, and holiday hours data to the theme layer.
+- Added theme-owned business JSON-LD output sourced from the canonical business-information contract.
+- Added a curated developer handoff doc plus theme roadmap/tasklist docs for backend/frontend delivery.
+
 ## 2026.03.27-foundation
 - Established a stack-wide release record with a current baseline file and changelog.
 - Packaged and synced the current builder foundation baseline to the stack server.

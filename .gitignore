@@ -18,6 +18,9 @@
 !/stack/STACK_VERSION.md
 !/stack/CHANGELOG.md
 !/stack/BUILDER_CONVENTIONS.md
+!/stack/DEV_HANDOFF.md
+!/stack/THEME_ROADMAP.md
+!/stack/THEME_TASKLIST.md
 !/stack/STACK_OPERATIONS.md
 !/stack/PLUGIN_CATALOG.md
 !/stack/PLUGIN_DOC_TEMPLATE.md
@@ -27,7 +30,11 @@
 !/stack/themes/mrn-base-stack/
 !/stack/themes/mrn-base-stack/functions.php
 !/stack/themes/mrn-base-stack/style.css
+!/stack/themes/mrn-base-stack/header.php
+!/stack/themes/mrn-base-stack/footer.php
 !/stack/themes/mrn-base-stack/inc/
+!/stack/themes/mrn-base-stack/inc/theme-options.php
+!/stack/themes/mrn-base-stack/inc/template-tags.php
 !/stack/themes/mrn-base-stack/inc/builder/
 !/stack/themes/mrn-base-stack/inc/builder/*.php
 !/stack/themes/mrn-base-stack/js/
