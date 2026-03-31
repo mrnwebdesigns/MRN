@@ -46,8 +46,8 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<div class="mrn-layout-section mrn-layout-section--external-widget <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
-			<div class="mrn-layout-grid mrn-layout-grid--external-widget">
-				<div class="mrn-layout-content mrn-layout-content--embed mrn-external-widget-row__content">
+			<div class="mrn-layout-grid mrn-layout-grid--external-widget mrn-layout-grid--embed-shell">
+				<div class="mrn-layout-content mrn-layout-content--embed mrn-external-widget-row__content mrn-external-widget-row__content--embed-shell">
 					<?php echo do_shortcode( $embed_code ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
 			</div>

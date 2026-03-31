@@ -98,7 +98,7 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 		<?php endif; ?>
 
 		<?php if ( ! empty( $valid_items ) ) : ?>
-			<div class="mrn-showcase-row__grid">
+			<div class="mrn-showcase-row__grid mrn-showcase-row__grid--gallery-shell">
 				<?php foreach ( $valid_items as $index => $item ) : ?>
 					<?php
 					$image  = $item['image'];
@@ -106,7 +106,7 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 					$url    = isset( $link['url'] ) ? (string) $link['url'] : '';
 					$target = isset( $link['target'] ) ? (string) $link['target'] : '';
 					?>
-					<figure class="mrn-showcase-row__item mrn-showcase-row__item--<?php echo esc_attr( (string) ( $index + 1 ) ); ?>">
+					<figure class="mrn-showcase-row__item mrn-showcase-row__item--gallery-shell mrn-showcase-row__item--<?php echo esc_attr( (string) ( $index + 1 ) ); ?>">
 						<?php if ( '' !== $url ) : ?>
 							<a class="mrn-showcase-row__link" href="<?php echo esc_url( $url ); ?>"<?php if ( '' !== $target ) : ?> target="<?php echo esc_attr( $target ); ?>"<?php endif; ?><?php if ( '_blank' === $target ) : ?> rel="noopener noreferrer"<?php endif; ?>>
 						<?php endif; ?>

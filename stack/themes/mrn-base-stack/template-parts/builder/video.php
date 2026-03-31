@@ -84,9 +84,9 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<div class="mrn-layout-section mrn-layout-section--video <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
-			<div class="mrn-layout-grid mrn-layout-grid--video mrn-video-row">
+			<div class="mrn-layout-grid mrn-layout-grid--video mrn-video-row mrn-layout-grid--video-feature">
 			<?php if ( '' !== $label || '' !== $heading || '' !== trim( wp_strip_all_tags( $content ) ) ) : ?>
-				<div class="mrn-layout-content mrn-layout-content--text mrn-video-row__header">
+				<div class="mrn-layout-content mrn-layout-content--text mrn-video-row__header mrn-video-row__header--video-feature">
 					<?php if ( '' !== $label ) : ?>
 						<div class="mrn-video-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 					<?php endif; ?>
@@ -104,7 +104,7 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 			<?php endif; ?>
 
 			<?php if ( '' !== $resolved_video_url ) : ?>
-				<div class="mrn-layout-content mrn-layout-content--media mrn-video-row__media" data-video-src="<?php echo esc_url( $resolved_video_url ); ?>" data-video-kind="<?php echo esc_attr( $resolved_video_kind ); ?>"<?php if ( 'local' === $resolved_video_kind && '' !== $resolved_video_mime ) : ?> data-video-mime="<?php echo esc_attr( $resolved_video_mime ); ?>"<?php endif; ?> data-video-background="false" data-video-autoplay="false" data-video-muted="false" data-video-loop="false" data-video-controls="true" data-video-delay="250" aria-hidden="false"></div>
+				<div class="mrn-layout-content mrn-layout-content--media mrn-video-row__media mrn-video-row__media--video-feature" data-video-src="<?php echo esc_url( $resolved_video_url ); ?>" data-video-kind="<?php echo esc_attr( $resolved_video_kind ); ?>"<?php if ( 'local' === $resolved_video_kind && '' !== $resolved_video_mime ) : ?> data-video-mime="<?php echo esc_attr( $resolved_video_mime ); ?>"<?php endif; ?> data-video-background="false" data-video-autoplay="false" data-video-muted="false" data-video-loop="false" data-video-controls="true" data-video-delay="250" aria-hidden="false"></div>
 			<?php endif; ?>
 			</div>
 		</div>

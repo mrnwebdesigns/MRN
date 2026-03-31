@@ -94,9 +94,9 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 		<?php endif; ?>
 
 		<?php if ( ! empty( $valid_items ) ) : ?>
-			<div class="mrn-stats-row__grid">
+			<div class="mrn-stats-row__grid mrn-stats-row__grid--metrics-shell">
 				<?php foreach ( $valid_items as $item ) : ?>
-					<div class="mrn-stats-row__item">
+					<div class="mrn-stats-row__item mrn-stats-row__item--metrics-shell">
 						<?php if ( '' !== $item['value'] ) : ?>
 							<div class="mrn-stats-row__value"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $item['value'] ) : esc_html( $item['value'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 						<?php endif; ?>

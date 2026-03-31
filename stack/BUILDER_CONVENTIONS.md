@@ -130,6 +130,10 @@ These are the current preferred content patterns in the stack.
   - `Background image`
   - `Background video`
   - accent controls when the specific hero layout exposes them
+- Hero remains a separate contract from the body-section width system.
+- Default hero layouts can start from the hero-shell classes:
+  - `mrn-hero__content--hero-shell`
+  - `mrn-hero__media--hero-shell`
 
 ### After Content
 
@@ -206,6 +210,55 @@ Layout templates should not hardcode one-off max-width containers. Instead, they
   - `Content` reads tighter
   - `Wide` uses a larger contained working width
   - `Full Width` is behaviorally different because the section shell goes full bleed
+- Current width-expression baseline for media/content families:
+  - `Basic` and `Image Content` should keep `Content` single-column and readable
+  - `Wide` should become a contained split composition rather than a full-bleed band
+  - `Full Width` can let media/shell behavior go edge to edge, but readable text should stay constrained
+  - layered `Wide` and `Full Width` variants must still collapse back to one column on small screens
+  - when adding a new media/content family, start by reusing the shared layered media-stack shell classes:
+    - `mrn-layout-grid--media-stack`
+    - `mrn-layout-content--media-stack-media`
+    - `mrn-layout-content--media-stack-text`
+  - this shared starter contract now also applies to the layered `Reusable Basic` shell path
+  - CTA rows now also have a reusable callout-inner contract for width expression:
+    - `mrn-reusable-block__inner--callout`
+    - `mrn-reusable-block__actions--callout`
+  - collection/grid-style reusable layouts can now start from the collection-shell classes:
+    - `mrn-content-grid--collection-shell`
+    - `mrn-content-grid__items--collection-shell`
+    - `mrn-content-grid__item--collection-shell`
+  - FAQ rows now use an editorial-shell class so width modes can shift between constrained and split layouts without changing the accordion model:
+    - `mrn-faq--editorial-shell`
+  - image-led showcase/collage rows can start from the gallery-shell classes:
+    - `mrn-showcase-row__grid--gallery-shell`
+    - `mrn-showcase-row__item--gallery-shell`
+  - stats/countup-style rows can start from the metrics-shell classes:
+    - `mrn-stats-row__grid--metrics-shell`
+    - `mrn-stats-row__item--metrics-shell`
+  - logo-wall rows can start from the logo-wall classes:
+    - `mrn-logos-row__grid--logo-wall`
+    - `mrn-logos-row__item--logo-wall`
+  - card collection rows can start from the card-deck classes:
+    - `mrn-card-row__grid--card-deck`
+    - `mrn-card-row__item--card-deck`
+  - slider/carousel rows can start from the slider-shell classes:
+    - `mrn-layout-grid--slider-shell`
+    - `mrn-slider-row__header--slider-shell`
+    - `mrn-slider-row__splide--slider-shell`
+    - `mrn-slider-row__slide--slider-shell`
+  - feature-video rows can start from the video-feature classes:
+    - `mrn-layout-grid--video-feature`
+    - `mrn-video-row__header--video-feature`
+    - `mrn-video-row__media--video-feature`
+  - embed/external-widget rows can start from the embed-shell classes:
+    - `mrn-layout-grid--embed-shell`
+    - `mrn-external-widget-row__content--embed-shell`
+  - two-column composition rows can start from the split-shell classes:
+    - `mrn-layout-grid--split-shell`
+    - `mrn-two-column-split__column--split-shell`
+  - editorial text rows can start from the text-shell classes:
+    - `mrn-layout-grid--text-shell`
+    - `mrn-layout-content--text-shell`
 - In the base theme, `Content` and `Wide` can be subtly different.
 - The fallback responsibility is structural first and visual second.
 - The base theme should keep fallback styling minimal and readable, not over-design every width mode.
@@ -259,6 +312,7 @@ Layout templates should not hardcode one-off max-width containers. Instead, they
 
 - Local QA acceptance pages on the stack test site should cover every width-sensitive layout family and reusable block family.
 - Current local QA page slugs include:
+  - `qa-hero`
   - `qa-text-widths`
   - `qa-basic-widths`
   - `qa-image-content-widths`

@@ -80,7 +80,7 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 		<?php endif; ?>
 
 		<?php if ( $has_items ) : ?>
-			<div class="mrn-card-row__grid">
+			<div class="mrn-card-row__grid mrn-card-row__grid--card-deck">
 				<?php foreach ( $items as $item ) : ?>
 					<?php
 					if ( ! is_array( $item ) ) {
@@ -95,7 +95,7 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 						continue;
 					}
 					?>
-					<article class="mrn-card-row__item">
+					<article class="mrn-card-row__item mrn-card-row__item--card-deck">
 						<?php if ( ! empty( $item_image['ID'] ) ) : ?>
 							<div class="mrn-card-row__image">
 								<?php echo wp_get_attachment_image( (int) $item_image['ID'], 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

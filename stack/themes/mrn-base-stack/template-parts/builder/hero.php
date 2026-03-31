@@ -88,6 +88,10 @@ if ( '' !== $video_url ) {
 	$section_classes[] = 'has-background-video';
 }
 
+if ( '' !== $image_url ) {
+	$section_classes[] = 'has-hero-media';
+}
+
 $accent_contract = function_exists( 'mrn_site_styles_get_bottom_accent_contract' )
 	? mrn_site_styles_get_bottom_accent_contract( $bottom_accent, $accent_slug )
 	: array(
@@ -108,7 +112,7 @@ if ( isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attr
 		<div class="mrn-section-background-media mrn-hero__background-media" data-video-src="<?php echo esc_url( $video_url ); ?>" data-video-kind="<?php echo esc_attr( $video_kind ); ?>"<?php if ( 'local' === $video_kind && '' !== $local_video_mime ) : ?> data-video-mime="<?php echo esc_attr( $local_video_mime ); ?>"<?php endif; ?><?php if ( '' !== $image_url ) : ?> data-video-poster="<?php echo esc_url( $image_url ); ?>"<?php endif; ?> data-video-background="true" data-video-autoplay="true" data-video-muted="true" data-video-loop="true" data-video-controls="false" data-video-delay="2000" data-video-desktop-only="true" aria-hidden="true"></div>
 	<?php endif; ?>
 	<div class="mrn-hero__inner">
-		<div class="mrn-hero__content">
+		<div class="mrn-hero__content mrn-hero__content--hero-shell">
 			<?php if ( '' !== $label ) : ?>
 				<p class="mrn-hero__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 			<?php endif; ?>
@@ -133,7 +137,7 @@ if ( isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attr
 		</div>
 
 		<?php if ( '' !== $image_url ) : ?>
-			<div class="mrn-hero__media">
+			<div class="mrn-hero__media mrn-hero__media--hero-shell">
 				<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $image_alt ); ?>" />
 			</div>
 		<?php endif; ?>

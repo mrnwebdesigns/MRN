@@ -236,6 +236,14 @@ Current first-pass footer contract:
 - good responsive behavior for all standard layouts
 - support for shared accent and background token rules
 
+Current family-specific width-expression baseline:
+
+- `Basic` and `Image Content` now set the direction for layered width expression in theme-owned media/content layouts
+- `Content` should remain stacked and readable
+- `Wide` should read as a contained split layout, not a full-bleed background band
+- `Full Width` should use a true full-bleed shell/media treatment while keeping inner readable text constrained
+- small-screen behavior should collapse layered wide/full grids back to one column
+
 ### 4. Front-End Integration Layer
 
 - Site Styles token consumption

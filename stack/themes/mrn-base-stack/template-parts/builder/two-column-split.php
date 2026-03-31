@@ -98,8 +98,8 @@ $is_full_width = 'full-width' === ( $width_layers['width'] ?? '' );
 	<?php endif; ?>
 	<div class="mrn-layout-section mrn-layout-section--two-column-split <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
-			<div class="mrn-layout-grid mrn-layout-grid--two-column-split mrn-two-column-split">
-			<div class="mrn-layout-content mrn-layout-content--column mrn-two-column-split__column mrn-two-column-split__column--left">
+			<div class="mrn-layout-grid mrn-layout-grid--two-column-split mrn-two-column-split mrn-layout-grid--split-shell">
+			<div class="mrn-layout-content mrn-layout-content--column mrn-two-column-split__column mrn-two-column-split__column--left mrn-two-column-split__column--split-shell">
 				<?php
 				if ( ! empty( $left_row ) && function_exists( 'mrn_base_stack_render_builder_row' ) ) {
 					mrn_base_stack_render_builder_row(
@@ -110,7 +110,7 @@ $is_full_width = 'full-width' === ( $width_layers['width'] ?? '' );
 				}
 				?>
 			</div>
-			<div class="mrn-layout-content mrn-layout-content--column mrn-two-column-split__column mrn-two-column-split__column--right">
+			<div class="mrn-layout-content mrn-layout-content--column mrn-two-column-split__column mrn-two-column-split__column--right mrn-two-column-split__column--split-shell">
 				<?php
 				if ( ! empty( $right_row ) && function_exists( 'mrn_base_stack_render_builder_row' ) ) {
 					mrn_base_stack_render_builder_row(

@@ -218,6 +218,75 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - `mrn_base_stack_render_social_links()`
 - The stack now also has a tactical theme execution doc:
   - `/Users/khofmeyer/Development/MRN/stack/THEME_TASKLIST.md`
+- Hero remains a separate contract from the body-section width model.
+  - It should not be forced into the layered `Content` / `Wide` / `Full Width` section system just for naming consistency.
+  - Default hero layouts can now start from a shared hero-shell contract:
+    - `mrn-hero__content--hero-shell`
+    - `mrn-hero__media--hero-shell`
+  - The default fallback responsibility is still structural and override-friendly, not highly art-directed.
+- Post-width-system family-expression work has started in the stack theme for media/content layouts.
+  - `Basic` and `Image Content` are now the baseline examples for layout-family-specific width expression on the layered shell contract.
+  - `Content` stays stacked/readable.
+  - `Wide` becomes a contained split composition.
+  - `Full Width` is allowed to go full bleed at the shell/media level while keeping inner readable text constrained.
+  - Layered `Wide` and `Full Width` variants must collapse back to one column on small screens.
+  - Shared starter classes now exist for future theme-owned media/content families so new layouts can inherit the same shell behavior faster:
+    - `mrn-layout-grid--media-stack`
+    - `mrn-layout-content--media-stack-media`
+    - `mrn-layout-content--media-stack-text`
+  - The layered `Reusable Basic` shell path now also uses that shared media-stack starter contract.
+  - Reusable-block QA should explicitly check mobile collapse for width-sensitive full-width layouts, including `Reusable FAQ`.
+  - CTA rows now also have a reusable callout-inner contract so `Content`, `Wide`, and `Full Width` can diverge through a shared inner layout instead of padding-only tweaks:
+    - `mrn-reusable-block__inner--callout`
+    - `mrn-reusable-block__actions--callout`
+  - Reusable grid rows now also have a collection-shell contract so width expression can be shared across collection-style blocks:
+    - `mrn-content-grid--collection-shell`
+    - `mrn-content-grid__items--collection-shell`
+    - `mrn-content-grid__item--collection-shell`
+  - Reusable FAQ rows now use an editorial-shell contract:
+    - `mrn-faq--editorial-shell`
+    - `Content` stays constrained
+    - `Wide` can use a gentle split intro/items layout
+    - `Full Width` can feel more architectural while preserving mobile single-column collapse
+  - Native showcase/collage rows now also have a gallery-shell contract:
+    - `mrn-showcase-row__grid--gallery-shell`
+    - `mrn-showcase-row__item--gallery-shell`
+    - layered showcase mobile collapse should be enforced at the layered section rules, not only in older global breakpoint rules
+  - Native stats/countup rows now also have a metrics-shell contract:
+    - `mrn-stats-row__grid--metrics-shell`
+    - `mrn-stats-row__item--metrics-shell`
+    - `Full Width` can use card-like metric tiles while mobile should strip that treatment back cleanly
+  - Native logo-wall rows now also have a logo-wall contract:
+    - `mrn-logos-row__grid--logo-wall`
+    - `mrn-logos-row__item--logo-wall`
+    - `Content`, `Wide`, and `Full Width` can stay neutral while still differentiating through tile rhythm and surface treatment
+  - Native card collection rows now also have a card-deck contract:
+    - `mrn-card-row__grid--card-deck`
+    - `mrn-card-row__item--card-deck`
+    - layered card mobile collapse should be enforced at the layered section rules so full-width card rows do not remain multi-column on small screens
+  - Native slider/carousel rows now also have a slider-shell contract:
+    - `mrn-layout-grid--slider-shell`
+    - `mrn-slider-row__header--slider-shell`
+    - `mrn-slider-row__splide--slider-shell`
+    - `mrn-slider-row__slide--slider-shell`
+    - `Content` can stay editorial while `Wide` and `Full Width` shift into more intentional media/text slide compositions
+  - Native feature-video rows now also have a video-feature contract:
+    - `mrn-layout-grid--video-feature`
+    - `mrn-video-row__header--video-feature`
+    - `mrn-video-row__media--video-feature`
+    - `Wide` and `Full Width` can use a shared split text/media composition while still collapsing back to one column on small screens
+  - Native external-widget/embed rows now also have an embed-shell contract:
+    - `mrn-layout-grid--embed-shell`
+    - `mrn-external-widget-row__content--embed-shell`
+    - width expression should stay subtle and structural because the third-party widget chrome is the real content
+  - Native two-column composition rows now also have a split-shell contract:
+    - `mrn-layout-grid--split-shell`
+    - `mrn-two-column-split__column--split-shell`
+    - `Wide` and `Full Width` can use restrained column surfaces and inner rhythm while mobile should still collapse to a plain one-column flow
+  - Native editorial text rows now also have a text-shell contract:
+    - `mrn-layout-grid--text-shell`
+    - `mrn-layout-content--text-shell`
+    - `Content` should stay tightly readable, `Wide` can open the measure modestly, and `Full Width` can announce a broader section while keeping text comfortably constrained
 
 ## 2026-03-30 Width System Pass
 
@@ -245,6 +314,7 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
 - The direct `Reusable Block` layout now has a `Section Width` field.
 - Page-only `Basic Block` and `FAQ Block` now also expose `Section Width` so reusable-derived layouts use the same width vocabulary as the rest of the builder.
 - The local stack QA harness now includes dedicated page coverage for the remaining width-sensitive gaps:
+  - `qa-hero`
   - `qa-text-widths`
   - `qa-external-widget-widths`
   - `qa-reusable-basic-widths`

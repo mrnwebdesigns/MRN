@@ -144,7 +144,7 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 				</div>
 			</div>
 		<?php else : ?>
-			<div class="mrn-logos-row__grid mrn-logos-row__grid--columns-<?php echo esc_attr( (string) $per_page ); ?>">
+			<div class="mrn-logos-row__grid mrn-logos-row__grid--logo-wall mrn-logos-row__grid--columns-<?php echo esc_attr( (string) $per_page ); ?>">
 				<?php foreach ( $valid_items as $item ) : ?>
 					<?php
 					$image  = $item['image'];
@@ -152,7 +152,7 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 					$url    = isset( $link['url'] ) ? (string) $link['url'] : '';
 					$target = isset( $link['target'] ) ? (string) $link['target'] : '';
 					?>
-					<div class="mrn-logos-row__item">
+					<div class="mrn-logos-row__item mrn-logos-row__item--logo-wall">
 						<?php if ( '' !== $url ) : ?>
 							<a class="mrn-logos-row__link" href="<?php echo esc_url( $url ); ?>"<?php if ( '' !== $target ) : ?> target="<?php echo esc_attr( $target ); ?>"<?php endif; ?><?php if ( '_blank' === $target ) : ?> rel="noopener noreferrer"<?php endif; ?>>
 						<?php endif; ?>

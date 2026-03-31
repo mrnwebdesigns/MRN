@@ -160,6 +160,12 @@ Current standard layouts to review:
 - Review accent spacing defaults and override expectations.
 - Confirm section spacing behaves well when accent graphics are active.
 
+Current family-expression baseline completed:
+
+- `Basic` now uses the layered shell to make `Content`, `Wide`, and `Full Width` read differently without abandoning the shared wrapper contract
+- `Image Content` now follows the same family-level rule set
+- layered `Wide` and `Full Width` variants for those families now explicitly collapse to one column on small screens
+
 ### Media Performance
 
 - Review hero background media behavior on real devices.

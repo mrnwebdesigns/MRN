@@ -100,9 +100,9 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<div class="mrn-layout-section mrn-layout-section--slider <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
-			<div class="mrn-layout-grid mrn-layout-grid--slider">
+			<div class="mrn-layout-grid mrn-layout-grid--slider mrn-layout-grid--slider-shell">
 		<?php if ( '' !== $label || '' !== $heading ) : ?>
-			<header class="mrn-layout-content mrn-layout-content--text mrn-slider-row__header">
+			<header class="mrn-layout-content mrn-layout-content--text mrn-slider-row__header mrn-slider-row__header--slider-shell">
 				<?php if ( '' !== $label ) : ?>
 					<div class="mrn-slider-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 				<?php endif; ?>
@@ -115,7 +115,7 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 		<?php if ( $has_items ) : ?>
 			<div
 				id="<?php echo esc_attr( $slider_id ); ?>"
-				class="splide mrn-splide mrn-slider-row__splide"
+				class="splide mrn-splide mrn-slider-row__splide mrn-slider-row__splide--slider-shell"
 				aria-label="<?php echo esc_attr( '' !== $heading ? wp_strip_all_tags( $heading ) : 'Content slider' ); ?>"
 				data-per-page="<?php echo esc_attr( (string) $per_page ); ?>"
 				data-arrows="<?php echo esc_attr( $show_arrows ? 'true' : 'false' ); ?>"
@@ -157,7 +157,7 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 							}
 							?>
 							<li class="splide__slide">
-								<article class="mrn-slider-row__slide">
+								<article class="mrn-slider-row__slide mrn-slider-row__slide--slider-shell">
 									<?php if ( ! empty( $item_image['ID'] ) ) : ?>
 										<div class="mrn-slider-row__media">
 											<?php echo wp_get_attachment_image( (int) $item_image['ID'], 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
