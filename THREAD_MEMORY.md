@@ -224,6 +224,9 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - `mrn-hero__content--hero-shell`
     - `mrn-hero__media--hero-shell`
   - The default fallback responsibility is still structural and override-friendly, not highly art-directed.
+- `mrn-reusable-block-library` now has a plugin-root handoff README:
+  - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/README.md`
+  - It documents plugin ownership vs theme ownership, theme override paths, minimum integration expectations, and the shared family classes another theme may need to style.
 - Post-width-system family-expression work has started in the stack theme for media/content layouts.
   - `Basic` and `Image Content` are now the baseline examples for layout-family-specific width expression on the layered shell contract.
   - `Content` stays stacked/readable.
