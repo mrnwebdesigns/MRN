@@ -143,6 +143,22 @@ These are the current preferred content patterns in the stack.
 - Use `Content` for the main narrative body flow.
 - Use `After Content` for sections that should land after the main body flow.
 
+### Content Lists
+
+- `Content Lists` is a theme-owned query layout for listing WordPress content inside the builder.
+- It is the preferred theme layout when a page needs a post/query-driven list rather than hand-authored static rows.
+- Current control set includes:
+  - content type
+  - list style
+  - ordering and count
+  - offset and pagination
+  - excerpt and read-more display
+  - empty-state message or full-row suppression
+  - contextual or manual taxonomy filtering
+- The first contextual filter contract is:
+  - use the current page/post terms from a selected taxonomy to filter the queried content list
+- Taxonomy and term controls should stay aligned with the selected content type so authors are not shown irrelevant filter options.
+
 ### Section Width
 
 - Theme-owned layouts now use a shared `Section Width` setting where width matters visually.

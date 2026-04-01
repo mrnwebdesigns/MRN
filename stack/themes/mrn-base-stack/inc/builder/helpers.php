@@ -54,6 +54,154 @@ function mrn_base_stack_get_section_width_choices() {
 }
 
 /**
+ * Shared post-type choices for query-driven builder layouts.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_content_list_post_type_choices() {
+	$post_types = get_post_types(
+		array(
+			'public'  => true,
+			'show_ui' => true,
+		),
+		'objects'
+	);
+	$choices    = array();
+	$excluded   = array(
+		'attachment',
+		'wp_block',
+		'wp_font_face',
+		'wp_font_family',
+		'wp_global_styles',
+		'wp_navigation',
+		'wp_template',
+		'wp_template_part',
+		'acf-field',
+		'acf-field-group',
+	);
+
+	foreach ( $post_types as $post_type => $post_type_object ) {
+		if ( ! $post_type_object instanceof WP_Post_Type ) {
+			continue;
+		}
+
+		if ( in_array( $post_type, $excluded, true ) ) {
+			continue;
+		}
+
+		$label = isset( $post_type_object->labels->name ) ? trim( (string) $post_type_object->labels->name ) : '';
+		if ( '' === $label ) {
+			$label = ucfirst( str_replace( array( '-', '_' ), ' ', $post_type ) );
+		}
+
+		$choices[ $post_type ] = $label;
+	}
+
+	if ( empty( $choices['post'] ) ) {
+		$choices = array_merge( array( 'post' => 'Posts' ), $choices );
+	}
+
+	return $choices;
+}
+
+/**
+ * Shared list-style choices for query-driven builder layouts.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_content_list_style_choices() {
+	return array(
+		'unordered' => 'Unordered List',
+		'ordered'   => 'Ordered List',
+	);
+}
+
+/**
+ * Shared order-by choices for query-driven builder layouts.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_content_list_orderby_choices() {
+	return array(
+		'date'          => 'Publish Date',
+		'modified'      => 'Modified Date',
+		'title'         => 'Title',
+		'menu_order'    => 'Menu Order',
+		'comment_count' => 'Comment Count',
+		'rand'          => 'Random',
+	);
+}
+
+/**
+ * Shared taxonomy choices for query-driven builder layouts.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_content_list_taxonomy_choices() {
+	$taxonomies = get_taxonomies(
+		array(
+			'public'  => true,
+			'show_ui' => true,
+		),
+		'objects'
+	);
+	$choices    = array();
+	$excluded   = array(
+		'nav_menu',
+		'link_category',
+		'post_format',
+	);
+
+	foreach ( $taxonomies as $taxonomy => $taxonomy_object ) {
+		if ( ! $taxonomy_object instanceof WP_Taxonomy ) {
+			continue;
+		}
+
+		if ( in_array( $taxonomy, $excluded, true ) ) {
+			continue;
+		}
+
+		$label = isset( $taxonomy_object->labels->name ) ? trim( (string) $taxonomy_object->labels->name ) : '';
+		if ( '' === $label ) {
+			$label = ucfirst( str_replace( array( '-', '_' ), ' ', $taxonomy ) );
+		}
+
+		$choices[ $taxonomy ] = $label;
+	}
+
+	if ( empty( $choices['category'] ) && taxonomy_exists( 'category' ) ) {
+		$choices = array_merge( array( 'category' => 'Categories' ), $choices );
+	}
+
+	return $choices;
+}
+
+/**
+ * Shared filter source choices for query-driven builder layouts.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_content_list_filter_source_choices() {
+	return array(
+		'none'               => 'No Filter',
+		'current_post_terms' => 'Use Current Page/Post Terms',
+		'manual_terms'       => 'Use Specific Terms',
+	);
+}
+
+/**
+ * Shared term matching choices for query-driven builder layouts.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_content_list_filter_match_choices() {
+	return array(
+		'any' => 'Match Any Selected Term',
+		'all' => 'Match All Selected Terms',
+	);
+}
+
+/**
  * Build a standard section-width ACF field definition.
  *
  * @param string $key Unique ACF field key.
@@ -654,6 +802,138 @@ function mrn_base_stack_format_heading_inline_html( $value ) {
 	);
 
 	return wp_kses( (string) $value, $allowed_tags );
+}
+
+/**
+ * Build a row-specific pagination query arg for content-list builder rows.
+ *
+ * @param int $post_id Current post ID.
+ * @param int $index Zero-based row index.
+ * @return string
+ */
+function mrn_base_stack_get_content_list_pagination_query_arg( $post_id, $index ) {
+	return sanitize_key( sprintf( 'mrn_list_page_%d_%d', absint( $post_id ), absint( $index ) ) );
+}
+
+/**
+ * Resolve the requested content-list page from the current query string.
+ *
+ * @param int $post_id Current post ID.
+ * @param int $index Zero-based row index.
+ * @return int
+ */
+function mrn_base_stack_get_content_list_current_page( $post_id, $index ) {
+	$query_arg = mrn_base_stack_get_content_list_pagination_query_arg( $post_id, $index );
+
+	if ( isset( $_GET[ $query_arg ] ) ) {
+		return max( 1, absint( wp_unslash( $_GET[ $query_arg ] ) ) );
+	}
+
+	return 1;
+}
+
+/**
+ * Build a trimmed excerpt for content-list rows.
+ *
+ * @param WP_Post $post Current listing post.
+ * @param int     $word_count Desired word count.
+ * @return string
+ */
+function mrn_base_stack_get_content_list_excerpt( WP_Post $post, $word_count = 24 ) {
+	$word_count = max( 1, absint( $word_count ) );
+	$excerpt    = trim( (string) get_the_excerpt( $post ) );
+
+	if ( '' === $excerpt ) {
+		$excerpt = trim( wp_strip_all_tags( (string) $post->post_content ) );
+	}
+
+	if ( '' === $excerpt ) {
+		return '';
+	}
+
+	return wp_trim_words( $excerpt, $word_count, '...' );
+}
+
+/**
+ * Build a taxonomy filter query for a content-list row.
+ *
+ * @param array<string, mixed> $row Content-list row settings.
+ * @param int                  $context_post_id Current page/post ID.
+ * @param string               $target_post_type Queried post type.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_content_list_tax_query( array $row, $context_post_id, $target_post_type ) {
+	$filter_source = isset( $row['filter_source'] ) ? sanitize_key( (string) $row['filter_source'] ) : 'none';
+	$taxonomy      = isset( $row['filter_taxonomy'] ) ? sanitize_key( (string) $row['filter_taxonomy'] ) : '';
+	$match_mode    = isset( $row['filter_match'] ) ? sanitize_key( (string) $row['filter_match'] ) : 'any';
+
+	if ( 'none' === $filter_source || '' === $taxonomy || ! taxonomy_exists( $taxonomy ) ) {
+		return array();
+	}
+
+	if ( '' !== $target_post_type && ! is_object_in_taxonomy( $target_post_type, $taxonomy ) ) {
+		return array();
+	}
+
+	$operator = 'all' === $match_mode ? 'AND' : 'IN';
+
+	if ( 'current_post_terms' === $filter_source ) {
+		$term_ids = wp_get_post_terms(
+			absint( $context_post_id ),
+			$taxonomy,
+			array(
+				'fields' => 'ids',
+			)
+		);
+
+		if ( is_wp_error( $term_ids ) || empty( $term_ids ) ) {
+			return array(
+				array(
+					'taxonomy' => $taxonomy,
+					'field'    => 'term_id',
+					'terms'    => array( 0 ),
+					'operator' => 'IN',
+				),
+			);
+		}
+
+		return array(
+			array(
+				'taxonomy' => $taxonomy,
+				'field'    => 'term_id',
+				'terms'    => array_map( 'absint', $term_ids ),
+				'operator' => $operator,
+			),
+		);
+	}
+
+	if ( 'manual_terms' === $filter_source ) {
+		$raw_terms = isset( $row['filter_term_slugs'] ) ? (string) $row['filter_term_slugs'] : '';
+		$term_slugs = array_values(
+			array_filter(
+				array_map(
+					'sanitize_title',
+					preg_split( '/[\s,]+/', $raw_terms ) ?: array()
+				),
+				'strlen'
+			)
+		);
+
+		if ( empty( $term_slugs ) ) {
+			return array();
+		}
+
+		return array(
+			array(
+				'taxonomy' => $taxonomy,
+				'field'    => 'slug',
+				'terms'    => $term_slugs,
+				'operator' => $operator,
+			),
+		);
+	}
+
+	return array();
 }
 
 /**

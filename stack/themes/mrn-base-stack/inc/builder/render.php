@@ -203,6 +203,11 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 		return true;
 	}
 
+	if ( 'content_lists' === $layout ) {
+		get_template_part( 'template-parts/builder/content-lists', null, $context );
+		return true;
+	}
+
 	if ( 'hero' === $layout ) {
 		get_template_part( 'template-parts/builder/hero', null, $context );
 		return true;
@@ -707,6 +712,23 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 		}
 
 		return 'Text: ' . esc_html( wp_strip_all_tags( $heading ) );
+	}
+
+	if ( 'content_lists' === $layout_name ) {
+		$heading = trim( (string) get_sub_field( 'text_field' ) );
+
+		if ( '' !== $heading ) {
+			return 'Content Lists: ' . esc_html( wp_strip_all_tags( $heading ) );
+		}
+
+		$post_type = sanitize_key( (string) get_sub_field( 'list_post_type' ) );
+		$choices   = function_exists( 'mrn_base_stack_get_content_list_post_type_choices' ) ? mrn_base_stack_get_content_list_post_type_choices() : array();
+
+		if ( isset( $choices[ $post_type ] ) ) {
+			return 'Content Lists: ' . esc_html( $choices[ $post_type ] );
+		}
+
+		return 'Content Lists';
 	}
 
 	if ( 'card' === $layout_name ) {

@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.0.3
+Version: 1.0.4
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -3237,6 +3237,182 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	margin-bottom: 0;
 }
 
+.mrn-layout-section--content-lists.mrn-layout-surface,
+.mrn-layout-section--content-lists .mrn-layout-container.mrn-layout-surface {
+	background: var(--mrn-content-list-row-bg, transparent);
+	padding-block: clamp(1.75rem, 3.5vw, 3.5rem);
+}
+
+.mrn-layout-section--content-lists .mrn-layout-grid--content-lists {
+	gap: clamp(1.25rem, 2.8vw, 2rem);
+}
+
+.mrn-content-list-row__header {
+	display: grid;
+	gap: 0.9rem;
+	max-width: 72ch;
+}
+
+.mrn-content-list-row__intro > :last-child,
+.mrn-content-list-row__body > :last-child {
+	margin-bottom: 0;
+}
+
+.mrn-content-list-row__items {
+	display: grid;
+	gap: 1rem;
+	margin: 0;
+	padding: 0;
+}
+
+.mrn-content-list-row__items--unordered {
+	list-style: none;
+}
+
+.mrn-content-list-row__items--ordered {
+	counter-reset: mrn-content-list;
+	list-style: none;
+}
+
+.mrn-content-list-row__items--ordered > .mrn-content-list-row__item {
+	counter-increment: mrn-content-list;
+	position: relative;
+}
+
+.mrn-content-list-row__items--ordered > .mrn-content-list-row__item::before {
+	align-items: center;
+	background: rgba(28, 34, 43, 0.08);
+	border-radius: 999px;
+	color: var(--mrn-shell-text);
+	content: counter(mrn-content-list);
+	display: inline-flex;
+	font-size: 0.9rem;
+	font-weight: 600;
+	height: 2rem;
+	justify-content: center;
+	left: 1rem;
+	position: absolute;
+	top: 1rem;
+	width: 2rem;
+}
+
+.mrn-content-list-row__card {
+	background: rgba(255, 255, 255, 0.76);
+	border: 1px solid rgba(28, 34, 43, 0.1);
+	border-radius: clamp(0.9rem, 1.8vw, 1.2rem);
+	box-shadow: 0 14px 32px rgba(22, 28, 45, 0.05);
+	display: grid;
+	gap: 1rem;
+	padding: clamp(1rem, 2vw, 1.35rem);
+}
+
+.mrn-content-list-row__item--has-image .mrn-content-list-row__card {
+	grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+}
+
+.mrn-content-list-row__media {
+	display: block;
+}
+
+.mrn-content-list-row__media img {
+	aspect-ratio: 4 / 3;
+	border-radius: clamp(0.7rem, 1.4vw, 1rem);
+	display: block;
+	height: 100%;
+	object-fit: cover;
+	width: 100%;
+}
+
+.mrn-content-list-row__body {
+	display: grid;
+	gap: 0.65rem;
+	min-width: 0;
+}
+
+.mrn-content-list-row__meta {
+	color: var(--mrn-shell-muted);
+	font-size: 0.9rem;
+	margin: 0;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.mrn-content-list-row__title {
+	font-size: clamp(1.2rem, 2vw, 1.55rem);
+	line-height: 1.15;
+	margin: 0;
+}
+
+.mrn-content-list-row__title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.mrn-content-list-row__title a:hover,
+.mrn-content-list-row__title a:focus {
+	text-decoration: underline;
+}
+
+.mrn-content-list-row__excerpt,
+.mrn-content-list-row__empty {
+	color: var(--mrn-shell-muted);
+	margin: 0;
+	max-width: 64ch;
+}
+
+.mrn-content-list-row__link {
+	margin: 0;
+}
+
+.mrn-content-list-row__link a {
+	color: var(--mrn-shell-accent);
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.mrn-content-list-row__link a:hover,
+.mrn-content-list-row__link a:focus {
+	text-decoration: underline;
+}
+
+.mrn-content-list-row__pagination .page-numbers {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.mrn-content-list-row__pagination a,
+.mrn-content-list-row__pagination span {
+	border: 1px solid rgba(28, 34, 43, 0.14);
+	border-radius: 999px;
+	color: var(--mrn-shell-text);
+	display: inline-flex;
+	min-width: 2.5rem;
+	padding: 0.55rem 0.9rem;
+	text-decoration: none;
+}
+
+.mrn-content-list-row__pagination .current {
+	background: var(--mrn-shell-accent);
+	border-color: var(--mrn-shell-accent);
+	color: var(--mrn-shell-accent-soft);
+}
+
+.mrn-layout-section--content-lists.mrn-layout-section--contained .mrn-layout-container--content .mrn-content-list-row__items {
+	max-width: 52rem;
+}
+
+.mrn-layout-section--content-lists.mrn-layout-section--full .mrn-layout-container--wide .mrn-content-list-row__header {
+	max-width: 60rem;
+}
+
+.mrn-layout-section--content-lists.mrn-layout-section--full .mrn-layout-container--wide .mrn-content-list-row__card {
+	box-shadow: 0 20px 48px rgba(22, 28, 45, 0.08);
+}
+
 .mrn-layout-section--external-widget.mrn-layout-surface,
 .mrn-layout-section--external-widget .mrn-layout-container.mrn-layout-surface {
 	background: var(--mrn-external-widget-row-bg, transparent);
@@ -4119,6 +4295,10 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	.mrn-layout-section--text .mrn-layout-content--text-shell .mrn-shell-section__heading,
 	.mrn-layout-section--text .mrn-layout-content--text-shell .mrn-shell-section__content {
 		max-width: none;
+	}
+
+	.mrn-content-list-row__item--has-image .mrn-content-list-row__card {
+		grid-template-columns: 1fr;
 	}
 
 	.mrn-layout-section--two-column-split.mrn-layout-section--contained .mrn-layout-container--content .mrn-two-column-split__column--split-shell {

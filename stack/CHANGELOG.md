@@ -1,5 +1,13 @@
 # Stack Changelog
 
+## 2026.04.01-content-lists
+- Expanded `mrn-base-stack` to `1.0.4`.
+- Added a new theme-owned `Content Lists` builder layout for query-driven content listings.
+- Added builder controls for content type, list style, ordering, count, pagination, excerpt handling, read-more labels, and empty-state behavior.
+- Added contextual and manual taxonomy filtering to `Content Lists`, including current-page term matching.
+- Added builder-admin filtering so the `Content Lists` taxonomy and term controls narrow to the selected content type and taxonomy.
+- Added the option to suppress rendering the entire `Content Lists` row when a query returns no results.
+
 ## 2026.04.01-effects-foundation
 - Expanded `mrn-base-stack` to `1.0.3`.
 - Expanded `mrn-site-colors` / `Site Styles` to `0.1.3`.

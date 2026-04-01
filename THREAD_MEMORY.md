@@ -78,12 +78,20 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
   - Current baseline:
-    - `2026.04.01-effects-foundation`
-    - `mrn-base-stack` `1.0.3`
+    - `2026.04.01-content-lists`
+    - `mrn-base-stack` `1.0.4`
     - `mrn-config-helper` `0.1.19`
     - `mrn-editor-tools` `1.8.14`
     - `mrn-shared-assets` `0.1.0`
     - `mrn-site-colors` / `Site Styles` `0.1.3`
+  - `mrn-base-stack` now includes a theme-owned `Content Lists` builder layout.
+    - Current `Content Lists` contract includes:
+      - content type, list style, count, ordering, offset, and pagination
+      - featured image / date / excerpt / read-more display toggles
+      - empty-state message plus a control to suppress the entire row when no results are returned
+      - contextual taxonomy filtering using the current page/post terms
+      - manual taxonomy filtering through a term picker
+    - Builder admin now narrows `Content Lists` taxonomy and term options based on the selected content type and taxonomy.
 - The stack now also has a developer-facing builder/conventions doc:
   - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
   - Use it as the canonical reference for:
@@ -4553,6 +4561,33 @@ After you get each summary back:
   - `default-configs.mrndev.io` should use `mrn-config-helper`, not the older `mrn-helper`.
   - `default-configs.mrndev.io` should include `mrn-editor-tools` as part of the active baseline.
   - Remove these old leftover MRN plugins from `default-configs.mrndev.io`:
+
+## Thread: 2026-04-01 SEO Helper Local/Dev Required Relaxation
+- Goal:
+  - Stop local and development environments from blocking editor saves by requiring SEO Helper title/description fields.
+- Decisions made:
+  - `mrn-seo-helper` should remain active in all environments, but `SEO Title` and `Meta Description` are only required outside WordPress `local` and `development` environments.
+  - Environment detection should prefer `wp_get_environment_type()` and fall back to `WP_ENV` when needed.
+  - The plugin Tools UI should show the current environment and current required/optional status, and expose an admin override switch to force the fields back to required in local/dev when needed.
+- Version changes:
+  - `mrn-seo-helper` -> `0.2.7`
+- Files changed:
+  - `/Users/khofmeyer/Development/MRN/plugins/mrn-seo-helper/mrn-seo-helper.php`
+- Artifacts/deploy:
+  - Rebuilt artifact: `/Users/khofmeyer/Development/MRN/releases/plugins/mrn-seo-helper.zip`
+  - Updated stack package on server: `/home/mrndev-stack-manager/stack/packages/mrn-seo-helper.zip`
+- Git:
+  - Repo: `git@github.com:khofmeyer/mrn-seo-helper.git`
+  - Commit: `a44f81d` (`Release 0.2.7: add local/dev SEO field override controls`)
+- Validation:
+  - `php -l /Users/khofmeyer/Development/MRN/plugins/mrn-seo-helper/mrn-seo-helper.php`
+  - `git -C /Users/khofmeyer/Development/MRN/plugins/mrn-seo-helper diff --check`
+  - `rg -n "\beval\b|base64_decode|shell_exec|exec\(|system\(|passthru|proc_open|popen|curl_exec|unserialize\(|wp_remote_post\(|wp_remote_get\(|file_put_contents\(|unlink\(|rm -rf" /Users/khofmeyer/Development/MRN/plugins/mrn-seo-helper -S`
+  - `unzip -p /Users/khofmeyer/Development/MRN/releases/plugins/mrn-seo-helper.zip mrn-seo-helper/mrn-seo-helper.php | sed -n '1,12p'`
+  - `ssh mrndev-ops "unzip -p /home/mrndev-stack-manager/stack/packages/mrn-seo-helper.zip mrn-seo-helper/mrn-seo-helper.php | sed -n '1,8p'"`
+  - Documented the environment-variable contract in:
+    - `/Users/khofmeyer/Development/MRN/stack/STACK_OPERATIONS.md`
+    - `/Users/khofmeyer/Development/MRN/stack/PLUGIN_CATALOG.md`
     - `mrn-helper`
     - `mrn-license-vault`
     - `mrn-role-metabox-lock`
