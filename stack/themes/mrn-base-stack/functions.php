@@ -118,26 +118,6 @@ function mrn_base_stack_content_width() {
 add_action( 'after_setup_theme', 'mrn_base_stack_content_width', 0 );
 
 /**
- * Register widget area.
- *
- * @link https://developer.wordpress.org/themes/functionality/sidebars/#registering-a-sidebar
- */
-function mrn_base_stack_widgets_init() {
-	register_sidebar(
-		array(
-			'name'          => esc_html__( 'Sidebar', 'mrn-base-stack' ),
-			'id'            => 'sidebar-1',
-			'description'   => esc_html__( 'Add widgets here.', 'mrn-base-stack' ),
-			'before_widget' => '<section id="%1$s" class="widget %2$s">',
-			'after_widget'  => '</section>',
-			'before_title'  => '<h2 class="widget-title">',
-			'after_title'   => '</h2>',
-		)
-	);
-}
-add_action( 'widgets_init', 'mrn_base_stack_widgets_init' );
-
-/**
  * Enqueue Motion inView assets for front-end effects.
  */
 function mrn_base_stack_enqueue_motion_assets() {
@@ -218,6 +198,11 @@ require_once get_template_directory() . '/inc/builder/boot.php';
  * Load theme options modules.
  */
 require_once get_template_directory() . '/inc/theme-options.php';
+
+/**
+ * Load singular sidebar modules.
+ */
+require_once get_template_directory() . '/inc/singular-sidebar.php';
 
 /**
  * Implement the Custom Header feature.

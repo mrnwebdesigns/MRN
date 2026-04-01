@@ -36,6 +36,7 @@
 !/stack/themes/mrn-base-stack/inc/
 !/stack/themes/mrn-base-stack/inc/theme-options.php
 !/stack/themes/mrn-base-stack/inc/template-tags.php
+!/stack/themes/mrn-base-stack/inc/singular-sidebar.php
 !/stack/themes/mrn-base-stack/inc/builder/
 !/stack/themes/mrn-base-stack/inc/builder/*.php
 !/stack/themes/mrn-base-stack/js/
@@ -48,6 +49,8 @@
 !/stack/themes/mrn-base-stack/css/vendor/
 !/stack/themes/mrn-base-stack/css/vendor/splide.min.css
 !/stack/themes/mrn-base-stack/template-parts/
+!/stack/themes/mrn-base-stack/template-parts/content.php
+!/stack/themes/mrn-base-stack/template-parts/content-page.php
 !/stack/themes/mrn-base-stack/template-parts/builder/
 !/stack/themes/mrn-base-stack/template-parts/builder/*.php
 .DS_Store

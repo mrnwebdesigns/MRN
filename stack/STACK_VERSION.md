@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.01-content-lists`
+- Stack release: `2026.04.01-sidebar-builder`
 - Release date: `2026-04-01`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.0.4`
+  - `mrn-base-stack` `1.0.5`
 - MU plugins:
   - `mrn-shared-assets` `0.1.0`
   - `mrn-reusable-block-library` `0.1.3`

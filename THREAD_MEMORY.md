@@ -78,8 +78,8 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
   - Current baseline:
-    - `2026.04.01-content-lists`
-    - `mrn-base-stack` `1.0.4`
+    - `2026.04.01-sidebar-builder`
+    - `mrn-base-stack` `1.0.5`
     - `mrn-config-helper` `0.1.19`
     - `mrn-editor-tools` `1.8.14`
     - `mrn-shared-assets` `0.1.0`
@@ -102,6 +102,15 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - link presentation rules
     - accent contract rules
     - builder UI and collapsed-title rules
+- Singular sidebar behavior is theme-owned in `mrn-base-stack`, not a custom page-type pattern.
+  - Current theme contract adds a `Sidebar` field group on posts and pages with:
+    - `sidebar_layout`
+    - `page_sidebar_rows`
+  - The field group now renders after `After Content` in the editor flow instead of living in the side metabox area.
+  - When enabled, the normal singular title/featured-image/content-builder flow stays in the main column.
+  - Sidebar content is builder-owned and uses cloned `Content` layouts, which means reusable blocks remain available there through the existing `Reusable Block` layout.
+  - The stack no longer treats WordPress widgets as the sidebar-content source for this singular shell feature.
+  - This should be treated as a shared singular shell capability that can later be extended to more post types, rather than as a one-off template variant.
 - The stack now also has a theme direction/handoff doc:
   - `/Users/khofmeyer/Development/MRN/stack/THEME_ROADMAP.md`
   - Use it as the canonical reference for:

@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.04.01-sidebar-builder
+- Expanded `mrn-base-stack` to `1.0.5`.
+- Added a theme-owned singular sidebar shell for posts and pages.
+- Moved sidebar authoring into its own builder field group after `After Content`.
+- Removed the widget-area dependency from the sidebar feature and let sidebar content use cloned `Content` layouts instead.
+- Kept the normal singular title, featured image, and main `Content` / `After Content` flow in the primary column while the sidebar renders as a secondary builder column.
+
 ## 2026.04.01-content-lists
 - Expanded `mrn-base-stack` to `1.0.4`.
 - Added a new theme-owned `Content Lists` builder layout for query-driven content listings.

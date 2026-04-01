@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.0.4
+Version: 1.0.5
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -968,6 +968,70 @@ body {
 	width: 100%;
 }
 
+.mrn-singular-shell {
+	width: 100%;
+}
+
+.mrn-singular-shell--has-sidebar {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+	gap: clamp(2rem, 4vw, 4rem);
+	align-items: start;
+	margin-left: auto;
+	margin-right: auto;
+	width: min(100%, var(--mrn-shell-wide-width));
+	max-width: var(--mrn-shell-wide-width);
+}
+
+.mrn-singular-shell--sidebar-left .mrn-singular-shell__main {
+	order: 2;
+}
+
+.mrn-singular-shell--sidebar-left .mrn-singular-shell__sidebar {
+	order: 1;
+}
+
+.mrn-singular-shell--has-sidebar .entry-header,
+.mrn-singular-shell--has-sidebar .entry-content,
+.mrn-singular-shell--has-sidebar .entry-footer,
+.mrn-singular-shell--has-sidebar .post-thumbnail {
+	margin-left: 0;
+	margin-right: 0;
+	max-width: none;
+	width: 100%;
+}
+
+.mrn-singular-shell__main,
+.mrn-singular-shell__sidebar {
+	min-width: 0;
+}
+
+.mrn-singular-sidebar {
+	display: grid;
+	gap: 1.5rem;
+}
+
+.mrn-content-builder--sidebar {
+	gap: 1.5rem;
+}
+
+.mrn-singular-sidebar .mrn-shell-section {
+	padding-inline: 0;
+	padding-block: 1rem;
+}
+
+.mrn-singular-sidebar .mrn-shell-container,
+.mrn-singular-sidebar .mrn-layout-container,
+.mrn-singular-sidebar .mrn-layout-content,
+.mrn-singular-sidebar .mrn-layout-grid {
+	width: 100%;
+	max-width: none;
+}
+
+.mrn-singular-sidebar > :last-child {
+	margin-bottom: 0;
+}
+
 .entry-summary {
 	max-width: var(--mrn-shell-content-width);
 	margin-top: 1rem;
@@ -1902,6 +1966,16 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 		padding: 0;
 	}
 
+	.mrn-singular-shell--has-sidebar {
+		grid-template-columns: 1fr;
+		gap: 2rem;
+	}
+
+	.mrn-singular-shell--sidebar-left .mrn-singular-shell__main,
+	.mrn-singular-shell--sidebar-left .mrn-singular-shell__sidebar {
+		order: initial;
+	}
+
 	.mrn-content-grid__items,
 	.mrn-reusable-block--grid-columns-2 .mrn-content-grid__items,
 	.mrn-reusable-block--grid-columns-4 .mrn-content-grid__items {
@@ -2060,6 +2134,17 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 --------------------------------------------- */
 .widget {
 	margin: 0 0 1.5em;
+}
+
+.mrn-singular-sidebar .mrn-reusable-block {
+	padding: 1.5rem;
+	border: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+	border-radius: 1rem;
+	background: color-mix(in srgb, currentColor 2.5%, white);
+}
+
+.mrn-singular-sidebar .mrn-reusable-block > :last-child {
+	margin-bottom: 0;
 }
 
 .widget select {
