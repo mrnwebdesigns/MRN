@@ -138,6 +138,7 @@ $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 $list_tag          = 'ordered' === $list_style ? 'ol' : 'ul';
 $pagination_html   = '';
+$row_anchor_id     = 'mrn-content-list-row-' . absint( $post_id ) . '-' . absint( $index );
 
 if ( $show_pagination && $query->max_num_pages > 1 ) {
 	$page_arg     = function_exists( 'mrn_base_stack_get_content_list_pagination_query_arg' ) ? mrn_base_stack_get_content_list_pagination_query_arg( $post_id, $index ) : 'mrn_list_page';
@@ -169,6 +170,7 @@ if ( $show_pagination && $query->max_num_pages > 1 ) {
 		$base_url
 	);
 	$pagination_base = str_replace( '%25%23%25', '%#%', $pagination_base );
+	$pagination_base .= '#' . $row_anchor_id;
 	$pagination_html = paginate_links(
 		array(
 			'base'      => $pagination_base,
@@ -182,7 +184,7 @@ if ( $show_pagination && $query->max_num_pages > 1 ) {
 	);
 }
 ?>
-<section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+<section id="<?php echo esc_attr( $row_anchor_id ); ?>" class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<div class="mrn-layout-section mrn-layout-section--content-lists <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-grid mrn-layout-grid--content-lists">

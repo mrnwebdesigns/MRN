@@ -86,8 +86,8 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
   - Current baseline:
-    - `2026.04.01-reusable-content-lists-fix`
-    - `mrn-base-stack` `1.0.7`
+    - `2026.04.01-content-lists-pagination-polish`
+    - `mrn-base-stack` `1.0.8`
     - `mrn-config-helper` `0.1.19`
     - `mrn-editor-tools` `1.8.14`
     - `mrn-shared-assets` `0.1.0`
@@ -101,6 +101,7 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
       - empty-state message plus a control to suppress the entire row when no results are returned
       - contextual taxonomy filtering using the current page/post terms
       - manual taxonomy filtering through a term picker
+      - pagination now renders as a plain horizontal link row and appends a row anchor so paging returns to the same list instead of the top of the page
     - Builder admin now narrows `Content Lists` taxonomy and term options based on the selected content type and taxonomy.
   - `Content Lists` is also available as a reusable block type through `mrn-reusable-block-library`.
     - the reusable content-list CPT slug is `mrn_reusable_list` so it stays within WordPress' 20-character registration limit

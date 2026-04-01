@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.0.7
+Version: 1.0.8
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -3365,30 +3365,8 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 }
 
 .mrn-content-list-row__items--ordered {
-	counter-reset: mrn-content-list;
-	list-style: none;
-}
-
-.mrn-content-list-row__items--ordered > .mrn-content-list-row__item {
-	counter-increment: mrn-content-list;
-	position: relative;
-}
-
-.mrn-content-list-row__items--ordered > .mrn-content-list-row__item::before {
-	align-items: center;
-	background: rgba(28, 34, 43, 0.08);
-	border-radius: 999px;
-	color: var(--mrn-shell-text);
-	content: counter(mrn-content-list);
-	display: inline-flex;
-	font-size: 0.9rem;
-	font-weight: 600;
-	height: 2rem;
-	justify-content: center;
-	left: 1rem;
-	position: absolute;
-	top: 1rem;
-	width: 2rem;
+	list-style: decimal;
+	padding-left: 1.5rem;
 }
 
 .mrn-content-builder__row--content-lists-display-title_only .mrn-content-list-row__item {
@@ -3397,10 +3375,6 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 
 .mrn-content-builder__row--content-lists-display-title_only .mrn-content-list-row__items {
 	gap: 0.8rem;
-}
-
-.mrn-content-builder__row--content-lists-display-title_only .mrn-content-list-row__item::before {
-	top: 0.1rem;
 }
 
 .mrn-content-list-row__card {
@@ -3491,27 +3465,27 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 .mrn-content-list-row__pagination .page-numbers {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0.6rem;
+	gap: 0.75rem;
+	align-items: center;
 	list-style: none;
 	margin: 0;
 	padding: 0;
 }
 
+.mrn-content-list-row__pagination li {
+	margin: 0;
+}
+
 .mrn-content-list-row__pagination a,
 .mrn-content-list-row__pagination span {
-	border: 1px solid rgba(28, 34, 43, 0.14);
-	border-radius: 999px;
-	color: var(--mrn-shell-text);
-	display: inline-flex;
-	min-width: 2.5rem;
-	padding: 0.55rem 0.9rem;
+	color: inherit;
+	display: inline;
+	padding: 0;
 	text-decoration: none;
 }
 
 .mrn-content-list-row__pagination .current {
-	background: var(--mrn-shell-accent);
-	border-color: var(--mrn-shell-accent);
-	color: var(--mrn-shell-accent-soft);
+	font-weight: 700;
 }
 
 .mrn-layout-section--content-lists.mrn-layout-section--contained .mrn-layout-container--content .mrn-content-list-row__items {

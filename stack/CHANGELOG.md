@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.04.01-content-lists-pagination-polish
+- Expanded `mrn-base-stack` to `1.0.8`.
+- Removed the temporary custom ordered-list badge styling from `Content Lists`.
+- Simplified `Content Lists` pagination styling to a plain horizontal link row.
+- Added row-anchor pagination behavior so next/previous paging returns the browser to the same content-list row instead of the top of the page.
+
 ## 2026.04.01-reusable-content-lists-fix
 - Expanded `mrn-base-stack` to `1.0.7`.
 - Expanded `mrn-reusable-block-library` to `0.1.5`.

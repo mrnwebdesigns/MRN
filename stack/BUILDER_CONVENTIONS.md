@@ -165,9 +165,13 @@ These are the current preferred content patterns in the stack.
 
 - `Content Lists` is a theme-owned query layout for listing WordPress content inside the builder.
 - It is the preferred theme layout when a page needs a post/query-driven list rather than hand-authored static rows.
+- `Content Lists` is also available as a reusable block type through the reusable block library.
+- The reusable Content Lists CPT slug is `mrn_reusable_list`.
+- Keep reusable library CPT keys at or under WordPress' 20-character post-type limit.
 - Current control set includes:
   - content type
   - list style
+  - display mode (`Standard`, `Title Only`)
   - ordering and count
   - offset and pagination
   - excerpt and read-more display
@@ -176,6 +180,8 @@ These are the current preferred content patterns in the stack.
 - The first contextual filter contract is:
   - use the current page/post terms from a selected taxonomy to filter the queried content list
 - Taxonomy and term controls should stay aligned with the selected content type so authors are not shown irrelevant filter options.
+- Reusable Content Lists should still map back to the native `content_lists` builder layout vocabulary so page-specific conversion stays lossless.
+- Pagination should stay visually light by default and keep the browser anchored to the same row after paging.
 
 ### Section Width
 

@@ -26,6 +26,21 @@ Site styles documentation:
 
 - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-site-styles.md`
 
+## Reusable Content Lists
+
+The stack now supports `Content Lists` in two places:
+
+- as a theme-owned builder layout for page and post composition
+- as a reusable block type in `mrn-reusable-block-library`
+
+Current implementation notes:
+
+- the reusable library CPT slug is `mrn_reusable_list`
+- reusable Content Lists render through the same front-end layout family as the native `content_lists` builder row
+- reusable rendering receives host page context so current-page term filtering and pagination can still work inside the builder shell
+- content-list pagination should append a row anchor so paging does not jump the browser back to the top of the page
+- any future reusable library CPT additions need to respect WordPress' 20-character post-type key limit
+
 ## Motion InView In The Stack
 
 The base theme now vendors Motion and exposes a small stack helper layer.
