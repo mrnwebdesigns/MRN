@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.0.2' );
+	define( '_S_VERSION', '1.0.3' );
 }
 
 /**
@@ -138,6 +138,27 @@ function mrn_base_stack_widgets_init() {
 add_action( 'widgets_init', 'mrn_base_stack_widgets_init' );
 
 /**
+ * Enqueue Motion inView assets for front-end effects.
+ */
+function mrn_base_stack_enqueue_motion_assets() {
+	wp_enqueue_script(
+		'mrn-base-stack-motion',
+		get_template_directory_uri() . '/js/vendor/motion.js',
+		array(),
+		'12.38.0',
+		true
+	);
+
+	wp_enqueue_script(
+		'mrn-base-stack-front-end-effects',
+		get_template_directory_uri() . '/js/front-end-effects.js',
+		array( 'mrn-base-stack-motion' ),
+		_S_VERSION,
+		true
+	);
+}
+
+/**
  * Enqueue scripts and styles.
  */
 function mrn_base_stack_scripts() {
@@ -160,6 +181,8 @@ function mrn_base_stack_scripts() {
 	wp_enqueue_script( 'mrn-base-stack-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
 
 	if ( is_singular( array( 'post', 'page' ) ) ) {
+		mrn_base_stack_enqueue_motion_assets();
+
 		wp_enqueue_style(
 			'mrn-base-stack-splide',
 			get_template_directory_uri() . '/css/vendor/splide.min.css',

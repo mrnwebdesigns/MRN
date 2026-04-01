@@ -5,7 +5,7 @@
 - Name: `Site Styles (MU)`
 - Slug: `mrn-site-colors`
 - Type: MU plugin
-- Current version: `0.1.2`
+- Current version: `0.1.3`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-site-colors`
 
@@ -18,6 +18,7 @@ It started as Site Colors and evolved into Site Styles so it could own:
 - shared site color variables
 - graphic elements
 - accent definitions
+- motion effect presets
 - shared token/helper APIs used by themes and plugins
 
 ## Ownership Boundary
@@ -28,6 +29,7 @@ This plugin owns:
 - color helper functions
 - graphic element storage
 - bottom-accent contract helpers
+- motion preset storage for row effects
 - CSS variable output for front-end, admin, and login
 
 It should be treated as the source of truth for shared design tokens in the stack.
@@ -42,6 +44,7 @@ The settings page allows editors/developers to manage:
 
 - site colors
 - graphic elements
+- dark scroll card motion presets
 - optional accent spacing overrides
 
 ## Data Model
@@ -50,6 +53,7 @@ Stored options include:
 
 - `mrn_site_colors`
 - `mrn_site_graphic_elements`
+- `mrn_site_dark_scroll_card_presets`
 
 Each color stores:
 
@@ -63,6 +67,20 @@ Each graphic element stores:
 - `slug`
 - `css`
 - optional `space`
+
+Each dark scroll card preset stores:
+
+- `name`
+- `slug`
+- `background`
+- `text`
+- `muted_text`
+- `button_background`
+- `button_text`
+- `border_alpha`
+- `shadow_alpha`
+- `image_brightness`
+- `image_saturation`
 
 ## Front-End / Theming Behavior
 
@@ -130,6 +148,12 @@ When a layout or block needs selectable accent visuals:
 This plugin is currently more helper-function oriented than hook oriented.
 
 The main developer-facing integration surface is its function library rather than custom actions/filters.
+
+Motion preset helpers:
+
+- `mrn_site_styles_get_dark_scroll_card_presets()`
+- `mrn_site_styles_get_dark_scroll_card_preset_map()`
+- `mrn_site_styles_get_dark_scroll_card_preset_choices()`
 
 ## Rollout / Packaging Notes
 

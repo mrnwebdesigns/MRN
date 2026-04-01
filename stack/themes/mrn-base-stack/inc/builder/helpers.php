@@ -79,6 +79,212 @@ function mrn_base_stack_get_section_width_field( $key, $name = 'section_width', 
 }
 
 /**
+ * Shared motion effect choices for builder layouts.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_motion_effect_choices() {
+	return array(
+		'surface'          => 'Switch Light/Dark Surface',
+		'active-class'     => 'Mark Row As Active',
+		'dark-scroll-card' => 'Darken Card On Scroll',
+	);
+}
+
+/**
+ * Get beginner-friendly motion preset choices for a supported effect.
+ *
+ * @param string $effect Effect key.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_motion_preset_choices( $effect ) {
+	$effect = sanitize_key( (string) $effect );
+
+	if ( 'dark-scroll-card' === $effect ) {
+		if ( function_exists( 'mrn_site_styles_get_dark_scroll_card_preset_choices' ) ) {
+			return mrn_site_styles_get_dark_scroll_card_preset_choices();
+		}
+
+		return array(
+			'' => 'Default Dark Card',
+		);
+	}
+
+	return array(
+		'' => 'Default',
+	);
+}
+
+/**
+ * Shared beginner-friendly trigger choices for motion effects.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_motion_trigger_choices() {
+	return array(
+		'early'  => 'Early',
+		'center' => 'Center',
+		'late'   => 'Late',
+	);
+}
+
+/**
+ * Convert a stored trigger position into a Motion margin string.
+ *
+ * @param mixed $value Raw stored trigger value.
+ * @return string
+ */
+function mrn_base_stack_get_motion_margin_for_trigger( $value ) {
+	$trigger = is_string( $value ) ? sanitize_key( $value ) : '';
+
+	if ( 'early' === $trigger ) {
+		return '-20% 0px -20% 0px';
+	}
+
+	if ( 'late' === $trigger ) {
+		return '-45% 0px -10% 0px';
+	}
+
+	return '-35% 0px -35% 0px';
+}
+
+/**
+ * Build the standard motion-settings ACF group field definition.
+ *
+ * @param string $key Unique ACF field key.
+ * @param string $name Field name.
+ * @param string $label Field label.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_motion_group_field( $key, $name = 'motion_settings', $label = 'Motion Effects' ) {
+	$enabled_key   = $key . '_enabled';
+	$effect_key    = $key . '_effect';
+	$preset_key    = $key . '_preset';
+	$surface_key   = $key . '_surface';
+	$enabled_logic = array(
+		array(
+			array(
+				'field'    => $enabled_key,
+				'operator' => '==',
+				'value'    => '1',
+			),
+		),
+	);
+
+	return array(
+		'key'        => $key,
+		'label'      => $label,
+		'name'       => $name,
+		'aria-label' => '',
+		'type'       => 'group',
+		'layout'     => 'block',
+		'sub_fields' => array(
+			array(
+				'key'           => $enabled_key,
+				'label'         => 'Enable Row Effects',
+				'name'          => 'enabled',
+				'aria-label'    => '',
+				'type'          => 'true_false',
+				'ui'            => 1,
+				'default_value' => 0,
+				'ui_on_text'    => 'On',
+				'ui_off_text'   => 'Off',
+				'wrapper'       => array(
+					'width' => '33',
+				),
+			),
+			array(
+				'key'               => $effect_key,
+				'label'             => 'Effect Style',
+				'name'              => 'effect',
+				'aria-label'        => '',
+				'type'              => 'select',
+				'choices'           => mrn_base_stack_get_motion_effect_choices(),
+				'default_value'     => 'surface',
+				'ui'                => 1,
+				'wrapper'           => array(
+					'width' => '34',
+				),
+				'conditional_logic' => $enabled_logic,
+			),
+			array(
+				'key'               => $key . '_trigger_position',
+				'label'             => 'Start Effect',
+				'name'              => 'trigger_position',
+				'aria-label'        => '',
+				'type'              => 'select',
+				'choices'           => mrn_base_stack_get_motion_trigger_choices(),
+				'default_value'     => 'center',
+				'ui'                => 1,
+				'instructions'      => 'Choose where in the viewport the effect should become noticeable.',
+				'wrapper'           => array(
+					'width' => '33',
+				),
+				'conditional_logic' => $enabled_logic,
+			),
+			array(
+				'key'               => $surface_key,
+				'label'             => 'Surface Look',
+				'name'              => 'surface',
+				'aria-label'        => '',
+				'type'              => 'select',
+				'choices'           => array(
+					'light' => 'Light',
+					'dark'  => 'Dark',
+				),
+				'default_value'     => 'dark',
+				'ui'                => 1,
+				'wrapper'           => array(
+					'width' => '50',
+				),
+				'conditional_logic' => array(
+					array(
+						array(
+							'field'    => $enabled_key,
+							'operator' => '==',
+							'value'    => '1',
+						),
+						array(
+							'field'    => $effect_key,
+							'operator' => '==',
+							'value'    => 'surface',
+						),
+					),
+				),
+			),
+			array(
+				'key'               => $preset_key,
+				'label'             => 'Effect Preset',
+				'name'              => 'preset',
+				'aria-label'        => '',
+				'type'              => 'select',
+				'choices'           => mrn_base_stack_get_motion_preset_choices( 'dark-scroll-card' ),
+				'default_value'     => '',
+				'ui'                => 1,
+				'instructions'      => 'Choose a saved visual preset from Site Styles.',
+				'wrapper'           => array(
+					'width' => '50',
+				),
+				'conditional_logic' => array(
+					array(
+						array(
+							'field'    => $enabled_key,
+							'operator' => '==',
+							'value'    => '1',
+						),
+						array(
+							'field'    => $effect_key,
+							'operator' => '==',
+							'value'    => 'dark-scroll-card',
+						),
+					),
+				),
+			),
+		),
+	);
+}
+
+/**
  * Normalize a raw section-width setting to a supported value.
  *
  * @param mixed  $value Raw stored value.
@@ -216,6 +422,115 @@ function mrn_base_stack_merge_builder_section_classes( array $classes, array $ac
 }
 
 /**
+ * Merge a builder attribute contract into an existing attribute map.
+ *
+ * @param array<string, string> $attributes Existing attributes.
+ * @param array<string, string> $extra_attributes Additional attributes.
+ * @return array<string, string>
+ */
+function mrn_base_stack_merge_builder_attributes( array $attributes, array $extra_attributes ) {
+	foreach ( $extra_attributes as $attribute_name => $attribute_value ) {
+		$attribute_name  = is_string( $attribute_name ) ? trim( $attribute_name ) : '';
+		$attribute_value = is_scalar( $attribute_value ) ? trim( (string) $attribute_value ) : '';
+
+		if ( '' === $attribute_name || '' === $attribute_value ) {
+			continue;
+		}
+
+		$attributes[ $attribute_name ] = $attribute_value;
+	}
+
+	return $attributes;
+}
+
+/**
+ * Normalize a builder motion-settings payload.
+ *
+ * @param mixed $value Raw motion settings.
+ * @return array<string, string|bool>
+ */
+function mrn_base_stack_normalize_motion_settings( $value ) {
+	$settings = is_array( $value ) ? $value : array();
+
+	return array(
+		'enabled'          => ! empty( $settings['enabled'] ),
+		'effect'           => sanitize_key( (string) ( $settings['effect'] ?? '' ) ),
+		'preset'           => sanitize_key( (string) ( $settings['preset'] ?? '' ) ),
+		'trigger_position' => sanitize_key( (string) ( $settings['trigger_position'] ?? '' ) ),
+		'surface'          => sanitize_key( (string) ( $settings['surface'] ?? '' ) ),
+		'active_class'     => sanitize_html_class( (string) ( $settings['active_class'] ?? '' ) ),
+		'margin'           => is_string( $settings['margin'] ?? null ) ? trim( $settings['margin'] ) : '',
+	);
+}
+
+/**
+ * Build the motion contract for a builder row.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return array{classes:array<int,string>,attributes:array<string,string>}
+ */
+function mrn_base_stack_get_builder_motion_contract( array $row ) {
+	$settings = mrn_base_stack_normalize_motion_settings( $row['motion_settings'] ?? array() );
+
+	if ( empty( $settings['enabled'] ) ) {
+		return array(
+			'classes'    => array(),
+			'attributes' => array(),
+		);
+	}
+
+	$effect = $settings['effect'];
+	$margin = '' !== $settings['margin'] ? $settings['margin'] : mrn_base_stack_get_motion_margin_for_trigger( $settings['trigger_position'] ?? '' );
+
+	if ( 'surface' === $effect ) {
+		$surface = $settings['surface'];
+
+		if ( ! in_array( $surface, array( 'light', 'dark' ), true ) ) {
+			$surface = 'dark';
+		}
+
+		return array(
+			'classes'    => array(),
+			'attributes' => array(
+				'data-mrn-surface'        => $surface,
+				'data-mrn-surface-margin' => $margin,
+			),
+		);
+	}
+
+	if ( 'active-class' === $effect ) {
+		$active_class = 'is-mrn-in-view';
+
+		return array(
+			'classes'    => array( 'mrn-motion-effect--active-class' ),
+			'attributes' => array(
+				'data-mrn-motion-effect' => 'active-class',
+				'data-mrn-motion-class'  => $active_class,
+				'data-mrn-motion-margin' => $margin,
+			),
+		);
+	}
+
+	if ( 'dark-scroll-card' === $effect ) {
+		$preset = $settings['preset'];
+
+		return array(
+			'classes'    => array( 'mrn-motion-effect--dark-scroll-card' ),
+			'attributes' => array(
+				'data-mrn-motion-effect' => 'dark-scroll-card',
+				'data-mrn-effect-preset' => $preset,
+				'data-mrn-motion-margin' => $margin,
+			),
+		);
+	}
+
+	return array(
+		'classes'    => array(),
+		'attributes' => array(),
+	);
+}
+
+/**
  * Convert an array of CSS declarations into a style attribute value.
  *
  * @param array<int, string> $styles CSS declarations.
@@ -253,6 +568,73 @@ function mrn_base_stack_get_html_attributes( array $attributes ) {
 	}
 
 	return implode( ' ', $parts );
+}
+
+/**
+ * Shared HTML tag choices for heading-style text fields.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_text_tag_choices() {
+	return array(
+		'h1'   => 'H1',
+		'h2'   => 'H2',
+		'h3'   => 'H3',
+		'h4'   => 'H4',
+		'h5'   => 'H5',
+		'h6'   => 'H6',
+		'p'    => 'Paragraph',
+		'span' => 'Span',
+		'div'  => 'Div',
+	);
+}
+
+/**
+ * Normalize a requested HTML tag to the supported text-tag set.
+ *
+ * @param mixed  $value Raw tag value.
+ * @param string $default Default tag value.
+ * @return string
+ */
+function mrn_base_stack_normalize_text_tag( $value, $default = 'p' ) {
+	$tag          = is_string( $value ) ? sanitize_key( $value ) : '';
+	$default_tag  = is_string( $default ) ? sanitize_key( $default ) : 'p';
+	$allowed_tags = array_keys( mrn_base_stack_get_text_tag_choices() );
+
+	if ( ! in_array( $default_tag, $allowed_tags, true ) ) {
+		$default_tag = 'p';
+	}
+
+	if ( ! in_array( $tag, $allowed_tags, true ) ) {
+		$tag = $default_tag;
+	}
+
+	return $tag;
+}
+
+/**
+ * Build a standard label-tag ACF field definition.
+ *
+ * @param string $key Unique ACF field key.
+ * @param string $name Field name.
+ * @param string $default Default tag choice.
+ * @param string $label Field label.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_label_tag_field( $key, $name = 'label_tag', $default = 'p', $label = 'HTML Tag for Label' ) {
+	return array(
+		'key'           => $key,
+		'label'         => $label,
+		'name'          => $name,
+		'aria-label'    => '',
+		'type'          => 'select',
+		'choices'       => mrn_base_stack_get_text_tag_choices(),
+		'default_value' => mrn_base_stack_normalize_text_tag( $default, 'p' ),
+		'ui'            => 1,
+		'wrapper'       => array(
+			'width' => '25',
+		),
+	);
 }
 
 /**
@@ -432,6 +814,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
+				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_body_text_motion_settings' ),
 			),
 		),
 		'layout_mrn_nested_basic'          => array(
@@ -455,7 +838,11 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'aria-label'    => '',
 					'type'          => 'text',
 					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
+					'wrapper'       => array(
+						'width' => '75',
+					),
 				),
+				mrn_base_stack_get_label_tag_field( 'field_mrn_nested_basic_label_tag' ),
 				array(
 					'key'           => 'field_mrn_nested_basic_heading',
 					'label'         => 'Title field',
@@ -464,7 +851,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'type'          => 'text',
 					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
 					'wrapper'       => array(
-						'width' => '50',
+						'width' => '75',
 					),
 				),
 				array(
@@ -487,7 +874,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'default_value' => 'h2',
 					'ui'            => 1,
 					'wrapper'       => array(
-						'width' => '50',
+						'width' => '25',
 					),
 				),
 				array(
@@ -638,6 +1025,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
+				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_basic_motion_settings' ),
 			),
 		),
 		'layout_mrn_nested_card'           => array(
@@ -795,6 +1183,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
+				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_card_motion_settings' ),
 			),
 		),
 		'layout_mrn_nested_cta'            => array(
@@ -816,6 +1205,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'prefix_name'  => 0,
 				),
 				mrn_base_stack_get_section_width_field( 'field_mrn_nested_cta_section_width' ),
+				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_cta_motion_settings' ),
 			),
 		),
 		'layout_mrn_nested_grid'           => array(
@@ -837,6 +1227,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'prefix_name'  => 0,
 				),
 				mrn_base_stack_get_section_width_field( 'field_mrn_nested_grid_section_width' ),
+				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_grid_motion_settings' ),
 			),
 		),
 		'layout_mrn_nested_image_content'  => array(
@@ -870,7 +1261,11 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'aria-label'    => '',
 					'type'          => 'text',
 					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
+					'wrapper'       => array(
+						'width' => '75',
+					),
 				),
+				mrn_base_stack_get_label_tag_field( 'field_mrn_nested_image_content_label_tag' ),
 				array(
 					'key'           => 'field_mrn_nested_image_content_heading',
 					'label'         => 'Title field',
@@ -879,7 +1274,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'type'          => 'text',
 					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
 					'wrapper'       => array(
-						'width' => '50',
+						'width' => '75',
 					),
 				),
 				array(
@@ -902,7 +1297,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'default_value' => 'h2',
 					'ui'            => 1,
 					'wrapper'       => array(
-						'width' => '50',
+						'width' => '25',
 					),
 				),
 				array(
@@ -1025,6 +1420,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'default_value' => 'center',
 					'ui'            => 1,
 				),
+				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_image_content_motion_settings' ),
 			),
 		),
 		'layout_mrn_nested_video'          => array(
@@ -1048,7 +1444,11 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'aria-label'    => '',
 					'type'          => 'text',
 					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
+					'wrapper'       => array(
+						'width' => '75',
+					),
 				),
+				mrn_base_stack_get_label_tag_field( 'field_mrn_nested_video_label_tag' ),
 				array(
 					'key'           => 'field_mrn_nested_video_heading',
 					'label'         => 'Title field',
@@ -1057,7 +1457,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'type'          => 'text',
 					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
 					'wrapper'       => array(
-						'width' => '50',
+						'width' => '75',
 					),
 				),
 				array(
@@ -1080,7 +1480,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'default_value' => 'h2',
 					'ui'            => 1,
 					'wrapper'       => array(
-						'width' => '50',
+						'width' => '25',
 					),
 				),
 				array(
@@ -1171,6 +1571,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
+				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_video_motion_settings' ),
 			),
 		),
 		'layout_mrn_nested_logos'          => array(
@@ -1194,7 +1595,11 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'aria-label'    => '',
 					'type'          => 'text',
 					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
+					'wrapper'       => array(
+						'width' => '75',
+					),
 				),
+				mrn_base_stack_get_label_tag_field( 'field_mrn_nested_logos_label_tag' ),
 				array(
 					'key'           => 'field_mrn_nested_logos_heading',
 					'label'         => 'Heading',
@@ -1203,7 +1608,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'type'          => 'text',
 					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
 					'wrapper'       => array(
-						'width' => '50',
+						'width' => '75',
 					),
 				),
 				array(
@@ -1226,7 +1631,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'default_value' => 'h2',
 					'ui'            => 1,
 					'wrapper'       => array(
-						'width' => '50',
+						'width' => '25',
 					),
 				),
 				array(
@@ -1443,6 +1848,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
+				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_logos_motion_settings' ),
 			),
 		),
 		'layout_mrn_nested_external_widget' => array(
@@ -1519,6 +1925,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
+				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_external_widget_motion_settings' ),
 			),
 		),
 		'layout_mrn_nested_reusable_block' => array(

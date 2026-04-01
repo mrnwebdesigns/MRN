@@ -1,17 +1,17 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.03.29-theme-foundation`
-- Release date: `2026-03-29`
+- Stack release: `2026.04.01-effects-foundation`
+- Release date: `2026-04-01`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.0.2`
+  - `mrn-base-stack` `1.0.3`
 - MU plugins:
   - `mrn-shared-assets` `0.1.0`
   - `mrn-reusable-block-library` `0.1.3`
-  - `mrn-site-colors` / `Site Styles` `0.1.2`
+  - `mrn-site-colors` / `Site Styles` `0.1.3`
 - Standard plugins:
   - `mrn-config-helper` `0.1.19`
   - `mrn-editor-tools` `1.8.14`

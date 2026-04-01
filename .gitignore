@@ -15,6 +15,7 @@
 !/shared/README.md
 !/stack/
 !/stack/README.md
+!/stack/FRONTEND_IMPLEMENTATION_GUIDE.md
 !/stack/STACK_VERSION.md
 !/stack/CHANGELOG.md
 !/stack/BUILDER_CONVENTIONS.md
@@ -38,8 +39,10 @@
 !/stack/themes/mrn-base-stack/inc/builder/
 !/stack/themes/mrn-base-stack/inc/builder/*.php
 !/stack/themes/mrn-base-stack/js/
+!/stack/themes/mrn-base-stack/js/front-end-effects.js
 !/stack/themes/mrn-base-stack/js/front-end-slider.js
 !/stack/themes/mrn-base-stack/js/vendor/
+!/stack/themes/mrn-base-stack/js/vendor/motion.js
 !/stack/themes/mrn-base-stack/js/vendor/splide.min.js
 !/stack/themes/mrn-base-stack/css/
 !/stack/themes/mrn-base-stack/css/vendor/

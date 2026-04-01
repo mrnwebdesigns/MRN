@@ -94,13 +94,34 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 	$row_classes       = trim( 'mrn-content-builder__row ' . $row_modifier );
 	$section_classes   = trim( 'mrn-layout-section ' . $section_modifier . ' ' . ( $width_layers['section_class'] ?? 'mrn-layout-section--contained' ) );
 	$container_classes = trim( 'mrn-layout-container ' . ( $width_layers['container_class'] ?? 'mrn-layout-container--wide' ) );
+	$row_attributes    = array();
+	$motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
+		'classes'    => array(),
+		'attributes' => array(),
+	);
+
+	if ( ! empty( $motion_contract['classes'] ) && is_array( $motion_contract['classes'] ) ) {
+		$row_classes = trim( $row_classes . ' ' . implode( ' ', array_filter( $motion_contract['classes'], 'strlen' ) ) );
+	}
+
+	if ( function_exists( 'mrn_base_stack_merge_builder_attributes' ) ) {
+		$row_attributes = mrn_base_stack_merge_builder_attributes(
+			$row_attributes,
+			isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array()
+		);
+	} elseif ( isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ) {
+		$row_attributes = array_merge( $row_attributes, $motion_contract['attributes'] );
+	}
+
+	$row_attribute_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $row_attributes ) : '';
 
 	return sprintf(
-		'<div class="%1$s"><div class="%2$s"><div class="%3$s"><div class="mrn-layout-grid mrn-layout-grid--reusable"><div class="mrn-layout-content mrn-layout-content--reusable">%4$s</div></div></div></div></div>',
+		'<div class="%1$s"%5$s><div class="%2$s"><div class="%3$s"><div class="mrn-layout-grid mrn-layout-grid--reusable"><div class="mrn-layout-content mrn-layout-content--reusable">%4$s</div></div></div></div></div>',
 		esc_attr( $row_classes ),
 		esc_attr( $section_classes ),
 		esc_attr( $container_classes ),
-		$inner_markup // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		$inner_markup, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		'' !== $row_attribute_html ? ' ' . $row_attribute_html : ''
 	);
 }
 
@@ -635,7 +656,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 			return $title;
 		}
 
-		return '<div class="mrn-shell-section mrn-shell-section--logos '. esc_attr( $section_width ). '">Logos: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
+			return '<div class="mrn-shell-section mrn-shell-section--logos">Logos: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
 	}
 
 	if ( 'stats' === $layout_name ) {
@@ -645,7 +666,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 			return $title;
 		}
 
-		return '<div class="mrn-shell-section mrn-shell-section--stats '. esc_attr( $section_width ). '">Stats: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
+			return '<div class="mrn-shell-section mrn-shell-section--stats">Stats: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
 	}
 
 	if ( 'showcase' === $layout_name ) {
@@ -655,7 +676,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 			return $title;
 		}
 
-		return '<div class="mrn-shell-section mrn-shell-section--showcase '. esc_attr( $section_width ). '">Showcase: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
+			return '<div class="mrn-shell-section mrn-shell-section--showcase">Showcase: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
 	}
 
 	if ( 'image_content' === $layout_name ) {
@@ -695,7 +716,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 			return $title;
 		}
 
-		return '<div class="mrn-shell-section mrn-shell-section--card '. esc_attr( $section_width ). '">Card: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
+			return '<div class="mrn-shell-section mrn-shell-section--card">Card: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
 	}
 
 	return $title;

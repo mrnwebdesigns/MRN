@@ -80,6 +80,7 @@ $section_classes = array(
 	'mrn-content-builder__row',
 	'mrn-content-builder__row--two-column-split',
 );
+$section_attrs   = array();
 
 if ( '' !== $background_image_style ) {
 	$section_classes[] = 'has-background-image';
@@ -89,10 +90,18 @@ if ( '' !== $background_video_url ) {
 	$section_classes[] = 'has-background-video';
 }
 
+$motion_contract = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
+	'classes'    => array(),
+	'attributes' => array(),
+);
+$section_classes = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
+$section_attrs   = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+
 $surface_style = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
+$section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $is_full_width = 'full-width' === ( $width_layers['width'] ?? '' );
 ?>
-<section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>">
+<section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<?php if ( '' !== $background_video_url ) : ?>
 		<div class="mrn-section-background-media mrn-two-column-split__background-media" data-video-src="<?php echo esc_url( $background_video_url ); ?>" data-video-kind="<?php echo esc_attr( $background_video_kind ); ?>"<?php if ( 'local' === $background_video_kind && '' !== $local_video_mime ) : ?> data-video-mime="<?php echo esc_attr( $local_video_mime ); ?>"<?php endif; ?> data-video-background="true" data-video-autoplay="true" data-video-muted="true" data-video-loop="true" data-video-controls="false" data-video-delay="2000" data-video-desktop-only="true" aria-hidden="true"></div>
 	<?php endif; ?>

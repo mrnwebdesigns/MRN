@@ -8,6 +8,7 @@
 $context          = is_array( $args ?? null ) ? $args : array();
 $row              = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
 $label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
+$label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
 $heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
 $heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h2';
 $items            = isset( $row['stat_items'] ) && is_array( $row['stat_items'] ) ? $row['stat_items'] : array();
@@ -43,8 +44,9 @@ foreach ( $items as $item ) {
 	}
 
 	$valid_items[] = array(
-		'value'      => $value,
-		'item_label' => $item_label,
+		'value'          => $value,
+		'item_label'     => $item_label,
+		'item_label_tag' => function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $item['item_label_tag'] ?? '', 'p' ) : 'p',
 	);
 }
 
@@ -72,8 +74,14 @@ $accent_contract = function_exists( 'mrn_base_stack_get_builder_accent_contract'
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 	'attributes' => array(),
 );
+$motion_contract = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
+	'classes'    => array(),
+	'attributes' => array(),
+);
 $section_classes = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
+$section_classes = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
 $section_attrs   = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
+$section_attrs   = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
@@ -85,7 +93,7 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 		<?php if ( '' !== $label || '' !== $heading ) : ?>
 			<header class="mrn-layout-content mrn-layout-content--text mrn-stats-row__header">
 				<?php if ( '' !== $label ) : ?>
-					<div class="mrn-stats-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+					<<?php echo esc_html( $label_tag ); ?> class="mrn-stats-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
 				<?php endif; ?>
 				<?php if ( '' !== $heading ) : ?>
 					<<?php echo esc_html( $heading_tag ); ?> class="mrn-stats-row__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
@@ -101,7 +109,7 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 							<div class="mrn-stats-row__value"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $item['value'] ) : esc_html( $item['value'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 						<?php endif; ?>
 						<?php if ( '' !== $item['item_label'] ) : ?>
-							<div class="mrn-stats-row__item-label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $item['item_label'] ) : esc_html( $item['item_label'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+							<<?php echo esc_html( $item['item_label_tag'] ); ?> class="mrn-stats-row__item-label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $item['item_label'] ) : esc_html( $item['item_label'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $item['item_label_tag'] ); ?>>
 						<?php endif; ?>
 					</div>
 				<?php endforeach; ?>

@@ -1,5 +1,16 @@
 # Stack Changelog
 
+## 2026.04.01-effects-foundation
+- Expanded `mrn-base-stack` to `1.0.3`.
+- Expanded `mrn-site-colors` / `Site Styles` to `0.1.3`.
+- Added selectable HTML tag support for builder and reusable-block label fields.
+- Added Motion to the base theme as a shared front-end dependency for row-level effects.
+- Added builder-level `Motion Effects` controls across theme layouts, nested Two Column layouts, and reusable-block wrapper rows.
+- Added the first Site Styles-backed effect preset family for `Darken Card On Scroll`.
+- Added the row contract for `data-mrn-effect-preset` so Site Styles can skin effect mechanics without owning the runtime.
+- Added frontend documentation for Motion usage, Site Styles-backed effect presets, and the builder output contract.
+- Cleaned the Site Styles admin UI for motion presets so the new controls fit the WordPress settings screen cleanly.
+
 ## 2026.03.29-theme-foundation
 - Expanded `mrn-base-stack` to `1.0.2`.
 - Added a source-controlled `Business Information` options page to the canonical theme.

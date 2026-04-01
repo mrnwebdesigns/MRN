@@ -1,0 +1,271 @@
+( function() {
+	function normalizeMargin( value ) {
+		if ( typeof value !== 'string' || '' === value.trim() ) {
+			return '0px';
+		}
+
+		return value.trim();
+	}
+
+	function getSurfaceTarget() {
+		return document.body;
+	}
+
+	function activateSurface( sectionElement, surfaceValue ) {
+		var target = getSurfaceTarget();
+
+		if ( ! target || ! surfaceValue ) {
+			return;
+		}
+
+		target.dataset.mrnSurface = surfaceValue;
+		sectionElement.classList.add( 'is-mrn-active-surface' );
+	}
+
+	function deactivateSurface( sectionElement, surfaceValue ) {
+		var target = getSurfaceTarget();
+
+		sectionElement.classList.remove( 'is-mrn-active-surface' );
+
+		if ( ! target || ! surfaceValue ) {
+			return;
+		}
+
+		if ( target.dataset.mrnSurface === surfaceValue ) {
+			delete target.dataset.mrnSurface;
+		}
+	}
+
+	function initSurfaceSections( inView ) {
+		var surfaceSections = document.querySelectorAll( '[data-mrn-surface]' );
+
+		if ( ! surfaceSections.length ) {
+			return;
+		}
+
+		surfaceSections.forEach( function( sectionElement ) {
+			var surfaceValue = sectionElement.getAttribute( 'data-mrn-surface' );
+			var marginValue = normalizeMargin( sectionElement.getAttribute( 'data-mrn-surface-margin' ) || '-35% 0px -35% 0px' );
+
+			if ( ! surfaceValue ) {
+				return;
+			}
+
+			inView( sectionElement, function() {
+				activateSurface( sectionElement, surfaceValue );
+
+				return function() {
+					deactivateSurface( sectionElement, surfaceValue );
+				};
+			}, { margin: marginValue } );
+		} );
+	}
+
+	function initActiveClassEffects( inView ) {
+		var motionSections = document.querySelectorAll( '[data-mrn-motion-effect="active-class"]' );
+
+		if ( ! motionSections.length ) {
+			return;
+		}
+
+		motionSections.forEach( function( sectionElement ) {
+			var activeClass = sectionElement.getAttribute( 'data-mrn-motion-class' ) || 'is-mrn-in-view';
+			var marginValue = normalizeMargin( sectionElement.getAttribute( 'data-mrn-motion-margin' ) || '-35% 0px -35% 0px' );
+
+			inView( sectionElement, function() {
+				sectionElement.classList.add( activeClass );
+
+				return function() {
+					sectionElement.classList.remove( activeClass );
+				};
+			}, { margin: marginValue } );
+		} );
+	}
+
+	function mix( start, end, progress ) {
+		return start + ( end - start ) * progress;
+	}
+
+	function clamp( value, min, max ) {
+		var lower = typeof min === 'number' ? min : 0;
+		var upper = typeof max === 'number' ? max : 1;
+
+		return Math.min( Math.max( value, lower ), upper );
+	}
+
+	function parseRgbVar( value, fallback ) {
+		var parts = typeof value === 'string'
+			? value.trim().split( /[\s,]+/ ).filter( Boolean ).slice( 0, 3 )
+			: [];
+
+		if ( 3 !== parts.length ) {
+			return fallback;
+		}
+
+		return parts.map( function( part, index ) {
+			var fallbackValue = Array.isArray( fallback ) && typeof fallback[ index ] === 'number' ? fallback[ index ] : 0;
+			var numericValue = parseFloat( part );
+
+			if ( Number.isNaN( numericValue ) ) {
+				return fallbackValue;
+			}
+
+			return Math.round( clamp( numericValue, 0, 255 ) );
+		} );
+	}
+
+	function getCssNumberVar( element, name, fallback ) {
+		if ( ! element || 'function' !== typeof window.getComputedStyle ) {
+			return fallback;
+		}
+
+		var rawValue = window.getComputedStyle( element ).getPropertyValue( name );
+		var numericValue = parseFloat( rawValue );
+
+		return Number.isNaN( numericValue ) ? fallback : numericValue;
+	}
+
+	function getCssRgbVar( element, name, fallback ) {
+		if ( ! element || 'function' !== typeof window.getComputedStyle ) {
+			return fallback;
+		}
+
+		return parseRgbVar( window.getComputedStyle( element ).getPropertyValue( name ), fallback );
+	}
+
+	function findDarkScrollCardSurface( sectionElement ) {
+		return sectionElement.querySelector( '.mrn-layout-surface' ) || sectionElement;
+	}
+
+	function setStyles( elements, styles ) {
+		elements.forEach( function( element ) {
+			if ( ! element ) {
+				return;
+			}
+
+			Object.keys( styles ).forEach( function( property ) {
+				element.style[ property ] = styles[ property ];
+			} );
+		} );
+	}
+
+	function initDarkScrollCardEffects() {
+		if ( ! window.Motion || 'function' !== typeof window.Motion.scroll ) {
+			return;
+		}
+
+		var motionSections = document.querySelectorAll( '[data-mrn-motion-effect="dark-scroll-card"]' );
+
+		if ( ! motionSections.length ) {
+			return;
+		}
+
+		motionSections.forEach( function( sectionElement ) {
+			var surfaceElement = findDarkScrollCardSurface( sectionElement );
+			var titleElements = Array.prototype.slice.call( sectionElement.querySelectorAll( 'h1, h2, h3, h4, h5, h6' ) );
+			var bodyTextElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-basic-row__content p, .mrn-shell-section__content p, .mrn-image-content-row__content p, .mrn-video-row__content p, .mrn-card-row__content p, .mrn-reusable-block__text p' ) );
+			var labelElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-basic-row__label, .mrn-shell-section__label, .mrn-image-content-row__label, .mrn-video-row__label, .mrn-reusable-block__label' ) );
+			var actionElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-basic-row__link--button, .mrn-hero__link, .mrn-reusable-block__link--button, button' ) );
+			var imageElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-basic-row__media img, .mrn-image-content-row__media img, .mrn-video-row__media img, .mrn-reusable-block__media img, .mrn-card-row__item img' ) );
+			var targetBackground = getCssRgbVar( sectionElement, '--mrn-dark-scroll-card-bg-rgb', [ 15, 15, 21 ] );
+			var targetText = getCssRgbVar( sectionElement, '--mrn-dark-scroll-card-text-rgb', [ 245, 245, 245 ] );
+			var targetMuted = getCssRgbVar( sectionElement, '--mrn-dark-scroll-card-muted-rgb', [ 182, 190, 201 ] );
+			var targetButtonBackground = getCssRgbVar( sectionElement, '--mrn-dark-scroll-card-button-bg-rgb', [ 255, 255, 255 ] );
+			var targetButtonText = getCssRgbVar( sectionElement, '--mrn-dark-scroll-card-button-text-rgb', [ 17, 17, 17 ] );
+			var targetBorderAlpha = getCssNumberVar( sectionElement, '--mrn-dark-scroll-card-border-alpha', 0.12 );
+			var targetShadowAlpha = getCssNumberVar( sectionElement, '--mrn-dark-scroll-card-shadow-alpha', 0.35 );
+			var targetImageBrightness = getCssNumberVar( sectionElement, '--mrn-dark-scroll-card-image-brightness', 0.72 );
+			var targetImageSaturation = getCssNumberVar( sectionElement, '--mrn-dark-scroll-card-image-saturation', 0.85 );
+
+			window.Motion.scroll(
+				function( progress ) {
+					var p = clamp( progress );
+					var cardBackground = [
+						Math.round( mix( 255, targetBackground[ 0 ], p ) ),
+						Math.round( mix( 255, targetBackground[ 1 ], p ) ),
+						Math.round( mix( 255, targetBackground[ 2 ], p ) )
+					];
+					var cardText = [
+						Math.round( mix( 17, targetText[ 0 ], p ) ),
+						Math.round( mix( 17, targetText[ 1 ], p ) ),
+						Math.round( mix( 17, targetText[ 2 ], p ) )
+					];
+					var mutedText = [
+						Math.round( mix( 95, targetMuted[ 0 ], p ) ),
+						Math.round( mix( 102, targetMuted[ 1 ], p ) ),
+						Math.round( mix( 115, targetMuted[ 2 ], p ) )
+					];
+					var buttonBackground = [
+						Math.round( mix( 17, targetButtonBackground[ 0 ], p ) ),
+						Math.round( mix( 17, targetButtonBackground[ 1 ], p ) ),
+						Math.round( mix( 17, targetButtonBackground[ 2 ], p ) )
+					];
+					var buttonText = [
+						Math.round( mix( 255, targetButtonText[ 0 ], p ) ),
+						Math.round( mix( 255, targetButtonText[ 1 ], p ) ),
+						Math.round( mix( 255, targetButtonText[ 2 ], p ) )
+					];
+					var borderAlpha = mix( 0.08, targetBorderAlpha, p );
+					var shadowAlpha = mix( 0.08, targetShadowAlpha, p );
+					var imageBrightness = mix( 1, targetImageBrightness, p );
+					var imageSaturation = mix( 1, targetImageSaturation, p );
+
+					surfaceElement.style.backgroundColor = 'rgb(' + cardBackground.join( ', ' ) + ')';
+					surfaceElement.style.color = 'rgb(' + cardText.join( ', ' ) + ')';
+					surfaceElement.style.borderTopColor = 'rgba(255, 255, 255, ' + borderAlpha + ')';
+					surfaceElement.style.borderBottomColor = 'rgba(255, 255, 255, ' + borderAlpha + ')';
+					surfaceElement.style.boxShadow = '0 24px 80px rgba(0, 0, 0, ' + shadowAlpha + ')';
+
+					setStyles( titleElements, {
+						color: 'rgb(' + cardText.join( ', ' ) + ')'
+					} );
+
+					setStyles( labelElements.concat( bodyTextElements ), {
+						color: 'rgb(' + mutedText.join( ', ' ) + ')'
+					} );
+
+					setStyles( actionElements, {
+						backgroundColor: 'rgb(' + buttonBackground.join( ', ' ) + ')',
+						color: 'rgb(' + buttonText.join( ', ' ) + ')',
+						borderColor: 'rgb(' + buttonBackground.join( ', ' ) + ')'
+					} );
+
+					setStyles( imageElements, {
+						filter: 'brightness(' + imageBrightness + ') saturate(' + imageSaturation + ') contrast(1.02)'
+					} );
+				},
+				{
+					target: surfaceElement,
+					offset: [ 'start 90%', 'start 35%' ],
+					axis: 'y'
+				}
+			);
+		} );
+	}
+
+	function initGlobalApi( inView ) {
+		window.mrnBaseStack = window.mrnBaseStack || {};
+		window.mrnBaseStack.motion = window.Motion || {};
+		window.mrnBaseStack.inView = inView;
+		window.mrnBaseStack.initSurfaceSections = function() {
+			initSurfaceSections( inView );
+		};
+	}
+
+	function initEffects() {
+		if ( ! window.Motion || 'function' !== typeof window.Motion.inView ) {
+			return;
+		}
+
+		initGlobalApi( window.Motion.inView );
+		initSurfaceSections( window.Motion.inView );
+		initActiveClassEffects( window.Motion.inView );
+		initDarkScrollCardEffects();
+	}
+
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', initEffects );
+	} else {
+		initEffects();
+	}
+}() );

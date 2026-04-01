@@ -9,6 +9,7 @@ $context          = is_array( $args ?? null ) ? $args : array();
 $row              = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
 $post_id          = isset( $context['post_id'] ) ? (int) $context['post_id'] : get_the_ID();
 $label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
+$label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
 $heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
 $heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h1';
 $content          = isset( $row['content'] ) ? (string) $row['content'] : '';
@@ -98,13 +99,30 @@ $accent_contract = function_exists( 'mrn_site_styles_get_bottom_accent_contract'
 		'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 		'attributes' => array(),
 	);
+$motion_contract = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
+	'classes'    => array(),
+	'attributes' => array(),
+);
 
 if ( isset( $accent_contract['classes'] ) && is_array( $accent_contract['classes'] ) ) {
 	$section_classes = array_merge( $section_classes, $accent_contract['classes'] );
 }
 
+if ( isset( $motion_contract['classes'] ) && is_array( $motion_contract['classes'] ) ) {
+	$section_classes = array_merge( $section_classes, $motion_contract['classes'] );
+}
+
 if ( isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ) {
 	$section_attrs = $accent_contract['attributes'];
+}
+
+if ( function_exists( 'mrn_base_stack_merge_builder_attributes' ) ) {
+	$section_attrs = mrn_base_stack_merge_builder_attributes(
+		$section_attrs,
+		isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array()
+	);
+} elseif ( isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ) {
+	$section_attrs = array_merge( $section_attrs, $motion_contract['attributes'] );
 }
 ?>
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php foreach ( $section_attrs as $attribute_name => $attribute_value ) : ?><?php if ( '' !== $attribute_name && '' !== $attribute_value ) : ?> <?php echo esc_attr( $attribute_name ); ?>="<?php echo esc_attr( $attribute_value ); ?>"<?php endif; ?><?php endforeach; ?><?php echo ! empty( $section_styles ) ? ' style="' . esc_attr( implode( '; ', $section_styles ) ) . '"' : ''; ?>>
@@ -114,7 +132,7 @@ if ( isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attr
 	<div class="mrn-hero__inner">
 		<div class="mrn-hero__content mrn-hero__content--hero-shell">
 			<?php if ( '' !== $label ) : ?>
-				<p class="mrn-hero__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
+				<<?php echo esc_html( $label_tag ); ?> class="mrn-hero__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
 			<?php endif; ?>
 
 			<?php if ( '' !== $heading ) : ?>

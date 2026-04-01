@@ -218,6 +218,33 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - `mrn_base_stack_render_social_links()`
 - The stack now also has a tactical theme execution doc:
   - `/Users/khofmeyer/Development/MRN/stack/THEME_TASKLIST.md`
+
+## Thread: 2026-03-31 Site Styles Motion Presets
+
+- The first Site Styles-backed row effect preset family is now implemented for the builder motion effect `dark-scroll-card`.
+- Canonical storage lives in the Site Styles MU plugin:
+  - option key: `mrn_site_dark_scroll_card_presets`
+  - source file: `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-site-colors/mrn-site-colors.php`
+- Site Styles now owns:
+  - preset names/slugs
+  - dark-scroll-card surface colors
+  - button colors
+  - border/shadow alpha tuning
+  - image brightness/saturation tuning
+- Theme builder motion UI now supports an `Effect Preset` selector when `Darken Card On Scroll` is chosen.
+  - source helper: `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/helpers.php`
+- Theme row output contract now includes:
+  - `data-mrn-effect-preset="slug"` for `dark-scroll-card` rows when a preset is selected
+- Site Styles prints preset CSS custom properties for:
+  - `[data-mrn-motion-effect="dark-scroll-card"][data-mrn-effect-preset="slug"]`
+- The Motion runtime in `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/front-end-effects.js` now reads those CSS custom properties instead of relying only on hardcoded end-state values.
+- Starter preset contract:
+  - `brand-dark-card`
+  - it is available as a built-in fallback even before an editor explicitly saves Site Styles
+- Current durable architecture:
+  - theme = motion engine / activation logic
+  - Site Styles = visual preset registry
+  - builder = per-row effect and preset selection
 - Hero remains a separate contract from the body-section width model.
   - It should not be forced into the layered `Content` / `Wide` / `Full Width` section system just for naming consistency.
   - Default hero layouts can now start from a shared hero-shell contract:
@@ -290,6 +317,39 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - `mrn-layout-grid--text-shell`
     - `mrn-layout-content--text-shell`
     - `Content` should stay tightly readable, `Wide` can open the measure modestly, and `Full Width` can announce a broader section while keeping text comfortably constrained
+- New-thread rule for adding layouts:
+  - treat width rendering and wrapper layering as solved infrastructure
+  - this rule applies to:
+    - native theme layouts
+    - reusable-block templates
+    - reusable-block builder wrappers rendered through the theme shell
+  - start every new native or reusable-builder layout from the layered contract:
+    - `Section > Container > Grid > Content`
+  - do not invent a new width model for a layout unless the request is explicitly hero-like and intentionally outside the body-section system
+  - first decide which existing family the new layout belongs to:
+    - media/content
+    - callout
+    - collection/grid
+    - editorial text
+    - split composition
+    - slider/carousel
+    - feature video
+    - embed/external widget
+    - hero
+  - reuse the closest existing starter contract before creating new classes
+  - only add a new starter contract when the new layout family cannot reasonably inherit from an existing one
+  - when adding a new width-sensitive layout:
+    - make `Content`, `Wide`, and `Full Width` behaviorally different
+    - keep readable text constrained separately from shell width
+    - make `Wide` contained, not full-bleed
+    - enforce mobile collapse at the final layered section rules so later desktop selectors do not win on source order
+  - update:
+    - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
+    - `/Users/khofmeyer/Development/MRN/THREAD_MEMORY.md`
+    when a new starter contract or durable rule is introduced
+  - QA expectation for any new layout:
+    - add or reuse a dedicated local QA page on `mrn-plugin-stack.local`
+    - verify desktop and mobile with the seeded harness before calling the layout done
 
 ## 2026-03-30 Width System Pass
 
@@ -5492,3 +5552,205 @@ After you get each summary back:
 - Notes:
   - **Reusable Block** picker rows and other cloned layouts (e.g. FAQ) remain outside this pattern until explicitly extended.
   - Existing rows without a stored `section_width` fall back to `wide` (helper default).
+
+## Thread: 2026-03-30 AME Canonical Config Refresh (default-configs 2026-03-31 export)
+- Goal:
+  - Refresh the stack's canonical AME import source from the latest `default-configs.mrndev.io` export.
+- Decisions made:
+  - Canonical importer target remains `/Users/khofmeyer/Development/MRN/stack/configs/exports/ame-config-container.json`.
+  - Keep the raw dated export alongside the canonical file for traceability as `/Users/khofmeyer/Development/MRN/stack/configs/exports/default-configs.mrndev.io-AME-configuration(2026-03-31).json`.
+- Source changes:
+  - Updated:
+    - `/Users/khofmeyer/Development/MRN/stack/configs/exports/ame-config-container.json`
+  - Added:
+    - `/Users/khofmeyer/Development/MRN/stack/configs/exports/default-configs.mrndev.io-AME-configuration(2026-03-31).json`
+- Verification:
+  - `stack/manifests/importers.txt` still maps `ame_container_json|ame-config-container.json`.
+  - Local canonical and dated files both parse as `Admin Menu Editor configuration container` exports.
+
+## Thread: 2026-03-30 Live Stack Sync + Admin UI Notice Suppression
+- Goal:
+  - Push the refreshed AME stack export to the live stack server and suppress newly discovered admin upsell/review notices in the shared MU admin CSS.
+- Decisions made:
+  - Live stack AME source was synced to `/home/mrndev-stack-manager/stack/configs/exports/` using the standard owner-safe pattern:
+    - `rsync --rsync-path='sudo -n -u mrndev-stack-manager rsync'`
+  - Top-level workspace git ignoring `mu-plugins/` is intentional; MU plugins such as `mrn-admin-ui-css` are tracked in their own nested repos.
+  - Media Library Organizer / Themeisle review notices must be hidden in two places:
+    - full admin cleanup CSS in `mrn-admin.css`
+    - always-on inline CSS in `mrn-admin-ui-css.php` for editor / `post-new.php` screens where the full stylesheet is intentionally skipped
+- Source changes:
+  - Updated local stack export copies:
+    - `/Users/khofmeyer/Development/MRN/stack/configs/exports/ame-config-container.json`
+    - `/Users/khofmeyer/Development/MRN/stack/configs/exports/default-configs.mrndev.io-AME-configuration(2026-03-31).json`
+  - Synced live stack export copies:
+    - `/home/mrndev-stack-manager/stack/configs/exports/ame-config-container.json`
+    - `/home/mrndev-stack-manager/stack/configs/exports/default-configs.mrndev.io-AME-configuration(2026-03-31).json`
+  - Updated MU plugin source:
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-admin-ui-css/mrn-admin.css`
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-admin-ui-css/mrn-admin-ui-css.php`
+  - Synced live MU plugin copy:
+    - `/home/mrndev-stack-manager/stack/mu-plugins/mrn-admin-ui-css`
+- `mrn-admin-ui-css` outcomes:
+  - Added targeted hide rule for Themeisle / Media Library Organizer review notice:
+    - `#media_library_organizer_review_flag-notification`
+    - `.themeisle-sdk-notice[data-notification-id="media_library_organizer_review_flag"]`
+  - Added targeted hide rule for the Admin Menu Editor survey notice using the survey link + `ame_hide_survey_notice=1` link pattern.
+  - Moved the Media Library Organizer review-notice selector into the always-loaded inline CSS block so it also hides on create/edit post screens.
+  - Bumped `mrn-admin-ui-css` version to `3.1.11`.
+- Repo / release notes:
+  - Nested MU plugin repo:
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-admin-ui-css`
+  - Pushed commits:
+    - `e2498d9` — `Release 3.1.11: hide MLO and AME survey notices`
+    - `1733511` — `Hide MLO review notice on editor screens`
+  - During first server sync, the nested repo `.git` directory was accidentally copied to the live stack path and then removed immediately; future rsyncs for nested plugin repos should exclude `.git/`.
+- Verification:
+  - AME export local and remote SHA-256 matched:
+    - `29f36aa9e55d219e11e8bcaec4544496c345eebf06f474b1781ea15e844aa539`
+  - Live stack importer manifest still points at:
+    - `ame_container_json|ame-config-container.json`
+  - Remote `mrn-admin-ui-css` plugin header now reports `Version: 3.1.11`.
+
+## Thread: 2026-03-30 Google Doc Stack Handbook + Living Documentation
+- Goal:
+  - Create a remote Google Doc that acts as a living stack handbook and onboarding reference for MRN.
+- Decisions made:
+  - Created the shared Google Doc:
+    - `MRN Stack Documentation - 2026-03-30`
+    - `https://docs.google.com/document/d/1nkhkJSj-u6mv0z1HOHmkygvidme9LTiH3xyI-Mym6F4/edit?usp=drivesdk`
+  - The Google Doc should be treated as the best human-readable remote handoff/onboarding document, not the only canonical source.
+  - Source-controlled repo docs remain the durable technical source of truth for stack behavior and architecture.
+  - When durable stack behavior changes, update:
+    - source-controlled docs in `stack/`
+    - `/Users/khofmeyer/Development/MRN/THREAD_MEMORY.md`
+    - the Google Doc when the change affects onboarding, handoff, stack inventory, developer rules, or operational understanding
+  - The Google Doc now includes durable sections for:
+    - architecture and ownership boundaries
+    - builder/content-model rules
+    - theme options, business information, header/footer, and schema
+    - operations, rollout, QA harness, and current implementation direction
+    - reconciled legacy developer instructions
+    - developer rules appendix
+    - day-1 developer checklist
+    - stack inventory
+    - plugin matrix appendix with legend
+- Notes:
+  - Legacy wording that referred to rolling out a raw Underscores theme is now considered outdated.
+  - Current canonical wording is that sites start from the controlled MRN base theme, which is historically based on Underscores but is now its own canonical theme layer.
+  - `mrn-base-stack` is the current canonical source-theme/package name in source control, but it should not be described to external developers as the guaranteed deployed site theme name/slug.
+  - Developer-facing documentation should describe `mrn-base-stack` as the source-controlled base theme origin while noting that the deployed theme name/slug may vary per site.
+  - Developer-facing documentation should avoid repo-internal path language such as `stack/themes/mrn-base-stack` when that path is not meaningful in the deployed site context.
+  - Prefer conceptual language in handoff docs such as:
+    - the MRN base theme
+    - the base theme source
+    - the deployed project theme
+    - the Config Helper plugin
+    - the Site Styles MU plugin
+    - the Reusable Block Library MU plugin
+  - Legacy environment notes such as Defender Pro, Hummingbird Pro, SSH access, Updraft readiness, disabled caching, and backup behavior should be treated as per-project kickoff checks unless separately documented as stack-wide guarantees.
+  - Current source-tracked license wiring is documented in:
+    - `/Users/khofmeyer/Development/MRN/stack/manifests/licenses.txt`
+  - Current stack plugin install layer is documented in:
+    - `/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt`
+  - Current theme rollout manifest is documented in:
+    - `/Users/khofmeyer/Development/MRN/stack/manifests/themes.txt`
+
+## Thread: 2026-03-31 Label Tag Support Across Layouts and Reusable Blocks
+- Goal:
+  - Add selectable HTML tag support for front-end `label` fields across builder layouts and reusable blocks.
+- Decisions made:
+  - Builder and reusable-block label fields that render on the front end now support a companion tag selector field that defaults to `p`.
+  - The shared supported tag set for label rendering matches the existing heading-style tag vocabulary:
+    - `h1`
+    - `h2`
+    - `h3`
+    - `h4`
+    - `h5`
+    - `h6`
+    - `p`
+    - `span`
+    - `div`
+  - Existing content should preserve current output behavior because missing/stored-empty label-tag values normalize to `p`.
+  - This contract now applies to:
+    - theme builder layouts with a visible label
+    - nested Two Column Split layouts with a visible label
+    - repeater/item labels that render visibly in slider, stats, and content-grid style structures
+    - reusable block types with a visible label
+- Source changes:
+  - Theme shared helpers:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/helpers.php`
+  - Theme builder field groups:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/field-groups.php`
+  - Reusable block field registration:
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+- Verification:
+  - `php -l` passed for all touched PHP files in the theme builder and reusable block library.
+  - `git diff --check` passed at workspace root.
+
+## Thread: 2026-03-31 Motion InView Added To Base Theme
+- Goal:
+  - Add Motion `inView` to the base theme as a reusable front-end primitive and document how front-end developers should wire shared site styles and business information into templates and CSS.
+- Decisions made:
+  - The base theme now vendors Motion from the `motion` package and exposes it through the theme rather than requiring per-project installation.
+  - Motion is currently enqueued by default on singular `post` and `page` requests, matching the theme's existing front-end asset pattern.
+  - The theme now ships a small front-end helper layer that:
+    - preserves raw `window.Motion`
+    - exposes `window.mrnBaseStack.inView`
+    - supports a shared active-surface contract using:
+      - `data-mrn-surface`
+      - optional `data-mrn-surface-margin`
+      - `body[data-mrn-surface="..."]`
+      - `.is-mrn-active-surface`
+  - Front-end implementation guidance for:
+    - Motion usage
+    - Site Styles token usage in PHP and CSS
+    - Business Information helper usage in templates
+    is now documented in:
+    - `/Users/khofmeyer/Development/MRN/stack/FRONTEND_IMPLEMENTATION_GUIDE.md`
+- Source changes:
+  - Theme bootstrap:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - Vendored Motion asset:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/vendor/motion.js`
+  - Theme front-end helper:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/front-end-effects.js`
+  - New front-end guide:
+    - `/Users/khofmeyer/Development/MRN/stack/FRONTEND_IMPLEMENTATION_GUIDE.md`
+
+## Thread: 2026-03-31 Builder Motion Controls
+- Goal:
+  - Add reusable motion-effect controls to builder layout `Configs` so row-level viewport behavior can be enabled declaratively from ACF.
+- Decisions made:
+  - Builder layouts now use a shared `Motion Effects` group field named `motion_settings`.
+  - The same shared motion group is now available across:
+    - native theme layouts
+    - nested Two Column Split layouts
+    - page-specific reusable-block wrapper layouts
+    - reusable block picker rows
+  - Current supported motion effects are:
+    - `surface`
+      - drives `data-mrn-surface`
+      - intended for light/dark site-surface switching
+    - `active-class`
+      - drives `data-mrn-motion-effect="active-class"`
+      - toggles the stable class `is-mrn-in-view` while the row is in view
+    - `dark-scroll-card`
+      - drives `data-mrn-motion-effect="dark-scroll-card"`
+      - uses Motion scroll progress to darken the row surface and related card content as it enters the viewport
+  - Effect-specific controls are conditional in ACF:
+    - the UI is preset-driven for novice builders rather than raw CSS-style inputs
+    - all enabled effects expose `Start Effect` as a friendly viewport trigger preset
+    - `surface` exposes `Surface Look`
+  - Theme rendering now merges the motion contract into section/wrapper attributes so supported rows can opt into Motion without template-specific one-offs.
+  - Temporary QA-only motion styling in `functions.php` was removed after the first prototype pass; effect visuals should now live in the actual theme CSS/JS layers.
+- Source changes:
+  - Shared builder helpers:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/helpers.php`
+  - Builder field registration:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/field-groups.php`
+  - Builder/reusable wrapper rendering:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/render.php`
+  - Builder templates updated to consume motion attributes:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/`
+  - Front-end Motion helper:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/front-end-effects.js`
