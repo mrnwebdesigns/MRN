@@ -140,19 +140,23 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 ### `mrn-seo-helper`
 
 - Name: `SEO Helper`
-- Version: `0.2.6`
+- Version: `0.2.7`
 - Purpose:
   - registers baseline SEO ACF fields for posts and pages
   - syncs SEO field content into SmartCrawl-compatible storage
 - Admin/UI:
   - ACF field registration
   - tools/admin notices
+  - Tools page shows the detected environment and whether SEO fields are currently required or optional
+  - Tools page includes an override switch to force fields to remain required in local/dev
 - Front-end / theming:
   - indirectly affects rendered SEO/meta behavior through synced data
 - Developer-facing hooks:
   - no custom public hook inventory captured yet
 - Notes:
   - content-model helper plugin, not a design/theming plugin
+  - environment detection prefers `wp_get_environment_type()` and falls back to `WP_ENV`
+  - `local` and `development` make SEO Title and Meta Description optional by default
 
 ### `mrn-unified-exporter`
 

@@ -89,6 +89,16 @@ The local stack site is a development environment, not a second source of truth.
 - Do not treat copied local site plugin/theme folders as canonical.
 - If local site wiring drifts, repair the symlinks rather than editing the local copy by hand.
 
+## Environment Variable Rule
+
+WordPress environment type should be set deliberately because some stack-managed behavior changes by environment.
+
+- Prefer `wp_get_environment_type()` as the canonical runtime source.
+- If WordPress is not providing that yet, some MRN code falls back to `WP_ENV`.
+- Current example:
+  - `mrn-seo-helper` treats SEO Title and Meta Description as optional in `local` and `development`.
+  - The plugin Tools UI can override that and force the fields back to required when needed.
+
 ## Secrets Rule
 
 - Secrets belong in the stack secrets paths on the server.
