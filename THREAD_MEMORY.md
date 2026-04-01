@@ -78,11 +78,12 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
   - Current baseline:
-    - `2026.03.29-theme-foundation`
-    - `mrn-base-stack` `1.0.2`
+    - `2026.04.01-effects-foundation`
+    - `mrn-base-stack` `1.0.3`
     - `mrn-config-helper` `0.1.19`
     - `mrn-editor-tools` `1.8.14`
     - `mrn-shared-assets` `0.1.0`
+    - `mrn-site-colors` / `Site Styles` `0.1.3`
 - The stack now also has a developer-facing builder/conventions doc:
   - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
   - Use it as the canonical reference for:
