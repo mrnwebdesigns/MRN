@@ -86,12 +86,12 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
   - Current baseline:
-    - `2026.04.01-reusable-content-lists`
-    - `mrn-base-stack` `1.0.6`
+    - `2026.04.01-reusable-content-lists-fix`
+    - `mrn-base-stack` `1.0.7`
     - `mrn-config-helper` `0.1.19`
     - `mrn-editor-tools` `1.8.14`
     - `mrn-shared-assets` `0.1.0`
-    - `mrn-reusable-block-library` `0.1.4`
+    - `mrn-reusable-block-library` `0.1.5`
     - `mrn-site-colors` / `Site Styles` `0.1.3`
   - `mrn-base-stack` now includes a theme-owned `Content Lists` builder layout.
     - Current `Content Lists` contract includes:
@@ -103,6 +103,7 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
       - manual taxonomy filtering through a term picker
     - Builder admin now narrows `Content Lists` taxonomy and term options based on the selected content type and taxonomy.
   - `Content Lists` is also available as a reusable block type through `mrn-reusable-block-library`.
+    - the reusable content-list CPT slug is `mrn_reusable_list` so it stays within WordPress' 20-character registration limit
     - reusable content-list blocks map back to the native `content_lists` page layout when converted to page-specific content
     - reusable content-list rendering now receives host page context so current-page term filtering and pagination work when the block is placed inside the page builder
 - The stack now also has a developer-facing builder/conventions doc:

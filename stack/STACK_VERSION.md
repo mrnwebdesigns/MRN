@@ -1,16 +1,16 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.01-reusable-content-lists`
+- Stack release: `2026.04.01-reusable-content-lists-fix`
 - Release date: `2026-04-01`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.0.6`
+  - `mrn-base-stack` `1.0.7`
 - MU plugins:
   - `mrn-shared-assets` `0.1.0`
-  - `mrn-reusable-block-library` `0.1.4`
+  - `mrn-reusable-block-library` `0.1.5`
   - `mrn-site-colors` / `Site Styles` `0.1.3`
 - Standard plugins:
   - `mrn-config-helper` `0.1.19`

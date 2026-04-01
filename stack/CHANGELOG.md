@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.04.01-reusable-content-lists-fix
+- Expanded `mrn-base-stack` to `1.0.7`.
+- Expanded `mrn-reusable-block-library` to `0.1.5`.
+- Shortened the reusable content-list post type slug to `mrn_reusable_list` so it registers correctly under WordPress' post-type length limit.
+- Repackaged and redeployed the reusable content-list rollout after runtime QA caught the registration failure.
+
 ## 2026.04.01-reusable-content-lists
 - Expanded `mrn-base-stack` to `1.0.6`.
 - Expanded `mrn-reusable-block-library` to `0.1.4`.
