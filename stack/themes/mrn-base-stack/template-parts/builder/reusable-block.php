@@ -13,7 +13,13 @@ if ( ! function_exists( 'mrn_rbl_render_block' ) || ! ( $block instanceof WP_Pos
 	return;
 }
 
-$markup = mrn_rbl_render_block( $block );
+$extra_context = array(
+	'host_post_id'   => isset( $context['post_id'] ) ? (int) $context['post_id'] : 0,
+	'host_row_index' => isset( $context['index'] ) ? (int) $context['index'] : 0,
+);
+$markup        = function_exists( 'mrn_rbl_render_block_with_context' )
+	? mrn_rbl_render_block_with_context( $block, $extra_context )
+	: mrn_rbl_render_block( $block );
 if ( '' === trim( $markup ) ) {
 	return;
 }

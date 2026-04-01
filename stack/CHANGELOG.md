@@ -1,5 +1,13 @@
 # Stack Changelog
 
+## 2026.04.01-reusable-content-lists
+- Expanded `mrn-base-stack` to `1.0.6`.
+- Expanded `mrn-reusable-block-library` to `0.1.4`.
+- Added a reusable `Content Lists` block type to the reusable block library.
+- Added `Display Mode` support to `Content Lists`, including a lighter `Title Only` presentation.
+- Passed host page context into reusable block rendering so reusable content-list blocks can use current-page term filtering and pagination inside the page builder.
+- Added shared label-tag controls across reusable block types so reusable labels follow the same HTML-tag contract as the theme builder.
+
 ## 2026.04.01-sidebar-builder
 - Expanded `mrn-base-stack` to `1.0.5`.
 - Added a theme-owned singular sidebar shell for posts and pages.

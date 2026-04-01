@@ -485,7 +485,7 @@ function mrn_base_stack_register_acf_field_groups() {
 						'layout_mrn_content_lists'  => array(
 							'key'        => 'layout_mrn_content_lists',
 							'name'       => 'content_lists',
-							'label'      => 'Content Lists - query, pagination, count',
+							'label'      => 'Content Lists - query|pagination|count',
 							'display'    => 'block',
 							'sub_fields' => array(
 								array(
@@ -579,6 +579,19 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 								),
 								array(
+									'key'           => 'field_mrn_content_lists_display_mode',
+									'label'         => 'Display Mode',
+									'name'          => 'display_mode',
+									'aria-label'    => '',
+									'type'          => 'select',
+									'choices'       => mrn_base_stack_get_content_list_display_mode_choices(),
+									'default_value' => 'standard',
+									'ui'            => 1,
+									'wrapper'       => array(
+										'width' => '34',
+									),
+								),
+								array(
 									'key'           => 'field_mrn_content_lists_posts_per_page',
 									'label'         => 'How Many Items',
 									'name'          => 'posts_per_page',
@@ -588,7 +601,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'min'           => 1,
 									'step'          => 1,
 									'wrapper'       => array(
-										'width' => '34',
+										'width' => '33',
 									),
 								),
 								array(

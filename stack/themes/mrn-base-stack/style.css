@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.0.5
+Version: 1.0.6
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -3332,6 +3332,16 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	gap: clamp(1.25rem, 2.8vw, 2rem);
 }
 
+.mrn-reusable-block--content-lists {
+	background: var(--mrn-content-list-row-bg, transparent);
+	padding: clamp(1.75rem, 3.5vw, 3.5rem);
+}
+
+.mrn-reusable-block__inner--content-lists {
+	display: grid;
+	gap: clamp(1.25rem, 2.8vw, 2rem);
+}
+
 .mrn-content-list-row__header {
 	display: grid;
 	gap: 0.9rem;
@@ -3379,6 +3389,18 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	position: absolute;
 	top: 1rem;
 	width: 2rem;
+}
+
+.mrn-content-builder__row--content-lists-display-title_only .mrn-content-list-row__item {
+	padding-left: 0;
+}
+
+.mrn-content-builder__row--content-lists-display-title_only .mrn-content-list-row__items {
+	gap: 0.8rem;
+}
+
+.mrn-content-builder__row--content-lists-display-title_only .mrn-content-list-row__item::before {
+	top: 0.1rem;
 }
 
 .mrn-content-list-row__card {
@@ -3436,6 +3458,12 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 .mrn-content-list-row__title a:hover,
 .mrn-content-list-row__title a:focus {
 	text-decoration: underline;
+}
+
+.mrn-content-list-row__title--only {
+	font-size: clamp(1.05rem, 1.5vw, 1.2rem);
+	line-height: 1.3;
+	margin: 0;
 }
 
 .mrn-content-list-row__excerpt,

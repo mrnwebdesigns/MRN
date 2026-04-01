@@ -74,24 +74,37 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - `wp-content/plugins/mrn-config-helper` -> `0.1.19`
     - `wp-content/plugins/mrn-editor-tools` -> `1.8.14`
     - `wp-content/themes/default-configs` -> theme content from `mrn-base-stack` `1.0.2` while preserving `Theme Name: default configs` and `Text Domain: default-configs`
+- `default-configs.mrndev.io` was refreshed again on `2026-04-01` for the builder-driven singular sidebar release.
+  - Live theme now reports `default-configs` `1.0.5`.
+  - Live runtime verification confirmed:
+    - `mrn_base_stack_get_singular_sidebar_settings()` is loaded
+    - ACF field group `Sidebar` is registered with menu order `30`
+  - Current caveat:
+    - the refreshed live theme files are owned by `mrn-ops:mrn-ops`, not the preferred site owner
+    - functional QA passed, but ownership should be normalized in a later ops pass if write-path policy requires it
 - The stack now has lightweight stack-wide version notes:
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
   - Current baseline:
-    - `2026.04.01-sidebar-builder`
-    - `mrn-base-stack` `1.0.5`
+    - `2026.04.01-reusable-content-lists`
+    - `mrn-base-stack` `1.0.6`
     - `mrn-config-helper` `0.1.19`
     - `mrn-editor-tools` `1.8.14`
     - `mrn-shared-assets` `0.1.0`
+    - `mrn-reusable-block-library` `0.1.4`
     - `mrn-site-colors` / `Site Styles` `0.1.3`
   - `mrn-base-stack` now includes a theme-owned `Content Lists` builder layout.
     - Current `Content Lists` contract includes:
       - content type, list style, count, ordering, offset, and pagination
+      - display mode with `Standard` and `Title Only`
       - featured image / date / excerpt / read-more display toggles
       - empty-state message plus a control to suppress the entire row when no results are returned
       - contextual taxonomy filtering using the current page/post terms
       - manual taxonomy filtering through a term picker
     - Builder admin now narrows `Content Lists` taxonomy and term options based on the selected content type and taxonomy.
+  - `Content Lists` is also available as a reusable block type through `mrn-reusable-block-library`.
+    - reusable content-list blocks map back to the native `content_lists` page layout when converted to page-specific content
+    - reusable content-list rendering now receives host page context so current-page term filtering and pagination work when the block is placed inside the page builder
 - The stack now also has a developer-facing builder/conventions doc:
   - `/Users/khofmeyer/Development/MRN/stack/BUILDER_CONVENTIONS.md`
   - Use it as the canonical reference for:

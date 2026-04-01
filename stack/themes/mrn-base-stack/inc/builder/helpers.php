@@ -117,6 +117,18 @@ function mrn_base_stack_get_content_list_style_choices() {
 }
 
 /**
+ * Shared display-mode choices for query-driven builder layouts.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_content_list_display_mode_choices() {
+	return array(
+		'standard'   => 'Standard',
+		'title_only' => 'Title Only',
+	);
+}
+
+/**
  * Shared order-by choices for query-driven builder layouts.
  *
  * @return array<string, string>
