@@ -361,9 +361,17 @@ function mrn_base_stack_register_acf_field_groups() {
 						'layout_mrn_body_text'      => array(
 							'key'        => 'layout_mrn_body_text',
 							'name'       => 'body_text',
-							'label'      => 'Text - label|title|text with editor',
+							'label'      => 'Text - label, title, rich text',
 							'display'    => 'block',
 							'sub_fields' => array(
+								array(
+									'key'        => 'field_mrn_body_text_content_tab',
+									'label'      => 'Content',
+									'name'       => '',
+									'aria-label' => '',
+									'type'       => 'tab',
+									'placement'  => 'top',
+								),
 								array(
 									'key'           => 'field_mrn_body_text_label',
 									'label'         => 'Label',
@@ -420,6 +428,15 @@ function mrn_base_stack_register_acf_field_groups() {
 									'toolbar'       => 'full',
 									'media_upload'  => 1,
 									'delay'         => 0,
+								),
+								array(
+									'key'        => 'field_mrn_body_text_config_tab',
+									'label'      => 'Configs',
+									'name'       => '',
+									'aria-label' => '',
+									'type'       => 'tab',
+									'placement'  => 'top',
+									'endpoint'   => 0,
 								),
 								array(
 									'key'           => 'field_mrn_body_text_background_color',
