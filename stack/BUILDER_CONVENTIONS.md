@@ -143,6 +143,24 @@ These are the current preferred content patterns in the stack.
 - Use `Content` for the main narrative body flow.
 - Use `After Content` for sections that should land after the main body flow.
 
+### Sidebar
+
+- `Sidebar` is a separate theme-owned field group for singular posts and pages.
+- It renders after `After Content` in the editor flow, but on the front end it becomes a secondary column in the singular shell.
+- Current sidebar controls are:
+  - `Sidebar Layout`
+    - `No Sidebar`
+    - `Right Sidebar`
+    - `Left Sidebar`
+  - `Sidebar`
+    - flexible-content rows stored as `page_sidebar_rows`
+- The sidebar intentionally uses the same layout set as `Content`.
+- This keeps the authoring model consistent and avoids a second sidebar-specific layout vocabulary.
+- Reusable content in the sidebar should still flow through the existing `Reusable Block` layout rather than a separate sidebar block picker.
+- The sidebar feature does not use classic WordPress widgets in this stack.
+- Use the sidebar when content should stay visually adjacent to the main narrative flow on a singular page or post.
+- Use `After Content` when content should remain below the main narrative flow instead of becoming a parallel column.
+
 ### Content Lists
 
 - `Content Lists` is a theme-owned query layout for listing WordPress content inside the builder.

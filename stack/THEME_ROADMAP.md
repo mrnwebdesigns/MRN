@@ -91,7 +91,7 @@ Current builder structure:
 
 This is the pattern to continue. New theme builder work should extend that structure instead of pushing more system logic back into one giant file.
 
-The builder now has three placement buckets for singular posts/pages:
+The builder now has four placement buckets for singular posts/pages:
 
 - `Hero`
   - separate field group rendered above the native entry header/content flow
@@ -99,6 +99,11 @@ The builder now has three placement buckets for singular posts/pages:
   - the main flexible-content body
 - `After Content`
   - a second flexible-content area rendered after the main `Content` builder
+  - currently uses the same layout set as `Content`
+- `Sidebar`
+  - a third flexible-content area authored after `After Content`
+  - rendered into the singular shell as an optional secondary column
+  - controlled by `Sidebar Layout` (`No Sidebar`, `Right Sidebar`, `Left Sidebar`)
   - currently uses the same layout set as `Content`
 
 `Section Width` (`Content`, `Wide`, `Full Width`) is implemented in PHP helpers and emitted as `mrn-shell-section--width-*` on layout inner shells. Cloned reusable layouts in the builder (**CTA**, **Grid**, and page-only / nested equivalents) use the same contract: extra fields on the flexible row plus `mrn_base_stack_wrap_cloned_reusable_builder_markup()` in `render.php`, then width-scoped CSS on `mrn-shell-section--reusable-cta` and `mrn-shell-section--reusable-grid`. Further QA detail: `BUILDER_CONVENTIONS.md`.

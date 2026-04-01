@@ -324,6 +324,91 @@ Example:
 }
 ```
 
+## Singular Sidebar Shell
+
+The base theme now supports a builder-driven singular sidebar shell for posts and pages.
+
+Current authoring model:
+
+- Editors control the shell with the theme-owned `Sidebar` field group.
+- `Sidebar Layout` decides whether the singular shell stays single-column or becomes a two-column layout.
+- Sidebar content is authored with flexible rows stored in `page_sidebar_rows`.
+- The sidebar uses the same layout set as the main `Content` builder, so reusable content should still flow through the existing `Reusable Block` layout.
+- The stack does not use classic WordPress widgets for this feature.
+
+Current front-end class contract:
+
+- `mrn-singular-shell`
+  - base wrapper around the singular content area
+- `mrn-singular-shell--page`
+  - page-specific shell marker
+- `mrn-singular-shell--post`
+  - post-specific shell marker
+- `mrn-singular-shell--has-sidebar`
+  - added only when a sidebar is enabled and there is sidebar markup to render
+- `mrn-singular-shell--sidebar-right`
+  - right-sidebar modifier
+- `mrn-singular-shell--sidebar-left`
+  - left-sidebar modifier
+- `mrn-singular-shell__main`
+  - main narrative column
+- `mrn-singular-shell__sidebar`
+  - sidebar column wrapper
+- `mrn-singular-sidebar`
+  - sidebar content wrapper
+- `mrn-content-builder--sidebar`
+  - builder wrapper for sidebar rows
+
+Behavior rules:
+
+- The main singular title, featured image, `Content`, and `After Content` flow stays in `mrn-singular-shell__main`.
+- Sidebar rows render only when `Sidebar Layout` is not `No Sidebar` and `page_sidebar_rows` contains valid rows.
+- Small-screen behavior should collapse back to a single column.
+- Sidebar styling should treat the area as a compact companion column, not as a second full-bleed page canvas.
+- Sidebar layouts should prefer contained internal spacing and should avoid assuming full-width media behavior.
+
+Example shell:
+
+```php
+<?php
+$sidebar_settings = function_exists( 'mrn_base_stack_get_singular_sidebar_settings' ) ? mrn_base_stack_get_singular_sidebar_settings( get_the_ID() ) : array( 'layout' => 'none' );
+$sidebar_markup   = function_exists( 'mrn_base_stack_get_singular_sidebar_markup' ) ? mrn_base_stack_get_singular_sidebar_markup( get_the_ID() ) : '';
+$has_sidebar      = 'none' !== ( $sidebar_settings['layout'] ?? 'none' ) && '' !== $sidebar_markup;
+?>
+
+<div class="mrn-singular-shell <?php echo $has_sidebar ? 'mrn-singular-shell--has-sidebar mrn-singular-shell--sidebar-right' : ''; ?>">
+	<div class="mrn-singular-shell__main">
+		...
+	</div>
+
+	<?php if ( $has_sidebar ) : ?>
+		<div class="mrn-singular-shell__sidebar">
+			<?php echo $sidebar_markup; ?>
+		</div>
+	<?php endif; ?>
+</div>
+```
+
+Example CSS direction:
+
+```css
+.mrn-singular-shell--has-sidebar {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+	gap: clamp(2rem, 4vw, 4rem);
+}
+
+.mrn-content-builder--sidebar {
+	gap: 1.5rem;
+}
+
+@media (max-width: 782px) {
+	.mrn-singular-shell--has-sidebar {
+		grid-template-columns: 1fr;
+	}
+}
+```
+
 ## Implementation Rules
 
 - Prefer theme helper functions over direct `get_field()` calls in templates.
@@ -337,6 +422,9 @@ Example:
 
 - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/header.php`
 - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/footer.php`
+- `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/singular-sidebar.php`
 - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/basic.php`
 - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/showcase.php`
 - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/image-content.php`
+- `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content-page.php`
+- `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content.php`
