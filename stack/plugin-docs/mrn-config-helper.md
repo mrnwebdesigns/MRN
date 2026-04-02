@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.19`
+- Current version: `0.1.25`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper`
 
@@ -23,12 +23,26 @@
 
 - Adds:
   - `Settings -> Site Configurations`
+- The settings screen is now organized into tabs:
+  - `General`
+  - `Integrations`
+  - `Social`
+  - `Admin`
 - Current settings areas include:
   - Site Identity
   - Fluent SMTP
   - Google Tag Manager
+  - External APIs
   - Social Media
   - Dashboard Controls
+- External APIs currently includes:
+  - UptimeRobot API key storage fallback
+  - a nonce-protected admin connection test against UptimeRobot's `getMonitors` API
+  - a shared external-API secret resolution pattern for future services
+  - current-site monitor management for UptimeRobot:
+    - fetch matching monitors for the current site URL
+    - add a new monitor for the current site
+    - remove an existing matching monitor
 - Uses the WordPress media modal on its own settings page for social icon selection.
 - Also supports a searchable Font Awesome chooser for social icons when the shared asset layer is available.
 
@@ -38,6 +52,17 @@
 - Exposes front-end-consumable site configuration so theme code can render it intentionally.
 - Current front-end-facing helper:
   - `mrn_config_helper_get_social_links()`
+  - `mrn_config_helper_get_uptime_robot_settings()`
+- UptimeRobot helper return shape:
+  - `api_key`
+  - `source` (`constant`, `environment`, or `database`)
+- External API secret pattern:
+  - Config Helper now uses a shared internal registry for external API credentials
+  - each service can define:
+    - DB fallback option key
+    - constant override names
+    - environment override names
+    - optional admin test action metadata
 - Current social-link row shape:
   - `icon_type`
   - `icon_id`
@@ -56,8 +81,10 @@
 
 - Public class helper:
   - `MRN_Config_Helper::get_social_links()`
+  - `MRN_Config_Helper::get_uptime_robot_settings()`
 - Public wrapper helper:
   - `mrn_config_helper_get_social_links()`
+  - `mrn_config_helper_get_uptime_robot_settings()`
 - Theme/front-end recommendation:
   - prefer the wrapper helper over reaching into plugin internals directly
   - treat the plugin as a configuration source, not a markup renderer
@@ -75,8 +102,15 @@
   - site notification email
   - SendGrid API key
   - GTM container ID
+  - UptimeRobot API key fallback
   - dashboard lock roles
   - social links
+- UptimeRobot key resolution order:
+  - constant `MRN_UPTIME_ROBOT_API_KEY`
+  - environment variable `MRN_UPTIME_ROBOT_API_KEY`
+  - environment variable `UPTIME_ROBOT_API_KEY`
+  - database fallback in `mrn_helper_settings`
+- Future API keys should follow the same external-first, DB-fallback pattern instead of introducing one-off storage logic.
 
 ## Dependencies / Integrations
 

@@ -5814,3 +5814,139 @@ After you get each summary back:
     - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/`
   - Front-end Motion helper:
     - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/front-end-effects.js`
+
+## Thread: 2026-04-01 Config Helper External APIs Seed
+- Goal:
+  - Add an `External APIs` area to `Settings -> Site Configurations` and seed the first managed credential for UptimeRobot.
+- Decisions made:
+  - `mrn-config-helper` now owns an `External APIs` settings section inside the existing `Site Configurations` screen.
+  - The first external-service credential stored there is:
+    - `uptime_robot_api_key`
+  - The same screen now includes a nonce-protected `Test UptimeRobot Connection` action.
+  - The current connection test uses UptimeRobot API v2 `POST https://api.uptimerobot.com/v2/getMonitors` with the saved API key in the form body.
+  - The test is read-only and is meant to validate credentials/connectivity without mutating monitors.
+  - UptimeRobot credentials are no longer database-first.
+  - Current resolution order is:
+    - constant `MRN_UPTIME_ROBOT_API_KEY`
+    - environment variable `MRN_UPTIME_ROBOT_API_KEY`
+    - environment variable `UPTIME_ROBOT_API_KEY`
+    - database fallback `uptime_robot_api_key`
+  - The admin field is now explicitly a fallback-only value and is ignored when an external override exists.
+  - Config Helper now treats external API credentials as a shared registry pattern rather than a one-off UptimeRobot implementation.
+  - Future API credentials should be added by extending the shared external-API definitions/metadata instead of duplicating source-resolution logic.
+  - `Settings -> Site Configurations` is now organized into four admin tabs:
+    - `General`
+    - `Integrations`
+    - `Social`
+    - `Admin`
+  - The `Integrations` tab now includes a `Current Site Monitor` card for UptimeRobot.
+  - Current UptimeRobot monitor-management scope includes:
+    - fetching monitors and summarizing monitor counts by type
+    - identifying monitors that match the current `home_url('/')`
+    - adding a new monitor for the current site
+    - removing an existing matching monitor
+  - Current add-monitor UI supports monitor types:
+    - `HTTP(s)`
+    - `Keyword`
+    - `Ping`
+    - `Port`
+  - UptimeRobot configuration should be treated as shared site configuration, not as ad hoc plugin-specific settings.
+  - Consumers should read the UptimeRobot credential through helper accessors instead of reaching into the raw option array.
+  - Current helper contract:
+    - `MRN_Config_Helper::get_uptime_robot_settings()`
+    - `mrn_config_helper_get_uptime_robot_settings()`
+- Source changes:
+  - Config Helper plugin:
+    - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper/mrn-config-helper.php`
+  - Config Helper plugin doc:
+    - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-config-helper.md`
+
+## Thread: 2026-04-01 Sticky Toolbar Left-Offset Hardening
+- Goal:
+  - Fix the settings sticky bar visual clipping/overlap on the left edge in admin screens.
+- Decisions made:
+  - Shared settings sticky toolbars should no longer rely only on hard-coded desktop left offsets.
+  - The shared helper now aligns the toolbar to the live `#wpcontent` left edge on desktop via runtime JS so it stays correct across admin-menu states/layout changes.
+  - Single-tab sticky toolbars are now also enforced at the CSS level with an `:only-child` safeguard so they stay label-only even if a local tab class drifts.
+- Source changes:
+  - Shared helper mirror in current workspace:
+    - `/Users/khofmeyer/Development/MRN/shared/mrn-sticky-settings-toolbar.php`
+  - Canonical shared helper:
+    - `/Users/khofmeyer/Sites/MRNPlugins/shared/mrn-sticky-settings-toolbar.php`
+  - Synced plugin copies:
+    - `/Users/khofmeyer/Sites/MRNPlugins/mrn-editor-tools/includes/mrn-sticky-settings-toolbar.php`
+    - `/Users/khofmeyer/Sites/MRNPlugins/mrn-gtm-injector/includes/mrn-sticky-settings-toolbar.php`
+    - `/Users/khofmeyer/Sites/MRNPlugins/mrn-license-vault/includes/mrn-sticky-settings-toolbar.php`
+    - `/Users/khofmeyer/Sites/MRNPlugins/mrn-unified-exporter/includes/mrn-sticky-settings-toolbar.php`
+- Validation:
+  - `php -l` passed on each edited sticky-toolbar helper file.
+  - `git diff --check` passed in `/Users/khofmeyer/Development/MRN` and the locally available plugin repos updated in `/Users/khofmeyer/Sites/MRNPlugins/`.
+
+## Thread: 2026-04-01 Sticky Toolbar Title-First Unification
+- Goal:
+  - Align settings sticky bars with the post/page sticky bar pattern so the first element is a title/meta block and tabs or controls follow it.
+- Decisions made:
+  - Shared settings sticky bars now render a leading title block via `title` in `mrn_render_admin_top_bar()`.
+  - Single-tab settings pages should not render a faux active tab button anymore; they should show the title first and then action controls.
+  - Multi-tab settings pages should render title first, then tabs, then save/action controls.
+- Source changes:
+  - Shared helper:
+    - `/Users/khofmeyer/Development/MRN/shared/mrn-sticky-settings-toolbar.php`
+  - Updated local callers with explicit toolbar titles:
+    - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper/mrn-config-helper.php`
+    - `/Users/khofmeyer/Development/MRN/plugins/mrn-gtm-injector/mrn-gtm-injector.php`
+    - `/Users/khofmeyer/Development/MRN/plugins/mrn-editor-tools/mrn-editor-tools.php`
+    - `/Users/khofmeyer/Development/MRN/plugins/mrn-acf-character-count/mrn-acf-character-count.php`
+    - `/Users/khofmeyer/Development/MRN/plugins/mrn-cookie-consent/mrn-cookie-consent.php`
+  - Synced local plugin include copies under:
+    - `/Users/khofmeyer/Development/MRN/plugins/*/includes/mrn-sticky-settings-toolbar.php`
+- Validation:
+  - `php -l` passed on the shared helper, updated callers, and all synced include copies.
+  - `git diff --check` passed in the directly updated plugin repos.
+
+## Thread: 2026-04-01 Sticky Toolbar Packaging + Deploy
+- Goal:
+  - Package and deploy the sticky-toolbar refinements across the affected MRN settings plugins.
+- Decisions made:
+  - The sticky-toolbar refinements shipped as patch releases in each affected plugin repo.
+  - Local release artifacts were rebuilt in `/Users/khofmeyer/Development/MRN/releases/plugins`.
+  - Server stack package zips were updated via the preferred ownership-safe rsync path:
+    - `rsync --rsync-path="sudo -n -u mrndev-stack-manager rsync" ... mrndev-ops:/home/mrndev-stack-manager/stack/packages/`
+- Released versions:
+  - `mrn-config-helper` -> `0.1.25`
+  - `mrn-acf-character-count` -> `1.1.5`
+  - `mrn-cookie-consent` -> `1.1.20`
+  - `mrn-editor-tools` -> `1.8.15`
+  - `mrn-gtm-injector` -> `1.0.8`
+  - `mrn-comment-management` -> `1.1.6`
+  - `mrn-license-vault` -> `0.2.5`
+  - `mrn-unified-exporter` -> `1.2.5`
+- Validation:
+  - `php -l` passed on all changed plugin entry files and sticky-toolbar helper copies.
+  - `git diff --check` passed in all affected plugin repos.
+  - Local zip verification confirmed packaged plugin headers at the new versions.
+  - Server zip verification in `/home/mrndev-stack-manager/stack/packages/` confirmed the same versions after deploy.
+
+## Thread: 2026-04-01 Config Helper UptimeRobot Release
+- Goal:
+  - Ship the new `mrn-config-helper` UptimeRobot settings and monitor-management work through the normal package/deploy flow.
+- Decisions made:
+  - `mrn-config-helper` `0.1.25` is the release containing:
+    - Site Configurations tab cleanup
+    - external-first UptimeRobot credential resolution with DB fallback
+    - UptimeRobot connection testing
+    - current-site monitor add/remove management
+  - Local packaged artifact was rebuilt at:
+    - `/Users/khofmeyer/Development/MRN/releases/plugins/mrn-config-helper.zip`
+  - The refreshed package was synced to the server stack packages path:
+    - `/home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip`
+  - Server package sync used the preferred ownership-safe pattern:
+    - `rsync --rsync-path='sudo -n -u mrndev-stack-manager rsync'`
+- Validation:
+  - `php -l` passed for `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper/mrn-config-helper.php`
+  - `git diff --check` passed in the plugin repo and workspace root.
+  - Risk-pattern scan found only the expected UptimeRobot `wp_remote_post()` usage.
+  - Local WP-CLI runtime verification for `http://mrn-plugin-stack.local` confirmed:
+    - UptimeRobot overview returns `matching => 1`, `same_host => 0`, `monitors => 50`
+  - Local packaged zip header and server packaged zip header both report:
+    - `mrn-config-helper` `0.1.25`
