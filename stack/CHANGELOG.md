@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.04.01-blog-cpt
+- Expanded `mrn-base-stack` to `1.0.9`.
+- Added a theme-owned `blog` custom post type with the default WordPress admin list and add-new menu entries.
+- Extended the theme-owned hero/content/after-content/sidebar builder shell so `blog` entries follow the same editing flow as regular posts.
+- Normalized the theme runtime version constant with the packaged theme header version before release.
+
 ## 2026.04.01-content-lists-pagination-polish
 - Expanded `mrn-base-stack` to `1.0.8`.
 - Removed the temporary custom ordered-list badge styling from `Content Lists`.

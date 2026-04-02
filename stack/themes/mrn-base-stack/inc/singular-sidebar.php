@@ -11,7 +11,7 @@
  * @return array<int, string>
  */
 function mrn_base_stack_get_sidebar_supported_post_types() {
-	$post_types = array( 'page', 'post' );
+	$post_types = function_exists( 'mrn_base_stack_get_builder_supported_post_types' ) ? mrn_base_stack_get_builder_supported_post_types() : array( 'page', 'post', 'blog' );
 
 	/**
 	 * Filter the post types that can opt into the singular sidebar shell.
@@ -21,7 +21,7 @@ function mrn_base_stack_get_sidebar_supported_post_types() {
 	$post_types = apply_filters( 'mrn_base_stack_sidebar_supported_post_types', $post_types );
 
 	if ( ! is_array( $post_types ) ) {
-		return array( 'page', 'post' );
+		return array( 'page', 'post', 'blog' );
 	}
 
 	$post_types = array_values(
@@ -32,7 +32,7 @@ function mrn_base_stack_get_sidebar_supported_post_types() {
 		)
 	);
 
-	return ! empty( $post_types ) ? $post_types : array( 'page', 'post' );
+	return ! empty( $post_types ) ? $post_types : array( 'page', 'post', 'blog' );
 }
 
 /**
@@ -121,7 +121,7 @@ function mrn_base_stack_register_singular_sidebar_field_group() {
 			'label_placement'       => 'top',
 			'instruction_placement' => 'label',
 			'active'                => true,
-			'description'           => 'Theme-owned singular sidebar controls and builder rows for posts and pages.',
+			'description'           => 'Theme-owned singular sidebar controls and builder rows for builder-supported singular content types.',
 			'show_in_rest'          => 1,
 		)
 	);

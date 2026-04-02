@@ -16,7 +16,7 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 	}
 
 	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-	if ( ! $screen instanceof WP_Screen || ! in_array( $screen->post_type, array( 'post', 'page' ), true ) ) {
+	if ( ! $screen instanceof WP_Screen || ! mrn_base_stack_is_builder_supported_post_type( $screen->post_type ) ) {
 		return;
 	}
 
@@ -75,7 +75,7 @@ add_action( 'admin_enqueue_scripts', 'mrn_base_stack_admin_enqueue_builder_asset
  */
 function mrn_base_stack_admin_builder_action_styles() {
 	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-	if ( ! $screen instanceof WP_Screen || ! in_array( $screen->post_type, array( 'post', 'page' ), true ) ) {
+	if ( ! $screen instanceof WP_Screen || ! mrn_base_stack_is_builder_supported_post_type( $screen->post_type ) ) {
 		return;
 	}
 	?>
@@ -160,6 +160,7 @@ add_action( 'admin_head', 'mrn_base_stack_admin_builder_action_styles' );
 function mrn_base_stack_hide_native_editor_metabox() {
 	remove_meta_box( 'postdivrich', 'post', 'normal' );
 	remove_meta_box( 'postdivrich', 'page', 'normal' );
+	remove_meta_box( 'postdivrich', 'blog', 'normal' );
 }
 add_action( 'add_meta_boxes', 'mrn_base_stack_hide_native_editor_metabox', 20 );
 
@@ -173,7 +174,7 @@ function mrn_base_stack_hide_native_editor_css() {
 		return;
 	}
 
-	if ( ! in_array( $screen->post_type, array( 'post', 'page' ), true ) ) {
+	if ( ! mrn_base_stack_is_builder_supported_post_type( $screen->post_type ) ) {
 		return;
 	}
 	?>

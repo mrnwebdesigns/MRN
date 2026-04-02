@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.0.3' );
+	define( '_S_VERSION', '1.0.9' );
 }
 
 /**
@@ -118,6 +118,132 @@ function mrn_base_stack_content_width() {
 add_action( 'after_setup_theme', 'mrn_base_stack_content_width', 0 );
 
 /**
+ * Get the singular post types that use the theme's builder-style shell.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_builder_supported_post_types() {
+	$post_types = array( 'page', 'post', 'blog' );
+
+	/**
+	 * Filter the post types that should receive the theme builder experience.
+	 *
+	 * @param array<int, string> $post_types Supported post types.
+	 */
+	$post_types = apply_filters( 'mrn_base_stack_builder_supported_post_types', $post_types );
+
+	if ( ! is_array( $post_types ) ) {
+		return array( 'page', 'post', 'blog' );
+	}
+
+	$post_types = array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $post_types )
+			)
+		)
+	);
+
+	return ! empty( $post_types ) ? $post_types : array( 'page', 'post', 'blog' );
+}
+
+/**
+ * Determine whether a post type uses the theme's builder-style singular shell.
+ *
+ * @param string $post_type Post type slug.
+ * @return bool
+ */
+function mrn_base_stack_is_builder_supported_post_type( $post_type ) {
+	return in_array( sanitize_key( (string) $post_type ), mrn_base_stack_get_builder_supported_post_types(), true );
+}
+
+/**
+ * Build ACF location rules for builder-supported post types.
+ *
+ * @return array<int, array<int, array<string, string>>>
+ */
+function mrn_base_stack_get_builder_location_rules() {
+	$locations = array();
+
+	foreach ( mrn_base_stack_get_builder_supported_post_types() as $post_type ) {
+		$locations[] = array(
+			array(
+				'param'    => 'post_type',
+				'operator' => '==',
+				'value'    => $post_type,
+			),
+		);
+	}
+
+	return $locations;
+}
+
+/**
+ * Register the theme-owned Blog custom post type.
+ *
+ * @return void
+ */
+function mrn_base_stack_register_blog_post_type() {
+	$labels = array(
+		'name'                  => __( 'Blogs', 'mrn-base-stack' ),
+		'singular_name'         => __( 'Blog', 'mrn-base-stack' ),
+		'menu_name'             => __( 'Blogs', 'mrn-base-stack' ),
+		'name_admin_bar'        => __( 'Blog', 'mrn-base-stack' ),
+		'add_new'               => __( 'Add New', 'mrn-base-stack' ),
+		'add_new_item'          => __( 'Add New Blog', 'mrn-base-stack' ),
+		'new_item'              => __( 'New Blog', 'mrn-base-stack' ),
+		'edit_item'             => __( 'Edit Blog', 'mrn-base-stack' ),
+		'view_item'             => __( 'View Blog', 'mrn-base-stack' ),
+		'view_items'            => __( 'View Blogs', 'mrn-base-stack' ),
+		'all_items'             => __( 'All Blogs', 'mrn-base-stack' ),
+		'search_items'          => __( 'Search Blogs', 'mrn-base-stack' ),
+		'parent_item_colon'     => __( 'Parent Blogs:', 'mrn-base-stack' ),
+		'not_found'             => __( 'No blogs found.', 'mrn-base-stack' ),
+		'not_found_in_trash'    => __( 'No blogs found in Trash.', 'mrn-base-stack' ),
+		'archives'              => __( 'Blog Archives', 'mrn-base-stack' ),
+		'attributes'            => __( 'Blog Attributes', 'mrn-base-stack' ),
+		'insert_into_item'      => __( 'Insert into blog', 'mrn-base-stack' ),
+		'uploaded_to_this_item' => __( 'Uploaded to this blog', 'mrn-base-stack' ),
+		'featured_image'        => __( 'Featured image', 'mrn-base-stack' ),
+		'set_featured_image'    => __( 'Set featured image', 'mrn-base-stack' ),
+		'remove_featured_image' => __( 'Remove featured image', 'mrn-base-stack' ),
+		'use_featured_image'    => __( 'Use as featured image', 'mrn-base-stack' ),
+		'filter_items_list'     => __( 'Filter blogs list', 'mrn-base-stack' ),
+		'items_list_navigation' => __( 'Blogs list navigation', 'mrn-base-stack' ),
+		'items_list'            => __( 'Blogs list', 'mrn-base-stack' ),
+		'item_published'        => __( 'Blog published.', 'mrn-base-stack' ),
+		'item_updated'          => __( 'Blog updated.', 'mrn-base-stack' ),
+	);
+
+	register_post_type(
+		'blog',
+		array(
+			'labels'              => $labels,
+			'public'              => true,
+			'show_ui'             => true,
+			'show_in_menu'        => true,
+			'show_in_rest'        => true,
+			'has_archive'         => true,
+			'rewrite'             => array(
+				'slug'       => 'blog',
+				'with_front' => false,
+			),
+			'menu_position'       => 6,
+			'menu_icon'           => 'dashicons-admin-post',
+			'supports'            => array( 'title', 'editor', 'excerpt', 'thumbnail', 'author', 'revisions' ),
+			'taxonomies'          => array( 'category', 'post_tag' ),
+			'publicly_queryable'  => true,
+			'show_in_nav_menus'   => true,
+			'show_in_admin_bar'   => true,
+			'exclude_from_search' => false,
+			'hierarchical'        => false,
+			'query_var'           => true,
+		)
+	);
+}
+add_action( 'init', 'mrn_base_stack_register_blog_post_type' );
+
+/**
  * Enqueue Motion inView assets for front-end effects.
  */
 function mrn_base_stack_enqueue_motion_assets() {
@@ -160,7 +286,7 @@ function mrn_base_stack_scripts() {
 
 	wp_enqueue_script( 'mrn-base-stack-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
 
-	if ( is_singular( array( 'post', 'page' ) ) ) {
+	if ( is_singular( mrn_base_stack_get_builder_supported_post_types() ) ) {
 		mrn_base_stack_enqueue_motion_assets();
 
 		wp_enqueue_style(

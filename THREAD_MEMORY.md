@@ -86,8 +86,8 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
   - Current baseline:
-    - `2026.04.01-content-lists-pagination-polish`
-    - `mrn-base-stack` `1.0.8`
+    - `2026.04.01-blog-cpt`
+    - `mrn-base-stack` `1.0.9`
     - `mrn-config-helper` `0.1.19`
     - `mrn-editor-tools` `1.8.14`
     - `mrn-shared-assets` `0.1.0`
@@ -126,6 +126,15 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - Sidebar content is builder-owned and uses cloned `Content` layouts, which means reusable blocks remain available there through the existing `Reusable Block` layout.
   - The stack no longer treats WordPress widgets as the sidebar-content source for this singular shell feature.
   - This should be treated as a shared singular shell capability that can later be extended to more post types, rather than as a one-off template variant.
+- The theme-owned builder singular shell now also supports a `blog` custom post type.
+  - Canonical registration lives in:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - Current `blog` contract mirrors regular post editing structure:
+    - public CPT slug `blog`
+    - admin menu label `Blogs`
+    - default WordPress CPT submenu entries for viewing all items and adding new items
+    - builder field groups, after-content rows, and singular sidebar controls use the same theme-owned support list as `post` and `page`
+    - singular front-end builder assets now load for `blog` entries the same way they do for posts/pages
 - The stack now also has a theme direction/handoff doc:
   - `/Users/khofmeyer/Development/MRN/stack/THEME_ROADMAP.md`
   - Use it as the canonical reference for:

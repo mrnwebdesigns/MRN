@@ -320,22 +320,7 @@ function mrn_base_stack_register_acf_field_groups() {
 					),
 				),
 			),
-			'location'              => array(
-				array(
-					array(
-						'param'    => 'post_type',
-						'operator' => '==',
-						'value'    => 'page',
-					),
-				),
-				array(
-					array(
-						'param'    => 'post_type',
-						'operator' => '==',
-						'value'    => 'post',
-					),
-				),
-			),
+			'location'              => mrn_base_stack_get_builder_location_rules(),
 			'position'              => 'acf_after_title',
 			'menu_order'            => -10,
 			'style'                 => 'default',
@@ -2943,22 +2928,7 @@ function mrn_base_stack_register_acf_field_groups() {
 					),
 				),
 			),
-			'location'              => array(
-				array(
-					array(
-						'param'    => 'post_type',
-						'operator' => '==',
-						'value'    => 'page',
-					),
-				),
-				array(
-					array(
-						'param'    => 'post_type',
-						'operator' => '==',
-						'value'    => 'post',
-					),
-				),
-			),
+			'location'              => mrn_base_stack_get_builder_location_rules(),
 			'menu_order'            => 10,
 			'position'              => 'acf_after_title',
 			'style'                 => 'default',
@@ -2998,22 +2968,7 @@ function mrn_base_stack_register_acf_field_groups() {
 					'layouts'           => $after_content_layouts,
 				),
 			),
-			'location'              => array(
-				array(
-					array(
-						'param'    => 'post_type',
-						'operator' => '==',
-						'value'    => 'page',
-					),
-				),
-				array(
-					array(
-						'param'    => 'post_type',
-						'operator' => '==',
-						'value'    => 'post',
-					),
-				),
-			),
+			'location'              => mrn_base_stack_get_builder_location_rules(),
 			'menu_order'            => 20,
 			'position'              => 'acf_after_title',
 			'style'                 => 'default',

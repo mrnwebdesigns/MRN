@@ -58,7 +58,7 @@ if ( ! function_exists( 'mrn_base_stack_entry_footer' ) ) :
 	 */
 	function mrn_base_stack_entry_footer() {
 		// Hide category and tag text for pages.
-		if ( 'post' === get_post_type() ) {
+		if ( in_array( get_post_type(), array( 'post', 'blog' ), true ) ) {
 			/* translators: used between list items, there is a space after the comma */
 			$categories_list = get_the_category_list( esc_html__( ', ', 'mrn-base-stack' ) );
 			if ( $categories_list ) {
