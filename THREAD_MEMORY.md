@@ -92,6 +92,29 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - `Text Domain: default-configs`
   - Current caveat remains:
     - refreshed live theme files are owned by `mrn-ops:mrn-ops`, not the preferred site owner
+- Front-end singular-sidebar collapse behavior was explored but intentionally deferred for now.
+  - Revisit later if the shared singular shell should gain a front-end collapse/expand interaction.
+  - Current active collapse behavior target is the classic WordPress add/edit screen sidebar, not the front-end singular layout.
+- Classic WordPress add/edit screens now own the sidebar collapse affordance across posts, pages, and custom post types that use the classic editor screen.
+  - Canonical MU module:
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`
+  - Current contract:
+    - the right admin metabox column can collapse to a slim side tab on classic `post.php` / `post-new.php` screens
+    - collapse state persists per post type in local storage
+    - mobile/narrow widths fall back to the normal stacked editor layout
+- Theme-owned singular sidebar field cleanup:
+  - canonical theme module remains:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/singular-sidebar.php`
+  - current editor labels/order now treat the control as `Sidebar Position` with left before right so the button group reads in the expected visual order
+- `mrn-editor-lockdown` `1.0.2` is the follow-up MU release for classic editor sidebar collapse behavior.
+  - Scope:
+    - classic `post.php` / `post-new.php` screens only
+    - right metabox column collapse/restore control
+    - posts, pages, editorial CPTs, and reusable block screens that use the locked two-column classic editor shell
+  - Current contract:
+    - collapsed state keeps `#post-body-content` expanded to full width
+    - collapsed restore tab stays visible while scrolling
+    - front-end singular sidebar collapse remains deferred and should not be folded into this MU plugin release
 
 ## Thread: 2026-04-01 Gallery + Editorial CPT Admin Release
 - Goal:

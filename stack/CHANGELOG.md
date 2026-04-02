@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.04.02-editor-sidebar-collapse
+- Expanded `mrn-editor-lockdown` to `1.0.2`.
+- Added a classic-editor right-sidebar collapse control for posts, pages, editorial CPTs, and reusable-block screens that use the locked two-column edit shell.
+- Kept the collapse state sticky while scrolling and preserved full-width `#post-body-content` expansion when the sidebar is hidden.
+- Scoped the new interaction to the admin/editor shell and deferred any front-end singular-sidebar collapse behavior for a later pass.
+
 ## 2026.04.01-gallery-editorial-cpts
 - Expanded `mrn-base-stack` to `1.1.0`.
 - Expanded `mrn-editor-lockdown` to `1.0.1`.

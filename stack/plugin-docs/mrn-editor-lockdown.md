@@ -5,7 +5,7 @@
 - Name: `MRN Editor Lockdown (MU)`
 - Slug: `mrn-editor-lockdown`
 - Type: MU plugin
-- Current version: `1.0.0`
+- Current version: `1.0.2`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-lockdown`
 
@@ -27,12 +27,13 @@ This plugin owns:
 - metabox ordering
 - closed-metabox defaults
 - light admin CSS/JS to reinforce the locked behavior
+- classic editor sidebar collapse affordance for the right metabox column
 
 This plugin does not own:
 
 - the page/post content builder
 - ACF field group structure
-- the builder content area itself
+- front-end theme/sidebar behavior
 - broad admin CSS cleanup
 
 That separation is intentional and important.
@@ -74,7 +75,7 @@ The plugin enforces layout through:
 - `get_user_option_meta-box-order_*`
 - `get_user_option_closedpostboxes_*`
 
-It also prints limited admin CSS and JS to reinforce the locked metabox experience.
+It also prints limited admin CSS and JS to reinforce the locked metabox experience, including the classic-editor right-sidebar collapse control.
 
 ## Front-End / Theming Behavior
 
@@ -93,12 +94,11 @@ Its main integration behavior is compatibility with:
 
 ## Special Rules
 
-Durable rule from memory:
+Durable rules from memory:
 
-- treat this plugin as a metabox-ordering tool only
-- it should not try to reshape the main builder/content area
-
-That means if a problem is about the actual ACF builder layout, this plugin is probably not the right place to fix it.
+- treat this plugin as the owner of classic-editor metabox shell behavior
+- keep front-end singular sidebar behavior in the theme layer
+- if a problem is about the actual ACF builder layout, this plugin is probably not the right place to fix it
 
 ## Rollout / Packaging Notes
 
