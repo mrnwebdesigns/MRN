@@ -6037,10 +6037,16 @@ After you get each summary back:
     - gallery items repeater
     - local per-image filter labels
     - front-end filtering
-    - front-end lightbox
+    - GLightbox-powered front-end lightbox/viewer
     - gallery display settings such as columns and image aspect ratio
-  - Theme-owned gallery taxonomy is currently:
-    - `gallery_category`
+  - Gallery items are no longer image-only.
+    - Current gallery item media types:
+      - `image`
+      - `video`
+      - `external`
+    - Non-image items can use a preview image for the grid tile and then open through GLightbox.
+- Theme-owned gallery taxonomy is currently:
+  - `gallery_category`
 - Source paths:
   - CPT/support-list wiring:
     - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
@@ -6054,3 +6060,48 @@ After you get each summary back:
     - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css`
 - Current source version note:
   - `mrn-base-stack` source was bumped to `1.1.0` for the gallery CPT work.
+
+## Thread: 2026-04-01 Stack-Seeded Config Helper UptimeRobot Key
+- Task:
+  - Make the current UptimeRobot API key universal across stack-managed sites by baking it into stack bootstrap config while still leaving the Site Configurations field available as a fallback/edit surface.
+- Decisions / durable context:
+  - Stack bootstrap should seed `mrn_helper_settings` from the secret-backed importer mapping:
+    - `option_json|secret:mrn-config-helper-settings.json|mrn_helper_settings`
+  - The stack server secret payload now lives at:
+    - `/home/mrndev-stack-manager/stack/secrets/mrn-config-helper-settings.json`
+  - The payload currently contains the shared `uptime_robot_api_key` value for rollout use and should remain out of repo source and thread memory.
+  - Server-side importer manifest now includes the Config Helper mapping alongside the existing AME/Updraft mappings.
+- Verification:
+  - Synced `/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt` to `/home/mrndev-stack-manager/stack/manifests/importers.txt`
+  - Replaced the malformed server secret JSON with a clean valid payload and locked it to `600`
+  - Remote validation confirmed:
+    - importer manifest contains the Config Helper mapping
+    - secret JSON parses successfully
+    - secret file ownership is `mrndev-stack-manager:mrndev-stack-manager`
+
+## Thread: 2026-04-02 SendGrid Domain Auth In Config Helper
+- Goal:
+  - Expand `mrn-config-helper` so `Site Configurations -> Integrations` can create a site-specific SendGrid key for Fluent SMTP and manage SendGrid domain authentication.
+- Decisions made:
+  - The SendGrid work lives in the same Config Helper integrations area as Fluent SMTP, now framed as `SendGrid / Fluent SMTP`.
+  - Default SendGrid domain-auth values are:
+    - custom return path subdomain: `wp`
+    - custom DKIM selector: `wp2`
+  - The SendGrid management key should resolve from external sources instead of normal editable site settings.
+    - current resolution order:
+      - constant `MRN_SENDGRID_MANAGEMENT_API_KEY`
+      - environment variable `MRN_SENDGRID_MANAGEMENT_API_KEY`
+      - environment variable `SENDGRID_MANAGEMENT_API_KEY`
+  - Current source implementation in `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper/mrn-config-helper.php` now includes:
+    - site-key creation action that requests a SendGrid API key named from the current site host and syncs the returned secret into Fluent SMTP
+    - domain-auth creation action using SendGrid `POST /v3/whitelabel/domains`
+    - domain-auth validation action using SendGrid validate + retrieve calls
+    - persisted domain-auth metadata plus DNS-record display in the admin UI
+  - Stack rollout should inject the SendGrid management key into each site's `wp-config.php` instead of relying on manual per-site edits.
+    - bootstrap script:
+      - `/Users/khofmeyer/Development/MRN/stack/scripts/site-bootstrap.sh`
+    - current secret file convention:
+      - local: `/Users/khofmeyer/Development/MRN/stack/secrets/sendgrid-management-api-key.txt`
+      - server: `/home/mrndev-stack-manager/stack/secrets/sendgrid-management-api-key.txt`
+    - bootstrap target constant:
+      - `MRN_SENDGRID_MANAGEMENT_API_KEY`

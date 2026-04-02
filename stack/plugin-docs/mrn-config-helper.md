@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.25`
+- Current version: `0.1.26`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper`
 
@@ -30,11 +30,17 @@
   - `Admin`
 - Current settings areas include:
   - Site Identity
-  - Fluent SMTP
+  - SendGrid / Fluent SMTP
   - Google Tag Manager
   - External APIs
   - Social Media
   - Dashboard Controls
+- SendGrid / Fluent SMTP currently includes:
+  - site SendGrid sending-key storage/sync for Fluent SMTP
+  - stack-managed SendGrid management-key status
+  - site-specific SendGrid key creation
+  - SendGrid domain-auth creation and validation
+  - stored DNS records for the current authenticated domain
 - External APIs currently includes:
   - UptimeRobot API key storage fallback
   - a nonce-protected admin connection test against UptimeRobot's `getMonitors` API
@@ -100,17 +106,30 @@
 - Current `mrn_helper_settings` areas include:
   - sender name/email
   - site notification email
-  - SendGrid API key
+  - site SendGrid API key
+  - SendGrid domain/auth metadata
   - GTM container ID
   - UptimeRobot API key fallback
   - dashboard lock roles
   - social links
+- SendGrid management key resolution order:
+  - constant `MRN_SENDGRID_MANAGEMENT_API_KEY`
+  - environment variable `MRN_SENDGRID_MANAGEMENT_API_KEY`
+  - environment variable `SENDGRID_MANAGEMENT_API_KEY`
+- Stack bootstrap should inject the SendGrid management key into site `wp-config.php` from the stack secret file:
+  - local secret path: `/Users/khofmeyer/Development/MRN/stack/secrets/sendgrid-management-api-key.txt`
+  - server secret path: `/home/mrndev-stack-manager/stack/secrets/sendgrid-management-api-key.txt`
+  - target constant: `MRN_SENDGRID_MANAGEMENT_API_KEY`
 - UptimeRobot key resolution order:
   - constant `MRN_UPTIME_ROBOT_API_KEY`
   - environment variable `MRN_UPTIME_ROBOT_API_KEY`
   - environment variable `UPTIME_ROBOT_API_KEY`
   - database fallback in `mrn_helper_settings`
 - Future API keys should follow the same external-first, DB-fallback pattern instead of introducing one-off storage logic.
+- Stack bootstrap now seeds the Config Helper option from a stack secret payload:
+  - importer mapping: `option_json|secret:mrn-config-helper-settings.json|mrn_helper_settings`
+  - server secret path: `/home/mrndev-stack-manager/stack/secrets/mrn-config-helper-settings.json`
+  - keep the secret payload out of repo source and thread memory
 
 ## Dependencies / Integrations
 
