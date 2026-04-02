@@ -82,6 +82,16 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - Current caveat:
     - the refreshed live theme files are owned by `mrn-ops:mrn-ops`, not the preferred site owner
     - functional QA passed, but ownership should be normalized in a later ops pass if write-path policy requires it
+- `default-configs.mrndev.io` was refreshed again on `2026-04-01` for the `blog` CPT release.
+  - Live theme now reports `default-configs` `1.0.9`.
+  - Live runtime verification confirmed:
+    - `post_type_exists( 'blog' ) === true`
+    - `mrn_base_stack_get_builder_supported_post_types()` returns `page,post,blog`
+  - The live theme refresh again preserved the site identity header values:
+    - `Theme Name: default configs`
+    - `Text Domain: default-configs`
+  - Current caveat remains:
+    - refreshed live theme files are owned by `mrn-ops:mrn-ops`, not the preferred site owner
 - The stack now has lightweight stack-wide version notes:
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
@@ -5935,6 +5945,28 @@ After you get each summary back:
   - `git diff --check` passed in all affected plugin repos.
   - Local zip verification confirmed packaged plugin headers at the new versions.
   - Server zip verification in `/home/mrndev-stack-manager/stack/packages/` confirmed the same versions after deploy.
+
+## Thread: 2026-04-01 default-configs Live Plugin Refresh
+- Goal:
+  - Push the refreshed sticky-toolbar plugin builds onto the live `default-configs.mrndev.io` site.
+- Decisions made:
+  - The live site plugin refresh was performed in place on:
+    - `/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io`
+  - Direct sudo to the site owner was not available non-interactively from `mrndev-ops`.
+  - The working install path used:
+    - `sudo -n -u mrndev-stack-manager wp plugin install ... --force`
+  - Only the MRN plugins currently installed on `default-configs.mrndev.io` were refreshed in this pass.
+  - `mrn-license-vault` and `mrn-unified-exporter` were packaged and updated in stack packages, but not installed on this live site because they are not present there.
+- Live refresh set:
+  - `mrn-config-helper` -> `0.1.25`
+  - `mrn-acf-character-count` -> `1.1.5`
+  - `mrn-cookie-consent` -> `1.1.20`
+  - `mrn-editor-tools` -> `1.8.15`
+  - `mrn-gtm-injector` -> `1.0.8`
+  - `mrn-comment-management` -> `1.1.6`
+- Validation:
+  - `wp plugin list` on `default-configs.mrndev.io` confirmed the installed active versions above.
+  - Direct file-header reads in live `wp-content/plugins/*/*.php` matched those same versions.
 
 ## Thread: 2026-04-01 Config Helper UptimeRobot Release
 - Goal:
