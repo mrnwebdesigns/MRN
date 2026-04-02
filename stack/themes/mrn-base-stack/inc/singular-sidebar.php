@@ -11,7 +11,7 @@
  * @return array<int, string>
  */
 function mrn_base_stack_get_sidebar_supported_post_types() {
-	$post_types = function_exists( 'mrn_base_stack_get_builder_supported_post_types' ) ? mrn_base_stack_get_builder_supported_post_types() : array( 'page', 'post', 'blog' );
+	$post_types = function_exists( 'mrn_base_stack_get_singular_shell_post_types' ) ? mrn_base_stack_get_singular_shell_post_types() : array( 'page', 'post', 'blog', 'gallery' );
 
 	/**
 	 * Filter the post types that can opt into the singular sidebar shell.
@@ -21,7 +21,7 @@ function mrn_base_stack_get_sidebar_supported_post_types() {
 	$post_types = apply_filters( 'mrn_base_stack_sidebar_supported_post_types', $post_types );
 
 	if ( ! is_array( $post_types ) ) {
-		return array( 'page', 'post', 'blog' );
+		return array( 'page', 'post', 'blog', 'gallery' );
 	}
 
 	$post_types = array_values(
@@ -32,7 +32,7 @@ function mrn_base_stack_get_sidebar_supported_post_types() {
 		)
 	);
 
-	return ! empty( $post_types ) ? $post_types : array( 'page', 'post', 'blog' );
+	return ! empty( $post_types ) ? $post_types : array( 'page', 'post', 'blog', 'gallery' );
 }
 
 /**
@@ -42,6 +42,10 @@ function mrn_base_stack_get_sidebar_supported_post_types() {
  */
 function mrn_base_stack_get_sidebar_location_rules() {
 	$locations = array();
+
+	if ( function_exists( 'mrn_base_stack_build_post_type_location_rules' ) ) {
+		return mrn_base_stack_build_post_type_location_rules( mrn_base_stack_get_sidebar_supported_post_types() );
+	}
 
 	foreach ( mrn_base_stack_get_sidebar_supported_post_types() as $post_type ) {
 		$locations[] = array(
@@ -165,7 +169,6 @@ function mrn_base_stack_get_singular_sidebar_settings( $post_id = null ) {
  */
 function mrn_base_stack_get_singular_sidebar_markup( $post_id = null ) {
 	$settings = mrn_base_stack_get_singular_sidebar_settings( $post_id );
-
 	if ( 'none' === $settings['layout'] ) {
 		return '';
 	}

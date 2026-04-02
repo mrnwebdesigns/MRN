@@ -92,6 +92,36 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - `Text Domain: default-configs`
   - Current caveat remains:
     - refreshed live theme files are owned by `mrn-ops:mrn-ops`, not the preferred site owner
+
+## Thread: 2026-04-01 Gallery + Editorial CPT Admin Release
+- Goal:
+  - Ship the new gallery content model plus the cleaned-up `blog` / `gallery` add-edit admin layout through the normal package/deploy flow.
+- Decisions made:
+  - `mrn-base-stack` `1.1.0` is the theme release for:
+    - the theme-owned `gallery` CPT and taxonomy
+    - gallery front-end rendering, filtering, and lightbox support
+    - split singular-shell support lists so `gallery` gets `Hero`, `After Content`, `Sidebar`, and shared shell assets without inheriting the generic middle `Content` builder
+    - custom excerpt-after-title panels on `blog` and `gallery` edit screens
+  - `mrn-editor-lockdown` `1.0.1` is the MU release that adds locked metabox layouts for:
+    - `blog`
+    - `gallery`
+  - The custom excerpt-after-title admin panel should not use `postbox` markup because that interferes with metabox-lock behavior.
+  - `blog` keeps the author selector in the sidebar; `gallery` does not because the CPT does not support authors.
+- Packaging paths:
+  - theme zip:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack.zip`
+    - `/Users/khofmeyer/Development/MRN/releases/stack/mrn-base-stack.zip`
+  - MU plugin zip:
+    - `/Users/khofmeyer/Development/MRN/releases/mu-plugins/mrn-editor-lockdown.zip`
+- Deployment targets:
+  - stack theme artifact:
+    - `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip`
+  - stack MU source:
+    - `/home/mrndev-stack-manager/stack/mu-plugins/mrn-editor-lockdown/`
+  - live site theme:
+    - `/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io/wp-content/themes/default-configs/`
+  - live site MU plugin:
+    - `/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io/wp-content/mu-plugins/mrn-editor-lockdown/`
 - The stack now has lightweight stack-wide version notes:
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
@@ -5991,3 +6021,36 @@ After you get each summary back:
     - UptimeRobot overview returns `matching => 1`, `same_host => 0`, `monitors => 50`
   - Local packaged zip header and server packaged zip header both report:
     - `mrn-config-helper` `0.1.25`
+
+## Thread: 2026-04-01 Gallery CPT Architecture
+- Goal:
+  - Add a stack-native gallery content model that scales beyond a one-off builder row.
+- Decisions made:
+  - Galleries should be a theme-owned `gallery` CPT, not a normal page mode and not a generic `Content` builder layout.
+  - Gallery entries should reuse the shared singular shell pieces:
+    - `Hero`
+    - `After Content`
+    - `Sidebar`
+  - Gallery entries should not inherit the normal `page_content_rows` middle builder by default.
+  - The source implementation now splits support lists so `gallery` can receive hero/after-content/sidebar/admin shell behavior without becoming a full generic builder post type.
+  - The first-pass gallery body contract is theme-owned and ACF-driven with:
+    - gallery items repeater
+    - local per-image filter labels
+    - front-end filtering
+    - front-end lightbox
+    - gallery display settings such as columns and image aspect ratio
+  - Theme-owned gallery taxonomy is currently:
+    - `gallery_category`
+- Source paths:
+  - CPT/support-list wiring:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - gallery module:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/gallery.php`
+  - singular template:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/content-gallery.php`
+  - front-end behavior:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/front-end-gallery.js`
+  - front-end styling:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css`
+- Current source version note:
+  - `mrn-base-stack` source was bumped to `1.1.0` for the gallery CPT work.

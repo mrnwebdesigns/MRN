@@ -1,5 +1,14 @@
 # Stack Changelog
 
+## 2026.04.01-gallery-editorial-cpts
+- Expanded `mrn-base-stack` to `1.1.0`.
+- Expanded `mrn-editor-lockdown` to `1.0.1`.
+- Added the theme-owned `gallery` CPT module with dedicated gallery fields, rendering helpers, front-end assets, and shared singular-shell support for Hero, After Content, and Sidebar.
+- Split the theme post-type support lists so `gallery` can use the shared shell without inheriting the normal middle `Content` builder.
+- Reorganized the `blog` and `gallery` add/edit screens so excerpt authoring sits directly after the title instead of in the default metabox flow.
+- Moved the `blog` author box into the sidebar and extended metabox lockdown support to both `blog` and `gallery` screens.
+- Extended SmartCrawl subject markup generation so gallery entries include gallery-body content in SEO analysis.
+
 ## 2026.04.01-blog-cpt
 - Expanded `mrn-base-stack` to `1.0.9`.
 - Added a theme-owned `blog` custom post type with the default WordPress admin list and add-new menu entries.

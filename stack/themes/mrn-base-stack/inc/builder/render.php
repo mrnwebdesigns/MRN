@@ -870,9 +870,10 @@ function mrn_base_stack_get_smartcrawl_markup( $post_id ) {
 	}
 
 	$builder_markup = mrn_base_stack_get_content_builder_markup( $post->ID );
+	$gallery_markup = function_exists( 'mrn_base_stack_get_gallery_smartcrawl_markup' ) ? mrn_base_stack_get_gallery_smartcrawl_markup( $post->ID ) : '';
 	$after_markup   = mrn_base_stack_get_after_content_builder_markup( $post->ID );
 
-	if ( '' === $builder_markup && '' === $after_markup ) {
+	if ( '' === $builder_markup && '' === $gallery_markup && '' === $after_markup ) {
 		return '';
 	}
 
@@ -881,7 +882,7 @@ function mrn_base_stack_get_smartcrawl_markup( $post_id ) {
 		esc_html( get_the_title( $post ) )
 	);
 
-	return trim( $title_markup . "\n" . $builder_markup . "\n" . $after_markup );
+	return trim( $title_markup . "\n" . $builder_markup . "\n" . $gallery_markup . "\n" . $after_markup );
 }
 
 /**

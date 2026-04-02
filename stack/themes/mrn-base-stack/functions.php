@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.0.9' );
+	define( '_S_VERSION', '1.1.0' );
 }
 
 /**
@@ -122,6 +122,32 @@ add_action( 'after_setup_theme', 'mrn_base_stack_content_width', 0 );
  *
  * @return array<int, string>
  */
+function mrn_base_stack_build_post_type_location_rules( array $post_types ) {
+	$locations = array();
+
+	foreach ( $post_types as $post_type ) {
+		$post_type = sanitize_key( (string) $post_type );
+		if ( '' === $post_type ) {
+			continue;
+		}
+
+		$locations[] = array(
+			array(
+				'param'    => 'post_type',
+				'operator' => '==',
+				'value'    => $post_type,
+			),
+		);
+	}
+
+	return $locations;
+}
+
+/**
+ * Get the singular post types that use the theme's generic content builder.
+ *
+ * @return array<int, string>
+ */
 function mrn_base_stack_get_builder_supported_post_types() {
 	$post_types = array( 'page', 'post', 'blog' );
 
@@ -148,6 +174,101 @@ function mrn_base_stack_get_builder_supported_post_types() {
 }
 
 /**
+ * Get the post types that should expose the shared hero field group.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_hero_supported_post_types() {
+	$post_types = array_merge( mrn_base_stack_get_builder_supported_post_types(), array( 'gallery' ) );
+
+	/**
+	 * Filter the post types that should receive the theme hero experience.
+	 *
+	 * @param array<int, string> $post_types Supported post types.
+	 */
+	$post_types = apply_filters( 'mrn_base_stack_hero_supported_post_types', $post_types );
+
+	if ( ! is_array( $post_types ) ) {
+		return array( 'page', 'post', 'blog', 'gallery' );
+	}
+
+	$post_types = array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $post_types )
+			)
+		)
+	);
+
+	return ! empty( $post_types ) ? $post_types : array( 'page', 'post', 'blog', 'gallery' );
+}
+
+/**
+ * Get the post types that should expose the shared after-content field group.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_after_content_supported_post_types() {
+	$post_types = array_merge( mrn_base_stack_get_builder_supported_post_types(), array( 'gallery' ) );
+
+	/**
+	 * Filter the post types that should receive the after-content builder.
+	 *
+	 * @param array<int, string> $post_types Supported post types.
+	 */
+	$post_types = apply_filters( 'mrn_base_stack_after_content_supported_post_types', $post_types );
+
+	if ( ! is_array( $post_types ) ) {
+		return array( 'page', 'post', 'blog', 'gallery' );
+	}
+
+	$post_types = array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $post_types )
+			)
+		)
+	);
+
+	return ! empty( $post_types ) ? $post_types : array( 'page', 'post', 'blog', 'gallery' );
+}
+
+/**
+ * Get the singular post types that should load shared shell assets and admin helpers.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_singular_shell_post_types() {
+	$post_types = array_merge(
+		mrn_base_stack_get_builder_supported_post_types(),
+		mrn_base_stack_get_hero_supported_post_types(),
+		mrn_base_stack_get_after_content_supported_post_types(),
+		array( 'gallery' )
+	);
+
+	/**
+	 * Filter the singular post types that should load shared shell assets.
+	 *
+	 * @param array<int, string> $post_types Supported post types.
+	 */
+	$post_types = apply_filters( 'mrn_base_stack_singular_shell_post_types', $post_types );
+
+	if ( ! is_array( $post_types ) ) {
+		return array( 'page', 'post', 'blog', 'gallery' );
+	}
+
+	$post_types = array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $post_types )
+			)
+		)
+	);
+
+	return ! empty( $post_types ) ? $post_types : array( 'page', 'post', 'blog', 'gallery' );
+}
+
+/**
  * Determine whether a post type uses the theme's builder-style singular shell.
  *
  * @param string $post_type Post type slug.
@@ -163,19 +284,25 @@ function mrn_base_stack_is_builder_supported_post_type( $post_type ) {
  * @return array<int, array<int, array<string, string>>>
  */
 function mrn_base_stack_get_builder_location_rules() {
-	$locations = array();
+	return mrn_base_stack_build_post_type_location_rules( mrn_base_stack_get_builder_supported_post_types() );
+}
 
-	foreach ( mrn_base_stack_get_builder_supported_post_types() as $post_type ) {
-		$locations[] = array(
-			array(
-				'param'    => 'post_type',
-				'operator' => '==',
-				'value'    => $post_type,
-			),
-		);
-	}
+/**
+ * Build ACF location rules for hero-supported post types.
+ *
+ * @return array<int, array<int, array<string, string>>>
+ */
+function mrn_base_stack_get_hero_location_rules() {
+	return mrn_base_stack_build_post_type_location_rules( mrn_base_stack_get_hero_supported_post_types() );
+}
 
-	return $locations;
+/**
+ * Build ACF location rules for after-content-supported post types.
+ *
+ * @return array<int, array<int, array<string, string>>>
+ */
+function mrn_base_stack_get_after_content_location_rules() {
+	return mrn_base_stack_build_post_type_location_rules( mrn_base_stack_get_after_content_supported_post_types() );
 }
 
 /**
@@ -286,7 +413,7 @@ function mrn_base_stack_scripts() {
 
 	wp_enqueue_script( 'mrn-base-stack-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
 
-	if ( is_singular( mrn_base_stack_get_builder_supported_post_types() ) ) {
+	if ( is_singular( mrn_base_stack_get_singular_shell_post_types() ) ) {
 		mrn_base_stack_enqueue_motion_assets();
 
 		wp_enqueue_style(
@@ -311,6 +438,14 @@ function mrn_base_stack_scripts() {
 			_S_VERSION,
 			true
 		);
+
+		wp_enqueue_script(
+			'mrn-base-stack-front-end-gallery',
+			get_template_directory_uri() . '/js/front-end-gallery.js',
+			array(),
+			_S_VERSION,
+			true
+		);
 	}
 }
 add_action( 'wp_enqueue_scripts', 'mrn_base_stack_scripts' );
@@ -329,6 +464,11 @@ require_once get_template_directory() . '/inc/theme-options.php';
  * Load singular sidebar modules.
  */
 require_once get_template_directory() . '/inc/singular-sidebar.php';
+
+/**
+ * Load gallery modules.
+ */
+require_once get_template_directory() . '/inc/gallery.php';
 
 /**
  * Implement the Custom Header feature.
