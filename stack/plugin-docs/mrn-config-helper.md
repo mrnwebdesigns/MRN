@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.26`
+- Current version: `0.1.27`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper`
 
@@ -37,7 +37,7 @@
   - Dashboard Controls
 - SendGrid / Fluent SMTP currently includes:
   - site SendGrid sending-key storage/sync for Fluent SMTP
-  - stack-managed SendGrid management-key status
+  - host-managed SendGrid management-key status
   - site-specific SendGrid key creation
   - SendGrid domain-auth creation and validation
   - stored DNS records for the current authenticated domain
@@ -116,10 +116,11 @@
   - constant `MRN_SENDGRID_MANAGEMENT_API_KEY`
   - environment variable `MRN_SENDGRID_MANAGEMENT_API_KEY`
   - environment variable `SENDGRID_MANAGEMENT_API_KEY`
-- Stack bootstrap should inject the SendGrid management key into site `wp-config.php` from the stack secret file:
+- Stack bootstrap is one supported way to inject the SendGrid management key into site `wp-config.php` from the stack secret file:
   - local secret path: `/Users/khofmeyer/Development/MRN/stack/secrets/sendgrid-management-api-key.txt`
   - server secret path: `/home/mrndev-stack-manager/stack/secrets/sendgrid-management-api-key.txt`
   - target constant: `MRN_SENDGRID_MANAGEMENT_API_KEY`
+- For non-stack production sites, the same key should be provided by the host/deploy environment through a constant or environment variable instead of the WordPress database.
 - UptimeRobot key resolution order:
   - constant `MRN_UPTIME_ROBOT_API_KEY`
   - environment variable `MRN_UPTIME_ROBOT_API_KEY`

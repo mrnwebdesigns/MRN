@@ -6115,6 +6115,9 @@ After you get each summary back:
       - constant `MRN_SENDGRID_MANAGEMENT_API_KEY`
       - environment variable `MRN_SENDGRID_MANAGEMENT_API_KEY`
       - environment variable `SENDGRID_MANAGEMENT_API_KEY`
+  - The SendGrid management key should be treated as host-managed, not as a normal WordPress option value.
+    - stack bootstrap is one supported delivery path for stack-managed environments
+    - non-stack production sites should provide the same key through host/deploy configuration
   - Current source implementation in `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper/mrn-config-helper.php` now includes:
     - site-key creation action that requests a SendGrid API key named from the current site host and syncs the returned secret into Fluent SMTP
     - domain-auth creation action using SendGrid `POST /v3/whitelabel/domains`
@@ -6128,3 +6131,38 @@ After you get each summary back:
       - server: `/home/mrndev-stack-manager/stack/secrets/sendgrid-management-api-key.txt`
     - bootstrap target constant:
       - `MRN_SENDGRID_MANAGEMENT_API_KEY`
+
+## Thread: 2026-04-02 Config Helper ALT Requirement Environment Fix
+- Goal:
+  - Restore the older behavior where image ALT text enforcement is disabled in `local` and `development`, while staying enforced in higher environments.
+- Decisions made:
+  - `mrn-config-helper` `0.1.27` is the release containing the ALT enforcement fix.
+  - The plugin now uses shared environment detection that prefers `wp_get_environment_type()` and falls back to `WP_ENV`.
+  - Image ALT enforcement now short-circuits in `local` and `development` for:
+    - attachment edit-field required state
+    - attachment save validation
+    - media modal AJAX validation
+    - send-to-editor validation
+    - admin media-modal required-field script injection
+  - Release artifact was rebuilt at:
+    - `/Users/khofmeyer/Development/MRN/releases/plugins/mrn-config-helper.zip`
+  - Stack package was refreshed at:
+    - `/home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip`
+  - Live plugin reinstall on `default-configs.mrndev.io` succeeded when run as:
+    - `mrndev-stack-manager`
+  - Release commit:
+    - `63b21ed` (`Restore local/dev ALT text bypass`)
+- Validation:
+  - `php -l` passed for `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper/mrn-config-helper.php`
+  - `git diff --check` passed in the plugin repo and workspace root.
+  - Risk-pattern scan found only the expected UptimeRobot `wp_remote_post()` usage in Config Helper.
+  - Local WP-CLI verification confirmed:
+    - `wp_get_environment_type()` returns `local`
+    - `attachment_fields_to_edit` resolves the ALT field as `optional`
+  - Remote WP-CLI verification on `default-configs.mrndev.io` confirmed:
+    - `mrn-config-helper` is active at `0.1.27`
+    - `wp_get_environment_type()` returns `development`
+    - the stack package zip header reports `mrn-config-helper` `0.1.27`
+    - synthetic `attachment_fields_to_edit` verification resolves the ALT field as `optional`
+  - Current caveat:
+    - the live reinstall emitted a WordPress `chmod(): Operation not permitted` warning during plugin install, but the update completed successfully and the plugin remained active.
