@@ -5,7 +5,7 @@
 - Name: `MRN Editor Lockdown (MU)`
 - Slug: `mrn-editor-lockdown`
 - Type: MU plugin
-- Current version: `1.0.4`
+- Current version: `1.0.6`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-lockdown`
 
@@ -44,11 +44,18 @@ It currently supports:
 
 - `post`
 - `page`
+- explicit layouts for theme-owned editorial CPTs when present
+- dynamically discovered classic-editor post types with `show_ui`, excluding reusable block library CPTs and core/internal exclusions
 - reusable block CPTs discovered from the reusable block library
 
 The reusable block support is intentionally dynamic through:
 
 - `mrn_rbl_get_post_types()`
+
+The generic classic-editor support is intentionally dynamic through:
+
+- `get_post_types( array( 'show_ui' => true ), 'names' )`
+- internal reusable/internal post-type exclusions
 
 ## Core Behavior
 

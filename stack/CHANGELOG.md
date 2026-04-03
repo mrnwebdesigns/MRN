@@ -1,5 +1,14 @@
 # Stack Changelog
 
+## 2026.04.03-testimonial-editorial-shell
+- Expanded `mrn-base-stack` to `1.1.4`.
+- Expanded `mrn-editor-lockdown` to `1.0.6`.
+- Expanded `mrn-seo-helper` to `0.2.9`.
+- Added the theme-owned `testimonial` CPT with archive support, dedicated ACF fields, and a testimonial-specific singular/archive template.
+- Replaced the theme’s hardcoded editorial-CPT support lists with a shared helper so sticky-bar, hero/after-content shell support, and other editorial hooks stay aligned when new theme-owned CPTs are introduced.
+- Extended classic-editor lockdown to dynamically lock supported non-reusable post types so SEO Helper stays pinned at the top of the sidebar and metabox movement locks continue to apply on new editorial CPTs.
+- Updated SEO Helper’s dynamic post-type targeting to continue excluding reusable block library CPTs while still covering new standard/editorial post types.
+
 ## 2026.04.03-builder-layout-menu-dynamic
 - Expanded `mrn-base-stack` to `1.1.3`.
 - Moved the Card row builder order so the shared row-level fields appear before the card-specific repeater fields.
