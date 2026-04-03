@@ -130,6 +130,20 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - public HTTP status is `200`
   - Ops guardrail:
     - future live theme refreshes must avoid leaving selective files at mode `670`; normalize readable file modes after any manual copy/sync, especially when files land as `mrn-ops`
+- `default-configs.mrndev.io` was refreshed again on `2026-04-03` for the `Content Lists` display-mode and shared repeater-controls release.
+  - Live theme now reports `default-configs` `1.1.2`.
+  - Stack theme artifacts now report `mrn-base-stack` `1.1.2` in both:
+    - `/home/mrndev-stack-manager/stack/themes/mrn-base-stack/`
+    - `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip`
+  - Live runtime verification confirmed:
+    - `mrn_base_stack_get_content_list_display_mode_choice_map()` is loaded
+    - `mrn_base_stack_render_content_list_item()` is loaded
+    - public HTTP GETs returned `200` for:
+      - `https://default-configs.mrndev.io/`
+      - `https://default-configs.mrndev.io/sample-page/`
+  - Current caveat:
+    - the refreshed live theme files are readable (`644`) but are still owned by `mrn-ops:mrn-ops`, not the preferred site owner
+    - direct `mrn-ops` sync worked for this release because the live theme path is writable, but ownership normalization should still happen in a later ops pass if strict site-owner policy matters
 - Front-end singular-sidebar collapse behavior was explored but intentionally deferred for now.
   - Revisit later if the shared singular shell should gain a front-end collapse/expand interaction.
   - Current active collapse behavior target is the classic WordPress add/edit screen sidebar, not the front-end singular layout.
@@ -6350,6 +6364,64 @@ After you get each summary back:
     - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
     - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/admin-gallery.js`
     - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/admin-repeater-controls.js`
+
+## Thread: 2026-04-03 Content Lists Display Modes + Shared Repeater Release
+- Goal:
+  - QA, release, deploy, and document the `mrn-base-stack` follow-up baseline that combines `Content Lists` display modes with shared repeater collapse controls.
+- Decisions made:
+  - `mrn-base-stack` `1.1.2` is the release for:
+    - helper-driven `Content Lists` display-mode registration and rendering
+    - builder-admin filtering so only matching post-type display modes appear for the selected `Content Lists` post type
+    - `Use Row Settings` fallback when no display mode is selected
+    - shared ACF repeater `Collapse All` / `Expand All` controls via:
+      - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/admin-repeater-controls.js`
+  - Stack release baseline now advances to:
+    - `2026.04.03-content-lists-display-modes`
+- Packaging / deploy:
+  - commit:
+    - `04dee1f` (`Release content-list display modes and shared repeater controls`)
+  - pushed to:
+    - `origin/main`
+  - local theme zips rebuilt at:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack.zip`
+    - `/Users/khofmeyer/Development/MRN/releases/stack/mrn-base-stack.zip`
+  - stack server theme assets refreshed at:
+    - `/home/mrndev-stack-manager/stack/themes/mrn-base-stack/`
+    - `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip`
+  - live site theme refreshed at:
+    - `/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io/wp-content/themes/default-configs/`
+  - live theme header preservation still requires a post-sync patch on:
+    - `Theme Name: default configs`
+    - `Text Domain: default-configs`
+- Validation:
+  - `php -l` passed for:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/admin.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/field-groups.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/helpers.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/content-lists.php`
+  - `git diff --check` passed before commit.
+  - Risk-pattern scan on the changed theme files found no matches for the targeted high-risk execution helpers.
+  - Local QA on `mrn-plugin-stack.local` confirmed:
+    - active theme `mrn-base-stack` reports version `1.1.2`
+    - `mrn_base_stack_get_content_list_display_mode_choice_map()` is loaded
+    - `mrn_base_stack_render_content_list_item()` is loaded
+    - seeded page `QA - Hero` (`/qa-hero/`) renders `Content Lists` markup with the new display-mode item classes
+    - sample response timings stayed reasonable during spot checks:
+      - `/` about `0.214s`
+      - `/qa-hero/` about `0.289s`
+      - width QA pages around `1.25s`
+  - Remote verification on `default-configs.mrndev.io` confirmed:
+    - active theme `default configs` reports version `1.1.2`
+    - stack zip at `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip` reports version `1.1.2`
+    - `mrn_base_stack_get_content_list_display_mode_choice_map()` is loaded
+    - `mrn_base_stack_render_content_list_item()` is loaded
+    - public HTTP GET response timings stayed reasonable during spot checks:
+      - `/` about `0.58s` to `0.60s`
+      - `/sample-page/` about `0.60s`
+- Caveats:
+  - Local `wp db query` could not be used for one QA lookup because the Local shell environment could not find `mysql`; equivalent confirmation was done with `wp eval` instead.
+  - `default-configs.mrndev.io` does not currently include the seeded local QA page `/qa-hero/`, so live content-list frontend verification relied on runtime helper checks and standard public page responses rather than that exact seeded harness URL.
 
 ## Thread: 2026-04-03 Blog Sticky Bar Support
 - Goal:
