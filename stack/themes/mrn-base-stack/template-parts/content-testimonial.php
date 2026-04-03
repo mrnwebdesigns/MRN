@@ -15,7 +15,6 @@ $mrn_website_url  = isset( $mrn_testimonial['website_url'] ) ? trim( (string) $m
 $mrn_content      = isset( $mrn_testimonial['content'] ) ? (string) $mrn_testimonial['content'] : '';
 $mrn_image_logo   = isset( $mrn_testimonial['image_logo'] ) && is_array( $mrn_testimonial['image_logo'] ) ? $mrn_testimonial['image_logo'] : null;
 $mrn_archive_text = function_exists( 'mrn_base_stack_get_testimonial_excerpt' ) ? mrn_base_stack_get_testimonial_excerpt( $mrn_post_id ) : '';
-$mrn_meta_parts   = array_filter( array( $mrn_position, $mrn_company ) );
 ?>
 
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
@@ -24,10 +23,12 @@ $mrn_meta_parts   = array_filter( array( $mrn_position, $mrn_company ) );
 			<header class="entry-header">
 				<h1 class="entry-title"><?php echo esc_html( $mrn_name ); ?></h1>
 
-				<?php if ( ! empty( $mrn_meta_parts ) ) : ?>
-					<p class="entry-meta">
-						<?php echo esc_html( implode( ', ', $mrn_meta_parts ) ); ?>
-					</p>
+				<?php if ( '' !== $mrn_position ) : ?>
+					<p class="entry-meta"><?php echo esc_html( $mrn_position ); ?></p>
+				<?php endif; ?>
+
+				<?php if ( '' !== $mrn_company ) : ?>
+					<p class="entry-meta"><?php echo esc_html( $mrn_company ); ?></p>
 				<?php endif; ?>
 
 				<?php if ( '' !== $mrn_website_url ) : ?>
@@ -58,9 +59,19 @@ $mrn_meta_parts   = array_filter( array( $mrn_position, $mrn_company ) );
 					</a>
 				</h2>
 
-				<?php if ( ! empty( $mrn_meta_parts ) ) : ?>
+				<?php if ( '' !== $mrn_position ) : ?>
+					<p class="entry-meta"><?php echo esc_html( $mrn_position ); ?></p>
+				<?php endif; ?>
+
+				<?php if ( '' !== $mrn_company ) : ?>
+					<p class="entry-meta"><?php echo esc_html( $mrn_company ); ?></p>
+				<?php endif; ?>
+
+				<?php if ( '' !== $mrn_website_url ) : ?>
 					<p class="entry-meta">
-						<?php echo esc_html( implode( ', ', $mrn_meta_parts ) ); ?>
+						<a href="<?php echo esc_url( $mrn_website_url ); ?>" rel="bookmark">
+							<?php echo esc_html( $mrn_website_url ); ?>
+						</a>
 					</p>
 				<?php endif; ?>
 			</header>
