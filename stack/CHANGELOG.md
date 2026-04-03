@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.04.03-testimonial-meta-content-list-modes
+- Expanded `mrn-base-stack` to `1.1.5`.
+- Expanded `mrn-reusable-block-library` to `0.1.7`.
+- Split testimonial position and company onto separate meta lines in the theme’s testimonial templates and restored website-link output in list views.
+- Added `compact` and `feature` as reusable content-list display mode choices and routed reusable content-list item rendering through the shared theme display-mode renderer.
+- Added stable row-anchor IDs to reusable content lists so pagination links return to the same row after paging.
+
 ## 2026.04.03-config-helper-sendgrid-guidance
 - Expanded `mrn-config-helper` to `0.1.30`.
 - Updated the SendGrid management-key help text in `Site Configurations` to show the exact `wp-config.php` constant line for `MRN_SENDGRID_MANAGEMENT_API_KEY` while keeping the host-managed source guidance.

@@ -24,18 +24,21 @@
 - Classic-editor sidebar collapse behavior is the active collapse contract and lives in `mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`.
 
 ## Recent Durable Decisions
-- Current stack baseline is `2026.04.03-config-helper-sendgrid-guidance`.
-- Current stack theme version is `mrn-base-stack 1.1.4`.
+- Current stack baseline is `2026.04.03-testimonial-meta-content-list-modes`.
+- Current stack theme version is `mrn-base-stack 1.1.5`.
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
 - `default-configs.mrndev.io` was refreshed on `2026-04-03` for the `Content Lists` display-mode and shared repeater-controls release.
 - `mrn-config-helper` now exposes a list-first WPForms notification editor in Site Configurations with bulk apply/remove actions, while the saved Primary Notification Email still auto-applies to all WPForms notifications by default and can be disabled per form.
 - The WPForms notification puck editor in Site Configurations must emit native `input`/`change` events when recipients are added, removed, or the primary-email toggle changes so the shared sticky save bar registers unsaved changes.
+- `mrn-reusable-block-library` now exposes `compact` and `feature` content-list display modes and defers reusable content-list item rendering to the shared theme renderer so reusable blocks and page rows stay aligned.
 - `mrn-seo-helper` now owns sidebar placement for its SEO title/meta description ACF group and must register on WordPress `init` after CPT registration.
 - `mrn-editor-lockdown` preserves the SEO Helper box in locked classic-editor sidebars.
 
 ## Recent Release Notes
 - `mrn-config-helper` now shows the exact `define('MRN_SENDGRID_MANAGEMENT_API_KEY', 'your-sendgrid-management-api-key');` line in the SendGrid management-key help text and explicitly points admins to `wp-config.php` for host-managed setup.
+- The stack baseline now separates testimonial position/company meta lines and restores website-link output in testimonial list views.
+- Reusable content lists now support `compact` and `feature` display modes and keep pagination anchored to the same row after page changes.
 - The stack theme now includes a theme-owned `Testimonial` CPT with archive support and local ACF fields for name, company, position, website URL, rich text content, and image/logo.
 - Editorial CPT sticky-bar and shared shell support now derive from a shared helper so new theme-owned editorial CPTs stay aligned automatically.
 - `mrn-editor-lockdown` now applies its locked classic-editor metabox shell dynamically to supported non-reusable post types, keeping the SEO Helper box pinned at the top of the sidebar on new editorial CPTs.
