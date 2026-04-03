@@ -16,7 +16,7 @@
 ## Active Product Decisions
 - `Content Lists` display modes are a targeted system, not a stack-wide builder rule.
 - Client management for display modes lives in `Site Configurations -> Display Modes`.
-- Client management for WPForms notification recipient emails now lives in `Site Configurations -> Integrations -> WPForms Notifications`.
+- Client management for WPForms notification recipient emails now lives in `Site Configurations -> Integrations -> WPForms Notifications`, including select-all bulk apply/remove actions, per-notification puck-style editing, and per-form opt-out from the saved Primary Notification Email.
 - In builder UI, `Content Lists` should only expose post-type display modes that match the selected content type, with fallback to `Use Row Settings`.
 - The implementation should stay helper-driven and filterable so other list-capable layouts can reuse the same registry and renderer later.
 - Singular sidebar behavior is theme-owned in `mrn-base-stack`.
@@ -29,7 +29,8 @@
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
 - `default-configs.mrndev.io` was refreshed on `2026-04-03` for the `Content Lists` display-mode and shared repeater-controls release.
-- `mrn-config-helper` now exposes a list-first WPForms notification editor in Site Configurations and saves Send To email updates back into the source WPForms form definitions.
+- `mrn-config-helper` now exposes a list-first WPForms notification editor in Site Configurations with bulk apply/remove actions, while the saved Primary Notification Email still auto-applies to all WPForms notifications by default and can be disabled per form.
+- The WPForms notification puck editor in Site Configurations must emit native `input`/`change` events when recipients are added, removed, or the primary-email toggle changes so the shared sticky save bar registers unsaved changes.
 - `mrn-seo-helper` now owns sidebar placement for its SEO title/meta description ACF group and must register on WordPress `init` after CPT registration.
 - `mrn-editor-lockdown` preserves the SEO Helper box in locked classic-editor sidebars.
 
