@@ -29,9 +29,11 @@
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
 - `default-configs.mrndev.io` was refreshed on `2026-04-03` for the `Content Lists` display-mode and shared repeater-controls release.
+- `default-configs.mrndev.io` now runs `mrn-base-stack` directly instead of a forked `default-configs` theme slug and should stay mirrored from stack/local for stack theme and stack MU feature deploys.
 - `mrn-config-helper` now exposes a list-first WPForms notification editor in Site Configurations with bulk apply/remove actions, while the saved Primary Notification Email still auto-applies to all WPForms notifications by default and can be disabled per form.
 - The WPForms notification puck editor in Site Configurations must emit native `input`/`change` events when recipients are added, removed, or the primary-email toggle changes so the shared sticky save bar registers unsaved changes.
 - `mrn-reusable-block-library` now exposes `compact` and `feature` content-list display modes and defers reusable content-list item rendering to the shared theme renderer so reusable blocks and page rows stay aligned.
+- Canonical stack feature deploy command is `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-feature-stack-and-default-configs.sh`, which must refresh both the stack server copy and `default-configs.mrndev.io` for stack theme and stack MU changes.
 - `mrn-seo-helper` now owns sidebar placement for its SEO title/meta description ACF group and must register on WordPress `init` after CPT registration.
 - `mrn-editor-lockdown` preserves the SEO Helper box in locked classic-editor sidebars.
 

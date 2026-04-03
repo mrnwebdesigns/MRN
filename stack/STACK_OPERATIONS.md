@@ -78,6 +78,10 @@ rsync -rlt --omit-dir-times --delete \
   - Then normalize directories to `755` and files to `644` as the site owner.
 - Current canonical helper for live theme refreshes:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-live-theme.sh`
+- Current canonical helper for stack feature deploys that should also refresh `default-configs.mrndev.io`:
+  - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-feature-stack-and-default-configs.sh`
+- Use the feature deploy helper when stack theme or stack MU plugin work needs to stay mirrored to the stack server and the `default-configs` site in one step.
+- Standard plugins still follow their own plugin release flow and are not part of the stack feature deploy helper.
 - The helper now supports both modes:
   - default ops/stack-user sync with `sudo -n -u <site-user>`
   - direct site-owner SSH via `--direct-ssh`
@@ -93,6 +97,7 @@ rsync -rlt --omit-dir-times --delete \
   - `mrndev-stack-manager` does not have site-owner sudo rights for live-site sync commands
   - `mrn-ops` can become `mrndev-stack-manager`, but it still does not have `sudo -n -u <site-user>` rights for `rsync/find/chmod/perl/wp`
 - Until that sudoers policy is fixed, use direct site-owner SSH instead of writing live files as an operator user.
+- `default-configs.mrndev.io` is now expected to run `mrn-base-stack` directly, not a site-specific forked theme slug.
 
 ## Theme Rollout Rule
 

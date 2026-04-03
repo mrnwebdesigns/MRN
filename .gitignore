@@ -33,6 +33,7 @@
 !/stack/PLUGIN_DOC_TEMPLATE.md
 !/stack/scripts/
 !/stack/scripts/qa-*.sh
+!/stack/scripts/deploy-feature-stack-and-default-configs.sh
 !/stack/plugin-docs/
 !/stack/plugin-docs/*.md
 !/stack/themes/
