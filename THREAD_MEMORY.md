@@ -52,6 +52,11 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - CloudPanel stack files should be written as `mrndev-stack-manager:mrndev-stack-manager`
   - `kyle` is the SSH/operator user, not the final file owner
   - preferred sync pattern is `rsync --rsync-path='sudo -n -u mrndev-stack-manager rsync'`
+  - live site `wp-content` refreshes should not be written directly as `mrn-ops` or `kyle`
+  - live site theme/plugin/MU syncs should run as the destination site owner via `sudo -n -u <site-user> rsync`
+  - when syncing into live site paths, do not preserve local owner/group/perms; use content-only rsync flags (for example `-rlt --omit-dir-times`) and then normalize to `755` directories / `644` files as the site owner
+  - canonical local helper for live theme refreshes is:
+    - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-live-theme.sh`
 - Theme rollout manifest now uses the packaged stack theme zip path rather than a bare slug:
   - `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
   - This avoids WordPress.org slug install attempts for `mrn-base-stack` during bootstrap.
@@ -6422,6 +6427,60 @@ After you get each summary back:
 - Caveats:
   - Local `wp db query` could not be used for one QA lookup because the Local shell environment could not find `mysql`; equivalent confirmation was done with `wp eval` instead.
   - `default-configs.mrndev.io` does not currently include the seeded local QA page `/qa-hero/`, so live content-list frontend verification relied on runtime helper checks and standard public page responses rather than that exact seeded harness URL.
+  - The stricter site-owner live deploy path is still blocked on `mrndev-ops` by missing `sudo -n -u <site-user>` access; this release had to use the older `mrndev-stack-manager` live refresh path for `default-configs.mrndev.io`.
+
+## Thread: 2026-04-03 Config Helper Display Modes Release
+- Goal:
+  - Package, deploy, and document the client-facing `Display Modes` management UI for `mrn-config-helper`, and verify the matching `Content Lists` behavior on the live stack baseline.
+- Decisions made:
+  - `mrn-config-helper` `0.1.29` is the release containing:
+    - `Site Configurations -> Display Modes`
+    - list-first display-mode management with search, filters, sort, and edit/create flows
+    - entity-aware saved display modes with field selection and ordering
+    - public helper exposure for saved display modes used by `Content Lists`
+  - `Content Lists` now treats `Display Mode` as optional and falls back to `Use Row Settings` when blank.
+  - When a custom display mode is selected, output-driving row settings are visually locked in the builder instead of silently competing with the display mode.
+- Packaging / deploy:
+  - plugin repo commit:
+    - `8edbd4e` (`Add display mode management UI`)
+  - plugin repo pushed to:
+    - `origin/main`
+  - local release artifacts rebuilt at:
+    - `/Users/khofmeyer/Development/MRN/releases/plugins/mrn-config-helper.zip`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack.zip`
+    - `/Users/khofmeyer/Development/MRN/releases/stack/mrn-base-stack.zip`
+  - stack server package/theme zips refreshed at:
+    - `/home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip`
+    - `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip`
+  - live `default-configs.mrndev.io` updates:
+    - plugin reinstalled successfully from the refreshed stack package as `mrndev-stack-manager`
+    - live theme source refreshed into `/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io/wp-content/themes/default-configs/` via the older `mrndev-stack-manager` rsync path
+- Validation:
+  - local performance spot checks on `http://mrn-plugin-stack.local/`:
+    - `/` about `0.216s`
+    - `/sample-page/` about `0.106s`
+  - `php -l` passed for:
+    - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper/mrn-config-helper.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/admin.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/field-groups.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/builder/helpers.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/content-lists.php`
+  - `node -c` passed for:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/content-builder-admin.js`
+  - `git diff --check` passed in the plugin repo and workspace root before release commits.
+  - Risk-pattern scan found only the existing SendGrid/UptimeRobot remote request usage in Config Helper; no new high-risk execution helper was introduced in the changed release paths.
+  - local packaged headers verified:
+    - `mrn-config-helper.zip` reports `0.1.29`
+    - `mrn-base-stack.zip` reports `1.1.2`
+  - remote verification on `default-configs.mrndev.io` confirmed:
+    - active plugin `mrn-config-helper` reports version `0.1.29`
+    - active theme runtime reports `mrn-base-stack|1.1.2`
+    - `mrn_base_stack_render_content_list_item()` is loaded
+    - `mrn_base_stack_get_content_list_display_mode_choice_map()` is loaded
+    - `mrn_config_helper_get_display_modes()` is loaded
+    - public HTTP GET spot checks returned:
+      - `/` -> `200` about `0.714s`
+      - `/sample-page/` -> `200` about `0.702s`
 
 ## Thread: 2026-04-03 Blog Sticky Bar Support
 - Goal:

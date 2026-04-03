@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.28`
+- Current version: `0.1.29`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper`
 
@@ -27,6 +27,7 @@
   - `General`
   - `Integrations`
   - `Social`
+  - `Display Modes`
   - `Admin`
 - The `Admin` tab is visible only to users with the `administrator` role.
 - Current settings areas include:
@@ -35,9 +36,15 @@
   - Google Tag Manager
   - External APIs
   - Social Media
+  - Display Modes
   - Dashboard Controls
   - Back-end content type visibility
   - Builder layout visibility
+- Display Modes currently includes:
+  - list-first management UI with search, filters, sort, and row editing
+  - entity-aware mode creation for supported renderable items
+  - field selection and ordering for mode output
+  - a public saved-mode registry used by `Content Lists`
 - SendGrid / Fluent SMTP currently includes:
   - site SendGrid sending-key storage/sync for Fluent SMTP
   - host-managed SendGrid management-key status
@@ -64,6 +71,7 @@
   - `mrn_config_helper_get_uptime_robot_settings()`
   - `mrn_config_helper_get_hidden_admin_cpts()`
   - `mrn_config_helper_get_hidden_builder_layouts()`
+  - `mrn_config_helper_get_display_modes()`
 - UptimeRobot helper return shape:
   - `api_key`
   - `source` (`constant`, `environment`, or `database`)

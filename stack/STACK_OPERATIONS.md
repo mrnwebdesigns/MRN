@@ -53,6 +53,31 @@ rsync --rsync-path='sudo -n -u mrndev-stack-manager rsync'
 
 This ensures stack files are written as the app owner instead of a personal operator user.
 
+## Live Site Rule
+
+- Do not sync directly into live site `wp-content` paths as `mrn-ops`, `kyle`, or any other operator user.
+- Live site theme/plugin/MU refreshes should run as the destination site owner.
+- Preferred pattern for live site file syncs:
+
+```bash
+rsync -rlt --omit-dir-times --delete \
+  --rsync-path='sudo -n -u <site-user> rsync'
+```
+
+- Avoid preserving local owner/group/permission metadata onto live site paths.
+  - Use content-only sync flags such as `-rlt` instead of `-a` when syncing into live site directories.
+  - Then normalize directories to `755` and files to `644` as the site owner.
+- Current canonical helper for live theme refreshes:
+  - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-live-theme.sh`
+- Required server-side sudoers policy:
+  - `mrn-ops` needs `NOPASSWD` access to run at least:
+    - `/usr/bin/rsync`
+    - `/usr/bin/find`
+    - `/usr/bin/chmod`
+    - `/usr/bin/perl`
+  - and it must be allowed to run those commands as the relevant site owner user, not only as `mrndev-stack-manager`
+- If that sudoers access is missing, stop and fix the server policy first rather than falling back to direct `mrn-ops` writes.
+
 ## Theme Rollout Rule
 
 - The stack theme is a controlled MRN starter theme:

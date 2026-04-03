@@ -14,7 +14,7 @@
   - `mrn-reusable-block-library` `0.1.5`
   - `mrn-site-colors` / `Site Styles` `0.1.3`
 - Standard plugins:
-  - `mrn-config-helper` `0.1.19`
+  - `mrn-config-helper` `0.1.29`
   - `mrn-editor-tools` `1.8.14`
 
 ## Stack Manifests

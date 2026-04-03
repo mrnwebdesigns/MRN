@@ -2,7 +2,9 @@
 
 ## 2026.04.03-content-lists-display-modes
 - Expanded `mrn-base-stack` to `1.1.2`.
+- Expanded `mrn-config-helper` to `0.1.29`.
 - Added a helper-driven `Content Lists` display-mode registry that can ingest client-managed `Site Configurations -> Display Modes` entries and limit the builder dropdown to modes that match the selected post type.
+- Added a client-managed `Site Configurations -> Display Modes` admin workflow with a list-first editor, entity-aware mode definitions, field ordering, and `Content Lists` integration.
 - Let `Content Lists` fall back to `Use Row Settings` when no display mode is selected, and updated builder-admin behavior so taxonomy, term, and display-mode controls stay in sync without stale select UI.
 - Moved Content List item rendering behind shared theme helpers so reusable blocks and page-level rows use the same display-mode rendering contract.
 - Promoted repeater `Collapse All` / `Expand All` controls into a shared ACF admin resource instead of keeping that affordance gallery-specific.
