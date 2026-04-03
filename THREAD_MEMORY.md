@@ -6212,6 +6212,47 @@ After you get each summary back:
   - Supported layouts now include `Subheading` / `subheading` plus a dedicated tag selector beneath the heading controls.
   - Front-end templates and builder row-title helpers now prefer the new field names while keeping legacy read fallbacks for older saved row data.
 
+## Thread: 2026-04-02 Gallery Mixed-Media Release + Theme Packaging Repair
+- Goal:
+  - QA, package, deploy, and document the `mrn-base-stack` `gallery` mixed-media release on `default-configs.mrndev.io`.
+- Decisions made:
+  - `mrn-base-stack` `1.1.1` is the gallery mixed-media polish release.
+  - The workspace repo must allow the full `stack/themes/mrn-base-stack` source tree through `.gitignore`; partial allowlists can produce broken theme packages even when local source works.
+  - For stack theme packaging in this workspace, build the zip from committed `HEAD` after confirming the full theme tree is actually tracked.
+  - Live `default-configs.mrndev.io` refreshes should preserve the site-specific `Theme Name: default configs` and `Text Domain: default-configs` header values after syncing canonical theme source.
+- Packaging / deploy:
+  - Release commits:
+    - `f6857a8` (`Release gallery mixed-media polish`)
+    - `d2d1065` (`Track full stack theme source`)
+  - Local release artifacts rebuilt at:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack.zip`
+    - `/Users/khofmeyer/Development/MRN/releases/stack/mrn-base-stack.zip`
+  - Stack server theme source refreshed at:
+    - `/home/mrndev-stack-manager/stack/themes/mrn-base-stack/`
+  - Stack server theme zip refreshed at:
+    - `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip`
+  - Live site theme refreshed at:
+    - `/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io/wp-content/themes/default-configs/`
+- Validation:
+  - `php -l` passed for:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/gallery.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/custom-header.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/customizer.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/jetpack.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/inc/template-functions.php`
+  - `git diff --check` passed before both release commits.
+  - Risk-pattern scan on the changed gallery/theme release files found no high-risk execution helpers; the only pattern hit was the existing `system-ui` CSS font stack substring.
+  - Remote WP-CLI verification on `default-configs.mrndev.io` confirmed:
+    - active theme `default-configs` reports version `1.1.1`
+    - gallery helpers load
+    - restored theme support files such as `inc/custom-header.php` and `template-parts/content-none.php` are present
+  - Remote HTTP GET verification confirmed:
+    - `https://default-configs.mrndev.io/` -> `200`
+    - `https://default-configs.mrndev.io/gallery/` -> `200`
+- Gotchas:
+  - A plain `HEAD` request to `https://default-configs.mrndev.io/` still returned `500` during this release pass even after normal GET requests recovered to `200`; treat HEAD-vs-GET behavior as a follow-up diagnostic rather than as a blocker for the gallery release.
+
 ## Thread: 2026-04-02 Site Configurations Admin Visibility Toggles
 - Goal:
   - Let site admins hide selected theme-owned CPTs and builder layouts from the WordPress back-end UI through `Settings -> Site Configurations -> Admin`.
