@@ -11,6 +11,9 @@ $label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : ''
 $label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
 $heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
 $heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h2';
+$subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
+$section_link     = isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : array();
 $items            = isset( $row['showcase_items'] ) && is_array( $row['showcase_items'] ) ? $row['showcase_items'] : array();
 $hover_effect     = isset( $row['hover_effect'] ) ? sanitize_key( (string) $row['hover_effect'] ) : 'lift';
 $stagger_style    = isset( $row['stagger_style'] ) ? sanitize_key( (string) $row['stagger_style'] ) : 'collage';
@@ -28,6 +31,10 @@ $width_layers     = function_exists( 'mrn_base_stack_get_section_width_layers' )
 $allowed_tags = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
 if ( ! in_array( $heading_tag, $allowed_tags, true ) ) {
 	$heading_tag = 'h2';
+}
+
+if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
+	$subheading_tag = 'p';
 }
 
 if ( ! in_array( $hover_effect, array( 'lift', 'scale', 'none' ), true ) ) {
@@ -57,7 +64,11 @@ foreach ( $items as $item ) {
 	);
 }
 
-if ( '' === $label && '' === $heading && empty( $valid_items ) ) {
+$section_link_url = isset( $section_link['url'] ) ? (string) $section_link['url'] : '';
+$section_link_title = isset( $section_link['title'] ) ? (string) $section_link['title'] : '';
+$section_link_target = isset( $section_link['target'] ) ? (string) $section_link['target'] : '';
+
+if ( '' === $label && '' === $heading && '' === $subheading && '' === $section_link_url && empty( $valid_items ) ) {
 	return;
 }
 
@@ -93,13 +104,16 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 	<div class="mrn-layout-section mrn-layout-section--showcase <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-grid mrn-layout-grid--showcase">
-		<?php if ( '' !== $label || '' !== $heading ) : ?>
+		<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
 			<header class="mrn-layout-content mrn-layout-content--text mrn-showcase-row__header">
 				<?php if ( '' !== $label ) : ?>
 					<<?php echo esc_html( $label_tag ); ?> class="mrn-showcase-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
 				<?php endif; ?>
 				<?php if ( '' !== $heading ) : ?>
 					<<?php echo esc_html( $heading_tag ); ?> class="mrn-showcase-row__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+				<?php endif; ?>
+				<?php if ( '' !== $subheading ) : ?>
+					<<?php echo esc_html( $subheading_tag ); ?> class="mrn-showcase-row__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
 				<?php endif; ?>
 			</header>
 		<?php endif; ?>
@@ -127,6 +141,14 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 						<?php endif; ?>
 					</figure>
 				<?php endforeach; ?>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( '' !== $section_link_url ) : ?>
+			<div class="mrn-layout-content mrn-layout-content--text mrn-showcase-row__link-wrap">
+				<a class="mrn-showcase-row__section-link" href="<?php echo esc_url( $section_link_url ); ?>"<?php if ( '' !== $section_link_target ) : ?> target="<?php echo esc_attr( $section_link_target ); ?>"<?php endif; ?><?php if ( '_blank' === $section_link_target ) : ?> rel="noopener noreferrer"<?php endif; ?>>
+					<?php echo esc_html( '' !== $section_link_title ? $section_link_title : $section_link_url ); ?>
+				</a>
 			</div>
 		<?php endif; ?>
 			</div>

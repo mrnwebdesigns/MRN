@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.27`
+- Current version: `0.1.28`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper`
 
@@ -28,6 +28,7 @@
   - `Integrations`
   - `Social`
   - `Admin`
+- The `Admin` tab is visible only to users with the `administrator` role.
 - Current settings areas include:
   - Site Identity
   - SendGrid / Fluent SMTP
@@ -35,6 +36,8 @@
   - External APIs
   - Social Media
   - Dashboard Controls
+  - Back-end content type visibility
+  - Builder layout visibility
 - SendGrid / Fluent SMTP currently includes:
   - site SendGrid sending-key storage/sync for Fluent SMTP
   - host-managed SendGrid management-key status
@@ -59,6 +62,8 @@
 - Current front-end-facing helper:
   - `mrn_config_helper_get_social_links()`
   - `mrn_config_helper_get_uptime_robot_settings()`
+  - `mrn_config_helper_get_hidden_admin_cpts()`
+  - `mrn_config_helper_get_hidden_builder_layouts()`
 - UptimeRobot helper return shape:
   - `api_key`
   - `source` (`constant`, `environment`, or `database`)
@@ -111,6 +116,8 @@
   - GTM container ID
   - UptimeRobot API key fallback
   - dashboard lock roles
+  - disabled admin CPT/reusable-library post types
+  - disabled builder layouts
   - social links
 - SendGrid management key resolution order:
   - constant `MRN_SENDGRID_MANAGEMENT_API_KEY`

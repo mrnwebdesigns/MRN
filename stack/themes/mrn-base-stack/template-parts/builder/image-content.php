@@ -9,9 +9,12 @@ $context          = is_array( $args ?? null ) ? $args : array();
 $row              = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
 $label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
 $label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading          = isset( $row['text_field'] ) ? trim( (string) $row['text_field'] ) : '';
-$heading_tag      = isset( $row['text_field_tag'] ) ? strtolower( (string) $row['text_field_tag'] ) : 'h2';
+$heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : ( isset( $row['text_field'] ) ? trim( (string) $row['text_field'] ) : '' );
+$heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : ( isset( $row['text_field_tag'] ) ? strtolower( (string) $row['text_field_tag'] ) : 'h2' );
+$subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $content          = isset( $row['content'] ) ? (string) $row['content'] : '';
+$link             = isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : array();
 $image            = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
 $background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
 $bottom_accent    = ! empty( $row['bottom_accent'] );
@@ -34,6 +37,10 @@ if ( ! in_array( $heading_tag, $allowed_tags, true ) ) {
 	$heading_tag = 'h2';
 }
 
+if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
+	$subheading_tag = 'p';
+}
+
 if ( ! in_array( $image_position, array( 'top', 'bottom' ), true ) ) {
 	$image_position = 'top';
 }
@@ -47,7 +54,10 @@ if ( ! in_array( $image_alignment, array( 'left', 'center', 'right' ), true ) ) 
 }
 
 $has_image = ! empty( $image['ID'] ) || ! empty( $image['url'] );
-if ( '' === $label && '' === $heading && '' === trim( wp_strip_all_tags( $content ) ) && ! $has_image ) {
+$link_url = isset( $link['url'] ) ? (string) $link['url'] : '';
+$link_title = isset( $link['title'] ) ? (string) $link['title'] : '';
+$link_target = isset( $link['target'] ) ? (string) $link['target'] : '';
+if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $link_url && ! $has_image ) {
 	return;
 }
 
@@ -103,9 +113,21 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 					<<?php echo esc_html( $heading_tag ); ?> class="mrn-image-content-row__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
 				<?php endif; ?>
 
+				<?php if ( '' !== $subheading ) : ?>
+					<<?php echo esc_html( $subheading_tag ); ?> class="mrn-image-content-row__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
+				<?php endif; ?>
+
 				<?php if ( '' !== trim( $content ) ) : ?>
 					<div class="mrn-image-content-row__text">
 						<?php echo apply_filters( 'the_content', $content ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( '' !== $link_url ) : ?>
+					<div class="mrn-image-content-row__link-wrap">
+						<a class="mrn-image-content-row__link" href="<?php echo esc_url( $link_url ); ?>"<?php if ( '' !== $link_target ) : ?> target="<?php echo esc_attr( $link_target ); ?>"<?php endif; ?><?php if ( '_blank' === $link_target ) : ?> rel="noopener noreferrer"<?php endif; ?>>
+							<?php echo esc_html( '' !== $link_title ? $link_title : $link_url ); ?>
+						</a>
 					</div>
 				<?php endif; ?>
 			</div>

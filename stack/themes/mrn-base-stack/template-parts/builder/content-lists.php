@@ -12,8 +12,10 @@ $index   = isset( $context['index'] ) ? (int) $context['index'] : 0;
 
 $label       = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
 $label_tag   = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading     = isset( $row['text_field'] ) ? trim( (string) $row['text_field'] ) : '';
-$heading_tag = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['text_field_tag'] ?? '', 'h2' ) : 'h2';
+$heading     = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : ( isset( $row['text_field'] ) ? trim( (string) $row['text_field'] ) : '' );
+$heading_tag = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['heading_tag'] ?? ( $row['text_field_tag'] ?? '' ), 'h2' ) : 'h2';
+$subheading  = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['subheading_tag'] ?? '', 'p' ) : 'p';
 $intro       = isset( $row['content'] ) ? (string) $row['content'] : '';
 
 $post_type_choices = function_exists( 'mrn_base_stack_get_content_list_post_type_choices' ) ? mrn_base_stack_get_content_list_post_type_choices() : array( 'post' => 'Posts' );
@@ -94,8 +96,9 @@ if ( ! empty( $tax_query ) ) {
 
 $query = new WP_Query( $query_args );
 
-$has_intro   = '' !== trim( wp_strip_all_tags( $intro ) );
-$has_heading = '' !== $heading;
+$has_intro      = '' !== trim( wp_strip_all_tags( $intro ) );
+$has_heading    = '' !== $heading;
+$has_subheading = '' !== $subheading;
 $has_label   = '' !== $label;
 $has_posts   = $query->have_posts();
 
@@ -104,7 +107,7 @@ if ( ! $has_posts && $hide_when_empty ) {
 	return;
 }
 
-if ( ! $has_label && ! $has_heading && ! $has_intro && ! $has_posts && '' === $empty_message ) {
+if ( ! $has_label && ! $has_heading && ! $has_subheading && ! $has_intro && ! $has_posts && '' === $empty_message ) {
 	wp_reset_postdata();
 	return;
 }
@@ -188,13 +191,16 @@ if ( $show_pagination && $query->max_num_pages > 1 ) {
 	<div class="mrn-layout-section mrn-layout-section--content-lists <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-grid mrn-layout-grid--content-lists">
-				<?php if ( $has_label || $has_heading || $has_intro ) : ?>
+				<?php if ( $has_label || $has_heading || $has_subheading || $has_intro ) : ?>
 					<div class="mrn-content-list-row__header">
 						<?php if ( $has_label ) : ?>
 							<<?php echo esc_html( $label_tag ); ?> class="mrn-shell-section__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
 						<?php endif; ?>
 						<?php if ( $has_heading ) : ?>
 							<<?php echo esc_html( $heading_tag ); ?> class="mrn-shell-section__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+						<?php endif; ?>
+						<?php if ( $has_subheading ) : ?>
+							<<?php echo esc_html( $subheading_tag ); ?> class="mrn-shell-section__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
 						<?php endif; ?>
 						<?php if ( $has_intro ) : ?>
 							<div class="mrn-shell-section__content mrn-content-list-row__intro">

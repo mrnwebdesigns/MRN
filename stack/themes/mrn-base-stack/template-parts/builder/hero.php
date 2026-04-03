@@ -12,8 +12,11 @@ $label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : ''
 $label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
 $heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
 $heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h1';
+$subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $content          = isset( $row['content'] ) ? (string) $row['content'] : '';
-$link             = isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : array();
+$primary_link     = isset( $row['primary_link'] ) && is_array( $row['primary_link'] ) ? $row['primary_link'] : ( isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : array() );
+$secondary_link   = isset( $row['secondary_link'] ) && is_array( $row['secondary_link'] ) ? $row['secondary_link'] : array();
 $image            = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
 $background_image = isset( $row['background_image'] ) && is_array( $row['background_image'] ) ? $row['background_image'] : array();
 $background_video = isset( $row['background_video'] ) ? (string) $row['background_video'] : '';
@@ -31,9 +34,16 @@ if ( ! in_array( $heading_tag, $allowed_tags, true ) ) {
 	$heading_tag = 'h1';
 }
 
-$link_url    = isset( $link['url'] ) ? (string) $link['url'] : '';
-$link_title  = isset( $link['title'] ) ? (string) $link['title'] : '';
-$link_target = isset( $link['target'] ) ? (string) $link['target'] : '';
+if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
+	$subheading_tag = 'p';
+}
+
+$primary_link_url    = isset( $primary_link['url'] ) ? (string) $primary_link['url'] : '';
+$primary_link_title  = isset( $primary_link['title'] ) ? (string) $primary_link['title'] : '';
+$primary_link_target = isset( $primary_link['target'] ) ? (string) $primary_link['target'] : '';
+$secondary_link_url    = isset( $secondary_link['url'] ) ? (string) $secondary_link['url'] : '';
+$secondary_link_title  = isset( $secondary_link['title'] ) ? (string) $secondary_link['title'] : '';
+$secondary_link_target = isset( $secondary_link['target'] ) ? (string) $secondary_link['target'] : '';
 $image_url   = isset( $image['url'] ) ? (string) $image['url'] : '';
 $image_alt   = isset( $image['alt'] ) ? (string) $image['alt'] : '';
 $video_embed = function_exists( 'mrn_base_stack_get_video_embed' ) ? mrn_base_stack_get_video_embed(
@@ -61,7 +71,7 @@ if ( '' !== $local_video_url ) {
 	$video_kind = 'remote';
 }
 
-if ( '' === $label && '' === $heading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $link_url && '' === $image_url ) {
+if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $primary_link_url && '' === $secondary_link_url && '' === $image_url ) {
 	return;
 }
 
@@ -139,17 +149,28 @@ if ( function_exists( 'mrn_base_stack_merge_builder_attributes' ) ) {
 				<<?php echo esc_html( $heading_tag ); ?> class="mrn-hero__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
 			<?php endif; ?>
 
+			<?php if ( '' !== $subheading ) : ?>
+				<<?php echo esc_html( $subheading_tag ); ?> class="mrn-hero__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
+			<?php endif; ?>
+
 			<?php if ( '' !== trim( $content ) ) : ?>
 				<div class="mrn-hero__text">
 					<?php echo apply_filters( 'the_content', $content ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
 			<?php endif; ?>
 
-			<?php if ( '' !== $link_url ) : ?>
+			<?php if ( '' !== $primary_link_url || '' !== $secondary_link_url ) : ?>
 				<div class="mrn-hero__link-wrap">
-					<a class="mrn-hero__link" href="<?php echo esc_url( $link_url ); ?>"<?php if ( '' !== $link_target ) : ?> target="<?php echo esc_attr( $link_target ); ?>"<?php endif; ?><?php if ( '_blank' === $link_target ) : ?> rel="noopener noreferrer"<?php endif; ?>>
-						<?php echo esc_html( '' !== $link_title ? $link_title : $link_url ); ?>
-					</a>
+					<?php if ( '' !== $primary_link_url ) : ?>
+						<a class="mrn-hero__link mrn-hero__link--primary" href="<?php echo esc_url( $primary_link_url ); ?>"<?php if ( '' !== $primary_link_target ) : ?> target="<?php echo esc_attr( $primary_link_target ); ?>"<?php endif; ?><?php if ( '_blank' === $primary_link_target ) : ?> rel="noopener noreferrer"<?php endif; ?>>
+							<?php echo esc_html( '' !== $primary_link_title ? $primary_link_title : $primary_link_url ); ?>
+						</a>
+					<?php endif; ?>
+					<?php if ( '' !== $secondary_link_url ) : ?>
+						<a class="mrn-hero__link mrn-hero__link--secondary" href="<?php echo esc_url( $secondary_link_url ); ?>"<?php if ( '' !== $secondary_link_target ) : ?> target="<?php echo esc_attr( $secondary_link_target ); ?>"<?php endif; ?><?php if ( '_blank' === $secondary_link_target ) : ?> rel="noopener noreferrer"<?php endif; ?>>
+							<?php echo esc_html( '' !== $secondary_link_title ? $secondary_link_title : $secondary_link_url ); ?>
+						</a>
+					<?php endif; ?>
 				</div>
 			<?php endif; ?>
 		</div>

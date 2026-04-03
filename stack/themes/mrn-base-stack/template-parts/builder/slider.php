@@ -10,8 +10,10 @@ $row              = isset( $context['row'] ) && is_array( $context['row'] ) ? $c
 $row_index        = isset( $context['index'] ) ? (int) $context['index'] : 0;
 $label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
 $label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading          = isset( $row['text_field'] ) ? trim( (string) $row['text_field'] ) : '';
-$heading_tag      = isset( $row['text_field_tag'] ) ? strtolower( (string) $row['text_field_tag'] ) : 'h2';
+$heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : ( isset( $row['text_field'] ) ? trim( (string) $row['text_field'] ) : '' );
+$heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : ( isset( $row['text_field_tag'] ) ? strtolower( (string) $row['text_field_tag'] ) : 'h2' );
+$subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $items            = isset( $row['slider_items'] ) && is_array( $row['slider_items'] ) ? $row['slider_items'] : array();
 $link_style       = isset( $row['link_style'] ) ? sanitize_key( (string) $row['link_style'] ) : 'link';
 $link_color       = isset( $row['link_color'] ) ? trim( (string) $row['link_color'] ) : '';
@@ -39,6 +41,10 @@ if ( ! in_array( $heading_tag, $allowed_tags, true ) ) {
 	$heading_tag = 'h2';
 }
 
+if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
+	$subheading_tag = 'p';
+}
+
 if ( ! in_array( $link_style, array( 'link', 'button' ), true ) ) {
 	$link_style = 'link';
 }
@@ -50,7 +56,7 @@ foreach ( $items as $item ) {
 	}
 
 	$item_label   = isset( $item['label'] ) ? (string) $item['label'] : '';
-	$item_heading = isset( $item['title'] ) ? (string) $item['title'] : '';
+	$item_heading = isset( $item['heading'] ) ? (string) $item['heading'] : ( isset( $item['title'] ) ? (string) $item['title'] : '' );
 	$item_content = isset( $item['content'] ) ? (string) $item['content'] : '';
 	$item_link    = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
 	$item_image   = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
@@ -68,7 +74,7 @@ foreach ( $items as $item ) {
 	}
 }
 
-if ( '' === $label && '' === $heading && ! $has_items ) {
+if ( '' === $label && '' === $heading && '' === $subheading && ! $has_items ) {
 	return;
 }
 
@@ -108,13 +114,16 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 	<div class="mrn-layout-section mrn-layout-section--slider <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-grid mrn-layout-grid--slider mrn-layout-grid--slider-shell">
-		<?php if ( '' !== $label || '' !== $heading ) : ?>
+		<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
 			<header class="mrn-layout-content mrn-layout-content--text mrn-slider-row__header mrn-slider-row__header--slider-shell">
 				<?php if ( '' !== $label ) : ?>
 					<<?php echo esc_html( $label_tag ); ?> class="mrn-slider-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
 				<?php endif; ?>
 				<?php if ( '' !== $heading ) : ?>
 					<<?php echo esc_html( $heading_tag ); ?> class="mrn-slider-row__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+				<?php endif; ?>
+				<?php if ( '' !== $subheading ) : ?>
+					<<?php echo esc_html( $subheading_tag ); ?> class="mrn-slider-row__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
 				<?php endif; ?>
 			</header>
 		<?php endif; ?>
@@ -143,8 +152,8 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 
 							$item_label   = isset( $item['label'] ) ? trim( (string) $item['label'] ) : '';
 							$item_label_tag = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $item['label_tag'] ?? '', 'p' ) : 'p';
-							$item_heading = isset( $item['title'] ) ? trim( (string) $item['title'] ) : '';
-							$item_tag     = isset( $item['title_tag'] ) ? strtolower( (string) $item['title_tag'] ) : 'h3';
+							$item_heading = isset( $item['heading'] ) ? trim( (string) $item['heading'] ) : ( isset( $item['title'] ) ? trim( (string) $item['title'] ) : '' );
+							$item_tag     = isset( $item['heading_tag'] ) ? strtolower( (string) $item['heading_tag'] ) : ( isset( $item['title_tag'] ) ? strtolower( (string) $item['title_tag'] ) : 'h3' );
 							$item_content = isset( $item['content'] ) ? (string) $item['content'] : '';
 							$item_link    = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
 							$item_image   = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();

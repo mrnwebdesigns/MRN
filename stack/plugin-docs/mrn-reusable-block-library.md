@@ -5,7 +5,7 @@
 - Name: `Reusable Block Library (MU)`
 - Slug: `mrn-reusable-block-library`
 - Type: MU plugin
-- Current version: `0.1.3`
+- Current version: `0.1.6`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library`
 
@@ -46,6 +46,7 @@ Current built-in types:
 - `mrn_reusable_basic`
 - `mrn_reusable_faq`
 - `mrn_reusable_grid`
+- `mrn_reusable_list`
 
 ## Admin Surface Area
 
@@ -53,6 +54,7 @@ The plugin:
 
 - registers reusable block CPTs
 - creates a unified library admin menu
+- honors Config Helper back-end visibility toggles for reusable block post types
 - hides unnecessary default metaboxes
 - customizes parent/submenu highlighting
 - enforces title guidance and required-title behavior

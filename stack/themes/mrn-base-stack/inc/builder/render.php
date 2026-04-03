@@ -568,6 +568,31 @@ add_filter( 'acf/fields/post_object/query/key=field_mrn_reusable_block_post', 'm
 add_filter( 'acf/fields/post_object/query/key=field_mrn_nested_reusable_block_post', 'mrn_base_stack_filter_reusable_block_picker_query' );
 
 /**
+ * Read a builder sub-field value with legacy fallback names.
+ *
+ * @param string             $primary Primary sub field name.
+ * @param array<int, string> $fallbacks Legacy fallback names.
+ * @return string
+ */
+function mrn_base_stack_get_builder_sub_field_value( $primary, array $fallbacks = array() ) {
+	$value = trim( (string) get_sub_field( $primary ) );
+
+	if ( '' !== $value ) {
+		return $value;
+	}
+
+	foreach ( $fallbacks as $fallback ) {
+		$value = trim( (string) get_sub_field( $fallback ) );
+
+		if ( '' !== $value ) {
+			return $value;
+		}
+	}
+
+	return '';
+}
+
+/**
  * Improve flexible content row titles in the builder using ACF's native layout title filter.
  *
  * @param string               $title  Current layout title HTML.
@@ -609,7 +634,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'basic' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'text_field' ) );
+		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -619,7 +644,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'cta' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'text_field' ) );
+		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -629,7 +654,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'grid' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'text_field' ) );
+		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -649,7 +674,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'slider' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'text_field' ) );
+		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -689,7 +714,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'image_content' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'text_field' ) );
+		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -699,7 +724,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'video' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'text_field' ) );
+		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -709,7 +734,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'body_text' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'title_field' ) );
+		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'title_field' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -719,7 +744,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'content_lists' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'text_field' ) );
+		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
 
 		if ( '' !== $heading ) {
 			return 'Content Lists: ' . esc_html( wp_strip_all_tags( $heading ) );
@@ -736,7 +761,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'card' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'text_field' ) );
+		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
 
 		if ( '' === $heading ) {
 			return $title;

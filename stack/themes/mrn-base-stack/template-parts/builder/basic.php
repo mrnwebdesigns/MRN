@@ -9,8 +9,10 @@ $context          = is_array( $args ?? null ) ? $args : array();
 $row              = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
 $label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
 $label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading          = isset( $row['text_field'] ) ? trim( (string) $row['text_field'] ) : '';
-$heading_tag      = isset( $row['text_field_tag'] ) ? strtolower( (string) $row['text_field_tag'] ) : 'h2';
+$heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : ( isset( $row['text_field'] ) ? trim( (string) $row['text_field'] ) : '' );
+$heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : ( isset( $row['text_field_tag'] ) ? strtolower( (string) $row['text_field_tag'] ) : 'h2' );
+$subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $content          = isset( $row['content'] ) ? (string) $row['content'] : '';
 $image            = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
 $image_url        = isset( $image['url'] ) ? (string) $image['url'] : '';
@@ -39,6 +41,10 @@ if ( ! in_array( $heading_tag, $allowed_tags, true ) ) {
 	$heading_tag = 'h2';
 }
 
+if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
+	$subheading_tag = 'p';
+}
+
 $section_styles = array();
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-basic-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
@@ -64,7 +70,7 @@ if ( '' !== $link_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-basic-row-link-color: var(' . mrn_site_colors_get_css_var( $link_color ) . ')';
 }
 
-if ( '' === $label && '' === $heading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $image_url && '' === $link_url ) {
+if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $image_url && '' === $link_url ) {
 	return;
 }
 
@@ -111,6 +117,10 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 
 				<?php if ( '' !== $heading ) : ?>
 					<<?php echo esc_html( $heading_tag ); ?> class="mrn-basic-row__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+				<?php endif; ?>
+
+				<?php if ( '' !== $subheading ) : ?>
+					<<?php echo esc_html( $subheading_tag ); ?> class="mrn-basic-row__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
 				<?php endif; ?>
 
 				<?php if ( '' !== trim( $content ) ) : ?>

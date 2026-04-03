@@ -12,6 +12,8 @@ $label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : ''
 $label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
 $heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
 $heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h2';
+$subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $items            = isset( $row['logo_items'] ) && is_array( $row['logo_items'] ) ? $row['logo_items'] : array();
 $display_mode     = isset( $row['display_mode'] ) ? sanitize_key( (string) $row['display_mode'] ) : 'grid';
 $per_page         = isset( $row['per_page'] ) ? max( 3, min( 6, (int) $row['per_page'] ) ) : 6;
@@ -38,6 +40,10 @@ if ( ! in_array( $heading_tag, $allowed_tags, true ) ) {
 	$heading_tag = 'h2';
 }
 
+if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
+	$subheading_tag = 'p';
+}
+
 if ( ! in_array( $display_mode, array( 'grid', 'slider' ), true ) ) {
 	$display_mode = 'grid';
 }
@@ -61,7 +67,7 @@ foreach ( $items as $item ) {
 	);
 }
 
-if ( '' === $label && '' === $heading && empty( $valid_items ) ) {
+if ( '' === $label && '' === $heading && '' === $subheading && empty( $valid_items ) ) {
 	return;
 }
 
@@ -97,13 +103,16 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 	<div class="mrn-layout-section mrn-layout-section--logos <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-grid mrn-layout-grid--logos">
-		<?php if ( '' !== $label || '' !== $heading ) : ?>
+		<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
 			<header class="mrn-layout-content mrn-layout-content--text mrn-logos-row__header">
 				<?php if ( '' !== $label ) : ?>
 					<<?php echo esc_html( $label_tag ); ?> class="mrn-logos-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
 				<?php endif; ?>
 				<?php if ( '' !== $heading ) : ?>
 					<<?php echo esc_html( $heading_tag ); ?> class="mrn-logos-row__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+				<?php endif; ?>
+				<?php if ( '' !== $subheading ) : ?>
+					<<?php echo esc_html( $subheading_tag ); ?> class="mrn-logos-row__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
 				<?php endif; ?>
 			</header>
 		<?php endif; ?>

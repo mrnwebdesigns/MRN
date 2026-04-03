@@ -798,6 +798,31 @@ function mrn_base_stack_get_label_tag_field( $key, $name = 'label_tag', $default
 }
 
 /**
+ * Build a standard heading/subheading tag ACF field definition.
+ *
+ * @param string $key Unique ACF field key.
+ * @param string $name Field name.
+ * @param string $default Default tag choice.
+ * @param string $label Field label.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_text_tag_field( $key, $name = 'heading_tag', $default = 'h2', $label = 'Heading Tag' ) {
+	return array(
+		'key'           => $key,
+		'label'         => $label,
+		'name'          => $name,
+		'aria-label'    => '',
+		'type'          => 'select',
+		'choices'       => mrn_base_stack_get_text_tag_choices(),
+		'default_value' => mrn_base_stack_normalize_text_tag( $default, 'h2' ),
+		'ui'            => 1,
+		'wrapper'       => array(
+			'width' => '25',
+		),
+	);
+}
+
+/**
  * Allow a small, intentional inline HTML subset for heading-style fields.
  *
  * @param string $value Raw heading text value.
@@ -1129,7 +1154,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 		'layout_mrn_nested_basic'          => array(
 			'key'        => 'layout_mrn_nested_basic',
 			'name'       => 'basic',
-			'label'      => 'Basic - label|title|text with editor|image|link',
+			'label'      => 'Basic - label|heading|subheading|text with editor|image|link',
 			'display'    => 'block',
 			'sub_fields' => array(
 				array(
@@ -1154,8 +1179,8 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_label_tag_field( 'field_mrn_nested_basic_label_tag' ),
 				array(
 					'key'           => 'field_mrn_nested_basic_heading',
-					'label'         => 'Title field',
-					'name'          => 'text_field',
+					'label'         => 'Heading',
+					'name'          => 'heading',
 					'aria-label'    => '',
 					'type'          => 'text',
 					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
@@ -1163,29 +1188,19 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '75',
 					),
 				),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_basic_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
 				array(
-					'key'           => 'field_mrn_nested_basic_heading_tag',
-					'label'         => 'HTML Tag for Text Field',
-					'name'          => 'text_field_tag',
+					'key'           => 'field_mrn_nested_basic_subheading',
+					'label'         => 'Subheading',
+					'name'          => 'subheading',
 					'aria-label'    => '',
-					'type'          => 'select',
-					'choices'       => array(
-						'h1'   => 'H1',
-						'h2'   => 'H2',
-						'h3'   => 'H3',
-						'h4'   => 'H4',
-						'h5'   => 'H5',
-						'h6'   => 'H6',
-						'p'    => 'Paragraph',
-						'span' => 'Span',
-						'div'  => 'Div',
-					),
-					'default_value' => 'h2',
-					'ui'            => 1,
+					'type'          => 'text',
+					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
 					'wrapper'       => array(
-						'width' => '25',
+						'width' => '75',
 					),
 				),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_basic_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
 				array(
 					'key'          => 'field_mrn_nested_basic_content',
 					'label'        => 'Text area with editor',
@@ -1353,38 +1368,28 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				),
 				array(
 					'key'           => 'field_mrn_nested_card_heading',
-					'label'         => 'Text Field',
-					'name'          => 'text_field',
+					'label'         => 'Heading',
+					'name'          => 'heading',
 					'aria-label'    => '',
 					'type'          => 'text',
 					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
 					'wrapper'       => array(
-						'width' => '50',
+						'width' => '75',
 					),
 				),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_card_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
 				array(
-					'key'           => 'field_mrn_nested_card_heading_tag',
-					'label'         => 'HTML Tag for Text Field',
-					'name'          => 'text_field_tag',
+					'key'           => 'field_mrn_nested_card_subheading',
+					'label'         => 'Subheading',
+					'name'          => 'subheading',
 					'aria-label'    => '',
-					'type'          => 'select',
-					'choices'       => array(
-						'h1'   => 'H1',
-						'h2'   => 'H2',
-						'h3'   => 'H3',
-						'h4'   => 'H4',
-						'h5'   => 'H5',
-						'h6'   => 'H6',
-						'p'    => 'Paragraph',
-						'span' => 'Span',
-						'div'  => 'Div',
-					),
-					'default_value' => 'h2',
-					'ui'            => 1,
+					'type'          => 'text',
+					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
 					'wrapper'       => array(
-						'width' => '50',
+						'width' => '75',
 					),
 				),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_card_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
 				array(
 					'key'          => 'field_mrn_nested_card_items',
 					'label'        => 'Cards',
@@ -1498,7 +1503,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 		'layout_mrn_nested_cta'            => array(
 			'key'        => 'layout_mrn_nested_cta',
 			'name'       => 'cta',
-			'label'      => 'CTA - label|title|text with editor|link',
+			'label'      => 'CTA - label|heading|text with editor|link',
 			'display'    => 'block',
 			'sub_fields' => array(
 				array(
@@ -1520,7 +1525,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 		'layout_mrn_nested_grid'           => array(
 			'key'        => 'layout_mrn_nested_grid',
 			'name'       => 'grid',
-			'label'      => 'Grid - label|title|repeater',
+			'label'      => 'Grid - label|heading|repeater',
 			'display'    => 'block',
 			'sub_fields' => array(
 				array(
@@ -1542,7 +1547,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 		'layout_mrn_nested_image_content'  => array(
 			'key'        => 'layout_mrn_nested_image_content',
 			'name'       => 'image_content',
-			'label'      => 'Image - label|title|text with editor',
+			'label'      => 'Image - label|heading|subheading|text with editor',
 			'display'    => 'block',
 			'sub_fields' => array(
 				array(
@@ -1577,8 +1582,8 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_label_tag_field( 'field_mrn_nested_image_content_label_tag' ),
 				array(
 					'key'           => 'field_mrn_nested_image_content_heading',
-					'label'         => 'Title field',
-					'name'          => 'text_field',
+					'label'         => 'Heading',
+					'name'          => 'heading',
 					'aria-label'    => '',
 					'type'          => 'text',
 					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
@@ -1586,29 +1591,19 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '75',
 					),
 				),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_image_content_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
 				array(
-					'key'           => 'field_mrn_nested_image_content_heading_tag',
-					'label'         => 'HTML Tag for Text Field',
-					'name'          => 'text_field_tag',
+					'key'           => 'field_mrn_nested_image_content_subheading',
+					'label'         => 'Subheading',
+					'name'          => 'subheading',
 					'aria-label'    => '',
-					'type'          => 'select',
-					'choices'       => array(
-						'h1'   => 'H1',
-						'h2'   => 'H2',
-						'h3'   => 'H3',
-						'h4'   => 'H4',
-						'h5'   => 'H5',
-						'h6'   => 'H6',
-						'p'    => 'Paragraph',
-						'span' => 'Span',
-						'div'  => 'Div',
-					),
-					'default_value' => 'h2',
-					'ui'            => 1,
+					'type'          => 'text',
+					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
 					'wrapper'       => array(
-						'width' => '25',
+						'width' => '75',
 					),
 				),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_image_content_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
 				array(
 					'key'          => 'field_mrn_nested_image_content_copy',
 					'label'        => 'Text area with editor',
@@ -1760,8 +1755,8 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_label_tag_field( 'field_mrn_nested_video_label_tag' ),
 				array(
 					'key'           => 'field_mrn_nested_video_heading',
-					'label'         => 'Title field',
-					'name'          => 'text_field',
+					'label'         => 'Heading',
+					'name'          => 'heading',
 					'aria-label'    => '',
 					'type'          => 'text',
 					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
@@ -1769,29 +1764,19 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '75',
 					),
 				),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_video_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
 				array(
-					'key'           => 'field_mrn_nested_video_heading_tag',
-					'label'         => 'HTML Tag for Text Field',
-					'name'          => 'text_field_tag',
+					'key'           => 'field_mrn_nested_video_subheading',
+					'label'         => 'Subheading',
+					'name'          => 'subheading',
 					'aria-label'    => '',
-					'type'          => 'select',
-					'choices'       => array(
-						'h1'   => 'H1',
-						'h2'   => 'H2',
-						'h3'   => 'H3',
-						'h4'   => 'H4',
-						'h5'   => 'H5',
-						'h6'   => 'H6',
-						'p'    => 'Paragraph',
-						'span' => 'Span',
-						'div'  => 'Div',
-					),
-					'default_value' => 'h2',
-					'ui'            => 1,
+					'type'          => 'text',
+					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
 					'wrapper'       => array(
-						'width' => '25',
+						'width' => '75',
 					),
 				),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_video_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
 				array(
 					'key'          => 'field_mrn_nested_video_content',
 					'label'        => 'Text area with editor',
@@ -1920,29 +1905,19 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '75',
 					),
 				),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_logos_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
 				array(
-					'key'           => 'field_mrn_nested_logos_heading_tag',
-					'label'         => 'HTML tag for heading',
-					'name'          => 'heading_tag',
+					'key'           => 'field_mrn_nested_logos_subheading',
+					'label'         => 'Subheading',
+					'name'          => 'subheading',
 					'aria-label'    => '',
-					'type'          => 'select',
-					'choices'       => array(
-						'h1'   => 'H1',
-						'h2'   => 'H2',
-						'h3'   => 'H3',
-						'h4'   => 'H4',
-						'h5'   => 'H5',
-						'h6'   => 'H6',
-						'p'    => 'Paragraph',
-						'span' => 'Span',
-						'div'  => 'Div',
-					),
-					'default_value' => 'h2',
-					'ui'            => 1,
+					'type'          => 'text',
+					'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
 					'wrapper'       => array(
-						'width' => '25',
+						'width' => '75',
 					),
 				),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_logos_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
 				array(
 					'key'          => 'field_mrn_nested_logos_items',
 					'label'        => 'Logos',
