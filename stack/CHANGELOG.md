@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.04.02-gallery-mixed-media-polish
+- Expanded `mrn-base-stack` to `1.1.1`.
+- Polished the theme-owned `gallery` CPT editor for mixed-media authoring, including stronger per-item media-type locking, repeater collapse controls, and cleaner settings placement.
+- Moved gallery item filtering onto the attachment-backed `gallery_media_category` taxonomy instead of freeform labels.
+- Replaced the custom gallery lightbox with GLightbox and expanded the gallery body to support images, direct video files, and external video/embed URLs.
+- Added gallery hover-effect controls, richer video/embed thumbnail handling, and centered play overlays while keeping gallery tiles on a consistent aspect-ratio contract.
+
 ## 2026.04.02-editor-sidebar-chevron-fix
 - Expanded `mrn-editor-lockdown` to `1.0.4`.
 - Corrected the top-bar sidebar toggle chevron directions so expanded and collapsed states point the intended way.

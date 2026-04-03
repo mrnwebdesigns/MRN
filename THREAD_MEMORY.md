@@ -177,6 +177,14 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
 - The stack now has lightweight stack-wide version notes:
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
+  - Current gallery/mixed-media polish baseline:
+    - `2026.04.02-gallery-mixed-media-polish`
+    - `mrn-base-stack` `1.1.1`
+    - gallery items support `image`, `video`, and `external embed`
+    - gallery item filtering is attachment-taxonomy backed through `gallery_media_category`
+    - GLightbox is the canonical gallery lightbox layer in the theme
+    - gallery hover effects are exposed as theme classes/data attributes so frontend code can override or extend them cleanly
+    - gallery item media-type tabs are row-scoped and mutually exclusive; stale incompatible media fields are normalized on load/save
   - Current baseline:
     - `2026.04.01-blog-cpt`
     - `mrn-base-stack` `1.0.9`

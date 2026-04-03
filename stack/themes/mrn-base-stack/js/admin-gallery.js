@@ -50,6 +50,19 @@
 		}
 	}
 
+	function normalizeRowToSelectedType( $row ) {
+		var selectedType = getCheckedType( $row );
+
+		if ( selectedType === 'image' ) {
+			clearImageField( $row, 'preview_image' );
+			clearMediaUrlField( $row );
+			setTrueFalseFieldValue( $row, 'autoplay_thumbnail', false );
+			return;
+		}
+
+		clearImageField( $row, 'image' );
+	}
+
 	function setTrueFalseFieldValue( $row, fieldName, enabled ) {
 		var $field = getField( $row, fieldName );
 		var $checkbox = $field.find( 'input[type="checkbox"]' ).first();
@@ -229,7 +242,9 @@
 
 	function refreshAllRows( context ) {
 		$( context || document ).find( '.acf-row' ).each( function () {
-			refreshRow( $( this ) );
+			var $row = $( this );
+			normalizeRowToSelectedType( $row );
+			refreshRow( $row );
 		} );
 		refreshGalleryToolbars( context );
 	}
@@ -262,15 +277,7 @@
 
 	$( document ).on( 'change', '.acf-field[data-name="media_type"] input[type="radio"]', function () {
 		var $row = getRow( this );
-		var selectedType = $( this ).val() || 'image';
-
-		if ( selectedType === 'image' ) {
-			clearImageField( $row, 'preview_image' );
-			clearMediaUrlField( $row );
-			setTrueFalseFieldValue( $row, 'autoplay_thumbnail', false );
-		} else {
-			clearImageField( $row, 'image' );
-		}
+		normalizeRowToSelectedType( $row );
 
 		window.setTimeout( function () {
 			refreshRow( $row );

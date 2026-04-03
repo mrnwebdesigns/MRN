@@ -281,8 +281,12 @@ function mrn_base_stack_register_gallery_field_group() {
 								array(
 									array(
 										'field'    => 'field_mrn_gallery_item_media_type',
-										'operator' => '!=',
-										'value'    => 'image',
+										'operator' => '==',
+										'value'    => 'video',
+									),
+									array(
+										'field'    => 'field_mrn_gallery_item_preview_image',
+										'operator' => '==empty',
 									),
 								),
 							),
@@ -1239,6 +1243,7 @@ function mrn_base_stack_get_gallery_markup( $post_id = null ) {
 								href="<?php echo esc_url( $item['full_url'] ); ?>"
 								data-gallery="gallery-<?php echo esc_attr( (string) $post_id ); ?>"
 								<?php if ( 'image' !== $media_type ) : ?>data-type="<?php echo esc_attr( mrn_base_stack_get_gallery_lightbox_media_type( $media_type ) ); ?>"<?php endif; ?>
+								<?php if ( $lightbox['show_captions'] && '' !== $caption ) : ?>data-description="<?php echo esc_attr( wp_strip_all_tags( $caption ) ); ?>"<?php endif; ?>
 								data-glightbox="<?php echo esc_attr( implode( '; ', $glightbox_data ) ); ?>"
 							>
 								<?php if ( '' !== $thumb_url ) : ?>

@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.01-gallery-editorial-cpts`
-- Release date: `2026-04-01`
+- Stack release: `2026.04.02-gallery-mixed-media-polish`
+- Release date: `2026-04-02`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.0`
+  - `mrn-base-stack` `1.1.1`
 - MU plugins:
   - `mrn-shared-assets` `0.1.0`
   - `mrn-editor-lockdown` `1.0.4`
