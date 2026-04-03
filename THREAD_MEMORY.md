@@ -55,6 +55,26 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
 - Theme rollout manifest now uses the packaged stack theme zip path rather than a bare slug:
   - `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
   - This avoids WordPress.org slug install attempts for `mrn-base-stack` during bootstrap.
+- `Content Lists` display modes are currently a targeted system, not a stack-wide builder rule.
+  - Client-facing management now lives in:
+    - `Site Configurations -> Display Modes`
+  - Current product model:
+    - create a display mode
+    - choose entity type
+    - choose entity item/subtype
+    - choose which fields render for that entity
+  - Current `Content Lists` consumer rule:
+    - only post-type display modes whose subtype matches the selected list content type should appear in the builder dropdown
+  - The implementation should remain helper-driven and filterable so future list-capable layouts can reuse the same mode registry and item renderer without widening the change to every builder row.
+- Front-end performance is a first-class project requirement.
+  - As stack/theme features are built, performance checks should be part of normal QA.
+  - The active goal is to keep Google PageSpeed results as high as reasonably possible and tune regressions as they appear.
+- SEO is a first-class project requirement.
+  - As stack/theme features are built, SEO considerations should be part of normal implementation and QA.
+  - Favor semantic markup, strong page structure, clean metadata output, and avoid introducing technical SEO regressions.
+- Accessibility is a first-class project requirement.
+  - As stack/theme features are built, accessibility checks should be part of normal implementation and QA.
+  - Favor semantic HTML, keyboard support, usable contrast, clear labeling, and avoid introducing accessibility regressions.
 - Reusable content strategy:
   - The theme owns the universal `MRN Content Builder` experience for `post` and `page`.
   - The reusable block library must not register a duplicate page/post builder field group.
@@ -177,7 +197,13 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
 - The stack now has lightweight stack-wide version notes:
   - `/Users/khofmeyer/Development/MRN/stack/STACK_VERSION.md` for the current baseline snapshot
   - `/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md` for stack-level release notes
-  - Current gallery/mixed-media polish baseline:
+  - Current stack baseline:
+    - `2026.04.03-content-lists-display-modes`
+    - `mrn-base-stack` `1.1.2`
+    - `Content Lists` display modes can be client-managed from `Site Configurations -> Display Modes`
+    - builder `Content Lists` only offers post-type display modes that match the selected content type and can fall back to `Use Row Settings`
+    - repeater `Collapse All` / `Expand All` controls are now shared across ACF repeater admin screens via a theme-owned common script
+  - Previous gallery/mixed-media polish baseline:
     - `2026.04.02-gallery-mixed-media-polish`
     - `mrn-base-stack` `1.1.1`
     - gallery items support `image`, `video`, and `external embed`
@@ -6308,3 +6334,31 @@ After you get each summary back:
   - The theme half of this feature is still mixed into unrelated uncommitted `mrn-base-stack` work in the workspace, including the current untracked gallery module files.
   - Because of that, the live deploy in this thread intentionally excluded the theme changes that would make `blog` / `gallery` admin hiding effective on the live site.
   - Reusable block hiding and the Config Helper UI/admin-tab restrictions are live; theme-owned `blog` / `gallery` hiding still needs a clean theme release pass.
+
+## Thread: 2026-04-03 Shared Repeater Collapse Controls
+- Goal:
+  - Promote the new repeater `Collapse All` / `Expand All` admin affordance into a shared theme resource instead of keeping it gallery-only.
+- Decisions made:
+  - Canonical shared repeater admin script is now:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/admin-repeater-controls.js`
+  - The shared script is enqueued through ACF's admin asset hook so the controls follow any ACF repeater field rendered by the theme/admin stack, including builder screens, gallery edit screens, and ACF-backed admin/options screens.
+  - Gallery-specific admin JS keeps only the gallery media-type locking behavior and no longer owns its own duplicate repeater collapse toolbar logic.
+- Validation:
+  - `php -l` passed for:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+  - `git diff --check` passed for:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/admin-gallery.js`
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/admin-repeater-controls.js`
+
+## Thread: 2026-04-03 Blog Sticky Bar Support
+- Goal:
+  - Enable the existing universal sticky bar on classic `blog` edit screens.
+- Decisions made:
+  - The theme-level `mrn_universal_sticky_bar_post_types` integration now explicitly opts both theme-owned editorial CPTs into the plugin:
+    - `blog`
+    - `gallery`
+  - The sticky bar for `blog` is intentionally delivered through the existing universal plugin/filter path rather than a blog-specific admin implementation.
+- Validation:
+  - `php -l` passed for:
+    - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`

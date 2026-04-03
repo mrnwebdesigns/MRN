@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.1.1
+Version: 1.1.2
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -3660,11 +3660,13 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	padding-left: 1.5rem;
 }
 
-.mrn-content-builder__row--content-lists-display-title_only .mrn-content-list-row__item {
+.mrn-content-list-row__item--variant-title_only {
 	padding-left: 0;
 }
 
-.mrn-content-builder__row--content-lists-display-title_only .mrn-content-list-row__items {
+.mrn-content-list-row__item--variant-title_only + .mrn-content-list-row__item--variant-title_only,
+.mrn-content-builder__row--content-lists-display-title_only .mrn-content-list-row__items,
+.mrn-reusable-block--content-lists-display-title_only .mrn-content-list-row__items {
 	gap: 0.8rem;
 }
 

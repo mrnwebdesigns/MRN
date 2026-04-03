@@ -56,6 +56,7 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 			),
 			'disabledLayouts'    => function_exists( 'mrn_base_stack_get_hidden_builder_layouts' ) ? mrn_base_stack_get_hidden_builder_layouts() : array(),
 			'contentListTaxonomies' => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
+			'contentListDisplayModes' => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
 			'menuDecorations'    => array(
 				array(
 					'beforeLayout'    => 'reusable_block',
@@ -148,6 +149,68 @@ function mrn_base_stack_admin_builder_action_styles() {
 			left: 12px;
 			right: 12px;
 			border-top: 1px solid #dcdcde;
+		}
+
+		.layout[data-layout="content_lists"] > .acf-fields {
+			position: relative;
+		}
+
+		.layout[data-layout="content_lists"].mrn-content-list-is-syncing > .acf-fields::before {
+			content: "";
+			position: absolute;
+			inset: 0;
+			background: rgba(255, 255, 255, 0.55);
+			pointer-events: none;
+			z-index: 2;
+		}
+
+		.layout[data-layout="content_lists"].mrn-content-list-is-syncing > .acf-fields::after {
+			content: "";
+			position: absolute;
+			top: 18px;
+			right: 18px;
+			width: 18px;
+			height: 18px;
+			border: 2px solid #8c8f94;
+			border-right-color: transparent;
+			border-radius: 50%;
+			animation: mrn-content-list-admin-spin 0.75s linear infinite;
+			pointer-events: none;
+			z-index: 3;
+		}
+
+		.layout[data-layout="content_lists"] .acf-field.mrn-content-list-legacy-field-disabled {
+			opacity: 0.5;
+			position: relative;
+		}
+
+		.layout[data-layout="content_lists"] .acf-field.mrn-content-list-legacy-field-disabled .acf-input {
+			position: relative;
+		}
+
+		.layout[data-layout="content_lists"] .acf-field.mrn-content-list-legacy-field-disabled .acf-input::after {
+			content: "";
+			position: absolute;
+			inset: 0;
+			background: rgba(255, 255, 255, 0.01);
+			cursor: not-allowed;
+			z-index: 2;
+		}
+
+		.layout[data-layout="content_lists"] .acf-field.mrn-content-list-legacy-field-disabled .acf-label label::after {
+			content: " (Handled by Display Mode)";
+			font-weight: 400;
+			color: #646970;
+		}
+
+		@keyframes mrn-content-list-admin-spin {
+			from {
+				transform: rotate(0deg);
+			}
+
+			to {
+				transform: rotate(360deg);
+			}
 		}
 	</style>
 	<?php

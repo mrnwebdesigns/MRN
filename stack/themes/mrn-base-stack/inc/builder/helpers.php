@@ -105,6 +105,30 @@ function mrn_base_stack_get_content_list_post_type_choices() {
 }
 
 /**
+ * Load live post-type choices into the Content Lists builder field.
+ *
+ * This keeps the row selector aligned with the currently registered public
+ * content types instead of only the choices present when the field group was
+ * registered.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_load_content_list_post_type_field_choices( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field['choices'] = mrn_base_stack_get_content_list_post_type_choices();
+
+	return $field;
+}
+add_filter( 'acf/load_field/key=field_mrn_content_lists_post_type', 'mrn_base_stack_load_content_list_post_type_field_choices' );
+add_filter( 'acf/load_field/name=list_post_type', 'mrn_base_stack_load_content_list_post_type_field_choices' );
+add_filter( 'acf/prepare_field/key=field_mrn_content_lists_post_type', 'mrn_base_stack_load_content_list_post_type_field_choices' );
+add_filter( 'acf/prepare_field/name=list_post_type', 'mrn_base_stack_load_content_list_post_type_field_choices' );
+
+/**
  * Shared list-style choices for query-driven builder layouts.
  *
  * @return array<string, string>
@@ -122,10 +146,383 @@ function mrn_base_stack_get_content_list_style_choices() {
  * @return array<string, string>
  */
 function mrn_base_stack_get_content_list_display_mode_choices() {
-	return array(
-		'standard'   => 'Standard',
-		'title_only' => 'Title Only',
+	$choices = array(
+		'' => 'Use Row Settings',
 	);
+
+	foreach ( mrn_base_stack_get_content_list_display_mode_choice_map() as $post_type => $post_type_choices ) {
+		if ( ! is_array( $post_type_choices ) ) {
+			continue;
+		}
+
+		foreach ( $post_type_choices as $mode => $label ) {
+			$label = trim( (string) $label );
+			if ( '' === $label || isset( $choices[ $mode ] ) ) {
+				continue;
+			}
+
+			$choices[ $mode ] = $label;
+		}
+	}
+
+	return $choices;
+}
+
+/**
+ * Load live display-mode choices into the Content Lists builder field.
+ *
+ * The field group registers a baseline set of choices, but the actual options
+ * need to reflect client-managed Display Modes from Config Helper each time the
+ * builder form loads.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_load_content_list_display_mode_field_choices( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field['choices'] = mrn_base_stack_get_content_list_display_mode_choices();
+	$field['allow_null'] = 1;
+	$field['ui']      = 0;
+
+	return $field;
+}
+add_filter( 'acf/load_field/key=field_mrn_content_lists_display_mode', 'mrn_base_stack_load_content_list_display_mode_field_choices' );
+add_filter( 'acf/load_field/name=display_mode', 'mrn_base_stack_load_content_list_display_mode_field_choices' );
+add_filter( 'acf/prepare_field/key=field_mrn_content_lists_display_mode', 'mrn_base_stack_load_content_list_display_mode_field_choices' );
+add_filter( 'acf/prepare_field/name=display_mode', 'mrn_base_stack_load_content_list_display_mode_field_choices' );
+
+/**
+ * Robustly normalize dynamic choices for Content Lists select subfields.
+ *
+ * Some builder contexts can bypass the narrower ACF key/name hooks depending on
+ * how the flexible-content row is prepared. This catches the rendered field
+ * instance itself and reapplies the dynamic choice sources when the field is a
+ * Content Lists subfield.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_prepare_dynamic_content_list_select_fields( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field_type   = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	$field_name   = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+	$field_origin = isset( $field['_name'] ) ? sanitize_key( (string) $field['_name'] ) : $field_name;
+	$parent_layout = isset( $field['parent_layout'] ) ? sanitize_key( (string) $field['parent_layout'] ) : '';
+
+	if ( 'select' !== $field_type ) {
+		return $field;
+	}
+
+	$is_content_list_layout = false !== strpos( $parent_layout, 'content_lists' );
+
+	if ( $is_content_list_layout && in_array( $field_origin, array( 'list_post_type', 'display_mode' ), true ) ) {
+		if ( 'list_post_type' === $field_origin ) {
+			$field['choices'] = mrn_base_stack_get_content_list_post_type_choices();
+		}
+
+		if ( 'display_mode' === $field_origin ) {
+			$field['choices'] = mrn_base_stack_get_content_list_display_mode_choices();
+			$field['allow_null'] = 1;
+			$field['ui']      = 0;
+		}
+	}
+
+	return $field;
+}
+add_filter( 'acf/load_field', 'mrn_base_stack_prepare_dynamic_content_list_select_fields', 20 );
+add_filter( 'acf/prepare_field', 'mrn_base_stack_prepare_dynamic_content_list_select_fields', 20 );
+
+/**
+ * Get display-mode choices for a specific content-list post type.
+ *
+ * @param string $post_type Post type slug.
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_content_list_display_modes_for_post_type( $post_type = 'post' ) {
+	$post_type = sanitize_key( (string) $post_type );
+	$modes     = mrn_base_stack_get_content_list_display_modes();
+	$filtered  = array();
+
+	foreach ( $modes as $mode_key => $mode_config ) {
+		if ( ! is_array( $mode_config ) ) {
+			continue;
+		}
+
+		$entity_type    = isset( $mode_config['entity_type'] ) ? sanitize_key( (string) $mode_config['entity_type'] ) : 'post_type';
+		$entity_subtype = isset( $mode_config['entity_subtype'] ) ? sanitize_key( (string) $mode_config['entity_subtype'] ) : 'post';
+
+		if ( 'post_type' !== $entity_type || $entity_subtype !== $post_type ) {
+			continue;
+		}
+
+		$filtered[ $mode_key ] = $mode_config;
+	}
+
+	if ( empty( $filtered ) && 'post' !== $post_type ) {
+		return mrn_base_stack_get_content_list_display_modes_for_post_type( 'post' );
+	}
+
+	return $filtered;
+}
+
+/**
+ * Get display-mode labels grouped by post type for builder-admin filtering.
+ *
+ * @return array<string, array<string, string>>
+ */
+function mrn_base_stack_get_content_list_display_mode_choice_map() {
+	$map = array();
+
+	foreach ( mrn_base_stack_get_content_list_post_type_choices() as $post_type => $label ) {
+		$choices = array();
+
+		foreach ( mrn_base_stack_get_content_list_display_modes_for_post_type( $post_type ) as $mode_key => $mode_config ) {
+			if ( ! is_array( $mode_config ) ) {
+				continue;
+			}
+
+			$mode_label = isset( $mode_config['label'] ) ? trim( (string) $mode_config['label'] ) : '';
+			if ( '' === $mode_label ) {
+				continue;
+			}
+
+			$choices[ $mode_key ] = $mode_label;
+		}
+
+		$map[ $post_type ] = $choices;
+	}
+
+	return $map;
+}
+
+/**
+ * Shared display-mode registry for query-driven builder layouts.
+ *
+ * This intentionally starts small, but the contract is filterable so future
+ * list-capable layouts can reuse the same mode vocabulary without rewriting the
+ * builder field schema.
+ *
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_content_list_display_modes() {
+	$modes = array(
+		'standard'   => array(
+			'entity_type'      => 'post_type',
+			'entity_subtype'   => 'post',
+			'label'            => 'Standard',
+			'fields'           => array( 'title', 'featured_image', 'publish_date', 'excerpt', 'read_more' ),
+			'allows_image'     => true,
+			'allows_date'      => true,
+			'allows_excerpt'   => true,
+			'allows_read_more' => true,
+		),
+		'title_only' => array(
+			'entity_type'      => 'post_type',
+			'entity_subtype'   => 'post',
+			'label'            => 'Title Only',
+			'fields'           => array( 'title' ),
+			'allows_image'     => false,
+			'allows_date'      => false,
+			'allows_excerpt'   => false,
+			'allows_read_more' => false,
+		),
+	);
+
+	if ( function_exists( 'mrn_config_helper_get_display_modes' ) ) {
+		$saved_modes = mrn_config_helper_get_display_modes();
+
+		if ( is_array( $saved_modes ) ) {
+			foreach ( $saved_modes as $saved_mode ) {
+				if ( ! is_array( $saved_mode ) ) {
+					continue;
+				}
+
+				$mode_key       = isset( $saved_mode['mode_key'] ) ? sanitize_key( (string) $saved_mode['mode_key'] ) : '';
+				$label          = isset( $saved_mode['label'] ) ? trim( (string) $saved_mode['label'] ) : '';
+				$entity_type    = isset( $saved_mode['entity_type'] ) ? sanitize_key( (string) $saved_mode['entity_type'] ) : 'post_type';
+				$entity_subtype = isset( $saved_mode['entity_subtype'] ) ? sanitize_key( (string) $saved_mode['entity_subtype'] ) : 'post';
+				$fields         = isset( $saved_mode['fields'] ) && is_array( $saved_mode['fields'] ) ? array_values( array_unique( array_map( 'sanitize_key', $saved_mode['fields'] ) ) ) : array();
+
+				if ( '' === $mode_key || '' === $label ) {
+					continue;
+				}
+
+				$modes[ $mode_key ] = array(
+					'entity_type'      => $entity_type,
+					'entity_subtype'   => $entity_subtype,
+					'label'            => $label,
+					'fields'           => $fields,
+					'allows_image'     => in_array( 'featured_image', $fields, true ) || in_array( 'image', $fields, true ),
+					'allows_date'      => in_array( 'publish_date', $fields, true ),
+					'allows_excerpt'   => in_array( 'excerpt', $fields, true ) || in_array( 'body', $fields, true ),
+					'allows_read_more' => in_array( 'read_more', $fields, true ) || in_array( 'link', $fields, true ),
+				);
+			}
+		}
+	}
+
+	return apply_filters( 'mrn_base_stack_content_list_display_modes', $modes );
+}
+
+/**
+ * Normalize a content-list display mode to a supported key.
+ *
+ * @param string $mode Candidate display-mode key.
+ * @return string
+ */
+function mrn_base_stack_normalize_content_list_display_mode( $mode ) {
+	$mode  = sanitize_key( (string) $mode );
+	$modes = mrn_base_stack_get_content_list_display_modes();
+
+	if ( '' === $mode ) {
+		return '';
+	}
+
+	if ( isset( $modes[ $mode ] ) ) {
+		return $mode;
+	}
+
+	return '';
+}
+
+/**
+ * Get the configuration for one content-list display mode.
+ *
+ * @param string $mode Display-mode key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_content_list_display_mode_config( $mode ) {
+	$modes = mrn_base_stack_get_content_list_display_modes();
+	$mode  = mrn_base_stack_normalize_content_list_display_mode( $mode );
+
+	return isset( $modes[ $mode ] ) && is_array( $modes[ $mode ] ) ? $modes[ $mode ] : array();
+}
+
+/**
+ * Build the legacy row-settings display contract for Content Lists.
+ *
+ * @param array<string, mixed> $args Render arguments.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_content_list_legacy_mode_config( array $args = array() ) {
+	$fields = array( 'title' );
+
+	if ( ! empty( $args['show_featured_image'] ) ) {
+		$fields[] = 'featured_image';
+	}
+
+	if ( ! empty( $args['show_publish_date'] ) ) {
+		$fields[] = 'publish_date';
+	}
+
+	if ( ! empty( $args['show_excerpt'] ) ) {
+		$fields[] = 'excerpt';
+	}
+
+	if ( ! empty( $args['show_read_more'] ) ) {
+		$fields[] = 'read_more';
+	}
+
+	return array(
+		'label'            => 'Row Settings',
+		'fields'           => $fields,
+		'allows_image'     => ! empty( $args['show_featured_image'] ),
+		'allows_date'      => ! empty( $args['show_publish_date'] ),
+		'allows_excerpt'   => ! empty( $args['show_excerpt'] ),
+		'allows_read_more' => ! empty( $args['show_read_more'] ),
+	);
+}
+
+/**
+ * Render one query result item for the Content Lists layout.
+ *
+ * @param WP_Post $item_post Post to render.
+ * @param array<string, mixed> $args Render arguments.
+ * @return string
+ */
+function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $args = array() ) {
+	$display_mode    = mrn_base_stack_normalize_content_list_display_mode( $args['display_mode'] ?? '' );
+	$mode_config     = '' !== $display_mode ? mrn_base_stack_get_content_list_display_mode_config( $display_mode ) : mrn_base_stack_get_content_list_legacy_mode_config( $args );
+	$permalink       = get_permalink( $item_post );
+	$item_title      = get_the_title( $item_post );
+	$uses_row_settings = '' === $display_mode;
+	$show_date       = ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
+	$show_excerpt    = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] );
+	$show_read_more  = ( ! $uses_row_settings || ! empty( $args['show_read_more'] ) ) && ! empty( $mode_config['allows_read_more'] ) && '' !== $permalink;
+	$show_image      = ( ! $uses_row_settings || ! empty( $args['show_featured_image'] ) ) && ! empty( $mode_config['allows_image'] ) && has_post_thumbnail( $item_post );
+	$excerpt_length  = max( 5, absint( $args['excerpt_length'] ?? 24 ) );
+	$read_more_label = isset( $args['read_more_label'] ) ? trim( (string) $args['read_more_label'] ) : 'Read More';
+	$item_excerpt    = $show_excerpt && function_exists( 'mrn_base_stack_get_content_list_excerpt' ) ? mrn_base_stack_get_content_list_excerpt( $item_post, $excerpt_length ) : '';
+	$fields          = isset( $mode_config['fields'] ) && is_array( $mode_config['fields'] ) ? array_values( array_unique( array_map( 'sanitize_key', $mode_config['fields'] ) ) ) : array();
+	$variant         = array( 'title' ) === $fields ? 'title_only' : 'card';
+	$image_first     = ! empty( $fields ) && 'featured_image' === $fields[0];
+	$item_classes    = array(
+		'mrn-content-list-row__item',
+		'mrn-content-list-row__item--display-' . ( '' !== $display_mode ? $display_mode : 'row-settings' ),
+		'mrn-content-list-row__item--variant-' . $variant,
+	);
+
+	if ( $show_image ) {
+		$item_classes[] = 'mrn-content-list-row__item--has-image';
+		if ( $image_first ) {
+			$item_classes[] = 'mrn-content-list-row__item--image-leading';
+		}
+	}
+
+	ob_start();
+	?>
+	<li class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>">
+		<?php if ( 'title_only' === $variant ) : ?>
+			<span class="mrn-content-list-row__title mrn-content-list-row__title--only">
+				<?php if ( '' !== $permalink ) : ?>
+					<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
+				<?php else : ?>
+					<?php echo esc_html( $item_title ); ?>
+				<?php endif; ?>
+			</span>
+		<?php else : ?>
+			<article class="mrn-content-list-row__card">
+				<div class="mrn-content-list-row__body">
+					<?php foreach ( $fields as $field_key ) : ?>
+						<?php if ( 'featured_image' === $field_key && $show_image && '' !== $permalink ) : ?>
+							<a class="mrn-content-list-row__media" href="<?php echo esc_url( $permalink ); ?>">
+								<?php echo get_the_post_thumbnail( $item_post, 'medium_large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							</a>
+						<?php elseif ( 'featured_image' === $field_key && $show_image ) : ?>
+							<div class="mrn-content-list-row__media">
+								<?php echo get_the_post_thumbnail( $item_post, 'medium_large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							</div>
+						<?php elseif ( 'publish_date' === $field_key && $show_date ) : ?>
+							<p class="mrn-content-list-row__meta"><?php echo esc_html( get_the_date( '', $item_post ) ); ?></p>
+						<?php elseif ( 'title' === $field_key && '' !== $item_title ) : ?>
+							<h3 class="mrn-content-list-row__title">
+								<?php if ( '' !== $permalink ) : ?>
+									<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
+								<?php else : ?>
+									<?php echo esc_html( $item_title ); ?>
+								<?php endif; ?>
+							</h3>
+						<?php elseif ( 'excerpt' === $field_key && '' !== $item_excerpt ) : ?>
+							<p class="mrn-content-list-row__excerpt"><?php echo esc_html( $item_excerpt ); ?></p>
+						<?php elseif ( 'read_more' === $field_key && $show_read_more ) : ?>
+							<p class="mrn-content-list-row__link">
+								<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( '' !== $read_more_label ? $read_more_label : 'Read More' ); ?></a>
+							</p>
+						<?php endif; ?>
+					<?php endforeach; ?>
+				</div>
+			</article>
+		<?php endif; ?>
+	</li>
+	<?php
+
+	return (string) ob_get_clean();
 }
 
 /**

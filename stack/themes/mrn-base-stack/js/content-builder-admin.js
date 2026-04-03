@@ -32,6 +32,14 @@
 		return {};
 	}
 
+	function getContentListDisplayModeMap() {
+		if ( config.contentListDisplayModes && typeof config.contentListDisplayModes === 'object' ) {
+			return config.contentListDisplayModes;
+		}
+
+		return {};
+	}
+
 	function hideFlexibleContentLayouts( context ) {
 		var hiddenLayouts = getHiddenLayouts();
 
@@ -148,7 +156,7 @@
 		hideFlexibleContentLayouts( context );
 		ensureConversionActions( context );
 		decorateFlexibleContentMenus( context );
-		syncContentListFilters( context );
+		scheduleContentListFilterSync( context );
 	}
 
 	function getContentListField( $row, name ) {
@@ -163,78 +171,310 @@
 		return $field.find( 'select' ).first();
 	}
 
-	function updateSelectUi( $select ) {
-		if ( ! $select.length ) {
+	function getObjectKeys( object ) {
+		if ( ! object || typeof object !== 'object' ) {
+			return [];
+		}
+
+		return Object.keys( object );
+	}
+
+	function getChoicesSignature( choices ) {
+		return getObjectKeys( choices ).map( function( key ) {
+			return key + ':' + String( choices[ key ] );
+		} ).join( '|' );
+	}
+
+	function getCachedTermOptions( $select ) {
+		var cached = $select.data( 'mrnTermOptions' );
+
+		if ( cached ) {
+			return cached;
+		}
+
+		cached = $select.find( 'option' ).map( function() {
+			var $option = $( this );
+			var value = String( $option.attr( 'value' ) || '' );
+
+			return {
+				value: value,
+				label: String( $option.text() || '' ),
+				taxonomy: value ? ( value.split( ':' )[0] || '' ) : ''
+			};
+		} ).get();
+
+		$select.data( 'mrnTermOptions', cached );
+
+		return cached;
+	}
+
+	function rebuildSelectOptions( $select, choices, selectedValue, options ) {
+		var settings = $.extend(
+			{
+				allowBlank: false,
+				blankLabel: ''
+			},
+			options || {}
+		);
+		var signature = getChoicesSignature( choices ) + '|blank:' + ( settings.allowBlank ? '1' : '0' ) + ':' + settings.blankLabel;
+		var previousSignature = $select.data( 'mrnChoicesSignature' ) || '';
+		var isMultiple = $select.prop( 'multiple' );
+		var nextValue = selectedValue;
+		var fragment;
+
+		if ( previousSignature === signature ) {
+			if ( isMultiple ) {
+				nextValue = $.isArray( nextValue ) ? nextValue : ( nextValue ? [ nextValue ] : [] );
+			}
+
+			$select.val( nextValue );
+			return false;
+		}
+
+		fragment = document.createDocumentFragment();
+
+		if ( settings.allowBlank ) {
+			fragment.appendChild( new window.Option( settings.blankLabel, '' ) );
+		}
+
+		$.each( choices, function( value, label ) {
+			fragment.appendChild( new window.Option( String( label ), String( value ) ) );
+		} );
+
+		$select.empty().append( fragment );
+		$select.data( 'mrnChoicesSignature', signature );
+
+		if ( isMultiple ) {
+			nextValue = $.isArray( nextValue ) ? nextValue : ( nextValue ? [ nextValue ] : [] );
+		}
+
+		$select.val( nextValue );
+		return true;
+	}
+
+	function setContentListSyncState( $row, isSyncing ) {
+		$row.toggleClass( 'mrn-content-list-is-syncing', !! isSyncing );
+	}
+
+	function setContentListLegacyPresentationState( $row, useRowSettings ) {
+		var legacyFieldNames = [
+			'show_featured_image',
+			'show_publish_date',
+			'show_excerpt',
+			'excerpt_length',
+			'show_read_more',
+			'read_more_label'
+		];
+
+		$.each( legacyFieldNames, function( index, fieldName ) {
+			var $field = getContentListField( $row, fieldName );
+
+			if ( ! $field.length ) {
+				return;
+			}
+
+			$field.toggleClass( 'mrn-content-list-legacy-field-disabled', ! useRowSettings );
+			$field.attr( 'aria-disabled', useRowSettings ? 'false' : 'true' );
+			$field.find( 'input, select, textarea, button, a' ).not( '[type="hidden"]' ).each( function() {
+				var $control = $( this );
+				var originalTabIndex = $control.data( 'mrnOriginalTabIndex' );
+
+				if ( ! useRowSettings ) {
+					if ( typeof originalTabIndex === 'undefined' ) {
+						$control.data( 'mrnOriginalTabIndex', $control.attr( 'tabindex' ) );
+					}
+
+					$control.attr( 'tabindex', '-1' );
+					return;
+				}
+
+				if ( typeof originalTabIndex !== 'undefined' ) {
+					if ( false === originalTabIndex || null === originalTabIndex || '' === originalTabIndex ) {
+						$control.removeAttr( 'tabindex' );
+					} else {
+						$control.attr( 'tabindex', originalTabIndex );
+					}
+
+					$control.removeData( 'mrnOriginalTabIndex' );
+				} else {
+					$control.removeAttr( 'tabindex' );
+				}
+			} );
+		} );
+	}
+
+	function refreshContentListLegacyPresentationState( context ) {
+		$( context || document ).filter( '.layout[data-layout="content_lists"]' ).add( $( context || document ).find( '.layout[data-layout="content_lists"]' ) ).not( '.acf-clone' ).each( function() {
+			var $row = $( this );
+			var $displayModeField = getContentListField( $row, 'display_mode' );
+			var $displayModeSelect = getContentListSelect( $displayModeField );
+			var displayMode = $displayModeSelect.val() || '';
+
+			setContentListLegacyPresentationState( $row, '' === displayMode );
+		} );
+	}
+
+	function updateSelectUi( $field ) {
+		var $select = getContentListSelect( $field );
+
+		if ( ! $field || ! $field.length || ! $select.length ) {
 			return;
+		}
+
+		var fieldObject = ( typeof acf !== 'undefined' && typeof acf.getField === 'function' ) ? acf.getField( $field ) : null;
+		var hasEnhancedUi = $select.hasClass( 'select2-hidden-accessible' ) || !! $select.next( '.select2' ).length || !! $select.closest( '.acf-input' ).find( '> .select2, .select2-container' ).length;
+
+		if ( fieldObject && fieldObject.select2 && typeof fieldObject.select2.destroy === 'function' ) {
+			fieldObject.select2.destroy();
+			fieldObject.select2 = null;
+		} else if ( hasEnhancedUi && typeof $select.select2 === 'function' && $select.data( 'select2' ) ) {
+			$select.select2( 'destroy' );
+		}
+
+		if ( hasEnhancedUi ) {
+			$select.removeClass( 'select2-hidden-accessible' );
+			$select.removeAttr( 'data-select2-id' );
+			$select.find( 'option' ).removeAttr( 'data-select2-id' );
+			$select.next( '.select2' ).remove();
+			$select.closest( '.acf-input' ).find( '> .select2, > .select2-container' ).remove();
+		}
+
+		if ( fieldObject && typeof acf !== 'undefined' && typeof acf.newSelect2 === 'function' && fieldObject.get && fieldObject.get( 'ui' ) ) {
+			var ajaxAction = fieldObject.get( 'ajax_action' );
+
+			if ( ! ajaxAction ) {
+				ajaxAction = 'acf/fields/' + fieldObject.get( 'type' ) + '/query';
+			}
+
+			fieldObject.select2 = acf.newSelect2( $select, {
+				field: fieldObject,
+				ajax: fieldObject.get( 'ajax' ),
+				multiple: fieldObject.get( 'multiple' ),
+				placeholder: fieldObject.get( 'placeholder' ),
+				allowNull: fieldObject.get( 'allow_null' ),
+				tags: fieldObject.get( 'create_options' ),
+				ajaxAction: ajaxAction
+			} );
 		}
 
 		$select.trigger( 'change' );
 	}
 
 	function syncContentListFilters( context ) {
-		$( context || document ).find( '.layout[data-layout="content_lists"]' ).each( function() {
+		$( context || document ).filter( '.layout[data-layout="content_lists"]' ).add( $( context || document ).find( '.layout[data-layout="content_lists"]' ) ).not( '.acf-clone' ).each( function() {
 			var $row = $( this );
 			var $postTypeField = getContentListField( $row, 'list_post_type' );
 			var $taxonomyField = getContentListField( $row, 'filter_taxonomy' );
 			var $termsField = getContentListField( $row, 'filter_terms' );
+			var $displayModeField = getContentListField( $row, 'display_mode' );
 			var $postTypeSelect = getContentListSelect( $postTypeField );
 			var $taxonomySelect = getContentListSelect( $taxonomyField );
 			var $termsSelect = getContentListSelect( $termsField );
+			var $displayModeSelect = getContentListSelect( $displayModeField );
 			var postType = $postTypeSelect.val() || '';
 			var taxonomy = $taxonomySelect.val() || '';
 			var taxonomyMap = getContentListTaxonomyMap();
+			var displayModeMap = getContentListDisplayModeMap();
 			var allowedTaxonomies = taxonomyMap[ postType ] || {};
+			var allowedDisplayModes = displayModeMap[ postType ] || {};
+			var displayModeUiChanged = false;
+			var taxonomyUiChanged = false;
+			var termsUiChanged = false;
 
-			if ( $taxonomySelect.length ) {
-				$taxonomySelect.find( 'option' ).each( function() {
-					var $option = $( this );
-					var value = $option.attr( 'value' ) || '';
-					var shouldShow = ! value || Object.prototype.hasOwnProperty.call( allowedTaxonomies, value );
+			$row.data( 'mrnSuppressContentListSync', true );
 
-					$option.prop( 'disabled', ! shouldShow );
-					$option.toggle( shouldShow );
+			if ( $displayModeSelect.length ) {
+				var displayMode = $displayModeSelect.val() || '';
+
+				if ( displayMode && ! Object.prototype.hasOwnProperty.call( allowedDisplayModes, displayMode ) ) {
+					displayMode = '';
+				}
+
+				if ( ! displayMode ) {
+					displayMode = '';
+				}
+
+				displayModeUiChanged = rebuildSelectOptions( $displayModeSelect, allowedDisplayModes, displayMode, {
+					allowBlank: true,
+					blankLabel: 'Use Row Settings'
 				} );
 
+				if ( displayModeUiChanged ) {
+					$displayModeSelect.trigger( 'change' );
+				}
+			}
+
+			if ( $taxonomySelect.length ) {
 				if ( taxonomy && ! Object.prototype.hasOwnProperty.call( allowedTaxonomies, taxonomy ) ) {
 					taxonomy = '';
-					$taxonomySelect.val( '' );
 				}
 
 				if ( ! taxonomy ) {
 					var firstTaxonomy = Object.keys( allowedTaxonomies )[0] || '';
 					if ( firstTaxonomy ) {
 						taxonomy = firstTaxonomy;
-						$taxonomySelect.val( firstTaxonomy );
 					}
 				}
 
-				updateSelectUi( $taxonomySelect );
+				taxonomyUiChanged = rebuildSelectOptions( $taxonomySelect, allowedTaxonomies, taxonomy, {
+					allowBlank: true,
+					blankLabel: 'Select'
+				} );
+
+				if ( taxonomyUiChanged ) {
+					updateSelectUi( $taxonomyField );
+				}
 			}
 
 			if ( $termsSelect.length ) {
 				var selectedTerms = $termsSelect.val();
+				var availableTerms = getCachedTermOptions( $termsSelect );
+				var allowedTerms = {};
 
 				if ( ! $.isArray( selectedTerms ) ) {
 					selectedTerms = selectedTerms ? [ selectedTerms ] : [];
 				}
 
-				$termsSelect.find( 'option' ).each( function() {
-					var $option = $( this );
-					var value = $option.attr( 'value' ) || '';
-					var termTaxonomy = value.split( ':' )[0] || '';
-					var shouldShow = ! taxonomy || termTaxonomy === taxonomy;
-
-					$option.prop( 'disabled', ! shouldShow );
-					$option.toggle( shouldShow );
+				$.each( availableTerms, function( index, option ) {
+					if ( ! option.value || ! taxonomy || option.taxonomy === taxonomy ) {
+						allowedTerms[ option.value ] = option.label;
+					}
 				} );
 
 				selectedTerms = $.grep( selectedTerms, function( value ) {
 					return ! taxonomy || ( value.split( ':' )[0] || '' ) === taxonomy;
 				} );
 
-				$termsSelect.val( selectedTerms );
-				updateSelectUi( $termsSelect );
+				termsUiChanged = rebuildSelectOptions( $termsSelect, allowedTerms, selectedTerms );
+
+				if ( termsUiChanged ) {
+					updateSelectUi( $termsField );
+				}
 			}
+
+			setContentListLegacyPresentationState( $row, '' === ( $displayModeSelect.val() || '' ) );
+			$row.removeData( 'mrnSuppressContentListSync' );
+			setContentListSyncState( $row, false );
+		} );
+	}
+
+	function scheduleContentListFilterSync( context ) {
+		$( context || document ).filter( '.layout[data-layout="content_lists"]' ).add( $( context || document ).find( '.layout[data-layout="content_lists"]' ) ).not( '.acf-clone' ).each( function() {
+			var $row = $( this );
+			var pendingTimer = $row.data( 'mrnContentListSyncTimer' );
+
+			if ( pendingTimer ) {
+				window.clearTimeout( pendingTimer );
+			}
+
+			setContentListSyncState( $row, true );
+
+			pendingTimer = window.setTimeout( function() {
+				$row.removeData( 'mrnContentListSyncTimer' );
+				syncContentListFilters( $row );
+			}, 16 );
+
+			$row.data( 'mrnContentListSyncTimer', pendingTimer );
 		} );
 	}
 
@@ -538,8 +778,18 @@
 		}, 40 );
 	} );
 
-	$( document ).on( 'change', '.layout[data-layout="content_lists"] .acf-field[data-name="list_post_type"] select, .layout[data-layout="content_lists"] .acf-field[data-name="filter_taxonomy"] select', function() {
-		syncContentListFilters( $( this ).closest( '.layout[data-layout="content_lists"]' ) );
+	$( document ).on( 'change select2:select select2:clear', '.layout[data-layout="content_lists"] .acf-field[data-name="list_post_type"] select, .layout[data-layout="content_lists"] .acf-field[data-name="filter_taxonomy"] select', function() {
+		var $row = $( this ).closest( '.layout[data-layout="content_lists"]' );
+
+		if ( $row.data( 'mrnSuppressContentListSync' ) ) {
+			return;
+		}
+
+		scheduleContentListFilterSync( $row );
+	} );
+
+	$( document ).on( 'change', '.layout[data-layout="content_lists"] .acf-field[data-name="display_mode"] select', function() {
+		refreshContentListLegacyPresentationState( $( this ).closest( '.layout[data-layout="content_lists"]' ) );
 	} );
 
 	$( document ).on( 'click', '.mrn-convert-reusable-block, .mrn-convert-reusable-block-action', function( event ) {

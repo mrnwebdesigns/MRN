@@ -567,8 +567,8 @@ function mrn_base_stack_register_acf_field_groups() {
 									'aria-label'    => '',
 									'type'          => 'select',
 									'choices'       => mrn_base_stack_get_content_list_display_mode_choices(),
-									'default_value' => 'standard',
-									'ui'            => 1,
+									'default_value' => '',
+									'ui'            => 0,
 									'wrapper'       => array(
 										'width' => '34',
 									),

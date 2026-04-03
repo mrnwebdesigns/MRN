@@ -171,7 +171,7 @@ These are the current preferred content patterns in the stack.
 - Current control set includes:
   - content type
   - list style
-  - display mode (`Standard`, `Title Only`)
+  - display mode
   - ordering and count
   - offset and pagination
   - excerpt and read-more display
@@ -182,6 +182,17 @@ These are the current preferred content patterns in the stack.
 - Taxonomy and term controls should stay aligned with the selected content type so authors are not shown irrelevant filter options.
 - Reusable Content Lists should still map back to the native `content_lists` builder layout vocabulary so page-specific conversion stays lossless.
 - Pagination should stay visually light by default and keep the browser anchored to the same row after paging.
+- Display modes are currently first-class only for `Content Lists`.
+- The implementation should stay helper-driven and filterable so future list-capable layouts can opt into the same display-mode vocabulary without duplicating renderer logic.
+- Client-managed display modes now live in `Site Configurations -> Display Modes`.
+- Current product model:
+  - create a display mode
+  - choose an entity type
+  - choose an entity item within that type
+  - choose which fields render for that entity
+- `Content Lists` is the first consumer of that system.
+- Current `Content Lists` consumption rule:
+  - only display modes with entity type `Post Type` and an item matching the selected content type should appear in the builder dropdown
 
 ### Section Width
 

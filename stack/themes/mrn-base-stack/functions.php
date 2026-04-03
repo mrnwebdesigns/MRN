@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.1.1' );
+	define( '_S_VERSION', '1.1.2' );
 }
 
 /**
@@ -425,7 +425,7 @@ function mrn_base_stack_register_blog_post_type() {
 add_action( 'init', 'mrn_base_stack_register_blog_post_type' );
 
 /**
- * Opt the theme-owned Gallery CPT into the universal sticky bar plugin.
+ * Opt theme-owned editorial CPTs into the universal sticky bar plugin.
  *
  * @param array<int, string> $post_types Supported sticky-bar post types.
  * @return array<int, string>
@@ -435,6 +435,7 @@ function mrn_base_stack_add_gallery_to_universal_sticky_bar( $post_types ) {
 		$post_types = array();
 	}
 
+	$post_types[] = 'blog';
 	$post_types[] = 'gallery';
 
 	return array_values(
@@ -446,6 +447,22 @@ function mrn_base_stack_add_gallery_to_universal_sticky_bar( $post_types ) {
 	);
 }
 add_filter( 'mrn_universal_sticky_bar_post_types', 'mrn_base_stack_add_gallery_to_universal_sticky_bar' );
+
+/**
+ * Enqueue shared ACF repeater admin controls anywhere repeaters render.
+ *
+ * @return void
+ */
+function mrn_base_stack_enqueue_shared_repeater_admin_assets() {
+	wp_enqueue_script(
+		'mrn-base-stack-admin-repeater-controls',
+		get_template_directory_uri() . '/js/admin-repeater-controls.js',
+		array( 'jquery', 'acf-input' ),
+		_S_VERSION,
+		true
+	);
+}
+add_action( 'acf/input/admin_enqueue_scripts', 'mrn_base_stack_enqueue_shared_repeater_admin_assets' );
 
 /**
  * Enqueue gallery-specific editor behavior on gallery edit screens.

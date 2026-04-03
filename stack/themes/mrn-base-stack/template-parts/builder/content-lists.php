@@ -29,9 +29,15 @@ if ( ! in_array( $list_style, array( 'unordered', 'ordered' ), true ) ) {
 	$list_style = 'unordered';
 }
 
-$display_mode = isset( $row['display_mode'] ) ? sanitize_key( (string) $row['display_mode'] ) : 'standard';
-if ( ! in_array( $display_mode, array( 'standard', 'title_only' ), true ) ) {
-	$display_mode = 'standard';
+$display_mode = function_exists( 'mrn_base_stack_normalize_content_list_display_mode' )
+	? mrn_base_stack_normalize_content_list_display_mode( $row['display_mode'] ?? '' )
+	: '';
+
+if ( function_exists( 'mrn_base_stack_get_content_list_display_modes_for_post_type' ) ) {
+	$available_display_modes = mrn_base_stack_get_content_list_display_modes_for_post_type( $post_type );
+	if ( '' !== $display_mode && ! isset( $available_display_modes[ $display_mode ] ) ) {
+		$display_mode = '';
+	}
 }
 
 $orderby_choices = function_exists( 'mrn_base_stack_get_content_list_orderby_choices' ) ? mrn_base_stack_get_content_list_orderby_choices() : array( 'date' => 'Publish Date' );
@@ -116,7 +122,7 @@ $section_classes = array(
 	'mrn-content-builder__row',
 	'mrn-content-builder__row--content-lists',
 	'mrn-content-builder__row--content-lists-' . $list_style,
-	'mrn-content-builder__row--content-lists-display-' . $display_mode,
+	'mrn-content-builder__row--content-lists-display-' . ( '' !== $display_mode ? $display_mode : 'row-settings' ),
 );
 $section_styles  = array();
 
@@ -215,66 +221,24 @@ if ( $show_pagination && $query->max_num_pages > 1 ) {
 						<?php while ( $query->have_posts() ) : ?>
 							<?php
 							$query->the_post();
-							$item_post    = get_post();
-							$permalink    = $item_post instanceof WP_Post ? get_permalink( $item_post ) : '';
-							$item_title   = $item_post instanceof WP_Post ? get_the_title( $item_post ) : '';
-							$item_excerpt = $show_excerpt && $item_post instanceof WP_Post && function_exists( 'mrn_base_stack_get_content_list_excerpt' ) ? mrn_base_stack_get_content_list_excerpt( $item_post, $excerpt_length ) : '';
-							$item_classes = array( 'mrn-content-list-row__item' );
-							$is_title_only = 'title_only' === $display_mode;
-
-							if ( ! $is_title_only && $show_featured_image && has_post_thumbnail() ) {
-								$item_classes[] = 'mrn-content-list-row__item--has-image';
+							$item_post = get_post();
+							?>
+							<?php
+							if ( $item_post instanceof WP_Post && function_exists( 'mrn_base_stack_render_content_list_item' ) ) {
+								echo mrn_base_stack_render_content_list_item(
+									$item_post,
+									array(
+										'display_mode'        => $display_mode,
+										'show_featured_image' => $show_featured_image,
+										'show_publish_date'   => $show_publish_date,
+										'show_excerpt'        => $show_excerpt,
+										'excerpt_length'      => $excerpt_length,
+										'show_read_more'      => $show_read_more,
+										'read_more_label'     => $read_more_label,
+									)
+								); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							}
 							?>
-							<li class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>">
-								<?php if ( $is_title_only ) : ?>
-									<span class="mrn-content-list-row__title mrn-content-list-row__title--only">
-										<?php if ( '' !== $permalink ) : ?>
-											<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
-										<?php else : ?>
-											<?php echo esc_html( $item_title ); ?>
-										<?php endif; ?>
-									</span>
-								<?php else : ?>
-									<article class="mrn-content-list-row__card">
-										<?php if ( $show_featured_image && has_post_thumbnail() && '' !== $permalink ) : ?>
-											<a class="mrn-content-list-row__media" href="<?php echo esc_url( $permalink ); ?>">
-												<?php the_post_thumbnail( 'medium_large' ); ?>
-											</a>
-										<?php elseif ( $show_featured_image && has_post_thumbnail() ) : ?>
-											<div class="mrn-content-list-row__media">
-												<?php the_post_thumbnail( 'medium_large' ); ?>
-											</div>
-										<?php endif; ?>
-
-										<div class="mrn-content-list-row__body">
-											<?php if ( $show_publish_date && $item_post instanceof WP_Post ) : ?>
-												<p class="mrn-content-list-row__meta"><?php echo esc_html( get_the_date( '', $item_post ) ); ?></p>
-											<?php endif; ?>
-
-											<?php if ( '' !== $item_title ) : ?>
-												<h3 class="mrn-content-list-row__title">
-													<?php if ( '' !== $permalink ) : ?>
-														<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
-													<?php else : ?>
-														<?php echo esc_html( $item_title ); ?>
-													<?php endif; ?>
-												</h3>
-											<?php endif; ?>
-
-											<?php if ( '' !== $item_excerpt ) : ?>
-												<p class="mrn-content-list-row__excerpt"><?php echo esc_html( $item_excerpt ); ?></p>
-											<?php endif; ?>
-
-											<?php if ( $show_read_more && '' !== $permalink ) : ?>
-												<p class="mrn-content-list-row__link">
-													<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( '' !== $read_more_label ? $read_more_label : 'Read More' ); ?></a>
-												</p>
-											<?php endif; ?>
-										</div>
-									</article>
-								<?php endif; ?>
-							</li>
 						<?php endwhile; ?>
 					<?php elseif ( '' !== $empty_message ) : ?>
 						<li class="mrn-content-list-row__item mrn-content-list-row__item--empty">
