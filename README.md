@@ -32,6 +32,13 @@ This is the reorganized MRN development workspace.
 - `stack/mu-plugins/` is a stack-facing wrapper layer and may contain loader files, root stubs, or symlinks back to `mu-plugins/`.
 - Zips in `releases/` should be rebuilt from source, not used as the source of truth.
 
+## QA Toolkit
+
+- Repo QA scripts live in:
+  - `/Users/khofmeyer/Development/MRN/stack/scripts`
+- QA reference doc:
+  - `/Users/khofmeyer/Development/MRN/stack/QA.md`
+
 ## Current Layout Notes
 
 - `stack/mu-plugins/mrn-loader.php` currently uses an explicit allowlist of MU plugin entry files.

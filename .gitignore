@@ -5,6 +5,10 @@
 !/MRN.code-workspace
 !/README.md
 !/memory.md
+!/memory/
+!/memory/current.md
+!/memory/spec/
+!/memory/spec/*.md
 /.local/
 !/clone/
 !/clone/README.md
@@ -24,8 +28,11 @@
 !/stack/THEME_ROADMAP.md
 !/stack/THEME_TASKLIST.md
 !/stack/STACK_OPERATIONS.md
+!/stack/QA.md
 !/stack/PLUGIN_CATALOG.md
 !/stack/PLUGIN_DOC_TEMPLATE.md
+!/stack/scripts/
+!/stack/scripts/qa-*.sh
 !/stack/plugin-docs/
 !/stack/plugin-docs/*.md
 !/stack/themes/
