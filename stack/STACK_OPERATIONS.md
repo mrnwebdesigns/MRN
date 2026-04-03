@@ -58,10 +58,19 @@ This ensures stack files are written as the app owner instead of a personal oper
 - Do not sync directly into live site `wp-content` paths as `mrn-ops`, `kyle`, or any other operator user.
 - Live site theme/plugin/MU refreshes should run as the destination site owner.
 - Preferred pattern for live site file syncs:
+  - from an ops/stack user with site-owner sudo:
 
 ```bash
 rsync -rlt --omit-dir-times --delete \
   --rsync-path='sudo -n -u <site-user> rsync'
+```
+
+  - verified fallback when site-owner sudo is not available yet:
+
+```bash
+rsync -rlt --omit-dir-times --delete \
+  /local/source/ \
+  <site-user>@<host>:/absolute/live/path/
 ```
 
 - Avoid preserving local owner/group/permission metadata onto live site paths.
@@ -69,14 +78,21 @@ rsync -rlt --omit-dir-times --delete \
   - Then normalize directories to `755` and files to `644` as the site owner.
 - Current canonical helper for live theme refreshes:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-live-theme.sh`
+- The helper now supports both modes:
+  - default ops/stack-user sync with `sudo -n -u <site-user>`
+  - direct site-owner SSH via `--direct-ssh`
 - Required server-side sudoers policy:
   - `mrn-ops` needs `NOPASSWD` access to run at least:
     - `/usr/bin/rsync`
     - `/usr/bin/find`
     - `/usr/bin/chmod`
     - `/usr/bin/perl`
+    - `/usr/bin/wp`
   - and it must be allowed to run those commands as the relevant site owner user, not only as `mrndev-stack-manager`
-- If that sudoers access is missing, stop and fix the server policy first rather than falling back to direct `mrn-ops` writes.
+- Verified current gap on `2026-04-03` for `default-configs.mrndev.io`:
+  - `mrndev-stack-manager` does not have site-owner sudo rights for live-site sync commands
+  - `mrn-ops` can become `mrndev-stack-manager`, but it still does not have `sudo -n -u <site-user>` rights for `rsync/find/chmod/perl/wp`
+- Until that sudoers policy is fixed, use direct site-owner SSH instead of writing live files as an operator user.
 
 ## Theme Rollout Rule
 

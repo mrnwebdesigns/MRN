@@ -16,6 +16,7 @@
 ## Active Product Decisions
 - `Content Lists` display modes are a targeted system, not a stack-wide builder rule.
 - Client management for display modes lives in `Site Configurations -> Display Modes`.
+- Client management for WPForms notification recipient emails now lives in `Site Configurations -> Integrations -> WPForms Notifications`.
 - In builder UI, `Content Lists` should only expose post-type display modes that match the selected content type, with fallback to `Use Row Settings`.
 - The implementation should stay helper-driven and filterable so other list-capable layouts can reuse the same registry and renderer later.
 - Singular sidebar behavior is theme-owned in `mrn-base-stack`.
@@ -28,6 +29,7 @@
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
 - `default-configs.mrndev.io` was refreshed on `2026-04-03` for the `Content Lists` display-mode and shared repeater-controls release.
+- `mrn-config-helper` now exposes a list-first WPForms notification editor in Site Configurations and saves Send To email updates back into the source WPForms form definitions.
 - `mrn-seo-helper` now owns sidebar placement for its SEO title/meta description ACF group and must register on WordPress `init` after CPT registration.
 - `mrn-editor-lockdown` preserves the SEO Helper box in locked classic-editor sidebars.
 
@@ -45,6 +47,7 @@
 - Stack site/server credential details are stored locally at `/Users/khofmeyer/Development/MRN/.local/secrets/default-configs-server-info.txt`.
 - If work is for a specific project/site, request that site's server information instead of relying on the default stack SSH target.
 - Live stack files should be written as the destination owner, not as `kyle`.
+- For `default-configs.mrndev.io`, the documented `sudo -n -u <site-user>` live-site sync path is still not provisioned for either `mrndev-stack-manager` or `mrn-ops`; direct site-owner SSH is the current working fallback.
 - `default-configs.mrndev.io` live theme files are currently readable, but ownership is still not normalized to the preferred site owner.
 - Future live theme refreshes must avoid unreadable file modes like `670`, especially after manual or selective syncs.
 
