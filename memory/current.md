@@ -24,7 +24,7 @@
 - Classic-editor sidebar collapse behavior is the active collapse contract and lives in `mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`.
 
 ## Recent Durable Decisions
-- Current stack baseline is `2026.04.03-testimonial-editorial-shell`.
+- Current stack baseline is `2026.04.03-config-helper-sendgrid-guidance`.
 - Current stack theme version is `mrn-base-stack 1.1.4`.
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
@@ -35,6 +35,7 @@
 - `mrn-editor-lockdown` preserves the SEO Helper box in locked classic-editor sidebars.
 
 ## Recent Release Notes
+- `mrn-config-helper` now shows the exact `define('MRN_SENDGRID_MANAGEMENT_API_KEY', 'your-sendgrid-management-api-key');` line in the SendGrid management-key help text and explicitly points admins to `wp-config.php` for host-managed setup.
 - The stack theme now includes a theme-owned `Testimonial` CPT with archive support and local ACF fields for name, company, position, website URL, rich text content, and image/logo.
 - Editorial CPT sticky-bar and shared shell support now derive from a shared helper so new theme-owned editorial CPTs stay aligned automatically.
 - `mrn-editor-lockdown` now applies its locked classic-editor metabox shell dynamically to supported non-reusable post types, keeping the SEO Helper box pinned at the top of the sidebar on new editorial CPTs.

@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.03-testimonial-editorial-shell`
+- Stack release: `2026.04.03-config-helper-sendgrid-guidance`
 - Release date: `2026-04-03`
 - Status: `current baseline`
 
@@ -14,7 +14,7 @@
   - `mrn-reusable-block-library` `0.1.5`
   - `mrn-site-colors` / `Site Styles` `0.1.3`
 - Standard plugins:
-  - `mrn-config-helper` `0.1.29`
+  - `mrn-config-helper` `0.1.30`
   - `mrn-editor-tools` `1.8.14`
   - `mrn-seo-helper` `0.2.9`
 

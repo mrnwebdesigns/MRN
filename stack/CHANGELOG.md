@@ -1,5 +1,9 @@
 # Stack Changelog
 
+## 2026.04.03-config-helper-sendgrid-guidance
+- Expanded `mrn-config-helper` to `0.1.30`.
+- Updated the SendGrid management-key help text in `Site Configurations` to show the exact `wp-config.php` constant line for `MRN_SENDGRID_MANAGEMENT_API_KEY` while keeping the host-managed source guidance.
+
 ## 2026.04.03-testimonial-editorial-shell
 - Expanded `mrn-base-stack` to `1.1.4`.
 - Expanded `mrn-editor-lockdown` to `1.0.6`.
