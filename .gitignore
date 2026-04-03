@@ -4,7 +4,8 @@
 !/AGENTS.md
 !/MRN.code-workspace
 !/README.md
-!/THREAD_MEMORY.md
+!/memory.md
+/.local/
 !/clone/
 !/clone/README.md
 !/releases/
@@ -70,5 +71,6 @@
 !/stack/themes/mrn-base-stack/template-parts/builder/*.php
 !/stack/themes/mrn-base-stack/languages/
 !/stack/themes/mrn-base-stack/languages/*
+/stack/themes/mrn-base-stack/vendor/
 .DS_Store
 */.DS_Store

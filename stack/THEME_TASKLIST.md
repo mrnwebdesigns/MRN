@@ -15,7 +15,7 @@ Use it with:
 - When a task changes durable theme behavior, update:
   - this file
   - `THEME_ROADMAP.md`
-  - `THREAD_MEMORY.md`
+  - `memory.md`
 
 ## Phase 1: System Foundation
 

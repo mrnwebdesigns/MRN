@@ -134,5 +134,5 @@ WordPress environment type should be set deliberately because some stack-managed
 When durable stack workflow or deployment rules change:
 
 1. update this file
-2. update `/Users/khofmeyer/Development/MRN/THREAD_MEMORY.md`
+2. update `/Users/khofmeyer/Development/MRN/memory.md`
 3. update release notes when the change affects rollout expectations

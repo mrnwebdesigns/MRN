@@ -2,7 +2,6 @@
 <ruleset name="WordPress Theme Coding Standards">
 	<!-- See https://github.com/squizlabs/PHP_CodeSniffer/wiki/Annotated-ruleset.xml -->
 	<!-- See https://github.com/WordPress/WordPress-Coding-Standards -->
-	<!-- See https://github.com/WPTRT/WPThemeReview -->
 	<!-- See https://github.com/PHPCompatibility/PHPCompatibilityWP -->
 
 	<!-- Set a description for this ruleset. -->
@@ -41,7 +40,7 @@
 
 	<!--
 	#############################################################################
-	USE THE WordPress AND THE Theme Review RULESET
+	USE THE WordPress RULESET
 	#############################################################################
 	-->
 
@@ -49,7 +48,6 @@
 		<!-- This rule does not apply here since the _s prefix should be changed by the theme author. -->
 		<exclude name="WordPress.NamingConventions.PrefixAllGlobals.ShortPrefixPassed"/>
 	</rule>
-	<rule ref="WPThemeReview"/>
 
 	<!--
 	#############################################################################
@@ -61,7 +59,9 @@
 		 Multiple valid text domains can be provided as a comma-delimited list. -->
 	<rule ref="WordPress.WP.I18n">
 		<properties>
-			<property name="text_domain" type="array" value="_s"/>
+			<property name="text_domain" type="array">
+				<element value="mrn-base-stack"/>
+			</property>
 		</properties>
 	</rule>
 
@@ -93,7 +93,10 @@
 		 Multiple valid prefixes can be provided as a comma-delimited list. -->
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>
-			<property name="prefixes" type="array" value="_s" />
+			<property name="prefixes" type="array">
+				<element value="mrn"/>
+				<element value="_S"/>
+			</property>
 		</properties>
 	</rule>
 
