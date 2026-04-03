@@ -149,6 +149,13 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
   - Current caveat:
     - the refreshed live theme files are readable (`644`) but are still owned by `mrn-ops:mrn-ops`, not the preferred site owner
     - direct `mrn-ops` sync worked for this release because the live theme path is writable, but ownership normalization should still happen in a later ops pass if strict site-owner policy matters
+- `mrn-seo-helper` now owns sidebar placement for its SEO title/meta description ACF group.
+  - As of `0.2.8`, the field group registers with ACF `position => side` and `menu_order => 0`.
+  - The field group must register on WordPress `init` after CPT registration, not early on `acf/init`, otherwise theme-owned CPTs like `blog` / `gallery` are missing from the location rules.
+  - This keeps the SEO helper fields at the top of the classic edit-screen sidebar for supported UI post types without hard-coding each CPT into theme/editor layout code.
+- `mrn-editor-lockdown` now preserves the SEO Helper box in locked classic-editor sidebars.
+  - As of `1.0.5`, locked sidebar metabox order prepends `acf-group_69a1c0f3a1b01` dynamically instead of relying on per-CPT hard-coded side-order strings to include it.
+  - This specifically covers `blog` / `gallery` and also protects future locked post types from dropping the SEO Helper sidebar box.
 - Front-end singular-sidebar collapse behavior was explored but intentionally deferred for now.
   - Revisit later if the shared singular shell should gain a front-end collapse/expand interaction.
   - Current active collapse behavior target is the classic WordPress add/edit screen sidebar, not the front-end singular layout.
@@ -4766,6 +4773,62 @@ After you get each summary back:
   - Documented the environment-variable contract in:
     - `/Users/khofmeyer/Development/MRN/stack/STACK_OPERATIONS.md`
     - `/Users/khofmeyer/Development/MRN/stack/PLUGIN_CATALOG.md`
+
+## Thread: 2026-04-03 SEO Helper CPT Sidebar Rollout
+- Goal:
+  - Make new classic-editor CPTs inherit the SEO Helper title/description sidebar box dynamically without hard-coding each CPT into edit-screen ordering.
+- Decisions made:
+  - `mrn-seo-helper` `0.2.8` now registers its ACF field group in the classic editor sidebar with `position => side` and `menu_order => 0`.
+  - The field group must register on WordPress `init` after CPT registration; early `acf/init` registration caused theme-owned CPTs like `blog` and `gallery` to be missing from the location rules.
+  - `mrn-editor-lockdown` `1.0.5` now prepends the SEO Helper ACF metabox ID (`acf-group_69a1c0f3a1b01`) into locked sidebar orders dynamically so `blog`, `gallery`, reusable block CPTs, and future locked classic-editor post types do not drop the SEO box.
+- Files changed:
+  - `/Users/khofmeyer/Development/MRN/plugins/mrn-seo-helper/mrn-seo-helper.php`
+  - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`
+- Packaging / deploy:
+  - rebuilt plugin artifact:
+    - `/Users/khofmeyer/Development/MRN/releases/plugins/mrn-seo-helper.zip`
+  - rebuilt MU plugin artifact:
+    - `/Users/khofmeyer/Development/MRN/releases/mu-plugins/mrn-editor-lockdown.zip`
+  - synced server stack plugin package:
+    - `/home/mrndev-stack-manager/stack/packages/mrn-seo-helper.zip`
+  - synced server stack MU source:
+    - `/home/mrndev-stack-manager/stack/mu-plugins/mrn-editor-lockdown/`
+  - refreshed live `default-configs.mrndev.io` copies via the older `mrndev-stack-manager` path:
+    - `/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io/wp-content/plugins/mrn-seo-helper/`
+    - `/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io/wp-content/mu-plugins/mrn-editor-lockdown/`
+- Git:
+  - `mrn-seo-helper`
+    - repo: `git@github.com:khofmeyer/mrn-seo-helper.git`
+    - commit: `aad070e` (`Release 0.2.8: auto-place SEO fields in classic sidebars`)
+  - `mrn-editor-lockdown`
+    - repo: `git@github.com:khofmeyer/mrn-editor-lockdown.git`
+    - commit: `f6f846c` (`Release 1.0.5: keep SEO helper in locked sidebars`)
+- Validation:
+  - `php -l /Users/khofmeyer/Development/MRN/plugins/mrn-seo-helper/mrn-seo-helper.php`
+  - `php -l /Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`
+  - `git -C /Users/khofmeyer/Development/MRN/plugins/mrn-seo-helper diff --check`
+  - `git -C /Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-lockdown diff --check`
+  - risky-pattern scan on both repos for `eval`, `base64_decode`, `exec`, `shell_exec`, `system`, `passthru`, `proc_open`, `popen`, remote calls, and direct file-write/delete helpers returned no matches
+  - local WP runtime checks confirmed:
+    - SEO Helper field group position is `side`
+    - SEO Helper field group location rules include `blog` and `gallery`
+    - locked `blog` sidebar order is `acf-group_69a1c0f3a1b01,authordiv,submitdiv`
+  - live WP runtime checks confirmed:
+    - `mrn-seo-helper` version `0.2.8`
+    - `mrn-editor-lockdown` version `1.0.5`
+    - locked `blog` sidebar order is `acf-group_69a1c0f3a1b01,authordiv,submitdiv`
+    - SEO Helper field group resolves to sidebar position and includes both `blog` and `gallery`
+  - public HTTP smoke checks returned `200` for:
+    - `https://default-configs.mrndev.io/`
+    - `https://default-configs.mrndev.io/sample-page/`
+  - response timing spot checks stayed reasonable after deploy:
+    - local homepage about `0.26s`
+    - local sample page about `0.34s`
+    - live homepage about `0.78s`
+    - live sample page about `0.80s`
+- Caveats:
+  - live deploy still could not use the preferred `sudo -n -u <site-user>` path because that server permission gap remains unresolved
+  - the live plugin directories contain `.git` content the deploy user could not fully chmod; the actual PHP entry files were verified at the correct versions and normalized to readable file modes
     - `mrn-helper`
     - `mrn-license-vault`
     - `mrn-role-metabox-lock`
