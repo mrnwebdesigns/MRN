@@ -1023,6 +1023,8 @@ Current conversion targets:
 - Content Grid
 - FAQs/Accordion
 
+The Add Content Row picker should derive those hidden conversion targets from the registered builder layouts instead of maintaining a second hardcoded admin-JS list, and the visible menu should stay alphabetized.
+
 The hidden-layout filtering in admin JS must only affect popup menu items, not full builder row DOM.
 
 ## FAQs/Accordion Rule
@@ -1195,7 +1197,7 @@ Do not add recursive split-inside-split layouts unless a future thread makes tha
 When a durable content-model rule changes:
 
 1. update this file
-2. update `/Users/khofmeyer/Development/MRN/THREAD_MEMORY.md`
+2. update `/Users/khofmeyer/Development/MRN/memory.md`
 3. if it affects release expectations, update stack release notes too
 
 ## QA Harness Pages (Local Only)

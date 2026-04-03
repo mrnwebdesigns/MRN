@@ -1740,6 +1740,14 @@ function mrn_base_stack_register_acf_field_groups() {
 								),
 								mrn_base_stack_get_text_tag_field( 'field_mrn_card_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
 								array(
+									'key'           => 'field_mrn_card_link',
+									'label'         => 'Link',
+									'name'          => 'link',
+									'aria-label'    => '',
+									'type'          => 'link',
+									'return_format' => 'array',
+								),
+								array(
 									'key'          => 'field_mrn_card_items',
 									'label'        => 'Cards',
 									'name'         => 'card_items',
@@ -1789,14 +1797,6 @@ function mrn_base_stack_register_acf_field_groups() {
 											),
 										),
 									),
-								),
-								array(
-									'key'           => 'field_mrn_card_link',
-									'label'         => 'Link',
-									'name'          => 'link',
-									'aria-label'    => '',
-									'type'          => 'link',
-									'return_format' => 'array',
 								),
 								array(
 									'key'        => 'field_mrn_card_config_tab',

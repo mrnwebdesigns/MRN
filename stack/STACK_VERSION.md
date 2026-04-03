@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.03-content-lists-display-modes`
+- Stack release: `2026.04.03-builder-layout-menu-dynamic`
 - Release date: `2026-04-03`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.2`
+  - `mrn-base-stack` `1.1.3`
 - MU plugins:
   - `mrn-shared-assets` `0.1.0`
   - `mrn-editor-lockdown` `1.0.4`

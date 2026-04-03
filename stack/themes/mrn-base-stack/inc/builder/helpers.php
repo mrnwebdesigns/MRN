@@ -1788,6 +1788,14 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				),
 				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_card_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
 				array(
+					'key'           => 'field_mrn_nested_card_link',
+					'label'         => 'Link',
+					'name'          => 'link',
+					'aria-label'    => '',
+					'type'          => 'link',
+					'return_format' => 'array',
+				),
+				array(
 					'key'          => 'field_mrn_nested_card_items',
 					'label'        => 'Cards',
 					'name'         => 'card_items',
@@ -1837,14 +1845,6 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 							),
 						),
 					),
-				),
-				array(
-					'key'           => 'field_mrn_nested_card_link',
-					'label'         => 'Link',
-					'name'          => 'link',
-					'aria-label'    => '',
-					'type'          => 'link',
-					'return_format' => 'array',
 				),
 				array(
 					'key'        => 'field_mrn_nested_card_config_tab',

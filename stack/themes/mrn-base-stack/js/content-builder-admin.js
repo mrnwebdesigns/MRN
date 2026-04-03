@@ -7,13 +7,51 @@
 
 	var config = mrnBaseStackBuilderAdmin;
 
-	function getMenuDecorations() {
-		return $.isArray( config.menuDecorations ) ? config.menuDecorations : [];
+	function getBuilderLayouts() {
+		return $.isArray( config.builderLayouts ) ? config.builderLayouts : [];
+	}
+
+	function getBuilderLayoutMap() {
+		var layoutMap = {};
+
+		$.each( getBuilderLayouts(), function( index, layout ) {
+			if ( ! layout || typeof layout !== 'object' || ! layout.name ) {
+				return;
+			}
+
+			layoutMap[ layout.name ] = layout;
+		} );
+
+		return layoutMap;
+	}
+
+	function getReusableLayoutNames() {
+		var reusableLayouts = [];
+
+		$.each( getBuilderLayouts(), function( index, layout ) {
+			if ( ! layout || typeof layout !== 'object' || ! layout.name || ! layout.isReusable || layout.isPageOnly ) {
+				return;
+			}
+
+			reusableLayouts.push( layout.name );
+		} );
+
+		return reusableLayouts;
 	}
 
 	function getHiddenLayouts() {
-		var hiddenLayouts = $.isArray( config.hiddenLayouts ) ? config.hiddenLayouts.slice() : [];
+		var hiddenLayouts = [];
 		var disabledLayouts = $.isArray( config.disabledLayouts ) ? config.disabledLayouts : [];
+
+		$.each( getBuilderLayouts(), function( index, layout ) {
+			if ( ! layout || typeof layout !== 'object' || ! layout.name || ! layout.isPageOnly ) {
+				return;
+			}
+
+			if ( hiddenLayouts.indexOf( layout.name ) === -1 ) {
+				hiddenLayouts.push( layout.name );
+			}
+		} );
 
 		$.each( disabledLayouts, function( index, layoutName ) {
 			if ( hiddenLayouts.indexOf( layoutName ) === -1 ) {
@@ -60,43 +98,114 @@
 		} );
 	}
 
-	function decorateFlexibleContentMenus( context ) {
-		var decorations = getMenuDecorations();
+	function alphabetizeFlexibleContentMenus( context ) {
+		var layoutMap = getBuilderLayoutMap();
 
-		if ( ! decorations.length ) {
-			return;
-		}
+		$( context || document ).find( 'ul' ).has( 'li [data-layout]' ).each( function() {
+			var $menu = $( this );
+			var $items = $menu.children( 'li' ).filter( function() {
+				return $( this ).find( '[data-layout]' ).length > 0;
+			} );
 
-		$( context || document ).find( 'li [data-layout]' ).each( function() {
-			var $link = $( this );
-			var $item = $link.closest( 'li' );
-			var layoutName = $link.attr( 'data-layout' ) || '';
-
-			if ( ! $item.length ) {
+			if ( $items.length < 2 ) {
 				return;
 			}
 
-			$.each( decorations, function( index, decoration ) {
-				var identifier;
-				var $header;
+			$items.sort( function( leftItem, rightItem ) {
+				var $leftLink = $( leftItem ).find( '[data-layout]' ).first();
+				var $rightLink = $( rightItem ).find( '[data-layout]' ).first();
+				var leftName = $leftLink.attr( 'data-layout' ) || '';
+				var rightName = $rightLink.attr( 'data-layout' ) || '';
+				var leftMeta = layoutMap[ leftName ] || {};
+				var rightMeta = layoutMap[ rightName ] || {};
+				var leftLabel = String( leftMeta.label || $leftLink.text() || '' ).trim().toLowerCase();
+				var rightLabel = String( rightMeta.label || $rightLink.text() || '' ).trim().toLowerCase();
 
-				if ( layoutName !== decoration.beforeLayout ) {
-					return;
+				return leftLabel.localeCompare( rightLabel );
+			} );
+
+			$.each( $items, function( index, item ) {
+				$menu.append( item );
+			} );
+		} );
+	}
+
+	function decorateFlexibleContentMenus( context ) {
+		var reusableLayouts = getReusableLayoutNames();
+
+		if ( ! reusableLayouts.length ) {
+			return;
+		}
+
+		$( context || document ).find( 'ul' ).has( 'li [data-layout]' ).each( function() {
+			var $menu = $( this );
+			var $firstReusable;
+			var $header;
+
+			$menu.children( '.mrn-builder-menu-header' ).remove();
+
+			$firstReusable = $menu.children( 'li' ).filter( function() {
+				var $item = $( this );
+				var layoutName;
+
+				if ( 'none' === $item.css( 'display' ) ) {
+					return false;
 				}
 
-				identifier = decoration.styleIdentifier || ( decoration.beforeLayout + '-' + index );
+				layoutName = $item.find( '[data-layout]' ).first().attr( 'data-layout' ) || '';
 
-				if ( $item.attr( 'data-mrn-decoration' ) === identifier || $item.prev( '.mrn-builder-menu-header[data-mrn-decoration="' + identifier + '"]' ).length ) {
-					return;
-				}
+				return reusableLayouts.indexOf( layoutName ) !== -1;
+			} ).first();
 
-				$item.attr( 'data-mrn-decoration', identifier );
+			if ( ! $firstReusable.length ) {
+				return;
+			}
 
-				$header = $( '<li class="mrn-builder-menu-header" aria-hidden="true"></li>' );
-				$header.attr( 'data-mrn-decoration', identifier );
-				$header.text( decoration.label || '' );
+			$header = $( '<li class="mrn-builder-menu-header" aria-hidden="true"></li>' );
+			$header.attr( 'data-mrn-decoration', 'reusable-shared' );
+			$header.text( 'Reusable / Shared' );
 
-				$item.before( $header );
+			$firstReusable.before( $header );
+		} );
+	}
+
+	function refreshFlexibleContentMenus( context ) {
+		alphabetizeFlexibleContentMenus( context );
+		hideFlexibleContentLayouts( context );
+		decorateFlexibleContentMenus( context );
+	}
+
+	function getLayoutRowsFromContext( context ) {
+		var $context = $( context || document );
+		var $rows = $context.filter( 'li' ).has( '[data-layout]' );
+
+		if ( $rows.length ) {
+			return $rows;
+		}
+
+		return $context.find( 'li' ).has( '[data-layout]' );
+	}
+
+	function sortFlexibleContentLayoutChoices( context ) {
+		var $rows = getLayoutRowsFromContext( context );
+
+		if ( ! $rows.length ) {
+			return;
+		}
+
+		$rows.each( function() {
+			var $item = $( this );
+			var $menu = $item.parent( 'ul' );
+
+			if ( ! $menu.length || $menu.data( 'mrnMenuRefreshScheduled' ) ) {
+				return;
+			}
+
+			$menu.data( 'mrnMenuRefreshScheduled', true );
+
+			window.setTimeout( function() {
+				$menu.removeData( 'mrnMenuRefreshScheduled' );
+				refreshFlexibleContentMenus( $menu );
 			} );
 		} );
 	}
@@ -153,9 +262,8 @@
 	}
 
 	function bootBuilderAdminUi( context ) {
-		hideFlexibleContentLayouts( context );
+		refreshFlexibleContentMenus( context );
 		ensureConversionActions( context );
-		decorateFlexibleContentMenus( context );
 		scheduleContentListFilterSync( context );
 	}
 
@@ -771,10 +879,13 @@
 		bootBuilderAdminUi( $el || document );
 	} );
 
+	acf.addAction( 'show', function( $el ) {
+		sortFlexibleContentLayoutChoices( $el || document );
+	} );
+
 	$( document ).on( 'click', '[data-name="add-layout"]', function() {
 		window.setTimeout( function() {
-			hideFlexibleContentLayouts( document );
-			decorateFlexibleContentMenus( document );
+			refreshFlexibleContentMenus( document );
 		}, 40 );
 	} );
 

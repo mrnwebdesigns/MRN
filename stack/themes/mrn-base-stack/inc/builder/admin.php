@@ -48,27 +48,64 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 			'loadingText'        => 'Converting block...',
 			'successText'        => 'This row is now a page-specific block.',
 			'errorText'          => 'The block could not be converted.',
-			'hiddenLayouts'      => array(
-				'basic_block',
-				'content_grid',
-				'cta_block',
-				'faq_block',
-			),
+			'builderLayouts'     => mrn_base_stack_get_builder_add_row_layout_menu_items(),
 			'disabledLayouts'    => function_exists( 'mrn_base_stack_get_hidden_builder_layouts' ) ? mrn_base_stack_get_hidden_builder_layouts() : array(),
 			'contentListTaxonomies' => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
 			'contentListDisplayModes' => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
-			'menuDecorations'    => array(
-				array(
-					'beforeLayout'    => 'reusable_block',
-					'className'       => 'mrn-builder-menu-divider',
-					'label'           => 'Reusable / Shared',
-					'styleIdentifier' => 'reusable-shared',
-				),
-			),
 		)
 	);
 }
 add_action( 'admin_enqueue_scripts', 'mrn_base_stack_admin_enqueue_builder_assets' );
+
+/**
+ * Build live Add Row menu metadata from the registered page builder layouts.
+ *
+ * This keeps editor menu behavior aligned with the actual flexible-content
+ * layouts instead of relying on parallel hardcoded lists in admin JavaScript.
+ *
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_builder_add_row_layout_menu_items() {
+	if ( ! function_exists( 'acf_get_field' ) ) {
+		return array();
+	}
+
+	$field = acf_get_field( 'field_mrn_page_content_rows' );
+	if ( ! is_array( $field ) || empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
+		return array();
+	}
+
+	$items = array();
+
+	foreach ( $field['layouts'] as $layout ) {
+		if ( ! is_array( $layout ) ) {
+			continue;
+		}
+
+		$name  = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+		$label = isset( $layout['label'] ) ? trim( wp_strip_all_tags( (string) $layout['label'] ) ) : '';
+
+		if ( '' === $name ) {
+			continue;
+		}
+
+		if ( '' === $label ) {
+			$label = ucfirst( str_replace( array( '_', '-' ), ' ', $name ) );
+		}
+
+		$is_page_only = false !== stripos( $label, '(Page Only)' );
+		$is_reusable  = false !== stripos( $label, 'reusable' ) || false !== stripos( $label, 'shared' );
+
+		$items[] = array(
+			'name'        => $name,
+			'label'       => $label,
+			'isPageOnly'  => $is_page_only,
+			'isReusable'  => $is_reusable,
+		);
+	}
+
+	return $items;
+}
 
 /**
  * Add lightweight admin CSS for custom content-builder row actions.

@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.04.03-builder-layout-menu-dynamic
+- Expanded `mrn-base-stack` to `1.1.3`.
+- Moved the Card row builder order so the shared row-level fields appear before the card-specific repeater fields.
+- Replaced the hardcoded Add Row layout/menu lists with live builder-layout metadata so new page-only conversion targets and reusable/shared layouts register automatically.
+- Alphabetized the Add Row builder picker while keeping page-only conversion targets hidden from the normal editor menu.
+
 ## 2026.04.03-content-lists-display-modes
 - Expanded `mrn-base-stack` to `1.1.2`.
 - Expanded `mrn-config-helper` to `0.1.29`.
@@ -131,4 +137,4 @@
 ## Format
 - Use one release heading per stack baseline or rollout milestone.
 - Keep entries short and outcome-focused.
-- Record stack-wide changes here even when the detailed implementation history lives in `THREAD_MEMORY.md`.
+- Record stack-wide changes here even when the detailed implementation history lives in `memory.md`.
