@@ -138,6 +138,10 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - the collapse control now lives in the top admin tab row beside `Screen Options`, not on the sidebar edge
     - the top-bar control keeps a fixed width and single-line label between `Hide Sidebar` / `Show Sidebar`
     - chevrons swap left/right between expanded and collapsed states
+- `mrn-editor-lockdown` `1.0.4` is the follow-up patch release for the top-bar toggle.
+  - Current contract:
+    - expanded state shows the correct chevron direction for collapsing
+    - collapsed state shows the correct chevron direction for reopening
 
 ## Thread: 2026-04-01 Gallery + Editorial CPT Admin Release
 - Goal:

@@ -1,5 +1,9 @@
 # Stack Changelog
 
+## 2026.04.02-editor-sidebar-chevron-fix
+- Expanded `mrn-editor-lockdown` to `1.0.4`.
+- Corrected the top-bar sidebar toggle chevron directions so expanded and collapsed states point the intended way.
+
 ## 2026.04.02-editor-sidebar-topbar-toggle
 - Expanded `mrn-editor-lockdown` to `1.0.3`.
 - Moved the classic-editor sidebar collapse control out of the metabox column and into the top admin tab row beside `Screen Options`.

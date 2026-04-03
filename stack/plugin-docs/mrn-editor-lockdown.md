@@ -5,7 +5,7 @@
 - Name: `MRN Editor Lockdown (MU)`
 - Slug: `mrn-editor-lockdown`
 - Type: MU plugin
-- Current version: `1.0.3`
+- Current version: `1.0.4`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-lockdown`
 
