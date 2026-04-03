@@ -5,26 +5,26 @@
  * @package mrn-base-stack
  */
 
-$context          = is_array( $args ?? null ) ? $args : array();
-$row              = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
-$label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
-$label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : ( isset( $row['text_field'] ) ? trim( (string) $row['text_field'] ) : '' );
-$heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : ( isset( $row['text_field_tag'] ) ? strtolower( (string) $row['text_field_tag'] ) : 'h2' );
-$subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
-$subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
-$content          = isset( $row['content'] ) ? (string) $row['content'] : '';
-$link             = isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : array();
-$image            = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
-$background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
-$bottom_accent    = ! empty( $row['bottom_accent'] );
-$accent_slug      = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
+$context           = is_array( $args ?? null ) ? $args : array();
+$row               = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
+$label             = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
+$label_tag         = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
+$heading           = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : ( isset( $row['text_field'] ) ? trim( (string) $row['text_field'] ) : '' );
+$heading_tag       = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : ( isset( $row['text_field_tag'] ) ? strtolower( (string) $row['text_field_tag'] ) : 'h2' );
+$subheading        = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag    = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
+$content           = isset( $row['content'] ) ? (string) $row['content'] : '';
+$row_link          = isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : array();
+$image             = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
+$background_color  = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
+$bottom_accent     = ! empty( $row['bottom_accent'] );
+$accent_slug       = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
 $legacy_full_width = ! empty( $row['full_width'] );
-$image_position   = isset( $row['image_position'] ) ? sanitize_key( (string) $row['image_position'] ) : 'top';
-$image_size       = isset( $row['image_size'] ) ? sanitize_key( (string) $row['image_size'] ) : 'contained';
-$image_alignment  = isset( $row['image_alignment'] ) ? sanitize_key( (string) $row['image_alignment'] ) : 'center';
-$width_value      = $row['section_width'] ?? ( $legacy_full_width ? 'full-width' : '' );
-$width_layers     = function_exists( 'mrn_base_stack_get_section_width_layers' )
+$image_position    = isset( $row['image_position'] ) ? sanitize_key( (string) $row['image_position'] ) : 'top';
+$image_size        = isset( $row['image_size'] ) ? sanitize_key( (string) $row['image_size'] ) : 'contained';
+$image_alignment   = isset( $row['image_alignment'] ) ? sanitize_key( (string) $row['image_alignment'] ) : 'center';
+$width_value       = $row['section_width'] ?? ( $legacy_full_width ? 'full-width' : '' );
+$width_layers      = function_exists( 'mrn_base_stack_get_section_width_layers' )
 	? mrn_base_stack_get_section_width_layers( $width_value, 'wide', 'full-width' )
 	: array(
 		'width'           => $legacy_full_width ? 'full-width' : 'wide',
@@ -53,10 +53,10 @@ if ( ! in_array( $image_alignment, array( 'left', 'center', 'right' ), true ) ) 
 	$image_alignment = 'center';
 }
 
-$has_image = ! empty( $image['ID'] ) || ! empty( $image['url'] );
-$link_url = isset( $link['url'] ) ? (string) $link['url'] : '';
-$link_title = isset( $link['title'] ) ? (string) $link['title'] : '';
-$link_target = isset( $link['target'] ) ? (string) $link['target'] : '';
+$has_image   = ! empty( $image['ID'] ) || ! empty( $image['url'] );
+$link_url    = isset( $row_link['url'] ) ? (string) $row_link['url'] : '';
+$link_title  = isset( $row_link['title'] ) ? (string) $row_link['title'] : '';
+$link_target = isset( $row_link['target'] ) ? (string) $row_link['target'] : '';
 if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $link_url && ! $has_image ) {
 	return;
 }
@@ -74,18 +74,18 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 	$section_styles[] = '--mrn-image-content-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
-$accent_contract = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
+$accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 	'attributes' => array(),
 );
-$motion_contract = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
+$motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
 	'classes'    => array(),
 	'attributes' => array(),
 );
-$section_classes = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
-$section_classes = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
-$section_attrs   = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
-$section_attrs   = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
+$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
+$section_attrs     = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
+$section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
@@ -125,7 +125,16 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 
 				<?php if ( '' !== $link_url ) : ?>
 					<div class="mrn-image-content-row__link-wrap">
-						<a class="mrn-image-content-row__link" href="<?php echo esc_url( $link_url ); ?>"<?php if ( '' !== $link_target ) : ?> target="<?php echo esc_attr( $link_target ); ?>"<?php endif; ?><?php if ( '_blank' === $link_target ) : ?> rel="noopener noreferrer"<?php endif; ?>>
+						<a
+							class="mrn-image-content-row__link"
+							href="<?php echo esc_url( $link_url ); ?>"
+							<?php if ( '' !== $link_target ) : ?>
+								target="<?php echo esc_attr( $link_target ); ?>"
+							<?php endif; ?>
+							<?php if ( '_blank' === $link_target ) : ?>
+								rel="noopener noreferrer"
+							<?php endif; ?>
+						>
 							<?php echo esc_html( '' !== $link_title ? $link_title : $link_url ); ?>
 						</a>
 					</div>

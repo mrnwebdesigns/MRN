@@ -38,6 +38,10 @@ This is the reorganized MRN development workspace.
   - `/Users/khofmeyer/Development/MRN/stack/scripts`
 - QA reference doc:
   - `/Users/khofmeyer/Development/MRN/stack/QA.md`
+- Browser smoke QA command:
+  - `/Users/khofmeyer/Development/MRN/stack/scripts/qa-playwright-local-stack-site.sh`
+- Security QA command:
+  - `/Users/khofmeyer/Development/MRN/stack/scripts/qa-security.sh`
 
 ## Current Layout Notes
 

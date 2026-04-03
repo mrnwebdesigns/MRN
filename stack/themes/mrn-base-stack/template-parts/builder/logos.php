@@ -16,7 +16,7 @@ $subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheadin
 $subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $items            = isset( $row['logo_items'] ) && is_array( $row['logo_items'] ) ? $row['logo_items'] : array();
 $display_mode     = isset( $row['display_mode'] ) ? sanitize_key( (string) $row['display_mode'] ) : 'grid';
-$per_page         = isset( $row['per_page'] ) ? max( 3, min( 6, (int) $row['per_page'] ) ) : 6;
+$logos_per_page   = isset( $row['per_page'] ) ? max( 3, min( 6, (int) $row['per_page'] ) ) : 6;
 $show_arrows      = ! empty( $row['show_arrows'] );
 $show_pagination  = ! empty( $row['show_pagination'] );
 $pause_on_hover   = ! array_key_exists( 'pause_on_hover', $row ) || ! empty( $row['pause_on_hover'] );
@@ -54,8 +54,8 @@ foreach ( $items as $item ) {
 		continue;
 	}
 
-	$image = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
-	$link  = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
+	$image     = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+	$item_link = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
 
 	if ( empty( $image['ID'] ) && empty( $image['url'] ) ) {
 		continue;
@@ -63,7 +63,7 @@ foreach ( $items as $item ) {
 
 	$valid_items[] = array(
 		'image' => $image,
-		'link'  => $link,
+		'link'  => $item_link,
 	);
 }
 
@@ -82,19 +82,19 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 	$section_styles[] = '--mrn-logos-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
-$accent_contract = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
+$accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 	'attributes' => array(),
 );
-$motion_contract = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
+$motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
 	'classes'    => array(),
 	'attributes' => array(),
 );
-$section_classes = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
-$section_classes = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
-$section_attrs   = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
-$section_attrs   = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
-$slider_id       = 'mrn-logos-' . $row_index . '-' . wp_generate_password( 6, false, false );
+$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
+$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
+$section_attrs     = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
+$section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+$slider_id         = 'mrn-logos-' . $row_index . '-' . wp_generate_password( 6, false, false );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
@@ -122,7 +122,7 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 				id="<?php echo esc_attr( $slider_id ); ?>"
 				class="splide mrn-splide mrn-logos-row__splide"
 				aria-label="<?php echo esc_attr( '' !== $heading ? wp_strip_all_tags( $heading ) : 'Logo slider' ); ?>"
-				data-per-page="<?php echo esc_attr( (string) $per_page ); ?>"
+				data-per-page="<?php echo esc_attr( (string) $logos_per_page ); ?>"
 				data-arrows="<?php echo esc_attr( $show_arrows ? 'true' : 'false' ); ?>"
 				data-pagination="<?php echo esc_attr( $show_pagination ? 'true' : 'false' ); ?>"
 				data-pause-on-hover="<?php echo esc_attr( $pause_on_hover ? 'true' : 'false' ); ?>"
@@ -135,15 +135,24 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 					<ul class="splide__list">
 						<?php foreach ( $valid_items as $item ) : ?>
 							<?php
-							$image = $item['image'];
-							$link  = $item['link'];
-							$url   = isset( $link['url'] ) ? (string) $link['url'] : '';
-							$target = isset( $link['target'] ) ? (string) $link['target'] : '';
+							$image       = $item['image'];
+							$item_link   = $item['link'];
+							$url         = isset( $item_link['url'] ) ? (string) $item_link['url'] : '';
+							$link_target = isset( $item_link['target'] ) ? (string) $item_link['target'] : '';
 							?>
 							<li class="splide__slide">
 								<div class="mrn-logos-row__item">
 									<?php if ( '' !== $url ) : ?>
-										<a class="mrn-logos-row__link" href="<?php echo esc_url( $url ); ?>"<?php if ( '' !== $target ) : ?> target="<?php echo esc_attr( $target ); ?>"<?php endif; ?><?php if ( '_blank' === $target ) : ?> rel="noopener noreferrer"<?php endif; ?>>
+										<a
+											class="mrn-logos-row__link"
+											href="<?php echo esc_url( $url ); ?>"
+											<?php if ( '' !== $link_target ) : ?>
+												target="<?php echo esc_attr( $link_target ); ?>"
+											<?php endif; ?>
+											<?php if ( '_blank' === $link_target ) : ?>
+												rel="noopener noreferrer"
+											<?php endif; ?>
+										>
 									<?php endif; ?>
 									<?php if ( ! empty( $image['ID'] ) ) : ?>
 										<?php echo wp_get_attachment_image( (int) $image['ID'], 'medium' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -160,17 +169,26 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 				</div>
 			</div>
 		<?php else : ?>
-			<div class="mrn-logos-row__grid mrn-logos-row__grid--logo-wall mrn-logos-row__grid--columns-<?php echo esc_attr( (string) $per_page ); ?>">
+			<div class="mrn-logos-row__grid mrn-logos-row__grid--logo-wall mrn-logos-row__grid--columns-<?php echo esc_attr( (string) $logos_per_page ); ?>">
 				<?php foreach ( $valid_items as $item ) : ?>
 					<?php
-					$image  = $item['image'];
-					$link   = $item['link'];
-					$url    = isset( $link['url'] ) ? (string) $link['url'] : '';
-					$target = isset( $link['target'] ) ? (string) $link['target'] : '';
+					$image       = $item['image'];
+					$item_link   = $item['link'];
+					$url         = isset( $item_link['url'] ) ? (string) $item_link['url'] : '';
+					$link_target = isset( $item_link['target'] ) ? (string) $item_link['target'] : '';
 					?>
 					<div class="mrn-logos-row__item mrn-logos-row__item--logo-wall">
 						<?php if ( '' !== $url ) : ?>
-							<a class="mrn-logos-row__link" href="<?php echo esc_url( $url ); ?>"<?php if ( '' !== $target ) : ?> target="<?php echo esc_attr( $target ); ?>"<?php endif; ?><?php if ( '_blank' === $target ) : ?> rel="noopener noreferrer"<?php endif; ?>>
+							<a
+								class="mrn-logos-row__link"
+								href="<?php echo esc_url( $url ); ?>"
+								<?php if ( '' !== $link_target ) : ?>
+									target="<?php echo esc_attr( $link_target ); ?>"
+								<?php endif; ?>
+								<?php if ( '_blank' === $link_target ) : ?>
+									rel="noopener noreferrer"
+								<?php endif; ?>
+							>
 						<?php endif; ?>
 						<?php if ( ! empty( $image['ID'] ) ) : ?>
 							<?php echo wp_get_attachment_image( (int) $image['ID'], 'medium' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

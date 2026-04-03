@@ -51,8 +51,8 @@ foreach ( $items as $item ) {
 		continue;
 	}
 
-	$image = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
-	$link  = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
+	$image     = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+	$item_link = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
 
 	if ( empty( $image['ID'] ) && empty( $image['url'] ) ) {
 		continue;
@@ -60,12 +60,12 @@ foreach ( $items as $item ) {
 
 	$valid_items[] = array(
 		'image' => $image,
-		'link'  => $link,
+		'link'  => $item_link,
 	);
 }
 
-$section_link_url = isset( $section_link['url'] ) ? (string) $section_link['url'] : '';
-$section_link_title = isset( $section_link['title'] ) ? (string) $section_link['title'] : '';
+$section_link_url    = isset( $section_link['url'] ) ? (string) $section_link['url'] : '';
+$section_link_title  = isset( $section_link['title'] ) ? (string) $section_link['title'] : '';
 $section_link_target = isset( $section_link['target'] ) ? (string) $section_link['target'] : '';
 
 if ( '' === $label && '' === $heading && '' === $subheading && '' === $section_link_url && empty( $valid_items ) ) {
@@ -78,24 +78,24 @@ $section_classes = array(
 	'mrn-content-builder__row--showcase-hover-' . sanitize_html_class( $hover_effect ),
 	'mrn-content-builder__row--showcase-stagger-' . sanitize_html_class( $stagger_style ),
 );
-$section_styles = array();
+$section_styles  = array();
 
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-showcase-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
-$accent_contract = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
+$accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 	'attributes' => array(),
 );
-$motion_contract = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
+$motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
 	'classes'    => array(),
 	'attributes' => array(),
 );
-$section_classes = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
-$section_classes = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
-$section_attrs   = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
-$section_attrs   = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
+$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
+$section_attrs     = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
+$section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
@@ -122,14 +122,23 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 			<div class="mrn-showcase-row__grid mrn-showcase-row__grid--gallery-shell">
 				<?php foreach ( $valid_items as $index => $item ) : ?>
 					<?php
-					$image  = $item['image'];
-					$link   = $item['link'];
-					$url    = isset( $link['url'] ) ? (string) $link['url'] : '';
-					$target = isset( $link['target'] ) ? (string) $link['target'] : '';
+					$image       = $item['image'];
+					$item_link   = $item['link'];
+					$url         = isset( $item_link['url'] ) ? (string) $item_link['url'] : '';
+					$link_target = isset( $item_link['target'] ) ? (string) $item_link['target'] : '';
 					?>
 					<figure class="mrn-showcase-row__item mrn-showcase-row__item--gallery-shell mrn-showcase-row__item--<?php echo esc_attr( (string) ( $index + 1 ) ); ?>">
 						<?php if ( '' !== $url ) : ?>
-							<a class="mrn-showcase-row__link" href="<?php echo esc_url( $url ); ?>"<?php if ( '' !== $target ) : ?> target="<?php echo esc_attr( $target ); ?>"<?php endif; ?><?php if ( '_blank' === $target ) : ?> rel="noopener noreferrer"<?php endif; ?>>
+							<a
+								class="mrn-showcase-row__link"
+								href="<?php echo esc_url( $url ); ?>"
+								<?php if ( '' !== $link_target ) : ?>
+									target="<?php echo esc_attr( $link_target ); ?>"
+								<?php endif; ?>
+								<?php if ( '_blank' === $link_target ) : ?>
+									rel="noopener noreferrer"
+								<?php endif; ?>
+							>
 						<?php endif; ?>
 						<?php if ( ! empty( $image['ID'] ) ) : ?>
 							<?php echo wp_get_attachment_image( (int) $image['ID'], 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -146,7 +155,16 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 
 		<?php if ( '' !== $section_link_url ) : ?>
 			<div class="mrn-layout-content mrn-layout-content--text mrn-showcase-row__link-wrap">
-				<a class="mrn-showcase-row__section-link" href="<?php echo esc_url( $section_link_url ); ?>"<?php if ( '' !== $section_link_target ) : ?> target="<?php echo esc_attr( $section_link_target ); ?>"<?php endif; ?><?php if ( '_blank' === $section_link_target ) : ?> rel="noopener noreferrer"<?php endif; ?>>
+				<a
+					class="mrn-showcase-row__section-link"
+					href="<?php echo esc_url( $section_link_url ); ?>"
+					<?php if ( '' !== $section_link_target ) : ?>
+						target="<?php echo esc_attr( $section_link_target ); ?>"
+					<?php endif; ?>
+					<?php if ( '_blank' === $section_link_target ) : ?>
+						rel="noopener noreferrer"
+					<?php endif; ?>
+				>
 					<?php echo esc_html( '' !== $section_link_title ? $section_link_title : $section_link_url ); ?>
 				</a>
 			</div>

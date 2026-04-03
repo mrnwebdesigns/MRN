@@ -1,15 +1,16 @@
 <?php
-
 /**
-
  * Builder admin behavior.
-
  *
-
  * @package mrn-base-stack
-
  */
 
+/**
+ * Enqueue builder admin assets for supported classic editor screens.
+ *
+ * @param string $hook_suffix Current admin page hook suffix.
+ * @return void
+ */
 function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 	if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ), true ) ) {
 		return;
@@ -36,21 +37,21 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 		'mrn-base-stack-content-builder-admin',
 		'mrnBaseStackBuilderAdmin',
 		array(
-			'ajaxUrl'            => admin_url( 'admin-ajax.php' ),
-			'nonce'              => wp_create_nonce( 'mrn-base-stack-convert-reusable-block' ),
-			'action'             => 'mrn_base_stack_prepare_page_specific_block',
-			'actionTitle'        => 'Convert to page-specific',
-			'confirmTitle'       => 'Replace With Page-Specific Copy',
-			'confirmText'        => 'This will replace the reusable block reference in this row with a page-only copy you can edit here. The original reusable block will stay in the library unchanged.',
-			'confirmButton'      => 'Convert to Page-Specific',
-			'cancelButton'       => 'Cancel',
-			'emptySelectionText' => 'Choose a reusable block first.',
-			'loadingText'        => 'Converting block...',
-			'successText'        => 'This row is now a page-specific block.',
-			'errorText'          => 'The block could not be converted.',
-			'builderLayouts'     => mrn_base_stack_get_builder_add_row_layout_menu_items(),
-			'disabledLayouts'    => function_exists( 'mrn_base_stack_get_hidden_builder_layouts' ) ? mrn_base_stack_get_hidden_builder_layouts() : array(),
-			'contentListTaxonomies' => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
+			'ajaxUrl'                 => admin_url( 'admin-ajax.php' ),
+			'nonce'                   => wp_create_nonce( 'mrn-base-stack-convert-reusable-block' ),
+			'action'                  => 'mrn_base_stack_prepare_page_specific_block',
+			'actionTitle'             => 'Convert to page-specific',
+			'confirmTitle'            => 'Replace With Page-Specific Copy',
+			'confirmText'             => 'This will replace the reusable block reference in this row with a page-only copy you can edit here. The original reusable block will stay in the library unchanged.',
+			'confirmButton'           => 'Convert to Page-Specific',
+			'cancelButton'            => 'Cancel',
+			'emptySelectionText'      => 'Choose a reusable block first.',
+			'loadingText'             => 'Converting block...',
+			'successText'             => 'This row is now a page-specific block.',
+			'errorText'               => 'The block could not be converted.',
+			'builderLayouts'          => mrn_base_stack_get_builder_add_row_layout_menu_items(),
+			'disabledLayouts'         => function_exists( 'mrn_base_stack_get_hidden_builder_layouts' ) ? mrn_base_stack_get_hidden_builder_layouts() : array(),
+			'contentListTaxonomies'   => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
 			'contentListDisplayModes' => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
 		)
 	);
@@ -327,7 +328,7 @@ function mrn_base_stack_render_editorial_cpt_excerpt_after_title( $post ) {
 		return;
 	}
 
-	$title = 'blog' === $post->post_type ? __( 'Blog Excerpt', 'mrn-base-stack' ) : __( 'Gallery Excerpt', 'mrn-base-stack' );
+	$title       = 'blog' === $post->post_type ? __( 'Blog Excerpt', 'mrn-base-stack' ) : __( 'Gallery Excerpt', 'mrn-base-stack' );
 	$description = 'blog' === $post->post_type
 		? __( 'Write the short summary that should appear directly under the Blog title and in listings that use the excerpt.', 'mrn-base-stack' )
 		: __( 'Write the short summary that should appear directly under the Gallery title and in listings that use the excerpt.', 'mrn-base-stack' );

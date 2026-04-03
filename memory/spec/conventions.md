@@ -53,13 +53,13 @@
 ## Release Flow Definition
 - `Perform a release flow` means completing all of the following in order:
   - `QA`: check code for issues and do visual QA when possible or needed
-  - `Check for performance`: review for performance regressions or obvious performance concerns
+  - `Performance check`: review for performance regressions or obvious performance concerns
   - `Commit`: commit task-specific code to git with a simple commit message describing what was done
   - `Push`: push the new commit to GitHub
   - `Package`: create all necessary additions for the stack server and create the required local zip file
   - `Deploy`: deploy the code to the stack server
-  - `QA`: verify the deployed code is in place, versions are correct, required configs are added to the manifest, and any new plugins are added to the manifest
-  - `Document`: update memory and any other documentation needed to keep the project clean
+  - `Post-deploy QA`: verify the deployed code is in place, versions are correct, required configs are added to the manifest, and any new plugins are added to the manifest
+  - `Documentation update`: update memory and any other documentation needed to keep the project clean
 
 ## Deployment Guardrails
 - CloudPanel stack files should be written as `mrndev-stack-manager:mrndev-stack-manager`.

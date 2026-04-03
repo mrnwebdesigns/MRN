@@ -35,7 +35,17 @@
 				<div class="mrn-site-footer__brand">
 					<?php if ( ! empty( $mrn_footer_logo['ID'] ) ) : ?>
 						<a class="custom-logo-link mrn-site-logo-link" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
-							<?php echo wp_get_attachment_image( (int) $mrn_footer_logo['ID'], 'full', false, array( 'class' => 'custom-logo mrn-site-logo', 'alt' => get_bloginfo( 'name' ) ) ); ?>
+							<?php
+							echo wp_get_attachment_image(
+								(int) $mrn_footer_logo['ID'],
+								'full',
+								false,
+								array(
+									'class' => 'custom-logo mrn-site-logo',
+									'alt'   => get_bloginfo( 'name' ),
+								)
+							);
+							?>
 						</a>
 					<?php endif; ?>
 

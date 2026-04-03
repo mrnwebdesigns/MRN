@@ -1,6 +1,6 @@
 <?php
 /**
- * mrn-base-stack Theme Customizer
+ * Mrn-base-stack Theme Customizer
  *
  * @package mrn-base-stack
  */

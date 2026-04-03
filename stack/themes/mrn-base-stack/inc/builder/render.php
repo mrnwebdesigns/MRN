@@ -1,15 +1,18 @@
 <?php
-
 /**
-
  * Builder rendering, conversion, and search integration.
-
  *
-
  * @package mrn-base-stack
-
  */
 
+/**
+ * Render one hero-compatible builder row.
+ *
+ * @param array<string, mixed> $row Flexible content row.
+ * @param int                  $post_id Current post ID.
+ * @param int                  $index Zero-based row index.
+ * @return bool True when the row was rendered as a hero layout.
+ */
 function mrn_base_stack_render_hero_row( array $row, $post_id, $index ) {
 	if ( empty( $row['acf_fc_layout'] ) ) {
 		return false;
@@ -135,7 +138,7 @@ function mrn_base_stack_get_reusable_block_shell_modifier( $post_type ) {
 	$map = array(
 		'mrn_reusable_basic' => 'mrn-layout-section--reusable-basic',
 		'mrn_reusable_cta'   => 'mrn-layout-section--reusable-cta',
-		'mrn_reusable_list' => 'mrn-layout-section--reusable-content-lists',
+		'mrn_reusable_list'  => 'mrn-layout-section--reusable-content-lists',
 		'mrn_reusable_faq'   => 'mrn-layout-section--reusable-faq',
 		'mrn_reusable_grid'  => 'mrn-layout-section--reusable-grid',
 	);
@@ -155,7 +158,7 @@ function mrn_base_stack_get_reusable_block_row_modifier( $post_type ) {
 	$map = array(
 		'mrn_reusable_basic' => 'mrn-content-builder__row--basic-block',
 		'mrn_reusable_cta'   => 'mrn-content-builder__row--cta',
-		'mrn_reusable_list' => 'mrn-content-builder__row--content-lists',
+		'mrn_reusable_list'  => 'mrn-content-builder__row--content-lists',
 		'mrn_reusable_faq'   => 'mrn-content-builder__row--faq-block',
 		'mrn_reusable_grid'  => 'mrn-content-builder__row--content-grid',
 	);
@@ -222,7 +225,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'cta' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			$markup = mrn_rbl_render_fields_as_block(
+			$markup         = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_cta',
 				$row,
 				array(
@@ -231,12 +234,13 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page CTA',
 				)
 			);
-			echo mrn_base_stack_wrap_reusable_builder_markup(
+			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
 				$markup,
 				$row,
 				'mrn_reusable_cta',
 				'wide'
-			); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			);
+			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
 		}
 
@@ -245,7 +249,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'grid' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			$markup = mrn_rbl_render_fields_as_block(
+			$markup         = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_grid',
 				$row,
 				array(
@@ -254,12 +258,13 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page Grid',
 				)
 			);
-			echo mrn_base_stack_wrap_reusable_builder_markup(
+			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
 				$markup,
 				$row,
 				'mrn_reusable_grid',
 				'wide'
-			); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			);
+			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
 		}
 
@@ -268,7 +273,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'faq' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			$markup = mrn_rbl_render_fields_as_block(
+			$markup         = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_faq',
 				$row,
 				array(
@@ -277,7 +282,8 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page FAQs/Accordion',
 				)
 			);
-			echo mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_faq', 'wide' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_faq', 'wide' );
+			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
 		}
 
@@ -336,7 +342,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'basic_block' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			$markup = mrn_rbl_render_fields_as_block(
+			$markup         = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_basic',
 				$row,
 				array(
@@ -345,7 +351,8 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page Basic Block',
 				)
 			);
-			echo mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_basic', 'wide' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_basic', 'wide' );
+			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
 		}
 
@@ -354,7 +361,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'content_grid' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			$markup = mrn_rbl_render_fields_as_block(
+			$markup         = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_grid',
 				$row,
 				array(
@@ -363,12 +370,13 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page Content Grid',
 				)
 			);
-			echo mrn_base_stack_wrap_reusable_builder_markup(
+			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
 				$markup,
 				$row,
 				'mrn_reusable_grid',
 				'wide'
-			); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			);
+			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
 		}
 
@@ -377,7 +385,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'cta_block' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			$markup = mrn_rbl_render_fields_as_block(
+			$markup         = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_cta',
 				$row,
 				array(
@@ -386,12 +394,13 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page CTA Block',
 				)
 			);
-			echo mrn_base_stack_wrap_reusable_builder_markup(
+			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
 				$markup,
 				$row,
 				'mrn_reusable_cta',
 				'wide'
-			); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			);
+			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
 		}
 
@@ -400,7 +409,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'faq_block' === $layout ) {
 		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			$markup = mrn_rbl_render_fields_as_block(
+			$markup         = mrn_rbl_render_fields_as_block(
 				'mrn_reusable_faq',
 				$row,
 				array(
@@ -409,7 +418,8 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 					'block_name' => 'Page FAQ Block',
 				)
 			);
-			echo mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_faq', 'wide' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_faq', 'wide' );
+			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
 		}
 
@@ -428,7 +438,7 @@ function mrn_base_stack_get_page_specific_layout_map() {
 	return array(
 		'mrn_reusable_cta'   => 'cta_block',
 		'mrn_reusable_basic' => 'basic_block',
-		'mrn_reusable_list' => 'content_lists',
+		'mrn_reusable_list'  => 'content_lists',
 		'mrn_reusable_grid'  => 'content_grid',
 		'mrn_reusable_faq'   => 'faq_block',
 	);
@@ -443,7 +453,7 @@ function mrn_base_stack_get_page_specific_layout_key_map() {
 	return array(
 		'mrn_reusable_cta'   => 'layout_mrn_cta_block',
 		'mrn_reusable_basic' => 'layout_mrn_basic_block',
-		'mrn_reusable_list' => 'layout_mrn_content_lists',
+		'mrn_reusable_list'  => 'layout_mrn_content_lists',
 		'mrn_reusable_grid'  => 'layout_mrn_content_grid',
 		'mrn_reusable_faq'   => 'layout_mrn_faq_block',
 	);
@@ -489,7 +499,7 @@ function mrn_base_stack_get_page_specific_payload_for_block( $block_id ) {
 		return new WP_Error( 'invalid_block', 'The selected reusable block could not be found.' );
 	}
 
-	$layout_map = mrn_base_stack_get_page_specific_layout_map();
+	$layout_map     = mrn_base_stack_get_page_specific_layout_map();
 	$layout_key_map = mrn_base_stack_get_page_specific_layout_key_map();
 	$target_layout  = $layout_map[ $block->post_type ] ?? '';
 	$target_key     = $layout_key_map[ $block->post_type ] ?? '';
@@ -930,9 +940,10 @@ function mrn_base_stack_filter_smartcrawl_subject_endpoint( $subject, $keywords,
 		return $subject;
 	}
 
-	$post_id = isset( $_GET['post'] ) ? absint( wp_unslash( $_GET['post'] ) ) : 0;
-	if ( ! $post_id && isset( $_POST['post_ID'] ) ) {
-		$post_id = absint( wp_unslash( $_POST['post_ID'] ) );
+	// SmartCrawl reads the current editor context here without a nonce-bearing form submission.
+	$post_id = isset( $_GET['post'] ) ? absint( wp_unslash( $_GET['post'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	if ( ! $post_id && isset( $_POST['post_ID'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$post_id = absint( wp_unslash( $_POST['post_ID'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 	}
 
 	if ( ! $post_id ) {

@@ -34,6 +34,7 @@
 ## Recent Release Notes
 - The Card builder row now keeps shared row-level fields ahead of the card-specific repeater fields.
 - The Add Row builder picker now discovers layouts from live registered builder metadata, keeps page-only conversion targets hidden automatically, and alphabetizes the visible list.
+- The stack theme now includes a theme-owned `Testimonial` CPT with archive support and local ACF fields for name, company, position, website URL, rich text content, and image/logo.
 
 ## Active Ops Caveats
 - Run stack automation as `mrndev-stack-manager`; running as `kyle` can still produce runtime status-file warnings.
@@ -48,10 +49,22 @@
 - Local stack QA helpers now live in `/Users/khofmeyer/Development/MRN/stack/scripts`:
   - `qa-theme.sh`
   - `qa-risk-scan.sh`
+  - `qa-security.sh`
   - `qa-local-stack-site.sh`
   - `qa-page-speed.sh`
+  - `qa-playwright-local-stack-site.sh`
+- Shared cross-project QA starters now live in:
+  - `/Users/khofmeyer/Development/Local QA/lib/common.sh`
+  - `/Users/khofmeyer/Development/Local QA/templates/qa-wordpress-theme.sh`
+  - `/Users/khofmeyer/Development/Local QA/templates/qa-laravel-node.sh`
 - QA workflow reference doc:
   `/Users/khofmeyer/Development/MRN/stack/QA.md`
+- Theme browser smoke QA now lives in:
+  `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/tests/playwright`
+- Browser smoke coverage now includes the page editor builder UI by default on the Local stack site by provisioning a local-only `codex_qa_admin` user when explicit admin credentials are not supplied.
+- Security QA now has a dedicated script that combines the risk scan, focused WordPress security sniffs, a lightweight secret-pattern scan, and runtime dependency audits.
+- Adoption guidance for other repos now lives in:
+  `/Users/khofmeyer/Development/Local QA/README.md`
 
 ## Quality Priorities
 - Performance is a first-class requirement.

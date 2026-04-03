@@ -490,24 +490,24 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					),
 				),
 				array(
-					'key'        => 'field_mrn_business_hours_monday_open',
-					'label'      => __( 'Open', 'mrn-base-stack' ),
-					'name'       => 'hours_monday_open',
-					'type'       => 'time_picker',
-					'required'   => 0,
-					'wrapper'    => array(
+					'key'            => 'field_mrn_business_hours_monday_open',
+					'label'          => __( 'Open', 'mrn-base-stack' ),
+					'name'           => 'hours_monday_open',
+					'type'           => 'time_picker',
+					'required'       => 0,
+					'wrapper'        => array(
 						'width' => '33',
 					),
 					'display_format' => 'g:i a',
 					'return_format'  => 'g:i a',
 				),
 				array(
-					'key'        => 'field_mrn_business_hours_monday_close',
-					'label'      => __( 'Close', 'mrn-base-stack' ),
-					'name'       => 'hours_monday_close',
-					'type'       => 'time_picker',
-					'required'   => 0,
-					'wrapper'    => array(
+					'key'            => 'field_mrn_business_hours_monday_close',
+					'label'          => __( 'Close', 'mrn-base-stack' ),
+					'name'           => 'hours_monday_close',
+					'type'           => 'time_picker',
+					'required'       => 0,
+					'wrapper'        => array(
 						'width' => '33',
 					),
 					'display_format' => 'g:i a',
@@ -526,24 +526,24 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					),
 				),
 				array(
-					'key'        => 'field_mrn_business_hours_tuesday_open',
-					'label'      => __( 'Open', 'mrn-base-stack' ),
-					'name'       => 'hours_tuesday_open',
-					'type'       => 'time_picker',
-					'required'   => 0,
-					'wrapper'    => array(
+					'key'            => 'field_mrn_business_hours_tuesday_open',
+					'label'          => __( 'Open', 'mrn-base-stack' ),
+					'name'           => 'hours_tuesday_open',
+					'type'           => 'time_picker',
+					'required'       => 0,
+					'wrapper'        => array(
 						'width' => '33',
 					),
 					'display_format' => 'g:i a',
 					'return_format'  => 'g:i a',
 				),
 				array(
-					'key'        => 'field_mrn_business_hours_tuesday_close',
-					'label'      => __( 'Close', 'mrn-base-stack' ),
-					'name'       => 'hours_tuesday_close',
-					'type'       => 'time_picker',
-					'required'   => 0,
-					'wrapper'    => array(
+					'key'            => 'field_mrn_business_hours_tuesday_close',
+					'label'          => __( 'Close', 'mrn-base-stack' ),
+					'name'           => 'hours_tuesday_close',
+					'type'           => 'time_picker',
+					'required'       => 0,
+					'wrapper'        => array(
 						'width' => '33',
 					),
 					'display_format' => 'g:i a',
@@ -562,24 +562,24 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					),
 				),
 				array(
-					'key'        => 'field_mrn_business_hours_wednesday_open',
-					'label'      => __( 'Open', 'mrn-base-stack' ),
-					'name'       => 'hours_wednesday_open',
-					'type'       => 'time_picker',
-					'required'   => 0,
-					'wrapper'    => array(
+					'key'            => 'field_mrn_business_hours_wednesday_open',
+					'label'          => __( 'Open', 'mrn-base-stack' ),
+					'name'           => 'hours_wednesday_open',
+					'type'           => 'time_picker',
+					'required'       => 0,
+					'wrapper'        => array(
 						'width' => '33',
 					),
 					'display_format' => 'g:i a',
 					'return_format'  => 'g:i a',
 				),
 				array(
-					'key'        => 'field_mrn_business_hours_wednesday_close',
-					'label'      => __( 'Close', 'mrn-base-stack' ),
-					'name'       => 'hours_wednesday_close',
-					'type'       => 'time_picker',
-					'required'   => 0,
-					'wrapper'    => array(
+					'key'            => 'field_mrn_business_hours_wednesday_close',
+					'label'          => __( 'Close', 'mrn-base-stack' ),
+					'name'           => 'hours_wednesday_close',
+					'type'           => 'time_picker',
+					'required'       => 0,
+					'wrapper'        => array(
 						'width' => '33',
 					),
 					'display_format' => 'g:i a',
@@ -598,24 +598,24 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					),
 				),
 				array(
-					'key'        => 'field_mrn_business_hours_thursday_open',
-					'label'      => __( 'Open', 'mrn-base-stack' ),
-					'name'       => 'hours_thursday_open',
-					'type'       => 'time_picker',
-					'required'   => 0,
-					'wrapper'    => array(
+					'key'            => 'field_mrn_business_hours_thursday_open',
+					'label'          => __( 'Open', 'mrn-base-stack' ),
+					'name'           => 'hours_thursday_open',
+					'type'           => 'time_picker',
+					'required'       => 0,
+					'wrapper'        => array(
 						'width' => '33',
 					),
 					'display_format' => 'g:i a',
 					'return_format'  => 'g:i a',
 				),
 				array(
-					'key'        => 'field_mrn_business_hours_thursday_close',
-					'label'      => __( 'Close', 'mrn-base-stack' ),
-					'name'       => 'hours_thursday_close',
-					'type'       => 'time_picker',
-					'required'   => 0,
-					'wrapper'    => array(
+					'key'            => 'field_mrn_business_hours_thursday_close',
+					'label'          => __( 'Close', 'mrn-base-stack' ),
+					'name'           => 'hours_thursday_close',
+					'type'           => 'time_picker',
+					'required'       => 0,
+					'wrapper'        => array(
 						'width' => '33',
 					),
 					'display_format' => 'g:i a',
@@ -634,24 +634,24 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					),
 				),
 				array(
-					'key'        => 'field_mrn_business_hours_friday_open',
-					'label'      => __( 'Open', 'mrn-base-stack' ),
-					'name'       => 'hours_friday_open',
-					'type'       => 'time_picker',
-					'required'   => 0,
-					'wrapper'    => array(
+					'key'            => 'field_mrn_business_hours_friday_open',
+					'label'          => __( 'Open', 'mrn-base-stack' ),
+					'name'           => 'hours_friday_open',
+					'type'           => 'time_picker',
+					'required'       => 0,
+					'wrapper'        => array(
 						'width' => '33',
 					),
 					'display_format' => 'g:i a',
 					'return_format'  => 'g:i a',
 				),
 				array(
-					'key'        => 'field_mrn_business_hours_friday_close',
-					'label'      => __( 'Close', 'mrn-base-stack' ),
-					'name'       => 'hours_friday_close',
-					'type'       => 'time_picker',
-					'required'   => 0,
-					'wrapper'    => array(
+					'key'            => 'field_mrn_business_hours_friday_close',
+					'label'          => __( 'Close', 'mrn-base-stack' ),
+					'name'           => 'hours_friday_close',
+					'type'           => 'time_picker',
+					'required'       => 0,
+					'wrapper'        => array(
 						'width' => '33',
 					),
 					'display_format' => 'g:i a',
@@ -687,12 +687,12 @@ function mrn_base_stack_register_theme_options_field_groups() {
 							'default_value' => '',
 						),
 						array(
-							'key'           => 'field_mrn_business_holiday_date',
-							'label'         => __( 'Date', 'mrn-base-stack' ),
-							'name'          => 'date',
-							'type'          => 'date_picker',
-							'required'      => 1,
-							'wrapper'       => array(
+							'key'            => 'field_mrn_business_holiday_date',
+							'label'          => __( 'Date', 'mrn-base-stack' ),
+							'name'           => 'date',
+							'type'           => 'date_picker',
+							'required'       => 1,
+							'wrapper'        => array(
 								'width' => '18',
 							),
 							'display_format' => 'F j, Y',
@@ -717,24 +717,24 @@ function mrn_base_stack_register_theme_options_field_groups() {
 							'allow_null'    => 0,
 						),
 						array(
-							'key'           => 'field_mrn_business_holiday_open',
-							'label'         => __( 'Open', 'mrn-base-stack' ),
-							'name'          => 'open',
-							'type'          => 'time_picker',
-							'required'      => 0,
-							'wrapper'       => array(
+							'key'            => 'field_mrn_business_holiday_open',
+							'label'          => __( 'Open', 'mrn-base-stack' ),
+							'name'           => 'open',
+							'type'           => 'time_picker',
+							'required'       => 0,
+							'wrapper'        => array(
 								'width' => '14',
 							),
 							'display_format' => 'g:i a',
 							'return_format'  => 'g:i a',
 						),
 						array(
-							'key'           => 'field_mrn_business_holiday_close',
-							'label'         => __( 'Close', 'mrn-base-stack' ),
-							'name'          => 'close',
-							'type'          => 'time_picker',
-							'required'      => 0,
-							'wrapper'       => array(
+							'key'            => 'field_mrn_business_holiday_close',
+							'label'          => __( 'Close', 'mrn-base-stack' ),
+							'name'           => 'close',
+							'type'           => 'time_picker',
+							'required'       => 0,
+							'wrapper'        => array(
 								'width' => '14',
 							),
 							'display_format' => 'g:i a',
@@ -781,19 +781,19 @@ add_action( 'acf/init', 'mrn_base_stack_register_theme_options_field_groups', 20
  */
 function mrn_base_stack_get_business_information() {
 	$defaults = array(
-		'business_profile'  => '',
-		'years_in_business' => '',
-		'logo'              => null,
-		'logo_inverted'     => null,
-		'logo_footer'       => null,
+		'business_profile'     => '',
+		'years_in_business'    => '',
+		'logo'                 => null,
+		'logo_inverted'        => null,
+		'logo_footer'          => null,
 		'logo_footer_inverted' => null,
-		'phone'             => '',
-		'phone_uri'         => '',
-		'text_phone'        => '',
-		'text_phone_uri'    => '',
-		'address'           => array(),
-		'business_hours'    => array(),
-		'holiday_hours'     => array(),
+		'phone'                => '',
+		'phone_uri'            => '',
+		'text_phone'           => '',
+		'text_phone_uri'       => '',
+		'address'              => array(),
+		'business_hours'       => array(),
+		'holiday_hours'        => array(),
 	);
 
 	if ( ! function_exists( 'get_field' ) ) {
@@ -801,17 +801,17 @@ function mrn_base_stack_get_business_information() {
 	}
 
 	$business_information = array(
-		'business_profile'  => get_field( 'business_profile', 'option' ),
-		'years_in_business' => get_field( 'years_in_business', 'option' ),
-		'logo'              => get_field( 'logo', 'option' ),
-		'logo_inverted'     => get_field( 'logo_inverted', 'option' ),
-		'logo_footer'       => get_field( 'logo_footer', 'option' ),
+		'business_profile'     => get_field( 'business_profile', 'option' ),
+		'years_in_business'    => get_field( 'years_in_business', 'option' ),
+		'logo'                 => get_field( 'logo', 'option' ),
+		'logo_inverted'        => get_field( 'logo_inverted', 'option' ),
+		'logo_footer'          => get_field( 'logo_footer', 'option' ),
 		'logo_footer_inverted' => get_field( 'logo_footer_inverted', 'option' ),
-		'phone'             => mrn_base_stack_format_phone_number( get_field( 'phone', 'option' ) ),
-		'phone_uri'         => mrn_base_stack_get_phone_uri( get_field( 'phone', 'option' ) ),
-		'text_phone'        => mrn_base_stack_format_phone_number( get_field( 'text_phone', 'option' ) ),
-		'text_phone_uri'    => mrn_base_stack_get_phone_uri( get_field( 'text_phone', 'option' ) ),
-		'address'           => array(
+		'phone'                => mrn_base_stack_format_phone_number( get_field( 'phone', 'option' ) ),
+		'phone_uri'            => mrn_base_stack_get_phone_uri( get_field( 'phone', 'option' ) ),
+		'text_phone'           => mrn_base_stack_format_phone_number( get_field( 'text_phone', 'option' ) ),
+		'text_phone_uri'       => mrn_base_stack_get_phone_uri( get_field( 'text_phone', 'option' ) ),
+		'address'              => array(
 			'line_1'      => get_field( 'address_line_1', 'option' ),
 			'line_2'      => get_field( 'address_line_2', 'option' ),
 			'city'        => get_field( 'address_city', 'option' ),
@@ -819,7 +819,7 @@ function mrn_base_stack_get_business_information() {
 			'postal_code' => get_field( 'address_postal_code', 'option' ),
 			'country'     => get_field( 'address_country', 'option' ),
 		),
-		'business_hours'    => array(
+		'business_hours'       => array(
 			'monday'    => array(
 				'open'  => get_field( 'hours_monday_open', 'option' ),
 				'close' => get_field( 'hours_monday_close', 'option' ),
@@ -841,7 +841,7 @@ function mrn_base_stack_get_business_information() {
 				'close' => get_field( 'hours_friday_close', 'option' ),
 			),
 		),
-		'holiday_hours'     => get_field( 'holiday_hours', 'option' ),
+		'holiday_hours'        => get_field( 'holiday_hours', 'option' ),
 	);
 
 	return wp_parse_args( $business_information, $defaults );
@@ -874,10 +874,10 @@ function mrn_base_stack_get_business_opening_hours_schema( $business_information
 		}
 
 		$hours_payload[] = array(
-			'@type'    => 'OpeningHoursSpecification',
-			'dayOfWeek'=> $schema_day,
-			'opens'    => $open,
-			'closes'   => $close,
+			'@type'     => 'OpeningHoursSpecification',
+			'dayOfWeek' => $schema_day,
+			'opens'     => $open,
+			'closes'    => $close,
 		);
 	}
 
@@ -978,9 +978,9 @@ function mrn_base_stack_get_business_schema_data() {
 	if ( ! empty( $business_information['phone'] ) ) {
 		$contact_points[] = array_filter(
 			array(
-				'@type'        => 'ContactPoint',
-				'contactType'  => 'customer support',
-				'telephone'    => (string) $business_information['phone'],
+				'@type'          => 'ContactPoint',
+				'contactType'    => 'customer support',
+				'telephone'      => (string) $business_information['phone'],
 				'hoursAvailable' => $opening_hours,
 			)
 		);
@@ -1057,20 +1057,20 @@ function mrn_base_stack_get_business_logo( $context = 'header' ) {
  */
 function mrn_base_stack_get_theme_header_footer_options() {
 	$defaults = array(
-		'header_show_utility_menu'   => false,
-		'header_show_search'         => false,
-		'header_show_business_phone' => false,
+		'header_show_utility_menu'     => false,
+		'header_show_search'           => false,
+		'header_show_business_phone'   => false,
 		'header_show_business_profile' => false,
-		'footer_show_footer_menu'    => false,
-		'footer_show_legal_menu'     => false,
+		'footer_show_footer_menu'      => false,
+		'footer_show_legal_menu'       => false,
 		'footer_show_business_profile' => false,
-		'footer_show_business_phone' => false,
-		'footer_show_text_phone'     => false,
-		'footer_show_address'        => false,
-		'footer_show_business_hours' => false,
-		'footer_show_social_links'   => false,
-		'footer_copyright_text'      => '',
-		'footer_legal_text'          => '',
+		'footer_show_business_phone'   => false,
+		'footer_show_text_phone'       => false,
+		'footer_show_address'          => false,
+		'footer_show_business_hours'   => false,
+		'footer_show_social_links'     => false,
+		'footer_copyright_text'        => '',
+		'footer_legal_text'            => '',
 	);
 
 	if ( ! function_exists( 'get_field' ) ) {
@@ -1078,20 +1078,20 @@ function mrn_base_stack_get_theme_header_footer_options() {
 	}
 
 	$options = array(
-		'header_show_utility_menu'   => (bool) get_field( 'header_show_utility_menu', 'option' ),
-		'header_show_search'         => (bool) get_field( 'header_show_search', 'option' ),
-		'header_show_business_phone' => (bool) get_field( 'header_show_business_phone', 'option' ),
+		'header_show_utility_menu'     => (bool) get_field( 'header_show_utility_menu', 'option' ),
+		'header_show_search'           => (bool) get_field( 'header_show_search', 'option' ),
+		'header_show_business_phone'   => (bool) get_field( 'header_show_business_phone', 'option' ),
 		'header_show_business_profile' => (bool) get_field( 'header_show_business_profile', 'option' ),
-		'footer_show_footer_menu'    => (bool) get_field( 'footer_show_footer_menu', 'option' ),
-		'footer_show_legal_menu'     => (bool) get_field( 'footer_show_legal_menu', 'option' ),
+		'footer_show_footer_menu'      => (bool) get_field( 'footer_show_footer_menu', 'option' ),
+		'footer_show_legal_menu'       => (bool) get_field( 'footer_show_legal_menu', 'option' ),
 		'footer_show_business_profile' => (bool) get_field( 'footer_show_business_profile', 'option' ),
-		'footer_show_business_phone' => (bool) get_field( 'footer_show_business_phone', 'option' ),
-		'footer_show_text_phone'     => (bool) get_field( 'footer_show_text_phone', 'option' ),
-		'footer_show_address'        => (bool) get_field( 'footer_show_address', 'option' ),
-		'footer_show_business_hours' => (bool) get_field( 'footer_show_business_hours', 'option' ),
-		'footer_show_social_links'   => (bool) get_field( 'footer_show_social_links', 'option' ),
-		'footer_copyright_text'      => (string) get_field( 'footer_copyright_text', 'option' ),
-		'footer_legal_text'          => (string) get_field( 'footer_legal_text', 'option' ),
+		'footer_show_business_phone'   => (bool) get_field( 'footer_show_business_phone', 'option' ),
+		'footer_show_text_phone'       => (bool) get_field( 'footer_show_text_phone', 'option' ),
+		'footer_show_address'          => (bool) get_field( 'footer_show_address', 'option' ),
+		'footer_show_business_hours'   => (bool) get_field( 'footer_show_business_hours', 'option' ),
+		'footer_show_social_links'     => (bool) get_field( 'footer_show_social_links', 'option' ),
+		'footer_copyright_text'        => (string) get_field( 'footer_copyright_text', 'option' ),
+		'footer_legal_text'            => (string) get_field( 'footer_legal_text', 'option' ),
 	);
 
 	return wp_parse_args( $options, $defaults );
@@ -1163,6 +1163,8 @@ function mrn_base_stack_format_phone_number( $value ) {
  * @return bool|string
  */
 function mrn_base_stack_validate_business_phone_field( $valid, $value, $field ) {
+	unset( $field );
+
 	if ( true !== $valid ) {
 		return $valid;
 	}

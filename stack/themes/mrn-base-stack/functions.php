@@ -1,6 +1,6 @@
 <?php
 /**
- * mrn-base-stack functions and definitions
+ * MRN Base Stack functions and definitions.
  *
  * @link https://developer.wordpress.org/themes/basics/theme-functions/
  *
@@ -149,6 +149,36 @@ function mrn_base_stack_is_admin_cpt_visible( $post_type ) {
 }
 
 /**
+ * Get theme-owned editorial custom post types.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_editorial_cpts() {
+	$post_types = array( 'blog', 'gallery', 'testimonial' );
+
+	/**
+	 * Filter the theme-owned editorial CPT slugs.
+	 *
+	 * @param array<int, string> $post_types Supported CPTs.
+	 */
+	$post_types = apply_filters( 'mrn_base_stack_editorial_cpts', $post_types );
+
+	if ( ! is_array( $post_types ) ) {
+		return array( 'blog', 'gallery', 'testimonial' );
+	}
+
+	$post_types = array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $post_types )
+			)
+		)
+	);
+
+	return ! empty( $post_types ) ? $post_types : array( 'blog', 'gallery', 'testimonial' );
+}
+
+/**
  * Get builder layouts hidden from the editor add-row menus.
  *
  * @return array<int, string>
@@ -172,6 +202,7 @@ function mrn_base_stack_get_hidden_builder_layouts() {
 /**
  * Get the singular post types that use the theme's builder-style shell.
  *
+ * @param array<int, string> $post_types Post type slugs.
  * @return array<int, string>
  */
 function mrn_base_stack_build_post_type_location_rules( array $post_types ) {
@@ -231,7 +262,7 @@ function mrn_base_stack_get_builder_supported_post_types() {
  * @return array<int, string>
  */
 function mrn_base_stack_get_hero_supported_post_types() {
-	$post_types = array_merge( mrn_base_stack_get_builder_supported_post_types(), array( 'gallery' ) );
+	$post_types = array_merge( mrn_base_stack_get_builder_supported_post_types(), mrn_base_stack_get_editorial_cpts() );
 
 	/**
 	 * Filter the post types that should receive the theme hero experience.
@@ -241,7 +272,7 @@ function mrn_base_stack_get_hero_supported_post_types() {
 	$post_types = apply_filters( 'mrn_base_stack_hero_supported_post_types', $post_types );
 
 	if ( ! is_array( $post_types ) ) {
-		return array( 'page', 'post', 'blog', 'gallery' );
+		return array_merge( array( 'page', 'post' ), mrn_base_stack_get_editorial_cpts() );
 	}
 
 	$post_types = array_values(
@@ -252,7 +283,7 @@ function mrn_base_stack_get_hero_supported_post_types() {
 		)
 	);
 
-	return ! empty( $post_types ) ? $post_types : array( 'page', 'post', 'blog', 'gallery' );
+	return ! empty( $post_types ) ? $post_types : array_merge( array( 'page', 'post' ), mrn_base_stack_get_editorial_cpts() );
 }
 
 /**
@@ -261,7 +292,7 @@ function mrn_base_stack_get_hero_supported_post_types() {
  * @return array<int, string>
  */
 function mrn_base_stack_get_after_content_supported_post_types() {
-	$post_types = array_merge( mrn_base_stack_get_builder_supported_post_types(), array( 'gallery' ) );
+	$post_types = array_merge( mrn_base_stack_get_builder_supported_post_types(), mrn_base_stack_get_editorial_cpts() );
 
 	/**
 	 * Filter the post types that should receive the after-content builder.
@@ -271,7 +302,7 @@ function mrn_base_stack_get_after_content_supported_post_types() {
 	$post_types = apply_filters( 'mrn_base_stack_after_content_supported_post_types', $post_types );
 
 	if ( ! is_array( $post_types ) ) {
-		return array( 'page', 'post', 'blog', 'gallery' );
+		return array_merge( array( 'page', 'post' ), mrn_base_stack_get_editorial_cpts() );
 	}
 
 	$post_types = array_values(
@@ -282,7 +313,7 @@ function mrn_base_stack_get_after_content_supported_post_types() {
 		)
 	);
 
-	return ! empty( $post_types ) ? $post_types : array( 'page', 'post', 'blog', 'gallery' );
+	return ! empty( $post_types ) ? $post_types : array_merge( array( 'page', 'post' ), mrn_base_stack_get_editorial_cpts() );
 }
 
 /**
@@ -295,7 +326,7 @@ function mrn_base_stack_get_singular_shell_post_types() {
 		mrn_base_stack_get_builder_supported_post_types(),
 		mrn_base_stack_get_hero_supported_post_types(),
 		mrn_base_stack_get_after_content_supported_post_types(),
-		array( 'gallery' )
+		mrn_base_stack_get_editorial_cpts()
 	);
 
 	/**
@@ -306,7 +337,7 @@ function mrn_base_stack_get_singular_shell_post_types() {
 	$post_types = apply_filters( 'mrn_base_stack_singular_shell_post_types', $post_types );
 
 	if ( ! is_array( $post_types ) ) {
-		return array( 'page', 'post', 'blog', 'gallery' );
+		return array_merge( array( 'page', 'post' ), mrn_base_stack_get_editorial_cpts() );
 	}
 
 	$post_types = array_values(
@@ -317,7 +348,7 @@ function mrn_base_stack_get_singular_shell_post_types() {
 		)
 	);
 
-	return ! empty( $post_types ) ? $post_types : array( 'page', 'post', 'blog', 'gallery' );
+	return ! empty( $post_types ) ? $post_types : array_merge( array( 'page', 'post' ), mrn_base_stack_get_editorial_cpts() );
 }
 
 /**
@@ -430,13 +461,12 @@ add_action( 'init', 'mrn_base_stack_register_blog_post_type' );
  * @param array<int, string> $post_types Supported sticky-bar post types.
  * @return array<int, string>
  */
-function mrn_base_stack_add_gallery_to_universal_sticky_bar( $post_types ) {
+function mrn_base_stack_add_editorial_cpts_to_universal_sticky_bar( $post_types ) {
 	if ( ! is_array( $post_types ) ) {
 		$post_types = array();
 	}
 
-	$post_types[] = 'blog';
-	$post_types[] = 'gallery';
+	$post_types = array_merge( $post_types, mrn_base_stack_get_editorial_cpts() );
 
 	return array_values(
 		array_unique(
@@ -446,7 +476,7 @@ function mrn_base_stack_add_gallery_to_universal_sticky_bar( $post_types ) {
 		)
 	);
 }
-add_filter( 'mrn_universal_sticky_bar_post_types', 'mrn_base_stack_add_gallery_to_universal_sticky_bar' );
+add_filter( 'mrn_universal_sticky_bar_post_types', 'mrn_base_stack_add_editorial_cpts_to_universal_sticky_bar' );
 
 /**
  * Enqueue shared ACF repeater admin controls anywhere repeaters render.
@@ -607,6 +637,11 @@ require_once get_template_directory() . '/inc/singular-sidebar.php';
  * Load gallery modules.
  */
 require_once get_template_directory() . '/inc/gallery.php';
+
+/**
+ * Load testimonial modules.
+ */
+require_once get_template_directory() . '/inc/testimonial.php';
 
 /**
  * Implement the Custom Header feature.

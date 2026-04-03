@@ -1,15 +1,18 @@
 <?php
-
 /**
-
  * Builder helpers and nested layout definitions.
-
  *
-
  * @package mrn-base-stack
-
  */
 
+/**
+ * Build shared context passed into row template parts.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @param int|string           $post_id Current post ID.
+ * @param int|string           $index Row index.
+ * @return array<string, mixed>
+ */
 function mrn_base_stack_get_builder_row_context( array $row, $post_id, $index ) {
 	return array(
 		'row'     => $row,
@@ -183,9 +186,9 @@ function mrn_base_stack_load_content_list_display_mode_field_choices( $field ) {
 		return $field;
 	}
 
-	$field['choices'] = mrn_base_stack_get_content_list_display_mode_choices();
+	$field['choices']    = mrn_base_stack_get_content_list_display_mode_choices();
 	$field['allow_null'] = 1;
-	$field['ui']      = 0;
+	$field['ui']         = 0;
 
 	return $field;
 }
@@ -210,9 +213,9 @@ function mrn_base_stack_prepare_dynamic_content_list_select_fields( $field ) {
 		return $field;
 	}
 
-	$field_type   = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
-	$field_name   = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
-	$field_origin = isset( $field['_name'] ) ? sanitize_key( (string) $field['_name'] ) : $field_name;
+	$field_type    = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	$field_name    = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+	$field_origin  = isset( $field['_name'] ) ? sanitize_key( (string) $field['_name'] ) : $field_name;
 	$parent_layout = isset( $field['parent_layout'] ) ? sanitize_key( (string) $field['parent_layout'] ) : '';
 
 	if ( 'select' !== $field_type ) {
@@ -227,9 +230,9 @@ function mrn_base_stack_prepare_dynamic_content_list_select_fields( $field ) {
 		}
 
 		if ( 'display_mode' === $field_origin ) {
-			$field['choices'] = mrn_base_stack_get_content_list_display_mode_choices();
+			$field['choices']    = mrn_base_stack_get_content_list_display_mode_choices();
 			$field['allow_null'] = 1;
-			$field['ui']      = 0;
+			$field['ui']         = 0;
 		}
 	}
 
@@ -442,27 +445,27 @@ function mrn_base_stack_get_content_list_legacy_mode_config( array $args = array
 /**
  * Render one query result item for the Content Lists layout.
  *
- * @param WP_Post $item_post Post to render.
+ * @param WP_Post              $item_post Post to render.
  * @param array<string, mixed> $args Render arguments.
  * @return string
  */
 function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $args = array() ) {
-	$display_mode    = mrn_base_stack_normalize_content_list_display_mode( $args['display_mode'] ?? '' );
-	$mode_config     = '' !== $display_mode ? mrn_base_stack_get_content_list_display_mode_config( $display_mode ) : mrn_base_stack_get_content_list_legacy_mode_config( $args );
-	$permalink       = get_permalink( $item_post );
-	$item_title      = get_the_title( $item_post );
+	$display_mode      = mrn_base_stack_normalize_content_list_display_mode( $args['display_mode'] ?? '' );
+	$mode_config       = '' !== $display_mode ? mrn_base_stack_get_content_list_display_mode_config( $display_mode ) : mrn_base_stack_get_content_list_legacy_mode_config( $args );
+	$permalink         = get_permalink( $item_post );
+	$item_title        = get_the_title( $item_post );
 	$uses_row_settings = '' === $display_mode;
-	$show_date       = ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
-	$show_excerpt    = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] );
-	$show_read_more  = ( ! $uses_row_settings || ! empty( $args['show_read_more'] ) ) && ! empty( $mode_config['allows_read_more'] ) && '' !== $permalink;
-	$show_image      = ( ! $uses_row_settings || ! empty( $args['show_featured_image'] ) ) && ! empty( $mode_config['allows_image'] ) && has_post_thumbnail( $item_post );
-	$excerpt_length  = max( 5, absint( $args['excerpt_length'] ?? 24 ) );
-	$read_more_label = isset( $args['read_more_label'] ) ? trim( (string) $args['read_more_label'] ) : 'Read More';
-	$item_excerpt    = $show_excerpt && function_exists( 'mrn_base_stack_get_content_list_excerpt' ) ? mrn_base_stack_get_content_list_excerpt( $item_post, $excerpt_length ) : '';
-	$fields          = isset( $mode_config['fields'] ) && is_array( $mode_config['fields'] ) ? array_values( array_unique( array_map( 'sanitize_key', $mode_config['fields'] ) ) ) : array();
-	$variant         = array( 'title' ) === $fields ? 'title_only' : 'card';
-	$image_first     = ! empty( $fields ) && 'featured_image' === $fields[0];
-	$item_classes    = array(
+	$show_date         = ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
+	$show_excerpt      = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] );
+	$show_read_more    = ( ! $uses_row_settings || ! empty( $args['show_read_more'] ) ) && ! empty( $mode_config['allows_read_more'] ) && '' !== $permalink;
+	$show_image        = ( ! $uses_row_settings || ! empty( $args['show_featured_image'] ) ) && ! empty( $mode_config['allows_image'] ) && has_post_thumbnail( $item_post );
+	$excerpt_length    = max( 5, absint( $args['excerpt_length'] ?? 24 ) );
+	$read_more_label   = isset( $args['read_more_label'] ) ? trim( (string) $args['read_more_label'] ) : 'Read More';
+	$item_excerpt      = $show_excerpt && function_exists( 'mrn_base_stack_get_content_list_excerpt' ) ? mrn_base_stack_get_content_list_excerpt( $item_post, $excerpt_length ) : '';
+	$fields            = isset( $mode_config['fields'] ) && is_array( $mode_config['fields'] ) ? array_values( array_unique( array_map( 'sanitize_key', $mode_config['fields'] ) ) ) : array();
+	$variant           = array( 'title' ) === $fields ? 'title_only' : 'card';
+	$image_first       = ! empty( $fields ) && 'featured_image' === $fields[0];
+	$item_classes      = array(
 		'mrn-content-list-row__item',
 		'mrn-content-list-row__item--display-' . ( '' !== $display_mode ? $display_mode : 'row-settings' ),
 		'mrn-content-list-row__item--variant-' . $variant,
@@ -615,21 +618,21 @@ function mrn_base_stack_get_content_list_filter_match_choices() {
  *
  * @param string $key Unique ACF field key.
  * @param string $name Field name.
- * @param string $default Default width choice.
+ * @param string $default_width Default width choice.
  * @param string $label Field label.
  * @return array<string, mixed>
  */
-function mrn_base_stack_get_section_width_field( $key, $name = 'section_width', $default = 'wide', $label = 'Section Width' ) {
+function mrn_base_stack_get_section_width_field( $key, $name = 'section_width', $default_width = 'wide', $label = 'Section Width' ) {
 	return array(
-		'key'           => $key,
-		'label'         => $label,
-		'name'          => $name,
-		'aria-label'    => '',
-		'type'          => 'select',
-		'choices'       => mrn_base_stack_get_section_width_choices(),
-		'default_value' => $default,
-		'ui'            => 1,
-		'wrapper'       => array(
+		'key'               => $key,
+		'label'             => $label,
+		'name'              => $name,
+		'aria-label'        => '',
+		'type'              => 'select',
+		'choices'           => mrn_base_stack_get_section_width_choices(),
+		'default_value'     => $default_width,
+		'ui'                => 1,
+		'wrapper'           => array(
 			'width' => '50',
 		),
 	);
@@ -845,10 +848,10 @@ function mrn_base_stack_get_motion_group_field( $key, $name = 'motion_settings',
  * Normalize a raw section-width setting to a supported value.
  *
  * @param mixed  $value Raw stored value.
- * @param string $default Default width.
+ * @param string $default_width Default width.
  * @return string
  */
-function mrn_base_stack_normalize_section_width( $value, $default = 'wide' ) {
+function mrn_base_stack_normalize_section_width( $value, $default_width = 'wide' ) {
 	$width = is_string( $value ) ? sanitize_key( $value ) : '';
 
 	if ( in_array( $value, array( 1, '1', true, 'true' ), true ) ) {
@@ -856,7 +859,7 @@ function mrn_base_stack_normalize_section_width( $value, $default = 'wide' ) {
 	}
 
 	if ( ! in_array( $width, array( 'content', 'wide', 'full-width' ), true ) ) {
-		$width = $default;
+		$width = $default_width;
 	}
 
 	return $width;
@@ -866,11 +869,11 @@ function mrn_base_stack_normalize_section_width( $value, $default = 'wide' ) {
  * Convert a section-width setting into a shell modifier class.
  *
  * @param mixed  $value Raw stored value.
- * @param string $default Default width.
+ * @param string $default_width Default width.
  * @return string
  */
-function mrn_base_stack_get_section_width_class( $value, $default = 'wide' ) {
-	$width = mrn_base_stack_normalize_section_width( $value, $default );
+function mrn_base_stack_get_section_width_class( $value, $default_width = 'wide' ) {
+	$width = mrn_base_stack_normalize_section_width( $value, $default_width );
 
 	if ( 'content' === $width ) {
 		return 'mrn-shell-section--width-content';
@@ -890,12 +893,12 @@ function mrn_base_stack_get_section_width_class( $value, $default = 'wide' ) {
  * `full-width` is a full-bleed section with a layout-owned inner container.
  *
  * @param mixed  $value Raw stored value.
- * @param string $default Default width choice.
+ * @param string $default_width Default width choice.
  * @param string $full_container_width Inner container width to use when the section is full bleed.
  * @return array{width:string,section_class:string,container_class:string}
  */
-function mrn_base_stack_get_section_width_layers( $value, $default = 'wide', $full_container_width = 'wide' ) {
-	$width                = mrn_base_stack_normalize_section_width( $value, $default );
+function mrn_base_stack_get_section_width_layers( $value, $default_width = 'wide', $full_container_width = 'wide' ) {
+	$width                = mrn_base_stack_normalize_section_width( $value, $default_width );
 	$full_container_width = mrn_base_stack_normalize_section_width( $full_container_width, 'wide' );
 
 	$section_class = 'mrn-layout-section--contained';
@@ -924,18 +927,18 @@ function mrn_base_stack_get_section_width_layers( $value, $default = 'wide', $fu
  * Supports legacy boolean full-width fields when requested.
  *
  * @param array<string, mixed> $row Builder row data.
- * @param string               $default Default width choice.
+ * @param string               $default_width Default width choice.
  * @param string               $legacy_full_width_key Optional legacy field name.
  * @return string
  */
-function mrn_base_stack_get_row_section_width_class( array $row, $default = 'wide', $legacy_full_width_key = '' ) {
+function mrn_base_stack_get_row_section_width_class( array $row, $default_width = 'wide', $legacy_full_width_key = '' ) {
 	$value = $row['section_width'] ?? '';
 
 	if ( '' === $value && '' !== $legacy_full_width_key && ! empty( $row[ $legacy_full_width_key ] ) ) {
 		$value = 'full-width';
 	}
 
-	return mrn_base_stack_get_section_width_class( $value, $default );
+	return mrn_base_stack_get_section_width_class( $value, $default_width );
 }
 
 /**
@@ -966,8 +969,8 @@ function mrn_base_stack_get_builder_accent_contract( $enabled, $accent_slug = ''
 /**
  * Append accent classes to a builder section class list.
  *
- * @param array<int, string>                 $classes Existing section classes.
- * @param array{classes?:array<int,string>}  $accent_contract Accent contract array.
+ * @param array<int, string>                $classes Existing section classes.
+ * @param array{classes?:array<int,string>} $accent_contract Accent contract array.
  * @return array<int, string>
  */
 function mrn_base_stack_merge_builder_section_classes( array $classes, array $accent_contract ) {
@@ -1150,12 +1153,12 @@ function mrn_base_stack_get_text_tag_choices() {
  * Normalize a requested HTML tag to the supported text-tag set.
  *
  * @param mixed  $value Raw tag value.
- * @param string $default Default tag value.
+ * @param string $default_tag Default tag value.
  * @return string
  */
-function mrn_base_stack_normalize_text_tag( $value, $default = 'p' ) {
+function mrn_base_stack_normalize_text_tag( $value, $default_tag = 'p' ) {
 	$tag          = is_string( $value ) ? sanitize_key( $value ) : '';
-	$default_tag  = is_string( $default ) ? sanitize_key( $default ) : 'p';
+	$default_tag  = is_string( $default_tag ) ? sanitize_key( $default_tag ) : 'p';
 	$allowed_tags = array_keys( mrn_base_stack_get_text_tag_choices() );
 
 	if ( ! in_array( $default_tag, $allowed_tags, true ) ) {
@@ -1174,21 +1177,21 @@ function mrn_base_stack_normalize_text_tag( $value, $default = 'p' ) {
  *
  * @param string $key Unique ACF field key.
  * @param string $name Field name.
- * @param string $default Default tag choice.
+ * @param string $default_tag Default tag choice.
  * @param string $label Field label.
  * @return array<string, mixed>
  */
-function mrn_base_stack_get_label_tag_field( $key, $name = 'label_tag', $default = 'p', $label = 'HTML Tag for Label' ) {
+function mrn_base_stack_get_label_tag_field( $key, $name = 'label_tag', $default_tag = 'p', $label = 'HTML Tag for Label' ) {
 	return array(
-		'key'           => $key,
-		'label'         => $label,
-		'name'          => $name,
-		'aria-label'    => '',
-		'type'          => 'select',
-		'choices'       => mrn_base_stack_get_text_tag_choices(),
-		'default_value' => mrn_base_stack_normalize_text_tag( $default, 'p' ),
-		'ui'            => 1,
-		'wrapper'       => array(
+		'key'               => $key,
+		'label'             => $label,
+		'name'              => $name,
+		'aria-label'        => '',
+		'type'              => 'select',
+		'choices'           => mrn_base_stack_get_text_tag_choices(),
+		'default_value'     => mrn_base_stack_normalize_text_tag( $default_tag, 'p' ),
+		'ui'                => 1,
+		'wrapper'           => array(
 			'width' => '25',
 		),
 	);
@@ -1199,21 +1202,21 @@ function mrn_base_stack_get_label_tag_field( $key, $name = 'label_tag', $default
  *
  * @param string $key Unique ACF field key.
  * @param string $name Field name.
- * @param string $default Default tag choice.
+ * @param string $default_tag Default tag choice.
  * @param string $label Field label.
  * @return array<string, mixed>
  */
-function mrn_base_stack_get_text_tag_field( $key, $name = 'heading_tag', $default = 'h2', $label = 'Heading Tag' ) {
+function mrn_base_stack_get_text_tag_field( $key, $name = 'heading_tag', $default_tag = 'h2', $label = 'Heading Tag' ) {
 	return array(
-		'key'           => $key,
-		'label'         => $label,
-		'name'          => $name,
-		'aria-label'    => '',
-		'type'          => 'select',
-		'choices'       => mrn_base_stack_get_text_tag_choices(),
-		'default_value' => mrn_base_stack_normalize_text_tag( $default, 'h2' ),
-		'ui'            => 1,
-		'wrapper'       => array(
+		'key'               => $key,
+		'label'             => $label,
+		'name'              => $name,
+		'aria-label'        => '',
+		'type'              => 'select',
+		'choices'           => mrn_base_stack_get_text_tag_choices(),
+		'default_value'     => mrn_base_stack_normalize_text_tag( $default_tag, 'h2' ),
+		'ui'                => 1,
+		'wrapper'           => array(
 			'width' => '25',
 		),
 	);
@@ -1259,8 +1262,8 @@ function mrn_base_stack_get_content_list_pagination_query_arg( $post_id, $index 
 function mrn_base_stack_get_content_list_current_page( $post_id, $index ) {
 	$query_arg = mrn_base_stack_get_content_list_pagination_query_arg( $post_id, $index );
 
-	if ( isset( $_GET[ $query_arg ] ) ) {
-		return max( 1, absint( wp_unslash( $_GET[ $query_arg ] ) ) );
+	if ( isset( $_GET[ $query_arg ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended,Generic.WhiteSpace.ScopeIndent.IncorrectExact
+		return max( 1, absint( wp_unslash( $_GET[ $query_arg ] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended,Generic.WhiteSpace.ScopeIndent.IncorrectExact
 	}
 
 	return 1;
@@ -1342,12 +1345,12 @@ function mrn_base_stack_get_content_list_tax_query( array $row, $context_post_id
 	}
 
 	if ( 'manual_terms' === $filter_source ) {
-		$raw_terms = isset( $row['filter_term_slugs'] ) ? (string) $row['filter_term_slugs'] : '';
+		$raw_terms  = isset( $row['filter_term_slugs'] ) ? (string) $row['filter_term_slugs'] : '';
 		$term_slugs = array_values(
 			array_filter(
 				array_map(
 					'sanitize_title',
-					preg_split( '/[\s,]+/', $raw_terms ) ?: array()
+					false !== preg_split( '/[\s,]+/', $raw_terms ) ? preg_split( '/[\s,]+/', $raw_terms ) : array()
 				),
 				'strlen'
 			)
@@ -1408,10 +1411,10 @@ function mrn_base_stack_get_video_embed( $url, array $options = array() ) {
 	$options = wp_parse_args(
 		$options,
 		array(
-			'autoplay' => false,
-			'muted'    => false,
-			'loop'     => false,
-			'controls' => true,
+			'autoplay'   => false,
+			'muted'      => false,
+			'loop'       => false,
+			'controls'   => true,
 			'background' => false,
 		)
 	);
@@ -1453,14 +1456,14 @@ function mrn_base_stack_get_video_embed( $url, array $options = array() ) {
 	if ( preg_match( '~vimeo\.com/(?:video/)?([0-9]+)~', $sanitized_url, $matches ) ) {
 		$video_id = $matches[1];
 		$query    = array(
-			'autoplay'  => ! empty( $options['autoplay'] ) ? '1' : '0',
-			'muted'     => ! empty( $options['muted'] ) ? '1' : '0',
-			'loop'      => ! empty( $options['loop'] ) ? '1' : '0',
-			'background'=> ! empty( $options['background'] ) ? '1' : '0',
-			'autopause' => ! empty( $options['background'] ) ? '0' : '1',
-			'controls'  => ! empty( $options['controls'] ) ? '1' : '0',
-			'byline'    => '0',
-			'title'     => '0',
+			'autoplay'   => ! empty( $options['autoplay'] ) ? '1' : '0',
+			'muted'      => ! empty( $options['muted'] ) ? '1' : '0',
+			'loop'       => ! empty( $options['loop'] ) ? '1' : '0',
+			'background' => ! empty( $options['background'] ) ? '1' : '0',
+			'autopause'  => ! empty( $options['background'] ) ? '0' : '1',
+			'controls'   => ! empty( $options['controls'] ) ? '1' : '0',
+			'byline'     => '0',
+			'title'      => '0',
 		);
 
 		return array(
@@ -1482,7 +1485,7 @@ function mrn_base_stack_get_video_embed( $url, array $options = array() ) {
  */
 function mrn_base_stack_get_two_column_nested_layouts() {
 	return array(
-		'layout_mrn_nested_body_text'      => array(
+		'layout_mrn_nested_body_text' => array(
 			'key'        => 'layout_mrn_nested_body_text',
 			'name'       => 'body_text',
 			'label'      => 'Text - rich text',
@@ -1548,7 +1551,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_body_text_motion_settings' ),
 			),
 		),
-		'layout_mrn_nested_basic'          => array(
+		'layout_mrn_nested_basic' => array(
 			'key'        => 'layout_mrn_nested_basic',
 			'name'       => 'basic',
 			'label'      => 'Basic - label|heading|subheading|text with editor|image|link',
@@ -1749,7 +1752,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_basic_motion_settings' ),
 			),
 		),
-		'layout_mrn_nested_card'           => array(
+		'layout_mrn_nested_card' => array(
 			'key'        => 'layout_mrn_nested_card',
 			'name'       => 'card',
 			'label'      => 'Card - image|text|link',
@@ -1897,7 +1900,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_card_motion_settings' ),
 			),
 		),
-		'layout_mrn_nested_cta'            => array(
+		'layout_mrn_nested_cta' => array(
 			'key'        => 'layout_mrn_nested_cta',
 			'name'       => 'cta',
 			'label'      => 'CTA - label|heading|text with editor|link',
@@ -1919,7 +1922,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_cta_motion_settings' ),
 			),
 		),
-		'layout_mrn_nested_grid'           => array(
+		'layout_mrn_nested_grid' => array(
 			'key'        => 'layout_mrn_nested_grid',
 			'name'       => 'grid',
 			'label'      => 'Grid - label|heading|repeater',
@@ -1941,7 +1944,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_grid_motion_settings' ),
 			),
 		),
-		'layout_mrn_nested_image_content'  => array(
+		'layout_mrn_nested_image_content' => array(
 			'key'        => 'layout_mrn_nested_image_content',
 			'name'       => 'image_content',
 			'label'      => 'Image - label|heading|subheading|text with editor',
@@ -2124,7 +2127,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_image_content_motion_settings' ),
 			),
 		),
-		'layout_mrn_nested_video'          => array(
+		'layout_mrn_nested_video' => array(
 			'key'        => 'layout_mrn_nested_video',
 			'name'       => 'video',
 			'label'      => 'Video - remote|upload',
@@ -2265,7 +2268,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_video_motion_settings' ),
 			),
 		),
-		'layout_mrn_nested_logos'          => array(
+		'layout_mrn_nested_logos' => array(
 			'key'        => 'layout_mrn_nested_logos',
 			'name'       => 'logos',
 			'label'      => 'Logos - label|heading|image|link',

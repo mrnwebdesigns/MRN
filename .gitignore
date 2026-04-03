@@ -79,5 +79,9 @@
 !/stack/themes/mrn-base-stack/languages/
 !/stack/themes/mrn-base-stack/languages/*
 /stack/themes/mrn-base-stack/vendor/
+/stack/themes/mrn-base-stack/node_modules/
+/stack/themes/mrn-base-stack/playwright-report/
+/stack/themes/mrn-base-stack/test-results/
+.playwright/
 .DS_Store
 */.DS_Store

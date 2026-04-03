@@ -1,15 +1,15 @@
 <?php
-
 /**
-
  * Builder ACF field group registration.
-
  *
-
  * @package mrn-base-stack
-
  */
 
+/**
+ * Register theme-owned ACF field groups for the builder shell.
+ *
+ * @return void
+ */
 function mrn_base_stack_register_acf_field_groups() {
 	if ( ! function_exists( 'acf_add_local_field_group' ) ) {
 		return;
@@ -239,7 +239,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'button_label'  => 'Add Left Layout',
 									'max'           => 1,
 									'layouts'       => mrn_base_stack_get_two_column_nested_layouts(),
-									'wrapper'      => array(
+									'wrapper'       => array(
 										'width' => '50',
 									),
 								),
@@ -329,7 +329,6 @@ function mrn_base_stack_register_acf_field_groups() {
 			),
 			'location'              => mrn_base_stack_get_hero_location_rules(),
 			'position'              => 'acf_after_title',
-			'menu_order'            => -10,
 			'style'                 => 'default',
 			'label_placement'       => 'top',
 			'instruction_placement' => 'label',
@@ -340,7 +339,6 @@ function mrn_base_stack_register_acf_field_groups() {
 		array(
 			'key'                   => 'group_mrn_content_builder',
 			'title'                 => 'Content',
-			'menu_order'            => 10,
 			'fields'                => array(
 				array(
 					'key'               => 'field_mrn_page_content_rows',
@@ -350,7 +348,7 @@ function mrn_base_stack_register_acf_field_groups() {
 					'type'              => 'flexible_content',
 					'button_label'      => 'Add Content Row',
 					'layouts'           => array(
-						'layout_mrn_body_text'      => array(
+						'layout_mrn_body_text' => array(
 							'key'        => 'layout_mrn_body_text',
 							'name'       => 'body_text',
 							'label'      => 'Text - label|heading|subheading|rich text',
@@ -464,7 +462,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								),
 							),
 						),
-						'layout_mrn_content_lists'  => array(
+						'layout_mrn_content_lists' => array(
 							'key'        => 'layout_mrn_content_lists',
 							'name'       => 'content_lists',
 							'label'      => 'Content Lists - query|pagination|count',
@@ -869,7 +867,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								),
 							),
 						),
-						'layout_mrn_basic'          => array(
+						'layout_mrn_basic' => array(
 							'key'        => 'layout_mrn_basic',
 							'name'       => 'basic',
 							'label'      => 'Basic - label|heading|subheading|text with editor|image|link',
@@ -1071,7 +1069,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								),
 							),
 						),
-						'layout_mrn_cta'            => array(
+						'layout_mrn_cta' => array(
 							'key'        => 'layout_mrn_cta',
 							'name'       => 'cta',
 							'label'      => 'CTA - label|heading|text with editor|link',
@@ -1093,7 +1091,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								mrn_base_stack_get_motion_group_field( 'field_mrn_page_cta_motion_settings' ),
 							),
 						),
-						'layout_mrn_grid'           => array(
+						'layout_mrn_grid' => array(
 							'key'        => 'layout_mrn_grid',
 							'name'       => 'grid',
 							'label'      => 'Grid - label|heading|repeater',
@@ -1115,7 +1113,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								mrn_base_stack_get_motion_group_field( 'field_mrn_page_grid_motion_settings' ),
 							),
 						),
-						'layout_mrn_slider'         => array(
+						'layout_mrn_slider' => array(
 							'key'        => 'layout_mrn_slider',
 							'name'       => 'slider',
 							'label'      => 'Slider - label|heading|subheading|slides',
@@ -1177,35 +1175,35 @@ function mrn_base_stack_register_acf_field_groups() {
 									'min'          => 1,
 									'sub_fields'   => array(
 										array(
-											'key'           => 'field_mrn_slider_item_image',
-											'label'         => 'Image',
-											'name'          => 'image',
-											'aria-label'    => '',
-											'type'          => 'image',
+											'key'          => 'field_mrn_slider_item_image',
+											'label'        => 'Image',
+											'name'         => 'image',
+											'aria-label'   => '',
+											'type'         => 'image',
 											'return_format' => 'array',
-											'preview_size'  => 'medium',
-											'library'       => 'all',
+											'preview_size' => 'medium',
+											'library'      => 'all',
 										),
 										array(
-											'key'           => 'field_mrn_slider_item_label',
-											'label'         => 'Label',
-											'name'          => 'label',
-											'aria-label'    => '',
-											'type'          => 'text',
-											'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
-											'wrapper'       => array(
+											'key'          => 'field_mrn_slider_item_label',
+											'label'        => 'Label',
+											'name'         => 'label',
+											'aria-label'   => '',
+											'type'         => 'text',
+											'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
+											'wrapper'      => array(
 												'width' => '75',
 											),
 										),
 										mrn_base_stack_get_label_tag_field( 'field_mrn_slider_item_label_tag' ),
 										array(
-											'key'           => 'field_mrn_slider_item_heading',
-											'label'         => 'Heading',
-											'name'          => 'heading',
-											'aria-label'    => '',
-											'type'          => 'text',
-											'instructions'  => 'Limited inline HTML allowed: span, strong, em, br.',
-											'wrapper'       => array(
+											'key'          => 'field_mrn_slider_item_heading',
+											'label'        => 'Heading',
+											'name'         => 'heading',
+											'aria-label'   => '',
+											'type'         => 'text',
+											'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
+											'wrapper'      => array(
 												'width' => '75',
 											),
 										),
@@ -1222,11 +1220,11 @@ function mrn_base_stack_register_acf_field_groups() {
 											'delay'        => 0,
 										),
 										array(
-											'key'           => 'field_mrn_slider_item_link',
-											'label'         => 'Link',
-											'name'          => 'link',
-											'aria-label'    => '',
-											'type'          => 'link',
+											'key'        => 'field_mrn_slider_item_link',
+											'label'      => 'Link',
+											'name'       => 'link',
+											'aria-label' => '',
+											'type'       => 'link',
 											'return_format' => 'array',
 										),
 									),
@@ -1431,7 +1429,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								),
 							),
 						),
-						'layout_mrn_image_content'  => array(
+						'layout_mrn_image_content' => array(
 							'key'        => 'layout_mrn_image_content',
 							'name'       => 'image_content',
 							'label'      => 'Image - label|heading|subheading|text with editor',
@@ -1689,7 +1687,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								),
 							),
 						),
-						'layout_mrn_card'           => array(
+						'layout_mrn_card' => array(
 							'key'        => 'layout_mrn_card',
 							'name'       => 'card',
 							'label'      => 'Card - image|text|link',
@@ -1704,25 +1702,25 @@ function mrn_base_stack_register_acf_field_groups() {
 									'placement'  => 'top',
 								),
 								array(
-									'key'        => 'field_mrn_card_label',
-									'label'      => 'Label',
-									'name'       => 'label',
-									'aria-label' => '',
-									'type'       => 'text',
-									'instructions'=> 'Limited inline HTML allowed: span, strong, em, br.',
-									'wrapper'    => array(
+									'key'          => 'field_mrn_card_label',
+									'label'        => 'Label',
+									'name'         => 'label',
+									'aria-label'   => '',
+									'type'         => 'text',
+									'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
+									'wrapper'      => array(
 										'width' => '75',
 									),
 								),
 								mrn_base_stack_get_label_tag_field( 'field_mrn_card_label_tag' ),
 								array(
-									'key'        => 'field_mrn_card_heading',
-									'label'      => 'Heading',
-									'name'       => 'heading',
-									'aria-label' => '',
-									'type'       => 'text',
-									'instructions'=> 'Limited inline HTML allowed: span, strong, em, br.',
-									'wrapper'    => array(
+									'key'          => 'field_mrn_card_heading',
+									'label'        => 'Heading',
+									'name'         => 'heading',
+									'aria-label'   => '',
+									'type'         => 'text',
+									'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
+									'wrapper'      => array(
 										'width' => '75',
 									),
 								),
@@ -1759,15 +1757,15 @@ function mrn_base_stack_register_acf_field_groups() {
 									'min'          => 1,
 									'sub_fields'   => array(
 										array(
-											'key'           => 'field_mrn_card_item_image',
-											'label'         => 'Image',
-											'name'          => 'image',
-											'aria-label'    => '',
-											'type'          => 'image',
+											'key'          => 'field_mrn_card_item_image',
+											'label'        => 'Image',
+											'name'         => 'image',
+											'aria-label'   => '',
+											'type'         => 'image',
 											'return_format' => 'array',
-											'preview_size'  => 'medium',
-											'library'       => 'all',
-											'wrapper'       => array(
+											'preview_size' => 'medium',
+											'library'      => 'all',
+											'wrapper'      => array(
 												'width' => '33',
 											),
 										),
@@ -1786,13 +1784,13 @@ function mrn_base_stack_register_acf_field_groups() {
 											),
 										),
 										array(
-											'key'           => 'field_mrn_card_item_link',
-											'label'         => 'Link',
-											'name'          => 'link',
-											'aria-label'    => '',
-											'type'          => 'link',
+											'key'        => 'field_mrn_card_item_link',
+											'label'      => 'Link',
+											'name'       => 'link',
+											'aria-label' => '',
+											'type'       => 'link',
 											'return_format' => 'array',
-											'wrapper'       => array(
+											'wrapper'    => array(
 												'width' => '33',
 											),
 										),
@@ -1929,7 +1927,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								mrn_base_stack_get_motion_group_field( 'field_mrn_two_column_split_motion_settings' ),
 							),
 						),
-						'layout_mrn_video'          => array(
+						'layout_mrn_video' => array(
 							'key'        => 'layout_mrn_video',
 							'name'       => 'video',
 							'label'      => 'Video - remote|upload',
@@ -2071,7 +2069,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								),
 							),
 						),
-						'layout_mrn_logos'          => array(
+						'layout_mrn_logos' => array(
 							'key'        => 'layout_mrn_logos',
 							'name'       => 'logos',
 							'label'      => 'Logos - label|heading|image|link',
@@ -2133,26 +2131,26 @@ function mrn_base_stack_register_acf_field_groups() {
 									'min'          => 1,
 									'sub_fields'   => array(
 										array(
-											'key'           => 'field_mrn_logos_item_image',
-											'label'         => 'Image',
-											'name'          => 'image',
-											'aria-label'    => '',
-											'type'          => 'image',
+											'key'          => 'field_mrn_logos_item_image',
+											'label'        => 'Image',
+											'name'         => 'image',
+											'aria-label'   => '',
+											'type'         => 'image',
 											'return_format' => 'array',
-											'preview_size'  => 'medium',
-											'library'       => 'all',
-											'wrapper'       => array(
+											'preview_size' => 'medium',
+											'library'      => 'all',
+											'wrapper'      => array(
 												'width' => '50',
 											),
 										),
 										array(
-											'key'           => 'field_mrn_logos_item_link',
-											'label'         => 'Link',
-											'name'          => 'link',
-											'aria-label'    => '',
-											'type'          => 'link',
+											'key'        => 'field_mrn_logos_item_link',
+											'label'      => 'Link',
+											'name'       => 'link',
+											'aria-label' => '',
+											'type'       => 'link',
 											'return_format' => 'array',
-											'wrapper'       => array(
+											'wrapper'    => array(
 												'width' => '50',
 											),
 										),
@@ -2346,7 +2344,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								),
 							),
 						),
-						'layout_mrn_stats'          => array(
+						'layout_mrn_stats' => array(
 							'key'        => 'layout_mrn_stats',
 							'name'       => 'stats',
 							'label'      => 'Stats - label|heading|items',
@@ -2519,7 +2517,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								),
 							),
 						),
-						'layout_mrn_showcase'       => array(
+						'layout_mrn_showcase' => array(
 							'key'        => 'layout_mrn_showcase',
 							'name'       => 'showcase',
 							'label'      => 'Showcase - label|heading|image|link',
@@ -2581,26 +2579,26 @@ function mrn_base_stack_register_acf_field_groups() {
 									'min'          => 1,
 									'sub_fields'   => array(
 										array(
-											'key'           => 'field_mrn_showcase_item_image',
-											'label'         => 'Image',
-											'name'          => 'image',
-											'aria-label'    => '',
-											'type'          => 'image',
+											'key'          => 'field_mrn_showcase_item_image',
+											'label'        => 'Image',
+											'name'         => 'image',
+											'aria-label'   => '',
+											'type'         => 'image',
 											'return_format' => 'array',
-											'preview_size'  => 'medium',
-											'library'       => 'all',
-											'wrapper'       => array(
+											'preview_size' => 'medium',
+											'library'      => 'all',
+											'wrapper'      => array(
 												'width' => '50',
 											),
 										),
 										array(
-											'key'           => 'field_mrn_showcase_item_link',
-											'label'         => 'Link',
-											'name'          => 'link',
-											'aria-label'    => '',
-											'type'          => 'link',
+											'key'        => 'field_mrn_showcase_item_link',
+											'label'      => 'Link',
+											'name'       => 'link',
+											'aria-label' => '',
+											'type'       => 'link',
 											'return_format' => 'array',
-											'wrapper'       => array(
+											'wrapper'    => array(
 												'width' => '50',
 											),
 										),
@@ -2704,7 +2702,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								),
 							),
 						),
-						'layout_mrn_faq'            => array(
+						'layout_mrn_faq' => array(
 							'key'        => 'layout_mrn_faq',
 							'name'       => 'faq',
 							'label'      => 'FAQs/Accordion - label|heading|items',
@@ -2748,7 +2746,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								mrn_base_stack_get_motion_group_field( 'field_mrn_reusable_block_motion_settings' ),
 							),
 						),
-						'layout_mrn_cta_block'      => array(
+						'layout_mrn_cta_block' => array(
 							'key'        => 'layout_mrn_cta_block',
 							'name'       => 'cta_block',
 							'label'      => 'CTA (Page Only)',
@@ -2770,7 +2768,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								mrn_base_stack_get_motion_group_field( 'field_mrn_page_cta_block_motion_settings' ),
 							),
 						),
-						'layout_mrn_basic_block'    => array(
+						'layout_mrn_basic_block' => array(
 							'key'        => 'layout_mrn_basic_block',
 							'name'       => 'basic_block',
 							'label'      => 'Basic Block (Page Only)',
@@ -2792,7 +2790,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								mrn_base_stack_get_motion_group_field( 'field_mrn_page_basic_block_motion_settings' ),
 							),
 						),
-						'layout_mrn_content_grid'   => array(
+						'layout_mrn_content_grid' => array(
 							'key'        => 'layout_mrn_content_grid',
 							'name'       => 'content_grid',
 							'label'      => 'Content Grid (Page Only)',
@@ -2814,7 +2812,7 @@ function mrn_base_stack_register_acf_field_groups() {
 								mrn_base_stack_get_motion_group_field( 'field_mrn_page_content_grid_motion_settings' ),
 							),
 						),
-						'layout_mrn_faq_block'      => array(
+						'layout_mrn_faq_block' => array(
 							'key'        => 'layout_mrn_faq_block',
 							'name'       => 'faq_block',
 							'label'      => 'FAQs/Accordion (Page Only)',
@@ -2867,7 +2865,6 @@ function mrn_base_stack_register_acf_field_groups() {
 		array(
 			'key'                   => 'group_mrn_after_content_builder',
 			'title'                 => 'After Content',
-			'menu_order'            => 20,
 			'fields'                => array(
 				array(
 					'key'               => $after_content_field_key,

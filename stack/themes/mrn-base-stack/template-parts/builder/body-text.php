@@ -5,19 +5,19 @@
  * @package mrn-base-stack
  */
 
-$context   = is_array( $args ?? null ) ? $args : array();
-$row       = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
-$label     = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
-$label_tag = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading   = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : ( isset( $row['title_field'] ) ? trim( (string) $row['title_field'] ) : '' );
-$heading_tag = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : ( isset( $row['title_field_tag'] ) ? strtolower( (string) $row['title_field_tag'] ) : 'h2' );
-$subheading = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
-$subheading_tag = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
-$body_text = isset( $row['body_text'] ) ? (string) $row['body_text'] : '';
+$context          = is_array( $args ?? null ) ? $args : array();
+$row              = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
+$label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
+$label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
+$heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : ( isset( $row['title_field'] ) ? trim( (string) $row['title_field'] ) : '' );
+$heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : ( isset( $row['title_field_tag'] ) ? strtolower( (string) $row['title_field_tag'] ) : 'h2' );
+$subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
+$body_text        = isset( $row['body_text'] ) ? (string) $row['body_text'] : '';
 $background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
-$bottom_accent = ! empty( $row['bottom_accent'] );
-$accent_slug   = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
-$width_layers  = function_exists( 'mrn_base_stack_get_section_width_layers' )
+$bottom_accent    = ! empty( $row['bottom_accent'] );
+$accent_slug      = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
+$width_layers     = function_exists( 'mrn_base_stack_get_section_width_layers' )
 	? mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'content', 'content' )
 	: array(
 		'width'           => 'content',

@@ -110,7 +110,7 @@ function mrn_base_stack_register_gallery_taxonomies() {
 		'gallery_media_category',
 		array( 'attachment' ),
 		array(
-			'labels'            => array(
+			'labels'             => array(
 				'name'          => __( 'Media Categories', 'mrn-base-stack' ),
 				'singular_name' => __( 'Media Category', 'mrn-base-stack' ),
 				'search_items'  => __( 'Search Media Categories', 'mrn-base-stack' ),
@@ -121,16 +121,16 @@ function mrn_base_stack_register_gallery_taxonomies() {
 				'new_item_name' => __( 'New Media Category', 'mrn-base-stack' ),
 				'menu_name'     => __( 'Media Categories', 'mrn-base-stack' ),
 			),
-			'public'            => false,
-			'publicly_queryable'=> false,
-			'hierarchical'      => true,
-			'show_ui'           => $show_ui,
-			'show_in_menu'      => false,
-			'show_admin_column' => $show_ui,
-			'show_in_rest'      => true,
-			'show_tagcloud'     => false,
-			'meta_box_cb'       => false,
-			'rewrite'           => false,
+			'public'             => false,
+			'publicly_queryable' => false,
+			'hierarchical'       => true,
+			'show_ui'            => $show_ui,
+			'show_in_menu'       => false,
+			'show_admin_column'  => $show_ui,
+			'show_in_rest'       => true,
+			'show_tagcloud'      => false,
+			'meta_box_cb'        => false,
+			'rewrite'            => false,
 		)
 	);
 }
@@ -201,15 +201,15 @@ function mrn_base_stack_register_gallery_field_group() {
 							),
 						),
 						array(
-							'key'           => 'field_mrn_gallery_item_image',
-							'label'         => 'Image',
-							'name'          => 'image',
-							'aria-label'    => '',
-							'type'          => 'image',
-							'return_format' => 'array',
-							'preview_size'  => 'medium',
-							'library'       => 'all',
-							'instructions'  => 'Required for image items.',
+							'key'               => 'field_mrn_gallery_item_image',
+							'label'             => 'Image',
+							'name'              => 'image',
+							'aria-label'        => '',
+							'type'              => 'image',
+							'return_format'     => 'array',
+							'preview_size'      => 'medium',
+							'library'           => 'all',
+							'instructions'      => 'Required for image items.',
 							'conditional_logic' => array(
 								array(
 									array(
@@ -219,7 +219,7 @@ function mrn_base_stack_register_gallery_field_group() {
 									),
 								),
 							),
-							'wrapper'       => array(
+							'wrapper'           => array(
 								'width' => '40',
 							),
 						),
@@ -548,7 +548,7 @@ function mrn_base_stack_normalize_gallery_category_terms( array $terms ) {
 			continue;
 		}
 
-		$slug = sanitize_title( $term->slug );
+		$slug  = sanitize_title( $term->slug );
 		$label = trim( wp_strip_all_tags( $term->name ) );
 		if ( '' === $slug || '' === $label ) {
 			continue;
@@ -596,13 +596,13 @@ function mrn_base_stack_get_legacy_gallery_item_filters( $raw_filters ) {
 /**
  * Get normalized gallery categories for a gallery item.
  *
- * @param int   $attachment_id Attachment ID.
- * @param int[] $selected_term_ids Selected term IDs from the gallery editor.
+ * @param int    $attachment_id Attachment ID.
+ * @param int[]  $selected_term_ids Selected term IDs from the gallery editor.
  * @param string $legacy_filters Legacy comma-separated filters string.
  * @return array<int, array{slug:string,label:string}>
  */
 function mrn_base_stack_get_gallery_item_categories( $attachment_id, array $selected_term_ids = array(), $legacy_filters = '' ) {
-	$attachment_id = (int) $attachment_id;
+	$attachment_id     = (int) $attachment_id;
 	$selected_term_ids = wp_parse_id_list( $selected_term_ids );
 
 	if ( $attachment_id > 0 ) {
@@ -768,9 +768,9 @@ function mrn_base_stack_get_gallery_lightbox_media_type( $media_type ) {
  * @return string
  */
 function mrn_base_stack_get_gallery_preview_embed_url( $url, $autoplay = false ) {
-	$url  = (string) $url;
-	$host = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
-	$path = (string) wp_parse_url( $url, PHP_URL_PATH );
+	$url      = (string) $url;
+	$host     = strtolower( (string) wp_parse_url( $url, PHP_URL_HOST ) );
+	$path     = (string) wp_parse_url( $url, PHP_URL_PATH );
 	$autoplay = (bool) $autoplay;
 
 	if ( in_array( $host, array( 'youtube.com', 'www.youtube.com' ), true ) ) {
@@ -784,11 +784,11 @@ function mrn_base_stack_get_gallery_preview_embed_url( $url, $autoplay = false )
 
 		return add_query_arg(
 			array(
-				'autoplay'   => $autoplay ? '1' : '0',
-				'mute'       => '1',
-				'controls'   => '0',
-				'playsinline'=> '1',
-				'rel'        => '0',
+				'autoplay'    => $autoplay ? '1' : '0',
+				'mute'        => '1',
+				'controls'    => '0',
+				'playsinline' => '1',
+				'rel'         => '0',
 			),
 			'https://www.youtube.com/embed/' . rawurlencode( $video_id )
 		);
@@ -804,11 +804,11 @@ function mrn_base_stack_get_gallery_preview_embed_url( $url, $autoplay = false )
 
 		return add_query_arg(
 			array(
-				'autoplay'   => $autoplay ? '1' : '0',
-				'mute'       => '1',
-				'controls'   => '0',
-				'playsinline'=> '1',
-				'rel'        => '0',
+				'autoplay'    => $autoplay ? '1' : '0',
+				'mute'        => '1',
+				'controls'    => '0',
+				'playsinline' => '1',
+				'rel'         => '0',
 			),
 			'https://www.youtube.com/embed/' . rawurlencode( $video_id )
 		);
@@ -931,10 +931,10 @@ function mrn_base_stack_get_gallery_items( $post_id = null ) {
 			continue;
 		}
 
-		$media_type = mrn_base_stack_normalize_gallery_media_type( $row['media_type'] ?? 'image' );
-		$image      = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
-		$preview_image = isset( $row['preview_image'] ) && is_array( $row['preview_image'] ) ? $row['preview_image'] : array();
-		$media_url  = isset( $row['media_url'] ) ? esc_url_raw( (string) $row['media_url'] ) : '';
+		$media_type           = mrn_base_stack_normalize_gallery_media_type( $row['media_type'] ?? 'image' );
+		$image                = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
+		$preview_image        = isset( $row['preview_image'] ) && is_array( $row['preview_image'] ) ? $row['preview_image'] : array();
+		$media_url            = isset( $row['media_url'] ) ? esc_url_raw( (string) $row['media_url'] ) : '';
 		$effective_media_type = mrn_base_stack_get_gallery_effective_media_type( $media_type, $media_url );
 
 		if ( 'image' === $media_type && empty( $image['ID'] ) && empty( $image['url'] ) ) {
@@ -945,33 +945,33 @@ function mrn_base_stack_get_gallery_items( $post_id = null ) {
 			continue;
 		}
 
-		$display_image = 'image' === $media_type ? $image : $preview_image;
-		$attachment_id = ! empty( $display_image['ID'] ) ? (int) $display_image['ID'] : 0;
-		$thumb_url     = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'large' ) : ( $display_image['url'] ?? '' );
-		$full_url      = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'full' ) : ( $display_image['url'] ?? '' );
-		$alt           = $attachment_id ? get_post_meta( $attachment_id, '_wp_attachment_image_alt', true ) : ( $display_image['alt'] ?? '' );
-		$caption       = isset( $row['caption'] ) ? trim( wp_strip_all_tags( (string) $row['caption'] ) ) : '';
-		$link          = isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : array();
+		$display_image      = 'image' === $media_type ? $image : $preview_image;
+		$attachment_id      = ! empty( $display_image['ID'] ) ? (int) $display_image['ID'] : 0;
+		$thumb_url          = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'large' ) : ( $display_image['url'] ?? '' );
+		$full_url           = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'full' ) : ( $display_image['url'] ?? '' );
+		$alt                = $attachment_id ? get_post_meta( $attachment_id, '_wp_attachment_image_alt', true ) : ( $display_image['alt'] ?? '' );
+		$caption            = isset( $row['caption'] ) ? trim( wp_strip_all_tags( (string) $row['caption'] ) ) : '';
+		$link               = isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : array();
 		$autoplay_thumbnail = ! empty( $row['autoplay_thumbnail'] );
-		$selected_term_ids = isset( $row['media_categories'] ) ? wp_parse_id_list( $row['media_categories'] ) : array();
-		$legacy_filters    = get_post_meta( $post_id, 'gallery_items_' . $index . '_filters', true );
-		$filters           = mrn_base_stack_get_gallery_item_categories( $attachment_id, $selected_term_ids, $legacy_filters );
+		$selected_term_ids  = isset( $row['media_categories'] ) ? wp_parse_id_list( $row['media_categories'] ) : array();
+		$legacy_filters     = get_post_meta( $post_id, 'gallery_items_' . $index . '_filters', true );
+		$filters            = mrn_base_stack_get_gallery_item_categories( $attachment_id, $selected_term_ids, $legacy_filters );
 
 		if ( 'image' !== $media_type ) {
 			$full_url = $media_url;
 		}
 
 		$items[] = array(
-			'attachment_id' => $attachment_id,
-			'media_type'    => $media_type,
+			'attachment_id'        => $attachment_id,
+			'media_type'           => $media_type,
 			'effective_media_type' => $effective_media_type,
-			'thumb_url'     => esc_url_raw( (string) $thumb_url ),
-			'full_url'      => esc_url_raw( (string) $full_url ),
-			'alt'           => is_string( $alt ) ? $alt : '',
-			'caption'       => $caption,
-			'autoplay_thumbnail' => $autoplay_thumbnail,
-			'link'          => $link,
-			'filters'       => $filters,
+			'thumb_url'            => esc_url_raw( (string) $thumb_url ),
+			'full_url'             => esc_url_raw( (string) $full_url ),
+			'alt'                  => is_string( $alt ) ? $alt : '',
+			'caption'              => $caption,
+			'autoplay_thumbnail'   => $autoplay_thumbnail,
+			'link'                 => $link,
+			'filters'              => $filters,
 		);
 	}
 
@@ -981,12 +981,14 @@ function mrn_base_stack_get_gallery_items( $post_id = null ) {
 /**
  * Normalize gallery repeater row values before ACF saves them.
  *
- * @param mixed $value Submitted repeater value.
- * @param int|string $post_id Target post ID.
+ * @param mixed                $value Submitted repeater value.
+ * @param int|string           $post_id Target post ID.
  * @param array<string, mixed> $field Field definition.
  * @return mixed
  */
 function mrn_base_stack_normalize_gallery_items_value( $value, $post_id, $field ) {
+	unset( $post_id, $field );
+
 	if ( ! is_array( $value ) ) {
 		return $value;
 	}
@@ -1016,12 +1018,14 @@ add_filter( 'acf/update_value/key=field_mrn_gallery_items', 'mrn_base_stack_norm
 /**
  * Normalize gallery repeater row values when loading into ACF.
  *
- * @param mixed $value Stored repeater value.
- * @param int|string $post_id Target post ID.
+ * @param mixed                $value Stored repeater value.
+ * @param int|string           $post_id Target post ID.
  * @param array<string, mixed> $field Field definition.
  * @return mixed
  */
 function mrn_base_stack_normalize_loaded_gallery_items_value( $value, $post_id, $field ) {
+	unset( $post_id, $field );
+
 	if ( ! is_array( $value ) ) {
 		return $value;
 	}
@@ -1074,11 +1078,11 @@ function mrn_base_stack_sync_gallery_attachment_categories( $post_id ) {
 			continue;
 		}
 
-		$media_type = mrn_base_stack_normalize_gallery_media_type( $row['media_type'] ?? 'image' );
-		$image = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
-		$preview_image = isset( $row['preview_image'] ) && is_array( $row['preview_image'] ) ? $row['preview_image'] : array();
+		$media_type        = mrn_base_stack_normalize_gallery_media_type( $row['media_type'] ?? 'image' );
+		$image             = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
+		$preview_image     = isset( $row['preview_image'] ) && is_array( $row['preview_image'] ) ? $row['preview_image'] : array();
 		$attachment_source = 'image' === $media_type ? $image : $preview_image;
-		$attachment_id = ! empty( $attachment_source['ID'] ) ? (int) $attachment_source['ID'] : 0;
+		$attachment_id     = ! empty( $attachment_source['ID'] ) ? (int) $attachment_source['ID'] : 0;
 
 		if ( 'image' === $media_type ) {
 			delete_post_meta( $post_id, 'gallery_items_' . $index . '_preview_image' );
@@ -1207,18 +1211,18 @@ function mrn_base_stack_get_gallery_markup( $post_id = null ) {
 			<div class="mrn-gallery__grid">
 				<?php foreach ( $items as $index => $item ) : ?>
 					<?php
-					$item_filters = ! empty( $item['filters'] ) && is_array( $item['filters'] ) ? wp_list_pluck( $item['filters'], 'slug' ) : array();
-					$link         = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
-					$link_url     = isset( $link['url'] ) ? (string) $link['url'] : '';
-					$link_target  = isset( $link['target'] ) ? (string) $link['target'] : '';
-					$caption      = isset( $item['caption'] ) ? (string) $item['caption'] : '';
-					$media_type   = isset( $item['effective_media_type'] ) ? (string) $item['effective_media_type'] : ( isset( $item['media_type'] ) ? mrn_base_stack_normalize_gallery_media_type( $item['media_type'] ) : 'image' );
-					$thumb_url    = isset( $item['thumb_url'] ) ? (string) $item['thumb_url'] : '';
-					$alt          = isset( $item['alt'] ) ? (string) $item['alt'] : '';
-					$glightbox_data = array();
-					$is_direct_video = 'video' === $media_type && mrn_base_stack_is_direct_video_url( $item['full_url'] );
+					$item_filters       = ! empty( $item['filters'] ) && is_array( $item['filters'] ) ? wp_list_pluck( $item['filters'], 'slug' ) : array();
+					$link               = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
+					$link_url           = isset( $link['url'] ) ? (string) $link['url'] : '';
+					$link_target        = isset( $link['target'] ) ? (string) $link['target'] : '';
+					$caption            = isset( $item['caption'] ) ? (string) $item['caption'] : '';
+					$media_type         = isset( $item['effective_media_type'] ) ? (string) $item['effective_media_type'] : ( isset( $item['media_type'] ) ? mrn_base_stack_normalize_gallery_media_type( $item['media_type'] ) : 'image' );
+					$thumb_url          = isset( $item['thumb_url'] ) ? (string) $item['thumb_url'] : '';
+					$alt                = isset( $item['alt'] ) ? (string) $item['alt'] : '';
+					$glightbox_data     = array();
+					$is_direct_video    = 'video' === $media_type && mrn_base_stack_is_direct_video_url( $item['full_url'] );
 					$autoplay_thumbnail = ! empty( $item['autoplay_thumbnail'] );
-					$preview_embed_url = '';
+					$preview_embed_url  = '';
 
 					if ( 'video' === $media_type && ! $is_direct_video ) {
 						$preview_embed_url = mrn_base_stack_get_gallery_preview_embed_url( $item['full_url'], $autoplay_thumbnail );
@@ -1242,8 +1246,14 @@ function mrn_base_stack_get_gallery_markup( $post_id = null ) {
 								class="mrn-gallery__trigger glightbox"
 								href="<?php echo esc_url( $item['full_url'] ); ?>"
 								data-gallery="gallery-<?php echo esc_attr( (string) $post_id ); ?>"
-								<?php if ( 'image' !== $media_type ) : ?>data-type="<?php echo esc_attr( mrn_base_stack_get_gallery_lightbox_media_type( $media_type ) ); ?>"<?php endif; ?>
-								<?php if ( $lightbox['show_captions'] && '' !== $caption ) : ?>data-description="<?php echo esc_attr( wp_strip_all_tags( $caption ) ); ?>"<?php endif; ?>
+								<?php
+								if ( 'image' !== $media_type ) :
+									?>
+									data-type="<?php echo esc_attr( mrn_base_stack_get_gallery_lightbox_media_type( $media_type ) ); ?>"<?php endif; ?>
+								<?php
+								if ( $lightbox['show_captions'] && '' !== $caption ) :
+									?>
+									data-description="<?php echo esc_attr( wp_strip_all_tags( $caption ) ); ?>"<?php endif; ?>
 								data-glightbox="<?php echo esc_attr( implode( '; ', $glightbox_data ) ); ?>"
 							>
 								<?php if ( '' !== $thumb_url ) : ?>
@@ -1257,7 +1267,10 @@ function mrn_base_stack_get_gallery_markup( $post_id = null ) {
 										loop
 										data-gallery-thumbnail-video
 										data-gallery-thumbnail-autoplay="<?php echo esc_attr( $autoplay_thumbnail ? 'true' : 'false' ); ?>"
-										<?php if ( $autoplay_thumbnail ) : ?>autoplay<?php endif; ?>
+										<?php
+										if ( $autoplay_thumbnail ) :
+											?>
+											autoplay<?php endif; ?>
 									>
 										<source src="<?php echo esc_url( $item['full_url'] ); ?>">
 									</video>
@@ -1285,7 +1298,15 @@ function mrn_base_stack_get_gallery_markup( $post_id = null ) {
 								<?php endif; ?>
 							</a>
 						<?php elseif ( '' !== $link_url ) : ?>
-							<a class="mrn-gallery__trigger" href="<?php echo esc_url( $link_url ); ?>"<?php if ( '' !== $link_target ) : ?> target="<?php echo esc_attr( $link_target ); ?>"<?php endif; ?><?php if ( '_blank' === $link_target ) : ?> rel="noopener noreferrer"<?php endif; ?>>
+							<a class="mrn-gallery__trigger" href="<?php echo esc_url( $link_url ); ?>"
+							<?php
+							if ( '' !== $link_target ) :
+								?>
+								target="<?php echo esc_attr( $link_target ); ?>"<?php endif; ?>
+								<?php
+								if ( '_blank' === $link_target ) :
+									?>
+								rel="noopener noreferrer"<?php endif; ?>>
 								<?php if ( '' !== $thumb_url ) : ?>
 									<img src="<?php echo esc_url( $thumb_url ); ?>" alt="<?php echo esc_attr( $alt ); ?>">
 								<?php elseif ( $is_direct_video ) : ?>
@@ -1297,7 +1318,10 @@ function mrn_base_stack_get_gallery_markup( $post_id = null ) {
 										loop
 										data-gallery-thumbnail-video
 										data-gallery-thumbnail-autoplay="<?php echo esc_attr( $autoplay_thumbnail ? 'true' : 'false' ); ?>"
-										<?php if ( $autoplay_thumbnail ) : ?>autoplay<?php endif; ?>
+										<?php
+										if ( $autoplay_thumbnail ) :
+											?>
+											autoplay<?php endif; ?>
 									>
 										<source src="<?php echo esc_url( $item['full_url'] ); ?>">
 									</video>
@@ -1337,7 +1361,10 @@ function mrn_base_stack_get_gallery_markup( $post_id = null ) {
 										loop
 										data-gallery-thumbnail-video
 										data-gallery-thumbnail-autoplay="<?php echo esc_attr( $autoplay_thumbnail ? 'true' : 'false' ); ?>"
-										<?php if ( $autoplay_thumbnail ) : ?>autoplay<?php endif; ?>
+										<?php
+										if ( $autoplay_thumbnail ) :
+											?>
+											autoplay<?php endif; ?>
 									>
 										<source src="<?php echo esc_url( $item['full_url'] ); ?>">
 									</video>
