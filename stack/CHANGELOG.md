@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.04.02-editor-sidebar-topbar-toggle
+- Expanded `mrn-editor-lockdown` to `1.0.3`.
+- Moved the classic-editor sidebar collapse control out of the metabox column and into the top admin tab row beside `Screen Options`.
+- Matched the control more closely to native WordPress screen-option tabs, including a fixed-width single-line label and left/right chevron swap between states.
+- Kept the right editor column collapse behavior and full-width `#post-body-content` expansion while removing the sidebar-edge/scrollbar placement issues from the earlier pass.
+
 ## 2026.04.02-editor-sidebar-collapse
 - Expanded `mrn-editor-lockdown` to `1.0.2`.
 - Added a classic-editor right-sidebar collapse control for posts, pages, editorial CPTs, and reusable-block screens that use the locked two-column edit shell.

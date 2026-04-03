@@ -5,7 +5,7 @@
 - Name: `MRN Editor Lockdown (MU)`
 - Slug: `mrn-editor-lockdown`
 - Type: MU plugin
-- Current version: `1.0.2`
+- Current version: `1.0.3`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-lockdown`
 
@@ -75,7 +75,7 @@ The plugin enforces layout through:
 - `get_user_option_meta-box-order_*`
 - `get_user_option_closedpostboxes_*`
 
-It also prints limited admin CSS and JS to reinforce the locked metabox experience, including the classic-editor right-sidebar collapse control.
+It also prints limited admin CSS and JS to reinforce the locked metabox experience, including a classic-editor right-sidebar collapse control rendered in the top admin tab row beside `Screen Options`.
 
 ## Front-End / Theming Behavior
 

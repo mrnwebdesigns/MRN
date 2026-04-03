@@ -10,7 +10,7 @@
   - `mrn-base-stack` `1.1.0`
 - MU plugins:
   - `mrn-shared-assets` `0.1.0`
-  - `mrn-editor-lockdown` `1.0.2`
+  - `mrn-editor-lockdown` `1.0.3`
   - `mrn-reusable-block-library` `0.1.5`
   - `mrn-site-colors` / `Site Styles` `0.1.3`
 - Standard plugins:

@@ -92,6 +92,24 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - `Text Domain: default-configs`
   - Current caveat remains:
     - refreshed live theme files are owned by `mrn-ops:mrn-ops`, not the preferred site owner
+- `default-configs.mrndev.io` had a live outage on `2026-04-02` while `default-configs` `1.1.0` was active.
+  - Root cause was not Config Helper or SendGrid logic.
+  - The fatal was a filesystem permission problem on three gallery-related theme files:
+    - `wp-content/themes/default-configs/inc/gallery.php`
+    - `wp-content/themes/default-configs/js/front-end-gallery.js`
+    - `wp-content/themes/default-configs/template-parts/content-gallery.php`
+  - Those files were `mrn-ops:mrn-ops` with mode `670`, so the web runtime could not read `inc/gallery.php`; WordPress fatally failed on `require_once` from theme `functions.php`.
+  - Recovery path:
+    - temporarily used `twentytwentyfive` to keep the site up during diagnosis
+    - enabled `WP_DEBUG` long enough to capture the fatal in `wp-content/debug.log`
+    - re-synced only the three affected gallery files into the live `default-configs` theme as `mrndev-stack-manager` with world-readable file mode
+    - restored the expected active plugin baseline on the site
+    - set `WP_DEBUG` back to `false` and removed `wp-content/debug.log`
+  - Current verified state after recovery:
+    - `default-configs` is active again for both `template` and `stylesheet`
+    - public HTTP status is `200`
+  - Ops guardrail:
+    - future live theme refreshes must avoid leaving selective files at mode `670`; normalize readable file modes after any manual copy/sync, especially when files land as `mrn-ops`
 - Front-end singular-sidebar collapse behavior was explored but intentionally deferred for now.
   - Revisit later if the shared singular shell should gain a front-end collapse/expand interaction.
   - Current active collapse behavior target is the classic WordPress add/edit screen sidebar, not the front-end singular layout.
@@ -115,6 +133,11 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - collapsed state keeps `#post-body-content` expanded to full width
     - collapsed restore tab stays visible while scrolling
     - front-end singular sidebar collapse remains deferred and should not be folded into this MU plugin release
+- `mrn-editor-lockdown` `1.0.3` is the follow-up refinement release for the same admin collapse feature.
+  - Current contract:
+    - the collapse control now lives in the top admin tab row beside `Screen Options`, not on the sidebar edge
+    - the top-bar control keeps a fixed width and single-line label between `Hide Sidebar` / `Show Sidebar`
+    - chevrons swap left/right between expanded and collapsed states
 
 ## Thread: 2026-04-01 Gallery + Editorial CPT Admin Release
 - Goal:
@@ -125,6 +148,8 @@ Read /Users/khofmeyer/Development/MRN/THREAD_MEMORY.md first, then proceed with 
     - gallery front-end rendering, filtering, and lightbox support
     - split singular-shell support lists so `gallery` gets `Hero`, `After Content`, `Sidebar`, and shared shell assets without inheriting the generic middle `Content` builder
     - custom excerpt-after-title panels on `blog` and `gallery` edit screens
+    - gallery item categorization is now attachment-taxonomy backed through `gallery_media_category`; freeform per-item filter labels are legacy-only fallback data and should not be used for new authoring
+    - `Thumbnail Hover Effects` belongs in the main gallery `Settings` tab, while `Animation Type` remains in `Lightbox Settings`
   - `mrn-editor-lockdown` `1.0.1` is the MU release that adds locked metabox layouts for:
     - `blog`
     - `gallery`
@@ -6166,3 +6191,67 @@ After you get each summary back:
     - synthetic `attachment_fields_to_edit` verification resolves the ALT field as `optional`
   - Current caveat:
     - the live reinstall emitted a WordPress `chmod(): Operation not permitted` warning during plugin install, but the update completed successfully and the plugin remained active.
+
+## Thread: 2026-04-02 Builder Heading/Subheading Schema Update
+- Goal:
+  - Standardize builder/reusable layout heading fields from title-style naming to heading-style naming and add subheading support.
+- Decisions made:
+  - Theme-owned builder layouts now use `Heading` / `heading` instead of prior `Title field`, `title_field`, or `text_field` naming.
+  - Supported layouts now include `Subheading` / `subheading` plus a dedicated tag selector beneath the heading controls.
+  - Front-end templates and builder row-title helpers now prefer the new field names while keeping legacy read fallbacks for older saved row data.
+
+## Thread: 2026-04-02 Site Configurations Admin Visibility Toggles
+- Goal:
+  - Let site admins hide selected theme-owned CPTs and builder layouts from the WordPress back-end UI through `Settings -> Site Configurations -> Admin`.
+- Decisions made:
+  - `mrn-config-helper` now owns two new persisted admin-visibility settings:
+    - `disabled_admin_cpts`
+    - `disabled_builder_layouts`
+  - Current CPT coverage is intentionally scoped to theme-owned editorial types:
+    - `blog`
+    - `gallery`
+    - reusable block library post types:
+      - `mrn_reusable_basic`
+      - `mrn_reusable_cta`
+      - `mrn_reusable_list`
+      - `mrn_reusable_grid`
+      - `mrn_reusable_faq`
+  - Current layout visibility coverage is intentionally scoped to the stack builder menu choices, including hero layouts and reusable/page-specific block layouts.
+  - CPT visibility is enforced server-side in the theme registration layer by suppressing admin UI exposure while keeping front-end/public registration intact.
+  - Reusable block library visibility is enforced server-side in the MU plugin registration/menu layer, and the top-level library menu is omitted when every reusable post type is hidden.
+  - Builder layout visibility is enforced in the editor UI by hiding add-row menu options instead of removing ACF field definitions, so existing rows remain editable/renderable.
+  - The `Site Configurations -> Admin` tab itself is now administrator-role-only.
+    - Non-administrator users who can still reach `Site Configurations` do not see the `Admin` tab.
+    - Admin-tab settings are preserved on save for non-administrator users and cannot be changed by posting hidden fields.
+- Packaging/deploy:
+  - `mrn-config-helper` released as `0.1.28`
+    - commit: `ada6e9d` (`Add admin visibility controls`)
+    - release zip: `/Users/khofmeyer/Development/MRN/releases/plugins/mrn-config-helper.zip`
+    - stack package refreshed: `/home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip`
+    - live `default-configs.mrndev.io` plugin reinstalled from the refreshed stack package
+  - `mrn-reusable-block-library` released as `0.1.6`
+    - commit: `c927c20` (`Honor admin visibility controls`)
+    - release zip: `/Users/khofmeyer/Development/MRN/releases/mu-plugins/mrn-reusable-block-library.zip`
+    - stack MU source refreshed: `/home/mrndev-stack-manager/stack/mu-plugins/mrn-reusable-block-library/`
+    - live MU source refreshed: `/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io/wp-content/mu-plugins/mrn-reusable-block-library/`
+- Validation:
+  - `php -l` passed for:
+    - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper/mrn-config-helper.php`
+    - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - `git diff --check` passed in both released repos.
+  - Risky-pattern scan found no matches in the released plugin and MU plugin source.
+  - Local WP-CLI QA on the symlinked stack site confirmed:
+    - hidden admin CPT settings flow through `mrn_config_helper_get_hidden_admin_cpts()`
+    - hidden builder layout settings flow through `mrn_config_helper_get_hidden_builder_layouts()`
+    - `blog`, `gallery`, and `mrn_reusable_cta` resolve `show_ui` false when hidden
+    - the `Admin` tab renders for an administrator and is absent for an editor
+  - Remote verification on `default-configs.mrndev.io` confirmed:
+    - `mrn-config-helper` runtime version `0.1.28`
+    - Config Helper hidden-CPT/layout helper functions are loaded
+    - `mrn-reusable-block-library` runtime version `0.1.6`
+    - reusable block CPTs still register on the live site
+    - public HTTP status remained `200`
+- Current blocker / caveat:
+  - The theme half of this feature is still mixed into unrelated uncommitted `mrn-base-stack` work in the workspace, including the current untracked gallery module files.
+  - Because of that, the live deploy in this thread intentionally excluded the theme changes that would make `blog` / `gallery` admin hiding effective on the live site.
+  - Reusable block hiding and the Config Helper UI/admin-tab restrictions are live; theme-owned `blog` / `gallery` hiding still needs a clean theme release pass.
