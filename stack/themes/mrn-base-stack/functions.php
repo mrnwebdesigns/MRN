@@ -118,6 +118,58 @@ function mrn_base_stack_content_width() {
 add_action( 'after_setup_theme', 'mrn_base_stack_content_width', 0 );
 
 /**
+ * Get the theme-owned post types hidden from the back-end UI.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_hidden_admin_cpts() {
+	$post_types = function_exists( 'mrn_config_helper_get_hidden_admin_cpts' ) ? mrn_config_helper_get_hidden_admin_cpts() : array();
+
+	if ( ! is_array( $post_types ) ) {
+		return array();
+	}
+
+	return array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $post_types )
+			)
+		)
+	);
+}
+
+/**
+ * Determine whether a theme-owned post type should appear in the WordPress admin UI.
+ *
+ * @param string $post_type Post type slug.
+ * @return bool
+ */
+function mrn_base_stack_is_admin_cpt_visible( $post_type ) {
+	return ! in_array( sanitize_key( (string) $post_type ), mrn_base_stack_get_hidden_admin_cpts(), true );
+}
+
+/**
+ * Get builder layouts hidden from the editor add-row menus.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_hidden_builder_layouts() {
+	$layouts = function_exists( 'mrn_config_helper_get_hidden_builder_layouts' ) ? mrn_config_helper_get_hidden_builder_layouts() : array();
+
+	if ( ! is_array( $layouts ) ) {
+		return array();
+	}
+
+	return array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $layouts )
+			)
+		)
+	);
+}
+
+/**
  * Get the singular post types that use the theme's builder-style shell.
  *
  * @return array<int, string>
@@ -311,6 +363,8 @@ function mrn_base_stack_get_after_content_location_rules() {
  * @return void
  */
 function mrn_base_stack_register_blog_post_type() {
+	$show_ui = mrn_base_stack_is_admin_cpt_visible( 'blog' );
+
 	$labels = array(
 		'name'                  => __( 'Blogs', 'mrn-base-stack' ),
 		'singular_name'         => __( 'Blog', 'mrn-base-stack' ),
@@ -347,8 +401,8 @@ function mrn_base_stack_register_blog_post_type() {
 		array(
 			'labels'              => $labels,
 			'public'              => true,
-			'show_ui'             => true,
-			'show_in_menu'        => true,
+			'show_ui'             => $show_ui,
+			'show_in_menu'        => $show_ui,
 			'show_in_rest'        => true,
 			'has_archive'         => true,
 			'rewrite'             => array(
@@ -361,7 +415,7 @@ function mrn_base_stack_register_blog_post_type() {
 			'taxonomies'          => array( 'category', 'post_tag' ),
 			'publicly_queryable'  => true,
 			'show_in_nav_menus'   => true,
-			'show_in_admin_bar'   => true,
+			'show_in_admin_bar'   => $show_ui,
 			'exclude_from_search' => false,
 			'hierarchical'        => false,
 			'query_var'           => true,
@@ -369,6 +423,55 @@ function mrn_base_stack_register_blog_post_type() {
 	);
 }
 add_action( 'init', 'mrn_base_stack_register_blog_post_type' );
+
+/**
+ * Opt the theme-owned Gallery CPT into the universal sticky bar plugin.
+ *
+ * @param array<int, string> $post_types Supported sticky-bar post types.
+ * @return array<int, string>
+ */
+function mrn_base_stack_add_gallery_to_universal_sticky_bar( $post_types ) {
+	if ( ! is_array( $post_types ) ) {
+		$post_types = array();
+	}
+
+	$post_types[] = 'gallery';
+
+	return array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $post_types )
+			)
+		)
+	);
+}
+add_filter( 'mrn_universal_sticky_bar_post_types', 'mrn_base_stack_add_gallery_to_universal_sticky_bar' );
+
+/**
+ * Enqueue gallery-specific editor behavior on gallery edit screens.
+ *
+ * @param string $hook_suffix Current admin page hook.
+ * @return void
+ */
+function mrn_base_stack_enqueue_gallery_admin_assets( $hook_suffix ) {
+	if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ), true ) ) {
+		return;
+	}
+
+	$screen = get_current_screen();
+	if ( ! $screen || 'gallery' !== $screen->post_type ) {
+		return;
+	}
+
+	wp_enqueue_script(
+		'mrn-base-stack-gallery-admin',
+		get_template_directory_uri() . '/js/admin-gallery.js',
+		array( 'jquery', 'acf-input' ),
+		_S_VERSION,
+		true
+	);
+}
+add_action( 'admin_enqueue_scripts', 'mrn_base_stack_enqueue_gallery_admin_assets' );
 
 /**
  * Enqueue Motion inView assets for front-end effects.
@@ -439,10 +542,28 @@ function mrn_base_stack_scripts() {
 			true
 		);
 
+	}
+
+	if ( is_singular( 'gallery' ) ) {
+		wp_enqueue_style(
+			'mrn-base-stack-glightbox',
+			get_template_directory_uri() . '/css/vendor/glightbox.min.css',
+			array(),
+			'3.3.1'
+		);
+
+		wp_enqueue_script(
+			'mrn-base-stack-glightbox',
+			get_template_directory_uri() . '/js/vendor/glightbox.min.js',
+			array(),
+			'3.3.1',
+			true
+		);
+
 		wp_enqueue_script(
 			'mrn-base-stack-front-end-gallery',
 			get_template_directory_uri() . '/js/front-end-gallery.js',
-			array(),
+			array( 'mrn-base-stack-glightbox' ),
 			_S_VERSION,
 			true
 		);
