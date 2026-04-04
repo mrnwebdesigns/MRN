@@ -77,6 +77,7 @@
 - Theme browser smoke QA now lives in:
   `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/tests/playwright`
 - Browser smoke coverage now includes the page editor builder UI by default on the Local stack site by provisioning a local-only `codex_qa_admin` user when explicit admin credentials are not supplied.
+- Browser smoke coverage should also be used for rendered admin sanity, including leaked CSS-text detection and sticky-toolbar layout checks on `Site Configurations` when `mrn-config-helper` is active.
 - Security QA now has a dedicated script that combines the risk scan, focused WordPress security sniffs, a lightweight secret-pattern scan, and runtime dependency audits.
 - Adoption guidance for other repos now lives in:
   `/Users/khofmeyer/Development/Local QA/README.md`

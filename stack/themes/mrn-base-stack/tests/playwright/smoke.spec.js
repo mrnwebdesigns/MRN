@@ -49,6 +49,56 @@ function expectNoPageIssues(issues, contextLabel) {
 	expect.soft(issues.failedRequests, `${contextLabel} failed requests`).toEqual([]);
 }
 
+async function loginToWordPressAdmin(page) {
+	await page.goto('/wp-login.php', { waitUntil: 'domcontentloaded' });
+	await page.getByLabel(/username or email address/i).fill(process.env.MRN_WP_ADMIN_USER);
+	await page.locator('#user_pass').fill(process.env.MRN_WP_ADMIN_PASS);
+	await page.getByRole('button', { name: /log in/i }).click();
+	await page.waitForLoadState('domcontentloaded');
+	await page.waitForTimeout(3000);
+
+	const loginFormCount = await page.locator('#loginform').count();
+	const loginErrorCount = await page.locator('#login_error, .message.error').count();
+	const hasAdminShell = (await page.locator('body.wp-admin, #wpadminbar').count()) > 0;
+
+	expect.soft(loginErrorCount, 'WordPress login errors').toBe(0);
+	expect.soft(loginFormCount > 0 && ! hasAdminShell, 'WordPress login stayed on wp-login.php').toBe(false);
+}
+
+async function expectNoLeakedStyleText(page, contextLabel) {
+	const bodyText = await page.locator('body').innerText();
+	const bodyPreview = bodyText.slice(0, 1500);
+	const cssLeakPatterns = [
+		/\.[a-z0-9_-]+\s*\{/i,
+		/(display|position|padding|margin|grid-template-columns|box-shadow)\s*:\s*[^;]+;/i,
+	];
+	const hasLeakedText = cssLeakPatterns.some((pattern) => pattern.test(bodyPreview));
+
+	expect.soft(
+		hasLeakedText,
+		`${contextLabel} leaked CSS-like text near top of page`
+	).toBe(false);
+}
+
+async function expectStickyToolbarLayout(page, toolbarSelector, contentSelector, contextLabel) {
+	const toolbar = page.locator(toolbarSelector).first();
+	const content = page.locator(contentSelector).first();
+	const toolbarBox = await toolbar.boundingBox();
+	const contentBox = await content.boundingBox();
+
+	expect.soft(toolbarBox, `${contextLabel} toolbar bounding box`).not.toBeNull();
+	expect.soft(contentBox, `${contextLabel} content bounding box`).not.toBeNull();
+
+	if (!toolbarBox || !contentBox) {
+		return;
+	}
+
+	expect.soft(toolbarBox.width, `${contextLabel} toolbar width`).toBeGreaterThan(contentBox.width * 0.8);
+	expect.soft(toolbarBox.width, `${contextLabel} toolbar not wider than content area`).toBeLessThanOrEqual(contentBox.width + 48);
+	expect.soft(toolbarBox.x, `${contextLabel} toolbar aligns with content area`).toBeGreaterThanOrEqual(contentBox.x - 24);
+	expect.soft(toolbarBox.y, `${contextLabel} toolbar renders near top of admin shell`).toBeLessThanOrEqual(90);
+}
+
 test.describe('MRN stack site smoke QA', () => {
 	test('home page loads without browser/runtime errors', async ({ page, baseURL }) => {
 		const issues = await collectPageIssues(page);
@@ -78,26 +128,50 @@ test.describe('MRN stack site smoke QA', () => {
 		expectNoPageIssues(issues, 'Sample page');
 	});
 
-	test('page editor shows builder UI when admin credentials are provided', async ({ page }) => {
-		test.skip(
-			! process.env.MRN_WP_ADMIN_USER || ! process.env.MRN_WP_ADMIN_PASS || ! process.env.MRN_SAMPLE_PAGE_EDIT_PATH,
-			'Set MRN_WP_ADMIN_USER, MRN_WP_ADMIN_PASS, and MRN_SAMPLE_PAGE_EDIT_PATH to run admin builder smoke coverage.'
-		);
+	test.describe('admin smoke coverage', () => {
+		test.describe.configure({ mode: 'serial' });
 
-		const issues = await collectPageIssues(page);
+		test('page editor shows builder UI when admin credentials are provided', async ({ page }) => {
+			test.skip(
+				! process.env.MRN_WP_ADMIN_USER || ! process.env.MRN_WP_ADMIN_PASS || ! process.env.MRN_SAMPLE_PAGE_EDIT_PATH,
+				'Set MRN_WP_ADMIN_USER, MRN_WP_ADMIN_PASS, and MRN_SAMPLE_PAGE_EDIT_PATH to run admin builder smoke coverage.'
+			);
 
-		await page.goto('/wp-login.php', { waitUntil: 'domcontentloaded' });
-		await page.getByLabel(/username or email address/i).fill(process.env.MRN_WP_ADMIN_USER);
-		await page.locator('#user_pass').fill(process.env.MRN_WP_ADMIN_PASS);
-		await page.getByRole('button', { name: /log in/i }).click();
-		await page.waitForLoadState('networkidle');
+			const issues = await collectPageIssues(page);
 
-		await page.goto(process.env.MRN_SAMPLE_PAGE_EDIT_PATH, { waitUntil: 'networkidle' });
+			await loginToWordPressAdmin(page);
 
-		await expect(page.locator('body.wp-admin')).toBeVisible();
-		await expect(page.locator('.acf-field-flexible-content:visible').first()).toBeVisible();
-		await expect(page.locator('.acf-field-flexible-content .acf-actions [data-name="add-layout"]:visible').first()).toBeVisible();
+			await page.goto(process.env.MRN_SAMPLE_PAGE_EDIT_PATH, { waitUntil: 'networkidle' });
 
-		expectNoPageIssues(issues, 'Admin builder editor');
+			await expect(page.locator('body.wp-admin')).toBeVisible();
+			await expect(page.locator('.acf-field-flexible-content:visible').first()).toBeVisible();
+			await expect(page.locator('.acf-field-flexible-content .acf-actions [data-name="add-layout"]:visible').first()).toBeVisible();
+
+			expectNoPageIssues(issues, 'Admin builder editor');
+		});
+
+		test('site configurations page renders without leaked CSS text when configured', async ({ page }) => {
+			test.skip(
+				! process.env.MRN_WP_ADMIN_USER ||
+				! process.env.MRN_WP_ADMIN_PASS ||
+				! process.env.MRN_SETTINGS_PAGE_PATH,
+				'Set MRN_WP_ADMIN_USER, MRN_WP_ADMIN_PASS, and MRN_SETTINGS_PAGE_PATH to run settings-page smoke coverage.'
+			);
+
+			const issues = await collectPageIssues(page);
+			const toolbarSelector = process.env.MRN_SETTINGS_TOOLBAR_SELECTOR || '.mrn-sticky-save-bar';
+			const contentSelector = process.env.MRN_SETTINGS_CONTENT_SELECTOR || '#wpcontent .wrap';
+
+			await loginToWordPressAdmin(page);
+			await page.goto(process.env.MRN_SETTINGS_PAGE_PATH, { waitUntil: 'domcontentloaded' });
+
+			await expect(page.locator('body.wp-admin')).toBeVisible();
+			await expect(page.locator(contentSelector).first()).toBeVisible();
+			await expect(page.locator(toolbarSelector).first()).toBeVisible();
+
+			await expectNoLeakedStyleText(page, 'Site Configurations page');
+			await expectStickyToolbarLayout(page, toolbarSelector, contentSelector, 'Site Configurations page');
+			expectNoPageIssues(issues, 'Site Configurations page');
+		});
 	});
 });

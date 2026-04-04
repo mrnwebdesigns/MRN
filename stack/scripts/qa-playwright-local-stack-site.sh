@@ -103,6 +103,7 @@ ensure_local_admin_credentials() {
 BASE_URL="$(run_wp option get home | tail -n 1)"
 SAMPLE_PAGE_PATH="$(run_wp eval '$page = get_page_by_path("sample-page"); echo $page ? wp_make_link_relative( get_permalink( $page ) ) : "/sample-page/";' | tail -n 1)"
 SAMPLE_PAGE_EDIT_PATH="$(run_wp eval '$page = get_page_by_path("sample-page"); echo $page ? "/wp-admin/post.php?post=" . (int) $page->ID . "&action=edit" : "";' | tail -n 1)"
+SETTINGS_PAGE_PATH="$(run_wp eval 'echo is_plugin_active("mrn-config-helper/mrn-config-helper.php") ? "/wp-admin/options-general.php?page=mrn-config-helper" : "";' | tail -n 1)"
 
 echo "Playwright theme dir: ${THEME_DIR}"
 echo "Local site path: ${SITE_PATH}"
@@ -116,6 +117,13 @@ else
 	echo "Admin builder smoke: skipped (sample page editor path not available)"
 fi
 
+if [[ -n "${SETTINGS_PAGE_PATH}" ]]; then
+	ensure_local_admin_credentials
+	echo "Settings page smoke: enabled"
+else
+	echo "Settings page smoke: skipped (mrn-config-helper inactive)"
+fi
+
 cd "${THEME_DIR}"
 
 env -u FORCE_COLOR -u NO_COLOR \
@@ -124,4 +132,7 @@ env -u FORCE_COLOR -u NO_COLOR \
 	MRN_WP_ADMIN_USER="${MRN_WP_ADMIN_USER:-}" \
 	MRN_WP_ADMIN_PASS="${MRN_WP_ADMIN_PASS:-}" \
 	MRN_SAMPLE_PAGE_EDIT_PATH="${SAMPLE_PAGE_EDIT_PATH}" \
+	MRN_SETTINGS_PAGE_PATH="${SETTINGS_PAGE_PATH}" \
+	MRN_SETTINGS_TOOLBAR_SELECTOR=".mrn-sticky-save-bar" \
+	MRN_SETTINGS_CONTENT_SELECTOR="#wpcontent .wrap" \
 	npx playwright test

@@ -100,6 +100,9 @@ What it checks:
 - browser console/runtime errors are surfaced
 - failed network requests are surfaced
 - WordPress editor smoke coverage using a local-only QA admin account
+- Site Configurations admin smoke coverage when `mrn-config-helper` is active
+- leaked CSS/style text detection for targeted admin pages
+- sticky-toolbar layout sanity checks for targeted admin pages
 
 By default, the script will create or refresh a local-only `codex_qa_admin` administrator on the Local stack site for the editor smoke test. If you want to override that user, you can still provide credentials explicitly:
 
