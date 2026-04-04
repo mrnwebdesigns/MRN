@@ -57,7 +57,7 @@
   - `Commit`: commit task-specific code to git with a simple commit message describing what was done
   - `Push`: push the new commit to GitHub
   - `Package`: create all necessary additions for the stack server and create the required local zip file
-  - `Deploy`: deploy the code to the stack server
+  - `Deploy`: deploy the code to the stack server, and for stack theme or stack MU feature work use `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-feature-stack-and-default-configs.sh` so `default-configs.mrndev.io` is refreshed too
   - `Post-deploy QA`: verify the deployed code is in place, versions are correct, required configs are added to the manifest, and any new plugins are added to the manifest
   - `Documentation update`: update memory and any other documentation needed to keep the project clean
 
