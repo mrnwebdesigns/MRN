@@ -81,6 +81,7 @@ rsync -rlt --omit-dir-times --delete \
 - Current canonical helper for stack feature deploys that should also refresh `default-configs.mrndev.io`:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-feature-stack-and-default-configs.sh`
 - Use the feature deploy helper when stack theme or stack MU plugin work needs to stay mirrored to the stack server and the `default-configs` site in one step.
+- The feature deploy helper must also mirror `/Users/khofmeyer/Development/MRN/shared` into `wp-content/shared` on `default-configs.mrndev.io` because settings-style sticky bars and other shared runtime helpers load from that path.
 - Standard plugins still follow their own plugin release flow and are not part of the stack feature deploy helper.
 - The helper now supports both modes:
   - default ops/stack-user sync with `sudo -n -u <site-user>`

@@ -51,6 +51,7 @@ LIVE_SITE_ROOT="/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev
 LOCAL_THEME_DIR="${REPO_ROOT}/stack/themes/mrn-base-stack"
 LOCAL_STACK_MU_DIR="${REPO_ROOT}/stack/mu-plugins"
 LOCAL_MU_SOURCE_ROOT="${REPO_ROOT}/mu-plugins"
+LOCAL_SHARED_DIR="${REPO_ROOT}/shared"
 
 MU_PLUGIN_DIRS=(
 	"mrn-active-style-guide"
@@ -116,6 +117,11 @@ if [[ ! -d "${LOCAL_THEME_DIR}" ]]; then
 	exit 1
 fi
 
+if [[ ! -d "${LOCAL_SHARED_DIR}" ]]; then
+	echo "Shared source directory not found: ${LOCAL_SHARED_DIR}" >&2
+	exit 1
+fi
+
 for slug in "${MU_PLUGIN_DIRS[@]}"; do
 	if [[ ! -d "${LOCAL_MU_SOURCE_ROOT}/${slug}" ]]; then
 		echo "MU plugin source directory not found: ${LOCAL_MU_SOURCE_ROOT}/${slug}" >&2
@@ -143,6 +149,11 @@ run_rsync \
 	"${SSH_HOST}:${LIVE_SITE_ROOT}/wp-content/themes/mrn-base-stack/" \
 	"${THEME_EXCLUDES[@]}"
 
+run_rsync \
+	"${LOCAL_SHARED_DIR}/" \
+	"${SSH_HOST}:${LIVE_SITE_ROOT}/wp-content/shared/" \
+	"${COMMON_DIR_EXCLUDES[@]}"
+
 for slug in "${MU_PLUGIN_DIRS[@]}"; do
 	run_rsync \
 	"${LOCAL_MU_SOURCE_ROOT}/${slug}/" \
@@ -168,6 +179,8 @@ done
 if [[ "${DRY_RUN}" -eq 0 ]]; then
 	ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/themes/mrn-base-stack' -type d -exec chmod 755 {} +"
 	ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/themes/mrn-base-stack' -type f -exec chmod 644 {} +"
+	ssh "${SSH_HOST}" "find '${LIVE_SITE_ROOT}/wp-content/shared' -type d -exec chmod 755 {} +"
+	ssh "${SSH_HOST}" "find '${LIVE_SITE_ROOT}/wp-content/shared' -type f -exec chmod 644 {} +"
 
 	for slug in "${MU_PLUGIN_DIRS[@]}"; do
 		ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/mu-plugins/${slug}' -type d -exec chmod 755 {} +"
