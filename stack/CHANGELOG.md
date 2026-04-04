@@ -1,5 +1,9 @@
 # Stack Changelog
 
+## 2026.04.04-bootstrap-reset-and-shared-runtime
+- Updated the stack site bootstrap flow to remove any host-provided standard plugins before installing the MRN plugin manifest so fresh sites do not inherit extras like `hello` or provider defaults.
+- Updated the stack site bootstrap flow to sync the shared runtime into `wp-content/shared` on first bootstrap so fresh sites match the stack runtime contract.
+
 ## 2026.04.03-testimonial-meta-content-list-modes
 - Expanded `mrn-base-stack` to `1.1.5`.
 - Expanded `mrn-reusable-block-library` to `0.1.7`.

@@ -9,6 +9,7 @@ IMPORTERS_DIR="${STACK_ROOT}/configs/importers"
 EXPORTS_DIR="${STACK_ROOT}/configs/exports"
 SECRETS_DIR="${STACK_ROOT}/secrets"
 MU_PLUGINS_SOURCE_DIR="${STACK_ROOT}/mu-plugins"
+SHARED_SOURCE_DIR="${STACK_SHARED_SOURCE_DIR:-}"
 MARKER_NAME=".mrn_bootstrapped"
 DEFAULT_THEME_STARTER="underscores"
 SITE_THEME_CLONE_SOURCE_SLUG="${STACK_SITE_THEME_CLONE_SOURCE_SLUG:-mrn-base-stack}"
@@ -243,6 +244,25 @@ add_warning() {
   echo "WARNING: ${msg}" >&2
 }
 
+resolve_shared_source_dir() {
+  if [[ -n "${SHARED_SOURCE_DIR}" ]]; then
+    printf '%s' "${SHARED_SOURCE_DIR}"
+    return 0
+  fi
+
+  if [[ -d "${STACK_ROOT}/shared" ]]; then
+    printf '%s' "${STACK_ROOT}/shared"
+    return 0
+  fi
+
+  if [[ -d "${STACK_ROOT}/../shared" ]]; then
+    printf '%s' "${STACK_ROOT}/../shared"
+    return 0
+  fi
+
+  return 1
+}
+
 infer_new_plugin_slug() {
   local source="$1"
   local -a before_list after_list
@@ -428,6 +448,43 @@ install_plugins() {
       fi
     fi
   done < "${PLUGINS_FILE}"
+}
+
+reset_standard_plugins() {
+  local -a standard_plugins
+  local plugin_slug
+
+  mapfile -t standard_plugins < <(
+    {
+      run_wp plugin list --status=active --field=name 2>/dev/null || true
+      run_wp plugin list --status=inactive --field=name 2>/dev/null || true
+    } | sed '/^[[:space:]]*$/d' | sort -u
+  )
+
+  if [[ "${#standard_plugins[@]}" -eq 0 ]]; then
+    echo "No preinstalled standard plugins found."
+    return 0
+  fi
+
+  echo "Resetting preinstalled standard plugins before manifest install."
+  for plugin_slug in "${standard_plugins[@]}"; do
+    plugin_slug="$(printf '%s' "${plugin_slug}" | xargs)"
+    [[ -n "${plugin_slug}" ]] || continue
+
+    if run_wp plugin is-active "${plugin_slug}" >/dev/null 2>&1; then
+      if ! run_wp plugin deactivate "${plugin_slug}" >/dev/null 2>&1; then
+        add_warning "Failed to deactivate preinstalled plugin before reset: ${plugin_slug}"
+        continue
+      fi
+    fi
+
+    if ! run_wp plugin delete "${plugin_slug}" >/dev/null 2>&1; then
+      add_warning "Failed to delete preinstalled plugin before reset: ${plugin_slug}"
+      continue
+    fi
+
+    echo "Removed preinstalled plugin: ${plugin_slug}"
+  done
 }
 
 ensure_all_plugins_active() {
@@ -1192,14 +1249,36 @@ sync_mu_plugins() {
   echo "MU plugins synced: ${MU_PLUGINS_SOURCE_DIR} -> ${target_dir}"
 }
 
+sync_shared_runtime() {
+  local source_dir target_dir
+
+  if ! source_dir="$(resolve_shared_source_dir)"; then
+    add_warning "Shared runtime source not found. Expected STACK_SHARED_SOURCE_DIR, ${STACK_ROOT}/shared, or ${STACK_ROOT}/../shared."
+    return 0
+  fi
+
+  target_dir="${WP_PATH}/wp-content/shared"
+  mkdir -p "${target_dir}"
+
+  if ! rsync -a "${source_dir}/" "${target_dir}/"; then
+    add_warning "Failed shared runtime sync from ${source_dir} to ${target_dir}"
+    return 0
+  fi
+
+  chown -R "${SITE_USER}:${SITE_USER}" "${target_dir}" || add_warning "Failed to chown shared runtime directory: ${target_dir}"
+  echo "Shared runtime synced: ${source_dir} -> ${target_dir}"
+}
+
 main() {
   local domain body
   echo "Bootstrapping site: ${SITE_PATH} (owner: ${SITE_USER})"
+  reset_standard_plugins
   install_plugins
   ensure_all_plugins_active
   configure_post_types_order
   apply_licenses
   sync_mu_plugins
+  sync_shared_runtime
   install_themes
   apply_wp_defaults
   run_importers

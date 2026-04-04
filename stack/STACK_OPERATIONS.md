@@ -83,6 +83,8 @@ rsync -rlt --omit-dir-times --delete \
 - Use the feature deploy helper when stack theme or stack MU plugin work needs to stay mirrored to the stack server and the `default-configs` site in one step.
 - The feature deploy helper must also mirror `/Users/khofmeyer/Development/MRN/shared` into `wp-content/shared` on `default-configs.mrndev.io` because settings-style sticky bars and other shared runtime helpers load from that path.
 - Standard plugins still follow their own plugin release flow and are not part of the stack feature deploy helper.
+- Fresh site bootstrap must delete any preinstalled standard plugins from the host before installing the stack manifest so new sites match the stack plugin set exactly.
+- Fresh site bootstrap must also sync the shared runtime into `wp-content/shared` as part of the initial rollout.
 - The helper now supports both modes:
   - default ops/stack-user sync with `sudo -n -u <site-user>`
   - direct site-owner SSH via `--direct-ssh`

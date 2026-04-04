@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.03-testimonial-meta-content-list-modes`
-- Release date: `2026-04-03`
+- Stack release: `2026.04.04-bootstrap-reset-and-shared-runtime`
+- Release date: `2026-04-04`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components

@@ -25,7 +25,8 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 1. Create a new WordPress site in CloudPanel.
 2. A cron job runs `scripts/bootstrap-new-sites.sh` every 1-5 minutes.
 3. The script finds unbootstrapped sites and runs `scripts/site-bootstrap.sh`.
-4. A marker file is created so the same site is not bootstrapped again.
+4. Bootstrap clears host-provided standard plugins, installs the stack manifest, syncs MU plugins and `wp-content/shared`, and activates the stack theme clone.
+5. A marker file is created so the same site is not bootstrapped again.
 
 ## First setup
 
