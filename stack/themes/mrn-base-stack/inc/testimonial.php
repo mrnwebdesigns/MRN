@@ -88,12 +88,37 @@ function mrn_base_stack_register_testimonial_field_group() {
 			'menu_order'            => 10,
 			'fields'                => array(
 				array(
-					'key'        => 'field_mrn_testimonial_standard_set_tab',
-					'label'      => 'Standard Set',
-					'name'       => '',
-					'aria-label' => '',
-					'type'       => 'tab',
-					'placement'  => 'top',
+					'key'          => 'field_mrn_testimonial_label',
+					'label'        => 'Label',
+					'name'         => 'testimonial_label',
+					'aria-label'   => '',
+					'type'         => 'text',
+					'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
+					'wrapper'      => array(
+						'width' => '33',
+					),
+				),
+				array(
+					'key'          => 'field_mrn_testimonial_heading',
+					'label'        => 'Heading',
+					'name'         => 'testimonial_heading',
+					'aria-label'   => '',
+					'type'         => 'text',
+					'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
+					'wrapper'      => array(
+						'width' => '75',
+					),
+				),
+				array(
+					'key'          => 'field_mrn_testimonial_subheading',
+					'label'        => 'Subheading',
+					'name'         => 'testimonial_subheading',
+					'aria-label'   => '',
+					'type'         => 'text',
+					'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
+					'wrapper'      => array(
+						'width' => '75',
+					),
 				),
 				array(
 					'key'          => 'field_mrn_testimonial_name',
@@ -152,14 +177,6 @@ function mrn_base_stack_register_testimonial_field_group() {
 					),
 				),
 				array(
-					'key'        => 'field_mrn_testimonial_image_logo_tab',
-					'label'      => 'Image/Logo',
-					'name'       => '',
-					'aria-label' => '',
-					'type'       => 'tab',
-					'placement'  => 'top',
-				),
-				array(
 					'key'           => 'field_mrn_testimonial_image_logo',
 					'label'         => 'Image/Logo',
 					'name'          => 'testimonial_image_logo',
@@ -202,6 +219,9 @@ function mrn_base_stack_get_testimonial_data( $post_id = null ) {
 	$post_id = $post_id ? (int) $post_id : get_the_ID();
 
 	$data = array(
+		'label'       => '',
+		'heading'     => '',
+		'subheading'  => '',
 		'name'        => get_the_title( $post_id ),
 		'company'     => '',
 		'position'    => '',
@@ -212,6 +232,21 @@ function mrn_base_stack_get_testimonial_data( $post_id = null ) {
 
 	if ( ! $post_id || ! function_exists( 'get_field' ) ) {
 		return $data;
+	}
+
+	$label = get_field( 'testimonial_label', $post_id );
+	if ( is_string( $label ) ) {
+		$data['label'] = trim( $label );
+	}
+
+	$heading = get_field( 'testimonial_heading', $post_id );
+	if ( is_string( $heading ) ) {
+		$data['heading'] = trim( $heading );
+	}
+
+	$subheading = get_field( 'testimonial_subheading', $post_id );
+	if ( is_string( $subheading ) ) {
+		$data['subheading'] = trim( $subheading );
 	}
 
 	$name = get_field( 'testimonial_name', $post_id );
@@ -256,7 +291,11 @@ function mrn_base_stack_get_testimonial_data( $post_id = null ) {
  */
 function mrn_base_stack_get_testimonial_excerpt( $post_id = null, $length = 28 ) {
 	$data    = mrn_base_stack_get_testimonial_data( $post_id );
-	$content = isset( $data['content'] ) && is_string( $data['content'] ) ? wp_strip_all_tags( $data['content'] ) : '';
+	$segments = array(
+		isset( $data['subheading'] ) && is_string( $data['subheading'] ) ? $data['subheading'] : '',
+		isset( $data['content'] ) && is_string( $data['content'] ) ? $data['content'] : '',
+	);
+	$content = wp_strip_all_tags( implode( ' ', array_filter( $segments ) ) );
 	$content = preg_replace( '/\s+/', ' ', $content );
 	$content = is_string( $content ) ? trim( $content ) : '';
 

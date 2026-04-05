@@ -808,16 +808,30 @@ function mrn_base_stack_render_builder_field( $field_name, $post_id = null, $wra
 		return false;
 	}
 
-	echo '<div class="' . esc_attr( trim( $wrapper_class ) ) . '">';
+	$rendered_rows = array();
 
 	foreach ( $rows as $index => $row ) {
 		if ( ! is_array( $row ) ) {
 			continue;
 		}
 
+		ob_start();
 		mrn_base_stack_render_builder_row( $row, $post_id, $index );
+		$row_markup = trim( (string) ob_get_clean() );
+
+		if ( '' === $row_markup ) {
+			continue;
+		}
+
+		$rendered_rows[] = $row_markup;
 	}
 
+	if ( empty( $rendered_rows ) ) {
+		return false;
+	}
+
+	echo '<div class="' . esc_attr( trim( $wrapper_class ) ) . '">';
+	echo implode( '', $rendered_rows ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	echo '</div>';
 
 	return true;
@@ -906,9 +920,10 @@ function mrn_base_stack_get_smartcrawl_markup( $post_id ) {
 
 	$builder_markup = mrn_base_stack_get_content_builder_markup( $post->ID );
 	$gallery_markup = function_exists( 'mrn_base_stack_get_gallery_smartcrawl_markup' ) ? mrn_base_stack_get_gallery_smartcrawl_markup( $post->ID ) : '';
+	$case_study_markup = function_exists( 'mrn_base_stack_get_case_study_smartcrawl_markup' ) ? mrn_base_stack_get_case_study_smartcrawl_markup( $post->ID ) : '';
 	$after_markup   = mrn_base_stack_get_after_content_builder_markup( $post->ID );
 
-	if ( '' === $builder_markup && '' === $gallery_markup && '' === $after_markup ) {
+	if ( '' === $builder_markup && '' === $gallery_markup && '' === $case_study_markup && '' === $after_markup ) {
 		return '';
 	}
 
@@ -917,7 +932,7 @@ function mrn_base_stack_get_smartcrawl_markup( $post_id ) {
 		esc_html( get_the_title( $post ) )
 	);
 
-	return trim( $title_markup . "\n" . $builder_markup . "\n" . $gallery_markup . "\n" . $after_markup );
+	return trim( $title_markup . "\n" . $builder_markup . "\n" . $gallery_markup . "\n" . $case_study_markup . "\n" . $after_markup );
 }
 
 /**

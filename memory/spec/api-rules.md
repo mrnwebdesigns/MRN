@@ -33,9 +33,66 @@
   - `page_sidebar_rows`
 - Editor label should read `Sidebar Position`.
 - Sidebar field flow belongs after `After Content`, not in the side metabox column.
+- Empty sidebar builder rows must not count as rendered sidebar markup; the singular sidebar shell should only activate when at least one sidebar row outputs real front-end markup.
 - Front-end singular-sidebar collapse is deferred.
 - Classic-editor sidebar collapse lives in:
   `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`
+
+## Editorial Standard Set Contract
+- Theme-owned editorial CPTs should use a shared top-of-form `Standard Set` pattern before CPT-specific body fields.
+- The standard-set fields are:
+  - `Label`
+  - `Heading`
+  - `Subheading`
+- These fields should be plain text inputs, not WYSIWYG editors.
+- Their instructions should read:
+  `Limited inline HTML allowed: span, strong, em, br.`
+- Avoid tabbed ACF grouping for this standard set unless a specific CPT has an established exception.
+- `Heading` is the primary editorial display title for the entry body.
+- WordPress post title may remain the fallback display title when `Heading` is empty.
+- `Label` and `Subheading` are optional supporting fields for shell/header presentation.
+
+## Editorial CPT Pattern
+- Theme-owned editorial CPTs currently live in `mrn_base_stack_get_editorial_cpts()` and are expected to follow one shared structural pattern unless a deliberate exception is documented.
+- Registration pattern:
+  - register on `init`
+  - use `mrn_base_stack_is_admin_cpt_visible()` for admin visibility
+  - set `show_in_rest => true`
+  - set `publicly_queryable => true`
+  - set `show_in_nav_menus => true`
+  - use an explicit rewrite slug with `with_front => false`
+- Editor/admin pattern:
+  - register ACF field groups on `acf/init`
+  - use `position => acf_after_title`
+  - use `label_placement => top`
+  - use `instruction_placement => label`
+  - hide the native WordPress content editor when the CPT is theme-rendered instead of `the_content()`
+  - opt the CPT into the shared singular shell, hero, after-content, sidebar, and sticky-bar helpers through the theme-owned editorial CPT registry instead of one-off hooks
+- Header/body field pattern:
+  - place the `Standard Set` first
+  - follow with CPT-specific body fields
+  - avoid tabs for the standard set; use tabs only when a CPT-specific editing flow clearly benefits from them
+  - allow CPT-specific classes for front-end targeting, but keep them inside the shared shell contract
+- Singular front-end pattern:
+  - use the shared singular wrapper classes:
+    - `mrn-singular-shell`
+    - `mrn-singular-shell__main`
+    - `mrn-singular-shell__sidebar`
+    - `entry-header`
+    - `entry-content`
+  - keep CPT-specific content aligned to the same shell width as the header unless a narrower or wider treatment is intentional
+  - render hero, sidebar, and after-content through shared theme helpers when the CPT participates in the builder-style singular shell
+- Archive/listing pattern:
+  - use the matching `template-parts/content-{post_type}.php` template
+  - show the entry heading with a permalink
+  - show optional supporting media or summary content when available
+  - use either the native excerpt field or a helper-derived plain-text excerpt when the CPT does not store a native excerpt
+- Data/helper pattern:
+  - provide a dedicated `mrn_base_stack_get_{cpt}_data()` helper when the CPT has custom structured fields
+  - provide a helper-derived excerpt when archive cards need a stable summary and the CPT does not expose the core excerpt UI
+- Current alignment note:
+  - `Blog`, `Gallery`, `Testimonial`, and `Case Study` are the current theme-owned editorial reference pattern
+  - CPT-specific field payloads can still differ, but they should share the same shell, standard-set, and helper-driven structure
 
 ## Theme Options And Business Information
 - Theme header/footer options helper:

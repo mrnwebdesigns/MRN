@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.1.8
+Version: 1.1.10
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -1205,6 +1205,101 @@ body {
 .mrn-singular-sidebar .mrn-layout-grid {
 	width: 100%;
 	max-width: none;
+}
+
+.mrn-case-study-section {
+	display: grid;
+	gap: 1.5rem;
+}
+
+.mrn-singular-shell--case-study .entry-header {
+	margin-bottom: clamp(2rem, 5vw, 4rem);
+}
+
+.mrn-entry-label {
+	margin: 0 0 0.9rem;
+	color: var(--mrn-color-accent, #c54f36);
+	font-size: 0.82rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+
+.mrn-singular-shell--case-study .entry-summary {
+	max-width: 52rem;
+	color: #4d5157;
+	font-size: clamp(1rem, 2vw, 1.125rem);
+	line-height: 1.65;
+}
+
+.mrn-singular-shell--case-study .entry-content > .mrn-case-study-section {
+	margin-left: auto;
+	margin-right: auto;
+	width: min(100%, var(--mrn-shell-max-width));
+	max-width: var(--mrn-shell-max-width);
+}
+
+.mrn-singular-shell--testimonial .mrn-testimonial-body {
+	margin-left: auto;
+	margin-right: auto;
+	width: min(100%, var(--mrn-shell-max-width));
+	max-width: var(--mrn-shell-max-width);
+}
+
+.mrn-singular-shell--gallery .mrn-gallery {
+	margin-left: auto;
+	margin-right: auto;
+	width: min(100%, var(--mrn-shell-max-width));
+	max-width: var(--mrn-shell-max-width);
+}
+
+.mrn-case-study-section h2 {
+	margin-bottom: 0.75rem;
+	font-size: clamp(1.2rem, 2.4vw, 1.7rem);
+}
+
+.mrn-case-study-section + .mrn-case-study-section {
+	margin-top: var(--mrn-shell-section-space-tight);
+}
+
+.mrn-singular-shell--case-study .mrn-case-study-section {
+	padding-top: clamp(1.5rem, 3vw, 2.25rem);
+	border-top: 1px solid rgba(30, 35, 42, 0.1);
+}
+
+.mrn-singular-shell--case-study .entry-content > .mrn-case-study-section:first-child {
+	padding-top: 0;
+	border-top: 0;
+}
+
+.mrn-case-study-section--media {
+	align-items: center;
+	grid-template-columns: minmax(0, 1fr) minmax(18rem, 1fr);
+	gap: clamp(1.5rem, 3vw, 3rem);
+}
+
+.mrn-case-study-section--media-left .mrn-case-study-section__media {
+	order: 1;
+}
+
+.mrn-case-study-section--media-left .mrn-case-study-section__content {
+	order: 2;
+}
+
+.mrn-case-study-section--media-right .mrn-case-study-section__content {
+	order: 1;
+}
+
+.mrn-case-study-section--media-right .mrn-case-study-section__media {
+	order: 2;
+}
+
+.mrn-case-study-section__media img {
+	display: block;
+	height: auto;
+	max-width: 100%;
+	width: 100%;
+	border-radius: 1.25rem;
 }
 
 .mrn-singular-sidebar > :last-child {
@@ -4833,6 +4928,17 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 }
 
 @media (max-width: 960px) {
+	.mrn-case-study-section--media {
+		grid-template-columns: 1fr;
+	}
+
+	.mrn-case-study-section--media-left .mrn-case-study-section__content,
+	.mrn-case-study-section--media-left .mrn-case-study-section__media,
+	.mrn-case-study-section--media-right .mrn-case-study-section__content,
+	.mrn-case-study-section--media-right .mrn-case-study-section__media {
+		order: initial;
+	}
+
 	.mrn-layout-section--video .mrn-layout-grid--video,
 	.mrn-layout-section--two-column-split .mrn-layout-grid--two-column-split {
 		grid-template-columns: 1fr;

@@ -25,7 +25,7 @@
 
 ## Recent Durable Decisions
 - Current stack baseline is `2026.04.05-admin-ui-and-search-fixes`.
-- Current stack theme version is `mrn-base-stack 1.1.8`.
+- Current stack theme version is `mrn-base-stack 1.1.10`.
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
 - `default-configs.mrndev.io` was refreshed on `2026-04-03` for the `Content Lists` display-mode and shared repeater-controls release.
@@ -46,6 +46,9 @@
 - The stack baseline now separates testimonial position/company meta lines and restores website-link output in testimonial list views.
 - Reusable content lists now support `compact` and `feature` display modes and keep pagination anchored to the same row after page changes.
 - The stack theme now includes a theme-owned `Testimonial` CPT with archive support and local ACF fields for name, company, position, website URL, rich text content, and image/logo.
+- The stack theme now includes a theme-owned `Case Study` CPT with local ACF fields for client overview, challenge, services repeater rows with image-position controls, and strategy/approach content plus image placement.
+- The theme-owned `Testimonial` CPT now uses the shared editorial pattern too, including the `Standard Set` header fields and the shared singular shell structure instead of the older simpler wrapper.
+- Shared builder wrappers must only render when at least one row outputs real markup; empty sidebar rows must not trigger the singular sidebar shell on otherwise normal pages.
 - Editorial CPT sticky-bar and shared shell support now derive from a shared helper so new theme-owned editorial CPTs stay aligned automatically.
 - `mrn-editor-lockdown` now applies its locked classic-editor metabox shell dynamically to supported non-reusable post types, keeping the SEO Helper box pinned at the top of the sidebar on new editorial CPTs.
 - `mrn-seo-helper` keeps its dynamic post-type targeting while explicitly excluding reusable block library CPTs from SEO field registration and SmartCrawl template/sync coverage.

@@ -264,6 +264,8 @@ function mrn_base_stack_hide_native_editor_metabox() {
 	remove_meta_box( 'postdivrich', 'page', 'normal' );
 	remove_meta_box( 'postdivrich', 'blog', 'normal' );
 	remove_meta_box( 'postdivrich', 'gallery', 'normal' );
+	remove_meta_box( 'postdivrich', 'testimonial', 'normal' );
+	remove_meta_box( 'postdivrich', 'case_study', 'normal' );
 }
 add_action( 'add_meta_boxes', 'mrn_base_stack_hide_native_editor_metabox', 20 );
 
@@ -301,7 +303,7 @@ add_action( 'admin_head', 'mrn_base_stack_hide_native_editor_css' );
 function mrn_base_stack_customize_editorial_cpt_edit_screen( $post_type, $post ) {
 	$post_type = sanitize_key( (string) $post_type );
 
-	if ( ! in_array( $post_type, array( 'blog', 'gallery' ), true ) || ! $post instanceof WP_Post ) {
+	if ( ! in_array( $post_type, array( 'blog', 'gallery', 'case_study' ), true ) || ! $post instanceof WP_Post ) {
 		return;
 	}
 
