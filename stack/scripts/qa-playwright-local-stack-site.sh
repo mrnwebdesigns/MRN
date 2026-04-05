@@ -104,6 +104,9 @@ BASE_URL="$(run_wp option get home | tail -n 1)"
 SAMPLE_PAGE_PATH="$(run_wp eval '$page = get_page_by_path("sample-page"); echo $page ? wp_make_link_relative( get_permalink( $page ) ) : "/sample-page/";' | tail -n 1)"
 SAMPLE_PAGE_EDIT_PATH="$(run_wp eval '$page = get_page_by_path("sample-page"); echo $page ? "/wp-admin/post.php?post=" . (int) $page->ID . "&action=edit" : "";' | tail -n 1)"
 SETTINGS_PAGE_PATH="$(run_wp eval 'echo is_plugin_active("mrn-config-helper/mrn-config-helper.php") ? "/wp-admin/options-general.php?page=mrn-config-helper" : "";' | tail -n 1)"
+EDITOR_TOOLS_PAGE_PATH="$(run_wp eval 'echo is_plugin_active("mrn-editor-tools/mrn-editor-tools.php") ? "/wp-admin/options-general.php?page=mrn-editor-tools" : "";' | tail -n 1)"
+THEME_HEADER_FOOTER_PAGE_PATH="$(run_wp eval 'echo function_exists("acf_add_options_page") ? "/wp-admin/admin.php?page=mrn-theme-header-footer" : "";' | tail -n 1)"
+BUSINESS_INFORMATION_PAGE_PATH="$(run_wp eval 'echo function_exists("acf_add_options_page") ? "/wp-admin/admin.php?page=mrn-business-information" : "";' | tail -n 1)"
 
 echo "Playwright theme dir: ${THEME_DIR}"
 echo "Local site path: ${SITE_PATH}"
@@ -124,6 +127,27 @@ else
 	echo "Settings page smoke: skipped (mrn-config-helper inactive)"
 fi
 
+if [[ -n "${EDITOR_TOOLS_PAGE_PATH}" ]]; then
+	ensure_local_admin_credentials
+	echo "Editor Enhancements smoke: enabled"
+else
+	echo "Editor Enhancements smoke: skipped (mrn-editor-tools inactive)"
+fi
+
+if [[ -n "${THEME_HEADER_FOOTER_PAGE_PATH}" ]]; then
+	ensure_local_admin_credentials
+	echo "Theme Header/Footer smoke: enabled"
+else
+	echo "Theme Header/Footer smoke: skipped (ACF options pages unavailable)"
+fi
+
+if [[ -n "${BUSINESS_INFORMATION_PAGE_PATH}" ]]; then
+	ensure_local_admin_credentials
+	echo "Business Information smoke: enabled"
+else
+	echo "Business Information smoke: skipped (ACF options pages unavailable)"
+fi
+
 cd "${THEME_DIR}"
 
 env -u FORCE_COLOR -u NO_COLOR \
@@ -135,4 +159,11 @@ env -u FORCE_COLOR -u NO_COLOR \
 	MRN_SETTINGS_PAGE_PATH="${SETTINGS_PAGE_PATH}" \
 	MRN_SETTINGS_TOOLBAR_SELECTOR=".mrn-sticky-save-bar" \
 	MRN_SETTINGS_CONTENT_SELECTOR="#wpcontent .wrap" \
+	MRN_EDITOR_TOOLS_PAGE_PATH="${EDITOR_TOOLS_PAGE_PATH}" \
+	MRN_EDITOR_TOOLS_TOOLBAR_SELECTOR=".mrn-sticky-save-bar" \
+	MRN_EDITOR_TOOLS_CONTENT_SELECTOR="#wpcontent .wrap" \
+	MRN_THEME_HEADER_FOOTER_PAGE_PATH="${THEME_HEADER_FOOTER_PAGE_PATH}" \
+	MRN_BUSINESS_INFORMATION_PAGE_PATH="${BUSINESS_INFORMATION_PAGE_PATH}" \
+	MRN_THEME_OPTIONS_TOOLBAR_SELECTOR=".mrn-sticky-save-bar" \
+	MRN_THEME_OPTIONS_CONTENT_SELECTOR="#wpcontent .wrap" \
 	npx playwright test

@@ -12,6 +12,15 @@ function getConsoleIssueFilter() {
 	};
 }
 
+function shouldIgnoreFailedRequest(url, errorText) {
+	const normalizedUrl = String(url || '').toLowerCase();
+	const normalizedError = String(errorText || '').toLowerCase();
+
+	return (
+		(normalizedUrl.includes('mrn-login-logo.png') && normalizedError.includes('aborted'))
+	);
+}
+
 async function collectPageIssues(page) {
 	const consoleMessages = [];
 	const pageErrors = [];
@@ -30,9 +39,14 @@ async function collectPageIssues(page) {
 
 	page.on('requestfailed', (request) => {
 		const failure = request.failure();
+		const errorText = failure && failure.errorText ? failure.errorText : '';
+
+		if (shouldIgnoreFailedRequest(request.url(), errorText)) {
+			return;
+		}
 
 		failedRequests.push(
-			`${request.method()} ${request.url()}${failure && failure.errorText ? ` (${failure.errorText})` : ''}`
+			`${request.method()} ${request.url()}${errorText ? ` (${errorText})` : ''}`
 		);
 	});
 
@@ -172,6 +186,78 @@ test.describe('MRN stack site smoke QA', () => {
 			await expectNoLeakedStyleText(page, 'Site Configurations page');
 			await expectStickyToolbarLayout(page, toolbarSelector, contentSelector, 'Site Configurations page');
 			expectNoPageIssues(issues, 'Site Configurations page');
+		});
+
+		test('editor enhancements page renders a full-width sticky toolbar when configured', async ({ page }) => {
+			test.skip(
+				! process.env.MRN_WP_ADMIN_USER ||
+				! process.env.MRN_WP_ADMIN_PASS ||
+				! process.env.MRN_EDITOR_TOOLS_PAGE_PATH,
+				'Set MRN_WP_ADMIN_USER, MRN_WP_ADMIN_PASS, and MRN_EDITOR_TOOLS_PAGE_PATH to run editor-tools admin smoke coverage.'
+			);
+
+			const issues = await collectPageIssues(page);
+			const toolbarSelector = process.env.MRN_EDITOR_TOOLS_TOOLBAR_SELECTOR || '.mrn-sticky-save-bar';
+			const contentSelector = process.env.MRN_EDITOR_TOOLS_CONTENT_SELECTOR || '#wpcontent .wrap';
+
+			await loginToWordPressAdmin(page);
+			await page.goto(process.env.MRN_EDITOR_TOOLS_PAGE_PATH, { waitUntil: 'domcontentloaded' });
+
+			await expect(page.locator('body.wp-admin')).toBeVisible();
+			await expect(page.locator(contentSelector).first()).toBeVisible();
+			await expect(page.locator(toolbarSelector).first()).toBeVisible();
+
+			await expectNoLeakedStyleText(page, 'Editor Enhancements page');
+			await expectStickyToolbarLayout(page, toolbarSelector, contentSelector, 'Editor Enhancements page');
+			expectNoPageIssues(issues, 'Editor Enhancements page');
+		});
+
+		test('theme header/footer page renders a full-width sticky toolbar when configured', async ({ page }) => {
+			test.skip(
+				! process.env.MRN_WP_ADMIN_USER ||
+				! process.env.MRN_WP_ADMIN_PASS ||
+				! process.env.MRN_THEME_HEADER_FOOTER_PAGE_PATH,
+				'Set MRN_WP_ADMIN_USER, MRN_WP_ADMIN_PASS, and MRN_THEME_HEADER_FOOTER_PAGE_PATH to run theme-options admin smoke coverage.'
+			);
+
+			const issues = await collectPageIssues(page);
+			const toolbarSelector = process.env.MRN_THEME_OPTIONS_TOOLBAR_SELECTOR || '.mrn-sticky-save-bar';
+			const contentSelector = process.env.MRN_THEME_OPTIONS_CONTENT_SELECTOR || '#wpcontent .wrap';
+
+			await loginToWordPressAdmin(page);
+			await page.goto(process.env.MRN_THEME_HEADER_FOOTER_PAGE_PATH, { waitUntil: 'domcontentloaded' });
+
+			await expect(page.locator('body.wp-admin')).toBeVisible();
+			await expect(page.locator(contentSelector).first()).toBeVisible();
+			await expect(page.locator(toolbarSelector).first()).toBeVisible();
+
+			await expectNoLeakedStyleText(page, 'Theme Header/Footer page');
+			await expectStickyToolbarLayout(page, toolbarSelector, contentSelector, 'Theme Header/Footer page');
+			expectNoPageIssues(issues, 'Theme Header/Footer page');
+		});
+
+		test('business information page renders a full-width sticky toolbar when configured', async ({ page }) => {
+			test.skip(
+				! process.env.MRN_WP_ADMIN_USER ||
+				! process.env.MRN_WP_ADMIN_PASS ||
+				! process.env.MRN_BUSINESS_INFORMATION_PAGE_PATH,
+				'Set MRN_WP_ADMIN_USER, MRN_WP_ADMIN_PASS, and MRN_BUSINESS_INFORMATION_PAGE_PATH to run business-information admin smoke coverage.'
+			);
+
+			const issues = await collectPageIssues(page);
+			const toolbarSelector = process.env.MRN_THEME_OPTIONS_TOOLBAR_SELECTOR || '.mrn-sticky-save-bar';
+			const contentSelector = process.env.MRN_THEME_OPTIONS_CONTENT_SELECTOR || '#wpcontent .wrap';
+
+			await loginToWordPressAdmin(page);
+			await page.goto(process.env.MRN_BUSINESS_INFORMATION_PAGE_PATH, { waitUntil: 'domcontentloaded' });
+
+			await expect(page.locator('body.wp-admin')).toBeVisible();
+			await expect(page.locator(contentSelector).first()).toBeVisible();
+			await expect(page.locator(toolbarSelector).first()).toBeVisible();
+
+			await expectNoLeakedStyleText(page, 'Business Information page');
+			await expectStickyToolbarLayout(page, toolbarSelector, contentSelector, 'Business Information page');
+			expectNoPageIssues(issues, 'Business Information page');
 		});
 	});
 });

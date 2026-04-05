@@ -1,5 +1,19 @@
 # Stack Changelog
 
+## 2026.04.04-shared-sticky-toolbar-rollout
+- Expanded `mrn-base-stack` to `1.1.6`.
+- Expanded `mrn-config-helper` to `0.1.33`.
+- Expanded `mrn-editor-tools` to `1.8.16`.
+- Expanded `mrn-acf-character-count` to `1.1.6`.
+- Expanded `mrn-cookie-consent` to `1.1.21`.
+- Expanded `mrn-gtm-injector` to `1.0.9`.
+- Expanded `mrn-comment-management` to `1.1.7`.
+- Expanded `mrn-license-vault` to `0.2.6`.
+- Expanded `mrn-unified-exporter` to `1.2.6`.
+- Consolidated settings-style sticky admin bars onto one canonical shared source with thin plugin loaders and a unique shared API so toolbar behavior no longer depends on plugin load order.
+- Re-enabled `Theme Header/Footer` and `Business Information` on top of the shared toolbar contract with full-width content layouts and screenshot-backed admin QA.
+- Expanded local Playwright admin smoke coverage to include `Site Configurations`, `Editor Enhancements`, `Theme Header/Footer`, and `Business Information`.
+
 ## 2026.04.04-bootstrap-reset-and-shared-runtime
 - Updated the stack site bootstrap flow to remove any host-provided standard plugins before installing the MRN plugin manifest so fresh sites do not inherit extras like `hello` or provider defaults.
 - Updated the stack site bootstrap flow to sync the shared runtime into `wp-content/shared` on first bootstrap so fresh sites match the stack runtime contract.

@@ -1,21 +1,21 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.04-bootstrap-reset-and-shared-runtime`
+- Stack release: `2026.04.04-shared-sticky-toolbar-rollout`
 - Release date: `2026-04-04`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.5`
+  - `mrn-base-stack` `1.1.6`
 - MU plugins:
   - `mrn-shared-assets` `0.1.0`
   - `mrn-editor-lockdown` `1.0.6`
   - `mrn-reusable-block-library` `0.1.7`
   - `mrn-site-colors` / `Site Styles` `0.1.3`
 - Standard plugins:
-  - `mrn-config-helper` `0.1.30`
-  - `mrn-editor-tools` `1.8.14`
+  - `mrn-config-helper` `0.1.33`
+  - `mrn-editor-tools` `1.8.16`
   - `mrn-seo-helper` `0.2.9`
 
 ## Stack Manifests

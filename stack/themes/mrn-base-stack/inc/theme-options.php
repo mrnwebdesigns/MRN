@@ -1221,6 +1221,156 @@ function mrn_base_stack_validate_holiday_hours_field( $valid, $value ) {
 add_filter( 'acf/validate_value/key=field_mrn_business_holidays', 'mrn_base_stack_validate_holiday_hours_field', 10, 2 );
 
 /**
+ * Load the shared sticky toolbar helper when available.
+ *
+ * @return bool
+ */
+function mrn_base_stack_load_sticky_toolbar_helper() {
+	static $loaded = false;
+
+	if ( $loaded || function_exists( 'mrn_sticky_toolbar_render' ) ) {
+		$loaded = true;
+		return true;
+	}
+
+	$candidates = array(
+		defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR . '/shared/mrn-sticky-settings-toolbar.php' : '',
+		dirname( __DIR__, 4 ) . '/shared/mrn-sticky-settings-toolbar.php',
+	);
+
+	foreach ( $candidates as $candidate ) {
+		if ( $candidate && file_exists( $candidate ) ) {
+			require_once $candidate;
+			$loaded = function_exists( 'mrn_sticky_toolbar_render' );
+			if ( $loaded ) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Return sticky-toolbar configuration for supported theme option screens.
+ *
+ * @param string $screen_id Current screen id.
+ * @return array<string, string>|null
+ */
+function mrn_base_stack_get_theme_options_toolbar_config( $screen_id ) {
+	$configs = array(
+		'toplevel_page_mrn-theme-header-footer' => array(
+			'toolbar_id' => 'mrn-theme-header-footer-toolbar',
+			'title'      => __( 'Theme Header/Footer', 'mrn-base-stack' ),
+			'page_class' => 'toplevel_page_mrn-theme-header-footer',
+		),
+		'toplevel_page_mrn-business-information' => array(
+			'toolbar_id' => 'mrn-business-information-toolbar',
+			'title'      => __( 'Business Information', 'mrn-base-stack' ),
+			'page_class' => 'toplevel_page_mrn-business-information',
+		),
+	);
+
+	return isset( $configs[ $screen_id ] ) ? $configs[ $screen_id ] : null;
+}
+
+/**
+ * Register shared toolbar hooks for theme-owned options pages.
+ *
+ * @param WP_Screen $screen Current screen.
+ * @return void
+ */
+function mrn_base_stack_setup_theme_options_toolbar( $screen ) {
+	if ( ! $screen instanceof WP_Screen ) {
+		return;
+	}
+
+	$config = mrn_base_stack_get_theme_options_toolbar_config( $screen->id );
+	if ( ! is_array( $config ) || ! mrn_base_stack_load_sticky_toolbar_helper() ) {
+		return;
+	}
+
+	add_action(
+		'all_admin_notices',
+		static function () use ( $config ) {
+			if ( ! function_exists( 'mrn_sticky_toolbar_render' ) ) {
+				return;
+			}
+
+			mrn_sticky_toolbar_render(
+				array(
+					'toolbar_id' => $config['toolbar_id'],
+					'form_id'    => 'post',
+					'title'      => $config['title'],
+					'save_label' => __( 'Save Settings', 'mrn-base-stack' ),
+					'aria_label' => $config['title'] . ' ' . __( 'actions', 'mrn-base-stack' ),
+					'tabs'       => array(
+						array(
+							'key'    => 'general',
+							'label'  => $config['title'],
+							'active' => true,
+						),
+					),
+				)
+			);
+		},
+		1
+	);
+
+	add_action(
+		'admin_head',
+		static function () use ( $config ) {
+			if ( ! function_exists( 'mrn_sticky_toolbar_render_css' ) ) {
+				return;
+			}
+
+			ob_start();
+			mrn_sticky_toolbar_render_css(
+				array(
+					'toolbar_id'           => $config['toolbar_id'],
+					'page_class'           => $config['page_class'],
+					'desktop_left'         => 196,
+					'desktop_right'        => 0,
+					'mobile_left'          => 10,
+					'mobile_right'         => 10,
+					'spacer_height'        => 96,
+					'spacer_height_mobile' => 116,
+				)
+			);
+			$toolbar_css = trim( (string) ob_get_clean() );
+			if ( '' !== $toolbar_css ) {
+				echo $toolbar_css; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+			?>
+			<style>
+				body.<?php echo esc_html( $config['page_class'] ); ?> #screen-meta-links,
+				body.<?php echo esc_html( $config['page_class'] ); ?> #submitdiv,
+				body.<?php echo esc_html( $config['page_class'] ); ?> #side-sortables,
+				body.<?php echo esc_html( $config['page_class'] ); ?> #postbox-container-1 {
+					display: none !important;
+				}
+				body.<?php echo esc_html( $config['page_class'] ); ?> #poststuff {
+					padding-top: 0;
+				}
+				body.<?php echo esc_html( $config['page_class'] ); ?> #post-body,
+				body.<?php echo esc_html( $config['page_class'] ); ?> #post-body.columns-2,
+				body.<?php echo esc_html( $config['page_class'] ); ?> #post-body-content {
+					margin-right: 0 !important;
+					width: 100% !important;
+					float: none !important;
+				}
+				body.<?php echo esc_html( $config['page_class'] ); ?> .wrap.acf-settings-wrap,
+				body.<?php echo esc_html( $config['page_class'] ); ?> .wrap {
+					max-width: none;
+				}
+			</style>
+			<?php
+		}
+	);
+}
+add_action( 'current_screen', 'mrn_base_stack_setup_theme_options_toolbar' );
+
+/**
  * Convert business phone fields into tel-style inputs in ACF.
  */
 function mrn_base_stack_print_business_phone_input_script() {

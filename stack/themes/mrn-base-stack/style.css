@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.1.5
+Version: 1.1.6
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -848,6 +848,11 @@ body {
 	max-width: 28rem;
 }
 
+.mrn-site-header__search--icon-only {
+	flex: 0 0 auto;
+	max-width: none;
+}
+
 .mrn-site-search {
 	margin: 0;
 }
@@ -856,6 +861,17 @@ body {
 	display: flex;
 	align-items: stretch;
 	gap: 0.5rem;
+}
+
+.mrn-site-search__field {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	width: 100%;
+	padding: 0.55rem 0.8rem;
+	border: 1px solid currentColor;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.92);
 }
 
 .mrn-site-search__input {
@@ -867,8 +883,159 @@ body {
 	flex: 0 0 auto;
 }
 
+.mrn-site-search__toggle,
+.mrn-site-search__icon,
+.mrn-site-search__icon svg {
+	display: inline-flex;
+}
+
+.mrn-site-search--icon-only {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	position: relative;
+}
+
+.mrn-site-search--icon-only .mrn-site-search__toggle {
+	align-items: center;
+	justify-content: center;
+	position: absolute;
+	top: 50%;
+	right: 0;
+	transform: translateY(-50%);
+	width: 2.75rem;
+	height: 2.75rem;
+	padding: 0;
+	border: 1px solid currentColor;
+	border-radius: 999px;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+	z-index: 2;
+	transition: right 0.2s ease, transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.mrn-site-search--icon-only .mrn-site-search__toggle:hover,
+.mrn-site-search--icon-only .mrn-site-search__toggle:focus {
+	background: rgba(0, 0, 0, 0.06);
+}
+
+.mrn-site-search__icon {
+	align-items: center;
+	justify-content: center;
+	width: 1.25rem;
+	height: 1.25rem;
+	line-height: 1;
+	flex: 0 0 auto;
+}
+
+.mrn-site-search__icon--dashicons {
+	font-size: 1.1rem;
+}
+
+.mrn-site-search__icon-image {
+	width: 100%;
+	height: 100%;
+}
+
+.mrn-site-search__icon-image {
+	display: block;
+	object-fit: contain;
+}
+
+.mrn-site-search--icon-only .mrn-site-search__input-wrap {
+	flex: 0 1 auto;
+	width: 0;
+	max-width: 0;
+	opacity: 0;
+	overflow: hidden;
+	pointer-events: none;
+	transition: max-width 0.2s ease, opacity 0.2s ease;
+}
+
+.mrn-site-search--icon-only.is-expanded .mrn-site-search__input-wrap {
+	width: min(22rem, calc(100vw - 8rem));
+	max-width: min(22rem, calc(100vw - 8rem));
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.mrn-site-search--icon-only.is-expanded .mrn-site-search__toggle {
+	right: auto;
+	left: 0.72rem;
+	transform: translateY(-50%);
+	width: 1.5rem;
+	height: 1.5rem;
+	border-color: transparent;
+	background: transparent;
+}
+
+.mrn-site-search--icon-only.is-expanded .mrn-site-search__toggle:hover,
+.mrn-site-search--icon-only.is-expanded .mrn-site-search__toggle:focus {
+	background: transparent;
+}
+
+.mrn-site-search--icon-only .mrn-site-search__input {
+	min-width: 11rem;
+	border: 0;
+	padding: 0;
+	background: transparent;
+	box-shadow: none;
+	margin-left: 2.15rem;
+}
+
+.mrn-site-search--icon-only .mrn-site-search__input:focus {
+	outline: none;
+	box-shadow: none;
+}
+
+.mrn-site-search__prompt {
+	flex: 0 0 auto;
+	font-size: 0.95rem;
+	white-space: nowrap;
+	margin-left: -100%;
+	padding-left: 2.15rem;
+	pointer-events: none;
+}
+
+.mrn-site-search__prompt[hidden] {
+	display: none;
+}
+
+.mrn-site-search__clear {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.6rem;
+	height: 1.6rem;
+	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+	flex: 0 0 auto;
+}
+
+.mrn-site-search__clear:hover,
+.mrn-site-search__clear:focus {
+	background: rgba(0, 0, 0, 0.08);
+}
+
+.mrn-site-search__clear[hidden] {
+	display: none;
+}
+
 .mrn-site-header__main {
 	gap: 1.5rem;
+}
+
+@media (max-width: 782px) {
+	.mrn-site-search--icon-only.is-expanded .mrn-site-search__input-wrap {
+		width: min(18rem, calc(100vw - 6rem));
+		max-width: min(18rem, calc(100vw - 6rem));
+	}
 }
 
 .mrn-shell-container,
