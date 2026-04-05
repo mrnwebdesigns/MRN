@@ -85,6 +85,24 @@ What it checks:
 - builder Add Row helper is loaded
 - ACF builder layouts are registered
 
+### Rollout Contract QA
+
+Verify the stack rollout contract for `default-configs.mrndev.io`:
+
+```bash
+/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh
+```
+
+What it checks:
+
+- local `mrn-base-stack` version matches the packaged theme zip version
+- `/home/mrndev-stack-manager/stack/shared` exists on the server with required shared runtime files
+- `default-configs.mrndev.io/wp-content/shared` exists with required shared runtime files
+- the live site resolves an active stylesheet slug successfully
+- the live active theme version matches local stack source
+- rollout-owned `Case Study` files exist on the active live theme when present locally
+- WordPress registers the `case_study` post type on the live site when that feature is present locally
+
 ### Browser Smoke QA
 
 Run browser-based smoke checks against the Local stack site:

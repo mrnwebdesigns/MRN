@@ -18,6 +18,15 @@
 !/server/README.md
 !/shared/
 !/shared/README.md
+!/mu-plugins/
+!/mu-plugins/mrn-admin-ui-css/
+!/mu-plugins/mrn-admin-ui-css/**
+!/mu-plugins/mrn-disable-comments/
+!/mu-plugins/mrn-disable-comments/**
+!/mu-plugins/mrn-editor-ui-css/
+!/mu-plugins/mrn-editor-ui-css/**
+!/mu-plugins/mrn-svg-support/
+!/mu-plugins/mrn-svg-support/**
 !/stack/
 !/stack/README.md
 !/stack/FRONTEND_IMPLEMENTATION_GUIDE.md

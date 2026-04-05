@@ -47,11 +47,14 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 STACK_ROOT_REMOTE="/home/mrndev-stack-manager/stack"
-LIVE_SITE_ROOT="/home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io"
+LIVE_SITE_ROOT="${MRN_DEFAULT_CONFIGS_LIVE_SITE_ROOT:-/home/default-configs-stack/htdocs/default-configs.mrndev.io}"
 LOCAL_THEME_DIR="${REPO_ROOT}/stack/themes/mrn-base-stack"
 LOCAL_STACK_MU_DIR="${REPO_ROOT}/stack/mu-plugins"
 LOCAL_MU_SOURCE_ROOT="${REPO_ROOT}/mu-plugins"
 LOCAL_SHARED_DIR="${REPO_ROOT}/shared"
+LIVE_SITE_THEME_SLUG="${MRN_DEFAULT_CONFIGS_THEME_SLUG:-default-configs}"
+LIVE_SITE_THEME_DIR=""
+LIVE_SITE_ACTIVE_STYLESHEET=""
 
 MU_PLUGIN_DIRS=(
 	"mrn-active-style-guide"
@@ -137,7 +140,20 @@ run_rsync() {
 	rsync "${RSYNC_FLAGS[@]}" "$@" "${source}" "${destination}"
 }
 
+resolve_live_site_theme_slug() {
+	printf '%s' "${LIVE_SITE_THEME_SLUG}"
+}
+
 echo "Deploying stack feature surfaces to ${SSH_HOST}..."
+
+LIVE_SITE_THEME_SLUG="$(resolve_live_site_theme_slug)"
+LIVE_SITE_THEME_DIR="${LIVE_SITE_ROOT}/wp-content/themes/${LIVE_SITE_THEME_SLUG}"
+LIVE_SITE_ACTIVE_STYLESHEET="$(ssh "${SSH_HOST}" "wp option get stylesheet --path='${LIVE_SITE_ROOT}' 2>/dev/null" | tr -d '\r' | xargs || true)"
+
+echo "Live default-configs deploy theme slug: ${LIVE_SITE_THEME_SLUG}"
+if [[ -n "${LIVE_SITE_ACTIVE_STYLESHEET}" && "${LIVE_SITE_ACTIVE_STYLESHEET}" != "${LIVE_SITE_THEME_SLUG}" ]]; then
+	echo "WARNING: live active stylesheet is ${LIVE_SITE_ACTIVE_STYLESHEET}, expected ${LIVE_SITE_THEME_SLUG}" >&2
+fi
 
 run_rsync \
 	"${LOCAL_THEME_DIR}/" \
@@ -146,8 +162,13 @@ run_rsync \
 
 run_rsync \
 	"${LOCAL_THEME_DIR}/" \
-	"${SSH_HOST}:${LIVE_SITE_ROOT}/wp-content/themes/mrn-base-stack/" \
+	"${SSH_HOST}:${LIVE_SITE_THEME_DIR}/" \
 	"${THEME_EXCLUDES[@]}"
+
+run_rsync \
+	"${LOCAL_SHARED_DIR}/" \
+	"${SSH_HOST}:${STACK_ROOT_REMOTE}/shared/" \
+	"${COMMON_DIR_EXCLUDES[@]}"
 
 run_rsync \
 	"${LOCAL_SHARED_DIR}/" \
@@ -179,8 +200,12 @@ done
 if [[ "${DRY_RUN}" -eq 0 ]]; then
 	ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/themes/mrn-base-stack' -type d -exec chmod 755 {} +"
 	ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/themes/mrn-base-stack' -type f -exec chmod 644 {} +"
-	ssh "${SSH_HOST}" "find '${LIVE_SITE_ROOT}/wp-content/shared' -type d -exec chmod 755 {} +"
-	ssh "${SSH_HOST}" "find '${LIVE_SITE_ROOT}/wp-content/shared' -type f -exec chmod 644 {} +"
+	ssh "${SSH_HOST}" "find '${LIVE_SITE_THEME_DIR}' -type d -exec chmod 755 {} +" || true
+	ssh "${SSH_HOST}" "find '${LIVE_SITE_THEME_DIR}' -type f -exec chmod 644 {} +" || true
+	ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/shared' -type d -exec chmod 755 {} +"
+	ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/shared' -type f -exec chmod 644 {} +"
+	ssh "${SSH_HOST}" "find '${LIVE_SITE_ROOT}/wp-content/shared' -type d -exec chmod 755 {} +" || true
+	ssh "${SSH_HOST}" "find '${LIVE_SITE_ROOT}/wp-content/shared' -type f -exec chmod 644 {} +" || true
 
 	for slug in "${MU_PLUGIN_DIRS[@]}"; do
 		ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/mu-plugins/${slug}' -type d -exec chmod 755 {} +"
@@ -188,8 +213,9 @@ if [[ "${DRY_RUN}" -eq 0 ]]; then
 	done
 
 	ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/mu-plugins' -maxdepth 1 -name 'mrn-*.php' -type f -exec chmod 644 {} +"
+	ssh "${SSH_HOST}" "wp theme activate '${LIVE_SITE_THEME_SLUG}' --path='${LIVE_SITE_ROOT}'" >/dev/null
 
-	ssh "${SSH_HOST}" "cd '${LIVE_SITE_ROOT}' && wp option get stylesheet --path='${LIVE_SITE_ROOT}' && printf '\n---\n' && wp theme list --path='${LIVE_SITE_ROOT}' --format=table 2>/dev/null | grep -E 'name|mrn-base-stack'"
+	ssh "${SSH_HOST}" "cd '${LIVE_SITE_ROOT}' && wp option get stylesheet --path='${LIVE_SITE_ROOT}' && printf '\n---\n' && wp theme list --path='${LIVE_SITE_ROOT}' --format=table 2>/dev/null | grep -E 'name|${LIVE_SITE_THEME_SLUG}|mrn-base-stack'"
 fi
 
 echo "Feature deploy sync completed."

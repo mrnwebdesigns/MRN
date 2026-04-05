@@ -1,0 +1,169 @@
+/**
+ * ------------------------------------------------------------
+ * Admin Ad Suppression
+ * ------------------------------------------------------------
+ * Purpose:
+ * Hide promotional / upsell / advertisement elements injected
+ * by plugins into the WordPress admin UI.
+ *
+ * Scope:
+ * - Admin area only (loaded via admin_enqueue_scripts)
+ * - Cosmetic only (no functionality changes)
+ *
+ * Philosophy:
+ * - Prefer specific selectors
+ * - Fall back to attribute-based detection when needed
+ * - Fail silently if markup changes
+ * ------------------------------------------------------------
+ */
+
+
+/**
+ * 1. Explicit marketing / ad containers
+ * ------------------------------------------------------------
+ * Common class names used by plugins for ads, banners, or upsells
+ */
+
+[class*="advertisement"],
+[class*="promo"],
+[class*="promotion"],
+[class*="marketing"],
+[class*="upsell"],
+[class*="upgrade"],
+[class*="pro-banner"],
+[class*="premium-banner"] {
+    display: none !important;
+}
+
+
+/**
+ * 2. Images explicitly marked as advertisements
+ * ------------------------------------------------------------
+ * Some plugins inject ads as plain images with alt text
+ * like "Advertisement" or similar wording.
+ */
+
+img[alt="Advertisement"],
+img[alt="advertisement"],
+img[alt*="Advertisement"],
+img[alt*="advertisement"] {
+    display: none !important;
+}
+
+
+/**
+ * 3. Linked images that look like ads
+ * ------------------------------------------------------------
+ * Ads are often wrapped in links and placed in side panels
+ * or metaboxes. This hides common patterns without being reckless.
+ */
+
+a img[alt*="advertisement"],
+a img[alt*="promo"],
+a img[alt*="upgrade"] {
+    display: none !important;
+}
+
+
+/**
+ * 4. Known plugin-specific ad containers (document as discovered)
+ * ------------------------------------------------------------
+ * Add exact selectors here as you encounter them.
+ * This keeps overrides intentional and auditable.
+ */
+
+/* Duplicate Post */
+.duplicate-post-modal__marketing-banner {
+    display: none !important;
+}
+
+/* Post Duplicator "Email Customizer" upsell card */
+a.duplicate-post-modal__marketing-banner[href*="metaphorcreations.com/wordpress-plugins/email-customizer"] {
+    display: none !important;
+}
+
+/* Post Duplicator settings ads (Metaphor Creations cards) */
+.mtphrSettings__field--ad,
+.mtphrSettings__field--group:has(.mtphrSettings__field--ad),
+a[href*="metaphorcreations.com"][href*="campaign="],
+a[href*="/ditty/pricing/"][href*="campaign="] {
+    display: none !important;
+}
+
+/* Optimole recommendation notice (Media Library Organizer) */
+.notice.notice-info.ti-sdk-om-notice {
+    display: none !important;
+}
+
+/* Themeisle review notice (Media Library Organizer) */
+#media_library_organizer_review_flag-notification.notice.notice-success.is-dismissible.themeisle-sdk-notice,
+.notice.notice-success.is-dismissible.themeisle-sdk-notice[data-notification-id="media_library_organizer_review_flag"] {
+    display: none !important;
+}
+
+/* Media Library Organizer Pro admin notice */
+.mlo-pro-admin-notice.notice {
+    display: none !important;
+}
+
+/* View Admin As welcome notice */
+.notice.notice-success.is-dismissible:has(a.button.button-primary[href$="/wp-admin/"]) {
+    display: none !important;
+}
+
+/* Themeisle "WordPress Guides/Tutorials" dashboard widget and Screen Options toggle */
+#themeisle,
+#screen-meta label[for="themeisle-hide"],
+#screen-meta #themeisle-hide,
+#adv-settings label[for="themeisle-hide"],
+#adv-settings #themeisle-hide {
+    display: none !important;
+}
+
+/* Admin Menu Editor survey notice */
+.updated:has(a[href*="docs.google.com/spreadsheet/viewform?formkey="][target="_blank"]):has(a[href*="ame_hide_survey_notice=1"]) {
+    display: none !important;
+}
+
+/* NSP / Advanced Post Types Order promo box */
+#cpt_info_box {
+    display: none !important;
+}
+
+/* WPMU DEV Beehive GTM upsell card */
+.sui-box:has(.sui-box-title .sui-icon-gtm),
+.sui-box:has(.sui-box-body a.sui-button[href*="beehive-google-tag-manager"]),
+.sui-box:has(.sui-box-body a.sui-button[href*="google-tag-manager"]) {
+    display: none !important;
+}
+
+/* WPMU DEV / SUI upsell CTAs */
+.sui-box [class*="upsell"],
+.sui-box [class*="promo"],
+.sui-box [class*="marketing"],
+.sui-button[href*="wpmudev.com"],
+.sui-button[href*="utm_"] {
+    display: none !important;
+}
+
+/* Example future entries:
+.plugin-name-upsell,
+.plugin-name-ad-banner {
+    display: none !important;
+}
+*/
+
+
+/**
+ * 5. Safety: never hide core notices or accessibility helpers
+ * ------------------------------------------------------------
+ * Explicitly exclude WordPress core notice patterns
+ * to avoid breaking admin UX.
+ */
+
+.notice,
+.notice-warning,
+.notice-error,
+.notice-success {
+    display: block !important;
+}

@@ -1,0 +1,18 @@
+/* MRN – Editor-safe admin ad suppression only */
+
+/* Post Duplicator marketing banner */
+.duplicate-post-modal__marketing-banner {
+  display: none !important;
+}
+
+/* Optional: generic promo patterns (keep conservative) */
+[class*="advertisement"],
+[class*="promo"],
+[class*="promotion"],
+[class*="marketing"],
+[class*="upsell"],
+[class*="upgrade"],
+[class*="pro-banner"],
+[class*="premium-banner"] {
+  display: none !important;
+}

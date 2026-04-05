@@ -82,6 +82,7 @@ rsync -rlt --omit-dir-times --delete \
   - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-feature-stack-and-default-configs.sh`
 - Use the feature deploy helper when stack theme or stack MU plugin work needs to stay mirrored to the stack server and the `default-configs` site in one step.
 - The feature deploy helper must also mirror `/Users/khofmeyer/Development/MRN/shared` into `wp-content/shared` on `default-configs.mrndev.io` because settings-style sticky bars and other shared runtime helpers load from that path.
+- The feature deploy helper must sync the local stack theme into the live site's active stylesheet directory, not just `/wp-content/themes/mrn-base-stack/`, because `default-configs.mrndev.io` may still run a cloned active theme slug such as `default-configs`.
 - Standard plugins still follow their own plugin release flow and are not part of the stack feature deploy helper.
 - Fresh site bootstrap must delete any preinstalled standard plugins from the host before installing the stack manifest so new sites match the stack plugin set exactly.
 - Fresh site bootstrap must also sync the shared runtime into `wp-content/shared` as part of the initial rollout.
@@ -100,7 +101,7 @@ rsync -rlt --omit-dir-times --delete \
   - `mrndev-stack-manager` does not have site-owner sudo rights for live-site sync commands
   - `mrn-ops` can become `mrndev-stack-manager`, but it still does not have `sudo -n -u <site-user>` rights for `rsync/find/chmod/perl/wp`
 - Until that sudoers policy is fixed, use direct site-owner SSH instead of writing live files as an operator user.
-- `default-configs.mrndev.io` is now expected to run `mrn-base-stack` directly, not a site-specific forked theme slug.
+- `default-configs.mrndev.io` currently runs the cloned `default-configs` active stylesheet, so rollout verification must check the live active theme slug and version rather than assuming `mrn-base-stack`.
 
 ## Theme Rollout Rule
 
@@ -129,7 +130,8 @@ When updating stack-managed assets:
 1. update the canonical local source
 2. package when needed
 3. sync the correct source or artifact to `/home/mrndev-stack-manager/stack`
-4. verify the live server copy after sync
+4. run `/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh` for stack theme, stack MU, bootstrap, or rollout-path changes that affect `default-configs.mrndev.io`
+5. verify the live server copy after sync
 
 ## Local Test Site Rule
 

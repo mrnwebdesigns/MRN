@@ -4,6 +4,7 @@
 - Canonical workspace root: `/Users/khofmeyer/Development/MRN`
 - Active implementation area: `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack`
 - Local acceptance harness: seeded QA pages on the local stack test site at `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content`
+- Monorepo migration pilots are in progress for `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-admin-ui-css`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-ui-css`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-disable-comments`, and `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-svg-support`; their nested repo metadata was moved to `/Users/khofmeyer/Development/MRN/.repo-migration-backups/mu-plugins/` so the top-level repo can begin owning those plugin paths.
 
 ## Current Focus
 - Modernize builder and page-shell behavior in the stack theme.
@@ -29,14 +30,15 @@
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
 - `default-configs.mrndev.io` was refreshed on `2026-04-03` for the `Content Lists` display-mode and shared repeater-controls release.
-- `default-configs.mrndev.io` now runs `mrn-base-stack` directly instead of a forked `default-configs` theme slug and should stay mirrored from stack/local for stack theme and stack MU feature deploys.
+- `default-configs.mrndev.io` is currently still running the cloned `default-configs` theme slug, not `mrn-base-stack` directly, so stack theme feature deploys must target the live active stylesheet directory as well as the canonical stack source.
 - `default-configs.mrndev.io` also needs `/Users/khofmeyer/Development/MRN/shared` mirrored into `wp-content/shared`; otherwise Site Configurations can lose the sticky toolbar even when plugin/theme code is in sync.
+- The stack server source-of-truth copy also needs `/Users/khofmeyer/Development/MRN/shared` mirrored into `/home/mrndev-stack-manager/stack/shared`; new-site bootstrap reads shared runtime files from the stack root before syncing them into each site.
 - Settings-style sticky admin bars now have one canonical shared source at `/Users/khofmeyer/Development/MRN/shared/mrn-sticky-settings-toolbar.php`; consuming plugins should load it from `wp-content/shared` via thin local loaders and call the unique `mrn_sticky_toolbar_*` API instead of maintaining copied helper variants.
 - `mrn-config-helper` now exposes a list-first WPForms notification editor in Site Configurations with bulk apply/remove actions, while the saved Primary Notification Email still auto-applies to all WPForms notifications by default and can be disabled per form.
 - The WPForms notification puck editor in Site Configurations must emit native `input`/`change` events when recipients are added, removed, or the primary-email toggle changes so the shared sticky save bar registers unsaved changes.
 - `mrn-reusable-block-library` now exposes `compact` and `feature` content-list display modes and defers reusable content-list item rendering to the shared theme renderer so reusable blocks and page rows stay aligned.
 - Canonical stack feature deploy command is `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-feature-stack-and-default-configs.sh`, which must refresh both the stack server copy and `default-configs.mrndev.io` for stack theme and stack MU changes.
-- That feature deploy helper must also refresh `wp-content/shared` on `default-configs.mrndev.io`.
+- That feature deploy helper must also refresh stack-root `shared/` and `wp-content/shared` on `default-configs.mrndev.io`.
 - `mrn-seo-helper` now owns sidebar placement for its SEO title/meta description ACF group and must register on WordPress `init` after CPT registration.
 - `mrn-editor-lockdown` preserves the SEO Helper box in locked classic-editor sidebars.
 - Stack-wide admin icon picking now has one canonical chooser in `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`; `mrn-base-stack` and `mrn-editor-tools` should consume `mrn_shared_assets_enqueue_admin_icon_chooser()` instead of shipping their own modal/picker catalogs.
@@ -62,6 +64,7 @@
 - If work is for a specific project/site, request that site's server information instead of relying on the default stack SSH target.
 - Live stack files should be written as the destination owner, not as `kyle`.
 - For `default-configs.mrndev.io`, the documented `sudo -n -u <site-user>` live-site sync path is still not provisioned for either `mrndev-stack-manager` or `mrn-ops`; direct site-owner SSH is the current working fallback.
+- The current `default-configs.mrndev.io` live root is `/home/default-configs-stack/htdocs/default-configs.mrndev.io`; older `mrndev-default-configs-stack` paths are stale.
 - `default-configs.mrndev.io` live theme files are currently readable, but ownership is still not normalized to the preferred site owner.
 - Future live theme refreshes must avoid unreadable file modes like `670`, especially after manual or selective syncs.
 
@@ -71,6 +74,7 @@
   - `qa-risk-scan.sh`
   - `qa-security.sh`
   - `qa-local-stack-site.sh`
+  - `qa-rollout-contract.sh`
   - `qa-page-speed.sh`
   - `qa-playwright-local-stack-site.sh`
 - Shared cross-project QA starters now live in:
@@ -86,6 +90,7 @@
 - Visual admin fixes should be verified with a fresh screenshot after the code change, not just by code inspection.
 - Browser smoke coverage should also include `Editor Enhancements` sticky-toolbar sanity when `mrn-editor-tools` is active.
 - Security QA now has a dedicated script that combines the risk scan, focused WordPress security sniffs, a lightweight secret-pattern scan, and runtime dependency audits.
+- Stack rollout QA now has a dedicated contract check at `/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh` to verify packaged theme parity, stack and live shared runtime presence, live active stylesheet parity, and rollout-owned CPT registration on `default-configs.mrndev.io`.
 - Adoption guidance for other repos now lives in:
   `/Users/khofmeyer/Development/Local QA/README.md`
 

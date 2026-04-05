@@ -48,11 +48,13 @@
   - run a lightweight risky-pattern scan for high-risk functions such as `eval`, `base64_decode`, `exec`, `shell_exec`, `system`, `passthru`, `proc_open`, and `popen`
   - review capability checks, nonce usage, and sanitization or escaping for new admin forms, AJAX handlers, and settings saves
   - run any relevant existing test or verification command before release
+  - for stack theme, stack MU, or bootstrap-path changes that touch `default-configs.mrndev.io`, run `/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh` to verify packaged theme parity, shared runtime presence, live active stylesheet version parity, and required rollout-owned features such as `case_study`
   - verify the packaged main plugin file header and version when practical
 
 ## Release Flow Definition
 - `Perform a release flow` means completing all of the following in order:
   - `QA`: check code for issues and do visual QA when possible or needed
+    - for stack theme, stack MU, bootstrap, or rollout-path changes that affect `default-configs.mrndev.io`, include `/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh`
   - `Performance check`: review for performance regressions or obvious performance concerns
   - `Commit`: commit task-specific code to git with a simple commit message describing what was done
   - `Push`: push the new commit to GitHub
