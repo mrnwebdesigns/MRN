@@ -5,7 +5,7 @@
 - Name: `Editor Enhancements`
 - Slug: `mrn-editor-tools`
 - Type: standard plugin
-- Current version: `1.8.14`
+- Current version: `1.8.17`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-editor-tools`
 
@@ -115,7 +115,7 @@ Secondary behavior:
 
 - This is a standard packaged plugin, not a stack MU plugin.
 - It should install through the normal plugin manifest/package path in stack rollout.
-- Durable baseline in memory: `1.8.14`
+- Durable baseline in memory: `1.8.17`
 
 ## Special Rules
 

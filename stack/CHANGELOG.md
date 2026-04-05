@@ -1,5 +1,14 @@
 # Stack Changelog
 
+## 2026.04.04-shared-icon-chooser-rollout
+- Expanded `mrn-base-stack` to `1.1.7`.
+- Expanded `mrn-shared-assets` to `0.1.1`.
+- Expanded `mrn-config-helper` to `0.1.34`.
+- Expanded `mrn-editor-tools` to `1.8.17`.
+- Added one canonical shared admin icon chooser in `mrn-shared-assets` and migrated `Theme Header/Footer`, `Editor Enhancements`, and `Site Configurations -> Social` onto that shared Dashicons / Font Awesome / media picker.
+- Added icon-only header search controls and front-end behavior in `mrn-base-stack`, including expandable search UI, inline clear affordance, and shared chooser-backed admin controls.
+- Extended configured social links so Site Configurations can save and render Dashicons alongside Font Awesome and media icons.
+
 ## 2026.04.04-shared-sticky-toolbar-rollout
 - Expanded `mrn-base-stack` to `1.1.6`.
 - Expanded `mrn-config-helper` to `0.1.33`.

@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.1.5' );
+	define( '_S_VERSION', '1.1.7' );
 }
 
 /**
@@ -491,6 +491,25 @@ function mrn_base_stack_enqueue_shared_repeater_admin_assets() {
 		_S_VERSION,
 		true
 	);
+
+	if ( function_exists( 'mrn_shared_assets_enqueue_admin_icon_chooser' ) ) {
+		mrn_shared_assets_enqueue_admin_icon_chooser( 'mrn-shared-icon-chooser', 'mrn-shared-icon-chooser' );
+	}
+
+	wp_enqueue_script(
+		'mrn-base-stack-admin-icon-choosers',
+		get_template_directory_uri() . '/js/admin-icon-choosers.js',
+		array( 'jquery', 'acf-input', 'mrn-shared-icon-chooser' ),
+		_S_VERSION,
+		true
+	);
+
+	wp_enqueue_style(
+		'mrn-base-stack-admin-icon-choosers',
+		get_template_directory_uri() . '/css/admin-icon-choosers.css',
+		array( 'mrn-shared-icon-chooser' ),
+		_S_VERSION
+	);
 }
 add_action( 'acf/input/admin_enqueue_scripts', 'mrn_base_stack_enqueue_shared_repeater_admin_assets' );
 
@@ -548,20 +567,63 @@ function mrn_base_stack_scripts() {
 	wp_enqueue_style( 'mrn-base-stack-style', get_stylesheet_uri(), array(), _S_VERSION );
 	wp_style_add_data( 'mrn-base-stack-style', 'rtl', 'replace' );
 
-	if ( function_exists( 'mrn_config_helper_get_social_links' ) && function_exists( 'mrn_shared_assets_enqueue_fontawesome' ) ) {
+	$header_options     = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+	$needs_fontawesome  = false;
+	$needs_dashicons    = false;
+	$uses_icon_search   = ! empty( $header_options['header_show_search'] ) && isset( $header_options['header_search_style'] ) && 'icon_only' === $header_options['header_search_style'];
+	$search_icon_source = isset( $header_options['header_search_icon_source'] ) ? (string) $header_options['header_search_icon_source'] : 'dashicons';
+
+	if ( 'fontawesome' === $search_icon_source && $uses_icon_search ) {
+		$needs_fontawesome = true;
+	}
+
+	if ( ( 'dashicons' === $search_icon_source || 'standard' === $search_icon_source ) && $uses_icon_search ) {
+		$needs_dashicons = true;
+	}
+
+	if ( function_exists( 'mrn_config_helper_get_social_links' ) ) {
 		$social_links = mrn_config_helper_get_social_links();
 
 		if ( is_array( $social_links ) ) {
 			foreach ( $social_links as $social_link ) {
-				if ( is_array( $social_link ) && isset( $social_link['icon_type'] ) && 'fontawesome' === $social_link['icon_type'] ) {
-					mrn_shared_assets_enqueue_fontawesome( 'mrn-base-stack-fontawesome' );
+				if ( ! is_array( $social_link ) || ! isset( $social_link['icon_type'] ) ) {
+					continue;
+				}
+
+				if ( 'fontawesome' === $social_link['icon_type'] ) {
+					$needs_fontawesome = true;
+				}
+
+				if ( 'dashicons' === $social_link['icon_type'] ) {
+					$needs_dashicons = true;
+				}
+
+				if ( $needs_fontawesome && $needs_dashicons ) {
 					break;
 				}
 			}
 		}
 	}
 
+	if ( $needs_fontawesome && function_exists( 'mrn_shared_assets_enqueue_fontawesome' ) ) {
+		mrn_shared_assets_enqueue_fontawesome( 'mrn-base-stack-fontawesome' );
+	}
+
+	if ( $needs_dashicons ) {
+		wp_enqueue_style( 'dashicons' );
+	}
+
 	wp_enqueue_script( 'mrn-base-stack-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
+
+	if ( $uses_icon_search ) {
+		wp_enqueue_script(
+			'mrn-base-stack-header-search',
+			get_template_directory_uri() . '/js/header-search.js',
+			array(),
+			_S_VERSION,
+			true
+		);
+	}
 
 	if ( is_singular( mrn_base_stack_get_singular_shell_post_types() ) ) {
 		mrn_base_stack_enqueue_motion_assets();

@@ -24,8 +24,8 @@
 - Classic-editor sidebar collapse behavior is the active collapse contract and lives in `mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`.
 
 ## Recent Durable Decisions
-- Current stack baseline is `2026.04.03-testimonial-meta-content-list-modes`.
-- Current stack theme version is `mrn-base-stack 1.1.5`.
+- Current stack baseline is `2026.04.04-shared-icon-chooser-rollout`.
+- Current stack theme version is `mrn-base-stack 1.1.7`.
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
 - `default-configs.mrndev.io` was refreshed on `2026-04-03` for the `Content Lists` display-mode and shared repeater-controls release.
@@ -39,6 +39,7 @@
 - That feature deploy helper must also refresh `wp-content/shared` on `default-configs.mrndev.io`.
 - `mrn-seo-helper` now owns sidebar placement for its SEO title/meta description ACF group and must register on WordPress `init` after CPT registration.
 - `mrn-editor-lockdown` preserves the SEO Helper box in locked classic-editor sidebars.
+- Stack-wide admin icon picking now has one canonical chooser in `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`; `mrn-base-stack` and `mrn-editor-tools` should consume `mrn_shared_assets_enqueue_admin_icon_chooser()` instead of shipping their own modal/picker catalogs.
 
 ## Recent Release Notes
 - `mrn-config-helper` now shows the exact `define('MRN_SENDGRID_MANAGEMENT_API_KEY', 'your-sendgrid-management-api-key');` line in the SendGrid management-key help text and explicitly points admins to `wp-config.php` for host-managed setup.

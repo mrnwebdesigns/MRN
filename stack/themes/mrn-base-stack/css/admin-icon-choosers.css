@@ -1,0 +1,142 @@
+.mrn-icon-chooser-control {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.mrn-icon-chooser-preview {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+}
+
+.mrn-icon-chooser-preview img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.mrn-icon-chooser-selection {
+	font-size: 12px;
+	color: #50575e;
+	word-break: break-word;
+}
+
+.mrn-icon-chooser-is-enhanced .acf-button-group,
+.mrn-icon-chooser-is-enhanced input[type="hidden"] {
+	display: none;
+}
+
+.mrn-icon-chooser-storage .acf-input,
+.mrn-icon-chooser-storage .acf-label {
+	display: none;
+}
+
+.mrn-icon-modal {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.4);
+	z-index: 100000;
+}
+
+.mrn-icon-modal__inner {
+	background: #fff;
+	width: min(760px, 90vw);
+	max-height: 80vh;
+	margin: 6vh auto;
+	padding: 16px;
+	border-radius: 8px;
+	overflow: auto;
+}
+
+.mrn-icon-modal__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+}
+
+.mrn-icon-modal__tabs,
+.mrn-fa-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.mrn-icon-tab.is-active,
+.mrn-fa-tab.is-active {
+	background: #2271b1;
+	color: #fff;
+}
+
+.mrn-icon-modal__panel {
+	display: none;
+}
+
+.mrn-icon-modal__panel.is-active {
+	display: block;
+}
+
+.mrn-icon-search,
+.mrn-fa-search {
+	width: 100%;
+	margin-bottom: 10px;
+}
+
+.mrn-icon-grid,
+.mrn-fa-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+	gap: 8px;
+}
+
+.mrn-fa-grid {
+	max-height: 320px;
+	overflow: auto;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 8px;
+	background: #fff;
+}
+
+.mrn-icon-grid__item,
+.mrn-fa-grid__item {
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #fff;
+	padding: 8px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 52px;
+}
+
+.mrn-icon-grid__item:hover,
+.mrn-fa-grid__item:hover {
+	border-color: #2271b1;
+}
+
+.mrn-icon-grid__item .dashicons,
+.mrn-fa-grid__item span {
+	font-size: 24px;
+	width: 24px;
+	height: 24px;
+}
+
+.mrn-fa-empty {
+	margin-top: 10px;
+	color: #646970;
+}
+
+.mrn-image-preview img {
+	max-width: 120px;
+	height: auto;
+	margin-top: 10px;
+}

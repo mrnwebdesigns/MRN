@@ -71,6 +71,118 @@ function mrn_base_stack_get_us_state_choices() {
 }
 
 /**
+ * Return the available Dashicon names from core.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_dashicons() {
+	$css_path = ABSPATH . WPINC . '/css/dashicons.css';
+
+	if ( ! file_exists( $css_path ) ) {
+		return array();
+	}
+
+	$contents = file_get_contents( $css_path );
+
+	if ( false === $contents ) {
+		return array();
+	}
+
+	preg_match_all( '/\\.dashicons-([a-z0-9-]+):before\\s*\\{/i', $contents, $matches );
+
+	if ( empty( $matches[1] ) ) {
+		return array();
+	}
+
+	$icons = array_unique( $matches[1] );
+	sort( $icons );
+
+	return $icons;
+}
+
+/**
+ * Return the shared Font Awesome metadata payload.
+ *
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_fontawesome_icons() {
+	if ( function_exists( 'mrn_shared_assets_get_fontawesome_icons' ) ) {
+		return mrn_shared_assets_get_fontawesome_icons();
+	}
+
+	$fallback_path = WP_CONTENT_DIR . '/mu-plugins/mrn-shared-assets/assets/fontawesome/icons.json';
+
+	if ( ! file_exists( $fallback_path ) ) {
+		return array();
+	}
+
+	$contents = file_get_contents( $fallback_path );
+
+	if ( false === $contents ) {
+		return array();
+	}
+
+	$data = json_decode( $contents, true );
+
+	return is_array( $data ) ? $data : array();
+}
+
+/**
+ * Return the built-in header search Dashicon choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_header_search_standard_icon_choices() {
+	$choices = array();
+	$icons   = mrn_base_stack_get_dashicons();
+
+	foreach ( $icons as $icon ) {
+		$key              = 'dashicons-' . $icon;
+		$choices[ $key ] = ucwords( str_replace( '-', ' ', $icon ) );
+	}
+
+	return $choices;
+}
+
+/**
+ * Return the built-in Font Awesome header search icon choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_header_search_fontawesome_choices() {
+	$choices = array();
+	$icons   = mrn_base_stack_get_fontawesome_icons();
+	$styles  = array(
+		'solid'   => 'fa-solid',
+		'regular' => 'fa-regular',
+		'brands'  => 'fa-brands',
+	);
+
+	foreach ( $styles as $style => $class_prefix ) {
+		if ( empty( $icons[ $style ] ) || ! is_array( $icons[ $style ] ) ) {
+			continue;
+		}
+
+		foreach ( $icons[ $style ] as $icon ) {
+			if ( ! is_array( $icon ) || empty( $icon['name'] ) ) {
+				continue;
+			}
+
+			$name  = sanitize_key( (string) $icon['name'] );
+			$label = ! empty( $icon['label'] ) ? (string) $icon['label'] : ucwords( str_replace( '-', ' ', $name ) );
+
+			if ( '' === $name ) {
+				continue;
+			}
+
+			$choices[ $class_prefix . ' fa-' . $name ] = $label . ' (' . ucfirst( $style ) . ')';
+		}
+	}
+
+	return $choices;
+}
+
+/**
  * Register theme-owned ACF options pages.
  */
 function mrn_base_stack_register_theme_options_pages() {
@@ -144,6 +256,157 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					'required'      => 0,
 					'default_value' => 0,
 					'ui'            => 1,
+				),
+				array(
+					'key'               => 'field_mrn_theme_header_search_style',
+					'label'             => __( 'Search Display', 'mrn-base-stack' ),
+					'name'              => 'header_search_style',
+					'type'              => 'button_group',
+					'choices'           => array(
+						'full'      => __( 'Full Form', 'mrn-base-stack' ),
+						'icon_only' => __( 'Icon Only', 'mrn-base-stack' ),
+					),
+					'default_value'     => 'full',
+					'layout'            => 'horizontal',
+					'return_format'     => 'value',
+					'instructions'      => __( 'Icon Only starts as a search icon and expands the search field after click.', 'mrn-base-stack' ),
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_theme_header_show_search',
+								'operator' => '==',
+								'value'    => '1',
+							),
+						),
+					),
+				),
+				array(
+					'key'               => 'field_mrn_theme_header_search_icon_source',
+					'label'             => __( 'Icon Source', 'mrn-base-stack' ),
+					'name'              => 'header_search_icon_source',
+					'type'              => 'button_group',
+					'choices'           => array(
+						'dashicons'   => __( 'Dashicons', 'mrn-base-stack' ),
+						'fontawesome' => __( 'Font Awesome', 'mrn-base-stack' ),
+						'media'       => __( 'Media', 'mrn-base-stack' ),
+					),
+					'default_value'     => 'dashicons',
+					'layout'            => 'horizontal',
+					'return_format'     => 'value',
+					'wrapper'           => array(
+						'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--source',
+					),
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_theme_header_show_search',
+								'operator' => '==',
+								'value'    => '1',
+							),
+							array(
+								'field'    => 'field_mrn_theme_header_search_style',
+								'operator' => '==',
+								'value'    => 'icon_only',
+							),
+						),
+					),
+				),
+				array(
+					'key'               => 'field_mrn_theme_header_search_standard_icon',
+					'label'             => __( 'Dashicon', 'mrn-base-stack' ),
+					'name'              => 'header_search_standard_icon',
+					'type'              => 'select',
+					'choices'           => mrn_base_stack_get_header_search_standard_icon_choices(),
+					'default_value'     => 'dashicons-search',
+					'return_format'     => 'value',
+					'ui'                => 1,
+					'wrapper'           => array(
+						'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--dashicons',
+					),
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_theme_header_show_search',
+								'operator' => '==',
+								'value'    => '1',
+							),
+							array(
+								'field'    => 'field_mrn_theme_header_search_style',
+								'operator' => '==',
+								'value'    => 'icon_only',
+							),
+							array(
+								'field'    => 'field_mrn_theme_header_search_icon_source',
+								'operator' => '==',
+								'value'    => 'dashicons',
+							),
+						),
+					),
+				),
+				array(
+					'key'               => 'field_mrn_theme_header_search_fa_class',
+					'label'             => __( 'Font Awesome Icon', 'mrn-base-stack' ),
+					'name'              => 'header_search_fa_class',
+					'type'              => 'select',
+					'choices'           => mrn_base_stack_get_header_search_fontawesome_choices(),
+					'default_value'     => 'fa-solid fa-magnifying-glass',
+					'return_format'     => 'value',
+					'ui'                => 1,
+					'wrapper'           => array(
+						'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--fontawesome',
+					),
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_theme_header_show_search',
+								'operator' => '==',
+								'value'    => '1',
+							),
+							array(
+								'field'    => 'field_mrn_theme_header_search_style',
+								'operator' => '==',
+								'value'    => 'icon_only',
+							),
+							array(
+								'field'    => 'field_mrn_theme_header_search_icon_source',
+								'operator' => '==',
+								'value'    => 'fontawesome',
+							),
+						),
+					),
+				),
+				array(
+					'key'               => 'field_mrn_theme_header_search_media_icon',
+					'label'             => __( 'Media Icon', 'mrn-base-stack' ),
+					'name'              => 'header_search_media_icon',
+					'type'              => 'image',
+					'return_format'     => 'array',
+					'preview_size'      => 'thumbnail',
+					'library'           => 'all',
+					'mime_types'        => 'jpg,jpeg,png,gif,webp,svg',
+					'instructions'      => __( 'Upload or choose the icon image to use for the icon-only search trigger.', 'mrn-base-stack' ),
+					'wrapper'           => array(
+						'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--media',
+					),
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_theme_header_show_search',
+								'operator' => '==',
+								'value'    => '1',
+							),
+							array(
+								'field'    => 'field_mrn_theme_header_search_style',
+								'operator' => '==',
+								'value'    => 'icon_only',
+							),
+							array(
+								'field'    => 'field_mrn_theme_header_search_icon_source',
+								'operator' => '==',
+								'value'    => 'media',
+							),
+						),
+					),
 				),
 				array(
 					'key'           => 'field_mrn_theme_header_show_business_phone',
@@ -1059,6 +1322,11 @@ function mrn_base_stack_get_theme_header_footer_options() {
 	$defaults = array(
 		'header_show_utility_menu'     => false,
 		'header_show_search'           => false,
+		'header_search_style'          => 'full',
+		'header_search_icon_source'    => 'dashicons',
+		'header_search_standard_icon'  => 'dashicons-search',
+		'header_search_fa_class'       => 'fa-solid fa-magnifying-glass',
+		'header_search_media_icon'     => array(),
 		'header_show_business_phone'   => false,
 		'header_show_business_profile' => false,
 		'footer_show_footer_menu'      => false,
@@ -1077,9 +1345,46 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		return $defaults;
 	}
 
+	$header_search_style         = (string) get_field( 'header_search_style', 'option' );
+	$header_search_icon_source   = (string) get_field( 'header_search_icon_source', 'option' );
+	$header_search_standard_icon = (string) get_field( 'header_search_standard_icon', 'option' );
+	$header_search_fa_class      = (string) get_field( 'header_search_fa_class', 'option' );
+	$header_search_media_icon    = get_field( 'header_search_media_icon', 'option' );
+	$standard_icon_choices       = array_keys( mrn_base_stack_get_header_search_standard_icon_choices() );
+	$fontawesome_choices         = array_keys( mrn_base_stack_get_header_search_fontawesome_choices() );
+
+	if ( ! in_array( $header_search_style, array( 'full', 'icon_only' ), true ) ) {
+		$header_search_style = 'full';
+	}
+
+	if ( 'standard' === $header_search_icon_source ) {
+		$header_search_icon_source = 'dashicons';
+	}
+
+	if ( ! in_array( $header_search_icon_source, array( 'dashicons', 'fontawesome', 'media' ), true ) ) {
+		$header_search_icon_source = 'dashicons';
+	}
+
+	if ( ! in_array( $header_search_standard_icon, $standard_icon_choices, true ) ) {
+		$header_search_standard_icon = 'dashicons-search';
+	}
+
+	if ( ! in_array( $header_search_fa_class, $fontawesome_choices, true ) ) {
+		$header_search_fa_class = 'fa-solid fa-magnifying-glass';
+	}
+
+	if ( ! is_array( $header_search_media_icon ) ) {
+		$header_search_media_icon = array();
+	}
+
 	$options = array(
 		'header_show_utility_menu'     => (bool) get_field( 'header_show_utility_menu', 'option' ),
 		'header_show_search'           => (bool) get_field( 'header_show_search', 'option' ),
+		'header_search_style'          => $header_search_style,
+		'header_search_icon_source'    => $header_search_icon_source,
+		'header_search_standard_icon'  => $header_search_standard_icon,
+		'header_search_fa_class'       => $header_search_fa_class,
+		'header_search_media_icon'     => $header_search_media_icon,
 		'header_show_business_phone'   => (bool) get_field( 'header_show_business_phone', 'option' ),
 		'header_show_business_profile' => (bool) get_field( 'header_show_business_profile', 'option' ),
 		'footer_show_footer_menu'      => (bool) get_field( 'footer_show_footer_menu', 'option' ),

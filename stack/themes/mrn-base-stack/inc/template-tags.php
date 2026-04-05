@@ -183,9 +183,54 @@ if ( ! function_exists( 'mrn_base_stack_render_header_search' ) ) :
 			return;
 		}
 
-		echo '<div class="mrn-site-header__search">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		$header_options = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+		$classes        = array( 'mrn-site-header__search' );
+
+		if ( isset( $header_options['header_search_style'] ) && 'icon_only' === $header_options['header_search_style'] ) {
+			$classes[] = 'mrn-site-header__search--icon-only';
+		}
+
+		echo '<div class="' . esc_attr( implode( ' ', $classes ) ) . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		do_action( 'mrn_base_stack_header_search' );
 		echo '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_get_header_search_icon_markup' ) ) :
+	/**
+	 * Return the configured icon markup for icon-only search mode.
+	 *
+	 * @param array<string, mixed> $header_options Header option payload.
+	 * @return string
+	 */
+	function mrn_base_stack_get_header_search_icon_markup( $header_options ) {
+		$icon_source   = isset( $header_options['header_search_icon_source'] ) ? (string) $header_options['header_search_icon_source'] : 'dashicons';
+		$standard_icon = isset( $header_options['header_search_standard_icon'] ) ? (string) $header_options['header_search_standard_icon'] : 'dashicons-search';
+		$fa_class      = isset( $header_options['header_search_fa_class'] ) ? trim( (string) $header_options['header_search_fa_class'] ) : '';
+		$media_icon    = isset( $header_options['header_search_media_icon'] ) && is_array( $header_options['header_search_media_icon'] ) ? $header_options['header_search_media_icon'] : array();
+
+		if ( 'fontawesome' === $icon_source && '' !== $fa_class ) {
+			return '<span class="mrn-site-search__icon mrn-site-search__icon--fontawesome" aria-hidden="true"><i class="' . esc_attr( $fa_class ) . '"></i></span>';
+		}
+
+		if ( 'media' === $icon_source ) {
+			$attachment_id = isset( $media_icon['ID'] ) ? absint( $media_icon['ID'] ) : 0;
+			$icon_url      = isset( $media_icon['url'] ) ? (string) $media_icon['url'] : '';
+
+			if ( $attachment_id > 0 ) {
+				$image = wp_get_attachment_image( $attachment_id, 'thumbnail', false, array( 'class' => 'mrn-site-search__icon-image', 'alt' => '' ) );
+
+				if ( is_string( $image ) && '' !== $image ) {
+					return '<span class="mrn-site-search__icon mrn-site-search__icon--media" aria-hidden="true">' . $image . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				}
+			}
+
+			if ( '' !== $icon_url ) {
+				return '<span class="mrn-site-search__icon mrn-site-search__icon--media" aria-hidden="true"><img class="mrn-site-search__icon-image" src="' . esc_url( $icon_url ) . '" alt="" /></span>';
+			}
+		}
+
+		return '<span class="mrn-site-search__icon mrn-site-search__icon--dashicons dashicons ' . esc_attr( $standard_icon ) . '" aria-hidden="true"></span>';
 	}
 endif;
 
@@ -194,7 +239,47 @@ if ( ! function_exists( 'mrn_base_stack_render_search_form_markup' ) ) :
 	 * Render the stack header search form.
 	 */
 	function mrn_base_stack_render_search_form_markup() {
-		$search_query = get_search_query();
+		$search_query   = get_search_query();
+		$header_options = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+		$search_style   = isset( $header_options['header_search_style'] ) ? (string) $header_options['header_search_style'] : 'full';
+
+		if ( 'icon_only' === $search_style ) {
+			$is_expanded = '' !== $search_query;
+			$form_class  = 'mrn-site-search searchwp-form mrn-site-search--icon-only';
+
+			if ( $is_expanded ) {
+				$form_class .= ' is-expanded';
+			}
+			?>
+			<form role="search" method="get" class="<?php echo esc_attr( $form_class ); ?>" action="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'Search site content', 'mrn-base-stack' ); ?>" data-mrn-search-toggle>
+				<label class="screen-reader-text" for="mrn-header-search-input"><?php esc_html_e( 'Search for:', 'mrn-base-stack' ); ?></label>
+				<button type="button" class="mrn-site-search__toggle" aria-expanded="<?php echo $is_expanded ? 'true' : 'false'; ?>" aria-controls="mrn-header-search-input-wrap">
+					<?php echo mrn_base_stack_get_header_search_icon_markup( $header_options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<span class="screen-reader-text"><?php esc_html_e( 'Open search', 'mrn-base-stack' ); ?></span>
+				</button>
+				<div class="mrn-site-search__input-wrap" id="mrn-header-search-input-wrap">
+					<div class="mrn-site-search__field">
+						<span class="mrn-site-search__prompt" aria-hidden="true" data-mrn-search-prompt><?php esc_html_e( 'Search', 'mrn-base-stack' ); ?></span>
+						<input
+							type="search"
+							id="mrn-header-search-input"
+							class="mrn-site-search__input"
+							placeholder=""
+							value="<?php echo esc_attr( $search_query ); ?>"
+							name="s"
+							autocomplete="off"
+						/>
+						<button type="button" class="mrn-site-search__clear" aria-label="<?php esc_attr_e( 'Clear search', 'mrn-base-stack' ); ?>" <?php echo '' === $search_query ? 'hidden' : ''; ?>>
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+				</div>
+			</form>
+			<?php
+
+			return;
+		}
+
 		?>
 		<form role="search" method="get" class="mrn-site-search searchwp-form" action="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'Search site content', 'mrn-base-stack' ); ?>">
 			<label class="screen-reader-text" for="mrn-header-search-input"><?php esc_html_e( 'Search for:', 'mrn-base-stack' ); ?></label>
@@ -344,11 +429,17 @@ if ( ! function_exists( 'mrn_base_stack_render_social_links' ) ) :
 			$icon_type = isset( $row['icon_type'] ) ? (string) $row['icon_type'] : '';
 			$label     = isset( $row['fa_name'] ) && '' !== $row['fa_name'] ? (string) $row['fa_name'] : __( 'Social link', 'mrn-base-stack' );
 
+			if ( 'dashicons' === $icon_type && ! empty( $row['dashicon'] ) ) {
+				$label = (string) $row['dashicon'];
+			}
+
 			echo '<li class="mrn-social-links__item">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '<a class="mrn-social-links__link" href="' . $url . '" target="_blank" rel="noopener noreferrer" aria-label="' . esc_attr( ucwords( str_replace( '-', ' ', $label ) ) ) . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
 			if ( 'fontawesome' === $icon_type && ! empty( $row['fa_class'] ) ) {
 				echo '<span class="mrn-social-links__icon" aria-hidden="true"><i class="' . esc_attr( (string) $row['fa_class'] ) . '"></i></span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			} elseif ( 'dashicons' === $icon_type && ! empty( $row['dashicon'] ) ) {
+				echo '<span class="mrn-social-links__icon" aria-hidden="true"><span class="dashicons ' . esc_attr( (string) $row['dashicon'] ) . '"></span></span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			} elseif ( 'media' === $icon_type && ! empty( $row['icon_url'] ) ) {
 				echo '<img class="mrn-social-links__image" src="' . esc_url( (string) $row['icon_url'] ) . '" alt="" />'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			} else {

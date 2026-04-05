@@ -5,7 +5,7 @@
 - Name: `Shared Assets (MU)`
 - Slug: `mrn-shared-assets`
 - Type: MU plugin
-- Current version: `0.1.0`
+- Current version: `0.1.1`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`
 
