@@ -1,14 +1,15 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.04-shared-icon-chooser-rollout`
+- Stack release: `2026.04.05-admin-ui-and-search-fixes`
 - Release date: `2026-04-04`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.7`
+  - `mrn-base-stack` `1.1.8`
 - MU plugins:
+  - `mrn-admin-ui-css` `3.1.12`
   - `mrn-shared-assets` `0.1.1`
   - `mrn-editor-lockdown` `1.0.6`
   - `mrn-reusable-block-library` `0.1.7`

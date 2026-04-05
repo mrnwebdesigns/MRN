@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.1.7
+Version: 1.1.8
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -868,6 +868,7 @@ body {
 	align-items: center;
 	gap: 0.5rem;
 	width: 100%;
+	position: relative;
 	padding: 0.55rem 0.8rem;
 	border: 1px solid currentColor;
 	border-radius: 999px;
@@ -977,12 +978,15 @@ body {
 }
 
 .mrn-site-search--icon-only .mrn-site-search__input {
+	width: 100%;
 	min-width: 11rem;
 	border: 0;
-	padding: 0;
+	padding: 0 2.1rem 0 2.15rem;
 	background: transparent;
 	box-shadow: none;
-	margin-left: 2.15rem;
+	position: relative;
+	z-index: 1;
+	color: inherit;
 }
 
 .mrn-site-search--icon-only .mrn-site-search__input:focus {
@@ -991,12 +995,15 @@ body {
 }
 
 .mrn-site-search__prompt {
-	flex: 0 0 auto;
+	position: absolute;
+	top: 50%;
+	left: 2.95rem;
+	transform: translateY(-50%);
 	font-size: 0.95rem;
 	white-space: nowrap;
-	margin-left: -100%;
-	padding-left: 2.15rem;
 	pointer-events: none;
+	color: inherit;
+	opacity: 0.78;
 }
 
 .mrn-site-search__prompt[hidden] {
@@ -1007,6 +1014,10 @@ body {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	position: absolute;
+	top: 50%;
+	right: 0.8rem;
+	transform: translateY(-50%);
 	width: 1.6rem;
 	height: 1.6rem;
 	padding: 0;
@@ -1016,6 +1027,7 @@ body {
 	color: inherit;
 	cursor: pointer;
 	flex: 0 0 auto;
+	z-index: 2;
 }
 
 .mrn-site-search__clear:hover,

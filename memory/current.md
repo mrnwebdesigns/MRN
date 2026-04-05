@@ -24,8 +24,8 @@
 - Classic-editor sidebar collapse behavior is the active collapse contract and lives in `mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`.
 
 ## Recent Durable Decisions
-- Current stack baseline is `2026.04.04-shared-icon-chooser-rollout`.
-- Current stack theme version is `mrn-base-stack 1.1.7`.
+- Current stack baseline is `2026.04.05-admin-ui-and-search-fixes`.
+- Current stack theme version is `mrn-base-stack 1.1.8`.
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
 - `default-configs.mrndev.io` was refreshed on `2026-04-03` for the `Content Lists` display-mode and shared repeater-controls release.

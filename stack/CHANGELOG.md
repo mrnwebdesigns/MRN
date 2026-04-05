@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.04.05-admin-ui-and-search-fixes
+- Expanded `mrn-base-stack` to `1.1.8`.
+- Expanded `mrn-admin-ui-css` to `3.1.12`.
+- Fixed the icon-only header search field so the inline `Search` prompt and typed value share a stable input lane again.
+- Added shared admin suppression rules for the Media Library Organizer Pro notice and the Themeisle `WordPress Guides/Tutorials` dashboard widget plus its Screen Options toggle.
+
 ## 2026.04.04-shared-icon-chooser-rollout
 - Expanded `mrn-base-stack` to `1.1.7`.
 - Expanded `mrn-shared-assets` to `0.1.1`.

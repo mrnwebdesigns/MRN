@@ -212,7 +212,7 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 ### `mrn-admin-ui-css`
 
 - Name: `Admin UI CSS (MU)`
-- Version: `3.1.10`
+- Version: `3.1.12`
 - Purpose:
   - unified wp-admin CSS loader
 - Admin/UI:
