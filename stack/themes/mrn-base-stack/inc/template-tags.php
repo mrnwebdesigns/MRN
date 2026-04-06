@@ -428,11 +428,13 @@ if ( ! function_exists( 'mrn_base_stack_render_social_links' ) ) :
 			$url        = esc_url( (string) $row['url'] );
 			$icon_type  = isset( $row['icon_type'] ) ? (string) $row['icon_type'] : '';
 			$icon_id    = isset( $row['icon_id'] ) ? (int) $row['icon_id'] : 0;
+			$name       = isset( $row['name'] ) ? trim( (string) $row['name'] ) : '';
+			$alt_text   = isset( $row['alt_text'] ) ? trim( (string) $row['alt_text'] ) : '';
 			$icon_markup = '';
-			$label      = isset( $row['fa_name'] ) && '' !== $row['fa_name'] ? (string) $row['fa_name'] : __( 'Social link', 'mrn-base-stack' );
+			$label      = '' !== $name ? $name : ( isset( $row['fa_name'] ) && '' !== $row['fa_name'] ? (string) $row['fa_name'] : __( 'Social link', 'mrn-base-stack' ) );
 
 			if ( 'dashicons' === $icon_type && ! empty( $row['dashicon'] ) ) {
-				$label = (string) $row['dashicon'];
+				$label = '' !== $name ? $name : (string) $row['dashicon'];
 			}
 
 			if ( 'media' === $icon_type && $icon_id > 0 ) {
@@ -445,14 +447,16 @@ if ( ! function_exists( 'mrn_base_stack_render_social_links' ) ) :
 						false,
 						array(
 							'class' => 'mrn-social-links__image',
-							'alt'   => '',
+							'alt'   => $alt_text,
 						)
 					);
 				}
 			}
 
+			$accessible_label = '' !== $alt_text ? $alt_text : ucwords( str_replace( '-', ' ', $label ) );
+
 			echo '<li class="mrn-social-links__item">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo '<a class="mrn-social-links__link" href="' . $url . '" target="_blank" rel="noopener noreferrer" aria-label="' . esc_attr( ucwords( str_replace( '-', ' ', $label ) ) ) . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '<a class="mrn-social-links__link" href="' . $url . '" target="_blank" rel="noopener noreferrer" aria-label="' . esc_attr( $accessible_label ) . '" title="' . esc_attr( $accessible_label ) . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
 			if ( 'fontawesome' === $icon_type && ! empty( $row['fa_class'] ) ) {
 				echo '<span class="mrn-social-links__icon" aria-hidden="true"><i class="' . esc_attr( (string) $row['fa_class'] ) . '"></i></span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

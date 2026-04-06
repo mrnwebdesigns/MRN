@@ -8,6 +8,12 @@
 $context                 = is_array( $args ?? null ) ? $args : array();
 $row                     = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
 $context_post_id         = isset( $context['post_id'] ) ? (int) $context['post_id'] : get_the_ID();
+$label                   = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
+$label_tag               = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
+$heading                 = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
+$heading_tag             = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h2';
+$subheading              = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag          = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $left_rows               = isset( $row['left_column_rows'] ) && is_array( $row['left_column_rows'] ) ? $row['left_column_rows'] : array();
 $right_rows              = isset( $row['right_column_rows'] ) && is_array( $row['right_column_rows'] ) ? $row['right_column_rows'] : array();
 $column_ratio            = isset( $row['column_ratio'] ) ? (string) $row['column_ratio'] : '50-50';
@@ -31,6 +37,15 @@ $ratio_map               = array(
 );
 $left_row                = ! empty( $left_rows[0] ) && is_array( $left_rows[0] ) ? $left_rows[0] : array();
 $right_row               = ! empty( $right_rows[0] ) && is_array( $right_rows[0] ) ? $right_rows[0] : array();
+
+$allowed_tags = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
+if ( ! in_array( $heading_tag, $allowed_tags, true ) ) {
+	$heading_tag = 'h2';
+}
+
+if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
+	$subheading_tag = 'p';
+}
 
 if ( empty( $left_row ) && empty( $right_row ) ) {
 	return;
@@ -123,6 +138,19 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 	<div class="mrn-layout-section mrn-layout-section--two-column-split <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-grid mrn-layout-grid--two-column-split mrn-two-column-split mrn-layout-grid--split-shell">
+			<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
+				<header class="mrn-layout-content mrn-layout-content--text mrn-two-column-split__header mrn-two-column-split__header--split-shell">
+					<?php if ( '' !== $label ) : ?>
+						<<?php echo esc_html( $label_tag ); ?> class="mrn-two-column-split__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
+					<?php endif; ?>
+					<?php if ( '' !== $heading ) : ?>
+						<<?php echo esc_html( $heading_tag ); ?> class="mrn-two-column-split__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+					<?php endif; ?>
+					<?php if ( '' !== $subheading ) : ?>
+						<<?php echo esc_html( $subheading_tag ); ?> class="mrn-two-column-split__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
+					<?php endif; ?>
+				</header>
+			<?php endif; ?>
 			<div class="mrn-layout-content mrn-layout-content--column mrn-two-column-split__column mrn-two-column-split__column--left mrn-two-column-split__column--split-shell">
 				<?php
 				if ( ! empty( $left_row ) && function_exists( 'mrn_base_stack_render_builder_row' ) ) {

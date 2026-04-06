@@ -733,6 +733,16 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 		return 'Image: ' . esc_html( wp_strip_all_tags( $heading ) );
 	}
 
+	if ( 'two_column_split' === $layout_name ) {
+		$heading = trim( (string) get_sub_field( 'heading' ) );
+
+		if ( '' === $heading ) {
+			return $title;
+		}
+
+		return 'Two Column Split: ' . esc_html( wp_strip_all_tags( $heading ) );
+	}
+
 	if ( 'video' === $layout_name ) {
 		$heading = trim( (string) get_sub_field( 'heading' ) );
 

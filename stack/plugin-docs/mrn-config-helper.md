@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.34`
+- Current version: `0.1.35`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper`
 
@@ -83,6 +83,8 @@
     - environment override names
     - optional admin test action metadata
 - Current social-link row shape:
+  - `name`
+  - `alt_text`
   - `icon_type`
   - `icon_id`
   - `icon_url`

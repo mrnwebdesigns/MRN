@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.04.06-builder-width-and-social-polish
+- Expanded `mrn-base-stack` to `1.1.13`.
+- Expanded `mrn-config-helper` to `0.1.35`.
+- Brought the wide-layout seeded QA page back onto the shared width system by aligning slider, text, and FAQ/accordion rows with the intended wide or content shells.
+- Standardized `Two Column Split` on the shared `label` / `heading` / `subheading` intro-field contract and neutralized forced centered intro styling in `Showcase` and `Logos`.
+- Added animated FAQ accordion open/close behavior and extended social-link settings so admins can save a distinct social name plus hover/accessibility text without misleading placeholders.
+
 ## 2026.04.06-stack-source-tracking
 - Kept the surfaced stack source-of-truth files tracked after the `.gitignore` cleanup, including stack manifests, bootstrap/importer helpers, reference exports, archive docs, and the compatibility shim for the shared sticky-toolbar loader.
 - Added the tracked stack wrapper loaders for `mrn-active-style-guide`, `mrn-editor-lockdown`, `mrn-reusable-block-library`, and `mrn-site-colors` so stack MU deploys and bootstrap paths can be verified from the main repo.

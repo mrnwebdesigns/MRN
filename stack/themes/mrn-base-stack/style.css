@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.1.12
+Version: 1.1.13
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -2374,9 +2374,24 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 }
 
 .mrn-faq__answer {
-	padding: 0 1.2rem 1.15rem;
+	height: 0;
+	opacity: 0;
+	overflow: hidden;
+	padding: 0 1.2rem 0;
+	transform: translateY(-0.35rem);
+	transition:
+		height 0.32s ease,
+		opacity 0.24s ease,
+		padding 0.32s ease,
+		transform 0.32s ease;
 	color: #4b5563;
 	line-height: 1.7;
+}
+
+.mrn-faq__answer.is-expanded {
+	opacity: 1;
+	padding: 0 1.2rem 1.15rem;
+	transform: translateY(0);
 }
 
 .mrn-faq__answer > :first-child {
@@ -2385,6 +2400,12 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 
 .mrn-faq__answer > :last-child {
 	margin-bottom: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mrn-faq__answer {
+		transition: none;
+	}
 }
 
 .site-footer {
@@ -3269,7 +3290,6 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 
 .mrn-logos-row__header {
 	margin-bottom: 1.5rem;
-	text-align: center;
 }
 
 .mrn-logos-row__label {
@@ -3508,7 +3528,6 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 
 .mrn-showcase-row__header {
 	margin-bottom: 2rem;
-	text-align: center;
 }
 
 .mrn-showcase-row__label {
@@ -3860,11 +3879,16 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 }
 
 .mrn-layout-section--text.mrn-layout-section--contained .mrn-layout-container--wide .mrn-layout-content--text-shell {
-	max-width: 72ch;
+	max-width: none;
+	width: 100%;
 }
 
 .mrn-layout-section--text.mrn-layout-section--contained .mrn-layout-container--wide .mrn-layout-content--text-shell .mrn-shell-section__content {
 	max-width: 70ch;
+}
+
+.mrn-layout-section--text.mrn-layout-section--contained .mrn-layout-container--wide .mrn-layout-content--text-shell .mrn-shell-section__heading {
+	max-width: 52rem;
 }
 
 .mrn-layout-section--text.mrn-layout-section--full .mrn-layout-container--wide .mrn-layout-content--text-shell {
@@ -4208,7 +4232,8 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 }
 
 .mrn-layout-section--slider.mrn-layout-section--contained .mrn-layout-container--wide .mrn-slider-row__splide--slider-shell {
-	max-width: 72rem;
+	max-width: none;
+	width: 100%;
 }
 
 .mrn-layout-section--slider.mrn-layout-section--full .mrn-layout-container--wide .mrn-slider-row__splide--slider-shell {
@@ -4513,6 +4538,11 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 .mrn-layout-section--two-column-split .mrn-two-column-split__column--split-shell {
 	display: grid;
 	gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.mrn-layout-section--two-column-split .mrn-two-column-split__header--split-shell {
+	grid-column: 1 / -1;
+	max-width: 44rem;
 }
 
 .mrn-layout-section--two-column-split .mrn-two-column-split__column--split-shell > :last-child {
@@ -4832,17 +4862,18 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 }
 
 .mrn-layout-section--reusable-faq.mrn-layout-section--contained .mrn-layout-container--wide > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--faq {
-	padding: clamp(1.5rem, 3.5vw, 2.75rem);
+	margin-inline: auto;
+	max-width: var(--mrn-shell-content-width);
+	padding: clamp(1.25rem, 3vw, 2rem);
+	width: min(100%, var(--mrn-shell-content-width));
 }
 
 .mrn-layout-section--reusable-faq.mrn-layout-section--contained .mrn-layout-container--wide > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--faq .mrn-faq {
-	align-items: start;
-	column-gap: clamp(1.5rem, 3vw, 2.5rem);
-	grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+	grid-template-columns: minmax(0, 1fr);
 }
 
 .mrn-layout-section--reusable-faq.mrn-layout-section--contained .mrn-layout-container--wide > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--faq .mrn-faq__heading {
-	max-width: 24rem;
+	max-width: 32rem;
 }
 
 .mrn-layout-section--reusable-faq.mrn-layout-section--full .mrn-layout-container--full > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--faq {

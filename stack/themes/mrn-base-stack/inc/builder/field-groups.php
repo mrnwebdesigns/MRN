@@ -1621,7 +1621,7 @@ function mrn_base_stack_register_acf_field_groups() {
 						'layout_mrn_two_column_split' => array(
 							'key'        => 'layout_mrn_two_column_split',
 							'name'       => 'two_column_split',
-							'label'      => 'Two Column Split',
+							'label'      => 'Two Column Split - label|heading|subheading|left|right',
 							'display'    => 'block',
 							'sub_fields' => array(
 								array(
@@ -1632,6 +1632,12 @@ function mrn_base_stack_register_acf_field_groups() {
 									'type'       => 'tab',
 									'placement'  => 'top',
 								),
+								mrn_base_stack_get_inline_text_field( 'field_mrn_two_column_split_label', 'Label', 'label' ),
+								mrn_base_stack_get_label_tag_field( 'field_mrn_two_column_split_label_tag' ),
+								mrn_base_stack_get_inline_text_field( 'field_mrn_two_column_split_heading', 'Heading', 'heading' ),
+								mrn_base_stack_get_text_tag_field( 'field_mrn_two_column_split_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
+								mrn_base_stack_get_inline_text_field( 'field_mrn_two_column_split_subheading', 'Subheading', 'subheading' ),
+								mrn_base_stack_get_text_tag_field( 'field_mrn_two_column_split_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
 								array(
 									'key'           => 'field_mrn_two_column_split_left_column',
 									'label'         => 'Left Column',

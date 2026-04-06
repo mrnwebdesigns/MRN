@@ -105,6 +105,17 @@
   - `mrn_base_stack_get_business_hours_display_rows()`
   - `mrn_base_stack_get_footer_copyright_text()`
   - `mrn_base_stack_render_social_links()`
+- Social link helper rows should include:
+  - `name`
+  - `alt_text`
+  - `icon_type`
+  - `icon_id`
+  - `icon_url`
+  - `dashicon`
+  - `fa_style`
+  - `fa_name`
+  - `fa_class`
+  - `url`
 - Business information payload should include:
   - `phone_uri`
   - `text_phone_uri`

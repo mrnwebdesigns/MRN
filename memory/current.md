@@ -25,8 +25,8 @@
 - Classic-editor sidebar collapse behavior is the active collapse contract and lives in `mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`.
 
 ## Recent Durable Decisions
-- Current stack baseline is `2026.04.06-ame-config-refresh`.
-- Current stack theme version is `mrn-base-stack 1.1.12`.
+- Current stack baseline is `2026.04.06-builder-width-and-social-polish`.
+- Current stack theme version is `mrn-base-stack 1.1.13`.
 - Current reusable block library version is `mrn-reusable-block-library 0.1.8`.
 - Future sites should use a child theme for site-specific theming, and stack update work should preserve stable parent-theme theming hooks such as classes, CSS variables, and other child-theme styling targets unless a documented breaking change is truly necessary.
 - Stack AME export payloads were refreshed twice on `2026-04-06`; the current canonical files are `/Users/khofmeyer/Development/MRN/stack/configs/exports/ame-config-container.json` and `/Users/khofmeyer/Development/MRN/stack/configs/exports/AME-configuration(2026-04-06).json`.
@@ -49,6 +49,9 @@
 - Stack-wide admin icon picking now has one canonical chooser in `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`; `mrn-base-stack` and `mrn-editor-tools` should consume `mrn_shared_assets_enqueue_admin_icon_chooser()` instead of shipping their own modal/picker catalogs.
 
 ## Recent Release Notes
+- Stack release `2026.04.06-builder-width-and-social-polish` expands `mrn-base-stack` to `1.1.13` and `mrn-config-helper` to `0.1.35`.
+- That release realigns seeded wide-layout QA sections with the shared width shells, standardizes `Two Column Split` on the shared intro-field contract, adds animated FAQ accordion behavior, and extends social-link settings with separate saved name plus hover/accessibility text.
+- Release verification passed for `php -l`, `node --check`, `git diff --check`, targeted risky-pattern review, `qa-security.sh`, `qa-local-stack-site.sh`, `qa-page-speed.sh`, Playwright local stack smoke, and pre-deploy `qa-rollout-contract.sh` except for the expected live-version parity failure before rollout.
 - Stack release `2026.04.06-ame-config-refresh` refreshed the canonical AME export payloads and importer mapping for fresh stack-site bootstrap.
 - That release was then rebuilt on `2026-04-06` from a revised local AME snapshot that updated admin-menu, dashboard-widget-editor, roles-and-capabilities, and table-columns payload sections.
 - Release verification passed for JSON validation, `git diff --check`, targeted risky-pattern review, local AME import smoke via WP-CLI, and stack-specific roles follow-up import verification.
