@@ -4,7 +4,7 @@
 - Canonical workspace root: `/Users/khofmeyer/Development/MRN`
 - Active implementation area: `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack`
 - Local acceptance harness: seeded QA pages on the local stack test site at `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content`
-- Monorepo migration pilots are in progress for `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-admin-ui-css`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-ui-css`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-disable-comments`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-svg-support`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-dashboard-support`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-duplicate-enhance`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-site-colors`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-lockdown`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`, and `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library`; their nested repo metadata was moved to `/Users/khofmeyer/Development/MRN/.repo-migration-backups/mu-plugins/` so the top-level repo can begin owning those plugin paths.
+- Monorepo migration pilots are in progress for `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-admin-ui-css`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-ui-css`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-disable-comments`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-svg-support`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-dashboard-support`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-duplicate-enhance`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-site-colors`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-lockdown`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library`, and `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-active-style-guide`; their nested repo metadata was moved to `/Users/khofmeyer/Development/MRN/.repo-migration-backups/mu-plugins/` so the top-level repo can begin owning those plugin paths.
 
 ## Current Focus
 - Modernize builder and page-shell behavior in the stack theme.
@@ -28,6 +28,8 @@
 - Current stack baseline is `2026.04.05-social-link-icon-fallback`.
 - Current stack theme version is `mrn-base-stack 1.1.12`.
 - Current reusable block library version is `mrn-reusable-block-library 0.1.8`.
+- Future sites should use a child theme for site-specific theming, and stack update work should preserve stable parent-theme theming hooks such as classes, CSS variables, and other child-theme styling targets unless a documented breaking change is truly necessary.
+- Stack AME export payloads were refreshed on `2026-04-06`; canonical files are `/Users/khofmeyer/Development/MRN/stack/configs/exports/ame-config-container.json` and `/Users/khofmeyer/Development/MRN/stack/configs/exports/AME-configuration(2026-04-06).json`.
 - `mrn-dummy-content` is now a stack-packaged standard plugin with canonical source at `/Users/khofmeyer/Development/MRN/plugins/mrn-dummy-content`, release artifact path `/Users/khofmeyer/Development/MRN/releases/plugins/mrn-dummy-content.zip`, and stack manifest entry `/home/mrndev-stack-manager/stack/packages/mrn-dummy-content.zip`.
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
