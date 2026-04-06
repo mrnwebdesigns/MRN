@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.04.06-image-content-and-grid-polish
+- Expanded `mrn-base-stack` to `1.1.15`.
+- Expanded `mrn-reusable-block-library` to `0.1.9`.
+- Restored Content Grid column controls in the shared reusable-grid schema, re-enabled the matching rendered column classes, and added an opt-in equal-height mode that keeps item links pinned to the bottom without runaway card heights.
+- Corrected the Image Content builder contract so the standard intro/content fields come before the image in the editor and on the front end, and tightened the full-width top/bottom presentation so the content card stays centered and the image behaves like a shallower banner instead of an oversized split-style panel.
+
 ## 2026.04.06-sticky-toolbar-overlap-fixes
 - Expanded `mrn-base-stack` to `1.1.14`.
 - Expanded `mrn-universal-sticky-bar` to `1.0.9`.

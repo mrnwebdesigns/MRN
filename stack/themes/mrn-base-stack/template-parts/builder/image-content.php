@@ -94,16 +94,6 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 	<div class="mrn-layout-section mrn-layout-section--image-content <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-grid mrn-layout-grid--image-content mrn-layout-grid--media-stack mrn-image-content-row__inner">
-			<?php if ( 'top' === $image_position && $has_image ) : ?>
-				<div class="mrn-layout-content mrn-layout-content--media mrn-layout-content--media-stack-media mrn-image-content-row__media">
-					<?php if ( ! empty( $image['ID'] ) ) : ?>
-						<?php echo wp_get_attachment_image( (int) $image['ID'], 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					<?php else : ?>
-						<img src="<?php echo esc_url( $image['url'] ); ?>" alt="<?php echo esc_attr( $image['alt'] ?? '' ); ?>">
-					<?php endif; ?>
-				</div>
-			<?php endif; ?>
-
 			<div class="mrn-layout-content mrn-layout-content--text mrn-layout-content--media-stack-text mrn-image-content-row__content">
 				<?php if ( '' !== $label ) : ?>
 					<<?php echo esc_html( $label_tag ); ?> class="mrn-image-content-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
@@ -141,7 +131,7 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 				<?php endif; ?>
 			</div>
 
-			<?php if ( 'bottom' === $image_position && $has_image ) : ?>
+			<?php if ( $has_image ) : ?>
 				<div class="mrn-layout-content mrn-layout-content--media mrn-layout-content--media-stack-media mrn-image-content-row__media">
 					<?php if ( ! empty( $image['ID'] ) ) : ?>
 						<?php echo wp_get_attachment_image( (int) $image['ID'], 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

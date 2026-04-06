@@ -25,9 +25,9 @@
 - Classic-editor sidebar collapse behavior is the active collapse contract and lives in `mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`.
 
 ## Recent Durable Decisions
-- Current stack baseline is `2026.04.06-sticky-toolbar-overlap-fixes`.
-- Current stack theme version is `mrn-base-stack 1.1.14`.
-- Current reusable block library version is `mrn-reusable-block-library 0.1.8`.
+- Current stack baseline is `2026.04.06-image-content-and-grid-polish`.
+- Current stack theme version is `mrn-base-stack 1.1.15`.
+- Current reusable block library version is `mrn-reusable-block-library 0.1.9`.
 - Future sites should use a child theme for site-specific theming, and stack update work should preserve stable parent-theme theming hooks such as classes, CSS variables, and other child-theme styling targets unless a documented breaking change is truly necessary.
 - Stack AME export payloads were refreshed twice on `2026-04-06`; the current canonical files are `/Users/khofmeyer/Development/MRN/stack/configs/exports/ame-config-container.json` and `/Users/khofmeyer/Development/MRN/stack/configs/exports/AME-configuration(2026-04-06).json`.
 - The top-level repo now tracks the canonical stack manifests, importer/bootstrap helpers, archive docs, and surfaced wrapper/shim files that were previously hidden by the old allowlist `.gitignore`, so release and deployment QA can reason about the full stack source from one repo.
@@ -49,6 +49,8 @@
 - Stack-wide admin icon picking now has one canonical chooser in `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`; `mrn-base-stack` and `mrn-editor-tools` should consume `mrn_shared_assets_enqueue_admin_icon_chooser()` instead of shipping their own modal/picker catalogs.
 
 ## Recent Release Notes
+- Stack release `2026.04.06-image-content-and-grid-polish` expands `mrn-base-stack` to `1.1.15` and `mrn-reusable-block-library` to `0.1.9`.
+- That release restores shared Content Grid column controls with stable equal-height card behavior, re-pins equal-height grid links to the card bottom, and corrects the Image Content row so standard intro/content fields lead both the editor flow and the rendered page while the full-width top/bottom variant stays centered instead of drifting off-canvas or ballooning vertically.
 - Stack release `2026.04.06-sticky-toolbar-overlap-fixes` expands `mrn-base-stack` to `1.1.14` and `mrn-universal-sticky-bar` to `1.0.9`.
 - That release raises both the shared settings toolbar and the classic-editor universal sticky bar above overlapping admin controls, restores the icon-only header search overlay pill behavior, and replaces hardcoded settings-toolbar spacer heights with live rendered-height measurement so admin fields no longer slide under wrapped toolbars.
 - Release verification passed for `php -l`, `git diff --check`, targeted risky-pattern review, `qa-security.sh`, `qa-local-stack-site.sh`, and `qa-page-speed.sh`; `qa-theme.sh` still reports pre-existing PHPCS issues in untouched theme files, and pre-package `qa-rollout-contract.sh` correctly failed until the theme zip is rebuilt.

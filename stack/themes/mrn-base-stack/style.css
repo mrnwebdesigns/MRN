@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.1.14
+Version: 1.1.15
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -2325,14 +2325,8 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	flex: 1 1 auto;
-	width: 100%;
+	align-content: stretch;
 	min-height: 0;
-}
-
-.mrn-reusable-block--grid-equal-height .mrn-content-grid__item {
-	display: flex;
-	align-items: stretch;
 }
 
 .mrn-reusable-block--grid-equal-height .mrn-content-grid__item-link-wrap {
@@ -3825,6 +3819,11 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	gap: clamp(1.25rem, 2.5vw, 2rem);
 }
 
+.mrn-content-builder__row--image-content-position-top .mrn-layout-section--image-content .mrn-layout-grid--image-content,
+.mrn-content-builder__row--image-content-position-bottom .mrn-layout-section--image-content .mrn-layout-grid--image-content {
+	grid-template-columns: minmax(0, 1fr);
+}
+
 .mrn-layout-section--image-content.mrn-layout-section--contained .mrn-layout-container.mrn-layout-surface {
 	padding-block: clamp(1.5rem, 3vw, 2.75rem);
 }
@@ -3882,11 +3881,34 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 }
 
 .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-layout-grid--image-content {
+	align-items: stretch;
 	gap: clamp(2rem, 4vw, 4rem);
+	grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
+	max-width: none;
+	position: relative;
+}
+
+.mrn-content-builder__row--image-content-position-top .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-layout-grid--image-content,
+.mrn-content-builder__row--image-content-position-bottom .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-layout-grid--image-content {
+	gap: clamp(1rem, 2vw, 1.75rem);
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-image-content-row__media {
+	align-self: stretch;
+	min-height: clamp(24rem, 42vw, 40rem);
 }
 
 .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-image-content-row__media img {
+	height: 100%;
+	object-fit: cover;
 	width: 100%;
+}
+
+.mrn-content-builder__row--image-content-position-top .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-image-content-row__media img,
+.mrn-content-builder__row--image-content-position-bottom .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-image-content-row__media img {
+	aspect-ratio: 21 / 8;
+	max-height: clamp(16rem, 30vw, 26rem);
 }
 
 .mrn-content-builder__row--image-content-size-contained .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-image-content-row__media img,
@@ -3895,10 +3917,38 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 }
 
 .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-image-content-row__content {
+	align-self: center;
+	background: rgba(255, 255, 255, 0.92);
+	border: 1px solid rgba(28, 34, 43, 0.08);
 	box-sizing: border-box;
-	margin-inline: auto;
-	padding: clamp(1.75rem, 3vw, 2.75rem) var(--mrn-shell-gutter);
-	width: 100%;
+	border-radius: clamp(0.95rem, 1.4vw, 1.4rem);
+	box-shadow: 0 24px 60px rgba(22, 28, 45, 0.1);
+	margin-left: clamp(-4rem, -5vw, -1.5rem);
+	margin-right: var(--mrn-shell-gutter);
+	max-width: min(30rem, 100%);
+	padding: clamp(1.4rem, 3vw, 2.6rem);
+	width: auto;
+}
+
+.mrn-content-builder__row--image-content-position-top .mrn-layout-section--image-content .mrn-image-content-row__content,
+.mrn-content-builder__row--image-content-position-bottom .mrn-layout-section--image-content .mrn-image-content-row__content {
+	align-self: start;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.mrn-content-builder__row--image-content-position-top .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-image-content-row__content,
+.mrn-content-builder__row--image-content-position-bottom .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-image-content-row__content {
+	margin-left: auto;
+	margin-right: auto;
+	max-width: min(46rem, calc(100% - (var(--mrn-shell-gutter) * 2)));
+	width: min(46rem, calc(100% - (var(--mrn-shell-gutter) * 2)));
+}
+
+.mrn-content-builder__row--image-content-position-top .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-image-content-row__content,
+.mrn-content-builder__row--image-content-position-bottom .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-image-content-row__content {
+	max-width: min(46rem, calc(100% - (var(--mrn-shell-gutter) * 2)));
+	width: min(46rem, calc(100% - (var(--mrn-shell-gutter) * 2)));
 }
 
 @media (max-width: 782px) {

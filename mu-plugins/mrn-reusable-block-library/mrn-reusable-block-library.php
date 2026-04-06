@@ -3,7 +3,7 @@
  * Plugin Name: Reusable Block Library (MU)
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.8
+ * Version: 0.1.9
  */
 
 defined('ABSPATH') || exit;
@@ -1480,6 +1480,22 @@ function mrn_rbl_register_acf_field_groups(): void {
                 ),
             ),
             array(
+                'key'           => 'field_mrn_content_grid_columns',
+                'label'         => 'Columns',
+                'name'          => 'columns',
+                'type'          => 'select',
+                'choices'       => array(
+                    '2' => '2',
+                    '3' => '3',
+                    '4' => '4',
+                ),
+                'default_value' => '3',
+                'ui'            => 1,
+                'wrapper'       => array(
+                    'width' => '50',
+                ),
+            ),
+            array(
                 'key'           => 'field_mrn_content_grid_link_style',
                 'label'         => 'Link style',
                 'name'          => 'link_style',
@@ -1487,6 +1503,19 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'default_value' => 'link',
                 'choices'       => mrn_rbl_get_link_style_choices(),
                 'ui'            => 1,
+                'wrapper'       => array(
+                    'width' => '50',
+                ),
+            ),
+            array(
+                'key'           => 'field_mrn_content_grid_equal_height',
+                'label'         => 'Equal height',
+                'name'          => 'equal_height',
+                'type'          => 'true_false',
+                'ui'            => 1,
+                'default_value' => 0,
+                'ui_on_text'    => 'On',
+                'ui_off_text'   => 'Off',
                 'wrapper'       => array(
                     'width' => '50',
                 ),

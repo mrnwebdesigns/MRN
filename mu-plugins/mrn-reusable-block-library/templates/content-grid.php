@@ -14,6 +14,8 @@ $subheading      = isset($fields['subheading']) ? (string) $fields['subheading']
 $subheading_tag  = isset($fields['subheading_tag']) ? sanitize_key((string) $fields['subheading_tag']) : 'p';
 $grid_items      = isset($fields['grid_items']) && is_array($fields['grid_items']) ? $fields['grid_items'] : array();
 $bg_color        = isset($fields['bg_color']) ? sanitize_title((string) $fields['bg_color']) : '';
+$columns         = isset($fields['columns']) ? (string) $fields['columns'] : '3';
+$equal_height    = !empty($fields['equal_height']);
 $accent          = !empty($fields['bottom_accent']);
 $accent_slug     = isset($fields['bottom_accent_style']) ? (string) $fields['bottom_accent_style'] : '';
 $item_link_style = isset($fields['link_style']) ? sanitize_key((string) $fields['link_style']) : 'link';
@@ -32,11 +34,20 @@ if (!in_array($item_link_style, array('link', 'button'), true)) {
     $item_link_style = 'link';
 }
 
+if (!in_array($columns, array('2', '3', '4'), true)) {
+    $columns = '3';
+}
+
 $classes = array(
     'mrn-reusable-block',
     'mrn-reusable-block--content-grid',
+    'mrn-reusable-block--grid-columns-' . $columns,
     'mrn-reusable-block--grid-link-' . $item_link_style,
 );
+
+if ($equal_height) {
+    $classes[] = 'mrn-reusable-block--grid-equal-height';
+}
 
 $accent_contract = function_exists('mrn_site_styles_get_bottom_accent_contract')
     ? mrn_site_styles_get_bottom_accent_contract($accent, $accent_slug)
