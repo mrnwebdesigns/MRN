@@ -79,6 +79,8 @@ if ($background_image_style !== '') {
 if ($link_color !== '') {
     $styles[] = '--mrn-cta-link-color: var(--site-color-' . $link_color . ')';
 }
+
+echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($context) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section
     class="<?php echo esc_attr(implode(' ', $classes)); ?>"

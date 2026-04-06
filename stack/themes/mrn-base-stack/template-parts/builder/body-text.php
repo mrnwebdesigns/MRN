@@ -18,7 +18,7 @@ $background_color = isset( $row['background_color'] ) ? trim( (string) $row['bac
 $bottom_accent    = ! empty( $row['bottom_accent'] );
 $accent_slug      = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
 $width_layers     = function_exists( 'mrn_base_stack_get_section_width_layers' )
-	? mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'content', 'content' )
+	? mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'content', 'full-width' )
 	: array(
 		'width'           => 'content',
 		'section_class'   => 'mrn-layout-section--contained',
@@ -62,6 +62,7 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
+echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<div class="mrn-layout-section mrn-layout-section--text <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>

@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.04.06-builder-anchor-width-polish
+- Expanded `mrn-base-stack` to `1.1.16`.
+- Expanded `mrn-reusable-block-library` to `0.1.10`.
+- Expanded `mrn-dummy-content` to `0.1.9`.
+- Added shared optional anchor fields across theme-owned builder rows and reusable block library items, and render those anchor targets at the top of the row/block so in-page anchor links land at the intended visual start.
+- Tightened the full-width builder shell behavior so `Basic`, `Image Content`, and reusable CTA/full-width content stay inside the shared inset contract instead of drifting wide or stretching past the intended shell bounds on QA pages.
+
 ## 2026.04.06-image-content-and-grid-polish
 - Expanded `mrn-base-stack` to `1.1.15`.
 - Expanded `mrn-reusable-block-library` to `0.1.9`.

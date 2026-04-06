@@ -179,6 +179,8 @@ if ( $show_pagination && $query->max_num_pages > 1 ) {
 		)
 	);
 }
+
+echo function_exists( 'mrn_rbl_get_anchor_markup' ) ? mrn_rbl_get_anchor_markup( $context ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section
 	id="<?php echo esc_attr( $row_anchor_id ); ?>"

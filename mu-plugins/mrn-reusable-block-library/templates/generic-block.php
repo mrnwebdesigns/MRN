@@ -14,6 +14,8 @@ $post = isset($context['post']) && $context['post'] instanceof WP_Post ? $contex
 if (!$post instanceof WP_Post) {
     return;
 }
+
+echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($context) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section
     class="mrn-reusable-block mrn-reusable-block--generic"

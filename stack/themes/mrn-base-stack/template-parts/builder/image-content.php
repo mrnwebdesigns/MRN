@@ -89,46 +89,49 @@ $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' 
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
+echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<div class="mrn-layout-section mrn-layout-section--image-content <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-grid mrn-layout-grid--image-content mrn-layout-grid--media-stack mrn-image-content-row__inner">
 			<div class="mrn-layout-content mrn-layout-content--text mrn-layout-content--media-stack-text mrn-image-content-row__content">
-				<?php if ( '' !== $label ) : ?>
-					<<?php echo esc_html( $label_tag ); ?> class="mrn-image-content-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
-				<?php endif; ?>
+				<div class="mrn-image-content-row__content-inner">
+					<?php if ( '' !== $label ) : ?>
+						<<?php echo esc_html( $label_tag ); ?> class="mrn-image-content-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
+					<?php endif; ?>
 
-				<?php if ( '' !== $heading ) : ?>
-					<<?php echo esc_html( $heading_tag ); ?> class="mrn-image-content-row__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
-				<?php endif; ?>
+					<?php if ( '' !== $heading ) : ?>
+						<<?php echo esc_html( $heading_tag ); ?> class="mrn-image-content-row__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+					<?php endif; ?>
 
-				<?php if ( '' !== $subheading ) : ?>
-					<<?php echo esc_html( $subheading_tag ); ?> class="mrn-image-content-row__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
-				<?php endif; ?>
+					<?php if ( '' !== $subheading ) : ?>
+						<<?php echo esc_html( $subheading_tag ); ?> class="mrn-image-content-row__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
+					<?php endif; ?>
 
-				<?php if ( '' !== trim( $content ) ) : ?>
-					<div class="mrn-image-content-row__text">
-						<?php echo apply_filters( 'the_content', $content ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					</div>
-				<?php endif; ?>
+					<?php if ( '' !== trim( $content ) ) : ?>
+						<div class="mrn-image-content-row__text">
+							<?php echo apply_filters( 'the_content', $content ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						</div>
+					<?php endif; ?>
 
-				<?php if ( '' !== $link_url ) : ?>
-					<div class="mrn-image-content-row__link-wrap">
-						<a
-							class="mrn-image-content-row__link"
-							href="<?php echo esc_url( $link_url ); ?>"
-							<?php if ( '' !== $link_target ) : ?>
-								target="<?php echo esc_attr( $link_target ); ?>"
-							<?php endif; ?>
-							<?php if ( '_blank' === $link_target ) : ?>
-								rel="noopener noreferrer"
-							<?php endif; ?>
-						>
-							<?php echo esc_html( '' !== $link_title ? $link_title : $link_url ); ?>
-						</a>
-					</div>
-				<?php endif; ?>
+					<?php if ( '' !== $link_url ) : ?>
+						<div class="mrn-image-content-row__link-wrap">
+							<a
+								class="mrn-image-content-row__link"
+								href="<?php echo esc_url( $link_url ); ?>"
+								<?php if ( '' !== $link_target ) : ?>
+									target="<?php echo esc_attr( $link_target ); ?>"
+								<?php endif; ?>
+								<?php if ( '_blank' === $link_target ) : ?>
+									rel="noopener noreferrer"
+								<?php endif; ?>
+							>
+								<?php echo esc_html( '' !== $link_title ? $link_title : $link_url ); ?>
+							</a>
+						</div>
+					<?php endif; ?>
+				</div>
 			</div>
 
 			<?php if ( $has_image ) : ?>

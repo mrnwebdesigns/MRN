@@ -639,6 +639,28 @@ function mrn_base_stack_get_section_width_field( $key, $name = 'section_width', 
 }
 
 /**
+ * Build the standard anchor ACF field definition for builder rows.
+ *
+ * @param string $key Unique ACF field key.
+ * @param string $name Field name.
+ * @param string $label Field label.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_anchor_field( $key, $name = 'anchor', $label = 'Anchor ID' ) {
+	return array(
+		'key'          => $key,
+		'label'        => $label,
+		'name'         => $name,
+		'aria-label'   => '',
+		'type'         => 'text',
+		'instructions' => 'Optional anchor slug for one-page links. Enter the value without #.',
+		'wrapper'      => array(
+			'width' => '50',
+		),
+	);
+}
+
+/**
  * Shared motion effect choices for builder layouts.
  *
  * @return array<string, string>
@@ -939,6 +961,51 @@ function mrn_base_stack_get_row_section_width_class( array $row, $default_width 
 	}
 
 	return mrn_base_stack_get_section_width_class( $value, $default_width );
+}
+
+/**
+ * Normalize a builder anchor ID for safe front-end output.
+ *
+ * @param mixed $value Raw stored anchor value.
+ * @return string
+ */
+function mrn_base_stack_normalize_anchor_id( $value ) {
+	if ( ! is_string( $value ) ) {
+		return '';
+	}
+
+	$value = trim( $value );
+	if ( '' === $value ) {
+		return '';
+	}
+
+	$value = ltrim( $value, "# \t\n\r\0\x0B" );
+
+	return sanitize_title( $value );
+}
+
+/**
+ * Build the top-of-row anchor markup for a builder row.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @param string               $fallback_anchor Optional fallback anchor when the row does not store one.
+ * @return string
+ */
+function mrn_base_stack_get_builder_anchor_markup( array $row, $fallback_anchor = '' ) {
+	$anchor_id = mrn_base_stack_normalize_anchor_id( $row['anchor'] ?? '' );
+
+	if ( '' === $anchor_id && '' !== $fallback_anchor ) {
+		$anchor_id = mrn_base_stack_normalize_anchor_id( $fallback_anchor );
+	}
+
+	if ( '' === $anchor_id ) {
+		return '';
+	}
+
+	return sprintf(
+		'<div id="%1$s" class="mrn-content-builder__anchor" aria-hidden="true"></div>',
+		esc_attr( $anchor_id )
+	);
 }
 
 /**
@@ -1572,6 +1639,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
+				mrn_base_stack_get_anchor_field( 'field_mrn_nested_body_text_anchor' ),
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_body_text_motion_settings' ),
 			),
 		),
@@ -1743,6 +1811,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
+				mrn_base_stack_get_anchor_field( 'field_mrn_nested_basic_anchor' ),
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_basic_motion_settings' ),
 			),
 		),
@@ -1871,6 +1940,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
+				mrn_base_stack_get_anchor_field( 'field_mrn_nested_card_anchor' ),
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_card_motion_settings' ),
 			),
 		),
@@ -2068,6 +2138,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'default_value' => 'center',
 					'ui'            => 1,
 				),
+				mrn_base_stack_get_anchor_field( 'field_mrn_nested_image_content_anchor' ),
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_image_content_motion_settings' ),
 			),
 		),
@@ -2179,6 +2250,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
+				mrn_base_stack_get_anchor_field( 'field_mrn_nested_video_anchor' ),
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_video_motion_settings' ),
 			),
 		),
@@ -2416,6 +2488,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
+				mrn_base_stack_get_anchor_field( 'field_mrn_nested_logos_anchor' ),
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_logos_motion_settings' ),
 			),
 		),
@@ -2493,6 +2566,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
+				mrn_base_stack_get_anchor_field( 'field_mrn_nested_external_widget_anchor' ),
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_external_widget_motion_settings' ),
 			),
 		),
@@ -2515,6 +2589,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'multiple'      => 0,
 					'instructions'  => 'Choose a reusable block from the library. Editing that block updates it everywhere it is used.',
 				),
+				mrn_base_stack_get_anchor_field( 'field_mrn_nested_reusable_block_anchor' ),
 			),
 		),
 	);

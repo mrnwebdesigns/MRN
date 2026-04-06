@@ -59,6 +59,8 @@ $accent_contract = function_exists('mrn_site_styles_get_bottom_accent_contract')
 if (!empty($accent_contract['classes']) && is_array($accent_contract['classes'])) {
     $classes = array_merge($classes, $accent_contract['classes']);
 }
+
+echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($context) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section
     class="<?php echo esc_attr(implode(' ', $classes)); ?>"

@@ -118,13 +118,16 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 
 	$row_attribute_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $row_attributes ) : '';
 
+	$anchor_markup = function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : '';
+
 	return sprintf(
-		'<div class="%1$s"%5$s><div class="%2$s"><div class="%3$s"><div class="mrn-layout-grid mrn-layout-grid--reusable"><div class="mrn-layout-content mrn-layout-content--reusable">%4$s</div></div></div></div></div>',
+		'%6$s<div class="%1$s"%5$s><div class="%2$s"><div class="%3$s"><div class="mrn-layout-grid mrn-layout-grid--reusable"><div class="mrn-layout-content mrn-layout-content--reusable">%4$s</div></div></div></div></div>',
 		esc_attr( $row_classes ),
 		esc_attr( $section_classes ),
 		esc_attr( $container_classes ),
 		$inner_markup, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		'' !== $row_attribute_html ? ' ' . $row_attribute_html : ''
+		'' !== $row_attribute_html ? ' ' . $row_attribute_html : '',
+		$anchor_markup // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 	);
 }
 
@@ -229,9 +232,10 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_cta',
 				$row,
 				array(
-					'post_id'    => (int) $post_id,
-					'post_name'  => 'page-cta',
-					'block_name' => 'Page CTA',
+					'post_id'         => (int) $post_id,
+					'post_name'       => 'page-cta',
+					'block_name'      => 'Page CTA',
+					'suppress_anchor' => true,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
@@ -253,9 +257,10 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_grid',
 				$row,
 				array(
-					'post_id'    => (int) $post_id,
-					'post_name'  => 'page-grid',
-					'block_name' => 'Page Grid',
+					'post_id'         => (int) $post_id,
+					'post_name'       => 'page-grid',
+					'block_name'      => 'Page Grid',
+					'suppress_anchor' => true,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
@@ -277,9 +282,10 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_faq',
 				$row,
 				array(
-					'post_id'    => (int) $post_id,
-					'post_name'  => 'page-faq-accordion',
-					'block_name' => 'Page FAQs/Accordion',
+					'post_id'         => (int) $post_id,
+					'post_name'       => 'page-faq-accordion',
+					'block_name'      => 'Page FAQs/Accordion',
+					'suppress_anchor' => true,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_faq', 'wide' );
@@ -346,9 +352,10 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_basic',
 				$row,
 				array(
-					'post_id'    => (int) $post_id,
-					'post_name'  => 'page-basic-block',
-					'block_name' => 'Page Basic Block',
+					'post_id'         => (int) $post_id,
+					'post_name'       => 'page-basic-block',
+					'block_name'      => 'Page Basic Block',
+					'suppress_anchor' => true,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_basic', 'wide' );
@@ -365,9 +372,10 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_grid',
 				$row,
 				array(
-					'post_id'    => (int) $post_id,
-					'post_name'  => 'page-content-grid',
-					'block_name' => 'Page Content Grid',
+					'post_id'         => (int) $post_id,
+					'post_name'       => 'page-content-grid',
+					'block_name'      => 'Page Content Grid',
+					'suppress_anchor' => true,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
@@ -389,9 +397,10 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_cta',
 				$row,
 				array(
-					'post_id'    => (int) $post_id,
-					'post_name'  => 'page-cta-block',
-					'block_name' => 'Page CTA Block',
+					'post_id'         => (int) $post_id,
+					'post_name'       => 'page-cta-block',
+					'block_name'      => 'Page CTA Block',
+					'suppress_anchor' => true,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
@@ -413,9 +422,10 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_faq',
 				$row,
 				array(
-					'post_id'    => (int) $post_id,
-					'post_name'  => 'page-faq-block',
-					'block_name' => 'Page FAQ Block',
+					'post_id'         => (int) $post_id,
+					'post_name'       => 'page-faq-block',
+					'block_name'      => 'Page FAQ Block',
+					'suppress_anchor' => true,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_faq', 'wide' );

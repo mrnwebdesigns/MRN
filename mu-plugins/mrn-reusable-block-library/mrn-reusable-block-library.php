@@ -3,7 +3,7 @@
  * Plugin Name: Reusable Block Library (MU)
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.9
+ * Version: 0.1.10
  */
 
 defined('ABSPATH') || exit;
@@ -522,6 +522,30 @@ function mrn_rbl_render_context(array $context): string {
 }
 
 /**
+ * Build reusable-block anchor markup for standalone rendering contexts.
+ *
+ * @param array<string, mixed> $context
+ * @return string
+ */
+function mrn_rbl_get_anchor_markup(array $context): string {
+    if (!empty($context['suppress_anchor'])) {
+        return '';
+    }
+
+    $fields = isset($context['fields']) && is_array($context['fields']) ? $context['fields'] : array();
+    $anchor = mrn_rbl_normalize_anchor_id($fields['anchor'] ?? '');
+
+    if ($anchor === '') {
+        return '';
+    }
+
+    return sprintf(
+        '<div id="%1$s" class="mrn-reusable-block__anchor" aria-hidden="true"></div>',
+        esc_attr($anchor)
+    );
+}
+
+/**
  * Render arbitrary fields using the template contract for a reusable block type.
  *
  * @param string               $post_type
@@ -933,6 +957,42 @@ function mrn_rbl_get_inline_text_field(string $key, string $label, string $name,
 }
 
 /**
+ * Build a standard anchor field definition.
+ *
+ * @return array<string, mixed>
+ */
+function mrn_rbl_get_anchor_field(string $key, string $name = 'anchor', string $label = 'Anchor ID'): array {
+    return array(
+        'key'          => $key,
+        'label'        => $label,
+        'name'         => $name,
+        'type'         => 'text',
+        'instructions' => 'Optional anchor slug for one-page links. Enter the value without #.',
+        'wrapper'      => array(
+            'width' => '50',
+        ),
+    );
+}
+
+/**
+ * Normalize a reusable block anchor ID for safe front-end output.
+ */
+function mrn_rbl_normalize_anchor_id($value): string {
+    if (!is_string($value)) {
+        return '';
+    }
+
+    $value = trim($value);
+    if ($value === '') {
+        return '';
+    }
+
+    $value = ltrim($value, "# \t\n\r\0\x0B");
+
+    return sanitize_title($value);
+}
+
+/**
  * Build a standard label-tag ACF field definition.
  *
  * @return array<string, mixed>
@@ -1162,6 +1222,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'placement' => 'top',
                 'endpoint'  => 0,
             ),
+            mrn_rbl_get_anchor_field('field_mrn_cta_anchor'),
             array(
                 'key'           => 'field_mrn_cta_link_style',
                 'label'         => 'Link style',
@@ -1312,6 +1373,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'placement' => 'top',
                 'endpoint'  => 0,
             ),
+            mrn_rbl_get_anchor_field('field_mrn_basic_block_anchor'),
             array(
                 'key'           => 'field_mrn_basic_block_bg_color',
                 'label'         => 'Background color',
@@ -1467,6 +1529,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'type'      => 'tab',
                 'placement' => 'top',
             ),
+            mrn_rbl_get_anchor_field('field_mrn_content_grid_anchor'),
             array(
                 'key'          => 'field_mrn_content_grid_bg_color',
                 'label'        => 'Background color',
@@ -1612,6 +1675,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'type'      => 'tab',
                 'placement' => 'top',
             ),
+            mrn_rbl_get_anchor_field('field_mrn_reusable_content_lists_anchor'),
             array(
                 'key'           => 'field_mrn_reusable_content_lists_post_type',
                 'label'         => 'Content Type',
@@ -2000,6 +2064,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'type'      => 'tab',
                 'placement' => 'top',
             ),
+            mrn_rbl_get_anchor_field('field_mrn_faq_anchor'),
             array(
                 'key'          => 'field_mrn_faq_bg_color',
                 'label'        => 'Background color',

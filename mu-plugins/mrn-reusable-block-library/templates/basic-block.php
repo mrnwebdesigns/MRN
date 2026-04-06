@@ -88,6 +88,8 @@ if ( '' !== $bg_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 if ( '' !== $link_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$inline_styles[] = '--mrn-basic-block-link-color: var(' . mrn_site_colors_get_css_var( $link_color ) . ')';
 }
+
+echo function_exists( 'mrn_rbl_get_anchor_markup' ) ? mrn_rbl_get_anchor_markup( $context ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section
 	class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"

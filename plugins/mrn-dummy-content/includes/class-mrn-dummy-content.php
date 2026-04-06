@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class MRN_Dummy_Content {
-	const VERSION = '0.1.8';
+	const VERSION = '0.1.9';
 	const NONCE_ACTION = 'mrn_dummy_content_generate';
 	const DELETE_NONCE_ACTION = 'mrn_dummy_content_delete';
 	const MENU_SLUG = 'mrn-dummy-content';
@@ -1272,6 +1272,8 @@ final class MRN_Dummy_Content {
 		$all_layouts = ! empty( $context['prefer_all_layouts'] );
 		$limit       = $all_layouts ? count( $layouts ) : min( 2, count( $layouts ) );
 		$counter     = 0;
+		$nav_items   = array();
+		$is_all_layouts_page_content = self::is_all_layouts_page_content_context( $field, $context );
 
 		foreach ( $layouts as $layout ) {
 			if ( ! is_array( $layout ) || empty( $layout['name'] ) ) {
@@ -1289,10 +1291,17 @@ final class MRN_Dummy_Content {
 			$row = array(
 				'acf_fc_layout' => $layout['name'],
 			);
+			$row_anchor = '';
 
 			$sub_fields = isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ? $layout['sub_fields'] : array();
 			foreach ( $sub_fields as $sub_field ) {
 				if ( ! is_array( $sub_field ) || empty( $sub_field['name'] ) ) {
+					continue;
+				}
+
+				if ( $is_all_layouts_page_content && 'anchor' === (string) $sub_field['name'] ) {
+					$row_anchor = self::generate_layout_anchor_id( $layout, $counter + 1 );
+					$row[ $sub_field['name'] ] = $row_anchor;
 					continue;
 				}
 
@@ -1313,11 +1322,148 @@ final class MRN_Dummy_Content {
 				}
 			}
 
+			if ( $is_all_layouts_page_content ) {
+				$nav_items[] = array(
+					'label'  => isset( $layout['label'] ) ? wp_strip_all_tags( (string) $layout['label'] ) : ucwords( str_replace( array( '_', '-' ), ' ', (string) $layout['name'] ) ),
+					'anchor' => $row_anchor,
+				);
+			}
+
 			$rows[] = $row;
 			++$counter;
 		}
 
+		if ( $is_all_layouts_page_content ) {
+			$nav_row = self::build_all_layouts_navigation_row( $layouts, $nav_items, $context );
+			if ( ! empty( $nav_row ) ) {
+				array_unshift( $rows, $nav_row );
+			}
+		}
+
 		return $rows;
+	}
+
+	/**
+	 * Determine whether the current flexible-content generation is for the All Layouts page content field.
+	 *
+	 * @param array<string, mixed> $field Field definition.
+	 * @param array<string, mixed> $context Generation context.
+	 * @return bool
+	 */
+	private static function is_all_layouts_page_content_context( array $field, array $context ) {
+		return ! empty( $context['prefer_all_layouts'] )
+			&& 'page' === ( $context['post_type'] ?? '' )
+			&& self::is_primary_page_demo_field( $field );
+	}
+
+	/**
+	 * Generate a stable anchor ID for a layout row.
+	 *
+	 * @param array<string, mixed> $layout Layout definition.
+	 * @param int                  $position 1-based layout position.
+	 * @return string
+	 */
+	private static function generate_layout_anchor_id( array $layout, $position ) {
+		$base = isset( $layout['name'] ) ? sanitize_title( (string) $layout['name'] ) : '';
+		if ( '' === $base ) {
+			$base = 'layout-' . absint( $position );
+		}
+
+		return sprintf( 'layout-%s-%d', $base, absint( $position ) );
+	}
+
+	/**
+	 * Build a nav row that links to each generated All Layouts section anchor.
+	 *
+	 * @param array<int, array<string, mixed>> $layouts Layout definitions.
+	 * @param array<int, array<string, string>> $nav_items Nav items with labels and anchors.
+	 * @param array<string, mixed>              $context Generation context.
+	 * @return array<string, mixed>
+	 */
+	private static function build_all_layouts_navigation_row( array $layouts, array $nav_items, array $context ) {
+		if ( empty( $nav_items ) ) {
+			return array();
+		}
+
+		$body_layout = null;
+		foreach ( $layouts as $layout ) {
+			if ( is_array( $layout ) && ( $layout['name'] ?? '' ) === 'body_text' ) {
+				$body_layout = $layout;
+				break;
+			}
+		}
+
+		if ( ! is_array( $body_layout ) ) {
+			return array();
+		}
+
+		$links = array();
+		foreach ( $nav_items as $nav_item ) {
+			if ( empty( $nav_item['anchor'] ) || empty( $nav_item['label'] ) ) {
+				continue;
+			}
+
+			$links[] = sprintf(
+				'<li><a href="#%1$s">%2$s</a></li>',
+				esc_attr( $nav_item['anchor'] ),
+				esc_html( $nav_item['label'] )
+			);
+		}
+
+		if ( empty( $links ) ) {
+			return array();
+		}
+
+		$row = array(
+			'acf_fc_layout' => 'body_text',
+		);
+
+		$sub_fields = isset( $body_layout['sub_fields'] ) && is_array( $body_layout['sub_fields'] ) ? $body_layout['sub_fields'] : array();
+		foreach ( $sub_fields as $sub_field ) {
+			if ( ! is_array( $sub_field ) || empty( $sub_field['name'] ) ) {
+				continue;
+			}
+
+			$name = (string) $sub_field['name'];
+
+			if ( 'heading' === $name ) {
+				$row[ $name ] = 'Jump to a Layout';
+				continue;
+			}
+
+			if ( 'subheading' === $name ) {
+				$row[ $name ] = 'Quick anchor links for each generated layout section on this page.';
+				continue;
+			}
+
+			if ( 'body_text' === $name ) {
+				$row[ $name ] = '<ul>' . implode( '', $links ) . '</ul>';
+				continue;
+			}
+
+			if ( 'anchor' === $name ) {
+				$row[ $name ] = 'all-layouts-menu';
+				continue;
+			}
+
+			$value = self::generate_field_value(
+				$sub_field,
+				array_merge(
+					$context,
+					array(
+						'depth'        => (int) ( $context['depth'] ?? 0 ) + 1,
+						'layout_name'  => 'body_text',
+						'layout_label' => 'Jump to a Layout',
+					)
+				)
+			);
+
+			if ( null !== $value ) {
+				$row[ $name ] = $value;
+			}
+		}
+
+		return $row;
 	}
 
 	/**

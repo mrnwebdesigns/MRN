@@ -183,6 +183,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'width' => '50',
 									),
 								),
+								mrn_base_stack_get_anchor_field( 'field_mrn_hero_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_hero_motion_settings' ),
 							),
 						),
@@ -291,6 +292,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'width' => '50',
 									),
 								),
+								mrn_base_stack_get_anchor_field( 'field_mrn_hero_two_column_split_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_hero_two_column_split_motion_settings' ),
 							),
 						),
@@ -370,6 +372,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'instructions'  => 'Select from Site Colors when available.',
 								),
 								mrn_base_stack_get_section_width_field( 'field_mrn_body_text_section_width', 'section_width', 'wide' ),
+								mrn_base_stack_get_anchor_field( 'field_mrn_body_text_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_body_text_motion_settings' ),
 								array(
 									'key'           => 'field_mrn_body_text_bottom_accent',
@@ -745,6 +748,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'instructions'  => 'Select from Site Colors when available.',
 								),
 								mrn_base_stack_get_section_width_field( 'field_mrn_content_lists_section_width', 'section_width', 'wide' ),
+								mrn_base_stack_get_anchor_field( 'field_mrn_content_lists_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_content_lists_motion_settings' ),
 								array(
 									'key'           => 'field_mrn_content_lists_bottom_accent',
@@ -904,6 +908,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 								),
 								mrn_base_stack_get_section_width_field( 'field_mrn_basic_section_width', 'section_width', 'wide' ),
+								mrn_base_stack_get_anchor_field( 'field_mrn_basic_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_basic_motion_settings' ),
 								array(
 									'key'           => 'field_mrn_basic_background_image',
@@ -1112,6 +1117,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'instructions'  => 'Select from Site Colors when available.',
 								),
 								mrn_base_stack_get_section_width_field( 'field_mrn_slider_section_width', 'section_width', 'wide' ),
+								mrn_base_stack_get_anchor_field( 'field_mrn_slider_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_slider_motion_settings' ),
 								array(
 									'key'           => 'field_mrn_slider_bottom_accent',
@@ -1339,6 +1345,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'instructions'  => 'Select from Site Colors when available.',
 								),
 								mrn_base_stack_get_section_width_field( 'field_mrn_image_content_section_width', 'section_width', 'wide' ),
+								mrn_base_stack_get_anchor_field( 'field_mrn_image_content_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_image_content_motion_settings' ),
 								array(
 									'key'           => 'field_mrn_image_content_bottom_accent',
@@ -1465,6 +1472,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'instructions'  => 'Select from Site Colors when available.',
 								),
 								mrn_base_stack_get_section_width_field( 'field_mrn_external_widget_section_width', 'section_width', 'wide' ),
+								mrn_base_stack_get_anchor_field( 'field_mrn_external_widget_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_external_widget_motion_settings' ),
 								array(
 									'key'           => 'field_mrn_external_widget_bottom_accent',
@@ -1596,6 +1604,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'instructions'  => 'Select from Site Colors when available.',
 								),
 								mrn_base_stack_get_section_width_field( 'field_mrn_card_section_width', 'section_width', 'wide' ),
+								mrn_base_stack_get_anchor_field( 'field_mrn_card_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_card_motion_settings' ),
 								array(
 									'key'           => 'field_mrn_card_bottom_accent',
@@ -1710,6 +1719,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'instructions'  => 'Select from Site Colors when available.',
 								),
 								mrn_base_stack_get_section_width_field( 'field_mrn_two_column_split_section_width', 'section_width', 'wide' ),
+								mrn_base_stack_get_anchor_field( 'field_mrn_two_column_split_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_two_column_split_motion_settings' ),
 							),
 						),
@@ -1793,6 +1803,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 								),
 								mrn_base_stack_get_section_width_field( 'field_mrn_video_section_width', 'section_width', 'wide' ),
+								mrn_base_stack_get_anchor_field( 'field_mrn_video_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_video_motion_settings' ),
 								array(
 									'key'           => 'field_mrn_video_bottom_accent',
@@ -2038,6 +2049,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 								),
 								mrn_base_stack_get_section_width_field( 'field_mrn_logos_section_width', 'section_width', 'wide' ),
+								mrn_base_stack_get_anchor_field( 'field_mrn_logos_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_logos_motion_settings' ),
 								array(
 									'key'           => 'field_mrn_logos_bottom_accent',
@@ -2171,6 +2183,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 								),
 								mrn_base_stack_get_section_width_field( 'field_mrn_stats_section_width', 'section_width', 'wide' ),
+								mrn_base_stack_get_anchor_field( 'field_mrn_stats_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_stats_motion_settings' ),
 								array(
 									'key'           => 'field_mrn_stats_bottom_accent',
@@ -2326,6 +2339,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 								),
 								mrn_base_stack_get_section_width_field( 'field_mrn_showcase_section_width', 'section_width', 'wide' ),
+								mrn_base_stack_get_anchor_field( 'field_mrn_showcase_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_showcase_motion_settings' ),
 								array(
 									'key'           => 'field_mrn_showcase_bottom_accent',
@@ -2376,6 +2390,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'prefix_label' => 0,
 									'prefix_name'  => 0,
 								),
+								mrn_base_stack_get_section_width_field( 'field_mrn_page_faq_section_width' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_page_faq_motion_settings' ),
 							),
 						),
@@ -2399,6 +2414,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									'instructions'      => 'Choose a reusable block from the library. Editing that block updates it everywhere it is used.',
 								),
 								mrn_base_stack_get_section_width_field( 'field_mrn_reusable_block_section_width' ),
+								mrn_base_stack_get_anchor_field( 'field_mrn_reusable_block_anchor' ),
 								mrn_base_stack_get_motion_group_field( 'field_mrn_reusable_block_motion_settings' ),
 							),
 						),
