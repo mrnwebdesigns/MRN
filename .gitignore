@@ -1,5 +1,6 @@
 # Local-only workspace state
 .local/
+.tmp/
 .cursor/
 .repo-migration-backups/
 create_qa_pages.php
