@@ -25,11 +25,12 @@
 - Classic-editor sidebar collapse behavior is the active collapse contract and lives in `mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`.
 
 ## Recent Durable Decisions
-- Current stack baseline is `2026.04.05-admin-ui-and-search-fixes`.
-- Current stack theme version is `mrn-base-stack 1.1.10`.
+- Current stack baseline is `2026.04.05-builder-schema-standardization`.
+- Current stack theme version is `mrn-base-stack 1.1.11`.
+- Current reusable block library version is `mrn-reusable-block-library 0.1.8`.
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
-- `default-configs.mrndev.io` was refreshed on `2026-04-03` for the `Content Lists` display-mode and shared repeater-controls release.
+- `default-configs.mrndev.io` was refreshed on `2026-04-05` for the builder text-field schema and reusable block standardization release.
 - `default-configs.mrndev.io` is currently still running the cloned `default-configs` theme slug, not `mrn-base-stack` directly, so stack theme feature deploys must target the live active stylesheet directory as well as the canonical stack source.
 - `default-configs.mrndev.io` also needs `/Users/khofmeyer/Development/MRN/shared` mirrored into `wp-content/shared`; otherwise Site Configurations can lose the sticky toolbar even when plugin/theme code is in sync.
 - The stack server source-of-truth copy also needs `/Users/khofmeyer/Development/MRN/shared` mirrored into `/home/mrndev-stack-manager/stack/shared`; new-site bootstrap reads shared runtime files from the stack root before syncing them into each site.
@@ -44,6 +45,11 @@
 - Stack-wide admin icon picking now has one canonical chooser in `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`; `mrn-base-stack` and `mrn-editor-tools` should consume `mrn_shared_assets_enqueue_admin_icon_chooser()` instead of shipping their own modal/picker catalogs.
 
 ## Recent Release Notes
+- Builder, posts, pages, and reusable blocks now share one canonical `label` / `heading` / `subheading` text-field schema with paired tag controls, and the reusable block library templates now render that canonical shape directly.
+- CTA, Basic Block, Content Grid, Content Lists, and FAQ reusable blocks now use the same standard intro-field model and admin layout as the stack builder rows.
+- Stack release `2026.04.05-builder-schema-standardization` shipped as theme `1.1.11` and reusable block library `0.1.8`, was pushed from commit `518dfa8`, packaged as `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack.zip`, and deployed to both the stack source and `default-configs.mrndev.io`.
+- Release verification passed for `php -l`, `git diff --check`, `qa-security.sh`, `qa-page-speed.sh`, `qa-local-stack-site.sh`, targeted theme `phpcs`, and post-deploy `qa-rollout-contract.sh`.
+- Local `qa-playwright-local-stack-site.sh` still reports a pre-existing front-end console `404` resource error on home and sample-page smoke tests; admin/settings smoke checks passed and the live deploy itself verified cleanly afterward.
 - `mrn-config-helper` now shows the exact `define('MRN_SENDGRID_MANAGEMENT_API_KEY', 'your-sendgrid-management-api-key');` line in the SendGrid management-key help text and explicitly points admins to `wp-config.php` for host-managed setup.
 - The stack baseline now separates testimonial position/company meta lines and restores website-link output in testimonial list views.
 - Reusable content lists now support `compact` and `feature` display modes and keep pagination anchored to the same row after page changes.
