@@ -27,8 +27,12 @@
 !/mu-plugins/mrn-disable-comments/**
 !/mu-plugins/mrn-duplicate-enhance/
 !/mu-plugins/mrn-duplicate-enhance/**
+!/mu-plugins/mrn-editor-lockdown/
+!/mu-plugins/mrn-editor-lockdown/**
 !/mu-plugins/mrn-editor-ui-css/
 !/mu-plugins/mrn-editor-ui-css/**
+!/mu-plugins/mrn-site-colors/
+!/mu-plugins/mrn-site-colors/**
 !/mu-plugins/mrn-svg-support/
 !/mu-plugins/mrn-svg-support/**
 !/stack/
