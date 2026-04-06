@@ -2284,31 +2284,60 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 }
 
 .mrn-content-grid__items {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 3rem 2.75rem;
+	--mrn-content-grid-columns: 3;
+	--mrn-content-grid-row-gap: 3rem;
+	--mrn-content-grid-column-gap: 2.75rem;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	row-gap: var(--mrn-content-grid-row-gap);
+	column-gap: var(--mrn-content-grid-column-gap);
 }
 
 .mrn-content-grid__items--collection-shell {
 	align-items: start;
 }
 
-.mrn-reusable-block--grid-columns-2 .mrn-content-grid__items {
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.mrn-reusable-block--grid-columns-4 .mrn-content-grid__items {
-	grid-template-columns: repeat(4, minmax(0, 1fr));
+.mrn-reusable-block--grid-equal-height .mrn-content-grid__items--collection-shell {
+	align-items: stretch;
 }
 
 .mrn-content-grid__item {
+	flex: 0 1 calc((100% - ((var(--mrn-content-grid-columns) - 1) * var(--mrn-content-grid-column-gap))) / var(--mrn-content-grid-columns));
 	min-width: 0;
+}
+
+.mrn-reusable-block--grid-columns-2 .mrn-content-grid__items {
+	--mrn-content-grid-columns: 2;
+}
+
+.mrn-reusable-block--grid-columns-4 .mrn-content-grid__items {
+	--mrn-content-grid-columns: 4;
 }
 
 .mrn-content-grid__item--collection-shell {
 	display: grid;
 	align-content: start;
 	gap: 0.85rem;
+}
+
+.mrn-reusable-block--grid-equal-height .mrn-content-grid__item--collection-shell {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	flex: 1 1 auto;
+	width: 100%;
+	min-height: 0;
+}
+
+.mrn-reusable-block--grid-equal-height .mrn-content-grid__item {
+	display: flex;
+	align-items: stretch;
+}
+
+.mrn-reusable-block--grid-equal-height .mrn-content-grid__item-link-wrap {
+	margin-top: auto;
+	padding-top: 0.85rem;
 }
 
 .mrn-content-grid__item-title {
@@ -2607,8 +2636,12 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	.mrn-gallery__grid,
 	.mrn-reusable-block--grid-columns-2 .mrn-content-grid__items,
 	.mrn-reusable-block--grid-columns-4 .mrn-content-grid__items {
-		grid-template-columns: 1fr;
-		gap: 2rem;
+		--mrn-content-grid-row-gap: 2rem;
+		--mrn-content-grid-column-gap: 2rem;
+	}
+
+	.mrn-content-grid__item {
+		flex-basis: 100%;
 	}
 
 	.mrn-two-column-split {
@@ -4830,7 +4863,8 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 }
 
 .mrn-layout-section--reusable-grid.mrn-layout-section--contained .mrn-layout-container--content > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--content-grid .mrn-content-grid__items {
-	gap: 1.5rem 1.75rem;
+	--mrn-content-grid-row-gap: 1.5rem;
+	--mrn-content-grid-column-gap: 1.75rem;
 }
 
 .mrn-layout-section--reusable-grid.mrn-layout-section--contained .mrn-layout-container--content > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--content-grid .mrn-content-grid__heading {
@@ -4842,7 +4876,8 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 }
 
 .mrn-layout-section--reusable-grid.mrn-layout-section--contained .mrn-layout-container--wide > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--content-grid .mrn-content-grid__items {
-	gap: 2rem 2.75rem;
+	--mrn-content-grid-row-gap: 2rem;
+	--mrn-content-grid-column-gap: 2.75rem;
 }
 
 .mrn-layout-section--reusable-grid.mrn-layout-section--contained .mrn-layout-container--wide > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--content-grid .mrn-content-grid__item--collection-shell {
@@ -4851,7 +4886,8 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 }
 
 .mrn-layout-section--reusable-grid.mrn-layout-section--full .mrn-layout-container--full > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--content-grid .mrn-content-grid__items {
-	gap: clamp(2rem, 4vw, 3rem) clamp(2rem, 4vw, 3.5rem);
+	--mrn-content-grid-row-gap: clamp(2rem, 4vw, 3rem);
+	--mrn-content-grid-column-gap: clamp(2rem, 4vw, 3.5rem);
 }
 
 .mrn-layout-section--reusable-grid.mrn-layout-section--full .mrn-layout-container--full > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--content-grid .mrn-content-grid__heading {

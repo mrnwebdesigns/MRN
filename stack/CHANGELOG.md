@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.04.06-sticky-toolbar-overlap-fixes
+- Expanded `mrn-base-stack` to `1.1.14`.
+- Expanded `mrn-universal-sticky-bar` to `1.0.9`.
+- Raised the shared settings-style sticky toolbar above high-z-index admin controls and switched its spacer handling to measure the rendered toolbar height instead of relying on hardcoded offsets.
+- Restored the icon-only header search pill to its intended expanded appearance while keeping it as an overlay so it no longer shifts header layout or leaves the icon hover background behind.
+- Raised the classic-editor universal sticky bar above overlapping inputs so admin field controls no longer paint over the toolbar.
+
 ## 2026.04.06-builder-width-and-social-polish
 - Expanded `mrn-base-stack` to `1.1.13`.
 - Expanded `mrn-config-helper` to `0.1.35`.

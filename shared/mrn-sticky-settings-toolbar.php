@@ -118,7 +118,7 @@ if (!function_exists('mrn_sticky_toolbar_render')) {
 				<button type="submit" class="button button-primary mrn-settings-tab mrn-settings-tab--save"<?php echo $form_id !== '' ? ' form="' . esc_attr($form_id) . '"' : ''; ?>><?php echo esc_html($save_label); ?></button>
 			</div>
 		</div>
-		<div class="mrn-admin-toolbar-spacer" aria-hidden="true"></div>
+		<div class="mrn-admin-toolbar-spacer" data-mrn-toolbar-spacer-for="<?php echo esc_attr($toolbar_id); ?>" aria-hidden="true"></div>
 		<script>
 		(function () {
 			var toolbarId = <?php echo wp_json_encode($toolbar_id); ?>;
@@ -137,6 +137,19 @@ if (!function_exists('mrn_sticky_toolbar_render')) {
 
 				var left = Math.max(0, Math.round(wpContent.getBoundingClientRect().left));
 				toolbar.style.setProperty('--mrn-toolbar-left', left + 'px');
+			}
+
+			function syncToolbarSpacer(toolbar) {
+				if (!toolbar) {
+					return;
+				}
+
+				var spacer = document.querySelector('[data-mrn-toolbar-spacer-for="' + toolbarId + '"]');
+				if (!spacer) {
+					return;
+				}
+
+				spacer.style.height = Math.ceil(toolbar.getBoundingClientRect().height + 10) + 'px';
 			}
 
 			function serializeForm(form) {
@@ -159,22 +172,33 @@ if (!function_exists('mrn_sticky_toolbar_render')) {
 				}
 
 				syncToolbarLeftOffset(toolbar);
+				syncToolbarSpacer(toolbar);
 
 				var body = document.body;
 				if (body && !toolbar.dataset.mrnStickyAlignInit) {
 					toolbar.dataset.mrnStickyAlignInit = '1';
 					window.addEventListener('resize', function () {
 						syncToolbarLeftOffset(toolbar);
+						syncToolbarSpacer(toolbar);
 					});
 
 					var observer = new MutationObserver(function () {
 						syncToolbarLeftOffset(toolbar);
+						syncToolbarSpacer(toolbar);
 					});
 
 					observer.observe(body, {
 						attributes: true,
 						attributeFilter: ['class']
 					});
+
+					if ('ResizeObserver' in window) {
+						var resizeObserver = new ResizeObserver(function () {
+							syncToolbarSpacer(toolbar);
+						});
+
+						resizeObserver.observe(toolbar);
+					}
 				}
 
 				if (!formId) {
