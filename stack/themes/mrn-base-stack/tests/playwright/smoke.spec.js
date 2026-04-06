@@ -72,11 +72,17 @@ async function loginToWordPressAdmin(page) {
 	await page.waitForTimeout(3000);
 
 	const loginFormCount = await page.locator('#loginform').count();
-	const loginErrorCount = await page.locator('#login_error, .message.error').count();
+	const loginErrorLocator = page.locator('#login_error, .message.error');
+	const loginErrorCount = await loginErrorLocator.count();
+	const loginErrors = loginErrorCount > 0 ? await loginErrorLocator.allInnerTexts() : [];
 	const hasAdminShell = (await page.locator('body.wp-admin, #wpadminbar').count()) > 0;
+	const finalUrl = page.url();
 
-	expect.soft(loginErrorCount, 'WordPress login errors').toBe(0);
-	expect.soft(loginFormCount > 0 && ! hasAdminShell, 'WordPress login stayed on wp-login.php').toBe(false);
+	expect.soft(loginErrorCount, `WordPress login errors at ${finalUrl}: ${loginErrors.join(' | ')}`).toBe(0);
+	expect.soft(
+		loginFormCount > 0 && ! hasAdminShell,
+		`WordPress login stayed on wp-login.php at ${finalUrl}: ${loginErrors.join(' | ') || 'no login error text returned'}`
+	).toBe(false);
 }
 
 async function expectNoLeakedStyleText(page, contextLabel) {

@@ -85,9 +85,8 @@ ensure_local_admin_credentials() {
 	qa_email="codex-qa-admin@local.test"
 
 	if [[ -z "${qa_pass}" ]]; then
-		set +o pipefail
-		qa_pass="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 24)"
-		set -o pipefail
+		# Keep the local-only QA password deterministic so login flakes are reproducible.
+		qa_pass="CodexPlaywrightLocal123"
 	fi
 
 	if run_wp user get "${qa_user}" --field=ID >/dev/null; then
@@ -98,6 +97,31 @@ ensure_local_admin_credentials() {
 
 	MRN_WP_ADMIN_USER="${qa_user}"
 	MRN_WP_ADMIN_PASS="${qa_pass}"
+	export MRN_WP_ADMIN_USER MRN_WP_ADMIN_PASS
+}
+
+verify_local_admin_credentials() {
+	local password_check
+
+	if [[ -z "${MRN_WP_ADMIN_USER:-}" || -z "${MRN_WP_ADMIN_PASS:-}" ]]; then
+		return 0
+	fi
+
+	password_check="$(run_wp eval '
+		$user = get_user_by("login", getenv("MRN_WP_ADMIN_USER"));
+		if (! $user) {
+			echo "missing-user";
+			return;
+		}
+
+		echo wp_check_password(getenv("MRN_WP_ADMIN_PASS"), $user->user_pass, $user->ID) ? "ok" : "bad-password";
+	' | tail -n 1)"
+
+	if [[ "${password_check}" != "ok" ]]; then
+		echo "QA admin preflight failed for ${MRN_WP_ADMIN_USER}: ${password_check}" >&2
+		echo "Set MRN_WP_ADMIN_USER/MRN_WP_ADMIN_PASS explicitly or inspect the local login flow before rerunning Playwright." >&2
+		exit 1
+	fi
 }
 
 BASE_URL="$(run_wp option get home | tail -n 1)"
@@ -147,6 +171,8 @@ if [[ -n "${BUSINESS_INFORMATION_PAGE_PATH}" ]]; then
 else
 	echo "Business Information smoke: skipped (ACF options pages unavailable)"
 fi
+
+verify_local_admin_credentials
 
 cd "${THEME_DIR}"
 
