@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.1.13
+Version: 1.1.14
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -851,6 +851,10 @@ body {
 .mrn-site-header__search--icon-only {
 	flex: 0 0 auto;
 	max-width: none;
+	width: 2.75rem;
+	min-width: 2.75rem;
+	height: 2.75rem;
+	position: relative;
 }
 
 .mrn-site-search {
@@ -895,7 +899,13 @@ body {
 	align-items: center;
 	justify-content: flex-end;
 	gap: 0.5rem;
-	position: relative;
+	position: absolute;
+	top: 50%;
+	right: 0;
+	width: 2.75rem;
+	height: 2.75rem;
+	transform: translateY(-50%);
+	z-index: 20;
 }
 
 .mrn-site-search--icon-only .mrn-site-search__toggle {
@@ -919,7 +929,7 @@ body {
 
 .mrn-site-search--icon-only .mrn-site-search__toggle:hover,
 .mrn-site-search--icon-only .mrn-site-search__toggle:focus {
-	background: rgba(0, 0, 0, 0.06);
+	background: transparent;
 }
 
 .mrn-site-search__icon {
@@ -946,20 +956,33 @@ body {
 }
 
 .mrn-site-search--icon-only .mrn-site-search__input-wrap {
-	flex: 0 1 auto;
-	width: 0;
-	max-width: 0;
+	position: absolute;
+	top: 50%;
+	right: 0;
+	flex: none;
+	width: min(22rem, calc(100vw - 2rem));
+	max-width: min(22rem, calc(100vw - 2rem));
 	opacity: 0;
-	overflow: hidden;
+	visibility: hidden;
+	overflow: visible;
 	pointer-events: none;
-	transition: max-width 0.2s ease, opacity 0.2s ease;
+	transform: translateY(-50%) translateX(0.5rem);
+	transform-origin: center right;
+	z-index: 1;
+	transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
 }
 
 .mrn-site-search--icon-only.is-expanded .mrn-site-search__input-wrap {
-	width: min(22rem, calc(100vw - 8rem));
-	max-width: min(22rem, calc(100vw - 8rem));
 	opacity: 1;
+	visibility: visible;
 	pointer-events: auto;
+	transform: translateY(-50%) translateX(0);
+	transition-delay: 0s;
+}
+
+.mrn-site-search--icon-only.is-expanded {
+	width: min(22rem, calc(100vw - 2rem));
+	z-index: 30;
 }
 
 .mrn-site-search--icon-only.is-expanded .mrn-site-search__toggle {
@@ -979,7 +1002,7 @@ body {
 
 .mrn-site-search--icon-only .mrn-site-search__input {
 	width: 100%;
-	min-width: 11rem;
+	min-width: 0;
 	border: 0;
 	padding: 0 2.1rem 0 2.15rem;
 	background: transparent;
@@ -1039,14 +1062,33 @@ body {
 	display: none;
 }
 
+.mrn-site-search--icon-only .searchwp-live-search-results,
+.mrn-site-search--icon-only [class*="searchwp-live-search"] {
+	position: absolute;
+	top: calc(100% + 0.5rem);
+	right: 0;
+	left: auto;
+	z-index: 31;
+	width: 100%;
+}
+
 .mrn-site-header__main {
 	gap: 1.5rem;
 }
 
 @media (max-width: 782px) {
+	.mrn-site-search--icon-only.is-expanded {
+		width: min(18rem, calc(100vw - 2rem));
+	}
+
 	.mrn-site-search--icon-only.is-expanded .mrn-site-search__input-wrap {
-		width: min(18rem, calc(100vw - 6rem));
-		max-width: min(18rem, calc(100vw - 6rem));
+		width: min(18rem, calc(100vw - 2rem));
+		max-width: min(18rem, calc(100vw - 2rem));
+	}
+
+	.mrn-site-search--icon-only .searchwp-live-search-results,
+	.mrn-site-search--icon-only [class*="searchwp-live-search"] {
+		width: min(18rem, calc(100vw - 2rem));
 	}
 }
 

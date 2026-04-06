@@ -16,7 +16,7 @@ if (!function_exists('mrn_sticky_toolbar_universal_css')) {
 .mrn-universal-sticky-toolbar {
   position: sticky;
   top: 32px;
-  z-index: 1001;
+  z-index: 2147483000;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -350,7 +350,7 @@ if (!function_exists('mrn_sticky_toolbar_render_css')) {
 			top: 32px;
 			left: var(--mrn-toolbar-left);
 			right: var(--mrn-toolbar-right);
-			z-index: 1001;
+			z-index: 2147483000;
 			width: calc(100vw - var(--mrn-toolbar-left) - var(--mrn-toolbar-right));
 			box-sizing: border-box;
 			display: flex;
