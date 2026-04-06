@@ -2,6 +2,7 @@
 
 ## 2026.04.06-ame-config-refresh
 - Refreshed the canonical stack AME container export to the `2026-04-06` snapshot and kept the dated export alongside it for reference.
+- Refreshed that same-day snapshot again after local AME changes updated the exported admin-menu tree, dashboard widgets, role capability index data, and table-column screen settings.
 - Verified the refreshed AME payload imports cleanly on the local stack test site, including the stack-specific follow-up handling for the `roles-and-capabilities` component.
 
 ## 2026.04.05-social-link-icon-fallback

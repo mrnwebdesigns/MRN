@@ -29,7 +29,7 @@
 - Current stack theme version is `mrn-base-stack 1.1.12`.
 - Current reusable block library version is `mrn-reusable-block-library 0.1.8`.
 - Future sites should use a child theme for site-specific theming, and stack update work should preserve stable parent-theme theming hooks such as classes, CSS variables, and other child-theme styling targets unless a documented breaking change is truly necessary.
-- Stack AME export payloads were refreshed on `2026-04-06`; canonical files are `/Users/khofmeyer/Development/MRN/stack/configs/exports/ame-config-container.json` and `/Users/khofmeyer/Development/MRN/stack/configs/exports/AME-configuration(2026-04-06).json`.
+- Stack AME export payloads were refreshed twice on `2026-04-06`; the current canonical files are `/Users/khofmeyer/Development/MRN/stack/configs/exports/ame-config-container.json` and `/Users/khofmeyer/Development/MRN/stack/configs/exports/AME-configuration(2026-04-06).json`.
 - `mrn-dummy-content` is now a stack-packaged standard plugin with canonical source at `/Users/khofmeyer/Development/MRN/plugins/mrn-dummy-content`, release artifact path `/Users/khofmeyer/Development/MRN/releases/plugins/mrn-dummy-content.zip`, and stack manifest entry `/home/mrndev-stack-manager/stack/packages/mrn-dummy-content.zip`.
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
@@ -49,6 +49,7 @@
 
 ## Recent Release Notes
 - Stack release `2026.04.06-ame-config-refresh` refreshed the canonical AME export payloads and importer mapping for fresh stack-site bootstrap.
+- That release was then rebuilt on `2026-04-06` from a revised local AME snapshot that updated admin-menu, dashboard-widget-editor, roles-and-capabilities, and table-columns payload sections.
 - Release verification passed for JSON validation, `git diff --check`, targeted risky-pattern review, local AME import smoke via WP-CLI, and stack-specific roles follow-up import verification.
 - Social-link rendering in `mrn-base-stack` now verifies media icon attachments still resolve to a real file before outputting an `<img>`, and falls back cleanly to text when stale option data points at deleted media.
 - Stack release `2026.04.05-social-link-icon-fallback` shipped as theme `1.1.12`, was pushed from commit `512830b`, packaged as `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack.zip`, and deployed to both the stack source and `default-configs.mrndev.io`.
