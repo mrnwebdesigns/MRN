@@ -1,0 +1,9 @@
+ame_container_json|ame-config-container.json
+ame_toolbar_editor_json|ame-toolbar-editor.settings.json
+updraftplus_settings_json|secret:updraftplus-settings-mrn-plugin-stack.json|updraft_options
+option_json|secret:mrn-config-helper-settings.json|mrn_helper_settings
+# Import mappings: <type>|<file>|<target>|<mode>
+# option_json|mrn-editor-tools-settings.json|mrn_editor_tools_settings
+# option_text|some-secret.txt|some_option_name
+# mrn_license_vault_json|license-vault-export.json|overwrite
+# mrn_unified_export_zip|mrn-unified-export.zip

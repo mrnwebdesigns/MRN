@@ -30,6 +30,7 @@
 - Current reusable block library version is `mrn-reusable-block-library 0.1.8`.
 - Future sites should use a child theme for site-specific theming, and stack update work should preserve stable parent-theme theming hooks such as classes, CSS variables, and other child-theme styling targets unless a documented breaking change is truly necessary.
 - Stack AME export payloads were refreshed twice on `2026-04-06`; the current canonical files are `/Users/khofmeyer/Development/MRN/stack/configs/exports/ame-config-container.json` and `/Users/khofmeyer/Development/MRN/stack/configs/exports/AME-configuration(2026-04-06).json`.
+- The top-level repo now tracks the canonical stack manifests, importer/bootstrap helpers, archive docs, and surfaced wrapper/shim files that were previously hidden by the old allowlist `.gitignore`, so release and deployment QA can reason about the full stack source from one repo.
 - `mrn-dummy-content` is now a stack-packaged standard plugin with canonical source at `/Users/khofmeyer/Development/MRN/plugins/mrn-dummy-content`, release artifact path `/Users/khofmeyer/Development/MRN/releases/plugins/mrn-dummy-content.zip`, and stack manifest entry `/home/mrndev-stack-manager/stack/packages/mrn-dummy-content.zip`.
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`

@@ -38,14 +38,20 @@ This document explains how the MRN stack models page content, reusable content, 
   - reusable block admin UX
   - reusable block render templates, with theme override support when needed
 
-### No Child Theme Assumption
+### Child Theme Compatibility Rule
 
-- The current stack baseline does not assume a parent-theme plus child-theme model for builder work.
 - Shared stack behavior should live in:
   - the stack theme
   - MU plugins
   - normal plugins
-- Do not assume a separate child theme layer exists for content-model features unless a future thread establishes one.
+- Future sites should use a site-specific child theme for theming and branding overrides.
+- Content-model and shared feature work should still live in the shared stack layers, not in the child theme.
+- When updating the parent stack theme, preserve stable theming hooks consumed by child themes whenever practical, including:
+  - CSS class names used for styling
+  - CSS variables and token names
+  - data attributes and accent hooks
+  - helper or template output intentionally exposed for site theming
+- If a shared theme change must alter one of those hooks, treat it as a documented compatibility change rather than an incidental refactor.
 
 ## Field Naming Patterns
 

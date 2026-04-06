@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.04.06-stack-source-tracking
+- Kept the surfaced stack source-of-truth files tracked after the `.gitignore` cleanup, including stack manifests, bootstrap/importer helpers, reference exports, archive docs, and the compatibility shim for the shared sticky-toolbar loader.
+- Added the tracked stack wrapper loaders for `mrn-active-style-guide`, `mrn-editor-lockdown`, `mrn-reusable-block-library`, and `mrn-site-colors` so stack MU deploys and bootstrap paths can be verified from the main repo.
+- Documented the child-theme compatibility rule across stack docs so future site updates preserve stable parent-theme theming hooks.
+
 ## 2026.04.06-ame-config-refresh
 - Refreshed the canonical stack AME container export to the `2026-04-06` snapshot and kept the dated export alongside it for reference.
 - Refreshed that same-day snapshot again after local AME changes updated the exported admin-menu tree, dashboard widgets, role capability index data, and table-column screen settings.

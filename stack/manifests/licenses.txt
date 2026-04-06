@@ -1,0 +1,5 @@
+admin-menu-editor-pro/menu-editor.php|wsh_license_manager-admin-menu-editor-pro|secretfile:ame-license.txt
+wpforms/wpforms.php|wpforms_license|secretfile:wpforms-license.txt
+updraftplus/updraftplus.php|updraftplus-addons_options|secretfilejson:updraft-premium.json
+searchwp/index.php|searchwp_license_key|secretfile:searchwp-license.txt
+advanced-custom-fields-pro/acf.php|acf_pro_license|secretfile:acf-pro-license.txt

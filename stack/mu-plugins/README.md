@@ -6,6 +6,7 @@ stack server under `/home/mrndev-stack-manager/stack/mu-plugins/`.
 Current entries:
 - `mrn-loader`
 - `mrn-active-style-guide`
+- `mrn-editor-lockdown`
 - `mrn-svg-support`
 - `mrn-reusable-block-library`
 - `mrn-shared-assets`

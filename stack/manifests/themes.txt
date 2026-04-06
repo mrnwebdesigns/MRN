@@ -1,0 +1,10 @@
+# Theme rollout manifest for bootstrap
+# Format:
+#   theme-slug
+#   theme-slug|version
+#   /absolute/path/to/theme.zip
+#   https://example.com/theme.zip
+#   theme-slug|active
+#   theme-slug|version|active
+
+/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active

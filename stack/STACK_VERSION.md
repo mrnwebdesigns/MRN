@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.06-ame-config-refresh`
+- Stack release: `2026.04.06-stack-source-tracking`
 - Release date: `2026-04-06`
 - Status: `current baseline`
 
@@ -28,5 +28,5 @@
 ## Notes
 - This file tracks the current stack baseline, not every historical package ever shipped.
 - Third-party packages in `manifests/plugins.txt` keep their own upstream versions and package filenames.
-- Current baseline refreshes the canonical AME export payloads used by new stack-site bootstrap.
+- Current baseline keeps the canonical AME export payloads, importer/manifests, bootstrap helper, shared shim, and stack MU wrapper loaders tracked in the main repo so release/deploy flows can verify and sync them consistently.
 - Use [`CHANGELOG.md`](/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md) for release notes.

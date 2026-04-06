@@ -18,8 +18,25 @@
 - Keep edits scoped and minimal.
 - Prefer shared helpers over one-off patches.
 - Preserve canonical ownership boundaries between theme, plugins, MU plugins, and shared sources.
+- For site update work, prefer additive or internal implementation changes over public markup-contract changes.
+- Do not rename or remove stable theme-facing classes, CSS variables, helper contracts, or other theming hooks unless the change is necessary and the downstream site impact is reviewed first.
 - Treat width rendering and wrapper layering as solved infrastructure when adding new layouts.
 - Improve layout-family expression through shared shell patterns rather than ad hoc CSS tweaks.
+
+## Site Update Rule
+- Updating a site means reviewing the full stack impact, not only the targeted plugin.
+- Assume a site update can require coordinated changes across:
+  - normal plugins
+  - MU plugins
+  - shared runtime files
+  - the stack theme when rendering or helper contracts changed
+- For future sites, treat the site-specific child theme as the primary theming layer.
+- The parent stack theme should preserve stable theming hooks for child themes whenever practical, including:
+  - CSS class names used as styling targets
+  - CSS variables and token names
+  - data attributes and accent hooks
+  - template or helper outputs intentionally consumed by site theming
+- If a theming-contract change is truly necessary, document it before release and include explicit downstream update notes for site child themes and the master Google Doc.
 
 ## Builder Rules
 - Shared `Section Width` values are:

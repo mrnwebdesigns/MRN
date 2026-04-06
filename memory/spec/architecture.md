@@ -19,6 +19,7 @@
 - `stack/mu-plugins/` is not the canonical home for MU plugin source.
 - Top-level `mu-plugins/` is canonical.
 - `stack/mu-plugins/` contains stack loader or root entry files that point at the canonical MU plugin set.
+- Future site theming should happen in a site-specific child theme layered on top of the stack parent theme.
 
 ## Local QA Environment
 - Local stack test site:
@@ -43,6 +44,7 @@
 - The theme owns the universal `MRN Content Builder` experience for `post` and `page`.
 - Reusable blocks are plugin or MU-owned content primitives for centrally managed, shared content patterns.
 - Theme ACF layouts are page- or post-owned composition tools for one-off or page-specific content.
+- Site-specific styling and branding overrides should live in the site child theme rather than modifying the shared parent stack theme per site.
 - If content is edited once and reused in many places, prefer a reusable block type.
 - If content belongs only to the current entry, prefer a theme builder layout.
 - Converting a reusable block into page-specific content is a theme-level editor action, not a persistent toggle field.
@@ -83,3 +85,4 @@
   `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-live-theme.sh`
 - Stack automation is designed to run as `mrndev-stack-manager`.
 - Live site syncs should run as the destination site owner via `sudo -n -u <site-user> rsync`.
+- Site update planning should consider both parent-theme updates and any required child-theme follow-up when the shared rendering contract changes.
