@@ -102,7 +102,10 @@ LOCAL_THEME_VERSION="$(extract_theme_version "${LOCAL_THEME_DIR}/style.css")"
 pass "Local theme version is ${LOCAL_THEME_VERSION}"
 
 ZIP_THEME_VERSION="$(
-	unzip -p "${LOCAL_THEME_ZIP}" style.css 2>/dev/null | sed -n 's/^Version:[[:space:]]*//p' | head -n1 | xargs
+	{
+		unzip -p "${LOCAL_THEME_ZIP}" style.css 2>/dev/null ||
+		unzip -p "${LOCAL_THEME_ZIP}" "mrn-base-stack/style.css" 2>/dev/null
+	} | sed -n 's/^Version:[[:space:]]*//p' | head -n1 | xargs
 )"
 [[ -n "${ZIP_THEME_VERSION}" ]] || fail "Could not read packaged theme version from ${LOCAL_THEME_ZIP}"
 [[ "${ZIP_THEME_VERSION}" == "${LOCAL_THEME_VERSION}" ]] || fail "Packaged theme version (${ZIP_THEME_VERSION}) does not match local source (${LOCAL_THEME_VERSION})"
