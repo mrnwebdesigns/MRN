@@ -425,12 +425,30 @@ if ( ! function_exists( 'mrn_base_stack_render_social_links' ) ) :
 				continue;
 			}
 
-			$url       = esc_url( (string) $row['url'] );
-			$icon_type = isset( $row['icon_type'] ) ? (string) $row['icon_type'] : '';
-			$label     = isset( $row['fa_name'] ) && '' !== $row['fa_name'] ? (string) $row['fa_name'] : __( 'Social link', 'mrn-base-stack' );
+			$url        = esc_url( (string) $row['url'] );
+			$icon_type  = isset( $row['icon_type'] ) ? (string) $row['icon_type'] : '';
+			$icon_id    = isset( $row['icon_id'] ) ? (int) $row['icon_id'] : 0;
+			$icon_markup = '';
+			$label      = isset( $row['fa_name'] ) && '' !== $row['fa_name'] ? (string) $row['fa_name'] : __( 'Social link', 'mrn-base-stack' );
 
 			if ( 'dashicons' === $icon_type && ! empty( $row['dashicon'] ) ) {
 				$label = (string) $row['dashicon'];
+			}
+
+			if ( 'media' === $icon_type && $icon_id > 0 ) {
+				$attached_file = get_attached_file( $icon_id );
+
+				if ( is_string( $attached_file ) && '' !== $attached_file && file_exists( $attached_file ) ) {
+					$icon_markup = wp_get_attachment_image(
+						$icon_id,
+						'thumbnail',
+						false,
+						array(
+							'class' => 'mrn-social-links__image',
+							'alt'   => '',
+						)
+					);
+				}
 			}
 
 			echo '<li class="mrn-social-links__item">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -440,8 +458,8 @@ if ( ! function_exists( 'mrn_base_stack_render_social_links' ) ) :
 				echo '<span class="mrn-social-links__icon" aria-hidden="true"><i class="' . esc_attr( (string) $row['fa_class'] ) . '"></i></span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			} elseif ( 'dashicons' === $icon_type && ! empty( $row['dashicon'] ) ) {
 				echo '<span class="mrn-social-links__icon" aria-hidden="true"><span class="dashicons ' . esc_attr( (string) $row['dashicon'] ) . '"></span></span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			} elseif ( 'media' === $icon_type && ! empty( $row['icon_url'] ) ) {
-				echo '<img class="mrn-social-links__image" src="' . esc_url( (string) $row['icon_url'] ) . '" alt="" />'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			} elseif ( '' !== $icon_markup ) {
+				echo $icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			} else {
 				echo '<span class="mrn-social-links__text">' . esc_html( ucwords( str_replace( '-', ' ', $label ) ) ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}

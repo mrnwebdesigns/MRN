@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.04.05-social-link-icon-fallback
+- Expanded `mrn-base-stack` to `1.1.12`.
+- Hardened social-link rendering so media-based icons only output when the saved attachment still resolves to a real file.
+- Added a safe fallback to text when a saved social icon points at deleted local media, preventing front-end `404` noise in QA and on sites with stale option data.
+
 ## 2026.04.05-builder-schema-standardization
 - Expanded `mrn-base-stack` to `1.1.11`.
 - Expanded `mrn-reusable-block-library` to `0.1.8`.
