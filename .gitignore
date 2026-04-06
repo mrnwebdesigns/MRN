@@ -21,8 +21,12 @@
 !/mu-plugins/
 !/mu-plugins/mrn-admin-ui-css/
 !/mu-plugins/mrn-admin-ui-css/**
+!/mu-plugins/mrn-dashboard-support/
+!/mu-plugins/mrn-dashboard-support/**
 !/mu-plugins/mrn-disable-comments/
 !/mu-plugins/mrn-disable-comments/**
+!/mu-plugins/mrn-duplicate-enhance/
+!/mu-plugins/mrn-duplicate-enhance/**
 !/mu-plugins/mrn-editor-ui-css/
 !/mu-plugins/mrn-editor-ui-css/**
 !/mu-plugins/mrn-svg-support/

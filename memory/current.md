@@ -4,7 +4,7 @@
 - Canonical workspace root: `/Users/khofmeyer/Development/MRN`
 - Active implementation area: `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack`
 - Local acceptance harness: seeded QA pages on the local stack test site at `/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public/wp-content`
-- Monorepo migration pilots are in progress for `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-admin-ui-css`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-ui-css`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-disable-comments`, and `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-svg-support`; their nested repo metadata was moved to `/Users/khofmeyer/Development/MRN/.repo-migration-backups/mu-plugins/` so the top-level repo can begin owning those plugin paths.
+- Monorepo migration pilots are in progress for `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-admin-ui-css`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-editor-ui-css`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-disable-comments`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-svg-support`, `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-dashboard-support`, and `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-duplicate-enhance`; their nested repo metadata was moved to `/Users/khofmeyer/Development/MRN/.repo-migration-backups/mu-plugins/` so the top-level repo can begin owning those plugin paths.
 
 ## Current Focus
 - Modernize builder and page-shell behavior in the stack theme.
