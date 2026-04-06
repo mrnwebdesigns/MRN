@@ -1,5 +1,9 @@
 # Stack Changelog
 
+## 2026.04.06-ame-config-refresh
+- Refreshed the canonical stack AME container export to the `2026-04-06` snapshot and kept the dated export alongside it for reference.
+- Verified the refreshed AME payload imports cleanly on the local stack test site, including the stack-specific follow-up handling for the `roles-and-capabilities` component.
+
 ## 2026.04.05-social-link-icon-fallback
 - Expanded `mrn-base-stack` to `1.1.12`.
 - Hardened social-link rendering so media-based icons only output when the saved attachment still resolves to a real file.

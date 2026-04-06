@@ -25,7 +25,7 @@
 - Classic-editor sidebar collapse behavior is the active collapse contract and lives in `mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`.
 
 ## Recent Durable Decisions
-- Current stack baseline is `2026.04.05-social-link-icon-fallback`.
+- Current stack baseline is `2026.04.06-ame-config-refresh`.
 - Current stack theme version is `mrn-base-stack 1.1.12`.
 - Current reusable block library version is `mrn-reusable-block-library 0.1.8`.
 - Future sites should use a child theme for site-specific theming, and stack update work should preserve stable parent-theme theming hooks such as classes, CSS variables, and other child-theme styling targets unless a documented breaking change is truly necessary.
@@ -48,6 +48,8 @@
 - Stack-wide admin icon picking now has one canonical chooser in `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`; `mrn-base-stack` and `mrn-editor-tools` should consume `mrn_shared_assets_enqueue_admin_icon_chooser()` instead of shipping their own modal/picker catalogs.
 
 ## Recent Release Notes
+- Stack release `2026.04.06-ame-config-refresh` refreshed the canonical AME export payloads and importer mapping for fresh stack-site bootstrap.
+- Release verification passed for JSON validation, `git diff --check`, targeted risky-pattern review, local AME import smoke via WP-CLI, and stack-specific roles follow-up import verification.
 - Social-link rendering in `mrn-base-stack` now verifies media icon attachments still resolve to a real file before outputting an `<img>`, and falls back cleanly to text when stale option data points at deleted media.
 - Stack release `2026.04.05-social-link-icon-fallback` shipped as theme `1.1.12`, was pushed from commit `512830b`, packaged as `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack.zip`, and deployed to both the stack source and `default-configs.mrndev.io`.
 - Release verification passed for `php -l`, `git diff --check`, `qa-security.sh`, targeted Playwright front-end smoke, `qa-page-speed.sh`, and post-deploy `qa-rollout-contract.sh`.
