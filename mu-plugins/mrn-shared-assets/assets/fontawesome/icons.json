@@ -1,0 +1,8364 @@
+{
+  "solid": [
+    {
+      "name": "0",
+      "label": "0"
+    },
+    {
+      "name": "1",
+      "label": "1"
+    },
+    {
+      "name": "2",
+      "label": "2"
+    },
+    {
+      "name": "3",
+      "label": "3"
+    },
+    {
+      "name": "4",
+      "label": "4"
+    },
+    {
+      "name": "5",
+      "label": "5"
+    },
+    {
+      "name": "6",
+      "label": "6"
+    },
+    {
+      "name": "7",
+      "label": "7"
+    },
+    {
+      "name": "8",
+      "label": "8"
+    },
+    {
+      "name": "9",
+      "label": "9"
+    },
+    {
+      "name": "a",
+      "label": "A"
+    },
+    {
+      "name": "address-book",
+      "label": "Address Book"
+    },
+    {
+      "name": "address-card",
+      "label": "Address Card"
+    },
+    {
+      "name": "alarm-clock",
+      "label": "Alarm Clock"
+    },
+    {
+      "name": "align-center",
+      "label": "Align Center"
+    },
+    {
+      "name": "align-justify",
+      "label": "Align Justify"
+    },
+    {
+      "name": "align-left",
+      "label": "Align Left"
+    },
+    {
+      "name": "align-right",
+      "label": "Align Right"
+    },
+    {
+      "name": "anchor",
+      "label": "Anchor"
+    },
+    {
+      "name": "anchor-circle-check",
+      "label": "Anchor Circle Check"
+    },
+    {
+      "name": "anchor-circle-exclamation",
+      "label": "Anchor Circle Exclamation"
+    },
+    {
+      "name": "anchor-circle-xmark",
+      "label": "Anchor Circle Xmark"
+    },
+    {
+      "name": "anchor-lock",
+      "label": "Anchor Lock"
+    },
+    {
+      "name": "angle-down",
+      "label": "Angle Down"
+    },
+    {
+      "name": "angle-left",
+      "label": "Angle Left"
+    },
+    {
+      "name": "angle-right",
+      "label": "Angle Right"
+    },
+    {
+      "name": "angle-up",
+      "label": "Angle Up"
+    },
+    {
+      "name": "angles-down",
+      "label": "Angles Down"
+    },
+    {
+      "name": "angles-left",
+      "label": "Angles Left"
+    },
+    {
+      "name": "angles-right",
+      "label": "Angles Right"
+    },
+    {
+      "name": "angles-up",
+      "label": "Angles Up"
+    },
+    {
+      "name": "ankh",
+      "label": "Ankh"
+    },
+    {
+      "name": "apple-whole",
+      "label": "Apple Whole"
+    },
+    {
+      "name": "archway",
+      "label": "Archway"
+    },
+    {
+      "name": "arrow-down",
+      "label": "Arrow Down"
+    },
+    {
+      "name": "arrow-down-1-9",
+      "label": "Arrow Down 1 9"
+    },
+    {
+      "name": "arrow-down-9-1",
+      "label": "Arrow Down 9 1"
+    },
+    {
+      "name": "arrow-down-a-z",
+      "label": "Arrow Down A Z"
+    },
+    {
+      "name": "arrow-down-long",
+      "label": "Arrow Down Long"
+    },
+    {
+      "name": "arrow-down-short-wide",
+      "label": "Arrow Down Short Wide"
+    },
+    {
+      "name": "arrow-down-up-across-line",
+      "label": "Arrow Down Up Across Line"
+    },
+    {
+      "name": "arrow-down-up-lock",
+      "label": "Arrow Down Up Lock"
+    },
+    {
+      "name": "arrow-down-wide-short",
+      "label": "Arrow Down Wide Short"
+    },
+    {
+      "name": "arrow-down-z-a",
+      "label": "Arrow Down Z A"
+    },
+    {
+      "name": "arrow-left",
+      "label": "Arrow Left"
+    },
+    {
+      "name": "arrow-left-long",
+      "label": "Arrow Left Long"
+    },
+    {
+      "name": "arrow-pointer",
+      "label": "Arrow Pointer"
+    },
+    {
+      "name": "arrow-right",
+      "label": "Arrow Right"
+    },
+    {
+      "name": "arrow-right-arrow-left",
+      "label": "Arrow Right Arrow Left"
+    },
+    {
+      "name": "arrow-right-from-bracket",
+      "label": "Arrow Right From Bracket"
+    },
+    {
+      "name": "arrow-right-long",
+      "label": "Arrow Right Long"
+    },
+    {
+      "name": "arrow-right-to-bracket",
+      "label": "Arrow Right To Bracket"
+    },
+    {
+      "name": "arrow-right-to-city",
+      "label": "Arrow Right To City"
+    },
+    {
+      "name": "arrow-rotate-left",
+      "label": "Arrow Rotate Left"
+    },
+    {
+      "name": "arrow-rotate-right",
+      "label": "Arrow Rotate Right"
+    },
+    {
+      "name": "arrow-trend-down",
+      "label": "Arrow Trend Down"
+    },
+    {
+      "name": "arrow-trend-up",
+      "label": "Arrow Trend Up"
+    },
+    {
+      "name": "arrow-turn-down",
+      "label": "Arrow Turn Down"
+    },
+    {
+      "name": "arrow-turn-up",
+      "label": "Arrow Turn Up"
+    },
+    {
+      "name": "arrow-up",
+      "label": "Arrow Up"
+    },
+    {
+      "name": "arrow-up-1-9",
+      "label": "Arrow Up 1 9"
+    },
+    {
+      "name": "arrow-up-9-1",
+      "label": "Arrow Up 9 1"
+    },
+    {
+      "name": "arrow-up-a-z",
+      "label": "Arrow Up A Z"
+    },
+    {
+      "name": "arrow-up-from-bracket",
+      "label": "Arrow Up From Bracket"
+    },
+    {
+      "name": "arrow-up-from-ground-water",
+      "label": "Arrow Up From Ground Water"
+    },
+    {
+      "name": "arrow-up-from-water-pump",
+      "label": "Arrow Up From Water Pump"
+    },
+    {
+      "name": "arrow-up-long",
+      "label": "Arrow Up Long"
+    },
+    {
+      "name": "arrow-up-right-dots",
+      "label": "Arrow Up Right Dots"
+    },
+    {
+      "name": "arrow-up-right-from-square",
+      "label": "Arrow Up Right From Square"
+    },
+    {
+      "name": "arrow-up-short-wide",
+      "label": "Arrow Up Short Wide"
+    },
+    {
+      "name": "arrow-up-wide-short",
+      "label": "Arrow Up Wide Short"
+    },
+    {
+      "name": "arrow-up-z-a",
+      "label": "Arrow Up Z A"
+    },
+    {
+      "name": "arrows-down-to-line",
+      "label": "Arrows Down To Line"
+    },
+    {
+      "name": "arrows-down-to-people",
+      "label": "Arrows Down To People"
+    },
+    {
+      "name": "arrows-left-right",
+      "label": "Arrows Left Right"
+    },
+    {
+      "name": "arrows-left-right-to-line",
+      "label": "Arrows Left Right To Line"
+    },
+    {
+      "name": "arrows-rotate",
+      "label": "Arrows Rotate"
+    },
+    {
+      "name": "arrows-spin",
+      "label": "Arrows Spin"
+    },
+    {
+      "name": "arrows-split-up-and-left",
+      "label": "Arrows Split Up And Left"
+    },
+    {
+      "name": "arrows-to-circle",
+      "label": "Arrows To Circle"
+    },
+    {
+      "name": "arrows-to-dot",
+      "label": "Arrows To Dot"
+    },
+    {
+      "name": "arrows-to-eye",
+      "label": "Arrows To Eye"
+    },
+    {
+      "name": "arrows-turn-right",
+      "label": "Arrows Turn Right"
+    },
+    {
+      "name": "arrows-turn-to-dots",
+      "label": "Arrows Turn To Dots"
+    },
+    {
+      "name": "arrows-up-down",
+      "label": "Arrows Up Down"
+    },
+    {
+      "name": "arrows-up-down-left-right",
+      "label": "Arrows Up Down Left Right"
+    },
+    {
+      "name": "arrows-up-to-line",
+      "label": "Arrows Up To Line"
+    },
+    {
+      "name": "asterisk",
+      "label": "Asterisk"
+    },
+    {
+      "name": "at",
+      "label": "At"
+    },
+    {
+      "name": "atom",
+      "label": "Atom"
+    },
+    {
+      "name": "audio-description",
+      "label": "Audio Description"
+    },
+    {
+      "name": "austral-sign",
+      "label": "Austral Sign"
+    },
+    {
+      "name": "award",
+      "label": "Award"
+    },
+    {
+      "name": "b",
+      "label": "B"
+    },
+    {
+      "name": "baby",
+      "label": "Baby"
+    },
+    {
+      "name": "baby-carriage",
+      "label": "Baby Carriage"
+    },
+    {
+      "name": "backward",
+      "label": "Backward"
+    },
+    {
+      "name": "backward-fast",
+      "label": "Backward Fast"
+    },
+    {
+      "name": "backward-step",
+      "label": "Backward Step"
+    },
+    {
+      "name": "bacon",
+      "label": "Bacon"
+    },
+    {
+      "name": "bacteria",
+      "label": "Bacteria"
+    },
+    {
+      "name": "bacterium",
+      "label": "Bacterium"
+    },
+    {
+      "name": "bag-shopping",
+      "label": "Bag Shopping"
+    },
+    {
+      "name": "bahai",
+      "label": "Bahai"
+    },
+    {
+      "name": "baht-sign",
+      "label": "Baht Sign"
+    },
+    {
+      "name": "ban",
+      "label": "Ban"
+    },
+    {
+      "name": "ban-smoking",
+      "label": "Ban Smoking"
+    },
+    {
+      "name": "bandage",
+      "label": "Bandage"
+    },
+    {
+      "name": "bangladeshi-taka-sign",
+      "label": "Bangladeshi Taka Sign"
+    },
+    {
+      "name": "barcode",
+      "label": "Barcode"
+    },
+    {
+      "name": "bars",
+      "label": "Bars"
+    },
+    {
+      "name": "bars-progress",
+      "label": "Bars Progress"
+    },
+    {
+      "name": "bars-staggered",
+      "label": "Bars Staggered"
+    },
+    {
+      "name": "baseball",
+      "label": "Baseball"
+    },
+    {
+      "name": "baseball-bat-ball",
+      "label": "Baseball Bat Ball"
+    },
+    {
+      "name": "basket-shopping",
+      "label": "Basket Shopping"
+    },
+    {
+      "name": "basketball",
+      "label": "Basketball"
+    },
+    {
+      "name": "bath",
+      "label": "Bath"
+    },
+    {
+      "name": "battery-empty",
+      "label": "Battery Empty"
+    },
+    {
+      "name": "battery-full",
+      "label": "Battery Full"
+    },
+    {
+      "name": "battery-half",
+      "label": "Battery Half"
+    },
+    {
+      "name": "battery-quarter",
+      "label": "Battery Quarter"
+    },
+    {
+      "name": "battery-three-quarters",
+      "label": "Battery Three Quarters"
+    },
+    {
+      "name": "bed",
+      "label": "Bed"
+    },
+    {
+      "name": "bed-pulse",
+      "label": "Bed Pulse"
+    },
+    {
+      "name": "beer-mug-empty",
+      "label": "Beer Mug Empty"
+    },
+    {
+      "name": "bell",
+      "label": "Bell"
+    },
+    {
+      "name": "bell-concierge",
+      "label": "Bell Concierge"
+    },
+    {
+      "name": "bell-slash",
+      "label": "Bell Slash"
+    },
+    {
+      "name": "bezier-curve",
+      "label": "Bezier Curve"
+    },
+    {
+      "name": "bicycle",
+      "label": "Bicycle"
+    },
+    {
+      "name": "binoculars",
+      "label": "Binoculars"
+    },
+    {
+      "name": "biohazard",
+      "label": "Biohazard"
+    },
+    {
+      "name": "bitcoin-sign",
+      "label": "Bitcoin Sign"
+    },
+    {
+      "name": "blender",
+      "label": "Blender"
+    },
+    {
+      "name": "blender-phone",
+      "label": "Blender Phone"
+    },
+    {
+      "name": "blog",
+      "label": "Blog"
+    },
+    {
+      "name": "bold",
+      "label": "Bold"
+    },
+    {
+      "name": "bolt",
+      "label": "Bolt"
+    },
+    {
+      "name": "bolt-lightning",
+      "label": "Bolt Lightning"
+    },
+    {
+      "name": "bomb",
+      "label": "Bomb"
+    },
+    {
+      "name": "bone",
+      "label": "Bone"
+    },
+    {
+      "name": "bong",
+      "label": "Bong"
+    },
+    {
+      "name": "book",
+      "label": "Book"
+    },
+    {
+      "name": "book-atlas",
+      "label": "Book Atlas"
+    },
+    {
+      "name": "book-bible",
+      "label": "Book Bible"
+    },
+    {
+      "name": "book-bookmark",
+      "label": "Book Bookmark"
+    },
+    {
+      "name": "book-journal-whills",
+      "label": "Book Journal Whills"
+    },
+    {
+      "name": "book-medical",
+      "label": "Book Medical"
+    },
+    {
+      "name": "book-open",
+      "label": "Book Open"
+    },
+    {
+      "name": "book-open-reader",
+      "label": "Book Open Reader"
+    },
+    {
+      "name": "book-quran",
+      "label": "Book Quran"
+    },
+    {
+      "name": "book-skull",
+      "label": "Book Skull"
+    },
+    {
+      "name": "book-tanakh",
+      "label": "Book Tanakh"
+    },
+    {
+      "name": "bookmark",
+      "label": "Bookmark"
+    },
+    {
+      "name": "border-all",
+      "label": "Border All"
+    },
+    {
+      "name": "border-none",
+      "label": "Border None"
+    },
+    {
+      "name": "border-top-left",
+      "label": "Border Top Left"
+    },
+    {
+      "name": "bore-hole",
+      "label": "Bore Hole"
+    },
+    {
+      "name": "bottle-droplet",
+      "label": "Bottle Droplet"
+    },
+    {
+      "name": "bottle-water",
+      "label": "Bottle Water"
+    },
+    {
+      "name": "bowl-food",
+      "label": "Bowl Food"
+    },
+    {
+      "name": "bowl-rice",
+      "label": "Bowl Rice"
+    },
+    {
+      "name": "bowling-ball",
+      "label": "Bowling Ball"
+    },
+    {
+      "name": "box",
+      "label": "Box"
+    },
+    {
+      "name": "box-archive",
+      "label": "Box Archive"
+    },
+    {
+      "name": "box-open",
+      "label": "Box Open"
+    },
+    {
+      "name": "box-tissue",
+      "label": "Box Tissue"
+    },
+    {
+      "name": "boxes-packing",
+      "label": "Boxes Packing"
+    },
+    {
+      "name": "boxes-stacked",
+      "label": "Boxes Stacked"
+    },
+    {
+      "name": "braille",
+      "label": "Braille"
+    },
+    {
+      "name": "brain",
+      "label": "Brain"
+    },
+    {
+      "name": "brazilian-real-sign",
+      "label": "Brazilian Real Sign"
+    },
+    {
+      "name": "bread-slice",
+      "label": "Bread Slice"
+    },
+    {
+      "name": "bridge",
+      "label": "Bridge"
+    },
+    {
+      "name": "bridge-circle-check",
+      "label": "Bridge Circle Check"
+    },
+    {
+      "name": "bridge-circle-exclamation",
+      "label": "Bridge Circle Exclamation"
+    },
+    {
+      "name": "bridge-circle-xmark",
+      "label": "Bridge Circle Xmark"
+    },
+    {
+      "name": "bridge-lock",
+      "label": "Bridge Lock"
+    },
+    {
+      "name": "bridge-water",
+      "label": "Bridge Water"
+    },
+    {
+      "name": "briefcase",
+      "label": "Briefcase"
+    },
+    {
+      "name": "briefcase-medical",
+      "label": "Briefcase Medical"
+    },
+    {
+      "name": "broom",
+      "label": "Broom"
+    },
+    {
+      "name": "broom-ball",
+      "label": "Broom Ball"
+    },
+    {
+      "name": "brush",
+      "label": "Brush"
+    },
+    {
+      "name": "bucket",
+      "label": "Bucket"
+    },
+    {
+      "name": "bug",
+      "label": "Bug"
+    },
+    {
+      "name": "bug-slash",
+      "label": "Bug Slash"
+    },
+    {
+      "name": "bugs",
+      "label": "Bugs"
+    },
+    {
+      "name": "building",
+      "label": "Building"
+    },
+    {
+      "name": "building-circle-arrow-right",
+      "label": "Building Circle Arrow Right"
+    },
+    {
+      "name": "building-circle-check",
+      "label": "Building Circle Check"
+    },
+    {
+      "name": "building-circle-exclamation",
+      "label": "Building Circle Exclamation"
+    },
+    {
+      "name": "building-circle-xmark",
+      "label": "Building Circle Xmark"
+    },
+    {
+      "name": "building-columns",
+      "label": "Building Columns"
+    },
+    {
+      "name": "building-flag",
+      "label": "Building Flag"
+    },
+    {
+      "name": "building-lock",
+      "label": "Building Lock"
+    },
+    {
+      "name": "building-ngo",
+      "label": "Building Ngo"
+    },
+    {
+      "name": "building-shield",
+      "label": "Building Shield"
+    },
+    {
+      "name": "building-un",
+      "label": "Building Un"
+    },
+    {
+      "name": "building-user",
+      "label": "Building User"
+    },
+    {
+      "name": "building-wheat",
+      "label": "Building Wheat"
+    },
+    {
+      "name": "bullhorn",
+      "label": "Bullhorn"
+    },
+    {
+      "name": "bullseye",
+      "label": "Bullseye"
+    },
+    {
+      "name": "burger",
+      "label": "Burger"
+    },
+    {
+      "name": "burst",
+      "label": "Burst"
+    },
+    {
+      "name": "bus",
+      "label": "Bus"
+    },
+    {
+      "name": "bus-side",
+      "label": "Bus Side"
+    },
+    {
+      "name": "bus-simple",
+      "label": "Bus Simple"
+    },
+    {
+      "name": "business-time",
+      "label": "Business Time"
+    },
+    {
+      "name": "c",
+      "label": "C"
+    },
+    {
+      "name": "cable-car",
+      "label": "Cable Car"
+    },
+    {
+      "name": "cake-candles",
+      "label": "Cake Candles"
+    },
+    {
+      "name": "calculator",
+      "label": "Calculator"
+    },
+    {
+      "name": "calendar",
+      "label": "Calendar"
+    },
+    {
+      "name": "calendar-check",
+      "label": "Calendar Check"
+    },
+    {
+      "name": "calendar-day",
+      "label": "Calendar Day"
+    },
+    {
+      "name": "calendar-days",
+      "label": "Calendar Days"
+    },
+    {
+      "name": "calendar-minus",
+      "label": "Calendar Minus"
+    },
+    {
+      "name": "calendar-plus",
+      "label": "Calendar Plus"
+    },
+    {
+      "name": "calendar-week",
+      "label": "Calendar Week"
+    },
+    {
+      "name": "calendar-xmark",
+      "label": "Calendar Xmark"
+    },
+    {
+      "name": "camera",
+      "label": "Camera"
+    },
+    {
+      "name": "camera-retro",
+      "label": "Camera Retro"
+    },
+    {
+      "name": "camera-rotate",
+      "label": "Camera Rotate"
+    },
+    {
+      "name": "campground",
+      "label": "Campground"
+    },
+    {
+      "name": "candy-cane",
+      "label": "Candy Cane"
+    },
+    {
+      "name": "cannabis",
+      "label": "Cannabis"
+    },
+    {
+      "name": "capsules",
+      "label": "Capsules"
+    },
+    {
+      "name": "car",
+      "label": "Car"
+    },
+    {
+      "name": "car-battery",
+      "label": "Car Battery"
+    },
+    {
+      "name": "car-burst",
+      "label": "Car Burst"
+    },
+    {
+      "name": "car-on",
+      "label": "Car On"
+    },
+    {
+      "name": "car-rear",
+      "label": "Car Rear"
+    },
+    {
+      "name": "car-side",
+      "label": "Car Side"
+    },
+    {
+      "name": "car-tunnel",
+      "label": "Car Tunnel"
+    },
+    {
+      "name": "caravan",
+      "label": "Caravan"
+    },
+    {
+      "name": "caret-down",
+      "label": "Caret Down"
+    },
+    {
+      "name": "caret-left",
+      "label": "Caret Left"
+    },
+    {
+      "name": "caret-right",
+      "label": "Caret Right"
+    },
+    {
+      "name": "caret-up",
+      "label": "Caret Up"
+    },
+    {
+      "name": "carrot",
+      "label": "Carrot"
+    },
+    {
+      "name": "cart-arrow-down",
+      "label": "Cart Arrow Down"
+    },
+    {
+      "name": "cart-flatbed",
+      "label": "Cart Flatbed"
+    },
+    {
+      "name": "cart-flatbed-suitcase",
+      "label": "Cart Flatbed Suitcase"
+    },
+    {
+      "name": "cart-plus",
+      "label": "Cart Plus"
+    },
+    {
+      "name": "cart-shopping",
+      "label": "Cart Shopping"
+    },
+    {
+      "name": "cash-register",
+      "label": "Cash Register"
+    },
+    {
+      "name": "cat",
+      "label": "Cat"
+    },
+    {
+      "name": "cedi-sign",
+      "label": "Cedi Sign"
+    },
+    {
+      "name": "cent-sign",
+      "label": "Cent Sign"
+    },
+    {
+      "name": "certificate",
+      "label": "Certificate"
+    },
+    {
+      "name": "chair",
+      "label": "Chair"
+    },
+    {
+      "name": "chalkboard",
+      "label": "Chalkboard"
+    },
+    {
+      "name": "chalkboard-user",
+      "label": "Chalkboard User"
+    },
+    {
+      "name": "champagne-glasses",
+      "label": "Champagne Glasses"
+    },
+    {
+      "name": "charging-station",
+      "label": "Charging Station"
+    },
+    {
+      "name": "chart-area",
+      "label": "Chart Area"
+    },
+    {
+      "name": "chart-bar",
+      "label": "Chart Bar"
+    },
+    {
+      "name": "chart-column",
+      "label": "Chart Column"
+    },
+    {
+      "name": "chart-diagram",
+      "label": "Chart Diagram"
+    },
+    {
+      "name": "chart-gantt",
+      "label": "Chart Gantt"
+    },
+    {
+      "name": "chart-line",
+      "label": "Chart Line"
+    },
+    {
+      "name": "chart-pie",
+      "label": "Chart Pie"
+    },
+    {
+      "name": "chart-simple",
+      "label": "Chart Simple"
+    },
+    {
+      "name": "check",
+      "label": "Check"
+    },
+    {
+      "name": "check-double",
+      "label": "Check Double"
+    },
+    {
+      "name": "check-to-slot",
+      "label": "Check To Slot"
+    },
+    {
+      "name": "cheese",
+      "label": "Cheese"
+    },
+    {
+      "name": "chess",
+      "label": "Chess"
+    },
+    {
+      "name": "chess-bishop",
+      "label": "Chess Bishop"
+    },
+    {
+      "name": "chess-board",
+      "label": "Chess Board"
+    },
+    {
+      "name": "chess-king",
+      "label": "Chess King"
+    },
+    {
+      "name": "chess-knight",
+      "label": "Chess Knight"
+    },
+    {
+      "name": "chess-pawn",
+      "label": "Chess Pawn"
+    },
+    {
+      "name": "chess-queen",
+      "label": "Chess Queen"
+    },
+    {
+      "name": "chess-rook",
+      "label": "Chess Rook"
+    },
+    {
+      "name": "chevron-down",
+      "label": "Chevron Down"
+    },
+    {
+      "name": "chevron-left",
+      "label": "Chevron Left"
+    },
+    {
+      "name": "chevron-right",
+      "label": "Chevron Right"
+    },
+    {
+      "name": "chevron-up",
+      "label": "Chevron Up"
+    },
+    {
+      "name": "child",
+      "label": "Child"
+    },
+    {
+      "name": "child-combatant",
+      "label": "Child Combatant"
+    },
+    {
+      "name": "child-dress",
+      "label": "Child Dress"
+    },
+    {
+      "name": "child-reaching",
+      "label": "Child Reaching"
+    },
+    {
+      "name": "children",
+      "label": "Children"
+    },
+    {
+      "name": "church",
+      "label": "Church"
+    },
+    {
+      "name": "circle",
+      "label": "Circle"
+    },
+    {
+      "name": "circle-arrow-down",
+      "label": "Circle Arrow Down"
+    },
+    {
+      "name": "circle-arrow-left",
+      "label": "Circle Arrow Left"
+    },
+    {
+      "name": "circle-arrow-right",
+      "label": "Circle Arrow Right"
+    },
+    {
+      "name": "circle-arrow-up",
+      "label": "Circle Arrow Up"
+    },
+    {
+      "name": "circle-check",
+      "label": "Circle Check"
+    },
+    {
+      "name": "circle-chevron-down",
+      "label": "Circle Chevron Down"
+    },
+    {
+      "name": "circle-chevron-left",
+      "label": "Circle Chevron Left"
+    },
+    {
+      "name": "circle-chevron-right",
+      "label": "Circle Chevron Right"
+    },
+    {
+      "name": "circle-chevron-up",
+      "label": "Circle Chevron Up"
+    },
+    {
+      "name": "circle-dollar-to-slot",
+      "label": "Circle Dollar To Slot"
+    },
+    {
+      "name": "circle-dot",
+      "label": "Circle Dot"
+    },
+    {
+      "name": "circle-down",
+      "label": "Circle Down"
+    },
+    {
+      "name": "circle-exclamation",
+      "label": "Circle Exclamation"
+    },
+    {
+      "name": "circle-h",
+      "label": "Circle H"
+    },
+    {
+      "name": "circle-half-stroke",
+      "label": "Circle Half Stroke"
+    },
+    {
+      "name": "circle-info",
+      "label": "Circle Info"
+    },
+    {
+      "name": "circle-left",
+      "label": "Circle Left"
+    },
+    {
+      "name": "circle-minus",
+      "label": "Circle Minus"
+    },
+    {
+      "name": "circle-nodes",
+      "label": "Circle Nodes"
+    },
+    {
+      "name": "circle-notch",
+      "label": "Circle Notch"
+    },
+    {
+      "name": "circle-pause",
+      "label": "Circle Pause"
+    },
+    {
+      "name": "circle-play",
+      "label": "Circle Play"
+    },
+    {
+      "name": "circle-plus",
+      "label": "Circle Plus"
+    },
+    {
+      "name": "circle-question",
+      "label": "Circle Question"
+    },
+    {
+      "name": "circle-radiation",
+      "label": "Circle Radiation"
+    },
+    {
+      "name": "circle-right",
+      "label": "Circle Right"
+    },
+    {
+      "name": "circle-stop",
+      "label": "Circle Stop"
+    },
+    {
+      "name": "circle-up",
+      "label": "Circle Up"
+    },
+    {
+      "name": "circle-user",
+      "label": "Circle User"
+    },
+    {
+      "name": "circle-xmark",
+      "label": "Circle Xmark"
+    },
+    {
+      "name": "city",
+      "label": "City"
+    },
+    {
+      "name": "clapperboard",
+      "label": "Clapperboard"
+    },
+    {
+      "name": "clipboard",
+      "label": "Clipboard"
+    },
+    {
+      "name": "clipboard-check",
+      "label": "Clipboard Check"
+    },
+    {
+      "name": "clipboard-list",
+      "label": "Clipboard List"
+    },
+    {
+      "name": "clipboard-question",
+      "label": "Clipboard Question"
+    },
+    {
+      "name": "clipboard-user",
+      "label": "Clipboard User"
+    },
+    {
+      "name": "clock",
+      "label": "Clock"
+    },
+    {
+      "name": "clock-rotate-left",
+      "label": "Clock Rotate Left"
+    },
+    {
+      "name": "clone",
+      "label": "Clone"
+    },
+    {
+      "name": "closed-captioning",
+      "label": "Closed Captioning"
+    },
+    {
+      "name": "cloud",
+      "label": "Cloud"
+    },
+    {
+      "name": "cloud-arrow-down",
+      "label": "Cloud Arrow Down"
+    },
+    {
+      "name": "cloud-arrow-up",
+      "label": "Cloud Arrow Up"
+    },
+    {
+      "name": "cloud-bolt",
+      "label": "Cloud Bolt"
+    },
+    {
+      "name": "cloud-meatball",
+      "label": "Cloud Meatball"
+    },
+    {
+      "name": "cloud-moon",
+      "label": "Cloud Moon"
+    },
+    {
+      "name": "cloud-moon-rain",
+      "label": "Cloud Moon Rain"
+    },
+    {
+      "name": "cloud-rain",
+      "label": "Cloud Rain"
+    },
+    {
+      "name": "cloud-showers-heavy",
+      "label": "Cloud Showers Heavy"
+    },
+    {
+      "name": "cloud-showers-water",
+      "label": "Cloud Showers Water"
+    },
+    {
+      "name": "cloud-sun",
+      "label": "Cloud Sun"
+    },
+    {
+      "name": "cloud-sun-rain",
+      "label": "Cloud Sun Rain"
+    },
+    {
+      "name": "clover",
+      "label": "Clover"
+    },
+    {
+      "name": "code",
+      "label": "Code"
+    },
+    {
+      "name": "code-branch",
+      "label": "Code Branch"
+    },
+    {
+      "name": "code-commit",
+      "label": "Code Commit"
+    },
+    {
+      "name": "code-compare",
+      "label": "Code Compare"
+    },
+    {
+      "name": "code-fork",
+      "label": "Code Fork"
+    },
+    {
+      "name": "code-merge",
+      "label": "Code Merge"
+    },
+    {
+      "name": "code-pull-request",
+      "label": "Code Pull Request"
+    },
+    {
+      "name": "coins",
+      "label": "Coins"
+    },
+    {
+      "name": "colon-sign",
+      "label": "Colon Sign"
+    },
+    {
+      "name": "comment",
+      "label": "Comment"
+    },
+    {
+      "name": "comment-dollar",
+      "label": "Comment Dollar"
+    },
+    {
+      "name": "comment-dots",
+      "label": "Comment Dots"
+    },
+    {
+      "name": "comment-medical",
+      "label": "Comment Medical"
+    },
+    {
+      "name": "comment-nodes",
+      "label": "Comment Nodes"
+    },
+    {
+      "name": "comment-slash",
+      "label": "Comment Slash"
+    },
+    {
+      "name": "comment-sms",
+      "label": "Comment Sms"
+    },
+    {
+      "name": "comments",
+      "label": "Comments"
+    },
+    {
+      "name": "comments-dollar",
+      "label": "Comments Dollar"
+    },
+    {
+      "name": "compact-disc",
+      "label": "Compact Disc"
+    },
+    {
+      "name": "compass",
+      "label": "Compass"
+    },
+    {
+      "name": "compass-drafting",
+      "label": "Compass Drafting"
+    },
+    {
+      "name": "compress",
+      "label": "Compress"
+    },
+    {
+      "name": "computer",
+      "label": "Computer"
+    },
+    {
+      "name": "computer-mouse",
+      "label": "Computer Mouse"
+    },
+    {
+      "name": "cookie",
+      "label": "Cookie"
+    },
+    {
+      "name": "cookie-bite",
+      "label": "Cookie Bite"
+    },
+    {
+      "name": "copy",
+      "label": "Copy"
+    },
+    {
+      "name": "copyright",
+      "label": "Copyright"
+    },
+    {
+      "name": "couch",
+      "label": "Couch"
+    },
+    {
+      "name": "cow",
+      "label": "Cow"
+    },
+    {
+      "name": "credit-card",
+      "label": "Credit Card"
+    },
+    {
+      "name": "crop",
+      "label": "Crop"
+    },
+    {
+      "name": "crop-simple",
+      "label": "Crop Simple"
+    },
+    {
+      "name": "cross",
+      "label": "Cross"
+    },
+    {
+      "name": "crosshairs",
+      "label": "Crosshairs"
+    },
+    {
+      "name": "crow",
+      "label": "Crow"
+    },
+    {
+      "name": "crown",
+      "label": "Crown"
+    },
+    {
+      "name": "crutch",
+      "label": "Crutch"
+    },
+    {
+      "name": "cruzeiro-sign",
+      "label": "Cruzeiro Sign"
+    },
+    {
+      "name": "cube",
+      "label": "Cube"
+    },
+    {
+      "name": "cubes",
+      "label": "Cubes"
+    },
+    {
+      "name": "cubes-stacked",
+      "label": "Cubes Stacked"
+    },
+    {
+      "name": "d",
+      "label": "D"
+    },
+    {
+      "name": "database",
+      "label": "Database"
+    },
+    {
+      "name": "delete-left",
+      "label": "Delete Left"
+    },
+    {
+      "name": "democrat",
+      "label": "Democrat"
+    },
+    {
+      "name": "desktop",
+      "label": "Desktop"
+    },
+    {
+      "name": "dharmachakra",
+      "label": "Dharmachakra"
+    },
+    {
+      "name": "diagram-next",
+      "label": "Diagram Next"
+    },
+    {
+      "name": "diagram-predecessor",
+      "label": "Diagram Predecessor"
+    },
+    {
+      "name": "diagram-project",
+      "label": "Diagram Project"
+    },
+    {
+      "name": "diagram-successor",
+      "label": "Diagram Successor"
+    },
+    {
+      "name": "diamond",
+      "label": "Diamond"
+    },
+    {
+      "name": "diamond-turn-right",
+      "label": "Diamond Turn Right"
+    },
+    {
+      "name": "dice",
+      "label": "Dice"
+    },
+    {
+      "name": "dice-d20",
+      "label": "Dice D20"
+    },
+    {
+      "name": "dice-d6",
+      "label": "Dice D6"
+    },
+    {
+      "name": "dice-five",
+      "label": "Dice Five"
+    },
+    {
+      "name": "dice-four",
+      "label": "Dice Four"
+    },
+    {
+      "name": "dice-one",
+      "label": "Dice One"
+    },
+    {
+      "name": "dice-six",
+      "label": "Dice Six"
+    },
+    {
+      "name": "dice-three",
+      "label": "Dice Three"
+    },
+    {
+      "name": "dice-two",
+      "label": "Dice Two"
+    },
+    {
+      "name": "disease",
+      "label": "Disease"
+    },
+    {
+      "name": "display",
+      "label": "Display"
+    },
+    {
+      "name": "divide",
+      "label": "Divide"
+    },
+    {
+      "name": "dna",
+      "label": "Dna"
+    },
+    {
+      "name": "dog",
+      "label": "Dog"
+    },
+    {
+      "name": "dollar-sign",
+      "label": "Dollar Sign"
+    },
+    {
+      "name": "dolly",
+      "label": "Dolly"
+    },
+    {
+      "name": "dong-sign",
+      "label": "Dong Sign"
+    },
+    {
+      "name": "door-closed",
+      "label": "Door Closed"
+    },
+    {
+      "name": "door-open",
+      "label": "Door Open"
+    },
+    {
+      "name": "dove",
+      "label": "Dove"
+    },
+    {
+      "name": "down-left-and-up-right-to-center",
+      "label": "Down Left And Up Right To Center"
+    },
+    {
+      "name": "down-long",
+      "label": "Down Long"
+    },
+    {
+      "name": "download",
+      "label": "Download"
+    },
+    {
+      "name": "dragon",
+      "label": "Dragon"
+    },
+    {
+      "name": "draw-polygon",
+      "label": "Draw Polygon"
+    },
+    {
+      "name": "droplet",
+      "label": "Droplet"
+    },
+    {
+      "name": "droplet-slash",
+      "label": "Droplet Slash"
+    },
+    {
+      "name": "drum",
+      "label": "Drum"
+    },
+    {
+      "name": "drum-steelpan",
+      "label": "Drum Steelpan"
+    },
+    {
+      "name": "drumstick-bite",
+      "label": "Drumstick Bite"
+    },
+    {
+      "name": "dumbbell",
+      "label": "Dumbbell"
+    },
+    {
+      "name": "dumpster",
+      "label": "Dumpster"
+    },
+    {
+      "name": "dumpster-fire",
+      "label": "Dumpster Fire"
+    },
+    {
+      "name": "dungeon",
+      "label": "Dungeon"
+    },
+    {
+      "name": "e",
+      "label": "E"
+    },
+    {
+      "name": "ear-deaf",
+      "label": "Ear Deaf"
+    },
+    {
+      "name": "ear-listen",
+      "label": "Ear Listen"
+    },
+    {
+      "name": "earth-africa",
+      "label": "Earth Africa"
+    },
+    {
+      "name": "earth-americas",
+      "label": "Earth Americas"
+    },
+    {
+      "name": "earth-asia",
+      "label": "Earth Asia"
+    },
+    {
+      "name": "earth-europe",
+      "label": "Earth Europe"
+    },
+    {
+      "name": "earth-oceania",
+      "label": "Earth Oceania"
+    },
+    {
+      "name": "egg",
+      "label": "Egg"
+    },
+    {
+      "name": "eject",
+      "label": "Eject"
+    },
+    {
+      "name": "elevator",
+      "label": "Elevator"
+    },
+    {
+      "name": "ellipsis",
+      "label": "Ellipsis"
+    },
+    {
+      "name": "ellipsis-vertical",
+      "label": "Ellipsis Vertical"
+    },
+    {
+      "name": "envelope",
+      "label": "Envelope"
+    },
+    {
+      "name": "envelope-circle-check",
+      "label": "Envelope Circle Check"
+    },
+    {
+      "name": "envelope-open",
+      "label": "Envelope Open"
+    },
+    {
+      "name": "envelope-open-text",
+      "label": "Envelope Open Text"
+    },
+    {
+      "name": "envelopes-bulk",
+      "label": "Envelopes Bulk"
+    },
+    {
+      "name": "equals",
+      "label": "Equals"
+    },
+    {
+      "name": "eraser",
+      "label": "Eraser"
+    },
+    {
+      "name": "ethernet",
+      "label": "Ethernet"
+    },
+    {
+      "name": "euro-sign",
+      "label": "Euro Sign"
+    },
+    {
+      "name": "exclamation",
+      "label": "Exclamation"
+    },
+    {
+      "name": "expand",
+      "label": "Expand"
+    },
+    {
+      "name": "explosion",
+      "label": "Explosion"
+    },
+    {
+      "name": "eye",
+      "label": "Eye"
+    },
+    {
+      "name": "eye-dropper",
+      "label": "Eye Dropper"
+    },
+    {
+      "name": "eye-low-vision",
+      "label": "Eye Low Vision"
+    },
+    {
+      "name": "eye-slash",
+      "label": "Eye Slash"
+    },
+    {
+      "name": "f",
+      "label": "F"
+    },
+    {
+      "name": "face-angry",
+      "label": "Face Angry"
+    },
+    {
+      "name": "face-dizzy",
+      "label": "Face Dizzy"
+    },
+    {
+      "name": "face-flushed",
+      "label": "Face Flushed"
+    },
+    {
+      "name": "face-frown",
+      "label": "Face Frown"
+    },
+    {
+      "name": "face-frown-open",
+      "label": "Face Frown Open"
+    },
+    {
+      "name": "face-grimace",
+      "label": "Face Grimace"
+    },
+    {
+      "name": "face-grin",
+      "label": "Face Grin"
+    },
+    {
+      "name": "face-grin-beam",
+      "label": "Face Grin Beam"
+    },
+    {
+      "name": "face-grin-beam-sweat",
+      "label": "Face Grin Beam Sweat"
+    },
+    {
+      "name": "face-grin-hearts",
+      "label": "Face Grin Hearts"
+    },
+    {
+      "name": "face-grin-squint",
+      "label": "Face Grin Squint"
+    },
+    {
+      "name": "face-grin-squint-tears",
+      "label": "Face Grin Squint Tears"
+    },
+    {
+      "name": "face-grin-stars",
+      "label": "Face Grin Stars"
+    },
+    {
+      "name": "face-grin-tears",
+      "label": "Face Grin Tears"
+    },
+    {
+      "name": "face-grin-tongue",
+      "label": "Face Grin Tongue"
+    },
+    {
+      "name": "face-grin-tongue-squint",
+      "label": "Face Grin Tongue Squint"
+    },
+    {
+      "name": "face-grin-tongue-wink",
+      "label": "Face Grin Tongue Wink"
+    },
+    {
+      "name": "face-grin-wide",
+      "label": "Face Grin Wide"
+    },
+    {
+      "name": "face-grin-wink",
+      "label": "Face Grin Wink"
+    },
+    {
+      "name": "face-kiss",
+      "label": "Face Kiss"
+    },
+    {
+      "name": "face-kiss-beam",
+      "label": "Face Kiss Beam"
+    },
+    {
+      "name": "face-kiss-wink-heart",
+      "label": "Face Kiss Wink Heart"
+    },
+    {
+      "name": "face-laugh",
+      "label": "Face Laugh"
+    },
+    {
+      "name": "face-laugh-beam",
+      "label": "Face Laugh Beam"
+    },
+    {
+      "name": "face-laugh-squint",
+      "label": "Face Laugh Squint"
+    },
+    {
+      "name": "face-laugh-wink",
+      "label": "Face Laugh Wink"
+    },
+    {
+      "name": "face-meh",
+      "label": "Face Meh"
+    },
+    {
+      "name": "face-meh-blank",
+      "label": "Face Meh Blank"
+    },
+    {
+      "name": "face-rolling-eyes",
+      "label": "Face Rolling Eyes"
+    },
+    {
+      "name": "face-sad-cry",
+      "label": "Face Sad Cry"
+    },
+    {
+      "name": "face-sad-tear",
+      "label": "Face Sad Tear"
+    },
+    {
+      "name": "face-smile",
+      "label": "Face Smile"
+    },
+    {
+      "name": "face-smile-beam",
+      "label": "Face Smile Beam"
+    },
+    {
+      "name": "face-smile-wink",
+      "label": "Face Smile Wink"
+    },
+    {
+      "name": "face-surprise",
+      "label": "Face Surprise"
+    },
+    {
+      "name": "face-tired",
+      "label": "Face Tired"
+    },
+    {
+      "name": "fan",
+      "label": "Fan"
+    },
+    {
+      "name": "faucet",
+      "label": "Faucet"
+    },
+    {
+      "name": "faucet-drip",
+      "label": "Faucet Drip"
+    },
+    {
+      "name": "fax",
+      "label": "Fax"
+    },
+    {
+      "name": "feather",
+      "label": "Feather"
+    },
+    {
+      "name": "feather-pointed",
+      "label": "Feather Pointed"
+    },
+    {
+      "name": "ferry",
+      "label": "Ferry"
+    },
+    {
+      "name": "file",
+      "label": "File"
+    },
+    {
+      "name": "file-arrow-down",
+      "label": "File Arrow Down"
+    },
+    {
+      "name": "file-arrow-up",
+      "label": "File Arrow Up"
+    },
+    {
+      "name": "file-audio",
+      "label": "File Audio"
+    },
+    {
+      "name": "file-circle-check",
+      "label": "File Circle Check"
+    },
+    {
+      "name": "file-circle-exclamation",
+      "label": "File Circle Exclamation"
+    },
+    {
+      "name": "file-circle-minus",
+      "label": "File Circle Minus"
+    },
+    {
+      "name": "file-circle-plus",
+      "label": "File Circle Plus"
+    },
+    {
+      "name": "file-circle-question",
+      "label": "File Circle Question"
+    },
+    {
+      "name": "file-circle-xmark",
+      "label": "File Circle Xmark"
+    },
+    {
+      "name": "file-code",
+      "label": "File Code"
+    },
+    {
+      "name": "file-contract",
+      "label": "File Contract"
+    },
+    {
+      "name": "file-csv",
+      "label": "File Csv"
+    },
+    {
+      "name": "file-excel",
+      "label": "File Excel"
+    },
+    {
+      "name": "file-export",
+      "label": "File Export"
+    },
+    {
+      "name": "file-fragment",
+      "label": "File Fragment"
+    },
+    {
+      "name": "file-half-dashed",
+      "label": "File Half Dashed"
+    },
+    {
+      "name": "file-image",
+      "label": "File Image"
+    },
+    {
+      "name": "file-import",
+      "label": "File Import"
+    },
+    {
+      "name": "file-invoice",
+      "label": "File Invoice"
+    },
+    {
+      "name": "file-invoice-dollar",
+      "label": "File Invoice Dollar"
+    },
+    {
+      "name": "file-lines",
+      "label": "File Lines"
+    },
+    {
+      "name": "file-medical",
+      "label": "File Medical"
+    },
+    {
+      "name": "file-pdf",
+      "label": "File Pdf"
+    },
+    {
+      "name": "file-pen",
+      "label": "File Pen"
+    },
+    {
+      "name": "file-powerpoint",
+      "label": "File Powerpoint"
+    },
+    {
+      "name": "file-prescription",
+      "label": "File Prescription"
+    },
+    {
+      "name": "file-shield",
+      "label": "File Shield"
+    },
+    {
+      "name": "file-signature",
+      "label": "File Signature"
+    },
+    {
+      "name": "file-video",
+      "label": "File Video"
+    },
+    {
+      "name": "file-waveform",
+      "label": "File Waveform"
+    },
+    {
+      "name": "file-word",
+      "label": "File Word"
+    },
+    {
+      "name": "file-zipper",
+      "label": "File Zipper"
+    },
+    {
+      "name": "fill",
+      "label": "Fill"
+    },
+    {
+      "name": "fill-drip",
+      "label": "Fill Drip"
+    },
+    {
+      "name": "film",
+      "label": "Film"
+    },
+    {
+      "name": "filter",
+      "label": "Filter"
+    },
+    {
+      "name": "filter-circle-dollar",
+      "label": "Filter Circle Dollar"
+    },
+    {
+      "name": "filter-circle-xmark",
+      "label": "Filter Circle Xmark"
+    },
+    {
+      "name": "fingerprint",
+      "label": "Fingerprint"
+    },
+    {
+      "name": "fire",
+      "label": "Fire"
+    },
+    {
+      "name": "fire-burner",
+      "label": "Fire Burner"
+    },
+    {
+      "name": "fire-extinguisher",
+      "label": "Fire Extinguisher"
+    },
+    {
+      "name": "fire-flame-curved",
+      "label": "Fire Flame Curved"
+    },
+    {
+      "name": "fire-flame-simple",
+      "label": "Fire Flame Simple"
+    },
+    {
+      "name": "fish",
+      "label": "Fish"
+    },
+    {
+      "name": "fish-fins",
+      "label": "Fish Fins"
+    },
+    {
+      "name": "flag",
+      "label": "Flag"
+    },
+    {
+      "name": "flag-checkered",
+      "label": "Flag Checkered"
+    },
+    {
+      "name": "flag-usa",
+      "label": "Flag Usa"
+    },
+    {
+      "name": "flask",
+      "label": "Flask"
+    },
+    {
+      "name": "flask-vial",
+      "label": "Flask Vial"
+    },
+    {
+      "name": "floppy-disk",
+      "label": "Floppy Disk"
+    },
+    {
+      "name": "florin-sign",
+      "label": "Florin Sign"
+    },
+    {
+      "name": "folder",
+      "label": "Folder"
+    },
+    {
+      "name": "folder-closed",
+      "label": "Folder Closed"
+    },
+    {
+      "name": "folder-minus",
+      "label": "Folder Minus"
+    },
+    {
+      "name": "folder-open",
+      "label": "Folder Open"
+    },
+    {
+      "name": "folder-plus",
+      "label": "Folder Plus"
+    },
+    {
+      "name": "folder-tree",
+      "label": "Folder Tree"
+    },
+    {
+      "name": "font",
+      "label": "Font"
+    },
+    {
+      "name": "font-awesome",
+      "label": "Font Awesome"
+    },
+    {
+      "name": "football",
+      "label": "Football"
+    },
+    {
+      "name": "forward",
+      "label": "Forward"
+    },
+    {
+      "name": "forward-fast",
+      "label": "Forward Fast"
+    },
+    {
+      "name": "forward-step",
+      "label": "Forward Step"
+    },
+    {
+      "name": "franc-sign",
+      "label": "Franc Sign"
+    },
+    {
+      "name": "frog",
+      "label": "Frog"
+    },
+    {
+      "name": "futbol",
+      "label": "Futbol"
+    },
+    {
+      "name": "g",
+      "label": "G"
+    },
+    {
+      "name": "gamepad",
+      "label": "Gamepad"
+    },
+    {
+      "name": "gas-pump",
+      "label": "Gas Pump"
+    },
+    {
+      "name": "gauge",
+      "label": "Gauge"
+    },
+    {
+      "name": "gauge-high",
+      "label": "Gauge High"
+    },
+    {
+      "name": "gauge-simple",
+      "label": "Gauge Simple"
+    },
+    {
+      "name": "gauge-simple-high",
+      "label": "Gauge Simple High"
+    },
+    {
+      "name": "gavel",
+      "label": "Gavel"
+    },
+    {
+      "name": "gear",
+      "label": "Gear"
+    },
+    {
+      "name": "gears",
+      "label": "Gears"
+    },
+    {
+      "name": "gem",
+      "label": "Gem"
+    },
+    {
+      "name": "genderless",
+      "label": "Genderless"
+    },
+    {
+      "name": "ghost",
+      "label": "Ghost"
+    },
+    {
+      "name": "gift",
+      "label": "Gift"
+    },
+    {
+      "name": "gifts",
+      "label": "Gifts"
+    },
+    {
+      "name": "glass-water",
+      "label": "Glass Water"
+    },
+    {
+      "name": "glass-water-droplet",
+      "label": "Glass Water Droplet"
+    },
+    {
+      "name": "glasses",
+      "label": "Glasses"
+    },
+    {
+      "name": "globe",
+      "label": "Globe"
+    },
+    {
+      "name": "golf-ball-tee",
+      "label": "Golf Ball Tee"
+    },
+    {
+      "name": "gopuram",
+      "label": "Gopuram"
+    },
+    {
+      "name": "graduation-cap",
+      "label": "Graduation Cap"
+    },
+    {
+      "name": "greater-than",
+      "label": "Greater Than"
+    },
+    {
+      "name": "greater-than-equal",
+      "label": "Greater Than Equal"
+    },
+    {
+      "name": "grip",
+      "label": "Grip"
+    },
+    {
+      "name": "grip-lines",
+      "label": "Grip Lines"
+    },
+    {
+      "name": "grip-lines-vertical",
+      "label": "Grip Lines Vertical"
+    },
+    {
+      "name": "grip-vertical",
+      "label": "Grip Vertical"
+    },
+    {
+      "name": "group-arrows-rotate",
+      "label": "Group Arrows Rotate"
+    },
+    {
+      "name": "guarani-sign",
+      "label": "Guarani Sign"
+    },
+    {
+      "name": "guitar",
+      "label": "Guitar"
+    },
+    {
+      "name": "gun",
+      "label": "Gun"
+    },
+    {
+      "name": "h",
+      "label": "H"
+    },
+    {
+      "name": "hammer",
+      "label": "Hammer"
+    },
+    {
+      "name": "hamsa",
+      "label": "Hamsa"
+    },
+    {
+      "name": "hand",
+      "label": "Hand"
+    },
+    {
+      "name": "hand-back-fist",
+      "label": "Hand Back Fist"
+    },
+    {
+      "name": "hand-dots",
+      "label": "Hand Dots"
+    },
+    {
+      "name": "hand-fist",
+      "label": "Hand Fist"
+    },
+    {
+      "name": "hand-holding",
+      "label": "Hand Holding"
+    },
+    {
+      "name": "hand-holding-dollar",
+      "label": "Hand Holding Dollar"
+    },
+    {
+      "name": "hand-holding-droplet",
+      "label": "Hand Holding Droplet"
+    },
+    {
+      "name": "hand-holding-hand",
+      "label": "Hand Holding Hand"
+    },
+    {
+      "name": "hand-holding-heart",
+      "label": "Hand Holding Heart"
+    },
+    {
+      "name": "hand-holding-medical",
+      "label": "Hand Holding Medical"
+    },
+    {
+      "name": "hand-lizard",
+      "label": "Hand Lizard"
+    },
+    {
+      "name": "hand-middle-finger",
+      "label": "Hand Middle Finger"
+    },
+    {
+      "name": "hand-peace",
+      "label": "Hand Peace"
+    },
+    {
+      "name": "hand-point-down",
+      "label": "Hand Point Down"
+    },
+    {
+      "name": "hand-point-left",
+      "label": "Hand Point Left"
+    },
+    {
+      "name": "hand-point-right",
+      "label": "Hand Point Right"
+    },
+    {
+      "name": "hand-point-up",
+      "label": "Hand Point Up"
+    },
+    {
+      "name": "hand-pointer",
+      "label": "Hand Pointer"
+    },
+    {
+      "name": "hand-scissors",
+      "label": "Hand Scissors"
+    },
+    {
+      "name": "hand-sparkles",
+      "label": "Hand Sparkles"
+    },
+    {
+      "name": "hand-spock",
+      "label": "Hand Spock"
+    },
+    {
+      "name": "handcuffs",
+      "label": "Handcuffs"
+    },
+    {
+      "name": "hands",
+      "label": "Hands"
+    },
+    {
+      "name": "hands-asl-interpreting",
+      "label": "Hands Asl Interpreting"
+    },
+    {
+      "name": "hands-bound",
+      "label": "Hands Bound"
+    },
+    {
+      "name": "hands-bubbles",
+      "label": "Hands Bubbles"
+    },
+    {
+      "name": "hands-clapping",
+      "label": "Hands Clapping"
+    },
+    {
+      "name": "hands-holding",
+      "label": "Hands Holding"
+    },
+    {
+      "name": "hands-holding-child",
+      "label": "Hands Holding Child"
+    },
+    {
+      "name": "hands-holding-circle",
+      "label": "Hands Holding Circle"
+    },
+    {
+      "name": "hands-praying",
+      "label": "Hands Praying"
+    },
+    {
+      "name": "handshake",
+      "label": "Handshake"
+    },
+    {
+      "name": "handshake-angle",
+      "label": "Handshake Angle"
+    },
+    {
+      "name": "handshake-slash",
+      "label": "Handshake Slash"
+    },
+    {
+      "name": "hanukiah",
+      "label": "Hanukiah"
+    },
+    {
+      "name": "hard-drive",
+      "label": "Hard Drive"
+    },
+    {
+      "name": "hashtag",
+      "label": "Hashtag"
+    },
+    {
+      "name": "hat-cowboy",
+      "label": "Hat Cowboy"
+    },
+    {
+      "name": "hat-cowboy-side",
+      "label": "Hat Cowboy Side"
+    },
+    {
+      "name": "hat-wizard",
+      "label": "Hat Wizard"
+    },
+    {
+      "name": "head-side-cough",
+      "label": "Head Side Cough"
+    },
+    {
+      "name": "head-side-cough-slash",
+      "label": "Head Side Cough Slash"
+    },
+    {
+      "name": "head-side-mask",
+      "label": "Head Side Mask"
+    },
+    {
+      "name": "head-side-virus",
+      "label": "Head Side Virus"
+    },
+    {
+      "name": "heading",
+      "label": "Heading"
+    },
+    {
+      "name": "headphones",
+      "label": "Headphones"
+    },
+    {
+      "name": "headset",
+      "label": "Headset"
+    },
+    {
+      "name": "heart",
+      "label": "Heart"
+    },
+    {
+      "name": "heart-circle-bolt",
+      "label": "Heart Circle Bolt"
+    },
+    {
+      "name": "heart-circle-check",
+      "label": "Heart Circle Check"
+    },
+    {
+      "name": "heart-circle-exclamation",
+      "label": "Heart Circle Exclamation"
+    },
+    {
+      "name": "heart-circle-minus",
+      "label": "Heart Circle Minus"
+    },
+    {
+      "name": "heart-circle-plus",
+      "label": "Heart Circle Plus"
+    },
+    {
+      "name": "heart-circle-xmark",
+      "label": "Heart Circle Xmark"
+    },
+    {
+      "name": "heart-crack",
+      "label": "Heart Crack"
+    },
+    {
+      "name": "heart-pulse",
+      "label": "Heart Pulse"
+    },
+    {
+      "name": "helicopter",
+      "label": "Helicopter"
+    },
+    {
+      "name": "helicopter-symbol",
+      "label": "Helicopter Symbol"
+    },
+    {
+      "name": "helmet-safety",
+      "label": "Helmet Safety"
+    },
+    {
+      "name": "helmet-un",
+      "label": "Helmet Un"
+    },
+    {
+      "name": "hexagon",
+      "label": "Hexagon"
+    },
+    {
+      "name": "hexagon-nodes",
+      "label": "Hexagon Nodes"
+    },
+    {
+      "name": "hexagon-nodes-bolt",
+      "label": "Hexagon Nodes Bolt"
+    },
+    {
+      "name": "highlighter",
+      "label": "Highlighter"
+    },
+    {
+      "name": "hill-avalanche",
+      "label": "Hill Avalanche"
+    },
+    {
+      "name": "hill-rockslide",
+      "label": "Hill Rockslide"
+    },
+    {
+      "name": "hippo",
+      "label": "Hippo"
+    },
+    {
+      "name": "hockey-puck",
+      "label": "Hockey Puck"
+    },
+    {
+      "name": "holly-berry",
+      "label": "Holly Berry"
+    },
+    {
+      "name": "horse",
+      "label": "Horse"
+    },
+    {
+      "name": "horse-head",
+      "label": "Horse Head"
+    },
+    {
+      "name": "hospital",
+      "label": "Hospital"
+    },
+    {
+      "name": "hospital-user",
+      "label": "Hospital User"
+    },
+    {
+      "name": "hot-tub-person",
+      "label": "Hot Tub Person"
+    },
+    {
+      "name": "hotdog",
+      "label": "Hotdog"
+    },
+    {
+      "name": "hotel",
+      "label": "Hotel"
+    },
+    {
+      "name": "hourglass",
+      "label": "Hourglass"
+    },
+    {
+      "name": "hourglass-end",
+      "label": "Hourglass End"
+    },
+    {
+      "name": "hourglass-half",
+      "label": "Hourglass Half"
+    },
+    {
+      "name": "hourglass-start",
+      "label": "Hourglass Start"
+    },
+    {
+      "name": "house",
+      "label": "House"
+    },
+    {
+      "name": "house-chimney",
+      "label": "House Chimney"
+    },
+    {
+      "name": "house-chimney-crack",
+      "label": "House Chimney Crack"
+    },
+    {
+      "name": "house-chimney-medical",
+      "label": "House Chimney Medical"
+    },
+    {
+      "name": "house-chimney-user",
+      "label": "House Chimney User"
+    },
+    {
+      "name": "house-chimney-window",
+      "label": "House Chimney Window"
+    },
+    {
+      "name": "house-circle-check",
+      "label": "House Circle Check"
+    },
+    {
+      "name": "house-circle-exclamation",
+      "label": "House Circle Exclamation"
+    },
+    {
+      "name": "house-circle-xmark",
+      "label": "House Circle Xmark"
+    },
+    {
+      "name": "house-crack",
+      "label": "House Crack"
+    },
+    {
+      "name": "house-fire",
+      "label": "House Fire"
+    },
+    {
+      "name": "house-flag",
+      "label": "House Flag"
+    },
+    {
+      "name": "house-flood-water",
+      "label": "House Flood Water"
+    },
+    {
+      "name": "house-flood-water-circle-arrow-right",
+      "label": "House Flood Water Circle Arrow Right"
+    },
+    {
+      "name": "house-laptop",
+      "label": "House Laptop"
+    },
+    {
+      "name": "house-lock",
+      "label": "House Lock"
+    },
+    {
+      "name": "house-medical",
+      "label": "House Medical"
+    },
+    {
+      "name": "house-medical-circle-check",
+      "label": "House Medical Circle Check"
+    },
+    {
+      "name": "house-medical-circle-exclamation",
+      "label": "House Medical Circle Exclamation"
+    },
+    {
+      "name": "house-medical-circle-xmark",
+      "label": "House Medical Circle Xmark"
+    },
+    {
+      "name": "house-medical-flag",
+      "label": "House Medical Flag"
+    },
+    {
+      "name": "house-signal",
+      "label": "House Signal"
+    },
+    {
+      "name": "house-tsunami",
+      "label": "House Tsunami"
+    },
+    {
+      "name": "house-user",
+      "label": "House User"
+    },
+    {
+      "name": "hryvnia-sign",
+      "label": "Hryvnia Sign"
+    },
+    {
+      "name": "hurricane",
+      "label": "Hurricane"
+    },
+    {
+      "name": "i",
+      "label": "I"
+    },
+    {
+      "name": "i-cursor",
+      "label": "I Cursor"
+    },
+    {
+      "name": "ice-cream",
+      "label": "Ice Cream"
+    },
+    {
+      "name": "icicles",
+      "label": "Icicles"
+    },
+    {
+      "name": "icons",
+      "label": "Icons"
+    },
+    {
+      "name": "id-badge",
+      "label": "Id Badge"
+    },
+    {
+      "name": "id-card",
+      "label": "Id Card"
+    },
+    {
+      "name": "id-card-clip",
+      "label": "Id Card Clip"
+    },
+    {
+      "name": "igloo",
+      "label": "Igloo"
+    },
+    {
+      "name": "image",
+      "label": "Image"
+    },
+    {
+      "name": "image-portrait",
+      "label": "Image Portrait"
+    },
+    {
+      "name": "images",
+      "label": "Images"
+    },
+    {
+      "name": "inbox",
+      "label": "Inbox"
+    },
+    {
+      "name": "indent",
+      "label": "Indent"
+    },
+    {
+      "name": "indian-rupee-sign",
+      "label": "Indian Rupee Sign"
+    },
+    {
+      "name": "industry",
+      "label": "Industry"
+    },
+    {
+      "name": "infinity",
+      "label": "Infinity"
+    },
+    {
+      "name": "info",
+      "label": "Info"
+    },
+    {
+      "name": "italic",
+      "label": "Italic"
+    },
+    {
+      "name": "j",
+      "label": "J"
+    },
+    {
+      "name": "jar",
+      "label": "Jar"
+    },
+    {
+      "name": "jar-wheat",
+      "label": "Jar Wheat"
+    },
+    {
+      "name": "jedi",
+      "label": "Jedi"
+    },
+    {
+      "name": "jet-fighter",
+      "label": "Jet Fighter"
+    },
+    {
+      "name": "jet-fighter-up",
+      "label": "Jet Fighter Up"
+    },
+    {
+      "name": "joint",
+      "label": "Joint"
+    },
+    {
+      "name": "jug-detergent",
+      "label": "Jug Detergent"
+    },
+    {
+      "name": "k",
+      "label": "K"
+    },
+    {
+      "name": "kaaba",
+      "label": "Kaaba"
+    },
+    {
+      "name": "key",
+      "label": "Key"
+    },
+    {
+      "name": "keyboard",
+      "label": "Keyboard"
+    },
+    {
+      "name": "khanda",
+      "label": "Khanda"
+    },
+    {
+      "name": "kip-sign",
+      "label": "Kip Sign"
+    },
+    {
+      "name": "kit-medical",
+      "label": "Kit Medical"
+    },
+    {
+      "name": "kitchen-set",
+      "label": "Kitchen Set"
+    },
+    {
+      "name": "kiwi-bird",
+      "label": "Kiwi Bird"
+    },
+    {
+      "name": "l",
+      "label": "L"
+    },
+    {
+      "name": "land-mine-on",
+      "label": "Land Mine On"
+    },
+    {
+      "name": "landmark",
+      "label": "Landmark"
+    },
+    {
+      "name": "landmark-dome",
+      "label": "Landmark Dome"
+    },
+    {
+      "name": "landmark-flag",
+      "label": "Landmark Flag"
+    },
+    {
+      "name": "language",
+      "label": "Language"
+    },
+    {
+      "name": "laptop",
+      "label": "Laptop"
+    },
+    {
+      "name": "laptop-code",
+      "label": "Laptop Code"
+    },
+    {
+      "name": "laptop-file",
+      "label": "Laptop File"
+    },
+    {
+      "name": "laptop-medical",
+      "label": "Laptop Medical"
+    },
+    {
+      "name": "lari-sign",
+      "label": "Lari Sign"
+    },
+    {
+      "name": "layer-group",
+      "label": "Layer Group"
+    },
+    {
+      "name": "leaf",
+      "label": "Leaf"
+    },
+    {
+      "name": "left-long",
+      "label": "Left Long"
+    },
+    {
+      "name": "left-right",
+      "label": "Left Right"
+    },
+    {
+      "name": "lemon",
+      "label": "Lemon"
+    },
+    {
+      "name": "less-than",
+      "label": "Less Than"
+    },
+    {
+      "name": "less-than-equal",
+      "label": "Less Than Equal"
+    },
+    {
+      "name": "life-ring",
+      "label": "Life Ring"
+    },
+    {
+      "name": "lightbulb",
+      "label": "Lightbulb"
+    },
+    {
+      "name": "lines-leaning",
+      "label": "Lines Leaning"
+    },
+    {
+      "name": "link",
+      "label": "Link"
+    },
+    {
+      "name": "link-slash",
+      "label": "Link Slash"
+    },
+    {
+      "name": "lira-sign",
+      "label": "Lira Sign"
+    },
+    {
+      "name": "list",
+      "label": "List"
+    },
+    {
+      "name": "list-check",
+      "label": "List Check"
+    },
+    {
+      "name": "list-ol",
+      "label": "List Ol"
+    },
+    {
+      "name": "list-ul",
+      "label": "List Ul"
+    },
+    {
+      "name": "litecoin-sign",
+      "label": "Litecoin Sign"
+    },
+    {
+      "name": "location-arrow",
+      "label": "Location Arrow"
+    },
+    {
+      "name": "location-crosshairs",
+      "label": "Location Crosshairs"
+    },
+    {
+      "name": "location-dot",
+      "label": "Location Dot"
+    },
+    {
+      "name": "location-pin",
+      "label": "Location Pin"
+    },
+    {
+      "name": "location-pin-lock",
+      "label": "Location Pin Lock"
+    },
+    {
+      "name": "lock",
+      "label": "Lock"
+    },
+    {
+      "name": "lock-open",
+      "label": "Lock Open"
+    },
+    {
+      "name": "locust",
+      "label": "Locust"
+    },
+    {
+      "name": "lungs",
+      "label": "Lungs"
+    },
+    {
+      "name": "lungs-virus",
+      "label": "Lungs Virus"
+    },
+    {
+      "name": "m",
+      "label": "M"
+    },
+    {
+      "name": "magnet",
+      "label": "Magnet"
+    },
+    {
+      "name": "magnifying-glass",
+      "label": "Magnifying Glass"
+    },
+    {
+      "name": "magnifying-glass-arrow-right",
+      "label": "Magnifying Glass Arrow Right"
+    },
+    {
+      "name": "magnifying-glass-chart",
+      "label": "Magnifying Glass Chart"
+    },
+    {
+      "name": "magnifying-glass-dollar",
+      "label": "Magnifying Glass Dollar"
+    },
+    {
+      "name": "magnifying-glass-location",
+      "label": "Magnifying Glass Location"
+    },
+    {
+      "name": "magnifying-glass-minus",
+      "label": "Magnifying Glass Minus"
+    },
+    {
+      "name": "magnifying-glass-plus",
+      "label": "Magnifying Glass Plus"
+    },
+    {
+      "name": "manat-sign",
+      "label": "Manat Sign"
+    },
+    {
+      "name": "map",
+      "label": "Map"
+    },
+    {
+      "name": "map-location",
+      "label": "Map Location"
+    },
+    {
+      "name": "map-location-dot",
+      "label": "Map Location Dot"
+    },
+    {
+      "name": "map-pin",
+      "label": "Map Pin"
+    },
+    {
+      "name": "marker",
+      "label": "Marker"
+    },
+    {
+      "name": "mars",
+      "label": "Mars"
+    },
+    {
+      "name": "mars-and-venus",
+      "label": "Mars And Venus"
+    },
+    {
+      "name": "mars-and-venus-burst",
+      "label": "Mars And Venus Burst"
+    },
+    {
+      "name": "mars-double",
+      "label": "Mars Double"
+    },
+    {
+      "name": "mars-stroke",
+      "label": "Mars Stroke"
+    },
+    {
+      "name": "mars-stroke-right",
+      "label": "Mars Stroke Right"
+    },
+    {
+      "name": "mars-stroke-up",
+      "label": "Mars Stroke Up"
+    },
+    {
+      "name": "martini-glass",
+      "label": "Martini Glass"
+    },
+    {
+      "name": "martini-glass-citrus",
+      "label": "Martini Glass Citrus"
+    },
+    {
+      "name": "martini-glass-empty",
+      "label": "Martini Glass Empty"
+    },
+    {
+      "name": "mask",
+      "label": "Mask"
+    },
+    {
+      "name": "mask-face",
+      "label": "Mask Face"
+    },
+    {
+      "name": "mask-ventilator",
+      "label": "Mask Ventilator"
+    },
+    {
+      "name": "masks-theater",
+      "label": "Masks Theater"
+    },
+    {
+      "name": "mattress-pillow",
+      "label": "Mattress Pillow"
+    },
+    {
+      "name": "maximize",
+      "label": "Maximize"
+    },
+    {
+      "name": "medal",
+      "label": "Medal"
+    },
+    {
+      "name": "memory",
+      "label": "Memory"
+    },
+    {
+      "name": "menorah",
+      "label": "Menorah"
+    },
+    {
+      "name": "mercury",
+      "label": "Mercury"
+    },
+    {
+      "name": "message",
+      "label": "Message"
+    },
+    {
+      "name": "meteor",
+      "label": "Meteor"
+    },
+    {
+      "name": "microchip",
+      "label": "Microchip"
+    },
+    {
+      "name": "microphone",
+      "label": "Microphone"
+    },
+    {
+      "name": "microphone-lines",
+      "label": "Microphone Lines"
+    },
+    {
+      "name": "microphone-lines-slash",
+      "label": "Microphone Lines Slash"
+    },
+    {
+      "name": "microphone-slash",
+      "label": "Microphone Slash"
+    },
+    {
+      "name": "microscope",
+      "label": "Microscope"
+    },
+    {
+      "name": "mill-sign",
+      "label": "Mill Sign"
+    },
+    {
+      "name": "minimize",
+      "label": "Minimize"
+    },
+    {
+      "name": "minus",
+      "label": "Minus"
+    },
+    {
+      "name": "mitten",
+      "label": "Mitten"
+    },
+    {
+      "name": "mobile",
+      "label": "Mobile"
+    },
+    {
+      "name": "mobile-button",
+      "label": "Mobile Button"
+    },
+    {
+      "name": "mobile-retro",
+      "label": "Mobile Retro"
+    },
+    {
+      "name": "mobile-screen",
+      "label": "Mobile Screen"
+    },
+    {
+      "name": "mobile-screen-button",
+      "label": "Mobile Screen Button"
+    },
+    {
+      "name": "mobile-vibrate",
+      "label": "Mobile Vibrate"
+    },
+    {
+      "name": "money-bill",
+      "label": "Money Bill"
+    },
+    {
+      "name": "money-bill-1",
+      "label": "Money Bill 1"
+    },
+    {
+      "name": "money-bill-1-wave",
+      "label": "Money Bill 1 Wave"
+    },
+    {
+      "name": "money-bill-transfer",
+      "label": "Money Bill Transfer"
+    },
+    {
+      "name": "money-bill-trend-up",
+      "label": "Money Bill Trend Up"
+    },
+    {
+      "name": "money-bill-wave",
+      "label": "Money Bill Wave"
+    },
+    {
+      "name": "money-bill-wheat",
+      "label": "Money Bill Wheat"
+    },
+    {
+      "name": "money-bills",
+      "label": "Money Bills"
+    },
+    {
+      "name": "money-check",
+      "label": "Money Check"
+    },
+    {
+      "name": "money-check-dollar",
+      "label": "Money Check Dollar"
+    },
+    {
+      "name": "monument",
+      "label": "Monument"
+    },
+    {
+      "name": "moon",
+      "label": "Moon"
+    },
+    {
+      "name": "mortar-pestle",
+      "label": "Mortar Pestle"
+    },
+    {
+      "name": "mosque",
+      "label": "Mosque"
+    },
+    {
+      "name": "mosquito",
+      "label": "Mosquito"
+    },
+    {
+      "name": "mosquito-net",
+      "label": "Mosquito Net"
+    },
+    {
+      "name": "motorcycle",
+      "label": "Motorcycle"
+    },
+    {
+      "name": "mound",
+      "label": "Mound"
+    },
+    {
+      "name": "mountain",
+      "label": "Mountain"
+    },
+    {
+      "name": "mountain-city",
+      "label": "Mountain City"
+    },
+    {
+      "name": "mountain-sun",
+      "label": "Mountain Sun"
+    },
+    {
+      "name": "mug-hot",
+      "label": "Mug Hot"
+    },
+    {
+      "name": "mug-saucer",
+      "label": "Mug Saucer"
+    },
+    {
+      "name": "music",
+      "label": "Music"
+    },
+    {
+      "name": "n",
+      "label": "N"
+    },
+    {
+      "name": "naira-sign",
+      "label": "Naira Sign"
+    },
+    {
+      "name": "network-wired",
+      "label": "Network Wired"
+    },
+    {
+      "name": "neuter",
+      "label": "Neuter"
+    },
+    {
+      "name": "newspaper",
+      "label": "Newspaper"
+    },
+    {
+      "name": "non-binary",
+      "label": "Non Binary"
+    },
+    {
+      "name": "not-equal",
+      "label": "Not Equal"
+    },
+    {
+      "name": "notdef",
+      "label": "Notdef"
+    },
+    {
+      "name": "note-sticky",
+      "label": "Note Sticky"
+    },
+    {
+      "name": "notes-medical",
+      "label": "Notes Medical"
+    },
+    {
+      "name": "o",
+      "label": "O"
+    },
+    {
+      "name": "object-group",
+      "label": "Object Group"
+    },
+    {
+      "name": "object-ungroup",
+      "label": "Object Ungroup"
+    },
+    {
+      "name": "octagon",
+      "label": "Octagon"
+    },
+    {
+      "name": "oil-can",
+      "label": "Oil Can"
+    },
+    {
+      "name": "oil-well",
+      "label": "Oil Well"
+    },
+    {
+      "name": "om",
+      "label": "Om"
+    },
+    {
+      "name": "otter",
+      "label": "Otter"
+    },
+    {
+      "name": "outdent",
+      "label": "Outdent"
+    },
+    {
+      "name": "p",
+      "label": "P"
+    },
+    {
+      "name": "pager",
+      "label": "Pager"
+    },
+    {
+      "name": "paint-roller",
+      "label": "Paint Roller"
+    },
+    {
+      "name": "paintbrush",
+      "label": "Paintbrush"
+    },
+    {
+      "name": "palette",
+      "label": "Palette"
+    },
+    {
+      "name": "pallet",
+      "label": "Pallet"
+    },
+    {
+      "name": "panorama",
+      "label": "Panorama"
+    },
+    {
+      "name": "paper-plane",
+      "label": "Paper Plane"
+    },
+    {
+      "name": "paperclip",
+      "label": "Paperclip"
+    },
+    {
+      "name": "parachute-box",
+      "label": "Parachute Box"
+    },
+    {
+      "name": "paragraph",
+      "label": "Paragraph"
+    },
+    {
+      "name": "passport",
+      "label": "Passport"
+    },
+    {
+      "name": "paste",
+      "label": "Paste"
+    },
+    {
+      "name": "pause",
+      "label": "Pause"
+    },
+    {
+      "name": "paw",
+      "label": "Paw"
+    },
+    {
+      "name": "peace",
+      "label": "Peace"
+    },
+    {
+      "name": "pen",
+      "label": "Pen"
+    },
+    {
+      "name": "pen-clip",
+      "label": "Pen Clip"
+    },
+    {
+      "name": "pen-fancy",
+      "label": "Pen Fancy"
+    },
+    {
+      "name": "pen-nib",
+      "label": "Pen Nib"
+    },
+    {
+      "name": "pen-ruler",
+      "label": "Pen Ruler"
+    },
+    {
+      "name": "pen-to-square",
+      "label": "Pen To Square"
+    },
+    {
+      "name": "pencil",
+      "label": "Pencil"
+    },
+    {
+      "name": "pentagon",
+      "label": "Pentagon"
+    },
+    {
+      "name": "people-arrows",
+      "label": "People Arrows"
+    },
+    {
+      "name": "people-carry-box",
+      "label": "People Carry Box"
+    },
+    {
+      "name": "people-group",
+      "label": "People Group"
+    },
+    {
+      "name": "people-line",
+      "label": "People Line"
+    },
+    {
+      "name": "people-pulling",
+      "label": "People Pulling"
+    },
+    {
+      "name": "people-robbery",
+      "label": "People Robbery"
+    },
+    {
+      "name": "people-roof",
+      "label": "People Roof"
+    },
+    {
+      "name": "pepper-hot",
+      "label": "Pepper Hot"
+    },
+    {
+      "name": "percent",
+      "label": "Percent"
+    },
+    {
+      "name": "person",
+      "label": "Person"
+    },
+    {
+      "name": "person-arrow-down-to-line",
+      "label": "Person Arrow Down To Line"
+    },
+    {
+      "name": "person-arrow-up-from-line",
+      "label": "Person Arrow Up From Line"
+    },
+    {
+      "name": "person-biking",
+      "label": "Person Biking"
+    },
+    {
+      "name": "person-booth",
+      "label": "Person Booth"
+    },
+    {
+      "name": "person-breastfeeding",
+      "label": "Person Breastfeeding"
+    },
+    {
+      "name": "person-burst",
+      "label": "Person Burst"
+    },
+    {
+      "name": "person-cane",
+      "label": "Person Cane"
+    },
+    {
+      "name": "person-chalkboard",
+      "label": "Person Chalkboard"
+    },
+    {
+      "name": "person-circle-check",
+      "label": "Person Circle Check"
+    },
+    {
+      "name": "person-circle-exclamation",
+      "label": "Person Circle Exclamation"
+    },
+    {
+      "name": "person-circle-minus",
+      "label": "Person Circle Minus"
+    },
+    {
+      "name": "person-circle-plus",
+      "label": "Person Circle Plus"
+    },
+    {
+      "name": "person-circle-question",
+      "label": "Person Circle Question"
+    },
+    {
+      "name": "person-circle-xmark",
+      "label": "Person Circle Xmark"
+    },
+    {
+      "name": "person-digging",
+      "label": "Person Digging"
+    },
+    {
+      "name": "person-dots-from-line",
+      "label": "Person Dots From Line"
+    },
+    {
+      "name": "person-dress",
+      "label": "Person Dress"
+    },
+    {
+      "name": "person-dress-burst",
+      "label": "Person Dress Burst"
+    },
+    {
+      "name": "person-drowning",
+      "label": "Person Drowning"
+    },
+    {
+      "name": "person-falling",
+      "label": "Person Falling"
+    },
+    {
+      "name": "person-falling-burst",
+      "label": "Person Falling Burst"
+    },
+    {
+      "name": "person-half-dress",
+      "label": "Person Half Dress"
+    },
+    {
+      "name": "person-harassing",
+      "label": "Person Harassing"
+    },
+    {
+      "name": "person-hiking",
+      "label": "Person Hiking"
+    },
+    {
+      "name": "person-military-pointing",
+      "label": "Person Military Pointing"
+    },
+    {
+      "name": "person-military-rifle",
+      "label": "Person Military Rifle"
+    },
+    {
+      "name": "person-military-to-person",
+      "label": "Person Military To Person"
+    },
+    {
+      "name": "person-praying",
+      "label": "Person Praying"
+    },
+    {
+      "name": "person-pregnant",
+      "label": "Person Pregnant"
+    },
+    {
+      "name": "person-rays",
+      "label": "Person Rays"
+    },
+    {
+      "name": "person-rifle",
+      "label": "Person Rifle"
+    },
+    {
+      "name": "person-running",
+      "label": "Person Running"
+    },
+    {
+      "name": "person-shelter",
+      "label": "Person Shelter"
+    },
+    {
+      "name": "person-skating",
+      "label": "Person Skating"
+    },
+    {
+      "name": "person-skiing",
+      "label": "Person Skiing"
+    },
+    {
+      "name": "person-skiing-nordic",
+      "label": "Person Skiing Nordic"
+    },
+    {
+      "name": "person-snowboarding",
+      "label": "Person Snowboarding"
+    },
+    {
+      "name": "person-swimming",
+      "label": "Person Swimming"
+    },
+    {
+      "name": "person-through-window",
+      "label": "Person Through Window"
+    },
+    {
+      "name": "person-walking",
+      "label": "Person Walking"
+    },
+    {
+      "name": "person-walking-arrow-loop-left",
+      "label": "Person Walking Arrow Loop Left"
+    },
+    {
+      "name": "person-walking-arrow-right",
+      "label": "Person Walking Arrow Right"
+    },
+    {
+      "name": "person-walking-dashed-line-arrow-right",
+      "label": "Person Walking Dashed Line Arrow Right"
+    },
+    {
+      "name": "person-walking-luggage",
+      "label": "Person Walking Luggage"
+    },
+    {
+      "name": "person-walking-with-cane",
+      "label": "Person Walking With Cane"
+    },
+    {
+      "name": "peseta-sign",
+      "label": "Peseta Sign"
+    },
+    {
+      "name": "peso-sign",
+      "label": "Peso Sign"
+    },
+    {
+      "name": "phone",
+      "label": "Phone"
+    },
+    {
+      "name": "phone-flip",
+      "label": "Phone Flip"
+    },
+    {
+      "name": "phone-slash",
+      "label": "Phone Slash"
+    },
+    {
+      "name": "phone-volume",
+      "label": "Phone Volume"
+    },
+    {
+      "name": "photo-film",
+      "label": "Photo Film"
+    },
+    {
+      "name": "piggy-bank",
+      "label": "Piggy Bank"
+    },
+    {
+      "name": "pills",
+      "label": "Pills"
+    },
+    {
+      "name": "pizza-slice",
+      "label": "Pizza Slice"
+    },
+    {
+      "name": "place-of-worship",
+      "label": "Place Of Worship"
+    },
+    {
+      "name": "plane",
+      "label": "Plane"
+    },
+    {
+      "name": "plane-arrival",
+      "label": "Plane Arrival"
+    },
+    {
+      "name": "plane-circle-check",
+      "label": "Plane Circle Check"
+    },
+    {
+      "name": "plane-circle-exclamation",
+      "label": "Plane Circle Exclamation"
+    },
+    {
+      "name": "plane-circle-xmark",
+      "label": "Plane Circle Xmark"
+    },
+    {
+      "name": "plane-departure",
+      "label": "Plane Departure"
+    },
+    {
+      "name": "plane-lock",
+      "label": "Plane Lock"
+    },
+    {
+      "name": "plane-slash",
+      "label": "Plane Slash"
+    },
+    {
+      "name": "plane-up",
+      "label": "Plane Up"
+    },
+    {
+      "name": "plant-wilt",
+      "label": "Plant Wilt"
+    },
+    {
+      "name": "plate-wheat",
+      "label": "Plate Wheat"
+    },
+    {
+      "name": "play",
+      "label": "Play"
+    },
+    {
+      "name": "plug",
+      "label": "Plug"
+    },
+    {
+      "name": "plug-circle-bolt",
+      "label": "Plug Circle Bolt"
+    },
+    {
+      "name": "plug-circle-check",
+      "label": "Plug Circle Check"
+    },
+    {
+      "name": "plug-circle-exclamation",
+      "label": "Plug Circle Exclamation"
+    },
+    {
+      "name": "plug-circle-minus",
+      "label": "Plug Circle Minus"
+    },
+    {
+      "name": "plug-circle-plus",
+      "label": "Plug Circle Plus"
+    },
+    {
+      "name": "plug-circle-xmark",
+      "label": "Plug Circle Xmark"
+    },
+    {
+      "name": "plus",
+      "label": "Plus"
+    },
+    {
+      "name": "plus-minus",
+      "label": "Plus Minus"
+    },
+    {
+      "name": "podcast",
+      "label": "Podcast"
+    },
+    {
+      "name": "poo",
+      "label": "Poo"
+    },
+    {
+      "name": "poo-storm",
+      "label": "Poo Storm"
+    },
+    {
+      "name": "poop",
+      "label": "Poop"
+    },
+    {
+      "name": "power-off",
+      "label": "Power Off"
+    },
+    {
+      "name": "prescription",
+      "label": "Prescription"
+    },
+    {
+      "name": "prescription-bottle",
+      "label": "Prescription Bottle"
+    },
+    {
+      "name": "prescription-bottle-medical",
+      "label": "Prescription Bottle Medical"
+    },
+    {
+      "name": "print",
+      "label": "Print"
+    },
+    {
+      "name": "pump-medical",
+      "label": "Pump Medical"
+    },
+    {
+      "name": "pump-soap",
+      "label": "Pump Soap"
+    },
+    {
+      "name": "puzzle-piece",
+      "label": "Puzzle Piece"
+    },
+    {
+      "name": "q",
+      "label": "Q"
+    },
+    {
+      "name": "qrcode",
+      "label": "Qrcode"
+    },
+    {
+      "name": "question",
+      "label": "Question"
+    },
+    {
+      "name": "quote-left",
+      "label": "Quote Left"
+    },
+    {
+      "name": "quote-right",
+      "label": "Quote Right"
+    },
+    {
+      "name": "r",
+      "label": "R"
+    },
+    {
+      "name": "radiation",
+      "label": "Radiation"
+    },
+    {
+      "name": "radio",
+      "label": "Radio"
+    },
+    {
+      "name": "rainbow",
+      "label": "Rainbow"
+    },
+    {
+      "name": "ranking-star",
+      "label": "Ranking Star"
+    },
+    {
+      "name": "receipt",
+      "label": "Receipt"
+    },
+    {
+      "name": "record-vinyl",
+      "label": "Record Vinyl"
+    },
+    {
+      "name": "rectangle-ad",
+      "label": "Rectangle Ad"
+    },
+    {
+      "name": "rectangle-list",
+      "label": "Rectangle List"
+    },
+    {
+      "name": "rectangle-xmark",
+      "label": "Rectangle Xmark"
+    },
+    {
+      "name": "recycle",
+      "label": "Recycle"
+    },
+    {
+      "name": "registered",
+      "label": "Registered"
+    },
+    {
+      "name": "repeat",
+      "label": "Repeat"
+    },
+    {
+      "name": "reply",
+      "label": "Reply"
+    },
+    {
+      "name": "reply-all",
+      "label": "Reply All"
+    },
+    {
+      "name": "republican",
+      "label": "Republican"
+    },
+    {
+      "name": "restroom",
+      "label": "Restroom"
+    },
+    {
+      "name": "retweet",
+      "label": "Retweet"
+    },
+    {
+      "name": "ribbon",
+      "label": "Ribbon"
+    },
+    {
+      "name": "right-from-bracket",
+      "label": "Right From Bracket"
+    },
+    {
+      "name": "right-left",
+      "label": "Right Left"
+    },
+    {
+      "name": "right-long",
+      "label": "Right Long"
+    },
+    {
+      "name": "right-to-bracket",
+      "label": "Right To Bracket"
+    },
+    {
+      "name": "ring",
+      "label": "Ring"
+    },
+    {
+      "name": "road",
+      "label": "Road"
+    },
+    {
+      "name": "road-barrier",
+      "label": "Road Barrier"
+    },
+    {
+      "name": "road-bridge",
+      "label": "Road Bridge"
+    },
+    {
+      "name": "road-circle-check",
+      "label": "Road Circle Check"
+    },
+    {
+      "name": "road-circle-exclamation",
+      "label": "Road Circle Exclamation"
+    },
+    {
+      "name": "road-circle-xmark",
+      "label": "Road Circle Xmark"
+    },
+    {
+      "name": "road-lock",
+      "label": "Road Lock"
+    },
+    {
+      "name": "road-spikes",
+      "label": "Road Spikes"
+    },
+    {
+      "name": "robot",
+      "label": "Robot"
+    },
+    {
+      "name": "rocket",
+      "label": "Rocket"
+    },
+    {
+      "name": "rotate",
+      "label": "Rotate"
+    },
+    {
+      "name": "rotate-left",
+      "label": "Rotate Left"
+    },
+    {
+      "name": "rotate-right",
+      "label": "Rotate Right"
+    },
+    {
+      "name": "route",
+      "label": "Route"
+    },
+    {
+      "name": "rss",
+      "label": "Rss"
+    },
+    {
+      "name": "ruble-sign",
+      "label": "Ruble Sign"
+    },
+    {
+      "name": "rug",
+      "label": "Rug"
+    },
+    {
+      "name": "ruler",
+      "label": "Ruler"
+    },
+    {
+      "name": "ruler-combined",
+      "label": "Ruler Combined"
+    },
+    {
+      "name": "ruler-horizontal",
+      "label": "Ruler Horizontal"
+    },
+    {
+      "name": "ruler-vertical",
+      "label": "Ruler Vertical"
+    },
+    {
+      "name": "rupee-sign",
+      "label": "Rupee Sign"
+    },
+    {
+      "name": "rupiah-sign",
+      "label": "Rupiah Sign"
+    },
+    {
+      "name": "s",
+      "label": "S"
+    },
+    {
+      "name": "sack-dollar",
+      "label": "Sack Dollar"
+    },
+    {
+      "name": "sack-xmark",
+      "label": "Sack Xmark"
+    },
+    {
+      "name": "sailboat",
+      "label": "Sailboat"
+    },
+    {
+      "name": "satellite",
+      "label": "Satellite"
+    },
+    {
+      "name": "satellite-dish",
+      "label": "Satellite Dish"
+    },
+    {
+      "name": "scale-balanced",
+      "label": "Scale Balanced"
+    },
+    {
+      "name": "scale-unbalanced",
+      "label": "Scale Unbalanced"
+    },
+    {
+      "name": "scale-unbalanced-flip",
+      "label": "Scale Unbalanced Flip"
+    },
+    {
+      "name": "school",
+      "label": "School"
+    },
+    {
+      "name": "school-circle-check",
+      "label": "School Circle Check"
+    },
+    {
+      "name": "school-circle-exclamation",
+      "label": "School Circle Exclamation"
+    },
+    {
+      "name": "school-circle-xmark",
+      "label": "School Circle Xmark"
+    },
+    {
+      "name": "school-flag",
+      "label": "School Flag"
+    },
+    {
+      "name": "school-lock",
+      "label": "School Lock"
+    },
+    {
+      "name": "scissors",
+      "label": "Scissors"
+    },
+    {
+      "name": "screwdriver",
+      "label": "Screwdriver"
+    },
+    {
+      "name": "screwdriver-wrench",
+      "label": "Screwdriver Wrench"
+    },
+    {
+      "name": "scroll",
+      "label": "Scroll"
+    },
+    {
+      "name": "scroll-torah",
+      "label": "Scroll Torah"
+    },
+    {
+      "name": "sd-card",
+      "label": "Sd Card"
+    },
+    {
+      "name": "section",
+      "label": "Section"
+    },
+    {
+      "name": "seedling",
+      "label": "Seedling"
+    },
+    {
+      "name": "septagon",
+      "label": "Septagon"
+    },
+    {
+      "name": "server",
+      "label": "Server"
+    },
+    {
+      "name": "shapes",
+      "label": "Shapes"
+    },
+    {
+      "name": "share",
+      "label": "Share"
+    },
+    {
+      "name": "share-from-square",
+      "label": "Share From Square"
+    },
+    {
+      "name": "share-nodes",
+      "label": "Share Nodes"
+    },
+    {
+      "name": "sheet-plastic",
+      "label": "Sheet Plastic"
+    },
+    {
+      "name": "shekel-sign",
+      "label": "Shekel Sign"
+    },
+    {
+      "name": "shield",
+      "label": "Shield"
+    },
+    {
+      "name": "shield-cat",
+      "label": "Shield Cat"
+    },
+    {
+      "name": "shield-dog",
+      "label": "Shield Dog"
+    },
+    {
+      "name": "shield-halved",
+      "label": "Shield Halved"
+    },
+    {
+      "name": "shield-heart",
+      "label": "Shield Heart"
+    },
+    {
+      "name": "shield-virus",
+      "label": "Shield Virus"
+    },
+    {
+      "name": "ship",
+      "label": "Ship"
+    },
+    {
+      "name": "shirt",
+      "label": "Shirt"
+    },
+    {
+      "name": "shoe-prints",
+      "label": "Shoe Prints"
+    },
+    {
+      "name": "shop",
+      "label": "Shop"
+    },
+    {
+      "name": "shop-lock",
+      "label": "Shop Lock"
+    },
+    {
+      "name": "shop-slash",
+      "label": "Shop Slash"
+    },
+    {
+      "name": "shower",
+      "label": "Shower"
+    },
+    {
+      "name": "shrimp",
+      "label": "Shrimp"
+    },
+    {
+      "name": "shuffle",
+      "label": "Shuffle"
+    },
+    {
+      "name": "shuttle-space",
+      "label": "Shuttle Space"
+    },
+    {
+      "name": "sign-hanging",
+      "label": "Sign Hanging"
+    },
+    {
+      "name": "signal",
+      "label": "Signal"
+    },
+    {
+      "name": "signature",
+      "label": "Signature"
+    },
+    {
+      "name": "signs-post",
+      "label": "Signs Post"
+    },
+    {
+      "name": "sim-card",
+      "label": "Sim Card"
+    },
+    {
+      "name": "single-quote-left",
+      "label": "Single Quote Left"
+    },
+    {
+      "name": "single-quote-right",
+      "label": "Single Quote Right"
+    },
+    {
+      "name": "sink",
+      "label": "Sink"
+    },
+    {
+      "name": "sitemap",
+      "label": "Sitemap"
+    },
+    {
+      "name": "skull",
+      "label": "Skull"
+    },
+    {
+      "name": "skull-crossbones",
+      "label": "Skull Crossbones"
+    },
+    {
+      "name": "slash",
+      "label": "Slash"
+    },
+    {
+      "name": "sleigh",
+      "label": "Sleigh"
+    },
+    {
+      "name": "sliders",
+      "label": "Sliders"
+    },
+    {
+      "name": "smog",
+      "label": "Smog"
+    },
+    {
+      "name": "smoking",
+      "label": "Smoking"
+    },
+    {
+      "name": "snowflake",
+      "label": "Snowflake"
+    },
+    {
+      "name": "snowman",
+      "label": "Snowman"
+    },
+    {
+      "name": "snowplow",
+      "label": "Snowplow"
+    },
+    {
+      "name": "soap",
+      "label": "Soap"
+    },
+    {
+      "name": "socks",
+      "label": "Socks"
+    },
+    {
+      "name": "solar-panel",
+      "label": "Solar Panel"
+    },
+    {
+      "name": "sort",
+      "label": "Sort"
+    },
+    {
+      "name": "sort-down",
+      "label": "Sort Down"
+    },
+    {
+      "name": "sort-up",
+      "label": "Sort Up"
+    },
+    {
+      "name": "spa",
+      "label": "Spa"
+    },
+    {
+      "name": "spaghetti-monster-flying",
+      "label": "Spaghetti Monster Flying"
+    },
+    {
+      "name": "spell-check",
+      "label": "Spell Check"
+    },
+    {
+      "name": "spider",
+      "label": "Spider"
+    },
+    {
+      "name": "spinner",
+      "label": "Spinner"
+    },
+    {
+      "name": "spiral",
+      "label": "Spiral"
+    },
+    {
+      "name": "splotch",
+      "label": "Splotch"
+    },
+    {
+      "name": "spoon",
+      "label": "Spoon"
+    },
+    {
+      "name": "spray-can",
+      "label": "Spray Can"
+    },
+    {
+      "name": "spray-can-sparkles",
+      "label": "Spray Can Sparkles"
+    },
+    {
+      "name": "square",
+      "label": "Square"
+    },
+    {
+      "name": "square-arrow-up-right",
+      "label": "Square Arrow Up Right"
+    },
+    {
+      "name": "square-binary",
+      "label": "Square Binary"
+    },
+    {
+      "name": "square-caret-down",
+      "label": "Square Caret Down"
+    },
+    {
+      "name": "square-caret-left",
+      "label": "Square Caret Left"
+    },
+    {
+      "name": "square-caret-right",
+      "label": "Square Caret Right"
+    },
+    {
+      "name": "square-caret-up",
+      "label": "Square Caret Up"
+    },
+    {
+      "name": "square-check",
+      "label": "Square Check"
+    },
+    {
+      "name": "square-envelope",
+      "label": "Square Envelope"
+    },
+    {
+      "name": "square-full",
+      "label": "Square Full"
+    },
+    {
+      "name": "square-h",
+      "label": "Square H"
+    },
+    {
+      "name": "square-minus",
+      "label": "Square Minus"
+    },
+    {
+      "name": "square-nfi",
+      "label": "Square Nfi"
+    },
+    {
+      "name": "square-parking",
+      "label": "Square Parking"
+    },
+    {
+      "name": "square-pen",
+      "label": "Square Pen"
+    },
+    {
+      "name": "square-person-confined",
+      "label": "Square Person Confined"
+    },
+    {
+      "name": "square-phone",
+      "label": "Square Phone"
+    },
+    {
+      "name": "square-phone-flip",
+      "label": "Square Phone Flip"
+    },
+    {
+      "name": "square-plus",
+      "label": "Square Plus"
+    },
+    {
+      "name": "square-poll-horizontal",
+      "label": "Square Poll Horizontal"
+    },
+    {
+      "name": "square-poll-vertical",
+      "label": "Square Poll Vertical"
+    },
+    {
+      "name": "square-root-variable",
+      "label": "Square Root Variable"
+    },
+    {
+      "name": "square-rss",
+      "label": "Square Rss"
+    },
+    {
+      "name": "square-share-nodes",
+      "label": "Square Share Nodes"
+    },
+    {
+      "name": "square-up-right",
+      "label": "Square Up Right"
+    },
+    {
+      "name": "square-virus",
+      "label": "Square Virus"
+    },
+    {
+      "name": "square-xmark",
+      "label": "Square Xmark"
+    },
+    {
+      "name": "staff-snake",
+      "label": "Staff Snake"
+    },
+    {
+      "name": "stairs",
+      "label": "Stairs"
+    },
+    {
+      "name": "stamp",
+      "label": "Stamp"
+    },
+    {
+      "name": "stapler",
+      "label": "Stapler"
+    },
+    {
+      "name": "star",
+      "label": "Star"
+    },
+    {
+      "name": "star-and-crescent",
+      "label": "Star And Crescent"
+    },
+    {
+      "name": "star-half",
+      "label": "Star Half"
+    },
+    {
+      "name": "star-half-stroke",
+      "label": "Star Half Stroke"
+    },
+    {
+      "name": "star-of-david",
+      "label": "Star Of David"
+    },
+    {
+      "name": "star-of-life",
+      "label": "Star Of Life"
+    },
+    {
+      "name": "sterling-sign",
+      "label": "Sterling Sign"
+    },
+    {
+      "name": "stethoscope",
+      "label": "Stethoscope"
+    },
+    {
+      "name": "stop",
+      "label": "Stop"
+    },
+    {
+      "name": "stopwatch",
+      "label": "Stopwatch"
+    },
+    {
+      "name": "stopwatch-20",
+      "label": "Stopwatch 20"
+    },
+    {
+      "name": "store",
+      "label": "Store"
+    },
+    {
+      "name": "store-slash",
+      "label": "Store Slash"
+    },
+    {
+      "name": "street-view",
+      "label": "Street View"
+    },
+    {
+      "name": "strikethrough",
+      "label": "Strikethrough"
+    },
+    {
+      "name": "stroopwafel",
+      "label": "Stroopwafel"
+    },
+    {
+      "name": "subscript",
+      "label": "Subscript"
+    },
+    {
+      "name": "suitcase",
+      "label": "Suitcase"
+    },
+    {
+      "name": "suitcase-medical",
+      "label": "Suitcase Medical"
+    },
+    {
+      "name": "suitcase-rolling",
+      "label": "Suitcase Rolling"
+    },
+    {
+      "name": "sun",
+      "label": "Sun"
+    },
+    {
+      "name": "sun-plant-wilt",
+      "label": "Sun Plant Wilt"
+    },
+    {
+      "name": "superscript",
+      "label": "Superscript"
+    },
+    {
+      "name": "swatchbook",
+      "label": "Swatchbook"
+    },
+    {
+      "name": "synagogue",
+      "label": "Synagogue"
+    },
+    {
+      "name": "syringe",
+      "label": "Syringe"
+    },
+    {
+      "name": "t",
+      "label": "T"
+    },
+    {
+      "name": "table",
+      "label": "Table"
+    },
+    {
+      "name": "table-cells",
+      "label": "Table Cells"
+    },
+    {
+      "name": "table-cells-column-lock",
+      "label": "Table Cells Column Lock"
+    },
+    {
+      "name": "table-cells-large",
+      "label": "Table Cells Large"
+    },
+    {
+      "name": "table-cells-row-lock",
+      "label": "Table Cells Row Lock"
+    },
+    {
+      "name": "table-cells-row-unlock",
+      "label": "Table Cells Row Unlock"
+    },
+    {
+      "name": "table-columns",
+      "label": "Table Columns"
+    },
+    {
+      "name": "table-list",
+      "label": "Table List"
+    },
+    {
+      "name": "table-tennis-paddle-ball",
+      "label": "Table Tennis Paddle Ball"
+    },
+    {
+      "name": "tablet",
+      "label": "Tablet"
+    },
+    {
+      "name": "tablet-button",
+      "label": "Tablet Button"
+    },
+    {
+      "name": "tablet-screen-button",
+      "label": "Tablet Screen Button"
+    },
+    {
+      "name": "tablets",
+      "label": "Tablets"
+    },
+    {
+      "name": "tachograph-digital",
+      "label": "Tachograph Digital"
+    },
+    {
+      "name": "tag",
+      "label": "Tag"
+    },
+    {
+      "name": "tags",
+      "label": "Tags"
+    },
+    {
+      "name": "tape",
+      "label": "Tape"
+    },
+    {
+      "name": "tarp",
+      "label": "Tarp"
+    },
+    {
+      "name": "tarp-droplet",
+      "label": "Tarp Droplet"
+    },
+    {
+      "name": "taxi",
+      "label": "Taxi"
+    },
+    {
+      "name": "teeth",
+      "label": "Teeth"
+    },
+    {
+      "name": "teeth-open",
+      "label": "Teeth Open"
+    },
+    {
+      "name": "temperature-arrow-down",
+      "label": "Temperature Arrow Down"
+    },
+    {
+      "name": "temperature-arrow-up",
+      "label": "Temperature Arrow Up"
+    },
+    {
+      "name": "temperature-empty",
+      "label": "Temperature Empty"
+    },
+    {
+      "name": "temperature-full",
+      "label": "Temperature Full"
+    },
+    {
+      "name": "temperature-half",
+      "label": "Temperature Half"
+    },
+    {
+      "name": "temperature-high",
+      "label": "Temperature High"
+    },
+    {
+      "name": "temperature-low",
+      "label": "Temperature Low"
+    },
+    {
+      "name": "temperature-quarter",
+      "label": "Temperature Quarter"
+    },
+    {
+      "name": "temperature-three-quarters",
+      "label": "Temperature Three Quarters"
+    },
+    {
+      "name": "tenge-sign",
+      "label": "Tenge Sign"
+    },
+    {
+      "name": "tent",
+      "label": "Tent"
+    },
+    {
+      "name": "tent-arrow-down-to-line",
+      "label": "Tent Arrow Down To Line"
+    },
+    {
+      "name": "tent-arrow-left-right",
+      "label": "Tent Arrow Left Right"
+    },
+    {
+      "name": "tent-arrow-turn-left",
+      "label": "Tent Arrow Turn Left"
+    },
+    {
+      "name": "tent-arrows-down",
+      "label": "Tent Arrows Down"
+    },
+    {
+      "name": "tents",
+      "label": "Tents"
+    },
+    {
+      "name": "terminal",
+      "label": "Terminal"
+    },
+    {
+      "name": "text-height",
+      "label": "Text Height"
+    },
+    {
+      "name": "text-slash",
+      "label": "Text Slash"
+    },
+    {
+      "name": "text-width",
+      "label": "Text Width"
+    },
+    {
+      "name": "thermometer",
+      "label": "Thermometer"
+    },
+    {
+      "name": "thumbs-down",
+      "label": "Thumbs Down"
+    },
+    {
+      "name": "thumbs-up",
+      "label": "Thumbs Up"
+    },
+    {
+      "name": "thumbtack",
+      "label": "Thumbtack"
+    },
+    {
+      "name": "thumbtack-slash",
+      "label": "Thumbtack Slash"
+    },
+    {
+      "name": "ticket",
+      "label": "Ticket"
+    },
+    {
+      "name": "ticket-simple",
+      "label": "Ticket Simple"
+    },
+    {
+      "name": "timeline",
+      "label": "Timeline"
+    },
+    {
+      "name": "toggle-off",
+      "label": "Toggle Off"
+    },
+    {
+      "name": "toggle-on",
+      "label": "Toggle On"
+    },
+    {
+      "name": "toilet",
+      "label": "Toilet"
+    },
+    {
+      "name": "toilet-paper",
+      "label": "Toilet Paper"
+    },
+    {
+      "name": "toilet-paper-slash",
+      "label": "Toilet Paper Slash"
+    },
+    {
+      "name": "toilet-portable",
+      "label": "Toilet Portable"
+    },
+    {
+      "name": "toilets-portable",
+      "label": "Toilets Portable"
+    },
+    {
+      "name": "toolbox",
+      "label": "Toolbox"
+    },
+    {
+      "name": "tooth",
+      "label": "Tooth"
+    },
+    {
+      "name": "torii-gate",
+      "label": "Torii Gate"
+    },
+    {
+      "name": "tornado",
+      "label": "Tornado"
+    },
+    {
+      "name": "tower-broadcast",
+      "label": "Tower Broadcast"
+    },
+    {
+      "name": "tower-cell",
+      "label": "Tower Cell"
+    },
+    {
+      "name": "tower-observation",
+      "label": "Tower Observation"
+    },
+    {
+      "name": "tractor",
+      "label": "Tractor"
+    },
+    {
+      "name": "trademark",
+      "label": "Trademark"
+    },
+    {
+      "name": "traffic-light",
+      "label": "Traffic Light"
+    },
+    {
+      "name": "trailer",
+      "label": "Trailer"
+    },
+    {
+      "name": "train",
+      "label": "Train"
+    },
+    {
+      "name": "train-subway",
+      "label": "Train Subway"
+    },
+    {
+      "name": "train-tram",
+      "label": "Train Tram"
+    },
+    {
+      "name": "transgender",
+      "label": "Transgender"
+    },
+    {
+      "name": "trash",
+      "label": "Trash"
+    },
+    {
+      "name": "trash-arrow-up",
+      "label": "Trash Arrow Up"
+    },
+    {
+      "name": "trash-can",
+      "label": "Trash Can"
+    },
+    {
+      "name": "trash-can-arrow-up",
+      "label": "Trash Can Arrow Up"
+    },
+    {
+      "name": "tree",
+      "label": "Tree"
+    },
+    {
+      "name": "tree-city",
+      "label": "Tree City"
+    },
+    {
+      "name": "triangle-exclamation",
+      "label": "Triangle Exclamation"
+    },
+    {
+      "name": "trophy",
+      "label": "Trophy"
+    },
+    {
+      "name": "trowel",
+      "label": "Trowel"
+    },
+    {
+      "name": "trowel-bricks",
+      "label": "Trowel Bricks"
+    },
+    {
+      "name": "truck",
+      "label": "Truck"
+    },
+    {
+      "name": "truck-arrow-right",
+      "label": "Truck Arrow Right"
+    },
+    {
+      "name": "truck-droplet",
+      "label": "Truck Droplet"
+    },
+    {
+      "name": "truck-fast",
+      "label": "Truck Fast"
+    },
+    {
+      "name": "truck-field",
+      "label": "Truck Field"
+    },
+    {
+      "name": "truck-field-un",
+      "label": "Truck Field Un"
+    },
+    {
+      "name": "truck-front",
+      "label": "Truck Front"
+    },
+    {
+      "name": "truck-medical",
+      "label": "Truck Medical"
+    },
+    {
+      "name": "truck-monster",
+      "label": "Truck Monster"
+    },
+    {
+      "name": "truck-moving",
+      "label": "Truck Moving"
+    },
+    {
+      "name": "truck-pickup",
+      "label": "Truck Pickup"
+    },
+    {
+      "name": "truck-plane",
+      "label": "Truck Plane"
+    },
+    {
+      "name": "truck-ramp-box",
+      "label": "Truck Ramp Box"
+    },
+    {
+      "name": "tty",
+      "label": "Tty"
+    },
+    {
+      "name": "turkish-lira-sign",
+      "label": "Turkish Lira Sign"
+    },
+    {
+      "name": "turn-down",
+      "label": "Turn Down"
+    },
+    {
+      "name": "turn-up",
+      "label": "Turn Up"
+    },
+    {
+      "name": "tv",
+      "label": "Tv"
+    },
+    {
+      "name": "u",
+      "label": "U"
+    },
+    {
+      "name": "umbrella",
+      "label": "Umbrella"
+    },
+    {
+      "name": "umbrella-beach",
+      "label": "Umbrella Beach"
+    },
+    {
+      "name": "underline",
+      "label": "Underline"
+    },
+    {
+      "name": "universal-access",
+      "label": "Universal Access"
+    },
+    {
+      "name": "unlock",
+      "label": "Unlock"
+    },
+    {
+      "name": "unlock-keyhole",
+      "label": "Unlock Keyhole"
+    },
+    {
+      "name": "up-down",
+      "label": "Up Down"
+    },
+    {
+      "name": "up-down-left-right",
+      "label": "Up Down Left Right"
+    },
+    {
+      "name": "up-long",
+      "label": "Up Long"
+    },
+    {
+      "name": "up-right-and-down-left-from-center",
+      "label": "Up Right And Down Left From Center"
+    },
+    {
+      "name": "up-right-from-square",
+      "label": "Up Right From Square"
+    },
+    {
+      "name": "upload",
+      "label": "Upload"
+    },
+    {
+      "name": "user",
+      "label": "User"
+    },
+    {
+      "name": "user-astronaut",
+      "label": "User Astronaut"
+    },
+    {
+      "name": "user-check",
+      "label": "User Check"
+    },
+    {
+      "name": "user-clock",
+      "label": "User Clock"
+    },
+    {
+      "name": "user-doctor",
+      "label": "User Doctor"
+    },
+    {
+      "name": "user-gear",
+      "label": "User Gear"
+    },
+    {
+      "name": "user-graduate",
+      "label": "User Graduate"
+    },
+    {
+      "name": "user-group",
+      "label": "User Group"
+    },
+    {
+      "name": "user-injured",
+      "label": "User Injured"
+    },
+    {
+      "name": "user-lock",
+      "label": "User Lock"
+    },
+    {
+      "name": "user-minus",
+      "label": "User Minus"
+    },
+    {
+      "name": "user-ninja",
+      "label": "User Ninja"
+    },
+    {
+      "name": "user-nurse",
+      "label": "User Nurse"
+    },
+    {
+      "name": "user-pen",
+      "label": "User Pen"
+    },
+    {
+      "name": "user-plus",
+      "label": "User Plus"
+    },
+    {
+      "name": "user-secret",
+      "label": "User Secret"
+    },
+    {
+      "name": "user-shield",
+      "label": "User Shield"
+    },
+    {
+      "name": "user-slash",
+      "label": "User Slash"
+    },
+    {
+      "name": "user-tag",
+      "label": "User Tag"
+    },
+    {
+      "name": "user-tie",
+      "label": "User Tie"
+    },
+    {
+      "name": "user-xmark",
+      "label": "User Xmark"
+    },
+    {
+      "name": "users",
+      "label": "Users"
+    },
+    {
+      "name": "users-between-lines",
+      "label": "Users Between Lines"
+    },
+    {
+      "name": "users-gear",
+      "label": "Users Gear"
+    },
+    {
+      "name": "users-line",
+      "label": "Users Line"
+    },
+    {
+      "name": "users-rays",
+      "label": "Users Rays"
+    },
+    {
+      "name": "users-rectangle",
+      "label": "Users Rectangle"
+    },
+    {
+      "name": "users-slash",
+      "label": "Users Slash"
+    },
+    {
+      "name": "users-viewfinder",
+      "label": "Users Viewfinder"
+    },
+    {
+      "name": "utensils",
+      "label": "Utensils"
+    },
+    {
+      "name": "v",
+      "label": "V"
+    },
+    {
+      "name": "van-shuttle",
+      "label": "Van Shuttle"
+    },
+    {
+      "name": "vault",
+      "label": "Vault"
+    },
+    {
+      "name": "venus",
+      "label": "Venus"
+    },
+    {
+      "name": "venus-double",
+      "label": "Venus Double"
+    },
+    {
+      "name": "venus-mars",
+      "label": "Venus Mars"
+    },
+    {
+      "name": "vest",
+      "label": "Vest"
+    },
+    {
+      "name": "vest-patches",
+      "label": "Vest Patches"
+    },
+    {
+      "name": "vial",
+      "label": "Vial"
+    },
+    {
+      "name": "vial-circle-check",
+      "label": "Vial Circle Check"
+    },
+    {
+      "name": "vial-virus",
+      "label": "Vial Virus"
+    },
+    {
+      "name": "vials",
+      "label": "Vials"
+    },
+    {
+      "name": "video",
+      "label": "Video"
+    },
+    {
+      "name": "video-slash",
+      "label": "Video Slash"
+    },
+    {
+      "name": "vihara",
+      "label": "Vihara"
+    },
+    {
+      "name": "virus",
+      "label": "Virus"
+    },
+    {
+      "name": "virus-covid",
+      "label": "Virus Covid"
+    },
+    {
+      "name": "virus-covid-slash",
+      "label": "Virus Covid Slash"
+    },
+    {
+      "name": "virus-slash",
+      "label": "Virus Slash"
+    },
+    {
+      "name": "viruses",
+      "label": "Viruses"
+    },
+    {
+      "name": "voicemail",
+      "label": "Voicemail"
+    },
+    {
+      "name": "volcano",
+      "label": "Volcano"
+    },
+    {
+      "name": "volleyball",
+      "label": "Volleyball"
+    },
+    {
+      "name": "volume-high",
+      "label": "Volume High"
+    },
+    {
+      "name": "volume-low",
+      "label": "Volume Low"
+    },
+    {
+      "name": "volume-off",
+      "label": "Volume Off"
+    },
+    {
+      "name": "volume-xmark",
+      "label": "Volume Xmark"
+    },
+    {
+      "name": "vr-cardboard",
+      "label": "Vr Cardboard"
+    },
+    {
+      "name": "w",
+      "label": "W"
+    },
+    {
+      "name": "walkie-talkie",
+      "label": "Walkie Talkie"
+    },
+    {
+      "name": "wallet",
+      "label": "Wallet"
+    },
+    {
+      "name": "wand-magic",
+      "label": "Wand Magic"
+    },
+    {
+      "name": "wand-magic-sparkles",
+      "label": "Wand Magic Sparkles"
+    },
+    {
+      "name": "wand-sparkles",
+      "label": "Wand Sparkles"
+    },
+    {
+      "name": "warehouse",
+      "label": "Warehouse"
+    },
+    {
+      "name": "water",
+      "label": "Water"
+    },
+    {
+      "name": "water-ladder",
+      "label": "Water Ladder"
+    },
+    {
+      "name": "wave-square",
+      "label": "Wave Square"
+    },
+    {
+      "name": "web-awesome",
+      "label": "Web Awesome"
+    },
+    {
+      "name": "weight-hanging",
+      "label": "Weight Hanging"
+    },
+    {
+      "name": "weight-scale",
+      "label": "Weight Scale"
+    },
+    {
+      "name": "wheat-awn",
+      "label": "Wheat Awn"
+    },
+    {
+      "name": "wheat-awn-circle-exclamation",
+      "label": "Wheat Awn Circle Exclamation"
+    },
+    {
+      "name": "wheelchair",
+      "label": "Wheelchair"
+    },
+    {
+      "name": "wheelchair-move",
+      "label": "Wheelchair Move"
+    },
+    {
+      "name": "whiskey-glass",
+      "label": "Whiskey Glass"
+    },
+    {
+      "name": "wifi",
+      "label": "Wifi"
+    },
+    {
+      "name": "wind",
+      "label": "Wind"
+    },
+    {
+      "name": "window-maximize",
+      "label": "Window Maximize"
+    },
+    {
+      "name": "window-minimize",
+      "label": "Window Minimize"
+    },
+    {
+      "name": "window-restore",
+      "label": "Window Restore"
+    },
+    {
+      "name": "wine-bottle",
+      "label": "Wine Bottle"
+    },
+    {
+      "name": "wine-glass",
+      "label": "Wine Glass"
+    },
+    {
+      "name": "wine-glass-empty",
+      "label": "Wine Glass Empty"
+    },
+    {
+      "name": "won-sign",
+      "label": "Won Sign"
+    },
+    {
+      "name": "worm",
+      "label": "Worm"
+    },
+    {
+      "name": "wrench",
+      "label": "Wrench"
+    },
+    {
+      "name": "x",
+      "label": "X"
+    },
+    {
+      "name": "x-ray",
+      "label": "X Ray"
+    },
+    {
+      "name": "xmark",
+      "label": "Xmark"
+    },
+    {
+      "name": "xmarks-lines",
+      "label": "Xmarks Lines"
+    },
+    {
+      "name": "y",
+      "label": "Y"
+    },
+    {
+      "name": "yen-sign",
+      "label": "Yen Sign"
+    },
+    {
+      "name": "yin-yang",
+      "label": "Yin Yang"
+    },
+    {
+      "name": "z",
+      "label": "Z"
+    }
+  ],
+  "regular": [
+    {
+      "name": "address-book",
+      "label": "Address Book"
+    },
+    {
+      "name": "address-card",
+      "label": "Address Card"
+    },
+    {
+      "name": "alarm-clock",
+      "label": "Alarm Clock"
+    },
+    {
+      "name": "bell",
+      "label": "Bell"
+    },
+    {
+      "name": "bell-slash",
+      "label": "Bell Slash"
+    },
+    {
+      "name": "bookmark",
+      "label": "Bookmark"
+    },
+    {
+      "name": "building",
+      "label": "Building"
+    },
+    {
+      "name": "calendar",
+      "label": "Calendar"
+    },
+    {
+      "name": "calendar-check",
+      "label": "Calendar Check"
+    },
+    {
+      "name": "calendar-days",
+      "label": "Calendar Days"
+    },
+    {
+      "name": "calendar-minus",
+      "label": "Calendar Minus"
+    },
+    {
+      "name": "calendar-plus",
+      "label": "Calendar Plus"
+    },
+    {
+      "name": "calendar-xmark",
+      "label": "Calendar Xmark"
+    },
+    {
+      "name": "camera",
+      "label": "Camera"
+    },
+    {
+      "name": "chart-bar",
+      "label": "Chart Bar"
+    },
+    {
+      "name": "chess-bishop",
+      "label": "Chess Bishop"
+    },
+    {
+      "name": "chess-king",
+      "label": "Chess King"
+    },
+    {
+      "name": "chess-knight",
+      "label": "Chess Knight"
+    },
+    {
+      "name": "chess-pawn",
+      "label": "Chess Pawn"
+    },
+    {
+      "name": "chess-queen",
+      "label": "Chess Queen"
+    },
+    {
+      "name": "chess-rook",
+      "label": "Chess Rook"
+    },
+    {
+      "name": "circle",
+      "label": "Circle"
+    },
+    {
+      "name": "circle-check",
+      "label": "Circle Check"
+    },
+    {
+      "name": "circle-dot",
+      "label": "Circle Dot"
+    },
+    {
+      "name": "circle-down",
+      "label": "Circle Down"
+    },
+    {
+      "name": "circle-left",
+      "label": "Circle Left"
+    },
+    {
+      "name": "circle-pause",
+      "label": "Circle Pause"
+    },
+    {
+      "name": "circle-play",
+      "label": "Circle Play"
+    },
+    {
+      "name": "circle-question",
+      "label": "Circle Question"
+    },
+    {
+      "name": "circle-right",
+      "label": "Circle Right"
+    },
+    {
+      "name": "circle-stop",
+      "label": "Circle Stop"
+    },
+    {
+      "name": "circle-up",
+      "label": "Circle Up"
+    },
+    {
+      "name": "circle-user",
+      "label": "Circle User"
+    },
+    {
+      "name": "circle-xmark",
+      "label": "Circle Xmark"
+    },
+    {
+      "name": "clipboard",
+      "label": "Clipboard"
+    },
+    {
+      "name": "clock",
+      "label": "Clock"
+    },
+    {
+      "name": "clone",
+      "label": "Clone"
+    },
+    {
+      "name": "closed-captioning",
+      "label": "Closed Captioning"
+    },
+    {
+      "name": "cloud",
+      "label": "Cloud"
+    },
+    {
+      "name": "comment",
+      "label": "Comment"
+    },
+    {
+      "name": "comment-dots",
+      "label": "Comment Dots"
+    },
+    {
+      "name": "comments",
+      "label": "Comments"
+    },
+    {
+      "name": "compass",
+      "label": "Compass"
+    },
+    {
+      "name": "copy",
+      "label": "Copy"
+    },
+    {
+      "name": "copyright",
+      "label": "Copyright"
+    },
+    {
+      "name": "credit-card",
+      "label": "Credit Card"
+    },
+    {
+      "name": "envelope",
+      "label": "Envelope"
+    },
+    {
+      "name": "envelope-open",
+      "label": "Envelope Open"
+    },
+    {
+      "name": "eye",
+      "label": "Eye"
+    },
+    {
+      "name": "eye-slash",
+      "label": "Eye Slash"
+    },
+    {
+      "name": "face-angry",
+      "label": "Face Angry"
+    },
+    {
+      "name": "face-dizzy",
+      "label": "Face Dizzy"
+    },
+    {
+      "name": "face-flushed",
+      "label": "Face Flushed"
+    },
+    {
+      "name": "face-frown",
+      "label": "Face Frown"
+    },
+    {
+      "name": "face-frown-open",
+      "label": "Face Frown Open"
+    },
+    {
+      "name": "face-grimace",
+      "label": "Face Grimace"
+    },
+    {
+      "name": "face-grin",
+      "label": "Face Grin"
+    },
+    {
+      "name": "face-grin-beam",
+      "label": "Face Grin Beam"
+    },
+    {
+      "name": "face-grin-beam-sweat",
+      "label": "Face Grin Beam Sweat"
+    },
+    {
+      "name": "face-grin-hearts",
+      "label": "Face Grin Hearts"
+    },
+    {
+      "name": "face-grin-squint",
+      "label": "Face Grin Squint"
+    },
+    {
+      "name": "face-grin-squint-tears",
+      "label": "Face Grin Squint Tears"
+    },
+    {
+      "name": "face-grin-stars",
+      "label": "Face Grin Stars"
+    },
+    {
+      "name": "face-grin-tears",
+      "label": "Face Grin Tears"
+    },
+    {
+      "name": "face-grin-tongue",
+      "label": "Face Grin Tongue"
+    },
+    {
+      "name": "face-grin-tongue-squint",
+      "label": "Face Grin Tongue Squint"
+    },
+    {
+      "name": "face-grin-tongue-wink",
+      "label": "Face Grin Tongue Wink"
+    },
+    {
+      "name": "face-grin-wide",
+      "label": "Face Grin Wide"
+    },
+    {
+      "name": "face-grin-wink",
+      "label": "Face Grin Wink"
+    },
+    {
+      "name": "face-kiss",
+      "label": "Face Kiss"
+    },
+    {
+      "name": "face-kiss-beam",
+      "label": "Face Kiss Beam"
+    },
+    {
+      "name": "face-kiss-wink-heart",
+      "label": "Face Kiss Wink Heart"
+    },
+    {
+      "name": "face-laugh",
+      "label": "Face Laugh"
+    },
+    {
+      "name": "face-laugh-beam",
+      "label": "Face Laugh Beam"
+    },
+    {
+      "name": "face-laugh-squint",
+      "label": "Face Laugh Squint"
+    },
+    {
+      "name": "face-laugh-wink",
+      "label": "Face Laugh Wink"
+    },
+    {
+      "name": "face-meh",
+      "label": "Face Meh"
+    },
+    {
+      "name": "face-meh-blank",
+      "label": "Face Meh Blank"
+    },
+    {
+      "name": "face-rolling-eyes",
+      "label": "Face Rolling Eyes"
+    },
+    {
+      "name": "face-sad-cry",
+      "label": "Face Sad Cry"
+    },
+    {
+      "name": "face-sad-tear",
+      "label": "Face Sad Tear"
+    },
+    {
+      "name": "face-smile",
+      "label": "Face Smile"
+    },
+    {
+      "name": "face-smile-beam",
+      "label": "Face Smile Beam"
+    },
+    {
+      "name": "face-smile-wink",
+      "label": "Face Smile Wink"
+    },
+    {
+      "name": "face-surprise",
+      "label": "Face Surprise"
+    },
+    {
+      "name": "face-tired",
+      "label": "Face Tired"
+    },
+    {
+      "name": "file",
+      "label": "File"
+    },
+    {
+      "name": "file-audio",
+      "label": "File Audio"
+    },
+    {
+      "name": "file-code",
+      "label": "File Code"
+    },
+    {
+      "name": "file-excel",
+      "label": "File Excel"
+    },
+    {
+      "name": "file-image",
+      "label": "File Image"
+    },
+    {
+      "name": "file-lines",
+      "label": "File Lines"
+    },
+    {
+      "name": "file-pdf",
+      "label": "File Pdf"
+    },
+    {
+      "name": "file-powerpoint",
+      "label": "File Powerpoint"
+    },
+    {
+      "name": "file-video",
+      "label": "File Video"
+    },
+    {
+      "name": "file-word",
+      "label": "File Word"
+    },
+    {
+      "name": "file-zipper",
+      "label": "File Zipper"
+    },
+    {
+      "name": "flag",
+      "label": "Flag"
+    },
+    {
+      "name": "floppy-disk",
+      "label": "Floppy Disk"
+    },
+    {
+      "name": "folder",
+      "label": "Folder"
+    },
+    {
+      "name": "folder-closed",
+      "label": "Folder Closed"
+    },
+    {
+      "name": "folder-open",
+      "label": "Folder Open"
+    },
+    {
+      "name": "font-awesome",
+      "label": "Font Awesome"
+    },
+    {
+      "name": "futbol",
+      "label": "Futbol"
+    },
+    {
+      "name": "gem",
+      "label": "Gem"
+    },
+    {
+      "name": "hand",
+      "label": "Hand"
+    },
+    {
+      "name": "hand-back-fist",
+      "label": "Hand Back Fist"
+    },
+    {
+      "name": "hand-lizard",
+      "label": "Hand Lizard"
+    },
+    {
+      "name": "hand-peace",
+      "label": "Hand Peace"
+    },
+    {
+      "name": "hand-point-down",
+      "label": "Hand Point Down"
+    },
+    {
+      "name": "hand-point-left",
+      "label": "Hand Point Left"
+    },
+    {
+      "name": "hand-point-right",
+      "label": "Hand Point Right"
+    },
+    {
+      "name": "hand-point-up",
+      "label": "Hand Point Up"
+    },
+    {
+      "name": "hand-pointer",
+      "label": "Hand Pointer"
+    },
+    {
+      "name": "hand-scissors",
+      "label": "Hand Scissors"
+    },
+    {
+      "name": "hand-spock",
+      "label": "Hand Spock"
+    },
+    {
+      "name": "handshake",
+      "label": "Handshake"
+    },
+    {
+      "name": "hard-drive",
+      "label": "Hard Drive"
+    },
+    {
+      "name": "headphones",
+      "label": "Headphones"
+    },
+    {
+      "name": "heart",
+      "label": "Heart"
+    },
+    {
+      "name": "hospital",
+      "label": "Hospital"
+    },
+    {
+      "name": "hourglass",
+      "label": "Hourglass"
+    },
+    {
+      "name": "hourglass-half",
+      "label": "Hourglass Half"
+    },
+    {
+      "name": "house",
+      "label": "House"
+    },
+    {
+      "name": "id-badge",
+      "label": "Id Badge"
+    },
+    {
+      "name": "id-card",
+      "label": "Id Card"
+    },
+    {
+      "name": "image",
+      "label": "Image"
+    },
+    {
+      "name": "images",
+      "label": "Images"
+    },
+    {
+      "name": "keyboard",
+      "label": "Keyboard"
+    },
+    {
+      "name": "lemon",
+      "label": "Lemon"
+    },
+    {
+      "name": "life-ring",
+      "label": "Life Ring"
+    },
+    {
+      "name": "lightbulb",
+      "label": "Lightbulb"
+    },
+    {
+      "name": "map",
+      "label": "Map"
+    },
+    {
+      "name": "message",
+      "label": "Message"
+    },
+    {
+      "name": "money-bill-1",
+      "label": "Money Bill 1"
+    },
+    {
+      "name": "moon",
+      "label": "Moon"
+    },
+    {
+      "name": "newspaper",
+      "label": "Newspaper"
+    },
+    {
+      "name": "note-sticky",
+      "label": "Note Sticky"
+    },
+    {
+      "name": "object-group",
+      "label": "Object Group"
+    },
+    {
+      "name": "object-ungroup",
+      "label": "Object Ungroup"
+    },
+    {
+      "name": "paper-plane",
+      "label": "Paper Plane"
+    },
+    {
+      "name": "paste",
+      "label": "Paste"
+    },
+    {
+      "name": "pen-to-square",
+      "label": "Pen To Square"
+    },
+    {
+      "name": "rectangle-list",
+      "label": "Rectangle List"
+    },
+    {
+      "name": "rectangle-xmark",
+      "label": "Rectangle Xmark"
+    },
+    {
+      "name": "registered",
+      "label": "Registered"
+    },
+    {
+      "name": "share-from-square",
+      "label": "Share From Square"
+    },
+    {
+      "name": "snowflake",
+      "label": "Snowflake"
+    },
+    {
+      "name": "square",
+      "label": "Square"
+    },
+    {
+      "name": "square-caret-down",
+      "label": "Square Caret Down"
+    },
+    {
+      "name": "square-caret-left",
+      "label": "Square Caret Left"
+    },
+    {
+      "name": "square-caret-right",
+      "label": "Square Caret Right"
+    },
+    {
+      "name": "square-caret-up",
+      "label": "Square Caret Up"
+    },
+    {
+      "name": "square-check",
+      "label": "Square Check"
+    },
+    {
+      "name": "square-full",
+      "label": "Square Full"
+    },
+    {
+      "name": "square-minus",
+      "label": "Square Minus"
+    },
+    {
+      "name": "square-plus",
+      "label": "Square Plus"
+    },
+    {
+      "name": "star",
+      "label": "Star"
+    },
+    {
+      "name": "star-half",
+      "label": "Star Half"
+    },
+    {
+      "name": "star-half-stroke",
+      "label": "Star Half Stroke"
+    },
+    {
+      "name": "sun",
+      "label": "Sun"
+    },
+    {
+      "name": "thumbs-down",
+      "label": "Thumbs Down"
+    },
+    {
+      "name": "thumbs-up",
+      "label": "Thumbs Up"
+    },
+    {
+      "name": "trash-can",
+      "label": "Trash Can"
+    },
+    {
+      "name": "truck",
+      "label": "Truck"
+    },
+    {
+      "name": "user",
+      "label": "User"
+    },
+    {
+      "name": "window-maximize",
+      "label": "Window Maximize"
+    },
+    {
+      "name": "window-minimize",
+      "label": "Window Minimize"
+    },
+    {
+      "name": "window-restore",
+      "label": "Window Restore"
+    }
+  ],
+  "brands": [
+    {
+      "name": "42-group",
+      "label": "42 Group"
+    },
+    {
+      "name": "500px",
+      "label": "500px"
+    },
+    {
+      "name": "accessible-icon",
+      "label": "Accessible Icon"
+    },
+    {
+      "name": "accusoft",
+      "label": "Accusoft"
+    },
+    {
+      "name": "adn",
+      "label": "Adn"
+    },
+    {
+      "name": "adversal",
+      "label": "Adversal"
+    },
+    {
+      "name": "affiliatetheme",
+      "label": "Affiliatetheme"
+    },
+    {
+      "name": "airbnb",
+      "label": "Airbnb"
+    },
+    {
+      "name": "algolia",
+      "label": "Algolia"
+    },
+    {
+      "name": "alipay",
+      "label": "Alipay"
+    },
+    {
+      "name": "amazon",
+      "label": "Amazon"
+    },
+    {
+      "name": "amazon-pay",
+      "label": "Amazon Pay"
+    },
+    {
+      "name": "amilia",
+      "label": "Amilia"
+    },
+    {
+      "name": "android",
+      "label": "Android"
+    },
+    {
+      "name": "angellist",
+      "label": "Angellist"
+    },
+    {
+      "name": "angrycreative",
+      "label": "Angrycreative"
+    },
+    {
+      "name": "angular",
+      "label": "Angular"
+    },
+    {
+      "name": "app-store",
+      "label": "App Store"
+    },
+    {
+      "name": "app-store-ios",
+      "label": "App Store Ios"
+    },
+    {
+      "name": "apper",
+      "label": "Apper"
+    },
+    {
+      "name": "apple",
+      "label": "Apple"
+    },
+    {
+      "name": "apple-pay",
+      "label": "Apple Pay"
+    },
+    {
+      "name": "artstation",
+      "label": "Artstation"
+    },
+    {
+      "name": "asymmetrik",
+      "label": "Asymmetrik"
+    },
+    {
+      "name": "atlassian",
+      "label": "Atlassian"
+    },
+    {
+      "name": "audible",
+      "label": "Audible"
+    },
+    {
+      "name": "autoprefixer",
+      "label": "Autoprefixer"
+    },
+    {
+      "name": "avianex",
+      "label": "Avianex"
+    },
+    {
+      "name": "aviato",
+      "label": "Aviato"
+    },
+    {
+      "name": "aws",
+      "label": "Aws"
+    },
+    {
+      "name": "bandcamp",
+      "label": "Bandcamp"
+    },
+    {
+      "name": "battle-net",
+      "label": "Battle Net"
+    },
+    {
+      "name": "behance",
+      "label": "Behance"
+    },
+    {
+      "name": "bilibili",
+      "label": "Bilibili"
+    },
+    {
+      "name": "bimobject",
+      "label": "Bimobject"
+    },
+    {
+      "name": "bitbucket",
+      "label": "Bitbucket"
+    },
+    {
+      "name": "bitcoin",
+      "label": "Bitcoin"
+    },
+    {
+      "name": "bity",
+      "label": "Bity"
+    },
+    {
+      "name": "black-tie",
+      "label": "Black Tie"
+    },
+    {
+      "name": "blackberry",
+      "label": "Blackberry"
+    },
+    {
+      "name": "blogger",
+      "label": "Blogger"
+    },
+    {
+      "name": "blogger-b",
+      "label": "Blogger B"
+    },
+    {
+      "name": "bluesky",
+      "label": "Bluesky"
+    },
+    {
+      "name": "bluetooth",
+      "label": "Bluetooth"
+    },
+    {
+      "name": "bluetooth-b",
+      "label": "Bluetooth B"
+    },
+    {
+      "name": "bootstrap",
+      "label": "Bootstrap"
+    },
+    {
+      "name": "bots",
+      "label": "Bots"
+    },
+    {
+      "name": "brave",
+      "label": "Brave"
+    },
+    {
+      "name": "brave-reverse",
+      "label": "Brave Reverse"
+    },
+    {
+      "name": "btc",
+      "label": "Btc"
+    },
+    {
+      "name": "buffer",
+      "label": "Buffer"
+    },
+    {
+      "name": "buromobelexperte",
+      "label": "Buromobelexperte"
+    },
+    {
+      "name": "buy-n-large",
+      "label": "Buy N Large"
+    },
+    {
+      "name": "buysellads",
+      "label": "Buysellads"
+    },
+    {
+      "name": "canadian-maple-leaf",
+      "label": "Canadian Maple Leaf"
+    },
+    {
+      "name": "cash-app",
+      "label": "Cash App"
+    },
+    {
+      "name": "cc-amazon-pay",
+      "label": "Cc Amazon Pay"
+    },
+    {
+      "name": "cc-amex",
+      "label": "Cc Amex"
+    },
+    {
+      "name": "cc-apple-pay",
+      "label": "Cc Apple Pay"
+    },
+    {
+      "name": "cc-diners-club",
+      "label": "Cc Diners Club"
+    },
+    {
+      "name": "cc-discover",
+      "label": "Cc Discover"
+    },
+    {
+      "name": "cc-jcb",
+      "label": "Cc Jcb"
+    },
+    {
+      "name": "cc-mastercard",
+      "label": "Cc Mastercard"
+    },
+    {
+      "name": "cc-paypal",
+      "label": "Cc Paypal"
+    },
+    {
+      "name": "cc-stripe",
+      "label": "Cc Stripe"
+    },
+    {
+      "name": "cc-visa",
+      "label": "Cc Visa"
+    },
+    {
+      "name": "centercode",
+      "label": "Centercode"
+    },
+    {
+      "name": "centos",
+      "label": "Centos"
+    },
+    {
+      "name": "chrome",
+      "label": "Chrome"
+    },
+    {
+      "name": "chromecast",
+      "label": "Chromecast"
+    },
+    {
+      "name": "cloudflare",
+      "label": "Cloudflare"
+    },
+    {
+      "name": "cloudscale",
+      "label": "Cloudscale"
+    },
+    {
+      "name": "cloudsmith",
+      "label": "Cloudsmith"
+    },
+    {
+      "name": "cloudversify",
+      "label": "Cloudversify"
+    },
+    {
+      "name": "cmplid",
+      "label": "Cmplid"
+    },
+    {
+      "name": "codepen",
+      "label": "Codepen"
+    },
+    {
+      "name": "codiepie",
+      "label": "Codiepie"
+    },
+    {
+      "name": "confluence",
+      "label": "Confluence"
+    },
+    {
+      "name": "connectdevelop",
+      "label": "Connectdevelop"
+    },
+    {
+      "name": "contao",
+      "label": "Contao"
+    },
+    {
+      "name": "cotton-bureau",
+      "label": "Cotton Bureau"
+    },
+    {
+      "name": "cpanel",
+      "label": "Cpanel"
+    },
+    {
+      "name": "creative-commons",
+      "label": "Creative Commons"
+    },
+    {
+      "name": "creative-commons-by",
+      "label": "Creative Commons By"
+    },
+    {
+      "name": "creative-commons-nc",
+      "label": "Creative Commons Nc"
+    },
+    {
+      "name": "creative-commons-nc-eu",
+      "label": "Creative Commons Nc Eu"
+    },
+    {
+      "name": "creative-commons-nc-jp",
+      "label": "Creative Commons Nc Jp"
+    },
+    {
+      "name": "creative-commons-nd",
+      "label": "Creative Commons Nd"
+    },
+    {
+      "name": "creative-commons-pd",
+      "label": "Creative Commons Pd"
+    },
+    {
+      "name": "creative-commons-pd-alt",
+      "label": "Creative Commons Pd Alt"
+    },
+    {
+      "name": "creative-commons-remix",
+      "label": "Creative Commons Remix"
+    },
+    {
+      "name": "creative-commons-sa",
+      "label": "Creative Commons Sa"
+    },
+    {
+      "name": "creative-commons-sampling",
+      "label": "Creative Commons Sampling"
+    },
+    {
+      "name": "creative-commons-sampling-plus",
+      "label": "Creative Commons Sampling Plus"
+    },
+    {
+      "name": "creative-commons-share",
+      "label": "Creative Commons Share"
+    },
+    {
+      "name": "creative-commons-zero",
+      "label": "Creative Commons Zero"
+    },
+    {
+      "name": "critical-role",
+      "label": "Critical Role"
+    },
+    {
+      "name": "css",
+      "label": "Css"
+    },
+    {
+      "name": "css3",
+      "label": "Css3"
+    },
+    {
+      "name": "css3-alt",
+      "label": "Css3 Alt"
+    },
+    {
+      "name": "cuttlefish",
+      "label": "Cuttlefish"
+    },
+    {
+      "name": "d-and-d",
+      "label": "D And D"
+    },
+    {
+      "name": "d-and-d-beyond",
+      "label": "D And D Beyond"
+    },
+    {
+      "name": "dailymotion",
+      "label": "Dailymotion"
+    },
+    {
+      "name": "dart-lang",
+      "label": "Dart Lang"
+    },
+    {
+      "name": "dashcube",
+      "label": "Dashcube"
+    },
+    {
+      "name": "debian",
+      "label": "Debian"
+    },
+    {
+      "name": "deezer",
+      "label": "Deezer"
+    },
+    {
+      "name": "delicious",
+      "label": "Delicious"
+    },
+    {
+      "name": "deploydog",
+      "label": "Deploydog"
+    },
+    {
+      "name": "deskpro",
+      "label": "Deskpro"
+    },
+    {
+      "name": "dev",
+      "label": "Dev"
+    },
+    {
+      "name": "deviantart",
+      "label": "Deviantart"
+    },
+    {
+      "name": "dhl",
+      "label": "Dhl"
+    },
+    {
+      "name": "diaspora",
+      "label": "Diaspora"
+    },
+    {
+      "name": "digg",
+      "label": "Digg"
+    },
+    {
+      "name": "digital-ocean",
+      "label": "Digital Ocean"
+    },
+    {
+      "name": "discord",
+      "label": "Discord"
+    },
+    {
+      "name": "discourse",
+      "label": "Discourse"
+    },
+    {
+      "name": "disqus",
+      "label": "Disqus"
+    },
+    {
+      "name": "dochub",
+      "label": "Dochub"
+    },
+    {
+      "name": "docker",
+      "label": "Docker"
+    },
+    {
+      "name": "draft2digital",
+      "label": "Draft2digital"
+    },
+    {
+      "name": "dribbble",
+      "label": "Dribbble"
+    },
+    {
+      "name": "dropbox",
+      "label": "Dropbox"
+    },
+    {
+      "name": "drupal",
+      "label": "Drupal"
+    },
+    {
+      "name": "duolingo",
+      "label": "Duolingo"
+    },
+    {
+      "name": "dyalog",
+      "label": "Dyalog"
+    },
+    {
+      "name": "earlybirds",
+      "label": "Earlybirds"
+    },
+    {
+      "name": "ebay",
+      "label": "Ebay"
+    },
+    {
+      "name": "edge",
+      "label": "Edge"
+    },
+    {
+      "name": "edge-legacy",
+      "label": "Edge Legacy"
+    },
+    {
+      "name": "elementor",
+      "label": "Elementor"
+    },
+    {
+      "name": "eleventy",
+      "label": "Eleventy"
+    },
+    {
+      "name": "ello",
+      "label": "Ello"
+    },
+    {
+      "name": "ember",
+      "label": "Ember"
+    },
+    {
+      "name": "empire",
+      "label": "Empire"
+    },
+    {
+      "name": "envira",
+      "label": "Envira"
+    },
+    {
+      "name": "erlang",
+      "label": "Erlang"
+    },
+    {
+      "name": "ethereum",
+      "label": "Ethereum"
+    },
+    {
+      "name": "etsy",
+      "label": "Etsy"
+    },
+    {
+      "name": "evernote",
+      "label": "Evernote"
+    },
+    {
+      "name": "expeditedssl",
+      "label": "Expeditedssl"
+    },
+    {
+      "name": "facebook",
+      "label": "Facebook"
+    },
+    {
+      "name": "facebook-f",
+      "label": "Facebook F"
+    },
+    {
+      "name": "facebook-messenger",
+      "label": "Facebook Messenger"
+    },
+    {
+      "name": "fantasy-flight-games",
+      "label": "Fantasy Flight Games"
+    },
+    {
+      "name": "fedex",
+      "label": "Fedex"
+    },
+    {
+      "name": "fedora",
+      "label": "Fedora"
+    },
+    {
+      "name": "figma",
+      "label": "Figma"
+    },
+    {
+      "name": "files-pinwheel",
+      "label": "Files Pinwheel"
+    },
+    {
+      "name": "firefox",
+      "label": "Firefox"
+    },
+    {
+      "name": "firefox-browser",
+      "label": "Firefox Browser"
+    },
+    {
+      "name": "first-order",
+      "label": "First Order"
+    },
+    {
+      "name": "first-order-alt",
+      "label": "First Order Alt"
+    },
+    {
+      "name": "firstdraft",
+      "label": "Firstdraft"
+    },
+    {
+      "name": "flickr",
+      "label": "Flickr"
+    },
+    {
+      "name": "flipboard",
+      "label": "Flipboard"
+    },
+    {
+      "name": "flutter",
+      "label": "Flutter"
+    },
+    {
+      "name": "fly",
+      "label": "Fly"
+    },
+    {
+      "name": "font-awesome",
+      "label": "Font Awesome"
+    },
+    {
+      "name": "fonticons",
+      "label": "Fonticons"
+    },
+    {
+      "name": "fonticons-fi",
+      "label": "Fonticons Fi"
+    },
+    {
+      "name": "fort-awesome",
+      "label": "Fort Awesome"
+    },
+    {
+      "name": "fort-awesome-alt",
+      "label": "Fort Awesome Alt"
+    },
+    {
+      "name": "forumbee",
+      "label": "Forumbee"
+    },
+    {
+      "name": "foursquare",
+      "label": "Foursquare"
+    },
+    {
+      "name": "free-code-camp",
+      "label": "Free Code Camp"
+    },
+    {
+      "name": "freebsd",
+      "label": "Freebsd"
+    },
+    {
+      "name": "fulcrum",
+      "label": "Fulcrum"
+    },
+    {
+      "name": "galactic-republic",
+      "label": "Galactic Republic"
+    },
+    {
+      "name": "galactic-senate",
+      "label": "Galactic Senate"
+    },
+    {
+      "name": "get-pocket",
+      "label": "Get Pocket"
+    },
+    {
+      "name": "gg",
+      "label": "Gg"
+    },
+    {
+      "name": "gg-circle",
+      "label": "Gg Circle"
+    },
+    {
+      "name": "git",
+      "label": "Git"
+    },
+    {
+      "name": "git-alt",
+      "label": "Git Alt"
+    },
+    {
+      "name": "github",
+      "label": "Github"
+    },
+    {
+      "name": "github-alt",
+      "label": "Github Alt"
+    },
+    {
+      "name": "gitkraken",
+      "label": "Gitkraken"
+    },
+    {
+      "name": "gitlab",
+      "label": "Gitlab"
+    },
+    {
+      "name": "gitter",
+      "label": "Gitter"
+    },
+    {
+      "name": "glide",
+      "label": "Glide"
+    },
+    {
+      "name": "glide-g",
+      "label": "Glide G"
+    },
+    {
+      "name": "gofore",
+      "label": "Gofore"
+    },
+    {
+      "name": "golang",
+      "label": "Golang"
+    },
+    {
+      "name": "goodreads",
+      "label": "Goodreads"
+    },
+    {
+      "name": "goodreads-g",
+      "label": "Goodreads G"
+    },
+    {
+      "name": "google",
+      "label": "Google"
+    },
+    {
+      "name": "google-drive",
+      "label": "Google Drive"
+    },
+    {
+      "name": "google-pay",
+      "label": "Google Pay"
+    },
+    {
+      "name": "google-play",
+      "label": "Google Play"
+    },
+    {
+      "name": "google-plus",
+      "label": "Google Plus"
+    },
+    {
+      "name": "google-plus-g",
+      "label": "Google Plus G"
+    },
+    {
+      "name": "google-scholar",
+      "label": "Google Scholar"
+    },
+    {
+      "name": "google-wallet",
+      "label": "Google Wallet"
+    },
+    {
+      "name": "gratipay",
+      "label": "Gratipay"
+    },
+    {
+      "name": "grav",
+      "label": "Grav"
+    },
+    {
+      "name": "gripfire",
+      "label": "Gripfire"
+    },
+    {
+      "name": "grunt",
+      "label": "Grunt"
+    },
+    {
+      "name": "guilded",
+      "label": "Guilded"
+    },
+    {
+      "name": "gulp",
+      "label": "Gulp"
+    },
+    {
+      "name": "hacker-news",
+      "label": "Hacker News"
+    },
+    {
+      "name": "hackerrank",
+      "label": "Hackerrank"
+    },
+    {
+      "name": "hashnode",
+      "label": "Hashnode"
+    },
+    {
+      "name": "hips",
+      "label": "Hips"
+    },
+    {
+      "name": "hire-a-helper",
+      "label": "Hire A Helper"
+    },
+    {
+      "name": "hive",
+      "label": "Hive"
+    },
+    {
+      "name": "hooli",
+      "label": "Hooli"
+    },
+    {
+      "name": "hornbill",
+      "label": "Hornbill"
+    },
+    {
+      "name": "hotjar",
+      "label": "Hotjar"
+    },
+    {
+      "name": "houzz",
+      "label": "Houzz"
+    },
+    {
+      "name": "html5",
+      "label": "Html5"
+    },
+    {
+      "name": "hubspot",
+      "label": "Hubspot"
+    },
+    {
+      "name": "ideal",
+      "label": "Ideal"
+    },
+    {
+      "name": "imdb",
+      "label": "Imdb"
+    },
+    {
+      "name": "instagram",
+      "label": "Instagram"
+    },
+    {
+      "name": "instalod",
+      "label": "Instalod"
+    },
+    {
+      "name": "intercom",
+      "label": "Intercom"
+    },
+    {
+      "name": "internet-explorer",
+      "label": "Internet Explorer"
+    },
+    {
+      "name": "invision",
+      "label": "Invision"
+    },
+    {
+      "name": "ioxhost",
+      "label": "Ioxhost"
+    },
+    {
+      "name": "itch-io",
+      "label": "Itch Io"
+    },
+    {
+      "name": "itunes",
+      "label": "Itunes"
+    },
+    {
+      "name": "itunes-note",
+      "label": "Itunes Note"
+    },
+    {
+      "name": "java",
+      "label": "Java"
+    },
+    {
+      "name": "jedi-order",
+      "label": "Jedi Order"
+    },
+    {
+      "name": "jenkins",
+      "label": "Jenkins"
+    },
+    {
+      "name": "jira",
+      "label": "Jira"
+    },
+    {
+      "name": "joget",
+      "label": "Joget"
+    },
+    {
+      "name": "joomla",
+      "label": "Joomla"
+    },
+    {
+      "name": "js",
+      "label": "Js"
+    },
+    {
+      "name": "jsfiddle",
+      "label": "Jsfiddle"
+    },
+    {
+      "name": "jxl",
+      "label": "Jxl"
+    },
+    {
+      "name": "kaggle",
+      "label": "Kaggle"
+    },
+    {
+      "name": "kakao-talk",
+      "label": "Kakao Talk"
+    },
+    {
+      "name": "keybase",
+      "label": "Keybase"
+    },
+    {
+      "name": "keycdn",
+      "label": "Keycdn"
+    },
+    {
+      "name": "kickstarter",
+      "label": "Kickstarter"
+    },
+    {
+      "name": "kickstarter-k",
+      "label": "Kickstarter K"
+    },
+    {
+      "name": "korvue",
+      "label": "Korvue"
+    },
+    {
+      "name": "laravel",
+      "label": "Laravel"
+    },
+    {
+      "name": "lastfm",
+      "label": "Lastfm"
+    },
+    {
+      "name": "leanpub",
+      "label": "Leanpub"
+    },
+    {
+      "name": "less",
+      "label": "Less"
+    },
+    {
+      "name": "letterboxd",
+      "label": "Letterboxd"
+    },
+    {
+      "name": "line",
+      "label": "Line"
+    },
+    {
+      "name": "linkedin",
+      "label": "Linkedin"
+    },
+    {
+      "name": "linkedin-in",
+      "label": "Linkedin In"
+    },
+    {
+      "name": "linktree",
+      "label": "Linktree"
+    },
+    {
+      "name": "linode",
+      "label": "Linode"
+    },
+    {
+      "name": "linux",
+      "label": "Linux"
+    },
+    {
+      "name": "lumon",
+      "label": "Lumon"
+    },
+    {
+      "name": "lumon-drop",
+      "label": "Lumon Drop"
+    },
+    {
+      "name": "lyft",
+      "label": "Lyft"
+    },
+    {
+      "name": "magento",
+      "label": "Magento"
+    },
+    {
+      "name": "mailchimp",
+      "label": "Mailchimp"
+    },
+    {
+      "name": "mandalorian",
+      "label": "Mandalorian"
+    },
+    {
+      "name": "markdown",
+      "label": "Markdown"
+    },
+    {
+      "name": "mastodon",
+      "label": "Mastodon"
+    },
+    {
+      "name": "maxcdn",
+      "label": "Maxcdn"
+    },
+    {
+      "name": "mdb",
+      "label": "Mdb"
+    },
+    {
+      "name": "medapps",
+      "label": "Medapps"
+    },
+    {
+      "name": "medium",
+      "label": "Medium"
+    },
+    {
+      "name": "medrt",
+      "label": "Medrt"
+    },
+    {
+      "name": "meetup",
+      "label": "Meetup"
+    },
+    {
+      "name": "megaport",
+      "label": "Megaport"
+    },
+    {
+      "name": "mendeley",
+      "label": "Mendeley"
+    },
+    {
+      "name": "meta",
+      "label": "Meta"
+    },
+    {
+      "name": "microblog",
+      "label": "Microblog"
+    },
+    {
+      "name": "microsoft",
+      "label": "Microsoft"
+    },
+    {
+      "name": "mintbit",
+      "label": "Mintbit"
+    },
+    {
+      "name": "mix",
+      "label": "Mix"
+    },
+    {
+      "name": "mixcloud",
+      "label": "Mixcloud"
+    },
+    {
+      "name": "mixer",
+      "label": "Mixer"
+    },
+    {
+      "name": "mizuni",
+      "label": "Mizuni"
+    },
+    {
+      "name": "modx",
+      "label": "Modx"
+    },
+    {
+      "name": "monero",
+      "label": "Monero"
+    },
+    {
+      "name": "napster",
+      "label": "Napster"
+    },
+    {
+      "name": "neos",
+      "label": "Neos"
+    },
+    {
+      "name": "nfc-directional",
+      "label": "Nfc Directional"
+    },
+    {
+      "name": "nfc-symbol",
+      "label": "Nfc Symbol"
+    },
+    {
+      "name": "nimblr",
+      "label": "Nimblr"
+    },
+    {
+      "name": "node",
+      "label": "Node"
+    },
+    {
+      "name": "node-js",
+      "label": "Node Js"
+    },
+    {
+      "name": "notion",
+      "label": "Notion"
+    },
+    {
+      "name": "npm",
+      "label": "Npm"
+    },
+    {
+      "name": "ns8",
+      "label": "Ns8"
+    },
+    {
+      "name": "nutritionix",
+      "label": "Nutritionix"
+    },
+    {
+      "name": "octopus-deploy",
+      "label": "Octopus Deploy"
+    },
+    {
+      "name": "odnoklassniki",
+      "label": "Odnoklassniki"
+    },
+    {
+      "name": "odysee",
+      "label": "Odysee"
+    },
+    {
+      "name": "old-republic",
+      "label": "Old Republic"
+    },
+    {
+      "name": "openai",
+      "label": "Openai"
+    },
+    {
+      "name": "opencart",
+      "label": "Opencart"
+    },
+    {
+      "name": "openid",
+      "label": "Openid"
+    },
+    {
+      "name": "opensuse",
+      "label": "Opensuse"
+    },
+    {
+      "name": "opera",
+      "label": "Opera"
+    },
+    {
+      "name": "optin-monster",
+      "label": "Optin Monster"
+    },
+    {
+      "name": "orcid",
+      "label": "Orcid"
+    },
+    {
+      "name": "osi",
+      "label": "Osi"
+    },
+    {
+      "name": "padlet",
+      "label": "Padlet"
+    },
+    {
+      "name": "page4",
+      "label": "Page4"
+    },
+    {
+      "name": "pagelines",
+      "label": "Pagelines"
+    },
+    {
+      "name": "palfed",
+      "label": "Palfed"
+    },
+    {
+      "name": "pandora",
+      "label": "Pandora"
+    },
+    {
+      "name": "patreon",
+      "label": "Patreon"
+    },
+    {
+      "name": "paypal",
+      "label": "Paypal"
+    },
+    {
+      "name": "perbyte",
+      "label": "Perbyte"
+    },
+    {
+      "name": "periscope",
+      "label": "Periscope"
+    },
+    {
+      "name": "phabricator",
+      "label": "Phabricator"
+    },
+    {
+      "name": "phoenix-framework",
+      "label": "Phoenix Framework"
+    },
+    {
+      "name": "phoenix-squadron",
+      "label": "Phoenix Squadron"
+    },
+    {
+      "name": "php",
+      "label": "Php"
+    },
+    {
+      "name": "pied-piper",
+      "label": "Pied Piper"
+    },
+    {
+      "name": "pied-piper-alt",
+      "label": "Pied Piper Alt"
+    },
+    {
+      "name": "pied-piper-hat",
+      "label": "Pied Piper Hat"
+    },
+    {
+      "name": "pied-piper-pp",
+      "label": "Pied Piper Pp"
+    },
+    {
+      "name": "pinterest",
+      "label": "Pinterest"
+    },
+    {
+      "name": "pinterest-p",
+      "label": "Pinterest P"
+    },
+    {
+      "name": "pix",
+      "label": "Pix"
+    },
+    {
+      "name": "pixelfed",
+      "label": "Pixelfed"
+    },
+    {
+      "name": "pixiv",
+      "label": "Pixiv"
+    },
+    {
+      "name": "playstation",
+      "label": "Playstation"
+    },
+    {
+      "name": "product-hunt",
+      "label": "Product Hunt"
+    },
+    {
+      "name": "pushed",
+      "label": "Pushed"
+    },
+    {
+      "name": "python",
+      "label": "Python"
+    },
+    {
+      "name": "qq",
+      "label": "Qq"
+    },
+    {
+      "name": "quinscape",
+      "label": "Quinscape"
+    },
+    {
+      "name": "quora",
+      "label": "Quora"
+    },
+    {
+      "name": "r-project",
+      "label": "R Project"
+    },
+    {
+      "name": "raspberry-pi",
+      "label": "Raspberry Pi"
+    },
+    {
+      "name": "ravelry",
+      "label": "Ravelry"
+    },
+    {
+      "name": "react",
+      "label": "React"
+    },
+    {
+      "name": "reacteurope",
+      "label": "Reacteurope"
+    },
+    {
+      "name": "readme",
+      "label": "Readme"
+    },
+    {
+      "name": "rebel",
+      "label": "Rebel"
+    },
+    {
+      "name": "red-river",
+      "label": "Red River"
+    },
+    {
+      "name": "reddit",
+      "label": "Reddit"
+    },
+    {
+      "name": "reddit-alien",
+      "label": "Reddit Alien"
+    },
+    {
+      "name": "redhat",
+      "label": "Redhat"
+    },
+    {
+      "name": "renren",
+      "label": "Renren"
+    },
+    {
+      "name": "replyd",
+      "label": "Replyd"
+    },
+    {
+      "name": "researchgate",
+      "label": "Researchgate"
+    },
+    {
+      "name": "resolving",
+      "label": "Resolving"
+    },
+    {
+      "name": "rev",
+      "label": "Rev"
+    },
+    {
+      "name": "rocketchat",
+      "label": "Rocketchat"
+    },
+    {
+      "name": "rockrms",
+      "label": "Rockrms"
+    },
+    {
+      "name": "rust",
+      "label": "Rust"
+    },
+    {
+      "name": "safari",
+      "label": "Safari"
+    },
+    {
+      "name": "salesforce",
+      "label": "Salesforce"
+    },
+    {
+      "name": "sass",
+      "label": "Sass"
+    },
+    {
+      "name": "schlix",
+      "label": "Schlix"
+    },
+    {
+      "name": "screenpal",
+      "label": "Screenpal"
+    },
+    {
+      "name": "scribd",
+      "label": "Scribd"
+    },
+    {
+      "name": "searchengin",
+      "label": "Searchengin"
+    },
+    {
+      "name": "sellcast",
+      "label": "Sellcast"
+    },
+    {
+      "name": "sellsy",
+      "label": "Sellsy"
+    },
+    {
+      "name": "servicestack",
+      "label": "Servicestack"
+    },
+    {
+      "name": "shirtsinbulk",
+      "label": "Shirtsinbulk"
+    },
+    {
+      "name": "shoelace",
+      "label": "Shoelace"
+    },
+    {
+      "name": "shopify",
+      "label": "Shopify"
+    },
+    {
+      "name": "shopware",
+      "label": "Shopware"
+    },
+    {
+      "name": "signal-messenger",
+      "label": "Signal Messenger"
+    },
+    {
+      "name": "simplybuilt",
+      "label": "Simplybuilt"
+    },
+    {
+      "name": "sistrix",
+      "label": "Sistrix"
+    },
+    {
+      "name": "sith",
+      "label": "Sith"
+    },
+    {
+      "name": "sitrox",
+      "label": "Sitrox"
+    },
+    {
+      "name": "sketch",
+      "label": "Sketch"
+    },
+    {
+      "name": "skyatlas",
+      "label": "Skyatlas"
+    },
+    {
+      "name": "skype",
+      "label": "Skype"
+    },
+    {
+      "name": "slack",
+      "label": "Slack"
+    },
+    {
+      "name": "slideshare",
+      "label": "Slideshare"
+    },
+    {
+      "name": "snapchat",
+      "label": "Snapchat"
+    },
+    {
+      "name": "soundcloud",
+      "label": "Soundcloud"
+    },
+    {
+      "name": "sourcetree",
+      "label": "Sourcetree"
+    },
+    {
+      "name": "space-awesome",
+      "label": "Space Awesome"
+    },
+    {
+      "name": "speakap",
+      "label": "Speakap"
+    },
+    {
+      "name": "speaker-deck",
+      "label": "Speaker Deck"
+    },
+    {
+      "name": "spotify",
+      "label": "Spotify"
+    },
+    {
+      "name": "square-behance",
+      "label": "Square Behance"
+    },
+    {
+      "name": "square-bluesky",
+      "label": "Square Bluesky"
+    },
+    {
+      "name": "square-dribbble",
+      "label": "Square Dribbble"
+    },
+    {
+      "name": "square-facebook",
+      "label": "Square Facebook"
+    },
+    {
+      "name": "square-figma",
+      "label": "Square Figma"
+    },
+    {
+      "name": "square-font-awesome",
+      "label": "Square Font Awesome"
+    },
+    {
+      "name": "square-font-awesome-stroke",
+      "label": "Square Font Awesome Stroke"
+    },
+    {
+      "name": "square-git",
+      "label": "Square Git"
+    },
+    {
+      "name": "square-github",
+      "label": "Square Github"
+    },
+    {
+      "name": "square-gitlab",
+      "label": "Square Gitlab"
+    },
+    {
+      "name": "square-google-plus",
+      "label": "Square Google Plus"
+    },
+    {
+      "name": "square-hacker-news",
+      "label": "Square Hacker News"
+    },
+    {
+      "name": "square-instagram",
+      "label": "Square Instagram"
+    },
+    {
+      "name": "square-js",
+      "label": "Square Js"
+    },
+    {
+      "name": "square-lastfm",
+      "label": "Square Lastfm"
+    },
+    {
+      "name": "square-letterboxd",
+      "label": "Square Letterboxd"
+    },
+    {
+      "name": "square-linkedin",
+      "label": "Square Linkedin"
+    },
+    {
+      "name": "square-odnoklassniki",
+      "label": "Square Odnoklassniki"
+    },
+    {
+      "name": "square-pied-piper",
+      "label": "Square Pied Piper"
+    },
+    {
+      "name": "square-pinterest",
+      "label": "Square Pinterest"
+    },
+    {
+      "name": "square-reddit",
+      "label": "Square Reddit"
+    },
+    {
+      "name": "square-snapchat",
+      "label": "Square Snapchat"
+    },
+    {
+      "name": "square-steam",
+      "label": "Square Steam"
+    },
+    {
+      "name": "square-threads",
+      "label": "Square Threads"
+    },
+    {
+      "name": "square-tumblr",
+      "label": "Square Tumblr"
+    },
+    {
+      "name": "square-twitter",
+      "label": "Square Twitter"
+    },
+    {
+      "name": "square-upwork",
+      "label": "Square Upwork"
+    },
+    {
+      "name": "square-viadeo",
+      "label": "Square Viadeo"
+    },
+    {
+      "name": "square-vimeo",
+      "label": "Square Vimeo"
+    },
+    {
+      "name": "square-web-awesome",
+      "label": "Square Web Awesome"
+    },
+    {
+      "name": "square-web-awesome-stroke",
+      "label": "Square Web Awesome Stroke"
+    },
+    {
+      "name": "square-whatsapp",
+      "label": "Square Whatsapp"
+    },
+    {
+      "name": "square-x-twitter",
+      "label": "Square X Twitter"
+    },
+    {
+      "name": "square-xing",
+      "label": "Square Xing"
+    },
+    {
+      "name": "square-youtube",
+      "label": "Square Youtube"
+    },
+    {
+      "name": "squarespace",
+      "label": "Squarespace"
+    },
+    {
+      "name": "stack-exchange",
+      "label": "Stack Exchange"
+    },
+    {
+      "name": "stack-overflow",
+      "label": "Stack Overflow"
+    },
+    {
+      "name": "stackpath",
+      "label": "Stackpath"
+    },
+    {
+      "name": "staylinked",
+      "label": "Staylinked"
+    },
+    {
+      "name": "steam",
+      "label": "Steam"
+    },
+    {
+      "name": "steam-symbol",
+      "label": "Steam Symbol"
+    },
+    {
+      "name": "sticker-mule",
+      "label": "Sticker Mule"
+    },
+    {
+      "name": "strava",
+      "label": "Strava"
+    },
+    {
+      "name": "stripe",
+      "label": "Stripe"
+    },
+    {
+      "name": "stripe-s",
+      "label": "Stripe S"
+    },
+    {
+      "name": "stubber",
+      "label": "Stubber"
+    },
+    {
+      "name": "studiovinari",
+      "label": "Studiovinari"
+    },
+    {
+      "name": "stumbleupon",
+      "label": "Stumbleupon"
+    },
+    {
+      "name": "stumbleupon-circle",
+      "label": "Stumbleupon Circle"
+    },
+    {
+      "name": "superpowers",
+      "label": "Superpowers"
+    },
+    {
+      "name": "supple",
+      "label": "Supple"
+    },
+    {
+      "name": "suse",
+      "label": "Suse"
+    },
+    {
+      "name": "swift",
+      "label": "Swift"
+    },
+    {
+      "name": "symfony",
+      "label": "Symfony"
+    },
+    {
+      "name": "teamspeak",
+      "label": "Teamspeak"
+    },
+    {
+      "name": "telegram",
+      "label": "Telegram"
+    },
+    {
+      "name": "tencent-weibo",
+      "label": "Tencent Weibo"
+    },
+    {
+      "name": "tex",
+      "label": "Tex"
+    },
+    {
+      "name": "the-red-yeti",
+      "label": "The Red Yeti"
+    },
+    {
+      "name": "themeco",
+      "label": "Themeco"
+    },
+    {
+      "name": "themeisle",
+      "label": "Themeisle"
+    },
+    {
+      "name": "think-peaks",
+      "label": "Think Peaks"
+    },
+    {
+      "name": "threads",
+      "label": "Threads"
+    },
+    {
+      "name": "tidal",
+      "label": "Tidal"
+    },
+    {
+      "name": "tiktok",
+      "label": "Tiktok"
+    },
+    {
+      "name": "trade-federation",
+      "label": "Trade Federation"
+    },
+    {
+      "name": "trello",
+      "label": "Trello"
+    },
+    {
+      "name": "tumblr",
+      "label": "Tumblr"
+    },
+    {
+      "name": "twitch",
+      "label": "Twitch"
+    },
+    {
+      "name": "twitter",
+      "label": "Twitter"
+    },
+    {
+      "name": "typo3",
+      "label": "Typo3"
+    },
+    {
+      "name": "uber",
+      "label": "Uber"
+    },
+    {
+      "name": "ubuntu",
+      "label": "Ubuntu"
+    },
+    {
+      "name": "uikit",
+      "label": "Uikit"
+    },
+    {
+      "name": "umbraco",
+      "label": "Umbraco"
+    },
+    {
+      "name": "uncharted",
+      "label": "Uncharted"
+    },
+    {
+      "name": "uniregistry",
+      "label": "Uniregistry"
+    },
+    {
+      "name": "unity",
+      "label": "Unity"
+    },
+    {
+      "name": "unsplash",
+      "label": "Unsplash"
+    },
+    {
+      "name": "untappd",
+      "label": "Untappd"
+    },
+    {
+      "name": "ups",
+      "label": "Ups"
+    },
+    {
+      "name": "upwork",
+      "label": "Upwork"
+    },
+    {
+      "name": "usb",
+      "label": "Usb"
+    },
+    {
+      "name": "usps",
+      "label": "Usps"
+    },
+    {
+      "name": "ussunnah",
+      "label": "Ussunnah"
+    },
+    {
+      "name": "vaadin",
+      "label": "Vaadin"
+    },
+    {
+      "name": "viacoin",
+      "label": "Viacoin"
+    },
+    {
+      "name": "viadeo",
+      "label": "Viadeo"
+    },
+    {
+      "name": "viber",
+      "label": "Viber"
+    },
+    {
+      "name": "vimeo",
+      "label": "Vimeo"
+    },
+    {
+      "name": "vimeo-v",
+      "label": "Vimeo V"
+    },
+    {
+      "name": "vine",
+      "label": "Vine"
+    },
+    {
+      "name": "vk",
+      "label": "Vk"
+    },
+    {
+      "name": "vnv",
+      "label": "Vnv"
+    },
+    {
+      "name": "vsco",
+      "label": "Vsco"
+    },
+    {
+      "name": "vuejs",
+      "label": "Vuejs"
+    },
+    {
+      "name": "w3c",
+      "label": "W3c"
+    },
+    {
+      "name": "watchman-monitoring",
+      "label": "Watchman Monitoring"
+    },
+    {
+      "name": "waze",
+      "label": "Waze"
+    },
+    {
+      "name": "web-awesome",
+      "label": "Web Awesome"
+    },
+    {
+      "name": "webflow",
+      "label": "Webflow"
+    },
+    {
+      "name": "weebly",
+      "label": "Weebly"
+    },
+    {
+      "name": "weibo",
+      "label": "Weibo"
+    },
+    {
+      "name": "weixin",
+      "label": "Weixin"
+    },
+    {
+      "name": "whatsapp",
+      "label": "Whatsapp"
+    },
+    {
+      "name": "whmcs",
+      "label": "Whmcs"
+    },
+    {
+      "name": "wikipedia-w",
+      "label": "Wikipedia W"
+    },
+    {
+      "name": "windows",
+      "label": "Windows"
+    },
+    {
+      "name": "wirsindhandwerk",
+      "label": "Wirsindhandwerk"
+    },
+    {
+      "name": "wix",
+      "label": "Wix"
+    },
+    {
+      "name": "wizards-of-the-coast",
+      "label": "Wizards Of The Coast"
+    },
+    {
+      "name": "wodu",
+      "label": "Wodu"
+    },
+    {
+      "name": "wolf-pack-battalion",
+      "label": "Wolf Pack Battalion"
+    },
+    {
+      "name": "wordpress",
+      "label": "Wordpress"
+    },
+    {
+      "name": "wordpress-simple",
+      "label": "Wordpress Simple"
+    },
+    {
+      "name": "wpbeginner",
+      "label": "Wpbeginner"
+    },
+    {
+      "name": "wpexplorer",
+      "label": "Wpexplorer"
+    },
+    {
+      "name": "wpforms",
+      "label": "Wpforms"
+    },
+    {
+      "name": "wpressr",
+      "label": "Wpressr"
+    },
+    {
+      "name": "x-twitter",
+      "label": "X Twitter"
+    },
+    {
+      "name": "xbox",
+      "label": "Xbox"
+    },
+    {
+      "name": "xing",
+      "label": "Xing"
+    },
+    {
+      "name": "y-combinator",
+      "label": "Y Combinator"
+    },
+    {
+      "name": "yahoo",
+      "label": "Yahoo"
+    },
+    {
+      "name": "yammer",
+      "label": "Yammer"
+    },
+    {
+      "name": "yandex",
+      "label": "Yandex"
+    },
+    {
+      "name": "yandex-international",
+      "label": "Yandex International"
+    },
+    {
+      "name": "yarn",
+      "label": "Yarn"
+    },
+    {
+      "name": "yelp",
+      "label": "Yelp"
+    },
+    {
+      "name": "yoast",
+      "label": "Yoast"
+    },
+    {
+      "name": "youtube",
+      "label": "Youtube"
+    },
+    {
+      "name": "zhihu",
+      "label": "Zhihu"
+    }
+  ]
+}

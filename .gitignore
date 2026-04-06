@@ -31,6 +31,8 @@
 !/mu-plugins/mrn-editor-lockdown/**
 !/mu-plugins/mrn-editor-ui-css/
 !/mu-plugins/mrn-editor-ui-css/**
+!/mu-plugins/mrn-shared-assets/
+!/mu-plugins/mrn-shared-assets/**
 !/mu-plugins/mrn-site-colors/
 !/mu-plugins/mrn-site-colors/**
 !/mu-plugins/mrn-svg-support/
