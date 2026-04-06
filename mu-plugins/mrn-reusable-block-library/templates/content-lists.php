@@ -18,8 +18,10 @@ if ( $host_post_id < 1 ) {
 
 $label       = isset( $fields['label'] ) ? trim( (string) $fields['label'] ) : '';
 $label_tag   = function_exists( 'mrn_rbl_normalize_text_tag' ) ? mrn_rbl_normalize_text_tag( $fields['label_tag'] ?? '', 'p' ) : 'p';
-$heading     = isset( $fields['text_field'] ) ? trim( (string) $fields['text_field'] ) : '';
-$heading_tag = function_exists( 'mrn_rbl_normalize_text_tag' ) ? mrn_rbl_normalize_text_tag( $fields['text_field_tag'] ?? '', 'h2' ) : 'h2';
+$heading     = isset( $fields['heading'] ) ? trim( (string) $fields['heading'] ) : '';
+$heading_tag = function_exists( 'mrn_rbl_normalize_text_tag' ) ? mrn_rbl_normalize_text_tag( $fields['heading_tag'] ?? '', 'h2' ) : 'h2';
+$subheading  = isset( $fields['subheading'] ) ? trim( (string) $fields['subheading'] ) : '';
+$subheading_tag = function_exists( 'mrn_rbl_normalize_text_tag' ) ? mrn_rbl_normalize_text_tag( $fields['subheading_tag'] ?? '', 'p' ) : 'p';
 $intro       = isset( $fields['content'] ) ? (string) $fields['content'] : '';
 
 $post_type_choices = function_exists( 'mrn_base_stack_get_content_list_post_type_choices' ) ? mrn_base_stack_get_content_list_post_type_choices() : array( 'post' => 'Posts' );
@@ -93,6 +95,7 @@ $query = new WP_Query( $query_args );
 
 $has_intro   = '' !== trim( wp_strip_all_tags( $intro ) );
 $has_heading = '' !== $heading;
+$has_subheading = '' !== $subheading;
 $has_label   = '' !== $label;
 $has_posts   = $query->have_posts();
 
@@ -101,7 +104,7 @@ if ( ! $has_posts && $hide_when_empty ) {
 	return;
 }
 
-if ( ! $has_label && ! $has_heading && ! $has_intro && ! $has_posts && '' === $empty_message ) {
+if ( ! $has_label && ! $has_heading && ! $has_subheading && ! $has_intro && ! $has_posts && '' === $empty_message ) {
 	wp_reset_postdata();
 	return;
 }
@@ -194,13 +197,16 @@ if ( $show_pagination && $query->max_num_pages > 1 ) {
 	<?php endif; ?>
 >
 	<div class="mrn-reusable-block__inner mrn-reusable-block__inner--content-lists">
-		<?php if ( $has_label || $has_heading || $has_intro ) : ?>
+		<?php if ( $has_label || $has_heading || $has_subheading || $has_intro ) : ?>
 			<div class="mrn-content-list-row__header">
 				<?php if ( $has_label ) : ?>
 					<<?php echo esc_html( $label_tag ); ?> class="mrn-shell-section__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
 				<?php endif; ?>
 				<?php if ( $has_heading ) : ?>
 					<<?php echo esc_html( $heading_tag ); ?> class="mrn-shell-section__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+				<?php endif; ?>
+				<?php if ( $has_subheading ) : ?>
+					<<?php echo esc_html( $subheading_tag ); ?> class="mrn-shell-section__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
 				<?php endif; ?>
 				<?php if ( $has_intro ) : ?>
 					<div class="mrn-shell-section__content mrn-content-list-row__intro">

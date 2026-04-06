@@ -3,7 +3,7 @@
  * Plugin Name: Reusable Block Library (MU)
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.7
+ * Version: 0.1.8
  */
 
 defined('ABSPATH') || exit;
@@ -915,6 +915,24 @@ function mrn_rbl_normalize_text_tag($value, string $default = 'p'): string {
 }
 
 /**
+ * Build a standard inline-HTML-enabled text field definition.
+ *
+ * @return array<string, mixed>
+ */
+function mrn_rbl_get_inline_text_field(string $key, string $label, string $name, string $instructions = 'Limited inline HTML allowed: span, strong, em, br.', string $width = '75'): array {
+    return array(
+        'key'          => $key,
+        'label'        => $label,
+        'name'         => $name,
+        'type'         => 'text',
+        'instructions' => $instructions,
+        'wrapper'      => array(
+            'width' => $width,
+        ),
+    );
+}
+
+/**
  * Build a standard label-tag ACF field definition.
  *
  * @return array<string, mixed>
@@ -922,11 +940,31 @@ function mrn_rbl_normalize_text_tag($value, string $default = 'p'): string {
 function mrn_rbl_get_label_tag_field(string $key, string $name = 'label_tag', string $default = 'p'): array {
     return array(
         'key'           => $key,
-        'label'         => 'HTML tag for label',
+        'label'         => 'HTML Tag for Label',
         'name'          => $name,
         'type'          => 'select',
         'default_value' => mrn_rbl_normalize_text_tag($default, 'p'),
         'choices'       => mrn_rbl_get_label_tag_choices(),
+        'ui'            => 1,
+        'wrapper'       => array(
+            'width' => '25',
+        ),
+    );
+}
+
+/**
+ * Build a standard heading/subheading tag ACF field definition.
+ *
+ * @return array<string, mixed>
+ */
+function mrn_rbl_get_text_tag_field(string $key, string $label = 'Heading Tag', string $name = 'text_field_tag', string $default = 'h2'): array {
+    return array(
+        'key'           => $key,
+        'label'         => $label,
+        'name'          => $name,
+        'type'          => 'select',
+        'default_value' => mrn_rbl_normalize_text_tag($default, 'h2'),
+        'choices'       => mrn_rbl_get_heading_tag_choices(),
         'ui'            => 1,
         'wrapper'       => array(
             'width' => '25',
@@ -1081,39 +1119,12 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'type'      => 'tab',
                 'placement' => 'top',
             ),
-            array(
-                'key'          => 'field_mrn_cta_label',
-                'label'        => 'Label',
-                'name'         => 'label',
-                'type'         => 'text',
-                'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-                'wrapper'      => array(
-                    'width' => '75',
-                ),
-            ),
+            mrn_rbl_get_inline_text_field('field_mrn_cta_label', 'Label', 'label'),
             mrn_rbl_get_label_tag_field('field_mrn_cta_label_tag'),
-            array(
-                'key'          => 'field_mrn_cta_heading',
-                'label'        => 'Title field',
-                'name'         => 'text_field',
-                'type'         => 'text',
-                'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-                'wrapper'      => array(
-                    'width' => '75',
-                ),
-            ),
-            array(
-                'key'           => 'field_mrn_cta_heading_tag',
-                'label'         => 'HTML tag for text field',
-                'name'          => 'text_field_tag',
-                'type'          => 'select',
-                'default_value' => 'h2',
-                'choices'       => mrn_rbl_get_heading_tag_choices(),
-                'ui'            => 1,
-                'wrapper'       => array(
-                    'width' => '25',
-                ),
-            ),
+            mrn_rbl_get_inline_text_field('field_mrn_cta_heading', 'Heading', 'heading'),
+            mrn_rbl_get_text_tag_field('field_mrn_cta_heading_tag', 'Heading Tag', 'heading_tag', 'h2'),
+            mrn_rbl_get_inline_text_field('field_mrn_cta_subheading', 'Subheading', 'subheading'),
+            mrn_rbl_get_text_tag_field('field_mrn_cta_subheading_tag', 'Subheading Tag', 'subheading_tag', 'p'),
             array(
                 'key'          => 'field_mrn_cta_copy',
                 'label'        => 'Text area with editor',
@@ -1256,39 +1267,12 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'type'  => 'tab',
                 'placement' => 'top',
             ),
-            array(
-                'key'          => 'field_mrn_basic_block_label',
-                'label'        => 'Label',
-                'name'         => 'label',
-                'type'         => 'text',
-                'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-                'wrapper'      => array(
-                    'width' => '75',
-                ),
-            ),
+            mrn_rbl_get_inline_text_field('field_mrn_basic_block_label', 'Label', 'label'),
             mrn_rbl_get_label_tag_field('field_mrn_basic_block_label_tag'),
-            array(
-                'key'          => 'field_mrn_basic_block_title',
-                'label'        => 'Title field',
-                'name'         => 'text_field',
-                'type'         => 'text',
-                'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-                'wrapper'      => array(
-                    'width' => '75',
-                ),
-            ),
-            array(
-                'key'           => 'field_mrn_basic_block_title_tag',
-                'label'         => 'HTML tag for text field',
-                'name'          => 'text_field_tag',
-                'type'          => 'select',
-                'default_value' => 'h2',
-                'choices'       => mrn_rbl_get_heading_tag_choices(),
-                'ui'            => 1,
-                'wrapper'       => array(
-                    'width' => '25',
-                ),
-            ),
+            mrn_rbl_get_inline_text_field('field_mrn_basic_block_title', 'Heading', 'heading'),
+            mrn_rbl_get_text_tag_field('field_mrn_basic_block_title_tag', 'Heading Tag', 'heading_tag', 'h2'),
+            mrn_rbl_get_inline_text_field('field_mrn_basic_block_subheading', 'Subheading', 'subheading'),
+            mrn_rbl_get_text_tag_field('field_mrn_basic_block_subheading_tag', 'Subheading Tag', 'subheading_tag', 'p'),
             array(
                 'key'          => 'field_mrn_basic_block_text',
                 'label'        => 'Text area with editor',
@@ -1438,39 +1422,12 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'type'      => 'tab',
                 'placement' => 'top',
             ),
-            array(
-                'key'          => 'field_mrn_content_grid_label',
-                'label'        => 'Label',
-                'name'         => 'label',
-                'type'         => 'text',
-                'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-                'wrapper'      => array(
-                    'width' => '75',
-                ),
-            ),
+            mrn_rbl_get_inline_text_field('field_mrn_content_grid_label', 'Label', 'label'),
             mrn_rbl_get_label_tag_field('field_mrn_content_grid_label_tag'),
-            array(
-                'key'          => 'field_mrn_content_grid_heading',
-                'label'        => 'Title field',
-                'name'         => 'text_field',
-                'type'         => 'text',
-                'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-                'wrapper'      => array(
-                    'width' => '75',
-                ),
-            ),
-            array(
-                'key'           => 'field_mrn_content_grid_heading_tag',
-                'label'         => 'HTML tag for text field',
-                'name'          => 'text_field_tag',
-                'type'          => 'select',
-                'default_value' => 'h2',
-                'choices'       => mrn_rbl_get_heading_tag_choices(),
-                'ui'            => 1,
-                'wrapper'       => array(
-                    'width' => '25',
-                ),
-            ),
+            mrn_rbl_get_inline_text_field('field_mrn_content_grid_heading', 'Heading', 'heading'),
+            mrn_rbl_get_text_tag_field('field_mrn_content_grid_heading_tag', 'Heading Tag', 'heading_tag', 'h2'),
+            mrn_rbl_get_inline_text_field('field_mrn_content_grid_subheading', 'Subheading', 'subheading'),
+            mrn_rbl_get_text_tag_field('field_mrn_content_grid_subheading_tag', 'Subheading Tag', 'subheading_tag', 'p'),
             array(
                 'key'          => 'field_mrn_content_grid_items',
                 'label'        => 'Repeater',
@@ -1481,39 +1438,10 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'min'          => 1,
                 'button_label' => 'Add Grid Item',
                 'sub_fields'   => array(
-                    array(
-                        'key'          => 'field_mrn_content_grid_item_label',
-                        'label'        => 'Label',
-                        'name'         => 'label',
-                        'type'         => 'text',
-                        'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-                        'wrapper'      => array(
-                            'width' => '75',
-                        ),
-                    ),
+                    mrn_rbl_get_inline_text_field('field_mrn_content_grid_item_label', 'Label', 'label'),
                     mrn_rbl_get_label_tag_field('field_mrn_content_grid_item_label_tag'),
-                    array(
-                        'key'     => 'field_mrn_content_grid_item_title',
-                        'label'   => 'Title field',
-                        'name'    => 'title',
-                        'type'    => 'text',
-                        'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-                        'wrapper' => array(
-                            'width' => '75',
-                        ),
-                    ),
-                    array(
-                        'key'           => 'field_mrn_content_grid_item_title_tag',
-                        'label'         => 'HTML tag for title field',
-                        'name'          => 'title_tag',
-                        'type'          => 'select',
-                        'default_value' => 'h3',
-                        'choices'       => mrn_rbl_get_heading_tag_choices(),
-                        'ui'            => 1,
-                        'wrapper'       => array(
-                            'width' => '25',
-                        ),
-                    ),
+                    mrn_rbl_get_inline_text_field('field_mrn_content_grid_item_title', 'Heading', 'heading'),
+                    mrn_rbl_get_text_tag_field('field_mrn_content_grid_item_title_tag', 'Heading Tag', 'heading_tag', 'h3'),
                     array(
                         'key'          => 'field_mrn_content_grid_item_copy',
                         'label'        => 'Text area with editor',
@@ -1633,39 +1561,12 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'type'      => 'tab',
                 'placement' => 'top',
             ),
-            array(
-                'key'          => 'field_mrn_reusable_content_lists_label',
-                'label'        => 'Label',
-                'name'         => 'label',
-                'type'         => 'text',
-                'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-                'wrapper'      => array(
-                    'width' => '75',
-                ),
-            ),
+            mrn_rbl_get_inline_text_field('field_mrn_reusable_content_lists_label', 'Label', 'label'),
             mrn_rbl_get_label_tag_field('field_mrn_reusable_content_lists_label_tag'),
-            array(
-                'key'          => 'field_mrn_reusable_content_lists_heading',
-                'label'        => 'Title field',
-                'name'         => 'text_field',
-                'type'         => 'text',
-                'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-                'wrapper'      => array(
-                    'width' => '75',
-                ),
-            ),
-            array(
-                'key'           => 'field_mrn_reusable_content_lists_heading_tag',
-                'label'         => 'HTML tag for text field',
-                'name'          => 'text_field_tag',
-                'type'          => 'select',
-                'default_value' => 'h2',
-                'choices'       => mrn_rbl_get_heading_tag_choices(),
-                'ui'            => 1,
-                'wrapper'       => array(
-                    'width' => '25',
-                ),
-            ),
+            mrn_rbl_get_inline_text_field('field_mrn_reusable_content_lists_heading', 'Heading', 'heading'),
+            mrn_rbl_get_text_tag_field('field_mrn_reusable_content_lists_heading_tag', 'Heading Tag', 'heading_tag', 'h2'),
+            mrn_rbl_get_inline_text_field('field_mrn_reusable_content_lists_subheading', 'Subheading', 'subheading'),
+            mrn_rbl_get_text_tag_field('field_mrn_reusable_content_lists_subheading_tag', 'Subheading Tag', 'subheading_tag', 'p'),
             array(
                 'key'          => 'field_mrn_reusable_content_lists_intro',
                 'label'        => 'Intro text with editor',
@@ -2022,39 +1923,12 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'type'      => 'tab',
                 'placement' => 'top',
             ),
-            array(
-                'key'          => 'field_mrn_faq_label',
-                'label'        => 'Label',
-                'name'         => 'label',
-                'type'         => 'text',
-                'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-                'wrapper'      => array(
-                    'width' => '75',
-                ),
-            ),
+            mrn_rbl_get_inline_text_field('field_mrn_faq_label', 'Label', 'label'),
             mrn_rbl_get_label_tag_field('field_mrn_faq_label_tag'),
-            array(
-                'key'          => 'field_mrn_faq_heading',
-                'label'        => 'Title field',
-                'name'         => 'heading',
-                'type'         => 'text',
-                'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-                'wrapper'      => array(
-                    'width' => '75',
-                ),
-            ),
-            array(
-                'key'           => 'field_mrn_faq_heading_tag',
-                'label'         => 'HTML tag for text field',
-                'name'          => 'heading_tag',
-                'type'          => 'select',
-                'default_value' => 'h2',
-                'choices'       => mrn_rbl_get_heading_tag_choices(),
-                'ui'            => 1,
-                'wrapper'       => array(
-                    'width' => '25',
-                ),
-            ),
+            mrn_rbl_get_inline_text_field('field_mrn_faq_heading', 'Heading', 'heading'),
+            mrn_rbl_get_text_tag_field('field_mrn_faq_heading_tag', 'Heading Tag', 'heading_tag', 'h2'),
+            mrn_rbl_get_inline_text_field('field_mrn_faq_subheading', 'Subheading', 'subheading'),
+            mrn_rbl_get_text_tag_field('field_mrn_faq_subheading_tag', 'Subheading Tag', 'subheading_tag', 'p'),
             array(
                 'key'          => 'field_mrn_faq_items',
                 'label'        => 'Items',

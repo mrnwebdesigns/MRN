@@ -22,8 +22,10 @@ $post_name    = isset( $context['post_name'] ) ? (string) $context['post_name'] 
 $fields       = isset( $context['fields'] ) && is_array( $context['fields'] ) ? $context['fields'] : array();
 $label        = isset( $fields['label'] ) ? trim( (string) $fields['label'] ) : '';
 $label_tag    = function_exists( 'mrn_rbl_normalize_text_tag' ) ? mrn_rbl_normalize_text_tag( $fields['label_tag'] ?? '', 'p' ) : 'p';
-$heading      = isset( $fields['text_field'] ) ? trim( (string) $fields['text_field'] ) : '';
-$heading_tag  = isset( $fields['text_field_tag'] ) ? strtolower( (string) $fields['text_field_tag'] ) : 'h2';
+$heading      = isset( $fields['heading'] ) ? trim( (string) $fields['heading'] ) : '';
+$heading_tag  = isset( $fields['heading_tag'] ) ? strtolower( (string) $fields['heading_tag'] ) : 'h2';
+$subheading   = isset( $fields['subheading'] ) ? trim( (string) $fields['subheading'] ) : '';
+$subheading_tag = isset( $fields['subheading_tag'] ) ? strtolower( (string) $fields['subheading_tag'] ) : 'p';
 $content      = isset( $fields['content'] ) ? (string) $fields['content'] : '';
 $image        = isset( $fields['image'] ) && is_array( $fields['image'] ) ? $fields['image'] : array();
 $image_url    = isset( $image['url'] ) ? (string) $image['url'] : '';
@@ -39,13 +41,16 @@ $image_place  = isset( $fields['image_placement'] ) ? sanitize_key( (string) $fi
 $accent       = ! empty( $fields['bottom_accent'] );
 $accent_slug  = isset( $fields['bottom_accent_style'] ) ? (string) $fields['bottom_accent_style'] : '';
 
-if ( '' === $label && '' === $heading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $image_url && '' === $link_url ) {
+if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $image_url && '' === $link_url ) {
 	return;
 }
 
 $allowed_tags = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span' );
 if ( ! in_array( $heading_tag, $allowed_tags, true ) ) {
 	$heading_tag = 'h2';
+}
+if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
+	$subheading_tag = 'p';
 }
 
 if ( ! in_array( $link_style, array( 'link', 'button' ), true ) ) {
@@ -118,6 +123,12 @@ if ( '' !== $link_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 					<<?php echo esc_html( $heading_tag ); ?> class="mrn-reusable-block__heading">
 						<?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</<?php echo esc_html( $heading_tag ); ?>>
+				<?php endif; ?>
+
+				<?php if ( '' !== $subheading ) : ?>
+					<<?php echo esc_html( $subheading_tag ); ?> class="mrn-shell-section__subheading">
+						<?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</<?php echo esc_html( $subheading_tag ); ?>>
 				<?php endif; ?>
 
 				<?php if ( '' !== trim( $content ) ) : ?>

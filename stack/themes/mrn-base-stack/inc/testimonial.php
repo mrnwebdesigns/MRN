@@ -87,39 +87,12 @@ function mrn_base_stack_register_testimonial_field_group() {
 			'title'                 => 'Testimonial',
 			'menu_order'            => 10,
 			'fields'                => array(
-				array(
-					'key'          => 'field_mrn_testimonial_label',
-					'label'        => 'Label',
-					'name'         => 'testimonial_label',
-					'aria-label'   => '',
-					'type'         => 'text',
-					'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-					'wrapper'      => array(
-						'width' => '33',
-					),
-				),
-				array(
-					'key'          => 'field_mrn_testimonial_heading',
-					'label'        => 'Heading',
-					'name'         => 'testimonial_heading',
-					'aria-label'   => '',
-					'type'         => 'text',
-					'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-					'wrapper'      => array(
-						'width' => '75',
-					),
-				),
-				array(
-					'key'          => 'field_mrn_testimonial_subheading',
-					'label'        => 'Subheading',
-					'name'         => 'testimonial_subheading',
-					'aria-label'   => '',
-					'type'         => 'text',
-					'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-					'wrapper'      => array(
-						'width' => '75',
-					),
-				),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_testimonial_label', 'Label', 'testimonial_label' ),
+				mrn_base_stack_get_label_tag_field( 'field_mrn_testimonial_label_tag', 'testimonial_label_tag' ),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_testimonial_heading', 'Heading', 'testimonial_heading' ),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_testimonial_heading_tag', 'testimonial_heading_tag', 'h2', 'Heading Tag' ),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_testimonial_subheading', 'Subheading', 'testimonial_subheading' ),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_testimonial_subheading_tag', 'testimonial_subheading_tag', 'p', 'Subheading Tag' ),
 				array(
 					'key'          => 'field_mrn_testimonial_name',
 					'label'        => 'Name',
@@ -290,14 +263,14 @@ function mrn_base_stack_get_testimonial_data( $post_id = null ) {
  * @return string
  */
 function mrn_base_stack_get_testimonial_excerpt( $post_id = null, $length = 28 ) {
-	$data    = mrn_base_stack_get_testimonial_data( $post_id );
+	$data     = mrn_base_stack_get_testimonial_data( $post_id );
 	$segments = array(
 		isset( $data['subheading'] ) && is_string( $data['subheading'] ) ? $data['subheading'] : '',
 		isset( $data['content'] ) && is_string( $data['content'] ) ? $data['content'] : '',
 	);
-	$content = wp_strip_all_tags( implode( ' ', array_filter( $segments ) ) );
-	$content = preg_replace( '/\s+/', ' ', $content );
-	$content = is_string( $content ) ? trim( $content ) : '';
+	$content  = wp_strip_all_tags( implode( ' ', array_filter( $segments ) ) );
+	$content  = preg_replace( '/\s+/', ' ', $content );
+	$content  = is_string( $content ) ? trim( $content ) : '';
 
 	if ( '' === $content ) {
 		return '';

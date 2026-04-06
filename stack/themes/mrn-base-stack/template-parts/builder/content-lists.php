@@ -12,8 +12,8 @@ $index           = isset( $context['index'] ) ? (int) $context['index'] : 0;
 
 $label          = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
 $label_tag      = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading        = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : ( isset( $row['text_field'] ) ? trim( (string) $row['text_field'] ) : '' );
-$heading_tag    = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['heading_tag'] ?? ( $row['text_field_tag'] ?? '' ), 'h2' ) : 'h2';
+$heading        = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
+$heading_tag    = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['heading_tag'] ?? '', 'h2' ) : 'h2';
 $subheading     = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
 $subheading_tag = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['subheading_tag'] ?? '', 'p' ) : 'p';
 $intro          = isset( $row['content'] ) ? (string) $row['content'] : '';

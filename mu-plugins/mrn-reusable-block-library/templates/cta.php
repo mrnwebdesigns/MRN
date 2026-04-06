@@ -8,8 +8,10 @@
 $fields      = isset($context['fields']) && is_array($context['fields']) ? $context['fields'] : array();
 $label       = isset($fields['label']) ? trim((string) $fields['label']) : '';
 $label_tag   = function_exists('mrn_rbl_normalize_text_tag') ? mrn_rbl_normalize_text_tag($fields['label_tag'] ?? '', 'p') : 'p';
-$heading     = isset($fields['text_field']) ? (string) $fields['text_field'] : '';
-$heading_tag = isset($fields['text_field_tag']) ? sanitize_key((string) $fields['text_field_tag']) : 'h2';
+$heading     = isset($fields['heading']) ? (string) $fields['heading'] : '';
+$heading_tag = isset($fields['heading_tag']) ? sanitize_key((string) $fields['heading_tag']) : 'h2';
+$subheading     = isset($fields['subheading']) ? (string) $fields['subheading'] : '';
+$subheading_tag = isset($fields['subheading_tag']) ? sanitize_key((string) $fields['subheading_tag']) : 'p';
 $copy        = isset($fields['content']) ? (string) $fields['content'] : '';
 $primary_link   = isset($fields['primary_link']) && is_array($fields['primary_link']) ? $fields['primary_link'] : array();
 $secondary_link = isset($fields['secondary_link']) && is_array($fields['secondary_link']) ? $fields['secondary_link'] : array();
@@ -31,12 +33,15 @@ $post_name   = isset($context['post_name']) ? (string) $context['post_name'] : '
 if (!in_array($heading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span'), true)) {
     $heading_tag = 'h2';
 }
+if (!in_array($subheading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span'), true)) {
+    $subheading_tag = 'p';
+}
 
 if (!in_array($link_style, array('link', 'button'), true)) {
     $link_style = 'button';
 }
 
-if ($label === '' && $heading === '' && $copy === '' && $primary_link_url === '' && $secondary_link_url === '') {
+if ($label === '' && $heading === '' && $subheading === '' && $copy === '' && $primary_link_url === '' && $secondary_link_url === '') {
     return;
 }
 
@@ -101,6 +106,12 @@ if ($link_color !== '') {
             <<?php echo esc_html($heading_tag); ?> class="mrn-reusable-block__heading">
                 <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($heading) : esc_html($heading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             </<?php echo esc_html($heading_tag); ?>>
+        <?php endif; ?>
+
+        <?php if ($subheading !== '') : ?>
+            <<?php echo esc_html($subheading_tag); ?> class="mrn-shell-section__subheading">
+                <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($subheading) : esc_html($subheading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+            </<?php echo esc_html($subheading_tag); ?>>
         <?php endif; ?>
 
         <?php if ($copy !== '') : ?>

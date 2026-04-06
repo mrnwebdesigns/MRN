@@ -8,8 +8,10 @@
 $fields          = isset($context['fields']) && is_array($context['fields']) ? $context['fields'] : array();
 $label           = isset($fields['label']) ? trim((string) $fields['label']) : '';
 $label_tag       = function_exists('mrn_rbl_normalize_text_tag') ? mrn_rbl_normalize_text_tag($fields['label_tag'] ?? '', 'p') : 'p';
-$heading         = isset($fields['text_field']) ? (string) $fields['text_field'] : '';
-$heading_tag     = isset($fields['text_field_tag']) ? sanitize_key((string) $fields['text_field_tag']) : 'h2';
+$heading         = isset($fields['heading']) ? (string) $fields['heading'] : '';
+$heading_tag     = isset($fields['heading_tag']) ? sanitize_key((string) $fields['heading_tag']) : 'h2';
+$subheading      = isset($fields['subheading']) ? (string) $fields['subheading'] : '';
+$subheading_tag  = isset($fields['subheading_tag']) ? sanitize_key((string) $fields['subheading_tag']) : 'p';
 $grid_items      = isset($fields['grid_items']) && is_array($fields['grid_items']) ? $fields['grid_items'] : array();
 $bg_color        = isset($fields['bg_color']) ? sanitize_title((string) $fields['bg_color']) : '';
 $accent          = !empty($fields['bottom_accent']);
@@ -21,6 +23,9 @@ $post_name      = isset($context['post_name']) ? (string) $context['post_name'] 
 
 if (!in_array($heading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span'), true)) {
     $heading_tag = 'h2';
+}
+if (!in_array($subheading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span'), true)) {
+    $subheading_tag = 'p';
 }
 
 if (!in_array($item_link_style, array('link', 'button'), true)) {
@@ -81,6 +86,12 @@ if ($link_color !== '') {
             </<?php echo esc_html($heading_tag); ?>>
         <?php endif; ?>
 
+        <?php if ($subheading !== '') : ?>
+            <<?php echo esc_html($subheading_tag); ?> class="mrn-shell-section__subheading">
+                <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($subheading) : esc_html($subheading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+            </<?php echo esc_html($subheading_tag); ?>>
+        <?php endif; ?>
+
         <?php if ($grid_items !== array()) : ?>
             <div class="mrn-content-grid__items mrn-content-grid__items--collection-shell">
                 <?php foreach ($grid_items as $item) : ?>
@@ -91,19 +102,19 @@ if ($link_color !== '') {
 
                     $item_label  = isset($item['label']) ? (string) $item['label'] : '';
                     $item_label_tag = function_exists('mrn_rbl_normalize_text_tag') ? mrn_rbl_normalize_text_tag($item['label_tag'] ?? '', 'p') : 'p';
-                    $item_title  = isset($item['title']) ? (string) $item['title'] : '';
-                    $item_title_tag = isset($item['title_tag']) ? sanitize_key((string) $item['title_tag']) : 'h3';
+                    $item_heading  = isset($item['heading']) ? (string) $item['heading'] : '';
+                    $item_heading_tag = isset($item['heading_tag']) ? sanitize_key((string) $item['heading_tag']) : 'h3';
                     $item_copy   = isset($item['content']) ? (string) $item['content'] : '';
                     $item_link   = isset($item['link']) && is_array($item['link']) ? $item['link'] : array();
                     $link_url    = isset($item_link['url']) ? (string) $item_link['url'] : '';
                     $link_title  = isset($item_link['title']) ? (string) $item_link['title'] : '';
                     $link_target = isset($item_link['target']) ? (string) $item_link['target'] : '';
 
-                    if (!in_array($item_title_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span'), true)) {
-                        $item_title_tag = 'h3';
+                    if (!in_array($item_heading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span'), true)) {
+                        $item_heading_tag = 'h3';
                     }
 
-                    if ($item_label === '' && $item_title === '' && $item_copy === '' && $link_url === '') {
+                    if ($item_label === '' && $item_heading === '' && $item_copy === '' && $link_url === '') {
                         continue;
                     }
                     ?>
@@ -112,8 +123,8 @@ if ($link_color !== '') {
                             <<?php echo esc_html($item_label_tag); ?> class="mrn-content-grid__item-label"><?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($item_label) : esc_html($item_label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html($item_label_tag); ?>>
                         <?php endif; ?>
 
-                        <?php if ($item_title !== '') : ?>
-                            <<?php echo esc_html($item_title_tag); ?> class="mrn-content-grid__item-title"><?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($item_title) : esc_html($item_title); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html($item_title_tag); ?>>
+                        <?php if ($item_heading !== '') : ?>
+                            <<?php echo esc_html($item_heading_tag); ?> class="mrn-content-grid__item-title"><?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($item_heading) : esc_html($item_heading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html($item_heading_tag); ?>>
                         <?php endif; ?>
 
                         <?php if ($item_copy !== '') : ?>

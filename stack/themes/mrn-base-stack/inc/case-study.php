@@ -87,39 +87,12 @@ function mrn_base_stack_register_case_study_field_group() {
 			'title'                 => 'Case Study',
 			'menu_order'            => 10,
 			'fields'                => array(
-				array(
-					'key'          => 'field_mrn_case_study_label',
-					'label'        => 'Label',
-					'name'         => 'case_study_label',
-					'aria-label'   => '',
-					'type'         => 'text',
-					'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-					'wrapper'      => array(
-						'width' => '33',
-					),
-				),
-				array(
-					'key'          => 'field_mrn_case_study_heading',
-					'label'        => 'Heading',
-					'name'         => 'case_study_heading',
-					'aria-label'   => '',
-					'type'         => 'text',
-					'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-					'wrapper'      => array(
-						'width' => '75',
-					),
-				),
-				array(
-					'key'          => 'field_mrn_case_study_subheading',
-					'label'        => 'Subheading',
-					'name'         => 'case_study_subheading',
-					'aria-label'   => '',
-					'type'         => 'text',
-					'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
-					'wrapper'      => array(
-						'width' => '75',
-					),
-				),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_case_study_label', 'Label', 'case_study_label' ),
+				mrn_base_stack_get_label_tag_field( 'field_mrn_case_study_label_tag', 'case_study_label_tag' ),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_case_study_heading', 'Heading', 'case_study_heading' ),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_case_study_heading_tag', 'case_study_heading_tag', 'h2', 'Heading Tag' ),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_case_study_subheading', 'Subheading', 'case_study_subheading' ),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_case_study_subheading_tag', 'case_study_subheading_tag', 'p', 'Subheading Tag' ),
 				array(
 					'key'          => 'field_mrn_case_study_client_overview',
 					'label'        => 'Client Overview',

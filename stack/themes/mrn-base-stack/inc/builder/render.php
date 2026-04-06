@@ -644,7 +644,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'basic' === $layout_name ) {
-		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
+		$heading = trim( (string) get_sub_field( 'heading' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -654,7 +654,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'cta' === $layout_name ) {
-		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
+		$heading = trim( (string) get_sub_field( 'heading' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -664,7 +664,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'grid' === $layout_name ) {
-		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
+		$heading = trim( (string) get_sub_field( 'heading' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -684,7 +684,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'slider' === $layout_name ) {
-		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
+		$heading = trim( (string) get_sub_field( 'heading' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -724,7 +724,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'image_content' === $layout_name ) {
-		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
+		$heading = trim( (string) get_sub_field( 'heading' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -734,7 +734,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'video' === $layout_name ) {
-		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
+		$heading = trim( (string) get_sub_field( 'heading' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -744,7 +744,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'body_text' === $layout_name ) {
-		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'title_field' ) );
+		$heading = trim( (string) get_sub_field( 'heading' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -754,7 +754,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'content_lists' === $layout_name ) {
-		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
+		$heading = trim( (string) get_sub_field( 'heading' ) );
 
 		if ( '' !== $heading ) {
 			return 'Content Lists: ' . esc_html( wp_strip_all_tags( $heading ) );
@@ -771,7 +771,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'card' === $layout_name ) {
-		$heading = mrn_base_stack_get_builder_sub_field_value( 'heading', array( 'text_field' ) );
+		$heading = trim( (string) get_sub_field( 'heading' ) );
 
 		if ( '' === $heading ) {
 			return $title;
@@ -918,10 +918,10 @@ function mrn_base_stack_get_smartcrawl_markup( $post_id ) {
 		return '';
 	}
 
-	$builder_markup = mrn_base_stack_get_content_builder_markup( $post->ID );
-	$gallery_markup = function_exists( 'mrn_base_stack_get_gallery_smartcrawl_markup' ) ? mrn_base_stack_get_gallery_smartcrawl_markup( $post->ID ) : '';
+	$builder_markup    = mrn_base_stack_get_content_builder_markup( $post->ID );
+	$gallery_markup    = function_exists( 'mrn_base_stack_get_gallery_smartcrawl_markup' ) ? mrn_base_stack_get_gallery_smartcrawl_markup( $post->ID ) : '';
 	$case_study_markup = function_exists( 'mrn_base_stack_get_case_study_smartcrawl_markup' ) ? mrn_base_stack_get_case_study_smartcrawl_markup( $post->ID ) : '';
-	$after_markup   = mrn_base_stack_get_after_content_builder_markup( $post->ID );
+	$after_markup      = mrn_base_stack_get_after_content_builder_markup( $post->ID );
 
 	if ( '' === $builder_markup && '' === $gallery_markup && '' === $case_study_markup && '' === $after_markup ) {
 		return '';

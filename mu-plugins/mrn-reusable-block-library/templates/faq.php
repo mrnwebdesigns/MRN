@@ -19,6 +19,8 @@ $label       = isset($fields['label']) ? (string) $fields['label'] : '';
 $label_tag   = function_exists('mrn_rbl_normalize_text_tag') ? mrn_rbl_normalize_text_tag($fields['label_tag'] ?? '', 'p') : 'p';
 $heading     = isset($fields['heading']) ? (string) $fields['heading'] : '';
 $heading_tag = isset($fields['heading_tag']) ? sanitize_key((string) $fields['heading_tag']) : 'h2';
+$subheading  = isset($fields['subheading']) ? (string) $fields['subheading'] : '';
+$subheading_tag = isset($fields['subheading_tag']) ? sanitize_key((string) $fields['subheading_tag']) : 'p';
 $items       = isset($fields['faq_items']) && is_array($fields['faq_items']) ? $fields['faq_items'] : array();
 $bg_color    = isset($fields['bg_color']) ? (string) $fields['bg_color'] : '';
 $start_open  = !empty($fields['start_open']);
@@ -27,6 +29,9 @@ $bottom_accent_style = isset($fields['bottom_accent_style']) ? (string) $fields[
 
 if (!in_array($heading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span'), true)) {
     $heading_tag = 'h2';
+}
+if (!in_array($subheading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span'), true)) {
+    $subheading_tag = 'p';
 }
 
 if ($items === array()) {
@@ -82,6 +87,12 @@ if (!empty($accent_contract['classes']) && is_array($accent_contract['classes'])
                 <<?php echo esc_html($heading_tag); ?> class="mrn-faq__heading">
                     <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($heading) : esc_html($heading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                 </<?php echo esc_html($heading_tag); ?>>
+            <?php endif; ?>
+
+            <?php if ($subheading !== '') : ?>
+                <<?php echo esc_html($subheading_tag); ?> class="mrn-shell-section__subheading">
+                    <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($subheading) : esc_html($subheading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                </<?php echo esc_html($subheading_tag); ?>>
             <?php endif; ?>
 
             <div class="mrn-faq__items">

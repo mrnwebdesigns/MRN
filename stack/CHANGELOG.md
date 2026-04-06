@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.04.05-builder-schema-standardization
+- Expanded `mrn-base-stack` to `1.1.11`.
+- Expanded `mrn-reusable-block-library` to `0.1.8`.
+- Standardized builder, nested builder, reusable block, page, and editorial admin field layouts around the same `label`, `heading`, `subheading`, and matching tag-field contract.
+- Added missing reusable-block subheading support for CTA, Content Grid, Content Lists, Basic Block, and FAQ so their field schema and rendered output match the main builder pattern.
+- Removed old reusable/admin fallback naming like `text_field`, `text_field_tag`, and item `title`/`title_tag` from the active render path so the stack uses one canonical content-field model.
+
 ## 2026.04.05-admin-ui-and-search-fixes
 - Expanded `mrn-base-stack` to `1.1.8`.
 - Expanded `mrn-admin-ui-css` to `3.1.12`.

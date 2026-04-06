@@ -10,8 +10,8 @@ $row              = isset( $context['row'] ) && is_array( $context['row'] ) ? $c
 $row_index        = isset( $context['index'] ) ? (int) $context['index'] : 0;
 $label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
 $label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : ( isset( $row['text_field'] ) ? trim( (string) $row['text_field'] ) : '' );
-$heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : ( isset( $row['text_field_tag'] ) ? strtolower( (string) $row['text_field_tag'] ) : 'h2' );
+$heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
+$heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h2';
 $subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
 $subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $items            = isset( $row['slider_items'] ) && is_array( $row['slider_items'] ) ? $row['slider_items'] : array();
@@ -56,7 +56,7 @@ foreach ( $items as $item ) {
 	}
 
 	$item_label   = isset( $item['label'] ) ? (string) $item['label'] : '';
-	$item_heading = isset( $item['heading'] ) ? (string) $item['heading'] : ( isset( $item['title'] ) ? (string) $item['title'] : '' );
+	$item_heading = isset( $item['heading'] ) ? (string) $item['heading'] : '';
 	$item_content = isset( $item['content'] ) ? (string) $item['content'] : '';
 	$item_link    = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
 	$item_image   = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
@@ -152,8 +152,8 @@ $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 
 							$item_label     = isset( $item['label'] ) ? trim( (string) $item['label'] ) : '';
 							$item_label_tag = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $item['label_tag'] ?? '', 'p' ) : 'p';
-							$item_heading   = isset( $item['heading'] ) ? trim( (string) $item['heading'] ) : ( isset( $item['title'] ) ? trim( (string) $item['title'] ) : '' );
-							$item_tag       = isset( $item['heading_tag'] ) ? strtolower( (string) $item['heading_tag'] ) : ( isset( $item['title_tag'] ) ? strtolower( (string) $item['title_tag'] ) : 'h3' );
+							$item_heading   = isset( $item['heading'] ) ? trim( (string) $item['heading'] ) : '';
+							$item_tag       = isset( $item['heading_tag'] ) ? strtolower( (string) $item['heading_tag'] ) : 'h3';
 							$item_content   = isset( $item['content'] ) ? (string) $item['content'] : '';
 							$item_link      = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
 							$item_image     = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();

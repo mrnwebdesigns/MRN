@@ -1,18 +1,18 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.05-admin-ui-and-search-fixes`
-- Release date: `2026-04-04`
+- Stack release: `2026.04.05-builder-schema-standardization`
+- Release date: `2026-04-05`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.8`
+  - `mrn-base-stack` `1.1.11`
 - MU plugins:
   - `mrn-admin-ui-css` `3.1.12`
   - `mrn-shared-assets` `0.1.1`
   - `mrn-editor-lockdown` `1.0.6`
-  - `mrn-reusable-block-library` `0.1.7`
+  - `mrn-reusable-block-library` `0.1.8`
   - `mrn-site-colors` / `Site Styles` `0.1.3`
 - Standard plugins:
   - `mrn-config-helper` `0.1.34`
