@@ -52,6 +52,8 @@
 !/stack/QA.md
 !/stack/PLUGIN_CATALOG.md
 !/stack/PLUGIN_DOC_TEMPLATE.md
+!/stack/manifests/
+!/stack/manifests/plugins.txt
 !/stack/scripts/
 !/stack/scripts/qa-*.sh
 !/stack/scripts/deploy-feature-stack-and-default-configs.sh
@@ -100,6 +102,9 @@
 !/stack/themes/mrn-base-stack/template-parts/builder/*.php
 !/stack/themes/mrn-base-stack/languages/
 !/stack/themes/mrn-base-stack/languages/*
+!/plugins/
+!/plugins/mrn-dummy-content/
+!/plugins/mrn-dummy-content/**
 /stack/themes/mrn-base-stack/vendor/
 /stack/themes/mrn-base-stack/node_modules/
 /stack/themes/mrn-base-stack/playwright-report/

@@ -28,6 +28,7 @@
 - Current stack baseline is `2026.04.05-social-link-icon-fallback`.
 - Current stack theme version is `mrn-base-stack 1.1.12`.
 - Current reusable block library version is `mrn-reusable-block-library 0.1.8`.
+- `mrn-dummy-content` is now a stack-packaged standard plugin with canonical source at `/Users/khofmeyer/Development/MRN/plugins/mrn-dummy-content`, release artifact path `/Users/khofmeyer/Development/MRN/releases/plugins/mrn-dummy-content.zip`, and stack manifest entry `/home/mrndev-stack-manager/stack/packages/mrn-dummy-content.zip`.
 - Theme rollout manifest must use the packaged stack theme zip path, not a bare slug:
   `/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active`
 - `default-configs.mrndev.io` was refreshed on `2026-04-05` for the social-link icon fallback release.

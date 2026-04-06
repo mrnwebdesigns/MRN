@@ -84,6 +84,27 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 - Notes:
   - front-end behavior plugin with real runtime impact
 
+### `mrn-dummy-content`
+
+- Name: `Dummy Content`
+- Version: `0.1.6`
+- Purpose:
+  - scans the active site for public post types and ACF builder fields
+  - generates sample posts, pages, and an index of generated content
+  - builds shell-size `All Layouts` pages from compatible page-builder layouts
+- Admin/UI:
+  - Tools page
+  - generate and delete-only-generated-content actions
+  - admin inventory of detected page layout fields and included all-layouts sections
+- Front-end / theming:
+  - no direct CSS or theming output
+  - indirectly exercises front-end layouts by seeding builder data for QA/demo pages
+- Developer-facing hooks:
+  - no custom public hook inventory identified in the main plugin file
+- Notes:
+  - QA/demo utility plugin for validating stack layouts against runtime ACF definitions
+  - keeps generated sample pages out of fallback page menus except for the generated index page
+
 ### `mrn-editor-tools`
 
 - Name: `Editor Enhancements`
