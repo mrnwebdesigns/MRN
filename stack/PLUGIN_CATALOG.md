@@ -87,7 +87,7 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 ### `mrn-dummy-content`
 
 - Name: `Dummy Content`
-- Version: `0.1.6`
+- Version: `0.1.8`
 - Purpose:
   - scans the active site for public post types and ACF builder fields
   - generates sample posts, pages, and an index of generated content
@@ -104,6 +104,7 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 - Notes:
   - QA/demo utility plugin for validating stack layouts against runtime ACF definitions
   - keeps generated sample pages out of fallback page menus except for the generated index page
+  - admin actions now show a top-of-page progress indicator during long-running generate/delete requests
 
 ### `mrn-editor-tools`
 

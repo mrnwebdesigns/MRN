@@ -49,6 +49,7 @@
 - Stack-wide admin icon picking now has one canonical chooser in `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`; `mrn-base-stack` and `mrn-editor-tools` should consume `mrn_shared_assets_enqueue_admin_icon_chooser()` instead of shipping their own modal/picker catalogs.
 
 ## Recent Release Notes
+- `mrn-dummy-content 0.1.8` now expands non-page builder demos more aggressively, groups the generated index across all published generated content types, adds request-level caching for repeated field/term/media lookups, and shows a top-of-page progress indicator during long-running generate/delete actions.
 - Stack release `2026.04.06-builder-width-and-social-polish` expands `mrn-base-stack` to `1.1.13` and `mrn-config-helper` to `0.1.35`.
 - That release realigns seeded wide-layout QA sections with the shared width shells, standardizes `Two Column Split` on the shared intro-field contract, adds animated FAQ accordion behavior, and extends social-link settings with separate saved name plus hover/accessibility text.
 - Release verification passed for `php -l`, `node --check`, `git diff --check`, targeted risky-pattern review, `qa-security.sh`, `qa-local-stack-site.sh`, `qa-page-speed.sh`, Playwright local stack smoke, and pre-deploy `qa-rollout-contract.sh` except for the expected live-version parity failure before rollout.

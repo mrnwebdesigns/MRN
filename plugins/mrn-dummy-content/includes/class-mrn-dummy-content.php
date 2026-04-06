@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class MRN_Dummy_Content {
-	const VERSION = '0.1.6';
+	const VERSION = '0.1.8';
 	const NONCE_ACTION = 'mrn_dummy_content_generate';
 	const DELETE_NONCE_ACTION = 'mrn_dummy_content_delete';
 	const MENU_SLUG = 'mrn-dummy-content';
@@ -18,6 +18,41 @@ final class MRN_Dummy_Content {
 	const PLACEHOLDER_FLAG_META = '_mrn_dummy_content_placeholder';
 	const GENERATED_BY_META = '_mrn_dummy_content_generated_by';
 	const GENERATED_AT_META = '_mrn_dummy_content_generated_at';
+
+	/**
+	 * Per-request cache of discovered ACF fields by post type.
+	 *
+	 * @var array<string, array<int, array<string, mixed>>>
+	 */
+	private static $acf_fields_cache = array();
+
+	/**
+	 * Per-request cache of related posts for relationship-style fields.
+	 *
+	 * @var array<string, WP_Post|null>
+	 */
+	private static $related_post_cache = array();
+
+	/**
+	 * Per-request cache of sample terms by taxonomy.
+	 *
+	 * @var array<string, WP_Term|null>
+	 */
+	private static $sample_term_cache = array();
+
+	/**
+	 * Per-request cache of the placeholder attachment ID.
+	 *
+	 * @var int|null
+	 */
+	private static $placeholder_attachment_id = null;
+
+	/**
+	 * Track whether the placeholder file was refreshed during this request.
+	 *
+	 * @var bool
+	 */
+	private static $placeholder_attachment_refreshed = false;
 
 	/**
 	 * Bootstrap hooks.
@@ -64,6 +99,7 @@ final class MRN_Dummy_Content {
 		$placeholders = self::get_placeholder_attachments();
 		?>
 		<div class="wrap">
+			<?php self::render_progress_ui(); ?>
 			<h1><?php esc_html_e( 'Dummy Content', 'mrn-dummy-content' ); ?></h1>
 			<p><?php esc_html_e( 'This tool scans the active site at runtime, creates sample content for available custom post types, and builds an all-layouts page from any ACF flexible-content page builder fields it can find.', 'mrn-dummy-content' ); ?></p>
 
@@ -106,10 +142,10 @@ final class MRN_Dummy_Content {
 					</ul>
 				<?php endif; ?>
 
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mrn-dummy-content-action-form" data-progress-message="<?php echo esc_attr__( 'Generating dummy content. This can take a couple of minutes on larger sites.', 'mrn-dummy-content' ); ?>">
 				<input type="hidden" name="action" value="mrn_dummy_content_generate" />
 				<?php wp_nonce_field( self::NONCE_ACTION ); ?>
-				<?php submit_button( __( 'Generate Dummy Content', 'mrn-dummy-content' ) ); ?>
+				<?php submit_button( __( 'Generate Dummy Content', 'mrn-dummy-content' ), 'primary', 'submit', false, array( 'data-loading-label' => __( 'Generating Dummy Content...', 'mrn-dummy-content' ) ) ); ?>
 			</form>
 
 			<h2><?php esc_html_e( 'Delete Generated Content', 'mrn-dummy-content' ); ?></h2>
@@ -126,13 +162,118 @@ final class MRN_Dummy_Content {
 					<?php endforeach; ?>
 				</ul>
 
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" onsubmit="return window.confirm('Delete only Dummy Content generated items?');">
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mrn-dummy-content-action-form mrn-dummy-content-action-form--delete" data-progress-message="<?php echo esc_attr__( 'Deleting plugin-generated content. Please keep this tab open until WordPress finishes.', 'mrn-dummy-content' ); ?>" onsubmit="return window.confirm('Delete only Dummy Content generated items?');">
 					<input type="hidden" name="action" value="mrn_dummy_content_delete" />
 					<?php wp_nonce_field( self::DELETE_NONCE_ACTION ); ?>
-					<?php submit_button( __( 'Delete Generated Content', 'mrn-dummy-content' ), 'delete' ); ?>
+					<?php submit_button( __( 'Delete Generated Content', 'mrn-dummy-content' ), 'delete', 'submit', false, array( 'data-loading-label' => __( 'Deleting Generated Content...', 'mrn-dummy-content' ) ) ); ?>
 				</form>
 			<?php endif; ?>
 		</div>
+		<?php
+	}
+
+	/**
+	 * Render a lightweight progress indicator for long-running admin actions.
+	 *
+	 * @return void
+	 */
+	private static function render_progress_ui() {
+		?>
+		<style>
+			.mrn-dummy-content-progress {
+				display: none;
+				margin: 16px 0 20px;
+				padding: 16px 18px;
+				border: 1px solid #c3c4c7;
+				border-left: 4px solid #2271b1;
+				background: #fff;
+				box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+			}
+
+			.mrn-dummy-content-progress.is-active {
+				display: flex;
+				align-items: flex-start;
+				gap: 12px;
+			}
+
+			.mrn-dummy-content-progress__spinner {
+				flex: 0 0 auto;
+				width: 20px;
+				height: 20px;
+				border: 2px solid #c3c4c7;
+				border-top-color: #2271b1;
+				border-radius: 50%;
+				animation: mrn-dummy-content-spin 0.8s linear infinite;
+				margin-top: 2px;
+			}
+
+			.mrn-dummy-content-progress__message {
+				margin: 0;
+				font-weight: 600;
+			}
+
+			.mrn-dummy-content-progress__detail {
+				margin: 4px 0 0;
+				color: #50575e;
+			}
+
+			.mrn-dummy-content-action-form.is-busy {
+				opacity: 0.72;
+				pointer-events: none;
+			}
+
+			@keyframes mrn-dummy-content-spin {
+				from { transform: rotate(0deg); }
+				to { transform: rotate(360deg); }
+			}
+		</style>
+		<div class="mrn-dummy-content-progress" data-mrn-dummy-content-progress aria-live="polite" aria-hidden="true">
+			<div class="mrn-dummy-content-progress__spinner" aria-hidden="true"></div>
+			<div>
+				<p class="mrn-dummy-content-progress__message"><?php esc_html_e( 'Working on your request...', 'mrn-dummy-content' ); ?></p>
+				<p class="mrn-dummy-content-progress__detail"><?php esc_html_e( 'Dummy Content is processing this request. Please keep this tab open until the success notice appears.', 'mrn-dummy-content' ); ?></p>
+			</div>
+		</div>
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+				var progress = document.querySelector('[data-mrn-dummy-content-progress]');
+				var forms = document.querySelectorAll('.mrn-dummy-content-action-form');
+
+				if (!progress || !forms.length) {
+					return;
+				}
+
+				var messageNode = progress.querySelector('.mrn-dummy-content-progress__message');
+
+				forms.forEach(function (form) {
+					form.addEventListener('submit', function () {
+						var message = form.getAttribute('data-progress-message');
+						var submit = form.querySelector('button[type="submit"], input[type="submit"]');
+
+						if (message && messageNode) {
+							messageNode.textContent = message;
+						}
+
+						progress.classList.add('is-active');
+						progress.setAttribute('aria-hidden', 'false');
+						form.classList.add('is-busy');
+						progress.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+						if (submit) {
+							if (submit.tagName === 'BUTTON') {
+								submit.dataset.originalLabel = submit.textContent;
+								submit.textContent = submit.getAttribute('data-loading-label') || submit.textContent;
+							} else {
+								submit.dataset.originalLabel = submit.value;
+								submit.value = submit.getAttribute('data-loading-label') || submit.value;
+							}
+
+							submit.disabled = true;
+						}
+					});
+				});
+			});
+		</script>
 		<?php
 	}
 
@@ -733,10 +874,15 @@ final class MRN_Dummy_Content {
 				'preferred_section_width' => (string) $preferred_section_width,
 			);
 
-			if ( 'page' === $post_type && $prefer_all_layouts && self::is_page_hero_field( $field ) ) {
-				$value = self::generate_basic_hero_value( $field, $context );
+			$field_context = $context;
+			if ( self::should_expand_sample_variant_layouts( $post_type ) && self::is_demo_layout_field( $field ) ) {
+				$field_context['prefer_all_layouts'] = true;
+			}
+
+			if ( ! empty( $field_context['prefer_all_layouts'] ) && self::is_page_hero_field( $field ) ) {
+				$value = self::generate_basic_hero_value( $field, $field_context );
 			} else {
-				$value = self::generate_field_value( $field, $context );
+				$value = self::generate_field_value( $field, $field_context );
 			}
 
 			if ( null === $value ) {
@@ -768,7 +914,7 @@ final class MRN_Dummy_Content {
 		$context = array(
 			'post_id'            => (int) $post_id,
 			'post_type'          => sanitize_key( $post_type ),
-			'prefer_all_layouts' => false,
+			'prefer_all_layouts' => self::should_expand_sample_variant_layouts( $post_type ),
 			'depth'              => 0,
 			'preferred_section_width' => (string) $preferred_section_width,
 		);
@@ -809,6 +955,11 @@ final class MRN_Dummy_Content {
 			return array();
 		}
 
+		$post_type = sanitize_key( (string) $post_type );
+		if ( isset( self::$acf_fields_cache[ $post_type ] ) ) {
+			return self::$acf_fields_cache[ $post_type ];
+		}
+
 		$field_groups = acf_get_field_groups(
 			array(
 				'post_type' => $post_type,
@@ -845,6 +996,8 @@ final class MRN_Dummy_Content {
 				$fields[] = $field;
 			}
 		}
+
+		self::$acf_fields_cache[ $post_type ] = $fields;
 
 		return $fields;
 	}
@@ -1284,47 +1437,92 @@ final class MRN_Dummy_Content {
 	}
 
 	/**
+	 * Determine whether a field is one of the demo layout buckets.
+	 *
+	 * @param array<string, mixed> $field Field definition.
+	 * @return bool
+	 */
+	private static function is_demo_layout_field( array $field ) {
+		return self::is_primary_page_demo_field( $field )
+			|| self::is_page_after_content_field( $field )
+			|| self::is_page_hero_field( $field );
+	}
+
+	/**
+	 * Determine whether generated sample variants should expand all compatible layouts.
+	 *
+	 * Pages keep lighter sample variants because dedicated all-layouts pages already exist.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @return bool
+	 */
+	private static function should_expand_sample_variant_layouts( $post_type ) {
+		return 'page' !== sanitize_key( (string) $post_type );
+	}
+
+	/**
 	 * Build the generated-pages index markup.
 	 *
 	 * @return string
 	 */
 	private static function get_generated_pages_index_markup() {
-		$pages = get_posts(
+		$posts = get_posts(
 			array(
-				'post_type'      => 'page',
+				'post_type'      => 'any',
 				'post_status'    => 'publish',
 				'posts_per_page' => -1,
 				'meta_key'       => self::GENERATED_BY_META,
-				'orderby'        => 'title',
+				'orderby'        => 'post_type title',
 				'order'          => 'ASC',
 			)
 		);
 
-		$items = array();
+		$groups = array();
 
-		if ( is_array( $pages ) ) {
-			foreach ( $pages as $page ) {
-				if ( ! $page instanceof WP_Post ) {
+		if ( is_array( $posts ) ) {
+			foreach ( $posts as $post ) {
+				if ( ! $post instanceof WP_Post ) {
 					continue;
 				}
 
-				if ( 'dummy-content-index' === $page->post_name ) {
+				if ( 'dummy-content-index' === $post->post_name ) {
 					continue;
 				}
 
-				$items[] = sprintf(
+				$post_type_object = get_post_type_object( $post->post_type );
+				$group_label      = $post_type_object instanceof WP_Post_Type
+					? (string) $post_type_object->labels->name
+					: ucwords( str_replace( array( '_', '-' ), ' ', $post->post_type ) );
+
+				if ( ! isset( $groups[ $group_label ] ) ) {
+					$groups[ $group_label ] = array();
+				}
+
+				$groups[ $group_label ][] = sprintf(
 					'<li><a href="%1$s">%2$s</a></li>',
-					esc_url( get_permalink( $page ) ),
-					esc_html( get_the_title( $page ) )
+					esc_url( get_permalink( $post ) ),
+					esc_html( get_the_title( $post ) )
 				);
 			}
 		}
 
-		if ( empty( $items ) ) {
-			return '<p>No generated pages are available yet.</p>';
+		if ( empty( $groups ) ) {
+			return '<p>No generated content is available yet.</p>';
 		}
 
-		return '<p>Links to the generated demo pages.</p><ul>' . implode( '', $items ) . '</ul>';
+		ksort( $groups, SORT_NATURAL | SORT_FLAG_CASE );
+
+		$sections = array( '<p>Links to all generated demo content, organized by content type.</p>' );
+
+		foreach ( $groups as $group_label => $items ) {
+			$sections[] = sprintf(
+				'<h3>%1$s</h3><ul>%2$s</ul>',
+				esc_html( $group_label ),
+				implode( '', $items )
+			);
+		}
+
+		return implode( '', $sections );
 	}
 
 	/**
@@ -1377,7 +1575,7 @@ final class MRN_Dummy_Content {
 					}
 
 					if ( 'subheading' === $name ) {
-						$row[ $name ] = 'Quick links to the pages created by Dummy Content.';
+						$row[ $name ] = 'Quick links to all generated demo content grouped by content type.';
 						continue;
 					}
 
@@ -1654,28 +1852,34 @@ final class MRN_Dummy_Content {
 		$post_types = isset( $field['post_type'] ) && is_array( $field['post_type'] ) ? array_map( 'sanitize_key', $field['post_type'] ) : array( 'page' );
 
 		foreach ( $post_types as $post_type ) {
-			$post = get_posts(
-				array(
-					'post_type'      => $post_type,
-					'post_status'    => 'publish',
-					'posts_per_page' => 1,
-					'orderby'        => 'date',
-					'order'          => 'DESC',
-				)
-			);
+			if ( ! array_key_exists( $post_type, self::$related_post_cache ) ) {
+				$post = get_posts(
+					array(
+						'post_type'      => $post_type,
+						'post_status'    => 'publish',
+						'posts_per_page' => 1,
+						'orderby'        => 'date',
+						'order'          => 'DESC',
+					)
+				);
 
-			if ( empty( $post[0] ) ) {
+				self::$related_post_cache[ $post_type ] = ! empty( $post[0] ) && $post[0] instanceof WP_Post ? $post[0] : null;
+			}
+
+			if ( ! self::$related_post_cache[ $post_type ] instanceof WP_Post ) {
 				continue;
 			}
+
+			$post = self::$related_post_cache[ $post_type ];
 
 			$return_format = isset( $field['return_format'] ) ? (string) $field['return_format'] : 'id';
 			$is_multiple   = 'relationship' === ( $field['type'] ?? '' );
 
 			if ( 'object' === $return_format ) {
-				return $is_multiple ? array( $post[0] ) : $post[0];
+				return $is_multiple ? array( $post ) : $post;
 			}
 
-			return $is_multiple ? array( (int) $post[0]->ID ) : (int) $post[0]->ID;
+			return $is_multiple ? array( (int) $post->ID ) : (int) $post->ID;
 		}
 
 		return null;
@@ -1688,6 +1892,10 @@ final class MRN_Dummy_Content {
 	 * @return WP_Term|null
 	 */
 	private static function get_or_create_sample_term( WP_Taxonomy $taxonomy_object ) {
+		if ( array_key_exists( $taxonomy_object->name, self::$sample_term_cache ) ) {
+			return self::$sample_term_cache[ $taxonomy_object->name ];
+		}
+
 		$existing = get_terms(
 			array(
 				'taxonomy'   => $taxonomy_object->name,
@@ -1697,6 +1905,7 @@ final class MRN_Dummy_Content {
 		);
 
 		if ( is_array( $existing ) && ! empty( $existing[0] ) && $existing[0] instanceof WP_Term ) {
+			self::$sample_term_cache[ $taxonomy_object->name ] = $existing[0];
 			return $existing[0];
 		}
 
@@ -1710,11 +1919,14 @@ final class MRN_Dummy_Content {
 		);
 
 		if ( is_wp_error( $result ) || empty( $result['term_id'] ) ) {
+			self::$sample_term_cache[ $taxonomy_object->name ] = null;
 			return null;
 		}
 
 		$term = get_term( (int) $result['term_id'], $taxonomy_object->name );
-		return $term instanceof WP_Term ? $term : null;
+		self::$sample_term_cache[ $taxonomy_object->name ] = $term instanceof WP_Term ? $term : null;
+
+		return self::$sample_term_cache[ $taxonomy_object->name ];
 	}
 
 	/**
@@ -1724,6 +1936,15 @@ final class MRN_Dummy_Content {
 	 * @return int
 	 */
 	private static function get_placeholder_attachment_id( $label ) {
+		if ( null !== self::$placeholder_attachment_id ) {
+			if ( ! self::$placeholder_attachment_refreshed && self::$placeholder_attachment_id > 0 ) {
+				self::refresh_placeholder_attachment_file( self::$placeholder_attachment_id, $label );
+				self::$placeholder_attachment_refreshed = true;
+			}
+
+			return (int) self::$placeholder_attachment_id;
+		}
+
 		$attachments = get_posts(
 			array(
 				'post_type'      => 'attachment',
@@ -1735,8 +1956,10 @@ final class MRN_Dummy_Content {
 		);
 
 		if ( ! empty( $attachments[0] ) ) {
-			self::refresh_placeholder_attachment_file( (int) $attachments[0]->ID, $label );
-			return (int) $attachments[0]->ID;
+			self::$placeholder_attachment_id = (int) $attachments[0]->ID;
+			self::refresh_placeholder_attachment_file( self::$placeholder_attachment_id, $label );
+			self::$placeholder_attachment_refreshed = true;
+			return self::$placeholder_attachment_id;
 		}
 
 		$upload = wp_upload_dir();
@@ -1749,6 +1972,7 @@ final class MRN_Dummy_Content {
 		$result   = wp_upload_bits( $filename, null, $svg );
 
 		if ( ! empty( $result['error'] ) || empty( $result['file'] ) ) {
+			self::$placeholder_attachment_id = 0;
 			return 0;
 		}
 
@@ -1762,12 +1986,15 @@ final class MRN_Dummy_Content {
 		);
 
 		if ( is_wp_error( $attachment_id ) || ! $attachment_id ) {
+			self::$placeholder_attachment_id = 0;
 			return 0;
 		}
 
 		update_post_meta( $attachment_id, self::PLACEHOLDER_FLAG_META, '1' );
+		self::$placeholder_attachment_id        = (int) $attachment_id;
+		self::$placeholder_attachment_refreshed = true;
 
-		return (int) $attachment_id;
+		return self::$placeholder_attachment_id;
 	}
 
 	/**
