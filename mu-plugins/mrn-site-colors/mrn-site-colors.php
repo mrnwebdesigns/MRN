@@ -3,7 +3,7 @@
  * Plugin Name: Site Styles (MU)
  * Description: Adds a Site Styles configuration page for shared color variables, graphic elements, and usage helpers.
  * Author: MRN Web Designs
- * Version: 0.1.3
+ * Version: 0.1.4
  */
 
 defined('ABSPATH') || exit;
@@ -984,8 +984,13 @@ function mrn_site_colors_render_page(): void {
             Array.from(graphicRowsContainer.querySelectorAll('.mrn-site-styles-graphic-row')).forEach(bindGraphicRow);
             Array.from(motionRowsContainer.querySelectorAll('.mrn-site-styles-motion-row')).forEach(bindMotionRow);
 
+            let nextColorIndex = rowsContainer.querySelectorAll('.mrn-site-colors-row').length;
+            let nextGraphicIndex = graphicRowsContainer.querySelectorAll('.mrn-site-styles-graphic-row').length;
+            let nextMotionIndex = motionRowsContainer.querySelectorAll('.mrn-site-styles-motion-row').length;
+
             addButton.addEventListener('click', function () {
-                const index = rowsContainer.querySelectorAll('.mrn-site-colors-row').length;
+                const index = nextColorIndex;
+                nextColorIndex += 1;
                 const row = document.createElement('tr');
                 row.className = 'mrn-site-colors-row';
                 row.innerHTML = `
@@ -1012,7 +1017,8 @@ function mrn_site_colors_render_page(): void {
             });
 
             addGraphicButton.addEventListener('click', function () {
-                const index = graphicRowsContainer.querySelectorAll('.mrn-site-styles-graphic-row').length;
+                const index = nextGraphicIndex;
+                nextGraphicIndex += 1;
                 const row = document.createElement('tr');
                 row.className = 'mrn-site-styles-graphic-row';
                 row.innerHTML = `
@@ -1040,7 +1046,8 @@ function mrn_site_colors_render_page(): void {
             });
 
             addMotionButton.addEventListener('click', function () {
-                const index = motionRowsContainer.querySelectorAll('.mrn-site-styles-motion-row').length;
+                const index = nextMotionIndex;
+                nextMotionIndex += 1;
                 const row = document.createElement('tr');
                 row.className = 'mrn-site-styles-motion-row';
                 row.innerHTML = `

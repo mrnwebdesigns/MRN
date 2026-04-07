@@ -5,7 +5,7 @@
 - Name: `Site Styles (MU)`
 - Slug: `mrn-site-colors`
 - Type: MU plugin
-- Current version: `0.1.3`
+- Current version: `0.1.4`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-site-colors`
 
