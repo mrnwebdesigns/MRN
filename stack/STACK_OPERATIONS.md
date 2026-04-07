@@ -133,6 +133,12 @@ When updating stack-managed assets:
 4. run `/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh` for stack theme, stack MU, bootstrap, or rollout-path changes that affect `default-configs.mrndev.io`
 5. verify the live server copy after sync
 
+For full operator flow, use:
+
+- `/Users/khofmeyer/Development/MRN/stack/ROLLOUT_CHECKLIST.md`
+
+That checklist is the canonical pre-flight, deploy, and post-deploy parity reference.
+
 ## Local Test Site Rule
 
 The local stack site is a development environment, not a second source of truth.
