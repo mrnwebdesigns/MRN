@@ -103,17 +103,17 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<div class="mrn-layout-section mrn-layout-section--logos <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
-			<div class="mrn-layout-grid mrn-layout-grid--logos">
+			<div class="mrn-layout-grid mrn-layout-grid--logos mrn-ui__body">
 		<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
-			<header class="mrn-layout-content mrn-layout-content--text mrn-logos-row__header">
-				<?php if ( '' !== $label ) : ?>
-					<<?php echo esc_html( $label_tag ); ?> class="mrn-logos-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
+				<header class="mrn-layout-content mrn-layout-content--text mrn-logos-row__header mrn-ui__head">
+					<?php if ( '' !== $label ) : ?>
+						<<?php echo esc_html( $label_tag ); ?> class="mrn-ui__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
 				<?php endif; ?>
 				<?php if ( '' !== $heading ) : ?>
-					<<?php echo esc_html( $heading_tag ); ?> class="mrn-logos-row__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+						<<?php echo esc_html( $heading_tag ); ?> class="mrn-ui__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
 				<?php endif; ?>
 				<?php if ( '' !== $subheading ) : ?>
-					<<?php echo esc_html( $subheading_tag ); ?> class="mrn-logos-row__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
+						<<?php echo esc_html( $subheading_tag ); ?> class="mrn-ui__sub"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
 				<?php endif; ?>
 			</header>
 		<?php endif; ?>
@@ -133,7 +133,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				data-time-on-slide="<?php echo esc_attr( (string) $time_on_slide ); ?>"
 			>
 				<div class="splide__track">
-					<ul class="splide__list">
+						<ul class="splide__list mrn-ui__items">
 						<?php foreach ( $valid_items as $item ) : ?>
 							<?php
 							$image       = $item['image'];
@@ -142,10 +142,10 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 							$link_target = isset( $item_link['target'] ) ? (string) $item_link['target'] : '';
 							?>
 							<li class="splide__slide">
-								<div class="mrn-logos-row__item">
+									<div class="mrn-logos-row__item mrn-ui__item">
 									<?php if ( '' !== $url ) : ?>
 										<a
-											class="mrn-logos-row__link"
+												class="mrn-ui__link"
 											href="<?php echo esc_url( $url ); ?>"
 											<?php if ( '' !== $link_target ) : ?>
 												target="<?php echo esc_attr( $link_target ); ?>"
@@ -170,7 +170,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				</div>
 			</div>
 		<?php else : ?>
-			<div class="mrn-logos-row__grid mrn-logos-row__grid--logo-wall mrn-logos-row__grid--columns-<?php echo esc_attr( (string) $logos_per_page ); ?>">
+				<div class="mrn-logos-row__grid mrn-logos-row__grid--logo-wall mrn-logos-row__grid--columns-<?php echo esc_attr( (string) $logos_per_page ); ?> mrn-ui__items">
 				<?php foreach ( $valid_items as $item ) : ?>
 					<?php
 					$image       = $item['image'];
@@ -178,10 +178,10 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 					$url         = isset( $item_link['url'] ) ? (string) $item_link['url'] : '';
 					$link_target = isset( $item_link['target'] ) ? (string) $item_link['target'] : '';
 					?>
-					<div class="mrn-logos-row__item mrn-logos-row__item--logo-wall">
+						<div class="mrn-logos-row__item mrn-logos-row__item--logo-wall mrn-ui__item">
 						<?php if ( '' !== $url ) : ?>
 							<a
-								class="mrn-logos-row__link"
+									class="mrn-ui__link"
 								href="<?php echo esc_url( $url ); ?>"
 								<?php if ( '' !== $link_target ) : ?>
 									target="<?php echo esc_attr( $link_target ); ?>"

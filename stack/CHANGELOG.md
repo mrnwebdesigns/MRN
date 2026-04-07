@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.04.06-neutral-layout-baseline
+- Expanded `mrn-base-stack` to `1.1.17`.
+- Expanded `mrn-reusable-block-library` to `0.1.11`.
+- Normalized builder and reusable-block inner markup around the shared `mrn-ui__*` contract so layouts and reusable blocks expose one clearer semantic front-end API.
+- Removed parent-theme default box chrome and reduced row spacing to a minimal anti-collision fallback so first-site child themes can own visual rhythm and broad boxed treatments without fighting per-layout defaults.
+- Tightened shell-width compliance and moved more internal row/repeater spacing onto shared tokens so wide/full sections stay honest to the shell contract and future theming can target a smaller shared surface area.
+
 ## 2026.04.06-builder-anchor-width-polish
 - Expanded `mrn-base-stack` to `1.1.16`.
 - Expanded `mrn-reusable-block-library` to `0.1.10`.

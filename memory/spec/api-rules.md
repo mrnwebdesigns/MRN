@@ -6,7 +6,46 @@
   - `Wide`
   - `Full Width`
 - These values are the standard contract for body-section width behavior.
+- `Wide` and `Full Width` output should stay wide/full unless a row explicitly opts into a different composition through row/root modifiers.
+- Inner wrappers must not quietly collapse wide/full output back to content width with arbitrary `max-width` caps.
 - Hero is not part of this width enum.
+
+## Builder Inner Class Contract
+- This rule applies to future theme builder layouts and reusable-block templates.
+- Keep the outer shell contract helper-driven and stable.
+- Inside that shell, prefer one shared semantic class vocabulary so rows can negotiate presentation through row/root modifiers instead of one-off inner class trees.
+- Short canonical inner class names are:
+  - `__head`
+  - `__body`
+  - `__items`
+  - `__item`
+  - `__media`
+  - `__label`
+  - `__heading`
+  - `__sub`
+  - `__text`
+  - `__link`
+  - `__actions`
+- Use those names when the concept matches, even if the family is a slider, card deck, FAQ, grid, logo wall, or reusable block.
+- For normal repeaters and collections, the default structure is:
+  - root `__items`
+  - repeated child `__item`
+  - optional inner `__media`, `__label`, `__heading`, `__sub`, `__text`, `__link`, `__actions`
+- Only introduce a unique inner class when the structure is truly unique and the shared names would become misleading.
+- New layouts and reusable blocks should avoid synonyms such as `title` vs `heading`, `copy` vs `text`, or `slide` vs `item` for otherwise equivalent inner roles.
+
+## Parent Theme Theming Contract
+- The parent stack theme should stay visually neutral by default so child themes can own site-specific art direction.
+- Prefer shared CSS variables over per-layout presentation selectors for front-end defaults.
+- Canonical shared theming variables now include:
+  - row spacing: `--mrn-row-space-fallback`, `--mrn-row-space-default`, `--mrn-row-space-loose`
+  - stack spacing: `--mrn-space-stack-2xs`, `--mrn-space-stack-xs`, `--mrn-space-stack-sm`, `--mrn-space-stack-md`, `--mrn-space-stack-lg`, `--mrn-space-stack-xl`
+  - neutral item-panel hooks: `--mrn-ui-panel-bg`, `--mrn-ui-panel-border`, `--mrn-ui-panel-radius`, `--mrn-ui-panel-shadow`, `--mrn-ui-panel-padding`
+- Shared inner wrappers should prefer those variables rather than hard-coded row-family padding and panel chrome.
+- Parent-theme row spacing should be minimal anti-collision spacing only; child themes should own the actual vertical rhythm.
+- `--mrn-row-space-fallback` is the canonical shared row-spacing knob, and `--mrn-row-space-default` / `--mrn-row-space-loose` should alias to it unless a documented exception is introduced.
+- When a layout or reusable block already uses shared wrapper gaps such as `mrn-ui__body`, `mrn-ui__head`, or `mrn-ui__items`, avoid adding extra sibling spacing through one-off header margins or top offsets unless the exception is documented.
+- If a future child theme wants a boxed system across layouts, it should be able to achieve that by styling shared `mrn-ui__item`/`mrn-ui__body` targets and shared variables instead of many family-specific selectors.
 
 ## Content Lists Contract
 - `Content Lists` display modes are managed in `Site Configurations -> Display Modes`.

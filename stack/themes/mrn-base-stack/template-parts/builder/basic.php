@@ -105,27 +105,31 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 	<div class="mrn-layout-section mrn-layout-section--basic <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-grid mrn-layout-grid--basic mrn-layout-grid--media-stack mrn-basic-row__inner">
-			<?php if ( '' !== $image_url ) : ?>
-				<div class="mrn-layout-content mrn-layout-content--media mrn-layout-content--media-stack-media mrn-basic-row__media">
+				<?php if ( '' !== $image_url ) : ?>
+					<div class="mrn-layout-content mrn-layout-content--media mrn-layout-content--media-stack-media mrn-basic-row__media mrn-ui__media">
 					<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $image_alt ); ?>" />
 				</div>
 			<?php endif; ?>
 
-			<div class="mrn-layout-content mrn-layout-content--text mrn-layout-content--media-stack-text mrn-basic-row__content-wrap">
-				<?php if ( '' !== $label ) : ?>
-					<<?php echo esc_html( $label_tag ); ?> class="mrn-basic-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
-				<?php endif; ?>
+				<div class="mrn-layout-content mrn-layout-content--text mrn-layout-content--media-stack-text mrn-basic-row__content-wrap mrn-ui__body">
+					<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
+						<div class="mrn-ui__head">
+							<?php if ( '' !== $label ) : ?>
+								<<?php echo esc_html( $label_tag ); ?> class="mrn-ui__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
+							<?php endif; ?>
 
-				<?php if ( '' !== $heading ) : ?>
-					<<?php echo esc_html( $heading_tag ); ?> class="mrn-basic-row__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
-				<?php endif; ?>
+							<?php if ( '' !== $heading ) : ?>
+								<<?php echo esc_html( $heading_tag ); ?> class="mrn-ui__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+							<?php endif; ?>
 
-				<?php if ( '' !== $subheading ) : ?>
-					<<?php echo esc_html( $subheading_tag ); ?> class="mrn-basic-row__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
-				<?php endif; ?>
+							<?php if ( '' !== $subheading ) : ?>
+								<<?php echo esc_html( $subheading_tag ); ?> class="mrn-ui__sub"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
+							<?php endif; ?>
+						</div>
+					<?php endif; ?>
 
 				<?php if ( '' !== trim( $content ) ) : ?>
-					<div class="mrn-basic-row__content">
+						<div class="mrn-ui__text">
 						<?php echo apply_filters( 'the_content', $content ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
 				<?php endif; ?>
@@ -133,7 +137,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				<?php if ( '' !== $link_url ) : ?>
 					<div class="mrn-basic-row__link-wrap">
 						<a
-							class="mrn-basic-row__link <?php echo 'button' === $link_style ? 'mrn-basic-row__link--button' : 'mrn-basic-row__link--text'; ?>"
+								class="mrn-ui__link <?php echo 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text'; ?>"
 							href="<?php echo esc_url( $link_url ); ?>"
 							<?php if ( '' !== $link_target ) : ?>
 								target="<?php echo esc_attr( $link_target ); ?>"

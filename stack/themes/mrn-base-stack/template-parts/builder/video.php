@@ -100,21 +100,25 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-grid mrn-layout-grid--video mrn-video-row mrn-layout-grid--video-feature">
 			<?php if ( '' !== $label || '' !== $heading || '' !== $subheading || '' !== trim( wp_strip_all_tags( $content ) ) ) : ?>
-				<div class="mrn-layout-content mrn-layout-content--text mrn-video-row__header mrn-video-row__header--video-feature">
-					<?php if ( '' !== $label ) : ?>
-						<<?php echo esc_html( $label_tag ); ?> class="mrn-video-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
-					<?php endif; ?>
+					<div class="mrn-layout-content mrn-layout-content--text mrn-video-row__content mrn-video-row__content--video-feature mrn-ui__body">
+					<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
+							<div class="mrn-video-row__header mrn-video-row__header--video-feature mrn-ui__head">
+							<?php if ( '' !== $label ) : ?>
+									<<?php echo esc_html( $label_tag ); ?> class="mrn-ui__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
+							<?php endif; ?>
 
-					<?php if ( '' !== $heading ) : ?>
-						<<?php echo esc_html( $heading_tag ); ?> class="mrn-video-row__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
-					<?php endif; ?>
+							<?php if ( '' !== $heading ) : ?>
+									<<?php echo esc_html( $heading_tag ); ?> class="mrn-ui__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+							<?php endif; ?>
 
-					<?php if ( '' !== $subheading ) : ?>
-						<<?php echo esc_html( $subheading_tag ); ?> class="mrn-video-row__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
+							<?php if ( '' !== $subheading ) : ?>
+									<<?php echo esc_html( $subheading_tag ); ?> class="mrn-ui__sub"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
+							<?php endif; ?>
+						</div>
 					<?php endif; ?>
 
 					<?php if ( '' !== trim( $content ) ) : ?>
-						<div class="mrn-video-row__text">
+							<div class="mrn-video-row__text mrn-ui__text">
 							<?php echo apply_filters( 'the_content', $content ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						</div>
 					<?php endif; ?>
@@ -123,7 +127,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 
 			<?php if ( '' !== $resolved_video_url ) : ?>
 				<div
-					class="mrn-layout-content mrn-layout-content--media mrn-video-row__media mrn-video-row__media--video-feature"
+						class="mrn-layout-content mrn-layout-content--media mrn-video-row__media mrn-video-row__media--video-feature mrn-ui__media"
 					data-video-src="<?php echo esc_url( $resolved_video_url ); ?>"
 					data-video-kind="<?php echo esc_attr( $resolved_video_kind ); ?>"
 					<?php if ( 'local' === $resolved_video_kind && '' !== $resolved_video_mime ) : ?>

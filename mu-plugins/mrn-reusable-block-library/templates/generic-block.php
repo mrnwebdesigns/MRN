@@ -22,7 +22,9 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
     data-block-id="<?php echo esc_attr((string) $post->ID); ?>"
     data-block-slug="<?php echo esc_attr((string) $post->post_name); ?>"
 >
-    <div class="mrn-reusable-block__inner">
-        <h2 class="mrn-reusable-block__heading"><?php echo esc_html($post->post_title); ?></h2>
+    <div class="mrn-reusable-block__inner mrn-ui__body">
+        <div class="mrn-ui__head">
+            <h2 class="mrn-ui__heading"><?php echo esc_html($post->post_title); ?></h2>
+        </div>
     </div>
 </section>

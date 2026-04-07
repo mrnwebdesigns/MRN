@@ -198,27 +198,28 @@ echo function_exists( 'mrn_rbl_get_anchor_markup' ) ? mrn_rbl_get_anchor_markup(
 		style="<?php echo esc_attr( implode( '; ', $inline_styles ) ); ?>"
 	<?php endif; ?>
 >
-	<div class="mrn-reusable-block__inner mrn-reusable-block__inner--content-lists">
-		<?php if ( $has_label || $has_heading || $has_subheading || $has_intro ) : ?>
-			<div class="mrn-content-list-row__header">
-				<?php if ( $has_label ) : ?>
-					<<?php echo esc_html( $label_tag ); ?> class="mrn-shell-section__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
-				<?php endif; ?>
-				<?php if ( $has_heading ) : ?>
-					<<?php echo esc_html( $heading_tag ); ?> class="mrn-shell-section__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
-				<?php endif; ?>
-				<?php if ( $has_subheading ) : ?>
-					<<?php echo esc_html( $subheading_tag ); ?> class="mrn-shell-section__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
-				<?php endif; ?>
-				<?php if ( $has_intro ) : ?>
-					<div class="mrn-shell-section__content mrn-content-list-row__intro">
-						<?php echo apply_filters( 'the_content', $intro ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					</div>
-				<?php endif; ?>
-			</div>
-		<?php endif; ?>
+		<div class="mrn-reusable-block__inner mrn-reusable-block__inner--content-lists mrn-ui__body">
+			<?php if ( $has_label || $has_heading || $has_subheading ) : ?>
+				<div class="mrn-content-list-row__header mrn-ui__head">
+					<?php if ( $has_label ) : ?>
+						<<?php echo esc_html( $label_tag ); ?> class="mrn-ui__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
+					<?php endif; ?>
+					<?php if ( $has_heading ) : ?>
+						<<?php echo esc_html( $heading_tag ); ?> class="mrn-ui__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+					<?php endif; ?>
+					<?php if ( $has_subheading ) : ?>
+						<<?php echo esc_html( $subheading_tag ); ?> class="mrn-ui__sub"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
+					<?php endif; ?>
+				</div>
+			<?php endif; ?>
 
-		<<?php echo esc_html( $list_tag ); ?> class="mrn-content-list-row__items mrn-content-list-row__items--<?php echo esc_attr( $list_style ); ?>">
+			<?php if ( $has_intro ) : ?>
+				<div class="mrn-content-list-row__intro mrn-ui__text">
+					<?php echo apply_filters( 'the_content', $intro ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</div>
+			<?php endif; ?>
+
+			<<?php echo esc_html( $list_tag ); ?> class="mrn-content-list-row__items mrn-content-list-row__items--<?php echo esc_attr( $list_style ); ?> mrn-ui__items">
 			<?php if ( $has_posts ) : ?>
 				<?php while ( $query->have_posts() ) : ?>
 					<?php
@@ -243,8 +244,8 @@ echo function_exists( 'mrn_rbl_get_anchor_markup' ) ? mrn_rbl_get_anchor_markup(
 					?>
 				<?php endwhile; ?>
 			<?php elseif ( '' !== $empty_message ) : ?>
-				<li class="mrn-content-list-row__item mrn-content-list-row__item--empty">
-					<p class="mrn-content-list-row__empty"><?php echo esc_html( $empty_message ); ?></p>
+				<li class="mrn-content-list-row__item mrn-content-list-row__item--empty mrn-ui__item">
+					<p class="mrn-content-list-row__empty mrn-ui__text"><?php echo esc_html( $empty_message ); ?></p>
 				</li>
 			<?php endif; ?>
 		</<?php echo esc_html( $list_tag ); ?>>

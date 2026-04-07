@@ -163,10 +163,10 @@
 		motionSections.forEach( function( sectionElement ) {
 			var surfaceElement = findDarkScrollCardSurface( sectionElement );
 			var titleElements = Array.prototype.slice.call( sectionElement.querySelectorAll( 'h1, h2, h3, h4, h5, h6' ) );
-			var bodyTextElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-basic-row__content p, .mrn-shell-section__content p, .mrn-image-content-row__content p, .mrn-video-row__content p, .mrn-card-row__content p, .mrn-reusable-block__text p' ) );
-			var labelElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-basic-row__label, .mrn-shell-section__label, .mrn-image-content-row__label, .mrn-video-row__label, .mrn-reusable-block__label' ) );
-			var actionElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-basic-row__link--button, .mrn-hero__link, .mrn-reusable-block__link--button, button' ) );
-			var imageElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-basic-row__media img, .mrn-image-content-row__media img, .mrn-video-row__media img, .mrn-reusable-block__media img, .mrn-card-row__item img' ) );
+			var bodyTextElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-ui__text p' ) );
+			var labelElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-ui__label' ) );
+			var actionElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-ui__link--button, .mrn-hero__link, button' ) );
+			var imageElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-ui__media img' ) );
 			var targetBackground = getCssRgbVar( sectionElement, '--mrn-dark-scroll-card-bg-rgb', [ 15, 15, 21 ] );
 			var targetText = getCssRgbVar( sectionElement, '--mrn-dark-scroll-card-text-rgb', [ 245, 245, 245 ] );
 			var targetMuted = getCssRgbVar( sectionElement, '--mrn-dark-scroll-card-muted-rgb', [ 182, 190, 201 ] );

@@ -13,6 +13,7 @@
 - Keep `After Content` as a placement bucket that follows the same layout vocabulary as `Content`.
 - Centralize wrapper and shell logic in shared helpers instead of one-off layout patches.
 - Treat width-class rendering as solved infrastructure and focus next on stronger visual expression by layout family, starting with `Basic` and likely `Image Content`.
+- Set a forward-looking inner-markup contract so future layouts and reusable blocks share one short semantic class vocabulary under the stable shell.
 
 ## Active Product Decisions
 - `Content Lists` display modes are a targeted system, not a stack-wide builder rule.
@@ -23,11 +24,18 @@
 - Singular sidebar behavior is theme-owned in `mrn-base-stack`.
 - Front-end singular-sidebar collapse was explored and intentionally deferred.
 - Classic-editor sidebar collapse behavior is the active collapse contract and lives in `mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php`.
+- Future layout and reusable-block cleanup should leave shell classes stable and normalize only inner markup.
+- Row or block modifiers should own presentation differences; shared inner classes should stay semantic and short.
+- Wide/full shell widths are now the active contract for builder rows and reusable blocks; future CSS should not re-clamp them back to content width with stray inner `max-width` rules.
+- The parent stack theme is now being treated as a neutral child-theme base: default row styling should avoid built-in box chrome, decorative showcase effects, and row-family spacing drift unless a behavior truly requires them.
+- Shared spacing and panel variables in `mrn-base-stack` are now the preferred child-theme styling hooks for broad system changes like boxed items or adjusted row rhythm.
+- Parent-theme row spacing has been reduced to a minimal anti-collision fallback token; child themes are expected to own actual page rhythm.
+- Shared wrapper gaps are now the intended default internal rhythm too; row-specific header margins and top offsets should not be reintroduced on top of `mrn-ui__body` / `mrn-ui__head` spacing.
 
 ## Recent Durable Decisions
-- Current stack baseline is `2026.04.06-builder-anchor-width-polish`.
-- Current stack theme version is `mrn-base-stack 1.1.16`.
-- Current reusable block library version is `mrn-reusable-block-library 0.1.10`.
+- Current stack baseline is `2026.04.06-neutral-layout-baseline`.
+- Current stack theme version is `mrn-base-stack 1.1.17`.
+- Current reusable block library version is `mrn-reusable-block-library 0.1.11`.
 - Future sites should use a child theme for site-specific theming, and stack update work should preserve stable parent-theme theming hooks such as classes, CSS variables, and other child-theme styling targets unless a documented breaking change is truly necessary.
 - Stack AME export payloads were refreshed twice on `2026-04-06`; the current canonical files are `/Users/khofmeyer/Development/MRN/stack/configs/exports/ame-config-container.json` and `/Users/khofmeyer/Development/MRN/stack/configs/exports/AME-configuration(2026-04-06).json`.
 - The top-level repo now tracks the canonical stack manifests, importer/bootstrap helpers, archive docs, and surfaced wrapper/shim files that were previously hidden by the old allowlist `.gitignore`, so release and deployment QA can reason about the full stack source from one repo.
@@ -49,6 +57,8 @@
 - Stack-wide admin icon picking now has one canonical chooser in `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`; `mrn-base-stack` and `mrn-editor-tools` should consume `mrn_shared_assets_enqueue_admin_icon_chooser()` instead of shipping their own modal/picker catalogs.
 
 ## Recent Release Notes
+- Stack release `2026.04.06-neutral-layout-baseline` expands `mrn-base-stack` to `1.1.17` and `mrn-reusable-block-library` to `0.1.11`.
+- That release standardizes shared inner front-end markup across builder rows and reusable blocks, strips opinionated parent-theme box treatments, reduces row spacing to a minimal fallback token, and aligns width/spacing behavior more tightly to the shell contract for child-theme-first site builds.
 - Stack release `2026.04.06-builder-anchor-width-polish` expands `mrn-base-stack` to `1.1.16`, `mrn-reusable-block-library` to `0.1.10`, and `mrn-dummy-content` to `0.1.9`.
 - That release adds optional top-of-row/block anchor targets across builder and reusable-block configs, updates dummy-content seeding so the all-layouts QA page exercises those anchor-capable configs, and realigns the width-sensitive full-width `Basic`, `Image Content`, and reusable CTA output with the shared shell inset contract.
 - Release verification is expected to include `php -l`, `git diff --check`, targeted risky-pattern review, stack `qa-security.sh`, stack `qa-local-stack-site.sh`, theme `qa-page-speed.sh`, rebuilt package parity via `qa-rollout-contract.sh`, and post-deploy rollout verification.

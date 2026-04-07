@@ -84,21 +84,25 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<div class="mrn-layout-section mrn-layout-section--card <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
-			<div class="mrn-layout-grid mrn-layout-grid--card">
-		<?php if ( '' !== $label ) : ?>
-			<<?php echo esc_html( $label_tag ); ?> class="mrn-layout-content mrn-layout-content--text mrn-card-row__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
-		<?php endif; ?>
+			<div class="mrn-layout-grid mrn-layout-grid--card mrn-ui__body">
+		<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
+				<div class="mrn-layout-content mrn-layout-content--text mrn-card-row__head mrn-ui__head">
+					<?php if ( '' !== $label ) : ?>
+						<<?php echo esc_html( $label_tag ); ?> class="mrn-ui__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
+					<?php endif; ?>
 
-		<?php if ( '' !== $heading ) : ?>
-			<<?php echo esc_html( $heading_tag ); ?> class="mrn-layout-content mrn-layout-content--text mrn-card-row__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
-		<?php endif; ?>
+					<?php if ( '' !== $heading ) : ?>
+						<<?php echo esc_html( $heading_tag ); ?> class="mrn-ui__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+					<?php endif; ?>
 
-		<?php if ( '' !== $subheading ) : ?>
-			<<?php echo esc_html( $subheading_tag ); ?> class="mrn-layout-content mrn-layout-content--text mrn-card-row__subheading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
+					<?php if ( '' !== $subheading ) : ?>
+						<<?php echo esc_html( $subheading_tag ); ?> class="mrn-ui__sub"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
+					<?php endif; ?>
+				</div>
 		<?php endif; ?>
 
 		<?php if ( $has_items ) : ?>
-			<div class="mrn-card-row__grid mrn-card-row__grid--card-deck">
+				<div class="mrn-card-row__grid mrn-card-row__grid--card-deck mrn-ui__items">
 				<?php foreach ( $items as $item ) : ?>
 					<?php
 					if ( ! is_array( $item ) ) {
@@ -113,26 +117,26 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 						continue;
 					}
 					?>
-					<article class="mrn-card-row__item mrn-card-row__item--card-deck">
+						<article class="mrn-card-row__item mrn-card-row__item--card-deck mrn-ui__item">
 						<?php if ( ! empty( $item_image['ID'] ) ) : ?>
-							<div class="mrn-card-row__image">
+								<div class="mrn-card-row__image mrn-ui__media">
 								<?php echo wp_get_attachment_image( (int) $item_image['ID'], 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
 						<?php elseif ( ! empty( $item_image['url'] ) ) : ?>
-							<div class="mrn-card-row__image">
+								<div class="mrn-card-row__image mrn-ui__media">
 								<img src="<?php echo esc_url( $item_image['url'] ); ?>" alt="<?php echo esc_attr( $item_image['alt'] ?? '' ); ?>">
 							</div>
 						<?php endif; ?>
 
 						<?php if ( '' !== trim( wp_strip_all_tags( $item_text ) ) ) : ?>
-							<div class="mrn-card-row__text">
+								<div class="mrn-card-row__text mrn-ui__text">
 								<?php echo apply_filters( 'the_content', $item_text ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
 						<?php endif; ?>
 
 						<?php if ( ! empty( $item_link['url'] ) ) : ?>
 							<p class="mrn-card-row__item-link">
-								<a href="<?php echo esc_url( $item_link['url'] ); ?>"<?php echo ! empty( $item_link['target'] ) ? ' target="' . esc_attr( $item_link['target'] ) . '"' : ''; ?><?php echo ! empty( $item_link['target'] ) && '_blank' === $item_link['target'] ? ' rel="noopener noreferrer"' : ''; ?>>
+									<a class="mrn-ui__link" href="<?php echo esc_url( $item_link['url'] ); ?>"<?php echo ! empty( $item_link['target'] ) ? ' target="' . esc_attr( $item_link['target'] ) . '"' : ''; ?><?php echo ! empty( $item_link['target'] ) && '_blank' === $item_link['target'] ? ' rel="noopener noreferrer"' : ''; ?>>
 									<?php echo esc_html( $item_link['title'] ?? 'Learn More' ); ?>
 								</a>
 							</p>
@@ -144,7 +148,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 
 		<?php if ( ! empty( $section_link['url'] ) ) : ?>
 			<p class="mrn-card-row__link">
-				<a href="<?php echo esc_url( $section_link['url'] ); ?>"<?php echo ! empty( $section_link['target'] ) ? ' target="' . esc_attr( $section_link['target'] ) . '"' : ''; ?><?php echo ! empty( $section_link['target'] ) && '_blank' === $section_link['target'] ? ' rel="noopener noreferrer"' : ''; ?>>
+					<a class="mrn-ui__link" href="<?php echo esc_url( $section_link['url'] ); ?>"<?php echo ! empty( $section_link['target'] ) ? ' target="' . esc_attr( $section_link['target'] ) . '"' : ''; ?><?php echo ! empty( $section_link['target'] ) && '_blank' === $section_link['target'] ? ' rel="noopener noreferrer"' : ''; ?>>
 					<?php echo esc_html( $section_link['title'] ?? 'Learn More' ); ?>
 				</a>
 			</p>

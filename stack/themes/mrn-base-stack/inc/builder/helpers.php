@@ -467,6 +467,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 	$image_first       = ! empty( $fields ) && 'featured_image' === $fields[0];
 	$item_classes      = array(
 		'mrn-content-list-row__item',
+		'mrn-ui__item',
 		'mrn-content-list-row__item--display-' . ( '' !== $display_mode ? $display_mode : 'row-settings' ),
 		'mrn-content-list-row__item--variant-' . $variant,
 	);
@@ -482,43 +483,64 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 	?>
 	<li class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>">
 		<?php if ( 'title_only' === $variant ) : ?>
-			<span class="mrn-content-list-row__title mrn-content-list-row__title--only">
-				<?php if ( '' !== $permalink ) : ?>
-					<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
-				<?php else : ?>
-					<?php echo esc_html( $item_title ); ?>
-				<?php endif; ?>
-			</span>
+			<div class="mrn-content-list-row__body mrn-ui__body">
+				<div class="mrn-content-list-row__head mrn-ui__head">
+					<span class="mrn-content-list-row__title mrn-content-list-row__title--only mrn-ui__heading">
+						<?php if ( '' !== $permalink ) : ?>
+							<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
+						<?php else : ?>
+							<?php echo esc_html( $item_title ); ?>
+						<?php endif; ?>
+					</span>
+				</div>
+			</div>
 		<?php else : ?>
-			<article class="mrn-content-list-row__card">
-				<div class="mrn-content-list-row__body">
-					<?php foreach ( $fields as $field_key ) : ?>
-						<?php if ( 'featured_image' === $field_key && $show_image && '' !== $permalink ) : ?>
-							<a class="mrn-content-list-row__media" href="<?php echo esc_url( $permalink ); ?>">
+				<article class="mrn-content-list-row__card">
+					<div class="mrn-content-list-row__body mrn-ui__body">
+						<?php $head_open = false; ?>
+						<?php foreach ( $fields as $field_key ) : ?>
+							<?php
+							$is_head_field = (
+								( 'publish_date' === $field_key && $show_date ) ||
+								( 'title' === $field_key && '' !== $item_title )
+							);
+							?>
+							<?php if ( $is_head_field && ! $head_open ) : ?>
+								<div class="mrn-content-list-row__head mrn-ui__head">
+								<?php $head_open = true; ?>
+							<?php elseif ( ! $is_head_field && $head_open ) : ?>
+								</div>
+								<?php $head_open = false; ?>
+							<?php endif; ?>
+							<?php if ( 'featured_image' === $field_key && $show_image && '' !== $permalink ) : ?>
+								<a class="mrn-content-list-row__media mrn-ui__media mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>">
 								<?php echo get_the_post_thumbnail( $item_post, 'medium_large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</a>
 						<?php elseif ( 'featured_image' === $field_key && $show_image ) : ?>
-							<div class="mrn-content-list-row__media">
+								<div class="mrn-content-list-row__media mrn-ui__media">
 								<?php echo get_the_post_thumbnail( $item_post, 'medium_large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
 						<?php elseif ( 'publish_date' === $field_key && $show_date ) : ?>
 							<p class="mrn-content-list-row__meta"><?php echo esc_html( get_the_date( '', $item_post ) ); ?></p>
 						<?php elseif ( 'title' === $field_key && '' !== $item_title ) : ?>
-							<h3 class="mrn-content-list-row__title">
-								<?php if ( '' !== $permalink ) : ?>
-									<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
+								<h3 class="mrn-content-list-row__title mrn-ui__heading">
+									<?php if ( '' !== $permalink ) : ?>
+										<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
 								<?php else : ?>
 									<?php echo esc_html( $item_title ); ?>
 								<?php endif; ?>
 							</h3>
 						<?php elseif ( 'excerpt' === $field_key && '' !== $item_excerpt ) : ?>
-							<p class="mrn-content-list-row__excerpt"><?php echo esc_html( $item_excerpt ); ?></p>
-						<?php elseif ( 'read_more' === $field_key && $show_read_more ) : ?>
-							<p class="mrn-content-list-row__link">
-								<a href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( '' !== $read_more_label ? $read_more_label : 'Read More' ); ?></a>
+								<p class="mrn-content-list-row__excerpt mrn-ui__text"><?php echo esc_html( $item_excerpt ); ?></p>
+							<?php elseif ( 'read_more' === $field_key && $show_read_more ) : ?>
+									<p class="mrn-content-list-row__link">
+										<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( '' !== $read_more_label ? $read_more_label : 'Read More' ); ?></a>
 							</p>
 						<?php endif; ?>
 					<?php endforeach; ?>
+						<?php if ( $head_open ) : ?>
+							</div>
+						<?php endif; ?>
 				</div>
 			</article>
 		<?php endif; ?>

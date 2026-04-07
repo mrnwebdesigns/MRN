@@ -97,36 +97,40 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
         style="<?php echo esc_attr(implode('; ', $styles)); ?>"
     <?php endif; ?>
 >
-    <div class="mrn-reusable-block__inner mrn-reusable-block__inner--callout">
-        <?php if ($label !== '') : ?>
-            <<?php echo esc_html($label_tag); ?> class="mrn-reusable-block__label">
-                <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($label) : esc_html($label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-            </<?php echo esc_html($label_tag); ?>>
-        <?php endif; ?>
+	    <div class="mrn-reusable-block__inner mrn-reusable-block__inner--callout mrn-ui__body">
+	        <?php if ($label !== '' || $heading !== '' || $subheading !== '') : ?>
+	            <div class="mrn-ui__head">
+                <?php if ($label !== '') : ?>
+	                    <<?php echo esc_html($label_tag); ?> class="mrn-ui__label">
+                        <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($label) : esc_html($label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    </<?php echo esc_html($label_tag); ?>>
+                <?php endif; ?>
 
-        <?php if ($heading !== '') : ?>
-            <<?php echo esc_html($heading_tag); ?> class="mrn-reusable-block__heading">
-                <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($heading) : esc_html($heading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-            </<?php echo esc_html($heading_tag); ?>>
-        <?php endif; ?>
+                <?php if ($heading !== '') : ?>
+	                    <<?php echo esc_html($heading_tag); ?> class="mrn-ui__heading">
+                        <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($heading) : esc_html($heading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    </<?php echo esc_html($heading_tag); ?>>
+                <?php endif; ?>
 
-        <?php if ($subheading !== '') : ?>
-            <<?php echo esc_html($subheading_tag); ?> class="mrn-shell-section__subheading">
-                <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($subheading) : esc_html($subheading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-            </<?php echo esc_html($subheading_tag); ?>>
+                <?php if ($subheading !== '') : ?>
+	                    <<?php echo esc_html($subheading_tag); ?> class="mrn-ui__sub">
+                        <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($subheading) : esc_html($subheading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    </<?php echo esc_html($subheading_tag); ?>>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
 
         <?php if ($copy !== '') : ?>
-            <div class="mrn-reusable-block__text">
+	            <div class="mrn-ui__text">
                 <?php echo apply_filters('the_content', $copy); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
             </div>
         <?php endif; ?>
 
         <?php if ($primary_link_url !== '' || $secondary_link_url !== '') : ?>
-            <div class="mrn-reusable-block__actions mrn-reusable-block__actions--callout">
+	            <div class="mrn-reusable-block__actions mrn-reusable-block__actions--callout mrn-ui__actions">
                 <?php if ($primary_link_url !== '') : ?>
                 <a
-                    class="mrn-reusable-block__link <?php echo 'button' === $link_style ? 'mrn-reusable-block__link--button' : 'mrn-reusable-block__link--text'; ?>"
+	                    class="mrn-ui__link <?php echo 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text'; ?>"
                     href="<?php echo esc_url($primary_link_url); ?>"
                     <?php if ($primary_link_target !== '') : ?>
                         target="<?php echo esc_attr($primary_link_target); ?>"
@@ -141,7 +145,7 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
 
                 <?php if ($secondary_link_url !== '') : ?>
                 <a
-                    class="mrn-reusable-block__link mrn-reusable-block__link--secondary <?php echo 'button' === $link_style ? 'mrn-reusable-block__link--button' : 'mrn-reusable-block__link--text'; ?>"
+	                    class="mrn-ui__link mrn-ui__link--secondary <?php echo 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text'; ?>"
                     href="<?php echo esc_url($secondary_link_url); ?>"
                     <?php if ($secondary_link_target !== '') : ?>
                         target="<?php echo esc_attr($secondary_link_target); ?>"

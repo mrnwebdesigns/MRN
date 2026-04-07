@@ -86,27 +86,31 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
         style="<?php echo esc_attr(implode('; ', $styles)); ?>"
     <?php endif; ?>
 >
-    <div class="mrn-content-grid mrn-content-grid--collection-shell">
-        <?php if ($label !== '') : ?>
-            <<?php echo esc_html($label_tag); ?> class="mrn-content-grid__label">
-                <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($label) : esc_html($label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-            </<?php echo esc_html($label_tag); ?>>
-        <?php endif; ?>
+	    <div class="mrn-content-grid mrn-content-grid--collection-shell mrn-ui__body">
+	        <?php if ($label !== '' || $heading !== '' || $subheading !== '') : ?>
+	            <div class="mrn-content-grid__head mrn-ui__head">
+                <?php if ($label !== '') : ?>
+	                    <<?php echo esc_html($label_tag); ?> class="mrn-ui__label">
+                        <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($label) : esc_html($label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    </<?php echo esc_html($label_tag); ?>>
+                <?php endif; ?>
 
-        <?php if ($heading !== '') : ?>
-            <<?php echo esc_html($heading_tag); ?> class="mrn-content-grid__heading">
-                <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($heading) : esc_html($heading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-            </<?php echo esc_html($heading_tag); ?>>
-        <?php endif; ?>
+                <?php if ($heading !== '') : ?>
+	                    <<?php echo esc_html($heading_tag); ?> class="mrn-ui__heading">
+                        <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($heading) : esc_html($heading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    </<?php echo esc_html($heading_tag); ?>>
+                <?php endif; ?>
 
-        <?php if ($subheading !== '') : ?>
-            <<?php echo esc_html($subheading_tag); ?> class="mrn-shell-section__subheading">
-                <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($subheading) : esc_html($subheading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-            </<?php echo esc_html($subheading_tag); ?>>
+                <?php if ($subheading !== '') : ?>
+	                    <<?php echo esc_html($subheading_tag); ?> class="mrn-ui__sub">
+                        <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($subheading) : esc_html($subheading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    </<?php echo esc_html($subheading_tag); ?>>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
 
         <?php if ($grid_items !== array()) : ?>
-            <div class="mrn-content-grid__items mrn-content-grid__items--collection-shell">
+	            <div class="mrn-content-grid__items mrn-content-grid__items--collection-shell mrn-ui__items">
                 <?php foreach ($grid_items as $item) : ?>
                     <?php
                     if (!is_array($item)) {
@@ -131,37 +135,43 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
                         continue;
                     }
                     ?>
-                    <article class="mrn-content-grid__item mrn-content-grid__item--collection-shell">
-                        <?php if ($item_label !== '') : ?>
-                            <<?php echo esc_html($item_label_tag); ?> class="mrn-content-grid__item-label"><?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($item_label) : esc_html($item_label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html($item_label_tag); ?>>
-                        <?php endif; ?>
-
-                        <?php if ($item_heading !== '') : ?>
-                            <<?php echo esc_html($item_heading_tag); ?> class="mrn-content-grid__item-title"><?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($item_heading) : esc_html($item_heading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html($item_heading_tag); ?>>
-                        <?php endif; ?>
-
-                        <?php if ($item_copy !== '') : ?>
-                            <div class="mrn-content-grid__item-copy">
-                                <?php echo apply_filters('the_content', $item_copy); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <?php if ($link_url !== '') : ?>
-                            <div class="mrn-content-grid__item-link-wrap">
-                                <a
-                                    class="mrn-content-grid__item-link <?php echo 'button' === $item_link_style ? 'mrn-content-grid__item-link--button' : 'mrn-content-grid__item-link--text'; ?>"
-                                    href="<?php echo esc_url($link_url); ?>"
-                                    <?php if ($link_target !== '') : ?>
-                                        target="<?php echo esc_attr($link_target); ?>"
+                    <article class="mrn-content-grid__item mrn-content-grid__item--collection-shell mrn-ui__item">
+                        <div class="mrn-content-grid__item-body mrn-ui__body">
+                            <?php if ($item_label !== '' || $item_heading !== '') : ?>
+                                <div class="mrn-content-grid__item-head mrn-ui__head">
+                                    <?php if ($item_label !== '') : ?>
+                                        <<?php echo esc_html($item_label_tag); ?> class="mrn-ui__label"><?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($item_label) : esc_html($item_label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html($item_label_tag); ?>>
                                     <?php endif; ?>
-                                    <?php if ('_blank' === $link_target) : ?>
-                                        rel="noopener noreferrer"
+
+                                    <?php if ($item_heading !== '') : ?>
+                                        <<?php echo esc_html($item_heading_tag); ?> class="mrn-ui__heading"><?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($item_heading) : esc_html($item_heading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html($item_heading_tag); ?>>
                                     <?php endif; ?>
-                                >
-                                    <?php echo esc_html($link_title !== '' ? $link_title : $link_url); ?>
-                                </a>
-                            </div>
-                        <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if ($item_copy !== '') : ?>
+                                <div class="mrn-ui__text">
+                                    <?php echo apply_filters('the_content', $item_copy); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if ($link_url !== '') : ?>
+                                <div class="mrn-content-grid__item-link-wrap">
+                                    <a
+                                        class="mrn-ui__link <?php echo 'button' === $item_link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text'; ?>"
+                                        href="<?php echo esc_url($link_url); ?>"
+                                        <?php if ($link_target !== '') : ?>
+                                            target="<?php echo esc_attr($link_target); ?>"
+                                        <?php endif; ?>
+                                        <?php if ('_blank' === $link_target) : ?>
+                                            rel="noopener noreferrer"
+                                        <?php endif; ?>
+                                    >
+                                        <?php echo esc_html($link_title !== '' ? $link_title : $link_url); ?>
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </article>
                 <?php endforeach; ?>
             </div>
