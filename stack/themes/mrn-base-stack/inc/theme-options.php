@@ -82,6 +82,7 @@ function mrn_base_stack_get_dashicons() {
 		return array();
 	}
 
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reads a local core CSS file from disk.
 	$contents = file_get_contents( $css_path );
 
 	if ( false === $contents ) {
@@ -116,6 +117,7 @@ function mrn_base_stack_get_fontawesome_icons() {
 		return array();
 	}
 
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reads a local bundled JSON fallback from disk.
 	$contents = file_get_contents( $fallback_path );
 
 	if ( false === $contents ) {
@@ -137,7 +139,7 @@ function mrn_base_stack_get_header_search_standard_icon_choices() {
 	$icons   = mrn_base_stack_get_dashicons();
 
 	foreach ( $icons as $icon ) {
-		$key              = 'dashicons-' . $icon;
+		$key             = 'dashicons-' . $icon;
 		$choices[ $key ] = ucwords( str_replace( '-', ' ', $icon ) );
 	}
 

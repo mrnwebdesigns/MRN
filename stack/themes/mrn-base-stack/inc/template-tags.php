@@ -218,7 +218,15 @@ if ( ! function_exists( 'mrn_base_stack_get_header_search_icon_markup' ) ) :
 			$icon_url      = isset( $media_icon['url'] ) ? (string) $media_icon['url'] : '';
 
 			if ( $attachment_id > 0 ) {
-				$image = wp_get_attachment_image( $attachment_id, 'thumbnail', false, array( 'class' => 'mrn-site-search__icon-image', 'alt' => '' ) );
+				$image = wp_get_attachment_image(
+					$attachment_id,
+					'thumbnail',
+					false,
+					array(
+						'class' => 'mrn-site-search__icon-image',
+						'alt'   => '',
+					)
+				);
 
 				if ( is_string( $image ) && '' !== $image ) {
 					return '<span class="mrn-site-search__icon mrn-site-search__icon--media" aria-hidden="true">' . $image . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -425,13 +433,13 @@ if ( ! function_exists( 'mrn_base_stack_render_social_links' ) ) :
 				continue;
 			}
 
-			$url        = esc_url( (string) $row['url'] );
-			$icon_type  = isset( $row['icon_type'] ) ? (string) $row['icon_type'] : '';
-			$icon_id    = isset( $row['icon_id'] ) ? (int) $row['icon_id'] : 0;
-			$name       = isset( $row['name'] ) ? trim( (string) $row['name'] ) : '';
-			$alt_text   = isset( $row['alt_text'] ) ? trim( (string) $row['alt_text'] ) : '';
+			$url         = esc_url( (string) $row['url'] );
+			$icon_type   = isset( $row['icon_type'] ) ? (string) $row['icon_type'] : '';
+			$icon_id     = isset( $row['icon_id'] ) ? (int) $row['icon_id'] : 0;
+			$name        = isset( $row['name'] ) ? trim( (string) $row['name'] ) : '';
+			$alt_text    = isset( $row['alt_text'] ) ? trim( (string) $row['alt_text'] ) : '';
 			$icon_markup = '';
-			$label      = '' !== $name ? $name : ( isset( $row['fa_name'] ) && '' !== $row['fa_name'] ? (string) $row['fa_name'] : __( 'Social link', 'mrn-base-stack' ) );
+			$label       = '' !== $name ? $name : ( isset( $row['fa_name'] ) && '' !== $row['fa_name'] ? (string) $row['fa_name'] : __( 'Social link', 'mrn-base-stack' ) );
 
 			if ( 'dashicons' === $icon_type && ! empty( $row['dashicon'] ) ) {
 				$label = '' !== $name ? $name : (string) $row['dashicon'];
