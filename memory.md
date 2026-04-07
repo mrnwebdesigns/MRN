@@ -1,27 +1,35 @@
-# MRN Memory Index
+MRN PROJECT CONTEXT
 
-Read this file first in new threads, then follow [/Users/khofmeyer/Development/MRN/AGENTS.md](/Users/khofmeyer/Development/MRN/AGENTS.md).
+This is a WordPress-based website building platform.
 
-If this memory system conflicts with the current user request, ask which should win.
+Key facts:
+- Uses Classic Editor (NOT Gutenberg)
+- Built as a modular system using:
+  - stack theme (mrn-base-stack)
+  - plugins + MU plugins
+  - shared runtime code
+- Many features are interconnected across admin, frontend, and APIs
 
-## Active Context
-- Current work and near-term priorities:
-  [/Users/khofmeyer/Development/MRN/memory/current.md](/Users/khofmeyer/Development/MRN/memory/current.md)
+Core architecture rules:
+- Theme = layout, rendering, builder system
+- Plugins = features, integrations, admin behavior
+- MU plugins = shared runtime and cross-cutting logic
+- Site Styles = design tokens (colors, accents)
+- Config Helper = global settings + social data
 
-## Stable Project Knowledge
-- System design and repository structure:
-  [/Users/khofmeyer/Development/MRN/memory/spec/architecture.md](/Users/khofmeyer/Development/MRN/memory/spec/architecture.md)
-- Coding and operational conventions:
-  [/Users/khofmeyer/Development/MRN/memory/spec/conventions.md](/Users/khofmeyer/Development/MRN/memory/spec/conventions.md)
-- Helper contracts, API expectations, and data rules:
-  [/Users/khofmeyer/Development/MRN/memory/spec/api-rules.md](/Users/khofmeyer/Development/MRN/memory/spec/api-rules.md)
+Critical constraints:
+- Do NOT break existing builder behavior
+- Do NOT break shared theme hooks (CSS classes, variables, data attributes)
+- Always assume changes can affect multiple system areas
+- Prefer existing helpers/contracts over new logic
 
-## Historical Reference
-- Archived legacy memory snapshot and older thread history:
-  [/Users/khofmeyer/Development/MRN/memory/archive/](/Users/khofmeyer/Development/MRN/memory/archive/)
+Working approach:
+- Only use relevant context for the current task
+- Do NOT assume full system memory is loaded
+- Always identify:
+  1. what part of the system is being changed
+  2. what dependencies might be affected
+  3. the minimal safe change
 
-## Update Rules
-- Put active tasks, blockers, and recent decisions in `memory/current.md`.
-- Put durable project knowledge in `memory/spec/`.
-- Put completed, outdated, or long-form thread history in `memory/archive/`.
-- Keep this file short and navigation-focused.
+If unclear:
+- ask before making large or cross-system changes
