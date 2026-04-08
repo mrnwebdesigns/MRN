@@ -47,6 +47,12 @@ function mrn_site_colors_normalize_slug(string $value): string {
  * @return string
  */
 function mrn_site_colors_normalize_hex(string $value): string {
+    $value = trim($value);
+
+    if ($value !== '' && strpos($value, '#') !== 0) {
+        $value = '#' . $value;
+    }
+
     $hex = sanitize_hex_color($value);
     return is_string($hex) && $hex !== '' ? strtoupper($hex) : '';
 }
@@ -883,7 +889,7 @@ add_action('admin_menu', 'mrn_site_colors_register_menu');
 function mrn_site_colors_render_row(int $index, array $row): void {
     $name  = isset($row['name']) ? (string) $row['name'] : '';
     $slug  = isset($row['slug']) ? (string) $row['slug'] : '';
-    $value = isset($row['value']) ? (string) $row['value'] : '#000000';
+    $value = isset($row['value']) ? (string) $row['value'] : '';
     $error = isset($row['_error']) ? (string) $row['_error'] : '';
     $picker_value = mrn_site_colors_normalize_hex($value);
 
@@ -893,11 +899,11 @@ function mrn_site_colors_render_row(int $index, array $row): void {
     ?>
     <tr class="mrn-site-colors-row">
         <td>
-            <input type="text" class="regular-text mrn-site-colors-name" name="mrn_site_colors[<?php echo esc_attr((string) $index); ?>][name]" value="<?php echo esc_attr($name); ?>" placeholder="Brand Blue" />
+            <input type="text" class="regular-text mrn-site-colors-name" name="mrn_site_colors[<?php echo esc_attr((string) $index); ?>][name]" value="<?php echo esc_attr($name); ?>" />
             <input type="hidden" class="mrn-site-colors-slug" name="mrn_site_colors[<?php echo esc_attr((string) $index); ?>][slug]" value="<?php echo esc_attr($slug); ?>" />
         </td>
         <td>
-            <input type="text" class="regular-text code mrn-site-colors-value" name="mrn_site_colors[<?php echo esc_attr((string) $index); ?>][value]" value="<?php echo esc_attr($value); ?>" placeholder="#0057B8" />
+            <input type="text" class="regular-text code mrn-site-colors-value" name="mrn_site_colors[<?php echo esc_attr((string) $index); ?>][value]" value="<?php echo esc_attr($value); ?>" />
             <?php if ('' !== $error) : ?>
                 <p class="description" style="margin:6px 0 0;color:#b32d2e;"><?php echo esc_html($error); ?></p>
             <?php endif; ?>
@@ -929,15 +935,15 @@ function mrn_site_styles_render_graphic_element_row(int $index, array $row): voi
     ?>
     <tr class="mrn-site-styles-graphic-row">
         <td style="vertical-align:top;">
-            <input type="text" class="regular-text mrn-site-styles-graphic-name" name="mrn_site_graphic_elements[<?php echo esc_attr((string) $index); ?>][name]" value="<?php echo esc_attr($name); ?>" placeholder="Soft Swoop" />
+            <input type="text" class="regular-text mrn-site-styles-graphic-name" name="mrn_site_graphic_elements[<?php echo esc_attr((string) $index); ?>][name]" value="<?php echo esc_attr($name); ?>" />
             <input type="hidden" class="mrn-site-styles-graphic-slug" name="mrn_site_graphic_elements[<?php echo esc_attr((string) $index); ?>][slug]" value="<?php echo esc_attr($slug); ?>" />
         </td>
         <td style="vertical-align:top;">
-            <input type="text" class="regular-text code mrn-site-styles-graphic-space" name="mrn_site_graphic_elements[<?php echo esc_attr((string) $index); ?>][space]" value="<?php echo esc_attr($space); ?>" placeholder="3em" />
+            <input type="text" class="regular-text code mrn-site-styles-graphic-space" name="mrn_site_graphic_elements[<?php echo esc_attr((string) $index); ?>][space]" value="<?php echo esc_attr($space); ?>" />
             <p class="description" style="margin:6px 0 0;">Optional bottom spacing override.</p>
         </td>
         <td style="vertical-align:top;">
-            <textarea class="large-text code mrn-site-styles-graphic-css" name="mrn_site_graphic_elements[<?php echo esc_attr((string) $index); ?>][css]" rows="8" placeholder=".my-accent::after { content: ''; display: block; height: 3rem; background: red; }"><?php echo esc_textarea($css); ?></textarea>
+            <textarea class="large-text code mrn-site-styles-graphic-css" name="mrn_site_graphic_elements[<?php echo esc_attr((string) $index); ?>][css]" rows="8"><?php echo esc_textarea($css); ?></textarea>
         </td>
         <td style="vertical-align:top;">
             <code class="mrn-site-styles-graphic-token"><?php echo esc_html($slug !== '' ? $slug : 'graphic-element'); ?></code>
@@ -958,19 +964,19 @@ function mrn_site_styles_render_graphic_element_row(int $index, array $row): voi
 function mrn_site_styles_render_dark_scroll_card_preset_row(int $index, array $row): void {
     $name             = isset($row['name']) ? (string) $row['name'] : '';
     $slug             = isset($row['slug']) ? (string) $row['slug'] : '';
-    $background       = isset($row['background']) ? (string) $row['background'] : '#0F0F15';
-    $text             = isset($row['text']) ? (string) $row['text'] : '#F5F5F5';
-    $muted_text       = isset($row['muted_text']) ? (string) $row['muted_text'] : '#B6BEC9';
-    $button_background = isset($row['button_background']) ? (string) $row['button_background'] : '#FFFFFF';
-    $button_text      = isset($row['button_text']) ? (string) $row['button_text'] : '#111111';
-    $border_alpha     = isset($row['border_alpha']) ? (string) $row['border_alpha'] : '0.12';
-    $shadow_alpha     = isset($row['shadow_alpha']) ? (string) $row['shadow_alpha'] : '0.35';
-    $image_brightness = isset($row['image_brightness']) ? (string) $row['image_brightness'] : '0.72';
-    $image_saturation = isset($row['image_saturation']) ? (string) $row['image_saturation'] : '0.85';
+    $background       = isset($row['background']) ? (string) $row['background'] : '';
+    $text             = isset($row['text']) ? (string) $row['text'] : '';
+    $muted_text       = isset($row['muted_text']) ? (string) $row['muted_text'] : '';
+    $button_background = isset($row['button_background']) ? (string) $row['button_background'] : '';
+    $button_text      = isset($row['button_text']) ? (string) $row['button_text'] : '';
+    $border_alpha     = isset($row['border_alpha']) ? (string) $row['border_alpha'] : '';
+    $shadow_alpha     = isset($row['shadow_alpha']) ? (string) $row['shadow_alpha'] : '';
+    $image_brightness = isset($row['image_brightness']) ? (string) $row['image_brightness'] : '';
+    $image_saturation = isset($row['image_saturation']) ? (string) $row['image_saturation'] : '';
     ?>
     <tr class="mrn-site-styles-motion-row">
         <td style="vertical-align:top;">
-            <input type="text" class="regular-text mrn-site-styles-motion-name" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][name]" value="<?php echo esc_attr($name); ?>" placeholder="Brand Dark Card" />
+            <input type="text" class="regular-text mrn-site-styles-motion-name" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][name]" value="<?php echo esc_attr($name); ?>" />
             <input type="hidden" class="mrn-site-styles-motion-slug" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][slug]" value="<?php echo esc_attr($slug); ?>" />
             <p class="description" style="margin:6px 0 0;">Shown to editors as the effect preset name.</p>
         </td>
@@ -978,39 +984,39 @@ function mrn_site_styles_render_dark_scroll_card_preset_row(int $index, array $r
             <div class="mrn-site-styles-motion-fields">
                 <label>
                     <span>Background</span>
-                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][background]" value="<?php echo esc_attr($background); ?>" placeholder="#0F0F15" />
+                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][background]" value="<?php echo esc_attr($background); ?>" />
                 </label>
                 <label>
                     <span>Text</span>
-                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][text]" value="<?php echo esc_attr($text); ?>" placeholder="#F5F5F5" />
+                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][text]" value="<?php echo esc_attr($text); ?>" />
                 </label>
                 <label>
                     <span>Muted Text</span>
-                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][muted_text]" value="<?php echo esc_attr($muted_text); ?>" placeholder="#B6BEC9" />
+                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][muted_text]" value="<?php echo esc_attr($muted_text); ?>" />
                 </label>
                 <label>
                     <span>Button Background</span>
-                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][button_background]" value="<?php echo esc_attr($button_background); ?>" placeholder="#FFFFFF" />
+                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][button_background]" value="<?php echo esc_attr($button_background); ?>" />
                 </label>
                 <label>
                     <span>Button Text</span>
-                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][button_text]" value="<?php echo esc_attr($button_text); ?>" placeholder="#111111" />
+                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][button_text]" value="<?php echo esc_attr($button_text); ?>" />
                 </label>
                 <label>
                     <span>Border Alpha</span>
-                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][border_alpha]" value="<?php echo esc_attr($border_alpha); ?>" placeholder="0.12" />
+                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][border_alpha]" value="<?php echo esc_attr($border_alpha); ?>" />
                 </label>
                 <label>
                     <span>Shadow Alpha</span>
-                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][shadow_alpha]" value="<?php echo esc_attr($shadow_alpha); ?>" placeholder="0.35" />
+                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][shadow_alpha]" value="<?php echo esc_attr($shadow_alpha); ?>" />
                 </label>
                 <label>
                     <span>Image Brightness</span>
-                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][image_brightness]" value="<?php echo esc_attr($image_brightness); ?>" placeholder="0.72" />
+                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][image_brightness]" value="<?php echo esc_attr($image_brightness); ?>" />
                 </label>
                 <label>
                     <span>Image Saturation</span>
-                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][image_saturation]" value="<?php echo esc_attr($image_saturation); ?>" placeholder="0.85" />
+                    <input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[<?php echo esc_attr((string) $index); ?>][image_saturation]" value="<?php echo esc_attr($image_saturation); ?>" />
                 </label>
             </div>
         </td>
@@ -1034,23 +1040,15 @@ function mrn_site_colors_render_page(): void {
 
     $rows             = mrn_site_colors_get_all();
     $graphic_elements = mrn_site_styles_get_graphic_elements();
-    $dark_scroll_card_presets = mrn_site_styles_get_dark_scroll_card_presets();
+    $dark_scroll_card_presets = mrn_site_styles_sanitize_dark_scroll_card_preset_rows(
+        get_option(mrn_site_styles_dark_scroll_card_presets_option_key(), array())
+    );
     $color_feedback = mrn_site_colors_consume_feedback();
     $transfer_feedback = mrn_site_styles_consume_transfer_feedback();
     $color_invalid_count = isset($color_feedback['invalid_count']) ? (int) $color_feedback['invalid_count'] : 0;
 
     if (!empty($color_feedback['display_rows']) && is_array($color_feedback['display_rows'])) {
         $rows = $color_feedback['display_rows'];
-    }
-
-    if ($rows === array()) {
-        $rows = array(
-            array(
-                'name'  => 'Primary',
-                'slug'  => 'primary',
-                'value' => '#1D4ED8',
-            ),
-        );
     }
 
     $updated_notice = '';
@@ -1397,9 +1395,30 @@ function mrn_site_colors_render_page(): void {
                 const varOutput = row.querySelector('.mrn-site-colors-var');
                 const slug = slugify(nameInput.value || slugInput.value);
 
+                function normalizeHexInput(value) {
+                    const trimmed = value.trim();
+                    const raw = trimmed.replace(/^#/, '').toUpperCase();
+
+                    if (/^[0-9A-F]{3}([0-9A-F]{3})?$/.test(raw)) {
+                        return '#' + raw;
+                    }
+
+                    return trimmed.toUpperCase();
+                }
+
+                function getPickerValue(value) {
+                    const raw = value.trim().replace(/^#/, '').toUpperCase();
+
+                    if (/^[0-9A-F]{3}([0-9A-F]{3})?$/.test(raw)) {
+                        return '#' + raw;
+                    }
+
+                    return '#000000';
+                }
+
                 slugInput.value = slug;
-                valueInput.value = valueInput.value.toUpperCase();
-                picker.value = valueInput.value || '#000000';
+                valueInput.value = normalizeHexInput(valueInput.value);
+                picker.value = getPickerValue(valueInput.value);
                 varOutput.textContent = '--site-color-' + slug;
             }
 
@@ -1494,11 +1513,11 @@ function mrn_site_colors_render_page(): void {
                 row.className = 'mrn-site-colors-row';
                 row.innerHTML = `
                     <td>
-                        <input type="text" class="regular-text mrn-site-colors-name" name="mrn_site_colors[${index}][name]" value="" placeholder="Brand Blue" />
+                        <input type="text" class="regular-text mrn-site-colors-name" name="mrn_site_colors[${index}][name]" value="" />
                         <input type="hidden" class="mrn-site-colors-slug" name="mrn_site_colors[${index}][slug]" value="" />
                     </td>
                     <td>
-                        <input type="text" class="regular-text code mrn-site-colors-value" name="mrn_site_colors[${index}][value]" value="#000000" placeholder="#0057B8" />
+                        <input type="text" class="regular-text code mrn-site-colors-value" name="mrn_site_colors[${index}][value]" value="" />
                     </td>
                     <td>
                         <input type="color" class="mrn-site-colors-picker" value="#000000" />
@@ -1522,15 +1541,15 @@ function mrn_site_colors_render_page(): void {
                 row.className = 'mrn-site-styles-graphic-row';
                 row.innerHTML = `
                     <td style="vertical-align:top;">
-                        <input type="text" class="regular-text mrn-site-styles-graphic-name" name="mrn_site_graphic_elements[${index}][name]" value="" placeholder="Soft Swoop" />
+                        <input type="text" class="regular-text mrn-site-styles-graphic-name" name="mrn_site_graphic_elements[${index}][name]" value="" />
                         <input type="hidden" class="mrn-site-styles-graphic-slug" name="mrn_site_graphic_elements[${index}][slug]" value="" />
                     </td>
                     <td style="vertical-align:top;">
-                        <input type="text" class="regular-text code mrn-site-styles-graphic-space" name="mrn_site_graphic_elements[${index}][space]" value="" placeholder="3em" />
+                        <input type="text" class="regular-text code mrn-site-styles-graphic-space" name="mrn_site_graphic_elements[${index}][space]" value="" />
                         <p class="description" style="margin:6px 0 0;">Optional bottom spacing override.</p>
                     </td>
                     <td style="vertical-align:top;">
-                        <textarea class="large-text code mrn-site-styles-graphic-css" name="mrn_site_graphic_elements[${index}][css]" rows="8" placeholder=".my-accent::after { content: ''; display: block; height: 3rem; background: red; }"></textarea>
+                        <textarea class="large-text code mrn-site-styles-graphic-css" name="mrn_site_graphic_elements[${index}][css]" rows="8"></textarea>
                     </td>
                     <td style="vertical-align:top;">
                         <code class="mrn-site-styles-graphic-token">graphic-element</code>
@@ -1551,21 +1570,21 @@ function mrn_site_colors_render_page(): void {
                 row.className = 'mrn-site-styles-motion-row';
                 row.innerHTML = `
                     <td style="vertical-align:top;">
-                        <input type="text" class="regular-text mrn-site-styles-motion-name" name="mrn_site_dark_scroll_card_presets[${index}][name]" value="" placeholder="Brand Dark Card" />
+                        <input type="text" class="regular-text mrn-site-styles-motion-name" name="mrn_site_dark_scroll_card_presets[${index}][name]" value="" />
                         <input type="hidden" class="mrn-site-styles-motion-slug" name="mrn_site_dark_scroll_card_presets[${index}][slug]" value="" />
                         <p class="description" style="margin:6px 0 0;">Shown to editors as the effect preset name.</p>
                     </td>
                     <td style="vertical-align:top;">
                         <div class="mrn-site-styles-motion-fields">
-                            <label><span>Background</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][background]" value="#0F0F15" placeholder="#0F0F15" /></label>
-                            <label><span>Text</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][text]" value="#F5F5F5" placeholder="#F5F5F5" /></label>
-                            <label><span>Muted Text</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][muted_text]" value="#B6BEC9" placeholder="#B6BEC9" /></label>
-                            <label><span>Button Background</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][button_background]" value="#FFFFFF" placeholder="#FFFFFF" /></label>
-                            <label><span>Button Text</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][button_text]" value="#111111" placeholder="#111111" /></label>
-                            <label><span>Border Alpha</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][border_alpha]" value="0.12" placeholder="0.12" /></label>
-                            <label><span>Shadow Alpha</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][shadow_alpha]" value="0.35" placeholder="0.35" /></label>
-                            <label><span>Image Brightness</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][image_brightness]" value="0.72" placeholder="0.72" /></label>
-                            <label><span>Image Saturation</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][image_saturation]" value="0.85" placeholder="0.85" /></label>
+                            <label><span>Background</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][background]" value="" /></label>
+                            <label><span>Text</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][text]" value="" /></label>
+                            <label><span>Muted Text</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][muted_text]" value="" /></label>
+                            <label><span>Button Background</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][button_background]" value="" /></label>
+                            <label><span>Button Text</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][button_text]" value="" /></label>
+                            <label><span>Border Alpha</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][border_alpha]" value="" /></label>
+                            <label><span>Shadow Alpha</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][shadow_alpha]" value="" /></label>
+                            <label><span>Image Brightness</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][image_brightness]" value="" /></label>
+                            <label><span>Image Saturation</span><input type="text" class="regular-text code" name="mrn_site_dark_scroll_card_presets[${index}][image_saturation]" value="" /></label>
                         </div>
                     </td>
                     <td style="vertical-align:top;">
