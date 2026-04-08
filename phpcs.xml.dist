@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<ruleset name="MRN WordPress Security Audit">
+	<description>Security-focused PHPCS rules for custom MRN WordPress source directories.</description>
+
+	<arg value="ps"/>
+	<arg name="basepath" value="./"/>
+	<arg name="parallel" value="8"/>
+	<arg name="colors"/>
+	<arg name="extensions" value="php"/>
+
+	<file>plugins</file>
+	<file>mu-plugins</file>
+	<file>stack/themes</file>
+
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/playwright-report/*</exclude-pattern>
+	<exclude-pattern>*/test-results/*</exclude-pattern>
+	<exclude-pattern>.git/*</exclude-pattern>
+	<exclude-pattern>.local/*</exclude-pattern>
+	<exclude-pattern>.tmp/*</exclude-pattern>
+	<exclude-pattern>releases/*</exclude-pattern>
+	<exclude-pattern>stack/mu-plugins/*</exclude-pattern>
+
+	<config name="minimum_supported_wp_version" value="6.0"/>
+	<config name="testVersion" value="8.1-"/>
+
+	<rule ref="WordPress.Security.NonceVerification"/>
+	<rule ref="WordPress.Security.ValidatedSanitizedInput"/>
+	<rule ref="WordPress.Security.EscapeOutput"/>
+	<rule ref="WordPress.DB.PreparedSQL"/>
+	<rule ref="WordPress.PHP.DiscouragedPHPFunctions"/>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<rule ref="Generic.PHP.ForbiddenFunctions">
+		<properties>
+			<property name="forbiddenFunctions" type="array">
+				<element key="eval" value="Avoid eval()."/>
+				<element key="create_function" value="Use anonymous functions or named callbacks."/>
+				<element key="unserialize" value="Avoid unserialize() on untrusted data; prefer JSON or strict allow-lists."/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

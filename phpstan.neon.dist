@@ -1,0 +1,21 @@
+parameters:
+    level: 1
+    paths: []
+    tmpDir: .tmp/phpstan
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+    parallel:
+        maximumNumberOfProcesses: 4
+    reportUnmatchedIgnoredErrors: false
+    treatPhpDocTypesAsCertain: false
+    excludePaths:
+        analyse:
+            - */vendor/*
+            - */node_modules/*
+            - */playwright-report/*
+            - */test-results/*
+            - .git/*
+            - .local/*
+            - .tmp/*
+            - releases/*
+            - stack/mu-plugins/*

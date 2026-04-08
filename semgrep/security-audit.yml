@@ -1,0 +1,82 @@
+rules:
+  - id: wp-unsafe-unserialize
+    message: Avoid unserialize() on data that is not strictly trusted; prefer JSON or a tightly controlled allow-list.
+    severity: ERROR
+    languages:
+      - php
+    pattern: unserialize(...)
+
+  - id: wp-open-rest-permission-callback
+    message: This REST route is publicly accessible. Confirm that open access is intentional and safe.
+    severity: WARNING
+    languages:
+      - php
+    pattern-either:
+      - pattern: register_rest_route($NAMESPACE, $ROUTE, [ ..., 'permission_callback' => '__return_true', ... ])
+      - pattern: register_rest_route($NAMESPACE, $ROUTE, array(..., 'permission_callback' => '__return_true', ...))
+
+  - id: wp-rest-route-missing-permission-callback
+    message: register_rest_route() should define a permission_callback so access control is explicit.
+    severity: ERROR
+    languages:
+      - php
+    patterns:
+      - pattern-either:
+          - pattern: register_rest_route($NAMESPACE, $ROUTE, [ ... ])
+          - pattern: register_rest_route($NAMESPACE, $ROUTE, array(...))
+      - pattern-not: register_rest_route($NAMESPACE, $ROUTE, [ ..., 'permission_callback' => $CALLBACK, ... ])
+      - pattern-not: register_rest_route($NAMESPACE, $ROUTE, array(..., 'permission_callback' => $CALLBACK, ...))
+
+  - id: wp-public-ajax-hook
+    message: Public wp_ajax_nopriv_* endpoints deserve manual review for nonce, authorization, and abuse controls.
+    severity: WARNING
+    languages:
+      - php
+    pattern-regex: 'add_action\s*\(\s*["'']wp_ajax_nopriv_[^"'']+["'']'
+
+  - id: wp-direct-upload-handling
+    message: Prefer WordPress upload APIs such as wp_handle_upload() over direct move_uploaded_file() handling.
+    severity: WARNING
+    languages:
+      - php
+    pattern: move_uploaded_file(...)
+
+  - id: wp-user-controlled-file-read
+    message: User-controlled file access can lead to local file read or path traversal issues.
+    severity: ERROR
+    languages:
+      - php
+    pattern-either:
+      - pattern: file_get_contents($_GET[...])
+      - pattern: file_get_contents($_POST[...])
+      - pattern: file_get_contents($_REQUEST[...])
+      - pattern: readfile($_GET[...])
+      - pattern: readfile($_POST[...])
+      - pattern: readfile($_REQUEST[...])
+
+  - id: wp-user-controlled-file-write
+    message: User-controlled file writes or deletes can lead to path traversal or arbitrary file modification.
+    severity: ERROR
+    languages:
+      - php
+    pattern-either:
+      - pattern: file_put_contents($_GET[...], ...)
+      - pattern: file_put_contents($_POST[...], ...)
+      - pattern: file_put_contents($_REQUEST[...], ...)
+      - pattern: unlink($_GET[...])
+      - pattern: unlink($_POST[...])
+      - pattern: unlink($_REQUEST[...])
+
+  - id: php-dynamic-include
+    message: Dynamic include/require statements should use strict allow-lists and never trust request input.
+    severity: WARNING
+    languages:
+      - php
+    pattern-regex: '\b(?:include|include_once|require|require_once)\s+\$[A-Za-z_][A-Za-z0-9_]*\s*;'
+
+  - id: php-eval
+    message: Avoid eval(); it creates code execution risk and is difficult to secure.
+    severity: ERROR
+    languages:
+      - php
+    pattern: eval(...)

@@ -19,6 +19,7 @@ releases/stack/
 stack/configs/exports/*.bak-*
 
 # Stack secrets and generated theme output
+/vendor/
 stack/secrets/
 stack/themes/mrn-base-stack/vendor/
 stack/themes/mrn-base-stack/node_modules/

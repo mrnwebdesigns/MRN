@@ -1,0 +1,33 @@
+{
+    "name": "mrn/security-audit-tooling",
+    "description": "Repo-local WordPress security audit tooling for MRN source code.",
+    "license": "proprietary",
+    "type": "project",
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.1",
+        "php-stubs/wordpress-stubs": "^6.9",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
+        "squizlabs/php_codesniffer": "^3.13",
+        "szepeviktor/phpstan-wordpress": "^2.0",
+        "wp-coding-standards/wpcs": "^3.3"
+    },
+    "scripts": {
+        "security:scan": "bash scripts/security-scan.sh",
+        "security:phpcs": "php vendor/bin/phpcs --standard=phpcs.xml.dist",
+        "security:phpstan": "php vendor/bin/phpstan analyse --configuration=phpstan.neon.dist --memory-limit=2G plugins mu-plugins stack/themes",
+        "security:semgrep": "mkdir -p .tmp/semgrep-home && HOME=$PWD/.tmp/semgrep-home SEMGREP_SEND_METRICS=off semgrep scan --config semgrep/security-audit.yml --error --no-git-ignore plugins mu-plugins stack/themes"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true
+        },
+        "cache-dir": ".tmp/composer-cache",
+        "sort-packages": true
+    }
+}
