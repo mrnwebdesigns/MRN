@@ -35,6 +35,11 @@ function mrn_base_stack_clone_acf_keys_with_prefix( array $value, $prefix ) {
 			continue;
 		}
 
+		if ( 'field' === $item_key && is_string( $item_value ) && 0 === strpos( $item_value, 'field_' ) ) {
+			$value[ $item_key ] = $prefix . $item_value;
+			continue;
+		}
+
 		if ( is_array( $item_value ) ) {
 			$value[ $item_key ] = mrn_base_stack_clone_acf_keys_with_prefix( $item_value, $prefix );
 		}
@@ -1336,6 +1341,342 @@ function mrn_base_stack_get_text_tag_field( $key, $name = 'heading_tag', $defaul
 }
 
 /**
+ * Build the shared builder button-link icon chooser fields.
+ *
+ * @param string $key_prefix Unique ACF key prefix for this chooser set.
+ * @param string $link_style_field_key ACF key for the parent row's link-style field.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_button_link_icon_fields( $key_prefix, $link_style_field_key ) {
+	$base_condition = array(
+		array(
+			'field'    => $link_style_field_key,
+			'operator' => '==',
+			'value'    => 'button',
+		),
+	);
+
+	return array(
+		array(
+			'key'               => $key_prefix . '_source',
+			'label'             => 'Button Icon',
+			'name'              => 'link_icon_source',
+			'aria-label'        => '',
+			'type'              => 'button_group',
+			'choices'           => array(
+				'dashicons'   => 'Dashicons',
+				'fontawesome' => 'Font Awesome',
+				'media'       => 'Media',
+			),
+			'default_value'     => '',
+			'layout'            => 'horizontal',
+			'return_format'     => 'value',
+			'instructions'      => 'Optional. Uses the shared icon chooser when links render as buttons.',
+			'wrapper'           => array(
+				'width' => '50',
+				'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--source mrn-icon-chooser-field--allow-empty',
+			),
+			'conditional_logic' => array(
+				$base_condition,
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_dashicons',
+			'label'             => 'Dashicon',
+			'name'              => 'link_icon_dashicon',
+			'aria-label'        => '',
+			'type'              => 'select',
+			'choices'           => function_exists( 'mrn_base_stack_get_header_search_standard_icon_choices' ) ? mrn_base_stack_get_header_search_standard_icon_choices() : array(),
+			'default_value'     => '',
+			'return_format'     => 'value',
+			'ui'                => 1,
+			'wrapper'           => array(
+				'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--dashicons',
+			),
+			'conditional_logic' => array(
+				array(
+					array(
+						'field'    => $link_style_field_key,
+						'operator' => '==',
+						'value'    => 'button',
+					),
+					array(
+						'field'    => $key_prefix . '_source',
+						'operator' => '==',
+						'value'    => 'dashicons',
+					),
+				),
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_fontawesome',
+			'label'             => 'Font Awesome Icon',
+			'name'              => 'link_icon_fa_class',
+			'aria-label'        => '',
+			'type'              => 'select',
+			'choices'           => function_exists( 'mrn_base_stack_get_header_search_fontawesome_choices' ) ? mrn_base_stack_get_header_search_fontawesome_choices() : array(),
+			'default_value'     => '',
+			'return_format'     => 'value',
+			'ui'                => 1,
+			'wrapper'           => array(
+				'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--fontawesome',
+			),
+			'conditional_logic' => array(
+				array(
+					array(
+						'field'    => $link_style_field_key,
+						'operator' => '==',
+						'value'    => 'button',
+					),
+					array(
+						'field'    => $key_prefix . '_source',
+						'operator' => '==',
+						'value'    => 'fontawesome',
+					),
+				),
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_media',
+			'label'             => 'Media Icon',
+			'name'              => 'link_icon_media_icon',
+			'aria-label'        => '',
+			'type'              => 'image',
+			'return_format'     => 'array',
+			'preview_size'      => 'thumbnail',
+			'library'           => 'all',
+			'mime_types'        => 'jpg,jpeg,png,gif,webp,svg',
+			'wrapper'           => array(
+				'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--media',
+			),
+			'conditional_logic' => array(
+				array(
+					array(
+						'field'    => $link_style_field_key,
+						'operator' => '==',
+						'value'    => 'button',
+					),
+					array(
+						'field'    => $key_prefix . '_source',
+						'operator' => '==',
+						'value'    => 'media',
+					),
+				),
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_position',
+			'label'             => 'Icon Position',
+			'name'              => 'link_icon_position',
+			'aria-label'        => '',
+			'type'              => 'select',
+			'choices'           => array(
+				'left'  => 'Left',
+				'right' => 'Right',
+			),
+			'default_value'     => 'left',
+			'return_format'     => 'value',
+			'ui'                => 1,
+			'wrapper'           => array(
+				'width' => '25',
+			),
+			'conditional_logic' => array(
+				$base_condition,
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_gap',
+			'label'             => 'Icon Gap',
+			'name'              => 'link_icon_gap',
+			'aria-label'        => '',
+			'type'              => 'number',
+			'default_value'     => 10,
+			'min'               => 0,
+			'step'              => 1,
+			'append'            => 'px',
+			'wrapper'           => array(
+				'width' => '25',
+			),
+			'conditional_logic' => array(
+				$base_condition,
+			),
+		),
+	);
+}
+
+/**
+ * Resolve the chosen icon source for a builder button link.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return string
+ */
+function mrn_base_stack_get_button_link_icon_source( array $row ) {
+	$icon_source = isset( $row['link_icon_source'] ) ? sanitize_key( (string) $row['link_icon_source'] ) : '';
+	$media_icon  = isset( $row['link_icon_media_icon'] ) && is_array( $row['link_icon_media_icon'] ) ? $row['link_icon_media_icon'] : array();
+	$media_id    = isset( $media_icon['ID'] ) ? absint( $media_icon['ID'] ) : 0;
+	$media_url   = isset( $media_icon['url'] ) ? esc_url_raw( (string) $media_icon['url'] ) : '';
+	$fa_class    = isset( $row['link_icon_fa_class'] ) ? trim( (string) $row['link_icon_fa_class'] ) : '';
+	$dashicon    = isset( $row['link_icon_dashicon'] ) ? sanitize_html_class( (string) $row['link_icon_dashicon'] ) : '';
+
+	if ( in_array( $icon_source, array( 'dashicons', 'fontawesome', 'media' ), true ) ) {
+		return $icon_source;
+	}
+
+	if ( $media_id > 0 || '' !== $media_url ) {
+		return 'media';
+	}
+
+	if ( '' !== $fa_class ) {
+		return 'fontawesome';
+	}
+
+	if ( '' !== $dashicon ) {
+		return 'dashicons';
+	}
+
+	return '';
+}
+
+/**
+ * Resolve the chosen icon position for a builder button link.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return string
+ */
+function mrn_base_stack_get_button_link_icon_position( array $row ) {
+	$position = isset( $row['link_icon_position'] ) ? sanitize_key( (string) $row['link_icon_position'] ) : 'left';
+
+	return in_array( $position, array( 'left', 'right' ), true ) ? $position : 'left';
+}
+
+/**
+ * Resolve the chosen icon gap for a builder button link.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return string
+ */
+function mrn_base_stack_get_button_link_icon_gap( array $row ) {
+	if ( ! array_key_exists( 'link_icon_gap', $row ) || '' === (string) $row['link_icon_gap'] ) {
+		return '';
+	}
+
+	$gap = is_numeric( $row['link_icon_gap'] ) ? (float) $row['link_icon_gap'] : 10.0;
+	$gap = max( 0, $gap );
+
+	if ( 0.0 === fmod( $gap, 1.0 ) ) {
+		return (string) (int) $gap . 'px';
+	}
+
+	return rtrim( rtrim( sprintf( '%.2f', $gap ), '0' ), '.' ) . 'px';
+}
+
+/**
+ * Build the frontend icon markup for builder button links.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return string
+ */
+function mrn_base_stack_get_button_link_icon_markup( array $row ) {
+	$icon_source = mrn_base_stack_get_button_link_icon_source( $row );
+	$position    = mrn_base_stack_get_button_link_icon_position( $row );
+	$gap         = mrn_base_stack_get_button_link_icon_gap( $row );
+	$style_attr  = '' !== $gap ? ' style="--mrn-link-icon-gap:' . esc_attr( $gap ) . ';"' : '';
+
+	if ( '' === $icon_source ) {
+		return '';
+	}
+
+	if ( 'fontawesome' === $icon_source ) {
+		$fa_class = isset( $row['link_icon_fa_class'] ) ? trim( (string) $row['link_icon_fa_class'] ) : '';
+
+		if ( '' === $fa_class ) {
+			return '';
+		}
+
+		return '<span class="mrn-ui__link-icon mrn-ui__link-icon--' . esc_attr( $position ) . ' mrn-ui__link-icon--fontawesome" aria-hidden="true"' . $style_attr . '><i class="' . esc_attr( $fa_class ) . '"></i></span>';
+	}
+
+	if ( 'dashicons' === $icon_source ) {
+		$dashicon = isset( $row['link_icon_dashicon'] ) ? sanitize_html_class( (string) $row['link_icon_dashicon'] ) : '';
+
+		if ( '' !== $dashicon && 0 !== strpos( $dashicon, 'dashicons-' ) ) {
+			$dashicon = 'dashicons-' . $dashicon;
+		}
+
+		if ( '' === $dashicon ) {
+			return '';
+		}
+
+		return '<span class="mrn-ui__link-icon mrn-ui__link-icon--' . esc_attr( $position ) . ' mrn-ui__link-icon--dashicons" aria-hidden="true"' . $style_attr . '><span class="dashicons ' . esc_attr( $dashicon ) . '"></span></span>';
+	}
+
+	$media_icon = isset( $row['link_icon_media_icon'] ) && is_array( $row['link_icon_media_icon'] ) ? $row['link_icon_media_icon'] : array();
+	$media_id   = isset( $media_icon['ID'] ) ? absint( $media_icon['ID'] ) : 0;
+	$media_url  = isset( $media_icon['url'] ) ? esc_url( (string) $media_icon['url'] ) : '';
+
+	if ( $media_id > 0 ) {
+		$image_markup = wp_get_attachment_image(
+			$media_id,
+			'thumbnail',
+			false,
+			array(
+				'class'      => 'mrn-ui__link-icon-image',
+				'alt'        => '',
+				'aria-hidden' => 'true',
+			)
+		);
+
+		if ( '' !== $image_markup ) {
+			return '<span class="mrn-ui__link-icon mrn-ui__link-icon--' . esc_attr( $position ) . ' mrn-ui__link-icon--media" aria-hidden="true"' . $style_attr . '>' . $image_markup . '</span>';
+		}
+	}
+
+	if ( '' === $media_url ) {
+		return '';
+	}
+
+	return '<span class="mrn-ui__link-icon mrn-ui__link-icon--' . esc_attr( $position ) . ' mrn-ui__link-icon--media" aria-hidden="true"' . $style_attr . '><img class="mrn-ui__link-icon-image" src="' . esc_url( $media_url ) . '" alt="" /></span>';
+}
+
+/**
+ * Recursively collect builder button-link icon asset requirements.
+ *
+ * @param mixed $value Builder field data.
+ * @param bool  $needs_fontawesome Whether Font Awesome is needed.
+ * @param bool  $needs_dashicons Whether Dashicons are needed.
+ * @return void
+ */
+function mrn_base_stack_collect_builder_link_icon_asset_needs( $value, &$needs_fontawesome, &$needs_dashicons ) {
+	if ( ! is_array( $value ) ) {
+		return;
+	}
+
+	$link_style = isset( $value['link_style'] ) ? sanitize_key( (string) $value['link_style'] ) : '';
+
+	if ( 'button' === $link_style ) {
+		$icon_source = mrn_base_stack_get_button_link_icon_source( $value );
+
+		if ( 'fontawesome' === $icon_source ) {
+			$needs_fontawesome = true;
+		}
+
+		if ( 'dashicons' === $icon_source ) {
+			$needs_dashicons = true;
+		}
+	}
+
+	foreach ( $value as $child ) {
+		if ( is_array( $child ) ) {
+			mrn_base_stack_collect_builder_link_icon_asset_needs( $child, $needs_fontawesome, $needs_dashicons );
+		}
+
+		if ( $needs_fontawesome && $needs_dashicons ) {
+			return;
+		}
+	}
+}
+
+/**
  * Allow a small, intentional inline HTML subset for heading-style fields.
  *
  * @param string $value Raw heading text value.
@@ -1747,6 +2088,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
+				...mrn_base_stack_get_button_link_icon_fields( 'field_mrn_nested_basic_link_icon', 'field_mrn_nested_basic_link_style' ),
 				array(
 					'key'           => 'field_mrn_nested_basic_link_color',
 					'label'         => 'Link color',

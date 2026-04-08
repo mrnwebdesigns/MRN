@@ -33,6 +33,10 @@
 		return $field.find( 'select, input[type="hidden"], input[type="text"]' ).first().val() || '';
 	}
 
+	function groupAllowsEmpty( group ) {
+		return !! ( group && group.source && group.source.hasClass( 'mrn-icon-chooser-field--allow-empty' ) );
+	}
+
 	function getImageFieldAttachmentId( $field ) {
 		return parseInt( $field.find( '.acf-image-uploader input[type="hidden"]' ).first().val() || '0', 10 ) || 0;
 	}
@@ -63,6 +67,25 @@
 			$uploader.find( '.hide-if-value' ).hide();
 			$uploader.find( '.show-if-value' ).show();
 			$uploader.find( '.image-wrap img' ).attr( 'src', previewUrl );
+		}
+	}
+
+	function clearImageFieldValue( $field ) {
+		var fieldObject = getFieldObject( $field );
+		var $uploader = $field.find( '.acf-image-uploader' ).first();
+		var $hidden = $uploader.find( 'input[type="hidden"]' ).first();
+
+		if ( fieldObject && typeof fieldObject.val === 'function' ) {
+			fieldObject.val( '' );
+		}
+
+		$hidden.val( '' ).trigger( 'change' );
+
+		if ( $uploader.length ) {
+			$uploader.removeClass( 'has-value' );
+			$uploader.find( '.hide-if-value' ).show();
+			$uploader.find( '.show-if-value' ).hide();
+			$uploader.find( '.image-wrap img' ).attr( 'src', '' );
 		}
 	}
 
@@ -112,12 +135,13 @@
 
 	function normalizeSelection( group ) {
 		var source = getFieldValue( group.source );
-		var dashicon = getFieldValue( group.dashicons ) || 'dashicons-search';
-		var fontAwesomeClass = getFieldValue( group.fontawesome ) || 'fa-solid fa-magnifying-glass';
+		var dashicon = getFieldValue( group.dashicons ) || '';
+		var fontAwesomeClass = getFieldValue( group.fontawesome ) || '';
 		var imageId = getImageFieldAttachmentId( group.media );
 		var imageUrl = getImageFieldPreviewUrl( group.media );
+		var allowEmpty = groupAllowsEmpty( group );
 
-		if ( 'media' === source && imageId ) {
+		if ( 'media' === source && ( imageId || imageUrl ) ) {
 			return {
 				type: 'image',
 				value: imageUrl,
@@ -125,7 +149,15 @@
 			};
 		}
 
-		if ( 'fontawesome' === source ) {
+		if ( ! source && imageId ) {
+			return {
+				type: 'image',
+				value: imageUrl,
+				label: imageUrl ? imageUrl.split( '/' ).pop() : 'Image'
+			};
+		}
+
+		if ( 'fontawesome' === source && fontAwesomeClass ) {
 			return {
 				type: 'fontawesome',
 				value: fontAwesomeClass,
@@ -133,10 +165,38 @@
 			};
 		}
 
+		if ( ! source && fontAwesomeClass ) {
+			return {
+				type: 'fontawesome',
+				value: fontAwesomeClass,
+				label: fontAwesomeClass
+			};
+		}
+
+		if ( 'dashicons' === source && dashicon ) {
+			return {
+				type: 'dashicons',
+				value: dashicon,
+				label: dashicon
+			};
+		}
+
+		if ( ! source && dashicon ) {
+			return {
+				type: 'dashicons',
+				value: dashicon,
+				label: dashicon
+			};
+		}
+
+		if ( allowEmpty ) {
+			return null;
+		}
+
 		return {
 			type: 'dashicons',
-			value: dashicon,
-			label: dashicon
+			value: dashicon || 'dashicons-search',
+			label: dashicon || 'dashicons-search'
 		};
 	}
 
@@ -149,7 +209,7 @@
 		}
 
 		renderInlinePreview( $control.find( '.mrn-icon-chooser-preview' ), selection );
-		$control.find( '.mrn-icon-chooser-selection' ).text( selection.label || 'Selected icon' );
+		$control.find( '.mrn-icon-chooser-selection' ).text( selection && selection.label ? selection.label : 'No icon selected' );
 	}
 
 	function hideStorageFields( group ) {
@@ -184,8 +244,15 @@
 				updateChooserDisplay( group );
 			},
 			onClear: function () {
-				setFieldValue( group.source, 'dashicons' );
-				setFieldValue( group.dashicons, 'dashicons-search' );
+				if ( groupAllowsEmpty( group ) ) {
+					setFieldValue( group.source, '' );
+					setFieldValue( group.dashicons, '' );
+					setFieldValue( group.fontawesome, '' );
+					clearImageFieldValue( group.media );
+				} else {
+					setFieldValue( group.source, 'dashicons' );
+					setFieldValue( group.dashicons, 'dashicons-search' );
+				}
 				updateChooserDisplay( group );
 			}
 		} );

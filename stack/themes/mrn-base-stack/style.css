@@ -1774,6 +1774,30 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	text-decoration: none;
 }
 
+.mrn-content-builder__row .mrn-ui__link-icon,
+.mrn-reusable-block .mrn-ui__link-icon {
+	display: inline-flex;
+	align-items: center;
+	vertical-align: middle;
+}
+
+.mrn-content-builder__row .mrn-ui__link-icon--left,
+.mrn-reusable-block .mrn-ui__link-icon--left {
+	margin-right: var(--mrn-link-icon-gap, var(--mrn-link-icon-margin-right, 10px));
+}
+
+.mrn-content-builder__row .mrn-ui__link-icon--right,
+.mrn-reusable-block .mrn-ui__link-icon--right {
+	margin-left: var(--mrn-link-icon-gap, var(--mrn-link-icon-margin-left, 10px));
+}
+
+.mrn-content-builder__row .mrn-ui__link-icon-image,
+.mrn-reusable-block .mrn-ui__link-icon-image {
+	display: block;
+	height: 1em;
+	width: auto;
+}
+
 .mrn-content-builder__row .mrn-ui__link--text,
 .mrn-reusable-block .mrn-ui__link--text {
 	text-decoration: underline;

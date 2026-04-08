@@ -605,6 +605,28 @@ function mrn_base_stack_scripts() {
 		}
 	}
 
+	if ( is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'get_field' ) && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs' ) ) {
+		$post_id      = get_queried_object_id();
+		$builder_sets = array();
+
+		if ( $post_id ) {
+			$builder_sets = array(
+				get_field( 'page_hero_rows', $post_id ),
+				get_field( 'page_content_rows', $post_id ),
+				get_field( 'page_after_content_rows', $post_id ),
+				get_field( 'page_sidebar_rows', $post_id ),
+			);
+		}
+
+		foreach ( $builder_sets as $builder_rows ) {
+			mrn_base_stack_collect_builder_link_icon_asset_needs( $builder_rows, $needs_fontawesome, $needs_dashicons );
+
+			if ( $needs_fontawesome && $needs_dashicons ) {
+				break;
+			}
+		}
+	}
+
 	if ( $needs_fontawesome && function_exists( 'mrn_shared_assets_enqueue_fontawesome' ) ) {
 		mrn_shared_assets_enqueue_fontawesome( 'mrn-base-stack-fontawesome' );
 	}

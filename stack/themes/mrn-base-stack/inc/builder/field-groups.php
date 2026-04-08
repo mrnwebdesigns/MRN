@@ -863,6 +863,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'width' => '50',
 									),
 								),
+								...mrn_base_stack_get_button_link_icon_fields( 'field_mrn_basic_link_icon', 'field_mrn_basic_link_style' ),
 								array(
 									'key'           => 'field_mrn_basic_link_color',
 									'label'         => 'Link color',
@@ -1091,6 +1092,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'width' => '50',
 									),
 								),
+								...mrn_base_stack_get_button_link_icon_fields( 'field_mrn_slider_link_icon', 'field_mrn_slider_link_style' ),
 								array(
 									'key'           => 'field_mrn_slider_link_color',
 									'label'         => 'Link color',

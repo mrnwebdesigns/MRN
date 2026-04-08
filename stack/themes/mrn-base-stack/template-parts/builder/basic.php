@@ -70,6 +70,13 @@ if ( '' !== $link_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-basic-row-link-color: var(' . mrn_site_colors_get_css_var( $link_color ) . ')';
 }
 
+$link_icon_markup = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
+	? mrn_base_stack_get_button_link_icon_markup( $row )
+	: '';
+$link_icon_position = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
+	? mrn_base_stack_get_button_link_icon_position( $row )
+	: 'left';
+
 if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $image_url && '' === $link_url ) {
 	return;
 }
@@ -146,7 +153,13 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 								rel="noopener noreferrer"
 							<?php endif; ?>
 						>
+							<?php if ( 'left' === $link_icon_position ) : ?>
+								<?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
+							<?php endif; ?>
 							<?php echo esc_html( '' !== $link_title ? $link_title : $link_url ); ?>
+							<?php if ( 'right' === $link_icon_position ) : ?>
+								<?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
+							<?php endif; ?>
 						</a>
 					</div>
 				<?php endif; ?>
