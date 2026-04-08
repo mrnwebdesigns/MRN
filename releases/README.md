@@ -11,4 +11,12 @@ This folder contains built artifacts only.
 - `clone/`
   - Fresh clone-tool release artifacts
 
+These files are disposable build output and stay out of version control.
+
+Build fresh plugin, MU plugin, and stack theme zip artifacts with:
+
+```bash
+/Users/khofmeyer/Development/MRN/stack/scripts/build-release-zips.sh all
+```
+
 Do not edit files here as source.

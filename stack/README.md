@@ -19,6 +19,7 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 - A per-site bootstrap script (`scripts/site-bootstrap.sh`).
 - A CloudPanel cron scanner (`scripts/bootstrap-new-sites.sh`) that bootstraps only once per site.
 - A canonical stack feature-deploy helper (`scripts/deploy-feature-stack-and-default-configs.sh`) that mirrors stack theme and MU changes to both the stack server and `default-configs.mrndev.io`.
+- A release build helper (`scripts/build-release-zips.sh`) that rebuilds ignored plugin, MU plugin, and stack theme zip artifacts into `../releases/`.
 - A rollout-contract QA script (`scripts/qa-rollout-contract.sh`) that verifies packaged theme parity, shared runtime presence, live active theme version parity, and rollout-owned CPT registration on `default-configs.mrndev.io`.
 - A checklist for non-portable plugin configs (`configs/plugin-config-checklist.md`).
 - Export/import payload storage (`configs/exports/`) and importer mapping manifest (`manifests/importers.txt`).

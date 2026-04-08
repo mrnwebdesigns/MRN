@@ -20,6 +20,7 @@ media-library-organizer
 /home/mrndev-stack-manager/stack/packages/mrn-editor-tools.zip
 /home/mrndev-stack-manager/stack/packages/mrn-gtm-injector.zip
 /home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip
+/home/mrndev-stack-manager/stack/packages/mrn-media-bulk-tools.zip
 /home/mrndev-stack-manager/stack/packages/mrn-seo-helper.zip
 /home/mrndev-stack-manager/stack/packages/mrn-universal-sticky-bar.zip
 post-duplicator

@@ -37,6 +37,7 @@ Examples:
 
 - stack theme version in `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css`
 - plugin package versions in `/Users/khofmeyer/Development/MRN/releases/plugins/`
+- rebuild fresh package artifacts when needed with `/Users/khofmeyer/Development/MRN/stack/scripts/build-release-zips.sh all`
 - stack manifests in:
   - `/Users/khofmeyer/Development/MRN/stack/manifests/themes.txt`
   - `/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt`
