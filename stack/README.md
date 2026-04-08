@@ -23,6 +23,7 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 - A rollout-contract QA script (`scripts/qa-rollout-contract.sh`) that verifies packaged theme parity, shared runtime presence, live active theme version parity, and rollout-owned CPT registration on `default-configs.mrndev.io`.
 - A checklist for non-portable plugin configs (`configs/plugin-config-checklist.md`).
 - Export/import payload storage (`configs/exports/`) and importer mapping manifest (`manifests/importers.txt`).
+- Site Styles values remain per-site WordPress option data and are not seeded from the tracked stack baseline by default.
 
 ## Suggested flow in CloudPanel
 

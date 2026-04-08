@@ -203,6 +203,16 @@ function mrn_site_colors_feedback_transient_key(int $user_id): string {
 }
 
 /**
+ * Get the transient key used for one-time Site Styles transfer feedback.
+ *
+ * @param int $user_id
+ * @return string
+ */
+function mrn_site_styles_transfer_feedback_transient_key(int $user_id): string {
+    return 'mrn_site_styles_transfer_feedback_' . $user_id;
+}
+
+/**
  * Fetch and clear pending Site Colors admin feedback.
  *
  * @return array{display_rows?: array<int, array<string, string>>, invalid_count?: int}
@@ -224,6 +234,200 @@ function mrn_site_colors_consume_feedback(): array {
 
     return $feedback;
 }
+
+/**
+ * Store one-time Site Styles transfer feedback for the current user.
+ *
+ * @param array<string,string> $feedback
+ * @return void
+ */
+function mrn_site_styles_set_transfer_feedback(array $feedback): void {
+    $user_id = get_current_user_id();
+
+    if ($user_id <= 0) {
+        return;
+    }
+
+    set_transient(
+        mrn_site_styles_transfer_feedback_transient_key($user_id),
+        $feedback,
+        5 * MINUTE_IN_SECONDS
+    );
+}
+
+/**
+ * Fetch and clear pending Site Styles transfer feedback.
+ *
+ * @return array<string,string>
+ */
+function mrn_site_styles_consume_transfer_feedback(): array {
+    $user_id = get_current_user_id();
+
+    if ($user_id <= 0) {
+        return array();
+    }
+
+    $feedback = get_transient(mrn_site_styles_transfer_feedback_transient_key($user_id));
+
+    if (!is_array($feedback)) {
+        return array();
+    }
+
+    delete_transient(mrn_site_styles_transfer_feedback_transient_key($user_id));
+
+    return $feedback;
+}
+
+/**
+ * Build the current Site Styles export payload.
+ *
+ * @return array<string,mixed>
+ */
+function mrn_site_styles_build_export_payload(): array {
+    return array(
+        'tool'        => 'mrn-site-styles',
+        'version'     => 1,
+        'exported_at' => gmdate('c'),
+        'site_url'    => home_url('/'),
+        'data'        => array(
+            'colors'                   => mrn_site_colors_sanitize_rows(get_option(mrn_site_colors_option_key(), array())),
+            'graphic_elements'         => mrn_site_styles_sanitize_graphic_element_rows(get_option(mrn_site_styles_graphic_elements_option_key(), array())),
+            'dark_scroll_card_presets' => mrn_site_styles_sanitize_dark_scroll_card_preset_rows(get_option(mrn_site_styles_dark_scroll_card_presets_option_key(), array())),
+        ),
+    );
+}
+
+/**
+ * Handle Site Styles JSON export.
+ *
+ * @return void
+ */
+function mrn_site_styles_handle_export(): void {
+    if (!is_admin() || !isset($_GET['action']) || 'mrn_site_styles_export' !== $_GET['action']) {
+        return;
+    }
+
+    if (!current_user_can('manage_options')) {
+        wp_die(esc_html__('You are not allowed to export Site Styles.', 'mrn'));
+    }
+
+    check_admin_referer('mrn_site_styles_export', 'mrn_site_styles_export_nonce');
+
+    $payload = mrn_site_styles_build_export_payload();
+    $filename = sprintf('mrn-site-styles-%s.json', gmdate('Y-m-d-His'));
+
+    nocache_headers();
+    header('Content-Type: application/json; charset=utf-8');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+    echo wp_json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    exit;
+}
+add_action('admin_init', 'mrn_site_styles_handle_export');
+
+/**
+ * Handle Site Styles JSON import.
+ *
+ * @return void
+ */
+function mrn_site_styles_handle_import(): void {
+    if (!is_admin() || !isset($_POST['mrn_site_styles_import_submit'])) {
+        return;
+    }
+
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+
+    check_admin_referer('mrn_site_styles_import', 'mrn_site_styles_import_nonce');
+
+    $redirect = add_query_arg(
+        array(
+            'page' => 'mrn-site-styles',
+        ),
+        admin_url('options-general.php')
+    );
+
+    if (
+        !isset($_FILES['mrn_site_styles_import_file'])
+        || !is_array($_FILES['mrn_site_styles_import_file'])
+        || !isset($_FILES['mrn_site_styles_import_file']['tmp_name'])
+    ) {
+        mrn_site_styles_set_transfer_feedback(array(
+            'type'    => 'error',
+            'message' => 'Choose a Site Styles export file to import.',
+        ));
+        wp_safe_redirect($redirect);
+        exit;
+    }
+
+    $upload = $_FILES['mrn_site_styles_import_file'];
+    $tmp_name = isset($upload['tmp_name']) ? (string) $upload['tmp_name'] : '';
+    $error_code = isset($upload['error']) ? (int) $upload['error'] : UPLOAD_ERR_OK;
+
+    if (UPLOAD_ERR_OK !== $error_code || '' === $tmp_name || !is_uploaded_file($tmp_name)) {
+        mrn_site_styles_set_transfer_feedback(array(
+            'type'    => 'error',
+            'message' => 'The Site Styles import file could not be uploaded.',
+        ));
+        wp_safe_redirect($redirect);
+        exit;
+    }
+
+    $raw = file_get_contents($tmp_name);
+
+    if (!is_string($raw) || '' === $raw) {
+        mrn_site_styles_set_transfer_feedback(array(
+            'type'    => 'error',
+            'message' => 'The Site Styles import file was empty.',
+        ));
+        wp_safe_redirect($redirect);
+        exit;
+    }
+
+    $decoded = json_decode($raw, true);
+
+    if (
+        !is_array($decoded)
+        || ('mrn-site-styles' !== ($decoded['tool'] ?? ''))
+        || !isset($decoded['data'])
+        || !is_array($decoded['data'])
+    ) {
+        mrn_site_styles_set_transfer_feedback(array(
+            'type'    => 'error',
+            'message' => 'That file is not a valid Site Styles export.',
+        ));
+        wp_safe_redirect($redirect);
+        exit;
+    }
+
+    $data = $decoded['data'];
+    $colors = mrn_site_colors_sanitize_rows($data['colors'] ?? array());
+    $graphic_elements = mrn_site_styles_sanitize_graphic_element_rows($data['graphic_elements'] ?? array());
+    $motion_presets = mrn_site_styles_sanitize_dark_scroll_card_preset_rows($data['dark_scroll_card_presets'] ?? array());
+
+    update_option(mrn_site_colors_option_key(), $colors, false);
+    update_option(mrn_site_styles_graphic_elements_option_key(), $graphic_elements, false);
+    update_option(mrn_site_styles_dark_scroll_card_presets_option_key(), $motion_presets, false);
+
+    delete_transient(mrn_site_colors_feedback_transient_key(get_current_user_id()));
+
+    $source_site = isset($decoded['site_url']) ? esc_url_raw((string) $decoded['site_url']) : '';
+    $message = 'Site Styles imported.';
+
+    if ('' !== $source_site) {
+        $message .= ' Source: ' . $source_site;
+    }
+
+    mrn_site_styles_set_transfer_feedback(array(
+        'type'    => 'success',
+        'message' => $message,
+    ));
+
+    wp_safe_redirect($redirect);
+    exit;
+}
+add_action('admin_init', 'mrn_site_styles_handle_import');
 
 /**
  * Get all configured site colors.
@@ -832,6 +1036,7 @@ function mrn_site_colors_render_page(): void {
     $graphic_elements = mrn_site_styles_get_graphic_elements();
     $dark_scroll_card_presets = mrn_site_styles_get_dark_scroll_card_presets();
     $color_feedback = mrn_site_colors_consume_feedback();
+    $transfer_feedback = mrn_site_styles_consume_transfer_feedback();
     $color_invalid_count = isset($color_feedback['invalid_count']) ? (int) $color_feedback['invalid_count'] : 0;
 
     if (!empty($color_feedback['display_rows']) && is_array($color_feedback['display_rows'])) {
@@ -915,6 +1120,32 @@ function mrn_site_colors_render_page(): void {
                 min-width: 0;
             }
 
+            .mrn-site-styles-transfer-box {
+                max-width: 1100px;
+                margin-top: 20px;
+                padding: 16px 20px;
+                background: #fff;
+                border: 1px solid #dcdcde;
+                border-radius: 8px;
+            }
+
+            .mrn-site-styles-transfer-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 16px 24px;
+                align-items: end;
+            }
+
+            .mrn-site-styles-transfer-actions form {
+                margin: 0;
+            }
+
+            .mrn-site-styles-transfer-actions label {
+                display: block;
+                font-weight: 600;
+                margin-bottom: 6px;
+            }
+
             @media (max-width: 1100px) {
                 .mrn-site-styles-motion-fields {
                     grid-template-columns: 1fr;
@@ -929,6 +1160,11 @@ function mrn_site_colors_render_page(): void {
             <div class="notice notice-success is-dismissible"><p>Graphic elements saved.</p></div>
         <?php elseif ('motion-presets' === $updated_notice) : ?>
             <div class="notice notice-success is-dismissible"><p>Motion presets saved.</p></div>
+        <?php endif; ?>
+        <?php if (!empty($transfer_feedback['message'])) : ?>
+            <div class="notice notice-<?php echo esc_attr(('error' === ($transfer_feedback['type'] ?? '')) ? 'error' : 'success'); ?> is-dismissible">
+                <p><?php echo esc_html((string) $transfer_feedback['message']); ?></p>
+            </div>
         <?php endif; ?>
         <?php if ($color_invalid_count > 0) : ?>
             <div class="notice notice-warning is-dismissible">
@@ -948,6 +1184,26 @@ function mrn_site_colors_render_page(): void {
                 </p>
             </div>
         <?php endif; ?>
+
+        <div class="mrn-site-styles-transfer-box">
+            <h2 style="margin-top:0;">Import / Export</h2>
+            <p>Export the current Site Styles for this site to a JSON file, or import a previously exported Site Styles bundle into this site.</p>
+            <div class="mrn-site-styles-transfer-actions">
+                <form method="get" action="">
+                    <input type="hidden" name="page" value="mrn-site-styles" />
+                    <input type="hidden" name="action" value="mrn_site_styles_export" />
+                    <?php wp_nonce_field('mrn_site_styles_export', 'mrn_site_styles_export_nonce'); ?>
+                    <button type="submit" class="button">Export Site Styles</button>
+                </form>
+
+                <form method="post" action="" enctype="multipart/form-data">
+                    <?php wp_nonce_field('mrn_site_styles_import', 'mrn_site_styles_import_nonce'); ?>
+                    <label for="mrn-site-styles-import-file">Import JSON</label>
+                    <input type="file" id="mrn-site-styles-import-file" name="mrn_site_styles_import_file" accept="application/json,.json" />
+                    <button type="submit" name="mrn_site_styles_import_submit" class="button button-secondary">Import Site Styles</button>
+                </form>
+            </div>
+        </div>
 
         <nav class="nav-tab-wrapper mrn-site-styles-tabs" aria-label="Site Styles Sections">
             <a href="#colors" class="nav-tab<?php echo 'colors' === $active_tab ? ' nav-tab-active' : ''; ?>" data-mrn-site-styles-tab="colors">Site Colors</a>

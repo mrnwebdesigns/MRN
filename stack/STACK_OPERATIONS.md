@@ -86,6 +86,7 @@ rsync -rlt --omit-dir-times --delete \
 - Use the feature deploy helper when stack theme or stack MU plugin work needs to stay mirrored to the stack server and the `default-configs` site in one step.
 - The feature deploy helper must also mirror `/Users/khofmeyer/Development/MRN/shared` into `wp-content/shared` on `default-configs.mrndev.io` because settings-style sticky bars and other shared runtime helpers load from that path.
 - The feature deploy helper must sync the local stack theme into the live site's active stylesheet directory, not just `/wp-content/themes/mrn-base-stack/`, because `default-configs.mrndev.io` may still run a cloned active theme slug such as `default-configs`.
+- Site Styles values remain per-site database content unless a future rollout explicitly defines a shared baseline export/import path for them.
 - Standard plugins still follow their own plugin release flow and are not part of the stack feature deploy helper.
 - Fresh site bootstrap must delete any preinstalled standard plugins from the host before installing the stack manifest so new sites match the stack plugin set exactly.
 - Fresh site bootstrap must also sync the shared runtime into `wp-content/shared` as part of the initial rollout.

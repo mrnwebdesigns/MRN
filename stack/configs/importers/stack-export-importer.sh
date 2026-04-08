@@ -8,6 +8,7 @@ WP_PATH="${WP_PATH:-}"
 IMPORT_MANIFEST="${STACK_ROOT}/manifests/importers.txt"
 EXPORTS_DIR="${STACK_ROOT}/configs/exports"
 WP_SKIP_PLUGINS="${STACK_IMPORTER_SKIP_PLUGINS:-}"
+WP_RUN_AS_CURRENT_USER="${STACK_IMPORTER_RUN_AS_CURRENT_USER:-}"
 
 if [[ -z "${SITE_PATH}" || -z "${SITE_USER}" || -z "${WP_PATH}" ]]; then
   echo "Importer context missing (SITE_PATH/SITE_USER/WP_PATH). Skipping importer."
@@ -22,10 +23,18 @@ fi
 run_wp() {
   local -a args
   args=("$@")
-  if [[ -n "${WP_SKIP_PLUGINS}" ]]; then
-    sudo -u "${SITE_USER}" wp --path="${WP_PATH}" --skip-plugins="${WP_SKIP_PLUGINS}" "${args[@]}"
+  if [[ "${WP_RUN_AS_CURRENT_USER}" == "1" ]]; then
+    if [[ -n "${WP_SKIP_PLUGINS}" ]]; then
+      wp --path="${WP_PATH}" --skip-plugins="${WP_SKIP_PLUGINS}" "${args[@]}"
+    else
+      wp --path="${WP_PATH}" "${args[@]}"
+    fi
   else
-    sudo -u "${SITE_USER}" wp --path="${WP_PATH}" "${args[@]}"
+    if [[ -n "${WP_SKIP_PLUGINS}" ]]; then
+      sudo -u "${SITE_USER}" wp --path="${WP_PATH}" --skip-plugins="${WP_SKIP_PLUGINS}" "${args[@]}"
+    else
+      sudo -u "${SITE_USER}" wp --path="${WP_PATH}" "${args[@]}"
+    fi
   fi
 }
 
