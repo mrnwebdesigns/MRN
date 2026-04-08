@@ -111,12 +111,29 @@ function mrn_site_styles_hex_to_rgb_triplet(string $hex): string {
  * @return array<int, array<string, string>>
  */
 function mrn_site_colors_sanitize_rows($rows): array {
+    $prepared = mrn_site_colors_prepare_rows($rows);
+    return $prepared['sanitized'];
+}
+
+/**
+ * Prepare site color rows for saving and admin feedback.
+ *
+ * @param mixed $rows
+ * @return array{sanitized: array<int, array<string, string>>, display_rows: array<int, array<string, string>>, invalid_count: int}
+ */
+function mrn_site_colors_prepare_rows($rows): array {
     if (!is_array($rows)) {
-        return array();
+        return array(
+            'sanitized'    => array(),
+            'display_rows' => array(),
+            'invalid_count' => 0,
+        );
     }
 
     $sanitized = array();
+    $display_rows = array();
     $used_slugs = array();
+    $invalid_count = 0;
 
     foreach ($rows as $row) {
         if (!is_array($row)) {
@@ -124,13 +141,27 @@ function mrn_site_colors_sanitize_rows($rows): array {
         }
 
         $name = isset($row['name']) ? sanitize_text_field((string) $row['name']) : '';
-        $hex  = isset($row['value']) ? mrn_site_colors_normalize_hex((string) $row['value']) : '';
+        $submitted_value = isset($row['value']) ? strtoupper(trim(sanitize_text_field((string) $row['value']))) : '';
+        $hex  = '' !== $submitted_value ? mrn_site_colors_normalize_hex($submitted_value) : '';
         $slug_source = isset($row['slug']) && (string) $row['slug'] !== ''
             ? (string) $row['slug']
             : $name;
-        $slug = mrn_site_colors_normalize_slug($slug_source);
+        $slug = '' !== $slug_source ? mrn_site_colors_normalize_slug($slug_source) : '';
+
+        if ($name === '' && $submitted_value === '') {
+            continue;
+        }
 
         if ($name === '' || $hex === '') {
+            $invalid_count++;
+            $display_rows[] = array(
+                'slug'   => $slug,
+                'name'   => $name,
+                'value'  => $submitted_value,
+                '_error' => $name === ''
+                    ? 'Add a color name before saving.'
+                    : 'Enter a valid hex color like #5D6180.',
+            );
             continue;
         }
 
@@ -144,14 +175,54 @@ function mrn_site_colors_sanitize_rows($rows): array {
 
         $used_slugs[$slug] = true;
 
-        $sanitized[] = array(
+        $row_data = array(
             'slug'  => $slug,
             'name'  => $name,
             'value' => $hex,
         );
+
+        $sanitized[] = $row_data;
+        $display_rows[] = $row_data;
     }
 
-    return $sanitized;
+    return array(
+        'sanitized'     => $sanitized,
+        'display_rows'  => $display_rows,
+        'invalid_count' => $invalid_count,
+    );
+}
+
+/**
+ * Get the transient key used for one-time Site Colors admin feedback.
+ *
+ * @param int $user_id
+ * @return string
+ */
+function mrn_site_colors_feedback_transient_key(int $user_id): string {
+    return 'mrn_site_colors_feedback_' . $user_id;
+}
+
+/**
+ * Fetch and clear pending Site Colors admin feedback.
+ *
+ * @return array{display_rows?: array<int, array<string, string>>, invalid_count?: int}
+ */
+function mrn_site_colors_consume_feedback(): array {
+    $user_id = get_current_user_id();
+
+    if ($user_id <= 0) {
+        return array();
+    }
+
+    $feedback = get_transient(mrn_site_colors_feedback_transient_key($user_id));
+
+    if (!is_array($feedback)) {
+        return array();
+    }
+
+    delete_transient(mrn_site_colors_feedback_transient_key($user_id));
+
+    return $feedback;
 }
 
 /**
@@ -519,7 +590,19 @@ function mrn_site_colors_handle_save(): void {
         return;
     }
 
-    if (!isset($_POST['mrn_site_colors_submit'])) {
+    $submitted_section = isset($_POST['mrn_site_styles_section'])
+        ? sanitize_key(wp_unslash((string) $_POST['mrn_site_styles_section']))
+        : '';
+
+    if ('' === $submitted_section && isset($_POST['mrn_site_colors_submit'])) {
+        $submitted_section = 'colors';
+    } elseif ('' === $submitted_section && isset($_POST['mrn_site_graphic_elements_submit'])) {
+        $submitted_section = 'graphic-elements';
+    } elseif ('' === $submitted_section && isset($_POST['mrn_site_dark_scroll_card_presets_submit'])) {
+        $submitted_section = 'motion-presets';
+    }
+
+    if (!in_array($submitted_section, array('colors', 'graphic-elements', 'motion-presets'), true)) {
         return;
     }
 
@@ -529,21 +612,41 @@ function mrn_site_colors_handle_save(): void {
 
     check_admin_referer('mrn_site_colors_save', 'mrn_site_colors_nonce');
 
-    $rows                     = isset($_POST['mrn_site_colors']) ? wp_unslash($_POST['mrn_site_colors']) : array();
-    $graphic_element_rows     = isset($_POST['mrn_site_graphic_elements']) ? wp_unslash($_POST['mrn_site_graphic_elements']) : array();
-    $dark_scroll_card_rows    = isset($_POST['mrn_site_dark_scroll_card_presets']) ? wp_unslash($_POST['mrn_site_dark_scroll_card_presets']) : array();
-    $sanitized                = mrn_site_colors_sanitize_rows($rows);
-    $sanitized_graphic_items  = mrn_site_styles_sanitize_graphic_element_rows($graphic_element_rows);
-    $sanitized_motion_presets = mrn_site_styles_sanitize_dark_scroll_card_preset_rows($dark_scroll_card_rows);
+    if ('colors' === $submitted_section) {
+        $rows = isset($_POST['mrn_site_colors']) ? wp_unslash($_POST['mrn_site_colors']) : array();
+        $prepared = mrn_site_colors_prepare_rows($rows);
+        $sanitized = $prepared['sanitized'];
 
-    update_option(mrn_site_colors_option_key(), $sanitized, false);
-    update_option(mrn_site_styles_graphic_elements_option_key(), $sanitized_graphic_items, false);
-    update_option(mrn_site_styles_dark_scroll_card_presets_option_key(), $sanitized_motion_presets, false);
+        update_option(mrn_site_colors_option_key(), $sanitized, false);
+
+        if ((int) $prepared['invalid_count'] > 0) {
+            set_transient(
+                mrn_site_colors_feedback_transient_key(get_current_user_id()),
+                array(
+                    'display_rows'  => $prepared['display_rows'],
+                    'invalid_count' => (int) $prepared['invalid_count'],
+                ),
+                5 * MINUTE_IN_SECONDS
+            );
+        } else {
+            delete_transient(mrn_site_colors_feedback_transient_key(get_current_user_id()));
+        }
+    } elseif ('graphic-elements' === $submitted_section) {
+        $graphic_element_rows = isset($_POST['mrn_site_graphic_elements']) ? wp_unslash($_POST['mrn_site_graphic_elements']) : array();
+        $sanitized_graphic_items = mrn_site_styles_sanitize_graphic_element_rows($graphic_element_rows);
+
+        update_option(mrn_site_styles_graphic_elements_option_key(), $sanitized_graphic_items, false);
+    } elseif ('motion-presets' === $submitted_section) {
+        $dark_scroll_card_rows = isset($_POST['mrn_site_dark_scroll_card_presets']) ? wp_unslash($_POST['mrn_site_dark_scroll_card_presets']) : array();
+        $sanitized_motion_presets = mrn_site_styles_sanitize_dark_scroll_card_preset_rows($dark_scroll_card_rows);
+
+        update_option(mrn_site_styles_dark_scroll_card_presets_option_key(), $sanitized_motion_presets, false);
+    }
 
     $redirect = add_query_arg(
         array(
             'page'    => 'mrn-site-styles',
-            'updated' => '1',
+            'updated' => $submitted_section,
         ),
         admin_url('options-general.php')
     );
@@ -577,6 +680,12 @@ function mrn_site_colors_render_row(int $index, array $row): void {
     $name  = isset($row['name']) ? (string) $row['name'] : '';
     $slug  = isset($row['slug']) ? (string) $row['slug'] : '';
     $value = isset($row['value']) ? (string) $row['value'] : '#000000';
+    $error = isset($row['_error']) ? (string) $row['_error'] : '';
+    $picker_value = mrn_site_colors_normalize_hex($value);
+
+    if ('' === $picker_value) {
+        $picker_value = '#000000';
+    }
     ?>
     <tr class="mrn-site-colors-row">
         <td>
@@ -585,9 +694,12 @@ function mrn_site_colors_render_row(int $index, array $row): void {
         </td>
         <td>
             <input type="text" class="regular-text code mrn-site-colors-value" name="mrn_site_colors[<?php echo esc_attr((string) $index); ?>][value]" value="<?php echo esc_attr($value); ?>" placeholder="#0057B8" />
+            <?php if ('' !== $error) : ?>
+                <p class="description" style="margin:6px 0 0;color:#b32d2e;"><?php echo esc_html($error); ?></p>
+            <?php endif; ?>
         </td>
         <td>
-            <input type="color" class="mrn-site-colors-picker" value="<?php echo esc_attr($value); ?>" />
+            <input type="color" class="mrn-site-colors-picker" value="<?php echo esc_attr($picker_value); ?>" />
         </td>
         <td>
             <code class="mrn-site-colors-var"><?php echo esc_html($slug !== '' ? mrn_site_colors_get_css_var($slug) : '--site-color-your-slug'); ?></code>
@@ -719,6 +831,12 @@ function mrn_site_colors_render_page(): void {
     $rows             = mrn_site_colors_get_all();
     $graphic_elements = mrn_site_styles_get_graphic_elements();
     $dark_scroll_card_presets = mrn_site_styles_get_dark_scroll_card_presets();
+    $color_feedback = mrn_site_colors_consume_feedback();
+    $color_invalid_count = isset($color_feedback['invalid_count']) ? (int) $color_feedback['invalid_count'] : 0;
+
+    if (!empty($color_feedback['display_rows']) && is_array($color_feedback['display_rows'])) {
+        $rows = $color_feedback['display_rows'];
+    }
 
     if ($rows === array()) {
         $rows = array(
@@ -730,9 +848,34 @@ function mrn_site_colors_render_page(): void {
         );
     }
 
+    $updated_notice = '';
+    $active_tab = 'colors';
+
+    if (isset($_GET['updated'])) {
+        $updated_notice = sanitize_key(wp_unslash((string) $_GET['updated']));
+    }
+
+    if (in_array($updated_notice, array('colors', 'graphic-elements', 'motion-presets'), true)) {
+        $active_tab = $updated_notice;
+    }
+
     ?>
     <div class="wrap">
         <style>
+            .mrn-site-styles-tabs {
+                margin: 20px 0 0;
+            }
+
+            .mrn-site-styles-tab-panel {
+                display: none;
+                max-width: 1100px;
+                margin-top: 20px;
+            }
+
+            .mrn-site-styles-tab-panel.is-active {
+                display: block;
+            }
+
             .mrn-site-styles-motion-table {
                 max-width: 1100px;
                 table-layout: fixed;
@@ -780,103 +923,203 @@ function mrn_site_colors_render_page(): void {
         </style>
         <h1>Site Styles</h1>
         <p>Define shared site color variables and reusable graphic elements for themes, plugins, and admin UI usage.</p>
-        <?php if (isset($_GET['updated']) && $_GET['updated'] === '1') : ?>
-            <div class="notice notice-success is-dismissible"><p>Site styles saved.</p></div>
+        <?php if ('colors' === $updated_notice) : ?>
+            <div class="notice notice-success is-dismissible"><p>Site colors saved.</p></div>
+        <?php elseif ('graphic-elements' === $updated_notice) : ?>
+            <div class="notice notice-success is-dismissible"><p>Graphic elements saved.</p></div>
+        <?php elseif ('motion-presets' === $updated_notice) : ?>
+            <div class="notice notice-success is-dismissible"><p>Motion presets saved.</p></div>
+        <?php endif; ?>
+        <?php if ($color_invalid_count > 0) : ?>
+            <div class="notice notice-warning is-dismissible">
+                <p>
+                    <?php
+                    echo esc_html(
+                        sprintf(
+                            _n(
+                                '%d Site Color row needs attention. Invalid rows were kept below so you can correct or remove them and save again.',
+                                '%d Site Color rows need attention. Invalid rows were kept below so you can correct or remove them and save again.',
+                                $color_invalid_count
+                            ),
+                            $color_invalid_count
+                        )
+                    );
+                    ?>
+                </p>
+            </div>
         <?php endif; ?>
 
-        <form method="post" action="">
-            <?php wp_nonce_field('mrn_site_colors_save', 'mrn_site_colors_nonce'); ?>
-            <h2 style="margin-top:24px;">Site Colors</h2>
-            <table class="widefat striped" style="max-width:1100px;margin-top:20px;">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Hex Value</th>
-                        <th>Picker</th>
-                        <th>CSS Variable</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody id="mrn-site-colors-rows">
-                    <?php foreach (array_values($rows) as $index => $row) : ?>
-                        <?php mrn_site_colors_render_row((int) $index, $row); ?>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <nav class="nav-tab-wrapper mrn-site-styles-tabs" aria-label="Site Styles Sections">
+            <a href="#colors" class="nav-tab<?php echo 'colors' === $active_tab ? ' nav-tab-active' : ''; ?>" data-mrn-site-styles-tab="colors">Site Colors</a>
+            <a href="#graphic-elements" class="nav-tab<?php echo 'graphic-elements' === $active_tab ? ' nav-tab-active' : ''; ?>" data-mrn-site-styles-tab="graphic-elements">Graphic Elements</a>
+            <a href="#motion-presets" class="nav-tab<?php echo 'motion-presets' === $active_tab ? ' nav-tab-active' : ''; ?>" data-mrn-site-styles-tab="motion-presets">Motion Presets</a>
+        </nav>
 
-            <p style="margin-top:16px;">
-                <button type="button" class="button" id="mrn-site-colors-add">Add Color</button>
-            </p>
+        <div class="mrn-site-styles-tab-panels" data-mrn-site-styles-default-tab="<?php echo esc_attr($active_tab); ?>">
+            <section class="mrn-site-styles-tab-panel<?php echo 'colors' === $active_tab ? ' is-active' : ''; ?>" data-mrn-site-styles-panel="colors">
+                <form method="post" action="">
+                    <?php wp_nonce_field('mrn_site_colors_save', 'mrn_site_colors_nonce'); ?>
+                    <input type="hidden" name="mrn_site_styles_section" value="colors" />
+                    <h2 style="margin-top:24px;">Site Colors</h2>
+                    <table class="widefat striped" style="max-width:1100px;margin-top:20px;">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Hex Value</th>
+                                <th>Picker</th>
+                                <th>CSS Variable</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="mrn-site-colors-rows">
+                            <?php foreach (array_values($rows) as $index => $row) : ?>
+                                <?php mrn_site_colors_render_row((int) $index, $row); ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
 
-            <h2 style="margin-top:32px;">Graphic Elements</h2>
-            <p>Paste reusable CSS snippets for accent shapes and decorative elements. These definitions will feed future accent-element dropdowns.</p>
-            <table class="widefat striped" style="max-width:1100px;margin-top:20px;">
-                <thead>
-                    <tr>
-                        <th style="width:18%;">Name</th>
-                        <th style="width:12%;">Space Override</th>
-                        <th style="width:50%;">CSS</th>
-                        <th style="width:15%;">Slug</th>
-                        <th style="width:5%;"></th>
-                    </tr>
-                </thead>
-                <tbody id="mrn-site-styles-graphic-rows">
-                    <?php foreach (array_values($graphic_elements) as $index => $row) : ?>
-                        <?php mrn_site_styles_render_graphic_element_row((int) $index, $row); ?>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    <p style="margin-top:16px;">
+                        <button type="button" class="button" id="mrn-site-colors-add">Add Color</button>
+                    </p>
+                    <p class="submit" style="margin-top:12px;">
+                        <button type="submit" name="mrn_site_colors_submit" class="button button-primary">Save Site Colors</button>
+                    </p>
+                </form>
+            </section>
 
-            <p style="margin-top:16px;">
-                <button type="button" class="button" id="mrn-site-styles-graphic-add">Add Graphic Element</button>
-            </p>
+            <section class="mrn-site-styles-tab-panel<?php echo 'graphic-elements' === $active_tab ? ' is-active' : ''; ?>" data-mrn-site-styles-panel="graphic-elements">
+                <form method="post" action="">
+                    <?php wp_nonce_field('mrn_site_colors_save', 'mrn_site_colors_nonce'); ?>
+                    <input type="hidden" name="mrn_site_styles_section" value="graphic-elements" />
+                    <h2 style="margin-top:24px;">Graphic Elements</h2>
+                    <p>Paste reusable CSS snippets for accent shapes and decorative elements. These definitions will feed future accent-element dropdowns.</p>
+                    <table class="widefat striped" style="max-width:1100px;margin-top:20px;">
+                        <thead>
+                            <tr>
+                                <th style="width:18%;">Name</th>
+                                <th style="width:12%;">Space Override</th>
+                                <th style="width:50%;">CSS</th>
+                                <th style="width:15%;">Slug</th>
+                                <th style="width:5%;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="mrn-site-styles-graphic-rows">
+                            <?php foreach (array_values($graphic_elements) as $index => $row) : ?>
+                                <?php mrn_site_styles_render_graphic_element_row((int) $index, $row); ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
 
-            <h2 style="margin-top:32px;">Motion Effect Presets</h2>
-            <p>Define named visual presets for row effects. The first preset family powers the <code>Darken Card On Scroll</code> row effect.</p>
-            <table class="widefat striped mrn-site-styles-motion-table" style="margin-top:20px;">
-                <thead>
-                    <tr>
-                        <th style="width:22%;">Preset Name</th>
-                        <th style="width:58%;">Visual Settings</th>
-                        <th style="width:14%;">Slug</th>
-                        <th style="width:6%;"></th>
-                    </tr>
-                </thead>
-                <tbody id="mrn-site-styles-motion-rows">
-                    <?php foreach (array_values($dark_scroll_card_presets) as $index => $row) : ?>
-                        <?php mrn_site_styles_render_dark_scroll_card_preset_row((int) $index, $row); ?>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    <p style="margin-top:16px;">
+                        <button type="button" class="button" id="mrn-site-styles-graphic-add">Add Graphic Element</button>
+                    </p>
+                    <p class="submit" style="margin-top:12px;">
+                        <button type="submit" name="mrn_site_graphic_elements_submit" class="button button-primary">Save Graphic Elements</button>
+                    </p>
+                </form>
+            </section>
 
-            <p style="margin-top:16px;">
-                <button type="button" class="button" id="mrn-site-styles-motion-add">Add Motion Preset</button>
-            </p>
+            <section class="mrn-site-styles-tab-panel<?php echo 'motion-presets' === $active_tab ? ' is-active' : ''; ?>" data-mrn-site-styles-panel="motion-presets">
+                <form method="post" action="">
+                    <?php wp_nonce_field('mrn_site_colors_save', 'mrn_site_colors_nonce'); ?>
+                    <input type="hidden" name="mrn_site_styles_section" value="motion-presets" />
+                    <h2 style="margin-top:24px;">Motion Effect Presets</h2>
+                    <p>Define named visual presets for row effects. The first preset family powers the <code>Darken Card On Scroll</code> row effect.</p>
+                    <table class="widefat striped mrn-site-styles-motion-table" style="margin-top:20px;">
+                        <thead>
+                            <tr>
+                                <th style="width:22%;">Preset Name</th>
+                                <th style="width:58%;">Visual Settings</th>
+                                <th style="width:14%;">Slug</th>
+                                <th style="width:6%;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="mrn-site-styles-motion-rows">
+                            <?php foreach (array_values($dark_scroll_card_presets) as $index => $row) : ?>
+                                <?php mrn_site_styles_render_dark_scroll_card_preset_row((int) $index, $row); ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
 
-            <h2 style="margin-top:32px;">How To Use</h2>
-            <div style="max-width:1100px;background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:20px;">
-                <p><strong>CSS:</strong> Use <code>var(--site-color-your-slug)</code></p>
-                <p><strong>PHP value:</strong> Use <code>mrn_site_colors_get_value('your-slug')</code></p>
-                <p><strong>PHP variable name:</strong> Use <code>mrn_site_colors_get_css_var('your-slug')</code></p>
-                <p><strong>Full map:</strong> Use <code>mrn_site_colors_get_map()</code></p>
-                <p><strong>Graphic elements:</strong> Use <code>mrn_site_styles_get_graphic_elements()</code> or <code>mrn_site_styles_get_graphic_element_choices()</code></p>
-                <p><strong>Dark scroll card presets:</strong> Use <code>mrn_site_styles_get_dark_scroll_card_preset_choices()</code> in the builder and style against <code>data-mrn-effect-preset</code>.</p>
-            </div>
+                    <p style="margin-top:16px;">
+                        <button type="button" class="button" id="mrn-site-styles-motion-add">Add Motion Preset</button>
+                    </p>
+                    <p class="submit" style="margin-top:12px;">
+                        <button type="submit" name="mrn_site_dark_scroll_card_presets_submit" class="button button-primary">Save Motion Presets</button>
+                    </p>
+                </form>
+            </section>
+        </div>
 
-            <p class="submit">
-                <button type="submit" name="mrn_site_colors_submit" class="button button-primary">Save Site Styles</button>
-            </p>
-        </form>
+        <h2 style="margin-top:32px;">How To Use</h2>
+        <div style="max-width:1100px;background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:20px;">
+            <p><strong>CSS:</strong> Use <code>var(--site-color-your-slug)</code></p>
+            <p><strong>PHP value:</strong> Use <code>mrn_site_colors_get_value('your-slug')</code></p>
+            <p><strong>PHP variable name:</strong> Use <code>mrn_site_colors_get_css_var('your-slug')</code></p>
+            <p><strong>Full map:</strong> Use <code>mrn_site_colors_get_map()</code></p>
+            <p><strong>Graphic elements:</strong> Use <code>mrn_site_styles_get_graphic_elements()</code> or <code>mrn_site_styles_get_graphic_element_choices()</code></p>
+            <p><strong>Dark scroll card presets:</strong> Use <code>mrn_site_styles_get_dark_scroll_card_preset_choices()</code> in the builder and style against <code>data-mrn-effect-preset</code>.</p>
+        </div>
     </div>
 
     <script>
         (function () {
+            const tabLinks = Array.from(document.querySelectorAll('[data-mrn-site-styles-tab]'));
+            const tabPanels = Array.from(document.querySelectorAll('[data-mrn-site-styles-panel]'));
+            const tabPanelsWrapper = document.querySelector('[data-mrn-site-styles-default-tab]');
             const rowsContainer = document.getElementById('mrn-site-colors-rows');
             const addButton = document.getElementById('mrn-site-colors-add');
             const graphicRowsContainer = document.getElementById('mrn-site-styles-graphic-rows');
             const addGraphicButton = document.getElementById('mrn-site-styles-graphic-add');
             const motionRowsContainer = document.getElementById('mrn-site-styles-motion-rows');
             const addMotionButton = document.getElementById('mrn-site-styles-motion-add');
+
+            function isKnownTab(tabName) {
+                return tabPanels.some(function (panel) {
+                    return panel.getAttribute('data-mrn-site-styles-panel') === tabName;
+                });
+            }
+
+            function setActiveTab(tabName, shouldUpdateHash) {
+                if (!isKnownTab(tabName)) {
+                    tabName = tabPanelsWrapper ? (tabPanelsWrapper.getAttribute('data-mrn-site-styles-default-tab') || 'colors') : 'colors';
+                }
+
+                tabLinks.forEach(function (link) {
+                    const isActive = link.getAttribute('data-mrn-site-styles-tab') === tabName;
+                    link.classList.toggle('nav-tab-active', isActive);
+                    link.setAttribute('aria-current', isActive ? 'page' : 'false');
+                });
+
+                tabPanels.forEach(function (panel) {
+                    const isActive = panel.getAttribute('data-mrn-site-styles-panel') === tabName;
+                    panel.classList.toggle('is-active', isActive);
+                });
+
+                if (shouldUpdateHash && window.location.hash !== '#' + tabName) {
+                    window.history.replaceState(null, '', '#' + tabName);
+                }
+            }
+
+            if (tabLinks.length && tabPanels.length && tabPanelsWrapper) {
+                const defaultTab = tabPanelsWrapper.getAttribute('data-mrn-site-styles-default-tab') || 'colors';
+                const hashTab = window.location.hash ? window.location.hash.replace('#', '') : '';
+                const initialTab = isKnownTab(hashTab) ? hashTab : defaultTab;
+
+                tabLinks.forEach(function (link) {
+                    link.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        setActiveTab(link.getAttribute('data-mrn-site-styles-tab'), true);
+                    });
+                });
+
+                window.addEventListener('hashchange', function () {
+                    const nextTab = window.location.hash ? window.location.hash.replace('#', '') : defaultTab;
+                    setActiveTab(nextTab, false);
+                });
+
+                setActiveTab(initialTab, false);
+            }
 
             if (!rowsContainer || !addButton || !graphicRowsContainer || !addGraphicButton || !motionRowsContainer || !addMotionButton) {
                 return;
