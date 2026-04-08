@@ -33,3 +33,9 @@ Working approach:
 
 If unclear:
 - ask before making large or cross-system changes
+
+Deployment workflow note:
+- Resolve live site owner/user before direct live-site writes when the username is unknown:
+  - `/Users/khofmeyer/Development/MRN/stack/scripts/resolve-live-site-owner.sh <site-hostname>`
+- Use `kyle` only for discovery/fallback, not for live file writes
+- Use the CloudPanel site user for final live-site syncs so ownership stays correct

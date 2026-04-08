@@ -57,6 +57,9 @@ This ensures stack files are written as the app owner instead of a personal oper
 
 - Do not sync directly into live site `wp-content` paths as `mrn-ops`, `kyle`, or any other operator user.
 - Live site theme/plugin/MU refreshes should run as the destination site owner.
+- Resolve the destination site owner first when the site user is not already known:
+  - `/Users/khofmeyer/Development/MRN/stack/scripts/resolve-live-site-owner.sh <site-hostname>`
+  - This helper is read-only and uses the fallback/admin SSH path only for discovery.
 - Preferred pattern for live site file syncs:
   - from an ops/stack user with site-owner sudo:
 
@@ -101,6 +104,10 @@ rsync -rlt --omit-dir-times --delete \
   - `mrndev-stack-manager` does not have site-owner sudo rights for live-site sync commands
   - `mrn-ops` can become `mrndev-stack-manager`, but it still does not have `sudo -n -u <site-user>` rights for `rsync/find/chmod/perl/wp`
 - Until that sudoers policy is fixed, use direct site-owner SSH instead of writing live files as an operator user.
+- Current local SSH role split:
+  - `mrndev` or `mrndev-kyle` = fallback/admin discovery only
+  - `mrndev-ops` = neutral ops user
+  - `mrndev-site-owner` = shared deploy-key path for direct site-owner SSH
 - `default-configs.mrndev.io` currently runs the cloned `default-configs` active stylesheet, so rollout verification must check the live active theme slug and version rather than assuming `mrn-base-stack`.
 
 ## Theme Rollout Rule
