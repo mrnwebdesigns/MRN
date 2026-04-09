@@ -894,6 +894,127 @@ function mrn_base_stack_get_motion_group_field( $key, $name = 'motion_settings',
 }
 
 /**
+ * Build the standard Effects tab field definition for builder layouts.
+ *
+ * @param string $key Unique ACF field key.
+ * @param string $label Tab label.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_effects_tab_field( $key, $label = 'Effects' ) {
+	return array(
+		'key'        => $key,
+		'label'      => $label,
+		'name'       => '',
+		'aria-label' => '',
+		'type'       => 'tab',
+		'placement'  => 'top',
+		'endpoint'   => 0,
+	);
+}
+
+/**
+ * Recursively move row effect controls into a dedicated Effects tab.
+ *
+ * This preserves existing motion field keys/names and only changes their tab
+ * placement in row editors that already use top-level tabs.
+ *
+ * @param array<int, mixed> $fields Field definitions.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_relocate_effect_fields( array $fields ) {
+	$processed_fields = array();
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			$processed_fields[] = $field;
+			continue;
+		}
+
+		if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) ) {
+			$field['sub_fields'] = mrn_base_stack_relocate_effect_fields( $field['sub_fields'] );
+		}
+
+		if ( isset( $field['fields'] ) && is_array( $field['fields'] ) ) {
+			$field['fields'] = mrn_base_stack_relocate_effect_fields( $field['fields'] );
+		}
+
+		if ( isset( $field['layouts'] ) && is_array( $field['layouts'] ) ) {
+			foreach ( $field['layouts'] as $layout_key => $layout ) {
+				if ( ! is_array( $layout ) ) {
+					continue;
+				}
+
+				if ( isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ) {
+					$layout['sub_fields'] = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
+				}
+
+				$field['layouts'][ $layout_key ] = $layout;
+			}
+		}
+
+		$processed_fields[] = $field;
+	}
+
+	$has_tabs      = false;
+	$motion_fields = array();
+	$remaining     = array();
+
+	foreach ( $processed_fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			$remaining[] = $field;
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? (string) $field['type'] : '';
+		$field_name  = isset( $field['name'] ) ? (string) $field['name'] : '';
+		$field_label = isset( $field['label'] ) ? (string) $field['label'] : '';
+
+		if ( 'tab' === $field_type ) {
+			$has_tabs = true;
+
+			if ( 'effects' === sanitize_title( $field_label ) ) {
+				continue;
+			}
+		}
+
+		if ( 'motion_settings' === $field_name ) {
+			$motion_fields[] = $field;
+			continue;
+		}
+
+		$remaining[] = $field;
+	}
+
+	if ( ! $has_tabs || empty( $motion_fields ) ) {
+		return $remaining;
+	}
+
+	$effects_tab_key = 'field_mrn_effects_tab';
+
+	if ( isset( $motion_fields[0]['key'] ) && is_string( $motion_fields[0]['key'] ) && '' !== $motion_fields[0]['key'] ) {
+		$effects_tab_key = $motion_fields[0]['key'] . '_effects_tab';
+	}
+
+	$remaining[] = mrn_base_stack_get_effects_tab_field( $effects_tab_key );
+
+	return array_merge( $remaining, $motion_fields );
+}
+
+/**
+ * Apply the builder Effects tab transform to an ACF field group.
+ *
+ * @param array<string, mixed> $field_group Field group config.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_with_effects_tabs( array $field_group ) {
+	if ( isset( $field_group['fields'] ) && is_array( $field_group['fields'] ) ) {
+		$field_group['fields'] = mrn_base_stack_relocate_effect_fields( $field_group['fields'] );
+	}
+
+	return $field_group;
+}
+
+/**
  * Normalize a raw section-width setting to a supported value.
  *
  * @param mixed  $value Raw stored value.
