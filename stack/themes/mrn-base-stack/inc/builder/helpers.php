@@ -738,6 +738,41 @@ function mrn_base_stack_get_motion_trigger_choices() {
 }
 
 /**
+ * Shared target choices for non-surface motion effects.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_motion_target_choices() {
+	return array(
+		'row'          => 'Entire Layout',
+		'surface'      => 'Inner Surface',
+		'content'      => 'Text / Content Area',
+		'media'        => 'Image / Media',
+		'header'       => 'Heading Area',
+		'items'        => 'Items / Grid',
+		'left-column'  => 'Left Sub-Layout',
+		'right-column' => 'Right Sub-Layout',
+	);
+}
+
+/**
+ * Normalize a stored motion target to a supported value.
+ *
+ * @param mixed $value Raw stored target value.
+ * @return string
+ */
+function mrn_base_stack_normalize_motion_target( $value ) {
+	$target  = sanitize_key( (string) $value );
+	$choices = mrn_base_stack_get_motion_target_choices();
+
+	if ( ! isset( $choices[ $target ] ) ) {
+		return 'row';
+	}
+
+	return $target;
+}
+
+/**
  * Convert a stored trigger position into a Motion margin string.
  *
  * @param mixed $value Raw stored trigger value.
@@ -770,6 +805,7 @@ function mrn_base_stack_get_motion_group_field( $key, $name = 'motion_settings',
 	$effect_key    = $key . '_effect';
 	$preset_key    = $key . '_preset';
 	$surface_key   = $key . '_surface';
+	$target_key    = $key . '_target';
 	$enabled_logic = array(
 		array(
 			array(
@@ -832,6 +868,34 @@ function mrn_base_stack_get_motion_group_field( $key, $name = 'motion_settings',
 				'conditional_logic' => $enabled_logic,
 			),
 			array(
+				'key'               => $target_key,
+				'label'             => 'Apply To',
+				'name'              => 'target',
+				'aria-label'        => '',
+				'type'              => 'select',
+				'choices'           => mrn_base_stack_get_motion_target_choices(),
+				'default_value'     => 'row',
+				'ui'                => 1,
+				'instructions'      => 'Choose which part of the layout should receive the effect.',
+				'wrapper'           => array(
+					'width' => '33',
+				),
+				'conditional_logic' => array(
+					array(
+						array(
+							'field'    => $enabled_key,
+							'operator' => '==',
+							'value'    => '1',
+						),
+						array(
+							'field'    => $effect_key,
+							'operator' => '!=',
+							'value'    => 'surface',
+						),
+					),
+				),
+			),
+			array(
 				'key'               => $surface_key,
 				'label'             => 'Surface Look',
 				'name'              => 'surface',
@@ -891,127 +955,6 @@ function mrn_base_stack_get_motion_group_field( $key, $name = 'motion_settings',
 			),
 		),
 	);
-}
-
-/**
- * Build the standard Effects tab field definition for builder layouts.
- *
- * @param string $key Unique ACF field key.
- * @param string $label Tab label.
- * @return array<string, mixed>
- */
-function mrn_base_stack_get_effects_tab_field( $key, $label = 'Effects' ) {
-	return array(
-		'key'        => $key,
-		'label'      => $label,
-		'name'       => '',
-		'aria-label' => '',
-		'type'       => 'tab',
-		'placement'  => 'top',
-		'endpoint'   => 0,
-	);
-}
-
-/**
- * Recursively move row effect controls into a dedicated Effects tab.
- *
- * This preserves existing motion field keys/names and only changes their tab
- * placement in row editors that already use top-level tabs.
- *
- * @param array<int, mixed> $fields Field definitions.
- * @return array<int, mixed>
- */
-function mrn_base_stack_relocate_effect_fields( array $fields ) {
-	$processed_fields = array();
-
-	foreach ( $fields as $field ) {
-		if ( ! is_array( $field ) ) {
-			$processed_fields[] = $field;
-			continue;
-		}
-
-		if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) ) {
-			$field['sub_fields'] = mrn_base_stack_relocate_effect_fields( $field['sub_fields'] );
-		}
-
-		if ( isset( $field['fields'] ) && is_array( $field['fields'] ) ) {
-			$field['fields'] = mrn_base_stack_relocate_effect_fields( $field['fields'] );
-		}
-
-		if ( isset( $field['layouts'] ) && is_array( $field['layouts'] ) ) {
-			foreach ( $field['layouts'] as $layout_key => $layout ) {
-				if ( ! is_array( $layout ) ) {
-					continue;
-				}
-
-				if ( isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ) {
-					$layout['sub_fields'] = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
-				}
-
-				$field['layouts'][ $layout_key ] = $layout;
-			}
-		}
-
-		$processed_fields[] = $field;
-	}
-
-	$has_tabs      = false;
-	$motion_fields = array();
-	$remaining     = array();
-
-	foreach ( $processed_fields as $field ) {
-		if ( ! is_array( $field ) ) {
-			$remaining[] = $field;
-			continue;
-		}
-
-		$field_type  = isset( $field['type'] ) ? (string) $field['type'] : '';
-		$field_name  = isset( $field['name'] ) ? (string) $field['name'] : '';
-		$field_label = isset( $field['label'] ) ? (string) $field['label'] : '';
-
-		if ( 'tab' === $field_type ) {
-			$has_tabs = true;
-
-			if ( 'effects' === sanitize_title( $field_label ) ) {
-				continue;
-			}
-		}
-
-		if ( 'motion_settings' === $field_name ) {
-			$motion_fields[] = $field;
-			continue;
-		}
-
-		$remaining[] = $field;
-	}
-
-	if ( ! $has_tabs || empty( $motion_fields ) ) {
-		return $remaining;
-	}
-
-	$effects_tab_key = 'field_mrn_effects_tab';
-
-	if ( isset( $motion_fields[0]['key'] ) && is_string( $motion_fields[0]['key'] ) && '' !== $motion_fields[0]['key'] ) {
-		$effects_tab_key = $motion_fields[0]['key'] . '_effects_tab';
-	}
-
-	$remaining[] = mrn_base_stack_get_effects_tab_field( $effects_tab_key );
-
-	return array_merge( $remaining, $motion_fields );
-}
-
-/**
- * Apply the builder Effects tab transform to an ACF field group.
- *
- * @param array<string, mixed> $field_group Field group config.
- * @return array<string, mixed>
- */
-function mrn_base_stack_with_effects_tabs( array $field_group ) {
-	if ( isset( $field_group['fields'] ) && is_array( $field_group['fields'] ) ) {
-		$field_group['fields'] = mrn_base_stack_relocate_effect_fields( $field_group['fields'] );
-	}
-
-	return $field_group;
 }
 
 /**
@@ -1232,6 +1175,7 @@ function mrn_base_stack_normalize_motion_settings( $value ) {
 		'effect'           => sanitize_key( (string) ( $settings['effect'] ?? '' ) ),
 		'preset'           => sanitize_key( (string) ( $settings['preset'] ?? '' ) ),
 		'trigger_position' => sanitize_key( (string) ( $settings['trigger_position'] ?? '' ) ),
+		'target'           => mrn_base_stack_normalize_motion_target( $settings['target'] ?? 'row' ),
 		'surface'          => sanitize_key( (string) ( $settings['surface'] ?? '' ) ),
 		'active_class'     => sanitize_html_class( (string) ( $settings['active_class'] ?? '' ) ),
 		'margin'           => is_string( $settings['margin'] ?? null ) ? trim( $settings['margin'] ) : '',
@@ -1239,13 +1183,13 @@ function mrn_base_stack_normalize_motion_settings( $value ) {
 }
 
 /**
- * Build the motion contract for a builder row.
+ * Build the motion contract for a normalized motion-settings payload.
  *
- * @param array<string, mixed> $row Builder row data.
+ * @param mixed $settings Raw motion settings.
  * @return array{classes:array<int,string>,attributes:array<string,string>}
  */
-function mrn_base_stack_get_builder_motion_contract( array $row ) {
-	$settings = mrn_base_stack_normalize_motion_settings( $row['motion_settings'] ?? array() );
+function mrn_base_stack_get_motion_contract_for_settings( $settings ) {
+	$settings = mrn_base_stack_normalize_motion_settings( $settings );
 
 	if ( empty( $settings['enabled'] ) ) {
 		return array(
@@ -1256,6 +1200,7 @@ function mrn_base_stack_get_builder_motion_contract( array $row ) {
 
 	$effect = $settings['effect'];
 	$margin = '' !== $settings['margin'] ? $settings['margin'] : mrn_base_stack_get_motion_margin_for_trigger( $settings['trigger_position'] ?? '' );
+	$target = mrn_base_stack_normalize_motion_target( $settings['target'] ?? 'row' );
 
 	if ( 'surface' === $effect ) {
 		$surface = $settings['surface'];
@@ -1282,6 +1227,7 @@ function mrn_base_stack_get_builder_motion_contract( array $row ) {
 				'data-mrn-motion-effect' => 'active-class',
 				'data-mrn-motion-class'  => $active_class,
 				'data-mrn-motion-margin' => $margin,
+				'data-mrn-motion-target' => $target,
 			),
 		);
 	}
@@ -1295,6 +1241,7 @@ function mrn_base_stack_get_builder_motion_contract( array $row ) {
 				'data-mrn-motion-effect' => 'dark-scroll-card',
 				'data-mrn-effect-preset' => $preset,
 				'data-mrn-motion-margin' => $margin,
+				'data-mrn-motion-target' => $target,
 			),
 		);
 	}
@@ -1303,6 +1250,16 @@ function mrn_base_stack_get_builder_motion_contract( array $row ) {
 		'classes'    => array(),
 		'attributes' => array(),
 	);
+}
+
+/**
+ * Build the motion contract for a builder row.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return array{classes:array<int,string>,attributes:array<string,string>}
+ */
+function mrn_base_stack_get_builder_motion_contract( array $row ) {
+	return mrn_base_stack_get_motion_contract_for_settings( $row['motion_settings'] ?? array() );
 }
 
 /**

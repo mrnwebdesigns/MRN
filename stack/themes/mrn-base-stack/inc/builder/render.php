@@ -78,9 +78,10 @@ function mrn_base_stack_render_hero_builder( $post_id = null ) {
  * @param string               $row_modifier Extra class on `.mrn-content-builder__row`.
  * @param string               $section_modifier Extra class on `.mrn-layout-section` (e.g. `mrn-layout-section--reusable-cta`).
  * @param string               $default_width Default width when `section_width` is empty.
+ * @param bool                 $include_motion_contract Whether the wrapper should carry the row motion contract.
  * @return string
  */
-function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, array $row, $row_modifier, $section_modifier, $default_width = 'wide' ) {
+function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, array $row, $row_modifier, $section_modifier, $default_width = 'wide', $include_motion_contract = true ) {
 	$inner_markup = is_string( $inner_markup ) ? $inner_markup : '';
 	if ( '' === trim( $inner_markup ) ) {
 		return '';
@@ -98,22 +99,24 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 	$section_classes   = trim( 'mrn-layout-section ' . $section_modifier . ' ' . ( $width_layers['section_class'] ?? 'mrn-layout-section--contained' ) );
 	$container_classes = trim( 'mrn-layout-container ' . ( $width_layers['container_class'] ?? 'mrn-layout-container--wide' ) );
 	$row_attributes    = array();
-	$motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
-		'classes'    => array(),
-		'attributes' => array(),
-	);
-
-	if ( ! empty( $motion_contract['classes'] ) && is_array( $motion_contract['classes'] ) ) {
-		$row_classes = trim( $row_classes . ' ' . implode( ' ', array_filter( $motion_contract['classes'], 'strlen' ) ) );
-	}
-
-	if ( function_exists( 'mrn_base_stack_merge_builder_attributes' ) ) {
-		$row_attributes = mrn_base_stack_merge_builder_attributes(
-			$row_attributes,
-			isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array()
+	if ( $include_motion_contract ) {
+		$motion_contract = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
+			'classes'    => array(),
+			'attributes' => array(),
 		);
-	} elseif ( isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ) {
-		$row_attributes = array_merge( $row_attributes, $motion_contract['attributes'] );
+
+		if ( ! empty( $motion_contract['classes'] ) && is_array( $motion_contract['classes'] ) ) {
+			$row_classes = trim( $row_classes . ' ' . implode( ' ', array_filter( $motion_contract['classes'], 'strlen' ) ) );
+		}
+
+		if ( function_exists( 'mrn_base_stack_merge_builder_attributes' ) ) {
+			$row_attributes = mrn_base_stack_merge_builder_attributes(
+				$row_attributes,
+				isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array()
+			);
+		} elseif ( isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ) {
+			$row_attributes = array_merge( $row_attributes, $motion_contract['attributes'] );
+		}
 	}
 
 	$row_attribute_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $row_attributes ) : '';
@@ -178,15 +181,17 @@ function mrn_base_stack_get_reusable_block_row_modifier( $post_type ) {
  * @param array<string, mixed> $row Flexible content row.
  * @param string               $post_type Reusable block post type.
  * @param string               $default_width Default width when none is stored.
+ * @param bool                 $include_motion_contract Whether the wrapper should carry the row motion contract.
  * @return string
  */
-function mrn_base_stack_wrap_reusable_builder_markup( $inner_markup, array $row, $post_type, $default_width = 'wide' ) {
+function mrn_base_stack_wrap_reusable_builder_markup( $inner_markup, array $row, $post_type, $default_width = 'wide', $include_motion_contract = true ) {
 	return mrn_base_stack_wrap_cloned_reusable_builder_markup(
 		$inner_markup,
 		$row,
 		mrn_base_stack_get_reusable_block_row_modifier( $post_type ),
 		mrn_base_stack_get_reusable_block_shell_modifier( $post_type ),
-		$default_width
+		$default_width,
+		$include_motion_contract
 	);
 }
 
@@ -232,17 +237,19 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_cta',
 				$row,
 				array(
-					'post_id'         => (int) $post_id,
-					'post_name'       => 'page-cta',
-					'block_name'      => 'Page CTA',
-					'suppress_anchor' => true,
+					'post_id'               => (int) $post_id,
+					'post_name'             => 'page-cta',
+					'block_name'            => 'Page CTA',
+					'suppress_anchor'       => true,
+					'apply_motion_contract' => true,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
 				$markup,
 				$row,
 				'mrn_reusable_cta',
-				'wide'
+				'wide',
+				false
 			);
 			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
@@ -257,17 +264,19 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_grid',
 				$row,
 				array(
-					'post_id'         => (int) $post_id,
-					'post_name'       => 'page-grid',
-					'block_name'      => 'Page Grid',
-					'suppress_anchor' => true,
+					'post_id'               => (int) $post_id,
+					'post_name'             => 'page-grid',
+					'block_name'            => 'Page Grid',
+					'suppress_anchor'       => true,
+					'apply_motion_contract' => true,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
 				$markup,
 				$row,
 				'mrn_reusable_grid',
-				'wide'
+				'wide',
+				false
 			);
 			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
@@ -282,13 +291,14 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_faq',
 				$row,
 				array(
-					'post_id'         => (int) $post_id,
-					'post_name'       => 'page-faq-accordion',
-					'block_name'      => 'Page FAQs/Accordion',
-					'suppress_anchor' => true,
+					'post_id'               => (int) $post_id,
+					'post_name'             => 'page-faq-accordion',
+					'block_name'            => 'Page FAQs/Accordion',
+					'suppress_anchor'       => true,
+					'apply_motion_contract' => true,
 				)
 			);
-			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_faq', 'wide' );
+			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_faq', 'wide', false );
 			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
 		}
@@ -352,13 +362,14 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_basic',
 				$row,
 				array(
-					'post_id'         => (int) $post_id,
-					'post_name'       => 'page-basic-block',
-					'block_name'      => 'Page Basic Block',
-					'suppress_anchor' => true,
+					'post_id'               => (int) $post_id,
+					'post_name'             => 'page-basic-block',
+					'block_name'            => 'Page Basic Block',
+					'suppress_anchor'       => true,
+					'apply_motion_contract' => true,
 				)
 			);
-			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_basic', 'wide' );
+			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_basic', 'wide', false );
 			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
 		}
@@ -372,17 +383,19 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_grid',
 				$row,
 				array(
-					'post_id'         => (int) $post_id,
-					'post_name'       => 'page-content-grid',
-					'block_name'      => 'Page Content Grid',
-					'suppress_anchor' => true,
+					'post_id'               => (int) $post_id,
+					'post_name'             => 'page-content-grid',
+					'block_name'            => 'Page Content Grid',
+					'suppress_anchor'       => true,
+					'apply_motion_contract' => true,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
 				$markup,
 				$row,
 				'mrn_reusable_grid',
-				'wide'
+				'wide',
+				false
 			);
 			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
@@ -397,17 +410,19 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_cta',
 				$row,
 				array(
-					'post_id'         => (int) $post_id,
-					'post_name'       => 'page-cta-block',
-					'block_name'      => 'Page CTA Block',
-					'suppress_anchor' => true,
+					'post_id'               => (int) $post_id,
+					'post_name'             => 'page-cta-block',
+					'block_name'            => 'Page CTA Block',
+					'suppress_anchor'       => true,
+					'apply_motion_contract' => true,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
 				$markup,
 				$row,
 				'mrn_reusable_cta',
-				'wide'
+				'wide',
+				false
 			);
 			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
@@ -422,13 +437,14 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				'mrn_reusable_faq',
 				$row,
 				array(
-					'post_id'         => (int) $post_id,
-					'post_name'       => 'page-faq-block',
-					'block_name'      => 'Page FAQ Block',
-					'suppress_anchor' => true,
+					'post_id'               => (int) $post_id,
+					'post_name'             => 'page-faq-block',
+					'block_name'            => 'Page FAQ Block',
+					'suppress_anchor'       => true,
+					'apply_motion_contract' => true,
 				)
 			);
-			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_faq', 'wide' );
+			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_faq', 'wide', false );
 			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
 		}

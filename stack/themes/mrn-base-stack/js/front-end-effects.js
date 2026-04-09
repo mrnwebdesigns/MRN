@@ -7,6 +7,92 @@
 		return value.trim();
 	}
 
+	function normalizeMotionTarget( value ) {
+		if ( typeof value !== 'string' || '' === value.trim() ) {
+			return 'row';
+		}
+
+		return value.trim();
+	}
+
+	function getMotionTargetSelectorMap() {
+		// Shared front-end contract: these selectors are the stable targeting hooks
+		// for builder rows and reusable blocks. Do not rename/remove them in
+		// templates without updating this map, the implementation guide, and the
+		// motion-target smoke coverage.
+		return {
+			surface: [
+				'.mrn-layout-surface',
+				'.mrn-reusable-block__inner',
+				'.mrn-reusable-block',
+				'.mrn-hero__inner',
+				'.mrn-hero'
+			],
+			content: [
+				'.mrn-layout-content--text',
+				'.mrn-reusable-block__content',
+				'.mrn-hero__content',
+				'.mrn-reusable-block__inner',
+				'.mrn-ui__body'
+			],
+			media: [
+				'.mrn-ui__media',
+				'.mrn-reusable-block__media',
+				'.mrn-hero__media',
+				'.mrn-section-background-media'
+			],
+			header: [
+				'.mrn-ui__head',
+				'.mrn-card-row__head',
+				'.mrn-content-list-row__header',
+				'.mrn-hero__content'
+			],
+			items: [
+				'.mrn-ui__items',
+				'.mrn-card-row__grid',
+				'.mrn-content-list-row__items',
+				'.mrn-faq__items'
+			],
+			'left-column': [
+				'.mrn-two-column-split__column--left > .mrn-content-builder__row',
+				'.mrn-two-column-split__column--left .mrn-content-builder__row',
+				'.mrn-two-column-split__column--left'
+			],
+			'right-column': [
+				'.mrn-two-column-split__column--right > .mrn-content-builder__row',
+				'.mrn-two-column-split__column--right .mrn-content-builder__row',
+				'.mrn-two-column-split__column--right'
+			]
+		};
+	}
+
+	function findMotionTarget( sectionElement ) {
+		var target = normalizeMotionTarget( sectionElement.getAttribute( 'data-mrn-motion-target' ) );
+		var selectorMap = getMotionTargetSelectorMap();
+		var selectors = selectorMap[ target ] || [];
+		var match = null;
+
+		if ( 'row' === target || ! selectors.length ) {
+			return sectionElement;
+		}
+
+		selectors.some( function( selector ) {
+			if ( ! selector ) {
+				return false;
+			}
+
+			if ( sectionElement.matches && sectionElement.matches( selector ) ) {
+				match = sectionElement;
+				return true;
+			}
+
+			match = sectionElement.querySelector( selector );
+			return !! match;
+		} );
+
+		return match || sectionElement;
+	}
+
 	function getSurfaceTarget() {
 		return document.body;
 	}
@@ -69,14 +155,15 @@
 		}
 
 		motionSections.forEach( function( sectionElement ) {
+			var targetElement = findMotionTarget( sectionElement );
 			var activeClass = sectionElement.getAttribute( 'data-mrn-motion-class' ) || 'is-mrn-in-view';
 			var marginValue = normalizeMargin( sectionElement.getAttribute( 'data-mrn-motion-margin' ) || '-35% 0px -35% 0px' );
 
-			inView( sectionElement, function() {
-				sectionElement.classList.add( activeClass );
+			inView( targetElement, function() {
+				targetElement.classList.add( activeClass );
 
 				return function() {
-					sectionElement.classList.remove( activeClass );
+					targetElement.classList.remove( activeClass );
 				};
 			}, { margin: marginValue } );
 		} );
@@ -134,6 +221,10 @@
 	}
 
 	function findDarkScrollCardSurface( sectionElement ) {
+		if ( sectionElement.classList && sectionElement.classList.contains( 'mrn-layout-surface' ) ) {
+			return sectionElement;
+		}
+
 		return sectionElement.querySelector( '.mrn-layout-surface' ) || sectionElement;
 	}
 
@@ -161,21 +252,22 @@
 		}
 
 		motionSections.forEach( function( sectionElement ) {
-			var surfaceElement = findDarkScrollCardSurface( sectionElement );
-			var titleElements = Array.prototype.slice.call( sectionElement.querySelectorAll( 'h1, h2, h3, h4, h5, h6' ) );
-			var bodyTextElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-ui__text p' ) );
-			var labelElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-ui__label' ) );
-			var actionElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-ui__link--button, .mrn-hero__link, button' ) );
-			var imageElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-ui__media img' ) );
-			var targetBackground = getCssRgbVar( sectionElement, '--mrn-dark-scroll-card-bg-rgb', [ 15, 15, 21 ] );
-			var targetText = getCssRgbVar( sectionElement, '--mrn-dark-scroll-card-text-rgb', [ 245, 245, 245 ] );
-			var targetMuted = getCssRgbVar( sectionElement, '--mrn-dark-scroll-card-muted-rgb', [ 182, 190, 201 ] );
-			var targetButtonBackground = getCssRgbVar( sectionElement, '--mrn-dark-scroll-card-button-bg-rgb', [ 255, 255, 255 ] );
-			var targetButtonText = getCssRgbVar( sectionElement, '--mrn-dark-scroll-card-button-text-rgb', [ 17, 17, 17 ] );
-			var targetBorderAlpha = getCssNumberVar( sectionElement, '--mrn-dark-scroll-card-border-alpha', 0.12 );
-			var targetShadowAlpha = getCssNumberVar( sectionElement, '--mrn-dark-scroll-card-shadow-alpha', 0.35 );
-			var targetImageBrightness = getCssNumberVar( sectionElement, '--mrn-dark-scroll-card-image-brightness', 0.72 );
-			var targetImageSaturation = getCssNumberVar( sectionElement, '--mrn-dark-scroll-card-image-saturation', 0.85 );
+			var targetElement = findMotionTarget( sectionElement );
+			var surfaceElement = findDarkScrollCardSurface( targetElement );
+			var titleElements = Array.prototype.slice.call( targetElement.querySelectorAll( 'h1, h2, h3, h4, h5, h6' ) );
+			var bodyTextElements = Array.prototype.slice.call( targetElement.querySelectorAll( '.mrn-ui__text, .mrn-hero__text, .mrn-faq__answer, .mrn-content-list-row__intro' ) );
+			var labelElements = Array.prototype.slice.call( targetElement.querySelectorAll( '.mrn-ui__label, .mrn-hero__label' ) );
+			var actionElements = Array.prototype.slice.call( targetElement.querySelectorAll( '.mrn-ui__link--button, .mrn-hero__link, button' ) );
+			var imageElements = Array.prototype.slice.call( targetElement.querySelectorAll( 'img' ) );
+			var targetBackground = getCssRgbVar( surfaceElement, '--mrn-dark-scroll-card-bg-rgb', [ 15, 15, 21 ] );
+			var targetText = getCssRgbVar( surfaceElement, '--mrn-dark-scroll-card-text-rgb', [ 245, 245, 245 ] );
+			var targetMuted = getCssRgbVar( surfaceElement, '--mrn-dark-scroll-card-muted-rgb', [ 182, 190, 201 ] );
+			var targetButtonBackground = getCssRgbVar( surfaceElement, '--mrn-dark-scroll-card-button-bg-rgb', [ 255, 255, 255 ] );
+			var targetButtonText = getCssRgbVar( surfaceElement, '--mrn-dark-scroll-card-button-text-rgb', [ 17, 17, 17 ] );
+			var targetBorderAlpha = getCssNumberVar( surfaceElement, '--mrn-dark-scroll-card-border-alpha', 0.12 );
+			var targetShadowAlpha = getCssNumberVar( surfaceElement, '--mrn-dark-scroll-card-shadow-alpha', 0.35 );
+			var targetImageBrightness = getCssNumberVar( surfaceElement, '--mrn-dark-scroll-card-image-brightness', 0.72 );
+			var targetImageSaturation = getCssNumberVar( surfaceElement, '--mrn-dark-scroll-card-image-saturation', 0.85 );
 
 			window.Motion.scroll(
 				function( progress ) {

@@ -127,10 +127,23 @@ if ( isset( $accent_contract['classes'] ) && is_array( $accent_contract['classes
 	$classes = array_merge( $classes, $accent_contract['classes'] );
 }
 
+$motion_contract = function_exists( 'mrn_rbl_get_motion_contract' ) ? mrn_rbl_get_motion_contract( $fields, $context ) : array(
+	'classes'    => array(),
+	'attributes' => array(),
+);
+
+if ( isset( $motion_contract['classes'] ) && is_array( $motion_contract['classes'] ) ) {
+	$classes = array_merge( $classes, $motion_contract['classes'] );
+}
+
 $inline_styles = array();
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$inline_styles[] = '--mrn-content-list-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
+
+$section_attrs     = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
+$section_attrs     = function_exists( 'mrn_rbl_merge_attributes' ) ? mrn_rbl_merge_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+$section_attr_html = function_exists( 'mrn_rbl_get_html_attributes' ) ? mrn_rbl_get_html_attributes( $section_attrs ) : '';
 
 $list_tag        = 'ordered' === $list_style ? 'ol' : 'ul';
 $pagination_html = '';
@@ -145,7 +158,7 @@ if ( $show_pagination && $query->max_num_pages > 1 ) {
 		$base_url = home_url( '/' );
 	}
 
-	foreach ( $_GET as $query_key => $query_value ) {
+	foreach ( $_GET as $query_key => $query_value ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Preserves safe pagination query args from the current request.
 		$query_key = is_string( $query_key ) ? sanitize_key( $query_key ) : '';
 		if ( '' === $query_key || $query_key === $page_arg ) {
 			continue;
@@ -187,13 +200,7 @@ echo function_exists( 'mrn_rbl_get_anchor_markup' ) ? mrn_rbl_get_anchor_markup(
 	class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
 	data-block-id="<?php echo esc_attr( (string) $block_id ); ?>"
 	data-block-slug="<?php echo esc_attr( $block_slug ); ?>"
-	<?php if ( isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ) : ?>
-		<?php foreach ( $accent_contract['attributes'] as $attribute_name => $attribute_value ) : ?>
-			<?php if ( '' !== $attribute_name && '' !== $attribute_value ) : ?>
-				<?php echo ' ' . esc_attr( $attribute_name ) . '="' . esc_attr( $attribute_value ) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			<?php endif; ?>
-		<?php endforeach; ?>
-	<?php endif; ?>
+	<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 	<?php if ( $inline_styles !== array() ) : ?>
 		style="<?php echo esc_attr( implode( '; ', $inline_styles ) ); ?>"
 	<?php endif; ?>
@@ -228,7 +235,7 @@ echo function_exists( 'mrn_rbl_get_anchor_markup' ) ? mrn_rbl_get_anchor_markup(
 					?>
 					<?php
 					if ( $item_post instanceof WP_Post && function_exists( 'mrn_base_stack_render_content_list_item' ) ) {
-						echo mrn_base_stack_render_content_list_item(
+						echo mrn_base_stack_render_content_list_item( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared renderer returns escaped list-item markup.
 							$item_post,
 							array(
 								'display_mode'        => $display_mode,
@@ -239,7 +246,7 @@ echo function_exists( 'mrn_rbl_get_anchor_markup' ) ? mrn_rbl_get_anchor_markup(
 								'show_read_more'      => $show_read_more,
 								'read_more_label'     => $read_more_label,
 							)
-						); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						);
 					}
 					?>
 				<?php endwhile; ?>

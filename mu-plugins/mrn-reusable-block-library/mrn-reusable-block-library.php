@@ -3,7 +3,7 @@
  * Plugin Name: Reusable Block Library (MU)
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.11
+ * Version: 0.1.12
  */
 
 defined('ABSPATH') || exit;
@@ -517,6 +517,7 @@ function mrn_rbl_render_context(array $context): string {
     }
 
     ob_start();
+    // nosemgrep: semgrep.php-dynamic-include -- Template path is sanitized and allow-listed by mrn_rbl_locate_template().
     include $template;
     return (string) ob_get_clean();
 }
@@ -543,6 +544,70 @@ function mrn_rbl_get_anchor_markup(array $context): string {
         '<div id="%1$s" class="mrn-reusable-block__anchor" aria-hidden="true"></div>',
         esc_attr($anchor)
     );
+}
+
+/**
+ * Determine whether a render context is a true reusable-block post instance.
+ */
+function mrn_rbl_should_apply_motion_contract(array $context): bool {
+    return !empty($context['apply_motion_contract']) || (isset($context['post']) && $context['post'] instanceof WP_Post);
+}
+
+/**
+ * Build a motion contract for reusable-block post renders.
+ *
+ * @param array<string, mixed> $fields
+ * @param array<string, mixed> $context
+ * @return array{classes:array<int,string>,attributes:array<string,string>}
+ */
+function mrn_rbl_get_motion_contract(array $fields, array $context = array()): array {
+    if (!mrn_rbl_should_apply_motion_contract($context) || !function_exists('mrn_base_stack_get_motion_contract_for_settings')) {
+        return array(
+            'classes'    => array(),
+            'attributes' => array(),
+        );
+    }
+
+    return mrn_base_stack_get_motion_contract_for_settings($fields['motion_settings'] ?? array());
+}
+
+/**
+ * Merge reusable-block HTML attributes while preserving helper behavior when available.
+ *
+ * @param array<string, string> $base
+ * @param array<string, string> $extra
+ * @return array<string, string>
+ */
+function mrn_rbl_merge_attributes(array $base, array $extra): array {
+    if (function_exists('mrn_base_stack_merge_builder_attributes')) {
+        return mrn_base_stack_merge_builder_attributes($base, $extra);
+    }
+
+    return array_merge($base, $extra);
+}
+
+/**
+ * Convert reusable-block attributes into escaped HTML.
+ *
+ * @param array<string, string> $attributes
+ * @return string
+ */
+function mrn_rbl_get_html_attributes(array $attributes): string {
+    if (function_exists('mrn_base_stack_get_html_attributes')) {
+        return mrn_base_stack_get_html_attributes($attributes);
+    }
+
+    $chunks = array();
+
+    foreach ($attributes as $name => $value) {
+        if (!is_string($name) || '' === $name || !is_scalar($value)) {
+            continue;
+        }
+
+        $chunks[] = sprintf('%1$s="%2$s"', esc_attr($name), esc_attr((string) $value));
+    }
+
+    return implode(' ', $chunks);
 }
 
 /**
@@ -827,7 +892,9 @@ function mrn_rbl_filter_submenu_file($submenu_file): string {
         return $submenu_file;
     }
 
-    if ($screen->base === 'post' && isset($_GET['action']) && $_GET['action'] === 'add') {
+    $current_action = isset($_GET['action']) ? sanitize_key(wp_unslash((string) $_GET['action'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin UI state for submenu highlighting.
+
+    if ($screen->base === 'post' && 'add' === $current_action) {
         return 'post-new.php?post_type=' . $post_type;
     }
 
@@ -972,6 +1039,181 @@ function mrn_rbl_get_anchor_field(string $key, string $name = 'anchor', string $
             'width' => '50',
         ),
     );
+}
+
+/**
+ * Build the reusable-block Effects tab field definition.
+ *
+ * @return array<string, mixed>
+ */
+function mrn_rbl_get_effects_tab_field(string $key, string $label = 'Effects'): array {
+    if (function_exists('mrn_base_stack_get_effects_tab_field')) {
+        return mrn_base_stack_get_effects_tab_field($key, $label);
+    }
+
+    return array(
+        'key'       => $key,
+        'label'     => $label,
+        'name'      => '',
+        'type'      => 'tab',
+        'placement' => 'top',
+        'endpoint'  => 0,
+    );
+}
+
+/**
+ * Build the reusable-block motion group field definition.
+ *
+ * @return array<string, mixed>
+ */
+function mrn_rbl_get_motion_group_field(string $key, string $name = 'motion_settings', string $label = 'Motion Effects'): array {
+    if (function_exists('mrn_base_stack_get_motion_group_field')) {
+        return mrn_base_stack_get_motion_group_field($key, $name, $label);
+    }
+
+    return array(
+        'key'        => $key,
+        'label'      => $label,
+        'name'       => $name,
+        'type'       => 'group',
+        'layout'     => 'block',
+        'sub_fields' => array(),
+    );
+}
+
+/**
+ * Determine whether a field list already includes reusable-block motion settings.
+ *
+ * @param array<int, mixed> $fields
+ * @return bool
+ */
+function mrn_rbl_fields_have_motion_group(array $fields): bool {
+    foreach ($fields as $field) {
+        if (!is_array($field)) {
+            continue;
+        }
+
+        if (isset($field['name']) && 'motion_settings' === (string) $field['name']) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Determine whether a field list already includes top-level tabs.
+ *
+ * @param array<int, mixed> $fields
+ * @return bool
+ */
+function mrn_rbl_fields_have_tabs(array $fields): bool {
+    foreach ($fields as $field) {
+        if (is_array($field) && isset($field['type']) && 'tab' === (string) $field['type']) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Determine whether a field group targets a reusable-block post type.
+ *
+ * @param array<string, mixed> $field_group
+ * @return bool
+ */
+function mrn_rbl_should_auto_enhance_field_group(array $field_group): bool {
+    $locations = isset($field_group['location']) && is_array($field_group['location']) ? $field_group['location'] : array();
+
+    foreach ($locations as $location_group) {
+        if (!is_array($location_group)) {
+            continue;
+        }
+
+        foreach ($location_group as $rule) {
+            if (!is_array($rule)) {
+                continue;
+            }
+
+            $param = isset($rule['param']) ? (string) $rule['param'] : '';
+            $value = isset($rule['value']) ? sanitize_key((string) $rule['value']) : '';
+
+            if ('post_type' === $param && 0 === strpos($value, 'mrn_reusable_')) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Ensure reusable-block field groups always include shared effects controls.
+ *
+ * @param array<string, mixed> $field_group
+ * @return array<string, mixed>
+ */
+function mrn_rbl_with_effects_fields(array $field_group): array {
+    if (!mrn_rbl_should_auto_enhance_field_group($field_group)) {
+        return $field_group;
+    }
+
+    $fields = isset($field_group['fields']) && is_array($field_group['fields']) ? $field_group['fields'] : array();
+
+    if (mrn_rbl_fields_have_motion_group($fields)) {
+        return $field_group;
+    }
+
+    $group_key = isset($field_group['key']) ? sanitize_key((string) $field_group['key']) : 'mrn_reusable_group';
+    if (mrn_rbl_fields_have_tabs($fields)) {
+        $fields[] = mrn_rbl_get_effects_tab_field('field_' . $group_key . '_effects_tab_auto');
+    }
+    $fields[] = mrn_rbl_get_motion_group_field('field_' . $group_key . '_motion_settings_auto');
+
+    $field_group['fields'] = $fields;
+
+    return $field_group;
+}
+
+/**
+ * Reapply shared effect transforms to reusable-block field groups after registration.
+ *
+ * @return void
+ */
+function mrn_rbl_auto_enhance_local_field_groups(): void {
+    if (!function_exists('acf_get_local_field_groups') || !function_exists('acf_get_fields') || !function_exists('acf_add_local_field_group')) {
+        return;
+    }
+
+    $field_groups = acf_get_local_field_groups();
+    if (!is_array($field_groups)) {
+        return;
+    }
+
+    foreach ($field_groups as $field_group) {
+        if (!is_array($field_group)) {
+            continue;
+        }
+
+        $group_key = isset($field_group['key']) ? (string) $field_group['key'] : '';
+        if ('' === $group_key) {
+            continue;
+        }
+
+        $fields = acf_get_fields($group_key);
+        if (!is_array($fields)) {
+            continue;
+        }
+
+        $field_group['fields'] = $fields;
+
+        if (!mrn_rbl_should_auto_enhance_field_group($field_group)) {
+            continue;
+        }
+
+        acf_add_local_field_group(mrn_rbl_with_effects_fields($field_group));
+    }
 }
 
 /**
@@ -1301,6 +1543,8 @@ function mrn_rbl_register_acf_field_groups(): void {
                     'width' => '50',
                 ),
             ),
+            mrn_rbl_get_effects_tab_field('field_mrn_cta_effects_tab'),
+            mrn_rbl_get_motion_group_field('field_mrn_cta_motion_settings'),
         ),
         'location' => array(
             array(
@@ -1456,6 +1700,8 @@ function mrn_rbl_register_acf_field_groups(): void {
                     'width' => '50',
                 ),
             ),
+            mrn_rbl_get_effects_tab_field('field_mrn_basic_block_effects_tab'),
+            mrn_rbl_get_motion_group_field('field_mrn_basic_block_motion_settings'),
         ),
         'location' => array(
             array(
@@ -1625,6 +1871,8 @@ function mrn_rbl_register_acf_field_groups(): void {
                     'width' => '50',
                 ),
             ),
+            mrn_rbl_get_effects_tab_field('field_mrn_content_grid_effects_tab'),
+            mrn_rbl_get_motion_group_field('field_mrn_content_grid_motion_settings'),
         ),
         'location' => array(
             array(
@@ -1988,6 +2236,8 @@ function mrn_rbl_register_acf_field_groups(): void {
                     'width' => '50',
                 ),
             ),
+            mrn_rbl_get_effects_tab_field('field_mrn_reusable_content_lists_effects_tab'),
+            mrn_rbl_get_motion_group_field('field_mrn_reusable_content_lists_motion_settings'),
         ),
         'location' => array(
             array(
@@ -2117,6 +2367,8 @@ function mrn_rbl_register_acf_field_groups(): void {
                     'width' => '34',
                 ),
             ),
+            mrn_rbl_get_effects_tab_field('field_mrn_faq_effects_tab'),
+            mrn_rbl_get_motion_group_field('field_mrn_faq_motion_settings'),
         ),
         'location' => array(
             array(
@@ -2137,6 +2389,7 @@ function mrn_rbl_register_acf_field_groups(): void {
 
 }
 add_action('acf/init', 'mrn_rbl_register_acf_field_groups');
+add_action('acf/init', 'mrn_rbl_auto_enhance_local_field_groups', 100);
 
 /**
  * Check whether a post type belongs to the reusable block library.

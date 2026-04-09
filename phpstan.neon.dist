@@ -4,6 +4,8 @@ parameters:
     tmpDir: .tmp/phpstan
     bootstrapFiles:
         - phpstan-bootstrap.php
+    scanFiles:
+        - stack/themes/mrn-base-stack/functions.php
     parallel:
         maximumNumberOfProcesses: 4
     reportUnmatchedIgnoredErrors: false

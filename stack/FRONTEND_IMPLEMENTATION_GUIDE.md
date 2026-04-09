@@ -61,11 +61,14 @@ Default behavior:
 Builder authoring behavior:
 
 - Builder layouts now include a shared `Motion Effects` config group.
-- Editors can enable motion per layout row instead of hand-authoring data attributes.
+- Reusable blocks now include the same `Motion Effects` config group on their own edit screens.
+- Editors can enable motion per layout row or reusable block instead of hand-authoring data attributes.
+- MRN field-group registration now auto-injects these controls into future builder layouts and reusable-block field groups that follow the shared MRN registration pattern.
 - The editor UI is intentionally preset-driven:
   - `Enable Row Effects`
   - `Effect Style`
   - `Start Effect`
+  - `Apply To` for non-surface effects
   - `Surface Look` when relevant
   - `Effect Preset` when relevant
 - Current supported effects are:
@@ -129,11 +132,13 @@ Current builder output contract:
   - `data-mrn-motion-effect="active-class"`
   - `data-mrn-motion-class="is-mrn-in-view"`
   - `data-mrn-motion-margin="..."`
+  - `data-mrn-motion-target="row|surface|content|media|header|items|left-column|right-column"`
 - `Darken Card On Scroll` renders:
   - class: `mrn-motion-effect--dark-scroll-card`
   - `data-mrn-motion-effect="dark-scroll-card"`
   - `data-mrn-effect-preset="slug"` when a Site Styles preset is chosen
   - `data-mrn-motion-margin="..."`
+  - `data-mrn-motion-target="row|surface|content|media|header|items|left-column|right-column"`
 
 Class and attribute reference:
 
@@ -154,9 +159,74 @@ Class and attribute reference:
   - current builder-controlled value is `is-mrn-in-view`
 - `data-mrn-motion-margin`
   - in-view threshold for non-surface effects
+- `data-mrn-motion-target`
+  - tells the runtime which part of the row or reusable block should receive a non-surface effect
+  - current shared choices are `row`, `surface`, `content`, `media`, `header`, `items`, `left-column`, and `right-column`
 - `data-mrn-effect-preset`
   - names the Site Styles preset that should skin the effect
   - currently used by `Darken Card On Scroll`
+
+Protected selector contract:
+
+- The motion runtime depends on a shared structural selector contract. These classes are not cosmetic and should not be renamed or removed casually.
+- If a template refactor must change one of these hooks, the runtime selector map, implementation guide, and motion-target smoke cases must be updated in the same release.
+- Protected shared hooks currently include:
+  - content: `.mrn-layout-content--text`, `.mrn-reusable-block__content`, `.mrn-hero__content`, `.mrn-reusable-block__inner`, `.mrn-ui__body`
+  - media: `.mrn-ui__media`, `.mrn-reusable-block__media`, `.mrn-hero__media`, `.mrn-section-background-media`
+  - header: `.mrn-ui__head`, `.mrn-card-row__head`, `.mrn-content-list-row__header`, `.mrn-hero__content`
+  - items: `.mrn-ui__items`, `.mrn-card-row__grid`, `.mrn-content-list-row__items`, `.mrn-faq__items`
+  - left/right split shells: `.mrn-two-column-split__column--left`, `.mrn-two-column-split__column--right`
+
+Release QA helper:
+
+- Playwright smoke coverage can verify target-aware motion with `MRN_MOTION_TARGET_CASES`.
+- Pass it as a JSON array of cases with:
+  - `label`
+  - `path`
+  - `sectionSelector`
+  - `targetSelector`
+  - optional `nonTargetSelector`
+  - optional `expectedTarget`
+  - optional `activeClass`
+- Each case checks that the configured active class lands on the intended target element and not on the wrapper or optional non-target sibling.
+
+Example:
+
+```bash
+MRN_PLAYWRIGHT_BASE_URL="http://mrn-plugin-stack.local" \
+MRN_SAMPLE_PAGE_PATH="/sample-page/" \
+MRN_MOTION_TARGET_CASES='[
+  {
+    "label": "Content target",
+    "path": "/sample-page/",
+    "sectionSelector": "[data-mrn-motion-target=\"content\"]",
+    "targetSelector": ".mrn-ui__body",
+    "nonTargetSelector": ".mrn-ui__media",
+    "expectedTarget": "content",
+    "activeClass": "is-mrn-in-view"
+  },
+  {
+    "label": "Media target",
+    "path": "/sample-page/",
+    "sectionSelector": "[data-mrn-motion-target=\"media\"]",
+    "targetSelector": ".mrn-ui__media",
+    "nonTargetSelector": ".mrn-ui__body",
+    "expectedTarget": "media",
+    "activeClass": "is-mrn-in-view"
+  },
+  {
+    "label": "Items target",
+    "path": "/sample-page/",
+    "sectionSelector": "[data-mrn-motion-target=\"items\"]",
+    "targetSelector": ".mrn-ui__items",
+    "expectedTarget": "items",
+    "activeClass": "is-mrn-in-view"
+  }
+]' \
+npx playwright test tests/playwright/smoke.spec.js --project=chromium
+```
+
+If a site-specific child theme or override changes the internal markup, update the selectors in the test case to match the actual rendered structure for that site.
 
 ## Site Styles Effect Presets
 

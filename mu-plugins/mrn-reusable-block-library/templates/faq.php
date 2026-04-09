@@ -60,19 +60,26 @@ if (!empty($accent_contract['classes']) && is_array($accent_contract['classes'])
     $classes = array_merge($classes, $accent_contract['classes']);
 }
 
+$motion_contract = function_exists('mrn_rbl_get_motion_contract') ? mrn_rbl_get_motion_contract($fields, $context) : array(
+    'classes'    => array(),
+    'attributes' => array(),
+);
+
+if (!empty($motion_contract['classes']) && is_array($motion_contract['classes'])) {
+    $classes = array_merge($classes, $motion_contract['classes']);
+}
+
+$section_attrs = !empty($accent_contract['attributes']) && is_array($accent_contract['attributes']) ? $accent_contract['attributes'] : array();
+$section_attrs = function_exists('mrn_rbl_merge_attributes') ? mrn_rbl_merge_attributes($section_attrs, isset($motion_contract['attributes']) && is_array($motion_contract['attributes']) ? $motion_contract['attributes'] : array()) : array_merge($section_attrs, isset($motion_contract['attributes']) && is_array($motion_contract['attributes']) ? $motion_contract['attributes'] : array());
+$section_attr_html = function_exists('mrn_rbl_get_html_attributes') ? mrn_rbl_get_html_attributes($section_attrs) : '';
+
 echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($context) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section
     class="<?php echo esc_attr(implode(' ', $classes)); ?>"
     data-block-id="<?php echo esc_attr((string) $post_id); ?>"
     data-block-slug="<?php echo esc_attr($post_name); ?>"
-    <?php if (!empty($accent_contract['attributes']) && is_array($accent_contract['attributes'])) : ?>
-        <?php foreach ($accent_contract['attributes'] as $attribute_name => $attribute_value) : ?>
-            <?php if ($attribute_name !== '' && $attribute_value !== '') : ?>
-                <?php echo ' ' . esc_attr($attribute_name) . '="' . esc_attr($attribute_value) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-            <?php endif; ?>
-        <?php endforeach; ?>
-    <?php endif; ?>
+    <?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
     <?php if ($inline_styles !== array()) : ?>
         style="<?php echo esc_attr(implode('; ', $inline_styles)); ?>"
     <?php endif; ?>

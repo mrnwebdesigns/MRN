@@ -1,5 +1,13 @@
 # Stack Changelog
 
+## 2026.04.09-effects-targets
+- Expanded `mrn-base-stack` to `1.1.18`.
+- Expanded `mrn-reusable-block-library` to `0.1.12`.
+- Added shared `Apply To` targeting for non-surface motion effects so rows can direct effects to media, content, headings, item grids, or left/right sub-layout shells instead of only the outer row wrapper.
+- Added reusable-block-native `Motion Effects` controls so saved reusable CTAs, basic blocks, FAQs, content grids, and content lists can carry their own motion contract when rendered outside or inside the page builder.
+- Moved the effect-field injection into automatic field-group enhancement so future MRN flexible-content layouts and `mrn_reusable_*` field groups inherit motion controls without manual per-layout wiring.
+- Updated the Motion runtime and frontend guide to honor the new `data-mrn-motion-target` contract while preserving the existing row-level defaults.
+
 ## 2026.04.06-neutral-layout-baseline
 - Expanded `mrn-base-stack` to `1.1.17`.
 - Expanded `mrn-reusable-block-library` to `0.1.11`.

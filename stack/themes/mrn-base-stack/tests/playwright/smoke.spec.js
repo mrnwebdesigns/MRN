@@ -63,6 +63,88 @@ function expectNoPageIssues(issues, contextLabel) {
 	expect.soft(issues.failedRequests, `${contextLabel} failed requests`).toEqual([]);
 }
 
+function getMotionTargetCases() {
+	const rawCases = process.env.MRN_MOTION_TARGET_CASES;
+
+	if (! rawCases) {
+		return [];
+	}
+
+	try {
+		const parsedCases = JSON.parse(rawCases);
+
+		if (! Array.isArray(parsedCases)) {
+			return [];
+		}
+
+		return parsedCases
+			.filter((testCase) => testCase && typeof testCase === 'object')
+			.map((testCase) => ({
+				label: typeof testCase.label === 'string' && testCase.label.trim()
+					? testCase.label.trim()
+					: 'configured motion target case',
+				path: typeof testCase.path === 'string' && testCase.path.trim()
+					? testCase.path.trim()
+					: (process.env.MRN_SAMPLE_PAGE_PATH || '/sample-page/'),
+				sectionSelector: typeof testCase.sectionSelector === 'string' ? testCase.sectionSelector.trim() : '',
+				targetSelector: typeof testCase.targetSelector === 'string' ? testCase.targetSelector.trim() : '',
+				nonTargetSelector: typeof testCase.nonTargetSelector === 'string' ? testCase.nonTargetSelector.trim() : '',
+				expectedTarget: typeof testCase.expectedTarget === 'string' ? testCase.expectedTarget.trim() : '',
+				activeClass: typeof testCase.activeClass === 'string' && testCase.activeClass.trim()
+					? testCase.activeClass.trim()
+					: 'is-mrn-in-view',
+			}))
+			.filter((testCase) => testCase.sectionSelector && testCase.targetSelector);
+	} catch (error) {
+		console.warn(`Unable to parse MRN_MOTION_TARGET_CASES: ${error.message}`);
+		return [];
+	}
+}
+
+async function expectMotionTargetClass(locator, activeClass, shouldBeApplied, contextLabel) {
+	await expect.poll(
+		async () => locator.evaluate((element, className) => element.classList.contains(className), activeClass),
+		{
+			message: `${contextLabel} expected class "${activeClass}" application state to be ${shouldBeApplied}`,
+		}
+	).toBe(shouldBeApplied);
+}
+
+async function expectMotionTargetCase(page, testCase) {
+	const issues = await collectPageIssues(page);
+	const section = page.locator(testCase.sectionSelector).first();
+
+	await page.goto(testCase.path, { waitUntil: 'networkidle' });
+	await expect(section, `${testCase.label} section`).toBeVisible();
+
+	if (testCase.expectedTarget) {
+		await expect(section, `${testCase.label} motion target attribute`).toHaveAttribute('data-mrn-motion-target', testCase.expectedTarget);
+	}
+
+	const target = section.locator(testCase.targetSelector).first();
+	await expect(target, `${testCase.label} target`).toBeVisible();
+	await target.scrollIntoViewIfNeeded();
+	await page.waitForTimeout(250);
+	await expectMotionTargetClass(target, testCase.activeClass, true, `${testCase.label} target`);
+
+	const sectionMatchesTarget = await section.evaluate(
+		(element, selector) => element.matches(selector),
+		testCase.targetSelector
+	);
+
+	if (! sectionMatchesTarget) {
+		await expectMotionTargetClass(section, testCase.activeClass, false, `${testCase.label} wrapper`);
+	}
+
+	if (testCase.nonTargetSelector) {
+		const nonTarget = section.locator(testCase.nonTargetSelector).first();
+		await expect(nonTarget, `${testCase.label} non-target`).toBeVisible();
+		await expectMotionTargetClass(nonTarget, testCase.activeClass, false, `${testCase.label} non-target`);
+	}
+
+	expectNoPageIssues(issues, testCase.label);
+}
+
 async function loginToWordPressAdmin(page) {
 	await page.goto('/wp-login.php', { waitUntil: 'domcontentloaded' });
 	await page.getByLabel(/username or email address/i).fill(process.env.MRN_WP_ADMIN_USER);
@@ -120,6 +202,8 @@ async function expectStickyToolbarLayout(page, toolbarSelector, contentSelector,
 }
 
 test.describe('MRN stack site smoke QA', () => {
+	const motionTargetCases = getMotionTargetCases();
+
 	test('home page loads without browser/runtime errors', async ({ page, baseURL }) => {
 		const issues = await collectPageIssues(page);
 
@@ -147,6 +231,12 @@ test.describe('MRN stack site smoke QA', () => {
 
 		expectNoPageIssues(issues, 'Sample page');
 	});
+
+	for (const testCase of motionTargetCases) {
+		test(`motion target applies effect to configured target: ${testCase.label}`, async ({ page }) => {
+			await expectMotionTargetCase(page, testCase);
+		});
+	}
 
 	test.describe('admin smoke coverage', () => {
 		test.describe.configure({ mode: 'serial' });
