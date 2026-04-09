@@ -33,6 +33,10 @@ if (!function_exists('mrn_sticky_toolbar_universal_css')) {
 .mrn-universal-sticky-toolbar .mrn-usb-meta {display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 auto}
 .mrn-universal-sticky-toolbar .mrn-usb-title {font-weight:600;color:#f6f7f7;white-space:nowrap}
 .mrn-universal-sticky-toolbar .mrn-usb-actions {display:flex;align-items:center;gap:8px;margin-left:auto;flex:0 0 auto}
+#wpadminbar{z-index:2147483001 !important}
+#wpadminbar .ab-sub-wrapper,
+#wpadminbar ul li:hover > .ab-sub-wrapper,
+#wpadminbar ul li.hover > .ab-sub-wrapper{z-index:2147483002 !important}
 @media (max-width: 782px) {
   .mrn-universal-sticky-toolbar {top:46px;flex-wrap:wrap}
 }
@@ -387,6 +391,14 @@ if (!function_exists('mrn_sticky_toolbar_render_css')) {
 			border-radius: 0;
 			background: #1D2327;
 			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+		}
+		#wpadminbar {
+			z-index: 2147483001 !important;
+		}
+		#wpadminbar .ab-sub-wrapper,
+		#wpadminbar ul li:hover > .ab-sub-wrapper,
+		#wpadminbar ul li.hover > .ab-sub-wrapper {
+			z-index: 2147483002 !important;
 		}
 		<?php echo esc_html($folded_selector); ?> {
 			--mrn-toolbar-left: 56px;
