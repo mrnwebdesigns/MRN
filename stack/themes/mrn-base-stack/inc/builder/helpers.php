@@ -137,6 +137,135 @@ add_filter( 'acf/prepare_field/key=field_mrn_content_lists_post_type', 'mrn_base
 add_filter( 'acf/prepare_field/name=list_post_type', 'mrn_base_stack_load_content_list_post_type_field_choices' );
 
 /**
+ * Get the capability required to view Effects controls in builder/admin UIs.
+ *
+ * Advanced Menu Editor can grant this custom capability to non-admin roles
+ * that should retain access to Effects tabs and motion settings.
+ *
+ * @return string
+ */
+function mrn_base_stack_get_effects_controls_capability() {
+	$capability = apply_filters( 'mrn_base_stack_effects_controls_capability', 'layout_effects' );
+
+	if ( ! is_string( $capability ) || '' === $capability ) {
+		return 'layout_effects';
+	}
+
+	return sanitize_key( $capability );
+}
+
+/**
+ * Determine whether the current user can view Effects controls.
+ *
+ * Access is controlled by a dedicated custom capability so Advanced Menu Editor
+ * can manage it in the Roles screen.
+ *
+ * @return bool
+ */
+function mrn_base_stack_current_user_can_manage_effects_controls() {
+	$capability = mrn_base_stack_get_effects_controls_capability();
+
+	return current_user_can( $capability );
+}
+
+/**
+ * Ensure the Effects capability exists on the Administrator role and remove prior slugs.
+ *
+ * This seeds the capability into WordPress role data so Advanced Menu Editor
+ * can expose it as a real permission on the Roles screen.
+ *
+ * @return void
+ */
+function mrn_base_stack_register_effects_controls_capability() {
+	$administrator = get_role( 'administrator' );
+
+	if ( ! $administrator instanceof WP_Role ) {
+		return;
+	}
+
+	$capability = mrn_base_stack_get_effects_controls_capability();
+
+	if ( ! $administrator->has_cap( $capability ) ) {
+		$administrator->add_cap( $capability );
+	}
+
+	$roles = wp_roles();
+
+	if ( ! $roles instanceof WP_Roles || ! is_array( $roles->role_objects ) ) {
+		return;
+	}
+
+	foreach ( $roles->role_objects as $role ) {
+		if ( ! $role instanceof WP_Role ) {
+			continue;
+		}
+
+		if ( $role->has_cap( 'mrn_manage_effects_controls' ) ) {
+			$role->remove_cap( 'mrn_manage_effects_controls' );
+		}
+
+		if ( $role->has_cap( 'mrn_layout_blocks_effects_controls' ) ) {
+			$role->remove_cap( 'mrn_layout_blocks_effects_controls' );
+		}
+	}
+}
+add_action( 'init', 'mrn_base_stack_register_effects_controls_capability' );
+
+/**
+ * Hide shared Effects controls from users who do not have the required capability.
+ *
+ * @param array<string, mixed>|mixed $field ACF field definition.
+ * @return array<string, mixed>|false|mixed
+ */
+function mrn_base_stack_prepare_effects_fields_for_permissions( $field ) {
+	if ( ! is_array( $field ) || mrn_base_stack_current_user_can_manage_effects_controls() ) {
+		return $field;
+	}
+
+	$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	$field_name  = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+	$field_key   = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
+	$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+	$is_effects_tab  = 'tab' === $field_type && 'effects' === $field_label && false !== strpos( $field_key, 'effects_tab' );
+	$is_motion_group = 'group' === $field_type && 'motion_settings' === $field_name;
+
+	if ( $is_effects_tab || $is_motion_group ) {
+		return false;
+	}
+
+	return $field;
+}
+add_filter( 'acf/prepare_field', 'mrn_base_stack_prepare_effects_fields_for_permissions', 15 );
+
+/**
+ * Preserve existing motion settings when an unauthorized user submits Effects data.
+ *
+ * This enforces the capability at save time in addition to hiding the fields in
+ * the editor UI.
+ *
+ * @param mixed                $value Submitted ACF value.
+ * @param int|string           $post_id ACF object identifier.
+ * @param array<string, mixed> $field ACF field definition.
+ * @return mixed
+ */
+function mrn_base_stack_enforce_effects_controls_capability_on_save( $value, $post_id, array $field ) {
+	if ( mrn_base_stack_current_user_can_manage_effects_controls() ) {
+		return $value;
+	}
+
+	if ( ! function_exists( 'get_field' ) ) {
+		return false;
+	}
+
+	$field_name   = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : 'motion_settings';
+	$stored_value = get_field( $field_name, $post_id, false );
+
+	return false === $stored_value ? false : $stored_value;
+}
+add_filter( 'acf/update_value/name=motion_settings', 'mrn_base_stack_enforce_effects_controls_capability_on_save', 20, 3 );
+
+/**
  * Shared list-style choices for query-driven builder layouts.
  *
  * @return array<string, string>

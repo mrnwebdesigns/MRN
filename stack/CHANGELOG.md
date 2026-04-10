@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.04.10-layout-effects-permissions
+- Expanded `mrn-base-stack` to `1.1.19`.
+- Added a shared `layout_effects` capability that controls visibility of builder and reusable-block `Effects` tabs through Advanced Menu Editor role permissions.
+- Enforced that same `layout_effects` capability at ACF save time so unauthorized users cannot change `motion_settings` by submitting hidden field data directly.
+- Cleaned up the two earlier Effects-capability slugs from stored role records so the stack exposes one canonical permission in AME.
+
 ## 2026.04.09-effects-targets
 - Expanded `mrn-base-stack` to `1.1.18`.
 - Expanded `mrn-reusable-block-library` to `0.1.12`.
