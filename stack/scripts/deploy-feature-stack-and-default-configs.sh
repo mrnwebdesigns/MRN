@@ -141,6 +141,45 @@ run_rsync() {
 	rsync "${RSYNC_FLAGS[@]}" "$@" "${source}" "${destination}"
 }
 
+run_remote() {
+	local command="$1"
+	ssh "${SSH_HOST}" "${command}"
+}
+
+normalize_remote_tree_permissions() {
+	local path="$1"
+	local label="$2"
+	local user_filter="${3:-}"
+	local find_prefix="find '${path}'"
+
+	if [[ -n "${user_filter}" ]]; then
+		find_prefix+=" -user '${user_filter}'"
+	fi
+
+	echo "Normalizing ${label} permissions..."
+	run_remote "${find_prefix} -type d -exec chmod 755 {} +"
+	run_remote "${find_prefix} -type f -exec chmod 644 {} +"
+}
+
+verify_remote_tree_file_modes() {
+	local path="$1"
+	local label="$2"
+	local user_filter="${3:-}"
+	local find_prefix="find '${path}'"
+	local out_of_spec=""
+
+	if [[ -n "${user_filter}" ]]; then
+		find_prefix+=" -user '${user_filter}'"
+	fi
+
+	out_of_spec="$(run_remote "${find_prefix} -type f ! -perm 644 -print | head -n 20" | tr -d '\r')"
+	if [[ -n "${out_of_spec}" ]]; then
+		echo "ERROR: ${label} still has files that are not mode 644." >&2
+		echo "${out_of_spec}" >&2
+		return 1
+	fi
+}
+
 resolve_live_site_theme_slug() {
 	printf '%s' "${LIVE_SITE_THEME_SLUG}"
 }
@@ -200,30 +239,25 @@ for wrapper in "${LOCAL_STACK_MU_DIR}"/mrn-*.php; do
 done
 
 if [[ "${DRY_RUN}" -eq 0 ]]; then
-	ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/themes/mrn-base-stack' -type d -exec chmod 755 {} +"
-	ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/themes/mrn-base-stack' -type f -exec chmod 644 {} +"
-	ssh "${SSH_HOST}" "find '${LIVE_SITE_THEME_DIR}' -user '${REMOTE_SYNC_USER}' -type d -exec chmod 755 {} +"
-	ssh "${SSH_HOST}" "find '${LIVE_SITE_THEME_DIR}' -user '${REMOTE_SYNC_USER}' -type f -exec chmod 644 {} +"
-	ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/shared' -type d -exec chmod 755 {} +"
-	ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/shared' -type f -exec chmod 644 {} +"
-	ssh "${SSH_HOST}" "find '${LIVE_SITE_ROOT}/wp-content/shared' -user '${REMOTE_SYNC_USER}' -type d -exec chmod 755 {} +"
-	ssh "${SSH_HOST}" "find '${LIVE_SITE_ROOT}/wp-content/shared' -user '${REMOTE_SYNC_USER}' -type f -exec chmod 644 {} +"
+	normalize_remote_tree_permissions "${STACK_ROOT_REMOTE}/themes/mrn-base-stack" "stack theme"
+	normalize_remote_tree_permissions "${LIVE_SITE_THEME_DIR}" "live theme" "${REMOTE_SYNC_USER}"
+	normalize_remote_tree_permissions "${STACK_ROOT_REMOTE}/shared" "stack shared runtime"
+	normalize_remote_tree_permissions "${LIVE_SITE_ROOT}/wp-content/shared" "live shared runtime" "${REMOTE_SYNC_USER}"
+	normalize_remote_tree_permissions "${STACK_ROOT_REMOTE}/mu-plugins" "stack mu-plugins"
+	normalize_remote_tree_permissions "${LIVE_SITE_ROOT}/wp-content/mu-plugins" "live mu-plugins" "${REMOTE_SYNC_USER}"
 
-	for slug in "${MU_PLUGIN_DIRS[@]}"; do
-		ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/mu-plugins/${slug}' -type d -exec chmod 755 {} +"
-		ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/mu-plugins/${slug}' -type f -exec chmod 644 {} +"
-		ssh "${SSH_HOST}" "find '${LIVE_SITE_ROOT}/wp-content/mu-plugins/${slug}' -user '${REMOTE_SYNC_USER}' -type d -exec chmod 755 {} +"
-		ssh "${SSH_HOST}" "find '${LIVE_SITE_ROOT}/wp-content/mu-plugins/${slug}' -user '${REMOTE_SYNC_USER}' -type f -exec chmod 644 {} +"
-	done
-
-	ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/mu-plugins' -maxdepth 1 -name 'mrn-*.php' -type f -exec chmod 644 {} +"
-	ssh "${SSH_HOST}" "find '${LIVE_SITE_ROOT}/wp-content/mu-plugins' -maxdepth 1 -user '${REMOTE_SYNC_USER}' -name 'mrn-*.php' -type f -exec chmod 644 {} +"
+	verify_remote_tree_file_modes "${STACK_ROOT_REMOTE}/themes/mrn-base-stack" "stack theme"
+	verify_remote_tree_file_modes "${LIVE_SITE_THEME_DIR}" "live theme" "${REMOTE_SYNC_USER}"
+	verify_remote_tree_file_modes "${STACK_ROOT_REMOTE}/shared" "stack shared runtime"
+	verify_remote_tree_file_modes "${LIVE_SITE_ROOT}/wp-content/shared" "live shared runtime" "${REMOTE_SYNC_USER}"
+	verify_remote_tree_file_modes "${STACK_ROOT_REMOTE}/mu-plugins" "stack mu-plugins"
+	verify_remote_tree_file_modes "${LIVE_SITE_ROOT}/wp-content/mu-plugins" "live mu-plugins" "${REMOTE_SYNC_USER}"
 
 	if [[ "${LIVE_SITE_ACTIVE_STYLESHEET}" != "${LIVE_SITE_THEME_SLUG}" ]]; then
-		ssh "${SSH_HOST}" "wp theme activate '${LIVE_SITE_THEME_SLUG}' --path='${LIVE_SITE_ROOT}'" >/dev/null
+		run_remote "wp theme activate '${LIVE_SITE_THEME_SLUG}' --path='${LIVE_SITE_ROOT}'" >/dev/null
 	fi
 
-	ssh "${SSH_HOST}" "cd '${LIVE_SITE_ROOT}' && wp option get stylesheet --path='${LIVE_SITE_ROOT}' && printf '\n---\n' && wp theme list --path='${LIVE_SITE_ROOT}' --format=table 2>/dev/null | grep -E 'name|${LIVE_SITE_THEME_SLUG}|mrn-base-stack'"
+	run_remote "cd '${LIVE_SITE_ROOT}' && wp option get stylesheet --path='${LIVE_SITE_ROOT}' && printf '\n---\n' && wp theme list --path='${LIVE_SITE_ROOT}' --format=table 2>/dev/null | grep -E 'name|${LIVE_SITE_THEME_SLUG}|mrn-base-stack'"
 fi
 
 echo "Feature deploy sync completed."
