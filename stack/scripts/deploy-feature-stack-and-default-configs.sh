@@ -218,7 +218,10 @@ if [[ "${DRY_RUN}" -eq 0 ]]; then
 
 	ssh "${SSH_HOST}" "find '${STACK_ROOT_REMOTE}/mu-plugins' -maxdepth 1 -name 'mrn-*.php' -type f -exec chmod 644 {} +"
 	ssh "${SSH_HOST}" "find '${LIVE_SITE_ROOT}/wp-content/mu-plugins' -maxdepth 1 -user '${REMOTE_SYNC_USER}' -name 'mrn-*.php' -type f -exec chmod 644 {} +"
-	ssh "${SSH_HOST}" "wp theme activate '${LIVE_SITE_THEME_SLUG}' --path='${LIVE_SITE_ROOT}'" >/dev/null
+
+	if [[ "${LIVE_SITE_ACTIVE_STYLESHEET}" != "${LIVE_SITE_THEME_SLUG}" ]]; then
+		ssh "${SSH_HOST}" "wp theme activate '${LIVE_SITE_THEME_SLUG}' --path='${LIVE_SITE_ROOT}'" >/dev/null
+	fi
 
 	ssh "${SSH_HOST}" "cd '${LIVE_SITE_ROOT}' && wp option get stylesheet --path='${LIVE_SITE_ROOT}' && printf '\n---\n' && wp theme list --path='${LIVE_SITE_ROOT}' --format=table 2>/dev/null | grep -E 'name|${LIVE_SITE_THEME_SLUG}|mrn-base-stack'"
 fi
