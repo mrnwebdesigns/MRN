@@ -16,7 +16,8 @@ function mrn_base_stack_register_acf_field_groups() {
 	}
 
 	acf_add_local_field_group(
-		array(
+		mrn_base_stack_with_effects_tabs(
+			array(
 			'key'                   => 'group_mrn_hero_builder',
 			'title'                 => 'Hero',
 			'menu_order'            => -10,
@@ -304,11 +305,13 @@ function mrn_base_stack_register_acf_field_groups() {
 			'style'                 => 'default',
 			'label_placement'       => 'top',
 			'instruction_placement' => 'label',
+			)
 		)
 	);
 
 	acf_add_local_field_group(
-		array(
+		mrn_base_stack_with_effects_tabs(
+			array(
 			'key'                   => 'group_mrn_content_builder',
 			'title'                 => 'Content',
 			'fields'                => array(
@@ -2524,6 +2527,7 @@ function mrn_base_stack_register_acf_field_groups() {
 			'active'                => true,
 			'description'           => 'Universal starter content builder for posts and pages.',
 			'show_in_rest'          => 1,
+			)
 		)
 	);
 
@@ -2536,7 +2540,8 @@ function mrn_base_stack_register_acf_field_groups() {
 	}
 
 	acf_add_local_field_group(
-		array(
+		mrn_base_stack_with_effects_tabs(
+			array(
 			'key'                   => 'group_mrn_after_content_builder',
 			'title'                 => 'After Content',
 			'fields'                => array(
@@ -2559,6 +2564,7 @@ function mrn_base_stack_register_acf_field_groups() {
 			'active'                => true,
 			'description'           => 'Secondary flexible-content area that renders after the main Content builder.',
 			'show_in_rest'          => 1,
+			)
 		)
 	);
 }
