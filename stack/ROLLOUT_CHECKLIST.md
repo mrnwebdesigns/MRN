@@ -31,7 +31,13 @@ Perfect `100%` parity should not be assumed unless you also verify live config, 
 git -C /Users/khofmeyer/Development/MRN status --short
 ```
 
-2. Confirm the release targets you expect to ship.
+2. Confirm the exact approved release state you expect to ship.
+
+- Record the branch and exact commit SHA you are deploying.
+- If the approved release state is the current working tree, record whether local is ahead of `origin/main` before you touch live.
+- Do not assume the pushed remote is the approved release state unless you have verified that explicitly.
+
+3. Confirm the release targets you expect to ship.
 
 Examples:
 
@@ -42,7 +48,7 @@ Examples:
   - `/Users/khofmeyer/Development/MRN/stack/manifests/themes.txt`
   - `/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt`
 
-3. Confirm whether your change touches:
+4. Confirm whether your change touches:
 
 - theme only
 - MU plugins
@@ -96,6 +102,12 @@ Run these from the repo root unless noted otherwise.
 /Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh
 ```
 
+Interpret this one carefully:
+
+- A pre-deploy failure on packaged-theme parsing or remote shared/runtime checks is a real blocker.
+- After a theme version bump, a pre-deploy failure that is only the live theme version being older than local is expected until rollout.
+- Re-run the same command post-deploy and require a full pass there.
+
 Do not roll out while any of the above is red unless you have an explicit exception and know why.
 
 ## Deploy Path Decision
@@ -131,6 +143,13 @@ Examples:
 - `mrn-seo-helper`
 
 For these, use the normal plugin package/install flow and then verify the installed live version with WP-CLI.
+
+Current stack-standard-plugin path:
+
+1. Rebuild the local zip artifact in `/Users/khofmeyer/Development/MRN/releases/plugins/`.
+2. Sync that zip to `/home/mrndev-stack-manager/stack/packages/<plugin>.zip`.
+3. If the plugin is active on `default-configs.mrndev.io`, run `wp plugin install /home/mrndev-stack-manager/stack/packages/<plugin>.zip --force --activate --path=/home/default-configs-stack/htdocs/default-configs.mrndev.io`.
+4. Verify the resulting live version with `wp plugin list`.
 
 ## Deploy Checklist
 
@@ -222,6 +241,14 @@ For `default-configs.mrndev.io`, prefer both:
 - a WP-CLI verification
 - a browser/manual sanity pass
 
+### Ownership / Mode Spot Checks
+
+If the deploy path included live file sync plus `chmod` or other ownership-sensitive normalization:
+
+1. Check representative changed files explicitly with `stat`, not only `find`.
+2. Confirm they landed with the expected owner and readable mode.
+3. If one file still shows an unexpected mode after the broad normalization pass, fix that exact file and re-verify before calling the rollout complete.
+
 ## Parity Checklist
 
 Use this when the goal is "as close to local parity as practical."
@@ -255,8 +282,10 @@ Watch for these every time:
 
 4. Config drift
    AME or exported option payloads can differ from local expectations even when files match.
+   If a canonical AME export is revised again during the same day or thread, overwrite both the active `ame-config-container.json` and the matching dated snapshot, rerun the local import smoke plus roles follow-up verification, rebuild any stack release bundle that includes the payload, and re-sync the server copy before calling the rollout done.
 
 5. Environment drift
+   The approved release may be a local commit that has not been pushed yet. Record the exact SHA in rollout notes so live state can be traced back unambiguously.
    PHP, cron, cache, or plugin runtime behavior can differ from local even with matching code.
 
 ## Rollout Is Done When

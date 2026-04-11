@@ -47,6 +47,12 @@ The settings page allows editors/developers to manage:
 - dark scroll card motion presets
 - optional accent spacing overrides
 
+Implementation note for dynamic admin rows:
+
+- Site Colors, Graphic Elements, and Motion Presets must keep unique row indexes across add/remove cycles before save.
+- Do not derive the next posted row index from the current visible row count after removals.
+- Use a monotonic counter so submitted array keys stay unique and rows do not overwrite each other in `$_POST`.
+
 ## Data Model
 
 Stored options include:
@@ -160,6 +166,7 @@ Motion preset helpers:
 - This is a stack MU plugin.
 - It rolls out through stack MU source sync.
 - It is part of the stack baseline.
+- Use `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-feature-stack-and-default-configs.sh` for stack rollout, and prefer a `--dry-run` first when you need to inspect the broader sync surface.
 - Current packaged baseline in memory: `0.1.2`
 
 ## Risks / Gotchas
@@ -167,3 +174,4 @@ Motion preset helpers:
 - Do not treat Site Styles as “just an admin page.”
 - If themes hardcode duplicate color systems instead of using Site Styles, token drift will follow.
 - Accent behavior should stay shared and contract-driven, not recreated differently in each template.
+- Admin row-builder regressions can silently drop saved rows if posted array keys collide, so repeat add/remove/save verification when changing the settings UI.

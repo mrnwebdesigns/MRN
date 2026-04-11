@@ -20,6 +20,8 @@ Core architecture rules:
 Critical constraints:
 - Do NOT break existing builder behavior
 - Do NOT break shared theme hooks (CSS classes, variables, data attributes)
+- Treat site updates as stack updates, not plugin-only swaps
+- Future sites should use a child theme for site-specific styling and branding
 - Always assume changes can affect multiple system areas
 - Prefer existing helpers/contracts over new logic
 
@@ -30,6 +32,14 @@ Working approach:
   1. what part of the system is being changed
   2. what dependencies might be affected
   3. the minimal safe change
+- For Media Library folder drag/drop regressions, verify browser and user-session state before changing stack code. Firefox failures can reproduce across multiple media-folder plugins even when Chrome/Safari work, and a saved local `View Admin As` override on the `admin` user can block manual Media folder drag/drop until cleared.
+
+Deployment habits to preserve:
+- Record the exact approved release SHA before deploy, even when the approved release is a local commit that is ahead of `origin/main`
+- For live site deploys, resolve the site owner first and use the emitted site-owner SSH verify command before any fallback access path
+- Use direct site-owner writes for live site refreshes; prefer the explicit `<site-user>@mrndev-site-owner` form when a helper needs a direct SSH host
+- For Updraft preflight backups, run a full `plugins,themes,uploads,others` plus database backup and only normalize malformed placeholder `0` or empty-array values if they reappear
+- After live file sync plus chmod normalization, run `stat` on representative changed files and re-fix any unexpected mode before calling the deploy complete
 
 If unclear:
 - ask before making large or cross-system changes

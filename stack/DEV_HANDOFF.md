@@ -56,6 +56,19 @@ Important directories:
 - `releases/`
   - build artifacts only, not source of truth
 
+## Site Update Rule
+
+MRN site updates are stack updates, not plugin-only swaps.
+
+When planning an update, review whether the change affects:
+
+- standard plugins
+- MU plugins
+- shared runtime files
+- the shared parent theme
+
+If rendering, helper output, classes, variables, or accent hooks changed, include the parent theme in the rollout plan and verify child-theme compatibility.
+
 ## Ownership Model
 
 ### Theme Owns
@@ -102,11 +115,32 @@ Each site may still end up with its own deployed theme identity, but the source 
 
 - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack`
 
+For future sites, assume:
+
+- `mrn-base-stack` is the shared parent theme
+- the site-specific visual layer should live in a child theme
+- shared feature work still belongs in the stack theme, plugins, MU plugins, or shared runtime, not in the child theme
+
 ### Theme Goals
 
 - complete enough that a team is not rebuilding the basics every time
 - neutral enough that sites can still get distinct front-end treatment
 - strong enough to work as the theme framework for builder-driven sites
+
+### Theme Compatibility Rule
+
+When the shared parent theme is updated, preserve stable theming hooks for child themes whenever practical.
+
+Do not casually rename or remove:
+
+- CSS class names used as styling targets
+- CSS variables or shared token names
+- data attributes used as styling or behavior hooks
+- helper or template output intentionally consumed by site styling
+
+Prefer additive hooks and internal refactors over breaking markup-contract changes.
+
+If a theming-contract change is truly necessary, document it in rollout notes and flag required child-theme follow-up.
 
 ### Page Shell Direction
 

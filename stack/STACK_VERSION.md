@@ -13,7 +13,7 @@
   - `mrn-shared-assets` `0.1.1`
   - `mrn-editor-lockdown` `1.0.6`
   - `mrn-reusable-block-library` `0.1.11`
-  - `mrn-site-colors` / `Site Styles` `0.1.3`
+  - `mrn-site-colors` / `Site Styles` `0.1.4`
 - Standard plugins:
   - `mrn-config-helper` `0.1.35`
   - `mrn-dummy-content` `0.1.9`

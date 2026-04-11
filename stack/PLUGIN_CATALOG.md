@@ -47,7 +47,7 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 ### `mrn-config-helper`
 
 - Name: `Config Helper`
-- Version: `0.1.18`
+- Version: `0.1.37`
 - Purpose:
   - centralized site configuration and admin workflow helpers
 - Admin/UI:
@@ -58,12 +58,13 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 - Front-end / theming:
   - not primarily a front-end/theming plugin
   - exposes site-wide social links for theme consumption via `mrn_config_helper_get_social_links()`
-  - social rows can now use either media-library icons or Font Awesome classes
+  - social rows can now use Dashicons, media-library icons, or Font Awesome classes
 - Developer-facing hooks:
   - `mrn_config_helper_get_social_links()`
   - integrates heavily with WPForms and WordPress hooks
 - Notes:
   - cross-cutting admin utility plugin
+  - Site Configurations social icon rows now use the canonical shared admin icon chooser from `mrn-shared-assets`
   - deep doc: [`mrn-config-helper.md`](./plugin-docs/mrn-config-helper.md)
 
 ### `mrn-cookie-consent`
@@ -109,7 +110,7 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 ### `mrn-editor-tools`
 
 - Name: `Editor Enhancements`
-- Version: `1.8.14`
+- Version: `1.8.17`
 - Purpose:
   - classic editor and ACF WYSIWYG enhancements
   - snippets, wrap buttons, style helpers, icon tools
@@ -128,6 +129,7 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
   - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-editor-enhancements.md`
 - Notes:
   - core editor-experience plugin in this stack
+  - icon picking now reuses the canonical shared admin icon chooser from `mrn-shared-assets`
 
 ### `mrn-gtm-injector`
 
@@ -234,25 +236,27 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 ### `mrn-admin-ui-css`
 
 - Name: `Admin UI CSS (MU)`
-- Version: `3.1.12`
+- Version: `3.1.13`
 - Purpose:
   - unified wp-admin CSS loader
 - Admin/UI:
   - broad admin styling cleanup
+  - suppresses selected third-party admin promos and dashboard noise when they conflict with the stack admin UX
 - Front-end / theming:
   - admin only
 - Developer-facing hooks:
   - no custom public hook inventory captured yet
 - Notes:
   - should be documented carefully because admin CSS can become broad-impact
+  - currently hides the Media Library Organizer Pro promo notice and the Themeisle `WordPress Guides/Tutorials` dashboard widget plus its Screen Options toggle
 
 ### `mrn-shared-assets`
 
 - Name: `Shared Assets (MU)`
-- Version: `0.1.0`
+- Version: `0.1.1`
 - Purpose:
   - owns stack-wide runtime assets that should not belong to one feature plugin
-  - currently provides the shared Font Awesome bundle and icon metadata
+  - currently provides the shared Font Awesome bundle, icon metadata, and the canonical admin icon chooser
 - Admin/UI:
   - none directly
 - Front-end / theming:
@@ -263,6 +267,9 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
   - `mrn_shared_assets_fontawesome_css_url()`
   - `mrn_shared_assets_enqueue_fontawesome()`
   - `mrn_shared_assets_get_fontawesome_icons()`
+  - `mrn_shared_assets_admin_icon_chooser_css_url()`
+  - `mrn_shared_assets_admin_icon_chooser_js_url()`
+  - `mrn_shared_assets_enqueue_admin_icon_chooser()`
 - Notes:
   - stack asset-owner MU plugin
   - deep doc:

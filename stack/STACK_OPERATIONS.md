@@ -55,6 +55,20 @@ This ensures stack files are written as the app owner instead of a personal oper
 
 ## Live Site Rule
 
+- Resolve the live site owner first with:
+  - `/Users/khofmeyer/Development/MRN/stack/scripts/resolve-live-site-owner.sh <site-hostname>`
+- Treat the resolver output as part of the deploy contract:
+  - `SITE_USER`
+  - `SITE_ROOT`
+  - `SSH_ALIAS`
+  - `SSH_LOGIN`
+  - `SSH_VERIFY`
+- Owner resolution alone is not enough.
+  - Run the emitted `SSH_VERIFY` path and confirm the site-owner alias/key works before using any fallback access path.
+  - If direct site-owner SSH fails, diagnose the alias and `IdentityFile` first.
+  - Do not substitute `kyle` or `mrn-ops` as the write path for a live site refresh.
+- When using direct site-owner SSH with a deploy helper, prefer the explicit host form:
+  - `<site-user>@mrndev-site-owner`
 - Do not sync directly into live site `wp-content` paths as `mrn-ops`, `kyle`, or any other operator user.
 - Live site theme/plugin/MU refreshes should run as the destination site owner.
 - Preferred pattern for live site file syncs:
@@ -76,6 +90,16 @@ rsync -rlt --omit-dir-times --delete \
 - Avoid preserving local owner/group/permission metadata onto live site paths.
   - Use content-only sync flags such as `-rlt` instead of `-a` when syncing into live site directories.
   - Then normalize directories to `755` and files to `644` as the site owner.
+- Before any individual-site live write, run a full Updraft backup from the site-owner context:
+  - `wp updraftplus backup --include-files='plugins,themes,uploads,others' --send-to-cloud --always-keep --label='<label>'`
+- Treat malformed Updraft placeholder values as part of deploy readiness.
+  - Check `updraft_service`, `updraft_email`, `updraft_report_warningsonly`, `updraft_report_wholebackup`, and `updraft_report_dbbackup`.
+  - If those values contain placeholder entries such as `"0"` or empty-string array values, remove only the placeholders, keep the real storage backend, and rerun the same backup until the latest log is clean.
+- If there is no dedicated helper for the exact live site change, sync only the changed live surface instead of broad site-wide paths.
+  - Example: for a single MU plugin release, sync only that MU plugin directory as the site owner.
+- After the broad normalization pass, run `stat` on representative changed files.
+  - Do not assume a successful recursive `chmod` means every changed file landed with the expected mode.
+  - If a representative file still shows an unexpected mode, fix that exact file and re-verify before calling the deploy done.
 - Current canonical helper for live theme refreshes:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-live-theme.sh`
 - Current canonical helper for stack feature deploys that should also refresh `default-configs.mrndev.io`:
@@ -83,7 +107,9 @@ rsync -rlt --omit-dir-times --delete \
 - Use the feature deploy helper when stack theme or stack MU plugin work needs to stay mirrored to the stack server and the `default-configs` site in one step.
 - The feature deploy helper must also mirror `/Users/khofmeyer/Development/MRN/shared` into `wp-content/shared` on `default-configs.mrndev.io` because settings-style sticky bars and other shared runtime helpers load from that path.
 - The feature deploy helper must sync the local stack theme into the live site's active stylesheet directory, not just `/wp-content/themes/mrn-base-stack/`, because `default-configs.mrndev.io` may still run a cloned active theme slug such as `default-configs`.
+- The feature deploy helper must verify its post-sync permission normalization and fail if sync-user-owned live files remain outside `644`.
 - Standard plugins still follow their own plugin release flow and are not part of the stack feature deploy helper.
+- When a stack-packaged standard plugin changes, rebuild its local zip, sync that artifact into `/home/mrndev-stack-manager/stack/packages/<plugin>.zip`, and if the plugin is meant to be live on `default-configs.mrndev.io`, run a forced `wp plugin install ... --force --activate` against that site so the live version matches the refreshed package.
 - Fresh site bootstrap must delete any preinstalled standard plugins from the host before installing the stack manifest so new sites match the stack plugin set exactly.
 - Fresh site bootstrap must also sync the shared runtime into `wp-content/shared` as part of the initial rollout.
 - The helper now supports both modes:
@@ -116,6 +142,7 @@ Current expected manifest pattern:
 ```
 
 The stack does not pull fresh `_s` from upstream on each rollout.
+- Keep the packaged theme zip in the existing flat-root format with `style.css` at the archive root; current rollout QA reads the version directly from that location.
 
 ## Bootstrap Execution Rule
 
@@ -128,10 +155,25 @@ The stack does not pull fresh `_s` from upstream on each rollout.
 When updating stack-managed assets:
 
 1. update the canonical local source
-2. package when needed
-3. sync the correct source or artifact to `/home/mrndev-stack-manager/stack`
-4. run `/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh` for stack theme, stack MU, bootstrap, or rollout-path changes that affect `default-configs.mrndev.io`
-5. verify the live server copy after sync
+2. decide whether the update also affects the shared parent theme, not only the originally targeted plugin or MU plugin
+3. confirm stable child-theme hooks are still preserved, especially classes, CSS variables, data attributes, and other theming targets
+4. package when needed
+5. sync the correct source or artifact to `/home/mrndev-stack-manager/stack`
+6. run `/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh` for stack theme, stack MU, bootstrap, or rollout-path changes that affect `default-configs.mrndev.io`
+7. verify the live server copy after sync
+
+For individual live-site deploys:
+
+1. confirm the exact approved release state, including whether local is ahead of `origin/main`
+2. take the required Updraft backup before writing live files
+3. inspect backup output and settings for malformed placeholder values such as:
+   - `updraft_email = ""`
+   - report arrays stored as `["0"]`
+4. normalize only those malformed reporting placeholders if they reappear
+5. sync only the intended live site paths as `SITE_USER`
+6. verify the changed runtime files are present and loaded after deploy
+
+If a shared theming hook must change, treat it as a documented compatibility update and include downstream child-theme follow-up in rollout notes.
 
 For full operator flow, use:
 

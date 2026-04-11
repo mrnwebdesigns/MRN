@@ -65,6 +65,7 @@
   - run a lightweight risky-pattern scan for high-risk functions such as `eval`, `base64_decode`, `exec`, `shell_exec`, `system`, `passthru`, `proc_open`, and `popen`
   - review capability checks, nonce usage, and sanitization or escaping for new admin forms, AJAX handlers, and settings saves
   - run any relevant existing test or verification command before release
+  - for the stack theme package, keep the zip in the existing flat-root format so `style.css` is readable at the archive root and `/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh` can verify it
   - for stack theme, stack MU, or bootstrap-path changes that touch `default-configs.mrndev.io`, run `/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh` to verify packaged theme parity, shared runtime presence, live active stylesheet version parity, and required rollout-owned features such as `case_study`
   - verify the packaged main plugin file header and version when practical
 
@@ -72,13 +73,29 @@
 - `Perform a release flow` means completing all of the following in order:
   - `QA`: check code for issues and do visual QA when possible or needed
     - for stack theme, stack MU, bootstrap, or rollout-path changes that affect `default-configs.mrndev.io`, include `/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh`
+    - after a stack-theme version bump, a pre-deploy run of that contract check may still fail on live-version parity until the new package is rolled out; treat that as expected drift, then rerun the same check post-deploy and require a full pass
   - `Performance check`: review for performance regressions or obvious performance concerns
   - `Commit`: commit task-specific code to git with a simple commit message describing what was done
   - `Push`: push the new commit to GitHub
   - `Package`: create all necessary additions for the stack server and create the required local zip file
   - `Deploy`: deploy the code to the stack server, and for stack theme or stack MU feature work use `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-feature-stack-and-default-configs.sh` so `default-configs.mrndev.io` is refreshed too
-  - `Post-deploy QA`: verify the deployed code is in place, versions are correct, required configs are added to the manifest, and any new plugins are added to the manifest
+  - `Post-deploy QA`: verify the deployed code is in place, versions are correct, required configs are added to the manifest, any new plugins are added to the manifest, and public requests still return `200`
+    - for `default-configs.mrndev.io`, treat a public `500` after stack-theme activation as a blocking rollout failure even if local QA, package parity, and remote file/version checks passed
+    - if `default-configs.mrndev.io` fails immediately after a stack-theme rollout, recover the site first by switching it back to `default-configs-fresh`, then continue root-cause debugging
   - `Documentation update`: update memory and any other documentation needed to keep the project clean
+- When reusing this phrase outside MRN or in cross-project prompt-writing, translate it into a platform-agnostic release workflow instead of carrying over WordPress- or stack-specific checks.
+- The reusable cross-project meaning should stay:
+  - QA and functional verification
+  - security and code-quality review
+  - performance review
+  - version bump when release-worthy code changed
+  - git commit
+  - GitHub push
+  - package/build artifact creation after source and version are final
+  - deploy when the target project has a deployment step
+  - post-deploy verification
+  - documentation or release-note updates
+- Only add WordPress-, CloudPanel-, or `default-configs.mrndev.io`-specific commands when the target repo actually uses them.
 
 ## Deployment Guardrails
 - CloudPanel stack files should be written as `mrndev-stack-manager:mrndev-stack-manager`.

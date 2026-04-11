@@ -19,10 +19,12 @@ WordPress rules:
 
 Safety:
 - Assume shared components affect multiple features
+- Treat site updates as coordinated stack changes when rendering, helpers, or theming hooks are involved
 - Avoid breaking:
   - builder layouts
   - reusable blocks
   - theme rendering contracts
+  - child-theme styling hooks such as stable classes, CSS variables, and data attributes
 
 When fixing issues:
 1. Identify root cause

@@ -36,18 +36,24 @@ Prefer:
 
 1. Identify the scope of the change.
    - Confirm whether the work touches a normal plugin, MU plugin, shared runtime file, stack theme, or more than one layer.
-2. Review theme impact.
+2. Resolve the live site owner and back up first.
+   - Resolve the target owner with `/Users/khofmeyer/Development/MRN/stack/scripts/resolve-live-site-owner.sh <site-hostname>`.
+   - Verify the direct site-owner SSH path before any write.
+   - Run a full Updraft backup for `plugins`, `themes`, `uploads`, `others`, and database before deploying.
+   - If Updraft storage/report settings contain placeholder values such as `"0"` or empty-string array entries, normalize only those placeholders and rerun the backup until the latest log is clean.
+3. Review theme impact.
    - If rendering, template structure, helper output, classes, variables, or accent hooks changed, include the parent theme update in the rollout plan.
-3. Check child-theme compatibility.
+4. Check child-theme compatibility.
    - Assume future sites theme through a child theme.
    - Avoid renaming or removing theming hooks unless required.
-4. Package the shared code.
+5. Package the shared code.
    - Follow the project packaging and release-flow rules in memory and stack docs.
-5. Update the target site.
+6. Update the target site.
    - Sync the changed plugins, MU plugins, shared runtime files, and parent theme as needed.
-6. Verify the site.
+7. Verify the site.
    - Confirm functionality, front-end rendering, admin behavior, and any visual theming still behave correctly.
-7. Document the rollout.
+   - Verify representative live file ownership and mode when the deploy flow includes rsync/chmod steps.
+8. Document the rollout.
    - Note any required site follow-up, especially if a child theme must be adjusted.
 
 ## When A Breaking Theming Change Is Allowed
