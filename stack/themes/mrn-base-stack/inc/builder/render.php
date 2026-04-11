@@ -341,6 +341,11 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 		return true;
 	}
 
+	if ( 'wpforms' === $layout ) {
+		get_template_part( 'template-parts/builder/wpforms', null, $context );
+		return true;
+	}
+
 	if ( 'card' === $layout ) {
 		get_template_part( 'template-parts/builder/card', null, $context );
 		return true;
@@ -804,6 +809,32 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 		}
 
 		return 'Content Lists';
+	}
+
+	if ( 'wpforms' === $layout_name ) {
+		$heading = trim( (string) get_sub_field( 'heading' ) );
+
+		if ( '' !== $heading ) {
+			return 'WPForms: ' . esc_html( wp_strip_all_tags( $heading ) );
+		}
+
+		$form = get_sub_field( 'form' );
+
+		if ( $form instanceof WP_Post ) {
+			$form_title = get_the_title( $form );
+		} elseif ( is_numeric( $form ) ) {
+			$form_title = get_the_title( (int) $form );
+		} else {
+			$form_title = '';
+		}
+
+		$form_title = is_string( $form_title ) ? trim( $form_title ) : '';
+
+		if ( '' !== $form_title ) {
+			return 'WPForms: ' . esc_html( $form_title );
+		}
+
+		return 'WPForms';
 	}
 
 	if ( 'card' === $layout_name ) {
