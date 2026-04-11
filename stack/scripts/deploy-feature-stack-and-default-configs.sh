@@ -91,6 +91,8 @@ THEME_EXCLUDES=(
 	--exclude=.eslintrc
 	--exclude=style.css.map
 	--exclude=yarn.lock
+	--exclude=playwright-report
+	--exclude=test-results
 )
 
 COMMON_DIR_EXCLUDES=(
