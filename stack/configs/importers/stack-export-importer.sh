@@ -602,6 +602,30 @@ if (!is_array($settings)) {
     exit(1);
 }
 
+$placeholder_array_keys = [
+    "updraft_service",
+    "updraft_email",
+    "updraft_report_warningsonly",
+    "updraft_report_wholebackup",
+    "updraft_report_dbbackup",
+];
+
+foreach ($placeholder_array_keys as $key) {
+    if (!array_key_exists($key, $settings)) {
+        continue;
+    }
+    $value = $settings[$key];
+    if (is_array($value)) {
+        $settings[$key] = array_values(array_filter($value, static function ($item) {
+            return $item !== "0" && $item !== "" && $item !== 0 && $item !== null;
+        }));
+        continue;
+    }
+    if ($value === "0" || $value === "" || $value === 0) {
+        $settings[$key] = [];
+    }
+}
+
 $imported = 0;
 foreach ($settings as $key => $value) {
     if (!is_string($key) || $key === "") {

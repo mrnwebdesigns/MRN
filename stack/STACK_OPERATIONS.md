@@ -95,6 +95,8 @@ rsync -rlt --omit-dir-times --delete \
 - Treat malformed Updraft placeholder values as part of deploy readiness.
   - Check `updraft_service`, `updraft_email`, `updraft_report_warningsonly`, `updraft_report_wholebackup`, and `updraft_report_dbbackup`.
   - If those values contain placeholder entries such as `"0"` or empty-string array values, remove only the placeholders, keep the real storage backend, and rerun the same backup until the latest log is clean.
+- Canonical preflight helper for the site-owner SSH verify plus Updraft readiness pass:
+  - `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh --site-hostname <site-hostname>`
 - If there is no dedicated helper for the exact live site change, sync only the changed live surface instead of broad site-wide paths.
   - Example: for a single MU plugin release, sync only that MU plugin directory as the site owner.
 - After the broad normalization pass, run `stat` on representative changed files.
@@ -102,11 +104,13 @@ rsync -rlt --omit-dir-times --delete \
   - If a representative file still shows an unexpected mode, fix that exact file and re-verify before calling the deploy done.
 - Current canonical helper for live theme refreshes:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-live-theme.sh`
+  - pass `--site-hostname <site-hostname>` to make it run the canonical site-owner SSH and Updraft preflight before syncing
 - Current canonical helper for stack feature deploys that should also refresh `default-configs.mrndev.io`:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-feature-stack-and-default-configs.sh`
 - Use the feature deploy helper when stack theme or stack MU plugin work needs to stay mirrored to the stack server and the `default-configs` site in one step.
 - The feature deploy helper must also mirror `/Users/khofmeyer/Development/MRN/shared` into `wp-content/shared` on `default-configs.mrndev.io` because settings-style sticky bars and other shared runtime helpers load from that path.
 - The feature deploy helper must sync the local stack theme into the live site's active stylesheet directory, not just `/wp-content/themes/mrn-base-stack/`, because `default-configs.mrndev.io` may still run a cloned active theme slug such as `default-configs`.
+- The feature deploy helper must resolve `default-configs.mrndev.io`, verify direct site-owner SSH, run the Updraft preflight helper, and write the live site refresh through `<site-user>@mrndev-site-owner`.
 - The feature deploy helper must verify its post-sync permission normalization and fail if sync-user-owned live files remain outside `644`.
 - Standard plugins still follow their own plugin release flow and are not part of the stack feature deploy helper.
 - When a stack-packaged standard plugin changes, rebuild its local zip, sync that artifact into `/home/mrndev-stack-manager/stack/packages/<plugin>.zip`, and if the plugin is meant to be live on `default-configs.mrndev.io`, run a forced `wp plugin install ... --force --activate` against that site so the live version matches the refreshed package.
@@ -170,6 +174,7 @@ For individual live-site deploys:
    - `updraft_email = ""`
    - report arrays stored as `["0"]`
 4. normalize only those malformed reporting placeholders if they reappear
+   - the canonical helper for this preflight is `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh`
 5. sync only the intended live site paths as `SITE_USER`
 6. verify the changed runtime files are present and loaded after deploy
 

@@ -39,6 +39,8 @@ Prefer:
 2. Resolve the live site owner and back up first.
    - Resolve the target owner with `/Users/khofmeyer/Development/MRN/stack/scripts/resolve-live-site-owner.sh <site-hostname>`.
    - Verify the direct site-owner SSH path before any write.
+   - Prefer the canonical helper:
+     `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh --site-hostname <site-hostname>`
    - Run a full Updraft backup for `plugins`, `themes`, `uploads`, `others`, and database before deploying.
    - If Updraft storage/report settings contain placeholder values such as `"0"` or empty-string array entries, normalize only those placeholders and rerun the backup until the latest log is clean.
 3. Review theme impact.
@@ -50,6 +52,7 @@ Prefer:
    - Follow the project packaging and release-flow rules in memory and stack docs.
 6. Update the target site.
    - Sync the changed plugins, MU plugins, shared runtime files, and parent theme as needed.
+   - When using the live theme helper, pass `--site-hostname <site-hostname>` so it resolves the owner and runs the canonical preflight before syncing.
 7. Verify the site.
    - Confirm functionality, front-end rendering, admin behavior, and any visual theming still behave correctly.
    - Verify representative live file ownership and mode when the deploy flow includes rsync/chmod steps.

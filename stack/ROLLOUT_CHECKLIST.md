@@ -110,6 +110,22 @@ Interpret this one carefully:
 
 Do not roll out while any of the above is red unless you have an explicit exception and know why.
 
+## Live Preflight
+
+Before any live-site write, run the canonical preflight helper for the target site:
+
+```bash
+/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh \
+  --site-hostname default-configs.mrndev.io
+```
+
+This helper is responsible for:
+
+- resolving `SITE_USER` / `SITE_ROOT`
+- verifying the direct `mrndev-site-owner` SSH path
+- removing malformed Updraft placeholder values without inventing new settings
+- starting a clean Updraft backup before the deploy continues
+
 ## Deploy Path Decision
 
 Choose the right deploy path before touching live.
@@ -130,6 +146,7 @@ Use this when the rollout includes any of:
 - `shared/`
 
 This helper is responsible for keeping the stack server copy and `default-configs.mrndev.io` aligned for those surfaces.
+It now performs the live-site preflight and writes the `default-configs.mrndev.io` refresh through the site-owner SSH path.
 
 ### Standard Plugins
 
@@ -182,7 +199,7 @@ Current stack-standard-plugin path:
 2. Confirm the live active stylesheet slug explicitly.
 
 ```bash
-ssh kyle@167.99.54.77 \
+ssh -l default-configs-stack mrndev-site-owner \
   'wp --path=/home/default-configs-stack/htdocs/default-configs.mrndev.io option get stylesheet'
 ```
 
@@ -197,7 +214,7 @@ Do not assume the live site is using the `mrn-base-stack` directory slug directl
 1. Check the live active theme version.
 
 ```bash
-ssh kyle@167.99.54.77 \
+ssh -l default-configs-stack mrndev-site-owner \
   'wp --path=/home/default-configs-stack/htdocs/default-configs.mrndev.io theme list --fields=name,status,version'
 ```
 
@@ -208,7 +225,7 @@ ssh kyle@167.99.54.77 \
 Check changed plugins directly after deploy.
 
 ```bash
-ssh kyle@167.99.54.77 \
+ssh -l default-configs-stack mrndev-site-owner \
   'wp --path=/home/default-configs-stack/htdocs/default-configs.mrndev.io plugin list --fields=name,status,version'
 ```
 
@@ -317,6 +334,6 @@ Then deploy the correct surfaces, and re-run:
 
 ```bash
 /Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh
-ssh kyle@167.99.54.77 'wp --path=/home/default-configs-stack/htdocs/default-configs.mrndev.io theme list --fields=name,status,version'
-ssh kyle@167.99.54.77 'wp --path=/home/default-configs-stack/htdocs/default-configs.mrndev.io plugin list --fields=name,status,version'
+ssh -l default-configs-stack mrndev-site-owner 'wp --path=/home/default-configs-stack/htdocs/default-configs.mrndev.io theme list --fields=name,status,version'
+ssh -l default-configs-stack mrndev-site-owner 'wp --path=/home/default-configs-stack/htdocs/default-configs.mrndev.io plugin list --fields=name,status,version'
 ```

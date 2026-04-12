@@ -21,6 +21,13 @@ EOF
 
 SSH_HOST="mrndev-stack-manager@167.99.54.77"
 DRY_RUN=0
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+LIVE_SITE_HOSTNAME="${MRN_DEFAULT_CONFIGS_HOSTNAME:-default-configs.mrndev.io}"
+LIVE_SITE_ROOT_OVERRIDE="${MRN_DEFAULT_CONFIGS_LIVE_SITE_ROOT:-}"
+LIVE_SITE_THEME_SLUG="${MRN_DEFAULT_CONFIGS_THEME_SLUG:-default-configs}"
+LIVE_SITE_THEME_NAME="${MRN_DEFAULT_CONFIGS_THEME_NAME:-default configs}"
+LIVE_SITE_TEXT_DOMAIN="${MRN_DEFAULT_CONFIGS_TEXT_DOMAIN:-default-configs}"
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -44,18 +51,17 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 STACK_ROOT_REMOTE="/home/mrndev-stack-manager/stack"
-LIVE_SITE_ROOT="${MRN_DEFAULT_CONFIGS_LIVE_SITE_ROOT:-/home/default-configs-stack/htdocs/default-configs.mrndev.io}"
+LIVE_SITE_ROOT=""
+LIVE_SITE_USER=""
+LIVE_SITE_SSH_LOGIN=""
 LOCAL_THEME_DIR="${REPO_ROOT}/stack/themes/mrn-base-stack"
 LOCAL_STACK_MU_DIR="${REPO_ROOT}/stack/mu-plugins"
 LOCAL_MU_SOURCE_ROOT="${REPO_ROOT}/mu-plugins"
 LOCAL_SHARED_DIR="${REPO_ROOT}/shared"
-LIVE_SITE_THEME_SLUG="${MRN_DEFAULT_CONFIGS_THEME_SLUG:-default-configs}"
 LIVE_SITE_THEME_DIR=""
 LIVE_SITE_ACTIVE_STYLESHEET=""
-REMOTE_SYNC_USER=""
+STACK_SYNC_USER="${SSH_HOST%%@*}"
 
 MU_PLUGIN_DIRS=(
 	"mrn-active-style-guide"
@@ -144,14 +150,16 @@ run_rsync() {
 }
 
 run_remote() {
-	local command="$1"
-	ssh "${SSH_HOST}" "${command}"
+	local remote_host="$1"
+	local command="$2"
+	ssh "${remote_host}" "${command}"
 }
 
 normalize_remote_tree_permissions() {
-	local path="$1"
-	local label="$2"
-	local user_filter="${3:-}"
+	local remote_host="$1"
+	local path="$2"
+	local label="$3"
+	local user_filter="${4:-}"
 	local find_prefix="find '${path}'"
 
 	if [[ -n "${user_filter}" ]]; then
@@ -159,14 +167,15 @@ normalize_remote_tree_permissions() {
 	fi
 
 	echo "Normalizing ${label} permissions..."
-	run_remote "${find_prefix} -type d -exec chmod 755 {} +"
-	run_remote "${find_prefix} -type f -exec chmod 644 {} +"
+	run_remote "${remote_host}" "${find_prefix} -type d -exec chmod 755 {} +"
+	run_remote "${remote_host}" "${find_prefix} -type f -not -path '*/.git/*' -exec chmod 644 {} +"
 }
 
 verify_remote_tree_file_modes() {
-	local path="$1"
-	local label="$2"
-	local user_filter="${3:-}"
+	local remote_host="$1"
+	local path="$2"
+	local label="$3"
+	local user_filter="${4:-}"
 	local find_prefix="find '${path}'"
 	local out_of_spec=""
 
@@ -174,7 +183,7 @@ verify_remote_tree_file_modes() {
 		find_prefix+=" -user '${user_filter}'"
 	fi
 
-	out_of_spec="$(run_remote "${find_prefix} -type f ! -perm 644 -print | head -n 20" | tr -d '\r')"
+	out_of_spec="$(run_remote "${remote_host}" "${find_prefix} -type f -not -path '*/.git/*' ! -perm 644 -print | head -n 20" | tr -d '\r')"
 	if [[ -n "${out_of_spec}" ]]; then
 		echo "ERROR: ${label} still has files that are not mode 644." >&2
 		echo "${out_of_spec}" >&2
@@ -182,16 +191,74 @@ verify_remote_tree_file_modes() {
 	fi
 }
 
-resolve_live_site_theme_slug() {
-	printf '%s' "${LIVE_SITE_THEME_SLUG}"
+verify_remote_tree_user_absent() {
+	local remote_host="$1"
+	local path="$2"
+	local label="$3"
+	local forbidden_user="$4"
+	local matches=""
+
+	matches="$(run_remote "${remote_host}" "find '${path}' -not -path '*/.git/*' -user '${forbidden_user}' -print | head -n 20" | tr -d '\r')"
+	if [[ -n "${matches}" ]]; then
+		echo "ERROR: ${label} still contains files owned by ${forbidden_user}." >&2
+		echo "${matches}" >&2
+		return 1
+	fi
+}
+
+verify_remote_path_owner_mode() {
+	local remote_host="$1"
+	local path="$2"
+	local expected_user="$3"
+	local expected_mode="$4"
+	local label="$5"
+	local stat_output owner mode
+
+	stat_output="$(run_remote "${remote_host}" "stat -c '%U %a %n' '${path}'" | tr -d '\r')"
+	owner="$(printf '%s\n' "${stat_output}" | awk 'NR==1 { print $1 }')"
+	mode="$(printf '%s\n' "${stat_output}" | awk 'NR==1 { print $2 }')"
+
+	if [[ "${owner}" != "${expected_user}" || "${mode}" != "${expected_mode}" ]]; then
+		echo "ERROR: ${label} expected ${expected_user}/${expected_mode} but saw ${stat_output}" >&2
+		return 1
+	fi
 }
 
 echo "Deploying stack feature surfaces to ${SSH_HOST}..."
 
-LIVE_SITE_THEME_SLUG="$(resolve_live_site_theme_slug)"
+PREP_ARGS=(
+	--site-hostname "${LIVE_SITE_HOSTNAME}"
+	--discovery-ssh-host "${SSH_HOST}"
+)
+
+if [[ "${DRY_RUN}" -eq 1 ]]; then
+	PREP_ARGS+=(--skip-backup)
+else
+	PREP_ARGS+=(--backup-label "stack-feature-$(printf '%s' "${LIVE_SITE_HOSTNAME}" | tr -c '[:alnum:]._- ' '-' | tr ' ' '-')-$(date +%Y%m%d%H%M%S)")
+fi
+
+PREP_OUTPUT="$("${SCRIPT_DIR}/preflight-live-site-deploy.sh" "${PREP_ARGS[@]}")"
+
+while IFS='=' read -r key value; do
+	case "${key}" in
+		SITE_USER) LIVE_SITE_USER="${value}" ;;
+		SITE_ROOT) LIVE_SITE_ROOT="${value}" ;;
+		SSH_LOGIN) LIVE_SITE_SSH_LOGIN="${value}" ;;
+	esac
+done <<< "${PREP_OUTPUT}"
+
+if [[ -z "${LIVE_SITE_USER}" || -z "${LIVE_SITE_ROOT}" || -z "${LIVE_SITE_SSH_LOGIN}" ]]; then
+	echo "Live-site preflight did not return complete site-owner details." >&2
+	exit 1
+fi
+
+if [[ -n "${LIVE_SITE_ROOT_OVERRIDE}" && "${LIVE_SITE_ROOT_OVERRIDE}" != "${LIVE_SITE_ROOT}" ]]; then
+	echo "Resolved live site root (${LIVE_SITE_ROOT}) does not match MRN_DEFAULT_CONFIGS_LIVE_SITE_ROOT (${LIVE_SITE_ROOT_OVERRIDE})." >&2
+	exit 1
+fi
+
 LIVE_SITE_THEME_DIR="${LIVE_SITE_ROOT}/wp-content/themes/${LIVE_SITE_THEME_SLUG}"
-REMOTE_SYNC_USER="${SSH_HOST%%@*}"
-LIVE_SITE_ACTIVE_STYLESHEET="$(ssh "${SSH_HOST}" "wp option get stylesheet --path='${LIVE_SITE_ROOT}' 2>/dev/null" | tr -d '\r' | xargs || true)"
+LIVE_SITE_ACTIVE_STYLESHEET="$(ssh "${LIVE_SITE_SSH_LOGIN}" "wp option get stylesheet --path='${LIVE_SITE_ROOT}' 2>/dev/null" | tr -d '\r' | xargs || true)"
 
 echo "Live default-configs deploy theme slug: ${LIVE_SITE_THEME_SLUG}"
 if [[ -n "${LIVE_SITE_ACTIVE_STYLESHEET}" && "${LIVE_SITE_ACTIVE_STYLESHEET}" != "${LIVE_SITE_THEME_SLUG}" ]]; then
@@ -205,7 +272,7 @@ run_rsync \
 
 run_rsync \
 	"${LOCAL_THEME_DIR}/" \
-	"${SSH_HOST}:${LIVE_SITE_THEME_DIR}/" \
+	"${LIVE_SITE_SSH_LOGIN}:${LIVE_SITE_THEME_DIR}/" \
 	"${THEME_EXCLUDES[@]}"
 
 run_rsync \
@@ -215,7 +282,7 @@ run_rsync \
 
 run_rsync \
 	"${LOCAL_SHARED_DIR}/" \
-	"${SSH_HOST}:${LIVE_SITE_ROOT}/wp-content/shared/" \
+	"${LIVE_SITE_SSH_LOGIN}:${LIVE_SITE_ROOT}/wp-content/shared/" \
 	"${COMMON_DIR_EXCLUDES[@]}"
 
 for slug in "${MU_PLUGIN_DIRS[@]}"; do
@@ -226,40 +293,51 @@ for slug in "${MU_PLUGIN_DIRS[@]}"; do
 
 	run_rsync \
 		"${LOCAL_MU_SOURCE_ROOT}/${slug}/" \
-		"${SSH_HOST}:${LIVE_SITE_ROOT}/wp-content/mu-plugins/${slug}/" \
+		"${LIVE_SITE_SSH_LOGIN}:${LIVE_SITE_ROOT}/wp-content/mu-plugins/${slug}/" \
 		"${COMMON_DIR_EXCLUDES[@]}"
 done
 
 for wrapper in "${LOCAL_STACK_MU_DIR}"/mrn-*.php; do
 	[[ -f "${wrapper}" ]] || continue
 	run_rsync \
-	"${wrapper}" \
-	"${SSH_HOST}:${STACK_ROOT_REMOTE}/mu-plugins/$(basename "${wrapper}")"
+		"${wrapper}" \
+		"${SSH_HOST}:${STACK_ROOT_REMOTE}/mu-plugins/$(basename "${wrapper}")"
 	run_rsync \
 		"${wrapper}" \
-		"${SSH_HOST}:${LIVE_SITE_ROOT}/wp-content/mu-plugins/$(basename "${wrapper}")"
+		"${LIVE_SITE_SSH_LOGIN}:${LIVE_SITE_ROOT}/wp-content/mu-plugins/$(basename "${wrapper}")"
 done
 
 if [[ "${DRY_RUN}" -eq 0 ]]; then
-	normalize_remote_tree_permissions "${STACK_ROOT_REMOTE}/themes/mrn-base-stack" "stack theme"
-	normalize_remote_tree_permissions "${LIVE_SITE_THEME_DIR}" "live theme" "${REMOTE_SYNC_USER}"
-	normalize_remote_tree_permissions "${STACK_ROOT_REMOTE}/shared" "stack shared runtime"
-	normalize_remote_tree_permissions "${LIVE_SITE_ROOT}/wp-content/shared" "live shared runtime" "${REMOTE_SYNC_USER}"
-	normalize_remote_tree_permissions "${STACK_ROOT_REMOTE}/mu-plugins" "stack mu-plugins"
-	normalize_remote_tree_permissions "${LIVE_SITE_ROOT}/wp-content/mu-plugins" "live mu-plugins" "${REMOTE_SYNC_USER}"
+	run_remote "${LIVE_SITE_SSH_LOGIN}" "perl -0pi -e 's/^Theme Name:\\s*.*\$/Theme Name: ${LIVE_SITE_THEME_NAME}/m; s/^Text Domain:\\s*.*\$/Text Domain: ${LIVE_SITE_TEXT_DOMAIN}/m;' '${LIVE_SITE_THEME_DIR}/style.css'"
+	run_remote "${LIVE_SITE_SSH_LOGIN}" "rm -rf '${LIVE_SITE_THEME_DIR}/test-results' '${LIVE_SITE_THEME_DIR}/playwright-report'"
 
-	verify_remote_tree_file_modes "${STACK_ROOT_REMOTE}/themes/mrn-base-stack" "stack theme"
-	verify_remote_tree_file_modes "${LIVE_SITE_THEME_DIR}" "live theme" "${REMOTE_SYNC_USER}"
-	verify_remote_tree_file_modes "${STACK_ROOT_REMOTE}/shared" "stack shared runtime"
-	verify_remote_tree_file_modes "${LIVE_SITE_ROOT}/wp-content/shared" "live shared runtime" "${REMOTE_SYNC_USER}"
-	verify_remote_tree_file_modes "${STACK_ROOT_REMOTE}/mu-plugins" "stack mu-plugins"
-	verify_remote_tree_file_modes "${LIVE_SITE_ROOT}/wp-content/mu-plugins" "live mu-plugins" "${REMOTE_SYNC_USER}"
+	normalize_remote_tree_permissions "${SSH_HOST}" "${STACK_ROOT_REMOTE}/themes/mrn-base-stack" "stack theme"
+	normalize_remote_tree_permissions "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_THEME_DIR}" "live theme"
+	normalize_remote_tree_permissions "${SSH_HOST}" "${STACK_ROOT_REMOTE}/shared" "stack shared runtime"
+	normalize_remote_tree_permissions "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/shared" "live shared runtime"
+	normalize_remote_tree_permissions "${SSH_HOST}" "${STACK_ROOT_REMOTE}/mu-plugins" "stack mu-plugins"
+	normalize_remote_tree_permissions "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/mu-plugins" "live mu-plugins"
+
+	verify_remote_tree_file_modes "${SSH_HOST}" "${STACK_ROOT_REMOTE}/themes/mrn-base-stack" "stack theme"
+	verify_remote_tree_file_modes "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_THEME_DIR}" "live theme"
+	verify_remote_tree_file_modes "${SSH_HOST}" "${STACK_ROOT_REMOTE}/shared" "stack shared runtime"
+	verify_remote_tree_file_modes "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/shared" "live shared runtime"
+	verify_remote_tree_file_modes "${SSH_HOST}" "${STACK_ROOT_REMOTE}/mu-plugins" "stack mu-plugins"
+	verify_remote_tree_file_modes "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/mu-plugins" "live mu-plugins"
+
+	verify_remote_tree_user_absent "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_THEME_DIR}" "live theme" "${STACK_SYNC_USER}"
+	verify_remote_tree_user_absent "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/shared" "live shared runtime" "${STACK_SYNC_USER}"
+	verify_remote_tree_user_absent "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/mu-plugins" "live mu-plugins" "${STACK_SYNC_USER}"
+
+	verify_remote_path_owner_mode "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_THEME_DIR}/style.css" "${LIVE_SITE_USER}" "644" "live theme style.css"
+	verify_remote_path_owner_mode "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/shared/mrn-sticky-settings-toolbar.php" "${LIVE_SITE_USER}" "644" "live shared runtime representative file"
+	verify_remote_path_owner_mode "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/mu-plugins/mrn-site-colors/mrn-site-colors.php" "${LIVE_SITE_USER}" "644" "live mu-plugin representative file"
 
 	if [[ "${LIVE_SITE_ACTIVE_STYLESHEET}" != "${LIVE_SITE_THEME_SLUG}" ]]; then
-		run_remote "wp theme activate '${LIVE_SITE_THEME_SLUG}' --path='${LIVE_SITE_ROOT}'" >/dev/null
+		run_remote "${LIVE_SITE_SSH_LOGIN}" "wp theme activate '${LIVE_SITE_THEME_SLUG}' --path='${LIVE_SITE_ROOT}'" >/dev/null
 	fi
 
-	run_remote "cd '${LIVE_SITE_ROOT}' && wp option get stylesheet --path='${LIVE_SITE_ROOT}' && printf '\n---\n' && wp theme list --path='${LIVE_SITE_ROOT}' --format=table 2>/dev/null | grep -E 'name|${LIVE_SITE_THEME_SLUG}|mrn-base-stack'"
+	run_remote "${LIVE_SITE_SSH_LOGIN}" "cd '${LIVE_SITE_ROOT}' && wp option get stylesheet --path='${LIVE_SITE_ROOT}' && printf '\n---\n' && wp theme list --path='${LIVE_SITE_ROOT}' --format=table 2>/dev/null | grep -E 'name|${LIVE_SITE_THEME_SLUG}|mrn-base-stack'"
 fi
 
 echo "Feature deploy sync completed."
