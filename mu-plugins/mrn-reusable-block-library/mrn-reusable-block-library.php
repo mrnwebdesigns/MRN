@@ -84,6 +84,17 @@ function mrn_rbl_get_post_type_definitions(): array {
             'starter_slug'   => 'reusable-content-lists',
             'starter_title'  => 'Content List',
         ),
+        'mrn_reusable_search' => array(
+            'singular'       => 'Search Form',
+            'plural'         => 'Search Forms',
+            'list_label'     => 'Search Forms',
+            'add_new_label'  => 'Add New Search Form',
+            'description'    => 'SearchWP-powered search form sections that can be reused across pages.',
+            'menu_icon'      => 'dashicons-search',
+            'supports'       => array('title', 'revisions'),
+            'starter_slug'   => 'reusable-search-form',
+            'starter_title'  => 'Search Form',
+        ),
     );
 
     return apply_filters('mrn_rbl_post_type_definitions', $post_types);
@@ -323,6 +334,7 @@ function mrn_rbl_get_template_slug_for_post_type(string $post_type): string {
         'mrn_reusable_list' => 'content-lists',
         'mrn_reusable_faq'   => 'faq',
         'mrn_reusable_grid'  => 'content-grid',
+        'mrn_reusable_search' => 'search-form',
     );
 
     return isset($map[$post_type]) ? $map[$post_type] : 'generic-block';
@@ -2245,6 +2257,112 @@ function mrn_rbl_register_acf_field_groups(): void {
                     'param'    => 'post_type',
                     'operator' => '==',
                     'value'    => 'mrn_reusable_list',
+                ),
+            ),
+        ),
+        'position'              => 'acf_after_title',
+        'style'                 => 'default',
+        'label_placement'       => 'top',
+        'instruction_placement' => 'label',
+        'active'                => true,
+        'show_in_rest'          => 1,
+    ));
+
+    acf_add_local_field_group(array(
+        'key'    => 'group_mrn_reusable_search_form',
+        'title'  => 'Search Form Fields',
+        'fields' => array(
+            array(
+                'key'       => 'field_mrn_reusable_search_form_content_tab',
+                'label'     => 'Content',
+                'type'      => 'tab',
+                'placement' => 'top',
+            ),
+            mrn_rbl_get_inline_text_field('field_mrn_reusable_search_form_label', 'Label', 'label'),
+            mrn_rbl_get_label_tag_field('field_mrn_reusable_search_form_label_tag'),
+            mrn_rbl_get_inline_text_field('field_mrn_reusable_search_form_heading', 'Heading', 'heading'),
+            mrn_rbl_get_text_tag_field('field_mrn_reusable_search_form_heading_tag', 'Heading Tag', 'heading_tag', 'h2'),
+            mrn_rbl_get_inline_text_field('field_mrn_reusable_search_form_subheading', 'Subheading', 'subheading'),
+            mrn_rbl_get_text_tag_field('field_mrn_reusable_search_form_subheading_tag', 'Subheading Tag', 'subheading_tag', 'p'),
+            array(
+                'key'          => 'field_mrn_reusable_search_form_intro',
+                'label'        => 'Text area with editor',
+                'name'         => 'intro',
+                'type'         => 'wysiwyg',
+                'tabs'         => 'all',
+                'toolbar'      => 'full',
+                'media_upload' => 1,
+                'delay'        => 0,
+            ),
+            array(
+                'key'           => 'field_mrn_reusable_search_form_form_id',
+                'label'         => 'Search Form',
+                'name'          => 'searchwp_form_id',
+                'type'          => 'select',
+                'choices'       => function_exists('mrn_base_stack_get_searchwp_form_choices') ? mrn_base_stack_get_searchwp_form_choices() : array(),
+                'ui'            => 1,
+                'allow_null'    => 1,
+                'default_value' => '',
+                'placeholder'   => 'Default site search form',
+                'instructions'  => 'Choose from the SearchWP forms available on this site. Leave blank to use the default site search form.',
+            ),
+            array(
+                'key'       => 'field_mrn_reusable_search_form_config_tab',
+                'label'     => 'Configs',
+                'type'      => 'tab',
+                'placement' => 'top',
+            ),
+            mrn_rbl_get_anchor_field('field_mrn_reusable_search_form_anchor'),
+            array(
+                'key'           => 'field_mrn_reusable_search_form_background_color',
+                'label'         => 'Background color',
+                'name'          => 'background_color',
+                'type'          => 'select',
+                'choices'       => mrn_rbl_get_site_color_choices(),
+                'ui'            => 1,
+                'allow_null'    => 1,
+                'instructions'  => 'Select from Site Colors when available.',
+            ),
+            array(
+                'key'           => 'field_mrn_reusable_search_form_bottom_accent',
+                'label'         => 'Bottom Accent',
+                'name'          => 'bottom_accent',
+                'type'          => 'true_false',
+                'ui'            => 1,
+                'default_value' => 0,
+                'ui_on_text'    => 'On',
+                'ui_off_text'   => 'Off',
+                'wrapper'       => array(
+                    'width' => '50',
+                ),
+            ),
+            array(
+                'key'           => 'field_mrn_reusable_search_form_bottom_accent_style',
+                'label'         => 'Bottom Accent Style',
+                'name'          => 'bottom_accent_style',
+                'type'          => 'select',
+                'choices'       => function_exists('mrn_site_styles_get_graphic_element_choices')
+                    ? mrn_site_styles_get_graphic_element_choices()
+                    : array(
+                        '' => 'Select a Graphic Element',
+                    ),
+                'default_value' => '',
+                'ui'            => 1,
+                'allow_null'    => 1,
+                'instructions'  => 'Choose a saved graphic element from Site Styles.',
+                'wrapper'       => array(
+                    'width' => '50',
+                ),
+            ),
+            mrn_rbl_get_effects_tab_field('field_mrn_reusable_search_form_effects_tab'),
+            mrn_rbl_get_motion_group_field('field_mrn_reusable_search_form_motion_settings'),
+        ),
+        'location' => array(
+            array(
+                array(
+                    'param'    => 'post_type',
+                    'operator' => '==',
+                    'value'    => 'mrn_reusable_search',
                 ),
             ),
         ),

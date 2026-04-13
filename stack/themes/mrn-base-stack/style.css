@@ -4032,6 +4032,26 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	gap: var(--mrn-space-stack-md);
 }
 
+.mrn-layout-section--searchwp-form.mrn-layout-surface,
+.mrn-layout-section--searchwp-form .mrn-layout-container.mrn-layout-surface {
+	background: var(--mrn-searchwp-form-row-bg, transparent);
+	padding-block: var(--mrn-row-space-default);
+}
+
+.mrn-layout-section--searchwp-form .mrn-layout-grid--searchwp-form {
+	gap: var(--mrn-space-stack-md);
+}
+
+.mrn-reusable-block--search-form {
+	background: var(--mrn-searchwp-form-row-bg, transparent);
+	padding: 0;
+}
+
+.mrn-reusable-block__inner--search-form {
+	display: grid;
+	gap: var(--mrn-space-stack-md);
+}
+
 .mrn-reusable-block--content-lists {
 	background: var(--mrn-content-list-row-bg, transparent);
 	padding: 0;

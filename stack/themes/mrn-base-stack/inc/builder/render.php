@@ -147,6 +147,7 @@ function mrn_base_stack_get_reusable_block_shell_modifier( $post_type ) {
 		'mrn_reusable_list'  => 'mrn-layout-section--reusable-content-lists',
 		'mrn_reusable_faq'   => 'mrn-layout-section--reusable-faq',
 		'mrn_reusable_grid'  => 'mrn-layout-section--reusable-grid',
+		'mrn_reusable_search' => 'mrn-layout-section--reusable-search-form',
 	);
 
 	$post_type = sanitize_key( (string) $post_type );
@@ -167,6 +168,7 @@ function mrn_base_stack_get_reusable_block_row_modifier( $post_type ) {
 		'mrn_reusable_list'  => 'mrn-content-builder__row--content-lists',
 		'mrn_reusable_faq'   => 'mrn-content-builder__row--faq-block',
 		'mrn_reusable_grid'  => 'mrn-content-builder__row--content-grid',
+		'mrn_reusable_search' => 'mrn-content-builder__row--searchwp-form',
 	);
 
 	$post_type = sanitize_key( (string) $post_type );
@@ -346,6 +348,11 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 		return true;
 	}
 
+	if ( 'searchwp_form' === $layout ) {
+		get_template_part( 'template-parts/builder/searchwp-form', null, $context );
+		return true;
+	}
+
 	if ( 'card' === $layout ) {
 		get_template_part( 'template-parts/builder/card', null, $context );
 		return true;
@@ -472,6 +479,7 @@ function mrn_base_stack_get_page_specific_layout_map() {
 		'mrn_reusable_list'  => 'content_lists',
 		'mrn_reusable_grid'  => 'content_grid',
 		'mrn_reusable_faq'   => 'faq_block',
+		'mrn_reusable_search' => 'searchwp_form',
 	);
 }
 
@@ -487,6 +495,7 @@ function mrn_base_stack_get_page_specific_layout_key_map() {
 		'mrn_reusable_list'  => 'layout_mrn_content_lists',
 		'mrn_reusable_grid'  => 'layout_mrn_content_grid',
 		'mrn_reusable_faq'   => 'layout_mrn_faq_block',
+		'mrn_reusable_search' => 'layout_mrn_searchwp_form',
 	);
 }
 
@@ -835,6 +844,23 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 		}
 
 		return 'WPForms';
+	}
+
+	if ( 'searchwp_form' === $layout_name ) {
+		$heading = trim( (string) get_sub_field( 'heading' ) );
+
+		if ( '' !== $heading ) {
+			return 'SearchWP Form: ' . esc_html( wp_strip_all_tags( $heading ) );
+		}
+
+		$form_title = function_exists( 'mrn_base_stack_get_searchwp_form_title' ) ? mrn_base_stack_get_searchwp_form_title( get_sub_field( 'searchwp_form_id' ) ) : '';
+		$form_title = is_string( $form_title ) ? trim( $form_title ) : '';
+
+		if ( '' !== $form_title ) {
+			return 'SearchWP Form: ' . esc_html( $form_title );
+		}
+
+		return 'SearchWP Form';
 	}
 
 	if ( 'card' === $layout_name ) {

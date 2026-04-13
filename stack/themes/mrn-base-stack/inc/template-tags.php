@@ -242,14 +242,169 @@ if ( ! function_exists( 'mrn_base_stack_get_header_search_icon_markup' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'mrn_base_stack_has_searchwp_form_support' ) ) :
+	/**
+	 * Determine whether SearchWP form integrations are available on the current site.
+	 *
+	 * @return bool
+	 */
+	function mrn_base_stack_has_searchwp_form_support() {
+		return shortcode_exists( 'searchwp_form' ) || class_exists( 'SearchWP_Live_Search_Storage' ) || function_exists( 'searchwp_live_search' );
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_get_searchwp_forms' ) ) :
+	/**
+	 * Return available SearchWP form settings keyed by form ID.
+	 *
+	 * SearchWP stores form definitions in the `searchwp_forms` option as a JSON
+	 * payload, not as a post type, so the builder/reusable-block pickers need to
+	 * resolve those settings directly.
+	 *
+	 * @return array<int, array<string, mixed>>
+	 */
+	function mrn_base_stack_get_searchwp_forms() {
+		if ( ! mrn_base_stack_has_searchwp_form_support() ) {
+			return array();
+		}
+
+		$stored_forms = get_option( 'searchwp_forms', '' );
+
+		if ( is_array( $stored_forms ) ) {
+			$decoded = $stored_forms;
+		} elseif ( is_string( $stored_forms ) && '' !== $stored_forms ) {
+			$decoded = json_decode( $stored_forms, true );
+		} else {
+			$decoded = array();
+		}
+
+		if ( ! is_array( $decoded ) || empty( $decoded['forms'] ) || ! is_array( $decoded['forms'] ) ) {
+			return array();
+		}
+
+		$forms = array();
+
+		foreach ( $decoded['forms'] as $form_key => $form ) {
+			if ( ! is_array( $form ) ) {
+				continue;
+			}
+
+			$form_id = absint( $form['id'] ?? $form_key );
+			if ( $form_id < 1 ) {
+				continue;
+			}
+
+			$form_title = isset( $form['title'] ) ? trim( (string) $form['title'] ) : '';
+			if ( '' === $form_title ) {
+				$form_title = sprintf( __( 'Search Form %d', 'mrn-base-stack' ), $form_id );
+			}
+
+			$forms[ $form_id ] = array(
+				'id'       => $form_id,
+				'title'    => $form_title,
+				'settings' => $form,
+			);
+		}
+
+		ksort( $forms );
+
+		/**
+		 * Filter the normalized SearchWP form settings list.
+		 *
+		 * @param array<int, array<string, mixed>> $forms Available SearchWP forms.
+		 */
+		return apply_filters( 'mrn_base_stack_searchwp_forms', $forms );
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_get_searchwp_form_choices' ) ) :
+	/**
+	 * Build ACF-ready SearchWP form choices.
+	 *
+	 * @return array<string, string>
+	 */
+	function mrn_base_stack_get_searchwp_form_choices() {
+		$forms   = mrn_base_stack_get_searchwp_forms();
+		$choices = array();
+
+		foreach ( $forms as $form_id => $form ) {
+			$choices[ (string) $form_id ] = isset( $form['title'] ) ? (string) $form['title'] : sprintf( __( 'Search Form %d', 'mrn-base-stack' ), $form_id );
+		}
+
+		/**
+		 * Filter the SearchWP form picker choices.
+		 *
+		 * @param array<string, string>             $choices ACF-ready choices keyed by form ID.
+		 * @param array<int, array<string, mixed>>  $forms   Normalized SearchWP form settings.
+		 */
+		return apply_filters( 'mrn_base_stack_searchwp_form_choices', $choices, $forms );
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_get_searchwp_form_title' ) ) :
+	/**
+	 * Resolve a SearchWP form title for UI labels and builder row titles.
+	 *
+	 * @param int|string $form_id SearchWP form ID.
+	 * @return string
+	 */
+	function mrn_base_stack_get_searchwp_form_title( $form_id ) {
+		$form_id = absint( $form_id );
+		if ( $form_id < 1 ) {
+			return '';
+		}
+
+		$forms = mrn_base_stack_get_searchwp_forms();
+
+		return isset( $forms[ $form_id ]['title'] ) ? (string) $forms[ $form_id ]['title'] : '';
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_get_searchwp_form_markup' ) ) :
+	/**
+	 * Return rendered SearchWP form markup, with a theme search fallback.
+	 *
+	 * @param int|string $form_id SearchWP form ID.
+	 * @return string
+	 */
+	function mrn_base_stack_get_searchwp_form_markup( $form_id = 0 ) {
+		$form_id = absint( $form_id );
+
+		if ( $form_id > 0 && shortcode_exists( 'searchwp_form' ) ) {
+			$form_title = mrn_base_stack_get_searchwp_form_title( $form_id );
+
+			if ( '' !== $form_title ) {
+				return do_shortcode( sprintf( '[searchwp_form id="%d"]', $form_id ) );
+			}
+		}
+
+		ob_start();
+
+		if ( function_exists( 'mrn_base_stack_render_search_form_markup' ) ) {
+			mrn_base_stack_render_search_form_markup(
+				array(
+					'search_style' => 'full',
+				)
+			);
+		} else {
+			get_search_form();
+		}
+
+		return trim( (string) ob_get_clean() );
+	}
+endif;
+
 if ( ! function_exists( 'mrn_base_stack_render_search_form_markup' ) ) :
 	/**
 	 * Render the stack header search form.
+	 *
+	 * @param array<string, mixed> $args Optional rendering overrides.
 	 */
-	function mrn_base_stack_render_search_form_markup() {
+	function mrn_base_stack_render_search_form_markup( $args = array() ) {
+		$args           = is_array( $args ) ? $args : array();
 		$search_query   = get_search_query();
 		$header_options = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
-		$search_style   = isset( $header_options['header_search_style'] ) ? (string) $header_options['header_search_style'] : 'full';
+		$search_style   = isset( $args['search_style'] ) ? (string) $args['search_style'] : ( isset( $header_options['header_search_style'] ) ? (string) $header_options['header_search_style'] : 'full' );
 
 		if ( 'icon_only' === $search_style ) {
 			$is_expanded = '' !== $search_query;
