@@ -54,7 +54,7 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 LOCAL_THEME_DIR="${REPO_ROOT}/stack/themes/mrn-base-stack"
-LOCAL_THEME_ZIP="${REPO_ROOT}/stack/themes/mrn-base-stack.zip"
+LOCAL_THEME_ZIP="${REPO_ROOT}/releases/stack/mrn-base-stack.zip"
 
 REMOTE_SHARED_DIR="${STACK_ROOT_REMOTE}/shared"
 REMOTE_LIVE_SHARED_DIR="${LIVE_SITE_ROOT}/wp-content/shared"

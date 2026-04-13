@@ -87,8 +87,11 @@ build_mu_plugins() {
 build_theme() {
 	local source_root="${ROOT_DIR}/stack/themes"
 	local release_root="${ROOT_DIR}/releases/stack"
+	local legacy_zip_path="${ROOT_DIR}/stack/themes/mrn-base-stack.zip"
 
 	zip_directory "$source_root" "$release_root" "mrn-base-stack"
+	cp "${release_root}/mrn-base-stack.zip" "${legacy_zip_path}"
+	echo "Mirrored ${legacy_zip_path}"
 }
 
 main() {
