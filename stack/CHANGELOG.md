@@ -6,6 +6,7 @@
 - Reduced repeated Classic Editor builder-admin work by caching post-init `Content Lists` post-type, display-mode, and taxonomy choice generation within the request instead of rebuilding the same ACF choice data for every prepared field instance.
 - Reduced repeated classic-editor metabox layout writes by caching `mrn-editor-lockdown` layout lookups and skipping no-op user-meta updates when the enforced layout payload has not changed.
 - Refined the builder Add Row menu ordering so standard layouts and reusable/shared layouts each stay alphabetized while preserving the reusable/shared section break in the editor menu.
+- Documented the deploy rule that stack-managed sites run a cloned active theme by default, and that child themes are introduced later only during explicit development/front-end handoff.
 
 ## 2026.04.10-layout-effects-permissions
 - Expanded `mrn-base-stack` to `1.1.19`.

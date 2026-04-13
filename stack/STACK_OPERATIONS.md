@@ -109,6 +109,9 @@ rsync -rlt --omit-dir-times --delete \
 - Current canonical helper for live theme refreshes:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-live-theme.sh`
   - pass `--site-hostname <site-hostname>` to make it run the canonical site-owner SSH and Updraft preflight before syncing
+- Default live-site theme assumption:
+  - stack-managed sites run a cloned active stylesheet directory until the site is explicitly handed to the development/front-end team for child-theme setup
+  - live theme deploys should target that active stylesheet directory and preserve the live stylesheet slug, `Theme Name`, and `Text Domain`
 - Current canonical helper for stack feature deploys that should also refresh `default-configs.mrndev.io`:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-feature-stack-and-default-configs.sh`
 - Use the feature deploy helper when stack theme or stack MU plugin work needs to stay mirrored to the stack server and the `default-configs` site in one step.
@@ -165,7 +168,7 @@ When updating stack-managed assets:
 
 1. update the canonical local source
 2. decide whether the update also affects the shared parent theme, not only the originally targeted plugin or MU plugin
-3. confirm stable child-theme hooks are still preserved, especially classes, CSS variables, data attributes, and other theming targets
+3. confirm stable live-theme hooks are still preserved, especially classes, CSS variables, data attributes, and other theming targets needed now or during later front-end handoff
 4. package when needed
 5. sync the correct source or artifact to `/home/mrndev-stack-manager/stack`
 6. run `/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh` for stack theme, stack MU, bootstrap, or rollout-path changes that affect `default-configs.mrndev.io`
@@ -183,7 +186,7 @@ For individual live-site deploys:
 5. sync only the intended live site paths as `SITE_USER`
 6. verify the changed runtime files are present and loaded after deploy
 
-If a shared theming hook must change, treat it as a documented compatibility update and include downstream child-theme follow-up in rollout notes.
+If a shared theming hook must change, treat it as a documented compatibility update and include downstream live-theme or later child-theme follow-up in rollout notes.
 
 For full operator flow, use:
 

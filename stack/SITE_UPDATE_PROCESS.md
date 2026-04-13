@@ -6,20 +6,20 @@ This document defines the standard process for updating an MRN site when the cod
 
 Updating a site is not a plugin-only action.
 
-Because MRN sites are built from coordinated plugins, MU plugins, shared runtime files, and the stack theme, every site update should evaluate whether the parent theme also needs to be updated.
+Because MRN sites are built from coordinated plugins, MU plugins, shared runtime files, and the stack theme, every site update should evaluate whether the live active theme also needs to be updated.
 
-For future sites, assume:
+For stack-managed sites, assume:
 
-- the shared stack theme is the parent theme
-- the site-specific visual layer lives in a child theme
+- the site runs a cloned active theme directory based on the shared stack theme
+- a child theme is introduced later only when the site is handed to the development/front-end team
 
-That means shared code updates should protect the child theme's theming hooks whenever practical.
+That means shared code updates should preserve the live theme slug plus `Theme Name` and `Text Domain`, and should keep stable theming hooks available for later front-end handoff work whenever practical.
 
 ## Stable Theming Contract
 
 Do not change these parent-theme theming hooks unless the change is truly necessary and documented:
 
-- CSS class names used as child-theme styling targets
+- CSS class names used as live-theme styling targets
 - CSS variables and token names
 - data attributes used for styling or behavior hooks
 - shared accent hooks
@@ -46,8 +46,8 @@ Prefer:
    - If Updraft storage/report settings contain placeholder values such as `"0"` or empty-string array entries, normalize only those placeholders and rerun the backup until the latest log is clean.
 3. Review theme impact.
    - If rendering, template structure, helper output, classes, variables, or accent hooks changed, include the parent theme update in the rollout plan.
-4. Check child-theme compatibility.
-   - Assume future sites theme through a child theme.
+4. Check live-theme compatibility.
+   - Assume the site is running its cloned active theme directory unless a front-end handoff has already introduced a child theme.
    - Avoid renaming or removing theming hooks unless required.
 5. Package the shared code.
    - Follow the project packaging and release-flow rules in memory and stack docs.
@@ -58,7 +58,7 @@ Prefer:
    - Confirm functionality, front-end rendering, admin behavior, and any visual theming still behave correctly.
    - Verify representative live file ownership and mode when the deploy flow includes rsync/chmod steps.
 8. Document the rollout.
-   - Note any required site follow-up, especially if a child theme must be adjusted.
+   - Note any required site follow-up, especially if a later front-end handoff or child-theme setup must be adjusted.
 
 ## When A Breaking Theming Change Is Allowed
 
@@ -72,11 +72,11 @@ If that happens:
 
 - document the change before release
 - list the affected classes, variables, or hooks
-- note the expected child-theme follow-up
+- note the expected live-theme or later child-theme follow-up
 - add language for the master Google Doc
 
 ## Master Google Doc Copy
 
 Use this wording in the master Google Doc:
 
-> Site updates should be treated as stack updates, not plugin-only swaps. When code changes are prepared for a site, review the affected plugins, MU plugins, shared runtime files, and the shared parent theme together. Future sites should use a child theme for site-specific styling and branding, so parent-theme updates should preserve stable theming hooks whenever possible. Do not rename or remove shared class names, CSS variables, data attributes, or other styling hooks unless the change is necessary and documented in the rollout notes. If a breaking theming change is required, the update plan must include the parent-theme change, any needed child-theme follow-up, and documentation updates for the master Google Doc.
+> Site updates should be treated as stack updates, not plugin-only swaps. When code changes are prepared for a site, review the affected plugins, MU plugins, shared runtime files, and the live active theme together. Stack-managed sites should be assumed to run a cloned active theme until they are explicitly handed to the development/front-end team for child-theme setup, so theme updates should preserve the live stylesheet slug, `Theme Name`, `Text Domain`, and stable theming hooks whenever possible. Do not rename or remove shared class names, CSS variables, data attributes, or other styling hooks unless the change is necessary and documented in the rollout notes. If a breaking theming change is required, the update plan must include the active-theme change, any needed later handoff follow-up, and documentation updates for the master Google Doc.

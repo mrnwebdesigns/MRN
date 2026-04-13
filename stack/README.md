@@ -11,7 +11,7 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 - A front-end implementation guide (`FRONTEND_IMPLEMENTATION_GUIDE.md`) for Motion `inView`, Site Styles token usage, and Business Information template patterns.
 - A theme strategy guide (`THEME_ROADMAP.md`) for the stack theme’s role, ownership boundaries, and development roadmap.
 - A theme execution checklist (`THEME_TASKLIST.md`) for turning the roadmap into backend/frontend work.
-- A site update process guide (`SITE_UPDATE_PROCESS.md`) for safe plugin/theme rollouts and child-theme compatibility expectations.
+- A site update process guide (`SITE_UPDATE_PROCESS.md`) for safe plugin/theme rollouts, cloned active-theme deploys, and later front-end handoff expectations.
 - A stack workflow/ops guide (`STACK_OPERATIONS.md`) for local symlink workflow, server ownership, and sync/deploy rules.
 - A canonical rollout checklist (`ROLLOUT_CHECKLIST.md`) for pre-flight QA, deploy-path decisions, post-deploy verification, and live parity checks.
 - A plugin inventory (`PLUGIN_CATALOG.md`) and plugin doc template (`PLUGIN_DOC_TEMPLATE.md`) for documenting MRN plugins and MU plugins.
