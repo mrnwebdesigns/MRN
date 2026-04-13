@@ -67,6 +67,10 @@ This ensures stack files are written as the app owner instead of a personal oper
   - Run the emitted `SSH_VERIFY` path and confirm the site-owner alias/key works before using any fallback access path.
   - If direct site-owner SSH fails, diagnose the alias and `IdentityFile` first.
   - Do not substitute `kyle` or `mrn-ops` as the write path for a live site refresh.
+- Fresh site bootstrap owns new-site direct site-owner SSH readiness.
+  - `site-bootstrap.sh` runs after CloudPanel has already created `/home/<site-user>` and the site root.
+  - It must ensure `/home/<site-user>/.ssh/authorized_keys` contains the canonical MRN site-owner public key from `stack/configs/site-owner-authorized-key.pub`, with `.ssh` at `700` and `authorized_keys` at `600`, owned by the site owner.
+  - This fixes new-site provisioning only; older sites created before this bootstrap step may still need a one-time backfill if `SSH_VERIFY` fails.
 - When using direct site-owner SSH with a deploy helper, prefer the explicit host form:
   - `<site-user>@mrndev-site-owner`
 - Do not sync directly into live site `wp-content` paths as `mrn-ops`, `kyle`, or any other operator user.
@@ -116,6 +120,7 @@ rsync -rlt --omit-dir-times --delete \
 - When a stack-packaged standard plugin changes, rebuild its local zip, sync that artifact into `/home/mrndev-stack-manager/stack/packages/<plugin>.zip`, and if the plugin is meant to be live on `default-configs.mrndev.io`, run a forced `wp plugin install ... --force --activate` against that site so the live version matches the refreshed package.
 - Fresh site bootstrap must delete any preinstalled standard plugins from the host before installing the stack manifest so new sites match the stack plugin set exactly.
 - Fresh site bootstrap must also sync the shared runtime into `wp-content/shared` as part of the initial rollout.
+- Fresh site bootstrap must also provision direct site-owner SSH trust by creating `/home/<site-user>/.ssh/authorized_keys` when missing and ensuring the canonical MRN site-owner public key is present exactly once without removing unrelated keys.
 - The helper now supports both modes:
   - default ops/stack-user sync with `sudo -n -u <site-user>`
   - direct site-owner SSH via `--direct-ssh`

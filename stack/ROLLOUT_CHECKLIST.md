@@ -185,6 +185,8 @@ Current stack-standard-plugin path:
 - `/Users/khofmeyer/Development/MRN/stack/configs/exports/`
 
 5. If the rollout affects bootstrap behavior, verify the relevant manifest and bootstrap files on the stack server before relying on them for new sites.
+   - For direct site-owner SSH bootstrap changes, verify both `scripts/site-bootstrap.sh` and `configs/site-owner-authorized-key.pub` are current on the stack server.
+   - Remember that bootstrap-only fixes do not backfill older sites automatically; existing site owners may still need a one-time `authorized_keys` repair if `ssh -l <site-user> mrndev-site-owner 'whoami && pwd'` still fails.
 
 ## Post-Deploy Verification
 

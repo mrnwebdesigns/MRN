@@ -38,6 +38,7 @@ Deployment habits to preserve:
 - Record the exact approved release SHA before deploy, even when the approved release is a local commit that is ahead of `origin/main`
 - For live site deploys, resolve the site owner first and use the emitted site-owner SSH verify command before any fallback access path
 - Use direct site-owner writes for live site refreshes; prefer the explicit `<site-user>@mrndev-site-owner` form when a helper needs a direct SSH host
+- Fresh site bootstrap now owns direct site-owner SSH authorization by ensuring `/home/<site-user>/.ssh/authorized_keys` contains the canonical MRN site-owner public key from `stack/configs/site-owner-authorized-key.pub`; older sites may still need a one-time backfill
 - Canonical live-site preflight helper is `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh`, and stack feature deploys should call it before any live refresh
 - For Updraft preflight backups, run a full `plugins,themes,uploads,others` plus database backup and only normalize malformed placeholder `0` or empty-array values if they reappear
 - Updraft settings imports should strip placeholder `"0"` and empty-string array rows for `updraft_service` and reporting/email options so new sites do not inherit broken backup config

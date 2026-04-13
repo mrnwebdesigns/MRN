@@ -18,6 +18,7 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 - First deep-dive plugin docs live in `plugin-docs/`.
 - A per-site bootstrap script (`scripts/site-bootstrap.sh`).
 - A CloudPanel cron scanner (`scripts/bootstrap-new-sites.sh`) that bootstraps only once per site.
+- A canonical direct site-owner SSH public key file (`configs/site-owner-authorized-key.pub`) that bootstrap installs into each new site owner's `authorized_keys`.
 - A canonical stack feature-deploy helper (`scripts/deploy-feature-stack-and-default-configs.sh`) that mirrors stack theme and MU changes to both the stack server and `default-configs.mrndev.io`.
 - A live-site preflight helper (`scripts/preflight-live-site-deploy.sh`) that resolves the site owner, verifies direct site-owner SSH, normalizes malformed Updraft placeholder settings, and starts a clean pre-deploy backup.
 - A release build helper (`scripts/build-release-zips.sh`) that rebuilds ignored plugin, MU plugin, and stack theme zip artifacts into `../releases/`.
@@ -30,7 +31,7 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 1. Create a new WordPress site in CloudPanel.
 2. A cron job runs `scripts/bootstrap-new-sites.sh` every 1-5 minutes.
 3. The script finds unbootstrapped sites and runs `scripts/site-bootstrap.sh`.
-4. Bootstrap clears host-provided standard plugins, installs the stack manifest, syncs MU plugins and `wp-content/shared`, and activates the stack theme clone.
+4. Bootstrap clears host-provided standard plugins, installs the stack manifest, syncs MU plugins and `wp-content/shared`, activates the stack theme clone, and authorizes the canonical MRN site-owner public key for direct site-owner SSH.
 5. A marker file is created so the same site is not bootstrapped again.
 
 ## First setup

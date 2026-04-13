@@ -8,6 +8,7 @@ LICENSES_FILE="${STACK_ROOT}/manifests/licenses.txt"
 IMPORTERS_DIR="${STACK_ROOT}/configs/importers"
 EXPORTS_DIR="${STACK_ROOT}/configs/exports"
 SECRETS_DIR="${STACK_ROOT}/secrets"
+SITE_OWNER_AUTHORIZED_KEY_FILE="${STACK_ROOT}/configs/site-owner-authorized-key.pub"
 MU_PLUGINS_SOURCE_DIR="${STACK_ROOT}/mu-plugins"
 SHARED_SOURCE_DIR="${STACK_SHARED_SOURCE_DIR:-}"
 MARKER_NAME=".mrn_bootstrapped"
@@ -21,7 +22,7 @@ Usage:
   site-bootstrap.sh --site-path /home/<user>/htdocs/<domain> [--site-user <user>] [--plugins-file <path>] [--themes-file <path>] [--licenses-file <path>] [--notify-email <email>]
 
 Notes:
-  - Run as root (recommended on CloudPanel).
+  - Run as root (recommended on CloudPanel and required to provision site-owner SSH files with the correct ownership/perms).
   - Plugin manifest format:
       plugin-slug
       plugin-slug|version
@@ -38,6 +39,7 @@ USAGE
 
 SITE_PATH=""
 SITE_USER=""
+SITE_HOME=""
 WP_PATH=""
 NOTIFY_EMAIL="${STACK_NOTIFY_EMAIL:-${BOOTSTRAP_NOTIFY_EMAIL:-wordpress_admin@mrnwebdesigns.com}}"
 SLACK_WEBHOOK_URL="${STACK_SLACK_WEBHOOK_URL:-${BOOTSTRAP_SLACK_WEBHOOK_URL:-}}"
@@ -211,6 +213,11 @@ if ! WP_PATH="$(detect_wp_path "${SITE_PATH}")"; then
   exit 1
 fi
 
+if ! SITE_HOME="$(cd "${SITE_PATH}/../.." && pwd)"; then
+  echo "Unable to resolve site home from site path: ${SITE_PATH}" >&2
+  exit 1
+fi
+
 if [[ -z "${SITE_USER}" ]]; then
   SITE_USER="$(stat -c '%U' "${SITE_PATH}")"
 fi
@@ -236,6 +243,104 @@ run_wp() {
   local -a args
   args=("$@")
   sudo -u "${SITE_USER}" wp --path="${WP_PATH}" "${args[@]}"
+}
+
+load_site_owner_authorized_key() {
+  local key_line
+
+  if [[ ! -f "${SITE_OWNER_AUTHORIZED_KEY_FILE}" ]]; then
+    echo "Canonical site-owner public key file missing: ${SITE_OWNER_AUTHORIZED_KEY_FILE}" >&2
+    exit 1
+  fi
+
+  key_line="$(
+    sed -e 's/\r$//' "${SITE_OWNER_AUTHORIZED_KEY_FILE}" \
+      | sed '/^[[:space:]]*#/d; /^[[:space:]]*$/d' \
+      | head -n1
+  )"
+
+  if [[ -z "${key_line}" ]]; then
+    echo "Canonical site-owner public key file is empty: ${SITE_OWNER_AUTHORIZED_KEY_FILE}" >&2
+    exit 1
+  fi
+
+  if ! printf '%s\n' "${key_line}" | awk 'NF >= 2 { found = 1 } END { exit(found ? 0 : 1) }'; then
+    echo "Canonical site-owner public key file is invalid: ${SITE_OWNER_AUTHORIZED_KEY_FILE}" >&2
+    exit 1
+  fi
+
+  printf '%s' "${key_line}"
+}
+
+ensure_site_owner_direct_ssh() {
+  local key_line key_type key_blob ssh_dir authorized_keys match_count tmp_file
+
+  if [[ ! -d "${SITE_HOME}" ]]; then
+    echo "Site home directory missing for ${SITE_USER}: ${SITE_HOME}" >&2
+    exit 1
+  fi
+
+  key_line="$(load_site_owner_authorized_key)"
+  key_type="$(printf '%s\n' "${key_line}" | awk '{print $1}')"
+  key_blob="$(printf '%s\n' "${key_line}" | awk '{print $2}')"
+
+  if [[ -z "${key_type}" || -z "${key_blob}" ]]; then
+    echo "Canonical site-owner public key is incomplete: ${SITE_OWNER_AUTHORIZED_KEY_FILE}" >&2
+    exit 1
+  fi
+
+  ssh_dir="${SITE_HOME}/.ssh"
+  authorized_keys="${ssh_dir}/authorized_keys"
+
+  mkdir -p "${ssh_dir}"
+  chown "${SITE_USER}:${SITE_USER}" "${ssh_dir}"
+  chmod 700 "${ssh_dir}"
+
+  touch "${authorized_keys}"
+  chown "${SITE_USER}:${SITE_USER}" "${authorized_keys}"
+  chmod 600 "${authorized_keys}"
+
+  match_count="$(
+    awk -v key_type="${key_type}" -v key_blob="${key_blob}" '
+      {
+        for (i = 1; i < NF; i++) {
+          if ($i == key_type && $(i + 1) == key_blob) {
+            count++
+          }
+        }
+      }
+      END { print count + 0 }
+    ' "${authorized_keys}"
+  )"
+
+  if [[ "${match_count}" -eq 1 ]] && grep -Fqx "${key_line}" "${authorized_keys}"; then
+    echo "Direct site-owner SSH already authorized for ${SITE_USER}: ${authorized_keys}"
+    return 0
+  fi
+
+  tmp_file="$(mktemp)"
+  awk -v key_type="${key_type}" -v key_blob="${key_blob}" '
+    {
+      matched = 0
+      for (i = 1; i < NF; i++) {
+        if ($i == key_type && $(i + 1) == key_blob) {
+          matched = 1
+          break
+        }
+      }
+      if (!matched) {
+        print
+      }
+    }
+  ' "${authorized_keys}" > "${tmp_file}"
+  printf '%s\n' "${key_line}" >> "${tmp_file}"
+  cat "${tmp_file}" > "${authorized_keys}"
+  rm -f "${tmp_file}"
+
+  chown "${SITE_USER}:${SITE_USER}" "${authorized_keys}"
+  chmod 600 "${authorized_keys}"
+
+  echo "Ensured direct site-owner SSH authorization for ${SITE_USER}: ${authorized_keys}"
 }
 
 add_warning() {
@@ -1272,6 +1377,7 @@ sync_shared_runtime() {
 main() {
   local domain body
   echo "Bootstrapping site: ${SITE_PATH} (owner: ${SITE_USER})"
+  ensure_site_owner_direct_ssh
   reset_standard_plugins
   install_plugins
   ensure_all_plugins_active

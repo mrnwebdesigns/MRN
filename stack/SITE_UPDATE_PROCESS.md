@@ -39,6 +39,7 @@ Prefer:
 2. Resolve the live site owner and back up first.
    - Resolve the target owner with `/Users/khofmeyer/Development/MRN/stack/scripts/resolve-live-site-owner.sh <site-hostname>`.
    - Verify the direct site-owner SSH path before any write.
+   - New sites should receive that direct site-owner SSH authorization during stack bootstrap; if an older site still fails the verify step, treat it as a one-time site-owner `authorized_keys` backfill instead of a theme/plugin deploy bug.
    - Prefer the canonical helper:
      `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh --site-hostname <site-hostname>`
    - Run a full Updraft backup for `plugins`, `themes`, `uploads`, `others`, and database before deploying.
