@@ -17,6 +17,15 @@ function mrn_editor_lockdown_get_seo_helper_metabox_id() {
 }
 
 /**
+ * Legacy SmartCrawl SEO metabox ID.
+ *
+ * @return string
+ */
+function mrn_editor_lockdown_get_legacy_seo_metabox_id() {
+	return 'wds-wds-meta-box';
+}
+
+/**
  * Ensure the SEO Helper metabox stays at the top of the locked sidebar order.
  *
  * @param string $side_order Comma-delimited sidebar metabox order.
@@ -57,47 +66,43 @@ function mrn_editor_lockdown_get_layouts() {
 			'meta_box_order' => array(
 				'normal'   => 'postexcerpt,slugdiv,authordiv',
 				'side'     => 'acf-group_69a1c0f3a1b01,categorydiv,tagsdiv-post_tag,submitdiv',
-				'advanced' => 'wds-wds-meta-box,ame-cpe-content-permissions',
+				'advanced' => 'ame-cpe-content-permissions',
 			),
 			'closed' => array(
-				'wds-wds-meta-box',
 				'ame-cpe-content-permissions',
 			),
 		),
 		'page' => array(
 			'screen_layout' => 2,
 			'meta_box_order' => array(
-				'normal'   => 'wds-wds-meta-box,slugdiv,authordiv,revisionsdiv',
+				'normal'   => 'slugdiv,authordiv,revisionsdiv',
 				'side'     => 'acf-group_69a1c0f3a1b01,submitdiv,pageparentdiv',
 				'advanced' => 'ame-cpe-content-permissions',
 			),
 			'closed' => array(
 				'pageparentdiv',
-				'wds-wds-meta-box',
 				'ame-cpe-content-permissions',
 			),
 		),
 		'blog' => array(
 			'screen_layout' => 2,
 			'meta_box_order' => array(
-				'normal'   => 'wds-wds-meta-box,slugdiv,revisionsdiv',
+				'normal'   => 'slugdiv,revisionsdiv',
 				'side'     => 'authordiv,submitdiv',
 				'advanced' => 'ame-cpe-content-permissions',
 			),
 			'closed' => array(
-				'wds-wds-meta-box',
 				'ame-cpe-content-permissions',
 			),
 		),
 		'gallery' => array(
 			'screen_layout' => 2,
 			'meta_box_order' => array(
-				'normal'   => 'wds-wds-meta-box,slugdiv,revisionsdiv',
+				'normal'   => 'slugdiv,revisionsdiv',
 				'side'     => 'submitdiv,gallery_categorydiv,postimagediv',
 				'advanced' => 'ame-cpe-content-permissions',
 			),
 			'closed' => array(
-				'wds-wds-meta-box',
 				'ame-cpe-content-permissions',
 			),
 		),
@@ -210,12 +215,11 @@ function mrn_editor_lockdown_get_dynamic_layout() {
 	$layout = array(
 		'screen_layout' => 2,
 		'meta_box_order' => array(
-			'normal'   => 'wds-wds-meta-box,slugdiv,revisionsdiv',
+			'normal'   => 'slugdiv,revisionsdiv',
 			'side'     => mrn_editor_lockdown_prepend_seo_helper_to_side_order( 'submitdiv,authordiv,pageparentdiv,categorydiv,tagsdiv-post_tag,postimagediv' ),
 			'advanced' => 'ame-cpe-content-permissions',
 		),
 		'closed' => array(
-			'wds-wds-meta-box',
 			'ame-cpe-content-permissions',
 		),
 	);
@@ -377,6 +381,36 @@ function mrn_editor_lockdown_apply_layout( $screen ) {
 	}
 }
 add_action( 'current_screen', 'mrn_editor_lockdown_apply_layout' );
+
+/**
+ * Remove the heavyweight SmartCrawl metabox from supported classic editor screens.
+ *
+ * The lightweight SEO helper remains available in the sidebar, so editors keep
+ * the intended SEO surface without booting the full SmartCrawl analysis UI.
+ *
+ * @param string $post_type Current post type slug.
+ * @return void
+ */
+function mrn_editor_lockdown_remove_legacy_seo_metabox( $post_type ) {
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+	if ( ! mrn_editor_lockdown_is_supported_screen( $screen ) ) {
+		return;
+	}
+
+	$post_type = sanitize_key( (string) $post_type );
+
+	if ( '' === $post_type || $post_type !== $screen->post_type ) {
+		return;
+	}
+
+	$metabox_id = mrn_editor_lockdown_get_legacy_seo_metabox_id();
+
+	remove_meta_box( $metabox_id, $post_type, 'normal' );
+	remove_meta_box( $metabox_id, $post_type, 'advanced' );
+	remove_meta_box( $metabox_id, $post_type, 'side' );
+}
+add_action( 'add_meta_boxes', 'mrn_editor_lockdown_remove_legacy_seo_metabox', 100 );
 
 /**
  * Filter screen layout user options for locked post types.

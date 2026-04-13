@@ -233,12 +233,22 @@
 		return $();
 	}
 
+	function rowHasConvertibleBlockField( $row ) {
+		var $targets = getFlexibleRowBodyTargets( $row );
+
+		if ( ! $targets.length ) {
+			return false;
+		}
+
+		return $targets.first().children( '.acf-field[data-name="block"]' ).length > 0;
+	}
+
 	function ensureConversionActions( context ) {
-		$( context || document ).find( '.layout' ).filter( function() {
+		$( context || document ).find( '.layout' ).not( '.acf-clone' ).filter( function() {
 			var $row = $( this );
 			var $flexField = $row.closest( '.acf-field-flexible-content' );
 
-			return $row.find( '.acf-field[data-name="block"]' ).length > 0 &&
+			return rowHasConvertibleBlockField( $row ) &&
 				$flexField.length &&
 				$pageContentRowsFieldName( $flexField );
 		} ).each( function() {
@@ -269,10 +279,20 @@
 		return $flexField.attr( 'data-name' ) === 'page_content_rows';
 	}
 
-	function bootBuilderAdminUi( context ) {
+	function bootBuilderAdminUi( context, options ) {
+		var settings = $.extend(
+			{
+				syncContentLists: true
+			},
+			options || {}
+		);
+
 		refreshFlexibleContentMenus( context );
 		ensureConversionActions( context );
-		scheduleContentListFilterSync( context );
+
+		if ( settings.syncContentLists ) {
+			scheduleContentListFilterSync( context );
+		}
 	}
 
 	function getContentListField( $row, name ) {
@@ -602,29 +622,153 @@
 		return $row.children( '.acf-fields' );
 	}
 
-	function hasLiveEditorFields( $row ) {
-		return $row.is( '.acf-field[data-type="wysiwyg"]' ) ||
-			$row.find( '.acf-field[data-type="wysiwyg"], .acf-editor-wrap, .wp-editor-wrap, .quicktags-toolbar, textarea.wp-editor-area' ).length > 0;
+	function getFlexibleFields( context ) {
+		return $( context || document )
+			.filter( '.acf-field-flexible-content' )
+			.add( $( context || document ).find( '.acf-field-flexible-content' ) );
+	}
+
+	function getFlexibleCloneRows( $flexField ) {
+		var $clones = $flexField.find( '> .acf-input > .acf-flexible-content > .clones, > .acf-input > .clones' ).first();
+
+		if ( ! $clones.length ) {
+			return $();
+		}
+
+		return $clones.children( '.layout.acf-clone' );
+	}
+
+	function rowContainsLiveEditor( $row ) {
+		return $row.find( '.acf-field[data-type="wysiwyg"], .wp-editor-wrap, .mce-tinymce, .quicktags-toolbar' ).length > 0;
 	}
 
 	function canDetachFlexibleRowBodies( $row ) {
-		return ! hasLiveEditorFields( $row );
+		if ( rowContainsLiveEditor( $row ) ) {
+			return false;
+		}
+
+		return getFlexibleRowBodyTargets( $row ).filter( function() {
+			return !! this && this.childNodes.length > 0;
+		} ).length > 0;
+	}
+
+	function detachFlexibleCloneBodies( $row ) {
+		var snapshots = [];
+
+		if ( $row.data( 'mrnDetachedFlexibleCloneBodies' ) ) {
+			return;
+		}
+
+		getFlexibleRowBodyTargets( $row ).filter( function() {
+			return !! this && this.childNodes.length > 0;
+		} ).each( function() {
+			var target = this;
+			var fragment = document.createDocumentFragment();
+
+			while ( target.firstChild ) {
+				fragment.appendChild( target.firstChild );
+			}
+
+			target.style.display = 'none';
+			target.setAttribute( 'data-mrn-clone-body-detached', 'true' );
+
+			snapshots.push( {
+				target: target,
+				fragment: fragment
+			} );
+		} );
+
+		if ( snapshots.length ) {
+			$row.data( 'mrnDetachedFlexibleCloneBodies', snapshots );
+		}
+	}
+
+	function restoreFlexibleCloneBodies( $row ) {
+		var snapshots = $row.data( 'mrnDetachedFlexibleCloneBodies' ) || [];
+
+		if ( ! snapshots.length ) {
+			return;
+		}
+
+		$.each( snapshots, function( index, snapshot ) {
+			if ( ! snapshot || ! snapshot.target ) {
+				return;
+			}
+
+			snapshot.target.style.display = '';
+			snapshot.target.removeAttribute( 'data-mrn-clone-body-detached' );
+
+			if ( snapshot.fragment ) {
+				snapshot.target.appendChild( snapshot.fragment );
+			}
+		} );
+
+		$row.removeData( 'mrnDetachedFlexibleCloneBodies' );
+	}
+
+	function syncFlexibleCloneBodyStates( context ) {
+		getFlexibleFields( context ).each( function() {
+			getFlexibleCloneRows( $( this ) ).each( function() {
+				detachFlexibleCloneBodies( $( this ) );
+			} );
+		} );
+	}
+
+	function restoreAllFlexibleCloneBodies( context ) {
+		getFlexibleFields( context ).each( function() {
+			getFlexibleCloneRows( $( this ) ).each( function() {
+				restoreFlexibleCloneBodies( $( this ) );
+			} );
+		} );
+	}
+
+	// Use ACF's native field lifecycle before detaching row markup so WYSIWYG and
+	// other field runtimes can tear down cleanly while the row is collapsed.
+	function unmountFlexibleRow( $row ) {
+		if ( ! $row || ! $row.length || $row.data( 'mrnFlexibleRowUnmounted' ) ) {
+			return;
+		}
+
+		if ( typeof acf.doAction === 'function' ) {
+			acf.doAction( 'unmount', $row );
+		}
+
+		$row.data( 'mrnFlexibleRowUnmounted', true );
+	}
+
+	function remountFlexibleRow( $row ) {
+		if ( ! $row || ! $row.length || ! $row.data( 'mrnFlexibleRowUnmounted' ) ) {
+			return;
+		}
+
+		$row.removeData( 'mrnFlexibleRowUnmounted' );
+
+		if ( typeof acf.doAction === 'function' ) {
+			acf.doAction( 'remount', $row );
+		}
 	}
 
 	function detachFlexibleRowBodies( $row ) {
+		var $targets;
 		var snapshots = [];
 
 		if ( $row.data( 'mrnDetachedFlexibleBodies' ) || ! canDetachFlexibleRowBodies( $row ) ) {
 			return;
 		}
 
-		getFlexibleRowBodyTargets( $row ).each( function() {
+		$targets = getFlexibleRowBodyTargets( $row ).filter( function() {
+			return !! this && this.childNodes.length > 0;
+		} );
+
+		if ( ! $targets.length ) {
+			return;
+		}
+
+		unmountFlexibleRow( $row );
+
+		$targets.each( function() {
 			var target = this;
 			var fragment;
-
-			if ( ! target || ! target.childNodes.length ) {
-				return;
-			}
 
 			fragment = document.createDocumentFragment();
 
@@ -647,10 +791,19 @@
 		}
 	}
 
-	function restoreFlexibleRowBodies( $row ) {
+	function restoreFlexibleRowBodies( $row, options ) {
+		var settings = $.extend(
+			{
+				remount: true
+			},
+			options || {}
+		);
 		var snapshots = $row.data( 'mrnDetachedFlexibleBodies' ) || [];
 
 		if ( ! snapshots.length ) {
+			if ( settings.remount ) {
+				remountFlexibleRow( $row );
+			}
 			return;
 		}
 
@@ -668,6 +821,10 @@
 		} );
 
 		$row.removeData( 'mrnDetachedFlexibleBodies' );
+
+		if ( settings.remount ) {
+			remountFlexibleRow( $row );
+		}
 	}
 
 	function syncFlexibleRowBodyState( $row ) {
@@ -676,8 +833,7 @@
 		}
 
 		if ( isRowCollapsed( $row ) ) {
-			restoreFlexibleRowBodies( $row );
-			if ( canDetachFlexibleRowBodies( $row ) ) {
+			if ( ! $row.data( 'mrnDetachedFlexibleBodies' ) && canDetachFlexibleRowBodies( $row ) ) {
 				detachFlexibleRowBodies( $row );
 			}
 			return;
@@ -699,7 +855,7 @@
 
 	function restoreAllFlexibleRowBodies( context ) {
 		$( context || document ).find( '.acf-field-flexible-content .layout' ).not( '.acf-clone' ).each( function() {
-			restoreFlexibleRowBodies( $( this ) );
+			restoreFlexibleRowBodies( $( this ), { remount: false } );
 		} );
 	}
 
@@ -971,18 +1127,33 @@
 	}
 
 	$( function() {
-		collapseInitialFlexibleRows( document );
-		bootBuilderAdminUi( document );
+		syncFlexibleCloneBodyStates( document );
+		bootBuilderAdminUi( document, { syncContentLists: false } );
 	} );
 
 	acf.addAction( 'append', function( $el ) {
-		bootBuilderAdminUi( $el || document );
+		var context = $el || document;
+
+		syncFlexibleRowBodyStates( context );
+		syncFlexibleCloneBodyStates( context );
+		bootBuilderAdminUi( context, { syncContentLists: true } );
+		syncFlexibleCloneBodyStates( document );
 	} );
 
 	$( document ).on( 'click', '[data-name="add-layout"]', function() {
 		window.setTimeout( function() {
 			refreshFlexibleContentMenus( document );
 		}, 40 );
+	} );
+
+	$( document ).on( 'mousedown touchstart', '[data-layout]', function() {
+		restoreAllFlexibleCloneBodies( document );
+	} );
+
+	$( document ).on( 'click', '[data-layout]', function() {
+		window.setTimeout( function() {
+			syncFlexibleCloneBodyStates( document );
+		}, 80 );
 	} );
 
 	$( document ).on( 'mousedown touchstart', '.acf-field-flexible-content .layout:not(.acf-clone) [data-name="collapse-layout"]', function() {
@@ -1033,7 +1204,7 @@
 		event.preventDefault();
 
 		var $button = $( this );
-		var $row = $button.closest( '.layout[data-layout="reusable_block"]' );
+		var $row = $button.closest( '.layout' );
 		var blockId = getSelectedBlockId( $row );
 
 		if ( ! blockId ) {

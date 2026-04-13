@@ -484,11 +484,14 @@ add_filter( 'mrn_universal_sticky_bar_post_types', 'mrn_base_stack_add_editorial
  * @return void
  */
 function mrn_base_stack_enqueue_shared_repeater_admin_assets() {
+	$repeater_controls_path = get_template_directory() . '/js/admin-repeater-controls.js';
+	$repeater_controls_ver  = file_exists( $repeater_controls_path ) ? (string) filemtime( $repeater_controls_path ) : _S_VERSION;
+
 	wp_enqueue_script(
 		'mrn-base-stack-admin-repeater-controls',
 		get_template_directory_uri() . '/js/admin-repeater-controls.js',
 		array( 'jquery', 'acf-input' ),
-		_S_VERSION,
+		$repeater_controls_ver,
 		true
 	);
 

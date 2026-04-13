@@ -16,6 +16,10 @@
 		return $field.find( '> .acf-input > .acf-repeater > .acf-table > tbody > .acf-row, > .acf-input > .acf-repeater > .acf-table > .acf-tbody > .acf-row, > .acf-input > .acf-repeater > table > tbody > .acf-row, > .acf-input > .acf-repeater > .values > .acf-row' ).not( '.acf-clone' );
 	}
 
+	function getRepeaterCloneRows( $field ) {
+		return $field.find( '> .acf-input > .acf-repeater > .acf-table > tbody > .acf-row.acf-clone, > .acf-input > .acf-repeater > .acf-table > .acf-tbody > .acf-row.acf-clone, > .acf-input > .acf-repeater > table > tbody > .acf-row.acf-clone, > .acf-input > .acf-repeater > .values > .acf-row.acf-clone' );
+	}
+
 	function getRowCollapseToggle( $row ) {
 		var $toggle = $row.find( '> .acf-row-handle .acf-icon.-collapse, > .acf-row-handle.order .acf-icon.-collapse, > .acf-row-handle .acf-js-tooltip' ).first();
 
@@ -34,29 +38,118 @@
 		return $row.children( '.acf-fields, td.acf-fields, td:not(.acf-row-handle):not(.acf-row-handle.order)' );
 	}
 
-	function hasLiveEditorFields( $row ) {
-		return $row.is( '.acf-field[data-type="wysiwyg"]' ) ||
-			$row.find( '.acf-field[data-type="wysiwyg"], .acf-editor-wrap, .wp-editor-wrap, .quicktags-toolbar, textarea.wp-editor-area' ).length > 0;
+	function rowContainsLiveEditor( $row ) {
+		return $row.find( '.acf-field[data-type="wysiwyg"], .wp-editor-wrap, .mce-tinymce, .quicktags-toolbar' ).length > 0;
 	}
 
 	function canDetachRowBodies( $row ) {
-		return ! hasLiveEditorFields( $row );
+		if ( rowContainsLiveEditor( $row ) ) {
+			return false;
+		}
+
+		return getRowBodyTargets( $row ).filter( function () {
+			return !! this && this.childNodes.length > 0;
+		} ).length > 0;
+	}
+
+	function detachCloneRowBodies( $row ) {
+		var snapshots = [];
+
+		if ( $row.data( 'mrnDetachedRepeaterCloneBodies' ) ) {
+			return;
+		}
+
+		getRowBodyTargets( $row ).filter( function () {
+			return !! this && this.childNodes.length > 0;
+		} ).each( function () {
+			var target = this;
+			var fragment = document.createDocumentFragment();
+
+			while ( target.firstChild ) {
+				fragment.appendChild( target.firstChild );
+			}
+
+			target.style.display = 'none';
+			target.setAttribute( 'data-mrn-clone-body-detached', 'true' );
+			snapshots.push( {
+				target: target,
+				fragment: fragment
+			} );
+		} );
+
+		if ( snapshots.length ) {
+			$row.data( 'mrnDetachedRepeaterCloneBodies', snapshots );
+		}
+	}
+
+	function restoreCloneRowBodies( $row ) {
+		var snapshots = $row.data( 'mrnDetachedRepeaterCloneBodies' ) || [];
+
+		if ( ! snapshots.length ) {
+			return;
+		}
+
+		$.each( snapshots, function ( index, snapshot ) {
+			if ( ! snapshot || ! snapshot.target ) {
+				return;
+			}
+
+			snapshot.target.style.display = '';
+			snapshot.target.removeAttribute( 'data-mrn-clone-body-detached' );
+
+			if ( snapshot.fragment ) {
+				snapshot.target.appendChild( snapshot.fragment );
+			}
+		} );
+
+		$row.removeData( 'mrnDetachedRepeaterCloneBodies' );
+	}
+
+	function unmountRow( $row ) {
+		if ( ! $row || ! $row.length || $row.data( 'mrnRepeaterRowUnmounted' ) ) {
+			return;
+		}
+
+		if ( typeof acf.doAction === 'function' ) {
+			acf.doAction( 'unmount', $row );
+		}
+
+		$row.data( 'mrnRepeaterRowUnmounted', true );
+	}
+
+	function remountRow( $row ) {
+		if ( ! $row || ! $row.length || ! $row.data( 'mrnRepeaterRowUnmounted' ) ) {
+			return;
+		}
+
+		$row.removeData( 'mrnRepeaterRowUnmounted' );
+
+		if ( typeof acf.doAction === 'function' ) {
+			acf.doAction( 'remount', $row );
+		}
 	}
 
 	function detachRowBodies( $row ) {
+		var $targets;
 		var snapshots = [];
 
 		if ( $row.data( 'mrnDetachedRepeaterBodies' ) || ! canDetachRowBodies( $row ) ) {
 			return;
 		}
 
-		getRowBodyTargets( $row ).each( function () {
+		$targets = getRowBodyTargets( $row ).filter( function () {
+			return !! this && this.childNodes.length > 0;
+		} );
+
+		if ( ! $targets.length ) {
+			return;
+		}
+
+		unmountRow( $row );
+
+		$targets.each( function () {
 			var target = this;
 			var fragment;
-
-			if ( ! target || ! target.childNodes.length ) {
-				return;
-			}
 
 			fragment = document.createDocumentFragment();
 
@@ -77,10 +170,19 @@
 		}
 	}
 
-	function restoreRowBodies( $row ) {
+	function restoreRowBodies( $row, options ) {
+		var settings = $.extend(
+			{
+				remount: true
+			},
+			options || {}
+		);
 		var snapshots = $row.data( 'mrnDetachedRepeaterBodies' ) || [];
 
 		if ( ! snapshots.length ) {
+			if ( settings.remount ) {
+				remountRow( $row );
+			}
 			return;
 		}
 
@@ -98,6 +200,10 @@
 		} );
 
 		$row.removeData( 'mrnDetachedRepeaterBodies' );
+
+		if ( settings.remount ) {
+			remountRow( $row );
+		}
 	}
 
 	function syncRowBodyState( $row ) {
@@ -106,8 +212,7 @@
 		}
 
 		if ( isRowCollapsed( $row ) ) {
-			restoreRowBodies( $row );
-			if ( canDetachRowBodies( $row ) ) {
+			if ( ! $row.data( 'mrnDetachedRepeaterBodies' ) && canDetachRowBodies( $row ) ) {
 				detachRowBodies( $row );
 			}
 			return;
@@ -127,7 +232,23 @@
 	function restoreAllRowBodies( context ) {
 		getRepeaterFields( context ).each( function () {
 			getRepeaterRows( $( this ) ).each( function () {
-				restoreRowBodies( $( this ) );
+				restoreRowBodies( $( this ), { remount: false } );
+			} );
+		} );
+	}
+
+	function syncCloneRowBodyStates( context ) {
+		getRepeaterFields( context ).each( function () {
+			getRepeaterCloneRows( $( this ) ).each( function () {
+				detachCloneRowBodies( $( this ) );
+			} );
+		} );
+	}
+
+	function restoreRepeaterCloneBodies( context ) {
+		getRepeaterFields( context ).each( function () {
+			getRepeaterCloneRows( $( this ) ).each( function () {
+				restoreCloneRowBodies( $( this ) );
 			} );
 		} );
 	}
@@ -263,6 +384,16 @@
 		}, 0 );
 	} );
 
+	$( document ).on( 'mousedown touchstart', '.acf-field[data-type="repeater"] .acf-actions a, .acf-field[data-type="repeater"] .acf-actions button, .acf-field[data-type="repeater"] [data-event="add-row"]', function () {
+		restoreRepeaterCloneBodies( $( this ).closest( '.acf-field[data-type="repeater"]' ) );
+	} );
+
+	$( document ).on( 'click', '.acf-field[data-type="repeater"] .acf-actions a, .acf-field[data-type="repeater"] .acf-actions button, .acf-field[data-type="repeater"] [data-event="add-row"]', function () {
+		window.setTimeout( function () {
+			syncCloneRowBodyStates( document );
+		}, 80 );
+	} );
+
 	$( document ).on( 'submit', '#post', function () {
 		restoreAllRowBodies( this );
 	} );
@@ -277,12 +408,16 @@
 		}, 0 );
 	} );
 
-	acf.addAction( 'append', function ( $el ) {
-		refreshToolbars( $el );
-	} );
-
 	$( function () {
 		refreshToolbars( document );
-		collapseInitialRows( document );
+		syncCloneRowBodyStates( document );
+	} );
+
+	acf.addAction( 'append', function ( $el ) {
+		var context = $el || document;
+
+		refreshToolbars( context );
+		syncRowBodyStates( context );
+		syncCloneRowBodyStates( document );
 	} );
 }( jQuery, window.acf ) );

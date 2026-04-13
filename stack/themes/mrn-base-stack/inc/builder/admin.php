@@ -25,11 +25,14 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 		wp_enqueue_editor();
 	}
 
+	$content_builder_admin_path = get_template_directory() . '/js/content-builder-admin.js';
+	$content_builder_admin_ver  = file_exists( $content_builder_admin_path ) ? (string) filemtime( $content_builder_admin_path ) : _S_VERSION;
+
 	wp_enqueue_script(
 		'mrn-base-stack-content-builder-admin',
 		get_template_directory_uri() . '/js/content-builder-admin.js',
 		array( 'jquery' ),
-		_S_VERSION,
+		$content_builder_admin_ver,
 		true
 	);
 
@@ -133,8 +136,8 @@ function mrn_base_stack_admin_builder_action_styles() {
 			border: 0;
 			background: transparent;
 			box-shadow: none;
-			opacity: 0;
-			pointer-events: none;
+			opacity: 0.8;
+			pointer-events: auto;
 			transition: opacity 0.15s ease;
 		}
 
@@ -163,6 +166,17 @@ function mrn_base_stack_admin_builder_action_styles() {
 			width: 20px;
 			height: 20px;
 			line-height: 20px;
+		}
+
+		/* Hide heavy ACF clone-template bodies before admin JS runs so the
+			edit screen does not visibly assemble template field groups on load. */
+		.acf-field-flexible-content > .acf-input > .acf-flexible-content > .clones > .layout.acf-clone > .acf-fields,
+		.acf-field-flexible-content > .acf-input > .clones > .layout.acf-clone > .acf-fields,
+		.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > tbody > .acf-row.acf-clone > td:not(.acf-row-handle):not(.acf-row-handle.order),
+		.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > .acf-tbody > .acf-row.acf-clone > td:not(.acf-row-handle):not(.acf-row-handle.order),
+		.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > table > tbody > .acf-row.acf-clone > td:not(.acf-row-handle):not(.acf-row-handle.order),
+		.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .values > .acf-row.acf-clone > .acf-fields {
+			display: none !important;
 		}
 
 		li.mrn-builder-menu-header {
