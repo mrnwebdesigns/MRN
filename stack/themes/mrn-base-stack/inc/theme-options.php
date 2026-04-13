@@ -1540,18 +1540,27 @@ function mrn_base_stack_load_sticky_toolbar_helper() {
 		return true;
 	}
 
-	$candidates = array(
-		defined( 'WP_CONTENT_DIR' ) ? WP_CONTENT_DIR . '/shared/mrn-sticky-settings-toolbar.php' : '',
-		dirname( __DIR__, 4 ) . '/shared/mrn-sticky-settings-toolbar.php',
-	);
+	if ( defined( 'WP_CONTENT_DIR' ) ) {
+		$content_toolbar_helper = WP_CONTENT_DIR . '/shared/mrn-sticky-settings-toolbar.php';
 
-	foreach ( $candidates as $candidate ) {
-		if ( $candidate && file_exists( $candidate ) ) {
-			require_once $candidate;
+		if ( file_exists( $content_toolbar_helper ) ) {
+			require_once WP_CONTENT_DIR . '/shared/mrn-sticky-settings-toolbar.php';
 			$loaded = function_exists( 'mrn_sticky_toolbar_render' );
+
 			if ( $loaded ) {
 				return true;
 			}
+		}
+	}
+
+	$repo_toolbar_helper = dirname( __DIR__, 4 ) . '/shared/mrn-sticky-settings-toolbar.php';
+
+	if ( file_exists( $repo_toolbar_helper ) ) {
+		require_once dirname( __DIR__, 4 ) . '/shared/mrn-sticky-settings-toolbar.php';
+		$loaded = function_exists( 'mrn_sticky_toolbar_render' );
+
+		if ( $loaded ) {
+			return true;
 		}
 	}
 

@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.1.21' );
+	define( '_S_VERSION', '1.1.22' );
 }
 
 /**
@@ -668,6 +668,14 @@ function mrn_base_stack_scripts() {
 		wp_enqueue_script(
 			'mrn-base-stack-front-end-slider',
 			get_template_directory_uri() . '/js/front-end-slider.js',
+			array( 'mrn-base-stack-splide' ),
+			_S_VERSION,
+			true
+		);
+
+		wp_enqueue_script(
+			'mrn-base-stack-front-end-tabs',
+			get_template_directory_uri() . '/js/front-end-tabs.js',
 			array( 'mrn-base-stack-splide' ),
 			_S_VERSION,
 			true

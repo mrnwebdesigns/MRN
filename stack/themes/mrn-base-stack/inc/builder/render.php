@@ -323,6 +323,11 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 		return true;
 	}
 
+	if ( 'tabbed_layout' === $layout ) {
+		get_template_part( 'template-parts/builder/tabbed-layout', null, $context );
+		return true;
+	}
+
 	if ( 'logos' === $layout ) {
 		get_template_part( 'template-parts/builder/logos', null, $context );
 		return true;
@@ -733,6 +738,30 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 		return 'Slider: ' . esc_html( wp_strip_all_tags( $heading ) );
 	}
 
+	if ( 'tabbed_layout' === $layout_name ) {
+		$heading = trim( (string) get_sub_field( 'heading' ) );
+
+		if ( '' !== $heading ) {
+			return 'Tabbed Layout: ' . esc_html( wp_strip_all_tags( $heading ) );
+		}
+
+		$tabs = get_sub_field( 'tabs' );
+		if ( is_array( $tabs ) ) {
+			foreach ( $tabs as $tab ) {
+				if ( ! is_array( $tab ) ) {
+					continue;
+				}
+
+				$tab_label = isset( $tab['tab_label'] ) ? trim( (string) $tab['tab_label'] ) : '';
+				if ( '' !== $tab_label ) {
+					return 'Tabbed Layout: ' . esc_html( wp_strip_all_tags( $tab_label ) );
+				}
+			}
+		}
+
+		return 'Tabbed Layout';
+	}
+
 	if ( 'logos' === $layout_name ) {
 		$heading = trim( (string) get_sub_field( 'heading' ) );
 
@@ -877,6 +906,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 }
 add_filter( 'acf/fields/flexible_content/layout_title/name=page_content_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/name=page_after_content_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 
 /**
  * Render a flexible-content builder field for posts and pages.

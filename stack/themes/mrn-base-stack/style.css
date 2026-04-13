@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.1.21
+Version: 1.1.22
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -1844,6 +1844,182 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	margin: 0;
 }
 
+.mrn-tabbed-layout__header {
+	margin-bottom: var(--mrn-tabbed-layout-header-gap, 0.5rem);
+}
+
+.mrn-tabbed-layout__body {
+	display: grid;
+	gap: var(--mrn-tabbed-layout-body-gap, 1.5rem);
+}
+
+.mrn-tabbed-layout__nav-wrap {
+	overflow-x: auto;
+	padding-bottom: 0.25rem;
+}
+
+.mrn-tabbed-layout__nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--mrn-tabbed-layout-tab-gap, 0.75rem);
+}
+
+.mrn-tabbed-layout--orientation-vertical .mrn-tabbed-layout__nav-wrap {
+	overflow-x: visible;
+	padding-bottom: 0;
+}
+
+.mrn-tabbed-layout--orientation-vertical .mrn-tabbed-layout__body {
+	align-items: start;
+	grid-template-columns: minmax(12rem, var(--mrn-tabbed-layout-vertical-nav-width, 16rem)) minmax(0, 1fr);
+}
+
+.mrn-tabbed-layout--orientation-vertical .mrn-tabbed-layout__nav {
+	flex-direction: column;
+	flex-wrap: nowrap;
+}
+
+.mrn-tabbed-layout__tab {
+	align-items: center;
+	appearance: none;
+	background: var(--mrn-tabbed-layout-tab-bg, var(--mrn-ui-panel-bg, transparent));
+	border: var(--mrn-tabbed-layout-tab-border, var(--mrn-ui-panel-border, 1px solid currentColor));
+	border-radius: var(--mrn-tabbed-layout-tab-radius, 999px);
+	color: var(--mrn-tabbed-layout-tab-color, inherit);
+	cursor: pointer;
+	display: inline-flex;
+	font: inherit;
+	gap: var(--mrn-tabbed-layout-tab-inner-gap, 0.75rem);
+	justify-content: center;
+	line-height: 1.2;
+	margin: 0;
+	max-width: 100%;
+	min-height: var(--mrn-tabbed-layout-tab-min-height, 3rem);
+	padding: var(--mrn-tabbed-layout-tab-padding, 0.75rem 1rem);
+	text-align: center;
+	text-decoration: none;
+	transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+	white-space: nowrap;
+}
+
+.mrn-tabbed-layout__tab:hover,
+.mrn-tabbed-layout__tab:focus-visible,
+.mrn-tabbed-layout__tab.is-active,
+.mrn-tabbed-layout__tab[aria-selected="true"] {
+	background: var(--mrn-tabbed-layout-tab-active-bg, rgba(15, 23, 32, 0.08));
+	border: var(--mrn-tabbed-layout-tab-active-border, var(--mrn-tabbed-layout-tab-border, var(--mrn-ui-panel-border, 1px solid currentColor)));
+	box-shadow: var(--mrn-tabbed-layout-tab-active-shadow, var(--mrn-ui-panel-shadow, none));
+	color: var(--mrn-tabbed-layout-tab-active-color, inherit);
+}
+
+.mrn-tabbed-layout__tab:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
+.mrn-tabbed-layout__tab-media {
+	align-items: center;
+	display: inline-flex;
+	flex-shrink: 0;
+	justify-content: center;
+}
+
+.mrn-tabbed-layout__tab-image {
+	border-radius: var(--mrn-tabbed-layout-tab-image-radius, 999px);
+	display: block;
+	height: var(--mrn-tabbed-layout-tab-image-size, 3rem);
+	object-fit: cover;
+	width: var(--mrn-tabbed-layout-tab-image-size, 3rem);
+}
+
+.mrn-tabbed-layout__tab-label {
+	max-width: 100%;
+	overflow-wrap: anywhere;
+	white-space: normal;
+}
+
+.mrn-tabbed-layout--orientation-vertical .mrn-tabbed-layout__tab {
+	justify-content: flex-start;
+	text-align: left;
+	width: 100%;
+}
+
+.mrn-tabbed-layout__panels {
+	display: grid;
+	position: relative;
+}
+
+.mrn-tabbed-layout__panel {
+	min-width: 0;
+}
+
+.mrn-tabbed-layout__panel-body {
+	min-width: 0;
+}
+
+.mrn-tabbed-layout__panel[hidden] {
+	display: none;
+}
+
+.mrn-tabbed-layout__panel > .mrn-content-builder__row,
+.mrn-tabbed-layout__panel-body > .mrn-content-builder__row {
+	margin: 0;
+}
+
+.mrn-tabbed-layout__panels--slider:not(.is-initialized) .mrn-tabbed-layout__panel-list {
+	display: block;
+}
+
+.mrn-tabbed-layout__panels--slider .mrn-tabbed-layout__panel-track,
+.mrn-tabbed-layout__panels--slider .mrn-tabbed-layout__panel-list,
+.mrn-tabbed-layout__panels--slider .mrn-tabbed-layout__panel {
+	height: 100%;
+}
+
+.mrn-tabbed-layout--orientation-horizontal .mrn-tabbed-layout__panels--slider .mrn-tabbed-layout__panel {
+	flex: 0 0 100%;
+	width: 100%;
+}
+
+.mrn-tabbed-layout__panels--slider .mrn-tabbed-layout__panel-body {
+	height: 100%;
+}
+
+.mrn-tabbed-layout--transition-slide.mrn-tabbed-layout--orientation-vertical .mrn-tabbed-layout__panels--slider {
+	height: var(--mrn-tabbed-layout-panel-height, auto);
+}
+
+.mrn-tabbed-layout--equal-heights .mrn-tabbed-layout__panels,
+.mrn-tabbed-layout--equal-heights .mrn-tabbed-layout__panel,
+.mrn-tabbed-layout--equal-heights .mrn-tabbed-layout__panel-body {
+	min-height: var(--mrn-tabbed-layout-panel-height, auto);
+}
+
+.mrn-tabbed-layout__panel.is-measuring {
+	display: block !important;
+	left: 0;
+	pointer-events: none;
+	position: absolute;
+	top: 0;
+	visibility: hidden;
+	width: 100%;
+	z-index: -1;
+}
+
+.mrn-tabbed-layout--transition-fade .mrn-tabbed-layout__panel.is-active {
+	animation: mrn-tabbed-layout-fade-in 220ms ease;
+}
+
+@keyframes mrn-tabbed-layout-fade-in {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
 .mrn-shell-section--text {
 	background: transparent;
 	border: 0;
@@ -2657,6 +2833,29 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	}
 
 	.mrn-two-column-split {
+		grid-template-columns: 1fr;
+	}
+
+	.mrn-tabbed-layout__nav {
+		flex-wrap: nowrap;
+		min-width: 100%;
+		width: max-content;
+	}
+
+	.mrn-tabbed-layout__tab {
+		flex: 0 0 auto;
+	}
+
+	.mrn-tabbed-layout--orientation-vertical .mrn-tabbed-layout__nav {
+		min-width: 100%;
+		width: max-content;
+	}
+
+	.mrn-tabbed-layout--orientation-vertical .mrn-tabbed-layout__tab {
+		flex: 1 1 auto;
+	}
+
+	.mrn-tabbed-layout--orientation-vertical .mrn-tabbed-layout__body {
 		grid-template-columns: 1fr;
 	}
 

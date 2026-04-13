@@ -49,6 +49,97 @@ function mrn_base_stack_clone_acf_keys_with_prefix( array $value, $prefix ) {
 }
 
 /**
+ * Build a stable derived row index for nested builder content.
+ *
+ * Some row templates use the index for DOM IDs and query-string pagination.
+ * Nested tab panels need their own deterministic index space so they do not
+ * collide with sibling top-level rows on the same page.
+ *
+ * @param int $parent_index Parent row index.
+ * @param int $group_index Nested group index.
+ * @param int $row_index Nested row index.
+ * @return int
+ */
+function mrn_base_stack_get_nested_builder_row_index( $parent_index, $group_index, $row_index ) {
+	$parent_index = max( 0, (int) $parent_index );
+	$group_index  = max( 0, (int) $group_index );
+	$row_index    = max( 0, (int) $row_index );
+
+	return ( ( $parent_index + 1 ) * 10000 ) + ( ( $group_index + 1 ) * 100 ) + $row_index;
+}
+
+/**
+ * Clone the page-builder layouts for use inside tab panels.
+ *
+ * The cloned layouts retain their original `name` values so the existing
+ * renderers and admin title filters keep working, but each ACF `key` gets a
+ * new prefix so the nested flexible-content field is isolated from the top-level
+ * builder field.
+ *
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_tabbed_layout_nested_layouts() {
+	static $layouts = null;
+	static $loading = false;
+
+	if ( null !== $layouts ) {
+		return $layouts;
+	}
+
+	if ( $loading || ! function_exists( 'acf_get_field' ) ) {
+		return array();
+	}
+
+	$loading = true;
+	$field   = acf_get_field( 'field_mrn_page_content_rows' );
+	$loading = false;
+
+	if ( ! is_array( $field ) || empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
+		$layouts = array();
+		return $layouts;
+	}
+
+	$layouts = array();
+
+	foreach ( $field['layouts'] as $layout_key => $layout ) {
+		if ( ! is_array( $layout ) ) {
+			continue;
+		}
+
+		$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+		if ( '' === $layout_name || 'tabbed_layout' === $layout_name ) {
+			continue;
+		}
+
+		$cloned_layout = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_tabbed_panel_' );
+		$cloned_key    = 'layout_mrn_tabbed_panel_' . $layout_name;
+		$cloned_layout['key'] = $cloned_key;
+
+		$layouts[ $cloned_key ] = $cloned_layout;
+	}
+
+	return $layouts;
+}
+
+/**
+ * Populate the nested tab-panel flexible-content field with builder layouts.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_populate_tabbed_layout_panel_field( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field['layouts'] = mrn_base_stack_get_tabbed_layout_nested_layouts();
+
+	return $field;
+}
+add_filter( 'acf/load_field/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_populate_tabbed_layout_panel_field', 20 );
+add_filter( 'acf/prepare_field/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_populate_tabbed_layout_panel_field', 20 );
+
+/**
  * Shared section-width choices for theme-owned builder layouts.
  *
  * @return array<string, string>
@@ -229,8 +320,9 @@ function mrn_base_stack_prepare_effects_fields_for_permissions( $field ) {
 
 	$is_effects_tab  = 'tab' === $field_type && 'effects' === $field_label && false !== strpos( $field_key, 'effects_tab' );
 	$is_motion_group = 'group' === $field_type && 'motion_settings' === $field_name;
+	$is_effects_field = in_array( $field_name, mrn_base_stack_get_effects_tab_field_names(), true );
 
-	if ( $is_effects_tab || $is_motion_group ) {
+	if ( $is_effects_tab || $is_motion_group || $is_effects_field ) {
 		return false;
 	}
 
@@ -264,6 +356,7 @@ function mrn_base_stack_enforce_effects_controls_capability_on_save( $value, $po
 	return false === $stored_value ? false : $stored_value;
 }
 add_filter( 'acf/update_value/name=motion_settings', 'mrn_base_stack_enforce_effects_controls_capability_on_save', 20, 3 );
+add_filter( 'acf/update_value/name=tab_switch_effect', 'mrn_base_stack_enforce_effects_controls_capability_on_save', 20, 3 );
 
 /**
  * Shared list-style choices for query-driven builder layouts.
@@ -867,6 +960,30 @@ function mrn_base_stack_get_motion_trigger_choices() {
 }
 
 /**
+ * Get field names that belong in the shared Effects tab.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_effects_tab_field_names() {
+	return array(
+		'tab_switch_effect',
+	);
+}
+
+/**
+ * Shared tab-switch animation choices for tabbed layouts.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_tab_switch_effect_choices() {
+	return array(
+		'instant' => 'Instant',
+		'fade'    => 'Fade',
+		'slide'   => 'Slide',
+	);
+}
+
+/**
  * Shared target choices for non-surface motion effects.
  *
  * @return array<string, string>
@@ -1148,9 +1265,9 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 		$processed_fields[] = $field;
 	}
 
-	$has_tabs      = false;
-	$motion_fields = array();
-	$remaining     = array();
+	$has_tabs       = false;
+	$effects_fields = array();
+	$remaining      = array();
 
 	foreach ( $processed_fields as $field ) {
 		if ( ! is_array( $field ) ) {
@@ -1170,27 +1287,27 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 			}
 		}
 
-		if ( 'motion_settings' === $field_name ) {
-			$motion_fields[] = $field;
+		if ( 'motion_settings' === $field_name || in_array( $field_name, mrn_base_stack_get_effects_tab_field_names(), true ) ) {
+			$effects_fields[] = $field;
 			continue;
 		}
 
 		$remaining[] = $field;
 	}
 
-	if ( ! $has_tabs || empty( $motion_fields ) ) {
+	if ( ! $has_tabs || empty( $effects_fields ) ) {
 		return $remaining;
 	}
 
 	$effects_tab_key = 'field_mrn_effects_tab';
 
-	if ( isset( $motion_fields[0]['key'] ) && is_string( $motion_fields[0]['key'] ) && '' !== $motion_fields[0]['key'] ) {
-		$effects_tab_key = $motion_fields[0]['key'] . '_effects_tab';
+	if ( isset( $effects_fields[0]['key'] ) && is_string( $effects_fields[0]['key'] ) && '' !== $effects_fields[0]['key'] ) {
+		$effects_tab_key = $effects_fields[0]['key'] . '_effects_tab';
 	}
 
 	$remaining[] = mrn_base_stack_get_effects_tab_field( $effects_tab_key );
 
-	return array_merge( $remaining, $motion_fields );
+	return array_merge( $remaining, $effects_fields );
 }
 
 /**
