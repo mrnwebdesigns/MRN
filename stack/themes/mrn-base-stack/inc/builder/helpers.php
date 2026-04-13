@@ -67,6 +67,13 @@ function mrn_base_stack_get_section_width_choices() {
  * @return array<string, string>
  */
 function mrn_base_stack_get_content_list_post_type_choices() {
+	static $cached_choices = null;
+	$can_cache = did_action( 'init' );
+
+	if ( $can_cache && is_array( $cached_choices ) ) {
+		return $cached_choices;
+	}
+
 	$post_types = get_post_types(
 		array(
 			'public'  => true,
@@ -108,6 +115,12 @@ function mrn_base_stack_get_content_list_post_type_choices() {
 	if ( empty( $choices['post'] ) ) {
 		$choices = array_merge( array( 'post' => 'Posts' ), $choices );
 	}
+
+	if ( ! $can_cache ) {
+		return $choices;
+	}
+
+	$cached_choices = $choices;
 
 	return $choices;
 }
@@ -283,6 +296,13 @@ function mrn_base_stack_get_content_list_style_choices() {
  * @return array<string, string>
  */
 function mrn_base_stack_get_content_list_display_mode_choices() {
+	static $cached_choices = null;
+	$can_cache = did_action( 'init' );
+
+	if ( $can_cache && is_array( $cached_choices ) ) {
+		return $cached_choices;
+	}
+
 	$choices = array(
 		'' => 'Use Row Settings',
 	);
@@ -301,6 +321,12 @@ function mrn_base_stack_get_content_list_display_mode_choices() {
 			$choices[ $mode ] = $label;
 		}
 	}
+
+	if ( ! $can_cache ) {
+		return $choices;
+	}
+
+	$cached_choices = $choices;
 
 	return $choices;
 }
@@ -382,7 +408,15 @@ add_filter( 'acf/prepare_field', 'mrn_base_stack_prepare_dynamic_content_list_se
  * @return array<string, array<string, mixed>>
  */
 function mrn_base_stack_get_content_list_display_modes_for_post_type( $post_type = 'post' ) {
+	static $cached_modes_by_post_type = array();
+	$can_cache = did_action( 'init' );
+
 	$post_type = sanitize_key( (string) $post_type );
+
+	if ( $can_cache && array_key_exists( $post_type, $cached_modes_by_post_type ) ) {
+		return $cached_modes_by_post_type[ $post_type ];
+	}
+
 	$modes     = mrn_base_stack_get_content_list_display_modes();
 	$filtered  = array();
 
@@ -402,10 +436,16 @@ function mrn_base_stack_get_content_list_display_modes_for_post_type( $post_type
 	}
 
 	if ( empty( $filtered ) && 'post' !== $post_type ) {
-		return mrn_base_stack_get_content_list_display_modes_for_post_type( 'post' );
+		$filtered = mrn_base_stack_get_content_list_display_modes_for_post_type( 'post' );
 	}
 
-	return $filtered;
+	if ( ! $can_cache ) {
+		return $filtered;
+	}
+
+	$cached_modes_by_post_type[ $post_type ] = $filtered;
+
+	return $cached_modes_by_post_type[ $post_type ];
 }
 
 /**
@@ -414,6 +454,13 @@ function mrn_base_stack_get_content_list_display_modes_for_post_type( $post_type
  * @return array<string, array<string, string>>
  */
 function mrn_base_stack_get_content_list_display_mode_choice_map() {
+	static $cached_map = null;
+	$can_cache = did_action( 'init' );
+
+	if ( $can_cache && is_array( $cached_map ) ) {
+		return $cached_map;
+	}
+
 	$map = array();
 
 	foreach ( mrn_base_stack_get_content_list_post_type_choices() as $post_type => $label ) {
@@ -435,6 +482,12 @@ function mrn_base_stack_get_content_list_display_mode_choice_map() {
 		$map[ $post_type ] = $choices;
 	}
 
+	if ( ! $can_cache ) {
+		return $map;
+	}
+
+	$cached_map = $map;
+
 	return $map;
 }
 
@@ -448,6 +501,13 @@ function mrn_base_stack_get_content_list_display_mode_choice_map() {
  * @return array<string, array<string, mixed>>
  */
 function mrn_base_stack_get_content_list_display_modes() {
+	static $cached_modes = null;
+	$can_cache = did_action( 'init' );
+
+	if ( $can_cache && is_array( $cached_modes ) ) {
+		return $cached_modes;
+	}
+
 	$modes = array(
 		'standard'   => array(
 			'entity_type'      => 'post_type',
@@ -504,7 +564,16 @@ function mrn_base_stack_get_content_list_display_modes() {
 		}
 	}
 
-	return apply_filters( 'mrn_base_stack_content_list_display_modes', $modes );
+	$modes = apply_filters( 'mrn_base_stack_content_list_display_modes', $modes );
+	$modes = is_array( $modes ) ? $modes : array();
+
+	if ( ! $can_cache ) {
+		return $modes;
+	}
+
+	$cached_modes = $modes;
+
+	return $modes;
 }
 
 /**
@@ -706,6 +775,13 @@ function mrn_base_stack_get_content_list_orderby_choices() {
  * @return array<string, string>
  */
 function mrn_base_stack_get_content_list_taxonomy_choices() {
+	static $cached_choices = null;
+	$can_cache = did_action( 'init' );
+
+	if ( $can_cache && is_array( $cached_choices ) ) {
+		return $cached_choices;
+	}
+
 	$taxonomies = get_taxonomies(
 		array(
 			'public'  => true,
@@ -740,6 +816,12 @@ function mrn_base_stack_get_content_list_taxonomy_choices() {
 	if ( empty( $choices['category'] ) && taxonomy_exists( 'category' ) ) {
 		$choices = array_merge( array( 'category' => 'Categories' ), $choices );
 	}
+
+	if ( ! $can_cache ) {
+		return $choices;
+	}
+
+	$cached_choices = $choices;
 
 	return $choices;
 }

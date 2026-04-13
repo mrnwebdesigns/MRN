@@ -98,81 +98,89 @@
 		} );
 	}
 
+	function compareFlexibleContentMenuItems( leftItem, rightItem, layoutMap ) {
+		var $leftLink = $( leftItem ).find( '[data-layout]' ).first();
+		var $rightLink = $( rightItem ).find( '[data-layout]' ).first();
+		var leftName = $leftLink.attr( 'data-layout' ) || '';
+		var rightName = $rightLink.attr( 'data-layout' ) || '';
+		var leftMeta = layoutMap[ leftName ] || {};
+		var rightMeta = layoutMap[ rightName ] || {};
+		var leftLabel = String( leftMeta.label || $leftLink.text() || '' ).trim().toLowerCase();
+		var rightLabel = String( rightMeta.label || $rightLink.text() || '' ).trim().toLowerCase();
+
+		return leftLabel.localeCompare( rightLabel );
+	}
+
 	function alphabetizeFlexibleContentMenus( context ) {
 		var layoutMap = getBuilderLayoutMap();
+		var reusableLayouts = getReusableLayoutNames();
 
 		$( context || document ).find( 'ul' ).has( 'li [data-layout]' ).each( function() {
 			var $menu = $( this );
 			var $items = $menu.children( 'li' ).filter( function() {
 				return $( this ).find( '[data-layout]' ).length > 0;
 			} );
+			var standardItems = [];
+			var reusableItems = [];
+			var hiddenItems = [];
 
 			if ( $items.length < 2 ) {
 				return;
 			}
 
-			$items.sort( function( leftItem, rightItem ) {
-				var $leftLink = $( leftItem ).find( '[data-layout]' ).first();
-				var $rightLink = $( rightItem ).find( '[data-layout]' ).first();
-				var leftName = $leftLink.attr( 'data-layout' ) || '';
-				var rightName = $rightLink.attr( 'data-layout' ) || '';
-				var leftMeta = layoutMap[ leftName ] || {};
-				var rightMeta = layoutMap[ rightName ] || {};
-				var leftLabel = String( leftMeta.label || $leftLink.text() || '' ).trim().toLowerCase();
-				var rightLabel = String( rightMeta.label || $rightLink.text() || '' ).trim().toLowerCase();
+			$menu.children( '.mrn-builder-menu-header' ).remove();
 
-				return leftLabel.localeCompare( rightLabel );
+			$items.each( function() {
+				var $item = $( this );
+				var layoutName;
+
+				if ( 'none' === $item.css( 'display' ) ) {
+					hiddenItems.push( this );
+					return;
+				}
+
+				layoutName = $item.find( '[data-layout]' ).first().attr( 'data-layout' ) || '';
+
+				if ( reusableLayouts.indexOf( layoutName ) !== -1 ) {
+					reusableItems.push( this );
+					return;
+				}
+
+				standardItems.push( this );
 			} );
 
-			$.each( $items, function( index, item ) {
+			standardItems.sort( function( leftItem, rightItem ) {
+				return compareFlexibleContentMenuItems( leftItem, rightItem, layoutMap );
+			} );
+
+			reusableItems.sort( function( leftItem, rightItem ) {
+				return compareFlexibleContentMenuItems( leftItem, rightItem, layoutMap );
+			} );
+
+			$.each( standardItems, function( index, item ) {
+				$menu.append( item );
+			} );
+
+			if ( standardItems.length && reusableItems.length ) {
+				var $header = $( '<li class="mrn-builder-menu-header" aria-hidden="true"></li>' );
+				$header.attr( 'data-mrn-decoration', 'reusable-shared' );
+				$header.text( 'Reusable / Shared' );
+				$menu.append( $header );
+			}
+
+			$.each( reusableItems, function( index, item ) {
+				$menu.append( item );
+			} );
+
+			$.each( hiddenItems, function( index, item ) {
 				$menu.append( item );
 			} );
 		} );
 	}
 
-	function decorateFlexibleContentMenus( context ) {
-		var reusableLayouts = getReusableLayoutNames();
-
-		if ( ! reusableLayouts.length ) {
-			return;
-		}
-
-		$( context || document ).find( 'ul' ).has( 'li [data-layout]' ).each( function() {
-			var $menu = $( this );
-			var $firstReusable;
-			var $header;
-
-			$menu.children( '.mrn-builder-menu-header' ).remove();
-
-			$firstReusable = $menu.children( 'li' ).filter( function() {
-				var $item = $( this );
-				var layoutName;
-
-				if ( 'none' === $item.css( 'display' ) ) {
-					return false;
-				}
-
-				layoutName = $item.find( '[data-layout]' ).first().attr( 'data-layout' ) || '';
-
-				return reusableLayouts.indexOf( layoutName ) !== -1;
-			} ).first();
-
-			if ( ! $firstReusable.length ) {
-				return;
-			}
-
-			$header = $( '<li class="mrn-builder-menu-header" aria-hidden="true"></li>' );
-			$header.attr( 'data-mrn-decoration', 'reusable-shared' );
-			$header.text( 'Reusable / Shared' );
-
-			$firstReusable.before( $header );
-		} );
-	}
-
 	function refreshFlexibleContentMenus( context ) {
-		alphabetizeFlexibleContentMenus( context );
 		hideFlexibleContentLayouts( context );
-		decorateFlexibleContentMenus( context );
+		alphabetizeFlexibleContentMenus( context );
 	}
 
 	function getLayoutRowsFromContext( context ) {
