@@ -45,6 +45,12 @@ function mrn_editor_lockdown_prepend_seo_helper_to_side_order( $side_order ) {
  * @return array<string, array<string, mixed>>
  */
 function mrn_editor_lockdown_get_layouts() {
+	static $layouts = null;
+
+	if ( null !== $layouts ) {
+		return $layouts;
+	}
+
 	$layouts = array(
 		'post' => array(
 			'screen_layout' => 2,
@@ -114,7 +120,13 @@ function mrn_editor_lockdown_get_layouts() {
  * @return array<string, mixed>
  */
 function mrn_editor_lockdown_get_reusable_layout() {
-	return array(
+	static $layout = null;
+
+	if ( null !== $layout ) {
+		return $layout;
+	}
+
+	$layout = array(
 		'screen_layout' => 2,
 		'meta_box_order' => array(
 			'normal'   => 'slugdiv,revisionsdiv',
@@ -123,6 +135,8 @@ function mrn_editor_lockdown_get_reusable_layout() {
 		),
 		'closed' => array(),
 	);
+
+	return $layout;
 }
 
 /**
@@ -141,6 +155,12 @@ function mrn_editor_lockdown_is_reusable_post_type( $post_type ) {
  * @return string[]
  */
 function mrn_editor_lockdown_get_dynamic_post_types() {
+	static $locked = null;
+
+	if ( null !== $locked ) {
+		return $locked;
+	}
+
 	$post_types = get_post_types(
 		array(
 			'show_ui' => true,
@@ -170,7 +190,9 @@ function mrn_editor_lockdown_get_dynamic_post_types() {
 		$locked[] = $post_type;
 	}
 
-	return array_values( array_unique( $locked ) );
+	$locked = array_values( array_unique( $locked ) );
+
+	return $locked;
 }
 
 /**
@@ -179,7 +201,13 @@ function mrn_editor_lockdown_get_dynamic_post_types() {
  * @return array<string, mixed>
  */
 function mrn_editor_lockdown_get_dynamic_layout() {
-	return array(
+	static $layout = null;
+
+	if ( null !== $layout ) {
+		return $layout;
+	}
+
+	$layout = array(
 		'screen_layout' => 2,
 		'meta_box_order' => array(
 			'normal'   => 'wds-wds-meta-box,slugdiv,revisionsdiv',
@@ -191,6 +219,8 @@ function mrn_editor_lockdown_get_dynamic_layout() {
 			'ame-cpe-content-permissions',
 		),
 	);
+
+	return $layout;
 }
 
 /**
@@ -200,21 +230,34 @@ function mrn_editor_lockdown_get_dynamic_layout() {
  * @return array<string, mixed>|null
  */
 function mrn_editor_lockdown_get_layout_for_post_type( $post_type ) {
+	static $cache = array();
+
+	$post_type = sanitize_key( (string) $post_type );
+
+	if ( array_key_exists( $post_type, $cache ) ) {
+		return $cache[ $post_type ];
+	}
+
 	$layouts = mrn_editor_lockdown_get_layouts();
 
 	if ( isset( $layouts[ $post_type ] ) ) {
-		return $layouts[ $post_type ];
+		$cache[ $post_type ] = $layouts[ $post_type ];
+		return $cache[ $post_type ];
 	}
 
 	if ( mrn_editor_lockdown_is_reusable_post_type( $post_type ) ) {
-		return mrn_editor_lockdown_get_reusable_layout();
+		$cache[ $post_type ] = mrn_editor_lockdown_get_reusable_layout();
+		return $cache[ $post_type ];
 	}
 
 	if ( in_array( $post_type, mrn_editor_lockdown_get_dynamic_post_types(), true ) ) {
-		return mrn_editor_lockdown_get_dynamic_layout();
+		$cache[ $post_type ] = mrn_editor_lockdown_get_dynamic_layout();
+		return $cache[ $post_type ];
 	}
 
-	return null;
+	$cache[ $post_type ] = null;
+
+	return $cache[ $post_type ];
 }
 
 /**
@@ -223,6 +266,12 @@ function mrn_editor_lockdown_get_layout_for_post_type( $post_type ) {
  * @return string[]
  */
 function mrn_editor_lockdown_get_supported_post_types() {
+	static $post_types = null;
+
+	if ( null !== $post_types ) {
+		return $post_types;
+	}
+
 	$post_types = array_merge(
 		array_keys( mrn_editor_lockdown_get_layouts() ),
 		mrn_editor_lockdown_get_dynamic_post_types()
@@ -239,7 +288,9 @@ function mrn_editor_lockdown_get_supported_post_types() {
 		}
 	}
 
-	return array_values( array_unique( array_filter( $post_types, 'is_string' ) ) );
+	$post_types = array_values( array_unique( array_filter( $post_types, 'is_string' ) ) );
+
+	return $post_types;
 }
 
 /**
@@ -305,9 +356,25 @@ function mrn_editor_lockdown_apply_layout( $screen ) {
 		return;
 	}
 
-	update_user_meta( $user_id, 'screen_layout_' . $post_type, (int) $settings['screen_layout'] );
-	update_user_meta( $user_id, 'meta-box-order_' . $post_type, $settings['meta_box_order'] );
-	update_user_meta( $user_id, 'closedpostboxes_' . $post_type, $settings['closed'] );
+	$screen_layout_key = 'screen_layout_' . $post_type;
+	$meta_box_order_key = 'meta-box-order_' . $post_type;
+	$closed_postboxes_key = 'closedpostboxes_' . $post_type;
+	$screen_layout = (int) $settings['screen_layout'];
+	$current_screen_layout = (int) get_user_meta( $user_id, $screen_layout_key, true );
+	$current_meta_box_order = get_user_meta( $user_id, $meta_box_order_key, true );
+	$current_closed_postboxes = get_user_meta( $user_id, $closed_postboxes_key, true );
+
+	if ( $current_screen_layout !== $screen_layout ) {
+		update_user_meta( $user_id, $screen_layout_key, $screen_layout );
+	}
+
+	if ( ! is_array( $current_meta_box_order ) || $current_meta_box_order !== $settings['meta_box_order'] ) {
+		update_user_meta( $user_id, $meta_box_order_key, $settings['meta_box_order'] );
+	}
+
+	if ( ! is_array( $current_closed_postboxes ) || $current_closed_postboxes !== $settings['closed'] ) {
+		update_user_meta( $user_id, $closed_postboxes_key, $settings['closed'] );
+	}
 }
 add_action( 'current_screen', 'mrn_editor_lockdown_apply_layout' );
 
