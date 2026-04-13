@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.04.13-page-edit-speed
+- Expanded `mrn-base-stack` to `1.1.21`.
+- Expanded `mrn-editor-lockdown` to `1.0.7`.
+- Reduced repeated Classic Editor builder-admin work by caching post-init `Content Lists` post-type, display-mode, and taxonomy choice generation within the request instead of rebuilding the same ACF choice data for every prepared field instance.
+- Reduced repeated classic-editor metabox layout writes by caching `mrn-editor-lockdown` layout lookups and skipping no-op user-meta updates when the enforced layout payload has not changed.
+- Refined the builder Add Row menu ordering so standard layouts and reusable/shared layouts each stay alphabetized while preserving the reusable/shared section break in the editor menu.
+
 ## 2026.04.10-layout-effects-permissions
 - Expanded `mrn-base-stack` to `1.1.19`.
 - Expanded `mrn-site-colors` / `Site Styles` to `0.1.4`.

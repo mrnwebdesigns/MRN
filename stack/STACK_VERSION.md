@@ -1,17 +1,17 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.10-layout-effects-permissions`
-- Release date: `2026-04-10`
+- Stack release: `2026.04.13-page-edit-speed`
+- Release date: `2026-04-13`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.19`
+  - `mrn-base-stack` `1.1.21`
 - MU plugins:
   - `mrn-admin-ui-css` `3.1.12`
   - `mrn-shared-assets` `0.1.1`
-  - `mrn-editor-lockdown` `1.0.6`
+  - `mrn-editor-lockdown` `1.0.7`
   - `mrn-reusable-block-library` `0.1.11`
   - `mrn-site-colors` / `Site Styles` `0.1.4`
 - Standard plugins:

@@ -70,7 +70,7 @@ if ( '' !== $link_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-basic-row-link-color: var(' . mrn_site_colors_get_css_var( $link_color ) . ')';
 }
 
-$link_icon_markup = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
+$link_icon_markup   = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
 	? mrn_base_stack_get_button_link_icon_markup( $row )
 	: '';
 $link_icon_position = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )

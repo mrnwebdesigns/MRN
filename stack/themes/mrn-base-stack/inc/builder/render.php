@@ -142,11 +142,11 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
  */
 function mrn_base_stack_get_reusable_block_shell_modifier( $post_type ) {
 	$map = array(
-		'mrn_reusable_basic' => 'mrn-layout-section--reusable-basic',
-		'mrn_reusable_cta'   => 'mrn-layout-section--reusable-cta',
-		'mrn_reusable_list'  => 'mrn-layout-section--reusable-content-lists',
-		'mrn_reusable_faq'   => 'mrn-layout-section--reusable-faq',
-		'mrn_reusable_grid'  => 'mrn-layout-section--reusable-grid',
+		'mrn_reusable_basic'  => 'mrn-layout-section--reusable-basic',
+		'mrn_reusable_cta'    => 'mrn-layout-section--reusable-cta',
+		'mrn_reusable_list'   => 'mrn-layout-section--reusable-content-lists',
+		'mrn_reusable_faq'    => 'mrn-layout-section--reusable-faq',
+		'mrn_reusable_grid'   => 'mrn-layout-section--reusable-grid',
 		'mrn_reusable_search' => 'mrn-layout-section--reusable-search-form',
 	);
 
@@ -163,11 +163,11 @@ function mrn_base_stack_get_reusable_block_shell_modifier( $post_type ) {
  */
 function mrn_base_stack_get_reusable_block_row_modifier( $post_type ) {
 	$map = array(
-		'mrn_reusable_basic' => 'mrn-content-builder__row--basic-block',
-		'mrn_reusable_cta'   => 'mrn-content-builder__row--cta',
-		'mrn_reusable_list'  => 'mrn-content-builder__row--content-lists',
-		'mrn_reusable_faq'   => 'mrn-content-builder__row--faq-block',
-		'mrn_reusable_grid'  => 'mrn-content-builder__row--content-grid',
+		'mrn_reusable_basic'  => 'mrn-content-builder__row--basic-block',
+		'mrn_reusable_cta'    => 'mrn-content-builder__row--cta',
+		'mrn_reusable_list'   => 'mrn-content-builder__row--content-lists',
+		'mrn_reusable_faq'    => 'mrn-content-builder__row--faq-block',
+		'mrn_reusable_grid'   => 'mrn-content-builder__row--content-grid',
 		'mrn_reusable_search' => 'mrn-content-builder__row--searchwp-form',
 	);
 
@@ -474,11 +474,11 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
  */
 function mrn_base_stack_get_page_specific_layout_map() {
 	return array(
-		'mrn_reusable_cta'   => 'cta_block',
-		'mrn_reusable_basic' => 'basic_block',
-		'mrn_reusable_list'  => 'content_lists',
-		'mrn_reusable_grid'  => 'content_grid',
-		'mrn_reusable_faq'   => 'faq_block',
+		'mrn_reusable_cta'    => 'cta_block',
+		'mrn_reusable_basic'  => 'basic_block',
+		'mrn_reusable_list'   => 'content_lists',
+		'mrn_reusable_grid'   => 'content_grid',
+		'mrn_reusable_faq'    => 'faq_block',
 		'mrn_reusable_search' => 'searchwp_form',
 	);
 }
@@ -490,11 +490,11 @@ function mrn_base_stack_get_page_specific_layout_map() {
  */
 function mrn_base_stack_get_page_specific_layout_key_map() {
 	return array(
-		'mrn_reusable_cta'   => 'layout_mrn_cta_block',
-		'mrn_reusable_basic' => 'layout_mrn_basic_block',
-		'mrn_reusable_list'  => 'layout_mrn_content_lists',
-		'mrn_reusable_grid'  => 'layout_mrn_content_grid',
-		'mrn_reusable_faq'   => 'layout_mrn_faq_block',
+		'mrn_reusable_cta'    => 'layout_mrn_cta_block',
+		'mrn_reusable_basic'  => 'layout_mrn_basic_block',
+		'mrn_reusable_list'   => 'layout_mrn_content_lists',
+		'mrn_reusable_grid'   => 'layout_mrn_content_grid',
+		'mrn_reusable_faq'    => 'layout_mrn_faq_block',
 		'mrn_reusable_search' => 'layout_mrn_searchwp_form',
 	);
 }

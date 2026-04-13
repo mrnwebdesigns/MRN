@@ -294,8 +294,9 @@ if ( ! function_exists( 'mrn_base_stack_get_searchwp_forms' ) ) :
 				continue;
 			}
 
-			$form_title = isset( $form['title'] ) ? trim( (string) $form['title'] ) : '';
+				$form_title = isset( $form['title'] ) ? trim( (string) $form['title'] ) : '';
 			if ( '' === $form_title ) {
+				/* translators: %d: SearchWP form ID. */
 				$form_title = sprintf( __( 'Search Form %d', 'mrn-base-stack' ), $form_id );
 			}
 
@@ -324,10 +325,11 @@ if ( ! function_exists( 'mrn_base_stack_get_searchwp_form_choices' ) ) :
 	 * @return array<string, string>
 	 */
 	function mrn_base_stack_get_searchwp_form_choices() {
-		$forms   = mrn_base_stack_get_searchwp_forms();
-		$choices = array();
+		$forms       = mrn_base_stack_get_searchwp_forms();
+			$choices = array();
 
 		foreach ( $forms as $form_id => $form ) {
+			/* translators: %d: SearchWP form ID. */
 			$choices[ (string) $form_id ] = isset( $form['title'] ) ? (string) $form['title'] : sprintf( __( 'Search Form %d', 'mrn-base-stack' ), $form_id );
 		}
 

@@ -1948,8 +1948,8 @@ function mrn_base_stack_get_button_link_icon_markup( array $row ) {
 			'thumbnail',
 			false,
 			array(
-				'class'      => 'mrn-ui__link-icon-image',
-				'alt'        => '',
+				'class'       => 'mrn-ui__link-icon-image',
+				'alt'         => '',
 				'aria-hidden' => 'true',
 			)
 		);
