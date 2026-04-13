@@ -43,6 +43,7 @@ Deployment habits to preserve:
 - Canonical live-site preflight helper is `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh`, and stack feature deploys should call it before any live refresh
 - For Updraft preflight backups, run a full `plugins,themes,uploads,others` plus database backup and only normalize malformed placeholder `0` or empty-array values if they reappear
 - Updraft settings imports should strip placeholder `"0"` and empty-string array rows for `updraft_service` and reporting/email options so new sites do not inherit broken backup config
+- The stack feature deploy helper now strips inherited/default ACLs from the live rollout-owned theme, shared runtime, and MU runtime trees before enforcing `644` representative file modes
 - After live file sync plus chmod normalization, run `stat` on representative changed files and re-fix any unexpected mode before calling the deploy complete
 
 If unclear:

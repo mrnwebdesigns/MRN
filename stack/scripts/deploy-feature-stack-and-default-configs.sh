@@ -155,6 +155,21 @@ run_remote() {
 	ssh "${remote_host}" "${command}"
 }
 
+normalize_remote_tree_acls() {
+	local remote_host="$1"
+	local path="$2"
+	local label="$3"
+
+	if ! run_remote "${remote_host}" "command -v setfacl >/dev/null 2>&1"; then
+		echo "WARNING: setfacl is not available on ${remote_host}; skipping ACL normalization for ${label}." >&2
+		return 0
+	fi
+
+	echo "Removing inherited ACLs from ${label}..."
+	run_remote "${remote_host}" "setfacl -R -b '${path}'"
+	run_remote "${remote_host}" "find '${path}' -type d -exec setfacl -k {} +"
+}
+
 normalize_remote_tree_permissions() {
 	local remote_host="$1"
 	local path="$2"
@@ -185,7 +200,7 @@ verify_remote_tree_file_modes() {
 
 	out_of_spec="$(run_remote "${remote_host}" "${find_prefix} -type f -not -path '*/.git/*' ! -perm 644 -print | head -n 20" | tr -d '\r')"
 	if [[ -n "${out_of_spec}" ]]; then
-		echo "ERROR: ${label} still has files that are not mode 644." >&2
+		echo "ERROR: ${label} still has files that are not mode 644 after normalization." >&2
 		echo "${out_of_spec}" >&2
 		return 1
 	fi
@@ -312,10 +327,13 @@ if [[ "${DRY_RUN}" -eq 0 ]]; then
 	run_remote "${LIVE_SITE_SSH_LOGIN}" "rm -rf '${LIVE_SITE_THEME_DIR}/test-results' '${LIVE_SITE_THEME_DIR}/playwright-report'"
 
 	normalize_remote_tree_permissions "${SSH_HOST}" "${STACK_ROOT_REMOTE}/themes/mrn-base-stack" "stack theme"
+	normalize_remote_tree_acls "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_THEME_DIR}" "live theme"
 	normalize_remote_tree_permissions "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_THEME_DIR}" "live theme"
 	normalize_remote_tree_permissions "${SSH_HOST}" "${STACK_ROOT_REMOTE}/shared" "stack shared runtime"
+	normalize_remote_tree_acls "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/shared" "live shared runtime"
 	normalize_remote_tree_permissions "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/shared" "live shared runtime"
 	normalize_remote_tree_permissions "${SSH_HOST}" "${STACK_ROOT_REMOTE}/mu-plugins" "stack mu-plugins"
+	normalize_remote_tree_acls "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/mu-plugins" "live mu-plugins"
 	normalize_remote_tree_permissions "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/mu-plugins" "live mu-plugins"
 
 	verify_remote_tree_file_modes "${SSH_HOST}" "${STACK_ROOT_REMOTE}/themes/mrn-base-stack" "stack theme"
