@@ -45,12 +45,6 @@ function mrn_editor_lockdown_prepend_seo_helper_to_side_order( $side_order ) {
  * @return array<string, array<string, mixed>>
  */
 function mrn_editor_lockdown_get_layouts() {
-	static $layouts = null;
-
-	if ( is_array( $layouts ) ) {
-		return $layouts;
-	}
-
 	$layouts = array(
 		'post' => array(
 			'screen_layout' => 2,
@@ -120,13 +114,7 @@ function mrn_editor_lockdown_get_layouts() {
  * @return array<string, mixed>
  */
 function mrn_editor_lockdown_get_reusable_layout() {
-	static $layout = null;
-
-	if ( is_array( $layout ) ) {
-		return $layout;
-	}
-
-	$layout = array(
+	return array(
 		'screen_layout' => 2,
 		'meta_box_order' => array(
 			'normal'   => 'slugdiv,revisionsdiv',
@@ -135,8 +123,6 @@ function mrn_editor_lockdown_get_reusable_layout() {
 		),
 		'closed' => array(),
 	);
-
-	return $layout;
 }
 
 /**
@@ -155,12 +141,6 @@ function mrn_editor_lockdown_is_reusable_post_type( $post_type ) {
  * @return string[]
  */
 function mrn_editor_lockdown_get_dynamic_post_types() {
-	static $locked = null;
-
-	if ( is_array( $locked ) ) {
-		return $locked;
-	}
-
 	$post_types = get_post_types(
 		array(
 			'show_ui' => true,
@@ -199,13 +179,7 @@ function mrn_editor_lockdown_get_dynamic_post_types() {
  * @return array<string, mixed>
  */
 function mrn_editor_lockdown_get_dynamic_layout() {
-	static $layout = null;
-
-	if ( is_array( $layout ) ) {
-		return $layout;
-	}
-
-	$layout = array(
+	return array(
 		'screen_layout' => 2,
 		'meta_box_order' => array(
 			'normal'   => 'wds-wds-meta-box,slugdiv,revisionsdiv',
@@ -217,8 +191,6 @@ function mrn_editor_lockdown_get_dynamic_layout() {
 			'ame-cpe-content-permissions',
 		),
 	);
-
-	return $layout;
 }
 
 /**
@@ -228,34 +200,21 @@ function mrn_editor_lockdown_get_dynamic_layout() {
  * @return array<string, mixed>|null
  */
 function mrn_editor_lockdown_get_layout_for_post_type( $post_type ) {
-	static $cache = array();
-
-	$post_type = sanitize_key( (string) $post_type );
-
-	if ( array_key_exists( $post_type, $cache ) ) {
-		return $cache[ $post_type ];
-	}
-
 	$layouts = mrn_editor_lockdown_get_layouts();
 
 	if ( isset( $layouts[ $post_type ] ) ) {
-		$cache[ $post_type ] = $layouts[ $post_type ];
-		return $cache[ $post_type ];
+		return $layouts[ $post_type ];
 	}
 
 	if ( mrn_editor_lockdown_is_reusable_post_type( $post_type ) ) {
-		$cache[ $post_type ] = mrn_editor_lockdown_get_reusable_layout();
-		return $cache[ $post_type ];
+		return mrn_editor_lockdown_get_reusable_layout();
 	}
 
 	if ( in_array( $post_type, mrn_editor_lockdown_get_dynamic_post_types(), true ) ) {
-		$cache[ $post_type ] = mrn_editor_lockdown_get_dynamic_layout();
-		return $cache[ $post_type ];
+		return mrn_editor_lockdown_get_dynamic_layout();
 	}
 
-	$cache[ $post_type ] = null;
-
-	return $cache[ $post_type ];
+	return null;
 }
 
 /**
@@ -264,12 +223,6 @@ function mrn_editor_lockdown_get_layout_for_post_type( $post_type ) {
  * @return string[]
  */
 function mrn_editor_lockdown_get_supported_post_types() {
-	static $post_types = null;
-
-	if ( is_array( $post_types ) ) {
-		return $post_types;
-	}
-
 	$post_types = array_merge(
 		array_keys( mrn_editor_lockdown_get_layouts() ),
 		mrn_editor_lockdown_get_dynamic_post_types()
@@ -286,19 +239,7 @@ function mrn_editor_lockdown_get_supported_post_types() {
 		}
 	}
 
-	$post_types = array_values( array_unique( array_filter( $post_types, 'is_string' ) ) );
-
-	return $post_types;
-}
-
-/**
- * Build a stable signature for a locked layout payload.
- *
- * @param array<string, mixed> $settings Locked layout settings.
- * @return string
- */
-function mrn_editor_lockdown_get_layout_signature( array $settings ) {
-	return md5( wp_json_encode( $settings ) );
+	return array_values( array_unique( array_filter( $post_types, 'is_string' ) ) );
 }
 
 /**
@@ -358,24 +299,15 @@ function mrn_editor_lockdown_apply_layout( $screen ) {
 	}
 
 	$settings  = mrn_editor_lockdown_get_layout_for_post_type( $screen->post_type );
-	$post_type = sanitize_key( (string) $screen->post_type );
+	$post_type = $screen->post_type;
 
 	if ( null === $settings ) {
-		return;
-	}
-
-	$layout_signature = mrn_editor_lockdown_get_layout_signature( $settings );
-	$signature_key    = 'mrn_editor_lockdown_layout_hash_' . $post_type;
-	$stored_signature = get_user_meta( $user_id, $signature_key, true );
-
-	if ( is_string( $stored_signature ) && $stored_signature === $layout_signature ) {
 		return;
 	}
 
 	update_user_meta( $user_id, 'screen_layout_' . $post_type, (int) $settings['screen_layout'] );
 	update_user_meta( $user_id, 'meta-box-order_' . $post_type, $settings['meta_box_order'] );
 	update_user_meta( $user_id, 'closedpostboxes_' . $post_type, $settings['closed'] );
-	update_user_meta( $user_id, $signature_key, $layout_signature );
 }
 add_action( 'current_screen', 'mrn_editor_lockdown_apply_layout' );
 
