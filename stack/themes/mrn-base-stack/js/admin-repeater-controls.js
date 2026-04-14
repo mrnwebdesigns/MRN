@@ -6,14 +6,39 @@
 	}
 
 	function getRepeaterFields( context ) {
-		return $( context || document )
+		var $context = $( context || document );
+
+		return $context
 			.filter( '.acf-field[data-type="repeater"]' )
-			.add( $( context || document ).find( '.acf-field[data-type="repeater"]' ) )
+			.add( $context.find( '.acf-field[data-type="repeater"]' ) )
+			.add( $context.closest( '.acf-field[data-type="repeater"]' ) )
 			.not( '.acf-clone' );
 	}
 
 	function getRepeaterRows( $field ) {
 		return $field.find( '> .acf-input > .acf-repeater > .acf-table > tbody > .acf-row, > .acf-input > .acf-repeater > .acf-table > .acf-tbody > .acf-row, > .acf-input > .acf-repeater > table > tbody > .acf-row, > .acf-input > .acf-repeater > .values > .acf-row' ).not( '.acf-clone' );
+	}
+
+	function markInitialPrecollapseReady( attributeName ) {
+		var root = document.documentElement;
+
+		if ( ! root || ! attributeName ) {
+			return;
+		}
+
+		root.setAttribute( attributeName, 'done' );
+
+		if ( root.getAttribute( 'data-mrn-builder-precollapse' ) !== 'done' ) {
+			return;
+		}
+
+		if ( root.getAttribute( 'data-mrn-repeater-precollapse' ) !== 'done' ) {
+			return;
+		}
+
+		root.classList.remove( 'mrn-base-stack-admin-precollapse' );
+		root.removeAttribute( 'data-mrn-builder-precollapse' );
+		root.removeAttribute( 'data-mrn-repeater-precollapse' );
 	}
 
 	function getRepeaterCloneRows( $field ) {
@@ -39,7 +64,15 @@
 	}
 
 	function rowContainsLiveEditor( $row ) {
-		return $row.find( '.acf-field[data-type="wysiwyg"], .wp-editor-wrap, .mce-tinymce, .quicktags-toolbar' ).length > 0;
+		return $row.find( '.wp-editor-wrap' ).filter( function () {
+			var $wrap = $( this );
+
+			if ( ! $wrap.hasClass( 'delay' ) ) {
+				return true;
+			}
+
+			return $wrap.find( '.mce-tinymce, .quicktags-toolbar' ).length > 0;
+		} ).length > 0;
 	}
 
 	function canDetachRowBodies( $row ) {
@@ -389,8 +422,10 @@
 	} );
 
 	$( document ).on( 'click', '.acf-field[data-type="repeater"] .acf-actions a, .acf-field[data-type="repeater"] .acf-actions button, .acf-field[data-type="repeater"] [data-event="add-row"]', function () {
+		var $field = $( this ).closest( '.acf-field[data-type="repeater"]' );
+
 		window.setTimeout( function () {
-			syncCloneRowBodyStates( document );
+			syncCloneRowBodyStates( $field );
 		}, 80 );
 	} );
 
@@ -409,15 +444,19 @@
 	} );
 
 	$( function () {
-		refreshToolbars( document );
+		collapseInitialRows( document );
 		syncCloneRowBodyStates( document );
+		markInitialPrecollapseReady( 'data-mrn-repeater-precollapse' );
 	} );
 
 	acf.addAction( 'append', function ( $el ) {
 		var context = $el || document;
 
-		refreshToolbars( context );
 		syncRowBodyStates( context );
-		syncCloneRowBodyStates( document );
+		syncCloneRowBodyStates( context );
+	} );
+
+	$( document ).on( 'mouseenter focusin', '.acf-field[data-type="repeater"]', function () {
+		ensureToolbar( $( this ) );
 	} );
 }( jQuery, window.acf ) );

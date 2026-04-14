@@ -15,7 +15,7 @@ $heading         = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) :
 $heading_tag     = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['heading_tag'] ?? '', 'h2' ) : 'h2';
 $subheading      = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
 $subheading_tag  = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['subheading_tag'] ?? '', 'p' ) : 'p';
-$tabs            = isset( $row['tabs'] ) && is_array( $row['tabs'] ) ? $row['tabs'] : array();
+$tab_items       = isset( $row['tabs'] ) && is_array( $row['tabs'] ) ? $row['tabs'] : array();
 $tab_orientation = isset( $row['tab_orientation'] ) ? sanitize_key( (string) $row['tab_orientation'] ) : 'horizontal';
 $equal_heights   = ! empty( $row['equal_panel_heights'] );
 $switch_effect   = isset( $row['tab_switch_effect'] ) ? sanitize_key( (string) $row['tab_switch_effect'] ) : 'instant';
@@ -35,14 +35,14 @@ $layout_uid      = function_exists( 'wp_unique_id' )
 $rendered_tabs   = array();
 $has_tab_images  = false;
 
-foreach ( $tabs as $tab_index => $tab ) {
-	if ( ! is_array( $tab ) ) {
+foreach ( $tab_items as $tab_index => $tab_item ) {
+	if ( ! is_array( $tab_item ) ) {
 		continue;
 	}
 
-	$tab_label  = isset( $tab['tab_label'] ) ? trim( (string) $tab['tab_label'] ) : '';
-	$tab_image  = isset( $tab['tab_image'] ) && is_array( $tab['tab_image'] ) ? $tab['tab_image'] : array();
-	$panel_rows = isset( $tab['panel_rows'] ) && is_array( $tab['panel_rows'] ) ? $tab['panel_rows'] : array();
+	$tab_label  = isset( $tab_item['tab_label'] ) ? trim( (string) $tab_item['tab_label'] ) : '';
+	$tab_image  = isset( $tab_item['tab_image'] ) && is_array( $tab_item['tab_image'] ) ? $tab_item['tab_image'] : array();
+	$panel_rows = isset( $tab_item['panel_rows'] ) && is_array( $tab_item['panel_rows'] ) ? $tab_item['panel_rows'] : array();
 	$panel_row  = ! empty( $panel_rows[0] ) && is_array( $panel_rows[0] ) ? $panel_rows[0] : array();
 
 	if ( empty( $panel_row ) ) {
@@ -161,15 +161,15 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 					<div class="mrn-tabbed-layout__body">
 							<div class="mrn-tabbed-layout__nav-wrap">
 								<div class="mrn-tabbed-layout__nav" role="tablist" aria-label="<?php echo esc_attr( $tablist_label ); ?>">
-									<?php foreach ( $rendered_tabs as $tab_index => $tab ) : ?>
+									<?php foreach ( $rendered_tabs as $tab_index => $tab_item ) : ?>
 										<?php
 										$button_classes = array( 'mrn-tabbed-layout__tab' );
 
-										if ( ! empty( $tab['has_image'] ) ) {
+										if ( ! empty( $tab_item['has_image'] ) ) {
 											$button_classes[] = 'mrn-tabbed-layout__tab--has-image';
 										}
 
-										if ( ! empty( $tab['is_image_only'] ) ) {
+										if ( ! empty( $tab_item['is_image_only'] ) ) {
 											$button_classes[] = 'mrn-tabbed-layout__tab--image-only';
 										}
 
@@ -178,21 +178,21 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 										}
 										?>
 										<button
-											id="<?php echo esc_attr( $tab['button_id'] ); ?>"
+											id="<?php echo esc_attr( $tab_item['button_id'] ); ?>"
 											class="<?php echo esc_attr( implode( ' ', $button_classes ) ); ?>"
 											type="button"
 											role="tab"
 											aria-selected="<?php echo 0 === $tab_index ? 'true' : 'false'; ?>"
-											aria-controls="<?php echo esc_attr( $tab['panel_id'] ); ?>"
+											aria-controls="<?php echo esc_attr( $tab_item['panel_id'] ); ?>"
 											tabindex="<?php echo 0 === $tab_index ? '0' : '-1'; ?>"
 											data-mrn-tab-button
 										>
-											<?php if ( ! empty( $tab['has_image'] ) ) : ?>
+											<?php if ( ! empty( $tab_item['has_image'] ) ) : ?>
 												<span class="mrn-tabbed-layout__tab-media" aria-hidden="true">
-													<?php if ( ! empty( $tab['image']['ID'] ) ) : ?>
+													<?php if ( ! empty( $tab_item['image']['ID'] ) ) : ?>
 														<?php
 														echo wp_get_attachment_image(
-															(int) $tab['image']['ID'],
+															(int) $tab_item['image']['ID'],
 															'medium',
 															false,
 															array(
@@ -201,16 +201,16 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 															)
 														); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 														?>
-													<?php elseif ( ! empty( $tab['image']['url'] ) ) : ?>
-														<img class="mrn-tabbed-layout__tab-image" src="<?php echo esc_url( $tab['image']['url'] ); ?>" alt="">
+													<?php elseif ( ! empty( $tab_item['image']['url'] ) ) : ?>
+														<img class="mrn-tabbed-layout__tab-image" src="<?php echo esc_url( $tab_item['image']['url'] ); ?>" alt="">
 													<?php endif; ?>
 												</span>
 											<?php endif; ?>
 
-											<?php if ( '' !== $tab['label'] ) : ?>
-												<span class="mrn-tabbed-layout__tab-label"><?php echo esc_html( $tab['label'] ); ?></span>
+											<?php if ( '' !== $tab_item['label'] ) : ?>
+												<span class="mrn-tabbed-layout__tab-label"><?php echo esc_html( $tab_item['label'] ); ?></span>
 											<?php else : ?>
-												<span class="screen-reader-text"><?php echo esc_html( $tab['accessible_label'] ); ?></span>
+												<span class="screen-reader-text"><?php echo esc_html( $tab_item['accessible_label'] ); ?></span>
 											<?php endif; ?>
 										</button>
 									<?php endforeach; ?>
@@ -223,32 +223,32 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 										<ul class="splide__list mrn-tabbed-layout__panel-list">
 								<?php endif; ?>
 
-								<?php foreach ( $rendered_tabs as $tab_index => $tab ) : ?>
+								<?php foreach ( $rendered_tabs as $tab_index => $tab_item ) : ?>
 									<?php if ( $uses_slider ) : ?>
 										<li
 											class="mrn-tabbed-layout__panel splide__slide<?php echo 0 === $tab_index ? ' is-active' : ''; ?>"
 											data-mrn-tab-panel
 										>
 											<div
-												id="<?php echo esc_attr( $tab['panel_id'] ); ?>"
+												id="<?php echo esc_attr( $tab_item['panel_id'] ); ?>"
 												class="mrn-tabbed-layout__panel-body"
 												role="tabpanel"
-												aria-labelledby="<?php echo esc_attr( $tab['button_id'] ); ?>"
+												aria-labelledby="<?php echo esc_attr( $tab_item['button_id'] ); ?>"
 												aria-hidden="<?php echo 0 === $tab_index ? 'false' : 'true'; ?>"
 												data-mrn-tab-panel-content
 												>
-													<?php echo $tab['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Nested builder rows escape their own output. ?>
+													<?php echo $tab_item['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Nested builder rows escape their own output. ?>
 												</div>
 										</li>
 									<?php else : ?>
 										<div
-											id="<?php echo esc_attr( $tab['panel_id'] ); ?>"
+											id="<?php echo esc_attr( $tab_item['panel_id'] ); ?>"
 											class="mrn-tabbed-layout__panel<?php echo 0 === $tab_index ? ' is-active' : ''; ?>"
 											role="tabpanel"
-											aria-labelledby="<?php echo esc_attr( $tab['button_id'] ); ?>"
+											aria-labelledby="<?php echo esc_attr( $tab_item['button_id'] ); ?>"
 											data-mrn-tab-panel
 										>
-											<?php echo $tab['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Nested builder rows escape their own output. ?>
+											<?php echo $tab_item['markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Nested builder rows escape their own output. ?>
 										</div>
 									<?php endif; ?>
 								<?php endforeach; ?>

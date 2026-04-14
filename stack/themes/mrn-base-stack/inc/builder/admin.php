@@ -5,6 +5,8 @@
  * @package mrn-base-stack
  */
 
+defined( 'ABSPATH' ) || exit;
+
 /**
  * Enqueue builder admin assets for supported classic editor screens.
  *
@@ -60,6 +62,101 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 	);
 }
 add_action( 'admin_enqueue_scripts', 'mrn_base_stack_admin_enqueue_builder_assets' );
+
+/**
+ * Pre-hide heavy builder row bodies before first paint so the editor does not
+ * visibly collapse large ACF structures after the page is already on screen.
+ *
+ * The admin scripts clear these markers once initial collapse/detach work is
+ * complete, and a timeout fallback prevents the screen from staying hidden if
+ * one of those scripts fails unexpectedly.
+ *
+ * @return void
+ */
+function mrn_base_stack_precollapse_builder_admin_rows() {
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( ! $screen instanceof WP_Screen || 'post' !== $screen->base ) {
+		return;
+	}
+
+	if ( ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_singular_shell_post_types(), true ) ) {
+		return;
+	}
+	?>
+	<script id="mrn-base-stack-precollapse-admin-script">
+		(function() {
+			var root = document.documentElement;
+
+			if ( ! root ) {
+				return;
+			}
+
+			root.classList.add( 'mrn-base-stack-admin-precollapse' );
+			root.setAttribute( 'data-mrn-builder-precollapse', 'pending' );
+			root.setAttribute( 'data-mrn-repeater-precollapse', 'pending' );
+
+			window.setTimeout( function() {
+				root.classList.remove( 'mrn-base-stack-admin-precollapse' );
+				root.removeAttribute( 'data-mrn-builder-precollapse' );
+				root.removeAttribute( 'data-mrn-repeater-precollapse' );
+			}, 4000 );
+		}());
+	</script>
+	<style id="mrn-base-stack-precollapse-admin-style">
+		.mrn-base-stack-admin-precollapse .acf-field-flexible-content .layout:not(.acf-clone) > .acf-fc-layout-actions-wrap {
+			border-bottom-width: 0 !important;
+		}
+
+		.mrn-base-stack-admin-precollapse .acf-field-flexible-content .layout:not(.acf-clone) > .acf-fields,
+		.mrn-base-stack-admin-precollapse .acf-field-flexible-content .layout:not(.acf-clone) > .acf-fields.-left,
+		.mrn-base-stack-admin-precollapse .acf-field-flexible-content .layout:not(.acf-clone) > .acf-table,
+		.mrn-base-stack-admin-precollapse .acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > tbody > .acf-row:not(.acf-clone) > .acf-fields,
+		.mrn-base-stack-admin-precollapse .acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > .acf-tbody > .acf-row:not(.acf-clone) > .acf-fields,
+		.mrn-base-stack-admin-precollapse .acf-field[data-type="repeater"] > .acf-input > .acf-repeater > table > tbody > .acf-row:not(.acf-clone) > .acf-fields,
+		.mrn-base-stack-admin-precollapse .acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .values > .acf-row:not(.acf-clone) > .acf-fields,
+		.mrn-base-stack-admin-precollapse .acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > tbody > .acf-row:not(.acf-clone) > td:not(.acf-row-handle):not(.acf-row-handle.order),
+		.mrn-base-stack-admin-precollapse .acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > .acf-tbody > .acf-row:not(.acf-clone) > td:not(.acf-row-handle):not(.acf-row-handle.order),
+		.mrn-base-stack-admin-precollapse .acf-field[data-type="repeater"] > .acf-input > .acf-repeater > table > tbody > .acf-row:not(.acf-clone) > td:not(.acf-row-handle):not(.acf-row-handle.order),
+		.mrn-base-stack-admin-precollapse .acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .values > .acf-row:not(.acf-clone) > td:not(.acf-row-handle):not(.acf-row-handle.order) {
+			display: none !important;
+		}
+	</style>
+	<?php
+}
+add_action( 'admin_head', 'mrn_base_stack_precollapse_builder_admin_rows', 1 );
+
+/**
+ * Delay ACF WYSIWYG initialization on heavy classic editor screens.
+ *
+ * This keeps TinyMCE instances from booting on initial page load for builder-
+ * style post types, allowing editors to initialize only when a field is used.
+ *
+ * @param array<string, mixed>|false $field ACF field configuration.
+ * @return array<string, mixed>|false
+ */
+function mrn_base_stack_delay_builder_wysiwyg_initialization( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( ! $screen instanceof WP_Screen || 'post' !== $screen->base ) {
+		return $field;
+	}
+
+	if ( ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_singular_shell_post_types(), true ) ) {
+		return $field;
+	}
+
+	if ( ! empty( $field['delay'] ) ) {
+		return $field;
+	}
+
+	$field['delay'] = 1;
+
+	return $field;
+}
+add_filter( 'acf/prepare_field/type=wysiwyg', 'mrn_base_stack_delay_builder_wysiwyg_initialization', 20 );
 
 /**
  * Build live Add Row menu metadata from the registered page builder layouts.

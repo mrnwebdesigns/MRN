@@ -3,6 +3,8 @@
  * Plugin Name: MRN Editor Lockdown (MU)
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
  * Version: 1.0.7
+ *
+ * @package MRNEditorLockdown
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -46,6 +48,26 @@ function mrn_editor_lockdown_prepend_seo_helper_to_side_order( $side_order ) {
 	array_unshift( $order, $metabox_id );
 
 	return implode( ',', array_unique( $order ) );
+}
+
+/**
+ * Ensure the SEO Helper metabox is never hidden on locked classic editor screens.
+ *
+ * @param mixed $hidden Existing hidden metabox IDs.
+ * @return string[]
+ */
+function mrn_editor_lockdown_get_visible_hidden_metaboxes( $hidden ) {
+	$metabox_id = mrn_editor_lockdown_get_seo_helper_metabox_id();
+	$hidden     = is_array( $hidden ) ? $hidden : array();
+
+	return array_values(
+		array_filter(
+			array_map( 'sanitize_key', $hidden ),
+			static function ( $item ) use ( $metabox_id ) {
+				return $item !== $metabox_id;
+			}
+		)
+	);
 }
 
 /**
@@ -363,10 +385,12 @@ function mrn_editor_lockdown_apply_layout( $screen ) {
 	$screen_layout_key = 'screen_layout_' . $post_type;
 	$meta_box_order_key = 'meta-box-order_' . $post_type;
 	$closed_postboxes_key = 'closedpostboxes_' . $post_type;
+	$hidden_metaboxes_key = 'metaboxhidden_' . $post_type;
 	$screen_layout = (int) $settings['screen_layout'];
 	$current_screen_layout = (int) get_user_meta( $user_id, $screen_layout_key, true );
 	$current_meta_box_order = get_user_meta( $user_id, $meta_box_order_key, true );
 	$current_closed_postboxes = get_user_meta( $user_id, $closed_postboxes_key, true );
+	$current_hidden_metaboxes = get_user_meta( $user_id, $hidden_metaboxes_key, true );
 
 	if ( $current_screen_layout !== $screen_layout ) {
 		update_user_meta( $user_id, $screen_layout_key, $screen_layout );
@@ -378,6 +402,12 @@ function mrn_editor_lockdown_apply_layout( $screen ) {
 
 	if ( ! is_array( $current_closed_postboxes ) || $current_closed_postboxes !== $settings['closed'] ) {
 		update_user_meta( $user_id, $closed_postboxes_key, $settings['closed'] );
+	}
+
+	$visible_hidden_metaboxes = mrn_editor_lockdown_get_visible_hidden_metaboxes( $current_hidden_metaboxes );
+
+	if ( ! is_array( $current_hidden_metaboxes ) || $current_hidden_metaboxes !== $visible_hidden_metaboxes ) {
+		update_user_meta( $user_id, $hidden_metaboxes_key, $visible_hidden_metaboxes );
 	}
 }
 add_action( 'current_screen', 'mrn_editor_lockdown_apply_layout' );
@@ -415,9 +445,9 @@ add_action( 'add_meta_boxes', 'mrn_editor_lockdown_remove_legacy_seo_metabox', 1
 /**
  * Filter screen layout user options for locked post types.
  *
- * @param mixed $result Existing user option value.
+ * @param mixed  $result Existing user option value.
  * @param string $option Option name.
- * @param int $user User ID.
+ * @param int    $user   User ID.
  * @return mixed
  */
 function mrn_editor_lockdown_filter_screen_layout_option( $result, $option, $user ) {
@@ -437,9 +467,9 @@ function mrn_editor_lockdown_filter_screen_layout_option( $result, $option, $use
 /**
  * Filter metabox ordering user options for locked post types.
  *
- * @param mixed $result Existing user option value.
+ * @param mixed  $result Existing user option value.
  * @param string $option Option name.
- * @param int $user User ID.
+ * @param int    $user   User ID.
  * @return mixed
  */
 function mrn_editor_lockdown_filter_metabox_order_option( $result, $option, $user ) {
@@ -477,6 +507,29 @@ function mrn_editor_lockdown_filter_closed_metaboxes( $hidden, $screen ) {
 
 	return array_values( array_unique( array_merge( $hidden, $settings['closed'] ) ) );
 }
+
+/**
+ * Force the SEO Helper metabox to remain visible at runtime.
+ *
+ * @param mixed  $hidden Existing hidden metabox IDs.
+ * @param string $option Current user option name.
+ * @param int    $user   User ID.
+ * @return string[]
+ */
+function mrn_editor_lockdown_filter_hidden_metaboxes( $hidden, $option, $user ) {
+	unset( $user );
+
+	if ( 0 === strpos( $option, 'metaboxhidden_' ) ) {
+		$post_type = substr( $option, strlen( 'metaboxhidden_' ) );
+		$layout    = mrn_editor_lockdown_get_layout_for_post_type( $post_type );
+
+		if ( null !== $layout ) {
+			return mrn_editor_lockdown_get_visible_hidden_metaboxes( $hidden );
+		}
+	}
+
+	return is_array( $hidden ) ? $hidden : array();
+}
 /**
  * Register dynamic user-option filters for supported post types.
  *
@@ -487,6 +540,7 @@ function mrn_editor_lockdown_register_option_filters() {
 		add_filter( 'get_user_option_screen_layout_' . $post_type, 'mrn_editor_lockdown_filter_screen_layout_option', 10, 3 );
 		add_filter( 'get_user_option_meta-box-order_' . $post_type, 'mrn_editor_lockdown_filter_metabox_order_option', 10, 3 );
 		add_filter( 'get_user_option_closedpostboxes_' . $post_type, 'mrn_editor_lockdown_filter_closed_metaboxes', 10, 2 );
+		add_filter( 'get_user_option_metaboxhidden_' . $post_type, 'mrn_editor_lockdown_filter_hidden_metaboxes', 10, 3 );
 	}
 }
 add_action( 'init', 'mrn_editor_lockdown_register_option_filters', 20 );
@@ -557,10 +611,17 @@ function mrn_editor_lockdown_admin_css() {
 
 		body.mrn-editor-sidebar-collapsible #post-body.columns-2 #postbox-container-1 {
 			position: relative;
-			transition: width 0.22s ease, margin-right 0.22s ease, opacity 0.22s ease;
 		}
 
 		body.mrn-editor-sidebar-collapsible #postbox-container-1 > *:not(.mrn-editor-sidebar-toggle) {
+			transition: none;
+		}
+
+		body.mrn-editor-sidebar-collapsible.mrn-editor-sidebar-animate #post-body.columns-2 #postbox-container-1 {
+			transition: width 0.22s ease, margin-right 0.22s ease, opacity 0.22s ease;
+		}
+
+		body.mrn-editor-sidebar-collapsible.mrn-editor-sidebar-animate #postbox-container-1 > *:not(.mrn-editor-sidebar-toggle) {
 			transition: opacity 0.18s ease, transform 0.22s ease, visibility 0.22s ease;
 		}
 
@@ -619,8 +680,16 @@ function mrn_editor_lockdown_admin_css() {
 			}
 		}
 
+		@media (prefers-reduced-motion: reduce) {
+			body.mrn-editor-sidebar-collapsible.mrn-editor-sidebar-animate #post-body.columns-2 #postbox-container-1,
+			body.mrn-editor-sidebar-collapsible.mrn-editor-sidebar-animate #postbox-container-1 > *:not(.mrn-editor-sidebar-toggle),
+			.mrn-editor-sidebar-toggle {
+				transition: none !important;
+			}
+		}
+
 	<?php if ( mrn_editor_lockdown_is_supported_screen( $screen ) ) : ?>
-		.postbox .handle-order-higher,
+			.postbox .handle-order-higher,
 		.postbox .handle-order-lower {
 			display: none !important;
 		}
@@ -645,7 +714,11 @@ function mrn_editor_lockdown_admin_js() {
 		jQuery(function($) {
 			var body = document.body;
 			var postType = <?php echo wp_json_encode( sanitize_key( (string) $screen->post_type ) ); ?>;
-			var storageKey = 'mrnEditorSidebarCollapsed:' + postType;
+			var legacyStorageKey = 'mrnEditorSidebarCollapsed:' + postType;
+			// Version the storage key so existing collapsed states do not keep
+			// the locked sidebar hidden after the editor performance rollout.
+			var storageKey = 'mrnEditorSidebarState:v2:' + postType;
+			var migrationKey = 'mrnEditorSidebarStateMigration:v1:' + postType;
 			var sidebar = document.getElementById('postbox-container-1');
 			var postBody = document.getElementById('post-body');
 			var postBodyContent = document.getElementById('post-body-content');
@@ -681,8 +754,8 @@ function mrn_editor_lockdown_admin_js() {
 
 				if (toggle) {
 					toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-					toggle.setAttribute('aria-label', collapsed ? 'Show sidebar settings' : 'Hide sidebar settings');
-					toggle.setAttribute('title', collapsed ? 'Show sidebar settings' : 'Hide sidebar settings');
+					toggle.setAttribute('aria-label', collapsed ? 'Show sidebar settings and SEO fields' : 'Hide sidebar settings and SEO fields');
+					toggle.setAttribute('title', collapsed ? 'Show sidebar settings and SEO fields' : 'Hide sidebar settings and SEO fields');
 				}
 
 				if (toggleIcon) {
@@ -690,7 +763,7 @@ function mrn_editor_lockdown_admin_js() {
 				}
 
 				if (toggleText) {
-					toggleText.textContent = collapsed ? 'Show Sidebar' : 'Hide Sidebar';
+					toggleText.textContent = collapsed ? 'Show Settings' : 'Hide Settings';
 				}
 			}
 
@@ -700,6 +773,18 @@ function mrn_editor_lockdown_admin_js() {
 				} catch (error) {
 					return false;
 				}
+			}
+
+			function migrateSidebarStateIfNeeded() {
+				try {
+					if ('done' === window.localStorage.getItem(migrationKey)) {
+						return;
+					}
+
+					window.localStorage.removeItem(legacyStorageKey);
+					window.localStorage.removeItem(storageKey);
+					window.localStorage.setItem(migrationKey, 'done');
+				} catch (error) {}
 			}
 
 			function restoreSidebarState() {
@@ -721,6 +806,8 @@ function mrn_editor_lockdown_admin_js() {
 					return;
 				}
 
+				migrateSidebarStateIfNeeded();
+
 				body.classList.add('mrn-editor-sidebar-collapsible');
 
 				toggle = document.createElement('button');
@@ -732,7 +819,7 @@ function mrn_editor_lockdown_admin_js() {
 				toggleIcon.className = 'dashicons dashicons-arrow-right-alt2';
 				toggleIcon.setAttribute('aria-hidden', 'true');
 				toggleText.className = 'mrn-editor-sidebar-toggle__label';
-				toggleText.textContent = 'Hide Sidebar';
+				toggleText.textContent = 'Hide Settings';
 				toggle.appendChild(toggleIcon);
 				toggle.appendChild(toggleText);
 				toggle.addEventListener('click', function() {
@@ -747,7 +834,12 @@ function mrn_editor_lockdown_admin_js() {
 				screenMetaLinks.appendChild(toggle);
 				body.classList.add('mrn-editor-sidebar-ready');
 				restoreSidebarState();
-				scheduleSidebarStateRestore();
+
+				window.requestAnimationFrame(function() {
+					window.requestAnimationFrame(function() {
+						body.classList.add('mrn-editor-sidebar-animate');
+					});
+				});
 			}
 
 			function lockMetaboxSorting() {
@@ -772,10 +864,6 @@ function mrn_editor_lockdown_admin_js() {
 			}
 
 			initSidebarToggle();
-			window.addEventListener('load', function() {
-				scheduleSidebarStateRestore();
-			});
-
 			if (<?php echo wp_json_encode( mrn_editor_lockdown_is_supported_screen( $screen ) ); ?>) {
 				lockMetaboxSorting();
 				setTimeout(lockMetaboxSorting, 250);

@@ -78,6 +78,28 @@
 		return {};
 	}
 
+	function markInitialPrecollapseReady( attributeName ) {
+		var root = document.documentElement;
+
+		if ( ! root || ! attributeName ) {
+			return;
+		}
+
+		root.setAttribute( attributeName, 'done' );
+
+		if ( root.getAttribute( 'data-mrn-builder-precollapse' ) !== 'done' ) {
+			return;
+		}
+
+		if ( root.getAttribute( 'data-mrn-repeater-precollapse' ) !== 'done' ) {
+			return;
+		}
+
+		root.classList.remove( 'mrn-base-stack-admin-precollapse' );
+		root.removeAttribute( 'data-mrn-builder-precollapse' );
+		root.removeAttribute( 'data-mrn-repeater-precollapse' );
+	}
+
 	function hideFlexibleContentLayouts( context ) {
 		var hiddenLayouts = getHiddenLayouts();
 
@@ -194,6 +216,15 @@
 		return $context.find( 'li' ).has( '[data-layout]' );
 	}
 
+	function getEnhancementLayoutRows( context ) {
+		var $context = $( context || document );
+
+		return $context
+			.filter( '.layout' )
+			.not( '.acf-clone' )
+			.add( $context.find( '.layout' ).not( '.acf-clone' ) );
+	}
+
 	function sortFlexibleContentLayoutChoices( context ) {
 		var $rows = getLayoutRowsFromContext( context );
 
@@ -244,7 +275,7 @@
 	}
 
 	function ensureConversionActions( context ) {
-		$( context || document ).find( '.layout' ).not( '.acf-clone' ).filter( function() {
+		getEnhancementLayoutRows( context ).filter( function() {
 			var $row = $( this );
 			var $flexField = $row.closest( '.acf-field-flexible-content' );
 
@@ -623,9 +654,13 @@
 	}
 
 	function getFlexibleFields( context ) {
-		return $( context || document )
+		var $context = $( context || document );
+
+		return $context
 			.filter( '.acf-field-flexible-content' )
-			.add( $( context || document ).find( '.acf-field-flexible-content' ) );
+			.add( $context.find( '.acf-field-flexible-content' ) )
+			.add( $context.closest( '.acf-field-flexible-content' ) )
+			.not( '.acf-clone' );
 	}
 
 	function getFlexibleCloneRows( $flexField ) {
@@ -639,7 +674,15 @@
 	}
 
 	function rowContainsLiveEditor( $row ) {
-		return $row.find( '.acf-field[data-type="wysiwyg"], .wp-editor-wrap, .mce-tinymce, .quicktags-toolbar' ).length > 0;
+		return $row.find( '.wp-editor-wrap' ).filter( function() {
+			var $wrap = $( this );
+
+			if ( ! $wrap.hasClass( 'delay' ) ) {
+				return true;
+			}
+
+			return $wrap.find( '.mce-tinymce, .quicktags-toolbar' ).length > 0;
+		} ).length > 0;
 	}
 
 	function canDetachFlexibleRowBodies( $row ) {
@@ -1127,8 +1170,9 @@
 	}
 
 	$( function() {
+		collapseInitialFlexibleRows( document );
 		syncFlexibleCloneBodyStates( document );
-		bootBuilderAdminUi( document, { syncContentLists: false } );
+		markInitialPrecollapseReady( 'data-mrn-builder-precollapse' );
 	} );
 
 	acf.addAction( 'append', function( $el ) {
@@ -1136,14 +1180,18 @@
 
 		syncFlexibleRowBodyStates( context );
 		syncFlexibleCloneBodyStates( context );
-		bootBuilderAdminUi( context, { syncContentLists: true } );
-		syncFlexibleCloneBodyStates( document );
+		ensureConversionActions( context );
+		scheduleContentListFilterSync( context );
 	} );
 
 	$( document ).on( 'click', '[data-name="add-layout"]', function() {
 		window.setTimeout( function() {
 			refreshFlexibleContentMenus( document );
 		}, 40 );
+	} );
+
+	$( document ).on( 'mouseenter focusin', '.acf-field-flexible-content .layout:not(.acf-clone)', function() {
+		ensureConversionActions( this );
 	} );
 
 	$( document ).on( 'mousedown touchstart', '[data-layout]', function() {
