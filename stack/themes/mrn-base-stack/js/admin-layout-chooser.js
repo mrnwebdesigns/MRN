@@ -27,6 +27,19 @@
 		closeButton: null
 	};
 
+	function isChooserManagedFlexibleField( element ) {
+		var field = element && element.closest ? element.closest( '.acf-field-flexible-content' ) : null;
+		var fieldName = '';
+
+		if ( ! field ) {
+			return false;
+		}
+
+		fieldName = String( field.getAttribute( 'data-name' ) || '' );
+
+		return fieldName === 'page_content_rows' || fieldName === 'page_after_content_rows';
+	}
+
 	function getBuilderLayouts() {
 		return $.isArray( adminConfig.builderLayouts ) ? adminConfig.builderLayouts : [];
 	}
@@ -357,10 +370,6 @@
 		}
 
 		ensureLaunchNotice();
-
-		if ( ! state.hasSavedSelection && getPostId() ) {
-			openChooser();
-		}
 	} );
 
 	$( document ).on( 'click', '.mrn-layout-chooser-launch', function( event ) {
@@ -429,6 +438,10 @@
 		);
 
 		if ( ! addRowTrigger ) {
+			return;
+		}
+
+		if ( ! isChooserManagedFlexibleField( addRowTrigger ) ) {
 			return;
 		}
 
