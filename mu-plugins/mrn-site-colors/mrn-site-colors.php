@@ -566,15 +566,8 @@ add_action('admin_init', 'mrn_site_styles_handle_import');
  * @return array<int, array<string, string>>
  */
 function mrn_site_colors_get_all(): array {
-    static $rows = null;
-
-    if (null !== $rows) {
-        return $rows;
-    }
-
-    $rows = mrn_site_colors_sanitize_rows(get_option(mrn_site_colors_option_key(), array()));
-
-    return $rows;
+    $rows = get_option(mrn_site_colors_option_key(), array());
+    return mrn_site_colors_sanitize_rows($rows);
 }
 
 /**
@@ -687,15 +680,8 @@ function mrn_site_styles_sanitize_graphic_element_rows($rows): array {
  * @return array<int, array<string, string>>
  */
 function mrn_site_styles_get_graphic_elements(): array {
-    static $rows = null;
-
-    if (null !== $rows) {
-        return $rows;
-    }
-
-    $rows = mrn_site_styles_sanitize_graphic_element_rows(get_option(mrn_site_styles_graphic_elements_option_key(), array()));
-
-    return $rows;
+    $rows = get_option(mrn_site_styles_graphic_elements_option_key(), array());
+    return mrn_site_styles_sanitize_graphic_element_rows($rows);
 }
 
 /**
@@ -704,12 +690,6 @@ function mrn_site_styles_get_graphic_elements(): array {
  * @return array<string, array<string, string>>
  */
 function mrn_site_styles_get_graphic_element_map(): array {
-    static $map = null;
-
-    if (null !== $map) {
-        return $map;
-    }
-
     $map = array();
 
     foreach (mrn_site_styles_get_graphic_elements() as $row) {
@@ -730,12 +710,6 @@ function mrn_site_styles_get_graphic_element_map(): array {
  * @return array<string, string>
  */
 function mrn_site_styles_get_graphic_element_choices(): array {
-    static $choices = null;
-
-    if (null !== $choices) {
-        return $choices;
-    }
-
     $choices = array(
         '' => 'Select a Graphic Element',
     );
@@ -874,21 +848,14 @@ function mrn_site_styles_sanitize_dark_scroll_card_preset_rows($rows): array {
  * @return array<int, array<string, string>>
  */
 function mrn_site_styles_get_dark_scroll_card_presets(): array {
-    static $presets = null;
-
-    if (null !== $presets) {
-        return $presets;
-    }
-
     $rows = get_option(mrn_site_styles_dark_scroll_card_presets_option_key(), array());
     $sanitized = mrn_site_styles_sanitize_dark_scroll_card_preset_rows($rows);
 
     if ($sanitized !== array()) {
-        $presets = $sanitized;
-        return $presets;
+        return $sanitized;
     }
 
-    $presets = array(
+    return array(
         array(
             'name' => 'Brand Dark Card',
             'slug' => 'brand-dark-card',
@@ -903,8 +870,6 @@ function mrn_site_styles_get_dark_scroll_card_presets(): array {
             'image_saturation' => '0.85',
         ),
     );
-
-    return $presets;
 }
 
 /**
@@ -913,12 +878,6 @@ function mrn_site_styles_get_dark_scroll_card_presets(): array {
  * @return array<string, array<string, string>>
  */
 function mrn_site_styles_get_dark_scroll_card_preset_map(): array {
-    static $map = null;
-
-    if (null !== $map) {
-        return $map;
-    }
-
     $map = array();
 
     foreach (mrn_site_styles_get_dark_scroll_card_presets() as $row) {
@@ -940,12 +899,6 @@ function mrn_site_styles_get_dark_scroll_card_preset_map(): array {
  * @return array<string, string>
  */
 function mrn_site_styles_get_dark_scroll_card_preset_choices(): array {
-    static $choices = null;
-
-    if (null !== $choices) {
-        return $choices;
-    }
-
     $choices = array(
         '' => 'Default Dark Card',
     );
