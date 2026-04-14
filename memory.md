@@ -1,37 +1,44 @@
 MRN PROJECT CONTEXT
 
-This is a WordPress-based website building platform.
+This project is a WordPress-based website building platform.
 
-Key facts:
-- Uses Classic Editor (NOT Gutenberg)
-- Built as a modular system using:
-  - stack theme (mrn-base-stack)
-  - plugins + MU plugins
-  - shared runtime code
-- Many features are interconnected across admin, frontend, and APIs
+Platform facts:
+- Uses Classic Editor, not Gutenberg
+- Built as a modular system using a stack theme, plugins, MU plugins, and shared runtime code
+- Features often affect admin UI, frontend rendering, saved data, and third-party APIs
 
-Core architecture rules:
-- Theme = layout, rendering, builder system
-- Plugins = features, integrations, admin behavior
-- MU plugins = shared runtime and cross-cutting logic
-- Site Styles = design tokens (colors, accents)
-- Config Helper = global settings + social data
+Architecture:
+- Theme owns layout, rendering, and builder behavior
+- Plugins own features, integrations, and admin behavior
+- MU plugins own shared runtime and cross-cutting behavior
+- Site Styles owns design tokens such as colors and accents
+- Config Helper owns site-wide settings and social/config data
 
 Critical constraints:
-- Do NOT break existing builder behavior
-- Do NOT break shared theme hooks (CSS classes, variables, data attributes)
+- Preserve existing builder behavior unless explicitly told otherwise
+- Preserve shared theme hook contracts, including CSS classes, CSS variables, data attributes, and helper output used by other parts of the system
 - Treat site updates as stack updates, not plugin-only swaps
 - Stack sites run a cloned active site theme by default; only add a child theme later when the site is handed to the development/front-end team
-- Always assume changes can affect multiple system areas
-- Prefer existing helpers/contracts over new logic
+- Prefer existing helpers, APIs, and established contracts over one-off logic
+- Assume changes may affect multiple connected areas
+
+Product quality standards:
+- Accessibility and front-end performance are stack-level requirements, not optional polish
+- Theme-owned front-end work should preserve or improve a WCAG 2.1 AA baseline where the stack controls markup, styles, and behavior
+- Favor semantic markup, strong heading structure, usable labels, keyboard access, visible focus states, meaningful alternative text, usable contrast, and reduced-motion-safe behavior
+- Treat page speed as a release concern for stack-owned pages; avoid unnecessary JavaScript, render-blocking assets, layout shift, oversized media, duplicate payloads, and other avoidable regressions
+- Target Lighthouse/PageSpeed scores in the 90s or better on stack-owned pages when the stack controls the result
+- If a third-party script, embed, or platform constraint prevents the target, document the blocker and do not make theme-owned output worse
+
+Before making changes:
+1. Identify what part of the system is being changed
+2. Identify what dependencies may be affected
+3. Make the smallest safe change
+4. Note risks before making broad or cross-system changes
 
 Working approach:
 - Only use relevant context for the current task
 - Do NOT assume full system memory is loaded
-- Always identify:
-  1. what part of the system is being changed
-  2. what dependencies might be affected
-  3. the minimal safe change
 - For Media Library folder drag/drop regressions, verify browser and user-session state before changing stack code. Firefox failures can reproduce across multiple media-folder plugins even when Chrome/Safari work, and a saved local `View Admin As` override on the `admin` user can block manual Media folder drag/drop until cleared.
 
 Deployment habits to preserve:

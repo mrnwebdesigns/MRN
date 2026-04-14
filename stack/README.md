@@ -8,6 +8,7 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 - A stack release snapshot (`STACK_VERSION.md`) and stack-wide notes (`CHANGELOG.md`).
 - A builder/dev conventions guide (`BUILDER_CONVENTIONS.md`) for theme layouts, reusable blocks, and shared content rules.
 - A curated developer handoff guide (`DEV_HANDOFF.md`) for backend/frontend team onboarding and Google Docs export.
+- A reusable feature prompt template (`FEATURE_PROMPT_TEMPLATE.md`) for scoping new stack work with shared accessibility, performance, and rollout requirements.
 - A front-end implementation guide (`FRONTEND_IMPLEMENTATION_GUIDE.md`) for Motion `inView`, Site Styles token usage, and Business Information template patterns.
 - A theme strategy guide (`THEME_ROADMAP.md`) for the stack theme’s role, ownership boundaries, and development roadmap.
 - A theme execution checklist (`THEME_TASKLIST.md`) for turning the roadmap into backend/frontend work.
