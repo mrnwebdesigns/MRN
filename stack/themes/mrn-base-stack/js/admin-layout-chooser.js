@@ -16,7 +16,6 @@
 		hasSavedSelection: !! chooserConfig.hasSavedSelection,
 		selectedLayouts: $.isArray( chooserConfig.selectedLayouts ) ? chooserConfig.selectedLayouts.slice() : [],
 		canPersistSelection: !! chooserConfig.canPersistSelection,
-		requiredMode: false,
 		isSaving: false
 	};
 
@@ -248,7 +247,7 @@
 		}
 	}
 
-	function openChooser( requiredMode ) {
+	function openChooser() {
 		if ( ! getPostId() ) {
 			showNotice( chooserConfig.cannotResolvePostIdNotice || 'Save this draft once, then choose layouts.', 'warning' );
 			return;
@@ -257,14 +256,13 @@
 		ensureStyles();
 		ensureDialog();
 
-		state.requiredMode = !! requiredMode;
-		ui.closeButton.toggle( ! state.requiredMode );
+		ui.closeButton.show();
 		renderDialogOptions();
 		setDialogOpen( true );
 	}
 
 	function closeChooser() {
-		if ( state.requiredMode || state.isSaving ) {
+		if ( state.isSaving ) {
 			return;
 		}
 
@@ -361,7 +359,7 @@
 		ensureLaunchNotice();
 
 		if ( ! state.hasSavedSelection && getPostId() ) {
-			openChooser( true );
+			openChooser();
 		}
 	} );
 
@@ -373,7 +371,7 @@
 			return;
 		}
 
-		openChooser( false );
+		openChooser();
 	} );
 
 	$( document ).on( 'click', '.mrn-layout-chooser-close, .mrn-layout-chooser-cancel', function( event ) {
