@@ -7,6 +7,260 @@
 
 defined( 'ABSPATH' ) || exit;
 
+if ( ! defined( 'MRN_BASE_STACK_LAYOUT_CHOOSER_META_KEY' ) ) {
+	define( 'MRN_BASE_STACK_LAYOUT_CHOOSER_META_KEY', '_mrn_enabled_builder_layouts' );
+}
+
+if ( ! defined( 'MRN_BASE_STACK_LAYOUT_CHOOSER_NONCE_ACTION' ) ) {
+	define( 'MRN_BASE_STACK_LAYOUT_CHOOSER_NONCE_ACTION', 'mrn-base-stack-layout-chooser' );
+}
+
+/**
+ * Resolve the current post ID for classic post editor requests.
+ *
+ * @return int
+ */
+function mrn_base_stack_get_builder_layout_selector_post_id() {
+	static $post_id = null;
+
+	if ( null !== $post_id ) {
+		return $post_id;
+	}
+
+	$post_id = 0;
+
+	if ( isset( $_GET['post'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only post context lookup.
+		$post_id = absint( wp_unslash( $_GET['post'] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- absint sanitizes scalar post IDs.
+	}
+
+	if ( ! $post_id && isset( $_POST['post_ID'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Read-only post context lookup.
+		$post_id = absint( wp_unslash( $_POST['post_ID'] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- absint sanitizes scalar post IDs.
+	}
+
+	if ( ! $post_id && function_exists( 'acf_get_form_data' ) ) {
+		$acf_post_id = acf_get_form_data( 'post_id' );
+
+		if ( is_numeric( $acf_post_id ) ) {
+			$post_id = absint( $acf_post_id );
+		} elseif ( is_string( $acf_post_id ) && preg_match( '/^post_(\d+)$/', $acf_post_id, $matches ) ) {
+			$post_id = absint( $matches[1] );
+		}
+	}
+
+	if ( ! $post_id && isset( $GLOBALS['post'] ) && $GLOBALS['post'] instanceof WP_Post ) {
+		$post_id = (int) $GLOBALS['post']->ID;
+	}
+
+	if ( ! $post_id && isset( $GLOBALS['post_ID'] ) ) {
+		$post_id = absint( $GLOBALS['post_ID'] );
+	}
+
+	return $post_id;
+}
+
+/**
+ * Get the current post type for classic post editor requests.
+ *
+ * @param int $post_id Current post ID.
+ * @return string
+ */
+function mrn_base_stack_get_builder_layout_selector_post_type( $post_id = 0 ) {
+	$post_type = '';
+	$post_id   = absint( $post_id );
+
+	if ( $post_id ) {
+		$post_type = get_post_type( $post_id );
+	}
+
+	if ( ! is_string( $post_type ) || '' === $post_type ) {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( $screen instanceof WP_Screen ) {
+			$post_type = (string) $screen->post_type;
+		}
+	}
+
+	return sanitize_key( (string) $post_type );
+}
+
+/**
+ * Get the saved builder layout allow-list for a post.
+ *
+ * @param int $post_id Post ID.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_saved_builder_layout_selection( $post_id ) {
+	static $cache = array();
+
+	$post_id = absint( $post_id );
+
+	if ( ! $post_id ) {
+		return array();
+	}
+
+	if ( isset( $cache[ $post_id ] ) ) {
+		return $cache[ $post_id ];
+	}
+
+	$raw = get_post_meta( $post_id, MRN_BASE_STACK_LAYOUT_CHOOSER_META_KEY, true );
+	if ( ! is_array( $raw ) ) {
+		$cache[ $post_id ] = array();
+		return $cache[ $post_id ];
+	}
+
+	$cache[ $post_id ] = array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $raw )
+			)
+		)
+	);
+
+	return $cache[ $post_id ];
+}
+
+/**
+ * Get all selectable top-level layout names for the layout chooser.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_selectable_builder_layout_names() {
+	$hidden_layouts = function_exists( 'mrn_base_stack_get_hidden_builder_layouts' ) ? mrn_base_stack_get_hidden_builder_layouts() : array();
+	$layout_names   = array();
+
+	foreach ( mrn_base_stack_get_builder_add_row_layout_menu_items() as $layout ) {
+		if ( ! is_array( $layout ) ) {
+			continue;
+		}
+
+		$name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+		if ( '' === $name ) {
+			continue;
+		}
+
+		$is_page_only = ! empty( $layout['isPageOnly'] );
+		if ( $is_page_only || in_array( $name, $hidden_layouts, true ) ) {
+			continue;
+		}
+
+		$layout_names[] = $name;
+	}
+
+	return array_values( array_unique( $layout_names ) );
+}
+
+/**
+ * Get builder meta-key prefixes that can contain flexible-layout names.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_builder_layout_usage_source_prefixes() {
+	return array(
+		'page_hero_rows',
+		'page_content_rows',
+		'page_after_content_rows',
+	);
+}
+
+/**
+ * Get currently-used layout names from all builder buckets on a post.
+ *
+ * @param int $post_id Post ID.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_used_builder_layout_names( $post_id ) {
+	static $cache = array();
+
+	$post_id = absint( $post_id );
+
+	if ( ! $post_id ) {
+		return array();
+	}
+
+	if ( isset( $cache[ $post_id ] ) ) {
+		return $cache[ $post_id ];
+	}
+
+	$names = array();
+	$meta  = get_post_meta( $post_id );
+
+	if ( ! is_array( $meta ) || empty( $meta ) ) {
+		$cache[ $post_id ] = array();
+		return $cache[ $post_id ];
+	}
+
+	$prefixes = mrn_base_stack_get_builder_layout_usage_source_prefixes();
+	$prefixes = array_values(
+		array_filter(
+			array_map( 'sanitize_key', $prefixes )
+		)
+	);
+
+	foreach ( $meta as $meta_key => $values ) {
+		$meta_key = (string) $meta_key;
+
+		if ( '_acf_fc_layout' !== substr( $meta_key, -14 ) ) {
+			continue;
+		}
+
+		$matches_prefix = false;
+
+		foreach ( $prefixes as $prefix ) {
+			if ( 0 === strpos( $meta_key, $prefix . '_' ) ) {
+				$matches_prefix = true;
+				break;
+			}
+		}
+
+		if ( ! $matches_prefix || ! is_array( $values ) ) {
+			continue;
+		}
+
+		foreach ( $values as $value ) {
+			$layout_name = sanitize_key( (string) $value );
+			if ( '' === $layout_name ) {
+				continue;
+			}
+
+			$names[] = $layout_name;
+		}
+	}
+
+	$cache[ $post_id ] = array_values( array_unique( $names ) );
+
+	return $cache[ $post_id ];
+}
+
+/**
+ * Get the layout allow-list for the current post.
+ *
+ * @param int $post_id Post ID.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_allowed_builder_layout_names( $post_id ) {
+	static $cache = array();
+
+	$post_id = absint( $post_id );
+
+	if ( ! $post_id ) {
+		return array();
+	}
+
+	if ( isset( $cache[ $post_id ] ) ) {
+		return $cache[ $post_id ];
+	}
+
+	$cache[ $post_id ] = array_values(
+		array_unique(
+			array_merge(
+				mrn_base_stack_get_saved_builder_layout_selection( $post_id ),
+				mrn_base_stack_get_used_builder_layout_names( $post_id )
+			)
+		)
+	);
+
+	return $cache[ $post_id ];
+}
+
 /**
  * Enqueue builder admin assets for supported classic editor screens.
  *
@@ -22,6 +276,14 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 	if ( ! $screen instanceof WP_Screen || ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_singular_shell_post_types(), true ) ) {
 		return;
 	}
+
+	$post_id                  = mrn_base_stack_get_builder_layout_selector_post_id();
+	$saved_layout_selection   = $post_id ? mrn_base_stack_get_saved_builder_layout_selection( $post_id ) : array();
+	$allowed_layout_selection = $post_id ? mrn_base_stack_get_allowed_builder_layout_names( $post_id ) : array();
+	$initial_layout_selection = ! empty( $saved_layout_selection ) ? $saved_layout_selection : $allowed_layout_selection;
+	$has_initial_layout_set   = ! empty( $initial_layout_selection );
+	$layout_chooser_path      = get_template_directory() . '/js/admin-layout-chooser.js';
+	$layout_chooser_ver       = file_exists( $layout_chooser_path ) ? (string) filemtime( $layout_chooser_path ) : _S_VERSION;
 
 	if ( function_exists( 'wp_enqueue_editor' ) ) {
 		wp_enqueue_editor();
@@ -58,7 +320,34 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 			'disabledLayouts'         => function_exists( 'mrn_base_stack_get_hidden_builder_layouts' ) ? mrn_base_stack_get_hidden_builder_layouts() : array(),
 			'contentListTaxonomies'   => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
 			'contentListDisplayModes' => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
+			'layoutChooser'           => array(
+				'postId'                    => $post_id,
+				'selectedLayouts'           => $initial_layout_selection,
+				'hasSavedSelection'         => $has_initial_layout_set,
+				'canPersistSelection'       => $post_id > 0,
+				'saveAction'                => 'mrn_base_stack_save_builder_layout_selection',
+				'nonce'                     => wp_create_nonce( MRN_BASE_STACK_LAYOUT_CHOOSER_NONCE_ACTION ),
+				'launchButton'              => 'Choose Layouts',
+				'updateButton'              => 'Save Selection',
+				'savingButton'              => 'Saving...',
+				'dialogTitle'               => 'Choose Allowed Layouts',
+				'dialogDescription'         => 'Choose which layouts this entry can add. You can reopen this chooser later to allow more layouts.',
+				'emptySelectionError'       => 'Choose at least one layout to continue.',
+				'missingSelectionNotice'    => 'Pick your starting layout set before building this page.',
+				'readyNotice'               => 'Layout chooser is available when you need to allow more layouts.',
+				'saveFailedNotice'          => 'Could not save the layout selection.',
+				'saveSuccessNotice'         => 'Layouts saved. Reloading editor...',
+				'cannotResolvePostIdNotice' => 'Save this draft once, then choose layouts.',
+			),
 		)
+		);
+
+	wp_enqueue_script(
+		'mrn-base-stack-admin-layout-chooser',
+		get_template_directory_uri() . '/js/admin-layout-chooser.js',
+		array( 'jquery', 'mrn-base-stack-content-builder-admin' ),
+		$layout_chooser_ver,
+		true
 	);
 }
 add_action( 'admin_enqueue_scripts', 'mrn_base_stack_admin_enqueue_builder_assets' );
@@ -207,6 +496,128 @@ function mrn_base_stack_get_builder_add_row_layout_menu_items() {
 
 	return $items;
 }
+
+/**
+ * Filter builder flexible-content layouts to the per-post allow-list.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_filter_editor_flexible_layouts_by_selection( $field ) {
+	if ( ! is_array( $field ) || empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
+		return $field;
+	}
+
+	$post_id = mrn_base_stack_get_builder_layout_selector_post_id();
+	if ( ! $post_id ) {
+		return $field;
+	}
+
+	$post_type = mrn_base_stack_get_builder_layout_selector_post_type( $post_id );
+	if ( '' === $post_type || ! in_array( $post_type, mrn_base_stack_get_singular_shell_post_types(), true ) ) {
+		return $field;
+	}
+
+	$allowed_layout_names = mrn_base_stack_get_allowed_builder_layout_names( $post_id );
+	if ( empty( $allowed_layout_names ) ) {
+		$field['layouts'] = array();
+		return $field;
+	}
+
+	$filtered_layouts = array();
+
+	foreach ( $field['layouts'] as $layout_key => $layout ) {
+		if ( ! is_array( $layout ) ) {
+			continue;
+		}
+
+		$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+		if ( '' === $layout_name || ! in_array( $layout_name, $allowed_layout_names, true ) ) {
+			continue;
+		}
+
+		$filtered_layouts[ $layout_key ] = $layout;
+	}
+
+	$field['layouts'] = $filtered_layouts;
+
+	return $field;
+}
+add_filter( 'acf/load_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
+add_filter( 'acf/load_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
+add_filter( 'acf/load_field/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
+add_filter( 'acf/prepare_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
+add_filter( 'acf/prepare_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
+add_filter( 'acf/prepare_field/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
+
+/**
+ * Persist builder layout chooser selections for a specific post.
+ *
+ * @return void
+ */
+function mrn_base_stack_save_builder_layout_selection() {
+	if ( ! check_ajax_referer( MRN_BASE_STACK_LAYOUT_CHOOSER_NONCE_ACTION, 'nonce', false ) ) {
+		wp_send_json_error(
+			array(
+				'message' => __( 'Security check failed. Refresh and try again.', 'mrn-base-stack' ),
+			),
+			403
+		);
+	}
+
+	$post_id = isset( $_POST['post_id'] ) ? absint( wp_unslash( $_POST['post_id'] ) ) : 0; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- absint sanitizes scalar post IDs.
+	if ( ! $post_id || ! current_user_can( 'edit_post', $post_id ) ) {
+		wp_send_json_error(
+			array(
+				'message' => __( 'You do not have permission to update layouts for this entry.', 'mrn-base-stack' ),
+			),
+			403
+		);
+	}
+
+	$post_type = sanitize_key( (string) get_post_type( $post_id ) );
+	if ( '' === $post_type || ! in_array( $post_type, mrn_base_stack_get_singular_shell_post_types(), true ) ) {
+		wp_send_json_error(
+			array(
+				'message' => __( 'Layouts can only be managed for supported builder entries.', 'mrn-base-stack' ),
+			),
+			400
+		);
+	}
+
+	$raw_layouts = isset( $_POST['layouts'] ) ? (array) wp_unslash( $_POST['layouts'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce verified above.
+	$layouts     = array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $raw_layouts )
+			)
+		)
+	);
+
+	$available_layouts = mrn_base_stack_get_selectable_builder_layout_names();
+	if ( ! empty( $available_layouts ) ) {
+		$layouts = array_values( array_intersect( $layouts, $available_layouts ) );
+	}
+
+	if ( empty( $layouts ) ) {
+		wp_send_json_error(
+			array(
+				'message' => __( 'Choose at least one layout.', 'mrn-base-stack' ),
+			),
+			400
+		);
+	}
+
+	update_post_meta( $post_id, MRN_BASE_STACK_LAYOUT_CHOOSER_META_KEY, $layouts );
+
+	wp_send_json_success(
+		array(
+			'postId'          => $post_id,
+			'selectedLayouts' => $layouts,
+		)
+	);
+}
+add_action( 'wp_ajax_mrn_base_stack_save_builder_layout_selection', 'mrn_base_stack_save_builder_layout_selection' );
 
 /**
  * Add lightweight admin CSS for custom content-builder row actions.
