@@ -155,10 +155,22 @@ run_remote() {
 	ssh "${remote_host}" "${command}"
 }
 
+get_remote_tree_acl_entries() {
+	local remote_host="$1"
+	local path="$2"
+
+	if ! run_remote "${remote_host}" "command -v getfacl >/dev/null 2>&1"; then
+		return 0
+	fi
+
+	run_remote "${remote_host}" "getfacl -R -cp '${path}' 2>/dev/null | grep -E '^(default:|user:[^:]+:|group:[^:]+:)' | head -n 20" | tr -d '\r'
+}
+
 normalize_remote_tree_acls() {
 	local remote_host="$1"
 	local path="$2"
 	local label="$3"
+	local residual_acls=""
 
 	if ! run_remote "${remote_host}" "command -v setfacl >/dev/null 2>&1"; then
 		echo "WARNING: setfacl is not available on ${remote_host}; skipping ACL normalization for ${label}." >&2
@@ -167,7 +179,21 @@ normalize_remote_tree_acls() {
 
 	echo "Removing inherited ACLs from ${label}..."
 	run_remote "${remote_host}" "setfacl -R -b '${path}'"
-	run_remote "${remote_host}" "find '${path}' -type d -exec setfacl -k {} +"
+	run_remote "${remote_host}" "find '${path}' -type d -print0 | xargs -0 -r -n 50 setfacl -k"
+
+	residual_acls="$(get_remote_tree_acl_entries "${remote_host}" "${path}" || true)"
+	if [[ -n "${residual_acls}" ]]; then
+		echo "Residual ACLs detected for ${label}; retrying ACL cleanup..."
+		run_remote "${remote_host}" "setfacl -R -b '${path}'"
+		run_remote "${remote_host}" "find '${path}' -type d -print0 | xargs -0 -r -n 1 setfacl -k"
+
+		residual_acls="$(get_remote_tree_acl_entries "${remote_host}" "${path}" || true)"
+		if [[ -n "${residual_acls}" ]]; then
+			echo "ERROR: ${label} still has residual ACLs after cleanup." >&2
+			echo "${residual_acls}" >&2
+			return 1
+		fi
+	fi
 }
 
 normalize_remote_tree_permissions() {

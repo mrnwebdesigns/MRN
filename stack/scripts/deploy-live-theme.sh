@@ -178,6 +178,79 @@ RSYNC_EXCLUDES=(
 	--exclude=yarn.lock
 )
 
+run_site_remote() {
+	local command="$1"
+
+	if [[ "${DIRECT_SSH}" -eq 1 ]]; then
+		ssh "$SSH_HOST" "${command}"
+	else
+		local escaped_command
+		escaped_command="$(printf '%q' "${command}")"
+		ssh "$SSH_HOST" "sudo -n -u ${SITE_USER} /bin/bash -lc ${escaped_command}"
+	fi
+}
+
+get_remote_tree_acl_entries() {
+	local path="$1"
+
+	if ! run_site_remote "command -v getfacl >/dev/null 2>&1"; then
+		return 0
+	fi
+
+	run_site_remote "getfacl -R -cp '${path}' 2>/dev/null | grep -E '^(default:|user:[^:]+:|group:[^:]+:)' | head -n 20" | tr -d '\r'
+}
+
+normalize_remote_tree_acls() {
+	local path="$1"
+	local label="$2"
+	local residual_acls=""
+
+	if ! run_site_remote "command -v setfacl >/dev/null 2>&1"; then
+		echo "WARNING: setfacl is not available on ${SSH_HOST}; skipping ACL normalization for ${label}." >&2
+		return 0
+	fi
+
+	echo "Removing inherited ACLs from ${label}..."
+	run_site_remote "setfacl -R -b '${path}'"
+	run_site_remote "find '${path}' -type d -print0 | xargs -0 -r -n 50 setfacl -k"
+
+	residual_acls="$(get_remote_tree_acl_entries "${path}" || true)"
+	if [[ -n "${residual_acls}" ]]; then
+		echo "Residual ACLs detected for ${label}; retrying ACL cleanup..."
+		run_site_remote "setfacl -R -b '${path}'"
+		run_site_remote "find '${path}' -type d -print0 | xargs -0 -r -n 1 setfacl -k"
+
+		residual_acls="$(get_remote_tree_acl_entries "${path}" || true)"
+		if [[ -n "${residual_acls}" ]]; then
+			echo "ERROR: ${label} still has residual ACLs after cleanup." >&2
+			echo "${residual_acls}" >&2
+			return 1
+		fi
+	fi
+}
+
+normalize_remote_tree_permissions() {
+	local path="$1"
+	local label="$2"
+
+	echo "Normalizing ${label} permissions..."
+	run_site_remote "find '${path}' -type d -exec chmod 755 {} +"
+	run_site_remote "find '${path}' -type f -not -path '*/.git/*' -exec chmod 644 {} +"
+}
+
+verify_remote_tree_file_modes() {
+	local path="$1"
+	local label="$2"
+	local out_of_spec=""
+
+	out_of_spec="$(run_site_remote "find '${path}' -type f -not -path '*/.git/*' ! -perm 644 -print | head -n 20" | tr -d '\r')"
+	if [[ -n "${out_of_spec}" ]]; then
+		echo "ERROR: ${label} still has files that are not mode 644 after normalization." >&2
+		echo "${out_of_spec}" >&2
+		return 1
+	fi
+}
+
 echo "Syncing theme to live site as ${SITE_USER} via ${SSH_HOST}..."
 
 RSYNC_ARGS=(
@@ -211,21 +284,13 @@ if [[ -n "$PRESERVE_THEME_NAME" || -n "$PRESERVE_TEXT_DOMAIN" ]]; then
 
 	REMOTE_PATCH+="' '${REMOTE_STYLE}'"
 
-	if [[ "${DIRECT_SSH}" -eq 1 ]]; then
-		ssh "$SSH_HOST" "${REMOTE_PATCH}"
-	else
-		ssh "$SSH_HOST" "sudo -n -u ${SITE_USER} ${REMOTE_PATCH}"
-	fi
+	run_site_remote "${REMOTE_PATCH}"
 fi
 
-if [[ "${DIRECT_SSH}" -eq 1 ]]; then
-	ssh "$SSH_HOST" "find '${REMOTE_THEME_PATH}' -type d -exec chmod 755 {} +"
-	ssh "$SSH_HOST" "find '${REMOTE_THEME_PATH}' -type f -exec chmod 644 {} +"
-else
-	ssh "$SSH_HOST" "sudo -n -u ${SITE_USER} find '${REMOTE_THEME_PATH}' -type d -exec chmod 755 {} +"
-	ssh "$SSH_HOST" "sudo -n -u ${SITE_USER} find '${REMOTE_THEME_PATH}' -type f -exec chmod 644 {} +"
-fi
+normalize_remote_tree_acls "${REMOTE_THEME_PATH}" "live theme"
+normalize_remote_tree_permissions "${REMOTE_THEME_PATH}" "live theme"
+verify_remote_tree_file_modes "${REMOTE_THEME_PATH}" "live theme"
 
-ssh "$SSH_HOST" "stat -c '%U:%G %a %n' '${REMOTE_THEME_PATH}/style.css'"
+run_site_remote "stat -c '%U:%G %a %n' '${REMOTE_THEME_PATH}/style.css'"
 
 echo "Live theme deploy completed."
