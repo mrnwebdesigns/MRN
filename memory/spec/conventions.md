@@ -49,7 +49,11 @@
 - Performance is a first-class requirement.
 - SEO is a first-class requirement.
 - Accessibility is a first-class requirement.
-- Favor semantic markup, strong page structure, clean metadata, keyboard support, usable contrast, and avoidance of regressions.
+- Theme-owned front-end work should preserve or improve a WCAG 2.1 AA baseline where the stack controls markup, styles, and behavior.
+- Favor semantic markup, strong page structure, clean metadata, keyboard support, visible focus, usable contrast, meaningful labels and text alternatives, reduced-motion-safe behavior, and avoidance of regressions.
+- Treat Lighthouse/PageSpeed scores in the 90s or better as the target for stack-owned pages when the stack controls the result.
+- Avoid unnecessary JavaScript, render-blocking assets, layout shift, oversized media, duplicate payloads, and other avoidable performance regressions.
+- If a third-party dependency or platform constraint blocks a target, document the blocker and do not make theme-owned output worse.
 
 ## Packaging Definition
 - To package a plugin or similar deliverable:
@@ -64,6 +68,7 @@
   - run `git diff --check`
   - run a lightweight risky-pattern scan for high-risk functions such as `eval`, `base64_decode`, `exec`, `shell_exec`, `system`, `passthru`, `proc_open`, and `popen`
   - review capability checks, nonce usage, and sanitization or escaping for new admin forms, AJAX handlers, and settings saves
+  - for theme-owned front-end work, review for accessibility and performance regressions using the relevant local QA pages when practical
   - run any relevant existing test or verification command before release
   - for the stack theme package, keep the zip in the existing flat-root format so `style.css` is readable at the archive root and `/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh` can verify it
   - for stack theme, stack MU, or bootstrap-path changes that touch `default-configs.mrndev.io`, run `/Users/khofmeyer/Development/MRN/stack/scripts/qa-rollout-contract.sh` to verify packaged theme parity, shared runtime presence, live active stylesheet version parity, and required rollout-owned features such as `case_study`

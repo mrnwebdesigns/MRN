@@ -17,6 +17,14 @@ WordPress rules:
   - escaping
   - nonce/capability checks
 
+Product quality:
+- Accessibility and frontend performance are required, not optional polish
+- Theme-owned frontend work should preserve or improve a WCAG 2.1 AA baseline where the stack controls markup, styles, and behavior
+- Favor semantic markup, strong heading structure, labels, keyboard access, visible focus, usable contrast, meaningful text alternatives, and reduced-motion-safe behavior
+- Optimize stack-owned pages for Lighthouse/PageSpeed scores in the 90s or higher when the stack controls the result
+- Avoid unnecessary JavaScript, render-blocking assets, layout shift, oversized media, duplicate payloads, and other avoidable regressions
+- If a third-party dependency blocks a target, document the blocker and avoid making theme-owned output worse
+
 Safety:
 - Assume shared components affect multiple features
 - Treat site updates as coordinated stack changes when rendering, helpers, or theming hooks are involved
@@ -37,3 +45,5 @@ Release baseline:
 - PHP linting
 - diff check
 - security review (nonce, sanitize, escape)
+- accessibility review
+- performance review

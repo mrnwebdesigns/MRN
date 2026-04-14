@@ -1872,6 +1872,10 @@ function mrn_site_colors_render_page(): void {
  * Print site style CSS variables and graphic elements for front-end, admin, and login screens.
  */
 function mrn_site_colors_print_css_variables(): void {
+    if (is_admin() && function_exists('mrn_is_post_page_editor_stack_disabled') && mrn_is_post_page_editor_stack_disabled()) {
+        return;
+    }
+
     $rows             = mrn_site_colors_get_all();
     $graphic_elements = mrn_site_styles_get_graphic_elements();
     $dark_scroll_card_presets = mrn_site_styles_get_dark_scroll_card_presets();

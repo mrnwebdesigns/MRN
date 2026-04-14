@@ -260,6 +260,10 @@ function mrn_editor_lockdown_get_layout_for_post_type( $post_type ) {
 
 	$post_type = sanitize_key( (string) $post_type );
 
+	if ( function_exists( 'mrn_is_post_page_editor_stack_disabled_for_post_type' ) && mrn_is_post_page_editor_stack_disabled_for_post_type( $post_type ) ) {
+		return null;
+	}
+
 	if ( array_key_exists( $post_type, $cache ) ) {
 		return $cache[ $post_type ];
 	}
@@ -327,6 +331,10 @@ function mrn_editor_lockdown_get_supported_post_types() {
  */
 function mrn_editor_lockdown_is_classic_post_screen( $screen ) {
 	if ( ! $screen instanceof WP_Screen ) {
+		return false;
+	}
+
+	if ( function_exists( 'mrn_is_post_page_editor_stack_disabled_for_post_type' ) && mrn_is_post_page_editor_stack_disabled_for_post_type( $screen->post_type ) ) {
 		return false;
 	}
 
@@ -441,6 +449,29 @@ function mrn_editor_lockdown_remove_legacy_seo_metabox( $post_type ) {
 	remove_meta_box( $metabox_id, $post_type, 'side' );
 }
 add_action( 'add_meta_boxes', 'mrn_editor_lockdown_remove_legacy_seo_metabox', 100 );
+
+/**
+ * Remove the SEO Helper metabox entirely when editor diagnostic mode is active.
+ *
+ * This provides a hard fallback even if the field group is registered outside the
+ * normal stack bootstrap path for a given site.
+ *
+ * @param string $post_type Current post type slug.
+ * @return void
+ */
+function mrn_editor_lockdown_remove_seo_helper_during_diagnostics( $post_type ) {
+	if ( ! function_exists( 'mrn_is_post_page_editor_stack_disabled_for_post_type' ) || ! mrn_is_post_page_editor_stack_disabled_for_post_type( $post_type ) ) {
+		return;
+	}
+
+	$post_type  = sanitize_key( (string) $post_type );
+	$metabox_id = mrn_editor_lockdown_get_seo_helper_metabox_id();
+
+	remove_meta_box( $metabox_id, $post_type, 'normal' );
+	remove_meta_box( $metabox_id, $post_type, 'advanced' );
+	remove_meta_box( $metabox_id, $post_type, 'side' );
+}
+add_action( 'add_meta_boxes', 'mrn_editor_lockdown_remove_seo_helper_during_diagnostics', PHP_INT_MAX );
 
 /**
  * Filter screen layout user options for locked post types.

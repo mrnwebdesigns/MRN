@@ -36,6 +36,10 @@ add_filter('pre_option_default_comment_status_page', 'mrn_dc_return_closed');
  * Strip support from all post types (including late-registered CPTs).
  */
 function mrn_dc_strip_support_all() {
+  if (function_exists('mrn_is_post_page_editor_stack_disabled') && mrn_is_post_page_editor_stack_disabled()) {
+    return;
+  }
+
   $types = get_post_types(array(), 'names');
   if (!is_array($types)) return;
 
@@ -47,6 +51,8 @@ function mrn_dc_strip_support_all() {
 add_action('init', 'mrn_dc_strip_support_all', PHP_INT_MAX);
 
 add_action('registered_post_type', function ($post_type) {
+  if (function_exists('mrn_is_post_page_editor_stack_disabled') && mrn_is_post_page_editor_stack_disabled()) return;
+
   if (!is_string($post_type) || $post_type === '') return;
   remove_post_type_support($post_type, 'comments');
   remove_post_type_support($post_type, 'trackbacks');
@@ -56,6 +62,10 @@ add_action('registered_post_type', function ($post_type) {
  * Remove comment-related meta boxes.
  */
 add_action('add_meta_boxes', function () {
+  if (function_exists('mrn_is_post_page_editor_stack_disabled') && mrn_is_post_page_editor_stack_disabled()) {
+    return;
+  }
+
   $types = get_post_types(array(), 'names');
   if (!is_array($types)) return;
 
@@ -170,6 +180,8 @@ add_filter('xmlrpc_methods', function ($methods) {
  * Hide discussion settings UI (optional cleanup).
  */
 add_action('admin_init', function () {
+  if (function_exists('mrn_is_post_page_editor_stack_disabled') && mrn_is_post_page_editor_stack_disabled()) return;
+
   remove_meta_box('commentstatusdiv', 'post', 'normal');
   remove_meta_box('commentstatusdiv', 'page', 'normal');
 
@@ -231,6 +243,10 @@ add_filter('dashboard_glance_items', function ($items) {
 
 add_action('admin_head', function () {
   if (!is_admin()) {
+    return;
+  }
+
+  if (function_exists('mrn_is_post_page_editor_stack_disabled') && mrn_is_post_page_editor_stack_disabled()) {
     return;
   }
   ?>

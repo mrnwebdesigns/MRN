@@ -67,6 +67,9 @@ add_action('admin_footer-post.php', 'mrn_pd_autoclick_duplicate_button');
 add_action('admin_footer-post-new.php', 'mrn_pd_autoclick_duplicate_button');
 
 function mrn_pd_autoclick_duplicate_button() {
+	if (function_exists('mrn_is_post_page_editor_stack_disabled') && mrn_is_post_page_editor_stack_disabled()) {
+		return;
+	}
 
     if (empty($_GET['mrn_pd_open_duplicate'])) {
         return;

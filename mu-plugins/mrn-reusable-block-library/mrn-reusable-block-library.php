@@ -1194,11 +1194,11 @@ function mrn_rbl_with_effects_fields(array $field_group): array {
  * @return void
  */
 function mrn_rbl_auto_enhance_local_field_groups(): void {
-    if (!function_exists('acf_get_local_field_groups') || !function_exists('acf_get_fields') || !function_exists('acf_add_local_field_group')) {
-        return;
-    }
+	if (!function_exists('acf_get_local_field_groups') || !function_exists('acf_get_fields') || !function_exists('acf_add_local_field_group')) {
+		return;
+	}
 
-    $field_groups = acf_get_local_field_groups();
+	$field_groups = acf_get_local_field_groups();
     if (!is_array($field_groups)) {
         return;
     }
@@ -2004,11 +2004,11 @@ function mrn_rbl_get_content_list_filter_match_choices(): array {
  * Register ACF field groups for reusable block types.
  */
 function mrn_rbl_register_acf_field_groups(): void {
-    if (!function_exists('acf_add_local_field_group')) {
-        return;
-    }
+	if (!function_exists('acf_add_local_field_group')) {
+		return;
+	}
 
-    acf_add_local_field_group(array(
+	acf_add_local_field_group(array(
         'key'    => 'group_mrn_reusable_cta',
         'title'  => 'CTA Fields',
         'fields' => array(

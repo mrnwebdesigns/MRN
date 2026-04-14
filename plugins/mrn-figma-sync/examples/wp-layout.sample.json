@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "source": {
+    "document_id": "figma-file-123",
+    "page_name": "About"
+  },
+  "target": {
+    "post_id": 123,
+    "post_type": "page"
+  },
+  "fields": {
+    "page_hero_rows": [
+      {
+        "acf_fc_layout": "hero",
+        "label": "MRN Platform",
+        "heading": "Deterministic Figma to WordPress",
+        "subheading": "Structured content in, validated builder rows out.",
+        "content": "<p>This payload maps into the existing MRN builder instead of generating raw front-end code.</p>",
+        "primary_link": {
+          "url": "/contact/",
+          "title": "Talk To Us",
+          "target": ""
+        },
+        "image": 456,
+        "background_color": "primary"
+      }
+    ],
+    "page_content_rows": [
+      {
+        "acf_fc_layout": "body_text",
+        "label": "How It Works",
+        "heading": "Registry-driven mapping",
+        "subheading": "The import pipeline respects live ACF fields.",
+        "body_text": "<p>The mapper only writes layouts and fields that exist in the live builder contract.</p>",
+        "section_width": "content"
+      },
+      {
+        "acf_fc_layout": "stats",
+        "heading": "Why This Fits MRN",
+        "stat_items": [
+          {
+            "label": "Per-page Dev Work",
+            "value": "Near Zero"
+          },
+          {
+            "label": "Import Mode",
+            "value": "Deterministic"
+          }
+        ],
+        "columns": 2
+      }
+    ],
+    "page_after_content_rows": [],
+    "sidebar_layout": "right",
+    "page_sidebar_rows": [
+      {
+        "acf_fc_layout": "body_text",
+        "heading": "Sidebar Note",
+        "body_text": "<p>Sidebars reuse the same builder layouts through the cloned sidebar field group.</p>"
+      }
+    ]
+  }
+}

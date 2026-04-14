@@ -19,6 +19,10 @@ add_filter('upload_mimes', function ($mimes) {
  * Fix SVG display in Media Library.
  */
 add_action('admin_head', function () {
+    if (function_exists('mrn_is_post_page_editor_stack_disabled') && mrn_is_post_page_editor_stack_disabled()) {
+        return;
+    }
+
     echo '<style>
         .attachment-266x266,
         .thumbnail img {

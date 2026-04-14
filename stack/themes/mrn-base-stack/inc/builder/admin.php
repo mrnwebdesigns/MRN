@@ -23,6 +23,13 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 		return;
 	}
 
+	$acf_only_mode        = function_exists( 'mrn_base_stack_is_post_page_editor_acf_only_mode' ) && mrn_base_stack_is_post_page_editor_acf_only_mode();
+	$performance_only_mode = function_exists( 'mrn_base_stack_is_post_page_editor_stack_disabled' ) && mrn_base_stack_is_post_page_editor_stack_disabled();
+
+	if ( $acf_only_mode ) {
+		return;
+	}
+
 	if ( function_exists( 'wp_enqueue_editor' ) ) {
 		wp_enqueue_editor();
 	}
@@ -54,6 +61,7 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 			'loadingText'             => 'Converting block...',
 			'successText'             => 'This row is now a page-specific block.',
 			'errorText'               => 'The block could not be converted.',
+			'performanceOnlyMode'     => $performance_only_mode,
 			'builderLayouts'          => mrn_base_stack_get_builder_add_row_layout_menu_items(),
 			'disabledLayouts'         => function_exists( 'mrn_base_stack_get_hidden_builder_layouts' ) ? mrn_base_stack_get_hidden_builder_layouts() : array(),
 			'contentListTaxonomies'   => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
@@ -80,6 +88,10 @@ function mrn_base_stack_precollapse_builder_admin_rows() {
 	}
 
 	if ( ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_singular_shell_post_types(), true ) ) {
+		return;
+	}
+
+	if ( function_exists( 'mrn_base_stack_is_post_page_editor_acf_only_mode' ) && mrn_base_stack_is_post_page_editor_acf_only_mode() ) {
 		return;
 	}
 	?>
@@ -139,12 +151,22 @@ function mrn_base_stack_delay_builder_wysiwyg_initialization( $field ) {
 		return $field;
 	}
 
+	if ( function_exists( 'mrn_base_stack_is_post_page_editor_stack_disabled' ) && mrn_base_stack_is_post_page_editor_stack_disabled() ) {
+		return $field;
+	}
+
 	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 	if ( ! $screen instanceof WP_Screen || 'post' !== $screen->base ) {
 		return $field;
 	}
 
-	if ( ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_singular_shell_post_types(), true ) ) {
+	$post_type = sanitize_key( (string) $screen->post_type );
+
+	if ( in_array( $post_type, array( 'post', 'page' ), true ) ) {
+		return $field;
+	}
+
+	if ( ! in_array( $post_type, mrn_base_stack_get_singular_shell_post_types(), true ) ) {
 		return $field;
 	}
 
@@ -218,8 +240,27 @@ function mrn_base_stack_admin_builder_action_styles() {
 	if ( ! $screen instanceof WP_Screen || ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_singular_shell_post_types(), true ) ) {
 		return;
 	}
+
+	$acf_only_mode        = function_exists( 'mrn_base_stack_is_post_page_editor_acf_only_mode' ) && mrn_base_stack_is_post_page_editor_acf_only_mode();
+	$performance_only_mode = function_exists( 'mrn_base_stack_is_post_page_editor_stack_disabled' ) && mrn_base_stack_is_post_page_editor_stack_disabled();
+
+	if ( $acf_only_mode ) {
+		return;
+	}
 	?>
 	<style id="mrn-base-stack-builder-actions">
+		/* Hide heavy ACF clone-template bodies before admin JS runs so the
+			edit screen does not visibly assemble template field groups on load. */
+		.acf-field-flexible-content > .acf-input > .acf-flexible-content > .clones > .layout.acf-clone > .acf-fields,
+		.acf-field-flexible-content > .acf-input > .clones > .layout.acf-clone > .acf-fields,
+		.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > tbody > .acf-row.acf-clone > td:not(.acf-row-handle):not(.acf-row-handle.order),
+		.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > .acf-tbody > .acf-row.acf-clone > td:not(.acf-row-handle):not(.acf-row-handle.order),
+		.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > table > tbody > .acf-row.acf-clone > td:not(.acf-row-handle):not(.acf-row-handle.order),
+		.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .values > .acf-row.acf-clone > .acf-fields {
+			display: none !important;
+		}
+
+		<?php if ( ! $performance_only_mode ) : ?>
 		.acf-fc-layout-controls .mrn-convert-reusable-block-action,
 		.acf-fc-layout-actions .mrn-convert-reusable-block-action,
 		.acf-fc-layout-controlls .mrn-convert-reusable-block-action {
@@ -263,17 +304,6 @@ function mrn_base_stack_admin_builder_action_styles() {
 			width: 20px;
 			height: 20px;
 			line-height: 20px;
-		}
-
-		/* Hide heavy ACF clone-template bodies before admin JS runs so the
-			edit screen does not visibly assemble template field groups on load. */
-		.acf-field-flexible-content > .acf-input > .acf-flexible-content > .clones > .layout.acf-clone > .acf-fields,
-		.acf-field-flexible-content > .acf-input > .clones > .layout.acf-clone > .acf-fields,
-		.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > tbody > .acf-row.acf-clone > td:not(.acf-row-handle):not(.acf-row-handle.order),
-		.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > .acf-tbody > .acf-row.acf-clone > td:not(.acf-row-handle):not(.acf-row-handle.order),
-		.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > table > tbody > .acf-row.acf-clone > td:not(.acf-row-handle):not(.acf-row-handle.order),
-		.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .values > .acf-row.acf-clone > .acf-fields {
-			display: none !important;
 		}
 
 		li.mrn-builder-menu-header {
@@ -361,6 +391,7 @@ function mrn_base_stack_admin_builder_action_styles() {
 				transform: rotate(360deg);
 			}
 		}
+		<?php endif; ?>
 	</style>
 	<?php
 }
@@ -371,12 +402,18 @@ add_action( 'admin_head', 'mrn_base_stack_admin_builder_action_styles' );
  * screen compatibility for plugins that expect the classic editor context.
  */
 function mrn_base_stack_hide_native_editor_metabox() {
-	remove_meta_box( 'postdivrich', 'post', 'normal' );
-	remove_meta_box( 'postdivrich', 'page', 'normal' );
-	remove_meta_box( 'postdivrich', 'blog', 'normal' );
-	remove_meta_box( 'postdivrich', 'gallery', 'normal' );
-	remove_meta_box( 'postdivrich', 'testimonial', 'normal' );
-	remove_meta_box( 'postdivrich', 'case_study', 'normal' );
+	foreach ( array( 'post', 'page', 'blog', 'gallery', 'testimonial', 'case_study' ) as $post_type ) {
+		if ( function_exists( 'mrn_base_stack_is_post_page_editor_acf_only_mode_for_post_type' ) && mrn_base_stack_is_post_page_editor_acf_only_mode_for_post_type( $post_type ) ) {
+			remove_meta_box( 'postdivrich', $post_type, 'normal' );
+			continue;
+		}
+
+		if ( function_exists( 'mrn_base_stack_is_post_page_editor_stack_disabled_for_post_type' ) && mrn_base_stack_is_post_page_editor_stack_disabled_for_post_type( $post_type ) ) {
+			continue;
+		}
+
+		remove_meta_box( 'postdivrich', $post_type, 'normal' );
+	}
 }
 add_action( 'add_meta_boxes', 'mrn_base_stack_hide_native_editor_metabox', 20 );
 
@@ -387,6 +424,12 @@ add_action( 'add_meta_boxes', 'mrn_base_stack_hide_native_editor_metabox', 20 );
 function mrn_base_stack_hide_native_editor_css() {
 	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 	if ( ! $screen instanceof WP_Screen ) {
+		return;
+	}
+
+	$is_acf_only_mode = function_exists( 'mrn_base_stack_is_post_page_editor_acf_only_mode' ) && mrn_base_stack_is_post_page_editor_acf_only_mode();
+
+	if ( ! $is_acf_only_mode && function_exists( 'mrn_base_stack_is_post_page_editor_stack_disabled' ) && mrn_base_stack_is_post_page_editor_stack_disabled() ) {
 		return;
 	}
 

@@ -7,6 +7,10 @@
 
 	var config = mrnBaseStackBuilderAdmin;
 
+	function isPerformanceOnlyMode() {
+		return !! config.performanceOnlyMode;
+	}
+
 	function getBuilderLayouts() {
 		return $.isArray( config.builderLayouts ) ? config.builderLayouts : [];
 	}
@@ -101,6 +105,10 @@
 	}
 
 	function hideFlexibleContentLayouts( context ) {
+		if ( isPerformanceOnlyMode() ) {
+			return;
+		}
+
 		var hiddenLayouts = getHiddenLayouts();
 
 		if ( ! hiddenLayouts.length ) {
@@ -134,6 +142,10 @@
 	}
 
 	function alphabetizeFlexibleContentMenus( context ) {
+		if ( isPerformanceOnlyMode() ) {
+			return;
+		}
+
 		var layoutMap = getBuilderLayoutMap();
 		var reusableLayouts = getReusableLayoutNames();
 
@@ -271,10 +283,14 @@
 			return false;
 		}
 
-		return $targets.first().children( '.acf-field[data-name="block"]' ).length > 0;
+		return $targets.first().find( '.acf-field[data-name="block"]' ).length > 0;
 	}
 
 	function ensureConversionActions( context ) {
+		if ( isPerformanceOnlyMode() ) {
+			return;
+		}
+
 		getEnhancementLayoutRows( context ).filter( function() {
 			var $row = $( this );
 			var $flexField = $row.closest( '.acf-field-flexible-content' );
@@ -420,10 +436,18 @@
 	}
 
 	function setContentListSyncState( $row, isSyncing ) {
+		if ( isPerformanceOnlyMode() ) {
+			return;
+		}
+
 		$row.toggleClass( 'mrn-content-list-is-syncing', !! isSyncing );
 	}
 
 	function setContentListLegacyPresentationState( $row, useRowSettings ) {
+		if ( isPerformanceOnlyMode() ) {
+			return;
+		}
+
 		var legacyFieldNames = [
 			'show_featured_image',
 			'show_publish_date',
@@ -471,6 +495,10 @@
 	}
 
 	function refreshContentListLegacyPresentationState( context ) {
+		if ( isPerformanceOnlyMode() ) {
+			return;
+		}
+
 		$( context || document ).filter( '.layout[data-layout="content_lists"]' ).add( $( context || document ).find( '.layout[data-layout="content_lists"]' ) ).not( '.acf-clone' ).each( function() {
 			var $row = $( this );
 			var $displayModeField = getContentListField( $row, 'display_mode' );
@@ -482,6 +510,10 @@
 	}
 
 	function updateSelectUi( $field ) {
+		if ( isPerformanceOnlyMode() ) {
+			return;
+		}
+
 		var $select = getContentListSelect( $field );
 
 		if ( ! $field || ! $field.length || ! $select.length ) {
@@ -528,6 +560,10 @@
 	}
 
 	function syncContentListFilters( context ) {
+		if ( isPerformanceOnlyMode() ) {
+			return;
+		}
+
 		$( context || document ).filter( '.layout[data-layout="content_lists"]' ).add( $( context || document ).find( '.layout[data-layout="content_lists"]' ) ).not( '.acf-clone' ).each( function() {
 			var $row = $( this );
 			var $postTypeField = getContentListField( $row, 'list_post_type' );
@@ -626,6 +662,10 @@
 	}
 
 	function scheduleContentListFilterSync( context ) {
+		if ( isPerformanceOnlyMode() ) {
+			return;
+		}
+
 		$( context || document ).filter( '.layout[data-layout="content_lists"]' ).add( $( context || document ).find( '.layout[data-layout="content_lists"]' ) ).not( '.acf-clone' ).each( function() {
 			var $row = $( this );
 			var pendingTimer = $row.data( 'mrnContentListSyncTimer' );
@@ -883,6 +923,7 @@
 		}
 
 		restoreFlexibleRowBodies( $row );
+		ensureConversionActions( $row );
 
 		if ( $row.attr( 'data-layout' ) === 'content_lists' ) {
 			scheduleContentListFilterSync( $row );
@@ -1249,6 +1290,10 @@
 	} );
 
 	$( document ).on( 'click', '.mrn-convert-reusable-block, .mrn-convert-reusable-block-action', function( event ) {
+		if ( isPerformanceOnlyMode() ) {
+			return;
+		}
+
 		event.preventDefault();
 
 		var $button = $( this );

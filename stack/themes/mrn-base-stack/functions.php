@@ -362,6 +362,47 @@ function mrn_base_stack_is_builder_supported_post_type( $post_type ) {
 }
 
 /**
+ * Determine whether the post/page editor diagnostic mode is active.
+ *
+ * @return bool
+ */
+function mrn_base_stack_is_post_page_editor_stack_disabled() {
+	return function_exists( 'mrn_is_post_page_editor_stack_disabled' ) && mrn_is_post_page_editor_stack_disabled();
+}
+
+/**
+ * Determine whether the post/page editor is in ACF-only diagnostic mode.
+ *
+ * @return bool
+ */
+function mrn_base_stack_is_post_page_editor_acf_only_mode() {
+	return function_exists( 'mrn_is_post_page_editor_acf_only_mode' ) && mrn_is_post_page_editor_acf_only_mode();
+}
+
+/**
+ * Determine whether the post/page editor diagnostic mode is active for a post type.
+ *
+ * @param string $post_type Post type slug.
+ * @return bool
+ */
+function mrn_base_stack_is_post_page_editor_stack_disabled_for_post_type( $post_type ) {
+	return function_exists( 'mrn_is_post_page_editor_stack_disabled_for_post_type' ) && mrn_is_post_page_editor_stack_disabled_for_post_type( $post_type );
+}
+
+/**
+ * Determine whether the post/page editor is in ACF-only diagnostic mode for a post type.
+ *
+ * @param string $post_type Post type slug.
+ * @return bool
+ */
+function mrn_base_stack_is_post_page_editor_acf_only_mode_for_post_type( $post_type ) {
+	return function_exists( 'mrn_is_post_page_editor_request' ) &&
+		function_exists( 'mrn_is_post_page_editor_acf_only_mode' ) &&
+		mrn_is_post_page_editor_request( (string) $post_type ) &&
+		mrn_is_post_page_editor_acf_only_mode();
+}
+
+/**
  * Build ACF location rules for builder-supported post types.
  *
  * @return array<int, array<int, array<string, string>>>
@@ -484,6 +525,12 @@ add_filter( 'mrn_universal_sticky_bar_post_types', 'mrn_base_stack_add_editorial
  * @return void
  */
 function mrn_base_stack_enqueue_shared_repeater_admin_assets() {
+	if ( mrn_base_stack_is_post_page_editor_acf_only_mode() ) {
+		return;
+	}
+
+	$performance_only_mode = mrn_base_stack_is_post_page_editor_stack_disabled();
+
 	$repeater_controls_path = get_template_directory() . '/js/admin-repeater-controls.js';
 	$repeater_controls_ver  = file_exists( $repeater_controls_path ) ? (string) filemtime( $repeater_controls_path ) : _S_VERSION;
 
@@ -494,6 +541,10 @@ function mrn_base_stack_enqueue_shared_repeater_admin_assets() {
 		$repeater_controls_ver,
 		true
 	);
+
+	if ( $performance_only_mode ) {
+		return;
+	}
 
 	if ( function_exists( 'mrn_shared_assets_enqueue_admin_icon_chooser' ) ) {
 		mrn_shared_assets_enqueue_admin_icon_chooser( 'mrn-shared-icon-chooser', 'mrn-shared-icon-chooser' );
