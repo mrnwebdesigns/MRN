@@ -412,4 +412,33 @@
 
 		closeChooser();
 	} );
+
+	document.addEventListener( 'click', function( event ) {
+		if ( state.hasSavedSelection || state.isSaving ) {
+			return;
+		}
+
+		var target = event.target;
+		if ( ! target || ! target.closest ) {
+			return;
+		}
+
+		var addRowTrigger = target.closest(
+			'.acf-field-flexible-content [data-event="add-row"], ' +
+			'.acf-field-flexible-content [data-name="add-layout"]'
+		);
+
+		if ( ! addRowTrigger ) {
+			return;
+		}
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		if ( typeof event.stopImmediatePropagation === 'function' ) {
+			event.stopImmediatePropagation();
+		}
+
+		openChooser();
+	}, true );
 } )( jQuery, window, document );
