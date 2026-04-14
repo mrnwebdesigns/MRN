@@ -111,9 +111,9 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 			continue;
 		}
 
-		$cloned_layout = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_tabbed_panel_' );
-		$cloned_key    = 'layout_mrn_tabbed_panel_' . $layout_name;
-		$cloned_layout['key'] = $cloned_key;
+			$cloned_layout        = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_tabbed_panel_' );
+			$cloned_key           = 'layout_mrn_tabbed_panel_' . $layout_name;
+			$cloned_layout['key'] = $cloned_key;
 
 		$layouts[ $cloned_key ] = $cloned_layout;
 	}
@@ -318,9 +318,9 @@ function mrn_base_stack_prepare_effects_fields_for_permissions( $field ) {
 	$field_key   = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
 	$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
 
-	$is_effects_tab  = 'tab' === $field_type && 'effects' === $field_label && false !== strpos( $field_key, 'effects_tab' );
-	$is_motion_group = 'group' === $field_type && 'motion_settings' === $field_name;
-	$is_effects_field = in_array( $field_name, mrn_base_stack_get_effects_tab_field_names(), true );
+		$is_effects_tab   = 'tab' === $field_type && 'effects' === $field_label && false !== strpos( $field_key, 'effects_tab' );
+		$is_motion_group  = 'group' === $field_type && 'motion_settings' === $field_name;
+		$is_effects_field = in_array( $field_name, mrn_base_stack_get_effects_tab_field_names(), true );
 
 	if ( $is_effects_tab || $is_motion_group || $is_effects_field ) {
 		return false;
