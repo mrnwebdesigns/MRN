@@ -13,7 +13,6 @@ $heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) 
 $heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h2';
 $subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
 $subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
-$section_link     = isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : array();
 $items            = isset( $row['showcase_items'] ) && is_array( $row['showcase_items'] ) ? $row['showcase_items'] : array();
 $hover_effect     = isset( $row['hover_effect'] ) ? sanitize_key( (string) $row['hover_effect'] ) : 'lift';
 $stagger_style    = isset( $row['stagger_style'] ) ? sanitize_key( (string) $row['stagger_style'] ) : 'collage';
@@ -64,9 +63,27 @@ foreach ( $items as $item ) {
 	);
 }
 
-$section_link_url    = isset( $section_link['url'] ) ? (string) $section_link['url'] : '';
-$section_link_title  = isset( $section_link['title'] ) ? (string) $section_link['title'] : '';
-$section_link_target = isset( $section_link['target'] ) ? (string) $section_link['target'] : '';
+$links        = function_exists( 'mrn_rbl_get_content_links' )
+	? mrn_rbl_get_content_links(
+		$row,
+		array(
+			'max'          => 1,
+		)
+	)
+	: array();
+$section_link = isset( $links[0] ) && is_array( $links[0] ) ? $links[0] : array();
+
+$section_link_url           = isset( $section_link['url'] ) ? (string) $section_link['url'] : '';
+$section_link_text          = isset( $section_link['text'] ) ? (string) $section_link['text'] : '';
+$section_link_style         = isset( $section_link['link_style'] ) && in_array( $section_link['link_style'], array( 'link', 'button' ), true ) ? (string) $section_link['link_style'] : 'link';
+$section_link_tag           = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $section_link ) : 'a';
+$section_link_attr_html     = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $section_link ) : '';
+$section_link_icon_markup   = 'button' === $section_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
+	? mrn_base_stack_get_button_link_icon_markup( $section_link )
+	: '';
+$section_link_icon_position = 'button' === $section_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
+	? mrn_base_stack_get_button_link_icon_position( $section_link )
+	: 'left';
 
 if ( '' === $label && '' === $heading && '' === $subheading && '' === $section_link_url && empty( $valid_items ) ) {
 	return;
@@ -156,18 +173,18 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 
 		<?php if ( '' !== $section_link_url ) : ?>
 			<div class="mrn-layout-content mrn-layout-content--text mrn-showcase-row__link-wrap">
-				<a
-						class="mrn-ui__link mrn-ui__link--text"
-					href="<?php echo esc_url( $section_link_url ); ?>"
-					<?php if ( '' !== $section_link_target ) : ?>
-						target="<?php echo esc_attr( $section_link_target ); ?>"
-					<?php endif; ?>
-					<?php if ( '_blank' === $section_link_target ) : ?>
-						rel="noopener noreferrer"
-					<?php endif; ?>
+				<<?php echo esc_html( $section_link_tag ); ?>
+					class="mrn-ui__link <?php echo 'button' === $section_link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text'; ?>"
+					<?php echo '' !== $section_link_attr_html ? $section_link_attr_html : ( 'button' === $section_link_tag ? 'type="button"' : 'href="' . esc_url( $section_link_url ) . '"' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				>
-					<?php echo esc_html( '' !== $section_link_title ? $section_link_title : $section_link_url ); ?>
-				</a>
+					<?php if ( 'left' === $section_link_icon_position ) : ?>
+						<?php echo $section_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
+					<?php endif; ?>
+					<?php echo esc_html( '' !== $section_link_text ? $section_link_text : $section_link_url ); ?>
+					<?php if ( 'right' === $section_link_icon_position ) : ?>
+						<?php echo $section_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
+					<?php endif; ?>
+				</<?php echo esc_html( $section_link_tag ); ?>>
 			</div>
 		<?php endif; ?>
 			</div>

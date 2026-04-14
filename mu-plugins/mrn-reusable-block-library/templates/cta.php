@@ -13,16 +13,7 @@ $heading_tag = isset($fields['heading_tag']) ? sanitize_key((string) $fields['he
 $subheading     = isset($fields['subheading']) ? (string) $fields['subheading'] : '';
 $subheading_tag = isset($fields['subheading_tag']) ? sanitize_key((string) $fields['subheading_tag']) : 'p';
 $copy        = isset($fields['content']) ? (string) $fields['content'] : '';
-$primary_link   = isset($fields['primary_link']) && is_array($fields['primary_link']) ? $fields['primary_link'] : array();
-$secondary_link = isset($fields['secondary_link']) && is_array($fields['secondary_link']) ? $fields['secondary_link'] : array();
 $background_image = isset($fields['background_image']) && is_array($fields['background_image']) ? $fields['background_image'] : array();
-$primary_link_url    = isset($primary_link['url']) ? (string) $primary_link['url'] : '';
-$primary_link_title  = isset($primary_link['title']) ? (string) $primary_link['title'] : '';
-$primary_link_target = isset($primary_link['target']) ? (string) $primary_link['target'] : '';
-$secondary_link_url    = isset($secondary_link['url']) ? (string) $secondary_link['url'] : '';
-$secondary_link_title  = isset($secondary_link['title']) ? (string) $secondary_link['title'] : '';
-$secondary_link_target = isset($secondary_link['target']) ? (string) $secondary_link['target'] : '';
-$link_style  = isset($fields['link_style']) ? sanitize_key((string) $fields['link_style']) : 'button';
 $bg_color    = isset($fields['bg_color']) ? sanitize_title((string) $fields['bg_color']) : '';
 $link_color  = isset($fields['link_color']) ? sanitize_title((string) $fields['link_color']) : '';
 $accent      = !empty($fields['bottom_accent']);
@@ -37,9 +28,40 @@ if (!in_array($subheading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'd
     $subheading_tag = 'p';
 }
 
-if (!in_array($link_style, array('link', 'button'), true)) {
-    $link_style = 'button';
-}
+$links = function_exists('mrn_rbl_get_content_links')
+    ? mrn_rbl_get_content_links(
+        $fields,
+        array(
+            'max' => 2,
+        )
+    )
+    : array();
+
+$primary_link   = isset($links[0]) && is_array($links[0]) ? $links[0] : array();
+$secondary_link = isset($links[1]) && is_array($links[1]) ? $links[1] : array();
+
+$primary_link_url           = isset($primary_link['url']) ? (string) $primary_link['url'] : '';
+$primary_link_text          = isset($primary_link['text']) ? (string) $primary_link['text'] : '';
+$primary_link_style         = isset($primary_link['link_style']) && in_array($primary_link['link_style'], array('link', 'button'), true) ? (string) $primary_link['link_style'] : 'button';
+$primary_link_tag           = function_exists('mrn_rbl_get_content_link_tag_name') ? mrn_rbl_get_content_link_tag_name($primary_link) : 'a';
+$primary_link_attr_html     = function_exists('mrn_rbl_get_content_link_html_attributes') ? mrn_rbl_get_content_link_html_attributes($primary_link) : '';
+$primary_link_icon_markup   = 'button' === $primary_link_style && function_exists('mrn_base_stack_get_button_link_icon_markup')
+    ? mrn_base_stack_get_button_link_icon_markup($primary_link)
+    : '';
+$primary_link_icon_position = 'button' === $primary_link_style && function_exists('mrn_base_stack_get_button_link_icon_position')
+    ? mrn_base_stack_get_button_link_icon_position($primary_link)
+    : 'left';
+$secondary_link_url           = isset($secondary_link['url']) ? (string) $secondary_link['url'] : '';
+$secondary_link_text          = isset($secondary_link['text']) ? (string) $secondary_link['text'] : '';
+$secondary_link_style         = isset($secondary_link['link_style']) && in_array($secondary_link['link_style'], array('link', 'button'), true) ? (string) $secondary_link['link_style'] : 'button';
+$secondary_link_tag           = function_exists('mrn_rbl_get_content_link_tag_name') ? mrn_rbl_get_content_link_tag_name($secondary_link) : 'a';
+$secondary_link_attr_html     = function_exists('mrn_rbl_get_content_link_html_attributes') ? mrn_rbl_get_content_link_html_attributes($secondary_link) : '';
+$secondary_link_icon_markup   = 'button' === $secondary_link_style && function_exists('mrn_base_stack_get_button_link_icon_markup')
+    ? mrn_base_stack_get_button_link_icon_markup($secondary_link)
+    : '';
+$secondary_link_icon_position = 'button' === $secondary_link_style && function_exists('mrn_base_stack_get_button_link_icon_position')
+    ? mrn_base_stack_get_button_link_icon_position($secondary_link)
+    : 'left';
 
 if ($label === '' && $heading === '' && $subheading === '' && $copy === '' && $primary_link_url === '' && $secondary_link_url === '') {
     return;
@@ -48,7 +70,7 @@ if ($label === '' && $heading === '' && $subheading === '' && $copy === '' && $p
 $classes = array(
     'mrn-reusable-block',
     'mrn-reusable-block--cta',
-    'mrn-reusable-block--cta-link-' . $link_style,
+    'mrn-reusable-block--cta-link-' . ( '' !== $primary_link_url ? $primary_link_style : ( '' !== $secondary_link_url ? $secondary_link_style : 'button' ) ),
 );
 
 $accent_contract = function_exists('mrn_site_styles_get_bottom_accent_contract')
@@ -136,33 +158,33 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
         <?php if ($primary_link_url !== '' || $secondary_link_url !== '') : ?>
 	            <div class="mrn-reusable-block__actions mrn-reusable-block__actions--callout mrn-ui__actions">
                 <?php if ($primary_link_url !== '') : ?>
-                <a
-	                    class="mrn-ui__link <?php echo 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text'; ?>"
-                    href="<?php echo esc_url($primary_link_url); ?>"
-                    <?php if ($primary_link_target !== '') : ?>
-                        target="<?php echo esc_attr($primary_link_target); ?>"
-                    <?php endif; ?>
-                    <?php if ('_blank' === $primary_link_target) : ?>
-                        rel="noopener noreferrer"
-                    <?php endif; ?>
+                <<?php echo esc_html($primary_link_tag); ?>
+	                    class="mrn-ui__link <?php echo 'button' === $primary_link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text'; ?>"
+                    <?php echo '' !== $primary_link_attr_html ? $primary_link_attr_html : ( 'button' === $primary_link_tag ? 'type="button"' : 'href="' . esc_url($primary_link_url) . '"' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                 >
-                    <?php echo esc_html($primary_link_title !== '' ? $primary_link_title : $primary_link_url); ?>
-                </a>
+                    <?php if ('left' === $primary_link_icon_position) : ?>
+                        <?php echo $primary_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
+                    <?php endif; ?>
+                    <?php echo esc_html($primary_link_text !== '' ? $primary_link_text : $primary_link_url); ?>
+                    <?php if ('right' === $primary_link_icon_position) : ?>
+                        <?php echo $primary_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
+                    <?php endif; ?>
+                </<?php echo esc_html($primary_link_tag); ?>>
                 <?php endif; ?>
 
                 <?php if ($secondary_link_url !== '') : ?>
-                <a
-	                    class="mrn-ui__link mrn-ui__link--secondary <?php echo 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text'; ?>"
-                    href="<?php echo esc_url($secondary_link_url); ?>"
-                    <?php if ($secondary_link_target !== '') : ?>
-                        target="<?php echo esc_attr($secondary_link_target); ?>"
-                    <?php endif; ?>
-                    <?php if ('_blank' === $secondary_link_target) : ?>
-                        rel="noopener noreferrer"
-                    <?php endif; ?>
+                <<?php echo esc_html($secondary_link_tag); ?>
+	                    class="mrn-ui__link mrn-ui__link--secondary <?php echo 'button' === $secondary_link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text'; ?>"
+                    <?php echo '' !== $secondary_link_attr_html ? $secondary_link_attr_html : ( 'button' === $secondary_link_tag ? 'type="button"' : 'href="' . esc_url($secondary_link_url) . '"' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                 >
-                    <?php echo esc_html($secondary_link_title !== '' ? $secondary_link_title : $secondary_link_url); ?>
-                </a>
+                    <?php if ('left' === $secondary_link_icon_position) : ?>
+                        <?php echo $secondary_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
+                    <?php endif; ?>
+                    <?php echo esc_html($secondary_link_text !== '' ? $secondary_link_text : $secondary_link_url); ?>
+                    <?php if ('right' === $secondary_link_icon_position) : ?>
+                        <?php echo $secondary_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
+                    <?php endif; ?>
+                </<?php echo esc_html($secondary_link_tag); ?>>
                 <?php endif; ?>
             </div>
         <?php endif; ?>

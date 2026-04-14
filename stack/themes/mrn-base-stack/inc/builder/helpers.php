@@ -2098,6 +2098,10 @@ function mrn_base_stack_collect_builder_link_icon_asset_needs( $value, &$needs_f
 
 	$link_style = isset( $value['link_style'] ) ? sanitize_key( (string) $value['link_style'] ) : '';
 
+	if ( '' === $link_style && ! empty( $value['is_button'] ) ) {
+		$link_style = 'button';
+	}
+
 	if ( 'button' === $link_style ) {
 		$icon_source = mrn_base_stack_get_button_link_icon_source( $value );
 
@@ -2495,17 +2499,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
-				array(
-					'key'           => 'field_mrn_nested_basic_link',
-					'label'         => 'Link',
-					'name'          => 'link',
-					'aria-label'    => '',
-					'type'          => 'link',
-					'return_format' => 'array',
-					'wrapper'       => array(
-						'width' => '50',
-					),
-				),
+				mrn_rbl_get_content_link_repeater_field( 'field_mrn_nested_basic_links', 'Links', 'links', 1 ),
 				array(
 					'key'        => 'field_mrn_nested_basic_config_tab',
 					'label'      => 'Configs',

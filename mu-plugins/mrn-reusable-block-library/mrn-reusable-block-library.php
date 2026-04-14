@@ -3,7 +3,7 @@
  * Plugin Name: Reusable Block Library (MU)
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.12
+ * Version: 0.1.13
  */
 
 defined('ABSPATH') || exit;
@@ -1299,6 +1299,627 @@ function mrn_rbl_get_link_style_choices(): array {
 }
 
 /**
+ * Shared target choices for content links.
+ *
+ * @return array<string, string>
+ */
+function mrn_rbl_get_content_link_target_choices(): array {
+    return array(
+        ''        => 'Same Tab / Window',
+        '_blank'  => 'New Tab / Window',
+        '_self'   => 'Same Frame',
+        '_parent' => 'Parent Frame',
+        '_top'    => 'Top Frame',
+    );
+}
+
+/**
+ * Shared button tag choices for content links that render like buttons.
+ *
+ * @return array<string, string>
+ */
+function mrn_rbl_get_content_link_button_tag_choices(): array {
+    return array(
+        'a'      => 'Anchor Tag',
+        'button' => 'Button Element',
+    );
+}
+
+/**
+ * Shared Dashicon choices for button-style links.
+ *
+ * @return array<string, string>
+ */
+function mrn_rbl_get_button_link_dashicon_choices(): array {
+    if (function_exists('mrn_base_stack_get_header_search_standard_icon_choices')) {
+        return mrn_base_stack_get_header_search_standard_icon_choices();
+    }
+
+    $choices = array();
+    $icons   = function_exists('mrn_shared_assets_get_dashicons') ? mrn_shared_assets_get_dashicons() : array();
+
+    foreach ($icons as $icon) {
+        $key           = 'dashicons-' . $icon;
+        $choices[$key] = ucwords(str_replace('-', ' ', $icon));
+    }
+
+    return $choices;
+}
+
+/**
+ * Shared Font Awesome choices for button-style links.
+ *
+ * @return array<string, string>
+ */
+function mrn_rbl_get_button_link_fontawesome_choices(): array {
+    if (function_exists('mrn_base_stack_get_header_search_fontawesome_choices')) {
+        return mrn_base_stack_get_header_search_fontawesome_choices();
+    }
+
+    $choices = array();
+    $icons   = function_exists('mrn_shared_assets_get_fontawesome_icons') ? mrn_shared_assets_get_fontawesome_icons() : array();
+    $styles  = array(
+        'solid'   => 'fa-solid',
+        'regular' => 'fa-regular',
+        'brands'  => 'fa-brands',
+    );
+
+    foreach ($styles as $style => $class_prefix) {
+        if (empty($icons[$style]) || !is_array($icons[$style])) {
+            continue;
+        }
+
+        foreach ($icons[$style] as $icon) {
+            if (!is_array($icon) || empty($icon['name'])) {
+                continue;
+            }
+
+            $name  = sanitize_key((string) $icon['name']);
+            $label = !empty($icon['label']) ? (string) $icon['label'] : ucwords(str_replace('-', ' ', $name));
+
+            if ('' === $name) {
+                continue;
+            }
+
+            $choices[$class_prefix . ' fa-' . $name] = $label . ' (' . ucfirst($style) . ')';
+        }
+    }
+
+    return $choices;
+}
+
+/**
+ * Build the shared button-link icon chooser fields.
+ *
+ * @param string $key_prefix Unique ACF key prefix for this chooser set.
+ * @param string $button_field_key ACF key for the button toggle field in the same row.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_rbl_get_button_link_icon_fields(string $key_prefix, string $button_field_key): array {
+    $base_condition = array(
+        array(
+            'field'    => $button_field_key,
+            'operator' => '==',
+            'value'    => '1',
+        ),
+    );
+
+    return array(
+        array(
+            'key'               => $key_prefix . '_source',
+            'label'             => 'Button Icon',
+            'name'              => 'link_icon_source',
+            'type'              => 'button_group',
+            'choices'           => array(
+                'dashicons'   => 'Dashicons',
+                'fontawesome' => 'Font Awesome',
+                'media'       => 'Media',
+            ),
+            'default_value'     => '',
+            'layout'            => 'horizontal',
+            'return_format'     => 'value',
+            'instructions'      => 'Optional. Uses the shared icon chooser when this link renders as a button.',
+            'wrapper'           => array(
+                'width' => '50',
+                'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--source mrn-icon-chooser-field--allow-empty',
+            ),
+            'conditional_logic' => array(
+                $base_condition,
+            ),
+        ),
+        array(
+            'key'               => $key_prefix . '_dashicons',
+            'label'             => 'Dashicon',
+            'name'              => 'link_icon_dashicon',
+            'type'              => 'select',
+            'choices'           => mrn_rbl_get_button_link_dashicon_choices(),
+            'default_value'     => '',
+            'return_format'     => 'value',
+            'ui'                => 1,
+            'wrapper'           => array(
+                'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--dashicons',
+            ),
+            'conditional_logic' => array(
+                array(
+                    array(
+                        'field'    => $button_field_key,
+                        'operator' => '==',
+                        'value'    => '1',
+                    ),
+                    array(
+                        'field'    => $key_prefix . '_source',
+                        'operator' => '==',
+                        'value'    => 'dashicons',
+                    ),
+                ),
+            ),
+        ),
+        array(
+            'key'               => $key_prefix . '_fontawesome',
+            'label'             => 'Font Awesome Icon',
+            'name'              => 'link_icon_fa_class',
+            'type'              => 'select',
+            'choices'           => mrn_rbl_get_button_link_fontawesome_choices(),
+            'default_value'     => '',
+            'return_format'     => 'value',
+            'ui'                => 1,
+            'wrapper'           => array(
+                'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--fontawesome',
+            ),
+            'conditional_logic' => array(
+                array(
+                    array(
+                        'field'    => $button_field_key,
+                        'operator' => '==',
+                        'value'    => '1',
+                    ),
+                    array(
+                        'field'    => $key_prefix . '_source',
+                        'operator' => '==',
+                        'value'    => 'fontawesome',
+                    ),
+                ),
+            ),
+        ),
+        array(
+            'key'               => $key_prefix . '_media',
+            'label'             => 'Media Icon',
+            'name'              => 'link_icon_media_icon',
+            'type'              => 'image',
+            'return_format'     => 'array',
+            'preview_size'      => 'thumbnail',
+            'library'           => 'all',
+            'mime_types'        => 'jpg,jpeg,png,gif,webp,svg',
+            'wrapper'           => array(
+                'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--media',
+            ),
+            'conditional_logic' => array(
+                array(
+                    array(
+                        'field'    => $button_field_key,
+                        'operator' => '==',
+                        'value'    => '1',
+                    ),
+                    array(
+                        'field'    => $key_prefix . '_source',
+                        'operator' => '==',
+                        'value'    => 'media',
+                    ),
+                ),
+            ),
+        ),
+        array(
+            'key'               => $key_prefix . '_position',
+            'label'             => 'Icon Position',
+            'name'              => 'link_icon_position',
+            'type'              => 'select',
+            'choices'           => array(
+                'left'  => 'Left',
+                'right' => 'Right',
+            ),
+            'default_value'     => 'left',
+            'return_format'     => 'value',
+            'ui'                => 1,
+            'wrapper'           => array(
+                'width' => '25',
+            ),
+            'conditional_logic' => array(
+                $base_condition,
+            ),
+        ),
+        array(
+            'key'               => $key_prefix . '_gap',
+            'label'             => 'Icon Gap',
+            'name'              => 'link_icon_gap',
+            'type'              => 'number',
+            'default_value'     => 10,
+            'min'               => 0,
+            'step'              => 1,
+            'append'            => 'px',
+            'wrapper'           => array(
+                'width' => '25',
+            ),
+            'conditional_logic' => array(
+                $base_condition,
+            ),
+        ),
+    );
+}
+
+/**
+ * Build the shared content-link repeater field.
+ *
+ * @param string      $key Repeater field key.
+ * @param string      $label Field label.
+ * @param string      $name Field name.
+ * @param int         $max Maximum rows allowed. Use 0 for unlimited.
+ * @param string|null $instructions Optional instructions override.
+ * @return array<string, mixed>
+ */
+function mrn_rbl_get_content_link_repeater_field(string $key, string $label = 'Links', string $name = 'links', int $max = 0, ?string $instructions = null): array {
+    $link_key     = $key . '_link';
+    $button_key   = $key . '_is_button';
+    $button_tag   = $key . '_button_tag';
+    $field_max    = $max > 0 ? $max : 0;
+    $instructions = null !== $instructions
+        ? $instructions
+        : 'Use the WordPress link picker to search pages/posts or enter a custom URL.';
+
+    return array(
+        'key'          => $key,
+        'label'        => $label,
+        'name'         => $name,
+        'type'         => 'repeater',
+        'layout'       => 'row',
+        'button_label' => 'Add Link',
+        'collapsed'    => $link_key,
+        'instructions' => $instructions,
+        'min'          => 0,
+        'max'          => $field_max,
+        'sub_fields'   => array(
+            array(
+                'key'           => $link_key,
+                'label'         => 'Link',
+                'name'          => 'link',
+                'type'          => 'link',
+                'return_format' => 'array',
+                'instructions'  => 'Search pages/posts or enter a custom URL with the native WordPress link picker.',
+                'wrapper'       => array(
+                    'width' => '50',
+                ),
+            ),
+            array(
+                'key'           => $button_key,
+                'label'         => 'Button',
+                'name'          => 'is_button',
+                'type'          => 'true_false',
+                'ui'            => 1,
+                'default_value' => 0,
+                'ui_on_text'    => 'On',
+                'ui_off_text'   => 'Off',
+                'wrapper'       => array(
+                    'width' => '25',
+                ),
+            ),
+            array(
+                'key'               => $button_tag,
+                'label'             => 'Tag',
+                'name'              => 'button_tag',
+                'type'              => 'select',
+                'choices'           => mrn_rbl_get_content_link_button_tag_choices(),
+                'default_value'     => 'a',
+                'ui'                => 1,
+                'instructions'      => 'Pro Tip: For better accessibility and performance, use the &lt;button&gt; tag for interactive actions and only use classes to change how it looks. If you are navigating to a new page, use an &lt;a&gt; (anchor) tag styled with a button class.',
+                'wrapper'           => array(
+                    'width' => '25',
+                ),
+                'conditional_logic' => array(
+                    array(
+                        array(
+                            'field'    => $button_key,
+                            'operator' => '==',
+                            'value'    => '1',
+                        ),
+                    ),
+                ),
+            ),
+            array(
+                'key'           => $key . '_target',
+                'label'         => 'Target',
+                'name'          => 'target',
+                'type'          => 'select',
+                'choices'       => mrn_rbl_get_content_link_target_choices(),
+                'default_value' => '',
+                'instructions'  => 'Optional override. Leave blank to use the target chosen in the WordPress link picker.',
+                'ui'            => 1,
+                'wrapper'       => array(
+                    'width' => '25',
+                ),
+            ),
+            array(
+                'key'     => $key . '_rel',
+                'label'   => 'Rel',
+                'name'    => 'rel',
+                'type'    => 'text',
+                'wrapper' => array(
+                    'width' => '25',
+                ),
+            ),
+            array(
+                'key'     => $key . '_title_attribute',
+                'label'   => 'Title Attribute',
+                'name'    => 'title_attribute',
+                'type'    => 'text',
+                'wrapper' => array(
+                    'width' => '25',
+                ),
+            ),
+            array(
+                'key'           => $key . '_download',
+                'label'         => 'Download',
+                'name'          => 'download',
+                'type'          => 'true_false',
+                'ui'            => 1,
+                'default_value' => 0,
+                'ui_on_text'    => 'On',
+                'ui_off_text'   => 'Off',
+                'wrapper'       => array(
+                    'width' => '25',
+                ),
+            ),
+            array(
+                'key'     => $key . '_hreflang',
+                'label'   => 'Hreflang',
+                'name'    => 'hreflang',
+                'type'    => 'text',
+                'wrapper' => array(
+                    'width' => '50',
+                ),
+            ),
+            array(
+                'key'     => $key . '_media',
+                'label'   => 'Media',
+                'name'    => 'media',
+                'type'    => 'text',
+                'wrapper' => array(
+                    'width' => '50',
+                ),
+            ),
+            ...mrn_rbl_get_button_link_icon_fields($key . '_icon', $button_key),
+        ),
+    );
+}
+
+/**
+ * Normalize rel tokens for safe link output.
+ *
+ * @param string $rel Raw rel string.
+ * @param string $target Normalized target value.
+ * @return string
+ */
+function mrn_rbl_normalize_content_link_rel(string $rel, string $target): string {
+    $tokens = preg_split('/\s+/', trim(strtolower($rel))) ?: array();
+    $tokens = array_filter(array_map('sanitize_key', $tokens));
+
+    if ('_blank' === $target) {
+        $tokens[] = 'noopener';
+        $tokens[] = 'noreferrer';
+    }
+
+    return implode(' ', array_values(array_unique($tokens)));
+}
+
+/**
+ * Normalize a content-link row for template use.
+ *
+ * @param array<string, mixed> $link Raw link row data.
+ * @param array<string, mixed> $args Optional fallback config.
+ * @return array<string, mixed>
+ */
+function mrn_rbl_normalize_content_link(array $link, array $args = array()): array {
+    $fallback_style       = isset($args['fallback_link_style']) ? sanitize_key((string) $args['fallback_link_style']) : '';
+    $fallback_icon_fields = isset($args['fallback_icon_fields']) && is_array($args['fallback_icon_fields']) ? $args['fallback_icon_fields'] : array();
+    $fallback_button_tag  = isset($args['fallback_button_tag']) ? sanitize_key((string) $args['fallback_button_tag']) : 'a';
+    $allowed_styles       = array('link', 'button');
+    $allowed_targets      = array('', '_blank', '_self', '_parent', '_top');
+    $allowed_tags         = array('a', 'button');
+
+    if (!in_array($fallback_style, $allowed_styles, true)) {
+        $fallback_style = 'link';
+    }
+
+    if (!in_array($fallback_button_tag, $allowed_tags, true)) {
+        $fallback_button_tag = 'a';
+    }
+
+    $acf_link = isset($link['link']) && is_array($link['link']) ? $link['link'] : array();
+    $text     = trim((string) ($acf_link['title'] ?? ''));
+    $url      = isset($acf_link['url']) ? esc_url_raw((string) $acf_link['url']) : '';
+    $target   = isset($link['target']) ? sanitize_key((string) $link['target']) : '';
+
+    if ('' === $target) {
+        $target = isset($acf_link['target']) ? sanitize_key((string) $acf_link['target']) : '';
+    }
+
+    if ('' === $url) {
+        $url = isset($link['url']) ? esc_url_raw((string) $link['url']) : '';
+    }
+
+    if ('' === $text) {
+        $text = trim((string) ($link['text'] ?? ($link['label'] ?? ($link['title'] ?? ''))));
+    }
+
+    if (!in_array($target, $allowed_targets, true)) {
+        $target = '';
+    }
+
+    $is_button = array_key_exists('is_button', $link)
+        ? !empty($link['is_button'])
+        : ('button' === sanitize_key((string) ($link['link_style'] ?? $fallback_style)));
+
+    $button_tag = isset($link['button_tag']) ? sanitize_key((string) $link['button_tag']) : $fallback_button_tag;
+    if (!$is_button || !in_array($button_tag, $allowed_tags, true)) {
+        $button_tag = 'a';
+    }
+
+    $normalized = array(
+        'text'                 => $text,
+        'url'                  => $url,
+        'target'               => $target,
+        'rel'                  => mrn_rbl_normalize_content_link_rel((string) ($link['rel'] ?? ''), $target),
+        'title_attribute'      => sanitize_text_field((string) ($link['title_attribute'] ?? '')),
+        'download'             => !empty($link['download']),
+        'hreflang'             => sanitize_text_field((string) ($link['hreflang'] ?? '')),
+        'media'                => sanitize_text_field((string) ($link['media'] ?? '')),
+        'is_button'            => $is_button,
+        'button_tag'           => $button_tag,
+        'link_style'           => $is_button ? 'button' : 'link',
+        'link_icon_source'     => isset($link['link_icon_source']) ? sanitize_key((string) $link['link_icon_source']) : '',
+        'link_icon_dashicon'   => isset($link['link_icon_dashicon']) ? sanitize_html_class((string) $link['link_icon_dashicon']) : '',
+        'link_icon_fa_class'   => isset($link['link_icon_fa_class']) ? trim((string) $link['link_icon_fa_class']) : '',
+        'link_icon_media_icon' => isset($link['link_icon_media_icon']) && is_array($link['link_icon_media_icon']) ? $link['link_icon_media_icon'] : array(),
+        'link_icon_position'   => isset($link['link_icon_position']) ? sanitize_key((string) $link['link_icon_position']) : '',
+        'link_icon_gap'        => $link['link_icon_gap'] ?? '',
+    );
+
+    foreach (array('link_icon_source', 'link_icon_dashicon', 'link_icon_fa_class', 'link_icon_position', 'link_icon_gap') as $icon_key) {
+        if ('' === (string) $normalized[$icon_key] && isset($fallback_icon_fields[$icon_key])) {
+            $normalized[$icon_key] = $fallback_icon_fields[$icon_key];
+        }
+    }
+
+    if (empty($normalized['link_icon_media_icon']) && !empty($fallback_icon_fields['link_icon_media_icon']) && is_array($fallback_icon_fields['link_icon_media_icon'])) {
+        $normalized['link_icon_media_icon'] = $fallback_icon_fields['link_icon_media_icon'];
+    }
+
+    if (!$normalized['is_button']) {
+        $normalized['button_tag'] = 'a';
+    }
+
+    return $normalized;
+}
+
+/**
+ * Normalize a link collection from repeater rows.
+ *
+ * @param array<string, mixed> $fields Field array that may contain a `links` repeater.
+ * @param array<string, mixed> $args Optional fallback config.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_rbl_get_content_links(array $fields, array $args = array()): array {
+    $links     = isset($fields['links']) && is_array($fields['links']) ? $fields['links'] : array();
+    $max_links = isset($args['max']) ? max(0, (int) $args['max']) : 0;
+
+    if (isset($links['link']) || isset($links['url'])) {
+        $links = array($links);
+    }
+
+    $normalized = array();
+    foreach ($links as $link) {
+        if (!is_array($link)) {
+            continue;
+        }
+
+        $link = mrn_rbl_normalize_content_link($link, $args);
+
+        if ('' === $link['url']) {
+            continue;
+        }
+
+        $normalized[] = $link;
+
+        if ($max_links > 0 && count($normalized) >= $max_links) {
+            break;
+        }
+    }
+
+    return $normalized;
+}
+
+/**
+ * Resolve the HTML tag used to render a normalized content link.
+ *
+ * @param array<string, mixed> $link Normalized link data.
+ * @return string
+ */
+function mrn_rbl_get_content_link_tag_name(array $link): string {
+    return !empty($link['is_button']) && 'button' === ($link['button_tag'] ?? '') ? 'button' : 'a';
+}
+
+/**
+ * Build a safe HTML attribute string for a normalized content link.
+ *
+ * @param array<string, mixed> $link Normalized link data.
+ * @return string
+ */
+function mrn_rbl_get_content_link_html_attributes(array $link): string {
+    $url = isset($link['url']) ? (string) $link['url'] : '';
+    if ('' === $url) {
+        return '';
+    }
+
+    $title_attribute = isset($link['title_attribute']) ? (string) $link['title_attribute'] : '';
+    $tag_name        = mrn_rbl_get_content_link_tag_name($link);
+
+    if ('button' === $tag_name) {
+        $attributes = array(
+            'type="button"',
+            'data-mrn-link-url="' . esc_url($url) . '"',
+        );
+
+        $target = isset($link['target']) ? (string) $link['target'] : '';
+        if ('' !== $target) {
+            $attributes[] = 'data-mrn-link-target="' . esc_attr($target) . '"';
+        }
+
+        $rel = isset($link['rel']) ? (string) $link['rel'] : '';
+        if ('' !== $rel) {
+            $attributes[] = 'data-mrn-link-rel="' . esc_attr($rel) . '"';
+        }
+
+        if ('' !== $title_attribute) {
+            $attributes[] = 'title="' . esc_attr($title_attribute) . '"';
+        }
+
+        return implode(' ', $attributes);
+    }
+
+    $attributes = array(
+        'href="' . esc_url($url) . '"',
+    );
+
+    $target = isset($link['target']) ? (string) $link['target'] : '';
+    if ('' !== $target) {
+        $attributes[] = 'target="' . esc_attr($target) . '"';
+    }
+
+    $rel = isset($link['rel']) ? (string) $link['rel'] : '';
+    if ('' !== $rel) {
+        $attributes[] = 'rel="' . esc_attr($rel) . '"';
+    }
+
+    if ('' !== $title_attribute) {
+        $attributes[] = 'title="' . esc_attr($title_attribute) . '"';
+    }
+
+    if (!empty($link['download'])) {
+        $attributes[] = 'download';
+    }
+
+    $hreflang = isset($link['hreflang']) ? (string) $link['hreflang'] : '';
+    if ('' !== $hreflang) {
+        $attributes[] = 'hreflang="' . esc_attr($hreflang) . '"';
+    }
+
+    $media = isset($link['media']) ? (string) $link['media'] : '';
+    if ('' !== $media) {
+        $attributes[] = 'media="' . esc_attr($media) . '"';
+    }
+
+    return implode(' ', $attributes);
+}
+
+/**
  * Shared post-type choices for content-list reusable blocks.
  *
  * @return array<string, string>
@@ -1449,26 +2070,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'media_upload' => 1,
                 'delay'        => 0,
             ),
-            array(
-                'key'           => 'field_mrn_cta_link',
-                'label'         => 'Primary Link',
-                'name'          => 'primary_link',
-                'type'          => 'link',
-                'return_format' => 'array',
-                'wrapper'       => array(
-                    'width' => '50',
-                ),
-            ),
-            array(
-                'key'           => 'field_mrn_cta_secondary_link',
-                'label'         => 'Secondary Link',
-                'name'          => 'secondary_link',
-                'type'          => 'link',
-                'return_format' => 'array',
-                'wrapper'       => array(
-                    'width' => '50',
-                ),
-            ),
+            mrn_rbl_get_content_link_repeater_field('field_mrn_cta_links', 'Links', 'links', 2),
             array(
                 'key'       => 'field_mrn_cta_config_tab',
                 'label'     => 'Configs',
@@ -1477,18 +2079,6 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'endpoint'  => 0,
             ),
             mrn_rbl_get_anchor_field('field_mrn_cta_anchor'),
-            array(
-                'key'           => 'field_mrn_cta_link_style',
-                'label'         => 'Link style',
-                'name'          => 'link_style',
-                'type'          => 'select',
-                'default_value' => 'link',
-                'choices'       => mrn_rbl_get_link_style_choices(),
-                'ui'            => 1,
-                'wrapper'       => array(
-                    'width' => '50',
-                ),
-            ),
             array(
                 'key'           => 'field_mrn_cta_bg_color',
                 'label'         => 'Background color',
@@ -1612,16 +2202,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                     'width' => '50',
                 ),
             ),
-            array(
-                'key'           => 'field_mrn_basic_block_link',
-                'label'         => 'Link',
-                'name'          => 'link',
-                'type'          => 'link',
-                'return_format' => 'array',
-                'wrapper'       => array(
-                    'width' => '50',
-                ),
-            ),
+            mrn_rbl_get_content_link_repeater_field('field_mrn_basic_block_links', 'Links', 'links', 1),
             array(
                 'key'   => 'field_mrn_basic_block_config_tab',
                 'label' => 'Configs',
@@ -1639,18 +2220,6 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'ui'            => 1,
                 'allow_null'    => 1,
                 'instructions'  => 'Select from Site Colors so this block stays aligned with shared site variables.',
-                'wrapper'       => array(
-                    'width' => '50',
-                ),
-            ),
-            array(
-                'key'           => 'field_mrn_basic_block_link_style',
-                'label'         => 'Link style',
-                'name'          => 'link_style',
-                'type'          => 'select',
-                'default_value' => 'link',
-                'choices'       => mrn_rbl_get_link_style_choices(),
-                'ui'            => 1,
                 'wrapper'       => array(
                     'width' => '50',
                 ),

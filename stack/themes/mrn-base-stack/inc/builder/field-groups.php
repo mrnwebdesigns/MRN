@@ -62,28 +62,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'media_upload'  => 1,
 										'delay'         => 0,
 									),
-									array(
-										'key'           => 'field_mrn_hero_link',
-										'label'         => 'Primary Link',
-										'name'          => 'primary_link',
-										'aria-label'    => '',
-										'type'          => 'link',
-										'return_format' => 'array',
-										'wrapper'       => array(
-											'width' => '50',
-										),
-									),
-									array(
-										'key'           => 'field_mrn_hero_secondary_link',
-										'label'         => 'Secondary Link',
-										'name'          => 'secondary_link',
-										'aria-label'    => '',
-										'type'          => 'link',
-										'return_format' => 'array',
-										'wrapper'       => array(
-											'width' => '50',
-										),
-									),
+									mrn_rbl_get_content_link_repeater_field( 'field_mrn_hero_links', 'Links', 'links', 2 ),
 									array(
 										'key'           => 'field_mrn_hero_image',
 										'label'         => 'Image',
@@ -828,17 +807,7 @@ function mrn_base_stack_register_acf_field_groups() {
 											'width' => '50',
 										),
 									),
-									array(
-										'key'           => 'field_mrn_basic_link',
-										'label'         => 'Link',
-										'name'          => 'link',
-										'aria-label'    => '',
-										'type'          => 'link',
-										'return_format' => 'array',
-										'wrapper'       => array(
-											'width' => '50',
-										),
-									),
+									mrn_rbl_get_content_link_repeater_field( 'field_mrn_basic_links', 'Links', 'links', 1 ),
 									array(
 										'key'        => 'field_mrn_basic_config_tab',
 										'label'      => 'Configs',
@@ -848,25 +817,6 @@ function mrn_base_stack_register_acf_field_groups() {
 										'placement'  => 'top',
 										'endpoint'   => 0,
 									),
-									array(
-										'key'           => 'field_mrn_basic_link_style',
-										'label'         => 'Link style',
-										'name'          => 'link_style',
-										'aria-label'    => '',
-										'type'          => 'select',
-										'choices'       => function_exists( 'mrn_rbl_get_link_style_choices' )
-											? mrn_rbl_get_link_style_choices()
-											: array(
-												'link'   => 'Link',
-												'button' => 'Button',
-											),
-										'default_value' => 'link',
-										'ui'            => 1,
-										'wrapper'       => array(
-											'width' => '50',
-										),
-									),
-									...mrn_base_stack_get_button_link_icon_fields( 'field_mrn_basic_link_icon', 'field_mrn_basic_link_style' ),
 									array(
 										'key'           => 'field_mrn_basic_link_color',
 										'label'         => 'Link color',
@@ -1471,14 +1421,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'media_upload' => 1,
 										'delay'        => 0,
 									),
-									array(
-										'key'           => 'field_mrn_image_content_link',
-										'label'         => 'Link',
-										'name'          => 'link',
-										'aria-label'    => '',
-										'type'          => 'link',
-										'return_format' => 'array',
-									),
+									mrn_rbl_get_content_link_repeater_field( 'field_mrn_image_content_links', 'Links', 'links', 1 ),
 									array(
 										'key'           => 'field_mrn_image_content_image',
 										'label'         => 'Image',
@@ -1886,14 +1829,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									mrn_base_stack_get_text_tag_field( 'field_mrn_card_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
 									mrn_base_stack_get_inline_text_field( 'field_mrn_card_subheading', 'Subheading', 'subheading' ),
 									mrn_base_stack_get_text_tag_field( 'field_mrn_card_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
-									array(
-										'key'           => 'field_mrn_card_link',
-										'label'         => 'Link',
-										'name'          => 'link',
-										'aria-label'    => '',
-										'type'          => 'link',
-										'return_format' => 'array',
-									),
+									mrn_rbl_get_content_link_repeater_field( 'field_mrn_card_links', 'Links', 'links', 1 ),
 									array(
 										'key'          => 'field_mrn_card_items',
 										'label'        => 'Cards',
@@ -2634,14 +2570,7 @@ function mrn_base_stack_register_acf_field_groups() {
 											),
 										),
 									),
-									array(
-										'key'           => 'field_mrn_showcase_link',
-										'label'         => 'Link',
-										'name'          => 'link',
-										'aria-label'    => '',
-										'type'          => 'link',
-										'return_format' => 'array',
-									),
+									mrn_rbl_get_content_link_repeater_field( 'field_mrn_showcase_links', 'Links', 'links', 1 ),
 									array(
 										'key'        => 'field_mrn_showcase_config_tab',
 										'label'      => 'Configs',

@@ -335,6 +335,58 @@
 		} );
 	}
 
+	function navigateButtonLink( buttonElement ) {
+		var url = buttonElement && buttonElement.getAttribute ? buttonElement.getAttribute( 'data-mrn-link-url' ) : '';
+		var target = buttonElement && buttonElement.getAttribute ? buttonElement.getAttribute( 'data-mrn-link-target' ) : '';
+		var rel = buttonElement && buttonElement.getAttribute ? ( buttonElement.getAttribute( 'data-mrn-link-rel' ) || '' ).toLowerCase() : '';
+		var shouldHardenNewWindow = rel.indexOf( 'noopener' ) !== -1 || rel.indexOf( 'noreferrer' ) !== -1;
+		var newWindow = null;
+
+		if ( ! url ) {
+			return;
+		}
+
+		if ( '_blank' === target ) {
+			newWindow = window.open( url, '_blank', shouldHardenNewWindow ? 'noopener' : '' );
+
+			if ( newWindow && shouldHardenNewWindow ) {
+				newWindow.opener = null;
+			}
+
+			return;
+		}
+
+		try {
+			if ( '_parent' === target && window.parent && window.parent !== window ) {
+				window.parent.location.assign( url );
+				return;
+			}
+
+			if ( '_top' === target && window.top && window.top !== window ) {
+				window.top.location.assign( url );
+				return;
+			}
+		} catch ( error ) {
+			// Fall back to the current window when cross-frame navigation is blocked.
+		}
+
+		window.location.assign( url );
+	}
+
+	function initContentLinkButtons() {
+		document.addEventListener( 'click', function( event ) {
+			var target = event.target;
+			var buttonElement = target && target.closest ? target.closest( 'button[data-mrn-link-url]' ) : null;
+
+			if ( ! buttonElement || buttonElement.disabled ) {
+				return;
+			}
+
+			event.preventDefault();
+			navigateButtonLink( buttonElement );
+		} );
+	}
+
 	function initGlobalApi( inView ) {
 		window.mrnBaseStack = window.mrnBaseStack || {};
 		window.mrnBaseStack.motion = window.Motion || {};
@@ -345,6 +397,8 @@
 	}
 
 	function initEffects() {
+		initContentLinkButtons();
+
 		if ( ! window.Motion || 'function' !== typeof window.Motion.inView ) {
 			return;
 		}

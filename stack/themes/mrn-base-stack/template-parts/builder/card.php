@@ -14,7 +14,6 @@ $heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['he
 $subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
 $subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $items            = isset( $row['card_items'] ) && is_array( $row['card_items'] ) ? $row['card_items'] : array();
-$section_link     = isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : array();
 $background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
 $bottom_accent    = ! empty( $row['bottom_accent'] );
 $accent_slug      = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
@@ -51,7 +50,29 @@ foreach ( $items as $item ) {
 	}
 }
 
-if ( '' === $label && '' === $heading && '' === $subheading && ! $has_items && empty( $section_link['url'] ) ) {
+$links        = function_exists( 'mrn_rbl_get_content_links' )
+	? mrn_rbl_get_content_links(
+		$row,
+		array(
+			'max'          => 1,
+		)
+	)
+	: array();
+$section_link = isset( $links[0] ) && is_array( $links[0] ) ? $links[0] : array();
+
+$section_link_url           = isset( $section_link['url'] ) ? (string) $section_link['url'] : '';
+$section_link_text          = isset( $section_link['text'] ) ? (string) $section_link['text'] : '';
+$section_link_style         = isset( $section_link['link_style'] ) && in_array( $section_link['link_style'], array( 'link', 'button' ), true ) ? (string) $section_link['link_style'] : 'link';
+$section_link_tag           = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $section_link ) : 'a';
+$section_link_attr_html     = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $section_link ) : '';
+$section_link_icon_markup   = 'button' === $section_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
+	? mrn_base_stack_get_button_link_icon_markup( $section_link )
+	: '';
+$section_link_icon_position = 'button' === $section_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
+	? mrn_base_stack_get_button_link_icon_position( $section_link )
+	: 'left';
+
+if ( '' === $label && '' === $heading && '' === $subheading && ! $has_items && '' === $section_link_url ) {
 	return;
 }
 
@@ -146,11 +167,20 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 			</div>
 		<?php endif; ?>
 
-		<?php if ( ! empty( $section_link['url'] ) ) : ?>
+		<?php if ( '' !== $section_link_url ) : ?>
 			<p class="mrn-card-row__link">
-					<a class="mrn-ui__link" href="<?php echo esc_url( $section_link['url'] ); ?>"<?php echo ! empty( $section_link['target'] ) ? ' target="' . esc_attr( $section_link['target'] ) . '"' : ''; ?><?php echo ! empty( $section_link['target'] ) && '_blank' === $section_link['target'] ? ' rel="noopener noreferrer"' : ''; ?>>
-					<?php echo esc_html( $section_link['title'] ?? 'Learn More' ); ?>
-				</a>
+				<<?php echo esc_html( $section_link_tag ); ?>
+					class="mrn-ui__link<?php echo 'button' === $section_link_style ? ' mrn-ui__link--button' : ''; ?>"
+					<?php echo '' !== $section_link_attr_html ? $section_link_attr_html : ( 'button' === $section_link_tag ? 'type="button"' : 'href="' . esc_url( $section_link_url ) . '"' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				>
+					<?php if ( 'left' === $section_link_icon_position ) : ?>
+						<?php echo $section_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
+					<?php endif; ?>
+					<?php echo esc_html( '' !== $section_link_text ? $section_link_text : $section_link_url ); ?>
+					<?php if ( 'right' === $section_link_icon_position ) : ?>
+						<?php echo $section_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
+					<?php endif; ?>
+				</<?php echo esc_html( $section_link_tag ); ?>>
 			</p>
 		<?php endif; ?>
 			</div>

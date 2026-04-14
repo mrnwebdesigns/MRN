@@ -627,6 +627,18 @@ function mrn_base_stack_scripts() {
 		}
 	}
 
+	if ( function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs' ) && function_exists( 'mrn_rbl_get_post_types' ) && is_singular( mrn_rbl_get_post_types() ) && function_exists( 'get_fields' ) ) {
+		$reusable_post_id = get_queried_object_id();
+
+		if ( $reusable_post_id ) {
+			$reusable_fields = get_fields( $reusable_post_id );
+
+			if ( is_array( $reusable_fields ) ) {
+				mrn_base_stack_collect_builder_link_icon_asset_needs( $reusable_fields, $needs_fontawesome, $needs_dashicons );
+			}
+		}
+	}
+
 	if ( $needs_fontawesome && function_exists( 'mrn_shared_assets_enqueue_fontawesome' ) ) {
 		mrn_shared_assets_enqueue_fontawesome( 'mrn-base-stack-fontawesome' );
 	}
