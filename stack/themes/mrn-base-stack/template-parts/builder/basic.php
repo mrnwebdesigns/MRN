@@ -18,6 +18,11 @@ $image            = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['
 $image_url        = isset( $image['url'] ) ? (string) $image['url'] : '';
 $image_alt        = isset( $image['alt'] ) ? (string) $image['alt'] : '';
 $background_image = isset( $row['background_image'] ) && is_array( $row['background_image'] ) ? $row['background_image'] : array();
+$row_link         = isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : array();
+$link_url         = isset( $row_link['url'] ) ? (string) $row_link['url'] : '';
+$link_title       = isset( $row_link['title'] ) ? (string) $row_link['title'] : '';
+$link_target      = isset( $row_link['target'] ) ? (string) $row_link['target'] : '';
+$link_style       = isset( $row['link_style'] ) ? sanitize_key( (string) $row['link_style'] ) : 'link';
 $link_color       = isset( $row['link_color'] ) ? trim( (string) $row['link_color'] ) : '';
 $image_placement  = isset( $row['image_placement'] ) ? sanitize_key( (string) $row['image_placement'] ) : 'left';
 $background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
@@ -53,6 +58,10 @@ if ( '' !== $background_image_style ) {
 	$section_styles[] = $background_image_style;
 }
 
+if ( ! in_array( $link_style, array( 'link', 'button' ), true ) ) {
+	$link_style = 'link';
+}
+
 if ( ! in_array( $image_placement, array( 'left', 'right' ), true ) ) {
 	$image_placement = 'left';
 }
@@ -61,26 +70,11 @@ if ( '' !== $link_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-basic-row-link-color: var(' . mrn_site_colors_get_css_var( $link_color ) . ')';
 }
 
-$links = function_exists( 'mrn_rbl_get_content_links' )
-	? mrn_rbl_get_content_links(
-		$row,
-		array(
-			'max' => 1,
-		)
-	)
-	: array();
-$content_link = isset( $links[0] ) && is_array( $links[0] ) ? $links[0] : array();
-
-$link_url         = isset( $content_link['url'] ) ? (string) $content_link['url'] : '';
-$link_text        = isset( $content_link['text'] ) ? (string) $content_link['text'] : '';
-$link_style       = isset( $content_link['link_style'] ) && in_array( $content_link['link_style'], array( 'link', 'button' ), true ) ? (string) $content_link['link_style'] : 'link';
-$link_tag         = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $content_link ) : 'a';
-$link_attr_html   = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $content_link ) : '';
-$link_icon_markup = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
-	? mrn_base_stack_get_button_link_icon_markup( $content_link )
+$link_icon_markup   = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
+	? mrn_base_stack_get_button_link_icon_markup( $row )
 	: '';
 $link_icon_position = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
-	? mrn_base_stack_get_button_link_icon_position( $content_link )
+	? mrn_base_stack_get_button_link_icon_position( $row )
 	: 'left';
 
 if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $image_url && '' === $link_url ) {
@@ -149,18 +143,24 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 
 				<?php if ( '' !== $link_url ) : ?>
 					<div class="mrn-basic-row__link-wrap">
-						<<?php echo esc_html( $link_tag ); ?>
-							class="mrn-ui__link <?php echo 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text'; ?>"
-							<?php echo '' !== $link_attr_html ? $link_attr_html : ( 'button' === $link_tag ? 'type="button"' : 'href="' . esc_url( $link_url ) . '"' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<a
+								class="mrn-ui__link <?php echo 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text'; ?>"
+							href="<?php echo esc_url( $link_url ); ?>"
+							<?php if ( '' !== $link_target ) : ?>
+								target="<?php echo esc_attr( $link_target ); ?>"
+							<?php endif; ?>
+							<?php if ( '_blank' === $link_target ) : ?>
+								rel="noopener noreferrer"
+							<?php endif; ?>
 						>
 							<?php if ( 'left' === $link_icon_position ) : ?>
 								<?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
 							<?php endif; ?>
-							<?php echo esc_html( '' !== $link_text ? $link_text : $link_url ); ?>
+							<?php echo esc_html( '' !== $link_title ? $link_title : $link_url ); ?>
 							<?php if ( 'right' === $link_icon_position ) : ?>
 								<?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
 							<?php endif; ?>
-						</<?php echo esc_html( $link_tag ); ?>>
+						</a>
 					</div>
 				<?php endif; ?>
 			</div>
