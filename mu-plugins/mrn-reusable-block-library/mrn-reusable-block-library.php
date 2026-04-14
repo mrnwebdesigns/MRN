@@ -1314,18 +1314,6 @@ function mrn_rbl_get_content_link_target_choices(): array {
 }
 
 /**
- * Shared button tag choices for content links that render like buttons.
- *
- * @return array<string, string>
- */
-function mrn_rbl_get_content_link_button_tag_choices(): array {
-    return array(
-        'a'      => 'Anchor Tag',
-        'button' => 'Button Element',
-    );
-}
-
-/**
  * Shared Dashicon choices for button-style links.
  *
  * @return array<string, string>
@@ -1559,7 +1547,6 @@ function mrn_rbl_get_button_link_icon_fields(string $key_prefix, string $button_
 function mrn_rbl_get_content_link_repeater_field(string $key, string $label = 'Links', string $name = 'links', int $max = 0, ?string $instructions = null): array {
     $link_key     = $key . '_link';
     $button_key   = $key . '_is_button';
-    $button_tag   = $key . '_button_tag';
     $field_max    = $max > 0 ? $max : 0;
     $instructions = null !== $instructions
         ? $instructions
@@ -1597,30 +1584,19 @@ function mrn_rbl_get_content_link_repeater_field(string $key, string $label = 'L
                 'default_value' => 0,
                 'ui_on_text'    => 'On',
                 'ui_off_text'   => 'Off',
+                'instructions'  => 'Pro Tip: For better accessibility and performance, use the &lt;button&gt; tag for interactive actions and only use classes to change how it looks. If you are navigating to a new page, use an &lt;a&gt; (anchor) tag styled with a button class.',
                 'wrapper'       => array(
-                    'width' => '25',
+                    'width' => '50',
                 ),
             ),
             array(
-                'key'               => $button_tag,
-                'label'             => 'Tag',
-                'name'              => 'button_tag',
-                'type'              => 'select',
-                'choices'           => mrn_rbl_get_content_link_button_tag_choices(),
-                'default_value'     => 'a',
-                'ui'                => 1,
-                'instructions'      => 'Pro Tip: For better accessibility and performance, use the &lt;button&gt; tag for interactive actions and only use classes to change how it looks. If you are navigating to a new page, use an &lt;a&gt; (anchor) tag styled with a button class.',
-                'wrapper'           => array(
-                    'width' => '25',
-                ),
-                'conditional_logic' => array(
-                    array(
-                        array(
-                            'field'    => $button_key,
-                            'operator' => '==',
-                            'value'    => '1',
-                        ),
-                    ),
+                'key'          => $key . '_css_classes',
+                'label'        => 'CSS Classes',
+                'name'         => 'css_classes',
+                'type'         => 'text',
+                'instructions' => 'Optional. A class such as &quot;button&quot; is not needed if Button is turned on.',
+                'wrapper'      => array(
+                    'width' => '50',
                 ),
             ),
             array(
@@ -1710,6 +1686,20 @@ function mrn_rbl_normalize_content_link_rel(string $rel, string $target): string
 }
 
 /**
+ * Normalize a whitespace-delimited class string for safe HTML output.
+ *
+ * @param string $classes Raw class string.
+ * @return array<int, string>
+ */
+function mrn_rbl_normalize_css_class_tokens(string $classes): array {
+    $tokens = preg_split('/\s+/', trim($classes)) ?: array();
+    $tokens = array_map('sanitize_html_class', $tokens);
+    $tokens = array_filter($tokens);
+
+    return array_values(array_unique($tokens));
+}
+
+/**
  * Normalize a content-link row for template use.
  *
  * @param array<string, mixed> $link Raw link row data.
@@ -1719,17 +1709,11 @@ function mrn_rbl_normalize_content_link_rel(string $rel, string $target): string
 function mrn_rbl_normalize_content_link(array $link, array $args = array()): array {
     $fallback_style       = isset($args['fallback_link_style']) ? sanitize_key((string) $args['fallback_link_style']) : '';
     $fallback_icon_fields = isset($args['fallback_icon_fields']) && is_array($args['fallback_icon_fields']) ? $args['fallback_icon_fields'] : array();
-    $fallback_button_tag  = isset($args['fallback_button_tag']) ? sanitize_key((string) $args['fallback_button_tag']) : 'a';
     $allowed_styles       = array('link', 'button');
     $allowed_targets      = array('', '_blank', '_self', '_parent', '_top');
-    $allowed_tags         = array('a', 'button');
 
     if (!in_array($fallback_style, $allowed_styles, true)) {
         $fallback_style = 'link';
-    }
-
-    if (!in_array($fallback_button_tag, $allowed_tags, true)) {
-        $fallback_button_tag = 'a';
     }
 
     $acf_link = isset($link['link']) && is_array($link['link']) ? $link['link'] : array();
@@ -1757,11 +1741,6 @@ function mrn_rbl_normalize_content_link(array $link, array $args = array()): arr
         ? !empty($link['is_button'])
         : ('button' === sanitize_key((string) ($link['link_style'] ?? $fallback_style)));
 
-    $button_tag = isset($link['button_tag']) ? sanitize_key((string) $link['button_tag']) : $fallback_button_tag;
-    if (!$is_button || !in_array($button_tag, $allowed_tags, true)) {
-        $button_tag = 'a';
-    }
-
     $normalized = array(
         'text'                 => $text,
         'url'                  => $url,
@@ -1772,8 +1751,8 @@ function mrn_rbl_normalize_content_link(array $link, array $args = array()): arr
         'hreflang'             => sanitize_text_field((string) ($link['hreflang'] ?? '')),
         'media'                => sanitize_text_field((string) ($link['media'] ?? '')),
         'is_button'            => $is_button,
-        'button_tag'           => $button_tag,
         'link_style'           => $is_button ? 'button' : 'link',
+        'css_classes'          => mrn_rbl_normalize_css_class_tokens((string) ($link['css_classes'] ?? ($link['css_class'] ?? ''))),
         'link_icon_source'     => isset($link['link_icon_source']) ? sanitize_key((string) $link['link_icon_source']) : '',
         'link_icon_dashicon'   => isset($link['link_icon_dashicon']) ? sanitize_html_class((string) $link['link_icon_dashicon']) : '',
         'link_icon_fa_class'   => isset($link['link_icon_fa_class']) ? trim((string) $link['link_icon_fa_class']) : '',
@@ -1790,10 +1769,6 @@ function mrn_rbl_normalize_content_link(array $link, array $args = array()): arr
 
     if (empty($normalized['link_icon_media_icon']) && !empty($fallback_icon_fields['link_icon_media_icon']) && is_array($fallback_icon_fields['link_icon_media_icon'])) {
         $normalized['link_icon_media_icon'] = $fallback_icon_fields['link_icon_media_icon'];
-    }
-
-    if (!$normalized['is_button']) {
-        $normalized['button_tag'] = 'a';
     }
 
     return $normalized;
@@ -1843,7 +1818,20 @@ function mrn_rbl_get_content_links(array $fields, array $args = array()): array 
  * @return string
  */
 function mrn_rbl_get_content_link_tag_name(array $link): string {
-    return !empty($link['is_button']) && 'button' === ($link['button_tag'] ?? '') ? 'button' : 'a';
+    return 'a';
+}
+
+/**
+ * Get any sanitized custom classes configured for a normalized content link.
+ *
+ * @param array<string, mixed> $link Normalized link data.
+ * @return string
+ */
+function mrn_rbl_get_content_link_custom_class_names(array $link): string {
+    $classes = isset($link['css_classes']) && is_array($link['css_classes']) ? $link['css_classes'] : array();
+    $classes = array_filter(array_map('sanitize_html_class', $classes));
+
+    return implode(' ', array_values(array_unique($classes)));
 }
 
 /**
@@ -1859,30 +1847,6 @@ function mrn_rbl_get_content_link_html_attributes(array $link): string {
     }
 
     $title_attribute = isset($link['title_attribute']) ? (string) $link['title_attribute'] : '';
-    $tag_name        = mrn_rbl_get_content_link_tag_name($link);
-
-    if ('button' === $tag_name) {
-        $attributes = array(
-            'type="button"',
-            'data-mrn-link-url="' . esc_url($url) . '"',
-        );
-
-        $target = isset($link['target']) ? (string) $link['target'] : '';
-        if ('' !== $target) {
-            $attributes[] = 'data-mrn-link-target="' . esc_attr($target) . '"';
-        }
-
-        $rel = isset($link['rel']) ? (string) $link['rel'] : '';
-        if ('' !== $rel) {
-            $attributes[] = 'data-mrn-link-rel="' . esc_attr($rel) . '"';
-        }
-
-        if ('' !== $title_attribute) {
-            $attributes[] = 'title="' . esc_attr($title_attribute) . '"';
-        }
-
-        return implode(' ', $attributes);
-    }
 
     $attributes = array(
         'href="' . esc_url($url) . '"',

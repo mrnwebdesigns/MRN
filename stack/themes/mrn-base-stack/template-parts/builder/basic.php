@@ -76,12 +76,20 @@ $link_text        = isset( $content_link['text'] ) ? (string) $content_link['tex
 $link_style       = isset( $content_link['link_style'] ) && in_array( $content_link['link_style'], array( 'link', 'button' ), true ) ? (string) $content_link['link_style'] : 'link';
 $link_tag         = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $content_link ) : 'a';
 $link_attr_html   = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $content_link ) : '';
+$link_class_names = 'mrn-ui__link ' . ( 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text' );
 $link_icon_markup = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
 	? mrn_base_stack_get_button_link_icon_markup( $content_link )
 	: '';
 $link_icon_position = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
 	? mrn_base_stack_get_button_link_icon_position( $content_link )
 	: 'left';
+
+if ( function_exists( 'mrn_rbl_get_content_link_custom_class_names' ) ) {
+	$link_custom_classes = mrn_rbl_get_content_link_custom_class_names( $content_link );
+	if ( '' !== $link_custom_classes ) {
+		$link_class_names .= ' ' . $link_custom_classes;
+	}
+}
 
 if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $image_url && '' === $link_url ) {
 	return;
@@ -148,11 +156,11 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				<?php endif; ?>
 
 				<?php if ( '' !== $link_url ) : ?>
-					<div class="mrn-basic-row__link-wrap">
-						<<?php echo esc_html( $link_tag ); ?>
-							class="mrn-ui__link <?php echo 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text'; ?>"
-							<?php echo '' !== $link_attr_html ? $link_attr_html : ( 'button' === $link_tag ? 'type="button"' : 'href="' . esc_url( $link_url ) . '"' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						>
+						<div class="mrn-basic-row__link-wrap">
+							<<?php echo esc_html( $link_tag ); ?>
+								class="<?php echo esc_attr( trim( $link_class_names ) ); ?>"
+								<?php echo '' !== $link_attr_html ? $link_attr_html : 'href="' . esc_url( $link_url ) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							>
 							<?php if ( 'left' === $link_icon_position ) : ?>
 								<?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
 							<?php endif; ?>
