@@ -17,7 +17,20 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 	}
 
 	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-	if ( ! $screen instanceof WP_Screen || ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_singular_shell_post_types(), true ) ) {
+	if ( ! $screen instanceof WP_Screen ) {
+		return;
+	}
+
+	$post_type = sanitize_key( (string) $screen->post_type );
+	if ( '' === $post_type && isset( $_GET['post_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only context lookup.
+		$post_type = sanitize_key( (string) wp_unslash( $_GET['post_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only context lookup.
+	}
+
+	if ( '' === $post_type && 'post-new.php' === $hook_suffix ) {
+		$post_type = 'post';
+	}
+
+	if ( '' === $post_type || ! in_array( $post_type, mrn_base_stack_get_singular_shell_post_types(), true ) ) {
 		return;
 	}
 

@@ -165,6 +165,10 @@ function mrn_base_stack_is_builder_layout_allowlist_context( $post_id = 0 ) {
 		return false;
 	}
 
+	if ( ! did_action( 'current_screen' ) && ! doing_action( 'current_screen' ) ) {
+		return false;
+	}
+
 	$post_type = mrn_base_stack_get_builder_layout_allowlist_context_post_type( $post_id );
 	if ( '' === $post_type ) {
 		return false;
@@ -172,6 +176,46 @@ function mrn_base_stack_is_builder_layout_allowlist_context( $post_id = 0 ) {
 
 	return in_array( $post_type, mrn_base_stack_get_singular_shell_post_types(), true );
 }
+
+/**
+ * Clear cached top-level builder field definitions for editor screens.
+ *
+ * This prevents pre-screen ACF cache warm-ups from locking in stale layout
+ * sets before per-entry allowlist filtering runs.
+ *
+ * @param WP_Screen $screen Current screen.
+ * @return void
+ */
+function mrn_base_stack_reset_builder_layout_allowlist_field_cache( $screen ) {
+	if ( ! $screen instanceof WP_Screen ) {
+		return;
+	}
+
+	if ( ! in_array( $screen->base, array( 'post', 'post-new' ), true ) ) {
+		return;
+	}
+
+	if ( ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_singular_shell_post_types(), true ) ) {
+		return;
+	}
+
+	if ( ! function_exists( 'acf_get_store' ) ) {
+		return;
+	}
+
+	$store = acf_get_store( 'fields' );
+	if ( ! is_object( $store ) || ! method_exists( $store, 'remove' ) ) {
+		return;
+	}
+
+	foreach ( mrn_base_stack_get_builder_layout_allowlist_targets() as $target ) {
+		$field_key = isset( $target['field_key'] ) ? (string) $target['field_key'] : '';
+		if ( '' !== $field_key ) {
+			$store->remove( $field_key );
+		}
+	}
+}
+add_action( 'current_screen', 'mrn_base_stack_reset_builder_layout_allowlist_field_cache', 20 );
 
 /**
  * Build a catalog of flexible-content layouts from an ACF field definition.
