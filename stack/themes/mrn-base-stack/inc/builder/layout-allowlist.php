@@ -855,8 +855,27 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 			$( function() {
 				var $button = $( '#mrn-builder-allowlist-save-button' );
 				var $form = $( '#post' );
+				var $metabox = $( '#mrn-builder-layout-allowlist' );
+				var initialSnapshot = '';
+
+				function getNonAllowlistSnapshot() {
+					if ( window.tinyMCE && typeof window.tinyMCE.triggerSave === 'function' ) {
+						window.tinyMCE.triggerSave();
+					}
+
+					return $form.find( ':input[name]' )
+						.not( '[name^="mrn_builder_layout_allowlist"]' )
+						.not( '[name^="mrn_builder_layout_allowlist_catalog"]' )
+						.not( '[name="mrn_base_stack_builder_layout_allowlist_nonce"]' )
+						.serialize();
+				}
+
 				if ( ! $button.length ) {
 					return;
+				}
+
+				if ( $form.length ) {
+					initialSnapshot = getNonAllowlistSnapshot();
 				}
 
 				$button.on( 'click', function( event ) {
@@ -865,13 +884,16 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 					var postId = parseInt( String( $( '#post_ID' ).val() || <?php echo (int) $post_id; ?> ), 10 );
 					var ajaxUrl = window.ajaxurl || '';
 					var originalLabel = $button.text();
+					var hasUnsavedContentChanges = false;
 					var payload;
 
-					if ( ! $form.length || ! postId || ! ajaxUrl ) {
+					if ( ! $form.length || ! $metabox.length || ! postId || ! ajaxUrl ) {
 						return;
 					}
 
-					payload = $form.serializeArray();
+					hasUnsavedContentChanges = getNonAllowlistSnapshot() !== initialSnapshot;
+
+					payload = $metabox.find( ':input[name]' ).serializeArray();
 					payload.push( { name: 'action', value: 'mrn_base_stack_save_builder_layout_allowlist' } );
 					payload.push( { name: 'nonce', value: '<?php echo esc_js( wp_create_nonce( 'mrn_base_stack_save_builder_layout_allowlist' ) ); ?>' } );
 					payload.push( { name: 'post_id', value: postId } );
@@ -885,6 +907,11 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 						data: payload
 					} ).done( function( response ) {
 						if ( response && response.success ) {
+							if ( hasUnsavedContentChanges ) {
+								window.alert( 'Layout availability was saved. This page has unsaved content changes, so it was not reloaded. Save/Update the post when ready to keep your content changes.' );
+								return;
+							}
+
 							window.location.reload();
 							return;
 						}
