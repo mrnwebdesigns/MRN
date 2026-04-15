@@ -52,8 +52,8 @@ if ( ! in_array( $image_alignment, array( 'left', 'center', 'right' ), true ) ) 
 	$image_alignment = 'center';
 }
 
-$has_image = ! empty( $image['ID'] ) || ! empty( $image['url'] );
-$links     = function_exists( 'mrn_rbl_get_content_links' )
+$has_image    = ! empty( $image['ID'] ) || ! empty( $image['url'] );
+$links        = function_exists( 'mrn_rbl_get_content_links' )
 	? mrn_rbl_get_content_links(
 		$row,
 		array(

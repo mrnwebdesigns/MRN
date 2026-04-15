@@ -158,7 +158,7 @@ function mrn_base_stack_get_section_width_choices() {
  * @return array<string, string>
  */
 function mrn_base_stack_get_content_list_post_type_choices() {
-	static $cache = null;
+	static $cache     = null;
 	static $resolving = false;
 
 	if ( is_array( $cache ) ) {

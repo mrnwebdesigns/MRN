@@ -48,16 +48,16 @@ $links = function_exists( 'mrn_rbl_get_content_links' )
 $primary_link   = isset( $links[0] ) && is_array( $links[0] ) ? $links[0] : array();
 $secondary_link = isset( $links[1] ) && is_array( $links[1] ) ? $links[1] : array();
 
-$primary_link_url           = isset( $primary_link['url'] ) ? (string) $primary_link['url'] : '';
-$primary_link_text          = isset( $primary_link['text'] ) ? (string) $primary_link['text'] : '';
-$primary_link_style         = isset( $primary_link['link_style'] ) && in_array( $primary_link['link_style'], array( 'link', 'button' ), true ) ? (string) $primary_link['link_style'] : 'link';
-$primary_link_tag           = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $primary_link ) : 'a';
-$primary_link_attr_html     = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $primary_link ) : '';
-$primary_link_class_names   = 'mrn-hero__link mrn-hero__link--primary' . ( 'button' === $primary_link_style ? ' mrn-ui__link mrn-ui__link--button' : '' );
-$primary_link_icon_markup   = 'button' === $primary_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
+$primary_link_url             = isset( $primary_link['url'] ) ? (string) $primary_link['url'] : '';
+$primary_link_text            = isset( $primary_link['text'] ) ? (string) $primary_link['text'] : '';
+$primary_link_style           = isset( $primary_link['link_style'] ) && in_array( $primary_link['link_style'], array( 'link', 'button' ), true ) ? (string) $primary_link['link_style'] : 'link';
+$primary_link_tag             = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $primary_link ) : 'a';
+$primary_link_attr_html       = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $primary_link ) : '';
+$primary_link_class_names     = 'mrn-hero__link mrn-hero__link--primary' . ( 'button' === $primary_link_style ? ' mrn-ui__link mrn-ui__link--button' : '' );
+$primary_link_icon_markup     = 'button' === $primary_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
 	? mrn_base_stack_get_button_link_icon_markup( $primary_link )
 	: '';
-$primary_link_icon_position = 'button' === $primary_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
+$primary_link_icon_position   = 'button' === $primary_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
 	? mrn_base_stack_get_button_link_icon_position( $primary_link )
 	: 'left';
 $secondary_link_url           = isset( $secondary_link['url'] ) ? (string) $secondary_link['url'] : '';
@@ -84,9 +84,9 @@ if ( function_exists( 'mrn_rbl_get_content_link_custom_class_names' ) ) {
 		$secondary_link_class_names .= ' ' . $secondary_link_custom_classes;
 	}
 }
-$image_url             = isset( $image['url'] ) ? (string) $image['url'] : '';
-$image_alt             = isset( $image['alt'] ) ? (string) $image['alt'] : '';
-$video_embed           = function_exists( 'mrn_base_stack_get_video_embed' ) ? mrn_base_stack_get_video_embed(
+$image_url        = isset( $image['url'] ) ? (string) $image['url'] : '';
+$image_alt        = isset( $image['alt'] ) ? (string) $image['alt'] : '';
+$video_embed      = function_exists( 'mrn_base_stack_get_video_embed' ) ? mrn_base_stack_get_video_embed(
 	$background_video,
 	array(
 		'autoplay'   => true,
@@ -99,10 +99,10 @@ $video_embed           = function_exists( 'mrn_base_stack_get_video_embed' ) ? m
 	'provider'  => '',
 	'embed_url' => '',
 );
-$video_url             = isset( $video_embed['embed_url'] ) ? (string) $video_embed['embed_url'] : '';
-$local_video_url       = isset( $background_video_upload['url'] ) ? (string) $background_video_upload['url'] : '';
-$local_video_mime      = isset( $background_video_upload['mime_type'] ) ? (string) $background_video_upload['mime_type'] : '';
-$video_kind            = '';
+$video_url        = isset( $video_embed['embed_url'] ) ? (string) $video_embed['embed_url'] : '';
+$local_video_url  = isset( $background_video_upload['url'] ) ? (string) $background_video_upload['url'] : '';
+$local_video_mime = isset( $background_video_upload['mime_type'] ) ? (string) $background_video_upload['mime_type'] : '';
+$video_kind       = '';
 
 if ( '' !== $local_video_url ) {
 	$video_kind = 'local';

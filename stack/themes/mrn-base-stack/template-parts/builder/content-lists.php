@@ -152,7 +152,7 @@ $pagination_html   = '';
 $row_anchor_id     = 'mrn-content-list-row-' . absint( $context_post_id ) . '-' . absint( $index );
 
 if ( $show_pagination && $query->max_num_pages > 1 ) {
-	$page_arg     = function_exists( 'mrn_base_stack_get_content_list_pagination_query_arg' ) ? mrn_base_stack_get_content_list_pagination_query_arg( $post_id, $index ) : 'mrn_list_page';
+	$page_arg     = function_exists( 'mrn_base_stack_get_content_list_pagination_query_arg' ) ? mrn_base_stack_get_content_list_pagination_query_arg( $context_post_id, $index ) : 'mrn_list_page';
 	$base_url     = $context_post_id ? get_permalink( $context_post_id ) : '';
 	$current_args = array();
 
