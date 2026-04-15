@@ -787,13 +787,7 @@ function mrn_base_stack_filter_builder_layout_allowlist_field_layouts( $field ) 
 	}
 
 	$existing_only_names = mrn_base_stack_get_builder_layout_allowlist_existing_only_names( $post_id, $field_name, $catalog );
-	if ( ! empty( $existing_only_names ) ) {
-		if ( ! isset( $field['wrapper'] ) || ! is_array( $field['wrapper'] ) ) {
-			$field['wrapper'] = array();
-		}
-
-		$field['wrapper']['data-mrn-existing-only-layouts'] = implode( ',', $existing_only_names );
-	}
+	$existing_only_lookup = ! empty( $existing_only_names ) ? array_fill_keys( $existing_only_names, true ) : array();
 
 	$effective_names = mrn_base_stack_get_builder_layout_allowlist_effective_names( $post_id, $field_name, $catalog );
 	if ( empty( $effective_names ) ) {
@@ -811,6 +805,11 @@ function mrn_base_stack_filter_builder_layout_allowlist_field_layouts( $field ) 
 		$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
 		if ( '' === $layout_name || ! isset( $effective_lookup[ $layout_name ] ) ) {
 			continue;
+		}
+
+		// Keep existing rows editable while preventing new rows from this layout.
+		if ( isset( $existing_only_lookup[ $layout_name ] ) ) {
+			$layout['max'] = -1;
 		}
 
 		$filtered_layouts[ $layout_key ] = $layout;
@@ -832,93 +831,24 @@ add_filter( 'acf/prepare_field/key=field_mrn_page_after_content_rows', 'mrn_base
 add_filter( 'acf/prepare_field/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 
 /**
- * Hide "existing-only" layout choices from Add Row while preserving existing rows.
+ * Hide non-addable existing-only layout choices in ACF popup menus.
  *
  * @return void
  */
-function mrn_base_stack_print_builder_layout_allowlist_existing_only_script() {
+function mrn_base_stack_print_builder_layout_allowlist_existing_only_styles() {
 	$post_id = mrn_base_stack_get_builder_layout_allowlist_post_id();
 	if ( ! mrn_base_stack_is_builder_layout_allowlist_context( $post_id ) ) {
 		return;
 	}
 	?>
-	<script>
-		( function( $, acf ) {
-			'use strict';
-
-			function parseLayoutNames( rawValue ) {
-				return String( rawValue || '' )
-					.split( ',' )
-					.map( function( item ) {
-						return $.trim( item );
-					} )
-					.filter( function( item ) {
-						return item !== '';
-					} );
-			}
-
-			function removeExistingOnlyLayoutsFromPopupTemplate( fieldElement, layoutNames ) {
-				var templateNode;
-				var container;
-
-				if ( ! fieldElement || ! layoutNames.length ) {
-					return;
-				}
-
-				if ( fieldElement.getAttribute( 'data-mrn-existing-only-template-updated' ) === '1' ) {
-					return;
-				}
-
-				templateNode = fieldElement.querySelector( 'script.tmpl-popup' );
-				if ( ! templateNode ) {
-					return;
-				}
-
-				container = document.createElement( 'div' );
-				container.innerHTML = templateNode.innerHTML;
-
-				layoutNames.forEach( function( layoutName ) {
-					container.querySelectorAll( 'a[data-layout="' + layoutName + '"]' ).forEach( function( linkNode ) {
-						var listItem = linkNode.closest( 'li' );
-						if ( listItem && listItem.parentNode ) {
-							listItem.parentNode.removeChild( listItem );
-						}
-					} );
-				} );
-
-				templateNode.innerHTML = container.innerHTML;
-				fieldElement.setAttribute( 'data-mrn-existing-only-template-updated', '1' );
-			}
-
-			function applyExistingOnlyLayoutRules( $scope ) {
-				var selector = '.acf-field-flexible-content[data-mrn-existing-only-layouts]';
-				var $fields = $scope.filter( selector ).add( $scope.find( selector ) );
-
-				$fields.each( function() {
-					removeExistingOnlyLayoutsFromPopupTemplate(
-						this,
-						parseLayoutNames( this.getAttribute( 'data-mrn-existing-only-layouts' ) )
-					);
-				} );
-			}
-
-			if ( acf && typeof acf.addAction === 'function' ) {
-				acf.addAction( 'ready', function( $el ) {
-					applyExistingOnlyLayoutRules( $el && $el.length ? $el : $( document ) );
-				} );
-				acf.addAction( 'append', function( $el ) {
-					applyExistingOnlyLayoutRules( $el && $el.length ? $el : $( document ) );
-				} );
-			} else {
-				$( function() {
-					applyExistingOnlyLayoutRules( $( document ) );
-				} );
-			}
-		} )( jQuery, window.acf );
-	</script>
+	<style>
+	.acf-fc-popup a[data-max="-1"] {
+		display: none !important;
+	}
+	</style>
 	<?php
 }
-add_action( 'acf/input/admin_footer', 'mrn_base_stack_print_builder_layout_allowlist_existing_only_script' );
+add_action( 'acf/input/admin_head', 'mrn_base_stack_print_builder_layout_allowlist_existing_only_styles' );
 
 /**
  * Register a classic-editor metabox for per-entry builder layout allowlists.
