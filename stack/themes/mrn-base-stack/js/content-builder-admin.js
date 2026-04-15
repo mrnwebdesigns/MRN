@@ -7,61 +7,6 @@
 
 	var config = mrnBaseStackBuilderAdmin;
 
-	function getBuilderLayouts() {
-		return $.isArray( config.builderLayouts ) ? config.builderLayouts : [];
-	}
-
-	function getBuilderLayoutMap() {
-		var layoutMap = {};
-
-		$.each( getBuilderLayouts(), function( index, layout ) {
-			if ( ! layout || typeof layout !== 'object' || ! layout.name ) {
-				return;
-			}
-
-			layoutMap[ layout.name ] = layout;
-		} );
-
-		return layoutMap;
-	}
-
-	function getReusableLayoutNames() {
-		var reusableLayouts = [];
-
-		$.each( getBuilderLayouts(), function( index, layout ) {
-			if ( ! layout || typeof layout !== 'object' || ! layout.name || ! layout.isReusable || layout.isPageOnly ) {
-				return;
-			}
-
-			reusableLayouts.push( layout.name );
-		} );
-
-		return reusableLayouts;
-	}
-
-	function getHiddenLayouts() {
-		var hiddenLayouts = [];
-		var disabledLayouts = $.isArray( config.disabledLayouts ) ? config.disabledLayouts : [];
-
-		$.each( getBuilderLayouts(), function( index, layout ) {
-			if ( ! layout || typeof layout !== 'object' || ! layout.name || ! layout.isPageOnly ) {
-				return;
-			}
-
-			if ( hiddenLayouts.indexOf( layout.name ) === -1 ) {
-				hiddenLayouts.push( layout.name );
-			}
-		} );
-
-		$.each( disabledLayouts, function( index, layoutName ) {
-			if ( hiddenLayouts.indexOf( layoutName ) === -1 ) {
-				hiddenLayouts.push( layoutName );
-			}
-		} );
-
-		return hiddenLayouts;
-	}
-
 	function getContentListTaxonomyMap() {
 		if ( config.contentListTaxonomies && typeof config.contentListTaxonomies === 'object' ) {
 			return config.contentListTaxonomies;
@@ -76,143 +21,6 @@
 		}
 
 		return {};
-	}
-
-	function hideFlexibleContentLayouts( context ) {
-		var hiddenLayouts = getHiddenLayouts();
-
-		if ( ! hiddenLayouts.length ) {
-			return;
-		}
-
-		$( context || document ).find( 'li [data-layout]' ).each( function() {
-			var $link = $( this );
-			var layoutName = $link.attr( 'data-layout' ) || '';
-			var $item = $link.closest( 'li' );
-
-			if ( hiddenLayouts.indexOf( layoutName ) === -1 || ! $item.length ) {
-				return;
-			}
-
-			$item.hide();
-		} );
-	}
-
-	function compareFlexibleContentMenuItems( leftItem, rightItem, layoutMap ) {
-		var $leftLink = $( leftItem ).find( '[data-layout]' ).first();
-		var $rightLink = $( rightItem ).find( '[data-layout]' ).first();
-		var leftName = $leftLink.attr( 'data-layout' ) || '';
-		var rightName = $rightLink.attr( 'data-layout' ) || '';
-		var leftMeta = layoutMap[ leftName ] || {};
-		var rightMeta = layoutMap[ rightName ] || {};
-		var leftLabel = String( leftMeta.label || $leftLink.text() || '' ).trim().toLowerCase();
-		var rightLabel = String( rightMeta.label || $rightLink.text() || '' ).trim().toLowerCase();
-
-		return leftLabel.localeCompare( rightLabel );
-	}
-
-	function alphabetizeFlexibleContentMenus( context ) {
-		var layoutMap = getBuilderLayoutMap();
-		var reusableLayouts = getReusableLayoutNames();
-
-		$( context || document ).find( 'ul' ).has( 'li [data-layout]' ).each( function() {
-			var $menu = $( this );
-			var $items = $menu.children( 'li' ).filter( function() {
-				return $( this ).find( '[data-layout]' ).length > 0;
-			} );
-			var standardItems = [];
-			var reusableItems = [];
-			var hiddenItems = [];
-
-			if ( $items.length < 2 ) {
-				return;
-			}
-
-			$menu.children( '.mrn-builder-menu-header' ).remove();
-
-			$items.each( function() {
-				var $item = $( this );
-				var layoutName;
-
-				if ( 'none' === $item.css( 'display' ) ) {
-					hiddenItems.push( this );
-					return;
-				}
-
-				layoutName = $item.find( '[data-layout]' ).first().attr( 'data-layout' ) || '';
-
-				if ( reusableLayouts.indexOf( layoutName ) !== -1 ) {
-					reusableItems.push( this );
-					return;
-				}
-
-				standardItems.push( this );
-			} );
-
-			standardItems.sort( function( leftItem, rightItem ) {
-				return compareFlexibleContentMenuItems( leftItem, rightItem, layoutMap );
-			} );
-
-			reusableItems.sort( function( leftItem, rightItem ) {
-				return compareFlexibleContentMenuItems( leftItem, rightItem, layoutMap );
-			} );
-
-			$.each( standardItems, function( index, item ) {
-				$menu.append( item );
-			} );
-
-			if ( standardItems.length && reusableItems.length ) {
-				var $header = $( '<li class="mrn-builder-menu-header" aria-hidden="true"></li>' );
-				$header.attr( 'data-mrn-decoration', 'reusable-shared' );
-				$header.text( 'Reusable / Shared' );
-				$menu.append( $header );
-			}
-
-			$.each( reusableItems, function( index, item ) {
-				$menu.append( item );
-			} );
-
-			$.each( hiddenItems, function( index, item ) {
-				$menu.append( item );
-			} );
-		} );
-	}
-
-	function refreshFlexibleContentMenus( context ) {
-		hideFlexibleContentLayouts( context );
-		alphabetizeFlexibleContentMenus( context );
-	}
-
-	function getLayoutRowsFromContext( context ) {
-		var $context = $( context || document );
-		var $rows = $context.filter( 'li' ).has( '[data-layout]' );
-
-		if ( $rows.length ) {
-			return $rows;
-		}
-
-		return $context.find( 'li' ).has( '[data-layout]' );
-	}
-
-	function sortFlexibleContentLayoutChoices( context ) {
-		var $rows = getLayoutRowsFromContext( context );
-
-		if ( ! $rows.length ) {
-			return;
-		}
-
-		$rows.each( function() {
-			var $item = $( this );
-			var $menu = $item.parent( 'ul' );
-
-			if ( ! $menu.length || $menu.data( 'mrnMenuRefreshScheduled' ) ) {
-				return;
-			}
-
-			$menu.data( 'mrnMenuRefreshScheduled', true );
-			refreshFlexibleContentMenus( $menu );
-			$menu.removeData( 'mrnMenuRefreshScheduled' );
-		} );
 	}
 
 	function getRowActionWrap( $row ) {
@@ -267,7 +75,6 @@
 	}
 
 	function bootBuilderAdminUi( context ) {
-		refreshFlexibleContentMenus( context );
 		ensureConversionActions( context );
 		scheduleContentListFilterSync( context );
 	}
@@ -882,10 +689,6 @@
 
 	acf.addAction( 'append', function( $el ) {
 		bootBuilderAdminUi( $el || document );
-	} );
-
-	acf.addAction( 'show', function( $el ) {
-		sortFlexibleContentLayoutChoices( $el || document );
 	} );
 
 	$( document ).on( 'change select2:select select2:clear', '.layout[data-layout="content_lists"] .acf-field[data-name="list_post_type"] select, .layout[data-layout="content_lists"] .acf-field[data-name="filter_taxonomy"] select', function() {
