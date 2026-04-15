@@ -174,11 +174,13 @@ function mrn_base_stack_is_builder_layout_allowlist_context( $post_id = 0 ) {
 		return false;
 	}
 
-	if ( ! did_action( 'current_screen' ) && ! doing_action( 'current_screen' ) ) {
-		return false;
+	$post_type = mrn_base_stack_get_builder_layout_allowlist_context_post_type( $post_id );
+	if ( '' === $post_type ) {
+		if ( isset( $GLOBALS['pagenow'] ) && 'post-new.php' === $GLOBALS['pagenow'] ) {
+			$post_type = 'post';
+		}
 	}
 
-	$post_type = mrn_base_stack_get_builder_layout_allowlist_context_post_type( $post_id );
 	if ( '' === $post_type ) {
 		return false;
 	}
@@ -754,6 +756,11 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 		<?php if ( empty( $configurable_names ) ) : ?>
 			<p><em>No selectable layouts are available for this section.</em></p>
 		<?php else : ?>
+			<input
+				type="hidden"
+				name="mrn_builder_layout_allowlist_catalog[<?php echo esc_attr( $field_name ); ?>]"
+				value="<?php echo esc_attr( implode( ',', $configurable_names ) ); ?>"
+			/>
 			<p style="margin: 0 0 8px;">
 				<em><?php echo esc_html( sprintf( 'Selected %1$d of %2$d layouts. Scroll to view all.', $selected_count, $total_count ) ); ?></em>
 			</p>
@@ -816,12 +823,31 @@ function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post 
 	$input      = isset( $_POST['mrn_builder_layout_allowlist'] ) && is_array( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
 		? wp_unslash( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
 		: array();
+	$catalog_input = isset( $_POST['mrn_builder_layout_allowlist_catalog'] ) && is_array( $_POST['mrn_builder_layout_allowlist_catalog'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
+		? wp_unslash( $_POST['mrn_builder_layout_allowlist_catalog'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
+		: array();
 	$targets    = mrn_base_stack_get_builder_layout_allowlist_targets();
 	$allowlists = array();
 
 	foreach ( $targets as $field_name => $target ) {
 		$catalog            = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name ) );
 		$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
+		if ( isset( $catalog_input[ $field_name ] ) ) {
+			$posted_catalog_names = array_values(
+				array_unique(
+					array_filter(
+						array_map(
+							'sanitize_key',
+							explode( ',', (string) $catalog_input[ $field_name ] )
+						)
+					)
+				)
+			);
+
+			if ( ! empty( $posted_catalog_names ) ) {
+				$configurable_names = $posted_catalog_names;
+			}
+		}
 		$selected           = isset( $input[ $field_name ] ) && is_array( $input[ $field_name ] )
 			? array_filter(
 				array_map(
