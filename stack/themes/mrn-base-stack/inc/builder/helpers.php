@@ -158,49 +158,68 @@ function mrn_base_stack_get_section_width_choices() {
  * @return array<string, string>
  */
 function mrn_base_stack_get_content_list_post_type_choices() {
-	$post_types = get_post_types(
-		array(
-			'public'  => true,
-			'show_ui' => true,
-		),
-		'objects'
-	);
-	$choices    = array();
-	$excluded   = array(
-		'attachment',
-		'wp_block',
-		'wp_font_face',
-		'wp_font_family',
-		'wp_global_styles',
-		'wp_navigation',
-		'wp_template',
-		'wp_template_part',
-		'acf-field',
-		'acf-field-group',
-	);
+	static $cache = null;
+	static $resolving = false;
 
-	foreach ( $post_types as $post_type => $post_type_object ) {
-		if ( ! $post_type_object instanceof WP_Post_Type ) {
-			continue;
-		}
-
-		if ( in_array( $post_type, $excluded, true ) ) {
-			continue;
-		}
-
-		$label = isset( $post_type_object->labels->name ) ? trim( (string) $post_type_object->labels->name ) : '';
-		if ( '' === $label ) {
-			$label = ucfirst( str_replace( array( '-', '_' ), ' ', $post_type ) );
-		}
-
-		$choices[ $post_type ] = $label;
+	if ( is_array( $cache ) ) {
+		return $cache;
 	}
 
-	if ( empty( $choices['post'] ) ) {
-		$choices = array_merge( array( 'post' => 'Posts' ), $choices );
+	if ( $resolving ) {
+		return array( 'post' => 'Posts' );
 	}
 
-	return $choices;
+	$resolving = true;
+
+	try {
+		$post_types = get_post_types(
+			array(
+				'public'  => true,
+				'show_ui' => true,
+			),
+			'objects'
+		);
+		$choices    = array();
+		$excluded   = array(
+			'attachment',
+			'wp_block',
+			'wp_font_face',
+			'wp_font_family',
+			'wp_global_styles',
+			'wp_navigation',
+			'wp_template',
+			'wp_template_part',
+			'acf-field',
+			'acf-field-group',
+		);
+
+		foreach ( $post_types as $post_type => $post_type_object ) {
+			if ( ! $post_type_object instanceof WP_Post_Type ) {
+				continue;
+			}
+
+			if ( in_array( $post_type, $excluded, true ) ) {
+				continue;
+			}
+
+			$label = isset( $post_type_object->labels->name ) ? trim( (string) $post_type_object->labels->name ) : '';
+			if ( '' === $label ) {
+				$label = ucfirst( str_replace( array( '-', '_' ), ' ', $post_type ) );
+			}
+
+			$choices[ $post_type ] = $label;
+		}
+
+		if ( empty( $choices['post'] ) ) {
+			$choices = array_merge( array( 'post' => 'Posts' ), $choices );
+		}
+
+		$cache = $choices;
+
+		return $cache;
+	} finally {
+		$resolving = false;
+	}
 }
 
 /**
