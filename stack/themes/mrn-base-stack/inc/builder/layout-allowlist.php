@@ -78,6 +78,15 @@ function mrn_base_stack_get_builder_layout_allowlist_meta_key() {
 }
 
 /**
+ * Get the post-meta key used to mark explicit allowlist saves.
+ *
+ * @return string
+ */
+function mrn_base_stack_get_builder_layout_allowlist_initialized_meta_key() {
+	return '_mrn_builder_layout_allowlist_initialized';
+}
+
+/**
  * Parse a WordPress post reference into a numeric post ID.
  *
  * @param mixed $reference Raw post reference.
@@ -448,7 +457,11 @@ function mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $pos
 		return false;
 	}
 
-	return 'auto-draft' !== $post->post_status;
+	if ( 'auto-draft' !== $post->post_status ) {
+		return true;
+	}
+
+	return metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_initialized_meta_key() );
 }
 
 /**
@@ -829,5 +842,6 @@ function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post 
 	}
 
 	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key(), $allowlists );
+	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_initialized_meta_key(), 1 );
 }
 add_action( 'save_post', 'mrn_base_stack_save_builder_layout_allowlist_meta_box', 10, 2 );
