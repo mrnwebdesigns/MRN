@@ -380,7 +380,7 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 					'missingSelectionNotice'    => 'Pick your starting layout set before building this page.',
 					'readyNotice'               => 'Layout chooser is available when you need to allow more layouts.',
 					'saveFailedNotice'          => 'Could not save the layout selection.',
-					'saveSuccessNotice'         => 'Layouts saved. Reloading editor...',
+					'saveSuccessNotice'         => 'Layouts saved.',
 					'cannotResolvePostIdNotice' => 'Save this draft once, then choose layouts.',
 				),
 			)
@@ -413,6 +413,18 @@ function mrn_base_stack_precollapse_builder_admin_rows() {
 	}
 
 	if ( ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_singular_shell_post_types(), true ) ) {
+		return;
+	}
+
+	/**
+	 * Toggle pre-collapse rendering behavior for builder admin screens.
+	 *
+	 * Disabled by default because hiding/revealing large ACF trees can create
+	 * visible layout jumps on some stacks.
+	 *
+	 * @param bool $enabled Whether pre-collapse should run.
+	 */
+	if ( ! apply_filters( 'mrn_base_stack_enable_builder_admin_precollapse', false ) ) {
 		return;
 	}
 	?>

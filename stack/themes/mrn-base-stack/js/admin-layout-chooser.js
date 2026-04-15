@@ -27,7 +27,6 @@
 		saveButton: null,
 		closeButton: null
 	};
-	var reloadStateKey = 'mrnBaseStackLayoutChooserReloadState';
 
 	function getLayoutsByField() {
 		return chooserConfig.layoutsByField && typeof chooserConfig.layoutsByField === 'object' ? chooserConfig.layoutsByField : {};
@@ -174,44 +173,6 @@
 		}
 
 		return postId || 0;
-	}
-
-	function restoreScrollAfterReload() {
-		var postId = getPostId();
-		var rawState = '';
-		var parsed = null;
-		var scrollY = 0;
-
-		if ( ! window.sessionStorage || ! postId ) {
-			return;
-		}
-
-		rawState = window.sessionStorage.getItem( reloadStateKey ) || '';
-		if ( ! rawState ) {
-			return;
-		}
-
-		try {
-			parsed = JSON.parse( rawState );
-		} catch ( error ) {
-			window.sessionStorage.removeItem( reloadStateKey );
-			return;
-		}
-
-		window.sessionStorage.removeItem( reloadStateKey );
-
-		if ( ! parsed || parseInt( parsed.postId || 0, 10 ) !== postId ) {
-			return;
-		}
-
-		scrollY = parseInt( parsed.scrollY || 0, 10 );
-		if ( scrollY < 0 ) {
-			scrollY = 0;
-		}
-
-		window.setTimeout( function() {
-			window.scrollTo( 0, scrollY );
-		}, 80 );
 	}
 
 	function showNotice( text, type ) {
@@ -428,19 +389,8 @@
 
 			state.hasSavedSelection = true;
 			state.selectedLayouts = $.isArray( response.data.selectedLayouts ) ? response.data.selectedLayouts : mergedSelection.slice();
-			showNotice( chooserConfig.saveSuccessNotice || 'Layouts saved. Reloading editor...', 'success' );
-
-			if ( window.sessionStorage ) {
-				window.sessionStorage.setItem(
-					reloadStateKey,
-					JSON.stringify( {
-						postId: postId,
-						scrollY: window.scrollY || window.pageYOffset || 0
-					} )
-				);
-			}
-
-			window.location.reload();
+			showNotice( chooserConfig.saveSuccessNotice || 'Layouts saved.', 'success' );
+			closeChooser();
 		} ).fail( function( xhr ) {
 			var message = chooserConfig.saveFailedNotice || 'Could not save the layout selection.';
 
@@ -487,7 +437,6 @@
 
 	$( function() {
 		state.activeFieldName = getDefaultManagedFieldName();
-		restoreScrollAfterReload();
 
 		if ( ! getSelectableLayouts( state.activeFieldName ).length ) {
 			return;
