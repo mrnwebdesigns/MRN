@@ -21,6 +21,22 @@ All QA scripts live in:
 
 - `/Users/khofmeyer/Development/MRN/stack/scripts`
 
+## Feature Intake Rule
+
+Before starting new feature work, use:
+
+- `/Users/khofmeyer/Development/MRN/stack/FEATURE_PROMPT_TEMPLATE.md`
+
+That template makes accessibility, performance, ownership boundaries, and rollout impact part of the feature request itself instead of something discovered late in QA.
+
+Minimum expectation for new feature prompts:
+
+- define the system area and ownership
+- preserve existing builder behavior and shared theme hooks unless the change is intentional
+- include explicit accessibility acceptance criteria
+- include explicit performance acceptance criteria
+- call out rollout impact and known blockers
+
 ### Theme QA
 
 Run the stack theme checks:
@@ -204,6 +220,16 @@ Recommended local equivalent:
   / \
   /sample-page/
 ```
+
+### Accessibility And Performance Gate
+
+For theme-owned frontend work, treat these as required review items, not optional polish:
+
+- verify semantic structure, heading order, labels, keyboard reachability, focus visibility, contrast, and reduced-motion-safe behavior on affected UI
+- review stack-owned pages for avoidable performance regressions such as unnecessary JavaScript, render-blocking assets, layout shift, oversized media, or duplicate payload
+- use the seeded local QA pages and relevant smoke coverage as the default acceptance harness
+- when the feature materially changes rendered output, run a browser performance review such as Lighthouse when practical
+- when a third-party embed, script, or platform constraint blocks the desired score target, document the blocker and confirm the stack-owned code did not get worse
 
 ## Composer Tooling
 
