@@ -59,10 +59,10 @@ foreach ( $links as $index => $hero_link_source ) {
 	$link_tag           = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $hero_link_source ) : 'a';
 	$link_attr_html     = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $hero_link_source ) : '';
 	$link_class_names   = 'mrn-hero__link mrn-hero__link--' . sanitize_html_class( $hero_link_slots[ $index ] ?? 'secondary' ) . ( 'button' === $link_style ? ' mrn-ui__link mrn-ui__link--button' : '' );
-	$link_icon_markup   = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
+	$link_icon_markup   = function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
 		? mrn_base_stack_get_button_link_icon_markup( $hero_link_source )
 		: '';
-	$link_icon_position = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
+	$link_icon_position = function_exists( 'mrn_base_stack_get_button_link_icon_position' )
 		? mrn_base_stack_get_button_link_icon_position( $hero_link_source )
 		: 'left';
 

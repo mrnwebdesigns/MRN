@@ -265,7 +265,7 @@
 	function syncCloneRowBodyStates( context ) {
 		getRepeaterFields( context ).each( function () {
 			getRepeaterCloneRows( $( this ) ).each( function () {
-				detachCloneRowBodies( $( this ) );
+				restoreCloneRowBodies( $( this ) );
 			} );
 		} );
 	}
@@ -276,6 +276,23 @@
 				restoreCloneRowBodies( $( this ) );
 			} );
 		} );
+	}
+
+	function expandNewestRepeaterRow( $field ) {
+		var $rows = getRepeaterRows( $field );
+		var $row = $rows.last();
+
+		if ( ! $row.length ) {
+			return;
+		}
+
+		if ( isRowCollapsed( $row ) ) {
+			setRowCollapsed( $row, false );
+			$row.removeClass( '-collapsed collapsed' );
+		}
+
+		restoreRowBodies( $row );
+		syncRowBodyState( $row );
 	}
 
 	function isClassicPostEditorScreen() {
@@ -414,13 +431,21 @@
 	} );
 
 	$( document ).on( 'click', '.acf-field[data-type="repeater"] .acf-actions a, .acf-field[data-type="repeater"] .acf-actions button, .acf-field[data-type="repeater"] [data-event="add-row"]', function () {
+		var $action = $( this );
 		var $field = $( this ).closest( '.acf-field[data-type="repeater"]' );
+		var isAddRowAction = $action.is( '[data-event="add-row"]' );
 
 		restoreRepeaterCloneBodies( $field );
 
 		window.setTimeout( function () {
 			syncCloneRowBodyStates( $field );
 		}, 80 );
+
+		if ( isAddRowAction ) {
+			window.setTimeout( function () {
+				expandNewestRepeaterRow( $field );
+			}, 120 );
+		}
 	} );
 
 	$( document ).on( 'keydown', '.acf-field[data-type="repeater"] .acf-actions a, .acf-field[data-type="repeater"] .acf-actions button, .acf-field[data-type="repeater"] [data-event="add-row"]', function ( event ) {

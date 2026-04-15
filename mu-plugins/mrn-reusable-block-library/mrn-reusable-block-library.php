@@ -1377,325 +1377,218 @@ function mrn_rbl_get_button_link_fontawesome_choices(): array {
 }
 
 /**
- * Build the shared button-link icon chooser fields.
+ * Build shared manual icon fields for content links.
  *
- * @param string $key_prefix Unique ACF key prefix for this chooser set.
- * @param string $button_field_key ACF key for the button toggle field in the same row.
+ * @param string $key_prefix Unique ACF key prefix for this icon field set.
+ * @param string $button_field_key Unused legacy arg kept for call-site compatibility.
  * @return array<int, array<string, mixed>>
  */
 function mrn_rbl_get_button_link_icon_fields(string $key_prefix, string $button_field_key): array {
-    $base_condition = array(
-        array(
-            'field'    => $button_field_key,
-            'operator' => '==',
-            'value'    => '1',
-        ),
-    );
+    unset($button_field_key);
 
     return array(
         array(
-            'key'               => $key_prefix . '_source',
-            'label'             => 'Button Icon',
-            'name'              => 'link_icon_source',
-            'type'              => 'button_group',
-            'choices'           => array(
-                'dashicons'   => 'Dashicons',
-                'fontawesome' => 'Font Awesome',
-                'media'       => 'Media',
-            ),
-            'default_value'     => '',
-            'layout'            => 'horizontal',
-            'return_format'     => 'value',
-            'instructions'      => 'Optional. Uses the shared icon chooser when this link renders as a button.',
-            'wrapper'           => array(
+            'key'         => $key_prefix . '_dashicons',
+            'label'       => 'Dashicon Class',
+            'name'        => 'link_icon_dashicon',
+            'type'        => 'text',
+            'placeholder' => 'dashicons-arrow-right-alt2',
+            'wrapper'     => array(
                 'width' => '50',
-                'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--source mrn-icon-chooser-field--allow-empty',
-            ),
-            'conditional_logic' => array(
-                $base_condition,
             ),
         ),
         array(
-            'key'               => $key_prefix . '_dashicons',
-            'label'             => 'Dashicon',
-            'name'              => 'link_icon_dashicon',
-            'type'              => 'select',
-            'choices'           => mrn_rbl_get_button_link_dashicon_choices(),
-            'default_value'     => '',
-            'return_format'     => 'value',
-            'ui'                => 1,
-            'wrapper'           => array(
-                'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--dashicons',
-            ),
-            'conditional_logic' => array(
-                array(
-                    array(
-                        'field'    => $button_field_key,
-                        'operator' => '==',
-                        'value'    => '1',
-                    ),
-                    array(
-                        'field'    => $key_prefix . '_source',
-                        'operator' => '==',
-                        'value'    => 'dashicons',
-                    ),
-                ),
+            'key'         => $key_prefix . '_fontawesome',
+            'label'       => 'Font Awesome Class',
+            'name'        => 'link_icon_fa_class',
+            'type'        => 'text',
+            'placeholder' => 'fa-solid fa-arrow-right',
+            'wrapper'     => array(
+                'width' => '50',
             ),
         ),
         array(
-            'key'               => $key_prefix . '_fontawesome',
-            'label'             => 'Font Awesome Icon',
-            'name'              => 'link_icon_fa_class',
-            'type'              => 'select',
-            'choices'           => mrn_rbl_get_button_link_fontawesome_choices(),
-            'default_value'     => '',
-            'return_format'     => 'value',
-            'ui'                => 1,
-            'wrapper'           => array(
-                'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--fontawesome',
-            ),
-            'conditional_logic' => array(
-                array(
-                    array(
-                        'field'    => $button_field_key,
-                        'operator' => '==',
-                        'value'    => '1',
-                    ),
-                    array(
-                        'field'    => $key_prefix . '_source',
-                        'operator' => '==',
-                        'value'    => 'fontawesome',
-                    ),
-                ),
-            ),
-        ),
-        array(
-            'key'               => $key_prefix . '_media',
-            'label'             => 'Media Icon',
-            'name'              => 'link_icon_media_icon',
-            'type'              => 'image',
-            'return_format'     => 'array',
-            'preview_size'      => 'thumbnail',
-            'library'           => 'all',
-            'mime_types'        => 'jpg,jpeg,png,gif,webp,svg',
-            'wrapper'           => array(
-                'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--media',
-            ),
-            'conditional_logic' => array(
-                array(
-                    array(
-                        'field'    => $button_field_key,
-                        'operator' => '==',
-                        'value'    => '1',
-                    ),
-                    array(
-                        'field'    => $key_prefix . '_source',
-                        'operator' => '==',
-                        'value'    => 'media',
-                    ),
-                ),
-            ),
-        ),
-        array(
-            'key'               => $key_prefix . '_position',
-            'label'             => 'Icon Position',
-            'name'              => 'link_icon_position',
-            'type'              => 'select',
-            'choices'           => array(
+            'key'           => $key_prefix . '_position',
+            'label'         => 'Icon Position',
+            'name'          => 'link_icon_position',
+            'type'          => 'select',
+            'choices'       => array(
                 'left'  => 'Left',
                 'right' => 'Right',
             ),
-            'default_value'     => 'left',
-            'return_format'     => 'value',
-            'ui'                => 1,
-            'wrapper'           => array(
+            'default_value' => 'left',
+            'return_format' => 'value',
+            'ui'            => 1,
+            'wrapper'       => array(
                 'width' => '25',
-            ),
-            'conditional_logic' => array(
-                $base_condition,
             ),
         ),
         array(
-            'key'               => $key_prefix . '_gap',
-            'label'             => 'Icon Gap',
-            'name'              => 'link_icon_gap',
-            'type'              => 'number',
-            'default_value'     => 10,
-            'min'               => 0,
-            'step'              => 1,
-            'append'            => 'px',
-            'wrapper'           => array(
+            'key'           => $key_prefix . '_gap',
+            'label'         => 'Icon Gap',
+            'name'          => 'link_icon_gap',
+            'type'          => 'number',
+            'default_value' => 10,
+            'min'           => 0,
+            'step'          => 1,
+            'append'        => 'px',
+            'wrapper'       => array(
                 'width' => '25',
-            ),
-            'conditional_logic' => array(
-                $base_condition,
             ),
         ),
     );
 }
 
 /**
- * Build one content-link field group.
+ * Build the shared content-link repeater field.
  *
- * @param string      $key Group field key.
- * @param string      $label Group field label.
- * @param string      $name Group field name.
+ * @param string      $key Repeater field key.
+ * @param string      $label Field label.
+ * @param string      $name Field name.
+ * @param int         $max Maximum rows allowed. Use 0 for unlimited.
  * @param string|null $instructions Optional instructions override.
  * @return array<string, mixed>
  */
-function mrn_rbl_get_content_link_field(string $key, string $label, string $name, ?string $instructions = null): array {
+function mrn_rbl_get_content_link_repeater_field(string $key, string $label = 'Links', string $name = 'links', int $max = 0, ?string $instructions = null): array {
     unset($instructions);
 
-    $link_key   = $key . '_link';
-    $button_key = $key . '_is_button';
-
-    $sub_fields = array(
-        array(
-            'key'       => $key . '_content_tab',
-            'label'     => 'Content',
-            'name'      => '',
-            'type'      => 'tab',
-            'placement' => 'top',
-            'endpoint'  => 0,
-        ),
-        array(
-            'key'           => $link_key,
-            'label'         => 'Link',
-            'name'          => 'link',
-            'type'          => 'link',
-            'return_format' => 'array',
-        ),
-        array(
-            'key'       => $key . '_configs_tab',
-            'label'     => 'Configs',
-            'name'      => '',
-            'type'      => 'tab',
-            'placement' => 'top',
-            'endpoint'  => 0,
-        ),
-        array(
-            'key'       => $key . '_button_guidance',
-            'label'     => '',
-            'name'      => '',
-            'type'      => 'message',
-            'message'   => '<div style="margin:0 0 8px 0;padding:10px 12px;border-left:4px solid #2271b1;background:#f0f6fc;border-radius:2px;"><em><small>Pro Tip: For better accessibility and performance, use the &lt;button&gt; tag (<strong>On</strong> converts the &lt;a&gt; to &lt;button&gt;) for interactive actions and only use classes to change how it looks.</small></em></div>',
-            'esc_html'  => 0,
-            'new_lines' => 'br',
-        ),
-        array(
-            'key'           => $button_key,
-            'label'         => 'Button',
-            'name'          => 'is_button',
-            'type'          => 'true_false',
-            'ui'            => 1,
-            'default_value' => 0,
-            'ui_on_text'    => 'On',
-            'ui_off_text'   => 'Off',
-        ),
-        array(
-            'key'       => $key . '_classes_guidance',
-            'label'     => '',
-            'name'      => '',
-            'type'      => 'message',
-            'message'   => '<div style="margin:0 0 8px 0;padding:10px 12px;border-left:4px solid #2271b1;background:#f0f6fc;border-radius:2px;"><em><small>If you have the Button control <strong>On</strong>, do not place classes to make this look like a button.</small></em></div>',
-            'esc_html'  => 0,
-            'new_lines' => 'br',
-        ),
-        array(
-            'key'   => $key . '_css_classes',
-            'label' => 'CSS Classes',
-            'name'  => 'css_classes',
-            'type'  => 'text',
-        ),
-        array(
-            'key'           => $key . '_target',
-            'label'         => 'Target',
-            'name'          => 'target',
-            'type'          => 'select',
-            'choices'       => mrn_rbl_get_content_link_target_choices(),
-            'default_value' => '',
-            'ui'            => 1,
-        ),
-        array(
-            'key'   => $key . '_rel',
-            'label' => 'Rel',
-            'name'  => 'rel',
-            'type'  => 'text',
-        ),
-        array(
-            'key'   => $key . '_title_attribute',
-            'label' => 'Title Attribute',
-            'name'  => 'title_attribute',
-            'type'  => 'text',
-        ),
-        array(
-            'key'           => $key . '_download',
-            'label'         => 'Download',
-            'name'          => 'download',
-            'type'          => 'true_false',
-            'ui'            => 1,
-            'default_value' => 0,
-            'ui_on_text'    => 'On',
-            'ui_off_text'   => 'Off',
-        ),
-        array(
-            'key'   => $key . '_hreflang',
-            'label' => 'Hreflang',
-            'name'  => 'hreflang',
-            'type'  => 'text',
-        ),
-        array(
-            'key'   => $key . '_media',
-            'label' => 'Media',
-            'name'  => 'media',
-            'type'  => 'text',
-        ),
-        ...mrn_rbl_get_button_link_icon_fields($key . '_icon', $button_key),
-    );
-
-    foreach ($sub_fields as $sub_index => $sub_field) {
-        if (!is_array($sub_field)) {
-            continue;
-        }
-
-        unset($sub_fields[$sub_index]['instructions']);
-
-        $existing_wrapper = isset($sub_field['wrapper']) && is_array($sub_field['wrapper']) ? $sub_field['wrapper'] : array();
-        $existing_wrapper['width'] = '100';
-        $sub_fields[$sub_index]['wrapper'] = $existing_wrapper;
-    }
+    $link_key     = $key . '_link';
+    $button_key   = $key . '_is_button';
+    $field_max    = $max > 0 ? $max : 0;
 
     return array(
         'key'          => $key,
         'label'        => $label,
         'name'         => $name,
-        'type'         => 'group',
-        'layout'       => 'block',
-        'wrapper'      => array(
-            'width' => '100',
+        'type'         => 'repeater',
+        'layout'       => 'row',
+        'button_label' => 'Add Link',
+        'collapsed'    => $link_key,
+        'min'          => 0,
+        'max'          => $field_max,
+        'sub_fields'   => array(
+            array(
+                'key'           => $link_key,
+                'label'         => 'Link',
+                'name'          => 'link',
+                'type'          => 'link',
+                'return_format' => 'array',
+                'wrapper'       => array(
+                    'width' => '50',
+                ),
+            ),
+            array(
+                'key'           => $button_key,
+                'label'         => 'Button',
+                'name'          => 'is_button',
+                'type'          => 'true_false',
+                'ui'            => 1,
+                'default_value' => 0,
+                'ui_on_text'    => 'On',
+                'ui_off_text'   => 'Off',
+                'wrapper'       => array(
+                    'width' => '50',
+                ),
+            ),
+            array(
+                'key'          => $key . '_css_classes',
+                'label'        => 'CSS Classes',
+                'name'         => 'css_classes',
+                'type'         => 'text',
+                'wrapper'      => array(
+                    'width' => '50',
+                ),
+            ),
+            array(
+                'key'           => $key . '_target',
+                'label'         => 'Target',
+                'name'          => 'target',
+                'type'          => 'select',
+                'choices'       => mrn_rbl_get_content_link_target_choices(),
+                'default_value' => '',
+                'ui'            => 1,
+                'wrapper'       => array(
+                    'width' => '25',
+                ),
+            ),
+            array(
+                'key'     => $key . '_rel',
+                'label'   => 'Rel',
+                'name'    => 'rel',
+                'type'    => 'text',
+                'wrapper' => array(
+                    'width' => '25',
+                ),
+            ),
+            array(
+                'key'     => $key . '_title_attribute',
+                'label'   => 'Title Attribute',
+                'name'    => 'title_attribute',
+                'type'    => 'text',
+                'wrapper' => array(
+                    'width' => '25',
+                ),
+            ),
+            array(
+                'key'           => $key . '_download',
+                'label'         => 'Download',
+                'name'          => 'download',
+                'type'          => 'true_false',
+                'ui'            => 1,
+                'default_value' => 0,
+                'ui_on_text'    => 'On',
+                'ui_off_text'   => 'Off',
+                'wrapper'       => array(
+                    'width' => '25',
+                ),
+            ),
+            array(
+                'key'     => $key . '_hreflang',
+                'label'   => 'Hreflang',
+                'name'    => 'hreflang',
+                'type'    => 'text',
+                'wrapper' => array(
+                    'width' => '50',
+                ),
+            ),
+            array(
+                'key'     => $key . '_media',
+                'label'   => 'Media',
+                'name'    => 'media',
+                'type'    => 'text',
+                'wrapper' => array(
+                    'width' => '50',
+                ),
+            ),
+            ...mrn_rbl_get_button_link_icon_fields($key . '_icon', $button_key),
         ),
-        'sub_fields'   => $sub_fields,
     );
 }
 
 /**
- * Build the standard set of four content-link fields.
+ * Build content-link fields for builder groups.
  *
  * @param string      $key Unique ACF key prefix.
  * @param string      $label Field label.
  * @param string      $name Field name.
- * @param int         $max Unused legacy argument kept for backward compatibility.
+ * @param int         $max Maximum rows allowed in the repeater.
  * @param string|null $instructions Optional instructions override.
  * @return array<int, array<string, mixed>>
  */
 function mrn_rbl_get_content_link_fields(string $key, string $label = 'Links', string $name = 'links', int $max = 0, ?string $instructions = null): array {
-    unset($label, $name, $max, $instructions);
+    $tip_message = '<div style="margin:0 0 8px 0;padding:10px 12px;border-left:4px solid #2271b1;background:#f0f6fc;border-radius:2px;display:flex;align-items:flex-start;gap:8px;"><span class="dashicons dashicons-lightbulb" aria-hidden="true" style="margin-top:1px;color:#2271b1;"></span><span><strong>Pro Tip:</strong> For better accessibility and performance, use the <code>&lt;button&gt;</code> tag for interactive actions and only use classes to change how it looks. If you are navigating to a new page, use an <code>&lt;a&gt;</code> (anchor) tag styled with a button class.</span></div>';
 
     return array(
-        mrn_rbl_get_content_link_field($key . '_primary', 'Primary Link', 'primary_link'),
-        mrn_rbl_get_content_link_field($key . '_secondary', 'Secondary Link', 'secondary_link'),
-        mrn_rbl_get_content_link_field($key . '_tertiary', 'Tertiary Link', 'tertiary_link'),
-        mrn_rbl_get_content_link_field($key . '_quaternary', 'Quaternary Link', 'quaternary_link'),
+        array(
+            'key'       => $key . '_tip',
+            'label'     => '',
+            'name'      => '',
+            'type'      => 'message',
+            'message'   => $tip_message,
+            'esc_html'  => 0,
+            'new_lines' => 'wpautop',
+        ),
+        mrn_rbl_get_content_link_repeater_field($key, $label, $name, $max, $instructions),
     );
 }
 
@@ -1787,7 +1680,7 @@ function mrn_rbl_normalize_content_link(array $link, array $args = array()): arr
         'link_style'           => $is_button ? 'button' : 'link',
         'css_classes'          => mrn_rbl_normalize_css_class_tokens((string) ($link['css_classes'] ?? ($link['css_class'] ?? ''))),
         'link_icon_source'     => isset($link['link_icon_source']) ? sanitize_key((string) $link['link_icon_source']) : '',
-        'link_icon_dashicon'   => isset($link['link_icon_dashicon']) ? sanitize_html_class((string) $link['link_icon_dashicon']) : '',
+        'link_icon_dashicon'   => isset($link['link_icon_dashicon']) ? trim((string) $link['link_icon_dashicon']) : '',
         'link_icon_fa_class'   => isset($link['link_icon_fa_class']) ? trim((string) $link['link_icon_fa_class']) : '',
         'link_icon_media_icon' => isset($link['link_icon_media_icon']) && is_array($link['link_icon_media_icon']) ? $link['link_icon_media_icon'] : array(),
         'link_icon_position'   => isset($link['link_icon_position']) ? sanitize_key((string) $link['link_icon_position']) : '',

@@ -51,10 +51,10 @@ foreach ($links as $index => $link) {
     $link_tag           = function_exists('mrn_rbl_get_content_link_tag_name') ? mrn_rbl_get_content_link_tag_name($link) : 'a';
     $link_attr_html     = function_exists('mrn_rbl_get_content_link_html_attributes') ? mrn_rbl_get_content_link_html_attributes($link) : '';
     $link_class_names   = 'mrn-ui__link mrn-ui__link--' . sanitize_html_class($cta_link_slots[$index] ?? 'secondary') . ' ' . ( 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text' );
-    $link_icon_markup   = 'button' === $link_style && function_exists('mrn_base_stack_get_button_link_icon_markup')
+    $link_icon_markup   = function_exists('mrn_base_stack_get_button_link_icon_markup')
         ? mrn_base_stack_get_button_link_icon_markup($link)
         : '';
-    $link_icon_position = 'button' === $link_style && function_exists('mrn_base_stack_get_button_link_icon_position')
+    $link_icon_position = function_exists('mrn_base_stack_get_button_link_icon_position')
         ? mrn_base_stack_get_button_link_icon_position($link)
         : 'left';
 

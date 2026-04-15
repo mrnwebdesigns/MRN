@@ -150,10 +150,10 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 							$link_tag           = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $content_link ) : 'a';
 							$link_attr_html     = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $content_link ) : '';
 							$link_class_names   = 'mrn-ui__link ' . ( 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text' );
-							$link_icon_markup   = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
+							$link_icon_markup   = function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
 								? mrn_base_stack_get_button_link_icon_markup( $content_link )
 								: '';
-							$link_icon_position = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
+							$link_icon_position = function_exists( 'mrn_base_stack_get_button_link_icon_position' )
 								? mrn_base_stack_get_button_link_icon_position( $content_link )
 								: 'left';
 
