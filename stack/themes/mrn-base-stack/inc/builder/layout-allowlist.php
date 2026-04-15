@@ -846,7 +846,7 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 		<button type="button" class="button button-primary" id="mrn-builder-allowlist-save-button">Save Layout Availability</button>
 	</p>
 	<p class="description" style="margin: 0;">
-		Saves layout availability for this entry and reloads the page.
+		Uses the normal Save Draft/Update flow so content and layout availability save together.
 	</p>
 	<script>
 		( function( $, window, document ) {
@@ -855,73 +855,33 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 			$( function() {
 				var $button = $( '#mrn-builder-allowlist-save-button' );
 				var $form = $( '#post' );
-				var $metabox = $( '#mrn-builder-layout-allowlist' );
-				var initialSnapshot = '';
-
-				function getNonAllowlistSnapshot() {
-					if ( window.tinyMCE && typeof window.tinyMCE.triggerSave === 'function' ) {
-						window.tinyMCE.triggerSave();
-					}
-
-					return $form.find( ':input[name]' )
-						.not( '[name^="mrn_builder_layout_allowlist"]' )
-						.not( '[name^="mrn_builder_layout_allowlist_catalog"]' )
-						.not( '[name="mrn_base_stack_builder_layout_allowlist_nonce"]' )
-						.serialize();
-				}
-
 				if ( ! $button.length ) {
 					return;
-				}
-
-				if ( $form.length ) {
-					initialSnapshot = getNonAllowlistSnapshot();
 				}
 
 				$button.on( 'click', function( event ) {
 					event.preventDefault();
 
-					var postId = parseInt( String( $( '#post_ID' ).val() || <?php echo (int) $post_id; ?> ), 10 );
-					var ajaxUrl = window.ajaxurl || '';
-					var originalLabel = $button.text();
-					var hasUnsavedContentChanges = false;
-					var payload;
+					var $saveDraft = $( '#save-post' );
+					var $update = $( '#publish' );
+					var $target = $();
 
-					if ( ! $form.length || ! $metabox.length || ! postId || ! ajaxUrl ) {
+					if ( ! $form.length ) {
 						return;
 					}
 
-					hasUnsavedContentChanges = getNonAllowlistSnapshot() !== initialSnapshot;
+					if ( $saveDraft.length && ! $saveDraft.prop( 'disabled' ) ) {
+						$target = $saveDraft;
+					} else if ( $update.length && ! $update.prop( 'disabled' ) ) {
+						$target = $update;
+					}
 
-					payload = $metabox.find( ':input[name]' ).serializeArray();
-					payload.push( { name: 'action', value: 'mrn_base_stack_save_builder_layout_allowlist' } );
-					payload.push( { name: 'nonce', value: '<?php echo esc_js( wp_create_nonce( 'mrn_base_stack_save_builder_layout_allowlist' ) ); ?>' } );
-					payload.push( { name: 'post_id', value: postId } );
+					if ( ! $target.length ) {
+						return;
+					}
 
 					$button.prop( 'disabled', true ).text( 'Saving...' );
-
-					$.ajax( {
-						url: ajaxUrl,
-						method: 'POST',
-						dataType: 'json',
-						data: payload
-					} ).done( function( response ) {
-						if ( response && response.success ) {
-							if ( hasUnsavedContentChanges ) {
-								window.alert( 'Layout availability was saved. This page has unsaved content changes, so it was not reloaded. Save/Update the post when ready to keep your content changes.' );
-								return;
-							}
-
-							window.location.reload();
-							return;
-						}
-
-						window.alert( 'Layout availability could not be saved. Please try again.' );
-					} ).fail( function() {
-						window.alert( 'Layout availability could not be saved. Please try again.' );
-					} ).always( function() {
-						$button.prop( 'disabled', false ).text( originalLabel );
-					} );
+					$target.trigger( 'click' );
 				} );
 			} );
 		} )( jQuery, window, document );
@@ -972,36 +932,3 @@ function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post 
 	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_initialized_meta_key(), 1 );
 }
 add_action( 'save_post', 'mrn_base_stack_save_builder_layout_allowlist_meta_box', 10, 2 );
-
-/**
- * Save builder layout allowlist selections through AJAX.
- *
- * @return void
- */
-function mrn_base_stack_ajax_save_builder_layout_allowlist() {
-	check_ajax_referer( 'mrn_base_stack_save_builder_layout_allowlist', 'nonce' );
-
-	$post_id = isset( $_POST['post_id'] ) ? absint( wp_unslash( $_POST['post_id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
-	if ( $post_id < 1 || ! current_user_can( 'edit_post', $post_id ) ) {
-		wp_send_json_error( array( 'message' => 'Not allowed.' ), 403 );
-	}
-
-	$input = isset( $_POST['mrn_builder_layout_allowlist'] ) && is_array( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
-		? wp_unslash( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
-		: array();
-	$catalog_input = isset( $_POST['mrn_builder_layout_allowlist_catalog'] ) && is_array( $_POST['mrn_builder_layout_allowlist_catalog'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
-		? wp_unslash( $_POST['mrn_builder_layout_allowlist_catalog'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
-		: array();
-
-	$allowlists = mrn_base_stack_build_sanitized_builder_layout_allowlist_payload( $input, $catalog_input );
-
-	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key(), $allowlists );
-	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_initialized_meta_key(), 1 );
-
-	wp_send_json_success(
-		array(
-			'post_id' => $post_id,
-		)
-	);
-}
-add_action( 'wp_ajax_mrn_base_stack_save_builder_layout_allowlist', 'mrn_base_stack_ajax_save_builder_layout_allowlist' );
