@@ -5,6 +5,12 @@
 		return;
 	}
 
+	var config = window.mrnBaseStackBuilderAdmin || {};
+
+	function isDetachmentEnabled() {
+		return !! config.enableRepeaterDetachment;
+	}
+
 	function getRepeaterFields( context ) {
 		var $context = $( context || document );
 
@@ -88,6 +94,10 @@
 	function detachCloneRowBodies( $row ) {
 		var snapshots = [];
 
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		if ( $row.data( 'mrnDetachedRepeaterCloneBodies' ) ) {
 			return;
 		}
@@ -117,6 +127,12 @@
 
 	function restoreCloneRowBodies( $row ) {
 		var snapshots = $row.data( 'mrnDetachedRepeaterCloneBodies' ) || [];
+
+		if ( ! isDetachmentEnabled() ) {
+			$row.removeData( 'mrnDetachedRepeaterCloneBodies' );
+			getRowBodyTargets( $row ).css( 'display', '' );
+			return;
+		}
 
 		if ( ! snapshots.length ) {
 			return;
@@ -166,6 +182,10 @@
 		var $targets;
 		var snapshots = [];
 
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		if ( $row.data( 'mrnDetachedRepeaterBodies' ) || ! canDetachRowBodies( $row ) ) {
 			return;
 		}
@@ -212,6 +232,16 @@
 		);
 		var snapshots = $row.data( 'mrnDetachedRepeaterBodies' ) || [];
 
+		if ( ! isDetachmentEnabled() ) {
+			$row.removeData( 'mrnDetachedRepeaterBodies' );
+			getRowBodyTargets( $row ).css( 'display', '' );
+
+			if ( settings.remount ) {
+				remountRow( $row );
+			}
+			return;
+		}
+
 		if ( ! snapshots.length ) {
 			if ( settings.remount ) {
 				remountRow( $row );
@@ -244,6 +274,10 @@
 			return;
 		}
 
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		if ( isRowCollapsed( $row ) ) {
 			if ( ! $row.data( 'mrnDetachedRepeaterBodies' ) && canDetachRowBodies( $row ) ) {
 				detachRowBodies( $row );
@@ -255,6 +289,10 @@
 	}
 
 	function syncRowBodyStates( context ) {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		getRepeaterFields( context ).each( function () {
 			getRepeaterRows( $( this ) ).each( function () {
 				syncRowBodyState( $( this ) );
@@ -263,6 +301,10 @@
 	}
 
 	function restoreAllRowBodies( context ) {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		getRepeaterFields( context ).each( function () {
 			getRepeaterRows( $( this ) ).each( function () {
 				restoreRowBodies( $( this ), { remount: false } );
@@ -271,6 +313,10 @@
 	}
 
 	function syncCloneRowBodyStates( context ) {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		getRepeaterFields( context ).each( function () {
 			getRepeaterCloneRows( $( this ) ).each( function () {
 				detachCloneRowBodies( $( this ) );
@@ -279,6 +325,10 @@
 	}
 
 	function restoreRepeaterCloneBodies( context ) {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		getRepeaterFields( context ).each( function () {
 			getRepeaterCloneRows( $( this ) ).each( function () {
 				restoreCloneRowBodies( $( this ) );
@@ -310,6 +360,10 @@
 	}
 
 	function collapseInitialRows( context ) {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		if ( ! isClassicPostEditorScreen() ) {
 			return;
 		}
@@ -402,6 +456,10 @@
 	} );
 
 	$( document ).on( 'mousedown touchstart', '.acf-field[data-type="repeater"] .acf-row:not(.acf-clone) > .acf-row-handle, .acf-field[data-type="repeater"] .acf-row:not(.acf-clone) > .acf-row-handle.order, .acf-field[data-type="repeater"] .acf-row:not(.acf-clone) .acf-icon.-collapse', function () {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		var $row = $( this ).closest( '.acf-row' );
 
 		if ( isRowCollapsed( $row ) ) {
@@ -410,6 +468,10 @@
 	} );
 
 	$( document ).on( 'click', '.acf-field[data-type="repeater"] .acf-row:not(.acf-clone) > .acf-row-handle, .acf-field[data-type="repeater"] .acf-row:not(.acf-clone) > .acf-row-handle.order, .acf-field[data-type="repeater"] .acf-row:not(.acf-clone) .acf-icon.-collapse', function () {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		var $row = $( this ).closest( '.acf-row' );
 
 		window.setTimeout( function () {
@@ -418,10 +480,18 @@
 	} );
 
 	$( document ).on( 'mousedown touchstart', '.acf-field[data-type="repeater"] .acf-actions a, .acf-field[data-type="repeater"] .acf-actions button, .acf-field[data-type="repeater"] [data-event="add-row"]', function () {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		restoreRepeaterCloneBodies( $( this ).closest( '.acf-field[data-type="repeater"]' ) );
 	} );
 
 	$( document ).on( 'click', '.acf-field[data-type="repeater"] .acf-actions a, .acf-field[data-type="repeater"] .acf-actions button, .acf-field[data-type="repeater"] [data-event="add-row"]', function () {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		var $field = $( this ).closest( '.acf-field[data-type="repeater"]' );
 
 		window.setTimeout( function () {
@@ -430,30 +500,47 @@
 	} );
 
 	$( document ).on( 'submit', '#post', function () {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		restoreAllRowBodies( this );
 	} );
 
 	$( document ).on( 'heartbeat-send', function () {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		restoreAllRowBodies( document );
 	} );
 
 	$( document ).on( 'heartbeat-tick', function () {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		window.setTimeout( function () {
 			syncRowBodyStates( document );
 		}, 0 );
 	} );
 
 	$( function () {
-		collapseInitialRows( document );
-		syncCloneRowBodyStates( document );
+		if ( isDetachmentEnabled() ) {
+			collapseInitialRows( document );
+			syncCloneRowBodyStates( document );
+		}
+
 		markInitialPrecollapseReady( 'data-mrn-repeater-precollapse' );
 	} );
 
 	acf.addAction( 'append', function ( $el ) {
 		var context = $el || document;
 
-		syncRowBodyStates( context );
-		syncCloneRowBodyStates( context );
+		if ( isDetachmentEnabled() ) {
+			syncRowBodyStates( context );
+			syncCloneRowBodyStates( context );
+		}
 	} );
 
 	$( document ).on( 'mouseenter focusin', '.acf-field[data-type="repeater"]', function () {
