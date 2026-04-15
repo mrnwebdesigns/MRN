@@ -64,15 +64,7 @@
 	}
 
 	function rowContainsLiveEditor( $row ) {
-		return $row.find( '.wp-editor-wrap' ).filter( function () {
-			var $wrap = $( this );
-
-			if ( ! $wrap.hasClass( 'delay' ) ) {
-				return true;
-			}
-
-			return $wrap.find( '.mce-tinymce, .quicktags-toolbar' ).length > 0;
-		} ).length > 0;
+		return $row.find( '.wp-editor-wrap' ).length > 0;
 	}
 
 	function canDetachRowBodies( $row ) {
@@ -424,9 +416,19 @@
 	$( document ).on( 'click', '.acf-field[data-type="repeater"] .acf-actions a, .acf-field[data-type="repeater"] .acf-actions button, .acf-field[data-type="repeater"] [data-event="add-row"]', function () {
 		var $field = $( this ).closest( '.acf-field[data-type="repeater"]' );
 
+		restoreRepeaterCloneBodies( $field );
+
 		window.setTimeout( function () {
 			syncCloneRowBodyStates( $field );
 		}, 80 );
+	} );
+
+	$( document ).on( 'keydown', '.acf-field[data-type="repeater"] .acf-actions a, .acf-field[data-type="repeater"] .acf-actions button, .acf-field[data-type="repeater"] [data-event="add-row"]', function ( event ) {
+		if ( 'Enter' !== event.key && ' ' !== event.key ) {
+			return;
+		}
+
+		restoreRepeaterCloneBodies( $( this ).closest( '.acf-field[data-type="repeater"]' ) );
 	} );
 
 	$( document ).on( 'submit', '#post', function () {
