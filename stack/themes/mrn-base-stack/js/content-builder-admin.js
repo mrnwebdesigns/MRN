@@ -210,11 +210,8 @@
 			}
 
 			$menu.data( 'mrnMenuRefreshScheduled', true );
-
-			window.setTimeout( function() {
-				$menu.removeData( 'mrnMenuRefreshScheduled' );
-				refreshFlexibleContentMenus( $menu );
-			} );
+			refreshFlexibleContentMenus( $menu );
+			$menu.removeData( 'mrnMenuRefreshScheduled' );
 		} );
 	}
 
@@ -889,12 +886,6 @@
 
 	acf.addAction( 'show', function( $el ) {
 		sortFlexibleContentLayoutChoices( $el || document );
-	} );
-
-	$( document ).on( 'click', '[data-name="add-layout"]', function() {
-		window.setTimeout( function() {
-			refreshFlexibleContentMenus( document );
-		}, 40 );
 	} );
 
 	$( document ).on( 'change select2:select select2:clear', '.layout[data-layout="content_lists"] .acf-field[data-name="list_post_type"] select, .layout[data-layout="content_lists"] .acf-field[data-name="filter_taxonomy"] select', function() {
