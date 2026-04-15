@@ -27,6 +27,11 @@ function mrn_base_stack_get_builder_layout_allowlist_targets() {
 			'group_key' => 'group_mrn_after_content_builder',
 			'label'     => 'After Content',
 		),
+		'page_sidebar_rows' => array(
+			'field_key' => 'field_mrn_sidebar_rows',
+			'group_key' => 'group_mrn_singular_sidebar',
+			'label'     => 'Sidebars',
+		),
 	);
 }
 
@@ -40,9 +45,11 @@ function mrn_base_stack_get_builder_layout_allowlist_filter_hooks() {
 		'acf/load_field/key=field_mrn_page_hero_rows',
 		'acf/load_field/key=field_mrn_page_content_rows',
 		'acf/load_field/key=field_mrn_page_after_content_rows',
+		'acf/load_field/key=field_mrn_sidebar_rows',
 		'acf/prepare_field/key=field_mrn_page_hero_rows',
 		'acf/prepare_field/key=field_mrn_page_content_rows',
 		'acf/prepare_field/key=field_mrn_page_after_content_rows',
+		'acf/prepare_field/key=field_mrn_sidebar_rows',
 	);
 }
 
@@ -529,6 +536,7 @@ function mrn_base_stack_get_builder_layout_allowlist_default_limits() {
 		'page_hero_rows'          => 4,
 		'page_content_rows'       => 8,
 		'page_after_content_rows' => 6,
+		'page_sidebar_rows'       => 1,
 	);
 	$limits   = apply_filters( 'mrn_base_stack_builder_layout_allowlist_default_limits', $defaults );
 
@@ -557,7 +565,32 @@ function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name,
 	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
 	$limit_map          = mrn_base_stack_get_builder_layout_allowlist_default_limits();
 	$limit              = isset( $limit_map[ $field_name ] ) ? (int) $limit_map[ $field_name ] : 0;
-	$defaults           = $limit > 0 ? array_slice( $configurable_names, 0, $limit ) : array();
+
+	$named_default_map = apply_filters(
+		'mrn_base_stack_builder_layout_allowlist_named_defaults',
+		array(
+			'page_sidebar_rows' => array( 'basic' ),
+		),
+		$field_name,
+		$configurable_names,
+		$catalog
+	);
+	$named_defaults    = array();
+	if ( is_array( $named_default_map ) && isset( $named_default_map[ $field_name ] ) && is_array( $named_default_map[ $field_name ] ) ) {
+		$named_defaults = array_filter( array_map( 'sanitize_key', $named_default_map[ $field_name ] ) );
+	}
+
+	$defaults = ! empty( $named_defaults )
+		? array_values(
+			array_unique(
+				array_intersect( $named_defaults, $configurable_names )
+			)
+		)
+		: array();
+
+	if ( empty( $defaults ) && $limit > 0 ) {
+		$defaults = array_slice( $configurable_names, 0, $limit );
+	}
 
 	$defaults = apply_filters(
 		'mrn_base_stack_builder_layout_allowlist_defaults',
@@ -715,9 +748,11 @@ function mrn_base_stack_filter_builder_layout_allowlist_field_layouts( $field ) 
 add_filter( 'acf/load_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/load_field/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/prepare_field/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 
 /**
  * Register a classic-editor metabox for per-entry builder layout allowlists.
@@ -761,8 +796,6 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 	wp_nonce_field( 'mrn_base_stack_builder_layout_allowlist_save', 'mrn_base_stack_builder_layout_allowlist_nonce' );
 	?>
 	<p>Choose which layout types are available in Add Row for this entry.</p>
-	<p><em>New entries start with a core set selected. Check more layouts, then save and reload to use them.</em></p>
-	<p><em>Layouts already used on this entry always stay available for editing.</em></p>
 	<?php
 
 	foreach ( $targets as $field_name => $target ) {
