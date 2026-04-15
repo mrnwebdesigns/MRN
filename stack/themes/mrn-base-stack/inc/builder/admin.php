@@ -126,39 +126,6 @@ function mrn_base_stack_precollapse_builder_admin_rows() {
 add_action( 'admin_head', 'mrn_base_stack_precollapse_builder_admin_rows', 1 );
 
 /**
- * Delay ACF WYSIWYG initialization on heavy classic editor screens.
- *
- * This keeps TinyMCE instances from booting on initial page load for builder-
- * style post types, allowing editors to initialize only when a field is used.
- *
- * @param array<string, mixed>|false $field ACF field configuration.
- * @return array<string, mixed>|false
- */
-function mrn_base_stack_delay_builder_wysiwyg_initialization( $field ) {
-	if ( ! is_array( $field ) ) {
-		return $field;
-	}
-
-	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-	if ( ! $screen instanceof WP_Screen || 'post' !== $screen->base ) {
-		return $field;
-	}
-
-	if ( ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_singular_shell_post_types(), true ) ) {
-		return $field;
-	}
-
-	if ( ! empty( $field['delay'] ) ) {
-		return $field;
-	}
-
-	$field['delay'] = 1;
-
-	return $field;
-}
-add_filter( 'acf/prepare_field/type=wysiwyg', 'mrn_base_stack_delay_builder_wysiwyg_initialization', 20 );
-
-/**
  * Build live Add Row menu metadata from the registered page builder layouts.
  *
  * This keeps editor menu behavior aligned with the actual flexible-content

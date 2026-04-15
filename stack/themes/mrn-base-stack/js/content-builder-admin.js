@@ -674,15 +674,7 @@
 	}
 
 	function rowContainsLiveEditor( $row ) {
-		return $row.find( '.wp-editor-wrap' ).filter( function() {
-			var $wrap = $( this );
-
-			if ( ! $wrap.hasClass( 'delay' ) ) {
-				return true;
-			}
-
-			return $wrap.find( '.mce-tinymce, .quicktags-toolbar' ).length > 0;
-		} ).length > 0;
+		return $row.find( '.wp-editor-wrap' ).length > 0;
 	}
 
 	function canDetachFlexibleRowBodies( $row ) {
@@ -1198,7 +1190,17 @@
 		restoreAllFlexibleCloneBodies( document );
 	} );
 
+	$( document ).on( 'keydown', '[data-layout]', function( event ) {
+		if ( 'Enter' !== event.key && ' ' !== event.key ) {
+			return;
+		}
+
+		restoreAllFlexibleCloneBodies( document );
+	} );
+
 	$( document ).on( 'click', '[data-layout]', function() {
+		restoreAllFlexibleCloneBodies( document );
+
 		window.setTimeout( function() {
 			syncFlexibleCloneBodyStates( document );
 		}, 80 );
