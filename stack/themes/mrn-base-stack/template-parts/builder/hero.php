@@ -40,49 +40,48 @@ $links = function_exists( 'mrn_rbl_get_content_links' )
 	? mrn_rbl_get_content_links(
 		$row,
 		array(
-			'max'          => 2,
+			'max'          => 4,
 		)
 	)
 	: array();
 
-$primary_link   = isset( $links[0] ) && is_array( $links[0] ) ? $links[0] : array();
-$secondary_link = isset( $links[1] ) && is_array( $links[1] ) ? $links[1] : array();
+$hero_links      = array();
+$hero_link_slots = array( 'primary', 'secondary', 'tertiary', 'quaternary' );
 
-$primary_link_url             = isset( $primary_link['url'] ) ? (string) $primary_link['url'] : '';
-$primary_link_text            = isset( $primary_link['text'] ) ? (string) $primary_link['text'] : '';
-$primary_link_style           = isset( $primary_link['link_style'] ) && in_array( $primary_link['link_style'], array( 'link', 'button' ), true ) ? (string) $primary_link['link_style'] : 'link';
-$primary_link_tag             = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $primary_link ) : 'a';
-$primary_link_attr_html       = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $primary_link ) : '';
-$primary_link_class_names     = 'mrn-hero__link mrn-hero__link--primary' . ( 'button' === $primary_link_style ? ' mrn-ui__link mrn-ui__link--button' : '' );
-$primary_link_icon_markup     = 'button' === $primary_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
-	? mrn_base_stack_get_button_link_icon_markup( $primary_link )
-	: '';
-$primary_link_icon_position   = 'button' === $primary_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
-	? mrn_base_stack_get_button_link_icon_position( $primary_link )
-	: 'left';
-$secondary_link_url           = isset( $secondary_link['url'] ) ? (string) $secondary_link['url'] : '';
-$secondary_link_text          = isset( $secondary_link['text'] ) ? (string) $secondary_link['text'] : '';
-$secondary_link_style         = isset( $secondary_link['link_style'] ) && in_array( $secondary_link['link_style'], array( 'link', 'button' ), true ) ? (string) $secondary_link['link_style'] : 'link';
-$secondary_link_tag           = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $secondary_link ) : 'a';
-$secondary_link_attr_html     = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $secondary_link ) : '';
-$secondary_link_class_names   = 'mrn-hero__link mrn-hero__link--secondary' . ( 'button' === $secondary_link_style ? ' mrn-ui__link mrn-ui__link--button' : '' );
-$secondary_link_icon_markup   = 'button' === $secondary_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
-	? mrn_base_stack_get_button_link_icon_markup( $secondary_link )
-	: '';
-$secondary_link_icon_position = 'button' === $secondary_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
-	? mrn_base_stack_get_button_link_icon_position( $secondary_link )
-	: 'left';
-
-if ( function_exists( 'mrn_rbl_get_content_link_custom_class_names' ) ) {
-	$primary_link_custom_classes = mrn_rbl_get_content_link_custom_class_names( $primary_link );
-	if ( '' !== $primary_link_custom_classes ) {
-		$primary_link_class_names .= ' ' . $primary_link_custom_classes;
+foreach ( $links as $index => $hero_link_source ) {
+	if ( ! is_array( $hero_link_source ) ) {
+		continue;
 	}
 
-	$secondary_link_custom_classes = mrn_rbl_get_content_link_custom_class_names( $secondary_link );
-	if ( '' !== $secondary_link_custom_classes ) {
-		$secondary_link_class_names .= ' ' . $secondary_link_custom_classes;
+	$link_url           = isset( $hero_link_source['url'] ) ? (string) $hero_link_source['url'] : '';
+	$link_text          = isset( $hero_link_source['text'] ) ? (string) $hero_link_source['text'] : '';
+	$link_style         = isset( $hero_link_source['link_style'] ) && in_array( $hero_link_source['link_style'], array( 'link', 'button' ), true ) ? (string) $hero_link_source['link_style'] : 'link';
+	$link_tag           = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $hero_link_source ) : 'a';
+	$link_attr_html     = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $hero_link_source ) : '';
+	$link_class_names   = 'mrn-hero__link mrn-hero__link--' . sanitize_html_class( $hero_link_slots[ $index ] ?? 'secondary' ) . ( 'button' === $link_style ? ' mrn-ui__link mrn-ui__link--button' : '' );
+	$link_icon_markup   = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
+		? mrn_base_stack_get_button_link_icon_markup( $hero_link_source )
+		: '';
+	$link_icon_position = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
+		? mrn_base_stack_get_button_link_icon_position( $hero_link_source )
+		: 'left';
+
+	if ( function_exists( 'mrn_rbl_get_content_link_custom_class_names' ) ) {
+		$link_custom_classes = mrn_rbl_get_content_link_custom_class_names( $hero_link_source );
+		if ( '' !== $link_custom_classes ) {
+			$link_class_names .= ' ' . $link_custom_classes;
+		}
 	}
+
+	$hero_links[] = array(
+		'url'           => $link_url,
+		'text'          => $link_text,
+		'tag'           => $link_tag,
+		'attr_html'     => $link_attr_html,
+		'class_names'   => $link_class_names,
+		'icon_markup'   => $link_icon_markup,
+		'icon_position' => $link_icon_position,
+	);
 }
 $image_url        = isset( $image['url'] ) ? (string) $image['url'] : '';
 $image_alt        = isset( $image['alt'] ) ? (string) $image['alt'] : '';
@@ -111,7 +110,7 @@ if ( '' !== $local_video_url ) {
 	$video_kind = 'remote';
 }
 
-if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $primary_link_url && '' === $secondary_link_url && '' === $image_url ) {
+if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $hero_links ) && '' === $image_url ) {
 	return;
 }
 
@@ -210,36 +209,22 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				</div>
 			<?php endif; ?>
 
-				<?php if ( '' !== $primary_link_url || '' !== $secondary_link_url ) : ?>
+				<?php if ( ! empty( $hero_links ) ) : ?>
 					<div class="mrn-hero__link-wrap">
-						<?php if ( '' !== $primary_link_url ) : ?>
-							<<?php echo esc_html( $primary_link_tag ); ?>
-								class="<?php echo esc_attr( trim( $primary_link_class_names ) ); ?>"
-								<?php echo '' !== $primary_link_attr_html ? $primary_link_attr_html : 'href="' . esc_url( $primary_link_url ) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php foreach ( $hero_links as $hero_link ) : ?>
+							<<?php echo esc_html( $hero_link['tag'] ); ?>
+								class="<?php echo esc_attr( trim( (string) $hero_link['class_names'] ) ); ?>"
+								<?php echo '' !== $hero_link['attr_html'] ? $hero_link['attr_html'] : 'href="' . esc_url( (string) $hero_link['url'] ) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							>
-							<?php if ( 'left' === $primary_link_icon_position ) : ?>
-								<?php echo $primary_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
+							<?php if ( 'left' === $hero_link['icon_position'] ) : ?>
+								<?php echo $hero_link['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
 							<?php endif; ?>
-							<?php echo esc_html( '' !== $primary_link_text ? $primary_link_text : $primary_link_url ); ?>
-							<?php if ( 'right' === $primary_link_icon_position ) : ?>
-								<?php echo $primary_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
+							<?php echo esc_html( '' !== $hero_link['text'] ? (string) $hero_link['text'] : (string) $hero_link['url'] ); ?>
+							<?php if ( 'right' === $hero_link['icon_position'] ) : ?>
+								<?php echo $hero_link['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
 							<?php endif; ?>
-						</<?php echo esc_html( $primary_link_tag ); ?>>
-						<?php endif; ?>
-						<?php if ( '' !== $secondary_link_url ) : ?>
-							<<?php echo esc_html( $secondary_link_tag ); ?>
-								class="<?php echo esc_attr( trim( $secondary_link_class_names ) ); ?>"
-								<?php echo '' !== $secondary_link_attr_html ? $secondary_link_attr_html : 'href="' . esc_url( $secondary_link_url ) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-							>
-							<?php if ( 'left' === $secondary_link_icon_position ) : ?>
-								<?php echo $secondary_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
-							<?php endif; ?>
-							<?php echo esc_html( '' !== $secondary_link_text ? $secondary_link_text : $secondary_link_url ); ?>
-							<?php if ( 'right' === $secondary_link_icon_position ) : ?>
-								<?php echo $secondary_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
-							<?php endif; ?>
-							</<?php echo esc_html( $secondary_link_tag ); ?>>
-						<?php endif; ?>
+							</<?php echo esc_html( $hero_link['tag'] ); ?>>
+						<?php endforeach; ?>
 					</div>
 				<?php endif; ?>
 		</div>

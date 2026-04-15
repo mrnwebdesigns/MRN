@@ -56,11 +56,11 @@ if ( ! function_exists( 'get_row_layout' ) ) {
 	}
 }
 
-if ( ! function_exists( 'mrn_rbl_get_content_link_repeater_field' ) ) {
+if ( ! function_exists( 'mrn_rbl_get_content_link_fields' ) ) {
 	/**
-	 * @return array<string, mixed>
+	 * @return array<int, array<string, mixed>>
 	 */
-	function mrn_rbl_get_content_link_repeater_field( string $key, string $label = 'Links', string $name = 'links', int $max = 0, ?string $instructions = null ): array {
+	function mrn_rbl_get_content_link_fields( string $key, string $label = 'Links', string $name = 'links', int $max = 0, ?string $instructions = null ): array {
 		unset( $key, $label, $name, $max, $instructions );
 
 		return array();

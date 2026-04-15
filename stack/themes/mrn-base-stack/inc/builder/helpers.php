@@ -2518,7 +2518,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '50',
 					),
 				),
-				mrn_rbl_get_content_link_repeater_field( 'field_mrn_nested_basic_links', 'Links', 'links', 1 ),
+				...mrn_rbl_get_content_link_fields( 'field_mrn_nested_basic_links', 'Links', 'links', 1 ),
 				array(
 					'key'        => 'field_mrn_nested_basic_config_tab',
 					'label'      => 'Configs',

@@ -3,7 +3,7 @@
  * Plugin Name: Reusable Block Library (MU)
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.13
+ * Version: 0.1.14
  */
 
 defined('ABSPATH') || exit;
@@ -1535,134 +1535,167 @@ function mrn_rbl_get_button_link_icon_fields(string $key_prefix, string $button_
 }
 
 /**
- * Build the shared content-link repeater field.
+ * Build one content-link field group.
  *
- * @param string      $key Repeater field key.
- * @param string      $label Field label.
- * @param string      $name Field name.
- * @param int         $max Maximum rows allowed. Use 0 for unlimited.
+ * @param string      $key Group field key.
+ * @param string      $label Group field label.
+ * @param string      $name Group field name.
  * @param string|null $instructions Optional instructions override.
  * @return array<string, mixed>
  */
-function mrn_rbl_get_content_link_repeater_field(string $key, string $label = 'Links', string $name = 'links', int $max = 0, ?string $instructions = null): array {
-    $link_key     = $key . '_link';
-    $button_key   = $key . '_is_button';
-    $field_max    = $max > 0 ? $max : 0;
-    $instructions = null !== $instructions
-        ? $instructions
-        : 'Use the WordPress link picker to search pages/posts or enter a custom URL.';
+function mrn_rbl_get_content_link_field(string $key, string $label, string $name, ?string $instructions = null): array {
+    unset($instructions);
+
+    $link_key   = $key . '_link';
+    $button_key = $key . '_is_button';
+
+    $sub_fields = array(
+        array(
+            'key'       => $key . '_content_tab',
+            'label'     => 'Content',
+            'name'      => '',
+            'type'      => 'tab',
+            'placement' => 'top',
+            'endpoint'  => 0,
+        ),
+        array(
+            'key'           => $link_key,
+            'label'         => 'Link',
+            'name'          => 'link',
+            'type'          => 'link',
+            'return_format' => 'array',
+        ),
+        array(
+            'key'       => $key . '_configs_tab',
+            'label'     => 'Configs',
+            'name'      => '',
+            'type'      => 'tab',
+            'placement' => 'top',
+            'endpoint'  => 0,
+        ),
+        array(
+            'key'       => $key . '_button_guidance',
+            'label'     => '',
+            'name'      => '',
+            'type'      => 'message',
+            'message'   => '<div style="margin:0 0 8px 0;padding:10px 12px;border-left:4px solid #2271b1;background:#f0f6fc;border-radius:2px;"><em><small>Pro Tip: For better accessibility and performance, use the &lt;button&gt; tag (<strong>On</strong> converts the &lt;a&gt; to &lt;button&gt;) for interactive actions and only use classes to change how it looks.</small></em></div>',
+            'esc_html'  => 0,
+            'new_lines' => 'br',
+        ),
+        array(
+            'key'           => $button_key,
+            'label'         => 'Button',
+            'name'          => 'is_button',
+            'type'          => 'true_false',
+            'ui'            => 1,
+            'default_value' => 0,
+            'ui_on_text'    => 'On',
+            'ui_off_text'   => 'Off',
+        ),
+        array(
+            'key'       => $key . '_classes_guidance',
+            'label'     => '',
+            'name'      => '',
+            'type'      => 'message',
+            'message'   => '<div style="margin:0 0 8px 0;padding:10px 12px;border-left:4px solid #2271b1;background:#f0f6fc;border-radius:2px;"><em><small>If you have the Button control <strong>On</strong>, do not place classes to make this look like a button.</small></em></div>',
+            'esc_html'  => 0,
+            'new_lines' => 'br',
+        ),
+        array(
+            'key'   => $key . '_css_classes',
+            'label' => 'CSS Classes',
+            'name'  => 'css_classes',
+            'type'  => 'text',
+        ),
+        array(
+            'key'           => $key . '_target',
+            'label'         => 'Target',
+            'name'          => 'target',
+            'type'          => 'select',
+            'choices'       => mrn_rbl_get_content_link_target_choices(),
+            'default_value' => '',
+            'ui'            => 1,
+        ),
+        array(
+            'key'   => $key . '_rel',
+            'label' => 'Rel',
+            'name'  => 'rel',
+            'type'  => 'text',
+        ),
+        array(
+            'key'   => $key . '_title_attribute',
+            'label' => 'Title Attribute',
+            'name'  => 'title_attribute',
+            'type'  => 'text',
+        ),
+        array(
+            'key'           => $key . '_download',
+            'label'         => 'Download',
+            'name'          => 'download',
+            'type'          => 'true_false',
+            'ui'            => 1,
+            'default_value' => 0,
+            'ui_on_text'    => 'On',
+            'ui_off_text'   => 'Off',
+        ),
+        array(
+            'key'   => $key . '_hreflang',
+            'label' => 'Hreflang',
+            'name'  => 'hreflang',
+            'type'  => 'text',
+        ),
+        array(
+            'key'   => $key . '_media',
+            'label' => 'Media',
+            'name'  => 'media',
+            'type'  => 'text',
+        ),
+        ...mrn_rbl_get_button_link_icon_fields($key . '_icon', $button_key),
+    );
+
+    foreach ($sub_fields as $sub_index => $sub_field) {
+        if (!is_array($sub_field)) {
+            continue;
+        }
+
+        unset($sub_fields[$sub_index]['instructions']);
+
+        $existing_wrapper = isset($sub_field['wrapper']) && is_array($sub_field['wrapper']) ? $sub_field['wrapper'] : array();
+        $existing_wrapper['width'] = '100';
+        $sub_fields[$sub_index]['wrapper'] = $existing_wrapper;
+    }
 
     return array(
         'key'          => $key,
         'label'        => $label,
         'name'         => $name,
-        'type'         => 'repeater',
-        'layout'       => 'row',
-        'button_label' => 'Add Link',
-        'collapsed'    => $link_key,
-        'instructions' => $instructions,
-        'min'          => 0,
-        'max'          => $field_max,
-        'sub_fields'   => array(
-            array(
-                'key'           => $link_key,
-                'label'         => 'Link',
-                'name'          => 'link',
-                'type'          => 'link',
-                'return_format' => 'array',
-                'instructions'  => 'Search pages/posts or enter a custom URL with the native WordPress link picker.',
-                'wrapper'       => array(
-                    'width' => '50',
-                ),
-            ),
-            array(
-                'key'           => $button_key,
-                'label'         => 'Button',
-                'name'          => 'is_button',
-                'type'          => 'true_false',
-                'ui'            => 1,
-                'default_value' => 0,
-                'ui_on_text'    => 'On',
-                'ui_off_text'   => 'Off',
-                'instructions'  => 'Pro Tip: For better accessibility and performance, use the &lt;button&gt; tag for interactive actions and only use classes to change how it looks. If you are navigating to a new page, use an &lt;a&gt; (anchor) tag styled with a button class.',
-                'wrapper'       => array(
-                    'width' => '50',
-                ),
-            ),
-            array(
-                'key'          => $key . '_css_classes',
-                'label'        => 'CSS Classes',
-                'name'         => 'css_classes',
-                'type'         => 'text',
-                'instructions' => 'Optional. A class such as &quot;button&quot; is not needed if Button is turned on.',
-                'wrapper'      => array(
-                    'width' => '50',
-                ),
-            ),
-            array(
-                'key'           => $key . '_target',
-                'label'         => 'Target',
-                'name'          => 'target',
-                'type'          => 'select',
-                'choices'       => mrn_rbl_get_content_link_target_choices(),
-                'default_value' => '',
-                'instructions'  => 'Optional override. Leave blank to use the target chosen in the WordPress link picker.',
-                'ui'            => 1,
-                'wrapper'       => array(
-                    'width' => '25',
-                ),
-            ),
-            array(
-                'key'     => $key . '_rel',
-                'label'   => 'Rel',
-                'name'    => 'rel',
-                'type'    => 'text',
-                'wrapper' => array(
-                    'width' => '25',
-                ),
-            ),
-            array(
-                'key'     => $key . '_title_attribute',
-                'label'   => 'Title Attribute',
-                'name'    => 'title_attribute',
-                'type'    => 'text',
-                'wrapper' => array(
-                    'width' => '25',
-                ),
-            ),
-            array(
-                'key'           => $key . '_download',
-                'label'         => 'Download',
-                'name'          => 'download',
-                'type'          => 'true_false',
-                'ui'            => 1,
-                'default_value' => 0,
-                'ui_on_text'    => 'On',
-                'ui_off_text'   => 'Off',
-                'wrapper'       => array(
-                    'width' => '25',
-                ),
-            ),
-            array(
-                'key'     => $key . '_hreflang',
-                'label'   => 'Hreflang',
-                'name'    => 'hreflang',
-                'type'    => 'text',
-                'wrapper' => array(
-                    'width' => '50',
-                ),
-            ),
-            array(
-                'key'     => $key . '_media',
-                'label'   => 'Media',
-                'name'    => 'media',
-                'type'    => 'text',
-                'wrapper' => array(
-                    'width' => '50',
-                ),
-            ),
-            ...mrn_rbl_get_button_link_icon_fields($key . '_icon', $button_key),
+        'type'         => 'group',
+        'layout'       => 'block',
+        'wrapper'      => array(
+            'width' => '100',
         ),
+        'sub_fields'   => $sub_fields,
+    );
+}
+
+/**
+ * Build the standard set of four content-link fields.
+ *
+ * @param string      $key Unique ACF key prefix.
+ * @param string      $label Field label.
+ * @param string      $name Field name.
+ * @param int         $max Unused legacy argument kept for backward compatibility.
+ * @param string|null $instructions Optional instructions override.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_rbl_get_content_link_fields(string $key, string $label = 'Links', string $name = 'links', int $max = 0, ?string $instructions = null): array {
+    unset($label, $name, $max, $instructions);
+
+    return array(
+        mrn_rbl_get_content_link_field($key . '_primary', 'Primary Link', 'primary_link'),
+        mrn_rbl_get_content_link_field($key . '_secondary', 'Secondary Link', 'secondary_link'),
+        mrn_rbl_get_content_link_field($key . '_tertiary', 'Tertiary Link', 'tertiary_link'),
+        mrn_rbl_get_content_link_field($key . '_quaternary', 'Quaternary Link', 'quaternary_link'),
     );
 }
 
@@ -1775,18 +1808,44 @@ function mrn_rbl_normalize_content_link(array $link, array $args = array()): arr
 }
 
 /**
- * Normalize a link collection from repeater rows.
+ * Normalize a link collection from named fields.
  *
- * @param array<string, mixed> $fields Field array that may contain a `links` repeater.
+ * @param array<string, mixed> $fields Field array with `primary_link`..`quaternary_link`.
  * @param array<string, mixed> $args Optional fallback config.
  * @return array<int, array<string, mixed>>
  */
 function mrn_rbl_get_content_links(array $fields, array $args = array()): array {
-    $links     = isset($fields['links']) && is_array($fields['links']) ? $fields['links'] : array();
-    $max_links = isset($args['max']) ? max(0, (int) $args['max']) : 0;
+    $links          = array();
+    $named_link_map = array('primary_link', 'secondary_link', 'tertiary_link', 'quaternary_link');
+    $max_links      = isset($args['max']) ? max(0, (int) $args['max']) : 0;
 
-    if (isset($links['link']) || isset($links['url'])) {
-        $links = array($links);
+    foreach ($named_link_map as $link_key) {
+        if (!isset($fields[$link_key]) || !is_array($fields[$link_key])) {
+            continue;
+        }
+
+        $links[] = $fields[$link_key];
+    }
+
+    /**
+     * Backward compatibility: keep rendering legacy repeater-based links so
+     * existing builder rows and reusable blocks do not lose CTA output until
+     * they are re-saved with the named link fields.
+     */
+    if (empty($links) && isset($fields['links']) && is_array($fields['links'])) {
+        $legacy_links = $fields['links'];
+
+        if (isset($legacy_links['link']) || isset($legacy_links['url'])) {
+            $legacy_links = array($legacy_links);
+        }
+
+        foreach ($legacy_links as $legacy_link) {
+            if (!is_array($legacy_link)) {
+                continue;
+            }
+
+            $links[] = $legacy_link;
+        }
     }
 
     $normalized = array();
@@ -2034,7 +2093,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'media_upload' => 1,
                 'delay'        => 0,
             ),
-            mrn_rbl_get_content_link_repeater_field('field_mrn_cta_links', 'Links', 'links', 2),
+            ...mrn_rbl_get_content_link_fields('field_mrn_cta_links', 'Links', 'links', 2),
             array(
                 'key'       => 'field_mrn_cta_config_tab',
                 'label'     => 'Configs',
@@ -2166,7 +2225,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                     'width' => '50',
                 ),
             ),
-            mrn_rbl_get_content_link_repeater_field('field_mrn_basic_block_links', 'Links', 'links', 1),
+            ...mrn_rbl_get_content_link_fields('field_mrn_basic_block_links', 'Links', 'links', 1),
             array(
                 'key'   => 'field_mrn_basic_block_config_tab',
                 'label' => 'Configs',

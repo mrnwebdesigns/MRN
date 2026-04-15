@@ -50,37 +50,15 @@ foreach ( $items as $item ) {
 	}
 }
 
-$links        = function_exists( 'mrn_rbl_get_content_links' )
+$section_links = function_exists( 'mrn_rbl_get_content_links' )
 	? mrn_rbl_get_content_links(
 		$row,
 		array(
-			'max'          => 1,
+			'max'          => 4,
 		)
 	)
 	: array();
-$section_link = isset( $links[0] ) && is_array( $links[0] ) ? $links[0] : array();
-
-$section_link_url           = isset( $section_link['url'] ) ? (string) $section_link['url'] : '';
-$section_link_text          = isset( $section_link['text'] ) ? (string) $section_link['text'] : '';
-$section_link_style         = isset( $section_link['link_style'] ) && in_array( $section_link['link_style'], array( 'link', 'button' ), true ) ? (string) $section_link['link_style'] : 'link';
-$section_link_tag           = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $section_link ) : 'a';
-$section_link_attr_html     = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $section_link ) : '';
-$section_link_class_names   = 'mrn-ui__link' . ( 'button' === $section_link_style ? ' mrn-ui__link--button' : '' );
-$section_link_icon_markup   = 'button' === $section_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
-	? mrn_base_stack_get_button_link_icon_markup( $section_link )
-	: '';
-$section_link_icon_position = 'button' === $section_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
-	? mrn_base_stack_get_button_link_icon_position( $section_link )
-	: 'left';
-
-if ( function_exists( 'mrn_rbl_get_content_link_custom_class_names' ) ) {
-	$section_link_custom_classes = mrn_rbl_get_content_link_custom_class_names( $section_link );
-	if ( '' !== $section_link_custom_classes ) {
-		$section_link_class_names .= ' ' . $section_link_custom_classes;
-	}
-}
-
-if ( '' === $label && '' === $heading && '' === $subheading && ! $has_items && '' === $section_link_url ) {
+if ( '' === $label && '' === $heading && '' === $subheading && ! $has_items && empty( $section_links ) ) {
 	return;
 }
 
@@ -175,8 +153,34 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 			</div>
 		<?php endif; ?>
 
-		<?php if ( '' !== $section_link_url ) : ?>
-				<p class="mrn-card-row__link">
+		<?php if ( ! empty( $section_links ) ) : ?>
+				<div class="mrn-card-row__link">
+				<?php foreach ( $section_links as $section_link ) : ?>
+					<?php
+					if ( ! is_array( $section_link ) ) {
+						continue;
+					}
+
+					$section_link_url           = isset( $section_link['url'] ) ? (string) $section_link['url'] : '';
+					$section_link_text          = isset( $section_link['text'] ) ? (string) $section_link['text'] : '';
+					$section_link_style         = isset( $section_link['link_style'] ) && in_array( $section_link['link_style'], array( 'link', 'button' ), true ) ? (string) $section_link['link_style'] : 'link';
+					$section_link_tag           = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $section_link ) : 'a';
+					$section_link_attr_html     = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $section_link ) : '';
+					$section_link_class_names   = 'mrn-ui__link' . ( 'button' === $section_link_style ? ' mrn-ui__link--button' : '' );
+					$section_link_icon_markup   = 'button' === $section_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
+						? mrn_base_stack_get_button_link_icon_markup( $section_link )
+						: '';
+					$section_link_icon_position = 'button' === $section_link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
+						? mrn_base_stack_get_button_link_icon_position( $section_link )
+						: 'left';
+
+					if ( function_exists( 'mrn_rbl_get_content_link_custom_class_names' ) ) {
+						$section_link_custom_classes = mrn_rbl_get_content_link_custom_class_names( $section_link );
+						if ( '' !== $section_link_custom_classes ) {
+							$section_link_class_names .= ' ' . $section_link_custom_classes;
+						}
+					}
+					?>
 					<<?php echo esc_html( $section_link_tag ); ?>
 						class="<?php echo esc_attr( trim( $section_link_class_names ) ); ?>"
 						<?php echo '' !== $section_link_attr_html ? $section_link_attr_html : 'href="' . esc_url( $section_link_url ) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -189,7 +193,8 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 						<?php echo $section_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
 					<?php endif; ?>
 				</<?php echo esc_html( $section_link_tag ); ?>>
-			</p>
+				<?php endforeach; ?>
+			</div>
 		<?php endif; ?>
 			</div>
 		</div>

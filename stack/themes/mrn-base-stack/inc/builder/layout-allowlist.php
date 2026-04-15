@@ -502,13 +502,34 @@ function mrn_base_stack_get_sitewide_allowed_builder_layout_names() {
 		return null;
 	}
 
-	return array_values(
+	$allowed_names = array_values(
 		array_unique(
 			array_filter(
 				array_map( 'sanitize_key', $allowed_names )
 			)
 		)
 	);
+
+	if ( ! empty( $allowed_names ) ) {
+		return $allowed_names;
+	}
+
+	/**
+	 * Keep explicit "allow none" saves intact, but avoid collapsing builder
+	 * choices when legacy/no-key settings temporarily resolve as empty.
+	 */
+	$settings = get_option( 'mrn_helper_settings', null );
+	if ( is_array( $settings ) && array_key_exists( 'allowed_builder_layouts', $settings ) && is_array( $settings['allowed_builder_layouts'] ) ) {
+		return array_values(
+			array_unique(
+				array_filter(
+					array_map( 'sanitize_key', $settings['allowed_builder_layouts'] )
+				)
+			)
+		);
+	}
+
+	return null;
 }
 
 /**

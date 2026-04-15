@@ -62,7 +62,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'media_upload'  => 1,
 										'delay'         => 0,
 									),
-									mrn_rbl_get_content_link_repeater_field( 'field_mrn_hero_links', 'Links', 'links', 2 ),
+									...mrn_rbl_get_content_link_fields( 'field_mrn_hero_links', 'Links', 'links', 2 ),
 									array(
 										'key'           => 'field_mrn_hero_image',
 										'label'         => 'Image',
@@ -807,7 +807,7 @@ function mrn_base_stack_register_acf_field_groups() {
 											'width' => '50',
 										),
 									),
-									mrn_rbl_get_content_link_repeater_field( 'field_mrn_basic_links', 'Links', 'links', 1 ),
+									...mrn_rbl_get_content_link_fields( 'field_mrn_basic_links', 'Links', 'links', 1 ),
 									array(
 										'key'        => 'field_mrn_basic_config_tab',
 										'label'      => 'Configs',
@@ -1421,7 +1421,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'media_upload' => 1,
 										'delay'        => 0,
 									),
-									mrn_rbl_get_content_link_repeater_field( 'field_mrn_image_content_links', 'Links', 'links', 1 ),
+									...mrn_rbl_get_content_link_fields( 'field_mrn_image_content_links', 'Links', 'links', 1 ),
 									array(
 										'key'           => 'field_mrn_image_content_image',
 										'label'         => 'Image',
@@ -1829,7 +1829,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									mrn_base_stack_get_text_tag_field( 'field_mrn_card_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
 									mrn_base_stack_get_inline_text_field( 'field_mrn_card_subheading', 'Subheading', 'subheading' ),
 									mrn_base_stack_get_text_tag_field( 'field_mrn_card_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
-									mrn_rbl_get_content_link_repeater_field( 'field_mrn_card_links', 'Links', 'links', 1 ),
+									...mrn_rbl_get_content_link_fields( 'field_mrn_card_links', 'Links', 'links', 1 ),
 									array(
 										'key'          => 'field_mrn_card_items',
 										'label'        => 'Cards',
@@ -2570,7 +2570,7 @@ function mrn_base_stack_register_acf_field_groups() {
 											),
 										),
 									),
-									mrn_rbl_get_content_link_repeater_field( 'field_mrn_showcase_links', 'Links', 'links', 1 ),
+									...mrn_rbl_get_content_link_fields( 'field_mrn_showcase_links', 'Links', 'links', 1 ),
 									array(
 										'key'        => 'field_mrn_showcase_config_tab',
 										'label'      => 'Configs',

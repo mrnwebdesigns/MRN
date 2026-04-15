@@ -52,37 +52,17 @@ if ( ! in_array( $image_alignment, array( 'left', 'center', 'right' ), true ) ) 
 	$image_alignment = 'center';
 }
 
-$has_image    = ! empty( $image['ID'] ) || ! empty( $image['url'] );
-$links        = function_exists( 'mrn_rbl_get_content_links' )
+$has_image     = ! empty( $image['ID'] ) || ! empty( $image['url'] );
+$content_links = function_exists( 'mrn_rbl_get_content_links' )
 	? mrn_rbl_get_content_links(
 		$row,
 		array(
-			'max'          => 1,
+			'max'          => 4,
 		)
 	)
 	: array();
-$content_link = isset( $links[0] ) && is_array( $links[0] ) ? $links[0] : array();
 
-$link_url           = isset( $content_link['url'] ) ? (string) $content_link['url'] : '';
-$link_text          = isset( $content_link['text'] ) ? (string) $content_link['text'] : '';
-$link_style         = isset( $content_link['link_style'] ) && in_array( $content_link['link_style'], array( 'link', 'button' ), true ) ? (string) $content_link['link_style'] : 'link';
-$link_tag           = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $content_link ) : 'a';
-$link_attr_html     = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $content_link ) : '';
-$link_class_names   = 'mrn-ui__link ' . ( 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text' );
-$link_icon_markup   = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
-	? mrn_base_stack_get_button_link_icon_markup( $content_link )
-	: '';
-$link_icon_position = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
-	? mrn_base_stack_get_button_link_icon_position( $content_link )
-	: 'left';
-
-if ( function_exists( 'mrn_rbl_get_content_link_custom_class_names' ) ) {
-	$link_custom_classes = mrn_rbl_get_content_link_custom_class_names( $content_link );
-	if ( '' !== $link_custom_classes ) {
-		$link_class_names .= ' ' . $link_custom_classes;
-	}
-}
-if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $link_url && ! $has_image ) {
+if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $content_links ) && ! $has_image ) {
 	return;
 }
 
@@ -144,8 +124,34 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 						</div>
 					<?php endif; ?>
 
-					<?php if ( '' !== $link_url ) : ?>
+					<?php if ( ! empty( $content_links ) ) : ?>
 							<div class="mrn-image-content-row__link-wrap">
+							<?php foreach ( $content_links as $content_link ) : ?>
+								<?php
+								if ( ! is_array( $content_link ) ) {
+									continue;
+								}
+
+								$link_url           = isset( $content_link['url'] ) ? (string) $content_link['url'] : '';
+								$link_text          = isset( $content_link['text'] ) ? (string) $content_link['text'] : '';
+								$link_style         = isset( $content_link['link_style'] ) && in_array( $content_link['link_style'], array( 'link', 'button' ), true ) ? (string) $content_link['link_style'] : 'link';
+								$link_tag           = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $content_link ) : 'a';
+								$link_attr_html     = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $content_link ) : '';
+								$link_class_names   = 'mrn-ui__link ' . ( 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text' );
+								$link_icon_markup   = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
+									? mrn_base_stack_get_button_link_icon_markup( $content_link )
+									: '';
+								$link_icon_position = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
+									? mrn_base_stack_get_button_link_icon_position( $content_link )
+									: 'left';
+
+								if ( function_exists( 'mrn_rbl_get_content_link_custom_class_names' ) ) {
+									$link_custom_classes = mrn_rbl_get_content_link_custom_class_names( $content_link );
+									if ( '' !== $link_custom_classes ) {
+										$link_class_names .= ' ' . $link_custom_classes;
+									}
+								}
+								?>
 								<<?php echo esc_html( $link_tag ); ?>
 									class="<?php echo esc_attr( trim( $link_class_names ) ); ?>"
 									<?php echo '' !== $link_attr_html ? $link_attr_html : 'href="' . esc_url( $link_url ) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -158,6 +164,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 									<?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
 								<?php endif; ?>
 							</<?php echo esc_html( $link_tag ); ?>>
+							<?php endforeach; ?>
 						</div>
 					<?php endif; ?>
 				</div>
