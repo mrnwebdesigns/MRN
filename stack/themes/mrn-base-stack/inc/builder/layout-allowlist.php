@@ -787,6 +787,51 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 		<?php endif; ?>
 		<?php
 	}
+	?>
+	<hr />
+	<p style="margin: 0 0 8px;">
+		<button type="button" class="button button-primary" id="mrn-builder-allowlist-save-button">Save Layout Availability</button>
+	</p>
+	<p class="description" style="margin: 0;">
+		Saves this entry and applies layout availability updates after reload.
+	</p>
+	<script>
+		( function( $, window, document ) {
+			'use strict';
+
+			$( function() {
+				var $button = $( '#mrn-builder-allowlist-save-button' );
+				if ( ! $button.length ) {
+					return;
+				}
+
+				$button.on( 'click', function( event ) {
+					event.preventDefault();
+
+					var $saveDraft = $( '#save-post' );
+					var $update = $( '#publish' );
+					var postStatus = String( $( '#post_status' ).val() || $( '#original_post_status' ).val() || '' ).toLowerCase();
+					var $target = $();
+
+					if ( postStatus && postStatus !== 'publish' && $saveDraft.length && ! $saveDraft.prop( 'disabled' ) ) {
+						$target = $saveDraft;
+					} else if ( $update.length && ! $update.prop( 'disabled' ) ) {
+						$target = $update;
+					} else if ( $saveDraft.length && ! $saveDraft.prop( 'disabled' ) ) {
+						$target = $saveDraft;
+					}
+
+					if ( ! $target.length ) {
+						return;
+					}
+
+					$button.prop( 'disabled', true ).text( 'Saving...' );
+					$target.trigger( 'click' );
+				} );
+			} );
+		} )( jQuery, window, document );
+	</script>
+	<?php
 }
 
 /**
