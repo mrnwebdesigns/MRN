@@ -31,6 +31,44 @@ function mrn_base_stack_get_builder_layout_allowlist_targets() {
 }
 
 /**
+ * Get the registered ACF hooks used by builder layout allowlist filtering.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_builder_layout_allowlist_filter_hooks() {
+	return array(
+		'acf/load_field/key=field_mrn_page_hero_rows',
+		'acf/load_field/key=field_mrn_page_content_rows',
+		'acf/load_field/key=field_mrn_page_after_content_rows',
+		'acf/prepare_field/key=field_mrn_page_hero_rows',
+		'acf/prepare_field/key=field_mrn_page_content_rows',
+		'acf/prepare_field/key=field_mrn_page_after_content_rows',
+	);
+}
+
+/**
+ * Run a callback with allowlist ACF filters temporarily disabled.
+ *
+ * @param callable $callback Callback to execute.
+ * @return mixed
+ */
+function mrn_base_stack_run_without_builder_layout_allowlist_filters( callable $callback ) {
+	$hooks = mrn_base_stack_get_builder_layout_allowlist_filter_hooks();
+
+	foreach ( $hooks as $hook_name ) {
+		remove_filter( $hook_name, 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+	}
+
+	try {
+		return $callback();
+	} finally {
+		foreach ( $hooks as $hook_name ) {
+			add_filter( $hook_name, 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+		}
+	}
+}
+
+/**
  * Get the post-meta key used for per-entry builder layout allowlists.
  *
  * @return string
@@ -198,31 +236,40 @@ function mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_na
 	$field_key = isset( $target['field_key'] ) ? (string) $target['field_key'] : '';
 	$group_key = isset( $target['group_key'] ) ? (string) $target['group_key'] : '';
 
-	if ( function_exists( 'acf_get_fields' ) && '' !== $group_key ) {
-		$fields = acf_get_fields( $group_key );
-		if ( is_array( $fields ) ) {
-			foreach ( $fields as $field ) {
-				if ( ! is_array( $field ) ) {
-					continue;
-				}
+	$resolved_field = mrn_base_stack_run_without_builder_layout_allowlist_filters(
+		static function() use ( $group_key, $field_key, $field_name ) {
+			if ( function_exists( 'acf_get_fields' ) && '' !== $group_key ) {
+				$fields = acf_get_fields( $group_key );
+				if ( is_array( $fields ) ) {
+					foreach ( $fields as $field ) {
+						if ( ! is_array( $field ) ) {
+							continue;
+						}
 
-				$current_key  = isset( $field['key'] ) ? (string) $field['key'] : '';
-				$current_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+						$current_key  = isset( $field['key'] ) ? (string) $field['key'] : '';
+						$current_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
 
-				if ( $current_key === $field_key || $current_name === $field_name ) {
-					$cache[ $field_name ] = $field;
-					return $cache[ $field_name ];
+						if ( $current_key === $field_key || $current_name === $field_name ) {
+							return $field;
+						}
+					}
 				}
 			}
-		}
-	}
 
-	if ( function_exists( 'acf_get_field' ) && '' !== $field_key ) {
-		$field = acf_get_field( $field_key );
-		if ( is_array( $field ) ) {
-			$cache[ $field_name ] = $field;
-			return $cache[ $field_name ];
+			if ( function_exists( 'acf_get_field' ) && '' !== $field_key ) {
+				$field = acf_get_field( $field_key );
+				if ( is_array( $field ) ) {
+					return $field;
+				}
+			}
+
+			return array();
 		}
+	);
+
+	if ( is_array( $resolved_field ) && ! empty( $resolved_field ) ) {
+		$cache[ $field_name ] = $resolved_field;
+		return $cache[ $field_name ];
 	}
 
 	$cache[ $field_name ] = array();
