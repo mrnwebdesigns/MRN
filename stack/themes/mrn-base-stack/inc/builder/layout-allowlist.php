@@ -264,28 +264,17 @@ function mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id
 /**
  * Get configurable layout names from a field catalog.
  *
- * Configurable names exclude global hidden layouts and internal page-only rows.
+ * Configurable names exclude internal page-only rows.
  *
  * @param array<string, array<string, mixed>> $catalog Field catalog.
  * @return array<int, string>
  */
 function mrn_base_stack_get_builder_layout_allowlist_configurable_names( array $catalog ) {
-	$hidden_layouts = function_exists( 'mrn_base_stack_get_hidden_builder_layouts' ) ? mrn_base_stack_get_hidden_builder_layouts() : array();
-	$hidden_lookup  = array_fill_keys(
-		array_values(
-			array_unique(
-				array_filter(
-					array_map( 'sanitize_key', is_array( $hidden_layouts ) ? $hidden_layouts : array() )
-				)
-			)
-		),
-		true
-	);
-	$names          = array();
+	$names = array();
 
 	foreach ( $catalog as $name => $layout_meta ) {
 		$name = sanitize_key( (string) $name );
-		if ( '' === $name || isset( $hidden_lookup[ $name ] ) ) {
+		if ( '' === $name ) {
 			continue;
 		}
 
