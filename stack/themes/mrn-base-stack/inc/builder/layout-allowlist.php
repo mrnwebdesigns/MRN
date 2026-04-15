@@ -455,7 +455,41 @@ function mrn_base_stack_get_builder_layout_allowlist_configurable_names( array $
 		$names[] = $name;
 	}
 
-	return array_values( array_unique( $names ) );
+	$names = array_values( array_unique( $names ) );
+	$sitewide_allowed_names = mrn_base_stack_get_sitewide_allowed_builder_layout_names();
+
+	if ( is_array( $sitewide_allowed_names ) ) {
+		$names = array_values( array_intersect( $names, $sitewide_allowed_names ) );
+	}
+
+	return $names;
+}
+
+/**
+ * Get the site-wide allowed builder layout names.
+ *
+ * Returns `null` when site-wide allow settings are unavailable so callers can
+ * skip global gating and behave as before.
+ *
+ * @return array<int, string>|null
+ */
+function mrn_base_stack_get_sitewide_allowed_builder_layout_names() {
+	if ( ! function_exists( 'mrn_config_helper_get_allowed_builder_layouts' ) ) {
+		return null;
+	}
+
+	$allowed_names = mrn_config_helper_get_allowed_builder_layouts();
+	if ( ! is_array( $allowed_names ) ) {
+		return null;
+	}
+
+	return array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $allowed_names )
+			)
+		)
+	);
 }
 
 /**
@@ -792,6 +826,7 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 	$targets   = mrn_base_stack_get_builder_layout_allowlist_targets();
 	$has_saved = mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id ) && metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() );
 	$saved     = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
+	$sitewide_allowed_names = mrn_base_stack_get_sitewide_allowed_builder_layout_names();
 
 	wp_nonce_field( 'mrn_base_stack_builder_layout_allowlist_save', 'mrn_base_stack_builder_layout_allowlist_nonce' );
 	?>
@@ -830,6 +865,10 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 		$used_nonselectable = array();
 
 		foreach ( $used_names as $used_name ) {
+			if ( is_array( $sitewide_allowed_names ) && ! in_array( $used_name, $sitewide_allowed_names, true ) ) {
+				continue;
+			}
+
 			if ( in_array( $used_name, $configurable_names, true ) ) {
 				continue;
 			}
