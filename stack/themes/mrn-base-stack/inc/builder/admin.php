@@ -372,6 +372,7 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 					'saveAction'                => 'mrn_base_stack_save_builder_layout_selection',
 					'nonce'                     => wp_create_nonce( MRN_BASE_STACK_LAYOUT_CHOOSER_NONCE_ACTION ),
 					'launchButton'              => 'Choose Layouts',
+					'insertButton'              => 'Insert Layout(s)',
 					'updateButton'              => 'Save Selection',
 					'savingButton'              => 'Saving...',
 					'dialogTitle'               => 'Choose Allowed Layouts',

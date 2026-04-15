@@ -148,18 +148,6 @@
 		return items;
 	}
 
-	function fieldHasSavedSelection( fieldName ) {
-		var fieldLayouts = getSelectableLayouts( fieldName );
-
-		if ( ! fieldLayouts.length ) {
-			return false;
-		}
-
-		return fieldLayouts.some( function( layout ) {
-			return state.selectedLayouts.indexOf( layout.name ) !== -1;
-		} );
-	}
-
 	function getLayoutNamesForField( fieldName ) {
 		return getSelectableLayouts( fieldName ).map( function( layout ) {
 			return String( layout.name || '' );
@@ -309,6 +297,14 @@
 		$( document.body ).append( ui.overlay );
 	}
 
+	function getPrimaryButtonLabel() {
+		if ( state.autoAddAfterSave ) {
+			return chooserConfig.insertButton || 'Insert Layout(s)';
+		}
+
+		return chooserConfig.updateButton || 'Save Selection';
+	}
+
 	function renderDialogOptions() {
 		var layouts = getSelectableLayouts( state.activeFieldName );
 		var selected = state.selectedLayouts.slice();
@@ -387,12 +383,13 @@
 		ensureDialog();
 
 		ui.closeButton.show();
+		ui.saveButton.text( getPrimaryButtonLabel() );
 		renderDialogOptions();
 		setDialogOpen( true );
 	}
 
-	function closeChooser() {
-		if ( state.isSaving ) {
+	function closeChooser( forceClose ) {
+		if ( state.isSaving && ! forceClose ) {
 			return;
 		}
 
@@ -452,7 +449,7 @@
 			if ( state.autoAddAfterSave && selected.length ) {
 				addSelectedLayoutRow( state.activeFieldName, selected[0] );
 			}
-			closeChooser();
+			closeChooser( true );
 		} ).fail( function( xhr ) {
 			var message = chooserConfig.saveFailedNotice || 'Could not save the layout selection.';
 
@@ -463,7 +460,7 @@
 			showNotice( message, 'error' );
 		} ).always( function() {
 			state.isSaving = false;
-			ui.saveButton.text( chooserConfig.updateButton || 'Save Selection' );
+			ui.saveButton.text( getPrimaryButtonLabel() );
 			updateCountAndSaveState();
 		} );
 	}
@@ -581,9 +578,6 @@
 		}
 
 		var fieldName = getFlexibleFieldNameFromElement( addRowTrigger );
-		if ( fieldHasSavedSelection( fieldName ) ) {
-			return;
-		}
 
 		event.preventDefault();
 		event.stopPropagation();
