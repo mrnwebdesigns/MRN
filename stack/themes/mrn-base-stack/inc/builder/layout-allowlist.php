@@ -842,8 +842,20 @@ function mrn_base_stack_print_builder_layout_allowlist_existing_only_styles() {
 	}
 	?>
 	<style>
-	.acf-fc-popup a[data-max="-1"] {
+	.acf-fc-popup li:has(> a[data-max="-1"]) {
 		display: none !important;
+	}
+
+	/* Fallback for browsers without :has() support to avoid large visual gaps. */
+	.acf-fc-popup a[data-max="-1"] {
+		display: block !important;
+		height: 0 !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		border: 0 !important;
+		font-size: 0 !important;
+		line-height: 0 !important;
+		overflow: hidden !important;
 	}
 	</style>
 	<?php
