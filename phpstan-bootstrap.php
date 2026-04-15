@@ -55,3 +55,14 @@ if ( ! function_exists( 'get_row_layout' ) ) {
 		return null;
 	}
 }
+
+if ( ! function_exists( 'mrn_rbl_get_content_link_repeater_field' ) ) {
+	/**
+	 * @return array<string, mixed>
+	 */
+	function mrn_rbl_get_content_link_repeater_field( string $key, string $label = 'Links', string $name = 'links', int $max = 0, ?string $instructions = null ): array {
+		unset( $key, $label, $name, $max, $instructions );
+
+		return array();
+	}
+}

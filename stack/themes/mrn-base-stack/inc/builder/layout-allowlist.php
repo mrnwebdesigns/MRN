@@ -176,12 +176,14 @@ function mrn_base_stack_get_builder_layout_allowlist_post_id() {
 		$post_id = mrn_base_stack_parse_builder_layout_allowlist_post_id_reference( acf_get_form_data( 'post_id' ) );
 	}
 
-	if ( $post_id < 1 && isset( $_POST['post_ID'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Read-only context lookup.
-		$post_id = mrn_base_stack_parse_builder_layout_allowlist_post_id_reference( wp_unslash( $_POST['post_ID'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Read-only context lookup.
+	$post_reference = filter_input( INPUT_POST, 'post_ID', FILTER_SANITIZE_NUMBER_INT );
+	if ( $post_id < 1 && is_string( $post_reference ) && '' !== $post_reference ) {
+		$post_id = mrn_base_stack_parse_builder_layout_allowlist_post_id_reference( $post_reference );
 	}
 
-	if ( $post_id < 1 && isset( $_GET['post'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only context lookup.
-		$post_id = mrn_base_stack_parse_builder_layout_allowlist_post_id_reference( wp_unslash( $_GET['post'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only context lookup.
+	$get_post_reference = filter_input( INPUT_GET, 'post', FILTER_SANITIZE_NUMBER_INT );
+	if ( $post_id < 1 && is_string( $get_post_reference ) && '' !== $get_post_reference ) {
+		$post_id = mrn_base_stack_parse_builder_layout_allowlist_post_id_reference( $get_post_reference );
 	}
 
 	if ( $post_id < 1 ) {
@@ -360,7 +362,7 @@ function mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_na
 	}
 
 	$resolved_field = mrn_base_stack_run_without_builder_layout_allowlist_filters(
-		static function() use ( $group_key, $field_key, $field_name ) {
+		static function () use ( $group_key, $field_key, $field_name ) {
 			if ( function_exists( 'acf_get_fields' ) && '' !== $group_key ) {
 				$fields = acf_get_fields( $group_key );
 				if ( is_array( $fields ) ) {
@@ -472,7 +474,7 @@ function mrn_base_stack_get_builder_layout_allowlist_configurable_names( array $
 		$names[] = $name;
 	}
 
-	$names = array_values( array_unique( $names ) );
+	$names                  = array_values( array_unique( $names ) );
 	$sitewide_allowed_names = mrn_base_stack_get_sitewide_allowed_builder_layout_names();
 
 	if ( is_array( $sitewide_allowed_names ) ) {
@@ -655,7 +657,7 @@ function mrn_base_stack_get_builder_layout_allowlist_configured_names( $post_id,
 	$configured_names   = mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, $catalog );
 
 	if ( $post_id > 0 && mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id ) && metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() ) ) {
-		$saved_settings = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
+		$saved_settings   = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
 		$configured_names = isset( $saved_settings[ $field_name ] ) && is_array( $saved_settings[ $field_name ] )
 			? $saved_settings[ $field_name ]
 			: array();
@@ -682,11 +684,11 @@ function mrn_base_stack_get_builder_layout_allowlist_configured_names( $post_id,
  * @return array<int, string>
  */
 function mrn_base_stack_get_builder_layout_allowlist_existing_only_names( $post_id, $field_name, array $catalog ) {
-	$post_id            = absint( $post_id );
-	$field_name         = sanitize_key( (string) $field_name );
-	$all_layout_names   = array_keys( $catalog );
-	$configured_names   = mrn_base_stack_get_builder_layout_allowlist_configured_names( $post_id, $field_name, $catalog );
-	$used_names         = $post_id > 0 ? mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, $field_name ) : array();
+	$post_id          = absint( $post_id );
+	$field_name       = sanitize_key( (string) $field_name );
+	$all_layout_names = array_keys( $catalog );
+	$configured_names = mrn_base_stack_get_builder_layout_allowlist_configured_names( $post_id, $field_name, $catalog );
+	$used_names       = $post_id > 0 ? mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, $field_name ) : array();
 
 	if ( empty( $used_names ) ) {
 		return array();
@@ -786,7 +788,7 @@ function mrn_base_stack_filter_builder_layout_allowlist_field_layouts( $field ) 
 		return $field;
 	}
 
-	$existing_only_names = mrn_base_stack_get_builder_layout_allowlist_existing_only_names( $post_id, $field_name, $catalog );
+	$existing_only_names  = mrn_base_stack_get_builder_layout_allowlist_existing_only_names( $post_id, $field_name, $catalog );
 	$existing_only_lookup = ! empty( $existing_only_names ) ? array_fill_keys( $existing_only_names, true ) : array();
 
 	$effective_names = mrn_base_stack_get_builder_layout_allowlist_effective_names( $post_id, $field_name, $catalog );
@@ -896,10 +898,10 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 		return;
 	}
 
-	$post_id   = (int) $post->ID;
-	$targets   = mrn_base_stack_get_builder_layout_allowlist_targets();
-	$has_saved = mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id ) && metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() );
-	$saved     = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
+	$post_id                = (int) $post->ID;
+	$targets                = mrn_base_stack_get_builder_layout_allowlist_targets();
+	$has_saved              = mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id ) && metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() );
+	$saved                  = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
 	$sitewide_allowed_names = mrn_base_stack_get_sitewide_allowed_builder_layout_names();
 
 	wp_nonce_field( 'mrn_base_stack_builder_layout_allowlist_save', 'mrn_base_stack_builder_layout_allowlist_nonce' );
@@ -916,10 +918,10 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 			continue;
 		}
 
-		$selected = $has_saved
+		$selected       = $has_saved
 			? ( isset( $saved[ $field_name ] ) && is_array( $saved[ $field_name ] ) ? $saved[ $field_name ] : array() )
 			: mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, $catalog );
-		$selected = array_fill_keys(
+		$selected       = array_fill_keys(
 			array_values(
 				array_unique(
 					array_intersect(
@@ -1066,13 +1068,11 @@ function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post 
 		return;
 	}
 
-	$input        = isset( $_POST['mrn_builder_layout_allowlist'] ) && is_array( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
-		? wp_unslash( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
-		: array();
-	$catalog_input = isset( $_POST['mrn_builder_layout_allowlist_catalog'] ) && is_array( $_POST['mrn_builder_layout_allowlist_catalog'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
-		? wp_unslash( $_POST['mrn_builder_layout_allowlist_catalog'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
-		: array();
-	$allowlists   = mrn_base_stack_build_sanitized_builder_layout_allowlist_payload( $input, $catalog_input );
+	$input         = filter_input( INPUT_POST, 'mrn_builder_layout_allowlist', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+	$catalog_input = filter_input( INPUT_POST, 'mrn_builder_layout_allowlist_catalog', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+	$input         = is_array( $input ) ? wp_unslash( $input ) : array();
+	$catalog_input = is_array( $catalog_input ) ? wp_unslash( $catalog_input ) : array();
+	$allowlists    = mrn_base_stack_build_sanitized_builder_layout_allowlist_payload( $input, $catalog_input );
 
 	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key(), $allowlists );
 	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_initialized_meta_key(), 1 );

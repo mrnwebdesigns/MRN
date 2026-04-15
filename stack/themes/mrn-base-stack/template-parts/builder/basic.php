@@ -61,7 +61,7 @@ if ( '' !== $link_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-basic-row-link-color: var(' . mrn_site_colors_get_css_var( $link_color ) . ')';
 }
 
-$links = function_exists( 'mrn_rbl_get_content_links' )
+$links        = function_exists( 'mrn_rbl_get_content_links' )
 	? mrn_rbl_get_content_links(
 		$row,
 		array(
@@ -71,13 +71,13 @@ $links = function_exists( 'mrn_rbl_get_content_links' )
 	: array();
 $content_link = isset( $links[0] ) && is_array( $links[0] ) ? $links[0] : array();
 
-$link_url         = isset( $content_link['url'] ) ? (string) $content_link['url'] : '';
-$link_text        = isset( $content_link['text'] ) ? (string) $content_link['text'] : '';
-$link_style       = isset( $content_link['link_style'] ) && in_array( $content_link['link_style'], array( 'link', 'button' ), true ) ? (string) $content_link['link_style'] : 'link';
-$link_tag         = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $content_link ) : 'a';
-$link_attr_html   = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $content_link ) : '';
-$link_class_names = 'mrn-ui__link ' . ( 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text' );
-$link_icon_markup = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
+$link_url           = isset( $content_link['url'] ) ? (string) $content_link['url'] : '';
+$link_text          = isset( $content_link['text'] ) ? (string) $content_link['text'] : '';
+$link_style         = isset( $content_link['link_style'] ) && in_array( $content_link['link_style'], array( 'link', 'button' ), true ) ? (string) $content_link['link_style'] : 'link';
+$link_tag           = function_exists( 'mrn_rbl_get_content_link_tag_name' ) ? mrn_rbl_get_content_link_tag_name( $content_link ) : 'a';
+$link_attr_html     = function_exists( 'mrn_rbl_get_content_link_html_attributes' ) ? mrn_rbl_get_content_link_html_attributes( $content_link ) : '';
+$link_class_names   = 'mrn-ui__link ' . ( 'button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text' );
+$link_icon_markup   = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_markup' )
 	? mrn_base_stack_get_button_link_icon_markup( $content_link )
 	: '';
 $link_icon_position = 'button' === $link_style && function_exists( 'mrn_base_stack_get_button_link_icon_position' )
