@@ -17,6 +17,7 @@
 		selectedLayouts: $.isArray( chooserConfig.selectedLayouts ) ? chooserConfig.selectedLayouts.slice() : [],
 		canPersistSelection: !! chooserConfig.canPersistSelection,
 		activeFieldName: '',
+		autoAddAfterSave: false,
 		isSaving: false
 	};
 
@@ -157,6 +158,52 @@
 		return fieldLayouts.some( function( layout ) {
 			return state.selectedLayouts.indexOf( layout.name ) !== -1;
 		} );
+	}
+
+	function getLayoutNamesForField( fieldName ) {
+		return getSelectableLayouts( fieldName ).map( function( layout ) {
+			return String( layout.name || '' );
+		} ).filter( function( name ) {
+			return !! name;
+		} );
+	}
+
+	function addSelectedLayoutRow( fieldName, layoutName ) {
+		var safeFieldName = String( fieldName || '' );
+		var safeLayoutName = String( layoutName || '' );
+		var $field;
+		var fieldObject;
+
+		if ( ! safeFieldName || ! safeLayoutName ) {
+			return;
+		}
+
+		$field = $( '.acf-field-flexible-content[data-name="' + safeFieldName + '"]' ).first();
+		if ( ! $field.length ) {
+			return;
+		}
+
+		fieldObject = window.acf && typeof window.acf.getField === 'function' ? window.acf.getField( $field ) : null;
+		if ( fieldObject && typeof fieldObject.add === 'function' ) {
+			fieldObject.add( { layout: safeLayoutName } );
+			return;
+		}
+
+		var $addTrigger = $field.find( '[data-name="add-layout"], [data-event="add-row"]' ).first();
+		if ( ! $addTrigger.length ) {
+			return;
+		}
+
+		$addTrigger.trigger( 'click' );
+
+		window.setTimeout( function() {
+			var $layoutLink = $field.find( '[data-layout="' + safeLayoutName + '"]' ).first();
+			if ( ! $layoutLink.length ) {
+				return;
+			}
+
+			$layoutLink.trigger( 'click' );
+		}, 40 );
 	}
 
 	function getPostId() {
@@ -316,7 +363,14 @@
 		}
 	}
 
-	function openChooser( fieldName ) {
+	function openChooser( fieldName, options ) {
+		var settings = $.extend(
+			{
+				autoAddAfterSave: false
+			},
+			options || {}
+		);
+
 		if ( ! getPostId() ) {
 			showNotice( chooserConfig.cannotResolvePostIdNotice || 'Save this draft once, then choose layouts.', 'warning' );
 			return;
@@ -327,6 +381,7 @@
 		} else if ( ! state.activeFieldName ) {
 			state.activeFieldName = getDefaultManagedFieldName();
 		}
+		state.autoAddAfterSave = !! settings.autoAddAfterSave;
 
 		ensureStyles();
 		ensureDialog();
@@ -341,13 +396,17 @@
 			return;
 		}
 
+		state.autoAddAfterSave = false;
 		setDialogOpen( false );
 	}
 
 	function saveSelection() {
 		var postId = getPostId();
 		var selected = getSelectedFromDialog();
-		var mergedSelection = state.selectedLayouts.slice();
+		var fieldLayoutNames = getLayoutNamesForField( state.activeFieldName );
+		var nextSelection = state.selectedLayouts.filter( function( layoutName ) {
+			return fieldLayoutNames.indexOf( String( layoutName || '' ) ) === -1;
+		} );
 
 		if ( ! postId ) {
 			showNotice( chooserConfig.cannotResolvePostIdNotice || 'Save this draft once, then choose layouts.', 'error' );
@@ -360,11 +419,11 @@
 		}
 
 		$.each( selected, function( index, layoutName ) {
-			if ( mergedSelection.indexOf( layoutName ) !== -1 ) {
+			if ( nextSelection.indexOf( layoutName ) !== -1 ) {
 				return;
 			}
 
-			mergedSelection.push( layoutName );
+			nextSelection.push( layoutName );
 		} );
 
 		state.isSaving = true;
@@ -379,7 +438,7 @@
 				action: chooserConfig.saveAction,
 				nonce: chooserConfig.nonce,
 				post_id: postId,
-				layouts: mergedSelection
+				layouts: nextSelection
 			}
 		} ).done( function( response ) {
 			if ( ! response || ! response.success || ! response.data ) {
@@ -388,8 +447,11 @@
 			}
 
 			state.hasSavedSelection = true;
-			state.selectedLayouts = $.isArray( response.data.selectedLayouts ) ? response.data.selectedLayouts : mergedSelection.slice();
+			state.selectedLayouts = $.isArray( response.data.selectedLayouts ) ? response.data.selectedLayouts : nextSelection.slice();
 			showNotice( chooserConfig.saveSuccessNotice || 'Layouts saved.', 'success' );
+			if ( state.autoAddAfterSave && selected.length ) {
+				addSelectedLayoutRow( state.activeFieldName, selected[0] );
+			}
 			closeChooser();
 		} ).fail( function( xhr ) {
 			var message = chooserConfig.saveFailedNotice || 'Could not save the layout selection.';
@@ -453,7 +515,7 @@
 			return;
 		}
 
-		openChooser();
+		openChooser( state.activeFieldName, { autoAddAfterSave: false } );
 	} );
 
 	$( document ).on( 'click', '.mrn-layout-chooser-close, .mrn-layout-chooser-cancel', function( event ) {
@@ -530,6 +592,6 @@
 			event.stopImmediatePropagation();
 		}
 
-		openChooser( fieldName );
+		openChooser( fieldName, { autoAddAfterSave: true } );
 	}, true );
 } )( jQuery, window, document );
