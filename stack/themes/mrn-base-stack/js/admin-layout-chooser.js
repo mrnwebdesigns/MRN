@@ -156,11 +156,86 @@
 		} );
 	}
 
+	function getFlexibleFieldRows( $field ) {
+		if ( ! $field || ! $field.length ) {
+			return $();
+		}
+
+		return $field.find(
+			'> .acf-input > .acf-flexible-content > .values > .layout:not(.acf-clone), ' +
+			'> .acf-input > .values > .layout:not(.acf-clone)'
+		);
+	}
+
+	function getFlexibleFieldRowIds( $field ) {
+		return getFlexibleFieldRows( $field ).map( function() {
+			return String( $( this ).attr( 'data-id' ) || '' );
+		} ).get();
+	}
+
+	function findInsertedRow( $field, beforeIds, layoutName ) {
+		var $rows = getFlexibleFieldRows( $field );
+		var $newRow = $rows.filter( function() {
+			var rowId = String( $( this ).attr( 'data-id' ) || '' );
+			return beforeIds.indexOf( rowId ) === -1;
+		} ).last();
+
+		if ( $newRow.length ) {
+			return $newRow;
+		}
+
+		return $rows.filter( '[data-layout="' + String( layoutName || '' ) + '"]' ).last();
+	}
+
+	function restoreDetachedRowBodies( $row ) {
+		var snapshots = $row.data( 'mrnDetachedFlexibleBodies' ) || [];
+
+		if ( ! snapshots.length ) {
+			return;
+		}
+
+		$.each( snapshots, function( index, snapshot ) {
+			if ( ! snapshot || ! snapshot.target ) {
+				return;
+			}
+
+			snapshot.target.style.display = '';
+			snapshot.target.removeAttribute( 'data-mrn-body-detached' );
+
+			if ( snapshot.fragment ) {
+				snapshot.target.appendChild( snapshot.fragment );
+			}
+		} );
+
+		$row.removeData( 'mrnDetachedFlexibleBodies' );
+	}
+
+	function ensureInsertedRowVisible( $row, fieldObject ) {
+		if ( ! $row || ! $row.length ) {
+			return;
+		}
+
+		restoreDetachedRowBodies( $row );
+		$row.removeClass( '-collapsed collapsed' );
+		$row.children( '.acf-fields' ).css( 'display', '' );
+
+		if ( window.acf && typeof window.acf.doAction === 'function' ) {
+			window.acf.doAction( 'remount', $row );
+		}
+
+		if ( fieldObject && typeof fieldObject.setActiveLayout === 'function' ) {
+			fieldObject.setActiveLayout( $row );
+		}
+
+		$row.find( '.acf-fc-layout-handle' ).first().trigger( 'focus' );
+	}
+
 	function addSelectedLayoutRow( fieldName, layoutName ) {
 		var safeFieldName = String( fieldName || '' );
 		var safeLayoutName = String( layoutName || '' );
 		var $field;
 		var fieldObject;
+		var beforeIds = [];
 
 		if ( ! safeFieldName || ! safeLayoutName ) {
 			return;
@@ -171,9 +246,14 @@
 			return;
 		}
 
+		beforeIds = getFlexibleFieldRowIds( $field );
 		fieldObject = window.acf && typeof window.acf.getField === 'function' ? window.acf.getField( $field ) : null;
 		if ( fieldObject && typeof fieldObject.add === 'function' ) {
 			fieldObject.add( { layout: safeLayoutName } );
+			window.setTimeout( function() {
+				var $newRow = findInsertedRow( $field, beforeIds, safeLayoutName );
+				ensureInsertedRowVisible( $newRow, fieldObject );
+			}, 60 );
 			return;
 		}
 
@@ -191,6 +271,10 @@
 			}
 
 			$layoutLink.trigger( 'click' );
+			window.setTimeout( function() {
+				var $newRow = findInsertedRow( $field, beforeIds, safeLayoutName );
+				ensureInsertedRowVisible( $newRow, fieldObject );
+			}, 60 );
 		}, 40 );
 	}
 
