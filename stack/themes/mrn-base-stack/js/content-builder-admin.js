@@ -7,6 +7,10 @@
 
 	var config = mrnBaseStackBuilderAdmin;
 
+	function isDetachmentEnabled() {
+		return !! config.enableDetachment;
+	}
+
 	function getBuilderLayouts() {
 		return $.isArray( config.builderLayouts ) ? config.builderLayouts : [];
 	}
@@ -750,6 +754,10 @@
 	}
 
 	function syncFlexibleCloneBodyStates( context ) {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		getFlexibleFields( context ).each( function() {
 			getFlexibleCloneRows( $( this ) ).each( function() {
 				detachFlexibleCloneBodies( $( this ) );
@@ -758,6 +766,10 @@
 	}
 
 	function restoreAllFlexibleCloneBodies( context ) {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		getFlexibleFields( context ).each( function() {
 			getFlexibleCloneRows( $( this ) ).each( function() {
 				restoreFlexibleCloneBodies( $( this ) );
@@ -794,6 +806,10 @@
 	function detachFlexibleRowBodies( $row ) {
 		var $targets;
 		var snapshots = [];
+
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
 
 		if ( $row.data( 'mrnDetachedFlexibleBodies' ) || ! canDetachFlexibleRowBodies( $row ) ) {
 			return;
@@ -843,6 +859,16 @@
 		);
 		var snapshots = $row.data( 'mrnDetachedFlexibleBodies' ) || [];
 
+		if ( ! isDetachmentEnabled() ) {
+			$row.removeData( 'mrnDetachedFlexibleBodies' );
+			$row.children( '.acf-fields' ).css( 'display', '' );
+
+			if ( settings.remount ) {
+				remountFlexibleRow( $row );
+			}
+			return;
+		}
+
 		if ( ! snapshots.length ) {
 			if ( settings.remount ) {
 				remountFlexibleRow( $row );
@@ -875,6 +901,10 @@
 			return;
 		}
 
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		if ( isRowCollapsed( $row ) ) {
 			if ( ! $row.data( 'mrnDetachedFlexibleBodies' ) && canDetachFlexibleRowBodies( $row ) ) {
 				detachFlexibleRowBodies( $row );
@@ -891,18 +921,30 @@
 	}
 
 	function syncFlexibleRowBodyStates( context ) {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		$( context || document ).find( '.acf-field-flexible-content .layout' ).not( '.acf-clone' ).each( function() {
 			syncFlexibleRowBodyState( $( this ) );
 		} );
 	}
 
 	function restoreAllFlexibleRowBodies( context ) {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		$( context || document ).find( '.acf-field-flexible-content .layout' ).not( '.acf-clone' ).each( function() {
 			restoreFlexibleRowBodies( $( this ), { remount: false } );
 		} );
 	}
 
 	function collapseInitialFlexibleRows( context ) {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		$( context || document ).find( '.acf-field-flexible-content' ).each( function() {
 			var $flexField = $( this );
 
@@ -1170,16 +1212,22 @@
 	}
 
 	$( function() {
-		collapseInitialFlexibleRows( document );
-		syncFlexibleCloneBodyStates( document );
+		if ( isDetachmentEnabled() ) {
+			collapseInitialFlexibleRows( document );
+			syncFlexibleCloneBodyStates( document );
+		}
+
 		markInitialPrecollapseReady( 'data-mrn-builder-precollapse' );
 	} );
 
 	acf.addAction( 'append', function( $el ) {
 		var context = $el || document;
 
-		syncFlexibleRowBodyStates( context );
-		syncFlexibleCloneBodyStates( context );
+		if ( isDetachmentEnabled() ) {
+			syncFlexibleRowBodyStates( context );
+			syncFlexibleCloneBodyStates( context );
+		}
+
 		ensureConversionActions( context );
 		scheduleContentListFilterSync( context );
 	} );
@@ -1195,16 +1243,28 @@
 	} );
 
 	$( document ).on( 'mousedown touchstart', '[data-layout]', function() {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		restoreAllFlexibleCloneBodies( document );
 	} );
 
 	$( document ).on( 'click', '[data-layout]', function() {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		window.setTimeout( function() {
 			syncFlexibleCloneBodyStates( document );
 		}, 80 );
 	} );
 
 	$( document ).on( 'mousedown touchstart', '.acf-field-flexible-content .layout:not(.acf-clone) [data-name="collapse-layout"]', function() {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		var $row = $( this ).closest( '.layout' );
 
 		if ( isRowCollapsed( $row ) ) {
@@ -1213,6 +1273,10 @@
 	} );
 
 	$( document ).on( 'click', '.acf-field-flexible-content .layout:not(.acf-clone) [data-name="collapse-layout"]', function() {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		var $row = $( this ).closest( '.layout' );
 
 		window.setTimeout( function() {
@@ -1221,6 +1285,10 @@
 	} );
 
 	$( document ).on( 'submit', '#post', function() {
+		if ( ! isDetachmentEnabled() ) {
+			return;
+		}
+
 		restoreAllFlexibleRowBodies( this );
 	} );
 

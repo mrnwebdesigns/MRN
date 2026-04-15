@@ -585,7 +585,9 @@
 			return;
 		}
 
-		ensureLaunchNotice();
+		if ( chooserConfig.showNotice ) {
+			ensureLaunchNotice();
+		}
 	} );
 
 	$( document ).on( 'click', '.mrn-layout-chooser-launch', function( event ) {
