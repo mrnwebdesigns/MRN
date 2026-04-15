@@ -87,6 +87,59 @@ function mrn_base_stack_get_builder_layout_allowlist_initialized_meta_key() {
 }
 
 /**
+ * Build sanitized allowlist payload from submitted form data.
+ *
+ * @param array<string, mixed> $input Raw allowlist checkbox input.
+ * @param array<string, mixed> $catalog_input Raw catalog helper input.
+ * @return array<string, array<int, string>>
+ */
+function mrn_base_stack_build_sanitized_builder_layout_allowlist_payload( array $input, array $catalog_input ) {
+	$targets    = mrn_base_stack_get_builder_layout_allowlist_targets();
+	$allowlists = array();
+
+	foreach ( $targets as $field_name => $target ) {
+		$catalog            = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name ) );
+		$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
+		if ( isset( $catalog_input[ $field_name ] ) ) {
+			$posted_catalog_names = array_values(
+				array_unique(
+					array_filter(
+						array_map(
+							'sanitize_key',
+							explode( ',', (string) $catalog_input[ $field_name ] )
+						)
+					)
+				)
+			);
+
+			if ( ! empty( $posted_catalog_names ) ) {
+				$configurable_names = $posted_catalog_names;
+			}
+		}
+
+		$selected = isset( $input[ $field_name ] ) && is_array( $input[ $field_name ] )
+			? array_filter(
+				array_map(
+					'sanitize_key',
+					$input[ $field_name ]
+				)
+			)
+			: array();
+
+		$allowlists[ $field_name ] = array_values(
+			array_unique(
+				array_intersect(
+					$selected,
+					$configurable_names
+				)
+			)
+		);
+	}
+
+	return $allowlists;
+}
+
+/**
  * Parse a WordPress post reference into a numeric post ID.
  *
  * @param mixed $reference Raw post reference.
@@ -793,7 +846,7 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 		<button type="button" class="button button-primary" id="mrn-builder-allowlist-save-button">Save Layout Availability</button>
 	</p>
 	<p class="description" style="margin: 0;">
-		Saves this entry and applies layout availability updates after reload.
+		Saves layout availability for this entry and reloads the page.
 	</p>
 	<script>
 		( function( $, window, document ) {
@@ -801,6 +854,7 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 
 			$( function() {
 				var $button = $( '#mrn-builder-allowlist-save-button' );
+				var $form = $( '#post' );
 				if ( ! $button.length ) {
 					return;
 				}
@@ -808,25 +862,39 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 				$button.on( 'click', function( event ) {
 					event.preventDefault();
 
-					var $saveDraft = $( '#save-post' );
-					var $update = $( '#publish' );
-					var postStatus = String( $( '#post_status' ).val() || $( '#original_post_status' ).val() || '' ).toLowerCase();
-					var $target = $();
+					var postId = parseInt( String( $( '#post_ID' ).val() || <?php echo (int) $post_id; ?> ), 10 );
+					var ajaxUrl = window.ajaxurl || '';
+					var originalLabel = $button.text();
+					var payload;
 
-					if ( postStatus && postStatus !== 'publish' && $saveDraft.length && ! $saveDraft.prop( 'disabled' ) ) {
-						$target = $saveDraft;
-					} else if ( $update.length && ! $update.prop( 'disabled' ) ) {
-						$target = $update;
-					} else if ( $saveDraft.length && ! $saveDraft.prop( 'disabled' ) ) {
-						$target = $saveDraft;
-					}
-
-					if ( ! $target.length ) {
+					if ( ! $form.length || ! postId || ! ajaxUrl ) {
 						return;
 					}
 
+					payload = $form.serializeArray();
+					payload.push( { name: 'action', value: 'mrn_base_stack_save_builder_layout_allowlist' } );
+					payload.push( { name: 'nonce', value: '<?php echo esc_js( wp_create_nonce( 'mrn_base_stack_save_builder_layout_allowlist' ) ); ?>' } );
+					payload.push( { name: 'post_id', value: postId } );
+
 					$button.prop( 'disabled', true ).text( 'Saving...' );
-					$target.trigger( 'click' );
+
+					$.ajax( {
+						url: ajaxUrl,
+						method: 'POST',
+						dataType: 'json',
+						data: payload
+					} ).done( function( response ) {
+						if ( response && response.success ) {
+							window.location.reload();
+							return;
+						}
+
+						window.alert( 'Layout availability could not be saved. Please try again.' );
+					} ).fail( function() {
+						window.alert( 'Layout availability could not be saved. Please try again.' );
+					} ).always( function() {
+						$button.prop( 'disabled', false ).text( originalLabel );
+					} );
 				} );
 			} );
 		} )( jQuery, window, document );
@@ -865,54 +933,48 @@ function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post 
 		return;
 	}
 
-	$input      = isset( $_POST['mrn_builder_layout_allowlist'] ) && is_array( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
+	$input        = isset( $_POST['mrn_builder_layout_allowlist'] ) && is_array( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
 		? wp_unslash( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
 		: array();
 	$catalog_input = isset( $_POST['mrn_builder_layout_allowlist_catalog'] ) && is_array( $_POST['mrn_builder_layout_allowlist_catalog'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
 		? wp_unslash( $_POST['mrn_builder_layout_allowlist_catalog'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
 		: array();
-	$targets    = mrn_base_stack_get_builder_layout_allowlist_targets();
-	$allowlists = array();
-
-	foreach ( $targets as $field_name => $target ) {
-		$catalog            = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name ) );
-		$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
-		if ( isset( $catalog_input[ $field_name ] ) ) {
-			$posted_catalog_names = array_values(
-				array_unique(
-					array_filter(
-						array_map(
-							'sanitize_key',
-							explode( ',', (string) $catalog_input[ $field_name ] )
-						)
-					)
-				)
-			);
-
-			if ( ! empty( $posted_catalog_names ) ) {
-				$configurable_names = $posted_catalog_names;
-			}
-		}
-		$selected           = isset( $input[ $field_name ] ) && is_array( $input[ $field_name ] )
-			? array_filter(
-				array_map(
-					'sanitize_key',
-					$input[ $field_name ]
-				)
-			)
-			: array();
-
-		$allowlists[ $field_name ] = array_values(
-			array_unique(
-				array_intersect(
-					$selected,
-					$configurable_names
-				)
-			)
-		);
-	}
+	$allowlists   = mrn_base_stack_build_sanitized_builder_layout_allowlist_payload( $input, $catalog_input );
 
 	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key(), $allowlists );
 	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_initialized_meta_key(), 1 );
 }
 add_action( 'save_post', 'mrn_base_stack_save_builder_layout_allowlist_meta_box', 10, 2 );
+
+/**
+ * Save builder layout allowlist selections through AJAX.
+ *
+ * @return void
+ */
+function mrn_base_stack_ajax_save_builder_layout_allowlist() {
+	check_ajax_referer( 'mrn_base_stack_save_builder_layout_allowlist', 'nonce' );
+
+	$post_id = isset( $_POST['post_id'] ) ? absint( wp_unslash( $_POST['post_id'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
+	if ( $post_id < 1 || ! current_user_can( 'edit_post', $post_id ) ) {
+		wp_send_json_error( array( 'message' => 'Not allowed.' ), 403 );
+	}
+
+	$input = isset( $_POST['mrn_builder_layout_allowlist'] ) && is_array( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
+		? wp_unslash( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
+		: array();
+	$catalog_input = isset( $_POST['mrn_builder_layout_allowlist_catalog'] ) && is_array( $_POST['mrn_builder_layout_allowlist_catalog'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
+		? wp_unslash( $_POST['mrn_builder_layout_allowlist_catalog'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce checked above.
+		: array();
+
+	$allowlists = mrn_base_stack_build_sanitized_builder_layout_allowlist_payload( $input, $catalog_input );
+
+	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key(), $allowlists );
+	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_initialized_meta_key(), 1 );
+
+	wp_send_json_success(
+		array(
+			'post_id' => $post_id,
+		)
+	);
+}
+add_action( 'wp_ajax_mrn_base_stack_save_builder_layout_allowlist', 'mrn_base_stack_ajax_save_builder_layout_allowlist' );
