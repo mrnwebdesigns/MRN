@@ -612,7 +612,7 @@ function mrn_base_stack_register_builder_layout_allowlist_meta_box() {
 	foreach ( mrn_base_stack_get_singular_shell_post_types() as $post_type ) {
 		add_meta_box(
 			'mrn-builder-layout-allowlist',
-			'Builder Layout Allowlist',
+			'Available Builder Layout Types',
 			'mrn_base_stack_render_builder_layout_allowlist_meta_box',
 			$post_type,
 			'side',
@@ -640,7 +640,8 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 
 	wp_nonce_field( 'mrn_base_stack_builder_layout_allowlist_save', 'mrn_base_stack_builder_layout_allowlist_nonce' );
 	?>
-	<p>Select which layout types should be loaded for this entry. Save and reload to apply changes.</p>
+	<p>Choose which layout types are available in Add Row for this entry.</p>
+	<p><em>New entries start with a core set selected. Check more layouts, then save and reload to use them.</em></p>
 	<p><em>Layouts already used on this entry always stay available for editing.</em></p>
 	<?php
 
