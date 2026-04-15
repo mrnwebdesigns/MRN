@@ -3,6 +3,7 @@
 .tmp/
 .cursor/
 .repo-migration-backups/
+.worktrees/
 create_qa_pages.php
 test_db_connection.php
 
