@@ -557,6 +557,82 @@ function mrn_editor_lockdown_admin_css() {
 	}
 	?>
 	<style id="mrn-editor-lockdown">
+		body.post-php:not(.mrn-editor-page-ready),
+		body.post-new-php:not(.mrn-editor-page-ready) {
+			overflow: hidden;
+		}
+
+		body.post-php:not(.mrn-editor-page-ready)::before,
+		body.post-new-php:not(.mrn-editor-page-ready)::before {
+			content: '';
+			position: fixed;
+			inset: 0;
+			background: rgba(17, 20, 24, 0.86);
+			z-index: 100000;
+		}
+
+		body.post-php:not(.mrn-editor-page-ready)::after,
+		body.post-new-php:not(.mrn-editor-page-ready)::after {
+			content: '';
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			width: 48px;
+			height: 48px;
+			margin: -40px 0 0 -24px;
+			border-radius: 50%;
+			border: 4px solid rgba(255, 255, 255, 0.35);
+			border-top-color: #ffffff;
+			animation: mrnEditorPageLoaderSpin 0.9s linear infinite;
+			z-index: 100001;
+		}
+
+		.mrn-editor-loading-message {
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			width: min(88vw, 520px);
+			margin-top: 24px;
+			transform: translateX(-50%);
+			text-align: center;
+			color: #f4f7fb;
+			font-size: 14px;
+			font-weight: 600;
+			letter-spacing: 0.02em;
+			line-height: 1.4;
+			text-wrap: balance;
+			z-index: 100002;
+			pointer-events: none;
+			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+		}
+
+		body.post-php:not(.mrn-editor-page-ready):not(.mrn-editor-loading-message-live) #wpwrap::before,
+		body.post-new-php:not(.mrn-editor-page-ready):not(.mrn-editor-loading-message-live) #wpwrap::before {
+			content: 'Summoning your editing desk...';
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			width: min(88vw, 520px);
+			margin-top: 24px;
+			transform: translateX(-50%);
+			text-align: center;
+			color: #f4f7fb;
+			font-size: 14px;
+			font-weight: 600;
+			letter-spacing: 0.02em;
+			line-height: 1.4;
+			text-wrap: balance;
+			z-index: 100002;
+			pointer-events: none;
+			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+		}
+
+		@keyframes mrnEditorPageLoaderSpin {
+			to {
+				transform: rotate(360deg);
+			}
+		}
+
 		.mrn-editor-sidebar-toggle {
 			display: inline-flex;
 			align-items: center;
@@ -686,6 +762,11 @@ function mrn_editor_lockdown_admin_css() {
 			.mrn-editor-sidebar-toggle {
 				transition: none !important;
 			}
+
+			body.post-php:not(.mrn-editor-page-ready)::after,
+			body.post-new-php:not(.mrn-editor-page-ready)::after {
+				animation: none;
+			}
 		}
 
 	<?php if ( mrn_editor_lockdown_is_supported_screen( $screen ) ) : ?>
@@ -727,6 +808,107 @@ function mrn_editor_lockdown_admin_js() {
 			var toggleIcon;
 			var toggleText;
 			var restoreTimer;
+			var loadingFallbackTimer;
+			var loadingReadyTimer;
+			var loadingMessageTimer;
+			var loadingMessageEl;
+			var loadingMessageIndex = 0;
+			var loadingDelayMs = 1000;
+			var loadingMessages = [
+				'Arranging your tools where your muscle memory expects them...',
+				'Checking that links, buttons, and classes all behave nicely...',
+				'Making room for sidebars, metaboxes, and your brilliant ideas...',
+				'Giving the editor a deep breath before the sprint...',
+				'Polishing tiny details so the page feels fast and friendly...',
+				'Final preflight: content safe, controls ready, launch in 3...2...1...'
+			];
+
+			function setLoadingMessage(index) {
+				if (!loadingMessageEl || !loadingMessages.length) {
+					return;
+				}
+
+				loadingMessageEl.textContent = loadingMessages[index % loadingMessages.length];
+			}
+
+			function startLoadingMessageCycle() {
+				if (!body || loadingMessageEl) {
+					return;
+				}
+
+				body.classList.add('mrn-editor-loading-message-live');
+				loadingMessageEl = document.createElement('div');
+				loadingMessageEl.className = 'mrn-editor-loading-message';
+				loadingMessageEl.setAttribute('role', 'status');
+				loadingMessageEl.setAttribute('aria-live', 'polite');
+				setLoadingMessage(loadingMessageIndex);
+				body.appendChild(loadingMessageEl);
+
+				loadingMessageTimer = window.setInterval(function() {
+					loadingMessageIndex = (loadingMessageIndex + 1) % loadingMessages.length;
+					setLoadingMessage(loadingMessageIndex);
+				}, 650);
+			}
+
+			function stopLoadingMessageCycle() {
+				if (loadingMessageTimer) {
+					window.clearInterval(loadingMessageTimer);
+					loadingMessageTimer = null;
+				}
+
+				if (loadingMessageEl && loadingMessageEl.parentNode) {
+					loadingMessageEl.parentNode.removeChild(loadingMessageEl);
+				}
+
+				loadingMessageEl = null;
+				if (body) {
+					body.classList.remove('mrn-editor-loading-message-live');
+				}
+			}
+
+			function markEditorPageReady() {
+				if (!body) {
+					return;
+				}
+
+				body.classList.add('mrn-editor-page-ready');
+				stopLoadingMessageCycle();
+
+				if (loadingFallbackTimer) {
+					window.clearTimeout(loadingFallbackTimer);
+					loadingFallbackTimer = null;
+				}
+
+				if (loadingReadyTimer) {
+					window.clearTimeout(loadingReadyTimer);
+					loadingReadyTimer = null;
+				}
+			}
+
+			function scheduleEditorPageReady() {
+				if (loadingReadyTimer) {
+					window.clearTimeout(loadingReadyTimer);
+				}
+
+				loadingReadyTimer = window.setTimeout(markEditorPageReady, loadingDelayMs);
+			}
+
+			function initEditorLoadingMask() {
+				if (!body) {
+					return;
+				}
+
+				loadingMessageIndex = Math.floor(Math.random() * loadingMessages.length);
+				startLoadingMessageCycle();
+
+				if ('complete' === document.readyState) {
+					scheduleEditorPageReady();
+					return;
+				}
+
+				window.addEventListener('load', scheduleEditorPageReady, { once: true });
+				loadingFallbackTimer = window.setTimeout(markEditorPageReady, 7000);
+			}
 
 			function setSidebarCollapsed(collapsed) {
 				if (!body) {
@@ -863,6 +1045,7 @@ function mrn_editor_lockdown_admin_js() {
 				$('.meta-box-sortables .hndle, .meta-box-sortables .handlediv').css('cursor', 'default');
 			}
 
+			initEditorLoadingMask();
 			initSidebarToggle();
 			if (<?php echo wp_json_encode( mrn_editor_lockdown_is_supported_screen( $screen ) ); ?>) {
 				lockMetaboxSorting();
