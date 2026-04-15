@@ -641,6 +641,39 @@ function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name,
 }
 
 /**
+ * Get configured (selectable/addable) layout names for a post field.
+ *
+ * @param int                                 $post_id Post ID.
+ * @param string                              $field_name Flexible-content field name.
+ * @param array<string, array<string, mixed>> $catalog Layout catalog.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_builder_layout_allowlist_configured_names( $post_id, $field_name, array $catalog ) {
+	$post_id            = absint( $post_id );
+	$field_name         = sanitize_key( (string) $field_name );
+	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
+	$configured_names   = mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, $catalog );
+
+	if ( $post_id > 0 && mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id ) && metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() ) ) {
+		$saved_settings = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
+		$configured_names = isset( $saved_settings[ $field_name ] ) && is_array( $saved_settings[ $field_name ] )
+			? $saved_settings[ $field_name ]
+			: array();
+	}
+
+	return array_values(
+		array_unique(
+			array_intersect(
+				array_filter(
+					array_map( 'sanitize_key', $configured_names )
+				),
+				$configurable_names
+			)
+		)
+	);
+}
+
+/**
  * Get used layout names that should stay editable but not be addable as new rows.
  *
  * @param int                                 $post_id Post ID.
@@ -652,7 +685,7 @@ function mrn_base_stack_get_builder_layout_allowlist_existing_only_names( $post_
 	$post_id            = absint( $post_id );
 	$field_name         = sanitize_key( (string) $field_name );
 	$all_layout_names   = array_keys( $catalog );
-	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
+	$configured_names   = mrn_base_stack_get_builder_layout_allowlist_configured_names( $post_id, $field_name, $catalog );
 	$used_names         = $post_id > 0 ? mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, $field_name ) : array();
 
 	if ( empty( $used_names ) ) {
@@ -662,7 +695,7 @@ function mrn_base_stack_get_builder_layout_allowlist_existing_only_names( $post_
 	return array_values(
 		array_unique(
 			array_intersect(
-				array_diff( $used_names, $configurable_names ),
+				array_diff( $used_names, $configured_names ),
 				$all_layout_names
 			)
 		)
@@ -681,26 +714,8 @@ function mrn_base_stack_get_builder_layout_allowlist_effective_names( $post_id, 
 	$post_id            = absint( $post_id );
 	$field_name         = sanitize_key( (string) $field_name );
 	$all_layout_names   = array_keys( $catalog );
+	$configured_names   = mrn_base_stack_get_builder_layout_allowlist_configured_names( $post_id, $field_name, $catalog );
 	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
-	$configured_names   = mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, $catalog );
-
-	if ( $post_id > 0 && mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id ) && metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() ) ) {
-		$saved_settings = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
-		$configured_names = isset( $saved_settings[ $field_name ] ) && is_array( $saved_settings[ $field_name ] )
-			? $saved_settings[ $field_name ]
-			: array();
-	}
-
-	$configured_names = array_values(
-		array_unique(
-			array_intersect(
-				array_filter(
-					array_map( 'sanitize_key', $configured_names )
-				),
-				$configurable_names
-			)
-		)
-	);
 
 	$used_names = $post_id > 0 ? mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, $field_name ) : array();
 	$effective  = array_values(
