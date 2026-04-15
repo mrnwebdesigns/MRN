@@ -119,6 +119,42 @@ function mrn_base_stack_get_saved_builder_layout_selection( $post_id ) {
 }
 
 /**
+ * Get chooser-managed flexible-content field key map by field name.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_layout_chooser_field_key_map() {
+	return array(
+		'page_hero_rows'         => 'field_mrn_page_hero_rows',
+		'page_content_rows'      => 'field_mrn_page_content_rows',
+		'page_after_content_rows' => 'field_mrn_page_after_content_rows',
+	);
+}
+
+/**
+ * Get chooser-managed layout metadata keyed by flexible-content field name.
+ *
+ * @return array<string, array<int, array<string, mixed>>>
+ */
+function mrn_base_stack_get_layout_chooser_layouts_by_field() {
+	$map     = mrn_base_stack_get_layout_chooser_field_key_map();
+	$layouts = array();
+
+	foreach ( $map as $field_name => $field_key ) {
+		$field_name = sanitize_key( (string) $field_name );
+		$field_key  = sanitize_key( (string) $field_key );
+
+		if ( '' === $field_name || '' === $field_key ) {
+			continue;
+		}
+
+		$layouts[ $field_name ] = mrn_base_stack_get_builder_add_row_layout_menu_items( $field_key );
+	}
+
+	return $layouts;
+}
+
+/**
  * Get all selectable top-level layout names for the layout chooser.
  *
  * @return array<int, string>
@@ -127,22 +163,28 @@ function mrn_base_stack_get_selectable_builder_layout_names() {
 	$hidden_layouts = function_exists( 'mrn_base_stack_get_hidden_builder_layouts' ) ? mrn_base_stack_get_hidden_builder_layouts() : array();
 	$layout_names   = array();
 
-	foreach ( mrn_base_stack_get_builder_add_row_layout_menu_items() as $layout ) {
-		if ( ! is_array( $layout ) ) {
+	foreach ( mrn_base_stack_get_layout_chooser_layouts_by_field() as $field_layouts ) {
+		if ( ! is_array( $field_layouts ) ) {
 			continue;
 		}
 
-		$name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
-		if ( '' === $name ) {
-			continue;
-		}
+		foreach ( $field_layouts as $layout ) {
+			if ( ! is_array( $layout ) ) {
+				continue;
+			}
 
-		$is_page_only = ! empty( $layout['isPageOnly'] );
-		if ( $is_page_only || in_array( $name, $hidden_layouts, true ) ) {
-			continue;
-		}
+			$name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+			if ( '' === $name ) {
+				continue;
+			}
 
-		$layout_names[] = $name;
+			$is_page_only = ! empty( $layout['isPageOnly'] );
+			if ( $is_page_only || in_array( $name, $hidden_layouts, true ) ) {
+				continue;
+			}
+
+			$layout_names[] = $name;
+		}
 	}
 
 	return array_values( array_unique( $layout_names ) );
@@ -319,27 +361,29 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 			'builderLayouts'          => mrn_base_stack_get_builder_add_row_layout_menu_items(),
 			'disabledLayouts'         => function_exists( 'mrn_base_stack_get_hidden_builder_layouts' ) ? mrn_base_stack_get_hidden_builder_layouts() : array(),
 			'contentListTaxonomies'   => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
-			'contentListDisplayModes' => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
-			'layoutChooser'           => array(
-				'postId'                    => $post_id,
-				'selectedLayouts'           => $initial_layout_selection,
-				'hasSavedSelection'         => $has_initial_layout_set,
-				'canPersistSelection'       => $post_id > 0,
-				'saveAction'                => 'mrn_base_stack_save_builder_layout_selection',
-				'nonce'                     => wp_create_nonce( MRN_BASE_STACK_LAYOUT_CHOOSER_NONCE_ACTION ),
-				'launchButton'              => 'Choose Layouts',
-				'updateButton'              => 'Save Selection',
-				'savingButton'              => 'Saving...',
-				'dialogTitle'               => 'Choose Allowed Layouts',
-				'dialogDescription'         => 'Choose which layouts this entry can add. You can reopen this chooser later to allow more layouts.',
-				'emptySelectionError'       => 'Choose at least one layout to continue.',
-				'missingSelectionNotice'    => 'Pick your starting layout set before building this page.',
-				'readyNotice'               => 'Layout chooser is available when you need to allow more layouts.',
-				'saveFailedNotice'          => 'Could not save the layout selection.',
-				'saveSuccessNotice'         => 'Layouts saved. Reloading editor...',
-				'cannotResolvePostIdNotice' => 'Save this draft once, then choose layouts.',
-			),
-		)
+				'contentListDisplayModes' => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
+				'layoutChooser'           => array(
+					'postId'                    => $post_id,
+					'selectedLayouts'           => $initial_layout_selection,
+					'hasSavedSelection'         => $has_initial_layout_set,
+					'canPersistSelection'       => $post_id > 0,
+					'managedFieldNames'         => array_keys( mrn_base_stack_get_layout_chooser_field_key_map() ),
+					'layoutsByField'            => mrn_base_stack_get_layout_chooser_layouts_by_field(),
+					'saveAction'                => 'mrn_base_stack_save_builder_layout_selection',
+					'nonce'                     => wp_create_nonce( MRN_BASE_STACK_LAYOUT_CHOOSER_NONCE_ACTION ),
+					'launchButton'              => 'Choose Layouts',
+					'updateButton'              => 'Save Selection',
+					'savingButton'              => 'Saving...',
+					'dialogTitle'               => 'Choose Allowed Layouts',
+					'dialogDescription'         => 'Choose which layouts this entry can add. You can reopen this chooser later to allow more layouts.',
+					'emptySelectionError'       => 'Choose at least one layout to continue.',
+					'missingSelectionNotice'    => 'Pick your starting layout set before building this page.',
+					'readyNotice'               => 'Layout chooser is available when you need to allow more layouts.',
+					'saveFailedNotice'          => 'Could not save the layout selection.',
+					'saveSuccessNotice'         => 'Layouts saved. Reloading editor...',
+					'cannotResolvePostIdNotice' => 'Save this draft once, then choose layouts.',
+				),
+			)
 		);
 
 	wp_enqueue_script(
@@ -453,14 +497,16 @@ add_filter( 'acf/prepare_field/type=wysiwyg', 'mrn_base_stack_delay_builder_wysi
  * This keeps editor menu behavior aligned with the actual flexible-content
  * layouts instead of relying on parallel hardcoded lists in admin JavaScript.
  *
+ * @param string $field_key ACF flexible-content field key.
  * @return array<int, array<string, mixed>>
  */
-function mrn_base_stack_get_builder_add_row_layout_menu_items() {
+function mrn_base_stack_get_builder_add_row_layout_menu_items( $field_key = 'field_mrn_page_content_rows' ) {
 	if ( ! function_exists( 'acf_get_field' ) ) {
 		return array();
 	}
 
-	$field = acf_get_field( 'field_mrn_page_content_rows' );
+	$field_key = sanitize_key( (string) $field_key );
+	$field     = acf_get_field( $field_key );
 	if ( ! is_array( $field ) || empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
 		return array();
 	}
@@ -543,12 +589,12 @@ function mrn_base_stack_filter_editor_flexible_layouts_by_selection( $field ) {
 
 	return $field;
 }
+add_filter( 'acf/load_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
 add_filter( 'acf/load_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
 add_filter( 'acf/load_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
-add_filter( 'acf/load_field/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
+add_filter( 'acf/prepare_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
-add_filter( 'acf/prepare_field/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_filter_editor_flexible_layouts_by_selection', 40 );
 
 /**
  * Persist builder layout chooser selections for a specific post.

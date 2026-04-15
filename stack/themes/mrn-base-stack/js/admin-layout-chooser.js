@@ -16,6 +16,7 @@
 		hasSavedSelection: !! chooserConfig.hasSavedSelection,
 		selectedLayouts: $.isArray( chooserConfig.selectedLayouts ) ? chooserConfig.selectedLayouts.slice() : [],
 		canPersistSelection: !! chooserConfig.canPersistSelection,
+		activeFieldName: '',
 		isSaving: false
 	};
 
@@ -27,28 +28,70 @@
 		closeButton: null
 	};
 
-	function isChooserManagedFlexibleField( element ) {
-		var field = element && element.closest ? element.closest( '.acf-field-flexible-content' ) : null;
-		var fieldName = '';
-
-		if ( ! field ) {
-			return false;
-		}
-
-		fieldName = String( field.getAttribute( 'data-name' ) || '' );
-
-		return fieldName === 'page_content_rows' || fieldName === 'page_after_content_rows';
+	function getLayoutsByField() {
+		return chooserConfig.layoutsByField && typeof chooserConfig.layoutsByField === 'object' ? chooserConfig.layoutsByField : {};
 	}
 
 	function getBuilderLayouts() {
 		return $.isArray( adminConfig.builderLayouts ) ? adminConfig.builderLayouts : [];
 	}
 
-	function getHiddenLayouts() {
+	function getManagedFieldNames() {
+		var explicit = $.isArray( chooserConfig.managedFieldNames ) ? chooserConfig.managedFieldNames : [];
+		var mapKeys = Object.keys( getLayoutsByField() );
+		var names = explicit.concat( mapKeys );
+
+		return names.filter( function( name, index ) {
+			return !! name && names.indexOf( name ) === index;
+		} );
+	}
+
+	function getDefaultManagedFieldName() {
+		var names = getManagedFieldNames();
+
+		if ( names.indexOf( 'page_content_rows' ) !== -1 ) {
+			return 'page_content_rows';
+		}
+
+		return names[0] || '';
+	}
+
+	function getFlexibleFieldNameFromElement( element ) {
+		var field = element && element.closest ? element.closest( '.acf-field-flexible-content' ) : null;
+
+		if ( ! field ) {
+			return '';
+		}
+
+		return String( field.getAttribute( 'data-name' ) || '' );
+	}
+
+	function isChooserManagedFlexibleField( element ) {
+		var fieldName = getFlexibleFieldNameFromElement( element );
+
+		return !! fieldName && getManagedFieldNames().indexOf( fieldName ) !== -1;
+	}
+
+	function getFieldLayouts( fieldName ) {
+		var byField = getLayoutsByField();
+
+		if ( fieldName && $.isArray( byField[ fieldName ] ) ) {
+			return byField[ fieldName ];
+		}
+
+		if ( fieldName === 'page_content_rows' ) {
+			return getBuilderLayouts();
+		}
+
+		return [];
+	}
+
+	function getHiddenLayouts( layouts ) {
 		var hidden = [];
 		var disabled = $.isArray( adminConfig.disabledLayouts ) ? adminConfig.disabledLayouts : [];
+		var sourceLayouts = $.isArray( layouts ) ? layouts : getBuilderLayouts();
 
-		$.each( getBuilderLayouts(), function( index, layout ) {
+		$.each( sourceLayouts, function( index, layout ) {
 			if ( ! layout || typeof layout !== 'object' || ! layout.name ) {
 				return;
 			}
@@ -67,11 +110,12 @@
 		return hidden;
 	}
 
-	function getSelectableLayouts() {
-		var hiddenLayouts = getHiddenLayouts();
+	function getSelectableLayouts( fieldName ) {
+		var sourceLayouts = getFieldLayouts( fieldName );
+		var hiddenLayouts = getHiddenLayouts( sourceLayouts );
 		var items = [];
 
-		$.each( getBuilderLayouts(), function( index, layout ) {
+		$.each( sourceLayouts, function( index, layout ) {
 			var name;
 			var label;
 
@@ -101,6 +145,18 @@
 		} );
 
 		return items;
+	}
+
+	function fieldHasSavedSelection( fieldName ) {
+		var fieldLayouts = getSelectableLayouts( fieldName );
+
+		if ( ! fieldLayouts.length ) {
+			return false;
+		}
+
+		return fieldLayouts.some( function( layout ) {
+			return state.selectedLayouts.indexOf( layout.name ) !== -1;
+		} );
 	}
 
 	function getPostId() {
@@ -207,7 +263,7 @@
 	}
 
 	function renderDialogOptions() {
-		var layouts = getSelectableLayouts();
+		var layouts = getSelectableLayouts( state.activeFieldName );
 		var selected = state.selectedLayouts.slice();
 
 		ui.optionsWrap.empty();
@@ -260,10 +316,16 @@
 		}
 	}
 
-	function openChooser() {
+	function openChooser( fieldName ) {
 		if ( ! getPostId() ) {
 			showNotice( chooserConfig.cannotResolvePostIdNotice || 'Save this draft once, then choose layouts.', 'warning' );
 			return;
+		}
+
+		if ( fieldName ) {
+			state.activeFieldName = String( fieldName );
+		} else if ( ! state.activeFieldName ) {
+			state.activeFieldName = getDefaultManagedFieldName();
 		}
 
 		ensureStyles();
@@ -285,6 +347,7 @@
 	function saveSelection() {
 		var postId = getPostId();
 		var selected = getSelectedFromDialog();
+		var mergedSelection = state.selectedLayouts.slice();
 
 		if ( ! postId ) {
 			showNotice( chooserConfig.cannotResolvePostIdNotice || 'Save this draft once, then choose layouts.', 'error' );
@@ -295,6 +358,14 @@
 			showNotice( chooserConfig.emptySelectionError || 'Choose at least one layout.', 'error' );
 			return;
 		}
+
+		$.each( selected, function( index, layoutName ) {
+			if ( mergedSelection.indexOf( layoutName ) !== -1 ) {
+				return;
+			}
+
+			mergedSelection.push( layoutName );
+		} );
 
 		state.isSaving = true;
 		updateCountAndSaveState();
@@ -308,7 +379,7 @@
 				action: chooserConfig.saveAction,
 				nonce: chooserConfig.nonce,
 				post_id: postId,
-				layouts: selected
+				layouts: mergedSelection
 			}
 		} ).done( function( response ) {
 			if ( ! response || ! response.success || ! response.data ) {
@@ -317,7 +388,7 @@
 			}
 
 			state.hasSavedSelection = true;
-			state.selectedLayouts = $.isArray( response.data.selectedLayouts ) ? response.data.selectedLayouts : selected.slice();
+			state.selectedLayouts = $.isArray( response.data.selectedLayouts ) ? response.data.selectedLayouts : mergedSelection.slice();
 			showNotice( chooserConfig.saveSuccessNotice || 'Layouts saved. Reloading editor...', 'success' );
 			window.location.reload();
 		} ).fail( function( xhr ) {
@@ -365,7 +436,9 @@
 	}
 
 	$( function() {
-		if ( ! getSelectableLayouts().length ) {
+		state.activeFieldName = getDefaultManagedFieldName();
+
+		if ( ! getSelectableLayouts( state.activeFieldName ).length ) {
 			return;
 		}
 
@@ -423,7 +496,7 @@
 	} );
 
 	document.addEventListener( 'click', function( event ) {
-		if ( state.hasSavedSelection || state.isSaving ) {
+		if ( state.isSaving ) {
 			return;
 		}
 
@@ -445,6 +518,11 @@
 			return;
 		}
 
+		var fieldName = getFlexibleFieldNameFromElement( addRowTrigger );
+		if ( fieldHasSavedSelection( fieldName ) ) {
+			return;
+		}
+
 		event.preventDefault();
 		event.stopPropagation();
 
@@ -452,6 +530,6 @@
 			event.stopImmediatePropagation();
 		}
 
-		openChooser();
+		openChooser( fieldName );
 	}, true );
 } )( jQuery, window, document );
