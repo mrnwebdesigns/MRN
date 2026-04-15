@@ -50,7 +50,8 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 			'successText'             => 'This row is now a page-specific block.',
 			'errorText'               => 'The block could not be converted.',
 			'builderLayouts'          => mrn_base_stack_get_builder_add_row_layout_menu_items(),
-			'disabledLayouts'         => function_exists( 'mrn_base_stack_get_hidden_builder_layouts' ) ? mrn_base_stack_get_hidden_builder_layouts() : array(),
+			// Per-entry server-side allowlists now control builder layout visibility.
+			'disabledLayouts'         => array(),
 			'contentListTaxonomies'   => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
 			'contentListDisplayModes' => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
 		)

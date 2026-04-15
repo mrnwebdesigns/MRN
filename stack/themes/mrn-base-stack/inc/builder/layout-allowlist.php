@@ -377,6 +377,29 @@ function mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id ) 
 }
 
 /**
+ * Determine whether saved allowlist settings should be used for a post.
+ *
+ * New auto-draft posts should always start from defaults.
+ *
+ * @param int $post_id Post ID.
+ * @return bool
+ */
+function mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id ) {
+	$post_id = absint( $post_id );
+
+	if ( $post_id < 1 ) {
+		return false;
+	}
+
+	$post = get_post( $post_id );
+	if ( ! $post instanceof WP_Post ) {
+		return false;
+	}
+
+	return 'auto-draft' !== $post->post_status;
+}
+
+/**
  * Get default layout limits for unsaved allowlists.
  *
  * @return array<string, int>
@@ -455,7 +478,7 @@ function mrn_base_stack_get_builder_layout_allowlist_effective_names( $post_id, 
 	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
 	$configured_names   = mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, $catalog );
 
-	if ( $post_id > 0 && metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() ) ) {
+	if ( $post_id > 0 && mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id ) && metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() ) ) {
 		$saved_settings = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
 		$configured_names = isset( $saved_settings[ $field_name ] ) && is_array( $saved_settings[ $field_name ] )
 			? $saved_settings[ $field_name ]
@@ -612,7 +635,7 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 
 	$post_id   = (int) $post->ID;
 	$targets   = mrn_base_stack_get_builder_layout_allowlist_targets();
-	$has_saved = metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() );
+	$has_saved = mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id ) && metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() );
 	$saved     = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
 
 	wp_nonce_field( 'mrn_base_stack_builder_layout_allowlist_save', 'mrn_base_stack_builder_layout_allowlist_nonce' );
@@ -646,6 +669,8 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 			),
 			true
 		);
+		$selected_count = count( $selected );
+		$total_count    = count( $configurable_names );
 
 		$used_names         = mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, $field_name );
 		$used_nonselectable = array();
@@ -663,6 +688,9 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 		<?php if ( empty( $configurable_names ) ) : ?>
 			<p><em>No selectable layouts are available for this section.</em></p>
 		<?php else : ?>
+			<p style="margin: 0 0 8px;">
+				<em><?php echo esc_html( sprintf( 'Selected %1$d of %2$d layouts. Scroll to view all.', $selected_count, $total_count ) ); ?></em>
+			</p>
 			<div style="max-height: 180px; overflow: auto; border: 1px solid #dcdcde; padding: 8px;">
 				<?php foreach ( $configurable_names as $layout_name ) : ?>
 					<?php
