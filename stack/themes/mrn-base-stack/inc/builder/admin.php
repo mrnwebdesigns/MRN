@@ -566,7 +566,6 @@ function mrn_base_stack_filter_editor_flexible_layouts_by_selection( $field ) {
 
 	$allowed_layout_names = mrn_base_stack_get_allowed_builder_layout_names( $post_id );
 	if ( empty( $allowed_layout_names ) ) {
-		$field['layouts'] = array();
 		return $field;
 	}
 
@@ -583,6 +582,10 @@ function mrn_base_stack_filter_editor_flexible_layouts_by_selection( $field ) {
 		}
 
 		$filtered_layouts[ $layout_key ] = $layout;
+	}
+
+	if ( empty( $filtered_layouts ) ) {
+		return $field;
 	}
 
 	$field['layouts'] = $filtered_layouts;
