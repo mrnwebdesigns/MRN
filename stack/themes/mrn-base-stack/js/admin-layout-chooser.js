@@ -67,6 +67,34 @@
 		return String( field.getAttribute( 'data-name' ) || '' );
 	}
 
+	function isFlexibleAddLayoutTrigger( element ) {
+		var trigger = element && element.closest ? element.closest( '[data-name="add-layout"], [data-event="add-row"]' ) : null;
+		var owningField;
+		var dataName;
+		var dataEvent;
+
+		if ( ! trigger ) {
+			return false;
+		}
+
+		dataName = String( trigger.getAttribute( 'data-name' ) || '' );
+		if ( dataName === 'add-layout' ) {
+			return true;
+		}
+
+		dataEvent = String( trigger.getAttribute( 'data-event' ) || '' );
+		if ( dataEvent !== 'add-row' ) {
+			return false;
+		}
+
+		owningField = trigger.closest( '.acf-field' );
+		if ( ! owningField ) {
+			return false;
+		}
+
+		return String( owningField.getAttribute( 'data-type' ) || '' ) === 'flexible_content';
+	}
+
 	function isChooserManagedFlexibleField( element ) {
 		var fieldName = getFlexibleFieldNameFromElement( element );
 
@@ -650,12 +678,13 @@
 			return;
 		}
 
-		var addRowTrigger = target.closest(
-			'.acf-field-flexible-content [data-event="add-row"], ' +
-			'.acf-field-flexible-content [data-name="add-layout"]'
-		);
+		var addRowTrigger = target.closest( '[data-name="add-layout"], [data-event="add-row"]' );
 
 		if ( ! addRowTrigger ) {
+			return;
+		}
+
+		if ( ! isFlexibleAddLayoutTrigger( addRowTrigger ) ) {
 			return;
 		}
 
