@@ -414,7 +414,24 @@ function mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id
 		return array();
 	}
 
-	$row_count = absint( get_post_meta( $post_id, $field_name, true ) );
+	$raw_value = get_post_meta( $post_id, $field_name, true );
+
+	// ACF flexible content may store row layouts directly as an array of slugs.
+	if ( is_array( $raw_value ) ) {
+		$layout_names = array_values(
+			array_unique(
+				array_filter(
+					array_map( 'sanitize_key', $raw_value )
+				)
+			)
+		);
+
+		if ( ! empty( $layout_names ) ) {
+			return $layout_names;
+		}
+	}
+
+	$row_count = absint( $raw_value );
 	if ( $row_count < 1 ) {
 		return array();
 	}
