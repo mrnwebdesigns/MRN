@@ -236,6 +236,14 @@ function mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_na
 	$field_key = isset( $target['field_key'] ) ? (string) $target['field_key'] : '';
 	$group_key = isset( $target['group_key'] ) ? (string) $target['group_key'] : '';
 
+	if ( function_exists( 'acf_get_local_field' ) && '' !== $field_key ) {
+		$field = acf_get_local_field( $field_key );
+		if ( is_array( $field ) && ! empty( $field['layouts'] ) && is_array( $field['layouts'] ) ) {
+			$cache[ $field_name ] = $field;
+			return $cache[ $field_name ];
+		}
+	}
+
 	$resolved_field = mrn_base_stack_run_without_builder_layout_allowlist_filters(
 		static function() use ( $group_key, $field_key, $field_name ) {
 			if ( function_exists( 'acf_get_fields' ) && '' !== $group_key ) {
