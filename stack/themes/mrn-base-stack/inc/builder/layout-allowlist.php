@@ -497,7 +497,21 @@ function mrn_base_stack_get_builder_layout_allowlist_configurable_names( array $
 	}
 
 	$names                  = array_values( array_unique( $names ) );
+	$removed_names          = apply_filters( 'mrn_base_stack_builder_layout_allowlist_removed_layout_names', array( 'body_text' ) );
+	$removed_names          = is_array( $removed_names )
+		? array_values(
+			array_unique(
+				array_filter(
+					array_map( 'sanitize_key', $removed_names )
+				)
+			)
+		)
+		: array( 'body_text' );
 	$sitewide_allowed_names = mrn_base_stack_get_sitewide_allowed_builder_layout_names();
+
+	if ( ! empty( $removed_names ) ) {
+		$names = array_values( array_diff( $names, $removed_names ) );
+	}
 
 	if ( is_array( $sitewide_allowed_names ) ) {
 		$names = array_values( array_intersect( $names, $sitewide_allowed_names ) );
@@ -561,10 +575,10 @@ function mrn_base_stack_get_sitewide_allowed_builder_layout_names() {
 		return $saved_allowed_names;
 	}
 
-	if ( ! empty( $allowed_names ) ) {
-		return $allowed_names;
-	}
-
+	/*
+	 * Default to "all layouts on" when no explicit site-wide allowlist has
+	 * been saved. This keeps new/dynamic layouts available by default.
+	 */
 	return null;
 }
 
@@ -673,7 +687,51 @@ function mrn_base_stack_get_builder_layout_allowlist_default_limits() {
 function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, array $catalog ) {
 	$field_name         = sanitize_key( (string) $field_name );
 	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
-	$defaults           = $configurable_names;
+	$default_map        = array(
+		'page_hero_rows'          => array( 'basic', 'image_content', 'two_column_split' ),
+		'page_content_rows'       => array( 'basic', 'image_content', 'two_column_split', 'reusable_block', 'grid' ),
+		'page_after_content_rows' => array( 'basic', 'two_column_split', 'logos', 'reusable_block', 'cta' ),
+		'page_sidebar_rows'       => array( 'basic', 'image_content', 'searchwp_form' ),
+	);
+	$alias_map          = array(
+		'basic'            => array( 'basic', 'hero' ),
+		'image_content'    => array( 'image_content' ),
+		'two_column_split' => array( 'two_column_split', 'hero_two_column_split' ),
+		'reusable_block'   => array( 'reusable_block' ),
+		'grid'             => array( 'grid' ),
+		'logos'            => array( 'logos' ),
+		'cta'              => array( 'cta' ),
+		'searchwp_form'    => array( 'searchwp_form' ),
+	);
+	$defaults           = array();
+	$requested_defaults = isset( $default_map[ $field_name ] ) && is_array( $default_map[ $field_name ] )
+		? $default_map[ $field_name ]
+		: $configurable_names;
+
+	foreach ( $requested_defaults as $requested_name ) {
+		$requested_name = sanitize_key( (string) $requested_name );
+		if ( '' === $requested_name ) {
+			continue;
+		}
+
+		$candidates = isset( $alias_map[ $requested_name ] ) && is_array( $alias_map[ $requested_name ] )
+			? $alias_map[ $requested_name ]
+			: array( $requested_name );
+
+		foreach ( $candidates as $candidate_name ) {
+			$candidate_name = sanitize_key( (string) $candidate_name );
+			if ( '' === $candidate_name || ! in_array( $candidate_name, $configurable_names, true ) ) {
+				continue;
+			}
+
+			$defaults[] = $candidate_name;
+			break;
+		}
+	}
+
+	if ( empty( $defaults ) ) {
+		$defaults = $configurable_names;
+	}
 
 	$defaults = apply_filters(
 		'mrn_base_stack_builder_layout_allowlist_defaults',
