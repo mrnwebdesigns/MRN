@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class MRN_Dummy_Content {
-	const VERSION = '0.1.9';
+	const VERSION = '0.1.11';
 	const NONCE_ACTION = 'mrn_dummy_content_generate';
 	const DELETE_NONCE_ACTION = 'mrn_dummy_content_delete';
 	const MENU_SLUG = 'mrn-dummy-content';
@@ -458,7 +458,8 @@ final class MRN_Dummy_Content {
 	 * @return array<string, string>
 	 */
 	private static function get_notice_from_request() {
-		$notice = isset( $_GET[ self::NOTICE_QUERY_ARG ] ) ? wp_unslash( $_GET[ self::NOTICE_QUERY_ARG ] ) : '';
+		$notice = filter_input( INPUT_GET, self::NOTICE_QUERY_ARG, FILTER_UNSAFE_RAW );
+		$notice = is_string( $notice ) ? wp_unslash( $notice ) : '';
 		if ( '' === $notice ) {
 			return array(
 				'type'    => '',
@@ -785,14 +786,24 @@ final class MRN_Dummy_Content {
 	private static function get_all_layout_page_labels() {
 		$labels = array();
 		$fields = self::get_acf_fields_for_post_type( 'page' );
+		$label_context = array(
+			'post_id'            => 0,
+			'post_type'          => 'page',
+			'prefer_all_layouts' => true,
+		);
 
 		foreach ( $fields as $field ) {
 			if ( ! is_array( $field ) || empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
 				continue;
 			}
 
+			$filtered_layouts = self::filter_layouts_for_demo( $field, $field['layouts'], $label_context );
+			if ( empty( $filtered_layouts ) ) {
+				continue;
+			}
+
 			if ( self::is_page_hero_field( $field ) ) {
-				foreach ( $field['layouts'] as $layout ) {
+				foreach ( $filtered_layouts as $layout ) {
 					if ( is_array( $layout ) && ( $layout['name'] ?? '' ) === 'hero' ) {
 						$labels[] = wp_strip_all_tags( (string) ( $layout['label'] ?? 'Hero' ) );
 						break;
@@ -806,11 +817,7 @@ final class MRN_Dummy_Content {
 				continue;
 			}
 
-			foreach ( $field['layouts'] as $layout ) {
-				if ( ! is_array( $layout ) || ! self::is_safe_layout_for_demo( $layout ) ) {
-					continue;
-				}
-
+			foreach ( $filtered_layouts as $layout ) {
 				$labels[] = wp_strip_all_tags( (string) ( $layout['label'] ?? $layout['name'] ?? '' ) );
 			}
 		}
@@ -1268,6 +1275,11 @@ final class MRN_Dummy_Content {
 			return array();
 		}
 
+		$layouts = self::filter_layouts_for_demo( $field, $layouts, $context );
+		if ( empty( $layouts ) ) {
+			return array();
+		}
+
 		$rows        = array();
 		$all_layouts = ! empty( $context['prefer_all_layouts'] );
 		$limit       = $all_layouts ? count( $layouts ) : min( 2, count( $layouts ) );
@@ -1603,7 +1615,7 @@ final class MRN_Dummy_Content {
 	 * @return bool
 	 */
 	private static function should_expand_sample_variant_layouts( $post_type ) {
-		return 'page' !== sanitize_key( (string) $post_type );
+		return false;
 	}
 
 	/**
@@ -1943,8 +1955,6 @@ final class MRN_Dummy_Content {
 		}
 
 		$blocked = array(
-			'reusable_block',
-			'cta_block',
 			'basic_block',
 			'content_grid',
 			'faq_block',
@@ -1954,6 +1964,120 @@ final class MRN_Dummy_Content {
 		);
 
 		return ! in_array( $name, $blocked, true );
+	}
+
+	/**
+	 * Filter layout definitions to safe and allowlisted rows for runtime demos.
+	 *
+	 * @param array<string, mixed>            $field   Flexible-content field definition.
+	 * @param array<int, array<string, mixed>> $layouts Layout definitions.
+	 * @param array<string, mixed>             $context Generation context.
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function filter_layouts_for_demo( array $field, array $layouts, array $context = array() ) {
+		$safe_layouts = array();
+
+		foreach ( $layouts as $layout ) {
+			if ( ! is_array( $layout ) || ! self::is_safe_layout_for_demo( $layout ) ) {
+				continue;
+			}
+
+			$safe_layouts[] = $layout;
+		}
+
+		if ( empty( $safe_layouts ) ) {
+			return array();
+		}
+
+		$allowed_names  = self::get_allowlisted_layout_names_for_demo_field( $field, $safe_layouts, $context );
+		$allowed_lookup = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
+
+		if ( empty( $allowed_lookup ) ) {
+			return array();
+		}
+
+		$filtered_layouts = array();
+
+		foreach ( $safe_layouts as $layout ) {
+			$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+			if ( '' === $layout_name || ! isset( $allowed_lookup[ $layout_name ] ) ) {
+				continue;
+			}
+
+			$filtered_layouts[] = $layout;
+		}
+
+		return $filtered_layouts;
+	}
+
+	/**
+	 * Resolve allowlisted layout names for a flexible-content field.
+	 *
+	 * Falls back to all safe layout names when allowlist helpers are unavailable.
+	 *
+	 * @param array<string, mixed>             $field   Flexible-content field definition.
+	 * @param array<int, array<string, mixed>> $layouts Safe layout definitions.
+	 * @param array<string, mixed>             $context Generation context.
+	 * @return array<int, string>
+	 */
+	private static function get_allowlisted_layout_names_for_demo_field( array $field, array $layouts, array $context = array() ) {
+		$layout_names = array();
+
+		foreach ( $layouts as $layout ) {
+			if ( ! is_array( $layout ) ) {
+				continue;
+			}
+
+			$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+			if ( '' !== $layout_name ) {
+				$layout_names[] = $layout_name;
+			}
+		}
+
+		$layout_names = array_values( array_unique( $layout_names ) );
+		if ( empty( $layout_names ) ) {
+			return array();
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		if ( '' === $field_name ) {
+			return $layout_names;
+		}
+
+		if (
+			! function_exists( 'mrn_base_stack_get_builder_layout_allowlist_targets' ) ||
+			! function_exists( 'mrn_base_stack_get_builder_layout_allowlist_catalog_from_field' ) ||
+			! function_exists( 'mrn_base_stack_get_builder_layout_allowlist_effective_names' )
+		) {
+			return $layout_names;
+		}
+
+		$targets = mrn_base_stack_get_builder_layout_allowlist_targets();
+		if ( ! is_array( $targets ) || ! isset( $targets[ $field_name ] ) ) {
+			return $layout_names;
+		}
+
+		$catalog = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( $field );
+		if ( ! is_array( $catalog ) || empty( $catalog ) ) {
+			return $layout_names;
+		}
+
+		$post_id         = isset( $context['post_id'] ) ? absint( $context['post_id'] ) : 0;
+		$effective_names = mrn_base_stack_get_builder_layout_allowlist_effective_names( $post_id, $field_name, $catalog );
+		if ( ! is_array( $effective_names ) || empty( $effective_names ) ) {
+			return array();
+		}
+
+		return array_values(
+			array_unique(
+				array_intersect(
+					$layout_names,
+					array_filter(
+						array_map( 'sanitize_key', $effective_names )
+					)
+				)
+			)
+		);
 	}
 
 	/**
