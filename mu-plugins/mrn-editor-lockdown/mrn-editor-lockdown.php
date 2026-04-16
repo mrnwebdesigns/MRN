@@ -816,22 +816,80 @@ function mrn_editor_lockdown_admin_js() {
 			var loadingMessageTimer;
 			var loadingMessageEl;
 			var loadingMessageIndex = 0;
+			var loadingMessageStartStorageKey = 'mrnEditorLoadingMessageStart:v1:' + postType;
 			var loadingDelayMs = 1000;
-			var loadingMessages = [
-				'Arranging your tools where your muscle memory expects them...',
-				'Checking that links, buttons, and classes all behave nicely...',
-				'Making room for sidebars, metaboxes, and your brilliant ideas...',
-				'Giving the editor a deep breath before the sprint...',
-				'Polishing tiny details so the page feels fast and friendly...',
-				'Final preflight: content safe, controls ready, launch in 3...2...1...'
+			var loadingMessageIcons = ['🚀', '💣', '🧨', '⚡', '🛰️', '🛠️', '🎯', '🧪', '🔥', '✨'];
+			var loadingMessageStartPhrases = [
+				'Aligning your metaboxes',
+				'Bribing the sidebar gremlins',
+				'Polishing the publish button',
+				'Checking every tiny click target',
+				'Sharpening your headline pencils',
+				'Warming up the permalink engine',
+				'Untangling classic editor cables',
+				'Tuning the SEO helper radar',
+				'Buffing up content controls',
+				'Loading keyboard shortcut fuel',
+				'Calibrating preview thrusters',
+				'Dusting off the formatting toolbox',
+				'Rehearsing your save-draft backup plan',
+				'Smoothing out admin panel corners',
+				'Syncing title fields and slug magic',
+				'Packing extra speed into this screen',
+				'Running one last quality checkpoint',
+				'Prepping your content launchpad',
+				'Teaching buttons to behave politely',
+				'Deploying tiny UX elves'
 			];
+			var loadingMessageEndPhrases = [
+				'for liftoff',
+				'before the big reveal',
+				'so everything feels snappy',
+				'without waking the bugs',
+				'with cinematic confidence'
+			];
+			var loadingMessages = [];
+			var loadingStartIndex;
+			var loadingEndIndex;
+
+			for (loadingStartIndex = 0; loadingStartIndex < loadingMessageStartPhrases.length; loadingStartIndex += 1) {
+				for (loadingEndIndex = 0; loadingEndIndex < loadingMessageEndPhrases.length; loadingEndIndex += 1) {
+					loadingMessages.push(loadingMessageStartPhrases[loadingStartIndex] + ' ' + loadingMessageEndPhrases[loadingEndIndex]);
+				}
+			}
 
 			function setLoadingMessage(index) {
 				if (!loadingMessageEl || !loadingMessages.length) {
 					return;
 				}
 
-				loadingMessageEl.textContent = loadingMessages[index % loadingMessages.length];
+				loadingMessageEl.textContent = loadingMessages[index % loadingMessages.length] + ' ' + loadingMessageIcons[index % loadingMessageIcons.length];
+			}
+
+			function getRandomLoadingMessageStartIndex() {
+				if (!loadingMessages.length) {
+					return 0;
+				}
+
+				var nextIndex = Math.floor(Math.random() * loadingMessages.length);
+				if (loadingMessages.length < 2) {
+					return nextIndex;
+				}
+
+				try {
+					var previousRaw = window.sessionStorage.getItem(loadingMessageStartStorageKey);
+					var previousIndex = parseInt(previousRaw, 10);
+
+					if (!Number.isNaN(previousIndex) && previousIndex >= 0 && previousIndex < loadingMessages.length && previousIndex === nextIndex) {
+						nextIndex = (nextIndex + 1 + Math.floor(Math.random() * (loadingMessages.length - 1))) % loadingMessages.length;
+					}
+
+					window.sessionStorage.setItem(loadingMessageStartStorageKey, String(nextIndex));
+				} catch (storageError) {
+					return nextIndex;
+				}
+
+				return nextIndex;
 			}
 
 			function startLoadingMessageCycle() {
@@ -901,7 +959,7 @@ function mrn_editor_lockdown_admin_js() {
 					return;
 				}
 
-				loadingMessageIndex = Math.floor(Math.random() * loadingMessages.length);
+				loadingMessageIndex = getRandomLoadingMessageStartIndex();
 				startLoadingMessageCycle();
 
 				if ('complete' === document.readyState) {
