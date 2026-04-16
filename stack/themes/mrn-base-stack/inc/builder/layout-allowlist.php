@@ -1052,26 +1052,14 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 		<?php
 	}
 	?>
-	<hr />
-	<p style="margin: 0 0 8px;">
-		<button type="button" class="button button-primary" id="mrn-builder-allowlist-save-button">Save Layout Availability</button>
-	</p>
-	<p class="description" style="margin: 0;">
-		Uses the normal Save Draft/Update flow so content and layout availability save together.
-	</p>
 	<script>
 		( function( $, window, document ) {
 			'use strict';
 
 			$( function() {
 				var payloadFieldName = 'mrn_builder_layout_allowlist_payload';
-				var $button = $( '#mrn-builder-allowlist-save-button' );
 				var $metabox = $( '#mrn-builder-layout-allowlist' );
 				var $postForm = $( '#post' );
-
-				if ( ! $metabox.length && $button.length ) {
-					$metabox = $button.closest( '.postbox' );
-				}
 
 				function getMetaboxPayloadField() {
 					var $payloadField = $metabox.find( '.mrn-builder-layout-allowlist-payload' ).first();
@@ -1163,42 +1151,6 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 				$( document ).on( 'click', '#save-post, #publish, .editor-post-save-draft, .editor-post-publish-button, .editor-post-publish-panel__toggle, .editor-post-publish-button__button', syncPayloadField );
 
 				syncPayloadField();
-
-				if ( ! $button.length ) {
-					return;
-				}
-
-				$button.on( 'click', function( event ) {
-					var $saveDraft;
-					var $update;
-					var $target = $();
-
-					event.preventDefault();
-
-					$saveDraft = $( '#save-post, .editor-post-save-draft' ).filter( ':visible' ).first();
-					$update = $( '#publish, .editor-post-publish-button, .editor-post-publish-button__button' ).filter( ':visible' ).first();
-
-					if ( $saveDraft.length && ! $saveDraft.prop( 'disabled' ) ) {
-						$target = $saveDraft;
-					} else if ( $update.length && ! $update.prop( 'disabled' ) ) {
-						$target = $update;
-					}
-
-					syncPayloadField();
-					$button.prop( 'disabled', true ).text( 'Saving...' );
-
-					if ( $target.length ) {
-						$target.trigger( 'click' );
-						return;
-					}
-
-					if ( $postForm.length && $postForm.get( 0 ) ) {
-						$postForm.get( 0 ).submit();
-						return;
-					}
-
-					$button.prop( 'disabled', false ).text( 'Save Layout Availability' );
-				} );
 			} );
 		} )( jQuery, window, document );
 	</script>
