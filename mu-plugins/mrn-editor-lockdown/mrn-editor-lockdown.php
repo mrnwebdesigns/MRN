@@ -638,7 +638,10 @@ function mrn_editor_lockdown_admin_css() {
 			align-items: center;
 			justify-content: center;
 			gap: 4px;
+			flex: 0 0 110px;
 			width: 110px;
+			min-width: 110px;
+			max-width: 110px;
 			min-height: 30px;
 			padding: 0 12px;
 			border: 1px solid #c3c4c7;
@@ -945,7 +948,7 @@ function mrn_editor_lockdown_admin_js() {
 				}
 
 				if (toggleText) {
-					toggleText.textContent = collapsed ? 'Show Settings' : 'Hide Settings';
+					toggleText.textContent = collapsed ? 'Show Sidebar' : 'Hide Sidebar';
 				}
 			}
 
@@ -1001,7 +1004,7 @@ function mrn_editor_lockdown_admin_js() {
 				toggleIcon.className = 'dashicons dashicons-arrow-right-alt2';
 				toggleIcon.setAttribute('aria-hidden', 'true');
 				toggleText.className = 'mrn-editor-sidebar-toggle__label';
-				toggleText.textContent = 'Hide Settings';
+				toggleText.textContent = 'Hide Sidebar';
 				toggle.appendChild(toggleIcon);
 				toggle.appendChild(toggleText);
 				toggle.addEventListener('click', function() {
