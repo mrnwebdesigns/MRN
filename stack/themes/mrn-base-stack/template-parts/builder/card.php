@@ -5,21 +5,21 @@
  * @package mrn-base-stack
  */
 
-$context          = is_array( $args ?? null ) ? $args : array();
-$row              = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
-$label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
-$label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
-$heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h2';
-$subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
-$subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
-$items            = isset( $row['card_items'] ) && is_array( $row['card_items'] ) ? $row['card_items'] : array();
+$context               = is_array( $args ?? null ) ? $args : array();
+$row                   = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
+$label                 = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
+$label_tag             = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
+$heading               = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
+$heading_tag           = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h2';
+$subheading            = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag        = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
+$items                 = isset( $row['card_items'] ) && is_array( $row['card_items'] ) ? $row['card_items'] : array();
 $enable_full_item_link = ! empty( $row['enable_full_item_link'] );
-$hide_item_link   = $enable_full_item_link && ! empty( $row['hide_item_link'] );
-$background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
-$bottom_accent    = ! empty( $row['bottom_accent'] );
-$accent_slug      = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
-$width_layers     = function_exists( 'mrn_base_stack_get_section_width_layers' )
+$hide_item_link        = $enable_full_item_link && ! empty( $row['hide_item_link'] );
+$background_color      = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
+$bottom_accent         = ! empty( $row['bottom_accent'] );
+$accent_slug           = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
+$width_layers          = function_exists( 'mrn_base_stack_get_section_width_layers' )
 	? mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'wide', 'wide' )
 	: array(
 		'width'           => 'wide',
@@ -42,16 +42,16 @@ foreach ( $items as $item ) {
 		continue;
 	}
 
-	$item_text = isset( $item['text'] ) ? (string) $item['text'] : '';
+	$item_text     = isset( $item['text'] ) ? (string) $item['text'] : '';
 	$item_link_raw = $item['link'] ?? array();
-	$item_link = is_array( $item_link_raw ) ? $item_link_raw : array();
+	$item_link     = is_array( $item_link_raw ) ? $item_link_raw : array();
 	$item_link_url = '';
 	if ( is_array( $item_link_raw ) ) {
 		$item_link_url = isset( $item_link_raw['url'] ) ? (string) $item_link_raw['url'] : '';
 	} elseif ( is_string( $item_link_raw ) ) {
 		$item_link_url = trim( $item_link_raw );
 	}
-	$item_img  = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+	$item_img = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
 
 	if ( '' !== trim( wp_strip_all_tags( $item_text ) ) || '' !== $item_link_url || ! empty( $item_img['ID'] ) || ! empty( $item_img['url'] ) ) {
 		$has_items = true;
@@ -76,7 +76,7 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 	$section_styles[] = '--mrn-card-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
-$section_classes   = array(
+$section_classes = array(
 	'mrn-content-builder__row',
 	'mrn-content-builder__row--card',
 );
@@ -128,23 +128,23 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 						continue;
 					}
 
-					$item_text      = isset( $item['text'] ) ? (string) $item['text'] : '';
-					$item_link_raw  = $item['link'] ?? array();
-					$item_link      = is_array( $item_link_raw ) ? $item_link_raw : array();
-					$item_image     = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
-					$item_link_url  = '';
-					$item_link_title = '';
+					$item_text        = isset( $item['text'] ) ? (string) $item['text'] : '';
+					$item_link_raw    = $item['link'] ?? array();
+					$item_link        = is_array( $item_link_raw ) ? $item_link_raw : array();
+					$item_image       = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+					$item_link_url    = '';
+					$item_link_title  = '';
 					$item_link_target = '';
 					if ( is_array( $item_link_raw ) ) {
-						$item_link_url = isset( $item_link_raw['url'] ) ? (string) $item_link_raw['url'] : '';
-						$item_link_title = isset( $item_link_raw['title'] ) ? (string) $item_link_raw['title'] : '';
+						$item_link_url    = isset( $item_link_raw['url'] ) ? (string) $item_link_raw['url'] : '';
+						$item_link_title  = isset( $item_link_raw['title'] ) ? (string) $item_link_raw['title'] : '';
 						$item_link_target = isset( $item_link_raw['target'] ) ? (string) $item_link_raw['target'] : '';
 					} elseif ( is_string( $item_link_raw ) ) {
 						$item_link_url = trim( $item_link_raw );
 					}
-					$item_link_label = isset( $item_link['title'] ) ? (string) $item_link['title'] : 'Learn More';
+					$item_link_label      = isset( $item_link['title'] ) ? (string) $item_link['title'] : 'Learn More';
 					$item_link_aria_label = '' !== $item_link_title ? $item_link_title : __( 'View card', 'mrn-base-stack' );
-					$item_class_names = array(
+					$item_class_names     = array(
 						'mrn-card-row__item',
 						'mrn-card-row__item--card-deck',
 						'mrn-ui__item',
