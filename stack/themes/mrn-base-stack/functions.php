@@ -232,7 +232,7 @@ function mrn_base_stack_build_post_type_location_rules( array $post_types ) {
  * @return array<int, string>
  */
 function mrn_base_stack_get_builder_supported_post_types() {
-	$post_types = array( 'page', 'post', 'blog' );
+	$post_types = array( 'page', 'page_with_sidebars', 'post', 'post_with_sidebars', 'blog' );
 
 	/**
 	 * Filter the post types that should receive the theme builder experience.
@@ -242,7 +242,7 @@ function mrn_base_stack_get_builder_supported_post_types() {
 	$post_types = apply_filters( 'mrn_base_stack_builder_supported_post_types', $post_types );
 
 	if ( ! is_array( $post_types ) ) {
-		return array( 'page', 'post', 'blog' );
+		return array( 'page', 'page_with_sidebars', 'post', 'post_with_sidebars', 'blog' );
 	}
 
 	$post_types = array_values(
@@ -253,7 +253,7 @@ function mrn_base_stack_get_builder_supported_post_types() {
 		)
 	);
 
-	return ! empty( $post_types ) ? $post_types : array( 'page', 'post', 'blog' );
+	return ! empty( $post_types ) ? $post_types : array( 'page', 'page_with_sidebars', 'post', 'post_with_sidebars', 'blog' );
 }
 
 /**
@@ -456,6 +456,141 @@ function mrn_base_stack_register_blog_post_type() {
 add_action( 'init', 'mrn_base_stack_register_blog_post_type' );
 
 /**
+ * Register the theme-owned Post with Sidebars custom post type.
+ *
+ * @return void
+ */
+function mrn_base_stack_register_post_with_sidebars_post_type() {
+	$show_ui = mrn_base_stack_is_admin_cpt_visible( 'post_with_sidebars' );
+
+	$labels = array(
+		'name'                  => __( 'Posts with Sidebars', 'mrn-base-stack' ),
+		'singular_name'         => __( 'Post with Sidebars', 'mrn-base-stack' ),
+		'menu_name'             => __( 'Posts with Sidebars', 'mrn-base-stack' ),
+		'name_admin_bar'        => __( 'Post with Sidebars', 'mrn-base-stack' ),
+		'add_new'               => __( 'Add New', 'mrn-base-stack' ),
+		'add_new_item'          => __( 'Add New Post with Sidebars', 'mrn-base-stack' ),
+		'new_item'              => __( 'New Post with Sidebars', 'mrn-base-stack' ),
+		'edit_item'             => __( 'Edit Post with Sidebars', 'mrn-base-stack' ),
+		'view_item'             => __( 'View Post with Sidebars', 'mrn-base-stack' ),
+		'view_items'            => __( 'View Posts with Sidebars', 'mrn-base-stack' ),
+		'all_items'             => __( 'All Posts with Sidebars', 'mrn-base-stack' ),
+		'search_items'          => __( 'Search Posts with Sidebars', 'mrn-base-stack' ),
+		'parent_item_colon'     => __( 'Parent Posts with Sidebars:', 'mrn-base-stack' ),
+		'not_found'             => __( 'No posts with sidebars found.', 'mrn-base-stack' ),
+		'not_found_in_trash'    => __( 'No posts with sidebars found in Trash.', 'mrn-base-stack' ),
+		'archives'              => __( 'Posts with Sidebars Archives', 'mrn-base-stack' ),
+		'attributes'            => __( 'Posts with Sidebars Attributes', 'mrn-base-stack' ),
+		'insert_into_item'      => __( 'Insert into post with sidebars', 'mrn-base-stack' ),
+		'uploaded_to_this_item' => __( 'Uploaded to this post with sidebars', 'mrn-base-stack' ),
+		'featured_image'        => __( 'Featured image', 'mrn-base-stack' ),
+		'set_featured_image'    => __( 'Set featured image', 'mrn-base-stack' ),
+		'remove_featured_image' => __( 'Remove featured image', 'mrn-base-stack' ),
+		'use_featured_image'    => __( 'Use as featured image', 'mrn-base-stack' ),
+		'filter_items_list'     => __( 'Filter posts with sidebars list', 'mrn-base-stack' ),
+		'items_list_navigation' => __( 'Posts with sidebars list navigation', 'mrn-base-stack' ),
+		'items_list'            => __( 'Posts with sidebars list', 'mrn-base-stack' ),
+		'item_published'        => __( 'Post with sidebars published.', 'mrn-base-stack' ),
+		'item_updated'          => __( 'Post with sidebars updated.', 'mrn-base-stack' ),
+	);
+
+	register_post_type(
+		'post_with_sidebars',
+		array(
+			'labels'              => $labels,
+			'public'              => true,
+			'show_ui'             => $show_ui,
+			'show_in_menu'        => $show_ui,
+			'show_in_rest'        => true,
+			'has_archive'         => true,
+			'rewrite'             => array(
+				'slug'       => 'posts-with-sidebars',
+				'with_front' => false,
+			),
+			'menu_position'       => 6,
+			'menu_icon'           => 'dashicons-admin-post',
+			'supports'            => array( 'title', 'editor', 'excerpt', 'thumbnail', 'author', 'revisions' ),
+			'taxonomies'          => array( 'category', 'post_tag' ),
+			'publicly_queryable'  => true,
+			'show_in_nav_menus'   => true,
+			'show_in_admin_bar'   => $show_ui,
+			'exclude_from_search' => false,
+			'hierarchical'        => false,
+			'query_var'           => true,
+		)
+	);
+}
+add_action( 'init', 'mrn_base_stack_register_post_with_sidebars_post_type' );
+
+/**
+ * Register the theme-owned Page with Sidebars custom post type.
+ *
+ * @return void
+ */
+function mrn_base_stack_register_page_with_sidebars_post_type() {
+	$show_ui = mrn_base_stack_is_admin_cpt_visible( 'page_with_sidebars' );
+
+	$labels = array(
+		'name'                  => __( 'Pages with Sidebars', 'mrn-base-stack' ),
+		'singular_name'         => __( 'Page with Sidebars', 'mrn-base-stack' ),
+		'menu_name'             => __( 'Pages with Sidebars', 'mrn-base-stack' ),
+		'name_admin_bar'        => __( 'Page with Sidebars', 'mrn-base-stack' ),
+		'add_new'               => __( 'Add New', 'mrn-base-stack' ),
+		'add_new_item'          => __( 'Add New Page with Sidebars', 'mrn-base-stack' ),
+		'new_item'              => __( 'New Page with Sidebars', 'mrn-base-stack' ),
+		'edit_item'             => __( 'Edit Page with Sidebars', 'mrn-base-stack' ),
+		'view_item'             => __( 'View Page with Sidebars', 'mrn-base-stack' ),
+		'view_items'            => __( 'View Pages with Sidebars', 'mrn-base-stack' ),
+		'all_items'             => __( 'All Pages with Sidebars', 'mrn-base-stack' ),
+		'search_items'          => __( 'Search Pages with Sidebars', 'mrn-base-stack' ),
+		'parent_item_colon'     => __( 'Parent Pages with Sidebars:', 'mrn-base-stack' ),
+		'not_found'             => __( 'No pages with sidebars found.', 'mrn-base-stack' ),
+		'not_found_in_trash'    => __( 'No pages with sidebars found in Trash.', 'mrn-base-stack' ),
+		'archives'              => __( 'Pages with Sidebars Archives', 'mrn-base-stack' ),
+		'attributes'            => __( 'Pages with Sidebars Attributes', 'mrn-base-stack' ),
+		'insert_into_item'      => __( 'Insert into page with sidebars', 'mrn-base-stack' ),
+		'uploaded_to_this_item' => __( 'Uploaded to this page with sidebars', 'mrn-base-stack' ),
+		'featured_image'        => __( 'Featured image', 'mrn-base-stack' ),
+		'set_featured_image'    => __( 'Set featured image', 'mrn-base-stack' ),
+		'remove_featured_image' => __( 'Remove featured image', 'mrn-base-stack' ),
+		'use_featured_image'    => __( 'Use as featured image', 'mrn-base-stack' ),
+		'filter_items_list'     => __( 'Filter pages with sidebars list', 'mrn-base-stack' ),
+		'items_list_navigation' => __( 'Pages with sidebars list navigation', 'mrn-base-stack' ),
+		'items_list'            => __( 'Pages with sidebars list', 'mrn-base-stack' ),
+		'item_published'        => __( 'Page with sidebars published.', 'mrn-base-stack' ),
+		'item_updated'          => __( 'Page with sidebars updated.', 'mrn-base-stack' ),
+	);
+
+	register_post_type(
+		'page_with_sidebars',
+		array(
+			'labels'              => $labels,
+			'public'              => true,
+			'show_ui'             => $show_ui,
+			'show_in_menu'        => $show_ui,
+			'show_in_rest'        => true,
+			'has_archive'         => false,
+			'rewrite'             => array(
+				'slug'       => 'pages-with-sidebars',
+				'with_front' => false,
+			),
+			'menu_position'       => 20,
+			'menu_icon'           => 'dashicons-admin-page',
+			'supports'            => array( 'title', 'editor', 'thumbnail', 'author', 'revisions', 'page-attributes' ),
+			'publicly_queryable'  => true,
+			'show_in_nav_menus'   => true,
+			'show_in_admin_bar'   => $show_ui,
+			'exclude_from_search' => false,
+			'hierarchical'        => true,
+			'query_var'           => true,
+			'capability_type'     => 'page',
+			'map_meta_cap'        => true,
+		)
+	);
+}
+add_action( 'init', 'mrn_base_stack_register_page_with_sidebars_post_type' );
+
+/**
  * Opt theme-owned editorial CPTs into the universal sticky bar plugin.
  *
  * @param array<int, string> $post_types Supported sticky-bar post types.
@@ -466,7 +601,7 @@ function mrn_base_stack_add_editorial_cpts_to_universal_sticky_bar( $post_types 
 		$post_types = array();
 	}
 
-	$post_types = array_merge( $post_types, mrn_base_stack_get_editorial_cpts() );
+	$post_types = array_merge( $post_types, mrn_base_stack_get_editorial_cpts(), array( 'post_with_sidebars', 'page_with_sidebars' ) );
 
 	return array_values(
 		array_unique(

@@ -36,6 +36,28 @@ function mrn_base_stack_get_builder_layout_allowlist_targets() {
 }
 
 /**
+ * Determine whether an allowlist target should be shown for a given post type.
+ *
+ * @param string $field_name Flexible-content field name.
+ * @param string $post_type  Current post type.
+ * @return bool
+ */
+function mrn_base_stack_should_render_builder_layout_allowlist_target( $field_name, $post_type ) {
+	$field_name = sanitize_key( (string) $field_name );
+	$post_type  = sanitize_key( (string) $post_type );
+
+	if ( 'page_sidebar_rows' !== $field_name ) {
+		return true;
+	}
+
+	if ( ! function_exists( 'mrn_base_stack_get_sidebar_supported_post_types' ) ) {
+		return true;
+	}
+
+	return in_array( $post_type, mrn_base_stack_get_sidebar_supported_post_types(), true );
+}
+
+/**
  * Get the registered ACF hooks used by builder layout allowlist filtering.
  *
  * @return array<int, string>
@@ -934,6 +956,7 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 	}
 
 	$post_id                = (int) $post->ID;
+	$post_type              = sanitize_key( (string) $post->post_type );
 	$targets                = mrn_base_stack_get_builder_layout_allowlist_targets();
 	$has_saved              = mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id ) && metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() );
 	$saved                  = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
@@ -946,6 +969,10 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 	<?php
 
 	foreach ( $targets as $field_name => $target ) {
+		if ( ! mrn_base_stack_should_render_builder_layout_allowlist_target( $field_name, $post_type ) ) {
+			continue;
+		}
+
 		$catalog            = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name ) );
 		$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
 		$label              = isset( $target['label'] ) ? (string) $target['label'] : ucfirst( str_replace( array( '-', '_' ), ' ', $field_name ) );
@@ -1460,6 +1487,16 @@ function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post 
 	$allowlists = mrn_base_stack_build_sanitized_builder_layout_allowlist_payload( $input, $catalog_input );
 	$targets    = mrn_base_stack_get_builder_layout_allowlist_targets();
 	$existing   = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
+	$active     = array();
+
+	foreach ( $targets as $field_name => $target ) {
+		if ( mrn_base_stack_should_render_builder_layout_allowlist_target( $field_name, $post_type ) ) {
+			$active[ $field_name ] = true;
+			continue;
+		}
+
+		unset( $allowlists[ $field_name ] );
+	}
 
 	/*
 	 * Preserve previously saved field selections when a field-specific catalog
@@ -1467,6 +1504,10 @@ function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post 
 	 * editor payloads omit trailing metabox arrays.
 	 */
 	foreach ( $targets as $field_name => $target ) {
+		if ( ! isset( $active[ $field_name ] ) ) {
+			continue;
+		}
+
 		$has_catalog_marker = array_key_exists( $field_name, $catalog_input );
 		$has_field_input    = isset( $input[ $field_name ] ) && is_array( $input[ $field_name ] );
 

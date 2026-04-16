@@ -199,7 +199,9 @@ add_action( 'admin_head', 'mrn_base_stack_admin_builder_action_styles' );
 function mrn_base_stack_hide_native_editor_metabox() {
 	remove_meta_box( 'postdivrich', 'post', 'normal' );
 	remove_meta_box( 'postdivrich', 'page', 'normal' );
+	remove_meta_box( 'postdivrich', 'page_with_sidebars', 'normal' );
 	remove_meta_box( 'postdivrich', 'blog', 'normal' );
+	remove_meta_box( 'postdivrich', 'post_with_sidebars', 'normal' );
 	remove_meta_box( 'postdivrich', 'gallery', 'normal' );
 	remove_meta_box( 'postdivrich', 'testimonial', 'normal' );
 	remove_meta_box( 'postdivrich', 'case_study', 'normal' );

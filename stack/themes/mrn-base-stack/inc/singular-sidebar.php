@@ -11,7 +11,7 @@
  * @return array<int, string>
  */
 function mrn_base_stack_get_sidebar_supported_post_types() {
-	$post_types = function_exists( 'mrn_base_stack_get_singular_shell_post_types' ) ? mrn_base_stack_get_singular_shell_post_types() : array( 'page', 'post', 'blog', 'gallery' );
+	$post_types = function_exists( 'mrn_base_stack_get_singular_shell_post_types' ) ? mrn_base_stack_get_singular_shell_post_types() : array( 'page_with_sidebars', 'post_with_sidebars', 'blog', 'gallery', 'case_study', 'testimonial' );
 
 	/**
 	 * Filter the post types that can opt into the singular sidebar shell.
@@ -21,7 +21,7 @@ function mrn_base_stack_get_sidebar_supported_post_types() {
 	$post_types = apply_filters( 'mrn_base_stack_sidebar_supported_post_types', $post_types );
 
 	if ( ! is_array( $post_types ) ) {
-		return array( 'page', 'post', 'blog', 'gallery' );
+		return array( 'page_with_sidebars', 'post_with_sidebars', 'blog', 'gallery', 'case_study', 'testimonial' );
 	}
 
 	$post_types = array_values(
@@ -32,7 +32,14 @@ function mrn_base_stack_get_sidebar_supported_post_types() {
 		)
 	);
 
-	return ! empty( $post_types ) ? $post_types : array( 'page', 'post', 'blog', 'gallery' );
+	$post_types = array_values(
+		array_diff(
+			$post_types,
+			array( 'page', 'post' )
+		)
+	);
+
+	return ! empty( $post_types ) ? $post_types : array( 'page_with_sidebars', 'post_with_sidebars', 'blog', 'gallery', 'case_study', 'testimonial' );
 }
 
 /**
@@ -146,6 +153,11 @@ function mrn_base_stack_get_singular_sidebar_settings( $post_id = null ) {
 	);
 
 	if ( ! $post_id || ! function_exists( 'get_field' ) ) {
+		return $settings;
+	}
+
+	$post_type = sanitize_key( (string) get_post_type( $post_id ) );
+	if ( '' === $post_type || ! in_array( $post_type, mrn_base_stack_get_sidebar_supported_post_types(), true ) ) {
 		return $settings;
 	}
 

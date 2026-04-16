@@ -11,22 +11,14 @@
 
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 	<?php
-	$mrn_post_id          = get_the_ID();
-	$mrn_is_singular      = is_singular();
-	$mrn_has_hero         = $mrn_is_singular ? mrn_base_stack_render_hero_builder( $mrn_post_id ) : false;
-	$mrn_sidebar_settings = $mrn_is_singular && function_exists( 'mrn_base_stack_get_singular_sidebar_settings' ) ? mrn_base_stack_get_singular_sidebar_settings( $mrn_post_id ) : array( 'layout' => 'none' );
-	$mrn_sidebar_markup   = $mrn_is_singular && function_exists( 'mrn_base_stack_get_singular_sidebar_markup' ) ? mrn_base_stack_get_singular_sidebar_markup( $mrn_post_id ) : '';
-	$mrn_has_sidebar      = $mrn_is_singular && 'none' !== ( $mrn_sidebar_settings['layout'] ?? 'none' ) && '' !== $mrn_sidebar_markup;
-	$mrn_shell_classes    = array(
-		'mrn-singular-shell',
-		'mrn-singular-shell--post',
-	);
-
-	if ( $mrn_has_sidebar ) {
-		$mrn_shell_classes[] = 'mrn-singular-shell--has-sidebar';
-		$mrn_shell_classes[] = 'mrn-singular-shell--sidebar-' . sanitize_html_class( $mrn_sidebar_settings['layout'] );
-	}
-	?>
+		$mrn_post_id       = get_the_ID();
+		$mrn_is_singular   = is_singular();
+		$mrn_has_hero      = $mrn_is_singular ? mrn_base_stack_render_hero_builder( $mrn_post_id ) : false;
+		$mrn_shell_classes = array(
+			'mrn-singular-shell',
+			'mrn-singular-shell--post',
+		);
+		?>
 
 	<div class="<?php echo esc_attr( implode( ' ', $mrn_shell_classes ) ); ?>">
 		<div class="mrn-singular-shell__main">
@@ -62,11 +54,5 @@
 				?>
 			</div><!-- .entry-content -->
 		</div><!-- .mrn-singular-shell__main -->
-
-		<?php if ( $mrn_has_sidebar ) : ?>
-			<div class="mrn-singular-shell__sidebar">
-				<?php echo $mrn_sidebar_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			</div>
-		<?php endif; ?>
 	</div><!-- .mrn-singular-shell -->
 </article><!-- #post-<?php the_ID(); ?> -->
