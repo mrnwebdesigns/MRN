@@ -14,6 +14,8 @@ $heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['he
 $subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
 $subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $items            = isset( $row['card_items'] ) && is_array( $row['card_items'] ) ? $row['card_items'] : array();
+$enable_full_item_link = ! empty( $row['enable_full_item_link'] );
+$hide_item_link   = $enable_full_item_link && ! empty( $row['hide_item_link'] );
 $background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
 $bottom_accent    = ! empty( $row['bottom_accent'] );
 $accent_slug      = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
@@ -41,10 +43,17 @@ foreach ( $items as $item ) {
 	}
 
 	$item_text = isset( $item['text'] ) ? (string) $item['text'] : '';
-	$item_link = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
+	$item_link_raw = $item['link'] ?? array();
+	$item_link = is_array( $item_link_raw ) ? $item_link_raw : array();
+	$item_link_url = '';
+	if ( is_array( $item_link_raw ) ) {
+		$item_link_url = isset( $item_link_raw['url'] ) ? (string) $item_link_raw['url'] : '';
+	} elseif ( is_string( $item_link_raw ) ) {
+		$item_link_url = trim( $item_link_raw );
+	}
 	$item_img  = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
 
-	if ( '' !== trim( wp_strip_all_tags( $item_text ) ) || ! empty( $item_link['url'] ) || ! empty( $item_img['ID'] ) || ! empty( $item_img['url'] ) ) {
+	if ( '' !== trim( wp_strip_all_tags( $item_text ) ) || '' !== $item_link_url || ! empty( $item_img['ID'] ) || ! empty( $item_img['url'] ) ) {
 		$has_items = true;
 		break;
 	}
@@ -71,6 +80,9 @@ $section_classes   = array(
 	'mrn-content-builder__row',
 	'mrn-content-builder__row--card',
 );
+if ( $enable_full_item_link ) {
+	$section_classes[] = 'mrn-content-builder__row--card-full-link';
+}
 $accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 	'attributes' => array(),
@@ -116,15 +128,37 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 						continue;
 					}
 
-					$item_text  = isset( $item['text'] ) ? (string) $item['text'] : '';
-					$item_link  = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
-					$item_image = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+					$item_text      = isset( $item['text'] ) ? (string) $item['text'] : '';
+					$item_link_raw  = $item['link'] ?? array();
+					$item_link      = is_array( $item_link_raw ) ? $item_link_raw : array();
+					$item_image     = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+					$item_link_url  = '';
+					$item_link_title = '';
+					$item_link_target = '';
+					if ( is_array( $item_link_raw ) ) {
+						$item_link_url = isset( $item_link_raw['url'] ) ? (string) $item_link_raw['url'] : '';
+						$item_link_title = isset( $item_link_raw['title'] ) ? (string) $item_link_raw['title'] : '';
+						$item_link_target = isset( $item_link_raw['target'] ) ? (string) $item_link_raw['target'] : '';
+					} elseif ( is_string( $item_link_raw ) ) {
+						$item_link_url = trim( $item_link_raw );
+					}
+					$item_link_label = isset( $item_link['title'] ) ? (string) $item_link['title'] : 'Learn More';
+					$item_link_aria_label = '' !== $item_link_title ? $item_link_title : __( 'View card', 'mrn-base-stack' );
+					$item_class_names = array(
+						'mrn-card-row__item',
+						'mrn-card-row__item--card-deck',
+						'mrn-ui__item',
+					);
 
-					if ( '' === trim( wp_strip_all_tags( $item_text ) ) && empty( $item_link['url'] ) && empty( $item_image['ID'] ) && empty( $item_image['url'] ) ) {
+					if ( '' === trim( wp_strip_all_tags( $item_text ) ) && '' === $item_link_url && empty( $item_image['ID'] ) && empty( $item_image['url'] ) ) {
 						continue;
 					}
+
+					if ( $enable_full_item_link && '' !== $item_link_url ) {
+						$item_class_names[] = 'mrn-card-row__item--full-link';
+					}
 					?>
-						<article class="mrn-card-row__item mrn-card-row__item--card-deck mrn-ui__item">
+						<article class="<?php echo esc_attr( implode( ' ', $item_class_names ) ); ?>">
 						<?php if ( ! empty( $item_image['ID'] ) ) : ?>
 								<div class="mrn-card-row__image mrn-ui__media">
 								<?php echo wp_get_attachment_image( (int) $item_image['ID'], 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -141,12 +175,24 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 							</div>
 						<?php endif; ?>
 
-						<?php if ( ! empty( $item_link['url'] ) ) : ?>
-							<p class="mrn-card-row__item-link">
-									<a class="mrn-ui__link" href="<?php echo esc_url( $item_link['url'] ); ?>"<?php echo ! empty( $item_link['target'] ) ? ' target="' . esc_attr( $item_link['target'] ) . '"' : ''; ?><?php echo ! empty( $item_link['target'] ) && '_blank' === $item_link['target'] ? ' rel="noopener noreferrer"' : ''; ?>>
-									<?php echo esc_html( $item_link['title'] ?? 'Learn More' ); ?>
+						<?php if ( '' !== $item_link_url ) : ?>
+							<?php if ( ! $enable_full_item_link ) : ?>
+								<p class="mrn-card-row__item-link">
+									<a class="mrn-ui__link" href="<?php echo esc_url( $item_link_url ); ?>"<?php echo '' !== $item_link_target ? ' target="' . esc_attr( $item_link_target ) . '"' : ''; ?><?php echo '_blank' === $item_link_target ? ' rel="noopener noreferrer"' : ''; ?>>
+										<?php echo esc_html( $item_link_label ); ?>
+									</a>
+								</p>
+							<?php elseif ( ! $hide_item_link ) : ?>
+								<p class="mrn-card-row__item-link">
+									<span class="mrn-ui__link"><?php echo esc_html( $item_link_label ); ?></span>
+								</p>
+							<?php endif; ?>
+
+							<?php if ( $enable_full_item_link ) : ?>
+								<a class="mrn-card-row__item-overlay-link" href="<?php echo esc_url( $item_link_url ); ?>"<?php echo '' !== $item_link_target ? ' target="' . esc_attr( $item_link_target ) . '"' : ''; ?><?php echo '_blank' === $item_link_target ? ' rel="noopener noreferrer"' : ''; ?>>
+									<span class="screen-reader-text"><?php echo esc_html( $item_link_aria_label ); ?></span>
 								</a>
-							</p>
+							<?php endif; ?>
 						<?php endif; ?>
 					</article>
 				<?php endforeach; ?>

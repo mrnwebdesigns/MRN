@@ -387,6 +387,119 @@
 		} );
 	}
 
+	function initFullItemOverlayLinks() {
+		var fullItemSelector = '.mrn-content-grid__item--full-link, .mrn-card-row__item--full-link, .mrn-showcase-row__item--full-link';
+		var overlayLinkSelector = '.mrn-content-grid__item-overlay-link, .mrn-card-row__item-overlay-link, .mrn-showcase-row__item-overlay-link';
+		var interactiveSelector = 'a, button, input, select, textarea, summary, [role="button"]';
+
+		function navigateOverlayLink( linkElement ) {
+			var url = linkElement && linkElement.getAttribute ? linkElement.getAttribute( 'href' ) : '';
+			var target = linkElement && linkElement.getAttribute ? linkElement.getAttribute( 'target' ) : '';
+			var rel = linkElement && linkElement.getAttribute ? ( linkElement.getAttribute( 'rel' ) || '' ).toLowerCase() : '';
+			var shouldHardenNewWindow = rel.indexOf( 'noopener' ) !== -1 || rel.indexOf( 'noreferrer' ) !== -1;
+			var newWindow = null;
+
+			if ( ! url ) {
+				return;
+			}
+
+			if ( '_blank' === target ) {
+				newWindow = window.open( url, '_blank', shouldHardenNewWindow ? 'noopener' : '' );
+
+				if ( newWindow && shouldHardenNewWindow ) {
+					newWindow.opener = null;
+				}
+
+				return;
+			}
+
+			try {
+				if ( '_parent' === target && window.parent && window.parent !== window ) {
+					window.parent.location.assign( url );
+					return;
+				}
+
+				if ( '_top' === target && window.top && window.top !== window ) {
+					window.top.location.assign( url );
+					return;
+				}
+			} catch ( error ) {
+				// Fall back to current-window navigation when cross-frame access is blocked.
+			}
+
+			window.location.assign( url );
+		}
+
+		document.addEventListener( 'click', function( event ) {
+			var target = event.target;
+			var overlayLink;
+
+			if (
+				event.defaultPrevented ||
+				0 !== event.button ||
+				event.metaKey ||
+				event.ctrlKey ||
+				event.shiftKey ||
+				event.altKey ||
+				! target ||
+				! target.closest
+			) {
+				return;
+			}
+
+			overlayLink = target.closest( overlayLinkSelector );
+
+			if (
+				! overlayLink ||
+				! overlayLink.getAttribute( 'href' ) ||
+				overlayLink.hasAttribute( 'download' )
+			) {
+				return;
+			}
+
+			event.preventDefault();
+			navigateOverlayLink( overlayLink );
+		}, true );
+
+		document.addEventListener( 'click', function( event ) {
+			var target = event.target;
+			var fullItemElement;
+			var overlayLink;
+
+			if (
+				event.defaultPrevented ||
+				0 !== event.button ||
+				event.metaKey ||
+				event.ctrlKey ||
+				event.shiftKey ||
+				event.altKey ||
+				! target ||
+				! target.closest
+			) {
+				return;
+			}
+
+			fullItemElement = target.closest( fullItemSelector );
+
+			if ( ! fullItemElement ) {
+				return;
+			}
+
+			if ( target.closest( overlayLinkSelector ) || target.closest( interactiveSelector ) ) {
+				return;
+			}
+
+			overlayLink = fullItemElement.querySelector( overlayLinkSelector );
+
+			if ( ! overlayLink || ! overlayLink.getAttribute( 'href' ) ) {
+				return;
+			}
+
+			event.preventDefault();
+			navigateOverlayLink( overlayLink );
+		} );
+	}
+
 	function initGlobalApi( inView ) {
 		window.mrnBaseStack = window.mrnBaseStack || {};
 		window.mrnBaseStack.motion = window.Motion || {};
@@ -398,6 +511,7 @@
 
 	function initEffects() {
 		initContentLinkButtons();
+		initFullItemOverlayLinks();
 
 		if ( ! window.Motion || 'function' !== typeof window.Motion.inView ) {
 			return;

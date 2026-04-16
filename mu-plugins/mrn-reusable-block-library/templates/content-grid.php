@@ -19,6 +19,8 @@ $equal_height    = !empty($fields['equal_height']);
 $accent          = !empty($fields['bottom_accent']);
 $accent_slug     = isset($fields['bottom_accent_style']) ? (string) $fields['bottom_accent_style'] : '';
 $item_link_style = isset($fields['link_style']) ? sanitize_key((string) $fields['link_style']) : 'link';
+$enable_full_item_link = !empty($fields['enable_full_item_link']);
+$hide_item_link = $enable_full_item_link && !empty($fields['hide_item_link']);
 $link_color      = isset($fields['link_color']) ? sanitize_title((string) $fields['link_color']) : '';
 $post_id        = isset($context['post_id']) ? (int) $context['post_id'] : 0;
 $post_name      = isset($context['post_name']) ? (string) $context['post_name'] : '';
@@ -47,6 +49,9 @@ $classes = array(
 
 if ($equal_height) {
     $classes[] = 'mrn-reusable-block--grid-equal-height';
+}
+if ($enable_full_item_link) {
+    $classes[] = 'mrn-reusable-block--grid-full-link';
 }
 
 $accent_contract = function_exists('mrn_site_styles_get_bottom_accent_contract')
@@ -129,10 +134,56 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
                     $item_heading  = isset($item['heading']) ? (string) $item['heading'] : '';
                     $item_heading_tag = isset($item['heading_tag']) ? sanitize_key((string) $item['heading_tag']) : 'h3';
                     $item_copy   = isset($item['content']) ? (string) $item['content'] : '';
-                    $item_link   = isset($item['link']) && is_array($item['link']) ? $item['link'] : array();
-                    $link_url    = isset($item_link['url']) ? (string) $item_link['url'] : '';
-                    $link_title  = isset($item_link['title']) ? (string) $item_link['title'] : '';
-                    $link_target = isset($item_link['target']) ? (string) $item_link['target'] : '';
+                    $item_background_color = isset($item['background_color']) ? sanitize_title((string) $item['background_color']) : '';
+                    foreach (array('item_url', 'link_url', 'url') as $legacy_url_key) {
+                        if (isset($item[$legacy_url_key]) && is_string($item[$legacy_url_key]) && trim($item[$legacy_url_key]) !== '') {
+                            $item['url'] = trim($item[$legacy_url_key]);
+                            break;
+                        }
+                    }
+                    if (isset($item['link']) && is_string($item['link']) && trim($item['link']) !== '') {
+                        $item['url'] = trim($item['link']);
+                    }
+                    $normalized_link = function_exists('mrn_rbl_normalize_content_link')
+                        ? mrn_rbl_normalize_content_link(
+                            $item,
+                            array(
+                                'fallback_link_style' => $item_link_style,
+                            )
+                        )
+                        : array();
+                    $link_url = isset($normalized_link['url']) ? (string) $normalized_link['url'] : '';
+                    $link_text = isset($normalized_link['text']) ? (string) $normalized_link['text'] : '';
+                    $link_style = isset($normalized_link['link_style']) ? (string) $normalized_link['link_style'] : $item_link_style;
+                    $link_attr_html = function_exists('mrn_rbl_get_content_link_html_attributes')
+                        ? mrn_rbl_get_content_link_html_attributes($normalized_link)
+                        : '';
+                    $link_custom_classes = function_exists('mrn_rbl_get_content_link_custom_class_names')
+                        ? mrn_rbl_get_content_link_custom_class_names($normalized_link)
+                        : '';
+                    $link_class_names = 'mrn-ui__link ' . ('button' === $link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text');
+                    $link_icon_markup = function_exists('mrn_base_stack_get_button_link_icon_markup')
+                        ? mrn_base_stack_get_button_link_icon_markup($normalized_link)
+                        : '';
+                    $link_icon_position = function_exists('mrn_base_stack_get_button_link_icon_position')
+                        ? mrn_base_stack_get_button_link_icon_position($normalized_link)
+                        : 'left';
+                    $link_label = $link_text !== '' ? $link_text : $link_url;
+                    $link_aria_label = $link_text !== ''
+                        ? $link_text
+                        : ($item_heading !== ''
+                            ? wp_strip_all_tags($item_heading)
+                            : __('View grid item', 'mrn-reusable-block-library'));
+                    $item_classes = array(
+                        'mrn-content-grid__item',
+                        'mrn-content-grid__item--collection-shell',
+                        'mrn-ui__item',
+                    );
+                    $item_styles = array();
+
+                    if ($link_custom_classes !== '') {
+                        $link_class_names .= ' ' . $link_custom_classes;
+                    }
 
                     if (!in_array($item_heading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span'), true)) {
                         $item_heading_tag = 'h3';
@@ -141,8 +192,16 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
                     if ($item_label === '' && $item_heading === '' && $item_copy === '' && $link_url === '') {
                         continue;
                     }
+
+                    if ($enable_full_item_link && $link_url !== '') {
+                        $item_classes[] = 'mrn-content-grid__item--full-link';
+                    }
+
+                    if ($item_background_color !== '') {
+                        $item_styles[] = '--mrn-content-grid-item-bg: var(--site-color-' . $item_background_color . ')';
+                    }
                     ?>
-                    <article class="mrn-content-grid__item mrn-content-grid__item--collection-shell mrn-ui__item">
+                    <article class="<?php echo esc_attr(implode(' ', $item_classes)); ?>"<?php echo $item_styles !== array() ? ' style="' . esc_attr(implode('; ', $item_styles)) . '"' : ''; ?>>
                         <div class="mrn-content-grid__item-body mrn-ui__body">
                             <?php if ($item_label !== '' || $item_heading !== '') : ?>
                                 <div class="mrn-content-grid__item-head mrn-ui__head">
@@ -163,22 +222,44 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
                             <?php endif; ?>
 
                             <?php if ($link_url !== '') : ?>
-                                <div class="mrn-content-grid__item-link-wrap">
-                                    <a
-                                        class="mrn-ui__link <?php echo 'button' === $item_link_style ? 'mrn-ui__link--button' : 'mrn-ui__link--text'; ?>"
-                                        href="<?php echo esc_url($link_url); ?>"
-                                        <?php if ($link_target !== '') : ?>
-                                            target="<?php echo esc_attr($link_target); ?>"
-                                        <?php endif; ?>
-                                        <?php if ('_blank' === $link_target) : ?>
-                                            rel="noopener noreferrer"
-                                        <?php endif; ?>
-                                    >
-                                        <?php echo esc_html($link_title !== '' ? $link_title : $link_url); ?>
-                                    </a>
-                                </div>
+                                <?php if (!$enable_full_item_link) : ?>
+                                    <div class="mrn-content-grid__item-link-wrap">
+                                        <a
+                                            class="<?php echo esc_attr(trim($link_class_names)); ?>"
+                                            <?php echo '' !== $link_attr_html ? $link_attr_html : 'href="' . esc_url($link_url) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                                        >
+                                            <?php if ('left' === $link_icon_position) : ?>
+                                                <?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in helper. ?>
+                                            <?php endif; ?>
+                                            <?php echo esc_html($link_label); ?>
+                                            <?php if ('right' === $link_icon_position) : ?>
+                                                <?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in helper. ?>
+                                            <?php endif; ?>
+                                        </a>
+                                    </div>
+                                <?php elseif (!$hide_item_link) : ?>
+                                    <div class="mrn-content-grid__item-link-wrap">
+                                        <span class="<?php echo esc_attr(trim($link_class_names)); ?>">
+                                            <?php if ('left' === $link_icon_position) : ?>
+                                                <?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in helper. ?>
+                                            <?php endif; ?>
+                                            <?php echo esc_html($link_label); ?>
+                                            <?php if ('right' === $link_icon_position) : ?>
+                                                <?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in helper. ?>
+                                            <?php endif; ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
                             <?php endif; ?>
                         </div>
+                        <?php if ($enable_full_item_link && $link_url !== '') : ?>
+                            <a
+                                class="mrn-content-grid__item-overlay-link"
+                                <?php echo '' !== $link_attr_html ? $link_attr_html : 'href="' . esc_url($link_url) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                            >
+                                <span class="screen-reader-text"><?php echo esc_html($link_aria_label); ?></span>
+                            </a>
+                        <?php endif; ?>
                     </article>
                 <?php endforeach; ?>
             </div>

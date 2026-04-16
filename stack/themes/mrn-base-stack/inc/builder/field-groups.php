@@ -1900,6 +1900,43 @@ function mrn_base_stack_register_acf_field_groups() {
 										'allow_null'    => 1,
 										'instructions'  => 'Select from Site Colors when available.',
 									),
+									array(
+										'key'           => 'field_mrn_card_enable_full_item_link',
+										'label'         => 'Make Entire Card Clickable',
+										'name'          => 'enable_full_item_link',
+										'aria-label'    => '',
+										'type'          => 'true_false',
+										'ui'            => 1,
+										'default_value' => 0,
+										'ui_on_text'    => 'On',
+										'ui_off_text'   => 'Off',
+										'wrapper'       => array(
+											'width' => '25',
+										),
+									),
+									array(
+										'key'           => 'field_mrn_card_hide_item_link',
+										'label'         => 'Hide Link Label',
+										'name'          => 'hide_item_link',
+										'aria-label'    => '',
+										'type'          => 'true_false',
+										'ui'            => 1,
+										'default_value' => 0,
+										'ui_on_text'    => 'On',
+										'ui_off_text'   => 'Off',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_card_enable_full_item_link',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'       => array(
+											'width' => '25',
+										),
+									),
 									mrn_base_stack_get_section_width_field( 'field_mrn_card_section_width', 'section_width', 'wide' ),
 									mrn_base_stack_get_anchor_field( 'field_mrn_card_anchor' ),
 									mrn_base_stack_get_motion_group_field( 'field_mrn_card_motion_settings' ),
@@ -2624,6 +2661,43 @@ function mrn_base_stack_register_acf_field_groups() {
 										'ui'            => 1,
 										'allow_null'    => 1,
 										'instructions'  => 'Select from Site Colors when available.',
+										'wrapper'       => array(
+											'width' => '25',
+										),
+									),
+									array(
+										'key'           => 'field_mrn_showcase_enable_full_item_link',
+										'label'         => 'Make Entire Showcase Clickable',
+										'name'          => 'enable_full_item_link',
+										'aria-label'    => '',
+										'type'          => 'true_false',
+										'ui'            => 1,
+										'default_value' => 0,
+										'ui_on_text'    => 'On',
+										'ui_off_text'   => 'Off',
+										'wrapper'       => array(
+											'width' => '25',
+										),
+									),
+									array(
+										'key'           => 'field_mrn_showcase_hide_item_link',
+										'label'         => 'Hide Link Label',
+										'name'          => 'hide_item_link',
+										'aria-label'    => '',
+										'type'          => 'true_false',
+										'ui'            => 1,
+										'default_value' => 0,
+										'ui_on_text'    => 'On',
+										'ui_off_text'   => 'Off',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_showcase_enable_full_item_link',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
 										'wrapper'       => array(
 											'width' => '25',
 										),

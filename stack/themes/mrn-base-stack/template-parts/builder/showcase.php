@@ -16,6 +16,8 @@ $subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row[
 $items            = isset( $row['showcase_items'] ) && is_array( $row['showcase_items'] ) ? $row['showcase_items'] : array();
 $hover_effect     = isset( $row['hover_effect'] ) ? sanitize_key( (string) $row['hover_effect'] ) : 'lift';
 $stagger_style    = isset( $row['stagger_style'] ) ? sanitize_key( (string) $row['stagger_style'] ) : 'collage';
+$enable_full_item_link = ! empty( $row['enable_full_item_link'] );
+$hide_item_link   = $enable_full_item_link && ! empty( $row['hide_item_link'] );
 $background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
 $bottom_accent    = ! empty( $row['bottom_accent'] );
 $accent_slug      = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
@@ -81,6 +83,9 @@ $section_classes = array(
 	'mrn-content-builder__row--showcase-hover-' . sanitize_html_class( $hover_effect ),
 	'mrn-content-builder__row--showcase-stagger-' . sanitize_html_class( $stagger_style ),
 );
+if ( $enable_full_item_link ) {
+	$section_classes[] = 'mrn-content-builder__row--showcase-full-link';
+}
 $section_styles  = array();
 
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
@@ -127,12 +132,31 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				<?php foreach ( $valid_items as $index => $item ) : ?>
 					<?php
 					$image       = $item['image'];
-					$item_link   = $item['link'];
-					$url         = isset( $item_link['url'] ) ? (string) $item_link['url'] : '';
-					$link_target = isset( $item_link['target'] ) ? (string) $item_link['target'] : '';
+					$item_link_raw = $item['link'] ?? array();
+					$url           = '';
+					$link_title    = '';
+					$link_target   = '';
+					if ( is_array( $item_link_raw ) ) {
+						$url         = isset( $item_link_raw['url'] ) ? (string) $item_link_raw['url'] : '';
+						$link_title  = isset( $item_link_raw['title'] ) ? (string) $item_link_raw['title'] : '';
+						$link_target = isset( $item_link_raw['target'] ) ? (string) $item_link_raw['target'] : '';
+					} elseif ( is_string( $item_link_raw ) ) {
+						$url = trim( $item_link_raw );
+					}
+					$item_classes = array(
+						'mrn-showcase-row__item',
+						'mrn-showcase-row__item--gallery-shell',
+						'mrn-ui__item',
+					);
+					$use_overlay_link = $enable_full_item_link && $hide_item_link && '' !== $url;
+					$item_link_aria_label = '' !== $link_title ? $link_title : __( 'View showcase item', 'mrn-base-stack' );
+
+					if ( $enable_full_item_link && '' !== $url ) {
+						$item_classes[] = 'mrn-showcase-row__item--full-link';
+					}
 					?>
-						<figure class="mrn-showcase-row__item mrn-showcase-row__item--gallery-shell mrn-ui__item">
-						<?php if ( '' !== $url ) : ?>
+						<figure class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>">
+						<?php if ( '' !== $url && ! $use_overlay_link ) : ?>
 							<a
 									class="mrn-ui__link"
 								href="<?php echo esc_url( $url ); ?>"
@@ -149,7 +173,12 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 						<?php else : ?>
 							<img src="<?php echo esc_url( $image['url'] ); ?>" alt="<?php echo esc_attr( $image['alt'] ?? '' ); ?>">
 						<?php endif; ?>
-						<?php if ( '' !== $url ) : ?>
+						<?php if ( '' !== $url && ! $use_overlay_link ) : ?>
+							</a>
+						<?php endif; ?>
+						<?php if ( $use_overlay_link ) : ?>
+							<a class="mrn-showcase-row__item-overlay-link" href="<?php echo esc_url( $url ); ?>"<?php echo '' !== $link_target ? ' target="' . esc_attr( $link_target ) . '"' : ''; ?><?php echo '_blank' === $link_target ? ' rel="noopener noreferrer"' : ''; ?>>
+								<span class="screen-reader-text"><?php echo esc_html( $item_link_aria_label ); ?></span>
 							</a>
 						<?php endif; ?>
 					</figure>
