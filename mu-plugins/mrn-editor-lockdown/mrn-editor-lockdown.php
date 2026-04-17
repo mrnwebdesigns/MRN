@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Editor Lockdown (MU)
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.7
+ * Version: 1.0.8
  *
  * @package MRNEditorLockdown
  */
@@ -654,6 +654,18 @@ function mrn_editor_lockdown_admin_css() {
 			transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 		}
 
+		.mrn-editor-sidebar-toggle--icon {
+			flex: 0 0 30px;
+			width: 30px;
+			min-width: 30px;
+			max-width: 30px;
+			padding: 0;
+		}
+
+		.mrn-editor-sidebar-toggle--icon .dashicons {
+			margin: 0;
+		}
+
 		.mrn-editor-sidebar-toggle:hover,
 		.mrn-editor-sidebar-toggle:focus-visible {
 			border-color: #2271b1;
@@ -718,7 +730,8 @@ function mrn_editor_lockdown_admin_css() {
 			width: 0 !important;
 			min-width: 0 !important;
 			margin-right: 0 !important;
-			overflow: visible;
+			max-width: 0 !important;
+			overflow: hidden;
 		}
 
 		body.mrn-editor-sidebar-collapsible.mrn-editor-sidebar-collapsed #poststuff #post-body.columns-2 {
@@ -810,6 +823,9 @@ function mrn_editor_lockdown_admin_js() {
 			var toggle;
 			var toggleIcon;
 			var toggleText;
+			var distractionFreeToggle;
+			var distractionFreeIcon;
+			var adminMenuCollapseButton;
 			var restoreTimer;
 			var loadingFallbackTimer;
 			var loadingReadyTimer;
@@ -971,6 +987,53 @@ function mrn_editor_lockdown_admin_js() {
 				loadingFallbackTimer = window.setTimeout(markEditorPageReady, 7000);
 			}
 
+			function isAdminMenuCollapsed() {
+				return !!body && body.classList.contains('folded');
+			}
+
+			function getAdminMenuCollapseButton() {
+				if (adminMenuCollapseButton && adminMenuCollapseButton.isConnected) {
+					return adminMenuCollapseButton;
+				}
+
+				adminMenuCollapseButton = document.getElementById('collapse-button') || document.querySelector('#collapse-menu button');
+
+				return adminMenuCollapseButton;
+			}
+
+			function setAdminMenuCollapsed(collapsed) {
+				if (!body || isAdminMenuCollapsed() === collapsed) {
+					return;
+				}
+
+				adminMenuCollapseButton = getAdminMenuCollapseButton();
+				if (adminMenuCollapseButton && 'function' === typeof adminMenuCollapseButton.click) {
+					adminMenuCollapseButton.click();
+					return;
+				}
+
+				body.classList.toggle('folded', collapsed);
+			}
+
+			function updateDistractionFreeToggleState() {
+				if (!distractionFreeToggle) {
+					return;
+				}
+
+				var distractionFreeActive = body && body.classList.contains('mrn-editor-sidebar-collapsed') && isAdminMenuCollapsed();
+				var toggleLabel = distractionFreeActive
+					? 'Exit distraction-free mode (show sidebar and expand admin menu)'
+					: 'Enter distraction-free mode (hide sidebar and collapse admin menu)';
+
+				distractionFreeToggle.setAttribute('aria-pressed', distractionFreeActive ? 'true' : 'false');
+				distractionFreeToggle.setAttribute('aria-label', toggleLabel);
+				distractionFreeToggle.setAttribute('title', toggleLabel);
+
+				if (distractionFreeIcon) {
+					distractionFreeIcon.className = distractionFreeActive ? 'dashicons dashicons-editor-expand' : 'dashicons dashicons-editor-contract';
+				}
+			}
+
 			function setSidebarCollapsed(collapsed) {
 				if (!body) {
 					return;
@@ -1008,6 +1071,8 @@ function mrn_editor_lockdown_admin_js() {
 				if (toggleText) {
 					toggleText.textContent = collapsed ? 'Show Sidebar' : 'Hide Sidebar';
 				}
+
+				updateDistractionFreeToggleState();
 			}
 
 			function getStoredSidebarState() {
@@ -1052,6 +1117,12 @@ function mrn_editor_lockdown_admin_js() {
 				migrateSidebarStateIfNeeded();
 
 				body.classList.add('mrn-editor-sidebar-collapsible');
+				adminMenuCollapseButton = getAdminMenuCollapseButton();
+				if (adminMenuCollapseButton) {
+					adminMenuCollapseButton.addEventListener('click', function() {
+						window.setTimeout(updateDistractionFreeToggleState, 0);
+					});
+				}
 
 				toggle = document.createElement('button');
 				toggleIcon = document.createElement('span');
@@ -1074,9 +1145,32 @@ function mrn_editor_lockdown_admin_js() {
 					} catch (error) {}
 				});
 
+				distractionFreeToggle = document.createElement('button');
+				distractionFreeIcon = document.createElement('span');
+				distractionFreeToggle.type = 'button';
+				distractionFreeToggle.className = 'mrn-editor-sidebar-toggle mrn-editor-sidebar-toggle--icon mrn-editor-sidebar-toggle--distraction';
+				distractionFreeToggle.setAttribute('aria-pressed', 'false');
+				distractionFreeToggle.setAttribute('aria-label', 'Enter distraction-free mode (hide sidebar and collapse admin menu)');
+				distractionFreeToggle.setAttribute('title', 'Enter distraction-free mode (hide sidebar and collapse admin menu)');
+				distractionFreeIcon.className = 'dashicons dashicons-editor-contract';
+				distractionFreeIcon.setAttribute('aria-hidden', 'true');
+				distractionFreeToggle.appendChild(distractionFreeIcon);
+				distractionFreeToggle.addEventListener('click', function() {
+					var nextCollapsedState = distractionFreeToggle.getAttribute('aria-pressed') !== 'true';
+					setSidebarCollapsed(nextCollapsedState);
+					setAdminMenuCollapsed(nextCollapsedState);
+					window.setTimeout(updateDistractionFreeToggleState, 0);
+
+					try {
+						window.localStorage.setItem(storageKey, nextCollapsedState ? 'collapsed' : 'expanded');
+					} catch (error) {}
+				});
+
 				screenMetaLinks.appendChild(toggle);
+				screenMetaLinks.appendChild(distractionFreeToggle);
 				body.classList.add('mrn-editor-sidebar-ready');
 				restoreSidebarState();
+				updateDistractionFreeToggleState();
 
 				window.requestAnimationFrame(function() {
 					window.requestAnimationFrame(function() {

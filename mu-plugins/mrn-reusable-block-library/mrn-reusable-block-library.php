@@ -1130,6 +1130,189 @@ function mrn_rbl_fields_have_tabs(array $fields): bool {
 }
 
 /**
+ * Build an editor-only internal name field for reusable layouts/blocks.
+ *
+ * @param string $key Unique ACF field key.
+ * @return array<string, mixed>
+ */
+function mrn_rbl_get_internal_layout_name_field(string $key): array {
+    return array(
+        'key'          => $key,
+        'label'        => 'Name (admin use only)',
+        'name'         => 'internal_name',
+        'type'         => 'text',
+        'instructions' => 'Optional editor-only row name used in the layout list. This is not rendered on the front end.',
+        'wrapper'      => array(
+            'width' => '50',
+        ),
+    );
+}
+
+/**
+ * Normalize one field label to the shared primary-layout contract.
+ *
+ * @param array<string, mixed> $field Field definition.
+ * @return array<string, mixed>
+ */
+function mrn_rbl_normalize_primary_layout_field(array $field): array {
+    $field_type = isset($field['type']) ? sanitize_key((string) $field['type']) : '';
+    $field_name = isset($field['name']) ? sanitize_key((string) $field['name']) : '';
+
+    if ('internal_name' === $field_name) {
+        $field['label'] = 'Name (admin use only)';
+    }
+
+    if ('label' === $field_name && 'text' === $field_type) {
+        $field['label'] = 'Label';
+    }
+
+    if ('label_tag' === $field_name) {
+        $field['label'] = 'Label';
+    }
+
+    if ('heading' === $field_name && 'text' === $field_type) {
+        $field['label'] = 'Heading';
+    }
+
+    if ('heading_tag' === $field_name || 'text_field_tag' === $field_name) {
+        $field['label'] = 'Heading';
+    }
+
+    if ('subheading' === $field_name && 'text' === $field_type) {
+        $field['label'] = 'Subheading';
+    }
+
+    if ('subheading_tag' === $field_name) {
+        $field['label'] = 'Subheading';
+    }
+
+    if ('wysiwyg' === $field_type && in_array($field_name, array('content', 'body_text', 'intro'), true)) {
+        $field['label'] = 'Text';
+    }
+
+    if ('links' === $field_name && 'repeater' === $field_type) {
+        $field['label'] = 'Link repeater';
+    }
+
+    if ('background_color' === $field_name && 'select' === $field_type) {
+        $field['label'] = 'Background Color';
+    }
+
+    if ('anchor' === $field_name) {
+        $field['label'] = 'Anchor ID';
+    }
+
+    if ('section_width' === $field_name && 'select' === $field_type) {
+        $field['label'] = 'Section Width';
+    }
+
+    if ('bottom_accent' === $field_name && 'true_false' === $field_type) {
+        $field['label'] = 'Accent';
+    }
+
+    if ('bottom_accent_style' === $field_name && 'select' === $field_type) {
+        $field['label'] = 'Bottom accent style';
+    }
+
+    return $field;
+}
+
+/**
+ * Recursively apply the shared primary-layout field contract.
+ *
+ * @param array<int, mixed> $fields Field definitions.
+ * @param bool              $inject_internal_name Whether to inject the editor-only internal name field.
+ * @return array<int, mixed>
+ */
+function mrn_rbl_apply_primary_layout_field_contract(array $fields, bool $inject_internal_name = true): array {
+    $normalized_fields = array();
+
+    foreach ($fields as $field) {
+        if (!is_array($field)) {
+            $normalized_fields[] = $field;
+            continue;
+        }
+
+        if (isset($field['sub_fields']) && is_array($field['sub_fields'])) {
+            $field['sub_fields'] = mrn_rbl_apply_primary_layout_field_contract($field['sub_fields'], false);
+        }
+
+        if (isset($field['fields']) && is_array($field['fields'])) {
+            $field['fields'] = mrn_rbl_apply_primary_layout_field_contract($field['fields'], false);
+        }
+
+        if (isset($field['layouts']) && is_array($field['layouts'])) {
+            foreach ($field['layouts'] as $layout_key => $layout) {
+                if (!is_array($layout)) {
+                    continue;
+                }
+
+                if (isset($layout['sub_fields']) && is_array($layout['sub_fields'])) {
+                    $layout['sub_fields'] = mrn_rbl_apply_primary_layout_field_contract($layout['sub_fields'], true);
+                }
+
+                $field['layouts'][$layout_key] = $layout;
+            }
+        }
+
+        $normalized_fields[] = mrn_rbl_normalize_primary_layout_field($field);
+    }
+
+    if (!$inject_internal_name) {
+        return $normalized_fields;
+    }
+
+    $content_tab_index = null;
+    $first_field_index = null;
+    $internal_name_key = 'field_mrn_rbl_internal_name';
+    $has_internal_name = false;
+
+    foreach ($normalized_fields as $index => $field) {
+        if (!is_array($field)) {
+            continue;
+        }
+
+        $field_name = isset($field['name']) ? sanitize_key((string) $field['name']) : '';
+        $field_type = isset($field['type']) ? sanitize_key((string) $field['type']) : '';
+        $field_key  = isset($field['key']) ? trim((string) $field['key']) : '';
+
+        if (null === $first_field_index) {
+            $first_field_index = $index;
+
+            if ('' !== $field_key) {
+                $internal_name_key = sanitize_key($field_key) . '_internal_name';
+            }
+        }
+
+        if ('internal_name' === $field_name) {
+            $has_internal_name = true;
+        }
+
+        if (null !== $content_tab_index || 'tab' !== $field_type) {
+            continue;
+        }
+
+        $field_label = isset($field['label']) ? sanitize_title((string) $field['label']) : '';
+        if ('content' !== $field_label) {
+            continue;
+        }
+
+        $content_tab_index = $index;
+
+        if ('' !== $field_key) {
+            $internal_name_key = sanitize_key($field_key) . '_internal_name';
+        }
+    }
+
+    if (!$has_internal_name) {
+        $insert_index = null !== $content_tab_index ? $content_tab_index + 1 : (null !== $first_field_index ? $first_field_index : 0);
+        array_splice($normalized_fields, $insert_index, 0, array(mrn_rbl_get_internal_layout_name_field($internal_name_key)));
+    }
+
+    return $normalized_fields;
+}
+
+/**
  * Determine whether a field group targets a reusable-block post type.
  *
  * @param array<string, mixed> $field_group
@@ -1172,8 +1355,10 @@ function mrn_rbl_with_effects_fields(array $field_group): array {
     }
 
     $fields = isset($field_group['fields']) && is_array($field_group['fields']) ? $field_group['fields'] : array();
+    $fields = mrn_rbl_apply_primary_layout_field_contract($fields);
 
     if (mrn_rbl_fields_have_motion_group($fields)) {
+        $field_group['fields'] = $fields;
         return $field_group;
     }
 
@@ -1340,6 +1525,10 @@ function mrn_rbl_get_button_link_dashicon_choices(): array {
  * @return array<string, string>
  */
 function mrn_rbl_get_button_link_fontawesome_choices(): array {
+    if (function_exists('mrn_base_stack_get_builder_link_fontawesome_choices')) {
+        return mrn_base_stack_get_builder_link_fontawesome_choices();
+    }
+
     if (function_exists('mrn_base_stack_get_header_search_fontawesome_choices')) {
         return mrn_base_stack_get_header_search_fontawesome_choices();
     }
@@ -1373,7 +1562,26 @@ function mrn_rbl_get_button_link_fontawesome_choices(): array {
         }
     }
 
-    return $choices;
+    if (!function_exists('mrn_fapm_get_icon_allowlist')) {
+        return $choices;
+    }
+
+    $allowlist = mrn_fapm_get_icon_allowlist();
+    if (!is_array($allowlist) || empty($allowlist)) {
+        return $choices;
+    }
+
+    $filtered = array();
+    foreach ($allowlist as $icon_class) {
+        $icon_class = trim((string) $icon_class);
+        if ('' === $icon_class) {
+            continue;
+        }
+
+        $filtered[$icon_class] = isset($choices[$icon_class]) ? (string) $choices[$icon_class] : $icon_class;
+    }
+
+    return !empty($filtered) ? $filtered : $choices;
 }
 
 /**
@@ -1388,23 +1596,57 @@ function mrn_rbl_get_button_link_icon_fields(string $key_prefix, string $button_
 
     return array(
         array(
+            'key'           => $key_prefix . '_source',
+            'label'         => 'Icon Source',
+            'name'          => 'link_icon_source',
+            'type'          => 'button_group',
+            'choices'       => array(
+                'dashicons'   => 'Dashicons',
+                'fontawesome' => 'Font Awesome',
+                'media'       => 'Media',
+            ),
+            'default_value' => '',
+            'layout'        => 'horizontal',
+            'return_format' => 'value',
+            'wrapper'       => array(
+                'width' => '100',
+                'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--source mrn-icon-chooser-field--allow-empty',
+            ),
+        ),
+        array(
             'key'         => $key_prefix . '_dashicons',
-            'label'       => 'Dashicon Class',
+            'label'       => 'Dashicon',
             'name'        => 'link_icon_dashicon',
             'type'        => 'text',
             'placeholder' => 'dashicons-arrow-right-alt2',
             'wrapper'     => array(
                 'width' => '50',
+                'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--dashicons',
             ),
         ),
         array(
             'key'         => $key_prefix . '_fontawesome',
-            'label'       => 'Font Awesome Class',
+            'label'       => 'Font Awesome',
             'name'        => 'link_icon_fa_class',
             'type'        => 'text',
             'placeholder' => 'fa-solid fa-arrow-right',
             'wrapper'     => array(
                 'width' => '50',
+                'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--fontawesome',
+            ),
+        ),
+        array(
+            'key'           => $key_prefix . '_media',
+            'label'         => 'Media',
+            'name'          => 'link_icon_media_icon',
+            'type'          => 'image',
+            'return_format' => 'array',
+            'preview_size'  => 'thumbnail',
+            'library'       => 'all',
+            'mime_types'    => 'jpg,jpeg,png,gif,webp,svg',
+            'wrapper'       => array(
+                'width' => '50',
+                'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--media',
             ),
         ),
         array(
@@ -1449,7 +1691,7 @@ function mrn_rbl_get_button_link_icon_fields(string $key_prefix, string $button_
  * @param string|null $instructions Optional instructions override.
  * @return array<string, mixed>
  */
-function mrn_rbl_get_content_link_repeater_field(string $key, string $label = 'Links', string $name = 'links', int $max = 0, ?string $instructions = null): array {
+function mrn_rbl_get_content_link_repeater_field(string $key, string $label = 'Link repeater', string $name = 'links', int $max = 0, ?string $instructions = null): array {
     unset($instructions);
 
     $link_key     = $key . '_link';
@@ -1469,7 +1711,7 @@ function mrn_rbl_get_content_link_repeater_field(string $key, string $label = 'L
         'sub_fields'   => array(
             array(
                 'key'           => $link_key,
-                'label'         => 'Link',
+                'label'         => 'Select Link',
                 'name'          => 'link',
                 'type'          => 'link',
                 'return_format' => 'array',
@@ -1522,7 +1764,7 @@ function mrn_rbl_get_content_link_repeater_field(string $key, string $label = 'L
             ),
             array(
                 'key'     => $key . '_title_attribute',
-                'label'   => 'Title Attribute',
+                'label'   => 'Title Attributes',
                 'name'    => 'title_attribute',
                 'type'    => 'text',
                 'wrapper' => array(
@@ -1576,7 +1818,7 @@ function mrn_rbl_get_content_link_repeater_field(string $key, string $label = 'L
  * @return array<int, array<string, mixed>>
  */
 function mrn_rbl_get_content_link_fields(string $key, string $label = 'Links', string $name = 'links', int $max = 0, ?string $instructions = null): array {
-    $tip_message = '<div style="margin:0 0 8px 0;padding:10px 12px;border-left:4px solid #2271b1;background:#f0f6fc;border-radius:2px;display:flex;align-items:flex-start;gap:8px;"><span class="dashicons dashicons-lightbulb" aria-hidden="true" style="margin-top:1px;color:#2271b1;"></span><span><strong>Pro Tip:</strong> For better accessibility and performance, use the <code>&lt;button&gt;</code> tag for interactive actions and only use classes to change how it looks. If you are navigating to a new page, use an <code>&lt;a&gt;</code> (anchor) tag styled with a button class.</span></div>';
+    $tip_message = '<div style="margin:0 0 8px 0;padding:10px 12px;border-left:4px solid #2271b1;background:#f0f6fc;border-radius:2px;display:flex;align-items:flex-start;gap:8px;"><span class="dashicons dashicons-lightbulb" aria-hidden="true" style="margin-top:1px;color:#2271b1;"></span><span><strong>Pro Tip:</strong> Content Tab: use <em>Select Link</em>. Configs Tab: use <em>Button</em>, <em>CSS Classes</em>, <em>Target</em>, <em>Rel</em>, <em>Title Attributes</em>, <em>Download</em>, <em>Hreflang</em>, <em>Media</em>, <em>Font Awesome</em>, <em>Icon Position</em>, and <em>Icon Gap</em>.</span></div>';
 
     return array(
         array(
@@ -1695,6 +1937,17 @@ function mrn_rbl_normalize_content_link(array $link, array $args = array()): arr
 
     if (empty($normalized['link_icon_media_icon']) && !empty($fallback_icon_fields['link_icon_media_icon']) && is_array($fallback_icon_fields['link_icon_media_icon'])) {
         $normalized['link_icon_media_icon'] = $fallback_icon_fields['link_icon_media_icon'];
+    }
+
+    if (
+        '' !== (string) $normalized['link_icon_fa_class']
+        && function_exists('mrn_fapm_icon_is_allowed')
+        && !mrn_fapm_icon_is_allowed((string) $normalized['link_icon_fa_class'])
+    ) {
+        $normalized['link_icon_fa_class'] = '';
+        if ('fontawesome' === (string) $normalized['link_icon_source']) {
+            $normalized['link_icon_source'] = '';
+        }
     }
 
     return $normalized;
@@ -1960,7 +2213,7 @@ function mrn_rbl_register_acf_field_groups(): void {
         return;
     }
 
-    acf_add_local_field_group(array(
+    acf_add_local_field_group(mrn_rbl_with_effects_fields(array(
         'key'    => 'group_mrn_reusable_cta',
         'title'  => 'CTA Fields',
         'fields' => array(
@@ -2078,9 +2331,9 @@ function mrn_rbl_register_acf_field_groups(): void {
         'label_placement'       => 'top',
         'instruction_placement' => 'label',
         'active'                => true,
-    ));
+    )));
 
-    acf_add_local_field_group(array(
+    acf_add_local_field_group(mrn_rbl_with_effects_fields(array(
         'key'    => 'group_mrn_reusable_basic_block',
         'title'  => 'Basic Block Fields',
         'fields' => array(
@@ -2215,9 +2468,9 @@ function mrn_rbl_register_acf_field_groups(): void {
         'instruction_placement' => 'label',
         'active'                => true,
         'show_in_rest'          => 1,
-    ));
+    )));
 
-    acf_add_local_field_group(array(
+    acf_add_local_field_group(mrn_rbl_with_effects_fields(array(
         'key'    => 'group_mrn_reusable_content_grid',
         'title'  => 'Grid Fields',
         'fields' => array(
@@ -2235,7 +2488,7 @@ function mrn_rbl_register_acf_field_groups(): void {
             mrn_rbl_get_text_tag_field('field_mrn_content_grid_subheading_tag', 'Subheading Tag', 'subheading_tag', 'p'),
             array(
                 'key'          => 'field_mrn_content_grid_items',
-                'label'        => 'Repeater',
+                'label'        => 'Grids',
                 'name'         => 'grid_items',
                 'type'         => 'repeater',
                 'layout'       => 'row',
@@ -2536,9 +2789,9 @@ function mrn_rbl_register_acf_field_groups(): void {
         'instruction_placement' => 'label',
         'active'                => true,
         'show_in_rest'          => 1,
-    ));
+    )));
 
-    acf_add_local_field_group(array(
+    acf_add_local_field_group(mrn_rbl_with_effects_fields(array(
         'key'    => 'group_mrn_reusable_content_lists',
         'title'  => 'Content Lists Fields',
         'fields' => array(
@@ -2901,9 +3154,9 @@ function mrn_rbl_register_acf_field_groups(): void {
         'instruction_placement' => 'label',
         'active'                => true,
         'show_in_rest'          => 1,
-    ));
+    )));
 
-    acf_add_local_field_group(array(
+    acf_add_local_field_group(mrn_rbl_with_effects_fields(array(
         'key'    => 'group_mrn_reusable_search_form',
         'title'  => 'Search Form Fields',
         'fields' => array(
@@ -3007,9 +3260,9 @@ function mrn_rbl_register_acf_field_groups(): void {
         'instruction_placement' => 'label',
         'active'                => true,
         'show_in_rest'          => 1,
-    ));
+    )));
 
-    acf_add_local_field_group(array(
+    acf_add_local_field_group(mrn_rbl_with_effects_fields(array(
         'key'    => 'group_mrn_reusable_faq',
         'title'  => 'FAQs/Accordion Fields',
         'fields' => array(
@@ -3138,7 +3391,7 @@ function mrn_rbl_register_acf_field_groups(): void {
         'instruction_placement' => 'label',
         'active'                => true,
         'show_in_rest'          => 1,
-    ));
+    )));
 
 }
 add_action('acf/init', 'mrn_rbl_register_acf_field_groups');

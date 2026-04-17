@@ -1242,6 +1242,215 @@ function mrn_base_stack_get_effects_tab_field( $key, $label = 'Effects' ) {
 }
 
 /**
+ * Build the standard internal layout name field for editor-only row labels.
+ *
+ * @param string $key Unique ACF field key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_internal_layout_name_field( $key ) {
+	return array(
+		'key'          => $key,
+		'label'        => 'Name (admin use only)',
+		'name'         => 'internal_name',
+		'aria-label'   => '',
+		'type'         => 'text',
+		'instructions' => 'Optional editor-only row name used in the layout list. This is not rendered on the front end.',
+		'wrapper'      => array(
+			'width' => '50',
+		),
+	);
+}
+
+/**
+ * Normalize one field label to the shared primary-layout contract.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_normalize_primary_layout_field( array $field ) {
+	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+
+	if ( 'internal_name' === $field_name ) {
+		$field['label'] = 'Name (admin use only)';
+	}
+
+	if ( 'label' === $field_name && 'text' === $field_type ) {
+		$field['label'] = 'Label';
+	}
+
+	if ( 'label_tag' === $field_name ) {
+		$field['label'] = 'Label';
+	}
+
+	if ( 'heading' === $field_name && 'text' === $field_type ) {
+		$field['label'] = 'Heading';
+	}
+
+	if ( 'heading_tag' === $field_name ) {
+		$field['label'] = 'Heading';
+	}
+
+	if ( 'subheading' === $field_name && 'text' === $field_type ) {
+		$field['label'] = 'Subheading';
+	}
+
+	if ( 'subheading_tag' === $field_name ) {
+		$field['label'] = 'Subheading';
+	}
+
+	if ( 'wysiwyg' === $field_type && in_array( $field_name, array( 'content', 'body_text', 'intro' ), true ) ) {
+		$field['label'] = 'Text';
+	}
+
+	if ( 'links' === $field_name && 'repeater' === $field_type ) {
+		$field['label'] = 'Link repeater';
+	}
+
+	if ( 'background_color' === $field_name && 'select' === $field_type ) {
+		$field['label'] = 'Background Color';
+	}
+
+	if ( 'anchor' === $field_name ) {
+		$field['label'] = 'Anchor ID';
+	}
+
+	if ( 'section_width' === $field_name && 'select' === $field_type ) {
+		$field['label'] = 'Section Width';
+	}
+
+	if ( 'bottom_accent' === $field_name && 'true_false' === $field_type ) {
+		$field['label'] = 'Accent';
+	}
+
+	if ( 'bottom_accent_style' === $field_name && 'select' === $field_type ) {
+		$field['label'] = 'Bottom accent style';
+	}
+
+	return $field;
+}
+
+/**
+ * Recursively apply the shared primary-layout field contract.
+ *
+ * @param array<int, mixed> $fields ACF field definitions.
+ * @param bool              $inject_internal_name Whether to inject the editor-only internal name field.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inject_internal_name = true ) {
+	$normalized_fields = array();
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			$normalized_fields[] = $field;
+			continue;
+		}
+
+		if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) ) {
+			$field['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field['sub_fields'], false );
+		}
+
+		if ( isset( $field['fields'] ) && is_array( $field['fields'] ) ) {
+			$field['fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field['fields'], false );
+		}
+
+		if ( isset( $field['layouts'] ) && is_array( $field['layouts'] ) ) {
+			foreach ( $field['layouts'] as $layout_key => $layout ) {
+				if ( ! is_array( $layout ) ) {
+					continue;
+				}
+
+				if ( isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ) {
+					$layout['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+				}
+
+				$field['layouts'][ $layout_key ] = $layout;
+			}
+		}
+
+		$normalized_fields[] = mrn_base_stack_normalize_primary_layout_field( $field );
+	}
+
+	if ( ! $inject_internal_name ) {
+		return $normalized_fields;
+	}
+
+	$contains_reusable_group_clone = false;
+
+	foreach ( $normalized_fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		if ( 'clone' !== $field_type || ! isset( $field['clone'] ) || ! is_array( $field['clone'] ) ) {
+			continue;
+		}
+
+		foreach ( $field['clone'] as $clone_target ) {
+			$clone_key = is_string( $clone_target ) ? sanitize_key( $clone_target ) : '';
+			if ( '' !== $clone_key && 0 === strpos( $clone_key, 'group_mrn_reusable_' ) ) {
+				$contains_reusable_group_clone = true;
+				break 2;
+			}
+		}
+	}
+
+	if ( $contains_reusable_group_clone ) {
+		return $normalized_fields;
+	}
+
+	$content_tab_index = null;
+	$first_field_index = null;
+	$internal_name_key = 'field_mrn_layout_internal_name';
+	$has_internal_name = false;
+
+	foreach ( $normalized_fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_key  = isset( $field['key'] ) && is_string( $field['key'] ) ? trim( $field['key'] ) : '';
+
+		if ( null === $first_field_index ) {
+			$first_field_index = $index;
+
+			if ( '' !== $field_key ) {
+				$internal_name_key = sanitize_key( $field_key ) . '_internal_name';
+			}
+		}
+
+		if ( 'internal_name' === $field_name ) {
+			$has_internal_name = true;
+		}
+
+		if ( null !== $content_tab_index || 'tab' !== $field_type ) {
+			continue;
+		}
+
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+		if ( 'content' !== $field_label ) {
+			continue;
+		}
+
+		$content_tab_index = $index;
+
+		if ( '' !== $field_key ) {
+			$internal_name_key = sanitize_key( $field_key ) . '_internal_name';
+		}
+	}
+
+	if ( ! $has_internal_name ) {
+		$insert_index = null !== $content_tab_index ? $content_tab_index + 1 : ( null !== $first_field_index ? $first_field_index : 0 );
+		array_splice( $normalized_fields, $insert_index, 0, array( mrn_base_stack_get_internal_layout_name_field( $internal_name_key ) ) );
+	}
+
+	return $normalized_fields;
+}
+
+/**
  * Recursively move row effect controls into a dedicated Effects tab.
  *
  * This preserves existing motion field keys/names and only changes their tab
@@ -1337,6 +1546,7 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
  */
 function mrn_base_stack_with_effects_tabs( array $field_group ) {
 	if ( isset( $field_group['fields'] ) && is_array( $field_group['fields'] ) ) {
+		$field_group['fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field_group['fields'], false );
 		$field_group['fields'] = mrn_base_stack_relocate_effect_fields( $field_group['fields'] );
 	}
 
@@ -1805,6 +2015,51 @@ function mrn_base_stack_get_text_tag_field( $key, $name = 'heading_tag', $defaul
 }
 
 /**
+ * Get Font Awesome choices for builder link icon fields.
+ *
+ * If the Font Awesome profile manager is active and has an allowlist, prefer
+ * those classes so editor choices match the profile configuration.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_builder_link_fontawesome_choices() {
+	$choices = function_exists( 'mrn_base_stack_get_header_search_fontawesome_choices' )
+		? mrn_base_stack_get_header_search_fontawesome_choices()
+		: array();
+
+	if ( ! is_array( $choices ) ) {
+		$choices = array();
+	}
+
+	if ( ! function_exists( 'mrn_fapm_get_icon_allowlist' ) ) {
+		return $choices;
+	}
+
+	$allowlist = mrn_fapm_get_icon_allowlist();
+	if ( ! is_array( $allowlist ) || empty( $allowlist ) ) {
+		return $choices;
+	}
+
+	$filtered = array();
+
+	foreach ( $allowlist as $icon_class ) {
+		$icon_class = trim( (string) $icon_class );
+		if ( '' === $icon_class ) {
+			continue;
+		}
+
+		if ( isset( $choices[ $icon_class ] ) ) {
+			$filtered[ $icon_class ] = $choices[ $icon_class ];
+			continue;
+		}
+
+		$filtered[ $icon_class ] = $icon_class;
+	}
+
+	return ! empty( $filtered ) ? $filtered : $choices;
+}
+
+/**
  * Build shared manual icon fields for builder links.
  *
  * @param string $key_prefix Unique ACF key prefix for this field set.
@@ -1816,25 +2071,61 @@ function mrn_base_stack_get_button_link_icon_fields( $key_prefix, $link_style_fi
 
 	return array(
 		array(
+			'key'           => $key_prefix . '_source',
+			'label'         => 'Icon Source',
+			'name'          => 'link_icon_source',
+			'aria-label'    => '',
+			'type'          => 'button_group',
+			'choices'       => array(
+				'dashicons'   => 'Dashicons',
+				'fontawesome' => 'Font Awesome',
+				'media'       => 'Media',
+			),
+			'default_value' => '',
+			'layout'        => 'horizontal',
+			'return_format' => 'value',
+			'wrapper'       => array(
+				'width' => '100',
+				'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--source mrn-icon-chooser-field--allow-empty',
+			),
+		),
+		array(
 			'key'         => $key_prefix . '_dashicons',
-			'label'       => 'Dashicon Class',
+			'label'       => 'Dashicon',
 			'name'        => 'link_icon_dashicon',
 			'aria-label'  => '',
 			'type'        => 'text',
 			'placeholder' => 'dashicons-arrow-right-alt2',
 			'wrapper'     => array(
 				'width' => '50',
+				'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--dashicons',
 			),
 		),
 		array(
 			'key'         => $key_prefix . '_fontawesome',
-			'label'       => 'Font Awesome Class',
+			'label'       => 'Font Awesome',
 			'name'        => 'link_icon_fa_class',
 			'aria-label'  => '',
 			'type'        => 'text',
 			'placeholder' => 'fa-solid fa-arrow-right',
 			'wrapper'     => array(
 				'width' => '50',
+				'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--fontawesome',
+			),
+		),
+		array(
+			'key'           => $key_prefix . '_media',
+			'label'         => 'Media',
+			'name'          => 'link_icon_media_icon',
+			'aria-label'    => '',
+			'type'          => 'image',
+			'return_format' => 'array',
+			'preview_size'  => 'thumbnail',
+			'library'       => 'all',
+			'mime_types'    => 'jpg,jpeg,png,gif,webp,svg',
+			'wrapper'       => array(
+				'width' => '50',
+				'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--media',
 			),
 		),
 		array(
@@ -1985,6 +2276,10 @@ function mrn_base_stack_get_button_link_icon_markup( array $row ) {
 		$fa_class = isset( $row['link_icon_fa_class'] ) ? trim( (string) $row['link_icon_fa_class'] ) : '';
 
 		if ( '' === $fa_class ) {
+			return '';
+		}
+
+		if ( function_exists( 'mrn_fapm_icon_is_allowed' ) && ! mrn_fapm_icon_is_allowed( $fa_class ) ) {
 			return '';
 		}
 

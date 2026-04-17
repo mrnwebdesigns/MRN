@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Dummy Content
  * Description: Generates sample entries for discovered custom post types and builds an all-layouts page from the current site's ACF setup.
- * Version: 0.1.11
+ * Version: 0.1.12
  * Author: MRN
  */
 

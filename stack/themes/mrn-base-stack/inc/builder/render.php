@@ -668,6 +668,11 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	$layout_name = isset( $layout['name'] ) ? (string) $layout['name'] : '';
+	$internal    = mrn_base_stack_get_builder_sub_field_value( 'internal_name' );
+
+	if ( '' !== $internal ) {
+		return esc_html( wp_strip_all_tags( $internal ) );
+	}
 
 	if ( 'reusable_block' === $layout_name ) {
 		$block = get_sub_field( 'block' );
