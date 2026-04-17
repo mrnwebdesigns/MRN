@@ -219,6 +219,288 @@ function mrn_base_stack_register_theme_options_pages() {
 add_action( 'acf/init', 'mrn_base_stack_register_theme_options_pages' );
 
 /**
+ * Append classes to an ACF field wrapper definition.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @param string               $class Wrapper class(es) to append.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_append_field_wrapper_class( array $field, $class ) {
+	$class = trim( (string) $class );
+	if ( '' === $class ) {
+		return $field;
+	}
+
+	if ( ! isset( $field['wrapper'] ) || ! is_array( $field['wrapper'] ) ) {
+		$field['wrapper'] = array();
+	}
+
+	$existing = isset( $field['wrapper']['class'] ) ? (string) $field['wrapper']['class'] : '';
+	$classes  = preg_split( '/\s+/', trim( $existing . ' ' . $class ) );
+	$classes  = array_filter( is_array( $classes ) ? $classes : array() );
+	$classes  = array_values( array_unique( $classes ) );
+
+	$field['wrapper']['class'] = implode( ' ', $classes );
+
+	return $field;
+}
+
+/**
+ * Return the wrapper class contract for a Header/Footer sub-tab panel.
+ *
+ * @param string $section Section key.
+ * @param string $subtab  Sub-tab key.
+ * @return string
+ */
+function mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, $subtab ) {
+	$section = sanitize_html_class( (string) $section );
+	$subtab  = sanitize_html_class( (string) $subtab );
+
+	return 'mrn-theme-hf-subtab-panel mrn-theme-hf-subtab-section--' . $section . ' mrn-theme-hf-subtab--' . $subtab;
+}
+
+/**
+ * Return the universal sub-tab contract for Theme Header/Footer options.
+ *
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_theme_header_footer_subtab_contract() {
+	return array(
+		'default'    => 'configs',
+		'tabs'       => array(
+			'content' => __( 'Content', 'mrn-base-stack' ),
+			'configs' => __( 'Configs', 'mrn-base-stack' ),
+			'effects' => __( 'Effects', 'mrn-base-stack' ),
+			'layout'  => __( 'Layout', 'mrn-base-stack' ),
+		),
+		'appearance' => array(
+			'tab_set_gap_px'     => 10,
+			'panel_gap_px'       => 12,
+			'tab_border_width_px' => 1,
+			'tab_border_color'   => '#c3c4c7',
+		),
+	);
+}
+
+/**
+ * Resolve normalized appearance settings for Header/Footer tab contracts.
+ *
+ * @return array<string, int|string>
+ */
+function mrn_base_stack_get_theme_header_footer_subtab_appearance() {
+	$contract   = mrn_base_stack_get_theme_header_footer_subtab_contract();
+	$appearance = isset( $contract['appearance'] ) && is_array( $contract['appearance'] ) ? $contract['appearance'] : array();
+
+	$tab_set_gap_px = isset( $appearance['tab_set_gap_px'] ) ? max( 0, absint( $appearance['tab_set_gap_px'] ) ) : 10;
+	$panel_gap_px   = isset( $appearance['panel_gap_px'] ) ? max( 0, absint( $appearance['panel_gap_px'] ) ) : 12;
+	$tab_border_px  = isset( $appearance['tab_border_width_px'] ) ? max( 1, absint( $appearance['tab_border_width_px'] ) ) : 1;
+	$tab_border_hex = isset( $appearance['tab_border_color'] ) ? sanitize_hex_color( (string) $appearance['tab_border_color'] ) : '';
+
+	if ( '' === $tab_border_hex ) {
+		$tab_border_hex = '#c3c4c7';
+	}
+
+	return array(
+		'tab_set_gap_px'      => $tab_set_gap_px,
+		'panel_gap_px'        => $panel_gap_px,
+		'tab_border_width_px' => $tab_border_px,
+		'tab_border_color'    => $tab_border_hex,
+	);
+}
+
+/**
+ * Build section-specific sub-tab fields for Theme Header/Footer options.
+ *
+ * @param string $section Section key.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
+	$section = sanitize_key( (string) $section );
+
+	if ( ! in_array( $section, array( 'header', 'footer' ), true ) ) {
+		return array();
+	}
+
+	$section_label = 'header' === $section ? __( 'Header', 'mrn-base-stack' ) : __( 'Footer', 'mrn-base-stack' );
+	$contract      = mrn_base_stack_get_theme_header_footer_subtab_contract();
+	$tabs          = isset( $contract['tabs'] ) && is_array( $contract['tabs'] ) ? $contract['tabs'] : array();
+	$default_tab   = isset( $contract['default'] ) ? sanitize_key( (string) $contract['default'] ) : 'configs';
+	$buttons_html  = '';
+
+	if ( empty( $tabs ) ) {
+		return array();
+	}
+
+	if ( ! isset( $tabs[ $default_tab ] ) ) {
+		$first_key = array_key_first( $tabs );
+		if ( is_string( $first_key ) && '' !== $first_key ) {
+			$default_tab = $first_key;
+		}
+	}
+
+	foreach ( $tabs as $tab_key => $tab_label ) {
+		$tab_key    = sanitize_key( (string) $tab_key );
+		$is_default = $default_tab === $tab_key;
+		$classes    = 'nav-tab';
+		$tab_href   = '#mrn-theme-hf-' . $section . '-' . $tab_key;
+		if ( $is_default ) {
+			$classes .= ' nav-tab-active';
+		}
+
+		$buttons_html .= sprintf(
+			'<a href="%1$s" class="%2$s" data-mrn-theme-hf-subtab="%3$s" role="tab" aria-selected="%4$s" tabindex="%5$s">%6$s</a>',
+			esc_url( $tab_href ),
+			esc_attr( $classes ),
+			esc_attr( $tab_key ),
+			$is_default ? 'true' : 'false',
+			$is_default ? '0' : '-1',
+			esc_html( $tab_label )
+		);
+	}
+
+	$subtab_nav = array(
+		'key'       => 'field_mrn_theme_' . $section . '_subtabs_nav',
+		'label'     => '',
+		'name'      => '',
+		'type'      => 'message',
+		'message'   => sprintf(
+			'<div class="mrn-theme-hf-subtabs" data-mrn-theme-hf-section="%1$s" data-mrn-theme-hf-default="%4$s"><nav class="nav-tab-wrapper wp-clearfix" role="tablist" aria-label="%2$s">%3$s</nav></div>',
+			esc_attr( $section ),
+			esc_attr( sprintf( __( '%s option sub-tabs', 'mrn-base-stack' ), $section_label ) ),
+			$buttons_html,
+			esc_attr( $default_tab )
+		),
+		'esc_html'  => 0,
+		'new_lines' => 'br',
+	);
+
+	$contents_placeholder = array(
+		'key'       => 'field_mrn_theme_' . $section . '_content_placeholder',
+		'label'     => __( 'Content', 'mrn-base-stack' ),
+		'name'      => '',
+		'type'      => 'message',
+		'message'   => __( 'Header/Footer links are managed through WordPress menus. Add menu items there and they will render as their own rows in the assigned menu output.', 'mrn-base-stack' ),
+		'esc_html'  => 1,
+		'new_lines' => 'br',
+	);
+
+	$layout_placeholder = array(
+		'key'       => 'field_mrn_theme_' . $section . '_layout_placeholder',
+		'label'     => __( 'Layout', 'mrn-base-stack' ),
+		'name'      => '',
+		'type'      => 'message',
+		'message'   => __( 'Layout controls will be added in a follow-up update.', 'mrn-base-stack' ),
+		'esc_html'  => 1,
+		'new_lines' => 'br',
+	);
+
+	$effects_placeholder = array(
+		'key'       => 'field_mrn_theme_' . $section . '_effects_placeholder',
+		'label'     => __( 'Effects', 'mrn-base-stack' ),
+		'name'      => '',
+		'type'      => 'message',
+		'message'   => __( 'Effects controls will be added in a follow-up update.', 'mrn-base-stack' ),
+		'esc_html'  => 1,
+		'new_lines' => 'br',
+	);
+
+	$subtab_nav            = mrn_base_stack_append_field_wrapper_class( $subtab_nav, 'mrn-theme-hf-subtabs-nav' );
+	$contents_placeholder   = mrn_base_stack_append_field_wrapper_class(
+		$contents_placeholder,
+		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'content' )
+	);
+	$layout_placeholder    = mrn_base_stack_append_field_wrapper_class(
+		$layout_placeholder,
+		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'layout' )
+	);
+	$effects_placeholder   = mrn_base_stack_append_field_wrapper_class(
+		$effects_placeholder,
+		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'effects' )
+	);
+
+	return array(
+		$subtab_nav,
+		$contents_placeholder,
+		$layout_placeholder,
+		$effects_placeholder,
+	);
+}
+
+/**
+ * Apply Header/Footer sub-tab panel classes to options fields.
+ *
+ * @param array<int, mixed> $fields Field definitions.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_prepare_theme_header_footer_subtab_fields( array $fields ) {
+	$prepared       = array();
+	$current_section = '';
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_key  = isset( $field['key'] ) ? (string) $field['key'] : '';
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+
+		if ( 'field_mrn_theme_header_tab' === $field_key ) {
+			$current_section = 'header';
+			$prepared[]      = $field;
+			$prepared        = array_merge( $prepared, mrn_base_stack_get_theme_header_footer_subtab_fields( $current_section ) );
+			continue;
+		}
+
+		if ( 'field_mrn_theme_footer_tab' === $field_key ) {
+			$current_section = 'footer';
+			$prepared[]      = $field;
+			$prepared        = array_merge( $prepared, mrn_base_stack_get_theme_header_footer_subtab_fields( $current_section ) );
+			continue;
+		}
+
+		if ( '' !== $current_section && 'tab' !== $field_type ) {
+			$field = mrn_base_stack_append_field_wrapper_class(
+				$field,
+				mrn_base_stack_get_theme_header_footer_subtab_panel_class( $current_section, 'configs' )
+			);
+		}
+
+		$prepared[] = $field;
+	}
+
+	return $prepared;
+}
+
+/**
+ * Return the available social icon tone choices for menu-based social rows.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_social_icon_tone_choices() {
+	return array(
+		'dark'  => __( 'Dark', 'mrn-base-stack' ),
+		'light' => __( 'Light', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Normalize the configured social icon tone value.
+ *
+ * @param mixed $tone Raw icon tone option.
+ * @return string
+ */
+function mrn_base_stack_normalize_social_icon_tone( $tone ) {
+	$tone    = sanitize_key( (string) $tone );
+	$choices = array_keys( mrn_base_stack_get_social_icon_tone_choices() );
+
+	if ( ! in_array( $tone, $choices, true ) ) {
+		return 'dark';
+	}
+
+	return $tone;
+}
+
+/**
  * Register theme-owned options field groups.
  */
 function mrn_base_stack_register_theme_options_field_groups() {
@@ -230,7 +512,8 @@ function mrn_base_stack_register_theme_options_field_groups() {
 		array(
 			'key'                   => 'group_mrn_theme_header_footer',
 			'title'                 => __( 'Theme Header/Footer', 'mrn-base-stack' ),
-			'fields'                => array(
+			'fields'                => mrn_base_stack_prepare_theme_header_footer_subtab_fields(
+				array(
 				array(
 					'key'       => 'field_mrn_theme_header_tab',
 					'label'     => __( 'Header', 'mrn-base-stack' ),
@@ -240,13 +523,63 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					'endpoint'  => 0,
 				),
 				array(
-					'key'           => 'field_mrn_theme_header_show_utility_menu',
-					'label'         => __( 'Show Utility Menu', 'mrn-base-stack' ),
-					'name'          => 'header_show_utility_menu',
+					'key'           => 'field_mrn_theme_header_show_social_menu',
+					'label'         => __( 'Show Social Menu', 'mrn-base-stack' ),
+					'name'          => 'header_show_social_menu',
 					'type'          => 'true_false',
-					'instructions'  => __( 'Uses the native Utility menu location registered in the theme.', 'mrn-base-stack' ),
+					'instructions'  => __( 'Uses the Social Media menu location.', 'mrn-base-stack' ),
 					'required'      => 0,
 					'default_value' => 0,
+					'ui'            => 1,
+				),
+				array(
+					'key'               => 'field_mrn_theme_header_social_icon_tone',
+					'label'             => __( 'Social Icon Tone', 'mrn-base-stack' ),
+					'name'              => 'header_social_icon_tone',
+					'type'              => 'button_group',
+					'choices'           => mrn_base_stack_get_social_icon_tone_choices(),
+					'default_value'     => 'dark',
+					'layout'            => 'horizontal',
+					'return_format'     => 'value',
+					'instructions'      => __( 'Controls icon tone for the Social Media menu when rendered in the Header.', 'mrn-base-stack' ),
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_theme_header_show_social_menu',
+								'operator' => '==',
+								'value'    => '1',
+							),
+						),
+					),
+				),
+				array(
+					'key'           => 'field_mrn_theme_header_show_tertiary_menu',
+					'label'         => __( 'Show Tertiary Menu', 'mrn-base-stack' ),
+					'name'          => 'header_show_tertiary_menu',
+					'type'          => 'true_false',
+					'instructions'  => __( 'Uses the Header Tertiary menu location.', 'mrn-base-stack' ),
+					'required'      => 0,
+					'default_value' => 0,
+					'ui'            => 1,
+				),
+				array(
+					'key'           => 'field_mrn_theme_header_show_utility_menu',
+					'label'         => __( 'Show Secondary Menu', 'mrn-base-stack' ),
+					'name'          => 'header_show_utility_menu',
+					'type'          => 'true_false',
+					'instructions'  => __( 'Uses the Header Secondary menu location (falls back to Utility legacy location).', 'mrn-base-stack' ),
+					'required'      => 0,
+					'default_value' => 0,
+					'ui'            => 1,
+				),
+				array(
+					'key'           => 'field_mrn_theme_header_show_primary_menu',
+					'label'         => __( 'Show Primary Menu', 'mrn-base-stack' ),
+					'name'          => 'header_show_primary_menu',
+					'type'          => 'true_false',
+					'instructions'  => __( 'Uses the Primary menu location.', 'mrn-base-stack' ),
+					'required'      => 0,
+					'default_value' => 1,
 					'ui'            => 1,
 				),
 				array(
@@ -439,20 +772,58 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					'endpoint'  => 0,
 				),
 				array(
-					'key'           => 'field_mrn_theme_footer_show_footer_menu',
-					'label'         => __( 'Show Footer Menu', 'mrn-base-stack' ),
-					'name'          => 'footer_show_footer_menu',
+					'key'           => 'field_mrn_theme_footer_show_social_menu',
+					'label'         => __( 'Show Social Menu', 'mrn-base-stack' ),
+					'name'          => 'footer_show_social_menu',
 					'type'          => 'true_false',
-					'instructions'  => __( 'Uses the native Footer menu location registered in the theme.', 'mrn-base-stack' ),
+					'instructions'  => __( 'Uses the Social Media menu location.', 'mrn-base-stack' ),
 					'default_value' => 0,
 					'ui'            => 1,
 				),
 				array(
-					'key'           => 'field_mrn_theme_footer_show_legal_menu',
-					'label'         => __( 'Show Legal Menu', 'mrn-base-stack' ),
+					'key'               => 'field_mrn_theme_footer_social_icon_tone',
+					'label'             => __( 'Social Icon Tone', 'mrn-base-stack' ),
+					'name'              => 'footer_social_icon_tone',
+					'type'              => 'button_group',
+					'choices'           => mrn_base_stack_get_social_icon_tone_choices(),
+					'default_value'     => 'dark',
+					'layout'            => 'horizontal',
+					'return_format'     => 'value',
+					'instructions'      => __( 'Controls icon tone for the Social Media menu when rendered in the Footer.', 'mrn-base-stack' ),
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_theme_footer_show_social_menu',
+								'operator' => '==',
+								'value'    => '1',
+							),
+						),
+					),
+				),
+				array(
+					'key'           => 'field_mrn_theme_footer_show_tertiary_menu',
+					'label'         => __( 'Show Tertiary Menu', 'mrn-base-stack' ),
 					'name'          => 'footer_show_legal_menu',
 					'type'          => 'true_false',
-					'instructions'  => __( 'Uses the native Legal menu location registered in the theme.', 'mrn-base-stack' ),
+					'instructions'  => __( 'Uses the Footer Tertiary menu location (falls back to Legal legacy location).', 'mrn-base-stack' ),
+					'default_value' => 0,
+					'ui'            => 1,
+				),
+				array(
+					'key'           => 'field_mrn_theme_footer_show_secondary_menu',
+					'label'         => __( 'Show Secondary Menu', 'mrn-base-stack' ),
+					'name'          => 'footer_show_secondary_menu',
+					'type'          => 'true_false',
+					'instructions'  => __( 'Uses the Footer Secondary menu location.', 'mrn-base-stack' ),
+					'default_value' => 0,
+					'ui'            => 1,
+				),
+				array(
+					'key'           => 'field_mrn_theme_footer_show_footer_menu',
+					'label'         => __( 'Show Primary Menu', 'mrn-base-stack' ),
+					'name'          => 'footer_show_footer_menu',
+					'type'          => 'true_false',
+					'instructions'  => __( 'Uses the Footer Primary menu location.', 'mrn-base-stack' ),
 					'default_value' => 0,
 					'ui'            => 1,
 				),
@@ -502,15 +873,6 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					'ui'            => 1,
 				),
 				array(
-					'key'           => 'field_mrn_theme_footer_show_social_links',
-					'label'         => __( 'Show Social Links', 'mrn-base-stack' ),
-					'name'          => 'footer_show_social_links',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Pulls social icons from Config Helper.', 'mrn-base-stack' ),
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
 					'key'           => 'field_mrn_theme_footer_copyright_text',
 					'label'         => __( 'Copyright Text', 'mrn-base-stack' ),
 					'name'          => 'footer_copyright_text',
@@ -528,6 +890,7 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					'new_lines'     => 'br',
 					'default_value' => '',
 				),
+				)
 			),
 			'location'              => array(
 				array(
@@ -1322,6 +1685,11 @@ function mrn_base_stack_get_business_logo( $context = 'header' ) {
  */
 function mrn_base_stack_get_theme_header_footer_options() {
 	$defaults = array(
+		'header_show_social_menu'      => false,
+		'header_social_icon_tone'      => 'dark',
+		'header_show_tertiary_menu'    => false,
+		'header_show_secondary_menu'   => false,
+		'header_show_primary_menu'     => true,
 		'header_show_utility_menu'     => false,
 		'header_show_search'           => false,
 		'header_search_style'          => 'full',
@@ -1331,6 +1699,11 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		'header_search_media_icon'     => array(),
 		'header_show_business_phone'   => false,
 		'header_show_business_profile' => false,
+		'footer_show_social_menu'      => false,
+		'footer_social_icon_tone'      => 'dark',
+		'footer_show_tertiary_menu'    => false,
+		'footer_show_secondary_menu'   => false,
+		'footer_show_primary_menu'     => false,
 		'footer_show_footer_menu'      => false,
 		'footer_show_legal_menu'       => false,
 		'footer_show_business_profile' => false,
@@ -1379,7 +1752,21 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		$header_search_media_icon = array();
 	}
 
+	$header_show_secondary_menu = (bool) get_field( 'header_show_utility_menu', 'option' );
+	$header_show_primary_field  = get_field( 'header_show_primary_menu', 'option' );
+	$header_show_primary_menu   = null === $header_show_primary_field ? true : (bool) $header_show_primary_field;
+	$header_social_icon_tone    = mrn_base_stack_normalize_social_icon_tone( get_field( 'header_social_icon_tone', 'option' ) );
+	$footer_show_primary_menu   = (bool) get_field( 'footer_show_footer_menu', 'option' );
+	$footer_show_tertiary_menu  = (bool) get_field( 'footer_show_legal_menu', 'option' );
+	$footer_show_social_menu    = (bool) get_field( 'footer_show_social_menu', 'option' );
+	$footer_social_icon_tone    = mrn_base_stack_normalize_social_icon_tone( get_field( 'footer_social_icon_tone', 'option' ) );
+
 	$options = array(
+		'header_show_social_menu'      => (bool) get_field( 'header_show_social_menu', 'option' ),
+		'header_social_icon_tone'      => $header_social_icon_tone,
+		'header_show_tertiary_menu'    => (bool) get_field( 'header_show_tertiary_menu', 'option' ),
+		'header_show_secondary_menu'   => $header_show_secondary_menu,
+		'header_show_primary_menu'     => $header_show_primary_menu,
 		'header_show_utility_menu'     => (bool) get_field( 'header_show_utility_menu', 'option' ),
 		'header_show_search'           => (bool) get_field( 'header_show_search', 'option' ),
 		'header_search_style'          => $header_search_style,
@@ -1389,8 +1776,13 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		'header_search_media_icon'     => $header_search_media_icon,
 		'header_show_business_phone'   => (bool) get_field( 'header_show_business_phone', 'option' ),
 		'header_show_business_profile' => (bool) get_field( 'header_show_business_profile', 'option' ),
-		'footer_show_footer_menu'      => (bool) get_field( 'footer_show_footer_menu', 'option' ),
-		'footer_show_legal_menu'       => (bool) get_field( 'footer_show_legal_menu', 'option' ),
+		'footer_show_social_menu'      => $footer_show_social_menu,
+		'footer_social_icon_tone'      => $footer_social_icon_tone,
+		'footer_show_tertiary_menu'    => $footer_show_tertiary_menu,
+		'footer_show_secondary_menu'   => (bool) get_field( 'footer_show_secondary_menu', 'option' ),
+		'footer_show_primary_menu'     => $footer_show_primary_menu,
+		'footer_show_footer_menu'      => $footer_show_primary_menu,
+		'footer_show_legal_menu'       => $footer_show_tertiary_menu,
 		'footer_show_business_profile' => (bool) get_field( 'footer_show_business_profile', 'option' ),
 		'footer_show_business_phone'   => (bool) get_field( 'footer_show_business_phone', 'option' ),
 		'footer_show_text_phone'       => (bool) get_field( 'footer_show_text_phone', 'option' ),
@@ -1685,6 +2077,258 @@ function mrn_base_stack_setup_theme_options_toolbar( $screen ) {
 	);
 }
 add_action( 'current_screen', 'mrn_base_stack_setup_theme_options_toolbar' );
+
+/**
+ * Check whether the current admin screen is Theme Header/Footer options.
+ *
+ * @return bool
+ */
+function mrn_base_stack_is_theme_header_footer_options_screen() {
+	if ( ! function_exists( 'get_current_screen' ) ) {
+		return false;
+	}
+
+	$screen = get_current_screen();
+	return $screen instanceof WP_Screen && 'toplevel_page_mrn-theme-header-footer' === $screen->id;
+}
+
+/**
+ * Print structural CSS so Header/Footer sub-tabs render with native WP tab look.
+ *
+ * @return void
+ */
+function mrn_base_stack_print_theme_header_footer_subtab_layout_css() {
+	if ( ! mrn_base_stack_is_theme_header_footer_options_screen() ) {
+		return;
+	}
+
+	$appearance = mrn_base_stack_get_theme_header_footer_subtab_appearance();
+	$tab_set_gap_px = isset( $appearance['tab_set_gap_px'] ) ? absint( $appearance['tab_set_gap_px'] ) : 10;
+	$panel_gap_px = isset( $appearance['panel_gap_px'] ) ? absint( $appearance['panel_gap_px'] ) : 12;
+	$tab_border_width_px = isset( $appearance['tab_border_width_px'] ) ? absint( $appearance['tab_border_width_px'] ) : 1;
+	$tab_border_color = isset( $appearance['tab_border_color'] ) ? (string) $appearance['tab_border_color'] : '#c3c4c7';
+	?>
+		<style>
+			body.toplevel_page_mrn-theme-header-footer {
+				--mrn-theme-hf-tabset-gap: <?php echo esc_html( (string) $tab_set_gap_px ); ?>px;
+				--mrn-theme-hf-panel-gap: <?php echo esc_html( (string) $panel_gap_px ); ?>px;
+				--mrn-theme-hf-tab-border-width: <?php echo esc_html( (string) $tab_border_width_px ); ?>px;
+				--mrn-theme-hf-tab-border-color: <?php echo esc_html( $tab_border_color ); ?>;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-tab-wrap.-top {
+				border-bottom: var(--mrn-theme-hf-tab-border-width, 1px) solid var(--mrn-theme-hf-tab-border-color, #c3c4c7);
+				margin-bottom: 0;
+				padding-bottom: 0;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-tab-wrap.-top .acf-tab-group {
+				border-bottom: 0;
+				margin-bottom: 0;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-subtabs-nav {
+				border-top: 0;
+				padding: 0;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-subtabs-nav > .acf-label {
+				display: none;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-subtabs-nav > .acf-input {
+				margin: 0;
+				width: 100%;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-subtabs-nav .acf-input > .acf-message {
+				margin: 0;
+				padding: 0;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .mrn-theme-hf-subtabs {
+				padding-top: var(--mrn-theme-hf-tabset-gap, 10px);
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .mrn-theme-hf-subtabs .nav-tab-wrapper {
+				border-bottom: var(--mrn-theme-hf-tab-border-width, 1px) solid var(--mrn-theme-hf-tab-border-color, #c3c4c7);
+				margin: 0 0 var(--mrn-theme-hf-panel-gap, 12px);
+				padding-top: 0;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-subtab-panel {
+				border-top: 0;
+				padding-top: 0;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-subtab-panel[hidden] {
+				display: none !important;
+			}
+		</style>
+		<?php
+}
+add_action( 'admin_head', 'mrn_base_stack_print_theme_header_footer_subtab_layout_css' );
+
+/**
+ * Print Header/Footer sub-tab behavior.
+ *
+ * @return void
+ */
+function mrn_base_stack_print_theme_header_footer_subtab_script() {
+	if ( ! mrn_base_stack_is_theme_header_footer_options_screen() ) {
+		return;
+	}
+	?>
+	<script>
+		(function ($, window) {
+			'use strict';
+
+			var tabSelector = '[data-mrn-theme-hf-subtab]';
+			var hashPrefix = 'mrn-theme-hf-';
+
+			function getHashTabForSection(section) {
+				var hash = String(window.location.hash || '').replace(/^#/, '').toLowerCase();
+				var prefix = hashPrefix + String(section || '').toLowerCase() + '-';
+
+				if (hash.indexOf(prefix) !== 0) {
+					return '';
+				}
+
+				return hash.substring(prefix.length);
+			}
+
+			function updateSectionHash(section, tab) {
+				if (!window.history || typeof window.history.replaceState !== 'function') {
+					return;
+				}
+
+				var normalizedSection = String(section || '').toLowerCase();
+				var normalizedTab = String(tab || '').toLowerCase();
+
+				if (!normalizedSection || !normalizedTab) {
+					return;
+				}
+
+				var url = window.location.pathname + window.location.search + '#' + hashPrefix + normalizedSection + '-' + normalizedTab;
+				window.history.replaceState(null, '', url);
+			}
+
+			function getPanels($nav, section) {
+				var $fieldContainer = $nav.closest('.acf-fields');
+				if (!$fieldContainer.length) {
+					return $();
+				}
+
+				return $fieldContainer.children('.acf-field.mrn-theme-hf-subtab-panel.mrn-theme-hf-subtab-section--' + section);
+			}
+
+			function activateSubtab($nav, requestedTab, shouldFocus) {
+				var section = String($nav.attr('data-mrn-theme-hf-section') || '').toLowerCase();
+				if (!section) {
+					return;
+				}
+
+				var $tabs = $nav.find(tabSelector);
+				if (!$tabs.length) {
+					return;
+				}
+
+				var tab = String(requestedTab || '').toLowerCase();
+				var $activeTab = $tabs.filter('[data-mrn-theme-hf-subtab="' + tab + '"]').first();
+
+				if (!$activeTab.length) {
+					$activeTab = $tabs.first();
+					tab = String($activeTab.attr('data-mrn-theme-hf-subtab') || '').toLowerCase();
+				}
+
+				$tabs.removeClass('nav-tab-active').attr('aria-selected', 'false').attr('tabindex', '-1');
+				$activeTab.addClass('nav-tab-active').attr('aria-selected', 'true').attr('tabindex', '0');
+
+				if (shouldFocus) {
+					$activeTab.trigger('focus');
+				}
+
+				var $panels = getPanels($nav, section);
+				if ($panels.length) {
+					$panels.prop('hidden', true).attr('aria-hidden', 'true').removeClass('is-active');
+					$panels.filter('.mrn-theme-hf-subtab--' + tab).prop('hidden', false).attr('aria-hidden', 'false').addClass('is-active');
+				}
+
+				$nav.attr('data-mrn-theme-hf-active', tab);
+				updateSectionHash(section, tab);
+			}
+
+			function initializeSubtabs(context) {
+				var $scope = context && context.jquery ? context : $(context || document);
+
+				$scope.find('.mrn-theme-hf-subtabs').each(function () {
+					var $nav = $(this);
+					var defaultTab = String($nav.attr('data-mrn-theme-hf-default') || 'configs').toLowerCase();
+					var section = String($nav.attr('data-mrn-theme-hf-section') || '').toLowerCase();
+					var hashTab = getHashTabForSection(section);
+					var activeTab = String($nav.attr('data-mrn-theme-hf-active') || hashTab || defaultTab).toLowerCase();
+
+					activateSubtab($nav, activeTab, false);
+				});
+			}
+
+			$(document).on('click', '.mrn-theme-hf-subtabs ' + tabSelector, function (event) {
+				event.preventDefault();
+				var $tab = $(this);
+				activateSubtab($tab.closest('.mrn-theme-hf-subtabs'), String($tab.attr('data-mrn-theme-hf-subtab') || ''), true);
+			});
+
+			$(document).on('keydown', '.mrn-theme-hf-subtabs ' + tabSelector, function (event) {
+				var key = event.key || '';
+				if (key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'Home' && key !== 'End') {
+					return;
+				}
+
+				event.preventDefault();
+
+				var $tab = $(this);
+				var $nav = $tab.closest('.mrn-theme-hf-subtabs');
+				var $tabs = $nav.find(tabSelector);
+
+				if (!$tabs.length) {
+					return;
+				}
+
+				var currentIndex = $tabs.index($tab);
+				var nextIndex = currentIndex;
+
+				if (key === 'Home') {
+					nextIndex = 0;
+				} else if (key === 'End') {
+					nextIndex = $tabs.length - 1;
+				} else if (key === 'ArrowRight') {
+					nextIndex = (currentIndex + 1) % $tabs.length;
+				} else if (key === 'ArrowLeft') {
+					nextIndex = (currentIndex - 1 + $tabs.length) % $tabs.length;
+				}
+
+				var $nextTab = $tabs.eq(nextIndex);
+				activateSubtab($nav, String($nextTab.attr('data-mrn-theme-hf-subtab') || ''), true);
+			});
+
+			$(function () {
+				initializeSubtabs(document);
+			});
+
+			if (window.acf && typeof window.acf.addAction === 'function') {
+				window.acf.addAction('ready', function ($el) {
+					initializeSubtabs($el || document);
+				});
+
+				window.acf.addAction('append', function ($el) {
+					initializeSubtabs($el || document);
+				});
+			}
+		})(jQuery, window);
+	</script>
+	<?php
+}
+add_action( 'acf/input/admin_footer', 'mrn_base_stack_print_theme_header_footer_subtab_script' );
 
 /**
  * Convert business phone fields into tel-style inputs in ACF.

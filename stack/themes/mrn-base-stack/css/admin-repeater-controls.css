@@ -1,0 +1,27 @@
+/*
+ * Shared repeater row zebra striping for ACF admin fields.
+ * Improves scannability in nested repeater/sub-field editors.
+ */
+
+:root {
+	--mrn-acf-repeater-row-bg-even: #ffffff;
+	--mrn-acf-repeater-row-bg-odd: #f6f8fb;
+}
+
+.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > tbody > .acf-row:not(.acf-clone):nth-child(odd) > td,
+.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > .acf-tbody > .acf-row:not(.acf-clone):nth-child(odd) > td,
+.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > table > tbody > .acf-row:not(.acf-clone):nth-child(odd) > td,
+.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .values > .acf-row:not(.acf-clone):nth-child(odd) > .acf-fields,
+.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .values > .acf-row:not(.acf-clone):nth-child(odd) > .acf-row-handle,
+.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .values > .acf-row:not(.acf-clone):nth-child(odd) > .acf-row-handle.order {
+	background-color: var(--mrn-acf-repeater-row-bg-odd);
+}
+
+.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > tbody > .acf-row:not(.acf-clone):nth-child(even) > td,
+.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .acf-table > .acf-tbody > .acf-row:not(.acf-clone):nth-child(even) > td,
+.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > table > tbody > .acf-row:not(.acf-clone):nth-child(even) > td,
+.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .values > .acf-row:not(.acf-clone):nth-child(even) > .acf-fields,
+.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .values > .acf-row:not(.acf-clone):nth-child(even) > .acf-row-handle,
+.acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .values > .acf-row:not(.acf-clone):nth-child(even) > .acf-row-handle.order {
+	background-color: var(--mrn-acf-repeater-row-bg-even);
+}
