@@ -730,7 +730,8 @@ function mrn_editor_lockdown_admin_css() {
 			width: 0 !important;
 			min-width: 0 !important;
 			margin-right: 0 !important;
-			overflow: visible;
+			max-width: 0 !important;
+			overflow: hidden;
 		}
 
 		body.mrn-editor-sidebar-collapsible.mrn-editor-sidebar-collapsed #poststuff #post-body.columns-2 {
