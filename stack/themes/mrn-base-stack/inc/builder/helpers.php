@@ -907,6 +907,31 @@ function mrn_base_stack_get_section_width_field( $key, $name = 'section_width', 
 }
 
 /**
+ * Build a standard sub-content width ACF field definition for repeater wrappers.
+ *
+ * @param string $key Unique ACF field key.
+ * @param string $name Field name.
+ * @param string $label Field label.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_sub_content_width_field( $key, $name = 'sub_content_width', $label = 'Section Width (Sub-content)' ) {
+	return array(
+		'key'               => $key,
+		'label'             => $label,
+		'name'              => $name,
+		'aria-label'        => '',
+		'type'              => 'select',
+		'choices'           => mrn_base_stack_get_section_width_choices(),
+		'default_value'     => 'content',
+		'ui'                => 1,
+		'allow_null'        => 0,
+		'wrapper'           => array(
+			'width' => '50',
+		),
+	);
+}
+
+/**
  * Build the standard anchor ACF field definition for builder rows.
  *
  * @param string $key Unique ACF field key.
@@ -985,6 +1010,7 @@ function mrn_base_stack_get_motion_trigger_choices() {
  */
 function mrn_base_stack_get_effects_tab_field_names() {
 	return array(
+		'enable_row_effects',
 		'tab_switch_effect',
 	);
 }
@@ -1242,6 +1268,1955 @@ function mrn_base_stack_get_effects_tab_field( $key, $label = 'Effects' ) {
 }
 
 /**
+ * Build the standard internal layout name field for editor-only row labels.
+ *
+ * @param string $key Unique ACF field key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_internal_layout_name_field( $key ) {
+	return array(
+		'key'          => $key,
+		'label'        => 'Name (admin use only)',
+		'name'         => 'internal_name',
+		'aria-label'   => '',
+		'type'         => 'text',
+		'instructions' => 'Optional editor-only row name used in the layout list. This is not rendered on the front end.',
+		'wrapper'      => array(
+			'width' => '50',
+		),
+	);
+}
+
+/**
+ * Normalize one field label to the shared primary-layout contract.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_normalize_primary_layout_field( array $field ) {
+	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+	$is_tag_chooser_field = ( 'select' === $field_type ) && ( 1 === preg_match( '/(^|_)(label|heading|subheading|text_field)_tag$/', $field_name ) );
+
+	if ( 'internal_name' === $field_name ) {
+		$field['label'] = 'Name (admin use only)';
+	}
+
+	if ( in_array( $field_name, array( 'label', 'tab_label' ), true ) && 'text' === $field_type ) {
+		$field['label'] = 'Label';
+		if ( ! isset( $field['wrapper'] ) || ! is_array( $field['wrapper'] ) ) {
+			$field['wrapper'] = array();
+		}
+		$field['wrapper']['width'] = '75';
+
+		if ( 'tab_label' === $field_name ) {
+			$field['instructions'] = '';
+		}
+	}
+
+	if ( $is_tag_chooser_field ) {
+		$field['label'] = 'Tag';
+		if ( ! isset( $field['wrapper'] ) || ! is_array( $field['wrapper'] ) ) {
+			$field['wrapper'] = array();
+		}
+		$field['wrapper']['width'] = '25';
+	}
+
+	if ( 'heading' === $field_name && 'text' === $field_type ) {
+		$field['label'] = 'Heading';
+		if ( ! isset( $field['wrapper'] ) || ! is_array( $field['wrapper'] ) ) {
+			$field['wrapper'] = array();
+		}
+		$field['wrapper']['width'] = '75';
+	}
+
+	if ( 'subheading' === $field_name && 'text' === $field_type ) {
+		$field['label'] = 'Subheading';
+		if ( ! isset( $field['wrapper'] ) || ! is_array( $field['wrapper'] ) ) {
+			$field['wrapper'] = array();
+		}
+		$field['wrapper']['width'] = '75';
+	}
+
+	if ( 'wysiwyg' === $field_type && in_array( $field_name, array( 'content', 'body_text', 'intro' ), true ) ) {
+		$field['label'] = 'Text';
+	}
+
+	if ( 'repeater' === $field_type && 'links' !== $field_name ) {
+		$field['layout'] = 'block';
+
+		/*
+		 * Keep showcase contract repeaters expanded by default so their shared
+		 * Content|Configs|Effects tabs are immediately visible.
+		 */
+		if ( 'showcase_items' === $field_name ) {
+			$field['collapsed'] = '';
+		}
+	}
+
+	if ( 'links' === $field_name && 'repeater' === $field_type ) {
+		$field['label'] = 'Link repeater';
+	}
+
+	if ( 'background_color' === $field_name && 'select' === $field_type ) {
+		$field['label'] = 'Background Color';
+	}
+
+	if ( 'anchor' === $field_name ) {
+		$field['label'] = 'Anchor ID';
+	}
+
+	if ( 'section_width' === $field_name && 'select' === $field_type ) {
+		$field['label'] = 'Section Width (Content)';
+	}
+
+	if ( 'sub_content_width' === $field_name && 'select' === $field_type ) {
+		$field['label'] = 'Section Width (Sub-content)';
+	}
+
+	if ( 'bottom_accent' === $field_name && 'true_false' === $field_type ) {
+		$field['label'] = 'Accent';
+	}
+
+	if ( 'bottom_accent_style' === $field_name && 'select' === $field_type ) {
+		$field['label'] = 'Bottom accent style';
+	}
+
+	return $field;
+}
+
+/**
+ * Keep Label/Heading/Subheading text fields at 75% when paired with *_tag fields.
+ *
+ * This supports nested repeater naming patterns like `item_label` + `item_label_tag`.
+ *
+ * @param array<int, mixed> $fields
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_apply_tag_field_column_layout( array $fields ) {
+	$text_field_indexes_by_name = array();
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+
+		if ( 'text' !== $field_type || '' === $field_name ) {
+			continue;
+		}
+
+		if ( ! isset( $text_field_indexes_by_name[ $field_name ] ) ) {
+			$text_field_indexes_by_name[ $field_name ] = array();
+		}
+
+		$text_field_indexes_by_name[ $field_name ][] = $index;
+	}
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+
+		if ( 'select' !== $field_type || '' === $field_name ) {
+			continue;
+		}
+
+		if ( 1 !== preg_match( '/^(.*?)(label|heading|subheading)_tag$/', $field_name, $matches ) ) {
+			continue;
+		}
+
+		$companion_name = sanitize_key( $matches[1] . $matches[2] );
+		if ( '' === $companion_name || ! isset( $text_field_indexes_by_name[ $companion_name ] ) ) {
+			continue;
+		}
+
+		foreach ( $text_field_indexes_by_name[ $companion_name ] as $text_index ) {
+			if ( ! isset( $fields[ $text_index ] ) || ! is_array( $fields[ $text_index ] ) ) {
+				continue;
+			}
+
+			if ( ! isset( $fields[ $text_index ]['wrapper'] ) || ! is_array( $fields[ $text_index ]['wrapper'] ) ) {
+				$fields[ $text_index ]['wrapper'] = array();
+			}
+
+			$fields[ $text_index ]['wrapper']['width'] = '75';
+		}
+	}
+
+	return $fields;
+}
+
+/**
+ * Ensure non-link repeater sub-fields include a Subheading + Tag pair.
+ *
+ * When a repeater row already follows the heading/tag pattern but is missing
+ * subheading fields, inject them in-place without adding internal-name fields.
+ *
+ * @param array<int, mixed> $fields Repeater sub-fields.
+ * @param string            $repeater_key Parent repeater field key.
+ * @param string            $repeater_name Parent repeater field name.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_ensure_repeater_subheading_contract( array $fields, $repeater_key = '', $repeater_name = '' ) {
+	$repeater_name = sanitize_key( (string) $repeater_name );
+	if ( in_array( $repeater_name, array( 'tabs', 'stat_items', 'showcase_items' ), true ) ) {
+		return $fields;
+	}
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		if ( '' === $field_name ) {
+			continue;
+		}
+
+		$is_subsubheading_field = false;
+		if ( strlen( $field_name ) >= 13 && 'subsubheading' === substr( $field_name, -13 ) ) {
+			$is_subsubheading_field = true;
+		}
+		if ( strlen( $field_name ) >= 17 && 'subsubheading_tag' === substr( $field_name, -17 ) ) {
+			$is_subsubheading_field = true;
+		}
+
+		if ( $is_subsubheading_field ) {
+			unset( $fields[ $index ] );
+		}
+	}
+	$fields = array_values( $fields );
+
+	$heading_index        = null;
+	$heading_tag_index    = null;
+	$subheading_index     = null;
+	$subheading_tag_index = null;
+	$prefix               = null;
+	$heading_key          = '';
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_key  = isset( $field['key'] ) && is_string( $field['key'] ) ? trim( $field['key'] ) : '';
+
+		if ( '' === $field_name ) {
+			continue;
+		}
+
+		$is_subheading_seed = strlen( $field_name ) >= 10 && 'subheading' === substr( $field_name, -10 );
+		if ( null === $heading_index && 'text' === $field_type && ! $is_subheading_seed && 1 === preg_match( '/^(.*)heading$/', $field_name, $heading_match ) ) {
+			$heading_index = $index;
+			$prefix        = $heading_match[1];
+			$heading_key   = $field_key;
+			continue;
+		}
+
+		if ( null === $prefix ) {
+			continue;
+		}
+
+		if ( null === $heading_tag_index && 'select' === $field_type && in_array( $field_name, array( $prefix . 'heading_tag', $prefix . 'text_field_tag' ), true ) ) {
+			$heading_tag_index = $index;
+			continue;
+		}
+
+		if ( null === $subheading_index && 'text' === $field_type && $field_name === $prefix . 'subheading' ) {
+			$subheading_index = $index;
+			continue;
+		}
+
+		if ( null === $subheading_tag_index && 'select' === $field_type && $field_name === $prefix . 'subheading_tag' ) {
+			$subheading_tag_index = $index;
+		}
+	}
+
+	if ( null === $heading_index || null === $prefix ) {
+		$fallback_anchor_index = null;
+		$fallback_anchor_name  = '';
+		$fallback_anchor_key   = '';
+		$fallback_prefix       = '';
+
+		foreach ( $fields as $index => $field ) {
+			if ( ! is_array( $field ) ) {
+				continue;
+			}
+
+			$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+			$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+			$field_key  = isset( $field['key'] ) && is_string( $field['key'] ) ? trim( $field['key'] ) : '';
+
+			if ( '' === $field_name ) {
+				continue;
+			}
+
+			if ( null === $fallback_anchor_index && 'tab' !== $field_type && 'accordion' !== $field_type && 'links' !== $field_name ) {
+				$fallback_anchor_index = $index;
+				$fallback_anchor_name  = $field_name;
+				$fallback_anchor_key   = $field_key;
+			}
+
+			if ( '' === $fallback_prefix && 1 === preg_match( '/^(.*?)(heading|label|text|content)$/', $field_name, $fallback_match ) ) {
+				$fallback_prefix = $fallback_match[1];
+			}
+		}
+
+		if ( null === $fallback_anchor_index ) {
+			return $fields;
+		}
+
+		$heading_index = $fallback_anchor_index;
+		$heading_key   = $fallback_anchor_key;
+		$prefix        = $fallback_prefix;
+
+		foreach ( $fields as $index => $field ) {
+			if ( ! is_array( $field ) ) {
+				continue;
+			}
+
+			$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+			$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+
+			if ( '' === $field_name ) {
+				continue;
+			}
+
+			if ( null === $heading_tag_index && 'select' === $field_type && in_array( $field_name, array( $prefix . 'heading_tag', $prefix . 'text_field_tag' ), true ) ) {
+				$heading_tag_index = $index;
+				continue;
+			}
+
+			if ( null === $subheading_index && 'text' === $field_type && $field_name === $prefix . 'subheading' ) {
+				$subheading_index = $index;
+				continue;
+			}
+
+			if ( null === $subheading_tag_index && 'select' === $field_type && $field_name === $prefix . 'subheading_tag' ) {
+				$subheading_tag_index = $index;
+			}
+		}
+	}
+
+	$needs_subheading     = null === $subheading_index;
+	$needs_subheading_tag = null === $subheading_tag_index;
+
+	if ( ! $needs_subheading && ! $needs_subheading_tag ) {
+		return $fields;
+	}
+
+	$subheading_name = $prefix . 'subheading';
+	$tag_name        = $prefix . 'subheading_tag';
+	$key_seed        = '' !== $heading_key ? sanitize_key( $heading_key ) : sanitize_key( (string) $repeater_key );
+	if ( '' === $key_seed ) {
+		$key_seed = 'field_mrn_subfield_heading';
+	}
+
+	$subheading_key     = $key_seed . '_subheading';
+	$subheading_tag_key = $key_seed . '_subheading_tag';
+	$new_fields         = array();
+
+	if ( $needs_subheading ) {
+		$new_fields[] = mrn_base_stack_get_inline_text_field( $subheading_key, 'Subheading', $subheading_name );
+	}
+
+	if ( $needs_subheading_tag ) {
+		$new_fields[] = mrn_base_stack_get_text_tag_field( $subheading_tag_key, $tag_name, 'p', 'Tag' );
+	}
+
+	if ( empty( $new_fields ) ) {
+		return $fields;
+	}
+
+	if ( $needs_subheading && ! $needs_subheading_tag ) {
+		$insert_at = null !== $subheading_tag_index ? $subheading_tag_index : ( null !== $heading_tag_index ? $heading_tag_index + 1 : $heading_index + 1 );
+		array_splice( $fields, $insert_at, 0, array( $new_fields[0] ) );
+		return $fields;
+	}
+
+	if ( ! $needs_subheading && $needs_subheading_tag ) {
+		$insert_at = null !== $subheading_index ? $subheading_index + 1 : ( null !== $heading_tag_index ? $heading_tag_index + 1 : $heading_index + 1 );
+		array_splice( $fields, $insert_at, 0, array( $new_fields[0] ) );
+		return $fields;
+	}
+
+	$insert_at = null !== $heading_tag_index ? $heading_tag_index + 1 : $heading_index + 1;
+	array_splice( $fields, $insert_at, 0, $new_fields );
+
+	return $fields;
+}
+
+/**
+ * Ensure tabbed-content repeater items start with the primary content contract.
+ *
+ * Tab items keep their saved-data key (`tab_label`) for backward compatibility,
+ * while exposing the standard `Name`, `Label`, `Heading`, and `Subheading`
+ * experience in a predictable order at the top of the Content tab.
+ *
+ * @param array<int, mixed> $fields Repeater sub-fields.
+ * @param string            $repeater_name Parent repeater name.
+ * @param string            $repeater_key Parent repeater key.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_ensure_tabs_repeater_primary_content_contract( array $fields, $repeater_name, $repeater_key = '' ) {
+	$repeater_name = sanitize_key( (string) $repeater_name );
+	if ( 'tabs' !== $repeater_name ) {
+		return $fields;
+	}
+
+	$contract_indexes = array(
+		'internal_name'   => null,
+		'tab_label'       => null,
+		'heading'         => null,
+		'heading_tag'     => null,
+		'subheading'      => null,
+		'subheading_tag'  => null,
+	);
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+
+		if ( array_key_exists( $field_name, $contract_indexes ) && null === $contract_indexes[ $field_name ] ) {
+			$contract_indexes[ $field_name ] = $index;
+		}
+	}
+
+	if ( null === $contract_indexes['tab_label'] ) {
+		return $fields;
+	}
+
+	$tab_label_field = null;
+	if ( null !== $contract_indexes['tab_label'] && isset( $fields[ $contract_indexes['tab_label'] ] ) && is_array( $fields[ $contract_indexes['tab_label'] ] ) ) {
+		$tab_label_field = $fields[ $contract_indexes['tab_label'] ];
+	}
+
+	if ( ! is_array( $tab_label_field ) ) {
+		return $fields;
+	}
+
+	$key_seed = sanitize_key( (string) $repeater_key );
+	if ( '' === $key_seed ) {
+		$key_seed = 'field_mrn_tab_item';
+	}
+
+	$internal_name_field = null;
+	if ( null !== $contract_indexes['internal_name'] && isset( $fields[ $contract_indexes['internal_name'] ] ) && is_array( $fields[ $contract_indexes['internal_name'] ] ) ) {
+		$internal_name_field = $fields[ $contract_indexes['internal_name'] ];
+	}
+	if ( ! is_array( $internal_name_field ) ) {
+		$internal_name_field = mrn_base_stack_get_internal_layout_name_field( $key_seed . '_internal_name' );
+	}
+
+	$heading_field = null;
+	if ( null !== $contract_indexes['heading'] && isset( $fields[ $contract_indexes['heading'] ] ) && is_array( $fields[ $contract_indexes['heading'] ] ) ) {
+		$heading_field = $fields[ $contract_indexes['heading'] ];
+	}
+	if ( ! is_array( $heading_field ) ) {
+		$heading_field = mrn_base_stack_get_inline_text_field( $key_seed . '_heading', 'Heading', 'heading' );
+	}
+
+	$heading_tag_field = null;
+	if ( null !== $contract_indexes['heading_tag'] && isset( $fields[ $contract_indexes['heading_tag'] ] ) && is_array( $fields[ $contract_indexes['heading_tag'] ] ) ) {
+		$heading_tag_field = $fields[ $contract_indexes['heading_tag'] ];
+	}
+	if ( ! is_array( $heading_tag_field ) ) {
+		$heading_tag_field = mrn_base_stack_get_text_tag_field( $key_seed . '_heading_tag', 'heading_tag', 'h3', 'Tag' );
+	}
+
+	$subheading_field = null;
+	if ( null !== $contract_indexes['subheading'] && isset( $fields[ $contract_indexes['subheading'] ] ) && is_array( $fields[ $contract_indexes['subheading'] ] ) ) {
+		$subheading_field = $fields[ $contract_indexes['subheading'] ];
+	}
+	if ( ! is_array( $subheading_field ) ) {
+		$subheading_field = mrn_base_stack_get_inline_text_field( $key_seed . '_subheading', 'Subheading', 'subheading' );
+	}
+
+	$subheading_tag_field = null;
+	if ( null !== $contract_indexes['subheading_tag'] && isset( $fields[ $contract_indexes['subheading_tag'] ] ) && is_array( $fields[ $contract_indexes['subheading_tag'] ] ) ) {
+		$subheading_tag_field = $fields[ $contract_indexes['subheading_tag'] ];
+	}
+	if ( ! is_array( $subheading_tag_field ) ) {
+		$subheading_tag_field = mrn_base_stack_get_text_tag_field( $key_seed . '_subheading_tag', 'subheading_tag', 'p', 'Tag' );
+	}
+
+	/*
+	 * Remove existing contract fields so they can be re-inserted in one stable
+	 * order directly after the Content tab.
+	 */
+	$kept_fields = array();
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			$kept_fields[] = $field;
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		if ( in_array( $field_name, array( 'internal_name', 'tab_label', 'heading', 'heading_tag', 'subheading', 'subheading_tag' ), true ) ) {
+			continue;
+		}
+
+		$kept_fields[] = $field;
+	}
+
+	$insert_index = 0;
+	foreach ( $kept_fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+		if ( 'tab' === $field_type && 'content' === $field_label ) {
+			$insert_index = $index + 1;
+			break;
+		}
+	}
+
+	$contract_segment = array(
+		$internal_name_field,
+		$tab_label_field,
+		$heading_field,
+		$heading_tag_field,
+		$subheading_field,
+		$subheading_tag_field,
+	);
+
+	array_splice( $kept_fields, $insert_index, 0, $contract_segment );
+
+	return $kept_fields;
+}
+
+/**
+ * Check whether a repeater should receive the shared item-level contract tabs.
+ *
+ * @param string $repeater_name Repeater field name.
+ * @return bool
+ */
+function mrn_base_stack_repeater_uses_primary_item_contract( $repeater_name ) {
+	$repeater_name = sanitize_key( (string) $repeater_name );
+
+	return in_array(
+		$repeater_name,
+			array(
+				'grid_items',
+				'card_items',
+				'showcase_items',
+				'slider_items',
+				'tabs',
+				'logo_items',
+			),
+			true
+		);
+}
+
+/**
+ * Ensure injected/normalized ACF fields retain required runtime keys.
+ *
+ * ACF runtime expects non-empty-name sub-fields to include an `_name` key.
+ * Repeater table rendering also expects wrapper keys such as `class`/`id` on
+ * collapsed targets. Contract-generated fields can miss these keys when
+ * inserted during `acf/load_field` filters, which produces undefined-index
+ * warnings in ACF Pro.
+ *
+ * @param array<int, mixed> $fields Field definitions.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_ensure_acf_field_origin_names( array $fields ) {
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		if ( isset( $field['name'] ) && is_string( $field['name'] ) && '' !== trim( $field['name'] ) && ! isset( $field['_name'] ) ) {
+			$field['_name'] = $field['name'];
+		}
+
+		if ( ! isset( $field['wrapper'] ) || ! is_array( $field['wrapper'] ) ) {
+			$field['wrapper'] = array();
+		}
+
+		if ( ! array_key_exists( 'width', $field['wrapper'] ) ) {
+			$field['wrapper']['width'] = '';
+		}
+
+		if ( ! array_key_exists( 'class', $field['wrapper'] ) ) {
+			$field['wrapper']['class'] = '';
+		}
+
+		if ( ! array_key_exists( 'id', $field['wrapper'] ) ) {
+			$field['wrapper']['id'] = '';
+		}
+
+		if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) ) {
+			$field['sub_fields'] = mrn_base_stack_ensure_acf_field_origin_names( $field['sub_fields'] );
+		}
+
+		if ( isset( $field['fields'] ) && is_array( $field['fields'] ) ) {
+			$field['fields'] = mrn_base_stack_ensure_acf_field_origin_names( $field['fields'] );
+		}
+
+		if ( isset( $field['layouts'] ) && is_array( $field['layouts'] ) ) {
+			foreach ( $field['layouts'] as $layout_key => $layout ) {
+				if ( ! is_array( $layout ) || ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+					continue;
+				}
+
+				$layout['sub_fields']      = mrn_base_stack_ensure_acf_field_origin_names( $layout['sub_fields'] );
+				$field['layouts'][ $layout_key ] = $layout;
+			}
+		}
+
+		$fields[ $index ] = $field;
+	}
+
+	return $fields;
+}
+
+/**
+ * Resolve the functionality group for a repeater config field.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return string
+ */
+function mrn_base_stack_get_repeater_config_field_group_key( array $field ) {
+	$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+
+	if ( '' === $field_name ) {
+		return '';
+	}
+
+	if ( 0 === strpos( $field_name, 'link_icon_' ) ) {
+		return 'icons';
+	}
+
+	if ( in_array( $field_name, array( 'is_button', 'target', 'download' ), true ) ) {
+		return 'behavior';
+	}
+
+	if ( in_array( $field_name, array( 'rel', 'title_attribute', 'hreflang', 'media' ), true ) ) {
+		return 'attributes';
+	}
+
+	if ( in_array( $field_name, array( 'css_classes', 'background_color' ), true ) ) {
+		return 'appearance';
+	}
+
+	return 'advanced';
+}
+
+/**
+ * Build the shared "future use" message field for empty contract groups.
+ *
+ * @param string $key Unique ACF field key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_contract_future_use_message_field( $key ) {
+	return array(
+		'key'        => $key,
+		'label'      => '',
+		'name'       => '',
+		'aria-label' => '',
+		'type'       => 'message',
+		'message'    => 'Future Use, Stay Tuned...',
+		'new_lines'  => 'wpautop',
+		'esc_html'   => 1,
+		'wrapper'    => array(
+			'width' => '100',
+		),
+	);
+}
+
+/**
+ * Group repeater config controls by functionality within the Configs tab.
+ *
+ * @param array<int, mixed> $fields Repeater sub-fields.
+ * @param string            $key_seed Repeater key seed.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_group_repeater_config_fields_by_functionality( array $fields, $key_seed ) {
+	$config_tab_index  = null;
+	$next_tab_index    = null;
+	$total_fields      = count( $fields );
+	$config_candidates = array();
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+		$field_key   = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
+
+		if ( 'tab' !== $field_type ) {
+			continue;
+		}
+
+		if ( 'configs' === $field_label ) {
+			$config_candidates[] = array(
+				'index' => $index,
+				'key'   => $field_key,
+			);
+		}
+	}
+
+	if ( empty( $config_candidates ) ) {
+		return $fields;
+	}
+
+	foreach ( $config_candidates as $candidate ) {
+		$candidate_key = isset( $candidate['key'] ) ? (string) $candidate['key'] : '';
+		if ( '' !== $candidate_key && false !== strpos( $candidate_key, 'link_configs_tab_contract' ) ) {
+			continue;
+		}
+
+		$config_tab_index = isset( $candidate['index'] ) ? (int) $candidate['index'] : null;
+		break;
+	}
+
+	if ( null === $config_tab_index ) {
+		$config_tab_index = (int) $config_candidates[0]['index'];
+	}
+
+	foreach ( $fields as $index => $field ) {
+		if ( $index <= $config_tab_index || ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		if ( 'tab' === $field_type ) {
+			$next_tab_index = $index;
+			break;
+		}
+	}
+
+	$segment_start = $config_tab_index + 1;
+	$segment_end   = null !== $next_tab_index ? $next_tab_index : $total_fields;
+	$segment_len   = max( 0, $segment_end - $segment_start );
+
+	if ( $segment_len < 1 ) {
+		return $fields;
+	}
+
+	$config_fields = array_slice( $fields, $segment_start, $segment_len );
+	$group_prefix  = sanitize_key( (string) $key_seed ) . '_cfg_group_';
+	$sanitized     = array();
+
+	foreach ( $config_fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_key  = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+
+		if ( 'accordion' === $field_type && '' !== $field_key && 0 === strpos( $field_key, $group_prefix ) ) {
+			continue;
+		}
+
+		if ( 'message' === $field_type && $group_prefix . 'advanced_future_use' === $field_key ) {
+			continue;
+		}
+
+		$sanitized[] = $field;
+	}
+
+	$group_order = array(
+		'behavior'   => 'Link behavior',
+		'attributes' => 'Link attributes',
+		'icons'      => 'Icon settings',
+		'appearance' => 'Appearance',
+		'advanced'   => 'Additional settings',
+	);
+	$grouped     = array();
+
+	foreach ( array_keys( $group_order ) as $group_key ) {
+		$grouped[ $group_key ] = array();
+	}
+
+	foreach ( $sanitized as $field ) {
+		if ( ! is_array( $field ) ) {
+			$grouped['advanced'][] = $field;
+			continue;
+		}
+
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		if ( 'tab' === $field_type ) {
+			continue;
+		}
+
+		$group_key = mrn_base_stack_get_repeater_config_field_group_key( $field );
+		if ( '' === $group_key || ! isset( $grouped[ $group_key ] ) ) {
+			$group_key = 'advanced';
+		}
+
+		$grouped[ $group_key ][] = $field;
+	}
+
+	$has_group_content = false;
+	foreach ( $grouped as $group_fields ) {
+		if ( ! empty( $group_fields ) ) {
+			$has_group_content = true;
+			break;
+		}
+	}
+
+	if ( empty( $grouped['advanced'] ) ) {
+		$grouped['advanced'][] = mrn_base_stack_get_contract_future_use_message_field( $group_prefix . 'advanced_future_use' );
+		$has_group_content     = true;
+	}
+
+	if ( ! $has_group_content ) {
+		return $fields;
+	}
+
+	$grouped_segment = array();
+	$is_first_group  = true;
+	foreach ( $group_order as $group_key => $group_label ) {
+		$group_fields = $grouped[ $group_key ];
+		if ( empty( $group_fields ) ) {
+			continue;
+		}
+
+		$grouped_segment[] = array(
+			'key'          => $group_prefix . $group_key,
+			'label'        => $group_label,
+			'name'         => '',
+			'aria-label'   => '',
+			'type'         => 'accordion',
+			'open'         => $is_first_group ? 1 : 0,
+			'multi_expand' => 1,
+			'endpoint'     => 0,
+		);
+
+		foreach ( $group_fields as $group_field ) {
+			$grouped_segment[] = $group_field;
+		}
+
+		$is_first_group = false;
+	}
+
+	$grouped_segment[] = array(
+		'key'          => $group_prefix . 'end',
+		'label'        => '',
+		'name'         => '',
+		'aria-label'   => '',
+		'type'         => 'accordion',
+		'endpoint'     => 1,
+		'multi_expand' => 1,
+	);
+
+	array_splice( $fields, $segment_start, $segment_len, $grouped_segment );
+
+	return $fields;
+}
+
+/**
+ * Expand legacy bare repeater `link` fields into the shared link contract.
+ *
+ * This keeps the original ACF key for the `link` field where possible so any
+ * existing collapse targets and editor state continue to work.
+ *
+ * @param array<int, mixed> $fields Repeater sub-fields.
+ * @param string            $repeater_key Repeater ACF key.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_expand_repeater_legacy_link_to_contract( array $fields, $repeater_key = '' ) {
+	if ( ! function_exists( 'mrn_rbl_get_content_link_contract_sub_fields' ) ) {
+		return $fields;
+	}
+
+	$has_link_contract_fields = false;
+	$legacy_link_index        = null;
+	$legacy_link_field        = array();
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+
+		if ( in_array( $field_name, array( 'is_button', 'css_classes', 'target', 'rel', 'title_attribute', 'download', 'hreflang', 'media' ), true ) || 0 === strpos( $field_name, 'link_icon_' ) ) {
+			$has_link_contract_fields = true;
+		}
+
+		if ( null !== $legacy_link_index ) {
+			continue;
+		}
+
+		if ( 'link' === $field_type && 'link' === $field_name ) {
+			$legacy_link_index = $index;
+			$legacy_link_field = $field;
+		}
+	}
+
+	if ( $has_link_contract_fields || null === $legacy_link_index ) {
+		return $fields;
+	}
+
+	$key_seed = sanitize_key( (string) $repeater_key );
+	if ( '' === $key_seed ) {
+		$key_seed = 'field_mrn_repeater_item';
+	}
+
+	$link_field_key = isset( $legacy_link_field['key'] ) && is_string( $legacy_link_field['key'] ) ? trim( $legacy_link_field['key'] ) : '';
+	if ( '' === $link_field_key ) {
+		$link_field_key = $key_seed . '_link';
+	}
+
+	$contract_fields = mrn_rbl_get_content_link_contract_sub_fields(
+		$key_seed . '_link_contract',
+		array(
+			'include_tabs'   => true,
+			'link_field_key' => $link_field_key,
+			'link_tab_key'   => $key_seed . '_link_tab_contract',
+			'config_tab_key' => $key_seed . '_link_configs_tab_contract',
+		)
+	);
+
+	if ( empty( $contract_fields ) ) {
+		return $fields;
+	}
+
+	array_splice( $fields, $legacy_link_index, 1, $contract_fields );
+
+	return $fields;
+}
+
+/**
+ * Check whether a field name belongs to the shared flat link contract.
+ *
+ * @param string $field_name Field name.
+ * @return bool
+ */
+function mrn_base_stack_is_flat_link_contract_field_name( $field_name ) {
+	$field_name = sanitize_key( (string) $field_name );
+
+	if ( '' === $field_name ) {
+		return false;
+	}
+
+	if ( 0 === strpos( $field_name, 'link_icon_' ) ) {
+		return true;
+	}
+
+	return in_array(
+		$field_name,
+		array(
+			'link',
+			'is_button',
+			'css_classes',
+			'target',
+			'rel',
+			'title_attribute',
+			'download',
+			'hreflang',
+			'media',
+		),
+		true
+	);
+}
+
+/**
+ * Normalize repeater-item link UI to a single links repeater at the end of Content.
+ *
+ * Legacy flat link contract fields are removed from the row-level tab strip and
+ * replaced by a `links` repeater so link-specific tabs remain scoped to the
+ * link item UI rather than appearing as top-level row tabs.
+ *
+ * @param array<int, mixed> $fields Repeater sub-fields.
+ * @param string            $key_seed Repeater key seed.
+ * @param string            $repeater_name Repeater field name.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_ensure_repeater_item_links_repeater_contract( array $fields, $key_seed, $repeater_name = '' ) {
+	$repeater_name = sanitize_key( (string) $repeater_name );
+
+	if ( ! function_exists( 'mrn_rbl_get_content_link_repeater_field' ) ) {
+		return $fields;
+	}
+
+	$key_seed               = sanitize_key( (string) $key_seed );
+	$normalized             = array();
+	$links_field            = null;
+	$has_flat_link_contract = false;
+	$in_link_tab_segment    = false;
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			$normalized[] = $field;
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_name  = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( 'repeater' === $field_type && 'links' === $field_name ) {
+			$links_field = $field;
+			continue;
+		}
+
+		if ( 'tab' === $field_type ) {
+			if ( 'link' === $field_label ) {
+				$in_link_tab_segment    = true;
+				$has_flat_link_contract = true;
+				continue;
+			}
+
+			if ( $in_link_tab_segment && 'configs' === $field_label ) {
+				$has_flat_link_contract = true;
+				continue;
+			}
+
+			$in_link_tab_segment = false;
+		}
+
+		if ( mrn_base_stack_is_flat_link_contract_field_name( $field_name ) ) {
+			$has_flat_link_contract = true;
+			continue;
+		}
+
+		$normalized[] = $field;
+	}
+
+	if ( null === $links_field && ! $has_flat_link_contract ) {
+		return $fields;
+	}
+
+	if ( null === $links_field ) {
+		$links_field = mrn_rbl_get_content_link_repeater_field( $key_seed . '_links', 'Link repeater', 'links', 1 );
+	}
+
+	if ( ! is_array( $links_field ) ) {
+		return $normalized;
+	}
+
+	$links_field['label']  = 'Link repeater';
+	$links_field['name']   = 'links';
+	$links_field['layout'] = 'block';
+	$links_field['max']    = 1;
+	if ( 'showcase_items' === $repeater_name ) {
+		$links_field['label'] = 'Link';
+	}
+
+	$content_tab_index = null;
+	$insert_index      = null;
+
+	foreach ( $normalized as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( 'tab' !== $field_type ) {
+			continue;
+		}
+
+		if ( null === $content_tab_index && 'content' === $field_label ) {
+			$content_tab_index = $index;
+			continue;
+		}
+
+		if ( null !== $content_tab_index && $index > $content_tab_index ) {
+			$insert_index = $index;
+			break;
+		}
+	}
+
+	if ( null === $insert_index ) {
+		$normalized[] = $links_field;
+	} else {
+		array_splice( $normalized, $insert_index, 0, array( $links_field ) );
+	}
+
+	return $normalized;
+}
+
+/**
+ * Resolve the functionality group for a main-row config field.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return string
+ */
+function mrn_base_stack_get_main_config_field_group_key( array $field ) {
+	$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+
+	if ( '' === $field_name ) {
+		return '';
+	}
+
+	if ( in_array( $field_name, array( 'section_width', 'sub_content_width' ), true ) ) {
+		return 'appearance';
+	}
+
+	if ( in_array( $field_name, array( 'anchor', 'anchor_id' ), true ) ) {
+		return 'layout';
+	}
+
+	if ( in_array( $field_name, array( 'background_color', 'bg_color' ), true ) || 0 === strpos( $field_name, 'background_' ) ) {
+		return 'appearance';
+	}
+
+	if ( in_array( $field_name, array( 'accent', 'bottom_accent', 'bottom_accent_style' ), true ) || 0 === strpos( $field_name, 'accent_' ) ) {
+		return 'accent';
+	}
+
+	if ( 0 === strpos( $field_name, 'link_' ) || in_array( $field_name, array( 'is_button', 'css_classes', 'target', 'rel', 'title_attribute', 'download', 'hreflang', 'media' ), true ) ) {
+		return 'links';
+	}
+
+	if (
+		false !== strpos( $field_name, 'column' )
+		|| false !== strpos( $field_name, 'ratio' )
+		|| false !== strpos( $field_name, 'orientation' )
+		|| false !== strpos( $field_name, 'autoplay' )
+		|| false !== strpos( $field_name, 'delay' )
+		|| false !== strpos( $field_name, 'time_on_slide' )
+		|| false !== strpos( $field_name, 'hover' )
+		|| false !== strpos( $field_name, 'stagger' )
+		|| false !== strpos( $field_name, 'display_mode' )
+		|| false !== strpos( $field_name, 'equal' )
+		|| false !== strpos( $field_name, 'full' )
+		|| false !== strpos( $field_name, 'position' )
+		|| false !== strpos( $field_name, 'size' )
+		|| false !== strpos( $field_name, 'alignment' )
+		|| false !== strpos( $field_name, 'per_page' )
+		|| 0 === strpos( $field_name, 'show_' )
+	) {
+		return 'layout';
+	}
+
+	if ( in_array( $field_type, array( 'true_false', 'select', 'number', 'range', 'radio', 'button_group' ), true ) ) {
+		return 'layout';
+	}
+
+	return 'advanced';
+}
+
+/**
+ * Determine whether an ACF field is a row-width control.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return bool
+ */
+function mrn_base_stack_is_row_width_control_field( array $field ) {
+	$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+
+	return in_array( $field_name, array( 'section_width', 'sub_content_width', 'full_width' ), true );
+}
+
+/**
+ * Ensure layouts with row-level width controls expose sub-content width.
+ *
+ * @param array<int, mixed> $fields Layout/main field definitions.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_ensure_sub_content_width_field( array $fields ) {
+	$has_sub_content_width = false;
+	$has_section_width     = false;
+	$insert_after_index    = null;
+	$config_tab_index      = null;
+	$next_tab_index        = null;
+	$seed                  = '';
+	$total_fields          = count( $fields );
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_key   = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
+		$field_name  = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( '' === $seed && '' !== $field_key ) {
+			$seed = $field_key;
+		}
+
+		if ( 'sub_content_width' === $field_name ) {
+			$has_sub_content_width = true;
+			break;
+		}
+
+		if ( 'section_width' === $field_name ) {
+			$has_section_width  = true;
+			$insert_after_index = $index;
+			if ( '' !== $field_key ) {
+				$seed = $field_key;
+			}
+		}
+
+		if ( 'tab' === $field_type && 'configs' === $field_label && null === $config_tab_index ) {
+			$config_tab_index = $index;
+			continue;
+		}
+
+		if ( null !== $config_tab_index && 'tab' === $field_type && $index > $config_tab_index ) {
+			$next_tab_index = $index;
+			break;
+		}
+	}
+
+	if ( $has_sub_content_width ) {
+		return $fields;
+	}
+
+	if ( ! $has_section_width ) {
+		return $fields;
+	}
+
+	if ( '' === $seed ) {
+		$seed = 'field_mrn_layout_sub_content_width';
+	}
+
+	if ( null === $insert_after_index ) {
+		if ( null !== $config_tab_index ) {
+			$insert_after_index = $config_tab_index;
+		} else {
+			$insert_after_index = $total_fields - 1;
+		}
+	}
+
+	if ( null !== $next_tab_index && $insert_after_index >= $next_tab_index ) {
+		$insert_after_index = $next_tab_index - 1;
+	}
+
+	array_splice(
+		$fields,
+		$insert_after_index + 1,
+		0,
+		array(
+			mrn_base_stack_get_sub_content_width_field(
+				$seed . '_sub_content_width',
+				'sub_content_width',
+				'Section Width (Sub-content)'
+			),
+		)
+	);
+
+	return $fields;
+}
+
+/**
+ * Ensure row-width controls always have a Configs tab anchor.
+ *
+ * Some cloned layouts surface row-level controls (for example section width)
+ * without defining a local Configs tab, which can cause those controls to
+ * inherit the prior tab context visually.
+ *
+ * @param array<int, mixed> $fields Layout/main field definitions.
+ * @param string            $key_seed Optional key seed for generated field keys.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_ensure_main_configs_tab_for_row_width_fields( array $fields, $key_seed = '' ) {
+	$has_configs_tab         = false;
+	$first_width_field_index = null;
+	$seed                    = sanitize_key( (string) $key_seed );
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_key   = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( '' === $seed && '' !== $field_key ) {
+			$seed = $field_key;
+		}
+
+		if ( 'tab' === $field_type && 'configs' === $field_label ) {
+			$has_configs_tab = true;
+			break;
+		}
+
+		if ( null === $first_width_field_index && mrn_base_stack_is_row_width_control_field( $field ) ) {
+			$first_width_field_index = $index;
+		}
+	}
+
+	if ( $has_configs_tab || null === $first_width_field_index ) {
+		return $fields;
+	}
+
+	if ( '' === $seed ) {
+		$seed = 'field_mrn_layout_config';
+	}
+
+	array_splice(
+		$fields,
+		$first_width_field_index,
+		0,
+		array(
+			array(
+				'key'        => $seed . '_configs_tab_contract',
+				'label'      => 'Configs',
+				'name'       => '',
+				'aria-label' => '',
+				'type'       => 'tab',
+				'placement'  => 'top',
+				'endpoint'   => 0,
+			),
+		)
+	);
+
+	return $fields;
+}
+
+/**
+ * Move row-width controls into the Configs segment when they drift outside it.
+ *
+ * @param array<int, mixed> $fields Layout/main field definitions.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_move_row_width_fields_into_configs_segment( array $fields ) {
+	$config_tab_index = null;
+	$next_tab_index   = null;
+	$total_fields     = count( $fields );
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( 'tab' !== $field_type ) {
+			continue;
+		}
+
+		if ( null === $config_tab_index && 'configs' === $field_label ) {
+			$config_tab_index = $index;
+			continue;
+		}
+
+		if ( null !== $config_tab_index && $index > $config_tab_index ) {
+			$next_tab_index = $index;
+			break;
+		}
+	}
+
+	if ( null === $config_tab_index ) {
+		return $fields;
+	}
+
+	$segment_start = $config_tab_index + 1;
+	$segment_end   = null !== $next_tab_index ? $next_tab_index : $total_fields;
+	$width_fields  = array();
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) || ! mrn_base_stack_is_row_width_control_field( $field ) ) {
+			continue;
+		}
+
+		if ( $index >= $segment_start && $index < $segment_end ) {
+			continue;
+		}
+
+		$width_fields[] = $field;
+		unset( $fields[ $index ] );
+	}
+
+	if ( empty( $width_fields ) ) {
+		return $fields;
+	}
+
+	$fields           = array_values( $fields );
+	$config_tab_index = null;
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+		if ( 'tab' === $field_type && 'configs' === $field_label ) {
+			$config_tab_index = $index;
+			break;
+		}
+	}
+
+	if ( null === $config_tab_index ) {
+		return $fields;
+	}
+
+	array_splice( $fields, $config_tab_index + 1, 0, $width_fields );
+
+	return $fields;
+}
+
+/**
+ * Group main-row Configs controls by functionality with collapsed accordions.
+ *
+ * @param array<int, mixed> $fields Layout/main field definitions.
+ * @param string            $key_seed Optional key seed for generated accordion keys.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_group_main_config_fields_by_functionality( array $fields, $key_seed = '' ) {
+	$fields = mrn_base_stack_ensure_main_configs_tab_for_row_width_fields( $fields, $key_seed );
+	$fields = mrn_base_stack_move_row_width_fields_into_configs_segment( $fields );
+
+	$config_tab_index = null;
+	$next_tab_index   = null;
+	$total_fields     = count( $fields );
+	$seed             = sanitize_key( (string) $key_seed );
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+		$field_key   = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
+
+		if ( '' === $seed && '' !== $field_key ) {
+			$seed = $field_key;
+		}
+
+		if ( 'tab' !== $field_type ) {
+			continue;
+		}
+
+		if ( null === $config_tab_index && 'configs' === $field_label ) {
+			$config_tab_index = $index;
+
+			if ( '' !== $field_key ) {
+				$seed = $field_key;
+			}
+			continue;
+		}
+
+		if ( null !== $config_tab_index && $index > $config_tab_index ) {
+			$next_tab_index = $index;
+			break;
+		}
+	}
+
+	if ( null === $config_tab_index ) {
+		return $fields;
+	}
+
+	if ( '' === $seed ) {
+		$seed = 'field_mrn_layout_config';
+	}
+
+	$segment_start = $config_tab_index + 1;
+	$segment_end   = null !== $next_tab_index ? $next_tab_index : $total_fields;
+	$segment_len   = max( 0, $segment_end - $segment_start );
+
+	if ( $segment_len < 1 ) {
+		return $fields;
+	}
+
+	$config_fields = array_slice( $fields, $segment_start, $segment_len );
+	$group_prefix  = $seed . '_cfg_main_group_';
+	$sanitized     = array();
+
+	foreach ( $config_fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_key  = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+
+		if ( 'accordion' === $field_type && '' !== $field_key && 0 === strpos( $field_key, $group_prefix ) ) {
+			continue;
+		}
+
+		if ( 'message' === $field_type && $group_prefix . 'advanced_future_use' === $field_key ) {
+			continue;
+		}
+
+		$sanitized[] = $field;
+	}
+
+	$group_order = array(
+		'layout'     => 'Basic Setting',
+		'appearance' => 'Appearance',
+		'accent'     => 'Accent settings',
+		'links'      => 'Link settings',
+		'advanced'   => 'Additional settings',
+	);
+	$grouped     = array();
+
+	foreach ( array_keys( $group_order ) as $group_key ) {
+		$grouped[ $group_key ] = array();
+	}
+
+	foreach ( $sanitized as $field ) {
+		if ( ! is_array( $field ) ) {
+			$grouped['advanced'][] = $field;
+			continue;
+		}
+
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		if ( in_array( $field_type, array( 'tab', 'accordion' ), true ) ) {
+			continue;
+		}
+
+		$group_key = mrn_base_stack_get_main_config_field_group_key( $field );
+		if ( '' === $group_key || ! isset( $grouped[ $group_key ] ) ) {
+			$group_key = 'advanced';
+		}
+
+		$grouped[ $group_key ][] = $field;
+	}
+
+	$has_group_content = false;
+	foreach ( $grouped as $group_fields ) {
+		if ( ! empty( $group_fields ) ) {
+			$has_group_content = true;
+			break;
+		}
+	}
+
+	if ( empty( $grouped['advanced'] ) ) {
+		$grouped['advanced'][] = mrn_base_stack_get_contract_future_use_message_field( $group_prefix . 'advanced_future_use' );
+		$has_group_content     = true;
+	}
+
+	if ( ! $has_group_content ) {
+		return $fields;
+	}
+
+	$grouped_segment = array();
+	foreach ( $group_order as $group_key => $group_label ) {
+		$group_fields = $grouped[ $group_key ];
+		if ( empty( $group_fields ) ) {
+			continue;
+		}
+
+		$grouped_segment[] = array(
+			'key'          => $group_prefix . $group_key,
+			'label'        => $group_label,
+			'name'         => '',
+			'aria-label'   => '',
+			'type'         => 'accordion',
+			'open'         => 0,
+			'multi_expand' => 1,
+			'endpoint'     => 0,
+		);
+
+		foreach ( $group_fields as $group_field ) {
+			$grouped_segment[] = $group_field;
+		}
+	}
+
+	$grouped_segment[] = array(
+		'key'          => $group_prefix . 'end',
+		'label'        => '',
+		'name'         => '',
+		'aria-label'   => '',
+		'type'         => 'accordion',
+		'endpoint'     => 1,
+		'multi_expand' => 1,
+	);
+
+	array_splice( $fields, $segment_start, $segment_len, $grouped_segment );
+
+	return $fields;
+}
+
+/**
+ * Ensure target repeater items use shared Content|Configs tabs and config controls.
+ *
+ * @param array<int, mixed> $fields Repeater sub-fields.
+ * @param string            $repeater_name Repeater field name.
+ * @param string            $repeater_key Repeater field key.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_apply_repeater_item_tabs_and_config_contract( array $fields, $repeater_name, $repeater_key = '' ) {
+	if ( ! mrn_base_stack_repeater_uses_primary_item_contract( $repeater_name ) ) {
+		return $fields;
+	}
+
+	$key_seed = sanitize_key( (string) $repeater_key );
+	if ( '' === $key_seed ) {
+		$key_seed = 'field_mrn_repeater_item';
+	}
+
+	$fields = mrn_base_stack_expand_repeater_legacy_link_to_contract( $fields, $repeater_key );
+	$fields = mrn_base_stack_ensure_repeater_item_links_repeater_contract( $fields, $key_seed, $repeater_name );
+	$fields = mrn_base_stack_ensure_tabs_repeater_primary_content_contract( $fields, $repeater_name, $repeater_key );
+
+	$background_field = null;
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+
+		if ( 'background_color' !== $field_name || 'select' !== $field_type ) {
+			continue;
+		}
+
+		if ( null === $background_field ) {
+			$background_field = $field;
+		}
+
+		unset( $fields[ $index ] );
+	}
+	$fields = array_values( $fields );
+
+	$content_tab_index    = null;
+	$row_config_tab_index = null;
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+		$field_key   = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
+
+		if ( 'tab' !== $field_type ) {
+			continue;
+		}
+
+		if ( null === $content_tab_index && 'content' === $field_label ) {
+			$content_tab_index = $index;
+		}
+
+		if ( null === $row_config_tab_index && 'configs' === $field_label && false === strpos( $field_key, 'link_configs_tab_contract' ) ) {
+			$row_config_tab_index = $index;
+		}
+	}
+
+	if ( null === $content_tab_index ) {
+		array_unshift(
+			$fields,
+			array(
+				'key'       => $key_seed . '_content_tab',
+				'label'     => 'Content',
+				'name'      => '',
+				'type'      => 'tab',
+				'placement' => 'top',
+				'endpoint'  => 0,
+			)
+		);
+	}
+
+	if ( null === $row_config_tab_index ) {
+		$fields[] = array(
+			'key'       => $key_seed . '_config_tab',
+			'label'     => 'Configs',
+			'name'      => '',
+			'type'      => 'tab',
+			'placement' => 'top',
+			'endpoint'  => 0,
+		);
+	}
+
+	if ( null === $background_field ) {
+		$background_field = array(
+			'key'          => $key_seed . '_background_color',
+			'label'        => 'Background Color',
+			'name'         => 'background_color',
+			'aria-label'   => '',
+			'type'         => 'select',
+			'choices'      => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
+			'ui'           => 1,
+			'allow_null'   => 1,
+			'instructions' => 'Select from Site Colors when available.',
+			'wrapper'      => array(
+				'width' => '50',
+			),
+		);
+	}
+
+	$row_config_tab_index = null;
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+		$field_key   = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
+
+		if ( 'tab' === $field_type && 'configs' === $field_label && false === strpos( $field_key, 'link_configs_tab_contract' ) ) {
+			$row_config_tab_index = $index;
+			break;
+		}
+	}
+
+	if ( null === $row_config_tab_index ) {
+		$fields[] = $background_field;
+	} else {
+		array_splice( $fields, $row_config_tab_index + 1, 0, array( $background_field ) );
+	}
+
+	/*
+	 * Repeater-item contracts keep row effects in a dedicated Effects tab.
+	 */
+	$effects_tab   = null;
+	$effect_fields = array();
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_name  = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( null === $effects_tab && 'tab' === $field_type && 'effects' === $field_label ) {
+			$effects_tab = $field;
+			unset( $fields[ $index ] );
+			continue;
+		}
+
+		if ( 'enable_row_effects' === $field_name ) {
+			if ( empty( $effect_fields ) ) {
+				$effect_fields[] = $field;
+			}
+			unset( $fields[ $index ] );
+		}
+	}
+	$fields = array_values( $fields );
+
+	if ( null === $effects_tab ) {
+		$effects_tab = array(
+			'key'        => $key_seed . '_effects_tab',
+			'label'      => 'Effects',
+			'name'       => '',
+			'aria-label' => '',
+			'type'       => 'tab',
+			'placement'  => 'top',
+			'endpoint'   => 0,
+		);
+	}
+
+	if ( empty( $effect_fields ) ) {
+		$effect_fields[] = array(
+			'key'           => $key_seed . '_enable_row_effects',
+			'label'         => 'Enable Row Effects',
+			'name'          => 'enable_row_effects',
+			'aria-label'    => '',
+			'type'          => 'true_false',
+			'ui'            => 1,
+			'default_value' => 0,
+			'ui_on_text'    => 'On',
+			'ui_off_text'   => 'Off',
+			'wrapper'       => array(
+				'width' => '50',
+			),
+		);
+	}
+
+	$fields[] = $effects_tab;
+	array_splice( $fields, count( $fields ), 0, $effect_fields );
+
+	$fields = mrn_base_stack_group_repeater_config_fields_by_functionality( $fields, $key_seed );
+	$fields = mrn_base_stack_ensure_acf_field_origin_names( $fields );
+
+	return $fields;
+}
+
+/**
+ * Apply the primary repeater-item contract when ACF loads repeater fields.
+ *
+ * This ensures clone-derived repeater fields receive the same item contract
+ * normalization as directly registered layout fields.
+ *
+ * @param array<string, mixed>|mixed $field ACF field definition.
+ * @return array<string, mixed>|mixed
+ */
+function mrn_base_stack_apply_primary_repeater_item_contract_on_load( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+
+	if ( 'repeater' !== $field_type || ! mrn_base_stack_repeater_uses_primary_item_contract( $field_name ) ) {
+		return $field;
+	}
+
+	if ( ! isset( $field['sub_fields'] ) || ! is_array( $field['sub_fields'] ) ) {
+		return $field;
+	}
+
+	$field_key = isset( $field['key'] ) && is_string( $field['key'] ) ? trim( $field['key'] ) : '';
+
+	$field['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field['sub_fields'], false );
+	$field['sub_fields'] = mrn_base_stack_ensure_repeater_subheading_contract( $field['sub_fields'], $field_key, $field_name );
+	$field['sub_fields'] = mrn_base_stack_apply_repeater_item_tabs_and_config_contract( $field['sub_fields'], $field_name, $field_key );
+	$field['sub_fields'] = mrn_base_stack_ensure_acf_field_origin_names( $field['sub_fields'] );
+
+	return $field;
+}
+add_filter( 'acf/load_field/type=repeater', 'mrn_base_stack_apply_primary_repeater_item_contract_on_load', 30 );
+
+/**
+ * Recursively apply the shared primary-layout field contract.
+ *
+ * @param array<int, mixed> $fields ACF field definitions.
+ * @param bool              $inject_internal_name Whether to inject the editor-only internal name field.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inject_internal_name = true ) {
+	$normalized_fields = array();
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			$normalized_fields[] = $field;
+			continue;
+		}
+
+		if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) ) {
+			$field['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field['sub_fields'], false );
+
+			$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+			$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+			$field_key  = isset( $field['key'] ) && is_string( $field['key'] ) ? trim( $field['key'] ) : '';
+
+			if ( 'clone' === $field_type ) {
+				$field['sub_fields'] = mrn_base_stack_ensure_sub_content_width_field( $field['sub_fields'] );
+				$field['sub_fields'] = mrn_base_stack_group_main_config_fields_by_functionality( $field['sub_fields'], $field_key );
+			}
+
+			if ( 'repeater' === $field_type && 'links' !== $field_name ) {
+				$field['sub_fields'] = mrn_base_stack_ensure_repeater_subheading_contract( $field['sub_fields'], $field_key, $field_name );
+				$field['sub_fields'] = mrn_base_stack_apply_repeater_item_tabs_and_config_contract( $field['sub_fields'], $field_name, $field_key );
+			}
+		}
+
+		if ( isset( $field['fields'] ) && is_array( $field['fields'] ) ) {
+			$field['fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field['fields'], false );
+		}
+
+		if ( isset( $field['layouts'] ) && is_array( $field['layouts'] ) ) {
+			foreach ( $field['layouts'] as $layout_key => $layout ) {
+				if ( ! is_array( $layout ) ) {
+					continue;
+				}
+
+				if ( isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ) {
+					$layout['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+				}
+
+				$field['layouts'][ $layout_key ] = $layout;
+			}
+		}
+
+		$normalized_fields[] = mrn_base_stack_normalize_primary_layout_field( $field );
+	}
+
+	$normalized_fields = mrn_base_stack_apply_tag_field_column_layout( $normalized_fields );
+	if ( $inject_internal_name ) {
+		$normalized_fields = mrn_base_stack_ensure_sub_content_width_field( $normalized_fields );
+		$normalized_fields = mrn_base_stack_group_main_config_fields_by_functionality( $normalized_fields );
+	}
+
+	if ( ! $inject_internal_name ) {
+		return mrn_base_stack_ensure_acf_field_origin_names( $normalized_fields );
+	}
+
+	$contains_reusable_group_clone = false;
+
+	foreach ( $normalized_fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		if ( 'clone' !== $field_type || ! isset( $field['clone'] ) || ! is_array( $field['clone'] ) ) {
+			continue;
+		}
+
+		foreach ( $field['clone'] as $clone_target ) {
+			$clone_key = is_string( $clone_target ) ? sanitize_key( $clone_target ) : '';
+			if ( '' !== $clone_key && 0 === strpos( $clone_key, 'group_mrn_reusable_' ) ) {
+				$contains_reusable_group_clone = true;
+				break 2;
+			}
+		}
+	}
+
+	if ( $contains_reusable_group_clone ) {
+		return mrn_base_stack_ensure_acf_field_origin_names( $normalized_fields );
+	}
+
+	$content_tab_index = null;
+	$first_field_index = null;
+	$internal_name_key = 'field_mrn_layout_internal_name';
+	$has_internal_name = false;
+
+	foreach ( $normalized_fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_key  = isset( $field['key'] ) && is_string( $field['key'] ) ? trim( $field['key'] ) : '';
+
+		if ( null === $first_field_index ) {
+			$first_field_index = $index;
+
+			if ( '' !== $field_key ) {
+				$internal_name_key = sanitize_key( $field_key ) . '_internal_name';
+			}
+		}
+
+		if ( 'internal_name' === $field_name ) {
+			$has_internal_name = true;
+		}
+
+		if ( null !== $content_tab_index || 'tab' !== $field_type ) {
+			continue;
+		}
+
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+		if ( 'content' !== $field_label ) {
+			continue;
+		}
+
+		$content_tab_index = $index;
+
+		if ( '' !== $field_key ) {
+			$internal_name_key = sanitize_key( $field_key ) . '_internal_name';
+		}
+	}
+
+	if ( ! $has_internal_name ) {
+		$insert_index = null !== $content_tab_index ? $content_tab_index + 1 : ( null !== $first_field_index ? $first_field_index : 0 );
+		array_splice( $normalized_fields, $insert_index, 0, array( mrn_base_stack_get_internal_layout_name_field( $internal_name_key ) ) );
+	}
+
+	return mrn_base_stack_ensure_acf_field_origin_names( $normalized_fields );
+}
+
+/**
  * Recursively move row effect controls into a dedicated Effects tab.
  *
  * This preserves existing motion field keys/names and only changes their tab
@@ -1337,7 +3312,13 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
  */
 function mrn_base_stack_with_effects_tabs( array $field_group ) {
 	if ( isset( $field_group['fields'] ) && is_array( $field_group['fields'] ) ) {
+		$field_group['fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field_group['fields'], false );
 		$field_group['fields'] = mrn_base_stack_relocate_effect_fields( $field_group['fields'] );
+		/*
+		 * Re-run the contract pass after Effects relocation so empty
+		 * "Additional settings" groups always receive their placeholder message.
+		 */
+		$field_group['fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field_group['fields'], false );
 	}
 
 	return $field_group;
@@ -1441,6 +3422,64 @@ function mrn_base_stack_get_row_section_width_class( array $row, $default_width 
 }
 
 /**
+ * Resolve a row's repeater-wrapper width with safe fallback behavior.
+ *
+ * `sub_content_width` defaults to the row's `section_width` when unset so
+ * existing content keeps its prior visual width until explicitly changed.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @param string               $default_width Default width when both values are empty.
+ * @return string
+ */
+function mrn_base_stack_get_row_sub_content_width( array $row, $default_width = 'wide' ) {
+	$sub_content_width = isset( $row['sub_content_width'] ) ? $row['sub_content_width'] : '';
+	$section_width     = isset( $row['section_width'] ) ? $row['section_width'] : '';
+
+	$resolved = is_scalar( $sub_content_width ) ? trim( (string) $sub_content_width ) : '';
+	if ( '' === $resolved ) {
+		$resolved = is_scalar( $section_width ) ? trim( (string) $section_width ) : '';
+	}
+
+	return mrn_base_stack_normalize_section_width( $resolved, $default_width );
+}
+
+/**
+ * Build class/attribute contract for repeater-wrapper width controls.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return array{classes:array<int,string>,attributes:array<string,string>}
+ */
+function mrn_base_stack_get_builder_sub_content_width_contract( array $row ) {
+	$width      = mrn_base_stack_get_row_sub_content_width( $row, 'wide' );
+	$width_slug = 'wide';
+
+	if ( 'content' === $width ) {
+		$width_slug = 'content';
+	} elseif ( 'full-width' === $width ) {
+		$width_slug = 'full';
+	}
+
+	$contract = array(
+		'classes'    => array( 'mrn-content-builder__row--sub-content-width-' . $width_slug ),
+		'attributes' => array(),
+	);
+
+	/**
+	 * Filter repeater-wrapper width class/attribute contract per row.
+	 *
+	 * @param array{classes:array<int,string>,attributes:array<string,string>} $contract Width contract.
+	 * @param string                                                            $width Resolved width value.
+	 * @param array<string, mixed>                                              $row Builder row data.
+	 */
+	$contract = apply_filters( 'mrn_base_stack_builder_sub_content_width_contract', $contract, $width, $row );
+
+	return is_array( $contract ) ? $contract : array(
+		'classes'    => array(),
+		'attributes' => array(),
+	);
+}
+
+/**
  * Normalize a builder anchor ID for safe front-end output.
  *
  * @param mixed $value Raw stored anchor value.
@@ -1462,6 +3501,30 @@ function mrn_base_stack_normalize_anchor_id( $value ) {
 }
 
 /**
+ * Ensure builder anchor IDs stay unique in the current request.
+ *
+ * @param string $anchor_id Normalized anchor ID.
+ * @return string
+ */
+function mrn_base_stack_get_unique_builder_anchor_id( $anchor_id ) {
+	static $seen_anchor_ids = array();
+
+	$anchor_id = mrn_base_stack_normalize_anchor_id( $anchor_id );
+	if ( '' === $anchor_id ) {
+		return '';
+	}
+
+	if ( ! isset( $seen_anchor_ids[ $anchor_id ] ) ) {
+		$seen_anchor_ids[ $anchor_id ] = 1;
+		return $anchor_id;
+	}
+
+	$seen_anchor_ids[ $anchor_id ] = (int) $seen_anchor_ids[ $anchor_id ] + 1;
+
+	return $anchor_id . '-' . $seen_anchor_ids[ $anchor_id ];
+}
+
+/**
  * Build the top-of-row anchor markup for a builder row.
  *
  * @param array<string, mixed> $row Builder row data.
@@ -1477,6 +3540,18 @@ function mrn_base_stack_get_builder_anchor_markup( array $row, $fallback_anchor 
 
 	if ( '' === $anchor_id ) {
 		return '';
+	}
+
+	/**
+	 * Filter whether duplicate builder anchor IDs should be de-duplicated.
+	 *
+	 * @param bool                 $should_dedupe True to enforce unique IDs.
+	 * @param string               $anchor_id Normalized anchor ID before de-duplication.
+	 * @param array<string, mixed> $row Builder row data.
+	 */
+	$should_dedupe = (bool) apply_filters( 'mrn_base_stack_dedupe_builder_anchor_ids', true, $anchor_id, $row );
+	if ( $should_dedupe ) {
+		$anchor_id = mrn_base_stack_get_unique_builder_anchor_id( $anchor_id );
 	}
 
 	return sprintf(
@@ -1541,10 +3616,336 @@ function mrn_base_stack_merge_builder_attributes( array $attributes, array $extr
 			continue;
 		}
 
+		if ( isset( $attributes[ $attribute_name ] ) && 'style' === strtolower( $attribute_name ) ) {
+			$existing_style = is_scalar( $attributes[ $attribute_name ] ) ? trim( (string) $attributes[ $attribute_name ] ) : '';
+			if ( '' !== $existing_style ) {
+				$attribute_value = $existing_style . '; ' . $attribute_value;
+			}
+		}
+
 		$attributes[ $attribute_name ] = $attribute_value;
 	}
 
 	return $attributes;
+}
+
+/**
+ * Get the post-meta key used for row-level flex settings.
+ *
+ * @return string
+ */
+function mrn_base_stack_get_builder_row_flex_meta_key() {
+	return '_mrn_builder_row_flex_settings';
+}
+
+/**
+ * Get the flexible-content field names that support row-level flex settings.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_builder_row_flex_supported_fields() {
+	$fields = array(
+		'page_content_rows',
+		'page_after_content_rows',
+		'page_hero_rows',
+		'page_sidebar_rows',
+	);
+
+	/**
+	 * Filter builder flexible-content fields that can use row-level flex settings.
+	 *
+	 * @param array<int, string> $fields Supported field names.
+	 */
+	$fields = apply_filters( 'mrn_base_stack_builder_row_flex_supported_fields', $fields );
+	$fields = is_array( $fields ) ? $fields : array();
+
+	$normalized = array();
+	foreach ( $fields as $field_name ) {
+		$field_name = is_string( $field_name ) ? sanitize_key( $field_name ) : '';
+		if ( '' === $field_name ) {
+			continue;
+		}
+
+		$normalized[] = $field_name;
+	}
+
+	return array_values( array_unique( $normalized ) );
+}
+
+/**
+ * Normalize one row-level flex settings payload.
+ *
+ * @param mixed $settings Raw settings array.
+ * @return array{enabled:bool,scope:string,direction:string,justify:string,align:string,wrap:string,gap:string}
+ */
+function mrn_base_stack_normalize_builder_row_flex_settings( $settings ) {
+	$settings = is_array( $settings ) ? $settings : array();
+
+	$scope = sanitize_key( (string) ( $settings['scope'] ?? 'row' ) );
+	if ( ! in_array( $scope, array( 'row', 'repeaters' ), true ) ) {
+		$scope = 'row';
+	}
+
+	$direction = sanitize_key( (string) ( $settings['direction'] ?? 'row' ) );
+	if ( ! in_array( $direction, array( 'row', 'row-reverse', 'column', 'column-reverse' ), true ) ) {
+		$direction = 'row';
+	}
+
+	$justify = sanitize_key( (string) ( $settings['justify'] ?? 'flex-start' ) );
+	if ( ! in_array( $justify, array( 'flex-start', 'center', 'flex-end', 'space-between', 'space-around', 'space-evenly' ), true ) ) {
+		$justify = 'flex-start';
+	}
+
+	$align = sanitize_key( (string) ( $settings['align'] ?? 'stretch' ) );
+	if ( ! in_array( $align, array( 'stretch', 'flex-start', 'center', 'flex-end', 'baseline' ), true ) ) {
+		$align = 'stretch';
+	}
+
+	$wrap = sanitize_key( (string) ( $settings['wrap'] ?? 'nowrap' ) );
+	if ( ! in_array( $wrap, array( 'nowrap', 'wrap', 'wrap-reverse' ), true ) ) {
+		$wrap = 'nowrap';
+	}
+
+	$gap_raw = $settings['gap'] ?? '0';
+	$gap     = is_numeric( $gap_raw ) ? (float) $gap_raw : 0.0;
+	$gap     = max( 0, min( 160, $gap ) );
+	$gap     = rtrim( rtrim( sprintf( '%.2F', $gap ), '0' ), '.' );
+	if ( '' === $gap ) {
+		$gap = '0';
+	}
+
+	return array(
+		'enabled'   => ! empty( $settings['enabled'] ),
+		'scope'     => $scope,
+		'direction' => $direction,
+		'justify'   => $justify,
+		'align'     => $align,
+		'wrap'      => $wrap,
+		'gap'       => $gap,
+	);
+}
+
+/**
+ * Sanitize a row-level flex payload map keyed by field name + row index.
+ *
+ * @param mixed $payload Raw payload.
+ * @return array<string, array<string, array{enabled:bool,scope:string,direction:string,justify:string,align:string,wrap:string,gap:string}>>
+ */
+function mrn_base_stack_sanitize_builder_row_flex_payload( $payload ) {
+	$payload = is_array( $payload ) ? $payload : array();
+	$allowed = mrn_base_stack_get_builder_row_flex_supported_fields();
+	$allowed = array_flip( $allowed );
+
+	$sanitized = array();
+
+	foreach ( $payload as $field_name => $rows ) {
+		$field_name = is_string( $field_name ) ? sanitize_key( $field_name ) : '';
+		if ( '' === $field_name || ! isset( $allowed[ $field_name ] ) || ! is_array( $rows ) ) {
+			continue;
+		}
+
+		$sanitized_rows = array();
+		foreach ( $rows as $row_index => $settings ) {
+			if ( ! is_numeric( $row_index ) ) {
+				continue;
+			}
+
+			$row_index = max( 0, (int) $row_index );
+			$settings  = mrn_base_stack_normalize_builder_row_flex_settings( $settings );
+
+			if ( empty( $settings['enabled'] ) ) {
+				continue;
+			}
+
+			$sanitized_rows[ (string) $row_index ] = $settings;
+		}
+
+		if ( ! empty( $sanitized_rows ) ) {
+			ksort( $sanitized_rows, SORT_NATURAL );
+			$sanitized[ $field_name ] = $sanitized_rows;
+		}
+	}
+
+	return $sanitized;
+}
+
+/**
+ * Read sanitized row-level flex settings for a post.
+ *
+ * @param int $post_id Post ID.
+ * @return array<string, array<string, array{enabled:bool,scope:string,direction:string,justify:string,align:string,wrap:string,gap:string}>>
+ */
+function mrn_base_stack_get_builder_row_flex_payload( $post_id ) {
+	static $cache = array();
+
+	$post_id = absint( $post_id );
+	if ( $post_id < 1 ) {
+		return array();
+	}
+
+	if ( isset( $cache[ $post_id ] ) ) {
+		return $cache[ $post_id ];
+	}
+
+	$meta_key = mrn_base_stack_get_builder_row_flex_meta_key();
+	$raw      = get_post_meta( $post_id, $meta_key, true );
+	$payload  = mrn_base_stack_sanitize_builder_row_flex_payload( $raw );
+
+	/**
+	 * Filter the row-level flex payload before it is used in admin and frontend render paths.
+	 *
+	 * Child themes can use this to force defaults or remap per-row settings without changing
+	 * saved post meta directly.
+	 *
+	 * @param array<string, array<string, array{enabled:bool,scope:string,direction:string,justify:string,align:string,wrap:string,gap:string}>> $payload Sanitized payload.
+	 * @param int                                                                                                                     $post_id Post ID.
+	 * @param mixed                                                                                                                   $raw Raw post-meta value before sanitization.
+	 */
+	$payload = apply_filters( 'mrn_base_stack_builder_row_flex_payload', $payload, $post_id, $raw );
+
+	$cache[ $post_id ] = mrn_base_stack_sanitize_builder_row_flex_payload( $payload );
+
+	return $cache[ $post_id ];
+}
+
+/**
+ * Resolve row-level flex settings for a rendered builder row.
+ *
+ * @param array<string, mixed> $row Builder row payload with render context keys.
+ * @return array{enabled:bool,scope:string,direction:string,justify:string,align:string,wrap:string,gap:string}
+ */
+function mrn_base_stack_get_builder_row_flex_settings( array $row ) {
+	$defaults = mrn_base_stack_normalize_builder_row_flex_settings( array() );
+	$settings = $defaults;
+
+	$post_id = isset( $row['__mrn_builder_post_id'] ) ? absint( $row['__mrn_builder_post_id'] ) : 0;
+	$field_name = isset( $row['__mrn_builder_field_name'] ) ? sanitize_key( (string) $row['__mrn_builder_field_name'] ) : '';
+	$row_index = isset( $row['__mrn_builder_row_index'] ) ? (int) $row['__mrn_builder_row_index'] : -1;
+
+	if ( $post_id > 0 && '' !== $field_name && $row_index >= 0 ) {
+		$payload      = mrn_base_stack_get_builder_row_flex_payload( $post_id );
+		$settings_key = (string) $row_index;
+
+		if (
+			! empty( $payload[ $field_name ] ) &&
+			is_array( $payload[ $field_name ] ) &&
+			isset( $payload[ $field_name ][ $settings_key ] ) &&
+			is_array( $payload[ $field_name ][ $settings_key ] )
+		) {
+			$settings = mrn_base_stack_normalize_builder_row_flex_settings( $payload[ $field_name ][ $settings_key ] );
+		}
+	}
+
+	/**
+	 * Filter resolved row-level flex settings for one rendered row.
+	 *
+	 * @param array{enabled:bool,scope:string,direction:string,justify:string,align:string,wrap:string,gap:string} $settings Resolved settings.
+	 * @param array<string, mixed>                                                                      $row Builder row payload with render context.
+	 * @param int                                                                                       $post_id Host post ID.
+	 * @param string                                                                                    $field_name Flexible-content field name.
+	 * @param int                                                                                       $row_index Row index in the flexible-content field.
+	 */
+	$settings = apply_filters( 'mrn_base_stack_builder_row_flex_settings', $settings, $row, $post_id, $field_name, $row_index );
+
+	return mrn_base_stack_normalize_builder_row_flex_settings( $settings );
+}
+
+/**
+ * Build the row-level flex class/attribute contract for one builder row.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return array{classes:array<int,string>,attributes:array<string,string>}
+ */
+function mrn_base_stack_get_builder_flex_contract( array $row ) {
+	$settings = mrn_base_stack_get_builder_row_flex_settings( $row );
+	$contract = array(
+		'classes'    => array(),
+		'attributes' => array(),
+	);
+
+	if ( ! empty( $settings['enabled'] ) ) {
+		$style_declarations = array(
+			'--mrn-row-flex-direction: ' . $settings['direction'],
+			'--mrn-row-flex-justify: ' . $settings['justify'],
+			'--mrn-row-flex-align: ' . $settings['align'],
+			'--mrn-row-flex-wrap: ' . $settings['wrap'],
+			'--mrn-row-flex-gap: ' . $settings['gap'] . 'px',
+		);
+
+		if ( 'repeaters' === $settings['scope'] ) {
+			$style_declarations = array(
+				'--mrn-repeater-flex-direction: ' . $settings['direction'],
+				'--mrn-repeater-flex-justify: ' . $settings['justify'],
+				'--mrn-repeater-flex-align: ' . $settings['align'],
+				'--mrn-repeater-flex-wrap: ' . $settings['wrap'],
+				'--mrn-repeater-flex-gap: ' . $settings['gap'] . 'px',
+			);
+		}
+
+		$style = mrn_base_stack_get_inline_style_attribute( $style_declarations );
+
+		$attributes = array();
+		if ( '' !== $style ) {
+			$attributes['style'] = $style;
+		}
+
+		$classes = array( 'mrn-content-builder__row--layout-flex' );
+		if ( 'repeaters' === $settings['scope'] ) {
+			$classes = array( 'mrn-content-builder__row--layout-flex-repeaters' );
+		}
+
+		$contract = array(
+			'classes'    => $classes,
+			'attributes' => $attributes,
+		);
+	}
+
+	/**
+	 * Filter the row-level flex frontend contract so child themes can override classes/attributes.
+	 *
+	 * @param array{classes:array<int,string>,attributes:array<string,string>}                           $contract Row contract.
+	 * @param array{enabled:bool,scope:string,direction:string,justify:string,align:string,wrap:string,gap:string} $settings Resolved flex settings.
+	 * @param array<string, mixed>                                                                         $row Builder row payload with render context.
+	 */
+	$contract = apply_filters( 'mrn_base_stack_builder_flex_contract', $contract, $settings, $row );
+	$contract = is_array( $contract ) ? $contract : array();
+
+	$classes = array();
+	if ( ! empty( $contract['classes'] ) && is_array( $contract['classes'] ) ) {
+		foreach ( $contract['classes'] as $class_name ) {
+			$class_name = is_scalar( $class_name ) ? sanitize_html_class( (string) $class_name ) : '';
+			if ( '' === $class_name ) {
+				continue;
+			}
+
+			$classes[] = $class_name;
+		}
+	}
+	$classes = array_values( array_unique( $classes ) );
+
+	$attributes = array();
+	if ( ! empty( $contract['attributes'] ) && is_array( $contract['attributes'] ) ) {
+		foreach ( $contract['attributes'] as $attribute_name => $attribute_value ) {
+			$attribute_name  = is_scalar( $attribute_name ) ? strtolower( trim( (string) $attribute_name ) ) : '';
+			$attribute_value = is_scalar( $attribute_value ) ? trim( (string) $attribute_value ) : '';
+
+			if ( '' === $attribute_name || '' === $attribute_value ) {
+				continue;
+			}
+
+			$attribute_name = preg_replace( '/[^a-z0-9_:\-]/', '', $attribute_name );
+			if ( '' === $attribute_name ) {
+				continue;
+			}
+
+			$attributes[ $attribute_name ] = $attribute_value;
+		}
+	}
+
+	return array(
+		'classes'    => $classes,
+		'attributes' => $attributes,
+	);
 }
 
 /**
@@ -1645,7 +4046,53 @@ function mrn_base_stack_get_motion_contract_for_settings( $settings ) {
  * @return array{classes:array<int,string>,attributes:array<string,string>}
  */
 function mrn_base_stack_get_builder_motion_contract( array $row ) {
-	return mrn_base_stack_get_motion_contract_for_settings( $row['motion_settings'] ?? array() );
+	$motion_contract      = mrn_base_stack_get_motion_contract_for_settings( $row['motion_settings'] ?? array() );
+	$flex_contract        = mrn_base_stack_get_builder_flex_contract( $row );
+	$sub_content_contract = mrn_base_stack_get_builder_sub_content_width_contract( $row );
+
+	if ( ! empty( $flex_contract['classes'] ) && is_array( $flex_contract['classes'] ) ) {
+		$motion_contract['classes'] = array_values(
+			array_unique(
+				array_filter(
+					array_merge(
+						isset( $motion_contract['classes'] ) && is_array( $motion_contract['classes'] ) ? $motion_contract['classes'] : array(),
+						$flex_contract['classes']
+					),
+					'strlen'
+				)
+			)
+		);
+	}
+
+	if ( ! empty( $flex_contract['attributes'] ) && is_array( $flex_contract['attributes'] ) ) {
+		$motion_contract['attributes'] = mrn_base_stack_merge_builder_attributes(
+			isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array(),
+			$flex_contract['attributes']
+		);
+	}
+
+	if ( ! empty( $sub_content_contract['classes'] ) && is_array( $sub_content_contract['classes'] ) ) {
+		$motion_contract['classes'] = array_values(
+			array_unique(
+				array_filter(
+					array_merge(
+						isset( $motion_contract['classes'] ) && is_array( $motion_contract['classes'] ) ? $motion_contract['classes'] : array(),
+						$sub_content_contract['classes']
+					),
+					'strlen'
+				)
+			)
+		);
+	}
+
+	if ( ! empty( $sub_content_contract['attributes'] ) && is_array( $sub_content_contract['attributes'] ) ) {
+		$motion_contract['attributes'] = mrn_base_stack_merge_builder_attributes(
+			isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array(),
+			$sub_content_contract['attributes']
+		);
+	}
+
+	return $motion_contract;
 }
 
 /**
@@ -1763,15 +4210,19 @@ function mrn_base_stack_get_inline_text_field( $key, $label, $name, $instruction
  * @param string $label Field label.
  * @return array<string, mixed>
  */
-function mrn_base_stack_get_label_tag_field( $key, $name = 'label_tag', $default_tag = 'p', $label = 'HTML Tag for Label' ) {
+function mrn_base_stack_get_label_tag_field( $key, $name = 'label_tag', $default_tag = 'p', $label = 'Tag' ) {
+	unset( $label );
+
 	return array(
 		'key'               => $key,
-		'label'             => $label,
+		'label'             => 'Tag',
 		'name'              => $name,
 		'aria-label'        => '',
 		'type'              => 'select',
 		'choices'           => mrn_base_stack_get_text_tag_choices(),
 		'default_value'     => mrn_base_stack_normalize_text_tag( $default_tag, 'p' ),
+		'multiple'          => 0,
+		'return_format'     => 'value',
 		'ui'                => 1,
 		'wrapper'           => array(
 			'width' => '25',
@@ -1788,20 +4239,69 @@ function mrn_base_stack_get_label_tag_field( $key, $name = 'label_tag', $default
  * @param string $label Field label.
  * @return array<string, mixed>
  */
-function mrn_base_stack_get_text_tag_field( $key, $name = 'heading_tag', $default_tag = 'h2', $label = 'Heading Tag' ) {
+function mrn_base_stack_get_text_tag_field( $key, $name = 'heading_tag', $default_tag = 'h2', $label = 'Tag' ) {
+	unset( $label );
+
 	return array(
 		'key'               => $key,
-		'label'             => $label,
+		'label'             => 'Tag',
 		'name'              => $name,
 		'aria-label'        => '',
 		'type'              => 'select',
 		'choices'           => mrn_base_stack_get_text_tag_choices(),
 		'default_value'     => mrn_base_stack_normalize_text_tag( $default_tag, 'h2' ),
+		'multiple'          => 0,
+		'return_format'     => 'value',
 		'ui'                => 1,
 		'wrapper'           => array(
 			'width' => '25',
 		),
 	);
+}
+
+/**
+ * Get Font Awesome choices for builder link icon fields.
+ *
+ * If the Font Awesome profile manager is active and has an allowlist, prefer
+ * those classes so editor choices match the profile configuration.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_builder_link_fontawesome_choices() {
+	$choices = function_exists( 'mrn_base_stack_get_header_search_fontawesome_choices' )
+		? mrn_base_stack_get_header_search_fontawesome_choices()
+		: array();
+
+	if ( ! is_array( $choices ) ) {
+		$choices = array();
+	}
+
+	if ( ! function_exists( 'mrn_fapm_get_icon_allowlist' ) ) {
+		return $choices;
+	}
+
+	$allowlist = mrn_fapm_get_icon_allowlist();
+	if ( ! is_array( $allowlist ) || empty( $allowlist ) ) {
+		return $choices;
+	}
+
+	$filtered = array();
+
+	foreach ( $allowlist as $icon_class ) {
+		$icon_class = trim( (string) $icon_class );
+		if ( '' === $icon_class ) {
+			continue;
+		}
+
+		if ( isset( $choices[ $icon_class ] ) ) {
+			$filtered[ $icon_class ] = $choices[ $icon_class ];
+			continue;
+		}
+
+		$filtered[ $icon_class ] = $icon_class;
+	}
+
+	return ! empty( $filtered ) ? $filtered : $choices;
 }
 
 /**
@@ -1816,25 +4316,61 @@ function mrn_base_stack_get_button_link_icon_fields( $key_prefix, $link_style_fi
 
 	return array(
 		array(
+			'key'           => $key_prefix . '_source',
+			'label'         => 'Icon Source',
+			'name'          => 'link_icon_source',
+			'aria-label'    => '',
+			'type'          => 'button_group',
+			'choices'       => array(
+				'dashicons'   => 'Dashicons',
+				'fontawesome' => 'Font Awesome',
+				'media'       => 'Media',
+			),
+			'default_value' => '',
+			'layout'        => 'horizontal',
+			'return_format' => 'value',
+			'wrapper'       => array(
+				'width' => '100',
+				'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--source mrn-icon-chooser-field--allow-empty',
+			),
+		),
+		array(
 			'key'         => $key_prefix . '_dashicons',
-			'label'       => 'Dashicon Class',
+			'label'       => 'Dashicon',
 			'name'        => 'link_icon_dashicon',
 			'aria-label'  => '',
 			'type'        => 'text',
 			'placeholder' => 'dashicons-arrow-right-alt2',
 			'wrapper'     => array(
 				'width' => '50',
+				'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--dashicons',
 			),
 		),
 		array(
 			'key'         => $key_prefix . '_fontawesome',
-			'label'       => 'Font Awesome Class',
+			'label'       => 'Font Awesome',
 			'name'        => 'link_icon_fa_class',
 			'aria-label'  => '',
 			'type'        => 'text',
 			'placeholder' => 'fa-solid fa-arrow-right',
 			'wrapper'     => array(
 				'width' => '50',
+				'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--fontawesome',
+			),
+		),
+		array(
+			'key'           => $key_prefix . '_media',
+			'label'         => 'Media',
+			'name'          => 'link_icon_media_icon',
+			'aria-label'    => '',
+			'type'          => 'image',
+			'return_format' => 'array',
+			'preview_size'  => 'thumbnail',
+			'library'       => 'all',
+			'mime_types'    => 'jpg,jpeg,png,gif,webp,svg',
+			'wrapper'       => array(
+				'width' => '50',
+				'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--media',
 			),
 		),
 		array(
@@ -1851,7 +4387,7 @@ function mrn_base_stack_get_button_link_icon_fields( $key_prefix, $link_style_fi
 			'return_format' => 'value',
 			'ui'            => 1,
 			'wrapper'       => array(
-				'width' => '25',
+				'width' => '50',
 			),
 		),
 		array(
@@ -1865,7 +4401,7 @@ function mrn_base_stack_get_button_link_icon_fields( $key_prefix, $link_style_fi
 			'step'          => 1,
 			'append'        => 'px',
 			'wrapper'       => array(
-				'width' => '25',
+				'width' => '50',
 			),
 		),
 	);
@@ -1915,7 +4451,7 @@ function mrn_base_stack_get_button_link_icon_source( array $row ) {
 function mrn_base_stack_normalize_link_dashicon_class( $dashicon_raw ) {
 	$dashicon_raw = trim( (string) $dashicon_raw );
 
-	if ( '' === $dashicon_raw ) {
+	if ( '' === $dashicon_raw || 'dashicons' === strtolower( $dashicon_raw ) ) {
 		return '';
 	}
 
@@ -1925,11 +4461,17 @@ function mrn_base_stack_normalize_link_dashicon_class( $dashicon_raw ) {
 
 	$dashicon = sanitize_html_class( $dashicon_raw );
 
-	if ( '' === $dashicon ) {
+	if ( '' === $dashicon || 'dashicons' === $dashicon ) {
 		return '';
 	}
 
-	return 0 === strpos( $dashicon, 'dashicons-' ) ? $dashicon : 'dashicons-' . $dashicon;
+	if ( 0 === strpos( $dashicon, 'dashicons-' ) ) {
+		return strlen( $dashicon ) > strlen( 'dashicons-' ) && 'dashicons-dashicons' !== $dashicon ? $dashicon : '';
+	}
+
+	$dashicon = 'dashicons-' . $dashicon;
+
+	return 'dashicons-dashicons' === $dashicon ? '' : $dashicon;
 }
 
 /**
@@ -1988,6 +4530,10 @@ function mrn_base_stack_get_button_link_icon_markup( array $row ) {
 			return '';
 		}
 
+		if ( function_exists( 'mrn_fapm_icon_is_allowed' ) && ! mrn_fapm_icon_is_allowed( $fa_class ) ) {
+			return '';
+		}
+
 		return '<span class="mrn-ui__link-icon mrn-ui__link-icon--' . esc_attr( $position ) . ' mrn-ui__link-icon--fontawesome" aria-hidden="true"' . $style_attr . '><i class="' . esc_attr( $fa_class ) . '"></i></span>';
 	}
 
@@ -2027,6 +4573,74 @@ function mrn_base_stack_get_button_link_icon_markup( array $row ) {
 	}
 
 	return '<span class="mrn-ui__link-icon mrn-ui__link-icon--' . esc_attr( $position ) . ' mrn-ui__link-icon--media" aria-hidden="true"' . $style_attr . '><img class="mrn-ui__link-icon-image" src="' . esc_url( $media_url ) . '" alt="" /></span>';
+}
+
+/**
+ * Build compact link label markup so links do not render stray whitespace.
+ *
+ * Template indentation can introduce visible leading/trailing spaces when
+ * optional icon markup is empty, so this helper composes output in one string.
+ *
+ * @param string $label Link label.
+ * @param string $icon_markup Optional escaped icon markup.
+ * @param string $icon_position Icon position.
+ * @return string
+ */
+function mrn_base_stack_get_compact_link_label_markup( $label, $icon_markup = '', $icon_position = 'left' ) {
+	$label_markup = esc_html( (string) $label );
+	$icon_markup  = (string) $icon_markup;
+	$position     = sanitize_key( (string) $icon_position );
+
+	if ( '' === $icon_markup ) {
+		return $label_markup;
+	}
+
+	if ( 'right' === $position ) {
+		return $label_markup . $icon_markup;
+	}
+
+	return $icon_markup . $label_markup;
+}
+
+/**
+ * Resolve one normalized link from a repeater item using new and legacy shapes.
+ *
+ * New contract: `links` repeater (max 1 row).
+ * Legacy contract: flat `link` + link-config fields on the item itself.
+ *
+ * @param array<string, mixed> $item Repeater item data.
+ * @param array<string, mixed> $args Optional normalize args.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_repeater_item_primary_link( array $item, array $args = array() ) {
+	$link_args = $args;
+	if ( ! isset( $link_args['max'] ) ) {
+		$link_args['max'] = 1;
+	}
+
+	if ( function_exists( 'mrn_rbl_get_content_links' ) ) {
+		$links = mrn_rbl_get_content_links( $item, $link_args );
+		if ( ! empty( $links ) && isset( $links[0] ) && is_array( $links[0] ) ) {
+			return $links[0];
+		}
+	}
+
+	if ( function_exists( 'mrn_rbl_normalize_content_link' ) ) {
+		$legacy_item = $item;
+
+		if ( isset( $legacy_item['link'] ) && is_string( $legacy_item['link'] ) && '' !== trim( $legacy_item['link'] ) ) {
+			$legacy_item['url'] = trim( $legacy_item['link'] );
+		}
+
+		return mrn_rbl_normalize_content_link( $legacy_item, $args );
+	}
+
+	return array(
+		'url'        => '',
+		'text'       => '',
+		'target'     => '',
+		'link_style' => 'link',
+	);
 }
 
 /**
@@ -2685,7 +5299,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_card_motion_settings' ),
 			),
 		),
-		'layout_mrn_nested_cta' => array(
+			'layout_mrn_nested_cta' => array(
 			'key'        => 'layout_mrn_nested_cta',
 			'name'       => 'cta',
 			'label'      => 'CTA - label|heading|subheading|text with editor|link',
@@ -2703,11 +5317,10 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'prefix_label' => 0,
 					'prefix_name'  => 0,
 				),
-				mrn_base_stack_get_section_width_field( 'field_mrn_nested_cta_section_width' ),
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_cta_motion_settings' ),
 			),
 		),
-		'layout_mrn_nested_grid' => array(
+			'layout_mrn_nested_grid' => array(
 			'key'        => 'layout_mrn_nested_grid',
 			'name'       => 'grid',
 			'label'      => 'Grid - label|heading|subheading|repeater',
@@ -2725,7 +5338,6 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'prefix_label' => 0,
 					'prefix_name'  => 0,
 				),
-				mrn_base_stack_get_section_width_field( 'field_mrn_nested_grid_section_width' ),
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_grid_motion_settings' ),
 			),
 		),

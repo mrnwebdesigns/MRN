@@ -55,3 +55,17 @@ Deployment habits to preserve:
 
 If unclear:
 - ask before making large or cross-system changes
+
+Thread notes (2026-04-17 layout contract rollout):
+- Standardized a shared primary layout contract across top-level builder layouts and nested non-link repeaters:
+  - Name (admin use only), Label, Tag, Heading, Tag, Subheading, Tag, Text, Links
+- Removed legacy admin label suffix text such as `(full editor)`, `(allowed html)`, and `(tag chooser)`.
+- Normalized heading-tag field labels to `Tag` and applied the side-by-side text/tag pattern recursively through repeaters/subfields.
+- Ensured non-link repeaters use `Content | Configs | Effects`, with grouped/collapsible config sections and `Effects` kept in its own tab.
+- Standardized repeater naming (for example `Grids`) and added zebra striping for repeater/subfield scanability.
+- Kept link controls on link-specific tabs, removed link `Background Color`, defaulted icon source to empty, and removed icon spacing when icon is not set.
+- Added a lightweight non-ACF row-level `Layout` tab for flex controls (to protect editor performance).
+- Added `Apply To` scope for row flex (`Row` vs `Repeaters Only`) so repeater collections can be centered independently from the row intro/header shell.
+- Added child-theme override support for row flex at both PHP and CSS layers:
+  - PHP filters: `mrn_base_stack_builder_row_flex_payload`, `mrn_base_stack_builder_row_flex_settings`, `mrn_base_stack_builder_flex_contract`
+  - CSS override variables: `--mrn-row-flex-*-override` family

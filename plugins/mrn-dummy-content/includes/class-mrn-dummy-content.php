@@ -10,10 +10,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class MRN_Dummy_Content {
-	const VERSION = '0.1.11';
+	const VERSION = '0.1.12';
 	const NONCE_ACTION = 'mrn_dummy_content_generate';
+	const CUSTOM_NONCE_ACTION = 'mrn_dummy_content_generate_custom';
 	const DELETE_NONCE_ACTION = 'mrn_dummy_content_delete';
 	const MENU_SLUG = 'mrn-dummy-content';
+	const TAB_QUERY_ARG = 'mrn_dummy_content_tab';
 	const NOTICE_QUERY_ARG = 'mrn_dummy_content_notice';
 	const PLACEHOLDER_FLAG_META = '_mrn_dummy_content_placeholder';
 	const GENERATED_BY_META = '_mrn_dummy_content_generated_by';
@@ -62,6 +64,7 @@ final class MRN_Dummy_Content {
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'register_tools_page' ) );
 		add_action( 'admin_post_mrn_dummy_content_generate', array( __CLASS__, 'handle_generate' ) );
+		add_action( 'admin_post_mrn_dummy_content_generate_custom', array( __CLASS__, 'handle_generate_custom' ) );
 		add_action( 'admin_post_mrn_dummy_content_delete', array( __CLASS__, 'handle_delete' ) );
 		add_filter( 'wp_list_pages_excludes', array( __CLASS__, 'exclude_generated_pages_from_page_menu' ) );
 	}
@@ -91,14 +94,26 @@ final class MRN_Dummy_Content {
 			return;
 		}
 
-		$notice       = self::get_notice_from_request();
-		$custom_types = self::get_target_post_types();
-		$flex_fields  = self::get_page_flexible_fields();
-		$layout_labels = self::get_all_layout_page_labels();
-		$generated    = self::get_generated_posts();
-		$placeholders = self::get_placeholder_attachments();
+		self::maybe_load_sticky_toolbar_helper();
+
+		$notice                = self::get_notice_from_request();
+		$active_tab            = self::get_active_tab_from_request();
+		$custom_types          = self::get_target_post_types();
+		$flex_fields           = self::get_page_flexible_fields();
+		$layout_labels         = self::get_all_layout_page_labels();
+		$custom_layout_options = self::get_custom_layout_options_by_post_type();
+		$sidebar_variants      = self::get_sidebar_variants();
+		$shell_size_variants   = self::get_shell_size_variants();
+		$generated             = self::get_generated_posts();
+		$placeholders          = self::get_placeholder_attachments();
+
+		$default_custom_post_type = isset( $custom_types['page'] ) ? 'page' : (string) array_key_first( $custom_types );
+		if ( '' === $default_custom_post_type ) {
+			$default_custom_post_type = 'post';
+		}
 		?>
 		<div class="wrap">
+			<?php self::render_tabbed_toolbar( $active_tab ); ?>
 			<?php self::render_progress_ui(); ?>
 			<h1><?php esc_html_e( 'Dummy Content', 'mrn-dummy-content' ); ?></h1>
 			<p><?php esc_html_e( 'This tool scans the active site at runtime, creates sample content for available custom post types, and builds an all-layouts page from any ACF flexible-content page builder fields it can find.', 'mrn-dummy-content' ); ?></p>
@@ -109,26 +124,27 @@ final class MRN_Dummy_Content {
 				</div>
 			<?php endif; ?>
 
-			<h2><?php esc_html_e( 'Detected Content Types', 'mrn-dummy-content' ); ?></h2>
-			<?php if ( empty( $custom_types ) ) : ?>
-				<p><?php esc_html_e( 'No public custom post types were detected. The generator can still create an all-layouts page if page-builder fields exist.', 'mrn-dummy-content' ); ?></p>
-			<?php else : ?>
-				<ul>
-					<?php foreach ( $custom_types as $slug => $post_type ) : ?>
-						<li><?php echo esc_html( $post_type->labels->singular_name . ' (' . $slug . ')' ); ?></li>
-					<?php endforeach; ?>
-				</ul>
-			<?php endif; ?>
+			<div id="mrn-dummy-panel-generate" class="mrn-dummy-content-panel<?php echo 'generate' === $active_tab ? ' is-active' : ''; ?>" data-mrn-dummy-panel="generate" role="tabpanel" aria-labelledby="mrn-dummy-tab-generate"<?php echo 'generate' === $active_tab ? '' : ' hidden'; ?>>
+				<h2><?php esc_html_e( 'Detected Content Types', 'mrn-dummy-content' ); ?></h2>
+				<?php if ( empty( $custom_types ) ) : ?>
+					<p><?php esc_html_e( 'No public custom post types were detected. The generator can still create an all-layouts page if page-builder fields exist.', 'mrn-dummy-content' ); ?></p>
+				<?php else : ?>
+					<ul>
+						<?php foreach ( $custom_types as $slug => $post_type ) : ?>
+							<li><?php echo esc_html( $post_type->labels->singular_name . ' (' . $slug . ')' ); ?></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
 
-			<h2><?php esc_html_e( 'Detected Page Layout Fields', 'mrn-dummy-content' ); ?></h2>
-			<?php if ( empty( $flex_fields ) ) : ?>
-				<p><?php esc_html_e( 'No ACF flexible-content page fields were detected for pages. A page will still be created, but it will not contain auto-built layouts.', 'mrn-dummy-content' ); ?></p>
-			<?php else : ?>
-				<ul>
-					<?php foreach ( $flex_fields as $field ) : ?>
-						<li><?php echo esc_html( $field['label'] . ' (' . $field['name'] . ')' ); ?></li>
-					<?php endforeach; ?>
-				</ul>
+				<h2><?php esc_html_e( 'Detected Page Layout Fields', 'mrn-dummy-content' ); ?></h2>
+				<?php if ( empty( $flex_fields ) ) : ?>
+					<p><?php esc_html_e( 'No ACF flexible-content page fields were detected for pages. A page will still be created, but it will not contain auto-built layouts.', 'mrn-dummy-content' ); ?></p>
+				<?php else : ?>
+					<ul>
+						<?php foreach ( $flex_fields as $field ) : ?>
+							<li><?php echo esc_html( $field['label'] . ' (' . $field['name'] . ')' ); ?></li>
+						<?php endforeach; ?>
+					</ul>
 				<?php endif; ?>
 
 				<h2><?php esc_html_e( 'All Layouts Page Will Include', 'mrn-dummy-content' ); ?></h2>
@@ -142,34 +158,611 @@ final class MRN_Dummy_Content {
 					</ul>
 				<?php endif; ?>
 
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mrn-dummy-content-action-form" data-progress-message="<?php echo esc_attr__( 'Generating dummy content. This can take a couple of minutes on larger sites.', 'mrn-dummy-content' ); ?>">
-				<input type="hidden" name="action" value="mrn_dummy_content_generate" />
-				<?php wp_nonce_field( self::NONCE_ACTION ); ?>
-				<?php submit_button( __( 'Generate Dummy Content', 'mrn-dummy-content' ), 'primary', 'submit', false, array( 'data-loading-label' => __( 'Generating Dummy Content...', 'mrn-dummy-content' ) ) ); ?>
-			</form>
-
-			<h2><?php esc_html_e( 'Delete Generated Content', 'mrn-dummy-content' ); ?></h2>
-			<?php if ( empty( $generated ) && empty( $placeholders ) ) : ?>
-				<p><?php esc_html_e( 'No plugin-generated content is currently stored on this site.', 'mrn-dummy-content' ); ?></p>
-			<?php else : ?>
-				<p><?php esc_html_e( 'This deletes only posts, pages, and placeholder media created by Dummy Content.', 'mrn-dummy-content' ); ?></p>
-				<ul>
-					<?php foreach ( $generated as $post ) : ?>
-						<li><?php echo esc_html( sprintf( '%s: %s (#%d)', $post->post_type, get_the_title( $post ), (int) $post->ID ) ); ?></li>
-					<?php endforeach; ?>
-					<?php foreach ( $placeholders as $attachment ) : ?>
-						<li><?php echo esc_html( sprintf( 'attachment: %s (#%d)', get_the_title( $attachment ), (int) $attachment->ID ) ); ?></li>
-					<?php endforeach; ?>
-				</ul>
-
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mrn-dummy-content-action-form mrn-dummy-content-action-form--delete" data-progress-message="<?php echo esc_attr__( 'Deleting plugin-generated content. Please keep this tab open until WordPress finishes.', 'mrn-dummy-content' ); ?>" onsubmit="return window.confirm('Delete only Dummy Content generated items?');">
-					<input type="hidden" name="action" value="mrn_dummy_content_delete" />
-					<?php wp_nonce_field( self::DELETE_NONCE_ACTION ); ?>
-					<?php submit_button( __( 'Delete Generated Content', 'mrn-dummy-content' ), 'delete', 'submit', false, array( 'data-loading-label' => __( 'Deleting Generated Content...', 'mrn-dummy-content' ) ) ); ?>
+				<form id="mrn-dummy-generate-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mrn-dummy-content-action-form" data-progress-message="<?php echo esc_attr__( 'Generating dummy content. This can take a couple of minutes on larger sites.', 'mrn-dummy-content' ); ?>">
+					<input type="hidden" name="action" value="mrn_dummy_content_generate" />
+					<?php wp_nonce_field( self::NONCE_ACTION ); ?>
 				</form>
-			<?php endif; ?>
+
+				<h2><?php esc_html_e( 'Delete Generated Content', 'mrn-dummy-content' ); ?></h2>
+				<?php if ( empty( $generated ) && empty( $placeholders ) ) : ?>
+					<p><?php esc_html_e( 'No plugin-generated content is currently stored on this site.', 'mrn-dummy-content' ); ?></p>
+				<?php else : ?>
+					<p><?php esc_html_e( 'This deletes only posts, pages, and placeholder media created by Dummy Content.', 'mrn-dummy-content' ); ?></p>
+					<ul>
+						<?php foreach ( $generated as $post ) : ?>
+							<li><?php echo esc_html( sprintf( '%s: %s (#%d)', $post->post_type, get_the_title( $post ), (int) $post->ID ) ); ?></li>
+						<?php endforeach; ?>
+						<?php foreach ( $placeholders as $attachment ) : ?>
+							<li><?php echo esc_html( sprintf( 'attachment: %s (#%d)', get_the_title( $attachment ), (int) $attachment->ID ) ); ?></li>
+						<?php endforeach; ?>
+					</ul>
+
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mrn-dummy-content-action-form mrn-dummy-content-action-form--delete" data-progress-message="<?php echo esc_attr__( 'Deleting plugin-generated content. Please keep this tab open until WordPress finishes.', 'mrn-dummy-content' ); ?>" onsubmit="return window.confirm('Delete only Dummy Content generated items?');">
+						<input type="hidden" name="action" value="mrn_dummy_content_delete" />
+						<?php wp_nonce_field( self::DELETE_NONCE_ACTION ); ?>
+						<?php submit_button( __( 'Delete Generated Content', 'mrn-dummy-content' ), 'delete', 'submit', false, array( 'data-loading-label' => __( 'Deleting Generated Content...', 'mrn-dummy-content' ) ) ); ?>
+					</form>
+				<?php endif; ?>
+			</div>
+
+			<div id="mrn-dummy-panel-custom" class="mrn-dummy-content-panel<?php echo 'custom' === $active_tab ? ' is-active' : ''; ?>" data-mrn-dummy-panel="custom" role="tabpanel" aria-labelledby="mrn-dummy-tab-custom"<?php echo 'custom' === $active_tab ? '' : ' hidden'; ?>>
+				<h2><?php esc_html_e( 'Create Custom Entry', 'mrn-dummy-content' ); ?></h2>
+				<p><?php esc_html_e( 'Create one or more pages/posts/CPT entries and optionally choose exactly which compatible builder layouts to seed.', 'mrn-dummy-content' ); ?></p>
+
+				<form id="mrn-dummy-custom-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mrn-dummy-content-action-form" data-progress-message="<?php echo esc_attr__( 'Creating custom dummy content. Please keep this tab open until WordPress finishes.', 'mrn-dummy-content' ); ?>">
+					<input type="hidden" name="action" value="mrn_dummy_content_generate_custom" />
+					<?php wp_nonce_field( self::CUSTOM_NONCE_ACTION ); ?>
+
+					<table class="form-table" role="presentation">
+						<tbody>
+							<tr>
+								<th scope="row"><label for="mrn-dummy-custom-post-type"><?php esc_html_e( 'Content Type', 'mrn-dummy-content' ); ?></label></th>
+								<td>
+									<select id="mrn-dummy-custom-post-type" name="custom_post_type" required>
+										<?php foreach ( $custom_types as $slug => $post_type ) : ?>
+											<option value="<?php echo esc_attr( $slug ); ?>"<?php selected( $slug, $default_custom_post_type ); ?>><?php echo esc_html( $post_type->labels->singular_name . ' (' . $slug . ')' ); ?></option>
+										<?php endforeach; ?>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="mrn-dummy-custom-title"><?php esc_html_e( 'Title', 'mrn-dummy-content' ); ?></label></th>
+								<td>
+									<input type="text" id="mrn-dummy-custom-title" name="custom_title" class="regular-text" required />
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="mrn-dummy-custom-slug"><?php esc_html_e( 'Slug (Optional)', 'mrn-dummy-content' ); ?></label></th>
+								<td>
+									<input type="text" id="mrn-dummy-custom-slug" name="custom_slug" class="regular-text" />
+									<p class="description"><?php esc_html_e( 'Leave blank to let WordPress create the slug automatically.', 'mrn-dummy-content' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="mrn-dummy-custom-count"><?php esc_html_e( 'Quantity', 'mrn-dummy-content' ); ?></label></th>
+								<td>
+									<input type="number" id="mrn-dummy-custom-count" name="custom_count" class="small-text" min="1" max="50" step="1" value="1" />
+									<p class="description"><?php esc_html_e( 'Create this many entries in one run (1-50).', 'mrn-dummy-content' ); ?></p>
+								</td>
+							</tr>
+							<tr data-mrn-dummy-page-option>
+								<th scope="row"><label for="mrn-dummy-custom-sidebar-layout"><?php esc_html_e( 'Sidebar Layout', 'mrn-dummy-content' ); ?></label></th>
+								<td>
+									<select id="mrn-dummy-custom-sidebar-layout" name="custom_sidebar_layout">
+										<?php foreach ( $sidebar_variants as $sidebar_layout => $sidebar_label ) : ?>
+											<option value="<?php echo esc_attr( $sidebar_layout ); ?>"><?php echo esc_html( $sidebar_label ); ?></option>
+										<?php endforeach; ?>
+									</select>
+								</td>
+							</tr>
+							<tr data-mrn-dummy-page-option>
+								<th scope="row"><label for="mrn-dummy-custom-shell-width"><?php esc_html_e( 'Section Width', 'mrn-dummy-content' ); ?></label></th>
+								<td>
+									<select id="mrn-dummy-custom-shell-width" name="custom_shell_width">
+										<?php foreach ( $shell_size_variants as $shell_width => $shell_label ) : ?>
+											<option value="<?php echo esc_attr( $shell_width ); ?>"><?php echo esc_html( $shell_label ); ?></option>
+										<?php endforeach; ?>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><?php esc_html_e( 'Layouts', 'mrn-dummy-content' ); ?></th>
+								<td>
+									<p class="description"><?php esc_html_e( 'Choose the layout rows to include. Leave all unchecked to use the plugin defaults for that content type.', 'mrn-dummy-content' ); ?></p>
+									<div class="mrn-dummy-layout-groups" data-mrn-dummy-layout-groups>
+										<?php foreach ( $custom_layout_options as $post_type_slug => $layout_options ) : ?>
+											<fieldset class="mrn-dummy-layout-group" data-mrn-layout-group="<?php echo esc_attr( $post_type_slug ); ?>"<?php echo $post_type_slug === $default_custom_post_type ? '' : ' hidden'; ?>>
+												<?php if ( empty( $layout_options ) ) : ?>
+													<p class="description"><?php esc_html_e( 'No compatible layouts were detected for this content type.', 'mrn-dummy-content' ); ?></p>
+												<?php else : ?>
+													<div class="mrn-dummy-layout-grid">
+														<?php foreach ( $layout_options as $layout_option ) : ?>
+															<label class="mrn-dummy-layout-choice">
+																<input type="checkbox" name="custom_layouts[]" value="<?php echo esc_attr( $layout_option['name'] ); ?>"<?php echo $post_type_slug === $default_custom_post_type ? '' : ' disabled'; ?> />
+																<span><?php echo esc_html( $layout_option['label'] ); ?></span>
+															</label>
+														<?php endforeach; ?>
+													</div>
+												<?php endif; ?>
+											</fieldset>
+										<?php endforeach; ?>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</form>
+			</div>
 		</div>
+		<?php self::render_tabbed_ui_script( $active_tab ); ?>
 		<?php
+	}
+
+	/**
+	 * Load the shared sticky toolbar helper when available.
+	 *
+	 * @return void
+	 */
+	private static function maybe_load_sticky_toolbar_helper() {
+		$local_toolbar_helper = __DIR__ . '/mrn-sticky-settings-toolbar.php';
+		if ( file_exists( $local_toolbar_helper ) ) {
+			require_once $local_toolbar_helper;
+		}
+	}
+
+	/**
+	 * Resolve the active admin tab.
+	 *
+	 * @return string
+	 */
+	private static function get_active_tab_from_request() {
+		$tab = filter_input( INPUT_GET, self::TAB_QUERY_ARG, FILTER_UNSAFE_RAW );
+		$tab = sanitize_key( is_string( $tab ) ? wp_unslash( $tab ) : '' );
+
+		return in_array( $tab, array( 'generate', 'custom' ), true ) ? $tab : 'generate';
+	}
+
+	/**
+	 * Render the universal sticky tab toolbar.
+	 *
+	 * @param string $active_tab Active tab key.
+	 * @return void
+	 */
+	private static function render_tabbed_toolbar( $active_tab ) {
+		if ( function_exists( 'mrn_sticky_toolbar_render' ) ) {
+			mrn_sticky_toolbar_render(
+				array(
+					'toolbar_id' => 'mrn-dummy-content-toolbar',
+					'form_id'    => '',
+					'title'      => 'Dummy Content Actions',
+					'save_label' => 'Generate',
+					'aria_label' => 'Dummy Content tabs',
+					'tabs'       => array(
+						array(
+							'key'    => 'generate',
+							'label'  => 'Generate All',
+							'active' => 'generate' === $active_tab,
+						),
+						array(
+							'key'    => 'custom',
+							'label'  => 'Custom',
+							'active' => 'custom' === $active_tab,
+						),
+					),
+				)
+			);
+
+			return;
+		}
+
+		?>
+		<div id="mrn-dummy-content-toolbar" class="mrn-sticky-save-bar" aria-label="<?php esc_attr_e( 'Dummy Content tabs', 'mrn-dummy-content' ); ?>">
+			<div class="mrn-settings-toolbar__meta">
+				<span class="mrn-settings-toolbar__title"><?php esc_html_e( 'Dummy Content Actions', 'mrn-dummy-content' ); ?></span>
+			</div>
+			<div class="mrn-settings-toolbar__actions">
+				<nav class="mrn-settings-tabs" aria-label="<?php esc_attr_e( 'Dummy Content tabs', 'mrn-dummy-content' ); ?>">
+					<button id="mrn-dummy-tab-generate" type="button" class="mrn-settings-tab<?php echo 'generate' === $active_tab ? ' is-active' : ''; ?>" data-mrn-tab="generate" aria-pressed="<?php echo 'generate' === $active_tab ? 'true' : 'false'; ?>"><?php esc_html_e( 'Generate All', 'mrn-dummy-content' ); ?></button>
+					<button id="mrn-dummy-tab-custom" type="button" class="mrn-settings-tab<?php echo 'custom' === $active_tab ? ' is-active' : ''; ?>" data-mrn-tab="custom" aria-pressed="<?php echo 'custom' === $active_tab ? 'true' : 'false'; ?>"><?php esc_html_e( 'Custom', 'mrn-dummy-content' ); ?></button>
+				</nav>
+				<button type="submit" id="mrn-dummy-toolbar-generate" class="button button-primary mrn-settings-tab mrn-settings-tab--save" form="<?php echo 'custom' === $active_tab ? 'mrn-dummy-custom-form' : 'mrn-dummy-generate-form'; ?>" data-loading-label="<?php echo esc_attr__( 'Generating...', 'mrn-dummy-content' ); ?>">
+					<?php esc_html_e( 'Generate', 'mrn-dummy-content' ); ?>
+				</button>
+			</div>
+		</div>
+		<div class="mrn-admin-toolbar-spacer" data-mrn-toolbar-spacer-for="mrn-dummy-content-toolbar" aria-hidden="true"></div>
+		<?php
+	}
+
+	/**
+	 * Render styles and scripts for tab and custom-layout interactions.
+	 *
+	 * @param string $active_tab Active tab key.
+	 * @return void
+	 */
+	private static function render_tabbed_ui_script( $active_tab ) {
+		?>
+		<?php
+		if ( function_exists( 'mrn_sticky_toolbar_universal_css' ) ) {
+			?>
+			<style>
+			<?php echo mrn_sticky_toolbar_universal_css(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			</style>
+			<?php
+		}
+
+		if ( function_exists( 'mrn_sticky_toolbar_render_css' ) ) {
+			mrn_sticky_toolbar_render_css(
+				array(
+					'toolbar_id'   => 'mrn-dummy-content-toolbar',
+					'page_class'   => 'tools_page_mrn-dummy-content',
+					'desktop_left' => 196,
+					'desktop_right' => 0,
+					'mobile_left' => 10,
+					'mobile_right' => 10,
+					'spacer_height' => 88,
+					'spacer_height_mobile' => 120,
+				)
+			);
+		}
+		?>
+		<style>
+			<?php if ( ! function_exists( 'mrn_sticky_toolbar_render_css' ) ) : ?>
+			.mrn-settings-tabs {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+				margin: 0;
+				align-items: center;
+				padding: 4px;
+				border-radius: 8px;
+				background: rgba(255, 255, 255, 0.06);
+			}
+			.mrn-settings-toolbar__meta {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				min-width: 0;
+				flex: 0 0 auto;
+			}
+			.mrn-settings-toolbar__title {
+				font-weight: 600;
+				color: #f6f7f7;
+				white-space: nowrap;
+			}
+			.mrn-settings-toolbar__actions {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				margin-left: 24px;
+				min-width: 0;
+				flex: 1 1 auto;
+			}
+			.mrn-settings-tab {
+				appearance: none;
+				border: 0;
+				background: transparent;
+				color: #f6f7f7;
+				border-radius: 4px;
+				padding: 7px 10px;
+				font-weight: 600;
+				line-height: 1.2;
+				cursor: pointer;
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				margin: 0;
+			}
+			.mrn-settings-tab:hover,
+			.mrn-settings-tab:focus {
+				background: #2c2c2c;
+				color: #ffffff;
+				outline: none;
+			}
+			.mrn-settings-tab.is-active {
+				background: #4a4a4a;
+				color: #ffffff;
+				border-radius: 4px;
+			}
+			.mrn-sticky-save-bar .mrn-settings-tab--save.button.button-primary {
+				margin-left: auto;
+				min-height: 36px;
+				border-radius: 6px;
+				background: #f6f7f7;
+				border-color: #8c8f94;
+				color: #1d2327;
+				box-shadow: none;
+			}
+			.mrn-sticky-save-bar .mrn-settings-tab--save.button.button-primary:hover,
+			.mrn-sticky-save-bar .mrn-settings-tab--save.button.button-primary:focus {
+				background: #ffffff;
+				border-color: #c3c4c7;
+				color: #1d2327;
+			}
+			.mrn-admin-toolbar-spacer {
+				height: 88px;
+			}
+			#mrn-dummy-content-toolbar {
+				--mrn-toolbar-left: 196px;
+				--mrn-toolbar-right: 0px;
+				position: fixed;
+				top: 32px;
+				left: var(--mrn-toolbar-left);
+				right: var(--mrn-toolbar-right);
+				z-index: 2147483000;
+				width: calc(100vw - var(--mrn-toolbar-left) - var(--mrn-toolbar-right));
+				display: flex;
+				align-items: center;
+				justify-content: flex-start;
+				gap: 12px;
+				box-sizing: border-box;
+				margin: 0;
+				padding: 10px 18px 10px 16px;
+				border: 1px solid #2c2c2c;
+				border-radius: 0;
+				background: #1d2327;
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+			}
+			.folded.tools_page_mrn-dummy-content #mrn-dummy-content-toolbar {
+				--mrn-toolbar-left: 56px;
+			}
+			@media (max-width: 1000px) {
+				#mrn-dummy-content-toolbar {
+					--mrn-toolbar-left: 10px;
+					--mrn-toolbar-right: 10px;
+					top: 46px;
+					flex-wrap: wrap;
+					width: calc(100vw - var(--mrn-toolbar-left) - var(--mrn-toolbar-right));
+				}
+				.mrn-settings-toolbar__actions {
+					flex-wrap: wrap;
+					width: 100%;
+				}
+				.mrn-admin-toolbar-spacer {
+					height: 120px;
+				}
+			}
+			<?php endif; ?>
+			.mrn-dummy-content-panel[hidden] {
+				display: none !important;
+			}
+			.mrn-dummy-layout-group {
+				margin: 0;
+				padding: 8px 0 0;
+				border: 0;
+			}
+			.mrn-dummy-layout-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+				gap: 8px 14px;
+				margin-top: 6px;
+			}
+			.mrn-dummy-layout-choice {
+				display: inline-flex;
+				align-items: flex-start;
+				gap: 8px;
+				line-height: 1.4;
+			}
+			.mrn-dummy-layout-choice input {
+				margin-top: 2px;
+			}
+			#mrn-dummy-panel-custom textarea,
+			#mrn-dummy-panel-generate textarea {
+				height: 84px;
+				min-height: 84px;
+				resize: vertical;
+			}
+			#mrn-dummy-panel-custom .wp-editor-wrap textarea.wp-editor-area,
+			#mrn-dummy-panel-generate .wp-editor-wrap textarea.wp-editor-area {
+				height: 84px;
+				min-height: 84px;
+			}
+		</style>
+		<script>
+			(function () {
+				var toolbar = document.getElementById('mrn-dummy-content-toolbar');
+				if (!toolbar || toolbar.dataset.mrnDummyTabsInit === '1') {
+					return;
+				}
+
+				toolbar.dataset.mrnDummyTabsInit = '1';
+
+				var tabButtons = Array.prototype.slice.call(toolbar.querySelectorAll('[data-mrn-tab]'));
+				var panels = Array.prototype.slice.call(document.querySelectorAll('[data-mrn-dummy-panel]'));
+				var generateButton = toolbar.querySelector('.mrn-settings-tab--save') || document.getElementById('mrn-dummy-toolbar-generate');
+				var activeTab = <?php echo wp_json_encode( $active_tab ); ?>;
+				var defaultTab = activeTab || 'generate';
+
+				if (generateButton && !generateButton.getAttribute('data-loading-label')) {
+					generateButton.setAttribute('data-loading-label', 'Generating...');
+				}
+
+				tabButtons.forEach(function (button) {
+					var tabKey = button.getAttribute('data-mrn-tab') || '';
+					if (tabKey === 'generate' && !button.id) {
+						button.id = 'mrn-dummy-tab-generate';
+					}
+					if (tabKey === 'custom' && !button.id) {
+						button.id = 'mrn-dummy-tab-custom';
+					}
+				});
+
+				function activateTab(tabKey, updateHash) {
+					if (!tabKey) {
+						tabKey = defaultTab;
+					}
+
+					var hasMatch = false;
+
+					panels.forEach(function (panel) {
+						var isActive = panel.getAttribute('data-mrn-dummy-panel') === tabKey;
+						panel.hidden = !isActive;
+						if (isActive) {
+							hasMatch = true;
+						}
+					});
+
+					tabButtons.forEach(function (button) {
+						var isActive = button.getAttribute('data-mrn-tab') === tabKey;
+						button.classList.toggle('is-active', isActive);
+						button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+					});
+
+					if (hasMatch && generateButton) {
+						generateButton.setAttribute('form', tabKey === 'custom' ? 'mrn-dummy-custom-form' : 'mrn-dummy-generate-form');
+					}
+
+					if (hasMatch && updateHash) {
+						if (window.history && window.history.replaceState) {
+							window.history.replaceState(null, '', '#tab-' + tabKey);
+						} else {
+							window.location.hash = 'tab-' + tabKey;
+						}
+					}
+				}
+
+				tabButtons.forEach(function (button) {
+					button.addEventListener('click', function (event) {
+						event.preventDefault();
+						event.stopPropagation();
+						activateTab(button.getAttribute('data-mrn-tab') || 'generate', true);
+					});
+				});
+
+				window.addEventListener('hashchange', function () {
+					var hashTab = window.location.hash ? window.location.hash.replace(/^#tab-/, '') : '';
+					if (hashTab) {
+						activateTab(hashTab, false);
+					}
+				});
+
+				var initialHash = window.location.hash ? window.location.hash.replace(/^#tab-/, '') : '';
+				activateTab(initialHash || defaultTab, false);
+
+				var postTypeSelect = document.getElementById('mrn-dummy-custom-post-type');
+				var pageOnlyRows = Array.prototype.slice.call(document.querySelectorAll('[data-mrn-dummy-page-option]'));
+				var layoutGroups = Array.prototype.slice.call(document.querySelectorAll('[data-mrn-layout-group]'));
+
+				function syncCustomControls() {
+					if (!postTypeSelect) {
+						return;
+					}
+
+					var postType = postTypeSelect.value || '';
+					var isPage = postType === 'page';
+
+					pageOnlyRows.forEach(function (row) {
+						row.hidden = !isPage;
+						Array.prototype.slice.call(row.querySelectorAll('select, input')).forEach(function (control) {
+							control.disabled = !isPage;
+						});
+					});
+
+					layoutGroups.forEach(function (group) {
+						var isActive = group.getAttribute('data-mrn-layout-group') === postType;
+						group.hidden = !isActive;
+						Array.prototype.slice.call(group.querySelectorAll('input[type="checkbox"]')).forEach(function (checkbox) {
+							checkbox.disabled = !isActive;
+						});
+					});
+				}
+
+				if (postTypeSelect) {
+					postTypeSelect.addEventListener('change', syncCustomControls);
+				}
+
+				syncCustomControls();
+			})();
+		</script>
+		<?php
+	}
+
+	/**
+	 * Gather compatible layouts for each selectable post type.
+	 *
+	 * @return array<string, array<int, array{name:string,label:string}>>
+	 */
+	private static function get_custom_layout_options_by_post_type() {
+		$options = array();
+
+		foreach ( self::get_target_post_types() as $post_type => $object ) {
+			unset( $object );
+			$options[ $post_type ] = self::get_custom_layout_options_for_post_type( $post_type );
+		}
+
+		return $options;
+	}
+
+	/**
+	 * Gather compatible flexible-content layouts for a post type.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @return array<int, array{name:string,label:string}>
+	 */
+	private static function get_custom_layout_options_for_post_type( $post_type ) {
+		$post_type = sanitize_key( (string) $post_type );
+		if ( '' === $post_type ) {
+			return array();
+		}
+
+		$fields = self::get_acf_fields_for_post_type( $post_type );
+		if ( empty( $fields ) ) {
+			return array();
+		}
+
+		$context = array(
+			'post_id'            => 0,
+			'post_type'          => $post_type,
+			'prefer_all_layouts' => true,
+		);
+
+		$options = array();
+
+		foreach ( $fields as $field ) {
+			if ( ! is_array( $field ) || 'flexible_content' !== ( $field['type'] ?? '' ) ) {
+				continue;
+			}
+
+			if ( 'page' === $post_type && ! self::is_demo_layout_field( $field ) ) {
+				continue;
+			}
+
+			$layouts = isset( $field['layouts'] ) && is_array( $field['layouts'] ) ? $field['layouts'] : array();
+			$layouts = self::filter_layouts_for_demo( $field, $layouts, $context );
+			if ( empty( $layouts ) ) {
+				continue;
+			}
+
+			foreach ( $layouts as $layout ) {
+				$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+				if ( '' === $layout_name || isset( $options[ $layout_name ] ) ) {
+					continue;
+				}
+
+				$options[ $layout_name ] = array(
+					'name'  => $layout_name,
+					'label' => wp_strip_all_tags( (string) ( $layout['label'] ?? $layout_name ) ),
+				);
+			}
+		}
+
+		if ( empty( $options ) ) {
+			return array();
+		}
+
+		uasort(
+			$options,
+			static function ( $left, $right ) {
+				$left_label  = isset( $left['label'] ) ? (string) $left['label'] : '';
+				$right_label = isset( $right['label'] ) ? (string) $right['label'] : '';
+
+				return strnatcasecmp( $left_label, $right_label );
+			}
+		);
+
+		return array_values( $options );
+	}
+
+	/**
+	 * Resolve a lookup table of allowed custom layout names for a post type.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @return array<string, bool>
+	 */
+	private static function get_custom_layout_lookup_for_post_type( $post_type ) {
+		$lookup  = array();
+		$options = self::get_custom_layout_options_for_post_type( $post_type );
+
+		foreach ( $options as $option ) {
+			if ( ! is_array( $option ) || empty( $option['name'] ) ) {
+				continue;
+			}
+
+			$lookup[ sanitize_key( (string) $option['name'] ) ] = true;
+		}
+
+		return $lookup;
 	}
 
 	/**
@@ -188,6 +781,7 @@ final class MRN_Dummy_Content {
 				border-left: 4px solid #2271b1;
 				background: #fff;
 				box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+				scroll-margin-top: 110px;
 			}
 
 			.mrn-dummy-content-progress.is-active {
@@ -226,6 +820,11 @@ final class MRN_Dummy_Content {
 				from { transform: rotate(0deg); }
 				to { transform: rotate(360deg); }
 			}
+			@media (max-width: 782px) {
+				.mrn-dummy-content-progress {
+					scroll-margin-top: 130px;
+				}
+			}
 		</style>
 		<div class="mrn-dummy-content-progress" data-mrn-dummy-content-progress aria-live="polite" aria-hidden="true">
 			<div class="mrn-dummy-content-progress__spinner" aria-hidden="true"></div>
@@ -246,9 +845,17 @@ final class MRN_Dummy_Content {
 				var messageNode = progress.querySelector('.mrn-dummy-content-progress__message');
 
 				forms.forEach(function (form) {
-					form.addEventListener('submit', function () {
+					form.addEventListener('submit', function (event) {
 						var message = form.getAttribute('data-progress-message');
-						var submit = form.querySelector('button[type="submit"], input[type="submit"]');
+						var submit = event && event.submitter ? event.submitter : null;
+
+						if (!submit && form.id) {
+							submit = document.querySelector('button[type="submit"][form="' + form.id + '"], input[type="submit"][form="' + form.id + '"]');
+						}
+
+						if (!submit) {
+							submit = form.querySelector('button[type="submit"], input[type="submit"]');
+						}
 
 						if (message && messageNode) {
 							messageNode.textContent = message;
@@ -332,16 +939,182 @@ final class MRN_Dummy_Content {
 		$results['posts_updated'] += $index_result['updated'];
 
 		$message = self::build_notice_message( $results );
-		$redirect = add_query_arg(
+		self::redirect_with_notice( 'success', $message, 'generate' );
+	}
+
+	/**
+	 * Create one custom post/page/CPT entry with optional selected layouts.
+	 *
+	 * @return void
+	 */
+	public static function handle_generate_custom() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to generate dummy content.', 'mrn-dummy-content' ) );
+		}
+
+		check_admin_referer( self::CUSTOM_NONCE_ACTION );
+
+		$target_post_types = self::get_target_post_types();
+		$post_type_input   = filter_input( INPUT_POST, 'custom_post_type', FILTER_UNSAFE_RAW );
+		$post_type         = sanitize_key( is_string( $post_type_input ) ? wp_unslash( $post_type_input ) : '' );
+
+		if ( '' === $post_type || ! isset( $target_post_types[ $post_type ] ) ) {
+			self::redirect_with_notice( 'error', __( 'Please choose a valid content type before creating custom content.', 'mrn-dummy-content' ), 'custom' );
+		}
+
+		$title_input = filter_input( INPUT_POST, 'custom_title', FILTER_UNSAFE_RAW );
+		$title       = sanitize_text_field( is_string( $title_input ) ? wp_unslash( $title_input ) : '' );
+		if ( '' === $title ) {
+			$post_type_label = $target_post_types[ $post_type ]->labels->singular_name;
+			$title           = sprintf( 'Sample %s Custom', $post_type_label );
+		}
+
+		$slug_input = filter_input( INPUT_POST, 'custom_slug', FILTER_UNSAFE_RAW );
+		$slug       = sanitize_title( is_string( $slug_input ) ? wp_unslash( $slug_input ) : '' );
+
+		$count_input = filter_input(
+			INPUT_POST,
+			'custom_count',
+			FILTER_VALIDATE_INT,
 			array(
-				'page'                         => self::MENU_SLUG,
-				self::NOTICE_QUERY_ARG         => rawurlencode( wp_json_encode( array( 'type' => 'success', 'message' => $message ) ) ),
-			),
-			admin_url( 'tools.php' )
+				'options' => array(
+					'default'   => 1,
+					'min_range' => 1,
+				),
+			)
+		);
+		$count = is_int( $count_input ) ? $count_input : 1;
+		$count = max( 1, min( 50, $count ) );
+
+		$sidebar_layout_input = filter_input( INPUT_POST, 'custom_sidebar_layout', FILTER_UNSAFE_RAW );
+		$sidebar_layout       = sanitize_key( is_string( $sidebar_layout_input ) ? wp_unslash( $sidebar_layout_input ) : '' );
+		$sidebar_variants     = self::get_sidebar_variants();
+		if ( ! isset( $sidebar_variants[ $sidebar_layout ] ) ) {
+			$sidebar_layout = 'none';
+		}
+
+		$shell_width_input = filter_input( INPUT_POST, 'custom_shell_width', FILTER_UNSAFE_RAW );
+		$shell_width       = sanitize_key( is_string( $shell_width_input ) ? wp_unslash( $shell_width_input ) : '' );
+		$shell_variants    = self::get_shell_size_variants();
+		if ( ! isset( $shell_variants[ $shell_width ] ) ) {
+			$shell_width = 'content';
+		}
+
+		if ( 'page' !== $post_type ) {
+			$sidebar_layout = 'none';
+			$shell_width    = '';
+		}
+
+		$selected_layouts_input = filter_input( INPUT_POST, 'custom_layouts', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+		$selected_layouts_input = is_array( $selected_layouts_input ) ? $selected_layouts_input : array();
+		$selected_layouts       = array_values(
+			array_unique(
+				array_filter(
+					array_map(
+						static function ( $layout_name ) {
+							return sanitize_key( (string) $layout_name );
+						},
+						$selected_layouts_input
+					)
+				)
+			)
 		);
 
-		wp_safe_redirect( $redirect );
-		exit;
+		if ( ! empty( $selected_layouts ) ) {
+			$allowed_layouts = self::get_custom_layout_lookup_for_post_type( $post_type );
+			$selected_layouts = array_values(
+				array_filter(
+					$selected_layouts,
+					static function ( $layout_name ) use ( $allowed_layouts ) {
+						return isset( $allowed_layouts[ $layout_name ] );
+					}
+				)
+			);
+		}
+
+		$post_type_label = $target_post_types[ $post_type ]->labels->singular_name;
+		$created_ids     = array();
+		$failed_count    = 0;
+
+		for ( $index = 1; $index <= $count; $index++ ) {
+			$entry_title = $title;
+			$entry_slug  = $slug;
+
+			if ( $count > 1 ) {
+				$entry_title = sprintf( '%s %d', $title, $index );
+				if ( '' !== $entry_slug ) {
+					$entry_slug .= '-' . $index;
+				}
+			}
+
+			$postarr = array(
+				'post_type'    => $post_type,
+				'post_status'  => 'publish',
+				'post_title'   => $entry_title,
+				'post_content' => self::get_sample_paragraphs( $post_type_label ),
+				'post_excerpt' => sprintf( 'Sample %s content generated by Dummy Content.', strtolower( $post_type_label ) ),
+			);
+
+			if ( '' !== $entry_slug ) {
+				$postarr['post_name'] = $entry_slug;
+			}
+
+			$post_id = wp_insert_post( wp_slash( $postarr ), true );
+			if ( is_wp_error( $post_id ) || ! $post_id ) {
+				++$failed_count;
+				continue;
+			}
+
+			update_post_meta( $post_id, self::GENERATED_BY_META, self::VERSION );
+			update_post_meta( $post_id, self::GENERATED_AT_META, current_time( 'mysql' ) );
+
+			self::seed_taxonomies_for_post( $post_id, $post_type );
+			self::seed_acf_fields_for_post( $post_id, $post_type, false, $shell_width, $selected_layouts );
+			self::apply_generated_variant_fields( $post_id, $post_type, $sidebar_layout, $shell_width, $selected_layouts );
+			self::maybe_set_placeholder_thumbnail( $post_id, $post_type );
+
+			$created_ids[] = (int) $post_id;
+		}
+
+		if ( empty( $created_ids ) ) {
+			self::redirect_with_notice( 'error', __( 'WordPress could not create the custom entry. Please review your selections and try again.', 'mrn-dummy-content' ), 'custom' );
+		}
+
+		if ( 1 === count( $created_ids ) ) {
+			$single_id = $created_ids[0];
+			$message   = sprintf(
+				/* translators: 1: post type label, 2: generated post title, 3: post ID. */
+				__( 'Created custom %1$s "%2$s" (#%3$d).', 'mrn-dummy-content' ),
+				strtolower( (string) $post_type_label ),
+				get_the_title( $single_id ),
+				$single_id
+			);
+		} else {
+			$message = sprintf(
+				/* translators: 1: created entry count, 2: post type label. */
+				__( 'Created %1$d custom %2$s entries.', 'mrn-dummy-content' ),
+				count( $created_ids ),
+				strtolower( (string) $post_type_label )
+			);
+		}
+
+		if ( ! empty( $selected_layouts ) ) {
+			$message .= ' ' . sprintf(
+				/* translators: %d: selected layout count. */
+				__( 'Applied %d selected layouts.', 'mrn-dummy-content' ),
+				count( $selected_layouts )
+			);
+		}
+
+		if ( $failed_count > 0 ) {
+			$message .= ' ' . sprintf(
+				/* translators: %d: number of entries that failed to create. */
+				__( '%d entries could not be created.', 'mrn-dummy-content' ),
+				$failed_count
+			);
+		}
+
+		self::redirect_with_notice( 'success', $message, 'custom' );
 	}
 
 	/**
@@ -380,16 +1153,7 @@ final class MRN_Dummy_Content {
 			$deleted_attachments
 		);
 
-		$redirect = add_query_arg(
-			array(
-				'page'                 => self::MENU_SLUG,
-				self::NOTICE_QUERY_ARG => rawurlencode( wp_json_encode( array( 'type' => 'success', 'message' => $message ) ) ),
-			),
-			admin_url( 'tools.php' )
-		);
-
-		wp_safe_redirect( $redirect );
-		exit;
+		self::redirect_with_notice( 'success', $message, 'generate' );
 	}
 
 	/**
@@ -479,6 +1243,37 @@ final class MRN_Dummy_Content {
 			'type'    => isset( $decoded['type'] ) ? sanitize_key( (string) $decoded['type'] ) : 'info',
 			'message' => isset( $decoded['message'] ) ? sanitize_text_field( (string) $decoded['message'] ) : '',
 		);
+	}
+
+	/**
+	 * Redirect back to the tools screen with a flash notice.
+	 *
+	 * @param string $type Notice type.
+	 * @param string $message Notice text.
+	 * @param string $tab Active tab key.
+	 * @return void
+	 */
+	private static function redirect_with_notice( $type, $message, $tab = 'generate' ) {
+		$tab = in_array( $tab, array( 'generate', 'custom' ), true ) ? $tab : 'generate';
+
+		$redirect = add_query_arg(
+			array(
+				'page'                 => self::MENU_SLUG,
+				self::TAB_QUERY_ARG    => $tab,
+				self::NOTICE_QUERY_ARG => rawurlencode(
+					wp_json_encode(
+						array(
+							'type'    => sanitize_key( (string) $type ),
+							'message' => sanitize_text_field( (string) $message ),
+						)
+					)
+				),
+			),
+			admin_url( 'tools.php' )
+		);
+
+		wp_safe_redirect( $redirect );
+		exit;
 	}
 
 	/**
@@ -855,10 +1650,12 @@ final class MRN_Dummy_Content {
 	 *
 	 * @param int    $post_id Post ID.
 	 * @param string $post_type Post type slug.
-	 * @param bool   $prefer_all_layouts Whether to expand all layouts for flexible-content page fields.
+	 * @param bool                 $prefer_all_layouts Whether to expand all layouts for flexible-content page fields.
+	 * @param string               $preferred_section_width Preferred section width choice.
+	 * @param array<int, string>   $selected_layout_names Optional selected layout names.
 	 * @return void
 	 */
-	private static function seed_acf_fields_for_post( $post_id, $post_type, $prefer_all_layouts = false, $preferred_section_width = '' ) {
+	private static function seed_acf_fields_for_post( $post_id, $post_type, $prefer_all_layouts = false, $preferred_section_width = '', array $selected_layout_names = array() ) {
 		if ( ! function_exists( 'acf_get_field_groups' ) || ! function_exists( 'acf_get_fields' ) || ! function_exists( 'update_field' ) ) {
 			return;
 		}
@@ -879,6 +1676,7 @@ final class MRN_Dummy_Content {
 				'prefer_all_layouts' => (bool) $prefer_all_layouts,
 				'depth'              => 0,
 				'preferred_section_width' => (string) $preferred_section_width,
+				'selected_layout_names'   => $selected_layout_names,
 			);
 
 			$field_context = $context;
@@ -906,9 +1704,10 @@ final class MRN_Dummy_Content {
 	 * @param int    $post_id Post ID.
 	 * @param string $post_type Post type slug.
 	 * @param string $sidebar_layout Sidebar variant.
+	 * @param array<int, string> $selected_layout_names Optional selected layout names.
 	 * @return void
 	 */
-	private static function apply_generated_variant_fields( $post_id, $post_type, $sidebar_layout, $preferred_section_width = '' ) {
+	private static function apply_generated_variant_fields( $post_id, $post_type, $sidebar_layout, $preferred_section_width = '', array $selected_layout_names = array() ) {
 		if ( ! function_exists( 'update_field' ) ) {
 			return;
 		}
@@ -924,6 +1723,7 @@ final class MRN_Dummy_Content {
 			'prefer_all_layouts' => self::should_expand_sample_variant_layouts( $post_type ),
 			'depth'              => 0,
 			'preferred_section_width' => (string) $preferred_section_width,
+			'selected_layout_names'   => $selected_layout_names,
 		);
 
 		foreach ( $fields as $field ) {
@@ -1130,9 +1930,35 @@ final class MRN_Dummy_Content {
 	 * @return string
 	 */
 	private static function sample_text_for_field( $name, $label, $type, array $context = array() ) {
-		$key = strtolower( $name . ' ' . $label );
-		$layout_label = isset( $context['layout_label'] ) ? trim( (string) $context['layout_label'] ) : '';
-		$layout_name  = isset( $context['layout_name'] ) ? trim( (string) $context['layout_name'] ) : '';
+		$key                     = strtolower( $name . ' ' . $label );
+		$field_name              = sanitize_key( (string) $name );
+		$depth                   = isset( $context['depth'] ) ? (int) $context['depth'] : 0;
+		$layout_label            = isset( $context['layout_label'] ) ? trim( (string) $context['layout_label'] ) : '';
+		$layout_name             = isset( $context['layout_name'] ) ? trim( (string) $context['layout_name'] ) : '';
+		$layout_sub_field_names  = isset( $context['layout_sub_field_names'] ) && is_array( $context['layout_sub_field_names'] )
+			? array_values( array_unique( array_filter( array_map( 'sanitize_key', $context['layout_sub_field_names'] ) ) ) )
+			: array();
+		$layout_sub_field_labels = isset( $context['layout_sub_field_labels'] ) && is_array( $context['layout_sub_field_labels'] )
+			? array_values( array_unique( array_filter( array_map( 'wp_strip_all_tags', $context['layout_sub_field_labels'] ) ) ) )
+			: array();
+
+		$has_layout_name_context = ( '' !== $layout_label || '' !== $layout_name );
+		$layout_meta_field_names = array( 'label', 'title', 'heading', 'subheading', 'layout_name', 'name' );
+		$has_layout_meta_fields  = ! empty( array_intersect( $layout_sub_field_names, $layout_meta_field_names ) );
+		$descriptor_target_fields = array( 'layout_name', 'name', 'row_name', 'label', 'title', 'heading', 'subheading' );
+		$is_admin_row_name_field = false !== strpos( $key, 'admin use only' ) || false !== strpos( $key, 'row name' );
+
+		if (
+			$has_layout_name_context
+			&& $has_layout_meta_fields
+			&& (
+				in_array( $field_name, $descriptor_target_fields, true )
+				|| $is_admin_row_name_field
+				|| false !== strpos( $key, 'layout name' )
+			)
+		) {
+			return self::build_layout_descriptor_text( $layout_label, $layout_name, $layout_sub_field_labels );
+		}
 
 		if ( false !== strpos( $key, 'subheading' ) ) {
 			return sprintf( '%s sample subheading to show the layout hierarchy.', $label );
@@ -1183,6 +2009,46 @@ final class MRN_Dummy_Content {
 		}
 
 		return sprintf( 'Sample %s', $label );
+	}
+
+	/**
+	 * Build a simple layout display name for layout identity fields.
+	 *
+	 * Example: "Grid - label|heading|subheading|repeater" => "Grid"
+	 *
+	 * @param string             $layout_label Layout label.
+	 * @param string             $layout_name  Layout key/name.
+	 * @param array<int, string> $sub_labels   Layout subfield labels.
+	 * @return string
+	 */
+	private static function build_layout_descriptor_text( $layout_label, $layout_name, array $sub_labels = array() ) {
+		unset( $sub_labels );
+
+		$layout_label = trim( (string) $layout_label );
+		$layout_name  = trim( (string) $layout_name );
+
+		$display = '' !== $layout_label
+			? $layout_label
+			: ( '' !== $layout_name ? ucwords( str_replace( array( '_', '-' ), ' ', $layout_name ) ) : '' );
+
+		if ( '' === $display ) {
+			return 'Layout';
+		}
+
+		$display = wp_strip_all_tags( $display );
+		$dash_position = strpos( $display, ' - ' );
+		if ( false !== $dash_position ) {
+			$display = substr( $display, 0, $dash_position );
+		}
+
+		$pipe_position = strpos( $display, '|' );
+		if ( false !== $pipe_position ) {
+			$display = substr( $display, 0, $pipe_position );
+		}
+
+		$display = trim( preg_replace( '/\s+/', ' ', (string) $display ) );
+
+		return '' !== $display ? $display : 'Layout';
 	}
 
 	/**
@@ -1280,8 +2146,31 @@ final class MRN_Dummy_Content {
 			return array();
 		}
 
+		$selected_layout_names = self::get_selected_layout_names_from_context( $context );
+		if ( ! empty( $selected_layout_names ) ) {
+			$selected_lookup = array_fill_keys( $selected_layout_names, true );
+
+			$layouts = array_values(
+				array_filter(
+					$layouts,
+					static function ( $layout ) use ( $selected_lookup ) {
+						if ( ! is_array( $layout ) || empty( $layout['name'] ) ) {
+							return false;
+						}
+
+						$layout_name = sanitize_key( (string) $layout['name'] );
+						return '' !== $layout_name && isset( $selected_lookup[ $layout_name ] );
+					}
+				)
+			);
+
+			if ( empty( $layouts ) ) {
+				return array();
+			}
+		}
+
 		$rows        = array();
-		$all_layouts = ! empty( $context['prefer_all_layouts'] );
+		$all_layouts = ! empty( $context['prefer_all_layouts'] ) || ! empty( $selected_layout_names );
 		$limit       = $all_layouts ? count( $layouts ) : min( 2, count( $layouts ) );
 		$counter     = 0;
 		$nav_items   = array();
@@ -1303,13 +2192,30 @@ final class MRN_Dummy_Content {
 			$row = array(
 				'acf_fc_layout' => $layout['name'],
 			);
-			$row_anchor = '';
+				$row_anchor = '';
 
-			$sub_fields = isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ? $layout['sub_fields'] : array();
-			foreach ( $sub_fields as $sub_field ) {
-				if ( ! is_array( $sub_field ) || empty( $sub_field['name'] ) ) {
-					continue;
+				$sub_fields = isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ? $layout['sub_fields'] : array();
+				$layout_sub_field_names  = array();
+				$layout_sub_field_labels = array();
+
+				foreach ( $sub_fields as $layout_sub_field ) {
+					if ( ! is_array( $layout_sub_field ) || empty( $layout_sub_field['name'] ) ) {
+						continue;
+					}
+
+					$layout_sub_field_names[] = sanitize_key( (string) $layout_sub_field['name'] );
+					$layout_sub_field_labels[] = wp_strip_all_tags(
+						(string) ( $layout_sub_field['label'] ?? $layout_sub_field['name'] )
+					);
 				}
+
+				$layout_sub_field_names  = array_values( array_unique( array_filter( $layout_sub_field_names ) ) );
+				$layout_sub_field_labels = array_values( array_unique( array_filter( $layout_sub_field_labels ) ) );
+
+				foreach ( $sub_fields as $sub_field ) {
+					if ( ! is_array( $sub_field ) || empty( $sub_field['name'] ) ) {
+						continue;
+					}
 
 				if ( $is_all_layouts_page_content && 'anchor' === (string) $sub_field['name'] ) {
 					$row_anchor = self::generate_layout_anchor_id( $layout, $counter + 1 );
@@ -1319,15 +2225,17 @@ final class MRN_Dummy_Content {
 
 				$value = self::generate_field_value(
 					$sub_field,
-					array_merge(
-						$context,
-						array(
-							'depth'        => (int) $context['depth'] + 1,
-							'layout_name'  => isset( $layout['name'] ) ? (string) $layout['name'] : '',
-							'layout_label' => isset( $layout['label'] ) ? wp_strip_all_tags( (string) $layout['label'] ) : '',
+						array_merge(
+							$context,
+							array(
+								'depth'                   => (int) $context['depth'] + 1,
+								'layout_name'             => isset( $layout['name'] ) ? (string) $layout['name'] : '',
+								'layout_label'            => isset( $layout['label'] ) ? wp_strip_all_tags( (string) $layout['label'] ) : '',
+								'layout_sub_field_names'  => $layout_sub_field_names,
+								'layout_sub_field_labels' => $layout_sub_field_labels,
+							)
 						)
-					)
-				);
+					);
 
 				if ( null !== $value ) {
 					$row[ $sub_field['name'] ] = $value;
@@ -1353,6 +2261,31 @@ final class MRN_Dummy_Content {
 		}
 
 		return $rows;
+	}
+
+	/**
+	 * Get selected layout names from generation context.
+	 *
+	 * @param array<string, mixed> $context Generation context.
+	 * @return array<int, string>
+	 */
+	private static function get_selected_layout_names_from_context( array $context ) {
+		$selected_layout_names = isset( $context['selected_layout_names'] ) && is_array( $context['selected_layout_names'] )
+			? $context['selected_layout_names']
+			: array();
+
+		return array_values(
+			array_unique(
+				array_filter(
+					array_map(
+						static function ( $layout_name ) {
+							return sanitize_key( (string) $layout_name );
+						},
+						$selected_layout_names
+					)
+				)
+			)
+		);
 	}
 
 	/**
@@ -1782,19 +2715,31 @@ final class MRN_Dummy_Content {
 
 		$ids = array();
 
-		if ( is_array( $pages ) ) {
-			foreach ( $pages as $page ) {
-				if ( ! $page instanceof WP_Post ) {
-					continue;
-				}
+			if ( is_array( $pages ) ) {
+				foreach ( $pages as $page ) {
+					if ( ! $page instanceof WP_Post ) {
+						continue;
+					}
 
-				if ( 'dummy-content-index' === $page->post_name ) {
-					continue;
-				}
+					$post_name = sanitize_title( (string) $page->post_name );
+					if ( 'dummy-content-index' === $post_name ) {
+						continue;
+					}
 
-				$ids[] = (int) $page->ID;
+					$is_sample_page = 0 === strpos( $post_name, 'sample-page-' );
+					$is_all_layouts = 0 === strpos( $post_name, 'all-layouts-' );
+
+					/*
+					 * Keep intentionally generated stack demo pages out of fallback
+					 * page menus, but do not hide custom-created pages.
+					 */
+					if ( ! $is_sample_page && ! $is_all_layouts ) {
+						continue;
+					}
+
+					$ids[] = (int) $page->ID;
+				}
 			}
-		}
 
 		return $ids;
 	}
@@ -1886,7 +2831,10 @@ final class MRN_Dummy_Content {
 			return self::get_first_choice_value( $field );
 		}
 
-		if ( false !== strpos( $name, 'section_width' ) && ! empty( $context['preferred_section_width'] ) ) {
+		$is_sub_content_width = false !== strpos( $name, 'sub_content_width' );
+		$is_section_width     = false !== strpos( $name, 'section_width' ) && ! $is_sub_content_width;
+
+		if ( $is_section_width && ! empty( $context['preferred_section_width'] ) ) {
 			$preferred = strtolower( (string) $context['preferred_section_width'] );
 			foreach ( array_keys( $choices ) as $choice_key ) {
 				if ( strtolower( (string) $choice_key ) === $preferred ) {
@@ -1896,15 +2844,16 @@ final class MRN_Dummy_Content {
 		}
 
 		$preferred_map = array(
-			'section_width'   => array( 'content', 'wide', 'full_width', 'full-width' ),
-			'column_ratio'    => array( '50-50', '50_50' ),
-			'image_position'  => array( 'right', 'left' ),
-			'image_alignment' => array( 'center', 'left', 'right' ),
-			'image_size'      => array( 'cover', 'medium', 'large' ),
-			'display_mode'    => array( 'static', 'grid', 'default', 'list' ),
-			'list_style'      => array( 'list', 'grid', 'default' ),
-			'orderby'         => array( 'menu_order', 'date', 'title' ),
-			'order'           => array( 'ASC', 'DESC' ),
+			'sub_content_width' => array( 'content', 'wide', 'full_width', 'full-width' ),
+			'section_width'     => array( 'wide', 'content', 'full_width', 'full-width' ),
+			'column_ratio'     => array( '50-50', '50_50' ),
+			'image_position'   => array( 'right', 'left' ),
+			'image_alignment'  => array( 'center', 'left', 'right' ),
+			'image_size'       => array( 'cover', 'medium', 'large' ),
+			'display_mode'     => array( 'static', 'grid', 'default', 'list' ),
+			'list_style'       => array( 'list', 'grid', 'default' ),
+			'orderby'          => array( 'menu_order', 'date', 'title' ),
+			'order'            => array( 'ASC', 'DESC' ),
 			'background_color' => array( '', 'white', 'light', 'none' ),
 		);
 
@@ -2041,6 +2990,14 @@ final class MRN_Dummy_Content {
 
 		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
 		if ( '' === $field_name ) {
+			return $layout_names;
+		}
+
+		/*
+		 * Dummy Content "Generate All" and explicit custom layout picks should not
+		 * inherit per-entry builder allowlists from editor UI state.
+		 */
+		if ( ! empty( $context['prefer_all_layouts'] ) || ! empty( self::get_selected_layout_names_from_context( $context ) ) ) {
 			return $layout_names;
 		}
 

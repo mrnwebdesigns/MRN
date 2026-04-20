@@ -53,7 +53,9 @@ foreach ( $items as $item ) {
 	}
 
 	$image     = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
-	$item_link = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
+	$item_link = function_exists( 'mrn_base_stack_get_repeater_item_primary_link' )
+		? mrn_base_stack_get_repeater_item_primary_link( $item )
+		: array();
 
 	if ( empty( $image['ID'] ) && empty( $image['url'] ) ) {
 		continue;
@@ -132,17 +134,10 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				<?php foreach ( $valid_items as $index => $item ) : ?>
 					<?php
 					$image         = $item['image'];
-					$item_link_raw = $item['link'] ?? array();
-					$url           = '';
-					$link_title    = '';
-					$link_target   = '';
-					if ( is_array( $item_link_raw ) ) {
-						$url         = isset( $item_link_raw['url'] ) ? (string) $item_link_raw['url'] : '';
-						$link_title  = isset( $item_link_raw['title'] ) ? (string) $item_link_raw['title'] : '';
-						$link_target = isset( $item_link_raw['target'] ) ? (string) $item_link_raw['target'] : '';
-					} elseif ( is_string( $item_link_raw ) ) {
-						$url = trim( $item_link_raw );
-					}
+						$item_link     = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
+						$url           = isset( $item_link['url'] ) ? (string) $item_link['url'] : '';
+						$link_title    = isset( $item_link['text'] ) ? (string) $item_link['text'] : '';
+						$link_target   = isset( $item_link['target'] ) ? (string) $item_link['target'] : '';
 					$item_classes         = array(
 						'mrn-showcase-row__item',
 						'mrn-showcase-row__item--gallery-shell',
@@ -218,13 +213,12 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 						class="<?php echo esc_attr( trim( $section_link_class_names ) ); ?>"
 						<?php echo '' !== $section_link_attr_html ? $section_link_attr_html : 'href="' . esc_url( $section_link_url ) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					>
-					<?php if ( 'left' === $section_link_icon_position ) : ?>
-						<?php echo $section_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
-					<?php endif; ?>
-					<?php echo esc_html( '' !== $section_link_text ? $section_link_text : $section_link_url ); ?>
-					<?php if ( 'right' === $section_link_icon_position ) : ?>
-						<?php echo $section_link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
-					<?php endif; ?>
+					<?php
+					$section_link_label = '' !== $section_link_text ? $section_link_text : $section_link_url;
+					echo function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
+						? mrn_base_stack_get_compact_link_label_markup( $section_link_label, $section_link_icon_markup, $section_link_icon_position )
+						: esc_html( $section_link_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
+					?>
 				</<?php echo esc_html( $section_link_tag ); ?>>
 				<?php endforeach; ?>
 			</div>

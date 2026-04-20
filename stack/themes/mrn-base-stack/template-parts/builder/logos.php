@@ -55,7 +55,9 @@ foreach ( $items as $item ) {
 	}
 
 	$image     = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
-	$item_link = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
+	$item_link = function_exists( 'mrn_base_stack_get_repeater_item_primary_link' )
+		? mrn_base_stack_get_repeater_item_primary_link( $item )
+		: array();
 
 	if ( empty( $image['ID'] ) && empty( $image['url'] ) ) {
 		continue;

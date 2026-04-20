@@ -216,13 +216,12 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 								class="<?php echo esc_attr( trim( (string) $hero_link['class_names'] ) ); ?>"
 								<?php echo '' !== $hero_link['attr_html'] ? $hero_link['attr_html'] : 'href="' . esc_url( (string) $hero_link['url'] ) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							>
-							<?php if ( 'left' === $hero_link['icon_position'] ) : ?>
-								<?php echo $hero_link['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
-							<?php endif; ?>
-							<?php echo esc_html( '' !== $hero_link['text'] ? (string) $hero_link['text'] : (string) $hero_link['url'] ); ?>
-							<?php if ( 'right' === $hero_link['icon_position'] ) : ?>
-								<?php echo $hero_link['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
-							<?php endif; ?>
+							<?php
+							$hero_link_label = '' !== $hero_link['text'] ? (string) $hero_link['text'] : (string) $hero_link['url'];
+							echo function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
+								? mrn_base_stack_get_compact_link_label_markup( $hero_link_label, (string) $hero_link['icon_markup'], (string) $hero_link['icon_position'] )
+								: esc_html( $hero_link_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
+							?>
 							</<?php echo esc_html( $hero_link['tag'] ); ?>>
 						<?php endforeach; ?>
 					</div>

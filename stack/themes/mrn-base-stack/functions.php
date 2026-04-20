@@ -49,10 +49,15 @@ function mrn_base_stack_setup() {
 	// This theme uses wp_nav_menu() in one location.
 	register_nav_menus(
 		array(
-			'menu-2' => esc_html__( 'Utility', 'mrn-base-stack' ),
-			'menu-1' => esc_html__( 'Primary', 'mrn-base-stack' ),
-			'menu-3' => esc_html__( 'Footer', 'mrn-base-stack' ),
-			'menu-4' => esc_html__( 'Legal', 'mrn-base-stack' ),
+			'menu-1'          => esc_html__( 'Primary', 'mrn-base-stack' ),
+			'menu-2'          => esc_html__( 'Utility (Legacy)', 'mrn-base-stack' ),
+			'menu-3'          => esc_html__( 'Footer Primary', 'mrn-base-stack' ),
+			'menu-4'          => esc_html__( 'Legal (Legacy)', 'mrn-base-stack' ),
+			'header-secondary' => esc_html__( 'Header Secondary', 'mrn-base-stack' ),
+			'header-tertiary' => esc_html__( 'Header Tertiary', 'mrn-base-stack' ),
+			'footer-secondary' => esc_html__( 'Footer Secondary', 'mrn-base-stack' ),
+			'footer-tertiary' => esc_html__( 'Footer Tertiary', 'mrn-base-stack' ),
+			'social-media'    => esc_html__( 'Social Media', 'mrn-base-stack' ),
 		)
 	);
 
@@ -621,6 +626,15 @@ add_filter( 'mrn_universal_sticky_bar_post_types', 'mrn_base_stack_add_editorial
 function mrn_base_stack_enqueue_shared_repeater_admin_assets() {
 	$repeater_controls_path = get_template_directory() . '/js/admin-repeater-controls.js';
 	$repeater_controls_ver  = file_exists( $repeater_controls_path ) ? (string) filemtime( $repeater_controls_path ) : _S_VERSION;
+	$repeater_styles_path   = get_template_directory() . '/css/admin-repeater-controls.css';
+	$repeater_styles_ver    = file_exists( $repeater_styles_path ) ? (string) filemtime( $repeater_styles_path ) : _S_VERSION;
+
+	wp_enqueue_style(
+		'mrn-base-stack-admin-repeater-controls',
+		get_template_directory_uri() . '/css/admin-repeater-controls.css',
+		array(),
+		$repeater_styles_ver
+	);
 
 	wp_enqueue_script(
 		'mrn-base-stack-admin-repeater-controls',
@@ -869,6 +883,11 @@ require_once get_template_directory() . '/inc/builder/boot.php';
  * Load theme options modules.
  */
 require_once get_template_directory() . '/inc/theme-options.php';
+
+/**
+ * Load menu link attribute modules.
+ */
+require_once get_template_directory() . '/inc/menu-link-attributes.php';
 
 /**
  * Load singular sidebar modules.

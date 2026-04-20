@@ -42,14 +42,42 @@ foreach ( $items as $item ) {
 		continue;
 	}
 
-	$value      = isset( $item['value'] ) ? trim( (string) $item['value'] ) : '';
-	$item_label = isset( $item['item_label'] ) ? trim( (string) $item['item_label'] ) : '';
+	$value         = isset( $item['value'] ) ? trim( (string) $item['value'] ) : '';
+	$item_label    = isset( $item['item_label'] ) ? trim( (string) $item['item_label'] ) : '';
+	$icon_position = function_exists( 'mrn_base_stack_get_button_link_icon_position' ) ? mrn_base_stack_get_button_link_icon_position( $item ) : 'left';
+	$icon_markup   = function_exists( 'mrn_base_stack_get_button_link_icon_markup' ) ? mrn_base_stack_get_button_link_icon_markup( $item ) : '';
 
-	if ( '' === $value && '' === $item_label ) {
+	// Backward compatibility for legacy `icon` class strings saved before contract migration.
+	if ( '' === $icon_markup ) {
+		$icon_raw     = isset( $item['icon'] ) ? trim( (string) $item['icon'] ) : '';
+		$icon_tokens  = '' === $icon_raw ? array() : preg_split( '/\s+/', $icon_raw );
+		$icon_classes = array();
+
+		if ( is_array( $icon_tokens ) ) {
+			foreach ( $icon_tokens as $token ) {
+				$token = is_string( $token ) ? sanitize_html_class( trim( $token ) ) : '';
+				if ( '' === $token ) {
+					continue;
+				}
+
+				$icon_classes[] = $token;
+			}
+		}
+
+		$icon_classes = array_values( array_unique( $icon_classes ) );
+
+		if ( ! empty( $icon_classes ) ) {
+			$icon_markup = '<span class="mrn-ui__link-icon mrn-ui__link-icon--' . esc_attr( $icon_position ) . '" aria-hidden="true"><span class="' . esc_attr( implode( ' ', $icon_classes ) ) . '"></span></span>';
+		}
+	}
+
+	if ( '' === $value && '' === $item_label && '' === $icon_markup ) {
 		continue;
 	}
 
 	$valid_items[] = array(
+		'icon_markup'    => $icon_markup,
+		'icon_position'  => $icon_position,
 		'value'          => $value,
 		'item_label'     => $item_label,
 		'item_label_tag' => function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $item['item_label_tag'] ?? '', 'p' ) : 'p',
@@ -112,12 +140,18 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 		<?php endif; ?>
 
 		<?php if ( ! empty( $valid_items ) ) : ?>
-				<div class="mrn-stats-row__grid mrn-stats-row__grid--metrics-shell mrn-ui__items">
-				<?php foreach ( $valid_items as $item ) : ?>
-						<div class="mrn-stats-row__item mrn-stats-row__item--metrics-shell mrn-ui__item">
-						<?php if ( '' !== $item['value'] ) : ?>
-							<div class="mrn-stats-row__value mrn-ui__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $item['value'] ) : esc_html( $item['value'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
-						<?php endif; ?>
+					<div class="mrn-stats-row__grid mrn-stats-row__grid--metrics-shell mrn-ui__items">
+					<?php foreach ( $valid_items as $item ) : ?>
+							<div class="mrn-stats-row__item mrn-stats-row__item--metrics-shell mrn-ui__item">
+							<?php if ( '' !== $item['icon_markup'] && ( 'left' === $item['icon_position'] || '' === $item['value'] ) ) : ?>
+								<?php echo $item['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in shared helper output. ?>
+							<?php endif; ?>
+							<?php if ( '' !== $item['value'] ) : ?>
+								<div class="mrn-stats-row__value mrn-ui__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $item['value'] ) : esc_html( $item['value'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+							<?php endif; ?>
+							<?php if ( '' !== $item['icon_markup'] && 'right' === $item['icon_position'] && '' !== $item['value'] ) : ?>
+								<?php echo $item['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in shared helper output. ?>
+							<?php endif; ?>
 						<?php if ( '' !== $item['item_label'] ) : ?>
 								<<?php echo esc_html( $item['item_label_tag'] ); ?> class="mrn-ui__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $item['item_label'] ) : esc_html( $item['item_label'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $item['item_label_tag'] ); ?>>
 						<?php endif; ?>

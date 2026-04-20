@@ -68,6 +68,12 @@
 	}
 
 	function canDetachRowBodies( $row ) {
+		// Table-based repeater rows rely on native cell layout. Detaching table-cell
+		// contents can collapse column widths and cause hover/collapse jitter.
+		if ( $row.is( 'tr' ) ) {
+			return false;
+		}
+
 		if ( rowContainsLiveEditor( $row ) ) {
 			return false;
 		}
@@ -254,7 +260,23 @@
 		} );
 	}
 
+	function getDetachedRows( context ) {
+		return $( context || document )
+			.find( '[data-mrn-body-detached="true"]' )
+			.closest( '.acf-row' )
+			.not( '.acf-clone' );
+	}
+
 	function restoreAllRowBodies( context ) {
+		var $detachedRows = getDetachedRows( context );
+
+		if ( $detachedRows.length ) {
+			$detachedRows.each( function () {
+				restoreRowBodies( $( this ), { remount: false } );
+			} );
+			return;
+		}
+
 		getRepeaterFields( context ).each( function () {
 			getRepeaterRows( $( this ) ).each( function () {
 				restoreRowBodies( $( this ), { remount: false } );
@@ -335,16 +357,17 @@
 			getRepeaterRows( $field ).each( function () {
 				var $row = $( this );
 
-				if ( isRowCollapsed( $row ) || ! canDirectlyCollapseRow( $row ) ) {
-					if ( isRowCollapsed( $row ) ) {
-						detachRowBodies( $row );
-					}
-
+				if ( isRowCollapsed( $row ) ) {
 					return;
 				}
 
-				$row.addClass( '-collapsed' );
-				detachRowBodies( $row );
+				// Use ACF's own toggle path so collapsed state remains consistent.
+				if ( canDirectlyCollapseRow( $row ) ) {
+					setRowCollapsed( $row, true );
+					return;
+				}
+
+				setRowCollapsed( $row, true );
 			} );
 		} );
 	}
@@ -460,18 +483,41 @@
 		restoreAllRowBodies( this );
 	} );
 
+	var pendingHeartbeatResync = false;
+
 	$( document ).on( 'heartbeat-send', function () {
-		restoreAllRowBodies( document );
+		if ( ! getDetachedRows( document ).length ) {
+			pendingHeartbeatResync = false;
+			return;
+		}
+
+		try {
+			restoreAllRowBodies( document );
+			pendingHeartbeatResync = true;
+		} catch ( error ) {
+			pendingHeartbeatResync = false;
+		}
 	} );
 
 	$( document ).on( 'heartbeat-tick', function () {
+		if ( ! pendingHeartbeatResync ) {
+			return;
+		}
+
+		pendingHeartbeatResync = false;
+
 		window.setTimeout( function () {
-			syncRowBodyStates( document );
+			try {
+				syncRowBodyStates( document );
+			} catch ( error ) {
+				/* no-op: never let repeater sync block heartbeat processing */
+			}
 		}, 0 );
 	} );
 
 	$( function () {
 		collapseInitialRows( document );
+		refreshToolbars( document );
 		syncCloneRowBodyStates( document );
 		markInitialPrecollapseReady( 'data-mrn-repeater-precollapse' );
 	} );
@@ -481,6 +527,7 @@
 
 		syncRowBodyStates( context );
 		syncCloneRowBodyStates( context );
+		refreshToolbars( context );
 	} );
 
 	$( document ).on( 'mouseenter focusin', '.acf-field[data-type="repeater"]', function () {

@@ -178,13 +178,12 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
 		                    class="<?php echo esc_attr(trim((string) $cta_link['class_names'])); ?>"
 	                    <?php echo '' !== $cta_link['attr_html'] ? $cta_link['attr_html'] : 'href="' . esc_url((string) $cta_link['url']) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                 >
-                    <?php if ('left' === $cta_link['icon_position']) : ?>
-                        <?php echo $cta_link['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
-                    <?php endif; ?>
-                    <?php echo esc_html('' !== $cta_link['text'] ? (string) $cta_link['text'] : (string) $cta_link['url']); ?>
-                    <?php if ('right' === $cta_link['icon_position']) : ?>
-                        <?php echo $cta_link['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
-                    <?php endif; ?>
+                    <?php
+                    $cta_link_label = '' !== $cta_link['text'] ? (string) $cta_link['text'] : (string) $cta_link['url'];
+                    echo function_exists('mrn_base_stack_get_compact_link_label_markup')
+                        ? mrn_base_stack_get_compact_link_label_markup($cta_link_label, (string) $cta_link['icon_markup'], (string) $cta_link['icon_position'])
+                        : esc_html($cta_link_label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
+                    ?>
                 </<?php echo esc_html($cta_link['tag']); ?>>
                 <?php endforeach; ?>
             </div>

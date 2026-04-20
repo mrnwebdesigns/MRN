@@ -184,13 +184,12 @@ echo function_exists( 'mrn_rbl_get_anchor_markup' ) ? mrn_rbl_get_anchor_markup(
 								class="<?php echo esc_attr( trim( $link_class_names ) ); ?>"
 								<?php echo '' !== $link_attr_html ? $link_attr_html : 'href="' . esc_url( $link_url ) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							>
-							<?php if ( 'left' === $link_icon_position ) : ?>
-								<?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
-							<?php endif; ?>
-							<?php echo esc_html( '' !== $link_text ? $link_text : $link_url ); ?>
-							<?php if ( 'right' === $link_icon_position ) : ?>
-								<?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in the helper. ?>
-							<?php endif; ?>
+							<?php
+							$link_label = '' !== $link_text ? $link_text : $link_url;
+							echo function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
+								? mrn_base_stack_get_compact_link_label_markup( $link_label, $link_icon_markup, $link_icon_position )
+								: esc_html( $link_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
+							?>
 						</<?php echo esc_html( $link_tag ); ?>>
 						<?php endforeach; ?>
 					</div>
