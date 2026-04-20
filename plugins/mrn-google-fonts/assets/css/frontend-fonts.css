@@ -1,0 +1,29 @@
+/**
+ * Frontend typography scaffold.
+ *
+ * This stylesheet intentionally stays small.
+ * Runtime font-face declarations are expected through plugin hooks.
+ */
+
+:root {
+	--mrn-font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	--mrn-font-heading: var(--mrn-font-body);
+}
+
+body,
+button,
+input,
+select,
+optgroup,
+textarea {
+	font-family: var(--mrn-font-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: var(--mrn-font-heading);
+}

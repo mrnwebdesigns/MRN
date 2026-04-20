@@ -1,0 +1,16 @@
+/**
+ * Classic Editor / TinyMCE typography scaffold.
+ */
+
+.mce-content-body {
+	font-family: var(--mrn-font-body, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
+}
+
+.mce-content-body h1,
+.mce-content-body h2,
+.mce-content-body h3,
+.mce-content-body h4,
+.mce-content-body h5,
+.mce-content-body h6 {
+	font-family: var(--mrn-font-heading, var(--mrn-font-body, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif));
+}
