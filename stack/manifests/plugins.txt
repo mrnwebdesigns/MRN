@@ -28,6 +28,7 @@ post-duplicator
 post-types-order
 /home/mrndev-stack-manager/stack/packages/searchwp-4.5.7-1.zip
 searchwp-live-ajax-search
+/home/mrndev-stack-manager/stack/packages/searchwp-editor-performance.zip
 show-current-template
 tinymce-advanced
 /home/mrndev-stack-manager/stack/packages/updraftplus.2.26.1.zip

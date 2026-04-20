@@ -213,6 +213,27 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 - Notes:
   - editor-experience plugin with direct admin UX impact
 
+### `searchwp-editor-performance`
+
+- Name: `SearchWP Editor Performance`
+- Version: `1.0.0`
+- Purpose:
+  - avoids expensive SearchWP loopback method detection during post editor requests in local/development
+  - reduces logged-in edit and save latency on ACF-heavy pages where SearchWP hooks fire on `save_post`
+- Admin/UI:
+  - no new settings or menus
+  - modifies SearchWP indexer behavior in local/development only
+- Front-end / theming:
+  - none expected
+- Developer-facing hooks:
+  - no custom public hooks
+  - recognizes override constants:
+  - `MRN_SEARCHWP_EDITOR_PERF_FORCE`
+  - `MRN_SEARCHWP_EDITOR_PERF_DISABLE`
+- Notes:
+  - stack utility plugin meant to stay inert on production unless explicitly forced
+  - packaged as a standard plugin for stack bootstrap and rollout parity
+
 ## MU Plugins
 
 ### `mrn-active-style-guide`

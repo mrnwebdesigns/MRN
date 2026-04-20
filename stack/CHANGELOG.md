@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.04.20-searchwp-editor-performance
+- Added a new standard plugin, `searchwp-editor-performance` (`SearchWP Editor Performance` `1.0.0`), to enforce SearchWP alternate indexer mode in local/development editor requests and avoid the expensive loopback method check that was slowing post edit/save operations.
+- Kept the behavior environment-gated by default (`local` and `development` only) with explicit constants for force/disable overrides so production indexing behavior is unchanged unless intentionally overridden.
+- Added the stack package path for this plugin to the canonical bootstrap plugin manifest so new rollouts include the performance guard by default.
+
 ## 2026.04.17-layout-contract-standardization
 - Standardized the shared primary layout field contract across theme-owned layouts, reusable-block conversion surfaces, and nested non-link repeaters, including `Label`, `Heading`, `Subheading`, `Text`, and links plus row-level `Name (admin use only)`.
 - Removed legacy admin label suffix copy (`(full editor)`, `(allowed html)`, `(tag chooser)`) and normalized heading-tag controls to the `Tag` label with the text/tag side-by-side pattern across repeaters and subfields.

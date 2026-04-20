@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.13-page-edit-speed`
-- Release date: `2026-04-13`
+- Stack release: `2026.04.20-searchwp-editor-performance`
+- Release date: `2026-04-20`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
@@ -20,6 +20,7 @@
   - `mrn-editor-tools` `1.8.17`
   - `mrn-seo-helper` `0.2.9`
   - `mrn-universal-sticky-bar` `1.0.9`
+  - `searchwp-editor-performance` `1.0.0`
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)
