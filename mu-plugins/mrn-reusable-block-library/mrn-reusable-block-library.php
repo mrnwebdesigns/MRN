@@ -2774,27 +2774,6 @@ function mrn_rbl_get_content_link_contract_sub_fields(string $key_prefix, array 
                 ),
             ),
             array(
-                'key'           => $key_prefix . '_target',
-                'label'         => 'Target',
-                'name'          => 'target',
-                'type'          => 'select',
-                'choices'       => mrn_rbl_get_content_link_target_choices(),
-                'default_value' => '',
-                'ui'            => 1,
-                'wrapper'       => array(
-                    'width' => '25',
-                ),
-            ),
-            array(
-                'key'     => $key_prefix . '_rel',
-                'label'   => 'Rel',
-                'name'    => 'rel',
-                'type'    => 'text',
-                'wrapper' => array(
-                    'width' => '33',
-                ),
-            ),
-            array(
                 'key'     => $key_prefix . '_title_attribute',
                 'label'   => 'Title Attributes',
                 'name'    => 'title_attribute',
@@ -2885,7 +2864,7 @@ function mrn_rbl_get_content_link_repeater_field(string $key, string $label = 'L
  * @return array<int, array<string, mixed>>
  */
 function mrn_rbl_get_content_link_fields(string $key, string $label = 'Links', string $name = 'links', int $max = 0, ?string $instructions = null): array {
-    $tip_message = '<div style="margin:0 0 8px 0;padding:10px 12px;border-left:4px solid #2271b1;background:#f0f6fc;border-radius:2px;display:flex;align-items:flex-start;gap:8px;"><span class="dashicons dashicons-lightbulb" aria-hidden="true" style="margin-top:1px;color:#2271b1;"></span><span><strong>Pro Tip:</strong> Link Tab: use <em>Select Link</em>. Configs Tab: use <em>Button</em>, <em>CSS Classes</em>, <em>Target</em>, <em>Rel</em>, <em>Title Attributes</em>, <em>Download</em>, <em>Hreflang</em>, <em>Media</em>, <em>Font Awesome</em>, <em>Icon Position</em>, and <em>Icon Gap</em>.</span></div>';
+    $tip_message = '<div style="margin:0 0 8px 0;padding:10px 12px;border-left:4px solid #2271b1;background:#f0f6fc;border-radius:2px;display:flex;align-items:flex-start;gap:8px;"><span class="dashicons dashicons-lightbulb" aria-hidden="true" style="margin-top:1px;color:#2271b1;"></span><span><strong>Pro Tip:</strong> Link Tab: use <em>Select Link</em>. Configs Tab: use <em>Button</em>, <em>CSS Classes</em>, <em>Title Attributes</em>, <em>Download</em>, <em>Hreflang</em>, <em>Media</em>, <em>Font Awesome</em>, <em>Icon Position</em>, and <em>Icon Gap</em>.</span></div>';
 
     return array(
         array(
@@ -2972,6 +2951,11 @@ function mrn_rbl_normalize_content_link(array $link, array $args = array()): arr
         $target = '';
     }
 
+    $rel = (string) ($link['rel'] ?? '');
+    if ('' === trim($rel)) {
+        $rel = (string) ($acf_link['rel'] ?? '');
+    }
+
     $is_button = array_key_exists('is_button', $link)
         ? !empty($link['is_button'])
         : ('button' === sanitize_key((string) ($link['link_style'] ?? $fallback_style)));
@@ -2980,7 +2964,7 @@ function mrn_rbl_normalize_content_link(array $link, array $args = array()): arr
         'text'                 => $text,
         'url'                  => $url,
         'target'               => $target,
-        'rel'                  => mrn_rbl_normalize_content_link_rel((string) ($link['rel'] ?? ''), $target),
+        'rel'                  => mrn_rbl_normalize_content_link_rel($rel, $target),
         'title_attribute'      => sanitize_text_field((string) ($link['title_attribute'] ?? '')),
         'download'             => !empty($link['download']),
         'hreflang'             => sanitize_text_field((string) ($link['hreflang'] ?? '')),
