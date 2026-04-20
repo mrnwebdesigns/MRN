@@ -1398,6 +1398,35 @@ function mrn_site_colors_render_page(): void {
         $active_tab = $updated_notice;
     }
 
+    $separator_site_colors = array();
+
+    foreach ($rows as $row) {
+        $color_name = isset($row['name']) ? sanitize_text_field((string) $row['name']) : '';
+        $color_value = isset($row['value']) ? mrn_site_colors_normalize_hex((string) $row['value']) : '';
+
+        if ('' === $color_name || '' === $color_value) {
+            continue;
+        }
+
+        $separator_site_colors[] = array(
+            'label' => $color_name . ' (' . $color_value . ')',
+            'value' => $color_value,
+        );
+    }
+
+    if (array() === $separator_site_colors) {
+        $separator_site_colors = array(
+            array(
+                'label' => 'White (#FFFFFF)',
+                'value' => '#FFFFFF',
+            ),
+            array(
+                'label' => 'Slate 800 (#1F2937)',
+                'value' => '#1F2937',
+            ),
+        );
+    }
+
     ?>
     <div class="wrap">
         <style>
@@ -1504,8 +1533,208 @@ function mrn_site_colors_render_page(): void {
                 margin-top: 16px;
             }
 
+            .mrn-site-styles-separator-generator {
+                display: grid;
+                grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+                align-items: start;
+                gap: 20px;
+                margin-top: 18px;
+            }
+
+            .mrn-site-styles-separator-fields {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px 16px;
+            }
+
+            .mrn-site-styles-separator-field {
+                display: block;
+                min-width: 0;
+            }
+
+            .mrn-site-styles-separator-field span {
+                display: flex;
+                align-items: baseline;
+                justify-content: space-between;
+                gap: 10px;
+                margin-bottom: 4px;
+                font-weight: 600;
+                color: #2c3338;
+            }
+
+            .mrn-site-styles-separator-field .description {
+                margin: 6px 0 0;
+                color: #50575e;
+                font-size: 12px;
+            }
+
+            .mrn-site-styles-separator-field input,
+            .mrn-site-styles-separator-field select,
+            .mrn-site-styles-separator-field textarea {
+                width: 100%;
+                max-width: none;
+                box-sizing: border-box;
+            }
+
+            .mrn-site-styles-separator-field .button {
+                width: 100%;
+                text-align: center;
+            }
+
+            .mrn-site-styles-separator-field .button.is-primary {
+                color: #fff;
+                background: #2271b1;
+                border-color: #2271b1;
+            }
+
+            .mrn-site-styles-separator-field textarea {
+                min-height: 120px;
+                resize: vertical;
+            }
+
+            .mrn-site-styles-separator-field--full {
+                grid-column: 1 / -1;
+            }
+
+            .mrn-site-styles-separator-preview-shell {
+                position: relative;
+                border: 1px solid #d0d4d9;
+                border-radius: 10px;
+                overflow: hidden;
+                background: #fff;
+            }
+
+            .mrn-site-styles-separator-preview-current,
+            .mrn-site-styles-separator-preview-next {
+                position: relative;
+                padding: 20px;
+                color: #111827;
+                background: transparent;
+                isolation: isolate;
+            }
+
+            .mrn-site-styles-separator-preview-current::before,
+            .mrn-site-styles-separator-preview-next::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: var(--mrn-preview-row-bg, #FFFFFF);
+                z-index: 0;
+            }
+
+            .mrn-site-styles-separator-preview-current {
+                min-height: 168px;
+                z-index: 1;
+            }
+
+            .mrn-site-styles-separator-preview-current > *,
+            .mrn-site-styles-separator-preview-next > * {
+                position: relative;
+                z-index: 2;
+            }
+
+            .mrn-site-styles-separator-preview-next {
+                min-height: 128px;
+                border-top: 1px solid #d6dae0;
+                z-index: 1;
+            }
+
+            .mrn-site-styles-separator-preview-chip {
+                display: inline-flex;
+                align-items: center;
+                border: 1px solid currentColor;
+                border-radius: 999px;
+                padding: 4px 10px;
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                line-height: 1;
+                opacity: 0.92;
+            }
+
+            .mrn-site-styles-separator-preview-current h3,
+            .mrn-site-styles-separator-preview-next h3 {
+                margin: 12px 0 8px;
+                font-size: 36px;
+                line-height: 1.15;
+                letter-spacing: -0.02em;
+            }
+
+            .mrn-site-styles-separator-preview-current p {
+                margin: 0 0 14px;
+                max-width: 30ch;
+                font-size: 24px;
+                line-height: 1.32;
+            }
+
+            .mrn-site-styles-separator-preview-next p {
+                margin: 0;
+                font-size: 16px;
+                line-height: 1.45;
+            }
+
+            .mrn-site-styles-separator-preview-cta {
+                display: inline-flex;
+                align-items: center;
+                border: 1px solid currentColor;
+                border-radius: 8px;
+                padding: 8px 14px;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            .mrn-site-styles-separator-preview-current h3,
+            .mrn-site-styles-separator-preview-current p,
+            .mrn-site-styles-separator-preview-current .mrn-site-styles-separator-preview-chip,
+            .mrn-site-styles-separator-preview-current .mrn-site-styles-separator-preview-cta,
+            .mrn-site-styles-separator-preview-next h3,
+            .mrn-site-styles-separator-preview-next p,
+            .mrn-site-styles-separator-preview-next .mrn-site-styles-separator-preview-chip {
+                color: inherit;
+            }
+
+            .mrn-site-styles-separator-preview-accent {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                height: 96px;
+                pointer-events: none;
+                margin-top: 0;
+                overflow: hidden;
+                z-index: 1;
+            }
+
+            .mrn-site-styles-separator-preview-accent svg {
+                display: block;
+                width: 100%;
+                height: 100%;
+            }
+
+            .mrn-site-styles-separator-preview-note {
+                margin-top: 10px;
+                color: #50575e;
+                font-size: 12px;
+            }
+
+            .mrn-site-styles-separator-actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+            }
+
             @media (max-width: 1100px) {
                 .mrn-site-styles-motion-fields {
+                    grid-template-columns: 1fr;
+                }
+
+                .mrn-site-styles-separator-generator {
+                    grid-template-columns: 1fr;
+                }
+
+                .mrn-site-styles-separator-fields {
                     grid-template-columns: 1fr;
                 }
             }
@@ -1635,6 +1864,142 @@ function mrn_site_colors_render_page(): void {
                     <div class="mrn-site-styles-card">
                         <h2 style="margin-top:0;">Graphic Elements</h2>
                         <p>Paste reusable CSS snippets for accent shapes and decorative elements. These definitions will feed future accent-element dropdowns.</p>
+                        <div
+                            class="mrn-site-styles-separator-generator"
+                            id="mrn-site-styles-separator-generator"
+                            data-site-colors="<?php echo esc_attr((string) wp_json_encode($separator_site_colors)); ?>"
+                        >
+                            <div class="mrn-site-styles-separator-fields">
+                                <label class="mrn-site-styles-separator-field mrn-site-styles-separator-field--full" for="mrn-site-styles-separator-name">
+                                    <span>Graphic Element Name</span>
+                                    <input type="text" class="regular-text" id="mrn-site-styles-separator-name" value="Wave Separator" />
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-preset">
+                                    <span>Shape Preset</span>
+                                    <select id="mrn-site-styles-separator-preset">
+                                        <option value="curve">Curve</option>
+                                        <option value="wave">Wave</option>
+                                        <option value="arc">Arc</option>
+                                        <option value="tilt">Tilt</option>
+                                        <option value="zigzag">Zigzag</option>
+                                        <option value="steps">Steps</option>
+                                        <option value="notch">Notch</option>
+                                    </select>
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-space">
+                                    <span>Space Override <strong id="mrn-site-styles-separator-space-value">0px</strong></span>
+                                    <input id="mrn-site-styles-separator-space" type="range" min="-240" max="240" step="1" value="0" />
+                                    <p class="description">Offset from the baseline position. Negative pulls upward, positive pushes downward.</p>
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-top-height">
+                                    <span>Top Height Offset <strong id="mrn-site-styles-separator-top-height-value">0px</strong></span>
+                                    <input id="mrn-site-styles-separator-top-height" type="range" min="-320" max="320" step="1" value="0" />
+                                    <p class="description">`0` keeps the preset baseline. Positive grows upward into Current Row.</p>
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-bottom-height">
+                                    <span>Bottom Height Offset <strong id="mrn-site-styles-separator-bottom-height-value">0px</strong></span>
+                                    <input id="mrn-site-styles-separator-bottom-height" type="range" min="-320" max="320" step="1" value="0" />
+                                    <p class="description">`0` keeps the preset baseline. Positive extends into Next Row.</p>
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-intensity">
+                                    <span>Intensity Offset <strong id="mrn-site-styles-separator-intensity-value">0%</strong></span>
+                                    <input id="mrn-site-styles-separator-intensity" type="range" min="-300" max="300" step="1" value="0" />
+                                    <p class="description">`0` keeps the preset baseline. Positive bends convex, negative bends concave.</p>
+                                </label>
+
+                                <div class="mrn-site-styles-separator-field">
+                                    <span>Curve Direction</span>
+                                    <button type="button" class="button" id="mrn-site-styles-separator-invert" aria-pressed="true">Invert Curve: On</button>
+                                    <p class="description">On fills into Current Row. Off fills into Next Row.</p>
+                                </div>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-frequency">
+                                    <span>Frequency Offset <strong id="mrn-site-styles-separator-frequency-value">0</strong></span>
+                                    <input id="mrn-site-styles-separator-frequency" type="range" min="-11" max="11" step="1" value="0" />
+                                    <p class="description">`0` keeps the preset baseline frequency.</p>
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-left-depth">
+                                    <span>Left Curve Depth Offset <strong id="mrn-site-styles-separator-left-depth-value">0%</strong></span>
+                                    <input id="mrn-site-styles-separator-left-depth" type="range" min="-300" max="300" step="1" value="0" />
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-right-depth">
+                                    <span>Right Curve Depth Offset <strong id="mrn-site-styles-separator-right-depth-value">0%</strong></span>
+                                    <input id="mrn-site-styles-separator-right-depth" type="range" min="-300" max="300" step="1" value="0" />
+                                    <p class="description">Offsets apply from each preset baseline. Negative pushes downward, positive lifts upward.</p>
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-fill-color">
+                                    <span>Effects Fill</span>
+                                    <select id="mrn-site-styles-separator-fill-color"></select>
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-fill-opacity">
+                                    <span>Effects Fill Opacity <strong id="mrn-site-styles-separator-fill-opacity-value">100%</strong></span>
+                                    <input id="mrn-site-styles-separator-fill-opacity" type="range" min="0" max="100" step="1" value="100" />
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-bg-color">
+                                    <span>Effects Background</span>
+                                    <select id="mrn-site-styles-separator-bg-color"></select>
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-bg-opacity">
+                                    <span>Effects Background Opacity <strong id="mrn-site-styles-separator-bg-opacity-value">100%</strong></span>
+                                    <input id="mrn-site-styles-separator-bg-opacity" type="range" min="0" max="100" step="1" value="100" />
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-current-color">
+                                    <span>Current Row Color</span>
+                                    <select id="mrn-site-styles-separator-current-color"></select>
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field" for="mrn-site-styles-separator-next-color">
+                                    <span>Next Row Color</span>
+                                    <select id="mrn-site-styles-separator-next-color"></select>
+                                </label>
+
+                                <label class="mrn-site-styles-separator-field mrn-site-styles-separator-field--full" for="mrn-site-styles-separator-css">
+                                    <span>Generated CSS</span>
+                                    <textarea id="mrn-site-styles-separator-css" class="large-text code" readonly></textarea>
+                                </label>
+
+                                <div class="mrn-site-styles-separator-field mrn-site-styles-separator-field--full">
+                                    <div class="mrn-site-styles-separator-actions">
+                                        <button type="button" class="button button-primary" id="mrn-site-styles-separator-add">Add As Graphic Element</button>
+                                        <p class="description" style="margin:0;">Adds a new row below with generated CSS and the computed Bottom Space.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="mrn-site-styles-separator-preview-shell">
+                                    <div class="mrn-site-styles-separator-preview-current" id="mrn-site-styles-separator-preview-current">
+                                        <span class="mrn-site-styles-separator-preview-chip">Current Row</span>
+                                        <h3>Sample Current Row Heading</h3>
+                                        <p>This helps you preview how the separator exits below live row content and transitions into the next row.</p>
+                                        <span class="mrn-site-styles-separator-preview-cta">Sample CTA</span>
+                                    </div>
+                                    <div class="mrn-site-styles-separator-preview-next" id="mrn-site-styles-separator-preview-next">
+                                        <span class="mrn-site-styles-separator-preview-chip">Next Row</span>
+                                        <h3>Sample Next Row Heading</h3>
+                                        <p>Preview mirrors the current separator output from Current Row into Next Row.</p>
+                                    </div>
+                                    <div class="mrn-site-styles-separator-preview-accent" id="mrn-site-styles-separator-preview-accent">
+                                        <svg id="mrn-site-styles-separator-preview-accent-svg" viewBox="0 0 1000 96" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                                            <path id="mrn-site-styles-separator-preview-accent-path" d="M 0 56 L 1000 56 L 1000 96 L 0 96 Z"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p class="mrn-site-styles-separator-preview-note">Preview updates live without reflowing the panel layout.</p>
+                            </div>
+                        </div>
                         <table class="widefat striped" style="max-width:1100px;margin-top:20px;">
                             <thead>
                                 <tr>
@@ -1734,6 +2099,8 @@ function mrn_site_colors_render_page(): void {
             const addGraphicButton = document.getElementById('mrn-site-styles-graphic-add');
             const motionRowsContainer = document.getElementById('mrn-site-styles-motion-rows');
             const addMotionButton = document.getElementById('mrn-site-styles-motion-add');
+            let refreshSeparatorSiteColorOptions = function () {};
+            let scheduleSeparatorRender = function () {};
 
             function syncFormState(tabName) {
                 if (activeTabInput) {
@@ -1802,12 +2169,73 @@ function mrn_site_colors_render_page(): void {
                 return;
             }
 
+            function clamp(value, min, max) {
+                return Math.min(Math.max(value, min), max);
+            }
+
             function slugify(value) {
                 return value
                     .toLowerCase()
                     .trim()
                     .replace(/[^a-z0-9]+/g, '-')
                     .replace(/^-+|-+$/g, '') || 'color';
+            }
+
+            function normalizeHexValue(value) {
+                const trimmed = String(value || '').trim();
+                const raw = trimmed.replace(/^#/, '').toUpperCase();
+
+                if (!/^[0-9A-F]{3}([0-9A-F]{3})?$/.test(raw)) {
+                    return '';
+                }
+
+                if (3 === raw.length) {
+                    return '#' + raw.split('').map(function (character) {
+                        return character + character;
+                    }).join('');
+                }
+
+                return '#' + raw;
+            }
+
+            function readNumberValue(input, fallback) {
+                const parsed = Number.parseFloat(input.value);
+                return Number.isFinite(parsed) ? parsed : fallback;
+            }
+
+            function colorFromHexWithOpacity(colorValue, opacityPercent) {
+                if ('transparent' === colorValue) {
+                    return 'rgba(0, 0, 0, 0)';
+                }
+
+                const normalized = normalizeHexValue(colorValue);
+                if ('' === normalized) {
+                    return 'rgba(0, 0, 0, 0)';
+                }
+
+                const channels = normalized.slice(1);
+                const red = Number.parseInt(channels.slice(0, 2), 16);
+                const green = Number.parseInt(channels.slice(2, 4), 16);
+                const blue = Number.parseInt(channels.slice(4, 6), 16);
+                const alpha = clamp(opacityPercent, 0, 100) / 100;
+                const alphaValue = alpha.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+
+                return 'rgba(' + red + ', ' + green + ', ' + blue + ', ' + ('' === alphaValue ? '0' : alphaValue) + ')';
+            }
+
+            function getContrastTextColor(colorValue) {
+                const normalized = normalizeHexValue(colorValue);
+                if ('' === normalized) {
+                    return '#111827';
+                }
+
+                const channels = normalized.slice(1);
+                const red = Number.parseInt(channels.slice(0, 2), 16);
+                const green = Number.parseInt(channels.slice(2, 4), 16);
+                const blue = Number.parseInt(channels.slice(4, 6), 16);
+                const luminance = ((red * 299) + (green * 587) + (blue * 114)) / 1000;
+
+                return luminance > 150 ? '#111827' : '#FFFFFF';
             }
 
             function updateRow(row) {
@@ -1818,31 +2246,23 @@ function mrn_site_colors_render_page(): void {
                 const varOutput = row.querySelector('.mrn-site-colors-var');
                 const slug = slugify(nameInput.value || slugInput.value);
 
-                function normalizeHexInput(value) {
-                    const trimmed = value.trim();
-                    const raw = trimmed.replace(/^#/, '').toUpperCase();
-
-                    if (/^[0-9A-F]{3}([0-9A-F]{3})?$/.test(raw)) {
-                        return '#' + raw;
-                    }
-
-                    return trimmed.toUpperCase();
-                }
-
                 function getPickerValue(value) {
-                    const raw = value.trim().replace(/^#/, '').toUpperCase();
-
-                    if (/^[0-9A-F]{3}([0-9A-F]{3})?$/.test(raw)) {
-                        return '#' + raw;
+                    const normalized = normalizeHexValue(value);
+                    if ('' !== normalized) {
+                        return normalized;
                     }
 
                     return '#000000';
                 }
 
                 slugInput.value = slug;
-                valueInput.value = normalizeHexInput(valueInput.value);
+                valueInput.value = '' !== normalizeHexValue(valueInput.value)
+                    ? normalizeHexValue(valueInput.value)
+                    : String(valueInput.value).trim().toUpperCase();
                 picker.value = getPickerValue(valueInput.value);
                 varOutput.textContent = '--site-color-' + slug;
+                refreshSeparatorSiteColorOptions();
+                scheduleSeparatorRender();
             }
 
             function updateGraphicRow(row) {
@@ -1877,6 +2297,8 @@ function mrn_site_colors_render_page(): void {
                 removeButton.addEventListener('click', function () {
                     row.remove();
                     notifyFormChanged();
+                    refreshSeparatorSiteColorOptions();
+                    scheduleSeparatorRender();
                 });
 
                 updateRow(row);
@@ -1932,6 +2354,55 @@ function mrn_site_colors_render_page(): void {
             let nextGraphicIndex = graphicRowsContainer.querySelectorAll('.mrn-site-styles-graphic-row').length;
             let nextMotionIndex = motionRowsContainer.querySelectorAll('.mrn-site-styles-motion-row').length;
 
+            function createGraphicRow(rowData) {
+                const index = nextGraphicIndex;
+                nextGraphicIndex += 1;
+
+                const row = document.createElement('tr');
+                row.className = 'mrn-site-styles-graphic-row';
+                row.innerHTML = `
+                    <td style="vertical-align:top;">
+                        <input type="text" class="regular-text mrn-site-styles-graphic-name" name="mrn_site_graphic_elements[${index}][name]" value="" />
+                        <input type="hidden" class="mrn-site-styles-graphic-slug" name="mrn_site_graphic_elements[${index}][slug]" value="" />
+                    </td>
+                    <td style="vertical-align:top;">
+                        <input type="text" class="regular-text code mrn-site-styles-graphic-space" name="mrn_site_graphic_elements[${index}][space]" value="" />
+                        <p class="description" style="margin:6px 0 0;">Optional bottom spacing override.</p>
+                    </td>
+                    <td style="vertical-align:top;">
+                        <textarea class="large-text code mrn-site-styles-graphic-css" name="mrn_site_graphic_elements[${index}][css]" rows="8"></textarea>
+                    </td>
+                    <td style="vertical-align:top;">
+                        <code class="mrn-site-styles-graphic-token">graphic-element</code>
+                    </td>
+                    <td style="vertical-align:top;">
+                        <button type="button" class="button-link-delete mrn-site-styles-graphic-remove">Remove</button>
+                    </td>
+                `;
+
+                const nameInput = row.querySelector('.mrn-site-styles-graphic-name');
+                const spaceInput = row.querySelector('.mrn-site-styles-graphic-space');
+                const cssInput = row.querySelector('.mrn-site-styles-graphic-css');
+
+                if (rowData && 'string' === typeof rowData.name) {
+                    nameInput.value = rowData.name;
+                }
+
+                if (rowData && 'string' === typeof rowData.space) {
+                    spaceInput.value = rowData.space;
+                }
+
+                if (rowData && 'string' === typeof rowData.css) {
+                    cssInput.value = rowData.css;
+                }
+
+                graphicRowsContainer.appendChild(row);
+                bindGraphicRow(row);
+                notifyFormChanged();
+
+                return row;
+            }
+
             addButton.addEventListener('click', function () {
                 const index = nextColorIndex;
                 nextColorIndex += 1;
@@ -1959,36 +2430,16 @@ function mrn_site_colors_render_page(): void {
                 rowsContainer.appendChild(row);
                 bindRow(row);
                 notifyFormChanged();
+                refreshSeparatorSiteColorOptions();
+                scheduleSeparatorRender();
             });
 
             addGraphicButton.addEventListener('click', function () {
-                const index = nextGraphicIndex;
-                nextGraphicIndex += 1;
-                const row = document.createElement('tr');
-                row.className = 'mrn-site-styles-graphic-row';
-                row.innerHTML = `
-                    <td style="vertical-align:top;">
-                        <input type="text" class="regular-text mrn-site-styles-graphic-name" name="mrn_site_graphic_elements[${index}][name]" value="" />
-                        <input type="hidden" class="mrn-site-styles-graphic-slug" name="mrn_site_graphic_elements[${index}][slug]" value="" />
-                    </td>
-                    <td style="vertical-align:top;">
-                        <input type="text" class="regular-text code mrn-site-styles-graphic-space" name="mrn_site_graphic_elements[${index}][space]" value="" />
-                        <p class="description" style="margin:6px 0 0;">Optional bottom spacing override.</p>
-                    </td>
-                    <td style="vertical-align:top;">
-                        <textarea class="large-text code mrn-site-styles-graphic-css" name="mrn_site_graphic_elements[${index}][css]" rows="8"></textarea>
-                    </td>
-                    <td style="vertical-align:top;">
-                        <code class="mrn-site-styles-graphic-token">graphic-element</code>
-                    </td>
-                    <td style="vertical-align:top;">
-                        <button type="button" class="button-link-delete mrn-site-styles-graphic-remove">Remove</button>
-                    </td>
-                `;
-
-                graphicRowsContainer.appendChild(row);
-                bindGraphicRow(row);
-                notifyFormChanged();
+                createGraphicRow({
+                    name: '',
+                    space: '',
+                    css: '',
+                });
             });
 
             addMotionButton.addEventListener('click', function () {
@@ -2027,6 +2478,779 @@ function mrn_site_colors_render_page(): void {
                 bindMotionRow(row);
                 notifyFormChanged();
             });
+
+            function initSeparatorGenerator() {
+                const generator = document.getElementById('mrn-site-styles-separator-generator');
+                if (!generator) {
+                    return;
+                }
+
+                const separatorName = document.getElementById('mrn-site-styles-separator-name');
+                const separatorPreset = document.getElementById('mrn-site-styles-separator-preset');
+                const separatorSpace = document.getElementById('mrn-site-styles-separator-space');
+                const separatorTopHeight = document.getElementById('mrn-site-styles-separator-top-height');
+                const separatorBottomHeight = document.getElementById('mrn-site-styles-separator-bottom-height');
+                const separatorIntensity = document.getElementById('mrn-site-styles-separator-intensity');
+                const separatorInvertToggle = document.getElementById('mrn-site-styles-separator-invert');
+                const separatorFrequency = document.getElementById('mrn-site-styles-separator-frequency');
+                const separatorLeftDepth = document.getElementById('mrn-site-styles-separator-left-depth');
+                const separatorRightDepth = document.getElementById('mrn-site-styles-separator-right-depth');
+                const separatorFillColor = document.getElementById('mrn-site-styles-separator-fill-color');
+                const separatorFillOpacity = document.getElementById('mrn-site-styles-separator-fill-opacity');
+                const separatorBackgroundColor = document.getElementById('mrn-site-styles-separator-bg-color');
+                const separatorBackgroundOpacity = document.getElementById('mrn-site-styles-separator-bg-opacity');
+                const separatorCurrentColor = document.getElementById('mrn-site-styles-separator-current-color');
+                const separatorNextColor = document.getElementById('mrn-site-styles-separator-next-color');
+                const separatorCssOutput = document.getElementById('mrn-site-styles-separator-css');
+                const separatorAddButton = document.getElementById('mrn-site-styles-separator-add');
+                const previewCurrent = document.getElementById('mrn-site-styles-separator-preview-current');
+                const previewNext = document.getElementById('mrn-site-styles-separator-preview-next');
+                const previewAccent = document.getElementById('mrn-site-styles-separator-preview-accent');
+                const previewAccentSvg = document.getElementById('mrn-site-styles-separator-preview-accent-svg');
+                const previewAccentPath = document.getElementById('mrn-site-styles-separator-preview-accent-path');
+
+                const separatorSpaceValue = document.getElementById('mrn-site-styles-separator-space-value');
+                const separatorTopHeightValue = document.getElementById('mrn-site-styles-separator-top-height-value');
+                const separatorBottomHeightValue = document.getElementById('mrn-site-styles-separator-bottom-height-value');
+                const separatorIntensityValue = document.getElementById('mrn-site-styles-separator-intensity-value');
+                const separatorFrequencyValue = document.getElementById('mrn-site-styles-separator-frequency-value');
+                const separatorLeftDepthValue = document.getElementById('mrn-site-styles-separator-left-depth-value');
+                const separatorRightDepthValue = document.getElementById('mrn-site-styles-separator-right-depth-value');
+                const separatorFillOpacityValue = document.getElementById('mrn-site-styles-separator-fill-opacity-value');
+                const separatorBackgroundOpacityValue = document.getElementById('mrn-site-styles-separator-bg-opacity-value');
+
+                if (
+                    !separatorName
+                    || !separatorPreset
+                    || !separatorSpace
+                    || !separatorTopHeight
+                    || !separatorBottomHeight
+                    || !separatorIntensity
+                    || !separatorInvertToggle
+                    || !separatorFrequency
+                    || !separatorLeftDepth
+                    || !separatorRightDepth
+                    || !separatorFillColor
+                    || !separatorFillOpacity
+                    || !separatorBackgroundColor
+                    || !separatorBackgroundOpacity
+                    || !separatorCurrentColor
+                    || !separatorNextColor
+                    || !separatorCssOutput
+                    || !separatorAddButton
+                    || !previewCurrent
+                    || !previewNext
+                    || !previewAccent
+                    || !previewAccentSvg
+                    || !previewAccentPath
+                ) {
+                    return;
+                }
+
+                let datasetSiteColors = [];
+                let separatorCurveInverted = true;
+
+                function formatSignedValue(value, suffix) {
+                    const rounded = Math.round(Number(value) || 0);
+
+                    if (0 === rounded) {
+                        return '0' + suffix;
+                    }
+
+                    return (rounded > 0 ? '+' : '') + String(rounded) + suffix;
+                }
+
+                function getSeparatorPresetDefaults(preset) {
+                    const defaults = {
+                        curve: {
+                            topHeight: 96,
+                            bottomHeight: 0,
+                            intensity: 100,
+                            frequency: 1,
+                            leftDepth: 0,
+                            rightDepth: 0,
+                        },
+                        wave: {
+                            topHeight: 96,
+                            bottomHeight: 0,
+                            intensity: 100,
+                            frequency: 3,
+                            leftDepth: 0,
+                            rightDepth: 0,
+                        },
+                        arc: {
+                            topHeight: 96,
+                            bottomHeight: 0,
+                            intensity: 100,
+                            frequency: 1,
+                            leftDepth: 0,
+                            rightDepth: 0,
+                        },
+                        tilt: {
+                            topHeight: 96,
+                            bottomHeight: 0,
+                            intensity: 0,
+                            frequency: 1,
+                            leftDepth: -120,
+                            rightDepth: 120,
+                        },
+                        zigzag: {
+                            topHeight: 96,
+                            bottomHeight: 0,
+                            intensity: 100,
+                            frequency: 4,
+                            leftDepth: 0,
+                            rightDepth: 0,
+                        },
+                        steps: {
+                            topHeight: 96,
+                            bottomHeight: 0,
+                            intensity: 100,
+                            frequency: 4,
+                            leftDepth: 0,
+                            rightDepth: 0,
+                        },
+                        notch: {
+                            topHeight: 96,
+                            bottomHeight: 0,
+                            intensity: 100,
+                            frequency: 2,
+                            leftDepth: 0,
+                            rightDepth: 0,
+                        },
+                    };
+
+                    if (Object.prototype.hasOwnProperty.call(defaults, preset)) {
+                        return defaults[preset];
+                    }
+
+                    return defaults.curve;
+                }
+
+                function resetSeparatorOffsetsToZero() {
+                    separatorSpace.value = '0';
+                    separatorTopHeight.value = '0';
+                    separatorBottomHeight.value = '0';
+                    separatorIntensity.value = '0';
+                    separatorFrequency.value = '0';
+                    separatorLeftDepth.value = '0';
+                    separatorRightDepth.value = '0';
+                }
+
+                try {
+                    const parsed = JSON.parse(generator.getAttribute('data-site-colors') || '[]');
+                    if (Array.isArray(parsed)) {
+                        datasetSiteColors = parsed.filter(function (item) {
+                            return item && 'string' === typeof item.label && 'string' === typeof item.value;
+                        }).map(function (item) {
+                            return {
+                                label: item.label,
+                                value: normalizeHexValue(item.value),
+                            };
+                        }).filter(function (item) {
+                            return '' !== item.value;
+                        });
+                    }
+                } catch (error) {
+                    datasetSiteColors = [];
+                }
+
+                function getSiteColorOptionsFromRows() {
+                    const options = [];
+                    const used = {};
+
+                    Array.from(rowsContainer.querySelectorAll('.mrn-site-colors-row')).forEach(function (row) {
+                        const nameInput = row.querySelector('.mrn-site-colors-name');
+                        const valueInput = row.querySelector('.mrn-site-colors-value');
+                        const name = nameInput ? String(nameInput.value || '').trim() : '';
+                        const value = valueInput ? normalizeHexValue(valueInput.value) : '';
+
+                        if ('' === name || '' === value || used[value]) {
+                            return;
+                        }
+
+                        used[value] = true;
+                        options.push({
+                            label: name + ' (' + value + ')',
+                            value: value,
+                        });
+                    });
+
+                    if (options.length > 0) {
+                        return options;
+                    }
+
+                    if (datasetSiteColors.length > 0) {
+                        return datasetSiteColors;
+                    }
+
+                    return [
+                        { label: 'White (#FFFFFF)', value: '#FFFFFF' },
+                        { label: 'Slate 800 (#1F2937)', value: '#1F2937' },
+                    ];
+                }
+
+                function getLightestColor(options) {
+                    let best = options[0] ? options[0].value : '#FFFFFF';
+                    let bestValue = -1;
+
+                    options.forEach(function (item) {
+                        const normalized = normalizeHexValue(item.value);
+                        if ('' === normalized) {
+                            return;
+                        }
+
+                        const channels = normalized.slice(1);
+                        const red = Number.parseInt(channels.slice(0, 2), 16);
+                        const green = Number.parseInt(channels.slice(2, 4), 16);
+                        const blue = Number.parseInt(channels.slice(4, 6), 16);
+                        const brightness = (red * 299) + (green * 587) + (blue * 114);
+
+                        if (brightness > bestValue) {
+                            bestValue = brightness;
+                            best = normalized;
+                        }
+                    });
+
+                    return best;
+                }
+
+                function getDarkestColor(options) {
+                    let best = options[0] ? options[0].value : '#1F2937';
+                    let bestValue = Infinity;
+
+                    options.forEach(function (item) {
+                        const normalized = normalizeHexValue(item.value);
+                        if ('' === normalized) {
+                            return;
+                        }
+
+                        const channels = normalized.slice(1);
+                        const red = Number.parseInt(channels.slice(0, 2), 16);
+                        const green = Number.parseInt(channels.slice(2, 4), 16);
+                        const blue = Number.parseInt(channels.slice(4, 6), 16);
+                        const brightness = (red * 299) + (green * 587) + (blue * 114);
+
+                        if (brightness < bestValue) {
+                            bestValue = brightness;
+                            best = normalized;
+                        }
+                    });
+
+                    return best;
+                }
+
+                function populateColorSelect(select, options, selectedValue, includeTransparent) {
+                    const fragment = document.createDocumentFragment();
+                    const normalizedSelected = 'transparent' === selectedValue ? 'transparent' : normalizeHexValue(selectedValue);
+                    const optionValues = {};
+
+                    if (includeTransparent) {
+                        const transparentOption = document.createElement('option');
+                        transparentOption.value = 'transparent';
+                        transparentOption.textContent = 'Transparent';
+                        fragment.appendChild(transparentOption);
+                    }
+
+                    options.forEach(function (item) {
+                        if ('' === item.value || optionValues[item.value]) {
+                            return;
+                        }
+
+                        optionValues[item.value] = true;
+                        const option = document.createElement('option');
+                        option.value = item.value;
+                        option.textContent = item.label;
+                        fragment.appendChild(option);
+                    });
+
+                    select.innerHTML = '';
+                    select.appendChild(fragment);
+
+                    if ('transparent' === normalizedSelected && includeTransparent) {
+                        select.value = 'transparent';
+                        return;
+                    }
+
+                    if (normalizedSelected && optionValues[normalizedSelected]) {
+                        select.value = normalizedSelected;
+                        return;
+                    }
+
+                    if (includeTransparent) {
+                        select.value = 'transparent';
+                    } else if (options[0] && options[0].value) {
+                        select.value = options[0].value;
+                    }
+                }
+
+                function limitY(value, height) {
+                    return clamp(value, 0, height);
+                }
+
+                function getShapeMetrics(config, height) {
+                    const intensity = clamp(config.intensity, -300, 300);
+                    const scale = clamp(Math.abs(intensity) / 100, 0, 3);
+
+                    const leftNorm = clamp(config.leftDepth / 200, -1.5, 1.5);
+                    const rightNorm = clamp(config.rightDepth / 200, -1.5, 1.5);
+                    const fallbackTopHeight = height * 0.35;
+                    const safeTopHeight = clamp(
+                        Number.isFinite(config.topHeight) ? Number(config.topHeight) : fallbackTopHeight,
+                        0,
+                        height
+                    );
+                    const safeBottomHeight = clamp(
+                        Number.isFinite(config.bottomHeight) ? Number(config.bottomHeight) : (height - safeTopHeight),
+                        0,
+                        height
+                    );
+                    const baseline = clamp(safeTopHeight, 0, height);
+                    const upRange = Math.max(safeTopHeight, 1);
+                    const downRange = Math.max(safeBottomHeight, 1);
+                    const effectiveUpRange = upRange * scale;
+                    const effectiveDownRange = downRange * scale;
+                    const sideScale = 0.95;
+
+                    function resolveSideY(norm) {
+                        if (norm >= 0) {
+                            return baseline - (effectiveUpRange * sideScale * norm);
+                        }
+
+                        return baseline + (effectiveDownRange * sideScale * Math.abs(norm));
+                    }
+
+                    const startY = resolveSideY(leftNorm);
+                    const endY = resolveSideY(rightNorm);
+                    const bendDirection = intensity >= 0 ? -1 : 1;
+                    const bendRange = Math.max(effectiveUpRange, effectiveDownRange);
+                    const bendOffset = bendRange * 0.9 * bendDirection;
+
+                    return {
+                        scale: scale,
+                        leftNorm: leftNorm,
+                        rightNorm: rightNorm,
+                        baseline: baseline,
+                        amplitude: Math.min(effectiveUpRange, effectiveDownRange),
+                        upRange: upRange,
+                        downRange: downRange,
+                        effectiveUpRange: effectiveUpRange,
+                        effectiveDownRange: effectiveDownRange,
+                        bendOffset: bendOffset,
+                        startY: startY,
+                        endY: endY,
+                    };
+                }
+
+                function buildCurveLine(metrics, width, height) {
+                    const yStart = limitY(metrics.startY, height);
+                    const yEnd = limitY(metrics.endY, height);
+                    const midpoint = (yStart + yEnd) * 0.5;
+                    const maxOffset = Math.max(height * 0.9, Math.abs(yEnd - yStart) * 0.65);
+                    const controlY = limitY(midpoint + clamp(metrics.bendOffset, -maxOffset, maxOffset), height);
+                    const steps = 96;
+                    let path = 'M 0 ' + yStart.toFixed(2);
+
+                    for (let step = 1; step <= steps; step += 1) {
+                        const t = step / steps;
+                        const inverse = 1 - t;
+                        const x = width * t;
+                        const y = (inverse * inverse * yStart)
+                            + (2 * inverse * t * controlY)
+                            + (t * t * yEnd);
+
+                        path += ' L ' + x.toFixed(2) + ' ' + limitY(y, height).toFixed(2);
+                    }
+
+                    return path;
+                }
+
+                function buildWaveLine(metrics, config, width, height) {
+                    const frequency = clamp(Math.round(config.frequency), 1, 12);
+                    const waveAmplitude = height * 0.16 * metrics.scale;
+                    const steps = 80;
+                    let path = 'M 0 ' + limitY(metrics.startY, height).toFixed(2);
+
+                    for (let step = 1; step <= steps; step += 1) {
+                        const t = step / steps;
+                        const x = width * t;
+                        const linearY = metrics.startY + ((metrics.endY - metrics.startY) * t);
+                        const waveY = linearY + (Math.sin((t * frequency * Math.PI * 2) - (Math.PI / 2)) * waveAmplitude);
+                        path += ' L ' + x.toFixed(2) + ' ' + limitY(waveY, height).toFixed(2);
+                    }
+
+                    return path;
+                }
+
+                function buildTiltLine(metrics, width, height) {
+                    return 'M 0 ' + limitY(metrics.startY, height).toFixed(2)
+                        + ' L ' + width.toFixed(2) + ' ' + limitY(metrics.endY, height).toFixed(2);
+                }
+
+                function buildArcLine(metrics, width, height) {
+                    const controlPull = (metrics.leftNorm + metrics.rightNorm) * 0.5;
+                    const controlY = ((metrics.startY + metrics.endY) * 0.5) - (metrics.amplitude * controlPull * 0.8);
+                    const steps = 52;
+                    let path = 'M 0 ' + limitY(metrics.startY, height).toFixed(2);
+
+                    for (let step = 1; step <= steps; step += 1) {
+                        const t = step / steps;
+                        const x = width * t;
+                        const inverse = 1 - t;
+                        const y = (inverse * inverse * metrics.startY)
+                            + (2 * inverse * t * controlY)
+                            + (t * t * metrics.endY);
+                        path += ' L ' + x.toFixed(2) + ' ' + limitY(y, height).toFixed(2);
+                    }
+
+                    return path;
+                }
+
+                function buildZigzagLine(metrics, config, width, height) {
+                    const segments = clamp(Math.round(config.frequency) * 6, 6, 72);
+                    const zigAmplitude = height * 0.12 * Math.max(metrics.scale, 0.45);
+                    let path = 'M 0 ' + limitY(metrics.startY, height).toFixed(2);
+
+                    for (let segment = 1; segment <= segments; segment += 1) {
+                        const t = segment / segments;
+                        const x = width * t;
+                        const linearY = metrics.startY + ((metrics.endY - metrics.startY) * t);
+                        const direction = segment % 2 === 0 ? 1 : -1;
+                        const y = linearY + (direction * zigAmplitude);
+                        path += ' L ' + x.toFixed(2) + ' ' + limitY(y, height).toFixed(2);
+                    }
+
+                    return path;
+                }
+
+                function buildStepsLine(metrics, config, width, height) {
+                    const steps = clamp(Math.round(config.frequency) * 3, 2, 36);
+                    let path = 'M 0 ' + limitY(metrics.startY, height).toFixed(2);
+                    let lastY = metrics.startY;
+
+                    for (let index = 1; index <= steps; index += 1) {
+                        const t = index / steps;
+                        const x = width * t;
+                        const y = metrics.startY + ((metrics.endY - metrics.startY) * t);
+                        path += ' L ' + x.toFixed(2) + ' ' + limitY(lastY, height).toFixed(2);
+                        path += ' L ' + x.toFixed(2) + ' ' + limitY(y, height).toFixed(2);
+                        lastY = y;
+                    }
+
+                    return path;
+                }
+
+                function buildNotchLine(metrics, config, width, height) {
+                    const notches = clamp(Math.round(config.frequency), 1, 8);
+                    const notchDepth = height * 0.22 * Math.max(metrics.scale, 0.35);
+                    const span = width / notches;
+                    let path = 'M 0 ' + limitY(metrics.startY, height).toFixed(2);
+
+                    for (let index = 1; index <= notches; index += 1) {
+                        const fromX = (index - 1) * span;
+                        const toX = index * span;
+                        const midX = fromX + (span / 2);
+                        const fromY = metrics.startY + ((metrics.endY - metrics.startY) * ((index - 1) / notches));
+                        const toY = metrics.startY + ((metrics.endY - metrics.startY) * (index / notches));
+                        const midY = ((fromY + toY) * 0.5) + notchDepth;
+
+                        path += ' L ' + midX.toFixed(2) + ' ' + limitY(midY, height).toFixed(2);
+                        path += ' L ' + toX.toFixed(2) + ' ' + limitY(toY, height).toFixed(2);
+                    }
+
+                    return path;
+                }
+
+                function buildSeparatorPath(config) {
+                    const width = 1000;
+                    const height = clamp(Math.round(config.height), 12, 640);
+                    const metrics = getShapeMetrics(config, height);
+                    let topLine = '';
+
+                    switch (config.preset) {
+                        case 'wave':
+                            topLine = buildWaveLine(metrics, config, width, height);
+                            break;
+                        case 'arc':
+                            topLine = buildArcLine(metrics, width, height);
+                            break;
+                        case 'tilt':
+                            topLine = buildTiltLine(metrics, width, height);
+                            break;
+                        case 'zigzag':
+                            topLine = buildZigzagLine(metrics, config, width, height);
+                            break;
+                        case 'steps':
+                            topLine = buildStepsLine(metrics, config, width, height);
+                            break;
+                        case 'notch':
+                            topLine = buildNotchLine(metrics, config, width, height);
+                            break;
+                        case 'curve':
+                        default:
+                            topLine = buildCurveLine(metrics, width, height);
+                            break;
+                    }
+
+                    if (config.invertCurve) {
+                        return topLine + ' L ' + width.toFixed(2) + ' 0.00 L 0 0.00 Z';
+                    }
+
+                    return topLine + ' L ' + width.toFixed(2) + ' ' + height.toFixed(2) + ' L 0 ' + height.toFixed(2) + ' Z';
+                }
+
+                function buildSeparatorSvgDataUri(config) {
+                    const fillColor = colorFromHexWithOpacity(config.fillColor, config.fillOpacity);
+                    const path = buildSeparatorPath(config);
+                    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 '
+                        + clamp(Math.round(config.height), 12, 640)
+                        + '" preserveAspectRatio="none"><path fill="'
+                        + fillColor
+                        + '" d="'
+                        + path
+                        + '"/></svg>';
+
+                    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+                }
+
+                function buildSeparatorCss(config, slug) {
+                    const safeTopHeight = clamp(Math.round(config.topHeight), 0, 320);
+                    const safeBottomHeight = clamp(Math.round(config.bottomHeight), 0, 320);
+                    const safeHeight = clamp(safeTopHeight + safeBottomHeight, 12, 640);
+                    const safeSpaceOffset = clamp(Math.round(config.space), -240, 240);
+                    const accentTranslate = safeBottomHeight + safeSpaceOffset;
+                    const reservedSpace = Math.max(accentTranslate, 0);
+                    const backgroundColor = colorFromHexWithOpacity(config.backgroundColor, config.backgroundOpacity);
+                    const svgDataUri = buildSeparatorSvgDataUri({
+                        preset: config.preset,
+                        height: safeHeight,
+                        topHeight: safeTopHeight,
+                        bottomHeight: safeBottomHeight,
+                        intensity: config.intensity,
+                        frequency: config.frequency,
+                        leftDepth: config.leftDepth,
+                        rightDepth: config.rightDepth,
+                        invertCurve: config.invertCurve,
+                        fillColor: config.fillColor,
+                        fillOpacity: config.fillOpacity,
+                    });
+                    const selector = '.has-bottom-accent[data-bottom-accent="' + slug + '"]';
+
+                    return [
+                        selector + '{--mrn-accent-space:' + reservedSpace + 'px;position:relative;overflow:visible;}',
+                        selector + ' > *{position:relative;z-index:1;}',
+                        selector + '::after{content:"";position:absolute;left:0;right:0;bottom:0;height:' + safeHeight + 'px;transform:translateY(' + accentTranslate + 'px);pointer-events:none;z-index:0;background-color:' + backgroundColor + ';background-image:url("' + svgDataUri + '");background-repeat:no-repeat;background-position:50% 50%;background-size:100% 100%;}',
+                    ].join('\n');
+                }
+
+                function readGeneratorConfig() {
+                    const preset = String(separatorPreset.value || 'curve');
+                    const defaults = getSeparatorPresetDefaults(preset);
+                    const topOffset = clamp(readNumberValue(separatorTopHeight, 0), -320, 320);
+                    const bottomOffset = clamp(readNumberValue(separatorBottomHeight, 0), -320, 320);
+                    const intensityOffset = clamp(readNumberValue(separatorIntensity, 0), -300, 300);
+                    const frequencyOffset = clamp(readNumberValue(separatorFrequency, 0), -11, 11);
+                    const leftDepthOffset = clamp(readNumberValue(separatorLeftDepth, 0), -300, 300);
+                    const rightDepthOffset = clamp(readNumberValue(separatorRightDepth, 0), -300, 300);
+                    const topHeight = clamp(defaults.topHeight + topOffset, 0, 320);
+                    const bottomHeight = clamp(defaults.bottomHeight + bottomOffset, 0, 320);
+                    const intensity = clamp(defaults.intensity + intensityOffset, -300, 300);
+                    const frequency = clamp(defaults.frequency + frequencyOffset, 1, 12);
+                    const leftDepth = clamp(defaults.leftDepth + leftDepthOffset, -300, 300);
+                    const rightDepth = clamp(defaults.rightDepth + rightDepthOffset, -300, 300);
+
+                    return {
+                        name: String(separatorName.value || '').trim() || 'Wave Separator',
+                        preset: preset,
+                        space: clamp(readNumberValue(separatorSpace, 0), -240, 240),
+                        topOffset: topOffset,
+                        bottomOffset: bottomOffset,
+                        intensityOffset: intensityOffset,
+                        frequencyOffset: frequencyOffset,
+                        leftDepthOffset: leftDepthOffset,
+                        rightDepthOffset: rightDepthOffset,
+                        topHeight: topHeight,
+                        bottomHeight: bottomHeight,
+                        height: clamp(topHeight + bottomHeight, 12, 640),
+                        intensity: intensity,
+                        invertCurve: separatorCurveInverted,
+                        frequency: frequency,
+                        leftDepth: leftDepth,
+                        rightDepth: rightDepth,
+                        fillColor: String(separatorFillColor.value || '#FFFFFF'),
+                        fillOpacity: clamp(readNumberValue(separatorFillOpacity, 100), 0, 100),
+                        backgroundColor: String(separatorBackgroundColor.value || 'transparent'),
+                        backgroundOpacity: clamp(readNumberValue(separatorBackgroundOpacity, 100), 0, 100),
+                        currentColor: String(separatorCurrentColor.value || '#1F2937'),
+                        nextColor: String(separatorNextColor.value || '#FFFFFF'),
+                    };
+                }
+
+                let renderPending = false;
+
+                function renderSeparatorGenerator() {
+                    const config = readGeneratorConfig();
+                    const normalizedName = String(separatorName.value || '').trim();
+                    const slug = slugify('' === normalizedName ? 'wave-separator' : normalizedName);
+                    const safeTopHeight = clamp(Math.round(config.topHeight), 0, 320);
+                    const safeBottomHeight = clamp(Math.round(config.bottomHeight), 0, 320);
+                    const safeHeight = clamp(Math.round(config.height), 12, 640);
+                    const safeSpaceOffset = clamp(Math.round(config.space), -240, 240);
+                    const accentTopOffset = safeSpaceOffset - safeTopHeight;
+                    const boundaryOffset = previewCurrent.offsetHeight;
+                    const backgroundColor = colorFromHexWithOpacity(config.backgroundColor, config.backgroundOpacity);
+                    const fillColor = colorFromHexWithOpacity(config.fillColor, config.fillOpacity);
+                    const separatorPath = buildSeparatorPath(config);
+
+                    if (separatorSpaceValue) {
+                        separatorSpaceValue.textContent = formatSignedValue(safeSpaceOffset, 'px');
+                    }
+
+                    if (separatorTopHeightValue) {
+                        separatorTopHeightValue.textContent = formatSignedValue(config.topOffset, 'px');
+                    }
+
+                    if (separatorBottomHeightValue) {
+                        separatorBottomHeightValue.textContent = formatSignedValue(config.bottomOffset, 'px');
+                    }
+
+                    if (separatorIntensityValue) {
+                        separatorIntensityValue.textContent = formatSignedValue(config.intensityOffset, '%');
+                    }
+
+                    if (separatorFrequencyValue) {
+                        separatorFrequencyValue.textContent = formatSignedValue(config.frequencyOffset, '');
+                    }
+
+                    if (separatorLeftDepthValue) {
+                        separatorLeftDepthValue.textContent = formatSignedValue(config.leftDepthOffset, '%');
+                    }
+
+                    if (separatorRightDepthValue) {
+                        separatorRightDepthValue.textContent = formatSignedValue(config.rightDepthOffset, '%');
+                    }
+
+                    if (separatorFillOpacityValue) {
+                        separatorFillOpacityValue.textContent = Math.round(config.fillOpacity) + '%';
+                    }
+
+                    if (separatorBackgroundOpacityValue) {
+                        separatorBackgroundOpacityValue.textContent = Math.round(config.backgroundOpacity) + '%';
+                    }
+
+                    separatorInvertToggle.setAttribute('aria-pressed', config.invertCurve ? 'true' : 'false');
+                    separatorInvertToggle.classList.toggle('is-primary', config.invertCurve);
+                    separatorInvertToggle.textContent = config.invertCurve ? 'Invert Curve: On' : 'Invert Curve: Off';
+
+                    previewCurrent.style.setProperty('--mrn-preview-row-bg', colorFromHexWithOpacity(config.currentColor, 100));
+                    previewCurrent.style.color = getContrastTextColor(config.currentColor);
+                    previewNext.style.setProperty('--mrn-preview-row-bg', colorFromHexWithOpacity(config.nextColor, 100));
+                    previewNext.style.color = getContrastTextColor(config.nextColor);
+
+                    previewAccent.style.height = safeHeight + 'px';
+                    previewAccent.style.top = (boundaryOffset + accentTopOffset) + 'px';
+                    previewAccent.style.marginTop = '0';
+                    previewAccent.style.transform = 'none';
+                    previewAccent.style.backgroundColor = backgroundColor;
+                    previewAccent.style.backgroundImage = 'none';
+                    previewAccent.style.display = 'block';
+                    previewAccentSvg.style.width = '100%';
+                    previewAccentSvg.style.height = safeHeight + 'px';
+                    previewAccentSvg.style.marginTop = '0';
+                    previewAccentSvg.style.backgroundColor = 'transparent';
+                    previewAccentSvg.setAttribute('viewBox', '0 0 1000 ' + safeHeight);
+                    previewAccentPath.setAttribute('d', separatorPath);
+                    previewAccentPath.setAttribute('fill', fillColor);
+
+                    separatorCssOutput.value = buildSeparatorCss(config, slug);
+                }
+
+                scheduleSeparatorRender = function () {
+                    if (renderPending) {
+                        return;
+                    }
+
+                    renderPending = true;
+                    window.requestAnimationFrame(function () {
+                        renderPending = false;
+                        renderSeparatorGenerator();
+                    });
+                };
+
+                refreshSeparatorSiteColorOptions = function () {
+                    const colorOptions = getSiteColorOptionsFromRows();
+                    const lightestColor = getLightestColor(colorOptions);
+                    const darkestColor = getDarkestColor(colorOptions);
+
+                    populateColorSelect(separatorFillColor, colorOptions, separatorFillColor.value || lightestColor, false);
+                    populateColorSelect(separatorBackgroundColor, colorOptions, separatorBackgroundColor.value || 'transparent', true);
+                    populateColorSelect(separatorCurrentColor, colorOptions, separatorCurrentColor.value || darkestColor, false);
+                    populateColorSelect(separatorNextColor, colorOptions, separatorNextColor.value || lightestColor, false);
+                };
+
+                refreshSeparatorSiteColorOptions();
+
+                const separatorInputs = [
+                    separatorName,
+                    separatorPreset,
+                    separatorSpace,
+                    separatorTopHeight,
+                    separatorBottomHeight,
+                    separatorIntensity,
+                    separatorFrequency,
+                    separatorLeftDepth,
+                    separatorRightDepth,
+                    separatorFillColor,
+                    separatorFillOpacity,
+                    separatorBackgroundColor,
+                    separatorBackgroundOpacity,
+                    separatorCurrentColor,
+                    separatorNextColor,
+                ];
+
+                separatorInputs.forEach(function (input) {
+                    input.addEventListener('input', scheduleSeparatorRender);
+                    input.addEventListener('change', scheduleSeparatorRender);
+                });
+
+                separatorPreset.addEventListener('change', function () {
+                    resetSeparatorOffsetsToZero();
+                    separatorCurveInverted = true;
+                    scheduleSeparatorRender();
+                });
+
+                separatorInvertToggle.addEventListener('click', function () {
+                    separatorCurveInverted = !separatorCurveInverted;
+                    scheduleSeparatorRender();
+                });
+
+                separatorAddButton.addEventListener('click', function () {
+                    const config = readGeneratorConfig();
+                    const normalizedName = String(separatorName.value || '').trim();
+                    const safeName = '' === normalizedName ? 'Wave Separator' : normalizedName;
+                    const slug = slugify(safeName);
+                    const safeBottomHeight = clamp(Math.round(config.bottomHeight), 0, 320);
+                    const safeSpaceOffset = clamp(Math.round(config.space), -240, 240);
+                    const reservedSpace = Math.max(safeBottomHeight + safeSpaceOffset, 0);
+                    const css = buildSeparatorCss(config, slug);
+                    const row = createGraphicRow({
+                        name: safeName,
+                        space: reservedSpace + 'px',
+                        css: css,
+                    });
+
+                    const cssField = row.querySelector('.mrn-site-styles-graphic-css');
+                    if (cssField) {
+                        cssField.focus();
+                    }
+
+                    scheduleSeparatorRender();
+                });
+
+                scheduleSeparatorRender();
+            }
+
+            initSeparatorGenerator();
         }());
     </script>
     <?php

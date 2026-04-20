@@ -21,12 +21,12 @@ function mrn_base_stack_render_hero_row( array $row, $post_id, $index ) {
 	$layout  = (string) $row['acf_fc_layout'];
 	$context = mrn_base_stack_get_builder_row_context( $row, $post_id, $index );
 
-	if ( 'hero' === $layout ) {
+	if ( 'basic' === $layout ) {
 		get_template_part( 'template-parts/builder/hero', null, $context );
 		return true;
 	}
 
-	if ( 'hero_two_column_split' === $layout ) {
+	if ( 'two_column_split' === $layout ) {
 		get_template_part( 'template-parts/builder/two-column-split', null, $context );
 		return true;
 	}
@@ -258,11 +258,6 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 
 	if ( 'content_lists' === $layout ) {
 		get_template_part( 'template-parts/builder/content-lists', null, $context );
-		return true;
-	}
-
-	if ( 'hero' === $layout ) {
-		get_template_part( 'template-parts/builder/hero', null, $context );
 		return true;
 	}
 
@@ -517,11 +512,11 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
  */
 function mrn_base_stack_get_page_specific_layout_map() {
 	return array(
-		'mrn_reusable_cta'    => 'cta_block',
+		'mrn_reusable_cta'    => 'cta',
 		'mrn_reusable_basic'  => 'basic_block',
 		'mrn_reusable_list'   => 'content_lists',
-		'mrn_reusable_grid'   => 'content_grid',
-		'mrn_reusable_faq'    => 'faq_block',
+		'mrn_reusable_grid'   => 'grid',
+		'mrn_reusable_faq'    => 'faq',
 		'mrn_reusable_search' => 'searchwp_form',
 	);
 }
@@ -533,11 +528,11 @@ function mrn_base_stack_get_page_specific_layout_map() {
  */
 function mrn_base_stack_get_page_specific_layout_key_map() {
 	return array(
-		'mrn_reusable_cta'    => 'layout_mrn_cta_block',
+		'mrn_reusable_cta'    => 'layout_mrn_cta',
 		'mrn_reusable_basic'  => 'layout_mrn_basic_block',
 		'mrn_reusable_list'   => 'layout_mrn_content_lists',
-		'mrn_reusable_grid'   => 'layout_mrn_content_grid',
-		'mrn_reusable_faq'    => 'layout_mrn_faq_block',
+		'mrn_reusable_grid'   => 'layout_mrn_grid',
+		'mrn_reusable_faq'    => 'layout_mrn_faq',
 		'mrn_reusable_search' => 'layout_mrn_searchwp_form',
 	);
 }

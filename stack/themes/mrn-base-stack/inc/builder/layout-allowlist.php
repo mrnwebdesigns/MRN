@@ -694,9 +694,9 @@ function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name,
 		'page_sidebar_rows'       => array( 'basic', 'image_content', 'searchwp_form' ),
 	);
 	$alias_map          = array(
-		'basic'            => array( 'basic', 'hero' ),
+		'basic'            => array( 'basic' ),
 		'image_content'    => array( 'image_content' ),
-		'two_column_split' => array( 'two_column_split', 'hero_two_column_split' ),
+		'two_column_split' => array( 'two_column_split' ),
 		'reusable_block'   => array( 'reusable_block' ),
 		'grid'             => array( 'grid' ),
 		'logos'            => array( 'logos' ),
