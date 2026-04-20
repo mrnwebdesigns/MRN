@@ -33,7 +33,7 @@ function mrn_base_stack_register_acf_field_groups() {
 						'layouts'           => array(
 							'layout_mrn_hero' => array(
 								'key'        => 'layout_mrn_hero',
-								'name'       => 'hero',
+								'name'       => 'basic',
 								'label'      => 'Basic - label|heading|text with editor|link|image',
 								'display'    => 'block',
 								'sub_fields' => array(
@@ -169,7 +169,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							),
 							'layout_mrn_hero_two_column_split' => array(
 								'key'        => 'layout_mrn_hero_two_column_split',
-								'name'       => 'hero_two_column_split',
+								'name'       => 'two_column_split',
 								'label'      => 'Two Column Split',
 								'display'    => 'block',
 								'sub_fields' => array(
