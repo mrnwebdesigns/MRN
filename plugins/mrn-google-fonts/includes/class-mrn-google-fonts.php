@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 }
 
 final class MRN_Google_Fonts {
-	const VERSION = '0.4.13';
+	const VERSION = '0.4.14';
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
 	const PAGE_SLUG = 'google-fonts';
@@ -725,7 +725,6 @@ final class MRN_Google_Fonts {
 					class="button button-secondary"
 					formaction="<?php echo esc_url($build_action_url); ?>"
 					formmethod="post"
-					<?php echo empty($status['request_url']) ? 'disabled' : ''; ?>
 				>
 					Build Local Fonts
 				</button>
