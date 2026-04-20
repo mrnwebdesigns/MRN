@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 }
 
 final class MRN_Google_Fonts {
-	const VERSION = '0.4.12';
+	const VERSION = '0.4.13';
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
 	const PAGE_SLUG = 'google-fonts';
@@ -589,8 +589,7 @@ final class MRN_Google_Fonts {
 
 		natcasesort($catalog);
 		$catalog = array_values(array_unique(array_filter(array_map('strval', $catalog))));
-		$initial_catalog = self::find_font_family_matches($catalog, '', 20);
-		$initial_catalog = array_values(array_unique(array_merge(array($body_family, $heading_family), $initial_catalog)));
+		$initial_catalog = array_values(array_unique(array_merge(array($body_family, $heading_family), $catalog)));
 
 		$context_slug = sanitize_html_class($context);
 		$chooser_id = 'mrn-google-fonts-chooser-' . $context_slug;
