@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 }
 
 final class MRN_Google_Fonts {
-	const VERSION = '0.4.10';
+	const VERSION = '0.4.22';
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
 	const PAGE_SLUG = 'google-fonts';
@@ -158,7 +158,14 @@ final class MRN_Google_Fonts {
 	 * @param string $hook Current admin hook.
 	 */
 	public static function enqueue_admin_assets(string $hook): void {
-		if ('settings_page_' . self::PAGE_SLUG !== $hook) {
+		$allowed_hooks = array(
+			'settings_page_' . self::PAGE_SLUG,
+			'admin_page_' . self::PAGE_SLUG,
+			'settings_page_mrn-site-styles',
+			'admin_page_mrn-site-styles',
+		);
+
+		if (!in_array($hook, $allowed_hooks, true)) {
 			return;
 		}
 
@@ -166,8 +173,16 @@ final class MRN_Google_Fonts {
 		wp_enqueue_style('mrn-google-fonts-admin');
 			wp_add_inline_style(
 				'mrn-google-fonts-admin',
-				'.mrn-google-fonts-tabs{margin-top:16px}.mrn-google-fonts-panel{max-width:980px;padding:16px 20px;background:#fff;border:1px solid #dcdcde;border-top:none}.mrn-google-fonts-field{margin:0 0 14px}.mrn-google-fonts-field label{display:block;margin-bottom:6px;font-weight:600}.mrn-google-fonts-field .description{margin-top:4px;color:#50575e}.mrn-google-fonts-status{margin:0 0 14px;padding:12px;border-left:4px solid #2271b1;background:#f0f6fc}.mrn-google-fonts-chooser-grid{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:14px}.mrn-google-fonts-chooser-grid input[type="text"]{width:100%}@media (max-width:782px){.mrn-google-fonts-chooser-grid{grid-template-columns:1fr}}'
+				'.mrn-google-fonts-tabs{margin-top:16px}.mrn-google-fonts-panel{max-width:980px;padding:16px 20px;background:#fff;border:1px solid #dcdcde;border-top:none}.mrn-google-fonts-field{margin:0 0 14px}.mrn-google-fonts-field label{display:block;margin-bottom:6px;font-weight:600}.mrn-google-fonts-field .description{margin-top:4px;color:#50575e}.mrn-google-fonts-status{margin:0 0 14px;padding:12px;border-left:4px solid #2271b1;background:#f0f6fc}.mrn-google-fonts-chooser-grid{max-width:560px}.mrn-google-fonts-chooser-grid input[type="text"]{width:100%;max-width:460px}'
 			);
+
+		wp_enqueue_script(
+			'mrn-google-fonts-admin-chooser',
+			MRN_GOOGLE_FONTS_URL . 'assets/js/admin-chooser.js',
+			array(),
+			self::VERSION,
+			true
+		);
 		}
 
 	/**
@@ -589,8 +604,16 @@ final class MRN_Google_Fonts {
 
 		natcasesort($catalog);
 		$catalog = array_values(array_unique(array_filter(array_map('strval', $catalog))));
-		$initial_catalog = self::find_font_family_matches($catalog, '', 20);
-		$initial_catalog = array_values(array_unique(array_merge(array($body_family, $heading_family), $initial_catalog)));
+		$initial_catalog = array_values(
+			array_unique(
+				array_filter(
+					array($body_family, $heading_family),
+					static function ($family): bool {
+						return '' !== trim((string) $family);
+					}
+				)
+			)
+		);
 
 		$context_slug = sanitize_html_class($context);
 		$chooser_id = 'mrn-google-fonts-chooser-' . $context_slug;
@@ -692,127 +715,7 @@ final class MRN_Google_Fonts {
 			</datalist>
 
 			<p class="description" style="margin-top:10px;">Save settings, then run <strong>Build Local Fonts</strong> to self-host and avoid Google CDN requests on frontend pages.</p>
-			<script>
-				(function() {
-					const chooser = document.getElementById('<?php echo esc_js($chooser_id); ?>');
-					if (!chooser || chooser.dataset.mrnGoogleFontsChooserReady === '1') {
-						return;
-					}
-					chooser.dataset.mrnGoogleFontsChooserReady = '1';
-
-					const datalistId = chooser.getAttribute('data-mrn-google-fonts-datalist-id') || '';
-					const datalist = datalistId ? chooser.querySelector('#' + datalistId) : null;
-					const searchUrl = chooser.getAttribute('data-mrn-google-fonts-search-url') || '';
-					const searchNonce = chooser.getAttribute('data-mrn-google-fonts-search-nonce') || '';
-					const inputs = Array.from(chooser.querySelectorAll('[data-mrn-google-fonts-family-input]'));
-
-					if (!datalist || !searchUrl || !searchNonce || !inputs.length) {
-						return;
-					}
-
-					const defaultOptions = Array.from(datalist.querySelectorAll('option')).map(function(option) {
-						return (option.value || '').trim();
-					}).filter(Boolean);
-
-					const uniqueValues = function(values) {
-						const seen = new Set();
-						const result = [];
-
-						values.forEach(function(value) {
-							const normalized = (value || '').trim();
-							if (!normalized || seen.has(normalized)) {
-								return;
-							}
-							seen.add(normalized);
-							result.push(normalized);
-						});
-
-						return result;
-					};
-
-					const renderOptions = function(values) {
-						const selectedValues = inputs.map(function(input) {
-							return input.value || '';
-						});
-						const merged = uniqueValues(['system-ui'].concat(selectedValues, values)).slice(0, 30);
-
-						datalist.innerHTML = '';
-						merged.forEach(function(value) {
-							const option = document.createElement('option');
-							option.value = value;
-							datalist.appendChild(option);
-						});
-					};
-
-					let debounceTimer = 0;
-					let activeRequest = null;
-
-					const fetchSuggestions = function(query) {
-						if (activeRequest && typeof activeRequest.abort === 'function') {
-							activeRequest.abort();
-						}
-
-						const controller = window.AbortController ? new AbortController() : null;
-						activeRequest = controller;
-
-						const url = new URL(searchUrl, window.location.origin);
-						url.searchParams.set('action', 'mrn_google_fonts_search_families');
-						url.searchParams.set('q', query || '');
-						url.searchParams.set('_ajax_nonce', searchNonce);
-
-						const requestOptions = {
-							credentials: 'same-origin',
-						};
-
-						if (controller) {
-							requestOptions.signal = controller.signal;
-						}
-
-						fetch(url.toString(), requestOptions)
-							.then(function(response) {
-								if (!response.ok) {
-									throw new Error('Request failed');
-								}
-
-								return response.json();
-							})
-							.then(function(payload) {
-								if (!payload || !payload.success || !payload.data || !Array.isArray(payload.data.families)) {
-									renderOptions(defaultOptions);
-									return;
-								}
-
-								renderOptions(payload.data.families.map(function(family) {
-									return String(family);
-								}));
-							})
-							.catch(function(error) {
-								if (error && error.name === 'AbortError') {
-									return;
-								}
-
-								renderOptions(defaultOptions);
-							});
-					};
-
-					const scheduleSearch = function(query) {
-						window.clearTimeout(debounceTimer);
-						debounceTimer = window.setTimeout(function() {
-							fetchSuggestions(query);
-						}, 180);
-					};
-
-					inputs.forEach(function(input) {
-						input.addEventListener('input', function() {
-							scheduleSearch(input.value || '');
-						});
-
-						input.addEventListener('focus', function() {
-							scheduleSearch(input.value || '');
-						});
-					});
-				})();
-			</script>
+			<script src="<?php echo esc_url(MRN_GOOGLE_FONTS_URL . 'assets/js/admin-chooser.js?ver=' . rawurlencode((string) self::VERSION)); ?>"></script>
 		</div>
 
 		<div class="mrn-google-fonts-status">
@@ -1874,16 +1777,11 @@ final class MRN_Google_Fonts {
 			return $fetched;
 		}
 
-		$fallback = self::get_google_font_fallback_catalog();
-		$fallback = array_values(array_unique(array_filter(array_map('strval', $fallback))));
-		if (empty($fallback)) {
-			$fallback = array('Open Sans', 'Roboto', 'Lato', 'Montserrat', 'Poppins');
-		}
+		// When live metadata is unavailable, do not inject fallback suggestions.
+		// Cache the empty result briefly so we avoid repeated slow upstream calls.
+		set_transient(self::FONT_CATALOG_TRANSIENT, array(), self::FONT_CATALOG_FALLBACK_TTL);
 
-		// Keep fallback catalog cache short so temporary fetch failures self-heal quickly.
-		set_transient(self::FONT_CATALOG_TRANSIENT, $fallback, self::FONT_CATALOG_FALLBACK_TTL);
-
-		return $fallback;
+		return array();
 	}
 
 	/**
@@ -2005,7 +1903,12 @@ final class MRN_Google_Fonts {
 
 		check_ajax_referer('mrn_google_fonts_search_families');
 
-		$query = isset($_GET['q']) ? sanitize_text_field((string) wp_unslash($_GET['q'])) : '';
+		$query = '';
+		if (isset($_POST['q'])) {
+			$query = sanitize_text_field((string) wp_unslash($_POST['q']));
+		} elseif (isset($_GET['q'])) {
+			$query = sanitize_text_field((string) wp_unslash($_GET['q']));
+		}
 		$catalog = self::get_google_font_family_catalog();
 		$matches = self::find_font_family_matches($catalog, $query, 25);
 
