@@ -144,14 +144,21 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
                     if (isset($item['link']) && is_string($item['link']) && trim($item['link']) !== '') {
                         $item['url'] = trim($item['link']);
                     }
-                    $normalized_link = function_exists('mrn_rbl_normalize_content_link')
-                        ? mrn_rbl_normalize_content_link(
+                    $normalized_link = function_exists('mrn_base_stack_get_repeater_item_primary_link')
+                        ? mrn_base_stack_get_repeater_item_primary_link(
                             $item,
                             array(
                                 'fallback_link_style' => $item_link_style,
                             )
                         )
-                        : array();
+                        : (function_exists('mrn_rbl_normalize_content_link')
+                            ? mrn_rbl_normalize_content_link(
+                                $item,
+                                array(
+                                    'fallback_link_style' => $item_link_style,
+                                )
+                            )
+                            : array());
                     $link_url = isset($normalized_link['url']) ? (string) $normalized_link['url'] : '';
                     $link_text = isset($normalized_link['text']) ? (string) $normalized_link['text'] : '';
                     $link_style = isset($normalized_link['link_style']) ? (string) $normalized_link['link_style'] : $item_link_style;
@@ -228,25 +235,21 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
                                             class="<?php echo esc_attr(trim($link_class_names)); ?>"
                                             <?php echo '' !== $link_attr_html ? $link_attr_html : 'href="' . esc_url($link_url) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                                         >
-                                            <?php if ('left' === $link_icon_position) : ?>
-                                                <?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in helper. ?>
-                                            <?php endif; ?>
-                                            <?php echo esc_html($link_label); ?>
-                                            <?php if ('right' === $link_icon_position) : ?>
-                                                <?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in helper. ?>
-                                            <?php endif; ?>
+                                            <?php
+                                            echo function_exists('mrn_base_stack_get_compact_link_label_markup')
+                                                ? mrn_base_stack_get_compact_link_label_markup($link_label, $link_icon_markup, $link_icon_position)
+                                                : esc_html($link_label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
+                                            ?>
                                         </a>
                                     </div>
                                 <?php elseif (!$hide_item_link) : ?>
                                     <div class="mrn-content-grid__item-link-wrap">
                                         <span class="<?php echo esc_attr(trim($link_class_names)); ?>">
-                                            <?php if ('left' === $link_icon_position) : ?>
-                                                <?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in helper. ?>
-                                            <?php endif; ?>
-                                            <?php echo esc_html($link_label); ?>
-                                            <?php if ('right' === $link_icon_position) : ?>
-                                                <?php echo $link_icon_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in helper. ?>
-                                            <?php endif; ?>
+                                            <?php
+                                            echo function_exists('mrn_base_stack_get_compact_link_label_markup')
+                                                ? mrn_base_stack_get_compact_link_label_markup($link_label, $link_icon_markup, $link_icon_position)
+                                                : esc_html($link_label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
+                                            ?>
                                         </span>
                                     </div>
                                 <?php endif; ?>

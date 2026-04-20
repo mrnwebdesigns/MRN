@@ -1302,12 +1302,16 @@ function mrn_base_stack_normalize_primary_layout_field( array $field ) {
 		$field['label'] = 'Name (admin use only)';
 	}
 
-	if ( 'label' === $field_name && 'text' === $field_type ) {
+	if ( in_array( $field_name, array( 'label', 'tab_label' ), true ) && 'text' === $field_type ) {
 		$field['label'] = 'Label';
 		if ( ! isset( $field['wrapper'] ) || ! is_array( $field['wrapper'] ) ) {
 			$field['wrapper'] = array();
 		}
 		$field['wrapper']['width'] = '75';
+
+		if ( 'tab_label' === $field_name ) {
+			$field['instructions'] = '';
+		}
 	}
 
 	if ( $is_tag_chooser_field ) {
@@ -1342,10 +1346,10 @@ function mrn_base_stack_normalize_primary_layout_field( array $field ) {
 		$field['layout'] = 'block';
 
 		/*
-		 * Keep showcase/stats contract repeaters expanded by default so their
-		 * shared Content|Configs|Effects tabs are immediately visible.
+		 * Keep showcase contract repeaters expanded by default so their shared
+		 * Content|Configs|Effects tabs are immediately visible.
 		 */
-		if ( in_array( $field_name, array( 'showcase_items', 'stat_items' ), true ) ) {
+		if ( 'showcase_items' === $field_name ) {
 			$field['collapsed'] = '';
 		}
 	}
@@ -1456,9 +1460,15 @@ function mrn_base_stack_apply_tag_field_column_layout( array $fields ) {
  *
  * @param array<int, mixed> $fields Repeater sub-fields.
  * @param string            $repeater_key Parent repeater field key.
+ * @param string            $repeater_name Parent repeater field name.
  * @return array<int, mixed>
  */
-function mrn_base_stack_ensure_repeater_subheading_contract( array $fields, $repeater_key = '' ) {
+function mrn_base_stack_ensure_repeater_subheading_contract( array $fields, $repeater_key = '', $repeater_name = '' ) {
+	$repeater_name = sanitize_key( (string) $repeater_name );
+	if ( in_array( $repeater_name, array( 'tabs', 'stat_items', 'showcase_items' ), true ) ) {
+		return $fields;
+	}
+
 	foreach ( $fields as $index => $field ) {
 		if ( ! is_array( $field ) ) {
 			continue;
@@ -1645,6 +1655,150 @@ function mrn_base_stack_ensure_repeater_subheading_contract( array $fields, $rep
 }
 
 /**
+ * Ensure tabbed-content repeater items start with the primary content contract.
+ *
+ * Tab items keep their saved-data key (`tab_label`) for backward compatibility,
+ * while exposing the standard `Name`, `Label`, `Heading`, and `Subheading`
+ * experience in a predictable order at the top of the Content tab.
+ *
+ * @param array<int, mixed> $fields Repeater sub-fields.
+ * @param string            $repeater_name Parent repeater name.
+ * @param string            $repeater_key Parent repeater key.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_ensure_tabs_repeater_primary_content_contract( array $fields, $repeater_name, $repeater_key = '' ) {
+	$repeater_name = sanitize_key( (string) $repeater_name );
+	if ( 'tabs' !== $repeater_name ) {
+		return $fields;
+	}
+
+	$contract_indexes = array(
+		'internal_name'   => null,
+		'tab_label'       => null,
+		'heading'         => null,
+		'heading_tag'     => null,
+		'subheading'      => null,
+		'subheading_tag'  => null,
+	);
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+
+		if ( array_key_exists( $field_name, $contract_indexes ) && null === $contract_indexes[ $field_name ] ) {
+			$contract_indexes[ $field_name ] = $index;
+		}
+	}
+
+	if ( null === $contract_indexes['tab_label'] ) {
+		return $fields;
+	}
+
+	$tab_label_field = null;
+	if ( null !== $contract_indexes['tab_label'] && isset( $fields[ $contract_indexes['tab_label'] ] ) && is_array( $fields[ $contract_indexes['tab_label'] ] ) ) {
+		$tab_label_field = $fields[ $contract_indexes['tab_label'] ];
+	}
+
+	if ( ! is_array( $tab_label_field ) ) {
+		return $fields;
+	}
+
+	$key_seed = sanitize_key( (string) $repeater_key );
+	if ( '' === $key_seed ) {
+		$key_seed = 'field_mrn_tab_item';
+	}
+
+	$internal_name_field = null;
+	if ( null !== $contract_indexes['internal_name'] && isset( $fields[ $contract_indexes['internal_name'] ] ) && is_array( $fields[ $contract_indexes['internal_name'] ] ) ) {
+		$internal_name_field = $fields[ $contract_indexes['internal_name'] ];
+	}
+	if ( ! is_array( $internal_name_field ) ) {
+		$internal_name_field = mrn_base_stack_get_internal_layout_name_field( $key_seed . '_internal_name' );
+	}
+
+	$heading_field = null;
+	if ( null !== $contract_indexes['heading'] && isset( $fields[ $contract_indexes['heading'] ] ) && is_array( $fields[ $contract_indexes['heading'] ] ) ) {
+		$heading_field = $fields[ $contract_indexes['heading'] ];
+	}
+	if ( ! is_array( $heading_field ) ) {
+		$heading_field = mrn_base_stack_get_inline_text_field( $key_seed . '_heading', 'Heading', 'heading' );
+	}
+
+	$heading_tag_field = null;
+	if ( null !== $contract_indexes['heading_tag'] && isset( $fields[ $contract_indexes['heading_tag'] ] ) && is_array( $fields[ $contract_indexes['heading_tag'] ] ) ) {
+		$heading_tag_field = $fields[ $contract_indexes['heading_tag'] ];
+	}
+	if ( ! is_array( $heading_tag_field ) ) {
+		$heading_tag_field = mrn_base_stack_get_text_tag_field( $key_seed . '_heading_tag', 'heading_tag', 'h3', 'Tag' );
+	}
+
+	$subheading_field = null;
+	if ( null !== $contract_indexes['subheading'] && isset( $fields[ $contract_indexes['subheading'] ] ) && is_array( $fields[ $contract_indexes['subheading'] ] ) ) {
+		$subheading_field = $fields[ $contract_indexes['subheading'] ];
+	}
+	if ( ! is_array( $subheading_field ) ) {
+		$subheading_field = mrn_base_stack_get_inline_text_field( $key_seed . '_subheading', 'Subheading', 'subheading' );
+	}
+
+	$subheading_tag_field = null;
+	if ( null !== $contract_indexes['subheading_tag'] && isset( $fields[ $contract_indexes['subheading_tag'] ] ) && is_array( $fields[ $contract_indexes['subheading_tag'] ] ) ) {
+		$subheading_tag_field = $fields[ $contract_indexes['subheading_tag'] ];
+	}
+	if ( ! is_array( $subheading_tag_field ) ) {
+		$subheading_tag_field = mrn_base_stack_get_text_tag_field( $key_seed . '_subheading_tag', 'subheading_tag', 'p', 'Tag' );
+	}
+
+	/*
+	 * Remove existing contract fields so they can be re-inserted in one stable
+	 * order directly after the Content tab.
+	 */
+	$kept_fields = array();
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			$kept_fields[] = $field;
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		if ( in_array( $field_name, array( 'internal_name', 'tab_label', 'heading', 'heading_tag', 'subheading', 'subheading_tag' ), true ) ) {
+			continue;
+		}
+
+		$kept_fields[] = $field;
+	}
+
+	$insert_index = 0;
+	foreach ( $kept_fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+		if ( 'tab' === $field_type && 'content' === $field_label ) {
+			$insert_index = $index + 1;
+			break;
+		}
+	}
+
+	$contract_segment = array(
+		$internal_name_field,
+		$tab_label_field,
+		$heading_field,
+		$heading_tag_field,
+		$subheading_field,
+		$subheading_tag_field,
+	);
+
+	array_splice( $kept_fields, $insert_index, 0, $contract_segment );
+
+	return $kept_fields;
+}
+
+/**
  * Check whether a repeater should receive the shared item-level contract tabs.
  *
  * @param string $repeater_name Repeater field name.
@@ -1660,7 +1814,6 @@ function mrn_base_stack_repeater_uses_primary_item_contract( $repeater_name ) {
 				'card_items',
 				'showcase_items',
 				'slider_items',
-				'stat_items',
 				'tabs',
 				'logo_items',
 			),
@@ -1669,11 +1822,13 @@ function mrn_base_stack_repeater_uses_primary_item_contract( $repeater_name ) {
 }
 
 /**
- * Ensure injected/normalized ACF fields retain `_name` runtime keys.
+ * Ensure injected/normalized ACF fields retain required runtime keys.
  *
- * ACF repeater value formatting expects non-empty-name sub-fields to include an
- * `_name` key. Contract-generated fields can miss this key when inserted during
- * `acf/load_field` filters, which produces undefined-index warnings in ACF Pro.
+ * ACF runtime expects non-empty-name sub-fields to include an `_name` key.
+ * Repeater table rendering also expects wrapper keys such as `class`/`id` on
+ * collapsed targets. Contract-generated fields can miss these keys when
+ * inserted during `acf/load_field` filters, which produces undefined-index
+ * warnings in ACF Pro.
  *
  * @param array<int, mixed> $fields Field definitions.
  * @return array<int, mixed>
@@ -1686,6 +1841,22 @@ function mrn_base_stack_ensure_acf_field_origin_names( array $fields ) {
 
 		if ( isset( $field['name'] ) && is_string( $field['name'] ) && '' !== trim( $field['name'] ) && ! isset( $field['_name'] ) ) {
 			$field['_name'] = $field['name'];
+		}
+
+		if ( ! isset( $field['wrapper'] ) || ! is_array( $field['wrapper'] ) ) {
+			$field['wrapper'] = array();
+		}
+
+		if ( ! array_key_exists( 'width', $field['wrapper'] ) ) {
+			$field['wrapper']['width'] = '';
+		}
+
+		if ( ! array_key_exists( 'class', $field['wrapper'] ) ) {
+			$field['wrapper']['class'] = '';
+		}
+
+		if ( ! array_key_exists( 'id', $field['wrapper'] ) ) {
+			$field['wrapper']['id'] = '';
 		}
 
 		if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) ) {
@@ -2069,9 +2240,12 @@ function mrn_base_stack_is_flat_link_contract_field_name( $field_name ) {
  *
  * @param array<int, mixed> $fields Repeater sub-fields.
  * @param string            $key_seed Repeater key seed.
+ * @param string            $repeater_name Repeater field name.
  * @return array<int, mixed>
  */
-function mrn_base_stack_ensure_repeater_item_links_repeater_contract( array $fields, $key_seed ) {
+function mrn_base_stack_ensure_repeater_item_links_repeater_contract( array $fields, $key_seed, $repeater_name = '' ) {
+	$repeater_name = sanitize_key( (string) $repeater_name );
+
 	if ( ! function_exists( 'mrn_rbl_get_content_link_repeater_field' ) ) {
 		return $fields;
 	}
@@ -2136,6 +2310,9 @@ function mrn_base_stack_ensure_repeater_item_links_repeater_contract( array $fie
 	$links_field['name']   = 'links';
 	$links_field['layout'] = 'block';
 	$links_field['max']    = 1;
+	if ( 'showcase_items' === $repeater_name ) {
+		$links_field['label'] = 'Link';
+	}
 
 	$content_tab_index = null;
 	$insert_index      = null;
@@ -2683,7 +2860,8 @@ function mrn_base_stack_apply_repeater_item_tabs_and_config_contract( array $fie
 	}
 
 	$fields = mrn_base_stack_expand_repeater_legacy_link_to_contract( $fields, $repeater_key );
-	$fields = mrn_base_stack_ensure_repeater_item_links_repeater_contract( $fields, $key_seed );
+	$fields = mrn_base_stack_ensure_repeater_item_links_repeater_contract( $fields, $key_seed, $repeater_name );
+	$fields = mrn_base_stack_ensure_tabs_repeater_primary_content_contract( $fields, $repeater_name, $repeater_key );
 
 	$background_field = null;
 	foreach ( $fields as $index => $field ) {
@@ -2890,7 +3068,7 @@ function mrn_base_stack_apply_primary_repeater_item_contract_on_load( $field ) {
 	$field_key = isset( $field['key'] ) && is_string( $field['key'] ) ? trim( $field['key'] ) : '';
 
 	$field['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field['sub_fields'], false );
-	$field['sub_fields'] = mrn_base_stack_ensure_repeater_subheading_contract( $field['sub_fields'], $field_key );
+	$field['sub_fields'] = mrn_base_stack_ensure_repeater_subheading_contract( $field['sub_fields'], $field_key, $field_name );
 	$field['sub_fields'] = mrn_base_stack_apply_repeater_item_tabs_and_config_contract( $field['sub_fields'], $field_name, $field_key );
 	$field['sub_fields'] = mrn_base_stack_ensure_acf_field_origin_names( $field['sub_fields'] );
 
@@ -2927,7 +3105,7 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 			}
 
 			if ( 'repeater' === $field_type && 'links' !== $field_name ) {
-				$field['sub_fields'] = mrn_base_stack_ensure_repeater_subheading_contract( $field['sub_fields'], $field_key );
+				$field['sub_fields'] = mrn_base_stack_ensure_repeater_subheading_contract( $field['sub_fields'], $field_key, $field_name );
 				$field['sub_fields'] = mrn_base_stack_apply_repeater_item_tabs_and_config_contract( $field['sub_fields'], $field_name, $field_key );
 			}
 		}
@@ -2960,7 +3138,7 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 	}
 
 	if ( ! $inject_internal_name ) {
-		return $normalized_fields;
+		return mrn_base_stack_ensure_acf_field_origin_names( $normalized_fields );
 	}
 
 	$contains_reusable_group_clone = false;
@@ -2985,7 +3163,7 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 	}
 
 	if ( $contains_reusable_group_clone ) {
-		return $normalized_fields;
+		return mrn_base_stack_ensure_acf_field_origin_names( $normalized_fields );
 	}
 
 	$content_tab_index = null;
@@ -3035,7 +3213,7 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 		array_splice( $normalized_fields, $insert_index, 0, array( mrn_base_stack_get_internal_layout_name_field( $internal_name_key ) ) );
 	}
 
-	return $normalized_fields;
+	return mrn_base_stack_ensure_acf_field_origin_names( $normalized_fields );
 }
 
 /**

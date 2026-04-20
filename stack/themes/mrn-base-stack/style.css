@@ -3939,6 +3939,20 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	padding-bottom: 1rem;
 }
 
+.mrn-stats-row__item .mrn-ui__link-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: clamp(1.25rem, 3vw, 2rem);
+	line-height: 1;
+}
+
+.mrn-stats-row__item .mrn-ui__link-icon .dashicons {
+	width: auto;
+	height: auto;
+	font-size: 1em;
+}
+
 .mrn-stats-row__value {
 	font-size: clamp(2.75rem, 5vw, 4rem);
 	font-weight: 700;

@@ -3,7 +3,7 @@
  * Plugin Name: Site Styles (MU)
  * Description: Adds a Site Styles configuration page for shared color variables, graphic elements, and usage helpers.
  * Author: MRN Web Designs
- * Version: 0.1.6
+ * Version: 0.1.7
  */
 
 defined('ABSPATH') || exit;
@@ -35,11 +35,134 @@ function mrn_site_styles_dark_scroll_card_presets_option_key(): string {
  * @return array<string, string>
  */
 function mrn_site_styles_get_transfer_sections(): array {
-    return array(
+    $sections = array(
         'colors' => 'Site Colors',
         'graphic_elements' => 'Graphic Elements',
         'dark_scroll_card_presets' => 'Motion Presets',
     );
+
+    $filtered_sections = apply_filters('mrn_site_styles_transfer_sections', $sections);
+    if (!is_array($filtered_sections)) {
+        return $sections;
+    }
+
+    $normalized = array();
+    foreach ($filtered_sections as $section_key => $section_label) {
+        $normalized_key = sanitize_key((string) $section_key);
+        $normalized_label = sanitize_text_field((string) $section_label);
+
+        if ('' === $normalized_key || '' === $normalized_label || isset($normalized[$normalized_key])) {
+            continue;
+        }
+
+        $normalized[$normalized_key] = $normalized_label;
+    }
+
+    return $normalized;
+}
+
+/**
+ * Return the core Site Styles admin tabs.
+ *
+ * @return array<int, array<string, string>>
+ */
+function mrn_site_styles_get_core_tabs(): array {
+    return array(
+        array(
+            'key' => 'colors',
+            'label' => 'Site Colors',
+            'icon' => 'dashicons-art',
+        ),
+        array(
+            'key' => 'graphic-elements',
+            'label' => 'Graphic Elements',
+            'icon' => 'dashicons-format-image',
+        ),
+        array(
+            'key' => 'motion-presets',
+            'label' => 'Motion Presets',
+            'icon' => 'dashicons-controls-repeat',
+        ),
+    );
+}
+
+/**
+ * Return Site Styles admin tabs including extension tabs.
+ *
+ * @return array<int, array<string, string>>
+ */
+function mrn_site_styles_get_admin_tabs(): array {
+    $core_tabs = mrn_site_styles_get_core_tabs();
+    $filtered_tabs = apply_filters('mrn_site_styles_tabs', $core_tabs);
+
+    if (!is_array($filtered_tabs)) {
+        $filtered_tabs = $core_tabs;
+    }
+
+    $normalized_by_key = array();
+
+    foreach ($filtered_tabs as $tab) {
+        if (!is_array($tab)) {
+            continue;
+        }
+
+        $key = isset($tab['key']) ? sanitize_key((string) $tab['key']) : '';
+        $label = isset($tab['label']) ? sanitize_text_field((string) $tab['label']) : '';
+        $icon = isset($tab['icon']) ? sanitize_html_class((string) $tab['icon']) : '';
+
+        if ('' === $key || '' === $label || isset($normalized_by_key[$key])) {
+            continue;
+        }
+
+        if ('' === $icon) {
+            $icon = 'dashicons-admin-generic';
+        }
+
+        $normalized_by_key[$key] = array(
+            'key' => $key,
+            'label' => $label,
+            'icon' => $icon,
+        );
+    }
+
+    $ordered_tabs = array();
+
+    foreach ($core_tabs as $core_tab) {
+        $core_key = (string) $core_tab['key'];
+
+        if (isset($normalized_by_key[$core_key])) {
+            $ordered_tabs[] = $normalized_by_key[$core_key];
+            unset($normalized_by_key[$core_key]);
+            continue;
+        }
+
+        $ordered_tabs[] = $core_tab;
+    }
+
+    foreach ($normalized_by_key as $tab) {
+        $ordered_tabs[] = $tab;
+    }
+
+    return $ordered_tabs;
+}
+
+/**
+ * Return known Site Styles tab keys.
+ *
+ * @return array<int, string>
+ */
+function mrn_site_styles_get_admin_tab_keys(): array {
+    $keys = array();
+
+    foreach (mrn_site_styles_get_admin_tabs() as $tab) {
+        $key = isset($tab['key']) ? sanitize_key((string) $tab['key']) : '';
+
+        if ('' !== $key) {
+            $keys[] = $key;
+        }
+    }
+
+    return array_values(array_unique($keys));
 }
 
 /**
@@ -378,6 +501,11 @@ function mrn_site_styles_build_export_payload(array $sections = array()): array 
         $data['dark_scroll_card_presets'] = mrn_site_styles_sanitize_dark_scroll_card_preset_rows(get_option(mrn_site_styles_dark_scroll_card_presets_option_key(), array()));
     }
 
+    $extension_data = apply_filters('mrn_site_styles_export_data', $data, $sections);
+    if (is_array($extension_data)) {
+        $data = $extension_data;
+    }
+
     return array(
         'tool'        => 'mrn-site-styles',
         'version'     => 1,
@@ -531,6 +659,22 @@ function mrn_site_styles_handle_import(): void {
         update_option(mrn_site_styles_dark_scroll_card_presets_option_key(), $motion_presets, false);
         $imported_sections[] = 'Motion Presets';
     }
+
+    $extension_imported_sections = apply_filters('mrn_site_styles_import_data', $imported_sections, $data);
+    if (is_array($extension_imported_sections)) {
+        $imported_sections = $extension_imported_sections;
+    }
+
+    $imported_sections = array_values(
+        array_unique(
+            array_filter(
+                array_map(
+                    'sanitize_text_field',
+                    array_map('strval', $imported_sections)
+                )
+            )
+        )
+    );
 
     if ($imported_sections === array()) {
         mrn_site_styles_set_transfer_feedback(array(
@@ -972,6 +1116,15 @@ function mrn_site_colors_handle_save(): void {
         return;
     }
 
+    $request_action = isset($_REQUEST['action'])
+        ? sanitize_key(wp_unslash((string) $_REQUEST['action']))
+        : '';
+
+    // Do not intercept explicit admin-post actions (for example, Google Fonts local build actions).
+    if ('' !== $request_action) {
+        return;
+    }
+
     $submitted_section = isset($_POST['mrn_site_styles_section'])
         ? sanitize_key(wp_unslash((string) $_POST['mrn_site_styles_section']))
         : '';
@@ -984,7 +1137,7 @@ function mrn_site_colors_handle_save(): void {
         $submitted_section = 'motion-presets';
     }
 
-    if (!in_array($submitted_section, array('colors', 'graphic-elements', 'motion-presets'), true)) {
+    if (!in_array($submitted_section, mrn_site_styles_get_admin_tab_keys(), true)) {
         return;
     }
 
@@ -1009,6 +1162,13 @@ function mrn_site_colors_handle_save(): void {
     update_option(mrn_site_colors_option_key(), $sanitized, false);
     update_option(mrn_site_styles_graphic_elements_option_key(), $sanitized_graphic_items, false);
     update_option(mrn_site_styles_dark_scroll_card_presets_option_key(), $sanitized_motion_presets, false);
+
+    /**
+     * Let extension tabs persist their own section data.
+     *
+     * @param string $submitted_section Active Site Styles tab key.
+     */
+    do_action('mrn_site_styles_handle_save', $submitted_section);
 
     if ((int) $prepared['invalid_count'] > 0) {
         set_transient(
@@ -1222,7 +1382,10 @@ function mrn_site_colors_render_page(): void {
     }
 
     $updated_notice = '';
-    $active_tab = 'colors';
+    $tabs = mrn_site_styles_get_admin_tabs();
+    $tab_keys = mrn_site_styles_get_admin_tab_keys();
+    $default_tab = !empty($tab_keys) ? (string) $tab_keys[0] : 'colors';
+    $active_tab = $default_tab;
     $has_sticky_toolbar = mrn_site_styles_load_sticky_toolbar_helper();
 
     // phpcs:disable WordPress.Security.NonceVerification.Recommended -- Read-only tab/notice state from our own redirect query arg.
@@ -1231,7 +1394,7 @@ function mrn_site_colors_render_page(): void {
     }
     // phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-    if (in_array($updated_notice, array('colors', 'graphic-elements', 'motion-presets'), true)) {
+    if (in_array($updated_notice, $tab_keys, true)) {
         $active_tab = $updated_notice;
     }
 
@@ -1372,6 +1535,7 @@ function mrn_site_colors_render_page(): void {
         <?php elseif ('motion-presets' === $updated_notice) : ?>
             <div class="notice notice-success is-dismissible"><p>Motion presets saved.</p></div>
         <?php endif; ?>
+        <?php do_action('mrn_site_styles_render_notices', $updated_notice); ?>
         <?php if (!empty($transfer_feedback['message'])) : ?>
             <div class="notice notice-<?php echo esc_attr(('error' === ($transfer_feedback['type'] ?? '')) ? 'error' : 'success'); ?> is-dismissible">
                 <p><?php echo esc_html((string) $transfer_feedback['message']); ?></p>
@@ -1398,6 +1562,21 @@ function mrn_site_colors_render_page(): void {
 
         <?php if ($has_sticky_toolbar && function_exists('mrn_sticky_toolbar_render')) : ?>
             <?php
+            $toolbar_tabs = array();
+
+            foreach ($tabs as $tab) {
+                if (!is_array($tab) || empty($tab['key']) || empty($tab['label'])) {
+                    continue;
+                }
+
+                $toolbar_tabs[] = array(
+                    'key' => sanitize_key((string) $tab['key']),
+                    'label' => sanitize_text_field((string) $tab['label']),
+                    'active' => $active_tab === sanitize_key((string) $tab['key']),
+                    'icon' => sanitize_html_class((string) ($tab['icon'] ?? '')),
+                );
+            }
+
             mrn_sticky_toolbar_render(
                 array(
                     'toolbar_id' => 'mrn-site-styles-toolbar',
@@ -1405,58 +1584,11 @@ function mrn_site_colors_render_page(): void {
                     'title' => 'Site Styles',
                     'aria_label' => 'Site Styles tabs',
                     'save_label' => 'Save Site Styles',
-                    'tabs' => array(
-                        array(
-                            'key' => 'colors',
-                            'label' => 'Site Colors',
-                            'active' => 'colors' === $active_tab,
-                            'icon' => 'dashicons-art',
-                        ),
-                        array(
-                            'key' => 'graphic-elements',
-                            'label' => 'Graphic Elements',
-                            'active' => 'graphic-elements' === $active_tab,
-                            'icon' => 'dashicons-format-image',
-                        ),
-                        array(
-                            'key' => 'motion-presets',
-                            'label' => 'Motion Presets',
-                            'active' => 'motion-presets' === $active_tab,
-                            'icon' => 'dashicons-controls-repeat',
-                        ),
-                    ),
+                    'tabs' => $toolbar_tabs,
                 )
             );
             ?>
         <?php endif; ?>
-
-        <div class="mrn-site-styles-transfer-box">
-            <h2 style="margin-top:0;">Import / Export</h2>
-            <p>Export selected Site Styles sections for this site to a JSON file, or import any Site Styles sections present in a previously exported bundle.</p>
-            <div class="mrn-site-styles-transfer-actions">
-                <form method="post" action="">
-                    <?php wp_nonce_field('mrn_site_styles_export', 'mrn_site_styles_export_nonce'); ?>
-                    <div class="mrn-site-styles-transfer-sections">
-                        <strong>Export Sections</strong>
-                        <?php foreach (mrn_site_styles_get_transfer_sections() as $section_key => $section_label) : ?>
-                            <label>
-                                <input type="checkbox" name="mrn_site_styles_sections[]" value="<?php echo esc_attr($section_key); ?>" checked />
-                                <span><?php echo esc_html($section_label); ?></span>
-                            </label>
-                        <?php endforeach; ?>
-                    </div>
-                    <button type="submit" name="mrn_site_styles_export_submit" class="button">Export Site Styles</button>
-                </form>
-
-                <form method="post" action="" enctype="multipart/form-data">
-                    <?php wp_nonce_field('mrn_site_styles_import', 'mrn_site_styles_import_nonce'); ?>
-                    <label for="mrn-site-styles-import-file">Import JSON</label>
-                    <input type="file" id="mrn-site-styles-import-file" name="mrn_site_styles_import_file" accept="application/json,.json" />
-                    <button type="submit" name="mrn_site_styles_import_submit" class="button button-secondary">Import Site Styles</button>
-                    <p class="description" style="margin:6px 0 0;">Only the sections present in the JSON will be imported. Missing sections are left unchanged.</p>
-                </form>
-            </div>
-        </div>
 
         <form id="mrn-site-styles-form" method="post" action="">
             <?php wp_nonce_field('mrn_site_colors_save', 'mrn_site_colors_nonce'); ?>
@@ -1551,6 +1683,38 @@ function mrn_site_colors_render_page(): void {
                         </p>
                     </div>
                 </section>
+
+                <?php foreach ($tabs as $tab) : ?>
+                    <?php
+                    if (!is_array($tab)) {
+                        continue;
+                    }
+
+                    $tab_key = isset($tab['key']) ? sanitize_key((string) $tab['key']) : '';
+                    if ('' === $tab_key || in_array($tab_key, array('colors', 'graphic-elements', 'motion-presets'), true)) {
+                        continue;
+                    }
+                    ?>
+                    <section class="mrn-site-styles-panel" data-mrn-site-styles-panel="<?php echo esc_attr($tab_key); ?>" <?php echo $tab_key === $active_tab ? '' : 'hidden'; ?>>
+                        <?php
+                        ob_start();
+                        do_action('mrn_site_styles_render_tab_panel', $tab_key, $tab);
+                        $extension_panel_markup = trim((string) ob_get_clean());
+
+                        if ('' !== $extension_panel_markup) {
+                            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Tab panel markup is rendered by extension callbacks.
+                            echo $extension_panel_markup;
+                        } else {
+                            ?>
+                            <div class="mrn-site-styles-card">
+                                <h2 style="margin-top:0;"><?php echo esc_html(isset($tab['label']) ? (string) $tab['label'] : 'Extension'); ?></h2>
+                                <p>No settings are currently registered for this tab.</p>
+                            </div>
+                            <?php
+                        }
+                        ?>
+                    </section>
+                <?php endforeach; ?>
             </div>
         </form>
 

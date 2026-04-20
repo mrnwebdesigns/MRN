@@ -1,5 +1,17 @@
 # Stack Changelog
 
+## 2026.04.17-layout-contract-standardization
+- Standardized the shared primary layout field contract across theme-owned layouts, reusable-block conversion surfaces, and nested non-link repeaters, including `Label`, `Heading`, `Subheading`, `Text`, and links plus row-level `Name (admin use only)`.
+- Removed legacy admin label suffix copy (`(full editor)`, `(allowed html)`, `(tag chooser)`) and normalized heading-tag controls to the `Tag` label with the text/tag side-by-side pattern across repeaters and subfields.
+- Consolidated non-link repeater item UX onto `Content | Configs | Effects`, added grouped/collapsible config organization, and kept `Effects` in its own tab while placing `Section Width` in the first `Basic Setting` group.
+- Added/extended recursive repeater contract behavior (including subheading support), improved repeater discoverability with plural naming like `Grids`, and applied zebra striping between repeater/subfield rows for faster scanning.
+- Unified link contract behavior across layouts by removing link-level `Background Color`, keeping link controls on shared link tabs, defaulting icon source to empty, and preventing icon-gap spacing when no icon is set.
+- Added the lightweight non-ACF row `Layout` tab for flexbox controls and wired frontend rendering through the shared row contract using `mrn-content-builder__row--layout-flex` plus row CSS variables.
+- Added an `Apply To` scope on that row-level flex control (`Row` vs `Repeaters Only`) so grid/repeater item collections can be centered without forcing the row intro/header wrapper into flex layout.
+- Added child-theme override points for row flex behavior:
+  - PHP filters: `mrn_base_stack_builder_row_flex_payload`, `mrn_base_stack_builder_row_flex_settings`, `mrn_base_stack_builder_flex_contract`
+  - CSS override variables: `--mrn-row-flex-direction-override`, `--mrn-row-flex-justify-override`, `--mrn-row-flex-align-override`, `--mrn-row-flex-wrap-override`, `--mrn-row-flex-gap-override`
+
 ## 2026.04.13-page-edit-speed
 - Expanded `mrn-base-stack` to `1.1.21`.
 - Expanded `mrn-editor-lockdown` to `1.0.7`.

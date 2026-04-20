@@ -2831,7 +2831,10 @@ final class MRN_Dummy_Content {
 			return self::get_first_choice_value( $field );
 		}
 
-		if ( false !== strpos( $name, 'section_width' ) && ! empty( $context['preferred_section_width'] ) ) {
+		$is_sub_content_width = false !== strpos( $name, 'sub_content_width' );
+		$is_section_width     = false !== strpos( $name, 'section_width' ) && ! $is_sub_content_width;
+
+		if ( $is_section_width && ! empty( $context['preferred_section_width'] ) ) {
 			$preferred = strtolower( (string) $context['preferred_section_width'] );
 			foreach ( array_keys( $choices ) as $choice_key ) {
 				if ( strtolower( (string) $choice_key ) === $preferred ) {
@@ -2841,15 +2844,16 @@ final class MRN_Dummy_Content {
 		}
 
 		$preferred_map = array(
-			'section_width'   => array( 'content', 'wide', 'full_width', 'full-width' ),
-			'column_ratio'    => array( '50-50', '50_50' ),
-			'image_position'  => array( 'right', 'left' ),
-			'image_alignment' => array( 'center', 'left', 'right' ),
-			'image_size'      => array( 'cover', 'medium', 'large' ),
-			'display_mode'    => array( 'static', 'grid', 'default', 'list' ),
-			'list_style'      => array( 'list', 'grid', 'default' ),
-			'orderby'         => array( 'menu_order', 'date', 'title' ),
-			'order'           => array( 'ASC', 'DESC' ),
+			'sub_content_width' => array( 'content', 'wide', 'full_width', 'full-width' ),
+			'section_width'     => array( 'wide', 'content', 'full_width', 'full-width' ),
+			'column_ratio'     => array( '50-50', '50_50' ),
+			'image_position'   => array( 'right', 'left' ),
+			'image_alignment'  => array( 'center', 'left', 'right' ),
+			'image_size'       => array( 'cover', 'medium', 'large' ),
+			'display_mode'     => array( 'static', 'grid', 'default', 'list' ),
+			'list_style'       => array( 'list', 'grid', 'default' ),
+			'orderby'          => array( 'menu_order', 'date', 'title' ),
+			'order'            => array( 'ASC', 'DESC' ),
 			'background_color' => array( '', 'white', 'light', 'none' ),
 		);
 

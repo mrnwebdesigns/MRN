@@ -32,6 +32,10 @@
 	display: none;
 }
 
+.mrn-icon-chooser-storage {
+	display: none;
+}
+
 .mrn-icon-chooser-storage .acf-input,
 .mrn-icon-chooser-storage .acf-label {
 	display: none;

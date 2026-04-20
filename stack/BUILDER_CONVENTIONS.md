@@ -1157,6 +1157,78 @@ before:
 
 If a UX issue can be solved with better field architecture instead of CSS, prefer the architectural fix.
 
+## 2026.04 Layout Contract Standardization
+
+The current stack standardizes layout field contracts across top-level rows and nested repeaters while preserving existing render shells and shared frontend hooks.
+
+### Primary Content Contract
+
+- Theme-owned layout rows should expose this shared primary field pattern in the `Content` tab:
+  - `Name (admin use only)`
+  - `Label`
+  - `Tag`
+  - `Heading`
+  - `Tag`
+  - `Subheading`
+  - `Tag`
+  - `Text`
+  - `Links`
+- `Name (admin use only)` is row-level only.
+- Do not duplicate `Name` inside row content tabs or nested sub-repeaters.
+- Legacy helper suffix copy like `(full editor)`, `(allowed html)`, and `(tag chooser)` is no longer part of the labels.
+
+### Label/Heading/Subheading Tag Pairing
+
+- For `Label`, `Heading`, and `Subheading`, pair the text field with a sibling `Tag` chooser in a two-column row:
+  - text field on the left
+  - `Tag` field on the right
+- Apply this pattern recursively inside nested repeaters and sub-fields, not only top-level rows.
+
+### Repeater Contract (Non-Link Repeaters)
+
+- Non-link repeater items should follow the same recursive primary layout field contract as top-level rows.
+- Non-link repeater items should use `Content | Configs | Effects` tabs.
+- Repeater `Configs` should group controls by functionality with collapsible groups.
+- Keep effects controls in the dedicated `Effects` tab, not inside grouped `Configs`.
+- `Basic Setting` is the first grouped config row and includes `Section Width`.
+- Repeater labels should use meaningful plurals where applicable (example: `Grids` instead of `Repeater`).
+- Add zebra striping between repeater/subfield rows to improve scanability in dense editor UIs.
+
+### Link Contract
+
+- Keep links on the shared link helper contract and keep link-scoped controls inside the existing `Link | Configs` tabs.
+- Remove `Background Color` from link configs globally.
+- Default link icon source should be empty (no placeholder dashicon).
+- Frontend output should not reserve icon start/end spacing when no icon is set.
+
+### Row-Level Layout Tab (Non-ACF)
+
+- Row-level flex layout controls are intentionally non-ACF to avoid field-group bloat and editor performance regressions.
+- The row `Layout` tab controls:
+  - `Enable Flexbox`
+  - `Apply To` (`Row` or `Repeaters Only`)
+  - `Direction`
+  - `Justify Content`
+  - `Align Items`
+  - `Wrap`
+  - `Gap`
+- Settings are stored in row-flex post meta and merged into the shared row contract at render time.
+- `Repeaters Only` targets repeater item collections (`.mrn-ui__items`) and intentionally leaves row intro/header blocks in their normal layout flow.
+
+### Child Theme Override Contract (Front-End Handoff)
+
+- Keep `mrn-content-builder__row--layout-flex` stable for child-theme targeting.
+- Child themes can override row-flex behavior via PHP filters:
+  - `mrn_base_stack_builder_row_flex_payload`
+  - `mrn_base_stack_builder_row_flex_settings`
+  - `mrn_base_stack_builder_flex_contract`
+- Child themes can override row-flex behavior in CSS without fighting inline variables by setting:
+  - `--mrn-row-flex-direction-override`
+  - `--mrn-row-flex-justify-override`
+  - `--mrn-row-flex-align-override`
+  - `--mrn-row-flex-wrap-override`
+  - `--mrn-row-flex-gap-override`
+
 ## Collapsed Title Rule
 
 Use ACF's native flexible content title filter where possible:

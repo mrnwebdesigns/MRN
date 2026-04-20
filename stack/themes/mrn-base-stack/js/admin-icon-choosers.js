@@ -37,6 +37,32 @@
 		return !! ( group && group.source && group.source.hasClass( 'mrn-icon-chooser-field--allow-empty' ) );
 	}
 
+	function normalizeDashiconClass( rawValue ) {
+		var value = String( rawValue || '' ).trim();
+		var match;
+
+		if ( ! value || 'dashicons' === value.toLowerCase() ) {
+			return '';
+		}
+
+		match = value.match( /dashicons-[a-z0-9-]+/i );
+		if ( match && match[ 0 ] ) {
+			value = match[ 0 ].toLowerCase();
+		}
+
+		if ( 0 !== value.indexOf( 'dashicons-' ) ) {
+			value = 'dashicons-' + value.replace( /^dashicons[\s_-]*/i, '' );
+		}
+
+		value = value.toLowerCase();
+
+		if ( 'dashicons-' === value || 'dashicons-dashicons' === value ) {
+			return '';
+		}
+
+		return value;
+	}
+
 	function getImageFieldAttachmentId( $field ) {
 		return parseInt( $field.find( '.acf-image-uploader input[type="hidden"]' ).first().val() || '0', 10 ) || 0;
 	}
@@ -135,7 +161,7 @@
 
 	function normalizeSelection( group ) {
 		var source = getFieldValue( group.source );
-		var dashicon = getFieldValue( group.dashicons ) || '';
+		var dashicon = normalizeDashiconClass( getFieldValue( group.dashicons ) || '' );
 		var fontAwesomeClass = getFieldValue( group.fontawesome ) || '';
 		var imageId = getImageFieldAttachmentId( group.media );
 		var imageUrl = getImageFieldPreviewUrl( group.media );

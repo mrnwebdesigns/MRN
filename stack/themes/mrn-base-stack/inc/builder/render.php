@@ -62,6 +62,10 @@ function mrn_base_stack_render_hero_builder( $post_id = null ) {
 			continue;
 		}
 
+		$row['__mrn_builder_post_id']    = (int) $post_id;
+		$row['__mrn_builder_field_name'] = 'page_hero_rows';
+		$row['__mrn_builder_row_index']  = (int) $index;
+
 		if ( mrn_base_stack_render_hero_row( $row, $post_id, $index ) ) {
 			$rendered = true;
 		}
@@ -99,6 +103,40 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 	$section_classes   = trim( 'mrn-layout-section ' . $section_modifier . ' ' . ( $width_layers['section_class'] ?? 'mrn-layout-section--contained' ) );
 	$container_classes = trim( 'mrn-layout-container ' . ( $width_layers['container_class'] ?? 'mrn-layout-container--wide' ) );
 	$row_attributes    = array();
+	if ( ! $include_motion_contract ) {
+		$flex_contract = function_exists( 'mrn_base_stack_get_builder_flex_contract' ) ? mrn_base_stack_get_builder_flex_contract( $row ) : array(
+			'classes'    => array(),
+			'attributes' => array(),
+		);
+		$sub_content_contract = function_exists( 'mrn_base_stack_get_builder_sub_content_width_contract' ) ? mrn_base_stack_get_builder_sub_content_width_contract( $row ) : array(
+			'classes'    => array(),
+			'attributes' => array(),
+		);
+		$combined_contract = array(
+			'classes'    => array_merge(
+				isset( $flex_contract['classes'] ) && is_array( $flex_contract['classes'] ) ? $flex_contract['classes'] : array(),
+				isset( $sub_content_contract['classes'] ) && is_array( $sub_content_contract['classes'] ) ? $sub_content_contract['classes'] : array()
+			),
+			'attributes' => array_merge(
+				isset( $flex_contract['attributes'] ) && is_array( $flex_contract['attributes'] ) ? $flex_contract['attributes'] : array(),
+				isset( $sub_content_contract['attributes'] ) && is_array( $sub_content_contract['attributes'] ) ? $sub_content_contract['attributes'] : array()
+			),
+		);
+
+		if ( ! empty( $combined_contract['classes'] ) && is_array( $combined_contract['classes'] ) ) {
+			$row_classes = trim( $row_classes . ' ' . implode( ' ', array_filter( $combined_contract['classes'], 'strlen' ) ) );
+		}
+
+		if ( function_exists( 'mrn_base_stack_merge_builder_attributes' ) ) {
+			$row_attributes = mrn_base_stack_merge_builder_attributes(
+				$row_attributes,
+				isset( $combined_contract['attributes'] ) && is_array( $combined_contract['attributes'] ) ? $combined_contract['attributes'] : array()
+			);
+		} elseif ( isset( $combined_contract['attributes'] ) && is_array( $combined_contract['attributes'] ) ) {
+			$row_attributes = array_merge( $row_attributes, $combined_contract['attributes'] );
+		}
+	}
+
 	if ( $include_motion_contract ) {
 		$motion_contract = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
 			'classes'    => array(),
@@ -942,6 +980,10 @@ function mrn_base_stack_render_builder_field( $field_name, $post_id = null, $wra
 		if ( ! is_array( $row ) ) {
 			continue;
 		}
+
+		$row['__mrn_builder_post_id']    = (int) $post_id;
+		$row['__mrn_builder_field_name'] = sanitize_key( (string) $field_name );
+		$row['__mrn_builder_row_index']  = (int) $index;
 
 		ob_start();
 		mrn_base_stack_render_builder_row( $row, $post_id, $index );
