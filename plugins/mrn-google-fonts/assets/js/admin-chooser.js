@@ -17,6 +17,29 @@
 		return result;
 	}
 
+	function parseJsonPayload(rawText) {
+		var text = String(rawText || '').trim();
+		if (!text) {
+			return null;
+		}
+
+		try {
+			return JSON.parse(text);
+		} catch (error) {
+			var start = text.indexOf('{');
+			var end = text.lastIndexOf('}');
+			if (start === -1 || end === -1 || end <= start) {
+				return null;
+			}
+
+			try {
+				return JSON.parse(text.slice(start, end + 1));
+			} catch (nestedError) {
+				return null;
+			}
+		}
+	}
+
 	function bindChooser(chooser) {
 		if (!chooser || chooser.getAttribute('data-mrn-google-fonts-chooser-ready') === '1') {
 			return;
@@ -73,14 +96,9 @@
 		}
 
 		var debounceTimer = 0;
-		var activeRequest = null;
 		var requestCounter = 0;
 
 		function fetchSuggestions(query) {
-			if (activeRequest && typeof activeRequest.abort === 'function') {
-				activeRequest.abort();
-			}
-
 			requestCounter += 1;
 			var currentRequestId = requestCounter;
 			var body = new URLSearchParams();
@@ -88,7 +106,7 @@
 			body.set('q', query || '');
 			body.set('_ajax_nonce', searchNonce);
 
-			var requestOptions = {
+			fetch(searchUrl, {
 				method: 'POST',
 				credentials: 'same-origin',
 				headers: {
@@ -96,31 +114,20 @@
 					'Cache-Control': 'no-cache'
 				},
 				body: body.toString()
-			};
-
-			if (window.AbortController) {
-				var controller = new window.AbortController();
-				requestOptions.signal = controller.signal;
-				activeRequest = controller;
-			} else {
-				activeRequest = null;
-			}
-
-			fetch(searchUrl, requestOptions)
+			})
 				.then(function(response) {
-					if (!response.ok) {
-						throw new Error('Request failed');
-					}
-
-					return response.json();
+					return response.text();
 				})
-				.then(function(payload) {
+				.then(function(rawText) {
 					if (currentRequestId !== requestCounter) {
 						return;
 					}
 
+					var payload = parseJsonPayload(rawText);
 					if (!payload || !payload.success || !payload.data || !Array.isArray(payload.data.families)) {
-						renderOptions(defaultOptions);
+						if (!query) {
+							renderOptions(defaultOptions);
+						}
 						return;
 					}
 
@@ -128,12 +135,14 @@
 						return String(family);
 					}).filter(Boolean));
 				})
-				.catch(function(error) {
-					if (error && error.name === 'AbortError') {
+				.catch(function() {
+					if (currentRequestId !== requestCounter) {
 						return;
 					}
 
-					renderOptions(defaultOptions);
+					if (!query) {
+						renderOptions(defaultOptions);
+					}
 				});
 		}
 
@@ -141,15 +150,11 @@
 			window.clearTimeout(debounceTimer);
 			debounceTimer = window.setTimeout(function() {
 				fetchSuggestions(query);
-			}, 180);
+			}, 120);
 		}
 
 		inputs.forEach(function(input) {
 			input.addEventListener('input', function() {
-				scheduleSearch(input.value || '');
-			});
-
-			input.addEventListener('focus', function() {
 				scheduleSearch(input.value || '');
 			});
 		});
