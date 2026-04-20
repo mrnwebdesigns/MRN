@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 }
 
 final class MRN_Google_Fonts {
-	const VERSION = '0.4.9';
+	const VERSION = '0.4.10';
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
 	const PAGE_SLUG = 'google-fonts';
@@ -16,7 +16,8 @@ final class MRN_Google_Fonts {
 	const SITE_STYLES_TRANSFER_SECTION_KEY = 'google_fonts';
 	const BUILD_LOCAL_ACTION = 'mrn_google_fonts_build_local_assets';
 	const CLEAR_LOCAL_ACTION = 'mrn_google_fonts_clear_local_assets';
-	const FONT_CATALOG_TRANSIENT = 'mrn_google_fonts_catalog_v1';
+	const FONT_CATALOG_TRANSIENT = 'mrn_google_fonts_catalog_v2';
+	const FONT_CATALOG_FALLBACK_TTL = 15 * MINUTE_IN_SECONDS;
 	const FONT_CATALOG_URL = 'https://fonts.google.com/metadata/fonts';
 
 	/**
@@ -1867,18 +1868,22 @@ final class MRN_Google_Fonts {
 		}
 
 		$fetched = self::fetch_google_font_family_catalog();
-		if (empty($fetched)) {
-			$fetched = self::get_google_font_fallback_catalog();
+		if (!empty($fetched)) {
+			$fetched = array_values(array_unique(array_filter(array_map('strval', $fetched))));
+			set_transient(self::FONT_CATALOG_TRANSIENT, $fetched, DAY_IN_SECONDS);
+			return $fetched;
 		}
 
-		$fetched = array_values(array_unique(array_filter(array_map('strval', $fetched))));
-		if (empty($fetched)) {
-			$fetched = array('Open Sans', 'Roboto', 'Lato', 'Montserrat', 'Poppins');
+		$fallback = self::get_google_font_fallback_catalog();
+		$fallback = array_values(array_unique(array_filter(array_map('strval', $fallback))));
+		if (empty($fallback)) {
+			$fallback = array('Open Sans', 'Roboto', 'Lato', 'Montserrat', 'Poppins');
 		}
 
-		set_transient(self::FONT_CATALOG_TRANSIENT, $fetched, DAY_IN_SECONDS);
+		// Keep fallback catalog cache short so temporary fetch failures self-heal quickly.
+		set_transient(self::FONT_CATALOG_TRANSIENT, $fallback, self::FONT_CATALOG_FALLBACK_TTL);
 
-		return $fetched;
+		return $fallback;
 	}
 
 	/**
@@ -1890,7 +1895,7 @@ final class MRN_Google_Fonts {
 		$response = wp_remote_get(
 			self::FONT_CATALOG_URL,
 			array(
-				'timeout' => 3,
+				'timeout' => 5,
 				'redirection' => 2,
 				'headers' => array(
 					'User-Agent' => 'Mozilla/5.0 (WordPress; MRN Google Fonts Catalog)',
