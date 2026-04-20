@@ -1598,11 +1598,9 @@ final class MRN_Dummy_Content {
 			}
 
 			if ( self::is_page_hero_field( $field ) ) {
-				foreach ( $filtered_layouts as $layout ) {
-					if ( is_array( $layout ) && ( $layout['name'] ?? '' ) === 'hero' ) {
-						$labels[] = wp_strip_all_tags( (string) ( $layout['label'] ?? 'Hero' ) );
-						break;
-					}
+				$hero_layout = self::find_layout_by_preferred_names( $filtered_layouts, array( 'basic', 'hero' ) );
+				if ( is_array( $hero_layout ) ) {
+					$labels[] = wp_strip_all_tags( (string) ( $hero_layout['label'] ?? 'Basic' ) );
 				}
 
 				continue;
@@ -1618,6 +1616,47 @@ final class MRN_Dummy_Content {
 		}
 
 		return array_values( array_unique( array_filter( $labels ) ) );
+	}
+
+	/**
+	 * Find the first matching layout definition from preferred layout names.
+	 *
+	 * @param array<int, array<string, mixed>> $layouts Layout definitions.
+	 * @param array<int, string>               $preferred_names Preferred layout names in priority order.
+	 * @return array<string, mixed>|null
+	 */
+	private static function find_layout_by_preferred_names( array $layouts, array $preferred_names ) {
+		$preferred_names = array_values(
+			array_unique(
+				array_filter(
+					array_map(
+						static function ( $name ) {
+							return sanitize_key( (string) $name );
+						},
+						$preferred_names
+					)
+				)
+			)
+		);
+
+		if ( empty( $preferred_names ) ) {
+			return null;
+		}
+
+		foreach ( $preferred_names as $preferred_name ) {
+			foreach ( $layouts as $layout ) {
+				if ( ! is_array( $layout ) ) {
+					continue;
+				}
+
+				$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+				if ( $preferred_name === $layout_name ) {
+					return $layout;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -2757,42 +2796,45 @@ final class MRN_Dummy_Content {
 			return array();
 		}
 
-		foreach ( $layouts as $layout ) {
-			if ( ! is_array( $layout ) || empty( $layout['name'] ) || 'hero' !== (string) $layout['name'] ) {
+		$layout = self::find_layout_by_preferred_names( $layouts, array( 'basic', 'hero' ) );
+		if ( ! is_array( $layout ) ) {
+			return array();
+		}
+
+		$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+		if ( '' === $layout_name ) {
+			return array();
+		}
+
+		$layout_label = isset( $layout['label'] ) ? wp_strip_all_tags( (string) $layout['label'] ) : ucwords( str_replace( array( '_', '-' ), ' ', $layout_name ) );
+		$row          = array(
+			'acf_fc_layout' => $layout_name,
+		);
+
+		$sub_fields = isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ? $layout['sub_fields'] : array();
+		foreach ( $sub_fields as $sub_field ) {
+			if ( ! is_array( $sub_field ) || empty( $sub_field['name'] ) ) {
 				continue;
 			}
 
-			$row = array(
-				'acf_fc_layout' => 'hero',
+			$value = self::generate_field_value(
+				$sub_field,
+				array_merge(
+					$context,
+					array(
+						'depth'        => (int) $context['depth'] + 1,
+						'layout_name'  => $layout_name,
+						'layout_label' => $layout_label,
+					)
+				)
 			);
 
-			$sub_fields = isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ? $layout['sub_fields'] : array();
-			foreach ( $sub_fields as $sub_field ) {
-				if ( ! is_array( $sub_field ) || empty( $sub_field['name'] ) ) {
-					continue;
-				}
-
-				$value = self::generate_field_value(
-					$sub_field,
-					array_merge(
-						$context,
-						array(
-							'depth'        => (int) $context['depth'] + 1,
-							'layout_name'  => 'hero',
-							'layout_label' => isset( $layout['label'] ) ? wp_strip_all_tags( (string) $layout['label'] ) : 'Hero',
-						)
-					)
-				);
-
-				if ( null !== $value ) {
-					$row[ $sub_field['name'] ] = $value;
-				}
+			if ( null !== $value ) {
+				$row[ $sub_field['name'] ] = $value;
 			}
-
-			return array( $row );
 		}
 
-		return array();
+		return array( $row );
 	}
 
 	/**
