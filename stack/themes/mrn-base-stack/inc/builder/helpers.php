@@ -486,6 +486,211 @@ add_filter( 'acf/update_value/name=motion_settings', 'mrn_base_stack_enforce_eff
 add_filter( 'acf/update_value/name=tab_switch_effect', 'mrn_base_stack_enforce_effects_controls_capability_on_save', 20, 3 );
 
 /**
+ * Determine whether a builder value contains meaningful content.
+ *
+ * @param mixed $value Candidate value.
+ * @return bool
+ */
+function mrn_base_stack_builder_value_has_content( $value ) {
+	if ( is_array( $value ) ) {
+		foreach ( $value as $nested_value ) {
+			if ( mrn_base_stack_builder_value_has_content( $nested_value ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	if ( is_object( $value ) ) {
+		return mrn_base_stack_builder_value_has_content( (array) $value );
+	}
+
+	if ( is_string( $value ) ) {
+		return '' !== trim( $value );
+	}
+
+	if ( is_bool( $value ) ) {
+		return $value;
+	}
+
+	if ( is_numeric( $value ) ) {
+		return 0.0 !== (float) $value;
+	}
+
+	return ! empty( $value );
+}
+
+/**
+ * Determine whether a showcase image value references media.
+ *
+ * @param mixed $image Candidate image value.
+ * @return bool
+ */
+function mrn_base_stack_showcase_image_has_content( $image ) {
+	if ( is_numeric( $image ) ) {
+		return absint( $image ) > 0;
+	}
+
+	if ( is_string( $image ) ) {
+		return '' !== trim( $image );
+	}
+
+	if ( ! is_array( $image ) ) {
+		return false;
+	}
+
+	if ( isset( $image['ID'] ) && absint( $image['ID'] ) > 0 ) {
+		return true;
+	}
+
+	if ( isset( $image['id'] ) && absint( $image['id'] ) > 0 ) {
+		return true;
+	}
+
+	if ( isset( $image['url'] ) && is_string( $image['url'] ) && '' !== trim( $image['url'] ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Determine whether a showcase link payload contains an actionable link target.
+ *
+ * @param mixed $value Candidate link payload.
+ * @return bool
+ */
+function mrn_base_stack_showcase_link_value_has_content( $value ) {
+	if ( is_array( $value ) ) {
+		$has_link_shape = isset( $value['url'] ) || isset( $value['title'] ) || isset( $value['ID'] ) || isset( $value['id'] );
+
+		if ( $has_link_shape ) {
+			if ( isset( $value['url'] ) && is_string( $value['url'] ) && '' !== trim( $value['url'] ) ) {
+				return true;
+			}
+
+			if ( isset( $value['title'] ) && is_string( $value['title'] ) && '' !== trim( $value['title'] ) ) {
+				return true;
+			}
+
+			if ( isset( $value['ID'] ) && absint( $value['ID'] ) > 0 ) {
+				return true;
+			}
+
+			if ( isset( $value['id'] ) && absint( $value['id'] ) > 0 ) {
+				return true;
+			}
+
+			return false;
+		}
+
+		foreach ( $value as $nested_value ) {
+			if ( mrn_base_stack_showcase_link_value_has_content( $nested_value ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	if ( is_string( $value ) ) {
+		return '' !== trim( $value );
+	}
+
+	if ( is_numeric( $value ) ) {
+		return absint( $value ) > 0;
+	}
+
+	return ! empty( $value );
+}
+
+/**
+ * Determine whether a showcase repeater row has meaningful editor content.
+ *
+ * @param mixed $row Candidate repeater row.
+ * @return bool
+ */
+function mrn_base_stack_showcase_item_row_has_content( $row ) {
+	if ( ! is_array( $row ) ) {
+		return mrn_base_stack_builder_value_has_content( $row );
+	}
+
+	if ( isset( $row['image'] ) && mrn_base_stack_showcase_image_has_content( $row['image'] ) ) {
+		return true;
+	}
+
+	if ( isset( $row['links'] ) && mrn_base_stack_showcase_link_value_has_content( $row['links'] ) ) {
+		return true;
+	}
+
+	if ( isset( $row['link'] ) && mrn_base_stack_showcase_link_value_has_content( $row['link'] ) ) {
+		return true;
+	}
+
+	if ( isset( $row['background_color'] ) && is_string( $row['background_color'] ) && '' !== trim( $row['background_color'] ) ) {
+		return true;
+	}
+
+	if ( ! empty( $row['enable_row_effects'] ) ) {
+		return true;
+	}
+
+	$ignored_keys = array(
+		'acfcloneindex',
+		'image',
+		'links',
+		'link',
+		'background_color',
+		'enable_row_effects',
+	);
+
+	foreach ( $row as $key => $value ) {
+		$key = is_string( $key ) ? sanitize_key( $key ) : '';
+		if ( in_array( $key, $ignored_keys, true ) ) {
+			continue;
+		}
+
+		if ( mrn_base_stack_builder_value_has_content( $value ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Prevent empty showcase repeater placeholders from bloating postmeta on save.
+ *
+ * @param mixed                $value Submitted ACF value.
+ * @param int|string           $_post_id ACF object identifier.
+ * @param array<string, mixed> $_field ACF field definition.
+ * @return mixed
+ */
+function mrn_base_stack_prune_empty_showcase_items_on_save( $value, $_post_id, array $_field ) {
+	if ( ! is_array( $value ) ) {
+		return $value;
+	}
+
+	$filtered_rows = array();
+
+	foreach ( $value as $row_index => $row ) {
+		if ( 'acfcloneindex' === ( is_string( $row_index ) ? sanitize_key( $row_index ) : '' ) ) {
+			continue;
+		}
+
+		if ( ! mrn_base_stack_showcase_item_row_has_content( $row ) ) {
+			continue;
+		}
+
+		$filtered_rows[] = $row;
+	}
+
+	return array_values( $filtered_rows );
+}
+add_filter( 'acf/update_value/name=showcase_items', 'mrn_base_stack_prune_empty_showcase_items_on_save', 20, 3 );
+
+/**
  * Shared list-style choices for query-driven builder layouts.
  *
  * @return array<string, string>
