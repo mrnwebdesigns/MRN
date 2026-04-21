@@ -493,7 +493,14 @@ add_filter( 'acf/update_value/name=tab_switch_effect', 'mrn_base_stack_enforce_e
  */
 function mrn_base_stack_builder_value_has_content( $value ) {
 	if ( is_array( $value ) ) {
-		foreach ( $value as $nested_value ) {
+		foreach ( $value as $nested_key => $nested_value ) {
+			if ( is_string( $nested_key ) ) {
+				$normalized_key = sanitize_key( $nested_key );
+				if ( '' !== $normalized_key && ( 0 === strpos( $normalized_key, '_' ) || 'acfcloneindex' === $normalized_key ) ) {
+					continue;
+				}
+			}
+
 			if ( mrn_base_stack_builder_value_has_content( $nested_value ) ) {
 				return true;
 			}
@@ -563,29 +570,39 @@ function mrn_base_stack_showcase_image_has_content( $image ) {
  */
 function mrn_base_stack_showcase_link_value_has_content( $value ) {
 	if ( is_array( $value ) ) {
-		$has_link_shape = isset( $value['url'] ) || isset( $value['title'] ) || isset( $value['ID'] ) || isset( $value['id'] );
+		$normalized_link = array();
+		foreach ( $value as $link_key => $link_value ) {
+			$normalized_key = is_string( $link_key ) ? sanitize_key( $link_key ) : '';
+			if ( '' !== $normalized_key && ( 0 === strpos( $normalized_key, '_' ) || 'acfcloneindex' === $normalized_key ) ) {
+				continue;
+			}
+
+			$normalized_link[ $link_key ] = $link_value;
+		}
+
+		$has_link_shape = isset( $normalized_link['url'] ) || isset( $normalized_link['title'] ) || isset( $normalized_link['ID'] ) || isset( $normalized_link['id'] );
 
 		if ( $has_link_shape ) {
-			if ( isset( $value['url'] ) && is_string( $value['url'] ) && '' !== trim( $value['url'] ) ) {
+			if ( isset( $normalized_link['url'] ) && is_string( $normalized_link['url'] ) && '' !== trim( $normalized_link['url'] ) ) {
 				return true;
 			}
 
-			if ( isset( $value['title'] ) && is_string( $value['title'] ) && '' !== trim( $value['title'] ) ) {
+			if ( isset( $normalized_link['title'] ) && is_string( $normalized_link['title'] ) && '' !== trim( $normalized_link['title'] ) ) {
 				return true;
 			}
 
-			if ( isset( $value['ID'] ) && absint( $value['ID'] ) > 0 ) {
+			if ( isset( $normalized_link['ID'] ) && absint( $normalized_link['ID'] ) > 0 ) {
 				return true;
 			}
 
-			if ( isset( $value['id'] ) && absint( $value['id'] ) > 0 ) {
+			if ( isset( $normalized_link['id'] ) && absint( $normalized_link['id'] ) > 0 ) {
 				return true;
 			}
 
 			return false;
 		}
 
-		foreach ( $value as $nested_value ) {
+		foreach ( $normalized_link as $nested_value ) {
 			if ( mrn_base_stack_showcase_link_value_has_content( $nested_value ) ) {
 				return true;
 			}
@@ -647,6 +664,10 @@ function mrn_base_stack_showcase_item_row_has_content( $row ) {
 
 	foreach ( $row as $key => $value ) {
 		$key = is_string( $key ) ? sanitize_key( $key ) : '';
+		if ( '' !== $key && 0 === strpos( $key, '_' ) ) {
+			continue;
+		}
+
 		if ( in_array( $key, $ignored_keys, true ) ) {
 			continue;
 		}
