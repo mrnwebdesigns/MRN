@@ -398,8 +398,35 @@
 		} );
 	}
 
-	var initialFlexibleCollapseQueue = [];
-	var initialFlexibleCollapseScheduled = false;
+		var initialBuilderBootstrapped = false;
+		var initialFlexibleCollapseQueue = [];
+		var initialFlexibleCollapseScheduled = false;
+		var deferCollapseUntil = 0;
+		var interactionQuietPeriodMs = 900;
+		var interactionRetryDelayMs = 220;
+		var inputEditingRetryDelayMs = 260;
+		var maxInitialFlexibleCollapseRows = 120;
+
+	function markEditorInteraction() {
+		var now = window.performance && typeof window.performance.now === 'function'
+			? window.performance.now()
+			: Date.now();
+
+		deferCollapseUntil = now + interactionQuietPeriodMs;
+
+		// Prioritize editor responsiveness once the user starts interacting.
+		if ( initialFlexibleCollapseQueue.length ) {
+			initialFlexibleCollapseQueue.length = 0;
+		}
+	}
+
+	function shouldDeferCollapseForInteraction() {
+		var now = window.performance && typeof window.performance.now === 'function'
+			? window.performance.now()
+			: Date.now();
+
+		return deferCollapseUntil > now;
+	}
 
 	function isEditingInputControl() {
 		var active = document.activeElement;
@@ -432,9 +459,9 @@
 
 	function processInitialFlexibleCollapseQueue() {
 		var processed = 0;
-		var maxPerPass = 8;
+		var maxPerPass = 2;
 		var start = window.performance && typeof window.performance.now === 'function' ? window.performance.now() : 0;
-		var maxDuration = 12;
+		var maxDuration = 4;
 
 		initialFlexibleCollapseScheduled = false;
 
@@ -442,8 +469,13 @@
 			return;
 		}
 
+		if ( shouldDeferCollapseForInteraction() ) {
+			window.setTimeout( scheduleInitialFlexibleCollapse, interactionRetryDelayMs );
+			return;
+		}
+
 		if ( isEditingInputControl() ) {
-			window.setTimeout( scheduleInitialFlexibleCollapse, 120 );
+			window.setTimeout( scheduleInitialFlexibleCollapse, inputEditingRetryDelayMs );
 			return;
 		}
 
@@ -486,11 +518,13 @@
 		}
 	}
 
-	function queueInitialFlexibleRows( context ) {
-		$( context || document ).find( '.acf-field-flexible-content' ).each( function() {
-			var $flexField = $( this );
+		function queueInitialFlexibleRows( context ) {
+			var queueCapped = false;
 
-			if ( $flexField.data( 'mrn-initial-collapse-done' ) ) {
+			$( context || document ).find( '.acf-field-flexible-content' ).each( function() {
+				var $flexField = $( this );
+
+				if ( $flexField.data( 'mrn-initial-collapse-done' ) ) {
 				return;
 			}
 
@@ -499,16 +533,25 @@
 			getRows( $flexField ).each( function() {
 				var $row = $( this );
 
-				if ( $row.hasClass( '-collapsed' ) || $row.hasClass( 'collapsed' ) ) {
-					return;
+					if ( $row.hasClass( '-collapsed' ) || $row.hasClass( 'collapsed' ) ) {
+						return;
+					}
+
+					if ( initialFlexibleCollapseQueue.length >= maxInitialFlexibleCollapseRows ) {
+						queueCapped = true;
+						return false;
+					}
+
+					initialFlexibleCollapseQueue.push( this );
+				} );
+
+				if ( queueCapped ) {
+					return false;
 				}
-
-				initialFlexibleCollapseQueue.push( this );
 			} );
-		} );
 
-		scheduleInitialFlexibleCollapse();
-	}
+			scheduleInitialFlexibleCollapse();
+		}
 
 	function getRows( $flexField ) {
 		var $values = $flexField.find( '> .acf-input > .acf-flexible-content > .values, > .acf-input > .values' ).first();
@@ -753,15 +796,34 @@
 		}, 80 );
 	}
 
-	$( function() {
-		bootBuilderAdminUi( document );
+	function bootBuilderAdminUiOnce( context ) {
+		var bootContext = context || document;
+
+		if ( initialBuilderBootstrapped ) {
+			return;
+		}
+
+		initialBuilderBootstrapped = true;
+		bootBuilderAdminUi( bootContext );
 		window.setTimeout( function() {
-			queueInitialFlexibleRows( document );
+			queueInitialFlexibleRows( bootContext );
 		}, 40 );
+	}
+
+	$( function() {
+		bootBuilderAdminUiOnce( document );
 	} );
 
+	$( document ).on(
+		'mousedown touchstart keydown',
+		'#post input, #post textarea, #post select, #post [contenteditable="true"]',
+		function() {
+			markEditorInteraction();
+		}
+	);
+
 	acf.addAction( 'ready', function( $el ) {
-		bootBuilderAdminUi( $el || document );
+		bootBuilderAdminUiOnce( $el || document );
 	} );
 
 	acf.addAction( 'append', function( $el ) {

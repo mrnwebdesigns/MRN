@@ -733,6 +733,8 @@ function mrn_base_stack_showcase_item_row_has_content( $row ) {
  * @return mixed
  */
 function mrn_base_stack_prune_empty_showcase_items_on_save( $value, $_post_id, array $_field ) {
+	unset( $_post_id, $_field );
+
 	if ( ! is_array( $value ) ) {
 		return $value;
 	}
@@ -779,7 +781,7 @@ function mrn_base_stack_cleanup_empty_showcase_repeater_meta_on_save( $post_id )
 		return;
 	}
 
-	$count_key_rows = $wpdb->get_results(
+	$count_key_rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Targeted post-save cleanup query over dynamic repeater keys.
 		$wpdb->prepare(
 			"SELECT meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key REGEXP %s",
 			$post_id,
@@ -804,14 +806,14 @@ function mrn_base_stack_cleanup_empty_showcase_repeater_meta_on_save( $post_id )
 			continue;
 		}
 
-		$row_value_rows = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key LIKE %s",
-				$post_id,
-				$count_key . '\\_%'
-			),
-			ARRAY_A
-		);
+			$row_value_rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Targeted post-save cleanup query over dynamic child meta rows.
+				$wpdb->prepare(
+					"SELECT meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key LIKE %s",
+					$post_id,
+					$count_key . '\\_%'
+				),
+				ARRAY_A
+			);
 
 		if ( ! is_array( $row_value_rows ) || empty( $row_value_rows ) ) {
 			continue;
@@ -871,14 +873,14 @@ function mrn_base_stack_cleanup_empty_showcase_repeater_meta_on_save( $post_id )
 		$child_pattern         = '^' . preg_quote( $count_key, '/' ) . '_[0-9]+_';
 		$child_reference_regex = '^_' . preg_quote( $count_key, '/' ) . '_[0-9]+_';
 
-		$wpdb->query(
-			$wpdb->prepare(
-				"DELETE FROM {$wpdb->postmeta} WHERE post_id = %d AND (meta_key REGEXP %s OR meta_key REGEXP %s)",
-				$post_id,
-				$child_pattern,
-				$child_reference_regex
-			)
-		);
+			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Targeted delete of orphaned/empty showcase child meta rows.
+				$wpdb->prepare(
+					"DELETE FROM {$wpdb->postmeta} WHERE post_id = %d AND (meta_key REGEXP %s OR meta_key REGEXP %s)",
+					$post_id,
+					$child_pattern,
+					$child_reference_regex
+				)
+			);
 
 		update_post_meta( $post_id, $count_key, '0' );
 	}
@@ -952,6 +954,87 @@ add_filter( 'acf/prepare_field/key=field_mrn_content_lists_display_mode', 'mrn_b
 add_filter( 'acf/prepare_field/name=display_mode', 'mrn_base_stack_load_content_list_display_mode_field_choices' );
 
 /**
+ * Recursively normalize select defaults on a full ACF field tree.
+ *
+ * @param mixed $field Field or layout field definition.
+ * @return mixed
+ */
+function mrn_base_stack_normalize_select_defaults_in_field_tree( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	// ACF core validators assume this key exists across field types.
+	if ( ! array_key_exists( 'required', $field ) ) {
+		$field['required'] = 0;
+	}
+
+	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	if ( 'select' === $field_type ) {
+		if ( ! array_key_exists( 'multiple', $field ) ) {
+			$field['multiple'] = 0;
+		}
+
+		$return_format = isset( $field['return_format'] ) ? sanitize_key( (string) $field['return_format'] ) : '';
+		if ( '' === $return_format || ! in_array( $return_format, array( 'value', 'label', 'array' ), true ) ) {
+			$field['return_format'] = 'value';
+		}
+	}
+
+	if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) ) {
+		foreach ( $field['sub_fields'] as $index => $sub_field ) {
+			$field['sub_fields'][ $index ] = mrn_base_stack_normalize_select_defaults_in_field_tree( $sub_field );
+		}
+	}
+
+	if ( isset( $field['fields'] ) && is_array( $field['fields'] ) ) {
+		foreach ( $field['fields'] as $index => $child_field ) {
+			$field['fields'][ $index ] = mrn_base_stack_normalize_select_defaults_in_field_tree( $child_field );
+		}
+	}
+
+	if ( isset( $field['layouts'] ) && is_array( $field['layouts'] ) ) {
+		foreach ( $field['layouts'] as $layout_key => $layout ) {
+			if ( ! is_array( $layout ) ) {
+				continue;
+			}
+
+			if ( isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ) {
+				foreach ( $layout['sub_fields'] as $sub_index => $sub_field ) {
+					$layout['sub_fields'][ $sub_index ] = mrn_base_stack_normalize_select_defaults_in_field_tree( $sub_field );
+				}
+			}
+
+			$field['layouts'][ $layout_key ] = $layout;
+		}
+	}
+
+	return $field;
+}
+add_filter( 'acf/validate_field', 'mrn_base_stack_normalize_select_defaults_in_field_tree', 20 );
+add_filter( 'acf/load_field', 'mrn_base_stack_normalize_select_defaults_in_field_tree', 20 );
+add_filter( 'acf/prepare_field', 'mrn_base_stack_normalize_select_defaults_in_field_tree', 20 );
+
+/**
+ * Ensure select fields always include required core defaults.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_normalize_select_field_defaults( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field = mrn_base_stack_normalize_select_defaults_in_field_tree( $field );
+
+	return $field;
+}
+add_filter( 'acf/validate_field/type=select', 'mrn_base_stack_normalize_select_field_defaults', 20 );
+add_filter( 'acf/load_field/type=select', 'mrn_base_stack_normalize_select_field_defaults', 20 );
+add_filter( 'acf/prepare_field/type=select', 'mrn_base_stack_normalize_select_field_defaults', 20 );
+
+/**
  * Robustly normalize dynamic choices for Content Lists select subfields.
  *
  * Some builder contexts can bypass the narrower ACF key/name hooks depending on
@@ -975,6 +1058,8 @@ function mrn_base_stack_prepare_dynamic_content_list_select_fields( $field ) {
 	if ( 'select' !== $field_type ) {
 		return $field;
 	}
+
+	$field = mrn_base_stack_normalize_select_field_defaults( $field );
 
 	$is_content_list_layout = false !== strpos( $parent_layout, 'content_lists' );
 

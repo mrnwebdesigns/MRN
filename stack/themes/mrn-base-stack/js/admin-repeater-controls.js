@@ -5,6 +5,9 @@
 		return;
 	}
 
+	// Keep this off by default to avoid costly submit/heartbeat restore passes on very large editors.
+	var enableRowBodyDetachment = false;
+
 	function getRepeaterFields( context ) {
 		var $context = $( context || document );
 
@@ -68,6 +71,10 @@
 	}
 
 	function canDetachRowBodies( $row ) {
+		if ( ! enableRowBodyDetachment ) {
+			return false;
+		}
+
 		// Table-based repeater rows rely on native cell layout. Detaching table-cell
 		// contents can collapse column widths and cause hover/collapse jitter.
 		if ( $row.is( 'tr' ) ) {
@@ -270,17 +277,12 @@
 	function restoreAllRowBodies( context ) {
 		var $detachedRows = getDetachedRows( context );
 
-		if ( $detachedRows.length ) {
-			$detachedRows.each( function () {
-				restoreRowBodies( $( this ), { remount: false } );
-			} );
+		if ( ! $detachedRows.length ) {
 			return;
 		}
 
-		getRepeaterFields( context ).each( function () {
-			getRepeaterRows( $( this ) ).each( function () {
-				restoreRowBodies( $( this ), { remount: false } );
-			} );
+		$detachedRows.each( function () {
+			restoreRowBodies( $( this ), { remount: false } );
 		} );
 	}
 
@@ -323,9 +325,36 @@
 		return !! body && ( body.classList.contains( 'post-php' ) || body.classList.contains( 'post-new-php' ) );
 	}
 
-	var initialRepeaterCollapseQueue = [];
-	var initialRepeaterCollapseScheduled = false;
-	var initialRepeaterPrecollapseReadyMarked = false;
+		var initialRepeaterCollapseQueue = [];
+		var initialRepeaterCollapseScheduled = false;
+		var initialRepeaterPrecollapseReadyMarked = false;
+		var deferCollapseUntil = 0;
+		var interactionQuietPeriodMs = 900;
+		var interactionRetryDelayMs = 220;
+		var inputEditingRetryDelayMs = 260;
+		var maxInitialRepeaterCollapseRows = 160;
+
+	function markEditorInteraction() {
+		var now = window.performance && typeof window.performance.now === 'function'
+			? window.performance.now()
+			: Date.now();
+
+		deferCollapseUntil = now + interactionQuietPeriodMs;
+
+		// Stop background initial collapsing after first user interaction.
+		if ( initialRepeaterCollapseQueue.length ) {
+			initialRepeaterCollapseQueue.length = 0;
+			markRepeaterPrecollapseReady();
+		}
+	}
+
+	function shouldDeferCollapseForInteraction() {
+		var now = window.performance && typeof window.performance.now === 'function'
+			? window.performance.now()
+			: Date.now();
+
+		return deferCollapseUntil > now;
+	}
 
 	function isEditingInputControl() {
 		var active = document.activeElement;
@@ -367,9 +396,9 @@
 
 	function processInitialRepeaterCollapseQueue() {
 		var processed = 0;
-		var maxPerPass = 10;
+		var maxPerPass = 3;
 		var start = window.performance && typeof window.performance.now === 'function' ? window.performance.now() : 0;
-		var maxDuration = 12;
+		var maxDuration = 4;
 
 		initialRepeaterCollapseScheduled = false;
 
@@ -378,8 +407,13 @@
 			return;
 		}
 
+		if ( shouldDeferCollapseForInteraction() ) {
+			window.setTimeout( scheduleInitialRepeaterCollapse, interactionRetryDelayMs );
+			return;
+		}
+
 		if ( isEditingInputControl() ) {
-			window.setTimeout( scheduleInitialRepeaterCollapse, 120 );
+			window.setTimeout( scheduleInitialRepeaterCollapse, inputEditingRetryDelayMs );
 			return;
 		}
 
@@ -426,11 +460,13 @@
 		}
 	}
 
-	function collapseInitialRows( context ) {
-		if ( ! isClassicPostEditorScreen() ) {
-			markRepeaterPrecollapseReady();
-			return;
-		}
+		function collapseInitialRows( context ) {
+			var queueCapped = false;
+
+			if ( ! isClassicPostEditorScreen() ) {
+				markRepeaterPrecollapseReady();
+				return;
+			}
 
 		getRepeaterFields( context ).each( function () {
 			var $field = $( this );
@@ -444,16 +480,25 @@
 			getRepeaterRows( $field ).each( function () {
 				var $row = $( this );
 
-				if ( isRowCollapsed( $row ) ) {
-					return;
+					if ( isRowCollapsed( $row ) ) {
+						return;
+					}
+
+					if ( initialRepeaterCollapseQueue.length >= maxInitialRepeaterCollapseRows ) {
+						queueCapped = true;
+						return false;
+					}
+
+					initialRepeaterCollapseQueue.push( this );
+				} );
+
+				if ( queueCapped ) {
+					return false;
 				}
-
-				initialRepeaterCollapseQueue.push( this );
 			} );
-		} );
 
-		scheduleInitialRepeaterCollapse();
-	}
+			scheduleInitialRepeaterCollapse();
+		}
 
 	function ensureToolbar( $field ) {
 		var $label = $field.children( '.acf-label' ).first();
@@ -563,12 +608,21 @@
 	} );
 
 	$( document ).on( 'submit', '#post', function () {
+		if ( ! enableRowBodyDetachment ) {
+			return;
+		}
+
 		restoreAllRowBodies( this );
 	} );
 
 	var pendingHeartbeatResync = false;
 
 	$( document ).on( 'heartbeat-send', function () {
+		if ( ! enableRowBodyDetachment ) {
+			pendingHeartbeatResync = false;
+			return;
+		}
+
 		if ( ! getDetachedRows( document ).length ) {
 			pendingHeartbeatResync = false;
 			return;
@@ -583,6 +637,11 @@
 	} );
 
 	$( document ).on( 'heartbeat-tick', function () {
+		if ( ! enableRowBodyDetachment ) {
+			pendingHeartbeatResync = false;
+			return;
+		}
+
 		if ( ! pendingHeartbeatResync ) {
 			return;
 		}
@@ -612,7 +671,15 @@
 		refreshToolbars( context );
 	} );
 
-	$( document ).on( 'mouseenter focusin', '.acf-field[data-type="repeater"]', function () {
+	$( document ).on(
+		'mousedown touchstart keydown',
+		'#post input, #post textarea, #post select, #post [contenteditable="true"]',
+		function () {
+			markEditorInteraction();
+		}
+	);
+
+	$( document ).on( 'mouseenter', '.acf-field[data-type="repeater"]', function () {
 		ensureToolbar( $( this ) );
 	} );
 }( jQuery, window.acf ) );

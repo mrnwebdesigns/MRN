@@ -1457,6 +1457,14 @@ function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post 
 		return;
 	}
 
+	$has_allowlist_payload_inputs = isset( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce/capability verified above.
+		|| isset( $_POST['mrn_builder_layout_allowlist_catalog'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce/capability verified above.
+		|| isset( $_POST['mrn_builder_layout_allowlist_payload'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce/capability verified above.
+
+	if ( ! $has_allowlist_nonce && ! $has_allowlist_payload_inputs ) {
+		return;
+	}
+
 	$input           = mrn_base_stack_get_builder_layout_allowlist_post_array( 'mrn_builder_layout_allowlist' );
 	$catalog_input   = mrn_base_stack_get_builder_layout_allowlist_post_array( 'mrn_builder_layout_allowlist_catalog' );
 	$payload_input   = mrn_base_stack_get_builder_layout_allowlist_post_string( 'mrn_builder_layout_allowlist_payload' );

@@ -658,11 +658,28 @@ add_filter( 'acf/fields/post_object/query/key=field_mrn_nested_reusable_block_po
 /**
  * Read a builder sub-field value with legacy fallback names.
  *
- * @param string             $primary Primary sub field name.
- * @param array<int, string> $fallbacks Legacy fallback names.
+ * @param string                   $primary Primary sub field name.
+ * @param array<int, string>       $fallbacks Legacy fallback names.
+ * @param array<string,mixed>|null $row_values Optional raw row values for fast lookups.
  * @return string
  */
-function mrn_base_stack_get_builder_sub_field_value( $primary, array $fallbacks = array() ) {
+function mrn_base_stack_get_builder_sub_field_value( $primary, array $fallbacks = array(), $row_values = null ) {
+	$names = array_merge( array( $primary ), $fallbacks );
+
+	if ( is_array( $row_values ) ) {
+		foreach ( $names as $name ) {
+			if ( ! is_string( $name ) || '' === $name || ! array_key_exists( $name, $row_values ) ) {
+				continue;
+			}
+
+			$value = trim( (string) $row_values[ $name ] );
+
+			if ( '' !== $value ) {
+				return $value;
+			}
+		}
+	}
+
 	$value = trim( (string) get_sub_field( $primary ) );
 
 	if ( '' !== $value ) {
@@ -700,24 +717,75 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 		return $title;
 	}
 
-	$layout_name = isset( $layout['name'] ) ? (string) $layout['name'] : '';
-	$internal    = mrn_base_stack_get_builder_sub_field_value( 'internal_name' );
+	$layout_name             = isset( $layout['name'] ) ? (string) $layout['name'] : '';
+	$row_values              = function_exists( 'get_row' ) ? get_row( true ) : array();
+	$row_values              = is_array( $row_values ) ? $row_values : array();
+	$internal                = mrn_base_stack_get_builder_sub_field_value( 'internal_name', array(), $row_values );
+	$heading                 = mrn_base_stack_get_builder_sub_field_value( 'heading', array(), $row_values );
+	static $post_title_cache = array();
+
+	$is_layout_title_ajax = false;
+	if ( wp_doing_ajax() && isset( $_REQUEST['action'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only request context.
+		$ajax_action          = sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only request context.
+		$is_layout_title_ajax = ( 'acf/fields/flexible_content/layout_title' === $ajax_action );
+	}
 
 	if ( '' !== $internal ) {
 		return esc_html( wp_strip_all_tags( $internal ) );
 	}
 
-	if ( 'reusable_block' === $layout_name ) {
-		$block = get_sub_field( 'block' );
-		if ( $block instanceof WP_Post ) {
-			$block_title = get_the_title( $block );
-		} elseif ( is_numeric( $block ) ) {
-			$block_title = get_the_title( (int) $block );
-		} else {
-			$block_title = '';
+	/*
+	 * Fast path: this AJAX action can fire repeatedly on heavy builder screens.
+	 * Keep labels simple and avoid expensive per-row lookups so save/publish stays responsive.
+	 */
+	if ( $is_layout_title_ajax ) {
+		if ( '' !== $heading ) {
+			$heading_prefixes = array(
+				'basic'            => 'Basic',
+				'cta'              => 'CTA',
+				'grid'             => 'Grid',
+				'faq'              => 'FAQs/Accordion',
+				'slider'           => 'Slider',
+				'tabbed_layout'    => 'Tabbed Layout',
+				'logos'            => 'Logos',
+				'stats'            => 'Stats',
+				'showcase'         => 'Showcase',
+				'image_content'    => 'Image',
+				'two_column_split' => 'Two Column Split',
+				'video'            => 'Video',
+				'body_text'        => 'Text',
+				'content_lists'    => 'Content Lists',
+				'wpforms'          => 'WPForms',
+				'searchwp_form'    => 'SearchWP Form',
+				'card'             => 'Card',
+			);
+			$prefix           = isset( $heading_prefixes[ $layout_name ] ) ? $heading_prefixes[ $layout_name ] : '';
+
+			if ( '' !== $prefix ) {
+				return $prefix . ': ' . esc_html( wp_strip_all_tags( $heading ) );
+			}
+
+			return esc_html( wp_strip_all_tags( $heading ) );
 		}
 
-		$block_title = is_string( $block_title ) ? trim( $block_title ) : '';
+		return $title;
+	}
+
+	if ( 'reusable_block' === $layout_name ) {
+		$block    = array_key_exists( 'block', $row_values ) ? $row_values['block'] : get_sub_field( 'block' );
+		$block_id = 0;
+
+		if ( $block instanceof WP_Post ) {
+			$block_id = (int) $block->ID;
+		} elseif ( is_numeric( $block ) ) {
+			$block_id = (int) $block;
+		}
+
+		if ( $block_id > 0 && ! array_key_exists( $block_id, $post_title_cache ) ) {
+			$post_title_cache[ $block_id ] = trim( (string) get_the_title( $block_id ) );
+		}
+
+		$block_title = ( $block_id > 0 && array_key_exists( $block_id, $post_title_cache ) ) ? $post_title_cache[ $block_id ] : '';
 
 		if ( '' === $block_title ) {
 			return $title;
@@ -727,8 +795,6 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'basic' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' === $heading ) {
 			return $title;
 		}
@@ -737,8 +803,6 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'cta' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' === $heading ) {
 			return $title;
 		}
@@ -747,8 +811,6 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'grid' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' === $heading ) {
 			return $title;
 		}
@@ -757,8 +819,6 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'faq' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' === $heading ) {
 			return $title;
 		}
@@ -767,8 +827,6 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'slider' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' === $heading ) {
 			return $title;
 		}
@@ -777,13 +835,11 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'tabbed_layout' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' !== $heading ) {
 			return 'Tabbed Layout: ' . esc_html( wp_strip_all_tags( $heading ) );
 		}
 
-		$tabs = get_sub_field( 'tabs' );
+		$tabs = array_key_exists( 'tabs', $row_values ) ? $row_values['tabs'] : get_sub_field( 'tabs' );
 		if ( is_array( $tabs ) ) {
 			foreach ( $tabs as $tab ) {
 				if ( ! is_array( $tab ) ) {
@@ -801,8 +857,6 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'logos' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' === $heading ) {
 			return $title;
 		}
@@ -811,8 +865,6 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'stats' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' === $heading ) {
 			return $title;
 		}
@@ -821,8 +873,6 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'showcase' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' === $heading ) {
 			return $title;
 		}
@@ -831,8 +881,6 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'image_content' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' === $heading ) {
 			return $title;
 		}
@@ -841,8 +889,6 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'two_column_split' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' === $heading ) {
 			return $title;
 		}
@@ -851,8 +897,6 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'video' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' === $heading ) {
 			return $title;
 		}
@@ -861,8 +905,6 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'body_text' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' === $heading ) {
 			return $title;
 		}
@@ -871,13 +913,11 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'content_lists' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' !== $heading ) {
 			return 'Content Lists: ' . esc_html( wp_strip_all_tags( $heading ) );
 		}
 
-		$post_type = sanitize_key( (string) get_sub_field( 'list_post_type' ) );
+		$post_type = sanitize_key( mrn_base_stack_get_builder_sub_field_value( 'list_post_type', array(), $row_values ) );
 		$choices   = function_exists( 'mrn_base_stack_get_content_list_post_type_choices' ) ? mrn_base_stack_get_content_list_post_type_choices() : array();
 
 		if ( isset( $choices[ $post_type ] ) ) {
@@ -888,23 +928,24 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'wpforms' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' !== $heading ) {
 			return 'WPForms: ' . esc_html( wp_strip_all_tags( $heading ) );
 		}
 
-		$form = get_sub_field( 'form' );
+		$form    = array_key_exists( 'form', $row_values ) ? $row_values['form'] : get_sub_field( 'form' );
+		$form_id = 0;
 
 		if ( $form instanceof WP_Post ) {
-			$form_title = get_the_title( $form );
+			$form_id = (int) $form->ID;
 		} elseif ( is_numeric( $form ) ) {
-			$form_title = get_the_title( (int) $form );
-		} else {
-			$form_title = '';
+			$form_id = (int) $form;
 		}
 
-		$form_title = is_string( $form_title ) ? trim( $form_title ) : '';
+		if ( $form_id > 0 && ! array_key_exists( $form_id, $post_title_cache ) ) {
+			$post_title_cache[ $form_id ] = trim( (string) get_the_title( $form_id ) );
+		}
+
+		$form_title = ( $form_id > 0 && array_key_exists( $form_id, $post_title_cache ) ) ? $post_title_cache[ $form_id ] : '';
 
 		if ( '' !== $form_title ) {
 			return 'WPForms: ' . esc_html( $form_title );
@@ -914,13 +955,12 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'searchwp_form' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' !== $heading ) {
 			return 'SearchWP Form: ' . esc_html( wp_strip_all_tags( $heading ) );
 		}
 
-		$form_title = function_exists( 'mrn_base_stack_get_searchwp_form_title' ) ? mrn_base_stack_get_searchwp_form_title( get_sub_field( 'searchwp_form_id' ) ) : '';
+		$form_id    = array_key_exists( 'searchwp_form_id', $row_values ) ? $row_values['searchwp_form_id'] : get_sub_field( 'searchwp_form_id' );
+		$form_title = function_exists( 'mrn_base_stack_get_searchwp_form_title' ) ? mrn_base_stack_get_searchwp_form_title( $form_id ) : '';
 		$form_title = is_string( $form_title ) ? trim( $form_title ) : '';
 
 		if ( '' !== $form_title ) {
@@ -931,8 +971,6 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'card' === $layout_name ) {
-		$heading = trim( (string) get_sub_field( 'heading' ) );
-
 		if ( '' === $heading ) {
 			return $title;
 		}

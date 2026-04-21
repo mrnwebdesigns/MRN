@@ -1,4 +1,6 @@
 ( function ( $, window ) {
+	var initialChooserBootstrapped = false;
+
 	function getFieldObject( $field ) {
 		if ( ! $field || ! $field.length || typeof acf === 'undefined' || typeof acf.getField !== 'function' ) {
 			return null;
@@ -312,6 +314,15 @@
 		} );
 	}
 
+	function initChooserFieldsOnce( context ) {
+		if ( initialChooserBootstrapped ) {
+			return;
+		}
+
+		initialChooserBootstrapped = true;
+		initChooserFields( context || document );
+	}
+
 	$( document ).on( 'click', '.mrn-icon-chooser-open', function () {
 		var group = $( this ).closest( '.mrn-icon-chooser-control' ).data( 'mrnIconChooserGroup' );
 
@@ -321,9 +332,11 @@
 	} );
 
 	if ( typeof acf !== 'undefined' ) {
-		acf.addAction( 'ready', initChooserFields );
+		acf.addAction( 'ready', initChooserFieldsOnce );
 		acf.addAction( 'append', initChooserFields );
 	}
 
-	$( initChooserFields );
+	$( function() {
+		initChooserFieldsOnce( document );
+	} );
 }( jQuery, window ) );

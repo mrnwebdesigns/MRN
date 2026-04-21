@@ -1,5 +1,28 @@
 # Stack Changelog
 
+## 2026.04.21-editor-latency-hotfix-wpnonce-bootstrap
+- Expanded `searchwp-editor-performance` to `1.0.6`.
+- Fixed a plugin bootstrap fatal on classic editor admin requests by guarding `wp_verify_nonce()` usage until the pluggable function is available.
+- Preserved the existing SearchWP editor-request performance suppression behavior while removing the early-load crash path.
+
+## 2026.04.21-editor-latency-hardening-v3
+- Expanded `searchwp-editor-performance` to `1.0.5`.
+- Made SearchWP bootstrap suppression load-order-safe by removing SearchWP `init` callbacks again on `plugins_loaded` at max priority for classic post editor requests.
+- Preserved the existing local/development guardrails and production inert behavior.
+
+## 2026.04.21-editor-latency-hardening-v2
+- Expanded `mrn-base-stack` to `1.1.30`.
+- Expanded `searchwp-editor-performance` to `1.0.4`.
+- Hardened the SearchWP editor performance guard to disable SearchWP core `init` bootstrap on classic post editor requests (`post.php` / `post-new.php`) in local/development, preventing source-hook registration and index-drop churn during heavy ACF saves.
+- Added an extra admin-init safety pass for SearchWP source callback removal on classic editor save requests.
+- Updated builder/repeater admin collapse batching to defer while users interact with editor inputs, reducing residual click-to-caret lag in large flexible/repeater screens.
+
+## 2026.04.21-editor-save-and-focus-latency-hardening
+- Expanded `searchwp-editor-performance` to `1.0.3`.
+- Added an editor-save request guard that short-circuits SearchWP source hook registration during classic `editpost` saves, preventing expensive index-drop hook churn on large ACF submissions.
+- Relaxed strict nonce gating for editor-save detection to avoid false negatives on stacked/classic admin save flows where nonce transport can vary but request action remains `editpost`.
+- Kept the existing environment guardrails so production remains inert unless explicitly forced.
+
 ## 2026.04.21-editor-focus-lag-smoothing
 - Expanded `mrn-base-stack` to `1.1.29`.
 - Reworked initial Classic Editor builder/repeater precollapse behavior so row collapsing runs in small animation-frame batches instead of a single long synchronous pass.
