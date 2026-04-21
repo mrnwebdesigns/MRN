@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.1.24' );
+	define( '_S_VERSION', '1.1.25' );
 }
 
 /**
@@ -49,15 +49,15 @@ function mrn_base_stack_setup() {
 	// This theme uses wp_nav_menu() in one location.
 	register_nav_menus(
 		array(
-			'menu-1'          => esc_html__( 'Primary', 'mrn-base-stack' ),
-			'menu-2'          => esc_html__( 'Utility (Legacy)', 'mrn-base-stack' ),
-			'menu-3'          => esc_html__( 'Footer Primary', 'mrn-base-stack' ),
-			'menu-4'          => esc_html__( 'Legal (Legacy)', 'mrn-base-stack' ),
+			'menu-1'           => esc_html__( 'Primary', 'mrn-base-stack' ),
+			'menu-2'           => esc_html__( 'Utility (Legacy)', 'mrn-base-stack' ),
+			'menu-3'           => esc_html__( 'Footer Primary', 'mrn-base-stack' ),
+			'menu-4'           => esc_html__( 'Legal (Legacy)', 'mrn-base-stack' ),
 			'header-secondary' => esc_html__( 'Header Secondary', 'mrn-base-stack' ),
-			'header-tertiary' => esc_html__( 'Header Tertiary', 'mrn-base-stack' ),
+			'header-tertiary'  => esc_html__( 'Header Tertiary', 'mrn-base-stack' ),
 			'footer-secondary' => esc_html__( 'Footer Secondary', 'mrn-base-stack' ),
-			'footer-tertiary' => esc_html__( 'Footer Tertiary', 'mrn-base-stack' ),
-			'social-media'    => esc_html__( 'Social Media', 'mrn-base-stack' ),
+			'footer-tertiary'  => esc_html__( 'Footer Tertiary', 'mrn-base-stack' ),
+			'social-media'     => esc_html__( 'Social Media', 'mrn-base-stack' ),
 		)
 	);
 

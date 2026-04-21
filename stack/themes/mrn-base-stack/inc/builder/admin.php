@@ -307,7 +307,7 @@ function mrn_base_stack_save_builder_row_flex_layout_meta( $post_id, $post ) {
 	}
 
 	$raw_payload = isset( $_POST['mrn_base_stack_row_flex_payload'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
-		? wp_unslash( $_POST['mrn_base_stack_row_flex_payload'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
+		? sanitize_textarea_field( wp_unslash( (string) $_POST['mrn_base_stack_row_flex_payload'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
 		: '';
 
 	$decoded_payload = array();

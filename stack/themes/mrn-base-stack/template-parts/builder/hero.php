@@ -218,9 +218,11 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 							>
 							<?php
 							$hero_link_label = '' !== $hero_link['text'] ? (string) $hero_link['text'] : (string) $hero_link['url'];
-							echo function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
-								? mrn_base_stack_get_compact_link_label_markup( $hero_link_label, (string) $hero_link['icon_markup'], (string) $hero_link['icon_position'] )
-								: esc_html( $hero_link_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
+								echo wp_kses_post(
+									function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
+										? mrn_base_stack_get_compact_link_label_markup( $hero_link_label, (string) $hero_link['icon_markup'], (string) $hero_link['icon_position'] )
+										: esc_html( $hero_link_label )
+								);
 							?>
 							</<?php echo esc_html( $hero_link['tag'] ); ?>>
 						<?php endforeach; ?>

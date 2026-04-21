@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class MRN_Dummy_Content {
-	const VERSION = '0.1.12';
+	const VERSION = '0.1.13';
 	const NONCE_ACTION = 'mrn_dummy_content_generate';
 	const CUSTOM_NONCE_ACTION = 'mrn_dummy_content_generate_custom';
 	const DELETE_NONCE_ACTION = 'mrn_dummy_content_delete';

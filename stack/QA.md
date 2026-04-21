@@ -262,5 +262,5 @@ If you are running browser smoke from Codex and the sandboxed launch is blocked 
 
 ## Notes
 
-- PHPCS now runs locally under the current PHP version, but the existing theme still has standards findings to clean up separately.
+- PHPCS now runs locally under the current PHP version; treat new PHPCS findings as release blockers unless explicitly waived.
 - Use this toolkit as the default baseline before packaging or release work.

@@ -6,6 +6,7 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 
 - A plugin manifest (`manifests/plugins.txt`) for install/activate.
 - A stack release snapshot (`STACK_VERSION.md`) and stack-wide notes (`CHANGELOG.md`).
+- A release versioning strategy (`RELEASE_VERSIONING_STRATEGY.md`) for consistent component version bumps and packaging.
 - A builder/dev conventions guide (`BUILDER_CONVENTIONS.md`) for theme layouts, reusable blocks, and shared content rules.
 - A curated developer handoff guide (`DEV_HANDOFF.md`) for backend/frontend team onboarding and Google Docs export.
 - A reusable feature prompt template (`FEATURE_PROMPT_TEMPLATE.md`) for scoping new stack work with shared accessibility, performance, and rollout requirements.
