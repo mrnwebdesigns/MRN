@@ -42,12 +42,12 @@ foreach ( $items as $item ) {
 		continue;
 	}
 
-	$item_text     = isset( $item['text'] ) ? (string) $item['text'] : '';
+	$item_text      = isset( $item['text'] ) ? (string) $item['text'] : '';
 	$item_link_data = function_exists( 'mrn_base_stack_get_repeater_item_primary_link' )
 		? mrn_base_stack_get_repeater_item_primary_link( $item )
 		: array();
 	$item_link_url  = isset( $item_link_data['url'] ) ? (string) $item_link_data['url'] : '';
-	$item_img = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+	$item_img       = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
 
 	if ( '' !== trim( wp_strip_all_tags( $item_text ) ) || '' !== $item_link_url || ! empty( $item_img['ID'] ) || ! empty( $item_img['url'] ) ) {
 		$has_items = true;
@@ -124,33 +124,33 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 						continue;
 					}
 
-						$item_text        = isset( $item['text'] ) ? (string) $item['text'] : '';
-						$item_link_data   = function_exists( 'mrn_base_stack_get_repeater_item_primary_link' )
+						$item_text            = isset( $item['text'] ) ? (string) $item['text'] : '';
+						$item_link_data       = function_exists( 'mrn_base_stack_get_repeater_item_primary_link' )
 							? mrn_base_stack_get_repeater_item_primary_link( $item )
 							: array();
-						$item_image       = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
-						$item_link_url    = isset( $item_link_data['url'] ) ? (string) $item_link_data['url'] : '';
-						$item_link_target = isset( $item_link_data['target'] ) ? (string) $item_link_data['target'] : '';
-						$item_link_label  = isset( $item_link_data['text'] ) && '' !== trim( (string) $item_link_data['text'] )
+						$item_image           = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+						$item_link_url        = isset( $item_link_data['url'] ) ? (string) $item_link_data['url'] : '';
+						$item_link_target     = isset( $item_link_data['target'] ) ? (string) $item_link_data['target'] : '';
+						$item_link_label      = isset( $item_link_data['text'] ) && '' !== trim( (string) $item_link_data['text'] )
 							? (string) $item_link_data['text']
 							: 'Learn More';
 						$item_link_aria_label = isset( $item_link_data['text'] ) && '' !== trim( (string) $item_link_data['text'] )
 							? (string) $item_link_data['text']
 							: __( 'View card', 'mrn-base-stack' );
 						$item_class_names     = array(
-						'mrn-card-row__item',
-						'mrn-card-row__item--card-deck',
-						'mrn-ui__item',
-					);
+							'mrn-card-row__item',
+							'mrn-card-row__item--card-deck',
+							'mrn-ui__item',
+						);
 
-					if ( '' === trim( wp_strip_all_tags( $item_text ) ) && '' === $item_link_url && empty( $item_image['ID'] ) && empty( $item_image['url'] ) ) {
-						continue;
-					}
+						if ( '' === trim( wp_strip_all_tags( $item_text ) ) && '' === $item_link_url && empty( $item_image['ID'] ) && empty( $item_image['url'] ) ) {
+							continue;
+						}
 
-					if ( $enable_full_item_link && '' !== $item_link_url ) {
-						$item_class_names[] = 'mrn-card-row__item--full-link';
-					}
-					?>
+						if ( $enable_full_item_link && '' !== $item_link_url ) {
+							$item_class_names[] = 'mrn-card-row__item--full-link';
+						}
+						?>
 						<article class="<?php echo esc_attr( implode( ' ', $item_class_names ) ); ?>">
 						<?php if ( ! empty( $item_image['ID'] ) ) : ?>
 								<div class="mrn-card-row__image mrn-ui__media">
@@ -226,9 +226,11 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 					>
 					<?php
 					$section_link_label = '' !== $section_link_text ? $section_link_text : $section_link_url;
-					echo function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
-						? mrn_base_stack_get_compact_link_label_markup( $section_link_label, $section_link_icon_markup, $section_link_icon_position )
-						: esc_html( $section_link_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
+						echo wp_kses_post(
+							function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
+								? mrn_base_stack_get_compact_link_label_markup( $section_link_label, $section_link_icon_markup, $section_link_icon_position )
+								: esc_html( $section_link_label )
+						);
 					?>
 				</<?php echo esc_html( $section_link_tag ); ?>>
 				<?php endforeach; ?>

@@ -104,7 +104,7 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 	$container_classes = trim( 'mrn-layout-container ' . ( $width_layers['container_class'] ?? 'mrn-layout-container--wide' ) );
 	$row_attributes    = array();
 	if ( ! $include_motion_contract ) {
-		$flex_contract = function_exists( 'mrn_base_stack_get_builder_flex_contract' ) ? mrn_base_stack_get_builder_flex_contract( $row ) : array(
+		$flex_contract        = function_exists( 'mrn_base_stack_get_builder_flex_contract' ) ? mrn_base_stack_get_builder_flex_contract( $row ) : array(
 			'classes'    => array(),
 			'attributes' => array(),
 		);
@@ -112,7 +112,7 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 			'classes'    => array(),
 			'attributes' => array(),
 		);
-		$combined_contract = array(
+		$combined_contract    = array(
 			'classes'    => array_merge(
 				isset( $flex_contract['classes'] ) && is_array( $flex_contract['classes'] ) ? $flex_contract['classes'] : array(),
 				isset( $sub_content_contract['classes'] ) && is_array( $sub_content_contract['classes'] ) ? $sub_content_contract['classes'] : array()

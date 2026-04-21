@@ -158,9 +158,11 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 								>
 								<?php
 								$link_label = '' !== $link_text ? $link_text : $link_url;
-								echo function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
-									? mrn_base_stack_get_compact_link_label_markup( $link_label, $link_icon_markup, $link_icon_position )
-									: esc_html( $link_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
+									echo wp_kses_post(
+										function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
+											? mrn_base_stack_get_compact_link_label_markup( $link_label, $link_icon_markup, $link_icon_position )
+											: esc_html( $link_label )
+									);
 								?>
 							</<?php echo esc_html( $link_tag ); ?>>
 							<?php endforeach; ?>

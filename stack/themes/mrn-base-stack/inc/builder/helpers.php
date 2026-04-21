@@ -1294,8 +1294,8 @@ function mrn_base_stack_get_internal_layout_name_field( $key ) {
  * @return array<string, mixed>
  */
 function mrn_base_stack_normalize_primary_layout_field( array $field ) {
-	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
-	$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+	$field_type           = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	$field_name           = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
 	$is_tag_chooser_field = ( 'select' === $field_type ) && ( 1 === preg_match( '/(^|_)(label|heading|subheading|text_field)_tag$/', $field_name ) );
 
 	if ( 'internal_name' === $field_name ) {
@@ -1390,7 +1390,7 @@ function mrn_base_stack_normalize_primary_layout_field( array $field ) {
  *
  * This supports nested repeater naming patterns like `item_label` + `item_label_tag`.
  *
- * @param array<int, mixed> $fields
+ * @param array<int, mixed> $fields Flexible-content field definitions.
  * @return array<int, mixed>
  */
 function mrn_base_stack_apply_tag_field_column_layout( array $fields ) {
@@ -1809,16 +1809,16 @@ function mrn_base_stack_repeater_uses_primary_item_contract( $repeater_name ) {
 
 	return in_array(
 		$repeater_name,
-			array(
-				'grid_items',
-				'card_items',
-				'showcase_items',
-				'slider_items',
-				'tabs',
-				'logo_items',
-			),
-			true
-		);
+		array(
+			'grid_items',
+			'card_items',
+			'showcase_items',
+			'slider_items',
+			'tabs',
+			'logo_items',
+		),
+		true
+	);
 }
 
 /**
@@ -1873,7 +1873,7 @@ function mrn_base_stack_ensure_acf_field_origin_names( array $fields ) {
 					continue;
 				}
 
-				$layout['sub_fields']      = mrn_base_stack_ensure_acf_field_origin_names( $layout['sub_fields'] );
+				$layout['sub_fields']            = mrn_base_stack_ensure_acf_field_origin_names( $layout['sub_fields'] );
 				$field['layouts'][ $layout_key ] = $layout;
 			}
 		}
@@ -3314,6 +3314,7 @@ function mrn_base_stack_with_effects_tabs( array $field_group ) {
 	if ( isset( $field_group['fields'] ) && is_array( $field_group['fields'] ) ) {
 		$field_group['fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field_group['fields'], false );
 		$field_group['fields'] = mrn_base_stack_relocate_effect_fields( $field_group['fields'] );
+
 		/*
 		 * Re-run the contract pass after Effects relocation so empty
 		 * "Additional settings" groups always receive their placeholder message.
@@ -3818,9 +3819,9 @@ function mrn_base_stack_get_builder_row_flex_settings( array $row ) {
 	$defaults = mrn_base_stack_normalize_builder_row_flex_settings( array() );
 	$settings = $defaults;
 
-	$post_id = isset( $row['__mrn_builder_post_id'] ) ? absint( $row['__mrn_builder_post_id'] ) : 0;
+	$post_id    = isset( $row['__mrn_builder_post_id'] ) ? absint( $row['__mrn_builder_post_id'] ) : 0;
 	$field_name = isset( $row['__mrn_builder_field_name'] ) ? sanitize_key( (string) $row['__mrn_builder_field_name'] ) : '';
-	$row_index = isset( $row['__mrn_builder_row_index'] ) ? (int) $row['__mrn_builder_row_index'] : -1;
+	$row_index  = isset( $row['__mrn_builder_row_index'] ) ? (int) $row['__mrn_builder_row_index'] : -1;
 
 	if ( $post_id > 0 && '' !== $field_name && $row_index >= 0 ) {
 		$payload      = mrn_base_stack_get_builder_row_flex_payload( $post_id );
@@ -5299,7 +5300,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_card_motion_settings' ),
 			),
 		),
-			'layout_mrn_nested_cta' => array(
+		'layout_mrn_nested_cta' => array(
 			'key'        => 'layout_mrn_nested_cta',
 			'name'       => 'cta',
 			'label'      => 'CTA - label|heading|subheading|text with editor|link',
@@ -5320,7 +5321,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_cta_motion_settings' ),
 			),
 		),
-			'layout_mrn_nested_grid' => array(
+		'layout_mrn_nested_grid' => array(
 			'key'        => 'layout_mrn_nested_grid',
 			'name'       => 'grid',
 			'label'      => 'Grid - label|heading|subheading|repeater',

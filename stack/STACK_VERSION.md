@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.20-searchwp-editor-performance`
-- Release date: `2026-04-20`
+- Stack release: `2026.04.21-builder-layout-canonicalization`
+- Release date: `2026-04-21`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.21`
+  - `mrn-base-stack` `1.1.25`
 - MU plugins:
   - `mrn-admin-ui-css` `3.1.12`
   - `mrn-shared-assets` `0.1.1`
@@ -16,7 +16,7 @@
   - `mrn-site-colors` / `Site Styles` `0.1.4`
 - Standard plugins:
   - `mrn-config-helper` `0.1.35`
-  - `mrn-dummy-content` `0.1.9`
+  - `mrn-dummy-content` `0.1.13`
   - `mrn-editor-tools` `1.8.17`
   - `mrn-seo-helper` `0.2.9`
   - `mrn-universal-sticky-bar` `1.0.9`

@@ -221,13 +221,13 @@ add_action( 'acf/init', 'mrn_base_stack_register_theme_options_pages' );
 /**
  * Append classes to an ACF field wrapper definition.
  *
- * @param array<string, mixed> $field ACF field definition.
- * @param string               $class Wrapper class(es) to append.
+ * @param array<string, mixed> $field         ACF field definition.
+ * @param string               $wrapper_class Wrapper class(es) to append.
  * @return array<string, mixed>
  */
-function mrn_base_stack_append_field_wrapper_class( array $field, $class ) {
-	$class = trim( (string) $class );
-	if ( '' === $class ) {
+function mrn_base_stack_append_field_wrapper_class( array $field, $wrapper_class ) {
+	$wrapper_class = trim( (string) $wrapper_class );
+	if ( '' === $wrapper_class ) {
 		return $field;
 	}
 
@@ -236,7 +236,7 @@ function mrn_base_stack_append_field_wrapper_class( array $field, $class ) {
 	}
 
 	$existing = isset( $field['wrapper']['class'] ) ? (string) $field['wrapper']['class'] : '';
-	$classes  = preg_split( '/\s+/', trim( $existing . ' ' . $class ) );
+	$classes  = preg_split( '/\s+/', trim( $existing . ' ' . $wrapper_class ) );
 	$classes  = array_filter( is_array( $classes ) ? $classes : array() );
 	$classes  = array_values( array_unique( $classes ) );
 
@@ -274,10 +274,10 @@ function mrn_base_stack_get_theme_header_footer_subtab_contract() {
 			'layout'  => __( 'Layout', 'mrn-base-stack' ),
 		),
 		'appearance' => array(
-			'tab_set_gap_px'     => 10,
-			'panel_gap_px'       => 12,
+			'tab_set_gap_px'      => 10,
+			'panel_gap_px'        => 12,
 			'tab_border_width_px' => 1,
-			'tab_border_color'   => '#c3c4c7',
+			'tab_border_color'    => '#c3c4c7',
 		),
 	);
 }
@@ -366,6 +366,7 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
 		'message'   => sprintf(
 			'<div class="mrn-theme-hf-subtabs" data-mrn-theme-hf-section="%1$s" data-mrn-theme-hf-default="%4$s"><nav class="nav-tab-wrapper wp-clearfix" role="tablist" aria-label="%2$s">%3$s</nav></div>',
 			esc_attr( $section ),
+			/* translators: %s: Header or Footer section label. */
 			esc_attr( sprintf( __( '%s option sub-tabs', 'mrn-base-stack' ), $section_label ) ),
 			$buttons_html,
 			esc_attr( $default_tab )
@@ -404,16 +405,16 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
 		'new_lines' => 'br',
 	);
 
-	$subtab_nav            = mrn_base_stack_append_field_wrapper_class( $subtab_nav, 'mrn-theme-hf-subtabs-nav' );
-	$contents_placeholder   = mrn_base_stack_append_field_wrapper_class(
+	$subtab_nav           = mrn_base_stack_append_field_wrapper_class( $subtab_nav, 'mrn-theme-hf-subtabs-nav' );
+	$contents_placeholder = mrn_base_stack_append_field_wrapper_class(
 		$contents_placeholder,
 		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'content' )
 	);
-	$layout_placeholder    = mrn_base_stack_append_field_wrapper_class(
+	$layout_placeholder   = mrn_base_stack_append_field_wrapper_class(
 		$layout_placeholder,
 		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'layout' )
 	);
-	$effects_placeholder   = mrn_base_stack_append_field_wrapper_class(
+	$effects_placeholder  = mrn_base_stack_append_field_wrapper_class(
 		$effects_placeholder,
 		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'effects' )
 	);
@@ -433,7 +434,7 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
  * @return array<int, mixed>
  */
 function mrn_base_stack_prepare_theme_header_footer_subtab_fields( array $fields ) {
-	$prepared       = array();
+	$prepared        = array();
 	$current_section = '';
 
 	foreach ( $fields as $field ) {
@@ -514,382 +515,382 @@ function mrn_base_stack_register_theme_options_field_groups() {
 			'title'                 => __( 'Theme Header/Footer', 'mrn-base-stack' ),
 			'fields'                => mrn_base_stack_prepare_theme_header_footer_subtab_fields(
 				array(
-				array(
-					'key'       => 'field_mrn_theme_header_tab',
-					'label'     => __( 'Header', 'mrn-base-stack' ),
-					'name'      => '',
-					'type'      => 'tab',
-					'placement' => 'top',
-					'endpoint'  => 0,
-				),
-				array(
-					'key'           => 'field_mrn_theme_header_show_social_menu',
-					'label'         => __( 'Show Social Menu', 'mrn-base-stack' ),
-					'name'          => 'header_show_social_menu',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Uses the Social Media menu location.', 'mrn-base-stack' ),
-					'required'      => 0,
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'               => 'field_mrn_theme_header_social_icon_tone',
-					'label'             => __( 'Social Icon Tone', 'mrn-base-stack' ),
-					'name'              => 'header_social_icon_tone',
-					'type'              => 'button_group',
-					'choices'           => mrn_base_stack_get_social_icon_tone_choices(),
-					'default_value'     => 'dark',
-					'layout'            => 'horizontal',
-					'return_format'     => 'value',
-					'instructions'      => __( 'Controls icon tone for the Social Media menu when rendered in the Header.', 'mrn-base-stack' ),
-					'conditional_logic' => array(
-						array(
+					array(
+						'key'       => 'field_mrn_theme_header_tab',
+						'label'     => __( 'Header', 'mrn-base-stack' ),
+						'name'      => '',
+						'type'      => 'tab',
+						'placement' => 'top',
+						'endpoint'  => 0,
+					),
+					array(
+						'key'           => 'field_mrn_theme_header_show_social_menu',
+						'label'         => __( 'Show Social Menu', 'mrn-base-stack' ),
+						'name'          => 'header_show_social_menu',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Uses the Social Media menu location.', 'mrn-base-stack' ),
+						'required'      => 0,
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'               => 'field_mrn_theme_header_social_icon_tone',
+						'label'             => __( 'Social Icon Tone', 'mrn-base-stack' ),
+						'name'              => 'header_social_icon_tone',
+						'type'              => 'button_group',
+						'choices'           => mrn_base_stack_get_social_icon_tone_choices(),
+						'default_value'     => 'dark',
+						'layout'            => 'horizontal',
+						'return_format'     => 'value',
+						'instructions'      => __( 'Controls icon tone for the Social Media menu when rendered in the Header.', 'mrn-base-stack' ),
+						'conditional_logic' => array(
 							array(
-								'field'    => 'field_mrn_theme_header_show_social_menu',
-								'operator' => '==',
-								'value'    => '1',
+								array(
+									'field'    => 'field_mrn_theme_header_show_social_menu',
+									'operator' => '==',
+									'value'    => '1',
+								),
 							),
 						),
 					),
-				),
-				array(
-					'key'           => 'field_mrn_theme_header_show_tertiary_menu',
-					'label'         => __( 'Show Tertiary Menu', 'mrn-base-stack' ),
-					'name'          => 'header_show_tertiary_menu',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Uses the Header Tertiary menu location.', 'mrn-base-stack' ),
-					'required'      => 0,
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'           => 'field_mrn_theme_header_show_utility_menu',
-					'label'         => __( 'Show Secondary Menu', 'mrn-base-stack' ),
-					'name'          => 'header_show_utility_menu',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Uses the Header Secondary menu location (falls back to Utility legacy location).', 'mrn-base-stack' ),
-					'required'      => 0,
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'           => 'field_mrn_theme_header_show_primary_menu',
-					'label'         => __( 'Show Primary Menu', 'mrn-base-stack' ),
-					'name'          => 'header_show_primary_menu',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Uses the Primary menu location.', 'mrn-base-stack' ),
-					'required'      => 0,
-					'default_value' => 1,
-					'ui'            => 1,
-				),
-				array(
-					'key'           => 'field_mrn_theme_header_show_search',
-					'label'         => __( 'Show Search', 'mrn-base-stack' ),
-					'name'          => 'header_show_search',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Shows the stack search trigger area. This is intended for the stack search experience, not the default WordPress search form.', 'mrn-base-stack' ),
-					'required'      => 0,
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'               => 'field_mrn_theme_header_search_style',
-					'label'             => __( 'Search Display', 'mrn-base-stack' ),
-					'name'              => 'header_search_style',
-					'type'              => 'button_group',
-					'choices'           => array(
-						'full'      => __( 'Full Form', 'mrn-base-stack' ),
-						'icon_only' => __( 'Icon Only', 'mrn-base-stack' ),
+					array(
+						'key'           => 'field_mrn_theme_header_show_tertiary_menu',
+						'label'         => __( 'Show Tertiary Menu', 'mrn-base-stack' ),
+						'name'          => 'header_show_tertiary_menu',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Uses the Header Tertiary menu location.', 'mrn-base-stack' ),
+						'required'      => 0,
+						'default_value' => 0,
+						'ui'            => 1,
 					),
-					'default_value'     => 'full',
-					'layout'            => 'horizontal',
-					'return_format'     => 'value',
-					'instructions'      => __( 'Icon Only starts as a search icon and expands the search field after click.', 'mrn-base-stack' ),
-					'conditional_logic' => array(
-						array(
+					array(
+						'key'           => 'field_mrn_theme_header_show_utility_menu',
+						'label'         => __( 'Show Secondary Menu', 'mrn-base-stack' ),
+						'name'          => 'header_show_utility_menu',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Uses the Header Secondary menu location (falls back to Utility legacy location).', 'mrn-base-stack' ),
+						'required'      => 0,
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'           => 'field_mrn_theme_header_show_primary_menu',
+						'label'         => __( 'Show Primary Menu', 'mrn-base-stack' ),
+						'name'          => 'header_show_primary_menu',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Uses the Primary menu location.', 'mrn-base-stack' ),
+						'required'      => 0,
+						'default_value' => 1,
+						'ui'            => 1,
+					),
+					array(
+						'key'           => 'field_mrn_theme_header_show_search',
+						'label'         => __( 'Show Search', 'mrn-base-stack' ),
+						'name'          => 'header_show_search',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Shows the stack search trigger area. This is intended for the stack search experience, not the default WordPress search form.', 'mrn-base-stack' ),
+						'required'      => 0,
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'               => 'field_mrn_theme_header_search_style',
+						'label'             => __( 'Search Display', 'mrn-base-stack' ),
+						'name'              => 'header_search_style',
+						'type'              => 'button_group',
+						'choices'           => array(
+							'full'      => __( 'Full Form', 'mrn-base-stack' ),
+							'icon_only' => __( 'Icon Only', 'mrn-base-stack' ),
+						),
+						'default_value'     => 'full',
+						'layout'            => 'horizontal',
+						'return_format'     => 'value',
+						'instructions'      => __( 'Icon Only starts as a search icon and expands the search field after click.', 'mrn-base-stack' ),
+						'conditional_logic' => array(
 							array(
-								'field'    => 'field_mrn_theme_header_show_search',
-								'operator' => '==',
-								'value'    => '1',
+								array(
+									'field'    => 'field_mrn_theme_header_show_search',
+									'operator' => '==',
+									'value'    => '1',
+								),
 							),
 						),
 					),
-				),
-				array(
-					'key'               => 'field_mrn_theme_header_search_icon_source',
-					'label'             => __( 'Icon Source', 'mrn-base-stack' ),
-					'name'              => 'header_search_icon_source',
-					'type'              => 'button_group',
-					'choices'           => array(
-						'dashicons'   => __( 'Dashicons', 'mrn-base-stack' ),
-						'fontawesome' => __( 'Font Awesome', 'mrn-base-stack' ),
-						'media'       => __( 'Media', 'mrn-base-stack' ),
-					),
-					'default_value'     => 'dashicons',
-					'layout'            => 'horizontal',
-					'return_format'     => 'value',
-					'wrapper'           => array(
-						'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--source',
-					),
-					'conditional_logic' => array(
-						array(
+					array(
+						'key'               => 'field_mrn_theme_header_search_icon_source',
+						'label'             => __( 'Icon Source', 'mrn-base-stack' ),
+						'name'              => 'header_search_icon_source',
+						'type'              => 'button_group',
+						'choices'           => array(
+							'dashicons'   => __( 'Dashicons', 'mrn-base-stack' ),
+							'fontawesome' => __( 'Font Awesome', 'mrn-base-stack' ),
+							'media'       => __( 'Media', 'mrn-base-stack' ),
+						),
+						'default_value'     => 'dashicons',
+						'layout'            => 'horizontal',
+						'return_format'     => 'value',
+						'wrapper'           => array(
+							'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--source',
+						),
+						'conditional_logic' => array(
 							array(
-								'field'    => 'field_mrn_theme_header_show_search',
-								'operator' => '==',
-								'value'    => '1',
-							),
-							array(
-								'field'    => 'field_mrn_theme_header_search_style',
-								'operator' => '==',
-								'value'    => 'icon_only',
+								array(
+									'field'    => 'field_mrn_theme_header_show_search',
+									'operator' => '==',
+									'value'    => '1',
+								),
+								array(
+									'field'    => 'field_mrn_theme_header_search_style',
+									'operator' => '==',
+									'value'    => 'icon_only',
+								),
 							),
 						),
 					),
-				),
-				array(
-					'key'               => 'field_mrn_theme_header_search_standard_icon',
-					'label'             => __( 'Dashicon', 'mrn-base-stack' ),
-					'name'              => 'header_search_standard_icon',
-					'type'              => 'select',
-					'choices'           => mrn_base_stack_get_header_search_standard_icon_choices(),
-					'default_value'     => 'dashicons-search',
-					'return_format'     => 'value',
-					'ui'                => 1,
-					'wrapper'           => array(
-						'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--dashicons',
-					),
-					'conditional_logic' => array(
-						array(
+					array(
+						'key'               => 'field_mrn_theme_header_search_standard_icon',
+						'label'             => __( 'Dashicon', 'mrn-base-stack' ),
+						'name'              => 'header_search_standard_icon',
+						'type'              => 'select',
+						'choices'           => mrn_base_stack_get_header_search_standard_icon_choices(),
+						'default_value'     => 'dashicons-search',
+						'return_format'     => 'value',
+						'ui'                => 1,
+						'wrapper'           => array(
+							'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--dashicons',
+						),
+						'conditional_logic' => array(
 							array(
-								'field'    => 'field_mrn_theme_header_show_search',
-								'operator' => '==',
-								'value'    => '1',
-							),
-							array(
-								'field'    => 'field_mrn_theme_header_search_style',
-								'operator' => '==',
-								'value'    => 'icon_only',
-							),
-							array(
-								'field'    => 'field_mrn_theme_header_search_icon_source',
-								'operator' => '==',
-								'value'    => 'dashicons',
+								array(
+									'field'    => 'field_mrn_theme_header_show_search',
+									'operator' => '==',
+									'value'    => '1',
+								),
+								array(
+									'field'    => 'field_mrn_theme_header_search_style',
+									'operator' => '==',
+									'value'    => 'icon_only',
+								),
+								array(
+									'field'    => 'field_mrn_theme_header_search_icon_source',
+									'operator' => '==',
+									'value'    => 'dashicons',
+								),
 							),
 						),
 					),
-				),
-				array(
-					'key'               => 'field_mrn_theme_header_search_fa_class',
-					'label'             => __( 'Font Awesome Icon', 'mrn-base-stack' ),
-					'name'              => 'header_search_fa_class',
-					'type'              => 'select',
-					'choices'           => mrn_base_stack_get_header_search_fontawesome_choices(),
-					'default_value'     => 'fa-solid fa-magnifying-glass',
-					'return_format'     => 'value',
-					'ui'                => 1,
-					'wrapper'           => array(
-						'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--fontawesome',
-					),
-					'conditional_logic' => array(
-						array(
+					array(
+						'key'               => 'field_mrn_theme_header_search_fa_class',
+						'label'             => __( 'Font Awesome Icon', 'mrn-base-stack' ),
+						'name'              => 'header_search_fa_class',
+						'type'              => 'select',
+						'choices'           => mrn_base_stack_get_header_search_fontawesome_choices(),
+						'default_value'     => 'fa-solid fa-magnifying-glass',
+						'return_format'     => 'value',
+						'ui'                => 1,
+						'wrapper'           => array(
+							'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--fontawesome',
+						),
+						'conditional_logic' => array(
 							array(
-								'field'    => 'field_mrn_theme_header_show_search',
-								'operator' => '==',
-								'value'    => '1',
-							),
-							array(
-								'field'    => 'field_mrn_theme_header_search_style',
-								'operator' => '==',
-								'value'    => 'icon_only',
-							),
-							array(
-								'field'    => 'field_mrn_theme_header_search_icon_source',
-								'operator' => '==',
-								'value'    => 'fontawesome',
+								array(
+									'field'    => 'field_mrn_theme_header_show_search',
+									'operator' => '==',
+									'value'    => '1',
+								),
+								array(
+									'field'    => 'field_mrn_theme_header_search_style',
+									'operator' => '==',
+									'value'    => 'icon_only',
+								),
+								array(
+									'field'    => 'field_mrn_theme_header_search_icon_source',
+									'operator' => '==',
+									'value'    => 'fontawesome',
+								),
 							),
 						),
 					),
-				),
-				array(
-					'key'               => 'field_mrn_theme_header_search_media_icon',
-					'label'             => __( 'Media Icon', 'mrn-base-stack' ),
-					'name'              => 'header_search_media_icon',
-					'type'              => 'image',
-					'return_format'     => 'array',
-					'preview_size'      => 'thumbnail',
-					'library'           => 'all',
-					'mime_types'        => 'jpg,jpeg,png,gif,webp,svg',
-					'instructions'      => __( 'Upload or choose the icon image to use for the icon-only search trigger.', 'mrn-base-stack' ),
-					'wrapper'           => array(
-						'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--media',
-					),
-					'conditional_logic' => array(
-						array(
+					array(
+						'key'               => 'field_mrn_theme_header_search_media_icon',
+						'label'             => __( 'Media Icon', 'mrn-base-stack' ),
+						'name'              => 'header_search_media_icon',
+						'type'              => 'image',
+						'return_format'     => 'array',
+						'preview_size'      => 'thumbnail',
+						'library'           => 'all',
+						'mime_types'        => 'jpg,jpeg,png,gif,webp,svg',
+						'instructions'      => __( 'Upload or choose the icon image to use for the icon-only search trigger.', 'mrn-base-stack' ),
+						'wrapper'           => array(
+							'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--media',
+						),
+						'conditional_logic' => array(
 							array(
-								'field'    => 'field_mrn_theme_header_show_search',
-								'operator' => '==',
-								'value'    => '1',
-							),
-							array(
-								'field'    => 'field_mrn_theme_header_search_style',
-								'operator' => '==',
-								'value'    => 'icon_only',
-							),
-							array(
-								'field'    => 'field_mrn_theme_header_search_icon_source',
-								'operator' => '==',
-								'value'    => 'media',
+								array(
+									'field'    => 'field_mrn_theme_header_show_search',
+									'operator' => '==',
+									'value'    => '1',
+								),
+								array(
+									'field'    => 'field_mrn_theme_header_search_style',
+									'operator' => '==',
+									'value'    => 'icon_only',
+								),
+								array(
+									'field'    => 'field_mrn_theme_header_search_icon_source',
+									'operator' => '==',
+									'value'    => 'media',
+								),
 							),
 						),
 					),
-				),
-				array(
-					'key'           => 'field_mrn_theme_header_show_business_phone',
-					'label'         => __( 'Show Business Phone', 'mrn-base-stack' ),
-					'name'          => 'header_show_business_phone',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Pulls the display value from Business Information.', 'mrn-base-stack' ),
-					'required'      => 0,
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'           => 'field_mrn_theme_header_show_business_profile',
-					'label'         => __( 'Show Business Profile', 'mrn-base-stack' ),
-					'name'          => 'header_show_business_profile',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Pulls the Business Profile value from Business Information.', 'mrn-base-stack' ),
-					'required'      => 0,
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'       => 'field_mrn_theme_footer_tab',
-					'label'     => __( 'Footer', 'mrn-base-stack' ),
-					'name'      => '',
-					'type'      => 'tab',
-					'placement' => 'top',
-					'endpoint'  => 0,
-				),
-				array(
-					'key'           => 'field_mrn_theme_footer_show_social_menu',
-					'label'         => __( 'Show Social Menu', 'mrn-base-stack' ),
-					'name'          => 'footer_show_social_menu',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Uses the Social Media menu location.', 'mrn-base-stack' ),
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'               => 'field_mrn_theme_footer_social_icon_tone',
-					'label'             => __( 'Social Icon Tone', 'mrn-base-stack' ),
-					'name'              => 'footer_social_icon_tone',
-					'type'              => 'button_group',
-					'choices'           => mrn_base_stack_get_social_icon_tone_choices(),
-					'default_value'     => 'dark',
-					'layout'            => 'horizontal',
-					'return_format'     => 'value',
-					'instructions'      => __( 'Controls icon tone for the Social Media menu when rendered in the Footer.', 'mrn-base-stack' ),
-					'conditional_logic' => array(
-						array(
+					array(
+						'key'           => 'field_mrn_theme_header_show_business_phone',
+						'label'         => __( 'Show Business Phone', 'mrn-base-stack' ),
+						'name'          => 'header_show_business_phone',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Pulls the display value from Business Information.', 'mrn-base-stack' ),
+						'required'      => 0,
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'           => 'field_mrn_theme_header_show_business_profile',
+						'label'         => __( 'Show Business Profile', 'mrn-base-stack' ),
+						'name'          => 'header_show_business_profile',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Pulls the Business Profile value from Business Information.', 'mrn-base-stack' ),
+						'required'      => 0,
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'       => 'field_mrn_theme_footer_tab',
+						'label'     => __( 'Footer', 'mrn-base-stack' ),
+						'name'      => '',
+						'type'      => 'tab',
+						'placement' => 'top',
+						'endpoint'  => 0,
+					),
+					array(
+						'key'           => 'field_mrn_theme_footer_show_social_menu',
+						'label'         => __( 'Show Social Menu', 'mrn-base-stack' ),
+						'name'          => 'footer_show_social_menu',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Uses the Social Media menu location.', 'mrn-base-stack' ),
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'               => 'field_mrn_theme_footer_social_icon_tone',
+						'label'             => __( 'Social Icon Tone', 'mrn-base-stack' ),
+						'name'              => 'footer_social_icon_tone',
+						'type'              => 'button_group',
+						'choices'           => mrn_base_stack_get_social_icon_tone_choices(),
+						'default_value'     => 'dark',
+						'layout'            => 'horizontal',
+						'return_format'     => 'value',
+						'instructions'      => __( 'Controls icon tone for the Social Media menu when rendered in the Footer.', 'mrn-base-stack' ),
+						'conditional_logic' => array(
 							array(
-								'field'    => 'field_mrn_theme_footer_show_social_menu',
-								'operator' => '==',
-								'value'    => '1',
+								array(
+									'field'    => 'field_mrn_theme_footer_show_social_menu',
+									'operator' => '==',
+									'value'    => '1',
+								),
 							),
 						),
 					),
-				),
-				array(
-					'key'           => 'field_mrn_theme_footer_show_tertiary_menu',
-					'label'         => __( 'Show Tertiary Menu', 'mrn-base-stack' ),
-					'name'          => 'footer_show_legal_menu',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Uses the Footer Tertiary menu location (falls back to Legal legacy location).', 'mrn-base-stack' ),
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'           => 'field_mrn_theme_footer_show_secondary_menu',
-					'label'         => __( 'Show Secondary Menu', 'mrn-base-stack' ),
-					'name'          => 'footer_show_secondary_menu',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Uses the Footer Secondary menu location.', 'mrn-base-stack' ),
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'           => 'field_mrn_theme_footer_show_footer_menu',
-					'label'         => __( 'Show Primary Menu', 'mrn-base-stack' ),
-					'name'          => 'footer_show_footer_menu',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Uses the Footer Primary menu location.', 'mrn-base-stack' ),
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'           => 'field_mrn_theme_footer_show_business_profile',
-					'label'         => __( 'Show Business Profile', 'mrn-base-stack' ),
-					'name'          => 'footer_show_business_profile',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Pulls the Business Profile value from Business Information.', 'mrn-base-stack' ),
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'           => 'field_mrn_theme_footer_show_business_phone',
-					'label'         => __( 'Show Business Phone', 'mrn-base-stack' ),
-					'name'          => 'footer_show_business_phone',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Pulls the Business Phone value from Business Information.', 'mrn-base-stack' ),
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'           => 'field_mrn_theme_footer_show_text_phone',
-					'label'         => __( 'Show Text / SMS / RCS', 'mrn-base-stack' ),
-					'name'          => 'footer_show_text_phone',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Pulls the text support number from Business Information.', 'mrn-base-stack' ),
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'           => 'field_mrn_theme_footer_show_address',
-					'label'         => __( 'Show Address', 'mrn-base-stack' ),
-					'name'          => 'footer_show_address',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Pulls the address block from Business Information.', 'mrn-base-stack' ),
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'           => 'field_mrn_theme_footer_show_business_hours',
-					'label'         => __( 'Show Business Hours', 'mrn-base-stack' ),
-					'name'          => 'footer_show_business_hours',
-					'type'          => 'true_false',
-					'instructions'  => __( 'Shows weekday hours from Business Information.', 'mrn-base-stack' ),
-					'default_value' => 0,
-					'ui'            => 1,
-				),
-				array(
-					'key'           => 'field_mrn_theme_footer_copyright_text',
-					'label'         => __( 'Copyright Text', 'mrn-base-stack' ),
-					'name'          => 'footer_copyright_text',
-					'type'          => 'text',
-					'instructions'  => __( 'Optional custom copyright line. Leave blank to use the site name and current year.', 'mrn-base-stack' ),
-					'default_value' => '',
-				),
-				array(
-					'key'           => 'field_mrn_theme_footer_legal_text',
-					'label'         => __( 'Legal Text', 'mrn-base-stack' ),
-					'name'          => 'footer_legal_text',
-					'type'          => 'textarea',
-					'instructions'  => __( 'Optional legal/supporting text below the footer menus.', 'mrn-base-stack' ),
-					'rows'          => 3,
-					'new_lines'     => 'br',
-					'default_value' => '',
-				),
+					array(
+						'key'           => 'field_mrn_theme_footer_show_tertiary_menu',
+						'label'         => __( 'Show Tertiary Menu', 'mrn-base-stack' ),
+						'name'          => 'footer_show_legal_menu',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Uses the Footer Tertiary menu location (falls back to Legal legacy location).', 'mrn-base-stack' ),
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'           => 'field_mrn_theme_footer_show_secondary_menu',
+						'label'         => __( 'Show Secondary Menu', 'mrn-base-stack' ),
+						'name'          => 'footer_show_secondary_menu',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Uses the Footer Secondary menu location.', 'mrn-base-stack' ),
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'           => 'field_mrn_theme_footer_show_footer_menu',
+						'label'         => __( 'Show Primary Menu', 'mrn-base-stack' ),
+						'name'          => 'footer_show_footer_menu',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Uses the Footer Primary menu location.', 'mrn-base-stack' ),
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'           => 'field_mrn_theme_footer_show_business_profile',
+						'label'         => __( 'Show Business Profile', 'mrn-base-stack' ),
+						'name'          => 'footer_show_business_profile',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Pulls the Business Profile value from Business Information.', 'mrn-base-stack' ),
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'           => 'field_mrn_theme_footer_show_business_phone',
+						'label'         => __( 'Show Business Phone', 'mrn-base-stack' ),
+						'name'          => 'footer_show_business_phone',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Pulls the Business Phone value from Business Information.', 'mrn-base-stack' ),
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'           => 'field_mrn_theme_footer_show_text_phone',
+						'label'         => __( 'Show Text / SMS / RCS', 'mrn-base-stack' ),
+						'name'          => 'footer_show_text_phone',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Pulls the text support number from Business Information.', 'mrn-base-stack' ),
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'           => 'field_mrn_theme_footer_show_address',
+						'label'         => __( 'Show Address', 'mrn-base-stack' ),
+						'name'          => 'footer_show_address',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Pulls the address block from Business Information.', 'mrn-base-stack' ),
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'           => 'field_mrn_theme_footer_show_business_hours',
+						'label'         => __( 'Show Business Hours', 'mrn-base-stack' ),
+						'name'          => 'footer_show_business_hours',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Shows weekday hours from Business Information.', 'mrn-base-stack' ),
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'           => 'field_mrn_theme_footer_copyright_text',
+						'label'         => __( 'Copyright Text', 'mrn-base-stack' ),
+						'name'          => 'footer_copyright_text',
+						'type'          => 'text',
+						'instructions'  => __( 'Optional custom copyright line. Leave blank to use the site name and current year.', 'mrn-base-stack' ),
+						'default_value' => '',
+					),
+					array(
+						'key'           => 'field_mrn_theme_footer_legal_text',
+						'label'         => __( 'Legal Text', 'mrn-base-stack' ),
+						'name'          => 'footer_legal_text',
+						'type'          => 'textarea',
+						'instructions'  => __( 'Optional legal/supporting text below the footer menus.', 'mrn-base-stack' ),
+						'rows'          => 3,
+						'new_lines'     => 'br',
+						'default_value' => '',
+					),
 				)
 			),
 			'location'              => array(
@@ -2102,11 +2103,11 @@ function mrn_base_stack_print_theme_header_footer_subtab_layout_css() {
 		return;
 	}
 
-	$appearance = mrn_base_stack_get_theme_header_footer_subtab_appearance();
-	$tab_set_gap_px = isset( $appearance['tab_set_gap_px'] ) ? absint( $appearance['tab_set_gap_px'] ) : 10;
-	$panel_gap_px = isset( $appearance['panel_gap_px'] ) ? absint( $appearance['panel_gap_px'] ) : 12;
+	$appearance          = mrn_base_stack_get_theme_header_footer_subtab_appearance();
+	$tab_set_gap_px      = isset( $appearance['tab_set_gap_px'] ) ? absint( $appearance['tab_set_gap_px'] ) : 10;
+	$panel_gap_px        = isset( $appearance['panel_gap_px'] ) ? absint( $appearance['panel_gap_px'] ) : 12;
 	$tab_border_width_px = isset( $appearance['tab_border_width_px'] ) ? absint( $appearance['tab_border_width_px'] ) : 1;
-	$tab_border_color = isset( $appearance['tab_border_color'] ) ? (string) $appearance['tab_border_color'] : '#c3c4c7';
+	$tab_border_color    = isset( $appearance['tab_border_color'] ) ? (string) $appearance['tab_border_color'] : '#c3c4c7';
 	?>
 		<style>
 			body.toplevel_page_mrn-theme-header-footer {

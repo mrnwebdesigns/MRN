@@ -12,29 +12,29 @@
 ?>
 
 	<?php
-	$mrn_footer_options        = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
-	$mrn_business_information  = function_exists( 'mrn_base_stack_get_business_information' ) ? mrn_base_stack_get_business_information() : array();
-	$mrn_footer_logo           = function_exists( 'mrn_base_stack_get_business_logo' ) ? mrn_base_stack_get_business_logo( 'footer' ) : null;
-	$mrn_footer_address_lines  = function_exists( 'mrn_base_stack_get_business_address_lines' ) ? mrn_base_stack_get_business_address_lines() : array();
-	$mrn_footer_hours_rows     = function_exists( 'mrn_base_stack_get_business_hours_display_rows' ) ? mrn_base_stack_get_business_hours_display_rows() : array();
+	$mrn_footer_options           = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+	$mrn_business_information     = function_exists( 'mrn_base_stack_get_business_information' ) ? mrn_base_stack_get_business_information() : array();
+	$mrn_footer_logo              = function_exists( 'mrn_base_stack_get_business_logo' ) ? mrn_base_stack_get_business_logo( 'footer' ) : null;
+	$mrn_footer_address_lines     = function_exists( 'mrn_base_stack_get_business_address_lines' ) ? mrn_base_stack_get_business_address_lines() : array();
+	$mrn_footer_hours_rows        = function_exists( 'mrn_base_stack_get_business_hours_display_rows' ) ? mrn_base_stack_get_business_hours_display_rows() : array();
 	$mrn_footer_tertiary_location = has_nav_menu( 'footer-tertiary' ) ? 'footer-tertiary' : 'menu-4';
-	$mrn_show_social_menu      = ! empty( $mrn_footer_options['footer_show_social_menu'] ) && has_nav_menu( 'social-media' );
-	$mrn_show_tertiary_menu    = ! empty( $mrn_footer_options['footer_show_tertiary_menu'] ) && has_nav_menu( $mrn_footer_tertiary_location );
-	$mrn_show_secondary_menu   = ! empty( $mrn_footer_options['footer_show_secondary_menu'] ) && has_nav_menu( 'footer-secondary' );
-	$mrn_show_primary_menu     = ! empty( $mrn_footer_options['footer_show_primary_menu'] ) && has_nav_menu( 'menu-3' );
-	$mrn_footer_social_icon_tone = function_exists( 'mrn_base_stack_normalize_social_icon_tone' )
+	$mrn_show_social_menu         = ! empty( $mrn_footer_options['footer_show_social_menu'] ) && has_nav_menu( 'social-media' );
+	$mrn_show_tertiary_menu       = ! empty( $mrn_footer_options['footer_show_tertiary_menu'] ) && has_nav_menu( $mrn_footer_tertiary_location );
+	$mrn_show_secondary_menu      = ! empty( $mrn_footer_options['footer_show_secondary_menu'] ) && has_nav_menu( 'footer-secondary' );
+	$mrn_show_primary_menu        = ! empty( $mrn_footer_options['footer_show_primary_menu'] ) && has_nav_menu( 'menu-3' );
+	$mrn_footer_social_icon_tone  = function_exists( 'mrn_base_stack_normalize_social_icon_tone' )
 		? mrn_base_stack_normalize_social_icon_tone( isset( $mrn_footer_options['footer_social_icon_tone'] ) ? $mrn_footer_options['footer_social_icon_tone'] : 'dark' )
 		: 'dark';
 	$mrn_footer_social_menu_class = 'mrn-social-links mrn-social-links--icon-tone-' . sanitize_html_class( $mrn_footer_social_icon_tone );
-	$mrn_show_business_profile = ! empty( $mrn_footer_options['footer_show_business_profile'] ) && ! empty( $mrn_business_information['business_profile'] );
-	$mrn_show_business_phone   = ! empty( $mrn_footer_options['footer_show_business_phone'] ) && ! empty( $mrn_business_information['phone'] ) && ! empty( $mrn_business_information['phone_uri'] );
-	$mrn_show_text_phone       = ! empty( $mrn_footer_options['footer_show_text_phone'] ) && ! empty( $mrn_business_information['text_phone'] ) && ! empty( $mrn_business_information['text_phone_uri'] );
-	$mrn_show_address          = ! empty( $mrn_footer_options['footer_show_address'] ) && ! empty( $mrn_footer_address_lines );
-	$mrn_show_business_hours   = ! empty( $mrn_footer_options['footer_show_business_hours'] ) && ! empty( $mrn_footer_hours_rows );
-	$mrn_footer_legal_text     = ! empty( $mrn_footer_options['footer_legal_text'] ) ? (string) $mrn_footer_options['footer_legal_text'] : '';
-	$mrn_has_footer_top        = ! empty( $mrn_footer_logo ) || $mrn_show_business_profile || $mrn_show_business_phone || $mrn_show_text_phone || $mrn_show_address || $mrn_show_business_hours;
-	$mrn_has_footer_menu_rows  = $mrn_show_social_menu || $mrn_show_tertiary_menu || $mrn_show_secondary_menu || $mrn_show_primary_menu;
-	$mrn_footer_rows           = array(
+	$mrn_show_business_profile    = ! empty( $mrn_footer_options['footer_show_business_profile'] ) && ! empty( $mrn_business_information['business_profile'] );
+	$mrn_show_business_phone      = ! empty( $mrn_footer_options['footer_show_business_phone'] ) && ! empty( $mrn_business_information['phone'] ) && ! empty( $mrn_business_information['phone_uri'] );
+	$mrn_show_text_phone          = ! empty( $mrn_footer_options['footer_show_text_phone'] ) && ! empty( $mrn_business_information['text_phone'] ) && ! empty( $mrn_business_information['text_phone_uri'] );
+	$mrn_show_address             = ! empty( $mrn_footer_options['footer_show_address'] ) && ! empty( $mrn_footer_address_lines );
+	$mrn_show_business_hours      = ! empty( $mrn_footer_options['footer_show_business_hours'] ) && ! empty( $mrn_footer_hours_rows );
+	$mrn_footer_legal_text        = ! empty( $mrn_footer_options['footer_legal_text'] ) ? (string) $mrn_footer_options['footer_legal_text'] : '';
+	$mrn_has_footer_top           = ! empty( $mrn_footer_logo ) || $mrn_show_business_profile || $mrn_show_business_phone || $mrn_show_text_phone || $mrn_show_address || $mrn_show_business_hours;
+	$mrn_has_footer_menu_rows     = $mrn_show_social_menu || $mrn_show_tertiary_menu || $mrn_show_secondary_menu || $mrn_show_primary_menu;
+	$mrn_footer_rows              = array(
 		array(
 			'show'       => $mrn_show_social_menu,
 			'modifier'   => 'social',

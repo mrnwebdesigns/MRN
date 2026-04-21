@@ -93,35 +93,35 @@ if ( '' === $label && '' === $heading && '' === $subheading && ! $has_items ) {
 	return;
 }
 
-$slider_id       = 'mrn-slider-' . $row_index . '-' . wp_generate_password( 6, false, false );
+$slider_id           = 'mrn-slider-' . $row_index . '-' . wp_generate_password( 6, false, false );
 	$section_classes = array(
 		'mrn-content-builder__row',
 		'mrn-content-builder__row--slider',
 		'mrn-content-builder__row--slider-link-' . sanitize_html_class( $legacy_link_style ),
 	);
-$section_styles  = array();
+	$section_styles  = array();
 
-if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
-	$section_styles[] = '--mrn-slider-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
-}
+	if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
+		$section_styles[] = '--mrn-slider-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
+	}
 
-$accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
-	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
-	'attributes' => array(),
-);
-$motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
-	'classes'    => array(),
-	'attributes' => array(),
-);
-$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
-$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
-$section_attrs     = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
-$section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
-$section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
-$surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
-$is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
-echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
-?>
+	$accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
+		'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
+		'attributes' => array(),
+	);
+	$motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
+		'classes'    => array(),
+		'attributes' => array(),
+	);
+	$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
+	$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
+	$section_attrs     = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
+	$section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+	$section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
+	$surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
+	$is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
+	echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
+	?>
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<div class="mrn-layout-section mrn-layout-section--slider <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
@@ -197,8 +197,8 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 									empty( $item_image['url'] )
 								) {
 									continue;
-							}
-							?>
+								}
+								?>
 							<li class="splide__slide">
 									<article class="mrn-slider-row__slide mrn-slider-row__slide--slider-shell mrn-ui__item">
 										<?php if ( ! empty( $item_image['ID'] ) ) : ?>
@@ -261,9 +261,11 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 														$link_label = isset( $item_link_data['text'] ) && is_string( $item_link_data['text'] ) && '' !== $item_link_data['text']
 															? $item_link_data['text']
 															: 'Learn More';
-														echo function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
-															? mrn_base_stack_get_compact_link_label_markup( $link_label, $item_link_icon_markup, $item_link_icon_position )
-															: esc_html( $link_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
+															echo wp_kses_post(
+																function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
+																	? mrn_base_stack_get_compact_link_label_markup( $link_label, $item_link_icon_markup, $item_link_icon_position )
+																	: esc_html( $link_label )
+															);
 														?>
 													</<?php echo esc_html( $item_link_tag ); ?>>
 												</p>

@@ -329,11 +329,11 @@ function mrn_base_stack_save_menu_item_link_attributes( $menu_id, $menu_item_db_
 	}
 
 	$input_map = isset( $_POST['menu-item-mrn-link-attributes'] ) && is_array( $_POST['menu-item-mrn-link-attributes'] )
-		? $_POST['menu-item-mrn-link-attributes']
+		? wp_unslash( $_POST['menu-item-mrn-link-attributes'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Individual values are sanitized in $raw_attributes before use.
 		: array();
 
 	$raw_attributes = isset( $input_map[ $menu_item_db_id ] )
-		? wp_unslash( (string) $input_map[ $menu_item_db_id ] )
+		? sanitize_textarea_field( (string) $input_map[ $menu_item_db_id ] )
 		: '';
 
 	$normalized = mrn_base_stack_normalize_menu_item_link_attributes_raw( $raw_attributes );

@@ -133,11 +133,11 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				<div class="mrn-showcase-row__grid mrn-showcase-row__grid--gallery-shell mrn-ui__items">
 				<?php foreach ( $valid_items as $index => $item ) : ?>
 					<?php
-					$image         = $item['image'];
-						$item_link     = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
-						$url           = isset( $item_link['url'] ) ? (string) $item_link['url'] : '';
-						$link_title    = isset( $item_link['text'] ) ? (string) $item_link['text'] : '';
-						$link_target   = isset( $item_link['target'] ) ? (string) $item_link['target'] : '';
+					$image                = $item['image'];
+						$item_link        = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
+						$url              = isset( $item_link['url'] ) ? (string) $item_link['url'] : '';
+						$link_title       = isset( $item_link['text'] ) ? (string) $item_link['text'] : '';
+						$link_target      = isset( $item_link['target'] ) ? (string) $item_link['target'] : '';
 					$item_classes         = array(
 						'mrn-showcase-row__item',
 						'mrn-showcase-row__item--gallery-shell',
@@ -215,9 +215,11 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 					>
 					<?php
 					$section_link_label = '' !== $section_link_text ? $section_link_text : $section_link_url;
-					echo function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
-						? mrn_base_stack_get_compact_link_label_markup( $section_link_label, $section_link_icon_markup, $section_link_icon_position )
-						: esc_html( $section_link_label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
+						echo wp_kses_post(
+							function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
+								? mrn_base_stack_get_compact_link_label_markup( $section_link_label, $section_link_icon_markup, $section_link_icon_position )
+								: esc_html( $section_link_label )
+						);
 					?>
 				</<?php echo esc_html( $section_link_tag ); ?>>
 				<?php endforeach; ?>

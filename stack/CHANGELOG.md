@@ -1,5 +1,14 @@
 # Stack Changelog
 
+## 2026.04.21-builder-layout-canonicalization
+- Expanded `mrn-base-stack` to `1.1.25`.
+- Expanded `mrn-dummy-content` to `0.1.13`.
+- Canonicalized Hero builder layout slugs to use `basic` and `two_column_split` directly, removing Hero-only alias behavior.
+- Aligned reusable conversion mapping with canonical page-builder layout targets (`cta`, `grid`, `faq`) while keeping `basic_block` for the existing reusable basic schema contract.
+- Updated Dummy Content layout detection and generation to prefer canonical Hero-compatible layout names (`basic` first, `hero` fallback) so generated QA content follows the stack builder contract.
+- Resolved theme QA/security blocker findings in the stack theme baseline so release gates can run cleanly in the current source state.
+- Added a documented versioning policy at `stack/RELEASE_VERSIONING_STRATEGY.md` and linked it from the stack README for future release consistency.
+
 ## 2026.04.20-searchwp-editor-performance
 - Added a new standard plugin, `searchwp-editor-performance` (`SearchWP Editor Performance` `1.0.0`), to enforce SearchWP alternate indexer mode in local/development editor requests and avoid the expensive loopback method check that was slowing post edit/save operations.
 - Kept the behavior environment-gated by default (`local` and `development` only) with explicit constants for force/disable overrides so production indexing behavior is unchanged unless intentionally overridden.
