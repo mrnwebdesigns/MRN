@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.04.21-editor-save-latency-hardening
+- Expanded `mrn-base-stack` to `1.1.26`.
+- Expanded `searchwp-editor-performance` to `1.0.2`.
+- Hardened the builder allowlist save path so raw `php://input` parsing only runs as a truncation-recovery fallback instead of on every nonce-valid editor save request.
+- Expanded the SearchWP editor performance runtime guard to remove both `Post` and `Attachment` source drop/meta callbacks during classic `editpost` saves in local/development.
+- Kept the existing environment guardrails so production remains inert unless explicitly forced.
+
 ## 2026.04.21-builder-layout-canonicalization
 - Expanded `mrn-base-stack` to `1.1.25`.
 - Expanded `mrn-dummy-content` to `0.1.13`.

@@ -216,10 +216,10 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 ### `searchwp-editor-performance`
 
 - Name: `SearchWP Editor Performance`
-- Version: `1.0.0`
+- Version: `1.0.2`
 - Purpose:
   - avoids expensive SearchWP loopback method detection during post editor requests in local/development
-  - reduces logged-in edit and save latency on ACF-heavy pages where SearchWP hooks fire on `save_post`
+  - reduces logged-in edit and save latency on ACF-heavy pages where SearchWP source callbacks fire repeatedly on save/meta updates
 - Admin/UI:
   - no new settings or menus
   - modifies SearchWP indexer behavior in local/development only

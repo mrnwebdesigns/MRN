@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.21-builder-layout-canonicalization`
+- Stack release: `2026.04.21-editor-save-latency-hardening`
 - Release date: `2026-04-21`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.25`
+  - `mrn-base-stack` `1.1.26`
 - MU plugins:
   - `mrn-admin-ui-css` `3.1.12`
   - `mrn-shared-assets` `0.1.1`
@@ -20,7 +20,7 @@
   - `mrn-editor-tools` `1.8.17`
   - `mrn-seo-helper` `0.2.9`
   - `mrn-universal-sticky-bar` `1.0.9`
-  - `searchwp-editor-performance` `1.0.0`
+  - `searchwp-editor-performance` `1.0.2`
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)

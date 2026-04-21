@@ -1457,40 +1457,62 @@ function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post 
 		return;
 	}
 
-	$input         = mrn_base_stack_get_builder_layout_allowlist_post_array( 'mrn_builder_layout_allowlist' );
-	$catalog_input = mrn_base_stack_get_builder_layout_allowlist_post_array( 'mrn_builder_layout_allowlist_catalog' );
-	$payload_input = mrn_base_stack_get_builder_layout_allowlist_post_string( 'mrn_builder_layout_allowlist_payload' );
-	$raw_payload   = mrn_base_stack_get_builder_layout_allowlist_raw_request_payload();
-
-	if ( isset( $raw_payload['allowlist'] ) && is_array( $raw_payload['allowlist'] ) && ! empty( $raw_payload['allowlist'] ) ) {
-		$input = $raw_payload['allowlist'];
-	}
-
-	if ( isset( $raw_payload['catalog'] ) && is_array( $raw_payload['catalog'] ) && ! empty( $raw_payload['catalog'] ) ) {
-		$catalog_input = $raw_payload['catalog'];
-	}
-
-	if ( isset( $raw_payload['payload'] ) && is_string( $raw_payload['payload'] ) && '' !== $raw_payload['payload'] ) {
-		$payload_input = $raw_payload['payload'];
-	}
+	$input           = mrn_base_stack_get_builder_layout_allowlist_post_array( 'mrn_builder_layout_allowlist' );
+	$catalog_input   = mrn_base_stack_get_builder_layout_allowlist_post_array( 'mrn_builder_layout_allowlist_catalog' );
+	$payload_input   = mrn_base_stack_get_builder_layout_allowlist_post_string( 'mrn_builder_layout_allowlist_payload' );
+	$decoded_payload = null;
 
 	if ( '' !== $payload_input ) {
 		$decoded_payload = json_decode( $payload_input, true );
-		if ( is_array( $decoded_payload ) ) {
-			/*
-			 * Prefer payload data when available.
-			 *
-			 * Large classic-editor submissions can hit max_input_vars and deliver
-			 * partially truncated checkbox arrays. The payload is a compact snapshot
-			 * captured at submit time and avoids per-field truncation loss.
-			 */
-			if ( isset( $decoded_payload['allowlist'] ) && is_array( $decoded_payload['allowlist'] ) ) {
-				$input = $decoded_payload['allowlist'];
-			}
+	}
 
-			if ( isset( $decoded_payload['catalog'] ) && is_array( $decoded_payload['catalog'] ) ) {
-				$catalog_input = $decoded_payload['catalog'];
+	$needs_raw_fallback = (
+		( ! is_array( $decoded_payload ) && '' !== $payload_input )
+		|| ( '' === $payload_input && ( empty( $input ) || empty( $catalog_input ) ) )
+	);
+
+	if ( $needs_raw_fallback ) {
+		/*
+		 * Raw-body parsing is a fallback for max_input_vars truncation recovery.
+		 *
+		 * Parsing full php://input on every save is expensive on large builder
+		 * submissions, so only do it when the compact payload is missing/invalid
+		 * or the expected allowlist/catalog arrays are absent.
+		 */
+		$raw_payload = mrn_base_stack_get_builder_layout_allowlist_raw_request_payload();
+
+		if ( isset( $raw_payload['allowlist'] ) && is_array( $raw_payload['allowlist'] ) && ! empty( $raw_payload['allowlist'] ) ) {
+			$input = $raw_payload['allowlist'];
+		}
+
+		if ( isset( $raw_payload['catalog'] ) && is_array( $raw_payload['catalog'] ) && ! empty( $raw_payload['catalog'] ) ) {
+			$catalog_input = $raw_payload['catalog'];
+		}
+
+		if ( isset( $raw_payload['payload'] ) && is_string( $raw_payload['payload'] ) && '' !== $raw_payload['payload'] ) {
+			$payload_input = $raw_payload['payload'];
+			$decoded       = json_decode( $payload_input, true );
+
+			if ( is_array( $decoded ) ) {
+				$decoded_payload = $decoded;
 			}
+		}
+	}
+
+	if ( is_array( $decoded_payload ) ) {
+		/*
+		 * Prefer payload data when available.
+		 *
+		 * Large classic-editor submissions can hit max_input_vars and deliver
+		 * partially truncated checkbox arrays. The payload is a compact snapshot
+		 * captured at submit time and avoids per-field truncation loss.
+		 */
+		if ( isset( $decoded_payload['allowlist'] ) && is_array( $decoded_payload['allowlist'] ) ) {
+			$input = $decoded_payload['allowlist'];
+		}
+
+		if ( isset( $decoded_payload['catalog'] ) && is_array( $decoded_payload['catalog'] ) ) {
+			$catalog_input = $decoded_payload['catalog'];
 		}
 	}
 

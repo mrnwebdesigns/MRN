@@ -2,7 +2,7 @@
 /**
  * Plugin Name: SearchWP Editor Performance
  * Description: Local/development SearchWP indexer override to reduce editor load/save latency.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: MRN
  */
 
@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
 }
 
 final class MRN_SearchWP_Editor_Performance {
-	const VERSION = '1.0.1';
+	const VERSION = '1.0.2';
 
 	public static function init() {
 		if (!self::should_enable()) {
@@ -32,9 +32,9 @@ final class MRN_SearchWP_Editor_Performance {
 			return;
 		}
 
-		self::remove_searchwp_post_callbacks('save_post', 'drop_post');
-		self::remove_searchwp_post_callbacks('updated_post_meta', 'updated_post_meta');
-		self::remove_searchwp_post_callbacks('deleted_post_meta', 'updated_post_meta');
+		self::remove_searchwp_source_callbacks('save_post', 'drop_post');
+		self::remove_searchwp_source_callbacks('updated_post_meta', 'updated_post_meta');
+		self::remove_searchwp_source_callbacks('deleted_post_meta', 'updated_post_meta');
 	}
 
 	private static function should_enable() {
@@ -92,7 +92,7 @@ final class MRN_SearchWP_Editor_Performance {
 		return true;
 	}
 
-	private static function remove_searchwp_post_callbacks($hook_name, $method_name) {
+	private static function remove_searchwp_source_callbacks($hook_name, $method_name) {
 		global $wp_filter;
 
 		if (empty($wp_filter[$hook_name]) || !($wp_filter[$hook_name] instanceof WP_Hook)) {
@@ -120,11 +120,22 @@ final class MRN_SearchWP_Editor_Performance {
 					continue;
 				}
 
-				if ($function[0] instanceof SearchWP\Sources\Post) {
+				if (self::is_supported_searchwp_source($function[0])) {
 					remove_action($hook_name, $function, $priority);
 				}
 			}
 		}
+	}
+
+	private static function is_supported_searchwp_source($target) {
+		if (!is_object($target)) {
+			return false;
+		}
+
+		$class_name = get_class($target);
+
+		return 0 === strpos($class_name, 'SearchWP\\Sources\\Post')
+			|| 0 === strpos($class_name, 'SearchWP\\Sources\\Attachment');
 	}
 
 	private static function get_environment_type() {
