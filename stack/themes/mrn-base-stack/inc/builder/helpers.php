@@ -496,7 +496,15 @@ function mrn_base_stack_builder_value_has_content( $value ) {
 		foreach ( $value as $nested_key => $nested_value ) {
 			if ( is_string( $nested_key ) ) {
 				$normalized_key = sanitize_key( $nested_key );
-				if ( '' !== $normalized_key && ( 0 === strpos( $normalized_key, '_' ) || 'acfcloneindex' === $normalized_key ) ) {
+				if (
+					'' !== $normalized_key
+					&& (
+						0 === strpos( $normalized_key, '_' )
+						|| 0 === strpos( $normalized_key, 'field_' )
+						|| 'acfcloneindex' === $normalized_key
+						|| 'acf_fc_layout' === $normalized_key
+					)
+				) {
 					continue;
 				}
 			}
@@ -573,7 +581,15 @@ function mrn_base_stack_showcase_link_value_has_content( $value ) {
 		$normalized_link = array();
 		foreach ( $value as $link_key => $link_value ) {
 			$normalized_key = is_string( $link_key ) ? sanitize_key( $link_key ) : '';
-			if ( '' !== $normalized_key && ( 0 === strpos( $normalized_key, '_' ) || 'acfcloneindex' === $normalized_key ) ) {
+			if (
+				'' !== $normalized_key
+				&& (
+					0 === strpos( $normalized_key, '_' )
+					|| 0 === strpos( $normalized_key, 'field_' )
+					|| 'acfcloneindex' === $normalized_key
+					|| 'acf_fc_layout' === $normalized_key
+				)
+			) {
 				continue;
 			}
 
@@ -664,7 +680,7 @@ function mrn_base_stack_showcase_item_row_has_content( $row ) {
 
 	foreach ( $row as $key => $value ) {
 		$key = is_string( $key ) ? sanitize_key( $key ) : '';
-		if ( '' !== $key && 0 === strpos( $key, '_' ) ) {
+		if ( '' !== $key && ( 0 === strpos( $key, '_' ) || 0 === strpos( $key, 'field_' ) || 'acf_fc_layout' === $key ) ) {
 			continue;
 		}
 
