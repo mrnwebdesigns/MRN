@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.04.21-admin-input-lag-reduction
+- Expanded `mrn-base-stack` to `1.1.28`.
+- Expanded `mrn-reusable-block-library` to `0.1.15`.
+- Switched shared heading/subheading/label tag chooser fields from Select2-enhanced selects to native selects in both the stack builder and reusable block field helpers.
+- Reduced editor-side Select2 initialization overhead on large ACF pages with many cloned layouts, improving typing and dropdown responsiveness in heavy classic-editor builder screens.
+
 ## 2026.04.21-tabbed-editor-load-reduction
 - Expanded `mrn-base-stack` to `1.1.27`.
 - Reduced classic editor payload size for tabbed-builder rows by applying per-entry page-content allowlist filtering to nested tab panel row layouts.

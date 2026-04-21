@@ -3,7 +3,7 @@
  * Plugin Name: Reusable Block Library (MU)
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.14
+ * Version: 0.1.15
  */
 
 defined('ABSPATH') || exit;
@@ -2644,7 +2644,7 @@ function mrn_rbl_get_label_tag_field(string $key, string $name = 'label_tag', st
         'choices'       => mrn_rbl_get_label_tag_choices(),
         'multiple'      => 0,
         'return_format' => 'value',
-        'ui'            => 1,
+        'ui'            => 0,
         'wrapper'       => array(
             'width' => '25',
         ),
@@ -2668,7 +2668,7 @@ function mrn_rbl_get_text_tag_field(string $key, string $label = 'Tag', string $
         'choices'       => mrn_rbl_get_heading_tag_choices(),
         'multiple'      => 0,
         'return_format' => 'value',
-        'ui'            => 1,
+        'ui'            => 0,
         'wrapper'       => array(
             'width' => '25',
         ),

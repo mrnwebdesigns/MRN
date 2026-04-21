@@ -376,7 +376,7 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 ### `mrn-reusable-block-library`
 
 - Name: `Reusable Block Library (MU)`
-- Version: `0.1.3`
+- Version: `0.1.15`
 - Purpose:
   - typed reusable content block system
 - Admin/UI:

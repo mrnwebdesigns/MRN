@@ -4332,7 +4332,7 @@ function mrn_base_stack_get_label_tag_field( $key, $name = 'label_tag', $default
 		'default_value'     => mrn_base_stack_normalize_text_tag( $default_tag, 'p' ),
 		'multiple'          => 0,
 		'return_format'     => 'value',
-		'ui'                => 1,
+		'ui'                => 0,
 		'wrapper'           => array(
 			'width' => '25',
 		),
@@ -4361,7 +4361,7 @@ function mrn_base_stack_get_text_tag_field( $key, $name = 'heading_tag', $defaul
 		'default_value'     => mrn_base_stack_normalize_text_tag( $default_tag, 'h2' ),
 		'multiple'          => 0,
 		'return_format'     => 'value',
-		'ui'                => 1,
+		'ui'                => 0,
 		'wrapper'           => array(
 			'width' => '25',
 		),

@@ -1,18 +1,18 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.21-tabbed-editor-load-reduction`
+- Stack release: `2026.04.21-admin-input-lag-reduction`
 - Release date: `2026-04-21`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.27`
+  - `mrn-base-stack` `1.1.28`
 - MU plugins:
   - `mrn-admin-ui-css` `3.1.12`
   - `mrn-shared-assets` `0.1.1`
   - `mrn-editor-lockdown` `1.0.7`
-  - `mrn-reusable-block-library` `0.1.11`
+  - `mrn-reusable-block-library` `0.1.15`
   - `mrn-site-colors` / `Site Styles` `0.1.4`
 - Standard plugins:
   - `mrn-config-helper` `0.1.35`
