@@ -726,6 +726,136 @@ function mrn_base_stack_prune_empty_showcase_items_on_save( $value, $_post_id, a
 	return array_values( $filtered_rows );
 }
 add_filter( 'acf/update_value/name=showcase_items', 'mrn_base_stack_prune_empty_showcase_items_on_save', 20, 3 );
+add_filter( 'acf/update_value/key=field_mrn_showcase_items', 'mrn_base_stack_prune_empty_showcase_items_on_save', 20, 3 );
+
+/**
+ * Remove fully-empty showcase repeater payloads that ACF may persist on save.
+ *
+ * Some classic-editor save flows can still store placeholder rows (for example
+ * minimum-row enforcement and internal field-key transport) even after
+ * `acf/update_value` filtering. This post-save guard inspects each top-level
+ * `showcase_items` repeater and resets it to zero rows when every persisted row
+ * is empty.
+ *
+ * @param int|string $post_id ACF object identifier.
+ * @return void
+ */
+function mrn_base_stack_cleanup_empty_showcase_repeater_meta_on_save( $post_id ) {
+	$post_id = is_numeric( $post_id ) ? absint( $post_id ) : 0;
+	if ( $post_id <= 0 ) {
+		return;
+	}
+
+	global $wpdb;
+	if ( ! isset( $wpdb ) || ! ( $wpdb instanceof wpdb ) ) {
+		return;
+	}
+
+	$count_key_rows = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key REGEXP %s",
+			$post_id,
+			'^page_content_rows_[0-9]+_showcase_items$'
+		),
+		ARRAY_A
+	);
+
+	if ( ! is_array( $count_key_rows ) || empty( $count_key_rows ) ) {
+		return;
+	}
+
+	foreach ( $count_key_rows as $count_row ) {
+		if ( ! is_array( $count_row ) ) {
+			continue;
+		}
+
+		$count_key = isset( $count_row['meta_key'] ) ? sanitize_key( (string) $count_row['meta_key'] ) : '';
+		$row_count = isset( $count_row['meta_value'] ) ? absint( $count_row['meta_value'] ) : 0;
+
+		if ( '' === $count_key || $row_count < 1 ) {
+			continue;
+		}
+
+		$row_value_rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key LIKE %s",
+				$post_id,
+				$count_key . '\\_%'
+			),
+			ARRAY_A
+		);
+
+		if ( ! is_array( $row_value_rows ) || empty( $row_value_rows ) ) {
+			continue;
+		}
+
+		$rows_by_index = array();
+
+		foreach ( $row_value_rows as $value_row ) {
+			if ( ! is_array( $value_row ) ) {
+				continue;
+			}
+
+			$meta_key = isset( $value_row['meta_key'] ) ? (string) $value_row['meta_key'] : '';
+			if ( '' === $meta_key ) {
+				continue;
+			}
+
+			if ( 1 !== preg_match( '/^' . preg_quote( $count_key, '/' ) . '_([0-9]+)_([a-z0-9_]+)$/', $meta_key, $matches ) ) {
+				continue;
+			}
+
+			$row_index = absint( $matches[1] );
+			$field_key = sanitize_key( $matches[2] );
+			if ( '' === $field_key ) {
+				continue;
+			}
+
+			$meta_value = isset( $value_row['meta_value'] ) ? $value_row['meta_value'] : '';
+			if ( 'links' === $field_key ) {
+				$meta_value = maybe_unserialize( $meta_value );
+			}
+
+			if ( ! isset( $rows_by_index[ $row_index ] ) || ! is_array( $rows_by_index[ $row_index ] ) ) {
+				$rows_by_index[ $row_index ] = array();
+			}
+
+			$rows_by_index[ $row_index ][ $field_key ] = $meta_value;
+		}
+
+		if ( empty( $rows_by_index ) ) {
+			continue;
+		}
+
+		$all_rows_empty = true;
+
+		foreach ( $rows_by_index as $row_data ) {
+			if ( mrn_base_stack_showcase_item_row_has_content( $row_data ) ) {
+				$all_rows_empty = false;
+				break;
+			}
+		}
+
+		if ( ! $all_rows_empty ) {
+			continue;
+		}
+
+		$child_pattern         = '^' . preg_quote( $count_key, '/' ) . '_[0-9]+_';
+		$child_reference_regex = '^_' . preg_quote( $count_key, '/' ) . '_[0-9]+_';
+
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->postmeta} WHERE post_id = %d AND (meta_key REGEXP %s OR meta_key REGEXP %s)",
+				$post_id,
+				$child_pattern,
+				$child_reference_regex
+			)
+		);
+
+		update_post_meta( $post_id, $count_key, '0' );
+	}
+}
+add_action( 'acf/save_post', 'mrn_base_stack_cleanup_empty_showcase_repeater_meta_on_save', 30 );
 
 /**
  * Shared list-style choices for query-driven builder layouts.
