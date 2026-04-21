@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.04.21-editor-focus-lag-smoothing
+- Expanded `mrn-base-stack` to `1.1.29`.
+- Reworked initial Classic Editor builder/repeater precollapse behavior so row collapsing runs in small animation-frame batches instead of a single long synchronous pass.
+- Added a guard that pauses collapse batching while an editor input is actively focused, reducing cursor/caret delay when clicking into heading text fields during heavy page loads.
+- Preserved existing collapsed-row behavior and repeater detachment contracts after the initial pass so large ACF pages keep their memory/load benefits without blocking early input focus.
+
 ## 2026.04.21-admin-input-lag-reduction
 - Expanded `mrn-base-stack` to `1.1.28`.
 - Expanded `mrn-reusable-block-library` to `0.1.15`.

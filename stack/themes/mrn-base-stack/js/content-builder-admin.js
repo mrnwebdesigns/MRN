@@ -398,7 +398,95 @@
 		} );
 	}
 
-	function collapseInitialFlexibleRows( context ) {
+	var initialFlexibleCollapseQueue = [];
+	var initialFlexibleCollapseScheduled = false;
+
+	function isEditingInputControl() {
+		var active = document.activeElement;
+
+		if ( ! active ) {
+			return false;
+		}
+
+		if ( active.isContentEditable ) {
+			return true;
+		}
+
+		return /^(INPUT|TEXTAREA|SELECT)$/.test( active.tagName || '' );
+	}
+
+	function scheduleInitialFlexibleCollapse() {
+		if ( initialFlexibleCollapseScheduled ) {
+			return;
+		}
+
+		initialFlexibleCollapseScheduled = true;
+
+		if ( typeof window.requestAnimationFrame === 'function' ) {
+			window.requestAnimationFrame( processInitialFlexibleCollapseQueue );
+			return;
+		}
+
+		window.setTimeout( processInitialFlexibleCollapseQueue, 0 );
+	}
+
+	function processInitialFlexibleCollapseQueue() {
+		var processed = 0;
+		var maxPerPass = 8;
+		var start = window.performance && typeof window.performance.now === 'function' ? window.performance.now() : 0;
+		var maxDuration = 12;
+
+		initialFlexibleCollapseScheduled = false;
+
+		if ( ! initialFlexibleCollapseQueue.length ) {
+			return;
+		}
+
+		if ( isEditingInputControl() ) {
+			window.setTimeout( scheduleInitialFlexibleCollapse, 120 );
+			return;
+		}
+
+		while ( initialFlexibleCollapseQueue.length ) {
+			var rowElement = initialFlexibleCollapseQueue.shift();
+			var $row = $( rowElement );
+			var $toggle;
+
+			if ( ! $row.length || $row.hasClass( '-collapsed' ) || $row.hasClass( 'collapsed' ) ) {
+				continue;
+			}
+
+			$toggle = $row.find( '> .acf-fc-layout-controls .acf-icon.-collapse, > .acf-fc-layout-actions .acf-icon.-collapse, .acf-fc-layout-controls .acf-icon.-collapse, .acf-fc-layout-actions .acf-icon.-collapse' ).first();
+
+			if ( ! $toggle.length ) {
+				$toggle = $row.find( '> .acf-fc-layout-handle .acf-icon.-collapse, .acf-fc-layout-handle .acf-icon.-collapse' ).first();
+			}
+
+			if ( ! $toggle.length ) {
+				$toggle = $row.children( '.acf-fc-layout-handle' ).first();
+			}
+
+			if ( $toggle.length ) {
+				$toggle.trigger( 'click' );
+			}
+
+			processed += 1;
+
+			if ( processed >= maxPerPass ) {
+				break;
+			}
+
+			if ( start && window.performance.now() - start >= maxDuration ) {
+				break;
+			}
+		}
+
+		if ( initialFlexibleCollapseQueue.length ) {
+			scheduleInitialFlexibleCollapse();
+		}
+	}
+
+	function queueInitialFlexibleRows( context ) {
 		$( context || document ).find( '.acf-field-flexible-content' ).each( function() {
 			var $flexField = $( this );
 
@@ -410,27 +498,16 @@
 
 			getRows( $flexField ).each( function() {
 				var $row = $( this );
-				var $toggle;
 
 				if ( $row.hasClass( '-collapsed' ) || $row.hasClass( 'collapsed' ) ) {
 					return;
 				}
 
-				$toggle = $row.find( '> .acf-fc-layout-controls .acf-icon.-collapse, > .acf-fc-layout-actions .acf-icon.-collapse, .acf-fc-layout-controls .acf-icon.-collapse, .acf-fc-layout-actions .acf-icon.-collapse' ).first();
-
-				if ( ! $toggle.length ) {
-					$toggle = $row.find( '> .acf-fc-layout-handle .acf-icon.-collapse, .acf-fc-layout-handle .acf-icon.-collapse' ).first();
-				}
-
-				if ( ! $toggle.length ) {
-					$toggle = $row.children( '.acf-fc-layout-handle' ).first();
-				}
-
-				if ( $toggle.length ) {
-					$toggle.trigger( 'click' );
-				}
+				initialFlexibleCollapseQueue.push( this );
 			} );
 		} );
+
+		scheduleInitialFlexibleCollapse();
 	}
 
 	function getRows( $flexField ) {
@@ -679,7 +756,7 @@
 	$( function() {
 		bootBuilderAdminUi( document );
 		window.setTimeout( function() {
-			collapseInitialFlexibleRows( document );
+			queueInitialFlexibleRows( document );
 		}, 40 );
 	} );
 
