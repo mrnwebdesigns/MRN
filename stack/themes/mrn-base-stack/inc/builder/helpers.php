@@ -124,6 +124,26 @@ function mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id ) {
 }
 
 /**
+ * Check whether a flexible-content field contains complete layout sub-fields.
+ *
+ * @param mixed $field Field definition candidate.
+ * @return bool
+ */
+function mrn_base_stack_builder_field_has_complete_layouts( $field ) {
+	if ( ! is_array( $field ) || empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
+		return false;
+	}
+
+	foreach ( $field['layouts'] as $layout ) {
+		if ( ! is_array( $layout ) || ! array_key_exists( 'sub_fields', $layout ) || ! is_array( $layout['sub_fields'] ) ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
  * Clone the page-builder layouts for use inside tab panels.
  *
  * The cloned layouts retain their original `name` values so the existing
@@ -155,13 +175,17 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 		? mrn_base_stack_get_builder_layout_allowlist_field_definition( 'page_content_rows' )
 		: array();
 
-	if ( ! is_array( $field ) || empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
+	$has_complete_layouts = mrn_base_stack_builder_field_has_complete_layouts( $field );
+
+	if ( ! $has_complete_layouts ) {
 		$loading = true;
 		$field   = acf_get_field( 'field_mrn_page_content_rows' );
 		$loading = false;
 	}
 
-	if ( ! is_array( $field ) || empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
+	$has_complete_layouts = mrn_base_stack_builder_field_has_complete_layouts( $field );
+
+	if ( ! $has_complete_layouts ) {
 		$layouts_cache[ $cache_key ] = array();
 		return $layouts_cache[ $cache_key ];
 	}
@@ -206,6 +230,10 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 	foreach ( $field['layouts'] as $layout_key => $layout ) {
 		if ( ! is_array( $layout ) ) {
 			continue;
+		}
+
+		if ( ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+			$layout['sub_fields'] = array();
 		}
 
 		$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
