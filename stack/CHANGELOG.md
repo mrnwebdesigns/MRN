@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.04.21-tabbed-editor-load-reduction
+- Expanded `mrn-base-stack` to `1.1.27`.
+- Reduced classic editor payload size for tabbed-builder rows by applying per-entry page-content allowlist filtering to nested tab panel row layouts.
+- Preserved edit safety for existing tab-panel content by auto-including already-saved nested panel layout slugs in the filtered nested layout set.
+- Kept nested `tabbed_layout` recursion blocked while reducing unnecessary cloned ACF layout markup that was inflating editor load time on heavy pages.
+
 ## 2026.04.21-editor-save-latency-hardening
 - Expanded `mrn-base-stack` to `1.1.26`.
 - Expanded `searchwp-editor-performance` to `1.0.2`.

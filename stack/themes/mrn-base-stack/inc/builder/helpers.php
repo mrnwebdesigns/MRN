@@ -69,6 +69,61 @@ function mrn_base_stack_get_nested_builder_row_index( $parent_index, $group_inde
 }
 
 /**
+ * Get nested tab-panel layout names already saved in post meta.
+ *
+ * @param int $post_id Post ID.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id ) {
+	static $cache = array();
+
+	$post_id = absint( $post_id );
+
+	if ( $post_id < 1 ) {
+		return array();
+	}
+
+	if ( isset( $cache[ $post_id ] ) ) {
+		return $cache[ $post_id ];
+	}
+
+	$meta         = get_post_meta( $post_id );
+	$layout_names = array();
+
+	if ( ! is_array( $meta ) ) {
+		$cache[ $post_id ] = array();
+		return $cache[ $post_id ];
+	}
+
+	foreach ( $meta as $meta_key => $values ) {
+		if ( ! is_string( $meta_key ) || 0 !== strpos( $meta_key, 'page_content_rows_' ) ) {
+			continue;
+		}
+
+		if ( false === strpos( $meta_key, '_panel_rows_' ) || 0 !== substr_compare( $meta_key, '_acf_fc_layout', -14 ) ) {
+			continue;
+		}
+
+		$raw_value = '';
+
+		if ( is_array( $values ) && ! empty( $values ) ) {
+			$raw_value = (string) $values[ count( $values ) - 1 ];
+		} elseif ( is_scalar( $values ) ) {
+			$raw_value = (string) $values;
+		}
+
+		$layout_name = sanitize_key( $raw_value );
+		if ( '' !== $layout_name ) {
+			$layout_names[] = $layout_name;
+		}
+	}
+
+	$cache[ $post_id ] = array_values( array_unique( $layout_names ) );
+
+	return $cache[ $post_id ];
+}
+
+/**
  * Clone the page-builder layouts for use inside tab panels.
  *
  * The cloned layouts retain their original `name` values so the existing
@@ -79,27 +134,74 @@ function mrn_base_stack_get_nested_builder_row_index( $parent_index, $group_inde
  * @return array<string, array<string, mixed>>
  */
 function mrn_base_stack_get_tabbed_layout_nested_layouts() {
-	static $layouts = null;
-	static $loading = false;
+	static $layouts_cache = array();
+	static $loading       = false;
 
-	if ( null !== $layouts ) {
-		return $layouts;
+	$post_id          = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_post_id' ) ? mrn_base_stack_get_builder_layout_allowlist_post_id() : 0;
+	$allowlist_active = $post_id > 0
+		&& function_exists( 'mrn_base_stack_is_builder_layout_allowlist_context' )
+		&& mrn_base_stack_is_builder_layout_allowlist_context( $post_id );
+	$cache_key        = $allowlist_active ? 'post_' . $post_id : 'global';
+
+	if ( isset( $layouts_cache[ $cache_key ] ) ) {
+		return $layouts_cache[ $cache_key ];
 	}
 
 	if ( $loading || ! function_exists( 'acf_get_field' ) ) {
 		return array();
 	}
 
-	$loading = true;
-	$field   = acf_get_field( 'field_mrn_page_content_rows' );
-	$loading = false;
+	$field = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_field_definition' )
+		? mrn_base_stack_get_builder_layout_allowlist_field_definition( 'page_content_rows' )
+		: array();
 
 	if ( ! is_array( $field ) || empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
-		$layouts = array();
-		return $layouts;
+		$loading = true;
+		$field   = acf_get_field( 'field_mrn_page_content_rows' );
+		$loading = false;
 	}
 
-	$layouts = array();
+	if ( ! is_array( $field ) || empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
+		$layouts_cache[ $cache_key ] = array();
+		return $layouts_cache[ $cache_key ];
+	}
+
+	$allowed_names = array();
+	if (
+		$allowlist_active
+		&& function_exists( 'mrn_base_stack_get_builder_layout_allowlist_catalog_from_field' )
+		&& function_exists( 'mrn_base_stack_get_builder_layout_allowlist_effective_names' )
+	) {
+		$catalog = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( $field );
+
+		if ( ! empty( $catalog ) ) {
+			$allowed_names = mrn_base_stack_get_builder_layout_allowlist_effective_names( $post_id, 'page_content_rows', $catalog );
+		}
+
+		$allowed_names = array_values(
+			array_unique(
+				array_merge(
+					$allowed_names,
+					mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id )
+				)
+			)
+		);
+	}
+
+	$allowed_names  = array_values(
+		array_diff(
+			array_values(
+				array_unique(
+					array_filter(
+						array_map( 'sanitize_key', $allowed_names )
+					)
+				)
+			),
+			array( 'tabbed_layout' )
+		)
+	);
+	$allowed_lookup = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
+	$layouts        = array();
 
 	foreach ( $field['layouts'] as $layout_key => $layout ) {
 		if ( ! is_array( $layout ) ) {
@@ -111,14 +213,20 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 			continue;
 		}
 
-			$cloned_layout        = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_tabbed_panel_' );
-			$cloned_key           = 'layout_mrn_tabbed_panel_' . $layout_name;
-			$cloned_layout['key'] = $cloned_key;
+		if ( ! empty( $allowed_lookup ) && ! isset( $allowed_lookup[ $layout_name ] ) ) {
+			continue;
+		}
+
+		$cloned_layout        = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_tabbed_panel_' );
+		$cloned_key           = 'layout_mrn_tabbed_panel_' . $layout_name;
+		$cloned_layout['key'] = $cloned_key;
 
 		$layouts[ $cloned_key ] = $cloned_layout;
 	}
 
-	return $layouts;
+	$layouts_cache[ $cache_key ] = $layouts;
+
+	return $layouts_cache[ $cache_key ];
 }
 
 /**
