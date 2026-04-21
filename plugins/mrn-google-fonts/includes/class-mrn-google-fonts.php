@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 }
 
 final class MRN_Google_Fonts {
-	const VERSION = '0.4.14';
+	const VERSION = '0.4.15';
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
 	const PAGE_SLUG = 'google-fonts';
@@ -19,6 +19,7 @@ final class MRN_Google_Fonts {
 	const FONT_CATALOG_TRANSIENT = 'mrn_google_fonts_catalog_v2';
 	const FONT_CATALOG_FALLBACK_TTL = 15 * MINUTE_IN_SECONDS;
 	const FONT_CATALOG_URL = 'https://fonts.google.com/metadata/fonts';
+	const GOOGLE_FONTS_CSS_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
 	/**
 	 * Register plugin hooks.
@@ -1052,6 +1053,7 @@ final class MRN_Google_Fonts {
 	 * @return string|\WP_Error
 	 */
 	private static function fetch_google_fonts_css(string $request_url) {
+		$user_agent = self::get_google_fonts_css_user_agent();
 		$response = wp_remote_get(
 			$request_url,
 			array(
@@ -1059,7 +1061,7 @@ final class MRN_Google_Fonts {
 				'redirection' => 3,
 				'reject_unsafe_urls' => true,
 				'headers' => array(
-					'User-Agent' => 'Mozilla/5.0 (WordPress; MRN Google Fonts Local Builder)',
+					'User-Agent' => $user_agent,
 					'Accept' => 'text/css,*/*;q=0.1',
 				),
 			)
@@ -1080,6 +1082,25 @@ final class MRN_Google_Fonts {
 		}
 
 		return $css;
+	}
+
+	/**
+	 * Return User-Agent used when requesting Google CSS2.
+	 */
+	private static function get_google_fonts_css_user_agent(): string {
+		/**
+		 * Filter CSS2 request User-Agent for local Google Font builds.
+		 *
+		 * @param string $user_agent Default modern-browser user agent.
+		 */
+		$user_agent = apply_filters('mrn_google_fonts_css_user_agent', self::GOOGLE_FONTS_CSS_USER_AGENT);
+		$user_agent = trim((string) $user_agent);
+
+		if ('' === $user_agent) {
+			$user_agent = self::GOOGLE_FONTS_CSS_USER_AGENT;
+		}
+
+		return $user_agent;
 	}
 
 	/**
