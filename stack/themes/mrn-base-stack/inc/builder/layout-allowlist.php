@@ -688,7 +688,7 @@ function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name,
 	$field_name         = sanitize_key( (string) $field_name );
 	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
 	$default_map        = array(
-		'page_hero_rows'          => array( 'basic', 'image_content', 'two_column_split' ),
+		'page_hero_rows'          => array( 'basic', 'two_column_split' ),
 		'page_content_rows'       => array( 'basic', 'image_content', 'two_column_split', 'reusable_block', 'grid' ),
 		'page_after_content_rows' => array( 'basic', 'two_column_split', 'logos', 'reusable_block', 'cta' ),
 		'page_sidebar_rows'       => array( 'basic', 'image_content', 'searchwp_form' ),

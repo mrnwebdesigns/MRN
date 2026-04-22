@@ -144,6 +144,113 @@ function mrn_base_stack_builder_field_has_complete_layouts( $field ) {
 }
 
 /**
+ * Get content layout names that should be available in Hero.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_hero_builder_layout_source_names() {
+	$defaults = array( 'basic', 'two_column_split' );
+	$names    = apply_filters( 'mrn_base_stack_hero_builder_layout_source_names', $defaults );
+
+	if ( ! is_array( $names ) ) {
+		return $defaults;
+	}
+
+	$names = array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $names )
+			)
+		)
+	);
+
+	return ! empty( $names ) ? $names : $defaults;
+}
+
+/**
+ * Clone selected top-level Content layouts for Hero field usage.
+ *
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_hero_builder_layouts() {
+	static $layouts_cache = null;
+	static $loading       = false;
+
+	if ( is_array( $layouts_cache ) ) {
+		return $layouts_cache;
+	}
+
+	if ( $loading || ! function_exists( 'acf_get_field' ) ) {
+		return array();
+	}
+
+	$field = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_field_definition' )
+		? mrn_base_stack_get_builder_layout_allowlist_field_definition( 'page_content_rows' )
+		: array();
+
+	$has_complete_layouts = mrn_base_stack_builder_field_has_complete_layouts( $field );
+
+	if ( ! $has_complete_layouts ) {
+		$loading = true;
+		$field   = acf_get_field( 'field_mrn_page_content_rows' );
+		$loading = false;
+	}
+
+	$has_complete_layouts = mrn_base_stack_builder_field_has_complete_layouts( $field );
+
+	if ( ! $has_complete_layouts ) {
+		$layouts_cache = array();
+		return $layouts_cache;
+	}
+
+	$allowed_names  = mrn_base_stack_get_hero_builder_layout_source_names();
+	$allowed_lookup = array_fill_keys( $allowed_names, true );
+	$layouts        = array();
+
+	foreach ( $field['layouts'] as $layout ) {
+		if ( ! is_array( $layout ) ) {
+			continue;
+		}
+
+		$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+		if ( '' === $layout_name || ! isset( $allowed_lookup[ $layout_name ] ) ) {
+			continue;
+		}
+
+		if ( ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+			$layout['sub_fields'] = array();
+		}
+
+		$cloned_layout        = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_hero_' );
+		$cloned_key           = 'layout_mrn_hero_' . $layout_name;
+		$cloned_layout['key'] = $cloned_key;
+		$layouts[ $cloned_key ] = $cloned_layout;
+	}
+
+	$layouts_cache = $layouts;
+
+	return $layouts_cache;
+}
+
+/**
+ * Populate the top-level Hero flexible-content field with cloned Content layouts.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_populate_hero_builder_field( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field['layouts'] = mrn_base_stack_get_hero_builder_layouts();
+
+	return $field;
+}
+add_filter( 'acf/load_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_populate_hero_builder_field', 15 );
+add_filter( 'acf/prepare_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_populate_hero_builder_field', 15 );
+
+/**
  * Clone the page-builder layouts for use inside tab panels.
  *
  * The cloned layouts retain their original `name` values so the existing
