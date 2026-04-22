@@ -394,6 +394,27 @@ function mrn_base_stack_get_after_content_location_rules() {
 }
 
 /**
+ * Determine whether the layout-builder runtime should load.
+ *
+ * This rollback branch keeps the infrastructure in place while defaulting the
+ * heavy ACF layout builder to off. Sites can opt back in with either:
+ * - define( 'MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER', true );
+ * - add_filter( 'mrn_base_stack_enable_layout_builder', '__return_true' );
+ *
+ * @return bool
+ */
+function mrn_base_stack_is_layout_builder_enabled() {
+	$enabled = defined( 'MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER' ) ? (bool) MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER : false;
+
+	/**
+	 * Filter whether the theme's ACF layout-builder runtime should load.
+	 *
+	 * @param bool $enabled Whether builder runtime is enabled.
+	 */
+	return (bool) apply_filters( 'mrn_base_stack_enable_layout_builder', $enabled );
+}
+
+/**
  * Register the theme-owned Blog custom post type.
  *
  * @return void
@@ -719,6 +740,7 @@ function mrn_base_stack_scripts() {
 	wp_enqueue_style( 'mrn-base-stack-style', get_stylesheet_uri(), array(), _S_VERSION );
 	wp_style_add_data( 'mrn-base-stack-style', 'rtl', 'replace' );
 
+	$layout_builder_enabled = mrn_base_stack_is_layout_builder_enabled();
 	$header_options     = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
 	$needs_fontawesome  = false;
 	$needs_dashicons    = false;
@@ -757,7 +779,7 @@ function mrn_base_stack_scripts() {
 		}
 	}
 
-	if ( is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'get_field' ) && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs' ) ) {
+	if ( $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'get_field' ) && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs' ) ) {
 		$post_id      = get_queried_object_id();
 		$builder_sets = array();
 
@@ -779,7 +801,7 @@ function mrn_base_stack_scripts() {
 		}
 	}
 
-	if ( function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs' ) && function_exists( 'mrn_rbl_get_post_types' ) && is_singular( mrn_rbl_get_post_types() ) && function_exists( 'get_fields' ) ) {
+	if ( $layout_builder_enabled && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs' ) && function_exists( 'mrn_rbl_get_post_types' ) && is_singular( mrn_rbl_get_post_types() ) && function_exists( 'get_fields' ) ) {
 		$reusable_post_id = get_queried_object_id();
 
 		if ( $reusable_post_id ) {
@@ -811,7 +833,7 @@ function mrn_base_stack_scripts() {
 		);
 	}
 
-	if ( is_singular( mrn_base_stack_get_singular_shell_post_types() ) ) {
+	if ( $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() ) ) {
 		mrn_base_stack_enqueue_motion_assets();
 
 		wp_enqueue_style(
@@ -877,7 +899,50 @@ add_action( 'wp_enqueue_scripts', 'mrn_base_stack_scripts' );
 /**
  * Load builder modules.
  */
-require_once get_template_directory() . '/inc/builder/boot.php';
+if ( mrn_base_stack_is_layout_builder_enabled() ) {
+	require_once get_template_directory() . '/inc/builder/boot.php';
+} else {
+	/**
+	 * Fallback hero renderer when layout-builder runtime is disabled.
+	 *
+	 * @param int|null $post_id Optional post ID.
+	 * @return bool
+	 */
+	function mrn_base_stack_render_hero_builder( $post_id = null ) {
+		return false;
+	}
+
+	/**
+	 * Fallback main-content renderer when layout-builder runtime is disabled.
+	 *
+	 * @param int|null $post_id Optional post ID.
+	 * @return void
+	 */
+	function mrn_base_stack_render_content_builder( $post_id = null ) {
+		$post_id = null !== $post_id ? absint( $post_id ) : get_the_ID();
+		if ( ! $post_id ) {
+			return;
+		}
+
+		$content = get_post_field( 'post_content', $post_id );
+		if ( ! is_string( $content ) || '' === trim( $content ) ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Filtered through the standard post-content pipeline.
+		echo apply_filters( 'the_content', $content );
+	}
+
+	/**
+	 * Fallback after-content renderer when layout-builder runtime is disabled.
+	 *
+	 * @param int|null $post_id Optional post ID.
+	 * @return void
+	 */
+	function mrn_base_stack_render_after_content_builder( $post_id = null ) {
+		return;
+	}
+}
 
 /**
  * Load theme options modules.
@@ -892,7 +957,9 @@ require_once get_template_directory() . '/inc/menu-link-attributes.php';
 /**
  * Load singular sidebar modules.
  */
-require_once get_template_directory() . '/inc/singular-sidebar.php';
+if ( mrn_base_stack_is_layout_builder_enabled() ) {
+	require_once get_template_directory() . '/inc/singular-sidebar.php';
+}
 
 /**
  * Load gallery modules.
