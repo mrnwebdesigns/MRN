@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.21-editor-ready-mask-disabled`
-- Release date: `2026-04-21`
+- Stack release: `2026.04.22-effects-permissions-removed`
+- Release date: `2026-04-22`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.31`
+  - `mrn-base-stack` `1.1.32`
 - MU plugins:
   - `mrn-admin-ui-css` `3.1.12`
   - `mrn-shared-assets` `0.1.1`

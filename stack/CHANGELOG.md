@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.04.22-effects-permissions-removed
+- Expanded `mrn-base-stack` to `1.1.32`.
+- Removed the builder `layout_effects` capability gating hooks from the global ACF field-prepare/save path so Effects controls are no longer permission-gated in admin.
+- Eliminated repeated `current_user_can( 'layout_effects' )` checks on ACF-heavy editor screens, reducing edit-page admin latency on large layout payloads.
+
 ## 2026.04.21-editor-ready-mask-disabled
 - Expanded `mrn-editor-lockdown` to `1.0.9`.
 - Disabled the heavyweight classic-editor loading mask by default so post edit screens become interactive as soon as WordPress/ACF can accept input, instead of waiting for the deferred ready-state gate.
