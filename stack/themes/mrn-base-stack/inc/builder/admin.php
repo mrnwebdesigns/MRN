@@ -84,6 +84,7 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 			'errorText'               => 'The block could not be converted.',
 			'contentListTaxonomies'   => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
 			'contentListDisplayModes' => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
+			'initialCollapseEnabled'  => (bool) apply_filters( 'mrn_base_stack_admin_initial_collapse_enabled', false ),
 			'rowFlex'                 => array(
 				'nonce'           => wp_create_nonce( 'mrn-base-stack-row-flex-layout' ),
 				'nonceField'      => 'mrn_base_stack_row_flex_nonce',

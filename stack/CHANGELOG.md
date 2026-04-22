@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.04.21-editor-load-latency-collapse-default-off
+- Expanded `mrn-base-stack` to `1.1.31`.
+- Disabled automatic initial builder/repeater row precollapse by default on classic editor screens so the editor stays interactive sooner on ACF-heavy pages.
+- Added a stack filter (`mrn_base_stack_admin_initial_collapse_enabled`) to opt back into the previous precollapse behavior when needed for specific environments.
+
 ## 2026.04.21-editor-latency-hotfix-wpnonce-bootstrap
 - Expanded `searchwp-editor-performance` to `1.0.6`.
 - Fixed a plugin bootstrap fatal on classic editor admin requests by guarding `wp_verify_nonce()` usage until the pluggable function is available.

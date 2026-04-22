@@ -7,6 +7,10 @@
 
 	var config = mrnBaseStackBuilderAdmin;
 
+	function isInitialFlexibleCollapseEnabled() {
+		return !! ( config && config.initialCollapseEnabled );
+	}
+
 	function getContentListTaxonomyMap() {
 		if ( config.contentListTaxonomies && typeof config.contentListTaxonomies === 'object' ) {
 			return config.contentListTaxonomies;
@@ -518,8 +522,13 @@
 		}
 	}
 
-		function queueInitialFlexibleRows( context ) {
-			var queueCapped = false;
+	function queueInitialFlexibleRows( context ) {
+		if ( ! isInitialFlexibleCollapseEnabled() ) {
+			initialFlexibleCollapseQueue.length = 0;
+			return;
+		}
+
+		var queueCapped = false;
 
 			$( context || document ).find( '.acf-field-flexible-content' ).each( function() {
 				var $flexField = $( this );
@@ -805,9 +814,11 @@
 
 		initialBuilderBootstrapped = true;
 		bootBuilderAdminUi( bootContext );
-		window.setTimeout( function() {
-			queueInitialFlexibleRows( bootContext );
-		}, 40 );
+		if ( isInitialFlexibleCollapseEnabled() ) {
+			window.setTimeout( function() {
+				queueInitialFlexibleRows( bootContext );
+			}, 40 );
+		}
 	}
 
 	$( function() {

@@ -8,6 +8,13 @@
 	// Keep this off by default to avoid costly submit/heartbeat restore passes on very large editors.
 	var enableRowBodyDetachment = false;
 
+	function isInitialRepeaterCollapseEnabled() {
+		return !! (
+			window.mrnBaseStackBuilderAdmin &&
+			window.mrnBaseStackBuilderAdmin.initialCollapseEnabled
+		);
+	}
+
 	function getRepeaterFields( context ) {
 		var $context = $( context || document );
 
@@ -460,13 +467,18 @@
 		}
 	}
 
-		function collapseInitialRows( context ) {
-			var queueCapped = false;
+	function collapseInitialRows( context ) {
+		var queueCapped = false;
 
-			if ( ! isClassicPostEditorScreen() ) {
-				markRepeaterPrecollapseReady();
-				return;
-			}
+		if ( ! isInitialRepeaterCollapseEnabled() ) {
+			markRepeaterPrecollapseReady();
+			return;
+		}
+
+		if ( ! isClassicPostEditorScreen() ) {
+			markRepeaterPrecollapseReady();
+			return;
+		}
 
 		getRepeaterFields( context ).each( function () {
 			var $field = $( this );
