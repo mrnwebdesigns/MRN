@@ -932,6 +932,130 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 	function mrn_base_stack_render_after_content_builder( $post_id = null ) {
 		return;
 	}
+
+	/**
+	 * Shared HTML tag choices for heading-style text fields.
+	 *
+	 * @return array<string, string>
+	 */
+	function mrn_base_stack_get_text_tag_choices() {
+		return array(
+			'h1'   => 'H1',
+			'h2'   => 'H2',
+			'h3'   => 'H3',
+			'h4'   => 'H4',
+			'h5'   => 'H5',
+			'h6'   => 'H6',
+			'p'    => 'Paragraph',
+			'span' => 'Span',
+			'div'  => 'Div',
+		);
+	}
+
+	/**
+	 * Normalize a requested HTML tag to the supported text-tag set.
+	 *
+	 * @param mixed  $value Raw tag value.
+	 * @param string $default_tag Default tag value.
+	 * @return string
+	 */
+	function mrn_base_stack_normalize_text_tag( $value, $default_tag = 'p' ) {
+		$tag          = is_string( $value ) ? sanitize_key( $value ) : '';
+		$default_tag  = is_string( $default_tag ) ? sanitize_key( $default_tag ) : 'p';
+		$allowed_tags = array_keys( mrn_base_stack_get_text_tag_choices() );
+
+		if ( ! in_array( $default_tag, $allowed_tags, true ) ) {
+			$default_tag = 'p';
+		}
+
+		if ( ! in_array( $tag, $allowed_tags, true ) ) {
+			$tag = $default_tag;
+		}
+
+		return $tag;
+	}
+
+	/**
+	 * Build a standard inline-HTML-enabled text field definition.
+	 *
+	 * @param string $key Unique ACF field key.
+	 * @param string $label Field label.
+	 * @param string $name Field name.
+	 * @param string $instructions Field instructions.
+	 * @param string $width Wrapper width percentage.
+	 * @return array<string, mixed>
+	 */
+	function mrn_base_stack_get_inline_text_field( $key, $label, $name, $instructions = 'Limited inline HTML allowed: span, strong, em, br.', $width = '75' ) {
+		return array(
+			'key'           => $key,
+			'label'         => $label,
+			'name'          => $name,
+			'aria-label'    => '',
+			'type'          => 'text',
+			'instructions'  => $instructions,
+			'wrapper'       => array(
+				'width' => $width,
+			),
+		);
+	}
+
+	/**
+	 * Build a standard label-tag ACF field definition.
+	 *
+	 * @param string $key Unique ACF field key.
+	 * @param string $name Field name.
+	 * @param string $default_tag Default tag choice.
+	 * @param string $label Field label.
+	 * @return array<string, mixed>
+	 */
+	function mrn_base_stack_get_label_tag_field( $key, $name = 'label_tag', $default_tag = 'p', $label = 'Tag' ) {
+		unset( $label );
+
+		return array(
+			'key'               => $key,
+			'label'             => 'Tag',
+			'name'              => $name,
+			'aria-label'        => '',
+			'type'              => 'select',
+			'choices'           => mrn_base_stack_get_text_tag_choices(),
+			'default_value'     => mrn_base_stack_normalize_text_tag( $default_tag, 'p' ),
+			'multiple'          => 0,
+			'return_format'     => 'value',
+			'ui'                => 0,
+			'wrapper'           => array(
+				'width' => '25',
+			),
+		);
+	}
+
+	/**
+	 * Build a standard heading/subheading tag ACF field definition.
+	 *
+	 * @param string $key Unique ACF field key.
+	 * @param string $name Field name.
+	 * @param string $default_tag Default tag choice.
+	 * @param string $label Field label.
+	 * @return array<string, mixed>
+	 */
+	function mrn_base_stack_get_text_tag_field( $key, $name = 'heading_tag', $default_tag = 'h2', $label = 'Tag' ) {
+		unset( $label );
+
+		return array(
+			'key'               => $key,
+			'label'             => 'Tag',
+			'name'              => $name,
+			'aria-label'        => '',
+			'type'              => 'select',
+			'choices'           => mrn_base_stack_get_text_tag_choices(),
+			'default_value'     => mrn_base_stack_normalize_text_tag( $default_tag, 'h2' ),
+			'multiple'          => 0,
+			'return_format'     => 'value',
+			'ui'                => 0,
+			'wrapper'           => array(
+				'width' => '25',
+			),
+		);
+	}
 }
 
 /**
