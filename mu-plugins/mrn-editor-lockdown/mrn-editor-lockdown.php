@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Editor Lockdown (MU)
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.9
+ * Version: 1.0.10
  *
  * @package MRNEditorLockdown
  */
@@ -16,6 +16,15 @@ defined( 'ABSPATH' ) || exit;
  */
 function mrn_editor_lockdown_is_loading_mask_enabled() {
 	return (bool) apply_filters( 'mrn_editor_lockdown_loading_mask_enabled', false );
+}
+
+/**
+ * Determine whether lightweight non-blocking editor loading feedback should run.
+ *
+ * @return bool
+ */
+function mrn_editor_lockdown_is_loading_indicator_enabled() {
+	return (bool) apply_filters( 'mrn_editor_lockdown_loading_indicator_enabled', true );
 }
 
 /**
@@ -564,7 +573,8 @@ function mrn_editor_lockdown_admin_css() {
 	if ( ! mrn_editor_lockdown_is_classic_post_screen( $screen ) ) {
 		return;
 	}
-	$loading_mask_enabled = mrn_editor_lockdown_is_loading_mask_enabled();
+	$loading_mask_enabled      = mrn_editor_lockdown_is_loading_mask_enabled();
+	$loading_indicator_enabled = mrn_editor_lockdown_is_loading_indicator_enabled();
 	?>
 	<style id="mrn-editor-lockdown">
 	<?php if ( $loading_mask_enabled ) : ?>
@@ -638,12 +648,62 @@ function mrn_editor_lockdown_admin_css() {
 			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 		}
 
+	<?php endif; ?>
+
+	<?php if ( $loading_indicator_enabled ) : ?>
+		.mrn-editor-loading-indicator {
+			position: fixed;
+			top: 44px;
+			right: 16px;
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			padding: 8px 12px;
+			border-radius: 999px;
+			background: rgba(17, 20, 24, 0.9);
+			color: #f4f7fb;
+			font-size: 12px;
+			font-weight: 600;
+			letter-spacing: 0.01em;
+			line-height: 1.2;
+			box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+			z-index: 100003;
+			pointer-events: none;
+			opacity: 0;
+			transform: translateY(-4px);
+			transition: opacity 0.2s ease, transform 0.2s ease;
+		}
+
+		body.mrn-editor-loading-indicator-live .mrn-editor-loading-indicator {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.mrn-editor-loading-indicator__spinner {
+			flex: 0 0 auto;
+			width: 14px;
+			height: 14px;
+			border-radius: 50%;
+			border: 2px solid rgba(255, 255, 255, 0.35);
+			border-top-color: #ffffff;
+			animation: mrnEditorPageLoaderSpin 0.9s linear infinite;
+		}
+
+		@media (max-width: 782px) {
+			.mrn-editor-loading-indicator {
+				top: 10px;
+				right: 10px;
+				padding: 7px 10px;
+				font-size: 11px;
+			}
+		}
+	<?php endif; ?>
+
 		@keyframes mrnEditorPageLoaderSpin {
 			to {
 				transform: rotate(360deg);
 			}
 		}
-	<?php endif; ?>
 
 		.mrn-editor-sidebar-toggle {
 			display: inline-flex;
@@ -795,6 +855,14 @@ function mrn_editor_lockdown_admin_css() {
 			body.post-new-php:not(.mrn-editor-page-ready)::after {
 				animation: none;
 			}
+
+			.mrn-editor-loading-indicator {
+				transition: none;
+			}
+
+			.mrn-editor-loading-indicator__spinner {
+				animation: none;
+			}
 		}
 
 	<?php if ( mrn_editor_lockdown_is_supported_screen( $screen ) ) : ?>
@@ -845,8 +913,8 @@ function mrn_editor_lockdown_admin_js() {
 			var loadingMessageEl;
 			var loadingMessageIndex = 0;
 			var loadingMessageStartStorageKey = 'mrnEditorLoadingMessageStart:v1:' + postType;
-			var loadingDelayMs = 1000;
 			var loadingMaskEnabled = <?php echo wp_json_encode( mrn_editor_lockdown_is_loading_mask_enabled() ); ?>;
+			var loadingIndicatorEnabled = <?php echo wp_json_encode( mrn_editor_lockdown_is_loading_indicator_enabled() ); ?>;
 			var loadingMessageIcons = ['🚀', '💣', '🧨', '⚡', '🛰️', '🛠️', '🎯', '🧪', '🔥', '✨'];
 			var loadingMessageStartPhrases = [
 				'Aligning your metaboxes',
@@ -880,6 +948,9 @@ function mrn_editor_lockdown_admin_js() {
 			var loadingMessages = [];
 			var loadingStartIndex;
 			var loadingEndIndex;
+			var loadingIndicatorEl;
+			var loadingMaskReadyDelayMs = 1000;
+			var loadingIndicatorReadyDelayMs = 120;
 
 			for (loadingStartIndex = 0; loadingStartIndex < loadingMessageStartPhrases.length; loadingStartIndex += 1) {
 				for (loadingEndIndex = 0; loadingEndIndex < loadingMessageEndPhrases.length; loadingEndIndex += 1) {
@@ -956,6 +1027,45 @@ function mrn_editor_lockdown_admin_js() {
 				}
 			}
 
+			function startLoadingIndicator() {
+				if (!body || loadingIndicatorEl || !loadingIndicatorEnabled || loadingMaskEnabled) {
+					return;
+				}
+
+				body.classList.add('mrn-editor-loading-indicator-live');
+
+				loadingIndicatorEl = document.createElement('div');
+				loadingIndicatorEl.className = 'mrn-editor-loading-indicator';
+				loadingIndicatorEl.setAttribute('role', 'status');
+				loadingIndicatorEl.setAttribute('aria-live', 'polite');
+				loadingIndicatorEl.setAttribute('aria-label', 'Preparing editor controls');
+
+				var spinner = document.createElement('span');
+				spinner.className = 'mrn-editor-loading-indicator__spinner';
+				spinner.setAttribute('aria-hidden', 'true');
+
+				var text = document.createElement('span');
+				text.textContent = 'Preparing editor controls';
+
+				loadingIndicatorEl.appendChild(spinner);
+				loadingIndicatorEl.appendChild(text);
+				body.appendChild(loadingIndicatorEl);
+			}
+
+			function stopLoadingIndicator() {
+				if (!body) {
+					return;
+				}
+
+				body.classList.remove('mrn-editor-loading-indicator-live');
+
+				if (loadingIndicatorEl && loadingIndicatorEl.parentNode) {
+					loadingIndicatorEl.parentNode.removeChild(loadingIndicatorEl);
+				}
+
+				loadingIndicatorEl = null;
+			}
+
 			function markEditorPageReady() {
 				if (!body) {
 					return;
@@ -963,6 +1073,7 @@ function mrn_editor_lockdown_admin_js() {
 
 				body.classList.add('mrn-editor-page-ready');
 				stopLoadingMessageCycle();
+				stopLoadingIndicator();
 
 				if (loadingFallbackTimer) {
 					window.clearTimeout(loadingFallbackTimer);
@@ -975,12 +1086,12 @@ function mrn_editor_lockdown_admin_js() {
 				}
 			}
 
-			function scheduleEditorPageReady() {
+			function scheduleEditorPageReady(delayMs) {
 				if (loadingReadyTimer) {
 					window.clearTimeout(loadingReadyTimer);
 				}
 
-				loadingReadyTimer = window.setTimeout(markEditorPageReady, loadingDelayMs);
+				loadingReadyTimer = window.setTimeout(markEditorPageReady, delayMs);
 			}
 
 			function initEditorLoadingMask() {
@@ -989,7 +1100,22 @@ function mrn_editor_lockdown_admin_js() {
 				}
 
 				if (!loadingMaskEnabled) {
-					markEditorPageReady();
+					if (!loadingIndicatorEnabled) {
+						markEditorPageReady();
+						return;
+					}
+
+					startLoadingIndicator();
+
+					if ('complete' === document.readyState) {
+						scheduleEditorPageReady(loadingIndicatorReadyDelayMs);
+						return;
+					}
+
+					window.addEventListener('load', function() {
+						scheduleEditorPageReady(loadingIndicatorReadyDelayMs);
+					}, { once: true });
+					loadingFallbackTimer = window.setTimeout(markEditorPageReady, 7000);
 					return;
 				}
 
@@ -997,11 +1123,13 @@ function mrn_editor_lockdown_admin_js() {
 				startLoadingMessageCycle();
 
 				if ('complete' === document.readyState) {
-					scheduleEditorPageReady();
+					scheduleEditorPageReady(loadingMaskReadyDelayMs);
 					return;
 				}
 
-				window.addEventListener('load', scheduleEditorPageReady, { once: true });
+				window.addEventListener('load', function() {
+					scheduleEditorPageReady(loadingMaskReadyDelayMs);
+				}, { once: true });
 				loadingFallbackTimer = window.setTimeout(markEditorPageReady, 7000);
 			}
 

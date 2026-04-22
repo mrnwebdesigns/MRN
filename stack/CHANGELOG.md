@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.04.22-editor-loading-feedback-nonblocking
+- Expanded `mrn-editor-lockdown` to `1.0.10`.
+- Kept the heavyweight classic-editor loading mask opt-in only, but restored editor load feedback with a lightweight non-blocking loading indicator.
+- Ensured the indicator no longer blocks clicks/typing while the editor warms up, preserving the interactivity gains from the mask-default-off performance rollout.
+
 ## 2026.04.22-effects-permissions-removed
 - Expanded `mrn-base-stack` to `1.1.32`.
 - Removed the builder `layout_effects` capability gating hooks from the global ACF field-prepare/save path so Effects controls are no longer permission-gated in admin.
