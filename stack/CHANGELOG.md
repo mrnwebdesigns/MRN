@@ -1,5 +1,20 @@
 # Stack Changelog
 
+## 2026.04.22-editor-loading-indicator-centered-visibility
+- Expanded `mrn-editor-lockdown` to `1.0.13`.
+- Updated the non-blocking classic-editor loading indicator visual treatment to a centered spinner/message so editors can clearly perceive feedback during long loads.
+- Kept the indicator non-blocking (`pointer-events: none`) and retained the early `admin_head` bootstrap path.
+
+## 2026.04.22-editor-loading-indicator-pseudo-head
+- Expanded `mrn-editor-lockdown` to `1.0.12`.
+- Switched the non-blocking classic-editor loading indicator to an early `admin_head` pseudo-element (`html::before/::after`) so it is visible during long pre-footer admin loads.
+- Removed indicator DOM-injection timing dependencies and extended the post-load visibility window slightly for clearer user feedback.
+
+## 2026.04.22-editor-loading-indicator-head-bootstrap
+- Expanded `mrn-editor-lockdown` to `1.0.11`.
+- Moved non-blocking editor loading-indicator bootstrap to `admin_head` so it can appear before footer scripts execute on slow classic-editor loads.
+- Increased non-blocking indicator visibility timing slightly so editors can reliably see feedback while preserving the no-blocking interaction model.
+
 ## 2026.04.22-editor-loading-feedback-nonblocking
 - Expanded `mrn-editor-lockdown` to `1.0.10`.
 - Kept the heavyweight classic-editor loading mask opt-in only, but restored editor load feedback with a lightweight non-blocking loading indicator.

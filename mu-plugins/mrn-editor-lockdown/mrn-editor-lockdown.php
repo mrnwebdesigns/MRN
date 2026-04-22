@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Editor Lockdown (MU)
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.10
+ * Version: 1.0.13
  *
  * @package MRNEditorLockdown
  */
@@ -651,50 +651,53 @@ function mrn_editor_lockdown_admin_css() {
 	<?php endif; ?>
 
 	<?php if ( $loading_indicator_enabled ) : ?>
-		.mrn-editor-loading-indicator {
+		html.mrn-editor-loading-indicator-live::before {
+			content: '';
 			position: fixed;
-			top: 44px;
-			right: 16px;
-			display: inline-flex;
-			align-items: center;
-			gap: 8px;
-			padding: 8px 12px;
-			border-radius: 999px;
+			top: 50%;
+			left: 50%;
+			width: 42px;
+			height: 42px;
+			margin: -48px 0 0 -21px;
+			border-radius: 50%;
+			border: 4px solid rgba(32, 37, 42, 0.22);
+			border-top-color: #ffffff;
+			background: rgba(17, 20, 24, 0.62);
+			z-index: 100003;
+			pointer-events: none;
+			animation: mrnEditorPageLoaderSpin 0.9s linear infinite;
+		}
+
+		html.mrn-editor-loading-indicator-live::after {
+			content: 'Preparing editor controls';
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			margin-top: 8px;
+			transform: translateX(-50%);
+			padding: 9px 14px;
+			border-radius: 10px;
 			background: rgba(17, 20, 24, 0.9);
 			color: #f4f7fb;
-			font-size: 12px;
+			font-size: 13px;
 			font-weight: 600;
 			letter-spacing: 0.01em;
 			line-height: 1.2;
 			box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-			z-index: 100003;
+			z-index: 100002;
 			pointer-events: none;
-			opacity: 0;
-			transform: translateY(-4px);
-			transition: opacity 0.2s ease, transform 0.2s ease;
-		}
-
-		body.mrn-editor-loading-indicator-live .mrn-editor-loading-indicator {
-			opacity: 1;
-			transform: translateY(0);
-		}
-
-		.mrn-editor-loading-indicator__spinner {
-			flex: 0 0 auto;
-			width: 14px;
-			height: 14px;
-			border-radius: 50%;
-			border: 2px solid rgba(255, 255, 255, 0.35);
-			border-top-color: #ffffff;
-			animation: mrnEditorPageLoaderSpin 0.9s linear infinite;
 		}
 
 		@media (max-width: 782px) {
-			.mrn-editor-loading-indicator {
-				top: 10px;
-				right: 10px;
-				padding: 7px 10px;
-				font-size: 11px;
+			html.mrn-editor-loading-indicator-live::after {
+				padding: 8px 12px;
+				font-size: 12px;
+			}
+
+			html.mrn-editor-loading-indicator-live::before {
+				width: 38px;
+				height: 38px;
+				margin: -44px 0 0 -19px;
 			}
 		}
 	<?php endif; ?>
@@ -856,11 +859,7 @@ function mrn_editor_lockdown_admin_css() {
 				animation: none;
 			}
 
-			.mrn-editor-loading-indicator {
-				transition: none;
-			}
-
-			.mrn-editor-loading-indicator__spinner {
+			html.mrn-editor-loading-indicator-live::before {
 				animation: none;
 			}
 		}
@@ -872,6 +871,18 @@ function mrn_editor_lockdown_admin_css() {
 		}
 	<?php endif; ?>
 	</style>
+	<?php if ( $loading_indicator_enabled && ! $loading_mask_enabled ) : ?>
+		<script id="mrn-editor-lockdown-loading-indicator-bootstrap">
+			(function() {
+				var docEl = document.documentElement;
+				if (!docEl) {
+					return;
+				}
+
+				docEl.classList.add('mrn-editor-loading-indicator-live');
+			})();
+		</script>
+	<?php endif; ?>
 	<?php
 }
 add_action( 'admin_head', 'mrn_editor_lockdown_admin_css' );
@@ -948,9 +959,8 @@ function mrn_editor_lockdown_admin_js() {
 			var loadingMessages = [];
 			var loadingStartIndex;
 			var loadingEndIndex;
-			var loadingIndicatorEl;
 			var loadingMaskReadyDelayMs = 1000;
-			var loadingIndicatorReadyDelayMs = 120;
+			var loadingIndicatorReadyDelayMs = 900;
 
 			for (loadingStartIndex = 0; loadingStartIndex < loadingMessageStartPhrases.length; loadingStartIndex += 1) {
 				for (loadingEndIndex = 0; loadingEndIndex < loadingMessageEndPhrases.length; loadingEndIndex += 1) {
@@ -1028,42 +1038,19 @@ function mrn_editor_lockdown_admin_js() {
 			}
 
 			function startLoadingIndicator() {
-				if (!body || loadingIndicatorEl || !loadingIndicatorEnabled || loadingMaskEnabled) {
+				if (!loadingIndicatorEnabled || loadingMaskEnabled) {
 					return;
 				}
 
-				body.classList.add('mrn-editor-loading-indicator-live');
-
-				loadingIndicatorEl = document.createElement('div');
-				loadingIndicatorEl.className = 'mrn-editor-loading-indicator';
-				loadingIndicatorEl.setAttribute('role', 'status');
-				loadingIndicatorEl.setAttribute('aria-live', 'polite');
-				loadingIndicatorEl.setAttribute('aria-label', 'Preparing editor controls');
-
-				var spinner = document.createElement('span');
-				spinner.className = 'mrn-editor-loading-indicator__spinner';
-				spinner.setAttribute('aria-hidden', 'true');
-
-				var text = document.createElement('span');
-				text.textContent = 'Preparing editor controls';
-
-				loadingIndicatorEl.appendChild(spinner);
-				loadingIndicatorEl.appendChild(text);
-				body.appendChild(loadingIndicatorEl);
+				if (document.documentElement) {
+					document.documentElement.classList.add('mrn-editor-loading-indicator-live');
+				}
 			}
 
 			function stopLoadingIndicator() {
-				if (!body) {
-					return;
+				if (document.documentElement) {
+					document.documentElement.classList.remove('mrn-editor-loading-indicator-live');
 				}
-
-				body.classList.remove('mrn-editor-loading-indicator-live');
-
-				if (loadingIndicatorEl && loadingIndicatorEl.parentNode) {
-					loadingIndicatorEl.parentNode.removeChild(loadingIndicatorEl);
-				}
-
-				loadingIndicatorEl = null;
 			}
 
 			function markEditorPageReady() {
