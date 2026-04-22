@@ -396,22 +396,12 @@ function mrn_base_stack_get_after_content_location_rules() {
 /**
  * Determine whether the layout-builder runtime should load.
  *
- * This rollback branch keeps the infrastructure in place while defaulting the
- * heavy ACF layout builder to off. Sites can opt back in with either:
- * - define( 'MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER', true );
- * - add_filter( 'mrn_base_stack_enable_layout_builder', '__return_true' );
+ * This rollback track keeps layout-builder functionality fully disabled.
  *
  * @return bool
  */
 function mrn_base_stack_is_layout_builder_enabled() {
-	$enabled = defined( 'MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER' ) ? (bool) MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER : false;
-
-	/**
-	 * Filter whether the theme's ACF layout-builder runtime should load.
-	 *
-	 * @param bool $enabled Whether builder runtime is enabled.
-	 */
-	return (bool) apply_filters( 'mrn_base_stack_enable_layout_builder', $enabled );
+	return false;
 }
 
 /**
