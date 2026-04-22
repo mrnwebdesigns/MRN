@@ -2,12 +2,21 @@
 /**
  * Plugin Name: MRN Editor Lockdown (MU)
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.8
+ * Version: 1.0.9
  *
  * @package MRNEditorLockdown
  */
 
 defined( 'ABSPATH' ) || exit;
+
+/**
+ * Determine whether the heavyweight editor loading mask should run.
+ *
+ * @return bool
+ */
+function mrn_editor_lockdown_is_loading_mask_enabled() {
+	return (bool) apply_filters( 'mrn_editor_lockdown_loading_mask_enabled', false );
+}
 
 /**
  * SEO Helper ACF metabox ID.
@@ -555,8 +564,10 @@ function mrn_editor_lockdown_admin_css() {
 	if ( ! mrn_editor_lockdown_is_classic_post_screen( $screen ) ) {
 		return;
 	}
+	$loading_mask_enabled = mrn_editor_lockdown_is_loading_mask_enabled();
 	?>
 	<style id="mrn-editor-lockdown">
+	<?php if ( $loading_mask_enabled ) : ?>
 		body.post-php:not(.mrn-editor-page-ready),
 		body.post-new-php:not(.mrn-editor-page-ready) {
 			overflow: hidden;
@@ -632,6 +643,7 @@ function mrn_editor_lockdown_admin_css() {
 				transform: rotate(360deg);
 			}
 		}
+	<?php endif; ?>
 
 		.mrn-editor-sidebar-toggle {
 			display: inline-flex;
@@ -834,6 +846,7 @@ function mrn_editor_lockdown_admin_js() {
 			var loadingMessageIndex = 0;
 			var loadingMessageStartStorageKey = 'mrnEditorLoadingMessageStart:v1:' + postType;
 			var loadingDelayMs = 1000;
+			var loadingMaskEnabled = <?php echo wp_json_encode( mrn_editor_lockdown_is_loading_mask_enabled() ); ?>;
 			var loadingMessageIcons = ['🚀', '💣', '🧨', '⚡', '🛰️', '🛠️', '🎯', '🧪', '🔥', '✨'];
 			var loadingMessageStartPhrases = [
 				'Aligning your metaboxes',
@@ -972,6 +985,11 @@ function mrn_editor_lockdown_admin_js() {
 
 			function initEditorLoadingMask() {
 				if (!body) {
+					return;
+				}
+
+				if (!loadingMaskEnabled) {
+					markEditorPageReady();
 					return;
 				}
 

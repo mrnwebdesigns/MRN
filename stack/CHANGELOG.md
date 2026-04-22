@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.04.21-editor-ready-mask-disabled
+- Expanded `mrn-editor-lockdown` to `1.0.9`.
+- Disabled the heavyweight classic-editor loading mask by default so post edit screens become interactive as soon as WordPress/ACF can accept input, instead of waiting for the deferred ready-state gate.
+- Added the `mrn_editor_lockdown_loading_mask_enabled` filter so environments that still want the legacy full-screen loading overlay can opt in explicitly.
+
 ## 2026.04.21-editor-load-latency-collapse-default-off
 - Expanded `mrn-base-stack` to `1.1.31`.
 - Disabled automatic initial builder/repeater row precollapse by default on classic editor screens so the editor stays interactive sooner on ACF-heavy pages.
