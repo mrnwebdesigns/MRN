@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.22-editor-loading-indicator-strong-nonblocking`
+- Stack release: `2026.04.22-editor-loading-indicator-text-black`
 - Release date: `2026-04-22`
 - Status: `current baseline`
 
@@ -11,7 +11,7 @@
 - MU plugins:
   - `mrn-admin-ui-css` `3.1.12`
   - `mrn-shared-assets` `0.1.1`
-  - `mrn-editor-lockdown` `1.0.14`
+  - `mrn-editor-lockdown` `1.0.15`
   - `mrn-reusable-block-library` `0.1.15`
   - `mrn-site-colors` / `Site Styles` `0.1.4`
 - Standard plugins:

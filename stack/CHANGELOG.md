@@ -1,5 +1,9 @@
 # Stack Changelog
 
+## 2026.04.22-editor-loading-indicator-text-black
+- Expanded `mrn-editor-lockdown` to `1.0.15`.
+- Updated the centered non-blocking editor loading indicator label text to black for improved visual preference/readability.
+
 ## 2026.04.22-editor-loading-indicator-strong-nonblocking
 - Expanded `mrn-editor-lockdown` to `1.0.14`.
 - Strengthened the classic-editor non-blocking loading indicator with a clearer centered spinner/message treatment and a light non-interfering scrim.
