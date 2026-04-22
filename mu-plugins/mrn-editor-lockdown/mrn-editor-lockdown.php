@@ -669,25 +669,25 @@ function mrn_editor_lockdown_admin_css() {
 			animation: mrnEditorPageLoaderSpin 0.82s linear infinite;
 		}
 
-		html.mrn-editor-loading-indicator-live::after {
-			content: 'Preparing editor controls...';
-			position: fixed;
-			inset: 0;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding-top: 26px;
-			background: rgba(17, 20, 24, 0.14);
-			color: #f4f7fb;
-			font-size: 15px;
-			font-weight: 700;
-			letter-spacing: 0.02em;
-			line-height: 1.25;
-			text-shadow: 0 1px 2px rgba(255, 255, 255, 0.55);
-			z-index: 100003;
-			pointer-events: none;
-			animation: mrnEditorLoaderPulse 1.05s ease-in-out infinite;
-		}
+			html.mrn-editor-loading-indicator-live::after {
+				content: 'Preparing editor controls...';
+				position: fixed;
+				inset: 0;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding-top: 26px;
+				background: rgba(255, 255, 255, 0.38);
+				color: #111111;
+				font-size: 15px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+				line-height: 1.25;
+				text-shadow: none;
+				z-index: 100003;
+				pointer-events: none;
+				animation: mrnEditorLoaderPulse 1.05s ease-in-out infinite;
+			}
 
 		@media (max-width: 782px) {
 			html.mrn-editor-loading-indicator-live::after {
