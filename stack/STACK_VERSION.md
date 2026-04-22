@@ -1,17 +1,17 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.22-editor-loading-indicator-text-black`
+- Stack release: `2026.04.22-layout-builder-hard-disable-and-loader-contrast`
 - Release date: `2026-04-22`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.32`
+  - `mrn-base-stack` `1.1.33`
 - MU plugins:
   - `mrn-admin-ui-css` `3.1.12`
   - `mrn-shared-assets` `0.1.1`
-  - `mrn-editor-lockdown` `1.0.15`
+  - `mrn-editor-lockdown` `1.0.16`
   - `mrn-reusable-block-library` `0.1.15`
   - `mrn-site-colors` / `Site Styles` `0.1.4`
 - Standard plugins:

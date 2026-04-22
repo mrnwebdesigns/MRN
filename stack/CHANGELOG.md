@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.04.22-layout-builder-hard-disable-and-loader-contrast
+- Expanded `mrn-base-stack` to `1.1.33`.
+- Expanded `mrn-editor-lockdown` to `1.0.16`.
+- Hard-disabled the heavy theme layout-builder runtime by default in the rollback track and kept safe content fallbacks so classic content rendering remains stable.
+- Restored shared ACF text/tag helper functions in the builder-disabled path so testimonial and case-study field groups continue to register cleanly.
+- Improved non-blocking editor loading-indicator readability with dark text on a light scrim to avoid invisible white-on-light loader copy.
+
 ## 2026.04.22-editor-loading-indicator-text-black
 - Expanded `mrn-editor-lockdown` to `1.0.15`.
 - Updated the centered non-blocking editor loading indicator label text to black for improved visual preference/readability.
