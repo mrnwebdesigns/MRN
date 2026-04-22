@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.04.22-editor-loading-indicator-strong-nonblocking
+- Expanded `mrn-editor-lockdown` to `1.0.14`.
+- Strengthened the classic-editor non-blocking loading indicator with a clearer centered spinner/message treatment and a light non-interfering scrim.
+- Reduced indicator linger timing so feedback appears fast but clears quickly once the editor is ready.
+
 ## 2026.04.22-editor-loading-indicator-centered-visibility
 - Expanded `mrn-editor-lockdown` to `1.0.13`.
 - Updated the non-blocking classic-editor loading indicator visual treatment to a centered spinner/message so editors can clearly perceive feedback during long loads.

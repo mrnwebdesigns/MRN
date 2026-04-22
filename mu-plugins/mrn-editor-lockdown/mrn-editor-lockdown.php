@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Editor Lockdown (MU)
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.13
+ * Version: 1.0.14
  *
  * @package MRNEditorLockdown
  */
@@ -656,48 +656,49 @@ function mrn_editor_lockdown_admin_css() {
 			position: fixed;
 			top: 50%;
 			left: 50%;
-			width: 42px;
-			height: 42px;
-			margin: -48px 0 0 -21px;
+			width: 56px;
+			height: 56px;
+			margin: -74px 0 0 -28px;
 			border-radius: 50%;
-			border: 4px solid rgba(32, 37, 42, 0.22);
+			border: 5px solid rgba(255, 255, 255, 0.28);
 			border-top-color: #ffffff;
-			background: rgba(17, 20, 24, 0.62);
-			z-index: 100003;
+			background: rgba(17, 20, 24, 0.42);
+			box-shadow: 0 0 0 8px rgba(17, 20, 24, 0.14), 0 10px 24px rgba(0, 0, 0, 0.22);
+			z-index: 100004;
 			pointer-events: none;
-			animation: mrnEditorPageLoaderSpin 0.9s linear infinite;
+			animation: mrnEditorPageLoaderSpin 0.82s linear infinite;
 		}
 
 		html.mrn-editor-loading-indicator-live::after {
-			content: 'Preparing editor controls';
+			content: 'Preparing editor controls...';
 			position: fixed;
-			top: 50%;
-			left: 50%;
-			margin-top: 8px;
-			transform: translateX(-50%);
-			padding: 9px 14px;
-			border-radius: 10px;
-			background: rgba(17, 20, 24, 0.9);
+			inset: 0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding-top: 26px;
+			background: rgba(17, 20, 24, 0.14);
 			color: #f4f7fb;
-			font-size: 13px;
-			font-weight: 600;
-			letter-spacing: 0.01em;
-			line-height: 1.2;
-			box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-			z-index: 100002;
+			font-size: 15px;
+			font-weight: 700;
+			letter-spacing: 0.02em;
+			line-height: 1.25;
+			text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+			z-index: 100003;
 			pointer-events: none;
+			animation: mrnEditorLoaderPulse 1.05s ease-in-out infinite;
 		}
 
 		@media (max-width: 782px) {
 			html.mrn-editor-loading-indicator-live::after {
-				padding: 8px 12px;
-				font-size: 12px;
+				padding-top: 22px;
+				font-size: 13px;
 			}
 
 			html.mrn-editor-loading-indicator-live::before {
-				width: 38px;
-				height: 38px;
-				margin: -44px 0 0 -19px;
+				width: 48px;
+				height: 48px;
+				margin: -66px 0 0 -24px;
 			}
 		}
 	<?php endif; ?>
@@ -705,6 +706,17 @@ function mrn_editor_lockdown_admin_css() {
 		@keyframes mrnEditorPageLoaderSpin {
 			to {
 				transform: rotate(360deg);
+			}
+		}
+
+		@keyframes mrnEditorLoaderPulse {
+			0%,
+			100% {
+				opacity: 0.95;
+			}
+
+			50% {
+				opacity: 0.72;
 			}
 		}
 
@@ -862,6 +874,10 @@ function mrn_editor_lockdown_admin_css() {
 			html.mrn-editor-loading-indicator-live::before {
 				animation: none;
 			}
+
+			html.mrn-editor-loading-indicator-live::after {
+				animation: none;
+			}
 		}
 
 	<?php if ( mrn_editor_lockdown_is_supported_screen( $screen ) ) : ?>
@@ -960,7 +976,7 @@ function mrn_editor_lockdown_admin_js() {
 			var loadingStartIndex;
 			var loadingEndIndex;
 			var loadingMaskReadyDelayMs = 1000;
-			var loadingIndicatorReadyDelayMs = 900;
+			var loadingIndicatorReadyDelayMs = 120;
 
 			for (loadingStartIndex = 0; loadingStartIndex < loadingMessageStartPhrases.length; loadingStartIndex += 1) {
 				for (loadingEndIndex = 0; loadingEndIndex < loadingMessageEndPhrases.length; loadingEndIndex += 1) {
