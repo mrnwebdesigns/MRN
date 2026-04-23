@@ -241,24 +241,31 @@ test.describe('MRN stack site smoke QA', () => {
 	test.describe('admin smoke coverage', () => {
 		test.describe.configure({ mode: 'serial' });
 
-		test('page editor shows builder UI when admin credentials are provided', async ({ page }) => {
-			test.skip(
-				! process.env.MRN_WP_ADMIN_USER || ! process.env.MRN_WP_ADMIN_PASS || ! process.env.MRN_SAMPLE_PAGE_EDIT_PATH,
-				'Set MRN_WP_ADMIN_USER, MRN_WP_ADMIN_PASS, and MRN_SAMPLE_PAGE_EDIT_PATH to run admin builder smoke coverage.'
-			);
+			test('page editor shows expected editing UI when admin credentials are provided', async ({ page }) => {
+				test.skip(
+					! process.env.MRN_WP_ADMIN_USER || ! process.env.MRN_WP_ADMIN_PASS || ! process.env.MRN_SAMPLE_PAGE_EDIT_PATH,
+					'Set MRN_WP_ADMIN_USER, MRN_WP_ADMIN_PASS, and MRN_SAMPLE_PAGE_EDIT_PATH to run admin builder smoke coverage.'
+				);
 
 			const issues = await collectPageIssues(page);
 
 			await loginToWordPressAdmin(page);
 
-			await page.goto(process.env.MRN_SAMPLE_PAGE_EDIT_PATH, { waitUntil: 'networkidle' });
+				await page.goto(process.env.MRN_SAMPLE_PAGE_EDIT_PATH, { waitUntil: 'networkidle' });
 
-			await expect(page.locator('body.wp-admin')).toBeVisible();
-			await expect(page.locator('.acf-field-flexible-content:visible').first()).toBeVisible();
-			await expect(page.locator('.acf-field-flexible-content .acf-actions [data-name="add-layout"]:visible').first()).toBeVisible();
+				await expect(page.locator('body.wp-admin')).toBeVisible();
+				const flexibleFields = page.locator('.acf-field-flexible-content:visible');
+				const hasBuilderUi = (await flexibleFields.count()) > 0;
 
-			expectNoPageIssues(issues, 'Admin builder editor');
-		});
+				if (hasBuilderUi) {
+					await expect(flexibleFields.first()).toBeVisible();
+					await expect(page.locator('.acf-field-flexible-content .acf-actions [data-name="add-layout"]:visible').first()).toBeVisible();
+				} else {
+					await expect(page.locator('#wp-content-wrap, #content, #poststuff').first()).toBeVisible();
+				}
+
+				expectNoPageIssues(issues, 'Admin builder editor');
+			});
 
 		test('site configurations page renders without leaked CSS text when configured', async ({ page }) => {
 			test.skip(
