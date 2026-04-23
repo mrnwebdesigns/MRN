@@ -221,10 +221,10 @@ function mrn_base_stack_get_hero_builder_layouts() {
 			$layout['sub_fields'] = array();
 		}
 
-		$cloned_layout        = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_hero_' );
-		$cloned_key           = 'layout_mrn_hero_' . $layout_name;
-		$cloned_layout['key'] = $cloned_key;
-		$layouts[ $cloned_key ] = $cloned_layout;
+			$cloned_layout          = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_hero_' );
+			$cloned_key             = 'layout_mrn_hero_' . $layout_name;
+			$cloned_layout['key']   = $cloned_key;
+			$layouts[ $cloned_key ] = $cloned_layout;
 	}
 
 	$layouts_cache = $layouts;
@@ -1435,6 +1435,7 @@ function mrn_base_stack_get_content_list_filter_source_choices() {
 		'none'               => 'No Filter',
 		'current_post_terms' => 'Use Current Page/Post Terms',
 		'manual_terms'       => 'Use Specific Terms',
+		'manual_posts'       => 'Choose Specific Content',
 	);
 }
 
@@ -2968,6 +2969,7 @@ function mrn_base_stack_get_main_config_field_group_key( array $field ) {
 		|| false !== strpos( $field_name, 'size' )
 		|| false !== strpos( $field_name, 'alignment' )
 		|| false !== strpos( $field_name, 'per_page' )
+		|| false !== strpos( $field_name, 'filter_' )
 		|| 0 === strpos( $field_name, 'show_' )
 	) {
 		return 'layout';
@@ -3373,6 +3375,7 @@ function mrn_base_stack_group_main_config_fields_by_functionality( array $fields
 	}
 
 	$grouped_segment = array();
+	$is_first_group  = true;
 	foreach ( $group_order as $group_key => $group_label ) {
 		$group_fields = $grouped[ $group_key ];
 		if ( empty( $group_fields ) ) {
@@ -3385,7 +3388,7 @@ function mrn_base_stack_group_main_config_fields_by_functionality( array $fields
 			'name'         => '',
 			'aria-label'   => '',
 			'type'         => 'accordion',
-			'open'         => 0,
+			'open'         => $is_first_group ? 1 : 0,
 			'multi_expand' => 1,
 			'endpoint'     => 0,
 		);
@@ -3393,6 +3396,8 @@ function mrn_base_stack_group_main_config_fields_by_functionality( array $fields
 		foreach ( $group_fields as $group_field ) {
 			$grouped_segment[] = $group_field;
 		}
+
+		$is_first_group = false;
 	}
 
 	$grouped_segment[] = array(
@@ -5396,6 +5401,73 @@ function mrn_base_stack_get_content_list_tax_query( array $row, $context_post_id
 	}
 
 	return array();
+}
+
+/**
+ * Resolve manually selected post IDs for content-list rows.
+ *
+ * @param array<string, mixed> $row Content-list row settings.
+ * @param string               $target_post_type Queried post type.
+ * @return array<int, int>
+ */
+function mrn_base_stack_get_content_list_manual_post_ids( array $row, $target_post_type = '' ) {
+	$selected = isset( $row['filter_posts'] ) ? $row['filter_posts'] : array();
+	$post_ids = array();
+
+	if ( $selected instanceof WP_Post ) {
+		$selected = array( $selected );
+	} elseif ( is_scalar( $selected ) ) {
+		$selected = array( $selected );
+	} elseif ( ! is_array( $selected ) ) {
+		$selected = array();
+	}
+
+	foreach ( $selected as $item ) {
+		if ( $item instanceof WP_Post ) {
+			$post_ids[] = absint( $item->ID );
+			continue;
+		}
+
+		if ( is_array( $item ) && isset( $item['ID'] ) ) {
+			$post_ids[] = absint( $item['ID'] );
+			continue;
+		}
+
+		$post_ids[] = absint( $item );
+	}
+
+	$post_ids = array_values(
+		array_filter(
+			array_unique( array_map( 'absint', $post_ids ) )
+		)
+	);
+
+	if ( empty( $post_ids ) ) {
+		return array();
+	}
+
+	$target_post_type = sanitize_key( (string) $target_post_type );
+	if ( '' === $target_post_type ) {
+		return $post_ids;
+	}
+
+	return array_values(
+		array_filter(
+			$post_ids,
+			static function ( $post_id ) use ( $target_post_type ) {
+				$post = get_post( absint( $post_id ) );
+				if ( ! $post instanceof WP_Post ) {
+					return false;
+				}
+
+				if ( 'publish' !== $post->post_status ) {
+					return false;
+				}
+
+				return sanitize_key( (string) $post->post_type ) === $target_post_type;
+			}
+		)
+	);
 }
 
 /**

@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.1.33' );
+	define( '_S_VERSION', '1.1.34' );
 }
 
 /**
@@ -731,11 +731,11 @@ function mrn_base_stack_scripts() {
 	wp_style_add_data( 'mrn-base-stack-style', 'rtl', 'replace' );
 
 	$layout_builder_enabled = mrn_base_stack_is_layout_builder_enabled();
-	$header_options     = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
-	$needs_fontawesome  = false;
-	$needs_dashicons    = false;
-	$uses_icon_search   = ! empty( $header_options['header_show_search'] ) && isset( $header_options['header_search_style'] ) && 'icon_only' === $header_options['header_search_style'];
-	$search_icon_source = isset( $header_options['header_search_icon_source'] ) ? (string) $header_options['header_search_icon_source'] : 'dashicons';
+	$header_options         = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+	$needs_fontawesome      = false;
+	$needs_dashicons        = false;
+	$uses_icon_search       = ! empty( $header_options['header_show_search'] ) && isset( $header_options['header_search_style'] ) && 'icon_only' === $header_options['header_search_style'];
+	$search_icon_source     = isset( $header_options['header_search_icon_source'] ) ? (string) $header_options['header_search_icon_source'] : 'dashicons';
 
 	if ( 'fontawesome' === $search_icon_source && $uses_icon_search ) {
 		$needs_fontawesome = true;
@@ -898,7 +898,7 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 	 * @param int|null $post_id Optional post ID.
 	 * @return bool
 	 */
-	function mrn_base_stack_render_hero_builder( $post_id = null ) {
+	function mrn_base_stack_render_hero_builder( $post_id = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Keep signature parity with builder-enabled runtime.
 		return false;
 	}
 
@@ -929,9 +929,7 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 	 * @param int|null $post_id Optional post ID.
 	 * @return void
 	 */
-	function mrn_base_stack_render_after_content_builder( $post_id = null ) {
-		return;
-	}
+	function mrn_base_stack_render_after_content_builder( $post_id = null ) {} // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Keep signature parity with builder-enabled runtime.
 
 	/**
 	 * Shared HTML tag choices for heading-style text fields.
@@ -1071,9 +1069,7 @@ require_once get_template_directory() . '/inc/menu-link-attributes.php';
 /**
  * Load singular sidebar modules.
  */
-if ( mrn_base_stack_is_layout_builder_enabled() ) {
-	require_once get_template_directory() . '/inc/singular-sidebar.php';
-}
+require_once get_template_directory() . '/inc/singular-sidebar.php';
 
 /**
  * Load gallery modules.

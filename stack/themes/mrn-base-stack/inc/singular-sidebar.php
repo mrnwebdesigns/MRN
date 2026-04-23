@@ -11,7 +11,12 @@
  * @return array<int, string>
  */
 function mrn_base_stack_get_sidebar_supported_post_types() {
-	$post_types = function_exists( 'mrn_base_stack_get_singular_shell_post_types' ) ? mrn_base_stack_get_singular_shell_post_types() : array( 'page_with_sidebars', 'post_with_sidebars', 'blog', 'gallery', 'case_study', 'testimonial' );
+	$layout_builder_enabled = function_exists( 'mrn_base_stack_is_layout_builder_enabled' ) && mrn_base_stack_is_layout_builder_enabled();
+	$fallback_post_types    = $layout_builder_enabled
+		? array( 'page_with_sidebars', 'post_with_sidebars', 'blog', 'gallery', 'case_study', 'testimonial' )
+		: array( 'page_with_sidebars', 'post_with_sidebars' );
+
+	$post_types = function_exists( 'mrn_base_stack_get_singular_shell_post_types' ) ? mrn_base_stack_get_singular_shell_post_types() : $fallback_post_types;
 
 	/**
 	 * Filter the post types that can opt into the singular sidebar shell.
@@ -21,7 +26,7 @@ function mrn_base_stack_get_sidebar_supported_post_types() {
 	$post_types = apply_filters( 'mrn_base_stack_sidebar_supported_post_types', $post_types );
 
 	if ( ! is_array( $post_types ) ) {
-		return array( 'page_with_sidebars', 'post_with_sidebars', 'blog', 'gallery', 'case_study', 'testimonial' );
+		return $fallback_post_types;
 	}
 
 	$post_types = array_values(
@@ -32,14 +37,23 @@ function mrn_base_stack_get_sidebar_supported_post_types() {
 		)
 	);
 
-	$post_types = array_values(
-		array_diff(
-			$post_types,
-			array( 'page', 'post' )
-		)
-	);
+	if ( $layout_builder_enabled ) {
+		$post_types = array_values(
+			array_diff(
+				$post_types,
+				array( 'page', 'post' )
+			)
+		);
+	} else {
+		$post_types = array_values(
+			array_intersect(
+				$post_types,
+				array( 'page_with_sidebars', 'post_with_sidebars' )
+			)
+		);
+	}
 
-	return ! empty( $post_types ) ? $post_types : array( 'page_with_sidebars', 'post_with_sidebars', 'blog', 'gallery', 'case_study', 'testimonial' );
+	return ! empty( $post_types ) ? $post_types : $fallback_post_types;
 }
 
 /**
@@ -77,54 +91,61 @@ function mrn_base_stack_register_singular_sidebar_field_group() {
 		return;
 	}
 
+	$layout_builder_enabled = function_exists( 'mrn_base_stack_is_layout_builder_enabled' ) && mrn_base_stack_is_layout_builder_enabled();
 	$content_builder_fields = function_exists( 'acf_get_fields' ) ? acf_get_fields( 'group_mrn_content_builder' ) : array();
 	$sidebar_layouts        = array();
+	$fields                 = array(
+		array(
+			'key'           => 'field_mrn_sidebar_layout',
+			'label'         => 'Sidebar Position',
+			'name'          => 'sidebar_layout',
+			'aria-label'    => '',
+			'type'          => 'button_group',
+			'choices'       => array(
+				'left'  => 'Left Sidebar',
+				'right' => 'Right Sidebar',
+			),
+			'default_value' => 'right',
+			'layout'        => 'horizontal',
+			'return_format' => 'value',
+			'instructions'  => 'Choose where the sidebar sits when this entry needs a two-column singular layout.',
+		),
+	);
 
 	if ( is_array( $content_builder_fields ) && ! empty( $content_builder_fields[0]['layouts'] ) && is_array( $content_builder_fields[0]['layouts'] ) ) {
 		$sidebar_layouts = mrn_base_stack_clone_acf_keys_with_prefix( $content_builder_fields[0]['layouts'], 'sidebar_' );
+	}
+
+	if ( $layout_builder_enabled && ! empty( $sidebar_layouts ) ) {
+		$fields[] = array(
+			'key'               => 'field_mrn_sidebar_rows',
+			'label'             => 'Sidebar Rows',
+			'name'              => 'page_sidebar_rows',
+			'aria-label'        => '',
+			'type'              => 'flexible_content',
+			'button_label'      => 'Add Sidebar Row',
+			'layouts'           => $sidebar_layouts,
+			'instructions'      => 'Build the sidebar with the same row layouts available in the main Content area.',
+		);
+	} else {
+		$fields[] = array(
+			'key'           => 'field_mrn_sidebar_content',
+			'label'         => 'Sidebar Content',
+			'name'          => 'sidebar_content',
+			'aria-label'    => '',
+			'type'          => 'wysiwyg',
+			'tabs'          => 'all',
+			'toolbar'       => 'full',
+			'media_upload'  => 1,
+			'instructions'  => 'Add the content that should appear in this entry sidebar.',
+		);
 	}
 
 	acf_add_local_field_group(
 		array(
 			'key'                   => 'group_mrn_singular_sidebar',
 			'title'                 => 'Sidebar',
-			'fields'                => array(
-				array(
-					'key'           => 'field_mrn_sidebar_layout',
-					'label'         => 'Sidebar Position',
-					'name'          => 'sidebar_layout',
-					'aria-label'    => '',
-					'type'          => 'button_group',
-					'choices'       => array(
-						'none'  => 'No Sidebar',
-						'left'  => 'Left Sidebar',
-						'right' => 'Right Sidebar',
-					),
-					'default_value' => 'none',
-					'layout'        => 'horizontal',
-					'return_format' => 'value',
-					'instructions'  => 'Choose where the sidebar sits when this entry needs a two-column singular layout.',
-				),
-				array(
-					'key'               => 'field_mrn_sidebar_rows',
-					'label'             => 'Sidebar Rows',
-					'name'              => 'page_sidebar_rows',
-					'aria-label'        => '',
-					'type'              => 'flexible_content',
-					'button_label'      => 'Add Sidebar Row',
-					'layouts'           => $sidebar_layouts,
-					'conditional_logic' => array(
-						array(
-							array(
-								'field'    => 'field_mrn_sidebar_layout',
-								'operator' => '!=',
-								'value'    => 'none',
-							),
-						),
-					),
-					'instructions'      => 'Build the sidebar with the same row layouts available in the main Content area.',
-				),
-			),
+			'fields'                => $fields,
 			'location'              => mrn_base_stack_get_sidebar_location_rules(),
 			'menu_order'            => 30,
 			'position'              => 'acf_after_title',
@@ -132,7 +153,9 @@ function mrn_base_stack_register_singular_sidebar_field_group() {
 			'label_placement'       => 'top',
 			'instruction_placement' => 'label',
 			'active'                => true,
-			'description'           => 'Theme-owned singular sidebar controls and builder rows for builder-supported singular content types.',
+			'description'           => $layout_builder_enabled
+				? 'Theme-owned singular sidebar controls and builder rows for builder-supported singular content types.'
+				: 'Theme-owned singular sidebar controls for entries that use the with-sidebars shell.',
 			'show_in_rest'          => 1,
 		)
 	);
@@ -149,7 +172,7 @@ function mrn_base_stack_get_singular_sidebar_settings( $post_id = null ) {
 	$post_id = $post_id ? (int) $post_id : get_the_ID();
 
 	$settings = array(
-		'layout' => 'none',
+		'layout' => 'right',
 	);
 
 	if ( ! $post_id || ! function_exists( 'get_field' ) ) {
@@ -162,10 +185,10 @@ function mrn_base_stack_get_singular_sidebar_settings( $post_id = null ) {
 	}
 
 	$layout = get_field( 'sidebar_layout', $post_id );
-	$layout = is_string( $layout ) ? sanitize_key( $layout ) : 'none';
+	$layout = is_string( $layout ) ? sanitize_key( $layout ) : 'right';
 
-	if ( ! in_array( $layout, array( 'none', 'left', 'right' ), true ) ) {
-		$layout = 'none';
+	if ( ! in_array( $layout, array( 'left', 'right' ), true ) ) {
+		$layout = 'right';
 	}
 
 	$settings['layout'] = $layout;
@@ -180,12 +203,23 @@ function mrn_base_stack_get_singular_sidebar_settings( $post_id = null ) {
  * @return string
  */
 function mrn_base_stack_get_singular_sidebar_markup( $post_id = null ) {
-	$settings = mrn_base_stack_get_singular_sidebar_settings( $post_id );
-	if ( 'none' === $settings['layout'] ) {
-		return '';
-	}
+	$settings               = mrn_base_stack_get_singular_sidebar_settings( $post_id );
+	$layout_builder_enabled = function_exists( 'mrn_base_stack_is_layout_builder_enabled' ) && mrn_base_stack_is_layout_builder_enabled();
+	$markup                 = '';
 
-	$markup = function_exists( 'mrn_base_stack_get_builder_markup' ) ? mrn_base_stack_get_builder_markup( 'page_sidebar_rows', $post_id, 'mrn-content-builder mrn-content-builder--sidebar' ) : '';
+	if ( $layout_builder_enabled && function_exists( 'mrn_base_stack_get_builder_markup' ) ) {
+		$markup = mrn_base_stack_get_builder_markup( 'page_sidebar_rows', $post_id, 'mrn-content-builder mrn-content-builder--sidebar' );
+	} elseif ( function_exists( 'get_field' ) ) {
+		$content = get_field( 'sidebar_content', $post_id );
+		$content = is_string( $content ) ? trim( $content ) : '';
+
+		if ( '' !== $content ) {
+			$markup = sprintf(
+				'<div class="mrn-singular-sidebar__content">%s</div>',
+				wp_kses_post( $content )
+			);
+		}
+	}
 
 	if ( '' === $markup ) {
 		return '';
@@ -205,11 +239,5 @@ function mrn_base_stack_get_singular_sidebar_markup( $post_id = null ) {
  * @return bool
  */
 function mrn_base_stack_has_singular_sidebar( $post_id = null ) {
-	$settings = mrn_base_stack_get_singular_sidebar_settings( $post_id );
-
-	if ( 'none' === $settings['layout'] ) {
-		return false;
-	}
-
 	return '' !== mrn_base_stack_get_singular_sidebar_markup( $post_id );
 }

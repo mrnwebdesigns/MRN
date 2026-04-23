@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class MRN_Dummy_Content {
-	const VERSION = '0.1.13';
+	const VERSION = '0.1.14';
 	const NONCE_ACTION = 'mrn_dummy_content_generate';
 	const CUSTOM_NONCE_ACTION = 'mrn_dummy_content_generate_custom';
 	const DELETE_NONCE_ACTION = 'mrn_dummy_content_delete';
@@ -470,7 +470,7 @@ final class MRN_Dummy_Content {
 				top: 32px;
 				left: var(--mrn-toolbar-left);
 				right: var(--mrn-toolbar-right);
-				z-index: 2147483000;
+				z-index: 99990;
 				width: calc(100vw - var(--mrn-toolbar-left) - var(--mrn-toolbar-right));
 				display: flex;
 				align-items: center;

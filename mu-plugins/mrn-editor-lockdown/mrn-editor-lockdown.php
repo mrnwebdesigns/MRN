@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Editor Lockdown (MU)
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.16
+ * Version: 1.0.17
  *
  * @package MRNEditorLockdown
  */
@@ -43,6 +43,17 @@ function mrn_editor_lockdown_get_seo_helper_metabox_id() {
  */
 function mrn_editor_lockdown_get_legacy_seo_metabox_id() {
 	return 'wds-wds-meta-box';
+}
+
+/**
+ * Determine whether the legacy SmartCrawl metabox should be removed.
+ *
+ * Defaults to disabled so SmartCrawl stays visible on edit screens.
+ *
+ * @return bool
+ */
+function mrn_editor_lockdown_should_remove_legacy_seo_metabox() {
+	return (bool) apply_filters( 'mrn_editor_lockdown_remove_legacy_seo_metabox', false );
 }
 
 /**
@@ -440,6 +451,10 @@ add_action( 'current_screen', 'mrn_editor_lockdown_apply_layout' );
  * @return void
  */
 function mrn_editor_lockdown_remove_legacy_seo_metabox( $post_type ) {
+	if ( ! mrn_editor_lockdown_should_remove_legacy_seo_metabox() ) {
+		return;
+	}
+
 	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 
 	if ( ! mrn_editor_lockdown_is_supported_screen( $screen ) ) {

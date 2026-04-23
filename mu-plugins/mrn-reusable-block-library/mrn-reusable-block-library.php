@@ -3,7 +3,7 @@
  * Plugin Name: Reusable Block Library (MU)
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.15
+ * Version: 0.1.16
  */
 
 defined('ABSPATH') || exit;
@@ -830,7 +830,7 @@ function mrn_rbl_render_library_overview(): void {
     <div class="wrap">
         <h1>Reusable Block Library</h1>
         <p>Manage your reusable block types from one place.</p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;max-width:900px;margin-top:20px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;max-width:1200px;margin-top:20px;">
             <?php foreach ($definitions as $post_type => $definition) : ?>
                 <?php
                 if (!is_string($post_type) || $post_type === '' || !is_array($definition)) {
@@ -860,7 +860,7 @@ function mrn_rbl_render_library_overview(): void {
                     <h2 style="margin-top:0;"><?php echo esc_html($plural); ?></h2>
                     <p style="margin-bottom:8px;">Total items: <strong><?php echo esc_html((string) $all_count); ?></strong></p>
                     <p style="margin-top:0;">Drafts: <strong><?php echo esc_html((string) $draft_count); ?></strong></p>
-                    <div style="display:flex;flex-wrap:nowrap;gap:8px;align-items:center;">
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;">
                         <a class="button button-primary" style="white-space:nowrap;" href="<?php echo esc_url($list_url); ?>">View <?php echo esc_html($plural); ?></a>
                         <a class="button" style="white-space:nowrap;" href="<?php echo esc_url($new_url); ?>">Add <?php echo esc_html($singular); ?></a>
                     </div>
@@ -2034,6 +2034,7 @@ function mrn_rbl_get_main_config_field_group_key(array $field): string {
         || false !== strpos($field_name, 'size')
         || false !== strpos($field_name, 'alignment')
         || false !== strpos($field_name, 'per_page')
+        || false !== strpos($field_name, 'filter_')
         || 0 === strpos($field_name, 'show_')
     ) {
         return 'layout';
@@ -2172,6 +2173,7 @@ function mrn_rbl_group_main_config_fields_by_functionality(array $fields, string
     }
 
     $grouped_segment = array();
+    $is_first_group  = true;
     foreach ($group_order as $group_key => $group_label) {
         $group_fields = $grouped[$group_key];
         if (empty($group_fields)) {
@@ -2183,7 +2185,7 @@ function mrn_rbl_group_main_config_fields_by_functionality(array $fields, string
             'label'        => $group_label,
             'name'         => '',
             'type'         => 'accordion',
-            'open'         => 0,
+            'open'         => $is_first_group ? 1 : 0,
             'multi_expand' => 1,
             'endpoint'     => 0,
         );
@@ -2191,6 +2193,8 @@ function mrn_rbl_group_main_config_fields_by_functionality(array $fields, string
         foreach ($group_fields as $group_field) {
             $grouped_segment[] = $group_field;
         }
+
+        $is_first_group = false;
     }
 
     $grouped_segment[] = array(
@@ -3448,6 +3452,7 @@ function mrn_rbl_get_content_list_filter_source_choices(): array {
         'none'               => 'No Filter',
         'current_post_terms' => 'Use Current Page/Post Terms',
         'manual_terms'       => 'Use Specific Terms',
+        'manual_posts'       => 'Choose Specific Content',
     );
 }
 
@@ -3464,6 +3469,73 @@ function mrn_rbl_get_content_list_filter_match_choices(): array {
     return array(
         'any' => 'Match Any Selected Term',
         'all' => 'Match All Selected Terms',
+    );
+}
+
+/**
+ * Resolve manually selected post IDs for reusable content-list blocks.
+ *
+ * @param array<string, mixed> $fields Block field values.
+ * @param string               $target_post_type Queried post type.
+ * @return array<int, int>
+ */
+function mrn_rbl_get_content_list_manual_post_ids(array $fields, string $target_post_type = ''): array {
+    $selected = $fields['filter_posts'] ?? array();
+    $post_ids = array();
+
+    if ($selected instanceof WP_Post) {
+        $selected = array($selected);
+    } elseif (is_scalar($selected)) {
+        $selected = array($selected);
+    } elseif (!is_array($selected)) {
+        $selected = array();
+    }
+
+    foreach ($selected as $item) {
+        if ($item instanceof WP_Post) {
+            $post_ids[] = absint($item->ID);
+            continue;
+        }
+
+        if (is_array($item) && isset($item['ID'])) {
+            $post_ids[] = absint($item['ID']);
+            continue;
+        }
+
+        $post_ids[] = absint($item);
+    }
+
+    $post_ids = array_values(
+        array_filter(
+            array_unique(array_map('absint', $post_ids))
+        )
+    );
+
+    if (empty($post_ids)) {
+        return array();
+    }
+
+    $target_post_type = sanitize_key($target_post_type);
+    if ('' === $target_post_type) {
+        return $post_ids;
+    }
+
+    return array_values(
+        array_filter(
+            $post_ids,
+            static function (int $post_id) use ($target_post_type): bool {
+                $post = get_post(absint($post_id));
+                if (!$post instanceof WP_Post) {
+                    return false;
+                }
+
+                if ('publish' !== $post->post_status) {
+                    return false;
+                }
+
+                return sanitize_key((string) $post->post_type) === $target_post_type;
+            }
+        )
     );
 }
 
@@ -4119,6 +4191,30 @@ function mrn_rbl_register_acf_field_groups(): void {
                 ),
             ),
             array(
+                'key'               => 'field_mrn_reusable_content_lists_filter_posts',
+                'label'             => 'Specific Content',
+                'name'              => 'filter_posts',
+                'type'              => 'post_object',
+                'post_type'         => array_keys(mrn_rbl_get_content_list_post_type_choices()),
+                'return_format'     => 'id',
+                'ui'                => 1,
+                'allow_null'        => 1,
+                'multiple'          => 1,
+                'instructions'      => 'Choose the exact published items to show. List order follows this selection.',
+                'conditional_logic' => array(
+                    array(
+                        array(
+                            'field'    => 'field_mrn_reusable_content_lists_filter_source',
+                            'operator' => '==',
+                            'value'    => 'manual_posts',
+                        ),
+                    ),
+                ),
+                'wrapper'           => array(
+                    'width' => '100',
+                ),
+            ),
+            array(
                 'key'           => 'field_mrn_reusable_content_lists_pagination',
                 'label'         => 'Enable Pagination',
                 'name'          => 'enable_pagination',
@@ -4599,6 +4695,98 @@ function mrn_rbl_render_title_guidance(): void {
 add_action('edit_form_after_title', 'mrn_rbl_render_title_guidance');
 
 /**
+ * Build a reusable block shortcode string for admin shortcuts.
+ *
+ * @param WP_Post $post Reusable block post.
+ * @param string  $mode `slug` or `id`.
+ * @return string
+ */
+function mrn_rbl_get_shortcode_for_post(WP_Post $post, string $mode = 'slug'): string {
+    if (!mrn_rbl_is_reusable_post_type((string) $post->post_type) || (int) $post->ID <= 0) {
+        return '';
+    }
+
+    $mode = strtolower($mode);
+    if ($mode !== 'id') {
+        $mode = 'slug';
+    }
+
+    if ($mode === 'slug') {
+        $slug = sanitize_title((string) $post->post_name);
+        if ($slug !== '' && $slug !== 'auto-draft') {
+            return sprintf('[mrn_block slug="%s"]', $slug);
+        }
+    }
+
+    return sprintf('[mrn_block id="%d"]', (int) $post->ID);
+}
+
+/**
+ * Render quick-insert shortcode shortcuts on reusable block edit screens.
+ *
+ * @param WP_Post $post Current reusable block post.
+ * @return void
+ */
+function mrn_rbl_render_shortcut_metabox(WP_Post $post): void {
+    if (!mrn_rbl_is_reusable_post_type((string) $post->post_type)) {
+        return;
+    }
+
+    $slug_shortcode = mrn_rbl_get_shortcode_for_post($post, 'slug');
+    $id_shortcode   = mrn_rbl_get_shortcode_for_post($post, 'id');
+
+    if ($slug_shortcode === '' && $id_shortcode === '') {
+        echo '<p>Save this block as a draft first, then shortcut snippets will appear here.</p>';
+        return;
+    }
+
+    ?>
+    <p style="margin-top:0;">Add this reusable block anywhere you can place text content or shortcodes.</p>
+    <?php if ($slug_shortcode !== '') : ?>
+        <p style="margin-bottom:6px;"><strong>Shortcut (slug)</strong></p>
+        <p style="margin-top:0;">
+            <code style="display:block;overflow:auto;white-space:nowrap;"><?php echo esc_html($slug_shortcode); ?></code>
+        </p>
+        <p style="margin-top:0;">
+            <button type="button" class="button mrn-rbl-copy-shortcode" data-shortcode="<?php echo esc_attr($slug_shortcode); ?>">Copy Slug Shortcode</button>
+        </p>
+    <?php endif; ?>
+    <?php if ($id_shortcode !== '') : ?>
+        <p style="margin-bottom:6px;"><strong>Shortcut (ID)</strong></p>
+        <p style="margin-top:0;">
+            <code style="display:block;overflow:auto;white-space:nowrap;"><?php echo esc_html($id_shortcode); ?></code>
+        </p>
+        <p style="margin-top:0;">
+            <button type="button" class="button mrn-rbl-copy-shortcode" data-shortcode="<?php echo esc_attr($id_shortcode); ?>">Copy ID Shortcode</button>
+        </p>
+    <?php endif; ?>
+    <p class="description" style="margin-top:8px;">
+        Use whichever shortcut fits your workflow. Slug is easier to read, ID is stable for edge cases.
+    </p>
+    <p class="screen-reader-text mrn-rbl-copy-status" aria-live="polite"></p>
+    <?php
+}
+
+/**
+ * Register reusable block shortcut metaboxes.
+ *
+ * @return void
+ */
+function mrn_rbl_register_shortcut_metaboxes(): void {
+    foreach (mrn_rbl_get_post_types() as $post_type) {
+        add_meta_box(
+            'mrn-rbl-shortcuts',
+            'Quick Insert Shortcuts',
+            'mrn_rbl_render_shortcut_metabox',
+            $post_type,
+            'side',
+            'high'
+        );
+    }
+}
+add_action('add_meta_boxes', 'mrn_rbl_register_shortcut_metaboxes', 15);
+
+/**
  * Make the reusable block title behave like a required field in the classic editor.
  */
 function mrn_rbl_print_title_required_js(): void {
@@ -4702,11 +4890,15 @@ function mrn_rbl_add_slug_column(array $columns): array {
 
         if ($key === 'title') {
             $offset_columns['mrn_block_slug'] = 'Block Slug';
+            $offset_columns['mrn_block_shortcut'] = 'Quick Insert';
         }
     }
 
     if (!isset($offset_columns['mrn_block_slug'])) {
         $offset_columns['mrn_block_slug'] = 'Block Slug';
+    }
+    if (!isset($offset_columns['mrn_block_shortcut'])) {
+        $offset_columns['mrn_block_shortcut'] = 'Quick Insert';
     }
 
     return $offset_columns;
@@ -4719,7 +4911,7 @@ function mrn_rbl_add_slug_column(array $columns): array {
  * @param int    $post_id
  */
 function mrn_rbl_render_slug_column(string $column_name, int $post_id): void {
-    if ($column_name !== 'mrn_block_slug') {
+    if ($column_name !== 'mrn_block_slug' && $column_name !== 'mrn_block_shortcut') {
         return;
     }
 
@@ -4729,7 +4921,32 @@ function mrn_rbl_render_slug_column(string $column_name, int $post_id): void {
         return;
     }
 
-    echo esc_html($post->post_name !== '' ? $post->post_name : '(draft)');
+    if ($column_name === 'mrn_block_slug') {
+        echo esc_html($post->post_name !== '' ? $post->post_name : '(draft)');
+        return;
+    }
+
+    $shortcode = mrn_rbl_get_shortcode_for_post($post, 'slug');
+    if ($shortcode === '') {
+        $shortcode = mrn_rbl_get_shortcode_for_post($post, 'id');
+    }
+
+    if ($shortcode === '') {
+        echo '—';
+        return;
+    }
+
+    ?>
+    <code style="display:block;overflow:auto;white-space:nowrap;"><?php echo esc_html($shortcode); ?></code>
+    <button
+        type="button"
+        class="button-link mrn-rbl-copy-shortcode"
+        data-shortcode="<?php echo esc_attr($shortcode); ?>"
+        style="padding:0;margin-top:4px;"
+    >
+        Copy shortcut
+    </button>
+    <?php
 }
 
 /**
@@ -4746,6 +4963,140 @@ function mrn_rbl_register_admin_columns(): void {
     }
 }
 add_action('init', 'mrn_rbl_register_admin_columns', 20);
+
+/**
+ * Add copy-shortcode quick action on reusable block list screens.
+ *
+ * @param array<string, string> $actions Existing row actions.
+ * @param WP_Post               $post    Current row post.
+ * @return array<string, string>
+ */
+function mrn_rbl_add_row_shortcut_action(array $actions, WP_Post $post): array {
+    if (!mrn_rbl_is_reusable_post_type((string) $post->post_type)) {
+        return $actions;
+    }
+
+    $shortcode = mrn_rbl_get_shortcode_for_post($post, 'slug');
+    if ($shortcode === '') {
+        $shortcode = mrn_rbl_get_shortcode_for_post($post, 'id');
+    }
+    if ($shortcode === '') {
+        return $actions;
+    }
+
+    $actions['mrn_rbl_copy_shortcode'] = sprintf(
+        '<button type="button" class="button-link mrn-rbl-copy-shortcode" data-shortcode="%1$s">Copy shortcut</button>',
+        esc_attr($shortcode)
+    );
+
+    return $actions;
+}
+add_filter('post_row_actions', 'mrn_rbl_add_row_shortcut_action', 20, 2);
+
+/**
+ * Determine whether the current admin screen belongs to reusable block workflows.
+ *
+ * @return bool
+ */
+function mrn_rbl_is_reusable_admin_screen(): bool {
+    $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+
+    if (!$screen instanceof WP_Screen) {
+        return false;
+    }
+
+    if (in_array($screen->base, array('post', 'post-new', 'edit'), true) && mrn_rbl_is_reusable_post_type((string) $screen->post_type)) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Print reusable block shortcut copy behavior for admin screens.
+ *
+ * @return void
+ */
+function mrn_rbl_print_shortcut_copy_script(): void {
+    if (!mrn_rbl_is_reusable_admin_screen()) {
+        return;
+    }
+    ?>
+    <script id="mrn-rbl-shortcut-copy-script">
+        (function() {
+            function copyText(value) {
+                if (!value) {
+                    return Promise.reject(new Error('Empty shortcut'));
+                }
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    return navigator.clipboard.writeText(value);
+                }
+
+                return new Promise(function(resolve, reject) {
+                    var input = document.createElement('textarea');
+                    input.value = value;
+                    input.setAttribute('readonly', 'readonly');
+                    input.style.position = 'absolute';
+                    input.style.left = '-9999px';
+                    document.body.appendChild(input);
+                    input.select();
+
+                    try {
+                        var copied = document.execCommand('copy');
+                        document.body.removeChild(input);
+                        if (copied) {
+                            resolve();
+                        } else {
+                            reject(new Error('Copy command failed'));
+                        }
+                    } catch (error) {
+                        document.body.removeChild(input);
+                        reject(error);
+                    }
+                });
+            }
+
+            function announceStatus(button, message) {
+                var metabox = button.closest('#mrn-rbl-shortcuts');
+                var status = metabox ? metabox.querySelector('.mrn-rbl-copy-status') : null;
+                if (status) {
+                    status.textContent = message;
+                }
+            }
+
+            document.addEventListener('click', function(event) {
+                var button = event.target.closest('.mrn-rbl-copy-shortcode');
+                if (!button) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                var shortcode = button.getAttribute('data-shortcode') || '';
+                var originalLabel = button.textContent;
+
+                copyText(shortcode).then(function() {
+                    button.textContent = 'Copied';
+                    announceStatus(button, 'Shortcut copied to clipboard.');
+
+                    window.setTimeout(function() {
+                        button.textContent = originalLabel;
+                    }, 1400);
+                }).catch(function() {
+                    button.textContent = 'Copy failed';
+                    announceStatus(button, 'Shortcut copy failed. Copy the text manually.');
+
+                    window.setTimeout(function() {
+                        button.textContent = originalLabel;
+                    }, 2000);
+                });
+            });
+        })();
+    </script>
+    <?php
+}
+add_action('admin_print_footer_scripts', 'mrn_rbl_print_shortcut_copy_script');
 
 /**
  * Tell Post Types Order not to expose reorder interfaces for library CPTs.

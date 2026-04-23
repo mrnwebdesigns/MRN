@@ -21,18 +21,18 @@ function mrn_base_stack_register_acf_field_groups() {
 				'key'                   => 'group_mrn_hero_builder',
 				'title'                 => 'Hero',
 				'menu_order'            => -10,
-					'fields'                => array(
-						array(
-							'key'               => 'field_mrn_page_hero_rows',
-							'label'             => 'Hero',
-							'name'              => 'page_hero_rows',
-							'aria-label'        => '',
-							'type'              => 'flexible_content',
-							'max'               => 1,
-							'button_label'      => 'Add Hero Row',
-							'layouts'           => array(),
-						),
+				'fields'                => array(
+					array(
+						'key'               => 'field_mrn_page_hero_rows',
+						'label'             => 'Hero',
+						'name'              => 'page_hero_rows',
+						'aria-label'        => '',
+						'type'              => 'flexible_content',
+						'max'               => 1,
+						'button_label'      => 'Add Hero Row',
+						'layouts'           => array(),
 					),
+				),
 				'location'              => mrn_base_stack_get_hero_location_rules(),
 				'position'              => 'acf_after_title',
 				'style'                 => 'default',
@@ -332,6 +332,31 @@ function mrn_base_stack_register_acf_field_groups() {
 											),
 										),
 										'wrapper'      => array(
+											'width' => '100',
+										),
+									),
+									array(
+										'key'           => 'field_mrn_content_lists_filter_posts',
+										'label'         => 'Specific Content',
+										'name'          => 'filter_posts',
+										'aria-label'    => '',
+										'type'          => 'post_object',
+										'post_type'     => array_keys( mrn_base_stack_get_content_list_post_type_choices() ),
+										'return_format' => 'id',
+										'ui'            => 1,
+										'allow_null'    => 1,
+										'multiple'      => 1,
+										'instructions'  => 'Choose the exact published items to show. List order follows this selection.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_content_lists_filter_source',
+													'operator' => '==',
+													'value'    => 'manual_posts',
+												),
+											),
+										),
+										'wrapper'       => array(
 											'width' => '100',
 										),
 									),
