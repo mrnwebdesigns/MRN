@@ -1,5 +1,19 @@
 # Stack Changelog
 
+## 2026.04.22-developer-reference-sidebar-and-editor-runtime-hardening
+- Expanded `mrn-base-stack` to `1.1.34`.
+- Expanded `mrn-active-style-guide` to `0.1.3`.
+- Expanded `mrn-editor-lockdown` to `1.0.17`.
+- Expanded `mrn-reusable-block-library` to `0.1.16`.
+- Expanded `mrn-dummy-content` to `0.1.14`.
+- Expanded `mrn-universal-sticky-bar` to `1.1.1`.
+- Added a new `Appearance -> Developer Reference` admin screen with tabbed quick-copy references for templates, CSS variables, hooks/assets, shell contracts, reusable-block shortcodes, and starter snippets.
+- Kept SmartCrawl visible by default on edit screens by making legacy metabox removal opt-in through `mrn_editor_lockdown_remove_legacy_seo_metabox`.
+- Added manual post-selection support to theme and reusable Content Lists (`filter_source=manual_posts`) with published-item and post-type guards, preserving editor-chosen ordering.
+- Restored singular sidebar support when builder runtime is disabled by always loading the sidebar module and falling back to sanitized `sidebar_content` output.
+- Simplified sidebar layout choices to left/right only and removed the legacy no-sidebar mode in the singular-sidebar contract.
+- Lowered shared/admin sticky-toolbar z-index levels to prevent media picker and admin-bar overlap regressions.
+
 ## 2026.04.22-layout-builder-hard-disable-and-loader-contrast
 - Expanded `mrn-base-stack` to `1.1.33`.
 - Expanded `mrn-editor-lockdown` to `1.0.16`.

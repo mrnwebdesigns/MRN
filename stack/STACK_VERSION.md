@@ -1,25 +1,26 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.22-layout-builder-hard-disable-and-loader-contrast`
+- Stack release: `2026.04.22-developer-reference-sidebar-and-editor-runtime-hardening`
 - Release date: `2026-04-22`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.33`
+  - `mrn-base-stack` `1.1.34`
 - MU plugins:
+  - `mrn-active-style-guide` `0.1.3`
   - `mrn-admin-ui-css` `3.1.12`
   - `mrn-shared-assets` `0.1.1`
-  - `mrn-editor-lockdown` `1.0.16`
-  - `mrn-reusable-block-library` `0.1.15`
+  - `mrn-editor-lockdown` `1.0.17`
+  - `mrn-reusable-block-library` `0.1.16`
   - `mrn-site-colors` / `Site Styles` `0.1.4`
 - Standard plugins:
   - `mrn-config-helper` `0.1.35`
-  - `mrn-dummy-content` `0.1.13`
+  - `mrn-dummy-content` `0.1.14`
   - `mrn-editor-tools` `1.8.17`
   - `mrn-seo-helper` `0.2.9`
-  - `mrn-universal-sticky-bar` `1.0.9`
+  - `mrn-universal-sticky-bar` `1.1.1`
   - `searchwp-editor-performance` `1.0.6`
 
 ## Stack Manifests

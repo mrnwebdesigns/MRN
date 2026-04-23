@@ -43,6 +43,7 @@ plugins/mrn-comment-management/
 plugins/mrn-config-helper/
 plugins/mrn-cookie-consent/
 plugins/mrn-editor-tools/
+plugins/mrn-fontawesome-profile-manager/
 plugins/mrn-gtm-injector/
 plugins/mrn-seo-helper/
 plugins/mrn-universal-sticky-bar/
