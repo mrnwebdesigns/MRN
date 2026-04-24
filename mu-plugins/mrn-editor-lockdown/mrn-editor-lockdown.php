@@ -135,17 +135,6 @@ function mrn_editor_lockdown_get_layouts() {
 				'ame-cpe-content-permissions',
 			),
 		),
-		'blog' => array(
-			'screen_layout' => 2,
-			'meta_box_order' => array(
-				'normal'   => 'slugdiv,revisionsdiv',
-				'side'     => 'authordiv,submitdiv',
-				'advanced' => 'ame-cpe-content-permissions',
-			),
-			'closed' => array(
-				'ame-cpe-content-permissions',
-			),
-		),
 		'gallery' => array(
 			'screen_layout' => 2,
 			'meta_box_order' => array(

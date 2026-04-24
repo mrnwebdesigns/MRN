@@ -570,7 +570,7 @@ function mrn_active_style_guide_get_theme_hook_map_reference(): array {
         'wp_head'                               => 'mrn_base_stack_pingback_header()',
         'wp_head (priority 40)'                 => 'mrn_base_stack_print_business_schema()',
         'mrn_universal_sticky_bar_post_types'   => 'mrn_base_stack_add_editorial_cpts_to_universal_sticky_bar()',
-        'mrn_base_stack_sidebar_supported_post_types' => 'Filter sidebar-enabled singular post types',
+        'mrn_base_stack_sidebar_supported_post_types' => 'Filter sidebar-enabled singular post types (default: none)',
         'mrn_base_stack_singular_shell_post_types'    => 'Filter singular shell post types',
     );
 }
@@ -582,7 +582,7 @@ function mrn_active_style_guide_get_theme_hook_map_reference(): array {
  */
 function mrn_active_style_guide_get_sidebar_contract_reference(): array {
     return array(
-        'Sidebar-enabled post types (default)' => 'post_with_sidebars, page_with_sidebars',
+        'Sidebar-enabled post types (default)' => 'None (enable via mrn_base_stack_sidebar_supported_post_types)',
         'Sidebar layout field'                 => 'sidebar_layout (left|right)',
         'Sidebar content field (builder off)'  => 'sidebar_content (WYSIWYG)',
         'Sidebar rows field (builder on)'      => 'page_sidebar_rows (flexible content)',

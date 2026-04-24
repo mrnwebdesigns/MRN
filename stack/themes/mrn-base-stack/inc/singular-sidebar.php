@@ -11,12 +11,8 @@
  * @return array<int, string>
  */
 function mrn_base_stack_get_sidebar_supported_post_types() {
-	$layout_builder_enabled = function_exists( 'mrn_base_stack_is_layout_builder_enabled' ) && mrn_base_stack_is_layout_builder_enabled();
-	$fallback_post_types    = $layout_builder_enabled
-		? array( 'page_with_sidebars', 'post_with_sidebars', 'blog', 'gallery', 'case_study', 'testimonial' )
-		: array( 'page_with_sidebars', 'post_with_sidebars' );
-
-	$post_types = function_exists( 'mrn_base_stack_get_singular_shell_post_types' ) ? mrn_base_stack_get_singular_shell_post_types() : $fallback_post_types;
+	$fallback_post_types = array();
+	$post_types          = $fallback_post_types;
 
 	/**
 	 * Filter the post types that can opt into the singular sidebar shell.
@@ -36,22 +32,6 @@ function mrn_base_stack_get_sidebar_supported_post_types() {
 			)
 		)
 	);
-
-	if ( $layout_builder_enabled ) {
-		$post_types = array_values(
-			array_diff(
-				$post_types,
-				array( 'page', 'post' )
-			)
-		);
-	} else {
-		$post_types = array_values(
-			array_intersect(
-				$post_types,
-				array( 'page_with_sidebars', 'post_with_sidebars' )
-			)
-		);
-	}
 
 	return ! empty( $post_types ) ? $post_types : $fallback_post_types;
 }
@@ -88,6 +68,11 @@ function mrn_base_stack_get_sidebar_location_rules() {
  */
 function mrn_base_stack_register_singular_sidebar_field_group() {
 	if ( ! function_exists( 'acf_add_local_field_group' ) ) {
+		return;
+	}
+
+	$location_rules = mrn_base_stack_get_sidebar_location_rules();
+	if ( empty( $location_rules ) ) {
 		return;
 	}
 
@@ -146,7 +131,7 @@ function mrn_base_stack_register_singular_sidebar_field_group() {
 			'key'                   => 'group_mrn_singular_sidebar',
 			'title'                 => 'Sidebar',
 			'fields'                => $fields,
-			'location'              => mrn_base_stack_get_sidebar_location_rules(),
+			'location'              => $location_rules,
 			'menu_order'            => 30,
 			'position'              => 'acf_after_title',
 			'style'                 => 'default',
@@ -154,8 +139,8 @@ function mrn_base_stack_register_singular_sidebar_field_group() {
 			'instruction_placement' => 'label',
 			'active'                => true,
 			'description'           => $layout_builder_enabled
-				? 'Theme-owned singular sidebar controls and builder rows for builder-supported singular content types.'
-				: 'Theme-owned singular sidebar controls for entries that use the with-sidebars shell.',
+				? 'Theme-owned singular sidebar controls and builder rows for sidebar-enabled singular content types.'
+				: 'Theme-owned singular sidebar controls for sidebar-enabled singular content types.',
 			'show_in_rest'          => 1,
 		)
 	);

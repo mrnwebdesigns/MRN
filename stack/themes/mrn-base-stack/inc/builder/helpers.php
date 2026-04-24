@@ -4223,7 +4223,6 @@ function mrn_base_stack_get_builder_row_flex_supported_fields() {
 		'page_content_rows',
 		'page_after_content_rows',
 		'page_hero_rows',
-		'page_sidebar_rows',
 	);
 
 	/**

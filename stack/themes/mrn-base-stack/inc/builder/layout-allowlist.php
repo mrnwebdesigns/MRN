@@ -27,11 +27,6 @@ function mrn_base_stack_get_builder_layout_allowlist_targets() {
 			'group_key' => 'group_mrn_after_content_builder',
 			'label'     => 'After Content',
 		),
-		'page_sidebar_rows' => array(
-			'field_key' => 'field_mrn_sidebar_rows',
-			'group_key' => 'group_mrn_singular_sidebar',
-			'label'     => 'Sidebars',
-		),
 	);
 }
 
@@ -43,18 +38,8 @@ function mrn_base_stack_get_builder_layout_allowlist_targets() {
  * @return bool
  */
 function mrn_base_stack_should_render_builder_layout_allowlist_target( $field_name, $post_type ) {
-	$field_name = sanitize_key( (string) $field_name );
-	$post_type  = sanitize_key( (string) $post_type );
-
-	if ( 'page_sidebar_rows' !== $field_name ) {
-		return true;
-	}
-
-	if ( ! function_exists( 'mrn_base_stack_get_sidebar_supported_post_types' ) ) {
-		return true;
-	}
-
-	return in_array( $post_type, mrn_base_stack_get_sidebar_supported_post_types(), true );
+	unset( $field_name, $post_type );
+	return true;
 }
 
 /**
@@ -67,11 +52,9 @@ function mrn_base_stack_get_builder_layout_allowlist_filter_hooks() {
 		'acf/load_field/key=field_mrn_page_hero_rows',
 		'acf/load_field/key=field_mrn_page_content_rows',
 		'acf/load_field/key=field_mrn_page_after_content_rows',
-		'acf/load_field/key=field_mrn_sidebar_rows',
 		'acf/prepare_field/key=field_mrn_page_hero_rows',
 		'acf/prepare_field/key=field_mrn_page_content_rows',
 		'acf/prepare_field/key=field_mrn_page_after_content_rows',
-		'acf/prepare_field/key=field_mrn_sidebar_rows',
 	);
 }
 
@@ -660,7 +643,6 @@ function mrn_base_stack_get_builder_layout_allowlist_default_limits() {
 		'page_hero_rows'          => 4,
 		'page_content_rows'       => 8,
 		'page_after_content_rows' => 6,
-		'page_sidebar_rows'       => 1,
 	);
 	$limits   = apply_filters( 'mrn_base_stack_builder_layout_allowlist_default_limits', $defaults );
 
@@ -691,7 +673,6 @@ function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name,
 		'page_hero_rows'          => array( 'basic', 'two_column_split' ),
 		'page_content_rows'       => array( 'basic', 'image_content', 'two_column_split', 'reusable_block', 'grid' ),
 		'page_after_content_rows' => array( 'basic', 'two_column_split', 'logos', 'reusable_block', 'cta' ),
-		'page_sidebar_rows'       => array( 'basic', 'image_content', 'searchwp_form' ),
 	);
 	$alias_map          = array(
 		'basic'            => array( 'basic' ),
@@ -941,11 +922,9 @@ function mrn_base_stack_filter_builder_layout_allowlist_field_layouts( $field ) 
 add_filter( 'acf/load_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
-add_filter( 'acf/load_field/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
-add_filter( 'acf/prepare_field/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 
 /**
  * Hide non-addable existing-only layout choices in ACF popup menus.

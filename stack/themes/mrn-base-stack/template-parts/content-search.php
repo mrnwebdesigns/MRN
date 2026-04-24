@@ -13,7 +13,7 @@
 	<header class="entry-header">
 		<?php the_title( sprintf( '<h2 class="entry-title"><a href="%s" rel="bookmark">', esc_url( get_permalink() ) ), '</a></h2>' ); ?>
 
-		<?php if ( in_array( get_post_type(), array( 'post', 'post_with_sidebars' ), true ) ) : ?>
+		<?php if ( 'post' === get_post_type() ) : ?>
 		<div class="entry-meta">
 			<?php
 			mrn_base_stack_posted_on();
