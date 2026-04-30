@@ -10,6 +10,7 @@ Usage:
     --site-path <absolute-site-root> \
     --theme-src <local-theme-dir> \
     --remote-theme-path <absolute-live-theme-dir> \
+    [--allow-child-theme-path] \
     [--ssh-host <ssh-host>] \
     [--discovery-ssh-host <ssh-host>] \
     [--direct-ssh] \
@@ -49,6 +50,7 @@ REMOTE_THEME_PATH=""
 PRESERVE_THEME_NAME=""
 PRESERVE_TEXT_DOMAIN=""
 DIRECT_SSH=0
+ALLOW_CHILD_THEME_PATH=0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 while [[ $# -gt 0 ]]; do
@@ -80,6 +82,10 @@ while [[ $# -gt 0 ]]; do
 		--remote-theme-path)
 			REMOTE_THEME_PATH="${2:-}"
 			shift 2
+			;;
+		--allow-child-theme-path)
+			ALLOW_CHILD_THEME_PATH=1
+			shift
 			;;
 		--direct-ssh)
 			DIRECT_SSH=1
@@ -250,6 +256,26 @@ verify_remote_tree_file_modes() {
 		return 1
 	fi
 }
+
+REMOTE_THEME_SLUG="$(basename "${REMOTE_THEME_PATH}")"
+ACTIVE_TEMPLATE="$(run_site_remote "wp option get template --path='${SITE_PATH}' 2>/dev/null" | tr -d '\r' | xargs || true)"
+ACTIVE_STYLESHEET="$(run_site_remote "wp option get stylesheet --path='${SITE_PATH}' 2>/dev/null" | tr -d '\r' | xargs || true)"
+
+if [[ "${ALLOW_CHILD_THEME_PATH}" -ne 1 ]]; then
+	if [[ "${REMOTE_THEME_SLUG}" == *child* ]]; then
+		echo "Refusing to deploy into child-like theme slug '${REMOTE_THEME_SLUG}' without --allow-child-theme-path." >&2
+		echo "Target the parent template directory instead (current template: '${ACTIVE_TEMPLATE:-unknown}')." >&2
+		exit 1
+	fi
+
+	if [[ -n "${ACTIVE_TEMPLATE}" && "${REMOTE_THEME_SLUG}" != "${ACTIVE_TEMPLATE}" ]]; then
+		if [[ -n "${ACTIVE_STYLESHEET}" && "${REMOTE_THEME_SLUG}" == "${ACTIVE_STYLESHEET}" && "${ACTIVE_STYLESHEET}" != "${ACTIVE_TEMPLATE}" ]]; then
+			echo "Refusing to deploy into active stylesheet '${ACTIVE_STYLESHEET}' because it is a child of template '${ACTIVE_TEMPLATE}'." >&2
+			echo "Target the parent template directory or pass --allow-child-theme-path intentionally." >&2
+			exit 1
+		fi
+	fi
+fi
 
 echo "Syncing theme to live site as ${SITE_USER} via ${SSH_HOST}..."
 
