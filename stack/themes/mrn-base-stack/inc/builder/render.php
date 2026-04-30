@@ -112,14 +112,20 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 			'classes'    => array(),
 			'attributes' => array(),
 		);
+		$row_spacing_contract = function_exists( 'mrn_base_stack_get_builder_row_spacing_contract' ) ? mrn_base_stack_get_builder_row_spacing_contract( $row ) : array(
+			'classes'    => array(),
+			'attributes' => array(),
+		);
 		$combined_contract    = array(
 			'classes'    => array_merge(
 				isset( $flex_contract['classes'] ) && is_array( $flex_contract['classes'] ) ? $flex_contract['classes'] : array(),
-				isset( $sub_content_contract['classes'] ) && is_array( $sub_content_contract['classes'] ) ? $sub_content_contract['classes'] : array()
+				isset( $sub_content_contract['classes'] ) && is_array( $sub_content_contract['classes'] ) ? $sub_content_contract['classes'] : array(),
+				isset( $row_spacing_contract['classes'] ) && is_array( $row_spacing_contract['classes'] ) ? $row_spacing_contract['classes'] : array()
 			),
 			'attributes' => array_merge(
 				isset( $flex_contract['attributes'] ) && is_array( $flex_contract['attributes'] ) ? $flex_contract['attributes'] : array(),
-				isset( $sub_content_contract['attributes'] ) && is_array( $sub_content_contract['attributes'] ) ? $sub_content_contract['attributes'] : array()
+				isset( $sub_content_contract['attributes'] ) && is_array( $sub_content_contract['attributes'] ) ? $sub_content_contract['attributes'] : array(),
+				isset( $row_spacing_contract['attributes'] ) && is_array( $row_spacing_contract['attributes'] ) ? $row_spacing_contract['attributes'] : array()
 			),
 		);
 

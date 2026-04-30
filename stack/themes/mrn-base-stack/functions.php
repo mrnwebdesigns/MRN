@@ -690,6 +690,599 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 	require_once get_template_directory() . '/inc/builder/boot.php';
 } else {
 	/**
+	 * Determine whether editor-only row-spacing contracts should load while the
+	 * builder runtime remains disabled.
+	 *
+	 * @return bool
+	 */
+	function mrn_base_stack_should_apply_disabled_builder_row_spacing_contract() {
+		if ( is_admin() ) {
+			return true;
+		}
+
+		if ( function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Normalize a disabled-builder row-spacing selector scope key.
+	 *
+	 * @param mixed $scope Raw scope value.
+	 * @return string
+	 */
+	function mrn_base_stack_normalize_disabled_builder_row_spacing_scope( $scope ) {
+		$scope = is_scalar( $scope ) ? strtolower( trim( (string) $scope ) ) : '';
+
+		if ( in_array( $scope, array( 'margin', 'padding' ), true ) ) {
+			return $scope;
+		}
+
+		if ( preg_match( '/^(margin|padding)\-(top|right|bottom|left)$/', $scope ) ) {
+			return $scope;
+		}
+
+		return '';
+	}
+
+	/**
+	 * Expand a disabled-builder row-spacing property into side-level keys.
+	 *
+	 * @param mixed $property Raw property key.
+	 * @return array<int, string>
+	 */
+	function mrn_base_stack_expand_disabled_builder_row_spacing_property_to_keys( $property ) {
+		$property = is_scalar( $property ) ? strtolower( trim( (string) $property ) ) : '';
+		if ( '' === $property ) {
+			return array();
+		}
+
+		if ( 'margin' === $property ) {
+			return array(
+				'margin-top',
+				'margin-right',
+				'margin-bottom',
+				'margin-left',
+			);
+		}
+
+		if ( 'padding' === $property ) {
+			return array(
+				'padding-top',
+				'padding-right',
+				'padding-bottom',
+				'padding-left',
+			);
+		}
+
+		if ( preg_match( '/^(margin|padding)\-(top|right|bottom|left)$/', $property ) ) {
+			return array( $property );
+		}
+
+		return array();
+	}
+
+	/**
+	 * Get side selector definitions for disabled-builder row spacing controls.
+	 *
+	 * @return array<int, array<string, string>>
+	 */
+	function mrn_base_stack_get_disabled_builder_row_spacing_side_selector_definitions() {
+		return array(
+			array(
+				'name'  => 'row_spacing_margin_top_preset',
+				'label' => 'Margin Top',
+				'scope' => 'margin-top',
+			),
+			array(
+				'name'  => 'row_spacing_margin_right_preset',
+				'label' => 'Margin Right',
+				'scope' => 'margin-right',
+			),
+			array(
+				'name'  => 'row_spacing_margin_bottom_preset',
+				'label' => 'Margin Bottom',
+				'scope' => 'margin-bottom',
+			),
+			array(
+				'name'  => 'row_spacing_margin_left_preset',
+				'label' => 'Margin Left',
+				'scope' => 'margin-left',
+			),
+			array(
+				'name'  => 'row_spacing_padding_top_preset',
+				'label' => 'Padding Top',
+				'scope' => 'padding-top',
+			),
+			array(
+				'name'  => 'row_spacing_padding_right_preset',
+				'label' => 'Padding Right',
+				'scope' => 'padding-right',
+			),
+			array(
+				'name'  => 'row_spacing_padding_bottom_preset',
+				'label' => 'Padding Bottom',
+				'scope' => 'padding-bottom',
+			),
+			array(
+				'name'  => 'row_spacing_padding_left_preset',
+				'label' => 'Padding Left',
+				'scope' => 'padding-left',
+			),
+		);
+	}
+
+	/**
+	 * Check whether the field name is a row-spacing selector.
+	 *
+	 * @param mixed $field_name Raw field name.
+	 * @return bool
+	 */
+	function mrn_base_stack_is_disabled_builder_row_spacing_selector_field_name( $field_name ) {
+		$field_name = is_scalar( $field_name ) ? sanitize_key( (string) $field_name ) : '';
+		if ( '' === $field_name ) {
+			return false;
+		}
+
+		if ( in_array( $field_name, array( 'row_spacing_preset', 'row_spacing_margin_preset', 'row_spacing_padding_preset' ), true ) ) {
+			return true;
+		}
+
+		foreach ( mrn_base_stack_get_disabled_builder_row_spacing_side_selector_definitions() as $definition ) {
+			$selector_name = isset( $definition['name'] ) ? sanitize_key( (string) $definition['name'] ) : '';
+			if ( '' !== $selector_name && $selector_name === $field_name ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Map a row-spacing selector field name to its scope.
+	 *
+	 * @param mixed $field_name Raw field name.
+	 * @return string
+	 */
+	function mrn_base_stack_get_disabled_builder_row_spacing_scope_from_field_name( $field_name ) {
+		$field_name = is_scalar( $field_name ) ? sanitize_key( (string) $field_name ) : '';
+		if ( 'row_spacing_margin_preset' === $field_name ) {
+			return 'margin';
+		}
+
+		if ( 'row_spacing_padding_preset' === $field_name ) {
+			return 'padding';
+		}
+
+		foreach ( mrn_base_stack_get_disabled_builder_row_spacing_side_selector_definitions() as $definition ) {
+			$selector_name = isset( $definition['name'] ) ? sanitize_key( (string) $definition['name'] ) : '';
+			$scope         = isset( $definition['scope'] ) ? mrn_base_stack_normalize_disabled_builder_row_spacing_scope( $definition['scope'] ) : '';
+			if ( '' !== $selector_name && '' !== $scope && $selector_name === $field_name ) {
+				return $scope;
+			}
+		}
+
+		if ( 'row_spacing_preset' === $field_name ) {
+			return '';
+		}
+
+		return '';
+	}
+
+	/**
+	 * Check whether a row-spacing property belongs to a disabled-builder selector scope.
+	 *
+	 * @param mixed  $property Raw property key.
+	 * @param string $scope Selector scope (`margin`, `padding`, or empty for all).
+	 * @return bool
+	 */
+	function mrn_base_stack_disabled_builder_row_spacing_property_matches_scope( $property, $scope = '' ) {
+		$scope = mrn_base_stack_normalize_disabled_builder_row_spacing_scope( $scope );
+		if ( '' === $scope ) {
+			return true;
+		}
+
+		$target_properties = mrn_base_stack_expand_disabled_builder_row_spacing_property_to_keys( $property );
+		if ( empty( $target_properties ) ) {
+			return false;
+		}
+
+		if ( in_array( $scope, array( 'margin', 'padding' ), true ) ) {
+			foreach ( $target_properties as $target_property ) {
+				if ( 0 === strpos( $target_property, $scope . '-' ) ) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		return in_array( $scope, $target_properties, true );
+	}
+
+	/**
+	 * Build row-spacing preset choices from site styles for disabled-builder mode.
+	 *
+	 * @param string $scope Optional selector scope (`margin`, `padding`, or empty for all).
+	 * @return array<string, string>
+	 */
+	function mrn_base_stack_get_disabled_builder_row_spacing_choices( $scope = '' ) {
+		$scope   = mrn_base_stack_normalize_disabled_builder_row_spacing_scope( $scope );
+		$choices = array(
+			'' => 'Site Default',
+		);
+
+		if ( ! function_exists( 'mrn_site_styles_get_row_spacing_presets_resolved' ) ) {
+			return $choices;
+		}
+
+		$rows = mrn_site_styles_get_row_spacing_presets_resolved();
+		if ( ! is_array( $rows ) ) {
+			return $choices;
+		}
+
+		foreach ( $rows as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+
+			if ( ! mrn_base_stack_disabled_builder_row_spacing_property_matches_scope( $row['property'] ?? '', $scope ) ) {
+				continue;
+			}
+
+			$name = isset( $row['name'] ) && is_scalar( $row['name'] ) ? trim( (string) $row['name'] ) : '';
+			if ( '' === $name || isset( $choices[ $name ] ) ) {
+				continue;
+			}
+
+			$choices[ $name ] = $name;
+		}
+
+		return $choices;
+	}
+
+	/**
+	 * Build the editor field definition for row spacing overrides.
+	 *
+	 * @param string $key_seed Field key seed.
+	 * @param string $name Field name.
+	 * @param string $label Field label.
+	 * @param string $scope Optional selector scope (`margin`, `padding`, or empty for all).
+	 * @param string $instructions Optional custom field instructions.
+	 * @param string $wrapper_width Wrapper width percentage.
+	 * @return array<string, mixed>
+	 */
+	function mrn_base_stack_get_disabled_builder_row_spacing_field( $key_seed, $name = 'row_spacing_preset', $label = 'Row Spacing', $scope = '', $instructions = '', $wrapper_width = '50' ) {
+		$key_seed = sanitize_key( (string) $key_seed );
+		$scope    = mrn_base_stack_normalize_disabled_builder_row_spacing_scope( $scope );
+		if ( '' === $key_seed ) {
+			$key_seed = 'field_mrn_disabled_builder_row_spacing';
+		}
+		if ( '' === $instructions && 'row_spacing_preset' === $name ) {
+			$instructions = 'Overrides site spacing defaults for this row only.';
+		}
+
+		return array(
+			'key'               => $key_seed . '_' . sanitize_key( (string) $name ),
+			'label'             => $label,
+			'name'              => $name,
+			'aria-label'        => '',
+			'type'              => 'select',
+			'instructions'      => $instructions,
+			'required'          => 0,
+			'conditional_logic' => 0,
+			'wrapper'           => array(
+				'width' => (string) $wrapper_width,
+			),
+			'choices'           => mrn_base_stack_get_disabled_builder_row_spacing_choices( $scope ),
+			'default_value'     => '',
+			'allow_null'        => 0,
+			'multiple'          => 0,
+			'ui'                => 1,
+			'ajax'              => 0,
+			'return_format'     => 'value',
+		);
+	}
+
+	/**
+	 * Ensure a layout has row-level Content/Spacing tabs and a spacing preset control.
+	 *
+	 * @param array<int, mixed> $fields   Layout sub fields.
+	 * @param string            $key_seed Field key seed.
+	 * @return array<int, mixed>
+	 */
+	function mrn_base_stack_apply_disabled_builder_row_spacing_sub_fields( array $fields, $key_seed = '' ) {
+		$seed              = sanitize_key( (string) $key_seed );
+		$content_tab_index = null;
+		$spacing_tab_index = null;
+		$effects_tab_index = null;
+
+		foreach ( $fields as $index => $field ) {
+			if ( ! is_array( $field ) ) {
+				continue;
+			}
+
+			$field_name  = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+			$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+			$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+			$field_key   = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
+
+			if ( '' === $seed && '' !== $field_key ) {
+				$seed = $field_key;
+			}
+
+			if ( mrn_base_stack_is_disabled_builder_row_spacing_selector_field_name( $field_name ) && 'select' === $field_type ) {
+				unset( $fields[ $index ] );
+				continue;
+			}
+
+			if ( 'tab' !== $field_type ) {
+				continue;
+			}
+
+			if ( null === $content_tab_index && 'content' === $field_label ) {
+				$content_tab_index = $index;
+			}
+
+			if ( null === $spacing_tab_index && 'spacing' === $field_label ) {
+				$spacing_tab_index = $index;
+			}
+
+			if ( null === $effects_tab_index && 'effects' === $field_label ) {
+				$effects_tab_index = $index;
+			}
+		}
+
+		$fields = array_values( $fields );
+
+		if ( '' === $seed ) {
+			$seed = 'field_mrn_disabled_builder_row_spacing';
+		}
+
+		$row_spacing_selector_fields = array();
+		foreach ( mrn_base_stack_get_disabled_builder_row_spacing_side_selector_definitions() as $definition ) {
+			$selector_name  = isset( $definition['name'] ) ? sanitize_key( (string) $definition['name'] ) : '';
+			$selector_label = isset( $definition['label'] ) ? sanitize_text_field( (string) $definition['label'] ) : '';
+			$scope          = isset( $definition['scope'] ) ? mrn_base_stack_normalize_disabled_builder_row_spacing_scope( $definition['scope'] ) : '';
+
+			if ( '' === $selector_name || '' === $selector_label || '' === $scope ) {
+				continue;
+			}
+
+			$row_spacing_selector_fields[] = mrn_base_stack_get_disabled_builder_row_spacing_field(
+				$seed . '_' . $selector_name,
+				$selector_name,
+				$selector_label,
+				$scope,
+				'',
+				'25'
+			);
+		}
+
+		$content_tab_index = null;
+		$spacing_tab_index = null;
+		$effects_tab_index = null;
+
+		foreach ( $fields as $index => $field ) {
+			if ( ! is_array( $field ) ) {
+				continue;
+			}
+
+			$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+			$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+			if ( 'tab' !== $field_type ) {
+				continue;
+			}
+
+			if ( null === $content_tab_index && 'content' === $field_label ) {
+				$content_tab_index = $index;
+			}
+
+			if ( null === $spacing_tab_index && 'spacing' === $field_label ) {
+				$spacing_tab_index = $index;
+			}
+
+			if ( null === $effects_tab_index && 'effects' === $field_label ) {
+				$effects_tab_index = $index;
+			}
+		}
+
+		if ( null === $content_tab_index ) {
+			array_unshift(
+				$fields,
+				array(
+					'key'        => $seed . '_content_tab_contract',
+					'label'      => 'Content',
+					'name'       => '',
+					'aria-label' => '',
+					'type'       => 'tab',
+					'placement'  => 'top',
+					'endpoint'   => 0,
+				)
+			);
+		}
+
+		$spacing_tab = array(
+			'key'        => $seed . '_spacing_tab_contract',
+			'label'      => 'Spacing',
+			'name'       => '',
+			'aria-label' => '',
+			'type'       => 'tab',
+			'placement'  => 'top',
+			'endpoint'   => 0,
+		);
+
+		$spacing_tab_index = null;
+		$effects_tab_index = null;
+
+		foreach ( $fields as $index => $field ) {
+			if ( ! is_array( $field ) ) {
+				continue;
+			}
+
+			$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+			$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+			if ( 'tab' !== $field_type ) {
+				continue;
+			}
+
+			if ( null === $spacing_tab_index && 'spacing' === $field_label ) {
+				$spacing_tab_index = $index;
+			}
+
+			if ( null === $effects_tab_index && 'effects' === $field_label ) {
+				$effects_tab_index = $index;
+			}
+		}
+
+		if ( null === $spacing_tab_index ) {
+			$insert_index = null !== $effects_tab_index ? $effects_tab_index : count( $fields );
+			array_splice( $fields, $insert_index, 0, array( $spacing_tab ) );
+			$spacing_tab_index = $insert_index;
+		}
+
+		foreach ( $fields as $index => $field ) {
+			if ( ! is_array( $field ) ) {
+				continue;
+			}
+
+			$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+			$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+			if ( mrn_base_stack_is_disabled_builder_row_spacing_selector_field_name( $field_name ) && 'select' === $field_type ) {
+				unset( $fields[ $index ] );
+			}
+		}
+
+		$fields = array_values( $fields );
+
+		$spacing_tab_index = null;
+		foreach ( $fields as $index => $field ) {
+			if ( ! is_array( $field ) ) {
+				continue;
+			}
+
+			$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+			$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+			if ( 'tab' === $field_type && 'spacing' === $field_label ) {
+				$spacing_tab_index = $index;
+				break;
+			}
+		}
+
+		if ( null === $spacing_tab_index ) {
+			$spacing_tab_index = count( $fields ) - 1;
+		}
+
+		if ( ! empty( $row_spacing_selector_fields ) ) {
+			array_splice(
+				$fields,
+				$spacing_tab_index + 1,
+				0,
+				$row_spacing_selector_fields
+			);
+		}
+
+		return array_values( $fields );
+	}
+
+	/**
+	 * Apply row-spacing editor contracts to flexible-content fields.
+	 *
+	 * @param array<string, mixed>|mixed $field ACF field definition.
+	 * @return array<string, mixed>|mixed
+	 */
+	function mrn_base_stack_apply_disabled_builder_row_spacing_contract_to_flexible_field( $field ) {
+		if ( ! mrn_base_stack_should_apply_disabled_builder_row_spacing_contract() ) {
+			return $field;
+		}
+
+		if ( ! is_array( $field ) ) {
+			return $field;
+		}
+
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		if ( 'flexible_content' !== $field_type ) {
+			return $field;
+		}
+
+		if ( ! isset( $field['layouts'] ) || ! is_array( $field['layouts'] ) || empty( $field['layouts'] ) ) {
+			return $field;
+		}
+
+		foreach ( $field['layouts'] as $layout_key => $layout ) {
+			if ( ! is_array( $layout ) || ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+				continue;
+			}
+
+			$key_seed                        = isset( $layout['key'] ) ? (string) $layout['key'] : ( isset( $field['key'] ) ? (string) $field['key'] : '' );
+			$layout['sub_fields']            = mrn_base_stack_apply_disabled_builder_row_spacing_sub_fields( $layout['sub_fields'], $key_seed );
+			$field['layouts'][ $layout_key ] = $layout;
+		}
+
+		return $field;
+	}
+
+	/**
+	 * Ensure row-spacing preset fields always expose up-to-date site-style choices.
+	 *
+	 * @param array<string, mixed>|mixed $field ACF field definition.
+	 * @return array<string, mixed>|mixed
+	 */
+	function mrn_base_stack_apply_disabled_builder_row_spacing_choices( $field ) {
+		if ( ! is_array( $field ) ) {
+			return $field;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		if ( ! mrn_base_stack_is_disabled_builder_row_spacing_selector_field_name( $field_name ) || 'select' !== $field_type ) {
+			return $field;
+		}
+
+		$scope = mrn_base_stack_get_disabled_builder_row_spacing_scope_from_field_name( $field_name );
+
+		$choices       = mrn_base_stack_get_disabled_builder_row_spacing_choices( $scope );
+		$current_value = isset( $field['value'] ) && is_scalar( $field['value'] ) ? trim( (string) $field['value'] ) : '';
+		if ( '' !== $current_value && ! isset( $choices[ $current_value ] ) ) {
+			$choices[ $current_value ] = $current_value . ' (Missing preset)';
+		}
+
+		$field['choices']       = $choices;
+		$field['default_value'] = '';
+		$field['allow_null']    = 0;
+		$field['ui']            = 1;
+		return $field;
+	}
+
+	add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_apply_disabled_builder_row_spacing_contract_to_flexible_field', 35 );
+	add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_apply_disabled_builder_row_spacing_contract_to_flexible_field', 35 );
+	add_filter( 'acf/get_field', 'mrn_base_stack_apply_disabled_builder_row_spacing_contract_to_flexible_field', 35 );
+	add_filter( 'acf/load_field/name=row_spacing_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/prepare_field/name=row_spacing_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/load_field/name=row_spacing_margin_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/prepare_field/name=row_spacing_margin_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/load_field/name=row_spacing_padding_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/prepare_field/name=row_spacing_padding_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/load_field/name=row_spacing_margin_top_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/prepare_field/name=row_spacing_margin_top_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/load_field/name=row_spacing_margin_right_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/prepare_field/name=row_spacing_margin_right_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/load_field/name=row_spacing_margin_bottom_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/prepare_field/name=row_spacing_margin_bottom_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/load_field/name=row_spacing_margin_left_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/prepare_field/name=row_spacing_margin_left_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/load_field/name=row_spacing_padding_top_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/prepare_field/name=row_spacing_padding_top_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/load_field/name=row_spacing_padding_right_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/prepare_field/name=row_spacing_padding_right_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/load_field/name=row_spacing_padding_bottom_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/prepare_field/name=row_spacing_padding_bottom_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/load_field/name=row_spacing_padding_left_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+	add_filter( 'acf/prepare_field/name=row_spacing_padding_left_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
+
+	/**
 	 * Fallback hero renderer when layout-builder runtime is disabled.
 	 *
 	 * @param int|null $post_id Optional post ID.

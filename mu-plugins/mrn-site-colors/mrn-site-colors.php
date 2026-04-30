@@ -3,7 +3,7 @@
  * Plugin Name: Site Styles (MU)
  * Description: Adds a Site Styles configuration page for shared color variables, graphic elements, and usage helpers.
  * Author: MRN Web Designs
- * Version: 0.1.7
+ * Version: 0.1.12
  */
 
 defined('ABSPATH') || exit;
@@ -30,6 +30,20 @@ function mrn_site_styles_dark_scroll_card_presets_option_key(): string {
 }
 
 /**
+ * Option key for stored row spacing presets.
+ */
+function mrn_site_styles_row_spacing_option_key(): string {
+    return 'mrn_site_row_spacing';
+}
+
+/**
+ * Option key for stored row spacing defaults.
+ */
+function mrn_site_styles_row_spacing_defaults_option_key(): string {
+    return 'mrn_site_row_spacing_defaults';
+}
+
+/**
  * Return the supported Site Styles transfer sections.
  *
  * @return array<string, string>
@@ -39,6 +53,7 @@ function mrn_site_styles_get_transfer_sections(): array {
         'colors' => 'Site Colors',
         'graphic_elements' => 'Graphic Elements',
         'dark_scroll_card_presets' => 'Motion Presets',
+        'row_spacing' => 'Row Spacing',
     );
 
     $filtered_sections = apply_filters('mrn_site_styles_transfer_sections', $sections);
@@ -82,6 +97,11 @@ function mrn_site_styles_get_core_tabs(): array {
             'key' => 'motion-presets',
             'label' => 'Motion Presets',
             'icon' => 'dashicons-controls-repeat',
+        ),
+        array(
+            'key' => 'spacing',
+            'label' => 'Spacing',
+            'icon' => 'dashicons-align-wide',
         ),
     );
 }
@@ -501,6 +521,13 @@ function mrn_site_styles_build_export_payload(array $sections = array()): array 
         $data['dark_scroll_card_presets'] = mrn_site_styles_sanitize_dark_scroll_card_preset_rows(get_option(mrn_site_styles_dark_scroll_card_presets_option_key(), array()));
     }
 
+    if (in_array('row_spacing', $sections, true)) {
+        $data['row_spacing'] = array(
+            'defaults' => mrn_site_styles_get_row_spacing_defaults(),
+            'presets' => mrn_site_styles_sanitize_row_spacing_rows(get_option(mrn_site_styles_row_spacing_option_key(), array())),
+        );
+    }
+
     $extension_data = apply_filters('mrn_site_styles_export_data', $data, $sections);
     if (is_array($extension_data)) {
         $data = $extension_data;
@@ -658,6 +685,30 @@ function mrn_site_styles_handle_import(): void {
         $motion_presets = mrn_site_styles_sanitize_dark_scroll_card_preset_rows($data['dark_scroll_card_presets']);
         update_option(mrn_site_styles_dark_scroll_card_presets_option_key(), $motion_presets, false);
         $imported_sections[] = 'Motion Presets';
+    }
+
+    if (array_key_exists('row_spacing', $data)) {
+        $row_spacing_payload = $data['row_spacing'];
+        $row_spacing_defaults = mrn_site_styles_get_row_spacing_defaults();
+        $row_spacing_presets = array();
+
+        if (
+            is_array($row_spacing_payload)
+            && (
+                array_key_exists('defaults', $row_spacing_payload)
+                || array_key_exists('presets', $row_spacing_payload)
+            )
+        ) {
+            $row_spacing_defaults = mrn_site_styles_sanitize_row_spacing_defaults($row_spacing_payload['defaults'] ?? array());
+            $row_spacing_presets = mrn_site_styles_sanitize_row_spacing_rows($row_spacing_payload['presets'] ?? array());
+        } else {
+            // Backward compatibility for early row_spacing exports that stored only presets.
+            $row_spacing_presets = mrn_site_styles_sanitize_row_spacing_rows($row_spacing_payload);
+        }
+
+        update_option(mrn_site_styles_row_spacing_defaults_option_key(), $row_spacing_defaults, false);
+        update_option(mrn_site_styles_row_spacing_option_key(), $row_spacing_presets, false);
+        $imported_sections[] = 'Row Spacing';
     }
 
     $extension_imported_sections = apply_filters('mrn_site_styles_import_data', $imported_sections, $data);
@@ -1109,6 +1160,794 @@ function mrn_site_styles_get_dark_scroll_card_preset_choices(): array {
 }
 
 /**
+ * Get available row spacing property choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_site_styles_get_row_spacing_property_choices(): array {
+    return array(
+        'margin' => 'All Margins',
+        'padding' => 'All Padding',
+        'margin-top' => 'Margin Top',
+        'margin-right' => 'Margin Right',
+        'margin-bottom' => 'Margin Bottom',
+        'margin-left' => 'Margin Left',
+        'padding-top' => 'Padding Top',
+        'padding-right' => 'Padding Right',
+        'padding-bottom' => 'Padding Bottom',
+        'padding-left' => 'Padding Left',
+    );
+}
+
+/**
+ * Get available row spacing preset name choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_site_styles_get_row_spacing_name_choices(): array {
+    return array(
+        'extra-small' => 'Extra Small',
+        'small' => 'Small',
+        'medium' => 'Medium',
+        'large' => 'Large',
+        'x-large' => 'Extra Large',
+        'custom' => 'Custom',
+    );
+}
+
+/**
+ * Normalize row spacing names for stable matching.
+ *
+ * @param string $name
+ * @return string
+ */
+function mrn_site_styles_normalize_row_spacing_name_for_matching(string $name): string {
+    $name = strtolower(trim($name));
+    $name = preg_replace('/\s+/', ' ', $name);
+
+    return is_string($name) ? trim($name) : '';
+}
+
+/**
+ * Get locked starter row spacing preset values rolled out on every site.
+ *
+ * @return array<string, string>
+ */
+function mrn_site_styles_get_required_row_spacing_name_defaults(): array {
+    $defaults = array(
+        'Extra Small' => '32px',
+        'Small' => '48px',
+        'Medium' => '64px',
+        'Large' => '80px',
+        'Extra Large' => '104px',
+    );
+
+    $filtered = apply_filters('mrn_site_styles_required_row_spacing_name_defaults', $defaults);
+    if (!is_array($filtered)) {
+        return $defaults;
+    }
+
+    $normalized = array();
+    foreach ($filtered as $name => $desktop_value) {
+        $label = sanitize_text_field((string) $name);
+        $value = mrn_site_styles_sanitize_spacing_dimension((string) $desktop_value);
+
+        if ('' === $label || '' === $value) {
+            continue;
+        }
+
+        $normalized[$label] = $value;
+    }
+
+    return $normalized !== array() ? $normalized : $defaults;
+}
+
+/**
+ * Get baseline row spacing defaults rolled out on every site.
+ *
+ * @return array<string, array<string, string>>
+ */
+function mrn_site_styles_get_required_row_spacing_property_defaults(): array {
+    $defaults = array(
+        'margin-top' => array(
+            'desktop' => '32px',
+            'mobile' => 'auto',
+        ),
+        'margin-right' => array(
+            'desktop' => '80px',
+            'mobile' => 'auto',
+        ),
+        'margin-bottom' => array(
+            'desktop' => '32px',
+            'mobile' => 'auto',
+        ),
+        'margin-left' => array(
+            'desktop' => '80px',
+            'mobile' => 'auto',
+        ),
+        'padding-top' => array(
+            'desktop' => '64px',
+            'mobile' => 'auto',
+        ),
+        'padding-right' => array(
+            'desktop' => '72px',
+            'mobile' => 'auto',
+        ),
+        'padding-bottom' => array(
+            'desktop' => '80px',
+            'mobile' => 'auto',
+        ),
+        'padding-left' => array(
+            'desktop' => '72px',
+            'mobile' => 'auto',
+        ),
+    );
+
+    $filtered = apply_filters('mrn_site_styles_required_row_spacing_property_defaults', $defaults);
+    if (!is_array($filtered)) {
+        $filtered = $defaults;
+    }
+
+    $allowed_properties = array_keys(mrn_site_styles_get_row_spacing_property_choices());
+    $normalized = array();
+
+    foreach ($filtered as $property => $values) {
+        $property = sanitize_key((string) $property);
+        if ('' === $property || !in_array($property, $allowed_properties, true) || !is_array($values)) {
+            continue;
+        }
+
+        $desktop = mrn_site_styles_get_submitted_row_spacing_value($values, 'desktop', false);
+        $mobile = mrn_site_styles_get_submitted_row_spacing_value($values, 'mobile', true);
+
+        if ('' === $desktop && '' === $mobile) {
+            continue;
+        }
+
+        $normalized[$property] = array(
+            'desktop' => $desktop,
+            'mobile' => $mobile,
+        );
+    }
+
+    return $normalized;
+}
+
+/**
+ * Get the required row spacing properties that should always exist per preset name.
+ *
+ * @return array<int, string>
+ */
+function mrn_site_styles_get_required_row_spacing_properties(): array {
+    return array('margin', 'padding');
+}
+
+/**
+ * Build required non-removable row spacing rows.
+ *
+ * @return array<int, array<string, string>>
+ */
+function mrn_site_styles_get_required_row_spacing_rows(): array {
+    $rows = array();
+    $mobile_auto = mrn_site_styles_row_spacing_mobile_auto_keyword();
+
+    foreach (mrn_site_styles_get_required_row_spacing_name_defaults() as $name => $desktop_value) {
+        foreach (mrn_site_styles_get_required_row_spacing_properties() as $property) {
+            $rows[] = array(
+                'name' => (string) $name,
+                'slug' => mrn_site_colors_normalize_slug((string) $name),
+                'property' => sanitize_key((string) $property),
+                'desktop' => mrn_site_styles_sanitize_spacing_dimension((string) $desktop_value),
+                'mobile' => $mobile_auto,
+            );
+        }
+    }
+
+    return $rows;
+}
+
+/**
+ * Build a lookup for required row spacing rows.
+ *
+ * @return array<string, bool>
+ */
+function mrn_site_styles_get_required_row_spacing_row_lookup(): array {
+    $lookup = array();
+
+    foreach (mrn_site_styles_get_required_row_spacing_rows() as $row) {
+        $name = mrn_site_styles_normalize_row_spacing_name_for_matching((string) ($row['name'] ?? ''));
+        $property = sanitize_key((string) ($row['property'] ?? ''));
+
+        if ('' === $name || '' === $property) {
+            continue;
+        }
+
+        $lookup[$name . '|' . $property] = true;
+    }
+
+    return $lookup;
+}
+
+/**
+ * Check whether a row spacing preset row is required and non-removable.
+ *
+ * @param array<string, string> $row
+ * @return bool
+ */
+function mrn_site_styles_is_required_row_spacing_row(array $row): bool {
+    $name = mrn_site_styles_normalize_row_spacing_name_for_matching((string) ($row['name'] ?? ''));
+    $property = sanitize_key((string) ($row['property'] ?? ''));
+
+    if ('' === $name || '' === $property) {
+        return false;
+    }
+
+    $lookup = mrn_site_styles_get_required_row_spacing_row_lookup();
+    return isset($lookup[$name . '|' . $property]);
+}
+
+/**
+ * Resolve the row spacing name choice from a saved name.
+ *
+ * @param string $name
+ * @return string
+ */
+function mrn_site_styles_get_row_spacing_name_choice_from_name(string $name): string {
+    $name = trim($name);
+
+    if ('' === $name) {
+        return 'custom';
+    }
+
+    $normalized_name = strtolower($name);
+
+    foreach (mrn_site_styles_get_row_spacing_name_choices() as $choice_key => $choice_label) {
+        if ('custom' === $choice_key) {
+            continue;
+        }
+
+        if ($normalized_name === strtolower($choice_label)) {
+            return $choice_key;
+        }
+    }
+
+    if (in_array($normalized_name, array('xsmall', 'x-small', 'extra small', 'extra-small'), true)) {
+        return 'extra-small';
+    }
+
+    if (in_array($normalized_name, array('xlarge', 'x-large', 'extra large', 'extra-large'), true)) {
+        return 'x-large';
+    }
+
+    return 'custom';
+}
+
+/**
+ * Get stepped spacing values for row spacing dropdowns.
+ *
+ * @return array<int, string>
+ */
+function mrn_site_styles_get_row_spacing_base8_values(): array {
+    $values = array();
+
+    /**
+     * Filter the maximum spacing value (in px) shown in row spacing dropdowns.
+     *
+     * @param int $max_px Maximum pixel value (inclusive).
+     */
+    $max_px = (int) apply_filters('mrn_site_styles_row_spacing_base8_max_px', 104);
+
+    /**
+     * Filter the spacing step value (in px) used in row spacing dropdowns.
+     *
+     * @param int $step_px Step value in pixels.
+     */
+    $step_px = (int) apply_filters('mrn_site_styles_row_spacing_step_px', 4);
+    $step_px = max(1, $step_px);
+    $max_px = max(0, $max_px);
+    $capped_max = (int) floor($max_px / $step_px) * $step_px;
+
+    for ($value = 0; $value <= $capped_max; $value += $step_px) {
+        $values[] = $value . 'px';
+    }
+
+    // Respect explicit non-step caps (for example 50px with a 4px step).
+    if (!in_array($max_px . 'px', $values, true)) {
+        $values[] = $max_px . 'px';
+    }
+
+    return $values;
+}
+
+/**
+ * Get spacing value dropdown choices.
+ *
+ * @param bool $allow_auto Include the mobile auto option.
+ * @return array<string, string>
+ */
+function mrn_site_styles_get_row_spacing_value_choices(bool $allow_auto = false): array {
+    $choices = array(
+        '' => 'Select',
+    );
+
+    if ($allow_auto) {
+        $choices[mrn_site_styles_row_spacing_mobile_auto_keyword()] = 'Auto (derive from Desktop)';
+    }
+
+    foreach (mrn_site_styles_get_row_spacing_base8_values() as $value) {
+        $choices[$value] = $value;
+    }
+
+    $choices['custom'] = 'Custom';
+
+    return $choices;
+}
+
+/**
+ * Resolve the value-choice key for a saved row spacing value.
+ *
+ * @param string $value
+ * @param bool   $allow_auto
+ * @return string
+ */
+function mrn_site_styles_get_row_spacing_value_choice_from_value(string $value, bool $allow_auto = false): string {
+    $value = mrn_site_styles_sanitize_spacing_dimension($value);
+
+    if ($allow_auto && mrn_site_styles_is_mobile_auto_spacing_value($value)) {
+        return mrn_site_styles_row_spacing_mobile_auto_keyword();
+    }
+
+    if ('' === $value) {
+        return '';
+    }
+
+    $choices = mrn_site_styles_get_row_spacing_value_choices($allow_auto);
+
+    return isset($choices[$value]) ? $value : 'custom';
+}
+
+/**
+ * Resolve a submitted spacing value from choice/custom fallbacks.
+ *
+ * @param array<string, mixed> $payload
+ * @param string               $field
+ * @param bool                 $allow_auto
+ * @return string
+ */
+function mrn_site_styles_get_submitted_row_spacing_value(array $payload, string $field, bool $allow_auto = false): string {
+    $field = sanitize_key($field);
+
+    $raw_value = isset($payload[$field])
+        ? mrn_site_styles_sanitize_spacing_dimension((string) $payload[$field])
+        : '';
+    $choice_key = isset($payload[$field . '_choice'])
+        ? sanitize_key((string) $payload[$field . '_choice'])
+        : '';
+    $custom_value = isset($payload[$field . '_custom'])
+        ? mrn_site_styles_sanitize_spacing_dimension((string) $payload[$field . '_custom'])
+        : '';
+
+    $choices = mrn_site_styles_get_row_spacing_value_choices($allow_auto);
+
+    if ('' !== $choice_key) {
+        if ('custom' === $choice_key) {
+            return $custom_value;
+        }
+
+        if (isset($choices[$choice_key])) {
+            return $choice_key;
+        }
+    }
+
+    if ($allow_auto && mrn_site_styles_is_mobile_auto_spacing_value($raw_value)) {
+        return mrn_site_styles_row_spacing_mobile_auto_keyword();
+    }
+
+    return $raw_value;
+}
+
+/**
+ * Sanitize a user-entered CSS spacing value.
+ *
+ * @param string $value
+ * @return string
+ */
+function mrn_site_styles_sanitize_spacing_dimension(string $value): string {
+    $value = preg_replace('/[^a-zA-Z0-9.%(),\-+*\/\s]/', '', $value);
+    $value = is_string($value) ? trim($value) : '';
+    $value = preg_replace('/\s+/', ' ', $value);
+    $value = is_string($value) ? trim($value) : '';
+
+    if ('' === $value) {
+        return '';
+    }
+
+    // Normalize bare numeric values to px so dropdown-backed values stay matched.
+    if (preg_match('/^-?(?:\d+|\d*\.\d+)$/', $value)) {
+        $value .= 'px';
+    }
+
+    return substr($value, 0, 64);
+}
+
+/**
+ * Return the mobile auto keyword for row spacing values.
+ *
+ * @return string
+ */
+function mrn_site_styles_row_spacing_mobile_auto_keyword(): string {
+    return 'auto';
+}
+
+/**
+ * Check whether a row spacing value should use mobile auto scaling.
+ *
+ * @param string $value
+ * @return bool
+ */
+function mrn_site_styles_is_mobile_auto_spacing_value(string $value): bool {
+    $normalized = strtolower(trim(mrn_site_styles_sanitize_spacing_dimension($value)));
+
+    return '' === $normalized || mrn_site_styles_row_spacing_mobile_auto_keyword() === $normalized;
+}
+
+/**
+ * Scale a simple CSS dimension value by a ratio.
+ *
+ * @param string $value
+ * @param float  $scale
+ * @return string
+ */
+function mrn_site_styles_scale_spacing_dimension(string $value, float $scale): string {
+    $value = mrn_site_styles_sanitize_spacing_dimension($value);
+    $scale = max(0.1, min(1.0, $scale));
+
+    if ('' === $value) {
+        return '';
+    }
+
+    if (!preg_match('/^\s*(-?\d+(?:\.\d+)?)\s*(px|rem|em|%|vw|vh|vmin|vmax|ch|ex|cm|mm|in|pt|pc)\s*$/i', $value, $matches)) {
+        return $value;
+    }
+
+    $number = (float) $matches[1];
+    $unit = strtolower((string) $matches[2]);
+    $scaled = $number * $scale;
+
+    if (abs($scaled) < 0.0005) {
+        $scaled = 0.0;
+    }
+
+    $scaled_string = rtrim(rtrim(sprintf('%.3F', $scaled), '0'), '.');
+
+    if ('' === $scaled_string || '-0' === $scaled_string) {
+        $scaled_string = '0';
+    }
+
+    return $scaled_string . $unit;
+}
+
+/**
+ * Resolve a mobile row spacing value from desktop when mobile is set to auto.
+ *
+ * @param string $desktop_value
+ * @param string $mobile_value
+ * @param string $property
+ * @return string
+ */
+function mrn_site_styles_resolve_mobile_spacing_value(string $desktop_value, string $mobile_value, string $property = ''): string {
+    $desktop_value = mrn_site_styles_sanitize_spacing_dimension($desktop_value);
+    $mobile_value = mrn_site_styles_sanitize_spacing_dimension($mobile_value);
+
+    if (!mrn_site_styles_is_mobile_auto_spacing_value($mobile_value)) {
+        return $mobile_value;
+    }
+
+    if ('' === $desktop_value) {
+        return '';
+    }
+
+    /**
+     * Filter the ratio used when auto-scaling row spacing mobile values from desktop.
+     *
+     * @param float  $scale         Ratio applied to desktop values.
+     * @param string $property      CSS property key (for example, margin-top).
+     * @param string $desktop_value Desktop spacing value.
+     */
+    $scale = (float) apply_filters(
+        'mrn_site_styles_row_spacing_mobile_auto_scale',
+        0.8,
+        sanitize_key($property),
+        $desktop_value
+    );
+
+    return mrn_site_styles_scale_spacing_dimension($desktop_value, $scale);
+}
+
+/**
+ * Sanitize row spacing preset rows.
+ *
+ * @param mixed $rows
+ * @return array<int, array<string, string>>
+ */
+function mrn_site_styles_sanitize_row_spacing_rows($rows): array {
+    $allowed_properties = array_keys(mrn_site_styles_get_row_spacing_property_choices());
+    $name_choices = mrn_site_styles_get_row_spacing_name_choices();
+    $rows = is_array($rows) ? $rows : array();
+
+    $normalized_rows = array();
+
+    foreach ($rows as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+
+        $legacy_name = isset($row['name']) ? sanitize_text_field((string) $row['name']) : '';
+        $name_choice = isset($row['name_choice']) ? sanitize_key((string) $row['name_choice']) : '';
+        $custom_name = isset($row['custom_name']) ? sanitize_text_field((string) $row['custom_name']) : '';
+        $name = $legacy_name;
+
+        if (isset($name_choices[$name_choice])) {
+            if ('custom' === $name_choice) {
+                $name = $custom_name;
+            } else {
+                $name = (string) $name_choices[$name_choice];
+            }
+        }
+
+        $slug_source = isset($row['slug']) && '' !== (string) $row['slug']
+            ? (string) $row['slug']
+            : $name;
+        $slug = mrn_site_colors_normalize_slug($slug_source);
+        $property = isset($row['property']) ? sanitize_key((string) $row['property']) : '';
+        $desktop = mrn_site_styles_get_submitted_row_spacing_value($row, 'desktop', false);
+        $mobile = mrn_site_styles_get_submitted_row_spacing_value($row, 'mobile', true);
+
+        if ('' === $name && '' === $desktop && '' === $mobile) {
+            continue;
+        }
+
+        if ('' === $name || '' === $property || !in_array($property, $allowed_properties, true)) {
+            continue;
+        }
+
+        if ('' === $desktop && '' === $mobile) {
+            continue;
+        }
+
+        $normalized_rows[] = array(
+            'name' => $name,
+            'slug' => $slug,
+            'property' => $property,
+            'desktop' => $desktop,
+            'mobile' => $mobile,
+        );
+    }
+
+    $required_rows = mrn_site_styles_get_required_row_spacing_rows();
+    $normalized_lookup = array();
+    $missing_required_rows = array();
+
+    foreach ($normalized_rows as $index => $row) {
+        $lookup_key = mrn_site_styles_normalize_row_spacing_name_for_matching((string) ($row['name'] ?? ''))
+            . '|'
+            . sanitize_key((string) ($row['property'] ?? ''));
+
+        if (isset($normalized_lookup[$lookup_key])) {
+            continue;
+        }
+
+        $normalized_lookup[$lookup_key] = $index;
+    }
+
+    foreach ($required_rows as $required_row) {
+        $lookup_key = mrn_site_styles_normalize_row_spacing_name_for_matching((string) ($required_row['name'] ?? ''))
+            . '|'
+            . sanitize_key((string) ($required_row['property'] ?? ''));
+
+        if (isset($normalized_lookup[$lookup_key])) {
+            $required_slug = mrn_site_colors_normalize_slug((string) ($required_row['slug'] ?? ''));
+            if ('' !== $required_slug) {
+                $normalized_rows[(int) $normalized_lookup[$lookup_key]]['slug'] = $required_slug;
+            }
+            continue;
+        }
+
+        $missing_required_rows[] = array(
+            'name' => (string) ($required_row['name'] ?? ''),
+            'slug' => mrn_site_colors_normalize_slug((string) ($required_row['slug'] ?? '')),
+            'property' => sanitize_key((string) ($required_row['property'] ?? '')),
+            'desktop' => mrn_site_styles_sanitize_spacing_dimension((string) ($required_row['desktop'] ?? '')),
+            'mobile' => mrn_site_styles_sanitize_spacing_dimension((string) ($required_row['mobile'] ?? '')),
+        );
+    }
+
+    if ($missing_required_rows !== array()) {
+        $normalized_rows = array_merge($missing_required_rows, $normalized_rows);
+    }
+
+    $sanitized = array();
+    $used_slugs = array();
+
+    foreach ($normalized_rows as $row) {
+        $name = isset($row['name']) ? sanitize_text_field((string) $row['name']) : '';
+        $property = isset($row['property']) ? sanitize_key((string) $row['property']) : '';
+        $desktop = mrn_site_styles_sanitize_spacing_dimension((string) ($row['desktop'] ?? ''));
+        $mobile = mrn_site_styles_get_submitted_row_spacing_value(
+            array(
+                'mobile' => (string) ($row['mobile'] ?? ''),
+            ),
+            'mobile',
+            true
+        );
+
+        if ('' === $name || '' === $property || !in_array($property, $allowed_properties, true)) {
+            continue;
+        }
+
+        if ('' === $desktop && '' === $mobile) {
+            continue;
+        }
+
+        $slug_source = isset($row['slug']) ? (string) $row['slug'] : '';
+        if ('' === $slug_source) {
+            $slug_source = $name;
+        }
+
+        $slug = mrn_site_colors_normalize_slug($slug_source);
+        $base_slug = $slug;
+        $suffix = 2;
+
+        while (isset($used_slugs[$slug])) {
+            $slug = $base_slug . '-' . $suffix;
+            $suffix++;
+        }
+
+        $used_slugs[$slug] = true;
+
+        $sanitized[] = array(
+            'name' => $name,
+            'slug' => $slug,
+            'property' => $property,
+            'desktop' => $desktop,
+            'mobile' => $mobile,
+        );
+    }
+
+    return $sanitized;
+}
+
+/**
+ * Sanitize row spacing default values.
+ *
+ * @param mixed $defaults
+ * @return array<string, array<string, string>>
+ */
+function mrn_site_styles_sanitize_row_spacing_defaults($defaults): array {
+    $defaults = is_array($defaults) ? $defaults : array();
+    $required_defaults = mrn_site_styles_get_required_row_spacing_property_defaults();
+    $sanitized = array();
+
+    foreach (mrn_site_styles_get_row_spacing_property_choices() as $property => $label) {
+        unset($label);
+        $property_values = isset($defaults[$property]) && is_array($defaults[$property])
+            ? $defaults[$property]
+            : array();
+
+        $desktop = mrn_site_styles_get_submitted_row_spacing_value($property_values, 'desktop', false);
+        $mobile = mrn_site_styles_get_submitted_row_spacing_value($property_values, 'mobile', true);
+
+        // Compatibility migration for prior non-step defaults.
+        if (in_array($property, array('padding-right', 'padding-left'), true) && '70px' === strtolower($desktop)) {
+            $desktop = '72px';
+        }
+
+        if ('' === $desktop && isset($required_defaults[$property]['desktop'])) {
+            $desktop = mrn_site_styles_sanitize_spacing_dimension((string) $required_defaults[$property]['desktop']);
+        }
+
+        if ('' === $mobile && isset($required_defaults[$property]['mobile'])) {
+            $mobile = mrn_site_styles_get_submitted_row_spacing_value(
+                array(
+                    'mobile' => (string) $required_defaults[$property]['mobile'],
+                ),
+                'mobile',
+                true
+            );
+        }
+
+        $sanitized[$property] = array(
+            'desktop' => $desktop,
+            'mobile' => $mobile,
+        );
+    }
+
+    return $sanitized;
+}
+
+/**
+ * Get saved row spacing defaults.
+ *
+ * @return array<string, array<string, string>>
+ */
+function mrn_site_styles_get_row_spacing_defaults(): array {
+    static $defaults = null;
+
+    if (null !== $defaults) {
+        return $defaults;
+    }
+
+    $defaults = mrn_site_styles_sanitize_row_spacing_defaults(
+        get_option(mrn_site_styles_row_spacing_defaults_option_key(), array())
+    );
+
+    return $defaults;
+}
+
+/**
+ * Get row spacing defaults with auto mobile values resolved.
+ *
+ * @return array<string, array<string, string>>
+ */
+function mrn_site_styles_get_row_spacing_defaults_resolved(): array {
+    $resolved = array();
+
+    foreach (mrn_site_styles_get_row_spacing_defaults() as $property => $values) {
+        $desktop = isset($values['desktop']) ? (string) $values['desktop'] : '';
+        $mobile = isset($values['mobile']) ? (string) $values['mobile'] : '';
+
+        $resolved[sanitize_key((string) $property)] = array(
+            'desktop' => $desktop,
+            'mobile' => mrn_site_styles_resolve_mobile_spacing_value($desktop, $mobile, (string) $property),
+        );
+    }
+
+    return $resolved;
+}
+
+/**
+ * Get saved row spacing presets.
+ *
+ * @return array<int, array<string, string>>
+ */
+function mrn_site_styles_get_row_spacing_presets(): array {
+    static $rows = null;
+
+    if (null !== $rows) {
+        return $rows;
+    }
+
+    $rows = mrn_site_styles_sanitize_row_spacing_rows(get_option(mrn_site_styles_row_spacing_option_key(), array()));
+
+    return $rows;
+}
+
+/**
+ * Get row spacing presets with auto mobile values resolved.
+ *
+ * @return array<int, array<string, string>>
+ */
+function mrn_site_styles_get_row_spacing_presets_resolved(): array {
+    $resolved = array();
+
+    foreach (mrn_site_styles_get_row_spacing_presets() as $row) {
+        $desktop = isset($row['desktop']) ? (string) $row['desktop'] : '';
+        $mobile = isset($row['mobile']) ? (string) $row['mobile'] : '';
+        $property = isset($row['property']) ? (string) $row['property'] : '';
+
+        $resolved[] = array(
+            'name' => isset($row['name']) ? (string) $row['name'] : '',
+            'slug' => isset($row['slug']) ? (string) $row['slug'] : '',
+            'property' => $property,
+            'desktop' => $desktop,
+            'mobile' => mrn_site_styles_resolve_mobile_spacing_value($desktop, $mobile, $property),
+        );
+    }
+
+    return $resolved;
+}
+
+/**
  * Persist settings form submission.
  */
 function mrn_site_colors_handle_save(): void {
@@ -1135,6 +1974,8 @@ function mrn_site_colors_handle_save(): void {
         $submitted_section = 'graphic-elements';
     } elseif ('' === $submitted_section && isset($_POST['mrn_site_dark_scroll_card_presets_submit'])) {
         $submitted_section = 'motion-presets';
+    } elseif ('' === $submitted_section && isset($_POST['mrn_site_row_spacing_submit'])) {
+        $submitted_section = 'spacing';
     }
 
     if (!in_array($submitted_section, mrn_site_styles_get_admin_tab_keys(), true)) {
@@ -1153,15 +1994,23 @@ function mrn_site_colors_handle_save(): void {
     $graphic_element_rows = isset($_POST['mrn_site_graphic_elements']) ? wp_unslash($_POST['mrn_site_graphic_elements']) : array();
     // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Rows are unslashed here and sanitized in mrn_site_styles_sanitize_dark_scroll_card_preset_rows().
     $dark_scroll_card_rows = isset($_POST['mrn_site_dark_scroll_card_presets']) ? wp_unslash($_POST['mrn_site_dark_scroll_card_presets']) : array();
+    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Rows are unslashed here and sanitized in mrn_site_styles_sanitize_row_spacing_rows().
+    $row_spacing_rows = isset($_POST['mrn_site_row_spacing']) ? wp_unslash($_POST['mrn_site_row_spacing']) : array();
+    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Rows are unslashed here and sanitized in mrn_site_styles_sanitize_row_spacing_defaults().
+    $row_spacing_defaults = isset($_POST['mrn_site_row_spacing_defaults']) ? wp_unslash($_POST['mrn_site_row_spacing_defaults']) : array();
 
     $prepared = mrn_site_colors_prepare_rows($rows);
     $sanitized = $prepared['sanitized'];
     $sanitized_graphic_items = mrn_site_styles_sanitize_graphic_element_rows($graphic_element_rows);
     $sanitized_motion_presets = mrn_site_styles_sanitize_dark_scroll_card_preset_rows($dark_scroll_card_rows);
+    $sanitized_row_spacing = mrn_site_styles_sanitize_row_spacing_rows($row_spacing_rows);
+    $sanitized_row_spacing_defaults = mrn_site_styles_sanitize_row_spacing_defaults($row_spacing_defaults);
 
     update_option(mrn_site_colors_option_key(), $sanitized, false);
     update_option(mrn_site_styles_graphic_elements_option_key(), $sanitized_graphic_items, false);
     update_option(mrn_site_styles_dark_scroll_card_presets_option_key(), $sanitized_motion_presets, false);
+    update_option(mrn_site_styles_row_spacing_defaults_option_key(), $sanitized_row_spacing_defaults, false);
+    update_option(mrn_site_styles_row_spacing_option_key(), $sanitized_row_spacing, false);
 
     /**
      * Let extension tabs persist their own section data.
@@ -1361,6 +2210,128 @@ function mrn_site_styles_render_dark_scroll_card_preset_row(int $index, array $r
 }
 
 /**
+ * Render a single row spacing preset row.
+ *
+ * @param int                  $index
+ * @param array<string,string> $row
+ */
+function mrn_site_styles_render_row_spacing_row(int $index, array $row): void {
+    $name = isset($row['name']) ? (string) $row['name'] : '';
+    $slug = isset($row['slug']) ? (string) $row['slug'] : '';
+    $property = isset($row['property']) ? sanitize_key((string) $row['property']) : '';
+    $desktop = isset($row['desktop']) ? (string) $row['desktop'] : '';
+    $mobile = isset($row['mobile']) ? (string) $row['mobile'] : '';
+    $mobile_display = '' === trim($mobile) ? mrn_site_styles_row_spacing_mobile_auto_keyword() : $mobile;
+    $property_choices = mrn_site_styles_get_row_spacing_property_choices();
+    $name_choices = mrn_site_styles_get_row_spacing_name_choices();
+    $desktop_value_choices = mrn_site_styles_get_row_spacing_value_choices(false);
+    $mobile_value_choices = mrn_site_styles_get_row_spacing_value_choices(true);
+    $name_choice = mrn_site_styles_get_row_spacing_name_choice_from_name($name);
+    $custom_name = 'custom' === $name_choice ? $name : '';
+    $show_custom_name = 'custom' === $name_choice;
+    $desktop_choice = mrn_site_styles_get_row_spacing_value_choice_from_value($desktop, false);
+    $mobile_choice = mrn_site_styles_get_row_spacing_value_choice_from_value($mobile_display, true);
+    $desktop_custom = 'custom' === $desktop_choice ? $desktop : '';
+    $mobile_custom = 'custom' === $mobile_choice ? $mobile_display : '';
+    $show_desktop_custom = 'custom' === $desktop_choice;
+    $show_mobile_custom = 'custom' === $mobile_choice;
+    $is_required = mrn_site_styles_is_required_row_spacing_row($row);
+    $name_choice_value = $name_choice;
+    $property_value = $property;
+
+    if (!isset($property_choices[$property])) {
+        $property = '';
+    }
+    ?>
+    <tr class="mrn-site-styles-row-spacing-row" <?php echo $is_required ? 'data-row-spacing-required="1"' : ''; ?>>
+        <td style="vertical-align:top;">
+            <select class="mrn-site-styles-row-spacing-name-choice" name="mrn_site_row_spacing[<?php echo esc_attr((string) $index); ?>][name_choice]" <?php echo $is_required ? 'disabled' : ''; ?>>
+                <?php foreach ($name_choices as $choice_key => $choice_label) : ?>
+                    <option value="<?php echo esc_attr($choice_key); ?>" <?php selected($choice_key, $name_choice); ?>>
+                        <?php echo esc_html($choice_label); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <?php if ($is_required) : ?>
+                <input type="hidden" name="mrn_site_row_spacing[<?php echo esc_attr((string) $index); ?>][name_choice]" value="<?php echo esc_attr($name_choice_value); ?>" />
+            <?php endif; ?>
+            <input
+                type="text"
+                class="regular-text mrn-site-styles-row-spacing-custom-name"
+                name="mrn_site_row_spacing[<?php echo esc_attr((string) $index); ?>][custom_name]"
+                value="<?php echo esc_attr($custom_name); ?>"
+                placeholder="Enter custom name"
+                <?php echo $show_custom_name ? '' : 'hidden'; ?>
+            />
+            <input type="hidden" class="mrn-site-styles-row-spacing-slug" name="mrn_site_row_spacing[<?php echo esc_attr((string) $index); ?>][slug]" value="<?php echo esc_attr($slug); ?>" />
+        </td>
+        <td style="vertical-align:top;">
+            <select class="mrn-site-styles-row-spacing-property" name="mrn_site_row_spacing[<?php echo esc_attr((string) $index); ?>][property]" <?php echo $is_required ? 'disabled' : ''; ?>>
+                <?php foreach ($property_choices as $property_key => $property_label) : ?>
+                    <option value="<?php echo esc_attr($property_key); ?>" <?php selected($property_key, $property); ?>>
+                        <?php echo esc_html($property_label); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <?php if ($is_required) : ?>
+                <input type="hidden" name="mrn_site_row_spacing[<?php echo esc_attr((string) $index); ?>][property]" value="<?php echo esc_attr($property_value); ?>" />
+            <?php endif; ?>
+        </td>
+        <td style="vertical-align:top;">
+            <div class="mrn-site-styles-row-spacing-values">
+                <label>
+                    <span>Desktop</span>
+                    <select class="mrn-site-styles-row-spacing-desktop-choice" name="mrn_site_row_spacing[<?php echo esc_attr((string) $index); ?>][desktop_choice]">
+                        <?php foreach ($desktop_value_choices as $choice_key => $choice_label) : ?>
+                            <option value="<?php echo esc_attr($choice_key); ?>" <?php selected($choice_key, $desktop_choice); ?>>
+                                <?php echo esc_html($choice_label); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <input
+                        type="text"
+                        class="regular-text code mrn-site-styles-row-spacing-desktop-custom"
+                        name="mrn_site_row_spacing[<?php echo esc_attr((string) $index); ?>][desktop_custom]"
+                        value="<?php echo esc_attr($desktop_custom); ?>"
+                        placeholder="Enter custom value"
+                        <?php echo $show_desktop_custom ? '' : 'hidden'; ?>
+                    />
+                </label>
+                <label>
+                    <span>Mobile</span>
+                    <select class="mrn-site-styles-row-spacing-mobile-choice" name="mrn_site_row_spacing[<?php echo esc_attr((string) $index); ?>][mobile_choice]">
+                        <?php foreach ($mobile_value_choices as $choice_key => $choice_label) : ?>
+                            <option value="<?php echo esc_attr($choice_key); ?>" <?php selected($choice_key, $mobile_choice); ?>>
+                                <?php echo esc_html($choice_label); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <input
+                        type="text"
+                        class="regular-text code mrn-site-styles-row-spacing-mobile-custom"
+                        name="mrn_site_row_spacing[<?php echo esc_attr((string) $index); ?>][mobile_custom]"
+                        value="<?php echo esc_attr($mobile_custom); ?>"
+                        placeholder="Enter custom value"
+                        <?php echo $show_mobile_custom ? '' : 'hidden'; ?>
+                    />
+                </label>
+            </div>
+        </td>
+        <td style="vertical-align:top;">
+            <code class="mrn-site-styles-row-spacing-token"><?php echo esc_html(($slug !== '' && $property !== '') ? '--mrn-row-spacing-' . $slug . '-' . $property : '--mrn-row-spacing-preset-margin-top'); ?></code>
+        </td>
+        <td style="vertical-align:top;">
+            <?php if ($is_required) : ?>
+                <span class="description">Required</span>
+            <?php else : ?>
+                <button type="button" class="button-link-delete mrn-site-styles-row-spacing-remove">Remove</button>
+            <?php endif; ?>
+        </td>
+    </tr>
+    <?php
+}
+
+/**
  * Render the Site Styles settings page.
  */
 function mrn_site_colors_render_page(): void {
@@ -1373,6 +2344,48 @@ function mrn_site_colors_render_page(): void {
     $dark_scroll_card_presets = mrn_site_styles_sanitize_dark_scroll_card_preset_rows(
         get_option(mrn_site_styles_dark_scroll_card_presets_option_key(), array())
     );
+    $row_spacing_presets = mrn_site_styles_get_row_spacing_presets();
+    $row_spacing_defaults = mrn_site_styles_get_row_spacing_defaults();
+    $row_spacing_property_choices = mrn_site_styles_get_row_spacing_property_choices();
+    $row_spacing_name_choices = mrn_site_styles_get_row_spacing_name_choices();
+    $row_spacing_desktop_value_choices = mrn_site_styles_get_row_spacing_value_choices(false);
+    $row_spacing_mobile_value_choices = mrn_site_styles_get_row_spacing_value_choices(true);
+    $row_spacing_property_options_html = '';
+    $row_spacing_name_options_html = '';
+    $row_spacing_desktop_value_options_html = '';
+    $row_spacing_mobile_value_options_html = '';
+
+    foreach ($row_spacing_property_choices as $property_key => $property_label) {
+        $row_spacing_property_options_html .= sprintf(
+            '<option value="%1$s">%2$s</option>',
+            esc_attr($property_key),
+            esc_html($property_label)
+        );
+    }
+
+    foreach ($row_spacing_name_choices as $name_key => $name_label) {
+        $row_spacing_name_options_html .= sprintf(
+            '<option value="%1$s">%2$s</option>',
+            esc_attr($name_key),
+            esc_html($name_label)
+        );
+    }
+
+    foreach ($row_spacing_desktop_value_choices as $value_key => $value_label) {
+        $row_spacing_desktop_value_options_html .= sprintf(
+            '<option value="%1$s">%2$s</option>',
+            esc_attr($value_key),
+            esc_html($value_label)
+        );
+    }
+
+    foreach ($row_spacing_mobile_value_choices as $value_key => $value_label) {
+        $row_spacing_mobile_value_options_html .= sprintf(
+            '<option value="%1$s">%2$s</option>',
+            esc_attr($value_key),
+            esc_html($value_label)
+        );
+    }
     $color_feedback = mrn_site_colors_consume_feedback();
     $transfer_feedback = mrn_site_styles_consume_transfer_feedback();
     $color_invalid_count = isset($color_feedback['invalid_count']) ? (int) $color_feedback['invalid_count'] : 0;
@@ -1487,6 +2500,79 @@ function mrn_site_colors_render_page(): void {
             .mrn-site-styles-motion-fields input {
                 width: 100%;
                 min-width: 0;
+            }
+
+            .mrn-site-styles-spacing-tabs .nav-tab-wrapper {
+                margin: 12px 0 16px;
+            }
+
+            .mrn-site-styles-spacing-subpanel[hidden] {
+                display: none;
+            }
+
+            .mrn-site-styles-row-spacing-table {
+                max-width: 1100px;
+                table-layout: fixed;
+            }
+
+            .mrn-site-styles-row-spacing-defaults-table {
+                max-width: 1100px;
+                table-layout: fixed;
+                margin-top: 14px;
+            }
+
+            .mrn-site-styles-row-spacing-defaults-table th,
+            .mrn-site-styles-row-spacing-defaults-table td {
+                vertical-align: top;
+            }
+
+            .mrn-site-styles-row-spacing-defaults-table .regular-text,
+            .mrn-site-styles-row-spacing-defaults-table .code,
+            .mrn-site-styles-row-spacing-defaults-table select {
+                width: 100%;
+                max-width: none;
+                box-sizing: border-box;
+            }
+
+            .mrn-site-styles-row-spacing-default-desktop-custom,
+            .mrn-site-styles-row-spacing-default-mobile-custom,
+            .mrn-site-styles-row-spacing-desktop-custom,
+            .mrn-site-styles-row-spacing-mobile-custom {
+                margin-top: 8px;
+            }
+
+            .mrn-site-styles-row-spacing-table th,
+            .mrn-site-styles-row-spacing-table td {
+                vertical-align: top;
+            }
+
+            .mrn-site-styles-row-spacing-table .regular-text,
+            .mrn-site-styles-row-spacing-table .code,
+            .mrn-site-styles-row-spacing-table select {
+                width: 100%;
+                max-width: none;
+                box-sizing: border-box;
+            }
+
+            .mrn-site-styles-row-spacing-custom-name {
+                margin-top: 8px;
+            }
+
+            .mrn-site-styles-row-spacing-values {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px 14px;
+            }
+
+            .mrn-site-styles-row-spacing-values label {
+                display: block;
+                font-weight: 600;
+            }
+
+            .mrn-site-styles-row-spacing-values label span {
+                display: block;
+                margin-bottom: 4px;
+                font-weight: 600;
             }
 
             .mrn-site-styles-transfer-box {
@@ -1730,6 +2816,10 @@ function mrn_site_colors_render_page(): void {
                     grid-template-columns: 1fr;
                 }
 
+                .mrn-site-styles-row-spacing-values {
+                    grid-template-columns: 1fr;
+                }
+
                 .mrn-site-styles-separator-generator {
                     grid-template-columns: 1fr;
                 }
@@ -1763,6 +2853,8 @@ function mrn_site_colors_render_page(): void {
             <div class="notice notice-success is-dismissible"><p>Graphic elements saved.</p></div>
         <?php elseif ('motion-presets' === $updated_notice) : ?>
             <div class="notice notice-success is-dismissible"><p>Motion presets saved.</p></div>
+        <?php elseif ('spacing' === $updated_notice) : ?>
+            <div class="notice notice-success is-dismissible"><p>Row spacing saved.</p></div>
         <?php endif; ?>
         <?php do_action('mrn_site_styles_render_notices', $updated_notice); ?>
         <?php if (!empty($transfer_feedback['message'])) : ?>
@@ -2049,6 +3141,118 @@ function mrn_site_colors_render_page(): void {
                     </div>
                 </section>
 
+                <section class="mrn-site-styles-panel" data-mrn-site-styles-panel="spacing" <?php echo 'spacing' === $active_tab ? '' : 'hidden'; ?>>
+                    <div class="mrn-site-styles-card mrn-site-styles-spacing-tabs" data-mrn-site-styles-spacing-default="row-spacing">
+                        <h2 style="margin-top:0;">Spacing</h2>
+                        <p>Define reusable spacing presets for builder rows. Desktop and mobile values stay grouped per setting.</p>
+                        <p class="description"><strong>Mobile Auto:</strong> Choose <code>Auto</code> for Mobile to inherit from Desktop and scale down automatically (default scale is <code>0.8</code>). Use a specific mobile value only when you need an explicit override.</p>
+
+                        <h3 class="nav-tab-wrapper" role="tablist" aria-label="Spacing options">
+                            <a href="#" class="nav-tab nav-tab-active" data-mrn-site-styles-spacing-tab-trigger="row-spacing" role="tab" aria-selected="true">Row Spacing</a>
+                        </h3>
+
+                        <div class="mrn-site-styles-spacing-subpanel" data-mrn-site-styles-spacing-tab-panel="row-spacing">
+                            <h3 style="margin:0;">Site Defaults</h3>
+                            <p class="description">Set baseline desktop and mobile spacing defaults for each margin/padding side. Choose base-4 pixel values (up to <code>104px</code>) from each dropdown, or select <code>Custom</code> to enter any CSS value. Use <code>auto</code> in mobile to scale from desktop, and enter a mobile value only when you need an override.</p>
+                            <table class="widefat striped mrn-site-styles-row-spacing-defaults-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:40%;">Setting</th>
+                                        <th style="width:30%;">Desktop</th>
+                                        <th style="width:30%;">Mobile</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($row_spacing_property_choices as $property_key => $property_label) : ?>
+                                        <?php
+                                        $default_values = isset($row_spacing_defaults[$property_key]) && is_array($row_spacing_defaults[$property_key])
+                                            ? $row_spacing_defaults[$property_key]
+                                            : array();
+                                        $default_desktop = isset($default_values['desktop']) ? (string) $default_values['desktop'] : '';
+                                        $default_mobile = isset($default_values['mobile']) ? (string) $default_values['mobile'] : '';
+                                        $default_mobile_display = '' === trim($default_mobile)
+                                            ? mrn_site_styles_row_spacing_mobile_auto_keyword()
+                                            : $default_mobile;
+                                        $default_desktop_choice = mrn_site_styles_get_row_spacing_value_choice_from_value($default_desktop, false);
+                                        $default_mobile_choice = mrn_site_styles_get_row_spacing_value_choice_from_value($default_mobile_display, true);
+                                        $default_desktop_custom = 'custom' === $default_desktop_choice ? $default_desktop : '';
+                                        $default_mobile_custom = 'custom' === $default_mobile_choice ? $default_mobile_display : '';
+                                        $show_default_desktop_custom = 'custom' === $default_desktop_choice;
+                                        $show_default_mobile_custom = 'custom' === $default_mobile_choice;
+                                        ?>
+                                        <tr>
+                                            <th scope="row"><?php echo esc_html($property_label); ?></th>
+                                            <td>
+                                                <select
+                                                    class="mrn-site-styles-row-spacing-default-desktop-choice"
+                                                    name="mrn_site_row_spacing_defaults[<?php echo esc_attr($property_key); ?>][desktop_choice]"
+                                                >
+                                                    <?php foreach ($row_spacing_desktop_value_choices as $choice_key => $choice_label) : ?>
+                                                        <option value="<?php echo esc_attr($choice_key); ?>" <?php selected($choice_key, $default_desktop_choice); ?>>
+                                                            <?php echo esc_html($choice_label); ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                                <input
+                                                    type="text"
+                                                    class="regular-text code mrn-site-styles-row-spacing-default-desktop-custom"
+                                                    name="mrn_site_row_spacing_defaults[<?php echo esc_attr($property_key); ?>][desktop_custom]"
+                                                    value="<?php echo esc_attr($default_desktop_custom); ?>"
+                                                    placeholder="Enter custom value"
+                                                    <?php echo $show_default_desktop_custom ? '' : 'hidden'; ?>
+                                                />
+                                            </td>
+                                            <td>
+                                                <select
+                                                    class="mrn-site-styles-row-spacing-default-mobile-choice"
+                                                    name="mrn_site_row_spacing_defaults[<?php echo esc_attr($property_key); ?>][mobile_choice]"
+                                                >
+                                                    <?php foreach ($row_spacing_mobile_value_choices as $choice_key => $choice_label) : ?>
+                                                        <option value="<?php echo esc_attr($choice_key); ?>" <?php selected($choice_key, $default_mobile_choice); ?>>
+                                                            <?php echo esc_html($choice_label); ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                                <input
+                                                    type="text"
+                                                    class="regular-text code mrn-site-styles-row-spacing-default-mobile-custom"
+                                                    name="mrn_site_row_spacing_defaults[<?php echo esc_attr($property_key); ?>][mobile_custom]"
+                                                    value="<?php echo esc_attr($default_mobile_custom); ?>"
+                                                    placeholder="Enter custom value"
+                                                    <?php echo $show_default_mobile_custom ? '' : 'hidden'; ?>
+                                                />
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+
+                            <h3 style="margin:20px 0 0;">Custom Values</h3>
+                            <p class="description"><strong>Extra Small</strong>, <strong>Small</strong>, <strong>Medium</strong>, <strong>Large</strong>, and <strong>Extra Large</strong> are required starter presets on every site. They default to <code>32px</code>, <code>48px</code>, <code>64px</code>, <code>80px</code>, and <code>104px</code>, can be edited, and cannot be removed. Use <strong>Custom</strong> only when you need an additional named preset.</p>
+                            <table class="widefat striped mrn-site-styles-row-spacing-table" style="margin-top:16px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:24%;">Name</th>
+                                        <th style="width:22%;">Setting</th>
+                                        <th style="width:34%;">Values</th>
+                                        <th style="width:14%;">CSS Variable</th>
+                                        <th style="width:6%;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mrn-site-styles-row-spacing-rows">
+                                    <?php foreach (array_values($row_spacing_presets) as $index => $row) : ?>
+                                        <?php mrn_site_styles_render_row_spacing_row((int) $index, $row); ?>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+
+                            <p class="mrn-site-styles-panel-actions">
+                                <button type="button" class="button" id="mrn-site-styles-row-spacing-add">Add Row Spacing Setting</button>
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
                 <?php foreach ($tabs as $tab) : ?>
                     <?php
                     if (!is_array($tab)) {
@@ -2056,7 +3260,7 @@ function mrn_site_colors_render_page(): void {
                     }
 
                     $tab_key = isset($tab['key']) ? sanitize_key((string) $tab['key']) : '';
-                    if ('' === $tab_key || in_array($tab_key, array('colors', 'graphic-elements', 'motion-presets'), true)) {
+                    if ('' === $tab_key || in_array($tab_key, array('colors', 'graphic-elements', 'motion-presets', 'spacing'), true)) {
                         continue;
                     }
                     ?>
@@ -3251,6 +4455,281 @@ function mrn_site_colors_render_page(): void {
             }
 
             initSeparatorGenerator();
+        }());
+    </script>
+    <script>
+        (function () {
+            const root = document.querySelector('.mrn-site-styles-spacing-tabs');
+            const form = document.getElementById('mrn-site-styles-form');
+            const defaultsTable = root ? root.querySelector('.mrn-site-styles-row-spacing-defaults-table') : null;
+            const rowsContainer = document.getElementById('mrn-site-styles-row-spacing-rows');
+            const addButton = document.getElementById('mrn-site-styles-row-spacing-add');
+
+            if (!root || root.dataset.mrnSiteStylesSpacingReady === '1') {
+                return;
+            }
+            root.dataset.mrnSiteStylesSpacingReady = '1';
+
+            const triggers = Array.from(root.querySelectorAll('[data-mrn-site-styles-spacing-tab-trigger]'));
+            const panels = Array.from(root.querySelectorAll('[data-mrn-site-styles-spacing-tab-panel]'));
+            const defaultTab = root.getAttribute('data-mrn-site-styles-spacing-default') || 'row-spacing';
+
+            function activateTab(tabName) {
+                const targetTab = tabName || defaultTab;
+
+                triggers.forEach(function (trigger) {
+                    const isActive = trigger.getAttribute('data-mrn-site-styles-spacing-tab-trigger') === targetTab;
+                    trigger.classList.toggle('nav-tab-active', isActive);
+                    trigger.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                });
+
+                panels.forEach(function (panel) {
+                    const isActive = panel.getAttribute('data-mrn-site-styles-spacing-tab-panel') === targetTab;
+                    panel.hidden = !isActive;
+                });
+            }
+
+            triggers.forEach(function (trigger) {
+                trigger.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    activateTab(trigger.getAttribute('data-mrn-site-styles-spacing-tab-trigger'));
+                });
+            });
+
+            activateTab(defaultTab);
+
+            function notifyFormChanged() {
+                if (!form) {
+                    return;
+                }
+
+                form.dispatchEvent(new Event('input', { bubbles: true }));
+                form.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            function slugify(value) {
+                return String(value || '')
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '') || 'spacing';
+            }
+
+            function getSelectedNameValue(row) {
+                const choiceSelect = row.querySelector('.mrn-site-styles-row-spacing-name-choice');
+                const customInput = row.querySelector('.mrn-site-styles-row-spacing-custom-name');
+
+                if (!choiceSelect) {
+                    return '';
+                }
+
+                const choice = String(choiceSelect.value || 'custom');
+                if ('custom' === choice) {
+                    return customInput ? String(customInput.value || '') : '';
+                }
+
+                const selectedOption = choiceSelect.options[choiceSelect.selectedIndex];
+                if (selectedOption && selectedOption.text) {
+                    return selectedOption.text;
+                }
+
+                return choice;
+            }
+
+            function toggleCustomNameInput(row) {
+                const choiceSelect = row.querySelector('.mrn-site-styles-row-spacing-name-choice');
+                const customInput = row.querySelector('.mrn-site-styles-row-spacing-custom-name');
+
+                if (!choiceSelect || !customInput) {
+                    return;
+                }
+
+                const isCustom = 'custom' === String(choiceSelect.value || 'custom');
+                customInput.hidden = !isCustom;
+            }
+
+            function toggleCustomValueInput(row, choiceSelector, customSelector) {
+                const choiceSelect = row.querySelector(choiceSelector);
+                const customInput = row.querySelector(customSelector);
+
+                if (!choiceSelect || !customInput) {
+                    return;
+                }
+
+                const isCustom = 'custom' === String(choiceSelect.value || '');
+                customInput.hidden = !isCustom;
+            }
+
+            function toggleRowValueInputs(row) {
+                toggleCustomValueInput(row, '.mrn-site-styles-row-spacing-desktop-choice', '.mrn-site-styles-row-spacing-desktop-custom');
+                toggleCustomValueInput(row, '.mrn-site-styles-row-spacing-mobile-choice', '.mrn-site-styles-row-spacing-mobile-custom');
+            }
+
+            function toggleDefaultValueInputs(row) {
+                toggleCustomValueInput(row, '.mrn-site-styles-row-spacing-default-desktop-choice', '.mrn-site-styles-row-spacing-default-desktop-custom');
+                toggleCustomValueInput(row, '.mrn-site-styles-row-spacing-default-mobile-choice', '.mrn-site-styles-row-spacing-default-mobile-custom');
+            }
+
+            function bindDefaultRow(row) {
+                const desktopChoice = row.querySelector('.mrn-site-styles-row-spacing-default-desktop-choice');
+                const mobileChoice = row.querySelector('.mrn-site-styles-row-spacing-default-mobile-choice');
+
+                if (desktopChoice) {
+                    desktopChoice.addEventListener('change', function () {
+                        toggleDefaultValueInputs(row);
+                        notifyFormChanged();
+                    });
+                }
+
+                if (mobileChoice) {
+                    mobileChoice.addEventListener('change', function () {
+                        toggleDefaultValueInputs(row);
+                        notifyFormChanged();
+                    });
+                }
+
+                Array.from(row.querySelectorAll('input, select')).forEach(function (field) {
+                    field.addEventListener('input', notifyFormChanged);
+                    field.addEventListener('change', notifyFormChanged);
+                });
+
+                toggleDefaultValueInputs(row);
+            }
+
+            if (defaultsTable) {
+                Array.from(defaultsTable.querySelectorAll('tbody tr')).forEach(bindDefaultRow);
+            }
+
+            if (!rowsContainer || !addButton) {
+                return;
+            }
+
+            const propertyOptionsHtml = <?php echo wp_json_encode($row_spacing_property_options_html); ?>;
+            const nameOptionsHtml = <?php echo wp_json_encode($row_spacing_name_options_html); ?>;
+            const desktopValueOptionsHtml = <?php echo wp_json_encode($row_spacing_desktop_value_options_html); ?>;
+            const mobileValueOptionsHtml = <?php echo wp_json_encode($row_spacing_mobile_value_options_html); ?>;
+            let nextIndex = rowsContainer.querySelectorAll('.mrn-site-styles-row-spacing-row').length;
+
+            function updateRow(row) {
+                const slugInput = row.querySelector('.mrn-site-styles-row-spacing-slug');
+                const propertySelect = row.querySelector('.mrn-site-styles-row-spacing-property');
+                const tokenOutput = row.querySelector('.mrn-site-styles-row-spacing-token');
+                const property = String(propertySelect.value || 'margin-top');
+                const nameValue = getSelectedNameValue(row);
+                const slug = slugify(nameValue || slugInput.value || 'spacing');
+
+                slugInput.value = slug;
+                tokenOutput.textContent = '--mrn-row-spacing-' + slug + '-' + property;
+            }
+
+            function bindRow(row) {
+                const choiceSelect = row.querySelector('.mrn-site-styles-row-spacing-name-choice');
+                const customInput = row.querySelector('.mrn-site-styles-row-spacing-custom-name');
+                const propertySelect = row.querySelector('.mrn-site-styles-row-spacing-property');
+                const desktopChoice = row.querySelector('.mrn-site-styles-row-spacing-desktop-choice');
+                const mobileChoice = row.querySelector('.mrn-site-styles-row-spacing-mobile-choice');
+                const removeButton = row.querySelector('.mrn-site-styles-row-spacing-remove');
+
+                if (choiceSelect) {
+                    choiceSelect.addEventListener('change', function () {
+                        toggleCustomNameInput(row);
+                        updateRow(row);
+                        notifyFormChanged();
+                    });
+                }
+
+                if (customInput) {
+                    customInput.addEventListener('input', function () {
+                        updateRow(row);
+                    });
+                }
+
+                if (propertySelect) {
+                    propertySelect.addEventListener('change', function () {
+                        updateRow(row);
+                        notifyFormChanged();
+                    });
+                }
+
+                if (desktopChoice) {
+                    desktopChoice.addEventListener('change', function () {
+                        toggleRowValueInputs(row);
+                        notifyFormChanged();
+                    });
+                }
+
+                if (mobileChoice) {
+                    mobileChoice.addEventListener('change', function () {
+                        toggleRowValueInputs(row);
+                        notifyFormChanged();
+                    });
+                }
+
+                if (removeButton) {
+                    removeButton.addEventListener('click', function () {
+                        row.remove();
+                        notifyFormChanged();
+                    });
+                }
+
+                Array.from(row.querySelectorAll('input, select')).forEach(function (field) {
+                    field.addEventListener('input', notifyFormChanged);
+                    field.addEventListener('change', notifyFormChanged);
+                });
+
+                toggleCustomNameInput(row);
+                toggleRowValueInputs(row);
+                updateRow(row);
+            }
+
+            Array.from(rowsContainer.querySelectorAll('.mrn-site-styles-row-spacing-row')).forEach(bindRow);
+
+            addButton.addEventListener('click', function () {
+                const index = nextIndex;
+                nextIndex += 1;
+
+                const row = document.createElement('tr');
+                row.className = 'mrn-site-styles-row-spacing-row';
+                row.innerHTML = `
+                    <td style="vertical-align:top;">
+                        <select class="mrn-site-styles-row-spacing-name-choice" name="mrn_site_row_spacing[${index}][name_choice]">${nameOptionsHtml}</select>
+                        <input type="text" class="regular-text mrn-site-styles-row-spacing-custom-name" name="mrn_site_row_spacing[${index}][custom_name]" value="" placeholder="Enter custom name" hidden />
+                        <input type="hidden" class="mrn-site-styles-row-spacing-slug" name="mrn_site_row_spacing[${index}][slug]" value="" />
+                    </td>
+                    <td style="vertical-align:top;">
+                        <select class="mrn-site-styles-row-spacing-property" name="mrn_site_row_spacing[${index}][property]">${propertyOptionsHtml}</select>
+                    </td>
+                    <td style="vertical-align:top;">
+                        <div class="mrn-site-styles-row-spacing-values">
+                            <label>
+                                <span>Desktop</span>
+                                <select class="mrn-site-styles-row-spacing-desktop-choice" name="mrn_site_row_spacing[${index}][desktop_choice]">${desktopValueOptionsHtml}</select>
+                                <input type="text" class="regular-text code mrn-site-styles-row-spacing-desktop-custom" name="mrn_site_row_spacing[${index}][desktop_custom]" value="" placeholder="Enter custom value" hidden />
+                            </label>
+                            <label>
+                                <span>Mobile</span>
+                                <select class="mrn-site-styles-row-spacing-mobile-choice" name="mrn_site_row_spacing[${index}][mobile_choice]">${mobileValueOptionsHtml}</select>
+                                <input type="text" class="regular-text code mrn-site-styles-row-spacing-mobile-custom" name="mrn_site_row_spacing[${index}][mobile_custom]" value="" placeholder="Enter custom value" hidden />
+                            </label>
+                        </div>
+                    </td>
+                    <td style="vertical-align:top;">
+                        <code class="mrn-site-styles-row-spacing-token">--mrn-row-spacing-spacing-margin-top</code>
+                    </td>
+                    <td style="vertical-align:top;">
+                        <button type="button" class="button-link-delete mrn-site-styles-row-spacing-remove">Remove</button>
+                    </td>
+                `;
+
+                const mobileChoiceField = row.querySelector('.mrn-site-styles-row-spacing-mobile-choice');
+                if (mobileChoiceField) {
+                    mobileChoiceField.value = 'auto';
+                }
+
+                rowsContainer.appendChild(row);
+                bindRow(row);
+                notifyFormChanged();
+            });
         }());
     </script>
     <?php

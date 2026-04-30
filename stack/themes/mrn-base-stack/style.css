@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.1.34
+Version: 1.1.35
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -1711,6 +1711,30 @@ body {
 
 .mrn-content-builder__row {
 	width: 100%;
+}
+
+[data-mrn-row-spacing] {
+	--mrn-row-padding-top: var(--mrn-row-padding-top-desktop);
+	--mrn-row-padding-right: var(--mrn-row-padding-right-desktop);
+	--mrn-row-padding-bottom: var(--mrn-row-padding-bottom-desktop);
+	--mrn-row-padding-left: var(--mrn-row-padding-left-desktop);
+	margin-top: var(--mrn-row-margin-top-desktop);
+	margin-right: var(--mrn-row-margin-right-desktop);
+	margin-bottom: var(--mrn-row-margin-bottom-desktop);
+	margin-left: var(--mrn-row-margin-left-desktop);
+}
+
+@media (max-width: 782px) {
+	[data-mrn-row-spacing] {
+		--mrn-row-padding-top: var(--mrn-row-padding-top-mobile, var(--mrn-row-padding-top-desktop));
+		--mrn-row-padding-right: var(--mrn-row-padding-right-mobile, var(--mrn-row-padding-right-desktop));
+		--mrn-row-padding-bottom: var(--mrn-row-padding-bottom-mobile, var(--mrn-row-padding-bottom-desktop));
+		--mrn-row-padding-left: var(--mrn-row-padding-left-mobile, var(--mrn-row-padding-left-desktop));
+		margin-top: var(--mrn-row-margin-top-mobile, var(--mrn-row-margin-top-desktop));
+		margin-right: var(--mrn-row-margin-right-mobile, var(--mrn-row-margin-right-desktop));
+		margin-bottom: var(--mrn-row-margin-bottom-mobile, var(--mrn-row-margin-bottom-desktop));
+		margin-left: var(--mrn-row-margin-left-mobile, var(--mrn-row-margin-left-desktop));
+	}
 }
 
 .mrn-content-builder__row--layout-flex .mrn-layout-container > * {
@@ -4469,7 +4493,10 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 .mrn-layout-section--searchwp-form.mrn-layout-surface,
 .mrn-layout-section--searchwp-form .mrn-layout-container.mrn-layout-surface {
 	background: var(--mrn-searchwp-form-row-bg, transparent);
-	padding-block: var(--mrn-row-space-default);
+	padding-top: var(--mrn-row-padding-top, var(--mrn-row-space-default));
+	padding-right: var(--mrn-row-padding-right);
+	padding-bottom: var(--mrn-row-padding-bottom, var(--mrn-row-space-default));
+	padding-left: var(--mrn-row-padding-left);
 }
 
 .mrn-layout-section--searchwp-form .mrn-layout-grid--searchwp-form {
@@ -5157,12 +5184,18 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 .mrn-layout-section--showcase .mrn-layout-container.mrn-layout-surface,
 .mrn-layout-section--two-column-split.mrn-layout-surface,
 .mrn-layout-section--two-column-split .mrn-layout-container.mrn-layout-surface {
-	padding-block: var(--mrn-row-space-default);
+	padding-top: var(--mrn-row-padding-top, var(--mrn-row-space-default));
+	padding-right: var(--mrn-row-padding-right);
+	padding-bottom: var(--mrn-row-padding-bottom, var(--mrn-row-space-default));
+	padding-left: var(--mrn-row-padding-left);
 }
 
 .mrn-layout-section--basic.mrn-layout-section--full.mrn-layout-surface,
 .mrn-layout-section--stats.mrn-layout-section--full.mrn-layout-surface {
-	padding-block: var(--mrn-row-space-loose);
+	padding-top: var(--mrn-row-padding-top, var(--mrn-row-space-loose));
+	padding-right: var(--mrn-row-padding-right);
+	padding-bottom: var(--mrn-row-padding-bottom, var(--mrn-row-space-loose));
+	padding-left: var(--mrn-row-padding-left);
 }
 
 /*--------------------------------------------------------------
@@ -5699,5 +5732,8 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 .mrn-layout-section--reusable-grid .mrn-layout-container.mrn-layout-surface,
 .mrn-layout-section--reusable-faq.mrn-layout-surface,
 .mrn-layout-section--reusable-faq .mrn-layout-container.mrn-layout-surface {
-	padding-block: var(--mrn-row-space-fallback);
+	padding-top: var(--mrn-row-padding-top, var(--mrn-row-space-fallback));
+	padding-right: var(--mrn-row-padding-right);
+	padding-bottom: var(--mrn-row-padding-bottom, var(--mrn-row-space-fallback));
+	padding-left: var(--mrn-row-padding-left);
 }
