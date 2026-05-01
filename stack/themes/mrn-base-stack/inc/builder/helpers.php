@@ -1830,7 +1830,7 @@ function mrn_base_stack_get_row_spacing_preset_field( $key, $name = 'row_spacing
 		'choices'       => mrn_base_stack_get_row_spacing_preset_choices( $scope ),
 		'default_value' => '',
 		'ui'            => 1,
-		'allow_null'    => 0,
+		'allow_null'    => 1,
 		'instructions'  => $instructions,
 		'wrapper'       => array(
 			'width' => (string) $wrapper_width,
@@ -5091,6 +5091,7 @@ function mrn_base_stack_get_row_spacing_defaults_resolved_map() {
 function mrn_base_stack_get_row_spacing_overrides_for_preset( $preset_name, $scope = '' ) {
 	$scope           = mrn_base_stack_normalize_row_spacing_preset_scope( $scope );
 	$normalized_name = mrn_base_stack_normalize_row_spacing_preset_name( $preset_name );
+	$scope_is_side   = (bool) preg_match( '/^(margin|padding)\-(top|right|bottom|left)$/', $scope );
 	$overrides       = array(
 		'desktop' => array(),
 		'mobile'  => array(),
@@ -5120,6 +5121,9 @@ function mrn_base_stack_get_row_spacing_overrides_for_preset( $preset_name, $sco
 		}
 
 		$target_properties = mrn_base_stack_expand_row_spacing_property_to_keys( $preset_row['property'] ?? '' );
+		if ( $scope_is_side ) {
+			$target_properties = in_array( $scope, $target_properties, true ) ? array( $scope ) : array();
+		}
 		if ( empty( $target_properties ) ) {
 			continue;
 		}

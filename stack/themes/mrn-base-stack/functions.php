@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.1.34' );
+	define( '_S_VERSION', '1.1.35' );
 }
 
 /**
@@ -690,12 +690,89 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 	require_once get_template_directory() . '/inc/builder/boot.php';
 } else {
 	/**
+	 * Detect whether the current request is editing ACF field definitions.
+	 *
+	 * Spacing contracts should apply to content editors, not to ACF field/group
+	 * management screens where field definitions are authored.
+	 *
+	 * @return bool
+	 */
+	function mrn_base_stack_is_disabled_builder_row_spacing_field_editor_request() {
+		$acf_editor_post_types = array( 'acf-field-group', 'acf-field' );
+
+		if ( function_exists( 'get_current_screen' ) ) {
+			$current_screen = get_current_screen();
+			if ( $current_screen && isset( $current_screen->post_type ) ) {
+				$screen_post_type = sanitize_key( (string) $current_screen->post_type );
+				if ( in_array( $screen_post_type, $acf_editor_post_types, true ) ) {
+					return true;
+				}
+			}
+
+			if ( $current_screen && isset( $current_screen->id ) ) {
+				$screen_id = sanitize_key( (string) $current_screen->id );
+				if ( false !== strpos( $screen_id, 'acf-field-group' ) || false !== strpos( $screen_id, 'acf-field' ) ) {
+					return true;
+				}
+			}
+		}
+
+		$request_post_type = '';
+		if ( isset( $_REQUEST['post_type'] ) && is_scalar( $_REQUEST['post_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only scope detection.
+			$request_post_type = sanitize_key( wp_unslash( (string) $_REQUEST['post_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only scope detection.
+		}
+
+		if ( '' !== $request_post_type && in_array( $request_post_type, $acf_editor_post_types, true ) ) {
+			return true;
+		}
+
+		$request_post_id = '';
+		if ( isset( $_REQUEST['post_id'] ) && is_scalar( $_REQUEST['post_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only scope detection.
+			$request_post_id = sanitize_text_field( wp_unslash( (string) $_REQUEST['post_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only scope detection.
+		}
+
+		if ( '' !== $request_post_id ) {
+			if ( 0 === strpos( $request_post_id, 'acf-field-group_' ) || 0 === strpos( $request_post_id, 'acf-field_' ) ) {
+				return true;
+			}
+
+			if ( preg_match( '/^post_(\d+)$/', $request_post_id, $post_match ) ) {
+				$post_id_from_request = absint( $post_match[1] );
+				if ( $post_id_from_request > 0 ) {
+					$request_post_type = sanitize_key( (string) get_post_type( $post_id_from_request ) );
+					if ( in_array( $request_post_type, $acf_editor_post_types, true ) ) {
+						return true;
+					}
+				}
+			}
+		}
+
+		$request_post = 0;
+		if ( isset( $_REQUEST['post'] ) && is_scalar( $_REQUEST['post'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only scope detection.
+			$request_post = absint( $_REQUEST['post'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only scope detection.
+		}
+
+		if ( $request_post > 0 ) {
+			$request_post_type = sanitize_key( (string) get_post_type( $request_post ) );
+			if ( in_array( $request_post_type, $acf_editor_post_types, true ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Determine whether editor-only row-spacing contracts should load while the
 	 * builder runtime remains disabled.
 	 *
 	 * @return bool
 	 */
 	function mrn_base_stack_should_apply_disabled_builder_row_spacing_contract() {
+		if ( mrn_base_stack_is_disabled_builder_row_spacing_field_editor_request() ) {
+			return false;
+		}
+
 		if ( is_admin() ) {
 			return true;
 		}
@@ -978,7 +1055,7 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 			),
 			'choices'           => mrn_base_stack_get_disabled_builder_row_spacing_choices( $scope ),
 			'default_value'     => '',
-			'allow_null'        => 0,
+			'allow_null'        => 1,
 			'multiple'          => 0,
 			'ui'                => 1,
 			'ajax'              => 0,
