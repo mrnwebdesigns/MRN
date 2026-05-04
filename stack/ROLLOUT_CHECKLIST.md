@@ -130,6 +130,20 @@ This helper is responsible for:
 
 Choose the right deploy path before touching live.
 
+### Child-Theme Safety Gate
+
+Before any live theme sync, confirm whether the site is clone-style or child-theme mode:
+
+```bash
+ssh -l <site-user> mrndev-site-owner 'wp --path=<site-root> option get stylesheet --skip-themes'
+ssh -l <site-user> mrndev-site-owner 'wp --path=<site-root> option get template --skip-themes'
+```
+
+- If `stylesheet == template`: deploy to that active stylesheet path (clone-style rollout).
+- If `stylesheet != template`: deploy stack parent source to the active template path (parent), not the child stylesheet path.
+- Never sync local stack source `stack/themes/mrn-base-stack` into a child stylesheet directory in normal rollout work.
+- `deploy-live-theme.sh` now blocks that risky path by default. The emergency override flag `--force-stack-source-child-overwrite` is recovery-only and must be documented if used.
+
 ### Theme / MU / Shared
 
 Use the canonical feature deploy helper:

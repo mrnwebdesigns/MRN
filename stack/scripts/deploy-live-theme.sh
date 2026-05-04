@@ -11,6 +11,7 @@ Usage:
     --theme-src <local-theme-dir> \
     --remote-theme-path <absolute-live-theme-dir> \
     [--allow-child-theme-path] \
+    [--force-stack-source-child-overwrite] \
     [--ssh-host <ssh-host>] \
     [--discovery-ssh-host <ssh-host>] \
     [--direct-ssh] \
@@ -51,6 +52,7 @@ PRESERVE_THEME_NAME=""
 PRESERVE_TEXT_DOMAIN=""
 DIRECT_SSH=0
 ALLOW_CHILD_THEME_PATH=0
+FORCE_STACK_SOURCE_CHILD_OVERWRITE=0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 while [[ $# -gt 0 ]]; do
@@ -85,6 +87,10 @@ while [[ $# -gt 0 ]]; do
 			;;
 		--allow-child-theme-path)
 			ALLOW_CHILD_THEME_PATH=1
+			shift
+			;;
+		--force-stack-source-child-overwrite)
+			FORCE_STACK_SOURCE_CHILD_OVERWRITE=1
 			shift
 			;;
 		--direct-ssh)
@@ -258,8 +264,19 @@ verify_remote_tree_file_modes() {
 }
 
 REMOTE_THEME_SLUG="$(basename "${REMOTE_THEME_PATH}")"
+THEME_SRC_SLUG="$(basename "${THEME_SRC}")"
 ACTIVE_TEMPLATE="$(run_site_remote "wp option get template --path='${SITE_PATH}' 2>/dev/null" | tr -d '\r' | xargs || true)"
 ACTIVE_STYLESHEET="$(run_site_remote "wp option get stylesheet --path='${SITE_PATH}' 2>/dev/null" | tr -d '\r' | xargs || true)"
+
+if [[ -n "${ACTIVE_TEMPLATE}" && -n "${ACTIVE_STYLESHEET}" && "${ACTIVE_STYLESHEET}" != "${ACTIVE_TEMPLATE}" ]]; then
+	if [[ "${REMOTE_THEME_SLUG}" == "${ACTIVE_STYLESHEET}" && "${THEME_SRC_SLUG}" == "mrn-base-stack" && "${FORCE_STACK_SOURCE_CHILD_OVERWRITE}" -ne 1 ]]; then
+		echo "Refusing to sync stack source '${THEME_SRC_SLUG}' into active child stylesheet '${ACTIVE_STYLESHEET}'." >&2
+		echo "This can overwrite child theme files and break parent/child loading." >&2
+		echo "Target the parent template directory '${ACTIVE_TEMPLATE}' instead." >&2
+		echo "If and only if this is an intentional emergency recovery, pass --force-stack-source-child-overwrite." >&2
+		exit 1
+	fi
+fi
 
 if [[ "${ALLOW_CHILD_THEME_PATH}" -ne 1 ]]; then
 	if [[ "${REMOTE_THEME_SLUG}" == *child* ]]; then

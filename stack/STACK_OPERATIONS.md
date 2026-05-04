@@ -111,7 +111,10 @@ rsync -rlt --omit-dir-times --delete \
   - pass `--site-hostname <site-hostname>` to make it run the canonical site-owner SSH and Updraft preflight before syncing
 - Default live-site theme assumption:
   - stack-managed sites run a cloned active stylesheet directory until the site is explicitly handed to the development/front-end team for child-theme setup
-  - live theme deploys should target that active stylesheet directory and preserve the live stylesheet slug, `Theme Name`, and `Text Domain`
+  - if a site is still clone-style (`stylesheet == template`), live theme deploys should target that active stylesheet directory and preserve the live stylesheet slug, `Theme Name`, and `Text Domain`
+  - if a site is in child-theme mode (`stylesheet != template`), deploy stack parent source into the active template directory (parent), not the child stylesheet directory
+  - never sync stack source `mrn-base-stack` into an active child stylesheet path during normal rollouts
+  - `deploy-live-theme.sh` now hard-fails that path by default; only use `--force-stack-source-child-overwrite` for intentional emergency recovery and document it in rollout notes
 - Current canonical helper for stack feature deploys that should also refresh `default-configs.mrndev.io`:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-feature-stack-and-default-configs.sh`
 - Use the feature deploy helper when stack theme or stack MU plugin work needs to stay mirrored to the stack server and the `default-configs` site in one step.
