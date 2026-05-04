@@ -59,6 +59,7 @@ $mrn_loader_entries = array(
     WP_CONTENT_DIR . '/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-shared-assets/mrn-shared-assets.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-site-colors/mrn-site-colors.php',
+    WP_CONTENT_DIR . '/mu-plugins/mrn-updraft-local-retention/mrn-updraft-local-retention.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-active-style-guide/mrn-active-style-guide.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-svg-support/mrn-svg-support.php',
 );

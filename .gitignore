@@ -17,6 +17,7 @@ releases/clone/
 releases/mu-plugins/
 releases/plugins/
 releases/stack/
+releases/*.zip
 stack/configs/exports/*.bak-*
 
 # Stack secrets and generated theme output
@@ -35,6 +36,7 @@ stack/mu-plugins/mrn-editor-ui-css
 stack/mu-plugins/mrn-reusable-block-library
 stack/mu-plugins/mrn-shared-assets
 stack/mu-plugins/mrn-site-colors
+stack/mu-plugins/mrn-updraft-local-retention
 stack/mu-plugins/mrn-svg-support
 
 # Separate child repos that are still intentionally independent

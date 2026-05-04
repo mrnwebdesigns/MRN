@@ -74,6 +74,7 @@ MU_PLUGIN_DIRS=(
 	"mrn-reusable-block-library"
 	"mrn-shared-assets"
 	"mrn-site-colors"
+	"mrn-updraft-local-retention"
 	"mrn-svg-support"
 )
 

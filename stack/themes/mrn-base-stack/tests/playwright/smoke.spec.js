@@ -362,5 +362,50 @@ test.describe('MRN stack site smoke QA', () => {
 			await expectStickyToolbarLayout(page, toolbarSelector, contentSelector, 'Business Information page');
 			expectNoPageIssues(issues, 'Business Information page');
 		});
+
+		test('business information media-field changes enable sticky save state', async ({ page }) => {
+			test.skip(
+				! process.env.MRN_WP_ADMIN_USER ||
+				! process.env.MRN_WP_ADMIN_PASS ||
+				! process.env.MRN_BUSINESS_INFORMATION_PAGE_PATH,
+				'Set MRN_WP_ADMIN_USER, MRN_WP_ADMIN_PASS, and MRN_BUSINESS_INFORMATION_PAGE_PATH to run business-information dirty-state coverage.'
+			);
+
+			await loginToWordPressAdmin(page);
+			await page.goto(process.env.MRN_BUSINESS_INFORMATION_PAGE_PATH, { waitUntil: 'domcontentloaded' });
+
+			const saveButton = page.locator('.mrn-sticky-save-bar .mrn-settings-tab--save').first();
+			const footerLogoInput = page.locator(
+				'.acf-field[data-key="field_mrn_business_logo_footer"] input[type="hidden"][name^="acf["]'
+			).first();
+
+			await expect(page.locator('body.wp-admin')).toBeVisible();
+			await expect(saveButton).toBeVisible();
+			await expect(footerLogoInput).toHaveCount(1);
+
+			// Baseline: no unsaved changes, sticky save button is disabled.
+			await expect(saveButton).toBeDisabled();
+
+			// Simulate an ACF media-driven value update without dispatching input/change.
+			await footerLogoInput.evaluate((input) => {
+				const original = String(input.value || '');
+				const nextValue = original === '' ? '12345' : original + '-qa';
+				input.value = nextValue;
+				input.setAttribute('value', nextValue);
+
+				const uploader = input.closest('.acf-image-uploader');
+				if (!uploader) {
+					return;
+				}
+
+				const previewImage = uploader.querySelector('.image-wrap img');
+				if (previewImage) {
+					previewImage.setAttribute('src', 'https://example.com/qa-logo.png?v=' + Date.now());
+				}
+			});
+
+			await expect(saveButton).toBeEnabled();
+			await expect(saveButton).toHaveAttribute('aria-disabled', 'false');
+		});
 	});
 });

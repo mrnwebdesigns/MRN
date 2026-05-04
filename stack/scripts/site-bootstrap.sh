@@ -1335,6 +1335,32 @@ run_importers() {
   done
 }
 
+ensure_updraft_local_retention_schedule() {
+  if ! run_wp plugin is-installed updraftplus >/dev/null 2>&1; then
+    echo "UpdraftPlus is not installed; skipping local retention cron verification."
+    return 0
+  fi
+
+  if ! run_wp eval '
+$hook = "mrn_updraft_local_retention_cleanup";
+if (function_exists("mrn_updraft_local_retention_schedule_cleanup")) {
+    mrn_updraft_local_retention_schedule_cleanup();
+}
+$event = function_exists("wp_get_scheduled_event") ? wp_get_scheduled_event($hook) : false;
+if (!$event || !isset($event->schedule)) {
+    fwrite(STDERR, "Missing scheduled local retention hook: {$hook}\n");
+    exit(1);
+}
+if ($event->schedule !== "daily") {
+    fwrite(STDERR, "Unexpected retention schedule for {$hook}: {$event->schedule}\n");
+    exit(1);
+}
+echo "Verified local retention hook {$hook} ({$event->schedule})\n";
+'; then
+    add_warning "Failed to verify local Updraft retention cron schedule."
+  fi
+}
+
 sync_mu_plugins() {
   local target_dir
   target_dir="${WP_PATH}/wp-content/mu-plugins"
@@ -1388,6 +1414,7 @@ main() {
   install_themes
   apply_wp_defaults
   run_importers
+  ensure_updraft_local_retention_schedule
   sudo -u "${SITE_USER}" touch "${SITE_PATH}/${MARKER_NAME}"
   echo "Bootstrap complete: ${SITE_PATH}"
   domain="$(basename "${SITE_PATH}")"

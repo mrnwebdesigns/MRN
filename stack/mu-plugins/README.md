@@ -11,3 +11,4 @@ Current entries:
 - `mrn-reusable-block-library`
 - `mrn-shared-assets`
 - `mrn-site-colors`
+- `mrn-updraft-local-retention`
