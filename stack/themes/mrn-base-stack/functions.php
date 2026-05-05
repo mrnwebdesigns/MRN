@@ -567,6 +567,24 @@ function mrn_base_stack_scripts() {
 		}
 	}
 
+	if ( function_exists( 'mrn_config_helper_get_breadcrumb_settings' ) ) {
+		$breadcrumb_settings = mrn_config_helper_get_breadcrumb_settings();
+
+		if (
+			is_array( $breadcrumb_settings )
+			&& ! empty( $breadcrumb_settings['enabled'] )
+			&& isset( $breadcrumb_settings['separator_type'] )
+			&& 'fontawesome' === sanitize_key( (string) $breadcrumb_settings['separator_type'] )
+		) {
+			$breadcrumb_context = function_exists( 'mrn_breadcrumbs_detect_context' ) ? mrn_breadcrumbs_detect_context() : '';
+			$context_enabled    = function_exists( 'mrn_breadcrumbs_context_enabled' ) ? mrn_breadcrumbs_context_enabled( $breadcrumb_context, $breadcrumb_settings ) : true;
+
+			if ( $context_enabled ) {
+				$needs_fontawesome = true;
+			}
+		}
+	}
+
 	if ( $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'get_field' ) && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs' ) ) {
 		$post_id      = get_queried_object_id();
 		$builder_sets = array();
@@ -1518,6 +1536,408 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 			'ui'                => 0,
 			'wrapper'           => array(
 				'width' => '25',
+			),
+		);
+	}
+}
+
+/**
+ * Get a stable row-spacing contract for row wrappers across builder modes.
+ *
+ * When the full layout-builder runtime is available this delegates to the
+ * builder helper contract. When disabled, it resolves spacing from Site Styles
+ * defaults/presets so child-theme templates can still apply the shared spacing
+ * variables without duplicating stack logic.
+ *
+ * @param array<string, mixed> $row Row-like payload containing spacing selectors.
+ * @return array{classes:array<int,string>,attributes:array<string,string>}
+ */
+if ( ! function_exists( 'mrn_base_stack_get_row_spacing_contract' ) ) {
+	/**
+	 * Get row-spacing classes/attributes for one row payload.
+	 *
+	 * @param array<string, mixed> $row Row-like payload containing spacing selectors.
+	 * @return array{classes:array<int,string>,attributes:array<string,string>}
+	 */
+	function mrn_base_stack_get_row_spacing_contract( array $row = array() ) {
+		if ( function_exists( 'mrn_base_stack_get_builder_row_spacing_contract' ) ) {
+			return mrn_base_stack_get_builder_row_spacing_contract( $row );
+		}
+
+		$property_keys = array(
+			'margin-top',
+			'margin-right',
+			'margin-bottom',
+			'margin-left',
+			'padding-top',
+			'padding-right',
+			'padding-bottom',
+			'padding-left',
+		);
+
+		$sanitize_dimension = static function ( $value ) {
+			if ( function_exists( 'mrn_site_styles_sanitize_spacing_dimension' ) ) {
+				return mrn_site_styles_sanitize_spacing_dimension( (string) $value );
+			}
+
+			$sanitized = preg_replace( '/[^a-zA-Z0-9.%(),\-+*\/\s]/', '', (string) $value );
+			$sanitized = is_string( $sanitized ) ? trim( preg_replace( '/\s+/', ' ', $sanitized ) ) : '';
+			if ( '' === $sanitized ) {
+				return '';
+			}
+
+			return substr( $sanitized, 0, 64 );
+		};
+
+		$expand_property_to_keys = static function ( $property ) {
+			if ( function_exists( 'mrn_base_stack_expand_row_spacing_property_to_keys' ) ) {
+				return mrn_base_stack_expand_row_spacing_property_to_keys( $property );
+			}
+
+			if ( function_exists( 'mrn_base_stack_expand_disabled_builder_row_spacing_property_to_keys' ) ) {
+				return mrn_base_stack_expand_disabled_builder_row_spacing_property_to_keys( $property );
+			}
+
+			$property = is_scalar( $property ) ? strtolower( trim( (string) $property ) ) : '';
+			if ( 'margin' === $property ) {
+				return array( 'margin-top', 'margin-right', 'margin-bottom', 'margin-left' );
+			}
+
+			if ( 'padding' === $property ) {
+				return array( 'padding-top', 'padding-right', 'padding-bottom', 'padding-left' );
+			}
+
+			if ( preg_match( '/^(margin|padding)\-(top|right|bottom|left)$/', $property ) ) {
+				return array( $property );
+			}
+
+			return array();
+		};
+
+		$normalize_scope = static function ( $scope ) {
+			if ( function_exists( 'mrn_base_stack_normalize_row_spacing_preset_scope' ) ) {
+				return mrn_base_stack_normalize_row_spacing_preset_scope( $scope );
+			}
+
+			if ( function_exists( 'mrn_base_stack_normalize_disabled_builder_row_spacing_scope' ) ) {
+				return mrn_base_stack_normalize_disabled_builder_row_spacing_scope( $scope );
+			}
+
+			$scope = is_scalar( $scope ) ? strtolower( trim( (string) $scope ) ) : '';
+			if ( in_array( $scope, array( 'margin', 'padding' ), true ) ) {
+				return $scope;
+			}
+
+			if ( preg_match( '/^(margin|padding)\-(top|right|bottom|left)$/', $scope ) ) {
+				return $scope;
+			}
+
+			return '';
+		};
+
+		$property_matches_scope = static function ( $property, $scope = '' ) use ( $expand_property_to_keys, $normalize_scope ) {
+			if ( function_exists( 'mrn_base_stack_row_spacing_property_matches_scope' ) ) {
+				return mrn_base_stack_row_spacing_property_matches_scope( $property, $scope );
+			}
+
+			if ( function_exists( 'mrn_base_stack_disabled_builder_row_spacing_property_matches_scope' ) ) {
+				return mrn_base_stack_disabled_builder_row_spacing_property_matches_scope( $property, $scope );
+			}
+
+			$scope = $normalize_scope( $scope );
+			if ( '' === $scope ) {
+				return true;
+			}
+
+			$target_properties = $expand_property_to_keys( $property );
+			if ( empty( $target_properties ) ) {
+				return false;
+			}
+
+			if ( in_array( $scope, array( 'margin', 'padding' ), true ) ) {
+				foreach ( $target_properties as $target_property ) {
+					if ( 0 === strpos( $target_property, $scope . '-' ) ) {
+						return true;
+					}
+				}
+
+				return false;
+			}
+
+			return in_array( $scope, $target_properties, true );
+		};
+
+		$side_selector_definitions = array(
+			array(
+				'name'  => 'row_spacing_margin_top_preset',
+				'scope' => 'margin-top',
+			),
+			array(
+				'name'  => 'row_spacing_margin_right_preset',
+				'scope' => 'margin-right',
+			),
+			array(
+				'name'  => 'row_spacing_margin_bottom_preset',
+				'scope' => 'margin-bottom',
+			),
+			array(
+				'name'  => 'row_spacing_margin_left_preset',
+				'scope' => 'margin-left',
+			),
+			array(
+				'name'  => 'row_spacing_padding_top_preset',
+				'scope' => 'padding-top',
+			),
+			array(
+				'name'  => 'row_spacing_padding_right_preset',
+				'scope' => 'padding-right',
+			),
+			array(
+				'name'  => 'row_spacing_padding_bottom_preset',
+				'scope' => 'padding-bottom',
+			),
+			array(
+				'name'  => 'row_spacing_padding_left_preset',
+				'scope' => 'padding-left',
+			),
+		);
+
+		if ( function_exists( 'mrn_base_stack_get_row_spacing_side_selector_definitions' ) ) {
+			$definitions = mrn_base_stack_get_row_spacing_side_selector_definitions();
+			if ( is_array( $definitions ) && ! empty( $definitions ) ) {
+				$side_selector_definitions = $definitions;
+			}
+		} elseif ( function_exists( 'mrn_base_stack_get_disabled_builder_row_spacing_side_selector_definitions' ) ) {
+			$definitions = mrn_base_stack_get_disabled_builder_row_spacing_side_selector_definitions();
+			if ( is_array( $definitions ) && ! empty( $definitions ) ) {
+				$side_selector_definitions = $definitions;
+			}
+		}
+
+		$normalize_preset_name = static function ( $value ) {
+			$name = is_scalar( $value ) ? trim( (string) $value ) : '';
+			$name = preg_replace( '/\s+/', ' ', $name );
+			$name = is_string( $name ) ? trim( $name ) : '';
+
+			return strtolower( $name );
+		};
+
+		$resolved_values = array(
+			'desktop' => array_fill_keys( $property_keys, '' ),
+			'mobile'  => array_fill_keys( $property_keys, '' ),
+		);
+
+		if ( function_exists( 'mrn_site_styles_get_row_spacing_defaults_resolved' ) ) {
+			$defaults = mrn_site_styles_get_row_spacing_defaults_resolved();
+			if ( is_array( $defaults ) ) {
+				foreach ( $defaults as $property => $values ) {
+					if ( ! is_array( $values ) ) {
+						continue;
+					}
+
+					$targets = $expand_property_to_keys( $property );
+					if ( empty( $targets ) ) {
+						continue;
+					}
+
+					$desktop = $sanitize_dimension( $values['desktop'] ?? '' );
+					$mobile  = $sanitize_dimension( $values['mobile'] ?? '' );
+
+					foreach ( $targets as $target ) {
+						if ( '' !== $desktop ) {
+							$resolved_values['desktop'][ $target ] = $desktop;
+						}
+
+						if ( '' !== $mobile ) {
+							$resolved_values['mobile'][ $target ] = $mobile;
+						}
+					}
+				}
+			}
+		}
+
+		$preset_rows = function_exists( 'mrn_site_styles_get_row_spacing_presets_resolved' )
+			? mrn_site_styles_get_row_spacing_presets_resolved()
+			: array();
+		$preset_rows = is_array( $preset_rows ) ? $preset_rows : array();
+
+		$resolve_overrides_for_preset = static function ( $preset_name, $scope = '' ) use ( $normalize_scope, $normalize_preset_name, $property_matches_scope, $expand_property_to_keys, $sanitize_dimension, $preset_rows ) {
+			$normalized_name = $normalize_preset_name( $preset_name );
+			$scope           = $normalize_scope( $scope );
+			$scope_is_side   = (bool) preg_match( '/^(margin|padding)\-(top|right|bottom|left)$/', $scope );
+			$overrides       = array(
+				'desktop' => array(),
+				'mobile'  => array(),
+			);
+
+			if ( '' === $normalized_name ) {
+				return $overrides;
+			}
+
+			foreach ( $preset_rows as $preset_row ) {
+				if ( ! is_array( $preset_row ) ) {
+					continue;
+				}
+
+				$row_name = $normalize_preset_name( $preset_row['name'] ?? '' );
+				if ( '' === $row_name || $row_name !== $normalized_name ) {
+					continue;
+				}
+
+				if ( ! $property_matches_scope( $preset_row['property'] ?? '', $scope ) ) {
+					continue;
+				}
+
+				$target_properties = $expand_property_to_keys( $preset_row['property'] ?? '' );
+				if ( $scope_is_side ) {
+					$target_properties = in_array( $scope, $target_properties, true ) ? array( $scope ) : array();
+				}
+				if ( empty( $target_properties ) ) {
+					continue;
+				}
+
+				$desktop = $sanitize_dimension( $preset_row['desktop'] ?? '' );
+				$mobile  = $sanitize_dimension( $preset_row['mobile'] ?? '' );
+
+				foreach ( $target_properties as $target_property ) {
+					if ( '' !== $desktop ) {
+						$overrides['desktop'][ $target_property ] = $desktop;
+					}
+
+					if ( '' !== $mobile ) {
+						$overrides['mobile'][ $target_property ] = $mobile;
+					}
+				}
+			}
+
+			return $overrides;
+		};
+
+		$apply_overrides = static function ( array $overrides, array $target ) use ( $sanitize_dimension ) {
+			foreach ( array( 'desktop', 'mobile' ) as $device_key ) {
+				if ( ! isset( $overrides[ $device_key ] ) || ! is_array( $overrides[ $device_key ] ) ) {
+					continue;
+				}
+
+				foreach ( $overrides[ $device_key ] as $property => $value ) {
+					$property = sanitize_key( (string) $property );
+					$value    = $sanitize_dimension( $value );
+					if ( '' === $property || '' === $value ) {
+						continue;
+					}
+
+					$target[ $device_key ][ $property ] = $value;
+				}
+			}
+
+			return $target;
+		};
+
+		$preset_name = isset( $row['row_spacing_preset'] ) && is_scalar( $row['row_spacing_preset'] )
+			? trim( (string) $row['row_spacing_preset'] )
+			: '';
+		if ( '' !== $preset_name ) {
+			$resolved_values = $apply_overrides( $resolve_overrides_for_preset( $preset_name, '' ), $resolved_values );
+		}
+
+		$margin_preset = isset( $row['row_spacing_margin_preset'] ) && is_scalar( $row['row_spacing_margin_preset'] )
+			? trim( (string) $row['row_spacing_margin_preset'] )
+			: '';
+		if ( '' !== $margin_preset ) {
+			$resolved_values = $apply_overrides( $resolve_overrides_for_preset( $margin_preset, 'margin' ), $resolved_values );
+		}
+
+		$padding_preset = isset( $row['row_spacing_padding_preset'] ) && is_scalar( $row['row_spacing_padding_preset'] )
+			? trim( (string) $row['row_spacing_padding_preset'] )
+			: '';
+		if ( '' !== $padding_preset ) {
+			$resolved_values = $apply_overrides( $resolve_overrides_for_preset( $padding_preset, 'padding' ), $resolved_values );
+		}
+
+		$side_preset_names = array();
+		foreach ( $side_selector_definitions as $definition ) {
+			if ( ! is_array( $definition ) ) {
+				continue;
+			}
+
+			$selector_name = isset( $definition['name'] ) ? sanitize_key( (string) $definition['name'] ) : '';
+			$scope         = isset( $definition['scope'] ) ? $normalize_scope( $definition['scope'] ) : '';
+			if ( '' === $selector_name || '' === $scope ) {
+				continue;
+			}
+
+				$selected_name = isset( $row[ $selector_name ] ) && is_scalar( $row[ $selector_name ] )
+					? trim( (string) $row[ $selector_name ] )
+					: '';
+
+				$side_preset_names[ $scope ] = $selected_name;
+
+			if ( '' === $selected_name ) {
+				continue;
+			}
+
+			$resolved_values = $apply_overrides( $resolve_overrides_for_preset( $selected_name, $scope ), $resolved_values );
+		}
+
+		$active_selector_label = $preset_name;
+		if ( '' === $active_selector_label ) {
+			$active_selector_parts = array();
+			if ( '' !== $margin_preset ) {
+				$active_selector_parts[] = 'margin-' . sanitize_title( $margin_preset );
+			}
+			if ( '' !== $padding_preset ) {
+				$active_selector_parts[] = 'padding-' . sanitize_title( $padding_preset );
+			}
+			foreach ( $side_preset_names as $scope => $side_name ) {
+				if ( '' === $side_name ) {
+					continue;
+				}
+
+				$active_selector_parts[] = sanitize_title( (string) $scope ) . '-' . sanitize_title( $side_name );
+			}
+			$active_selector_label = implode( '_', $active_selector_parts );
+		}
+
+		$styles      = array();
+		$has_spacing = false;
+
+		foreach ( $property_keys as $property ) {
+			$desktop = isset( $resolved_values['desktop'][ $property ] ) ? $sanitize_dimension( $resolved_values['desktop'][ $property ] ) : '';
+			$mobile  = isset( $resolved_values['mobile'][ $property ] ) ? $sanitize_dimension( $resolved_values['mobile'][ $property ] ) : '';
+
+			if ( '' !== $desktop ) {
+				$styles[]    = '--mrn-row-' . $property . '-desktop: ' . $desktop;
+				$has_spacing = true;
+			}
+
+			if ( '' !== $mobile ) {
+				$styles[]    = '--mrn-row-' . $property . '-mobile: ' . $mobile;
+				$has_spacing = true;
+			}
+		}
+
+		if ( ! $has_spacing ) {
+			return array(
+				'classes'    => array(),
+				'attributes' => array(),
+			);
+		}
+
+		$style = function_exists( 'mrn_base_stack_get_inline_style_attribute' )
+			? mrn_base_stack_get_inline_style_attribute( $styles )
+			: implode( '; ', array_values( array_filter( array_map( 'trim', $styles ), 'strlen' ) ) );
+		if ( '' === $style ) {
+			return array(
+				'classes'    => array(),
+				'attributes' => array(),
+			);
+		}
+
+		return array(
+			'classes'    => array(),
+			'attributes' => array(
+				'data-mrn-row-spacing' => '' !== $active_selector_label ? sanitize_title( $active_selector_label ) : 'defaults',
+				'style'                => $style,
 			),
 		);
 	}

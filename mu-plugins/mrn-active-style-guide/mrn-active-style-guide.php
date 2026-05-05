@@ -520,6 +520,7 @@ function mrn_active_style_guide_get_frontend_helper_functions(): array {
         'mrn_base_stack_get_section_width_layers()',
         'mrn_base_stack_get_builder_anchor_markup()',
         'mrn_base_stack_get_builder_motion_contract()',
+        'mrn_base_stack_get_row_spacing_contract()',
         'mrn_base_stack_get_builder_sub_content_width_contract()',
         'mrn_base_stack_get_builder_flex_contract()',
         'mrn_base_stack_get_button_link_icon_markup()',
@@ -640,6 +641,18 @@ function mrn_active_style_guide_get_starter_css_snippets(): array {
         'Primary Button Tone Override' => ".mrn-ui__link--button,\n.mrn-active-style-guide-button.is-primary {\n    background: var(--site-color-brand-primary, #0b6ea8);\n    border-color: var(--site-color-brand-primary, #0b6ea8);\n    color: #fff;\n}",
         'Content Row Vertical Rhythm' => ".entry-content--builder {\n    gap: clamp(1.25rem, 2.2vw, 2rem);\n}\n\n.mrn-content-builder__row {\n    margin-block: 0;\n}",
         'Header Search Icon Size' => ".mrn-site-search__icon {\n    font-size: 1.125rem;\n}\n\n.mrn-site-search__toggle {\n    min-width: 2.5rem;\n    min-height: 2.5rem;\n}",
+    );
+}
+
+/**
+ * Get starter PHP snippets for common stack template integrations.
+ *
+ * @return array<string, string>
+ */
+function mrn_active_style_guide_get_starter_php_snippets(): array {
+    return array(
+        'Row Spacing Contract (Shared Wrapper)' => "\$row_spacing_contract = function_exists('mrn_base_stack_get_row_spacing_contract')\n    ? mrn_base_stack_get_row_spacing_contract(is_array(\$row) ? \$row : array())\n    : array('classes' => array(), 'attributes' => array());\n\n\$section_attrs = isset(\$section_attrs) && is_array(\$section_attrs) ? \$section_attrs : array();\n\nif (!empty(\$row_spacing_contract['attributes']) && is_array(\$row_spacing_contract['attributes'])) {\n    if (function_exists('mrn_base_stack_merge_builder_attributes')) {\n        \$section_attrs = mrn_base_stack_merge_builder_attributes(\$section_attrs, \$row_spacing_contract['attributes']);\n    } else {\n        \$section_attrs = array_merge(\$section_attrs, \$row_spacing_contract['attributes']);\n    }\n}\n\n\$section_attr_html = function_exists('mrn_base_stack_get_html_attributes')\n    ? mrn_base_stack_get_html_attributes(\$section_attrs)\n    : '';",
+        'Row Wrapper Output' => "<section class=\"your-row-class\"<?php echo '' !== \$section_attr_html ? ' ' . \$section_attr_html : ''; ?>>\n    ...\n</section>",
     );
 }
 
@@ -784,6 +797,7 @@ function mrn_active_style_guide_render_developer_reference_page(): void {
     $sidebar_contract_reference = mrn_active_style_guide_get_sidebar_contract_reference();
     $reusable_block_shortcodes = mrn_active_style_guide_get_reusable_block_shortcode_rows();
     $starter_css_snippets = mrn_active_style_guide_get_starter_css_snippets();
+    $starter_php_snippets = mrn_active_style_guide_get_starter_php_snippets();
 
     $root_template_rows = array();
     foreach ($root_templates as $template) {
@@ -1023,6 +1037,13 @@ function mrn_active_style_guide_render_developer_reference_page(): void {
                     'Starter CSS Snippets',
                     'Copy-ready starter snippets for common stack adjustments. Paste into your stylesheet or child-theme layer and tune as needed.',
                     $starter_css_snippets
+                );
+
+                mrn_active_style_guide_render_developer_reference_snippet_section(
+                    'mrn-devref-starter-php-snippets',
+                    'Starter PHP Snippets',
+                    'Use shared stack wrappers in templates. For row spacing, call mrn_base_stack_get_row_spacing_contract() instead of directly calling builder-only internals.',
+                    $starter_php_snippets
                 );
                 ?>
             </div>
