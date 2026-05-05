@@ -38,6 +38,7 @@ Phase 2 runtime for a performance-first Google Fonts workflow.
   - on stack sites: `Settings -> Site Styles -> Google Fonts -> Font Builder`
   - on non-stack/standalone sites: `Settings -> Google Fonts -> Font Builder`
   - `Build Local Fonts` downloads selected `.woff2` files from Google CSS2 into uploads
+  - per-family italic toggles use Google CSS2 `ital,wght` tuples for variable-font-safe requests
   - saves a local manifest in `mrn_google_fonts_local_manifest`
   - frontend/editor automatically prefer the matching local CSS build and skip Google CDN
   - build now persists posted builder values first (so separate Save is not required)
@@ -99,6 +100,16 @@ Use this quick pass before release on stack-owned pages:
 6. Confirm configured weights are loadable (network or `document.fonts` checks) and that rendered weights align with theme selectors.
 7. If using child-theme overrides, confirm override CSS loads after runtime and that computed font stacks reflect the override vars.
 8. Run a quick performance sanity check (no duplicate remote/local font payloads, no unexpected render-blocking additions).
+
+## Editor Regression Check
+
+Run this lightweight check before release when TinyMCE font-format behavior changes:
+
+```bash
+php plugins/mrn-google-fonts/tests/tinymce-font-formats-regression.php
+```
+
+It asserts that injected TinyMCE `font_formats` remain alphabetically sorted and free of duplicate labels.
 
 ## Not Implemented Yet
 

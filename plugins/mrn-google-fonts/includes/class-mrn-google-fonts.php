@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 }
 
 final class MRN_Google_Fonts {
-	const VERSION = '0.4.15';
+	const VERSION = '0.4.16';
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
 	const PAGE_SLUG = 'google-fonts';
@@ -32,7 +32,8 @@ final class MRN_Google_Fonts {
 		add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_frontend_assets'), 20);
 		add_filter('wp_resource_hints', array(__CLASS__, 'filter_resource_hints'), 10, 2);
 		add_filter('mce_css', array(__CLASS__, 'append_editor_css'));
-		add_filter('tiny_mce_before_init', array(__CLASS__, 'inject_tinymce_content_style'), 20);
+		// Run late so our configured Google font list survives downstream TinyMCE init filters.
+		add_filter('tiny_mce_before_init', array(__CLASS__, 'inject_tinymce_content_style'), 1000);
 		add_filter('mrn_site_styles_tabs', array(__CLASS__, 'filter_site_styles_tabs'));
 		add_filter('mrn_site_styles_transfer_sections', array(__CLASS__, 'filter_site_styles_transfer_sections'));
 		add_filter('mrn_site_styles_export_data', array(__CLASS__, 'filter_site_styles_export_data'), 10, 2);
@@ -74,6 +75,8 @@ final class MRN_Google_Fonts {
 			'heading_font_family' => 'system-ui',
 			'body_font_weights' => '400',
 			'heading_font_weights' => '600,700',
+			'body_font_italics' => 0,
+			'heading_font_italics' => 0,
 			'subset' => 'latin',
 			'font_display' => 'swap',
 			'stack_bridge_mode' => 'auto',
@@ -117,6 +120,8 @@ final class MRN_Google_Fonts {
 		$sanitized['heading_font_family'] = self::sanitize_font_family_value($input['heading_font_family'] ?? $defaults['heading_font_family']);
 		$sanitized['body_font_weights'] = self::sanitize_font_weights_value($input['body_font_weights'] ?? $defaults['body_font_weights']);
 		$sanitized['heading_font_weights'] = self::sanitize_font_weights_value($input['heading_font_weights'] ?? $defaults['heading_font_weights']);
+		$sanitized['body_font_italics'] = !empty($input['body_font_italics']) ? 1 : 0;
+		$sanitized['heading_font_italics'] = !empty($input['heading_font_italics']) ? 1 : 0;
 
 		$allowed_subsets = array('latin', 'latin-ext');
 		$subset = sanitize_key((string) ($input['subset'] ?? $defaults['subset']));
@@ -318,14 +323,149 @@ final class MRN_Google_Fonts {
 			return $settings;
 		}
 
-		$body_stack = self::build_font_stack((string) $plugin_settings['body_font_family']);
-		$heading_stack = self::build_font_stack((string) $plugin_settings['heading_font_family']);
+		// _WP_Editors::_parse_init() wraps string values in double quotes without escaping.
+		// Keep TinyMCE content_style JS-safe by avoiding unescaped double quotes here.
+		$body_stack = str_replace('"', "'", self::build_font_stack((string) $plugin_settings['body_font_family']));
+		$heading_stack = str_replace('"', "'", self::build_font_stack((string) $plugin_settings['heading_font_family']));
 		$css = ':root{--mrn-font-body:' . $body_stack . ';--mrn-font-heading:' . $heading_stack . ';}.mce-content-body{font-family:var(--mrn-font-body)}.mce-content-body h1,.mce-content-body h2,.mce-content-body h3,.mce-content-body h4,.mce-content-body h5,.mce-content-body h6{font-family:var(--mrn-font-heading)}';
 
 		$existing = isset($settings['content_style']) ? (string) $settings['content_style'] : '';
 		$settings['content_style'] = trim($existing . ' ' . $css);
+		$settings['font_formats'] = self::inject_tinymce_font_formats(
+			isset($settings['font_formats']) ? (string) $settings['font_formats'] : '',
+			$plugin_settings
+		);
 
 		return $settings;
+	}
+
+	/**
+	 * Merge configured Google font families into TinyMCE font formats.
+	 *
+	 * @param string               $existing_formats Existing TinyMCE font_formats string.
+	 * @param array<string, mixed> $plugin_settings Plugin settings.
+	 */
+	private static function inject_tinymce_font_formats(string $existing_formats, array $plugin_settings): string {
+		$custom_families = array();
+		$body_family = self::normalize_primary_family_name((string) ($plugin_settings['body_font_family'] ?? ''));
+		$heading_family = self::normalize_primary_family_name((string) ($plugin_settings['heading_font_family'] ?? ''));
+
+		foreach (array($body_family, $heading_family) as $family) {
+			if ('' === $family || self::is_system_font_family($family)) {
+				continue;
+			}
+
+			$family = trim(preg_replace('/\s+/', ' ', str_replace(array('"', "'"), '', (string) $family)));
+			if ('' === $family || in_array($family, $custom_families, true)) {
+				continue;
+			}
+
+			$custom_families[] = $family;
+		}
+
+		if (empty($custom_families)) {
+			return $existing_formats;
+		}
+
+		$format_map = array();
+
+		foreach (array_filter(array_map('trim', explode(';', $existing_formats))) as $pair) {
+			$parts = array_map('trim', explode('=', (string) $pair, 2));
+			if (2 !== count($parts) || '' === $parts[0] || '' === $parts[1]) {
+				continue;
+			}
+
+			$label = trim((string) $parts[0]);
+			$value = trim((string) $parts[1]);
+			$label_key = strtolower($label);
+			if ('' === $label || '' === $value || isset($format_map[ $label_key ])) {
+				continue;
+			}
+
+			$format_map[ $label_key ] = array(
+				'label' => $label,
+				'value' => $value,
+			);
+		}
+
+		if (empty($format_map)) {
+			foreach (self::get_default_tinymce_font_format_pairs() as $pair) {
+				$parts = array_map('trim', explode('=', (string) $pair, 2));
+				if (2 !== count($parts) || '' === $parts[0] || '' === $parts[1]) {
+					continue;
+				}
+
+				$label = trim((string) $parts[0]);
+				$value = trim((string) $parts[1]);
+				$label_key = strtolower($label);
+				if ('' === $label || '' === $value || isset($format_map[ $label_key ])) {
+					continue;
+				}
+
+				$format_map[ $label_key ] = array(
+					'label' => $label,
+					'value' => $value,
+				);
+			}
+		}
+
+		foreach ($custom_families as $family) {
+			$label_key = strtolower($family);
+			if (isset($format_map[ $label_key ])) {
+				continue;
+			}
+
+			$format_map[ $label_key ] = array(
+				'label' => $family,
+				'value' => $family . ',sans-serif',
+			);
+		}
+
+		$sorted_entries = array_values($format_map);
+		usort(
+			$sorted_entries,
+			static function (array $a, array $b): int {
+				return strnatcasecmp((string) ($a['label'] ?? ''), (string) ($b['label'] ?? ''));
+			}
+		);
+
+		$final_pairs = array();
+		foreach ($sorted_entries as $entry) {
+			if (!isset($entry['label'], $entry['value']) || '' === (string) $entry['label'] || '' === (string) $entry['value']) {
+				continue;
+			}
+
+			$final_pairs[] = $entry['label'] . '=' . $entry['value'];
+		}
+
+		return implode(';', $final_pairs);
+	}
+
+	/**
+	 * Return the TinyMCE legacy default font format pairs.
+	 *
+	 * @return array<int, string>
+	 */
+	private static function get_default_tinymce_font_format_pairs(): array {
+		return array(
+			'Andale Mono=andale mono,times',
+			'Arial=arial,helvetica,sans-serif',
+			'Arial Black=arial black,avant garde',
+			'Book Antiqua=book antiqua,palatino',
+			'Comic Sans MS=comic sans ms,sans-serif',
+			'Courier New=courier new,courier',
+			'Georgia=georgia,palatino',
+			'Helvetica=helvetica',
+			'Impact=impact,chicago',
+			'Symbol=symbol',
+			'Tahoma=tahoma,arial,helvetica,sans-serif',
+			'Terminal=terminal,monaco',
+			'Times New Roman=times new roman,times',
+			'Trebuchet MS=trebuchet ms,geneva',
+			'Verdana=verdana,geneva',
+			'Webdings=webdings',
+			'Wingdings=wingdings,zapf dingbats',
+		);
 	}
 
 	/**
@@ -364,7 +504,7 @@ final class MRN_Google_Fonts {
 			// Backward-compatible fallback for already-open admin pages posting legacy builder fields.
 			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Builder payload is sanitized by self::sanitize_settings().
 			$builder_input = $has_legacy_builder_payload ? wp_unslash($_POST['mrn_google_fonts_builder']) : array();
-			foreach (array('body_font_family', 'heading_font_family', 'body_font_weights', 'heading_font_weights') as $field_key) {
+			foreach (array('body_font_family', 'heading_font_family', 'body_font_weights', 'heading_font_weights', 'body_font_italics', 'heading_font_italics') as $field_key) {
 				if (array_key_exists($field_key, $builder_input)) {
 					$merged[$field_key] = $builder_input[$field_key];
 				}
@@ -573,6 +713,8 @@ final class MRN_Google_Fonts {
 		$heading_family = self::normalize_primary_family_name((string) ($settings['heading_font_family'] ?? 'system-ui'));
 		$body_weights = self::sanitize_font_weights_value((string) ($settings['body_font_weights'] ?? '400'));
 		$heading_weights = self::sanitize_font_weights_value((string) ($settings['heading_font_weights'] ?? '600,700'));
+		$body_italics = !empty($settings['body_font_italics']);
+		$heading_italics = !empty($settings['heading_font_italics']);
 
 		if ('' === $body_family) {
 			$body_family = 'system-ui';
@@ -590,7 +732,15 @@ final class MRN_Google_Fonts {
 
 		natcasesort($catalog);
 		$catalog = array_values(array_unique(array_filter(array_map('strval', $catalog))));
-		$initial_catalog = array_values(array_unique(array_merge(array($body_family, $heading_family), $catalog)));
+		// Keep initial datalist payload compact for browser stability; live search fills the rest.
+		$initial_catalog = array_values(
+			array_unique(
+				array_merge(
+					array($body_family, $heading_family),
+					array_slice($catalog, 0, 250)
+				)
+			)
+		);
 
 		$context_slug = sanitize_html_class($context);
 		$chooser_id = 'mrn-google-fonts-chooser-' . $context_slug;
@@ -599,6 +749,8 @@ final class MRN_Google_Fonts {
 		$heading_family_input_id = 'mrn-google-fonts-builder-heading-family-' . $context_slug;
 		$body_weights_input_id = 'mrn-google-fonts-builder-body-weights-' . $context_slug;
 		$heading_weights_input_id = 'mrn-google-fonts-builder-heading-weights-' . $context_slug;
+		$body_italics_input_id = 'mrn-google-fonts-builder-body-italics-' . $context_slug;
+		$heading_italics_input_id = 'mrn-google-fonts-builder-heading-italics-' . $context_slug;
 		$search_url = admin_url('admin-ajax.php');
 		$search_nonce = wp_create_nonce('mrn_google_fonts_search_families');
 
@@ -606,6 +758,8 @@ final class MRN_Google_Fonts {
 		$heading_family_name = $option_name . '[heading_font_family]';
 		$body_weights_name = $option_name . '[body_font_weights]';
 		$heading_weights_name = $option_name . '[heading_font_weights]';
+		$body_italics_name = $option_name . '[body_font_italics]';
+		$heading_italics_name = $option_name . '[heading_font_italics]';
 		?>
 		<div
 			id="<?php echo esc_attr($chooser_id); ?>"
@@ -678,6 +832,42 @@ final class MRN_Google_Fonts {
 						<?php endif; ?>
 					/>
 					<p class="description" style="margin:4px 0 0;">Use only weights needed by the design to keep file size low.</p>
+				</div>
+
+				<div class="mrn-google-fonts-field" style="margin:0;">
+					<label for="<?php echo esc_attr($body_italics_input_id); ?>">Body italics</label>
+					<?php if ('' !== $body_italics_name) : ?>
+						<input type="hidden" name="<?php echo esc_attr($body_italics_name); ?>" value="0" />
+					<?php endif; ?>
+					<input
+						type="checkbox"
+						id="<?php echo esc_attr($body_italics_input_id); ?>"
+						value="1"
+						<?php if ('' !== $body_italics_name) : ?>
+							name="<?php echo esc_attr($body_italics_name); ?>"
+						<?php endif; ?>
+						<?php checked($body_italics); ?>
+					/>
+					<label for="<?php echo esc_attr($body_italics_input_id); ?>" style="display:inline-block;font-weight:400;margin:0 0 0 6px;">Include italic styles for body weights.</label>
+					<p class="description" style="margin:4px 0 0;">Uses Google CSS2 <code>ital,wght</code> tuples so local builds include italic files.</p>
+				</div>
+
+				<div class="mrn-google-fonts-field" style="margin:0;">
+					<label for="<?php echo esc_attr($heading_italics_input_id); ?>">Heading italics</label>
+					<?php if ('' !== $heading_italics_name) : ?>
+						<input type="hidden" name="<?php echo esc_attr($heading_italics_name); ?>" value="0" />
+					<?php endif; ?>
+					<input
+						type="checkbox"
+						id="<?php echo esc_attr($heading_italics_input_id); ?>"
+						value="1"
+						<?php if ('' !== $heading_italics_name) : ?>
+							name="<?php echo esc_attr($heading_italics_name); ?>"
+						<?php endif; ?>
+						<?php checked($heading_italics); ?>
+					/>
+					<label for="<?php echo esc_attr($heading_italics_input_id); ?>" style="display:inline-block;font-weight:400;margin:0 0 0 6px;">Include italic styles for heading weights.</label>
+					<p class="description" style="margin:4px 0 0;">Enable only when heading styles actually use italics to keep payloads lean.</p>
 				</div>
 			</div>
 
@@ -1475,7 +1665,7 @@ final class MRN_Google_Fonts {
 		// Backward-compatible fallback for already-open admin pages that still post legacy builder fields.
 		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Builder payload is sanitized by self::sanitize_settings().
 		$builder_input = isset($_POST['mrn_google_fonts_builder']) && is_array($_POST['mrn_google_fonts_builder']) ? wp_unslash($_POST['mrn_google_fonts_builder']) : array();
-		foreach (array('body_font_family', 'heading_font_family', 'body_font_weights', 'heading_font_weights') as $field_key) {
+		foreach (array('body_font_family', 'heading_font_family', 'body_font_weights', 'heading_font_weights', 'body_font_italics', 'heading_font_italics') as $field_key) {
 			if (array_key_exists($field_key, $builder_input)) {
 				$merged[$field_key] = $builder_input[$field_key];
 			}
@@ -1634,6 +1824,18 @@ final class MRN_Google_Fonts {
 			<div class="mrn-google-fonts-field">
 				<label for="mrn-google-fonts-heading-weights">Heading weights</label>
 				<input type="text" class="regular-text" id="mrn-google-fonts-heading-weights" name="<?php echo esc_attr($option_name); ?>[heading_font_weights]" value="<?php echo esc_attr((string) $settings['heading_font_weights']); ?>" />
+			</div>
+			<div class="mrn-google-fonts-field">
+				<label>
+					<input type="checkbox" name="<?php echo esc_attr($option_name); ?>[body_font_italics]" value="1" <?php checked(!empty($settings['body_font_italics'])); ?> />
+					Include body italic styles
+				</label>
+			</div>
+			<div class="mrn-google-fonts-field">
+				<label>
+					<input type="checkbox" name="<?php echo esc_attr($option_name); ?>[heading_font_italics]" value="1" <?php checked(!empty($settings['heading_font_italics'])); ?> />
+					Include heading italic styles
+				</label>
 			</div>
 			<div class="mrn-google-fonts-field">
 				<label for="mrn-google-fonts-display">Font display strategy</label>
@@ -2058,11 +2260,13 @@ final class MRN_Google_Fonts {
 		self::collect_google_font_family_request(
 			(string) ($settings['body_font_family'] ?? ''),
 			(string) ($settings['body_font_weights'] ?? '400'),
+			!empty($settings['body_font_italics']),
 			$families
 		);
 		self::collect_google_font_family_request(
 			(string) ($settings['heading_font_family'] ?? ''),
 			(string) ($settings['heading_font_weights'] ?? '700'),
+			!empty($settings['heading_font_italics']),
 			$families
 		);
 
@@ -2076,15 +2280,28 @@ final class MRN_Google_Fonts {
 		$families = array_slice($families, 0, 2, true);
 		$query_parts = array();
 
-		foreach ($families as $family => $weights) {
+		foreach ($families as $family => $family_config) {
+			$weights = isset($family_config['weights']) && is_array($family_config['weights']) ? $family_config['weights'] : array();
 			$weight_values = array_slice(array_values(array_unique(array_filter($weights))), 0, 4);
 			sort($weight_values, SORT_NUMERIC);
 			if (empty($weight_values)) {
 				$weight_values = array('400');
 			}
+			$include_italics = !empty($family_config['italics']);
 
 			$family_param = str_replace('%20', '+', rawurlencode(trim((string) $family)));
-			$query_parts[] = 'family=' . $family_param . ':wght@' . implode(';', $weight_values);
+			if ($include_italics) {
+				$tuples = array();
+				foreach ($weight_values as $weight_value) {
+					$tuples[] = '0,' . $weight_value;
+				}
+				foreach ($weight_values as $weight_value) {
+					$tuples[] = '1,' . $weight_value;
+				}
+				$query_parts[] = 'family=' . $family_param . ':ital,wght@' . implode(';', $tuples);
+			} else {
+				$query_parts[] = 'family=' . $family_param . ':wght@' . implode(';', $weight_values);
+			}
 		}
 
 		$display = sanitize_key((string) ($settings['font_display'] ?? 'swap'));
@@ -2104,11 +2321,12 @@ final class MRN_Google_Fonts {
 	/**
 	 * Collect one family request into a normalized map.
 	 *
-	 * @param string                       $font_family Raw family setting.
-	 * @param string                       $weights_raw Raw weights setting.
-	 * @param array<string, array<string>> $families Aggregated map.
+	 * @param string                                                                                     $font_family Raw family setting.
+	 * @param string                                                                                     $weights_raw Raw weights setting.
+	 * @param bool                                                                                       $include_italics Whether to include italic tuples for this family.
+	 * @param array<string, array{weights: array<int, string>, italics: bool}> $families Aggregated map.
 	 */
-	private static function collect_google_font_family_request(string $font_family, string $weights_raw, array &$families): void {
+	private static function collect_google_font_family_request(string $font_family, string $weights_raw, bool $include_italics, array &$families): void {
 		$family = self::normalize_primary_family_name($font_family);
 		if ('' === $family || self::is_system_font_family($family)) {
 			return;
@@ -2121,11 +2339,18 @@ final class MRN_Google_Fonts {
 		}
 
 		if (!isset($families[$family])) {
-			$families[$family] = array();
+			$families[$family] = array(
+				'weights' => array(),
+				'italics' => false,
+			);
 		}
 
 		foreach ($weights as $weight) {
-			$families[$family][] = $weight;
+			$families[$family]['weights'][] = $weight;
+		}
+
+		if ($include_italics) {
+			$families[$family]['italics'] = true;
 		}
 	}
 

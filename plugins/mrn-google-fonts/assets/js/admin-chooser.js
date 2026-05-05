@@ -157,6 +157,9 @@
 			input.addEventListener('input', function() {
 				scheduleSearch(input.value || '');
 			});
+			input.addEventListener('focus', function() {
+				scheduleSearch(input.value || '');
+			});
 		});
 	}
 

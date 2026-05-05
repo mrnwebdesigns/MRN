@@ -3,7 +3,7 @@
  * Plugin Name: Google Fonts
  * Description: Performance-first Google Fonts runtime for frontend and Classic Editor, with optional MRN stack bridge support.
  * Author: MRN Web Designs
- * Version: 0.4.15
+ * Version: 0.4.16
  */
 
 if (!defined('ABSPATH')) {
