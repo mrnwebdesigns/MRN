@@ -3,7 +3,7 @@
  * Plugin Name: Style Guide (MU)
  * Description: Adds a logged-in-only front-end style guide panel and full reference page for reviewing live brand styles.
  * Author: MRN Web Designs
- * Version: 0.1.3
+ * Version: 0.1.4
  */
 
 defined('ABSPATH') || exit;
