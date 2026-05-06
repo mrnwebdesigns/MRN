@@ -143,6 +143,8 @@ rsync -rlt --omit-dir-times --delete \
 - The feature deploy helper must verify its post-sync permission normalization and fail if sync-user-owned live files remain outside `644`.
 - Standard plugins still follow their own plugin release flow and are not part of the stack feature deploy helper.
 - When a stack-packaged standard plugin changes, rebuild its local zip, sync that artifact into `/home/mrndev-stack-manager/stack/packages/<plugin>.zip`, and if the plugin is meant to be live on `default-configs.mrndev.io`, run a forced `wp plugin install ... --force --activate` against that site so the live version matches the refreshed package.
+- Site plugin updates should run via direct site-owner SSH.
+  - If a site owner cannot update a plugin due to file ownership or mode, treat that as a deploy blocker and remediate ownership/mode first.
 - Fresh site bootstrap must delete any preinstalled standard plugins from the host before installing the stack manifest so new sites match the stack plugin set exactly.
 - Fresh site bootstrap must also sync the shared runtime into `wp-content/shared` as part of the initial rollout.
 - Fresh site bootstrap must also provision direct site-owner SSH trust by creating `/home/<site-user>/.ssh/authorized_keys` when missing and ensuring the canonical MRN site-owner public key is present exactly once without removing unrelated keys.
@@ -162,6 +164,20 @@ rsync -rlt --omit-dir-times --delete \
   - `mrn-ops` can become `mrndev-stack-manager`, but it still does not have `sudo -n -u <site-user>` rights for `rsync/find/chmod/perl/wp`
 - Until that sudoers policy is fixed, use direct site-owner SSH instead of writing live files as an operator user.
 - `default-configs.mrndev.io` currently runs the cloned `default-configs` active stylesheet, so rollout verification must check the live active theme slug and version rather than assuming `mrn-base-stack`.
+
+## Config Helper Parity Gate
+
+- Before any release that depends on `mrn-config-helper` UI/runtime behavior (for example breadcrumb tabs/panels), run:
+  - `/Users/khofmeyer/Development/MRN/stack/scripts/audit-config-helper-parity.sh`
+- Treat any non-zero exit as a release blocker.
+- Required pass conditions for installed copies:
+  - `version_parity=match`
+  - `site_owner_ssh_ok=yes`
+  - `site_owner_can_write=yes`
+- If `site_owner_can_write=no`, do not proceed with site-owner plugin updates until file ownership/modes are remediated for that site.
+- If `site_owner_ssh_ok=no`, fix site-owner SSH trust/readiness before rollout.
+- Canonical remediation helper for these blockers:
+  - `/Users/khofmeyer/Development/MRN/stack/scripts/remediate-site-owner-readiness.sh`
 
 ## Theme Rollout Rule
 

@@ -47,3 +47,5 @@ Release baseline:
 - security review (nonce, sanitize, escape)
 - accessibility review
 - performance review
+- stack plugin parity check for UI/runtime-dependent releases (`stack/scripts/audit-config-helper-parity.sh`)
+- site-owner deploy readiness check (site-owner SSH + write access for the target live plugin/theme paths)
