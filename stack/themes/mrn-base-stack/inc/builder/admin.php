@@ -337,15 +337,44 @@ function mrn_base_stack_save_builder_row_flex_layout_meta( $post_id, $post ) {
 add_action( 'save_post', 'mrn_base_stack_save_builder_row_flex_layout_meta', 20, 2 );
 
 /**
- * Hide the native WordPress content editor on posts and pages while preserving
- * screen compatibility for plugins that expect the classic editor context.
+ * Get post types where the native WordPress editor should be hidden.
+ *
+ * Defaults to an empty list so all classic-editor body fields remain available
+ * unless a site explicitly opts into hiding via filter.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_native_editor_hidden_post_types() {
+	$post_types = array();
+
+	/**
+	 * Filter post types where the native editor should be hidden.
+	 *
+	 * @param array<int, string> $post_types Post type slugs.
+	 */
+	$post_types = apply_filters( 'mrn_base_stack_native_editor_hidden_post_types', $post_types );
+
+	if ( ! is_array( $post_types ) ) {
+		return array();
+	}
+
+	return array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $post_types )
+			)
+		)
+	);
+}
+
+/**
+ * Hide the native WordPress content editor on configured singular screens while
+ * preserving screen compatibility for plugins that expect the classic editor context.
  */
 function mrn_base_stack_hide_native_editor_metabox() {
-	remove_meta_box( 'postdivrich', 'post', 'normal' );
-	remove_meta_box( 'postdivrich', 'page', 'normal' );
-	remove_meta_box( 'postdivrich', 'gallery', 'normal' );
-	remove_meta_box( 'postdivrich', 'testimonial', 'normal' );
-	remove_meta_box( 'postdivrich', 'case_study', 'normal' );
+	foreach ( mrn_base_stack_get_native_editor_hidden_post_types() as $post_type ) {
+		remove_meta_box( 'postdivrich', $post_type, 'normal' );
+	}
 }
 add_action( 'add_meta_boxes', 'mrn_base_stack_hide_native_editor_metabox', 20 );
 
@@ -359,7 +388,7 @@ function mrn_base_stack_hide_native_editor_css() {
 		return;
 	}
 
-	if ( ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_singular_shell_post_types(), true ) ) {
+	if ( ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_native_editor_hidden_post_types(), true ) ) {
 		return;
 	}
 	?>

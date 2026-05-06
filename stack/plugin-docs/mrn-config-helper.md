@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.35`
+- Current version: `0.1.37`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper`
 
@@ -27,19 +27,30 @@
   - `General`
   - `Integrations`
   - `Social`
+  - `Breadcrumbs`
   - `Display Modes`
   - `Admin`
 - The `Admin` tab is visible only to users with the `administrator` role.
 - Current settings areas include:
   - Site Identity
   - SendGrid / Fluent SMTP
+  - WPForms Notifications
   - Google Tag Manager
   - External APIs
   - Social Media
+  - Breadcrumbs
   - Display Modes
   - Dashboard Controls
   - Back-end content type visibility
-  - Builder layout visibility
+- Builder layout visibility controls are not currently rendered in the Site Configurations UI (helper/storage support remains in code).
+- The Breadcrumbs tab currently includes secondary tabs:
+  - `Advanced Breadcrumbs`
+  - `Behavior`
+  - `Styling`
+  - `Output`
+  - `Instructions`
+- Classic Editor support:
+  - Adds a `Breadcrumb Trail` metabox on supported post types for per-entry manual overrides.
 - Display Modes currently includes:
   - list-first management UI with search, filters, sort, and row editing
   - entity-aware mode creation for supported renderable items
@@ -64,14 +75,21 @@
 
 ## Front-End / Theming Behavior
 
-- Does not directly render front-end markup by itself.
-- Exposes front-end-consumable site configuration so theme code can render it intentionally.
+- Exposes front-end-consumable site configuration and includes a stack-owned breadcrumb runtime.
+- Breadcrumb runtime output is semantic by default (`nav` + ordered list + `aria-current` on active item).
 - Current front-end-facing helper:
   - `mrn_config_helper_get_social_links()`
   - `mrn_config_helper_get_uptime_robot_settings()`
   - `mrn_config_helper_get_hidden_admin_cpts()`
   - `mrn_config_helper_get_hidden_builder_layouts()`
   - `mrn_config_helper_get_display_modes()`
+  - `mrn_config_helper_get_content_list_display_modes()`
+  - `mrn_config_helper_get_breadcrumb_settings()`
+  - `mrn_config_helper_get_breadcrumb_manual_override( $post_id )`
+- Breadcrumb runtime helper surface:
+  - `mrn_render_breadcrumbs( $args = [] )`
+  - `mrn_get_breadcrumb_items( $args = [] )`
+  - shortcode: `[mrn_breadcrumbs]` (+ `view` attribute)
 - UptimeRobot helper return shape:
   - `api_key`
   - `source` (`constant`, `environment`, or `database`)
@@ -98,14 +116,73 @@
   - if `icon_type === 'media'`, render the image icon linked to the destination URL
   - if `icon_type === 'fontawesome'`, render the stored Font Awesome class linked to the destination URL
 
+## Breadcrumbs: Child Theme + Mode Reference
+
+- Yes, breadcrumbs can be added from a child theme.
+- Child-theme integration pattern (template-level):
+  - Check function availability before calling:
+    - `if ( function_exists( 'mrn_render_breadcrumbs' ) ) { ... }`
+  - Render in a child theme template:
+    - `mrn_render_breadcrumbs( array( 'placement' => 'singular_header' ) );`
+  - Use placement keys already supported by stack settings:
+    - `singular_header`
+    - `archive_header`
+    - `search_header`
+    - `error_header`
+    - `home_header`
+- Data-only integration pattern:
+  - Call `mrn_get_breadcrumb_items()` and map your own markup for custom child-theme views if needed.
+  - Preserve accessibility semantics if overriding markup:
+    - `nav` landmark
+    - ordered/list structure
+    - `aria-current="page"` for active crumb
+
+### Mode Behavior (same meaning as UI Instructions tab)
+
+- `Dynamic only`
+  - Stack builds breadcrumb trail from current request context + selected view type.
+  - Per-page custom chips are saved but ignored for front-end rendering.
+- `Dynamic with per-page manual override`
+  - Dynamic remains the default.
+  - On singular entries only, if `Use manual breadcrumb override` is checked and valid chips exist, chips take precedence.
+- Fallback behavior
+  - If override mode is on but override is disabled/empty/invalid for that entry, stack falls back to dynamic output.
+- Precedence
+  - Global mode controls whether overrides are allowed.
+  - Per-entry checkbox + saved chips control whether that one entry uses a custom trail.
+
+### Why Custom Breadcrumbs May Not Show
+
+- `Trail Mode` is still set to `Dynamic only`.
+- Per-entry `Use manual breadcrumb override` is not checked.
+- No valid chips were saved in the entry metabox.
+- Current context or placement is disabled in Breadcrumb `Behavior` settings.
+- Template area does not call breadcrumb render helper for that request type.
+
 ## Developer Hooks / Extension Points
 
 - Public class helper:
   - `MRN_Config_Helper::get_social_links()`
   - `MRN_Config_Helper::get_uptime_robot_settings()`
+  - `MRN_Config_Helper::get_hidden_admin_cpts()`
+  - `MRN_Config_Helper::get_hidden_builder_layouts()`
+  - `MRN_Config_Helper::get_display_modes()`
+  - `MRN_Config_Helper::get_breadcrumb_settings()`
+  - `MRN_Config_Helper::get_breadcrumb_manual_override( $post_id )`
 - Public wrapper helper:
   - `mrn_config_helper_get_social_links()`
   - `mrn_config_helper_get_uptime_robot_settings()`
+  - `mrn_config_helper_get_hidden_admin_cpts()`
+  - `mrn_config_helper_get_hidden_builder_layouts()`
+  - `mrn_config_helper_get_display_modes()`
+  - `mrn_config_helper_get_breadcrumb_settings()`
+  - `mrn_config_helper_get_breadcrumb_manual_override( $post_id )`
+  - `mrn_config_helper_get_content_list_display_modes()`
+- Breadcrumb runtime filters:
+  - `mrn_breadcrumb_items`
+  - `mrn_breadcrumbs_markup`
+- Breadcrumb metabox extensibility:
+  - `mrn_config_helper_breadcrumb_meta_post_types`
 - Theme/front-end recommendation:
   - prefer the wrapper helper over reaching into plugin internals directly
   - treat the plugin as a configuration source, not a markup renderer
@@ -129,6 +206,13 @@
   - disabled admin CPT/reusable-library post types
   - disabled builder layouts
   - social links
+  - breadcrumbs settings payload
+- Breadcrumb per-entry override storage:
+  - post meta key: `_mrn_breadcrumbs_manual_path`
+  - includes:
+    - enabled flag
+    - legacy manual items
+    - chip-based manual items
 - SendGrid management key resolution order:
   - constant `MRN_SENDGRID_MANAGEMENT_API_KEY`
   - environment variable `MRN_SENDGRID_MANAGEMENT_API_KEY`
@@ -178,3 +262,4 @@
 - It is safe to consume its helper data from the theme, but avoid letting theme code write back into its options directly.
 - Social links are configuration only right now; front-end output/styling remains theme-owned on purpose.
 - Social links can now use either media-library images or Font Awesome classes, so front-end render code should branch on `icon_type` rather than assuming an image-only contract.
+- Breadcrumb custom chips are only rendered when global mode allows manual overrides.

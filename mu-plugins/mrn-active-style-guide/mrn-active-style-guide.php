@@ -3,7 +3,7 @@
  * Plugin Name: Style Guide (MU)
  * Description: Adds a logged-in-only front-end style guide panel and full reference page for reviewing live brand styles.
  * Author: MRN Web Designs
- * Version: 0.1.4
+ * Version: 0.1.5
  */
 
 defined('ABSPATH') || exit;
@@ -527,6 +527,10 @@ function mrn_active_style_guide_get_frontend_helper_functions(): array {
         'mrn_base_stack_get_button_link_icon_position()',
         'mrn_site_colors_get_css_var()',
         'mrn_rbl_render_block()',
+        'mrn_render_breadcrumbs()',
+        'mrn_get_breadcrumb_items()',
+        'mrn_config_helper_get_breadcrumb_settings()',
+        'mrn_config_helper_get_breadcrumb_manual_override()',
     );
 }
 
@@ -569,10 +573,106 @@ function mrn_active_style_guide_get_theme_hook_map_reference(): array {
         'admin_enqueue_scripts'                 => 'mrn_base_stack_enqueue_gallery_admin_assets()',
         'body_class'                            => 'mrn_base_stack_body_classes()',
         'wp_head'                               => 'mrn_base_stack_pingback_header()',
+        'wp_head (priority 39)'                 => 'mrn_breadcrumbs_print_schema()',
         'wp_head (priority 40)'                 => 'mrn_base_stack_print_business_schema()',
         'mrn_universal_sticky_bar_post_types'   => 'mrn_base_stack_add_editorial_cpts_to_universal_sticky_bar()',
         'mrn_base_stack_sidebar_supported_post_types' => 'Filter sidebar-enabled singular post types (default: none)',
         'mrn_base_stack_singular_shell_post_types'    => 'Filter singular shell post types',
+        'mrn_breadcrumb_items'                  => 'Filter resolved breadcrumb item array before output',
+        'mrn_breadcrumbs_markup'                => 'Filter final breadcrumb markup output',
+        'mrn_config_helper_breadcrumb_meta_post_types' => 'Filter post types that get Breadcrumb Trail metabox',
+    );
+}
+
+/**
+ * Get breadcrumb mode behavior reference content.
+ *
+ * @return array<string, string>
+ */
+function mrn_active_style_guide_get_breadcrumb_mode_reference(): array {
+    return array(
+        'Dynamic only' => 'Stack generates breadcrumb trails from context + selected view. Manual chips are saved but ignored.',
+        'Dynamic with per-page manual override' => 'Dynamic is default, but singular entries use chips when "Use manual breadcrumb override" is enabled and valid chips exist.',
+        'Fallback behavior' => 'If override mode is active but chips are missing/invalid (or entry override is off), stack falls back to dynamic output.',
+        'Precedence' => 'Global Trail Mode controls whether overrides are allowed; per-entry checkbox + chips control whether that entry uses a custom trail.',
+    );
+}
+
+/**
+ * Get breadcrumb troubleshooting reference content.
+ *
+ * @return array<string, string>
+ */
+function mrn_active_style_guide_get_breadcrumb_troubleshooting_reference(): array {
+    return array(
+        'Custom trail not showing: mode' => 'Trail Mode is still set to Dynamic only.',
+        'Custom trail not showing: entry override' => 'The entry-level "Use manual breadcrumb override" checkbox is not enabled.',
+        'Custom trail not showing: chips' => 'No valid chips were saved in the Breadcrumb Trail metabox.',
+        'Custom trail not showing: context/placement' => 'Active context or template placement is disabled in Breadcrumb Behavior settings.',
+        'Custom trail not showing: template integration' => 'The template area is not calling mrn_render_breadcrumbs() for that request type.',
+        'Metabox missing in editor' => 'Enable the Breadcrumb Trail box from Screen Options on the Classic Editor screen.',
+    );
+}
+
+/**
+ * Get breadcrumb implementation contract reference.
+ *
+ * @return array<string, string>
+ */
+function mrn_active_style_guide_get_breadcrumb_contract_reference(): array {
+    return array(
+        'Shortcode (default)' => '[mrn_breadcrumbs]',
+        'Shortcode (URL view)' => '[mrn_breadcrumbs view="url"]',
+        'Shortcode (Post Type view)' => '[mrn_breadcrumbs view="post_type"]',
+        'Template helper (render)' => 'mrn_render_breadcrumbs( array( \'placement\' => \'singular_header\' ) );',
+        'Data helper (items)' => '$items = mrn_get_breadcrumb_items();',
+        'Placement keys' => 'singular_header, archive_header, search_header, error_header, home_header',
+        'Per-entry override meta key' => '_mrn_breadcrumbs_manual_path',
+    );
+}
+
+/**
+ * Get child-theme integration behavior notes for breadcrumbs.
+ *
+ * @return array<string, string>
+ */
+function mrn_active_style_guide_get_breadcrumb_child_theme_reference(): array {
+    return array(
+        'Move to child-theme template' => 'Turn off the matching placement key in Breadcrumb Behavior, then call mrn_render_breadcrumbs() in your child-theme template where you want it.',
+        'Turn off globally' => 'Disable breadcrumbs in Config Helper > Breadcrumbs > Advanced Breadcrumbs.',
+        'Turn off for specific contexts' => 'Use Breadcrumb Behavior context toggles (singular, archive, search, home, 404).',
+        'Turn off for a specific template' => 'Keep global breadcrumbs on and return an empty array from mrn_breadcrumb_items when your template condition matches.',
+        'Schema ownership' => 'Use Schema Source in settings (Auto, Stack, SmartCrawl, None) to avoid duplicate JSON-LD output.',
+    );
+}
+
+/**
+ * Get breadcrumb implementation checklist for child-theme and shortcode usage.
+ *
+ * @return array<string, string>
+ */
+function mrn_active_style_guide_get_breadcrumb_implementation_reference(): array {
+    return array(
+        'Choose one integration path' => 'Use template integration with mrn_render_breadcrumbs() or content integration with [mrn_breadcrumbs]. Do not assume base theme auto-output.',
+        'Template integration (recommended)' => 'Add mrn_render_breadcrumbs( array( \'placement\' => \'singular_header\' ) ) in the exact child-theme template area where breadcrumbs should appear.',
+        'Shortcode integration' => 'Use [mrn_breadcrumbs] in Classic Editor content where template-level placement is not available.',
+        'Manual override requirements' => 'Set Trail Mode to "Dynamic with per-page manual override" and enable "Use manual breadcrumb override" in the entry metabox.',
+        'Accessibility baseline' => 'If custom markup is used, preserve nav landmark, list semantics, keyboard-reachable links, and aria-current="page" for the active crumb.',
+        'SEO/schema baseline' => 'Set Schema Source intentionally (Auto, Stack, SmartCrawl, None) so only one breadcrumb schema source is active.',
+        'Verification checklist' => 'Verify on at least one page/post/archive/search/404 target where enabled. Confirm visible output, semantic structure, and no duplicate schema.',
+    );
+}
+
+/**
+ * Get starter breadcrumb snippets for child-theme integration.
+ *
+ * @return array<string, string>
+ */
+function mrn_active_style_guide_get_breadcrumb_php_snippets(): array {
+    return array(
+        'Child Theme Render (Template Placement)' => "<?php\nif ( function_exists( 'mrn_render_breadcrumbs' ) ) {\n    mrn_render_breadcrumbs( array(\n        'placement' => 'singular_header',\n    ) );\n}\n?>",
+        'Child Theme Render (Forced Output)' => "<?php\nif ( function_exists( 'mrn_render_breadcrumbs' ) ) {\n    mrn_render_breadcrumbs( array(\n        'force' => true,\n        'view'  => 'post_type',\n    ) );\n}\n?>",
+        'Custom Markup From Data Helper' => "<?php\nif ( function_exists( 'mrn_get_breadcrumb_items' ) ) {\n    \$items = mrn_get_breadcrumb_items();\n    // Render custom child-theme markup from \$items while preserving nav/list/aria-current semantics.\n}\n?>",
     );
 }
 
@@ -636,7 +736,10 @@ function mrn_active_style_guide_get_reusable_block_shortcode_rows(): array {
  */
 function mrn_active_style_guide_get_starter_css_snippets(): array {
     return array(
-        'Sidebar Width Tuning' => ".mrn-singular-shell--has-sidebar {\n    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);\n}\n\n@media (max-width: 980px) {\n    .mrn-singular-shell--has-sidebar {\n        grid-template-columns: 1fr;\n    }\n}",
+        /*
+         * Temporarily hidden: sidebar-specific starter snippet.
+         */
+        // 'Sidebar Width Tuning' => ".mrn-singular-shell--has-sidebar {\n    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);\n}\n\n@media (max-width: 980px) {\n    .mrn-singular-shell--has-sidebar {\n        grid-template-columns: 1fr;\n    }\n}",
         'Global Container Width Override' => ":root {\n    --mrn-shell-wide-width: 1360px;\n    --mrn-shell-max-width: 1120px;\n    --mrn-shell-content-width: 760px;\n}",
         'Primary Button Tone Override' => ".mrn-ui__link--button,\n.mrn-active-style-guide-button.is-primary {\n    background: var(--site-color-brand-primary, #0b6ea8);\n    border-color: var(--site-color-brand-primary, #0b6ea8);\n    color: #fff;\n}",
         'Content Row Vertical Rhythm' => ".entry-content--builder {\n    gap: clamp(1.25rem, 2.2vw, 2rem);\n}\n\n.mrn-content-builder__row {\n    margin-block: 0;\n}",
@@ -653,6 +756,70 @@ function mrn_active_style_guide_get_starter_php_snippets(): array {
     return array(
         'Row Spacing Contract (Shared Wrapper)' => "\$row_spacing_contract = function_exists('mrn_base_stack_get_row_spacing_contract')\n    ? mrn_base_stack_get_row_spacing_contract(is_array(\$row) ? \$row : array())\n    : array('classes' => array(), 'attributes' => array());\n\n\$section_attrs = isset(\$section_attrs) && is_array(\$section_attrs) ? \$section_attrs : array();\n\nif (!empty(\$row_spacing_contract['attributes']) && is_array(\$row_spacing_contract['attributes'])) {\n    if (function_exists('mrn_base_stack_merge_builder_attributes')) {\n        \$section_attrs = mrn_base_stack_merge_builder_attributes(\$section_attrs, \$row_spacing_contract['attributes']);\n    } else {\n        \$section_attrs = array_merge(\$section_attrs, \$row_spacing_contract['attributes']);\n    }\n}\n\n\$section_attr_html = function_exists('mrn_base_stack_get_html_attributes')\n    ? mrn_base_stack_get_html_attributes(\$section_attrs)\n    : '';",
         'Row Wrapper Output' => "<section class=\"your-row-class\"<?php echo '' !== \$section_attr_html ? ' ' . \$section_attr_html : ''; ?>>\n    ...\n</section>",
+    );
+}
+
+/**
+ * Get child-theme runtime and deployment references.
+ *
+ * @return array<string, string>
+ */
+function mrn_active_style_guide_get_child_theme_runtime_reference(): array {
+    $stylesheet = (string) get_stylesheet();
+    $template = (string) get_template();
+    $is_child_mode = $stylesheet !== '' && $template !== '' && $stylesheet !== $template;
+
+    return array(
+        'Current runtime mode' => $is_child_mode ? 'Child theme active (stylesheet != template)' : 'Parent-only runtime (stylesheet == template)',
+        'Child-theme mode contract' => 'Treat stylesheet != template as child-theme runtime; treat stylesheet == template as parent-only runtime.',
+        'Parent deploy target contract' => 'Deploy stack parent updates to wp-content/themes/{template}.',
+        'Child stylesheet contract' => 'Use wp-content/themes/{stylesheet} for child-only overrides.',
+        'Sync safety rule' => 'Never sync stack parent source into the child stylesheet path.',
+    );
+}
+
+/**
+ * Get child-theme row spacing integration instructions.
+ *
+ * @return array<string, string>
+ */
+function mrn_active_style_guide_get_child_theme_row_spacing_reference(): array {
+    return array(
+        'Use shared row spacing wrapper' => 'Call mrn_base_stack_get_row_spacing_contract() from child templates.',
+        'Avoid builder-only helper calls' => 'Do not call mrn_base_stack_get_builder_row_spacing_contract() directly from child templates.',
+        'Merge attributes through stack helper' => 'Prefer mrn_base_stack_merge_builder_attributes() before rendering attributes with mrn_base_stack_get_html_attributes().',
+        'Keep stable row wrapper class' => 'Preserve .mrn-content-builder__row on row wrappers.',
+        'Fallback when helper is unavailable' => 'Use array(\'classes\' => array(), \'attributes\' => array()) so templates fail safely.',
+        'Output behavior' => 'data-mrn-row-spacing and --mrn-row-* vars emit only when resolved spacing exists.',
+    );
+}
+
+/**
+ * Get child-theme row spacing contract classes and variables.
+ *
+ * @return array<string, string>
+ */
+function mrn_active_style_guide_get_child_theme_row_spacing_contract_reference(): array {
+    return array(
+        'Wrapper class' => '.mrn-content-builder__row',
+        'Spacing selector' => '[data-mrn-row-spacing]',
+        'Variable prefix' => '--mrn-row-*',
+        'Margin desktop vars' => '--mrn-row-margin-top-desktop, --mrn-row-margin-right-desktop, --mrn-row-margin-bottom-desktop, --mrn-row-margin-left-desktop',
+        'Margin mobile vars' => '--mrn-row-margin-top-mobile, --mrn-row-margin-right-mobile, --mrn-row-margin-bottom-mobile, --mrn-row-margin-left-mobile',
+        'Padding desktop vars' => '--mrn-row-padding-top-desktop, --mrn-row-padding-right-desktop, --mrn-row-padding-bottom-desktop, --mrn-row-padding-left-desktop',
+        'Padding mobile vars' => '--mrn-row-padding-top-mobile, --mrn-row-padding-right-mobile, --mrn-row-padding-bottom-mobile, --mrn-row-padding-left-mobile',
+    );
+}
+
+/**
+ * Get child-theme row spacing snippets.
+ *
+ * @return array<string, string>
+ */
+function mrn_active_style_guide_get_child_theme_row_spacing_snippets(): array {
+    return array(
+        'Child Theme Row Spacing Drop-In (Template)' => "<?php\n\$row = isset(\$row) && is_array(\$row) ? \$row : array();\n\n\$row_spacing_contract = function_exists('mrn_base_stack_get_row_spacing_contract')\n    ? mrn_base_stack_get_row_spacing_contract(\$row)\n    : array('classes' => array(), 'attributes' => array());\n\n\$section_attrs = isset(\$section_attrs) && is_array(\$section_attrs) ? \$section_attrs : array();\nif (!empty(\$row_spacing_contract['attributes']) && is_array(\$row_spacing_contract['attributes'])) {\n    if (function_exists('mrn_base_stack_merge_builder_attributes')) {\n        \$section_attrs = mrn_base_stack_merge_builder_attributes(\$section_attrs, \$row_spacing_contract['attributes']);\n    } else {\n        \$section_attrs = array_merge(\$section_attrs, \$row_spacing_contract['attributes']);\n    }\n}\n\n\$section_attr_html = function_exists('mrn_base_stack_get_html_attributes')\n    ? mrn_base_stack_get_html_attributes(\$section_attrs)\n    : '';\n?>\n<section class=\"mrn-content-builder__row\"<?php echo '' !== \$section_attr_html ? ' ' . \$section_attr_html : ''; ?>>\n    ...\n</section>",
+        'Child Theme Row Spacing CSS' => ".mrn-content-builder__row[data-mrn-row-spacing] {\n    margin-top: var(--mrn-row-margin-top-desktop, 0);\n    margin-right: var(--mrn-row-margin-right-desktop, 0);\n    margin-bottom: var(--mrn-row-margin-bottom-desktop, 0);\n    margin-left: var(--mrn-row-margin-left-desktop, 0);\n    padding-top: var(--mrn-row-padding-top-desktop, 0);\n    padding-right: var(--mrn-row-padding-right-desktop, 0);\n    padding-bottom: var(--mrn-row-padding-bottom-desktop, 0);\n    padding-left: var(--mrn-row-padding-left-desktop, 0);\n}\n\n@media (max-width: 767px) {\n    .mrn-content-builder__row[data-mrn-row-spacing] {\n        margin-top: var(--mrn-row-margin-top-mobile, var(--mrn-row-margin-top-desktop, 0));\n        margin-right: var(--mrn-row-margin-right-mobile, var(--mrn-row-margin-right-desktop, 0));\n        margin-bottom: var(--mrn-row-margin-bottom-mobile, var(--mrn-row-margin-bottom-desktop, 0));\n        margin-left: var(--mrn-row-margin-left-mobile, var(--mrn-row-margin-left-desktop, 0));\n        padding-top: var(--mrn-row-padding-top-mobile, var(--mrn-row-padding-top-desktop, 0));\n        padding-right: var(--mrn-row-padding-right-mobile, var(--mrn-row-padding-right-desktop, 0));\n        padding-bottom: var(--mrn-row-padding-bottom-mobile, var(--mrn-row-padding-bottom-desktop, 0));\n        padding-left: var(--mrn-row-padding-left-mobile, var(--mrn-row-padding-left-desktop, 0));\n    }\n}",
     );
 }
 
@@ -798,6 +965,16 @@ function mrn_active_style_guide_render_developer_reference_page(): void {
     $reusable_block_shortcodes = mrn_active_style_guide_get_reusable_block_shortcode_rows();
     $starter_css_snippets = mrn_active_style_guide_get_starter_css_snippets();
     $starter_php_snippets = mrn_active_style_guide_get_starter_php_snippets();
+    $breadcrumb_mode_reference = mrn_active_style_guide_get_breadcrumb_mode_reference();
+    $breadcrumb_troubleshooting_reference = mrn_active_style_guide_get_breadcrumb_troubleshooting_reference();
+    $breadcrumb_contract_reference = mrn_active_style_guide_get_breadcrumb_contract_reference();
+    $breadcrumb_child_theme_reference = mrn_active_style_guide_get_breadcrumb_child_theme_reference();
+    $breadcrumb_implementation_reference = mrn_active_style_guide_get_breadcrumb_implementation_reference();
+    $breadcrumb_php_snippets = mrn_active_style_guide_get_breadcrumb_php_snippets();
+    $child_theme_runtime_reference = mrn_active_style_guide_get_child_theme_runtime_reference();
+    $child_theme_row_spacing_reference = mrn_active_style_guide_get_child_theme_row_spacing_reference();
+    $child_theme_row_spacing_contract_reference = mrn_active_style_guide_get_child_theme_row_spacing_contract_reference();
+    $child_theme_row_spacing_snippets = mrn_active_style_guide_get_child_theme_row_spacing_snippets();
 
     $root_template_rows = array();
     foreach ($root_templates as $template) {
@@ -849,12 +1026,54 @@ function mrn_active_style_guide_render_developer_reference_page(): void {
         $reusable_shortcode_rows[$label] = $shortcode;
     }
 
+    $breadcrumb_mode_rows = array();
+    foreach ($breadcrumb_mode_reference as $label => $value) {
+        $breadcrumb_mode_rows[$label] = $value;
+    }
+
+    $breadcrumb_troubleshooting_rows = array();
+    foreach ($breadcrumb_troubleshooting_reference as $label => $value) {
+        $breadcrumb_troubleshooting_rows[$label] = $value;
+    }
+
+    $breadcrumb_contract_rows = array();
+    foreach ($breadcrumb_contract_reference as $label => $value) {
+        $breadcrumb_contract_rows[$label] = $value;
+    }
+
+    $breadcrumb_child_theme_rows = array();
+    foreach ($breadcrumb_child_theme_reference as $label => $value) {
+        $breadcrumb_child_theme_rows[$label] = $value;
+    }
+
+    $breadcrumb_implementation_rows = array();
+    foreach ($breadcrumb_implementation_reference as $label => $value) {
+        $breadcrumb_implementation_rows[$label] = $value;
+    }
+
+    $child_theme_runtime_rows = array();
+    foreach ($child_theme_runtime_reference as $label => $value) {
+        $child_theme_runtime_rows[$label] = $value;
+    }
+
+    $child_theme_row_spacing_rows = array();
+    foreach ($child_theme_row_spacing_reference as $label => $value) {
+        $child_theme_row_spacing_rows[$label] = $value;
+    }
+
+    $child_theme_row_spacing_contract_rows = array();
+    foreach ($child_theme_row_spacing_contract_reference as $label => $value) {
+        $child_theme_row_spacing_contract_rows[$label] = $value;
+    }
+
     $tabs = array(
         'templates' => 'Templates',
         'variables' => 'Variables',
         'assets-hooks' => 'Assets & Hooks',
         'shell-contracts' => 'Shell Contracts',
         'reusable-blocks' => 'Reusable Blocks',
+        'breadcrumbs' => 'Breadcrumbs',
+        'child-theme' => 'Child Theme',
         'starter-snippets' => 'Starter Snippets',
     );
     ?>
@@ -921,6 +1140,11 @@ function mrn_active_style_guide_render_developer_reference_page(): void {
                     'Path'
                 );
 
+                /*
+                 * Temporarily hidden: layout-specific mapping guidance is not finalized
+                 * for all stack sites yet.
+                 */
+                /*
                 mrn_active_style_guide_render_developer_reference_section(
                     'mrn-devref-builder-map',
                     'Builder Layout Map',
@@ -929,6 +1153,7 @@ function mrn_active_style_guide_render_developer_reference_page(): void {
                     'Layout Slug',
                     'Renderer'
                 );
+                */
                 ?>
             </div>
         </section>
@@ -1002,6 +1227,10 @@ function mrn_active_style_guide_render_developer_reference_page(): void {
                     'Selector'
                 );
 
+                /*
+                 * Temporarily hidden: sidebar-specific contract reference.
+                 */
+                /*
                 mrn_active_style_guide_render_developer_reference_section(
                     'mrn-devref-sidebar-contracts',
                     'Sidebar Contracts',
@@ -1010,6 +1239,7 @@ function mrn_active_style_guide_render_developer_reference_page(): void {
                     'Contract',
                     'Reference'
                 );
+                */
                 ?>
             </div>
         </section>
@@ -1029,6 +1259,116 @@ function mrn_active_style_guide_render_developer_reference_page(): void {
             </div>
         </section>
 
+        <section id="mrn-devref-panel-breadcrumbs" class="mrn-devref-panel" role="tabpanel" aria-labelledby="mrn-devref-tab-breadcrumbs" hidden>
+            <div class="mrn-devref-grid">
+                <?php
+                mrn_active_style_guide_render_developer_reference_section(
+                    'mrn-devref-breadcrumb-mode',
+                    'Trail Mode Behavior',
+                    'How breadcrumb modes work in runtime and when custom chips override dynamic trails.',
+                    $breadcrumb_mode_rows,
+                    'Mode / Rule',
+                    'Behavior'
+                );
+
+                mrn_active_style_guide_render_developer_reference_section(
+                    'mrn-devref-breadcrumb-troubleshooting',
+                    'Troubleshooting',
+                    'Use this checklist when breadcrumbs or custom chips do not appear as expected.',
+                    $breadcrumb_troubleshooting_rows,
+                    'Issue',
+                    'Check'
+                );
+                ?>
+            </div>
+        </section>
+
+        <section id="mrn-devref-panel-child-theme" class="mrn-devref-panel" role="tabpanel" aria-labelledby="mrn-devref-tab-child-theme" hidden>
+            <div class="mrn-devref-grid mrn-devref-grid--single">
+                <?php
+                mrn_active_style_guide_render_developer_reference_section(
+                    'mrn-devref-child-theme-runtime',
+                    'Active Parent/Child Runtime',
+                    'Use these stack-level runtime contracts to guide parent vs child deployment decisions. Site-specific slug/path values are intentionally omitted.',
+                    $child_theme_runtime_rows,
+                    'Runtime Contract',
+                    'Value'
+                );
+
+                mrn_active_style_guide_render_developer_reference_section(
+                    'mrn-devref-breadcrumb-contract',
+                    'Child Theme Integration Contracts',
+                    'Copy-ready helper names, shortcodes, and placement keys for child-theme integration.',
+                    $breadcrumb_contract_rows,
+                    'Contract',
+                    'Reference'
+                );
+
+                mrn_active_style_guide_render_developer_reference_section(
+                    'mrn-devref-breadcrumb-implementation',
+                    'Breadcrumb Implementation Checklist',
+                    'Use this checklist when adding breadcrumbs via child-theme templates or shortcode integration.',
+                    $breadcrumb_implementation_rows,
+                    'Step',
+                    'Guidance'
+                );
+
+                mrn_active_style_guide_render_developer_reference_section(
+                    'mrn-devref-breadcrumb-child-theme-behavior',
+                    'Child Theme Control Behavior',
+                    'How to move, disable, and scope breadcrumbs safely without breaking stack runtime contracts.',
+                    $breadcrumb_child_theme_rows,
+                    'Task',
+                    'Approach'
+                );
+
+                /*
+                 * Temporarily hidden: layout-specific row spacing contracts are not yet
+                 * part of the default guidance for all stack sites.
+                 */
+                /*
+                mrn_active_style_guide_render_developer_reference_section(
+                    'mrn-devref-child-theme-row-spacing-instructions',
+                    'Row Spacing Child-Theme Instructions',
+                    'Use these rules when applying Site Styles spacing contracts in child theme templates.',
+                    $child_theme_row_spacing_rows,
+                    'Instruction',
+                    'Details'
+                );
+
+                mrn_active_style_guide_render_developer_reference_section(
+                    'mrn-devref-child-theme-row-spacing-contract',
+                    'Row Spacing Classes & Attributes',
+                    'Stable selectors and CSS custom property names child-theme styles can safely consume.',
+                    $child_theme_row_spacing_contract_rows,
+                    'Contract',
+                    'Reference'
+                );
+                */
+
+                mrn_active_style_guide_render_developer_reference_snippet_section(
+                    'mrn-devref-breadcrumb-php-snippets',
+                    'Breadcrumb Child-Theme Snippets',
+                    'Paste these snippets into child-theme templates to render stack breadcrumbs or consume breadcrumb data safely.',
+                    $breadcrumb_php_snippets
+                );
+
+                /*
+                 * Temporarily hidden: layout-specific row spacing snippets are disabled
+                 * until the stack-wide rollout is finalized.
+                 */
+                /*
+                mrn_active_style_guide_render_developer_reference_snippet_section(
+                    'mrn-devref-child-theme-row-spacing-snippets',
+                    'Row Spacing Child-Theme Snippets',
+                    'Paste these snippets into child-theme template/CSS files to apply stack row spacing contracts safely.',
+                    $child_theme_row_spacing_snippets
+                );
+                */
+                ?>
+            </div>
+        </section>
+
         <section id="mrn-devref-panel-starter-snippets" class="mrn-devref-panel" role="tabpanel" aria-labelledby="mrn-devref-tab-starter-snippets" hidden>
             <div class="mrn-devref-grid mrn-devref-grid--single">
                 <?php
@@ -1039,12 +1379,18 @@ function mrn_active_style_guide_render_developer_reference_page(): void {
                     $starter_css_snippets
                 );
 
+                /*
+                 * Temporarily hidden: current starter PHP snippets are layout-specific
+                 * and are not part of the default stack guidance at this time.
+                 */
+                /*
                 mrn_active_style_guide_render_developer_reference_snippet_section(
                     'mrn-devref-starter-php-snippets',
                     'Starter PHP Snippets',
                     'Use shared stack wrappers in templates. For row spacing, call mrn_base_stack_get_row_spacing_contract() instead of directly calling builder-only internals.',
                     $starter_php_snippets
                 );
+                */
                 ?>
             </div>
         </section>
@@ -1232,6 +1578,10 @@ function mrn_active_style_guide_render_developer_reference_page(): void {
                     return;
                 }
 
+                if (window.history && window.history.replaceState && nextButton.id) {
+                    window.history.replaceState(null, '', '#' + nextButton.id);
+                }
+
                 tabButtons.forEach(function (button) {
                     var panelId = button.getAttribute('aria-controls') || '';
                     var panel = panelId ? document.getElementById(panelId) : null;
@@ -1283,6 +1633,23 @@ function mrn_active_style_guide_render_developer_reference_page(): void {
                         activateTab(tabButtons[nextIndex], true);
                     });
                 });
+
+                var hash = window.location.hash ? window.location.hash.replace('#', '') : '';
+                if (hash) {
+                    var fromHash = document.getElementById(hash);
+                    if (fromHash && fromHash.classList.contains('mrn-devref-tab')) {
+                        activateTab(fromHash, false);
+                    } else {
+                        var panelFromHash = document.getElementById(hash);
+                        if (panelFromHash) {
+                            var labelledBy = panelFromHash.getAttribute('aria-labelledby') || '';
+                            var tabFromPanel = labelledBy ? document.getElementById(labelledBy) : null;
+                            if (tabFromPanel && tabFromPanel.classList.contains('mrn-devref-tab')) {
+                                activateTab(tabFromPanel, false);
+                            }
+                        }
+                    }
+                }
             }
 
             document.addEventListener('click', function (event) {

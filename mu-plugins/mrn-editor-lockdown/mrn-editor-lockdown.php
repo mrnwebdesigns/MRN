@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Editor Lockdown (MU)
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.17
+ * Version: 1.0.18
  *
  * @package MRNEditorLockdown
  */
@@ -372,6 +372,92 @@ function mrn_editor_lockdown_is_supported_screen( $screen ) {
 
 	return null !== mrn_editor_lockdown_get_layout_for_post_type( $screen->post_type );
 }
+
+/**
+ * Determine whether classic-editor enforcement should apply to a post type.
+ *
+ * @param string $post_type Post type slug.
+ * @return bool
+ */
+function mrn_editor_lockdown_should_force_classic_editor_for_post_type( $post_type ) {
+	$post_type = sanitize_key( (string) $post_type );
+	if ( '' === $post_type ) {
+		return false;
+	}
+
+	return in_array( $post_type, mrn_editor_lockdown_get_supported_post_types(), true );
+}
+
+/**
+ * Force supported post types to use Classic Editor.
+ *
+ * @param bool   $use_block_editor Current block-editor decision.
+ * @param string $post_type        Post type slug.
+ * @return bool
+ */
+function mrn_editor_lockdown_force_classic_editor_for_post_type( $use_block_editor, $post_type ) {
+	if ( mrn_editor_lockdown_should_force_classic_editor_for_post_type( $post_type ) ) {
+		return false;
+	}
+
+	return (bool) $use_block_editor;
+}
+add_filter( 'use_block_editor_for_post_type', 'mrn_editor_lockdown_force_classic_editor_for_post_type', 100, 2 );
+add_filter( 'gutenberg_can_edit_post_type', 'mrn_editor_lockdown_force_classic_editor_for_post_type', 100, 2 );
+
+/**
+ * Force supported posts to use Classic Editor.
+ *
+ * @param bool    $use_block_editor Current block-editor decision.
+ * @param WP_Post $post             Current post object.
+ * @return bool
+ */
+function mrn_editor_lockdown_force_classic_editor_for_post( $use_block_editor, $post ) {
+	if ( $post instanceof WP_Post && mrn_editor_lockdown_should_force_classic_editor_for_post_type( $post->post_type ) ) {
+		return false;
+	}
+
+	return (bool) $use_block_editor;
+}
+add_filter( 'use_block_editor_for_post', 'mrn_editor_lockdown_force_classic_editor_for_post', 100, 2 );
+add_filter( 'gutenberg_can_edit_post', 'mrn_editor_lockdown_force_classic_editor_for_post', 100, 2 );
+
+/**
+ * Ensure TinyMCE/Quicktags runtime is available for classic edit screens.
+ *
+ * @param string $hook_suffix Current admin hook suffix.
+ * @return void
+ */
+function mrn_editor_lockdown_enqueue_editor_runtime( $hook_suffix ) {
+	if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ), true ) ) {
+		return;
+	}
+
+	if ( ! function_exists( 'wp_enqueue_editor' ) ) {
+		return;
+	}
+
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( ! $screen instanceof WP_Screen ) {
+		return;
+	}
+
+	$post_type = sanitize_key( (string) $screen->post_type );
+	if ( '' === $post_type && 'post-new.php' === $hook_suffix && isset( $_GET['post_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only context lookup.
+		$post_type = sanitize_key( (string) wp_unslash( $_GET['post_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only context lookup.
+	}
+
+	if ( '' === $post_type && 'post-new.php' === $hook_suffix ) {
+		$post_type = 'post';
+	}
+
+	if ( ! mrn_editor_lockdown_should_force_classic_editor_for_post_type( $post_type ) ) {
+		return;
+	}
+
+	wp_enqueue_editor();
+}
+add_action( 'admin_enqueue_scripts', 'mrn_editor_lockdown_enqueue_editor_runtime', 20 );
 
 /**
  * Enforce saved metabox layout user preferences for the current editor screen.
