@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.1.36' );
+	define( '_S_VERSION', '1.2.0' );
 }
 
 /**
@@ -1059,7 +1059,7 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 			$instructions = 'Overrides site spacing defaults for this row only.';
 		}
 
-		return array(
+		$field = array(
 			'key'               => $key_seed . '_' . sanitize_key( (string) $name ),
 			'label'             => $label,
 			'name'              => $name,
@@ -1079,6 +1079,71 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 			'ajax'              => 0,
 			'return_format'     => 'value',
 		);
+
+		$normalized = mrn_base_stack_ensure_disabled_builder_acf_field_runtime_keys( array( $field ) );
+
+		return ( ! empty( $normalized ) && is_array( $normalized[0] ) ) ? $normalized[0] : $field;
+	}
+
+	/**
+	 * Ensure disabled-builder dynamic ACF fields include runtime keys expected by ACF.
+	 *
+	 * Dynamic contracts may inject fields after ACF loads definitions, so this guard
+	 * keeps `_name` and wrapper keys present to avoid undefined-index warnings during
+	 * validation and table rendering.
+	 *
+	 * @param array<int, mixed> $fields Field definitions.
+	 * @return array<int, mixed>
+	 */
+	function mrn_base_stack_ensure_disabled_builder_acf_field_runtime_keys( array $fields ) {
+		foreach ( $fields as $index => $field ) {
+			if ( ! is_array( $field ) ) {
+				continue;
+			}
+
+			if ( isset( $field['name'] ) && is_string( $field['name'] ) && '' !== trim( $field['name'] ) && ! isset( $field['_name'] ) ) {
+				$field['_name'] = $field['name'];
+			}
+
+			if ( ! isset( $field['wrapper'] ) || ! is_array( $field['wrapper'] ) ) {
+				$field['wrapper'] = array();
+			}
+
+			if ( ! array_key_exists( 'width', $field['wrapper'] ) ) {
+				$field['wrapper']['width'] = '';
+			}
+
+			if ( ! array_key_exists( 'class', $field['wrapper'] ) ) {
+				$field['wrapper']['class'] = '';
+			}
+
+			if ( ! array_key_exists( 'id', $field['wrapper'] ) ) {
+				$field['wrapper']['id'] = '';
+			}
+
+			if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) ) {
+				$field['sub_fields'] = mrn_base_stack_ensure_disabled_builder_acf_field_runtime_keys( $field['sub_fields'] );
+			}
+
+			if ( isset( $field['fields'] ) && is_array( $field['fields'] ) ) {
+				$field['fields'] = mrn_base_stack_ensure_disabled_builder_acf_field_runtime_keys( $field['fields'] );
+			}
+
+			if ( isset( $field['layouts'] ) && is_array( $field['layouts'] ) ) {
+				foreach ( $field['layouts'] as $layout_key => $layout ) {
+					if ( ! is_array( $layout ) || ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+						continue;
+					}
+
+					$layout['sub_fields']            = mrn_base_stack_ensure_disabled_builder_acf_field_runtime_keys( $layout['sub_fields'] );
+					$field['layouts'][ $layout_key ] = $layout;
+				}
+			}
+
+			$fields[ $index ] = $field;
+		}
+
+		return $fields;
 	}
 
 	/**
@@ -1279,7 +1344,7 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 			);
 		}
 
-		return array_values( $fields );
+		return mrn_base_stack_ensure_disabled_builder_acf_field_runtime_keys( array_values( $fields ) );
 	}
 
 	/**
@@ -1316,7 +1381,8 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 			$field['layouts'][ $layout_key ] = $layout;
 		}
 
-		return $field;
+		$normalized = mrn_base_stack_ensure_disabled_builder_acf_field_runtime_keys( array( $field ) );
+		return ( ! empty( $normalized ) && is_array( $normalized[0] ) ) ? $normalized[0] : $field;
 	}
 
 	/**
@@ -1348,12 +1414,33 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 		$field['default_value'] = '';
 		$field['allow_null']    = 0;
 		$field['ui']            = 1;
-		return $field;
+		$normalized             = mrn_base_stack_ensure_disabled_builder_acf_field_runtime_keys( array( $field ) );
+		return ( ! empty( $normalized ) && is_array( $normalized[0] ) ) ? $normalized[0] : $field;
+	}
+
+	/**
+	 * Harden ACF validate-field payloads for disabled-builder dynamic contracts.
+	 *
+	 * @param array<string, mixed>|mixed $field ACF field definition.
+	 * @return array<string, mixed>|mixed
+	 */
+	function mrn_base_stack_harden_disabled_builder_acf_validate_field( $field ) {
+		if ( ! mrn_base_stack_should_apply_disabled_builder_row_spacing_contract() ) {
+			return $field;
+		}
+
+		if ( ! is_array( $field ) ) {
+			return $field;
+		}
+
+		$normalized = mrn_base_stack_ensure_disabled_builder_acf_field_runtime_keys( array( $field ) );
+		return ( ! empty( $normalized ) && is_array( $normalized[0] ) ) ? $normalized[0] : $field;
 	}
 
 	add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_apply_disabled_builder_row_spacing_contract_to_flexible_field', 35 );
 	add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_apply_disabled_builder_row_spacing_contract_to_flexible_field', 35 );
 	add_filter( 'acf/get_field', 'mrn_base_stack_apply_disabled_builder_row_spacing_contract_to_flexible_field', 35 );
+	add_filter( 'acf/validate_field', 'mrn_base_stack_harden_disabled_builder_acf_validate_field', 5 );
 	add_filter( 'acf/load_field/name=row_spacing_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
 	add_filter( 'acf/prepare_field/name=row_spacing_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
 	add_filter( 'acf/load_field/name=row_spacing_margin_preset', 'mrn_base_stack_apply_disabled_builder_row_spacing_choices', 35 );
