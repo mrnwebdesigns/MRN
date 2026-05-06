@@ -120,10 +120,8 @@
 
 - Yes, breadcrumbs can be added from a child theme.
 - Child-theme integration pattern (template-level):
-  - Check function availability before calling:
-    - `if ( function_exists( 'mrn_render_breadcrumbs' ) ) { ... }`
-  - Render in a child theme template:
-    - `mrn_render_breadcrumbs( array( 'placement' => 'singular_header' ) );`
+  - Use a guarded render snippet in child theme templates:
+    - `if ( function_exists( 'mrn_render_breadcrumbs' ) ) { mrn_render_breadcrumbs( array( 'placement' => 'singular_header' ) ); }`
   - Use placement keys already supported by stack settings:
     - `singular_header`
     - `archive_header`

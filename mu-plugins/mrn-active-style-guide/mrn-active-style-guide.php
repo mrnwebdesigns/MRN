@@ -624,7 +624,7 @@ function mrn_active_style_guide_get_breadcrumb_contract_reference(): array {
         'Shortcode (default)' => '[mrn_breadcrumbs]',
         'Shortcode (URL view)' => '[mrn_breadcrumbs view="url"]',
         'Shortcode (Post Type view)' => '[mrn_breadcrumbs view="post_type"]',
-        'Template helper (render)' => 'mrn_render_breadcrumbs( array( \'placement\' => \'singular_header\' ) );',
+        'Template helper (render)' => 'if ( function_exists( \'mrn_render_breadcrumbs\' ) ) { mrn_render_breadcrumbs( array( \'placement\' => \'singular_header\' ) ); }',
         'Data helper (items)' => '$items = mrn_get_breadcrumb_items();',
         'Placement keys' => 'singular_header, archive_header, search_header, error_header, home_header',
         'Per-entry override meta key' => '_mrn_breadcrumbs_manual_path',
@@ -638,7 +638,7 @@ function mrn_active_style_guide_get_breadcrumb_contract_reference(): array {
  */
 function mrn_active_style_guide_get_breadcrumb_child_theme_reference(): array {
     return array(
-        'Move to child-theme template' => 'Turn off the matching placement key in Breadcrumb Behavior, then call mrn_render_breadcrumbs() in your child-theme template where you want it.',
+        'Move to child-theme template' => 'Turn off the matching placement key in Breadcrumb Behavior, then add a guarded function_exists( \'mrn_render_breadcrumbs\' ) call in your child-theme template where you want it.',
         'Turn off globally' => 'Disable breadcrumbs in Config Helper > Breadcrumbs > Advanced Breadcrumbs.',
         'Turn off for specific contexts' => 'Use Breadcrumb Behavior context toggles (singular, archive, search, home, 404).',
         'Turn off for a specific template' => 'Keep global breadcrumbs on and return an empty array from mrn_breadcrumb_items when your template condition matches.',
@@ -653,8 +653,8 @@ function mrn_active_style_guide_get_breadcrumb_child_theme_reference(): array {
  */
 function mrn_active_style_guide_get_breadcrumb_implementation_reference(): array {
     return array(
-        'Choose one integration path' => 'Use template integration with mrn_render_breadcrumbs() or content integration with [mrn_breadcrumbs]. Do not assume base theme auto-output.',
-        'Template integration (recommended)' => 'Add mrn_render_breadcrumbs( array( \'placement\' => \'singular_header\' ) ) in the exact child-theme template area where breadcrumbs should appear.',
+        'Choose one integration path' => 'Use template integration with a guarded mrn_render_breadcrumbs() call or content integration with [mrn_breadcrumbs]. Do not assume base theme auto-output.',
+        'Template integration (recommended)' => 'Add a guarded function_exists( \'mrn_render_breadcrumbs\' ) call with placement => singular_header in the exact child-theme template area where breadcrumbs should appear.',
         'Shortcode integration' => 'Use [mrn_breadcrumbs] in Classic Editor content where template-level placement is not available.',
         'Manual override requirements' => 'Set Trail Mode to "Dynamic with per-page manual override" and enable "Use manual breadcrumb override" in the entry metabox.',
         'Accessibility baseline' => 'If custom markup is used, preserve nav landmark, list semantics, keyboard-reachable links, and aria-current="page" for the active crumb.',
