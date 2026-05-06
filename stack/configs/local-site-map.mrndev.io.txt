@@ -1,0 +1,15 @@
+# Map live hostnames to Local site paths.
+# Format:
+#   hostname|/absolute/local/site/path
+#
+# Examples:
+# default-configs.mrndev.io|/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public
+# artisanroofing.mrndev.io|/Users/khofmeyer/Local Sites/artisanroofing/app/public
+# morgandevelopment.mrndev.io|/Users/khofmeyer/Local Sites/morgandevelopment/app/public
+
+default-configs.mrndev.io|/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public
+morgandevelopment.mrndev.io|/Users/khofmeyer/Local Sites/morgandevelopment/app/public
+artisanroofing.mrndev.io|/Users/khofmeyer/Local Sites/artisanroofing/app/public
+gloves-online.mrndev.io|/Users/khofmeyer/Local Sites/gloves-online/app/public
+woocommerce.mrndev.io|/Users/khofmeyer/Local Sites/woocommerce/app/public
+wordpress-7.mrndev.io|/Users/khofmeyer/Local Sites/wordpress-7/app/public

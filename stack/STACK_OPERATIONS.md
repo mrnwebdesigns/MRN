@@ -30,6 +30,24 @@ The local MRN test site should point to canonical source via symlinks.
 
 This is the preferred local workflow because it keeps local testing aligned with the real source of truth.
 
+## Local Environment Pull/Deploy Rule
+
+Use the canonical Local environment helper when you want Local to act like an environment endpoint for a site:
+
+- `/Users/khofmeyer/Development/MRN/stack/scripts/local-env-workflow.sh`
+- `/Users/khofmeyer/Development/MRN/stack/scripts/nightly-pull-mrndev-sites.sh`
+- workflow guide: `/Users/khofmeyer/Development/MRN/stack/LOCAL_ENV_WORKFLOW.md`
+
+Behavior contract:
+
+- `pull` is for pulling a site's uploads/database into Local for testing/QA.
+- `pull` can also sync runtime code surfaces (`themes`, `plugins`, `mu-plugins`) from live into Local when Local API path resolution is used (or when `--sync-runtime` is passed).
+- `nightly-pull` is for scheduled multi-site pull of discovered `*.mrndev.io` sites, with snapshot fallback when no runnable Local path exists.
+- `deploy` always runs canonical live preflight by default and prompts for deploy scope:
+  - `site` scope for site-specific content/config updates
+  - `stack` scope for canonical stack code updates from this repo
+- Deploy writes are blocked until explicit confirmation unless intentionally bypassed with `--yes`.
+
 ## Server Ownership Rule
 
 - Stack-owned files should be written as:
