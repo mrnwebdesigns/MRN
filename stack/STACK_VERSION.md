@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.22-developer-reference-sidebar-and-editor-runtime-hardening`
-- Release date: `2026-04-22`
+- Stack release: `2026.05.06-front-end-runtime-autoload-for-reusable-interactions`
+- Release date: `2026-05-06`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.34`
+  - `mrn-base-stack` `1.2.1`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.3`
   - `mrn-admin-ui-css` `3.1.12`

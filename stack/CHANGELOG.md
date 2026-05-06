@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.05.06-front-end-runtime-autoload-for-reusable-interactions
+- Expanded `mrn-base-stack` to `1.2.1`.
+- Updated stack runtime enqueue behavior so front-end interaction assets can load on singular shell content when layout builder is disabled but runtime markers are present in content/meta.
+- Preserved compatibility by keeping the marker list filterable (`mrn_base_stack_front_end_runtime_markers`) and the final runtime enqueue decision filterable (`mrn_base_stack_should_enqueue_front_end_runtime`).
+- Fixed FAQ/tabs/slider interaction regressions on pages that rely on reusable-block or stack runtime features outside the layout-builder path.
+
 ## 2026.04.22-developer-reference-sidebar-and-editor-runtime-hardening
 - Expanded `mrn-base-stack` to `1.1.34`.
 - Expanded `mrn-active-style-guide` to `0.1.3`.

@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.2.0' );
+	define( '_S_VERSION', '1.2.1' );
 }
 
 /**
@@ -522,6 +522,128 @@ function mrn_base_stack_enqueue_motion_assets() {
 }
 
 /**
+ * Return front-end marker fragments that indicate runtime JS is needed.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_front_end_runtime_markers() {
+	$markers = array(
+		'[mrn_block',
+		'data-mrn-',
+		'mrn-splide',
+		'mrn-faq__item',
+		'data-video-src',
+	);
+
+	/**
+	 * Filter marker fragments used to detect runtime JS requirements.
+	 *
+	 * @param array<int, string> $markers Marker fragments.
+	 */
+	$markers = apply_filters( 'mrn_base_stack_front_end_runtime_markers', $markers );
+
+	if ( ! is_array( $markers ) ) {
+		return array();
+	}
+
+	$markers = array_values(
+		array_unique(
+			array_filter(
+				array_map(
+					static function ( $marker ) {
+						return is_string( $marker ) ? trim( $marker ) : '';
+					},
+					$markers
+				)
+			)
+		)
+	);
+
+	return $markers;
+}
+
+/**
+ * Recursively determine whether a value contains any runtime marker fragment.
+ *
+ * @param mixed              $value   Value to inspect.
+ * @param array<int, string> $markers Marker fragments.
+ * @return bool
+ */
+function mrn_base_stack_value_contains_runtime_marker( $value, array $markers ) {
+	if ( empty( $markers ) ) {
+		return false;
+	}
+
+	if ( is_string( $value ) ) {
+		foreach ( $markers as $marker ) {
+			if ( '' !== $marker && false !== stripos( $value, $marker ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	if ( is_array( $value ) ) {
+		foreach ( $value as $nested_value ) {
+			if ( mrn_base_stack_value_contains_runtime_marker( $nested_value, $markers ) ) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Determine whether a singular post appears to require stack runtime JS.
+ *
+ * @param int $post_id Post ID.
+ * @return bool
+ */
+function mrn_base_stack_post_requires_front_end_runtime( $post_id ) {
+	$post_id = absint( $post_id );
+	if ( $post_id < 1 ) {
+		return false;
+	}
+
+	$markers = mrn_base_stack_get_front_end_runtime_markers();
+	if ( empty( $markers ) ) {
+		return false;
+	}
+
+	$post_content = (string) get_post_field( 'post_content', $post_id );
+	if ( '' !== $post_content && mrn_base_stack_value_contains_runtime_marker( $post_content, $markers ) ) {
+		return true;
+	}
+
+	$meta = get_post_meta( $post_id );
+	if ( ! is_array( $meta ) || empty( $meta ) ) {
+		return false;
+	}
+
+	foreach ( $meta as $meta_key => $meta_values ) {
+		// Ignore ACF reference/meta internals and scan authored values only.
+		if ( ! is_string( $meta_key ) || '' === $meta_key || '_' === substr( $meta_key, 0, 1 ) ) {
+			continue;
+		}
+
+		if ( ! is_array( $meta_values ) ) {
+			continue;
+		}
+
+		foreach ( $meta_values as $meta_value ) {
+			$normalized_value = maybe_unserialize( $meta_value );
+			if ( mrn_base_stack_value_contains_runtime_marker( $normalized_value, $markers ) ) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
  * Enqueue scripts and styles.
  */
 function mrn_base_stack_scripts() {
@@ -638,7 +760,32 @@ function mrn_base_stack_scripts() {
 		);
 	}
 
-	if ( $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() ) ) {
+	$should_enqueue_builder_runtime = $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() );
+
+	if ( ! $should_enqueue_builder_runtime && is_singular( mrn_base_stack_get_singular_shell_post_types() ) ) {
+		$post_id = get_queried_object_id();
+
+		if ( $post_id && mrn_base_stack_post_requires_front_end_runtime( $post_id ) ) {
+			$should_enqueue_builder_runtime = true;
+		}
+	}
+
+	/**
+	 * Filter whether shared front-end runtime assets should load.
+	 *
+	 * This runtime powers stack features such as motion effects, tabs, sliders,
+	 * and reusable-block interactions even when the layout builder is disabled.
+	 *
+	 * @param bool $should_enqueue_builder_runtime Whether runtime assets should enqueue.
+	 * @param bool $layout_builder_enabled         Whether layout builder is enabled.
+	 */
+	$should_enqueue_builder_runtime = (bool) apply_filters(
+		'mrn_base_stack_should_enqueue_front_end_runtime',
+		$should_enqueue_builder_runtime,
+		$layout_builder_enabled
+	);
+
+	if ( $should_enqueue_builder_runtime ) {
 		mrn_base_stack_enqueue_motion_assets();
 
 		wp_enqueue_style(
