@@ -1776,7 +1776,7 @@ function mrn_base_stack_load_row_spacing_preset_field_choices( $field ) {
 
 	$field['choices']       = $choices;
 	$field['default_value'] = '';
-	$field['allow_null']    = 0;
+	$field['allow_null']    = 1;
 	$field['ui']            = 1;
 
 	return $field;
