@@ -12,8 +12,8 @@ _mrn_site_hostnames_prefixed() {
 	local -a hosts map_hosts remote_hosts filtered_hosts
 
 	prefix="${1:-}"
-	map_file="${MRN_LOCAL_SITE_MAP_FILE:-/Users/khofmeyer/Development/MRN/stack/configs/local-site-map.mrndev.io.txt}"
-	list_script="${MRN_MRNDEV_HOSTS_LIST_SCRIPT:-/Users/khofmeyer/Development/MRN/stack/scripts/list-mrndev-hostnames.sh}"
+	map_file="${MRN_LOCAL_SITE_MAP_FILE:-/Users/khofmeyer/Development/MRN/local/configs/local-site-map.mrndev.io.txt}"
+	list_script="${MRN_MRNDEV_HOSTS_LIST_SCRIPT:-/Users/khofmeyer/Development/MRN/local/scripts/list-mrndev-hostnames.sh}"
 	hosts=()
 	map_hosts=()
 	remote_hosts=()

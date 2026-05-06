@@ -15,7 +15,7 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 - A theme execution checklist (`THEME_TASKLIST.md`) for turning the roadmap into backend/frontend work.
 - A site update process guide (`SITE_UPDATE_PROCESS.md`) for safe plugin/theme rollouts, cloned active-theme deploys, and later front-end handoff expectations.
 - A stack workflow/ops guide (`STACK_OPERATIONS.md`) for local symlink workflow, server ownership, and sync/deploy rules.
-- A Local environment pull/deploy guide (`LOCAL_ENV_WORKFLOW.md`) for using Local like a site environment endpoint.
+- A Local environment pull/deploy guide (`../local/LOCAL_ENV_WORKFLOW.md`) for using Local like a site environment endpoint.
 - A canonical rollout checklist (`ROLLOUT_CHECKLIST.md`) for pre-flight QA, deploy-path decisions, post-deploy verification, and live parity checks.
 - A plugin inventory (`PLUGIN_CATALOG.md`) and plugin doc template (`PLUGIN_DOC_TEMPLATE.md`) for documenting MRN plugins and MU plugins.
 - First deep-dive plugin docs live in `plugin-docs/`.
@@ -24,9 +24,9 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 - A canonical direct site-owner SSH public key file (`configs/site-owner-authorized-key.pub`) that bootstrap installs into each new site owner's `authorized_keys`.
 - A canonical stack feature-deploy helper (`scripts/deploy-feature-stack-and-default-configs.sh`) that mirrors stack theme and MU changes to both the stack server and `default-configs.mrndev.io`.
 - A live-site preflight helper (`scripts/preflight-live-site-deploy.sh`) that resolves the site owner, verifies direct site-owner SSH, normalizes malformed Updraft placeholder settings, and starts a clean pre-deploy backup.
-- A Local environment workflow helper (`scripts/local-env-workflow.sh`) that pulls into Local and deploys with an explicit site-vs-stack scope prompt.
+- A Local environment workflow helper (`../local/scripts/local-env-workflow.sh`) that pulls into Local and deploys with an explicit site-vs-stack scope prompt.
 - A repo shortcut command (`../scripts/mrn`) for `mrn pull-site` and `mrn deploy-site`.
-- A nightly Local sync helper (`scripts/nightly-pull-mrndev-sites.sh`) for discovered `*.mrndev.io` sites.
+- A nightly Local sync helper (`../local/scripts/nightly-pull-mrndev-sites.sh`) for discovered `*.mrndev.io` sites.
 - A release build helper (`scripts/build-release-zips.sh`) that rebuilds ignored plugin, MU plugin, and stack theme zip artifacts into `../releases/`.
 - A rollout-contract QA script (`scripts/qa-rollout-contract.sh`) that verifies packaged theme parity, shared runtime presence, live active theme version parity, and rollout-owned CPT registration on `default-configs.mrndev.io`.
 - A checklist for non-portable plugin configs (`configs/plugin-config-checklist.md`).

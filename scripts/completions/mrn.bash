@@ -4,8 +4,8 @@ _mrn() {
 	cur="${COMP_WORDS[COMP_CWORD]}"
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
 	cmd="${COMP_WORDS[1]}"
-	map_file="${MRN_LOCAL_SITE_MAP_FILE:-/Users/khofmeyer/Development/MRN/stack/configs/local-site-map.mrndev.io.txt}"
-	list_script="${MRN_MRNDEV_HOSTS_LIST_SCRIPT:-/Users/khofmeyer/Development/MRN/stack/scripts/list-mrndev-hostnames.sh}"
+	map_file="${MRN_LOCAL_SITE_MAP_FILE:-/Users/khofmeyer/Development/MRN/local/configs/local-site-map.mrndev.io.txt}"
+	list_script="${MRN_MRNDEV_HOSTS_LIST_SCRIPT:-/Users/khofmeyer/Development/MRN/local/scripts/list-mrndev-hostnames.sh}"
 	site_hosts=""
 
 	if [[ -f "${map_file}" ]]; then

@@ -34,9 +34,9 @@ This is the preferred local workflow because it keeps local testing aligned with
 
 Use the canonical Local environment helper when you want Local to act like an environment endpoint for a site:
 
-- `/Users/khofmeyer/Development/MRN/stack/scripts/local-env-workflow.sh`
-- `/Users/khofmeyer/Development/MRN/stack/scripts/nightly-pull-mrndev-sites.sh`
-- workflow guide: `/Users/khofmeyer/Development/MRN/stack/LOCAL_ENV_WORKFLOW.md`
+- `/Users/khofmeyer/Development/MRN/local/scripts/local-env-workflow.sh`
+- `/Users/khofmeyer/Development/MRN/local/scripts/nightly-pull-mrndev-sites.sh`
+- workflow guide: `/Users/khofmeyer/Development/MRN/local/LOCAL_ENV_WORKFLOW.md`
 
 Behavior contract:
 

@@ -48,7 +48,7 @@ This is the reorganized MRN development workspace.
 - Shortcut command:
   - `/Users/khofmeyer/Development/MRN/scripts/mrn`
 - Docs:
-  - `/Users/khofmeyer/Development/MRN/stack/LOCAL_ENV_WORKFLOW.md`
+  - `/Users/khofmeyer/Development/MRN/local/LOCAL_ENV_WORKFLOW.md`
 - Includes:
   - `mrn pull-site`
   - `mrn deploy-site`

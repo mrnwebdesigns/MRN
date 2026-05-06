@@ -32,11 +32,11 @@ Examples:
 
 Notes:
   - This command is a wrapper around:
-    /Users/khofmeyer/Development/MRN/stack/scripts/local-env-workflow.sh
+    /Users/khofmeyer/Development/MRN/local/scripts/local-env-workflow.sh
   - `pull-site` first tries map/inferred Local paths.
   - If no Local path is found, `pull-site` attempts Local app API auto-create/reuse.
   - If Local app API is unavailable, pass `--local-site-path` or add a mapping.
-  - For Local API auto-created sites, pull auto-syncs runtime code
+  - For Local API-resolved sites, pull auto-syncs runtime code
     (themes/plugins/mu-plugins) before DB/media pull.
   - You can force runtime sync on any pull with `--sync-runtime`.
   - You can disable runtime sync with `--no-sync-runtime`.
@@ -54,8 +54,8 @@ done
 
 SCRIPT_DIR="$(cd -P "$(dirname "${SOURCE_PATH}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-LOCAL_WORKFLOW="${REPO_ROOT}/stack/scripts/local-env-workflow.sh"
-NIGHTLY_PULL_WORKFLOW="${REPO_ROOT}/stack/scripts/nightly-pull-mrndev-sites.sh"
+LOCAL_WORKFLOW="${REPO_ROOT}/local/scripts/local-env-workflow.sh"
+NIGHTLY_PULL_WORKFLOW="${REPO_ROOT}/local/scripts/nightly-pull-mrndev-sites.sh"
 ZSH_COMPLETION_SRC="${REPO_ROOT}/scripts/completions/_mrn"
 BASH_COMPLETION_SRC="${REPO_ROOT}/scripts/completions/mrn.bash"
 COMMAND="${1:-help}"
