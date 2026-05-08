@@ -53,6 +53,7 @@ $case_one = (string) $method->invoke(
 	array(
 		'body_font_family' => 'Public Sans',
 		'heading_font_family' => 'Geist',
+		'accent_font_family' => 'Lora',
 	)
 );
 
@@ -62,6 +63,7 @@ natcasesort($sorted_case_one);
 assert_or_exit(array_values($sorted_case_one) === $case_one_labels, 'Case 1 is not alphabetically sorted.');
 assert_or_exit(in_array('Public Sans', $case_one_labels, true), 'Case 1 missing Public Sans label.');
 assert_or_exit(in_array('Geist', $case_one_labels, true), 'Case 1 missing Geist label.');
+assert_or_exit(in_array('Lora', $case_one_labels, true), 'Case 1 missing Lora label.');
 
 // Case 2: existing formats already contain custom labels in non-alpha order.
 $case_two_existing = 'Public Sans=Public Sans,sans-serif;Geist=Geist,sans-serif;Arial=arial,helvetica,sans-serif';
@@ -71,6 +73,7 @@ $case_two = (string) $method->invoke(
 	array(
 		'body_font_family' => 'Public Sans',
 		'heading_font_family' => 'Geist',
+		'accent_font_family' => 'Lora',
 	)
 );
 
