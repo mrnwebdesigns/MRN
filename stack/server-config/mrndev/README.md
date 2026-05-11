@@ -2,6 +2,9 @@
 
 This folder tracks operational files used by the `mrndev` server.
 
+Runbook:
+- `RUNBOOK.md` is a quick copy/paste command playbook for incident recovery, SSH/fail2ban fixes, monitoring operations, and config sync.
+
 Manifest:
 - `manifest.txt` maps local repo files to remote server paths.
 - Format: `local_path|remote_path|access_mode|file_mode`
