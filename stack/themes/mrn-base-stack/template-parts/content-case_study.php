@@ -17,6 +17,8 @@ $mrn_services        = isset( $mrn_case_study['services'] ) && is_array( $mrn_ca
 $mrn_strategy_text   = isset( $mrn_case_study['strategy_content'] ) ? (string) $mrn_case_study['strategy_content'] : '';
 $mrn_strategy_image  = isset( $mrn_case_study['strategy_image'] ) && is_array( $mrn_case_study['strategy_image'] ) ? $mrn_case_study['strategy_image'] : null;
 $mrn_strategy_side   = isset( $mrn_case_study['strategy_image_position'] ) ? (string) $mrn_case_study['strategy_image_position'] : 'right';
+$mrn_categories_list = get_the_term_list( $mrn_post_id, 'category', '', esc_html__( ', ', 'mrn-base-stack' ) );
+$mrn_tags_list       = get_the_term_list( $mrn_post_id, 'post_tag', '', esc_html_x( ', ', 'list item separator', 'mrn-base-stack' ) );
 ?>
 
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
@@ -55,6 +57,34 @@ $mrn_strategy_side   = isset( $mrn_case_study['strategy_image_position'] ) ? (st
 							<p class="entry-summary"><?php echo esc_html( $mrn_subheading ); ?></p>
 						<?php endif; ?>
 					</header>
+				<?php endif; ?>
+
+				<?php if ( $mrn_categories_list || $mrn_tags_list ) : ?>
+					<div class="entry-meta">
+						<?php if ( $mrn_categories_list ) : ?>
+							<span class="cat-links">
+								<?php
+								printf(
+									/* translators: 1: list of categories. */
+									esc_html__( 'Posted in %1$s', 'mrn-base-stack' ),
+									$mrn_categories_list // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								);
+								?>
+							</span>
+						<?php endif; ?>
+
+						<?php if ( $mrn_tags_list ) : ?>
+							<span class="tags-links">
+								<?php
+								printf(
+									/* translators: 1: list of tags. */
+									esc_html__( 'Tagged %1$s', 'mrn-base-stack' ),
+									$mrn_tags_list // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								);
+								?>
+							</span>
+						<?php endif; ?>
+					</div>
 				<?php endif; ?>
 
 				<div class="entry-content entry-content--builder">
@@ -167,6 +197,34 @@ $mrn_strategy_side   = isset( $mrn_case_study['strategy_image_position'] ) ? (st
 
 				<?php if ( '' !== $mrn_subheading ) : ?>
 					<p class="entry-summary"><?php echo esc_html( $mrn_subheading ); ?></p>
+				<?php endif; ?>
+
+				<?php if ( $mrn_categories_list || $mrn_tags_list ) : ?>
+					<div class="entry-meta">
+						<?php if ( $mrn_categories_list ) : ?>
+							<span class="cat-links">
+								<?php
+								printf(
+									/* translators: 1: list of categories. */
+									esc_html__( 'Posted in %1$s', 'mrn-base-stack' ),
+									$mrn_categories_list // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								);
+								?>
+							</span>
+						<?php endif; ?>
+
+						<?php if ( $mrn_tags_list ) : ?>
+							<span class="tags-links">
+								<?php
+								printf(
+									/* translators: 1: list of tags. */
+									esc_html__( 'Tagged %1$s', 'mrn-base-stack' ),
+									$mrn_tags_list // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								);
+								?>
+							</span>
+						<?php endif; ?>
+					</div>
 				<?php endif; ?>
 			</header>
 
