@@ -81,6 +81,7 @@ fi
 pull_file() {
 	local local_rel="$1"
 	local remote_path="$2"
+	local file_mode="$3"
 	local local_abs="${REPO_ROOT}/${local_rel}"
 	local local_dir tmp_file
 
@@ -90,12 +91,13 @@ pull_file() {
 	mkdir -p "${local_dir}"
 
 	if [[ "${DRY_RUN}" -eq 1 ]]; then
-		echo "PULL ${remote_path} -> ${local_rel}"
+		echo "PULL ${remote_path} -> ${local_rel} (mode ${file_mode})"
 		return 0
 	fi
 
 	if ssh -n "${SSH_HOST}" "cat '${remote_path}' 2>/dev/null" > "${tmp_file}"; then
 		mv "${tmp_file}" "${local_abs}"
+		chmod "${file_mode}" "${local_abs}"
 		echo "Pulled ${remote_path} -> ${local_rel}"
 	else
 		rm -f "${tmp_file}"
@@ -169,7 +171,7 @@ while IFS='|' read -r local_rel remote_path access_mode file_mode; do
 	processed=$(( processed + 1 ))
 
 	if [[ "${MODE}" == "pull" ]]; then
-		if ! pull_file "${local_rel}" "${remote_path}"; then
+		if ! pull_file "${local_rel}" "${remote_path}" "${file_mode}"; then
 			if [[ "${access_mode}" == "ro" ]]; then
 				echo "WARN: Pull skipped for ro entry (permission or availability): ${remote_path}" >&2
 				skipped=$(( skipped + 1 ))
