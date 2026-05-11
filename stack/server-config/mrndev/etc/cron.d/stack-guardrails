@@ -1,0 +1,5 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Nightly guardrail drift check + auto-fix at 2:17 AM America/New_York (06:17 UTC while on EDT)
+17 6 * * * root /usr/local/sbin/enforce-stack-guardrails.sh --apply >> /var/log/stack-guardrails-cron.log 2>&1

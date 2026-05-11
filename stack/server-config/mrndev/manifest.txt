@@ -1,0 +1,5 @@
+# local_path|remote_path|access_mode|file_mode
+stack/scripts/stack-load-alerts-user.sh|/home/mrndev-stack-manager/stack/scripts/stack-load-alerts-user.sh|rw|750
+stack/server-config/mrndev/etc/cron.d/stack-load-alerts|/etc/cron.d/stack-load-alerts|ro|644
+stack/server-config/mrndev/etc/cron.d/stack-guardrails|/etc/cron.d/stack-guardrails|ro|644
+stack/server-config/mrndev/usr/local/sbin/stack-load-alerts.sh|/home/mrndev-stack-manager/stack/server-config-export/usr/local/sbin/stack-load-alerts.sh|ro|644
