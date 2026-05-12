@@ -1,0 +1,545 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ENGINE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+ENGINE_VERSION="$(cat "${ENGINE_ROOT}/VERSION")"
+
+source "${ENGINE_ROOT}/lib/common.sh"
+source "${ENGINE_ROOT}/lib/discovery.sh"
+source "${ENGINE_ROOT}/lib/report.sh"
+source "${ENGINE_ROOT}/lib/checks_wordpress.sh"
+
+usage() {
+  cat <<USAGE
+MRN QA Engine v${ENGINE_VERSION}
+
+Usage:
+  mrn-qa init [--project-root <path>]
+  mrn-qa doctor [--project-root <path>]
+  mrn-qa run [options]
+
+Run options:
+  --project-root <path>
+  --profile <name>                     (default: wordpress-site)
+  --site-path <path>
+  --site-url <url>
+  --stack-root <path>
+  --scope <site-only|site+stack>
+  --approved-ref <ref>
+  --approved-ref-mode <auto|explicit-ref|approved-clean-working-tree>
+  --run-smoke <auto|always|never>
+  --smoke-scope <public|full>
+  --smoke-strict <0|1>
+  --playwright-provider <engine|stack|auto>
+  --mode <standard|release>
+  --output-file <path>
+
+Examples:
+  mrn-qa init
+  mrn-qa doctor
+  mrn-qa run --mode release --output-file reports/release-qa.md
+USAGE
+}
+
+append_line() {
+  local var_name="$1"
+  local line="$2"
+  if [[ -z "${!var_name:-}" ]]; then
+    printf -v "${var_name}" '%s' "${line}"
+  else
+    printf -v "${var_name}" '%s\n%s' "${!var_name}" "${line}"
+  fi
+}
+
+add_blocked_tool_rows() {
+  local blocked_note="$1"
+  local tools=(
+    "PHP lint"
+    "PHPCS"
+    "PHPStan"
+    "Semgrep"
+    "git diff --check"
+    "ESLint"
+    "Stylelint"
+    "Composer audit"
+    "npm audit"
+    "PHPUnit"
+    "audit-config-helper-parity.sh"
+    "qa-theme.sh"
+    "qa-security.sh"
+    "qa-playwright-local-stack-site.sh"
+    "qa-page-speed.sh"
+    "qa-rollout-contract.sh"
+    "qa-local-stack-site.sh"
+  )
+
+  local tool
+  for tool in "${tools[@]}"; do
+    report_add_tool_row "${tool}" "Skipped" "Fail/Blocked" "${PROJECT_ROOT}" "${blocked_note}"
+  done
+}
+
+classify_changed_files() {
+  local changed_files="$1"
+
+  CLASS_HAS_THEME=0
+  CLASS_HAS_MU=0
+  CLASS_HAS_PLUGIN=0
+  CLASS_HAS_FRONTEND=0
+  CLASS_HAS_SECURITY_SENSITIVE=0
+  CLASS_DOCS_ONLY=1
+
+  local file
+  while IFS= read -r file; do
+    [[ -z "${file}" ]] && continue
+
+    if [[ "${file}" == themes/* ]]; then
+      CLASS_HAS_THEME=1
+      CLASS_HAS_FRONTEND=1
+      CLASS_HAS_SECURITY_SENSITIVE=1
+      CLASS_DOCS_ONLY=0
+    elif [[ "${file}" == wp-content/mu-plugins/* ]]; then
+      CLASS_HAS_MU=1
+      CLASS_HAS_SECURITY_SENSITIVE=1
+      CLASS_DOCS_ONLY=0
+    elif [[ "${file}" == plugins/* ]]; then
+      CLASS_HAS_PLUGIN=1
+      CLASS_HAS_SECURITY_SENSITIVE=1
+      CLASS_DOCS_ONLY=0
+    elif [[ "${file}" == docs/* || "${file}" == scripts/* || "${file}" == *.md ]]; then
+      :
+    else
+      CLASS_DOCS_ONLY=0
+    fi
+  done <<<"${changed_files}"
+}
+
+gather_changed_files() {
+  local root="$1"
+  if ! repo_is_git "${root}"; then
+    return 0
+  fi
+
+  {
+    git -C "${root}" diff --name-only
+    git -C "${root}" diff --name-only --cached
+    git -C "${root}" ls-files --others --exclude-standard
+  } | sed '/^$/d' | sort -u
+}
+
+load_project_config() {
+  local project_root="$1"
+  local profile="$2"
+
+  local profile_file="${ENGINE_ROOT}/profiles/${profile}.env"
+  if [[ ! -f "${profile_file}" ]]; then
+    log_error "Profile not found: ${profile_file}"
+    exit 1
+  fi
+
+  # shellcheck disable=SC1090
+  source "${profile_file}"
+
+  local config_file="${project_root}/.mrn-qa.env"
+  if [[ -f "${config_file}" ]]; then
+    # shellcheck disable=SC1090
+    source "${config_file}"
+  fi
+}
+
+cmd_init() {
+  local project_root="$(pwd -P)"
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --project-root)
+        project_root="$2"
+        shift 2
+        ;;
+      -h|--help)
+        usage
+        return 0
+        ;;
+      *)
+        log_error "Unknown init option: $1"
+        return 1
+        ;;
+    esac
+  done
+
+  project_root="$(abspath "${project_root}")"
+  ensure_dir "${project_root}"
+
+  local target="${project_root}/.mrn-qa.env"
+  if [[ -f "${target}" ]]; then
+    log_warn "Config already exists: ${target}"
+    return 0
+  fi
+
+  cp "${ENGINE_ROOT}/.mrn-qa.env.example" "${target}"
+  log_info "Created ${target}"
+}
+
+cmd_doctor() {
+  local project_root="$(pwd -P)"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --project-root)
+        project_root="$2"
+        shift 2
+        ;;
+      -h|--help)
+        usage
+        return 0
+        ;;
+      *)
+        log_error "Unknown doctor option: $1"
+        return 1
+        ;;
+    esac
+  done
+
+  project_root="$(abspath "${project_root}")"
+  local stack_root="${MRN_QA_STACK_ROOT:-/Users/khofmeyer/Development/MRN}"
+
+  echo "MRN QA Engine doctor"
+  echo "Engine root: ${ENGINE_ROOT}"
+  echo "Project root: ${project_root}"
+  echo "Stack root: ${stack_root}"
+  echo
+
+  local cmd
+  for cmd in php git wp composer npm semgrep; do
+    if command_exists "${cmd}"; then
+      echo "- ${cmd}: $(command -v "${cmd}")"
+    else
+      echo "- ${cmd}: missing"
+    fi
+  done
+
+  echo
+  local engine_playwright_runner="${ENGINE_ROOT}/tools/run-playwright-smoke.sh"
+  if [[ -x "${engine_playwright_runner}" ]]; then
+    echo "- engine Playwright runner: ${engine_playwright_runner}"
+  else
+    echo "- engine Playwright runner: missing (${engine_playwright_runner})"
+  fi
+  if [[ -d "${ENGINE_ROOT}/node_modules/@playwright/test" ]]; then
+    echo "- engine Playwright deps: installed"
+  else
+    echo "- engine Playwright deps: missing (run npm install + npx playwright install chromium in engine repo)"
+  fi
+
+  echo
+  local required_scripts=(
+    "${stack_root}/stack/scripts/audit-config-helper-parity.sh"
+    "${stack_root}/stack/scripts/qa-theme.sh"
+    "${stack_root}/stack/scripts/qa-security.sh"
+    "${stack_root}/stack/scripts/qa-playwright-local-stack-site.sh"
+    "${stack_root}/stack/scripts/qa-page-speed.sh"
+    "${stack_root}/stack/scripts/qa-rollout-contract.sh"
+  )
+
+  for script_path in "${required_scripts[@]}"; do
+    if [[ -x "${script_path}" ]]; then
+      echo "- script OK: ${script_path}"
+    else
+      echo "- script missing: ${script_path}"
+    fi
+  done
+}
+
+cmd_run() {
+  local cli_profile=""
+  local cli_project_root=""
+  local cli_site_path=""
+  local cli_site_url=""
+  local cli_stack_root=""
+  local cli_scope=""
+  local cli_approved_ref=""
+  local cli_approved_ref_mode=""
+  local cli_run_smoke=""
+  local cli_smoke_scope=""
+  local cli_smoke_strict=""
+  local cli_playwright_provider=""
+  local cli_mode=""
+  local cli_output_file=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --project-root) cli_project_root="$2"; shift 2 ;;
+      --profile) cli_profile="$2"; shift 2 ;;
+      --site-path) cli_site_path="$2"; shift 2 ;;
+      --site-url) cli_site_url="$2"; shift 2 ;;
+      --stack-root) cli_stack_root="$2"; shift 2 ;;
+      --scope) cli_scope="$2"; shift 2 ;;
+      --approved-ref) cli_approved_ref="$2"; shift 2 ;;
+      --approved-ref-mode) cli_approved_ref_mode="$2"; shift 2 ;;
+      --run-smoke) cli_run_smoke="$2"; shift 2 ;;
+      --smoke-scope) cli_smoke_scope="$2"; shift 2 ;;
+      --smoke-strict) cli_smoke_strict="$2"; shift 2 ;;
+      --playwright-provider) cli_playwright_provider="$2"; shift 2 ;;
+      --mode) cli_mode="$2"; shift 2 ;;
+      --output-file) cli_output_file="$2"; shift 2 ;;
+      -h|--help) usage; return 0 ;;
+      *) log_error "Unknown run option: $1"; return 1 ;;
+    esac
+  done
+
+  local profile="$(first_non_empty "${cli_profile}" "${MRN_QA_PROFILE:-}" "wordpress-site")"
+  local project_root_candidate
+  project_root_candidate="$(first_non_empty "${cli_project_root}" "${MRN_QA_PROJECT_ROOT:-}" "$(pwd -P)")"
+  project_root_candidate="$(abspath "${project_root_candidate}")"
+
+  load_project_config "${project_root_candidate}" "${profile}"
+
+  PROJECT_ROOT="$(detect_repo_root "$(first_non_empty "${cli_project_root}" "${MRN_QA_PROJECT_ROOT:-}" "${project_root_candidate}")")"
+  PROJECT_ROOT="$(abspath "${PROJECT_ROOT}")"
+
+  STACK_ROOT="$(first_non_empty "${cli_stack_root}" "${MRN_QA_STACK_ROOT:-}" "/Users/khofmeyer/Development/MRN")"
+  MRN_QA_SCOPE="$(first_non_empty "${cli_scope}" "${MRN_QA_SCOPE:-}" "site-only")"
+  MRN_QA_APPROVED_REF="$(first_non_empty "${cli_approved_ref}" "${MRN_QA_APPROVED_REF:-}" "")"
+  MRN_QA_APPROVED_REF_MODE="$(first_non_empty "${cli_approved_ref_mode}" "${MRN_QA_APPROVED_REF_MODE:-}" "auto")"
+  MRN_QA_RUN_SMOKE="$(first_non_empty "${cli_run_smoke}" "${MRN_QA_RUN_SMOKE:-}" "auto")"
+  MRN_SMOKE_SCOPE="$(first_non_empty "${cli_smoke_scope}" "${MRN_SMOKE_SCOPE:-}" "public")"
+  MRN_SMOKE_STRICT="$(first_non_empty "${cli_smoke_strict}" "${MRN_SMOKE_STRICT:-}" "0")"
+  MRN_QA_PLAYWRIGHT_PROVIDER="$(first_non_empty "${cli_playwright_provider}" "${MRN_QA_PLAYWRIGHT_PROVIDER:-}" "engine")"
+  MRN_QA_MODE="$(first_non_empty "${cli_mode}" "${MRN_QA_MODE:-}" "standard")"
+  OUTPUT_FILE="$(first_non_empty "${cli_output_file}" "")"
+
+  case "${MRN_QA_PLAYWRIGHT_PROVIDER}" in
+    engine|stack|auto) ;;
+    *)
+      log_error "Invalid --playwright-provider: ${MRN_QA_PLAYWRIGHT_PROVIDER} (expected engine|stack|auto)"
+      return 1
+      ;;
+  esac
+
+  local local_sites_root
+  local_sites_root="$(first_non_empty "${MRN_QA_LOCAL_SITES_ROOT:-}" "/Users/khofmeyer/Local Sites")"
+
+  SITE_PATH="$(first_non_empty "${cli_site_path}" "${MRN_QA_SITE_PATH:-}" "")"
+  if [[ -z "${SITE_PATH}" ]]; then
+    SITE_PATH="$(detect_site_path "${PROJECT_ROOT}" "${local_sites_root}" || true)"
+  fi
+
+  SITE_URL="$(first_non_empty "${cli_site_url}" "${MRN_QA_SITE_URL:-}" "")"
+  if [[ -z "${SITE_URL}" && -n "${SITE_PATH}" ]]; then
+    SITE_URL="$(detect_site_url "${SITE_PATH}" | tail -n 1 || true)"
+  fi
+
+  local repos=()
+  repos+=("${PROJECT_ROOT}")
+  while IFS= read -r nested_repo; do
+    [[ -z "${nested_repo}" ]] && continue
+    repos+=("${nested_repo}")
+  done < <(detect_nested_git_repos "${PROJECT_ROOT}")
+
+  local changed_files=""
+  local root_repo_for_snapshot="${PROJECT_ROOT}"
+  local snapshot_path=""
+  local snapshot_created=0
+  local check_project_root="${PROJECT_ROOT}"
+
+  SECTION_CHANGES_SUMMARY=""
+  SECTION_RELEASE_READINESS=""
+  SECTION_VERIFICATION_STEPS=""
+  SECTION_MISSING_ITEMS=""
+  SECTION_ROLLOUT_RISKS=""
+  SECTION_SECURITY_CONCERNS=""
+  SECTION_ACCESSIBILITY_CONCERNS=""
+  SECTION_PERFORMANCE_CONCERNS=""
+  SECTION_CLASSIFICATION_BLOCKERS=""
+  SECTION_CLASSIFICATION_SHOULD_FIX=""
+  SECTION_CLASSIFICATION_FOLLOW_UP=""
+  SECTION_CROSS_REPO_RISKS=""
+
+  local stop_blocked=0
+  local resolved_ref_mode="${MRN_QA_APPROVED_REF_MODE}"
+  local root_dirty_state="non-git"
+  if [[ "${resolved_ref_mode}" == "auto" ]]; then
+    if [[ -n "${MRN_QA_APPROVED_REF}" ]]; then
+      resolved_ref_mode="explicit-ref"
+    else
+      resolved_ref_mode="approved-clean-working-tree"
+    fi
+  fi
+
+  append_line SECTION_RELEASE_READINESS "- Mode: ${MRN_QA_MODE}"
+  append_line SECTION_RELEASE_READINESS "- Scope: ${MRN_QA_SCOPE}"
+  append_line SECTION_RELEASE_READINESS "- Approved ref mode: ${resolved_ref_mode}"
+  append_line SECTION_RELEASE_READINESS "- Playwright provider: ${MRN_QA_PLAYWRIGHT_PROVIDER}"
+  append_line SECTION_RELEASE_READINESS "- Project root: ${PROJECT_ROOT}"
+
+  if [[ -n "${SITE_PATH}" ]]; then
+    append_line SECTION_RELEASE_READINESS "- Site path: ${SITE_PATH}"
+  else
+    append_line SECTION_RELEASE_READINESS "- Site path: unresolved"
+  fi
+
+  if [[ -n "${SITE_URL}" ]]; then
+    append_line SECTION_RELEASE_READINESS "- Site URL: ${SITE_URL}"
+  else
+    append_line SECTION_RELEASE_READINESS "- Site URL: unresolved"
+  fi
+
+  append_line SECTION_CHANGES_SUMMARY "- In-scope repos detected: ${#repos[@]}"
+
+  local repo
+  for repo in "${repos[@]}"; do
+    local branch sha tag dirty
+    branch="$(repo_branch "${repo}")"
+    sha="$(repo_sha "${repo}")"
+    tag="$(repo_tag_exact "${repo}")"
+    dirty="$(repo_dirty_state "${repo}")"
+    if [[ "${repo}" == "${PROJECT_ROOT}" ]]; then
+      root_dirty_state="${dirty}"
+    fi
+
+    append_line SECTION_CHANGES_SUMMARY "- Repo: ${repo}"
+    append_line SECTION_CHANGES_SUMMARY "  - branch: ${branch}"
+    append_line SECTION_CHANGES_SUMMARY "  - commit: ${sha}"
+    append_line SECTION_CHANGES_SUMMARY "  - tag: ${tag:-none}"
+    append_line SECTION_CHANGES_SUMMARY "  - working tree: ${dirty}"
+
+    if [[ "${resolved_ref_mode}" == "approved-clean-working-tree" && "${dirty}" == "dirty" ]]; then
+      stop_blocked=1
+      append_line SECTION_CLASSIFICATION_BLOCKERS "- Dirty repo without explicit approved ref: ${repo}"
+    fi
+
+    if [[ "${resolved_ref_mode}" == "explicit-ref" && -z "${MRN_QA_APPROVED_REF}" ]]; then
+      stop_blocked=1
+      append_line SECTION_CLASSIFICATION_BLOCKERS "- Approved ref mode is explicit-ref but no MRN_QA_APPROVED_REF was provided."
+    fi
+  done
+
+  if [[ "${resolved_ref_mode}" == "explicit-ref" && -n "${MRN_QA_APPROVED_REF}" && "${root_dirty_state}" == "dirty" ]]; then
+    snapshot_path="$(mktemp -d /tmp/mrn-qa-snapshot-XXXXXX)"
+    if git -C "${root_repo_for_snapshot}" worktree add --detach "${snapshot_path}" "${MRN_QA_APPROVED_REF}" >/tmp/mrn-qa-worktree-add.out 2>&1; then
+      snapshot_created=1
+      check_project_root="${snapshot_path}"
+      append_line SECTION_RELEASE_READINESS "- Snapshot safety: using clean snapshot ${snapshot_path} at ref ${MRN_QA_APPROVED_REF}"
+    else
+      stop_blocked=1
+      append_line SECTION_CLASSIFICATION_BLOCKERS "- Failed to create clean snapshot from approved ref ${MRN_QA_APPROVED_REF}."
+      append_line SECTION_CLASSIFICATION_BLOCKERS "- Snapshot error: $(tail -n 3 /tmp/mrn-qa-worktree-add.out | tr '\n' ' ' | sed 's/[[:space:]]\\+/ /g')"
+    fi
+  fi
+
+  changed_files="$(gather_changed_files "${check_project_root}")"
+  classify_changed_files "${changed_files}"
+
+  local required_file
+  while IFS= read -r required_file; do
+    [[ -z "${required_file}" ]] && continue
+    if [[ ! -f "${required_file}" ]]; then
+      stop_blocked=1
+      append_line SECTION_CLASSIFICATION_BLOCKERS "- Missing required discovery file: ${required_file}"
+    fi
+  done < <(read_required_discovery_files "${PROJECT_ROOT}")
+
+  if [[ -z "${changed_files}" ]]; then
+    append_line SECTION_CHANGES_SUMMARY "- Changed files: none detected"
+  else
+    append_line SECTION_CHANGES_SUMMARY "- Changed files (project root):"
+    while IFS= read -r cf; do
+      append_line SECTION_CHANGES_SUMMARY "  - ${cf}"
+    done <<<"${changed_files}"
+  fi
+
+  append_line SECTION_VERIFICATION_STEPS "- Verified repo release state for each in-scope repository."
+  append_line SECTION_VERIFICATION_STEPS "- Executed standardized QA toolchain rows with pass/fail evidence."
+  append_line SECTION_VERIFICATION_STEPS "- Applied scope-aware smoke and rollout checks based on policy."
+
+  append_line SECTION_SECURITY_CONCERNS "- Review nonce, capability, sanitization, and escaping in any failing PHPCS/Semgrep rows."
+  append_line SECTION_ACCESSIBILITY_CONCERNS "- Run WCAG-focused manual checks when frontend/theme rows are in scope."
+  append_line SECTION_PERFORMANCE_CONCERNS "- Run qa-page-speed.sh when frontend output is changed."
+
+  if [[ "${MRN_QA_SCOPE}" == "site+stack" ]]; then
+    append_line SECTION_CROSS_REPO_RISKS "- Site+stack scope selected: coordinate stack rollout order before deploy."
+  else
+    append_line SECTION_CROSS_REPO_RISKS "- Site-only scope selected: verify no hidden dependency on unreleased stack changes."
+  fi
+
+  report_reset
+
+  if [[ ${stop_blocked} -eq 0 ]]; then
+    PROJECT_ROOT="${check_project_root}"
+    set +e
+    run_wordpress_checks
+    local check_failures=$?
+    set -e
+
+    if [[ ${check_failures} -eq 0 ]]; then
+      report_set_overall "Pass" "all in-scope site repos" "100% SUCCESS"
+      append_line SECTION_CLASSIFICATION_FOLLOW_UP "- none"
+    else
+      report_set_overall "Fail/Blocked" "all in-scope site repos" "Failing or warning checks present"
+      append_line SECTION_CLASSIFICATION_SHOULD_FIX "- Resolve failed checks listed in Tool Execution Report before release sign-off."
+    fi
+  else
+    report_add_tool_row "Release state precheck" "Ran" "Fail/Blocked" "${PROJECT_ROOT}" "Blocked by stop conditions"
+    add_blocked_tool_rows "Not run due to release-state/discovery blockers"
+    report_set_overall "Fail/Blocked" "all in-scope site repos" "Blocked before tool execution"
+    append_line SECTION_MISSING_ITEMS "- Resolve blockers listed under Classification > release blockers."
+  fi
+
+  if [[ -z "${SECTION_CLASSIFICATION_BLOCKERS}" ]]; then
+    SECTION_CLASSIFICATION_BLOCKERS="- none"
+  fi
+
+  if [[ -z "${SECTION_CLASSIFICATION_SHOULD_FIX}" ]]; then
+    SECTION_CLASSIFICATION_SHOULD_FIX="- none"
+  fi
+
+  if [[ -z "${SECTION_CLASSIFICATION_FOLLOW_UP}" ]]; then
+    SECTION_CLASSIFICATION_FOLLOW_UP="- Add project-specific regression cases as coverage grows."
+  fi
+
+  if [[ -z "${SECTION_MISSING_ITEMS}" ]]; then
+    SECTION_MISSING_ITEMS="- none"
+  fi
+
+  if [[ -z "${SECTION_ROLLOUT_RISKS}" ]]; then
+    SECTION_ROLLOUT_RISKS="- Deploying out of order can desync site and stack expectations; verify scope before release."
+  fi
+
+  report_emit_markdown "${OUTPUT_FILE}"
+
+  if [[ ${snapshot_created} -eq 1 && -n "${snapshot_path}" ]]; then
+    git -C "${root_repo_for_snapshot}" worktree remove --force "${snapshot_path}" >/dev/null 2>&1 || true
+  fi
+
+  if [[ "${REPORT_OVERALL_PASS_FAIL}" == "Pass" ]]; then
+    return 0
+  fi
+  return 1
+}
+
+main() {
+  local command="${1:-}"
+  if [[ -z "${command}" ]]; then
+    usage
+    exit 1
+  fi
+  shift || true
+
+  case "${command}" in
+    init) cmd_init "$@" ;;
+    doctor) cmd_doctor "$@" ;;
+    run) cmd_run "$@" ;;
+    version|--version|-v)
+      echo "${ENGINE_VERSION}"
+      ;;
+    -h|--help|help)
+      usage
+      ;;
+    *)
+      log_error "Unknown command: ${command}"
+      usage
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

@@ -1,0 +1,12 @@
+{
+  "name": "mrn-qa-engine",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Portable QA engine runtime dependencies",
+  "scripts": {
+    "smoke:playwright": "playwright test --config ./playwright.config.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.2"
+  }
+}
