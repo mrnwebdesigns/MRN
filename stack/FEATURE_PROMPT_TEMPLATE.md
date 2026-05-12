@@ -76,13 +76,22 @@ The goal is to make sure new work starts with the right scope, ownership, access
 - `git diff --check`
 - Security review for nonce, capability, sanitize, and escape coverage
 - Relevant local stack QA
+- Playwright smoke only when scope requires it:
+  - required: frontend rendering changes, login/auth flows, role/capability changes, or critical admin workflows
+  - optional: routine admin-only visual/styling changes that do not affect auth, permissions, or data handling
 - Accessibility review on affected flows
 - Performance review on affected stack-owned pages
+- PHPStan policy:
+  - prefer `/Users/khofmeyer/Development/MRN/scripts/mrn-phpstan.sh` so checks use the shared MRN binary/config
+  - required when the shared runner/config are available in the current environment
+  - if not configured/available, mark `Skipped` with reason (not a release blocker by itself)
 
 ## Suggested Local QA
 - `/Users/khofmeyer/Development/MRN/stack/scripts/qa-theme.sh`
 - `/Users/khofmeyer/Development/MRN/stack/scripts/qa-security.sh`
-- `/Users/khofmeyer/Development/MRN/stack/scripts/qa-playwright-local-stack-site.sh`
+- `/Users/khofmeyer/Development/MRN/scripts/mrn-smoke.sh --scope public` (default for non-auth/non-permission UI checks)
+- `/Users/khofmeyer/Development/MRN/scripts/mrn-smoke.sh --scope full` (when auth/permissions/admin workflows are in scope)
+- `/Users/khofmeyer/Development/MRN/stack/scripts/qa-playwright-local-stack-site.sh` (only when required by scope above)
 - `/Users/khofmeyer/Development/MRN/stack/scripts/qa-page-speed.sh http://mrn-plugin-stack.local / /sample-page/`
 - Lighthouse or equivalent browser performance review when the feature changes rendered output materially
 

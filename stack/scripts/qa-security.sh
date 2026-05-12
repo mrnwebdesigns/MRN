@@ -58,7 +58,21 @@ else
 fi
 
 echo
-echo "3. Lightweight secret scan"
+echo "3. PHPStan (shared MRN config)"
+if [[ -x "${REPO_ROOT}/vendor/bin/phpstan" && -f "${REPO_ROOT}/phpstan.neon.dist" ]]; then
+	if ! php "${REPO_ROOT}/vendor/bin/phpstan" analyse \
+		--configuration="${REPO_ROOT}/phpstan.neon.dist" \
+		--memory-limit=2G \
+		--no-progress \
+		"${THEME_DIR}"; then
+		STATUS=1
+	fi
+else
+	echo "Skipping PHPStan; install root Composer dev tools first."
+fi
+
+echo
+echo "4. Lightweight secret scan"
 if command -v rg >/dev/null 2>&1; then
 	SECRET_SCAN_ARGS=(
 		-n
@@ -106,7 +120,7 @@ else
 fi
 
 echo
-echo "4. Runtime dependency audit"
+echo "5. Runtime dependency audit"
 if [[ -f "${THEME_DIR}/package-lock.json" ]] && command -v npm >/dev/null 2>&1; then
 	if ! (
 		cd "${THEME_DIR}" &&
@@ -128,7 +142,7 @@ fi
 
 if [[ "${INCLUDE_DEV_AUDIT}" == "1" ]]; then
 	echo
-	echo "5. Dev dependency audit"
+	echo "6. Dev dependency audit"
 	if [[ -f "${THEME_DIR}/package-lock.json" ]] && command -v npm >/dev/null 2>&1; then
 		if ! (
 			cd "${THEME_DIR}" &&
@@ -149,7 +163,7 @@ if [[ "${INCLUDE_DEV_AUDIT}" == "1" ]]; then
 	fi
 else
 	echo
-	echo "5. Dev dependency audit"
+	echo "6. Dev dependency audit"
 	echo "Skipped by default. Set MRN_QA_INCLUDE_DEV_AUDIT=1 to audit local dev tooling too."
 fi
 
