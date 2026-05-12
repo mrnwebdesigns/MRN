@@ -7,6 +7,7 @@
 
 $mrn_post_id     = get_the_ID();
 $mrn_is_singular = is_singular( 'gallery' );
+$mrn_tags_list   = get_the_term_list( $mrn_post_id, 'post_tag', '', esc_html_x( ', ', 'list item separator', 'mrn-base-stack' ) );
 ?>
 
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
@@ -40,6 +41,20 @@ $mrn_is_singular = is_singular( 'gallery' );
 					</header>
 				<?php endif; ?>
 
+				<?php if ( $mrn_tags_list ) : ?>
+					<div class="entry-meta">
+						<span class="tags-links">
+							<?php
+							printf(
+								/* translators: 1: list of tags. */
+								esc_html__( 'Tagged %1$s', 'mrn-base-stack' ),
+								$mrn_tags_list // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							);
+							?>
+						</span>
+					</div>
+				<?php endif; ?>
+
 				<div class="entry-content entry-content--builder">
 					<?php
 					if ( function_exists( 'mrn_base_stack_render_gallery' ) ) {
@@ -62,6 +77,20 @@ $mrn_is_singular = is_singular( 'gallery' );
 	<?php else : ?>
 		<header class="entry-header">
 			<?php the_title( '<h2 class="entry-title"><a href="' . esc_url( get_permalink() ) . '" rel="bookmark">', '</a></h2>' ); ?>
+
+			<?php if ( $mrn_tags_list ) : ?>
+				<div class="entry-meta">
+					<span class="tags-links">
+						<?php
+						printf(
+							/* translators: 1: list of tags. */
+							esc_html__( 'Tagged %1$s', 'mrn-base-stack' ),
+							$mrn_tags_list // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						);
+						?>
+					</span>
+				</div>
+			<?php endif; ?>
 		</header>
 
 		<?php if ( has_post_thumbnail() ) : ?>

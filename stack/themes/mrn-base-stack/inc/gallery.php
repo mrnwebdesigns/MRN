@@ -60,6 +60,7 @@ function mrn_base_stack_register_gallery_post_type() {
 			'menu_position'       => 7,
 			'menu_icon'           => 'dashicons-format-gallery',
 			'supports'            => array( 'title', 'excerpt', 'thumbnail', 'revisions' ),
+			'taxonomies'          => array( 'post_tag' ),
 			'publicly_queryable'  => true,
 			'show_in_nav_menus'   => true,
 			'show_in_admin_bar'   => $show_ui,

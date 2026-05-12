@@ -139,7 +139,7 @@ function mrn_editor_lockdown_get_layouts() {
 			'screen_layout' => 2,
 			'meta_box_order' => array(
 				'normal'   => 'slugdiv,revisionsdiv',
-				'side'     => 'submitdiv,gallery_categorydiv,postimagediv',
+				'side'     => 'submitdiv,gallery_categorydiv,tagsdiv-post_tag,postimagediv',
 				'advanced' => 'ame-cpe-content-permissions',
 			),
 			'closed' => array(
