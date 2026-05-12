@@ -238,6 +238,16 @@
 
 		renderInlinePreview( $control.find( '.mrn-icon-chooser-preview' ), selection );
 		$control.find( '.mrn-icon-chooser-selection' ).text( selection && selection.label ? selection.label : 'No icon selected' );
+
+		if (
+			selection &&
+			'fontawesome' === selection.type &&
+			selection.value &&
+			window.MRNSharedIconChooser &&
+			typeof window.MRNSharedIconChooser.registerFontawesomeSelection === 'function'
+		) {
+			window.MRNSharedIconChooser.registerFontawesomeSelection( selection.value );
+		}
 	}
 
 	function hideStorageFields( group ) {

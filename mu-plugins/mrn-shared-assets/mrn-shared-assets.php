@@ -31,20 +31,38 @@ function mrn_shared_assets_fontawesome_url(): string {
 
 /**
  * Get the Font Awesome CSS URL.
+ *
+ * @param string $context Optional loading context.
  */
-function mrn_shared_assets_fontawesome_css_url(): string {
-    return trailingslashit(mrn_shared_assets_fontawesome_url()) . 'css/all.min.css';
+function mrn_shared_assets_fontawesome_css_url(string $context = 'runtime'): string {
+    $default_url = trailingslashit(mrn_shared_assets_fontawesome_url()) . 'css/all.min.css';
+
+    /**
+     * Filter the Font Awesome stylesheet URL used by shared-asset consumers.
+     *
+     * @param string $default_url Default shared-asset stylesheet URL.
+     * @param string $context     Optional loading context.
+     */
+    $filtered = (string) apply_filters('mrn_shared_assets_fontawesome_css_url', $default_url, $context);
+    $filtered = esc_url_raw($filtered);
+
+    if ('' === $filtered) {
+        return $default_url;
+    }
+
+    return $filtered;
 }
 
 /**
  * Enqueue the shared Font Awesome bundle.
  *
- * @param string $handle Optional style handle.
+ * @param string $handle  Optional style handle.
+ * @param string $context Optional loading context.
  */
-function mrn_shared_assets_enqueue_fontawesome(string $handle = 'mrn-shared-fontawesome'): void {
+function mrn_shared_assets_enqueue_fontawesome(string $handle = 'mrn-shared-fontawesome', string $context = 'runtime'): void {
     wp_enqueue_style(
         $handle,
-        mrn_shared_assets_fontawesome_css_url(),
+        mrn_shared_assets_fontawesome_css_url($context),
         array(),
         mrn_shared_assets_fontawesome_version()
     );
@@ -122,27 +140,77 @@ function mrn_shared_assets_enqueue_admin_icon_chooser(string $script_handle = 'm
         $style_handle,
         mrn_shared_assets_icon_chooser_css_url(),
         array(),
-        '0.1.1'
+        '0.1.3'
     );
 
     wp_enqueue_script(
         $script_handle,
         mrn_shared_assets_icon_chooser_js_url(),
         array('jquery'),
-        '0.1.1',
+        '0.1.3',
         true
     );
 
     wp_enqueue_style('dashicons');
-    mrn_shared_assets_enqueue_fontawesome($style_handle . '-fontawesome');
+    mrn_shared_assets_enqueue_fontawesome($style_handle . '-fontawesome', 'icon-chooser');
     wp_enqueue_media();
+
+    $fontawesome_catalog = (array) apply_filters(
+        'mrn_shared_assets_fontawesome_icon_catalog',
+        mrn_shared_assets_get_fontawesome_icons(),
+        'admin_icon_chooser'
+    );
+
+    $fontawesome_picker_endpoint = array();
+    if (has_action('wp_ajax_mrn_fapm_register_icon_selection')) {
+        $fontawesome_picker_endpoint = array(
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'action' => 'mrn_fapm_register_icon_selection',
+            'nonce' => wp_create_nonce('mrn_fapm_register_icon_selection'),
+        );
+    }
+
+    $fontawesome_picker_endpoint = (array) apply_filters(
+        'mrn_shared_assets_fontawesome_picker_endpoint',
+        $fontawesome_picker_endpoint
+    );
+
+    $fontawesome_style_labels = (array) apply_filters(
+        'mrn_shared_assets_fontawesome_style_labels',
+        array(
+            'solid' => __('Solid'),
+            'regular' => __('Regular'),
+            'brands' => __('Brands'),
+            'light' => __('Light'),
+            'thin' => __('Thin'),
+            'duotone' => __('Duotone'),
+            'sharp-solid' => __('Sharp Solid'),
+            'sharp-regular' => __('Sharp Regular'),
+            'sharp-light' => __('Sharp Light'),
+            'sharp-thin' => __('Sharp Thin'),
+            'sharp-duotone' => __('Sharp Duotone'),
+        ),
+        'admin_icon_chooser'
+    );
+
+    $sanitized_style_labels = array();
+    foreach ($fontawesome_style_labels as $style_key => $style_label) {
+        $style_key = sanitize_key((string) $style_key);
+        if ('' === $style_key) {
+            continue;
+        }
+
+        $sanitized_style_labels[$style_key] = sanitize_text_field((string) $style_label);
+    }
 
     wp_localize_script(
         $script_handle,
         'mrnSharedIconChooserData',
         array(
             'dashicons' => mrn_shared_assets_get_dashicons(),
-            'fontawesome' => mrn_shared_assets_get_fontawesome_icons(),
+            'fontawesome' => $fontawesome_catalog,
+            'fontawesomeStyleLabels' => $sanitized_style_labels,
+            'fontawesomePickerEndpoint' => $fontawesome_picker_endpoint,
             'strings' => array(
                 'chooseIcon' => __('Choose Icon'),
                 'dashicons' => __('Dashicons'),
@@ -156,6 +224,14 @@ function mrn_shared_assets_enqueue_admin_icon_chooser(string $script_handle = 'm
                 'selectImage' => __('Select Icon Image'),
                 'noIconsFound' => __('No icons found.'),
                 'close' => __('Close'),
+                'faTrackingEnabled' => __('Local pack tracking is on.'),
+                'faTrackingUnavailable' => __('Local pack tracking is unavailable on this screen.'),
+                'faTrackingSaving' => __('Saving icon to local pack list...'),
+                'faTrackingAdded' => __('Added to local pack list.'),
+                'faTrackingAlready' => __('Icon already tracked for local pack.'),
+                'faTrackingError' => __('Could not register icon right now.'),
+                'faTrackingAllowlistLabel' => __('Allowlist'),
+                'faTrackingSessionLabel' => __('Session Adds'),
             ),
         )
     );

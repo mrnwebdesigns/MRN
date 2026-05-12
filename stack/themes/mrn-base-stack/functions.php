@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.2.1' );
+	define( '_S_VERSION', '1.2.2' );
 }
 
 /**
@@ -433,10 +433,14 @@ add_filter( 'mrn_universal_sticky_bar_post_types', 'mrn_base_stack_add_editorial
  * @return void
  */
 function mrn_base_stack_enqueue_shared_repeater_admin_assets() {
-	$repeater_controls_path = get_template_directory() . '/js/admin-repeater-controls.js';
-	$repeater_controls_ver  = file_exists( $repeater_controls_path ) ? (string) filemtime( $repeater_controls_path ) : _S_VERSION;
-	$repeater_styles_path   = get_template_directory() . '/css/admin-repeater-controls.css';
-	$repeater_styles_ver    = file_exists( $repeater_styles_path ) ? (string) filemtime( $repeater_styles_path ) : _S_VERSION;
+	$repeater_controls_path    = get_template_directory() . '/js/admin-repeater-controls.js';
+	$repeater_controls_ver     = file_exists( $repeater_controls_path ) ? (string) filemtime( $repeater_controls_path ) : _S_VERSION;
+	$repeater_styles_path      = get_template_directory() . '/css/admin-repeater-controls.css';
+	$repeater_styles_ver       = file_exists( $repeater_styles_path ) ? (string) filemtime( $repeater_styles_path ) : _S_VERSION;
+	$icon_choosers_script_path = get_template_directory() . '/js/admin-icon-choosers.js';
+	$icon_choosers_script_ver  = file_exists( $icon_choosers_script_path ) ? (string) filemtime( $icon_choosers_script_path ) : _S_VERSION;
+	$icon_choosers_style_path  = get_template_directory() . '/css/admin-icon-choosers.css';
+	$icon_choosers_style_ver   = file_exists( $icon_choosers_style_path ) ? (string) filemtime( $icon_choosers_style_path ) : _S_VERSION;
 
 	wp_enqueue_style(
 		'mrn-base-stack-admin-repeater-controls',
@@ -461,7 +465,7 @@ function mrn_base_stack_enqueue_shared_repeater_admin_assets() {
 		'mrn-base-stack-admin-icon-choosers',
 		get_template_directory_uri() . '/js/admin-icon-choosers.js',
 		array( 'jquery', 'acf-input', 'mrn-shared-icon-chooser' ),
-		_S_VERSION,
+		$icon_choosers_script_ver,
 		true
 	);
 
@@ -469,7 +473,7 @@ function mrn_base_stack_enqueue_shared_repeater_admin_assets() {
 		'mrn-base-stack-admin-icon-choosers',
 		get_template_directory_uri() . '/css/admin-icon-choosers.css',
 		array( 'mrn-shared-icon-chooser' ),
-		_S_VERSION
+		$icon_choosers_style_ver
 	);
 }
 add_action( 'acf/input/admin_enqueue_scripts', 'mrn_base_stack_enqueue_shared_repeater_admin_assets' );
@@ -1956,9 +1960,55 @@ if ( ! function_exists( 'mrn_base_stack_get_row_spacing_contract' ) ) {
 			return strtolower( $name );
 		};
 
+		$normalize_compensation_flag = static function ( $value ) {
+			if ( function_exists( 'mrn_base_stack_normalize_row_spacing_compensation_flag' ) ) {
+				return mrn_base_stack_normalize_row_spacing_compensation_flag( $value );
+			}
+
+			if ( is_bool( $value ) ) {
+				return $value;
+			}
+
+			if ( ! is_scalar( $value ) ) {
+				return false;
+			}
+
+			$normalized = strtolower( trim( (string) $value ) );
+
+			return in_array( $normalized, array( '1', 'true', 'yes', 'on' ), true );
+		};
+
+		$property_supports_compensation = static function ( $property ) {
+			if ( function_exists( 'mrn_base_stack_row_spacing_property_supports_shell_compensation' ) ) {
+				return mrn_base_stack_row_spacing_property_supports_shell_compensation( $property );
+			}
+
+			$property = sanitize_key( (string) $property );
+
+			return in_array( $property, array( 'margin-left', 'margin-right' ), true );
+		};
+
+		$apply_compensation_to_value = static function ( $value, $property, $should_compensate ) use ( $sanitize_dimension, $normalize_compensation_flag, $property_supports_compensation ) {
+			if ( function_exists( 'mrn_base_stack_apply_shell_compensation_to_row_spacing_value' ) ) {
+				return mrn_base_stack_apply_shell_compensation_to_row_spacing_value( $value, $property, $should_compensate );
+			}
+
+			$value = $sanitize_dimension( $value );
+			if ( '' === $value || ! $normalize_compensation_flag( $should_compensate ) || ! $property_supports_compensation( $property ) ) {
+				return $value;
+			}
+
+			if ( 'auto' === strtolower( trim( $value ) ) ) {
+				return $value;
+			}
+
+			return 'calc(' . $value . ' - var(--mrn-shell-gutter))';
+		};
+
 		$resolved_values = array(
-			'desktop' => array_fill_keys( $property_keys, '' ),
-			'mobile'  => array_fill_keys( $property_keys, '' ),
+			'desktop'      => array_fill_keys( $property_keys, '' ),
+			'mobile'       => array_fill_keys( $property_keys, '' ),
+			'compensation' => array_fill_keys( $property_keys, false ),
 		);
 
 		if ( function_exists( 'mrn_site_styles_get_row_spacing_defaults_resolved' ) ) {
@@ -1974,8 +2024,9 @@ if ( ! function_exists( 'mrn_base_stack_get_row_spacing_contract' ) ) {
 						continue;
 					}
 
-					$desktop = $sanitize_dimension( $values['desktop'] ?? '' );
-					$mobile  = $sanitize_dimension( $values['mobile'] ?? '' );
+					$desktop          = $sanitize_dimension( $values['desktop'] ?? '' );
+					$mobile           = $sanitize_dimension( $values['mobile'] ?? '' );
+					$compensate_shell = $normalize_compensation_flag( $values['compensate_shell'] ?? false );
 
 					foreach ( $targets as $target ) {
 						if ( '' !== $desktop ) {
@@ -1985,6 +2036,8 @@ if ( ! function_exists( 'mrn_base_stack_get_row_spacing_contract' ) ) {
 						if ( '' !== $mobile ) {
 							$resolved_values['mobile'][ $target ] = $mobile;
 						}
+
+						$resolved_values['compensation'][ $target ] = $compensate_shell;
 					}
 				}
 			}
@@ -2000,8 +2053,9 @@ if ( ! function_exists( 'mrn_base_stack_get_row_spacing_contract' ) ) {
 			$scope           = $normalize_scope( $scope );
 			$scope_is_side   = (bool) preg_match( '/^(margin|padding)\-(top|right|bottom|left)$/', $scope );
 			$overrides       = array(
-				'desktop' => array(),
-				'mobile'  => array(),
+				'desktop'      => array(),
+				'mobile'       => array(),
+				'compensation' => array(),
 			);
 
 			if ( '' === $normalized_name ) {
@@ -2030,8 +2084,9 @@ if ( ! function_exists( 'mrn_base_stack_get_row_spacing_contract' ) ) {
 					continue;
 				}
 
-				$desktop = $sanitize_dimension( $preset_row['desktop'] ?? '' );
-				$mobile  = $sanitize_dimension( $preset_row['mobile'] ?? '' );
+				$desktop          = $sanitize_dimension( $preset_row['desktop'] ?? '' );
+				$mobile           = $sanitize_dimension( $preset_row['mobile'] ?? '' );
+				$compensate_shell = isset( $preset_row['compensate_shell'] ) ? $preset_row['compensate_shell'] : false;
 
 				foreach ( $target_properties as $target_property ) {
 					if ( '' !== $desktop ) {
@@ -2041,13 +2096,15 @@ if ( ! function_exists( 'mrn_base_stack_get_row_spacing_contract' ) ) {
 					if ( '' !== $mobile ) {
 						$overrides['mobile'][ $target_property ] = $mobile;
 					}
+
+					$overrides['compensation'][ $target_property ] = $compensate_shell;
 				}
 			}
 
 			return $overrides;
 		};
 
-		$apply_overrides = static function ( array $overrides, array $target ) use ( $sanitize_dimension ) {
+		$apply_overrides = static function ( array $overrides, array $target ) use ( $sanitize_dimension, $normalize_compensation_flag ) {
 			foreach ( array( 'desktop', 'mobile' ) as $device_key ) {
 				if ( ! isset( $overrides[ $device_key ] ) || ! is_array( $overrides[ $device_key ] ) ) {
 					continue;
@@ -2061,6 +2118,17 @@ if ( ! function_exists( 'mrn_base_stack_get_row_spacing_contract' ) ) {
 					}
 
 					$target[ $device_key ][ $property ] = $value;
+				}
+			}
+
+			if ( isset( $overrides['compensation'] ) && is_array( $overrides['compensation'] ) ) {
+				foreach ( $overrides['compensation'] as $property => $value ) {
+					$property = sanitize_key( (string) $property );
+					if ( '' === $property ) {
+						continue;
+					}
+
+					$target['compensation'][ $property ] = $normalize_compensation_flag( $value );
 				}
 			}
 
@@ -2136,8 +2204,11 @@ if ( ! function_exists( 'mrn_base_stack_get_row_spacing_contract' ) ) {
 		$has_spacing = false;
 
 		foreach ( $property_keys as $property ) {
-			$desktop = isset( $resolved_values['desktop'][ $property ] ) ? $sanitize_dimension( $resolved_values['desktop'][ $property ] ) : '';
-			$mobile  = isset( $resolved_values['mobile'][ $property ] ) ? $sanitize_dimension( $resolved_values['mobile'][ $property ] ) : '';
+			$desktop           = isset( $resolved_values['desktop'][ $property ] ) ? $sanitize_dimension( $resolved_values['desktop'][ $property ] ) : '';
+			$mobile            = isset( $resolved_values['mobile'][ $property ] ) ? $sanitize_dimension( $resolved_values['mobile'][ $property ] ) : '';
+			$should_compensate = isset( $resolved_values['compensation'][ $property ] ) && $normalize_compensation_flag( $resolved_values['compensation'][ $property ] );
+			$desktop           = $apply_compensation_to_value( $desktop, $property, $should_compensate );
+			$mobile            = $apply_compensation_to_value( $mobile, $property, $should_compensate );
 
 			if ( '' !== $desktop ) {
 				$styles[]    = '--mrn-row-' . $property . '-desktop: ' . $desktop;
