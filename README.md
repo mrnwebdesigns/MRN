@@ -34,6 +34,12 @@ This is the reorganized MRN development workspace.
 
 ## QA Toolkit
 
+- Shared QA engine source of truth:
+  - `https://github.com/mrnwebdesigns/MRN-qa-engine`
+- Recommended local clone path:
+  - `/Users/khofmeyer/Development/MRN-qa-engine`
+- Install `mrn-qa` command shim from the standalone repo:
+  - `bash /Users/khofmeyer/Development/MRN-qa-engine/tools/install.sh`
 - Repo QA scripts live in:
   - `/Users/khofmeyer/Development/MRN/stack/scripts`
 - QA reference doc:
