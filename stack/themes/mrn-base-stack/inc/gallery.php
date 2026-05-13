@@ -126,7 +126,7 @@ function mrn_base_stack_register_gallery_taxonomies() {
 				'menu_name'                  => __( 'Gallery Tags', 'mrn-base-stack' ),
 			),
 			'public'            => true,
-			'hierarchical'      => false,
+			'hierarchical'      => true,
 			'show_ui'           => $show_ui,
 			'show_admin_column' => $show_ui,
 			'show_in_rest'      => true,
