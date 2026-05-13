@@ -1217,6 +1217,12 @@ install_themes() {
     version=""
     flag=""
     activate="0"
+    slug=""
+    before_list=()
+    after_list=()
+    inferred_slug=""
+    install_output=""
+    fallback_slug=""
 
     if [[ "${clean}" == *"|"* ]]; then
       source="$(printf '%s' "${clean%%|*}" | tr -d '\r' | xargs)"
