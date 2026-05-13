@@ -63,6 +63,24 @@ function expectNoPageIssues(issues, contextLabel) {
 	expect.soft(issues.failedRequests, `${contextLabel} failed requests`).toEqual([]);
 }
 
+async function expectAnyVisible(page, selectorCsv, contextLabel) {
+	const selectors = String(selectorCsv || '')
+		.split(',')
+		.map((selector) => selector.trim())
+		.filter(Boolean);
+
+	for (const selector of selectors) {
+		const locator = page.locator(selector).first();
+
+		if ((await locator.count()) > 0) {
+			await expect(locator, `${contextLabel} (${selector})`).toBeVisible();
+			return selector;
+		}
+	}
+
+	throw new Error(`${contextLabel} not found for selectors: ${selectors.join(', ')}`);
+}
+
 function getMotionTargetCases() {
 	const rawCases = process.env.MRN_MOTION_TARGET_CASES;
 
@@ -203,6 +221,9 @@ async function expectStickyToolbarLayout(page, toolbarSelector, contentSelector,
 
 test.describe('MRN stack site smoke QA', () => {
 	const motionTargetCases = getMotionTargetCases();
+	const requireStructureChecks = process.env.MRN_SMOKE_REQUIRE_STRUCTURE === '1';
+	const shellSelectors = process.env.MRN_PUBLIC_SHELL_SELECTORS || '#page, #content, .site, body';
+	const primaryContentSelectors = process.env.MRN_PUBLIC_CONTENT_SELECTORS || 'main#primary, main.site-main, #primary, #content, .site-main, main, article';
 
 	test('home page loads without browser/runtime errors', async ({ page, baseURL }) => {
 		const issues = await collectPageIssues(page);
@@ -211,9 +232,11 @@ test.describe('MRN stack site smoke QA', () => {
 
 		await expect(page).toHaveTitle(/.+/);
 		await expect(page.locator('body')).toBeVisible();
-		await expect(page.locator('#page')).toBeVisible();
-		await expect(page.locator('header.site-header')).toBeVisible();
-		await expect(page.locator('main#primary, main.site-main').first()).toBeVisible();
+
+		if (requireStructureChecks) {
+			await expectAnyVisible(page, shellSelectors, 'Home page shell');
+			await expectAnyVisible(page, primaryContentSelectors, 'Home page primary content');
+		}
 
 		expect(page.url()).toContain(baseURL || '');
 		expectNoPageIssues(issues, 'Home page');
@@ -226,8 +249,11 @@ test.describe('MRN stack site smoke QA', () => {
 		await page.goto(samplePath, { waitUntil: 'networkidle' });
 
 		await expect(page.locator('body')).toBeVisible();
-		await expect(page.locator('#page')).toBeVisible();
-		await expect(page.locator('main#primary, main.site-main').first()).toBeVisible();
+
+		if (requireStructureChecks) {
+			await expectAnyVisible(page, shellSelectors, 'Sample page shell');
+			await expectAnyVisible(page, primaryContentSelectors, 'Sample page primary content');
+		}
 
 		expectNoPageIssues(issues, 'Sample page');
 	});

@@ -300,6 +300,21 @@ ensure_site_owner_direct_ssh() {
   chown "${SITE_USER}:${SITE_USER}" "${authorized_keys}"
   chmod 600 "${authorized_keys}"
 
+  # Some hosts apply permissive default ACLs in /home; clear them so StrictModes
+  # can reliably accept site-owner keys for direct SSH/SFTP access.
+  if command -v setfacl >/dev/null 2>&1; then
+    if ! setfacl -bn "${ssh_dir}" >/dev/null 2>&1; then
+      add_warning "Could not clear ACLs on ${ssh_dir}; site-owner SSH StrictModes may fail."
+    fi
+    if ! setfacl -bn "${authorized_keys}" >/dev/null 2>&1; then
+      add_warning "Could not clear ACLs on ${authorized_keys}; site-owner SSH StrictModes may fail."
+    fi
+    chown "${SITE_USER}:${SITE_USER}" "${ssh_dir}"
+    chmod 700 "${ssh_dir}"
+    chown "${SITE_USER}:${SITE_USER}" "${authorized_keys}"
+    chmod 600 "${authorized_keys}"
+  fi
+
   match_count="$(
     awk -v key_type="${key_type}" -v key_blob="${key_blob}" '
       {
