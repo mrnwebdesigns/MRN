@@ -60,7 +60,6 @@ function mrn_base_stack_register_gallery_post_type() {
 			'menu_position'       => 7,
 			'menu_icon'           => 'dashicons-format-gallery',
 			'supports'            => array( 'title', 'excerpt', 'thumbnail', 'revisions' ),
-			'taxonomies'          => array( 'post_tag' ),
 			'publicly_queryable'  => true,
 			'show_in_nav_menus'   => true,
 			'show_in_admin_bar'   => $show_ui,
@@ -102,6 +101,38 @@ function mrn_base_stack_register_gallery_taxonomies() {
 			'show_in_rest'      => true,
 			'rewrite'           => array(
 				'slug'       => 'gallery-category',
+				'with_front' => false,
+			),
+		)
+	);
+
+	register_taxonomy(
+		'gallery_tag',
+		array( 'gallery' ),
+		array(
+			'labels'            => array(
+				'name'                       => __( 'Gallery Tags', 'mrn-base-stack' ),
+				'singular_name'              => __( 'Gallery Tag', 'mrn-base-stack' ),
+				'search_items'               => __( 'Search Gallery Tags', 'mrn-base-stack' ),
+				'popular_items'              => __( 'Popular Gallery Tags', 'mrn-base-stack' ),
+				'all_items'                  => __( 'All Gallery Tags', 'mrn-base-stack' ),
+				'edit_item'                  => __( 'Edit Gallery Tag', 'mrn-base-stack' ),
+				'update_item'                => __( 'Update Gallery Tag', 'mrn-base-stack' ),
+				'add_new_item'               => __( 'Add New Gallery Tag', 'mrn-base-stack' ),
+				'new_item_name'              => __( 'New Gallery Tag Name', 'mrn-base-stack' ),
+				'separate_items_with_commas' => __( 'Separate gallery tags with commas', 'mrn-base-stack' ),
+				'add_or_remove_items'        => __( 'Add or remove gallery tags', 'mrn-base-stack' ),
+				'choose_from_most_used'      => __( 'Choose from the most used gallery tags', 'mrn-base-stack' ),
+				'menu_name'                  => __( 'Gallery Tags', 'mrn-base-stack' ),
+			),
+			'public'            => true,
+			'hierarchical'      => false,
+			'show_ui'           => $show_ui,
+			'show_admin_column' => $show_ui,
+			'show_in_rest'      => true,
+			'show_tagcloud'     => $show_ui,
+			'rewrite'           => array(
+				'slug'       => 'gallery-tag',
 				'with_front' => false,
 			),
 		)

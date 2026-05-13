@@ -7,7 +7,7 @@
 
 $mrn_post_id     = get_the_ID();
 $mrn_is_singular = is_singular( 'gallery' );
-$mrn_tags_list   = get_the_term_list( $mrn_post_id, 'post_tag', '', esc_html_x( ', ', 'list item separator', 'mrn-base-stack' ) );
+$mrn_tags_list   = get_the_term_list( $mrn_post_id, 'gallery_tag', '', esc_html_x( ', ', 'list item separator', 'mrn-base-stack' ) );
 ?>
 
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
