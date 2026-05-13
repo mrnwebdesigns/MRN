@@ -23,4 +23,3 @@ copy_export() {
 }
 
 copy_export "/usr/local/sbin/stack-load-alerts.sh" "usr/local/sbin/stack-load-alerts.sh"
-
