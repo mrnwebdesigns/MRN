@@ -3,7 +3,7 @@
  * Plugin Name: Site Styles (MU)
  * Description: Adds a Site Styles configuration page for shared color variables, graphic elements, and usage helpers.
  * Author: MRN Web Designs
- * Version: 0.1.12
+ * Version: 0.1.13
  */
 
 defined('ABSPATH') || exit;
@@ -223,18 +223,21 @@ function mrn_site_styles_load_sticky_toolbar_helper(): bool {
         return true;
     }
 
-    $candidates = array(
-        defined('WP_CONTENT_DIR') ? WP_CONTENT_DIR . '/shared/mrn-sticky-settings-toolbar.php' : '',
-        dirname(__DIR__, 2) . '/shared/mrn-sticky-settings-toolbar.php',
-    );
+    $content_dir_candidate = defined('WP_CONTENT_DIR') ? WP_CONTENT_DIR . '/shared/mrn-sticky-settings-toolbar.php' : '';
+    if ('' !== $content_dir_candidate && file_exists($content_dir_candidate)) {
+        require_once WP_CONTENT_DIR . '/shared/mrn-sticky-settings-toolbar.php';
+        $loaded = function_exists('mrn_sticky_toolbar_render');
+        if ($loaded) {
+            return true;
+        }
+    }
 
-    foreach ($candidates as $candidate) {
-        if ($candidate && file_exists($candidate)) {
-            require_once $candidate;
-            $loaded = function_exists('mrn_sticky_toolbar_render');
-            if ($loaded) {
-                return true;
-            }
+    $repo_candidate = dirname(__DIR__, 2) . '/shared/mrn-sticky-settings-toolbar.php';
+    if (file_exists($repo_candidate)) {
+        require_once dirname(__DIR__, 2) . '/shared/mrn-sticky-settings-toolbar.php';
+        $loaded = function_exists('mrn_sticky_toolbar_render');
+        if ($loaded) {
+            return true;
         }
     }
 
@@ -1180,12 +1183,44 @@ function mrn_site_styles_get_row_spacing_property_choices(): array {
 }
 
 /**
+ * Check whether a row spacing property supports shell gutter compensation.
+ *
+ * Compensation offsets the parent shell gutter on horizontal margins only.
+ *
+ * @param string $property
+ * @return bool
+ */
+function mrn_site_styles_row_spacing_property_supports_shell_compensation(string $property): bool {
+    $property = sanitize_key($property);
+
+    return in_array($property, array('margin', 'margin-left', 'margin-right'), true);
+}
+
+/**
+ * Sanitize row spacing shell compensation flag.
+ *
+ * @param mixed  $value
+ * @param string $property
+ * @return string
+ */
+function mrn_site_styles_sanitize_row_spacing_shell_compensation_flag($value, string $property = ''): string {
+    if (!mrn_site_styles_row_spacing_property_supports_shell_compensation($property)) {
+        return '';
+    }
+
+    $normalized = is_scalar($value) ? strtolower(trim((string) $value)) : '';
+
+    return in_array($normalized, array('1', 'true', 'yes', 'on'), true) ? '1' : '';
+}
+
+/**
  * Get available row spacing preset name choices.
  *
  * @return array<string, string>
  */
 function mrn_site_styles_get_row_spacing_name_choices(): array {
     return array(
+        'none' => 'None',
         'extra-small' => 'Extra Small',
         'small' => 'Small',
         'medium' => 'Medium',
@@ -1215,6 +1250,7 @@ function mrn_site_styles_normalize_row_spacing_name_for_matching(string $name): 
  */
 function mrn_site_styles_get_required_row_spacing_name_defaults(): array {
     $defaults = array(
+        'None' => '0px',
         'Extra Small' => '32px',
         'Small' => '48px',
         'Medium' => '64px',
@@ -1339,6 +1375,7 @@ function mrn_site_styles_get_required_row_spacing_rows(): array {
                 'property' => sanitize_key((string) $property),
                 'desktop' => mrn_site_styles_sanitize_spacing_dimension((string) $desktop_value),
                 'mobile' => $mobile_auto,
+                'compensate_shell' => '',
             );
         }
     }
@@ -1702,6 +1739,10 @@ function mrn_site_styles_sanitize_row_spacing_rows($rows): array {
         $property = isset($row['property']) ? sanitize_key((string) $row['property']) : '';
         $desktop = mrn_site_styles_get_submitted_row_spacing_value($row, 'desktop', false);
         $mobile = mrn_site_styles_get_submitted_row_spacing_value($row, 'mobile', true);
+        $compensate_shell = mrn_site_styles_sanitize_row_spacing_shell_compensation_flag(
+            $row['compensate_shell'] ?? '',
+            $property
+        );
 
         if ('' === $name && '' === $desktop && '' === $mobile) {
             continue;
@@ -1721,6 +1762,7 @@ function mrn_site_styles_sanitize_row_spacing_rows($rows): array {
             'property' => $property,
             'desktop' => $desktop,
             'mobile' => $mobile,
+            'compensate_shell' => $compensate_shell,
         );
     }
 
@@ -1759,6 +1801,10 @@ function mrn_site_styles_sanitize_row_spacing_rows($rows): array {
             'property' => sanitize_key((string) ($required_row['property'] ?? '')),
             'desktop' => mrn_site_styles_sanitize_spacing_dimension((string) ($required_row['desktop'] ?? '')),
             'mobile' => mrn_site_styles_sanitize_spacing_dimension((string) ($required_row['mobile'] ?? '')),
+            'compensate_shell' => mrn_site_styles_sanitize_row_spacing_shell_compensation_flag(
+                $required_row['compensate_shell'] ?? '',
+                (string) ($required_row['property'] ?? '')
+            ),
         );
     }
 
@@ -1779,6 +1825,10 @@ function mrn_site_styles_sanitize_row_spacing_rows($rows): array {
             ),
             'mobile',
             true
+        );
+        $compensate_shell = mrn_site_styles_sanitize_row_spacing_shell_compensation_flag(
+            $row['compensate_shell'] ?? '',
+            $property
         );
 
         if ('' === $name || '' === $property || !in_array($property, $allowed_properties, true)) {
@@ -1811,6 +1861,7 @@ function mrn_site_styles_sanitize_row_spacing_rows($rows): array {
             'property' => $property,
             'desktop' => $desktop,
             'mobile' => $mobile,
+            'compensate_shell' => $compensate_shell,
         );
     }
 
@@ -1836,6 +1887,10 @@ function mrn_site_styles_sanitize_row_spacing_defaults($defaults): array {
 
         $desktop = mrn_site_styles_get_submitted_row_spacing_value($property_values, 'desktop', false);
         $mobile = mrn_site_styles_get_submitted_row_spacing_value($property_values, 'mobile', true);
+        $compensate_shell = mrn_site_styles_sanitize_row_spacing_shell_compensation_flag(
+            $property_values['compensate_shell'] ?? '',
+            (string) $property
+        );
 
         // Compatibility migration for prior non-step defaults.
         if (in_array($property, array('padding-right', 'padding-left'), true) && '70px' === strtolower($desktop)) {
@@ -1859,6 +1914,7 @@ function mrn_site_styles_sanitize_row_spacing_defaults($defaults): array {
         $sanitized[$property] = array(
             'desktop' => $desktop,
             'mobile' => $mobile,
+            'compensate_shell' => $compensate_shell,
         );
     }
 
@@ -1895,10 +1951,15 @@ function mrn_site_styles_get_row_spacing_defaults_resolved(): array {
     foreach (mrn_site_styles_get_row_spacing_defaults() as $property => $values) {
         $desktop = isset($values['desktop']) ? (string) $values['desktop'] : '';
         $mobile = isset($values['mobile']) ? (string) $values['mobile'] : '';
+        $compensate_shell = mrn_site_styles_sanitize_row_spacing_shell_compensation_flag(
+            $values['compensate_shell'] ?? '',
+            (string) $property
+        );
 
         $resolved[sanitize_key((string) $property)] = array(
             'desktop' => $desktop,
             'mobile' => mrn_site_styles_resolve_mobile_spacing_value($desktop, $mobile, (string) $property),
+            'compensate_shell' => $compensate_shell,
         );
     }
 
@@ -1934,6 +1995,10 @@ function mrn_site_styles_get_row_spacing_presets_resolved(): array {
         $desktop = isset($row['desktop']) ? (string) $row['desktop'] : '';
         $mobile = isset($row['mobile']) ? (string) $row['mobile'] : '';
         $property = isset($row['property']) ? (string) $row['property'] : '';
+        $compensate_shell = mrn_site_styles_sanitize_row_spacing_shell_compensation_flag(
+            $row['compensate_shell'] ?? '',
+            $property
+        );
 
         $resolved[] = array(
             'name' => isset($row['name']) ? (string) $row['name'] : '',
@@ -1941,6 +2006,7 @@ function mrn_site_styles_get_row_spacing_presets_resolved(): array {
             'property' => $property,
             'desktop' => $desktop,
             'mobile' => mrn_site_styles_resolve_mobile_spacing_value($desktop, $mobile, $property),
+            'compensate_shell' => $compensate_shell,
         );
     }
 
@@ -2238,6 +2304,12 @@ function mrn_site_styles_render_row_spacing_row(int $index, array $row): void {
     $is_required = mrn_site_styles_is_required_row_spacing_row($row);
     $name_choice_value = $name_choice;
     $property_value = $property;
+    $supports_compensation = mrn_site_styles_row_spacing_property_supports_shell_compensation($property);
+    $compensate_shell = mrn_site_styles_sanitize_row_spacing_shell_compensation_flag(
+        $row['compensate_shell'] ?? '',
+        $property
+    );
+    $compensate_shell_input_name = 'mrn_site_row_spacing[' . (string) $index . '][compensate_shell]';
 
     if (!isset($property_choices[$property])) {
         $property = '';
@@ -2316,6 +2388,23 @@ function mrn_site_styles_render_row_spacing_row(int $index, array $row): void {
                     />
                 </label>
             </div>
+        </td>
+        <td style="vertical-align:top;">
+            <input type="hidden" name="<?php echo esc_attr($compensate_shell_input_name); ?>" value="0" />
+            <label class="mrn-site-styles-row-spacing-compensate-shell-control">
+                <input
+                    type="checkbox"
+                    class="mrn-site-styles-row-spacing-compensate-shell"
+                    name="<?php echo esc_attr($compensate_shell_input_name); ?>"
+                    value="1"
+                    <?php checked('1', $compensate_shell); ?>
+                    <?php disabled(!$supports_compensation); ?>
+                />
+                <span>Offset shell gutter</span>
+            </label>
+            <?php if (!$supports_compensation) : ?>
+                <p class="description" style="margin:4px 0 0;">Margin left/right only.</p>
+            <?php endif; ?>
         </td>
         <td style="vertical-align:top;">
             <code class="mrn-site-styles-row-spacing-token"><?php echo esc_html(($slug !== '' && $property !== '') ? '--mrn-row-spacing-' . $slug . '-' . $property : '--mrn-row-spacing-preset-margin-top'); ?></code>
@@ -3153,13 +3242,14 @@ function mrn_site_colors_render_page(): void {
 
                         <div class="mrn-site-styles-spacing-subpanel" data-mrn-site-styles-spacing-tab-panel="row-spacing">
                             <h3 style="margin:0;">Site Defaults</h3>
-                            <p class="description">Set baseline desktop and mobile spacing defaults for each margin/padding side. Choose base-4 pixel values (up to <code>104px</code>) from each dropdown, or select <code>Custom</code> to enter any CSS value. Use <code>auto</code> in mobile to scale from desktop, and enter a mobile value only when you need an override.</p>
+                            <p class="description">Set baseline desktop and mobile spacing defaults for each margin/padding side. Choose base-4 pixel values (up to <code>104px</code>) from each dropdown, or select <code>Custom</code> to enter any CSS value. Use <code>auto</code> in mobile to scale from desktop, and enter a mobile value only when you need an override. Turn on <strong>Compensate Shell</strong> to offset the parent shell gutter on horizontal margins.</p>
                             <table class="widefat striped mrn-site-styles-row-spacing-defaults-table">
                                 <thead>
                                     <tr>
-                                        <th style="width:40%;">Setting</th>
-                                        <th style="width:30%;">Desktop</th>
-                                        <th style="width:30%;">Mobile</th>
+                                        <th style="width:34%;">Setting</th>
+                                        <th style="width:24%;">Desktop</th>
+                                        <th style="width:24%;">Mobile</th>
+                                        <th style="width:18%;">Compensate Shell</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -3179,6 +3269,12 @@ function mrn_site_colors_render_page(): void {
                                         $default_mobile_custom = 'custom' === $default_mobile_choice ? $default_mobile_display : '';
                                         $show_default_desktop_custom = 'custom' === $default_desktop_choice;
                                         $show_default_mobile_custom = 'custom' === $default_mobile_choice;
+                                        $default_supports_compensation = mrn_site_styles_row_spacing_property_supports_shell_compensation((string) $property_key);
+                                        $default_compensate_shell = mrn_site_styles_sanitize_row_spacing_shell_compensation_flag(
+                                            $default_values['compensate_shell'] ?? '',
+                                            (string) $property_key
+                                        );
+                                        $default_compensate_input_name = 'mrn_site_row_spacing_defaults[' . (string) $property_key . '][compensate_shell]';
                                         ?>
                                         <tr>
                                             <th scope="row"><?php echo esc_html($property_label); ?></th>
@@ -3222,20 +3318,38 @@ function mrn_site_colors_render_page(): void {
                                                     <?php echo $show_default_mobile_custom ? '' : 'hidden'; ?>
                                                 />
                                             </td>
+                                            <td>
+                                                <input type="hidden" name="<?php echo esc_attr($default_compensate_input_name); ?>" value="0" />
+                                                <label class="mrn-site-styles-row-spacing-default-compensate-shell-control">
+                                                    <input
+                                                        type="checkbox"
+                                                        class="mrn-site-styles-row-spacing-default-compensate-shell"
+                                                        name="<?php echo esc_attr($default_compensate_input_name); ?>"
+                                                        value="1"
+                                                        <?php checked('1', $default_compensate_shell); ?>
+                                                        <?php disabled(!$default_supports_compensation); ?>
+                                                    />
+                                                    <span>Offset shell gutter</span>
+                                                </label>
+                                                <?php if (!$default_supports_compensation) : ?>
+                                                    <p class="description" style="margin:4px 0 0;">Margin left/right only.</p>
+                                                <?php endif; ?>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
 
                             <h3 style="margin:20px 0 0;">Custom Values</h3>
-                            <p class="description"><strong>Extra Small</strong>, <strong>Small</strong>, <strong>Medium</strong>, <strong>Large</strong>, and <strong>Extra Large</strong> are required starter presets on every site. They default to <code>32px</code>, <code>48px</code>, <code>64px</code>, <code>80px</code>, and <code>104px</code>, can be edited, and cannot be removed. Use <strong>Custom</strong> only when you need an additional named preset.</p>
+                            <p class="description"><strong>None</strong>, <strong>Extra Small</strong>, <strong>Small</strong>, <strong>Medium</strong>, <strong>Large</strong>, and <strong>Extra Large</strong> are required starter presets on every site. Use <strong>Compensate Shell</strong> on margin presets when a section needs to cancel parent shell gutters automatically.</p>
                             <table class="widefat striped mrn-site-styles-row-spacing-table" style="margin-top:16px;">
                                 <thead>
                                     <tr>
-                                        <th style="width:24%;">Name</th>
-                                        <th style="width:22%;">Setting</th>
-                                        <th style="width:34%;">Values</th>
-                                        <th style="width:14%;">CSS Variable</th>
+                                        <th style="width:21%;">Name</th>
+                                        <th style="width:19%;">Setting</th>
+                                        <th style="width:29%;">Values</th>
+                                        <th style="width:15%;">Compensate Shell</th>
+                                        <th style="width:11%;">CSS Variable</th>
                                         <th style="width:6%;"></th>
                                     </tr>
                                 </thead>
@@ -4570,6 +4684,47 @@ function mrn_site_colors_render_page(): void {
                 toggleCustomValueInput(row, '.mrn-site-styles-row-spacing-default-mobile-choice', '.mrn-site-styles-row-spacing-default-mobile-custom');
             }
 
+            function propertySupportsShellCompensation(property) {
+                const normalized = String(property || '').toLowerCase().trim();
+
+                return 'margin' === normalized || 'margin-left' === normalized || 'margin-right' === normalized;
+            }
+
+            function syncDefaultCompensationToggle(row) {
+                const desktopChoice = row.querySelector('.mrn-site-styles-row-spacing-default-desktop-choice');
+                const compensateToggle = row.querySelector('.mrn-site-styles-row-spacing-default-compensate-shell');
+                if (!desktopChoice || !compensateToggle) {
+                    return;
+                }
+
+                const match = String(desktopChoice.name || '').match(/^mrn_site_row_spacing_defaults\[([^\]]+)\]/);
+                const property = match && match[1] ? match[1] : '';
+                const supported = propertySupportsShellCompensation(property);
+
+                if (!supported) {
+                    compensateToggle.checked = false;
+                }
+
+                compensateToggle.disabled = !supported;
+            }
+
+            function syncRowCompensationToggle(row) {
+                const propertySelect = row.querySelector('.mrn-site-styles-row-spacing-property');
+                const compensateToggle = row.querySelector('.mrn-site-styles-row-spacing-compensate-shell');
+                if (!propertySelect || !compensateToggle) {
+                    return;
+                }
+
+                const property = String(propertySelect.value || '');
+                const supported = propertySupportsShellCompensation(property);
+
+                if (!supported) {
+                    compensateToggle.checked = false;
+                }
+
+                compensateToggle.disabled = !supported;
+            }
+
             function bindDefaultRow(row) {
                 const desktopChoice = row.querySelector('.mrn-site-styles-row-spacing-default-desktop-choice');
                 const mobileChoice = row.querySelector('.mrn-site-styles-row-spacing-default-mobile-choice');
@@ -4594,6 +4749,7 @@ function mrn_site_colors_render_page(): void {
                 });
 
                 toggleDefaultValueInputs(row);
+                syncDefaultCompensationToggle(row);
             }
 
             if (defaultsTable) {
@@ -4646,6 +4802,7 @@ function mrn_site_colors_render_page(): void {
 
                 if (propertySelect) {
                     propertySelect.addEventListener('change', function () {
+                        syncRowCompensationToggle(row);
                         updateRow(row);
                         notifyFormChanged();
                     });
@@ -4679,6 +4836,7 @@ function mrn_site_colors_render_page(): void {
 
                 toggleCustomNameInput(row);
                 toggleRowValueInputs(row);
+                syncRowCompensationToggle(row);
                 updateRow(row);
             }
 
@@ -4712,6 +4870,14 @@ function mrn_site_colors_render_page(): void {
                                 <input type="text" class="regular-text code mrn-site-styles-row-spacing-mobile-custom" name="mrn_site_row_spacing[${index}][mobile_custom]" value="" placeholder="Enter custom value" hidden />
                             </label>
                         </div>
+                    </td>
+                    <td style="vertical-align:top;">
+                        <input type="hidden" name="mrn_site_row_spacing[${index}][compensate_shell]" value="0" />
+                        <label class="mrn-site-styles-row-spacing-compensate-shell-control">
+                            <input type="checkbox" class="mrn-site-styles-row-spacing-compensate-shell" name="mrn_site_row_spacing[${index}][compensate_shell]" value="1" />
+                            <span>Offset shell gutter</span>
+                        </label>
+                        <p class="description" style="margin:4px 0 0;">Margin left/right only.</p>
                     </td>
                     <td style="vertical-align:top;">
                         <code class="mrn-site-styles-row-spacing-token">--mrn-row-spacing-spacing-margin-top</code>

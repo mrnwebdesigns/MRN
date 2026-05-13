@@ -5025,6 +5025,66 @@ function mrn_base_stack_sanitize_spacing_dimension_value( $value ) {
 }
 
 /**
+ * Check whether a row-spacing property supports shell gutter compensation.
+ *
+ * Compensation applies to horizontal margins only.
+ *
+ * @param mixed $property Property key.
+ * @return bool
+ */
+function mrn_base_stack_row_spacing_property_supports_shell_compensation( $property ) {
+	$property = mrn_base_stack_normalize_row_spacing_property( $property );
+
+	return in_array( $property, array( 'margin-left', 'margin-right' ), true );
+}
+
+/**
+ * Normalize a row-spacing compensation flag to boolean.
+ *
+ * @param mixed $value Raw flag value.
+ * @return bool
+ */
+function mrn_base_stack_normalize_row_spacing_compensation_flag( $value ) {
+	if ( is_bool( $value ) ) {
+		return $value;
+	}
+
+	if ( ! is_scalar( $value ) ) {
+		return false;
+	}
+
+	$normalized = strtolower( trim( (string) $value ) );
+
+	return in_array( $normalized, array( '1', 'true', 'yes', 'on' ), true );
+}
+
+/**
+ * Apply shell gutter compensation to one row-spacing value.
+ *
+ * @param string $value Spacing value.
+ * @param string $property Property key.
+ * @param bool   $should_compensate Whether compensation should be applied.
+ * @return string
+ */
+function mrn_base_stack_apply_shell_compensation_to_row_spacing_value( $value, $property, $should_compensate ) {
+	$value = mrn_base_stack_sanitize_spacing_dimension_value( $value );
+	if ( '' === $value || ! $should_compensate ) {
+		return $value;
+	}
+
+	$property = mrn_base_stack_normalize_row_spacing_property( $property );
+	if ( ! mrn_base_stack_row_spacing_property_supports_shell_compensation( $property ) ) {
+		return $value;
+	}
+
+	if ( 'auto' === strtolower( trim( $value ) ) ) {
+		return $value;
+	}
+
+	return 'calc(' . $value . ' - var(--mrn-shell-gutter))';
+}
+
+/**
  * Normalize row-spacing preset names for matching.
  *
  * @param mixed $value Raw preset name.
@@ -5045,13 +5105,14 @@ function mrn_base_stack_normalize_row_spacing_preset_name( $value ) {
 /**
  * Get resolved row-spacing defaults from Site Styles.
  *
- * @return array{desktop:array<string,string>,mobile:array<string,string>}
+ * @return array{desktop:array<string,string>,mobile:array<string,string>,compensation:array<string,bool>}
  */
 function mrn_base_stack_get_row_spacing_defaults_resolved_map() {
 	$properties = mrn_base_stack_get_row_spacing_property_keys();
 	$defaults   = array(
-		'desktop' => array_fill_keys( $properties, '' ),
-		'mobile'  => array_fill_keys( $properties, '' ),
+		'desktop'      => array_fill_keys( $properties, '' ),
+		'mobile'       => array_fill_keys( $properties, '' ),
+		'compensation' => array_fill_keys( $properties, false ),
 	);
 
 	if ( ! function_exists( 'mrn_site_styles_get_row_spacing_defaults_resolved' ) ) {
@@ -5069,12 +5130,14 @@ function mrn_base_stack_get_row_spacing_defaults_resolved_map() {
 			continue;
 		}
 
-		$desktop = mrn_base_stack_sanitize_spacing_dimension_value( $values['desktop'] ?? '' );
-		$mobile  = mrn_base_stack_sanitize_spacing_dimension_value( $values['mobile'] ?? '' );
+		$desktop          = mrn_base_stack_sanitize_spacing_dimension_value( $values['desktop'] ?? '' );
+		$mobile           = mrn_base_stack_sanitize_spacing_dimension_value( $values['mobile'] ?? '' );
+		$compensate_shell = mrn_base_stack_normalize_row_spacing_compensation_flag( $values['compensate_shell'] ?? false );
 
 		foreach ( $target_properties as $property ) {
-			$defaults['desktop'][ $property ] = $desktop;
-			$defaults['mobile'][ $property ]  = $mobile;
+			$defaults['desktop'][ $property ]      = $desktop;
+			$defaults['mobile'][ $property ]       = $mobile;
+			$defaults['compensation'][ $property ] = $compensate_shell;
 		}
 	}
 
@@ -5086,15 +5149,16 @@ function mrn_base_stack_get_row_spacing_defaults_resolved_map() {
  *
  * @param string $preset_name Preset name saved on the builder row.
  * @param string $scope Optional selector scope (`margin`, `padding`, or empty for all).
- * @return array{desktop:array<string,string>,mobile:array<string,string>}
+ * @return array{desktop:array<string,string>,mobile:array<string,string>,compensation:array<string,bool>}
  */
 function mrn_base_stack_get_row_spacing_overrides_for_preset( $preset_name, $scope = '' ) {
 	$scope           = mrn_base_stack_normalize_row_spacing_preset_scope( $scope );
 	$normalized_name = mrn_base_stack_normalize_row_spacing_preset_name( $preset_name );
 	$scope_is_side   = (bool) preg_match( '/^(margin|padding)\-(top|right|bottom|left)$/', $scope );
 	$overrides       = array(
-		'desktop' => array(),
-		'mobile'  => array(),
+		'desktop'      => array(),
+		'mobile'       => array(),
+		'compensation' => array(),
 	);
 
 	if ( '' === $normalized_name || ! function_exists( 'mrn_site_styles_get_row_spacing_presets_resolved' ) ) {
@@ -5128,8 +5192,9 @@ function mrn_base_stack_get_row_spacing_overrides_for_preset( $preset_name, $sco
 			continue;
 		}
 
-		$desktop = mrn_base_stack_sanitize_spacing_dimension_value( $preset_row['desktop'] ?? '' );
-		$mobile  = mrn_base_stack_sanitize_spacing_dimension_value( $preset_row['mobile'] ?? '' );
+			$desktop          = mrn_base_stack_sanitize_spacing_dimension_value( $preset_row['desktop'] ?? '' );
+			$mobile           = mrn_base_stack_sanitize_spacing_dimension_value( $preset_row['mobile'] ?? '' );
+			$compensate_shell = mrn_base_stack_normalize_row_spacing_compensation_flag( $preset_row['compensate_shell'] ?? false );
 
 		foreach ( $target_properties as $property ) {
 			if ( '' !== $desktop ) {
@@ -5139,6 +5204,8 @@ function mrn_base_stack_get_row_spacing_overrides_for_preset( $preset_name, $sco
 			if ( '' !== $mobile ) {
 				$overrides['mobile'][ $property ] = $mobile;
 			}
+
+			$overrides['compensation'][ $property ] = $compensate_shell;
 		}
 	}
 
@@ -5150,7 +5217,7 @@ function mrn_base_stack_get_row_spacing_overrides_for_preset( $preset_name, $sco
  *
  * @param string $preset_name Preset name saved on the builder row.
  * @param string $scope Optional selector scope (`margin`, `padding`, or empty for all).
- * @return array{desktop:array<string,string>,mobile:array<string,string>}
+ * @return array{desktop:array<string,string>,mobile:array<string,string>,compensation:array<string,bool>}
  */
 function mrn_base_stack_get_row_spacing_values_for_preset( $preset_name, $scope = '' ) {
 	$values    = mrn_base_stack_get_row_spacing_defaults_resolved_map();
@@ -5170,6 +5237,17 @@ function mrn_base_stack_get_row_spacing_values_for_preset( $preset_name, $scope 
 			}
 
 			$values[ $device_key ][ $property ] = $value;
+		}
+	}
+
+	if ( isset( $overrides['compensation'] ) && is_array( $overrides['compensation'] ) ) {
+		foreach ( $overrides['compensation'] as $property => $value ) {
+			$property = mrn_base_stack_normalize_row_spacing_property( $property );
+			if ( '' === $property ) {
+				continue;
+			}
+
+			$values['compensation'][ $property ] = mrn_base_stack_normalize_row_spacing_compensation_flag( $value );
 		}
 	}
 
@@ -5227,6 +5305,17 @@ function mrn_base_stack_get_builder_row_spacing_contract( array $row ) {
 				$resolved_values[ $device_key ][ $property ] = $value;
 			}
 		}
+
+		if ( isset( $margin_overrides['compensation'] ) && is_array( $margin_overrides['compensation'] ) ) {
+			foreach ( $margin_overrides['compensation'] as $property => $value ) {
+				$property = mrn_base_stack_normalize_row_spacing_property( $property );
+				if ( '' === $property ) {
+					continue;
+				}
+
+				$resolved_values['compensation'][ $property ] = mrn_base_stack_normalize_row_spacing_compensation_flag( $value );
+			}
+		}
 	}
 
 	if ( '' !== $padding_preset_name ) {
@@ -5244,6 +5333,17 @@ function mrn_base_stack_get_builder_row_spacing_contract( array $row ) {
 				}
 
 				$resolved_values[ $device_key ][ $property ] = $value;
+			}
+		}
+
+		if ( isset( $padding_overrides['compensation'] ) && is_array( $padding_overrides['compensation'] ) ) {
+			foreach ( $padding_overrides['compensation'] as $property => $value ) {
+				$property = mrn_base_stack_normalize_row_spacing_property( $property );
+				if ( '' === $property ) {
+					continue;
+				}
+
+				$resolved_values['compensation'][ $property ] = mrn_base_stack_normalize_row_spacing_compensation_flag( $value );
 			}
 		}
 	}
@@ -5267,6 +5367,17 @@ function mrn_base_stack_get_builder_row_spacing_contract( array $row ) {
 				}
 
 				$resolved_values[ $device_key ][ $property ] = $value;
+			}
+		}
+
+		if ( isset( $side_overrides['compensation'] ) && is_array( $side_overrides['compensation'] ) ) {
+			foreach ( $side_overrides['compensation'] as $property => $value ) {
+				$property = mrn_base_stack_normalize_row_spacing_property( $property );
+				if ( '' === $property ) {
+					continue;
+				}
+
+				$resolved_values['compensation'][ $property ] = mrn_base_stack_normalize_row_spacing_compensation_flag( $value );
 			}
 		}
 	}
@@ -5295,8 +5406,11 @@ function mrn_base_stack_get_builder_row_spacing_contract( array $row ) {
 	$has_spacing = false;
 
 	foreach ( $properties as $property ) {
-		$desktop = isset( $resolved_values['desktop'][ $property ] ) ? mrn_base_stack_sanitize_spacing_dimension_value( $resolved_values['desktop'][ $property ] ) : '';
-		$mobile  = isset( $resolved_values['mobile'][ $property ] ) ? mrn_base_stack_sanitize_spacing_dimension_value( $resolved_values['mobile'][ $property ] ) : '';
+			$desktop           = isset( $resolved_values['desktop'][ $property ] ) ? mrn_base_stack_sanitize_spacing_dimension_value( $resolved_values['desktop'][ $property ] ) : '';
+			$mobile            = isset( $resolved_values['mobile'][ $property ] ) ? mrn_base_stack_sanitize_spacing_dimension_value( $resolved_values['mobile'][ $property ] ) : '';
+			$should_compensate = isset( $resolved_values['compensation'][ $property ] ) && mrn_base_stack_normalize_row_spacing_compensation_flag( $resolved_values['compensation'][ $property ] );
+			$desktop           = mrn_base_stack_apply_shell_compensation_to_row_spacing_value( $desktop, $property, $should_compensate );
+			$mobile            = mrn_base_stack_apply_shell_compensation_to_row_spacing_value( $mobile, $property, $should_compensate );
 
 		if ( '' !== $desktop ) {
 			$styles[]    = '--mrn-row-' . $property . '-desktop: ' . $desktop;
@@ -5333,7 +5447,7 @@ function mrn_base_stack_get_builder_row_spacing_contract( array $row ) {
 	 * Filter the row-spacing frontend contract before it is merged on the row wrapper.
 	 *
 	 * @param array{classes:array<int,string>,attributes:array<string,string>} $contract Row spacing contract.
-	 * @param array{desktop:array<string,string>,mobile:array<string,string>}  $resolved_values Resolved desktop/mobile values.
+	 * @param array{desktop:array<string,string>,mobile:array<string,string>,compensation:array<string,bool>} $resolved_values Resolved desktop/mobile values.
 	 * @param string                                                            $preset_name Selected preset name.
 	 * @param array<string,mixed>                                               $row Builder row payload.
 	 */
