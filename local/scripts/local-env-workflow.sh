@@ -46,6 +46,7 @@ Description:
 
   - pull:
     - resolves the live site owner via resolve-live-site-owner.sh
+    - starts halted Local sites automatically (when Local GraphQL is available)
     - can sync runtime code surfaces (themes/plugins/mu-plugins) from live site
       into Local before DB/media pull (auto for Local API-resolved sites)
     - pulls uploads and/or database into Local
@@ -128,6 +129,8 @@ LOCAL_API_RESOLVED_SITE=0
 LOCAL_AUTO_CREATED_SITE_URL=""
 LOCAL_AUTO_CREATED_SITE_DOMAIN=""
 LOCAL_AUTO_CREATE_ERROR=""
+LOCAL_SITE_ID=""
+LOCAL_DB_SOCKET=""
 DEPLOY_SCOPE=""
 SKIP_BACKUP=0
 SKIP_DB=0
@@ -379,6 +382,162 @@ parse_local_api_kv_output() {
 				;;
 		esac
 	done <<< "${raw}"
+}
+
+ensure_local_site_running_for_pull() {
+	local output
+	local line
+	local key
+	local value
+
+	[[ "${COMMAND}" == "pull" ]] || return 0
+	[[ "${SNAPSHOT_MODE}" -eq 0 ]] || return 0
+	[[ -n "${LOCAL_WP_PATH}" ]] || return 0
+	[[ -f "${LOCAL_GRAPHQL_INFO_FILE}" ]] || return 0
+
+	command -v python3 >/dev/null 2>&1 || return 0
+	command -v curl >/dev/null 2>&1 || return 0
+
+	output="$(
+		python3 - "${LOCAL_GRAPHQL_INFO_FILE}" "${LOCAL_WP_PATH}" "${LOCAL_API_WAIT_TIMEOUT}" "${LOCAL_API_POLL_INTERVAL}" <<'PY'
+import json
+import os
+import pathlib
+import subprocess
+import sys
+import time
+
+info_file = os.path.expanduser(sys.argv[1].strip())
+local_wp_path = os.path.normpath(os.path.abspath(os.path.expanduser(sys.argv[2].strip())))
+wait_timeout = max(int(sys.argv[3]), 1)
+poll_interval = max(float(sys.argv[4]), 0.5)
+
+def emit(message):
+    print(f"LOCAL_NOTE={message}")
+
+def normalize(path):
+    return os.path.normpath(os.path.abspath(os.path.expanduser(path)))
+
+def gql(endpoint, token, query, variables=None):
+    payload = {"query": query}
+    if variables is not None:
+        payload["variables"] = variables
+    proc = subprocess.run(
+        [
+            "curl", "-sS", "-X", "POST", endpoint,
+            "-H", "Content-Type: application/json",
+            "-H", f"Authorization: Bearer {token}",
+            "--data-binary", json.dumps(payload),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        stderr = (proc.stderr or "").strip() or "curl error"
+        raise RuntimeError(f"Local GraphQL request failed: {stderr}")
+
+    try:
+        response = json.loads(proc.stdout)
+    except Exception:
+        raise RuntimeError("Local GraphQL returned non-JSON output.")
+
+    if response.get("errors"):
+        messages = "; ".join((err.get("message") or "unknown error") for err in response["errors"])
+        raise RuntimeError(f"Local GraphQL error: {messages}")
+
+    return response.get("data") or {}
+
+if not os.path.isfile(info_file):
+    raise SystemExit(0)
+
+try:
+    info = json.loads(pathlib.Path(info_file).read_text())
+except Exception:
+    raise SystemExit(0)
+
+endpoint = info.get("url")
+token = info.get("authToken")
+if not endpoint or not token:
+    raise SystemExit(0)
+
+paths = [local_wp_path]
+if local_wp_path.endswith("/app/public"):
+    paths.append(os.path.normpath(local_wp_path[:-len("/app/public")]))
+if local_wp_path.endswith("/public"):
+    paths.append(os.path.normpath(local_wp_path[:-len("/public")]))
+
+seen = set()
+candidate_paths = []
+for item in paths:
+    normalized = normalize(item)
+    if normalized not in seen:
+        seen.add(normalized)
+        candidate_paths.append(normalized)
+
+def fetch_sites():
+    data = gql(endpoint, token, "query { sites { id name domain path status } }")
+    return data.get("sites") or []
+
+def find_site_by_path(sites):
+    for site in sites:
+        site_path = normalize((site or {}).get("path") or "")
+        if site_path in candidate_paths:
+            return site
+    return None
+
+sites = fetch_sites()
+site = find_site_by_path(sites)
+if site is None:
+    raise SystemExit(0)
+
+site_id = (site.get("id") or "").strip()
+site_status = (site.get("status") or "").strip().lower()
+site_label = (site.get("domain") or site.get("name") or site_id or "local site").strip()
+
+if site_status == "running" or not site_id:
+    raise SystemExit(0)
+
+emit(f"Local site '{site_label}' is {site_status or 'not running'}; starting before pull import.")
+gql(endpoint, token, "mutation($id: ID!){ startSite(id: $id){ id status } }", {"id": site_id})
+
+deadline = time.time() + wait_timeout
+last_status = site_status
+while time.time() <= deadline:
+    sites = fetch_sites()
+    current = None
+    for item in sites:
+        if ((item or {}).get("id") or "").strip() == site_id:
+            current = item
+            break
+    if current is None:
+        raise RuntimeError(f"Local site '{site_label}' was not found after start.")
+
+    current_status = (current.get("status") or "").strip().lower()
+    if current_status and current_status != last_status:
+        emit(f"Local site status: {current_status}")
+        last_status = current_status
+    if current_status == "running":
+        raise SystemExit(0)
+    if current_status in {"errored", "error"}:
+        raise RuntimeError(
+            f"Local site '{site_label}' entered status '{current_status}' while starting."
+        )
+    time.sleep(poll_interval)
+
+raise RuntimeError(
+    f"Timed out waiting for Local site '{site_label}' to reach running status ({wait_timeout}s)."
+)
+PY
+	)" || fail "Could not ensure Local site is running before pull. Open Local and start the site, then rerun pull-site."
+
+	while IFS= read -r line; do
+		[[ -n "${line}" ]] || continue
+		key="${line%%=*}"
+		value="${line#*=}"
+		if [[ "${key}" == "LOCAL_NOTE" ]]; then
+			note "${value}"
+		fi
+	done <<< "${output}"
 }
 
 attempt_local_api_site_prepare() {
@@ -687,6 +846,131 @@ detect_local_wp_bin() {
 	fail "Could not find wp-cli in PATH or Local bundle."
 }
 
+resolve_local_site_db_socket() {
+	local sites_json
+	local output
+
+	LOCAL_SITE_ID=""
+	LOCAL_DB_SOCKET=""
+
+	if [[ "${SNAPSHOT_MODE}" -ne 0 || -z "${LOCAL_WP_PATH}" ]]; then
+		return 0
+	fi
+
+	sites_json="${HOME}/Library/Application Support/Local/sites.json"
+	[[ -f "${sites_json}" ]] || return 0
+
+	output="$(
+		python3 - "${sites_json}" "${LOCAL_WP_PATH}" <<'PY'
+import json
+import os
+import pathlib
+import sys
+
+sites_path = pathlib.Path(sys.argv[1])
+local_wp_path = os.path.normpath(sys.argv[2])
+
+candidates = [local_wp_path]
+if local_wp_path.endswith("/app/public"):
+    candidates.append(os.path.normpath(local_wp_path[:-len("/app/public")]))
+if local_wp_path.endswith("/public"):
+    candidates.append(os.path.normpath(local_wp_path[:-len("/public")]))
+
+# Preserve order while de-duping.
+seen = set()
+ordered = []
+for path in candidates:
+    if path and path not in seen:
+        seen.add(path)
+        ordered.append(path)
+
+try:
+    raw = json.loads(sites_path.read_text())
+except Exception:
+    raise SystemExit(0)
+
+sites = raw.values() if isinstance(raw, dict) else raw
+match = None
+for site in sites:
+    site_path = os.path.normpath(os.path.expanduser((site or {}).get("path") or ""))
+    if site_path in ordered:
+        match = site
+        break
+
+if not match:
+    raise SystemExit(0)
+
+site_id = (match.get("id") or "").strip()
+if not site_id:
+    raise SystemExit(0)
+
+socket_path = str(pathlib.Path.home() / "Library/Application Support/Local/run" / site_id / "mysql" / "mysqld.sock")
+
+print(f"LOCAL_SITE_ID={site_id}")
+print(f"LOCAL_DB_SOCKET={socket_path}")
+PY
+	)" || true
+
+	while IFS='=' read -r key value; do
+		case "${key}" in
+			LOCAL_SITE_ID) LOCAL_SITE_ID="${value}" ;;
+			LOCAL_DB_SOCKET) LOCAL_DB_SOCKET="${value}" ;;
+		esac
+	done <<< "${output}"
+}
+
+ensure_local_wp_cli_socket_db_host() {
+	local wp_config
+
+	[[ -n "${LOCAL_DB_SOCKET}" ]] || return 0
+	[[ -S "${LOCAL_DB_SOCKET}" ]] || return 0
+
+	wp_config="${LOCAL_WP_PATH}/wp-config.php"
+	[[ -f "${wp_config}" ]] || return 0
+
+	python3 - "${wp_config}" "${LOCAL_DB_SOCKET}" <<'PY'
+import pathlib
+import re
+import sys
+
+wp_config = pathlib.Path(sys.argv[1])
+socket_path = sys.argv[2]
+
+text = wp_config.read_text()
+updated = text
+
+if "$mrn_local_socket" in text:
+    updated = re.sub(
+        r"\$mrn_local_socket\s*=\s*'[^']*';",
+        f"$mrn_local_socket  = '{socket_path}';",
+        text,
+        count=1,
+    )
+else:
+    block = (
+        "$mrn_local_db_host = 'localhost';\n"
+        f"$mrn_local_socket  = '{socket_path}';\n\n"
+        "if (PHP_SAPI === 'cli' && file_exists($mrn_local_socket)) {\n"
+        "\t$mrn_local_db_host = 'localhost:' . $mrn_local_socket;\n"
+        "}\n\n"
+        "define( 'DB_HOST', $mrn_local_db_host );"
+    )
+    updated, replacements = re.subn(
+        r"define\(\s*['\"]DB_HOST['\"]\s*,\s*['\"]localhost['\"]\s*\);",
+        block,
+        text,
+        count=1,
+    )
+    if replacements == 0:
+        raise SystemExit(0)
+
+if updated != text:
+    wp_config.write_text(updated)
+PY
+
+	export MYSQL_UNIX_PORT="${LOCAL_DB_SOCKET}"
+}
+
 ensure_local_mysql_bin_path() {
 	local services_root
 	local candidate
@@ -729,7 +1013,10 @@ assert_local_db_clients_ready() {
 }
 
 if [[ "${SNAPSHOT_MODE}" -eq 0 ]]; then
+	ensure_local_site_running_for_pull
 	detect_local_wp_bin
+	resolve_local_site_db_socket
+	ensure_local_wp_cli_socket_db_host
 	ensure_local_mysql_bin_path >/dev/null 2>&1 || true
 fi
 
