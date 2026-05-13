@@ -3,7 +3,7 @@
  * Plugin Name: Shared Assets (MU)
  * Description: Provides shared runtime assets and metadata for stack-wide consumers.
  * Author: MRN Web Designs
- * Version: 0.1.1
+ * Version: 0.1.3
  */
 
 defined('ABSPATH') || exit;
