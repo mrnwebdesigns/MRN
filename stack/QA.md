@@ -33,6 +33,8 @@ Minimum expectation for new feature prompts:
 
 - define the system area and ownership
 - preserve existing builder behavior and shared theme hooks unless the change is intentional
+- declare parent-vs-child theme deployment mode when theme rendering/hooks are affected
+- declare the live theme target path decision (`template` for parent updates, child only when intentionally in scope)
 - include explicit accessibility acceptance criteria
 - include explicit performance acceptance criteria
 - call out rollout impact and known blockers
