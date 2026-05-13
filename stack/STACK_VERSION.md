@@ -1,26 +1,27 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.04.21-builder-layout-canonicalization`
-- Release date: `2026-04-21`
+- Stack release: `2026.05.06-front-end-runtime-autoload-for-reusable-interactions`
+- Release date: `2026-05-06`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.1.25`
+  - `mrn-base-stack` `1.2.1`
 - MU plugins:
+  - `mrn-active-style-guide` `0.1.3`
   - `mrn-admin-ui-css` `3.1.12`
   - `mrn-shared-assets` `0.1.1`
-  - `mrn-editor-lockdown` `1.0.7`
-  - `mrn-reusable-block-library` `0.1.11`
+  - `mrn-editor-lockdown` `1.0.17`
+  - `mrn-reusable-block-library` `0.1.16`
   - `mrn-site-colors` / `Site Styles` `0.1.4`
 - Standard plugins:
   - `mrn-config-helper` `0.1.35`
-  - `mrn-dummy-content` `0.1.13`
+  - `mrn-dummy-content` `0.1.14`
   - `mrn-editor-tools` `1.8.17`
   - `mrn-seo-helper` `0.2.9`
-  - `mrn-universal-sticky-bar` `1.0.9`
-  - `searchwp-editor-performance` `1.0.0`
+  - `mrn-universal-sticky-bar` `1.1.1`
+  - `searchwp-editor-performance` `1.0.6`
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)

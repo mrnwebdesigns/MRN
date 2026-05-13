@@ -10,6 +10,10 @@ Default site path:
   /Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public
 
 Environment:
+  MRN_SMOKE_SCOPE     Optional: `full` (default) or `public`.
+                      `public` skips admin/login smoke and only runs public page smoke.
+  MRN_SMOKE_REQUIRE_STRUCTURE Optional: `1` (default in full scope) or `0`.
+                      Controls strict public-page structure selectors in Playwright smoke.
   MRN_WP_ADMIN_USER   Optional WordPress admin username for editor smoke tests.
   MRN_WP_ADMIN_PASS   Optional WordPress admin password for editor smoke tests.
 
@@ -28,7 +32,27 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 THEME_DIR="${REPO_ROOT}/stack/themes/mrn-base-stack"
 SITE_PATH="${1:-/Users/khofmeyer/Local Sites/mrn-plugin-stack/app/public}"
+SMOKE_SCOPE="${MRN_SMOKE_SCOPE:-full}"
+SMOKE_REQUIRE_STRUCTURE="${MRN_SMOKE_REQUIRE_STRUCTURE:-}"
 LOCAL_WP="/Applications/Local.app/Contents/Resources/extraResources/bin/wp-cli/posix/wp"
+
+case "${SMOKE_SCOPE}" in
+	full|public)
+		;;
+	*)
+		echo "Invalid MRN_SMOKE_SCOPE value: ${SMOKE_SCOPE}" >&2
+		echo "Valid values: full, public" >&2
+		exit 1
+		;;
+esac
+
+if [[ -z "${SMOKE_REQUIRE_STRUCTURE}" ]]; then
+	if [[ "${SMOKE_SCOPE}" == "public" ]]; then
+		SMOKE_REQUIRE_STRUCTURE="0"
+	else
+		SMOKE_REQUIRE_STRUCTURE="1"
+	fi
+fi
 
 if command -v wp >/dev/null 2>&1; then
 	WP_BIN="$(command -v wp)"
@@ -136,6 +160,17 @@ echo "Playwright theme dir: ${THEME_DIR}"
 echo "Local site path: ${SITE_PATH}"
 echo "Base URL: ${BASE_URL}"
 echo "Sample page path: ${SAMPLE_PAGE_PATH}"
+echo "Smoke scope: ${SMOKE_SCOPE}"
+echo "Structure checks: ${SMOKE_REQUIRE_STRUCTURE}"
+
+if [[ "${SMOKE_SCOPE}" == "public" ]]; then
+	SAMPLE_PAGE_EDIT_PATH=""
+	SETTINGS_PAGE_PATH=""
+	EDITOR_TOOLS_PAGE_PATH=""
+	THEME_HEADER_FOOTER_PAGE_PATH=""
+	BUSINESS_INFORMATION_PAGE_PATH=""
+	echo "Admin smoke: skipped by scope (public)"
+fi
 
 if [[ -n "${SAMPLE_PAGE_EDIT_PATH}" ]]; then
 	ensure_local_admin_credentials
@@ -178,6 +213,7 @@ cd "${THEME_DIR}"
 
 env -u FORCE_COLOR -u NO_COLOR \
 	MRN_PLAYWRIGHT_BASE_URL="${BASE_URL}" \
+	MRN_SMOKE_REQUIRE_STRUCTURE="${SMOKE_REQUIRE_STRUCTURE}" \
 	MRN_SAMPLE_PAGE_PATH="${SAMPLE_PAGE_PATH}" \
 	MRN_WP_ADMIN_USER="${MRN_WP_ADMIN_USER:-}" \
 	MRN_WP_ADMIN_PASS="${MRN_WP_ADMIN_PASS:-}" \

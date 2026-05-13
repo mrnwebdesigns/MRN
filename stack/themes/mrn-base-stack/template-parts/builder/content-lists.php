@@ -53,6 +53,10 @@ if ( ! in_array( $sort_order, array( 'ASC', 'DESC' ), true ) ) {
 
 $posts_per_page      = max( 1, absint( $row['posts_per_page'] ?? 10 ) );
 $offset              = absint( $row['offset'] ?? 0 );
+$filter_source       = isset( $row['filter_source'] ) ? sanitize_key( (string) $row['filter_source'] ) : 'none';
+$manual_post_ids     = ( 'manual_posts' === $filter_source && function_exists( 'mrn_base_stack_get_content_list_manual_post_ids' ) )
+	? mrn_base_stack_get_content_list_manual_post_ids( $row, $list_post_type )
+	: array();
 $tax_query           = function_exists( 'mrn_base_stack_get_content_list_tax_query' )
 	? mrn_base_stack_get_content_list_tax_query( $row, $context_post_id, $list_post_type )
 	: array();
@@ -89,6 +93,12 @@ $query_args   = array(
 	'ignore_sticky_posts' => true,
 	'no_found_rows'       => ! $show_pagination,
 );
+
+if ( 'manual_posts' === $filter_source ) {
+	$query_args['post__in'] = ! empty( $manual_post_ids ) ? $manual_post_ids : array( 0 );
+	$query_args['orderby']  = 'post__in';
+	$query_args['order']    = 'ASC';
+}
 
 if ( $show_pagination ) {
 	$query_args['paged'] = max( 1, $current_page );

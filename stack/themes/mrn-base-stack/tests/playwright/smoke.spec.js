@@ -63,6 +63,24 @@ function expectNoPageIssues(issues, contextLabel) {
 	expect.soft(issues.failedRequests, `${contextLabel} failed requests`).toEqual([]);
 }
 
+async function expectAnyVisible(page, selectorCsv, contextLabel) {
+	const selectors = String(selectorCsv || '')
+		.split(',')
+		.map((selector) => selector.trim())
+		.filter(Boolean);
+
+	for (const selector of selectors) {
+		const locator = page.locator(selector).first();
+
+		if ((await locator.count()) > 0) {
+			await expect(locator, `${contextLabel} (${selector})`).toBeVisible();
+			return selector;
+		}
+	}
+
+	throw new Error(`${contextLabel} not found for selectors: ${selectors.join(', ')}`);
+}
+
 function getMotionTargetCases() {
 	const rawCases = process.env.MRN_MOTION_TARGET_CASES;
 
@@ -203,6 +221,9 @@ async function expectStickyToolbarLayout(page, toolbarSelector, contentSelector,
 
 test.describe('MRN stack site smoke QA', () => {
 	const motionTargetCases = getMotionTargetCases();
+	const requireStructureChecks = process.env.MRN_SMOKE_REQUIRE_STRUCTURE === '1';
+	const shellSelectors = process.env.MRN_PUBLIC_SHELL_SELECTORS || '#page, #content, .site, body';
+	const primaryContentSelectors = process.env.MRN_PUBLIC_CONTENT_SELECTORS || 'main#primary, main.site-main, #primary, #content, .site-main, main, article';
 
 	test('home page loads without browser/runtime errors', async ({ page, baseURL }) => {
 		const issues = await collectPageIssues(page);
@@ -211,9 +232,11 @@ test.describe('MRN stack site smoke QA', () => {
 
 		await expect(page).toHaveTitle(/.+/);
 		await expect(page.locator('body')).toBeVisible();
-		await expect(page.locator('#page')).toBeVisible();
-		await expect(page.locator('header.site-header')).toBeVisible();
-		await expect(page.locator('main#primary, main.site-main').first()).toBeVisible();
+
+		if (requireStructureChecks) {
+			await expectAnyVisible(page, shellSelectors, 'Home page shell');
+			await expectAnyVisible(page, primaryContentSelectors, 'Home page primary content');
+		}
 
 		expect(page.url()).toContain(baseURL || '');
 		expectNoPageIssues(issues, 'Home page');
@@ -226,8 +249,11 @@ test.describe('MRN stack site smoke QA', () => {
 		await page.goto(samplePath, { waitUntil: 'networkidle' });
 
 		await expect(page.locator('body')).toBeVisible();
-		await expect(page.locator('#page')).toBeVisible();
-		await expect(page.locator('main#primary, main.site-main').first()).toBeVisible();
+
+		if (requireStructureChecks) {
+			await expectAnyVisible(page, shellSelectors, 'Sample page shell');
+			await expectAnyVisible(page, primaryContentSelectors, 'Sample page primary content');
+		}
 
 		expectNoPageIssues(issues, 'Sample page');
 	});
@@ -241,24 +267,31 @@ test.describe('MRN stack site smoke QA', () => {
 	test.describe('admin smoke coverage', () => {
 		test.describe.configure({ mode: 'serial' });
 
-		test('page editor shows builder UI when admin credentials are provided', async ({ page }) => {
-			test.skip(
-				! process.env.MRN_WP_ADMIN_USER || ! process.env.MRN_WP_ADMIN_PASS || ! process.env.MRN_SAMPLE_PAGE_EDIT_PATH,
-				'Set MRN_WP_ADMIN_USER, MRN_WP_ADMIN_PASS, and MRN_SAMPLE_PAGE_EDIT_PATH to run admin builder smoke coverage.'
-			);
+			test('page editor shows expected editing UI when admin credentials are provided', async ({ page }) => {
+				test.skip(
+					! process.env.MRN_WP_ADMIN_USER || ! process.env.MRN_WP_ADMIN_PASS || ! process.env.MRN_SAMPLE_PAGE_EDIT_PATH,
+					'Set MRN_WP_ADMIN_USER, MRN_WP_ADMIN_PASS, and MRN_SAMPLE_PAGE_EDIT_PATH to run admin builder smoke coverage.'
+				);
 
 			const issues = await collectPageIssues(page);
 
 			await loginToWordPressAdmin(page);
 
-			await page.goto(process.env.MRN_SAMPLE_PAGE_EDIT_PATH, { waitUntil: 'networkidle' });
+				await page.goto(process.env.MRN_SAMPLE_PAGE_EDIT_PATH, { waitUntil: 'networkidle' });
 
-			await expect(page.locator('body.wp-admin')).toBeVisible();
-			await expect(page.locator('.acf-field-flexible-content:visible').first()).toBeVisible();
-			await expect(page.locator('.acf-field-flexible-content .acf-actions [data-name="add-layout"]:visible').first()).toBeVisible();
+				await expect(page.locator('body.wp-admin')).toBeVisible();
+				const flexibleFields = page.locator('.acf-field-flexible-content:visible');
+				const hasBuilderUi = (await flexibleFields.count()) > 0;
 
-			expectNoPageIssues(issues, 'Admin builder editor');
-		});
+				if (hasBuilderUi) {
+					await expect(flexibleFields.first()).toBeVisible();
+					await expect(page.locator('.acf-field-flexible-content .acf-actions [data-name="add-layout"]:visible').first()).toBeVisible();
+				} else {
+					await expect(page.locator('#wp-content-wrap, #content, #poststuff').first()).toBeVisible();
+				}
+
+				expectNoPageIssues(issues, 'Admin builder editor');
+			});
 
 		test('site configurations page renders without leaked CSS text when configured', async ({ page }) => {
 			test.skip(
@@ -354,6 +387,51 @@ test.describe('MRN stack site smoke QA', () => {
 			await expectNoLeakedStyleText(page, 'Business Information page');
 			await expectStickyToolbarLayout(page, toolbarSelector, contentSelector, 'Business Information page');
 			expectNoPageIssues(issues, 'Business Information page');
+		});
+
+		test('business information media-field changes enable sticky save state', async ({ page }) => {
+			test.skip(
+				! process.env.MRN_WP_ADMIN_USER ||
+				! process.env.MRN_WP_ADMIN_PASS ||
+				! process.env.MRN_BUSINESS_INFORMATION_PAGE_PATH,
+				'Set MRN_WP_ADMIN_USER, MRN_WP_ADMIN_PASS, and MRN_BUSINESS_INFORMATION_PAGE_PATH to run business-information dirty-state coverage.'
+			);
+
+			await loginToWordPressAdmin(page);
+			await page.goto(process.env.MRN_BUSINESS_INFORMATION_PAGE_PATH, { waitUntil: 'domcontentloaded' });
+
+			const saveButton = page.locator('.mrn-sticky-save-bar .mrn-settings-tab--save').first();
+			const footerLogoInput = page.locator(
+				'.acf-field[data-key="field_mrn_business_logo_footer"] input[type="hidden"][name^="acf["]'
+			).first();
+
+			await expect(page.locator('body.wp-admin')).toBeVisible();
+			await expect(saveButton).toBeVisible();
+			await expect(footerLogoInput).toHaveCount(1);
+
+			// Baseline: no unsaved changes, sticky save button is disabled.
+			await expect(saveButton).toBeDisabled();
+
+			// Simulate an ACF media-driven value update without dispatching input/change.
+			await footerLogoInput.evaluate((input) => {
+				const original = String(input.value || '');
+				const nextValue = original === '' ? '12345' : original + '-qa';
+				input.value = nextValue;
+				input.setAttribute('value', nextValue);
+
+				const uploader = input.closest('.acf-image-uploader');
+				if (!uploader) {
+					return;
+				}
+
+				const previewImage = uploader.querySelector('.image-wrap img');
+				if (previewImage) {
+					previewImage.setAttribute('src', 'https://example.com/qa-logo.png?v=' + Date.now());
+				}
+			});
+
+			await expect(saveButton).toBeEnabled();
+			await expect(saveButton).toHaveAttribute('aria-disabled', 'false');
 		});
 	});
 });

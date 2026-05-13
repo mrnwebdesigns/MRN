@@ -37,7 +37,11 @@ Phase 2 runtime for a performance-first Google Fonts workflow.
 - Local Font Builder:
   - on stack sites: `Settings -> Site Styles -> Google Fonts -> Font Builder`
   - on non-stack/standalone sites: `Settings -> Google Fonts -> Font Builder`
+  - supports three configurable families (`Body`, `Heading`, `Accent`)
+  - each family can be assigned to multiple selector groups via multiselect targets
+  - heading targets include both `All Headings (H1-H6)` and individual `H1`..`H6` options
   - `Build Local Fonts` downloads selected `.woff2` files from Google CSS2 into uploads
+  - per-family italic toggles use Google CSS2 `ital,wght` tuples for variable-font-safe requests
   - saves a local manifest in `mrn_google_fonts_local_manifest`
   - frontend/editor automatically prefer the matching local CSS build and skip Google CDN
   - build now persists posted builder values first (so separate Save is not required)
@@ -57,6 +61,7 @@ Verified against local stack site `http://mrn-plugin-stack.local` on April 17, 2
   - inline root variables:
     - `--mrn-font-body`
     - `--mrn-font-heading`
+    - `--mrn-font-accent`
 - Local built CSS contains `@font-face` entries for configured families and weights.
 - `document.fonts.load`/`document.fonts.check` confirms configured weights are loadable.
 - Computed frontend family values match configured body/heading families.
@@ -79,6 +84,7 @@ Override in a child theme stylesheet loaded after Google Fonts runtime:
 :root {
   --mrn-font-body: "Your Body Family", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --mrn-font-heading: "Your Heading Family", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mrn-font-accent: "Your Accent Family", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 ```
 
@@ -88,17 +94,27 @@ If enqueueing a separate child-theme CSS file, ensure it is loaded after runtime
 
 Use this quick pass before release on stack-owned pages:
 
-1. In `Settings -> Site Styles -> Google Fonts -> Font Builder`, choose body + heading families and keep family count at 2 or fewer.
-2. Set only required weights for each family and click `Build Local Fonts`.
+1. In `Settings -> Site Styles -> Google Fonts -> Font Builder`, choose up to three families and assign each to the needed selector groups.
+2. Set only required weights/italics for each family and click `Build Local Fonts`.
 3. Confirm build notice reports files/families and no errors.
 4. On a frontend page, verify in devtools that:
    - `mrn-google-fonts-local-css` is loaded (preferred) or `mrn-google-fonts-remote-css` fallback.
    - `mrn-google-fonts-frontend-css` is loaded.
-   - `--mrn-font-body` and `--mrn-font-heading` are present on `:root`.
-5. Check computed typography on representative body and heading elements.
+   - `--mrn-font-body`, `--mrn-font-heading`, and `--mrn-font-accent` are present on `:root`.
+5. Check computed typography on representative selectors for each assigned family target group.
 6. Confirm configured weights are loadable (network or `document.fonts` checks) and that rendered weights align with theme selectors.
 7. If using child-theme overrides, confirm override CSS loads after runtime and that computed font stacks reflect the override vars.
 8. Run a quick performance sanity check (no duplicate remote/local font payloads, no unexpected render-blocking additions).
+
+## Editor Regression Check
+
+Run this lightweight check before release when TinyMCE font-format behavior changes:
+
+```bash
+php plugins/mrn-google-fonts/tests/tinymce-font-formats-regression.php
+```
+
+It asserts that injected TinyMCE `font_formats` remain alphabetically sorted and free of duplicate labels.
 
 ## Not Implemented Yet
 

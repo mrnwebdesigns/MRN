@@ -50,6 +50,38 @@
 	margin-bottom: 10px;
 }
 
+.mrn-shared-fa-registration-status {
+	margin: 0 0 10px;
+	padding: 8px 10px;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	background: #f6f7f7;
+	color: #1d2327;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.mrn-shared-fa-registration-status.is-active {
+	border-color: #8bc34a;
+	background: #f4fbf1;
+}
+
+.mrn-shared-fa-registration-status.is-pending {
+	border-color: #dba617;
+	background: #fff8e6;
+}
+
+.mrn-shared-fa-registration-status.is-error {
+	border-color: #d63638;
+	background: #fcf0f1;
+}
+
+.mrn-shared-fa-registration-status.is-muted {
+	border-color: #dcdcde;
+	background: #f6f7f7;
+	color: #646970;
+}
+
 .mrn-shared-icon-grid,
 .mrn-shared-fa-grid {
 	display: grid;

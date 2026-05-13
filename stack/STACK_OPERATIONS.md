@@ -30,6 +30,24 @@ The local MRN test site should point to canonical source via symlinks.
 
 This is the preferred local workflow because it keeps local testing aligned with the real source of truth.
 
+## Local Environment Pull/Deploy Rule
+
+Use the canonical Local environment helper when you want Local to act like an environment endpoint for a site:
+
+- `/Users/khofmeyer/Development/MRN/local/scripts/local-env-workflow.sh`
+- `/Users/khofmeyer/Development/MRN/local/scripts/nightly-pull-mrndev-sites.sh`
+- workflow guide: `/Users/khofmeyer/Development/MRN/local/LOCAL_ENV_WORKFLOW.md`
+
+Behavior contract:
+
+- `pull` is for pulling a site's uploads/database into Local for testing/QA.
+- `pull` can also sync runtime code surfaces (`themes`, `plugins`, `mu-plugins`) from live into Local when Local API path resolution is used (or when `--sync-runtime` is passed).
+- `nightly-pull` is for scheduled multi-site pull of discovered `*.mrndev.io` sites, with snapshot fallback when no runnable Local path exists.
+- `deploy` always runs canonical live preflight by default and prompts for deploy scope:
+  - `site` scope for site-specific content/config updates
+  - `stack` scope for canonical stack code updates from this repo
+- Deploy writes are blocked until explicit confirmation unless intentionally bypassed with `--yes`.
+
 ## Server Ownership Rule
 
 - Stack-owned files should be written as:
@@ -111,7 +129,10 @@ rsync -rlt --omit-dir-times --delete \
   - pass `--site-hostname <site-hostname>` to make it run the canonical site-owner SSH and Updraft preflight before syncing
 - Default live-site theme assumption:
   - stack-managed sites run a cloned active stylesheet directory until the site is explicitly handed to the development/front-end team for child-theme setup
-  - live theme deploys should target that active stylesheet directory and preserve the live stylesheet slug, `Theme Name`, and `Text Domain`
+  - if a site is still clone-style (`stylesheet == template`), live theme deploys should target that active stylesheet directory and preserve the live stylesheet slug, `Theme Name`, and `Text Domain`
+  - if a site is in child-theme mode (`stylesheet != template`), deploy stack parent source into the active template directory (parent), not the child stylesheet directory
+  - never sync stack source `mrn-base-stack` into an active child stylesheet path during normal rollouts
+  - `deploy-live-theme.sh` now hard-fails that path by default; only use `--force-stack-source-child-overwrite` for intentional emergency recovery and document it in rollout notes
 - Current canonical helper for stack feature deploys that should also refresh `default-configs.mrndev.io`:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-feature-stack-and-default-configs.sh`
 - Use the feature deploy helper when stack theme or stack MU plugin work needs to stay mirrored to the stack server and the `default-configs` site in one step.
@@ -122,6 +143,8 @@ rsync -rlt --omit-dir-times --delete \
 - The feature deploy helper must verify its post-sync permission normalization and fail if sync-user-owned live files remain outside `644`.
 - Standard plugins still follow their own plugin release flow and are not part of the stack feature deploy helper.
 - When a stack-packaged standard plugin changes, rebuild its local zip, sync that artifact into `/home/mrndev-stack-manager/stack/packages/<plugin>.zip`, and if the plugin is meant to be live on `default-configs.mrndev.io`, run a forced `wp plugin install ... --force --activate` against that site so the live version matches the refreshed package.
+- Site plugin updates should run via direct site-owner SSH.
+  - If a site owner cannot update a plugin due to file ownership or mode, treat that as a deploy blocker and remediate ownership/mode first.
 - Fresh site bootstrap must delete any preinstalled standard plugins from the host before installing the stack manifest so new sites match the stack plugin set exactly.
 - Fresh site bootstrap must also sync the shared runtime into `wp-content/shared` as part of the initial rollout.
 - Fresh site bootstrap must also provision direct site-owner SSH trust by creating `/home/<site-user>/.ssh/authorized_keys` when missing and ensuring the canonical MRN site-owner public key is present exactly once without removing unrelated keys.
@@ -141,6 +164,20 @@ rsync -rlt --omit-dir-times --delete \
   - `mrn-ops` can become `mrndev-stack-manager`, but it still does not have `sudo -n -u <site-user>` rights for `rsync/find/chmod/perl/wp`
 - Until that sudoers policy is fixed, use direct site-owner SSH instead of writing live files as an operator user.
 - `default-configs.mrndev.io` currently runs the cloned `default-configs` active stylesheet, so rollout verification must check the live active theme slug and version rather than assuming `mrn-base-stack`.
+
+## Config Helper Parity Gate
+
+- Before any release that depends on `mrn-config-helper` UI/runtime behavior (for example breadcrumb tabs/panels), run:
+  - `/Users/khofmeyer/Development/MRN/stack/scripts/audit-config-helper-parity.sh`
+- Treat any non-zero exit as a release blocker.
+- Required pass conditions for installed copies:
+  - `version_parity=match`
+  - `site_owner_ssh_ok=yes`
+  - `site_owner_can_write=yes`
+- If `site_owner_can_write=no`, do not proceed with site-owner plugin updates until file ownership/modes are remediated for that site.
+- If `site_owner_ssh_ok=no`, fix site-owner SSH trust/readiness before rollout.
+- Canonical remediation helper for these blockers:
+  - `/Users/khofmeyer/Development/MRN/stack/scripts/remediate-site-owner-readiness.sh`
 
 ## Theme Rollout Rule
 

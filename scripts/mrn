@@ -1,0 +1,238 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+	cat <<'EOF'
+Usage:
+  mrn <command> [arguments]
+
+Commands:
+  pull-site      Pull a live site into Local (uploads/database).
+  deploy-site    Deploy from Local with site-vs-stack scope.
+  nightly-pull   Pull all discovered .mrndev.io sites into Local.
+  completion     Print shell completion script (zsh|bash).
+  install-completion
+                 Install shell completion for zsh or bash.
+  help           Show this help text.
+
+Examples:
+  mrn pull-site default-configs.mrndev.io
+  mrn deploy-site default-configs.mrndev.io
+
+  mrn pull-site \
+    --site-hostname example.mrndev.io \
+    --local-site-path "/Users/khofmeyer/Local Sites/example/app/public"
+
+  mrn deploy-site \
+    --site-hostname example.mrndev.io \
+    --local-site-path "/Users/khofmeyer/Local Sites/example/app/public"
+
+  mrn nightly-pull --dry-run
+  mrn install-completion zsh
+
+Notes:
+  - This command is a wrapper around:
+    /Users/khofmeyer/Development/MRN/local/scripts/local-env-workflow.sh
+  - `pull-site` first tries map/inferred Local paths.
+  - If no Local path is found, `pull-site` attempts Local app API auto-create/reuse.
+  - If Local app API is unavailable, pass `--local-site-path` or add a mapping.
+  - For Local API-resolved sites, pull auto-syncs runtime code
+    (themes/plugins/mu-plugins) before DB/media pull.
+  - You can force runtime sync on any pull with `--sync-runtime`.
+  - You can disable runtime sync with `--no-sync-runtime`.
+  - For artifact-only pulls without a Local site, use:
+    mrn pull-site <site-hostname> --snapshot-if-missing
+EOF
+}
+
+SOURCE_PATH="${BASH_SOURCE[0]}"
+while [[ -L "${SOURCE_PATH}" ]]; do
+	SOURCE_DIR="$(cd -P "$(dirname "${SOURCE_PATH}")" && pwd)"
+	SOURCE_PATH="$(readlink "${SOURCE_PATH}")"
+	[[ "${SOURCE_PATH}" == /* ]] || SOURCE_PATH="${SOURCE_DIR}/${SOURCE_PATH}"
+done
+
+SCRIPT_DIR="$(cd -P "$(dirname "${SOURCE_PATH}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+LOCAL_WORKFLOW="${REPO_ROOT}/local/scripts/local-env-workflow.sh"
+NIGHTLY_PULL_WORKFLOW="${REPO_ROOT}/local/scripts/nightly-pull-mrndev-sites.sh"
+ZSH_COMPLETION_SRC="${REPO_ROOT}/scripts/completions/_mrn"
+BASH_COMPLETION_SRC="${REPO_ROOT}/scripts/completions/mrn.bash"
+COMMAND="${1:-help}"
+
+[[ -x "${LOCAL_WORKFLOW}" ]] || {
+	echo "FAIL: Missing workflow helper: ${LOCAL_WORKFLOW}" >&2
+	exit 1
+}
+
+[[ -x "${NIGHTLY_PULL_WORKFLOW}" ]] || {
+	echo "FAIL: Missing nightly workflow helper: ${NIGHTLY_PULL_WORKFLOW}" >&2
+	exit 1
+}
+
+detect_shell() {
+	local shell_name
+	shell_name="${SHELL##*/}"
+	if [[ "${shell_name}" == "zsh" || "${shell_name}" == "bash" ]]; then
+		printf '%s\n' "${shell_name}"
+		return 0
+	fi
+	printf 'zsh\n'
+}
+
+print_completion() {
+	local shell_name="${1:-}"
+	if [[ -z "${shell_name}" ]]; then
+		shell_name="$(detect_shell)"
+	fi
+
+	case "${shell_name}" in
+		zsh)
+			cat "${ZSH_COMPLETION_SRC}"
+			;;
+		bash)
+			cat "${BASH_COMPLETION_SRC}"
+			;;
+		*)
+			echo "FAIL: Unsupported shell for completion: ${shell_name}" >&2
+			exit 1
+			;;
+	esac
+}
+
+install_completion_zsh() {
+	local dest_dir
+	local dest_file
+	local rc_file
+	local marker_start
+	local marker_end
+	local tmp_file
+
+	dest_dir="${HOME}/.zfunc"
+	dest_file="${dest_dir}/_mrn"
+	rc_file="${HOME}/.zshrc"
+	marker_start="# >>> mrn completion >>>"
+	marker_end="# <<< mrn completion <<<"
+
+	mkdir -p "${dest_dir}"
+	cp "${ZSH_COMPLETION_SRC}" "${dest_file}"
+
+	if [[ ! -f "${rc_file}" ]]; then
+		touch "${rc_file}"
+	fi
+
+	tmp_file="$(mktemp)"
+	awk -v start="${marker_start}" -v end="${marker_end}" '
+		$0 == start { skip = 1; next }
+		$0 == end { skip = 0; next }
+		skip != 1 { print }
+	' "${rc_file}" > "${tmp_file}"
+	mv "${tmp_file}" "${rc_file}"
+
+	cat >> "${rc_file}" <<EOF
+${marker_start}
+if [[ -d "${dest_dir}" ]]; then
+  fpath=("${dest_dir}" \$fpath)
+fi
+autoload -Uz compinit
+compinit -i
+autoload -Uz _mrn
+compdef _mrn mrn
+${marker_end}
+EOF
+
+	echo "Installed zsh completion at ${dest_file}"
+	echo "Open a new terminal session (or run: source ${rc_file})."
+}
+
+install_completion_bash() {
+	local dest_dir
+	local dest_file
+	local rc_file
+	local marker_start
+	local marker_end
+	local tmp_file
+
+	dest_dir="${HOME}/.bash_completion.d"
+	dest_file="${dest_dir}/mrn"
+	rc_file="${HOME}/.bashrc"
+	marker_start="# >>> mrn completion >>>"
+	marker_end="# <<< mrn completion <<<"
+
+	mkdir -p "${dest_dir}"
+	cp "${BASH_COMPLETION_SRC}" "${dest_file}"
+
+	if [[ ! -f "${rc_file}" ]]; then
+		touch "${rc_file}"
+	fi
+
+	tmp_file="$(mktemp)"
+	awk -v start="${marker_start}" -v end="${marker_end}" '
+		$0 == start { skip = 1; next }
+		$0 == end { skip = 0; next }
+		skip != 1 { print }
+	' "${rc_file}" > "${tmp_file}"
+	mv "${tmp_file}" "${rc_file}"
+
+	cat >> "${rc_file}" <<EOF
+${marker_start}
+if [[ -f "${dest_file}" ]]; then
+  source "${dest_file}"
+fi
+${marker_end}
+EOF
+
+	echo "Installed bash completion at ${dest_file}"
+	echo "Open a new terminal session (or run: source ${rc_file})."
+}
+
+install_completion() {
+	local shell_name="${1:-}"
+	if [[ -z "${shell_name}" ]]; then
+		shell_name="$(detect_shell)"
+	fi
+
+	case "${shell_name}" in
+		zsh)
+			install_completion_zsh
+			;;
+		bash)
+			install_completion_bash
+			;;
+		*)
+			echo "FAIL: Unsupported shell for install-completion: ${shell_name}" >&2
+			exit 1
+			;;
+	esac
+}
+
+case "${COMMAND}" in
+	pull-site)
+		shift
+		exec "${LOCAL_WORKFLOW}" pull "$@"
+		;;
+	deploy-site)
+		shift
+		exec "${LOCAL_WORKFLOW}" deploy "$@"
+		;;
+	nightly-pull)
+		shift
+		exec "${NIGHTLY_PULL_WORKFLOW}" "$@"
+		;;
+	completion)
+		shift
+		print_completion "${1:-}"
+		;;
+	install-completion)
+		shift
+		install_completion "${1:-}"
+		;;
+	help|-h|--help)
+		usage
+		;;
+	*)
+		echo "Unknown command: ${COMMAND}" >&2
+		usage >&2
+		exit 1
+		;;
+esac

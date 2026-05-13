@@ -27,11 +27,6 @@ function mrn_base_stack_get_builder_layout_allowlist_targets() {
 			'group_key' => 'group_mrn_after_content_builder',
 			'label'     => 'After Content',
 		),
-		'page_sidebar_rows' => array(
-			'field_key' => 'field_mrn_sidebar_rows',
-			'group_key' => 'group_mrn_singular_sidebar',
-			'label'     => 'Sidebars',
-		),
 	);
 }
 
@@ -43,18 +38,8 @@ function mrn_base_stack_get_builder_layout_allowlist_targets() {
  * @return bool
  */
 function mrn_base_stack_should_render_builder_layout_allowlist_target( $field_name, $post_type ) {
-	$field_name = sanitize_key( (string) $field_name );
-	$post_type  = sanitize_key( (string) $post_type );
-
-	if ( 'page_sidebar_rows' !== $field_name ) {
-		return true;
-	}
-
-	if ( ! function_exists( 'mrn_base_stack_get_sidebar_supported_post_types' ) ) {
-		return true;
-	}
-
-	return in_array( $post_type, mrn_base_stack_get_sidebar_supported_post_types(), true );
+	unset( $field_name, $post_type );
+	return true;
 }
 
 /**
@@ -67,11 +52,9 @@ function mrn_base_stack_get_builder_layout_allowlist_filter_hooks() {
 		'acf/load_field/key=field_mrn_page_hero_rows',
 		'acf/load_field/key=field_mrn_page_content_rows',
 		'acf/load_field/key=field_mrn_page_after_content_rows',
-		'acf/load_field/key=field_mrn_sidebar_rows',
 		'acf/prepare_field/key=field_mrn_page_hero_rows',
 		'acf/prepare_field/key=field_mrn_page_content_rows',
 		'acf/prepare_field/key=field_mrn_page_after_content_rows',
-		'acf/prepare_field/key=field_mrn_sidebar_rows',
 	);
 }
 
@@ -660,7 +643,6 @@ function mrn_base_stack_get_builder_layout_allowlist_default_limits() {
 		'page_hero_rows'          => 4,
 		'page_content_rows'       => 8,
 		'page_after_content_rows' => 6,
-		'page_sidebar_rows'       => 1,
 	);
 	$limits   = apply_filters( 'mrn_base_stack_builder_layout_allowlist_default_limits', $defaults );
 
@@ -688,10 +670,9 @@ function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name,
 	$field_name         = sanitize_key( (string) $field_name );
 	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
 	$default_map        = array(
-		'page_hero_rows'          => array( 'basic', 'image_content', 'two_column_split' ),
+		'page_hero_rows'          => array( 'basic', 'two_column_split' ),
 		'page_content_rows'       => array( 'basic', 'image_content', 'two_column_split', 'reusable_block', 'grid' ),
 		'page_after_content_rows' => array( 'basic', 'two_column_split', 'logos', 'reusable_block', 'cta' ),
-		'page_sidebar_rows'       => array( 'basic', 'image_content', 'searchwp_form' ),
 	);
 	$alias_map          = array(
 		'basic'            => array( 'basic' ),
@@ -941,11 +922,9 @@ function mrn_base_stack_filter_builder_layout_allowlist_field_layouts( $field ) 
 add_filter( 'acf/load_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
-add_filter( 'acf/load_field/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
-add_filter( 'acf/prepare_field/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 
 /**
  * Hide non-addable existing-only layout choices in ACF popup menus.
@@ -1457,40 +1436,70 @@ function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post 
 		return;
 	}
 
-	$input         = mrn_base_stack_get_builder_layout_allowlist_post_array( 'mrn_builder_layout_allowlist' );
-	$catalog_input = mrn_base_stack_get_builder_layout_allowlist_post_array( 'mrn_builder_layout_allowlist_catalog' );
-	$payload_input = mrn_base_stack_get_builder_layout_allowlist_post_string( 'mrn_builder_layout_allowlist_payload' );
-	$raw_payload   = mrn_base_stack_get_builder_layout_allowlist_raw_request_payload();
+	$has_allowlist_payload_inputs = isset( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce/capability verified above.
+		|| isset( $_POST['mrn_builder_layout_allowlist_catalog'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce/capability verified above.
+		|| isset( $_POST['mrn_builder_layout_allowlist_payload'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce/capability verified above.
 
-	if ( isset( $raw_payload['allowlist'] ) && is_array( $raw_payload['allowlist'] ) && ! empty( $raw_payload['allowlist'] ) ) {
-		$input = $raw_payload['allowlist'];
+	if ( ! $has_allowlist_nonce && ! $has_allowlist_payload_inputs ) {
+		return;
 	}
 
-	if ( isset( $raw_payload['catalog'] ) && is_array( $raw_payload['catalog'] ) && ! empty( $raw_payload['catalog'] ) ) {
-		$catalog_input = $raw_payload['catalog'];
-	}
-
-	if ( isset( $raw_payload['payload'] ) && is_string( $raw_payload['payload'] ) && '' !== $raw_payload['payload'] ) {
-		$payload_input = $raw_payload['payload'];
-	}
+	$input           = mrn_base_stack_get_builder_layout_allowlist_post_array( 'mrn_builder_layout_allowlist' );
+	$catalog_input   = mrn_base_stack_get_builder_layout_allowlist_post_array( 'mrn_builder_layout_allowlist_catalog' );
+	$payload_input   = mrn_base_stack_get_builder_layout_allowlist_post_string( 'mrn_builder_layout_allowlist_payload' );
+	$decoded_payload = null;
 
 	if ( '' !== $payload_input ) {
 		$decoded_payload = json_decode( $payload_input, true );
-		if ( is_array( $decoded_payload ) ) {
-			/*
-			 * Prefer payload data when available.
-			 *
-			 * Large classic-editor submissions can hit max_input_vars and deliver
-			 * partially truncated checkbox arrays. The payload is a compact snapshot
-			 * captured at submit time and avoids per-field truncation loss.
-			 */
-			if ( isset( $decoded_payload['allowlist'] ) && is_array( $decoded_payload['allowlist'] ) ) {
-				$input = $decoded_payload['allowlist'];
-			}
+	}
 
-			if ( isset( $decoded_payload['catalog'] ) && is_array( $decoded_payload['catalog'] ) ) {
-				$catalog_input = $decoded_payload['catalog'];
+	$needs_raw_fallback = (
+		( ! is_array( $decoded_payload ) && '' !== $payload_input )
+		|| ( '' === $payload_input && ( empty( $input ) || empty( $catalog_input ) ) )
+	);
+
+	if ( $needs_raw_fallback ) {
+		/*
+		 * Raw-body parsing is a fallback for max_input_vars truncation recovery.
+		 *
+		 * Parsing full php://input on every save is expensive on large builder
+		 * submissions, so only do it when the compact payload is missing/invalid
+		 * or the expected allowlist/catalog arrays are absent.
+		 */
+		$raw_payload = mrn_base_stack_get_builder_layout_allowlist_raw_request_payload();
+
+		if ( isset( $raw_payload['allowlist'] ) && is_array( $raw_payload['allowlist'] ) && ! empty( $raw_payload['allowlist'] ) ) {
+			$input = $raw_payload['allowlist'];
+		}
+
+		if ( isset( $raw_payload['catalog'] ) && is_array( $raw_payload['catalog'] ) && ! empty( $raw_payload['catalog'] ) ) {
+			$catalog_input = $raw_payload['catalog'];
+		}
+
+		if ( isset( $raw_payload['payload'] ) && is_string( $raw_payload['payload'] ) && '' !== $raw_payload['payload'] ) {
+			$payload_input = $raw_payload['payload'];
+			$decoded       = json_decode( $payload_input, true );
+
+			if ( is_array( $decoded ) ) {
+				$decoded_payload = $decoded;
 			}
+		}
+	}
+
+	if ( is_array( $decoded_payload ) ) {
+		/*
+		 * Prefer payload data when available.
+		 *
+		 * Large classic-editor submissions can hit max_input_vars and deliver
+		 * partially truncated checkbox arrays. The payload is a compact snapshot
+		 * captured at submit time and avoids per-field truncation loss.
+		 */
+		if ( isset( $decoded_payload['allowlist'] ) && is_array( $decoded_payload['allowlist'] ) ) {
+			$input = $decoded_payload['allowlist'];
+		}
+
+		if ( isset( $decoded_payload['catalog'] ) && is_array( $decoded_payload['catalog'] ) ) {
+			$catalog_input = $decoded_payload['catalog'];
 		}
 	}
 

@@ -7,6 +7,10 @@
 
 	var config = mrnBaseStackBuilderAdmin;
 
+	function isInitialFlexibleCollapseEnabled() {
+		return !! ( config && config.initialCollapseEnabled );
+	}
+
 	function getContentListTaxonomyMap() {
 		if ( config.contentListTaxonomies && typeof config.contentListTaxonomies === 'object' ) {
 			return config.contentListTaxonomies;
@@ -398,11 +402,138 @@
 		} );
 	}
 
-	function collapseInitialFlexibleRows( context ) {
-		$( context || document ).find( '.acf-field-flexible-content' ).each( function() {
-			var $flexField = $( this );
+		var initialBuilderBootstrapped = false;
+		var initialFlexibleCollapseQueue = [];
+		var initialFlexibleCollapseScheduled = false;
+		var deferCollapseUntil = 0;
+		var interactionQuietPeriodMs = 900;
+		var interactionRetryDelayMs = 220;
+		var inputEditingRetryDelayMs = 260;
+		var maxInitialFlexibleCollapseRows = 120;
 
-			if ( $flexField.data( 'mrn-initial-collapse-done' ) ) {
+	function markEditorInteraction() {
+		var now = window.performance && typeof window.performance.now === 'function'
+			? window.performance.now()
+			: Date.now();
+
+		deferCollapseUntil = now + interactionQuietPeriodMs;
+
+		// Prioritize editor responsiveness once the user starts interacting.
+		if ( initialFlexibleCollapseQueue.length ) {
+			initialFlexibleCollapseQueue.length = 0;
+		}
+	}
+
+	function shouldDeferCollapseForInteraction() {
+		var now = window.performance && typeof window.performance.now === 'function'
+			? window.performance.now()
+			: Date.now();
+
+		return deferCollapseUntil > now;
+	}
+
+	function isEditingInputControl() {
+		var active = document.activeElement;
+
+		if ( ! active ) {
+			return false;
+		}
+
+		if ( active.isContentEditable ) {
+			return true;
+		}
+
+		return /^(INPUT|TEXTAREA|SELECT)$/.test( active.tagName || '' );
+	}
+
+	function scheduleInitialFlexibleCollapse() {
+		if ( initialFlexibleCollapseScheduled ) {
+			return;
+		}
+
+		initialFlexibleCollapseScheduled = true;
+
+		if ( typeof window.requestAnimationFrame === 'function' ) {
+			window.requestAnimationFrame( processInitialFlexibleCollapseQueue );
+			return;
+		}
+
+		window.setTimeout( processInitialFlexibleCollapseQueue, 0 );
+	}
+
+	function processInitialFlexibleCollapseQueue() {
+		var processed = 0;
+		var maxPerPass = 2;
+		var start = window.performance && typeof window.performance.now === 'function' ? window.performance.now() : 0;
+		var maxDuration = 4;
+
+		initialFlexibleCollapseScheduled = false;
+
+		if ( ! initialFlexibleCollapseQueue.length ) {
+			return;
+		}
+
+		if ( shouldDeferCollapseForInteraction() ) {
+			window.setTimeout( scheduleInitialFlexibleCollapse, interactionRetryDelayMs );
+			return;
+		}
+
+		if ( isEditingInputControl() ) {
+			window.setTimeout( scheduleInitialFlexibleCollapse, inputEditingRetryDelayMs );
+			return;
+		}
+
+		while ( initialFlexibleCollapseQueue.length ) {
+			var rowElement = initialFlexibleCollapseQueue.shift();
+			var $row = $( rowElement );
+			var $toggle;
+
+			if ( ! $row.length || $row.hasClass( '-collapsed' ) || $row.hasClass( 'collapsed' ) ) {
+				continue;
+			}
+
+			$toggle = $row.find( '> .acf-fc-layout-controls .acf-icon.-collapse, > .acf-fc-layout-actions .acf-icon.-collapse, .acf-fc-layout-controls .acf-icon.-collapse, .acf-fc-layout-actions .acf-icon.-collapse' ).first();
+
+			if ( ! $toggle.length ) {
+				$toggle = $row.find( '> .acf-fc-layout-handle .acf-icon.-collapse, .acf-fc-layout-handle .acf-icon.-collapse' ).first();
+			}
+
+			if ( ! $toggle.length ) {
+				$toggle = $row.children( '.acf-fc-layout-handle' ).first();
+			}
+
+			if ( $toggle.length ) {
+				$toggle.trigger( 'click' );
+			}
+
+			processed += 1;
+
+			if ( processed >= maxPerPass ) {
+				break;
+			}
+
+			if ( start && window.performance.now() - start >= maxDuration ) {
+				break;
+			}
+		}
+
+		if ( initialFlexibleCollapseQueue.length ) {
+			scheduleInitialFlexibleCollapse();
+		}
+	}
+
+	function queueInitialFlexibleRows( context ) {
+		if ( ! isInitialFlexibleCollapseEnabled() ) {
+			initialFlexibleCollapseQueue.length = 0;
+			return;
+		}
+
+		var queueCapped = false;
+
+			$( context || document ).find( '.acf-field-flexible-content' ).each( function() {
+				var $flexField = $( this );
+
+				if ( $flexField.data( 'mrn-initial-collapse-done' ) ) {
 				return;
 			}
 
@@ -410,28 +541,26 @@
 
 			getRows( $flexField ).each( function() {
 				var $row = $( this );
-				var $toggle;
 
-				if ( $row.hasClass( '-collapsed' ) || $row.hasClass( 'collapsed' ) ) {
-					return;
-				}
+					if ( $row.hasClass( '-collapsed' ) || $row.hasClass( 'collapsed' ) ) {
+						return;
+					}
 
-				$toggle = $row.find( '> .acf-fc-layout-controls .acf-icon.-collapse, > .acf-fc-layout-actions .acf-icon.-collapse, .acf-fc-layout-controls .acf-icon.-collapse, .acf-fc-layout-actions .acf-icon.-collapse' ).first();
+					if ( initialFlexibleCollapseQueue.length >= maxInitialFlexibleCollapseRows ) {
+						queueCapped = true;
+						return false;
+					}
 
-				if ( ! $toggle.length ) {
-					$toggle = $row.find( '> .acf-fc-layout-handle .acf-icon.-collapse, .acf-fc-layout-handle .acf-icon.-collapse' ).first();
-				}
+					initialFlexibleCollapseQueue.push( this );
+				} );
 
-				if ( ! $toggle.length ) {
-					$toggle = $row.children( '.acf-fc-layout-handle' ).first();
-				}
-
-				if ( $toggle.length ) {
-					$toggle.trigger( 'click' );
+				if ( queueCapped ) {
+					return false;
 				}
 			} );
-		} );
-	}
+
+			scheduleInitialFlexibleCollapse();
+		}
 
 	function getRows( $flexField ) {
 		var $values = $flexField.find( '> .acf-input > .acf-flexible-content > .values, > .acf-input > .values' ).first();
@@ -676,15 +805,36 @@
 		}, 80 );
 	}
 
+	function bootBuilderAdminUiOnce( context ) {
+		var bootContext = context || document;
+
+		if ( initialBuilderBootstrapped ) {
+			return;
+		}
+
+		initialBuilderBootstrapped = true;
+		bootBuilderAdminUi( bootContext );
+		if ( isInitialFlexibleCollapseEnabled() ) {
+			window.setTimeout( function() {
+				queueInitialFlexibleRows( bootContext );
+			}, 40 );
+		}
+	}
+
 	$( function() {
-		bootBuilderAdminUi( document );
-		window.setTimeout( function() {
-			collapseInitialFlexibleRows( document );
-		}, 40 );
+		bootBuilderAdminUiOnce( document );
 	} );
 
+	$( document ).on(
+		'mousedown touchstart keydown',
+		'#post input, #post textarea, #post select, #post [contenteditable="true"]',
+		function() {
+			markEditorInteraction();
+		}
+	);
+
 	acf.addAction( 'ready', function( $el ) {
-		bootBuilderAdminUi( $el || document );
+		bootBuilderAdminUiOnce( $el || document );
 	} );
 
 	acf.addAction( 'append', function( $el ) {

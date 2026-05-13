@@ -216,10 +216,14 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 ### `searchwp-editor-performance`
 
 - Name: `SearchWP Editor Performance`
-- Version: `1.0.0`
+- Version: `1.0.6`
 - Purpose:
   - avoids expensive SearchWP loopback method detection during post editor requests in local/development
-  - reduces logged-in edit and save latency on ACF-heavy pages where SearchWP hooks fire on `save_post`
+  - reduces logged-in edit and save latency on ACF-heavy pages where SearchWP source callbacks fire repeatedly on save/meta updates
+  - short-circuits SearchWP source hook registration for classic `editpost` saves to avoid repeated index-drop overhead during one publish request
+  - skips SearchWP core bootstrap entirely for classic post editor requests so source hooks are never registered for those requests
+  - applies the bootstrap suppression on `plugins_loaded` at max priority to stay effective regardless plugin load order
+  - guards pluggable nonce calls during early plugin bootstrap to avoid admin-request fatals before `wp_verify_nonce()` is available
 - Admin/UI:
   - no new settings or menus
   - modifies SearchWP indexer behavior in local/development only
@@ -376,7 +380,7 @@ This is an inventory and summary, not yet the full deep-dive documentation for e
 ### `mrn-reusable-block-library`
 
 - Name: `Reusable Block Library (MU)`
-- Version: `0.1.3`
+- Version: `0.1.15`
 - Purpose:
   - typed reusable content block system
 - Admin/UI:

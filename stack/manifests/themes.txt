@@ -7,4 +7,5 @@
 #   theme-slug|active
 #   theme-slug|version|active
 
-/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active
+/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip
+/home/mrndev-stack-manager/stack/themes/mrn-base-stack-child.zip|active

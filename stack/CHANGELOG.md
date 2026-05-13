@@ -1,5 +1,124 @@
 # Stack Changelog
 
+## 2026.05.06-front-end-runtime-autoload-for-reusable-interactions
+- Expanded `mrn-base-stack` to `1.2.1`.
+- Updated stack runtime enqueue behavior so front-end interaction assets can load on singular shell content when layout builder is disabled but runtime markers are present in content/meta.
+- Preserved compatibility by keeping the marker list filterable (`mrn_base_stack_front_end_runtime_markers`) and the final runtime enqueue decision filterable (`mrn_base_stack_should_enqueue_front_end_runtime`).
+- Fixed FAQ/tabs/slider interaction regressions on pages that rely on reusable-block or stack runtime features outside the layout-builder path.
+
+## 2026.04.22-developer-reference-sidebar-and-editor-runtime-hardening
+- Expanded `mrn-base-stack` to `1.1.34`.
+- Expanded `mrn-active-style-guide` to `0.1.3`.
+- Expanded `mrn-editor-lockdown` to `1.0.17`.
+- Expanded `mrn-reusable-block-library` to `0.1.16`.
+- Expanded `mrn-dummy-content` to `0.1.14`.
+- Expanded `mrn-universal-sticky-bar` to `1.1.1`.
+- Added a new `Appearance -> Developer Reference` admin screen with tabbed quick-copy references for templates, CSS variables, hooks/assets, shell contracts, reusable-block shortcodes, and starter snippets.
+- Kept SmartCrawl visible by default on edit screens by making legacy metabox removal opt-in through `mrn_editor_lockdown_remove_legacy_seo_metabox`.
+- Added manual post-selection support to theme and reusable Content Lists (`filter_source=manual_posts`) with published-item and post-type guards, preserving editor-chosen ordering.
+- Restored singular sidebar support when builder runtime is disabled by always loading the sidebar module and falling back to sanitized `sidebar_content` output.
+- Simplified sidebar layout choices to left/right only and removed the legacy no-sidebar mode in the singular-sidebar contract.
+- Lowered shared/admin sticky-toolbar z-index levels to prevent media picker and admin-bar overlap regressions.
+
+## 2026.04.22-layout-builder-hard-disable-and-loader-contrast
+- Expanded `mrn-base-stack` to `1.1.33`.
+- Expanded `mrn-editor-lockdown` to `1.0.16`.
+- Hard-disabled the heavy theme layout-builder runtime by default in the rollback track and kept safe content fallbacks so classic content rendering remains stable.
+- Restored shared ACF text/tag helper functions in the builder-disabled path so testimonial and case-study field groups continue to register cleanly.
+- Improved non-blocking editor loading-indicator readability with dark text on a light scrim to avoid invisible white-on-light loader copy.
+
+## 2026.04.22-editor-loading-indicator-text-black
+- Expanded `mrn-editor-lockdown` to `1.0.15`.
+- Updated the centered non-blocking editor loading indicator label text to black for improved visual preference/readability.
+
+## 2026.04.22-editor-loading-indicator-strong-nonblocking
+- Expanded `mrn-editor-lockdown` to `1.0.14`.
+- Strengthened the classic-editor non-blocking loading indicator with a clearer centered spinner/message treatment and a light non-interfering scrim.
+- Reduced indicator linger timing so feedback appears fast but clears quickly once the editor is ready.
+
+## 2026.04.22-editor-loading-indicator-centered-visibility
+- Expanded `mrn-editor-lockdown` to `1.0.13`.
+- Updated the non-blocking classic-editor loading indicator visual treatment to a centered spinner/message so editors can clearly perceive feedback during long loads.
+- Kept the indicator non-blocking (`pointer-events: none`) and retained the early `admin_head` bootstrap path.
+
+## 2026.04.22-editor-loading-indicator-pseudo-head
+- Expanded `mrn-editor-lockdown` to `1.0.12`.
+- Switched the non-blocking classic-editor loading indicator to an early `admin_head` pseudo-element (`html::before/::after`) so it is visible during long pre-footer admin loads.
+- Removed indicator DOM-injection timing dependencies and extended the post-load visibility window slightly for clearer user feedback.
+
+## 2026.04.22-editor-loading-indicator-head-bootstrap
+- Expanded `mrn-editor-lockdown` to `1.0.11`.
+- Moved non-blocking editor loading-indicator bootstrap to `admin_head` so it can appear before footer scripts execute on slow classic-editor loads.
+- Increased non-blocking indicator visibility timing slightly so editors can reliably see feedback while preserving the no-blocking interaction model.
+
+## 2026.04.22-editor-loading-feedback-nonblocking
+- Expanded `mrn-editor-lockdown` to `1.0.10`.
+- Kept the heavyweight classic-editor loading mask opt-in only, but restored editor load feedback with a lightweight non-blocking loading indicator.
+- Ensured the indicator no longer blocks clicks/typing while the editor warms up, preserving the interactivity gains from the mask-default-off performance rollout.
+
+## 2026.04.22-effects-permissions-removed
+- Expanded `mrn-base-stack` to `1.1.32`.
+- Removed the builder `layout_effects` capability gating hooks from the global ACF field-prepare/save path so Effects controls are no longer permission-gated in admin.
+- Eliminated repeated `current_user_can( 'layout_effects' )` checks on ACF-heavy editor screens, reducing edit-page admin latency on large layout payloads.
+
+## 2026.04.21-editor-ready-mask-disabled
+- Expanded `mrn-editor-lockdown` to `1.0.9`.
+- Disabled the heavyweight classic-editor loading mask by default so post edit screens become interactive as soon as WordPress/ACF can accept input, instead of waiting for the deferred ready-state gate.
+- Added the `mrn_editor_lockdown_loading_mask_enabled` filter so environments that still want the legacy full-screen loading overlay can opt in explicitly.
+
+## 2026.04.21-editor-load-latency-collapse-default-off
+- Expanded `mrn-base-stack` to `1.1.31`.
+- Disabled automatic initial builder/repeater row precollapse by default on classic editor screens so the editor stays interactive sooner on ACF-heavy pages.
+- Added a stack filter (`mrn_base_stack_admin_initial_collapse_enabled`) to opt back into the previous precollapse behavior when needed for specific environments.
+
+## 2026.04.21-editor-latency-hotfix-wpnonce-bootstrap
+- Expanded `searchwp-editor-performance` to `1.0.6`.
+- Fixed a plugin bootstrap fatal on classic editor admin requests by guarding `wp_verify_nonce()` usage until the pluggable function is available.
+- Preserved the existing SearchWP editor-request performance suppression behavior while removing the early-load crash path.
+
+## 2026.04.21-editor-latency-hardening-v3
+- Expanded `searchwp-editor-performance` to `1.0.5`.
+- Made SearchWP bootstrap suppression load-order-safe by removing SearchWP `init` callbacks again on `plugins_loaded` at max priority for classic post editor requests.
+- Preserved the existing local/development guardrails and production inert behavior.
+
+## 2026.04.21-editor-latency-hardening-v2
+- Expanded `mrn-base-stack` to `1.1.30`.
+- Expanded `searchwp-editor-performance` to `1.0.4`.
+- Hardened the SearchWP editor performance guard to disable SearchWP core `init` bootstrap on classic post editor requests (`post.php` / `post-new.php`) in local/development, preventing source-hook registration and index-drop churn during heavy ACF saves.
+- Added an extra admin-init safety pass for SearchWP source callback removal on classic editor save requests.
+- Updated builder/repeater admin collapse batching to defer while users interact with editor inputs, reducing residual click-to-caret lag in large flexible/repeater screens.
+
+## 2026.04.21-editor-save-and-focus-latency-hardening
+- Expanded `searchwp-editor-performance` to `1.0.3`.
+- Added an editor-save request guard that short-circuits SearchWP source hook registration during classic `editpost` saves, preventing expensive index-drop hook churn on large ACF submissions.
+- Relaxed strict nonce gating for editor-save detection to avoid false negatives on stacked/classic admin save flows where nonce transport can vary but request action remains `editpost`.
+- Kept the existing environment guardrails so production remains inert unless explicitly forced.
+
+## 2026.04.21-editor-focus-lag-smoothing
+- Expanded `mrn-base-stack` to `1.1.29`.
+- Reworked initial Classic Editor builder/repeater precollapse behavior so row collapsing runs in small animation-frame batches instead of a single long synchronous pass.
+- Added a guard that pauses collapse batching while an editor input is actively focused, reducing cursor/caret delay when clicking into heading text fields during heavy page loads.
+- Preserved existing collapsed-row behavior and repeater detachment contracts after the initial pass so large ACF pages keep their memory/load benefits without blocking early input focus.
+
+## 2026.04.21-admin-input-lag-reduction
+- Expanded `mrn-base-stack` to `1.1.28`.
+- Expanded `mrn-reusable-block-library` to `0.1.15`.
+- Switched shared heading/subheading/label tag chooser fields from Select2-enhanced selects to native selects in both the stack builder and reusable block field helpers.
+- Reduced editor-side Select2 initialization overhead on large ACF pages with many cloned layouts, improving typing and dropdown responsiveness in heavy classic-editor builder screens.
+
+## 2026.04.21-tabbed-editor-load-reduction
+- Expanded `mrn-base-stack` to `1.1.27`.
+- Reduced classic editor payload size for tabbed-builder rows by applying per-entry page-content allowlist filtering to nested tab panel row layouts.
+- Preserved edit safety for existing tab-panel content by auto-including already-saved nested panel layout slugs in the filtered nested layout set.
+- Kept nested `tabbed_layout` recursion blocked while reducing unnecessary cloned ACF layout markup that was inflating editor load time on heavy pages.
+
+## 2026.04.21-editor-save-latency-hardening
+- Expanded `mrn-base-stack` to `1.1.26`.
+- Expanded `searchwp-editor-performance` to `1.0.2`.
+- Hardened the builder allowlist save path so raw `php://input` parsing only runs as a truncation-recovery fallback instead of on every nonce-valid editor save request.
+- Expanded the SearchWP editor performance runtime guard to remove both `Post` and `Attachment` source drop/meta callbacks during classic `editpost` saves in local/development.
+- Kept the existing environment guardrails so production remains inert unless explicitly forced.
+
 ## 2026.04.21-builder-layout-canonicalization
 - Expanded `mrn-base-stack` to `1.1.25`.
 - Expanded `mrn-dummy-content` to `0.1.13`.

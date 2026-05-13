@@ -638,7 +638,21 @@ foreach ($settings as $key => $value) {
 // Keep a full payload copy for diagnostics/compatibility, but write live settings
 // as individual options because Updraft reads them that way.
 update_option($option_name, $settings);
-echo "Imported Updraft settings into {$imported} individual options and {$option_name}\n";'
+echo "Imported Updraft settings into {$imported} individual options and {$option_name}\n";
+
+// If the MU retention helper is available, reconcile its schedule immediately
+// after importing Updraft settings.
+if (function_exists("mrn_updraft_local_retention_schedule_cleanup")) {
+    mrn_updraft_local_retention_schedule_cleanup();
+    $hook = "mrn_updraft_local_retention_cleanup";
+    $event = function_exists("wp_get_scheduled_event") ? wp_get_scheduled_event($hook) : false;
+
+    if ($event && isset($event->schedule)) {
+        echo "Verified MU retention cron hook {$hook} ({$event->schedule})\n";
+    } else {
+        echo "MU retention cron hook {$hook} is not currently scheduled\n";
+    }
+}'
 }
 
 resolve_file_path() {

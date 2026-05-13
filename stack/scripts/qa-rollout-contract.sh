@@ -10,6 +10,8 @@ Default checks:
   - local theme version matches packaged zip version
   - stack shared runtime exists on the server
   - live site shared runtime exists
+  - stack/live Updraft local retention MU plugin files exist
+  - live site schedules the Updraft local retention cron hook
   - live active stylesheet resolves
   - live active theme version matches local source
   - case study files and CPT exist when local source includes them
@@ -58,6 +60,10 @@ LOCAL_THEME_ZIP="${REPO_ROOT}/releases/stack/mrn-base-stack.zip"
 
 REMOTE_SHARED_DIR="${STACK_ROOT_REMOTE}/shared"
 REMOTE_LIVE_SHARED_DIR="${LIVE_SITE_ROOT}/wp-content/shared"
+REMOTE_STACK_RETENTION_WRAPPER="${STACK_ROOT_REMOTE}/mu-plugins/mrn-updraft-local-retention.php"
+REMOTE_STACK_RETENTION_MAIN="${STACK_ROOT_REMOTE}/mu-plugins/mrn-updraft-local-retention/mrn-updraft-local-retention.php"
+REMOTE_LIVE_RETENTION_WRAPPER="${LIVE_SITE_ROOT}/wp-content/mu-plugins/mrn-updraft-local-retention.php"
+REMOTE_LIVE_RETENTION_MAIN="${LIVE_SITE_ROOT}/wp-content/mu-plugins/mrn-updraft-local-retention/mrn-updraft-local-retention.php"
 REMOTE_ACTIVE_THEME_SLUG=""
 REMOTE_ACTIVE_THEME_DIR=""
 
@@ -119,6 +125,21 @@ pass "Remote stack shared runtime exists"
 remote_dir_exists "${REMOTE_LIVE_SHARED_DIR}" || fail "Live site shared runtime missing: ${REMOTE_LIVE_SHARED_DIR}"
 remote_file_exists "${REMOTE_LIVE_SHARED_DIR}/mrn-sticky-settings-toolbar.php" || fail "Live site shared runtime missing mrn-sticky-settings-toolbar.php"
 pass "Live site shared runtime exists"
+
+remote_file_exists "${REMOTE_STACK_RETENTION_WRAPPER}" || fail "Remote stack MU wrapper missing: ${REMOTE_STACK_RETENTION_WRAPPER}"
+remote_file_exists "${REMOTE_STACK_RETENTION_MAIN}" || fail "Remote stack MU plugin missing: ${REMOTE_STACK_RETENTION_MAIN}"
+pass "Remote stack Updraft local retention MU plugin exists"
+
+remote_file_exists "${REMOTE_LIVE_RETENTION_WRAPPER}" || fail "Live site MU wrapper missing: ${REMOTE_LIVE_RETENTION_WRAPPER}"
+remote_file_exists "${REMOTE_LIVE_RETENTION_MAIN}" || fail "Live site MU plugin missing: ${REMOTE_LIVE_RETENTION_MAIN}"
+pass "Live site Updraft local retention MU plugin exists"
+
+REMOTE_RETENTION_CRON_SCHEDULE="$(
+	ssh "${SSH_HOST}" "wp eval --path='${LIVE_SITE_ROOT}' '\$hook=\"mrn_updraft_local_retention_cleanup\"; \$event=function_exists(\"wp_get_scheduled_event\") ? wp_get_scheduled_event(\$hook) : false; if (!\$event || !isset(\$event->schedule)) { echo \"missing\"; } else { echo \$event->schedule; }' 2>/dev/null" | tr -d '\r' | xargs
+)"
+[[ -n "${REMOTE_RETENTION_CRON_SCHEDULE}" && "${REMOTE_RETENTION_CRON_SCHEDULE}" != "missing" ]] || fail "Live site is missing scheduled hook: mrn_updraft_local_retention_cleanup"
+[[ "${REMOTE_RETENTION_CRON_SCHEDULE}" == "daily" ]] || fail "Live retention hook recurrence is ${REMOTE_RETENTION_CRON_SCHEDULE}, expected daily"
+pass "Live site schedules mrn_updraft_local_retention_cleanup daily"
 
 REMOTE_ACTIVE_THEME_SLUG="$(
 	ssh "${SSH_HOST}" "wp option get stylesheet --path='${LIVE_SITE_ROOT}' 2>/dev/null" | tr -d '\r' | xargs

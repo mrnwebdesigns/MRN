@@ -1,0 +1,227 @@
+#compdef mrn
+
+_mrn_site_hostnames() {
+	_mrn_site_hostnames_prefixed "${PREFIX:-}"
+}
+
+_mrn_site_hostnames_prefixed() {
+	local prefix
+	local map_file
+	local list_script
+	local host
+	local -a hosts map_hosts remote_hosts filtered_hosts
+
+	prefix="${1:-}"
+	map_file="${MRN_LOCAL_SITE_MAP_FILE:-/Users/khofmeyer/Development/MRN/local/configs/local-site-map.mrndev.io.txt}"
+	list_script="${MRN_MRNDEV_HOSTS_LIST_SCRIPT:-/Users/khofmeyer/Development/MRN/local/scripts/list-mrndev-hostnames.sh}"
+	hosts=()
+	map_hosts=()
+	remote_hosts=()
+	filtered_hosts=()
+
+	if [[ -f "${map_file}" ]]; then
+		map_hosts=( ${(f)"$(awk -F'|' '
+			/^[[:space:]]*#/ { next }
+			NF < 2 { next }
+			{
+				host=$1
+				gsub(/^[[:space:]]+|[[:space:]]+$/, "", host)
+				if (host != "") print host
+			}
+		' "${map_file}" 2>/dev/null | sort -u)"} )
+	fi
+
+	if [[ -x "${list_script}" ]]; then
+		remote_hosts=( ${(f)"$("${list_script}" 2>/dev/null || true)"} )
+	fi
+
+	hosts=( "${map_hosts[@]}" "${remote_hosts[@]}" )
+	hosts=( ${(ou)hosts} )
+	filtered_hosts=("${hosts[@]}")
+
+	if [[ -n "${prefix}" ]]; then
+		filtered_hosts=()
+		for host in "${hosts[@]}"; do
+			[[ "${host}" == "${prefix}"* ]] && filtered_hosts+=("${host}")
+		done
+	fi
+
+	if (( ${#filtered_hosts[@]} )); then
+		compadd -- "${filtered_hosts[@]}"
+	else
+		_message 'site hostname'
+	fi
+}
+
+_mrn() {
+	local subcmd prev
+
+	subcmd="${words[2]:-}"
+	prev="${words[CURRENT-1]:-}"
+
+	local -a subcommands opts
+	subcommands=(
+		'pull-site:Pull a live site into Local'
+		'deploy-site:Deploy local updates to a live site'
+		'nightly-pull:Pull all discovered .mrndev.io sites'
+		'completion:Print shell completion script'
+		'install-completion:Install shell completion'
+		'help:Show help'
+	)
+
+	if (( CURRENT == 2 )); then
+		_describe -t commands 'mrn command' subcommands
+		return
+	fi
+
+	case "${subcmd}" in
+		pull-site)
+			if (( CURRENT == 3 )) || [[ "${prev}" == "--site-hostname" ]]; then
+				_mrn_site_hostnames
+				return
+			fi
+			if (( CURRENT == 4 )) && [[ -n "${words[3]:-}" ]] && [[ "${words[3]}" != -* ]] && [[ -z "${words[4]:-}" ]]; then
+				_mrn_site_hostnames_prefixed "${words[3]}"
+				return
+			fi
+
+			case "${prev}" in
+				--local-site-path|--local-sites-root|--snapshot-root)
+					_files -/
+					return
+					;;
+				--map-file)
+					_files
+					return
+					;;
+				--local-home-url)
+					_message 'local home URL'
+					return
+					;;
+				--discovery-ssh-host)
+					_message 'SSH host alias'
+					return
+					;;
+			esac
+
+			if (( CURRENT == 4 )) && [[ "${words[3]:-}" != -* ]]; then
+				_files -/
+				return
+			fi
+
+			opts=(
+				'--site-hostname[Live site hostname, e.g. site.mrndev.io]'
+				'--local-site-path[Absolute Local site path]'
+				'--sync-runtime[Sync themes/plugins/mu-plugins from live before pull]'
+				'--no-sync-runtime[Skip runtime code sync from live]'
+				'--local-api-auto-create[Allow Local app API to auto-create/reuse missing local sites]'
+				'--no-local-api-auto-create[Disable Local app API auto-create/reuse]'
+				'--snapshot-if-missing[Fallback to snapshot mode when Local site path is missing]'
+				'--snapshot-root[Snapshot root path used when no Local site exists]'
+				'--local-home-url[Override local home URL]'
+				'--local-sites-root[Path to Local Sites root]'
+				'--map-file[Hostname-to-local-path mapping file]'
+				'--discovery-ssh-host[SSH host alias used for discovery]'
+				'--skip-db[Skip database pull]'
+				'--skip-uploads[Skip uploads pull]'
+				'--dry-run[Preview rsync without writes]'
+			)
+			_describe -t options 'pull-site option' opts
+			return
+			;;
+		deploy-site)
+			if (( CURRENT == 3 )) || [[ "${prev}" == "--site-hostname" ]]; then
+				_mrn_site_hostnames
+				return
+			fi
+			if (( CURRENT == 4 )) && [[ -n "${words[3]:-}" ]] && [[ "${words[3]}" != -* ]] && [[ -z "${words[4]:-}" ]]; then
+				_mrn_site_hostnames_prefixed "${words[3]}"
+				return
+			fi
+
+			case "${prev}" in
+				--local-site-path|--local-sites-root)
+					_files -/
+					return
+					;;
+				--map-file)
+					_files
+					return
+					;;
+				--deploy-scope)
+					_describe -t scope 'deploy scope' '(site stack)'
+					return
+					;;
+				--local-home-url)
+					_message 'local home URL'
+					return
+					;;
+				--discovery-ssh-host)
+					_message 'SSH host alias'
+					return
+					;;
+			esac
+
+			if (( CURRENT == 4 )) && [[ "${words[3]:-}" != -* ]]; then
+				_files -/
+				return
+			fi
+
+			opts=(
+				'--site-hostname[Live site hostname, e.g. site.mrndev.io]'
+				'--local-site-path[Absolute Local site path]'
+				'--deploy-scope[Deploy scope: site or stack]'
+				'--local-home-url[Override local home URL]'
+				'--local-sites-root[Path to Local Sites root]'
+				'--map-file[Hostname-to-local-path mapping file]'
+				'--discovery-ssh-host[SSH host alias used for discovery]'
+				'--skip-backup[Skip preflight backup]'
+				'--skip-db[Skip database deploy]'
+				'--skip-uploads[Skip uploads deploy]'
+				'--delete-uploads[Mirror uploads with delete]'
+				'--yes[Skip deploy confirmation prompt]'
+				'--dry-run[Preview rsync without writes]'
+			)
+			_describe -t options 'deploy-site option' opts
+			return
+			;;
+		nightly-pull)
+			case "${prev}" in
+				--local-sites-root|--snapshot-root)
+					_files -/
+					return
+					;;
+				--map-file)
+					_files
+					return
+					;;
+				--discovery-ssh-host)
+					_message 'SSH host alias'
+					return
+					;;
+			esac
+
+			opts=(
+				'--discovery-ssh-host[SSH host alias used for discovery]'
+				'--local-sites-root[Path to Local Sites root]'
+				'--map-file[Hostname-to-local-path mapping file]'
+				'--snapshot-root[Snapshot root path used when no Local site exists]'
+				'--skip-db[Skip database pulls]'
+				'--with-uploads[Include uploads pulls]'
+				'--dry-run[Preview rsync without writes]'
+			)
+			_describe -t options 'nightly-pull option' opts
+			return
+			;;
+		completion|install-completion)
+			if (( CURRENT == 3 )); then
+				_describe -t shell 'shell' '(zsh bash)'
+				return
+			fi
+			_message 'shell'
+			return
+			;;
+	esac
+
+	_message 'mrn command'
+}

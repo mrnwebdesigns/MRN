@@ -1,4 +1,6 @@
 ( function ( $, window ) {
+	var initialChooserBootstrapped = false;
+
 	function getFieldObject( $field ) {
 		if ( ! $field || ! $field.length || typeof acf === 'undefined' || typeof acf.getField !== 'function' ) {
 			return null;
@@ -236,6 +238,16 @@
 
 		renderInlinePreview( $control.find( '.mrn-icon-chooser-preview' ), selection );
 		$control.find( '.mrn-icon-chooser-selection' ).text( selection && selection.label ? selection.label : 'No icon selected' );
+
+		if (
+			selection &&
+			'fontawesome' === selection.type &&
+			selection.value &&
+			window.MRNSharedIconChooser &&
+			typeof window.MRNSharedIconChooser.registerFontawesomeSelection === 'function'
+		) {
+			window.MRNSharedIconChooser.registerFontawesomeSelection( selection.value );
+		}
 	}
 
 	function hideStorageFields( group ) {
@@ -312,6 +324,15 @@
 		} );
 	}
 
+	function initChooserFieldsOnce( context ) {
+		if ( initialChooserBootstrapped ) {
+			return;
+		}
+
+		initialChooserBootstrapped = true;
+		initChooserFields( context || document );
+	}
+
 	$( document ).on( 'click', '.mrn-icon-chooser-open', function () {
 		var group = $( this ).closest( '.mrn-icon-chooser-control' ).data( 'mrnIconChooserGroup' );
 
@@ -321,9 +342,11 @@
 	} );
 
 	if ( typeof acf !== 'undefined' ) {
-		acf.addAction( 'ready', initChooserFields );
+		acf.addAction( 'ready', initChooserFieldsOnce );
 		acf.addAction( 'append', initChooserFields );
 	}
 
-	$( initChooserFields );
+	$( function() {
+		initChooserFieldsOnce( document );
+	} );
 }( jQuery, window ) );

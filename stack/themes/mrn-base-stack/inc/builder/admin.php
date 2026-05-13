@@ -64,7 +64,7 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 	$row_flex_settings         = ( $post_id > 0 && function_exists( 'mrn_base_stack_get_builder_row_flex_payload' ) ) ? mrn_base_stack_get_builder_row_flex_payload( $post_id ) : array();
 	$row_flex_supported_fields = function_exists( 'mrn_base_stack_get_builder_row_flex_supported_fields' )
 		? mrn_base_stack_get_builder_row_flex_supported_fields()
-		: array( 'page_content_rows', 'page_after_content_rows', 'page_hero_rows', 'page_sidebar_rows' );
+		: array( 'page_content_rows', 'page_after_content_rows', 'page_hero_rows' );
 
 	wp_localize_script(
 		'mrn-base-stack-content-builder-admin',
@@ -84,6 +84,7 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 			'errorText'               => 'The block could not be converted.',
 			'contentListTaxonomies'   => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
 			'contentListDisplayModes' => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
+			'initialCollapseEnabled'  => (bool) apply_filters( 'mrn_base_stack_admin_initial_collapse_enabled', false ),
 			'rowFlex'                 => array(
 				'nonce'           => wp_create_nonce( 'mrn-base-stack-row-flex-layout' ),
 				'nonceField'      => 'mrn_base_stack_row_flex_nonce',
@@ -336,18 +337,44 @@ function mrn_base_stack_save_builder_row_flex_layout_meta( $post_id, $post ) {
 add_action( 'save_post', 'mrn_base_stack_save_builder_row_flex_layout_meta', 20, 2 );
 
 /**
- * Hide the native WordPress content editor on posts and pages while preserving
- * screen compatibility for plugins that expect the classic editor context.
+ * Get post types where the native WordPress editor should be hidden.
+ *
+ * Defaults to an empty list so all classic-editor body fields remain available
+ * unless a site explicitly opts into hiding via filter.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_native_editor_hidden_post_types() {
+	$post_types = array();
+
+	/**
+	 * Filter post types where the native editor should be hidden.
+	 *
+	 * @param array<int, string> $post_types Post type slugs.
+	 */
+	$post_types = apply_filters( 'mrn_base_stack_native_editor_hidden_post_types', $post_types );
+
+	if ( ! is_array( $post_types ) ) {
+		return array();
+	}
+
+	return array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $post_types )
+			)
+		)
+	);
+}
+
+/**
+ * Hide the native WordPress content editor on configured singular screens while
+ * preserving screen compatibility for plugins that expect the classic editor context.
  */
 function mrn_base_stack_hide_native_editor_metabox() {
-	remove_meta_box( 'postdivrich', 'post', 'normal' );
-	remove_meta_box( 'postdivrich', 'page', 'normal' );
-	remove_meta_box( 'postdivrich', 'page_with_sidebars', 'normal' );
-	remove_meta_box( 'postdivrich', 'blog', 'normal' );
-	remove_meta_box( 'postdivrich', 'post_with_sidebars', 'normal' );
-	remove_meta_box( 'postdivrich', 'gallery', 'normal' );
-	remove_meta_box( 'postdivrich', 'testimonial', 'normal' );
-	remove_meta_box( 'postdivrich', 'case_study', 'normal' );
+	foreach ( mrn_base_stack_get_native_editor_hidden_post_types() as $post_type ) {
+		remove_meta_box( 'postdivrich', $post_type, 'normal' );
+	}
 }
 add_action( 'add_meta_boxes', 'mrn_base_stack_hide_native_editor_metabox', 20 );
 
@@ -361,7 +388,7 @@ function mrn_base_stack_hide_native_editor_css() {
 		return;
 	}
 
-	if ( ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_singular_shell_post_types(), true ) ) {
+	if ( ! in_array( sanitize_key( (string) $screen->post_type ), mrn_base_stack_get_native_editor_hidden_post_types(), true ) ) {
 		return;
 	}
 	?>
@@ -385,14 +412,8 @@ add_action( 'admin_head', 'mrn_base_stack_hide_native_editor_css' );
 function mrn_base_stack_customize_editorial_cpt_edit_screen( $post_type, $post ) {
 	$post_type = sanitize_key( (string) $post_type );
 
-	if ( ! in_array( $post_type, array( 'blog', 'gallery', 'case_study' ), true ) || ! $post instanceof WP_Post ) {
+	if ( ! in_array( $post_type, array( 'gallery', 'case_study' ), true ) || ! $post instanceof WP_Post ) {
 		return;
-	}
-
-	if ( 'blog' === $post_type ) {
-		remove_meta_box( 'authordiv', $post_type, 'normal' );
-		remove_meta_box( 'authordiv', $post_type, 'advanced' );
-		add_meta_box( 'authordiv', __( 'Author', 'mrn-base-stack' ), 'post_author_meta_box', $post_type, 'side', 'high' );
 	}
 
 	remove_meta_box( 'postexcerpt', $post_type, 'normal' );
@@ -408,14 +429,12 @@ add_action( 'add_meta_boxes', 'mrn_base_stack_customize_editorial_cpt_edit_scree
  * @return void
  */
 function mrn_base_stack_render_editorial_cpt_excerpt_after_title( $post ) {
-	if ( ! $post instanceof WP_Post || ! in_array( $post->post_type, array( 'blog', 'gallery' ), true ) ) {
+	if ( ! $post instanceof WP_Post || 'gallery' !== $post->post_type ) {
 		return;
 	}
 
-	$title       = 'blog' === $post->post_type ? __( 'Blog Excerpt', 'mrn-base-stack' ) : __( 'Gallery Excerpt', 'mrn-base-stack' );
-	$description = 'blog' === $post->post_type
-		? __( 'Write the short summary that should appear directly under the Blog title and in listings that use the excerpt.', 'mrn-base-stack' )
-		: __( 'Write the short summary that should appear directly under the Gallery title and in listings that use the excerpt.', 'mrn-base-stack' );
+	$title       = __( 'Gallery Excerpt', 'mrn-base-stack' );
+	$description = __( 'Write the short summary that should appear directly under the Gallery title and in listings that use the excerpt.', 'mrn-base-stack' );
 
 	?>
 	<div class="mrn-blog-excerpt-panel">
@@ -439,7 +458,7 @@ add_action( 'edit_form_after_title', 'mrn_base_stack_render_editorial_cpt_excerp
  */
 function mrn_base_stack_editorial_cpt_edit_screen_styles() {
 	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-	if ( ! $screen instanceof WP_Screen || ! in_array( sanitize_key( (string) $screen->post_type ), array( 'blog', 'gallery' ), true ) ) {
+	if ( ! $screen instanceof WP_Screen || 'gallery' !== sanitize_key( (string) $screen->post_type ) ) {
 		return;
 	}
 	?>

@@ -43,6 +43,18 @@ This is the reorganized MRN development workspace.
 - Security QA command:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/qa-security.sh`
 
+## Local Environment Workflow
+
+- Shortcut command:
+  - `/Users/khofmeyer/Development/MRN/scripts/mrn`
+- Docs:
+  - `/Users/khofmeyer/Development/MRN/local/LOCAL_ENV_WORKFLOW.md`
+- Includes:
+  - `mrn pull-site`
+  - `mrn deploy-site`
+  - `mrn nightly-pull`
+  - `mrn install-completion zsh`
+
 ## Current Layout Notes
 
 - `stack/mu-plugins/mrn-loader.php` currently uses an explicit allowlist of MU plugin entry files.

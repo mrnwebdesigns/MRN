@@ -2,12 +2,30 @@
 /**
  * Plugin Name: MRN Editor Lockdown (MU)
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.8
+ * Version: 1.0.18
  *
  * @package MRNEditorLockdown
  */
 
 defined( 'ABSPATH' ) || exit;
+
+/**
+ * Determine whether the heavyweight editor loading mask should run.
+ *
+ * @return bool
+ */
+function mrn_editor_lockdown_is_loading_mask_enabled() {
+	return (bool) apply_filters( 'mrn_editor_lockdown_loading_mask_enabled', false );
+}
+
+/**
+ * Determine whether lightweight non-blocking editor loading feedback should run.
+ *
+ * @return bool
+ */
+function mrn_editor_lockdown_is_loading_indicator_enabled() {
+	return (bool) apply_filters( 'mrn_editor_lockdown_loading_indicator_enabled', true );
+}
 
 /**
  * SEO Helper ACF metabox ID.
@@ -25,6 +43,17 @@ function mrn_editor_lockdown_get_seo_helper_metabox_id() {
  */
 function mrn_editor_lockdown_get_legacy_seo_metabox_id() {
 	return 'wds-wds-meta-box';
+}
+
+/**
+ * Determine whether the legacy SmartCrawl metabox should be removed.
+ *
+ * Defaults to disabled so SmartCrawl stays visible on edit screens.
+ *
+ * @return bool
+ */
+function mrn_editor_lockdown_should_remove_legacy_seo_metabox() {
+	return (bool) apply_filters( 'mrn_editor_lockdown_remove_legacy_seo_metabox', false );
 }
 
 /**
@@ -106,22 +135,11 @@ function mrn_editor_lockdown_get_layouts() {
 				'ame-cpe-content-permissions',
 			),
 		),
-		'blog' => array(
-			'screen_layout' => 2,
-			'meta_box_order' => array(
-				'normal'   => 'slugdiv,revisionsdiv',
-				'side'     => 'authordiv,submitdiv',
-				'advanced' => 'ame-cpe-content-permissions',
-			),
-			'closed' => array(
-				'ame-cpe-content-permissions',
-			),
-		),
 		'gallery' => array(
 			'screen_layout' => 2,
 			'meta_box_order' => array(
 				'normal'   => 'slugdiv,revisionsdiv',
-				'side'     => 'submitdiv,gallery_categorydiv,postimagediv',
+				'side'     => 'submitdiv,gallery_categorydiv,tagsdiv-gallery_tag,postimagediv',
 				'advanced' => 'ame-cpe-content-permissions',
 			),
 			'closed' => array(
@@ -356,6 +374,92 @@ function mrn_editor_lockdown_is_supported_screen( $screen ) {
 }
 
 /**
+ * Determine whether classic-editor enforcement should apply to a post type.
+ *
+ * @param string $post_type Post type slug.
+ * @return bool
+ */
+function mrn_editor_lockdown_should_force_classic_editor_for_post_type( $post_type ) {
+	$post_type = sanitize_key( (string) $post_type );
+	if ( '' === $post_type ) {
+		return false;
+	}
+
+	return in_array( $post_type, mrn_editor_lockdown_get_supported_post_types(), true );
+}
+
+/**
+ * Force supported post types to use Classic Editor.
+ *
+ * @param bool   $use_block_editor Current block-editor decision.
+ * @param string $post_type        Post type slug.
+ * @return bool
+ */
+function mrn_editor_lockdown_force_classic_editor_for_post_type( $use_block_editor, $post_type ) {
+	if ( mrn_editor_lockdown_should_force_classic_editor_for_post_type( $post_type ) ) {
+		return false;
+	}
+
+	return (bool) $use_block_editor;
+}
+add_filter( 'use_block_editor_for_post_type', 'mrn_editor_lockdown_force_classic_editor_for_post_type', 100, 2 );
+add_filter( 'gutenberg_can_edit_post_type', 'mrn_editor_lockdown_force_classic_editor_for_post_type', 100, 2 );
+
+/**
+ * Force supported posts to use Classic Editor.
+ *
+ * @param bool    $use_block_editor Current block-editor decision.
+ * @param WP_Post $post             Current post object.
+ * @return bool
+ */
+function mrn_editor_lockdown_force_classic_editor_for_post( $use_block_editor, $post ) {
+	if ( $post instanceof WP_Post && mrn_editor_lockdown_should_force_classic_editor_for_post_type( $post->post_type ) ) {
+		return false;
+	}
+
+	return (bool) $use_block_editor;
+}
+add_filter( 'use_block_editor_for_post', 'mrn_editor_lockdown_force_classic_editor_for_post', 100, 2 );
+add_filter( 'gutenberg_can_edit_post', 'mrn_editor_lockdown_force_classic_editor_for_post', 100, 2 );
+
+/**
+ * Ensure TinyMCE/Quicktags runtime is available for classic edit screens.
+ *
+ * @param string $hook_suffix Current admin hook suffix.
+ * @return void
+ */
+function mrn_editor_lockdown_enqueue_editor_runtime( $hook_suffix ) {
+	if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ), true ) ) {
+		return;
+	}
+
+	if ( ! function_exists( 'wp_enqueue_editor' ) ) {
+		return;
+	}
+
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( ! $screen instanceof WP_Screen ) {
+		return;
+	}
+
+	$post_type = sanitize_key( (string) $screen->post_type );
+	if ( '' === $post_type && 'post-new.php' === $hook_suffix && isset( $_GET['post_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only context lookup.
+		$post_type = sanitize_key( (string) wp_unslash( $_GET['post_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only context lookup.
+	}
+
+	if ( '' === $post_type && 'post-new.php' === $hook_suffix ) {
+		$post_type = 'post';
+	}
+
+	if ( ! mrn_editor_lockdown_should_force_classic_editor_for_post_type( $post_type ) ) {
+		return;
+	}
+
+	wp_enqueue_editor();
+}
+add_action( 'admin_enqueue_scripts', 'mrn_editor_lockdown_enqueue_editor_runtime', 20 );
+
+/**
  * Enforce saved metabox layout user preferences for the current editor screen.
  *
  * @param WP_Screen $screen Current admin screen.
@@ -422,6 +526,10 @@ add_action( 'current_screen', 'mrn_editor_lockdown_apply_layout' );
  * @return void
  */
 function mrn_editor_lockdown_remove_legacy_seo_metabox( $post_type ) {
+	if ( ! mrn_editor_lockdown_should_remove_legacy_seo_metabox() ) {
+		return;
+	}
+
 	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 
 	if ( ! mrn_editor_lockdown_is_supported_screen( $screen ) ) {
@@ -555,8 +663,11 @@ function mrn_editor_lockdown_admin_css() {
 	if ( ! mrn_editor_lockdown_is_classic_post_screen( $screen ) ) {
 		return;
 	}
+	$loading_mask_enabled      = mrn_editor_lockdown_is_loading_mask_enabled();
+	$loading_indicator_enabled = mrn_editor_lockdown_is_loading_indicator_enabled();
 	?>
 	<style id="mrn-editor-lockdown">
+	<?php if ( $loading_mask_enabled ) : ?>
 		body.post-php:not(.mrn-editor-page-ready),
 		body.post-new-php:not(.mrn-editor-page-ready) {
 			overflow: hidden;
@@ -595,7 +706,7 @@ function mrn_editor_lockdown_admin_css() {
 			margin-top: 24px;
 			transform: translateX(-50%);
 			text-align: center;
-			color: #f4f7fb;
+			color: #111111;
 			font-size: 14px;
 			font-weight: 600;
 			letter-spacing: 0.02em;
@@ -627,9 +738,75 @@ function mrn_editor_lockdown_admin_css() {
 			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 		}
 
+	<?php endif; ?>
+
+	<?php if ( $loading_indicator_enabled ) : ?>
+		html.mrn-editor-loading-indicator-live::before {
+			content: '';
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			width: 56px;
+			height: 56px;
+			margin: -74px 0 0 -28px;
+			border-radius: 50%;
+			border: 5px solid rgba(255, 255, 255, 0.28);
+			border-top-color: #ffffff;
+			background: rgba(17, 20, 24, 0.42);
+			box-shadow: 0 0 0 8px rgba(17, 20, 24, 0.14), 0 10px 24px rgba(0, 0, 0, 0.22);
+			z-index: 100004;
+			pointer-events: none;
+			animation: mrnEditorPageLoaderSpin 0.82s linear infinite;
+		}
+
+			html.mrn-editor-loading-indicator-live::after {
+				content: 'Preparing editor controls...';
+				position: fixed;
+				inset: 0;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding-top: 26px;
+				background: rgba(255, 255, 255, 0.38);
+				color: #111111;
+				font-size: 15px;
+				font-weight: 700;
+				letter-spacing: 0.02em;
+				line-height: 1.25;
+				text-shadow: none;
+				z-index: 100003;
+				pointer-events: none;
+				animation: mrnEditorLoaderPulse 1.05s ease-in-out infinite;
+			}
+
+		@media (max-width: 782px) {
+			html.mrn-editor-loading-indicator-live::after {
+				padding-top: 22px;
+				font-size: 13px;
+			}
+
+			html.mrn-editor-loading-indicator-live::before {
+				width: 48px;
+				height: 48px;
+				margin: -66px 0 0 -24px;
+			}
+		}
+	<?php endif; ?>
+
 		@keyframes mrnEditorPageLoaderSpin {
 			to {
 				transform: rotate(360deg);
+			}
+		}
+
+		@keyframes mrnEditorLoaderPulse {
+			0%,
+			100% {
+				opacity: 0.95;
+			}
+
+			50% {
+				opacity: 0.72;
 			}
 		}
 
@@ -783,6 +960,14 @@ function mrn_editor_lockdown_admin_css() {
 			body.post-new-php:not(.mrn-editor-page-ready)::after {
 				animation: none;
 			}
+
+			html.mrn-editor-loading-indicator-live::before {
+				animation: none;
+			}
+
+			html.mrn-editor-loading-indicator-live::after {
+				animation: none;
+			}
 		}
 
 	<?php if ( mrn_editor_lockdown_is_supported_screen( $screen ) ) : ?>
@@ -792,6 +977,18 @@ function mrn_editor_lockdown_admin_css() {
 		}
 	<?php endif; ?>
 	</style>
+	<?php if ( $loading_indicator_enabled && ! $loading_mask_enabled ) : ?>
+		<script id="mrn-editor-lockdown-loading-indicator-bootstrap">
+			(function() {
+				var docEl = document.documentElement;
+				if (!docEl) {
+					return;
+				}
+
+				docEl.classList.add('mrn-editor-loading-indicator-live');
+			})();
+		</script>
+	<?php endif; ?>
 	<?php
 }
 add_action( 'admin_head', 'mrn_editor_lockdown_admin_css' );
@@ -833,7 +1030,8 @@ function mrn_editor_lockdown_admin_js() {
 			var loadingMessageEl;
 			var loadingMessageIndex = 0;
 			var loadingMessageStartStorageKey = 'mrnEditorLoadingMessageStart:v1:' + postType;
-			var loadingDelayMs = 1000;
+			var loadingMaskEnabled = <?php echo wp_json_encode( mrn_editor_lockdown_is_loading_mask_enabled() ); ?>;
+			var loadingIndicatorEnabled = <?php echo wp_json_encode( mrn_editor_lockdown_is_loading_indicator_enabled() ); ?>;
 			var loadingMessageIcons = ['🚀', '💣', '🧨', '⚡', '🛰️', '🛠️', '🎯', '🧪', '🔥', '✨'];
 			var loadingMessageStartPhrases = [
 				'Aligning your metaboxes',
@@ -867,6 +1065,8 @@ function mrn_editor_lockdown_admin_js() {
 			var loadingMessages = [];
 			var loadingStartIndex;
 			var loadingEndIndex;
+			var loadingMaskReadyDelayMs = 1000;
+			var loadingIndicatorReadyDelayMs = 120;
 
 			for (loadingStartIndex = 0; loadingStartIndex < loadingMessageStartPhrases.length; loadingStartIndex += 1) {
 				for (loadingEndIndex = 0; loadingEndIndex < loadingMessageEndPhrases.length; loadingEndIndex += 1) {
@@ -943,6 +1143,22 @@ function mrn_editor_lockdown_admin_js() {
 				}
 			}
 
+			function startLoadingIndicator() {
+				if (!loadingIndicatorEnabled || loadingMaskEnabled) {
+					return;
+				}
+
+				if (document.documentElement) {
+					document.documentElement.classList.add('mrn-editor-loading-indicator-live');
+				}
+			}
+
+			function stopLoadingIndicator() {
+				if (document.documentElement) {
+					document.documentElement.classList.remove('mrn-editor-loading-indicator-live');
+				}
+			}
+
 			function markEditorPageReady() {
 				if (!body) {
 					return;
@@ -950,6 +1166,7 @@ function mrn_editor_lockdown_admin_js() {
 
 				body.classList.add('mrn-editor-page-ready');
 				stopLoadingMessageCycle();
+				stopLoadingIndicator();
 
 				if (loadingFallbackTimer) {
 					window.clearTimeout(loadingFallbackTimer);
@@ -962,12 +1179,12 @@ function mrn_editor_lockdown_admin_js() {
 				}
 			}
 
-			function scheduleEditorPageReady() {
+			function scheduleEditorPageReady(delayMs) {
 				if (loadingReadyTimer) {
 					window.clearTimeout(loadingReadyTimer);
 				}
 
-				loadingReadyTimer = window.setTimeout(markEditorPageReady, loadingDelayMs);
+				loadingReadyTimer = window.setTimeout(markEditorPageReady, delayMs);
 			}
 
 			function initEditorLoadingMask() {
@@ -975,15 +1192,37 @@ function mrn_editor_lockdown_admin_js() {
 					return;
 				}
 
+				if (!loadingMaskEnabled) {
+					if (!loadingIndicatorEnabled) {
+						markEditorPageReady();
+						return;
+					}
+
+					startLoadingIndicator();
+
+					if ('complete' === document.readyState) {
+						scheduleEditorPageReady(loadingIndicatorReadyDelayMs);
+						return;
+					}
+
+					window.addEventListener('load', function() {
+						scheduleEditorPageReady(loadingIndicatorReadyDelayMs);
+					}, { once: true });
+					loadingFallbackTimer = window.setTimeout(markEditorPageReady, 7000);
+					return;
+				}
+
 				loadingMessageIndex = getRandomLoadingMessageStartIndex();
 				startLoadingMessageCycle();
 
 				if ('complete' === document.readyState) {
-					scheduleEditorPageReady();
+					scheduleEditorPageReady(loadingMaskReadyDelayMs);
 					return;
 				}
 
-				window.addEventListener('load', scheduleEditorPageReady, { once: true });
+				window.addEventListener('load', function() {
+					scheduleEditorPageReady(loadingMaskReadyDelayMs);
+				}, { once: true });
 				loadingFallbackTimer = window.setTimeout(markEditorPageReady, 7000);
 			}
 

@@ -48,6 +48,9 @@ Prefer:
    - If rendering, template structure, helper output, classes, variables, or accent hooks changed, include the parent theme update in the rollout plan.
 4. Check live-theme compatibility.
    - Assume the site is running its cloned active theme directory unless a front-end handoff has already introduced a child theme.
+   - If `stylesheet != template`, treat the site as child-theme mode and deploy stack parent source into the active parent template directory only.
+   - Do not sync `stack/themes/mrn-base-stack` into a child stylesheet directory during normal rollout work.
+   - The live theme helper now blocks this risky path by default; `--force-stack-source-child-overwrite` is emergency-only and requires rollout-note documentation.
    - Avoid renaming or removing theming hooks unless required.
 5. Package the shared code.
    - Follow the project packaging and release-flow rules in memory and stack docs.

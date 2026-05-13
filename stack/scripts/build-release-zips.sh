@@ -88,8 +88,15 @@ build_theme() {
 	local source_root="${ROOT_DIR}/stack/themes"
 	local release_root="${ROOT_DIR}/releases/stack"
 	local legacy_zip_path="${ROOT_DIR}/stack/themes/mrn-base-stack.zip"
+	local theme_slugs=(
+		"mrn-base-stack"
+		"mrn-base-stack-child"
+	)
 
-	zip_directory "$source_root" "$release_root" "mrn-base-stack"
+	for slug in "${theme_slugs[@]}"; do
+		zip_directory "$source_root" "$release_root" "$slug"
+	done
+
 	cp "${release_root}/mrn-base-stack.zip" "${legacy_zip_path}"
 	echo "Mirrored ${legacy_zip_path}"
 }

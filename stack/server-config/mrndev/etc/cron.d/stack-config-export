@@ -1,0 +1,5 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Export root-owned stack config snapshots for Git pull tracking.
+*/15 * * * * root /usr/local/sbin/stack-config-export.sh >> /var/log/stack-config-export.log 2>&1

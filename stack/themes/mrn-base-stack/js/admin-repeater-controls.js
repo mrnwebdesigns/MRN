@@ -5,6 +5,16 @@
 		return;
 	}
 
+	// Keep this off by default to avoid costly submit/heartbeat restore passes on very large editors.
+	var enableRowBodyDetachment = false;
+
+	function isInitialRepeaterCollapseEnabled() {
+		return !! (
+			window.mrnBaseStackBuilderAdmin &&
+			window.mrnBaseStackBuilderAdmin.initialCollapseEnabled
+		);
+	}
+
 	function getRepeaterFields( context ) {
 		var $context = $( context || document );
 
@@ -68,6 +78,10 @@
 	}
 
 	function canDetachRowBodies( $row ) {
+		if ( ! enableRowBodyDetachment ) {
+			return false;
+		}
+
 		// Table-based repeater rows rely on native cell layout. Detaching table-cell
 		// contents can collapse column widths and cause hover/collapse jitter.
 		if ( $row.is( 'tr' ) ) {
@@ -270,17 +284,12 @@
 	function restoreAllRowBodies( context ) {
 		var $detachedRows = getDetachedRows( context );
 
-		if ( $detachedRows.length ) {
-			$detachedRows.each( function () {
-				restoreRowBodies( $( this ), { remount: false } );
-			} );
+		if ( ! $detachedRows.length ) {
 			return;
 		}
 
-		getRepeaterFields( context ).each( function () {
-			getRepeaterRows( $( this ) ).each( function () {
-				restoreRowBodies( $( this ), { remount: false } );
-			} );
+		$detachedRows.each( function () {
+			restoreRowBodies( $( this ), { remount: false } );
 		} );
 	}
 
@@ -323,8 +332,126 @@
 		return !! body && ( body.classList.contains( 'post-php' ) || body.classList.contains( 'post-new-php' ) );
 	}
 
-	function canDirectlyCollapseRow( $row ) {
-		return $row.find( '.-collapsed-target' ).length > 0;
+		var initialRepeaterCollapseQueue = [];
+		var initialRepeaterCollapseScheduled = false;
+		var initialRepeaterPrecollapseReadyMarked = false;
+		var deferCollapseUntil = 0;
+		var interactionQuietPeriodMs = 900;
+		var interactionRetryDelayMs = 220;
+		var inputEditingRetryDelayMs = 260;
+		var maxInitialRepeaterCollapseRows = 160;
+
+	function markEditorInteraction() {
+		var now = window.performance && typeof window.performance.now === 'function'
+			? window.performance.now()
+			: Date.now();
+
+		deferCollapseUntil = now + interactionQuietPeriodMs;
+
+		// Stop background initial collapsing after first user interaction.
+		if ( initialRepeaterCollapseQueue.length ) {
+			initialRepeaterCollapseQueue.length = 0;
+			markRepeaterPrecollapseReady();
+		}
+	}
+
+	function shouldDeferCollapseForInteraction() {
+		var now = window.performance && typeof window.performance.now === 'function'
+			? window.performance.now()
+			: Date.now();
+
+		return deferCollapseUntil > now;
+	}
+
+	function isEditingInputControl() {
+		var active = document.activeElement;
+
+		if ( ! active ) {
+			return false;
+		}
+
+		if ( active.isContentEditable ) {
+			return true;
+		}
+
+		return /^(INPUT|TEXTAREA|SELECT)$/.test( active.tagName || '' );
+	}
+
+	function markRepeaterPrecollapseReady() {
+		if ( initialRepeaterPrecollapseReadyMarked ) {
+			return;
+		}
+
+		initialRepeaterPrecollapseReadyMarked = true;
+		markInitialPrecollapseReady( 'data-mrn-repeater-precollapse' );
+	}
+
+	function scheduleInitialRepeaterCollapse() {
+		if ( initialRepeaterCollapseScheduled ) {
+			return;
+		}
+
+		initialRepeaterCollapseScheduled = true;
+
+		if ( typeof window.requestAnimationFrame === 'function' ) {
+			window.requestAnimationFrame( processInitialRepeaterCollapseQueue );
+			return;
+		}
+
+		window.setTimeout( processInitialRepeaterCollapseQueue, 0 );
+	}
+
+	function processInitialRepeaterCollapseQueue() {
+		var processed = 0;
+		var maxPerPass = 3;
+		var start = window.performance && typeof window.performance.now === 'function' ? window.performance.now() : 0;
+		var maxDuration = 4;
+
+		initialRepeaterCollapseScheduled = false;
+
+		if ( ! initialRepeaterCollapseQueue.length ) {
+			markRepeaterPrecollapseReady();
+			return;
+		}
+
+		if ( shouldDeferCollapseForInteraction() ) {
+			window.setTimeout( scheduleInitialRepeaterCollapse, interactionRetryDelayMs );
+			return;
+		}
+
+		if ( isEditingInputControl() ) {
+			window.setTimeout( scheduleInitialRepeaterCollapse, inputEditingRetryDelayMs );
+			return;
+		}
+
+		while ( initialRepeaterCollapseQueue.length ) {
+			var rowElement = initialRepeaterCollapseQueue.shift();
+			var $row = $( rowElement );
+
+			if ( ! $row.length || isRowCollapsed( $row ) ) {
+				continue;
+			}
+
+			// Use ACF's own toggle path so collapsed state remains consistent.
+			setRowCollapsed( $row, true );
+
+			processed += 1;
+
+			if ( processed >= maxPerPass ) {
+				break;
+			}
+
+			if ( start && window.performance.now() - start >= maxDuration ) {
+				break;
+			}
+		}
+
+		if ( initialRepeaterCollapseQueue.length ) {
+			scheduleInitialRepeaterCollapse();
+			return;
+		}
+
+		markRepeaterPrecollapseReady();
 	}
 
 	function setRowCollapsed( $row, collapsed ) {
@@ -341,7 +468,15 @@
 	}
 
 	function collapseInitialRows( context ) {
+		var queueCapped = false;
+
+		if ( ! isInitialRepeaterCollapseEnabled() ) {
+			markRepeaterPrecollapseReady();
+			return;
+		}
+
 		if ( ! isClassicPostEditorScreen() ) {
+			markRepeaterPrecollapseReady();
 			return;
 		}
 
@@ -357,20 +492,25 @@
 			getRepeaterRows( $field ).each( function () {
 				var $row = $( this );
 
-				if ( isRowCollapsed( $row ) ) {
-					return;
-				}
+					if ( isRowCollapsed( $row ) ) {
+						return;
+					}
 
-				// Use ACF's own toggle path so collapsed state remains consistent.
-				if ( canDirectlyCollapseRow( $row ) ) {
-					setRowCollapsed( $row, true );
-					return;
-				}
+					if ( initialRepeaterCollapseQueue.length >= maxInitialRepeaterCollapseRows ) {
+						queueCapped = true;
+						return false;
+					}
 
-				setRowCollapsed( $row, true );
+					initialRepeaterCollapseQueue.push( this );
+				} );
+
+				if ( queueCapped ) {
+					return false;
+				}
 			} );
-		} );
-	}
+
+			scheduleInitialRepeaterCollapse();
+		}
 
 	function ensureToolbar( $field ) {
 		var $label = $field.children( '.acf-label' ).first();
@@ -480,12 +620,21 @@
 	} );
 
 	$( document ).on( 'submit', '#post', function () {
+		if ( ! enableRowBodyDetachment ) {
+			return;
+		}
+
 		restoreAllRowBodies( this );
 	} );
 
 	var pendingHeartbeatResync = false;
 
 	$( document ).on( 'heartbeat-send', function () {
+		if ( ! enableRowBodyDetachment ) {
+			pendingHeartbeatResync = false;
+			return;
+		}
+
 		if ( ! getDetachedRows( document ).length ) {
 			pendingHeartbeatResync = false;
 			return;
@@ -500,6 +649,11 @@
 	} );
 
 	$( document ).on( 'heartbeat-tick', function () {
+		if ( ! enableRowBodyDetachment ) {
+			pendingHeartbeatResync = false;
+			return;
+		}
+
 		if ( ! pendingHeartbeatResync ) {
 			return;
 		}
@@ -519,7 +673,6 @@
 		collapseInitialRows( document );
 		refreshToolbars( document );
 		syncCloneRowBodyStates( document );
-		markInitialPrecollapseReady( 'data-mrn-repeater-precollapse' );
 	} );
 
 	acf.addAction( 'append', function ( $el ) {
@@ -530,7 +683,15 @@
 		refreshToolbars( context );
 	} );
 
-	$( document ).on( 'mouseenter focusin', '.acf-field[data-type="repeater"]', function () {
+	$( document ).on(
+		'mousedown touchstart keydown',
+		'#post input, #post textarea, #post select, #post [contenteditable="true"]',
+		function () {
+			markEditorInteraction();
+		}
+	);
+
+	$( document ).on( 'mouseenter', '.acf-field[data-type="repeater"]', function () {
 		ensureToolbar( $( this ) );
 	} );
 }( jQuery, window.acf ) );

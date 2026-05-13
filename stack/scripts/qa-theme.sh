@@ -30,6 +30,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 THEME_DIR="${1:-${REPO_ROOT}/stack/themes/mrn-base-stack}"
 RISK_SCAN_SCRIPT="${SCRIPT_DIR}/qa-risk-scan.sh"
+STATUS=0
 
 if [[ ! -d "${THEME_DIR}" ]]; then
 	echo "Theme directory not found: ${THEME_DIR}" >&2
@@ -46,11 +47,15 @@ done < <(find "${THEME_DIR}" -type f -name '*.php' ! -path '*/vendor/*' -print0 
 
 echo
 echo "2. Git diff whitespace"
-git -C "${REPO_ROOT}" diff --check
+if ! git -C "${REPO_ROOT}" diff --check; then
+	STATUS=1
+fi
 
 echo
 echo "3. Risk scan"
-"${RISK_SCAN_SCRIPT}" "${THEME_DIR}"
+if ! "${RISK_SCAN_SCRIPT}" "${THEME_DIR}"; then
+	STATUS=1
+fi
 
 echo
 echo "4. JavaScript syntax"
@@ -65,7 +70,9 @@ fi
 echo
 echo "5. Parallel lint"
 if [[ -x "${THEME_DIR}/vendor/bin/parallel-lint" ]]; then
-	"${THEME_DIR}/vendor/bin/parallel-lint" --exclude "${THEME_DIR}/vendor" "${THEME_DIR}"
+	if ! "${THEME_DIR}/vendor/bin/parallel-lint" --exclude "${THEME_DIR}/vendor" "${THEME_DIR}"; then
+		STATUS=1
+	fi
 else
 	echo "Skipping parallel lint; install Composer dev tools first."
 fi
@@ -73,10 +80,32 @@ fi
 echo
 echo "6. PHPCS"
 if [[ -x "${THEME_DIR}/vendor/bin/phpcs" && -f "${THEME_DIR}/phpcs.xml.dist" ]]; then
-	"${THEME_DIR}/vendor/bin/phpcs" --standard="${THEME_DIR}/phpcs.xml.dist" "${THEME_DIR}"
+	if ! "${THEME_DIR}/vendor/bin/phpcs" --standard="${THEME_DIR}/phpcs.xml.dist" "${THEME_DIR}"; then
+		STATUS=1
+	fi
 else
 	echo "Skipping PHPCS; install Composer dev tools first."
 fi
 
 echo
-echo "Theme QA completed."
+echo "7. PHPStan (shared MRN config)"
+if [[ -x "${REPO_ROOT}/vendor/bin/phpstan" && -f "${REPO_ROOT}/phpstan.neon.dist" ]]; then
+	if ! php "${REPO_ROOT}/vendor/bin/phpstan" analyse \
+		--configuration="${REPO_ROOT}/phpstan.neon.dist" \
+		--memory-limit=2G \
+		--no-progress \
+		"${THEME_DIR}"; then
+		STATUS=1
+	fi
+else
+	echo "Skipping PHPStan; install root Composer dev tools first."
+fi
+
+echo
+if [[ "${STATUS}" -eq 0 ]]; then
+	echo "Theme QA completed."
+else
+	echo "Theme QA completed with findings." >&2
+fi
+
+exit "${STATUS}"

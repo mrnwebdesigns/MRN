@@ -1,0 +1,61 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Filter callback return statement is missing\.$#'
+			identifier: return.missing
+			count: 1
+			path: mu-plugins/mrn-disable-comments/mrn-disable-comments.php
+
+		-
+			message: '#^Found usage of constant WPMU_PLUGIN_URL\. Use plugins_url\(\) instead\.$#'
+			identifier: phpstanWP.wpConstant.fetch
+			count: 1
+			path: mu-plugins/mrn-editor-ui-css/mrn-editor-ui-css.php
+
+		-
+			message: '#^Variable \$ids in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: plugins/mrn-comment-management/mrn-comment-management.php
+
+		-
+			message: '#^Cannot call method get\(\) on class\-string\|object\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: plugins/mrn-config-helper/mrn-config-helper.php
+
+		-
+			message: '#^Constant MRN_FAPM_DIR not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: plugins/mrn-fontawesome-profile-manager/includes/class-mrn-fontawesome-profile-manager.php
+
+		-
+			message: '#^Function mrn_base_stack_build_post_type_location_rules\(\) should return array\<int, string\> but returns list\<array\<int, array\<string, string\>\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: stack/themes/mrn-base-stack/functions.php
+
+		-
+			message: '#^Function mrn_base_stack_get_after_content_location_rules\(\) should return array\<int, array\<int, array\<string, string\>\>\> but returns array\<int, string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: stack/themes/mrn-base-stack/functions.php
+
+		-
+			message: '#^Function mrn_base_stack_get_builder_location_rules\(\) should return array\<int, array\<int, array\<string, string\>\>\> but returns array\<int, string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: stack/themes/mrn-base-stack/functions.php
+
+		-
+			message: '#^Function mrn_base_stack_get_hero_location_rules\(\) should return array\<int, array\<int, array\<string, string\>\>\> but returns array\<int, string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: stack/themes/mrn-base-stack/functions.php
+
+		-
+			message: '#^Function mrn_base_stack_get_sidebar_location_rules\(\) should return array\<int, array\<int, array\<string, string\>\>\> but returns array\<int, string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: stack/themes/mrn-base-stack/inc/singular-sidebar.php

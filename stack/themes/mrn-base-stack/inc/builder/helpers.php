@@ -69,6 +69,188 @@ function mrn_base_stack_get_nested_builder_row_index( $parent_index, $group_inde
 }
 
 /**
+ * Get nested tab-panel layout names already saved in post meta.
+ *
+ * @param int $post_id Post ID.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id ) {
+	static $cache = array();
+
+	$post_id = absint( $post_id );
+
+	if ( $post_id < 1 ) {
+		return array();
+	}
+
+	if ( isset( $cache[ $post_id ] ) ) {
+		return $cache[ $post_id ];
+	}
+
+	$meta         = get_post_meta( $post_id );
+	$layout_names = array();
+
+	if ( ! is_array( $meta ) ) {
+		$cache[ $post_id ] = array();
+		return $cache[ $post_id ];
+	}
+
+	foreach ( $meta as $meta_key => $values ) {
+		if ( ! is_string( $meta_key ) || 0 !== strpos( $meta_key, 'page_content_rows_' ) ) {
+			continue;
+		}
+
+		if ( false === strpos( $meta_key, '_panel_rows_' ) || 0 !== substr_compare( $meta_key, '_acf_fc_layout', -14 ) ) {
+			continue;
+		}
+
+		$raw_value = '';
+
+		if ( is_array( $values ) && ! empty( $values ) ) {
+			$raw_value = (string) $values[ count( $values ) - 1 ];
+		} elseif ( is_scalar( $values ) ) {
+			$raw_value = (string) $values;
+		}
+
+		$layout_name = sanitize_key( $raw_value );
+		if ( '' !== $layout_name ) {
+			$layout_names[] = $layout_name;
+		}
+	}
+
+	$cache[ $post_id ] = array_values( array_unique( $layout_names ) );
+
+	return $cache[ $post_id ];
+}
+
+/**
+ * Check whether a flexible-content field contains complete layout sub-fields.
+ *
+ * @param mixed $field Field definition candidate.
+ * @return bool
+ */
+function mrn_base_stack_builder_field_has_complete_layouts( $field ) {
+	if ( ! is_array( $field ) || empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
+		return false;
+	}
+
+	foreach ( $field['layouts'] as $layout ) {
+		if ( ! is_array( $layout ) || ! array_key_exists( 'sub_fields', $layout ) || ! is_array( $layout['sub_fields'] ) ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * Get content layout names that should be available in Hero.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_hero_builder_layout_source_names() {
+	$defaults = array( 'basic', 'two_column_split' );
+	$names    = apply_filters( 'mrn_base_stack_hero_builder_layout_source_names', $defaults );
+
+	if ( ! is_array( $names ) ) {
+		return $defaults;
+	}
+
+	$names = array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $names )
+			)
+		)
+	);
+
+	return ! empty( $names ) ? $names : $defaults;
+}
+
+/**
+ * Clone selected top-level Content layouts for Hero field usage.
+ *
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_hero_builder_layouts() {
+	static $layouts_cache = null;
+	static $loading       = false;
+
+	if ( is_array( $layouts_cache ) ) {
+		return $layouts_cache;
+	}
+
+	if ( $loading || ! function_exists( 'acf_get_field' ) ) {
+		return array();
+	}
+
+	$field = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_field_definition' )
+		? mrn_base_stack_get_builder_layout_allowlist_field_definition( 'page_content_rows' )
+		: array();
+
+	$has_complete_layouts = mrn_base_stack_builder_field_has_complete_layouts( $field );
+
+	if ( ! $has_complete_layouts ) {
+		$loading = true;
+		$field   = acf_get_field( 'field_mrn_page_content_rows' );
+		$loading = false;
+	}
+
+	$has_complete_layouts = mrn_base_stack_builder_field_has_complete_layouts( $field );
+
+	if ( ! $has_complete_layouts ) {
+		$layouts_cache = array();
+		return $layouts_cache;
+	}
+
+	$allowed_names  = mrn_base_stack_get_hero_builder_layout_source_names();
+	$allowed_lookup = array_fill_keys( $allowed_names, true );
+	$layouts        = array();
+
+	foreach ( $field['layouts'] as $layout ) {
+		if ( ! is_array( $layout ) ) {
+			continue;
+		}
+
+		$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+		if ( '' === $layout_name || ! isset( $allowed_lookup[ $layout_name ] ) ) {
+			continue;
+		}
+
+		if ( ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+			$layout['sub_fields'] = array();
+		}
+
+			$cloned_layout          = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_hero_' );
+			$cloned_key             = 'layout_mrn_hero_' . $layout_name;
+			$cloned_layout['key']   = $cloned_key;
+			$layouts[ $cloned_key ] = $cloned_layout;
+	}
+
+	$layouts_cache = $layouts;
+
+	return $layouts_cache;
+}
+
+/**
+ * Populate the top-level Hero flexible-content field with cloned Content layouts.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_populate_hero_builder_field( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field['layouts'] = mrn_base_stack_get_hero_builder_layouts();
+
+	return $field;
+}
+add_filter( 'acf/load_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_populate_hero_builder_field', 15 );
+add_filter( 'acf/prepare_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_populate_hero_builder_field', 15 );
+
+/**
  * Clone the page-builder layouts for use inside tab panels.
  *
  * The cloned layouts retain their original `name` values so the existing
@@ -79,31 +261,86 @@ function mrn_base_stack_get_nested_builder_row_index( $parent_index, $group_inde
  * @return array<string, array<string, mixed>>
  */
 function mrn_base_stack_get_tabbed_layout_nested_layouts() {
-	static $layouts = null;
-	static $loading = false;
+	static $layouts_cache = array();
+	static $loading       = false;
 
-	if ( null !== $layouts ) {
-		return $layouts;
+	$post_id          = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_post_id' ) ? mrn_base_stack_get_builder_layout_allowlist_post_id() : 0;
+	$allowlist_active = $post_id > 0
+		&& function_exists( 'mrn_base_stack_is_builder_layout_allowlist_context' )
+		&& mrn_base_stack_is_builder_layout_allowlist_context( $post_id );
+	$cache_key        = $allowlist_active ? 'post_' . $post_id : 'global';
+
+	if ( isset( $layouts_cache[ $cache_key ] ) ) {
+		return $layouts_cache[ $cache_key ];
 	}
 
 	if ( $loading || ! function_exists( 'acf_get_field' ) ) {
 		return array();
 	}
 
-	$loading = true;
-	$field   = acf_get_field( 'field_mrn_page_content_rows' );
-	$loading = false;
+	$field = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_field_definition' )
+		? mrn_base_stack_get_builder_layout_allowlist_field_definition( 'page_content_rows' )
+		: array();
 
-	if ( ! is_array( $field ) || empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
-		$layouts = array();
-		return $layouts;
+	$has_complete_layouts = mrn_base_stack_builder_field_has_complete_layouts( $field );
+
+	if ( ! $has_complete_layouts ) {
+		$loading = true;
+		$field   = acf_get_field( 'field_mrn_page_content_rows' );
+		$loading = false;
 	}
 
-	$layouts = array();
+	$has_complete_layouts = mrn_base_stack_builder_field_has_complete_layouts( $field );
+
+	if ( ! $has_complete_layouts ) {
+		$layouts_cache[ $cache_key ] = array();
+		return $layouts_cache[ $cache_key ];
+	}
+
+	$allowed_names = array();
+	if (
+		$allowlist_active
+		&& function_exists( 'mrn_base_stack_get_builder_layout_allowlist_catalog_from_field' )
+		&& function_exists( 'mrn_base_stack_get_builder_layout_allowlist_effective_names' )
+	) {
+		$catalog = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( $field );
+
+		if ( ! empty( $catalog ) ) {
+			$allowed_names = mrn_base_stack_get_builder_layout_allowlist_effective_names( $post_id, 'page_content_rows', $catalog );
+		}
+
+		$allowed_names = array_values(
+			array_unique(
+				array_merge(
+					$allowed_names,
+					mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id )
+				)
+			)
+		);
+	}
+
+	$allowed_names  = array_values(
+		array_diff(
+			array_values(
+				array_unique(
+					array_filter(
+						array_map( 'sanitize_key', $allowed_names )
+					)
+				)
+			),
+			array( 'tabbed_layout' )
+		)
+	);
+	$allowed_lookup = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
+	$layouts        = array();
 
 	foreach ( $field['layouts'] as $layout_key => $layout ) {
 		if ( ! is_array( $layout ) ) {
 			continue;
+		}
+
+		if ( ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+			$layout['sub_fields'] = array();
 		}
 
 		$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
@@ -111,14 +348,20 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 			continue;
 		}
 
-			$cloned_layout        = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_tabbed_panel_' );
-			$cloned_key           = 'layout_mrn_tabbed_panel_' . $layout_name;
-			$cloned_layout['key'] = $cloned_key;
+		if ( ! empty( $allowed_lookup ) && ! isset( $allowed_lookup[ $layout_name ] ) ) {
+			continue;
+		}
+
+		$cloned_layout        = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_tabbed_panel_' );
+		$cloned_key           = 'layout_mrn_tabbed_panel_' . $layout_name;
+		$cloned_layout['key'] = $cloned_key;
 
 		$layouts[ $cloned_key ] = $cloned_layout;
 	}
 
-	return $layouts;
+	$layouts_cache[ $cache_key ] = $layouts;
+
+	return $layouts_cache[ $cache_key ];
 }
 
 /**
@@ -247,135 +490,378 @@ add_filter( 'acf/prepare_field/key=field_mrn_content_lists_post_type', 'mrn_base
 add_filter( 'acf/prepare_field/name=list_post_type', 'mrn_base_stack_load_content_list_post_type_field_choices' );
 
 /**
- * Get the capability required to view Effects controls in builder/admin UIs.
+ * Determine whether a builder value contains meaningful content.
  *
- * Advanced Menu Editor can grant this custom capability to non-admin roles
- * that should retain access to Effects tabs and motion settings.
- *
- * @return string
- */
-function mrn_base_stack_get_effects_controls_capability() {
-	$capability = apply_filters( 'mrn_base_stack_effects_controls_capability', 'layout_effects' );
-
-	if ( ! is_string( $capability ) || '' === $capability ) {
-		return 'layout_effects';
-	}
-
-	return sanitize_key( $capability );
-}
-
-/**
- * Determine whether the current user can view Effects controls.
- *
- * Access is controlled by a dedicated custom capability so Advanced Menu Editor
- * can manage it in the Roles screen.
- *
+ * @param mixed $value Candidate value.
  * @return bool
  */
-function mrn_base_stack_current_user_can_manage_effects_controls() {
-	$capability = mrn_base_stack_get_effects_controls_capability();
+function mrn_base_stack_builder_value_has_content( $value ) {
+	if ( is_array( $value ) ) {
+		foreach ( $value as $nested_key => $nested_value ) {
+			if ( is_string( $nested_key ) ) {
+				$normalized_key = sanitize_key( $nested_key );
+				if (
+					'' !== $normalized_key
+					&& (
+						0 === strpos( $normalized_key, '_' )
+						|| 0 === strpos( $normalized_key, 'field_' )
+						|| 'acfcloneindex' === $normalized_key
+						|| 'acf_fc_layout' === $normalized_key
+					)
+				) {
+					continue;
+				}
+			}
 
-	return current_user_can( $capability );
-}
-
-/**
- * Ensure the Effects capability exists on the Administrator role and remove prior slugs.
- *
- * This seeds the capability into WordPress role data so Advanced Menu Editor
- * can expose it as a real permission on the Roles screen.
- *
- * @return void
- */
-function mrn_base_stack_register_effects_controls_capability() {
-	$administrator = get_role( 'administrator' );
-
-	if ( ! $administrator instanceof WP_Role ) {
-		return;
-	}
-
-	$capability = mrn_base_stack_get_effects_controls_capability();
-
-	if ( ! $administrator->has_cap( $capability ) ) {
-		$administrator->add_cap( $capability );
-	}
-
-	$roles = wp_roles();
-
-	if ( ! $roles instanceof WP_Roles || ! is_array( $roles->role_objects ) ) {
-		return;
-	}
-
-	foreach ( $roles->role_objects as $role ) {
-		if ( ! $role instanceof WP_Role ) {
-			continue;
+			if ( mrn_base_stack_builder_value_has_content( $nested_value ) ) {
+				return true;
+			}
 		}
 
-		if ( $role->has_cap( 'mrn_manage_effects_controls' ) ) {
-			$role->remove_cap( 'mrn_manage_effects_controls' );
-		}
-
-		if ( $role->has_cap( 'mrn_layout_blocks_effects_controls' ) ) {
-			$role->remove_cap( 'mrn_layout_blocks_effects_controls' );
-		}
-	}
-}
-add_action( 'init', 'mrn_base_stack_register_effects_controls_capability' );
-
-/**
- * Hide shared Effects controls from users who do not have the required capability.
- *
- * @param array<string, mixed>|mixed $field ACF field definition.
- * @return array<string, mixed>|false|mixed
- */
-function mrn_base_stack_prepare_effects_fields_for_permissions( $field ) {
-	if ( ! is_array( $field ) || mrn_base_stack_current_user_can_manage_effects_controls() ) {
-		return $field;
-	}
-
-	$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
-	$field_name  = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
-	$field_key   = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
-	$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
-
-		$is_effects_tab   = 'tab' === $field_type && 'effects' === $field_label && false !== strpos( $field_key, 'effects_tab' );
-		$is_motion_group  = 'group' === $field_type && 'motion_settings' === $field_name;
-		$is_effects_field = in_array( $field_name, mrn_base_stack_get_effects_tab_field_names(), true );
-
-	if ( $is_effects_tab || $is_motion_group || $is_effects_field ) {
 		return false;
 	}
 
-	return $field;
-}
-add_filter( 'acf/prepare_field', 'mrn_base_stack_prepare_effects_fields_for_permissions', 15 );
+	if ( is_object( $value ) ) {
+		return mrn_base_stack_builder_value_has_content( (array) $value );
+	}
 
-/**
- * Preserve existing motion settings when an unauthorized user submits Effects data.
- *
- * This enforces the capability at save time in addition to hiding the fields in
- * the editor UI.
- *
- * @param mixed                $value Submitted ACF value.
- * @param int|string           $post_id ACF object identifier.
- * @param array<string, mixed> $field ACF field definition.
- * @return mixed
- */
-function mrn_base_stack_enforce_effects_controls_capability_on_save( $value, $post_id, array $field ) {
-	if ( mrn_base_stack_current_user_can_manage_effects_controls() ) {
+	if ( is_string( $value ) ) {
+		return '' !== trim( $value );
+	}
+
+	if ( is_bool( $value ) ) {
 		return $value;
 	}
 
-	if ( ! function_exists( 'get_field' ) ) {
+	if ( is_numeric( $value ) ) {
+		return 0.0 !== (float) $value;
+	}
+
+	return ! empty( $value );
+}
+
+/**
+ * Determine whether a showcase image value references media.
+ *
+ * @param mixed $image Candidate image value.
+ * @return bool
+ */
+function mrn_base_stack_showcase_image_has_content( $image ) {
+	if ( is_numeric( $image ) ) {
+		return absint( $image ) > 0;
+	}
+
+	if ( is_string( $image ) ) {
+		return '' !== trim( $image );
+	}
+
+	if ( ! is_array( $image ) ) {
 		return false;
 	}
 
-	$field_name   = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : 'motion_settings';
-	$stored_value = get_field( $field_name, $post_id, false );
+	if ( isset( $image['ID'] ) && absint( $image['ID'] ) > 0 ) {
+		return true;
+	}
 
-	return false === $stored_value ? false : $stored_value;
+	if ( isset( $image['id'] ) && absint( $image['id'] ) > 0 ) {
+		return true;
+	}
+
+	if ( isset( $image['url'] ) && is_string( $image['url'] ) && '' !== trim( $image['url'] ) ) {
+		return true;
+	}
+
+	return false;
 }
-add_filter( 'acf/update_value/name=motion_settings', 'mrn_base_stack_enforce_effects_controls_capability_on_save', 20, 3 );
-add_filter( 'acf/update_value/name=tab_switch_effect', 'mrn_base_stack_enforce_effects_controls_capability_on_save', 20, 3 );
+
+/**
+ * Determine whether a showcase link payload contains an actionable link target.
+ *
+ * @param mixed $value Candidate link payload.
+ * @return bool
+ */
+function mrn_base_stack_showcase_link_value_has_content( $value ) {
+	if ( is_array( $value ) ) {
+		$normalized_link = array();
+		foreach ( $value as $link_key => $link_value ) {
+			$normalized_key = is_string( $link_key ) ? sanitize_key( $link_key ) : '';
+			if (
+				'' !== $normalized_key
+				&& (
+					0 === strpos( $normalized_key, '_' )
+					|| 0 === strpos( $normalized_key, 'field_' )
+					|| 'acfcloneindex' === $normalized_key
+					|| 'acf_fc_layout' === $normalized_key
+				)
+			) {
+				continue;
+			}
+
+			$normalized_link[ $link_key ] = $link_value;
+		}
+
+		$has_link_shape = isset( $normalized_link['url'] ) || isset( $normalized_link['title'] ) || isset( $normalized_link['ID'] ) || isset( $normalized_link['id'] );
+
+		if ( $has_link_shape ) {
+			if ( isset( $normalized_link['url'] ) && is_string( $normalized_link['url'] ) && '' !== trim( $normalized_link['url'] ) ) {
+				return true;
+			}
+
+			if ( isset( $normalized_link['title'] ) && is_string( $normalized_link['title'] ) && '' !== trim( $normalized_link['title'] ) ) {
+				return true;
+			}
+
+			if ( isset( $normalized_link['ID'] ) && absint( $normalized_link['ID'] ) > 0 ) {
+				return true;
+			}
+
+			if ( isset( $normalized_link['id'] ) && absint( $normalized_link['id'] ) > 0 ) {
+				return true;
+			}
+
+			return false;
+		}
+
+		foreach ( $normalized_link as $nested_value ) {
+			if ( mrn_base_stack_showcase_link_value_has_content( $nested_value ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	if ( is_string( $value ) ) {
+		return '' !== trim( $value );
+	}
+
+	if ( is_numeric( $value ) ) {
+		return absint( $value ) > 0;
+	}
+
+	return ! empty( $value );
+}
+
+/**
+ * Determine whether a showcase repeater row has meaningful editor content.
+ *
+ * @param mixed $row Candidate repeater row.
+ * @return bool
+ */
+function mrn_base_stack_showcase_item_row_has_content( $row ) {
+	if ( ! is_array( $row ) ) {
+		return mrn_base_stack_builder_value_has_content( $row );
+	}
+
+	if ( isset( $row['image'] ) && mrn_base_stack_showcase_image_has_content( $row['image'] ) ) {
+		return true;
+	}
+
+	if ( isset( $row['links'] ) && mrn_base_stack_showcase_link_value_has_content( $row['links'] ) ) {
+		return true;
+	}
+
+	if ( isset( $row['link'] ) && mrn_base_stack_showcase_link_value_has_content( $row['link'] ) ) {
+		return true;
+	}
+
+	if ( isset( $row['background_color'] ) && is_string( $row['background_color'] ) && '' !== trim( $row['background_color'] ) ) {
+		return true;
+	}
+
+	if ( ! empty( $row['enable_row_effects'] ) ) {
+		return true;
+	}
+
+	$ignored_keys = array(
+		'acfcloneindex',
+		'image',
+		'links',
+		'link',
+		'background_color',
+		'enable_row_effects',
+	);
+
+	foreach ( $row as $key => $value ) {
+		$key = is_string( $key ) ? sanitize_key( $key ) : '';
+		if ( '' !== $key && ( 0 === strpos( $key, '_' ) || 0 === strpos( $key, 'field_' ) || 'acf_fc_layout' === $key ) ) {
+			continue;
+		}
+
+		if ( in_array( $key, $ignored_keys, true ) ) {
+			continue;
+		}
+
+		if ( mrn_base_stack_builder_value_has_content( $value ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Prevent empty showcase repeater placeholders from bloating postmeta on save.
+ *
+ * @param mixed                $value Submitted ACF value.
+ * @param int|string           $_post_id ACF object identifier.
+ * @param array<string, mixed> $_field ACF field definition.
+ * @return mixed
+ */
+function mrn_base_stack_prune_empty_showcase_items_on_save( $value, $_post_id, array $_field ) {
+	unset( $_post_id, $_field );
+
+	if ( ! is_array( $value ) ) {
+		return $value;
+	}
+
+	$filtered_rows = array();
+
+	foreach ( $value as $row_index => $row ) {
+		if ( 'acfcloneindex' === ( is_string( $row_index ) ? sanitize_key( $row_index ) : '' ) ) {
+			continue;
+		}
+
+		if ( ! mrn_base_stack_showcase_item_row_has_content( $row ) ) {
+			continue;
+		}
+
+		$filtered_rows[] = $row;
+	}
+
+	return array_values( $filtered_rows );
+}
+add_filter( 'acf/update_value/name=showcase_items', 'mrn_base_stack_prune_empty_showcase_items_on_save', 20, 3 );
+add_filter( 'acf/update_value/key=field_mrn_showcase_items', 'mrn_base_stack_prune_empty_showcase_items_on_save', 20, 3 );
+
+/**
+ * Remove fully-empty showcase repeater payloads that ACF may persist on save.
+ *
+ * Some classic-editor save flows can still store placeholder rows (for example
+ * minimum-row enforcement and internal field-key transport) even after
+ * `acf/update_value` filtering. This post-save guard inspects each top-level
+ * `showcase_items` repeater and resets it to zero rows when every persisted row
+ * is empty.
+ *
+ * @param int|string $post_id ACF object identifier.
+ * @return void
+ */
+function mrn_base_stack_cleanup_empty_showcase_repeater_meta_on_save( $post_id ) {
+	$post_id = is_numeric( $post_id ) ? absint( $post_id ) : 0;
+	if ( $post_id <= 0 ) {
+		return;
+	}
+
+	global $wpdb;
+	if ( ! isset( $wpdb ) || ! ( $wpdb instanceof wpdb ) ) {
+		return;
+	}
+
+	$count_key_rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Targeted post-save cleanup query over dynamic repeater keys.
+		$wpdb->prepare(
+			"SELECT meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key REGEXP %s",
+			$post_id,
+			'^page_content_rows_[0-9]+_showcase_items$'
+		),
+		ARRAY_A
+	);
+
+	if ( ! is_array( $count_key_rows ) || empty( $count_key_rows ) ) {
+		return;
+	}
+
+	foreach ( $count_key_rows as $count_row ) {
+		if ( ! is_array( $count_row ) ) {
+			continue;
+		}
+
+		$count_key = isset( $count_row['meta_key'] ) ? sanitize_key( (string) $count_row['meta_key'] ) : '';
+		$row_count = isset( $count_row['meta_value'] ) ? absint( $count_row['meta_value'] ) : 0;
+
+		if ( '' === $count_key || $row_count < 1 ) {
+			continue;
+		}
+
+			$row_value_rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Targeted post-save cleanup query over dynamic child meta rows.
+				$wpdb->prepare(
+					"SELECT meta_key, meta_value FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key LIKE %s",
+					$post_id,
+					$count_key . '\\_%'
+				),
+				ARRAY_A
+			);
+
+		if ( ! is_array( $row_value_rows ) || empty( $row_value_rows ) ) {
+			continue;
+		}
+
+		$rows_by_index = array();
+
+		foreach ( $row_value_rows as $value_row ) {
+			if ( ! is_array( $value_row ) ) {
+				continue;
+			}
+
+			$meta_key = isset( $value_row['meta_key'] ) ? (string) $value_row['meta_key'] : '';
+			if ( '' === $meta_key ) {
+				continue;
+			}
+
+			if ( 1 !== preg_match( '/^' . preg_quote( $count_key, '/' ) . '_([0-9]+)_([a-z0-9_]+)$/', $meta_key, $matches ) ) {
+				continue;
+			}
+
+			$row_index = absint( $matches[1] );
+			$field_key = sanitize_key( $matches[2] );
+			if ( '' === $field_key ) {
+				continue;
+			}
+
+			$meta_value = isset( $value_row['meta_value'] ) ? $value_row['meta_value'] : '';
+			if ( 'links' === $field_key ) {
+				$meta_value = maybe_unserialize( $meta_value );
+			}
+
+			if ( ! isset( $rows_by_index[ $row_index ] ) || ! is_array( $rows_by_index[ $row_index ] ) ) {
+				$rows_by_index[ $row_index ] = array();
+			}
+
+			$rows_by_index[ $row_index ][ $field_key ] = $meta_value;
+		}
+
+		if ( empty( $rows_by_index ) ) {
+			continue;
+		}
+
+		$all_rows_empty = true;
+
+		foreach ( $rows_by_index as $row_data ) {
+			if ( mrn_base_stack_showcase_item_row_has_content( $row_data ) ) {
+				$all_rows_empty = false;
+				break;
+			}
+		}
+
+		if ( ! $all_rows_empty ) {
+			continue;
+		}
+
+		$child_pattern         = '^' . preg_quote( $count_key, '/' ) . '_[0-9]+_';
+		$child_reference_regex = '^_' . preg_quote( $count_key, '/' ) . '_[0-9]+_';
+
+			$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Targeted delete of orphaned/empty showcase child meta rows.
+				$wpdb->prepare(
+					"DELETE FROM {$wpdb->postmeta} WHERE post_id = %d AND (meta_key REGEXP %s OR meta_key REGEXP %s)",
+					$post_id,
+					$child_pattern,
+					$child_reference_regex
+				)
+			);
+
+		update_post_meta( $post_id, $count_key, '0' );
+	}
+}
+add_action( 'acf/save_post', 'mrn_base_stack_cleanup_empty_showcase_repeater_meta_on_save', 30 );
 
 /**
  * Shared list-style choices for query-driven builder layouts.
@@ -444,6 +930,87 @@ add_filter( 'acf/prepare_field/key=field_mrn_content_lists_display_mode', 'mrn_b
 add_filter( 'acf/prepare_field/name=display_mode', 'mrn_base_stack_load_content_list_display_mode_field_choices' );
 
 /**
+ * Recursively normalize select defaults on a full ACF field tree.
+ *
+ * @param mixed $field Field or layout field definition.
+ * @return mixed
+ */
+function mrn_base_stack_normalize_select_defaults_in_field_tree( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	// ACF core validators assume this key exists across field types.
+	if ( ! array_key_exists( 'required', $field ) ) {
+		$field['required'] = 0;
+	}
+
+	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	if ( 'select' === $field_type ) {
+		if ( ! array_key_exists( 'multiple', $field ) ) {
+			$field['multiple'] = 0;
+		}
+
+		$return_format = isset( $field['return_format'] ) ? sanitize_key( (string) $field['return_format'] ) : '';
+		if ( '' === $return_format || ! in_array( $return_format, array( 'value', 'label', 'array' ), true ) ) {
+			$field['return_format'] = 'value';
+		}
+	}
+
+	if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) ) {
+		foreach ( $field['sub_fields'] as $index => $sub_field ) {
+			$field['sub_fields'][ $index ] = mrn_base_stack_normalize_select_defaults_in_field_tree( $sub_field );
+		}
+	}
+
+	if ( isset( $field['fields'] ) && is_array( $field['fields'] ) ) {
+		foreach ( $field['fields'] as $index => $child_field ) {
+			$field['fields'][ $index ] = mrn_base_stack_normalize_select_defaults_in_field_tree( $child_field );
+		}
+	}
+
+	if ( isset( $field['layouts'] ) && is_array( $field['layouts'] ) ) {
+		foreach ( $field['layouts'] as $layout_key => $layout ) {
+			if ( ! is_array( $layout ) ) {
+				continue;
+			}
+
+			if ( isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ) {
+				foreach ( $layout['sub_fields'] as $sub_index => $sub_field ) {
+					$layout['sub_fields'][ $sub_index ] = mrn_base_stack_normalize_select_defaults_in_field_tree( $sub_field );
+				}
+			}
+
+			$field['layouts'][ $layout_key ] = $layout;
+		}
+	}
+
+	return $field;
+}
+add_filter( 'acf/validate_field', 'mrn_base_stack_normalize_select_defaults_in_field_tree', 20 );
+add_filter( 'acf/load_field', 'mrn_base_stack_normalize_select_defaults_in_field_tree', 20 );
+add_filter( 'acf/prepare_field', 'mrn_base_stack_normalize_select_defaults_in_field_tree', 20 );
+
+/**
+ * Ensure select fields always include required core defaults.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_normalize_select_field_defaults( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field = mrn_base_stack_normalize_select_defaults_in_field_tree( $field );
+
+	return $field;
+}
+add_filter( 'acf/validate_field/type=select', 'mrn_base_stack_normalize_select_field_defaults', 20 );
+add_filter( 'acf/load_field/type=select', 'mrn_base_stack_normalize_select_field_defaults', 20 );
+add_filter( 'acf/prepare_field/type=select', 'mrn_base_stack_normalize_select_field_defaults', 20 );
+
+/**
  * Robustly normalize dynamic choices for Content Lists select subfields.
  *
  * Some builder contexts can bypass the narrower ACF key/name hooks depending on
@@ -467,6 +1034,8 @@ function mrn_base_stack_prepare_dynamic_content_list_select_fields( $field ) {
 	if ( 'select' !== $field_type ) {
 		return $field;
 	}
+
+	$field = mrn_base_stack_normalize_select_field_defaults( $field );
 
 	$is_content_list_layout = false !== strpos( $parent_layout, 'content_lists' );
 
@@ -866,6 +1435,7 @@ function mrn_base_stack_get_content_list_filter_source_choices() {
 		'none'               => 'No Filter',
 		'current_post_terms' => 'Use Current Page/Post Terms',
 		'manual_terms'       => 'Use Specific Terms',
+		'manual_posts'       => 'Choose Specific Content',
 	);
 }
 
@@ -927,6 +1497,343 @@ function mrn_base_stack_get_sub_content_width_field( $key, $name = 'sub_content_
 		'allow_null'        => 0,
 		'wrapper'           => array(
 			'width' => '50',
+		),
+	);
+}
+
+/**
+ * Normalize a row-spacing selector scope key.
+ *
+ * @param mixed $scope Raw scope value.
+ * @return string
+ */
+function mrn_base_stack_normalize_row_spacing_preset_scope( $scope ) {
+	$scope = is_scalar( $scope ) ? strtolower( trim( (string) $scope ) ) : '';
+
+	if ( in_array( $scope, array( 'margin', 'padding' ), true ) ) {
+		return $scope;
+	}
+
+	if ( preg_match( '/^(margin|padding)\-(top|right|bottom|left)$/', $scope ) ) {
+		return $scope;
+	}
+
+	return '';
+}
+
+/**
+ * Get row-spacing side selector field definitions for ACF Spacing tabs.
+ *
+ * @return array<int, array<string, string>>
+ */
+function mrn_base_stack_get_row_spacing_side_selector_definitions() {
+	return array(
+		array(
+			'name'  => 'row_spacing_margin_top_preset',
+			'label' => 'Margin Top',
+			'scope' => 'margin-top',
+		),
+		array(
+			'name'  => 'row_spacing_margin_right_preset',
+			'label' => 'Margin Right',
+			'scope' => 'margin-right',
+		),
+		array(
+			'name'  => 'row_spacing_margin_bottom_preset',
+			'label' => 'Margin Bottom',
+			'scope' => 'margin-bottom',
+		),
+		array(
+			'name'  => 'row_spacing_margin_left_preset',
+			'label' => 'Margin Left',
+			'scope' => 'margin-left',
+		),
+		array(
+			'name'  => 'row_spacing_padding_top_preset',
+			'label' => 'Padding Top',
+			'scope' => 'padding-top',
+		),
+		array(
+			'name'  => 'row_spacing_padding_right_preset',
+			'label' => 'Padding Right',
+			'scope' => 'padding-right',
+		),
+		array(
+			'name'  => 'row_spacing_padding_bottom_preset',
+			'label' => 'Padding Bottom',
+			'scope' => 'padding-bottom',
+		),
+		array(
+			'name'  => 'row_spacing_padding_left_preset',
+			'label' => 'Padding Left',
+			'scope' => 'padding-left',
+		),
+	);
+}
+
+/**
+ * Check whether an ACF field name is a row-spacing selector field.
+ *
+ * @param mixed $field_name Raw field name.
+ * @return bool
+ */
+function mrn_base_stack_is_row_spacing_selector_field_name( $field_name ) {
+	$field_name = is_scalar( $field_name ) ? sanitize_key( (string) $field_name ) : '';
+	if ( '' === $field_name ) {
+		return false;
+	}
+
+	if ( in_array( $field_name, array( 'row_spacing_preset', 'row_spacing_margin_preset', 'row_spacing_padding_preset' ), true ) ) {
+		return true;
+	}
+
+	foreach ( mrn_base_stack_get_row_spacing_side_selector_definitions() as $definition ) {
+		$selector_name = isset( $definition['name'] ) ? sanitize_key( (string) $definition['name'] ) : '';
+		if ( '' !== $selector_name && $selector_name === $field_name ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Map a row-spacing selector field name to its scope.
+ *
+ * @param mixed $field_name Raw field name.
+ * @return string
+ */
+function mrn_base_stack_get_row_spacing_selector_scope_from_field_name( $field_name ) {
+	$field_name = is_scalar( $field_name ) ? sanitize_key( (string) $field_name ) : '';
+	if ( 'row_spacing_margin_preset' === $field_name ) {
+		return 'margin';
+	}
+
+	if ( 'row_spacing_padding_preset' === $field_name ) {
+		return 'padding';
+	}
+
+	foreach ( mrn_base_stack_get_row_spacing_side_selector_definitions() as $definition ) {
+		$selector_name = isset( $definition['name'] ) ? sanitize_key( (string) $definition['name'] ) : '';
+		$scope         = isset( $definition['scope'] ) ? mrn_base_stack_normalize_row_spacing_preset_scope( $definition['scope'] ) : '';
+		if ( '' !== $selector_name && '' !== $scope && $selector_name === $field_name ) {
+			return $scope;
+		}
+	}
+
+	if ( 'row_spacing_preset' === $field_name ) {
+		return '';
+	}
+
+	return '';
+}
+
+/**
+ * Get the list of row-spacing selector field names.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_row_spacing_selector_field_names() {
+	$names = array(
+		'row_spacing_preset',
+		'row_spacing_margin_preset',
+		'row_spacing_padding_preset',
+	);
+
+	foreach ( mrn_base_stack_get_row_spacing_side_selector_definitions() as $definition ) {
+		$selector_name = isset( $definition['name'] ) ? sanitize_key( (string) $definition['name'] ) : '';
+		if ( '' === $selector_name ) {
+			continue;
+		}
+
+		$names[] = $selector_name;
+	}
+
+	return array_values( array_unique( $names ) );
+}
+
+/**
+ * Check whether one selector scope contains another.
+ *
+ * @param string $selector_scope Selector scope (`margin`, `padding`, or side scope).
+ * @param string $target_scope Target scope (`margin`, `padding`, or side scope).
+ * @return bool
+ */
+function mrn_base_stack_row_spacing_scope_contains_scope( $selector_scope, $target_scope ) {
+	$selector_scope = mrn_base_stack_normalize_row_spacing_preset_scope( $selector_scope );
+	$target_scope   = mrn_base_stack_normalize_row_spacing_preset_scope( $target_scope );
+	if ( '' === $selector_scope || '' === $target_scope ) {
+		return false;
+	}
+
+	if ( $selector_scope === $target_scope ) {
+		return true;
+	}
+
+	if ( in_array( $selector_scope, array( 'margin', 'padding' ), true ) ) {
+		return 0 === strpos( $target_scope, $selector_scope . '-' );
+	}
+
+	if ( in_array( $target_scope, array( 'margin', 'padding' ), true ) ) {
+		return false;
+	}
+
+	return false;
+}
+
+/**
+ * Check whether a row-spacing property belongs to a selector scope.
+ *
+ * @param mixed  $property Raw property key.
+ * @param string $scope Selector scope (`margin`, `padding`, or empty for all).
+ * @return bool
+ */
+function mrn_base_stack_row_spacing_property_matches_scope( $property, $scope = '' ) {
+	$scope = mrn_base_stack_normalize_row_spacing_preset_scope( $scope );
+	if ( '' === $scope ) {
+		return true;
+	}
+
+	$target_properties = mrn_base_stack_expand_row_spacing_property_to_keys( $property );
+	if ( empty( $target_properties ) ) {
+		return false;
+	}
+
+	if ( in_array( $scope, array( 'margin', 'padding' ), true ) ) {
+		foreach ( $target_properties as $target_property ) {
+			if ( 0 === strpos( $target_property, $scope . '-' ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	return in_array( $scope, $target_properties, true );
+}
+
+/**
+ * Get row-spacing preset choices from Site Styles configuration.
+ *
+ * @param string $scope Optional selector scope (`margin`, `padding`, or empty for all).
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_row_spacing_preset_choices( $scope = '' ) {
+	$scope   = mrn_base_stack_normalize_row_spacing_preset_scope( $scope );
+	$choices = array(
+		'' => 'Site Default',
+	);
+
+	if ( ! function_exists( 'mrn_site_styles_get_row_spacing_presets_resolved' ) ) {
+		return $choices;
+	}
+
+	$rows = mrn_site_styles_get_row_spacing_presets_resolved();
+	if ( ! is_array( $rows ) ) {
+		return $choices;
+	}
+
+	foreach ( $rows as $row ) {
+		if ( ! is_array( $row ) ) {
+			continue;
+		}
+
+		if ( ! mrn_base_stack_row_spacing_property_matches_scope( $row['property'] ?? '', $scope ) ) {
+			continue;
+		}
+
+		$name = isset( $row['name'] ) && is_string( $row['name'] ) ? trim( $row['name'] ) : '';
+		if ( '' === $name || isset( $choices[ $name ] ) ) {
+			continue;
+		}
+
+		$choices[ $name ] = $name;
+	}
+
+	return $choices;
+}
+
+/**
+ * Load live row-spacing preset choices into the shared row config select.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_load_row_spacing_preset_field_choices( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+	$scope      = mrn_base_stack_get_row_spacing_selector_scope_from_field_name( $field_name );
+
+	$choices = mrn_base_stack_get_row_spacing_preset_choices( $scope );
+
+	$current_value = isset( $field['value'] ) && is_scalar( $field['value'] ) ? trim( (string) $field['value'] ) : '';
+	if ( '' !== $current_value && ! isset( $choices[ $current_value ] ) ) {
+		$choices[ $current_value ] = $current_value . ' (Missing preset)';
+	}
+
+	$field['choices']       = $choices;
+	$field['default_value'] = '';
+	$field['allow_null']    = 1;
+	$field['ui']            = 1;
+
+	return $field;
+}
+add_filter( 'acf/load_field/name=row_spacing_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/prepare_field/name=row_spacing_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/load_field/name=row_spacing_margin_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/prepare_field/name=row_spacing_margin_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/load_field/name=row_spacing_padding_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/prepare_field/name=row_spacing_padding_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/load_field/name=row_spacing_margin_top_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/prepare_field/name=row_spacing_margin_top_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/load_field/name=row_spacing_margin_right_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/prepare_field/name=row_spacing_margin_right_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/load_field/name=row_spacing_margin_bottom_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/prepare_field/name=row_spacing_margin_bottom_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/load_field/name=row_spacing_margin_left_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/prepare_field/name=row_spacing_margin_left_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/load_field/name=row_spacing_padding_top_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/prepare_field/name=row_spacing_padding_top_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/load_field/name=row_spacing_padding_right_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/prepare_field/name=row_spacing_padding_right_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/load_field/name=row_spacing_padding_bottom_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/prepare_field/name=row_spacing_padding_bottom_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/load_field/name=row_spacing_padding_left_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+add_filter( 'acf/prepare_field/name=row_spacing_padding_left_preset', 'mrn_base_stack_load_row_spacing_preset_field_choices', 20 );
+
+/**
+ * Build a standard row-spacing preset selector field.
+ *
+ * @param string $key Unique ACF field key.
+ * @param string $name Field name.
+ * @param string $label Field label.
+ * @param string $scope Optional selector scope (`margin`, `padding`, or empty for all).
+ * @param string $instructions Optional custom field instructions.
+ * @param string $wrapper_width Wrapper width percentage.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_row_spacing_preset_field( $key, $name = 'row_spacing_preset', $label = 'Row Spacing Preset', $scope = '', $instructions = '', $wrapper_width = '50' ) {
+	$scope = mrn_base_stack_normalize_row_spacing_preset_scope( $scope );
+	if ( '' === $instructions && 'row_spacing_preset' === $name ) {
+		$instructions = 'Uses Site Styles defaults by default. Select a preset name to override those defaults for this row.';
+	}
+
+	return array(
+		'key'           => $key,
+		'label'         => $label,
+		'name'          => $name,
+		'aria-label'    => '',
+		'type'          => 'select',
+		'choices'       => mrn_base_stack_get_row_spacing_preset_choices( $scope ),
+		'default_value' => '',
+		'ui'            => 1,
+		'allow_null'    => 1,
+		'instructions'  => $instructions,
+		'wrapper'       => array(
+			'width' => (string) $wrapper_width,
 		),
 	);
 }
@@ -2367,6 +3274,10 @@ function mrn_base_stack_get_main_config_field_group_key( array $field ) {
 		return 'appearance';
 	}
 
+	if ( mrn_base_stack_is_row_spacing_selector_field_name( $field_name ) ) {
+		return 'appearance';
+	}
+
 	if ( in_array( $field_name, array( 'anchor', 'anchor_id' ), true ) ) {
 		return 'layout';
 	}
@@ -2399,6 +3310,7 @@ function mrn_base_stack_get_main_config_field_group_key( array $field ) {
 		|| false !== strpos( $field_name, 'size' )
 		|| false !== strpos( $field_name, 'alignment' )
 		|| false !== strpos( $field_name, 'per_page' )
+		|| false !== strpos( $field_name, 'filter_' )
 		|| 0 === strpos( $field_name, 'show_' )
 	) {
 		return 'layout';
@@ -2514,6 +3426,211 @@ function mrn_base_stack_ensure_sub_content_width_field( array $fields ) {
 	);
 
 	return $fields;
+}
+
+/**
+ * Ensure shared row-spacing preset controls live in the Configs segment.
+ *
+ * @param array<int, mixed> $fields Layout/main field definitions.
+ * @param string            $key_seed Optional key seed for generated field keys.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_ensure_row_spacing_preset_field( array $fields, $key_seed = '' ) {
+	$seed              = sanitize_key( (string) $key_seed );
+	$content_tab_index = null;
+	$spacing_tab_index = null;
+	$effects_tab_index = null;
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_key   = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
+		$field_name  = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( '' === $seed && '' !== $field_key ) {
+			$seed = $field_key;
+		}
+
+		if ( mrn_base_stack_is_row_spacing_selector_field_name( $field_name ) && 'select' === $field_type ) {
+			unset( $fields[ $index ] );
+			continue;
+		}
+
+		if ( 'tab' !== $field_type ) {
+			continue;
+		}
+
+		if ( null === $content_tab_index && 'content' === $field_label ) {
+			$content_tab_index = $index;
+			continue;
+		}
+
+		if ( null === $spacing_tab_index && 'spacing' === $field_label ) {
+			$spacing_tab_index = $index;
+			continue;
+		}
+
+		if ( null === $effects_tab_index && 'effects' === $field_label ) {
+			$effects_tab_index = $index;
+		}
+	}
+
+	$fields = array_values( $fields );
+
+	if ( '' === $seed ) {
+		$seed = 'field_mrn_layout_row_spacing';
+	}
+
+	$row_spacing_selector_fields = array();
+	foreach ( mrn_base_stack_get_row_spacing_side_selector_definitions() as $definition ) {
+		$selector_name  = isset( $definition['name'] ) ? sanitize_key( (string) $definition['name'] ) : '';
+		$selector_label = isset( $definition['label'] ) ? sanitize_text_field( (string) $definition['label'] ) : '';
+		$scope          = isset( $definition['scope'] ) ? mrn_base_stack_normalize_row_spacing_preset_scope( $definition['scope'] ) : '';
+
+		if ( '' === $selector_name || '' === $selector_label || '' === $scope ) {
+			continue;
+		}
+
+		$row_spacing_selector_fields[] = mrn_base_stack_get_row_spacing_preset_field(
+			$seed . '_' . $selector_name,
+			$selector_name,
+			$selector_label,
+			$scope,
+			'',
+			'25'
+		);
+	}
+
+	$content_tab_index = null;
+	$spacing_tab_index = null;
+	$effects_tab_index = null;
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( 'tab' !== $field_type ) {
+			continue;
+		}
+
+		if ( null === $content_tab_index && 'content' === $field_label ) {
+			$content_tab_index = $index;
+		}
+
+		if ( null === $spacing_tab_index && 'spacing' === $field_label ) {
+			$spacing_tab_index = $index;
+		}
+
+		if ( null === $effects_tab_index && 'effects' === $field_label ) {
+			$effects_tab_index = $index;
+		}
+	}
+
+	if ( null === $content_tab_index ) {
+		array_unshift(
+			$fields,
+			array(
+				'key'        => $seed . '_content_tab_contract',
+				'label'      => 'Content',
+				'name'       => '',
+				'aria-label' => '',
+				'type'       => 'tab',
+				'placement'  => 'top',
+				'endpoint'   => 0,
+			)
+		);
+	}
+
+	$spacing_tab = array(
+		'key'        => $seed . '_spacing_tab_contract',
+		'label'      => 'Spacing',
+		'name'       => '',
+		'aria-label' => '',
+		'type'       => 'tab',
+		'placement'  => 'top',
+		'endpoint'   => 0,
+	);
+
+	$spacing_tab_index = null;
+	$effects_tab_index = null;
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( 'tab' !== $field_type ) {
+			continue;
+		}
+
+		if ( null === $spacing_tab_index && 'spacing' === $field_label ) {
+			$spacing_tab_index = $index;
+		}
+
+		if ( null === $effects_tab_index && 'effects' === $field_label ) {
+			$effects_tab_index = $index;
+		}
+	}
+
+	if ( null === $spacing_tab_index ) {
+		$insert_index = null !== $effects_tab_index ? $effects_tab_index : count( $fields );
+		array_splice( $fields, $insert_index, 0, array( $spacing_tab ) );
+		$spacing_tab_index = $insert_index;
+	}
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+
+		if ( mrn_base_stack_is_row_spacing_selector_field_name( $field_name ) && 'select' === $field_type ) {
+			unset( $fields[ $index ] );
+		}
+	}
+	$fields = array_values( $fields );
+
+	$spacing_tab_index = null;
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+		if ( 'tab' === $field_type && 'spacing' === $field_label ) {
+			$spacing_tab_index = $index;
+			break;
+		}
+	}
+
+	if ( null === $spacing_tab_index ) {
+		$spacing_tab_index = count( $fields ) - 1;
+	}
+
+	if ( ! empty( $row_spacing_selector_fields ) ) {
+		array_splice(
+			$fields,
+			$spacing_tab_index + 1,
+			0,
+			$row_spacing_selector_fields
+		);
+	}
+
+	return array_values( $fields );
 }
 
 /**
@@ -2676,6 +3793,7 @@ function mrn_base_stack_move_row_width_fields_into_configs_segment( array $field
  */
 function mrn_base_stack_group_main_config_fields_by_functionality( array $fields, $key_seed = '' ) {
 	$fields = mrn_base_stack_ensure_main_configs_tab_for_row_width_fields( $fields, $key_seed );
+	$fields = mrn_base_stack_ensure_row_spacing_preset_field( $fields, $key_seed );
 	$fields = mrn_base_stack_move_row_width_fields_into_configs_segment( $fields );
 
 	$config_tab_index = null;
@@ -2804,6 +3922,7 @@ function mrn_base_stack_group_main_config_fields_by_functionality( array $fields
 	}
 
 	$grouped_segment = array();
+	$is_first_group  = true;
 	foreach ( $group_order as $group_key => $group_label ) {
 		$group_fields = $grouped[ $group_key ];
 		if ( empty( $group_fields ) ) {
@@ -2816,7 +3935,7 @@ function mrn_base_stack_group_main_config_fields_by_functionality( array $fields
 			'name'         => '',
 			'aria-label'   => '',
 			'type'         => 'accordion',
-			'open'         => 0,
+			'open'         => $is_first_group ? 1 : 0,
 			'multi_expand' => 1,
 			'endpoint'     => 0,
 		);
@@ -2824,6 +3943,8 @@ function mrn_base_stack_group_main_config_fields_by_functionality( array $fields
 		foreach ( $group_fields as $group_field ) {
 			$grouped_segment[] = $group_field;
 		}
+
+		$is_first_group = false;
 	}
 
 	$grouped_segment[] = array(
@@ -3215,6 +4336,145 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 
 	return mrn_base_stack_ensure_acf_field_origin_names( $normalized_fields );
 }
+
+/**
+ * Get flexible-content field names that should receive the shared row contract.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_primary_builder_flexible_field_names() {
+	$field_names = function_exists( 'mrn_base_stack_get_builder_row_flex_supported_fields' )
+		? mrn_base_stack_get_builder_row_flex_supported_fields()
+		: array(
+			'page_content_rows',
+			'page_after_content_rows',
+			'page_hero_rows',
+		);
+
+	/**
+	 * Filter flexible-content field names that should receive shared row contracts
+	 * when loaded from ACF UI field groups.
+	 *
+	 * @param array<int, string> $field_names Supported flexible-content field names.
+	 */
+	$field_names = apply_filters( 'mrn_base_stack_primary_builder_flexible_field_names', $field_names );
+
+	if ( ! is_array( $field_names ) ) {
+		return array();
+	}
+
+	$normalized_names = array();
+	foreach ( $field_names as $field_name ) {
+		$field_name = is_scalar( $field_name ) ? sanitize_key( (string) $field_name ) : '';
+		if ( '' === $field_name ) {
+			continue;
+		}
+
+		$normalized_names[] = $field_name;
+	}
+
+	return array_values( array_unique( $normalized_names ) );
+}
+
+/**
+ * Determine whether a flexible-content field should receive shared row contracts.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return bool
+ */
+function mrn_base_stack_should_apply_primary_layout_contract_to_flexible_field( array $field ) {
+	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	if ( 'flexible_content' !== $field_type ) {
+		return false;
+	}
+
+	$has_layouts  = isset( $field['layouts'] ) && is_array( $field['layouts'] ) && ! empty( $field['layouts'] );
+	$should_apply = $has_layouts;
+
+	/**
+	 * Filter whether a flexible-content field should receive shared row contracts.
+	 *
+	 * @param bool                 $should_apply Default match result.
+	 * @param array<string, mixed> $field ACF field definition.
+	 */
+	return (bool) apply_filters( 'mrn_base_stack_should_apply_contract_to_flexible_field', $should_apply, $field );
+}
+
+/**
+ * Apply shared row contracts to flexible-content fields loaded from ACF UI.
+ *
+ * This ensures UI-managed field groups receive the same row-level Configs
+ * contract (tabs, shared controls, grouped settings) as code-registered groups.
+ *
+ * @param array<string, mixed>|mixed $field ACF field definition.
+ * @return array<string, mixed>|mixed
+ */
+function mrn_base_stack_apply_primary_layout_contract_on_flexible_load( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	if ( ! mrn_base_stack_should_apply_primary_layout_contract_to_flexible_field( $field ) ) {
+		return $field;
+	}
+
+	if ( ! isset( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
+		return $field;
+	}
+
+	foreach ( $field['layouts'] as $layout_key => $layout ) {
+		if ( ! is_array( $layout ) || ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+			continue;
+		}
+
+		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+		$layout['sub_fields']            = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
+		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+		$field['layouts'][ $layout_key ] = $layout;
+	}
+
+	return $field;
+}
+add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_apply_primary_layout_contract_on_flexible_load', 30 );
+add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_apply_primary_layout_contract_on_flexible_load', 30 );
+
+/**
+ * Apply shared row contracts when ACF retrieves field definitions from storage.
+ *
+ * Some UI-managed field groups hydrate through definition lookups where
+ * `acf/load_field` may not carry full layout structures yet. This ensures the
+ * same contract is applied as soon as complete flexible layouts are available.
+ *
+ * @param array<string, mixed>|mixed $field ACF field definition.
+ * @return array<string, mixed>|mixed
+ */
+function mrn_base_stack_apply_primary_layout_contract_on_flexible_get_field( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	if ( ! mrn_base_stack_should_apply_primary_layout_contract_to_flexible_field( $field ) ) {
+		return $field;
+	}
+
+	if ( ! isset( $field['layouts'] ) || ! is_array( $field['layouts'] ) || empty( $field['layouts'] ) ) {
+		return $field;
+	}
+
+	foreach ( $field['layouts'] as $layout_key => $layout ) {
+		if ( ! is_array( $layout ) || ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+			continue;
+		}
+
+		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+		$layout['sub_fields']            = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
+		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+		$field['layouts'][ $layout_key ] = $layout;
+	}
+
+	return $field;
+}
+add_filter( 'acf/get_field', 'mrn_base_stack_apply_primary_layout_contract_on_flexible_get_field', 30 );
 
 /**
  * Recursively move row effect controls into a dedicated Effects tab.
@@ -3631,6 +4891,575 @@ function mrn_base_stack_merge_builder_attributes( array $attributes, array $extr
 }
 
 /**
+ * Get supported row-spacing property keys.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_row_spacing_property_keys() {
+	static $properties = null;
+
+	if ( is_array( $properties ) ) {
+		return $properties;
+	}
+
+	$fallback = array(
+		'margin-top',
+		'margin-right',
+		'margin-bottom',
+		'margin-left',
+		'padding-top',
+		'padding-right',
+		'padding-bottom',
+		'padding-left',
+	);
+
+	if ( ! function_exists( 'mrn_site_styles_get_row_spacing_property_choices' ) ) {
+		$properties = $fallback;
+		return $properties;
+	}
+
+	$choices = mrn_site_styles_get_row_spacing_property_choices();
+	if ( ! is_array( $choices ) ) {
+		$properties = $fallback;
+		return $properties;
+	}
+
+	$normalized = array();
+	foreach ( array_keys( $choices ) as $property_key ) {
+		$property = is_scalar( $property_key ) ? strtolower( trim( (string) $property_key ) ) : '';
+		if ( '' === $property || ! preg_match( '/^(margin|padding)\-(top|right|bottom|left)$/', $property ) ) {
+			continue;
+		}
+
+		$normalized[] = $property;
+	}
+
+	if ( empty( $normalized ) ) {
+		$normalized = $fallback;
+	}
+
+	$properties = array_values( array_unique( $normalized ) );
+
+	return $properties;
+}
+
+/**
+ * Normalize one row-spacing property key.
+ *
+ * @param mixed $value Raw property key.
+ * @return string
+ */
+function mrn_base_stack_normalize_row_spacing_property( $value ) {
+	$property = is_scalar( $value ) ? strtolower( trim( (string) $value ) ) : '';
+	if ( '' === $property ) {
+		return '';
+	}
+
+	$allowed = mrn_base_stack_get_row_spacing_property_keys();
+	if ( ! in_array( $property, $allowed, true ) ) {
+		return '';
+	}
+
+	return $property;
+}
+
+/**
+ * Expand alias row-spacing properties to side-specific keys.
+ *
+ * @param mixed $value Raw property key.
+ * @return array<int, string>
+ */
+function mrn_base_stack_expand_row_spacing_property_to_keys( $value ) {
+	$property = is_scalar( $value ) ? strtolower( trim( (string) $value ) ) : '';
+	if ( '' === $property ) {
+		return array();
+	}
+
+	if ( 'margin' === $property ) {
+		return array(
+			'margin-top',
+			'margin-right',
+			'margin-bottom',
+			'margin-left',
+		);
+	}
+
+	if ( 'padding' === $property ) {
+		return array(
+			'padding-top',
+			'padding-right',
+			'padding-bottom',
+			'padding-left',
+		);
+	}
+
+	$normalized = mrn_base_stack_normalize_row_spacing_property( $property );
+	if ( '' === $normalized ) {
+		return array();
+	}
+
+	return array( $normalized );
+}
+
+/**
+ * Sanitize CSS spacing dimensions used by row-spacing contracts.
+ *
+ * @param mixed $value Raw spacing value.
+ * @return string
+ */
+function mrn_base_stack_sanitize_spacing_dimension_value( $value ) {
+	if ( function_exists( 'mrn_site_styles_sanitize_spacing_dimension' ) ) {
+		return mrn_site_styles_sanitize_spacing_dimension( (string) $value );
+	}
+
+	$sanitized = preg_replace( '/[^a-zA-Z0-9.%(),\-+*\/\s]/', '', (string) $value );
+	$sanitized = is_string( $sanitized ) ? trim( $sanitized ) : '';
+	$sanitized = preg_replace( '/\s+/', ' ', $sanitized );
+	$sanitized = is_string( $sanitized ) ? trim( $sanitized ) : '';
+
+	if ( '' === $sanitized ) {
+		return '';
+	}
+
+	return substr( $sanitized, 0, 64 );
+}
+
+/**
+ * Check whether a row-spacing property supports shell gutter compensation.
+ *
+ * Compensation applies to horizontal margins only.
+ *
+ * @param mixed $property Property key.
+ * @return bool
+ */
+function mrn_base_stack_row_spacing_property_supports_shell_compensation( $property ) {
+	$property = mrn_base_stack_normalize_row_spacing_property( $property );
+
+	return in_array( $property, array( 'margin-left', 'margin-right' ), true );
+}
+
+/**
+ * Normalize a row-spacing compensation flag to boolean.
+ *
+ * @param mixed $value Raw flag value.
+ * @return bool
+ */
+function mrn_base_stack_normalize_row_spacing_compensation_flag( $value ) {
+	if ( is_bool( $value ) ) {
+		return $value;
+	}
+
+	if ( ! is_scalar( $value ) ) {
+		return false;
+	}
+
+	$normalized = strtolower( trim( (string) $value ) );
+
+	return in_array( $normalized, array( '1', 'true', 'yes', 'on' ), true );
+}
+
+/**
+ * Apply shell gutter compensation to one row-spacing value.
+ *
+ * @param string $value Spacing value.
+ * @param string $property Property key.
+ * @param bool   $should_compensate Whether compensation should be applied.
+ * @return string
+ */
+function mrn_base_stack_apply_shell_compensation_to_row_spacing_value( $value, $property, $should_compensate ) {
+	$value = mrn_base_stack_sanitize_spacing_dimension_value( $value );
+	if ( '' === $value || ! $should_compensate ) {
+		return $value;
+	}
+
+	$property = mrn_base_stack_normalize_row_spacing_property( $property );
+	if ( ! mrn_base_stack_row_spacing_property_supports_shell_compensation( $property ) ) {
+		return $value;
+	}
+
+	if ( 'auto' === strtolower( trim( $value ) ) ) {
+		return $value;
+	}
+
+	return 'calc(' . $value . ' - var(--mrn-shell-gutter))';
+}
+
+/**
+ * Normalize row-spacing preset names for matching.
+ *
+ * @param mixed $value Raw preset name.
+ * @return string
+ */
+function mrn_base_stack_normalize_row_spacing_preset_name( $value ) {
+	$name = is_scalar( $value ) ? trim( (string) $value ) : '';
+	if ( '' === $name ) {
+		return '';
+	}
+
+	$name = preg_replace( '/\s+/', ' ', $name );
+	$name = is_string( $name ) ? trim( $name ) : '';
+
+	return strtolower( $name );
+}
+
+/**
+ * Get resolved row-spacing defaults from Site Styles.
+ *
+ * @return array{desktop:array<string,string>,mobile:array<string,string>,compensation:array<string,bool>}
+ */
+function mrn_base_stack_get_row_spacing_defaults_resolved_map() {
+	$properties = mrn_base_stack_get_row_spacing_property_keys();
+	$defaults   = array(
+		'desktop'      => array_fill_keys( $properties, '' ),
+		'mobile'       => array_fill_keys( $properties, '' ),
+		'compensation' => array_fill_keys( $properties, false ),
+	);
+
+	if ( ! function_exists( 'mrn_site_styles_get_row_spacing_defaults_resolved' ) ) {
+		return $defaults;
+	}
+
+	$configured_defaults = mrn_site_styles_get_row_spacing_defaults_resolved();
+	if ( ! is_array( $configured_defaults ) ) {
+		return $defaults;
+	}
+
+	foreach ( $configured_defaults as $property_key => $values ) {
+		$target_properties = mrn_base_stack_expand_row_spacing_property_to_keys( $property_key );
+		if ( empty( $target_properties ) || ! is_array( $values ) ) {
+			continue;
+		}
+
+		$desktop          = mrn_base_stack_sanitize_spacing_dimension_value( $values['desktop'] ?? '' );
+		$mobile           = mrn_base_stack_sanitize_spacing_dimension_value( $values['mobile'] ?? '' );
+		$compensate_shell = mrn_base_stack_normalize_row_spacing_compensation_flag( $values['compensate_shell'] ?? false );
+
+		foreach ( $target_properties as $property ) {
+			$defaults['desktop'][ $property ]      = $desktop;
+			$defaults['mobile'][ $property ]       = $mobile;
+			$defaults['compensation'][ $property ] = $compensate_shell;
+		}
+	}
+
+	return $defaults;
+}
+
+/**
+ * Get row-spacing overrides for one selected preset.
+ *
+ * @param string $preset_name Preset name saved on the builder row.
+ * @param string $scope Optional selector scope (`margin`, `padding`, or empty for all).
+ * @return array{desktop:array<string,string>,mobile:array<string,string>,compensation:array<string,bool>}
+ */
+function mrn_base_stack_get_row_spacing_overrides_for_preset( $preset_name, $scope = '' ) {
+	$scope           = mrn_base_stack_normalize_row_spacing_preset_scope( $scope );
+	$normalized_name = mrn_base_stack_normalize_row_spacing_preset_name( $preset_name );
+	$scope_is_side   = (bool) preg_match( '/^(margin|padding)\-(top|right|bottom|left)$/', $scope );
+	$overrides       = array(
+		'desktop'      => array(),
+		'mobile'       => array(),
+		'compensation' => array(),
+	);
+
+	if ( '' === $normalized_name || ! function_exists( 'mrn_site_styles_get_row_spacing_presets_resolved' ) ) {
+		return $overrides;
+	}
+
+	$preset_rows = mrn_site_styles_get_row_spacing_presets_resolved();
+	if ( ! is_array( $preset_rows ) ) {
+		return $overrides;
+	}
+
+	foreach ( $preset_rows as $preset_row ) {
+		if ( ! is_array( $preset_row ) ) {
+			continue;
+		}
+
+		$row_name = mrn_base_stack_normalize_row_spacing_preset_name( $preset_row['name'] ?? '' );
+		if ( '' === $row_name || $row_name !== $normalized_name ) {
+			continue;
+		}
+
+		if ( ! mrn_base_stack_row_spacing_property_matches_scope( $preset_row['property'] ?? '', $scope ) ) {
+			continue;
+		}
+
+		$target_properties = mrn_base_stack_expand_row_spacing_property_to_keys( $preset_row['property'] ?? '' );
+		if ( $scope_is_side ) {
+			$target_properties = in_array( $scope, $target_properties, true ) ? array( $scope ) : array();
+		}
+		if ( empty( $target_properties ) ) {
+			continue;
+		}
+
+			$desktop          = mrn_base_stack_sanitize_spacing_dimension_value( $preset_row['desktop'] ?? '' );
+			$mobile           = mrn_base_stack_sanitize_spacing_dimension_value( $preset_row['mobile'] ?? '' );
+			$compensate_shell = mrn_base_stack_normalize_row_spacing_compensation_flag( $preset_row['compensate_shell'] ?? false );
+
+		foreach ( $target_properties as $property ) {
+			if ( '' !== $desktop ) {
+				$overrides['desktop'][ $property ] = $desktop;
+			}
+
+			if ( '' !== $mobile ) {
+				$overrides['mobile'][ $property ] = $mobile;
+			}
+
+			$overrides['compensation'][ $property ] = $compensate_shell;
+		}
+	}
+
+	return $overrides;
+}
+
+/**
+ * Resolve row-spacing values for one selected preset.
+ *
+ * @param string $preset_name Preset name saved on the builder row.
+ * @param string $scope Optional selector scope (`margin`, `padding`, or empty for all).
+ * @return array{desktop:array<string,string>,mobile:array<string,string>,compensation:array<string,bool>}
+ */
+function mrn_base_stack_get_row_spacing_values_for_preset( $preset_name, $scope = '' ) {
+	$values    = mrn_base_stack_get_row_spacing_defaults_resolved_map();
+	$overrides = mrn_base_stack_get_row_spacing_overrides_for_preset( $preset_name, $scope );
+
+	foreach ( array( 'desktop', 'mobile' ) as $device_key ) {
+		if ( ! isset( $overrides[ $device_key ] ) || ! is_array( $overrides[ $device_key ] ) ) {
+			continue;
+		}
+
+		foreach ( $overrides[ $device_key ] as $property => $value ) {
+			$property = mrn_base_stack_normalize_row_spacing_property( $property );
+			$value    = mrn_base_stack_sanitize_spacing_dimension_value( $value );
+
+			if ( '' === $property || '' === $value ) {
+				continue;
+			}
+
+			$values[ $device_key ][ $property ] = $value;
+		}
+	}
+
+	if ( isset( $overrides['compensation'] ) && is_array( $overrides['compensation'] ) ) {
+		foreach ( $overrides['compensation'] as $property => $value ) {
+			$property = mrn_base_stack_normalize_row_spacing_property( $property );
+			if ( '' === $property ) {
+				continue;
+			}
+
+			$values['compensation'][ $property ] = mrn_base_stack_normalize_row_spacing_compensation_flag( $value );
+		}
+	}
+
+	return $values;
+}
+
+/**
+ * Build the row-spacing contract for one builder row.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return array{classes:array<int,string>,attributes:array<string,string>}
+ */
+function mrn_base_stack_get_builder_row_spacing_contract( array $row ) {
+	$preset_name         = isset( $row['row_spacing_preset'] ) && is_scalar( $row['row_spacing_preset'] )
+		? trim( (string) $row['row_spacing_preset'] )
+		: '';
+	$margin_preset_name  = isset( $row['row_spacing_margin_preset'] ) && is_scalar( $row['row_spacing_margin_preset'] )
+		? trim( (string) $row['row_spacing_margin_preset'] )
+		: '';
+	$padding_preset_name = isset( $row['row_spacing_padding_preset'] ) && is_scalar( $row['row_spacing_padding_preset'] )
+		? trim( (string) $row['row_spacing_padding_preset'] )
+		: '';
+	$side_preset_names   = array();
+
+	foreach ( mrn_base_stack_get_row_spacing_side_selector_definitions() as $definition ) {
+		$selector_name = isset( $definition['name'] ) ? sanitize_key( (string) $definition['name'] ) : '';
+		$scope         = isset( $definition['scope'] ) ? mrn_base_stack_normalize_row_spacing_preset_scope( $definition['scope'] ) : '';
+		if ( '' === $selector_name || '' === $scope ) {
+			continue;
+		}
+
+		$side_preset_names[ $scope ] = isset( $row[ $selector_name ] ) && is_scalar( $row[ $selector_name ] )
+			? trim( (string) $row[ $selector_name ] )
+			: '';
+	}
+
+	$resolved_values = '' !== $preset_name
+		? mrn_base_stack_get_row_spacing_values_for_preset( $preset_name )
+		: mrn_base_stack_get_row_spacing_defaults_resolved_map();
+
+	if ( '' !== $margin_preset_name ) {
+		$margin_overrides = mrn_base_stack_get_row_spacing_overrides_for_preset( $margin_preset_name, 'margin' );
+		foreach ( array( 'desktop', 'mobile' ) as $device_key ) {
+			if ( ! isset( $margin_overrides[ $device_key ] ) || ! is_array( $margin_overrides[ $device_key ] ) ) {
+				continue;
+			}
+
+			foreach ( $margin_overrides[ $device_key ] as $property => $value ) {
+				$property = mrn_base_stack_normalize_row_spacing_property( $property );
+				$value    = mrn_base_stack_sanitize_spacing_dimension_value( $value );
+				if ( '' === $property || '' === $value ) {
+					continue;
+				}
+
+				$resolved_values[ $device_key ][ $property ] = $value;
+			}
+		}
+
+		if ( isset( $margin_overrides['compensation'] ) && is_array( $margin_overrides['compensation'] ) ) {
+			foreach ( $margin_overrides['compensation'] as $property => $value ) {
+				$property = mrn_base_stack_normalize_row_spacing_property( $property );
+				if ( '' === $property ) {
+					continue;
+				}
+
+				$resolved_values['compensation'][ $property ] = mrn_base_stack_normalize_row_spacing_compensation_flag( $value );
+			}
+		}
+	}
+
+	if ( '' !== $padding_preset_name ) {
+		$padding_overrides = mrn_base_stack_get_row_spacing_overrides_for_preset( $padding_preset_name, 'padding' );
+		foreach ( array( 'desktop', 'mobile' ) as $device_key ) {
+			if ( ! isset( $padding_overrides[ $device_key ] ) || ! is_array( $padding_overrides[ $device_key ] ) ) {
+				continue;
+			}
+
+			foreach ( $padding_overrides[ $device_key ] as $property => $value ) {
+				$property = mrn_base_stack_normalize_row_spacing_property( $property );
+				$value    = mrn_base_stack_sanitize_spacing_dimension_value( $value );
+				if ( '' === $property || '' === $value ) {
+					continue;
+				}
+
+				$resolved_values[ $device_key ][ $property ] = $value;
+			}
+		}
+
+		if ( isset( $padding_overrides['compensation'] ) && is_array( $padding_overrides['compensation'] ) ) {
+			foreach ( $padding_overrides['compensation'] as $property => $value ) {
+				$property = mrn_base_stack_normalize_row_spacing_property( $property );
+				if ( '' === $property ) {
+					continue;
+				}
+
+				$resolved_values['compensation'][ $property ] = mrn_base_stack_normalize_row_spacing_compensation_flag( $value );
+			}
+		}
+	}
+
+	foreach ( $side_preset_names as $scope => $side_preset_name ) {
+		if ( '' === $side_preset_name ) {
+			continue;
+		}
+
+		$side_overrides = mrn_base_stack_get_row_spacing_overrides_for_preset( $side_preset_name, $scope );
+		foreach ( array( 'desktop', 'mobile' ) as $device_key ) {
+			if ( ! isset( $side_overrides[ $device_key ] ) || ! is_array( $side_overrides[ $device_key ] ) ) {
+				continue;
+			}
+
+			foreach ( $side_overrides[ $device_key ] as $property => $value ) {
+				$property = mrn_base_stack_normalize_row_spacing_property( $property );
+				$value    = mrn_base_stack_sanitize_spacing_dimension_value( $value );
+				if ( '' === $property || '' === $value ) {
+					continue;
+				}
+
+				$resolved_values[ $device_key ][ $property ] = $value;
+			}
+		}
+
+		if ( isset( $side_overrides['compensation'] ) && is_array( $side_overrides['compensation'] ) ) {
+			foreach ( $side_overrides['compensation'] as $property => $value ) {
+				$property = mrn_base_stack_normalize_row_spacing_property( $property );
+				if ( '' === $property ) {
+					continue;
+				}
+
+				$resolved_values['compensation'][ $property ] = mrn_base_stack_normalize_row_spacing_compensation_flag( $value );
+			}
+		}
+	}
+
+	$active_selector_label = $preset_name;
+	if ( '' === $active_selector_label ) {
+		$active_selector_parts = array();
+		if ( '' !== $margin_preset_name ) {
+			$active_selector_parts[] = 'margin-' . sanitize_title( $margin_preset_name );
+		}
+		if ( '' !== $padding_preset_name ) {
+			$active_selector_parts[] = 'padding-' . sanitize_title( $padding_preset_name );
+		}
+		foreach ( $side_preset_names as $scope => $side_preset_name ) {
+			if ( '' === $side_preset_name ) {
+				continue;
+			}
+
+			$active_selector_parts[] = sanitize_title( $scope ) . '-' . sanitize_title( $side_preset_name );
+		}
+		$active_selector_label = implode( '_', $active_selector_parts );
+	}
+
+	$properties  = mrn_base_stack_get_row_spacing_property_keys();
+	$styles      = array();
+	$has_spacing = false;
+
+	foreach ( $properties as $property ) {
+			$desktop           = isset( $resolved_values['desktop'][ $property ] ) ? mrn_base_stack_sanitize_spacing_dimension_value( $resolved_values['desktop'][ $property ] ) : '';
+			$mobile            = isset( $resolved_values['mobile'][ $property ] ) ? mrn_base_stack_sanitize_spacing_dimension_value( $resolved_values['mobile'][ $property ] ) : '';
+			$should_compensate = isset( $resolved_values['compensation'][ $property ] ) && mrn_base_stack_normalize_row_spacing_compensation_flag( $resolved_values['compensation'][ $property ] );
+			$desktop           = mrn_base_stack_apply_shell_compensation_to_row_spacing_value( $desktop, $property, $should_compensate );
+			$mobile            = mrn_base_stack_apply_shell_compensation_to_row_spacing_value( $mobile, $property, $should_compensate );
+
+		if ( '' !== $desktop ) {
+			$styles[]    = '--mrn-row-' . $property . '-desktop: ' . $desktop;
+			$has_spacing = true;
+		}
+
+		if ( '' !== $mobile ) {
+			$styles[]    = '--mrn-row-' . $property . '-mobile: ' . $mobile;
+			$has_spacing = true;
+		}
+	}
+
+	if ( ! $has_spacing ) {
+		return array(
+			'classes'    => array(),
+			'attributes' => array(),
+		);
+	}
+
+	$attributes = array(
+		'data-mrn-row-spacing' => '' !== $active_selector_label ? sanitize_title( $active_selector_label ) : 'defaults',
+	);
+	$style      = mrn_base_stack_get_inline_style_attribute( $styles );
+	if ( '' !== $style ) {
+		$attributes['style'] = $style;
+	}
+
+	$contract = array(
+		'classes'    => array(),
+		'attributes' => $attributes,
+	);
+
+	/**
+	 * Filter the row-spacing frontend contract before it is merged on the row wrapper.
+	 *
+	 * @param array{classes:array<int,string>,attributes:array<string,string>} $contract Row spacing contract.
+	 * @param array{desktop:array<string,string>,mobile:array<string,string>,compensation:array<string,bool>} $resolved_values Resolved desktop/mobile values.
+	 * @param string                                                            $preset_name Selected preset name.
+	 * @param array<string,mixed>                                               $row Builder row payload.
+	 */
+	$contract = apply_filters( 'mrn_base_stack_builder_row_spacing_contract', $contract, $resolved_values, $preset_name, $row );
+
+	return is_array( $contract ) ? $contract : array(
+		'classes'    => array(),
+		'attributes' => array(),
+	);
+}
+
+/**
  * Get the post-meta key used for row-level flex settings.
  *
  * @return string
@@ -3649,7 +5478,6 @@ function mrn_base_stack_get_builder_row_flex_supported_fields() {
 		'page_content_rows',
 		'page_after_content_rows',
 		'page_hero_rows',
-		'page_sidebar_rows',
 	);
 
 	/**
@@ -4050,6 +5878,7 @@ function mrn_base_stack_get_builder_motion_contract( array $row ) {
 	$motion_contract      = mrn_base_stack_get_motion_contract_for_settings( $row['motion_settings'] ?? array() );
 	$flex_contract        = mrn_base_stack_get_builder_flex_contract( $row );
 	$sub_content_contract = mrn_base_stack_get_builder_sub_content_width_contract( $row );
+	$row_spacing_contract = mrn_base_stack_get_builder_row_spacing_contract( $row );
 
 	if ( ! empty( $flex_contract['classes'] ) && is_array( $flex_contract['classes'] ) ) {
 		$motion_contract['classes'] = array_values(
@@ -4090,6 +5919,27 @@ function mrn_base_stack_get_builder_motion_contract( array $row ) {
 		$motion_contract['attributes'] = mrn_base_stack_merge_builder_attributes(
 			isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array(),
 			$sub_content_contract['attributes']
+		);
+	}
+
+	if ( ! empty( $row_spacing_contract['classes'] ) && is_array( $row_spacing_contract['classes'] ) ) {
+		$motion_contract['classes'] = array_values(
+			array_unique(
+				array_filter(
+					array_merge(
+						isset( $motion_contract['classes'] ) && is_array( $motion_contract['classes'] ) ? $motion_contract['classes'] : array(),
+						$row_spacing_contract['classes']
+					),
+					'strlen'
+				)
+			)
+		);
+	}
+
+	if ( ! empty( $row_spacing_contract['attributes'] ) && is_array( $row_spacing_contract['attributes'] ) ) {
+		$motion_contract['attributes'] = mrn_base_stack_merge_builder_attributes(
+			isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array(),
+			$row_spacing_contract['attributes']
 		);
 	}
 
@@ -4224,7 +6074,7 @@ function mrn_base_stack_get_label_tag_field( $key, $name = 'label_tag', $default
 		'default_value'     => mrn_base_stack_normalize_text_tag( $default_tag, 'p' ),
 		'multiple'          => 0,
 		'return_format'     => 'value',
-		'ui'                => 1,
+		'ui'                => 0,
 		'wrapper'           => array(
 			'width' => '25',
 		),
@@ -4253,7 +6103,7 @@ function mrn_base_stack_get_text_tag_field( $key, $name = 'heading_tag', $defaul
 		'default_value'     => mrn_base_stack_normalize_text_tag( $default_tag, 'h2' ),
 		'multiple'          => 0,
 		'return_format'     => 'value',
-		'ui'                => 1,
+		'ui'                => 0,
 		'wrapper'           => array(
 			'width' => '25',
 		),
@@ -4827,6 +6677,73 @@ function mrn_base_stack_get_content_list_tax_query( array $row, $context_post_id
 	}
 
 	return array();
+}
+
+/**
+ * Resolve manually selected post IDs for content-list rows.
+ *
+ * @param array<string, mixed> $row Content-list row settings.
+ * @param string               $target_post_type Queried post type.
+ * @return array<int, int>
+ */
+function mrn_base_stack_get_content_list_manual_post_ids( array $row, $target_post_type = '' ) {
+	$selected = isset( $row['filter_posts'] ) ? $row['filter_posts'] : array();
+	$post_ids = array();
+
+	if ( $selected instanceof WP_Post ) {
+		$selected = array( $selected );
+	} elseif ( is_scalar( $selected ) ) {
+		$selected = array( $selected );
+	} elseif ( ! is_array( $selected ) ) {
+		$selected = array();
+	}
+
+	foreach ( $selected as $item ) {
+		if ( $item instanceof WP_Post ) {
+			$post_ids[] = absint( $item->ID );
+			continue;
+		}
+
+		if ( is_array( $item ) && isset( $item['ID'] ) ) {
+			$post_ids[] = absint( $item['ID'] );
+			continue;
+		}
+
+		$post_ids[] = absint( $item );
+	}
+
+	$post_ids = array_values(
+		array_filter(
+			array_unique( array_map( 'absint', $post_ids ) )
+		)
+	);
+
+	if ( empty( $post_ids ) ) {
+		return array();
+	}
+
+	$target_post_type = sanitize_key( (string) $target_post_type );
+	if ( '' === $target_post_type ) {
+		return $post_ids;
+	}
+
+	return array_values(
+		array_filter(
+			$post_ids,
+			static function ( $post_id ) use ( $target_post_type ) {
+				$post = get_post( absint( $post_id ) );
+				if ( ! $post instanceof WP_Post ) {
+					return false;
+				}
+
+				if ( 'publish' !== $post->post_status ) {
+					return false;
+				}
+
+				return sanitize_key( (string) $post->post_type ) === $target_post_type;
+			}
+		)
+	);
 }
 
 /**

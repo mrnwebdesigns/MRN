@@ -25,7 +25,7 @@ EOF
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PHPCS_CONFIG="${REPO_ROOT}/phpcs.xml.dist"
-PHPSTAN_CONFIG="${REPO_ROOT}/phpstan.neon.dist"
+PHPSTAN_RUNNER="${REPO_ROOT}/scripts/mrn-phpstan.sh"
 SEMGREP_CONFIG="${REPO_ROOT}/semgrep/security-audit.yml"
 SEMGREP_HOME="${REPO_ROOT}/.tmp/semgrep-home"
 PHPSTAN_TMP_DIR="${REPO_ROOT}/.tmp/phpstan"
@@ -127,7 +127,7 @@ if ! command -v semgrep >/dev/null 2>&1; then
 	exit 1
 fi
 
-if [[ ! -x "${REPO_ROOT}/vendor/bin/phpcs" || ! -x "${REPO_ROOT}/vendor/bin/phpstan" ]]; then
+if [[ ! -x "${REPO_ROOT}/vendor/bin/phpcs" || ! -x "${PHPSTAN_RUNNER}" ]]; then
 	echo "Composer dev tools are not installed yet. Run 'composer install' from ${REPO_ROOT} first." >&2
 	exit 1
 fi
@@ -177,7 +177,7 @@ fi
 
 echo
 echo "2. PHPStan"
-if ! php "${REPO_ROOT}/vendor/bin/phpstan" analyse --configuration="${PHPSTAN_CONFIG}" --memory-limit=2G "${TARGETS[@]}"; then
+if ! "${PHPSTAN_RUNNER}" "${TARGETS[@]}"; then
 	PHPSTAN_RESULT="FAIL"
 	STATUS=1
 fi

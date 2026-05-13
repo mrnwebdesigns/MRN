@@ -1,0 +1,27 @@
+/*!
+Theme Name: mrn-base-stack (Child)
+Theme URI: https://mrndev.io/
+Author: MRN Web Designs
+Author URI: https://mrndev.io/
+Description: Rollout child theme scaffold for mrn-base-stack. Inherits parent shell, gutters, spacing, breadcrumbs, and shared rendering contracts while allowing site-specific overrides.
+Version: 1.0.0
+Tested up to: 6.8
+Requires PHP: 8.0
+License: GNU General Public License v2 or later
+License URI: LICENSE
+Template: mrn-base-stack
+Text Domain: mrn-base-stack-child
+Tags: custom-background, custom-logo, custom-menu, featured-images, threaded-comments, translation-ready
+*/
+
+/*
+ * Parent theme styles and tokens are loaded first via this child theme's
+ * functions.php. Keep overrides additive and contract-safe.
+ */
+
+/* Example token overrides for site handoff:
+:root {
+	--mrn-shell-gutter: clamp(1rem, 3vw, 2rem);
+	--mrn-shell-max-width: 1200px;
+}
+*/

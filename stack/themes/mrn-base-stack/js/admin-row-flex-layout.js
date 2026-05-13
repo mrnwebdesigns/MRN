@@ -7,6 +7,7 @@
 
 	var config = mrnBaseStackBuilderAdmin;
 	var rowFlexConfig = getRowFlexConfig();
+	var initialLayoutTabsBootstrapped = false;
 
 	if ( ! rowFlexConfig.supportedFields.length ) {
 		return;
@@ -301,6 +302,15 @@
 		syncLayoutPayload();
 	}
 
+	function ensureLayoutTabsOnce( context ) {
+		if ( initialLayoutTabsBootstrapped ) {
+			return;
+		}
+
+		initialLayoutTabsBootstrapped = true;
+		ensureLayoutTabs( context || document );
+	}
+
 	function collectLayoutPayload() {
 		var payload = {};
 
@@ -346,12 +356,12 @@
 	}
 
 	$( function() {
-		ensureLayoutTabs( document );
+		ensureLayoutTabsOnce( document );
 	} );
 
 	if ( window.acf && typeof window.acf.addAction === 'function' ) {
 		window.acf.addAction( 'ready', function( $el ) {
-			ensureLayoutTabs( $el || document );
+			ensureLayoutTabsOnce( $el || document );
 		} );
 
 		window.acf.addAction( 'append', function( $el ) {

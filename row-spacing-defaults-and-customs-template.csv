@@ -1,0 +1,21 @@
+record_type,target,name,property,desktop_value,mobile_value,locked,description
+site_default,row_spacing_defaults,,margin,,,no,Default for all margins
+site_default,row_spacing_defaults,,padding,,,no,Default for all padding
+site_default,row_spacing_defaults,,margin-top,,,no,Default margin top
+site_default,row_spacing_defaults,,margin-right,,,no,Default margin right
+site_default,row_spacing_defaults,,margin-bottom,,,no,Default margin bottom
+site_default,row_spacing_defaults,,margin-left,,,no,Default margin left
+site_default,row_spacing_defaults,,padding-top,,,no,Default padding top
+site_default,row_spacing_defaults,,padding-right,,,no,Default padding right
+site_default,row_spacing_defaults,,padding-bottom,,,no,Default padding bottom
+site_default,row_spacing_defaults,,padding-left,,,no,Default padding left
+required_preset,row_spacing_presets,Extra Small,margin,24px,auto,yes,Starter preset (non-removable)
+required_preset,row_spacing_presets,Extra Small,padding,24px,auto,yes,Starter preset (non-removable)
+required_preset,row_spacing_presets,Small,margin,32px,auto,yes,Starter preset (non-removable)
+required_preset,row_spacing_presets,Small,padding,32px,auto,yes,Starter preset (non-removable)
+required_preset,row_spacing_presets,Medium,margin,48px,auto,yes,Starter preset (non-removable)
+required_preset,row_spacing_presets,Medium,padding,48px,auto,yes,Starter preset (non-removable)
+required_preset,row_spacing_presets,Large,margin,64px,auto,yes,Starter preset (non-removable)
+required_preset,row_spacing_presets,Large,padding,64px,auto,yes,Starter preset (non-removable)
+required_preset,row_spacing_presets,Extra Large,margin,80px,auto,yes,Starter preset (non-removable)
+required_preset,row_spacing_presets,Extra Large,padding,80px,auto,yes,Starter preset (non-removable)

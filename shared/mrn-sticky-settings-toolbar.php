@@ -16,7 +16,7 @@ if (!function_exists('mrn_sticky_toolbar_universal_css')) {
 .mrn-universal-sticky-toolbar {
   position: sticky;
   top: 32px;
-  z-index: 2147483000;
+  z-index: 99990;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -217,11 +217,23 @@ if (!function_exists('mrn_sticky_toolbar_render')) {
 
 				form.dataset.mrnStickyDirtyInit = '1';
 				var initialState = serializeForm(form);
+				var saveStateTimer = 0;
 
 				function updateSaveState() {
 					var isDirty = serializeForm(form) !== initialState;
 					saveButton.disabled = !isDirty;
 					saveButton.setAttribute('aria-disabled', isDirty ? 'false' : 'true');
+				}
+
+				function scheduleSaveState(delay) {
+					if (saveStateTimer) {
+						window.clearTimeout(saveStateTimer);
+					}
+
+					saveStateTimer = window.setTimeout(function () {
+						saveStateTimer = 0;
+						updateSaveState();
+					}, typeof delay === 'number' ? delay : 0);
 				}
 
 				form.addEventListener('input', updateSaveState, true);
@@ -233,6 +245,37 @@ if (!function_exists('mrn_sticky_toolbar_render')) {
 					saveButton.disabled = true;
 					saveButton.setAttribute('aria-disabled', 'true');
 				});
+
+				// ACF media fields can update hidden values without native input/change bubbling.
+				// Watch relevant DOM mutations and schedule a state re-check.
+				var formObserver = new MutationObserver(function () {
+					scheduleSaveState(75);
+				});
+
+				formObserver.observe(form, {
+					subtree: true,
+					childList: true,
+					attributes: true,
+					attributeFilter: ['value', 'checked', 'selected', 'src', 'href', 'style']
+				});
+
+				if (window.acf && typeof window.acf.addAction === 'function') {
+					window.acf.addAction('append', function ($el) {
+						var node = $el && $el[0] ? $el[0] : null;
+						if (!node || !form.contains(node)) {
+							return;
+						}
+						scheduleSaveState(0);
+					});
+
+					window.acf.addAction('remove', function ($el) {
+						var node = $el && $el[0] ? $el[0] : null;
+						if (!node || !form.contains(node)) {
+							return;
+						}
+						scheduleSaveState(0);
+					});
+				}
 
 				updateSaveState();
 			}
@@ -374,7 +417,7 @@ if (!function_exists('mrn_sticky_toolbar_render_css')) {
 			top: 32px;
 			left: var(--mrn-toolbar-left);
 			right: var(--mrn-toolbar-right);
-			z-index: 2147483000;
+			z-index: 99990;
 			width: calc(100vw - var(--mrn-toolbar-left) - var(--mrn-toolbar-right));
 			box-sizing: border-box;
 			display: flex;

@@ -15,6 +15,36 @@ if ( ! defined( 'WPMU_PLUGIN_URL' ) ) {
 	define( 'WPMU_PLUGIN_URL', '' );
 }
 
+if ( ! defined( 'MRN_GOOGLE_FONTS_URL' ) ) {
+	define( 'MRN_GOOGLE_FONTS_URL', '' );
+}
+
+if ( ! class_exists( 'MRN_Google_Fonts_Stack_Bridge' ) ) {
+	final class MRN_Google_Fonts_Stack_Bridge {
+		public static function supports_site_styles_tab_extension(): bool {
+			return false;
+		}
+
+		public static function get_runtime_mode( string $bridge_mode ): string {
+			return 'standalone';
+		}
+
+		/**
+		 * @return array<string, mixed>
+		 */
+		public static function get_status( string $bridge_mode ): array {
+			unset( $bridge_mode );
+
+			return array(
+				'stack_available' => false,
+				'site_styles_tab_extension_available' => false,
+				'runtime_mode' => 'standalone',
+				'summary' => '',
+			);
+		}
+	}
+}
+
 if ( ! function_exists( 'get_field' ) ) {
 	/**
 	 * @param mixed $selector

@@ -33,6 +33,8 @@ Minimum expectation for new feature prompts:
 
 - define the system area and ownership
 - preserve existing builder behavior and shared theme hooks unless the change is intentional
+- declare parent-vs-child theme deployment mode when theme rendering/hooks are affected
+- declare the live theme target path decision (`template` for parent updates, child only when intentionally in scope)
 - include explicit accessibility acceptance criteria
 - include explicit performance acceptance criteria
 - call out rollout impact and known blockers
@@ -75,6 +77,7 @@ What it checks:
 
 - risky-pattern scan
 - focused WordPress security PHPCS sniffs
+- PHPStan using the shared MRN config and baseline
 - lightweight secret-pattern scan in the theme source
 - runtime dependency audit for npm packages
 - runtime dependency audit for Composer packages when `composer` is installed
@@ -161,11 +164,42 @@ ssh mrndev-stack-manager@167.99.54.77 \
 
 ### Browser Smoke QA
 
+Preferred universal runner (works from any repo on this computer):
+
+```bash
+/Users/khofmeyer/Development/MRN/scripts/mrn-smoke.sh --scope public
+```
+
+Use `--scope full` when auth/admin flows or data-changing admin workflows are part of scope:
+
+```bash
+/Users/khofmeyer/Development/MRN/scripts/mrn-smoke.sh --scope full
+```
+
+It auto-detects Local site path from current working directory and falls back to the stack local site.
+Use `--require-structure 1` when you want strict shell/content selector checks in public smoke mode.
+
 Run browser-based smoke checks against the Local stack site:
 
 ```bash
 /Users/khofmeyer/Development/MRN/stack/scripts/qa-playwright-local-stack-site.sh
 ```
+
+When Playwright smoke is required vs optional:
+
+- Required:
+  - frontend rendering/output changes
+  - login/authentication flow changes
+  - role/capability/permission changes
+  - critical admin workflows with data mutation
+- Optional:
+  - routine admin-only visual/style polish with no auth, capability, or data-handling impact
+  - copy/content-only admin adjustments
+
+If optional and skipped:
+
+- mark as `Skipped` in release QA with a one-line scope reason
+- keep syntax/security checks and targeted manual verification in place
 
 What it checks:
 
@@ -260,7 +294,29 @@ npx playwright install chromium
 
 If you are running browser smoke from Codex and the sandboxed launch is blocked by macOS, rerun the same Playwright command outside the sandbox or approve the escalated browser run instead of changing the project first.
 
+## Shared PHP Static Analysis Defaults
+
+Use the shared runners so PHPStan behavior stays consistent across stack and site repos:
+
+```bash
+/Users/khofmeyer/Development/MRN/scripts/mrn-phpstan.sh <path>
+/Users/khofmeyer/Development/MRN/scripts/mrn-code-qa.sh <path>
+```
+
+Default behavior:
+
+- uses `/Users/khofmeyer/Development/MRN/vendor/bin/phpstan`
+- uses `/Users/khofmeyer/Development/MRN/phpstan.neon.dist`
+- default strictness is `level 3`
+- includes `/Users/khofmeyer/Development/MRN/phpstan-baseline.neon` so known legacy findings do not hide new issues
+- supports `MRN_STACK_ROOT`, `MRN_PHPSTAN_CONFIG`, and `MRN_PHPSTAN_MEMORY_LIMIT` overrides
+
 ## Notes
 
 - PHPCS now runs locally under the current PHP version; treat new PHPCS findings as release blockers unless explicitly waived.
+- PHPStan policy:
+  - Prefer the shared runner (`/Users/khofmeyer/Development/MRN/scripts/mrn-phpstan.sh`) so site repos use the same installed binary and config.
+  - `Required` when the shared runner/config are available in the current environment.
+  - If PHPStan is not available, mark as `Skipped` with reason; do not auto-fail release QA on missing tooling alone.
+  - If PHPStan is configured and runnable, failures are release blockers unless explicitly waived.
 - Use this toolkit as the default baseline before packaging or release work.
