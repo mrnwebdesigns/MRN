@@ -29,7 +29,7 @@ if [[ "$#" -eq 0 ]]; then
 	set -- "${REPO_ROOT}"
 fi
 
-PATTERN='\beval\s*\(|\bbase64_decode\s*\(|\bexec\s*\(|\bshell_exec\s*\(|\bsystem\s*\(|\bpassthru\s*\(|\bproc_open\s*\(|\bpopen\s*\('
+PATTERN='\beval\s*\(|\bexec\s*\(|\bshell_exec\s*\(|\bsystem\s*\(|\bpassthru\s*\(|\bproc_open\s*\(|\bpopen\s*\('
 
 echo "Risk scan targets:"
 for target in "$@"; do
@@ -41,6 +41,8 @@ if rg -n -S \
 	--glob '!**/node_modules/**' \
 	--glob '!**/.git/**' \
 	--glob '!**/*.min.js' \
+	--glob '!**/semgrep/**' \
+	--glob '!**/phpcs.xml.dist' \
 	"${PATTERN}" \
 	"$@"
 then

@@ -77,7 +77,7 @@ done
 
 [[ -n "${SITE_HOSTNAME}" ]] || fail "--site-hostname is required."
 
-for required in base64 date grep sed ssh tr; do
+for required in date grep sed ssh tr; do
 	command -v "${required}" >/dev/null 2>&1 || fail "Required command not found: ${required}"
 done
 
@@ -102,11 +102,22 @@ run_site_wp() {
 
 run_site_php() {
 	local code="$1"
-	local code_b64 wrapper
+	local tmp_file
+	local status=0
 
-	code_b64="$(printf '%s' "${code}" | base64 | tr -d '\n')"
-	wrapper="\$code = base64_decode(\"${code_b64}\", true); if (\$code === false) { fwrite(STDERR, \"Invalid base64 PHP payload.\\n\"); exit(1); } eval(\$code);"
-	run_site_wp "eval '${wrapper}'"
+	tmp_file="$(run_site_ssh "mktemp /tmp/mrn-preflight-live-site-deploy.XXXXXX.php" | tr -d '\r')"
+	[[ -n "${tmp_file}" ]] || fail "Unable to create remote temporary PHP file."
+
+	# Avoid dynamic eval by uploading the payload to a temp file and running wp eval-file.
+	run_site_ssh "cat > '${tmp_file}' <<'PHP'
+<?php
+${code}
+PHP"
+
+	run_site_wp "eval-file '${tmp_file}'" || status=$?
+	run_site_ssh "rm -f '${tmp_file}'" >/dev/null 2>&1 || true
+
+	return "${status}"
 }
 
 read_kv_output() {
