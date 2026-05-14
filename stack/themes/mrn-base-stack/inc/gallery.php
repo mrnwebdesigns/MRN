@@ -165,8 +165,363 @@ function mrn_base_stack_register_gallery_taxonomies() {
 			'rewrite'            => false,
 		)
 	);
+
+	register_taxonomy(
+		'gallery_media_tag',
+		array( 'attachment' ),
+		array(
+			'labels'             => array(
+				'name'                       => __( 'Media Tags', 'mrn-base-stack' ),
+				'singular_name'              => __( 'Media Tag', 'mrn-base-stack' ),
+				'search_items'               => __( 'Search Media Tags', 'mrn-base-stack' ),
+				'popular_items'              => __( 'Popular Media Tags', 'mrn-base-stack' ),
+				'all_items'                  => __( 'All Media Tags', 'mrn-base-stack' ),
+				'edit_item'                  => __( 'Edit Media Tag', 'mrn-base-stack' ),
+				'update_item'                => __( 'Update Media Tag', 'mrn-base-stack' ),
+				'add_new_item'               => __( 'Add New Media Tag', 'mrn-base-stack' ),
+				'new_item_name'              => __( 'New Media Tag Name', 'mrn-base-stack' ),
+				'separate_items_with_commas' => __( 'Separate media tags with commas', 'mrn-base-stack' ),
+				'add_or_remove_items'        => __( 'Add or remove media tags', 'mrn-base-stack' ),
+				'choose_from_most_used'      => __( 'Choose from the most used media tags', 'mrn-base-stack' ),
+				'menu_name'                  => __( 'Media Tags', 'mrn-base-stack' ),
+			),
+			'public'             => false,
+			'publicly_queryable' => false,
+			'hierarchical'       => false,
+			'show_ui'            => $show_ui,
+			'show_in_menu'       => false,
+			'show_admin_column'  => $show_ui,
+			'show_in_rest'       => true,
+			'show_tagcloud'      => $show_ui,
+			'meta_box_cb'        => false,
+			'rewrite'            => false,
+		)
+	);
 }
 add_action( 'init', 'mrn_base_stack_register_gallery_taxonomies' );
+
+/**
+ * Add gallery admin submenu links for media-level taxonomy management.
+ *
+ * @return void
+ */
+function mrn_base_stack_register_gallery_media_taxonomy_submenus() {
+	$taxonomy = get_taxonomy( 'gallery_media_tag' );
+	if ( ! $taxonomy || empty( $taxonomy->show_ui ) ) {
+		return;
+	}
+
+	$capability = isset( $taxonomy->cap->manage_terms ) ? $taxonomy->cap->manage_terms : 'manage_categories';
+
+	add_submenu_page(
+		'edit.php?post_type=gallery',
+		__( 'Media Tags', 'mrn-base-stack' ),
+		__( 'Media Tags', 'mrn-base-stack' ),
+		$capability,
+		'edit-tags.php?taxonomy=gallery_media_tag&post_type=gallery'
+	);
+}
+add_action( 'admin_menu', 'mrn_base_stack_register_gallery_media_taxonomy_submenus', 30 );
+
+/**
+ * Ensure Gallery "Re-Order" remains last in the submenu.
+ *
+ * @return void
+ */
+function mrn_base_stack_reorder_gallery_submenu_items() {
+	global $submenu;
+
+	$parent_menu = 'edit.php?post_type=gallery';
+	if ( ! isset( $submenu[ $parent_menu ] ) || ! is_array( $submenu[ $parent_menu ] ) ) {
+		return;
+	}
+
+	$media_slug   = 'edit-tags.php?taxonomy=gallery_media_tag&post_type=gallery';
+	$media_index  = null;
+	$reorder_item = null;
+
+	foreach ( $submenu[ $parent_menu ] as $index => $item ) {
+		$slug       = isset( $item[2] ) ? (string) $item[2] : '';
+		$title      = isset( $item[0] ) ? wp_strip_all_tags( (string) $item[0] ) : '';
+		$slug_check = strtolower( $slug );
+		$label      = strtolower( $title );
+
+		if ( $media_slug === $slug ) {
+			$media_index = $index;
+		}
+
+		if (
+			false !== strpos( $slug_check, 're-order' )
+			|| false !== strpos( $slug_check, 'reorder' )
+			|| false !== strpos( $label, 're-order' )
+			|| false !== strpos( $label, 'reorder' )
+		) {
+			$reorder_item = $item;
+		}
+	}
+
+	if ( null === $media_index || ! is_array( $reorder_item ) ) {
+		return;
+	}
+
+	$media_item = $submenu[ $parent_menu ][ $media_index ];
+	unset( $submenu[ $parent_menu ][ $media_index ] );
+
+	$items            = array_values( $submenu[ $parent_menu ] );
+	$reorder_position = null;
+
+	foreach ( $items as $index => $item ) {
+		$slug       = isset( $item[2] ) ? (string) $item[2] : '';
+		$title      = isset( $item[0] ) ? wp_strip_all_tags( (string) $item[0] ) : '';
+		$slug_check = strtolower( $slug );
+		$label      = strtolower( $title );
+
+		if (
+			false !== strpos( $slug_check, 're-order' )
+			|| false !== strpos( $slug_check, 'reorder' )
+			|| false !== strpos( $label, 're-order' )
+			|| false !== strpos( $label, 'reorder' )
+		) {
+			$reorder_position = $index;
+			break;
+		}
+	}
+
+	if ( null === $reorder_position ) {
+		$items[] = $media_item;
+		$submenu[ $parent_menu ] = $items;
+		return;
+	}
+
+	array_splice( $items, $reorder_position, 0, array( $media_item ) );
+	$submenu[ $parent_menu ] = $items;
+}
+add_action( 'admin_menu', 'mrn_base_stack_reorder_gallery_submenu_items', 999 );
+
+/**
+ * Keep the Gallery menu highlighted when managing media tags.
+ *
+ * @param string $parent_file Current parent file slug.
+ * @return string
+ */
+function mrn_base_stack_set_gallery_media_tag_admin_menu_parent( $parent_file ) {
+	global $pagenow, $submenu_file;
+
+	if ( 'edit-tags.php' !== $pagenow ) {
+		return $parent_file;
+	}
+
+	$taxonomy = isset( $_GET['taxonomy'] ) ? sanitize_key( wp_unslash( $_GET['taxonomy'] ) ) : '';
+	if ( 'gallery_media_tag' !== $taxonomy ) {
+		return $parent_file;
+	}
+
+	$parent_file  = 'edit.php?post_type=gallery';
+	$submenu_file = 'edit-tags.php?taxonomy=gallery_media_tag&post_type=gallery';
+
+	return $parent_file;
+}
+add_filter( 'parent_file', 'mrn_base_stack_set_gallery_media_tag_admin_menu_parent' );
+
+/**
+ * Get the canonical gallery taxonomy hierarchy for shared gallery/media labels.
+ *
+ * @return array<string, string[]>
+ */
+function mrn_base_stack_get_gallery_taxonomy_seed_hierarchy() {
+	return array(
+		'Industry'         => array(
+			'Non-Profit',
+			'Trade Services',
+			'Construction',
+			'Education',
+			'Retail',
+			'Technology',
+			'Manufacturing and Industrial',
+			'Health and Wellness',
+			'Other',
+			'Professional Services',
+			'Financial',
+			'Women owned',
+			'Government',
+		),
+		'Website Features' => array(
+			'eCommerce',
+			'Blogs',
+			'Resource Library',
+			'Resource Map',
+			'Third-Party Login Integration',
+			'Single-Page',
+			'Branding',
+			'Marketing',
+			'Translation',
+			'Event registration',
+			'LMS',
+		),
+	);
+}
+
+/**
+ * Create or re-parent a taxonomy term by name.
+ *
+ * @param string $taxonomy Taxonomy slug.
+ * @param string $name Term label.
+ * @param int    $parent Parent term ID.
+ * @return int|WP_Error
+ */
+function mrn_base_stack_upsert_taxonomy_term_by_name( $taxonomy, $name, $parent = 0 ) {
+	$taxonomy = (string) $taxonomy;
+	$name     = trim( (string) $name );
+	$parent   = (int) $parent;
+
+	if ( '' === $taxonomy || '' === $name ) {
+		return new WP_Error( 'invalid_term_data', 'Invalid taxonomy term data.' );
+	}
+
+	$existing = term_exists( $name, $taxonomy, $parent );
+	if ( is_array( $existing ) && ! empty( $existing['term_id'] ) ) {
+		return (int) $existing['term_id'];
+	}
+
+	if ( is_int( $existing ) && $existing > 0 ) {
+		return $existing;
+	}
+
+	$existing_any = term_exists( $name, $taxonomy );
+	if ( is_array( $existing_any ) && ! empty( $existing_any['term_id'] ) ) {
+		$term_id = (int) $existing_any['term_id'];
+		$term    = get_term( $term_id, $taxonomy );
+
+		if ( $term instanceof WP_Term && (int) $term->parent !== $parent ) {
+			$updated = wp_update_term(
+				$term_id,
+				$taxonomy,
+				array(
+					'parent' => $parent,
+				)
+			);
+			if ( is_wp_error( $updated ) ) {
+				return $updated;
+			}
+		}
+
+		return $term_id;
+	}
+
+	if ( is_int( $existing_any ) && $existing_any > 0 ) {
+		$term_id = $existing_any;
+		$term    = get_term( $term_id, $taxonomy );
+		if ( $term instanceof WP_Term && (int) $term->parent !== $parent ) {
+			$updated = wp_update_term(
+				$term_id,
+				$taxonomy,
+				array(
+					'parent' => $parent,
+				)
+			);
+			if ( is_wp_error( $updated ) ) {
+				return $updated;
+			}
+		}
+
+		return $term_id;
+	}
+
+	$created = wp_insert_term(
+		$name,
+		$taxonomy,
+		array(
+			'parent' => $parent,
+		)
+	);
+
+	if ( is_wp_error( $created ) || empty( $created['term_id'] ) ) {
+		return is_wp_error( $created ) ? $created : new WP_Error( 'term_create_failed', 'Failed to create taxonomy term.' );
+	}
+
+	return (int) $created['term_id'];
+}
+
+/**
+ * Ensure the configured hierarchy exists for a taxonomy.
+ *
+ * Hierarchical taxonomies preserve parent/child structure. Flat taxonomies
+ * receive the same labels without parent assignment.
+ *
+ * @param string                   $taxonomy Taxonomy slug.
+ * @param array<string, string[]>  $hierarchy Canonical hierarchy.
+ * @return bool
+ */
+function mrn_base_stack_seed_gallery_taxonomy_hierarchy( $taxonomy, array $hierarchy ) {
+	$taxonomy_object = get_taxonomy( $taxonomy );
+	if ( ! $taxonomy_object ) {
+		return false;
+	}
+
+	$is_hierarchical = ! empty( $taxonomy_object->hierarchical );
+	$has_error       = false;
+
+	foreach ( $hierarchy as $parent_name => $children ) {
+		$parent_id = mrn_base_stack_upsert_taxonomy_term_by_name( $taxonomy, $parent_name, 0 );
+		if ( is_wp_error( $parent_id ) || $parent_id <= 0 ) {
+			$has_error = true;
+			continue;
+		}
+
+		$child_parent = $is_hierarchical ? (int) $parent_id : 0;
+		foreach ( $children as $child_name ) {
+			$child_id = mrn_base_stack_upsert_taxonomy_term_by_name( $taxonomy, $child_name, $child_parent );
+			if ( is_wp_error( $child_id ) || $child_id <= 0 ) {
+				$has_error = true;
+			}
+		}
+	}
+
+	return ! $has_error;
+}
+
+/**
+ * Ensure gallery and image taxonomy seed terms exist stack-wide.
+ *
+ * @return void
+ */
+function mrn_base_stack_migrate_gallery_taxonomy_hierarchy() {
+	$migration_version = '2026-05-14-v1';
+	$option_key        = 'mrn_base_stack_gallery_taxonomy_migration_version';
+	$stored_version    = (string) get_option( $option_key, '' );
+
+	if ( $stored_version === $migration_version ) {
+		return;
+	}
+
+	$hierarchy = mrn_base_stack_get_gallery_taxonomy_seed_hierarchy();
+	$taxonomies_to_seed = array(
+		'gallery_tag',
+		'gallery_media_category',
+	);
+
+	$all_seeded = true;
+	foreach ( $taxonomies_to_seed as $taxonomy ) {
+		if ( ! taxonomy_exists( $taxonomy ) ) {
+			continue;
+		}
+
+		if ( ! mrn_base_stack_seed_gallery_taxonomy_hierarchy( $taxonomy, $hierarchy ) ) {
+			$all_seeded = false;
+		}
+	}
+
+	if ( ! $all_seeded ) {
+		return;
+	}
+
+	if ( false === get_option( $option_key, false ) ) {
+		add_option( $option_key, $migration_version, '', 'no' );
+	} else {
+		update_option( $option_key, $migration_version );
+	}
+}
+add_action( 'init', 'mrn_base_stack_migrate_gallery_taxonomy_hierarchy', 20 );
 
 /**
  * Register gallery-specific ACF fields.
@@ -353,6 +708,25 @@ function mrn_base_stack_register_gallery_field_group() {
 							'load_terms'    => 0,
 							'return_format' => 'id',
 							'instructions'  => 'Search or choose categories for the selected media item. These power the category tabs on the gallery page.',
+							'wrapper'       => array(
+								'width' => '50',
+							),
+						),
+						array(
+							'key'           => 'field_mrn_gallery_item_media_tags',
+							'label'         => 'Media Tags',
+							'name'          => 'media_tags',
+							'aria-label'    => '',
+							'type'          => 'taxonomy',
+							'taxonomy'      => 'gallery_media_tag',
+							'field_type'    => 'multi_select',
+							'ui'            => 1,
+							'ajax'          => 1,
+							'add_term'      => 1,
+							'save_terms'    => 0,
+							'load_terms'    => 0,
+							'return_format' => 'id',
+							'instructions'  => 'Search or choose tags for the selected media item.',
 							'wrapper'       => array(
 								'width' => '50',
 							),
@@ -1087,7 +1461,7 @@ function mrn_base_stack_normalize_loaded_gallery_items_value( $value, $post_id, 
 add_filter( 'acf/load_value/key=field_mrn_gallery_items', 'mrn_base_stack_normalize_loaded_gallery_items_value', 10, 3 );
 
 /**
- * Sync gallery row category selections onto the selected attachment items.
+ * Sync gallery row taxonomy selections onto the selected attachment items.
  *
  * @param mixed $post_id ACF save target.
  * @return void
@@ -1104,6 +1478,7 @@ function mrn_base_stack_sync_gallery_attachment_categories( $post_id ) {
 	}
 
 	$attachment_term_map = array();
+	$attachment_tag_map  = array();
 
 	foreach ( $rows as $index => $row ) {
 		if ( ! is_array( $row ) ) {
@@ -1133,12 +1508,18 @@ function mrn_base_stack_sync_gallery_attachment_categories( $post_id ) {
 			$legacy_filters = get_post_meta( $post_id, 'gallery_items_' . $index . '_filters', true );
 			$term_ids       = mrn_base_stack_get_gallery_media_category_ids_from_legacy_filters( $legacy_filters );
 		}
+		$tag_ids = isset( $row['media_tags'] ) ? wp_parse_id_list( $row['media_tags'] ) : array();
 
 		update_post_meta( $post_id, 'gallery_items_' . $index . '_media_categories', $term_ids );
 		update_post_meta( $post_id, '_gallery_items_' . $index . '_media_categories', 'field_mrn_gallery_item_media_categories' );
+		update_post_meta( $post_id, 'gallery_items_' . $index . '_media_tags', $tag_ids );
+		update_post_meta( $post_id, '_gallery_items_' . $index . '_media_tags', 'field_mrn_gallery_item_media_tags' );
 
 		if ( ! isset( $attachment_term_map[ $attachment_id ] ) ) {
 			$attachment_term_map[ $attachment_id ] = array();
+		}
+		if ( ! isset( $attachment_tag_map[ $attachment_id ] ) ) {
+			$attachment_tag_map[ $attachment_id ] = array();
 		}
 
 		$attachment_term_map[ $attachment_id ] = array_values(
@@ -1149,10 +1530,21 @@ function mrn_base_stack_sync_gallery_attachment_categories( $post_id ) {
 				)
 			)
 		);
+		$attachment_tag_map[ $attachment_id ] = array_values(
+			array_unique(
+				array_merge(
+					$attachment_tag_map[ $attachment_id ],
+					$tag_ids
+				)
+			)
+		);
 	}
 
 	foreach ( $attachment_term_map as $attachment_id => $term_ids ) {
 		wp_set_object_terms( (int) $attachment_id, wp_parse_id_list( $term_ids ), 'gallery_media_category', false );
+	}
+	foreach ( $attachment_tag_map as $attachment_id => $tag_ids ) {
+		wp_set_object_terms( (int) $attachment_id, wp_parse_id_list( $tag_ids ), 'gallery_media_tag', false );
 	}
 }
 add_action( 'acf/save_post', 'mrn_base_stack_sync_gallery_attachment_categories', 20 );
