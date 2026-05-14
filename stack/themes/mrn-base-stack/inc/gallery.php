@@ -289,11 +289,13 @@ function mrn_base_stack_reorder_gallery_submenu_items() {
 
 	if ( null === $reorder_position ) {
 		$items[] = $media_item;
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- updating submenu order requires writing to the global submenu map.
 		$submenu[ $parent_menu ] = $items;
 		return;
 	}
 
 	array_splice( $items, $reorder_position, 0, array( $media_item ) );
+	// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- updating submenu order requires writing to the global submenu map.
 	$submenu[ $parent_menu ] = $items;
 }
 add_action( 'admin_menu', 'mrn_base_stack_reorder_gallery_submenu_items', 999 );
@@ -311,12 +313,14 @@ function mrn_base_stack_set_gallery_media_tag_admin_menu_parent( $parent_file ) 
 		return $parent_file;
 	}
 
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only menu highlighting based on current admin query args.
 	$taxonomy = isset( $_GET['taxonomy'] ) ? sanitize_key( wp_unslash( $_GET['taxonomy'] ) ) : '';
 	if ( 'gallery_media_tag' !== $taxonomy ) {
 		return $parent_file;
 	}
 
-	$parent_file  = 'edit.php?post_type=gallery';
+	$parent_file = 'edit.php?post_type=gallery';
+	// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- WordPress admin menu highlighting requires setting this global.
 	$submenu_file = 'edit-tags.php?taxonomy=gallery_media_tag&post_type=gallery';
 
 	return $parent_file;
@@ -366,25 +370,25 @@ function mrn_base_stack_get_gallery_taxonomy_seed_hierarchy() {
  *
  * @param string $taxonomy Taxonomy slug.
  * @param string $name Term label.
- * @param int    $parent Parent term ID.
+ * @param int    $parent_id Parent term ID.
  * @return int|WP_Error
  */
-function mrn_base_stack_upsert_taxonomy_term_by_name( $taxonomy, $name, $parent = 0 ) {
-	$taxonomy = (string) $taxonomy;
-	$name     = trim( (string) $name );
-	$parent   = (int) $parent;
+function mrn_base_stack_upsert_taxonomy_term_by_name( $taxonomy, $name, $parent_id = 0 ) {
+	$taxonomy  = (string) $taxonomy;
+	$name      = trim( (string) $name );
+	$parent_id = (int) $parent_id;
 
 	if ( '' === $taxonomy || '' === $name ) {
 		return new WP_Error( 'invalid_term_data', 'Invalid taxonomy term data.' );
 	}
 
-	$existing = term_exists( $name, $taxonomy, $parent );
+	$existing = term_exists( $name, $taxonomy, $parent_id );
 	if ( is_array( $existing ) && ! empty( $existing['term_id'] ) ) {
 		return (int) $existing['term_id'];
 	}
 
-	if ( is_int( $existing ) && $existing > 0 ) {
-		return $existing;
+	if ( false !== $existing && null !== $existing && ! is_array( $existing ) ) {
+		return (int) $existing;
 	}
 
 	$existing_any = term_exists( $name, $taxonomy );
@@ -392,12 +396,12 @@ function mrn_base_stack_upsert_taxonomy_term_by_name( $taxonomy, $name, $parent 
 		$term_id = (int) $existing_any['term_id'];
 		$term    = get_term( $term_id, $taxonomy );
 
-		if ( $term instanceof WP_Term && (int) $term->parent !== $parent ) {
+		if ( $term instanceof WP_Term && (int) $term->parent !== $parent_id ) {
 			$updated = wp_update_term(
 				$term_id,
 				$taxonomy,
 				array(
-					'parent' => $parent,
+					'parent' => $parent_id,
 				)
 			);
 			if ( is_wp_error( $updated ) ) {
@@ -408,15 +412,15 @@ function mrn_base_stack_upsert_taxonomy_term_by_name( $taxonomy, $name, $parent 
 		return $term_id;
 	}
 
-	if ( is_int( $existing_any ) && $existing_any > 0 ) {
-		$term_id = $existing_any;
+	if ( false !== $existing_any && null !== $existing_any && ! is_array( $existing_any ) ) {
+		$term_id = (int) $existing_any;
 		$term    = get_term( $term_id, $taxonomy );
-		if ( $term instanceof WP_Term && (int) $term->parent !== $parent ) {
+		if ( $term instanceof WP_Term && (int) $term->parent !== $parent_id ) {
 			$updated = wp_update_term(
 				$term_id,
 				$taxonomy,
 				array(
-					'parent' => $parent,
+					'parent' => $parent_id,
 				)
 			);
 			if ( is_wp_error( $updated ) ) {
@@ -431,7 +435,7 @@ function mrn_base_stack_upsert_taxonomy_term_by_name( $taxonomy, $name, $parent 
 		$name,
 		$taxonomy,
 		array(
-			'parent' => $parent,
+			'parent' => $parent_id,
 		)
 	);
 
@@ -448,8 +452,8 @@ function mrn_base_stack_upsert_taxonomy_term_by_name( $taxonomy, $name, $parent 
  * Hierarchical taxonomies preserve parent/child structure. Flat taxonomies
  * receive the same labels without parent assignment.
  *
- * @param string                   $taxonomy Taxonomy slug.
- * @param array<string, string[]>  $hierarchy Canonical hierarchy.
+ * @param string                  $taxonomy Taxonomy slug.
+ * @param array<string, string[]> $hierarchy Canonical hierarchy.
  * @return bool
  */
 function mrn_base_stack_seed_gallery_taxonomy_hierarchy( $taxonomy, array $hierarchy ) {
@@ -494,7 +498,7 @@ function mrn_base_stack_migrate_gallery_taxonomy_hierarchy() {
 		return;
 	}
 
-	$hierarchy = mrn_base_stack_get_gallery_taxonomy_seed_hierarchy();
+	$hierarchy          = mrn_base_stack_get_gallery_taxonomy_seed_hierarchy();
 	$taxonomies_to_seed = array(
 		'gallery_tag',
 		'gallery_media_category',
@@ -1530,7 +1534,7 @@ function mrn_base_stack_sync_gallery_attachment_categories( $post_id ) {
 				)
 			)
 		);
-		$attachment_tag_map[ $attachment_id ] = array_values(
+		$attachment_tag_map[ $attachment_id ]  = array_values(
 			array_unique(
 				array_merge(
 					$attachment_tag_map[ $attachment_id ],
