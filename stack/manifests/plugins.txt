@@ -22,6 +22,7 @@ media-library-organizer
 /home/mrndev-stack-manager/stack/packages/mrn-google-fonts.zip
 /home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip
 /home/mrndev-stack-manager/stack/packages/mrn-media-bulk-tools.zip
+/home/mrndev-stack-manager/stack/packages/mrn-recaptcha-enterprise-manager.zip
 /home/mrndev-stack-manager/stack/packages/mrn-seo-helper.zip
 /home/mrndev-stack-manager/stack/packages/mrn-universal-sticky-bar.zip
 post-duplicator

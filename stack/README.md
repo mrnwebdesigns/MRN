@@ -44,6 +44,12 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 
 1. Edit `manifests/plugins.txt` with your plugin slugs or zip URLs.
 2. Review defaults inside `scripts/site-bootstrap.sh` (timezone, permalink, admin email).
+   - Optional stack-managed reCAPTCHA Enterprise secret files consumed by bootstrap:
+   - `secrets/recaptcha-enterprise-project-id.txt`
+   - `secrets/recaptcha-enterprise-service-account-email.txt`
+   - `secrets/recaptcha-enterprise-private-key.pem`
+   - `secrets/recaptcha-enterprise-allowed-domains.txt` (optional)
+   - `secrets/recaptcha-enterprise-default-integration-type.txt` (optional)
 3. Add optional plugin import scripts to `configs/importers/`.
 4. Manage importer mappings in `manifests/importers.txt` (or through Stack Manager UI).
    - Supported by default importer script:

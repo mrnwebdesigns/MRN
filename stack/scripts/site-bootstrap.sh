@@ -49,6 +49,16 @@ SLACK_USERNAME="${STACK_SLACK_USERNAME:-MRN Bootstrap}"
 SLACK_ICON_EMOJI="${STACK_SLACK_ICON_EMOJI:-:rocket:}"
 SENDGRID_MANAGEMENT_API_KEY="${MRN_SENDGRID_MANAGEMENT_API_KEY:-${STACK_SENDGRID_MANAGEMENT_API_KEY:-}}"
 SENDGRID_MANAGEMENT_API_KEY_FILE="${STACK_SENDGRID_MANAGEMENT_API_KEY_FILE:-${STACK_ROOT}/secrets/sendgrid-management-api-key.txt}"
+RECAPTCHA_ENTERPRISE_PROJECT_ID="${MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID:-${STACK_RECAPTCHA_ENTERPRISE_PROJECT_ID:-}}"
+RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE="${STACK_RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE:-${STACK_ROOT}/secrets/recaptcha-enterprise-project-id.txt}"
+RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL="${MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL:-${STACK_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL:-}}"
+RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL_FILE="${STACK_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL_FILE:-${STACK_ROOT}/secrets/recaptcha-enterprise-service-account-email.txt}"
+RECAPTCHA_ENTERPRISE_PRIVATE_KEY="${MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY:-${STACK_RECAPTCHA_ENTERPRISE_PRIVATE_KEY:-}}"
+RECAPTCHA_ENTERPRISE_PRIVATE_KEY_FILE="${STACK_RECAPTCHA_ENTERPRISE_PRIVATE_KEY_FILE:-${STACK_ROOT}/secrets/recaptcha-enterprise-private-key.pem}"
+RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS="${MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS:-${STACK_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS:-}}"
+RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS_FILE="${STACK_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS_FILE:-${STACK_ROOT}/secrets/recaptcha-enterprise-allowed-domains.txt}"
+RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE="${MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE:-${STACK_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE:-}}"
+RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE_FILE="${STACK_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE_FILE:-${STACK_ROOT}/secrets/recaptcha-enterprise-default-integration-type.txt}"
 
 if [[ -z "${SLACK_WEBHOOK_URL}" && -f "${SLACK_WEBHOOK_URL_FILE}" ]]; then
   SLACK_WEBHOOK_URL="$(tr -d '\r\n' < "${SLACK_WEBHOOK_URL_FILE}")"
@@ -56,6 +66,26 @@ fi
 
 if [[ -z "${SENDGRID_MANAGEMENT_API_KEY}" && -f "${SENDGRID_MANAGEMENT_API_KEY_FILE}" ]]; then
   SENDGRID_MANAGEMENT_API_KEY="$(tr -d '\r\n' < "${SENDGRID_MANAGEMENT_API_KEY_FILE}")"
+fi
+
+if [[ -z "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" && -f "${RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE}" ]]; then
+  RECAPTCHA_ENTERPRISE_PROJECT_ID="$(tr -d '\r\n' < "${RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE}")"
+fi
+
+if [[ -z "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" && -f "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL_FILE}" ]]; then
+  RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL="$(tr -d '\r\n' < "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL_FILE}")"
+fi
+
+if [[ -z "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY}" && -f "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY_FILE}" ]]; then
+  RECAPTCHA_ENTERPRISE_PRIVATE_KEY="$(tr -d '\r' < "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY_FILE}")"
+fi
+
+if [[ -z "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" && -f "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS_FILE}" ]]; then
+  RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS="$(tr -d '\r\n' < "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS_FILE}")"
+fi
+
+if [[ -z "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE}" && -f "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE_FILE}" ]]; then
+  RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE="$(tr -d '\r\n' < "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE_FILE}")"
 fi
 
 while [[ $# -gt 0 ]]; do
@@ -1326,6 +1356,8 @@ install_themes() {
 }
 
 apply_wp_defaults() {
+  local recaptcha_private_key_literal recaptcha_integration_type
+
   run_wp option update permalink_structure '/%postname%/'
   # Discourage search engines from indexing bootstrap sites by default.
   run_wp option update blog_public 0
@@ -1337,6 +1369,52 @@ apply_wp_defaults() {
   if [[ -n "${SENDGRID_MANAGEMENT_API_KEY}" ]]; then
     if ! run_wp config set MRN_SENDGRID_MANAGEMENT_API_KEY "${SENDGRID_MANAGEMENT_API_KEY}" --type=constant; then
       add_warning "Failed to set MRN_SENDGRID_MANAGEMENT_API_KEY in wp-config.php"
+    fi
+  fi
+  # Expose stack-managed reCAPTCHA Enterprise credentials for code-locked plugin mode.
+  if [[ -n "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" ]]; then
+    if ! run_wp config set MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" --type=constant; then
+      add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID in wp-config.php"
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" ]]; then
+    if ! run_wp config set MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" --type=constant; then
+      add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL in wp-config.php"
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY}" ]]; then
+    recaptcha_private_key_literal="$(
+      printf '%s' "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY}" \
+        | tr -d '\r' \
+        | sed ':a;N;$!ba;s/\n/\\n/g'
+    )"
+    if [[ -n "${recaptcha_private_key_literal}" ]]; then
+      if ! run_wp config set MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY "${recaptcha_private_key_literal}" --type=constant; then
+        add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY in wp-config.php"
+      fi
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" ]]; then
+    if ! run_wp config set MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" --type=constant; then
+      add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS in wp-config.php"
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE}" ]]; then
+    recaptcha_integration_type="$(
+      printf '%s' "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE}" \
+        | tr -d '\r\n' \
+        | tr '[:lower:]' '[:upper:]'
+    )"
+    if [[ "${recaptcha_integration_type}" == "SCORE" || "${recaptcha_integration_type}" == "CHECKBOX" ]]; then
+      if ! run_wp config set MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE "${recaptcha_integration_type}" --type=constant; then
+        add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE in wp-config.php"
+      fi
+    else
+      add_warning "Skipped MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE: expected SCORE or CHECKBOX."
     fi
   fi
 }
