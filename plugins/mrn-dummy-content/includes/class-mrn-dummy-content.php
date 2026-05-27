@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class MRN_Dummy_Content {
-	const VERSION = '0.1.14';
+	const VERSION = '0.1.17';
 	const NONCE_ACTION = 'mrn_dummy_content_generate';
 	const CUSTOM_NONCE_ACTION = 'mrn_dummy_content_generate_custom';
 	const DELETE_NONCE_ACTION = 'mrn_dummy_content_delete';
@@ -106,11 +106,19 @@ final class MRN_Dummy_Content {
 		$shell_size_variants   = self::get_shell_size_variants();
 		$generated             = self::get_generated_posts();
 		$placeholders          = self::get_placeholder_attachments();
+		$tutor_course_post_type = self::get_tutor_course_post_type();
+		$tutor_custom_items     = self::get_tutor_custom_item_options();
+		$tutor_custom_defaults  = self::get_default_tutor_custom_item_keys();
+		$tutor_default_sizes    = self::get_default_tutor_generation_sizes();
+		$has_tutor_course_type  = '' !== $tutor_course_post_type && isset( $custom_types[ $tutor_course_post_type ] );
 
 		$default_custom_post_type = isset( $custom_types['page'] ) ? 'page' : (string) array_key_first( $custom_types );
 		if ( '' === $default_custom_post_type ) {
 			$default_custom_post_type = 'post';
 		}
+
+		$default_is_tutor_course = $has_tutor_course_type && $default_custom_post_type === $tutor_course_post_type;
+		$tutor_custom_lookup     = array_fill_keys( $tutor_custom_defaults, true );
 		?>
 		<div class="wrap">
 			<?php self::render_tabbed_toolbar( $active_tab ); ?>
@@ -269,13 +277,47 @@ final class MRN_Dummy_Content {
 									</div>
 								</td>
 							</tr>
+							<?php if ( $has_tutor_course_type && ! empty( $tutor_custom_items ) ) : ?>
+							<tr data-mrn-dummy-tutor-option<?php echo $default_is_tutor_course ? '' : ' hidden'; ?>>
+								<th scope="row"><?php esc_html_e( 'Tutor LMS Content', 'mrn-dummy-content' ); ?></th>
+								<td>
+									<p class="description"><?php esc_html_e( 'Choose which Tutor LMS pieces to create for each course entry. Lessons and quizzes are created inside generated course topics.', 'mrn-dummy-content' ); ?></p>
+									<div class="mrn-dummy-layout-grid" data-mrn-dummy-tutor-items>
+										<?php foreach ( $tutor_custom_items as $item_key => $item_label ) : ?>
+											<label class="mrn-dummy-layout-choice">
+												<input type="checkbox" name="custom_tutor_items[]" value="<?php echo esc_attr( $item_key ); ?>" data-mrn-dummy-tutor-item="<?php echo esc_attr( $item_key ); ?>"<?php checked( isset( $tutor_custom_lookup[ $item_key ] ) ); ?><?php echo $default_is_tutor_course ? '' : ' disabled'; ?> />
+												<span><?php echo esc_html( $item_label ); ?></span>
+											</label>
+										<?php endforeach; ?>
+									</div>
+								</td>
+							</tr>
+							<tr data-mrn-dummy-tutor-option data-mrn-dummy-tutor-count-row="topics"<?php echo $default_is_tutor_course ? '' : ' hidden'; ?>>
+								<th scope="row"><label for="mrn-dummy-custom-tutor-topic-count"><?php esc_html_e( 'Topics Per Course', 'mrn-dummy-content' ); ?></label></th>
+								<td>
+									<input type="number" id="mrn-dummy-custom-tutor-topic-count" name="custom_tutor_topic_count" class="small-text" min="1" max="20" step="1" value="<?php echo esc_attr( (string) $tutor_default_sizes['topic_count'] ); ?>"<?php echo $default_is_tutor_course ? '' : ' disabled'; ?> />
+								</td>
+							</tr>
+							<tr data-mrn-dummy-tutor-option data-mrn-dummy-tutor-count-row="lessons"<?php echo $default_is_tutor_course ? '' : ' hidden'; ?>>
+								<th scope="row"><label for="mrn-dummy-custom-tutor-lesson-count"><?php esc_html_e( 'Lessons Per Topic', 'mrn-dummy-content' ); ?></label></th>
+								<td>
+									<input type="number" id="mrn-dummy-custom-tutor-lesson-count" name="custom_tutor_lessons_per_topic" class="small-text" min="1" max="20" step="1" value="<?php echo esc_attr( (string) $tutor_default_sizes['lessons_per_topic'] ); ?>"<?php echo $default_is_tutor_course ? '' : ' disabled'; ?> />
+								</td>
+							</tr>
+							<tr data-mrn-dummy-tutor-option data-mrn-dummy-tutor-count-row="quizzes"<?php echo $default_is_tutor_course ? '' : ' hidden'; ?>>
+								<th scope="row"><label for="mrn-dummy-custom-tutor-quiz-count"><?php esc_html_e( 'Quizzes Per Topic', 'mrn-dummy-content' ); ?></label></th>
+								<td>
+									<input type="number" id="mrn-dummy-custom-tutor-quiz-count" name="custom_tutor_quizzes_per_topic" class="small-text" min="0" max="10" step="1" value="<?php echo esc_attr( (string) $tutor_default_sizes['quizzes_per_topic'] ); ?>"<?php echo $default_is_tutor_course ? '' : ' disabled'; ?> />
+								</td>
+							</tr>
+							<?php endif; ?>
 						</tbody>
 					</table>
 
 				</form>
 			</div>
 		</div>
-		<?php self::render_tabbed_ui_script( $active_tab ); ?>
+		<?php self::render_tabbed_ui_script( $active_tab, $has_tutor_course_type ? $tutor_course_post_type : '' ); ?>
 		<?php
 	}
 
@@ -359,9 +401,11 @@ final class MRN_Dummy_Content {
 	 * Render styles and scripts for tab and custom-layout interactions.
 	 *
 	 * @param string $active_tab Active tab key.
+	 * @param string $tutor_course_post_type Tutor course post type, if available.
 	 * @return void
 	 */
-	private static function render_tabbed_ui_script( $active_tab ) {
+	private static function render_tabbed_ui_script( $active_tab, $tutor_course_post_type = '' ) {
+		$tutor_course_post_type = sanitize_key( (string) $tutor_course_post_type );
 		?>
 		<?php
 		if ( function_exists( 'mrn_sticky_toolbar_universal_css' ) ) {
@@ -623,6 +667,55 @@ final class MRN_Dummy_Content {
 				var postTypeSelect = document.getElementById('mrn-dummy-custom-post-type');
 				var pageOnlyRows = Array.prototype.slice.call(document.querySelectorAll('[data-mrn-dummy-page-option]'));
 				var layoutGroups = Array.prototype.slice.call(document.querySelectorAll('[data-mrn-layout-group]'));
+				var tutorRows = Array.prototype.slice.call(document.querySelectorAll('[data-mrn-dummy-tutor-option]'));
+				var tutorItemInputs = Array.prototype.slice.call(document.querySelectorAll('[data-mrn-dummy-tutor-item]'));
+				var tutorCountTopic = document.getElementById('mrn-dummy-custom-tutor-topic-count');
+				var tutorCountLesson = document.getElementById('mrn-dummy-custom-tutor-lesson-count');
+				var tutorCountQuiz = document.getElementById('mrn-dummy-custom-tutor-quiz-count');
+				var tutorCoursePostType = <?php echo wp_json_encode( $tutor_course_post_type ); ?>;
+
+				function findTutorItemInput(itemKey) {
+					for (var i = 0; i < tutorItemInputs.length; i++) {
+						if (tutorItemInputs[i].getAttribute('data-mrn-dummy-tutor-item') === itemKey) {
+							return tutorItemInputs[i];
+						}
+					}
+
+					return null;
+				}
+
+				function setTutorCountEnabled(input, isEnabled) {
+					if (!input) {
+						return;
+					}
+
+					input.disabled = !isEnabled;
+				}
+
+				function syncTutorDependencies(isTutorCourse) {
+					var topicsInput = findTutorItemInput('topics');
+					var lessonsInput = findTutorItemInput('lessons');
+					var quizzesInput = findTutorItemInput('quizzes');
+					var lessonAttachmentsInput = findTutorItemInput('lesson_attachments');
+
+					if (isTutorCourse && lessonAttachmentsInput && lessonAttachmentsInput.checked && lessonsInput && !lessonsInput.checked) {
+						lessonsInput.checked = true;
+					}
+
+					if (isTutorCourse && topicsInput && !topicsInput.checked) {
+						if ((lessonsInput && lessonsInput.checked) || (quizzesInput && quizzesInput.checked)) {
+							topicsInput.checked = true;
+						}
+					}
+
+					var hasTopics = !!(topicsInput && topicsInput.checked);
+					var hasLessons = !!(lessonsInput && lessonsInput.checked);
+					var hasQuizzes = !!(quizzesInput && quizzesInput.checked);
+
+					setTutorCountEnabled(tutorCountTopic, isTutorCourse && hasTopics);
+					setTutorCountEnabled(tutorCountLesson, isTutorCourse && hasLessons);
+					setTutorCountEnabled(tutorCountQuiz, isTutorCourse && hasQuizzes);
+				}
 
 				function syncCustomControls() {
 					if (!postTypeSelect) {
@@ -631,6 +724,7 @@ final class MRN_Dummy_Content {
 
 					var postType = postTypeSelect.value || '';
 					var isPage = postType === 'page';
+					var isTutorCourse = tutorCoursePostType && postType === tutorCoursePostType;
 
 					pageOnlyRows.forEach(function (row) {
 						row.hidden = !isPage;
@@ -646,11 +740,24 @@ final class MRN_Dummy_Content {
 							checkbox.disabled = !isActive;
 						});
 					});
+
+					tutorRows.forEach(function (row) {
+						row.hidden = !isTutorCourse;
+						Array.prototype.slice.call(row.querySelectorAll('select, input')).forEach(function (control) {
+							control.disabled = !isTutorCourse;
+						});
+					});
+
+					syncTutorDependencies(isTutorCourse);
 				}
 
 				if (postTypeSelect) {
 					postTypeSelect.addEventListener('change', syncCustomControls);
 				}
+
+				tutorItemInputs.forEach(function (input) {
+					input.addEventListener('change', syncCustomControls);
+				});
 
 				syncCustomControls();
 			})();
@@ -763,6 +870,551 @@ final class MRN_Dummy_Content {
 		}
 
 		return $lookup;
+	}
+
+	/**
+	 * Resolve the Tutor course post type when Tutor LMS is available.
+	 *
+	 * @return string
+	 */
+	private static function get_tutor_course_post_type() {
+		return self::get_tutor_runtime_post_type( 'course_post_type', 'courses' );
+	}
+
+	/**
+	 * Resolve the Tutor lesson post type when Tutor LMS is available.
+	 *
+	 * @return string
+	 */
+	private static function get_tutor_lesson_post_type() {
+		return self::get_tutor_runtime_post_type( 'lesson_post_type', 'lesson' );
+	}
+
+	/**
+	 * Resolve the Tutor quiz post type when Tutor LMS is available.
+	 *
+	 * @return string
+	 */
+	private static function get_tutor_quiz_post_type() {
+		return self::get_tutor_runtime_post_type( 'quiz_post_type', 'tutor_quiz' );
+	}
+
+	/**
+	 * Resolve the Tutor assignment post type when Tutor LMS is available.
+	 *
+	 * @return string
+	 */
+	private static function get_tutor_assignment_post_type() {
+		return self::get_tutor_runtime_post_type( 'assignment_post_type', 'tutor_assignments' );
+	}
+
+	/**
+	 * Resolve the Tutor topic post type when Tutor LMS is available.
+	 *
+	 * @return string
+	 */
+	private static function get_tutor_topic_post_type() {
+		$topic_post_type = sanitize_key( apply_filters( 'tutor_topic_post_type', 'topics' ) );
+
+		return post_type_exists( $topic_post_type ) ? $topic_post_type : '';
+	}
+
+	/**
+	 * Resolve a Tutor runtime post type property safely.
+	 *
+	 * @param string $property Runtime property name.
+	 * @param string $fallback Fallback post type slug.
+	 * @return string
+	 */
+	private static function get_tutor_runtime_post_type( $property, $fallback ) {
+		if ( ! function_exists( 'tutor' ) ) {
+			return '';
+		}
+
+		$tutor = tutor();
+		if ( ! is_object( $tutor ) ) {
+			return '';
+		}
+
+		$value = '';
+		if ( isset( $tutor->{$property} ) ) {
+			$value = sanitize_key( (string) $tutor->{$property} );
+		}
+
+		if ( '' === $value ) {
+			$value = sanitize_key( (string) $fallback );
+		}
+
+		return post_type_exists( $value ) ? $value : '';
+	}
+
+	/**
+	 * Determine whether a post type is the Tutor course post type.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @return bool
+	 */
+	private static function is_tutor_course_post_type( $post_type ) {
+		$tutor_course_post_type = self::get_tutor_course_post_type();
+		if ( '' === $tutor_course_post_type ) {
+			return false;
+		}
+
+		return sanitize_key( (string) $post_type ) === $tutor_course_post_type;
+	}
+
+	/**
+	 * Tutor sub-content post types that should stay nested under courses.
+	 *
+	 * @return array<int, string>
+	 */
+	private static function get_tutor_nested_content_post_types() {
+		$post_types = array(
+			self::get_tutor_topic_post_type(),
+			self::get_tutor_lesson_post_type(),
+			self::get_tutor_quiz_post_type(),
+			self::get_tutor_assignment_post_type(),
+		);
+
+		return array_values(
+			array_unique(
+				array_filter(
+					array_map( 'sanitize_key', $post_types )
+				)
+			)
+		);
+	}
+
+	/**
+	 * Available Tutor LMS generation toggles for custom content runs.
+	 *
+	 * @return array<string, string>
+	 */
+	private static function get_tutor_custom_item_options() {
+		if ( '' === self::get_tutor_course_post_type() ) {
+			return array();
+		}
+
+		return array(
+			'course_details'     => __( 'Course details (benefits, requirements, audience, materials)', 'mrn-dummy-content' ),
+			'course_thumbnail'   => __( 'Course featured image', 'mrn-dummy-content' ),
+			'course_attachments' => __( 'Course attachments/resources', 'mrn-dummy-content' ),
+			'topics'             => __( 'Topics', 'mrn-dummy-content' ),
+			'lessons'            => __( 'Lessons in each topic', 'mrn-dummy-content' ),
+			'lesson_attachments' => __( 'Lesson attachments/images', 'mrn-dummy-content' ),
+			'quizzes'            => __( 'Quizzes in each topic', 'mrn-dummy-content' ),
+		);
+	}
+
+	/**
+	 * Default Tutor LMS generation toggles for new custom runs.
+	 *
+	 * @return array<int, string>
+	 */
+	private static function get_default_tutor_custom_item_keys() {
+		return array(
+			'course_details',
+			'course_thumbnail',
+			'topics',
+			'lessons',
+			'lesson_attachments',
+			'quizzes',
+		);
+	}
+
+	/**
+	 * Default Tutor LMS content sizing per generated course.
+	 *
+	 * @return array<string, int>
+	 */
+	private static function get_default_tutor_generation_sizes() {
+		return array(
+			'topic_count'       => 2,
+			'lessons_per_topic' => 3,
+			'quizzes_per_topic' => 1,
+		);
+	}
+
+	/**
+	 * Sanitize and normalize Tutor LMS generation toggle keys.
+	 *
+	 * @param array<int, string> $items Raw requested toggle keys.
+	 * @return array<int, string>
+	 */
+	private static function sanitize_tutor_custom_item_keys( array $items ) {
+		$allowed_keys = array_keys( self::get_tutor_custom_item_options() );
+		if ( empty( $allowed_keys ) ) {
+			return array();
+		}
+
+		$allowed_lookup = array_fill_keys( $allowed_keys, true );
+		$selected_lookup = array();
+
+		foreach ( $items as $item ) {
+			$item = sanitize_key( (string) $item );
+			if ( '' === $item || ! isset( $allowed_lookup[ $item ] ) ) {
+				continue;
+			}
+
+			$selected_lookup[ $item ] = true;
+		}
+
+		if ( isset( $selected_lookup['lesson_attachments'] ) ) {
+			$selected_lookup['lessons'] = true;
+		}
+
+		if ( isset( $selected_lookup['lessons'] ) || isset( $selected_lookup['quizzes'] ) ) {
+			$selected_lookup['topics'] = true;
+		}
+
+		$selected = array();
+		foreach ( $allowed_keys as $allowed_key ) {
+			if ( isset( $selected_lookup[ $allowed_key ] ) ) {
+				$selected[] = $allowed_key;
+			}
+		}
+
+		return $selected;
+	}
+
+	/**
+	 * Read and bound an integer option from POST input.
+	 *
+	 * @param string $field_name Input field name.
+	 * @param int    $default Default value.
+	 * @param int    $min Minimum allowed value.
+	 * @param int    $max Maximum allowed value.
+	 * @return int
+	 */
+	private static function get_bounded_posted_integer( $field_name, $default, $min, $max ) {
+		$value = filter_input(
+			INPUT_POST,
+			$field_name,
+			FILTER_VALIDATE_INT,
+			array(
+				'options' => array(
+					'default' => (int) $default,
+				),
+			)
+		);
+
+		$value = is_int( $value ) ? $value : (int) $default;
+		$value = max( (int) $min, min( (int) $max, $value ) );
+
+		return (int) $value;
+	}
+
+	/**
+	 * Build Tutor LMS topic/lesson/quiz content for a generated course.
+	 *
+	 * @param int                  $course_id Generated course ID.
+	 * @param string               $course_title Generated course title.
+	 * @param array<string, mixed> $config Sanitized Tutor generation config.
+	 * @return array<string, int>
+	 */
+	private static function seed_tutor_course_content( $course_id, $course_title, array $config ) {
+		$totals = array(
+			'course_details'     => 0,
+			'course_thumbnails'  => 0,
+			'course_attachments' => 0,
+			'topics'             => 0,
+			'lessons'            => 0,
+			'lesson_attachments' => 0,
+			'quizzes'            => 0,
+		);
+
+		$item_keys = isset( $config['items'] ) && is_array( $config['items'] )
+			? self::sanitize_tutor_custom_item_keys( $config['items'] )
+			: array();
+
+		if ( empty( $item_keys ) ) {
+			return $totals;
+		}
+
+		self::delete_generated_tutor_course_children( $course_id );
+
+		$items_lookup = array_fill_keys( $item_keys, true );
+		$course_title = wp_strip_all_tags( (string) $course_title );
+
+		$placeholder_id = self::get_placeholder_attachment_id( $course_title );
+
+		if ( isset( $items_lookup['course_details'] ) ) {
+			update_post_meta( $course_id, '_tutor_course_benefits', "Understand the fundamentals of this topic.\nApply practical techniques right away." );
+			update_post_meta( $course_id, '_tutor_course_requirements', "Basic familiarity with the subject.\nWillingness to complete lesson activities." );
+			update_post_meta( $course_id, '_tutor_course_target_audience', "Learners who want structured step-by-step guidance.\nTeams onboarding to shared workflows." );
+			update_post_meta( $course_id, '_tutor_course_material_includes', "Downloadable guides and checklist resources.\nHands-on lesson examples." );
+			update_post_meta( $course_id, '_tutor_enable_qa', 'yes' );
+			update_post_meta( $course_id, '_tutor_is_public_course', 'yes' );
+			update_post_meta( $course_id, '_tutor_course_level', 'beginner' );
+			$totals['course_details'] = 1;
+		}
+
+		if ( isset( $items_lookup['course_thumbnail'] ) && $placeholder_id > 0 ) {
+			set_post_thumbnail( $course_id, $placeholder_id );
+			$totals['course_thumbnails'] = 1;
+		}
+
+		if ( isset( $items_lookup['course_attachments'] ) && $placeholder_id > 0 ) {
+			update_post_meta( $course_id, '_tutor_attachments', array( $placeholder_id ) );
+			$totals['course_attachments'] = 1;
+		}
+
+		$default_sizes      = self::get_default_tutor_generation_sizes();
+		$topic_count        = isset( $config['topic_count'] ) ? absint( $config['topic_count'] ) : $default_sizes['topic_count'];
+		$lessons_per_topic  = isset( $config['lessons_per_topic'] ) ? absint( $config['lessons_per_topic'] ) : $default_sizes['lessons_per_topic'];
+		$quizzes_per_topic  = isset( $config['quizzes_per_topic'] ) ? absint( $config['quizzes_per_topic'] ) : $default_sizes['quizzes_per_topic'];
+		$topic_count        = max( 1, min( 20, $topic_count ) );
+		$lessons_per_topic  = max( 1, min( 20, $lessons_per_topic ) );
+		$quizzes_per_topic  = max( 0, min( 10, $quizzes_per_topic ) );
+		$topic_ids          = array();
+
+		if ( isset( $items_lookup['topics'] ) ) {
+			for ( $topic_number = 1; $topic_number <= $topic_count; $topic_number++ ) {
+				$topic_id = self::create_tutor_topic(
+					$course_id,
+					sprintf( 'Topic %1$d: %2$s', $topic_number, $course_title ),
+					sprintf( '<p>Overview and key takeaways for topic %d.</p>', $topic_number ),
+					$topic_number
+				);
+
+				if ( $topic_id > 0 ) {
+					$topic_ids[] = $topic_id;
+					++$totals['topics'];
+				}
+			}
+		}
+
+		if ( isset( $items_lookup['lessons'] ) && ! empty( $topic_ids ) ) {
+			foreach ( $topic_ids as $topic_index => $topic_id ) {
+				for ( $lesson_number = 1; $lesson_number <= $lessons_per_topic; $lesson_number++ ) {
+					$lesson_id = self::create_tutor_lesson(
+						$topic_id,
+						sprintf( 'Lesson %1$d.%2$d: %3$s', $topic_index + 1, $lesson_number, $course_title ),
+						self::get_sample_paragraphs( 'lesson' ),
+						$lesson_number
+					);
+
+					if ( $lesson_id <= 0 ) {
+						continue;
+					}
+
+					++$totals['lessons'];
+
+					if ( isset( $items_lookup['lesson_attachments'] ) && $placeholder_id > 0 ) {
+						update_post_meta( $lesson_id, '_tutor_attachments', array( $placeholder_id ) );
+						update_post_meta( $lesson_id, '_thumbnail_id', $placeholder_id );
+						++$totals['lesson_attachments'];
+					}
+				}
+			}
+		}
+
+		if ( isset( $items_lookup['quizzes'] ) && $quizzes_per_topic > 0 && ! empty( $topic_ids ) ) {
+			foreach ( $topic_ids as $topic_index => $topic_id ) {
+				for ( $quiz_number = 1; $quiz_number <= $quizzes_per_topic; $quiz_number++ ) {
+					$quiz_id = self::create_tutor_quiz(
+						$topic_id,
+						sprintf( 'Quiz %1$d.%2$d: %3$s', $topic_index + 1, $quiz_number, $course_title ),
+						'<p>Auto-generated quiz placeholder.</p>',
+						$lessons_per_topic + $quiz_number
+					);
+
+					if ( $quiz_id > 0 ) {
+						update_post_meta( $quiz_id, 'tutor_quiz_option', array() );
+						++$totals['quizzes'];
+					}
+				}
+			}
+		}
+
+		return $totals;
+	}
+
+	/**
+	 * Remove generated Tutor sub-content under a course before reseeding.
+	 *
+	 * @param int $course_id Course post ID.
+	 * @return void
+	 */
+	private static function delete_generated_tutor_course_children( $course_id ) {
+		$topic_post_type = self::get_tutor_topic_post_type();
+		if ( '' === $topic_post_type ) {
+			return;
+		}
+
+		$topics = get_posts(
+			array(
+				'post_type'      => $topic_post_type,
+				'post_status'    => array( 'publish', 'draft', 'pending', 'private', 'future' ),
+				'post_parent'    => (int) $course_id,
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+				'meta_key'       => self::GENERATED_BY_META,
+			)
+		);
+
+		if ( ! is_array( $topics ) || empty( $topics ) ) {
+			return;
+		}
+
+		$nested_types = array_values(
+			array_filter(
+				self::get_tutor_nested_content_post_types(),
+				static function ( $post_type ) use ( $topic_post_type ) {
+					return $post_type !== $topic_post_type;
+				}
+			)
+		);
+
+		foreach ( $topics as $topic_id ) {
+			$topic_id = absint( $topic_id );
+			if ( $topic_id <= 0 ) {
+				continue;
+			}
+
+			if ( ! empty( $nested_types ) ) {
+				$children = get_posts(
+					array(
+						'post_type'      => $nested_types,
+						'post_status'    => array( 'publish', 'draft', 'pending', 'private', 'future' ),
+						'post_parent'    => $topic_id,
+						'posts_per_page' => -1,
+						'fields'         => 'ids',
+						'meta_key'       => self::GENERATED_BY_META,
+					)
+				);
+
+				if ( is_array( $children ) ) {
+					foreach ( $children as $child_id ) {
+						$child_id = absint( $child_id );
+						if ( $child_id > 0 ) {
+							wp_delete_post( $child_id, true );
+						}
+					}
+				}
+			}
+
+			wp_delete_post( $topic_id, true );
+		}
+	}
+
+	/**
+	 * Create a Tutor topic entry linked to a course.
+	 *
+	 * @param int    $course_id Course post ID.
+	 * @param string $title Topic title.
+	 * @param string $summary Topic summary.
+	 * @param int    $menu_order Menu order value.
+	 * @return int
+	 */
+	private static function create_tutor_topic( $course_id, $title, $summary, $menu_order ) {
+		$topic_id = wp_insert_post(
+			wp_slash(
+				array(
+					'post_type'    => 'topics',
+					'post_status'  => 'publish',
+					'post_title'   => sanitize_text_field( $title ),
+					'post_content' => wp_kses_post( $summary ),
+					'post_author'  => get_current_user_id(),
+					'post_parent'  => (int) $course_id,
+					'menu_order'   => absint( $menu_order ),
+				)
+			),
+			true
+		);
+
+		if ( is_wp_error( $topic_id ) || ! $topic_id ) {
+			return 0;
+		}
+
+		update_post_meta( $topic_id, self::GENERATED_BY_META, self::VERSION );
+		update_post_meta( $topic_id, self::GENERATED_AT_META, current_time( 'mysql' ) );
+		self::seed_taxonomies_for_post( $topic_id, get_post_type( $topic_id ) );
+
+		return (int) $topic_id;
+	}
+
+	/**
+	 * Create a Tutor lesson entry linked to a topic.
+	 *
+	 * @param int    $topic_id Topic post ID.
+	 * @param string $title Lesson title.
+	 * @param string $content Lesson content.
+	 * @param int    $menu_order Menu order value.
+	 * @return int
+	 */
+	private static function create_tutor_lesson( $topic_id, $title, $content, $menu_order ) {
+		$lesson_post_type = self::get_tutor_lesson_post_type();
+		if ( '' === $lesson_post_type ) {
+			return 0;
+		}
+
+		$lesson_id = wp_insert_post(
+			wp_slash(
+				array(
+					'post_type'      => $lesson_post_type,
+					'post_status'    => 'publish',
+					'post_title'     => sanitize_text_field( $title ),
+					'post_content'   => wp_kses_post( $content ),
+					'post_author'    => get_current_user_id(),
+					'post_parent'    => (int) $topic_id,
+					'menu_order'     => absint( $menu_order ),
+					'comment_status' => 'open',
+				)
+			),
+			true
+		);
+
+		if ( is_wp_error( $lesson_id ) || ! $lesson_id ) {
+			return 0;
+		}
+
+		update_post_meta( $lesson_id, self::GENERATED_BY_META, self::VERSION );
+		update_post_meta( $lesson_id, self::GENERATED_AT_META, current_time( 'mysql' ) );
+		self::seed_taxonomies_for_post( $lesson_id, get_post_type( $lesson_id ) );
+
+		return (int) $lesson_id;
+	}
+
+	/**
+	 * Create a Tutor quiz entry linked to a topic.
+	 *
+	 * @param int    $topic_id Topic post ID.
+	 * @param string $title Quiz title.
+	 * @param string $content Quiz content.
+	 * @param int    $menu_order Menu order value.
+	 * @return int
+	 */
+	private static function create_tutor_quiz( $topic_id, $title, $content, $menu_order ) {
+		$quiz_post_type = self::get_tutor_quiz_post_type();
+		if ( '' === $quiz_post_type ) {
+			return 0;
+		}
+
+		$quiz_id = wp_insert_post(
+			wp_slash(
+				array(
+					'post_type'    => $quiz_post_type,
+					'post_status'  => 'publish',
+					'post_title'   => sanitize_text_field( $title ),
+					'post_content' => wp_kses_post( $content ),
+					'post_author'  => get_current_user_id(),
+					'post_parent'  => (int) $topic_id,
+					'menu_order'   => absint( $menu_order ),
+				)
+			),
+			true
+		);
+
+		if ( is_wp_error( $quiz_id ) || ! $quiz_id ) {
+			return 0;
+		}
+
+		update_post_meta( $quiz_id, self::GENERATED_BY_META, self::VERSION );
+		update_post_meta( $quiz_id, self::GENERATED_AT_META, current_time( 'mysql' ) );
+		self::seed_taxonomies_for_post( $quiz_id, get_post_type( $quiz_id ) );
+
+		return (int) $quiz_id;
 	}
 
 	/**
@@ -1032,6 +1684,31 @@ final class MRN_Dummy_Content {
 			);
 		}
 
+		$is_tutor_course       = self::is_tutor_course_post_type( $post_type );
+		$tutor_generation      = array();
+		$tutor_generation_totals = array(
+			'course_details'     => 0,
+			'course_thumbnails'  => 0,
+			'course_attachments' => 0,
+			'topics'             => 0,
+			'lessons'            => 0,
+			'lesson_attachments' => 0,
+			'quizzes'            => 0,
+		);
+
+		if ( $is_tutor_course ) {
+			$tutor_item_input = filter_input( INPUT_POST, 'custom_tutor_items', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+			$tutor_item_input = is_array( $tutor_item_input ) ? $tutor_item_input : array();
+			$tutor_defaults   = self::get_default_tutor_generation_sizes();
+
+			$tutor_generation = array(
+				'items'             => self::sanitize_tutor_custom_item_keys( $tutor_item_input ),
+				'topic_count'       => self::get_bounded_posted_integer( 'custom_tutor_topic_count', $tutor_defaults['topic_count'], 1, 20 ),
+				'lessons_per_topic' => self::get_bounded_posted_integer( 'custom_tutor_lessons_per_topic', $tutor_defaults['lessons_per_topic'], 1, 20 ),
+				'quizzes_per_topic' => self::get_bounded_posted_integer( 'custom_tutor_quizzes_per_topic', $tutor_defaults['quizzes_per_topic'], 0, 10 ),
+			);
+		}
+
 		$post_type_label = $target_post_types[ $post_type ]->labels->singular_name;
 		$created_ids     = array();
 		$failed_count    = 0;
@@ -1071,7 +1748,14 @@ final class MRN_Dummy_Content {
 			self::seed_taxonomies_for_post( $post_id, $post_type );
 			self::seed_acf_fields_for_post( $post_id, $post_type, false, $shell_width, $selected_layouts );
 			self::apply_generated_variant_fields( $post_id, $post_type, $sidebar_layout, $shell_width, $selected_layouts );
-			self::maybe_set_placeholder_thumbnail( $post_id, $post_type );
+			if ( $is_tutor_course ) {
+				$tutor_counts = self::seed_tutor_course_content( $post_id, $entry_title, $tutor_generation );
+				foreach ( array_keys( $tutor_generation_totals ) as $metric ) {
+					$tutor_generation_totals[ $metric ] += isset( $tutor_counts[ $metric ] ) ? (int) $tutor_counts[ $metric ] : 0;
+				}
+			} else {
+				self::maybe_set_placeholder_thumbnail( $post_id, $post_type );
+			}
 
 			$created_ids[] = (int) $post_id;
 		}
@@ -1104,6 +1788,60 @@ final class MRN_Dummy_Content {
 				__( 'Applied %d selected layouts.', 'mrn-dummy-content' ),
 				count( $selected_layouts )
 			);
+		}
+
+		if ( $is_tutor_course && ! empty( $tutor_generation['items'] ) ) {
+			$tutor_parts = array();
+
+			if ( isset( $tutor_generation_totals['topics'] ) && $tutor_generation_totals['topics'] > 0 ) {
+				$tutor_parts[] = sprintf(
+					_n( '%d topic', '%d topics', $tutor_generation_totals['topics'], 'mrn-dummy-content' ),
+					$tutor_generation_totals['topics']
+				);
+			}
+
+			if ( isset( $tutor_generation_totals['lessons'] ) && $tutor_generation_totals['lessons'] > 0 ) {
+				$tutor_parts[] = sprintf(
+					_n( '%d lesson', '%d lessons', $tutor_generation_totals['lessons'], 'mrn-dummy-content' ),
+					$tutor_generation_totals['lessons']
+				);
+			}
+
+			if ( isset( $tutor_generation_totals['quizzes'] ) && $tutor_generation_totals['quizzes'] > 0 ) {
+				$tutor_parts[] = sprintf(
+					_n( '%d quiz', '%d quizzes', $tutor_generation_totals['quizzes'], 'mrn-dummy-content' ),
+					$tutor_generation_totals['quizzes']
+				);
+			}
+
+			if ( isset( $tutor_generation_totals['course_thumbnails'] ) && $tutor_generation_totals['course_thumbnails'] > 0 ) {
+				$tutor_parts[] = sprintf(
+					_n( '%d course image', '%d course images', $tutor_generation_totals['course_thumbnails'], 'mrn-dummy-content' ),
+					$tutor_generation_totals['course_thumbnails']
+				);
+			}
+
+			if ( isset( $tutor_generation_totals['lesson_attachments'] ) && $tutor_generation_totals['lesson_attachments'] > 0 ) {
+				$tutor_parts[] = sprintf(
+					_n( '%d lesson attachment', '%d lesson attachments', $tutor_generation_totals['lesson_attachments'], 'mrn-dummy-content' ),
+					$tutor_generation_totals['lesson_attachments']
+				);
+			}
+
+			if ( isset( $tutor_generation_totals['course_attachments'] ) && $tutor_generation_totals['course_attachments'] > 0 ) {
+				$tutor_parts[] = sprintf(
+					_n( '%d course attachment', '%d course attachments', $tutor_generation_totals['course_attachments'], 'mrn-dummy-content' ),
+					$tutor_generation_totals['course_attachments']
+				);
+			}
+
+			if ( ! empty( $tutor_parts ) ) {
+				$message .= ' ' . sprintf(
+					/* translators: %s: tutor content summary list. */
+					__( 'Tutor LMS additions: %s.', 'mrn-dummy-content' ),
+					implode( ', ', $tutor_parts )
+				);
+			}
 		}
 
 		if ( $failed_count > 0 ) {
@@ -1300,6 +2038,14 @@ final class MRN_Dummy_Content {
 			$post_types = array_merge( $post_types, $custom_post_types );
 		}
 
+		/*
+		 * Tutor LMS sub-content (topics/lessons/quizzes/assignments) should be
+		 * generated inside courses instead of as standalone top-level entries.
+		 */
+		foreach ( self::get_tutor_nested_content_post_types() as $nested_type ) {
+			unset( $post_types[ $nested_type ] );
+		}
+
 		return array_filter(
 			$post_types,
 			static function( $post_type_object ) {
@@ -1456,7 +2202,22 @@ final class MRN_Dummy_Content {
 		self::seed_taxonomies_for_post( $post_id, $slug );
 		self::seed_acf_fields_for_post( $post_id, $slug, false, $shell_width );
 		self::apply_generated_variant_fields( $post_id, $slug, $sidebar_layout, $shell_width );
-		self::maybe_set_placeholder_thumbnail( $post_id, $slug );
+
+		if ( self::is_tutor_course_post_type( $slug ) ) {
+			$default_sizes = self::get_default_tutor_generation_sizes();
+			self::seed_tutor_course_content(
+				$post_id,
+				(string) get_the_title( $post_id ),
+				array(
+					'items'             => self::get_default_tutor_custom_item_keys(),
+					'topic_count'       => $default_sizes['topic_count'],
+					'lessons_per_topic' => $default_sizes['lessons_per_topic'],
+					'quizzes_per_topic' => $default_sizes['quizzes_per_topic'],
+				)
+			);
+		} else {
+			self::maybe_set_placeholder_thumbnail( $post_id, $slug );
+		}
 
 		return array(
 			'post_id' => (int) $post_id,
@@ -1500,6 +2261,7 @@ final class MRN_Dummy_Content {
 		update_post_meta( $post_id, self::GENERATED_BY_META, self::VERSION );
 		update_post_meta( $post_id, self::GENERATED_AT_META, current_time( 'mysql' ) );
 
+		self::seed_taxonomies_for_post( $post_id, 'page' );
 		self::seed_acf_fields_for_post( $post_id, 'page', true, $shell_width );
 
 		return array(
@@ -1540,6 +2302,7 @@ final class MRN_Dummy_Content {
 
 		update_post_meta( $post_id, self::GENERATED_BY_META, self::VERSION );
 		update_post_meta( $post_id, self::GENERATED_AT_META, current_time( 'mysql' ) );
+		self::seed_taxonomies_for_post( $post_id, 'page' );
 		self::seed_generated_pages_index_builder( $post_id );
 
 		return array(
@@ -1667,6 +2430,11 @@ final class MRN_Dummy_Content {
 	 * @return void
 	 */
 	private static function seed_taxonomies_for_post( $post_id, $post_type ) {
+		$post_type = sanitize_key( (string) $post_type );
+		if ( '' === $post_type ) {
+			return;
+		}
+
 		$taxonomies = get_object_taxonomies( $post_type, 'objects' );
 		if ( ! is_array( $taxonomies ) ) {
 			return;
@@ -1677,11 +2445,113 @@ final class MRN_Dummy_Content {
 				continue;
 			}
 
-			$term = self::get_or_create_sample_term( $taxonomy_object );
+			$term_kind = self::get_content_taxonomy_kind( $taxonomy_object );
+			$term      = '' !== $term_kind
+				? self::get_or_create_dummy_content_term( $taxonomy_object, $term_kind )
+				: self::get_or_create_sample_term( $taxonomy_object );
+
 			if ( $term instanceof WP_Term ) {
 				wp_set_object_terms( $post_id, array( (int) $term->term_id ), $taxonomy, false );
 			}
 		}
+	}
+
+	/**
+	 * Identify category/tag-style taxonomies, including Tutor LMS course terms.
+	 *
+	 * @param WP_Taxonomy $taxonomy_object Taxonomy object.
+	 * @return string Either "category", "tag", or an empty string.
+	 */
+	private static function get_content_taxonomy_kind( WP_Taxonomy $taxonomy_object ) {
+		$taxonomy = sanitize_key( $taxonomy_object->name );
+		$label    = strtolower(
+			trim(
+				(string) $taxonomy_object->label . ' ' .
+				(string) $taxonomy_object->labels->singular_name
+			)
+		);
+
+		if (
+			in_array( $taxonomy, array( 'category', 'course-category' ), true )
+			|| self::string_ends_with( $taxonomy, '_category' )
+			|| self::string_ends_with( $taxonomy, '-category' )
+			|| false !== strpos( $label, 'categor' )
+		) {
+			return 'category';
+		}
+
+		if (
+			in_array( $taxonomy, array( 'post_tag', 'course-tag' ), true )
+			|| self::string_ends_with( $taxonomy, '_tag' )
+			|| self::string_ends_with( $taxonomy, '-tag' )
+			|| false !== strpos( $label, 'tag' )
+		) {
+			return 'tag';
+		}
+
+		return '';
+	}
+
+	/**
+	 * Get or create the shared Dummy Content category/tag term for a taxonomy.
+	 *
+	 * @param WP_Taxonomy $taxonomy_object Taxonomy object.
+	 * @param string      $term_kind Either "category" or "tag".
+	 * @return WP_Term|null
+	 */
+	private static function get_or_create_dummy_content_term( WP_Taxonomy $taxonomy_object, $term_kind ) {
+		$taxonomy = sanitize_key( $taxonomy_object->name );
+		if ( '' === $taxonomy ) {
+			return null;
+		}
+
+		$cache_key = $taxonomy . ':dummy-content:' . sanitize_key( (string) $term_kind );
+		if ( array_key_exists( $cache_key, self::$sample_term_cache ) ) {
+			return self::$sample_term_cache[ $cache_key ];
+		}
+
+		$term_slug = 'dummy-content';
+		$term      = get_term_by( 'slug', $term_slug, $taxonomy );
+		if ( $term instanceof WP_Term ) {
+			self::$sample_term_cache[ $cache_key ] = $term;
+			return $term;
+		}
+
+		$result = wp_insert_term(
+			__( 'Dummy Content', 'mrn-dummy-content' ),
+			$taxonomy,
+			array(
+				'slug' => $term_slug,
+			)
+		);
+
+		if ( is_wp_error( $result ) || empty( $result['term_id'] ) ) {
+			self::$sample_term_cache[ $cache_key ] = null;
+			return null;
+		}
+
+		$term = get_term( (int) $result['term_id'], $taxonomy );
+		self::$sample_term_cache[ $cache_key ] = $term instanceof WP_Term ? $term : null;
+
+		return self::$sample_term_cache[ $cache_key ];
+	}
+
+	/**
+	 * PHP-version-safe suffix check.
+	 *
+	 * @param string $value Value to inspect.
+	 * @param string $suffix Expected suffix.
+	 * @return bool
+	 */
+	private static function string_ends_with( $value, $suffix ) {
+		$value  = (string) $value;
+		$suffix = (string) $suffix;
+
+		if ( '' === $suffix ) {
+			return true;
+		}
+
+		return substr( $value, -strlen( $suffix ) ) === $suffix;
 	}
 
 	/**
