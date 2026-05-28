@@ -280,8 +280,9 @@ function mrn_render_support_widget() {
     echo '</p>';
 
     echo '<p style="margin-top:10px;font-size:12px;color:#555;">
-        Clicking the button opens your email client with site details added below
-        so you can start typing your message right away.
+        Click the button to open your email client with our support address
+        (' . esc_html($support_email) . ') and site details already filled in, so you
+        can start typing your message right away.
     </p>';
 
     echo '</div>';
