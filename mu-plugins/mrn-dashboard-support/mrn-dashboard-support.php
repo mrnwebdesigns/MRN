@@ -281,7 +281,7 @@ function mrn_render_support_widget() {
 
     echo '<p style="margin-top:10px;font-size:12px;color:#555;">
         Click the button to open your email client with our support address
-        (' . esc_html($support_email) . ') and site details already filled in, so you
+        (<a href="' . esc_url('mailto:' . $support_email) . '">' . esc_html($support_email) . '</a>) and site details already filled in, so you
         can start typing your message right away.
     </p>';
 
