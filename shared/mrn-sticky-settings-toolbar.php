@@ -153,6 +153,11 @@ if (!function_exists('mrn_sticky_toolbar_render')) {
 					return;
 				}
 
+				var wpBodyContent = document.getElementById('wpbody-content');
+				if (wpBodyContent && wpBodyContent.firstElementChild !== spacer) {
+					wpBodyContent.insertBefore(spacer, wpBodyContent.firstElementChild || wpBodyContent.firstChild);
+				}
+
 				spacer.style.height = Math.ceil(toolbar.getBoundingClientRect().height + 10) + 'px';
 			}
 
