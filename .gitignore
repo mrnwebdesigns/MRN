@@ -47,6 +47,7 @@ plugins/mrn-announcements
 plugins/mrn-comment-management
 plugins/mrn-config-helper
 plugins/mrn-cookie-consent
+plugins/mrn-dummy-content
 plugins/mrn-editor-tools
 plugins/mrn-fontawesome-profile-manager
 plugins/mrn-gtm-injector
