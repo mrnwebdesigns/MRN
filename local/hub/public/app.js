@@ -122,6 +122,7 @@ const els = {
 	adminStatus: document.querySelector("#adminStatus"),
 	adminResultList: document.querySelector("#adminResultList"),
 	pullFilesDbButton: document.querySelector("#pullFilesDbButton"),
+	pullResultList: document.querySelector("#pullResultList"),
 	pullWizardSteps: document.querySelectorAll("[data-pull-step]"),
 	pullFileScope: document.querySelector("#pullFileScope"),
 	pullCustomPathField: document.querySelector("#pullCustomPathField"),
@@ -1743,6 +1744,9 @@ function fillForm(site) {
 }
 
 function renderPullSummary(site) {
+	if (els.pullResultList) {
+		els.pullResultList.textContent = "";
+	}
 	if (!site) {
 		els.pullSummary.className = "operation-status";
 		els.pullSummary.textContent = "Select a site with SSH details to run preflight.";
@@ -1754,6 +1758,13 @@ function renderPullSummary(site) {
 	if (readiness) {
 		els.pullSummary.className = `operation-status ${readiness.ok ? "ok" : "warn"}`;
 		els.pullSummary.textContent = readiness.message;
+		if (els.pullResultList && readiness.items) {
+			for (const item of readiness.items) {
+				const li = document.createElement("li");
+				li.textContent = item;
+				els.pullResultList.append(li);
+			}
+		}
 		return;
 	}
 
@@ -1845,6 +1856,23 @@ function renderAdminSummary(site = currentSite()) {
 	}
 }
 
+function smokeFollowUpItems(smoke) {
+	const checks = smoke?.checks || [];
+	return checks
+		.filter((check) => check.status && check.status !== "pass")
+		.map((check) => {
+			const status = check.status === "warn" ? "Warning" : "Issue";
+			const detail = `${check.label} ${status.toLowerCase()}: ${check.detail}`;
+			if (check.label === "Admin" && /blocked by a WordPress security plugin/i.test(check.detail || "")) {
+				return `${detail} Run Local Admin Unlock if you need wp-admin access; otherwise the database import is okay.`;
+			}
+			if (check.status === "warn") {
+				return `${detail} Review only if it blocks the work you are doing locally.`;
+			}
+			return `${detail} Correct this before treating the local site as ready.`;
+		});
+}
+
 function updatePullReadiness(site, action, result) {
 	if (!site) return;
 	if (action === "pull-preflight") {
@@ -1859,6 +1887,7 @@ function updatePullReadiness(site, action, result) {
 				: warnings.length
 					? `Preflight warning: ${warnings.join(" ")}`
 					: `${scopeLabel} preflight ready. Run a file dry run before pulling.`,
+			items: notes,
 		};
 	} else if (action === "pull-files-dry-run") {
 		const scopeLabel = result.pullScope?.label || "File";
@@ -1893,9 +1922,10 @@ function updatePullReadiness(site, action, result) {
 		const smoke = result.smoke;
 		const smokeFailed = Boolean(smoke && smoke.failed);
 		const smokeWarned = Boolean(smoke && smoke.warnings);
+		const followUps = smokeFollowUpItems(smoke);
 		state.pullWizardStage = result.code === 0 ? "complete" : "verify";
 		state.pullReadiness[site.slug] = {
-			ok: result.code === 0 && !smokeFailed,
+			ok: result.code === 0 && !smokeFailed && !smokeWarned,
 			message: smoke
 				? result.code === 0
 					? smokeFailed
@@ -1907,12 +1937,14 @@ function updatePullReadiness(site, action, result) {
 				: result.code === 0
 					? "Database pulled and search-replaced for local."
 					: "Database pull failed; review the deployment log.",
+			items: followUps,
 		};
 	} else if (action === "smoke-check") {
 		const smoke = result.smoke;
+		const smokeWarned = Boolean(smoke && smoke.warnings);
 		state.pullWizardStage = result.code === 0 ? "complete" : "verify";
 		state.pullReadiness[site.slug] = {
-			ok: result.code === 0,
+			ok: result.code === 0 && !smokeWarned,
 			message: smoke
 				? result.code === 0
 					? `Smoke check passed (${smoke.passed} passed${smoke.warnings ? `, ${smoke.warnings} warning${smoke.warnings === 1 ? "" : "s"}` : ""}).`
@@ -1920,6 +1952,7 @@ function updatePullReadiness(site, action, result) {
 				: result.code === 0
 					? "Smoke check passed."
 					: "Smoke check failed; review the deployment log.",
+			items: smokeFollowUpItems(smoke),
 		};
 	}
 	renderPullSummary(site);
@@ -2611,9 +2644,10 @@ async function pullFilesAndDatabase() {
 		await refresh();
 		selectSite(activeSite.slug);
 		const smokeFailed = Boolean(dbResult.smoke && dbResult.smoke.failed);
+		const smokeWarned = Boolean(dbResult.smoke && dbResult.smoke.warnings);
 		showToast(
-			smokeFailed ? "Files and database pulled. Smoke check needs review." : "Files and database pulled.",
-			smokeFailed ? "info" : "success",
+			smokeFailed || smokeWarned ? "Files and database pulled. Smoke check needs review." : "Files and database pulled.",
+			smokeFailed || smokeWarned ? "info" : "success",
 		);
 	} catch (error) {
 		appendMessage(error.message, true);
