@@ -1625,6 +1625,46 @@ body.is-busy {
 	min-width: 0;
 }
 
+.warning-card {
+	border-color: rgba(251, 189, 8, 0.42);
+	background: color-mix(in srgb, var(--warning) 9%, var(--surface));
+	grid-column: 1 / -1;
+}
+
+.warning-card .panel-icon {
+	background: rgba(251, 189, 8, 0.16);
+	color: color-mix(in srgb, var(--warning) 72%, var(--text));
+}
+
+.warning-list {
+	display: grid;
+	gap: 10px;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.warning-list li {
+	border: 1px solid rgba(251, 189, 8, 0.34);
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--surface) 78%, var(--warning) 7%);
+	display: grid;
+	gap: 3px;
+	padding: 10px 12px;
+}
+
+.warning-list strong {
+	font-size: 0.86rem;
+}
+
+.warning-list p,
+.warning-list small {
+	color: var(--muted);
+	font-size: 0.8rem;
+	font-weight: 700;
+	line-height: 1.4;
+}
+
 .operation-band p {
 	overflow-wrap: anywhere;
 }

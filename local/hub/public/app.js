@@ -28,6 +28,7 @@ const state = {
 	operationTimer: null,
 	qaArtifactTimer: null,
 	pullReadiness: {},
+	siteWarnings: {},
 	adminReadiness: {},
 	pullWizardStage: "idle",
 	addSiteStep: "source",
@@ -119,6 +120,9 @@ const els = {
 	openAdminButton: document.querySelector("#openAdminButton"),
 	runtimeOperationStatus: document.querySelector("#runtimeOperationStatus"),
 	provisionSiteButton: document.querySelector("#provisionSiteButton"),
+	siteWarningsCard: document.querySelector("#siteWarningsCard"),
+	siteWarningsSummary: document.querySelector("#siteWarningsSummary"),
+	siteWarningsList: document.querySelector("#siteWarningsList"),
 	adminStatus: document.querySelector("#adminStatus"),
 	adminResultList: document.querySelector("#adminResultList"),
 	pullFilesDbButton: document.querySelector("#pullFilesDbButton"),
@@ -1738,6 +1742,7 @@ function fillForm(site) {
 	els.siteTitle.textContent = site.title || site.slug;
 	els.siteSubtitle.textContent = site.localUrl || site.localRoot || "Local WordPress workspace";
 	els.runtimeLabel.textContent = `${providerLabel(site.provider)} / ${site.webserver || "openlitespeed"} / ${site.runtimeStatus || "planned"}`;
+	renderSiteWarnings(site);
 	renderPullSummary(site);
 	renderPullWizardSteps(site);
 	renderAdminSummary(site);
@@ -1874,6 +1879,98 @@ function smokeFollowUpItems(smoke) {
 		});
 }
 
+function warningKey(source, title, detail) {
+	return `${source || "warning"}:${title || "Warning"}:${detail || ""}`;
+}
+
+function normalizeWarningItem(source, warning) {
+	if (typeof warning === "string") {
+		return {
+			source,
+			title: source === "smoke" ? "Smoke check warning" : "Warning",
+			detail: warning,
+		};
+	}
+	return {
+		source,
+		title: warning?.title || "Warning",
+		detail: warning?.detail || warning?.message || "",
+		action: warning?.action || "",
+		fileScope: warning?.fileScope || "",
+		relativePath: warning?.relativePath || "",
+	};
+}
+
+function setSiteWarnings(site, source, warnings = []) {
+	if (!site?.slug) return;
+	const existing = state.siteWarnings[site.slug] || [];
+	const next = existing.filter((item) => item.source !== source);
+	for (const warning of warnings) {
+		const item = normalizeWarningItem(source, warning);
+		if (item.detail || item.title) {
+			next.push(item);
+		}
+	}
+	const seen = new Set();
+	state.siteWarnings[site.slug] = next.filter((item) => {
+		const key = warningKey(item.source, item.title, item.detail);
+		if (seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
+	renderSiteWarnings(site);
+}
+
+function codeSyncWarningItems(result) {
+	return result.codeSync?.warnings || [];
+}
+
+function smokeWarningItems(smoke) {
+	const checks = smoke?.checks || [];
+	return checks
+		.filter((check) => check.status && check.status !== "pass")
+		.map((check) => ({
+			title: check.status === "warn" ? "Smoke check warning" : "Smoke check issue",
+			detail: `${check.label}: ${check.detail}`,
+		}));
+}
+
+function renderSiteWarnings(site = currentSite()) {
+	if (!els.siteWarningsCard || !els.siteWarningsSummary || !els.siteWarningsList) return;
+	els.siteWarningsList.textContent = "";
+	const warnings = site?.slug ? state.siteWarnings[site.slug] || [] : [];
+	els.siteWarningsCard.hidden = !site || !warnings.length;
+	if (!site || !warnings.length) {
+		els.siteWarningsSummary.textContent = "No warnings for this site.";
+		return;
+	}
+
+	els.siteWarningsSummary.textContent = `${warnings.length} warning${warnings.length === 1 ? "" : "s"} need review before treating local as fully in sync.`;
+	for (const warning of warnings) {
+		const li = document.createElement("li");
+		const title = document.createElement("strong");
+		const detail = document.createElement("p");
+		title.textContent = warning.title || "Warning";
+		detail.textContent = warning.detail || "";
+		li.append(title, detail);
+		const suggestion = [];
+		if (warning.action === "pull-files" && warning.fileScope === "active-theme") {
+			suggestion.push("Suggested action: Pull Active Theme.");
+		} else if (warning.action === "pull-files" && warning.relativePath) {
+			suggestion.push(`Suggested action: Pull ${warning.relativePath}.`);
+		}
+		if (warning.source) {
+			suggestion.push(`Source: ${warning.source.replace(/-/g, " ")}.`);
+		}
+		if (suggestion.length) {
+			const small = document.createElement("small");
+			small.textContent = suggestion.join(" ");
+			li.append(small);
+		}
+		els.siteWarningsList.append(li);
+	}
+}
+
 function updatePullReadiness(site, action, result) {
 	if (!site) return;
 	if (action === "pull-preflight") {
@@ -1890,6 +1987,10 @@ function updatePullReadiness(site, action, result) {
 					: `${scopeLabel} preflight ready. Run a file dry run before pulling.`,
 			items: notes,
 		};
+		setSiteWarnings(site, "pull-preflight", warnings.map((warning) => ({
+			title: "Preflight warning",
+			detail: warning,
+		})));
 	} else if (action === "pull-files-dry-run") {
 		const scopeLabel = result.pullScope?.label || "File";
 		state.pullWizardStage = result.code === 0 ? "files" : "idle";
@@ -1904,6 +2005,9 @@ function updatePullReadiness(site, action, result) {
 			ok: result.code === 0,
 			message: result.code === 0 ? `${scopeLabel} pulled into the local public path.` : `${scopeLabel} pull failed; review the deployment log.`,
 		};
+		if (result.code === 0) {
+			setSiteWarnings(site, "pull-preflight", []);
+		}
 	} else if (action === "provision-site") {
 		state.pullReadiness[site.slug] = {
 			ok: result.code === 0,
@@ -1926,20 +2030,28 @@ function updatePullReadiness(site, action, result) {
 		const followUps = smokeFollowUpItems(smoke);
 		state.pullWizardStage = result.code === 0 ? "complete" : "verify";
 		state.pullReadiness[site.slug] = {
-			ok: result.code === 0 && !smokeFailed && !smokeWarned,
+			ok: result.code === 0 && !smokeFailed && !smokeWarned && !codeSyncWarningItems(result).length,
 			message: smoke
 				? result.code === 0
 					? smokeFailed
 						? `Database pulled. Smoke check found ${smoke.failed} follow-up issue${smoke.failed === 1 ? "" : "s"}; review the deployment log.`
 						: smokeWarned
 							? `Database pulled. Smoke check passed with ${smoke.warnings} warning${smoke.warnings === 1 ? "" : "s"}.`
-							: `Database pulled. Smoke check passed (${smoke.passed} passed).`
+							: codeSyncWarningItems(result).length
+								? `Database pulled. Code parity has ${codeSyncWarningItems(result).length} warning${codeSyncWarningItems(result).length === 1 ? "" : "s"}.`
+								: `Database pulled. Smoke check passed (${smoke.passed} passed).`
 					: `Database import failed before smoke check finished.`
 				: result.code === 0
-					? "Database pulled and search-replaced for local."
+					? codeSyncWarningItems(result).length
+						? `Database pulled. Code parity has ${codeSyncWarningItems(result).length} warning${codeSyncWarningItems(result).length === 1 ? "" : "s"}.`
+						: "Database pulled and search-replaced for local."
 					: "Database pull failed; review the deployment log.",
 			items: followUps,
 		};
+		setSiteWarnings(site, "pull-db", [
+			...smokeWarningItems(smoke),
+			...codeSyncWarningItems(result),
+		]);
 	} else if (action === "smoke-check") {
 		const smoke = result.smoke;
 		const smokeWarned = Boolean(smoke && smoke.warnings);
@@ -1955,6 +2067,7 @@ function updatePullReadiness(site, action, result) {
 					: "Smoke check failed; review the deployment log.",
 			items: smokeFollowUpItems(smoke),
 		};
+		setSiteWarnings(site, "smoke-check", smokeWarningItems(smoke));
 	}
 	renderPullSummary(site);
 }
@@ -2659,9 +2772,10 @@ async function pullFilesAndDatabase() {
 		selectSite(activeSite.slug);
 		const smokeFailed = Boolean(dbResult.smoke && dbResult.smoke.failed);
 		const smokeWarned = Boolean(dbResult.smoke && dbResult.smoke.warnings);
+		const codeSyncWarned = Boolean(dbResult.codeSync?.warningCount);
 		showToast(
-			smokeFailed || smokeWarned ? "Files and database pulled. Smoke check needs review." : "Files and database pulled.",
-			smokeFailed || smokeWarned ? "info" : "success",
+			smokeFailed || smokeWarned || codeSyncWarned ? "Files and database pulled. Warnings need review." : "Files and database pulled.",
+			smokeFailed || smokeWarned || codeSyncWarned ? "info" : "success",
 		);
 	} catch (error) {
 		appendMessage(error.message, true);

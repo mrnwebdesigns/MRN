@@ -921,6 +921,56 @@ async function pathExists(filePath) {
 	}
 }
 
+function isPathInside(parentPath, childPath) {
+	const relative = path.relative(path.resolve(parentPath), path.resolve(childPath));
+	return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+async function preparePullDestinationDirectory(localDestPath, sitePublicPath, options = {}) {
+	const replaceUnsafeSymlink = Boolean(options.replaceUnsafeSymlink);
+	try {
+		const stat = await fsp.lstat(localDestPath);
+		if (stat.isSymbolicLink()) {
+			const target = await fsp.readlink(localDestPath);
+			const resolvedTarget = path.resolve(path.dirname(localDestPath), target);
+			const targetExists = await pathExists(resolvedTarget);
+			const targetIsLocal = targetExists && isPathInside(sitePublicPath, resolvedTarget);
+			if (!targetIsLocal) {
+				if (!replaceUnsafeSymlink) {
+					return {
+						changed: false,
+						stdout: `Pull destination is a symlink to ${target}; it will be replaced with a local directory during the real pull.`,
+					};
+				}
+				await fsp.rm(localDestPath, { force: true });
+				await fsp.mkdir(localDestPath, { recursive: true });
+				return {
+					changed: true,
+					stdout: `Replaced unsafe local symlink at ${displayPath(localDestPath)} with a directory before pulling.`,
+				};
+			}
+			const targetStat = await fsp.stat(localDestPath);
+			if (!targetStat.isDirectory()) {
+				throw httpError(400, `Pull destination symlink does not point to a directory: ${displayPath(localDestPath)}`);
+			}
+			return { changed: false, stdout: "" };
+		}
+		if (!stat.isDirectory()) {
+			throw httpError(400, `Pull destination exists but is not a directory: ${displayPath(localDestPath)}`);
+		}
+		return { changed: false, stdout: "" };
+	} catch (error) {
+		if (error.code !== "ENOENT") {
+			throw error;
+		}
+		await fsp.mkdir(localDestPath, { recursive: true });
+		return {
+			changed: true,
+			stdout: `Created pull destination directory: ${displayPath(localDestPath)}`,
+		};
+	}
+}
+
 async function healthReport() {
 	const commands = await Promise.all(["node", "php", "wp", "ssh", "rsync", "mysql", "git", "redis-cli"].map(commandExists));
 	const openLiteSpeedCandidates = [
@@ -5026,6 +5076,256 @@ function cleanWpCliScalarOutput(value) {
 	return lines.length ? lines[lines.length - 1] : "";
 }
 
+function parseWpCliJsonOutput(value) {
+	const lines = String(value || "")
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean);
+	for (let index = lines.length - 1; index >= 0; index -= 1) {
+		try {
+			return JSON.parse(lines[index]);
+		} catch {
+			// Keep walking backward through possible WP-CLI notices.
+		}
+	}
+	throw new Error("Could not parse WP-CLI JSON output.");
+}
+
+function rsyncChangeLines(value) {
+	return String(value || "")
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter((line) => /^[<>ch.*]/.test(line) || line.startsWith("*deleting "));
+}
+
+function codeSyncWarning(title, detail, action = {}) {
+	return {
+		level: "warning",
+		title,
+		detail,
+		...action,
+	};
+}
+
+async function localCodePathStatus(site, relativePath, options = {}) {
+	const localPath = path.join(site.publicPath, relativePath);
+	const allowFile = Boolean(options.allowFile);
+	try {
+		const stat = await fsp.lstat(localPath);
+		if (stat.isSymbolicLink()) {
+			const target = await fsp.readlink(localPath);
+			const resolvedTarget = path.resolve(path.dirname(localPath), target);
+			const targetExists = await pathExists(resolvedTarget);
+			const targetIsLocal = targetExists && isPathInside(site.publicPath, resolvedTarget);
+			return {
+				ok: targetExists && targetIsLocal,
+				localPath,
+				relativePath,
+				symlink: true,
+				target,
+				targetExists,
+				targetIsLocal,
+				reason: targetExists && targetIsLocal
+					? ""
+					: `local path is a ${targetExists ? "non-local" : "broken"} symlink to ${target}`,
+			};
+		}
+		if (!stat.isDirectory() && !(allowFile && stat.isFile())) {
+			return {
+				ok: false,
+				localPath,
+				relativePath,
+				reason: allowFile ? "local path exists but is not a file or directory" : "local path exists but is not a directory",
+			};
+		}
+		return { ok: true, localPath, relativePath, reason: "" };
+	} catch (error) {
+		if (error.code === "ENOENT") {
+			return {
+				ok: false,
+				localPath,
+				relativePath,
+				reason: "local path is missing",
+			};
+		}
+		throw error;
+	}
+}
+
+async function remoteCodePathStatuses(site, relativePaths) {
+	const uniquePaths = [...new Set(relativePaths.filter(Boolean).map(sanitizeRelativePath))];
+	if (!uniquePaths.length || !site.remoteSsh || !site.remotePath) {
+		return new Map();
+	}
+	const script = [
+		`cd ${shellQuote(sanitizeRemotePath(site.remotePath))} || exit 2`,
+		`for p in ${uniquePaths.map(shellQuote).join(" ")}; do`,
+		`  if [ -L "$p" ]; then printf 'SYMLINK\\t%s\\t%s\\n' "$p" "$(readlink "$p")";`,
+		`  elif [ -e "$p" ]; then printf 'EXISTS\\t%s\\t\\n' "$p";`,
+		`  else printf 'MISSING\\t%s\\t\\n' "$p"; fi`,
+		"done",
+	].join("\n");
+	const result = await runProcess(
+		"ssh",
+		sshArgs(site.remoteSsh, site.remotePort || "", script),
+		{ timeoutMs: 30000, trackJob: false },
+	);
+	const statuses = new Map();
+	if (result.code !== 0) {
+		return statuses;
+	}
+	for (const line of String(result.stdout || "").split(/\r?\n/)) {
+		const [status, relativePath, target = ""] = line.split("\t");
+		if (status && relativePath) {
+			statuses.set(relativePath, { status, relativePath, target });
+		}
+	}
+	return statuses;
+}
+
+async function localWordPressCodeState(site) {
+	const result = await runProcess(
+		"wp",
+		[
+			`--path=${site.publicPath}`,
+			"eval",
+			[
+				"$data = [",
+				"'stylesheet' => get_option('stylesheet'),",
+				"'template' => get_option('template'),",
+				"'active_plugins' => array_values((array) get_option('active_plugins', [])),",
+				"];",
+				"echo wp_json_encode($data);",
+			].join(" "),
+			"--skip-plugins",
+			"--skip-themes",
+		],
+		{ cwd: site.publicPath, timeoutMs: 30000, trackJob: false },
+	);
+	if (result.code !== 0) {
+		throw new Error(result.stderr || result.stdout || "Could not inspect local WordPress code state.");
+	}
+	return parseWpCliJsonOutput(result.stdout);
+}
+
+function pluginRelativePathFromPluginFile(pluginFile) {
+	const normalized = sanitizeRelativePath(pluginFile);
+	const parts = normalized.split("/");
+	return parts.length > 1 ? `wp-content/plugins/${parts[0]}` : `wp-content/plugins/${normalized}`;
+}
+
+async function checkDatabaseCodeSync(site) {
+	const warnings = [];
+	const startedAt = Date.now();
+	const checkedPaths = [];
+	try {
+		const state = await localWordPressCodeState(site);
+		const stylesheet = state.stylesheet ? sanitizeThemeDirectory(state.stylesheet) : "";
+		const activePlugins = Array.isArray(state.active_plugins) ? state.active_plugins : [];
+		const themeRelativePath = stylesheet ? `wp-content/themes/${stylesheet}` : "";
+		const pluginRelativePaths = [...new Set(activePlugins.map(pluginRelativePathFromPluginFile).filter(Boolean))];
+		const relativePaths = [themeRelativePath, ...pluginRelativePaths].filter(Boolean);
+		const remoteStatuses = await remoteCodePathStatuses(site, relativePaths);
+
+		if (themeRelativePath) {
+			checkedPaths.push(themeRelativePath);
+			const status = await localCodePathStatus(site, themeRelativePath);
+			const remote = remoteStatuses.get(themeRelativePath);
+			if (!status.ok) {
+				warnings.push(codeSyncWarning(
+					"Active theme files need attention",
+					`${themeRelativePath}: ${status.reason}${remote?.status === "SYMLINK" ? `; remote uses deploy symlink ${remote.target}` : ""}. Pull the active theme before trusting rendered pages.`,
+					{ action: "pull-files", fileScope: "active-theme", relativePath: themeRelativePath },
+				));
+			} else {
+				const source = `${sanitizeRemoteSsh(site.remoteSsh)}:${sanitizeRemotePath(site.remotePath)}/${themeRelativePath}/`;
+				const dest = `${status.localPath}/`;
+				const dryRun = await runProcess(
+					"rsync",
+					rsyncArgs({
+						dryRun: true,
+						deleteFiles: true,
+						source,
+						dest,
+						sshPort: site.remotePort || "",
+					}),
+					{ cwd: site.localRoot, timeoutMs: 120000, trackJob: false },
+				);
+				const changes = rsyncChangeLines(dryRun.stdout);
+				if (dryRun.code === 0 && changes.length) {
+					warnings.push(codeSyncWarning(
+						"Active theme differs from remote",
+						`${themeRelativePath} has ${changes.length} pending file change${changes.length === 1 ? "" : "s"} from the remote site. Pull the active theme so local rendering matches dev.`,
+						{ action: "pull-files", fileScope: "active-theme", relativePath: themeRelativePath, changes: changes.slice(0, 12) },
+					));
+				} else if (dryRun.code !== 0) {
+					warnings.push(codeSyncWarning(
+						"Active theme parity check failed",
+						`${themeRelativePath}: ${dryRun.stderr || dryRun.stdout || "rsync dry run failed"}`,
+						{ action: "pull-files-dry-run", fileScope: "active-theme", relativePath: themeRelativePath },
+					));
+				}
+			}
+		}
+
+		for (const relativePath of pluginRelativePaths) {
+			checkedPaths.push(relativePath);
+			const status = await localCodePathStatus(site, relativePath, { allowFile: relativePath.endsWith(".php") });
+			const remote = remoteStatuses.get(relativePath);
+			if (!status.ok) {
+				warnings.push(codeSyncWarning(
+					"Active plugin files need attention",
+					`${relativePath}: ${status.reason}${remote?.status === "SYMLINK" ? `; remote uses deploy symlink ${remote.target}` : ""}. Pull or materialize this active plugin locally.`,
+					{ action: "pull-files", fileScope: "custom", relativePath },
+				));
+			}
+		}
+
+		return {
+			checked: true,
+			warningCount: warnings.length,
+			warnings,
+			checkedPaths,
+			durationMs: Date.now() - startedAt,
+		};
+	} catch (error) {
+		warnings.push(codeSyncWarning(
+			"Code parity check did not finish",
+			error.message || "Local Hub could not inspect theme/plugin parity after the database pull.",
+		));
+		return {
+			checked: false,
+			warningCount: warnings.length,
+			warnings,
+			checkedPaths,
+			durationMs: Date.now() - startedAt,
+		};
+	}
+}
+
+function formatCodeSyncReport(report) {
+	if (!report) {
+		return "";
+	}
+	const lines = [
+		report.warningCount
+			? `Code parity warnings: ${report.warningCount}`
+			: "Code parity warnings: none",
+	];
+	for (const warning of report.warnings || []) {
+		lines.push(`- ${warning.title}: ${warning.detail}`);
+		if (Array.isArray(warning.changes) && warning.changes.length) {
+			for (const change of warning.changes.slice(0, 6)) {
+				lines.push(`  ${change}`);
+			}
+			if (warning.changes.length > 6) {
+				lines.push(`  ... ${warning.changes.length - 6} more`);
+			}
+		}
+	}
+	return lines.join("\n");
+}
+
 async function runSmokeCheck(site) {
 	const localSite = siteWithRuntimeDefaults(site);
 	const startedAt = Date.now();
@@ -5715,7 +6015,9 @@ async function runSiteAction(site, body) {
 					gitSafety,
 				};
 			}
-			await fsp.mkdir(pullScope.localDestPath, { recursive: true });
+			const destinationPrep = await preparePullDestinationDirectory(pullScope.localDestPath, site.publicPath, {
+				replaceUnsafeSymlink: action === "pull-files",
+			});
 			const result = await runProcess(
 				"rsync",
 				rsyncArgs({
@@ -5735,6 +6037,7 @@ async function runSiteAction(site, body) {
 					`Remote source: ${pullScope.source}`,
 					`Local target: ${pullScope.dest}`,
 					formatGitSafety(gitSafety),
+					destinationPrep.stdout,
 					result.stdout,
 				].filter(Boolean).join("\n"),
 				pullScope: {
@@ -5828,6 +6131,11 @@ async function runSiteAction(site, body) {
 				&& (!restartResult || restartResult.code === 0)
 				? await runSmokeCheck(localSite)
 				: null;
+			const codeSyncResult = importResult.code === 0
+				&& (!searchReplaceResult || searchReplaceResult.code === 0)
+				&& (!dbUrlResult || dbUrlResult.code === 0)
+				? await checkDatabaseCodeSync(localSite)
+				: null;
 			const dbResultCode = importResult.code
 				|| (searchReplaceResult ? searchReplaceResult.code : 0)
 				|| (dbUrlResult ? dbUrlResult.code : 0)
@@ -5846,6 +6154,7 @@ async function runSiteAction(site, body) {
 					htaccessResult ? formatHtaccessResult(htaccessResult) : "",
 					restartResult ? restartResult.stdout : "",
 					smokeResult ? smokeResult.stdout : "",
+					codeSyncResult ? formatCodeSyncReport(codeSyncResult) : "",
 				].filter(Boolean).join("\n"),
 				stderr: [
 					exportResult.stderr,
@@ -5863,13 +6172,15 @@ async function runSiteAction(site, body) {
 					+ (searchReplaceResult ? searchReplaceResult.durationMs : 0)
 					+ (dbUrlResult ? dbUrlResult.durationMs : 0)
 					+ (restartResult ? restartResult.durationMs : 0)
-					+ (smokeResult ? smokeResult.durationMs : 0),
+					+ (smokeResult ? smokeResult.durationMs : 0)
+					+ (codeSyncResult ? codeSyncResult.durationMs : 0),
 				site: localSite,
 				htaccess: htaccessResult,
 				restart: restartResult,
 				dbUrls: dbUrlResult,
 				smokeCode: smokeResult ? smokeResult.code : null,
 				smoke: smokeResult ? smokeResult.smoke : null,
+				codeSync: codeSyncResult,
 				wpConfig: wpConfigResult,
 			};
 		}
