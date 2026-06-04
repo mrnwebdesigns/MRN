@@ -10,6 +10,7 @@ Commands:
   pull-site      Pull a live site into Local (uploads/database).
   deploy-site    Deploy from Local with site-vs-stack scope.
   nightly-pull   Pull all discovered .mrndev.io sites into Local.
+  local-hub      Start the MRN Local Hub browser UI.
   completion     Print shell completion script (zsh|bash).
   install-completion
                  Install shell completion for zsh or bash.
@@ -28,6 +29,7 @@ Examples:
     --local-site-path "/Users/khofmeyer/Local Sites/example/app/public"
 
   mrn nightly-pull --dry-run
+  mrn local-hub
   mrn install-completion zsh
 
 Notes:
@@ -56,6 +58,7 @@ SCRIPT_DIR="$(cd -P "$(dirname "${SOURCE_PATH}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 LOCAL_WORKFLOW="${REPO_ROOT}/local/scripts/local-env-workflow.sh"
 NIGHTLY_PULL_WORKFLOW="${REPO_ROOT}/local/scripts/nightly-pull-mrndev-sites.sh"
+LOCAL_HUB_SERVER="${REPO_ROOT}/local/hub/server.js"
 ZSH_COMPLETION_SRC="${REPO_ROOT}/scripts/completions/_mrn"
 BASH_COMPLETION_SRC="${REPO_ROOT}/scripts/completions/mrn.bash"
 COMMAND="${1:-help}"
@@ -67,6 +70,11 @@ COMMAND="${1:-help}"
 
 [[ -x "${NIGHTLY_PULL_WORKFLOW}" ]] || {
 	echo "FAIL: Missing nightly workflow helper: ${NIGHTLY_PULL_WORKFLOW}" >&2
+	exit 1
+}
+
+[[ -f "${LOCAL_HUB_SERVER}" ]] || {
+	echo "FAIL: Missing Local Hub server: ${LOCAL_HUB_SERVER}" >&2
 	exit 1
 }
 
@@ -218,6 +226,10 @@ case "${COMMAND}" in
 	nightly-pull)
 		shift
 		exec "${NIGHTLY_PULL_WORKFLOW}" "$@"
+		;;
+	local-hub)
+		shift
+		exec node "${LOCAL_HUB_SERVER}" "$@"
 		;;
 	completion)
 		shift

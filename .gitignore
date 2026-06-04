@@ -8,6 +8,13 @@
 create_qa_pages.php
 test_db_connection.php
 
+# MRN Local Hub runtime state and private DB artifacts
+/.mrn-site.json
+/logs/
+/dumps/
+/backups/
+*.sql
+
 # macOS / tooling noise
 .DS_Store
 */.DS_Store

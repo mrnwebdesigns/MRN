@@ -1,0 +1,941 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>MRN Local Hub</title>
+		<link rel="stylesheet" href="/styles.css">
+	</head>
+	<body>
+		<datalist id="sshAliasOptions"></datalist>
+		<div class="app">
+			<aside class="sidebar" aria-label="Local Hub navigation">
+				<div class="brand">
+					<div class="brand-mark" aria-hidden="true">MRN</div>
+					<div>
+						<strong>Local Hub</strong>
+						<span>MRN Web Designs</span>
+					</div>
+				</div>
+
+				<nav class="nav-list" aria-label="Primary">
+					<button type="button" class="active" data-section="dashboard">Dashboard</button>
+					<button type="button" data-section="sites">Sites</button>
+				</nav>
+
+				<div id="healthStrip" class="health-strip">Runtime checking...</div>
+			</aside>
+
+			<main class="workspace">
+				<header class="topbar">
+					<div>
+						<p class="eyebrow">True Local Runtime</p>
+						<h1>MRN Local Hub</h1>
+					</div>
+					<div class="top-actions">
+						<span id="toolStatus" class="pill">Checking</span>
+						<span id="olsStatus" class="pill bad">OLS missing</span>
+						<span id="operationStatus" class="pill operation-pill" role="status" aria-live="polite">Idle</span>
+						<details id="userMenu" class="user-menu">
+							<summary aria-label="Open user menu">
+								<span class="user-avatar" aria-hidden="true">MRN</span>
+								<span class="user-menu-label">MRN Web Designs</span>
+							</summary>
+							<div class="user-menu-panel">
+								<div class="user-menu-heading">
+									<strong>MRN Web Designs</strong>
+									<span>Local Hub</span>
+								</div>
+								<button id="refreshButton" type="button">Refresh</button>
+								<button type="button" data-section="runtime">Runtime</button>
+								<button type="button" data-section="logs">Logs</button>
+								<button id="themeToggle" type="button">Dark mode</button>
+							</div>
+						</details>
+					</div>
+				</header>
+
+				<nav id="tabbar" class="tabbar" aria-label="Section tabs"></nav>
+
+				<section class="overview-dashboard app-tab-panel active" data-tab-panel="dashboard-overview" aria-label="Sites and server dashboard">
+					<div class="dashboard-heading">
+						<div>
+							<p class="eyebrow">Dashboard</p>
+							<h2>Server & Sites</h2>
+							<p>Near realtime runtime load, memory, jobs, and running site activity.</p>
+						</div>
+					</div>
+					<div class="dashboard-metrics">
+						<article>
+							<span class="eyebrow">CPU</span>
+							<strong id="cpuMetricSummary">Checking</strong>
+							<p id="cpuMetricDetail">Local host load is loading.</p>
+						</article>
+						<article>
+							<span class="eyebrow">Memory</span>
+							<strong id="memoryMetricSummary">Checking</strong>
+							<p id="memoryMetricDetail">Memory usage is loading.</p>
+						</article>
+						<article>
+							<span class="eyebrow">Jobs</span>
+							<strong id="jobMetricSummary">0 running</strong>
+							<p id="jobMetricDetail">Hub command queue is idle.</p>
+						</article>
+						<article>
+							<span class="eyebrow">Runtime</span>
+							<strong id="runtimeSummary">OpenLiteSpeed planned</strong>
+							<p id="runtimeMetricSummary">Runtime status is loading.</p>
+						</article>
+					</div>
+					<div class="chart-grid">
+						<button class="chart-card" data-chart-card="cpu" type="button" aria-pressed="false">
+							<span>CPU Usage</span>
+							<strong id="cpuChartValue">0%</strong>
+							<div id="cpuChart" class="sparkline" aria-label="CPU usage history"></div>
+						</button>
+						<button class="chart-card" data-chart-card="memory" type="button" aria-pressed="false">
+							<span>Memory Usage</span>
+							<strong id="memoryChartValue">0%</strong>
+							<div id="memoryChart" class="sparkline" aria-label="Memory usage history"></div>
+						</button>
+						<button class="chart-card" data-chart-card="jobs" type="button" aria-pressed="false">
+							<span>Running Jobs</span>
+							<strong id="jobsChartValue">0</strong>
+							<div id="jobsChart" class="sparkline" aria-label="Running jobs history"></div>
+						</button>
+					</div>
+					<div class="dashboard-section-header">
+						<div>
+							<h3>Running Sites</h3>
+							<p>Per-site disk usage, shared runtime memory, and active jobs.</p>
+						</div>
+					</div>
+					<nav id="dashboardSiteList" class="site-list site-card-grid" aria-label="Running sites"></nav>
+				</section>
+
+				<section class="panel app-tab-panel" data-tab-panel="sites-list">
+					<div class="section-heading">
+						<div>
+							<p class="eyebrow">Sites</p>
+							<h2>All Local Sites</h2>
+							<p id="siteMetricSummary">Local site inventory and controls.</p>
+						</div>
+						<div class="actions compact">
+							<button data-tab-jump="sites-add" type="button" class="action">Add Site</button>
+						</div>
+					</div>
+					<div class="dashboard-metrics site-summary-metrics">
+						<article>
+							<span class="eyebrow">Configured</span>
+							<strong id="siteCount">0 configured</strong>
+							<p id="toolMetricSummary">Checking tools</p>
+						</article>
+						<article>
+							<span class="eyebrow">SSH</span>
+							<strong id="sshMetricSummary">Checking aliases</strong>
+							<p>Local SSH profiles available for pulls and pushes.</p>
+						</article>
+					</div>
+					<div class="site-toolbar" aria-label="Site filtering and bulk operations">
+						<div class="site-filter-grid">
+							<label class="field">
+								<span>Search</span>
+								<input id="siteSearchInput" type="search" autocomplete="off" placeholder="Name, URL, provider, SSH">
+							</label>
+							<label class="field">
+								<span>Status</span>
+								<select id="siteStatusFilter">
+									<option value="all">All statuses</option>
+									<option value="provisioned">Running</option>
+									<option value="planned">Planned</option>
+									<option value="stopped">Stopped</option>
+								</select>
+							</label>
+							<label class="field">
+								<span>Provider</span>
+								<select id="siteProviderFilter">
+									<option value="all">All providers</option>
+								</select>
+							</label>
+						</div>
+						<div class="bulk-actions">
+							<span id="bulkSelectionSummary">0 selected</span>
+							<button id="selectVisibleSitesButton" type="button" class="ghost-button">Select Visible</button>
+							<button id="clearSiteSelectionButton" type="button" class="ghost-button">Clear</button>
+							<button id="bulkStartSitesButton" type="button" class="ghost-button">Start Selected</button>
+							<button id="bulkStopSitesButton" type="button" class="ghost-button danger-button">Stop Selected</button>
+						</div>
+					</div>
+					<div id="siteInventory" class="site-inventory" aria-label="All local sites"></div>
+					<details class="provider-discovery-panel provider-directory-panel embedded-panel">
+						<summary class="provider-directory-summary">
+							<span class="panel-icon" aria-hidden="true">D</span>
+							<span>
+								<strong>Provider Directory</strong>
+								<small>List provider-backed sites and hand one into Add Site.</small>
+							</span>
+						</summary>
+						<div class="discovery-grid">
+							<form id="wpEngineDiscoveryForm" class="discovery-block" autocomplete="off">
+								<div class="mini-heading">
+									<strong>WP Engine</strong>
+									<span id="wpEngineStatus">Credentials are checked locally.</span>
+								</div>
+								<label class="field">
+									<span>API user ID</span>
+									<input name="userId" type="text" autocomplete="off" placeholder="Use env or enter for this call">
+								</label>
+								<label class="field">
+									<span>API password</span>
+									<input name="password" type="password" autocomplete="off" placeholder="Not saved">
+								</label>
+								<div class="actions">
+									<button id="wpEngineListButton" type="button" class="action">List WP Engine</button>
+								</div>
+							</form>
+
+							<form id="siteGroundRegistryForm" class="discovery-block" autocomplete="off">
+								<div class="mini-heading">
+									<strong>SiteGround</strong>
+									<span id="siteGroundStatus">Saved locally from Site Tools SSH details.</span>
+								</div>
+								<label class="field">
+									<span>Name</span>
+									<input name="name" type="text" placeholder="Client site">
+								</label>
+								<label class="field">
+									<span>Slug</span>
+									<input name="slug" type="text" placeholder="client-site">
+								</label>
+								<label class="field">
+									<span>Live URL</span>
+									<input name="liveUrl" type="url" placeholder="https://example.org">
+								</label>
+								<label class="field">
+									<span>SSH alias or target</span>
+									<input name="remoteSsh" type="text" list="sshAliasOptions" placeholder="client-siteground">
+								</label>
+								<label class="field">
+									<span>Port</span>
+									<input name="remotePort" type="text" inputmode="numeric" placeholder="18765">
+								</label>
+								<label class="field">
+									<span>Remote root</span>
+									<input name="remotePath" type="text" placeholder="public_html">
+								</label>
+								<label class="field wide">
+									<span>Notes</span>
+									<input name="notes" type="text" placeholder="Optional account/site note">
+								</label>
+								<div class="actions">
+									<button id="siteGroundAddButton" type="button" class="ghost-button">Save SiteGround</button>
+								</div>
+							</form>
+						</div>
+						<div class="discovery-results-header">
+							<div>
+								<h3>Discovered Sites</h3>
+								<p id="providerDiscoverySummary">No provider sites loaded yet.</p>
+							</div>
+							<button id="refreshProviderAccountsButton" type="button" class="ghost-button">Refresh Providers</button>
+						</div>
+						<div id="providerResults" class="provider-results"></div>
+					</details>
+				</section>
+
+				<section class="panel add-site-flow app-tab-panel" data-tab-panel="sites-add" aria-labelledby="addSiteTitle">
+					<div class="section-heading add-site-heading">
+						<div>
+							<p class="eyebrow">Sites</p>
+							<h2 id="addSiteTitle">Add Site</h2>
+							<p>Choose a source, prepare the connection, then create the local manifest.</p>
+						</div>
+						<div class="actions compact">
+							<button id="addSiteCancelButton" type="button" class="ghost-button">Cancel</button>
+						</div>
+					</div>
+
+					<ol class="add-stepper" aria-label="Add site steps">
+						<li data-add-step="source">
+							<span>1</span>
+							<strong>Source</strong>
+							<small>Choose how this site starts.</small>
+						</li>
+						<li data-add-step="connection">
+							<span>2</span>
+							<strong>Connection</strong>
+							<small>Fill the required local or SSH details.</small>
+						</li>
+						<li data-add-step="create">
+							<span>3</span>
+							<strong>Create</strong>
+							<small>Review and choose the first import.</small>
+						</li>
+					</ol>
+
+					<div class="add-step-panel" data-add-step-panel="source">
+						<div class="source-grid" role="radiogroup" aria-label="Site source">
+							<label class="source-card">
+								<input type="radio" name="addSiteMode" value="ssh" checked>
+								<span>
+									<strong>Pull From SSH</strong>
+									<small>MRN Dev, RunCloud, SiteGround, WP Engine, or a generic SSH WordPress root.</small>
+								</span>
+							</label>
+							<label class="source-card">
+								<input type="radio" name="addSiteMode" value="blank">
+								<span>
+									<strong>Blank Local Site</strong>
+									<small>Create an empty local manifest and fill the site details later.</small>
+								</span>
+							</label>
+						</div>
+					</div>
+
+					<div class="add-step-panel" data-add-step-panel="connection" hidden>
+						<div class="blank-site-fields embedded-panel" data-add-requires="blank" hidden>
+							<div class="panel-title">
+								<div class="panel-icon" aria-hidden="true">+</div>
+								<div>
+									<h3>Blank Site Details</h3>
+									<p>The local slug is required before creating the manifest.</p>
+								</div>
+							</div>
+							<div class="create-strip">
+								<input id="newSlug" type="text" autocomplete="off" placeholder="site-slug" aria-label="New site slug">
+							</div>
+						</div>
+
+						<div class="connection-grid" data-add-requires="ssh">
+							<div class="embedded-panel ssh-panel">
+								<div class="panel-title">
+									<div class="panel-icon" aria-hidden="true">K</div>
+									<div>
+										<h3>SSH Connection</h3>
+										<p>Connect to MRN Dev, RunCloud, SiteGround, WP Engine, or any SSH WordPress root.</p>
+									</div>
+								</div>
+								<form id="sshForm" class="form-grid">
+									<label class="field">
+										<span>Provider</span>
+										<select name="provider">
+											<option value="mrndev">MRN Dev</option>
+											<option value="runcloud">RunCloud</option>
+											<option value="siteground">SiteGround</option>
+											<option value="wpengine">WP Engine</option>
+											<option value="generic">Generic SSH</option>
+										</select>
+									</label>
+									<label class="field">
+										<span>Site URL or slug</span>
+										<input name="slug" type="text" placeholder="https://site.mrndev.io or site-slug">
+									</label>
+									<label class="field">
+										<span>SSH alias or target</span>
+										<input name="remoteSsh" type="text" list="sshAliasOptions" placeholder="siteuser@server">
+									</label>
+									<label class="field">
+										<span>Port</span>
+										<input name="remotePort" type="text" inputmode="numeric" placeholder="22">
+									</label>
+									<label class="field">
+										<span>Live URL override</span>
+										<input name="liveUrl" type="url" placeholder="https://example.org">
+									</label>
+									<label class="field wide">
+										<span>Remote WordPress root</span>
+										<input name="remotePath" type="text" placeholder="/home/runcloud/webapps/app/public">
+									</label>
+									<div id="providerHint" class="provider-hint wide">Enter a *.mrndev.io live URL or slug. Prepare Connection resolves the SSH target, finds the WordPress root, and inspects the site.</div>
+								</form>
+								<details class="advanced-actions">
+									<summary>Advanced SSH checks</summary>
+									<div class="actions">
+										<button data-ssh-action="mrndev-resolve" type="button" class="ghost-button">Resolve MRN Dev</button>
+										<button data-ssh-action="ssh-config" type="button" class="ghost-button">Preview SSH Config</button>
+										<button data-ssh-action="ssh-test" type="button" class="ghost-button">Test SSH</button>
+										<button data-ssh-action="ssh-inspect" type="button" class="ghost-button">Inspect WordPress</button>
+									</div>
+								</details>
+							</div>
+
+							<div class="embedded-panel ssh-profile-panel">
+								<div class="panel-title">
+									<div class="panel-icon" aria-hidden="true">K</div>
+									<div>
+										<h3>SSH Profiles</h3>
+										<p>Local aliases from your SSH config.</p>
+									</div>
+								</div>
+								<div class="rail-actions">
+									<button id="refreshSshAliasesButton" type="button" class="ghost-button">Refresh Aliases</button>
+								</div>
+								<div id="sshAliasSummary" class="runtime-paths">SSH aliases have not loaded yet.</div>
+								<div id="sshAliasList" class="ssh-alias-list"></div>
+							</div>
+						</div>
+					</div>
+
+					<div class="add-step-panel" data-add-step-panel="create" hidden>
+						<div class="review-card">
+							<div>
+								<h3>Review & First Import</h3>
+								<p id="addSiteValidation">Complete the previous steps to create this site.</p>
+							</div>
+							<dl id="addSiteSummary" class="review-list"></dl>
+							<div class="initial-import-options" data-add-requires="ssh">
+								<div class="mini-heading">
+									<strong>First import</strong>
+									<span>Create the manifest, provision local runtime, then pull the selected parts into local.</span>
+								</div>
+								<div class="initial-import-grid">
+									<label class="checkline">
+										<input id="addSitePullFiles" type="checkbox" checked>
+										<span>Pull files</span>
+									</label>
+									<label class="field">
+										<span>File scope</span>
+										<select id="addSiteFileScope">
+											<option value="full">Full site</option>
+											<option value="full-no-uploads">Full site, skip uploads</option>
+											<option value="core">Core/root</option>
+											<option value="wp-content">wp-content</option>
+											<option value="themes">All themes</option>
+											<option value="plugins">Plugins</option>
+											<option value="mu-plugins">MU plugins</option>
+											<option value="uploads">Uploads</option>
+											<option value="custom">Custom directory</option>
+										</select>
+									</label>
+									<label id="addSiteCustomPathField" class="field" hidden>
+										<span>Custom path</span>
+										<input id="addSiteCustomPath" type="text" value="wp-content/themes" aria-label="Initial import custom pull path">
+									</label>
+									<label class="checkline">
+										<input id="addSitePullDb" type="checkbox" checked>
+										<span>Pull database</span>
+									</label>
+									<label class="checkline">
+										<input id="addSiteSmokeCheck" type="checkbox">
+										<span>Run final smoke check</span>
+									</label>
+								</div>
+								<div id="addSiteImportSummary" class="operation-status">Create & Import will provision the site locally first.</div>
+							</div>
+							<div class="actions">
+								<button id="createSiteButton" type="button" class="action">Create Blank Site</button>
+								<button id="sshCreateSiteButton" data-ssh-action="ssh-create-site" type="button" class="ghost-button">Create Manifest Only</button>
+								<button id="sshCreateImportButton" type="button" class="action">Create & Import</button>
+							</div>
+						</div>
+					</div>
+
+					<div class="wizard-actions">
+						<button id="addSiteBackButton" type="button" class="ghost-button">Back</button>
+						<button id="addSiteNextButton" type="button" class="action">Next</button>
+					</div>
+				</section>
+
+				<section class="runtime-page app-tab-panel" data-tab-panel="runtime-status" aria-label="Runtime status">
+					<div class="runtime-hero panel">
+						<div class="section-heading">
+							<div class="panel-title inline-title">
+								<div class="panel-icon" aria-hidden="true">R</div>
+								<div>
+									<p class="eyebrow">Runtime</p>
+									<h2>OpenLiteSpeed Adapter</h2>
+									<p>Current local server target and connection state.</p>
+								</div>
+							</div>
+							<div class="actions compact">
+								<button data-runtime-action="runtime-status" type="button" class="ghost-button">Refresh Runtime</button>
+								<button data-runtime-action="runtime-check" type="button" class="ghost-button">Check Services</button>
+							</div>
+						</div>
+						<div class="runtime-metrics">
+							<article>
+								<span>Webserver</span>
+								<strong>OpenLiteSpeed</strong>
+							</article>
+							<article>
+								<span>Isolation</span>
+								<strong id="runtimeIsolation">Lima VM</strong>
+							</article>
+							<article>
+								<span>Instance</span>
+								<strong id="runtimeInstance">mrn-openlitespeed</strong>
+							</article>
+							<article>
+								<span>State</span>
+								<strong id="runtimeState">Checking</strong>
+							</article>
+							<article class="wide">
+								<span>Friendly URLs</span>
+								<strong id="friendlyUrlState">Checking</strong>
+							</article>
+						</div>
+						<div class="runtime-shortcuts">
+							<button data-runtime-action="runtime-open-http" type="button" class="ghost-button">Open HTTP Runtime</button>
+							<button data-runtime-action="runtime-open-admin" type="button" class="ghost-button">Open OLS Admin</button>
+						</div>
+					</div>
+				</section>
+
+				<section class="runtime-page app-tab-panel" data-tab-panel="runtime-https" aria-label="Runtime HTTPS">
+					<div class="runtime-grid two-col">
+						<article class="panel runtime-card">
+							<div class="panel-title">
+								<div class="panel-icon" aria-hidden="true">S</div>
+								<div>
+									<h2>Friendly HTTPS</h2>
+									<p>No-port SSL on macOS requires the HTTPS helper. Install first, then verify.</p>
+								</div>
+							</div>
+							<div class="runtime-setup-flow">
+								<article id="httpsInstallStepCard" class="runtime-step-card required active">
+									<div class="step-heading">
+										<span class="step-number">1</span>
+										<span class="step-kicker">Required</span>
+									</div>
+									<h3>Install HTTPS Helper</h3>
+									<p>Creates a small macOS launchd helper for ports 80/443 and trusts the local SSL certificate.</p>
+									<button id="installHttpsHelperButton" data-runtime-action="runtime-friendly-install-helper" type="button" class="action">Install HTTPS Helper</button>
+								</article>
+								<article id="friendlyUrlStepCard" class="runtime-step-card">
+									<div class="step-heading">
+										<span class="step-number">2</span>
+										<span class="step-kicker">After install</span>
+									</div>
+									<h3>Verify Friendly URLs</h3>
+									<p>Checks that https://*.localhost is live. This cannot provide no-port SSL before the helper is installed.</p>
+									<button id="friendlyStartButton" data-runtime-action="runtime-friendly-start" type="button" class="ghost-button">Required</button>
+								</article>
+								<article id="httpsCertStepCard" class="runtime-step-card">
+									<div class="step-heading">
+										<span class="step-number">3</span>
+										<span class="step-kicker">Certificate</span>
+									</div>
+									<h3>Refresh SSL Cert</h3>
+									<p>Regenerates the mkcert certificate if it is missing or stale.</p>
+									<button id="refreshSslCertButton" data-runtime-action="runtime-friendly-cert" type="button" class="ghost-button">Refresh Cert</button>
+								</article>
+							</div>
+						</article>
+						<article class="panel runtime-card">
+							<div class="panel-title">
+								<div class="panel-icon" aria-hidden="true">C</div>
+								<div>
+									<h2>Certificate & Helper</h2>
+									<p>Trusted mkcert certificate plus the small macOS port helper.</p>
+								</div>
+							</div>
+							<div class="runtime-status-pills" aria-label="Friendly HTTPS status">
+								<span id="httpsHelperStatusPill" class="pill">Helper checking</span>
+								<span id="httpsCertStatusPill" class="pill">Cert checking</span>
+								<span id="httpsProxyStatusPill" class="pill">Proxy checking</span>
+								<span id="firefoxTrustStatusPill" class="pill">Firefox checking</span>
+							</div>
+							<div class="runtime-card-actions">
+								<button id="trustFirefoxButton" data-runtime-action="runtime-firefox-trust" type="button" class="ghost-button">Trust Firefox</button>
+							</div>
+							<div class="runtime-metrics compact-metrics">
+								<article>
+									<span>URL pattern</span>
+									<strong>https://*.localhost</strong>
+								</article>
+								<article>
+									<span>Proxy target</span>
+									<strong>127.0.0.1:8088</strong>
+								</article>
+								<article class="wide">
+									<span>Current state</span>
+									<strong id="friendlyUrlStateMirror">Checking</strong>
+								</article>
+							</div>
+						</article>
+					</div>
+				</section>
+
+				<section class="runtime-page app-tab-panel" data-tab-panel="runtime-maintenance" aria-label="Runtime maintenance">
+					<div class="runtime-grid two-col">
+						<article class="panel runtime-card">
+							<div class="panel-title">
+								<div class="panel-icon" aria-hidden="true">B</div>
+								<div>
+									<h2>Bootstrap</h2>
+									<p>Create or update the Lima OpenLiteSpeed runtime definition.</p>
+								</div>
+							</div>
+							<div class="runtime-action-stack">
+								<button data-runtime-action="runtime-plan" type="button" class="action">Generate Bootstrap</button>
+								<button data-runtime-action="runtime-bootstrap" type="button" class="action">Bootstrap Runtime</button>
+							</div>
+						</article>
+						<article class="panel runtime-card">
+							<div class="panel-title">
+								<div class="panel-icon" aria-hidden="true">M</div>
+								<div>
+									<h2>Maintenance</h2>
+									<p>Repair packages, recheck services, or open generated runtime files.</p>
+								</div>
+							</div>
+							<div class="runtime-action-stack">
+								<button data-runtime-action="runtime-repair" type="button" class="ghost-button">Repair Install</button>
+								<button data-runtime-action="runtime-check" type="button" class="ghost-button">Check Services</button>
+								<button data-runtime-action="runtime-open-script" type="button" class="ghost-button">Open Script</button>
+							</div>
+						</article>
+					</div>
+				</section>
+
+				<section class="runtime-page app-tab-panel" data-tab-panel="runtime-details" aria-label="Runtime details">
+					<div class="panel runtime-card">
+						<div class="panel-title">
+							<div class="panel-icon" aria-hidden="true">D</div>
+							<div>
+								<h2>Runtime Details</h2>
+								<p>Paths, ports, generated certs, helper status, and prerequisite checks.</p>
+							</div>
+						</div>
+						<div id="runtimePaths" class="runtime-paths large">Runtime plan has not been generated yet.</div>
+					</div>
+				</section>
+
+				<div class="content">
+					<section class="main-column">
+						<div id="emptyState" class="empty-state hero-panel" hidden>
+							<div class="panel-title">
+								<div class="panel-icon" aria-hidden="true">+</div>
+								<div>
+									<p class="eyebrow">No Active Site</p>
+									<h2>Select or create a site</h2>
+									<p>Create a manifest, add SSH details, then pull files/database into the local runtime.</p>
+								</div>
+							</div>
+						</div>
+
+						<div id="siteDetail" class="site-detail panel-grid" hidden>
+							<section class="hero-panel app-tab-panel" data-tab-panel="sites-settings sites-sync sites-qa">
+								<div class="section-heading">
+									<div>
+										<p id="runtimeLabel" class="eyebrow">OpenLiteSpeed</p>
+										<h2 id="siteTitle">Site</h2>
+										<p id="siteSubtitle">Local WordPress workspace</p>
+									</div>
+									<div class="actions compact">
+										<button id="openLocalButton" type="button" class="ghost-button">Open Site</button>
+										<button id="openAdminButton" type="button" class="ghost-button" title="Open wp-admin with a one-time local login">WP Admin</button>
+									</div>
+								</div>
+								<nav class="site-subnav" aria-label="Selected site options">
+									<button type="button" data-site-view="sites-settings" class="active" aria-selected="true">Settings</button>
+									<button type="button" data-site-view="sites-sync" aria-selected="false">Pull & Push</button>
+									<button type="button" data-site-view="sites-qa" aria-selected="false">QA</button>
+								</nav>
+							</section>
+
+							<section class="panel app-tab-panel" data-tab-panel="sites-settings">
+								<div class="panel-title">
+									<div class="panel-icon" aria-hidden="true">S</div>
+									<div>
+										<h2>Site Manifest</h2>
+										<p>Local paths, RunCloud production pointers, and runtime settings.</p>
+									</div>
+								</div>
+
+								<form id="siteForm" class="form-grid">
+									<label class="field">
+										<span>Title</span>
+										<input name="title" type="text">
+									</label>
+									<label class="field">
+										<span>Local URL</span>
+										<input name="localUrl" type="url">
+									</label>
+									<label class="field">
+										<span>Live URL</span>
+										<input name="liveUrl" type="url">
+									</label>
+									<label class="field">
+										<span>Provider</span>
+										<select name="provider">
+											<option value="mrndev">MRN Dev</option>
+											<option value="runcloud">RunCloud</option>
+											<option value="siteground">SiteGround</option>
+											<option value="wpengine">WP Engine</option>
+											<option value="generic">Generic SSH</option>
+										</select>
+									</label>
+									<label class="field">
+										<span>SSH alias or target</span>
+										<input name="remoteSsh" type="text" list="sshAliasOptions" placeholder="user@server">
+									</label>
+									<label class="field">
+										<span>SSH port</span>
+										<input name="remotePort" type="text" inputmode="numeric" placeholder="22">
+									</label>
+									<label class="field wide">
+										<span>Remote path</span>
+										<input name="remotePath" type="text" placeholder="/home/user/webapps/site">
+									</label>
+									<label class="field">
+										<span>PHP</span>
+										<select name="phpVersion">
+											<option value="8.4">8.4</option>
+											<option value="8.3">8.3</option>
+											<option value="8.2">8.2</option>
+											<option value="8.1">8.1</option>
+											<option value="8.0">8.0</option>
+											<option value="7.4">7.4</option>
+										</select>
+									</label>
+									<label class="field">
+										<span>Runtime</span>
+										<select name="runtime">
+											<option value="local-vm-openlitespeed">Local VM OpenLiteSpeed</option>
+											<option value="native-openlitespeed">Native OpenLiteSpeed</option>
+											<option value="native-php-approximation">Native PHP Approximation</option>
+										</select>
+									</label>
+									<label class="field">
+										<span>Database</span>
+										<input name="dbName" type="text">
+									</label>
+									<label class="field">
+										<span>DB user</span>
+										<input name="dbUser" type="text">
+									</label>
+									<label class="field">
+										<span>DB password</span>
+										<input name="dbPassword" type="password" autocomplete="off">
+									</label>
+									<label class="field">
+										<span>DB host</span>
+										<input name="dbHost" type="text">
+									</label>
+									<label class="field">
+										<span>DB port</span>
+										<input name="dbPort" type="text" inputmode="numeric">
+									</label>
+									<label class="field wide">
+										<span>Local root</span>
+										<input name="localRoot" type="text" readonly>
+									</label>
+									<label class="field wide">
+										<span>Public path</span>
+										<input name="publicPath" type="text">
+									</label>
+									<label class="field wide">
+										<span>QA project root</span>
+										<input name="qaProjectRoot" type="text">
+									</label>
+									<label class="field wide">
+										<span>Notes</span>
+										<textarea name="notes" rows="3"></textarea>
+									</label>
+								</form>
+								<div class="actions settings-actions">
+									<button id="saveSiteButton" type="button" class="action">Save Settings</button>
+									<button data-action="normalize-local-url" type="button" class="ghost-button">Normalize Local URL</button>
+								</div>
+								<div class="danger-zone">
+									<div>
+										<strong>Delete this local site</strong>
+										<p>Removes the local site folder, local database/user, and local OpenLiteSpeed mapping. Remote hosting is not touched.</p>
+									</div>
+									<button id="deleteSiteButton" type="button" class="ghost-button danger-button">Delete Site</button>
+								</div>
+							</section>
+
+							<div class="operations">
+								<section class="operation-band panel app-tab-panel" data-tab-panel="sites-sync">
+									<div class="panel-title">
+										<div class="panel-icon" aria-hidden="true">R</div>
+										<div>
+											<h3>Runtime</h3>
+											<p>Create the local database, user, and OpenLiteSpeed vhost.</p>
+										</div>
+									</div>
+									<div id="runtimeOperationStatus" class="operation-status">Select a site to provision the local runtime.</div>
+									<div class="actions">
+										<button id="provisionSiteButton" data-action="provision-site" type="button" class="action">Provision Site</button>
+									</div>
+								</section>
+
+								<section class="operation-band panel app-tab-panel" data-tab-panel="sites-sync">
+									<div class="panel-title">
+										<div class="panel-icon" aria-hidden="true">P</div>
+										<div>
+											<h3>Pull</h3>
+											<p>Check SSH, paths, and tools before bringing production into local.</p>
+										</div>
+									</div>
+									<div class="pull-options">
+										<label>
+											<span>Files</span>
+											<select id="pullFileScope">
+												<option value="full">Full site</option>
+												<option value="full-no-uploads">Full site, skip uploads</option>
+												<option value="core">Core/root</option>
+												<option value="wp-content">wp-content</option>
+												<option value="active-theme">Active theme</option>
+												<option value="themes">All themes</option>
+												<option value="plugins">Plugins</option>
+												<option value="mu-plugins">MU plugins</option>
+												<option value="uploads">Uploads</option>
+												<option value="custom">Custom directory</option>
+											</select>
+										</label>
+										<label id="pullCustomPathField" hidden>
+											<span>Custom path</span>
+											<input id="pullCustomPath" type="text" value="wp-content/themes" aria-label="Custom pull path">
+										</label>
+									</div>
+									<div id="pullSummary" class="operation-status">Select a site with SSH details to run preflight.</div>
+									<ol id="pullWizardSteps" class="mini-stepper" aria-label="Pull workflow steps">
+										<li data-pull-step="files">
+											<span>1</span>
+											<strong>Files</strong>
+										</li>
+										<li data-pull-step="database">
+											<span>2</span>
+											<strong>Database</strong>
+										</li>
+										<li data-pull-step="verify">
+											<span>3</span>
+											<strong>Verify</strong>
+										</li>
+									</ol>
+									<div class="actions">
+										<button id="pullFilesDbButton" type="button" class="action">Pull Files & DB</button>
+									</div>
+									<details class="advanced-actions">
+										<summary>Advanced pull actions</summary>
+										<div class="actions">
+											<button data-action="pull-preflight" type="button" class="ghost-button">Preflight</button>
+											<button data-action="pull-files-dry-run" type="button" class="ghost-button">Dry Run</button>
+											<button data-action="pull-files" type="button" class="ghost-button">Pull Files Only</button>
+											<button data-action="pull-db" type="button" class="ghost-button">Pull DB Only</button>
+											<button data-action="smoke-check" type="button" class="ghost-button">Smoke Check</button>
+										</div>
+									</details>
+								</section>
+
+								<section class="operation-band panel app-tab-panel" data-tab-panel="sites-sync">
+									<div class="panel-title">
+										<div class="panel-icon" aria-hidden="true">A</div>
+										<div>
+											<h3>Admin</h3>
+											<p>Find local login blockers and disable high-confidence security plugins locally.</p>
+										</div>
+									</div>
+									<div class="operation-status">Local-only. Does not push plugin changes back to the remote site.</div>
+									<div id="adminStatus" class="operation-status">Run Admin Check to inspect local wp-admin access and plugin blockers.</div>
+									<ul id="adminResultList" class="result-list"></ul>
+									<div class="actions">
+										<button data-action="admin-check" type="button" class="ghost-button">Admin Check</button>
+										<button data-action="admin-unlock" type="button" class="ghost-button">Local Admin Unlock</button>
+									</div>
+								</section>
+
+								<section class="operation-band panel app-tab-panel" data-tab-panel="sites-sync">
+									<div class="panel-title">
+										<div class="panel-icon" aria-hidden="true">U</div>
+										<div>
+											<h3>Push</h3>
+											<p>Deploy one selected path back over SSH after a dry run.</p>
+										</div>
+									</div>
+									<div class="push-row">
+										<input id="pushPath" type="text" value="wp-content/themes" aria-label="Path to push">
+										<label class="checkline">
+											<input id="deleteFiles" type="checkbox">
+											<span>Delete remote extras</span>
+										</label>
+									</div>
+									<div class="actions">
+										<button data-action="push-audit" type="button" class="ghost-button">Push Audit</button>
+										<button data-action="push-path-dry-run" type="button" class="ghost-button">Dry Run Push</button>
+										<button data-action="push-path" type="button" class="ghost-button danger-button">Push Path</button>
+									</div>
+								</section>
+
+								<section class="operation-band panel app-tab-panel" data-tab-panel="sites-qa">
+									<div class="panel-title">
+										<div class="panel-icon" aria-hidden="true">Q</div>
+										<div>
+											<h3>QA</h3>
+											<p>Run MRN gates against this local WordPress site.</p>
+										</div>
+									</div>
+									<div class="actions">
+										<button data-action="run-qa" type="button" class="action">Run MRN QA</button>
+									</div>
+								</section>
+
+								<section class="output qa-console-panel app-tab-panel" data-tab-panel="sites-qa" aria-label="MRN QA output">
+									<header>
+										<div>
+											<div class="panel-icon" aria-hidden="true">L</div>
+											<strong>MRN QA Log</strong>
+										</div>
+										<div class="actions compact">
+											<button id="refreshQaScreenshotsButton" type="button" class="ghost-button">Refresh Screenshots</button>
+											<button id="clearQaOutputButton" type="button" class="ghost-button">Clear Log</button>
+											<button id="clearQaAllButton" type="button" class="ghost-button danger-button">Clear All</button>
+										</div>
+									</header>
+									<pre id="qaOutputConsole" tabindex="0"></pre>
+									<div class="qa-screenshot-section">
+										<div class="qa-screenshot-heading">
+											<strong>Screenshots</strong>
+											<span id="qaScreenshotSummary">No screenshots loaded</span>
+										</div>
+										<div id="qaScreenshotGrid" class="qa-screenshot-grid"></div>
+									</div>
+								</section>
+							</div>
+
+						</div>
+
+						<section class="output app-tab-panel" data-tab-panel="logs-console" aria-label="Command output">
+							<header>
+								<div>
+									<div class="panel-icon" aria-hidden="true">T</div>
+									<strong>Deployment Log</strong>
+								</div>
+								<button id="clearOutputButton" type="button" class="ghost-button">Clear Log</button>
+							</header>
+							<pre id="outputConsole" tabindex="0"></pre>
+						</section>
+					</section>
+
+				</div>
+			</main>
+		</div>
+
+		<div id="confirmOverlay" class="confirm-overlay" hidden>
+			<section class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+				<div class="panel-title">
+					<div class="panel-icon" aria-hidden="true">!</div>
+					<div>
+						<h2 id="confirmTitle">Confirm action</h2>
+						<p id="confirmMessage">Type the confirmation token to continue.</p>
+					</div>
+				</div>
+				<label class="field">
+					<span id="confirmTokenLabel">Confirmation token</span>
+					<input id="confirmInput" type="text" autocomplete="off">
+				</label>
+				<div class="actions compact">
+					<button id="confirmCancelButton" type="button" class="ghost-button">Cancel</button>
+					<button id="confirmSubmitButton" type="button" class="action">Confirm</button>
+				</div>
+			</section>
+		</div>
+
+		<div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="false"></div>
+
+		<script src="/app.js"></script>
+	</body>
+</html>

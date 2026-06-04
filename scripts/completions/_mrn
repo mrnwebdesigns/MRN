@@ -64,6 +64,7 @@ _mrn() {
 		'pull-site:Pull a live site into Local'
 		'deploy-site:Deploy local updates to a live site'
 		'nightly-pull:Pull all discovered .mrndev.io sites'
+		'local-hub:Start the MRN Local Hub browser UI'
 		'completion:Print shell completion script'
 		'install-completion:Install shell completion'
 		'help:Show help'
@@ -219,6 +220,13 @@ _mrn() {
 				return
 			fi
 			_message 'shell'
+			return
+			;;
+		local-hub)
+			opts=(
+				'--doctor[Print Local Hub doctor JSON]'
+			)
+			_describe -t options 'local-hub option' opts
 			return
 			;;
 	esac

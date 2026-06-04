@@ -14,6 +14,7 @@ Use the shorthand commands:
 - `mrn pull-site`
 - `mrn deploy-site`
 - `mrn nightly-pull`
+- `mrn local-hub`
 - `mrn install-completion zsh`
 
 Fast positional form:
@@ -28,6 +29,77 @@ Optional one-time install into your PATH:
 ```bash
 ln -sf /Users/khofmeyer/Development/MRN/scripts/mrn /opt/homebrew/bin/mrn
 ```
+
+## MRN Local Hub
+
+Use the browser UI when you want a Local-app-free control panel for site manifests, SSH pulls, selected-path push dry runs, and MRN QA.
+
+```bash
+mrn local-hub
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5678
+```
+
+The hub stores site manifests under:
+
+```text
+/Users/khofmeyer/Development/MRN-sites/<site-slug>/.mrn-site.json
+```
+
+Runtime parity target:
+
+- true local, no Docker Desktop
+- OpenLiteSpeed-oriented site manifests
+- local VM/native OpenLiteSpeed adapter hooks
+- SSH/rsync/WP-CLI operations from the Mac
+
+After Lima is installed:
+
+1. Use `Generate Bootstrap`.
+2. Use `Bootstrap Runtime`.
+3. Use `Check Services`.
+4. Use `Open HTTP` or `Open Admin` to confirm OpenLiteSpeed is reachable.
+
+SSH import flow:
+
+1. Use Provider Discovery first when the site is on WP Engine or SiteGround.
+2. Choose MRN Dev, RunCloud, SiteGround, WP Engine, or Generic SSH.
+3. Add the site URL or short slug, plus an SSH alias from `~/.ssh/config` when possible.
+4. Use `Preview SSH Config` to confirm the alias resolves locally without opening a remote connection.
+5. Add a live URL and remote WordPress root if known.
+6. Leave the remote root blank when you want provider-aware inspection to try common roots.
+7. Run `Test SSH`.
+8. Run `Inspect WordPress`.
+9. Create the manifest.
+10. Run `Provision Site` to create the local OpenLiteSpeed vhost and MariaDB database/user.
+11. Run Pull `Preflight`, then `Dry Run`, then the guarded file/database pulls.
+
+Local site URLs use:
+
+```text
+https://<site-slug>.localhost
+```
+
+That keeps the runtime truly local and avoids macOS hosts-file edits. The friendly HTTPS helper binds ports 80/443 and proxies to OpenLiteSpeed on `127.0.0.1:8088`; Firefox may need the Runtime > HTTPS trust action because it uses its own certificate store. The hub patches the local `wp-config.php` to `127.0.0.1:3307` after provisioning or file pulls, with the first live config copied into the site's `backups/` directory.
+
+The `SSH Profiles` rail reads local aliases from `~/.ssh/config`, including simple included files. Click an alias there to fill the SSH Import target, then use `Preview SSH Config` or `Test SSH` when you want to resolve or connect.
+
+Provider Discovery:
+
+- WP Engine can list installs through the WP Engine API. Enter credentials for that one call, or start the Hub with `WPENGINE_API_USER_ID` and `WPENGINE_API_PASSWORD`.
+- SiteGround entries are saved locally from Site Tools SSH details because the practical SiteGround path is SSH/SFTP per site, not a public account-site listing API.
+- Saved SiteGround entries live at `/Users/khofmeyer/Development/MRN-sites/.mrn-provider-sites.json`.
+- Click `Use` on a discovered provider site to fill SSH Import, then inspect WordPress and create the manifest.
+
+For `*.mrndev.io` sites, choose `MRN Dev`, enter the live URL or short slug in `Site URL or slug`, then use `Resolve MRN Dev`. The Hub discovers the site owner/root via the `mrndev` SSH alias and fills the import form with `site-user@mrndev-site-owner` plus `/home/<site-user>/htdocs/<site>.mrndev.io`, so the standard pull/push buttons work against MRN Dev too.
+
+More detail:
+
+- `/Users/khofmeyer/Development/MRN/local/hub/README.md`
 
 ## Nightly Pull For All `*.mrndev.io` Sites
 
