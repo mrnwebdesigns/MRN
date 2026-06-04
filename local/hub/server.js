@@ -994,6 +994,24 @@ function createFriendlyHttpsProxyServer(tlsOptions) {
 	return https.createServer(tlsOptions, proxyToOpenLiteSpeed);
 }
 
+async function friendlyCertificateHostnames() {
+	const names = new Set(["localhost", "127.0.0.1", "::1"]);
+	try {
+		for (const site of await listSites()) {
+			if (site.slug) {
+				names.add(`${normalizeSlug(site.slug)}.localhost`);
+			}
+			const hostname = hostnameFromUrl(site.localUrl);
+			if (hostname && (hostname === "localhost" || hostname.endsWith(".localhost"))) {
+				names.add(hostname);
+			}
+		}
+	} catch {
+		// A cert with core localhost names is still useful when manifests are unavailable.
+	}
+	return Array.from(names);
+}
+
 async function ensureFriendlyCertificate() {
 	if (!friendlyUrlEnabled) {
 		friendlyProxyState.cert.status = "disabled";
@@ -1019,6 +1037,7 @@ async function ensureFriendlyCertificate() {
 	}
 
 	await fsp.mkdir(friendlyCertRoot, { recursive: true });
+	const certNames = await friendlyCertificateHostnames();
 	const result = await runProcess(
 		"mkcert",
 		[
@@ -1026,10 +1045,7 @@ async function ensureFriendlyCertificate() {
 			friendlyCertPath,
 			"-key-file",
 			friendlyKeyPath,
-			"localhost",
-			"127.0.0.1",
-			"::1",
-			"*.localhost",
+			...certNames,
 		],
 		{ timeoutMs: 60000, trackJob: false },
 	);
@@ -1040,7 +1056,7 @@ async function ensureFriendlyCertificate() {
 	}
 
 	friendlyProxyState.cert.status = "ready";
-	friendlyProxyState.cert.message = "mkcert certificate generated for localhost and *.localhost.";
+	friendlyProxyState.cert.message = `mkcert certificate generated for ${certNames.join(", ")}.`;
 	return {
 		cert: await fsp.readFile(friendlyCertPath),
 		key: await fsp.readFile(friendlyKeyPath),
@@ -1317,6 +1333,23 @@ async function trustFirefoxCertificate() {
 		durationMs: 0,
 		firefoxTrust: after,
 	};
+}
+
+async function restartFriendlyProxyHelper() {
+	const helper = await friendlyProxyHelperReport();
+	if (!helper.installed) {
+		return {
+			code: 0,
+			command: "restart-friendly-proxy-helper",
+			args: [friendlyProxyLabel],
+			stdout: "Friendly proxy helper is not installed.",
+			stderr: "",
+			durationMs: 0,
+		};
+	}
+	return runProcess("launchctl", ["kickstart", "-k", `system/${friendlyProxyLabel}`], {
+		timeoutMs: 30000,
+	});
 }
 
 async function installNssForFirefoxTrust() {
@@ -2269,14 +2302,19 @@ async function runRuntimeAction(body) {
 				// Best effort; ensureFriendlyCertificate will report the real state.
 			}
 			await ensureFriendlyCertificate();
+			const restartResult = await restartFriendlyProxyHelper();
 			const report = await friendlyUrlReport();
 			return {
 				code: report.cert.status === "ready" ? 0 : 1,
 				command: "runtime-friendly-cert",
 				args: [friendlyCertPath],
-				stdout: report.cert.message || "Friendly URL certificate check complete.",
-				stderr: "",
-				durationMs: 0,
+				stdout: [
+					report.cert.message || "Friendly URL certificate check complete.",
+					restartResult.code === 0 ? "Friendly proxy helper reloaded." : "Friendly proxy helper reload failed.",
+					restartResult.stdout || "",
+				].filter(Boolean).join("\n"),
+				stderr: restartResult.code === 0 ? "" : restartResult.stderr,
+				durationMs: restartResult.durationMs || 0,
 				friendlyUrls: report,
 			};
 		}
