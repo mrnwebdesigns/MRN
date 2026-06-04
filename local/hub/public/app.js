@@ -156,6 +156,7 @@ const els = {
 	sshMetricSummary: document.querySelector("#sshMetricSummary"),
 	toolMetricSummary: document.querySelector("#toolMetricSummary"),
 	toolStatus: document.querySelector("#toolStatus"),
+	gitStatus: document.querySelector("#gitStatus"),
 	olsStatus: document.querySelector("#olsStatus"),
 	redisStatus: document.querySelector("#redisStatus"),
 	operationStatus: document.querySelector("#operationStatus"),
@@ -2088,6 +2089,11 @@ function renderHealth() {
 		els.healthStrip.className = "health-strip";
 		els.toolStatus.className = "pill";
 		els.toolStatus.textContent = "Checking";
+		if (els.gitStatus) {
+			els.gitStatus.className = "pill";
+			els.gitStatus.textContent = "Git checking";
+			els.gitStatus.title = "Checking whether Git-aware pull/push safety is available.";
+		}
 		els.olsStatus.className = "pill bad";
 		els.olsStatus.textContent = "OLS missing";
 		if (els.toolMetricSummary) {
@@ -2100,7 +2106,15 @@ function renderHealth() {
 	const missing = state.health.commands
 		.filter((item) => required.includes(item.command) && !item.ok)
 		.map((item) => item.command);
+	const git = state.health.commands.find((item) => item.command === "git");
 	const hasOpenLiteSpeed = state.health.openLiteSpeed.some((item) => item.ok);
+	if (els.gitStatus) {
+		els.gitStatus.className = git?.ok ? "pill ok" : "pill warn";
+		els.gitStatus.textContent = git?.ok ? "Git ready" : "Git missing";
+		els.gitStatus.title = git?.ok
+			? `Git-aware file safety is available at ${git.path}.`
+			: "Git-aware file safety is unavailable; pulls can still use backup-only protection.";
+	}
 
 	if (missing.length) {
 		els.healthStrip.className = "health-strip warn";

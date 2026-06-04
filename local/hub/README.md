@@ -201,6 +201,7 @@ The `SSH Profiles` rail reads local `Host` aliases from `~/.ssh/config` and simp
 - SSH config previews do not connect to the remote host.
 - Site provisioning writes only the local Lima/OpenLiteSpeed runtime and the local site manifest.
 - Pull preflight checks SSH, local tools, remote `wp-config.php`, WP-CLI, and generated command previews before a pull.
+- Git is detected separately for file safety. When available, theme/plugin pull and push flows can inspect branch/status before writing; when unavailable, the Hub should fall back to backup-only protection.
 - File pulls and pushes use `rsync --itemize-changes`.
 - Push dry runs are first-class operations.
 - DB pulls save a timestamped dump under `dumps/` before importing locally.

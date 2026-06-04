@@ -922,7 +922,7 @@ async function pathExists(filePath) {
 }
 
 async function healthReport() {
-	const commands = await Promise.all(["node", "php", "wp", "ssh", "rsync", "mysql", "redis-cli"].map(commandExists));
+	const commands = await Promise.all(["node", "php", "wp", "ssh", "rsync", "mysql", "git", "redis-cli"].map(commandExists));
 	const openLiteSpeedCandidates = [
 		"/usr/local/lsws/bin/lswsctrl",
 		"/opt/homebrew/opt/openlitespeed/bin/lswsctrl",
@@ -3423,7 +3423,7 @@ async function localActiveThemeRelativePath(site) {
 		],
 		{ cwd: site.publicPath, timeoutMs: 30000, trackJob: false },
 	);
-	const theme = result.stdout.trim();
+	const theme = cleanWpCliScalarOutput(result.stdout);
 	if (result.code !== 0 || !theme) {
 		throw httpError(400, "Could not detect the local active theme. Pull the database first, or choose All themes.");
 	}
@@ -3486,6 +3486,147 @@ async function resolvePullFileScope(site, body = {}) {
 	};
 }
 
+function gitStatusLines(text) {
+	return String(text || "")
+		.split(/\r?\n/)
+		.map((line) => line.trimEnd())
+		.filter(Boolean);
+}
+
+function gitDisplayPath(filePath) {
+	return displayPath(filePath);
+}
+
+async function nearestExistingPath(filePath, stopPath) {
+	let candidate = path.resolve(filePath);
+	const stop = path.resolve(stopPath || sitesRoot);
+	while (candidate.startsWith(stop)) {
+		if (await pathExists(candidate)) {
+			return candidate;
+		}
+		const next = path.dirname(candidate);
+		if (next === candidate) {
+			break;
+		}
+		candidate = next;
+	}
+	return "";
+}
+
+async function gitSafetyReport(targetPath, options = {}) {
+	const label = options.label || "Selected path";
+	const git = await commandExists("git");
+	if (!git.ok) {
+		return {
+			available: false,
+			present: false,
+			dirty: false,
+			targetDirty: false,
+			label,
+			targetPath,
+			summary: "Git is not installed; Git-aware safety checks are unavailable.",
+			warnings: ["Git is missing; use backup-only protection before writing files."],
+			issues: [],
+		};
+	}
+
+	const probePath = await nearestExistingPath(targetPath, options.stopPath || sitesRoot);
+	if (!probePath) {
+		return {
+			available: true,
+			present: false,
+			dirty: false,
+			targetDirty: false,
+			label,
+			targetPath,
+			summary: `${label} does not exist locally yet; no Git repo was detected.`,
+			warnings: ["No local Git repo was detected for this path yet."],
+			issues: [],
+		};
+	}
+
+	const rootResult = await runProcess("git", ["-C", probePath, "rev-parse", "--show-toplevel"], {
+		timeoutMs: 10000,
+		trackJob: false,
+	});
+	if (rootResult.code !== 0) {
+		return {
+			available: true,
+			present: false,
+			dirty: false,
+			targetDirty: false,
+			label,
+			targetPath,
+			probePath,
+			summary: `${label} is not inside a Git repo.`,
+			warnings: ["This path is unversioned; use backup-only protection before writing files."],
+			issues: [],
+		};
+	}
+
+	const repoRoot = rootResult.stdout.trim().split(/\r?\n/).pop();
+	const relativePath = path.relative(repoRoot, path.resolve(targetPath)).split(path.sep).join("/") || ".";
+	const pathspec = relativePath.startsWith("..") ? "." : relativePath;
+	const [branchResult, upstreamResult, statusResult, scopedStatusResult] = await Promise.all([
+		runProcess("git", ["-C", repoRoot, "branch", "--show-current"], { timeoutMs: 10000, trackJob: false }),
+		runProcess("git", ["-C", repoRoot, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"], { timeoutMs: 10000, trackJob: false }),
+		runProcess("git", ["-C", repoRoot, "status", "--short", "--untracked-files=all"], { timeoutMs: 10000, trackJob: false }),
+		runProcess("git", ["-C", repoRoot, "status", "--short", "--untracked-files=all", "--", pathspec], { timeoutMs: 10000, trackJob: false }),
+	]);
+	const lines = gitStatusLines(statusResult.stdout);
+	const scopedLines = gitStatusLines(scopedStatusResult.stdout);
+	const dirty = lines.length > 0;
+	const targetDirty = scopedLines.length > 0;
+	const branch = branchResult.stdout.trim() || "detached";
+	const upstream = upstreamResult.code === 0 ? upstreamResult.stdout.trim() : "";
+	const summary = dirty
+		? `Git dirty: ${gitDisplayPath(repoRoot)} has ${lines.length} change${lines.length === 1 ? "" : "s"} (${scopedLines.length} in ${label}).`
+		: `Git clean: ${branch}${upstream ? ` tracking ${upstream}` : ""} at ${gitDisplayPath(repoRoot)}.`;
+	return {
+		available: true,
+		present: true,
+		dirty,
+		targetDirty,
+		label,
+		targetPath,
+		probePath,
+		repoRoot,
+		relativePath: pathspec,
+		branch,
+		upstream,
+		totalChanges: lines.length,
+		targetChanges: scopedLines.length,
+		lines: lines.slice(0, 20),
+		targetLines: scopedLines.slice(0, 20),
+		summary,
+		warnings: [],
+		issues: dirty ? [summary] : [],
+	};
+}
+
+function formatGitSafety(report) {
+	if (!report) {
+		return "";
+	}
+	const lines = [
+		"Git safety:",
+		`- ${report.summary}`,
+	];
+	if (report.present) {
+		lines.push(`- Branch: ${report.branch}${report.upstream ? ` -> ${report.upstream}` : ""}`);
+		if (report.dirty && report.lines.length) {
+			lines.push("- Changes:");
+			for (const line of report.lines) {
+				lines.push(`  ${line}`);
+			}
+			if (report.totalChanges > report.lines.length) {
+				lines.push(`  ... ${report.totalChanges - report.lines.length} more`);
+			}
+		}
+	}
+	return lines.join("\n");
+}
+
 const pushAllowedScopes = [
 	"wp-content/themes",
 	"wp-content/plugins",
@@ -3511,6 +3652,7 @@ function classifyPushPath(relativePath, entryName, isDirectory = false) {
 	const normalized = relativePath.split(path.sep).join(path.posix.sep);
 	const parts = normalized.split("/").filter(Boolean);
 	const lowerParts = parts.map((part) => part.toLowerCase());
+	const lowerNormalized = lowerParts.join("/");
 	const lowerName = String(entryName || parts[parts.length - 1] || "").toLowerCase();
 
 	if (lowerName === ".mrn-site.json") {
@@ -3534,7 +3676,13 @@ function classifyPushPath(relativePath, entryName, isDirectory = false) {
 	if (lowerName === ".ds_store" || lowerName === "thumbs.db") {
 		return pushAuditRecord("warning", normalized, "local OS metadata should usually be excluded");
 	}
-	if (isDirectory && ["cache", "updraft", "upgrade"].includes(lowerName)) {
+	const generatedContentRoots = [
+		"wp-content/cache",
+		"wp-content/uploads/cache",
+		"wp-content/updraft",
+		"wp-content/upgrade",
+	];
+	if (isDirectory && generatedContentRoots.some((root) => lowerNormalized === root || lowerNormalized.startsWith(`${root}/`))) {
 		return pushAuditRecord("warning", normalized, "generated WordPress directory; verify before pushing");
 	}
 	return null;
@@ -3586,19 +3734,25 @@ async function scanPushPath(rootPath, sitePublicPath, options = {}) {
 }
 
 function formatPushAudit(audit) {
-	return [
+	const lines = [
 		`Push audit: ${audit.slug}`,
 		`Local path: ${audit.source}`,
 		`Remote target: ${audit.dest}`,
 		`Scope: ${audit.scope || "blocked"}`,
 		`Delete remote extras: ${audit.deleteFiles ? "yes" : "no"}`,
 		`Scanned entries: ${audit.scanned}`,
+	];
+	if (audit.gitSafety) {
+		lines.push("", formatGitSafety(audit.gitSafety));
+	}
+	lines.push(
 		"",
 		audit.issues.length ? "Issues:" : "Issues: none",
 		...audit.issues.map((issue) => `- ${issue.path}: ${issue.reason}`),
 		audit.warnings.length ? "Warnings:" : "Warnings: none",
 		...audit.warnings.map((warning) => `- ${warning.path}: ${warning.reason}`),
-	].join("\n");
+	);
+	return lines.join("\n");
 }
 
 async function runPushAudit(site, body = {}) {
@@ -3613,6 +3767,7 @@ async function runPushAudit(site, body = {}) {
 	const scope = pushPathScope(relativePath);
 	let scanned = 0;
 	let sourceIsDirectory = false;
+	let gitSafety = null;
 
 	if (!isAllowedPushScope(relativePath)) {
 		issues.push(pushAuditRecord(
@@ -3641,6 +3796,12 @@ async function runPushAudit(site, body = {}) {
 	} else {
 		const stat = await fsp.lstat(source);
 		sourceIsDirectory = stat.isDirectory();
+		gitSafety = await gitSafetyReport(source, {
+			label: relativePath,
+			stopPath: site.publicPath,
+		});
+		issues.push(...gitSafety.issues.map((issue) => pushAuditRecord("blocked", relativePath, issue)));
+		warnings.push(...gitSafety.warnings.map((warning) => pushAuditRecord("warning", relativePath, warning)));
 		const scan = await scanPushPath(source, site.publicPath);
 		issues.push(...scan.issues);
 		warnings.push(...scan.warnings);
@@ -3659,6 +3820,7 @@ async function runPushAudit(site, body = {}) {
 		issues,
 		warnings,
 		allowedScopes: pushAllowedScopes,
+		gitSafety,
 	};
 
 	return {
@@ -5258,6 +5420,10 @@ async function pullPreflight(site, body = {}) {
 	const remotePath = sanitizeRemotePath(site.remotePath);
 	await ensureSiteDirectories(site);
 	const pullScope = await resolvePullFileScope(site, body);
+	const gitSafety = await gitSafetyReport(pullScope.localDestPath, {
+		label: pullScope.label,
+		stopPath: site.publicPath,
+	});
 
 	const [health, runtime, inspection] = await Promise.all([
 		healthReport(),
@@ -5284,6 +5450,8 @@ async function pullPreflight(site, body = {}) {
 	if (inspection.result.code === 0 && parsed.wp_cli !== "1") {
 		warnings.push("Remote WP-CLI is missing; file pull can work, but DB pull is blocked.");
 	}
+	issues.push(...gitSafety.issues);
+	warnings.push(...gitSafety.warnings);
 
 	const dryRunArgs = rsyncArgs({
 		dryRun: true,
@@ -5316,6 +5484,8 @@ async function pullPreflight(site, body = {}) {
 		"Remote WordPress:",
 		formatSshInspection(parsed),
 		"",
+		formatGitSafety(gitSafety),
+		"",
 		"Commands preview:",
 		`Files dry run: ${commandPreview("rsync", dryRunArgs)}`,
 		`Files pull: ${commandPreview("rsync", pullArgs)}`,
@@ -5328,7 +5498,7 @@ async function pullPreflight(site, body = {}) {
 	].join("\n");
 
 	return {
-		code: inspection.result.code === 0 && !missingLocal.length && parsed.wp_config === "1" ? 0 : 1,
+		code: inspection.result.code === 0 && !missingLocal.length && parsed.wp_config === "1" && !issues.length ? 0 : 1,
 		command: "pull-preflight",
 		args: [site.slug],
 		stdout,
@@ -5350,6 +5520,7 @@ async function pullPreflight(site, body = {}) {
 				label: pullScope.label,
 				relativePath: pullScope.relativePath,
 			},
+			gitSafety,
 		},
 	};
 }
@@ -5517,6 +5688,33 @@ async function runSiteAction(site, body) {
 		case "pull-files": {
 			await ensureSiteDirectories(site);
 			const pullScope = await resolvePullFileScope(site, body);
+			const gitSafety = await gitSafetyReport(pullScope.localDestPath, {
+				label: pullScope.label,
+				stopPath: site.publicPath,
+			});
+			if (action === "pull-files" && gitSafety.dirty) {
+				return {
+					code: 1,
+					command: action,
+					args: [site.slug, pullScope.relativePath || "."],
+					stdout: [
+						`Pull scope: ${pullScope.label}`,
+						`Local target: ${pullScope.dest}`,
+						formatGitSafety(gitSafety),
+						"",
+						"Pull stopped before rsync because the containing Git repo has local changes.",
+						"Commit, stash, or otherwise back up the local changes before pulling files.",
+					].filter(Boolean).join("\n"),
+					stderr: "",
+					durationMs: 0,
+					pullScope: {
+						scope: pullScope.scope,
+						label: pullScope.label,
+						relativePath: pullScope.relativePath,
+					},
+					gitSafety,
+				};
+			}
 			await fsp.mkdir(pullScope.localDestPath, { recursive: true });
 			const result = await runProcess(
 				"rsync",
@@ -5536,6 +5734,7 @@ async function runSiteAction(site, body) {
 					`Pull scope: ${pullScope.label}`,
 					`Remote source: ${pullScope.source}`,
 					`Local target: ${pullScope.dest}`,
+					formatGitSafety(gitSafety),
 					result.stdout,
 				].filter(Boolean).join("\n"),
 				pullScope: {
@@ -5543,6 +5742,7 @@ async function runSiteAction(site, body) {
 					label: pullScope.label,
 					relativePath: pullScope.relativePath,
 				},
+				gitSafety,
 			};
 			if (action === "pull-files" && result.code === 0) {
 				const nextSite = siteWithRuntimeDefaults(site);
