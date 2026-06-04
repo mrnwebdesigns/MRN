@@ -156,6 +156,7 @@ const els = {
 	toolMetricSummary: document.querySelector("#toolMetricSummary"),
 	toolStatus: document.querySelector("#toolStatus"),
 	olsStatus: document.querySelector("#olsStatus"),
+	redisStatus: document.querySelector("#redisStatus"),
 	operationStatus: document.querySelector("#operationStatus"),
 	userMenu: document.querySelector("#userMenu"),
 	themeToggle: document.querySelector("#themeToggle"),
@@ -1890,13 +1891,19 @@ function updatePullReadiness(site, action, result) {
 		};
 	} else if (action === "pull-db") {
 		const smoke = result.smoke;
+		const smokeFailed = Boolean(smoke && smoke.failed);
+		const smokeWarned = Boolean(smoke && smoke.warnings);
 		state.pullWizardStage = result.code === 0 ? "complete" : "verify";
 		state.pullReadiness[site.slug] = {
-			ok: result.code === 0,
+			ok: result.code === 0 && !smokeFailed,
 			message: smoke
 				? result.code === 0
-					? `Database pulled. Smoke check passed (${smoke.passed} passed${smoke.warnings ? `, ${smoke.warnings} warning${smoke.warnings === 1 ? "" : "s"}` : ""}).`
-					: `Database pulled, but smoke check found ${smoke.failed} failure${smoke.failed === 1 ? "" : "s"}.`
+					? smokeFailed
+						? `Database pulled. Smoke check found ${smoke.failed} follow-up issue${smoke.failed === 1 ? "" : "s"}; review the deployment log.`
+						: smokeWarned
+							? `Database pulled. Smoke check passed with ${smoke.warnings} warning${smoke.warnings === 1 ? "" : "s"}.`
+							: `Database pulled. Smoke check passed (${smoke.passed} passed).`
+					: `Database import failed before smoke check finished.`
 				: result.code === 0
 					? "Database pulled and search-replaced for local."
 					: "Database pull failed; review the deployment log.",
@@ -2037,6 +2044,12 @@ function renderSites() {
 }
 
 function renderHealth() {
+	if (els.redisStatus) {
+		els.redisStatus.className = "pill bad";
+		els.redisStatus.textContent = "Redis Not Complete";
+		els.redisStatus.title = "Redis cache integration is tracked as a Local Hub TODO.";
+	}
+
 	if (!state.health) {
 		els.healthStrip.textContent = "Checking local tools...";
 		els.healthStrip.className = "health-strip";
@@ -2597,7 +2610,11 @@ async function pullFilesAndDatabase() {
 		setPullWizardStage("complete");
 		await refresh();
 		selectSite(activeSite.slug);
-		showToast("Files and database pulled.", "success");
+		const smokeFailed = Boolean(dbResult.smoke && dbResult.smoke.failed);
+		showToast(
+			smokeFailed ? "Files and database pulled. Smoke check needs review." : "Files and database pulled.",
+			smokeFailed ? "info" : "success",
+		);
 	} catch (error) {
 		appendMessage(error.message, true);
 		showToast(error.message, "error");

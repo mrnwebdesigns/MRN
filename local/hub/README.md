@@ -108,6 +108,10 @@ Runtime actions:
 - `Open HTTP` opens the OpenLiteSpeed default HTTP listener.
 - `Open Admin` opens the OpenLiteSpeed admin listener.
 
+Runtime TODO:
+
+- Wire Redis as optional production-parity cache support: ensure Redis is installed/running in the Lima runtime, expose cache health and flush actions in the UI, add per-site cache status, and document the WordPress object-cache constants/plugin path needed when a pulled site uses Redis in production.
+
 ## Per-Site Provisioning
 
 Use `Provision Site` after creating a manifest and before pulling the database.

@@ -24,6 +24,19 @@ const memoryCacheTtlMs = Number(process.env.MRN_LOCAL_HUB_MEMORY_TTL_MS || "1000
 const runtimeInstanceName = process.env.MRN_LOCAL_RUNTIME_INSTANCE || "mrn-openlitespeed";
 const runtimeWorkRoot = path.join(repoRoot, ".tmp", "local-hub", "runtime");
 const runtimeBootstrapScript = path.join(runtimeWorkRoot, "bootstrap-mrn-openlitespeed.sh");
+const toolPathEntries = [
+	"/opt/homebrew/opt/mysql-client/bin",
+	"/opt/homebrew/opt/php/bin",
+	"/opt/homebrew/bin",
+	"/usr/local/bin",
+	"/usr/bin",
+	"/bin",
+	"/usr/sbin",
+	"/sbin",
+];
+process.env.PATH = [...toolPathEntries, process.env.PATH || ""]
+	.filter(Boolean)
+	.join(":");
 const friendlyUrlEnabled = process.env.MRN_LOCAL_FRIENDLY_URLS !== "0";
 const friendlyHttpPort = Number(process.env.MRN_LOCAL_FRIENDLY_HTTP_PORT || "80");
 const friendlyHttpsPort = Number(process.env.MRN_LOCAL_FRIENDLY_HTTPS_PORT || "443");
@@ -4244,56 +4257,129 @@ function smokeCommonFailure(text) {
 	return "";
 }
 
+let smokeLocalCaLoaded = false;
+let smokeLocalCa = null;
+
+function smokeLocalCaForUrl(url) {
+	let parsed = null;
+	try {
+		parsed = new URL(url);
+	} catch {
+		return null;
+	}
+	if (parsed.protocol !== "https:" || (parsed.hostname !== "localhost" && !parsed.hostname.endsWith(".localhost"))) {
+		return null;
+	}
+	if (!smokeLocalCaLoaded) {
+		smokeLocalCaLoaded = true;
+		const caroot = childProcess.spawnSync("mkcert", ["-CAROOT"], {
+			encoding: "utf8",
+			timeout: 5000,
+		});
+		if (caroot.status === 0 && caroot.stdout.trim()) {
+			const rootCa = path.join(caroot.stdout.trim(), "rootCA.pem");
+			try {
+				smokeLocalCa = fs.readFileSync(rootCa);
+			} catch {
+				smokeLocalCa = null;
+			}
+		}
+	}
+	return smokeLocalCa;
+}
+
 async function fetchSmokeTarget(url, options = {}) {
 	const timeoutMs = options.timeoutMs || 15000;
 	const maxTextChars = options.maxTextChars || 250000;
-	if (typeof fetch !== "function") {
-		return {
-			ok: false,
-			url,
-			finalUrl: url,
-			status: 0,
-			contentType: "",
-			text: "",
-			error: "This Node runtime does not provide fetch.",
-			durationMs: 0,
-		};
-	}
+	const redirects = options.redirects || 0;
 	const startedAt = Date.now();
-	const controller = new AbortController();
-	const timer = setTimeout(() => controller.abort(), timeoutMs);
-	try {
-		const response = await fetch(url, {
-			redirect: "follow",
-			signal: controller.signal,
+	return new Promise((resolve) => {
+		let parsed = null;
+		try {
+			parsed = new URL(url);
+		} catch (error) {
+			resolve({
+				ok: false,
+				url,
+				finalUrl: url,
+				status: 0,
+				contentType: "",
+				text: "",
+				error: error.message,
+				durationMs: Date.now() - startedAt,
+			});
+			return;
+		}
+
+		const requestOptions = {
 			headers: {
 				"user-agent": "MRN Local Hub Smoke Check",
 			},
+		};
+		if (parsed.protocol === "https:") {
+			const ca = smokeLocalCaForUrl(url);
+			if (ca) {
+				requestOptions.ca = ca;
+			}
+		}
+
+		const transport = parsed.protocol === "https:" ? https : http;
+		const request = transport.request(parsed, requestOptions, (response) => {
+			const status = response.statusCode || 0;
+			const location = response.headers.location || "";
+			if (status >= 300 && status < 400 && location && redirects < 5) {
+				response.resume();
+				const nextUrl = new URL(location, parsed).toString();
+				fetchSmokeTarget(nextUrl, { ...options, redirects: redirects + 1 }).then((result) => {
+					resolve({
+						...result,
+						url,
+						durationMs: Date.now() - startedAt,
+					});
+				});
+				return;
+			}
+
+			const chunks = [];
+			let collected = 0;
+			response.on("data", (chunk) => {
+				if (collected < maxTextChars) {
+					const remaining = maxTextChars - collected;
+					const slice = chunk.length > remaining ? chunk.subarray(0, remaining) : chunk;
+					chunks.push(slice);
+					collected += slice.length;
+				}
+			});
+			response.on("end", () => {
+				const text = Buffer.concat(chunks).toString("utf8");
+				resolve({
+					ok: status >= 200 && status < 400,
+					url,
+					finalUrl: url,
+					status,
+					contentType: response.headers["content-type"] || "",
+					text,
+					durationMs: Date.now() - startedAt,
+				});
+			});
 		});
-		const text = await response.text();
-		return {
-			ok: response.status >= 200 && response.status < 400,
-			url,
-			finalUrl: response.url || url,
-			status: response.status,
-			contentType: response.headers.get("content-type") || "",
-			text: text.length > maxTextChars ? text.slice(0, maxTextChars) : text,
-			durationMs: Date.now() - startedAt,
-		};
-	} catch (error) {
-		return {
-			ok: false,
-			url,
-			finalUrl: url,
-			status: 0,
-			contentType: "",
-			text: "",
-			error: error.name === "AbortError" ? `Timed out after ${timeoutMs}ms.` : error.message,
-			durationMs: Date.now() - startedAt,
-		};
-	} finally {
-		clearTimeout(timer);
-	}
+		request.setTimeout(timeoutMs, () => {
+			request.destroy(new Error(`Timed out after ${timeoutMs}ms.`));
+		});
+		request.on("error", (error) => {
+			resolve({
+				ok: false,
+				url,
+				finalUrl: url,
+				status: 0,
+				contentType: "",
+				text: "",
+				error: error.message,
+				durationMs: Date.now() - startedAt,
+			});
+		});
+		request.end();
+	});
 }
 
 function smokeCheck(status, label, detail, extra = {}) {
@@ -4769,6 +4855,15 @@ function localizeSiteLink(site, value) {
 	}
 }
 
+function cleanWpCliScalarOutput(value) {
+	const lines = String(value || "")
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.filter((line) => !/^(deprecated|notice|warning|php\s+(deprecated|notice|warning)):/i.test(line));
+	return lines.length ? lines[lines.length - 1] : "";
+}
+
 async function runSmokeCheck(site) {
 	const localSite = siteWithRuntimeDefaults(site);
 	const startedAt = Date.now();
@@ -4844,7 +4939,7 @@ async function runSmokeCheck(site) {
 		{ cwd: localSite.publicPath, timeoutMs: 30000 },
 	);
 	if (stylesheetResult.code === 0) {
-		themeSlug = stylesheetResult.stdout.trim();
+		themeSlug = cleanWpCliScalarOutput(stylesheetResult.stdout);
 	} else {
 		stderr.push(stylesheetResult.stderr);
 		themeSlug = parseThemeStyleSlug(home.text);
@@ -5533,13 +5628,13 @@ async function runSiteAction(site, body) {
 				&& (!restartResult || restartResult.code === 0)
 				? await runSmokeCheck(localSite)
 				: null;
+			const dbResultCode = importResult.code
+				|| (searchReplaceResult ? searchReplaceResult.code : 0)
+				|| (dbUrlResult ? dbUrlResult.code : 0)
+				|| (restartResult ? restartResult.code : 0);
 			invalidateSiteDiskUsage(localSite);
 			return {
-				code: importResult.code
-					|| (searchReplaceResult ? searchReplaceResult.code : 0)
-					|| (dbUrlResult ? dbUrlResult.code : 0)
-					|| (restartResult ? restartResult.code : 0)
-					|| (smokeResult ? smokeResult.code : 0),
+				code: dbResultCode,
 				command: "pull-db",
 				args: [localSite.slug],
 				stdout: [
@@ -5573,6 +5668,7 @@ async function runSiteAction(site, body) {
 				htaccess: htaccessResult,
 				restart: restartResult,
 				dbUrls: dbUrlResult,
+				smokeCode: smokeResult ? smokeResult.code : null,
 				smoke: smokeResult ? smokeResult.smoke : null,
 				wpConfig: wpConfigResult,
 			};
