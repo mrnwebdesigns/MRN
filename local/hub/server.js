@@ -29,6 +29,9 @@ const friendlyHttpPort = Number(process.env.MRN_LOCAL_FRIENDLY_HTTP_PORT || "80"
 const friendlyHttpsPort = Number(process.env.MRN_LOCAL_FRIENDLY_HTTPS_PORT || "443");
 const friendlyProxyTargetHost = process.env.MRN_LOCAL_FRIENDLY_TARGET_HOST || "127.0.0.1";
 const friendlyProxyTargetPort = Number(process.env.MRN_LOCAL_FRIENDLY_TARGET_PORT || "8088");
+const friendlyHubHostname = process.env.MRN_LOCAL_HUB_FRIENDLY_HOSTNAME || "thehub.localhost";
+const friendlyHubTargetHost = process.env.MRN_LOCAL_HUB_FRIENDLY_TARGET_HOST || host;
+const friendlyHubTargetPort = Number(process.env.MRN_LOCAL_HUB_FRIENDLY_TARGET_PORT || String(port));
 const friendlyCertRoot = path.join(runtimeWorkRoot, "certs");
 const friendlyCertPath = path.join(friendlyCertRoot, "mrn-localhost.pem");
 const friendlyKeyPath = path.join(friendlyCertRoot, "mrn-localhost-key.pem");
@@ -942,6 +945,21 @@ function friendlyHostWithPort(hostHeader, portNumber) {
 	return portNumber === 443 ? hostname : `${hostname}:${portNumber}`;
 }
 
+function friendlyProxyTargetForHost(hostname) {
+	if (hostname === friendlyHubHostname) {
+		return {
+			label: "MRN Local Hub",
+			host: friendlyHubTargetHost,
+			port: friendlyHubTargetPort,
+		};
+	}
+	return {
+		label: "OpenLiteSpeed",
+		host: friendlyProxyTargetHost,
+		port: friendlyProxyTargetPort,
+	};
+}
+
 function createFriendlyHttpRedirectServer() {
 	return http.createServer((req, res) => {
 		const location = `https://${friendlyHostWithPort(req.headers.host, friendlyHttpsPort)}${req.url || "/"}`;
@@ -953,8 +971,9 @@ function createFriendlyHttpRedirectServer() {
 	});
 }
 
-function proxyToOpenLiteSpeed(req, res) {
+function proxyFriendlyRequest(req, res) {
 	const originalHost = stripHostPort(req.headers.host) || `${normalizeSlug("site")}.localhost`;
+	const target = friendlyProxyTargetForHost(originalHost);
 	const headers = {
 		...req.headers,
 		host: originalHost,
@@ -968,8 +987,8 @@ function proxyToOpenLiteSpeed(req, res) {
 
 	const proxyReq = http.request(
 		{
-			hostname: friendlyProxyTargetHost,
-			port: friendlyProxyTargetPort,
+			hostname: target.host,
+			port: target.port,
 			method: req.method,
 			path: req.url || "/",
 			headers,
@@ -986,18 +1005,18 @@ function proxyToOpenLiteSpeed(req, res) {
 			return;
 		}
 		res.writeHead(502, { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" });
-		res.end(`MRN Local HTTPS proxy could not reach OpenLiteSpeed on ${friendlyProxyTargetHost}:${friendlyProxyTargetPort}.\n${error.message}\n`);
+		res.end(`MRN Local HTTPS proxy could not reach ${target.label} on ${target.host}:${target.port}.\n${error.message}\n`);
 	});
 
 	req.pipe(proxyReq);
 }
 
 function createFriendlyHttpsProxyServer(tlsOptions) {
-	return https.createServer(tlsOptions, proxyToOpenLiteSpeed);
+	return https.createServer(tlsOptions, proxyFriendlyRequest);
 }
 
 async function friendlyCertificateHostnames() {
-	const names = new Set(["localhost", "127.0.0.1", "::1"]);
+	const names = new Set(["localhost", "127.0.0.1", "::1", friendlyHubHostname]);
 	try {
 		for (const site of await listSites()) {
 			if (site.slug) {
@@ -1014,6 +1033,19 @@ async function friendlyCertificateHostnames() {
 	return Array.from(names);
 }
 
+async function friendlyCertificateCoversNames(certNames) {
+	const result = await runProcess("openssl", ["x509", "-in", friendlyCertPath, "-noout", "-ext", "subjectAltName"], {
+		timeoutMs: 5000,
+		trackJob: false,
+	});
+	if (result.code !== 0) {
+		return false;
+	}
+	const output = result.stdout || "";
+	const dnsNames = certNames.filter((name) => !/^[0-9:.]+$/.test(name));
+	return dnsNames.every((name) => output.includes(`DNS:${name}`));
+}
+
 async function ensureFriendlyCertificate() {
 	if (!friendlyUrlEnabled) {
 		friendlyProxyState.cert.status = "disabled";
@@ -1022,13 +1054,20 @@ async function ensureFriendlyCertificate() {
 	}
 	const certExists = await pathExists(friendlyCertPath);
 	const keyExists = await pathExists(friendlyKeyPath);
-	if (certExists && keyExists) {
+	const certNames = await friendlyCertificateHostnames();
+	if (certExists && keyExists && await friendlyCertificateCoversNames(certNames)) {
 		friendlyProxyState.cert.status = "ready";
 		friendlyProxyState.cert.message = "mkcert certificate is ready.";
 		return {
 			cert: await fsp.readFile(friendlyCertPath),
 			key: await fsp.readFile(friendlyKeyPath),
 		};
+	}
+	if (certExists || keyExists) {
+		await Promise.all([
+			fsp.rm(friendlyCertPath, { force: true }),
+			fsp.rm(friendlyKeyPath, { force: true }),
+		]);
 	}
 
 	const mkcert = await commandExists("mkcert");
@@ -1039,7 +1078,6 @@ async function ensureFriendlyCertificate() {
 	}
 
 	await fsp.mkdir(friendlyCertRoot, { recursive: true });
-	const certNames = await friendlyCertificateHostnames();
 	const result = await runProcess(
 		"mkcert",
 		[
@@ -1087,6 +1125,12 @@ function friendlyProxyPlist() {
 		friendlyProxyTargetHost,
 		"--target-port",
 		String(friendlyProxyTargetPort),
+		"--hub-hostname",
+		friendlyHubHostname,
+		"--hub-target-host",
+		friendlyHubTargetHost,
+		"--hub-target-port",
+		String(friendlyHubTargetPort),
 		"--http-port",
 		String(friendlyHttpPort),
 		"--https-port",
@@ -1780,7 +1824,9 @@ async function friendlyUrlReport() {
 		enabled: friendlyUrlEnabled,
 		ready,
 		pattern: "https://{slug}.localhost",
+		hubUrl: `https://${friendlyHubHostname}`,
 		target: `http://${friendlyProxyTargetHost}:${friendlyProxyTargetPort}`,
+		hubTarget: `http://${friendlyHubTargetHost}:${friendlyHubTargetPort}`,
 		cert: { ...friendlyProxyState.cert, mkcert },
 		browserTrust: { firefox },
 		helper,
@@ -2243,8 +2289,9 @@ async function sshAliasReport() {
 
 function runtimePorts() {
 	return [
-		{ label: "Friendly HTTP", host: `localhost:${friendlyHttpPort}`, guest: `proxy -> ${friendlyProxyTargetPort}` },
-		{ label: "Friendly HTTPS", host: friendlyHttpsPort === 443 ? "https://*.localhost" : `localhost:${friendlyHttpsPort}`, guest: `proxy -> ${friendlyProxyTargetPort}` },
+		{ label: "Friendly HTTP", host: `localhost:${friendlyHttpPort}`, guest: `proxy -> sites:${friendlyProxyTargetPort}, hub:${friendlyHubTargetPort}` },
+		{ label: "Friendly HTTPS", host: friendlyHttpsPort === 443 ? "https://*.localhost" : `localhost:${friendlyHttpsPort}`, guest: `sites -> ${friendlyProxyTargetPort}, ${friendlyHubHostname} -> ${friendlyHubTargetPort}` },
+		{ label: "Local Hub", host: `https://${friendlyHubHostname}`, guest: String(friendlyHubTargetPort) },
 		{ label: "HTTP", host: "127.0.0.1:8088", guest: "8088" },
 		{ label: "OpenLiteSpeed Admin", host: "127.0.0.1:7080", guest: "7080" },
 		{ label: "MariaDB", host: "127.0.0.1:3307", guest: "3306" },

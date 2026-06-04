@@ -10,6 +10,9 @@ const defaults = {
 	key: "/Users/khofmeyer/Development/MRN/.tmp/local-hub/runtime/certs/mrn-localhost-key.pem",
 	targetHost: "127.0.0.1",
 	targetPort: 8088,
+	hubHostname: "thehub.localhost",
+	hubTargetHost: "127.0.0.1",
+	hubTargetPort: 5678,
 	httpPort: 80,
 	httpsPort: 443,
 };
@@ -27,6 +30,9 @@ const config = {
 	key: argValue("key", defaults.key),
 	targetHost: argValue("target-host", defaults.targetHost),
 	targetPort: Number(argValue("target-port", String(defaults.targetPort))),
+	hubHostname: argValue("hub-hostname", defaults.hubHostname),
+	hubTargetHost: argValue("hub-target-host", defaults.hubTargetHost),
+	hubTargetPort: Number(argValue("hub-target-port", String(defaults.hubTargetPort))),
 	httpPort: Number(argValue("http-port", String(defaults.httpPort))),
 	httpsPort: Number(argValue("https-port", String(defaults.httpsPort))),
 };
@@ -47,19 +53,37 @@ function hostWithPort(hostHeader, portNumber) {
 	return portNumber === 443 ? hostname : `${hostname}:${portNumber}`;
 }
 
-function proxyToOpenLiteSpeed(req, res) {
+function proxyTargetForHost(hostname) {
+	if (hostname === config.hubHostname) {
+		return {
+			label: "MRN Local Hub",
+			host: config.hubTargetHost,
+			port: config.hubTargetPort,
+		};
+	}
+	return {
+		label: "OpenLiteSpeed",
+		host: config.targetHost,
+		port: config.targetPort,
+	};
+}
+
+function proxyRequest(req, res) {
 	if (req.url === "/__mrn-local-health") {
 		res.writeHead(200, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" });
 		res.end(JSON.stringify({
 			ok: true,
 			service: "mrn-local-friendly-proxy",
 			target: `http://${config.targetHost}:${config.targetPort}`,
+			hub: `https://${config.hubHostname}`,
+			hubTarget: `http://${config.hubTargetHost}:${config.hubTargetPort}`,
 			now: new Date().toISOString(),
 		}));
 		return;
 	}
 
 	const originalHost = stripHostPort(req.headers.host) || "localhost";
+	const target = proxyTargetForHost(originalHost);
 	const headers = {
 		...req.headers,
 		host: originalHost,
@@ -73,8 +97,8 @@ function proxyToOpenLiteSpeed(req, res) {
 
 	const proxyReq = http.request(
 		{
-			hostname: config.targetHost,
-			port: config.targetPort,
+			hostname: target.host,
+			port: target.port,
 			method: req.method,
 			path: req.url || "/",
 			headers,
@@ -91,7 +115,7 @@ function proxyToOpenLiteSpeed(req, res) {
 			return;
 		}
 		res.writeHead(502, { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" });
-		res.end(`MRN Local friendly proxy could not reach OpenLiteSpeed on ${config.targetHost}:${config.targetPort}.\n${error.message}\n`);
+		res.end(`MRN Local friendly proxy could not reach ${target.label} on ${target.host}:${target.port}.\n${error.message}\n`);
 	});
 
 	req.pipe(proxyReq);
@@ -111,7 +135,7 @@ function createHttpsProxyServer() {
 			cert: fs.readFileSync(config.cert),
 			key: fs.readFileSync(config.key),
 		},
-		proxyToOpenLiteSpeed,
+		proxyRequest,
 	);
 }
 
