@@ -42,6 +42,7 @@ const friendlyProxyStdoutPath = path.join(runtimeWorkRoot, "friendly-proxy.out.l
 const friendlyProxyStderrPath = path.join(runtimeWorkRoot, "friendly-proxy.err.log");
 const firefoxProfilesRoot = path.join(os.homedir(), "Library", "Application Support", "Firefox", "Profiles");
 const firefoxEnterpriseRootsPref = "security.enterprise_roots.enabled";
+const macosLoginKeychainPath = path.join(os.homedir(), "Library", "Keychains", "login.keychain-db");
 const homeDir = process.env.HOME || "";
 const activeJobs = new Map();
 const diskUsageCache = new Map();
@@ -1211,6 +1212,99 @@ async function firefoxProfiles() {
 	return profiles;
 }
 
+async function mkcertRootCaPath() {
+	const carootResult = await runProcess("mkcert", ["-CAROOT"], {
+		timeoutMs: 5000,
+		trackJob: false,
+	});
+	const rootCaPath = carootResult.code === 0 ? path.join(carootResult.stdout.trim(), "rootCA.pem") : "";
+	return rootCaPath && await pathExists(rootCaPath) ? rootCaPath : "";
+}
+
+async function macosRootTrustReport(rootCaPath) {
+	const security = await commandExists("security");
+	if (!security.ok) {
+		return {
+			trusted: false,
+			status: "missing-security",
+			message: "macOS security command was not found.",
+			security,
+			rootCaPath,
+		};
+	}
+	if (!rootCaPath) {
+		return {
+			trusted: false,
+			status: "missing-root",
+			message: "mkcert root CA was not found.",
+			security,
+			rootCaPath,
+		};
+	}
+	const result = await runProcess("security", ["verify-cert", "-c", rootCaPath, "-p", "ssl"], {
+		timeoutMs: 10000,
+		trackJob: false,
+	});
+	return {
+		trusted: result.code === 0,
+		status: result.code === 0 ? "trusted" : "untrusted",
+		message: result.code === 0
+			? "macOS trusts the mkcert local CA for SSL."
+			: "macOS does not trust the mkcert local CA for SSL yet.",
+		security,
+		rootCaPath,
+		code: result.code,
+		output: (result.stderr || result.stdout || "").trim(),
+	};
+}
+
+async function trustMacosUserRoot(rootCaPath) {
+	const before = await macosRootTrustReport(rootCaPath);
+	if (before.trusted) {
+		return {
+			code: 0,
+			changed: false,
+			message: before.message,
+			before,
+			after: before,
+		};
+	}
+	if (!before.security.ok || !rootCaPath) {
+		return {
+			code: 1,
+			changed: false,
+			message: before.message,
+			before,
+			after: before,
+		};
+	}
+	const result = await runProcess("security", [
+		"add-trusted-cert",
+		"-r",
+		"trustRoot",
+		"-p",
+		"ssl",
+		"-p",
+		"basic",
+		"-k",
+		macosLoginKeychainPath,
+		rootCaPath,
+	], {
+		timeoutMs: 30000,
+		trackJob: false,
+	});
+	const after = await macosRootTrustReport(rootCaPath);
+	return {
+		code: after.trusted ? 0 : result.code || 1,
+		changed: after.trusted,
+		message: after.trusted
+			? "Trusted mkcert CA in the current user's login keychain."
+			: (result.stderr || result.stdout || after.message || "Could not trust mkcert CA in the login keychain.").trim(),
+		before,
+		after,
+	};
+}
+
 function regexEscape(value) {
 	return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -1280,33 +1374,75 @@ async function writeFirefoxUserPref(profilePath, prefName, value) {
 	return { path: userJsPath, changed: nextContent !== content };
 }
 
-async function firefoxRunningProfilePaths() {
-	const result = await runProcess("ps", ["-axo", "command"], {
+async function firefoxRunningProfiles() {
+	const result = await runProcess("ps", ["-axo", "pid=,etimes=,command="], {
 		timeoutMs: 5000,
 		trackJob: false,
 	});
 	if (result.code !== 0) {
 		return [];
 	}
-	const profilePaths = new Set();
+	const profiles = new Map();
+	const now = Date.now();
 	for (const line of result.stdout.split(/\r?\n/)) {
 		if (!line.includes("/Firefox.app/") || !line.includes(" -profile ")) {
 			continue;
 		}
-		const match = line.match(/ -profile (.+?)(?: org\.mozilla\.machname\.|$)/);
-		if (match) {
-			profilePaths.add(path.resolve(match[1].trim()));
+		const processMatch = line.match(/^\s*(\d+)\s+(\d+)\s+(.*)$/);
+		if (!processMatch) {
+			continue;
+		}
+		const command = processMatch[3];
+		const profileMatch = command.match(/ -profile (.+?)(?: org\.mozilla\.machname\.|$)/);
+		if (profileMatch) {
+			const profilePath = path.resolve(profileMatch[1].trim());
+			const elapsedSeconds = Number(processMatch[2]);
+			const current = profiles.get(profilePath);
+			const startedAtMs = Number.isFinite(elapsedSeconds) ? now - elapsedSeconds * 1000 : 0;
+			if (!current || startedAtMs < current.startedAtMs) {
+				profiles.set(profilePath, {
+					path: profilePath,
+					pid: Number(processMatch[1]),
+					startedAt: startedAtMs ? new Date(startedAtMs).toISOString() : "",
+					startedAtMs,
+				});
+			}
 		}
 	}
-	return Array.from(profilePaths);
+	return Array.from(profiles.values());
+}
+
+async function fileMtimeMs(filePath) {
+	try {
+		return (await fsp.stat(filePath)).mtimeMs;
+	} catch (error) {
+		if (error.code !== "ENOENT") {
+			throw error;
+		}
+		return 0;
+	}
+}
+
+function profileNeedsFirefoxRestart(runningProfile, changedAtMs) {
+	if (!runningProfile) {
+		return false;
+	}
+	if (!runningProfile.startedAtMs || !changedAtMs) {
+		return false;
+	}
+	return changedAtMs > runningProfile.startedAtMs + 1000;
 }
 
 async function firefoxTrustReport() {
-	const [certutil, profiles, runningProfiles] = await Promise.all([
+	const [certutil, profiles, runningProfileReports, rootCaPath] = await Promise.all([
 		commandExists("certutil"),
 		firefoxProfiles(),
-		firefoxRunningProfilePaths(),
+		firefoxRunningProfiles(),
+		mkcertRootCaPath(),
 	]);
+	const runningProfiles = runningProfileReports.map((profile) => profile.path);
+	const runningProfileMap = new Map(runningProfileReports.map((profile) => [profile.path, profile]));
+	const macosRootTrust = await macosRootTrustReport(rootCaPath);
 	if (!profiles.length) {
 		return {
 			detected: false,
@@ -1316,6 +1452,7 @@ async function firefoxTrustReport() {
 			certutil,
 			profiles,
 			runningProfiles,
+			macosRootTrust,
 		};
 	}
 	if (!certutil.ok) {
@@ -1327,6 +1464,7 @@ async function firefoxTrustReport() {
 			certutil,
 			profiles,
 			runningProfiles,
+			macosRootTrust,
 		};
 	}
 	const profileReports = await Promise.all(profiles.map(async (profile) => {
@@ -1337,7 +1475,13 @@ async function firefoxTrustReport() {
 			}),
 			readFirefoxPref(profile.path, firefoxEnterpriseRootsPref),
 		]);
-		const running = runningProfiles.includes(path.resolve(profile.path));
+		const profilePath = path.resolve(profile.path);
+		const runningProfile = runningProfileMap.get(profilePath);
+		const [certDbMtimeMs, userJsMtimeMs] = await Promise.all([
+			fileMtimeMs(path.join(profile.path, "cert9.db")),
+			fileMtimeMs(path.join(profile.path, "user.js")),
+		]);
+		const trustChangedAtMs = Math.max(certDbMtimeMs, userJsMtimeMs);
 		return {
 			...profile,
 			code: result.code,
@@ -1345,15 +1489,20 @@ async function firefoxTrustReport() {
 			enterpriseRootsEnabled: enterpriseRoots.effectiveValue === true,
 			enterpriseRootsActive: enterpriseRoots.prefsValue === true,
 			enterpriseRoots,
-			restartRequired: running && enterpriseRoots.userValue === true && enterpriseRoots.prefsValue !== true,
-			running,
+			restartRequired: profileNeedsFirefoxRestart(runningProfile, trustChangedAtMs),
+			running: Boolean(runningProfile),
+			runningProfile,
+			trustChangedAt: trustChangedAtMs ? new Date(trustChangedAtMs).toISOString() : "",
 			error: result.code === 0 ? "" : (result.stderr || result.stdout).trim(),
 		};
 	}));
 	const trustedCount = profileReports.filter((profile) => profile.trusted).length;
 	const enterpriseCount = profileReports.filter((profile) => profile.enterpriseRootsEnabled).length;
 	const restartRequired = profileReports.some((profile) => profile.restartRequired);
-	const status = trustedCount === profileReports.length && restartRequired
+	const macosTrustNeeded = enterpriseCount > 0 && !macosRootTrust.trusted;
+	const status = macosTrustNeeded
+		? "macos-untrusted"
+		: trustedCount === profileReports.length && restartRequired
 		? "restart-required"
 		: trustedCount === profileReports.length
 			? "trusted"
@@ -1367,6 +1516,8 @@ async function firefoxTrustReport() {
 		restartRequired,
 		message: status === "trusted"
 			? "Firefox trusts the mkcert local CA."
+			: status === "macos-untrusted"
+				? "Firefox has the mkcert CA, but macOS does not trust it for SSL yet."
 			: status === "restart-required"
 				? "Firefox trust is written. Fully quit and reopen Firefox to reload it."
 			: status === "partial"
@@ -1375,6 +1526,7 @@ async function firefoxTrustReport() {
 		certutil,
 		profiles: profileReports,
 		runningProfiles,
+		macosRootTrust,
 	};
 }
 
@@ -1405,8 +1557,7 @@ async function trustFirefoxCertificate() {
 			durationMs: 0,
 		};
 	}
-	const carootResult = await runProcess("mkcert", ["-CAROOT"], { timeoutMs: 5000, trackJob: false });
-	const rootCaPath = carootResult.code === 0 ? path.join(carootResult.stdout.trim(), "rootCA.pem") : "";
+	const rootCaPath = await mkcertRootCaPath();
 	if (!rootCaPath || !(await pathExists(rootCaPath))) {
 		return {
 			code: 1,
@@ -1417,6 +1568,7 @@ async function trustFirefoxCertificate() {
 			durationMs: 0,
 		};
 	}
+	const macosTrustResult = await trustMacosUserRoot(rootCaPath);
 	const importResults = [];
 	for (const profile of before.profiles) {
 		const deleteResult = await runProcess("certutil", ["-D", "-d", `sql:${profile.path}`, "-n", "mkcert local CA"], {
@@ -1446,6 +1598,7 @@ async function trustFirefoxCertificate() {
 		command: "runtime-firefox-trust",
 		args: before.profiles.map((profile) => profile.name),
 		stdout: [
+			macosTrustResult.message,
 			`Imported mkcert CA into ${importResults.filter((result) => result.code === 0).length}/${importResults.length} Firefox profile stores.`,
 			`Enabled Firefox macOS root trust in ${importResults.filter((result) => result.enterpriseRoots && !result.enterpriseRootsError).length}/${importResults.length} profiles.`,
 			...importResults.filter((result) => result.code !== 0).map((result) => `${result.profile}: ${result.output || "import failed"}`),
