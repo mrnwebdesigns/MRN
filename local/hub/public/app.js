@@ -438,6 +438,9 @@ function firefoxTrustUi(firefoxTrust) {
 	if (firefoxTrust.status === "trusted") {
 		return { label: "Firefox trusted", status: "ok", button: "Re-trust Firefox", action: "runtime-firefox-trust", disabled: false, title: "Firefox already trusts the local mkcert CA." };
 	}
+	if (firefoxTrust.status === "restart-required") {
+		return { label: "Firefox restart", status: "warn", button: "Re-trust Firefox", action: "runtime-firefox-trust", disabled: false, title: firefoxTrust.message || "Fully quit and reopen Firefox to reload local certificate trust." };
+	}
 	if (firefoxTrust.status === "partial") {
 		return { label: "Firefox partial", status: "warn", button: "Trust Firefox", action: "runtime-firefox-trust", disabled: false, title: firefoxTrust.message || "Some Firefox profiles still need the local CA." };
 	}

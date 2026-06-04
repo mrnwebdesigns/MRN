@@ -41,6 +41,7 @@ const friendlyProxyInstallScriptPath = path.join(runtimeWorkRoot, "install-frien
 const friendlyProxyStdoutPath = path.join(runtimeWorkRoot, "friendly-proxy.out.log");
 const friendlyProxyStderrPath = path.join(runtimeWorkRoot, "friendly-proxy.err.log");
 const firefoxProfilesRoot = path.join(os.homedir(), "Library", "Application Support", "Firefox", "Profiles");
+const firefoxEnterpriseRootsPref = "security.enterprise_roots.enabled";
 const homeDir = process.env.HOME || "";
 const activeJobs = new Map();
 const diskUsageCache = new Map();
@@ -1210,10 +1211,101 @@ async function firefoxProfiles() {
 	return profiles;
 }
 
+function regexEscape(value) {
+	return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function firefoxPrefFromText(content, prefName) {
+	const pattern = new RegExp(`user_pref\\("${regexEscape(prefName)}",\\s*(true|false|"[^"]*"|-?\\d+(?:\\.\\d+)?)\\s*\\);`, "g");
+	let match;
+	let value = null;
+	while ((match = pattern.exec(content))) {
+		const rawValue = match[1];
+		if (rawValue === "true") {
+			value = true;
+		} else if (rawValue === "false") {
+			value = false;
+		} else if (rawValue.startsWith("\"")) {
+			value = rawValue.slice(1, -1);
+		} else {
+			value = Number(rawValue);
+		}
+	}
+	return value;
+}
+
+async function readFirefoxPref(profilePath, prefName) {
+	const files = [
+		{ name: "prefs.js", path: path.join(profilePath, "prefs.js") },
+		{ name: "user.js", path: path.join(profilePath, "user.js") },
+	];
+	const values = {};
+	for (const file of files) {
+		try {
+			values[file.name] = firefoxPrefFromText(await fsp.readFile(file.path, "utf8"), prefName);
+		} catch (error) {
+			if (error.code !== "ENOENT") {
+				values[`${file.name}Error`] = error.message;
+			}
+			values[file.name] = null;
+		}
+	}
+	return {
+		prefsValue: values["prefs.js"],
+		userValue: values["user.js"],
+		effectiveValue: values["user.js"] ?? values["prefs.js"],
+		prefsError: values["prefs.jsError"] || "",
+		userError: values["user.jsError"] || "",
+	};
+}
+
+async function writeFirefoxUserPref(profilePath, prefName, value) {
+	const userJsPath = path.join(profilePath, "user.js");
+	let content = "";
+	try {
+		content = await fsp.readFile(userJsPath, "utf8");
+	} catch (error) {
+		if (error.code !== "ENOENT") {
+			throw error;
+		}
+	}
+	const line = `user_pref("${prefName}", ${JSON.stringify(value)});`;
+	const pattern = new RegExp(`^user_pref\\("${regexEscape(prefName)}",\\s*[^;]*\\);\\s*$`, "m");
+	const nextContent = pattern.test(content)
+		? content.replace(pattern, line)
+		: `${content.replace(/\s*$/, "")}${content.trim() ? "\n" : ""}${line}\n`;
+	if (nextContent !== content) {
+		await fsp.writeFile(userJsPath, nextContent, "utf8");
+	}
+	return { path: userJsPath, changed: nextContent !== content };
+}
+
+async function firefoxRunningProfilePaths() {
+	const result = await runProcess("ps", ["-axo", "command"], {
+		timeoutMs: 5000,
+		trackJob: false,
+	});
+	if (result.code !== 0) {
+		return [];
+	}
+	const profilePaths = new Set();
+	for (const line of result.stdout.split(/\r?\n/)) {
+		if (!line.includes("/Firefox.app/") || !line.includes(" -profile ")) {
+			continue;
+		}
+		const match = line.match(/ -profile (.+?)(?: org\.mozilla\.machname\.|$)/);
+		if (match) {
+			profilePaths.add(path.resolve(match[1].trim()));
+		}
+	}
+	return Array.from(profilePaths);
+}
+
 async function firefoxTrustReport() {
-	const [certutil, profiles] = await Promise.all([
+	const [certutil, profiles, runningProfiles] = await Promise.all([
 		commandExists("certutil"),
 		firefoxProfiles(),
+		firefoxRunningProfilePaths(),
 	]);
 	if (!profiles.length) {
 		return {
@@ -1223,6 +1315,7 @@ async function firefoxTrustReport() {
 			message: "Firefox profiles were not found.",
 			certutil,
 			profiles,
+			runningProfiles,
 		};
 	}
 	if (!certutil.ok) {
@@ -1233,33 +1326,55 @@ async function firefoxTrustReport() {
 			message: "Firefox needs NSS certutil before mkcert can trust the local CA there.",
 			certutil,
 			profiles,
+			runningProfiles,
 		};
 	}
 	const profileReports = await Promise.all(profiles.map(async (profile) => {
-		const result = await runProcess("certutil", ["-L", "-d", `sql:${profile.path}`], {
-			timeoutMs: 5000,
-			trackJob: false,
-		});
+		const [result, enterpriseRoots] = await Promise.all([
+			runProcess("certutil", ["-L", "-d", `sql:${profile.path}`], {
+				timeoutMs: 5000,
+				trackJob: false,
+			}),
+			readFirefoxPref(profile.path, firefoxEnterpriseRootsPref),
+		]);
+		const running = runningProfiles.includes(path.resolve(profile.path));
 		return {
 			...profile,
 			code: result.code,
 			trusted: /mkcert/i.test(result.stdout),
+			enterpriseRootsEnabled: enterpriseRoots.effectiveValue === true,
+			enterpriseRootsActive: enterpriseRoots.prefsValue === true,
+			enterpriseRoots,
+			restartRequired: running && enterpriseRoots.userValue === true && enterpriseRoots.prefsValue !== true,
+			running,
 			error: result.code === 0 ? "" : (result.stderr || result.stdout).trim(),
 		};
 	}));
 	const trustedCount = profileReports.filter((profile) => profile.trusted).length;
-	const status = trustedCount === profileReports.length ? "trusted" : trustedCount > 0 ? "partial" : "untrusted";
+	const enterpriseCount = profileReports.filter((profile) => profile.enterpriseRootsEnabled).length;
+	const restartRequired = profileReports.some((profile) => profile.restartRequired);
+	const status = trustedCount === profileReports.length && restartRequired
+		? "restart-required"
+		: trustedCount === profileReports.length
+			? "trusted"
+			: trustedCount > 0 || enterpriseCount > 0
+				? "partial"
+				: "untrusted";
 	return {
 		detected: true,
 		status,
-		trusted: status === "trusted",
+		trusted: status === "trusted" || status === "restart-required",
+		restartRequired,
 		message: status === "trusted"
 			? "Firefox trusts the mkcert local CA."
+			: status === "restart-required"
+				? "Firefox trust is written. Fully quit and reopen Firefox to reload it."
 			: status === "partial"
 				? "Some Firefox profiles trust the mkcert local CA."
 				: "Firefox does not trust the mkcert local CA yet.",
 		certutil,
 		profiles: profileReports,
+		runningProfiles,
 	};
 }
 
@@ -1317,17 +1432,26 @@ async function trustFirefoxCertificate() {
 			code: importResult.code,
 			output: (importResult.stdout || importResult.stderr || deleteResult.stderr || "").trim(),
 		});
+		try {
+			const enterpriseRoots = await writeFirefoxUserPref(profile.path, firefoxEnterpriseRootsPref, true);
+			importResults[importResults.length - 1].enterpriseRoots = enterpriseRoots;
+		} catch (error) {
+			importResults[importResults.length - 1].enterpriseRootsError = error.message;
+		}
 	}
 	const after = await firefoxTrustReport();
+	const successStatuses = new Set(["trusted", "restart-required", "partial"]);
 	return {
-		code: after.status === "trusted" || after.status === "partial" ? 0 : 1,
+		code: successStatuses.has(after.status) ? 0 : 1,
 		command: "runtime-firefox-trust",
 		args: before.profiles.map((profile) => profile.name),
 		stdout: [
 			`Imported mkcert CA into ${importResults.filter((result) => result.code === 0).length}/${importResults.length} Firefox profile stores.`,
+			`Enabled Firefox macOS root trust in ${importResults.filter((result) => result.enterpriseRoots && !result.enterpriseRootsError).length}/${importResults.length} profiles.`,
 			...importResults.filter((result) => result.code !== 0).map((result) => `${result.profile}: ${result.output || "import failed"}`),
+			...importResults.filter((result) => result.enterpriseRootsError).map((result) => `${result.profile}: ${result.enterpriseRootsError}`),
 			after.message,
-			after.status === "trusted" || after.status === "partial" ? "Restart Firefox if the warning is still open." : "",
+			after.trusted ? "Restart Firefox if the warning is still open." : "",
 		].filter(Boolean).join("\n"),
 		stderr: "",
 		durationMs: 0,
