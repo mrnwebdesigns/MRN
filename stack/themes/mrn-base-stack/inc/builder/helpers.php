@@ -168,6 +168,76 @@ function mrn_base_stack_get_hero_builder_layout_source_names() {
 }
 
 /**
+ * Normalize a filterable list of layout names.
+ *
+ * @param mixed              $names Layout names supplied by a filter.
+ * @param array<int, string> $defaults Default layout names.
+ * @return array<int, string>
+ */
+function mrn_base_stack_normalize_builder_layout_source_names( $names, array $defaults ) {
+	if ( ! is_array( $names ) ) {
+		return $defaults;
+	}
+
+	$names = array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $names )
+			)
+		)
+	);
+
+	return ! empty( $names ) ? $names : $defaults;
+}
+
+/**
+ * Get content layout names that should be available inside Tabbed Layout panels.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_tabbed_layout_source_names() {
+	$defaults = array(
+		'body_text',
+		'basic',
+		'cta',
+		'image_content',
+		'external_widget',
+		'wpforms',
+		'searchwp_form',
+		'video',
+		'reusable_block',
+	);
+
+	return mrn_base_stack_normalize_builder_layout_source_names(
+		apply_filters( 'mrn_base_stack_tabbed_layout_source_names', $defaults ),
+		$defaults
+	);
+}
+
+/**
+ * Get nested layout names that should be available inside Two Column Split columns.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_two_column_column_layout_source_names() {
+	$defaults = array(
+		'body_text',
+		'basic',
+		'cta',
+		'image_content',
+		'video',
+		'external_widget',
+		'wpforms',
+		'reusable_block',
+	);
+
+	return mrn_base_stack_normalize_builder_layout_source_names(
+		apply_filters( 'mrn_base_stack_two_column_column_layout_source_names', $defaults ),
+		$defaults
+	);
+}
+
+/**
  * Clone selected top-level Content layouts for Hero field usage.
  *
  * @return array<string, array<string, mixed>>
@@ -297,7 +367,7 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 		return $layouts_cache[ $cache_key ];
 	}
 
-	$allowed_names = array();
+	$allowed_names = mrn_base_stack_get_tabbed_layout_source_names();
 	if (
 		$allowlist_active
 		&& function_exists( 'mrn_base_stack_get_builder_layout_allowlist_catalog_from_field' )
@@ -306,7 +376,20 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 		$catalog = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( $field );
 
 		if ( ! empty( $catalog ) ) {
-			$allowed_names = mrn_base_stack_get_builder_layout_allowlist_effective_names( $post_id, 'page_content_rows', $catalog );
+			$effective_names = mrn_base_stack_get_builder_layout_allowlist_effective_names( $post_id, 'page_content_rows', $catalog );
+			$effective_names = is_array( $effective_names ) ? $effective_names : array();
+			$effective_lookup = array_fill_keys(
+				array_map( 'sanitize_key', $effective_names ),
+				true
+			);
+			$allowed_names    = array_values(
+				array_filter(
+					$allowed_names,
+					static function ( $layout_name ) use ( $effective_lookup ) {
+						return isset( $effective_lookup[ $layout_name ] );
+					}
+				)
+			);
 		}
 
 		$allowed_names = array_values(
@@ -7961,4 +8044,34 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 			),
 		),
 	);
+}
+
+/**
+ * Nested layouts offered to authors inside Two Column Split columns.
+ *
+ * `mrn_base_stack_get_two_column_nested_layouts()` remains the complete
+ * compatibility catalog. This helper is the authoring catalog for new column
+ * rows, keeping split columns from becoming full recursive builders.
+ *
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_two_column_column_layouts() {
+	$allowed_names  = mrn_base_stack_get_two_column_column_layout_source_names();
+	$allowed_lookup = array_fill_keys( $allowed_names, true );
+	$layouts        = array();
+
+	foreach ( mrn_base_stack_get_two_column_nested_layouts() as $layout_key => $layout ) {
+		if ( ! is_array( $layout ) ) {
+			continue;
+		}
+
+		$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+		if ( '' === $layout_name || ! isset( $allowed_lookup[ $layout_name ] ) ) {
+			continue;
+		}
+
+		$layouts[ $layout_key ] = $layout;
+	}
+
+	return $layouts;
 }

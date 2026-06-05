@@ -1895,7 +1895,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'type'          => 'flexible_content',
 										'button_label'  => 'Add Left Layout',
 										'max'           => 1,
-										'layouts'       => mrn_base_stack_get_two_column_nested_layouts(),
+										'layouts'       => mrn_base_stack_get_two_column_column_layouts(),
 										'wrapper'       => array(
 											'width' => '50',
 										),
@@ -1908,7 +1908,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'type'          => 'flexible_content',
 										'button_label'  => 'Add Right Layout',
 										'max'           => 1,
-										'layouts'       => mrn_base_stack_get_two_column_nested_layouts(),
+										'layouts'       => mrn_base_stack_get_two_column_column_layouts(),
 										'wrapper'       => array(
 											'width' => '50',
 										),

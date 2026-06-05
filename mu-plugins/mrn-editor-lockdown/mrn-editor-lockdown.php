@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Editor Lockdown (MU)
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.20
+ * Version: 1.0.23
  *
  * @package MRNEditorLockdown
  */
@@ -678,7 +678,8 @@ function mrn_editor_lockdown_admin_css() {
 			content: '';
 			position: fixed;
 			inset: 0;
-			background: rgba(17, 20, 24, 0.86);
+			background: rgba(255, 255, 255, 0.9);
+			backdrop-filter: blur(3px);
 			z-index: 100000;
 		}
 
@@ -688,13 +689,14 @@ function mrn_editor_lockdown_admin_css() {
 			position: fixed;
 			top: 50%;
 			left: 50%;
-			width: 48px;
-			height: 48px;
-			margin: -40px 0 0 -24px;
+			width: 42px;
+			height: 42px;
+			margin: -38px 0 0 -21px;
 			border-radius: 50%;
-			border: 4px solid rgba(255, 255, 255, 0.35);
-			border-top-color: #ffffff;
-			animation: mrnEditorPageLoaderSpin 0.9s linear infinite;
+			background: conic-gradient(from 90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.36) 36%, #ffffff 72%, rgba(255, 255, 255, 0));
+			-webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+			mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+			animation: mrnEditorPageLoaderSpin 0.82s linear infinite;
 			z-index: 100001;
 		}
 
@@ -704,91 +706,104 @@ function mrn_editor_lockdown_admin_css() {
 			left: 50%;
 			width: min(88vw, 520px);
 			margin-top: 24px;
+			padding: 14px 18px;
 			transform: translateX(-50%);
 			text-align: center;
-			color: #111111;
+			color: #ffffff;
+			background: #111111;
+			border: 1px solid rgba(255, 255, 255, 0.16);
+			border-radius: 8px;
+			box-shadow: 0 18px 46px rgba(17, 17, 17, 0.24);
 			font-size: 14px;
 			font-weight: 600;
-			letter-spacing: 0.02em;
+			letter-spacing: 0;
 			line-height: 1.4;
 			text-wrap: balance;
 			z-index: 100002;
 			pointer-events: none;
-			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 		}
 
 		body.post-php:not(.mrn-editor-page-ready):not(.mrn-editor-loading-message-live) #wpwrap::before,
 		body.post-new-php:not(.mrn-editor-page-ready):not(.mrn-editor-loading-message-live) #wpwrap::before {
-			content: 'Summoning your editing desk...';
+			content: 'Preparing the editor workspace...';
 			position: fixed;
 			top: 50%;
 			left: 50%;
 			width: min(88vw, 520px);
 			margin-top: 24px;
+			padding: 14px 18px;
 			transform: translateX(-50%);
 			text-align: center;
-			color: #f4f7fb;
+			color: #ffffff;
+			background: #111111;
+			border: 1px solid rgba(255, 255, 255, 0.16);
+			border-radius: 8px;
+			box-shadow: 0 18px 46px rgba(17, 17, 17, 0.24);
 			font-size: 14px;
 			font-weight: 600;
-			letter-spacing: 0.02em;
+			letter-spacing: 0;
 			line-height: 1.4;
 			text-wrap: balance;
 			z-index: 100002;
 			pointer-events: none;
-			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 		}
 
 	<?php endif; ?>
 
 	<?php if ( $loading_indicator_enabled ) : ?>
 		html.mrn-editor-loading-indicator-live::before {
-			content: '';
+			content: 'Preparing editor controls...';
 			position: fixed;
 			top: 50%;
 			left: 50%;
-			width: 56px;
-			height: 56px;
-			margin: -74px 0 0 -28px;
-			border-radius: 50%;
-			border: 5px solid rgba(255, 255, 255, 0.28);
-			border-top-color: #ffffff;
-			background: rgba(17, 20, 24, 0.42);
-			box-shadow: 0 0 0 8px rgba(17, 20, 24, 0.14), 0 10px 24px rgba(0, 0, 0, 0.22);
-			z-index: 100004;
+			width: min(88vw, 360px);
+			min-height: 34px;
+			padding: 20px 28px 20px 82px;
+			box-sizing: border-box;
+			transform: translate(-50%, -50%);
+			border: 1px solid rgba(255, 255, 255, 0.16);
+			border-radius: 8px;
+			background: #111111;
+			box-shadow: 0 18px 46px rgba(17, 17, 17, 0.24);
+			color: #ffffff;
+			font-size: 14px;
+			font-weight: 700;
+			letter-spacing: 0;
+			line-height: 1.35;
+			text-align: left;
 			pointer-events: none;
-			animation: mrnEditorPageLoaderSpin 0.82s linear infinite;
+			z-index: 100003;
 		}
 
-			html.mrn-editor-loading-indicator-live::after {
-				content: 'Preparing editor controls...';
-				position: fixed;
-				inset: 0;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				padding-top: 26px;
-				background: rgba(255, 255, 255, 0.38);
-				color: #111111;
-				font-size: 15px;
-				font-weight: 700;
-				letter-spacing: 0.02em;
-				line-height: 1.25;
-				text-shadow: none;
-				z-index: 100003;
-				pointer-events: none;
-				animation: mrnEditorLoaderPulse 1.05s ease-in-out infinite;
-			}
+		html.mrn-editor-loading-indicator-live::after {
+			content: '';
+			position: fixed;
+			top: 50%;
+			left: calc(50% - min(44vw, 180px) + 42px);
+			width: 34px;
+			height: 34px;
+			margin: -17px 0 0 -17px;
+			border-radius: 50%;
+			background: conic-gradient(from 90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.36) 36%, #ffffff 72%, rgba(255, 255, 255, 0));
+			-webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+			mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+			pointer-events: none;
+			z-index: 100004;
+			animation: mrnEditorPageLoaderSpin 0.78s linear infinite;
+		}
 
 		@media (max-width: 782px) {
-			html.mrn-editor-loading-indicator-live::after {
-				padding-top: 22px;
+			html.mrn-editor-loading-indicator-live::before {
+				width: min(90vw, 320px);
+				padding: 18px 22px 18px 74px;
 				font-size: 13px;
 			}
 
-			html.mrn-editor-loading-indicator-live::before {
-				width: 48px;
-				height: 48px;
-				margin: -66px 0 0 -24px;
+			html.mrn-editor-loading-indicator-live::after {
+				left: calc(50% - min(45vw, 160px) + 38px);
+				width: 30px;
+				height: 30px;
+				margin: -15px 0 0 -15px;
 			}
 		}
 	<?php endif; ?>
@@ -796,17 +811,6 @@ function mrn_editor_lockdown_admin_css() {
 		@keyframes mrnEditorPageLoaderSpin {
 			to {
 				transform: rotate(360deg);
-			}
-		}
-
-		@keyframes mrnEditorLoaderPulse {
-			0%,
-			100% {
-				opacity: 0.95;
-			}
-
-			50% {
-				opacity: 0.72;
 			}
 		}
 
@@ -967,6 +971,7 @@ function mrn_editor_lockdown_admin_css() {
 
 			html.mrn-editor-loading-indicator-live::after {
 				animation: none;
+				background: conic-gradient(from 90deg, rgba(255, 255, 255, 0.18), #ffffff 70%, rgba(255, 255, 255, 0.18));
 			}
 		}
 
@@ -1032,35 +1037,21 @@ function mrn_editor_lockdown_admin_js() {
 			var loadingMessageStartStorageKey = 'mrnEditorLoadingMessageStart:v1:' + postType;
 			var loadingMaskEnabled = <?php echo wp_json_encode( mrn_editor_lockdown_is_loading_mask_enabled() ); ?>;
 			var loadingIndicatorEnabled = <?php echo wp_json_encode( mrn_editor_lockdown_is_loading_indicator_enabled() ); ?>;
-			var loadingMessageIcons = ['🚀', '💣', '🧨', '⚡', '🛰️', '🛠️', '🎯', '🧪', '🔥', '✨'];
 			var loadingMessageStartPhrases = [
-				'Aligning your metaboxes',
-				'Bribing the sidebar gremlins',
-				'Polishing the publish button',
-				'Checking every tiny click target',
-				'Sharpening your headline pencils',
-				'Warming up the permalink engine',
-				'Untangling classic editor cables',
-				'Tuning the SEO helper radar',
-				'Buffing up content controls',
-				'Loading keyboard shortcut fuel',
-				'Calibrating preview thrusters',
-				'Dusting off the formatting toolbox',
-				'Rehearsing your save-draft backup plan',
-				'Smoothing out admin panel corners',
-				'Syncing title fields and slug magic',
-				'Packing extra speed into this screen',
-				'Running one last quality checkpoint',
-				'Prepping your content launchpad',
-				'Teaching buttons to behave politely',
-				'Deploying tiny UX elves'
+				'Preparing editor controls',
+				'Loading content fields',
+				'Organizing sidebar panels',
+				'Checking editor state',
+				'Loading publishing tools',
+				'Preparing reusable content',
+				'Syncing editor settings',
+				'Finalizing admin controls'
 			];
 			var loadingMessageEndPhrases = [
-				'for liftoff',
-				'before the big reveal',
-				'so everything feels snappy',
-				'without waking the bugs',
-				'with cinematic confidence'
+				'for this page',
+				'for a smoother edit',
+				'before the screen is ready',
+				'with the current layout'
 			];
 			var loadingMessages = [];
 			var loadingStartIndex;
@@ -1079,7 +1070,7 @@ function mrn_editor_lockdown_admin_js() {
 					return;
 				}
 
-				loadingMessageEl.textContent = loadingMessages[index % loadingMessages.length] + ' ' + loadingMessageIcons[index % loadingMessageIcons.length];
+				loadingMessageEl.textContent = loadingMessages[index % loadingMessages.length];
 			}
 
 			function getRandomLoadingMessageStartIndex() {
