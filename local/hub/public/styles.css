@@ -3,24 +3,24 @@
 	font-family: "Aptos", "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 	background: #f6f2fa;
 	color: #241832;
-	--app-bg: #f6f2fa;
-	--app-bg-2: #ece4f5;
+	--app-bg: #f7f4fa;
+	--app-bg-2: #ede7f3;
 	--sidebar-bg: #17111f;
 	--sidebar-border: rgba(220, 165, 255, 0.2);
 	--sidebar-text: #fff7ff;
 	--sidebar-muted: #cbbbd8;
 	--surface: #ffffff;
-	--surface-2: #faf6ff;
-	--surface-3: #efe5fb;
-	--border: #ddcfe9;
+	--surface-2: #fbf8fd;
+	--surface-3: #eee6f6;
+	--border: #d8cbe4;
 	--text: #241832;
 	--muted: #70627f;
-	--accent: #8438f0;
-	--accent-strong: #b02cff;
-	--accent-pop: #de46ff;
-	--accent-soft: rgba(132, 56, 240, 0.13);
-	--logo-green: #5bd85d;
-	--positive: var(--logo-green);
+	--accent: #7a37e7;
+	--accent-strong: #6526c5;
+	--accent-pop: #c935f2;
+	--accent-soft: rgba(122, 55, 231, 0.12);
+	--logo-green: #61dc5d;
+	--positive: #1f8734;
 	--success: var(--positive);
 	--warning: #f2bf2d;
 	--danger: #e64b67;
@@ -341,8 +341,8 @@ h3 {
 }
 
 .health-strip.ok {
-	border-color: color-mix(in srgb, var(--positive) 38%, transparent);
-	background: color-mix(in srgb, var(--positive) 13%, transparent);
+	border-color: color-mix(in srgb, var(--logo-green) 55%, transparent);
+	background: color-mix(in srgb, var(--logo-green) 18%, var(--surface));
 	color: var(--positive);
 }
 
@@ -490,7 +490,8 @@ h3 {
 	top: 0;
 	z-index: 30;
 	border-bottom: 1px solid var(--border);
-	background: color-mix(in srgb, var(--app-bg) 82%, rgba(31, 22, 43, 0.18));
+	background: linear-gradient(90deg, var(--sidebar-bg), color-mix(in srgb, var(--sidebar-bg) 78%, #2d1749));
+	color: var(--sidebar-text);
 	backdrop-filter: blur(16px);
 }
 
@@ -519,7 +520,7 @@ h3 {
 }
 
 .masthead-brand .eyebrow {
-	color: color-mix(in srgb, var(--accent-strong) 38%, var(--muted));
+	color: var(--sidebar-muted);
 	font-size: 0.76rem;
 	font-weight: 900;
 }
@@ -530,7 +531,7 @@ h3 {
 }
 
 .masthead-subtitle {
-	color: var(--muted);
+	color: var(--sidebar-muted);
 	font-size: 0.8rem;
 	font-weight: 850;
 	text-transform: uppercase;
@@ -576,6 +577,29 @@ h3 {
 .user-menu > summary:hover {
 	border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
 	color: var(--accent-strong);
+}
+
+.topbar .user-menu > summary,
+.topbar .pill {
+	border-color: color-mix(in srgb, var(--sidebar-border) 72%, transparent);
+	background: color-mix(in srgb, var(--sidebar-bg) 72%, transparent);
+	color: var(--sidebar-muted);
+}
+
+.topbar .user-menu[open] > summary,
+.topbar .user-menu > summary:hover {
+	border-color: color-mix(in srgb, var(--accent-pop) 48%, var(--sidebar-border));
+	color: var(--sidebar-text);
+}
+
+.topbar .pill.ok {
+	border-color: color-mix(in srgb, var(--logo-green) 48%, transparent);
+	background: color-mix(in srgb, var(--logo-green) 14%, var(--sidebar-bg));
+	color: var(--logo-green);
+}
+
+.topbar .pill.bad {
+	background: color-mix(in srgb, var(--danger) 12%, var(--sidebar-bg));
 }
 
 .user-avatar {
@@ -807,8 +831,8 @@ h3 {
 }
 
 .pill.ok {
-	border-color: color-mix(in srgb, var(--positive) 38%, transparent);
-	background: color-mix(in srgb, var(--positive) 13%, transparent);
+	border-color: color-mix(in srgb, var(--logo-green) 55%, transparent);
+	background: color-mix(in srgb, var(--logo-green) 18%, var(--surface));
 	color: var(--positive);
 }
 
@@ -990,6 +1014,11 @@ body.is-busy {
 }
 
 .sparkline span.empty {
+	background: color-mix(in srgb, var(--accent) 18%, var(--border));
+	opacity: 0.42;
+}
+
+:root[data-theme="dark"] .sparkline span.empty {
 	background: var(--border);
 	opacity: 0.32;
 }
