@@ -67,6 +67,10 @@
 	display: none !important;
 }
 
+.icon-sprite {
+	display: none;
+}
+
 html,
 body {
 	min-height: 100%;
@@ -93,6 +97,54 @@ textarea {
 
 button {
 	cursor: pointer;
+}
+
+button .ui-icon,
+.metric-label .ui-icon,
+.chart-card-label .ui-icon {
+	pointer-events: none;
+}
+
+.ui-icon {
+	display: inline-block;
+	flex: 0 0 auto;
+	fill: none;
+	height: 1em;
+	stroke: currentColor;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	stroke-width: 1.9;
+	width: 1em;
+}
+
+.icon-badge {
+	align-items: center;
+	background:
+		radial-gradient(circle at 35% 20%, color-mix(in srgb, var(--accent-pop) 20%, transparent), transparent 62%),
+		color-mix(in srgb, var(--accent) 11%, var(--surface));
+	border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
+	border-radius: 10px;
+	color: var(--accent-strong);
+	display: inline-flex;
+	flex: 0 0 auto;
+	height: 34px;
+	justify-content: center;
+	width: 34px;
+}
+
+.icon-badge .ui-icon {
+	font-size: 1rem;
+}
+
+.icon-badge.compact {
+	border-radius: 8px;
+	height: 28px;
+	width: 28px;
+}
+
+.icon-badge.hero-icon {
+	height: 42px;
+	width: 42px;
 }
 
 button[data-tooltip] {
@@ -313,11 +365,21 @@ h3 {
 	text-align: left;
 }
 
+.nav-list .ui-icon {
+	color: color-mix(in srgb, var(--accent-pop) 68%, var(--sidebar-muted));
+	font-size: 1rem;
+}
+
 .nav-list button:hover,
 .nav-list button.active {
 	background: color-mix(in srgb, var(--accent) 17%, transparent);
 	border-color: var(--sidebar-border);
 	color: var(--sidebar-text);
+}
+
+.nav-list button:hover .ui-icon,
+.nav-list button.active .ui-icon {
+	color: var(--logo-green);
 }
 
 .sidebar .field span {
@@ -665,16 +727,27 @@ h3 {
 	font: inherit;
 	font-size: 0.9rem;
 	font-weight: 800;
+	gap: 9px;
 	min-height: 36px;
 	padding: 0 10px;
 	text-align: left;
 	width: 100%;
 }
 
+.user-menu-panel button .ui-icon {
+	color: color-mix(in srgb, var(--accent) 78%, var(--muted));
+	font-size: 0.98rem;
+}
+
 .user-menu-panel button:hover,
 .user-menu-panel button.active {
 	background: var(--surface-2);
 	color: var(--accent-strong);
+}
+
+.user-menu-panel button:hover .ui-icon,
+.user-menu-panel button.active .ui-icon {
+	color: var(--accent-pop);
 }
 
 .actions.compact {
@@ -720,15 +793,23 @@ h3 {
 }
 
 .tabbar button {
+	align-items: center;
 	border: 1px solid transparent;
 	border-radius: 7px;
 	background: transparent;
 	color: var(--muted);
+	display: inline-flex;
 	font-size: 0.86rem;
 	font-weight: 800;
+	gap: 7px;
 	min-height: 34px;
 	padding: 0 12px;
 	white-space: nowrap;
+}
+
+.tabbar button .ui-icon {
+	color: color-mix(in srgb, var(--accent) 72%, var(--muted));
+	font-size: 0.96rem;
 }
 
 .tabbar button:hover,
@@ -736,6 +817,11 @@ h3 {
 	border-color: color-mix(in srgb, var(--accent) 28%, var(--border));
 	background: var(--surface);
 	color: var(--accent-strong);
+}
+
+.tabbar button:hover .ui-icon,
+.tabbar button.active .ui-icon {
+	color: var(--accent-pop);
 }
 
 .tabbar button:disabled {
@@ -906,6 +992,13 @@ body.is-busy {
 	gap: 16px;
 }
 
+.dashboard-title {
+	align-items: center;
+	display: flex;
+	gap: 12px;
+	min-width: 0;
+}
+
 .dashboard-heading h2 {
 	font-size: 1.18rem;
 	margin-top: 2px;
@@ -934,9 +1027,21 @@ body.is-busy {
 	padding: 14px;
 }
 
+.metric-label {
+	align-items: center;
+	display: flex;
+	gap: 10px;
+	min-height: 34px;
+}
+
+.metric-label .eyebrow {
+	color: color-mix(in srgb, var(--accent-strong) 82%, var(--muted));
+	letter-spacing: 0;
+}
+
 .dashboard-metrics strong {
 	display: block;
-	margin-top: 4px;
+	margin-top: 8px;
 	overflow-wrap: anywhere;
 }
 
@@ -976,12 +1081,19 @@ body.is-busy {
 	text-align: left;
 }
 
+.chart-card-label {
+	align-items: center;
+	display: flex;
+	gap: 9px;
+	min-width: 0;
+}
+
 .chart-card:hover,
 .chart-card.expanded {
 	border-color: color-mix(in srgb, var(--accent) 42%, var(--border));
 }
 
-.chart-card span {
+.chart-card-label > span:last-child {
 	color: var(--muted);
 	font-size: 0.78rem;
 	font-weight: 800;
@@ -1050,13 +1162,16 @@ body.is-busy {
 	flex-wrap: wrap;
 	gap: 8px;
 	justify-content: flex-end;
+	min-width: 0;
 }
 
 .bulk-actions span {
 	color: var(--muted);
+	flex: 1 1 160px;
 	font-size: 0.82rem;
 	font-weight: 820;
-	margin-right: auto;
+	margin-right: 0;
+	min-width: 0;
 }
 
 .add-site-flow {
@@ -1847,14 +1962,22 @@ body.is-busy {
 }
 
 .site-subnav button {
+	align-items: center;
 	border: 1px solid var(--border);
 	border-radius: 7px;
 	background: color-mix(in srgb, var(--surface) 74%, transparent);
 	color: var(--muted);
+	display: inline-flex;
 	font-size: 0.84rem;
 	font-weight: 820;
+	gap: 7px;
 	min-height: 34px;
 	padding: 0 12px;
+}
+
+.site-subnav button .ui-icon {
+	color: color-mix(in srgb, var(--accent) 72%, var(--muted));
+	font-size: 0.95rem;
 }
 
 .site-subnav button.primary-site-tab {
@@ -1874,11 +1997,20 @@ body.is-busy {
 	color: var(--accent-strong);
 }
 
+.site-subnav button:hover .ui-icon,
+.site-subnav button.active .ui-icon {
+	color: var(--accent-pop);
+}
+
 .site-subnav button.primary-site-tab.active {
 	border-color: color-mix(in srgb, var(--accent) 68%, var(--border));
 	background: linear-gradient(180deg, var(--accent-pop), var(--accent));
 	color: white;
 	box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-pop) 24%, transparent);
+}
+
+.site-subnav button.primary-site-tab.active .ui-icon {
+	color: var(--logo-green);
 }
 
 .section-heading,
@@ -2382,6 +2514,11 @@ body.is-busy {
 	white-space: nowrap;
 }
 
+.ghost-button .ui-icon,
+.action .ui-icon {
+	font-size: 0.95rem;
+}
+
 .ghost-button {
 	border: 1px solid var(--border);
 	background: var(--surface-2);
@@ -2391,6 +2528,10 @@ body.is-busy {
 .ghost-button:hover {
 	border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
 	color: var(--accent-strong);
+}
+
+.ghost-button:hover .ui-icon {
+	color: var(--accent-pop);
 }
 
 .success-button,
@@ -2420,6 +2561,11 @@ body.is-busy {
 .danger-button:hover {
 	border-color: rgba(219, 40, 40, 0.44);
 	background: rgba(219, 40, 40, 0.1);
+	color: var(--danger);
+}
+
+.danger-button .ui-icon,
+.danger-button:hover .ui-icon {
 	color: var(--danger);
 }
 
@@ -2823,6 +2969,18 @@ body.is-busy {
 
 	.dashboard-metrics {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.site-filter-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.bulk-actions {
+		justify-content: flex-start;
+	}
+
+	.bulk-actions span {
+		flex-basis: 100%;
 	}
 
 	.runtime-grid.two-col,

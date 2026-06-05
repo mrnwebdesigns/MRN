@@ -321,29 +321,29 @@ const els = {
 
 const sectionTabs = {
 	dashboard: [
-		{ id: "dashboard-overview", label: "Overview" },
+		{ id: "dashboard-overview", label: "Overview", icon: "dashboard" },
 	],
 	sites: [
-		{ id: "sites-list", label: "All Sites" },
-		{ id: "sites-add", label: "Add Site", hidden: true },
-		{ id: "sites-settings", label: "Settings", requiresSite: true, hidden: true },
-		{ id: "sites-sync", label: "Pull & Push", requiresSite: true, hidden: true },
-		{ id: "sites-qa", label: "QA", requiresSite: true, hidden: true },
+		{ id: "sites-list", label: "All Sites", icon: "sites" },
+		{ id: "sites-add", label: "Add Site", icon: "add", hidden: true },
+		{ id: "sites-settings", label: "Settings", icon: "settings", requiresSite: true, hidden: true },
+		{ id: "sites-sync", label: "Pull & Push", icon: "refresh", requiresSite: true, hidden: true },
+		{ id: "sites-qa", label: "QA", icon: "qa", requiresSite: true, hidden: true },
 	],
 	runtime: [
-		{ id: "runtime-status", label: "Status" },
-		{ id: "runtime-https", label: "HTTPS" },
-		{ id: "runtime-maintenance", label: "Maintenance" },
-		{ id: "runtime-details", label: "Details" },
+		{ id: "runtime-status", label: "Status", icon: "runtime" },
+		{ id: "runtime-https", label: "HTTPS", icon: "check" },
+		{ id: "runtime-maintenance", label: "Maintenance", icon: "settings" },
+		{ id: "runtime-details", label: "Details", icon: "logs" },
 	],
 	providers: [
-		{ id: "providers-directory", label: "Integrations" },
+		{ id: "providers-directory", label: "Integrations", icon: "integrations" },
 	],
 	settings: [
-		{ id: "app-settings", label: "App Settings" },
+		{ id: "app-settings", label: "App Settings", icon: "settings" },
 	],
 	logs: [
-		{ id: "logs-console", label: "Deployment Log" },
+		{ id: "logs-console", label: "Deployment Log", icon: "logs" },
 	],
 };
 
@@ -394,7 +394,7 @@ const legacyTabMap = {
 function applyTheme(theme) {
 	const nextTheme = theme === "dark" ? "dark" : "light";
 	document.documentElement.dataset.theme = nextTheme;
-	els.themeToggle.textContent = nextTheme === "dark" ? "Light mode" : "Dark mode";
+	setButtonContent(els.themeToggle, nextTheme === "dark" ? "Light mode" : "Dark mode", "theme");
 	window.localStorage.setItem("mrn-local-hub-theme", nextTheme);
 }
 
@@ -402,6 +402,23 @@ function closeUserMenu() {
 	if (els.userMenu) {
 		els.userMenu.open = false;
 	}
+}
+
+function iconMarkup(iconName) {
+	if (!iconName) return "";
+	const safeName = String(iconName).replace(/[^a-z0-9-]/gi, "");
+	return `<svg class="ui-icon" aria-hidden="true"><use href="#icon-${safeName}"></use></svg>`;
+}
+
+function buttonLabelMarkup(label, iconName = "") {
+	const icon = iconMarkup(iconName);
+	const text = `<span>${escapeHtml(label)}</span>`;
+	return icon ? `${icon}${text}` : escapeHtml(label);
+}
+
+function setButtonContent(button, label, iconName = "") {
+	if (!button) return;
+	button.innerHTML = buttonLabelMarkup(label, iconName);
 }
 
 function desktopNotificationsSupported() {
@@ -611,7 +628,7 @@ function renderTabbar() {
 		const button = document.createElement("button");
 		button.type = "button";
 		button.dataset.tab = item.id;
-		button.textContent = item.label;
+		button.innerHTML = buttonLabelMarkup(item.label, item.icon);
 		button.className = item.id === state.activeTab ? "active" : "";
 		button.disabled = Boolean(item.requiresSite && !site);
 		button.setAttribute("aria-selected", item.id === state.activeTab ? "true" : "false");
@@ -1672,7 +1689,7 @@ function renderBulkControls(visibleSites = filteredSites()) {
 	}
 	if (els.selectVisibleSitesButton) {
 		els.selectVisibleSitesButton.disabled = state.busy || !visibleSites.length;
-		els.selectVisibleSitesButton.textContent = allVisibleSelected ? "Deselect Visible" : "Select Visible";
+		setButtonContent(els.selectVisibleSitesButton, allVisibleSelected ? "Deselect Visible" : "Select Visible", "check");
 	}
 	if (els.clearSiteSelectionButton) {
 		els.clearSiteSelectionButton.disabled = state.busy || !selected.length;
@@ -3955,11 +3972,11 @@ function renderSites() {
 						</span>
 					</button>
 				<div class="site-row-actions">
-					${status === "provisioned" ? `<button data-site-action="open-local" data-site-slug="${escapeHtml(site.slug)}" type="button" class="ghost-button" ${openDisabled}${openTitle}>Open</button>` : ""}
-					${status === "provisioned" ? `<button data-site-action="admin-login" data-site-slug="${escapeHtml(site.slug)}" type="button" class="ghost-button" ${openDisabled}${openTitle}>WP Admin</button>` : ""}
+					${status === "provisioned" ? `<button data-site-action="open-local" data-site-slug="${escapeHtml(site.slug)}" type="button" class="ghost-button" ${openDisabled}${openTitle}>${buttonLabelMarkup("Open", "open")}</button>` : ""}
+					${status === "provisioned" ? `<button data-site-action="admin-login" data-site-slug="${escapeHtml(site.slug)}" type="button" class="ghost-button" ${openDisabled}${openTitle}>${buttonLabelMarkup("WP Admin", "admin")}</button>` : ""}
 					${status === "provisioned"
-						? `<button data-site-action="stop-site" data-site-slug="${escapeHtml(site.slug)}" type="button" class="ghost-button danger-button">Stop</button>`
-						: `<button data-site-action="start-site" data-site-slug="${escapeHtml(site.slug)}" type="button" class="ghost-button">Start</button>`}
+						? `<button data-site-action="stop-site" data-site-slug="${escapeHtml(site.slug)}" type="button" class="ghost-button danger-button">${buttonLabelMarkup("Stop", "stop")}</button>`
+						: `<button data-site-action="start-site" data-site-slug="${escapeHtml(site.slug)}" type="button" class="ghost-button">${buttonLabelMarkup("Start", "start")}</button>`}
 				</div>
 			`;
 			row.querySelector("[data-site-select]").addEventListener("change", (event) => {

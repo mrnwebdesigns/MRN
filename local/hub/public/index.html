@@ -7,6 +7,117 @@
 		<link rel="stylesheet" href="/styles.css">
 	</head>
 	<body>
+		<svg class="icon-sprite" aria-hidden="true" focusable="false">
+			<symbol id="icon-dashboard" viewBox="0 0 24 24">
+				<path d="M4 13h6V4H4z"></path>
+				<path d="M14 20h6v-9h-6z"></path>
+				<path d="M4 20h6v-3H4z"></path>
+				<path d="M14 7h6V4h-6z"></path>
+			</symbol>
+			<symbol id="icon-sites" viewBox="0 0 24 24">
+				<path d="M5 6h14"></path>
+				<path d="M5 12h14"></path>
+				<path d="M5 18h14"></path>
+				<path d="M8 6v12"></path>
+			</symbol>
+			<symbol id="icon-cpu" viewBox="0 0 24 24">
+				<rect x="7" y="7" width="10" height="10" rx="2"></rect>
+				<path d="M9 3v3"></path>
+				<path d="M15 3v3"></path>
+				<path d="M9 18v3"></path>
+				<path d="M15 18v3"></path>
+				<path d="M3 9h3"></path>
+				<path d="M3 15h3"></path>
+				<path d="M18 9h3"></path>
+				<path d="M18 15h3"></path>
+			</symbol>
+			<symbol id="icon-memory" viewBox="0 0 24 24">
+				<rect x="4" y="7" width="16" height="10" rx="2"></rect>
+				<path d="M8 11h2"></path>
+				<path d="M14 11h2"></path>
+				<path d="M7 17v3"></path>
+				<path d="M12 17v3"></path>
+				<path d="M17 17v3"></path>
+			</symbol>
+			<symbol id="icon-jobs" viewBox="0 0 24 24">
+				<path d="M6 7h12"></path>
+				<path d="M6 12h12"></path>
+				<path d="M6 17h7"></path>
+				<path d="M4 7h.01"></path>
+				<path d="M4 12h.01"></path>
+				<path d="M4 17h.01"></path>
+			</symbol>
+			<symbol id="icon-runtime" viewBox="0 0 24 24">
+				<rect x="4" y="4" width="16" height="6" rx="2"></rect>
+				<rect x="4" y="14" width="16" height="6" rx="2"></rect>
+				<path d="M8 7h.01"></path>
+				<path d="M8 17h.01"></path>
+				<path d="M14 7h3"></path>
+				<path d="M14 17h3"></path>
+			</symbol>
+			<symbol id="icon-refresh" viewBox="0 0 24 24">
+				<path d="M20 7v5h-5"></path>
+				<path d="M4 17v-5h5"></path>
+				<path d="M18 12a6 6 0 0 0-10-4.2L4 12"></path>
+				<path d="M6 12a6 6 0 0 0 10 4.2L20 12"></path>
+			</symbol>
+			<symbol id="icon-settings" viewBox="0 0 24 24">
+				<path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path>
+				<path d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.04.04a2 2 0 0 1-2.82 2.82l-.04-.04a1.8 1.8 0 0 0-1.98-.36 1.8 1.8 0 0 0-1.08 1.64V22a2 2 0 0 1-4 0v-.08a1.8 1.8 0 0 0-1.08-1.64 1.8 1.8 0 0 0-1.98.36l-.04.04a2 2 0 1 1-2.82-2.82l.04-.04A1.8 1.8 0 0 0 4.6 15 1.8 1.8 0 0 0 3 13.92H3a2 2 0 0 1 0-4h.08A1.8 1.8 0 0 0 4.72 8.8a1.8 1.8 0 0 0-.36-1.98l-.04-.04A2 2 0 1 1 7.14 4l.04.04A1.8 1.8 0 0 0 9.16 4.4 1.8 1.8 0 0 0 10.24 3V3a2 2 0 0 1 4 0v.08a1.8 1.8 0 0 0 1.08 1.64 1.8 1.8 0 0 0 1.98-.36l.04-.04a2 2 0 1 1 2.82 2.82l-.04.04a1.8 1.8 0 0 0-.36 1.98 1.8 1.8 0 0 0 1.64 1.08h.08a2 2 0 0 1 0 4h-.08A1.8 1.8 0 0 0 19.4 15z"></path>
+			</symbol>
+			<symbol id="icon-integrations" viewBox="0 0 24 24">
+				<path d="M8 12h8"></path>
+				<path d="M6 8a4 4 0 1 0 0 8"></path>
+				<path d="M18 8a4 4 0 1 1 0 8"></path>
+				<path d="M12 4v4"></path>
+				<path d="M12 16v4"></path>
+			</symbol>
+			<symbol id="icon-logs" viewBox="0 0 24 24">
+				<path d="M7 6h10"></path>
+				<path d="M7 10h10"></path>
+				<path d="M7 14h6"></path>
+				<path d="M5 3h14a1 1 0 0 1 1 1v16l-4-2-4 2-4-2-4 2V4a1 1 0 0 1 1-1z"></path>
+			</symbol>
+			<symbol id="icon-theme" viewBox="0 0 24 24">
+				<path d="M12 3a9 9 0 1 0 9 9 6.5 6.5 0 0 1-9-9z"></path>
+			</symbol>
+			<symbol id="icon-add" viewBox="0 0 24 24">
+				<path d="M12 5v14"></path>
+				<path d="M5 12h14"></path>
+			</symbol>
+			<symbol id="icon-open" viewBox="0 0 24 24">
+				<path d="M14 4h6v6"></path>
+				<path d="M20 4 10 14"></path>
+				<path d="M11 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"></path>
+			</symbol>
+			<symbol id="icon-admin" viewBox="0 0 24 24">
+				<path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"></path>
+				<path d="M5 21a7 7 0 0 1 14 0"></path>
+				<path d="M17 10l1.5 1.5L21 9"></path>
+			</symbol>
+			<symbol id="icon-start" viewBox="0 0 24 24">
+				<path d="m8 5 11 7-11 7z"></path>
+			</symbol>
+			<symbol id="icon-stop" viewBox="0 0 24 24">
+				<rect x="6" y="6" width="12" height="12" rx="2"></rect>
+			</symbol>
+			<symbol id="icon-ssh" viewBox="0 0 24 24">
+				<path d="M4 17h16"></path>
+				<path d="M7 14l-3 3 3 3"></path>
+				<path d="M17 14l3 3-3 3"></path>
+				<path d="M9 7h6"></path>
+				<path d="M12 4v6"></path>
+			</symbol>
+			<symbol id="icon-check" viewBox="0 0 24 24">
+				<path d="m5 12 4 4L19 6"></path>
+			</symbol>
+			<symbol id="icon-qa" viewBox="0 0 24 24">
+				<path d="M9 9h.01"></path>
+				<path d="M15 9h.01"></path>
+				<path d="M8 15c1.2 1 2.5 1.5 4 1.5S14.8 16 16 15"></path>
+				<rect x="4" y="4" width="16" height="16" rx="4"></rect>
+			</symbol>
+		</svg>
 		<datalist id="sshAliasOptions"></datalist>
 		<div class="app">
 			<aside class="sidebar" aria-label="Local Hub navigation">
@@ -19,8 +130,14 @@
 				</div>
 
 				<nav class="nav-list" aria-label="Primary">
-					<button type="button" class="active" data-section="dashboard">Dashboard</button>
-					<button type="button" data-section="sites">Sites</button>
+					<button type="button" class="active" data-section="dashboard">
+						<svg class="ui-icon" aria-hidden="true"><use href="#icon-dashboard"></use></svg>
+						<span>Dashboard</span>
+					</button>
+					<button type="button" data-section="sites">
+						<svg class="ui-icon" aria-hidden="true"><use href="#icon-sites"></use></svg>
+						<span>Sites</span>
+					</button>
 				</nav>
 
 				<div id="healthStrip" class="health-strip">Runtime checking...</div>
@@ -49,12 +166,12 @@
 									<strong>MRN Web Designs</strong>
 									<span>Local Hub</span>
 								</div>
-								<button id="refreshButton" type="button">Refresh</button>
-								<button type="button" data-section="settings">Settings</button>
-								<button type="button" data-section="providers">Integrations</button>
-								<button type="button" data-section="runtime">Runtime</button>
-								<button type="button" data-section="logs">Logs</button>
-								<button id="themeToggle" type="button">Dark mode</button>
+								<button id="refreshButton" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-refresh"></use></svg><span>Refresh</span></button>
+								<button type="button" data-section="settings"><svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg><span>Settings</span></button>
+								<button type="button" data-section="providers"><svg class="ui-icon" aria-hidden="true"><use href="#icon-integrations"></use></svg><span>Integrations</span></button>
+								<button type="button" data-section="runtime"><svg class="ui-icon" aria-hidden="true"><use href="#icon-runtime"></use></svg><span>Runtime</span></button>
+								<button type="button" data-section="logs"><svg class="ui-icon" aria-hidden="true"><use href="#icon-logs"></use></svg><span>Logs</span></button>
+								<button id="themeToggle" type="button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-theme"></use></svg><span>Dark mode</span></button>
 							</div>
 						</details>
 					</div>
@@ -64,47 +181,50 @@
 
 				<section class="overview-dashboard app-tab-panel active" data-tab-panel="dashboard-overview" aria-label="Sites and server dashboard">
 					<div class="dashboard-heading">
-						<div>
-							<p class="eyebrow">Dashboard</p>
-							<h2>Server & Sites</h2>
-							<p>Near realtime runtime load, memory, jobs, and running site activity.</p>
+						<div class="dashboard-title">
+							<span class="icon-badge hero-icon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-dashboard"></use></svg></span>
+							<div>
+								<p class="eyebrow">Dashboard</p>
+								<h2>Server & Sites</h2>
+								<p>Near realtime runtime load, memory, jobs, and running site activity.</p>
+							</div>
 						</div>
 					</div>
 					<div class="dashboard-metrics">
-						<article>
-							<span class="eyebrow">CPU</span>
+						<article class="metric-card">
+							<div class="metric-label"><span class="icon-badge" aria-hidden="true"><svg class="ui-icon"><use href="#icon-cpu"></use></svg></span><span class="eyebrow">CPU</span></div>
 							<strong id="cpuMetricSummary">Checking</strong>
 							<p id="cpuMetricDetail">Local host load is loading.</p>
 						</article>
-						<article>
-							<span class="eyebrow">Memory</span>
+						<article class="metric-card">
+							<div class="metric-label"><span class="icon-badge" aria-hidden="true"><svg class="ui-icon"><use href="#icon-memory"></use></svg></span><span class="eyebrow">Memory</span></div>
 							<strong id="memoryMetricSummary">Checking</strong>
 							<p id="memoryMetricDetail">Memory usage is loading.</p>
 						</article>
-						<article>
-							<span class="eyebrow">Jobs</span>
+						<article class="metric-card">
+							<div class="metric-label"><span class="icon-badge" aria-hidden="true"><svg class="ui-icon"><use href="#icon-jobs"></use></svg></span><span class="eyebrow">Jobs</span></div>
 							<strong id="jobMetricSummary">0 running</strong>
 							<p id="jobMetricDetail">Hub command queue is idle.</p>
 						</article>
-						<article>
-							<span class="eyebrow">Runtime</span>
+						<article class="metric-card">
+							<div class="metric-label"><span class="icon-badge" aria-hidden="true"><svg class="ui-icon"><use href="#icon-runtime"></use></svg></span><span class="eyebrow">Runtime</span></div>
 							<strong id="runtimeSummary">OpenLiteSpeed planned</strong>
 							<p id="runtimeMetricSummary">Runtime status is loading.</p>
 						</article>
 					</div>
 					<div class="chart-grid">
 						<button class="chart-card" data-chart-card="cpu" type="button" aria-pressed="false">
-							<span>CPU Usage</span>
+							<span class="chart-card-label"><span class="icon-badge compact" aria-hidden="true"><svg class="ui-icon"><use href="#icon-cpu"></use></svg></span><span>CPU Usage</span></span>
 							<strong id="cpuChartValue">0%</strong>
 							<div id="cpuChart" class="sparkline" aria-label="CPU usage history"></div>
 						</button>
 						<button class="chart-card" data-chart-card="memory" type="button" aria-pressed="false">
-							<span>Memory Usage</span>
+							<span class="chart-card-label"><span class="icon-badge compact" aria-hidden="true"><svg class="ui-icon"><use href="#icon-memory"></use></svg></span><span>Memory Usage</span></span>
 							<strong id="memoryChartValue">0%</strong>
 							<div id="memoryChart" class="sparkline" aria-label="Memory usage history"></div>
 						</button>
 						<button class="chart-card" data-chart-card="jobs" type="button" aria-pressed="false">
-							<span>Running Jobs</span>
+							<span class="chart-card-label"><span class="icon-badge compact" aria-hidden="true"><svg class="ui-icon"><use href="#icon-jobs"></use></svg></span><span>Running Jobs</span></span>
 							<strong id="jobsChartValue">0</strong>
 							<div id="jobsChart" class="sparkline" aria-label="Running jobs history"></div>
 						</button>
@@ -126,17 +246,17 @@
 							<p id="siteMetricSummary">Local site inventory and controls.</p>
 						</div>
 						<div class="actions compact">
-							<button data-tab-jump="sites-add" type="button" class="action">Add Site</button>
+							<button data-tab-jump="sites-add" type="button" class="action"><svg class="ui-icon" aria-hidden="true"><use href="#icon-add"></use></svg><span>Add Site</span></button>
 						</div>
 					</div>
 					<div class="dashboard-metrics site-summary-metrics">
-						<article>
-							<span class="eyebrow">Configured</span>
+						<article class="metric-card">
+							<div class="metric-label"><span class="icon-badge" aria-hidden="true"><svg class="ui-icon"><use href="#icon-sites"></use></svg></span><span class="eyebrow">Configured</span></div>
 							<strong id="siteCount">0 configured</strong>
 							<p id="toolMetricSummary">Checking tools</p>
 						</article>
-						<article>
-							<span class="eyebrow">SSH</span>
+						<article class="metric-card">
+							<div class="metric-label"><span class="icon-badge" aria-hidden="true"><svg class="ui-icon"><use href="#icon-ssh"></use></svg></span><span class="eyebrow">SSH</span></div>
 							<strong id="sshMetricSummary">Checking aliases</strong>
 							<p>Local SSH profiles available for pulls and pushes.</p>
 						</article>
@@ -165,10 +285,10 @@
 						</div>
 						<div class="bulk-actions">
 							<span id="bulkSelectionSummary">0 selected</span>
-							<button id="selectVisibleSitesButton" type="button" class="ghost-button">Select Visible</button>
+							<button id="selectVisibleSitesButton" type="button" class="ghost-button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg><span>Select Visible</span></button>
 							<button id="clearSiteSelectionButton" type="button" class="ghost-button">Clear</button>
-							<button id="bulkStartSitesButton" type="button" class="ghost-button">Start Selected</button>
-							<button id="bulkStopSitesButton" type="button" class="ghost-button danger-button">Stop Selected</button>
+							<button id="bulkStartSitesButton" type="button" class="ghost-button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-start"></use></svg><span>Start Selected</span></button>
+							<button id="bulkStopSitesButton" type="button" class="ghost-button danger-button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-stop"></use></svg><span>Stop Selected</span></button>
 						</div>
 					</div>
 					<div id="siteInventory" class="site-inventory" aria-label="All local sites"></div>
@@ -806,14 +926,14 @@
 										<p id="siteSubtitle">Local WordPress workspace</p>
 									</div>
 									<div class="actions compact">
-										<button id="openLocalButton" type="button" class="ghost-button">Open Site</button>
-										<button id="openAdminButton" type="button" class="ghost-button" title="Open wp-admin with a one-time local login">WP Admin</button>
+										<button id="openLocalButton" type="button" class="ghost-button"><svg class="ui-icon" aria-hidden="true"><use href="#icon-open"></use></svg><span>Open Site</span></button>
+										<button id="openAdminButton" type="button" class="ghost-button" title="Open wp-admin with a one-time local login"><svg class="ui-icon" aria-hidden="true"><use href="#icon-admin"></use></svg><span>WP Admin</span></button>
 									</div>
 								</div>
 								<nav class="site-subnav" aria-label="Selected site options">
-									<button type="button" data-site-view="sites-sync" class="primary-site-tab active" aria-selected="true">Pull & Push</button>
-									<button type="button" data-site-view="sites-settings" aria-selected="false">Settings</button>
-									<button type="button" data-site-view="sites-qa" aria-selected="false">QA</button>
+									<button type="button" data-site-view="sites-sync" class="primary-site-tab active" aria-selected="true"><svg class="ui-icon" aria-hidden="true"><use href="#icon-refresh"></use></svg><span>Pull & Push</span></button>
+									<button type="button" data-site-view="sites-settings" aria-selected="false"><svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg><span>Settings</span></button>
+									<button type="button" data-site-view="sites-qa" aria-selected="false"><svg class="ui-icon" aria-hidden="true"><use href="#icon-qa"></use></svg><span>QA</span></button>
 								</nav>
 							</section>
 
