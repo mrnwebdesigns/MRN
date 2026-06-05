@@ -32,7 +32,13 @@ ln -sf /Users/khofmeyer/Development/MRN/scripts/mrn /opt/homebrew/bin/mrn
 
 ## MRN Local Hub
 
-Use the browser UI when you want a Local-app-free control panel for site manifests, SSH pulls, selected-path push dry runs, and MRN QA.
+Use the standalone browser UI when you want a Local-app-free control panel for site manifests, SSH pulls, selected-path push dry runs, and MRN QA.
+
+Hub source now lives outside this stack repo:
+
+```text
+/Users/khofmeyer/Development/MRN-local-hub
+```
 
 ```bash
 mrn local-hub
@@ -42,6 +48,13 @@ Then open:
 
 ```text
 http://127.0.0.1:5678
+```
+
+The wrapper defaults to `../MRN-local-hub/server.js`. Override the checkout path when needed:
+
+```bash
+MRN_LOCAL_HUB_HOME=/path/to/MRN-local-hub mrn local-hub
+MRN_LOCAL_HUB_SERVER=/path/to/MRN-local-hub/server.js mrn local-hub
 ```
 
 The hub stores site manifests under:

@@ -35,6 +35,8 @@ Examples:
 Notes:
   - This command is a wrapper around:
     /Users/khofmeyer/Development/MRN/local/scripts/local-env-workflow.sh
+  - `local-hub` launches the standalone MRN Local Hub checkout.
+    Override its path with MRN_LOCAL_HUB_HOME or MRN_LOCAL_HUB_SERVER.
   - `pull-site` first tries map/inferred Local paths.
   - If no Local path is found, `pull-site` attempts Local app API auto-create/reuse.
   - If Local app API is unavailable, pass `--local-site-path` or add a mapping.
@@ -58,7 +60,9 @@ SCRIPT_DIR="$(cd -P "$(dirname "${SOURCE_PATH}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 LOCAL_WORKFLOW="${REPO_ROOT}/local/scripts/local-env-workflow.sh"
 NIGHTLY_PULL_WORKFLOW="${REPO_ROOT}/local/scripts/nightly-pull-mrndev-sites.sh"
-LOCAL_HUB_SERVER="${REPO_ROOT}/local/hub/server.js"
+DEFAULT_LOCAL_HUB_HOME="$(cd "${REPO_ROOT}/.." && pwd)/MRN-local-hub"
+LOCAL_HUB_HOME="${MRN_LOCAL_HUB_HOME:-${DEFAULT_LOCAL_HUB_HOME}}"
+LOCAL_HUB_SERVER="${MRN_LOCAL_HUB_SERVER:-${LOCAL_HUB_HOME}/server.js}"
 ZSH_COMPLETION_SRC="${REPO_ROOT}/scripts/completions/_mrn"
 BASH_COMPLETION_SRC="${REPO_ROOT}/scripts/completions/mrn.bash"
 COMMAND="${1:-help}"
@@ -70,11 +74,6 @@ COMMAND="${1:-help}"
 
 [[ -x "${NIGHTLY_PULL_WORKFLOW}" ]] || {
 	echo "FAIL: Missing nightly workflow helper: ${NIGHTLY_PULL_WORKFLOW}" >&2
-	exit 1
-}
-
-[[ -f "${LOCAL_HUB_SERVER}" ]] || {
-	echo "FAIL: Missing Local Hub server: ${LOCAL_HUB_SERVER}" >&2
 	exit 1
 }
 
@@ -229,6 +228,11 @@ case "${COMMAND}" in
 		;;
 	local-hub)
 		shift
+		[[ -f "${LOCAL_HUB_SERVER}" ]] || {
+			echo "FAIL: Missing Local Hub server: ${LOCAL_HUB_SERVER}" >&2
+			echo "Set MRN_LOCAL_HUB_HOME or MRN_LOCAL_HUB_SERVER to the standalone MRN Local Hub checkout." >&2
+			exit 1
+		}
 		exec node "${LOCAL_HUB_SERVER}" "$@"
 		;;
 	completion)
