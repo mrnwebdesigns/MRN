@@ -17,10 +17,23 @@ $mrn_position     = isset( $mrn_testimonial['position'] ) ? trim( (string) $mrn_
 $mrn_website_url  = isset( $mrn_testimonial['website_url'] ) ? trim( (string) $mrn_testimonial['website_url'] ) : '';
 $mrn_content      = isset( $mrn_testimonial['content'] ) ? (string) $mrn_testimonial['content'] : '';
 $mrn_image_logo   = isset( $mrn_testimonial['image_logo'] ) && is_array( $mrn_testimonial['image_logo'] ) ? $mrn_testimonial['image_logo'] : null;
+$mrn_display_style = isset( $mrn_testimonial['display_style'] ) ? sanitize_key( (string) $mrn_testimonial['display_style'] ) : 'story';
+$mrn_video_url    = isset( $mrn_testimonial['video_url'] ) ? trim( (string) $mrn_testimonial['video_url'] ) : '';
+$mrn_video_kind   = isset( $mrn_testimonial['video_kind'] ) ? trim( (string) $mrn_testimonial['video_kind'] ) : '';
+$mrn_video_mime   = isset( $mrn_testimonial['video_mime'] ) ? trim( (string) $mrn_testimonial['video_mime'] ) : '';
+$mrn_video_title  = sprintf(
+	/* translators: %s: testimonial author name. */
+	__( 'Video testimonial from %s', 'mrn-base-stack' ),
+	wp_strip_all_tags( $mrn_name )
+);
 $mrn_archive_text = function_exists( 'mrn_base_stack_get_testimonial_excerpt' ) ? mrn_base_stack_get_testimonial_excerpt( $mrn_post_id ) : '';
+$mrn_article_classes = array(
+	'mrn-testimonial',
+	'mrn-testimonial--display-' . sanitize_html_class( '' !== $mrn_display_style ? $mrn_display_style : 'story' ),
+);
 ?>
 
-<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
+<article id="post-<?php the_ID(); ?>" <?php post_class( $mrn_article_classes ); ?>>
 	<?php if ( $mrn_is_singular ) : ?>
 		<?php
 		$mrn_has_hero         = function_exists( 'mrn_base_stack_render_hero_builder' ) ? mrn_base_stack_render_hero_builder( $mrn_post_id ) : false;
@@ -30,6 +43,7 @@ $mrn_archive_text = function_exists( 'mrn_base_stack_get_testimonial_excerpt' ) 
 		$mrn_shell_classes    = array(
 			'mrn-singular-shell',
 			'mrn-singular-shell--testimonial',
+			'mrn-singular-shell--testimonial-display-' . sanitize_html_class( '' !== $mrn_display_style ? $mrn_display_style : 'story' ),
 		);
 
 		if ( $mrn_has_sidebar ) {
@@ -79,6 +93,26 @@ $mrn_archive_text = function_exists( 'mrn_base_stack_get_testimonial_excerpt' ) 
 						<div class="post-thumbnail">
 							<?php echo wp_get_attachment_image( (int) $mrn_image_logo['ID'], 'large' ); ?>
 						</div>
+					<?php endif; ?>
+
+					<?php if ( '' !== $mrn_video_url ) : ?>
+						<div
+							class="mrn-testimonial-video mrn-video-row__media mrn-ui__media"
+							data-video-src="<?php echo esc_url( $mrn_video_url ); ?>"
+							data-video-kind="<?php echo esc_attr( '' !== $mrn_video_kind ? $mrn_video_kind : 'remote' ); ?>"
+							data-video-title="<?php echo esc_attr( $mrn_video_title ); ?>"
+							<?php if ( 'local' === $mrn_video_kind && '' !== $mrn_video_mime ) : ?>
+								data-video-mime="<?php echo esc_attr( $mrn_video_mime ); ?>"
+							<?php endif; ?>
+							data-video-background="false"
+							data-video-autoplay="false"
+							data-video-muted="false"
+							data-video-loop="false"
+							data-video-controls="true"
+							data-video-delay="250"
+							role="group"
+							aria-label="<?php echo esc_attr( $mrn_video_title ); ?>"
+						></div>
 					<?php endif; ?>
 
 					<?php if ( '' !== trim( wp_strip_all_tags( $mrn_content ) ) ) : ?>

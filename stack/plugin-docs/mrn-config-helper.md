@@ -83,6 +83,7 @@
   - `mrn_config_helper_get_hidden_admin_cpts()`
   - `mrn_config_helper_get_hidden_builder_layouts()`
   - `mrn_config_helper_get_display_modes()`
+  - `mrn_config_helper_get_display_styles()`
   - `mrn_config_helper_get_content_list_display_modes()`
   - `mrn_config_helper_get_breadcrumb_settings()`
   - `mrn_config_helper_get_breadcrumb_manual_override( $post_id )`
@@ -165,6 +166,7 @@
   - `MRN_Config_Helper::get_hidden_admin_cpts()`
   - `MRN_Config_Helper::get_hidden_builder_layouts()`
   - `MRN_Config_Helper::get_display_modes()`
+  - `MRN_Config_Helper::get_display_styles()`
   - `MRN_Config_Helper::get_breadcrumb_settings()`
   - `MRN_Config_Helper::get_breadcrumb_manual_override( $post_id )`
 - Public wrapper helper:
@@ -173,6 +175,7 @@
   - `mrn_config_helper_get_hidden_admin_cpts()`
   - `mrn_config_helper_get_hidden_builder_layouts()`
   - `mrn_config_helper_get_display_modes()`
+  - `mrn_config_helper_get_display_styles()`
   - `mrn_config_helper_get_breadcrumb_settings()`
   - `mrn_config_helper_get_breadcrumb_manual_override( $post_id )`
   - `mrn_config_helper_get_content_list_display_modes()`
@@ -204,6 +207,7 @@
   - disabled admin CPT/reusable-library post types
   - disabled builder layouts
   - social links
+  - display styles
   - breadcrumbs settings payload
 - Breadcrumb per-entry override storage:
   - post meta key: `_mrn_breadcrumbs_manual_path`

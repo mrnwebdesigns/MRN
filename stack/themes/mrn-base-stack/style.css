@@ -1424,6 +1424,12 @@ body {
 	max-width: var(--mrn-shell-max-width);
 }
 
+.mrn-singular-shell--testimonial .mrn-testimonial-video {
+	margin: 0 auto var(--mrn-shell-section-space-tight);
+	width: min(100%, var(--mrn-shell-max-width));
+	max-width: var(--mrn-shell-max-width);
+}
+
 .mrn-singular-shell--gallery .mrn-gallery {
 	margin-left: auto;
 	margin-right: auto;

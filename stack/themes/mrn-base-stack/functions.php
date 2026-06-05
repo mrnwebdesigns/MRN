@@ -396,12 +396,20 @@ function mrn_base_stack_get_after_content_location_rules() {
 /**
  * Determine whether the layout-builder runtime should load.
  *
- * This rollback track keeps layout-builder functionality fully disabled.
+ * Layout-builder runtime stays off by default, but site-local experiments can
+ * opt in without re-enabling the feature across the shared stack.
  *
  * @return bool
  */
 function mrn_base_stack_is_layout_builder_enabled() {
-	return false;
+	$enabled = defined( 'MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER' ) ? (bool) MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER : false;
+
+	/**
+	 * Filter whether the theme's ACF layout-builder runtime should load.
+	 *
+	 * @param bool $enabled Whether builder runtime is enabled.
+	 */
+	return (bool) apply_filters( 'mrn_base_stack_enable_layout_builder', $enabled );
 }
 
 /**
@@ -772,6 +780,10 @@ function mrn_base_stack_scripts() {
 		if ( $post_id && mrn_base_stack_post_requires_front_end_runtime( $post_id ) ) {
 			$should_enqueue_builder_runtime = true;
 		}
+	}
+
+	if ( ! $should_enqueue_builder_runtime && is_singular( 'testimonial' ) && function_exists( 'mrn_base_stack_testimonial_requires_front_end_runtime' ) ) {
+		$should_enqueue_builder_runtime = mrn_base_stack_testimonial_requires_front_end_runtime( get_queried_object_id() );
 	}
 
 	/**
@@ -2247,6 +2259,11 @@ if ( ! function_exists( 'mrn_base_stack_get_row_spacing_contract' ) ) {
 		);
 	}
 }
+
+/**
+ * Load display-style helpers.
+ */
+require_once get_template_directory() . '/inc/display-styles.php';
 
 /**
  * Load theme options modules.
