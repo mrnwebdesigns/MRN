@@ -74,6 +74,11 @@ let memoryCache = null;
 let nextJobId = 1;
 let cpuSample = null;
 
+const defaultPhpVersion = "8.4";
+const phpRuntimeVersions = ["7.4", "8.1", "8.2", "8.3", "8.4"];
+const legacyPhpVersions = new Set(["7.4"]);
+const phpRuntimeModuleNames = ["common", "mysql", "curl", "imagick", "intl", "opcache", "redis"];
+
 const manifestFileName = ".mrn-site.json";
 const providerRegistryFile = path.join(sitesRoot, ".mrn-provider-sites.json");
 const allowedManifestFields = new Set([
@@ -90,6 +95,10 @@ const allowedManifestFields = new Set([
 	"remotePort",
 	"remotePath",
 	"phpVersion",
+	"activePhpVersion",
+	"activePhpHandler",
+	"phpStatus",
+	"phpCheckedAt",
 	"dbName",
 	"dbUser",
 	"dbPassword",
@@ -280,6 +289,39 @@ function phpSingleQuotedString(value) {
 		.replace(/'/g, "\\'");
 }
 
+function normalizePhpVersion(value) {
+	const version = String(value || defaultPhpVersion).trim();
+	if (phpRuntimeVersions.includes(version)) {
+		return version;
+	}
+	return defaultPhpVersion;
+}
+
+function phpVersionSuffix(version) {
+	return normalizePhpVersion(version).replace(".", "");
+}
+
+function phpHandlerName(version) {
+	return `lsphp${phpVersionSuffix(version)}`;
+}
+
+function phpBinaryPath(version) {
+	return `/usr/local/lsws/${phpHandlerName(version)}/bin/php`;
+}
+
+function phpPackageNames(version) {
+	const handler = phpHandlerName(version);
+	return [
+		handler,
+		...phpRuntimeModuleNames.map((moduleName) => `${handler}-${moduleName}`),
+	];
+}
+
+function phpVersionLabel(version) {
+	const normalized = normalizePhpVersion(version);
+	return legacyPhpVersions.has(normalized) ? `Legacy PHP ${normalized}` : `PHP ${normalized}`;
+}
+
 function sanitizeRemoteSsh(value) {
 	const remoteSsh = String(value || "").trim();
 	if (!remoteSsh) {
@@ -420,7 +462,11 @@ function sanitizeManifest(input, existing = null) {
 		remoteSsh: base.remoteSsh || "",
 		remotePort: sanitizeSshPort(base.remotePort || ""),
 		remotePath: sanitizeOptionalRemotePath(base.remotePath || ""),
-		phpVersion: base.phpVersion || "8.2",
+		phpVersion: normalizePhpVersion(base.phpVersion),
+		activePhpVersion: base.activePhpVersion || "",
+		activePhpHandler: base.activePhpHandler || "",
+		phpStatus: base.phpStatus || "",
+		phpCheckedAt: base.phpCheckedAt || "",
 		dbName: base.dbName || defaultDbName(slug),
 		dbUser: base.dbUser || defaultDbUser(slug),
 		dbPassword: base.dbPassword || generateDbPassword(),
@@ -2419,6 +2465,7 @@ async function runtimeReport() {
 function buildRuntimeBootstrapScript() {
 	const sitesRootQuoted = shellQuote(sitesRoot);
 	const instanceName = runtimeInstanceName;
+	const phpInstallScript = buildPhpInstallBash(phpRuntimeVersions, { requiredVersion: defaultPhpVersion });
 	return `#!/usr/bin/env bash
 set -euo pipefail
 
@@ -2524,7 +2571,8 @@ provision:
       apt-get install -y ca-certificates curl gnupg lsb-release mariadb-server redis-server unzip wget
       wget -O - https://repo.litespeed.sh | bash
       apt-get update
-      apt-get install -y openlitespeed lsphp84 lsphp84-common lsphp84-mysql lsphp84-curl lsphp84-imagick lsphp84-intl lsphp84-opcache lsphp84-redis
+      apt-get install -y openlitespeed
+${phpInstallScript.split("\n").map((line) => `      ${line}`).join("\n")}
       systemctl enable mariadb redis-server lsws || true
       systemctl restart mariadb redis-server || true
       /usr/local/lsws/bin/lswsctrl restart
@@ -2573,7 +2621,10 @@ async function runtimeServiceCheck() {
 				"printf '\\nMariaDB: '; systemctl is-active mariadb 2>&1 || true",
 				"printf '\\nRedis: '; systemctl is-active redis-server 2>&1 || true",
 				"printf '\\nSites mount: '; if [ -d /srv/mrn-sites ]; then echo /srv/mrn-sites; else echo missing; fi",
-				"printf '\\nPHP: '; if command -v /usr/local/lsws/lsphp84/bin/php >/dev/null 2>&1; then /usr/local/lsws/lsphp84/bin/php -v | head -n 1; else echo missing; fi",
+				...phpRuntimeVersions.map((version) => {
+					const binaryPath = phpBinaryPath(version);
+					return `printf '\\n${phpVersionLabel(version)}: '; if [ -x ${shellQuote(binaryPath)} ]; then ${shellQuote(binaryPath)} -v | head -n 1; else echo missing; fi`;
+				}),
 			].join("; "),
 		],
 		{ timeoutMs: 60000 },
@@ -2600,11 +2651,12 @@ async function runtimeRepairInstall() {
 				"set -euxo pipefail",
 				"export DEBIAN_FRONTEND=noninteractive",
 				"sudo apt-get update",
-				"sudo apt-get install -y openlitespeed lsphp84 lsphp84-common lsphp84-mysql lsphp84-curl lsphp84-imagick lsphp84-intl lsphp84-opcache lsphp84-redis",
+				"sudo apt-get install -y openlitespeed",
+				buildPhpInstallBash(phpRuntimeVersions, { sudo: true, requiredVersion: defaultPhpVersion }),
 				"sudo systemctl enable mariadb redis-server lsws || true",
 				"sudo systemctl restart mariadb redis-server || true",
 				"sudo /usr/local/lsws/bin/lswsctrl restart",
-			].join(" && "),
+			].join("\n"),
 		],
 		{ timeoutMs: Number(process.env.MRN_LOCAL_HUB_REPAIR_TIMEOUT_MS || "900000") },
 	);
@@ -3682,7 +3734,42 @@ const pushAllowedScopes = [
 	"wp-content/plugins",
 	"wp-content/mu-plugins",
 	"wp-content/uploads",
+	"wp-content",
 ];
+
+const blockedPushFileScopes = new Set(["full", "full-no-uploads", "core"]);
+
+async function resolvePushFileScope(site, body = {}) {
+	const hasFileScope = Object.prototype.hasOwnProperty.call(body, "fileScope");
+	const scope = hasFileScope && Object.prototype.hasOwnProperty.call(pullFileScopeLabels, body.fileScope)
+		? body.fileScope
+		: "custom";
+	let relativePath = "";
+	let label = pullFileScopeLabels[scope] || "Custom directory";
+
+	if (!hasFileScope) {
+		relativePath = sanitizeRelativePath(body.relativePath || "wp-content/themes").replace(/\/+$/g, "");
+		label = `Custom: ${relativePath}`;
+	} else if (scope === "wp-content") {
+		relativePath = "wp-content";
+	} else if (scope === "active-theme") {
+		relativePath = await localActiveThemeRelativePath(site);
+		label = `Active theme: ${path.posix.basename(relativePath)}`;
+	} else if (scope === "themes") {
+		relativePath = "wp-content/themes";
+	} else if (scope === "plugins") {
+		relativePath = "wp-content/plugins";
+	} else if (scope === "mu-plugins") {
+		relativePath = "wp-content/mu-plugins";
+	} else if (scope === "uploads") {
+		relativePath = "wp-content/uploads";
+	} else if (scope === "custom") {
+		relativePath = sanitizeRelativePath(body.relativePath || "wp-content/themes").replace(/\/+$/g, "");
+		label = `Custom: ${relativePath}`;
+	}
+
+	return { scope, label, relativePath };
+}
 
 function isAllowedPushScope(relativePath) {
 	const normalized = path.posix.normalize(relativePath).replace(/^\/+|\/+$/g, "");
@@ -3786,6 +3873,7 @@ async function scanPushPath(rootPath, sitePublicPath, options = {}) {
 function formatPushAudit(audit) {
 	const lines = [
 		`Push audit: ${audit.slug}`,
+		`File scope: ${audit.label || audit.relativePath || "selected path"}`,
 		`Local path: ${audit.source}`,
 		`Remote target: ${audit.dest}`,
 		`Scope: ${audit.scope || "blocked"}`,
@@ -3808,22 +3896,27 @@ function formatPushAudit(audit) {
 async function runPushAudit(site, body = {}) {
 	const remoteSsh = sanitizeRemoteSsh(site.remoteSsh);
 	const remotePath = sanitizeRemotePath(site.remotePath);
-	const relativePath = sanitizeRelativePath(body.relativePath || "wp-content/themes");
+	const pushScope = await resolvePushFileScope(site, body);
+	const relativePath = pushScope.relativePath;
 	const deleteFiles = Boolean(body.deleteFiles);
 	const source = path.join(site.publicPath, relativePath);
-	const dest = `${remoteSsh}:${remotePath}/${relativePath}`;
+	const remoteRelative = relativePath ? `/${relativePath}` : "";
+	const dest = `${remoteSsh}:${remotePath}${remoteRelative}`;
 	const issues = [];
 	const warnings = [];
 	const scope = pushPathScope(relativePath);
 	let scanned = 0;
 	let sourceIsDirectory = false;
 	let gitSafety = null;
+	const allowedPushScope = relativePath && isAllowedPushScope(relativePath);
 
-	if (!isAllowedPushScope(relativePath)) {
+	if (!allowedPushScope) {
 		issues.push(pushAuditRecord(
 			"blocked",
-			relativePath,
-			`push path must stay inside one of: ${pushAllowedScopes.join(", ")}`,
+			relativePath || ".",
+			blockedPushFileScopes.has(pushScope.scope)
+				? `${pushScope.label} pushes are blocked. Choose wp-content, active theme, themes, plugins, MU plugins, uploads, or a custom child path.`
+				: `push path must stay inside one of: ${pushAllowedScopes.join(", ")}`,
 		));
 	}
 	if (deleteFiles && pushAllowedScopes.includes(relativePath.replace(/\/+$/g, ""))) {
@@ -3841,7 +3934,9 @@ async function runPushAudit(site, body = {}) {
 		));
 	}
 
-	if (!(await pathExists(source))) {
+	if (!allowedPushScope) {
+		// Unsupported root/core scopes stop at audit without scanning the entire WordPress tree.
+	} else if (!(await pathExists(source))) {
 		issues.push(pushAuditRecord("blocked", relativePath, "local source path does not exist"));
 	} else {
 		const stat = await fsp.lstat(source);
@@ -3860,6 +3955,8 @@ async function runPushAudit(site, body = {}) {
 
 	const audit = {
 		slug: site.slug,
+		fileScope: pushScope.scope,
+		label: pushScope.label,
 		relativePath,
 		source,
 		sourceIsDirectory,
@@ -3876,7 +3973,7 @@ async function runPushAudit(site, body = {}) {
 	return {
 		code: issues.length ? 1 : 0,
 		command: "push-audit",
-		args: [site.slug, relativePath],
+		args: [site.slug, relativePath || "."],
 		stdout: formatPushAudit(audit),
 		stderr: "",
 		durationMs: 0,
@@ -3989,6 +4086,53 @@ function commandPreview(command, args) {
 	}).join(" ");
 }
 
+function bashArray(values) {
+	return values.map((value) => shellQuote(value)).join(" ");
+}
+
+function buildPhpInstallBash(versions, options = {}) {
+	const sudo = options.sudo ? "sudo " : "";
+	const requiredVersion = options.requiredVersion ? normalizePhpVersion(options.requiredVersion) : "";
+	const normalizedVersions = [...new Set(versions.map(normalizePhpVersion))];
+	const lines = [
+		`for MRN_PHP_VERSION in ${bashArray(normalizedVersions)}; do`,
+		`  MRN_PHP_SUFFIX="\${MRN_PHP_VERSION//./}"`,
+		`  MRN_PHP_HANDLER="lsphp\${MRN_PHP_SUFFIX}"`,
+		`  MRN_PHP_BIN="/usr/local/lsws/\${MRN_PHP_HANDLER}/bin/php"`,
+		`  if [ -x "\${MRN_PHP_BIN}" ]; then`,
+		`    echo "PHP \${MRN_PHP_VERSION} already installed: \${MRN_PHP_BIN}"`,
+		`    continue`,
+		`  fi`,
+		`  MRN_PHP_PACKAGES=()`,
+		`  for MRN_PHP_PACKAGE in "\${MRN_PHP_HANDLER}" "\${MRN_PHP_HANDLER}-common" "\${MRN_PHP_HANDLER}-mysql" "\${MRN_PHP_HANDLER}-curl" "\${MRN_PHP_HANDLER}-imagick" "\${MRN_PHP_HANDLER}-intl" "\${MRN_PHP_HANDLER}-opcache" "\${MRN_PHP_HANDLER}-redis"; do`,
+		`    if apt-cache show "\${MRN_PHP_PACKAGE}" >/dev/null 2>&1; then`,
+		`      MRN_PHP_PACKAGES+=("\${MRN_PHP_PACKAGE}")`,
+		`    else`,
+		`      echo "PHP \${MRN_PHP_VERSION} package unavailable: \${MRN_PHP_PACKAGE}"`,
+		`    fi`,
+		`  done`,
+		`  if [ "\${#MRN_PHP_PACKAGES[@]}" -gt 0 ]; then`,
+		`    ${sudo}apt-get install -y "\${MRN_PHP_PACKAGES[@]}"`,
+		`  fi`,
+		`  if [ -x "\${MRN_PHP_BIN}" ]; then`,
+		`    "\${MRN_PHP_BIN}" -v | head -n 1`,
+		`  else`,
+		`    echo "PHP \${MRN_PHP_VERSION} binary missing after install attempt: \${MRN_PHP_BIN}"`,
+		`  fi`,
+		`done`,
+	];
+	if (requiredVersion) {
+		lines.push(
+			`MRN_REQUIRED_PHP_BIN=${shellQuote(phpBinaryPath(requiredVersion))}`,
+			`if [ ! -x "\${MRN_REQUIRED_PHP_BIN}" ]; then`,
+			`  echo "Required ${phpVersionLabel(requiredVersion)} is not installed at \${MRN_REQUIRED_PHP_BIN}." >&2`,
+			`  exit 2`,
+			`fi`,
+		);
+	}
+	return lines.join("\n");
+}
+
 function sanitizeHostname(value) {
 	const hostname = String(value || "").trim().toLowerCase();
 	if (!hostname || hostname.length > 253 || !/^[a-z0-9.-]+$/.test(hostname) || hostname.includes("..")) {
@@ -4034,11 +4178,46 @@ function guestPathForHostPath(hostPath) {
 	return path.posix.join("/srv/mrn-sites", posixRelative);
 }
 
+function buildPhpExtProcessorConfig(version) {
+	const normalized = normalizePhpVersion(version);
+	const handler = phpHandlerName(normalized);
+	return `extProcessor ${handler}{
+    type                            lsapi
+    address                         uds://tmp/lshttpd/${handler}.sock
+    maxConns                        10
+    env                             PHP_LSAPI_CHILDREN=10
+    env                             LSAPI_AVOID_FORK=200M
+    initTimeout                     60
+    retryTimeout                    0
+    persistConn                     1
+    respBuffer                      0
+    autoStart                       1
+    path                            ${handler}/bin/lsphp
+    backlog                         100
+    instances                       1
+    priority                        0
+    memSoftLimit                    0
+    memHardLimit                    0
+    procSoftLimit                   1400
+    procHardLimit                   1500
+}
+`;
+}
+
+function buildPhpExtProcessorBundle(versions = phpRuntimeVersions) {
+	return versions.map(buildPhpExtProcessorConfig).join("\n");
+}
+
 function buildVhostConfig({ site, hostname, guestPublicPath, guestLocalRoot }) {
 	const docRoot = `${guestPublicPath.replace(/\/+$/, "")}/`;
 	const logRoot = `${guestLocalRoot.replace(/\/+$/, "")}/logs`;
+	const phpHandler = phpHandlerName(site.phpVersion);
 	return `docRoot ${docRoot}
 enableGzip 1
+
+scriptHandler {
+  add lsapi:${phpHandler} php
+}
 
 index {
   useServer 1
@@ -4102,11 +4281,14 @@ general {
 }
 
 function buildProvisionSiteScript(site) {
+	const phpVersion = normalizePhpVersion(site.phpVersion);
 	const hostname = runtimeHostnameForSite(site);
 	const vhostName = vhostNameForSite(site);
 	const guestLocalRoot = guestPathForHostPath(site.localRoot);
 	const guestPublicPath = guestPathForHostPath(site.publicPath);
 	const vhostConfig = buildVhostConfig({ site, hostname, guestPublicPath, guestLocalRoot });
+	const phpInstallScript = buildPhpInstallBash([phpVersion], { sudo: true, requiredVersion: phpVersion });
+	const phpExtProcessors = buildPhpExtProcessorBundle();
 	const vhostBlock = `virtualHost ${vhostName}{
     vhRoot                   ${guestLocalRoot}
     allowSymbolLink          1
@@ -4134,6 +4316,12 @@ VHOST_NAME=${shellQuote(vhostName)}
 HOSTNAME_VALUE=${shellQuote(hostname)}
 VHCONF="/usr/local/lsws/conf/vhosts/\${VHOST_NAME}/vhconf.conf"
 
+export DEBIAN_FRONTEND=noninteractive
+if [ ! -x ${shellQuote(phpBinaryPath(phpVersion))} ]; then
+  sudo apt-get update
+${phpInstallScript.split("\n").map((line) => `  ${line}`).join("\n")}
+fi
+
 sudo install -d -m 0755 "/usr/local/lsws/conf/vhosts/\${VHOST_NAME}"
 sudo tee "\${VHCONF}" >/dev/null <<'MRN_VHOST_CONF'
 ${vhostConfig}
@@ -4153,6 +4341,7 @@ MRN_SQL
 export MRN_VHOST_NAME="\${VHOST_NAME}"
 export MRN_HOSTNAME_VALUE="\${HOSTNAME_VALUE}"
 export MRN_VHOST_BLOCK=${shellQuote(vhostBlock)}
+export MRN_PHP_EXT_PROCESSORS=${shellQuote(phpExtProcessors)}
 sudo -E python3 <<'PY'
 import os
 import re
@@ -4163,9 +4352,19 @@ text = conf_path.read_text()
 vhost = os.environ["MRN_VHOST_NAME"]
 hostname = os.environ["MRN_HOSTNAME_VALUE"]
 vhost_block = os.environ["MRN_VHOST_BLOCK"].rstrip() + "\\n"
+php_ext_processors = os.environ["MRN_PHP_EXT_PROCESSORS"].rstrip() + "\\n"
 
 text = re.sub(r"\\n?virtualHost\\s+" + re.escape(vhost) + r"\\s*\\{.*?\\n\\}", "\\n", text, flags=re.S)
 text = re.sub(r"(?m)^(\\s*path\\s+)lsphp[0-9]+/bin/lsphp\\s*$", r"\\1lsphp84/bin/lsphp", text)
+text = re.sub(r"\\n?extProcessor\\s+lsphp(?:74|81|82|83|84)\\s*\\{.*?\\n\\}", "\\n", text, flags=re.S)
+
+script_handler_match = re.search(r"\\nscriptHandler\\s*\\{", text)
+rails_match = re.search(r"\\nrailsDefaults\\s*\\{", text)
+insert_match = script_handler_match or rails_match
+if insert_match:
+    text = text[:insert_match.start() + 1] + php_ext_processors + "\\n" + text[insert_match.start() + 1:]
+else:
+    text = text.rstrip() + "\\n\\n" + php_ext_processors + "\\n"
 
 listener_re = re.compile(r"listener\\s+Default\\s*\\{(?P<body>.*?)\\n\\}", re.S)
 match = listener_re.search(text)
@@ -4199,8 +4398,120 @@ sudo /usr/local/lsws/bin/lswsctrl restart
 printf 'Provisioned vhost: %s\\n' "\${VHOST_NAME}"
 printf 'Mapped host: %s\\n' "\${HOSTNAME_VALUE}"
 printf 'Document root: %s\\n' ${shellQuote(guestPublicPath)}
+printf 'PHP target: %s\\n' ${shellQuote(phpVersion)}
+${shellQuote(phpBinaryPath(phpVersion))} -r 'echo "PHP active binary: " . PHP_VERSION . PHP_EOL;' || true
 printf 'Database: %s\\n' ${shellQuote(site.dbName)}
 printf 'DB user: %s\\n' ${shellQuote(site.dbUser)}
+`,
+	};
+}
+
+function buildApplyPhpVersionScript(site) {
+	const phpVersion = normalizePhpVersion(site.phpVersion);
+	const hostname = runtimeHostnameForSite(site);
+	const vhostName = vhostNameForSite(site);
+	const guestLocalRoot = guestPathForHostPath(site.localRoot);
+	const guestPublicPath = guestPathForHostPath(site.publicPath);
+	const vhostConfig = buildVhostConfig({ site, hostname, guestPublicPath, guestLocalRoot });
+	const phpInstallScript = buildPhpInstallBash([phpVersion], { sudo: true, requiredVersion: phpVersion });
+	const phpExtProcessors = buildPhpExtProcessorBundle();
+	const vhostBlock = `virtualHost ${vhostName}{
+    vhRoot                   ${guestLocalRoot}
+    allowSymbolLink          1
+    enableScript             1
+    restrained               0
+    maxKeepAliveReq
+    smartKeepAlive
+    setUIDMode               0
+    chrootMode               0
+    configFile               conf/vhosts/${vhostName}/vhconf.conf
+}
+`;
+
+	return {
+		hostname,
+		vhostName,
+		guestPublicPath,
+		script: `#!/usr/bin/env bash
+set -euo pipefail
+
+VHOST_NAME=${shellQuote(vhostName)}
+HOSTNAME_VALUE=${shellQuote(hostname)}
+VHCONF="/usr/local/lsws/conf/vhosts/\${VHOST_NAME}/vhconf.conf"
+
+export DEBIAN_FRONTEND=noninteractive
+if [ ! -x ${shellQuote(phpBinaryPath(phpVersion))} ]; then
+  sudo apt-get update
+${phpInstallScript.split("\n").map((line) => `  ${line}`).join("\n")}
+fi
+
+sudo install -d -m 0755 "/usr/local/lsws/conf/vhosts/\${VHOST_NAME}"
+sudo tee "\${VHCONF}" >/dev/null <<'MRN_VHOST_CONF'
+${vhostConfig}
+MRN_VHOST_CONF
+
+export MRN_VHOST_NAME="\${VHOST_NAME}"
+export MRN_HOSTNAME_VALUE="\${HOSTNAME_VALUE}"
+export MRN_VHOST_BLOCK=${shellQuote(vhostBlock)}
+export MRN_PHP_EXT_PROCESSORS=${shellQuote(phpExtProcessors)}
+sudo -E python3 <<'PY'
+import os
+import re
+from pathlib import Path
+
+conf_path = Path("/usr/local/lsws/conf/httpd_config.conf")
+text = conf_path.read_text()
+vhost = os.environ["MRN_VHOST_NAME"]
+hostname = os.environ["MRN_HOSTNAME_VALUE"]
+vhost_block = os.environ["MRN_VHOST_BLOCK"].rstrip() + "\\n"
+php_ext_processors = os.environ["MRN_PHP_EXT_PROCESSORS"].rstrip() + "\\n"
+
+text = re.sub(r"\\n?virtualHost\\s+" + re.escape(vhost) + r"\\s*\\{.*?\\n\\}", "\\n", text, flags=re.S)
+text = re.sub(r"(?m)^(\\s*path\\s+)lsphp[0-9]+/bin/lsphp\\s*$", r"\\1lsphp84/bin/lsphp", text)
+text = re.sub(r"\\n?extProcessor\\s+lsphp(?:74|81|82|83|84)\\s*\\{.*?\\n\\}", "\\n", text, flags=re.S)
+
+script_handler_match = re.search(r"\\nscriptHandler\\s*\\{", text)
+rails_match = re.search(r"\\nrailsDefaults\\s*\\{", text)
+insert_match = script_handler_match or rails_match
+if insert_match:
+    text = text[:insert_match.start() + 1] + php_ext_processors + "\\n" + text[insert_match.start() + 1:]
+else:
+    text = text.rstrip() + "\\n\\n" + php_ext_processors + "\\n"
+
+listener_re = re.compile(r"listener\\s+Default\\s*\\{(?P<body>.*?)\\n\\}", re.S)
+match = listener_re.search(text)
+map_line = f"    map                      {vhost} {hostname}"
+if match:
+    body = match.group("body")
+    lines = [
+        line for line in body.splitlines()
+        if not re.match(r"\\s*map\\s+" + re.escape(vhost) + r"\\s+", line)
+    ]
+    wildcard_index = next(
+        (index for index, line in enumerate(lines) if re.match(r"\\s*map\\s+\\S+\\s+\\*\\s*$", line)),
+        len(lines),
+    )
+    lines.insert(wildcard_index, map_line)
+    listener = "listener Default{\\n" + "\\n".join(lines).rstrip() + "\\n}"
+    text = text[:match.start()] + listener + text[match.end():]
+else:
+    text += "\\nlistener Default{\\n    address                  *:8088\\n    secure                   0\\n" + map_line + "\\n}\\n"
+
+listener_match = re.search(r"\\nlistener\\s+Default\\s*\\{", text)
+if listener_match:
+    text = text[:listener_match.start() + 1] + vhost_block + "\\n" + text[listener_match.start() + 1:]
+else:
+    text = text.rstrip() + "\\n\\n" + vhost_block
+
+conf_path.write_text(text)
+PY
+
+sudo /usr/local/lsws/bin/lswsctrl restart
+printf 'Applied PHP target: %s\\n' ${shellQuote(phpVersion)}
+printf 'Vhost: %s\\n' "\${VHOST_NAME}"
+printf 'Mapped host: %s\\n' "\${HOSTNAME_VALUE}"
+printf 'Handler: %s\\n' ${shellQuote(phpHandlerName(phpVersion))}
+${shellQuote(phpBinaryPath(phpVersion))} -r 'echo "PHP active binary: " . PHP_VERSION . PHP_EOL;' || true
 `,
 	};
 }
@@ -4351,6 +4662,167 @@ function formatHtaccessResult(result) {
 function siteUrl(site, pathname = "/") {
 	const base = new URL(site.localUrl || defaultLocalUrl(site.slug));
 	return new URL(pathname, `${base.origin}/`).toString();
+}
+
+async function probeSitePhpVersion(site) {
+	const localSite = siteWithRuntimeDefaults(site);
+	const token = crypto.randomBytes(12).toString("hex");
+	const filename = `mrn-local-php-probe-${token}.php`;
+	const probePath = path.join(localSite.publicPath, filename);
+	const startedAt = Date.now();
+	const hostname = runtimeHostnameForSite(localSite);
+	const probeUrl = `http://127.0.0.1:8088/${filename}`;
+	const content = `<?php
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode(array(
+	'version' => PHP_VERSION,
+	'sapi' => PHP_SAPI,
+	'binary' => PHP_BINARY,
+));
+`;
+	await ensureSiteDirectories(localSite);
+	await fsp.writeFile(probePath, content, "utf8");
+	try {
+		const response = await runProcess(
+			"limactl",
+			[
+				"shell",
+				runtimeInstanceName,
+				"--",
+				"curl",
+				"-sS",
+				"-L",
+				"-H",
+				`Host: ${hostname}`,
+				probeUrl,
+			],
+			{ timeoutMs: 30000 },
+		);
+		let payload = null;
+		try {
+			payload = JSON.parse(response.stdout || "{}");
+		} catch {
+			payload = null;
+		}
+		const version = payload?.version ? String(payload.version) : "";
+		const majorMinor = version.match(/^\d+\.\d+/)?.[0] || "";
+		const ok = response.code === 0 && Boolean(majorMinor);
+		return {
+			code: ok ? 0 : 1,
+			command: "php-probe",
+			args: [localSite.slug, hostname, probeUrl],
+			stdout: ok
+				? `Active web PHP: ${version} (${payload.sapi || "unknown SAPI"})`
+				: `Active web PHP could not be detected through OpenLiteSpeed for ${hostname}.`,
+			stderr: ok ? "" : [response.stderr, response.stdout].filter(Boolean).join("\n").slice(0, 2000),
+			durationMs: Date.now() - startedAt,
+			url: probeUrl,
+			status: response.code,
+			version,
+			majorMinor,
+			sapi: payload?.sapi || "",
+			binary: payload?.binary || "",
+		};
+	} finally {
+		await fsp.rm(probePath, { force: true }).catch(() => {});
+	}
+}
+
+function phpStatusForProbe(targetVersion, probeResult) {
+	const target = normalizePhpVersion(targetVersion);
+	if (!probeResult || probeResult.code !== 0) {
+		return "unknown";
+	}
+	return probeResult.majorMinor === target ? "applied" : "mismatch";
+}
+
+async function applySitePhpVersion(site, requestedPhpVersion) {
+	const targetPhpVersion = normalizePhpVersion(requestedPhpVersion || site.phpVersion);
+	const localSite = siteWithRuntimeDefaults({ ...site, phpVersion: targetPhpVersion });
+	await writeManifest({
+		...localSite,
+		phpStatus: "applying",
+	});
+	const applyScript = buildApplyPhpVersionScript(localSite);
+	const applyResult = await runProcess("limactl", ["shell", runtimeInstanceName, "--", "bash", "-s"], {
+		input: applyScript.script,
+		timeoutMs: Number(process.env.MRN_LOCAL_HUB_PHP_APPLY_TIMEOUT_MS || "900000"),
+	});
+	if (applyResult.code !== 0) {
+		const failedSite = {
+			...localSite,
+			phpStatus: "missing",
+			phpCheckedAt: new Date().toISOString(),
+		};
+		await writeManifest(failedSite);
+		return {
+			...applyResult,
+			command: "apply-php-version",
+			args: [localSite.slug, targetPhpVersion],
+			stdout: [
+				`Target PHP: ${phpVersionLabel(targetPhpVersion)}`,
+				applyResult.stdout,
+				legacyPhpVersions.has(targetPhpVersion)
+					? "Legacy PHP 7.4 may require a legacy runtime channel if the current LiteSpeed repo does not provide lsphp74."
+					: "",
+			].filter(Boolean).join("\n"),
+			site: failedSite,
+			phpRuntime: {
+				target: targetPhpVersion,
+				status: "missing",
+				legacy: legacyPhpVersions.has(targetPhpVersion),
+				handler: phpHandlerName(targetPhpVersion),
+				binary: phpBinaryPath(targetPhpVersion),
+			},
+		};
+	}
+
+	const appliedSite = siteWithRuntimeDefaults(localSite, { runtimeStatus: "provisioned" });
+	const probe = await probeSitePhpVersion(appliedSite);
+	const phpStatus = phpStatusForProbe(targetPhpVersion, probe);
+	const finalSite = siteWithRuntimeDefaults({
+		...appliedSite,
+		activePhpVersion: probe.majorMinor || "",
+		activePhpHandler: phpStatus === "applied" ? phpHandlerName(targetPhpVersion) : "",
+		phpStatus,
+		phpCheckedAt: new Date().toISOString(),
+	});
+	await writeManifest(finalSite);
+	return {
+		...applyResult,
+		code: applyResult.code || probe.code,
+		command: "apply-php-version",
+		args: [finalSite.slug, targetPhpVersion],
+		stdout: [
+			`Target PHP: ${phpVersionLabel(targetPhpVersion)}`,
+			applyResult.stdout,
+			probe.stdout,
+			phpStatus === "applied"
+				? `PHP target confirmed for ${finalSite.slug}.`
+				: `PHP target mismatch: expected ${targetPhpVersion}, detected ${probe.majorMinor || "unknown"}.`,
+			legacyPhpVersions.has(targetPhpVersion)
+				? "Legacy PHP 7.4 is for temporary upgrade testing only."
+				: "",
+		].filter(Boolean).join("\n"),
+		stderr: [applyResult.stderr, probe.stderr].filter(Boolean).join("\n"),
+		durationMs: (applyResult.durationMs || 0) + (probe.durationMs || 0),
+		site: finalSite,
+		vhost: {
+			name: applyScript.vhostName,
+			hostname: applyScript.hostname,
+			documentRoot: applyScript.guestPublicPath,
+		},
+		phpRuntime: {
+			target: targetPhpVersion,
+			active: probe.majorMinor || "",
+			fullVersion: probe.version || "",
+			status: phpStatus,
+			legacy: legacyPhpVersions.has(targetPhpVersion),
+			handler: phpHandlerName(targetPhpVersion),
+			binary: phpBinaryPath(targetPhpVersion),
+			checkedAt: finalSite.phpCheckedAt,
+		},
+	};
 }
 
 function legacyLocalUrlsForSite(site) {
@@ -5964,6 +6436,8 @@ async function runSiteAction(site, body) {
 			return createLocalAdminLogin(site);
 		case "admin-unlock":
 			return runAdminAccessUnlock(site);
+		case "apply-php-version":
+			return applySitePhpVersion(site, body.phpVersion);
 		case "normalize-local-url": {
 			const localSite = siteWithRuntimeDefaults(site);
 			const wpConfigResult = await writeLocalWpConfig(localSite);
@@ -6477,7 +6951,15 @@ async function route(req, res) {
 
 		if (req.method === "PUT" && parts.length === 3) {
 			const body = await readBody(req);
+			const previousPhpVersion = normalizePhpVersion(site.phpVersion);
+			const nextPhpVersion = normalizePhpVersion(body.phpVersion || site.phpVersion);
 			const updated = sanitizeManifest({ ...site, ...body, slug });
+			if (nextPhpVersion !== previousPhpVersion) {
+				updated.phpStatus = updated.activePhpVersion === nextPhpVersion ? "applied" : "pending";
+				if (updated.phpStatus !== "applied") {
+					updated.activePhpHandler = "";
+				}
+			}
 			jsonResponse(res, 200, { site: await writeManifest(updated) });
 			return;
 		}

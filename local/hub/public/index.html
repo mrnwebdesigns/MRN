@@ -630,8 +630,8 @@
 									</div>
 								</div>
 								<nav class="site-subnav" aria-label="Selected site options">
-									<button type="button" data-site-view="sites-settings" class="active" aria-selected="true">Settings</button>
-									<button type="button" data-site-view="sites-sync" aria-selected="false">Pull & Push</button>
+									<button type="button" data-site-view="sites-sync" class="primary-site-tab active" aria-selected="true">Pull & Push</button>
+									<button type="button" data-site-view="sites-settings" aria-selected="false">Settings</button>
 									<button type="button" data-site-view="sites-qa" aria-selected="false">QA</button>
 								</nav>
 							</section>
@@ -681,14 +681,13 @@
 										<input name="remotePath" type="text" placeholder="/home/user/webapps/site">
 									</label>
 									<label class="field">
-										<span>PHP</span>
+										<span>Target PHP</span>
 										<select name="phpVersion">
 											<option value="8.4">8.4</option>
 											<option value="8.3">8.3</option>
 											<option value="8.2">8.2</option>
 											<option value="8.1">8.1</option>
-											<option value="8.0">8.0</option>
-											<option value="7.4">7.4</option>
+											<option value="7.4">Legacy 7.4</option>
 										</select>
 									</label>
 									<label class="field">
@@ -736,8 +735,10 @@
 										<textarea name="notes" rows="3"></textarea>
 									</label>
 								</form>
+								<div id="phpRuntimeStatus" class="php-runtime-status" aria-live="polite"></div>
 								<div class="actions settings-actions">
 									<button id="saveSiteButton" type="button" class="action">Save Settings</button>
+									<button data-action="apply-php-version" type="button" class="ghost-button">Apply PHP Version</button>
 									<button data-action="normalize-local-url" type="button" class="ghost-button">Normalize Local URL</button>
 								</div>
 								<div class="danger-zone">
@@ -750,32 +751,7 @@
 							</section>
 
 							<div class="operations">
-								<section id="siteWarningsCard" class="warning-card panel app-tab-panel" data-tab-panel="sites-sync" hidden>
-									<div class="panel-title">
-										<div class="panel-icon" aria-hidden="true">!</div>
-										<div>
-											<h3>Warnings</h3>
-											<p id="siteWarningsSummary">No warnings for this site.</p>
-										</div>
-									</div>
-									<ul id="siteWarningsList" class="warning-list"></ul>
-								</section>
-
-								<section class="operation-band panel app-tab-panel" data-tab-panel="sites-sync">
-									<div class="panel-title">
-										<div class="panel-icon" aria-hidden="true">R</div>
-										<div>
-											<h3>Runtime</h3>
-											<p>Create the local database, user, and OpenLiteSpeed vhost.</p>
-										</div>
-									</div>
-									<div id="runtimeOperationStatus" class="operation-status">Select a site to provision the local runtime.</div>
-									<div class="actions">
-										<button id="provisionSiteButton" data-action="provision-site" type="button" class="action">Provision Site</button>
-									</div>
-								</section>
-
-								<section class="operation-band panel app-tab-panel" data-tab-panel="sites-sync">
+								<section class="operation-band sync-card sync-card-pull panel app-tab-panel" data-tab-panel="sites-sync">
 									<div class="panel-title">
 										<div class="panel-icon" aria-hidden="true">P</div>
 										<div>
@@ -806,53 +782,22 @@
 									</div>
 									<div id="pullSummary" class="operation-status">Select a site with SSH details to run preflight.</div>
 									<ul id="pullResultList" class="result-list"></ul>
-									<ol id="pullWizardSteps" class="mini-stepper" aria-label="Pull workflow steps">
-										<li data-pull-step="files">
-											<span>1</span>
-											<strong>Files</strong>
-										</li>
-										<li data-pull-step="database">
-											<span>2</span>
-											<strong>Database</strong>
-										</li>
-										<li data-pull-step="verify">
-											<span>3</span>
-											<strong>Verify</strong>
-										</li>
-									</ol>
-									<div class="actions">
+									<div class="actions pull-management-actions">
 										<button id="pullFilesDbButton" type="button" class="action">Pull Files & DB</button>
+										<button data-action="pull-files" type="button" class="ghost-button">Pull Files</button>
+										<button data-action="pull-db" type="button" class="ghost-button">Pull DB</button>
+										<button data-action="smoke-check" type="button" class="ghost-button">Smoke Check</button>
 									</div>
 									<details class="advanced-actions">
-										<summary>Advanced pull actions</summary>
+										<summary>Advanced checks</summary>
 										<div class="actions">
 											<button data-action="pull-preflight" type="button" class="ghost-button">Preflight</button>
 											<button data-action="pull-files-dry-run" type="button" class="ghost-button">Dry Run</button>
-											<button data-action="pull-files" type="button" class="ghost-button">Pull Files Only</button>
-											<button data-action="pull-db" type="button" class="ghost-button">Pull DB Only</button>
-											<button data-action="smoke-check" type="button" class="ghost-button">Smoke Check</button>
 										</div>
 									</details>
 								</section>
 
-								<section class="operation-band panel app-tab-panel" data-tab-panel="sites-sync">
-									<div class="panel-title">
-										<div class="panel-icon" aria-hidden="true">A</div>
-										<div>
-											<h3>Admin</h3>
-											<p>Find local login blockers and disable high-confidence security plugins locally.</p>
-										</div>
-									</div>
-									<div class="operation-status">Local-only. Does not push plugin changes back to the remote site.</div>
-									<div id="adminStatus" class="operation-status">Run Admin Check to inspect local wp-admin access and plugin blockers.</div>
-									<ul id="adminResultList" class="result-list"></ul>
-									<div class="actions">
-										<button data-action="admin-check" type="button" class="ghost-button">Admin Check</button>
-										<button data-action="admin-unlock" type="button" class="ghost-button">Local Admin Unlock</button>
-									</div>
-								</section>
-
-								<section class="operation-band panel app-tab-panel" data-tab-panel="sites-sync">
+								<section class="operation-band sync-card sync-card-push panel app-tab-panel" data-tab-panel="sites-sync">
 									<div class="panel-title">
 										<div class="panel-icon" aria-hidden="true">U</div>
 										<div>
@@ -860,8 +805,29 @@
 											<p>Deploy one selected path back over SSH after a dry run.</p>
 										</div>
 									</div>
+									<div class="pull-options push-options">
+										<label>
+											<span>Files</span>
+											<select id="pushFileScope">
+												<option value="full">Full site</option>
+												<option value="full-no-uploads">Full site, skip uploads</option>
+												<option value="core">Core/root</option>
+												<option value="wp-content">wp-content</option>
+												<option value="active-theme" selected>Active theme</option>
+												<option value="themes">All themes</option>
+												<option value="plugins">Plugins</option>
+												<option value="mu-plugins">MU plugins</option>
+												<option value="uploads">Uploads</option>
+												<option value="custom">Custom directory</option>
+											</select>
+										</label>
+										<label id="pushCustomPathField" hidden>
+											<span>Custom path</span>
+											<input id="pushPath" type="text" value="wp-content/themes" aria-label="Custom push path">
+										</label>
+									</div>
+									<div id="pushSummary" class="operation-status">Select a site with SSH details to run a push audit.</div>
 									<div class="push-row">
-										<input id="pushPath" type="text" value="wp-content/themes" aria-label="Path to push">
 										<label class="checkline">
 											<input id="deleteFiles" type="checkbox">
 											<span>Delete remote extras</span>
@@ -870,8 +836,58 @@
 									<div class="actions">
 										<button data-action="push-audit" type="button" class="ghost-button">Push Audit</button>
 										<button data-action="push-path-dry-run" type="button" class="ghost-button">Dry Run Push</button>
-										<button data-action="push-path" type="button" class="ghost-button danger-button">Push Path</button>
+										<button data-action="push-path" type="button" class="ghost-button danger-button">Push Files</button>
 									</div>
+								</section>
+
+								<details class="secondary-tools panel app-tab-panel" data-tab-panel="sites-sync">
+									<summary>
+										<span>Other Site Tools</span>
+										<strong>Runtime and local admin utilities</strong>
+									</summary>
+									<div class="secondary-tool-grid">
+										<section class="operation-band compact-operation">
+											<div class="panel-title">
+												<div class="panel-icon" aria-hidden="true">R</div>
+												<div>
+													<h3>Runtime</h3>
+													<p>Create or repair the local database, user, and OpenLiteSpeed vhost.</p>
+												</div>
+											</div>
+											<div id="runtimeOperationStatus" class="operation-status">Select a site to provision the local runtime.</div>
+											<div class="actions">
+												<button id="provisionSiteButton" data-action="provision-site" type="button" class="ghost-button">Provision Site</button>
+											</div>
+										</section>
+
+										<section class="operation-band compact-operation">
+											<div class="panel-title">
+												<div class="panel-icon" aria-hidden="true">A</div>
+												<div>
+													<h3>Admin</h3>
+													<p>Find local login blockers and disable high-confidence security plugins locally.</p>
+												</div>
+											</div>
+											<div class="operation-status">Local-only. Does not push plugin changes back to the remote site.</div>
+											<div id="adminStatus" class="operation-status">Run Admin Check to inspect local wp-admin access and plugin blockers.</div>
+											<ul id="adminResultList" class="result-list"></ul>
+											<div class="actions">
+												<button data-action="admin-check" type="button" class="ghost-button">Admin Check</button>
+												<button data-action="admin-unlock" type="button" class="ghost-button">Local Admin Unlock</button>
+											</div>
+										</section>
+									</div>
+								</details>
+
+								<section id="siteWarningsCard" class="warning-card panel app-tab-panel" data-tab-panel="sites-sync">
+									<div class="panel-title">
+										<div class="panel-icon" aria-hidden="true">!</div>
+										<div>
+											<h3>Issues & Warnings</h3>
+											<p id="siteWarningsSummary">No issues or warnings for this site.</p>
+										</div>
+									</div>
+									<ul id="siteWarningsList" class="warning-list"></ul>
 								</section>
 
 								<section class="operation-band panel app-tab-panel" data-tab-panel="sites-qa">

@@ -30,7 +30,6 @@ const state = {
 	pullReadiness: {},
 	siteWarnings: {},
 	adminReadiness: {},
-	pullWizardStage: "idle",
 	addSiteStep: "source",
 	addSiteMode: "ssh",
 	siteFilters: {
@@ -39,6 +38,8 @@ const state = {
 		provider: "all",
 	},
 	selectedSiteSlugs: new Set(),
+	tooltipElement: null,
+	tooltipAnchor: null,
 };
 
 const providerPresets = {
@@ -115,6 +116,7 @@ const els = {
 	siteForm: document.querySelector("#siteForm"),
 	sshForm: document.querySelector("#sshForm"),
 	saveSiteButton: document.querySelector("#saveSiteButton"),
+	phpRuntimeStatus: document.querySelector("#phpRuntimeStatus"),
 	deleteSiteButton: document.querySelector("#deleteSiteButton"),
 	openLocalButton: document.querySelector("#openLocalButton"),
 	openAdminButton: document.querySelector("#openAdminButton"),
@@ -127,10 +129,12 @@ const els = {
 	adminResultList: document.querySelector("#adminResultList"),
 	pullFilesDbButton: document.querySelector("#pullFilesDbButton"),
 	pullResultList: document.querySelector("#pullResultList"),
-	pullWizardSteps: document.querySelectorAll("[data-pull-step]"),
 	pullFileScope: document.querySelector("#pullFileScope"),
 	pullCustomPathField: document.querySelector("#pullCustomPathField"),
 	pullCustomPath: document.querySelector("#pullCustomPath"),
+	pushFileScope: document.querySelector("#pushFileScope"),
+	pushCustomPathField: document.querySelector("#pushCustomPathField"),
+	pushSummary: document.querySelector("#pushSummary"),
 	pushPath: document.querySelector("#pushPath"),
 	deleteFiles: document.querySelector("#deleteFiles"),
 	outputConsole: document.querySelector("#outputConsole"),
@@ -235,6 +239,7 @@ const sectionTabs = {
 const addSiteSteps = ["source", "connection", "create"];
 const sparklinePointCount = 28;
 const siteDetailTabs = new Set(["sites-settings", "sites-sync", "sites-qa"]);
+const siteDefaultTab = "sites-sync";
 const pullFileScopeLabels = {
 	full: "Full site",
 	"full-no-uploads": "Full site, skip uploads",
@@ -248,9 +253,17 @@ const pullFileScopeLabels = {
 	custom: "Custom directory",
 };
 
+const pushScopePreviewPaths = {
+	"wp-content": "wp-content",
+	themes: "wp-content/themes",
+	plugins: "wp-content/plugins",
+	"mu-plugins": "wp-content/mu-plugins",
+	uploads: "wp-content/uploads",
+};
+
 const legacyTabMap = {
 	overview: ["dashboard", "dashboard-overview"],
-	site: ["sites", "sites-settings"],
+	site: ["sites", siteDefaultTab],
 	"sites-overview": ["dashboard", "dashboard-overview"],
 	"connect-import": ["sites", "sites-add"],
 	"connect-providers": ["sites", "sites-add"],
@@ -668,6 +681,7 @@ function actionLabel(action) {
 		"admin-check": "Admin Check",
 		"admin-login": "Login to Admin",
 		"admin-unlock": "Local Admin Unlock",
+		"apply-php-version": "Apply PHP Version",
 		"normalize-local-url": "Normalize Local URL",
 		"push-audit": "Push Audit",
 		"push-path-dry-run": "Push Dry Run",
@@ -705,6 +719,9 @@ function actionPendingMessage(action, site, payload = {}) {
 	if (action === "admin-unlock") {
 		return `Disabling high-confidence local security/login blockers for ${site.slug}. Remote files and remote database are not touched.`;
 	}
+	if (action === "apply-php-version") {
+		return `Applying PHP ${payload.phpVersion || site.phpVersion || "8.4"} to the local OpenLiteSpeed vhost for ${site.slug}, then probing the active web PHP version.`;
+	}
 	if (action === "normalize-local-url") {
 		return `Updating the local WordPress database and wp-config.php for ${site.localUrl}. Remote files and remote database are not touched.`;
 	}
@@ -721,9 +738,385 @@ function actionPendingMessage(action, site, payload = {}) {
 		return `Marking ${site.slug} stopped in Local Hub. The shared runtime stays online.`;
 	}
 	if (action.startsWith("push-")) {
-		return `Auditing ${payload.relativePath || "selected path"} for ${site.remoteSsh}:${site.remotePath}.`;
+		return `Auditing ${payload.pushScopeLabel || payload.relativePath || "selected path"} for ${site.remoteSsh}:${site.remotePath}.`;
 	}
 	return `Running ${actionLabel(action)} for ${site.slug}.`;
+}
+
+const buttonIdTooltips = {
+	refreshButton: "Reloads site manifests, runtime health, local tool checks, provider account status, and dashboard metrics. Useful after editing files outside the Hub or after a runtime command finishes.",
+	themeToggle: "Switches only the Hub UI theme. It does not change any local site, WordPress theme, or browser setting.",
+	selectVisibleSitesButton: "Selects every site currently visible after search and filters. Hidden filtered-out sites are not selected.",
+	clearSiteSelectionButton: "Clears the bulk selection so Start Selected and Stop Selected no longer affect any sites.",
+	bulkStartSitesButton: "Runs Start/Provision for every selected site. This can create missing local DB/vhost resources, but it does not contact remote hosting.",
+	bulkStopSitesButton: "Marks selected sites stopped in the Hub. The shared Lima/OpenLiteSpeed runtime stays online, and remote hosting is not touched.",
+	wpEngineListButton: "Calls the configured WP Engine account credentials to list installs/environments, then lets you hand one off to the SSH import flow.",
+	siteGroundAddButton: "Stores this SiteGround SSH site entry locally so it can be selected later. It does not validate SSH until the Add Site connection step.",
+	refreshProviderAccountsButton: "Reloads saved provider registries and environment-backed account credentials without changing any local site.",
+	addSiteCancelButton: "Exits the Add Site wizard and returns to All Sites. Anything already created by a completed step remains in place.",
+	addSiteBackButton: "Moves one wizard step back so you can revise the source or connection details before creating/importing.",
+	addSiteNextButton: "Validates the current wizard step. On the connection step it also prepares SSH by inspecting the remote WordPress root before continuing.",
+	createSiteButton: "Creates a blank local WordPress-style workspace only. Use this for new local work, not for cloning an existing remote site.",
+	sshCreateSiteButton: "Creates the local manifest from SSH details only. You will still need to provision, pull files, and pull the database afterward.",
+	sshCreateImportButton: "Runs the full selected first-import flow: create manifest, provision runtime, pull selected files, optionally pull DB, then optionally smoke check.",
+	refreshSshAliasesButton: "Re-reads ~/.ssh/config and included SSH config files so new aliases appear in the chooser.",
+	openLocalButton: "Opens the selected local site URL. If friendly HTTPS is not active, the button stays blocked with the reason shown here.",
+	openAdminButton: "Creates a one-time local admin login URL and opens wp-admin. This changes only the local WordPress database.",
+	saveSiteButton: "Saves editable settings on this page, such as title, URLs, SSH details, notes, and target PHP version.",
+	deleteSiteButton: "Deletes this local site folder, local DB/user, and OpenLiteSpeed mapping. Remote hosting is never deleted.",
+	pullFilesDbButton: "Runs the selected file pull first, then imports the remote database into local MariaDB. Local files in scope and the local DB are changed; remote is read-only.",
+	provisionSiteButton: "Creates or repairs the local database, DB user, wp-config.php settings, and OpenLiteSpeed vhost for this site.",
+	refreshQaScreenshotsButton: "Reloads screenshot artifacts from the latest MRN QA run so new captures appear without rerunning QA.",
+	clearQaOutputButton: "Clears the visible QA text log only. Saved QA screenshots are kept.",
+	clearQaAllButton: "Clears the visible QA log and removes saved QA screenshots for this site.",
+	clearOutputButton: "Clears the deployment log panel in the UI. It does not delete site backups, dumps, or runtime logs on disk.",
+	installHttpsHelperButton: "Installs or reinstalls the launchd helper that lets local HTTPS use ports 80 and 443 without running the Hub as root.",
+	friendlyStartButton: "Checks whether no-port HTTPS URLs like https://site.localhost are live through the helper/proxy.",
+	refreshSslCertButton: "Regenerates or verifies the mkcert certificate used by all *.localhost friendly HTTPS sites.",
+	trustFirefoxButton: "Imports the mkcert local CA into Firefox profiles when possible. Firefox may need a full quit/reopen afterward.",
+	confirmCancelButton: "Cancels the pending confirmed action. No files, database, or remote target will be changed.",
+	confirmSubmitButton: "Runs the pending action only if the required confirmation token matches exactly.",
+};
+
+const actionTooltips = {
+	"provision-site": "Builds or repairs local-only runtime pieces: DB name/user/password, wp-config.php constants, .htaccess, and OpenLiteSpeed vhost. Does not pull remote files or DB.",
+	"apply-php-version": "Rewires this site's local OpenLiteSpeed handler to the selected PHP version and probes the web response to confirm the active PHP.",
+	"normalize-local-url": "Rewrites the local WordPress home/siteurl and wp-config.php URL settings to match this Hub local URL. Remote DB and files are not touched.",
+	"pull-preflight": "Checks SSH reachability, remote WordPress root, required tools, Git safety, and the exact rsync command before files are changed.",
+	"pull-files-dry-run": "Runs rsync in preview mode for the selected pull scope. It shows what would change locally, but writes nothing.",
+	"pull-files": "Copies the selected remote file scope into the local public path. Stops when local Git changes would be overwritten.",
+	"pull-db": "Exports the remote DB through WP-CLI, imports it into the local DB, runs URL search-replace, then reports smoke/code-sync warnings.",
+	"smoke-check": "Runs quick local checks for the homepage, REST API, wp-admin response, active theme CSS, and an internal page.",
+	"push-audit": "Scans the selected push scope before any deploy: Git cleanliness, blocked private files, symlinks, generated folders, and delete safety.",
+	"push-path-dry-run": "Runs Push Audit, then rsync dry-run to show what remote files would change. No remote writes happen.",
+	"push-path": "Deploys the selected scope to remote over rsync after audit and confirmation. Can change remote files; use dry-run first.",
+	"admin-check": "Checks local wp-admin/wp-login responses and identifies security/login plugins that may be blocking local admin access.",
+	"admin-login": "Creates a one-time local wp-admin login URL for this site. It does not create remote users or touch remote data.",
+	"admin-unlock": "Locally deactivates high-confidence security/login blockers so wp-admin works. These plugin changes are not pushed back.",
+	"run-qa": "Runs MRN QA against this local site, including static/runtime gates where available, and refreshes screenshot artifacts during the run.",
+};
+
+const runtimeActionTooltips = {
+	"runtime-status": "Rechecks Lima state, OpenLiteSpeed, MariaDB, forwarded ports, friendly HTTPS helper, certificate, and Firefox trust status.",
+	"runtime-check": "Runs service checks inside the local runtime so you can see whether OLS, MariaDB, Redis, mounts, and PHP handlers are healthy.",
+	"runtime-open-http": "Opens the raw HTTP runtime endpoint on the forwarded port. Useful when friendly HTTPS is not working yet.",
+	"runtime-open-admin": "Opens OpenLiteSpeed WebAdmin for the local VM. This is runtime administration, not WordPress wp-admin.",
+	"runtime-friendly-install-helper": "Installs the macOS launchd helper that binds ports 80/443 and proxies friendly *.localhost URLs to the Hub runtime.",
+	"runtime-friendly-start": "Verifies that the helper/proxy is live and no-port HTTPS URLs resolve. It cannot work until the helper is installed.",
+	"runtime-friendly-cert": "Creates or refreshes the mkcert wildcard certificate for *.localhost used by friendly HTTPS.",
+	"runtime-firefox-trust": "Attempts to trust the mkcert CA in Firefox profiles. Close Firefox fully first if trust keeps reporting blocked.",
+	"runtime-install-nss": "Installs the NSS tooling Firefox needs for local certificate trust management.",
+	"runtime-plan": "Regenerates the Lima config and bootstrap script without starting the VM. Good for reviewing what will change.",
+	"runtime-bootstrap": "Creates or updates the Lima VM and installs OpenLiteSpeed, PHP handlers, MariaDB, Redis, and mounted site paths.",
+	"runtime-repair": "Re-runs package/service repair inside the VM. Use when tools are missing, PHP handlers changed, or services are unhealthy.",
+	"runtime-open-script": "Opens the generated bootstrap script on disk so you can inspect the runtime setup commands.",
+};
+
+const sshActionTooltips = {
+	"mrndev-resolve": "For *.mrndev.io sites, derives the site-owner SSH target and likely /home/.../htdocs WordPress root from the URL or slug.",
+	"ssh-config": "Shows which SSH alias, host, port, identity files, and proxy settings the Hub sees before it connects.",
+	"ssh-test": "Runs a simple SSH connection test. No files or databases are read, written, pulled, or pushed.",
+	"ssh-inspect": "Connects over SSH and checks the remote path for wp-config.php, WP-CLI, DB constants, WordPress version, and URLs.",
+	"ssh-create-site": "Creates the local Hub manifest from the current SSH fields. It does not provision runtime or import content.",
+};
+
+const siteActionTooltips = {
+	"open-local": "Open this site's local URL. If HTTPS helper/proxy is not ready, the button explains what is blocking it.",
+	"admin-login": "Generate a local one-time admin login and open wp-admin. Remote users and remote DB are untouched.",
+	"start-site": "Start/provision this site locally so it appears in running-site metrics and OpenLiteSpeed routing.",
+	"stop-site": "Hide/mark this site stopped in the Hub. The shared runtime and remote hosting remain untouched.",
+};
+
+const sectionTooltips = {
+	dashboard: "Server overview: CPU, memory, job activity, runtime health, and running-site cards.",
+	sites: "Site inventory: add sites, filter/bulk manage, open a site page, then pull, push, configure, or QA it.",
+	runtime: "Runtime controls: Lima/OpenLiteSpeed status, friendly HTTPS setup, maintenance, and generated config details.",
+	logs: "Command log: review output from pulls, pushes, DB imports, runtime actions, and QA commands.",
+};
+
+const siteViewTooltips = {
+	"sites-sync": "Pull from remote into local, push selected local scopes back to remote, and review site warnings.",
+	"sites-settings": "Edit site metadata, SSH target, paths, local URL, PHP target, and delete the local site.",
+	"sites-qa": "Run MRN QA and review logs/screenshots for the selected local WordPress site.",
+};
+
+const tabTooltips = {
+	"dashboard-overview": "Show server metrics and running-site cards.",
+	"sites-list": "Show all local sites with filters and bulk actions.",
+	"sites-add": "Start the guided Add Site flow.",
+	"sites-settings": "Edit selected site settings.",
+	"sites-sync": "Manage Pull and Push actions for the selected site.",
+	"sites-qa": "Run QA for the selected site.",
+	"runtime-status": "Show local runtime status.",
+	"runtime-https": "Configure friendly local HTTPS URLs.",
+	"runtime-maintenance": "Run runtime setup and repair actions.",
+	"runtime-details": "Show generated runtime paths and config details.",
+	"logs-console": "Show deployment command output.",
+};
+
+const chartTooltips = {
+	cpu: "Expands the CPU sparkline so you can see recent local machine/runtime load samples.",
+	memory: "Expands the memory sparkline so you can see recent used/available memory samples.",
+	jobs: "Expands the job sparkline so you can see recent Hub command activity.",
+};
+
+const buttonTextTooltips = {
+	"Add Site": "Starts the guided flow for either a blank local site or an SSH import from MRN Dev, RunCloud, SiteGround, WP Engine, or another host.",
+	Use: "Copies this discovered provider site's slug, live URL, SSH target, and path into the Add Site SSH form.",
+	Remove: "Removes this saved provider site entry from the local provider registry. It does not delete a site.",
+	Cancel: "Closes the current flow/dialog without running the pending action.",
+	Confirm: "Runs the pending action after the required token has been typed exactly.",
+};
+
+function normalizedButtonText(button) {
+	return (button?.textContent || "").trim().replace(/\s+/g, " ");
+}
+
+function safeCurrentPullSelection() {
+	try {
+		return currentPullFileSelection();
+	} catch {
+		return null;
+	}
+}
+
+function safeCurrentPushSelection() {
+	try {
+		return currentPushFileSelection();
+	} catch {
+		return null;
+	}
+}
+
+function selectedSiteLabel(site = currentSite()) {
+	return site?.title || site?.slug || "the selected site";
+}
+
+function detailedTooltipForButton(button) {
+	const site = currentSite();
+	const siteName = selectedSiteLabel(site);
+	if (button.id === "pullFilesDbButton") {
+		const selection = safeCurrentPullSelection();
+		const scope = selection?.pullScopeLabel || "the selected file scope";
+		return `Imports a working local copy in one run: pulls ${scope}, then overwrites the local DB with the remote DB and search-replaces URLs for ${siteName}. Remote files and DB are read-only.`;
+	}
+	if (button.dataset.action === "pull-preflight") {
+		const selection = safeCurrentPullSelection();
+		return `Preflight for ${selection?.pullScopeLabel || "the selected pull scope"}: checks SSH, remote WordPress path, local tools, Git safety, and the exact rsync command before anything is changed.`;
+	}
+	if (button.dataset.action === "pull-files-dry-run") {
+		const selection = safeCurrentPullSelection();
+		return `Preview pull for ${selection?.pullScopeLabel || "the selected scope"}. Shows what would change under the local public path, but writes no files.`;
+	}
+	if (button.dataset.action === "pull-files") {
+		const selection = safeCurrentPullSelection();
+		return `Pulls ${selection?.pullScopeLabel || "the selected scope"} from remote into local. This can overwrite local files in that scope, and it stops if Git says the target is dirty.`;
+	}
+	if (button.dataset.action === "pull-db") {
+		return `Overwrites the local database for ${siteName} with a fresh remote export, then runs local URL search-replace and reports smoke/code-sync warnings. Files are not changed.`;
+	}
+	if (button.dataset.action === "push-audit") {
+		const selection = safeCurrentPushSelection();
+		return `Safety scan for pushing ${selection?.pushScopeLabel || "the selected scope"}: checks Git cleanliness, local-only/private files, symlinks, generated folders, delete safety, and blocked broad scopes. No remote writes.`;
+	}
+	if (button.dataset.action === "push-path-dry-run") {
+		const selection = safeCurrentPushSelection();
+		return `Runs Push Audit, then rsync dry-run for ${selection?.pushScopeLabel || "the selected scope"}. Shows what remote files would change without writing to remote.`;
+	}
+	if (button.dataset.action === "push-path") {
+		const selection = safeCurrentPushSelection();
+		return `Deploys ${selection?.pushScopeLabel || "the selected scope"} to remote after audit and PUSH confirmation. This writes remote files; use Push Audit and Dry Run Push first.`;
+	}
+	if (button.id === "openLocalButton" || button.dataset.siteAction === "open-local") {
+		return siteOpenBlockedReason(site) || `Opens ${siteName} at its local URL. Uses friendly HTTPS when the helper/proxy is active.`;
+	}
+	if (button.id === "openAdminButton" || button.dataset.siteAction === "admin-login") {
+		return siteOpenBlockedReason(site) || `Creates a one-time local wp-admin login for ${siteName}. It does not change remote users, remote files, or remote DB.`;
+	}
+	if (button.dataset.siteAction === "start-site") {
+		return `Starts or provisions this site locally so its vhost, DB settings, and dashboard metrics are active. Remote hosting is not touched.`;
+	}
+	if (button.dataset.siteAction === "stop-site") {
+		return `Stops this site from the Hub's local running list. The shared Lima/OpenLiteSpeed runtime and remote hosting keep running.`;
+	}
+	if (button.id === "addSiteNextButton" && state.addSiteStep === "connection") {
+		return "Prepares the SSH connection now: resolves MRN Dev when needed, tests the remote WordPress root, and blocks the next step if wp-config.php is not found.";
+	}
+	if (button.id === "addSiteNextButton" && state.addSiteStep === "create") {
+		return "Moves through the final import choices. Use Create & Import on the next panel to actually create/provision/pull.";
+	}
+	if (button.dataset.chartCard) {
+		const metric = button.dataset.chartCard.toUpperCase();
+		return `Expands the ${metric} chart to make the recent sample history easier to inspect. This is display-only.`;
+	}
+	if (button.classList.contains("site-card")) {
+		const title = button.querySelector("strong")?.textContent?.trim() || "this site";
+		return `Opens ${title}'s site page with Pull & Push first, plus settings, QA, warnings, and local actions.`;
+	}
+	if (button.classList.contains("site-row-main")) {
+		const title = button.querySelector("strong")?.textContent?.trim() || "this site";
+		return `Opens ${title}'s management view. Use the row buttons for quick open/admin/start/stop without leaving the list.`;
+	}
+	if (button.classList.contains("ssh-alias-button")) {
+		const alias = button.querySelector("strong")?.textContent?.trim() || "this alias";
+		return `Copies ${alias} into the SSH target field and infers the likely provider. It does not connect until you test or prepare the connection.`;
+	}
+	return "";
+}
+
+function tooltipTextForButton(button) {
+	if (!button) return "";
+	const nativeTitle = button.getAttribute("title") || button.dataset.nativeTitle || "";
+	if (nativeTitle && button.disabled) return nativeTitle;
+	const detailed = detailedTooltipForButton(button);
+	if (detailed) return detailed;
+	if (button.id && buttonIdTooltips[button.id]) return buttonIdTooltips[button.id];
+	if (button.dataset.action && actionTooltips[button.dataset.action]) return actionTooltips[button.dataset.action];
+	if (button.dataset.runtimeAction && runtimeActionTooltips[button.dataset.runtimeAction]) return runtimeActionTooltips[button.dataset.runtimeAction];
+	if (button.dataset.sshAction && sshActionTooltips[button.dataset.sshAction]) return sshActionTooltips[button.dataset.sshAction];
+	if (button.dataset.siteAction && siteActionTooltips[button.dataset.siteAction]) return siteActionTooltips[button.dataset.siteAction];
+	if (button.dataset.section && sectionTooltips[button.dataset.section]) return sectionTooltips[button.dataset.section];
+	if (button.dataset.siteView && siteViewTooltips[button.dataset.siteView]) return siteViewTooltips[button.dataset.siteView];
+	if (button.dataset.tabJump && tabTooltips[button.dataset.tabJump]) return tabTooltips[button.dataset.tabJump];
+	if (button.dataset.tab && tabTooltips[button.dataset.tab]) return tabTooltips[button.dataset.tab];
+	if (button.dataset.chartCard && chartTooltips[button.dataset.chartCard]) return chartTooltips[button.dataset.chartCard];
+	const aria = button.getAttribute("aria-label");
+	if (aria) return aria;
+	return nativeTitle || buttonTextTooltips[normalizedButtonText(button)] || button.dataset.tooltip || "";
+}
+
+function primeButtonTooltip(button) {
+	const text = tooltipTextForButton(button);
+	if (text) {
+		button.dataset.tooltip = text;
+	} else {
+		delete button.dataset.tooltip;
+	}
+}
+
+function primeButtonTooltips(root = document) {
+	root.querySelectorAll?.("button").forEach(primeButtonTooltip);
+	if (root.matches?.("button")) {
+		primeButtonTooltip(root);
+	}
+}
+
+function ensureTooltipElement() {
+	if (state.tooltipElement) return state.tooltipElement;
+	const tooltip = document.createElement("div");
+	tooltip.className = "hub-tooltip";
+	tooltip.setAttribute("role", "tooltip");
+	tooltip.hidden = true;
+	document.body.append(tooltip);
+	state.tooltipElement = tooltip;
+	return tooltip;
+}
+
+function positionTooltip(anchor) {
+	const tooltip = state.tooltipElement;
+	if (!tooltip || !anchor || tooltip.hidden) return;
+	const anchorRect = anchor.getBoundingClientRect();
+	if (!anchorRect.width && !anchorRect.height) {
+		hideButtonTooltip();
+		return;
+	}
+	const tooltipRect = tooltip.getBoundingClientRect();
+	const margin = 10;
+	let placement = "top";
+	let top = anchorRect.top - tooltipRect.height - margin;
+	if (top < 8) {
+		placement = "bottom";
+		top = anchorRect.bottom + margin;
+	}
+	let left = anchorRect.left + (anchorRect.width / 2) - (tooltipRect.width / 2);
+	left = Math.max(8, Math.min(left, window.innerWidth - tooltipRect.width - 8));
+	const anchorCenter = anchorRect.left + (anchorRect.width / 2);
+	const arrowLeft = Math.max(14, Math.min(anchorCenter - left, tooltipRect.width - 14));
+	tooltip.dataset.placement = placement;
+	tooltip.style.left = `${Math.round(left)}px`;
+	tooltip.style.top = `${Math.round(top)}px`;
+	tooltip.style.setProperty("--tooltip-arrow-left", `${Math.round(arrowLeft)}px`);
+}
+
+function showButtonTooltip(button) {
+	if (!button) return;
+	const existingTitle = button.getAttribute("title");
+	if (existingTitle) {
+		button.dataset.nativeTitle = existingTitle;
+		button.removeAttribute("title");
+	}
+	const text = tooltipTextForButton(button);
+	if (!text) return;
+	button.dataset.tooltip = text;
+	const tooltip = ensureTooltipElement();
+	state.tooltipAnchor = button;
+	tooltip.textContent = text;
+	tooltip.hidden = false;
+	tooltip.classList.remove("visible");
+	window.requestAnimationFrame(() => {
+		positionTooltip(button);
+		tooltip.classList.add("visible");
+	});
+}
+
+function hideButtonTooltip() {
+	const anchor = state.tooltipAnchor;
+	const tooltip = state.tooltipElement;
+	if (anchor?.dataset.nativeTitle) {
+		anchor.setAttribute("title", anchor.dataset.nativeTitle);
+		delete anchor.dataset.nativeTitle;
+	}
+	state.tooltipAnchor = null;
+	if (!tooltip) return;
+	tooltip.classList.remove("visible");
+	tooltip.hidden = true;
+}
+
+function setupButtonTooltips() {
+	primeButtonTooltips();
+	const observer = new MutationObserver((records) => {
+		for (const record of records) {
+			if (record.type === "childList") {
+				record.addedNodes.forEach((node) => {
+					if (node.nodeType === Node.ELEMENT_NODE) {
+						primeButtonTooltips(node);
+					}
+				});
+			} else if (record.type === "attributes" && record.target?.matches?.("button")) {
+				primeButtonTooltip(record.target);
+			}
+		}
+	});
+	observer.observe(document.body, {
+		attributes: true,
+		attributeFilter: ["data-action", "data-runtime-action", "data-section", "data-site-action", "data-site-view", "data-ssh-action", "data-tab", "data-tab-jump", "disabled", "id", "title"],
+		childList: true,
+		subtree: true,
+	});
+	document.addEventListener("mouseover", (event) => {
+		const button = event.target.closest?.("button");
+		const relatedTarget = event.relatedTarget instanceof Node ? event.relatedTarget : null;
+		if (!button || button.contains(relatedTarget)) return;
+		showButtonTooltip(button);
+	});
+	document.addEventListener("mouseout", (event) => {
+		const button = event.target.closest?.("button");
+		const relatedTarget = event.relatedTarget instanceof Node ? event.relatedTarget : null;
+		if (!button || button !== state.tooltipAnchor || button.contains(relatedTarget)) return;
+		hideButtonTooltip();
+	});
+	document.addEventListener("focusin", (event) => {
+		const button = event.target.closest?.("button");
+		if (button) showButtonTooltip(button);
+	});
+	document.addEventListener("focusout", (event) => {
+		if (event.target === state.tooltipAnchor) hideButtonTooltip();
+	});
+	document.addEventListener("keydown", (event) => {
+		if (event.key === "Escape") hideButtonTooltip();
+	});
+	window.addEventListener("scroll", () => hideButtonTooltip(), true);
+	window.addEventListener("resize", hideButtonTooltip);
 }
 
 function summarizePath(value) {
@@ -1554,6 +1947,29 @@ function currentPullFileSelection({ requireCustomPath = false } = {}) {
 	return pullFileSelectionFromControls(els.pullFileScope, els.pullCustomPath, { requireCustomPath });
 }
 
+function pushFileSelectionFromControls({ requireCustomPath = false } = {}) {
+	const scope = els.pushFileScope?.value || "active-theme";
+	const customPath = (els.pushPath?.value || "").trim().replace(/^\/+|\/+$/g, "");
+	const label = scope === "custom"
+		? customPath
+			? `Custom: ${customPath}`
+			: "Custom directory"
+		: pullFileScopeLabels[scope] || "Active theme";
+	if (scope === "custom" && requireCustomPath && !customPath) {
+		appendMessage("Enter a custom push path before running the push action.", true);
+		return null;
+	}
+	return {
+		fileScope: scope,
+		relativePath: scope === "custom" ? customPath : "",
+		pushScopeLabel: label,
+	};
+}
+
+function currentPushFileSelection({ requireCustomPath = false } = {}) {
+	return pushFileSelectionFromControls({ requireCustomPath });
+}
+
 function renderPullScopeControls() {
 	const isCustom = (els.pullFileScope?.value || "full") === "custom";
 	if (els.pullCustomPathField) {
@@ -1564,31 +1980,14 @@ function renderPullScopeControls() {
 	}
 }
 
-function setPullWizardStage(stage) {
-	state.pullWizardStage = stage || "idle";
-	renderPullWizardSteps(currentSite());
-}
-
-function renderPullWizardSteps(site = currentSite()) {
-	const stage = state.pullWizardStage || "idle";
-	const current = stage === "idle" && site ? "files" : stage;
-	const completeSteps = new Set();
-	if (stage === "database") {
-		completeSteps.add("files");
-	} else if (stage === "verify") {
-		completeSteps.add("files");
-		completeSteps.add("database");
-	} else if (stage === "complete") {
-		completeSteps.add("files");
-		completeSteps.add("database");
-		completeSteps.add("verify");
+function renderPushScopeControls() {
+	const isCustom = (els.pushFileScope?.value || "active-theme") === "custom";
+	if (els.pushCustomPathField) {
+		els.pushCustomPathField.hidden = !isCustom;
 	}
-	els.pullWizardSteps.forEach((item) => {
-		const step = item.dataset.pullStep;
-		item.classList.toggle("complete", completeSteps.has(step));
-		item.classList.toggle("current", Boolean(site) && current === step);
-		item.classList.toggle("disabled", !site);
-	});
+	if (els.pushPath) {
+		els.pushPath.disabled = !currentSite() || !isCustom;
+	}
 }
 
 function initialImportOptions({ requireCustomPath = false } = {}) {
@@ -1710,17 +2109,17 @@ function renderSiteOperationState(site) {
 		"Provision the site before running local checks.",
 	);
 	setActionButtons(
-		["normalize-local-url"],
+		["apply-php-version", "normalize-local-url"],
 		!runtimeReady,
-		"Provision the site before normalizing local URLs.",
+		"Provision the site before applying runtime settings.",
 	);
 	setActionButtons(
 		["push-audit", "push-path-dry-run", "push-path"],
 		!canUseRemoteOps,
 		runtimeReady ? "Add remote SSH and WordPress root before pushing." : "Provision the site before pushing.",
 	);
-	if (els.pushPath) {
-		els.pushPath.disabled = !canUseRemoteOps;
+	if (els.pushFileScope) {
+		els.pushFileScope.disabled = !site;
 	}
 	if (els.deleteFiles) {
 		els.deleteFiles.disabled = !canUseRemoteOps;
@@ -1733,6 +2132,8 @@ function renderSiteOperationState(site) {
 		els.deleteSiteButton.title = site ? "Delete this local site and runtime resources." : "Select a site before deleting.";
 	}
 	renderPullScopeControls();
+	renderPushScopeControls();
+	renderPushSummary(site);
 }
 
 function fillForm(site) {
@@ -1743,8 +2144,9 @@ function fillForm(site) {
 	els.siteSubtitle.textContent = site.localUrl || site.localRoot || "Local WordPress workspace";
 	els.runtimeLabel.textContent = `${providerLabel(site.provider)} / ${site.webserver || "openlitespeed"} / ${site.runtimeStatus || "planned"}`;
 	renderSiteWarnings(site);
+	renderPhpRuntimeStatus(site);
 	renderPullSummary(site);
-	renderPullWizardSteps(site);
+	renderPushSummary(site);
 	renderAdminSummary(site);
 	renderSiteOperationState(site);
 }
@@ -1756,7 +2158,6 @@ function renderPullSummary(site) {
 	if (!site) {
 		els.pullSummary.className = "operation-status";
 		els.pullSummary.textContent = "Select a site with SSH details to run preflight.";
-		renderPullWizardSteps(null);
 		return;
 	}
 
@@ -1784,7 +2185,46 @@ function renderPullSummary(site) {
 	const scopeText = selection.fileScope === "custom" && !selection.relativePath ? "choose a custom directory" : selection.pullScopeLabel;
 	els.pullSummary.className = "operation-status";
 	els.pullSummary.textContent = `${scopeText}: ${site.remoteSsh}:${summarizePath(site.remotePath)} -> ${summarizePath(site.publicPath)}`;
-	renderPullWizardSteps(site);
+}
+
+function renderPushSummary(site) {
+	if (!els.pushSummary) return;
+	if (!site) {
+		els.pushSummary.className = "operation-status";
+		els.pushSummary.textContent = "Select a site with SSH details to run a push audit.";
+		return;
+	}
+
+	if (!site.remoteSsh || !site.remotePath) {
+		els.pushSummary.className = "operation-status warn";
+		els.pushSummary.textContent = "Add remote SSH and WordPress root before pushing.";
+		return;
+	}
+
+	const selection = currentPushFileSelection();
+	const blockedScopes = new Set(["full", "full-no-uploads", "core"]);
+	if (blockedScopes.has(selection.fileScope)) {
+		els.pushSummary.className = "operation-status warn";
+		els.pushSummary.textContent = `${selection.pushScopeLabel} pushes are blocked by audit. Choose wp-content, theme, plugins, uploads, or a custom child path.`;
+		return;
+	}
+
+	const previewPath = selection.fileScope === "custom"
+		? selection.relativePath || "choose a custom directory"
+		: selection.fileScope === "active-theme"
+			? "active theme, resolved from local WordPress"
+			: pushScopePreviewPaths[selection.fileScope] || selection.pushScopeLabel;
+	const broadScope = selection.fileScope === "wp-content" || selection.fileScope === "uploads";
+	els.pushSummary.className = `operation-status${broadScope ? " warn" : ""}`;
+	if (selection.fileScope === "active-theme") {
+		els.pushSummary.textContent = `${selection.pushScopeLabel}: resolves the active local theme, then deploys it to ${site.remoteSsh}:${summarizePath(site.remotePath)}. Run Push Audit first.`;
+		return;
+	}
+	const localPreview = selection.relativePath || pushScopePreviewPaths[selection.fileScope] || previewPath;
+	const targetPreview = localPreview && !localPreview.startsWith("choose ")
+		? `${site.remoteSsh}:${summarizePath(site.remotePath)}/${localPreview}`
+		: `${site.remoteSsh}:${summarizePath(site.remotePath)}`;
+	els.pushSummary.textContent = `${selection.pushScopeLabel}: ${summarizePath(site.publicPath)}/${previewPath} -> ${targetPreview}. Run Push Audit first.`;
 }
 
 function formatAdminAccessStatus(status) {
@@ -1862,23 +2302,6 @@ function renderAdminSummary(site = currentSite()) {
 	}
 }
 
-function smokeFollowUpItems(smoke) {
-	const checks = smoke?.checks || [];
-	return checks
-		.filter((check) => check.status && check.status !== "pass")
-		.map((check) => {
-			const status = check.status === "warn" ? "Warning" : "Issue";
-			const detail = `${check.label} ${status.toLowerCase()}: ${check.detail}`;
-			if (check.label === "Admin" && /blocked by a WordPress security plugin/i.test(check.detail || "")) {
-				return `${detail} Run Local Admin Unlock if you need wp-admin access; otherwise the database import is okay.`;
-			}
-			if (check.status === "warn") {
-				return `${detail} Review only if it blocks the work you are doing locally.`;
-			}
-			return `${detail} Correct this before treating the local site as ready.`;
-		});
-}
-
 function warningKey(source, title, detail) {
 	return `${source || "warning"}:${title || "Warning"}:${detail || ""}`;
 }
@@ -1887,12 +2310,14 @@ function normalizeWarningItem(source, warning) {
 	if (typeof warning === "string") {
 		return {
 			source,
+			level: "warning",
 			title: source === "smoke" ? "Smoke check warning" : "Warning",
 			detail: warning,
 		};
 	}
 	return {
 		source,
+		level: warning?.level || "warning",
 		title: warning?.title || "Warning",
 		detail: warning?.detail || warning?.message || "",
 		action: warning?.action || "",
@@ -1929,25 +2354,56 @@ function smokeWarningItems(smoke) {
 	const checks = smoke?.checks || [];
 	return checks
 		.filter((check) => check.status && check.status !== "pass")
-		.map((check) => ({
-			title: check.status === "warn" ? "Smoke check warning" : "Smoke check issue",
-			detail: `${check.label}: ${check.detail}`,
-		}));
+		.map((check) => {
+			let detail = `${check.label}: ${check.detail}`;
+			if (check.label === "Admin" && /blocked by a WordPress security plugin/i.test(check.detail || "")) {
+				detail += " Run Local Admin Unlock if you need wp-admin access; otherwise the database import is okay.";
+			}
+			return {
+				level: check.status === "fail" ? "issue" : "warning",
+				title: check.status === "warn" ? "Smoke check warning" : "Smoke check issue",
+				detail,
+				action: check.label === "Admin" ? "admin-unlock" : "",
+			};
+		});
 }
 
 function renderSiteWarnings(site = currentSite()) {
 	if (!els.siteWarningsCard || !els.siteWarningsSummary || !els.siteWarningsList) return;
 	els.siteWarningsList.textContent = "";
 	const warnings = site?.slug ? state.siteWarnings[site.slug] || [] : [];
-	els.siteWarningsCard.hidden = !site || !warnings.length;
-	if (!site || !warnings.length) {
-		els.siteWarningsSummary.textContent = "No warnings for this site.";
+	els.siteWarningsCard.hidden = !site;
+	if (!site) {
+		els.siteWarningsCard.dataset.state = "clean";
+		els.siteWarningsSummary.textContent = "No site selected.";
+		return;
+	}
+	if (!warnings.length) {
+		els.siteWarningsCard.dataset.state = "clean";
+		els.siteWarningsSummary.textContent = "No issues or warnings for this site.";
+		const li = document.createElement("li");
+		li.className = "clean";
+		const title = document.createElement("strong");
+		const detail = document.createElement("p");
+		title.textContent = "[ok] Sync checks clear";
+		detail.textContent = "Warnings from preflight, database pulls, smoke checks, and code parity checks will appear here.";
+		li.append(title, detail);
+		els.siteWarningsList.append(li);
 		return;
 	}
 
-	els.siteWarningsSummary.textContent = `${warnings.length} warning${warnings.length === 1 ? "" : "s"} need review before treating local as fully in sync.`;
+	const issueCount = warnings.filter((warning) => warning.level === "issue").length;
+	const warningCount = warnings.length - issueCount;
+	els.siteWarningsCard.dataset.state = issueCount ? "issue" : "warning";
+	els.siteWarningsSummary.textContent = [
+		issueCount ? `${issueCount} issue${issueCount === 1 ? "" : "s"}` : "",
+		warningCount ? `${warningCount} warning${warningCount === 1 ? "" : "s"}` : "",
+	].filter(Boolean).join(" and ") + " need review before treating local as fully in sync.";
 	for (const warning of warnings) {
 		const li = document.createElement("li");
+		if (warning.level === "issue") {
+			li.className = "issue";
+		}
 		const title = document.createElement("strong");
 		const detail = document.createElement("p");
 		title.textContent = warning.title || "Warning";
@@ -1958,6 +2414,8 @@ function renderSiteWarnings(site = currentSite()) {
 			suggestion.push("Suggested action: Pull Active Theme.");
 		} else if (warning.action === "pull-files" && warning.relativePath) {
 			suggestion.push(`Suggested action: Pull ${warning.relativePath}.`);
+		} else if (warning.action === "admin-unlock") {
+			suggestion.push("Suggested action: Local Admin Unlock, only if you need wp-admin access.");
 		}
 		if (warning.source) {
 			suggestion.push(`Source: ${warning.source.replace(/-/g, " ")}.`);
@@ -1971,6 +2429,55 @@ function renderSiteWarnings(site = currentSite()) {
 	}
 }
 
+function phpVersionLabel(version) {
+	const normalized = String(version || "8.4");
+	return normalized === "7.4" ? "Legacy PHP 7.4" : `PHP ${normalized}`;
+}
+
+function renderPhpRuntimeStatus(site = currentSite()) {
+	if (!els.phpRuntimeStatus) return;
+	if (!site) {
+		els.phpRuntimeStatus.className = "php-runtime-status";
+		els.phpRuntimeStatus.textContent = "Select a site to view PHP runtime status.";
+		return;
+	}
+	const target = String(site.phpVersion || "8.4");
+	const active = String(site.activePhpVersion || "");
+	const status = String(site.phpStatus || "");
+	const isLegacy = target === "7.4";
+	const isConfirmed = status === "applied" && active === target;
+	const isMissing = status === "missing";
+	const isMismatch = status === "mismatch" || (active && active !== target);
+	const stateClass = isMissing || isMismatch ? "issue" : isLegacy || !isConfirmed ? "warn" : "ok";
+	const checked = site.phpCheckedAt
+		? new Date(site.phpCheckedAt).toLocaleString()
+		: "Not checked yet";
+	const note = isMissing
+		? "Target PHP is not installed in the local runtime. Repair Install or Apply PHP Version will try to install it."
+		: isMismatch
+			? "Target and active PHP do not match. Apply PHP Version again and review the log if it stays mismatched."
+			: isLegacy
+				? "PHP 7.4 is legacy and should be used only for temporary upgrade testing."
+				: isConfirmed
+					? "The local web handler matches the target PHP version."
+					: "Click Apply PHP Version to update the local OpenLiteSpeed vhost and verify the active web handler.";
+	els.phpRuntimeStatus.className = `php-runtime-status ${stateClass}`;
+	els.phpRuntimeStatus.innerHTML = `
+		<div class="php-runtime-row">
+			<span>Target</span>
+			<strong>${escapeHtml(phpVersionLabel(target))}</strong>
+			${isLegacy ? '<em class="mini-pill warn">Legacy</em>' : ""}
+		</div>
+		<div class="php-runtime-row">
+			<span>Active</span>
+			<strong>${escapeHtml(active ? `PHP ${active}` : "Unknown")}</strong>
+			<em class="mini-pill ${isConfirmed ? "ok" : isMissing || isMismatch ? "bad" : "warn"}">${escapeHtml(isConfirmed ? "Confirmed" : isMissing ? "Missing" : isMismatch ? "Mismatch" : "Needs apply")}</em>
+		</div>
+		<p>${escapeHtml(note)}</p>
+		<small>Last checked: ${escapeHtml(checked)}</small>
+	`;
+}
+
 function updatePullReadiness(site, action, result) {
 	if (!site) return;
 	if (action === "pull-preflight") {
@@ -1979,28 +2486,34 @@ function updatePullReadiness(site, action, result) {
 		const notes = [...issues, ...warnings];
 		const scopeLabel = result.preflight?.pullScope?.label || result.pullScope?.label || "Pull";
 		state.pullReadiness[site.slug] = {
-			ok: result.code === 0 && !notes.length,
+			ok: result.code === 0 && !issues.length,
 			message: issues.length
-				? `Preflight blocked: ${issues.join(" ")}`
+				? "Preflight blocked. Review Issues & Warnings."
 				: warnings.length
-					? `Preflight warning: ${warnings.join(" ")}`
+					? "Preflight completed with warnings. Review Issues & Warnings."
 					: `${scopeLabel} preflight ready. Run a file dry run before pulling.`,
-			items: notes,
+			items: [],
 		};
-		setSiteWarnings(site, "pull-preflight", warnings.map((warning) => ({
-			title: "Preflight warning",
-			detail: warning,
-		})));
+		setSiteWarnings(site, "pull-preflight", [
+			...issues.map((issue) => ({
+				level: "issue",
+				title: "Preflight issue",
+				detail: issue,
+			})),
+			...warnings.map((warning) => ({
+				level: "warning",
+				title: "Preflight warning",
+				detail: warning,
+			})),
+		]);
 	} else if (action === "pull-files-dry-run") {
 		const scopeLabel = result.pullScope?.label || "File";
-		state.pullWizardStage = result.code === 0 ? "files" : "idle";
 		state.pullReadiness[site.slug] = {
 			ok: result.code === 0,
 			message: result.code === 0 ? `${scopeLabel} dry run completed. Pull Files is ready when you are.` : `${scopeLabel} dry run failed; review the deployment log.`,
 		};
 	} else if (action === "pull-files") {
 		const scopeLabel = result.pullScope?.label || "Files";
-		state.pullWizardStage = result.code === 0 ? "database" : "files";
 		state.pullReadiness[site.slug] = {
 			ok: result.code === 0,
 			message: result.code === 0 ? `${scopeLabel} pulled into the local public path.` : `${scopeLabel} pull failed; review the deployment log.`,
@@ -2027,26 +2540,25 @@ function updatePullReadiness(site, action, result) {
 		const smoke = result.smoke;
 		const smokeFailed = Boolean(smoke && smoke.failed);
 		const smokeWarned = Boolean(smoke && smoke.warnings);
-		const followUps = smokeFollowUpItems(smoke);
-		state.pullWizardStage = result.code === 0 ? "complete" : "verify";
+		const warningCount = smokeWarningItems(smoke).length + codeSyncWarningItems(result).length;
 		state.pullReadiness[site.slug] = {
-			ok: result.code === 0 && !smokeFailed && !smokeWarned && !codeSyncWarningItems(result).length,
+			ok: result.code === 0,
 			message: smoke
 				? result.code === 0
 					? smokeFailed
-						? `Database pulled. Smoke check found ${smoke.failed} follow-up issue${smoke.failed === 1 ? "" : "s"}; review the deployment log.`
+						? `Database pulled. ${warningCount} follow-up item${warningCount === 1 ? "" : "s"} moved to Issues & Warnings.`
 						: smokeWarned
-							? `Database pulled. Smoke check passed with ${smoke.warnings} warning${smoke.warnings === 1 ? "" : "s"}.`
+							? `Database pulled. ${warningCount} warning${warningCount === 1 ? "" : "s"} moved to Issues & Warnings.`
 							: codeSyncWarningItems(result).length
-								? `Database pulled. Code parity has ${codeSyncWarningItems(result).length} warning${codeSyncWarningItems(result).length === 1 ? "" : "s"}.`
+								? `Database pulled. ${warningCount} warning${warningCount === 1 ? "" : "s"} moved to Issues & Warnings.`
 								: `Database pulled. Smoke check passed (${smoke.passed} passed).`
 					: `Database import failed before smoke check finished.`
 				: result.code === 0
 					? codeSyncWarningItems(result).length
-						? `Database pulled. Code parity has ${codeSyncWarningItems(result).length} warning${codeSyncWarningItems(result).length === 1 ? "" : "s"}.`
+						? `Database pulled. ${warningCount} warning${warningCount === 1 ? "" : "s"} moved to Issues & Warnings.`
 						: "Database pulled and search-replaced for local."
 					: "Database pull failed; review the deployment log.",
-			items: followUps,
+			items: [],
 		};
 		setSiteWarnings(site, "pull-db", [
 			...smokeWarningItems(smoke),
@@ -2055,17 +2567,19 @@ function updatePullReadiness(site, action, result) {
 	} else if (action === "smoke-check") {
 		const smoke = result.smoke;
 		const smokeWarned = Boolean(smoke && smoke.warnings);
-		state.pullWizardStage = result.code === 0 ? "complete" : "verify";
+		const warningCount = smokeWarningItems(smoke).length;
 		state.pullReadiness[site.slug] = {
-			ok: result.code === 0 && !smokeWarned,
+			ok: result.code === 0,
 			message: smoke
 				? result.code === 0
-					? `Smoke check passed (${smoke.passed} passed${smoke.warnings ? `, ${smoke.warnings} warning${smoke.warnings === 1 ? "" : "s"}` : ""}).`
-					: `Smoke check found ${smoke.failed} failure${smoke.failed === 1 ? "" : "s"}; review the deployment log.`
+					? smokeWarned
+						? `Smoke check passed. ${warningCount} warning${warningCount === 1 ? "" : "s"} moved to Issues & Warnings.`
+						: `Smoke check passed (${smoke.passed} passed).`
+					: `Smoke check found ${warningCount || smoke.failed} follow-up item${(warningCount || smoke.failed) === 1 ? "" : "s"} in Issues & Warnings.`
 				: result.code === 0
 					? "Smoke check passed."
 					: "Smoke check failed; review the deployment log.",
-			items: smokeFollowUpItems(smoke),
+			items: [],
 		};
 		setSiteWarnings(site, "smoke-check", smokeWarningItems(smoke));
 	}
@@ -2438,15 +2952,13 @@ function renderMetrics() {
 function selectSite(slug, openSiteView = false) {
 	const previousSlug = state.currentSlug;
 	state.currentSlug = slug;
-	if (previousSlug !== slug) {
-		state.pullWizardStage = "idle";
-	}
 	const site = currentSite();
 	els.emptyState.hidden = true;
 	els.siteDetail.hidden = !site;
 	if (site) {
 		fillForm(site);
 	} else {
+		renderPhpRuntimeStatus(null);
 		renderPullSummary(null);
 		renderSiteOperationState(null);
 	}
@@ -2457,7 +2969,7 @@ function selectSite(slug, openSiteView = false) {
 	}
 	renderSites();
 	if (site && (openSiteView || previousSlug !== slug)) {
-		setActiveTab("sites-settings", "sites");
+		setActiveTab(siteDefaultTab, "sites");
 	} else {
 		setActiveTab(state.activeTab, state.activeSection);
 	}
@@ -2631,7 +3143,7 @@ async function createSite() {
 		state.currentSlug = response.site.slug;
 		els.newSlug.value = "";
 		await refresh();
-		setActiveTab("sites-settings", "sites");
+		setActiveTab(siteDefaultTab, "sites");
 		appendMessage(`Created ${response.site.slug}`);
 	} catch (error) {
 		appendMessage(error.message, true);
@@ -2717,7 +3229,7 @@ async function createAndImportSite() {
 		}
 		await refresh();
 		selectSite(site.slug);
-		setActiveTab("sites-settings", "sites");
+		setActiveTab(siteDefaultTab, "sites");
 		showToast("Initial import finished.", "success");
 	} catch (error) {
 		await refresh().catch(() => {});
@@ -2749,7 +3261,6 @@ async function pullFilesAndDatabase() {
 	const label = actionLabel("pull-files-db");
 	let activeSite = site;
 	setBusy(true, label);
-	setPullWizardStage("files");
 	appendPending(label, actionPendingMessage("pull-files-db", site, selection));
 	try {
 		const filesResult = await runSiteActionStep(activeSite, "pull-files", selection);
@@ -2759,7 +3270,6 @@ async function pullFilesAndDatabase() {
 		if (filesResult.code !== 0) {
 			throw new Error("File pull failed. Database pull was skipped.");
 		}
-		setPullWizardStage("database");
 		const dbResult = await runSiteActionStep(activeSite, "pull-db");
 		if (dbResult.site?.slug) {
 			activeSite = dbResult.site;
@@ -2767,7 +3277,6 @@ async function pullFilesAndDatabase() {
 		if (dbResult.code !== 0) {
 			throw new Error("Database pull failed. Review the deployment log.");
 		}
-		setPullWizardStage("complete");
 		await refresh();
 		selectSite(activeSite.slug);
 		const smokeFailed = Boolean(dbResult.smoke && dbResult.smoke.failed);
@@ -2897,13 +3406,22 @@ async function runAction(action, siteOverride = null) {
 			return;
 		}
 	}
+	if (action === "apply-php-version") {
+		payload.phpVersion = els.siteForm?.elements.phpVersion?.value || site.phpVersion || "8.4";
+	}
 	if (action.startsWith("push-")) {
-		payload.relativePath = els.pushPath.value;
+		const selection = currentPushFileSelection({ requireCustomPath: true });
+		if (!selection) {
+			return;
+		}
+		payload.fileScope = selection.fileScope;
+		payload.relativePath = selection.relativePath;
+		payload.pushScopeLabel = selection.pushScopeLabel;
 		payload.deleteFiles = els.deleteFiles.checked;
 		if (action === "push-path") {
 			const confirmation = await requestConfirmation({
-				title: "Push Path",
-				message: `This will deploy ${payload.relativePath} back to ${site.remoteSsh}.`,
+				title: "Push Files",
+				message: `This will deploy ${payload.pushScopeLabel} back to ${site.remoteSsh}.`,
 				token: "PUSH",
 			});
 			if (confirmation !== "PUSH") {
@@ -2991,7 +3509,7 @@ async function runSshAction(action, options = {}) {
 			state.currentSlug = response.result.site.slug;
 			await refresh();
 			if (options.navigateOnSite !== false) {
-				setActiveTab("sites-settings", "sites");
+				setActiveTab(siteDefaultTab, "sites");
 			}
 		}
 		return response.result;
@@ -3043,16 +3561,30 @@ els.newSlug?.addEventListener("keydown", (event) => {
 });
 els.newSlug?.addEventListener("input", renderAddSiteWizard);
 els.saveSiteButton.addEventListener("click", saveSite);
+els.siteForm?.elements.phpVersion?.addEventListener("change", () => {
+	const site = currentSite();
+	if (site) {
+		renderPhpRuntimeStatus({
+			...site,
+			phpVersion: els.siteForm.elements.phpVersion.value,
+		});
+	}
+});
 els.openLocalButton.addEventListener("click", () => runAction("open-local"));
 els.openAdminButton.addEventListener("click", () => runAction("admin-login"));
 els.pullFileScope?.addEventListener("change", () => {
-	state.pullWizardStage = "idle";
 	renderPullScopeControls();
 	renderPullSummary(currentSite());
 });
 els.pullCustomPath?.addEventListener("input", () => {
-	state.pullWizardStage = "idle";
 	renderPullSummary(currentSite());
+});
+els.pushFileScope?.addEventListener("change", () => {
+	renderPushScopeControls();
+	renderPushSummary(currentSite());
+});
+els.pushPath?.addEventListener("input", () => {
+	renderPushSummary(currentSite());
 });
 els.pullFilesDbButton?.addEventListener("click", () => {
 	pullFilesAndDatabase().catch((error) => appendMessage(error.message, true));
@@ -3181,6 +3713,7 @@ document.querySelectorAll("[data-ssh-action]").forEach((button) => {
 	});
 });
 
+setupButtonTooltips();
 applyTheme(window.localStorage.getItem("mrn-local-hub-theme") || "light");
 updateProviderHint();
 refresh().then(() => {
