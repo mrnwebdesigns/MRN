@@ -23,6 +23,7 @@ const defaultAppSettings = {
 	sitesRoot: defaultSitesRoot,
 	runtimeMemoryGiB: 3,
 	runtimeDiskGiB: 30,
+	sitegroundIdentityFile: "",
 };
 let appSettings = readAppSettingsSync();
 let sitesRoot = path.resolve(process.env.MRN_LOCAL_SITES_ROOT || appSettings.sitesRoot || defaultSitesRoot);
@@ -195,6 +196,17 @@ function sanitizeRuntimeGiB(input, label, options = {}) {
 	return Math.round(value * 10) / 10;
 }
 
+function sanitizeOptionalIdentityFile(input, options = {}) {
+	const raw = String(input || "").trim();
+	if (!raw) {
+		return options.fallback ? path.resolve(expandHomePath(options.fallback)) : "";
+	}
+	if (/[\0\r\n]/.test(raw) || raw.length > 4096) {
+		throw httpError(400, "Identity file path contains unsupported characters.");
+	}
+	return path.resolve(expandHomePath(raw));
+}
+
 function sanitizeAppSettings(input = {}) {
 	return {
 		sitesRoot: sanitizeStorageRoot(input.sitesRoot || defaultAppSettings.sitesRoot, { fallback: defaultAppSettings.sitesRoot }),
@@ -207,6 +219,9 @@ function sanitizeAppSettings(input = {}) {
 			fallback: defaultAppSettings.runtimeDiskGiB,
 			min: 10,
 			max: 1024,
+		}),
+		sitegroundIdentityFile: sanitizeOptionalIdentityFile(input.sitegroundIdentityFile || defaultAppSettings.sitegroundIdentityFile, {
+			fallback: defaultAppSettings.sitegroundIdentityFile,
 		}),
 	};
 }
@@ -243,6 +258,7 @@ function appSettingsReport(extra = {}) {
 			credentialRegistryFile,
 			runtimeMemory: `${appSettings.runtimeMemoryGiB}GiB`,
 			runtimeDisk: `${appSettings.runtimeDiskGiB}GiB`,
+			sitegroundIdentityFile: appSettings.sitegroundIdentityFile || "",
 		},
 		storage: {
 			appDataRoot,
@@ -265,7 +281,7 @@ async function saveAppSettings(input = {}) {
 		result: {
 			code: 0,
 			command: "app-settings-save",
-			args: [sitesRoot, `${appSettings.runtimeMemoryGiB}GiB`, `${appSettings.runtimeDiskGiB}GiB`],
+			args: [sitesRoot, `${appSettings.runtimeMemoryGiB}GiB`, `${appSettings.runtimeDiskGiB}GiB`, appSettings.sitegroundIdentityFile || ""],
 			stdout: sitesRootChanged
 				? "App settings saved. Site storage changed; existing sites are not moved automatically."
 				: "App settings saved.",
@@ -370,6 +386,10 @@ function shellQuote(value) {
 
 function timestampSlug() {
 	return new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+}
+
+function delay(ms) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function displayPath(filePath) {
@@ -2588,6 +2608,146 @@ async function prepareSqlDirectoryDump(site, sqlDir, sourceLabel) {
 	};
 }
 
+function originFromUrl(value) {
+	try {
+		const parsed = new URL(String(value || ""));
+		if (!["http:", "https:"].includes(parsed.protocol) || !parsed.hostname) return "";
+		return `${parsed.protocol}//${parsed.host}`.replace(/\/+$/, "");
+	} catch {
+		return "";
+	}
+}
+
+function originHost(value) {
+	try {
+		return new URL(value).hostname.toLowerCase();
+	} catch {
+		return "";
+	}
+}
+
+function sourceOriginVariants(origin) {
+	const parsedOrigin = originFromUrl(origin);
+	if (!parsedOrigin) return [];
+	const parsed = new URL(parsedOrigin);
+	const host = parsed.hostname.toLowerCase();
+	const hosts = new Set([host]);
+	if (host.startsWith("www.")) {
+		hosts.add(host.replace(/^www\./, ""));
+	} else {
+		hosts.add(`www.${host}`);
+	}
+	const variants = [];
+	for (const protocol of ["https:", "http:"]) {
+		for (const variantHost of hosts) {
+			const port = parsed.port ? `:${parsed.port}` : "";
+			variants.push(`${protocol}//${variantHost}${port}`);
+		}
+	}
+	return variants;
+}
+
+async function detectSourceOriginsFromDump(dumpFile, site) {
+	const localOrigin = originFromUrl(site.localUrl);
+	const liveOrigin = originFromUrl(site.liveUrl);
+	const optionOrigins = new Set();
+	const seenOrigins = new Map();
+	let carry = "";
+	await new Promise((resolve, reject) => {
+		const stream = fs.createReadStream(dumpFile, { encoding: "utf8", highWaterMark: 1024 * 1024 });
+		stream.on("data", (chunk) => {
+			const text = `${carry}${chunk}`.replace(/\\\//g, "/");
+			const urlPattern = /https?:\/\/[a-z0-9.-]+(?::\d+)?/gi;
+			let match;
+			while ((match = urlPattern.exec(text))) {
+				const origin = originFromUrl(match[0]);
+				if (origin) seenOrigins.set(origin, (seenOrigins.get(origin) || 0) + 1);
+			}
+			const optionPattern = /INSERT INTO `[^`]+_options`[\s\S]*?VALUES\s*\([^;]*?'(?:home|siteurl)'[^;]*?'(https?:\/\/[^']+)'/gi;
+			while ((match = optionPattern.exec(text))) {
+				const origin = originFromUrl(match[1]);
+				if (origin) optionOrigins.add(origin);
+			}
+			carry = text.slice(-2048);
+		});
+		stream.on("error", reject);
+		stream.on("end", resolve);
+	});
+
+	const primaryOrigins = new Set([...optionOrigins, liveOrigin].filter(Boolean));
+	const primaryLabels = new Set(
+		[...primaryOrigins]
+			.map((origin) => originHost(origin).replace(/^www\./, "").split(".")[0])
+			.filter(Boolean),
+	);
+	const detected = new Set();
+	for (const origin of primaryOrigins) {
+		for (const variant of sourceOriginVariants(origin)) detected.add(variant);
+	}
+	for (const origin of seenOrigins.keys()) {
+		const host = originHost(origin);
+		if (!host || host === "localhost" || host.endsWith(".localhost") || origin === localOrigin) continue;
+		if (host.endsWith(".tempurl.host")) {
+			const label = host.split(".")[0];
+			if (!primaryLabels.size || primaryLabels.has(label)) {
+				for (const variant of sourceOriginVariants(origin)) detected.add(variant);
+			}
+		}
+	}
+	return [...detected].filter((origin) => origin && origin !== localOrigin);
+}
+
+async function replaceImportedSourceUrls(site, dumpFile) {
+	const localSite = siteWithRuntimeDefaults(site);
+	const startedAt = Date.now();
+	const sourceOrigins = await detectSourceOriginsFromDump(dumpFile, localSite);
+	if (!sourceOrigins.length) {
+		return {
+			code: 0,
+			command: "replace-imported-source-urls",
+			args: [localSite.slug],
+			stdout: "No source URLs detected in the database dump before local URL normalization.",
+			stderr: "",
+			durationMs: Date.now() - startedAt,
+			sourceOrigins: [],
+		};
+	}
+	const wpBaseArgs = ["--skip-plugins", "--skip-themes"];
+	const replacements = [];
+	for (const sourceOrigin of sourceOrigins) {
+		const result = await runWpCli(
+			localSite,
+			[
+				...wpBaseArgs,
+				"search-replace",
+				sourceOrigin,
+				localSite.localUrl,
+				"--all-tables-with-prefix",
+				"--precise",
+				"--recurse-objects",
+				"--skip-columns=guid",
+			],
+			{ cwd: localSite.localRoot },
+		);
+		replacements.push({ sourceOrigin, result });
+	}
+	const failures = replacements.filter((item) => item.result.code !== 0);
+	return {
+		code: failures.length ? 1 : 0,
+		command: "replace-imported-source-urls",
+		args: [localSite.slug, localSite.localUrl],
+		stdout: [
+			`Detected source URL${sourceOrigins.length === 1 ? "" : "s"}: ${sourceOrigins.join(", ")}`,
+			...replacements.map((item) => `Replaced ${item.sourceOrigin}: ${item.result.code === 0 ? "ok" : "failed"}`),
+		].join("\n"),
+		stderr: replacements.map((item) => item.result.stderr).filter(Boolean).join("\n"),
+		durationMs: Date.now() - startedAt,
+		sourceOrigins,
+		replacements: replacements.map((item) => ({ oldUrl: item.sourceOrigin, code: item.result.code })),
+		runtimeContext: firstRuntimeContext(...replacements.map((item) => item.result)),
+	};
+}
+
 async function importPreparedDatabaseDump(site, prepResult, sourceLabel) {
 	if (prepResult.code !== 0) return prepResult;
 	const wpConfigResult = await writeLocalWpConfig(site);
@@ -2602,23 +2762,34 @@ async function importPreparedDatabaseDump(site, prepResult, sourceLabel) {
 			"--skip-columns=guid",
 		], { cwd: site.localRoot });
 	}
-	const dbUrlResult = importResult.code === 0 ? await normalizeLocalDatabaseUrls(site) : null;
+	const sourceUrlResult = importResult.code === 0
+		&& (!searchReplaceResult || searchReplaceResult.code === 0)
+		? await replaceImportedSourceUrls(site, prepResult.dumpFile)
+		: null;
+	const dbUrlResult = importResult.code === 0
+		&& (!searchReplaceResult || searchReplaceResult.code === 0)
+		&& (!sourceUrlResult || sourceUrlResult.code === 0)
+		? await normalizeLocalDatabaseUrls(site)
+		: null;
 	const htaccessResult = importResult.code === 0 ? await ensureWordPressHtaccess(site) : null;
 	const restartResult = htaccessResult && htaccessResult.updated ? await restartOpenLiteSpeedRuntime() : null;
 	const smokeResult = importResult.code === 0
 		&& (!searchReplaceResult || searchReplaceResult.code === 0)
+		&& (!sourceUrlResult || sourceUrlResult.code === 0)
 		&& (!dbUrlResult || dbUrlResult.code === 0)
 		&& (!restartResult || restartResult.code === 0)
 		? await runSmokeCheck(site)
 		: null;
 	const codeSyncResult = importResult.code === 0
 		&& (!searchReplaceResult || searchReplaceResult.code === 0)
+		&& (!sourceUrlResult || sourceUrlResult.code === 0)
 		&& (!dbUrlResult || dbUrlResult.code === 0)
 		? await checkDatabaseCodeSync(site)
 		: null;
 	const code = prepResult.code
 		|| importResult.code
 		|| (searchReplaceResult ? searchReplaceResult.code : 0)
+		|| (sourceUrlResult ? sourceUrlResult.code : 0)
 		|| (dbUrlResult ? dbUrlResult.code : 0)
 		|| (restartResult ? restartResult.code : 0);
 	return {
@@ -2630,6 +2801,7 @@ async function importPreparedDatabaseDump(site, prepResult, sourceLabel) {
 			formatWpConfigResult(wpConfigResult),
 			importResult.code === 0 ? `Imported ${prepResult.dumpFile} into ${site.dbName}.` : importResult.stdout,
 			searchReplaceResult ? searchReplaceResult.stdout : "",
+			sourceUrlResult ? sourceUrlResult.stdout : "",
 			dbUrlResult ? dbUrlResult.stdout : "",
 			htaccessResult ? formatHtaccessResult(htaccessResult) : "",
 			restartResult ? restartResult.stdout : "",
@@ -2640,6 +2812,7 @@ async function importPreparedDatabaseDump(site, prepResult, sourceLabel) {
 			prepResult.stderr,
 			importResult.stderr,
 			searchReplaceResult ? searchReplaceResult.stderr : "",
+			sourceUrlResult ? sourceUrlResult.stderr : "",
 			dbUrlResult ? dbUrlResult.stderr : "",
 			restartResult ? restartResult.stderr : "",
 			smokeResult ? smokeResult.stderr : "",
@@ -2647,12 +2820,14 @@ async function importPreparedDatabaseDump(site, prepResult, sourceLabel) {
 		durationMs: (prepResult.durationMs || 0)
 			+ (importResult.durationMs || 0)
 			+ (searchReplaceResult ? searchReplaceResult.durationMs : 0)
+			+ (sourceUrlResult ? sourceUrlResult.durationMs : 0)
 			+ (dbUrlResult ? dbUrlResult.durationMs : 0)
 			+ (restartResult ? restartResult.durationMs : 0)
 			+ (smokeResult ? smokeResult.durationMs : 0),
-		runtimeContext: firstRuntimeContext(searchReplaceResult, dbUrlResult, smokeResult),
+		runtimeContext: firstRuntimeContext(searchReplaceResult, sourceUrlResult, dbUrlResult, smokeResult),
 		dumpFile: prepResult.dumpFile,
 		wpConfig: wpConfigResult,
+		sourceUrls: sourceUrlResult,
 		dbUrls: dbUrlResult,
 		htaccess: htaccessResult,
 		restart: restartResult,
@@ -2753,6 +2928,7 @@ async function createSiteFromUpdraftBackup(body = {}) {
 	let gitSafety = null;
 	let coreResult = null;
 	let dbResult = null;
+	let friendlyCertResult = provisionResult.friendlyCert || null;
 
 	if (restoreFiles || restoreDb) {
 		coreResult = await ensureWordPressCore(localSite);
@@ -2835,6 +3011,8 @@ async function createSiteFromUpdraftBackup(body = {}) {
 		session,
 		gitSafety,
 		core: coreResult,
+		friendlyCert: friendlyCertResult,
+		friendlyUrls: friendlyCertResult ? friendlyCertResult.friendlyUrls : null,
 		smokeCode: dbResult ? dbResult.smokeCode : null,
 		smoke: dbResult ? dbResult.smoke : null,
 		codeSync: dbResult ? dbResult.codeSync : null,
@@ -3237,13 +3415,7 @@ async function friendlyCertificateCoversNames(certNames) {
 
 function certificateSanOutputCoversNames(output, certNames) {
 	const dnsNames = certNames.filter((name) => !/^[0-9:.]+$/.test(name));
-	const hasLocalhostWildcard = output.includes("DNS:*.localhost");
-	return dnsNames.every((name) => {
-		if (output.includes(`DNS:${name}`)) {
-			return true;
-		}
-		return hasLocalhostWildcard && /^[a-z0-9-]+\.localhost$/i.test(name);
-	});
+	return dnsNames.every((name) => output.includes(`DNS:${name}`));
 }
 
 async function liveFriendlyCertificateReport(certNames) {
@@ -3454,10 +3626,12 @@ async function friendlyProxyHelperReport() {
 		runProcess("launchctl", ["print", `system/${friendlyProxyLabel}`], { timeoutMs: 5000, trackJob: false }),
 		pathExists(friendlyProxySystemPlistPath),
 	]);
+	const supportsHotReload = Boolean(health.payload && Object.prototype.hasOwnProperty.call(health.payload, "tlsLoadedAt"));
 	return {
 		label: friendlyProxyLabel,
 		installed: plistExists,
 		healthy: health.ok,
+		supportsHotReload,
 		health,
 		launchctl: {
 			code: launchctl.code,
@@ -4052,6 +4226,9 @@ async function friendlyUrlReport() {
 	if (baseReady && liveCertificate.covers === false) {
 		issues.push("Friendly HTTPS helper is serving an old certificate. Run Install HTTPS Helper to reload the system helper.");
 	}
+	if (helper.healthy && !helper.supportsHotReload) {
+		issues.push("Friendly HTTPS helper is installed but needs one reinstall to auto-load new site certificates.");
+	}
 	if (!baseReady && (friendlyProxyState.https.errors || []).some((error) => error.code === "EACCES")) {
 		issues.push("Install the macOS helper to bind ports 80/443 without running the hub as root.");
 	}
@@ -4075,6 +4252,69 @@ async function friendlyUrlReport() {
 		http: { ...friendlyProxyState.http, owner: httpOwner },
 		https: { ...friendlyProxyState.https, owner: httpsOwner },
 		issues,
+	};
+}
+
+async function waitForLiveFriendlyCertificate(certNames, timeoutMs = 5000) {
+	const startedAt = Date.now();
+	let report = await liveFriendlyCertificateReport(certNames);
+	while (report.covers === false && Date.now() - startedAt < timeoutMs) {
+		await delay(500);
+		report = await liveFriendlyCertificateReport(certNames);
+	}
+	return report;
+}
+
+function siteUsesFriendlyHostname(site) {
+	const hostname = hostnameFromUrl(site?.localUrl || "");
+	return Boolean(hostname && (hostname === "localhost" || hostname.endsWith(".localhost")));
+}
+
+async function syncFriendlyCertificateAfterSiteChange(site, reason = "site-change") {
+	const localSite = siteWithRuntimeDefaults(site);
+	const startedAt = Date.now();
+	if (!friendlyUrlEnabled || !siteUsesFriendlyHostname(localSite)) {
+		return {
+			code: 0,
+			command: "friendly-cert-sync",
+			args: [localSite.slug, reason],
+			stdout: "Friendly HTTPS certificate sync skipped for this site URL.",
+			stderr: "",
+			durationMs: 0,
+			skipped: true,
+		};
+	}
+
+	await ensureFriendlyCertificate();
+	const certNames = await friendlyCertificateHostnames();
+	let liveCertificate = await waitForLiveFriendlyCertificate(certNames);
+	let restartResult = null;
+	if (liveCertificate.covers === false) {
+		restartResult = await restartFriendlyProxyHelper();
+		liveCertificate = await waitForLiveFriendlyCertificate(certNames);
+	}
+	const report = await friendlyUrlReport();
+	const code = report.ready ? 0 : 1;
+	return {
+		code,
+		command: "friendly-cert-sync",
+		args: [localSite.slug, reason],
+		stdout: [
+			report.ready
+				? `Friendly HTTPS certificate is ready for ${hostnameFromUrl(localSite.localUrl)}.`
+				: `Friendly HTTPS certificate was regenerated for ${hostnameFromUrl(localSite.localUrl)}, but the live helper has not reloaded it yet.`,
+			restartResult
+				? restartResult.code === 0
+					? "Friendly proxy helper reload requested."
+					: "Run Install HTTPS Helper once so future site certs hot-reload automatically."
+				: "",
+			report.issues.length ? `Friendly HTTPS issues:\n${report.issues.map((issue) => `- ${issue}`).join("\n")}` : "",
+		].filter(Boolean).join("\n"),
+		stderr: restartResult && restartResult.code !== 0 ? restartResult.stderr : "",
+		durationMs: Date.now() - startedAt,
+		friendlyUrls: report,
+		restart: restartResult,
+		liveCertificate,
 	};
 }
 
@@ -5549,6 +5789,20 @@ function formatSshConfigPreview(remoteSsh, remotePort, config) {
 	return lines.join("\n");
 }
 
+function sitegroundIdentityFile() {
+	return sanitizeOptionalIdentityFile(appSettings.sitegroundIdentityFile || defaultAppSettings.sitegroundIdentityFile, {
+		fallback: defaultAppSettings.sitegroundIdentityFile,
+	});
+}
+
+function sshIdentityFileForProvider(provider) {
+	return normalizeProvider(provider) === "siteground" ? sitegroundIdentityFile() : "";
+}
+
+function sshIdentityFileForSite(site) {
+	return sshIdentityFileForProvider(site?.provider || "");
+}
+
 function compactSshConfig(config) {
 	const keys = [
 		"hostname",
@@ -5572,9 +5826,14 @@ function compactSshConfig(config) {
 async function previewSshConfig(body) {
 	const remoteSsh = sanitizeRemoteSsh(body.remoteSsh);
 	const remotePort = sanitizeSshPort(body.remotePort || "");
+	const identityFile = sshIdentityFileForProvider(body.provider);
 	const args = ["-G", "-T", "-o", "BatchMode=yes"];
 	if (remotePort) {
 		args.push("-p", remotePort);
+	}
+	if (identityFile) {
+		args.push("-o", "IdentitiesOnly=yes");
+		args.push("-i", identityFile);
 	}
 	args.push(remoteSsh);
 	const result = await runProcess("ssh", args, { timeoutMs: 10000 });
@@ -5616,7 +5875,9 @@ async function inspectRemoteWordPress(body) {
 	});
 	const result = await runProcess(
 		"ssh",
-		sshArgs(remoteSsh, remotePort, buildWordPressInspectCommand({ provider, remotePath, candidates })),
+		sshArgs(remoteSsh, remotePort, buildWordPressInspectCommand({ provider, remotePath, candidates }), {
+			identityFile: sshIdentityFileForProvider(provider),
+		}),
 		{ timeoutMs: 30000 },
 	);
 	const parsed = parseKeyValueOutput(result.stdout);
@@ -5643,8 +5904,11 @@ async function runSshAction(body) {
 			}
 			const remoteSsh = sanitizeRemoteSsh(prepared.body.remoteSsh);
 			const remotePort = sanitizeSshPort(prepared.body.remotePort || "");
+			const provider = normalizeProvider(prepared.body.provider);
 			const command = "printf 'remote_user=%s\\nremote_host=%s\\nremote_pwd=%s\\n' \"$(whoami)\" \"$(hostname)\" \"$(pwd)\"";
-			const result = await runProcess("ssh", sshArgs(remoteSsh, remotePort, command), { timeoutMs: 20000 });
+			const result = await runProcess("ssh", sshArgs(remoteSsh, remotePort, command, {
+				identityFile: sshIdentityFileForProvider(provider),
+			}), { timeoutMs: 20000 });
 			const parsed = parseKeyValueOutput(result.stdout);
 			return {
 				...result,
@@ -5721,6 +5985,7 @@ async function runSshAction(body) {
 				runtimeStatus: "planned",
 			});
 			await writeManifest(site);
+			const friendlyCertResult = await syncFriendlyCertificateAfterSiteChange(site, "ssh-create-site");
 			return {
 				code: 0,
 				command: "ssh-create-site",
@@ -5732,21 +5997,24 @@ async function runSshAction(body) {
 					`Live URL: ${site.liveUrl || "not detected"}`,
 					"",
 					formatSshInspection(parsed),
+					friendlyCertResult.stdout,
 				].join("\n"),
-				stderr: result.stderr,
-				durationMs: result.durationMs,
+				stderr: [result.stderr, friendlyCertResult.stderr].filter(Boolean).join("\n"),
+				durationMs: (result.durationMs || 0) + (friendlyCertResult.durationMs || 0),
 				site,
 				inspection: parsed,
 				sshFields: resolveResult?.sshFields,
 				mrnDev: mrnDevContext,
+				friendlyCert: friendlyCertResult,
+				friendlyUrls: friendlyCertResult.friendlyUrls || null,
 			};
-		}
+			}
 		default:
 			throw httpError(400, `Unknown SSH action: ${action}`);
 	}
 }
 
-function sshArgs(remoteSsh, remotePort, remoteCommand) {
+function sshArgs(remoteSsh, remotePort, remoteCommand, options = {}) {
 	const args = [
 		"-o",
 		"BatchMode=yes",
@@ -5757,11 +6025,15 @@ function sshArgs(remoteSsh, remotePort, remoteCommand) {
 	if (port) {
 		args.push("-p", port);
 	}
+	if (options.identityFile) {
+		args.push("-o", "IdentitiesOnly=yes");
+		args.push("-i", sanitizeOptionalIdentityFile(options.identityFile));
+	}
 	args.push(sanitizeRemoteSsh(remoteSsh), remoteCommand);
 	return args;
 }
 
-function rsyncArgs({ dryRun, deleteFiles, source, dest, sshPort, excludes = [] }) {
+function rsyncArgs({ dryRun, deleteFiles, source, dest, sshPort, identityFile = "", excludes = [] }) {
 	const args = ["-az", "--human-readable", "--itemize-changes"];
 	if (dryRun) {
 		args.push("--dry-run");
@@ -5770,8 +6042,16 @@ function rsyncArgs({ dryRun, deleteFiles, source, dest, sshPort, excludes = [] }
 		args.push("--delete");
 	}
 	const port = sanitizeSshPort(sshPort || "");
+	const sshParts = ["ssh"];
 	if (port) {
-		args.push("-e", `ssh -p ${port}`);
+		sshParts.push("-p", port);
+	}
+	if (identityFile) {
+		sshParts.push("-o", "IdentitiesOnly=yes");
+		sshParts.push("-i", sanitizeOptionalIdentityFile(identityFile));
+	}
+	if (sshParts.length > 1) {
+		args.push("-e", sshParts.map((part) => shellQuote(part)).join(" "));
 	}
 	args.push(
 		"--exclude=.git/",
@@ -6362,13 +6642,14 @@ async function materializeRemoteWpSymlinks(site) {
 
 			const result = await runProcess(
 				"rsync",
-				rsyncArgs({
-					dryRun: false,
-					deleteFiles: true,
-					source: `${remoteSsh}:${sanitizeRemotePath(remoteTarget)}/`,
-					dest: `${localLink}/`,
-					sshPort: site.remotePort || "",
-				}),
+					rsyncArgs({
+						dryRun: false,
+						deleteFiles: true,
+						source: `${remoteSsh}:${sanitizeRemotePath(remoteTarget)}/`,
+						dest: `${localLink}/`,
+						sshPort: site.remotePort || "",
+						identityFile: sshIdentityFileForSite(site),
+					}),
 				{ cwd: site.localRoot },
 			);
 
@@ -8198,7 +8479,9 @@ async function remoteCodePathStatuses(site, relativePaths) {
 	].join("\n");
 	const result = await runProcess(
 		"ssh",
-		sshArgs(site.remoteSsh, site.remotePort || "", script),
+		sshArgs(site.remoteSsh, site.remotePort || "", script, {
+			identityFile: sshIdentityFileForSite(site),
+		}),
 		{ timeoutMs: 30000, trackJob: false },
 	);
 	const statuses = new Map();
@@ -8278,6 +8561,7 @@ async function checkDatabaseCodeSync(site) {
 						source,
 						dest,
 						sshPort: site.remotePort || "",
+						identityFile: sshIdentityFileForSite(site),
 					}),
 					{ cwd: site.localRoot, timeoutMs: 120000, trackJob: false },
 				);
@@ -8579,11 +8863,13 @@ async function provisionSite(site) {
 
 	let wpConfigResult = null;
 	let dbUrlResult = null;
+	let friendlyCertResult = null;
 	if (result.code === 0) {
 		nextSite = siteWithRuntimeDefaults(nextSite, { runtimeStatus: "provisioned" });
 		wpConfigResult = await writeLocalWpConfig(nextSite);
 		dbUrlResult = await normalizeLocalDatabaseUrls(nextSite);
 		await writeManifest(nextSite);
+		friendlyCertResult = await syncFriendlyCertificateAfterSiteChange(nextSite, "provision-site");
 	} else {
 		nextSite = siteWithRuntimeDefaults(nextSite, { runtimeStatus: "provision-error" });
 		await writeManifest(nextSite);
@@ -8600,12 +8886,20 @@ async function provisionSite(site) {
 			result.code === 0 ? `MariaDB: ${nextSite.dbName} as ${nextSite.dbUser} on ${nextSite.dbHost}:${nextSite.dbPort}` : "",
 			wpConfigResult ? formatWpConfigResult(wpConfigResult) : "",
 			dbUrlResult ? dbUrlResult.stdout : "",
+			friendlyCertResult ? friendlyCertResult.stdout : "",
 		].filter(Boolean).join("\n"),
-		stderr: [result.stderr, dbUrlResult ? dbUrlResult.stderr : ""].filter(Boolean).join("\n"),
+		stderr: [
+			result.stderr,
+			dbUrlResult ? dbUrlResult.stderr : "",
+			friendlyCertResult ? friendlyCertResult.stderr : "",
+		].filter(Boolean).join("\n"),
+		durationMs: (result.durationMs || 0) + (dbUrlResult ? dbUrlResult.durationMs || 0 : 0) + (friendlyCertResult ? friendlyCertResult.durationMs || 0 : 0),
 		runtimeContext: dbUrlResult ? dbUrlResult.runtimeContext : null,
 		site: nextSite,
 		wpConfig: wpConfigResult,
 		dbUrls: dbUrlResult,
+		friendlyCert: friendlyCertResult,
+		friendlyUrls: friendlyCertResult ? friendlyCertResult.friendlyUrls : null,
 		vhost: {
 			name: provision.vhostName,
 			hostname: provision.hostname,
@@ -8749,6 +9043,7 @@ async function stopSite(site) {
 async function pullPreflight(site, body = {}) {
 	const remoteSsh = sanitizeRemoteSsh(site.remoteSsh);
 	const remotePath = sanitizeRemotePath(site.remotePath);
+	const identityFile = sshIdentityFileForSite(site);
 	await ensureSiteDirectories(site);
 	const pullScope = await resolvePullFileScope(site, body);
 	const gitSafety = await gitSafetyReport(pullScope.localDestPath, {
@@ -8794,6 +9089,7 @@ async function pullPreflight(site, body = {}) {
 		source: pullScope.source,
 		dest: pullScope.dest,
 		sshPort: site.remotePort || "",
+		identityFile,
 		excludes: pullScope.excludes,
 	});
 	const pullArgs = rsyncArgs({
@@ -8802,9 +9098,10 @@ async function pullPreflight(site, body = {}) {
 		source: pullScope.source,
 		dest: pullScope.dest,
 		sshPort: site.remotePort || "",
+		identityFile,
 		excludes: pullScope.excludes,
 	});
-	const dbExportCommand = commandPreview("ssh", sshArgs(remoteSsh, site.remotePort || "", `cd ${shellQuote(remotePath)} && wp db export -`));
+	const dbExportCommand = commandPreview("ssh", sshArgs(remoteSsh, site.remotePort || "", `cd ${shellQuote(remotePath)} && wp db export -`, { identityFile }));
 	const status = issues.length ? "blocked" : warnings.length ? "ready with warnings" : "ready";
 	const stdout = [
 		`Pull preflight: ${site.slug}`,
@@ -8870,6 +9167,7 @@ async function pullPreflight(site, body = {}) {
 async function exportDatabase(site) {
 	const remoteSsh = sanitizeRemoteSsh(site.remoteSsh);
 	const remotePath = sanitizeRemotePath(site.remotePath);
+	const identityFile = sshIdentityFileForSite(site);
 	const dumpFile = path.join(site.localRoot, "dumps", `${timestampSlug()}-live.sql`);
 	await fsp.mkdir(path.dirname(dumpFile), { recursive: true });
 
@@ -8877,7 +9175,7 @@ async function exportDatabase(site) {
 		const startedAt = Date.now();
 		let stderr = "";
 		const out = fs.createWriteStream(dumpFile);
-		const child = childProcess.spawn("ssh", sshArgs(remoteSsh, site.remotePort || "", `cd ${shellQuote(remotePath)} && wp db export -`), {
+		const child = childProcess.spawn("ssh", sshArgs(remoteSsh, site.remotePort || "", `cd ${shellQuote(remotePath)} && wp db export -`, { identityFile }), {
 			cwd: repoRoot,
 			stdio: ["ignore", "pipe", "pipe"],
 		});
@@ -8927,6 +9225,7 @@ async function importDatabase(site, dumpFile) {
 			`--port=${dbPort}`,
 			`--user=${dbUser}`,
 			"--default-character-set=utf8mb4",
+			"--init-command=SET SESSION time_zone='+00:00'; SET SESSION sql_mode='NO_ENGINE_SUBSTITUTION,ALLOW_INVALID_DATES';",
 			dbName,
 		];
 		const child = childProcess.spawn("mysql", args, {
@@ -9071,6 +9370,7 @@ async function runSiteAction(site, body) {
 					source: pullScope.source,
 					dest: pullScope.dest,
 					sshPort: site.remotePort || "",
+					identityFile: sshIdentityFileForSite(site),
 					excludes: pullScope.excludes,
 				}),
 				{ cwd: site.localRoot },
@@ -9258,6 +9558,7 @@ async function runSiteAction(site, body) {
 					source,
 					dest,
 					sshPort: site.remotePort || "",
+					identityFile: sshIdentityFileForSite(site),
 				}),
 				{ cwd: site.localRoot },
 			);
@@ -9554,7 +9855,13 @@ async function route(req, res) {
 		if (await pathExists(manifestPathFor(site.localRoot))) {
 			throw httpError(409, `Site already exists: ${site.slug}`);
 		}
-		jsonResponse(res, 201, { site: await writeManifest(site) });
+		const savedSite = await writeManifest(site);
+		const friendlyCertResult = await syncFriendlyCertificateAfterSiteChange(savedSite, "create-site");
+		jsonResponse(res, 201, {
+			site: savedSite,
+			friendlyCert: friendlyCertResult,
+			friendlyUrls: friendlyCertResult.friendlyUrls || null,
+		});
 		return;
 	}
 
@@ -9578,7 +9885,15 @@ async function route(req, res) {
 					updated.activePhpHandler = "";
 				}
 			}
-			jsonResponse(res, 200, { site: await writeManifest(updated) });
+			const savedSite = await writeManifest(updated);
+			const friendlyCertResult = savedSite.localUrl !== site.localUrl
+				? await syncFriendlyCertificateAfterSiteChange(savedSite, "update-site")
+				: null;
+			jsonResponse(res, 200, {
+				site: savedSite,
+				friendlyCert: friendlyCertResult,
+				friendlyUrls: friendlyCertResult ? friendlyCertResult.friendlyUrls : null,
+			});
 			return;
 		}
 

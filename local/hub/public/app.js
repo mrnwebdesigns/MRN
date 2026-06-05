@@ -54,37 +54,85 @@ const state = {
 const providerPresets = {
 	generic: {
 		label: "Generic SSH",
+		slugLabel: "Site URL or slug",
+		slugPlaceholder: "https://example.org or client-site",
+		remoteSshLabel: "SSH alias or target",
 		remoteSshPlaceholder: "client-alias or user@server",
+		remotePortLabel: "Port",
+		remotePortPlaceholder: "22",
+		liveUrlLabel: "Live URL override",
+		liveUrlPlaceholder: "https://example.org",
+		remotePathLabel: "Remote WordPress root",
 		remotePathPlaceholder: "/home/user/public_html",
 		hint: "Use an SSH alias from ~/.ssh/config, then Prepare Connection tests SSH and inspects the WordPress root.",
 	},
 	mrndev: {
 		label: "MRN Dev",
+		slugLabel: "MRN Dev URL or slug",
+		slugPlaceholder: "https://site.mrndev.io or site-slug",
+		remoteSshLabel: "SSH target",
 		remoteSshPlaceholder: "auto: site-user@mrndev-site-owner",
+		remotePortLabel: "Port",
+		remotePortPlaceholder: "22",
+		liveUrlLabel: "Live URL override",
+		liveUrlPlaceholder: "https://site.mrndev.io",
+		remotePathLabel: "Remote WordPress root",
 		remotePathPlaceholder: "/home/site-user/htdocs/site.mrndev.io",
 		hint: "Enter a *.mrndev.io live URL or slug. Prepare Connection resolves the SSH target, finds the WordPress root, and inspects the site.",
 	},
 	runcloud: {
 		label: "RunCloud",
+		slugLabel: "Site URL or app slug",
+		slugPlaceholder: "https://example.org or runcloud-app",
+		remoteSshLabel: "RunCloud SSH alias or user@host",
 		remoteSshPlaceholder: "client-runcloud or siteuser@server",
+		remotePortLabel: "Port",
+		remotePortPlaceholder: "22",
+		liveUrlLabel: "Live URL override",
+		liveUrlPlaceholder: "https://example.org",
+		remotePathLabel: "RunCloud WordPress root",
 		remotePathPlaceholder: "/home/runcloud/webapps/app/public",
 		hint: "Use a RunCloud SSH alias or user@host. Prepare Connection tries common RunCloud roots and inspects WordPress.",
 	},
 	siteground: {
 		label: "SiteGround",
-		remoteSshPlaceholder: "client-siteground",
+		slugLabel: "Local slug or live URL",
+		slugPlaceholder: "https://example.org or client-site",
+		remoteSshLabel: "SiteGround SSH alias or user@host",
+		remoteSshPlaceholder: "siteground-alias or user@host",
+		remotePortLabel: "SiteGround SSH port",
+		remotePortPlaceholder: "18765",
+		liveUrlLabel: "Live URL",
+		liveUrlPlaceholder: "https://example.org",
+		remotePathLabel: "SiteGround WordPress root",
 		remotePathPlaceholder: "public_html or /home/customer/www/domain.com/public_html",
-		hint: "Use a SiteGround SSH alias from Site Tools. Prepare Connection can try public_html and domain roots.",
+		hint: "Enter the SSH details for this specific SiteGround site from Site Tools. These values stay with the site manifest, not an app-wide provider account.",
 	},
 	wpengine: {
 		label: "WP Engine",
-		remoteSshPlaceholder: "client-wpengine",
+		slugLabel: "Install or environment",
+		slugPlaceholder: "environment or https://site.wpenginepowered.com",
+		remoteSshLabel: "WP Engine SSH gateway",
+		remoteSshPlaceholder: "environment@environment.ssh.wpengine.net",
+		remotePortLabel: "Port",
+		remotePortPlaceholder: "22",
+		liveUrlLabel: "Live URL",
+		liveUrlPlaceholder: "https://example.org",
+		remotePathLabel: "WP Engine WordPress root",
 		remotePathPlaceholder: "sites/environment",
-		hint: "Use a WP Engine SSH Gateway alias. Prepare Connection can try sites/<environment> automatically.",
+		hint: "Enter this site's WP Engine install/environment and SSH gateway. These values stay with the site manifest, not an app-wide provider account.",
 	},
 	backup: {
 		label: "Backup Restore",
+		slugLabel: "Local slug",
+		slugPlaceholder: "",
+		remoteSshLabel: "SSH target",
 		remoteSshPlaceholder: "",
+		remotePortLabel: "Port",
+		remotePortPlaceholder: "",
+		liveUrlLabel: "Live URL",
+		liveUrlPlaceholder: "",
+		remotePathLabel: "Remote WordPress root",
 		remotePathPlaceholder: "",
 		hint: "Restore from selected backup files or AWS S3.",
 	},
@@ -238,6 +286,14 @@ const els = {
 	runtimePaths: document.querySelector("#runtimePaths"),
 	pullSummary: document.querySelector("#pullSummary"),
 	providerHint: document.querySelector("#providerHint"),
+	siteGroundFields: document.querySelector("#siteGroundFields"),
+	sshSlugLabel: document.querySelector("#sshSlugLabel"),
+	sshRemoteSshField: document.querySelector("#sshRemoteSshField"),
+	sshRemoteSshLabel: document.querySelector("#sshRemoteSshLabel"),
+	sshRemotePortField: document.querySelector("#sshRemotePortField"),
+	sshRemotePortLabel: document.querySelector("#sshRemotePortLabel"),
+	sshLiveUrlLabel: document.querySelector("#sshLiveUrlLabel"),
+	sshRemotePathLabel: document.querySelector("#sshRemotePathLabel"),
 	checklist: document.querySelector("#checklist"),
 	checklistSummary: document.querySelector("#checklistSummary"),
 	sshAliasOptions: document.querySelector("#sshAliasOptions"),
@@ -281,7 +337,7 @@ const sectionTabs = {
 		{ id: "runtime-details", label: "Details" },
 	],
 	providers: [
-		{ id: "providers-directory", label: "Provider Directory" },
+		{ id: "providers-directory", label: "Integrations" },
 	],
 	settings: [
 		{ id: "app-settings", label: "App Settings" },
@@ -483,6 +539,7 @@ function renderAppSettings() {
 	if (els.appSettingsForm && settings.sitesRoot) {
 		const fields = {
 			sitesRoot: settings.sitesRoot,
+			sitegroundIdentityFile: settings.sitegroundIdentityFile,
 			runtimeMemoryGiB: settings.runtimeMemoryGiB,
 			runtimeDiskGiB: settings.runtimeDiskGiB,
 		};
@@ -505,6 +562,7 @@ function renderAppSettings() {
 		els.appSettingsStatus.textContent = [
 			`Active sites folder: ${active.sitesRoot || settings.sitesRoot || "not set"}.`,
 			`Runtime allowance: ${memory} memory, ${disk} disk.`,
+			active.sitegroundIdentityFile ? `SiteGround identity file: ${active.sitegroundIdentityFile}.` : "SiteGround uses normal SSH config or the active SSH agent.",
 			envOverride ? "MRN_LOCAL_SITES_ROOT is set, so the environment overrides the saved sites folder." : "",
 		].filter(Boolean).join(" ");
 	}
@@ -667,6 +725,11 @@ async function api(path, options = {}) {
 
 function currentSite() {
 	return state.sites.find((site) => site.slug === state.currentSlug) || null;
+}
+
+function siteForButton(button) {
+	const slug = button?.dataset?.siteSlug || "";
+	return slug ? state.sites.find((site) => site.slug === slug) || null : currentSite();
 }
 
 function formatElapsed(startedAt) {
@@ -1092,19 +1155,17 @@ function actionPendingMessage(action, site, payload = {}) {
 }
 
 const buttonIdTooltips = {
-	refreshButton: "Reloads site manifests, runtime health, local tool checks, provider account status, and dashboard metrics. Useful after editing files outside the Hub or after a runtime command finishes.",
+	refreshButton: "Reloads site manifests, runtime health, local tool checks, integration status, and dashboard metrics. Useful after editing files outside the Hub or after a runtime command finishes.",
 	themeToggle: "Switches only the Hub UI theme. It does not change any local site, WordPress theme, or browser setting.",
 	desktopAlertsButton: "Enables portable browser desktop alerts for command failures, background completions, and longer-running jobs. Future native app builds can reuse this same alert path.",
-	saveAppSettingsButton: "Saves app-level defaults: local site storage folder and Lima runtime memory/disk allowances.",
+	saveAppSettingsButton: "Saves app-level defaults: local site storage folder, Lima runtime memory/disk allowances, and optional shared SSH identity paths.",
 	selectVisibleSitesButton: "Selects every site currently visible after search and filters. Hidden filtered-out sites are not selected.",
 	clearSiteSelectionButton: "Clears the bulk selection so Start Selected and Stop Selected no longer affect any sites.",
 	bulkStartSitesButton: "Runs Start/Provision for every selected site. This can create missing local DB/vhost resources, but it does not contact remote hosting.",
 	bulkStopSitesButton: "Marks selected sites stopped in the Hub. The shared Lima/OpenLiteSpeed runtime stays online, and remote hosting is not touched.",
-	wpEngineListButton: "Calls the configured WP Engine account credentials to list installs/environments, then lets you hand one off to the SSH import flow.",
-	siteGroundAddButton: "Stores this SiteGround SSH site entry locally so it can be selected later. It does not validate SSH until the Add Site connection step.",
 	saveAwsCredentialButton: "Stores AWS secrets in macOS Keychain and saves non-secret S3 defaults like label, region, bucket, and prefix for backup restore.",
 	cancelAwsCredentialEditButton: "Leaves the stored AWS key unchanged and clears the edit form.",
-	refreshProviderAccountsButton: "Reloads saved provider registries and environment-backed account credentials without changing any local site.",
+	refreshProviderAccountsButton: "Reloads saved integration credentials without changing any local site.",
 	addSiteCancelButton: "Exits the Add Site wizard and returns to All Sites. Anything already created by a completed step remains in place.",
 	addSiteBackButton: "Moves one wizard step back so you can revise the source or connection details before creating/importing.",
 	addSiteNextButton: "Validates the current wizard step. On the connection step it also prepares SSH by inspecting the remote WordPress root before continuing.",
@@ -1188,7 +1249,7 @@ const sectionTooltips = {
 	dashboard: "Server overview: CPU, memory, job activity, runtime health, and running-site cards.",
 	sites: "Site inventory: add sites, filter/bulk manage, open a site page, then pull, push, configure, or QA it.",
 	runtime: "Runtime controls: Lima/OpenLiteSpeed status, friendly HTTPS setup, maintenance, and generated config details.",
-	providers: "Provider Directory: manage external provider lookups, saved SiteGround entries, AWS keys, and S3 backup sources.",
+	providers: "Integrations: manage shared secure keys, AWS S3 sources, and external services that are not tied to one site.",
 	settings: "App Settings: local site storage, runtime allowances, and portable desktop alert preferences.",
 	logs: "Command log: review output from pulls, pushes, DB imports, runtime actions, and QA commands.",
 };
@@ -1210,7 +1271,7 @@ const tabTooltips = {
 	"runtime-https": "Configure friendly local HTTPS URLs.",
 	"runtime-maintenance": "Run runtime setup and repair actions.",
 	"runtime-details": "Show generated runtime paths and config details.",
-	"providers-directory": "Manage external provider directories and secure keys used by Add Site and backup restore.",
+	"providers-directory": "Manage shared integration keys used by Add Site and backup restore.",
 	"app-settings": "Manage Local Hub app defaults, runtime allowances, and desktop alerts.",
 	"logs-console": "Show deployment command output.",
 };
@@ -1222,9 +1283,7 @@ const chartTooltips = {
 };
 
 const buttonTextTooltips = {
-	"Add Site": "Starts the guided flow for either a blank local site or an SSH import from MRN Dev, RunCloud, SiteGround, WP Engine, or another host.",
-	Use: "Copies this discovered provider site's slug, live URL, SSH target, and path into the Add Site SSH form.",
-	Remove: "Removes this saved provider site entry from the local provider registry. It does not delete a site.",
+	"Add Site": "Starts the guided flow for either a blank local site, a backup restore, or an SSH import from MRN Dev, RunCloud, SiteGround, WP Engine, or another host.",
 	Cancel: "Closes the current flow/dialog without running the pending action.",
 	Confirm: "Runs the pending action after the required token has been typed exactly.",
 };
@@ -1254,7 +1313,7 @@ function selectedSiteLabel(site = currentSite()) {
 }
 
 function detailedTooltipForButton(button) {
-	const site = currentSite();
+	const site = siteForButton(button);
 	const siteName = selectedSiteLabel(site);
 	if (button.id === "pullFilesDbButton") {
 		const selection = safeCurrentPullSelection();
@@ -1511,6 +1570,20 @@ function friendlyUrlsReady() {
 	return Boolean(state.runtime?.friendlyUrls?.ready);
 }
 
+function friendlyUrlsFollowup(result = {}) {
+	const report = result.friendlyUrls || result.friendlyCert?.friendlyUrls || null;
+	if (!report || report.ready !== false) return "";
+	const issues = Array.isArray(report.issues) ? report.issues.filter(Boolean) : [];
+	return issues[0] || "Friendly HTTPS changed, but the helper has not reloaded the new certificate yet. Run Install HTTPS Helper once.";
+}
+
+function showFriendlyUrlsFollowup(result = {}) {
+	const message = friendlyUrlsFollowup(result);
+	if (message) {
+		showToast(message, "info");
+	}
+}
+
 function siteOpenBlockedReason(site) {
 	if (!site) return "Select a site first.";
 	if (site.runtimeStatus !== "provisioned") return "Start this site before opening it.";
@@ -1578,7 +1651,7 @@ function renderProviderFilterOptions() {
 	els.siteProviderFilter.textContent = "";
 	const allOption = document.createElement("option");
 	allOption.value = "all";
-	allOption.textContent = "All providers";
+	allOption.textContent = "All platforms";
 	els.siteProviderFilter.append(allOption);
 	for (const provider of providers) {
 		const option = document.createElement("option");
@@ -1814,6 +1887,16 @@ function sshFormData() {
 	new FormData(els.sshForm).forEach((value, key) => {
 		data[key] = value;
 	});
+	if (data.provider === "siteground") {
+		data.remoteSsh = derivedSiteGroundSshTarget(data) || data.remoteSsh;
+		data.remotePort = String(data.sitegroundPort || data.remotePort || "").trim();
+	}
+	if (data.provider === "wpengine" && !String(data.remoteSsh || "").trim()) {
+		data.remoteSsh = derivedWpEngineSshTarget(data);
+	}
+	delete data.sitegroundHost;
+	delete data.sitegroundUser;
+	delete data.sitegroundPort;
 	return data;
 }
 
@@ -1825,18 +1908,96 @@ function providerLabel(provider) {
 	return providerPreset(provider).label;
 }
 
+function setElementText(element, value) {
+	if (element && value) {
+		element.textContent = value;
+	}
+}
+
+function derivedSiteGroundSshTarget(values = {}) {
+	const user = String(values.sitegroundUser || "").trim();
+	const host = hostnameFromInput(values.sitegroundHost || "");
+	return user && host ? `${user}@${host}` : "";
+}
+
+function wpEngineEnvironmentFromInput(value) {
+	const raw = String(value || "").trim();
+	if (!raw) return "";
+	let host = hostnameFromInput(raw) || raw;
+	if (host.includes("@")) {
+		host = host.split("@").pop();
+	}
+	host = host.toLowerCase().replace(/^www\./, "");
+	let candidate = "";
+	if (host.endsWith(".ssh.wpengine.net")) {
+		candidate = host.replace(/\.ssh\.wpengine\.net$/i, "");
+	} else if (host.endsWith(".wpenginepowered.com")) {
+		candidate = host.replace(/\.wpenginepowered\.com$/i, "");
+	} else if (host.endsWith(".wpengine.com")) {
+		candidate = host.replace(/\.wpengine\.com$/i, "");
+	} else if (!host.includes(".")) {
+		candidate = host;
+	}
+	return candidate
+		.replace(/[^a-z0-9-]/g, "-")
+		.replace(/-+/g, "-")
+		.replace(/^-|-$/g, "");
+}
+
+function derivedWpEngineSshTarget(values = {}) {
+	const environment = wpEngineEnvironmentFromInput(values.slug) || wpEngineEnvironmentFromInput(values.liveUrl);
+	return environment ? `${environment}@${environment}.ssh.wpengine.net` : "";
+}
+
 function updateProviderHint() {
 	const provider = els.sshForm.elements.provider?.value || "generic";
 	const preset = providerPreset(provider);
+	const slug = els.sshForm.elements.slug;
 	const remoteSsh = els.sshForm.elements.remoteSsh;
+	const remotePort = els.sshForm.elements.remotePort;
+	const liveUrl = els.sshForm.elements.liveUrl;
 	const remotePath = els.sshForm.elements.remotePath;
+	const isSiteGround = provider === "siteground";
+	const wpEngineTarget = provider === "wpengine"
+		? derivedWpEngineSshTarget({
+			slug: slug?.value || "",
+			liveUrl: liveUrl?.value || "",
+		})
+		: "";
+	if (els.siteGroundFields) {
+		els.siteGroundFields.hidden = !isSiteGround;
+	}
+	if (els.sshRemoteSshField) {
+		els.sshRemoteSshField.hidden = isSiteGround;
+	}
+	if (els.sshRemotePortField) {
+		els.sshRemotePortField.hidden = isSiteGround;
+	}
+	setElementText(els.sshSlugLabel, preset.slugLabel);
+	setElementText(els.sshRemoteSshLabel, preset.remoteSshLabel);
+	setElementText(els.sshRemotePortLabel, preset.remotePortLabel);
+	setElementText(els.sshLiveUrlLabel, preset.liveUrlLabel);
+	setElementText(els.sshRemotePathLabel, preset.remotePathLabel);
+	if (slug) {
+		slug.placeholder = preset.slugPlaceholder;
+	}
 	if (remoteSsh) {
-		remoteSsh.placeholder = preset.remoteSshPlaceholder;
+		remoteSsh.placeholder = wpEngineTarget || preset.remoteSshPlaceholder;
+	}
+	if (remotePort) {
+		remotePort.placeholder = preset.remotePortPlaceholder;
+	}
+	if (liveUrl) {
+		liveUrl.placeholder = preset.liveUrlPlaceholder;
 	}
 	if (remotePath) {
 		remotePath.placeholder = preset.remotePathPlaceholder;
 	}
-	els.providerHint.textContent = preset.hint;
+	if (els.providerHint) {
+		els.providerHint.textContent = wpEngineTarget
+			? `${preset.hint} Inferred SSH target: ${wpEngineTarget}.`
+			: preset.hint;
+	}
 }
 
 function inferProviderFromAlias(alias) {
@@ -1921,14 +2082,25 @@ function validLocalSlug(value) {
 
 function addSiteSshValues() {
 	const form = els.sshForm;
-	return {
+	const values = {
 		provider: form?.elements.provider?.value || "generic",
 		slug: form?.elements.slug?.value.trim() || "",
 		liveUrl: form?.elements.liveUrl?.value.trim() || "",
 		remoteSsh: form?.elements.remoteSsh?.value.trim() || "",
 		remotePort: form?.elements.remotePort?.value.trim() || "",
 		remotePath: form?.elements.remotePath?.value.trim() || "",
+		sitegroundHost: form?.elements.sitegroundHost?.value.trim() || "",
+		sitegroundUser: form?.elements.sitegroundUser?.value.trim() || "",
+		sitegroundPort: form?.elements.sitegroundPort?.value.trim() || "",
 	};
+	if (values.provider === "siteground") {
+		values.remoteSsh = derivedSiteGroundSshTarget(values) || values.remoteSsh;
+		values.remotePort = values.sitegroundPort || values.remotePort;
+	}
+	if (values.provider === "wpengine" && !values.remoteSsh) {
+		values.remoteSsh = derivedWpEngineSshTarget(values);
+	}
+	return values;
 }
 
 function addSiteConnectionComplete() {
@@ -1943,6 +2115,9 @@ function addSiteConnectionComplete() {
 	const hasSiteIdentity = Boolean(values.slug || values.liveUrl || liveUrlFromIdentifier(values.slug));
 	if (values.provider === "mrndev") {
 		return hasSiteIdentity;
+	}
+	if (values.provider === "siteground") {
+		return hasSiteIdentity && Boolean(values.remoteSsh) && Boolean(values.remotePort);
 	}
 	return hasSiteIdentity && Boolean(values.remoteSsh);
 }
@@ -1987,7 +2162,16 @@ function addSiteValidationMessage() {
 		return "Enter the site URL or slug.";
 	}
 	if (values.provider !== "mrndev" && !values.remoteSsh) {
+		if (values.provider === "siteground") {
+			return "Enter the SiteGround hostname and username from this site's SSH Credentials card.";
+		}
+		if (values.provider === "wpengine") {
+			return "Enter the WP Engine environment or SSH gateway before continuing.";
+		}
 		return "Enter an SSH alias or target before continuing.";
+	}
+	if (values.provider === "siteground" && !values.remotePort) {
+		return "Enter the SiteGround SSH port from this site's SSH Credentials card.";
 	}
 	if (state.addSiteStep === "create") {
 		return "Ready to create the manifest and run the selected first import.";
@@ -2024,6 +2208,7 @@ function renderAddSiteSummary() {
 			["Provider", providerLabel(values.provider)],
 			["Site", values.liveUrl || values.slug || "Required"],
 			["SSH", values.remoteSsh || (values.provider === "mrndev" ? "Auto-resolved from MRN Dev" : "Required")],
+			["Port", values.remotePort || (values.provider === "siteground" ? "Required" : "Default SSH port")],
 			["Remote root", values.remotePath || "Auto-detect during inspection"],
 		);
 	}
@@ -2087,23 +2272,23 @@ function renderAddSiteWizard() {
 		els.sshCreateSiteButton.hidden = state.addSiteMode !== "ssh";
 		els.sshCreateSiteButton.disabled = state.busy || state.addSiteMode !== "ssh" || !addSiteStepComplete("create");
 	}
-		if (els.sshCreateImportButton) {
-			els.sshCreateImportButton.hidden = state.addSiteMode !== "ssh";
-			els.sshCreateImportButton.disabled = state.busy || state.addSiteMode !== "ssh" || !addSiteStepComplete("create");
-		}
-		if (els.createBackupSiteButton) {
-			els.createBackupSiteButton.hidden = state.addSiteMode !== "backup";
-			els.createBackupSiteButton.disabled = state.busy || state.addSiteMode !== "backup" || !addSiteStepComplete("create");
-		}
-		if (els.addSiteValidation) {
-			els.addSiteValidation.textContent = addSiteValidationMessage();
-		}
-		renderInitialImportOptions();
-		renderBackupRestoreOptions();
-		renderUpdraftSession();
-		renderAwsBackupResults();
-		renderAddSiteSummary();
+	if (els.sshCreateImportButton) {
+		els.sshCreateImportButton.hidden = state.addSiteMode !== "ssh";
+		els.sshCreateImportButton.disabled = state.busy || state.addSiteMode !== "ssh" || !addSiteStepComplete("create");
 	}
+	if (els.createBackupSiteButton) {
+		els.createBackupSiteButton.hidden = state.addSiteMode !== "backup";
+		els.createBackupSiteButton.disabled = state.busy || state.addSiteMode !== "backup" || !addSiteStepComplete("create");
+	}
+	if (els.addSiteValidation) {
+		els.addSiteValidation.textContent = addSiteValidationMessage();
+	}
+	renderInitialImportOptions();
+	renderBackupRestoreOptions();
+	renderUpdraftSession();
+	renderAwsBackupResults();
+	renderAddSiteSummary();
+}
 
 function setAddSiteStep(step) {
 	if (!addSiteSteps.includes(step)) return;
@@ -2176,74 +2361,7 @@ function providerSiteFields(site) {
 }
 
 function renderProviderDiscovery() {
-	if (!els.providerResults) return;
-
-	const accounts = state.providerAccounts?.accounts || {};
-	const wpEngine = accounts.wpengine || {};
-	if (els.wpEngineStatus) {
-		els.wpEngineStatus.textContent = wpEngine.envConfigured
-			? "Environment credentials are ready; UI credentials remain optional."
-			: "Enter credentials for one list call, or set Hub env vars.";
-	}
-
-	const sitegroundCount = state.discoveredSites.siteground.length;
-	if (els.siteGroundStatus) {
-		els.siteGroundStatus.textContent = `${sitegroundCount} saved local SiteGround entr${sitegroundCount === 1 ? "y" : "ies"}.`;
-	}
-
-	const sites = [
-		...state.discoveredSites.wpengine,
-		...state.discoveredSites.siteground,
-	].sort((a, b) => `${a.provider}:${a.slug}`.localeCompare(`${b.provider}:${b.slug}`));
-
-	els.providerDiscoverySummary.textContent = sites.length
-		? `${sites.length} provider site${sites.length === 1 ? "" : "s"} ready to hand off to SSH Import.`
-		: "No provider sites loaded yet.";
 	renderCredentials();
-
-	els.providerResults.textContent = "";
-	if (!sites.length) {
-		const empty = document.createElement("p");
-		empty.className = "mini-muted";
-		empty.textContent = "List WP Engine installs or save SiteGround SSH details to start.";
-		els.providerResults.append(empty);
-		return;
-	}
-
-	for (const site of sites) {
-		const item = document.createElement("article");
-		item.className = "provider-result";
-		const fields = providerSiteFields(site);
-		const meta = [
-			site.liveUrl || "no live URL",
-			fields.remoteSsh || "SSH target not set",
-			fields.remotePath || "auto path",
-		].join(" · ");
-		item.innerHTML = `
-			<div>
-				<span class="provider-badge">${escapeHtml(providerLabel(site.provider))}</span>
-				<strong>${escapeHtml(site.name || site.slug)}</strong>
-				<span>${escapeHtml(meta)}</span>
-			</div>
-			<div class="provider-result-actions"></div>
-		`;
-		const actions = item.querySelector(".provider-result-actions");
-		const useButton = document.createElement("button");
-		useButton.type = "button";
-		useButton.className = "action";
-		useButton.textContent = "Use";
-		useButton.addEventListener("click", () => useProviderSite(site));
-		actions.append(useButton);
-		if (site.provider === "siteground") {
-			const removeButton = document.createElement("button");
-			removeButton.type = "button";
-			removeButton.className = "ghost-button";
-			removeButton.textContent = "Remove";
-			removeButton.addEventListener("click", () => removeProviderSite(site));
-			actions.append(removeButton);
-		}
-		els.providerResults.append(item);
-	}
 }
 
 function awsStoredCredentials() {
@@ -2851,7 +2969,6 @@ function renderChecklist() {
 	const hasSites = state.sites.length > 0;
 	const hasProvisionedSite = state.sites.some((site) => site.runtimeStatus === "provisioned");
 	const hasPulledSite = state.sites.some((site) => site.runtimeStatus === "provisioned" && site.remoteSsh && site.remotePath);
-	const providerSiteCount = state.discoveredSites.wpengine.length + state.discoveredSites.siteground.length;
 	const backupSetCount = state.awsBackupGroups.length;
 	const credentialCount = state.credentials.length;
 	const items = [
@@ -2865,17 +2982,15 @@ function renderChecklist() {
 			detail: `${state.sshAliasReport?.aliasCount || 0} local aliases detected; MRN Dev, RunCloud, SiteGround, and WP Engine presets are ready.`,
 			status: "success",
 		},
-			{
-				label: "Provider discovery",
-				detail: providerSiteCount
-					? `${providerSiteCount} provider site${providerSiteCount === 1 ? "" : "s"} ready to load into SSH Import.`
-					: backupSetCount
-						? `${backupSetCount} S3 backup set${backupSetCount === 1 ? "" : "s"} ready to use for restore.`
-						: credentialCount
-							? `${credentialCount} secure API credential${credentialCount === 1 ? "" : "s"} stored for external services.`
-							: "WP Engine, SiteGround, AWS S3 backup discovery, and secure key storage are wired in.",
-				status: state.providerAccounts || backupSetCount || credentialCount ? "success" : "current",
-			},
+		{
+			label: "Integrations",
+			detail: backupSetCount
+				? `${backupSetCount} S3 backup set${backupSetCount === 1 ? "" : "s"} ready to use for restore.`
+				: credentialCount
+					? `${credentialCount} secure API credential${credentialCount === 1 ? "" : "s"} stored for external services.`
+					: "AWS S3 backup discovery and secure key storage are wired in. WP Engine and SiteGround are handled per site.",
+			status: state.providerAccounts || backupSetCount || credentialCount ? "success" : "current",
+		},
 		{
 			label: "OpenLiteSpeed runtime",
 			detail: runtimeRunning ? "Lima runtime is running with HTTP, admin, and MariaDB ports forwarded." : "Bootstrap or start the Lima runtime.",
@@ -3992,6 +4107,7 @@ function renderRuntime() {
 	const friendlyIssue = friendly?.issues?.[0] || "";
 	const helperInstalled = Boolean(friendly?.helper?.installed);
 	const helperHealthy = Boolean(friendly?.helper?.healthy);
+	const helperHotReload = Boolean(friendly?.helper?.supportsHotReload);
 	const certReady = friendly?.cert?.status === "ready";
 	const liveCertStale = friendly?.liveCertificate?.covers === false;
 	const firefoxTrust = friendly?.browserTrust?.firefox || null;
@@ -4007,8 +4123,8 @@ function renderRuntime() {
 	}
 	setPill(
 		els.httpsHelperStatusPill,
-		helperHealthy ? "Helper active" : helperInstalled ? "Helper installed" : "Helper missing",
-		helperHealthy ? "ok" : helperInstalled ? "" : "bad",
+		helperHealthy && !helperHotReload ? "Helper update needed" : helperHealthy ? "Helper active" : helperInstalled ? "Helper installed" : "Helper missing",
+		helperHealthy && !helperHotReload ? "warn" : helperHealthy ? "ok" : helperInstalled ? "" : "bad",
 	);
 	setPill(
 		els.httpsCertStatusPill,
@@ -4041,15 +4157,15 @@ function renderRuntime() {
 		els.friendlyStartButton.className = friendlyReady ? "ghost-button success-button" : helperInstalled ? "action" : "ghost-button";
 	}
 	if (els.installHttpsHelperButton) {
-		els.installHttpsHelperButton.textContent = helperInstalled ? "Reinstall" : "Install Helper";
-		els.installHttpsHelperButton.className = helperInstalled ? "ghost-button success-button" : "action";
+		els.installHttpsHelperButton.textContent = helperInstalled && !helperHotReload ? "Update Helper" : helperInstalled ? "Reinstall" : "Install Helper";
+		els.installHttpsHelperButton.className = helperInstalled && !helperHotReload ? "action" : helperInstalled ? "ghost-button success-button" : "action";
 	}
 	if (els.refreshSslCertButton) {
 		els.refreshSslCertButton.className = certReady && !liveCertStale ? "ghost-button success-button" : "ghost-button";
 	}
 	if (els.httpsInstallStepCard) {
-		els.httpsInstallStepCard.classList.toggle("done", helperInstalled);
-		els.httpsInstallStepCard.classList.toggle("active", !helperInstalled);
+		els.httpsInstallStepCard.classList.toggle("done", helperInstalled && helperHotReload);
+		els.httpsInstallStepCard.classList.toggle("active", !helperInstalled || !helperHotReload);
 		els.httpsInstallStepCard.classList.toggle("blocked", false);
 	}
 	if (els.friendlyUrlStepCard) {
@@ -4191,7 +4307,6 @@ async function refresh() {
 				siteground: { mode: "local-registry", count: 0 },
 			},
 			credentials: { credentials: [] },
-			sites: { siteground: [] },
 			error: error.message,
 		})),
 		api("/api/app-settings").catch(() => null),
@@ -4204,7 +4319,6 @@ async function refresh() {
 	state.sshAliasReport = sshAliasResponse;
 	state.sshAliases = sshAliasResponse.aliases || [];
 	state.providerAccounts = providerAccountsResponse;
-	state.discoveredSites.siteground = providerAccountsResponse.sites?.siteground || [];
 	state.credentials = providerAccountsResponse.credentials?.credentials || [];
 	if (state.currentSlug && !currentSite()) {
 		state.currentSlug = null;
@@ -4272,12 +4386,11 @@ async function refreshProviderAccounts(showMessage = true) {
 	try {
 		const response = await api("/api/provider-accounts");
 		state.providerAccounts = response;
-		state.discoveredSites.siteground = response.sites?.siteground || [];
 		state.credentials = response.credentials?.credentials || [];
 		renderProviderDiscovery();
 		renderChecklist();
 		if (showMessage) {
-			appendMessage("Provider discovery refreshed");
+			appendMessage("Integrations refreshed");
 		}
 	} catch (error) {
 		appendMessage(error.message, true);
@@ -4287,6 +4400,7 @@ async function refreshProviderAccounts(showMessage = true) {
 }
 
 async function listWpEngineSites() {
+	if (!els.wpEngineDiscoveryForm) return;
 	setBusy(true);
 	try {
 		const payload = {
@@ -4310,6 +4424,7 @@ async function listWpEngineSites() {
 }
 
 async function saveSiteGroundSite() {
+	if (!els.siteGroundRegistryForm) return;
 	setBusy(true);
 	try {
 		const response = await api("/api/provider-accounts/actions", {
@@ -4513,6 +4628,7 @@ async function createSite() {
 		state.currentSlug = response.site.slug;
 		els.newSlug.value = "";
 		await refresh();
+		showFriendlyUrlsFollowup(response);
 		setActiveTab(siteDefaultTab, "sites");
 		appendMessage(`Created ${response.site.slug}`);
 	} catch (error) {
@@ -4536,6 +4652,7 @@ async function runSiteActionStep(site, action, payload = {}, options = {}) {
 	if (action.startsWith("pull-") || action === "provision-site" || action === "smoke-check") {
 		updatePullReadiness(response.result.site || site, action, response.result);
 	}
+	showFriendlyUrlsFollowup(response.result);
 	return response.result;
 }
 
@@ -4671,6 +4788,7 @@ async function createSiteFromBackup() {
 			await refresh();
 			selectSite(response.result.site.slug);
 			setActiveTab(siteDefaultTab, "sites");
+			showFriendlyUrlsFollowup(response.result);
 			const site = currentSite() || response.result.site;
 			setSiteWarnings(site, "backup-restore", [
 				...smokeWarningItems(response.result.smoke),
@@ -4910,6 +5028,7 @@ async function runAction(action, siteOverride = null) {
 			state.currentSlug = response.result.site.slug;
 			await refresh();
 		}
+		showFriendlyUrlsFollowup(response.result);
 		if (action.startsWith("pull-") || action === "provision-site" || action === "start-site" || action === "stop-site" || action === "smoke-check") {
 			updatePullReadiness(site, action, response.result);
 		}
@@ -4989,6 +5108,7 @@ async function runSshAction(action, options = {}) {
 		if (response.result.site?.slug) {
 			state.currentSlug = response.result.site.slug;
 			await refresh();
+			showFriendlyUrlsFollowup(response.result);
 			if (options.navigateOnSite !== false) {
 				setActiveTab(siteDefaultTab, "sites");
 			}
@@ -5149,13 +5269,17 @@ els.selectVisibleSitesButton?.addEventListener("click", toggleVisibleSiteSelecti
 els.clearSiteSelectionButton?.addEventListener("click", clearSiteSelection);
 els.bulkStartSitesButton?.addEventListener("click", () => runBulkSiteAction("start-site"));
 els.bulkStopSitesButton?.addEventListener("click", () => runBulkSiteAction("stop-site"));
-els.sshForm?.addEventListener("input", renderAddSiteWizard);
+els.sshForm?.addEventListener("input", () => {
+	updateProviderHint();
+	renderAddSiteWizard();
+});
 els.sshForm?.elements.provider.addEventListener("change", () => {
 	updateProviderHint();
 	renderAddSiteWizard();
 });
 els.sshForm?.elements.slug.addEventListener("blur", () => {
 	syncImportIdentifier();
+	updateProviderHint();
 	renderAddSiteWizard();
 });
 els.refreshSshAliasesButton?.addEventListener("click", refreshSshAliases);
@@ -5164,11 +5288,11 @@ els.wpEngineListButton?.addEventListener("click", listWpEngineSites);
 els.siteGroundAddButton?.addEventListener("click", saveSiteGroundSite);
 els.saveAwsCredentialButton?.addEventListener("click", saveAwsCredential);
 els.cancelAwsCredentialEditButton?.addEventListener("click", resetAwsCredentialForm);
-els.wpEngineDiscoveryForm.addEventListener("submit", (event) => {
+els.wpEngineDiscoveryForm?.addEventListener("submit", (event) => {
 	event.preventDefault();
 	listWpEngineSites();
 });
-els.siteGroundRegistryForm.addEventListener("submit", (event) => {
+els.siteGroundRegistryForm?.addEventListener("submit", (event) => {
 	event.preventDefault();
 	saveSiteGroundSite();
 });

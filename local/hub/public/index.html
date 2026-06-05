@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>MRN Local Hub</title>
+		<title>TheHub | MRN Local</title>
 		<link rel="stylesheet" href="/styles.css">
 	</head>
 	<body>
@@ -11,8 +11,8 @@
 		<div class="app">
 			<aside class="sidebar" aria-label="Local Hub navigation">
 				<div class="brand">
-					<div class="brand-mark" aria-hidden="true">MRN</div>
-					<div>
+					<img class="brand-logo" src="/assets/thehub-icon.png" alt="TheHub">
+					<div class="brand-copy">
 						<strong>Local Hub</strong>
 						<span>MRN Web Designs</span>
 					</div>
@@ -28,9 +28,10 @@
 
 			<main class="workspace">
 				<header class="topbar">
-					<div>
+					<div class="masthead-brand">
 						<p class="eyebrow">True Local Runtime</p>
-						<h1>MRN Local Hub</h1>
+						<img class="app-logo" src="/assets/thehub-wordmark.png" alt="TheHub">
+						<span class="masthead-subtitle">MRN Local Hub</span>
 					</div>
 					<div class="top-actions">
 						<span id="toolStatus" class="pill">Checking</span>
@@ -50,7 +51,7 @@
 								</div>
 								<button id="refreshButton" type="button">Refresh</button>
 								<button type="button" data-section="settings">Settings</button>
-								<button type="button" data-section="providers">Provider Directory</button>
+								<button type="button" data-section="providers">Integrations</button>
 								<button type="button" data-section="runtime">Runtime</button>
 								<button type="button" data-section="logs">Logs</button>
 								<button id="themeToggle" type="button">Dark mode</button>
@@ -144,7 +145,7 @@
 						<div class="site-filter-grid">
 							<label class="field">
 								<span>Search</span>
-								<input id="siteSearchInput" type="search" autocomplete="off" placeholder="Name, URL, provider, SSH">
+								<input id="siteSearchInput" type="search" autocomplete="off" placeholder="Name, URL, platform, SSH">
 							</label>
 							<label class="field">
 								<span>Status</span>
@@ -156,9 +157,9 @@
 								</select>
 							</label>
 							<label class="field">
-								<span>Provider</span>
+								<span>Platform</span>
 								<select id="siteProviderFilter">
-									<option value="all">All providers</option>
+									<option value="all">All platforms</option>
 								</select>
 							</label>
 						</div>
@@ -195,6 +196,14 @@
 								<input name="sitesRoot" type="text" autocomplete="off" placeholder="~/Development/MRN-sites">
 							</label>
 							<div class="mini-heading">
+								<strong>Optional SSH Identity</strong>
+								<span>Leave blank to use normal SSH config or your active SSH agent. Add a file only when a host needs a specific identity.</span>
+							</div>
+							<label class="field wide">
+								<span>SiteGround identity file</span>
+								<input name="sitegroundIdentityFile" type="text" autocomplete="off" placeholder="Optional, e.g. ~/.ssh/siteground.pub">
+							</label>
+							<div class="mini-heading">
 								<strong>Runtime Allowance</strong>
 								<span>Used when generating or bootstrapping the Lima OpenLiteSpeed runtime.</span>
 							</div>
@@ -226,74 +235,18 @@
 					</div>
 				</section>
 
-				<section class="panel provider-discovery-panel provider-directory-panel app-tab-panel" data-tab-panel="providers-directory" aria-label="Provider directory">
+				<section class="panel provider-discovery-panel provider-directory-panel app-tab-panel" data-tab-panel="providers-directory" aria-label="Integrations">
 					<div class="section-heading">
 						<div class="panel-title inline-title">
-							<div class="panel-icon" aria-hidden="true">D</div>
+							<div class="panel-icon" aria-hidden="true">I</div>
 							<div>
 								<p class="eyebrow">Connections</p>
-								<h2>Provider Directory</h2>
-								<p>Manage provider-backed sites, account lookups, and secure keys for backup restores.</p>
+								<h2>Integrations</h2>
+								<p>Manage shared keys for services used across restores. SiteGround and WP Engine connection details are entered per site in Add Site.</p>
 							</div>
 						</div>
 					</div>
 						<div class="discovery-grid">
-							<form id="wpEngineDiscoveryForm" class="discovery-block" autocomplete="off">
-								<div class="mini-heading">
-									<strong>WP Engine</strong>
-									<span id="wpEngineStatus">Credentials are checked locally.</span>
-								</div>
-								<label class="field">
-									<span>API user ID</span>
-									<input name="userId" type="text" autocomplete="off" placeholder="Use env or enter for this call">
-								</label>
-								<label class="field">
-									<span>API password</span>
-									<input name="password" type="password" autocomplete="off" placeholder="Not saved">
-								</label>
-								<div class="actions">
-									<button id="wpEngineListButton" type="button" class="action">List WP Engine</button>
-								</div>
-							</form>
-
-							<form id="siteGroundRegistryForm" class="discovery-block" autocomplete="off">
-								<div class="mini-heading">
-									<strong>SiteGround</strong>
-									<span id="siteGroundStatus">Saved locally from Site Tools SSH details.</span>
-								</div>
-								<label class="field">
-									<span>Name</span>
-									<input name="name" type="text" placeholder="Client site">
-								</label>
-								<label class="field">
-									<span>Slug</span>
-									<input name="slug" type="text" placeholder="client-site">
-								</label>
-								<label class="field">
-									<span>Live URL</span>
-									<input name="liveUrl" type="url" placeholder="https://example.org">
-								</label>
-								<label class="field">
-									<span>SSH alias or target</span>
-									<input name="remoteSsh" type="text" list="sshAliasOptions" placeholder="client-siteground">
-								</label>
-								<label class="field">
-									<span>Port</span>
-									<input name="remotePort" type="text" inputmode="numeric" placeholder="18765">
-								</label>
-								<label class="field">
-									<span>Remote root</span>
-									<input name="remotePath" type="text" placeholder="public_html">
-								</label>
-								<label class="field wide">
-									<span>Notes</span>
-									<input name="notes" type="text" placeholder="Optional account/site note">
-								</label>
-								<div class="actions">
-									<button id="siteGroundAddButton" type="button" class="ghost-button">Save SiteGround</button>
-								</div>
-							</form>
-
 							<form id="awsCredentialForm" class="discovery-block credential-block" autocomplete="off">
 								<input name="id" type="hidden">
 								<div class="mini-heading">
@@ -333,15 +286,14 @@
 									<button id="cancelAwsCredentialEditButton" type="button" class="ghost-button" hidden>Cancel Edit</button>
 								</div>
 							</form>
-						</div>
-						<div class="discovery-results-header">
-							<div>
-								<h3>Discovered Sites</h3>
-								<p id="providerDiscoverySummary">No provider sites loaded yet.</p>
+							<div class="discovery-block integration-note">
+								<div class="mini-heading">
+									<strong>Per-site platforms</strong>
+									<span>Add Site handles these one site at a time.</span>
+								</div>
+								<div class="operation-status ok">WP Engine and SiteGround SSH details stay with each local site manifest instead of a shared account directory.</div>
 							</div>
-							<button id="refreshProviderAccountsButton" type="button" class="ghost-button">Refresh Providers</button>
 						</div>
-						<div id="providerResults" class="provider-results"></div>
 						<div class="discovery-results-header credential-results-header">
 							<div>
 								<h3>Secure Keys</h3>
@@ -432,33 +384,51 @@
 								</div>
 								<form id="sshForm" class="form-grid">
 									<label class="field">
-										<span>Provider</span>
+										<span>Platform</span>
 										<select name="provider">
 											<option value="mrndev">MRN Dev</option>
 											<option value="runcloud">RunCloud</option>
-											<option value="siteground">SiteGround</option>
-											<option value="wpengine">WP Engine</option>
+											<option value="siteground">SiteGround site</option>
+											<option value="wpengine">WP Engine environment</option>
 											<option value="generic">Generic SSH</option>
 										</select>
 									</label>
+									<div id="siteGroundFields" class="platform-fields wide" hidden>
+										<div class="mini-heading">
+											<strong>SiteGround SSH Credentials</strong>
+											<span>Paste the per-site values from Site Tools.</span>
+										</div>
+										<label class="field">
+											<span>Hostname</span>
+											<input name="sitegroundHost" type="text" autocomplete="off" placeholder="gvam1019.siteground.biz">
+										</label>
+										<label class="field">
+											<span>Username</span>
+											<input name="sitegroundUser" type="text" autocomplete="off" placeholder="u305-b44tyyid9gin">
+										</label>
+										<label class="field">
+											<span>Port</span>
+											<input name="sitegroundPort" type="text" inputmode="numeric" autocomplete="off" placeholder="18765">
+										</label>
+									</div>
 									<label class="field">
-										<span>Site URL or slug</span>
+										<span id="sshSlugLabel">Site URL or slug</span>
 										<input name="slug" type="text" placeholder="https://site.mrndev.io or site-slug">
 									</label>
-									<label class="field">
-										<span>SSH alias or target</span>
+									<label id="sshRemoteSshField" class="field">
+										<span id="sshRemoteSshLabel">SSH alias or target</span>
 										<input name="remoteSsh" type="text" list="sshAliasOptions" placeholder="siteuser@server">
 									</label>
-									<label class="field">
-										<span>Port</span>
+									<label id="sshRemotePortField" class="field">
+										<span id="sshRemotePortLabel">Port</span>
 										<input name="remotePort" type="text" inputmode="numeric" placeholder="22">
 									</label>
 									<label class="field">
-										<span>Live URL override</span>
+										<span id="sshLiveUrlLabel">Live URL override</span>
 										<input name="liveUrl" type="url" placeholder="https://example.org">
 									</label>
 									<label class="field wide">
-										<span>Remote WordPress root</span>
+										<span id="sshRemotePathLabel">Remote WordPress root</span>
 										<input name="remotePath" type="text" placeholder="/home/runcloud/webapps/app/public">
 									</label>
 									<div id="providerHint" class="provider-hint wide">Enter a *.mrndev.io live URL or slug. Prepare Connection resolves the SSH target, finds the WordPress root, and inspects the site.</div>

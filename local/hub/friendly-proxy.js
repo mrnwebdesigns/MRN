@@ -37,6 +37,46 @@ const config = {
 	httpsPort: Number(argValue("https-port", String(defaults.httpsPort))),
 };
 
+const httpsServers = [];
+let tlsReloadTimer = null;
+let tlsLoadedAt = "";
+let tlsReloadError = "";
+
+function readTlsOptions() {
+	return {
+		cert: fs.readFileSync(config.cert),
+		key: fs.readFileSync(config.key),
+	};
+}
+
+function reloadTlsContext() {
+	try {
+		const options = readTlsOptions();
+		for (const server of httpsServers) {
+			if (typeof server.setSecureContext === "function") {
+				server.setSecureContext(options);
+			}
+		}
+		tlsLoadedAt = new Date().toISOString();
+		tlsReloadError = "";
+		process.stdout.write(`${JSON.stringify({ service: "mrn-local-friendly-proxy", event: "tls-reloaded", at: tlsLoadedAt })}\n`);
+	} catch (error) {
+		tlsReloadError = error.message || String(error);
+		process.stderr.write(`Could not reload local TLS certificate: ${tlsReloadError}\n`);
+	}
+}
+
+function scheduleTlsReload() {
+	clearTimeout(tlsReloadTimer);
+	tlsReloadTimer = setTimeout(reloadTlsContext, 500);
+}
+
+function watchTlsFiles() {
+	for (const filePath of [config.cert, config.key]) {
+		fs.watchFile(filePath, { interval: 1000 }, scheduleTlsReload);
+	}
+}
+
 function stripHostPort(hostHeader) {
 	const hostText = String(hostHeader || "").trim();
 	if (!hostText) {
@@ -79,6 +119,8 @@ function proxyRequest(req, res) {
 			target: `http://${config.targetHost}:${config.targetPort}`,
 			hub: `https://${config.hubHostname}`,
 			hubTarget: `http://${config.hubTargetHost}:${config.hubTargetPort}`,
+			tlsLoadedAt,
+			tlsReloadError,
 			now: new Date().toISOString(),
 		}));
 		return;
@@ -133,13 +175,10 @@ function createHttpRedirectServer() {
 }
 
 function createHttpsProxyServer() {
-	return https.createServer(
-		{
-			cert: fs.readFileSync(config.cert),
-			key: fs.readFileSync(config.key),
-		},
-		proxyRequest,
-	);
+	const server = https.createServer(readTlsOptions(), proxyRequest);
+	httpsServers.push(server);
+	tlsLoadedAt = tlsLoadedAt || new Date().toISOString();
+	return server;
 }
 
 function listen(server, port, address) {
@@ -188,8 +227,12 @@ async function main() {
 		process.stderr.write("No HTTPS listener started. Is another app using port 443?\n");
 		process.exit(1);
 	}
+	watchTlsFiles();
 
 	const shutdown = () => {
+		for (const filePath of [config.cert, config.key]) {
+			fs.unwatchFile(filePath);
+		}
 		for (const server of servers) {
 			server.close();
 		}
