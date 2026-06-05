@@ -9,12 +9,23 @@ const http = require("http");
 const https = require("https");
 const os = require("os");
 const path = require("path");
+const { Readable } = require("stream");
 const { URL } = require("url");
 
 const repoRoot = path.resolve(__dirname, "../..");
 const publicRoot = path.join(__dirname, "public");
-const defaultSitesRoot = "/Users/khofmeyer/Development/MRN-sites";
-const sitesRoot = path.resolve(process.env.MRN_LOCAL_SITES_ROOT || defaultSitesRoot);
+const homeDir = process.env.HOME || os.homedir();
+const defaultSitesRoot = path.join(homeDir, "Development", "MRN-sites");
+const defaultAppDataRoot = path.join(homeDir, ".mrn-local-hub");
+const appDataRoot = path.resolve(process.env.MRN_LOCAL_HUB_DATA_ROOT || defaultAppDataRoot);
+const appSettingsFile = path.join(appDataRoot, "settings.json");
+const defaultAppSettings = {
+	sitesRoot: defaultSitesRoot,
+	runtimeMemoryGiB: 3,
+	runtimeDiskGiB: 30,
+};
+let appSettings = readAppSettingsSync();
+let sitesRoot = path.resolve(process.env.MRN_LOCAL_SITES_ROOT || appSettings.sitesRoot || defaultSitesRoot);
 const host = process.env.MRN_LOCAL_HUB_HOST || "127.0.0.1";
 const port = Number(process.env.MRN_LOCAL_HUB_PORT || "5678");
 const commandTimeoutMs = Number(process.env.MRN_LOCAL_HUB_COMMAND_TIMEOUT_MS || "300000");
@@ -62,7 +73,6 @@ const friendlyProxyStderrPath = path.join(runtimeWorkRoot, "friendly-proxy.err.l
 const firefoxProfilesRoot = path.join(os.homedir(), "Library", "Application Support", "Firefox", "Profiles");
 const firefoxEnterpriseRootsPref = "security.enterprise_roots.enabled";
 const macosLoginKeychainPath = path.join(os.homedir(), "Library", "Keychains", "login.keychain-db");
-const homeDir = process.env.HOME || "";
 const activeJobs = new Map();
 const diskUsageCache = new Map();
 const gitStatusCache = new Map();
@@ -77,6 +87,7 @@ const friendlyProxyState = {
 let memoryCache = null;
 let nextJobId = 1;
 let cpuSample = null;
+let runtimeWpCliReady = false;
 
 const defaultPhpVersion = "8.4";
 const phpRuntimeVersions = ["7.4", "8.1", "8.2", "8.3", "8.4"];
@@ -84,8 +95,9 @@ const legacyPhpVersions = new Set(["7.4"]);
 const phpRuntimeModuleNames = ["common", "mysql", "curl", "imagick", "intl", "opcache", "redis"];
 
 const manifestFileName = ".mrn-site.json";
-const providerRegistryFile = path.join(sitesRoot, ".mrn-provider-sites.json");
-const credentialRegistryFile = path.join(sitesRoot, ".mrn-credentials.json");
+let providerRegistryFile = path.join(sitesRoot, ".mrn-provider-sites.json");
+let credentialRegistryFile = path.join(sitesRoot, ".mrn-credentials.json");
+const awsBackupIndexFile = path.join(appDataRoot, "aws-backup-index.json");
 const allowedManifestFields = new Set([
 	"slug",
 	"title",
@@ -147,6 +159,123 @@ const providerPresets = {
 		hint: "Restore from local UpdraftPlus backup files or an AWS S3 backup set.",
 	},
 };
+
+function expandHomePath(input) {
+	const raw = String(input || "").trim();
+	if (raw === "~") {
+		return homeDir;
+	}
+	if (raw.startsWith("~/")) {
+		return path.join(homeDir, raw.slice(2));
+	}
+	return raw;
+}
+
+function sanitizeStorageRoot(input, options = {}) {
+	const raw = String(input || "").trim();
+	if (!raw) {
+		if (options.fallback) return path.resolve(options.fallback);
+		throw httpError(400, "Site storage folder is required.");
+	}
+	if (/[\0\r\n]/.test(raw) || raw.length > 4096) {
+		throw httpError(400, "Site storage folder contains unsupported characters.");
+	}
+	return path.resolve(expandHomePath(raw));
+}
+
+function sanitizeRuntimeGiB(input, label, options = {}) {
+	const fallback = Number(options.fallback || 1);
+	const value = Number(input || fallback);
+	const min = Number(options.min || 1);
+	const max = Number(options.max || 1024);
+	if (!Number.isFinite(value) || value < min || value > max) {
+		throw httpError(400, `${label} must be between ${min} and ${max} GiB.`);
+	}
+	return Math.round(value * 10) / 10;
+}
+
+function sanitizeAppSettings(input = {}) {
+	return {
+		sitesRoot: sanitizeStorageRoot(input.sitesRoot || defaultAppSettings.sitesRoot, { fallback: defaultAppSettings.sitesRoot }),
+		runtimeMemoryGiB: sanitizeRuntimeGiB(input.runtimeMemoryGiB, "Memory allowance", {
+			fallback: defaultAppSettings.runtimeMemoryGiB,
+			min: 1,
+			max: 64,
+		}),
+		runtimeDiskGiB: sanitizeRuntimeGiB(input.runtimeDiskGiB, "Disk allowance", {
+			fallback: defaultAppSettings.runtimeDiskGiB,
+			min: 10,
+			max: 1024,
+		}),
+	};
+}
+
+function readAppSettingsSync() {
+	try {
+		const raw = fs.readFileSync(appSettingsFile, "utf8");
+		return sanitizeAppSettings(JSON.parse(raw));
+	} catch {
+		return sanitizeAppSettings(defaultAppSettings);
+	}
+}
+
+function applyAppSettings(nextSettings) {
+	appSettings = sanitizeAppSettings(nextSettings);
+	sitesRoot = path.resolve(process.env.MRN_LOCAL_SITES_ROOT || appSettings.sitesRoot || defaultSitesRoot);
+	providerRegistryFile = path.join(sitesRoot, ".mrn-provider-sites.json");
+	credentialRegistryFile = path.join(sitesRoot, ".mrn-credentials.json");
+	diskUsageCache.clear();
+	gitStatusCache.clear();
+}
+
+function appSettingsReport(extra = {}) {
+	const envOverrides = {
+		sitesRoot: Boolean(process.env.MRN_LOCAL_SITES_ROOT),
+		dataRoot: Boolean(process.env.MRN_LOCAL_HUB_DATA_ROOT),
+	};
+	return {
+		settings: appSettings,
+		defaults: defaultAppSettings,
+		active: {
+			sitesRoot,
+			providerRegistryFile,
+			credentialRegistryFile,
+			runtimeMemory: `${appSettings.runtimeMemoryGiB}GiB`,
+			runtimeDisk: `${appSettings.runtimeDiskGiB}GiB`,
+		},
+		storage: {
+			appDataRoot,
+			settingsFile: appSettingsFile,
+		},
+		envOverrides,
+		...extra,
+	};
+}
+
+async function saveAppSettings(input = {}) {
+	const previous = { ...appSettings, activeSitesRoot: sitesRoot };
+	const next = sanitizeAppSettings(input);
+	await fsp.mkdir(appDataRoot, { recursive: true });
+	await fsp.writeFile(appSettingsFile, `${JSON.stringify({ ...next, updatedAt: new Date().toISOString() }, null, 2)}\n`, "utf8");
+	applyAppSettings(next);
+	await fsp.mkdir(sitesRoot, { recursive: true });
+	const sitesRootChanged = previous.activeSitesRoot !== sitesRoot;
+	return appSettingsReport({
+		result: {
+			code: 0,
+			command: "app-settings-save",
+			args: [sitesRoot, `${appSettings.runtimeMemoryGiB}GiB`, `${appSettings.runtimeDiskGiB}GiB`],
+			stdout: sitesRootChanged
+				? "App settings saved. Site storage changed; existing sites are not moved automatically."
+				: "App settings saved.",
+			stderr: "",
+			durationMs: 0,
+			sitesRootChanged,
+			requiresRuntimeBootstrap: previous.runtimeMemoryGiB !== appSettings.runtimeMemoryGiB
+				|| previous.runtimeDiskGiB !== appSettings.runtimeDiskGiB,
+		},
+	});
+}
 
 function jsonResponse(res, statusCode, payload) {
 	const body = JSON.stringify(payload, null, 2);
@@ -600,6 +729,8 @@ async function writeCredentialRegistry(registry) {
 			provider: String(credential.provider || "").trim().toLowerCase(),
 			label: sanitizeCredentialLabel(credential.label),
 			region: sanitizeAwsRegion(credential.region || ""),
+			s3Bucket: credential.s3Bucket ? sanitizeS3Bucket(credential.s3Bucket) : "",
+			s3Prefix: sanitizeS3Prefix(credential.s3Prefix || ""),
 			storage: "macos-keychain",
 			hasAccessKeyId: Boolean(credential.hasAccessKeyId),
 			hasSecretAccessKey: Boolean(credential.hasSecretAccessKey),
@@ -623,6 +754,8 @@ function credentialPublicSummary(credential) {
 		provider: credential.provider,
 		label: credential.label,
 		region: credential.region || "",
+		s3Bucket: credential.s3Bucket || "",
+		s3Prefix: credential.s3Prefix || "",
 		storage: credential.storage || "macos-keychain",
 		hasAccessKeyId: Boolean(credential.hasAccessKeyId),
 		hasSecretAccessKey: Boolean(credential.hasSecretAccessKey),
@@ -639,6 +772,117 @@ async function credentialSummary() {
 		storage: process.platform === "darwin" ? "macos-keychain" : "unsupported",
 		credentials: registry.credentials.map(credentialPublicSummary),
 	};
+}
+
+async function readAwsBackupIndexRegistry() {
+	try {
+		const raw = await fsp.readFile(awsBackupIndexFile, "utf8");
+		const parsed = JSON.parse(raw);
+		return {
+			version: 1,
+			indexes: parsed.indexes && typeof parsed.indexes === "object" ? parsed.indexes : {},
+			updatedAt: parsed.updatedAt || "",
+		};
+	} catch (error) {
+		if (error.code === "ENOENT") {
+			return { version: 1, indexes: {}, updatedAt: "" };
+		}
+		throw error;
+	}
+}
+
+async function writeAwsBackupIndexRegistry(registry) {
+	const next = {
+		version: 1,
+		indexes: registry.indexes && typeof registry.indexes === "object" ? registry.indexes : {},
+		updatedAt: new Date().toISOString(),
+	};
+	await fsp.mkdir(appDataRoot, { recursive: true });
+	await fsp.writeFile(awsBackupIndexFile, `${JSON.stringify(next, null, 2)}\n`, "utf8");
+	return next;
+}
+
+function awsBackupIndexSource(body = {}, credential = null) {
+	const credentialId = String(body.credentialId || body.awsCredentialId || "").trim();
+	const profile = sanitizeAwsProfile(body.profile || "");
+	const bucket = sanitizeS3Bucket(body.bucket || "");
+	const prefix = sanitizeS3Prefix(body.prefix || "");
+	const region = sanitizeAwsRegion(body.region || credential?.region || "");
+	const identity = credentialId ? `credential:${sanitizeCredentialId(credentialId)}` : profile ? `profile:${profile}` : "aws-cli:default";
+	return {
+		key: [identity, region || "auto-region", bucket, prefix || "/"].join("|"),
+		identity,
+		credentialId: credentialId ? sanitizeCredentialId(credentialId) : "",
+		profile,
+		credentialLabel: credential?.label || "",
+		bucket,
+		prefix,
+		region,
+	};
+}
+
+function folderPrefixesFromFiles(files = [], rootPrefix = "") {
+	const prefixes = new Set();
+	const root = String(rootPrefix || "");
+	for (const file of files) {
+		const key = String(file.key || "");
+		if (!key.startsWith(root)) continue;
+		const relative = key.slice(root.length);
+		const parts = relative.split("/");
+		let current = root;
+		for (let index = 0; index < parts.length - 1; index += 1) {
+			current += `${parts[index]}/`;
+			prefixes.add(current);
+		}
+	}
+	return [...prefixes].sort((a, b) => a.localeCompare(b));
+}
+
+function compactAwsBackupIndex(index) {
+	if (!index) return null;
+	return {
+		source: index.source,
+		scannedAt: index.scannedAt,
+		fileCount: index.files?.length || 0,
+		folderCount: index.prefixes?.length || 0,
+		groupCount: index.groups?.length || 0,
+		truncated: Boolean(index.truncated),
+	};
+}
+
+async function storeAwsBackupIndex(body, result, credential = null) {
+	if (result.code !== 0) return null;
+	const source = awsBackupIndexSource(body, credential);
+	const files = Array.isArray(result.files) ? result.files : [];
+	const prefixes = [...new Set([
+		...(Array.isArray(result.prefixes) ? result.prefixes : []),
+		...folderPrefixesFromFiles(files, source.prefix),
+	])].sort((a, b) => a.localeCompare(b));
+	const index = {
+		source,
+		scannedAt: new Date().toISOString(),
+		region: result.region || source.region || "",
+		files,
+		prefixes,
+		groups: Array.isArray(result.groups) ? result.groups : [],
+		truncated: Boolean(result.truncated),
+	};
+	const registry = await readAwsBackupIndexRegistry();
+	registry.indexes[source.key] = index;
+	await writeAwsBackupIndexRegistry(registry);
+	return index;
+}
+
+async function getStoredAwsBackupIndex(body = {}) {
+	let credential = null;
+	const credentialId = String(body.credentialId || body.awsCredentialId || "").trim();
+	if (credentialId) {
+		const registry = await readCredentialRegistry();
+		credential = registry.credentials.find((item) => item.id === sanitizeCredentialId(credentialId) && item.provider === "aws") || null;
+	}
+	const source = awsBackupIndexSource(body, credential);
+	const registry = await readAwsBackupIndexRegistry();
+	return registry.indexes[source.key] || null;
 }
 
 function credentialKeychainAccount(credentialId, field) {
@@ -706,17 +950,27 @@ async function saveAwsCredential(input = {}) {
 	const label = sanitizeCredentialLabel(input.label || input.name || "");
 	const id = input.id ? sanitizeCredentialId(input.id) : makeCredentialId("aws", label);
 	const region = sanitizeAwsRegion(input.region || "");
-	const accessKeyId = sanitizeAwsSecret(input.accessKeyId || input.awsAccessKeyId || "", "AWS access key ID", { required: true });
-	const secretAccessKey = sanitizeAwsSecret(input.secretAccessKey || input.awsSecretAccessKey || "", "AWS secret access key", { required: true });
-	const sessionToken = sanitizeAwsSecret(input.sessionToken || input.awsSessionToken || "", "AWS session token");
+	const s3BucketRaw = String(input.s3Bucket || input.bucket || "").trim();
+	const s3Bucket = s3BucketRaw ? sanitizeS3Bucket(s3BucketRaw) : "";
+	const s3Prefix = sanitizeS3Prefix(input.s3Prefix || input.prefix || "");
+	if (!s3Bucket && s3Prefix) {
+		throw httpError(400, "Default S3 bucket is required when a default S3 prefix is set.");
+	}
 	const registry = await readCredentialRegistry();
 	const existing = registry.credentials.find((credential) => credential.id === id);
+	const accessKeyId = sanitizeAwsSecret(input.accessKeyId || input.awsAccessKeyId || "", "AWS access key ID", { required: !existing });
+	const secretAccessKey = sanitizeAwsSecret(input.secretAccessKey || input.awsSecretAccessKey || "", "AWS secret access key", { required: !existing });
+	const sessionToken = sanitizeAwsSecret(input.sessionToken || input.awsSessionToken || "", "AWS session token");
 
-	await setKeychainSecret(id, "accessKeyId", accessKeyId);
-	await setKeychainSecret(id, "secretAccessKey", secretAccessKey);
+	if (accessKeyId) {
+		await setKeychainSecret(id, "accessKeyId", accessKeyId);
+	}
+	if (secretAccessKey) {
+		await setKeychainSecret(id, "secretAccessKey", secretAccessKey);
+	}
 	if (sessionToken) {
 		await setKeychainSecret(id, "sessionToken", sessionToken);
-	} else {
+	} else if (!existing) {
 		await deleteKeychainSecret(id, "sessionToken");
 	}
 
@@ -725,10 +979,12 @@ async function saveAwsCredential(input = {}) {
 		provider: "aws",
 		label,
 		region,
+		s3Bucket,
+		s3Prefix,
 		storage: "macos-keychain",
-		hasAccessKeyId: true,
-		hasSecretAccessKey: true,
-		hasSessionToken: Boolean(sessionToken),
+		hasAccessKeyId: Boolean(accessKeyId || existing?.hasAccessKeyId),
+		hasSecretAccessKey: Boolean(secretAccessKey || existing?.hasSecretAccessKey),
+		hasSessionToken: Boolean(sessionToken || existing?.hasSessionToken),
 		createdAt: existing?.createdAt || now,
 		updatedAt: now,
 	};
@@ -742,7 +998,7 @@ async function saveAwsCredential(input = {}) {
 		code: 0,
 		command: "credential-save",
 		args: ["aws", id],
-		stdout: `Saved AWS credential "${label}" to macOS Keychain.`,
+		stdout: `Saved AWS credential "${label}"${s3Bucket ? ` with default source ${s3Uri(s3Bucket, s3Prefix)}` : ""}.`,
 		stderr: "",
 		durationMs: 0,
 		credential: credentialPublicSummary(credential),
@@ -799,31 +1055,21 @@ async function awsEnvFromCredential(credentialId) {
 
 async function testAwsCredential(input = {}) {
 	const id = sanitizeCredentialId(input.id || input.credentialId || "");
-	const aws = await commandExists("aws");
-	if (!aws.ok) {
-		return {
-			code: 1,
-			command: "credential-test",
-			args: ["aws", id],
-			stdout: "",
-			stderr: "AWS CLI is not installed or not on PATH.",
-			durationMs: 0,
-		};
+	const registry = await readCredentialRegistry();
+	const credential = registry.credentials.find((item) => item.id === id && item.provider === "aws");
+	if (!credential) {
+		throw httpError(400, "Stored AWS credential was not found.");
 	}
-	const { credential, env } = await awsEnvFromCredential(id);
-	const result = await runProcess("aws", [
-		"sts",
-		"get-caller-identity",
-		"--output",
-		"json",
-	], { timeoutMs: 30000, trackJob: false, env });
+	const result = await testAwsBackupConnection({
+		credentialId: id,
+		region: input.region || credential.region || "",
+		bucket: input.bucket || credential.s3Bucket || "",
+		prefix: input.prefix || credential.s3Prefix || "",
+	});
 	return {
 		...result,
 		command: "credential-test",
-		args: ["aws", credential.id],
-		stdout: result.code === 0
-			? `AWS credential "${credential.label}" is valid; STS caller identity returned successfully.`
-			: result.stdout,
+		args: ["aws", credential.id, credential.s3Bucket ? s3Uri(credential.s3Bucket, credential.s3Prefix) : "no-default-bucket"],
 	};
 }
 
@@ -1223,6 +1469,359 @@ async function awsCliContext(input = {}) {
 	return { args: [], env, credential };
 }
 
+function awsPercentEncode(value) {
+	return encodeURIComponent(String(value))
+		.replace(/[!'()*]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
+}
+
+function awsCanonicalQuery(params = {}) {
+	return Object.entries(params)
+		.filter(([, value]) => typeof value !== "undefined" && value !== null && value !== "")
+		.flatMap(([key, value]) => Array.isArray(value) ? value.map((item) => [key, item]) : [[key, value]])
+		.map(([key, value]) => [awsPercentEncode(key), awsPercentEncode(value)])
+		.sort(([aKey, aValue], [bKey, bValue]) => aKey === bKey ? aValue.localeCompare(bValue) : aKey.localeCompare(bKey))
+		.map(([key, value]) => `${key}=${value}`)
+		.join("&");
+}
+
+function awsCanonicalUri(value) {
+	const pathname = String(value || "/");
+	return pathname
+		.split("/")
+		.map((part) => awsPercentEncode(decodeURIComponent(part)))
+		.join("/") || "/";
+}
+
+function sha256Hex(value) {
+	return crypto.createHash("sha256").update(value).digest("hex");
+}
+
+function hmacSha256(key, value, encoding) {
+	return crypto.createHmac("sha256", key).update(value).digest(encoding);
+}
+
+function awsSigningKey(secretAccessKey, dateStamp, region, service) {
+	const kDate = hmacSha256(`AWS4${secretAccessKey}`, dateStamp);
+	const kRegion = hmacSha256(kDate, region);
+	const kService = hmacSha256(kRegion, service);
+	return hmacSha256(kService, "aws4_request");
+}
+
+function awsDateParts(date = new Date()) {
+	const iso = date.toISOString().replace(/[:-]|\.\d{3}/g, "");
+	return {
+		amzDate: iso,
+		dateStamp: iso.slice(0, 8),
+	};
+}
+
+async function awsStoredSecrets(credentialId) {
+	const { credential, env } = await awsEnvFromCredential(credentialId);
+	return {
+		credential,
+		accessKeyId: env.AWS_ACCESS_KEY_ID,
+		secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+		sessionToken: env.AWS_SESSION_TOKEN || "",
+		region: env.AWS_REGION || env.AWS_DEFAULT_REGION || "",
+	};
+}
+
+async function awsSignedFetch(options = {}) {
+	const method = String(options.method || "GET").toUpperCase();
+	const service = String(options.service || "");
+	const region = sanitizeAwsRegion(options.region || "");
+	const hostName = String(options.host || "").trim();
+	const pathname = options.path || "/";
+	const query = awsCanonicalQuery(options.query || {});
+	const body = typeof options.body === "undefined" || options.body === null ? "" : options.body;
+	const bodyBuffer = Buffer.isBuffer(body) ? body : Buffer.from(String(body));
+	const payloadHash = sha256Hex(bodyBuffer);
+	const { amzDate, dateStamp } = awsDateParts();
+	const headers = {
+		...(options.headers || {}),
+		host: hostName,
+		"x-amz-content-sha256": payloadHash,
+		"x-amz-date": amzDate,
+	};
+	if (options.sessionToken) {
+		headers["x-amz-security-token"] = options.sessionToken;
+	}
+	const normalizedHeaders = Object.fromEntries(
+		Object.entries(headers).map(([key, value]) => [key.toLowerCase(), String(value).trim()]),
+	);
+	const signedHeaderNames = Object.keys(normalizedHeaders).sort();
+	const canonicalHeaders = signedHeaderNames
+		.map((key) => `${key}:${normalizedHeaders[key].replace(/\s+/g, " ")}\n`)
+		.join("");
+	const signedHeaders = signedHeaderNames.join(";");
+	const canonicalRequest = [
+		method,
+		awsCanonicalUri(pathname),
+		query,
+		canonicalHeaders,
+		signedHeaders,
+		payloadHash,
+	].join("\n");
+	const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+	const stringToSign = [
+		"AWS4-HMAC-SHA256",
+		amzDate,
+		credentialScope,
+		sha256Hex(canonicalRequest),
+	].join("\n");
+	const signature = hmacSha256(
+		awsSigningKey(options.secretAccessKey, dateStamp, region, service),
+		stringToSign,
+		"hex",
+	);
+	const authorization = `AWS4-HMAC-SHA256 Credential=${options.accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+	const url = `https://${hostName}${pathname}${query ? `?${query}` : ""}`;
+	return fetch(url, {
+		method,
+		headers: {
+			...normalizedHeaders,
+			authorization,
+		},
+		body: ["GET", "HEAD"].includes(method) ? undefined : bodyBuffer,
+	});
+}
+
+function xmlDecode(value) {
+	return String(value || "")
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&quot;/g, "\"")
+		.replace(/&apos;/g, "'")
+		.replace(/&amp;/g, "&");
+}
+
+function xmlTagText(block, tagName) {
+	const match = String(block || "").match(new RegExp(`<${tagName}>([\\s\\S]*?)</${tagName}>`));
+	return match ? xmlDecode(match[1]) : "";
+}
+
+async function detectS3BucketRegion(bucket) {
+	try {
+		const response = await fetch(`https://s3.amazonaws.com/${encodeURIComponent(bucket)}`, {
+			method: "HEAD",
+		});
+		return response.headers.get("x-amz-bucket-region") || "";
+	} catch {
+		return "";
+	}
+}
+
+async function nativeAwsCallerIdentity(credentialId, input = {}) {
+	const secrets = await awsStoredSecrets(credentialId);
+	const region = sanitizeAwsRegion(input.region || secrets.region || "us-east-1");
+	const body = "Action=GetCallerIdentity&Version=2011-06-15";
+	const response = await awsSignedFetch({
+		...secrets,
+		method: "POST",
+		service: "sts",
+		region,
+		host: `sts.${region}.amazonaws.com`,
+		path: "/",
+		headers: {
+			"content-type": "application/x-www-form-urlencoded; charset=utf-8",
+		},
+		body,
+	});
+	const text = await response.text();
+	return {
+		ok: response.ok,
+		status: response.status,
+		text,
+		credential: secrets.credential,
+		region,
+	};
+}
+
+async function nativeS3ListObjects(credentialId, body = {}, options = {}) {
+	const bucket = sanitizeS3Bucket(body.bucket || "");
+	const prefix = sanitizeS3Prefix(body.prefix || "");
+	const secrets = await awsStoredSecrets(credentialId);
+	const detectedRegion = body.region || secrets.region ? "" : await detectS3BucketRegion(bucket);
+	const region = sanitizeAwsRegion(body.region || secrets.region || detectedRegion || "us-east-1");
+	const hostName = `s3.${region}.amazonaws.com`;
+	const maxKeys = String(options.maxKeys || 1000);
+	const delimiter = options.delimiter ? "/" : "";
+	let continuationToken = "";
+	const files = [];
+	const prefixes = new Set();
+	let durationMs = 0;
+	let truncated = false;
+	for (let page = 0; page < Number(process.env.MRN_LOCAL_HUB_AWS_MAX_LIST_PAGES || "25"); page += 1) {
+		const startedAt = Date.now();
+		const response = await awsSignedFetch({
+			...secrets,
+			method: "GET",
+			service: "s3",
+			region,
+			host: hostName,
+			path: `/${bucket}`,
+			query: {
+				"list-type": "2",
+				prefix,
+				"max-keys": maxKeys,
+				delimiter,
+				"continuation-token": continuationToken,
+			},
+		});
+		durationMs += Date.now() - startedAt;
+		const text = await response.text();
+		if (!response.ok) {
+			return {
+				ok: false,
+				status: response.status,
+				text,
+				files,
+				prefixes: [...prefixes],
+				bucket,
+				prefix,
+				region,
+				durationMs,
+				truncated,
+				credential: secrets.credential,
+			};
+		}
+		for (const match of text.matchAll(/<CommonPrefixes>([\s\S]*?)<\/CommonPrefixes>/g)) {
+			const commonPrefix = xmlTagText(match[1], "Prefix");
+			if (commonPrefix) {
+				prefixes.add(commonPrefix);
+			}
+		}
+		const contents = [...text.matchAll(/<Contents>([\s\S]*?)<\/Contents>/g)];
+		for (const match of contents) {
+			const block = match[1];
+			const key = xmlTagText(block, "Key");
+			if (!key) continue;
+			const lastModified = xmlTagText(block, "LastModified");
+			files.push({
+				lastModified: lastModified.replace("T", " ").replace(/\.\d+Z$/, ""),
+				sizeBytes: Number.parseInt(xmlTagText(block, "Size"), 10) || 0,
+				key,
+				name: path.basename(key),
+				component: updraftComponentFromName(key),
+			});
+		}
+		if (!/<IsTruncated>true<\/IsTruncated>/.test(text)) {
+			break;
+		}
+		truncated = true;
+		continuationToken = xmlTagText(text, "NextContinuationToken");
+		if (!continuationToken) {
+			break;
+		}
+	}
+	return {
+		ok: true,
+		status: 200,
+		text: "",
+		files,
+		prefixes: [...prefixes].sort((a, b) => a.localeCompare(b)),
+		bucket,
+		prefix,
+		region,
+		durationMs,
+		truncated,
+		credential: secrets.credential,
+	};
+}
+
+async function nativeS3ScanFolderTree(credentialId, body = {}, options = {}) {
+	const rootPrefix = sanitizeS3Prefix(body.prefix || "");
+	const maxFolders = Number(options.maxFolders || process.env.MRN_LOCAL_HUB_AWS_MAX_SCAN_FOLDERS || "500");
+	const queue = [rootPrefix];
+	const seen = new Set();
+	const discoveredPrefixes = new Set();
+	const files = [];
+	let durationMs = 0;
+	let region = "";
+	let credential = null;
+	let bucket = "";
+	let truncated = false;
+	while (queue.length && seen.size < maxFolders) {
+		const prefix = queue.shift();
+		if (seen.has(prefix)) continue;
+		seen.add(prefix);
+		const result = await nativeS3ListObjects(credentialId, { ...body, prefix }, { delimiter: true });
+		durationMs += result.durationMs || 0;
+		region = result.region || region;
+		credential = result.credential || credential;
+		bucket = result.bucket || bucket;
+		truncated = truncated || Boolean(result.truncated);
+		if (!result.ok) {
+			return {
+				...result,
+				files,
+				prefixes: [...discoveredPrefixes].sort((a, b) => a.localeCompare(b)),
+				durationMs,
+			};
+		}
+		files.push(...result.files);
+		for (const folder of result.prefixes || []) {
+			discoveredPrefixes.add(folder);
+			if (!seen.has(folder) && queue.length + seen.size < maxFolders) {
+				queue.push(folder);
+			}
+		}
+	}
+	if (queue.length) {
+		truncated = true;
+	}
+	return {
+		ok: true,
+		status: 200,
+		text: "",
+		files,
+		prefixes: [...discoveredPrefixes].sort((a, b) => a.localeCompare(b)),
+		bucket: bucket || sanitizeS3Bucket(body.bucket || ""),
+		prefix: rootPrefix,
+		region,
+		durationMs,
+		credential,
+		truncated,
+		foldersScanned: seen.size,
+	};
+}
+
+async function nativeS3DownloadObject(credentialId, body = {}, key, dest) {
+	const bucket = sanitizeS3Bucket(body.bucket || "");
+	const s3Key = sanitizeS3Key(key);
+	const secrets = await awsStoredSecrets(credentialId);
+	const detectedRegion = body.region || secrets.region ? "" : await detectS3BucketRegion(bucket);
+	const region = sanitizeAwsRegion(body.region || secrets.region || detectedRegion || "us-east-1");
+	const hostName = `s3.${region}.amazonaws.com`;
+	const response = await awsSignedFetch({
+		...secrets,
+		method: "GET",
+		service: "s3",
+		region,
+		host: hostName,
+		path: `/${bucket}/${s3Key.split("/").map(awsPercentEncode).join("/")}`,
+	});
+	if (!response.ok) {
+		return {
+			code: 1,
+			stderr: await response.text(),
+			durationMs: 0,
+		};
+	}
+	await new Promise((resolve, reject) => {
+		const out = fs.createWriteStream(dest, { flags: "w" });
+		Readable.fromWeb(response.body).on("error", reject).pipe(out);
+		out.on("finish", resolve);
+		out.on("error", reject);
+	});
+	return {
+		code: 0,
+		stderr: "",
+		durationMs: 0,
+		region,
+	};
+}
+
 function updraftComponentFromName(fileName) {
 	const lower = String(fileName || "").toLowerCase();
 	if (/(^|[-_])db(?:[._-]|\d)/.test(lower) && /\.(gz|sql|sql\.gz)$/i.test(lower)) return "db";
@@ -1237,8 +1836,7 @@ function updraftComponentFromName(fileName) {
 }
 
 function updraftSetIdFromKey(key) {
-	const fileName = path.basename(String(key || ""));
-	return fileName
+	return String(key || "")
 		.replace(/-(db|plugins|themes|uploads\d*|mu-plugins|others|wpcore|core)\.(zip|gz|sql|sql\.gz)$/i, "")
 		.replace(/\.(zip|gz|sql|sql\.gz)$/i, "");
 }
@@ -1344,9 +1942,11 @@ function groupUpdraftS3Files(files) {
 	for (const file of files.filter((item) => item.component !== "unknown")) {
 		const id = updraftSetIdFromKey(file.key);
 		if (!groups.has(id)) {
+			const folder = path.posix.dirname(id) === "." ? "" : path.posix.dirname(id);
 			groups.set(id, {
 				id,
-				label: path.basename(id),
+				label: path.posix.basename(id),
+				folder,
 				lastModified: file.lastModified,
 				totalBytes: 0,
 				components: {},
@@ -1370,6 +1970,34 @@ function groupUpdraftS3Files(files) {
 async function listAwsUpdraftBackups(body = {}) {
 	const bucket = sanitizeS3Bucket(body.bucket || "");
 	const prefix = sanitizeS3Prefix(body.prefix || "");
+	const credentialId = String(body.credentialId || body.awsCredentialId || "").trim();
+	if (credentialId) {
+		const nativeResult = await nativeS3ScanFolderTree(credentialId, body);
+		const groups = nativeResult.ok ? groupUpdraftS3Files(nativeResult.files) : [];
+		const result = {
+			code: nativeResult.ok ? 0 : 1,
+			command: "aws-s3-list",
+			args: [bucket, prefix || "/", `stored:${nativeResult.credential?.label || credentialId}`, `region:${nativeResult.region}`],
+			stdout: nativeResult.ok
+				? groups.length
+					? `Indexed ${groups.length} Updraft backup set${groups.length === 1 ? "" : "s"} across ${nativeResult.prefixes?.length || 0} folder${(nativeResult.prefixes?.length || 0) === 1 ? "" : "s"} in ${s3Uri(bucket, prefix)}.`
+					: `No Updraft backup sets found while scanning ${nativeResult.prefixes?.length || 0} folder${(nativeResult.prefixes?.length || 0) === 1 ? "" : "s"} in ${s3Uri(bucket, prefix)}.`
+				: `Could not list ${s3Uri(bucket, prefix)} with stored AWS key.`,
+			stderr: nativeResult.ok ? "" : nativeResult.text,
+			durationMs: nativeResult.durationMs,
+			files: nativeResult.files,
+			prefixes: nativeResult.prefixes || [],
+			groups,
+			region: nativeResult.region,
+			truncated: nativeResult.truncated,
+			foldersScanned: nativeResult.foldersScanned || 0,
+		};
+		const index = await storeAwsBackupIndex(body, result, nativeResult.credential);
+		return {
+			...result,
+			index: compactAwsBackupIndex(index),
+		};
+	}
 	const aws = await commandExists("aws");
 	if (!aws.ok) {
 		return {
@@ -1379,6 +2007,8 @@ async function listAwsUpdraftBackups(body = {}) {
 			stdout: "",
 			stderr: "AWS CLI is not installed or not on PATH. Install/configure awscli before listing S3 backups.",
 			durationMs: 0,
+			files: [],
+			prefixes: [],
 			groups: [],
 		};
 	}
@@ -1394,18 +2024,175 @@ async function listAwsUpdraftBackups(body = {}) {
 		env: awsContext.env,
 	});
 	const files = result.code === 0 ? parseAwsS3Ls(result.stdout) : [];
+	const prefixes = folderPrefixesFromFiles(files, prefix);
 	const groups = groupUpdraftS3Files(files);
-	return {
+	const listResult = {
 		...result,
 		command: "aws-s3-list",
 		args: [bucket, prefix || "/", awsContext.credential ? `stored:${awsContext.credential.label}` : "aws-cli"],
 		stdout: result.code === 0
 			? groups.length
-				? `Found ${groups.length} Updraft backup set${groups.length === 1 ? "" : "s"} in ${s3Uri(bucket, prefix)}.`
+				? `Indexed ${groups.length} Updraft backup set${groups.length === 1 ? "" : "s"} across ${prefixes.length} folder${prefixes.length === 1 ? "" : "s"} in ${s3Uri(bucket, prefix)}.`
 				: `No Updraft backup sets found in ${s3Uri(bucket, prefix)}.`
 			: result.stdout,
 		files,
+		prefixes,
 		groups,
+	};
+	const index = await storeAwsBackupIndex(body, listResult, awsContext.credential);
+	return {
+		...listResult,
+		index: compactAwsBackupIndex(index),
+	};
+}
+
+async function testAwsBackupConnection(body = {}) {
+	const credentialId = String(body.credentialId || body.awsCredentialId || "").trim();
+	if (credentialId) {
+		const checks = [];
+		let durationMs = 0;
+		const identityStartedAt = Date.now();
+		const identity = await nativeAwsCallerIdentity(credentialId, body);
+		durationMs += Date.now() - identityStartedAt;
+		const source = `stored key "${identity.credential.label}"`;
+		if (!identity.ok) {
+			checks.push({ label: "AWS identity", status: "fail", detail: `AWS STS returned HTTP ${identity.status}.` });
+			return {
+				code: 1,
+				command: "aws-connection-test",
+				args: [source, `region:${identity.region}`],
+				stdout: `AWS connection test failed using ${source}.`,
+				stderr: identity.text,
+				durationMs,
+				checks,
+			};
+		}
+		checks.push({ label: "AWS identity", status: "pass", detail: `Authenticated with ${source}.` });
+		const bucketInput = String(body.bucket || "").trim();
+		if (bucketInput) {
+			const s3 = await nativeS3ListObjects(credentialId, body, { maxKeys: 1 });
+			durationMs += s3.durationMs || 0;
+			if (!s3.ok) {
+				checks.push({ label: "S3 list access", status: "fail", detail: `Could not list ${s3Uri(s3.bucket, s3.prefix)}.` });
+				return {
+					code: 1,
+					command: "aws-connection-test",
+					args: [source, s3.bucket, s3.prefix || "/", `region:${s3.region}`],
+					stdout: `AWS identity passed, but S3 list access failed for ${s3Uri(s3.bucket, s3.prefix)}.`,
+					stderr: s3.text,
+					durationMs,
+					checks,
+				};
+			}
+			checks.push({ label: "S3 list access", status: "pass", detail: `Can list ${s3Uri(s3.bucket, s3.prefix)}.` });
+		}
+		return {
+			code: 0,
+			command: "aws-connection-test",
+			args: [source, bucketInput ? sanitizeS3Bucket(bucketInput) : "no-bucket"],
+			stdout: [
+				`AWS connection test passed using ${source}.`,
+				bucketInput ? "S3 bucket access check passed." : "No bucket entered, so only AWS identity was checked.",
+			].join("\n"),
+			stderr: "",
+			durationMs,
+			checks,
+		};
+	}
+	const aws = await commandExists("aws");
+	if (!aws.ok) {
+		return {
+			code: 1,
+			command: "aws-connection-test",
+			args: ["aws-cli"],
+			stdout: "",
+			stderr: "AWS CLI is not installed or not on PATH.",
+			durationMs: 0,
+			checks: [{ label: "AWS CLI", status: "fail", detail: "aws command was not found." }],
+		};
+	}
+	const awsContext = await awsCliContext(body);
+	const profile = sanitizeAwsProfile(body.profile || "");
+	const source = awsContext.credential
+		? `stored key "${awsContext.credential.label}"`
+		: profile
+			? `AWS profile "${profile}"`
+			: "AWS CLI default credentials";
+	const checks = [];
+	let durationMs = 0;
+	const identity = await runProcess("aws", [
+		...awsContext.args,
+		"sts",
+		"get-caller-identity",
+		"--output",
+		"json",
+	], {
+		timeoutMs: Number(process.env.MRN_LOCAL_HUB_AWS_TEST_TIMEOUT_MS || "30000"),
+		trackJob: false,
+		env: awsContext.env,
+	});
+	durationMs += identity.durationMs || 0;
+	if (identity.code !== 0) {
+		checks.push({ label: "AWS identity", status: "fail", detail: "Could not resolve caller identity." });
+		return {
+			code: identity.code || 1,
+			command: "aws-connection-test",
+			args: [source],
+			stdout: `AWS connection test failed using ${source}.`,
+			stderr: identity.stderr || identity.stdout,
+			durationMs,
+			checks,
+		};
+	}
+	checks.push({ label: "AWS identity", status: "pass", detail: `Authenticated with ${source}.` });
+
+	const bucketInput = String(body.bucket || "").trim();
+	if (bucketInput) {
+		const bucket = sanitizeS3Bucket(bucketInput);
+		const prefix = sanitizeS3Prefix(body.prefix || "");
+		const s3 = await runProcess("aws", [
+			...awsContext.args,
+			"s3api",
+			"list-objects-v2",
+			"--bucket",
+			bucket,
+			...(prefix ? ["--prefix", prefix] : []),
+			"--max-items",
+			"1",
+			"--output",
+			"json",
+		], {
+			timeoutMs: Number(process.env.MRN_LOCAL_HUB_AWS_TEST_TIMEOUT_MS || "30000"),
+			trackJob: false,
+			env: awsContext.env,
+		});
+		durationMs += s3.durationMs || 0;
+		if (s3.code !== 0) {
+			checks.push({ label: "S3 list access", status: "fail", detail: `Could not list ${s3Uri(bucket, prefix)}.` });
+			return {
+				code: s3.code || 1,
+				command: "aws-connection-test",
+				args: [source, bucket, prefix || "/"],
+				stdout: `AWS identity passed, but S3 list access failed for ${s3Uri(bucket, prefix)}.`,
+				stderr: s3.stderr || s3.stdout,
+				durationMs,
+				checks,
+			};
+		}
+		checks.push({ label: "S3 list access", status: "pass", detail: `Can list ${s3Uri(bucket, prefix)}.` });
+	}
+
+	return {
+		code: 0,
+		command: "aws-connection-test",
+		args: [source, bucketInput ? sanitizeS3Bucket(bucketInput) : "no-bucket"],
+		stdout: [
+			`AWS connection test passed using ${source}.`,
+			bucketInput ? "S3 bucket access check passed." : "No bucket entered, so only AWS identity was checked.",
+		].join("\n"),
+		stderr: "",
+		durationMs,
+		checks,
 	};
 }
 
@@ -1418,6 +2205,37 @@ async function downloadAwsUpdraftFiles(body = {}) {
 	const session = sanitizeBackupSessionId(body.session || newBackupSessionId());
 	const dir = updraftSessionDir(session);
 	await fsp.mkdir(dir, { recursive: true });
+	const credentialId = String(body.credentialId || body.awsCredentialId || "").trim();
+	if (credentialId) {
+		const credential = (await awsStoredSecrets(credentialId)).credential;
+		const outputs = [];
+		const errors = [];
+		let code = 0;
+		let durationMs = 0;
+		for (const key of keys) {
+			const startedAt = Date.now();
+			const fileName = sanitizeBackupFileName(path.basename(key));
+			const dest = path.join(dir, fileName);
+			const result = await nativeS3DownloadObject(credentialId, body, key, dest);
+			durationMs += result.durationMs || Date.now() - startedAt;
+			if (result.code !== 0) {
+				code = result.code;
+				errors.push(result.stderr || `Failed to download ${key}`);
+				break;
+			}
+			outputs.push(`Downloaded ${s3Uri(bucket, key)} -> ${dest}`);
+		}
+		const inspection = await inspectUpdraftSession(session);
+		return {
+			code,
+			command: "aws-s3-download",
+			args: [bucket, `${keys.length} file${keys.length === 1 ? "" : "s"}`, session, `stored:${credential.label}`],
+			stdout: outputs.join("\n"),
+			stderr: errors.join("\n"),
+			durationMs,
+			session: inspection,
+		};
+	}
 	const awsContext = await awsCliContext(body);
 	const outputs = [];
 	const errors = [];
@@ -1565,10 +2383,9 @@ async function ensureWordPressCore(site) {
 		};
 	}
 	await fsp.mkdir(site.publicPath, { recursive: true });
-	return runProcess("wp", [
+	return runWpCli(site, [
 		"core",
 		"download",
-		`--path=${site.publicPath}`,
 		"--force",
 		"--skip-content",
 	], {
@@ -1603,17 +2420,15 @@ async function importUpdraftDatabase(site, dbFile) {
 	if (prepResult.code !== 0) return prepResult;
 	const wpConfigResult = await writeLocalWpConfig(site);
 	const importResult = await importDatabase(site, prepResult.dumpFile);
-	const wpPathArg = `--path=${site.publicPath}`;
 	let searchReplaceResult = null;
 	if (importResult.code === 0 && site.liveUrl && site.localUrl) {
-		searchReplaceResult = await runProcess("wp", [
-			wpPathArg,
+		searchReplaceResult = await runWpCli(site, [
 			"search-replace",
 			site.liveUrl,
 			site.localUrl,
 			"--all-tables",
 			"--skip-columns=guid",
-		], { cwd: site.publicPath });
+		], { cwd: site.localRoot });
 	}
 	const dbUrlResult = importResult.code === 0 ? await normalizeLocalDatabaseUrls(site) : null;
 	const htaccessResult = importResult.code === 0 ? await ensureWordPressHtaccess(site) : null;
@@ -1663,6 +2478,7 @@ async function importUpdraftDatabase(site, dbFile) {
 			+ (dbUrlResult ? dbUrlResult.durationMs : 0)
 			+ (restartResult ? restartResult.durationMs : 0)
 			+ (smokeResult ? smokeResult.durationMs : 0),
+		runtimeContext: firstRuntimeContext(searchReplaceResult, dbUrlResult, smokeResult),
 		dumpFile: prepResult.dumpFile,
 		wpConfig: wpConfigResult,
 		dbUrls: dbUrlResult,
@@ -1733,6 +2549,7 @@ async function createSiteFromUpdraftBackup(body = {}) {
 				stdout: outputs.filter(Boolean).join("\n"),
 				stderr: errors.filter(Boolean).join("\n"),
 				durationMs,
+				runtimeContext: coreResult.runtimeContext || null,
 				site: localSite,
 				session,
 				core: coreResult,
@@ -1792,6 +2609,7 @@ async function createSiteFromUpdraftBackup(body = {}) {
 		stdout: outputs.filter(Boolean).join("\n"),
 		stderr: errors.filter(Boolean).join("\n"),
 		durationMs,
+		runtimeContext: firstRuntimeContext(coreResult, dbResult),
 		site: localSite,
 		session,
 		gitSafety,
@@ -1815,8 +2633,27 @@ async function runUpdraftBackupAction(body) {
 				durationMs: 0,
 				session: await inspectUpdraftSession(body.session || ""),
 			};
+		case "aws-index-get": {
+			const index = await getStoredAwsBackupIndex(body);
+			return {
+				code: 0,
+				command: "aws-index-get",
+				args: [body.bucket || "", body.prefix || ""],
+				stdout: index
+					? `Loaded stored S3 backup index from ${index.scannedAt}.`
+					: "No stored S3 backup index exists for this source yet.",
+				stderr: "",
+				durationMs: 0,
+				files: index?.files || [],
+				prefixes: index?.prefixes || [],
+				groups: index?.groups || [],
+				index: compactAwsBackupIndex(index),
+			};
+		}
 		case "aws-list":
 			return listAwsUpdraftBackups(body);
+		case "aws-test-connection":
+			return testAwsBackupConnection(body);
 		case "aws-download-set":
 			return downloadAwsUpdraftFiles(body);
 		case "create-site-from-backup":
@@ -2052,6 +2889,7 @@ async function healthReport() {
 		ok: true,
 		repoRoot,
 		sitesRoot,
+		settings: appSettings,
 		commands,
 		openLiteSpeed,
 		now: new Date().toISOString(),
@@ -3366,6 +4204,13 @@ async function metricsReport() {
 			memory,
 			uptimeSeconds: os.uptime(),
 		},
+		limits: {
+			sitesRoot,
+			runtimeMemoryGiB: appSettings.runtimeMemoryGiB,
+			runtimeDiskGiB: appSettings.runtimeDiskGiB,
+			runtimeMemoryBytes: appSettings.runtimeMemoryGiB * 1024 * 1024 * 1024,
+			runtimeDiskBytes: appSettings.runtimeDiskGiB * 1024 * 1024 * 1024,
+		},
 		jobs: {
 			active: jobs.length,
 			items: jobs,
@@ -3672,6 +4517,11 @@ async function runtimeReport() {
 			limaConfig: limaConfigPath,
 			sitesRoot,
 		},
+		settings: {
+			sitesRoot,
+			memory: `${appSettings.runtimeMemoryGiB}GiB`,
+			disk: `${appSettings.runtimeDiskGiB}GiB`,
+		},
 		ports: runtimePorts(),
 		files: {
 			bootstrapScriptExists: scriptExists,
@@ -3692,6 +4542,8 @@ function buildRuntimeBootstrapScript() {
 	const sitesRootQuoted = shellQuote(sitesRoot);
 	const instanceName = runtimeInstanceName;
 	const phpInstallScript = buildPhpInstallBash(phpRuntimeVersions, { requiredVersion: defaultPhpVersion });
+	const runtimeMemory = `${appSettings.runtimeMemoryGiB}GiB`;
+	const runtimeDisk = `${appSettings.runtimeDiskGiB}GiB`;
 	return `#!/usr/bin/env bash
 set -euo pipefail
 
@@ -3766,8 +4618,8 @@ mkdir -p "\${LIMA_DIR}"
 cat > "\${LIMA_CONFIG}" <<YAML
 vmType: vz
 cpus: 2
-memory: 3GiB
-disk: 30GiB
+memory: ${runtimeMemory}
+disk: ${runtimeDisk}
 images:
   - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-arm64.img"
     arch: "aarch64"
@@ -3799,6 +4651,7 @@ provision:
       apt-get update
       apt-get install -y openlitespeed
 ${phpInstallScript.split("\n").map((line) => `      ${line}`).join("\n")}
+${buildRuntimeWpCliInstallBash().split("\n").map((line) => `      ${line}`).join("\n")}
       systemctl enable mariadb redis-server lsws || true
       systemctl restart mariadb redis-server || true
       /usr/local/lsws/bin/lswsctrl restart
@@ -3847,6 +4700,7 @@ async function runtimeServiceCheck() {
 				"printf '\\nMariaDB: '; systemctl is-active mariadb 2>&1 || true",
 				"printf '\\nRedis: '; systemctl is-active redis-server 2>&1 || true",
 				"printf '\\nSites mount: '; if [ -d /srv/mrn-sites ]; then echo /srv/mrn-sites; else echo missing; fi",
+				`printf '\\nWP-CLI: '; if command -v wp >/dev/null 2>&1; then MRN_WP_CLI_PHP=${shellQuote(phpBinaryPath(defaultPhpVersion))} wp --version; else echo missing; fi`,
 				...phpRuntimeVersions.map((version) => {
 					const binaryPath = phpBinaryPath(version);
 					return `printf '\\n${phpVersionLabel(version)}: '; if [ -x ${shellQuote(binaryPath)} ]; then ${shellQuote(binaryPath)} -v | head -n 1; else echo missing; fi`;
@@ -3877,8 +4731,9 @@ async function runtimeRepairInstall() {
 				"set -euxo pipefail",
 				"export DEBIAN_FRONTEND=noninteractive",
 				"sudo apt-get update",
-				"sudo apt-get install -y openlitespeed",
+				"sudo apt-get install -y ca-certificates curl openlitespeed",
 				buildPhpInstallBash(phpRuntimeVersions, { sudo: true, requiredVersion: defaultPhpVersion }),
+				buildRuntimeWpCliInstallBash({ sudo: true }),
 				"sudo systemctl enable mariadb redis-server lsws || true",
 				"sudo systemctl restart mariadb redis-server || true",
 				"sudo /usr/local/lsws/bin/lswsctrl restart",
@@ -4742,10 +5597,9 @@ async function localThemeRelativePath(site, optionName, label) {
 	if (!(await pathExists(path.join(site.publicPath, "wp-load.php")))) {
 		throw httpError(400, "Local WordPress files are not present yet. Use Full site, All themes, or Custom directory first.");
 	}
-	const result = await runProcess(
-		"wp",
+	const result = await runWpCli(
+		site,
 		[
-			`--path=${site.publicPath}`,
 			"option",
 			"get",
 			optionName,
@@ -4753,7 +5607,7 @@ async function localThemeRelativePath(site, optionName, label) {
 			"--skip-themes",
 			"--quiet",
 		],
-		{ cwd: site.publicPath, timeoutMs: 30000, trackJob: false },
+		{ cwd: site.localRoot, timeoutMs: 30000, trackJob: false },
 	);
 	const theme = cleanWpCliScalarOutput(result.stdout);
 	if (result.code !== 0 || !theme) {
@@ -5377,6 +6231,30 @@ function buildPhpInstallBash(versions, options = {}) {
 	return lines.join("\n");
 }
 
+function buildRuntimeWpCliInstallBash(options = {}) {
+	const sudo = options.sudo ? "sudo " : "";
+	const defaultPhp = phpBinaryPath(defaultPhpVersion);
+	return [
+		`MRN_WP_CLI_PHP=${shellQuote(defaultPhp)}`,
+		`if [ ! -x "$MRN_WP_CLI_PHP" ]; then`,
+		`  echo "Required WP-CLI PHP binary is missing: $MRN_WP_CLI_PHP" >&2`,
+		`  exit 2`,
+		`fi`,
+		`if [ ! -f /usr/local/bin/wp-cli.phar ]; then`,
+		`  ${sudo}curl -fsSL -o /usr/local/bin/wp-cli.phar https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar`,
+		`fi`,
+		`${sudo}tee /usr/local/bin/wp >/dev/null <<'MRN_WP_CLI_WRAPPER'`,
+		`#!/usr/bin/env bash`,
+		`set -e`,
+		`PHP_BIN="\${MRN_WP_CLI_PHP:-/usr/local/lsws/lsphp84/bin/php}"`,
+		`exec "$PHP_BIN" /usr/local/bin/wp-cli.phar "$@"`,
+		`MRN_WP_CLI_WRAPPER`,
+		`${sudo}chmod +x /usr/local/bin/wp /usr/local/bin/wp-cli.phar`,
+		`MRN_WP_CLI_PHP="$MRN_WP_CLI_PHP" /usr/local/bin/wp --info >/dev/null`,
+		`echo "WP-CLI ready in Lima runtime: /usr/local/bin/wp using $MRN_WP_CLI_PHP"`,
+	].join("\n");
+}
+
 function sanitizeHostname(value) {
 	const hostname = String(value || "").trim().toLowerCase();
 	if (!hostname || hostname.length > 253 || !/^[a-z0-9.-]+$/.test(hostname) || hostname.includes("..")) {
@@ -5420,6 +6298,182 @@ function guestPathForHostPath(hostPath) {
 	}
 	const posixRelative = relative.split(path.sep).join(path.posix.sep);
 	return path.posix.join("/srv/mrn-sites", posixRelative);
+}
+
+function siteUsesLimaOpenLiteSpeed(site) {
+	const runtime = String(site.runtime || "").toLowerCase();
+	const webserver = String(site.webserver || "").toLowerCase();
+	return runtime.includes("local-vm") || runtime.includes("lima") || webserver === "openlitespeed";
+}
+
+function wpRuntimeContextForSite(site) {
+	const localSite = siteWithRuntimeDefaults(site);
+	const hostPath = localSite.publicPath;
+	if (siteUsesLimaOpenLiteSpeed(localSite)) {
+		const runtimePath = guestPathForHostPath(hostPath);
+		return {
+			mode: "lima",
+			label: "Lima VM / OpenLiteSpeed",
+			instanceName: runtimeInstanceName,
+			webserver: "OpenLiteSpeed",
+			siteSlug: localSite.slug,
+			hostPath,
+			runtimePath,
+			commandPath: runtimePath,
+			phpBinary: phpBinaryPath(localSite.phpVersion),
+		};
+	}
+	return {
+		mode: "host",
+		label: "macOS host",
+		siteSlug: localSite.slug,
+		hostPath,
+		runtimePath: hostPath,
+		commandPath: hostPath,
+		phpBinary: "",
+	};
+}
+
+async function runtimeWpCliStatus(site) {
+	const context = wpRuntimeContextForSite(site);
+	if (context.mode !== "lima") {
+		const wp = await commandExists("wp");
+		return {
+			ok: wp.ok,
+			context,
+			stdout: wp.ok ? `Host WP-CLI ready: ${wp.path}` : "Host WP-CLI is missing.",
+			stderr: "",
+		};
+	}
+	const script = [
+		"set -u",
+		`export MRN_WP_CLI_PHP=${shellQuote(context.phpBinary)}`,
+		`if [ ! -x "$MRN_WP_CLI_PHP" ]; then echo "Runtime PHP missing: $MRN_WP_CLI_PHP" >&2; exit 2; fi`,
+		`command -v wp >/dev/null 2>&1 || { echo "Runtime WP-CLI missing inside Lima VM." >&2; exit 127; }`,
+		`wp --info >/dev/null`,
+		`echo "Runtime WP-CLI ready: $(command -v wp)"`,
+	].join("\n");
+	const result = await runProcess(
+		"limactl",
+		["shell", runtimeInstanceName, "--", "bash", "-lc", script],
+		{ cwd: "/", timeoutMs: 30000, trackJob: false },
+	);
+	return {
+		ok: result.code === 0,
+		context,
+		stdout: result.stdout,
+		stderr: result.stderr,
+		result,
+	};
+}
+
+async function ensureRuntimeWpCli(site) {
+	const context = wpRuntimeContextForSite(site);
+	if (context.mode !== "lima") {
+		return runtimeWpCliStatus(site);
+	}
+	if (runtimeWpCliReady) {
+		const status = await runtimeWpCliStatus(site);
+		if (status.ok) {
+			return status;
+		}
+		runtimeWpCliReady = false;
+	}
+	const before = await runtimeWpCliStatus(site);
+	if (before.ok) {
+		runtimeWpCliReady = true;
+		return before;
+	}
+	const install = await runProcess(
+		"limactl",
+		["shell", runtimeInstanceName, "--", "bash", "-lc", ["set -euo pipefail", buildRuntimeWpCliInstallBash({ sudo: true })].join("\n")],
+		{ cwd: "/", timeoutMs: Number(process.env.MRN_LOCAL_HUB_WP_CLI_INSTALL_TIMEOUT_MS || "120000"), trackJob: false },
+	);
+	runtimeWpCliReady = install.code === 0;
+	return {
+		ok: install.code === 0,
+		context,
+		stdout: install.stdout,
+		stderr: install.stderr,
+		result: install,
+		installed: install.code === 0,
+	};
+}
+
+function runtimeWpCliUnavailableResult(site, args, status, startedAt) {
+	const context = wpRuntimeContextForSite(site);
+	const stderr = [
+		status?.stderr,
+		status?.result?.stderr,
+		"WP-CLI is not available inside the Lima/OpenLiteSpeed runtime, so the Hub did not fall back to host macOS.",
+		"Run Runtime Repair or Bootstrap Runtime, then retry so WordPress status matches the browser-served site.",
+	].filter(Boolean).join("\n");
+	return {
+		command: "wp",
+		args: [`--path=${context.commandPath}`, ...args],
+		code: status?.result?.code || 127,
+		stdout: status?.stdout || status?.result?.stdout || "",
+		stderr,
+		durationMs: Date.now() - startedAt,
+		runtimeContext: context,
+	};
+}
+
+async function runWpCli(site, args, options = {}) {
+	const localSite = siteWithRuntimeDefaults(site);
+	const startedAt = Date.now();
+	const context = wpRuntimeContextForSite(localSite);
+	const wpArgs = [`--path=${context.commandPath}`, ...args];
+	if (context.mode === "lima") {
+		const runtime = options.ensureWpCli === false ? await runtimeWpCliStatus(localSite) : await ensureRuntimeWpCli(localSite);
+		if (!runtime.ok) {
+			return runtimeWpCliUnavailableResult(localSite, args, runtime, startedAt);
+		}
+		const result = await runProcess(
+			"limactl",
+			[
+				"shell",
+				runtimeInstanceName,
+				"--",
+				"env",
+				`MRN_WP_CLI_PHP=${context.phpBinary}`,
+				"wp",
+				...wpArgs,
+			],
+			{
+				cwd: options.hostCwd || "/",
+				timeoutMs: options.timeoutMs,
+				trackJob: options.trackJob,
+				siteSlug: options.siteSlug || localSite.slug,
+			},
+		);
+		return {
+			...result,
+			command: "wp",
+			args: wpArgs,
+			durationMs: Date.now() - startedAt,
+			runtimeContext: context,
+			runtimeSetup: runtime.installed ? {
+				installed: true,
+				stdout: runtime.stdout,
+				stderr: runtime.stderr,
+			} : null,
+		};
+	}
+	const result = await runProcess("wp", wpArgs, {
+		cwd: options.cwd || localSite.publicPath,
+		timeoutMs: options.timeoutMs,
+		trackJob: options.trackJob,
+		siteSlug: options.siteSlug || localSite.slug,
+	});
+	return {
+		...result,
+		runtimeContext: context,
+	};
+}
+
+function firstRuntimeContext(...results) {
+	return results.find((result) => result?.runtimeContext)?.runtimeContext || null;
 }
 
 function buildPhpExtProcessorConfig(version) {
@@ -6096,9 +7150,9 @@ async function normalizeLocalDatabaseUrls(site) {
 	}
 
 	const startedAt = Date.now();
-	const wpBaseArgs = [`--path=${localSite.publicPath}`, "--skip-plugins", "--skip-themes"];
-	const homeCheck = await runProcess("wp", [...wpBaseArgs, "option", "get", "home"], {
-		cwd: localSite.publicPath,
+	const wpBaseArgs = ["--skip-plugins", "--skip-themes"];
+	const homeCheck = await runWpCli(localSite, [...wpBaseArgs, "option", "get", "home"], {
+		cwd: localSite.localRoot,
 		timeoutMs: 30000,
 	});
 	if (homeCheck.code !== 0) {
@@ -6115,8 +7169,8 @@ async function normalizeLocalDatabaseUrls(site) {
 
 	const replacements = [];
 	for (const oldUrl of legacyLocalUrlsForSite(localSite)) {
-		const result = await runProcess(
-			"wp",
+		const result = await runWpCli(
+			localSite,
 			[
 				...wpBaseArgs,
 				"search-replace",
@@ -6125,17 +7179,17 @@ async function normalizeLocalDatabaseUrls(site) {
 				"--all-tables",
 				"--skip-columns=guid",
 			],
-			{ cwd: localSite.publicPath },
+			{ cwd: localSite.localRoot },
 		);
 		replacements.push({ oldUrl, result });
 	}
 
-	const homeUpdate = await runProcess("wp", [...wpBaseArgs, "option", "update", "home", localSite.localUrl], {
-		cwd: localSite.publicPath,
+	const homeUpdate = await runWpCli(localSite, [...wpBaseArgs, "option", "update", "home", localSite.localUrl], {
+		cwd: localSite.localRoot,
 		timeoutMs: 30000,
 	});
-	const siteUrlUpdate = await runProcess("wp", [...wpBaseArgs, "option", "update", "siteurl", localSite.localUrl], {
-		cwd: localSite.publicPath,
+	const siteUrlUpdate = await runWpCli(localSite, [...wpBaseArgs, "option", "update", "siteurl", localSite.localUrl], {
+		cwd: localSite.localRoot,
 		timeoutMs: 30000,
 	});
 	const failures = [
@@ -6163,6 +7217,7 @@ async function normalizeLocalDatabaseUrls(site) {
 		replacements: replacements.map((item) => ({ oldUrl: item.oldUrl, code: item.result.code })),
 		home: homeUpdate.code,
 		siteurl: siteUrlUpdate.code,
+		runtimeContext: firstRuntimeContext(homeCheck, ...replacements.map((item) => item.result), homeUpdate, siteUrlUpdate),
 	};
 }
 
@@ -6398,10 +7453,9 @@ function classifyAdminAccessPlugin(plugin) {
 }
 
 async function listAdminAccessPlugins(site) {
-	const result = await runProcess(
-		"wp",
+	const result = await runWpCli(
+		site,
 		[
-			`--path=${site.publicPath}`,
 			"plugin",
 			"list",
 			"--status=active",
@@ -6409,7 +7463,7 @@ async function listAdminAccessPlugins(site) {
 			"--skip-plugins",
 			"--skip-themes",
 		],
-		{ cwd: site.publicPath, timeoutMs: 30000 },
+		{ cwd: site.localRoot, timeoutMs: 30000 },
 	);
 	if (result.code !== 0) {
 		return {
@@ -6518,6 +7572,7 @@ async function runAdminAccessCheck(site) {
 		stdout,
 		stderr: pluginResult.stderr,
 		durationMs: Date.now() - startedAt + (pluginResult.durationMs || 0),
+		runtimeContext: pluginResult.runtimeContext || null,
 		adminAccess: {
 			...probe,
 			candidates: pluginResult.candidates,
@@ -6542,6 +7597,7 @@ async function runAdminAccessUnlock(site) {
 			].join("\n"),
 			stderr: pluginResult.stderr,
 			durationMs: Date.now() - startedAt,
+			runtimeContext: pluginResult.runtimeContext || null,
 			adminAccess: {
 				before,
 				candidates: [],
@@ -6566,6 +7622,7 @@ async function runAdminAccessUnlock(site) {
 			].join("\n"),
 			stderr: "",
 			durationMs: Date.now() - startedAt,
+			runtimeContext: pluginResult.runtimeContext || null,
 			adminAccess: {
 				before,
 				after: before,
@@ -6580,17 +7637,16 @@ async function runAdminAccessUnlock(site) {
 	const stdout = [];
 	const stderr = [];
 	for (const target of targets) {
-		const result = await runProcess(
-			"wp",
+		const result = await runWpCli(
+			localSite,
 			[
-				`--path=${localSite.publicPath}`,
 				"plugin",
 				"deactivate",
 				target.name,
 				"--skip-plugins",
 				"--skip-themes",
 			],
-			{ cwd: localSite.publicPath, timeoutMs: 30000 },
+			{ cwd: localSite.localRoot, timeoutMs: 30000 },
 		);
 		stdout.push(result.stdout);
 		stderr.push(result.stderr);
@@ -6608,6 +7664,7 @@ async function runAdminAccessUnlock(site) {
 				].join("\n"),
 				stderr: stderr.filter(Boolean).join("\n"),
 				durationMs: Date.now() - startedAt,
+				runtimeContext: result.runtimeContext || pluginResult.runtimeContext || null,
 				adminAccess: {
 					before,
 					candidates: pluginResult.candidates,
@@ -6646,6 +7703,7 @@ async function runAdminAccessUnlock(site) {
 		].join("\n"),
 		stderr: stderr.filter(Boolean).join("\n"),
 		durationMs: Date.now() - startedAt,
+		runtimeContext: pluginResult.runtimeContext || null,
 		adminAccess: {
 			before,
 			after,
@@ -6931,10 +7989,9 @@ async function remoteCodePathStatuses(site, relativePaths) {
 }
 
 async function localWordPressCodeState(site) {
-	const result = await runProcess(
-		"wp",
+	const result = await runWpCli(
+		site,
 		[
-			`--path=${site.publicPath}`,
 			"eval",
 			[
 				"$data = [",
@@ -6947,7 +8004,7 @@ async function localWordPressCodeState(site) {
 			"--skip-plugins",
 			"--skip-themes",
 		],
-		{ cwd: site.publicPath, timeoutMs: 30000, trackJob: false },
+		{ cwd: site.localRoot, timeoutMs: 30000, trackJob: false },
 	);
 	if (result.code !== 0) {
 		throw new Error(result.stderr || result.stdout || "Could not inspect local WordPress code state.");
@@ -7134,10 +8191,9 @@ async function runSmokeCheck(site) {
 	}
 
 	let themeSlug = "";
-	const stylesheetResult = await runProcess(
-		"wp",
+	const stylesheetResult = await runWpCli(
+		localSite,
 		[
-			`--path=${localSite.publicPath}`,
 			"option",
 			"get",
 			"stylesheet",
@@ -7145,7 +8201,7 @@ async function runSmokeCheck(site) {
 			"--skip-themes",
 			"--quiet",
 		],
-		{ cwd: localSite.publicPath, timeoutMs: 30000 },
+		{ cwd: localSite.localRoot, timeoutMs: 30000 },
 	);
 	if (stylesheetResult.code === 0) {
 		themeSlug = cleanWpCliScalarOutput(stylesheetResult.stdout);
@@ -7223,6 +8279,7 @@ async function runSmokeCheck(site) {
 		stdout,
 		stderr: stderr.filter(Boolean).join("\n"),
 		durationMs: Date.now() - startedAt,
+		runtimeContext: stylesheetResult.runtimeContext || null,
 		smoke: {
 			passed: passed.length,
 			failed: failed.length,
@@ -7319,6 +8376,7 @@ async function provisionSite(site) {
 			dbUrlResult ? dbUrlResult.stdout : "",
 		].filter(Boolean).join("\n"),
 		stderr: [result.stderr, dbUrlResult ? dbUrlResult.stderr : ""].filter(Boolean).join("\n"),
+		runtimeContext: dbUrlResult ? dbUrlResult.runtimeContext : null,
 		site: nextSite,
 		wpConfig: wpConfigResult,
 		dbUrls: dbUrlResult,
@@ -7472,13 +8530,14 @@ async function pullPreflight(site, body = {}) {
 		stopPath: site.publicPath,
 	});
 
-	const [health, runtime, inspection] = await Promise.all([
+	const [health, runtime, inspection, runtimeWpCli] = await Promise.all([
 		healthReport(),
 		runtimeReport(),
 		inspectRemoteWordPress(site),
+		runtimeWpCliStatus(siteWithRuntimeDefaults(site)),
 	]);
 	const parsed = inspection.parsed;
-	const localRequired = ["ssh", "rsync", "wp", "mysql"];
+	const localRequired = ["ssh", "rsync", "mysql"];
 	const missingLocal = health.commands
 		.filter((item) => localRequired.includes(item.command) && !item.ok)
 		.map((item) => item.command);
@@ -7496,6 +8555,9 @@ async function pullPreflight(site, body = {}) {
 	}
 	if (inspection.result.code === 0 && parsed.wp_cli !== "1") {
 		warnings.push("Remote WP-CLI is missing; file pull can work, but DB pull is blocked.");
+	}
+	if (!runtimeWpCli.ok) {
+		warnings.push("Runtime WP-CLI is not ready inside the Lima/OpenLiteSpeed VM; local WordPress status/search-replace will install or require Runtime Repair before running.");
 	}
 	issues.push(...gitSafety.issues);
 	warnings.push(...gitSafety.warnings);
@@ -7526,6 +8588,7 @@ async function pullPreflight(site, body = {}) {
 		`Remote: ${remoteSsh}:${remotePath}`,
 		`File scope: ${pullScope.label}`,
 		`Runtime: ${runtime.adapter} / ${runtime.status}`,
+		`Runtime WP-CLI: ${runtimeWpCli.ok ? "ready" : "not ready"}`,
 		`Local tools: ${missingLocal.length ? `missing ${missingLocal.join(", ")}` : "ready"}`,
 		"",
 		"Remote WordPress:",
@@ -7559,7 +8622,13 @@ async function pullPreflight(site, body = {}) {
 			runtime: {
 				adapter: runtime.adapter,
 				status: runtime.status,
-			missing: runtime.missing,
+				missing: runtime.missing,
+			},
+			runtimeWpCli: {
+				ok: runtimeWpCli.ok,
+				context: runtimeWpCli.context,
+				stdout: runtimeWpCli.stdout,
+				stderr: runtimeWpCli.stderr,
 			},
 			missingLocal,
 			pullScope: {
@@ -7728,6 +8797,7 @@ async function runSiteAction(site, body) {
 				].filter(Boolean).join("\n"),
 				stderr: dbUrlResult.stderr,
 				durationMs: (dbUrlResult.durationMs || 0),
+				runtimeContext: dbUrlResult.runtimeContext || null,
 				site: localSite,
 				wpConfig: wpConfigResult,
 				dbUrls: dbUrlResult,
@@ -7854,21 +8924,19 @@ async function runSiteAction(site, body) {
 				};
 			}
 
-			const wpPathArg = `--path=${localSite.publicPath}`;
 			const importResult = await importDatabase(localSite, exportResult.dumpFile);
 			let searchReplaceResult = null;
 			if (importResult.code === 0 && localSite.liveUrl && localSite.localUrl) {
-				searchReplaceResult = await runProcess(
-					"wp",
+				searchReplaceResult = await runWpCli(
+					localSite,
 					[
-						wpPathArg,
 						"search-replace",
 						localSite.liveUrl,
 						localSite.localUrl,
 						"--all-tables",
 						"--skip-columns=guid",
 					],
-					{ cwd: localSite.publicPath },
+					{ cwd: localSite.localRoot },
 				);
 			}
 			const dbUrlResult = importResult.code === 0 ? await normalizeLocalDatabaseUrls(localSite) : null;
@@ -7923,6 +8991,7 @@ async function runSiteAction(site, body) {
 					+ (restartResult ? restartResult.durationMs : 0)
 					+ (smokeResult ? smokeResult.durationMs : 0)
 					+ (codeSyncResult ? codeSyncResult.durationMs : 0),
+				runtimeContext: firstRuntimeContext(searchReplaceResult, dbUrlResult, smokeResult),
 				site: localSite,
 				htaccess: htaccessResult,
 				restart: restartResult,
@@ -8151,6 +9220,18 @@ async function route(req, res) {
 
 	if (req.method === "GET" && url.pathname === "/api/health") {
 		jsonResponse(res, 200, await healthReport());
+		return;
+	}
+
+	if (req.method === "GET" && url.pathname === "/api/app-settings") {
+		jsonResponse(res, 200, appSettingsReport());
+		return;
+	}
+
+	if (req.method === "POST" && url.pathname === "/api/app-settings") {
+		const body = await readBody(req);
+		const report = await saveAppSettings(body);
+		jsonResponse(res, 200, report);
 		return;
 	}
 

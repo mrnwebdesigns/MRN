@@ -8,6 +8,7 @@ const state = {
 	sshAliasReport: null,
 	sshAliases: [],
 	providerAccounts: null,
+	appSettings: null,
 	metrics: null,
 	metricHistory: {
 		cpu: [],
@@ -18,6 +19,7 @@ const state = {
 	activeSection: "dashboard",
 	activeTab: "dashboard-overview",
 	toastId: 0,
+	desktopAlertsEnabled: false,
 	discoveredSites: {
 		wpengine: [],
 		siteground: [],
@@ -26,6 +28,9 @@ const state = {
 	backupImportSessionId: "",
 	backupSession: null,
 	awsBackupGroups: [],
+	awsBackupPrefixes: [],
+	awsBackupIndex: null,
+	awsBackupFiles: [],
 	busy: false,
 	operationLabel: "",
 	operationStartedAt: 0,
@@ -114,11 +119,14 @@ const els = {
 	updraftStagedFiles: document.querySelector("#updraftStagedFiles"),
 	awsBackupForm: document.querySelector("#awsBackupForm"),
 	awsBackupCredentialSelect: document.querySelector("#awsBackupCredentialSelect"),
+	testAwsConnectionButton: document.querySelector("#testAwsConnectionButton"),
 	listAwsBackupsButton: document.querySelector("#listAwsBackupsButton"),
+	refreshAwsBackupsButton: document.querySelector("#refreshAwsBackupsButton"),
 	awsBackupStatus: document.querySelector("#awsBackupStatus"),
 	awsBackupResults: document.querySelector("#awsBackupResults"),
 	awsCredentialForm: document.querySelector("#awsCredentialForm"),
 	saveAwsCredentialButton: document.querySelector("#saveAwsCredentialButton"),
+	cancelAwsCredentialEditButton: document.querySelector("#cancelAwsCredentialEditButton"),
 	awsCredentialStatus: document.querySelector("#awsCredentialStatus"),
 	credentialSummary: document.querySelector("#credentialSummary"),
 	credentialResults: document.querySelector("#credentialResults"),
@@ -204,6 +212,11 @@ const els = {
 	redisStatus: document.querySelector("#redisStatus"),
 	operationStatus: document.querySelector("#operationStatus"),
 	userMenu: document.querySelector("#userMenu"),
+	desktopAlertsButton: document.querySelector("#desktopAlertsButton"),
+	desktopAlertsStatus: document.querySelector("#desktopAlertsStatus"),
+	appSettingsForm: document.querySelector("#appSettingsForm"),
+	saveAppSettingsButton: document.querySelector("#saveAppSettingsButton"),
+	appSettingsStatus: document.querySelector("#appSettingsStatus"),
 	themeToggle: document.querySelector("#themeToggle"),
 	runtimeIsolation: document.querySelector("#runtimeIsolation"),
 	runtimeInstance: document.querySelector("#runtimeInstance"),
@@ -266,11 +279,19 @@ const sectionTabs = {
 		{ id: "runtime-maintenance", label: "Maintenance" },
 		{ id: "runtime-details", label: "Details" },
 	],
+	providers: [
+		{ id: "providers-directory", label: "Provider Directory" },
+	],
+	settings: [
+		{ id: "app-settings", label: "App Settings" },
+	],
 	logs: [
 		{ id: "logs-console", label: "Deployment Log" },
 	],
 };
 
+const desktopAlertsStorageKey = "mrn-local-hub-desktop-alerts";
+const desktopAlertVisibleMinMs = 3000;
 const addSiteSteps = ["source", "connection", "create"];
 const sparklinePointCount = 28;
 const siteDetailTabs = new Set(["sites-settings", "sites-sync", "sites-qa"]);
@@ -303,11 +324,13 @@ const legacyTabMap = {
 	site: ["sites", siteDefaultTab],
 	"sites-overview": ["dashboard", "dashboard-overview"],
 	"connect-import": ["sites", "sites-add"],
-	"connect-providers": ["sites", "sites-add"],
+	"connect-providers": ["providers", "providers-directory"],
 	sync: ["sites", "sites-sync"],
 	qa: ["sites", "sites-qa"],
 	connect: ["sites", "sites-add"],
 	runtime: ["runtime", "runtime-status"],
+	providers: ["providers", "providers-directory"],
+	settings: ["settings", "app-settings"],
 	logs: ["logs", "logs-console"],
 };
 
@@ -321,6 +344,168 @@ function applyTheme(theme) {
 function closeUserMenu() {
 	if (els.userMenu) {
 		els.userMenu.open = false;
+	}
+}
+
+function desktopNotificationsSupported() {
+	return typeof window !== "undefined" && "Notification" in window && window.isSecureContext;
+}
+
+function desktopNotificationPermission() {
+	return desktopNotificationsSupported() ? window.Notification.permission : "unsupported";
+}
+
+function compactNotificationBody(value) {
+	return String(value || "")
+		.replace(/\s+/g, " ")
+		.trim()
+		.slice(0, 220);
+}
+
+function updateDesktopAlertsButton() {
+	if (!els.desktopAlertsButton) return;
+	const permission = desktopNotificationPermission();
+	let statusText = "";
+	if (permission === "unsupported") {
+		els.desktopAlertsButton.textContent = "Desktop alerts unsupported";
+		els.desktopAlertsButton.disabled = true;
+		els.desktopAlertsButton.title = "This browser/runtime does not expose portable desktop notifications.";
+		statusText = "Desktop notifications are unavailable in this browser/runtime.";
+		if (els.desktopAlertsStatus) els.desktopAlertsStatus.textContent = statusText;
+		return;
+	}
+	if (permission === "denied") {
+		els.desktopAlertsButton.textContent = "Desktop alerts blocked";
+		els.desktopAlertsButton.disabled = false;
+		els.desktopAlertsButton.title = "Notifications are blocked. Allow them in browser or system settings, then try again.";
+		statusText = "Notifications are blocked. Allow them in browser or system settings.";
+		if (els.desktopAlertsStatus) els.desktopAlertsStatus.textContent = statusText;
+		return;
+	}
+	if (permission === "granted" && state.desktopAlertsEnabled) {
+		els.desktopAlertsButton.textContent = "Desktop alerts on";
+		els.desktopAlertsButton.disabled = false;
+		els.desktopAlertsButton.title = "Click to turn off desktop alerts for command completions and failures.";
+		statusText = "Desktop alerts are enabled for failures, background completions, and longer jobs.";
+		if (els.desktopAlertsStatus) els.desktopAlertsStatus.textContent = statusText;
+		return;
+	}
+	els.desktopAlertsButton.textContent = permission === "granted" ? "Desktop alerts off" : "Enable desktop alerts";
+	els.desktopAlertsButton.disabled = false;
+	els.desktopAlertsButton.title = "Click to enable portable browser desktop alerts for Local Hub jobs.";
+	statusText = permission === "granted"
+		? "Desktop alerts are allowed but turned off for this browser."
+		: "Desktop alerts need browser permission before they can be used.";
+	if (els.desktopAlertsStatus) els.desktopAlertsStatus.textContent = statusText;
+}
+
+async function requestDesktopNotificationPermission() {
+	if (!desktopNotificationsSupported()) return "unsupported";
+	if (window.Notification.permission !== "default") return window.Notification.permission;
+	return new Promise((resolve) => {
+		const request = window.Notification.requestPermission((permission) => resolve(permission));
+		if (request && typeof request.then === "function") {
+			request.then(resolve);
+		}
+	});
+}
+
+function initDesktopAlerts() {
+	state.desktopAlertsEnabled = window.localStorage.getItem(desktopAlertsStorageKey) === "1";
+	if (desktopNotificationPermission() !== "granted") {
+		state.desktopAlertsEnabled = false;
+		window.localStorage.removeItem(desktopAlertsStorageKey);
+	}
+	updateDesktopAlertsButton();
+}
+
+function sendDesktopAlert(title, body = "", options = {}) {
+	const permission = desktopNotificationPermission();
+	if (!state.desktopAlertsEnabled || permission !== "granted") return;
+	const durationMs = Number(options.durationMs || 0);
+	const shouldNotify = Boolean(options.force)
+		|| options.type === "error"
+		|| document.visibilityState === "hidden"
+		|| !document.hasFocus()
+		|| durationMs >= desktopAlertVisibleMinMs;
+	if (!shouldNotify) return;
+	try {
+		const notification = new window.Notification(title, {
+			body: compactNotificationBody(body),
+			tag: options.tag || `mrn-local-hub-${title}`,
+			renotify: options.type === "error",
+		});
+		notification.onclick = () => {
+			window.focus();
+			notification.close();
+		};
+		window.setTimeout(() => notification.close(), 9000);
+	} catch {
+		// Browser notification support differs by runtime; failed alerts should not interrupt Hub work.
+	}
+}
+
+async function toggleDesktopAlerts() {
+	const permission = await requestDesktopNotificationPermission();
+	if (permission !== "granted") {
+		state.desktopAlertsEnabled = false;
+		window.localStorage.removeItem(desktopAlertsStorageKey);
+		updateDesktopAlertsButton();
+		showToast(permission === "denied" ? "Desktop alerts are blocked in browser or system settings." : "Desktop alerts are unavailable.", "error");
+		return;
+	}
+	state.desktopAlertsEnabled = !state.desktopAlertsEnabled;
+	if (state.desktopAlertsEnabled) {
+		window.localStorage.setItem(desktopAlertsStorageKey, "1");
+		updateDesktopAlertsButton();
+		showToast("Desktop alerts enabled.", "success");
+		sendDesktopAlert("MRN Local Hub", "Desktop alerts are enabled for command completions and failures.", { force: true });
+	} else {
+		window.localStorage.removeItem(desktopAlertsStorageKey);
+		updateDesktopAlertsButton();
+		showToast("Desktop alerts disabled.", "info");
+	}
+}
+
+function appSettingsFormData() {
+	const data = {};
+	if (!els.appSettingsForm) return data;
+	new FormData(els.appSettingsForm).forEach((value, key) => {
+		data[key] = String(value || "").trim();
+	});
+	return data;
+}
+
+function renderAppSettings() {
+	const report = state.appSettings;
+	const settings = report?.settings || {};
+	if (els.appSettingsForm && settings.sitesRoot) {
+		const fields = {
+			sitesRoot: settings.sitesRoot,
+			runtimeMemoryGiB: settings.runtimeMemoryGiB,
+			runtimeDiskGiB: settings.runtimeDiskGiB,
+		};
+		for (const [name, value] of Object.entries(fields)) {
+			const field = els.appSettingsForm.elements[name];
+			if (field) field.value = value ?? "";
+		}
+	}
+	if (els.appSettingsStatus) {
+		if (!report) {
+			els.appSettingsStatus.className = "operation-status";
+			els.appSettingsStatus.textContent = "Settings have not loaded yet.";
+			return;
+		}
+		const active = report.active || {};
+		const envOverride = report.envOverrides?.sitesRoot;
+		const memory = active.runtimeMemory || `${settings.runtimeMemoryGiB || 0}GiB`;
+		const disk = active.runtimeDisk || `${settings.runtimeDiskGiB || 0}GiB`;
+		els.appSettingsStatus.className = "operation-status ok";
+		els.appSettingsStatus.textContent = [
+			`Active sites folder: ${active.sitesRoot || settings.sitesRoot || "not set"}.`,
+			`Runtime allowance: ${memory} memory, ${disk} disk.`,
+			envOverride ? "MRN_LOCAL_SITES_ROOT is set, so the environment overrides the saved sites folder." : "",
+		].filter(Boolean).join(" ");
 	}
 }
 
@@ -602,6 +787,17 @@ function writeSiteConsole(text, className) {
 	writeConsole(els.siteActivityConsole, text, className);
 }
 
+function commandResultSummary(result = {}, fallback = "") {
+	const summary = result.stderr || result.stdout || fallback;
+	if (summary) {
+		return compactNotificationBody(summary);
+	}
+	if (typeof result.code === "number") {
+		return `Exit code ${result.code}.`;
+	}
+	return "";
+}
+
 function setSiteActivityStatus(text = "Idle", stateName = "idle") {
 	if (!els.siteActivityStatus) return;
 	els.siteActivityStatus.textContent = text;
@@ -618,11 +814,31 @@ function revealSiteActivity() {
 	});
 }
 
+function runtimeContextLines(result = {}) {
+	const context = result.runtimeContext;
+	if (!context) return [];
+	const lines = [`Runtime context: ${context.label || context.mode || "unknown"}`];
+	if (context.instanceName) {
+		lines.push(`Runtime instance: ${context.instanceName}`);
+	}
+	if (context.runtimePath) {
+		lines.push(`Runtime path: ${context.runtimePath}`);
+	}
+	if (context.hostPath && context.hostPath !== context.runtimePath) {
+		lines.push(`Host path: ${context.hostPath}`);
+	}
+	if (context.phpBinary) {
+		lines.push(`Runtime PHP: ${context.phpBinary}`);
+	}
+	return lines;
+}
+
 function appendOutput(title, result, isError = false, notify = true, options = {}) {
 	const stamp = new Date().toLocaleTimeString();
 	const lines = [
 		`[${stamp}] ${title}`,
 		result.command ? `$ ${[result.command, ...(result.args || [])].join(" ")}` : "",
+		...runtimeContextLines(result),
 		result.stdout || "",
 		result.stderr ? `STDERR:\n${result.stderr}` : "",
 		typeof result.code === "number" ? `Exit: ${result.code}` : "",
@@ -638,7 +854,14 @@ function appendOutput(title, result, isError = false, notify = true, options = {
 		writeConsole(els.qaOutputConsole, text, className);
 	}
 	if (notify) {
-		showToast(`${actionLabel(title)} ${isError ? "failed" : "finished"}`, isError ? "error" : "success");
+		const label = `${actionLabel(title)} ${isError ? "failed" : "finished"}`;
+		const type = isError ? "error" : "success";
+		showToast(label, type);
+		sendDesktopAlert(label, commandResultSummary(result, label), {
+			durationMs: Number(result.durationMs || (state.operationStartedAt ? Date.now() - state.operationStartedAt : 0)),
+			tag: `mrn-local-hub-${title}`,
+			type,
+		});
 	}
 }
 
@@ -665,6 +888,12 @@ function appendPending(title, message, options = {}) {
 function appendMessage(message, isError = false) {
 	appendOutput(message, { code: isError ? 1 : 0 }, isError, false);
 	showToast(message, isError ? "error" : "success");
+	if (isError) {
+		sendDesktopAlert("MRN Local Hub issue", message, {
+			tag: "mrn-local-hub-error",
+			type: "error",
+		});
+	}
 }
 
 function renderQaScreenshots(artifacts = []) {
@@ -757,8 +986,34 @@ function actionLabel(action) {
 		"credential-save": "Save Credential",
 		"credential-test": "Test Credential",
 		"credential-delete": "Delete Credential",
+		"aws-connection-test": "Test AWS Connection",
+		"app-settings-save": "Save App Settings",
 	};
 	return labels[action] || action;
+}
+
+function awsTestToastSummary(result = {}) {
+	const checks = Array.isArray(result.checks) ? result.checks : [];
+	const failed = checks.filter((check) => check.status === "fail");
+	const s3Check = checks.find((check) => String(check.label || "").toLowerCase().includes("s3"));
+	const identityCheck = checks.find((check) => String(check.label || "").toLowerCase().includes("identity"));
+	if (failed.length) {
+		const failedS3 = failed.find((check) => String(check.label || "").toLowerCase().includes("s3"));
+		if (failedS3) {
+			return { message: failedS3.detail || "AWS identity passed, but S3 bucket access failed.", type: "error" };
+		}
+		return { message: failed[0]?.detail || "AWS connection failed.", type: "error" };
+	}
+	if (s3Check?.status === "pass") {
+		return { message: s3Check.detail || "AWS key works and S3 bucket access passed.", type: "success" };
+	}
+	if (identityCheck?.status === "pass") {
+		return { message: "AWS key works. No bucket was checked.", type: "success" };
+	}
+	return {
+		message: result.code === 0 ? "AWS connection test passed." : "AWS connection test failed.",
+		type: result.code === 0 ? "success" : "error",
+	};
 }
 
 function actionPendingMessage(action, site, payload = {}) {
@@ -816,13 +1071,16 @@ function actionPendingMessage(action, site, payload = {}) {
 const buttonIdTooltips = {
 	refreshButton: "Reloads site manifests, runtime health, local tool checks, provider account status, and dashboard metrics. Useful after editing files outside the Hub or after a runtime command finishes.",
 	themeToggle: "Switches only the Hub UI theme. It does not change any local site, WordPress theme, or browser setting.",
+	desktopAlertsButton: "Enables portable browser desktop alerts for command failures, background completions, and longer-running jobs. Future native app builds can reuse this same alert path.",
+	saveAppSettingsButton: "Saves app-level defaults: local site storage folder and Lima runtime memory/disk allowances.",
 	selectVisibleSitesButton: "Selects every site currently visible after search and filters. Hidden filtered-out sites are not selected.",
 	clearSiteSelectionButton: "Clears the bulk selection so Start Selected and Stop Selected no longer affect any sites.",
 	bulkStartSitesButton: "Runs Start/Provision for every selected site. This can create missing local DB/vhost resources, but it does not contact remote hosting.",
 	bulkStopSitesButton: "Marks selected sites stopped in the Hub. The shared Lima/OpenLiteSpeed runtime stays online, and remote hosting is not touched.",
 	wpEngineListButton: "Calls the configured WP Engine account credentials to list installs/environments, then lets you hand one off to the SSH import flow.",
 	siteGroundAddButton: "Stores this SiteGround SSH site entry locally so it can be selected later. It does not validate SSH until the Add Site connection step.",
-	saveAwsCredentialButton: "Stores the AWS access key, secret key, and optional session token in macOS Keychain. The Hub only keeps non-secret metadata like label and region.",
+	saveAwsCredentialButton: "Stores AWS secrets in macOS Keychain and saves non-secret S3 defaults like label, region, bucket, and prefix for backup restore.",
+	cancelAwsCredentialEditButton: "Leaves the stored AWS key unchanged and clears the edit form.",
 	refreshProviderAccountsButton: "Reloads saved provider registries and environment-backed account credentials without changing any local site.",
 	addSiteCancelButton: "Exits the Add Site wizard and returns to All Sites. Anything already created by a completed step remains in place.",
 	addSiteBackButton: "Moves one wizard step back so you can revise the source or connection details before creating/importing.",
@@ -832,7 +1090,9 @@ const buttonIdTooltips = {
 		sshCreateImportButton: "Runs the full selected first-import flow: create manifest, provision runtime, pull selected files, optionally pull DB, then optionally smoke check.",
 		createBackupSiteButton: "Creates a new local site from staged Updraft backup parts. It provisions the runtime, restores files/database based on the selected options, and never writes to remote hosting.",
 		chooseUpdraftFilesButton: "Opens a file picker for local UpdraftPlus backup parts. Files are staged in the Hub runtime temp area, not inside a public WordPress folder.",
-		listAwsBackupsButton: "Lists UpdraftPlus backup sets in the selected S3 bucket. If a stored key is selected, the Hub reads it from Keychain for this AWS CLI call; otherwise it uses the profile/environment.",
+		testAwsConnectionButton: "Tests the selected stored AWS key or AWS CLI profile. If a bucket is entered, it also checks lightweight S3 list access for that bucket/prefix.",
+		listAwsBackupsButton: "Loads the saved S3 backup index for this bucket/prefix when available. If no index exists yet, it scans S3 and stores the result.",
+		refreshAwsBackupsButton: "Rescans the selected S3 bucket/prefix folder tree and replaces the saved backup index. Use this after new Updraft backups land in S3.",
 		refreshSshAliasesButton: "Re-reads ~/.ssh/config and included SSH config files so new aliases appear in the chooser.",
 	openLocalButton: "Opens the selected local site URL. If friendly HTTPS is not active, the button stays blocked with the reason shown here.",
 	openAdminButton: "Creates a one-time local admin login URL and opens wp-admin. This changes only the local WordPress database.",
@@ -905,6 +1165,8 @@ const sectionTooltips = {
 	dashboard: "Server overview: CPU, memory, job activity, runtime health, and running-site cards.",
 	sites: "Site inventory: add sites, filter/bulk manage, open a site page, then pull, push, configure, or QA it.",
 	runtime: "Runtime controls: Lima/OpenLiteSpeed status, friendly HTTPS setup, maintenance, and generated config details.",
+	providers: "Provider Directory: manage external provider lookups, saved SiteGround entries, AWS keys, and S3 backup sources.",
+	settings: "App Settings: local site storage, runtime allowances, and portable desktop alert preferences.",
 	logs: "Command log: review output from pulls, pushes, DB imports, runtime actions, and QA commands.",
 };
 
@@ -925,6 +1187,8 @@ const tabTooltips = {
 	"runtime-https": "Configure friendly local HTTPS URLs.",
 	"runtime-maintenance": "Run runtime setup and repair actions.",
 	"runtime-details": "Show generated runtime paths and config details.",
+	"providers-directory": "Manage external provider directories and secure keys used by Add Site and backup restore.",
+	"app-settings": "Manage Local Hub app defaults, runtime allowances, and desktop alerts.",
 	"logs-console": "Show deployment command output.",
 };
 
@@ -1599,6 +1863,12 @@ function awsBackupFormData() {
 		data[key] = String(value || "").trim();
 	});
 	if (data.credentialId) {
+		const credential = awsCredentialById(data.credentialId);
+		if (credential) {
+			if (!data.region && credential.region) data.region = credential.region;
+			if (!data.bucket && credential.s3Bucket) data.bucket = credential.s3Bucket;
+			if (!data.prefix && credential.s3Prefix) data.prefix = credential.s3Prefix;
+		}
 		delete data.profile;
 	}
 	return data;
@@ -1942,6 +2212,37 @@ function awsStoredCredentials() {
 	return (state.credentials || []).filter((credential) => credential.provider === "aws");
 }
 
+function awsCredentialById(id) {
+	return awsStoredCredentials().find((credential) => credential.id === id);
+}
+
+function s3SourceLabel(credential) {
+	if (!credential?.s3Bucket) return "";
+	return `s3://${credential.s3Bucket}/${credential.s3Prefix || ""}`;
+}
+
+function applyAwsCredentialDefaultsToBackupForm(id, options = {}) {
+	if (!els.awsBackupForm || !id) return;
+	const credential = awsCredentialById(id);
+	if (!credential) return;
+	const overwrite = Boolean(options.overwrite);
+	const fields = {
+		region: credential.region || "",
+		bucket: credential.s3Bucket || "",
+		prefix: credential.s3Prefix || "",
+	};
+	for (const [name, value] of Object.entries(fields)) {
+		const field = els.awsBackupForm.elements[name];
+		if (field && value && (overwrite || !field.value.trim())) {
+			field.value = value;
+		}
+	}
+	const profile = els.awsBackupForm.elements.profile;
+	if (profile && (overwrite || !profile.value.trim())) {
+		profile.value = "";
+	}
+}
+
 function renderAwsCredentialOptions() {
 	if (!els.awsBackupCredentialSelect) return;
 	const selected = els.awsBackupCredentialSelect.value;
@@ -1953,11 +2254,16 @@ function renderAwsCredentialOptions() {
 	for (const credential of awsStoredCredentials()) {
 		const option = document.createElement("option");
 		option.value = credential.id;
-		option.textContent = `${credential.label}${credential.region ? ` · ${credential.region}` : ""}`;
+		const details = [
+			credential.region,
+			credential.s3Bucket ? s3SourceLabel(credential) : "",
+		].filter(Boolean);
+		option.textContent = `${credential.label}${details.length ? ` · ${details.join(" · ")}` : ""}`;
 		els.awsBackupCredentialSelect.append(option);
 	}
 	if ([...els.awsBackupCredentialSelect.options].some((option) => option.value === selected)) {
 		els.awsBackupCredentialSelect.value = selected;
+		applyAwsCredentialDefaultsToBackupForm(selected);
 	}
 }
 
@@ -1990,20 +2296,41 @@ function renderCredentials() {
 			credential.storage || "secure storage",
 			credential.hasSessionToken ? "session token" : "long-lived key",
 		].join(" · ");
+		const s3Meta = credential.s3Bucket ? `S3 ${s3SourceLabel(credential)}` : "No default S3 source";
 		item.innerHTML = `
 			<div>
 				<span class="provider-badge">${escapeHtml(String(credential.provider || "").toUpperCase())}</span>
 				<strong>${escapeHtml(credential.label || credential.id)}</strong>
 				<span>${escapeHtml(meta)}</span>
+				<span>${escapeHtml(s3Meta)}</span>
 			</div>
 			<div class="provider-result-actions"></div>
 		`;
 		const actions = item.querySelector(".provider-result-actions");
 		if (credential.provider === "aws") {
+			const editButton = document.createElement("button");
+			editButton.type = "button";
+			editButton.className = "ghost-button";
+			editButton.textContent = "Edit";
+			editButton.title = "Loads this saved AWS source into the form. Leave secret fields blank to keep the current Keychain values.";
+			editButton.addEventListener("click", () => editAwsCredential(credential.id));
+			actions.append(editButton);
+
+			const useButton = document.createElement("button");
+			useButton.type = "button";
+			useButton.className = "ghost-button";
+			useButton.textContent = "Use";
+			useButton.title = "Selects this AWS source in Add Site and fills its saved bucket/prefix defaults.";
+			useButton.addEventListener("click", () => useAwsCredentialForBackup(credential.id));
+			actions.append(useButton);
+
 			const testButton = document.createElement("button");
 			testButton.type = "button";
 			testButton.className = "ghost-button";
 			testButton.textContent = "Test";
+			testButton.title = credential.s3Bucket
+				? `Tests AWS identity and list access for ${s3SourceLabel(credential)}.`
+				: "Tests AWS identity only because no default bucket is saved yet.";
 			testButton.addEventListener("click", () => testAwsCredential(credential.id));
 			actions.append(testButton);
 		}
@@ -2047,6 +2374,24 @@ function backupComponentLabel(component) {
 		unknown: "Unknown",
 	};
 	return labels[component] || component;
+}
+
+function s3PrefixLabel(prefix) {
+	const value = String(prefix || "").replace(/\/$/, "");
+	return value || "Bucket root";
+}
+
+function parentS3Prefix(prefix) {
+	const value = String(prefix || "").replace(/\/$/, "");
+	if (!value || !value.includes("/")) return "";
+	return `${value.split("/").slice(0, -1).join("/")}/`;
+}
+
+function setAwsBackupStateFromResult(result = {}) {
+	state.awsBackupGroups = Array.isArray(result.groups) ? result.groups : [];
+	state.awsBackupPrefixes = Array.isArray(result.prefixes) ? result.prefixes : [];
+	state.awsBackupFiles = Array.isArray(result.files) ? result.files : [];
+	state.awsBackupIndex = result.index || null;
 }
 
 function renderUpdraftSession() {
@@ -2099,24 +2444,42 @@ function renderBackupRestoreOptions() {
 function renderAwsBackupResults() {
 	if (!els.awsBackupResults || !els.awsBackupStatus) return;
 	const groups = state.awsBackupGroups || [];
+	const prefixes = state.awsBackupPrefixes || [];
+	const index = state.awsBackupIndex;
+	const fileCount = state.awsBackupFiles?.length || index?.fileCount || 0;
 	els.awsBackupResults.textContent = "";
 	if (!groups.length) {
-		els.awsBackupStatus.textContent = "AWS S3 backup source is optional.";
+		els.awsBackupStatus.className = index ? "operation-status warn" : "operation-status";
+		els.awsBackupStatus.textContent = index
+			? `Stored S3 index has no Updraft sets. ${prefixes.length} folder${prefixes.length === 1 ? "" : "s"} indexed.`
+			: "AWS S3 backup source is optional.";
+		if (prefixes.length) {
+			renderAwsFolderIndex(prefixes);
+		}
 		return;
 	}
 	els.awsBackupStatus.className = "operation-status ok";
-	els.awsBackupStatus.textContent = `${groups.length} Updraft backup set${groups.length === 1 ? "" : "s"} found.`;
-	for (const group of groups.slice(0, 20)) {
+	els.awsBackupStatus.textContent = [
+		`${groups.length} Updraft backup set${groups.length === 1 ? "" : "s"} found`,
+		`${prefixes.length} folder${prefixes.length === 1 ? "" : "s"} indexed`,
+		`${fileCount} file${fileCount === 1 ? "" : "s"} scanned`,
+		index?.scannedAt ? `stored ${new Date(index.scannedAt).toLocaleString()}` : "",
+	].filter(Boolean).join(" · ");
+	if (prefixes.length) {
+		renderAwsFolderIndex(prefixes);
+	}
+	for (const group of groups) {
 		const item = document.createElement("article");
 		item.className = "provider-result";
 		const components = Object.entries(group.components || {})
 			.map(([key, count]) => `${backupComponentLabel(key)} ${count}`)
 			.join(" · ");
+		const folder = group.folder ? `Folder ${group.folder}` : "Bucket root";
 		item.innerHTML = `
 			<div>
 				<span class="provider-badge">AWS S3</span>
 				<strong>${escapeHtml(group.label || group.id)}</strong>
-				<span>${escapeHtml(group.lastModified || "unknown date")} · ${escapeHtml(formatBytes(group.totalBytes || 0))} · ${escapeHtml(components)}</span>
+				<span>${escapeHtml(folder)} · ${escapeHtml(group.lastModified || "unknown date")} · ${escapeHtml(formatBytes(group.totalBytes || 0))} · ${escapeHtml(components)}</span>
 			</div>
 			<div class="provider-result-actions"></div>
 		`;
@@ -2134,6 +2497,41 @@ function renderAwsBackupResults() {
 		actions.append(stageCodeButton, stageAllButton);
 		els.awsBackupResults.append(item);
 	}
+}
+
+function renderAwsFolderIndex(prefixes = []) {
+	if (!els.awsBackupResults) return;
+	const panel = document.createElement("article");
+	panel.className = "provider-result aws-folder-index";
+	const currentPrefix = els.awsBackupForm?.elements.prefix?.value || "";
+	const title = document.createElement("div");
+	title.innerHTML = `
+		<span class="provider-badge">S3 Index</span>
+		<strong>Indexed folders</strong>
+		<span>Choose a folder to narrow the S3 prefix, or refresh the index to rescan the bucket tree.</span>
+	`;
+	const folderList = document.createElement("div");
+	folderList.className = "aws-folder-list";
+	const availablePrefixes = [
+		"",
+		...(currentPrefix ? [parentS3Prefix(currentPrefix)] : []),
+		...prefixes,
+	].filter((prefix, index, list) => list.indexOf(prefix) === index);
+	for (const prefix of availablePrefixes) {
+		const button = document.createElement("button");
+		button.type = "button";
+		button.className = prefix === currentPrefix ? "ghost-button success-button" : "ghost-button";
+		button.textContent = s3PrefixLabel(prefix);
+		button.title = `Use ${prefix || "bucket root"} as the S3 prefix.`;
+		button.addEventListener("click", () => {
+			const field = els.awsBackupForm?.elements.prefix;
+			if (field) field.value = prefix;
+			listAwsBackups().catch((error) => appendMessage(error.message, true));
+		});
+		folderList.append(button);
+	}
+	panel.append(title, folderList);
+	els.awsBackupResults.append(panel);
 }
 
 async function uploadUpdraftFiles(fileList) {
@@ -2167,24 +2565,67 @@ async function uploadUpdraftFiles(fileList) {
 	}
 }
 
-async function listAwsBackups() {
+async function listAwsBackups(options = {}) {
 	const form = awsBackupFormData();
 	if (!form.bucket) {
 		showToast("Enter an S3 bucket before listing backups.", "error");
 		return;
 	}
-	setBusy(true, "List S3 Backups");
+	const refreshIndex = Boolean(options.refresh);
+	setBusy(true, refreshIndex ? "Refresh S3 Index" : "List S3 Backups");
 	try {
 		els.awsBackupStatus.className = "operation-status";
-		els.awsBackupStatus.textContent = "Listing S3 backups...";
+		els.awsBackupStatus.textContent = refreshIndex ? "Refreshing S3 folder index..." : "Loading stored S3 index...";
+		if (!refreshIndex) {
+			const stored = await api("/api/backups/updraft/actions", {
+				method: "POST",
+				body: JSON.stringify({ action: "aws-index-get", ...form }),
+			});
+			appendOutput("aws-index-get", stored.result, stored.result.code !== 0);
+			if (stored.result?.groups?.length || stored.result?.index) {
+				setAwsBackupStateFromResult(stored.result);
+				renderAwsBackupResults();
+				renderChecklist();
+				return;
+			}
+			els.awsBackupStatus.textContent = "No stored S3 index yet. Scanning S3 folders...";
+		}
 		const response = await api("/api/backups/updraft/actions", {
 			method: "POST",
 			body: JSON.stringify({ action: "aws-list", ...form }),
 		});
 		appendOutput("aws-s3-list", response.result, response.result.code !== 0);
-		state.awsBackupGroups = response.result.groups || [];
+		setAwsBackupStateFromResult(response.result);
 		renderAwsBackupResults();
 		renderChecklist();
+	} catch (error) {
+		els.awsBackupStatus.className = "operation-status warn";
+		els.awsBackupStatus.textContent = error.message;
+		showToast(error.message, "error");
+	} finally {
+		setBusy(false);
+	}
+}
+
+async function testAwsConnection() {
+	const form = awsBackupFormData();
+	setBusy(true, "Test AWS");
+	try {
+		els.awsBackupStatus.className = "operation-status";
+		els.awsBackupStatus.textContent = "Testing AWS connection...";
+		const response = await api("/api/backups/updraft/actions", {
+			method: "POST",
+			body: JSON.stringify({ action: "aws-test-connection", ...form }),
+		});
+		appendOutput("aws-connection-test", response.result, response.result.code !== 0);
+		const checks = response.result.checks || [];
+		const failed = checks.filter((check) => check.status === "fail");
+		els.awsBackupStatus.className = failed.length ? "operation-status warn" : "operation-status ok";
+		els.awsBackupStatus.textContent = failed.length
+			? response.result.stderr || response.result.stdout || "AWS connection test failed."
+			: response.result.stdout || "AWS connection test passed.";
+		const toast = awsTestToastSummary(response.result);
+		showToast(toast.message, toast.type);
 	} catch (error) {
 		els.awsBackupStatus.className = "operation-status warn";
 		els.awsBackupStatus.textContent = error.message;
@@ -3567,9 +4008,11 @@ function renderMetrics() {
 	}
 	if (els.memoryMetricDetail) {
 		const memory = metrics.system?.memory || {};
-		els.memoryMetricDetail.textContent = memory.availableBytes
+		const memoryText = memory.availableBytes
 			? `${formatBytes(memory.usedBytes || 0)} used · ${formatBytes(memory.availableBytes)} available`
 			: `${formatBytes(memory.usedBytes || 0)} of ${formatBytes(memory.totalBytes || 0)} used`;
+		const runtimeMemory = metrics.limits?.runtimeMemoryBytes ? ` · runtime allowance ${formatBytes(metrics.limits.runtimeMemoryBytes)}` : "";
+		els.memoryMetricDetail.textContent = `${memoryText}${runtimeMemory}`;
 	}
 	if (els.jobMetricSummary) {
 		els.jobMetricSummary.textContent = `${activeJobs} running`;
@@ -3620,7 +4063,7 @@ function selectSite(slug, openSiteView = false) {
 }
 
 async function refresh() {
-	const [health, runtime, sitesResponse, metricsResponse, sshAliasResponse, providerAccountsResponse] = await Promise.all([
+	const [health, runtime, sitesResponse, metricsResponse, sshAliasResponse, providerAccountsResponse, appSettingsResponse] = await Promise.all([
 		api("/api/health"),
 		api("/api/runtime"),
 		api("/api/sites"),
@@ -3641,11 +4084,13 @@ async function refresh() {
 			sites: { siteground: [] },
 			error: error.message,
 		})),
+		api("/api/app-settings").catch(() => null),
 	]);
 	state.health = health;
 	state.runtime = runtime;
 	state.sites = sitesResponse.sites;
 	state.metrics = metricsResponse;
+	state.appSettings = appSettingsResponse;
 	state.sshAliasReport = sshAliasResponse;
 	state.sshAliases = sshAliasResponse.aliases || [];
 	state.providerAccounts = providerAccountsResponse;
@@ -3655,6 +4100,7 @@ async function refresh() {
 		state.currentSlug = null;
 	}
 	renderHealth();
+	renderAppSettings();
 	renderRuntime();
 	renderMetrics();
 	renderSites();
@@ -3670,6 +4116,29 @@ async function refreshMetrics() {
 	state.metrics = metrics;
 	renderMetrics();
 	renderSites();
+}
+
+async function saveAppSettings() {
+	if (!els.appSettingsForm) return;
+	setBusy(true, "Save Settings");
+	try {
+		const response = await api("/api/app-settings", {
+			method: "POST",
+			body: JSON.stringify(appSettingsFormData()),
+		});
+		state.appSettings = response;
+		appendOutput("app-settings-save", response.result, response.result?.code !== 0);
+		renderAppSettings();
+		renderMetrics();
+		renderRuntime();
+		showToast(response.result?.requiresRuntimeBootstrap ? "Settings saved. Regenerate/bootstrap runtime to apply allowance changes." : "App settings saved.", "success");
+		await refresh();
+	} catch (error) {
+		showToast(error.message, "error");
+		appendMessage(error.message, true);
+	} finally {
+		setBusy(false);
+	}
 }
 
 async function refreshSshAliases() {
@@ -3773,6 +4242,71 @@ async function removeProviderSite(site) {
 	}
 }
 
+function resetAwsCredentialForm() {
+	if (!els.awsCredentialForm) return;
+	els.awsCredentialForm.reset();
+	const idField = els.awsCredentialForm.elements.id;
+	if (idField) idField.value = "";
+	if (els.saveAwsCredentialButton) {
+		els.saveAwsCredentialButton.textContent = "Save AWS Key";
+	}
+	if (els.cancelAwsCredentialEditButton) {
+		els.cancelAwsCredentialEditButton.hidden = true;
+	}
+	if (els.awsCredentialStatus) {
+		const count = awsStoredCredentials().length;
+		els.awsCredentialStatus.textContent = count
+			? `${count} AWS key${count === 1 ? "" : "s"} available for S3 backups.`
+			: "Saved keys use macOS Keychain. Secrets are not written to site manifests.";
+	}
+}
+
+function editAwsCredential(id) {
+	const credential = awsCredentialById(id);
+	if (!credential || !els.awsCredentialForm) return;
+	const fields = {
+		id: credential.id,
+		label: credential.label || "",
+		region: credential.region || "",
+		s3Bucket: credential.s3Bucket || "",
+		s3Prefix: credential.s3Prefix || "",
+		accessKeyId: "",
+		secretAccessKey: "",
+		sessionToken: "",
+	};
+	for (const [name, value] of Object.entries(fields)) {
+		const field = els.awsCredentialForm.elements[name];
+		if (field) field.value = value;
+	}
+	if (els.saveAwsCredentialButton) {
+		els.saveAwsCredentialButton.textContent = "Update AWS Key";
+	}
+	if (els.cancelAwsCredentialEditButton) {
+		els.cancelAwsCredentialEditButton.hidden = false;
+	}
+	if (els.awsCredentialStatus) {
+		els.awsCredentialStatus.textContent = `Editing ${credential.label}. Leave secret fields blank to keep the current Keychain values.`;
+	}
+	els.awsCredentialForm.scrollIntoView({ behavior: "smooth", block: "start" });
+	els.awsCredentialForm.elements.label?.focus();
+}
+
+function useAwsCredentialForBackup(id) {
+	const credential = awsCredentialById(id);
+	if (!credential || !els.awsBackupCredentialSelect) return;
+	setSelectedAddSiteMode("backup");
+	setActiveTab("sites-add", "sites");
+	setAddSiteStep("source");
+	els.awsBackupCredentialSelect.value = credential.id;
+	applyAwsCredentialDefaultsToBackupForm(credential.id, { overwrite: true });
+	renderAddSiteWizard();
+	els.awsBackupForm?.scrollIntoView({ behavior: "smooth", block: "center" });
+	showToast(
+		credential.s3Bucket ? `Loaded ${s3SourceLabel(credential)}.` : "Loaded AWS key. Add a bucket before listing backups.",
+		credential.s3Bucket ? "success" : "error",
+	);
+}
+
 async function saveAwsCredential() {
 	if (!els.awsCredentialForm) return;
 	const payload = providerFormData(els.awsCredentialForm);
@@ -3791,7 +4325,8 @@ async function saveAwsCredential() {
 			if (field) field.value = "";
 		});
 		appendOutput("credential-save", response.result, response.result.code !== 0);
-		showToast("AWS key saved to Keychain.", "success");
+		showToast(payload.id ? "AWS source updated." : "AWS key saved to Keychain.", "success");
+		resetAwsCredentialForm();
 		renderCredentials();
 		renderChecklist();
 	} catch (error) {
@@ -3813,7 +4348,8 @@ async function testAwsCredential(id) {
 			}),
 		});
 		appendOutput("credential-test", response.result, response.result.code !== 0);
-		showToast(response.result.code === 0 ? "AWS key works." : "AWS key test failed.", response.result.code === 0 ? "success" : "error");
+		const toast = awsTestToastSummary(response.result);
+		showToast(toast.message, toast.type);
 	} catch (error) {
 		showToast(error.message, "error");
 		appendMessage(error.message, true);
@@ -4023,6 +4559,9 @@ async function createSiteFromBackup() {
 			state.backupImportSessionId = "";
 			state.backupSession = null;
 			state.awsBackupGroups = [];
+			state.awsBackupPrefixes = [];
+			state.awsBackupFiles = [];
+			state.awsBackupIndex = null;
 		}
 		showToast(
 			response.result.code === 0
@@ -4387,6 +4926,15 @@ if (els.updraftDropzone) {
 els.listAwsBackupsButton?.addEventListener("click", () => {
 	listAwsBackups().catch((error) => appendMessage(error.message, true));
 });
+els.refreshAwsBackupsButton?.addEventListener("click", () => {
+	listAwsBackups({ refresh: true }).catch((error) => appendMessage(error.message, true));
+});
+els.testAwsConnectionButton?.addEventListener("click", () => {
+	testAwsConnection().catch((error) => appendMessage(error.message, true));
+});
+els.awsBackupCredentialSelect?.addEventListener("change", () => {
+	applyAwsCredentialDefaultsToBackupForm(els.awsBackupCredentialSelect.value, { overwrite: false });
+});
 els.awsBackupForm?.addEventListener("submit", (event) => {
 	event.preventDefault();
 	listAwsBackups().catch((error) => appendMessage(error.message, true));
@@ -4471,6 +5019,7 @@ els.refreshProviderAccountsButton?.addEventListener("click", () => refreshProvid
 els.wpEngineListButton?.addEventListener("click", listWpEngineSites);
 els.siteGroundAddButton?.addEventListener("click", saveSiteGroundSite);
 els.saveAwsCredentialButton?.addEventListener("click", saveAwsCredential);
+els.cancelAwsCredentialEditButton?.addEventListener("click", resetAwsCredentialForm);
 els.wpEngineDiscoveryForm.addEventListener("submit", (event) => {
 	event.preventDefault();
 	listWpEngineSites();
@@ -4513,6 +5062,16 @@ els.themeToggle.addEventListener("click", () => {
 	const current = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 	applyTheme(current === "dark" ? "light" : "dark");
 	closeUserMenu();
+});
+els.desktopAlertsButton?.addEventListener("click", () => {
+	toggleDesktopAlerts().finally(closeUserMenu);
+});
+els.saveAppSettingsButton?.addEventListener("click", () => {
+	saveAppSettings().catch((error) => appendMessage(error.message, true));
+});
+els.appSettingsForm?.addEventListener("submit", (event) => {
+	event.preventDefault();
+	saveAppSettings().catch((error) => appendMessage(error.message, true));
 });
 document.addEventListener("click", (event) => {
 	if (els.userMenu?.open && !els.userMenu.contains(event.target)) {
@@ -4569,6 +5128,7 @@ document.querySelectorAll("[data-ssh-action]").forEach((button) => {
 
 setupButtonTooltips();
 applyTheme(window.localStorage.getItem("mrn-local-hub-theme") || "light");
+initDesktopAlerts();
 updateProviderHint();
 refresh().then(() => {
 	if (!state.metricsTimer) {

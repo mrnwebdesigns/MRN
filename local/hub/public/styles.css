@@ -590,6 +590,22 @@ h3 {
 	padding-top: 14px;
 }
 
+.settings-grid {
+	display: grid;
+	gap: 16px;
+	grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+	margin-top: 16px;
+}
+
+.settings-card {
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+	display: grid;
+	gap: 14px;
+	padding: 14px;
+}
+
 .tabbar {
 	align-items: center;
 	display: flex;
@@ -652,6 +668,8 @@ h3 {
 .app[data-active-tab="dashboard-overview"] .content,
 .app[data-active-tab="sites-list"] .content,
 .app[data-active-tab="sites-add"] .content,
+.app[data-active-section="settings"] .content,
+.app[data-active-section="providers"] .content,
 .app[data-active-section="runtime"] .content {
 	display: none;
 }
@@ -1072,6 +1090,10 @@ body.is-busy {
 
 .provider-directory-panel {
 	margin-top: 16px;
+}
+
+.provider-directory-panel .section-heading {
+	margin-bottom: 16px;
 }
 
 .provider-directory-summary {
@@ -1866,6 +1888,27 @@ body.is-busy {
 	flex-wrap: wrap;
 	gap: 8px;
 	justify-content: flex-end;
+}
+
+.aws-folder-index {
+	align-items: start;
+}
+
+.aws-folder-list {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	justify-content: flex-end;
+	max-height: 220px;
+	overflow: auto;
+}
+
+.aws-folder-list .ghost-button {
+	font-size: 0.78rem;
+	min-height: 34px;
+	padding: 7px 10px;
+	text-align: left;
 }
 
 .provider-badge {
@@ -2682,6 +2725,7 @@ body.is-busy {
 		.form-grid,
 		.backup-restore-grid,
 		.discovery-grid,
+		.settings-grid,
 		.site-filter-grid,
 	.initial-import-grid,
 	.source-grid,

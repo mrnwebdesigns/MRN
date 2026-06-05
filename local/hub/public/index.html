@@ -49,6 +49,8 @@
 									<span>Local Hub</span>
 								</div>
 								<button id="refreshButton" type="button">Refresh</button>
+								<button type="button" data-section="settings">Settings</button>
+								<button type="button" data-section="providers">Provider Directory</button>
 								<button type="button" data-section="runtime">Runtime</button>
 								<button type="button" data-section="logs">Logs</button>
 								<button id="themeToggle" type="button">Dark mode</button>
@@ -169,14 +171,72 @@
 						</div>
 					</div>
 					<div id="siteInventory" class="site-inventory" aria-label="All local sites"></div>
-					<details class="provider-discovery-panel provider-directory-panel embedded-panel">
-						<summary class="provider-directory-summary">
-							<span class="panel-icon" aria-hidden="true">D</span>
-							<span>
-								<strong>Provider Directory</strong>
-								<small>List provider-backed sites and hand one into Add Site.</small>
-							</span>
-						</summary>
+				</section>
+
+				<section class="panel app-settings-page app-tab-panel" data-tab-panel="app-settings" aria-label="App settings">
+					<div class="section-heading">
+						<div class="panel-title inline-title">
+							<div class="panel-icon" aria-hidden="true">S</div>
+							<div>
+								<p class="eyebrow">App</p>
+								<h2>Settings</h2>
+								<p>Local Hub behavior, runtime allowances, and desktop notifications.</p>
+							</div>
+						</div>
+					</div>
+					<div class="settings-grid">
+						<form id="appSettingsForm" class="settings-card" autocomplete="off">
+							<div class="mini-heading">
+								<strong>Local Storage</strong>
+								<span>Where the Hub creates and scans local WordPress site folders.</span>
+							</div>
+							<label class="field wide">
+								<span>Sites folder</span>
+								<input name="sitesRoot" type="text" autocomplete="off" placeholder="~/Development/MRN-sites">
+							</label>
+							<div class="mini-heading">
+								<strong>Runtime Allowance</strong>
+								<span>Used when generating or bootstrapping the Lima OpenLiteSpeed runtime.</span>
+							</div>
+							<div class="form-grid">
+								<label class="field">
+									<span>Memory allowance (GiB)</span>
+									<input name="runtimeMemoryGiB" type="number" min="1" max="64" step="0.5" inputmode="decimal">
+								</label>
+								<label class="field">
+									<span>Disk allowance (GiB)</span>
+									<input name="runtimeDiskGiB" type="number" min="10" max="1024" step="1" inputmode="decimal">
+								</label>
+							</div>
+							<div id="appSettingsStatus" class="operation-status">Settings have not loaded yet.</div>
+							<div class="actions settings-actions">
+								<button id="saveAppSettingsButton" type="button" class="action">Save Settings</button>
+							</div>
+						</form>
+						<section class="settings-card">
+							<div class="mini-heading">
+								<strong>Desktop Alerts</strong>
+								<span>Portable browser notifications for command failures, background completions, and longer jobs.</span>
+							</div>
+							<div id="desktopAlertsStatus" class="operation-status">Desktop alert status has not loaded yet.</div>
+							<div class="actions settings-actions">
+								<button id="desktopAlertsButton" type="button" class="ghost-button">Desktop alerts off</button>
+							</div>
+						</section>
+					</div>
+				</section>
+
+				<section class="panel provider-discovery-panel provider-directory-panel app-tab-panel" data-tab-panel="providers-directory" aria-label="Provider directory">
+					<div class="section-heading">
+						<div class="panel-title inline-title">
+							<div class="panel-icon" aria-hidden="true">D</div>
+							<div>
+								<p class="eyebrow">Connections</p>
+								<h2>Provider Directory</h2>
+								<p>Manage provider-backed sites, account lookups, and secure keys for backup restores.</p>
+							</div>
+						</div>
+					</div>
 						<div class="discovery-grid">
 							<form id="wpEngineDiscoveryForm" class="discovery-block" autocomplete="off">
 								<div class="mini-heading">
@@ -235,6 +295,7 @@
 							</form>
 
 							<form id="awsCredentialForm" class="discovery-block credential-block" autocomplete="off">
+								<input name="id" type="hidden">
 								<div class="mini-heading">
 									<strong>AWS Secure Key</strong>
 									<span id="awsCredentialStatus">Saved keys use macOS Keychain. Secrets are not written to site manifests.</span>
@@ -246,6 +307,14 @@
 								<label class="field">
 									<span>Default region</span>
 									<input name="region" type="text" autocomplete="off" placeholder="us-east-1">
+								</label>
+								<label class="field">
+									<span>Default bucket</span>
+									<input name="s3Bucket" type="text" autocomplete="off" placeholder="client-backups">
+								</label>
+								<label class="field">
+									<span>Default prefix</span>
+									<input name="s3Prefix" type="text" autocomplete="off" placeholder="updraft/site-name/">
 								</label>
 								<label class="field">
 									<span>Access key ID</span>
@@ -261,6 +330,7 @@
 								</label>
 								<div class="actions">
 									<button id="saveAwsCredentialButton" type="button" class="action">Save AWS Key</button>
+									<button id="cancelAwsCredentialEditButton" type="button" class="ghost-button" hidden>Cancel Edit</button>
 								</div>
 							</form>
 						</div>
@@ -279,7 +349,6 @@
 							</div>
 						</div>
 						<div id="credentialResults" class="provider-results"></div>
-					</details>
 				</section>
 
 				<section class="panel add-site-flow app-tab-panel" data-tab-panel="sites-add" aria-labelledby="addSiteTitle">
@@ -459,7 +528,7 @@
 										<div class="panel-icon" aria-hidden="true">S3</div>
 										<div>
 											<h3>AWS S3 Source</h3>
-											<p>Uses your local AWS CLI credentials or the profile entered below.</p>
+											<p>Uses a stored key, or falls back to your local AWS CLI profile/environment.</p>
 										</div>
 									</div>
 									<form id="awsBackupForm" class="form-grid">
@@ -487,7 +556,9 @@
 										</label>
 									</form>
 									<div class="actions">
+										<button id="testAwsConnectionButton" type="button" class="ghost-button">Test AWS</button>
 										<button id="listAwsBackupsButton" type="button" class="ghost-button">List S3 Backups</button>
+										<button id="refreshAwsBackupsButton" type="button" class="ghost-button">Refresh S3 Index</button>
 									</div>
 									<div id="awsBackupStatus" class="operation-status">AWS S3 backup source is optional.</div>
 									<div id="awsBackupResults" class="provider-results backup-results"></div>
