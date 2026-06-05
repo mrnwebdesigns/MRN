@@ -69,6 +69,8 @@ function proxyTargetForHost(hostname) {
 }
 
 function proxyRequest(req, res) {
+	req.socket.setTimeout(0);
+	res.socket?.setTimeout(0);
 	if (req.url === "/__mrn-local-health") {
 		res.writeHead(200, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" });
 		res.end(JSON.stringify({
@@ -108,6 +110,7 @@ function proxyRequest(req, res) {
 			proxyRes.pipe(res);
 		},
 	);
+	proxyReq.setTimeout(0);
 
 	proxyReq.on("error", (error) => {
 		if (res.headersSent) {
@@ -159,6 +162,9 @@ async function main() {
 	for (const address of addresses) {
 		const httpServer = createHttpRedirectServer();
 		const result = await listen(httpServer, config.httpPort, address);
+		httpServer.requestTimeout = 0;
+		httpServer.timeout = 0;
+		httpServer.keepAliveTimeout = 0;
 		httpResults.push(result);
 		if (result.ok) {
 			servers.push(httpServer);
@@ -168,6 +174,9 @@ async function main() {
 	for (const address of addresses) {
 		const httpsServer = createHttpsProxyServer();
 		const result = await listen(httpsServer, config.httpsPort, address);
+		httpsServer.requestTimeout = 0;
+		httpsServer.timeout = 0;
+		httpsServer.keepAliveTimeout = 0;
 		httpsResults.push(result);
 		if (result.ok) {
 			servers.push(httpsServer);

@@ -86,7 +86,7 @@ const providerPresets = {
 		label: "Backup Restore",
 		remoteSshPlaceholder: "",
 		remotePathPlaceholder: "",
-		hint: "Restore from staged UpdraftPlus backup files or AWS S3.",
+		hint: "Restore from selected backup files or AWS S3.",
 	},
 };
 
@@ -97,6 +97,7 @@ const els = {
 	addSiteCancelButton: document.querySelector("#addSiteCancelButton"),
 	addSiteBackButton: document.querySelector("#addSiteBackButton"),
 	addSiteNextButton: document.querySelector("#addSiteNextButton"),
+	addSiteStepHelp: document.querySelector("#addSiteStepHelp"),
 	addSiteSummary: document.querySelector("#addSiteSummary"),
 	addSiteValidation: document.querySelector("#addSiteValidation"),
 	addSiteModeInputs: document.querySelectorAll('input[name="addSiteMode"]'),
@@ -627,17 +628,39 @@ function showToast(message, type = "info") {
 	window.setTimeout(remove, type === "error" ? 7600 : 4600);
 }
 
+function localHubApiUrl(path) {
+	const hostname = window.location.hostname;
+	const isLocal = hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost");
+	if (!isLocal || window.location.port === "5678") {
+		return path;
+	}
+	return `http://127.0.0.1:5678${path}`;
+}
+
 async function api(path, options = {}) {
-	const response = await fetch(path, {
-		headers: {
-			"content-type": "application/json",
-			...(options.headers || {}),
-		},
-		...options,
-	});
-	const data = await response.json();
+	const { directLocalHub = false, ...fetchOptions } = options;
+	const requestPath = directLocalHub ? localHubApiUrl(path) : path;
+	let response;
+	try {
+		response = await fetch(requestPath, {
+			headers: {
+				"content-type": "application/json",
+				...(fetchOptions.headers || {}),
+			},
+			...fetchOptions,
+		});
+	} catch (error) {
+		throw new Error(`Could not reach MRN Local Hub at ${path}. The local server or HTTPS helper may still be starting.`);
+	}
+	let data;
+	try {
+		data = await response.json();
+	} catch {
+		throw new Error(`MRN Local Hub returned a non-JSON response for ${path}.`);
+	}
 	if (!response.ok && !data.result) {
-		throw new Error(data.error || `Request failed: ${response.status}`);
+		const detail = data.details?.cause ? ` ${data.details.cause}` : "";
+		throw new Error(`${data.error || `Request failed: ${response.status}`}${detail}`);
 	}
 	return data;
 }
@@ -1088,8 +1111,8 @@ const buttonIdTooltips = {
 		createSiteButton: "Creates a blank local WordPress-style workspace only. Use this for new local work, not for cloning an existing remote site.",
 		sshCreateSiteButton: "Creates the local manifest from SSH details only. You will still need to provision, pull files, and pull the database afterward.",
 		sshCreateImportButton: "Runs the full selected first-import flow: create manifest, provision runtime, pull selected files, optionally pull DB, then optionally smoke check.",
-		createBackupSiteButton: "Creates a new local site from staged Updraft backup parts. It provisions the runtime, restores files/database based on the selected options, and never writes to remote hosting.",
-		chooseUpdraftFilesButton: "Opens a file picker for local UpdraftPlus backup parts. Files are staged in the Hub runtime temp area, not inside a public WordPress folder.",
+		createBackupSiteButton: "Creates a new local site from the selected backup files. It provisions the runtime, restores files/database based on the selected options, and never writes to remote hosting.",
+		chooseUpdraftFilesButton: "Opens a file picker for local backup files. Files are copied to the Hub restore area, not inside a public WordPress folder.",
 		testAwsConnectionButton: "Tests the selected stored AWS key or AWS CLI profile. If a bucket is entered, it also checks lightweight S3 list access for that bucket/prefix.",
 		listAwsBackupsButton: "Loads the saved S3 backup index for this bucket/prefix when available. If no index exists yet, it scans S3 and stores the result.",
 		refreshAwsBackupsButton: "Rescans the selected S3 bucket/prefix folder tree and replaces the saved backup index. Use this after new Updraft backups land in S3.",
@@ -1278,6 +1301,12 @@ function detailedTooltipForButton(button) {
 		return `Stops this site from the Hub's local running list. The shared Lima/OpenLiteSpeed runtime and remote hosting keep running.`;
 	}
 	if (button.id === "addSiteNextButton" && state.addSiteStep === "connection") {
+		if (state.addSiteMode === "backup") {
+			return `Moves to restore options after the local slug, live URL, and backup file selection are ready. Current status: ${addSiteValidationMessage()}`;
+		}
+		if (state.addSiteMode === "blank") {
+			return `Moves to the final blank-site review after the local slug is valid. Current status: ${addSiteValidationMessage()}`;
+		}
 		return "Prepares the SSH connection now: resolves MRN Dev when needed, tests the remote WordPress root, and blocks the next step if wp-config.php is not found.";
 	}
 	if (button.id === "addSiteNextButton" && state.addSiteStep === "create") {
@@ -1908,7 +1937,7 @@ function addSiteConnectionComplete() {
 	}
 	if (state.addSiteMode === "backup") {
 		const values = backupFormData();
-		return validLocalSlug(values.slug) && Boolean(liveUrlFromIdentifier(values.liveUrl)) && Boolean(state.backupSession?.files?.length);
+		return validLocalSlug(values.slug) && Boolean(liveUrlFromIdentifier(values.liveUrl)) && backupSessionCapabilities().restorable;
 	}
 	const values = addSiteSshValues();
 	const hasSiteIdentity = Boolean(values.slug || values.liveUrl || liveUrlFromIdentifier(values.slug));
@@ -1943,11 +1972,14 @@ function addSiteValidationMessage() {
 			return "Enter the live URL so the database can be search-replaced to local.";
 		}
 		if (!state.backupSession?.files?.length) {
-			return "Drop Updraft backup files or stage an AWS S3 backup set before continuing.";
+			return "Choose a local backup file or use a backup set from S3 before continuing.";
+		}
+		if (!backupSessionCapabilities().restorable) {
+			return "The selected backup does not contain recognized WordPress files or database SQL.";
 		}
 		return state.addSiteStep === "create"
-			? "Ready to create the local site from the staged Updraft backup."
-			: "Backup files are staged. Review the restore options next.";
+			? "Ready to create the local site from the selected backup."
+			: "Backup selected. Next reviews restore options.";
 	}
 	const values = addSiteSshValues();
 	const hasSiteIdentity = Boolean(values.slug || values.liveUrl || liveUrlFromIdentifier(values.slug));
@@ -1976,13 +2008,14 @@ function renderAddSiteSummary() {
 		);
 	} else if (state.addSiteMode === "backup") {
 		const values = backupFormData();
-		const components = state.backupSession?.components || {};
+		const capabilities = backupSessionCapabilities();
 		rows.push(
-			["Type", "Restore Updraft backup"],
+			["Type", "Restore backup"],
 			["Local slug", values.slug || "Required"],
 			["Live URL", values.liveUrl || "Required"],
-			["Staged files", state.backupSession?.files?.length ? `${state.backupSession.files.length} file${state.backupSession.files.length === 1 ? "" : "s"}` : "Required"],
-			["Backup parts", Object.entries(components).map(([key, count]) => `${key}: ${count}`).join(", ") || "None"],
+			["Selected files", capabilities.files.length ? `${capabilities.files.length} file${capabilities.files.length === 1 ? "" : "s"}` : "Required"],
+			["Can restore", [capabilities.hasFiles ? "Files" : "", capabilities.hasDb ? "Database" : ""].filter(Boolean).join(" + ") || "None"],
+			["Backup parts", capabilities.componentSummary || "None"],
 		);
 	} else {
 		const values = addSiteSshValues();
@@ -2040,6 +2073,11 @@ function renderAddSiteWizard() {
 			: "Next";
 		els.addSiteNextButton.hidden = state.addSiteStep === "create";
 		els.addSiteNextButton.disabled = state.busy || !addSiteStepComplete(state.addSiteStep);
+		els.addSiteNextButton.title = addSiteValidationMessage();
+	}
+	if (els.addSiteStepHelp) {
+		els.addSiteStepHelp.textContent = addSiteValidationMessage();
+		els.addSiteStepHelp.className = `wizard-help ${addSiteStepComplete(state.addSiteStep) ? "ok" : "warn"}`;
 	}
 	if (els.createSiteButton) {
 		els.createSiteButton.hidden = state.addSiteMode !== "blank";
@@ -2101,7 +2139,7 @@ async function advanceAddSiteStep() {
 		return;
 	}
 	const currentIndex = addSiteSteps.indexOf(state.addSiteStep);
-	if (state.addSiteStep === "connection") {
+	if (state.addSiteStep === "connection" && state.addSiteMode === "ssh") {
 		const prepared = await prepareAddSiteConnection();
 		if (!prepared) {
 			return;
@@ -2370,10 +2408,36 @@ function backupComponentLabel(component) {
 		"mu-plugins": "MU plugins",
 		others: "Other wp-content",
 		core: "WordPress core",
-		zip: "ZIP",
+		"site-archive": "Full site archive",
+		"db-archive": "Database ZIP",
+		zip: "Backup ZIP",
 		unknown: "Unknown",
 	};
 	return labels[component] || component;
+}
+
+function backupSessionCapabilities(session = state.backupSession) {
+	const files = session?.files || [];
+	const components = session?.components || {};
+	const fileComponents = new Set(["plugins", "themes", "uploads", "mu-plugins", "others", "core", "site-archive"]);
+	const dbComponents = new Set(["db", "db-archive", "site-archive"]);
+	const unsupportedComponents = new Set(["zip", "unknown"]);
+	const hasFiles = files.some((file) => fileComponents.has(file.component));
+	const hasDb = files.some((file) => dbComponents.has(file.component));
+	const unsupported = files.filter((file) => unsupportedComponents.has(file.component));
+	return {
+		files,
+		components,
+		hasFiles,
+		hasDb,
+		unsupported,
+		dbOnly: hasDb && !hasFiles,
+		filesOnly: hasFiles && !hasDb,
+		restorable: hasFiles || hasDb,
+		componentSummary: Object.entries(components)
+			.map(([key, count]) => `${backupComponentLabel(key)} ${count}`)
+			.join(" · "),
+	};
 }
 
 function s3PrefixLabel(prefix) {
@@ -2387,6 +2451,21 @@ function parentS3Prefix(prefix) {
 	return `${value.split("/").slice(0, -1).join("/")}/`;
 }
 
+function immediateS3Prefixes(prefixes = [], currentPrefix = "") {
+	const root = String(currentPrefix || "");
+	const children = new Set();
+	for (const prefix of prefixes) {
+		const value = String(prefix || "");
+		if (!value || value === root || !value.startsWith(root)) continue;
+		const relative = value.slice(root.length);
+		const folder = relative.split("/").filter(Boolean)[0];
+		if (folder) {
+			children.add(`${root}${folder}/`);
+		}
+	}
+	return [...children].sort((a, b) => a.localeCompare(b));
+}
+
 function setAwsBackupStateFromResult(result = {}) {
 	state.awsBackupGroups = Array.isArray(result.groups) ? result.groups : [];
 	state.awsBackupPrefixes = Array.isArray(result.prefixes) ? result.prefixes : [];
@@ -2396,16 +2475,25 @@ function setAwsBackupStateFromResult(result = {}) {
 
 function renderUpdraftSession() {
 	if (!els.updraftStagedSummary || !els.updraftStagedFiles) return;
-	const files = state.backupSession?.files || [];
-	const components = state.backupSession?.components || {};
+	const capabilities = backupSessionCapabilities();
+	const { files } = capabilities;
 	if (!files.length) {
 		els.updraftStagedSummary.className = "operation-status";
-		els.updraftStagedSummary.textContent = "No Updraft files staged yet.";
+		els.updraftStagedSummary.textContent = "No backup selected yet.";
 		els.updraftStagedFiles.textContent = "";
 		return;
 	}
-	els.updraftStagedSummary.className = "operation-status ok";
-	els.updraftStagedSummary.textContent = `${files.length} file${files.length === 1 ? "" : "s"} staged · ${Object.entries(components).map(([key, count]) => `${backupComponentLabel(key)} ${count}`).join(" · ")}`;
+	els.updraftStagedSummary.className = capabilities.unsupported.length || !capabilities.restorable ? "operation-status warn" : "operation-status ok";
+	const capabilityText = capabilities.dbOnly
+		? "Database-only backup selected"
+		: capabilities.hasFiles && capabilities.hasDb
+			? "Files and database available"
+			: capabilities.hasFiles
+				? "File restore available"
+				: capabilities.hasDb
+					? "Database restore available"
+					: "No restorable WordPress backup parts found";
+	els.updraftStagedSummary.textContent = `${capabilityText} · ${files.length} file${files.length === 1 ? "" : "s"} checked · ${capabilities.componentSummary || "No parts"}`;
 	els.updraftStagedFiles.textContent = "";
 	for (const file of files) {
 		const li = document.createElement("li");
@@ -2419,15 +2507,32 @@ function renderUpdraftSession() {
 
 function renderBackupRestoreOptions() {
 	if (!els.backupRestoreSummary) return;
-	const files = state.backupSession?.files || [];
-	if (!files.length) {
+	const capabilities = backupSessionCapabilities();
+	if (!capabilities.files.length) {
 		els.backupRestoreSummary.className = "operation-status";
-		els.backupRestoreSummary.textContent = "Stage Updraft files before creating from backup.";
+		els.backupRestoreSummary.textContent = "Choose a local backup file or use a backup from S3 before creating the site.";
 		return;
 	}
 	const restoreFiles = els.backupRestoreFiles?.checked !== false;
 	const restoreDb = els.backupRestoreDb?.checked !== false;
 	const includeUploads = els.backupIncludeUploads?.checked === true;
+	if (capabilities.unsupported.length && !capabilities.restorable) {
+		els.backupRestoreSummary.className = "operation-status warn";
+		els.backupRestoreSummary.textContent = "The selected ZIP is not recognized as WordPress files or a database backup.";
+		return;
+	}
+	if (restoreFiles && !capabilities.hasFiles) {
+		els.backupRestoreSummary.className = "operation-status warn";
+		els.backupRestoreSummary.textContent = capabilities.hasDb
+			? "This backup is database-only. Turn off Restore files or choose a backup with WordPress files."
+			: "No WordPress file backup parts are selected.";
+		return;
+	}
+	if (restoreDb && !capabilities.hasDb) {
+		els.backupRestoreSummary.className = "operation-status warn";
+		els.backupRestoreSummary.textContent = "No database backup is selected. Turn off Restore database or choose a backup with SQL data.";
+		return;
+	}
 	const parts = [];
 	if (restoreFiles) {
 		parts.push(includeUploads ? "files including uploads" : "files without uploads");
@@ -2451,8 +2556,8 @@ function renderAwsBackupResults() {
 	if (!groups.length) {
 		els.awsBackupStatus.className = index ? "operation-status warn" : "operation-status";
 		els.awsBackupStatus.textContent = index
-			? `Stored S3 index has no Updraft sets. ${prefixes.length} folder${prefixes.length === 1 ? "" : "s"} indexed.`
-			: "AWS S3 backup source is optional.";
+			? `No Updraft backup sets found in ${s3PrefixLabel(index.source?.prefix || "")}. ${prefixes.length} S3 folder${prefixes.length === 1 ? "" : "s"} scanned.`
+			: "Add an S3 bucket, then list or refresh backups.";
 		if (prefixes.length) {
 			renderAwsFolderIndex(prefixes);
 		}
@@ -2460,10 +2565,9 @@ function renderAwsBackupResults() {
 	}
 	els.awsBackupStatus.className = "operation-status ok";
 	els.awsBackupStatus.textContent = [
-		`${groups.length} Updraft backup set${groups.length === 1 ? "" : "s"} found`,
-		`${prefixes.length} folder${prefixes.length === 1 ? "" : "s"} indexed`,
-		`${fileCount} file${fileCount === 1 ? "" : "s"} scanned`,
-		index?.scannedAt ? `stored ${new Date(index.scannedAt).toLocaleString()}` : "",
+		`Found ${groups.length} Updraft backup set${groups.length === 1 ? "" : "s"}`,
+		`${fileCount} S3 file${fileCount === 1 ? "" : "s"} checked`,
+		index?.scannedAt ? `index updated ${new Date(index.scannedAt).toLocaleString()}` : "",
 	].filter(Boolean).join(" · ");
 	if (prefixes.length) {
 		renderAwsFolderIndex(prefixes);
@@ -2487,14 +2591,19 @@ function renderAwsBackupResults() {
 		const stageCodeButton = document.createElement("button");
 		stageCodeButton.type = "button";
 		stageCodeButton.className = "ghost-button";
-		stageCodeButton.textContent = "Stage No Uploads";
+		stageCodeButton.textContent = "Use Without Uploads";
+		stageCodeButton.title = "Downloads this backup set into the restore area, skipping upload parts when the set has them.";
 		stageCodeButton.addEventListener("click", () => stageAwsBackupGroup(group, { includeUploads: false }));
 		const stageAllButton = document.createElement("button");
 		stageAllButton.type = "button";
 		stageAllButton.className = "action";
-		stageAllButton.textContent = "Stage Set";
+		stageAllButton.textContent = "Use Backup";
+		stageAllButton.title = "Downloads this backup set into the restore area so the wizard can create a local site from it.";
 		stageAllButton.addEventListener("click", () => stageAwsBackupGroup(group, { includeUploads: true }));
-		actions.append(stageCodeButton, stageAllButton);
+		if (group.components?.uploads) {
+			actions.append(stageCodeButton);
+		}
+		actions.append(stageAllButton);
 		els.awsBackupResults.append(item);
 	}
 }
@@ -2504,18 +2613,19 @@ function renderAwsFolderIndex(prefixes = []) {
 	const panel = document.createElement("article");
 	panel.className = "provider-result aws-folder-index";
 	const currentPrefix = els.awsBackupForm?.elements.prefix?.value || "";
+	const childPrefixes = immediateS3Prefixes(prefixes, currentPrefix);
 	const title = document.createElement("div");
 	title.innerHTML = `
-		<span class="provider-badge">S3 Index</span>
-		<strong>Indexed folders</strong>
-		<span>Choose a folder to narrow the S3 prefix, or refresh the index to rescan the bucket tree.</span>
+		<span class="provider-badge">S3 Browse</span>
+		<strong>${escapeHtml(s3PrefixLabel(currentPrefix))}</strong>
+		<span>${childPrefixes.length ? `${childPrefixes.length} folder${childPrefixes.length === 1 ? "" : "s"} here` : "No child folders here"} · ${prefixes.length} scanned total</span>
 	`;
 	const folderList = document.createElement("div");
 	folderList.className = "aws-folder-list";
 	const availablePrefixes = [
 		"",
 		...(currentPrefix ? [parentS3Prefix(currentPrefix)] : []),
-		...prefixes,
+		...childPrefixes,
 	].filter((prefix, index, list) => list.indexOf(prefix) === index);
 	for (const prefix of availablePrefixes) {
 		const button = document.createElement("button");
@@ -2537,11 +2647,11 @@ function renderAwsFolderIndex(prefixes = []) {
 async function uploadUpdraftFiles(fileList) {
 	const files = [...fileList].filter((file) => /\.(zip|gz|sql)$/i.test(file.name));
 	if (!files.length) {
-		showToast("Drop Updraft .zip, .gz, or .sql files.", "error");
+		showToast("Drop backup .zip, .gz, or .sql files.", "error");
 		return;
 	}
 	const session = ensureBackupSessionId();
-	setBusy(true, "Stage Updraft");
+	setBusy(true, "Select Backup");
 	try {
 		for (const file of files) {
 			els.updraftStagedSummary.textContent = `Uploading ${file.name}...`;
@@ -2555,7 +2665,7 @@ async function uploadUpdraftFiles(fileList) {
 			}
 			state.backupSession = data.session;
 		}
-		showToast("Updraft files staged.", "success");
+		showToast("Backup files selected.", "success");
 		renderAddSiteWizard();
 	} catch (error) {
 		showToast(error.message, "error");
@@ -2575,7 +2685,7 @@ async function listAwsBackups(options = {}) {
 	setBusy(true, refreshIndex ? "Refresh S3 Index" : "List S3 Backups");
 	try {
 		els.awsBackupStatus.className = "operation-status";
-		els.awsBackupStatus.textContent = refreshIndex ? "Refreshing S3 folder index..." : "Loading stored S3 index...";
+		els.awsBackupStatus.textContent = refreshIndex ? "Scanning S3 for Updraft backups..." : "Checking saved backup index...";
 		if (!refreshIndex) {
 			const stored = await api("/api/backups/updraft/actions", {
 				method: "POST",
@@ -2588,7 +2698,7 @@ async function listAwsBackups(options = {}) {
 				renderChecklist();
 				return;
 			}
-			els.awsBackupStatus.textContent = "No stored S3 index yet. Scanning S3 folders...";
+			els.awsBackupStatus.textContent = "No saved index for this bucket/prefix yet. Scanning S3 now...";
 		}
 		const response = await api("/api/backups/updraft/actions", {
 			method: "POST",
@@ -2642,14 +2752,14 @@ async function stageAwsBackupGroup(group, options = {}) {
 		.filter((file) => includeUploads || file.component !== "uploads")
 		.map((file) => file.key);
 	if (!keys.length) {
-		showToast("This backup set has no files to stage with those options.", "error");
+		showToast("This backup set has no files to use with those options.", "error");
 		return;
 	}
 	const session = ensureBackupSessionId();
-	setBusy(true, "Stage S3 Backup");
+	setBusy(true, "Use S3 Backup");
 	try {
 		els.awsBackupStatus.className = "operation-status";
-		els.awsBackupStatus.textContent = `Downloading ${keys.length} S3 file${keys.length === 1 ? "" : "s"}...`;
+		els.awsBackupStatus.textContent = `Preparing ${keys.length} S3 backup file${keys.length === 1 ? "" : "s"} for restore...`;
 		const response = await api("/api/backups/updraft/actions", {
 			method: "POST",
 			body: JSON.stringify({
@@ -2661,7 +2771,7 @@ async function stageAwsBackupGroup(group, options = {}) {
 		});
 		appendOutput("aws-s3-download", response.result, response.result.code !== 0);
 		state.backupSession = response.result.session;
-		showToast(response.result.code === 0 ? "S3 backup staged." : "S3 staging failed.", response.result.code === 0 ? "success" : "error");
+		showToast(response.result.code === 0 ? "Backup selected for restore." : "Backup download failed.", response.result.code === 0 ? "success" : "error");
 		renderAddSiteWizard();
 	} catch (error) {
 		showToast(error.message, "error");
@@ -2760,7 +2870,7 @@ function renderChecklist() {
 				detail: providerSiteCount
 					? `${providerSiteCount} provider site${providerSiteCount === 1 ? "" : "s"} ready to load into SSH Import.`
 					: backupSetCount
-						? `${backupSetCount} S3 backup set${backupSetCount === 1 ? "" : "s"} ready to stage for restore.`
+						? `${backupSetCount} S3 backup set${backupSetCount === 1 ? "" : "s"} ready to use for restore.`
 						: credentialCount
 							? `${credentialCount} secure API credential${credentialCount === 1 ? "" : "s"} stored for external services.`
 							: "WP Engine, SiteGround, AWS S3 backup discovery, and secure key storage are wired in.",
@@ -4516,9 +4626,22 @@ async function createSiteFromBackup() {
 		showToast("Choose files, database, or both before restoring.", "error");
 		return;
 	}
+	const capabilities = backupSessionCapabilities();
+	if (!capabilities.restorable) {
+		showToast("The selected backup does not contain recognized WordPress files or database SQL.", "error");
+		return;
+	}
+	if (restoreFiles && !capabilities.hasFiles) {
+		showToast("This backup is database-only. Turn off Restore files or choose a backup with WordPress files.", "error");
+		return;
+	}
+	if (restoreDb && !capabilities.hasDb) {
+		showToast("No database backup is selected. Turn off Restore database or choose a backup with SQL data.", "error");
+		return;
+	}
 	const confirmation = await requestConfirmation({
 		title: "Create From Updraft Backup",
-		message: `This will create ${values.slug}, provision local runtime, and restore the staged Updraft backup into the new local site.`,
+		message: `This will create ${values.slug}, provision local runtime, and restore the selected backup into the new local site.`,
 		token: "RESTORE",
 	});
 	if (confirmation !== "RESTORE") {
@@ -4527,7 +4650,7 @@ async function createSiteFromBackup() {
 	}
 
 	setBusy(true, "Create From Backup");
-	appendPending("Create From Backup", `Restoring staged Updraft backup into ${values.slug}.`, { revealActivity: true });
+	appendPending("Create From Backup", `Restoring selected backup into ${values.slug}.`, { revealActivity: true });
 	try {
 		const response = await api("/api/backups/updraft/actions", {
 			method: "POST",
@@ -4817,12 +4940,33 @@ async function runRuntimeAction(action) {
 		const response = await api("/api/runtime/actions", {
 			method: "POST",
 			body: JSON.stringify({ action }),
+			directLocalHub: true,
 		});
 		appendOutput(action, response.result, response.result.code !== 0);
-		state.runtime = await api("/api/runtime");
+		state.runtime = await api("/api/runtime", { directLocalHub: true });
 		renderRuntime();
 		renderChecklist();
 	} catch (error) {
+		if (action.startsWith("runtime-friendly-")) {
+			try {
+				state.runtime = await api("/api/runtime", { directLocalHub: true });
+				if (state.runtime?.friendlyUrls?.ready) {
+					appendOutput(action, {
+						code: 0,
+						command: action,
+						stdout: "Runtime action response was interrupted, but friendly HTTPS is ready after refresh.",
+						stderr: "",
+						durationMs: 0,
+						friendlyUrls: state.runtime.friendlyUrls,
+					}, false);
+					renderRuntime();
+					renderChecklist();
+					return;
+				}
+			} catch {
+				// Fall through to the original runtime action error.
+			}
+		}
 		appendMessage(error.message, true);
 	} finally {
 		setBusy(false);

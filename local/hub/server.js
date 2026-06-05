@@ -30,6 +30,7 @@ const host = process.env.MRN_LOCAL_HUB_HOST || "127.0.0.1";
 const port = Number(process.env.MRN_LOCAL_HUB_PORT || "5678");
 const commandTimeoutMs = Number(process.env.MRN_LOCAL_HUB_COMMAND_TIMEOUT_MS || "300000");
 const maxOutputBytes = Number(process.env.MRN_LOCAL_HUB_MAX_OUTPUT_BYTES || String(1024 * 1024));
+const maxZipListOutputBytes = Number(process.env.MRN_LOCAL_HUB_ZIP_LIST_MAX_OUTPUT_BYTES || String(16 * 1024 * 1024));
 const diskUsageCacheTtlMs = Number(process.env.MRN_LOCAL_HUB_DISK_USAGE_TTL_MS || "300000");
 const gitStatusCacheTtlMs = Number(process.env.MRN_LOCAL_HUB_GIT_STATUS_TTL_MS || "30000");
 const memoryCacheTtlMs = Number(process.env.MRN_LOCAL_HUB_MEMORY_TTL_MS || "10000");
@@ -292,6 +293,36 @@ function textResponse(res, statusCode, body, contentType = "text/plain; charset=
 		"cache-control": "no-store",
 	});
 	res.end(body);
+}
+
+function isAllowedLocalOrigin(origin) {
+	if (!origin) return false;
+	try {
+		const parsed = new URL(origin);
+		const hostname = parsed.hostname.toLowerCase();
+		return ["http:", "https:"].includes(parsed.protocol)
+			&& (
+				hostname === "localhost"
+				|| hostname === "127.0.0.1"
+				|| hostname === "::1"
+				|| hostname.endsWith(".localhost")
+			);
+	} catch {
+		return false;
+	}
+}
+
+function applyCorsHeaders(req, res) {
+	const origin = req.headers.origin || "";
+	if (!isAllowedLocalOrigin(origin)) return;
+	res.setHeader("access-control-allow-origin", origin);
+	res.setHeader("access-control-allow-methods", "GET,POST,OPTIONS");
+	res.setHeader("access-control-allow-headers", "content-type");
+	res.setHeader("access-control-max-age", "600");
+	res.setHeader("vary", "Origin");
+	if (req.headers["access-control-request-private-network"]) {
+		res.setHeader("access-control-allow-private-network", "true");
+	}
 }
 
 function httpError(statusCode, message, details) {
@@ -840,12 +871,13 @@ function folderPrefixesFromFiles(files = [], rootPrefix = "") {
 
 function compactAwsBackupIndex(index) {
 	if (!index) return null;
+	const groups = groupUpdraftS3Files(index.files || []);
 	return {
 		source: index.source,
 		scannedAt: index.scannedAt,
 		fileCount: index.files?.length || 0,
 		folderCount: index.prefixes?.length || 0,
-		groupCount: index.groups?.length || 0,
+		groupCount: groups.length,
 		truncated: Boolean(index.truncated),
 	};
 }
@@ -1576,14 +1608,25 @@ async function awsSignedFetch(options = {}) {
 	);
 	const authorization = `AWS4-HMAC-SHA256 Credential=${options.accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
 	const url = `https://${hostName}${pathname}${query ? `?${query}` : ""}`;
-	return fetch(url, {
-		method,
-		headers: {
-			...normalizedHeaders,
-			authorization,
-		},
-		body: ["GET", "HEAD"].includes(method) ? undefined : bodyBuffer,
-	});
+	try {
+		return await fetch(url, {
+			method,
+			headers: {
+				...normalizedHeaders,
+				authorization,
+			},
+			body: ["GET", "HEAD"].includes(method) ? undefined : bodyBuffer,
+		});
+	} catch (error) {
+		throw httpError(502, `AWS request could not reach ${hostName}.`, {
+			method,
+			service,
+			region,
+			host: hostName,
+			path: pathname,
+			cause: error.message || String(error),
+		});
+	}
 }
 
 function xmlDecode(value) {
@@ -1835,9 +1878,41 @@ function updraftComponentFromName(fileName) {
 	return "unknown";
 }
 
+async function classifyZipBackupComponent(filePath, fileName) {
+	const component = updraftComponentFromName(fileName);
+	if (component !== "zip") {
+		return component;
+	}
+	const result = await runProcess("unzip", ["-Z1", filePath], {
+		timeoutMs: Number(process.env.MRN_LOCAL_HUB_ZIP_LIST_TIMEOUT_MS || "120000"),
+		trackJob: false,
+		maxOutputBytes: maxZipListOutputBytes,
+	});
+	if (result.code !== 0) {
+		return component;
+	}
+	const entries = result.stdout
+		.split(/\r?\n/)
+		.map((entry) => entry.trim().replace(/\\/g, "/"))
+		.filter(Boolean);
+	const hasManifest = entries.includes("manifest.json") || entries.includes("manifest.csv");
+	const hasSql = entries.some((entry) => /(^|\/)[^/]+\.sql$/i.test(entry));
+	const hasDatabaseDirectory = entries.some((entry) => /^(sql|database|db|mysql)\//i.test(entry));
+	const hasWordPressFiles = entries.some((entry) => /(^|\/)wp-content\//i.test(entry))
+		&& entries.some((entry) => /(^|\/)wp-admin\//i.test(entry))
+		&& entries.some((entry) => /(^|\/)wp-includes\//i.test(entry));
+	if (hasWordPressFiles && (hasSql || hasManifest)) {
+		return "site-archive";
+	}
+	if (hasSql || hasDatabaseDirectory) {
+		return "db-archive";
+	}
+	return component;
+}
+
 function updraftSetIdFromKey(key) {
 	return String(key || "")
-		.replace(/-(db|plugins|themes|uploads\d*|mu-plugins|others|wpcore|core)\.(zip|gz|sql|sql\.gz)$/i, "")
+		.replace(/-(db\d*|plugins\d*|themes\d*|uploads\d*|mu-plugins\d*|others\d*|wpcore\d*|core\d*)\.(zip|gz|sql|sql\.gz)$/i, "")
 		.replace(/\.(zip|gz|sql|sql\.gz)$/i, "");
 }
 
@@ -1856,9 +1931,10 @@ async function inspectUpdraftSession(sessionId) {
 		const name = sanitizeBackupFileName(entry.name);
 		const filePath = path.join(dir, name);
 		const stat = await fsp.stat(filePath);
+		const component = await classifyZipBackupComponent(filePath, name);
 		files.push({
 			name,
-			component: updraftComponentFromName(name),
+			component,
 			sizeBytes: stat.size,
 			path: filePath,
 			uploadedAt: stat.birthtime.toISOString(),
@@ -2275,7 +2351,11 @@ async function downloadAwsUpdraftFiles(body = {}) {
 }
 
 async function validateZipFile(zipFile) {
-	const result = await runProcess("unzip", ["-Z1", zipFile], { timeoutMs: 30000, trackJob: false });
+	const result = await runProcess("unzip", ["-Z1", zipFile], {
+		timeoutMs: Number(process.env.MRN_LOCAL_HUB_ZIP_LIST_TIMEOUT_MS || "120000"),
+		trackJob: false,
+		maxOutputBytes: maxZipListOutputBytes,
+	});
 	if (result.code !== 0) return result;
 	const unsafe = result.stdout
 		.split(/\r?\n/)
@@ -2300,6 +2380,24 @@ async function firstExistingDirectory(candidates) {
 		try {
 			const stat = await fsp.stat(candidate);
 			if (stat.isDirectory()) return candidate;
+		} catch {
+			// Try the next candidate.
+		}
+	}
+	return "";
+}
+
+async function firstExistingWordPressDirectory(candidates) {
+	for (const candidate of candidates.filter(Boolean)) {
+		try {
+			const stat = await fsp.stat(candidate);
+			if (!stat.isDirectory()) continue;
+			const hasContent = await pathExists(path.join(candidate, "wp-content"));
+			const hasAdmin = await pathExists(path.join(candidate, "wp-admin"));
+			const hasIncludes = await pathExists(path.join(candidate, "wp-includes"));
+			if (hasContent && hasAdmin && hasIncludes) {
+				return candidate;
+			}
 		} catch {
 			// Try the next candidate.
 		}
@@ -2339,6 +2437,14 @@ async function extractUpdraftZipToSite(site, file, component, index) {
 		dest = wpContent;
 	} else if (component === "core") {
 		source = await firstExistingDirectory([path.join(extractRoot, "wordpress"), extractRoot]);
+		dest = site.publicPath;
+	} else if (component === "site-archive") {
+		source = await firstExistingWordPressDirectory([
+			path.join(extractRoot, "www"),
+			path.join(extractRoot, "public_html"),
+			path.join(extractRoot, "htdocs"),
+			extractRoot,
+		]);
 		dest = site.publicPath;
 	}
 
@@ -2415,8 +2521,74 @@ async function prepareUpdraftDbDump(site, file) {
 	};
 }
 
-async function importUpdraftDatabase(site, dbFile) {
-	const prepResult = await prepareUpdraftDbDump(site, dbFile);
+async function collectSqlFiles(rootDir) {
+	const results = [];
+	async function walk(dir) {
+		const entries = await fsp.readdir(dir, { withFileTypes: true });
+		for (const entry of entries) {
+			const filePath = path.join(dir, entry.name);
+			if (entry.isDirectory()) {
+				await walk(filePath);
+			} else if (/\.sql$/i.test(entry.name)) {
+				results.push(filePath);
+			}
+		}
+	}
+	await walk(rootDir);
+	return results.sort((a, b) => a.localeCompare(b));
+}
+
+async function firstSqlDumpDirectory(candidates) {
+	for (const candidate of candidates.filter(Boolean)) {
+		try {
+			const stat = await fsp.stat(candidate);
+			if (!stat.isDirectory()) continue;
+			const files = await collectSqlFiles(candidate);
+			if (files.length) {
+				return candidate;
+			}
+		} catch {
+			// Try the next candidate.
+		}
+	}
+	return "";
+}
+
+async function prepareSqlDirectoryDump(site, sqlDir, sourceLabel) {
+	const startedAt = Date.now();
+	const files = await collectSqlFiles(sqlDir);
+	const dumpFile = path.join(site.localRoot, "dumps", `${timestampSlug()}-archive.sql`);
+	await fsp.mkdir(path.dirname(dumpFile), { recursive: true });
+	if (!files.length) {
+		return {
+			code: 1,
+			command: "prepare-sql-directory",
+			args: [sourceLabel],
+			stdout: "",
+			stderr: `No .sql files found in ${sqlDir}.`,
+			durationMs: Date.now() - startedAt,
+			dumpFile,
+		};
+	}
+	await fsp.writeFile(dumpFile, "SET FOREIGN_KEY_CHECKS=0;\nSET UNIQUE_CHECKS=0;\n", "utf8");
+	for (const file of files) {
+		await fsp.appendFile(dumpFile, `\n-- Source: ${path.relative(sqlDir, file)}\n`, "utf8");
+		await fsp.appendFile(dumpFile, await fsp.readFile(file));
+		await fsp.appendFile(dumpFile, "\n", "utf8");
+	}
+	await fsp.appendFile(dumpFile, "SET UNIQUE_CHECKS=1;\nSET FOREIGN_KEY_CHECKS=1;\n", "utf8");
+	return {
+		code: 0,
+		command: "prepare-sql-directory",
+		args: [sourceLabel, `${files.length} table dump${files.length === 1 ? "" : "s"}`],
+		stdout: `Prepared ${files.length} SQL table dump${files.length === 1 ? "" : "s"}: ${dumpFile}`,
+		stderr: "",
+		durationMs: Date.now() - startedAt,
+		dumpFile,
+	};
+}
+
+async function importPreparedDatabaseDump(site, prepResult, sourceLabel) {
 	if (prepResult.code !== 0) return prepResult;
 	const wpConfigResult = await writeLocalWpConfig(site);
 	const importResult = await importDatabase(site, prepResult.dumpFile);
@@ -2452,7 +2624,7 @@ async function importUpdraftDatabase(site, dbFile) {
 	return {
 		code,
 		command: "updraft-db-import",
-		args: [site.slug, dbFile.name],
+		args: [site.slug, sourceLabel],
 		stdout: [
 			`Prepared database dump: ${prepResult.dumpFile}`,
 			formatWpConfigResult(wpConfigResult),
@@ -2490,6 +2662,45 @@ async function importUpdraftDatabase(site, dbFile) {
 	};
 }
 
+async function importUpdraftDatabase(site, dbFile) {
+	return importPreparedDatabaseDump(site, await prepareUpdraftDbDump(site, dbFile), dbFile.name);
+}
+
+async function importZipArchiveDatabase(site, archiveFile) {
+	const validation = await validateZipFile(archiveFile.path);
+	if (validation.code !== 0) {
+		return { ...validation, command: "zip-archive-db-validate", args: [archiveFile.name] };
+	}
+	const extractRoot = path.join(site.localRoot, "backups", `zip-archive-db-${timestampSlug()}`);
+	await fsp.mkdir(extractRoot, { recursive: true });
+	const unzipResult = await runProcess("unzip", ["-q", archiveFile.path, "-d", extractRoot], {
+		timeoutMs: Number(process.env.MRN_LOCAL_HUB_UPDRAFT_UNZIP_TIMEOUT_MS || "600000"),
+	});
+	if (unzipResult.code !== 0) return unzipResult;
+	const sqlDir = await firstSqlDumpDirectory([
+		path.join(extractRoot, "sql"),
+		path.join(extractRoot, "database"),
+		path.join(extractRoot, "db"),
+		path.join(extractRoot, "mysql"),
+		extractRoot,
+	]);
+	if (!sqlDir) {
+		return {
+			code: 1,
+			command: "zip-archive-db-import",
+			args: [archiveFile.name],
+			stdout: "",
+			stderr: `No SQL directory found inside ${archiveFile.name}.`,
+			durationMs: unzipResult.durationMs || 0,
+		};
+	}
+	const prepResult = await prepareSqlDirectoryDump(site, sqlDir, archiveFile.name);
+	prepResult.durationMs = (prepResult.durationMs || 0) + (unzipResult.durationMs || 0);
+	prepResult.stdout = [unzipResult.stdout, prepResult.stdout].filter(Boolean).join("\n");
+	prepResult.stderr = [unzipResult.stderr, prepResult.stderr].filter(Boolean).join("\n");
+	return importPreparedDatabaseDump(site, prepResult, archiveFile.name);
+}
+
 async function createSiteFromUpdraftBackup(body = {}) {
 	const session = await inspectUpdraftSession(body.session || "");
 	const slug = normalizeSlug(body.slug || "");
@@ -2510,15 +2721,23 @@ async function createSiteFromUpdraftBackup(body = {}) {
 		runtime: "local-vm-openlitespeed",
 		runtimeStatus: "planned",
 	});
-	const fileComponents = new Set(["plugins", "themes", "mu-plugins", "others", "core"]);
+	const fileComponents = new Set(["plugins", "themes", "mu-plugins", "others", "core", "site-archive"]);
 	if (includeUploads) fileComponents.add("uploads");
 	const zipFiles = session.files.filter((file) => restoreFiles && fileComponents.has(file.component));
 	const dbFile = session.files.find((file) => file.component === "db");
+	const archiveDbFile = session.files.find((file) => ["db-archive", "site-archive"].includes(file.component));
 	if (restoreFiles && !zipFiles.length) {
-		throw httpError(400, "No supported Updraft file zip parts are staged for this restore.");
+		const hasDbOnlyBackup = Boolean(dbFile || archiveDbFile);
+		throw httpError(
+			400,
+			hasDbOnlyBackup
+				? "This backup only has database files selected. Turn off Restore files or choose a backup set with WordPress files."
+				: "No supported WordPress backup zip files are selected for this restore.",
+			{ components: session.components },
+		);
 	}
-	if (restoreDb && !dbFile) {
-		throw httpError(400, "No Updraft database part is staged for this restore.");
+	if (restoreDb && !dbFile && !archiveDbFile) {
+		throw httpError(400, "No database backup is selected for this restore.", { components: session.components });
 	}
 
 	const provisionResult = await provisionSite(site);
@@ -2593,8 +2812,10 @@ async function createSiteFromUpdraftBackup(body = {}) {
 		outputs.push(formatWpConfigResult(wpConfigResult));
 	}
 
-	if (code === 0 && restoreDb && dbFile) {
-		dbResult = await importUpdraftDatabase(localSite, dbFile);
+	if (code === 0 && restoreDb && (dbFile || archiveDbFile)) {
+		dbResult = dbFile
+			? await importUpdraftDatabase(localSite, dbFile)
+			: await importZipArchiveDatabase(localSite, archiveDbFile);
 		outputs.push(dbResult.stdout);
 		errors.push(dbResult.stderr);
 		durationMs += dbResult.durationMs || 0;
@@ -2635,6 +2856,8 @@ async function runUpdraftBackupAction(body) {
 			};
 		case "aws-index-get": {
 			const index = await getStoredAwsBackupIndex(body);
+			const files = index?.files || [];
+			const groups = groupUpdraftS3Files(files);
 			return {
 				code: 0,
 				command: "aws-index-get",
@@ -2644,9 +2867,9 @@ async function runUpdraftBackupAction(body) {
 					: "No stored S3 backup index exists for this source yet.",
 				stderr: "",
 				durationMs: 0,
-				files: index?.files || [],
+				files,
 				prefixes: index?.prefixes || [],
-				groups: index?.groups || [],
+				groups,
 				index: compactAwsBackupIndex(index),
 			};
 		}
@@ -2731,6 +2954,7 @@ function runProcess(command, args, options = {}) {
 		const startedAt = Date.now();
 		let stdout = "";
 		let stderr = "";
+		const outputLimit = Number(options.maxOutputBytes || maxOutputBytes);
 		const trackJob = options.trackJob !== false;
 		const jobId = trackJob ? nextJobId++ : null;
 		const child = childProcess.spawn(command, args, {
@@ -2765,10 +2989,10 @@ function runProcess(command, args, options = {}) {
 		}
 
 		child.stdout.on("data", (chunk) => {
-			stdout = appendLimited(stdout, chunk.toString());
+			stdout = appendLimited(stdout, chunk.toString(), outputLimit);
 		});
 		child.stderr.on("data", (chunk) => {
-			stderr = appendLimited(stderr, chunk.toString());
+			stderr = appendLimited(stderr, chunk.toString(), outputLimit);
 		});
 		child.on("error", (error) => {
 			clearTimeout(timeout);
@@ -2778,7 +3002,7 @@ function runProcess(command, args, options = {}) {
 				args,
 				code: 127,
 				stdout,
-				stderr: appendLimited(stderr, error.message),
+				stderr: appendLimited(stderr, error.message, outputLimit),
 				durationMs: Date.now() - startedAt,
 			});
 		});
@@ -2798,12 +3022,12 @@ function runProcess(command, args, options = {}) {
 	});
 }
 
-function appendLimited(current, addition) {
+function appendLimited(current, addition, limit = maxOutputBytes) {
 	const combined = current + addition;
-	if (Buffer.byteLength(combined) <= maxOutputBytes) {
+	if (Buffer.byteLength(combined) <= limit) {
 		return combined;
 	}
-	return combined.slice(combined.length - maxOutputBytes);
+	return combined.slice(combined.length - limit);
 }
 
 async function commandExists(command) {
@@ -3724,13 +3948,15 @@ async function installFriendlyProxyHelper() {
 		args: [friendlyProxyLabel],
 		stdout: [
 			result.stdout,
+			result.code !== 0 && helper.healthy ? "Installer returned a warning, but the friendly proxy helper is healthy." : "",
 			helper.healthy ? "Friendly proxy helper is healthy." : "Friendly proxy helper is not healthy yet.",
 			`Generated plist: ${files.plistPath}`,
 			`System plist: ${files.systemPlistPath}`,
 			helper.health.error ? `Health error: ${helper.health.error}` : "",
 		].filter(Boolean).join("\n"),
+		stderr: helper.healthy ? "" : result.stderr,
 		helper,
-		code: result.code === 0 && helper.healthy ? 0 : result.code || 1,
+		code: helper.healthy ? 0 : result.code || 1,
 	};
 }
 
@@ -9213,6 +9439,13 @@ async function route(req, res) {
 	const url = new URL(req.url, `http://${req.headers.host || `${host}:${port}`}`);
 	const parts = url.pathname.split("/").filter(Boolean);
 
+	applyCorsHeaders(req, res);
+	if (req.method === "OPTIONS" && parts[0] === "api") {
+		res.writeHead(204, { "cache-control": "no-store" });
+		res.end();
+		return;
+	}
+
 	if (parts[0] !== "api") {
 		await serveStatic(req, res, url);
 		return;
@@ -9391,6 +9624,9 @@ const server = http.createServer((req, res) => {
 		});
 	});
 });
+server.requestTimeout = 0;
+server.timeout = 0;
+server.keepAliveTimeout = 0;
 
 if (process.argv.includes("--doctor")) {
 	healthReport()

@@ -133,7 +133,7 @@ else
 fi
 
 if [[ -f "${THEME_DIR}/composer.lock" ]] && command -v composer >/dev/null 2>&1; then
-	if ! composer audit --no-dev --working-dir="${THEME_DIR}"; then
+	if ! composer audit --locked --no-dev --working-dir="${THEME_DIR}"; then
 		STATUS=1
 	fi
 else
@@ -155,7 +155,7 @@ if [[ "${INCLUDE_DEV_AUDIT}" == "1" ]]; then
 	fi
 
 	if [[ -f "${THEME_DIR}/composer.lock" ]] && command -v composer >/dev/null 2>&1; then
-		if ! composer audit --working-dir="${THEME_DIR}"; then
+		if ! composer audit --locked --working-dir="${THEME_DIR}"; then
 			STATUS=1
 		fi
 	else

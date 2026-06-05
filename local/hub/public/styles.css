@@ -1212,10 +1212,26 @@ body.is-busy {
 .wizard-actions {
 	align-items: center;
 	border-top: 1px solid var(--border);
-	display: flex;
+	display: grid;
 	gap: 10px;
-	justify-content: space-between;
+	grid-template-columns: auto minmax(0, 1fr) auto;
 	padding-top: 14px;
+}
+
+.wizard-help {
+	color: var(--muted);
+	font-size: 0.82rem;
+	font-weight: 750;
+	line-height: 1.4;
+	text-align: center;
+}
+
+.wizard-help.ok {
+	color: var(--success);
+}
+
+.wizard-help.warn {
+	color: var(--warning);
 }
 
 .review-card {
@@ -1892,6 +1908,7 @@ body.is-busy {
 
 .aws-folder-index {
 	align-items: start;
+	grid-template-columns: minmax(0, 1fr);
 }
 
 .aws-folder-list {
@@ -1899,16 +1916,18 @@ body.is-busy {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
-	justify-content: flex-end;
-	max-height: 220px;
-	overflow: auto;
+	justify-content: flex-start;
 }
 
 .aws-folder-list .ghost-button {
 	font-size: 0.78rem;
+	max-width: min(100%, 360px);
 	min-height: 34px;
+	overflow: hidden;
 	padding: 7px 10px;
 	text-align: left;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .provider-badge {

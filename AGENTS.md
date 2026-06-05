@@ -42,6 +42,13 @@ When fixing issues:
 4. Explain impact and risks
 
 Release baseline:
+- For "Run QA", "MRN QA", plugin QA, theme QA, file QA, or release QA, use the MRN QA Engine.
+- Preferred command: `mrn-qa run --project-root /Users/khofmeyer/Development/MRN`
+- For whole plugin/theme/directory QA, use `MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Development/MRN`
+- For release/signoff QA, use `mrn-qa run --project-root /Users/khofmeyer/Development/MRN --mode release --smoke-strict 1`
+- Let MRN QA auto gates decide when to run WordPress best practices, API surface/runtime, accessibility, performance, browser smoke, and security checks.
+- WordPress API QA is required coverage: REST routes, admin-ajax, admin-post, permission callbacks, nonces, capabilities/auth, sanitization, escaping, and `/wp-json/` runtime health when applicable.
+- Accessibility QA is required coverage: axe-core WCAG A/AA scans when runtime is available/applicable, semantic markup, headings, labels/control names, image alt text, keyboard/focus risk, visible text/link names, and WCAG 2.1 AA baseline where MRN controls output.
 - PHP linting
 - diff check
 - security review (nonce, sanitize, escape)

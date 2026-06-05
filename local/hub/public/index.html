@@ -393,8 +393,8 @@
 								<label class="source-card">
 									<input type="radio" name="addSiteMode" value="backup">
 									<span>
-										<strong>Restore Updraft Backup</strong>
-										<small>Drop local Updraft files or stage a backup set from AWS S3.</small>
+										<strong>Restore Backup</strong>
+										<small>Drop local backup files or choose a backup set from AWS S3.</small>
 									</span>
 								</label>
 								<label class="source-card">
@@ -515,11 +515,11 @@
 									</form>
 									<div id="updraftDropzone" class="backup-dropzone" tabindex="0">
 										<input id="updraftFileInput" type="file" multiple accept=".zip,.gz,.sql">
-										<strong>Drop Updraft files here</strong>
-										<span>Accepts database .gz/.sql plus plugins, themes, uploads, others, or core .zip parts.</span>
+										<strong>Drop backup files here</strong>
+										<span>Accepts full-site backup ZIPs, database .gz/.sql files, and WordPress component ZIP parts.</span>
 										<button id="chooseUpdraftFilesButton" type="button" class="ghost-button">Choose Files</button>
 									</div>
-									<div id="updraftStagedSummary" class="operation-status">No Updraft files staged yet.</div>
+									<div id="updraftStagedSummary" class="operation-status">No backup selected yet.</div>
 									<ul id="updraftStagedFiles" class="result-list compact-list"></ul>
 								</div>
 
@@ -615,7 +615,7 @@
 								<div class="initial-import-options" data-add-requires="backup" hidden>
 									<div class="mini-heading">
 										<strong>Backup restore</strong>
-										<span>Create the manifest, provision local runtime, then restore the staged Updraft backup parts.</span>
+										<span>Create the manifest, provision local runtime, then restore the selected backup files.</span>
 									</div>
 									<div class="initial-import-grid">
 										<label class="checkline">
@@ -631,7 +631,7 @@
 											<span>Restore database</span>
 										</label>
 									</div>
-									<div id="backupRestoreSummary" class="operation-status">Stage Updraft files before creating from backup.</div>
+									<div id="backupRestoreSummary" class="operation-status">Choose a backup before creating the site.</div>
 								</div>
 								<div class="actions">
 									<button id="createSiteButton" type="button" class="action">Create Blank Site</button>
@@ -644,6 +644,7 @@
 
 					<div class="wizard-actions">
 						<button id="addSiteBackButton" type="button" class="ghost-button">Back</button>
+						<div id="addSiteStepHelp" class="wizard-help" aria-live="polite"></div>
 						<button id="addSiteNextButton" type="button" class="action">Next</button>
 					</div>
 				</section>
