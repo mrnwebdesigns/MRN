@@ -22,6 +22,10 @@ const state = {
 		wpengine: [],
 		siteground: [],
 	},
+	credentials: [],
+	backupImportSessionId: "",
+	backupSession: null,
+	awsBackupGroups: [],
 	busy: false,
 	operationLabel: "",
 	operationStartedAt: 0,
@@ -73,6 +77,12 @@ const providerPresets = {
 		remotePathPlaceholder: "sites/environment",
 		hint: "Use a WP Engine SSH Gateway alias. Prepare Connection can try sites/<environment> automatically.",
 	},
+	backup: {
+		label: "Backup Restore",
+		remoteSshPlaceholder: "",
+		remotePathPlaceholder: "",
+		hint: "Restore from staged UpdraftPlus backup files or AWS S3.",
+	},
 };
 
 const els = {
@@ -96,6 +106,27 @@ const els = {
 	addSitePullDb: document.querySelector("#addSitePullDb"),
 	addSiteSmokeCheck: document.querySelector("#addSiteSmokeCheck"),
 	addSiteImportSummary: document.querySelector("#addSiteImportSummary"),
+	backupRestoreForm: document.querySelector("#backupRestoreForm"),
+	updraftDropzone: document.querySelector("#updraftDropzone"),
+	updraftFileInput: document.querySelector("#updraftFileInput"),
+	chooseUpdraftFilesButton: document.querySelector("#chooseUpdraftFilesButton"),
+	updraftStagedSummary: document.querySelector("#updraftStagedSummary"),
+	updraftStagedFiles: document.querySelector("#updraftStagedFiles"),
+	awsBackupForm: document.querySelector("#awsBackupForm"),
+	awsBackupCredentialSelect: document.querySelector("#awsBackupCredentialSelect"),
+	listAwsBackupsButton: document.querySelector("#listAwsBackupsButton"),
+	awsBackupStatus: document.querySelector("#awsBackupStatus"),
+	awsBackupResults: document.querySelector("#awsBackupResults"),
+	awsCredentialForm: document.querySelector("#awsCredentialForm"),
+	saveAwsCredentialButton: document.querySelector("#saveAwsCredentialButton"),
+	awsCredentialStatus: document.querySelector("#awsCredentialStatus"),
+	credentialSummary: document.querySelector("#credentialSummary"),
+	credentialResults: document.querySelector("#credentialResults"),
+	backupRestoreFiles: document.querySelector("#backupRestoreFiles"),
+	backupIncludeUploads: document.querySelector("#backupIncludeUploads"),
+	backupRestoreDb: document.querySelector("#backupRestoreDb"),
+	backupRestoreSummary: document.querySelector("#backupRestoreSummary"),
+	createBackupSiteButton: document.querySelector("#createBackupSiteButton"),
 	healthStrip: document.querySelector("#healthStrip"),
 	dashboardSiteList: document.querySelector("#dashboardSiteList"),
 	siteInventory: document.querySelector("#siteInventory"),
@@ -139,6 +170,10 @@ const els = {
 	deleteFiles: document.querySelector("#deleteFiles"),
 	outputConsole: document.querySelector("#outputConsole"),
 	clearOutputButton: document.querySelector("#clearOutputButton"),
+	siteActivityPanel: document.querySelector(".site-activity-panel"),
+	siteActivityConsole: document.querySelector("#siteActivityConsole"),
+	siteActivityStatus: document.querySelector("#siteActivityStatus"),
+	clearSiteActivityButton: document.querySelector("#clearSiteActivityButton"),
 	qaOutputConsole: document.querySelector("#qaOutputConsole"),
 	clearQaOutputButton: document.querySelector("#clearQaOutputButton"),
 	clearQaAllButton: document.querySelector("#clearQaAllButton"),
@@ -245,7 +280,8 @@ const pullFileScopeLabels = {
 	"full-no-uploads": "Full site, skip uploads",
 	core: "Core/root",
 	"wp-content": "wp-content",
-	"active-theme": "Active theme",
+	"active-theme": "Child / active theme",
+	"parent-theme": "Parent theme",
 	themes: "All themes",
 	plugins: "Plugins",
 	"mu-plugins": "MU plugins",
@@ -255,6 +291,7 @@ const pullFileScopeLabels = {
 
 const pushScopePreviewPaths = {
 	"wp-content": "wp-content",
+	"parent-theme": "parent theme, resolved from local WordPress",
 	themes: "wp-content/themes",
 	plugins: "wp-content/plugins",
 	"mu-plugins": "wp-content/mu-plugins",
@@ -560,6 +597,27 @@ function writeConsole(consoleEl, text, className) {
 	consoleEl.scrollTop = consoleEl.scrollHeight;
 }
 
+function writeSiteConsole(text, className) {
+	writeConsole(els.outputConsole, text, className);
+	writeConsole(els.siteActivityConsole, text, className);
+}
+
+function setSiteActivityStatus(text = "Idle", stateName = "idle") {
+	if (!els.siteActivityStatus) return;
+	els.siteActivityStatus.textContent = text;
+	els.siteActivityStatus.dataset.state = stateName;
+}
+
+function revealSiteActivity() {
+	if (!els.siteActivityPanel || state.activeTab !== "sites-sync") return;
+	window.requestAnimationFrame(() => {
+		els.siteActivityPanel.scrollIntoView({
+			block: "nearest",
+			behavior: "smooth",
+		});
+	});
+}
+
 function appendOutput(title, result, isError = false, notify = true, options = {}) {
 	const stamp = new Date().toLocaleTimeString();
 	const lines = [
@@ -572,7 +630,10 @@ function appendOutput(title, result, isError = false, notify = true, options = {
 	].filter(Boolean);
 	const text = `${lines.join("\n")}\n`;
 	const className = isError ? "output-error" : "output-ok";
-	writeConsole(els.outputConsole, text, className);
+	writeSiteConsole(text, className);
+	if (!options.qa) {
+		setSiteActivityStatus(isError ? `${actionLabel(title)} failed` : `${actionLabel(title)} finished`, isError ? "error" : "ok");
+	}
 	if (options.qa) {
 		writeConsole(els.qaOutputConsole, text, className);
 	}
@@ -588,7 +649,13 @@ function appendPending(title, message, options = {}) {
 		message,
 		"",
 	].join("\n");
-	writeConsole(els.outputConsole, text, "output-running");
+	writeSiteConsole(text, "output-running");
+	if (!options.qa) {
+		setSiteActivityStatus(`${title} running`, "running");
+	}
+	if (options.revealActivity) {
+		revealSiteActivity();
+	}
 	if (options.qa) {
 		writeConsole(els.qaOutputConsole, text, "output-running");
 	}
@@ -687,6 +754,9 @@ function actionLabel(action) {
 		"push-path-dry-run": "Push Dry Run",
 		"push-path": "Push Path",
 		"run-qa": "Run MRN QA",
+		"credential-save": "Save Credential",
+		"credential-test": "Test Credential",
+		"credential-delete": "Delete Credential",
 	};
 	return labels[action] || action;
 }
@@ -752,14 +822,18 @@ const buttonIdTooltips = {
 	bulkStopSitesButton: "Marks selected sites stopped in the Hub. The shared Lima/OpenLiteSpeed runtime stays online, and remote hosting is not touched.",
 	wpEngineListButton: "Calls the configured WP Engine account credentials to list installs/environments, then lets you hand one off to the SSH import flow.",
 	siteGroundAddButton: "Stores this SiteGround SSH site entry locally so it can be selected later. It does not validate SSH until the Add Site connection step.",
+	saveAwsCredentialButton: "Stores the AWS access key, secret key, and optional session token in macOS Keychain. The Hub only keeps non-secret metadata like label and region.",
 	refreshProviderAccountsButton: "Reloads saved provider registries and environment-backed account credentials without changing any local site.",
 	addSiteCancelButton: "Exits the Add Site wizard and returns to All Sites. Anything already created by a completed step remains in place.",
 	addSiteBackButton: "Moves one wizard step back so you can revise the source or connection details before creating/importing.",
 	addSiteNextButton: "Validates the current wizard step. On the connection step it also prepares SSH by inspecting the remote WordPress root before continuing.",
-	createSiteButton: "Creates a blank local WordPress-style workspace only. Use this for new local work, not for cloning an existing remote site.",
-	sshCreateSiteButton: "Creates the local manifest from SSH details only. You will still need to provision, pull files, and pull the database afterward.",
-	sshCreateImportButton: "Runs the full selected first-import flow: create manifest, provision runtime, pull selected files, optionally pull DB, then optionally smoke check.",
-	refreshSshAliasesButton: "Re-reads ~/.ssh/config and included SSH config files so new aliases appear in the chooser.",
+		createSiteButton: "Creates a blank local WordPress-style workspace only. Use this for new local work, not for cloning an existing remote site.",
+		sshCreateSiteButton: "Creates the local manifest from SSH details only. You will still need to provision, pull files, and pull the database afterward.",
+		sshCreateImportButton: "Runs the full selected first-import flow: create manifest, provision runtime, pull selected files, optionally pull DB, then optionally smoke check.",
+		createBackupSiteButton: "Creates a new local site from staged Updraft backup parts. It provisions the runtime, restores files/database based on the selected options, and never writes to remote hosting.",
+		chooseUpdraftFilesButton: "Opens a file picker for local UpdraftPlus backup parts. Files are staged in the Hub runtime temp area, not inside a public WordPress folder.",
+		listAwsBackupsButton: "Lists UpdraftPlus backup sets in the selected S3 bucket. If a stored key is selected, the Hub reads it from Keychain for this AWS CLI call; otherwise it uses the profile/environment.",
+		refreshSshAliasesButton: "Re-reads ~/.ssh/config and included SSH config files so new aliases appear in the chooser.",
 	openLocalButton: "Opens the selected local site URL. If friendly HTTPS is not active, the button stays blocked with the reason shown here.",
 	openAdminButton: "Creates a one-time local admin login URL and opens wp-admin. This changes only the local WordPress database.",
 	saveSiteButton: "Saves editable settings on this page, such as title, URLs, SSH details, notes, and target PHP version.",
@@ -1333,6 +1407,45 @@ function formatBytes(bytes) {
 	return `${current.toFixed(current >= 10 ? 1 : 2)} ${units[unitIndex]}`;
 }
 
+function gitSyncLabel(git) {
+	const parts = [];
+	if (Number(git?.ahead || 0) > 0) {
+		parts.push(`ahead ${git.ahead}`);
+	}
+	if (Number(git?.behind || 0) > 0) {
+		parts.push(`behind ${git.behind}`);
+	}
+	return parts.join(" / ");
+}
+
+function gitStatusLabel(git) {
+	if (!git?.present) {
+		return "";
+	}
+	if (git.state === "error") {
+		return "Git unavailable";
+	}
+	const branch = git.branch || "detached";
+	const sync = gitSyncLabel(git);
+	const changeCount = Number(git.totalChanges || 0);
+	const state = git.dirty
+		? `${changeCount} change${changeCount === 1 ? "" : "s"}`
+		: "clean";
+	return [`Git ${branch}`, state, sync].filter(Boolean).join(" · ");
+}
+
+function gitStatusBadge(git) {
+	const label = gitStatusLabel(git);
+	if (!label) {
+		return "";
+	}
+	const state = git.state === "clean" || git.state === "dirty" || git.state === "error"
+		? git.state
+		: "unknown";
+	const title = git.summary || label;
+	return `<span class="git-status git-${state}" title="${escapeHtml(title)}">${escapeHtml(label)}</span>`;
+}
+
 function pushMetricHistory(key, value) {
 	const list = state.metricHistory[key] || [];
 	list.push(Number(value || 0));
@@ -1470,13 +1583,34 @@ function providerFormData(form) {
 	return data;
 }
 
+function backupFormData() {
+	const data = {};
+	if (!els.backupRestoreForm) return data;
+	new FormData(els.backupRestoreForm).forEach((value, key) => {
+		data[key] = String(value || "").trim();
+	});
+	return data;
+}
+
+function awsBackupFormData() {
+	const data = {};
+	if (!els.awsBackupForm) return data;
+	new FormData(els.awsBackupForm).forEach((value, key) => {
+		data[key] = String(value || "").trim();
+	});
+	if (data.credentialId) {
+		delete data.profile;
+	}
+	return data;
+}
+
 function selectedAddSiteMode() {
 	const selected = [...els.addSiteModeInputs].find((input) => input.checked);
 	return selected?.value || state.addSiteMode || "ssh";
 }
 
 function setSelectedAddSiteMode(mode) {
-	state.addSiteMode = mode === "blank" ? "blank" : "ssh";
+	state.addSiteMode = ["blank", "backup"].includes(mode) ? mode : "ssh";
 	els.addSiteModeInputs.forEach((input) => {
 		input.checked = input.value === state.addSiteMode;
 	});
@@ -1502,6 +1636,10 @@ function addSiteConnectionComplete() {
 	if (state.addSiteMode === "blank") {
 		return validLocalSlug(els.newSlug?.value || "");
 	}
+	if (state.addSiteMode === "backup") {
+		const values = backupFormData();
+		return validLocalSlug(values.slug) && Boolean(liveUrlFromIdentifier(values.liveUrl)) && Boolean(state.backupSession?.files?.length);
+	}
 	const values = addSiteSshValues();
 	const hasSiteIdentity = Boolean(values.slug || values.liveUrl || liveUrlFromIdentifier(values.slug));
 	if (values.provider === "mrndev") {
@@ -1525,6 +1663,21 @@ function addSiteValidationMessage() {
 		return validLocalSlug(els.newSlug?.value || "")
 			? "Ready to create a blank local manifest."
 			: "Enter a lowercase local slug using letters, numbers, and hyphens.";
+	}
+	if (state.addSiteMode === "backup") {
+		const values = backupFormData();
+		if (!validLocalSlug(values.slug)) {
+			return "Enter a lowercase local slug using letters, numbers, and hyphens.";
+		}
+		if (!liveUrlFromIdentifier(values.liveUrl)) {
+			return "Enter the live URL so the database can be search-replaced to local.";
+		}
+		if (!state.backupSession?.files?.length) {
+			return "Drop Updraft backup files or stage an AWS S3 backup set before continuing.";
+		}
+		return state.addSiteStep === "create"
+			? "Ready to create the local site from the staged Updraft backup."
+			: "Backup files are staged. Review the restore options next.";
 	}
 	const values = addSiteSshValues();
 	const hasSiteIdentity = Boolean(values.slug || values.liveUrl || liveUrlFromIdentifier(values.slug));
@@ -1550,6 +1703,16 @@ function renderAddSiteSummary() {
 			["Type", "Blank local site"],
 			["Local slug", els.newSlug?.value.trim() || "Required"],
 			["Runtime", "Local VM OpenLiteSpeed"],
+		);
+	} else if (state.addSiteMode === "backup") {
+		const values = backupFormData();
+		const components = state.backupSession?.components || {};
+		rows.push(
+			["Type", "Restore Updraft backup"],
+			["Local slug", values.slug || "Required"],
+			["Live URL", values.liveUrl || "Required"],
+			["Staged files", state.backupSession?.files?.length ? `${state.backupSession.files.length} file${state.backupSession.files.length === 1 ? "" : "s"}` : "Required"],
+			["Backup parts", Object.entries(components).map(([key, count]) => `${key}: ${count}`).join(", ") || "None"],
 		);
 	} else {
 		const values = addSiteSshValues();
@@ -1616,16 +1779,23 @@ function renderAddSiteWizard() {
 		els.sshCreateSiteButton.hidden = state.addSiteMode !== "ssh";
 		els.sshCreateSiteButton.disabled = state.busy || state.addSiteMode !== "ssh" || !addSiteStepComplete("create");
 	}
-	if (els.sshCreateImportButton) {
-		els.sshCreateImportButton.hidden = state.addSiteMode !== "ssh";
-		els.sshCreateImportButton.disabled = state.busy || state.addSiteMode !== "ssh" || !addSiteStepComplete("create");
+		if (els.sshCreateImportButton) {
+			els.sshCreateImportButton.hidden = state.addSiteMode !== "ssh";
+			els.sshCreateImportButton.disabled = state.busy || state.addSiteMode !== "ssh" || !addSiteStepComplete("create");
+		}
+		if (els.createBackupSiteButton) {
+			els.createBackupSiteButton.hidden = state.addSiteMode !== "backup";
+			els.createBackupSiteButton.disabled = state.busy || state.addSiteMode !== "backup" || !addSiteStepComplete("create");
+		}
+		if (els.addSiteValidation) {
+			els.addSiteValidation.textContent = addSiteValidationMessage();
+		}
+		renderInitialImportOptions();
+		renderBackupRestoreOptions();
+		renderUpdraftSession();
+		renderAwsBackupResults();
+		renderAddSiteSummary();
 	}
-	if (els.addSiteValidation) {
-		els.addSiteValidation.textContent = addSiteValidationMessage();
-	}
-	renderInitialImportOptions();
-	renderAddSiteSummary();
-}
 
 function setAddSiteStep(step) {
 	if (!addSiteSteps.includes(step)) return;
@@ -1721,6 +1891,7 @@ function renderProviderDiscovery() {
 	els.providerDiscoverySummary.textContent = sites.length
 		? `${sites.length} provider site${sites.length === 1 ? "" : "s"} ready to hand off to SSH Import.`
 		: "No provider sites loaded yet.";
+	renderCredentials();
 
 	els.providerResults.textContent = "";
 	if (!sites.length) {
@@ -1767,6 +1938,85 @@ function renderProviderDiscovery() {
 	}
 }
 
+function awsStoredCredentials() {
+	return (state.credentials || []).filter((credential) => credential.provider === "aws");
+}
+
+function renderAwsCredentialOptions() {
+	if (!els.awsBackupCredentialSelect) return;
+	const selected = els.awsBackupCredentialSelect.value;
+	els.awsBackupCredentialSelect.textContent = "";
+	const defaultOption = document.createElement("option");
+	defaultOption.value = "";
+	defaultOption.textContent = "Use AWS CLI profile or environment";
+	els.awsBackupCredentialSelect.append(defaultOption);
+	for (const credential of awsStoredCredentials()) {
+		const option = document.createElement("option");
+		option.value = credential.id;
+		option.textContent = `${credential.label}${credential.region ? ` · ${credential.region}` : ""}`;
+		els.awsBackupCredentialSelect.append(option);
+	}
+	if ([...els.awsBackupCredentialSelect.options].some((option) => option.value === selected)) {
+		els.awsBackupCredentialSelect.value = selected;
+	}
+}
+
+function renderCredentials() {
+	renderAwsCredentialOptions();
+	if (!els.credentialResults || !els.credentialSummary) return;
+	const credentials = state.credentials || [];
+	const awsCredentials = awsStoredCredentials();
+	els.credentialSummary.textContent = credentials.length
+		? `${credentials.length} secure credential${credentials.length === 1 ? "" : "s"} stored in macOS Keychain.`
+		: "No stored API keys yet.";
+	if (els.awsCredentialStatus) {
+		els.awsCredentialStatus.textContent = awsCredentials.length
+			? `${awsCredentials.length} AWS key${awsCredentials.length === 1 ? "" : "s"} available for S3 backups.`
+			: "Saved keys use macOS Keychain. Secrets are not written to site manifests.";
+	}
+	els.credentialResults.textContent = "";
+	if (!credentials.length) {
+		const empty = document.createElement("p");
+		empty.className = "mini-muted";
+		empty.textContent = "Save an AWS key to use S3 backups without exporting environment variables.";
+		els.credentialResults.append(empty);
+		return;
+	}
+	for (const credential of credentials) {
+		const item = document.createElement("article");
+		item.className = "provider-result credential-result";
+		const meta = [
+			credential.region || "no default region",
+			credential.storage || "secure storage",
+			credential.hasSessionToken ? "session token" : "long-lived key",
+		].join(" · ");
+		item.innerHTML = `
+			<div>
+				<span class="provider-badge">${escapeHtml(String(credential.provider || "").toUpperCase())}</span>
+				<strong>${escapeHtml(credential.label || credential.id)}</strong>
+				<span>${escapeHtml(meta)}</span>
+			</div>
+			<div class="provider-result-actions"></div>
+		`;
+		const actions = item.querySelector(".provider-result-actions");
+		if (credential.provider === "aws") {
+			const testButton = document.createElement("button");
+			testButton.type = "button";
+			testButton.className = "ghost-button";
+			testButton.textContent = "Test";
+			testButton.addEventListener("click", () => testAwsCredential(credential.id));
+			actions.append(testButton);
+		}
+		const deleteButton = document.createElement("button");
+		deleteButton.type = "button";
+		deleteButton.className = "ghost-button danger-button";
+		deleteButton.textContent = "Delete";
+		deleteButton.addEventListener("click", () => deleteCredential(credential.id));
+		actions.append(deleteButton);
+		els.credentialResults.append(item);
+	}
+}
+
 function useProviderSite(site) {
 	setSelectedAddSiteMode("ssh");
 	applySshFields(providerSiteFields(site));
@@ -1774,6 +2024,210 @@ function useProviderSite(site) {
 	setActiveTab("sites-add", "sites");
 	setAddSiteStep("connection");
 	document.querySelector(".ssh-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function ensureBackupSessionId() {
+	if (!state.backupImportSessionId) {
+		const random = window.crypto?.randomUUID ? window.crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+		state.backupImportSessionId = `updraft-${random.toLowerCase().replace(/[^a-z0-9-]/g, "-").slice(0, 48)}`;
+	}
+	return state.backupImportSessionId;
+}
+
+function backupComponentLabel(component) {
+	const labels = {
+		db: "Database",
+		plugins: "Plugins",
+		themes: "Themes",
+		uploads: "Uploads",
+		"mu-plugins": "MU plugins",
+		others: "Other wp-content",
+		core: "WordPress core",
+		zip: "ZIP",
+		unknown: "Unknown",
+	};
+	return labels[component] || component;
+}
+
+function renderUpdraftSession() {
+	if (!els.updraftStagedSummary || !els.updraftStagedFiles) return;
+	const files = state.backupSession?.files || [];
+	const components = state.backupSession?.components || {};
+	if (!files.length) {
+		els.updraftStagedSummary.className = "operation-status";
+		els.updraftStagedSummary.textContent = "No Updraft files staged yet.";
+		els.updraftStagedFiles.textContent = "";
+		return;
+	}
+	els.updraftStagedSummary.className = "operation-status ok";
+	els.updraftStagedSummary.textContent = `${files.length} file${files.length === 1 ? "" : "s"} staged · ${Object.entries(components).map(([key, count]) => `${backupComponentLabel(key)} ${count}`).join(" · ")}`;
+	els.updraftStagedFiles.textContent = "";
+	for (const file of files) {
+		const li = document.createElement("li");
+		li.innerHTML = `
+			<strong>${escapeHtml(backupComponentLabel(file.component))}</strong>
+			<span>${escapeHtml(file.name)} · ${escapeHtml(formatBytes(file.sizeBytes || 0))}</span>
+		`;
+		els.updraftStagedFiles.append(li);
+	}
+}
+
+function renderBackupRestoreOptions() {
+	if (!els.backupRestoreSummary) return;
+	const files = state.backupSession?.files || [];
+	if (!files.length) {
+		els.backupRestoreSummary.className = "operation-status";
+		els.backupRestoreSummary.textContent = "Stage Updraft files before creating from backup.";
+		return;
+	}
+	const restoreFiles = els.backupRestoreFiles?.checked !== false;
+	const restoreDb = els.backupRestoreDb?.checked !== false;
+	const includeUploads = els.backupIncludeUploads?.checked === true;
+	const parts = [];
+	if (restoreFiles) {
+		parts.push(includeUploads ? "files including uploads" : "files without uploads");
+	}
+	if (restoreDb) {
+		parts.push("database");
+	}
+	els.backupRestoreSummary.className = "operation-status ok";
+	els.backupRestoreSummary.textContent = parts.length
+		? `Create From Backup will restore ${parts.join(" and ")} into a new local site.`
+		: "Choose at least one restore option.";
+}
+
+function renderAwsBackupResults() {
+	if (!els.awsBackupResults || !els.awsBackupStatus) return;
+	const groups = state.awsBackupGroups || [];
+	els.awsBackupResults.textContent = "";
+	if (!groups.length) {
+		els.awsBackupStatus.textContent = "AWS S3 backup source is optional.";
+		return;
+	}
+	els.awsBackupStatus.className = "operation-status ok";
+	els.awsBackupStatus.textContent = `${groups.length} Updraft backup set${groups.length === 1 ? "" : "s"} found.`;
+	for (const group of groups.slice(0, 20)) {
+		const item = document.createElement("article");
+		item.className = "provider-result";
+		const components = Object.entries(group.components || {})
+			.map(([key, count]) => `${backupComponentLabel(key)} ${count}`)
+			.join(" · ");
+		item.innerHTML = `
+			<div>
+				<span class="provider-badge">AWS S3</span>
+				<strong>${escapeHtml(group.label || group.id)}</strong>
+				<span>${escapeHtml(group.lastModified || "unknown date")} · ${escapeHtml(formatBytes(group.totalBytes || 0))} · ${escapeHtml(components)}</span>
+			</div>
+			<div class="provider-result-actions"></div>
+		`;
+		const actions = item.querySelector(".provider-result-actions");
+		const stageCodeButton = document.createElement("button");
+		stageCodeButton.type = "button";
+		stageCodeButton.className = "ghost-button";
+		stageCodeButton.textContent = "Stage No Uploads";
+		stageCodeButton.addEventListener("click", () => stageAwsBackupGroup(group, { includeUploads: false }));
+		const stageAllButton = document.createElement("button");
+		stageAllButton.type = "button";
+		stageAllButton.className = "action";
+		stageAllButton.textContent = "Stage Set";
+		stageAllButton.addEventListener("click", () => stageAwsBackupGroup(group, { includeUploads: true }));
+		actions.append(stageCodeButton, stageAllButton);
+		els.awsBackupResults.append(item);
+	}
+}
+
+async function uploadUpdraftFiles(fileList) {
+	const files = [...fileList].filter((file) => /\.(zip|gz|sql)$/i.test(file.name));
+	if (!files.length) {
+		showToast("Drop Updraft .zip, .gz, or .sql files.", "error");
+		return;
+	}
+	const session = ensureBackupSessionId();
+	setBusy(true, "Stage Updraft");
+	try {
+		for (const file of files) {
+			els.updraftStagedSummary.textContent = `Uploading ${file.name}...`;
+			const response = await fetch(`/api/backups/updraft/uploads/${encodeURIComponent(session)}?filename=${encodeURIComponent(file.name)}`, {
+				method: "POST",
+				body: file,
+			});
+			const data = await response.json();
+			if (!response.ok) {
+				throw new Error(data.error || `Upload failed: ${file.name}`);
+			}
+			state.backupSession = data.session;
+		}
+		showToast("Updraft files staged.", "success");
+		renderAddSiteWizard();
+	} catch (error) {
+		showToast(error.message, "error");
+		appendMessage(error.message, true);
+	} finally {
+		setBusy(false);
+	}
+}
+
+async function listAwsBackups() {
+	const form = awsBackupFormData();
+	if (!form.bucket) {
+		showToast("Enter an S3 bucket before listing backups.", "error");
+		return;
+	}
+	setBusy(true, "List S3 Backups");
+	try {
+		els.awsBackupStatus.className = "operation-status";
+		els.awsBackupStatus.textContent = "Listing S3 backups...";
+		const response = await api("/api/backups/updraft/actions", {
+			method: "POST",
+			body: JSON.stringify({ action: "aws-list", ...form }),
+		});
+		appendOutput("aws-s3-list", response.result, response.result.code !== 0);
+		state.awsBackupGroups = response.result.groups || [];
+		renderAwsBackupResults();
+		renderChecklist();
+	} catch (error) {
+		els.awsBackupStatus.className = "operation-status warn";
+		els.awsBackupStatus.textContent = error.message;
+		showToast(error.message, "error");
+	} finally {
+		setBusy(false);
+	}
+}
+
+async function stageAwsBackupGroup(group, options = {}) {
+	const form = awsBackupFormData();
+	const includeUploads = options.includeUploads !== false;
+	const keys = (group.files || [])
+		.filter((file) => includeUploads || file.component !== "uploads")
+		.map((file) => file.key);
+	if (!keys.length) {
+		showToast("This backup set has no files to stage with those options.", "error");
+		return;
+	}
+	const session = ensureBackupSessionId();
+	setBusy(true, "Stage S3 Backup");
+	try {
+		els.awsBackupStatus.className = "operation-status";
+		els.awsBackupStatus.textContent = `Downloading ${keys.length} S3 file${keys.length === 1 ? "" : "s"}...`;
+		const response = await api("/api/backups/updraft/actions", {
+			method: "POST",
+			body: JSON.stringify({
+				action: "aws-download-set",
+				...form,
+				session,
+				keys,
+			}),
+		});
+		appendOutput("aws-s3-download", response.result, response.result.code !== 0);
+		state.backupSession = response.result.session;
+		showToast(response.result.code === 0 ? "S3 backup staged." : "S3 staging failed.", response.result.code === 0 ? "success" : "error");
+		renderAddSiteWizard();
+	} catch (error) {
+		showToast(error.message, "error");
+		appendMessage(error.message, true);
+	} finally {
+		setBusy(false);
+	}
 }
 
 function renderSshAliasOptions() {
@@ -1847,6 +2301,8 @@ function renderChecklist() {
 	const hasProvisionedSite = state.sites.some((site) => site.runtimeStatus === "provisioned");
 	const hasPulledSite = state.sites.some((site) => site.runtimeStatus === "provisioned" && site.remoteSsh && site.remotePath);
 	const providerSiteCount = state.discoveredSites.wpengine.length + state.discoveredSites.siteground.length;
+	const backupSetCount = state.awsBackupGroups.length;
+	const credentialCount = state.credentials.length;
 	const items = [
 		{
 			label: "Manifest control plane",
@@ -1858,13 +2314,17 @@ function renderChecklist() {
 			detail: `${state.sshAliasReport?.aliasCount || 0} local aliases detected; MRN Dev, RunCloud, SiteGround, and WP Engine presets are ready.`,
 			status: "success",
 		},
-		{
-			label: "Provider discovery",
-			detail: providerSiteCount
-				? `${providerSiteCount} provider site${providerSiteCount === 1 ? "" : "s"} ready to load into SSH Import.`
-				: "WP Engine account listing and SiteGround local registry are wired in.",
-			status: state.providerAccounts ? "success" : "current",
-		},
+			{
+				label: "Provider discovery",
+				detail: providerSiteCount
+					? `${providerSiteCount} provider site${providerSiteCount === 1 ? "" : "s"} ready to load into SSH Import.`
+					: backupSetCount
+						? `${backupSetCount} S3 backup set${backupSetCount === 1 ? "" : "s"} ready to stage for restore.`
+						: credentialCount
+							? `${credentialCount} secure API credential${credentialCount === 1 ? "" : "s"} stored for external services.`
+							: "WP Engine, SiteGround, AWS S3 backup discovery, and secure key storage are wired in.",
+				status: state.providerAccounts || backupSetCount || credentialCount ? "success" : "current",
+			},
 		{
 			label: "OpenLiteSpeed runtime",
 			detail: runtimeRunning ? "Lima runtime is running with HTTP, admin, and MariaDB ports forwarded." : "Bootstrap or start the Lima runtime.",
@@ -1954,7 +2414,7 @@ function pushFileSelectionFromControls({ requireCustomPath = false } = {}) {
 		? customPath
 			? `Custom: ${customPath}`
 			: "Custom directory"
-		: pullFileScopeLabels[scope] || "Active theme";
+		: pullFileScopeLabels[scope] || "Child / active theme";
 	if (scope === "custom" && requireCustomPath && !customPath) {
 		appendMessage("Enter a custom push path before running the push action.", true);
 		return null;
@@ -2212,12 +2672,16 @@ function renderPushSummary(site) {
 	const previewPath = selection.fileScope === "custom"
 		? selection.relativePath || "choose a custom directory"
 		: selection.fileScope === "active-theme"
-			? "active theme, resolved from local WordPress"
+			? "child/active theme, resolved from local WordPress"
 			: pushScopePreviewPaths[selection.fileScope] || selection.pushScopeLabel;
 	const broadScope = selection.fileScope === "wp-content" || selection.fileScope === "uploads";
 	els.pushSummary.className = `operation-status${broadScope ? " warn" : ""}`;
 	if (selection.fileScope === "active-theme") {
-		els.pushSummary.textContent = `${selection.pushScopeLabel}: resolves the active local theme, then deploys it to ${site.remoteSsh}:${summarizePath(site.remotePath)}. Run Push Audit first.`;
+		els.pushSummary.textContent = `${selection.pushScopeLabel}: resolves the local WordPress stylesheet/child theme, then deploys it to ${site.remoteSsh}:${summarizePath(site.remotePath)}. Run Push Audit first.`;
+		return;
+	}
+	if (selection.fileScope === "parent-theme") {
+		els.pushSummary.textContent = `${selection.pushScopeLabel}: resolves the local WordPress template/parent theme, then deploys it to ${site.remoteSsh}:${summarizePath(site.remotePath)}. Run Push Audit first.`;
 		return;
 	}
 	const localPreview = selection.relativePath || pushScopePreviewPaths[selection.fileScope] || previewPath;
@@ -2235,45 +2699,153 @@ function formatAdminAccessStatus(status) {
 	return status || "unknown admin state";
 }
 
-function summarizeAdminResult(action, result) {
+function adminPluginName(candidate) {
+	if (!candidate) return "";
+	if (candidate.label && candidate.label !== candidate.name) {
+		return `${candidate.label} (${candidate.name})`;
+	}
+	return candidate.name || candidate.label || "";
+}
+
+function adminPluginNames(candidates) {
+	return candidates.map(adminPluginName).filter(Boolean).join(", ");
+}
+
+function conciseProcessText(value) {
+	const lines = String(value || "")
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.filter((line) => !/^PHP\s+Deprecated:/i.test(line));
+	return lines.slice(-2).join(" ");
+}
+
+function adminFinalStatus(result) {
 	const access = result.adminAccess || {};
 	const after = access.after || null;
-	const finalStatus = after?.status || access.status || access.before?.status || "unknown";
+	return after?.status || access.status || access.before?.status || "unknown";
+}
+
+function summarizeAdminResult(action, result) {
+	const access = result.adminAccess || {};
+	const finalStatus = adminFinalStatus(result);
 	const candidates = access.candidates || [];
 	const blockers = candidates.filter((candidate) => candidate.disable);
 	const deactivated = access.deactivated || [];
+	const processError = result.code !== 0 ? conciseProcessText(result.stderr || result.stdout) : "";
 	const items = [];
 
 	if (action === "admin-unlock") {
-		items.push(`${deactivated.length} local plugin${deactivated.length === 1 ? "" : "s"} deactivated.`);
+		if (deactivated.length) {
+			items.push(`Deactivated locally: ${adminPluginNames(deactivated)}.`);
+		} else {
+			items.push("No local plugins were deactivated.");
+		}
 		if (access.backupPath) {
 			items.push(`Unlock record saved: ${access.backupPath}`);
 		}
 	} else {
-		items.push(`${blockers.length} high-confidence blocker${blockers.length === 1 ? "" : "s"} found.`);
+		items.push(blockers.length
+			? `High-confidence blocker${blockers.length === 1 ? "" : "s"} found: ${adminPluginNames(blockers)}.`
+			: "No high-confidence blockers found in the active plugin list.");
 	}
 
 	if (candidates.length) {
-		items.push(`${candidates.length} security/login plugin candidate${candidates.length === 1 ? "" : "s"} inspected.`);
+		items.push(`Security/login candidate${candidates.length === 1 ? "" : "s"} inspected: ${adminPluginNames(candidates)}.`);
+	} else if (result.code !== 0) {
+		items.push("Active plugin inspection did not complete.");
+	} else {
+		items.push("No security/login plugin candidates detected.");
+	}
+	if (processError) {
+		items.push(`Command detail: ${processError}`);
 	}
 	items.push(`Final state: ${formatAdminAccessStatus(finalStatus)}.`);
 
+	const adminReachable = finalStatus === "reachable";
+	const changedPlugins = deactivated.length ? ` Deactivated ${deactivated.length} local blocker${deactivated.length === 1 ? "" : "s"}.` : "";
 	return {
-		ok: result.code === 0,
+		ok: result.code === 0 && adminReachable,
 		message: action === "admin-unlock"
-			? result.code === 0
-				? `Unlock complete for ${result.args?.[0] || "site"}.`
-				: `Unlock finished with issues for ${result.args?.[0] || "site"}.`
-			: result.code === 0
-				? `Admin check complete: ${formatAdminAccessStatus(finalStatus)}.`
-				: `Admin check found issues: ${formatAdminAccessStatus(finalStatus)}.`,
+			? adminReachable
+				? `Unlock complete for ${result.args?.[0] || "site"}; wp-admin is reachable.`
+				: `Unlock still needs review for ${result.args?.[0] || "site"}.${changedPlugins}`
+			: adminReachable
+				? "Admin check complete: wp-admin is reachable."
+				: `Admin check found a blocker: ${formatAdminAccessStatus(finalStatus)}.`,
 		items,
 	};
+}
+
+function clearAdminAccessWarnings(site) {
+	if (!site?.slug) return;
+	const existing = state.siteWarnings[site.slug] || [];
+	state.siteWarnings[site.slug] = existing.filter((item) => item.source !== "admin-access" && item.action !== "admin-unlock");
+}
+
+function adminAccessWarningItems(action, result) {
+	const access = result.adminAccess || {};
+	const finalStatus = adminFinalStatus(result);
+	if (finalStatus === "reachable") {
+		return [];
+	}
+
+	const candidates = access.candidates || [];
+	const blockers = candidates.filter((candidate) => candidate.disable);
+	const deactivated = access.deactivated || [];
+	const processError = conciseProcessText(result.stderr || "");
+
+	if (result.code !== 0 && processError && !candidates.length) {
+		return [{
+			level: "issue",
+			title: "Admin plugin inspection failed",
+			detail: `wp-admin is still blocked, and the Hub could not inspect active plugins. ${processError}`,
+			suggestion: "Suggested action: run Admin Check again. If this repeats, inspect WP-CLI/PHP warnings before unlocking plugins.",
+		}];
+	}
+
+	if (action === "admin-check" && blockers.length) {
+		return [{
+			level: "warning",
+			title: "Admin blocker detected",
+			detail: `wp-admin/wp-login.php are blocked locally. High-confidence blocker${blockers.length === 1 ? "" : "s"} detected: ${adminPluginNames(blockers)}.`,
+			action: "admin-unlock",
+			suggestion: "Suggested action: run Local Admin Unlock if you need wp-admin access. This only changes the local database.",
+		}];
+	}
+
+	if (action === "admin-unlock" && deactivated.length) {
+		return [{
+			level: "issue",
+			title: "Admin still blocked after unlock",
+			detail: `The Hub deactivated ${adminPluginNames(deactivated)} locally, but wp-admin/wp-login.php still return ${formatAdminAccessStatus(finalStatus)}.`,
+			suggestion: "Suggested action: run Admin Check again, then review mu-plugins, .htaccess, or other local security rules if no new blocker appears.",
+		}];
+	}
+
+	if (action === "admin-unlock" && blockers.length) {
+		return [{
+			level: "issue",
+			title: "Admin unlock did not change local plugins",
+			detail: `wp-admin/wp-login.php are still blocked. Detected blocker${blockers.length === 1 ? "" : "s"}: ${adminPluginNames(blockers)}, but none were deactivated.`,
+			action: "admin-unlock",
+			suggestion: "Suggested action: try Local Admin Unlock again, then review the log if plugin deactivation fails.",
+		}];
+	}
+
+	return [{
+		level: action === "admin-unlock" ? "issue" : "warning",
+		title: action === "admin-unlock" ? "Admin still blocked" : "Admin access blocked",
+		detail: "wp-admin/wp-login.php are blocked locally, but no high-confidence active plugin blocker was detected.",
+		suggestion: "Suggested action: review mu-plugins, .htaccess, and local-only security rules; the database import can still be valid if you do not need wp-admin.",
+	}];
 }
 
 function updateAdminReadiness(site, action, result) {
 	if (!site || !["admin-check", "admin-unlock"].includes(action)) return;
 	state.adminReadiness[site.slug] = summarizeAdminResult(action, result);
+	clearAdminAccessWarnings(site);
+	setSiteWarnings(site, "admin-access", adminAccessWarningItems(action, result));
 	renderAdminSummary(site);
 }
 
@@ -2323,6 +2895,7 @@ function normalizeWarningItem(source, warning) {
 		action: warning?.action || "",
 		fileScope: warning?.fileScope || "",
 		relativePath: warning?.relativePath || "",
+		suggestion: warning?.suggestion || "",
 	};
 }
 
@@ -2348,6 +2921,56 @@ function setSiteWarnings(site, source, warnings = []) {
 
 function codeSyncWarningItems(result) {
 	return result.codeSync?.warnings || [];
+}
+
+function actionFailureDetail(result, fallback = "Review the deployment log for the command output.") {
+	const lines = String([result.stderr, result.stdout].filter(Boolean).join("\n") || "")
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.filter((line) => !/^Exit:\s*\d+$/i.test(line))
+		.filter((line) => !/^(Pull scope|Remote source|Local target):/i.test(line));
+	return lines.length ? lines.slice(-5).join(" ") : fallback;
+}
+
+function pullFailureWarningItems(action, result) {
+	if (!result || result.code === 0) {
+		return [];
+	}
+	const scopeLabel = result.pullScope?.label || "Selected files";
+	if (action === "pull-files" || action === "pull-files-dry-run") {
+		const dryRun = action === "pull-files-dry-run";
+		return [{
+			level: "issue",
+			title: dryRun ? "File dry run failed" : "File pull failed",
+			detail: `${scopeLabel} could not be ${dryRun ? "previewed" : "pulled"}. ${actionFailureDetail(result)}`,
+			suggestion: dryRun
+				? "Suggested action: review the file dry-run output, then fix SSH/path/Git issues before pulling."
+				: "Suggested action: review the pull output, then fix SSH/path/Git issues before trying Pull Files & DB again.",
+		}];
+	}
+	if (action === "pull-db") {
+		return [{
+			level: "issue",
+			title: "Database pull failed",
+			detail: `The remote database was not imported locally. ${actionFailureDetail(result)}`,
+			suggestion: "Suggested action: review the database pull output, then retry Pull DB after fixing the remote export or local import issue.",
+		}];
+	}
+	return [];
+}
+
+function gitSafetyWarningItems(action, result) {
+	const gitSafety = result?.gitSafety;
+	if (!gitSafety?.targetDirty || action !== "pull-files-dry-run") {
+		return [];
+	}
+	return [{
+		level: "warning",
+		title: "Git safety will block file pull",
+		detail: gitSafety.summary || "The local Git repo has changes in the selected pull scope.",
+		suggestion: "Suggested action: commit, stash, or back up local changes before running Pull Files or Pull Files & DB.",
+	}];
 }
 
 function smokeWarningItems(smoke) {
@@ -2394,11 +3017,12 @@ function renderSiteWarnings(site = currentSite()) {
 
 	const issueCount = warnings.filter((warning) => warning.level === "issue").length;
 	const warningCount = warnings.length - issueCount;
+	const totalCount = issueCount + warningCount;
 	els.siteWarningsCard.dataset.state = issueCount ? "issue" : "warning";
 	els.siteWarningsSummary.textContent = [
 		issueCount ? `${issueCount} issue${issueCount === 1 ? "" : "s"}` : "",
 		warningCount ? `${warningCount} warning${warningCount === 1 ? "" : "s"}` : "",
-	].filter(Boolean).join(" and ") + " need review before treating local as fully in sync.";
+	].filter(Boolean).join(" and ") + ` ${totalCount === 1 ? "needs" : "need"} review before treating local as fully in sync.`;
 	for (const warning of warnings) {
 		const li = document.createElement("li");
 		if (warning.level === "issue") {
@@ -2410,8 +3034,10 @@ function renderSiteWarnings(site = currentSite()) {
 		detail.textContent = warning.detail || "";
 		li.append(title, detail);
 		const suggestion = [];
-		if (warning.action === "pull-files" && warning.fileScope === "active-theme") {
-			suggestion.push("Suggested action: Pull Active Theme.");
+		if (warning.suggestion) {
+			suggestion.push(warning.suggestion);
+		} else if (warning.action === "pull-files" && warning.fileScope === "active-theme") {
+			suggestion.push("Suggested action: Pull Child / Active Theme.");
 		} else if (warning.action === "pull-files" && warning.relativePath) {
 			suggestion.push(`Suggested action: Pull ${warning.relativePath}.`);
 		} else if (warning.action === "admin-unlock") {
@@ -2510,8 +3136,16 @@ function updatePullReadiness(site, action, result) {
 		const scopeLabel = result.pullScope?.label || "File";
 		state.pullReadiness[site.slug] = {
 			ok: result.code === 0,
-			message: result.code === 0 ? `${scopeLabel} dry run completed. Pull Files is ready when you are.` : `${scopeLabel} dry run failed; review the deployment log.`,
+			message: result.code === 0
+				? result.gitSafety?.targetDirty
+					? `${scopeLabel} dry run completed, but Git safety will block the real pull.`
+					: `${scopeLabel} dry run completed. Pull Files is ready when you are.`
+				: `${scopeLabel} dry run failed; review the deployment log.`,
 		};
+		setSiteWarnings(site, "pull-files-dry-run", [
+			...pullFailureWarningItems(action, result),
+			...gitSafetyWarningItems(action, result),
+		]);
 	} else if (action === "pull-files") {
 		const scopeLabel = result.pullScope?.label || "Files";
 		state.pullReadiness[site.slug] = {
@@ -2520,6 +3154,9 @@ function updatePullReadiness(site, action, result) {
 		};
 		if (result.code === 0) {
 			setSiteWarnings(site, "pull-preflight", []);
+			setSiteWarnings(site, "pull-files", []);
+		} else {
+			setSiteWarnings(site, "pull-files", pullFailureWarningItems(action, result));
 		}
 	} else if (action === "provision-site") {
 		state.pullReadiness[site.slug] = {
@@ -2561,6 +3198,7 @@ function updatePullReadiness(site, action, result) {
 			items: [],
 		};
 		setSiteWarnings(site, "pull-db", [
+			...pullFailureWarningItems(action, result),
 			...smokeWarningItems(smoke),
 			...codeSyncWarningItems(result),
 		]);
@@ -2602,6 +3240,7 @@ function renderSites() {
 	for (const site of state.sites) {
 		const status = site.runtimeStatus || "planned";
 		const siteMetrics = metricsBySlug.get(site.slug) || {};
+		const gitBadge = gitStatusBadge(siteMetrics.git);
 
 		if (els.dashboardSiteList && status === "provisioned") {
 			const card = document.createElement("button");
@@ -2614,6 +3253,7 @@ function renderSites() {
 				<strong>${escapeHtml(site.title || site.slug)}</strong>
 				<span>${escapeHtml(site.localUrl || site.localRoot || "")}</span>
 				<span>Disk ${escapeHtml(formatBytes(siteMetrics.diskBytes || 0))} · Memory ${escapeHtml(siteMetrics.memoryNote || "Shared runtime")} · Jobs ${escapeHtml(String(siteMetrics.jobs || 0))}</span>
+				${gitBadge ? `<span class="site-card-git">${gitBadge}</span>` : ""}
 			</span>
 		`;
 			card.addEventListener("click", () => selectSite(site.slug, true));
@@ -2624,6 +3264,7 @@ function renderSites() {
 	for (const site of visibleSites) {
 		const status = site.runtimeStatus || "planned";
 		const siteMetrics = metricsBySlug.get(site.slug) || {};
+		const gitBadge = gitStatusBadge(siteMetrics.git);
 		const remoteLabel = site.remoteSsh && site.remotePath
 			? `${site.remoteSsh}:${summarizePath(site.remotePath)}`
 			: "Remote not configured";
@@ -2641,11 +3282,12 @@ function renderSites() {
 				<button type="button" class="site-row-main">
 					<span class="site-status ${status === "provisioned" ? "ok" : "planned"}" aria-hidden="true"></span>
 					<span>
-						<strong>${escapeHtml(site.title || site.slug)}</strong>
-						<small class="site-row-meta">${escapeHtml(providerLabel(site.provider))} · ${escapeHtml(status)} · ${escapeHtml(site.localUrl || site.localRoot || "")}</small>
-						<small class="site-row-stats">Disk ${escapeHtml(formatBytes(siteMetrics.diskBytes || 0))} · Memory ${escapeHtml(siteMetrics.memoryNote || "Shared runtime")} · Jobs ${escapeHtml(String(siteMetrics.jobs || 0))} · ${escapeHtml(remoteLabel)}</small>
-					</span>
-				</button>
+							<strong>${escapeHtml(site.title || site.slug)}</strong>
+							<small class="site-row-meta">${escapeHtml(providerLabel(site.provider))} · ${escapeHtml(status)} · ${escapeHtml(site.localUrl || site.localRoot || "")}</small>
+							<small class="site-row-stats">Disk ${escapeHtml(formatBytes(siteMetrics.diskBytes || 0))} · Memory ${escapeHtml(siteMetrics.memoryNote || "Shared runtime")} · Jobs ${escapeHtml(String(siteMetrics.jobs || 0))} · ${escapeHtml(remoteLabel)}</small>
+							${gitBadge ? `<small class="site-row-git">${gitBadge}</small>` : ""}
+						</span>
+					</button>
 				<div class="site-row-actions">
 					${status === "provisioned" ? `<button data-site-action="open-local" data-site-slug="${escapeHtml(site.slug)}" type="button" class="ghost-button" ${openDisabled}${openTitle}>Open</button>` : ""}
 					${status === "provisioned" ? `<button data-site-action="admin-login" data-site-slug="${escapeHtml(site.slug)}" type="button" class="ghost-button" ${openDisabled}${openTitle}>WP Admin</button>` : ""}
@@ -2800,6 +3442,7 @@ function renderRuntime() {
 	const helperInstalled = Boolean(friendly?.helper?.installed);
 	const helperHealthy = Boolean(friendly?.helper?.healthy);
 	const certReady = friendly?.cert?.status === "ready";
+	const liveCertStale = friendly?.liveCertificate?.covers === false;
 	const firefoxTrust = friendly?.browserTrust?.firefox || null;
 	const firefoxUi = firefoxTrustUi(firefoxTrust);
 	els.runtimeIsolation.textContent = state.runtime.adapter === "lima-openlitespeed" ? "Lima VM" : state.runtime.adapter;
@@ -2818,8 +3461,8 @@ function renderRuntime() {
 	);
 	setPill(
 		els.httpsCertStatusPill,
-		certReady ? "Cert ready" : "Cert needed",
-		certReady ? "ok" : "bad",
+		liveCertStale ? "Helper cert stale" : certReady ? "Cert ready" : "Cert needed",
+		liveCertStale ? "warn" : certReady ? "ok" : "bad",
 	);
 	setPill(
 		els.httpsProxyStatusPill,
@@ -2851,7 +3494,7 @@ function renderRuntime() {
 		els.installHttpsHelperButton.className = helperInstalled ? "ghost-button success-button" : "action";
 	}
 	if (els.refreshSslCertButton) {
-		els.refreshSslCertButton.className = certReady ? "ghost-button success-button" : "ghost-button";
+		els.refreshSslCertButton.className = certReady && !liveCertStale ? "ghost-button success-button" : "ghost-button";
 	}
 	if (els.httpsInstallStepCard) {
 		els.httpsInstallStepCard.classList.toggle("done", helperInstalled);
@@ -2874,6 +3517,7 @@ function renderRuntime() {
 		`ports: ${state.runtime.ports.map((port) => `${port.label} ${port.host}->${port.guest}`).join(", ")}`,
 		friendly ? `friendly urls: ${friendly.ready ? "ready" : "not ready"} (${friendly.pattern})` : "",
 		friendly?.cert ? `ssl cert: ${friendly.cert.status} ${friendly.cert.certPath || ""}` : "",
+		friendly?.liveCertificate ? `live cert: ${friendly.liveCertificate.status} ${friendly.liveCertificate.message || ""}` : "",
 		firefoxTrust ? `firefox trust: ${firefoxTrust.status} ${firefoxTrust.message || ""}` : "",
 		friendly?.helper ? `https helper: ${friendly.helper.healthy ? "healthy" : friendly.helper.installed ? "installed but not healthy" : "not installed"} (${friendly.helper.label})` : "",
 		friendly?.https?.owner?.occupied ? `port ${friendly.https.owner.port}: ${friendly.https.owner.summary}` : "",
@@ -2993,6 +3637,7 @@ async function refresh() {
 				wpengine: { envConfigured: false, credentialSource: "unavailable" },
 				siteground: { mode: "local-registry", count: 0 },
 			},
+			credentials: { credentials: [] },
 			sites: { siteground: [] },
 			error: error.message,
 		})),
@@ -3005,6 +3650,7 @@ async function refresh() {
 	state.sshAliases = sshAliasResponse.aliases || [];
 	state.providerAccounts = providerAccountsResponse;
 	state.discoveredSites.siteground = providerAccountsResponse.sites?.siteground || [];
+	state.credentials = providerAccountsResponse.credentials?.credentials || [];
 	if (state.currentSlug && !currentSite()) {
 		state.currentSlug = null;
 	}
@@ -3048,6 +3694,7 @@ async function refreshProviderAccounts(showMessage = true) {
 		const response = await api("/api/provider-accounts");
 		state.providerAccounts = response;
 		state.discoveredSites.siteground = response.sites?.siteground || [];
+		state.credentials = response.credentials?.credentials || [];
 		renderProviderDiscovery();
 		renderChecklist();
 		if (showMessage) {
@@ -3126,6 +3773,83 @@ async function removeProviderSite(site) {
 	}
 }
 
+async function saveAwsCredential() {
+	if (!els.awsCredentialForm) return;
+	const payload = providerFormData(els.awsCredentialForm);
+	setBusy(true, "Save AWS Key");
+	try {
+		const response = await api("/api/credentials/actions", {
+			method: "POST",
+			body: JSON.stringify({
+				action: "aws-save",
+				credential: payload,
+			}),
+		});
+		state.credentials = response.result.credentials || [];
+		["accessKeyId", "secretAccessKey", "sessionToken"].forEach((name) => {
+			const field = els.awsCredentialForm.elements[name];
+			if (field) field.value = "";
+		});
+		appendOutput("credential-save", response.result, response.result.code !== 0);
+		showToast("AWS key saved to Keychain.", "success");
+		renderCredentials();
+		renderChecklist();
+	} catch (error) {
+		showToast(error.message, "error");
+		appendMessage(error.message, true);
+	} finally {
+		setBusy(false);
+	}
+}
+
+async function testAwsCredential(id) {
+	setBusy(true, "Test AWS Key");
+	try {
+		const response = await api("/api/credentials/actions", {
+			method: "POST",
+			body: JSON.stringify({
+				action: "aws-test",
+				id,
+			}),
+		});
+		appendOutput("credential-test", response.result, response.result.code !== 0);
+		showToast(response.result.code === 0 ? "AWS key works." : "AWS key test failed.", response.result.code === 0 ? "success" : "error");
+	} catch (error) {
+		showToast(error.message, "error");
+		appendMessage(error.message, true);
+	} finally {
+		setBusy(false);
+	}
+}
+
+async function deleteCredential(id) {
+	const credential = (state.credentials || []).find((item) => item.id === id);
+	const label = credential?.label || id;
+	if (!window.confirm(`Delete the stored credential "${label}" from MRN Local Hub and macOS Keychain?`)) {
+		return;
+	}
+	setBusy(true, "Delete Key");
+	try {
+		const response = await api("/api/credentials/actions", {
+			method: "POST",
+			body: JSON.stringify({
+				action: "delete",
+				id,
+			}),
+		});
+		state.credentials = response.result.credentials || [];
+		appendOutput("credential-delete", response.result, response.result.code !== 0);
+		showToast("Credential deleted.", "success");
+		renderCredentials();
+		renderChecklist();
+	} catch (error) {
+		showToast(error.message, "error");
+		appendMessage(error.message, true);
+	} finally {
+		setBusy(false);
+	}
+}
+
 async function createSite() {
 	if (!els.newSlug) return;
 	const slug = els.newSlug.value.trim();
@@ -3152,13 +3876,13 @@ async function createSite() {
 	}
 }
 
-async function runSiteActionStep(site, action, payload = {}) {
-	appendPending(actionLabel(action), actionPendingMessage(action, site, payload));
+async function runSiteActionStep(site, action, payload = {}, options = {}) {
+	appendPending(actionLabel(action), actionPendingMessage(action, site, payload), { revealActivity: options.revealActivity !== false });
 	const response = await api(`/api/sites/${encodeURIComponent(site.slug)}/actions`, {
 		method: "POST",
 		body: JSON.stringify({ action, ...payload }),
 	});
-	appendOutput(action, response.result, response.result.code !== 0);
+	appendOutput(action, response.result, response.result.code !== 0, options.notify !== false);
 	applySshFields(response.result.sshFields);
 	if (response.result.site?.slug) {
 		state.currentSlug = response.result.site.slug;
@@ -3219,7 +3943,7 @@ async function createAndImportSite() {
 	setBusy(true, "Initial Import");
 	try {
 		for (const step of steps) {
-			const result = await runSiteActionStep(site, step.action, step.payload);
+			const result = await runSiteActionStep(site, step.action, step.payload, { notify: false });
 			if (result.site?.slug) {
 				site = result.site;
 			}
@@ -3236,6 +3960,81 @@ async function createAndImportSite() {
 		selectSite(site.slug);
 		showToast(error.message, "error");
 		appendMessage(error.message, true);
+	} finally {
+		setBusy(false);
+	}
+}
+
+async function createSiteFromBackup() {
+	if (state.addSiteMode !== "backup") {
+		return;
+	}
+	const values = backupFormData();
+	if (!addSiteConnectionComplete()) {
+		showToast(addSiteValidationMessage(), "error");
+		return;
+	}
+	const restoreFiles = els.backupRestoreFiles?.checked !== false;
+	const restoreDb = els.backupRestoreDb?.checked !== false;
+	if (!restoreFiles && !restoreDb) {
+		showToast("Choose files, database, or both before restoring.", "error");
+		return;
+	}
+	const confirmation = await requestConfirmation({
+		title: "Create From Updraft Backup",
+		message: `This will create ${values.slug}, provision local runtime, and restore the staged Updraft backup into the new local site.`,
+		token: "RESTORE",
+	});
+	if (confirmation !== "RESTORE") {
+		appendMessage("Backup restore cancelled");
+		return;
+	}
+
+	setBusy(true, "Create From Backup");
+	appendPending("Create From Backup", `Restoring staged Updraft backup into ${values.slug}.`, { revealActivity: true });
+	try {
+		const response = await api("/api/backups/updraft/actions", {
+			method: "POST",
+			body: JSON.stringify({
+				action: "create-site-from-backup",
+				session: state.backupImportSessionId,
+				slug: values.slug,
+				title: values.title,
+				liveUrl: values.liveUrl,
+				restoreFiles,
+				restoreDb,
+				includeUploads: els.backupIncludeUploads?.checked === true,
+			}),
+		});
+		appendOutput("updraft-create-site", response.result, response.result.code !== 0);
+		if (response.result.site?.slug) {
+			state.currentSlug = response.result.site.slug;
+			await refresh();
+			selectSite(response.result.site.slug);
+			setActiveTab(siteDefaultTab, "sites");
+			const site = currentSite() || response.result.site;
+			setSiteWarnings(site, "backup-restore", [
+				...smokeWarningItems(response.result.smoke),
+				...codeSyncWarningItems(response.result),
+			]);
+		}
+		const warned = Boolean(response.result.smoke?.warnings || response.result.smoke?.failed || response.result.codeSync?.warningCount);
+		if (response.result.code === 0) {
+			state.backupImportSessionId = "";
+			state.backupSession = null;
+			state.awsBackupGroups = [];
+		}
+		showToast(
+			response.result.code === 0
+				? warned
+					? "Backup restored. Warnings need review."
+					: "Backup restored."
+				: "Backup restore failed.",
+			response.result.code === 0 ? (warned ? "info" : "success") : "error",
+		);
+	} catch (error) {
+		appendMessage(error.message, true);
+		showToast(error.message, "error");
 	} finally {
 		setBusy(false);
 	}
@@ -3261,16 +4060,16 @@ async function pullFilesAndDatabase() {
 	const label = actionLabel("pull-files-db");
 	let activeSite = site;
 	setBusy(true, label);
-	appendPending(label, actionPendingMessage("pull-files-db", site, selection));
+	appendPending(label, actionPendingMessage("pull-files-db", site, selection), { revealActivity: true });
 	try {
-		const filesResult = await runSiteActionStep(activeSite, "pull-files", selection);
+		const filesResult = await runSiteActionStep(activeSite, "pull-files", selection, { notify: false });
 		if (filesResult.site?.slug) {
 			activeSite = filesResult.site;
 		}
 		if (filesResult.code !== 0) {
 			throw new Error("File pull failed. Database pull was skipped.");
 		}
-		const dbResult = await runSiteActionStep(activeSite, "pull-db");
+		const dbResult = await runSiteActionStep(activeSite, "pull-db", {}, { notify: false });
 		if (dbResult.site?.slug) {
 			activeSite = dbResult.site;
 		}
@@ -3289,7 +4088,6 @@ async function pullFilesAndDatabase() {
 	} catch (error) {
 		appendMessage(error.message, true);
 		showToast(error.message, "error");
-		await refresh().catch(() => {});
 		selectSite(activeSite.slug);
 	} finally {
 		setBusy(false);
@@ -3438,7 +4236,7 @@ async function runAction(action, siteOverride = null) {
 		startQaArtifactPolling(site.slug);
 	}
 	setBusy(true, label);
-	appendPending(label, actionPendingMessage(action, site, payload), { qa: isQaRun });
+	appendPending(label, actionPendingMessage(action, site, payload), { qa: isQaRun, revealActivity: !isQaRun });
 	try {
 		const response = await api(`/api/sites/${encodeURIComponent(site.slug)}/actions`, {
 			method: "POST",
@@ -3538,6 +4336,9 @@ els.createSiteButton?.addEventListener("click", createSite);
 els.sshCreateImportButton?.addEventListener("click", () => {
 	createAndImportSite().catch((error) => appendMessage(error.message, true));
 });
+els.createBackupSiteButton?.addEventListener("click", () => {
+	createSiteFromBackup().catch((error) => appendMessage(error.message, true));
+});
 els.addSiteCancelButton?.addEventListener("click", cancelAddSiteFlow);
 els.addSiteBackButton?.addEventListener("click", retreatAddSiteStep);
 els.addSiteNextButton?.addEventListener("click", () => {
@@ -3560,6 +4361,44 @@ els.newSlug?.addEventListener("keydown", (event) => {
 	}
 });
 els.newSlug?.addEventListener("input", renderAddSiteWizard);
+els.backupRestoreForm?.addEventListener("input", renderAddSiteWizard);
+els.chooseUpdraftFilesButton?.addEventListener("click", () => els.updraftFileInput?.click());
+els.updraftFileInput?.addEventListener("change", () => {
+	uploadUpdraftFiles(els.updraftFileInput.files).catch((error) => appendMessage(error.message, true));
+	els.updraftFileInput.value = "";
+});
+if (els.updraftDropzone) {
+	["dragenter", "dragover"].forEach((eventName) => {
+		els.updraftDropzone.addEventListener(eventName, (event) => {
+			event.preventDefault();
+			els.updraftDropzone.classList.add("dragging");
+		});
+	});
+	["dragleave", "drop"].forEach((eventName) => {
+		els.updraftDropzone.addEventListener(eventName, (event) => {
+			event.preventDefault();
+			if (eventName === "drop") {
+				uploadUpdraftFiles(event.dataTransfer.files).catch((error) => appendMessage(error.message, true));
+			}
+			els.updraftDropzone.classList.remove("dragging");
+		});
+	});
+}
+els.listAwsBackupsButton?.addEventListener("click", () => {
+	listAwsBackups().catch((error) => appendMessage(error.message, true));
+});
+els.awsBackupForm?.addEventListener("submit", (event) => {
+	event.preventDefault();
+	listAwsBackups().catch((error) => appendMessage(error.message, true));
+});
+[
+	els.backupRestoreFiles,
+	els.backupIncludeUploads,
+	els.backupRestoreDb,
+].forEach((control) => {
+	control?.addEventListener("input", renderBackupRestoreOptions);
+	control?.addEventListener("change", renderBackupRestoreOptions);
+});
 els.saveSiteButton.addEventListener("click", saveSite);
 els.siteForm?.elements.phpVersion?.addEventListener("change", () => {
 	const site = currentSite();
@@ -3631,6 +4470,7 @@ els.refreshSshAliasesButton?.addEventListener("click", refreshSshAliases);
 els.refreshProviderAccountsButton?.addEventListener("click", () => refreshProviderAccounts());
 els.wpEngineListButton?.addEventListener("click", listWpEngineSites);
 els.siteGroundAddButton?.addEventListener("click", saveSiteGroundSite);
+els.saveAwsCredentialButton?.addEventListener("click", saveAwsCredential);
 els.wpEngineDiscoveryForm.addEventListener("submit", (event) => {
 	event.preventDefault();
 	listWpEngineSites();
@@ -3639,9 +4479,23 @@ els.siteGroundRegistryForm.addEventListener("submit", (event) => {
 	event.preventDefault();
 	saveSiteGroundSite();
 });
+els.awsCredentialForm?.addEventListener("submit", (event) => {
+	event.preventDefault();
+	saveAwsCredential();
+});
 els.clearOutputButton.addEventListener("click", () => {
 	els.outputConsole.textContent = "";
 	els.outputConsole.className = "";
+	if (els.siteActivityConsole) {
+		els.siteActivityConsole.textContent = "";
+		els.siteActivityConsole.className = "";
+	}
+	setSiteActivityStatus();
+});
+els.clearSiteActivityButton?.addEventListener("click", () => {
+	els.siteActivityConsole.textContent = "";
+	els.siteActivityConsole.className = "";
+	setSiteActivityStatus();
 });
 els.clearQaOutputButton?.addEventListener("click", () => {
 	els.qaOutputConsole.textContent = "";

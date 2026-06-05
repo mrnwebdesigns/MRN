@@ -233,6 +233,36 @@
 									<button id="siteGroundAddButton" type="button" class="ghost-button">Save SiteGround</button>
 								</div>
 							</form>
+
+							<form id="awsCredentialForm" class="discovery-block credential-block" autocomplete="off">
+								<div class="mini-heading">
+									<strong>AWS Secure Key</strong>
+									<span id="awsCredentialStatus">Saved keys use macOS Keychain. Secrets are not written to site manifests.</span>
+								</div>
+								<label class="field">
+									<span>Label</span>
+									<input name="label" type="text" autocomplete="off" placeholder="Client AWS">
+								</label>
+								<label class="field">
+									<span>Default region</span>
+									<input name="region" type="text" autocomplete="off" placeholder="us-east-1">
+								</label>
+								<label class="field">
+									<span>Access key ID</span>
+									<input name="accessKeyId" type="password" autocomplete="off" placeholder="Stored in Keychain">
+								</label>
+								<label class="field">
+									<span>Secret access key</span>
+									<input name="secretAccessKey" type="password" autocomplete="off" placeholder="Stored in Keychain">
+								</label>
+								<label class="field wide">
+									<span>Session token</span>
+									<input name="sessionToken" type="password" autocomplete="off" placeholder="Optional">
+								</label>
+								<div class="actions">
+									<button id="saveAwsCredentialButton" type="button" class="action">Save AWS Key</button>
+								</div>
+							</form>
 						</div>
 						<div class="discovery-results-header">
 							<div>
@@ -242,6 +272,13 @@
 							<button id="refreshProviderAccountsButton" type="button" class="ghost-button">Refresh Providers</button>
 						</div>
 						<div id="providerResults" class="provider-results"></div>
+						<div class="discovery-results-header credential-results-header">
+							<div>
+								<h3>Secure Keys</h3>
+								<p id="credentialSummary">No stored API keys yet.</p>
+							</div>
+						</div>
+						<div id="credentialResults" class="provider-results"></div>
 					</details>
 				</section>
 
@@ -277,16 +314,23 @@
 
 					<div class="add-step-panel" data-add-step-panel="source">
 						<div class="source-grid" role="radiogroup" aria-label="Site source">
-							<label class="source-card">
-								<input type="radio" name="addSiteMode" value="ssh" checked>
-								<span>
-									<strong>Pull From SSH</strong>
-									<small>MRN Dev, RunCloud, SiteGround, WP Engine, or a generic SSH WordPress root.</small>
-								</span>
-							</label>
-							<label class="source-card">
-								<input type="radio" name="addSiteMode" value="blank">
-								<span>
+								<label class="source-card">
+									<input type="radio" name="addSiteMode" value="ssh" checked>
+									<span>
+										<strong>Pull From SSH</strong>
+										<small>MRN Dev, RunCloud, SiteGround, WP Engine, or a generic SSH WordPress root.</small>
+									</span>
+								</label>
+								<label class="source-card">
+									<input type="radio" name="addSiteMode" value="backup">
+									<span>
+										<strong>Restore Updraft Backup</strong>
+										<small>Drop local Updraft files or stage a backup set from AWS S3.</small>
+									</span>
+								</label>
+								<label class="source-card">
+									<input type="radio" name="addSiteMode" value="blank">
+									<span>
 									<strong>Blank Local Site</strong>
 									<small>Create an empty local manifest and fill the site details later.</small>
 								</span>
@@ -374,11 +418,84 @@
 								</div>
 								<div id="sshAliasSummary" class="runtime-paths">SSH aliases have not loaded yet.</div>
 								<div id="sshAliasList" class="ssh-alias-list"></div>
+								</div>
+							</div>
+
+							<div class="backup-restore-grid" data-add-requires="backup" hidden>
+								<div class="embedded-panel backup-restore-panel">
+									<div class="panel-title">
+										<div class="panel-icon" aria-hidden="true">B</div>
+										<div>
+											<h3>Backup Site Details</h3>
+											<p>These local details are used before the backup is restored.</p>
+										</div>
+									</div>
+									<form id="backupRestoreForm" class="form-grid">
+										<label class="field">
+											<span>Local slug</span>
+											<input name="slug" type="text" placeholder="client-site">
+										</label>
+										<label class="field">
+											<span>Title</span>
+											<input name="title" type="text" placeholder="Client Site">
+										</label>
+										<label class="field wide">
+											<span>Live URL</span>
+											<input name="liveUrl" type="url" placeholder="https://example.org">
+										</label>
+									</form>
+									<div id="updraftDropzone" class="backup-dropzone" tabindex="0">
+										<input id="updraftFileInput" type="file" multiple accept=".zip,.gz,.sql">
+										<strong>Drop Updraft files here</strong>
+										<span>Accepts database .gz/.sql plus plugins, themes, uploads, others, or core .zip parts.</span>
+										<button id="chooseUpdraftFilesButton" type="button" class="ghost-button">Choose Files</button>
+									</div>
+									<div id="updraftStagedSummary" class="operation-status">No Updraft files staged yet.</div>
+									<ul id="updraftStagedFiles" class="result-list compact-list"></ul>
+								</div>
+
+								<div class="embedded-panel backup-restore-panel">
+									<div class="panel-title">
+										<div class="panel-icon" aria-hidden="true">S3</div>
+										<div>
+											<h3>AWS S3 Source</h3>
+											<p>Uses your local AWS CLI credentials or the profile entered below.</p>
+										</div>
+									</div>
+									<form id="awsBackupForm" class="form-grid">
+										<label class="field wide">
+											<span>Stored key</span>
+											<select id="awsBackupCredentialSelect" name="credentialId">
+												<option value="">Use AWS CLI profile or environment</option>
+											</select>
+										</label>
+										<label class="field">
+											<span>Profile</span>
+											<input name="profile" type="text" placeholder="default or client-profile">
+										</label>
+										<label class="field">
+											<span>Region</span>
+											<input name="region" type="text" placeholder="us-east-1">
+										</label>
+										<label class="field">
+											<span>Bucket</span>
+											<input name="bucket" type="text" placeholder="client-backups">
+										</label>
+										<label class="field">
+											<span>Prefix</span>
+											<input name="prefix" type="text" placeholder="updraft/site-name/">
+										</label>
+									</form>
+									<div class="actions">
+										<button id="listAwsBackupsButton" type="button" class="ghost-button">List S3 Backups</button>
+									</div>
+									<div id="awsBackupStatus" class="operation-status">AWS S3 backup source is optional.</div>
+									<div id="awsBackupResults" class="provider-results backup-results"></div>
+								</div>
 							</div>
 						</div>
-					</div>
 
-					<div class="add-step-panel" data-add-step-panel="create" hidden>
+						<div class="add-step-panel" data-add-step-panel="create" hidden>
 						<div class="review-card">
 							<div>
 								<h3>Review & First Import</h3>
@@ -422,15 +539,37 @@
 										<span>Run final smoke check</span>
 									</label>
 								</div>
-								<div id="addSiteImportSummary" class="operation-status">Create & Import will provision the site locally first.</div>
-							</div>
-							<div class="actions">
-								<button id="createSiteButton" type="button" class="action">Create Blank Site</button>
-								<button id="sshCreateSiteButton" data-ssh-action="ssh-create-site" type="button" class="ghost-button">Create Manifest Only</button>
-								<button id="sshCreateImportButton" type="button" class="action">Create & Import</button>
+									<div id="addSiteImportSummary" class="operation-status">Create & Import will provision the site locally first.</div>
+								</div>
+								<div class="initial-import-options" data-add-requires="backup" hidden>
+									<div class="mini-heading">
+										<strong>Backup restore</strong>
+										<span>Create the manifest, provision local runtime, then restore the staged Updraft backup parts.</span>
+									</div>
+									<div class="initial-import-grid">
+										<label class="checkline">
+											<input id="backupRestoreFiles" type="checkbox" checked>
+											<span>Restore files</span>
+										</label>
+										<label class="checkline">
+											<input id="backupIncludeUploads" type="checkbox">
+											<span>Include uploads</span>
+										</label>
+										<label class="checkline">
+											<input id="backupRestoreDb" type="checkbox" checked>
+											<span>Restore database</span>
+										</label>
+									</div>
+									<div id="backupRestoreSummary" class="operation-status">Stage Updraft files before creating from backup.</div>
+								</div>
+								<div class="actions">
+									<button id="createSiteButton" type="button" class="action">Create Blank Site</button>
+									<button id="sshCreateSiteButton" data-ssh-action="ssh-create-site" type="button" class="ghost-button">Create Manifest Only</button>
+									<button id="sshCreateImportButton" type="button" class="action">Create & Import</button>
+									<button id="createBackupSiteButton" type="button" class="action">Create From Backup</button>
+								</div>
 							</div>
 						</div>
-					</div>
 
 					<div class="wizard-actions">
 						<button id="addSiteBackButton" type="button" class="ghost-button">Back</button>
@@ -767,7 +906,8 @@
 												<option value="full-no-uploads">Full site, skip uploads</option>
 												<option value="core">Core/root</option>
 												<option value="wp-content">wp-content</option>
-												<option value="active-theme">Active theme</option>
+												<option value="active-theme">Child / active theme</option>
+												<option value="parent-theme">Parent theme</option>
 												<option value="themes">All themes</option>
 												<option value="plugins">Plugins</option>
 												<option value="mu-plugins">MU plugins</option>
@@ -813,7 +953,8 @@
 												<option value="full-no-uploads">Full site, skip uploads</option>
 												<option value="core">Core/root</option>
 												<option value="wp-content">wp-content</option>
-												<option value="active-theme" selected>Active theme</option>
+												<option value="active-theme" selected>Child / active theme</option>
+												<option value="parent-theme">Parent theme</option>
 												<option value="themes">All themes</option>
 												<option value="plugins">Plugins</option>
 												<option value="mu-plugins">MU plugins</option>
@@ -888,6 +1029,20 @@
 										</div>
 									</div>
 									<ul id="siteWarningsList" class="warning-list"></ul>
+								</section>
+
+								<section class="output site-activity-panel app-tab-panel" data-tab-panel="sites-sync" aria-label="Live site activity">
+									<header>
+										<div>
+											<div class="panel-icon" aria-hidden="true">T</div>
+											<strong>Live Activity</strong>
+											<span id="siteActivityStatus" class="activity-status" data-state="idle">Idle</span>
+										</div>
+										<div class="actions compact">
+											<button id="clearSiteActivityButton" type="button" class="ghost-button">Clear Activity</button>
+										</div>
+									</header>
+									<pre id="siteActivityConsole" tabindex="0" data-placeholder="Run a pull, push, admin check, or runtime action to see command output here."></pre>
 								</section>
 
 								<section class="operation-band panel app-tab-panel" data-tab-panel="sites-qa">

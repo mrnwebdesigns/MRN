@@ -20,10 +20,13 @@ const port = Number(process.env.MRN_LOCAL_HUB_PORT || "5678");
 const commandTimeoutMs = Number(process.env.MRN_LOCAL_HUB_COMMAND_TIMEOUT_MS || "300000");
 const maxOutputBytes = Number(process.env.MRN_LOCAL_HUB_MAX_OUTPUT_BYTES || String(1024 * 1024));
 const diskUsageCacheTtlMs = Number(process.env.MRN_LOCAL_HUB_DISK_USAGE_TTL_MS || "300000");
+const gitStatusCacheTtlMs = Number(process.env.MRN_LOCAL_HUB_GIT_STATUS_TTL_MS || "30000");
 const memoryCacheTtlMs = Number(process.env.MRN_LOCAL_HUB_MEMORY_TTL_MS || "10000");
 const runtimeInstanceName = process.env.MRN_LOCAL_RUNTIME_INSTANCE || "mrn-openlitespeed";
 const runtimeWorkRoot = path.join(repoRoot, ".tmp", "local-hub", "runtime");
 const runtimeBootstrapScript = path.join(runtimeWorkRoot, "bootstrap-mrn-openlitespeed.sh");
+const updraftStagingRoot = path.join(runtimeWorkRoot, "updraft-staging");
+const maxBackupUploadBytes = Number(process.env.MRN_LOCAL_HUB_MAX_BACKUP_UPLOAD_BYTES || String(4 * 1024 * 1024 * 1024));
 const toolPathEntries = [
 	"/opt/homebrew/opt/mysql-client/bin",
 	"/opt/homebrew/opt/php/bin",
@@ -62,6 +65,7 @@ const macosLoginKeychainPath = path.join(os.homedir(), "Library", "Keychains", "
 const homeDir = process.env.HOME || "";
 const activeJobs = new Map();
 const diskUsageCache = new Map();
+const gitStatusCache = new Map();
 const friendlyProxyServers = [];
 const friendlyProxyState = {
 	enabled: friendlyUrlEnabled,
@@ -81,6 +85,7 @@ const phpRuntimeModuleNames = ["common", "mysql", "curl", "imagick", "intl", "op
 
 const manifestFileName = ".mrn-site.json";
 const providerRegistryFile = path.join(sitesRoot, ".mrn-provider-sites.json");
+const credentialRegistryFile = path.join(sitesRoot, ".mrn-credentials.json");
 const allowedManifestFields = new Set([
 	"slug",
 	"title",
@@ -135,6 +140,11 @@ const providerPresets = {
 		label: "WP Engine",
 		remotePathPlaceholder: "sites/environment",
 		hint: "WP Engine SSH Gateway uses an environment login and sites/<environment> as the WordPress root. An SSH alias keeps the key choice tidy.",
+	},
+	backup: {
+		label: "Backup Restore",
+		remotePathPlaceholder: "",
+		hint: "Restore from local UpdraftPlus backup files or an AWS S3 backup set.",
 	},
 };
 
@@ -529,6 +539,308 @@ async function writeProviderRegistry(registry) {
 	return next;
 }
 
+function sanitizeCredentialId(value) {
+	const id = String(value || "").trim().toLowerCase();
+	if (!/^[a-z0-9][a-z0-9-]{2,80}$/.test(id)) {
+		throw httpError(400, "Credential ID is invalid.");
+	}
+	return id;
+}
+
+function makeCredentialId(provider, label) {
+	const base = `${provider}-${String(label || "default")
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "")
+		.slice(0, 48) || "default"}`;
+	return `${base}-${crypto.randomBytes(3).toString("hex")}`;
+}
+
+function sanitizeCredentialLabel(value) {
+	const label = sanitizeOptionalProviderText(value || "", "Credential label", 120);
+	if (!label) {
+		throw httpError(400, "Credential label is required.");
+	}
+	return label;
+}
+
+function sanitizeAwsSecret(value, label, options = {}) {
+	const secret = String(value || "").trim();
+	if (!secret && options.required) {
+		throw httpError(400, `${label} is required.`);
+	}
+	if (secret && (/[\0\r\n]/.test(secret) || secret.length > 4096)) {
+		throw httpError(400, `${label} contains unsupported characters.`);
+	}
+	return secret;
+}
+
+async function readCredentialRegistry() {
+	try {
+		const raw = await fsp.readFile(credentialRegistryFile, "utf8");
+		const parsed = JSON.parse(raw);
+		return {
+			version: 1,
+			credentials: Array.isArray(parsed.credentials) ? parsed.credentials : [],
+		};
+	} catch (error) {
+		if (error.code === "ENOENT") {
+			return { version: 1, credentials: [] };
+		}
+		throw error;
+	}
+}
+
+async function writeCredentialRegistry(registry) {
+	await fsp.mkdir(sitesRoot, { recursive: true });
+	const credentials = Array.isArray(registry.credentials)
+		? registry.credentials.map((credential) => ({
+			id: sanitizeCredentialId(credential.id),
+			provider: String(credential.provider || "").trim().toLowerCase(),
+			label: sanitizeCredentialLabel(credential.label),
+			region: sanitizeAwsRegion(credential.region || ""),
+			storage: "macos-keychain",
+			hasAccessKeyId: Boolean(credential.hasAccessKeyId),
+			hasSecretAccessKey: Boolean(credential.hasSecretAccessKey),
+			hasSessionToken: Boolean(credential.hasSessionToken),
+			createdAt: credential.createdAt || new Date().toISOString(),
+			updatedAt: credential.updatedAt || new Date().toISOString(),
+		}))
+		: [];
+	const next = {
+		version: 1,
+		credentials,
+		updatedAt: new Date().toISOString(),
+	};
+	await fsp.writeFile(credentialRegistryFile, `${JSON.stringify(next, null, 2)}\n`, "utf8");
+	return next;
+}
+
+function credentialPublicSummary(credential) {
+	return {
+		id: credential.id,
+		provider: credential.provider,
+		label: credential.label,
+		region: credential.region || "",
+		storage: credential.storage || "macos-keychain",
+		hasAccessKeyId: Boolean(credential.hasAccessKeyId),
+		hasSecretAccessKey: Boolean(credential.hasSecretAccessKey),
+		hasSessionToken: Boolean(credential.hasSessionToken),
+		createdAt: credential.createdAt || "",
+		updatedAt: credential.updatedAt || "",
+	};
+}
+
+async function credentialSummary() {
+	const registry = await readCredentialRegistry();
+	return {
+		registryPath: credentialRegistryFile,
+		storage: process.platform === "darwin" ? "macos-keychain" : "unsupported",
+		credentials: registry.credentials.map(credentialPublicSummary),
+	};
+}
+
+function credentialKeychainAccount(credentialId, field) {
+	return `aws:${sanitizeCredentialId(credentialId)}:${field}`;
+}
+
+async function assertKeychainAvailable() {
+	if (process.platform !== "darwin") {
+		throw httpError(400, "Secure credential storage currently requires macOS Keychain. The Tauri app can swap this for native OS key storage per platform.");
+	}
+	const security = await commandExists("security");
+	if (!security.ok) {
+		throw httpError(400, "macOS security command was not found, so Keychain storage is unavailable.");
+	}
+}
+
+async function setKeychainSecret(credentialId, field, value) {
+	await assertKeychainAvailable();
+	const result = await runProcess("security", [
+		"add-generic-password",
+		"-a",
+		credentialKeychainAccount(credentialId, field),
+		"-s",
+		"io.mrn.localhub.credentials",
+		"-w",
+		value,
+		"-U",
+	], { timeoutMs: 10000, trackJob: false });
+	if (result.code !== 0) {
+		throw httpError(500, `Could not save ${field} in macOS Keychain.`, result.stderr || result.stdout);
+	}
+}
+
+async function getKeychainSecret(credentialId, field) {
+	await assertKeychainAvailable();
+	const result = await runProcess("security", [
+		"find-generic-password",
+		"-a",
+		credentialKeychainAccount(credentialId, field),
+		"-s",
+		"io.mrn.localhub.credentials",
+		"-w",
+	], { timeoutMs: 10000, trackJob: false });
+	if (result.code !== 0) {
+		throw httpError(400, `Could not read ${field} from macOS Keychain. Re-save this credential.`);
+	}
+	return result.stdout.replace(/\r?\n$/, "");
+}
+
+async function deleteKeychainSecret(credentialId, field) {
+	if (process.platform !== "darwin") return;
+	const security = await commandExists("security");
+	if (!security.ok) return;
+	await runProcess("security", [
+		"delete-generic-password",
+		"-a",
+		credentialKeychainAccount(credentialId, field),
+		"-s",
+		"io.mrn.localhub.credentials",
+	], { timeoutMs: 10000, trackJob: false });
+}
+
+async function saveAwsCredential(input = {}) {
+	const now = new Date().toISOString();
+	const label = sanitizeCredentialLabel(input.label || input.name || "");
+	const id = input.id ? sanitizeCredentialId(input.id) : makeCredentialId("aws", label);
+	const region = sanitizeAwsRegion(input.region || "");
+	const accessKeyId = sanitizeAwsSecret(input.accessKeyId || input.awsAccessKeyId || "", "AWS access key ID", { required: true });
+	const secretAccessKey = sanitizeAwsSecret(input.secretAccessKey || input.awsSecretAccessKey || "", "AWS secret access key", { required: true });
+	const sessionToken = sanitizeAwsSecret(input.sessionToken || input.awsSessionToken || "", "AWS session token");
+	const registry = await readCredentialRegistry();
+	const existing = registry.credentials.find((credential) => credential.id === id);
+
+	await setKeychainSecret(id, "accessKeyId", accessKeyId);
+	await setKeychainSecret(id, "secretAccessKey", secretAccessKey);
+	if (sessionToken) {
+		await setKeychainSecret(id, "sessionToken", sessionToken);
+	} else {
+		await deleteKeychainSecret(id, "sessionToken");
+	}
+
+	const credential = {
+		id,
+		provider: "aws",
+		label,
+		region,
+		storage: "macos-keychain",
+		hasAccessKeyId: true,
+		hasSecretAccessKey: true,
+		hasSessionToken: Boolean(sessionToken),
+		createdAt: existing?.createdAt || now,
+		updatedAt: now,
+	};
+	await writeCredentialRegistry({
+		credentials: [
+			credential,
+			...registry.credentials.filter((item) => item.id !== id),
+		],
+	});
+	return {
+		code: 0,
+		command: "credential-save",
+		args: ["aws", id],
+		stdout: `Saved AWS credential "${label}" to macOS Keychain.`,
+		stderr: "",
+		durationMs: 0,
+		credential: credentialPublicSummary(credential),
+		credentials: (await credentialSummary()).credentials,
+	};
+}
+
+async function deleteCredential(input = {}) {
+	const id = sanitizeCredentialId(input.id || "");
+	const registry = await readCredentialRegistry();
+	const credential = registry.credentials.find((item) => item.id === id);
+	if (!credential) {
+		throw httpError(404, "Credential was not found.");
+	}
+	await Promise.all([
+		deleteKeychainSecret(id, "accessKeyId"),
+		deleteKeychainSecret(id, "secretAccessKey"),
+		deleteKeychainSecret(id, "sessionToken"),
+	]);
+	const next = await writeCredentialRegistry({
+		credentials: registry.credentials.filter((item) => item.id !== id),
+	});
+	return {
+		code: 0,
+		command: "credential-delete",
+		args: [credential.provider, id],
+		stdout: `Deleted ${credential.provider.toUpperCase()} credential "${credential.label}".`,
+		stderr: "",
+		durationMs: 0,
+		credentials: next.credentials.map(credentialPublicSummary),
+	};
+}
+
+async function awsEnvFromCredential(credentialId) {
+	const id = sanitizeCredentialId(credentialId);
+	const registry = await readCredentialRegistry();
+	const credential = registry.credentials.find((item) => item.id === id && item.provider === "aws");
+	if (!credential) {
+		throw httpError(400, "Stored AWS credential was not found.");
+	}
+	const env = {
+		AWS_ACCESS_KEY_ID: await getKeychainSecret(id, "accessKeyId"),
+		AWS_SECRET_ACCESS_KEY: await getKeychainSecret(id, "secretAccessKey"),
+	};
+	if (credential.hasSessionToken) {
+		env.AWS_SESSION_TOKEN = await getKeychainSecret(id, "sessionToken");
+	}
+	if (credential.region) {
+		env.AWS_REGION = credential.region;
+		env.AWS_DEFAULT_REGION = credential.region;
+	}
+	return { credential, env };
+}
+
+async function testAwsCredential(input = {}) {
+	const id = sanitizeCredentialId(input.id || input.credentialId || "");
+	const aws = await commandExists("aws");
+	if (!aws.ok) {
+		return {
+			code: 1,
+			command: "credential-test",
+			args: ["aws", id],
+			stdout: "",
+			stderr: "AWS CLI is not installed or not on PATH.",
+			durationMs: 0,
+		};
+	}
+	const { credential, env } = await awsEnvFromCredential(id);
+	const result = await runProcess("aws", [
+		"sts",
+		"get-caller-identity",
+		"--output",
+		"json",
+	], { timeoutMs: 30000, trackJob: false, env });
+	return {
+		...result,
+		command: "credential-test",
+		args: ["aws", credential.id],
+		stdout: result.code === 0
+			? `AWS credential "${credential.label}" is valid; STS caller identity returned successfully.`
+			: result.stdout,
+	};
+}
+
+async function runCredentialAction(body) {
+	const action = String(body.action || "");
+	switch (action) {
+		case "aws-save":
+			return saveAwsCredential(body.credential || body);
+		case "delete":
+			return deleteCredential(body);
+		case "aws-test":
+			return testAwsCredential(body);
+		default:
+			throw httpError(400, `Unknown credential action: ${action}`);
+	}
+}
+
 function providerSiteToSshFields(site) {
 	return {
 		provider: normalizeProvider(site.provider),
@@ -583,11 +895,22 @@ function providerCredentialsSummary() {
 			envPasswordConfigured: Boolean(wpEnginePassword),
 			credentialSource: wpEngineUser && wpEnginePassword ? "environment" : "ephemeral",
 		},
+		aws: {
+			envConfigured: Boolean(process.env.AWS_PROFILE || process.env.AWS_ACCESS_KEY_ID),
+			profile: process.env.AWS_PROFILE || "",
+			region: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "",
+			credentialSource: process.env.AWS_PROFILE
+				? "profile"
+				: process.env.AWS_ACCESS_KEY_ID
+					? "environment"
+					: "aws-cli",
+		},
 	};
 }
 
 async function providerAccountSummary() {
 	const registry = await readProviderRegistry();
+	const credentials = await credentialSummary();
 	return {
 		registryPath: providerRegistryFile,
 		accounts: {
@@ -597,6 +920,7 @@ async function providerAccountSummary() {
 				count: registry.siteground.length,
 			},
 		},
+		credentials,
 		sites: {
 			siteground: registry.siteground.map((site) => ({
 				...site,
@@ -803,6 +1127,702 @@ async function runProviderAccountAction(body) {
 		}
 		default:
 			throw httpError(400, `Unknown provider discovery action: ${action}`);
+	}
+}
+
+function sanitizeBackupSessionId(value) {
+	const session = String(value || "").trim().toLowerCase();
+	if (!/^[a-z0-9][a-z0-9-]{7,80}$/.test(session)) {
+		throw httpError(400, "Backup staging session is invalid.");
+	}
+	return session;
+}
+
+function newBackupSessionId() {
+	return `updraft-${crypto.randomBytes(8).toString("hex")}`;
+}
+
+function updraftSessionDir(sessionId) {
+	return path.join(updraftStagingRoot, sanitizeBackupSessionId(sessionId));
+}
+
+function sanitizeBackupFileName(value) {
+	const basename = path.basename(String(value || "").trim()).replace(/[^\w .@()+,-]/g, "-");
+	if (!basename || basename === "." || basename === "..") {
+		throw httpError(400, "Backup file name is required.");
+	}
+	if (!/\.(zip|gz|sql|sql\.gz)$/i.test(basename)) {
+		throw httpError(400, "Updraft restore accepts .zip, .gz, .sql, and .sql.gz files.");
+	}
+	return basename;
+}
+
+function sanitizeAwsProfile(value) {
+	const profile = String(value || "").trim();
+	if (!profile) return "";
+	if (!/^[A-Za-z0-9_.@:+-]{1,120}$/.test(profile)) {
+		throw httpError(400, "AWS profile contains unsupported characters.");
+	}
+	return profile;
+}
+
+function sanitizeAwsRegion(value) {
+	const region = String(value || "").trim();
+	if (!region) return "";
+	if (!/^[A-Za-z0-9-]{1,60}$/.test(region)) {
+		throw httpError(400, "AWS region contains unsupported characters.");
+	}
+	return region;
+}
+
+function sanitizeS3Bucket(value) {
+	const bucket = String(value || "").trim();
+	if (!/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(bucket)) {
+		throw httpError(400, "Enter a valid S3 bucket name.");
+	}
+	return bucket;
+}
+
+function sanitizeS3Key(value, label = "S3 key") {
+	const key = String(value || "").trim().replace(/^\/+/, "");
+	if (!key || key.includes("\0") || key.includes("..")) {
+		throw httpError(400, `${label} is invalid.`);
+	}
+	return key;
+}
+
+function sanitizeS3Prefix(value) {
+	const prefix = String(value || "").trim().replace(/^\/+/, "");
+	if (!prefix) return "";
+	if (prefix.includes("\0") || prefix.includes("..")) {
+		throw httpError(400, "S3 prefix is invalid.");
+	}
+	return prefix.replace(/\/?$/, "/");
+}
+
+function awsCliArgs(input = {}) {
+	const args = [];
+	const profile = sanitizeAwsProfile(input.profile || "");
+	const region = sanitizeAwsRegion(input.region || "");
+	if (profile) args.push("--profile", profile);
+	if (region) args.push("--region", region);
+	return args;
+}
+
+async function awsCliContext(input = {}) {
+	const credentialId = String(input.credentialId || input.awsCredentialId || "").trim();
+	if (!credentialId) {
+		return { args: awsCliArgs(input), env: {}, credential: null };
+	}
+	const { credential, env } = await awsEnvFromCredential(credentialId);
+	const region = sanitizeAwsRegion(input.region || "");
+	if (region) {
+		env.AWS_REGION = region;
+		env.AWS_DEFAULT_REGION = region;
+	}
+	return { args: [], env, credential };
+}
+
+function updraftComponentFromName(fileName) {
+	const lower = String(fileName || "").toLowerCase();
+	if (/(^|[-_])db(?:[._-]|\d)/.test(lower) && /\.(gz|sql|sql\.gz)$/i.test(lower)) return "db";
+	if (/-plugins\d*\.zip$/i.test(lower)) return "plugins";
+	if (/-themes\d*\.zip$/i.test(lower)) return "themes";
+	if (/-uploads\d*\.zip$/i.test(lower)) return "uploads";
+	if (/-mu-plugins\d*\.zip$/i.test(lower)) return "mu-plugins";
+	if (/-others\d*\.zip$/i.test(lower)) return "others";
+	if (/-(wpcore|core)\d*\.zip$/i.test(lower)) return "core";
+	if (/\.zip$/i.test(lower)) return "zip";
+	return "unknown";
+}
+
+function updraftSetIdFromKey(key) {
+	const fileName = path.basename(String(key || ""));
+	return fileName
+		.replace(/-(db|plugins|themes|uploads\d*|mu-plugins|others|wpcore|core)\.(zip|gz|sql|sql\.gz)$/i, "")
+		.replace(/\.(zip|gz|sql|sql\.gz)$/i, "");
+}
+
+function s3Uri(bucket, key) {
+	return `s3://${bucket}/${key}`;
+}
+
+async function inspectUpdraftSession(sessionId) {
+	const session = sanitizeBackupSessionId(sessionId);
+	const dir = updraftSessionDir(session);
+	await fsp.mkdir(dir, { recursive: true });
+	const entries = await fsp.readdir(dir, { withFileTypes: true });
+	const files = [];
+	for (const entry of entries) {
+		if (!entry.isFile()) continue;
+		const name = sanitizeBackupFileName(entry.name);
+		const filePath = path.join(dir, name);
+		const stat = await fsp.stat(filePath);
+		files.push({
+			name,
+			component: updraftComponentFromName(name),
+			sizeBytes: stat.size,
+			path: filePath,
+			uploadedAt: stat.birthtime.toISOString(),
+		});
+	}
+	files.sort((a, b) => a.name.localeCompare(b.name));
+	const components = files.reduce((acc, file) => {
+		acc[file.component] = (acc[file.component] || 0) + 1;
+		return acc;
+	}, {});
+	return {
+		session,
+		stagingDir: dir,
+		files,
+		components,
+		ready: files.some((file) => file.component === "db" || file.component !== "unknown"),
+	};
+}
+
+async function stageUpdraftUpload(req, url, sessionId) {
+	const session = sanitizeBackupSessionId(sessionId || newBackupSessionId());
+	const fileName = sanitizeBackupFileName(url.searchParams.get("filename") || "");
+	const dir = updraftSessionDir(session);
+	await fsp.mkdir(dir, { recursive: true });
+	const filePath = path.join(dir, fileName);
+	const contentLength = Number(req.headers["content-length"] || 0);
+	if (contentLength > maxBackupUploadBytes) {
+		throw httpError(413, "Backup file is larger than the configured upload limit.");
+	}
+
+	let bytes = 0;
+	await new Promise((resolve, reject) => {
+		const out = fs.createWriteStream(filePath, { flags: "w" });
+		let rejected = false;
+		const fail = (error) => {
+			if (rejected) return;
+			rejected = true;
+			out.destroy();
+			reject(error);
+		};
+		req.on("data", (chunk) => {
+			bytes += chunk.length;
+			if (bytes > maxBackupUploadBytes) {
+				fail(httpError(413, "Backup file is larger than the configured upload limit."));
+				req.destroy();
+			}
+		});
+		req.on("error", fail);
+		out.on("error", fail);
+		out.on("finish", () => {
+			if (!rejected) resolve();
+		});
+		req.pipe(out);
+	});
+
+	return inspectUpdraftSession(session);
+}
+
+function parseAwsS3Ls(output) {
+	return String(output || "")
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.map((line) => {
+			const match = line.match(/^(\d{4}-\d\d-\d\d)\s+(\d\d:\d\d:\d\d)\s+(\d+)\s+(.+)$/);
+			if (!match) return null;
+			const [, date, time, size, key] = match;
+			return {
+				lastModified: `${date} ${time}`,
+				sizeBytes: Number.parseInt(size, 10) || 0,
+				key,
+				name: path.basename(key),
+				component: updraftComponentFromName(key),
+			};
+		})
+		.filter(Boolean);
+}
+
+function groupUpdraftS3Files(files) {
+	const groups = new Map();
+	for (const file of files.filter((item) => item.component !== "unknown")) {
+		const id = updraftSetIdFromKey(file.key);
+		if (!groups.has(id)) {
+			groups.set(id, {
+				id,
+				label: path.basename(id),
+				lastModified: file.lastModified,
+				totalBytes: 0,
+				components: {},
+				files: [],
+			});
+		}
+		const group = groups.get(id);
+		group.files.push(file);
+		group.totalBytes += file.sizeBytes || 0;
+		group.components[file.component] = (group.components[file.component] || 0) + 1;
+		if (file.lastModified > group.lastModified) group.lastModified = file.lastModified;
+	}
+	return [...groups.values()]
+		.map((group) => ({
+			...group,
+			files: group.files.sort((a, b) => a.name.localeCompare(b.name)),
+		}))
+		.sort((a, b) => b.lastModified.localeCompare(a.lastModified));
+}
+
+async function listAwsUpdraftBackups(body = {}) {
+	const bucket = sanitizeS3Bucket(body.bucket || "");
+	const prefix = sanitizeS3Prefix(body.prefix || "");
+	const aws = await commandExists("aws");
+	if (!aws.ok) {
+		return {
+			code: 1,
+			command: "aws-s3-list",
+			args: [bucket, prefix],
+			stdout: "",
+			stderr: "AWS CLI is not installed or not on PATH. Install/configure awscli before listing S3 backups.",
+			durationMs: 0,
+			groups: [],
+		};
+	}
+	const awsContext = await awsCliContext(body);
+	const result = await runProcess("aws", [
+		...awsContext.args,
+		"s3",
+		"ls",
+		s3Uri(bucket, prefix),
+		"--recursive",
+	], {
+		timeoutMs: Number(process.env.MRN_LOCAL_HUB_AWS_LIST_TIMEOUT_MS || "60000"),
+		env: awsContext.env,
+	});
+	const files = result.code === 0 ? parseAwsS3Ls(result.stdout) : [];
+	const groups = groupUpdraftS3Files(files);
+	return {
+		...result,
+		command: "aws-s3-list",
+		args: [bucket, prefix || "/", awsContext.credential ? `stored:${awsContext.credential.label}` : "aws-cli"],
+		stdout: result.code === 0
+			? groups.length
+				? `Found ${groups.length} Updraft backup set${groups.length === 1 ? "" : "s"} in ${s3Uri(bucket, prefix)}.`
+				: `No Updraft backup sets found in ${s3Uri(bucket, prefix)}.`
+			: result.stdout,
+		files,
+		groups,
+	};
+}
+
+async function downloadAwsUpdraftFiles(body = {}) {
+	const bucket = sanitizeS3Bucket(body.bucket || "");
+	const keys = Array.isArray(body.keys) ? body.keys.map((key) => sanitizeS3Key(key)) : [];
+	if (!keys.length) {
+		throw httpError(400, "Choose at least one S3 backup file to download.");
+	}
+	const session = sanitizeBackupSessionId(body.session || newBackupSessionId());
+	const dir = updraftSessionDir(session);
+	await fsp.mkdir(dir, { recursive: true });
+	const awsContext = await awsCliContext(body);
+	const outputs = [];
+	const errors = [];
+	let code = 0;
+	let durationMs = 0;
+	for (const key of keys) {
+		const fileName = sanitizeBackupFileName(path.basename(key));
+		const dest = path.join(dir, fileName);
+		const result = await runProcess("aws", [
+			...awsContext.args,
+			"s3",
+			"cp",
+			s3Uri(bucket, key),
+			dest,
+		], {
+			timeoutMs: Number(process.env.MRN_LOCAL_HUB_AWS_DOWNLOAD_TIMEOUT_MS || "600000"),
+			env: awsContext.env,
+		});
+		durationMs += result.durationMs || 0;
+		if (result.code !== 0) {
+			code = result.code;
+			errors.push(result.stderr || result.stdout || `Failed to download ${key}`);
+			break;
+		}
+		outputs.push(`Downloaded ${s3Uri(bucket, key)} -> ${dest}`);
+	}
+	const inspection = await inspectUpdraftSession(session);
+	return {
+		code,
+		command: "aws-s3-download",
+		args: [bucket, `${keys.length} file${keys.length === 1 ? "" : "s"}`, session, awsContext.credential ? `stored:${awsContext.credential.label}` : "aws-cli"],
+		stdout: outputs.join("\n"),
+		stderr: errors.join("\n"),
+		durationMs,
+		session: inspection,
+	};
+}
+
+async function validateZipFile(zipFile) {
+	const result = await runProcess("unzip", ["-Z1", zipFile], { timeoutMs: 30000, trackJob: false });
+	if (result.code !== 0) return result;
+	const unsafe = result.stdout
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.find((entry) => {
+			const normalized = entry.replace(/\\/g, "/");
+			return normalized.startsWith("/") || normalized.split("/").includes("..");
+		});
+	if (unsafe) {
+		return {
+			...result,
+			code: 1,
+			stderr: `Unsafe zip entry blocked: ${unsafe}`,
+		};
+	}
+	return result;
+}
+
+async function firstExistingDirectory(candidates) {
+	for (const candidate of candidates.filter(Boolean)) {
+		try {
+			const stat = await fsp.stat(candidate);
+			if (stat.isDirectory()) return candidate;
+		} catch {
+			// Try the next candidate.
+		}
+	}
+	return "";
+}
+
+async function extractUpdraftZipToSite(site, file, component, index) {
+	const validation = await validateZipFile(file.path);
+	if (validation.code !== 0) {
+		return { ...validation, command: "updraft-zip-validate", args: [file.name] };
+	}
+	const extractRoot = path.join(site.localRoot, "backups", `updraft-extract-${timestampSlug()}-${index}`);
+	await fsp.mkdir(extractRoot, { recursive: true });
+	const unzipResult = await runProcess("unzip", ["-q", file.path, "-d", extractRoot], {
+		timeoutMs: Number(process.env.MRN_LOCAL_HUB_UPDRAFT_UNZIP_TIMEOUT_MS || "600000"),
+	});
+	if (unzipResult.code !== 0) return unzipResult;
+
+	const wpContent = path.join(site.publicPath, "wp-content");
+	let source = "";
+	let dest = "";
+	if (component === "plugins") {
+		source = await firstExistingDirectory([path.join(extractRoot, "wp-content", "plugins"), path.join(extractRoot, "plugins")]) || extractRoot;
+		dest = path.join(wpContent, "plugins");
+	} else if (component === "themes") {
+		source = await firstExistingDirectory([path.join(extractRoot, "wp-content", "themes"), path.join(extractRoot, "themes")]) || extractRoot;
+		dest = path.join(wpContent, "themes");
+	} else if (component === "uploads") {
+		source = await firstExistingDirectory([path.join(extractRoot, "wp-content", "uploads"), path.join(extractRoot, "uploads")]) || extractRoot;
+		dest = path.join(wpContent, "uploads");
+	} else if (component === "mu-plugins") {
+		source = await firstExistingDirectory([path.join(extractRoot, "wp-content", "mu-plugins"), path.join(extractRoot, "mu-plugins")]) || extractRoot;
+		dest = path.join(wpContent, "mu-plugins");
+	} else if (component === "others") {
+		source = await firstExistingDirectory([path.join(extractRoot, "wp-content"), extractRoot]);
+		dest = wpContent;
+	} else if (component === "core") {
+		source = await firstExistingDirectory([path.join(extractRoot, "wordpress"), extractRoot]);
+		dest = site.publicPath;
+	}
+
+	if (!source || !dest) {
+		return {
+			code: 1,
+			command: "updraft-extract",
+			args: [file.name, component],
+			stdout: "",
+			stderr: `Could not find extracted ${component} directory inside ${extractRoot}.`,
+			durationMs: unzipResult.durationMs,
+		};
+	}
+	await fsp.mkdir(dest, { recursive: true });
+	const syncResult = await runProcess("rsync", ["-a", `${source.replace(/\/+$/, "")}/`, `${dest.replace(/\/+$/, "")}/`], {
+		timeoutMs: Number(process.env.MRN_LOCAL_HUB_UPDRAFT_RSYNC_TIMEOUT_MS || "600000"),
+	});
+	return {
+		...syncResult,
+		command: "updraft-extract",
+		args: [file.name, component],
+		stdout: [
+			`Restored ${component}: ${file.name}`,
+			`Source: ${source}`,
+			`Target: ${dest}`,
+			syncResult.stdout,
+		].filter(Boolean).join("\n"),
+		stderr: [unzipResult.stderr, syncResult.stderr].filter(Boolean).join("\n"),
+		durationMs: (unzipResult.durationMs || 0) + (syncResult.durationMs || 0),
+	};
+}
+
+async function ensureWordPressCore(site) {
+	if (await pathExists(path.join(site.publicPath, "wp-settings.php"))) {
+		return {
+			code: 0,
+			command: "wp-core-download",
+			args: [site.slug],
+			stdout: "WordPress core already exists locally.",
+			stderr: "",
+			durationMs: 0,
+		};
+	}
+	await fsp.mkdir(site.publicPath, { recursive: true });
+	return runProcess("wp", [
+		"core",
+		"download",
+		`--path=${site.publicPath}`,
+		"--force",
+		"--skip-content",
+	], {
+		cwd: site.localRoot,
+		timeoutMs: Number(process.env.MRN_LOCAL_HUB_WP_CORE_DOWNLOAD_TIMEOUT_MS || "300000"),
+	});
+}
+
+async function prepareUpdraftDbDump(site, file) {
+	const dumpFile = path.join(site.localRoot, "dumps", `${timestampSlug()}-updraft.sql`);
+	await fsp.mkdir(path.dirname(dumpFile), { recursive: true });
+	if (/\.gz$/i.test(file.name)) {
+		const result = await runProcess("/bin/sh", ["-lc", `gzip -cd ${shellQuote(file.path)} > ${shellQuote(dumpFile)}`], {
+			timeoutMs: Number(process.env.MRN_LOCAL_HUB_UPDRAFT_GZIP_TIMEOUT_MS || "300000"),
+		});
+		return { ...result, dumpFile };
+	}
+	await fsp.copyFile(file.path, dumpFile);
+	return {
+		code: 0,
+		command: "copy-db-dump",
+		args: [file.name],
+		stdout: `Prepared SQL dump: ${dumpFile}`,
+		stderr: "",
+		durationMs: 0,
+		dumpFile,
+	};
+}
+
+async function importUpdraftDatabase(site, dbFile) {
+	const prepResult = await prepareUpdraftDbDump(site, dbFile);
+	if (prepResult.code !== 0) return prepResult;
+	const wpConfigResult = await writeLocalWpConfig(site);
+	const importResult = await importDatabase(site, prepResult.dumpFile);
+	const wpPathArg = `--path=${site.publicPath}`;
+	let searchReplaceResult = null;
+	if (importResult.code === 0 && site.liveUrl && site.localUrl) {
+		searchReplaceResult = await runProcess("wp", [
+			wpPathArg,
+			"search-replace",
+			site.liveUrl,
+			site.localUrl,
+			"--all-tables",
+			"--skip-columns=guid",
+		], { cwd: site.publicPath });
+	}
+	const dbUrlResult = importResult.code === 0 ? await normalizeLocalDatabaseUrls(site) : null;
+	const htaccessResult = importResult.code === 0 ? await ensureWordPressHtaccess(site) : null;
+	const restartResult = htaccessResult && htaccessResult.updated ? await restartOpenLiteSpeedRuntime() : null;
+	const smokeResult = importResult.code === 0
+		&& (!searchReplaceResult || searchReplaceResult.code === 0)
+		&& (!dbUrlResult || dbUrlResult.code === 0)
+		&& (!restartResult || restartResult.code === 0)
+		? await runSmokeCheck(site)
+		: null;
+	const codeSyncResult = importResult.code === 0
+		&& (!searchReplaceResult || searchReplaceResult.code === 0)
+		&& (!dbUrlResult || dbUrlResult.code === 0)
+		? await checkDatabaseCodeSync(site)
+		: null;
+	const code = prepResult.code
+		|| importResult.code
+		|| (searchReplaceResult ? searchReplaceResult.code : 0)
+		|| (dbUrlResult ? dbUrlResult.code : 0)
+		|| (restartResult ? restartResult.code : 0);
+	return {
+		code,
+		command: "updraft-db-import",
+		args: [site.slug, dbFile.name],
+		stdout: [
+			`Prepared database dump: ${prepResult.dumpFile}`,
+			formatWpConfigResult(wpConfigResult),
+			importResult.code === 0 ? `Imported ${prepResult.dumpFile} into ${site.dbName}.` : importResult.stdout,
+			searchReplaceResult ? searchReplaceResult.stdout : "",
+			dbUrlResult ? dbUrlResult.stdout : "",
+			htaccessResult ? formatHtaccessResult(htaccessResult) : "",
+			restartResult ? restartResult.stdout : "",
+			smokeResult ? smokeResult.stdout : "",
+			codeSyncResult ? formatCodeSyncReport(codeSyncResult) : "",
+		].filter(Boolean).join("\n"),
+		stderr: [
+			prepResult.stderr,
+			importResult.stderr,
+			searchReplaceResult ? searchReplaceResult.stderr : "",
+			dbUrlResult ? dbUrlResult.stderr : "",
+			restartResult ? restartResult.stderr : "",
+			smokeResult ? smokeResult.stderr : "",
+		].filter(Boolean).join("\n"),
+		durationMs: (prepResult.durationMs || 0)
+			+ (importResult.durationMs || 0)
+			+ (searchReplaceResult ? searchReplaceResult.durationMs : 0)
+			+ (dbUrlResult ? dbUrlResult.durationMs : 0)
+			+ (restartResult ? restartResult.durationMs : 0)
+			+ (smokeResult ? smokeResult.durationMs : 0),
+		dumpFile: prepResult.dumpFile,
+		wpConfig: wpConfigResult,
+		dbUrls: dbUrlResult,
+		htaccess: htaccessResult,
+		restart: restartResult,
+		smokeCode: smokeResult ? smokeResult.code : null,
+		smoke: smokeResult ? smokeResult.smoke : null,
+		codeSync: codeSyncResult,
+	};
+}
+
+async function createSiteFromUpdraftBackup(body = {}) {
+	const session = await inspectUpdraftSession(body.session || "");
+	const slug = normalizeSlug(body.slug || "");
+	const siteRoot = assertInsideSitesRoot(path.join(sitesRoot, slug));
+	if (await pathExists(manifestPathFor(siteRoot))) {
+		throw httpError(409, `Site already exists: ${slug}`);
+	}
+	const restoreFiles = body.restoreFiles !== false;
+	const restoreDb = body.restoreDb !== false;
+	const includeUploads = body.includeUploads !== false;
+	const title = sanitizeOptionalProviderText(body.title || slug, "Site title", 120) || slug;
+	const liveUrl = sanitizeOptionalUrl(body.liveUrl || "");
+	const site = sanitizeManifest({
+		slug,
+		title,
+		provider: "backup",
+		liveUrl,
+		runtime: "local-vm-openlitespeed",
+		runtimeStatus: "planned",
+	});
+	const fileComponents = new Set(["plugins", "themes", "mu-plugins", "others", "core"]);
+	if (includeUploads) fileComponents.add("uploads");
+	const zipFiles = session.files.filter((file) => restoreFiles && fileComponents.has(file.component));
+	const dbFile = session.files.find((file) => file.component === "db");
+	if (restoreFiles && !zipFiles.length) {
+		throw httpError(400, "No supported Updraft file zip parts are staged for this restore.");
+	}
+	if (restoreDb && !dbFile) {
+		throw httpError(400, "No Updraft database part is staged for this restore.");
+	}
+
+	const provisionResult = await provisionSite(site);
+	const localSite = provisionResult.site || site;
+	if (provisionResult.code !== 0) {
+		return { ...provisionResult, command: "updraft-create-site", args: [slug], session };
+	}
+
+	const outputs = [provisionResult.stdout];
+	const errors = [provisionResult.stderr];
+	let code = 0;
+	let durationMs = provisionResult.durationMs || 0;
+	let gitSafety = null;
+	let coreResult = null;
+	let dbResult = null;
+
+	if (restoreFiles || restoreDb) {
+		coreResult = await ensureWordPressCore(localSite);
+		outputs.push(coreResult.stdout);
+		errors.push(coreResult.stderr);
+		durationMs += coreResult.durationMs || 0;
+		code = code || coreResult.code;
+		if (coreResult.code !== 0) {
+			return {
+				code,
+				command: "updraft-create-site",
+				args: [slug],
+				stdout: outputs.filter(Boolean).join("\n"),
+				stderr: errors.filter(Boolean).join("\n"),
+				durationMs,
+				site: localSite,
+				session,
+				core: coreResult,
+			};
+		}
+	}
+
+	if (restoreFiles) {
+		gitSafety = await gitSafetyReport(localSite.publicPath, {
+			label: "Updraft restore",
+			stopPath: localSite.publicPath,
+		});
+		if (gitSafety.dirty) {
+			return {
+				code: 1,
+				command: "updraft-create-site",
+				args: [slug],
+				stdout: [
+					...outputs,
+					formatGitSafety(gitSafety),
+					"Restore stopped before extracting files because the local Git repo has changes.",
+				].filter(Boolean).join("\n"),
+				stderr: errors.filter(Boolean).join("\n"),
+				durationMs,
+				site: localSite,
+				session,
+				gitSafety,
+			};
+		}
+		let index = 0;
+		for (const file of zipFiles) {
+			index += 1;
+			const result = await extractUpdraftZipToSite(localSite, file, file.component, index);
+			outputs.push(result.stdout);
+			errors.push(result.stderr);
+			durationMs += result.durationMs || 0;
+			code = code || result.code;
+			if (result.code !== 0) break;
+		}
+		const wpConfigResult = await writeLocalWpConfig(localSite);
+		outputs.push(formatWpConfigResult(wpConfigResult));
+	}
+
+	if (code === 0 && restoreDb && dbFile) {
+		dbResult = await importUpdraftDatabase(localSite, dbFile);
+		outputs.push(dbResult.stdout);
+		errors.push(dbResult.stderr);
+		durationMs += dbResult.durationMs || 0;
+		code = code || dbResult.code;
+	}
+
+	invalidateSiteDiskUsage(localSite);
+	return {
+		code,
+		command: "updraft-create-site",
+		args: [slug, session.session],
+		stdout: outputs.filter(Boolean).join("\n"),
+		stderr: errors.filter(Boolean).join("\n"),
+		durationMs,
+		site: localSite,
+		session,
+		gitSafety,
+		core: coreResult,
+		smokeCode: dbResult ? dbResult.smokeCode : null,
+		smoke: dbResult ? dbResult.smoke : null,
+		codeSync: dbResult ? dbResult.codeSync : null,
+	};
+}
+
+async function runUpdraftBackupAction(body) {
+	const action = String(body.action || "");
+	switch (action) {
+		case "inspect-session":
+			return {
+				code: 0,
+				command: "updraft-inspect-session",
+				args: [body.session || ""],
+				stdout: "Updraft staging inspected.",
+				stderr: "",
+				durationMs: 0,
+				session: await inspectUpdraftSession(body.session || ""),
+			};
+		case "aws-list":
+			return listAwsUpdraftBackups(body);
+		case "aws-download-set":
+			return downloadAwsUpdraftFiles(body);
+		case "create-site-from-backup":
+			return createSiteFromUpdraftBackup(body);
+		default:
+			throw httpError(400, `Unknown Updraft backup action: ${action}`);
 	}
 }
 
@@ -1018,7 +2038,7 @@ async function preparePullDestinationDirectory(localDestPath, sitePublicPath, op
 }
 
 async function healthReport() {
-	const commands = await Promise.all(["node", "php", "wp", "ssh", "rsync", "mysql", "git", "redis-cli"].map(commandExists));
+	const commands = await Promise.all(["node", "php", "wp", "ssh", "rsync", "mysql", "git", "aws", "unzip", "gzip", "redis-cli"].map(commandExists));
 	const openLiteSpeedCandidates = [
 		"/usr/local/lsws/bin/lswsctrl",
 		"/opt/homebrew/opt/openlitespeed/bin/lswsctrl",
@@ -1125,7 +2145,7 @@ function createFriendlyHttpsProxyServer(tlsOptions) {
 }
 
 async function friendlyCertificateHostnames() {
-	const names = new Set(["localhost", "127.0.0.1", "::1", friendlyHubHostname]);
+	const names = new Set(["localhost", "*.localhost", "127.0.0.1", "::1", friendlyHubHostname]);
 	try {
 		for (const site of await listSites()) {
 			if (site.slug) {
@@ -1143,16 +2163,58 @@ async function friendlyCertificateHostnames() {
 }
 
 async function friendlyCertificateCoversNames(certNames) {
-	const result = await runProcess("openssl", ["x509", "-in", friendlyCertPath, "-noout", "-ext", "subjectAltName"], {
+	const result = await runProcess("openssl", ["x509", "-in", friendlyCertPath, "-noout", "-text"], {
 		timeoutMs: 5000,
 		trackJob: false,
 	});
 	if (result.code !== 0) {
 		return false;
 	}
-	const output = result.stdout || "";
+	return certificateSanOutputCoversNames(result.stdout || "", certNames);
+}
+
+function certificateSanOutputCoversNames(output, certNames) {
 	const dnsNames = certNames.filter((name) => !/^[0-9:.]+$/.test(name));
-	return dnsNames.every((name) => output.includes(`DNS:${name}`));
+	const hasLocalhostWildcard = output.includes("DNS:*.localhost");
+	return dnsNames.every((name) => {
+		if (output.includes(`DNS:${name}`)) {
+			return true;
+		}
+		return hasLocalhostWildcard && /^[a-z0-9-]+\.localhost$/i.test(name);
+	});
+}
+
+async function liveFriendlyCertificateReport(certNames) {
+	const serverName = certNames.find((name) => /^[a-z0-9-]+\.localhost$/i.test(name) && name !== friendlyHubHostname)
+		|| friendlyHubHostname
+		|| "localhost";
+	const result = await runProcess("/bin/sh", [
+		"-lc",
+		`printf '' | openssl s_client -connect ${shellQuote(`127.0.0.1:${friendlyHttpsPort}`)} -servername ${shellQuote(serverName)} 2>/dev/null | openssl x509 -noout -text`,
+	], {
+		timeoutMs: 5000,
+		trackJob: false,
+	});
+	if (result.code !== 0) {
+		return {
+			status: "unavailable",
+			covers: null,
+			serverName,
+			message: "Live friendly HTTPS certificate could not be inspected.",
+			error: result.stderr || result.stdout,
+		};
+	}
+	const output = result.stdout || "";
+	const covers = certificateSanOutputCoversNames(output, certNames);
+	return {
+		status: covers ? "ready" : "stale",
+		covers,
+		serverName,
+		message: covers
+			? "Live friendly HTTPS helper is serving the current certificate."
+			: "Live friendly HTTPS helper is serving an old certificate.",
+		subjectAltName: output.trim(),
+	};
 }
 
 async function ensureFriendlyCertificate() {
@@ -1899,14 +2961,17 @@ async function portOwnerReport(portNumber) {
 }
 
 async function friendlyUrlReport() {
-	const [mkcert, httpOwner, httpsOwner, helper, firefox] = await Promise.all([
+	const certNames = await friendlyCertificateHostnames();
+	const [mkcert, httpOwner, httpsOwner, helper, firefox, liveCertificate] = await Promise.all([
 		commandExists("mkcert"),
 		portOwnerReport(friendlyHttpPort),
 		portOwnerReport(friendlyHttpsPort),
 		friendlyProxyHelperReport(),
 		firefoxTrustReport(),
+		liveFriendlyCertificateReport(certNames),
 	]);
-	const ready = friendlyProxyState.https.status === "running" || helper.healthy;
+	const baseReady = friendlyProxyState.https.status === "running" || helper.healthy;
+	const ready = baseReady && liveCertificate.covers !== false;
 	const issues = [];
 	if (!friendlyUrlEnabled) {
 		issues.push("Friendly URLs are disabled.");
@@ -1920,7 +2985,10 @@ async function friendlyUrlReport() {
 	if (!ready && friendlyProxyState.cert.status !== "ready") {
 		issues.push(friendlyProxyState.cert.message || "Local SSL certificate is not ready.");
 	}
-	if (!ready && (friendlyProxyState.https.errors || []).some((error) => error.code === "EACCES")) {
+	if (baseReady && liveCertificate.covers === false) {
+		issues.push("Friendly HTTPS helper is serving an old certificate. Run Install HTTPS Helper to reload the system helper.");
+	}
+	if (!baseReady && (friendlyProxyState.https.errors || []).some((error) => error.code === "EACCES")) {
 		issues.push("Install the macOS helper to bind ports 80/443 without running the hub as root.");
 	}
 	for (const error of friendlyProxyState.https.errors || []) {
@@ -1937,6 +3005,7 @@ async function friendlyUrlReport() {
 		target: `http://${friendlyProxyTargetHost}:${friendlyProxyTargetPort}`,
 		hubTarget: `http://${friendlyHubTargetHost}:${friendlyHubTargetPort}`,
 		cert: { ...friendlyProxyState.cert, mkcert },
+		liveCertificate,
 		browserTrust: { firefox },
 		helper,
 		http: { ...friendlyProxyState.http, owner: httpOwner },
@@ -2076,9 +3145,164 @@ async function cachedDiskUsageBytes(targetPath) {
 	return pending;
 }
 
+function emptyGitStatus(overrides = {}) {
+	return {
+		available: true,
+		present: false,
+		state: "none",
+		dirty: false,
+		branch: "",
+		upstream: "",
+		ahead: 0,
+		behind: 0,
+		totalChanges: 0,
+		repoRoot: "",
+		summary: "No Git repo detected.",
+		checkedAt: new Date().toISOString(),
+		...overrides,
+	};
+}
+
+function parseGitAheadBehind(text) {
+	const [ahead, behind] = String(text || "")
+		.trim()
+		.split(/\s+/)
+		.map((value) => Number.parseInt(value, 10));
+	return {
+		ahead: Number.isFinite(ahead) ? ahead : 0,
+		behind: Number.isFinite(behind) ? behind : 0,
+	};
+}
+
+async function siteGitStatus(site, gitAvailable = true) {
+	if (!gitAvailable) {
+		return emptyGitStatus({
+			available: false,
+			state: "missing",
+			summary: "Git is not installed.",
+		});
+	}
+
+	const targetPath = site?.localRoot || site?.publicPath || "";
+	const probePath = targetPath ? await nearestExistingPath(targetPath, sitesRoot) : "";
+	if (!probePath) {
+		return emptyGitStatus({
+			summary: "Local site path does not exist yet.",
+		});
+	}
+
+	const rootResult = await runProcess("git", ["-C", probePath, "rev-parse", "--show-toplevel"], {
+		timeoutMs: 5000,
+		trackJob: false,
+	});
+	if (rootResult.code !== 0) {
+		return emptyGitStatus({
+			checkedAt: new Date().toISOString(),
+			summary: "No Git repo detected for this local site.",
+		});
+	}
+
+	const gitRoot = rootResult.stdout.trim().split(/\r?\n/).pop();
+	const [branchResult, upstreamResult, statusResult, hashResult] = await Promise.all([
+		runProcess("git", ["-C", gitRoot, "branch", "--show-current"], { timeoutMs: 5000, trackJob: false }),
+		runProcess("git", ["-C", gitRoot, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"], { timeoutMs: 5000, trackJob: false }),
+		runProcess("git", ["-C", gitRoot, "status", "--short", "--untracked-files=all"], { timeoutMs: 10000, trackJob: false }),
+		runProcess("git", ["-C", gitRoot, "rev-parse", "--short", "HEAD"], { timeoutMs: 5000, trackJob: false }),
+	]);
+
+	if (statusResult.code !== 0) {
+		return {
+			...emptyGitStatus({
+				present: true,
+				state: "error",
+				repoRoot: gitRoot,
+				summary: "Git status is unavailable for this site.",
+			}),
+			checkedAt: new Date().toISOString(),
+		};
+	}
+
+	const branch = branchResult.stdout.trim() || (hashResult.stdout.trim() ? `detached ${hashResult.stdout.trim()}` : "detached");
+	const upstream = upstreamResult.code === 0 ? upstreamResult.stdout.trim() : "";
+	let aheadBehind = { ahead: 0, behind: 0 };
+	if (upstream) {
+		const aheadBehindResult = await runProcess("git", ["-C", gitRoot, "rev-list", "--left-right", "--count", "HEAD...@{u}"], {
+			timeoutMs: 5000,
+			trackJob: false,
+		});
+		if (aheadBehindResult.code === 0) {
+			aheadBehind = parseGitAheadBehind(aheadBehindResult.stdout);
+		}
+	}
+
+	const lines = gitStatusLines(statusResult.stdout);
+	const dirty = lines.length > 0;
+	const summary = dirty
+		? `Git dirty: ${gitDisplayPath(gitRoot)} has ${lines.length} change${lines.length === 1 ? "" : "s"} on ${branch}.`
+		: `Git clean: ${branch}${upstream ? ` tracking ${upstream}` : ""}.`;
+
+	return {
+		available: true,
+		present: true,
+		state: dirty ? "dirty" : "clean",
+		dirty,
+		branch,
+		upstream,
+		...aheadBehind,
+		totalChanges: lines.length,
+		repoRoot: gitRoot,
+		summary,
+		checkedAt: new Date().toISOString(),
+	};
+}
+
+async function cachedSiteGitStatus(site, gitAvailable = true) {
+	const targetPath = site?.localRoot || site?.publicPath || "";
+	const resolvedPath = targetPath ? path.resolve(targetPath) : "";
+	if (!resolvedPath) {
+		return emptyGitStatus();
+	}
+
+	const cacheKey = `${resolvedPath}:${gitAvailable ? "git" : "missing"}`;
+	const cached = gitStatusCache.get(cacheKey);
+	const now = Date.now();
+	if (cached && now - cached.sampledAt < gitStatusCacheTtlMs) {
+		return cached.report;
+	}
+	if (cached?.pending) {
+		return cached.report || emptyGitStatus();
+	}
+
+	const pending = siteGitStatus(site, gitAvailable)
+		.then((report) => {
+			gitStatusCache.set(cacheKey, { report, sampledAt: Date.now(), pending: null });
+			return report;
+		})
+		.catch(() => {
+			const report = cached?.report || emptyGitStatus({
+				state: "error",
+				summary: "Git status is unavailable for this site.",
+			});
+			gitStatusCache.set(cacheKey, { report, sampledAt: Date.now(), pending: null });
+			return report;
+		});
+	gitStatusCache.set(cacheKey, {
+		report: cached?.report || emptyGitStatus(),
+		sampledAt: cached?.sampledAt || 0,
+		pending,
+	});
+
+	return cached ? cached.report : pending;
+}
+
 function invalidateSiteDiskUsage(site) {
 	if (site?.localRoot) {
 		diskUsageCache.delete(path.resolve(site.localRoot));
+		for (const key of gitStatusCache.keys()) {
+			if (key.startsWith(`${path.resolve(site.localRoot)}:`)) {
+				gitStatusCache.delete(key);
+			}
+		}
 	}
 }
 
@@ -2109,6 +3333,7 @@ async function metricsReport() {
 	const cpuPercent = cpuPercentFromSamples(cpuSample, nextCpuSample);
 	cpuSample = nextCpuSample;
 	const memory = await memoryReport();
+	const git = await commandExists("git");
 
 	const siteMetrics = await Promise.all(sites.map(async (site) => {
 		const siteJobs = jobs.filter((job) => jobBelongsToSite(job, site));
@@ -2125,6 +3350,7 @@ async function metricsReport() {
 			memoryBytes: null,
 			memoryNote: "Shared runtime",
 			jobs: siteJobs.length,
+			git: await cachedSiteGitStatus(site, git.ok),
 		};
 	}));
 
@@ -2743,16 +3969,19 @@ async function runRuntimeAction(body) {
 			await ensureFriendlyCertificate();
 			const restartResult = await restartFriendlyProxyHelper();
 			const report = await friendlyUrlReport();
+			const liveCertificateReady = report.liveCertificate?.covers !== false;
+			const helperReloaded = restartResult.code === 0 || /not installed/i.test(restartResult.stdout || "");
 			return {
-				code: report.cert.status === "ready" ? 0 : 1,
+				code: report.cert.status === "ready" && liveCertificateReady && helperReloaded ? 0 : 1,
 				command: "runtime-friendly-cert",
 				args: [friendlyCertPath],
 				stdout: [
 					report.cert.message || "Friendly URL certificate check complete.",
 					restartResult.code === 0 ? "Friendly proxy helper reloaded." : "Friendly proxy helper reload failed.",
+					liveCertificateReady ? "" : "Live HTTPS helper is still serving the old certificate. Run Install HTTPS Helper to reload the system helper.",
 					restartResult.stdout || "",
 				].filter(Boolean).join("\n"),
-				stderr: restartResult.code === 0 ? "" : restartResult.stderr,
+				stderr: restartResult.code === 0 ? "" : restartResult.stderr || report.liveCertificate?.message || "",
 				durationMs: restartResult.durationMs || 0,
 				friendlyUrls: report,
 			};
@@ -3482,7 +4711,8 @@ const pullFileScopeLabels = {
 	"full-no-uploads": "Full site, skip uploads",
 	core: "Core/root",
 	"wp-content": "wp-content",
-	"active-theme": "Active theme",
+	"active-theme": "Child / active theme",
+	"parent-theme": "Parent theme",
 	themes: "All themes",
 	plugins: "Plugins",
 	"mu-plugins": "MU plugins",
@@ -3508,7 +4738,7 @@ function sanitizeThemeDirectory(value) {
 	return theme;
 }
 
-async function localActiveThemeRelativePath(site) {
+async function localThemeRelativePath(site, optionName, label) {
 	if (!(await pathExists(path.join(site.publicPath, "wp-load.php")))) {
 		throw httpError(400, "Local WordPress files are not present yet. Use Full site, All themes, or Custom directory first.");
 	}
@@ -3518,7 +4748,7 @@ async function localActiveThemeRelativePath(site) {
 			`--path=${site.publicPath}`,
 			"option",
 			"get",
-			"stylesheet",
+			optionName,
 			"--skip-plugins",
 			"--skip-themes",
 			"--quiet",
@@ -3527,14 +4757,22 @@ async function localActiveThemeRelativePath(site) {
 	);
 	const theme = cleanWpCliScalarOutput(result.stdout);
 	if (result.code !== 0 || !theme) {
-		throw httpError(400, "Could not detect the local active theme. Pull the database first, or choose All themes.");
+		throw httpError(400, `Could not detect the local ${label}. Pull the database first, or choose All themes.`);
 	}
 	return `wp-content/themes/${sanitizeThemeDirectory(theme)}`;
 }
 
+function localActiveThemeRelativePath(site) {
+	return localThemeRelativePath(site, "stylesheet", "child/active theme");
+}
+
+function localParentThemeRelativePath(site) {
+	return localThemeRelativePath(site, "template", "parent theme");
+}
+
 function pullScopePostProcessing(scope, relativePath) {
 	const touchesRoot = scope === "full" || scope === "full-no-uploads" || scope === "core";
-	const mayContainSymlinks = ["full", "full-no-uploads", "wp-content", "themes", "active-theme", "plugins", "mu-plugins"].includes(scope)
+	const mayContainSymlinks = ["full", "full-no-uploads", "wp-content", "themes", "active-theme", "parent-theme", "plugins", "mu-plugins"].includes(scope)
 		|| relativePath.startsWith("wp-content/themes")
 		|| relativePath.startsWith("wp-content/plugins")
 		|| relativePath.startsWith("wp-content/mu-plugins");
@@ -3555,7 +4793,10 @@ async function resolvePullFileScope(site, body = {}) {
 		relativePath = "wp-content";
 	} else if (scope === "active-theme") {
 		relativePath = await localActiveThemeRelativePath(site);
-		label = `Active theme: ${path.posix.basename(relativePath)}`;
+		label = `Child / active theme: ${path.posix.basename(relativePath)}`;
+	} else if (scope === "parent-theme") {
+		relativePath = await localParentThemeRelativePath(site);
+		label = `Parent theme: ${path.posix.basename(relativePath)}`;
 	} else if (scope === "themes") {
 		relativePath = "wp-content/themes";
 	} else if (scope === "plugins") {
@@ -3754,7 +4995,10 @@ async function resolvePushFileScope(site, body = {}) {
 		relativePath = "wp-content";
 	} else if (scope === "active-theme") {
 		relativePath = await localActiveThemeRelativePath(site);
-		label = `Active theme: ${path.posix.basename(relativePath)}`;
+		label = `Child / active theme: ${path.posix.basename(relativePath)}`;
+	} else if (scope === "parent-theme") {
+		relativePath = await localParentThemeRelativePath(site);
+		label = `Parent theme: ${path.posix.basename(relativePath)}`;
 	} else if (scope === "themes") {
 		relativePath = "wp-content/themes";
 	} else if (scope === "plugins") {
@@ -3915,7 +5159,7 @@ async function runPushAudit(site, body = {}) {
 			"blocked",
 			relativePath || ".",
 			blockedPushFileScopes.has(pushScope.scope)
-				? `${pushScope.label} pushes are blocked. Choose wp-content, active theme, themes, plugins, MU plugins, uploads, or a custom child path.`
+				? `${pushScope.label} pushes are blocked. Choose wp-content, child/active theme, parent theme, all themes, plugins, MU plugins, uploads, or a custom child path.`
 				: `push path must stay inside one of: ${pushAllowedScopes.join(", ")}`,
 		));
 	}
@@ -5176,7 +6420,10 @@ async function listAdminAccessPlugins(site) {
 	}
 	let plugins = [];
 	try {
-		plugins = JSON.parse(result.stdout);
+		plugins = parseWpCliJsonOutput(result.stdout);
+		if (!Array.isArray(plugins)) {
+			throw new Error("WP-CLI plugin list did not return an array.");
+		}
 	} catch (error) {
 		return {
 			...result,
@@ -5192,6 +6439,7 @@ async function listAdminAccessPlugins(site) {
 		.sort((a, b) => Number(b.disable) - Number(a.disable) || a.name.localeCompare(b.name));
 	return {
 		...result,
+		stderr: cleanWpCliDiagnosticOutput(result.stderr),
 		plugins,
 		candidates,
 	};
@@ -5548,16 +6796,43 @@ function cleanWpCliScalarOutput(value) {
 	return lines.length ? lines[lines.length - 1] : "";
 }
 
+function cleanWpCliDiagnosticOutput(value) {
+	return String(value || "")
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.filter((line) => !/^(deprecated|notice|warning|php\s+(deprecated|notice|warning)):/i.test(line))
+		.join("\n");
+}
+
 function parseWpCliJsonOutput(value) {
+	const output = String(value || "").trim();
+	const candidates = [];
+	if (output) {
+		candidates.push(output);
+		const arrayStart = output.indexOf("[");
+		const arrayEnd = output.lastIndexOf("]");
+		if (arrayStart !== -1 && arrayEnd > arrayStart) {
+			candidates.push(output.slice(arrayStart, arrayEnd + 1));
+		}
+		const objectStart = output.indexOf("{");
+		const objectEnd = output.lastIndexOf("}");
+		if (objectStart !== -1 && objectEnd > objectStart) {
+			candidates.push(output.slice(objectStart, objectEnd + 1));
+		}
+	}
 	const lines = String(value || "")
 		.split(/\r?\n/)
 		.map((line) => line.trim())
 		.filter(Boolean);
 	for (let index = lines.length - 1; index >= 0; index -= 1) {
+		candidates.push(lines[index]);
+	}
+	for (const candidate of candidates) {
 		try {
-			return JSON.parse(lines[index]);
+			return JSON.parse(candidate);
 		} catch {
-			// Keep walking backward through possible WP-CLI notices.
+			// Keep walking through possible WP-CLI notices and PHP warnings.
 		}
 	}
 	throw new Error("Could not parse WP-CLI JSON output.");
@@ -6891,6 +8166,35 @@ async function route(req, res) {
 
 	if (req.method === "GET" && url.pathname === "/api/providers") {
 		jsonResponse(res, 200, { providers: providerPresets });
+		return;
+	}
+
+	if (req.method === "GET" && url.pathname === "/api/credentials") {
+		jsonResponse(res, 200, await credentialSummary());
+		return;
+	}
+
+	if (req.method === "POST" && url.pathname === "/api/credentials/actions") {
+		const body = await readBody(req);
+		const result = await runCredentialAction(body);
+		jsonResponse(res, result.code === 0 ? 200 : 500, { result });
+		return;
+	}
+
+	if (req.method === "POST" && parts.length === 5 && parts[1] === "backups" && parts[2] === "updraft" && parts[3] === "uploads") {
+		jsonResponse(res, 200, { session: await stageUpdraftUpload(req, url, parts[4]) });
+		return;
+	}
+
+	if (req.method === "GET" && parts.length === 5 && parts[1] === "backups" && parts[2] === "updraft" && parts[3] === "sessions") {
+		jsonResponse(res, 200, { session: await inspectUpdraftSession(parts[4]) });
+		return;
+	}
+
+	if (req.method === "POST" && url.pathname === "/api/backups/updraft/actions") {
+		const body = await readBody(req);
+		const result = await runUpdraftBackupAction(body);
+		jsonResponse(res, result.code === 0 ? 200 : 500, { result });
 		return;
 	}
 

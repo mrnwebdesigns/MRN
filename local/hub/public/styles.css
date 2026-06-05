@@ -377,6 +377,59 @@ h3 {
 	font-weight: 650;
 }
 
+.site-card-git {
+	display: block;
+	margin-top: 6px;
+}
+
+.git-status {
+	align-items: center;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	display: inline-flex;
+	gap: 6px;
+	font-size: 0.7rem;
+	font-weight: 900;
+	line-height: 1;
+	max-width: 100%;
+	overflow: hidden;
+	padding: 6px 8px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.git-status::before {
+	background: currentColor;
+	border-radius: 999px;
+	content: "";
+	flex: 0 0 7px;
+	height: 7px;
+	width: 7px;
+}
+
+.site-tab .git-status.git-clean,
+.site-row-main .git-status.git-clean {
+	background: rgba(22, 171, 57, 0.12);
+	border-color: rgba(22, 171, 57, 0.34);
+	color: var(--positive);
+}
+
+.site-tab .git-status.git-dirty,
+.site-row-main .git-status.git-dirty {
+	background: rgba(231, 166, 26, 0.12);
+	border-color: rgba(231, 166, 26, 0.42);
+	color: #f0b341;
+}
+
+.site-tab .git-status.git-error,
+.site-row-main .git-status.git-error,
+.site-tab .git-status.git-unknown,
+.site-row-main .git-status.git-unknown {
+	background: rgba(219, 40, 40, 0.11);
+	border-color: rgba(219, 40, 40, 0.38);
+	color: var(--danger);
+}
+
 .site-status {
 	width: 9px;
 	height: 9px;
@@ -962,7 +1015,7 @@ body.is-busy {
 .connection-grid {
 	display: grid;
 	gap: 12px;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
 }
 
 .source-card {
@@ -1066,6 +1119,72 @@ body.is-busy {
 
 .blank-site-fields {
 	max-width: 680px;
+}
+
+.backup-restore-grid {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.backup-restore-panel {
+	align-content: start;
+}
+
+.backup-dropzone {
+	align-items: center;
+	border: 1px dashed color-mix(in srgb, var(--accent) 52%, var(--border));
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+	color: var(--muted);
+	display: grid;
+	gap: 8px;
+	justify-items: center;
+	min-height: 176px;
+	padding: 18px;
+	text-align: center;
+}
+
+.backup-dropzone.dragging,
+.backup-dropzone:focus-visible {
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+	outline: 0;
+}
+
+.backup-dropzone input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.backup-dropzone strong {
+	color: var(--text);
+	font-size: 1rem;
+}
+
+.backup-dropzone span {
+	font-size: 0.84rem;
+	font-weight: 700;
+	line-height: 1.45;
+	max-width: 520px;
+}
+
+.backup-results {
+	max-height: 420px;
+	overflow: auto;
+	padding-right: 2px;
+}
+
+.compact-list li strong,
+.compact-list li span {
+	display: block;
+}
+
+.compact-list li strong {
+	color: var(--text);
+	font-size: 0.78rem;
+	text-transform: uppercase;
 }
 
 .wizard-actions {
@@ -1308,6 +1427,11 @@ body.is-busy {
 
 .site-row-stats {
 	opacity: 0.82;
+}
+
+.site-row-git {
+	display: block;
+	margin-top: 7px;
 }
 
 .site-row-actions {
@@ -2202,7 +2326,38 @@ body.is-busy {
 	gap: 10px;
 }
 
+.activity-status {
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	color: var(--muted);
+	font-size: 0.72rem;
+	font-weight: 900;
+	letter-spacing: 0;
+	line-height: 1;
+	padding: 6px 10px;
+	text-transform: uppercase;
+}
+
+.activity-status[data-state="running"] {
+	background: rgba(33, 133, 208, 0.14);
+	border-color: rgba(84, 188, 255, 0.34);
+	color: var(--accent-strong);
+}
+
+.activity-status[data-state="ok"] {
+	background: rgba(22, 171, 57, 0.12);
+	border-color: rgba(22, 171, 57, 0.36);
+	color: var(--positive);
+}
+
+.activity-status[data-state="error"] {
+	background: rgba(219, 40, 40, 0.12);
+	border-color: rgba(219, 40, 40, 0.36);
+	color: var(--danger);
+}
+
 #outputConsole,
+#siteActivityConsole,
 #qaOutputConsole {
 	min-height: 240px;
 	max-height: 460px;
@@ -2217,9 +2372,23 @@ body.is-busy {
 	word-break: break-word;
 }
 
+#siteActivityConsole {
+	min-height: 220px;
+	max-height: min(34vh, 380px);
+}
+
+#siteActivityConsole:empty::before {
+	color: #718095;
+	content: attr(data-placeholder);
+}
+
 #qaOutputConsole {
 	min-height: 360px;
 	max-height: min(62vh, 760px);
+}
+
+.site-activity-panel {
+	grid-column: 1 / -1;
 }
 
 .qa-console-panel {
@@ -2510,9 +2679,10 @@ body.is-busy {
 
 	.role-strip,
 	.dashboard-metrics,
-	.form-grid,
-	.discovery-grid,
-	.site-filter-grid,
+		.form-grid,
+		.backup-restore-grid,
+		.discovery-grid,
+		.site-filter-grid,
 	.initial-import-grid,
 	.source-grid,
 	.connection-grid,
