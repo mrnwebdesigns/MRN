@@ -1,6 +1,6 @@
 <?php
 /**
- * Builder row: Content Lists.
+ * Builder row: Content.
  *
  * @package mrn-base-stack
  */
@@ -33,10 +33,21 @@ $display_mode = function_exists( 'mrn_base_stack_normalize_content_list_display_
 	? mrn_base_stack_normalize_content_list_display_mode( $row['display_mode'] ?? '' )
 	: '';
 
+$display_style = function_exists( 'mrn_base_stack_normalize_content_list_display_style' )
+	? mrn_base_stack_normalize_content_list_display_style( $row['display_style'] ?? '', $list_post_type )
+	: '';
+
 if ( function_exists( 'mrn_base_stack_get_content_list_display_modes_for_post_type' ) ) {
 	$available_display_modes = mrn_base_stack_get_content_list_display_modes_for_post_type( $list_post_type );
 	if ( '' !== $display_mode && ! isset( $available_display_modes[ $display_mode ] ) ) {
 		$display_mode = '';
+	}
+}
+
+if ( function_exists( 'mrn_base_stack_get_content_list_display_styles_for_post_type' ) ) {
+	$available_display_styles = mrn_base_stack_get_content_list_display_styles_for_post_type( $list_post_type );
+	if ( '' !== $display_style && ! isset( $available_display_styles[ $display_style ] ) ) {
+		$display_style = '';
 	}
 }
 
@@ -136,7 +147,12 @@ $section_classes = array(
 	'mrn-content-builder__row--content-lists-' . $list_style,
 	'mrn-content-builder__row--content-lists-display-' . ( '' !== $display_mode ? $display_mode : 'row-settings' ),
 );
-$section_styles  = array();
+
+if ( '' !== $display_style ) {
+	$section_classes[] = 'mrn-content-builder__row--content-lists-style-' . $display_style;
+}
+
+$section_styles = array();
 
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-content-list-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
@@ -244,6 +260,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 									$item_post,
 									array(
 										'display_mode'    => $display_mode,
+										'display_style'   => $display_style,
 										'show_featured_image' => $show_featured_image,
 										'show_publish_date' => $show_publish_date,
 										'show_excerpt'    => $show_excerpt,

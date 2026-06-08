@@ -64,28 +64,29 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 	$row_flex_settings         = ( $post_id > 0 && function_exists( 'mrn_base_stack_get_builder_row_flex_payload' ) ) ? mrn_base_stack_get_builder_row_flex_payload( $post_id ) : array();
 	$row_flex_supported_fields = function_exists( 'mrn_base_stack_get_builder_row_flex_supported_fields' )
 		? mrn_base_stack_get_builder_row_flex_supported_fields()
-		: array( 'page_content_rows', 'page_after_content_rows', 'page_hero_rows' );
+		: array( 'page_content_rows', 'page_after_content_rows', 'page_hero_rows', 'page_sidebar_rows' );
 
 	wp_localize_script(
 		'mrn-base-stack-content-builder-admin',
 		'mrnBaseStackBuilderAdmin',
 		array(
-			'ajaxUrl'                 => admin_url( 'admin-ajax.php' ),
-			'nonce'                   => wp_create_nonce( 'mrn-base-stack-convert-reusable-block' ),
-			'action'                  => 'mrn_base_stack_prepare_page_specific_block',
-			'actionTitle'             => 'Convert to page-specific',
-			'confirmTitle'            => 'Replace With Page-Specific Copy',
-			'confirmText'             => 'This will replace the reusable block reference in this row with a page-only copy you can edit here. The original reusable block will stay in the library unchanged.',
-			'confirmButton'           => 'Convert to Page-Specific',
-			'cancelButton'            => 'Cancel',
-			'emptySelectionText'      => 'Choose a reusable block first.',
-			'loadingText'             => 'Converting block...',
-			'successText'             => 'This row is now a page-specific block.',
-			'errorText'               => 'The block could not be converted.',
-			'contentListTaxonomies'   => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
-			'contentListDisplayModes' => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
-			'initialCollapseEnabled'  => (bool) apply_filters( 'mrn_base_stack_admin_initial_collapse_enabled', true ),
-			'rowFlex'                 => array(
+			'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
+			'nonce'                    => wp_create_nonce( 'mrn-base-stack-convert-reusable-block' ),
+			'action'                   => 'mrn_base_stack_prepare_page_specific_block',
+			'actionTitle'              => 'Convert to page-specific',
+			'confirmTitle'             => 'Replace With Page-Specific Copy',
+			'confirmText'              => 'This will replace the reusable block reference in this row with a page-only copy you can edit here. The original reusable block will stay in the library unchanged.',
+			'confirmButton'            => 'Convert to Page-Specific',
+			'cancelButton'             => 'Cancel',
+			'emptySelectionText'       => 'Choose a reusable block first.',
+			'loadingText'              => 'Converting block...',
+			'successText'              => 'This row is now a page-specific block.',
+			'errorText'                => 'The block could not be converted.',
+			'contentListTaxonomies'    => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
+			'contentListDisplayModes'  => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
+			'contentListDisplayStyles' => function_exists( 'mrn_base_stack_get_content_list_display_style_choice_map' ) ? mrn_base_stack_get_content_list_display_style_choice_map() : array(),
+			'initialCollapseEnabled'   => (bool) apply_filters( 'mrn_base_stack_admin_initial_collapse_enabled', true ),
+			'rowFlex'                  => array(
 				'nonce'           => wp_create_nonce( 'mrn-base-stack-row-flex-layout' ),
 				'nonceField'      => 'mrn_base_stack_row_flex_nonce',
 				'payloadField'    => 'mrn_base_stack_row_flex_payload',
@@ -339,13 +340,15 @@ add_action( 'save_post', 'mrn_base_stack_save_builder_row_flex_layout_meta', 20,
 /**
  * Get post types where the native WordPress editor should be hidden.
  *
- * Defaults to an empty list so all classic-editor body fields remain available
- * unless a site explicitly opts into hiding via filter.
+ * Defaults to builder-supported post types so the Classic Editor body field
+ * does not compete with the theme-owned ACF builder.
  *
  * @return array<int, string>
  */
 function mrn_base_stack_get_native_editor_hidden_post_types() {
-	$post_types = array();
+	$post_types = function_exists( 'mrn_base_stack_get_builder_supported_post_types' )
+		? mrn_base_stack_get_builder_supported_post_types()
+		: array( 'page', 'post' );
 
 	/**
 	 * Filter post types where the native editor should be hidden.

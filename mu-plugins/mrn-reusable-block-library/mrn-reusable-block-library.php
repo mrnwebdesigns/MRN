@@ -52,15 +52,15 @@ function mrn_rbl_get_post_type_definitions(): array {
             'starter_title'  => 'Basic Block',
         ),
         'mrn_reusable_faq' => array(
-            'singular'       => 'FAQs/Accordion',
-            'plural'         => 'FAQs/Accordion',
-            'list_label'     => 'FAQs/Accordion',
-            'add_new_label'  => 'Add New FAQs/Accordion',
+            'singular'       => 'FAQs / Accordion',
+            'plural'         => 'FAQs / Accordion',
+            'list_label'     => 'FAQs / Accordion',
+            'add_new_label'  => 'Add New FAQs / Accordion',
             'description'    => 'Accordion-style question and answer blocks that can be selected and placed into pages later.',
             'menu_icon'      => 'dashicons-screenoptions',
             'supports'       => array('title', 'revisions'),
             'starter_slug'   => 'reusable-faq',
-            'starter_title'  => 'FAQs/Accordion',
+            'starter_title'  => 'FAQs / Accordion',
         ),
         'mrn_reusable_grid' => array(
             'singular'       => 'Content Grid',
@@ -74,15 +74,15 @@ function mrn_rbl_get_post_type_definitions(): array {
             'starter_title'  => 'Content Grid',
         ),
         'mrn_reusable_list' => array(
-            'singular'       => 'Content List',
-            'plural'         => 'Content Lists',
-            'list_label'     => 'Content Lists',
-            'add_new_label'  => 'Add New Content List',
-            'description'    => 'Query-driven content listing sections that can be reused across pages.',
+            'singular'       => 'Content',
+            'plural'         => 'Content',
+            'list_label'     => 'Content',
+            'add_new_label'  => 'Add New Content',
+            'description'    => 'Query-driven content sections that can be reused across pages.',
             'menu_icon'      => 'dashicons-list-view',
             'supports'       => array('title', 'revisions'),
             'starter_slug'   => 'reusable-content-lists',
-            'starter_title'  => 'Content List',
+            'starter_title'  => 'Content',
         ),
         'mrn_reusable_search' => array(
             'singular'       => 'Search Form',
@@ -649,6 +649,13 @@ function mrn_rbl_render_fields_as_block(string $post_type, array $fields, array 
         'fields'        => $fields,
     );
 
+    if ($args !== array()) {
+        $context = array_merge($context, $args);
+        $context['post_type'] = $post_type;
+        $context['template_slug'] = mrn_rbl_get_template_slug_for_post_type($post_type);
+        $context['fields'] = $fields;
+    }
+
     return mrn_rbl_render_context($context);
 }
 
@@ -659,20 +666,44 @@ function mrn_rbl_render_fields_as_block(string $post_type, array $fields, array 
  * @return string
  */
 function mrn_rbl_render_block($block): string {
-    $post = $block instanceof WP_Post ? $block : mrn_rbl_get_block_post($block);
-    if (!$post instanceof WP_Post) {
-        return '';
-    }
-
-    if (!mrn_rbl_can_render_post($post)) {
-        return '';
-    }
-
-    return mrn_rbl_render_context(mrn_rbl_get_render_context($post));
+    return mrn_rbl_render_block_with_context($block);
 }
 
 /**
- * Render a reusable block post with additional host context.
+ * Render a reusable block post as its matching stack builder row when available.
+ *
+ * @param WP_Post              $post
+ * @param array<string, mixed> $extra_context
+ * @return string
+ */
+function mrn_rbl_render_block_as_stack_row(WP_Post $post, array $extra_context = array()): string {
+    if (!function_exists('mrn_base_stack_get_reusable_block_builder_row_markup')) {
+        return '';
+    }
+
+    $host_row = isset($extra_context['host_row']) && is_array($extra_context['host_row']) ? $extra_context['host_row'] : array();
+
+    foreach (array('section_width', 'sub_content_width', 'anchor', 'motion_settings') as $field_name) {
+        if (array_key_exists($field_name, $extra_context) && !array_key_exists($field_name, $host_row)) {
+            $host_row[$field_name] = $extra_context[$field_name];
+        }
+    }
+
+    $host_post_id = isset($extra_context['host_post_id']) ? (int) $extra_context['host_post_id'] : 0;
+    if ($host_post_id < 1) {
+        $host_post_id = get_queried_object_id();
+    }
+    if ($host_post_id < 1) {
+        $host_post_id = (int) $post->ID;
+    }
+
+    $host_row_index = isset($extra_context['host_row_index']) ? (int) $extra_context['host_row_index'] : 0;
+
+    return mrn_base_stack_get_reusable_block_builder_row_markup($post, $host_row, $host_post_id, $host_row_index);
+}
+
+/**
+ * Render a reusable block post and return HTML.
  *
  * @param int|string|WP_Post   $block
  * @param array<string, mixed> $extra_context
@@ -686,6 +717,11 @@ function mrn_rbl_render_block_with_context($block, array $extra_context = array(
 
     if (!mrn_rbl_can_render_post($post)) {
         return '';
+    }
+
+    $stack_markup = mrn_rbl_render_block_as_stack_row($post, $extra_context);
+    if ($stack_markup !== '') {
+        return $stack_markup;
     }
 
     return mrn_rbl_render_context(mrn_rbl_get_render_context($post, $extra_context));
@@ -797,26 +833,71 @@ function mrn_rbl_register_admin_menu(): void {
         26
     );
 
-    foreach ($visible_post_types as $post_type => $definition) {
+    add_submenu_page(
+        $parent_slug,
+        'Reusable Block Library',
+        'Overview',
+        'edit_posts',
+        $parent_slug,
+        'mrn_rbl_render_library_overview',
+        0
+    );
+
+    $primary_post_types = array('mrn_reusable_cta', 'mrn_reusable_basic', 'mrn_reusable_faq');
+    $position           = 10;
+
+    foreach ($primary_post_types as $post_type) {
+        if (!isset($visible_post_types[$post_type])) {
+            continue;
+        }
+
+        $definition = $visible_post_types[$post_type];
         $plural        = isset($definition['plural']) ? (string) $definition['plural'] : 'Blocks';
         $list_label    = isset($definition['list_label']) ? (string) $definition['list_label'] : $plural;
-        $add_new_label = isset($definition['add_new_label']) ? (string) $definition['add_new_label'] : 'Add New';
 
         add_submenu_page(
             $parent_slug,
             $plural,
             $list_label,
             'edit_posts',
-            'edit.php?post_type=' . $post_type
+            'edit.php?post_type=' . $post_type,
+            '',
+            $position
         );
+
+        $position += 10;
+    }
+
+    foreach ($visible_post_types as $post_type => $definition) {
+        $plural        = isset($definition['plural']) ? (string) $definition['plural'] : 'Blocks';
+        $list_label    = isset($definition['list_label']) ? (string) $definition['list_label'] : $plural;
+        $add_new_label = isset($definition['add_new_label']) ? (string) $definition['add_new_label'] : 'Add New';
+
+        if (!in_array($post_type, $primary_post_types, true)) {
+            add_submenu_page(
+                $parent_slug,
+                $plural,
+                $list_label,
+                'edit_posts',
+                'edit.php?post_type=' . $post_type,
+                '',
+                $position
+            );
+
+            $position += 10;
+        }
 
         add_submenu_page(
             $parent_slug,
             $add_new_label,
             $add_new_label,
             'edit_posts',
-            'post-new.php?post_type=' . $post_type
+            'post-new.php?post_type=' . $post_type,
+            '',
+            $position
         );
+
+        $position += 10;
     }
 }
 add_action('admin_menu', 'mrn_rbl_register_admin_menu', 9);
@@ -912,14 +993,12 @@ function mrn_rbl_filter_submenu_file($submenu_file): string {
         return $submenu_file;
     }
 
-    $current_action = isset($_GET['action']) ? sanitize_key(wp_unslash((string) $_GET['action'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin UI state for submenu highlighting.
+    if (in_array($screen->base, array('post', 'post-new'), true)) {
+        $current_action = isset($_GET['action']) ? sanitize_key(wp_unslash((string) $_GET['action'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin UI state for submenu highlighting.
 
-    if ($screen->base === 'post' && 'add' === $current_action) {
-        return 'post-new.php?post_type=' . $post_type;
-    }
-
-    if ($screen->base === 'post-new') {
-        return 'post-new.php?post_type=' . $post_type;
+        if ('post-new' === $screen->base || 'add' === $current_action) {
+            return 'post-new.php?post_type=' . $post_type;
+        }
     }
 
     return 'edit.php?post_type=' . $post_type;
@@ -2600,16 +2679,16 @@ function mrn_rbl_auto_enhance_local_field_groups(): void {
             continue;
         }
 
+        if (!mrn_rbl_should_auto_enhance_field_group($field_group)) {
+            continue;
+        }
+
         $fields = acf_get_fields($group_key);
         if (!is_array($fields)) {
             continue;
         }
 
         $field_group['fields'] = $fields;
-
-        if (!mrn_rbl_should_auto_enhance_field_group($field_group)) {
-            continue;
-        }
 
         acf_add_local_field_group(mrn_rbl_with_effects_fields($field_group));
     }
@@ -3404,6 +3483,23 @@ function mrn_rbl_get_content_list_display_mode_choices(): array {
 }
 
 /**
+ * Shared display-style choices for content-list reusable blocks.
+ *
+ * @return array<string, string>
+ */
+function mrn_rbl_get_content_list_display_style_choices(): array {
+    if (function_exists('mrn_base_stack_get_content_list_display_style_choices')) {
+        return mrn_base_stack_get_content_list_display_style_choices();
+    }
+
+    return array(
+        ''      => 'Use Content Default',
+        'story' => 'Story',
+        'quote' => 'Quote',
+    );
+}
+
+/**
  * Shared order-by choices for content-list reusable blocks.
  *
  * @return array<string, string>
@@ -4016,7 +4112,7 @@ function mrn_rbl_register_acf_field_groups(): void {
 
     acf_add_local_field_group(mrn_rbl_with_effects_fields(array(
         'key'    => 'group_mrn_reusable_content_lists',
-        'title'  => 'Content Lists Fields',
+        'title'  => 'Content Fields',
         'fields' => array(
             array(
                 'key'       => 'field_mrn_reusable_content_lists_content_tab',
@@ -4056,19 +4152,19 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'default_value' => 'post',
                 'ui'            => 1,
                 'wrapper'       => array(
-                    'width' => '33',
+                    'width' => '25',
                 ),
             ),
             array(
                 'key'           => 'field_mrn_reusable_content_lists_style',
-                'label'         => 'List Style',
+                'label'         => 'List Marker Style',
                 'name'          => 'list_style',
                 'type'          => 'select',
                 'choices'       => mrn_rbl_get_content_list_style_choices(),
                 'default_value' => 'unordered',
                 'ui'            => 1,
                 'wrapper'       => array(
-                    'width' => '33',
+                    'width' => '25',
                 ),
             ),
             array(
@@ -4080,7 +4176,21 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'default_value' => 'standard',
                 'ui'            => 1,
                 'wrapper'       => array(
-                    'width' => '34',
+                    'width' => '25',
+                ),
+            ),
+            array(
+                'key'           => 'field_mrn_reusable_content_lists_display_style',
+                'label'         => 'Display Style',
+                'name'          => 'display_style',
+                'type'          => 'select',
+                'instructions'  => 'Choose a visual treatment for the selected content type. Leave blank to use the content item default.',
+                'choices'       => mrn_rbl_get_content_list_display_style_choices(),
+                'default_value' => '',
+                'allow_null'    => 1,
+                'ui'            => 0,
+                'wrapper'       => array(
+                    'width' => '25',
                 ),
             ),
             array(

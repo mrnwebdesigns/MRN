@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.37`
+- Current version: `0.1.39`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper`
 
@@ -42,7 +42,7 @@
   - Display Modes
   - Dashboard Controls
   - Back-end content type visibility
-- Builder layout visibility controls are not currently rendered in the Site Configurations UI (helper/storage support remains in code).
+  - Builder layout visibility
 - The Breadcrumbs tab currently includes secondary tabs:
   - `Advanced Breadcrumbs`
   - `Behavior`
@@ -55,7 +55,7 @@
   - list-first management UI with search, filters, sort, and row editing
   - entity-aware mode creation for supported renderable items
   - field selection and ordering for mode output
-  - a public saved-mode registry used by `Content Lists`
+  - a public saved-mode registry used by `Content`
 - SendGrid / Fluent SMTP currently includes:
   - site SendGrid sending-key storage/sync for Fluent SMTP
   - host-managed SendGrid management-key status
@@ -82,6 +82,7 @@
   - `mrn_config_helper_get_uptime_robot_settings()`
   - `mrn_config_helper_get_hidden_admin_cpts()`
   - `mrn_config_helper_get_hidden_builder_layouts()`
+  - `mrn_config_helper_get_allowed_builder_layouts()`
   - `mrn_config_helper_get_display_modes()`
   - `mrn_config_helper_get_display_styles()`
   - `mrn_config_helper_get_content_list_display_modes()`
@@ -165,6 +166,7 @@
   - `MRN_Config_Helper::get_uptime_robot_settings()`
   - `MRN_Config_Helper::get_hidden_admin_cpts()`
   - `MRN_Config_Helper::get_hidden_builder_layouts()`
+  - `MRN_Config_Helper::get_allowed_builder_layouts()`
   - `MRN_Config_Helper::get_display_modes()`
   - `MRN_Config_Helper::get_display_styles()`
   - `MRN_Config_Helper::get_breadcrumb_settings()`
@@ -174,6 +176,7 @@
   - `mrn_config_helper_get_uptime_robot_settings()`
   - `mrn_config_helper_get_hidden_admin_cpts()`
   - `mrn_config_helper_get_hidden_builder_layouts()`
+  - `mrn_config_helper_get_allowed_builder_layouts()`
   - `mrn_config_helper_get_display_modes()`
   - `mrn_config_helper_get_display_styles()`
   - `mrn_config_helper_get_breadcrumb_settings()`

@@ -1792,6 +1792,11 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 }
 
 /**
+ * Load flexible-content row-spacing meta helpers.
+ */
+require_once get_template_directory() . '/inc/row-spacing-meta.php';
+
+/**
  * Get a stable row-spacing contract for row wrappers across builder modes.
  *
  * When the full layout-builder runtime is available this delegates to the

@@ -1989,6 +1989,12 @@ function mrn_site_styles_get_row_spacing_presets(): array {
  * @return array<int, array<string, string>>
  */
 function mrn_site_styles_get_row_spacing_presets_resolved(): array {
+    static $resolved_cache = null;
+
+    if (is_array($resolved_cache)) {
+        return $resolved_cache;
+    }
+
     $resolved = array();
 
     foreach (mrn_site_styles_get_row_spacing_presets() as $row) {
@@ -2009,6 +2015,8 @@ function mrn_site_styles_get_row_spacing_presets_resolved(): array {
             'compensate_shell' => $compensate_shell,
         );
     }
+
+    $resolved_cache = $resolved;
 
     return $resolved;
 }

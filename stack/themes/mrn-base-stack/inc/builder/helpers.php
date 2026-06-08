@@ -49,6 +49,90 @@ function mrn_base_stack_clone_acf_keys_with_prefix( array $value, $prefix ) {
 }
 
 /**
+ * Get the raw Content builder layout definitions for cloned builder areas.
+ *
+ * The per-entry layout allowlist filters intentionally narrow the Content
+ * field on edit screens. After Content and Sidebar must clone from the full
+ * registered Content catalog first, then apply their own target-specific
+ * limits so defaults never accidentally shrink the source catalog.
+ *
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_content_builder_source_layouts() {
+	if ( function_exists( 'acf_get_local_field' ) ) {
+		$field = acf_get_local_field( 'field_mrn_page_content_rows' );
+		if ( is_array( $field ) && ! empty( $field['layouts'] ) && is_array( $field['layouts'] ) ) {
+			return $field['layouts'];
+		}
+	}
+
+	$resolver = static function () {
+		if ( ! function_exists( 'acf_get_fields' ) ) {
+			return array();
+		}
+
+		$fields = acf_get_fields( 'group_mrn_content_builder' );
+		if ( ! is_array( $fields ) || empty( $fields[0]['layouts'] ) || ! is_array( $fields[0]['layouts'] ) ) {
+			return array();
+		}
+
+		return $fields[0]['layouts'];
+	};
+
+	$layouts = function_exists( 'mrn_base_stack_run_without_builder_layout_allowlist_filters' )
+		? mrn_base_stack_run_without_builder_layout_allowlist_filters( $resolver )
+		: $resolver();
+
+	return is_array( $layouts ) ? $layouts : array();
+}
+
+/**
+ * Clone Content builder layouts for the After Content builder field.
+ *
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_after_content_builder_layouts() {
+	static $layouts_cache = null;
+
+	if ( is_array( $layouts_cache ) ) {
+		return $layouts_cache;
+	}
+
+	if ( ! function_exists( 'mrn_base_stack_clone_acf_keys_with_prefix' ) ) {
+		$layouts_cache = array();
+		return $layouts_cache;
+	}
+
+	$content_layouts = mrn_base_stack_get_content_builder_source_layouts();
+	if ( empty( $content_layouts ) ) {
+		$layouts_cache = array();
+		return $layouts_cache;
+	}
+
+	$layouts_cache = mrn_base_stack_clone_acf_keys_with_prefix( $content_layouts, 'after_content_' );
+
+	return $layouts_cache;
+}
+
+/**
+ * Populate After Content layouts lazily so registration stays lightweight.
+ *
+ * @param array<string, mixed>|mixed $field ACF field definition.
+ * @return array<string, mixed>|mixed
+ */
+function mrn_base_stack_populate_after_content_builder_field( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field['layouts'] = mrn_base_stack_get_after_content_builder_layouts();
+
+	return $field;
+}
+add_filter( 'acf/load_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_populate_after_content_builder_field', 15 );
+add_filter( 'acf/prepare_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_populate_after_content_builder_field', 15 );
+
+/**
  * Build a stable derived row index for nested builder content.
  *
  * Some row templates use the index for DOM IDs and query-string pagination.
@@ -101,6 +185,64 @@ function mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id ) {
 		}
 
 		if ( false === strpos( $meta_key, '_panel_rows_' ) || 0 !== substr_compare( $meta_key, '_acf_fc_layout', -14 ) ) {
+			continue;
+		}
+
+		$raw_value = '';
+
+		if ( is_array( $values ) && ! empty( $values ) ) {
+			$raw_value = (string) $values[ count( $values ) - 1 ];
+		} elseif ( is_scalar( $values ) ) {
+			$raw_value = (string) $values;
+		}
+
+		$layout_name = sanitize_key( $raw_value );
+		if ( '' !== $layout_name ) {
+			$layout_names[] = $layout_name;
+		}
+	}
+
+	$cache[ $post_id ] = array_values( array_unique( $layout_names ) );
+
+	return $cache[ $post_id ];
+}
+
+/**
+ * Get nested two-column layout names already saved in post meta.
+ *
+ * @param int $post_id Post ID.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_two_column_used_nested_layout_names( $post_id ) {
+	static $cache = array();
+
+	$post_id = absint( $post_id );
+
+	if ( $post_id < 1 ) {
+		return array();
+	}
+
+	if ( isset( $cache[ $post_id ] ) ) {
+		return $cache[ $post_id ];
+	}
+
+	$meta         = get_post_meta( $post_id );
+	$layout_names = array();
+
+	if ( ! is_array( $meta ) ) {
+		$cache[ $post_id ] = array();
+		return $cache[ $post_id ];
+	}
+
+	foreach ( $meta as $meta_key => $values ) {
+		if ( ! is_string( $meta_key ) ) {
+			continue;
+		}
+
+		$is_column_layout_key = false !== strpos( $meta_key, '_left_column_rows_' )
+			|| false !== strpos( $meta_key, '_right_column_rows_' );
+
+		if ( ! $is_column_layout_key || 0 !== substr_compare( $meta_key, '_acf_fc_layout', -14 ) ) {
 			continue;
 		}
 
@@ -191,6 +333,46 @@ function mrn_base_stack_normalize_builder_layout_source_names( $names, array $de
 }
 
 /**
+ * Remove site-wide hidden layouts from an add-row source list.
+ *
+ * @param array<int, string> $names Layout names.
+ * @return array<int, string>
+ */
+function mrn_base_stack_filter_hidden_builder_layout_source_names( array $names ) {
+	if ( ! function_exists( 'mrn_base_stack_get_raw_sitewide_hidden_builder_layout_names' ) ) {
+		return $names;
+	}
+
+	$hidden_names = mrn_base_stack_get_raw_sitewide_hidden_builder_layout_names();
+	if ( empty( $hidden_names ) || ! is_array( $hidden_names ) ) {
+		return $names;
+	}
+
+	return array_values( array_diff( $names, $hidden_names ) );
+}
+
+/**
+ * Remove layouts unavailable in the current editor context from a source list.
+ *
+ * @param array<int, string> $names Layout names.
+ * @return array<int, string>
+ */
+function mrn_base_stack_filter_builder_layout_source_names_for_context( array $names ) {
+	$names = mrn_base_stack_filter_hidden_builder_layout_source_names( $names );
+
+	if ( ! function_exists( 'mrn_base_stack_get_post_type_allowed_builder_layout_names' ) ) {
+		return $names;
+	}
+
+	$allowed_names = mrn_base_stack_get_post_type_allowed_builder_layout_names();
+	if ( ! is_array( $allowed_names ) ) {
+		return $names;
+	}
+
+	return array_values( array_intersect( $names, $allowed_names ) );
+}
+
+/**
  * Get content layout names that should be available inside Tabbed Layout panels.
  *
  * @return array<int, string>
@@ -208,10 +390,12 @@ function mrn_base_stack_get_tabbed_layout_source_names() {
 		'reusable_block',
 	);
 
-	return mrn_base_stack_normalize_builder_layout_source_names(
+	$names = mrn_base_stack_normalize_builder_layout_source_names(
 		apply_filters( 'mrn_base_stack_tabbed_layout_source_names', $defaults ),
 		$defaults
 	);
+
+	return mrn_base_stack_filter_builder_layout_source_names_for_context( $names );
 }
 
 /**
@@ -231,10 +415,12 @@ function mrn_base_stack_get_two_column_column_layout_source_names() {
 		'reusable_block',
 	);
 
-	return mrn_base_stack_normalize_builder_layout_source_names(
+	$names = mrn_base_stack_normalize_builder_layout_source_names(
 		apply_filters( 'mrn_base_stack_two_column_column_layout_source_names', $defaults ),
 		$defaults
 	);
+
+	return mrn_base_stack_filter_builder_layout_source_names_for_context( $names );
 }
 
 /**
@@ -367,7 +553,8 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 		return $layouts_cache[ $cache_key ];
 	}
 
-	$allowed_names = mrn_base_stack_get_tabbed_layout_source_names();
+	$allowed_names       = mrn_base_stack_get_tabbed_layout_source_names();
+	$existing_only_names = array();
 	if (
 		$allowlist_active
 		&& function_exists( 'mrn_base_stack_get_builder_layout_allowlist_catalog_from_field' )
@@ -389,14 +576,24 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 						return isset( $effective_lookup[ $layout_name ] );
 					}
 				)
-			);
+				);
 		}
 
+		$base_allowed_lookup = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
+		$used_nested_names   = mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id );
+		$existing_only_names = array_values(
+			array_diff(
+				array_filter(
+					array_map( 'sanitize_key', $used_nested_names )
+				),
+				array_keys( $base_allowed_lookup )
+			)
+		);
 		$allowed_names = array_values(
 			array_unique(
 				array_merge(
 					$allowed_names,
-					mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id )
+					$used_nested_names
 				)
 			)
 		);
@@ -414,8 +611,9 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 			array( 'tabbed_layout' )
 		)
 	);
-	$allowed_lookup = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
-	$layouts        = array();
+	$allowed_lookup       = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
+	$existing_only_lookup = ! empty( $existing_only_names ) ? array_fill_keys( $existing_only_names, true ) : array();
+	$layouts              = array();
 
 	foreach ( $field['layouts'] as $layout_key => $layout ) {
 		if ( ! is_array( $layout ) ) {
@@ -433,6 +631,10 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 
 		if ( ! empty( $allowed_lookup ) && ! isset( $allowed_lookup[ $layout_name ] ) ) {
 			continue;
+		}
+
+		if ( isset( $existing_only_lookup[ $layout_name ] ) ) {
+			$layout['max'] = -1;
 		}
 
 		$cloned_layout        = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_tabbed_panel_' );
@@ -549,7 +751,7 @@ function mrn_base_stack_get_content_list_post_type_choices() {
 }
 
 /**
- * Load live post-type choices into the Content Lists builder field.
+ * Load live post-type choices into the Content builder field.
  *
  * This keeps the row selector aligned with the currently registered public
  * content types instead of only the choices present when the field group was
@@ -987,7 +1189,35 @@ function mrn_base_stack_get_content_list_display_mode_choices() {
 }
 
 /**
- * Load live display-mode choices into the Content Lists builder field.
+ * Get display-style choices for query-driven builder layouts.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_content_list_display_style_choices() {
+	$choices = array(
+		'' => 'Use Content Default',
+	);
+
+	foreach ( mrn_base_stack_get_content_list_display_style_choice_map() as $post_type_choices ) {
+		if ( ! is_array( $post_type_choices ) ) {
+			continue;
+		}
+
+		foreach ( $post_type_choices as $style => $label ) {
+			$label = trim( (string) $label );
+			if ( '' === $label || isset( $choices[ $style ] ) ) {
+				continue;
+			}
+
+			$choices[ $style ] = $label;
+		}
+	}
+
+	return $choices;
+}
+
+/**
+ * Load live display-mode choices into the Content builder field.
  *
  * The field group registers a baseline set of choices, but the actual options
  * need to reflect client-managed Display Modes from Config Helper each time the
@@ -1011,6 +1241,28 @@ add_filter( 'acf/load_field/key=field_mrn_content_lists_display_mode', 'mrn_base
 add_filter( 'acf/load_field/name=display_mode', 'mrn_base_stack_load_content_list_display_mode_field_choices' );
 add_filter( 'acf/prepare_field/key=field_mrn_content_lists_display_mode', 'mrn_base_stack_load_content_list_display_mode_field_choices' );
 add_filter( 'acf/prepare_field/name=display_mode', 'mrn_base_stack_load_content_list_display_mode_field_choices' );
+
+/**
+ * Load live display-style choices into the Content builder field.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_load_content_list_display_style_field_choices( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field['choices']    = mrn_base_stack_get_content_list_display_style_choices();
+	$field['allow_null'] = 1;
+	$field['ui']         = 0;
+
+	return $field;
+}
+add_filter( 'acf/load_field/key=field_mrn_content_lists_display_style', 'mrn_base_stack_load_content_list_display_style_field_choices' );
+add_filter( 'acf/load_field/name=display_style', 'mrn_base_stack_load_content_list_display_style_field_choices' );
+add_filter( 'acf/prepare_field/key=field_mrn_content_lists_display_style', 'mrn_base_stack_load_content_list_display_style_field_choices' );
+add_filter( 'acf/prepare_field/name=display_style', 'mrn_base_stack_load_content_list_display_style_field_choices' );
 
 /**
  * Recursively normalize select defaults on a full ACF field tree.
@@ -1094,12 +1346,12 @@ add_filter( 'acf/load_field/type=select', 'mrn_base_stack_normalize_select_field
 add_filter( 'acf/prepare_field/type=select', 'mrn_base_stack_normalize_select_field_defaults', 20 );
 
 /**
- * Robustly normalize dynamic choices for Content Lists select subfields.
+ * Robustly normalize dynamic choices for Content select subfields.
  *
  * Some builder contexts can bypass the narrower ACF key/name hooks depending on
  * how the flexible-content row is prepared. This catches the rendered field
  * instance itself and reapplies the dynamic choice sources when the field is a
- * Content Lists subfield.
+ * Content subfield.
  *
  * @param array<string, mixed> $field ACF field definition.
  * @return array<string, mixed>
@@ -1122,13 +1374,19 @@ function mrn_base_stack_prepare_dynamic_content_list_select_fields( $field ) {
 
 	$is_content_list_layout = false !== strpos( $parent_layout, 'content_lists' );
 
-	if ( $is_content_list_layout && in_array( $field_origin, array( 'list_post_type', 'display_mode' ), true ) ) {
+	if ( $is_content_list_layout && in_array( $field_origin, array( 'list_post_type', 'display_mode', 'display_style' ), true ) ) {
 		if ( 'list_post_type' === $field_origin ) {
 			$field['choices'] = mrn_base_stack_get_content_list_post_type_choices();
 		}
 
 		if ( 'display_mode' === $field_origin ) {
 			$field['choices']    = mrn_base_stack_get_content_list_display_mode_choices();
+			$field['allow_null'] = 1;
+			$field['ui']         = 0;
+		}
+
+		if ( 'display_style' === $field_origin ) {
+			$field['choices']    = mrn_base_stack_get_content_list_display_style_choices();
 			$field['allow_null'] = 1;
 			$field['ui']         = 0;
 		}
@@ -1203,6 +1461,52 @@ function mrn_base_stack_get_content_list_display_mode_choice_map() {
 }
 
 /**
+ * Get display-style choices for a specific Content post type.
+ *
+ * @param string $post_type Post type slug.
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_content_list_display_styles_for_post_type( $post_type = 'post' ) {
+	$post_type = sanitize_key( (string) $post_type );
+
+	if ( ! function_exists( 'mrn_base_stack_get_display_styles_for_entity' ) ) {
+		return array();
+	}
+
+	return mrn_base_stack_get_display_styles_for_entity( 'post_type', $post_type );
+}
+
+/**
+ * Get display-style labels grouped by post type for builder-admin filtering.
+ *
+ * @return array<string, array<string, string>>
+ */
+function mrn_base_stack_get_content_list_display_style_choice_map() {
+	$map = array();
+
+	foreach ( mrn_base_stack_get_content_list_post_type_choices() as $post_type => $label ) {
+		$choices = array();
+
+		foreach ( mrn_base_stack_get_content_list_display_styles_for_post_type( $post_type ) as $style_key => $style_config ) {
+			if ( ! is_array( $style_config ) ) {
+				continue;
+			}
+
+			$style_label = isset( $style_config['label'] ) ? trim( (string) $style_config['label'] ) : '';
+			if ( '' === $style_label ) {
+				continue;
+			}
+
+			$choices[ $style_key ] = $style_label;
+		}
+
+		$map[ $post_type ] = $choices;
+	}
+
+	return $map;
+}
+
+/**
  * Shared display-mode registry for query-driven builder layouts.
  *
  * This intentionally starts small, but the contract is filterable so future
@@ -1231,6 +1535,26 @@ function mrn_base_stack_get_content_list_display_modes() {
 			'allows_image'     => false,
 			'allows_date'      => false,
 			'allows_excerpt'   => false,
+			'allows_read_more' => false,
+		),
+		'video'      => array(
+			'entity_type'      => 'post_type',
+			'entity_subtype'   => 'testimonial',
+			'label'            => 'Video',
+			'fields'           => array( 'video', 'image', 'quote', 'name' ),
+			'allows_image'     => true,
+			'allows_date'      => false,
+			'allows_excerpt'   => true,
+			'allows_read_more' => false,
+		),
+		'text'       => array(
+			'entity_type'      => 'post_type',
+			'entity_subtype'   => 'testimonial',
+			'label'            => 'Text',
+			'fields'           => array( 'quote', 'name' ),
+			'allows_image'     => false,
+			'allows_date'      => false,
+			'allows_excerpt'   => true,
 			'allows_read_more' => false,
 		),
 	);
@@ -1293,6 +1617,26 @@ function mrn_base_stack_normalize_content_list_display_mode( $mode ) {
 }
 
 /**
+ * Normalize a Content row display style for a selected post type.
+ *
+ * Empty is meaningful: it lets each content item use its own default style.
+ *
+ * @param string $style     Candidate display-style key.
+ * @param string $post_type Selected post type.
+ * @return string
+ */
+function mrn_base_stack_normalize_content_list_display_style( $style, $post_type ) {
+	$style     = sanitize_key( (string) $style );
+	$post_type = sanitize_key( (string) $post_type );
+
+	if ( '' === $style || '' === $post_type || ! function_exists( 'mrn_base_stack_normalize_display_style' ) ) {
+		return '';
+	}
+
+	return mrn_base_stack_normalize_display_style( $style, 'post_type', $post_type, '' );
+}
+
+/**
  * Get the configuration for one content-list display mode.
  *
  * @param string $mode Display-mode key.
@@ -1306,7 +1650,7 @@ function mrn_base_stack_get_content_list_display_mode_config( $mode ) {
 }
 
 /**
- * Build the legacy row-settings display contract for Content Lists.
+ * Build the legacy row-settings display contract for Content.
  *
  * @param array<string, mixed> $args Render arguments.
  * @return array<string, mixed>
@@ -1341,13 +1685,170 @@ function mrn_base_stack_get_content_list_legacy_mode_config( array $args = array
 }
 
 /**
- * Render one query result item for the Content Lists layout.
+ * Prepare testimonial body HTML for Content row rendering.
+ *
+ * @param string $content Testimonial content.
+ * @return string
+ */
+function mrn_base_stack_get_content_list_testimonial_body_html( $content ) {
+	$content = trim( (string) $content );
+
+	if ( '' === $content ) {
+		return '';
+	}
+
+	if ( false === stripos( $content, '<p' ) && false === stripos( $content, '<br' ) ) {
+		$content = wpautop( $content );
+	}
+
+	return wp_kses_post( $content );
+}
+
+/**
+ * Render a testimonial video/media block for a Content row item.
+ *
+ * @param array<string, mixed> $testimonial Testimonial data.
+ * @return string
+ */
+function mrn_base_stack_get_content_list_testimonial_media_markup( array $testimonial ) {
+	$name        = isset( $testimonial['name'] ) ? wp_strip_all_tags( (string) $testimonial['name'] ) : __( 'testimonial', 'mrn-base-stack' );
+	$video_url   = isset( $testimonial['video_url'] ) ? trim( (string) $testimonial['video_url'] ) : '';
+	$video_kind  = isset( $testimonial['video_kind'] ) ? sanitize_key( (string) $testimonial['video_kind'] ) : '';
+	$video_mime  = isset( $testimonial['video_mime'] ) ? trim( (string) $testimonial['video_mime'] ) : '';
+	$image_logo  = isset( $testimonial['image_logo'] ) && is_array( $testimonial['image_logo'] ) ? $testimonial['image_logo'] : array();
+	$image_id    = isset( $image_logo['ID'] ) ? absint( $image_logo['ID'] ) : 0;
+	$video_title = sprintf(
+		/* translators: %s: testimonial author name. */
+		__( 'Video testimonial from %s', 'mrn-base-stack' ),
+		$name
+	);
+
+	ob_start();
+	?>
+	<?php if ( '' !== $video_url ) : ?>
+		<div
+			class="mrn-content-list-row__testimonial-video mrn-testimonial-video mrn-video-row__media mrn-ui__media"
+			data-video-src="<?php echo esc_url( $video_url ); ?>"
+			data-video-kind="<?php echo esc_attr( '' !== $video_kind ? $video_kind : 'remote' ); ?>"
+			data-video-title="<?php echo esc_attr( $video_title ); ?>"
+			<?php if ( 'local' === $video_kind && '' !== $video_mime ) : ?>
+				data-video-mime="<?php echo esc_attr( $video_mime ); ?>"
+			<?php endif; ?>
+			data-video-background="false"
+			data-video-autoplay="false"
+			data-video-muted="false"
+			data-video-loop="false"
+			data-video-controls="true"
+			data-video-delay="250"
+			role="group"
+			aria-label="<?php echo esc_attr( $video_title ); ?>"
+		></div>
+	<?php elseif ( $image_id ) : ?>
+		<div class="mrn-content-list-row__testimonial-image mrn-ui__media">
+			<?php echo wp_get_attachment_image( $image_id, 'large' ); ?>
+		</div>
+	<?php endif; ?>
+	<?php
+
+	return (string) ob_get_clean();
+}
+
+/**
+ * Render one testimonial result item for the Content layout.
+ *
+ * @param WP_Post              $item_post Testimonial post to render.
+ * @param array<string, mixed> $args      Render arguments.
+ * @return string
+ */
+function mrn_base_stack_render_content_list_testimonial_item( WP_Post $item_post, array $args = array() ) {
+	$display_mode = mrn_base_stack_normalize_content_list_display_mode( $args['display_mode'] ?? '' );
+	if ( '' === $display_mode ) {
+		$display_mode = 'text';
+	}
+
+	if ( ! in_array( $display_mode, array( 'video', 'text' ), true ) ) {
+		$display_mode = 'text';
+	}
+
+	$testimonial       = function_exists( 'mrn_base_stack_get_testimonial_data' ) ? mrn_base_stack_get_testimonial_data( $item_post->ID ) : array();
+	$row_display_style = function_exists( 'mrn_base_stack_normalize_content_list_display_style' )
+		? mrn_base_stack_normalize_content_list_display_style( $args['display_style'] ?? '', 'testimonial' )
+		: '';
+	$post_style        = isset( $testimonial['display_style'] ) ? sanitize_key( (string) $testimonial['display_style'] ) : '';
+	$display_style     = '' !== $row_display_style ? $row_display_style : $post_style;
+	$display_style     = function_exists( 'mrn_base_stack_normalize_display_style' )
+		? mrn_base_stack_normalize_display_style( $display_style, 'post_type', 'testimonial', 'story' )
+		: sanitize_key( '' !== $display_style ? $display_style : 'story' );
+	$display_style     = '' !== $display_style ? $display_style : 'story';
+	$name              = isset( $testimonial['name'] ) ? trim( (string) $testimonial['name'] ) : get_the_title( $item_post );
+	$company           = isset( $testimonial['company'] ) ? trim( (string) $testimonial['company'] ) : '';
+	$position          = isset( $testimonial['position'] ) ? trim( (string) $testimonial['position'] ) : '';
+	$content           = isset( $testimonial['content'] ) ? (string) $testimonial['content'] : '';
+	$quote_html        = mrn_base_stack_get_content_list_testimonial_body_html( $content );
+	$media_markup      = 'video' === $display_mode ? mrn_base_stack_get_content_list_testimonial_media_markup( $testimonial ) : '';
+	$item_classes      = array(
+		'mrn-content-list-row__item',
+		'mrn-content-list-row__item--testimonial',
+		'mrn-content-list-row__item--display-' . $display_mode,
+		'mrn-content-list-row__item--display-style-' . $display_style,
+		'mrn-ui__item',
+		'mrn-testimonial',
+		'mrn-testimonial--display-' . $display_style,
+	);
+
+	if ( '' !== $media_markup ) {
+		$item_classes[] = 'mrn-content-list-row__item--has-media';
+	}
+
+	ob_start();
+	?>
+	<li
+		class="<?php echo esc_attr( implode( ' ', array_map( 'sanitize_html_class', $item_classes ) ) ); ?>"
+		data-display-mode="<?php echo esc_attr( $display_mode ); ?>"
+		data-display-style="<?php echo esc_attr( $display_style ); ?>"
+	>
+		<article class="mrn-content-list-row__testimonial">
+			<?php echo $media_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Prepared above with escaped attributes/media. ?>
+
+			<div class="mrn-content-list-row__testimonial-body mrn-ui__body">
+				<?php if ( '' !== $quote_html ) : ?>
+					<blockquote class="mrn-content-list-row__testimonial-quote mrn-ui__text">
+						<?php echo $quote_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized by mrn_base_stack_get_content_list_testimonial_body_html(). ?>
+					</blockquote>
+				<?php endif; ?>
+
+				<?php if ( '' !== $name || '' !== $position || '' !== $company ) : ?>
+					<footer class="mrn-content-list-row__testimonial-meta">
+						<?php if ( '' !== $name ) : ?>
+							<cite class="mrn-content-list-row__testimonial-name"><?php echo esc_html( $name ); ?></cite>
+						<?php endif; ?>
+						<?php if ( '' !== $position || '' !== $company ) : ?>
+							<span class="mrn-content-list-row__testimonial-context">
+								<?php echo esc_html( implode( ', ', array_filter( array( $position, $company ) ) ) ); ?>
+							</span>
+						<?php endif; ?>
+					</footer>
+				<?php endif; ?>
+			</div>
+		</article>
+	</li>
+	<?php
+
+	return (string) ob_get_clean();
+}
+
+/**
+ * Render one query result item for the Content layout.
  *
  * @param WP_Post              $item_post Post to render.
  * @param array<string, mixed> $args Render arguments.
  * @return string
  */
 function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $args = array() ) {
+	if ( 'testimonial' === get_post_type( $item_post ) && function_exists( 'mrn_base_stack_render_content_list_testimonial_item' ) ) {
+		return mrn_base_stack_render_content_list_testimonial_item( $item_post, $args );
+	}
+
 	$display_mode      = mrn_base_stack_normalize_content_list_display_mode( $args['display_mode'] ?? '' );
 	$mode_config       = '' !== $display_mode ? mrn_base_stack_get_content_list_display_mode_config( $display_mode ) : mrn_base_stack_get_content_list_legacy_mode_config( $args );
 	$permalink         = get_permalink( $item_post );
@@ -1802,17 +2303,25 @@ function mrn_base_stack_row_spacing_property_matches_scope( $property, $scope = 
  * @return array<string, string>
  */
 function mrn_base_stack_get_row_spacing_preset_choices( $scope = '' ) {
-	$scope   = mrn_base_stack_normalize_row_spacing_preset_scope( $scope );
+	static $choices_cache = array();
+
+	$scope = mrn_base_stack_normalize_row_spacing_preset_scope( $scope );
+	if ( isset( $choices_cache[ $scope ] ) ) {
+		return $choices_cache[ $scope ];
+	}
+
 	$choices = array(
 		'' => 'Site Default',
 	);
 
 	if ( ! function_exists( 'mrn_site_styles_get_row_spacing_presets_resolved' ) ) {
+		$choices_cache[ $scope ] = $choices;
 		return $choices;
 	}
 
 	$rows = mrn_site_styles_get_row_spacing_presets_resolved();
 	if ( ! is_array( $rows ) ) {
+		$choices_cache[ $scope ] = $choices;
 		return $choices;
 	}
 
@@ -1832,6 +2341,8 @@ function mrn_base_stack_get_row_spacing_preset_choices( $scope = '' ) {
 
 		$choices[ $name ] = $name;
 	}
+
+	$choices_cache[ $scope ] = $choices;
 
 	return $choices;
 }
@@ -1907,12 +2418,14 @@ function mrn_base_stack_get_row_spacing_preset_field( $key, $name = 'row_spacing
 	return array(
 		'key'           => $key,
 		'label'         => $label,
-		'name'          => $name,
-		'aria-label'    => '',
-		'type'          => 'select',
-		'choices'       => mrn_base_stack_get_row_spacing_preset_choices( $scope ),
-		'default_value' => '',
-		'ui'            => 1,
+			'name'          => $name,
+			'aria-label'    => '',
+			'type'          => 'select',
+			'choices'       => array(
+				'' => 'Site Default',
+			),
+			'default_value' => '',
+			'ui'            => 1,
 		'allow_null'    => 1,
 		'instructions'  => $instructions,
 		'wrapper'       => array(
@@ -2821,9 +3334,15 @@ function mrn_base_stack_repeater_uses_primary_item_contract( $repeater_name ) {
  * warnings in ACF Pro.
  *
  * @param array<int, mixed> $fields Field definitions.
+ * @param int               $depth Current recursion depth.
  * @return array<int, mixed>
  */
-function mrn_base_stack_ensure_acf_field_origin_names( array $fields ) {
+function mrn_base_stack_ensure_acf_field_origin_names( array $fields, $depth = 0 ) {
+	$depth = absint( $depth );
+	if ( $depth > 20 ) {
+		return $fields;
+	}
+
 	foreach ( $fields as $index => $field ) {
 		if ( ! is_array( $field ) ) {
 			continue;
@@ -2849,12 +3368,17 @@ function mrn_base_stack_ensure_acf_field_origin_names( array $fields ) {
 			$field['wrapper']['id'] = '';
 		}
 
+		if ( function_exists( 'mrn_base_stack_field_is_reusable_group_clone' ) && mrn_base_stack_field_is_reusable_group_clone( $field ) ) {
+			$fields[ $index ] = $field;
+			continue;
+		}
+
 		if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) ) {
-			$field['sub_fields'] = mrn_base_stack_ensure_acf_field_origin_names( $field['sub_fields'] );
+			$field['sub_fields'] = mrn_base_stack_ensure_acf_field_origin_names( $field['sub_fields'], $depth + 1 );
 		}
 
 		if ( isset( $field['fields'] ) && is_array( $field['fields'] ) ) {
-			$field['fields'] = mrn_base_stack_ensure_acf_field_origin_names( $field['fields'] );
+			$field['fields'] = mrn_base_stack_ensure_acf_field_origin_names( $field['fields'], $depth + 1 );
 		}
 
 		if ( isset( $field['layouts'] ) && is_array( $field['layouts'] ) ) {
@@ -2863,7 +3387,7 @@ function mrn_base_stack_ensure_acf_field_origin_names( array $fields ) {
 					continue;
 				}
 
-				$layout['sub_fields']            = mrn_base_stack_ensure_acf_field_origin_names( $layout['sub_fields'] );
+				$layout['sub_fields']            = mrn_base_stack_ensure_acf_field_origin_names( $layout['sub_fields'], $depth + 1 );
 				$field['layouts'][ $layout_key ] = $layout;
 			}
 		}
@@ -3512,6 +4036,52 @@ function mrn_base_stack_ensure_sub_content_width_field( array $fields ) {
 }
 
 /**
+ * Determine whether a field clones one of the reusable block field groups.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return bool
+ */
+function mrn_base_stack_field_is_reusable_group_clone( array $field ) {
+	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	if ( 'clone' !== $field_type || ! isset( $field['clone'] ) || ! is_array( $field['clone'] ) ) {
+		return false;
+	}
+
+	foreach ( $field['clone'] as $clone_target ) {
+		$clone_key = is_string( $clone_target ) ? sanitize_key( $clone_target ) : '';
+		if ( '' !== $clone_key && 0 === strpos( $clone_key, 'group_mrn_reusable_' ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Determine whether a field list contains a seamless reusable group clone.
+ *
+ * Reusable clone groups already define their own tab structure. Row contracts
+ * should not inject a synthetic Content tab ahead of them because ACF flattens
+ * seamless clone fields into the parent layout UI.
+ *
+ * @param array<int, mixed> $fields Layout/main field definitions.
+ * @return bool
+ */
+function mrn_base_stack_field_list_has_reusable_group_clone( array $fields ) {
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		if ( mrn_base_stack_field_is_reusable_group_clone( $field ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Ensure shared row-spacing preset controls live in the Configs segment.
  *
  * @param array<int, mixed> $fields Layout/main field definitions.
@@ -3519,10 +4089,11 @@ function mrn_base_stack_ensure_sub_content_width_field( array $fields ) {
  * @return array<int, mixed>
  */
 function mrn_base_stack_ensure_row_spacing_preset_field( array $fields, $key_seed = '' ) {
-	$seed              = sanitize_key( (string) $key_seed );
-	$content_tab_index = null;
-	$spacing_tab_index = null;
-	$effects_tab_index = null;
+	$seed                     = sanitize_key( (string) $key_seed );
+	$content_tab_index        = null;
+	$spacing_tab_index        = null;
+	$effects_tab_index        = null;
+	$has_reusable_group_clone = mrn_base_stack_field_list_has_reusable_group_clone( $fields );
 
 	foreach ( $fields as $index => $field ) {
 		if ( ! is_array( $field ) ) {
@@ -3617,7 +4188,7 @@ function mrn_base_stack_ensure_row_spacing_preset_field( array $fields, $key_see
 		}
 	}
 
-	if ( null === $content_tab_index ) {
+	if ( null === $content_tab_index && ! $has_reusable_group_clone ) {
 		array_unshift(
 			$fields,
 			array(
@@ -4296,12 +4867,13 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 			continue;
 		}
 
-		if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) ) {
-			$field['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field['sub_fields'], false );
+		$field_type              = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_name              = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_key               = isset( $field['key'] ) && is_string( $field['key'] ) ? trim( $field['key'] ) : '';
+		$is_reusable_group_clone = mrn_base_stack_field_is_reusable_group_clone( $field );
 
-			$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
-			$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
-			$field_key  = isset( $field['key'] ) && is_string( $field['key'] ) ? trim( $field['key'] ) : '';
+		if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) && ! $is_reusable_group_clone ) {
+			$field['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field['sub_fields'], false );
 
 			if ( 'clone' === $field_type ) {
 				$field['sub_fields'] = mrn_base_stack_ensure_sub_content_width_field( $field['sub_fields'] );
@@ -4345,28 +4917,7 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 		return mrn_base_stack_ensure_acf_field_origin_names( $normalized_fields );
 	}
 
-	$contains_reusable_group_clone = false;
-
-	foreach ( $normalized_fields as $field ) {
-		if ( ! is_array( $field ) ) {
-			continue;
-		}
-
-		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
-		if ( 'clone' !== $field_type || ! isset( $field['clone'] ) || ! is_array( $field['clone'] ) ) {
-			continue;
-		}
-
-		foreach ( $field['clone'] as $clone_target ) {
-			$clone_key = is_string( $clone_target ) ? sanitize_key( $clone_target ) : '';
-			if ( '' !== $clone_key && 0 === strpos( $clone_key, 'group_mrn_reusable_' ) ) {
-				$contains_reusable_group_clone = true;
-				break 2;
-			}
-		}
-	}
-
-	if ( $contains_reusable_group_clone ) {
+	if ( mrn_base_stack_field_list_has_reusable_group_clone( $normalized_fields ) ) {
 		return mrn_base_stack_ensure_acf_field_origin_names( $normalized_fields );
 	}
 
@@ -4432,6 +4983,7 @@ function mrn_base_stack_get_primary_builder_flexible_field_names() {
 			'page_content_rows',
 			'page_after_content_rows',
 			'page_hero_rows',
+			'page_sidebar_rows',
 		);
 
 	/**
@@ -4460,6 +5012,41 @@ function mrn_base_stack_get_primary_builder_flexible_field_names() {
 }
 
 /**
+ * Determine whether a flexible-content field already carries row contracts.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return bool
+ */
+function mrn_base_stack_flexible_field_has_primary_layout_contract( array $field ) {
+	if ( ! empty( $field['_mrn_base_stack_contract_applied'] ) ) {
+		return true;
+	}
+
+	if ( ! isset( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
+		return false;
+	}
+
+	foreach ( $field['layouts'] as $layout ) {
+		if ( ! is_array( $layout ) || ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+			continue;
+		}
+
+		foreach ( $layout['sub_fields'] as $sub_field ) {
+			if ( ! is_array( $sub_field ) ) {
+				continue;
+			}
+
+			$field_name = isset( $sub_field['name'] ) ? sanitize_key( (string) $sub_field['name'] ) : '';
+			if ( 'internal_name' === $field_name ) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
  * Determine whether a flexible-content field should receive shared row contracts.
  *
  * @param array<string, mixed> $field ACF field definition.
@@ -4471,8 +5058,14 @@ function mrn_base_stack_should_apply_primary_layout_contract_to_flexible_field( 
 		return false;
 	}
 
-	$has_layouts  = isset( $field['layouts'] ) && is_array( $field['layouts'] ) && ! empty( $field['layouts'] );
-	$should_apply = $has_layouts;
+	$field_name    = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+	$field_names   = mrn_base_stack_get_primary_builder_flexible_field_names();
+	$has_layouts   = isset( $field['layouts'] ) && is_array( $field['layouts'] ) && ! empty( $field['layouts'] );
+	$should_apply  = $has_layouts && '' !== $field_name && in_array( $field_name, $field_names, true );
+
+	if ( $should_apply && mrn_base_stack_flexible_field_has_primary_layout_contract( $field ) ) {
+		$should_apply = false;
+	}
 
 	/**
 	 * Filter whether a flexible-content field should receive shared row contracts.
@@ -4512,12 +5105,14 @@ function mrn_base_stack_apply_primary_layout_contract_on_flexible_load( $field )
 
 		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
 		$layout['sub_fields']            = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
-		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
-		$field['layouts'][ $layout_key ] = $layout;
-	}
+			$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+			$field['layouts'][ $layout_key ] = $layout;
+		}
 
-	return $field;
-}
+		$field['_mrn_base_stack_contract_applied'] = true;
+
+		return $field;
+	}
 add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_apply_primary_layout_contract_on_flexible_load', 30 );
 add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_apply_primary_layout_contract_on_flexible_load', 30 );
 
@@ -4551,12 +5146,14 @@ function mrn_base_stack_apply_primary_layout_contract_on_flexible_get_field( $fi
 
 		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
 		$layout['sub_fields']            = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
-		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
-		$field['layouts'][ $layout_key ] = $layout;
-	}
+			$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+			$field['layouts'][ $layout_key ] = $layout;
+		}
 
-	return $field;
-}
+		$field['_mrn_base_stack_contract_applied'] = true;
+
+		return $field;
+	}
 add_filter( 'acf/get_field', 'mrn_base_stack_apply_primary_layout_contract_on_flexible_get_field', 30 );
 
 /**
@@ -5561,6 +6158,7 @@ function mrn_base_stack_get_builder_row_flex_supported_fields() {
 		'page_content_rows',
 		'page_after_content_rows',
 		'page_hero_rows',
+		'page_sidebar_rows',
 	);
 
 	/**
@@ -8056,9 +8654,37 @@ function mrn_base_stack_get_two_column_nested_layouts() {
  * @return array<string, array<string, mixed>>
  */
 function mrn_base_stack_get_two_column_column_layouts() {
-	$allowed_names  = mrn_base_stack_get_two_column_column_layout_source_names();
-	$allowed_lookup = array_fill_keys( $allowed_names, true );
-	$layouts        = array();
+	$allowed_names       = mrn_base_stack_get_two_column_column_layout_source_names();
+	$existing_only_names = array();
+	$post_id             = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_post_id' ) ? mrn_base_stack_get_builder_layout_allowlist_post_id() : 0;
+	$allowlist_active    = $post_id > 0
+		&& function_exists( 'mrn_base_stack_is_builder_layout_allowlist_context' )
+		&& mrn_base_stack_is_builder_layout_allowlist_context( $post_id );
+
+	if ( $allowlist_active ) {
+		$base_allowed_lookup = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
+		$used_nested_names   = mrn_base_stack_get_two_column_used_nested_layout_names( $post_id );
+		$existing_only_names = array_values(
+			array_diff(
+				array_filter(
+					array_map( 'sanitize_key', $used_nested_names )
+				),
+				array_keys( $base_allowed_lookup )
+			)
+		);
+		$allowed_names       = array_values(
+			array_unique(
+				array_merge(
+					$allowed_names,
+					$used_nested_names
+				)
+			)
+		);
+	}
+
+	$allowed_lookup       = array_fill_keys( $allowed_names, true );
+	$existing_only_lookup = ! empty( $existing_only_names ) ? array_fill_keys( $existing_only_names, true ) : array();
+	$layouts              = array();
 
 	foreach ( mrn_base_stack_get_two_column_nested_layouts() as $layout_key => $layout ) {
 		if ( ! is_array( $layout ) ) {
@@ -8068,6 +8694,10 @@ function mrn_base_stack_get_two_column_column_layouts() {
 		$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
 		if ( '' === $layout_name || ! isset( $allowed_lookup[ $layout_name ] ) ) {
 			continue;
+		}
+
+		if ( isset( $existing_only_lookup[ $layout_name ] ) ) {
+			$layout['max'] = -1;
 		}
 
 		$layouts[ $layout_key ] = $layout;

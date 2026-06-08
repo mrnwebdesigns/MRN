@@ -144,7 +144,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_content_lists' => array(
 								'key'        => 'layout_mrn_content_lists',
 								'name'       => 'content_lists',
-								'label'      => 'Content Lists - query|pagination|count',
+								'label'      => 'Content - query|pagination|count',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -191,12 +191,12 @@ function mrn_base_stack_register_acf_field_groups() {
 										'default_value' => 'post',
 										'ui'            => 1,
 										'wrapper'       => array(
-											'width' => '33',
+											'width' => '25',
 										),
 									),
 									array(
 										'key'           => 'field_mrn_content_lists_style',
-										'label'         => 'List Style',
+										'label'         => 'List Marker Style',
 										'name'          => 'list_style',
 										'aria-label'    => '',
 										'type'          => 'select',
@@ -204,7 +204,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'default_value' => 'unordered',
 										'ui'            => 1,
 										'wrapper'       => array(
-											'width' => '33',
+											'width' => '25',
 										),
 									),
 									array(
@@ -217,7 +217,22 @@ function mrn_base_stack_register_acf_field_groups() {
 										'default_value' => '',
 										'ui'            => 0,
 										'wrapper'       => array(
-											'width' => '34',
+											'width' => '25',
+										),
+									),
+									array(
+										'key'           => 'field_mrn_content_lists_display_style',
+										'label'         => 'Display Style',
+										'name'          => 'display_style',
+										'aria-label'    => '',
+										'type'          => 'select',
+										'choices'       => mrn_base_stack_get_content_list_display_style_choices(),
+										'default_value' => '',
+										'allow_null'    => 1,
+										'ui'            => 0,
+										'instructions'  => 'Choose a visual treatment for the selected content type. Leave blank to use the content item default.',
+										'wrapper'       => array(
+											'width' => '25',
 										),
 									),
 									array(
@@ -2719,14 +2734,12 @@ function mrn_base_stack_register_acf_field_groups() {
 										'return_format' => 'object',
 										'ui'            => 1,
 										'allow_null'    => 0,
-										'multiple'      => 0,
-										'instructions'  => 'Choose a reusable block from the library. Editing that block updates it everywhere it is used.',
+											'multiple'      => 0,
+											'instructions'  => 'Choose a reusable block from the library. Editing that block updates it everywhere it is used.',
+										),
+										mrn_base_stack_get_anchor_field( 'field_mrn_reusable_block_anchor', 'anchor', 'Placement Anchor ID' ),
 									),
-									mrn_base_stack_get_section_width_field( 'field_mrn_reusable_block_section_width' ),
-									mrn_base_stack_get_anchor_field( 'field_mrn_reusable_block_anchor' ),
-									mrn_base_stack_get_motion_group_field( 'field_mrn_reusable_block_motion_settings' ),
 								),
-							),
 							'layout_mrn_cta_block' => array(
 								'key'        => 'layout_mrn_cta_block',
 								'name'       => 'cta_block',
@@ -2831,16 +2844,10 @@ function mrn_base_stack_register_acf_field_groups() {
 		)
 	);
 
-	$content_builder_fields  = function_exists( 'acf_get_fields' ) ? acf_get_fields( 'group_mrn_content_builder' ) : array();
-	$after_content_layouts   = array();
-	$after_content_field_key = 'field_mrn_page_after_content_rows';
+		$after_content_field_key = 'field_mrn_page_after_content_rows';
 
-	if ( is_array( $content_builder_fields ) && ! empty( $content_builder_fields[0]['layouts'] ) && is_array( $content_builder_fields[0]['layouts'] ) ) {
-		$after_content_layouts = mrn_base_stack_clone_acf_keys_with_prefix( $content_builder_fields[0]['layouts'], 'after_content_' );
-	}
-
-	acf_add_local_field_group(
-		mrn_base_stack_with_effects_tabs(
+		acf_add_local_field_group(
+			mrn_base_stack_with_effects_tabs(
 			array(
 				'key'                   => 'group_mrn_after_content_builder',
 				'title'                 => 'After Content',
@@ -2849,12 +2856,12 @@ function mrn_base_stack_register_acf_field_groups() {
 						'key'               => $after_content_field_key,
 						'label'             => 'After Content',
 						'name'              => 'page_after_content_rows',
-						'aria-label'        => '',
-						'type'              => 'flexible_content',
-						'button_label'      => 'Add After Content Row',
-						'layouts'           => $after_content_layouts,
+							'aria-label'        => '',
+							'type'              => 'flexible_content',
+							'button_label'      => 'Add After Content Row',
+							'layouts'           => array(),
+						),
 					),
-				),
 				'location'              => mrn_base_stack_get_after_content_location_rules(),
 				'menu_order'            => 20,
 				'position'              => 'acf_after_title',

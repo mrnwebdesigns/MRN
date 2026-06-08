@@ -27,6 +27,14 @@
 		return {};
 	}
 
+	function getContentListDisplayStyleMap() {
+		if ( config.contentListDisplayStyles && typeof config.contentListDisplayStyles === 'object' ) {
+			return config.contentListDisplayStyles;
+		}
+
+		return {};
+	}
+
 	function getRowActionWrap( $row ) {
 		var $target = $row.find( '.acf-fc-layout-controls, .acf-fc-layout-actions, .acf-fc-layout-controlls' ).first();
 
@@ -291,17 +299,22 @@
 			var $taxonomyField = getContentListField( $row, 'filter_taxonomy' );
 			var $termsField = getContentListField( $row, 'filter_terms' );
 			var $displayModeField = getContentListField( $row, 'display_mode' );
+			var $displayStyleField = getContentListField( $row, 'display_style' );
 			var $postTypeSelect = getContentListSelect( $postTypeField );
 			var $taxonomySelect = getContentListSelect( $taxonomyField );
 			var $termsSelect = getContentListSelect( $termsField );
 			var $displayModeSelect = getContentListSelect( $displayModeField );
+			var $displayStyleSelect = getContentListSelect( $displayStyleField );
 			var postType = $postTypeSelect.val() || '';
 			var taxonomy = $taxonomySelect.val() || '';
 			var taxonomyMap = getContentListTaxonomyMap();
 			var displayModeMap = getContentListDisplayModeMap();
+			var displayStyleMap = getContentListDisplayStyleMap();
 			var allowedTaxonomies = taxonomyMap[ postType ] || {};
 			var allowedDisplayModes = displayModeMap[ postType ] || {};
+			var allowedDisplayStyles = displayStyleMap[ postType ] || {};
 			var displayModeUiChanged = false;
+			var displayStyleUiChanged = false;
 			var taxonomyUiChanged = false;
 			var termsUiChanged = false;
 
@@ -325,6 +338,23 @@
 
 				if ( displayModeUiChanged ) {
 					$displayModeSelect.trigger( 'change' );
+				}
+			}
+
+			if ( $displayStyleSelect.length ) {
+				var displayStyle = $displayStyleSelect.val() || '';
+
+				if ( displayStyle && ! Object.prototype.hasOwnProperty.call( allowedDisplayStyles, displayStyle ) ) {
+					displayStyle = '';
+				}
+
+				displayStyleUiChanged = rebuildSelectOptions( $displayStyleSelect, allowedDisplayStyles, displayStyle, {
+					allowBlank: true,
+					blankLabel: 'Use Content Default'
+				} );
+
+				if ( displayStyleUiChanged ) {
+					$displayStyleSelect.trigger( 'change' );
 				}
 			}
 

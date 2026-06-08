@@ -15,6 +15,8 @@ Before activating on a site handoff:
 - Add CSS overrides in `style.css` using existing parent variables/classes where possible.
 - Add template overrides by mirroring parent template paths (for example `template-parts/content.php`).
 - Add new template files not present in the parent as new entities/features are introduced.
+- For custom ACF flexible-content row wrappers, use `mrn_base_stack_get_row_spacing_attr_html_for_current_row()` and keep `mrn-content-builder__row` on the wrapper. The parent helper hydrates missing row-spacing selector fields from raw flexible-content meta so disabled/skipped ACF rows do not shift spacing onto the wrong visible row.
+- Keep direct `mrn_base_stack_get_row_spacing_contract( $row )` calls for code paths that already pass complete row data.
 
 ## Included Starter Template
 

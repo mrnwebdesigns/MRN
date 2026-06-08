@@ -9,7 +9,32 @@ $context = is_array( $args ?? null ) ? $args : array();
 $row     = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
 $block   = $row['block'] ?? null;
 
-if ( ! function_exists( 'mrn_rbl_render_block' ) || ! ( $block instanceof WP_Post ) ) {
+if ( ! ( $block instanceof WP_Post ) && is_numeric( $block ) ) {
+	$block = get_post( (int) $block );
+}
+
+if ( ! ( $block instanceof WP_Post ) && function_exists( 'mrn_rbl_get_block_post' ) ) {
+	$block = mrn_rbl_get_block_post( $block );
+}
+
+if ( ! ( $block instanceof WP_Post ) ) {
+	return;
+}
+
+if ( function_exists( 'mrn_base_stack_render_reusable_block_as_builder_row' ) ) {
+	$rendered_as_layout = mrn_base_stack_render_reusable_block_as_builder_row(
+		$block,
+		$row,
+		isset( $context['post_id'] ) ? (int) $context['post_id'] : 0,
+		isset( $context['index'] ) ? (int) $context['index'] : 0
+	);
+
+	if ( $rendered_as_layout ) {
+		return;
+	}
+}
+
+if ( ! function_exists( 'mrn_rbl_render_block' ) ) {
 	return;
 }
 

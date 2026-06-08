@@ -544,6 +544,131 @@ function mrn_base_stack_get_page_specific_layout_key_map() {
 }
 
 /**
+ * Determine whether a host reusable-block row value should override saved block fields.
+ *
+ * @param mixed $value Field value.
+ * @return bool
+ */
+function mrn_base_stack_reusable_block_host_value_is_meaningful( $value ) {
+	if ( is_array( $value ) ) {
+		foreach ( $value as $item ) {
+			if ( mrn_base_stack_reusable_block_host_value_is_meaningful( $item ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	if ( is_bool( $value ) ) {
+		return true === $value;
+	}
+
+	if ( is_scalar( $value ) ) {
+		return '' !== trim( (string) $value );
+	}
+
+	return null !== $value;
+}
+
+/**
+ * Convert a reusable block post into the matching page builder row contract.
+ *
+ * Reusable block placement is intended to behave like a saved instance of the
+ * page row layout, not like a parallel rendering system.
+ *
+ * @param WP_Post              $block    Reusable block post.
+ * @param array<string, mixed> $host_row The `reusable_block` row placing it.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_reusable_block_builder_row( WP_Post $block, array $host_row = array() ) {
+	if ( ! function_exists( 'get_fields' ) ) {
+		return array();
+	}
+
+	$layout_map = mrn_base_stack_get_page_specific_layout_map();
+	$layout     = isset( $layout_map[ $block->post_type ] ) ? (string) $layout_map[ $block->post_type ] : '';
+
+	if ( '' === $layout ) {
+		return array();
+	}
+
+	$block_fields = get_fields( $block->ID );
+	$row          = is_array( $block_fields ) ? $block_fields : array();
+
+	$row['acf_fc_layout']                  = $layout;
+	$row['__mrn_reusable_block_id']        = (int) $block->ID;
+	$row['__mrn_reusable_block_post_type'] = (string) $block->post_type;
+
+	$override_fields = apply_filters(
+		'mrn_base_stack_reusable_block_placement_override_fields',
+		array( 'anchor' ),
+		$block,
+		$host_row
+	);
+	$override_fields = is_array( $override_fields ) ? array_filter( array_map( 'sanitize_key', $override_fields ) ) : array( 'anchor' );
+
+	foreach ( $override_fields as $field_name ) {
+		if ( ! array_key_exists( $field_name, $host_row ) ) {
+			continue;
+		}
+
+		if ( mrn_base_stack_reusable_block_host_value_is_meaningful( $host_row[ $field_name ] ) ) {
+			$row[ $field_name ] = $host_row[ $field_name ];
+		}
+	}
+
+	return $row;
+}
+
+/**
+ * Render a reusable block through its matching page builder row layout and return markup.
+ *
+ * @param WP_Post              $block    Reusable block post.
+ * @param array<string, mixed> $host_row The `reusable_block` row placing it.
+ * @param int                  $post_id  Host post ID.
+ * @param int                  $index    Host row index.
+ * @return string
+ */
+function mrn_base_stack_get_reusable_block_builder_row_markup( WP_Post $block, array $host_row, $post_id, $index ) {
+	$row = mrn_base_stack_get_reusable_block_builder_row( $block, $host_row );
+
+	if ( empty( $row['acf_fc_layout'] ) ) {
+		return '';
+	}
+
+	$row['__mrn_builder_post_id']    = (int) $post_id;
+	$row['__mrn_builder_field_name'] = isset( $host_row['__mrn_builder_field_name'] ) ? (string) $host_row['__mrn_builder_field_name'] : '';
+	$row['__mrn_builder_row_index']  = (int) $index;
+
+	ob_start();
+	$rendered = mrn_base_stack_render_builder_row( $row, $post_id, $index );
+	$markup   = (string) ob_get_clean();
+
+	return $rendered && '' !== trim( $markup ) ? $markup : '';
+}
+
+/**
+ * Render a reusable block through its matching page builder row layout.
+ *
+ * @param WP_Post              $block   Reusable block post.
+ * @param array<string, mixed> $host_row The `reusable_block` row placing it.
+ * @param int                  $post_id Host post ID.
+ * @param int                  $index   Host row index.
+ * @return bool
+ */
+function mrn_base_stack_render_reusable_block_as_builder_row( WP_Post $block, array $host_row, $post_id, $index ) {
+	$markup = mrn_base_stack_get_reusable_block_builder_row_markup( $block, $host_row, $post_id, $index );
+
+	if ( '' === $markup ) {
+		return false;
+	}
+
+	echo $markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Row markup is escaped by the matching builder template.
+	return true;
+}
+
+/**
  * Normalize block field data for use in AJAX responses.
  *
  * @param mixed $value Field value.
@@ -727,7 +852,9 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	$row_values              = function_exists( 'get_row' ) ? get_row( true ) : array();
 	$row_values              = is_array( $row_values ) ? $row_values : array();
 	$internal                = mrn_base_stack_get_builder_sub_field_value( 'internal_name', array(), $row_values );
+	$label                   = mrn_base_stack_get_builder_sub_field_value( 'label', array(), $row_values );
 	$heading                 = mrn_base_stack_get_builder_sub_field_value( 'heading', array(), $row_values );
+	$title_text              = '' !== $heading ? $heading : $label;
 	static $post_title_cache = array();
 
 	$is_layout_title_ajax = false;
@@ -745,7 +872,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	 * Keep labels simple and avoid expensive per-row lookups so save/publish stays responsive.
 	 */
 	if ( $is_layout_title_ajax ) {
-		if ( '' !== $heading ) {
+		if ( '' !== $title_text ) {
 			$heading_prefixes = array(
 				'basic'            => 'Basic',
 				'cta'              => 'CTA',
@@ -760,7 +887,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 				'two_column_split' => 'Two Column Split',
 				'video'            => 'Video',
 				'body_text'        => 'Text',
-				'content_lists'    => 'Content Lists',
+				'content_lists'    => 'Content',
 				'wpforms'          => 'WPForms',
 				'searchwp_form'    => 'SearchWP Form',
 				'card'             => 'Card',
@@ -768,10 +895,10 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 			$prefix           = isset( $heading_prefixes[ $layout_name ] ) ? $heading_prefixes[ $layout_name ] : '';
 
 			if ( '' !== $prefix ) {
-				return $prefix . ': ' . esc_html( wp_strip_all_tags( $heading ) );
+				return $prefix . ': ' . esc_html( wp_strip_all_tags( $title_text ) );
 			}
 
-			return esc_html( wp_strip_all_tags( $heading ) );
+			return esc_html( wp_strip_all_tags( $title_text ) );
 		}
 
 		return $title;
@@ -801,48 +928,48 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'basic' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Basic: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Basic: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'cta' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'CTA: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'CTA: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'grid' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Grid: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Grid: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'faq' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'FAQs/Accordion: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'FAQs/Accordion: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'slider' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Slider: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Slider: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'tabbed_layout' === $layout_name ) {
-		if ( '' !== $heading ) {
-			return 'Tabbed Layout: ' . esc_html( wp_strip_all_tags( $heading ) );
+		if ( '' !== $title_text ) {
+			return 'Tabbed Layout: ' . esc_html( wp_strip_all_tags( $title_text ) );
 		}
 
 		$tabs = array_key_exists( 'tabs', $row_values ) ? $row_values['tabs'] : get_sub_field( 'tabs' );
@@ -863,79 +990,79 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'logos' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-			return '<div class="mrn-shell-section mrn-shell-section--logos">Logos: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
+		return '<div class="mrn-shell-section mrn-shell-section--logos">Logos: ' . esc_html( wp_strip_all_tags( $title_text ) ) . '</div>';
 	}
 
 	if ( 'stats' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-			return '<div class="mrn-shell-section mrn-shell-section--stats">Stats: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
+		return '<div class="mrn-shell-section mrn-shell-section--stats">Stats: ' . esc_html( wp_strip_all_tags( $title_text ) ) . '</div>';
 	}
 
 	if ( 'showcase' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-			return '<div class="mrn-shell-section mrn-shell-section--showcase">Showcase: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
+		return '<div class="mrn-shell-section mrn-shell-section--showcase">Showcase: ' . esc_html( wp_strip_all_tags( $title_text ) ) . '</div>';
 	}
 
 	if ( 'image_content' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Image: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Image: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'two_column_split' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Two Column Split: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Two Column Split: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'video' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Video: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Video: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'body_text' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Text: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Text: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'content_lists' === $layout_name ) {
-		if ( '' !== $heading ) {
-			return 'Content Lists: ' . esc_html( wp_strip_all_tags( $heading ) );
+		if ( '' !== $title_text ) {
+			return 'Content: ' . esc_html( wp_strip_all_tags( $title_text ) );
 		}
 
 		$post_type = sanitize_key( mrn_base_stack_get_builder_sub_field_value( 'list_post_type', array(), $row_values ) );
 		$choices   = function_exists( 'mrn_base_stack_get_content_list_post_type_choices' ) ? mrn_base_stack_get_content_list_post_type_choices() : array();
 
 		if ( isset( $choices[ $post_type ] ) ) {
-			return 'Content Lists: ' . esc_html( $choices[ $post_type ] );
+			return 'Content: ' . esc_html( $choices[ $post_type ] );
 		}
 
-		return 'Content Lists';
+		return 'Content';
 	}
 
 	if ( 'wpforms' === $layout_name ) {
-		if ( '' !== $heading ) {
-			return 'WPForms: ' . esc_html( wp_strip_all_tags( $heading ) );
+		if ( '' !== $title_text ) {
+			return 'WPForms: ' . esc_html( wp_strip_all_tags( $title_text ) );
 		}
 
 		$form    = array_key_exists( 'form', $row_values ) ? $row_values['form'] : get_sub_field( 'form' );
@@ -961,8 +1088,8 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'searchwp_form' === $layout_name ) {
-		if ( '' !== $heading ) {
-			return 'SearchWP Form: ' . esc_html( wp_strip_all_tags( $heading ) );
+		if ( '' !== $title_text ) {
+			return 'SearchWP Form: ' . esc_html( wp_strip_all_tags( $title_text ) );
 		}
 
 		$form_id    = array_key_exists( 'searchwp_form_id', $row_values ) ? $row_values['searchwp_form_id'] : get_sub_field( 'searchwp_form_id' );
@@ -977,17 +1104,21 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'card' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-			return '<div class="mrn-shell-section mrn-shell-section--card">Card: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
+		return '<div class="mrn-shell-section mrn-shell-section--card">Card: ' . esc_html( wp_strip_all_tags( $title_text ) ) . '</div>';
 	}
 
 	return $title;
 }
 add_filter( 'acf/fields/flexible_content/layout_title/name=page_content_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/name=page_after_content_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/name=page_hero_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/name=page_sidebar_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 
 /**
