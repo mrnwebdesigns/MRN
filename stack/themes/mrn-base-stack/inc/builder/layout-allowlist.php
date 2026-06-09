@@ -123,7 +123,7 @@ function mrn_base_stack_build_sanitized_builder_layout_allowlist_payload( array 
 	$allowlists = array();
 
 	foreach ( $targets as $field_name => $target ) {
-		$catalog            = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name ) );
+		$catalog            = mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name );
 		$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog, $field_name );
 		if ( isset( $catalog_input[ $field_name ] ) ) {
 			$posted_catalog_names = array_values(
@@ -343,12 +343,71 @@ function mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( array $
 
 		$catalog[ $name ] = array(
 			'label'        => $label,
-			'layout'       => $layout,
 			'is_page_only' => false !== stripos( $label, '(Page Only)' ),
 		);
 	}
 
 	return $catalog;
+}
+
+/**
+ * Resolve a lightweight layout catalog for an allowlist target.
+ *
+ * @param string $field_name Flexible-content field name.
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name ) {
+	static $cache = array();
+
+	$field_name = sanitize_key( (string) $field_name );
+	if ( isset( $cache[ $field_name ] ) ) {
+		return $cache[ $field_name ];
+	}
+
+	if ( 'page_content_rows' === $field_name ) {
+		$cache[ $field_name ] = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field(
+			mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name )
+		);
+
+		return $cache[ $field_name ];
+	}
+
+	$content_catalog = array();
+	if ( function_exists( 'mrn_base_stack_get_content_builder_source_layouts' ) ) {
+		$content_catalog = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field(
+			array(
+				'layouts' => mrn_base_stack_get_content_builder_source_layouts(),
+			)
+		);
+	}
+
+	$source_names = array();
+	if ( 'page_hero_rows' === $field_name && function_exists( 'mrn_base_stack_get_hero_builder_layout_source_names' ) ) {
+		$source_names = mrn_base_stack_get_hero_builder_layout_source_names();
+	} elseif ( 'page_after_content_rows' === $field_name && function_exists( 'mrn_base_stack_get_after_content_layout_source_names' ) ) {
+		$source_names = mrn_base_stack_get_after_content_layout_source_names();
+	} elseif ( 'page_sidebar_rows' === $field_name && function_exists( 'mrn_base_stack_get_sidebar_layout_source_names' ) ) {
+		$source_names = mrn_base_stack_get_sidebar_layout_source_names();
+	}
+
+	if ( empty( $content_catalog ) || empty( $source_names ) ) {
+		$cache[ $field_name ] = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field(
+			mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name )
+		);
+
+		return $cache[ $field_name ];
+	}
+
+	$catalog = array();
+	foreach ( $source_names as $layout_name ) {
+		$layout_name = sanitize_key( (string) $layout_name );
+		if ( isset( $content_catalog[ $layout_name ] ) ) {
+			$catalog[ $layout_name ] = $content_catalog[ $layout_name ];
+		}
+	}
+
+	$cache[ $field_name ] = $catalog;
+	return $cache[ $field_name ];
 }
 
 /**
@@ -1179,7 +1238,7 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 			continue;
 		}
 
-		$catalog            = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name ) );
+		$catalog            = mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name );
 		$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog, $field_name );
 		$label              = isset( $target['label'] ) ? (string) $target['label'] : ucfirst( str_replace( array( '-', '_' ), ' ', $field_name ) );
 
@@ -1716,7 +1775,7 @@ function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post 
 			continue;
 		}
 
-		$catalog                    = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name ) );
+		$catalog                    = mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name );
 		$allowlists[ $field_name ] = mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, $catalog );
 	}
 

@@ -72,16 +72,10 @@ function mrn_base_stack_get_sidebar_location_rules() {
 function mrn_base_stack_get_sidebar_layout_source_names() {
 	$defaults = array(
 		'body_text',
-		'basic',
 		'content_lists',
+		'basic',
 		'cta',
 		'image_content',
-		'external_widget',
-		'wpforms',
-		'searchwp_form',
-		'video',
-		'logos',
-		'faq',
 	);
 
 	$names = function_exists( 'mrn_base_stack_normalize_builder_layout_source_names' )
@@ -91,8 +85,8 @@ function mrn_base_stack_get_sidebar_layout_source_names() {
 		)
 		: $defaults;
 
-	return function_exists( 'mrn_base_stack_filter_builder_layout_source_names_for_context' )
-		? mrn_base_stack_filter_builder_layout_source_names_for_context( $names )
+	return function_exists( 'mrn_base_stack_filter_hidden_builder_layout_source_names' )
+		? mrn_base_stack_filter_hidden_builder_layout_source_names( $names )
 		: $names;
 }
 

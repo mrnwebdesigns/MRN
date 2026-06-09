@@ -340,15 +340,13 @@ add_action( 'save_post', 'mrn_base_stack_save_builder_row_flex_layout_meta', 20,
 /**
  * Get post types where the native WordPress editor should be hidden.
  *
- * Defaults to builder-supported post types so the Classic Editor body field
- * does not compete with the theme-owned ACF builder.
+ * Defaults to no post types so the Classic Editor body field remains available
+ * unless a site explicitly opts into hiding it.
  *
  * @return array<int, string>
  */
 function mrn_base_stack_get_native_editor_hidden_post_types() {
-	$post_types = function_exists( 'mrn_base_stack_get_builder_supported_post_types' )
-		? mrn_base_stack_get_builder_supported_post_types()
-		: array( 'page', 'post' );
+	$post_types = array();
 
 	/**
 	 * Filter post types where the native editor should be hidden.

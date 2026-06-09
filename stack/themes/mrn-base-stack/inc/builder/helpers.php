@@ -49,6 +49,63 @@ function mrn_base_stack_clone_acf_keys_with_prefix( array $value, $prefix ) {
 }
 
 /**
+ * Hydrate shallow ACF local flexible-content layouts with their local subfields.
+ *
+ * ACF stores local flexible-content subfields flattened under the parent field
+ * and groups them by `parent_layout` during load. Repeating that grouping here
+ * lets cloned builder areas reuse complete layouts without hydrating the full
+ * field through the heavier runtime path.
+ *
+ * @param array<string, mixed> $field ACF flexible-content field definition.
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_hydrated_local_flexible_layouts( array $field ) {
+	if ( empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) || ! function_exists( 'acf_get_fields' ) ) {
+		return array();
+	}
+
+	$sub_fields = acf_get_fields( $field );
+	if ( ! is_array( $sub_fields ) ) {
+		return array();
+	}
+
+	$grouped = array();
+	foreach ( $sub_fields as $sub_field ) {
+		if ( ! is_array( $sub_field ) ) {
+			continue;
+		}
+
+		$parent_layout = isset( $sub_field['parent_layout'] ) ? (string) $sub_field['parent_layout'] : '';
+		if ( '' === $parent_layout ) {
+			continue;
+		}
+
+		if ( ! isset( $grouped[ $parent_layout ] ) ) {
+			$grouped[ $parent_layout ] = array();
+		}
+
+		$grouped[ $parent_layout ][] = $sub_field;
+	}
+
+	$layouts = array();
+	foreach ( $field['layouts'] as $layout_key => $layout ) {
+		if ( ! is_array( $layout ) ) {
+			continue;
+		}
+
+		$key = isset( $layout['key'] ) ? (string) $layout['key'] : (string) $layout_key;
+		if ( '' === $key || empty( $grouped[ $key ] ) ) {
+			continue;
+		}
+
+		$layout['sub_fields'] = $grouped[ $key ];
+		$layouts[ $layout_key ] = $layout;
+	}
+
+	return $layouts;
+}
+
+/**
  * Get the raw Content builder layout definitions for cloned builder areas.
  *
  * The per-entry layout allowlist filters intentionally narrow the Content
@@ -61,8 +118,15 @@ function mrn_base_stack_clone_acf_keys_with_prefix( array $value, $prefix ) {
 function mrn_base_stack_get_content_builder_source_layouts() {
 	if ( function_exists( 'acf_get_local_field' ) ) {
 		$field = acf_get_local_field( 'field_mrn_page_content_rows' );
-		if ( is_array( $field ) && ! empty( $field['layouts'] ) && is_array( $field['layouts'] ) ) {
+		if ( is_array( $field ) && mrn_base_stack_builder_field_has_complete_layouts( $field ) ) {
 			return $field['layouts'];
+		}
+
+		if ( is_array( $field ) ) {
+			$layouts = mrn_base_stack_get_hydrated_local_flexible_layouts( $field );
+			if ( ! empty( $layouts ) ) {
+				return $layouts;
+			}
 		}
 	}
 
@@ -72,7 +136,7 @@ function mrn_base_stack_get_content_builder_source_layouts() {
 		}
 
 		$fields = acf_get_fields( 'group_mrn_content_builder' );
-		if ( ! is_array( $fields ) || empty( $fields[0]['layouts'] ) || ! is_array( $fields[0]['layouts'] ) ) {
+		if ( ! is_array( $fields ) || empty( $fields[0] ) || ! mrn_base_stack_builder_field_has_complete_layouts( $fields[0] ) ) {
 			return array();
 		}
 
@@ -87,31 +151,106 @@ function mrn_base_stack_get_content_builder_source_layouts() {
 }
 
 /**
+ * Get top-level layout names that can be added to After Content rows.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_after_content_layout_source_names() {
+	$defaults = array(
+		'basic',
+		'two_column_split',
+		'logos',
+		'reusable_block',
+		'cta',
+	);
+
+	$names = mrn_base_stack_normalize_builder_layout_source_names(
+		apply_filters( 'mrn_base_stack_after_content_layout_source_names', $defaults ),
+		$defaults
+	);
+
+	return mrn_base_stack_filter_hidden_builder_layout_source_names( $names );
+}
+
+/**
  * Clone Content builder layouts for the After Content builder field.
  *
+ * @param int $post_id Optional post ID for existing-row compatibility.
  * @return array<string, array<string, mixed>>
  */
-function mrn_base_stack_get_after_content_builder_layouts() {
-	static $layouts_cache = null;
+function mrn_base_stack_get_after_content_builder_layouts( $post_id = 0 ) {
+	static $layouts_cache = array();
 
-	if ( is_array( $layouts_cache ) ) {
-		return $layouts_cache;
+	$post_id = absint( $post_id );
+	if ( $post_id < 1 && function_exists( 'mrn_base_stack_get_builder_layout_allowlist_post_id' ) ) {
+		$post_id = mrn_base_stack_get_builder_layout_allowlist_post_id();
+	}
+
+	$cache_key = $post_id > 0 ? 'post_' . $post_id : 'global';
+
+	if ( isset( $layouts_cache[ $cache_key ] ) ) {
+		return $layouts_cache[ $cache_key ];
 	}
 
 	if ( ! function_exists( 'mrn_base_stack_clone_acf_keys_with_prefix' ) ) {
-		$layouts_cache = array();
-		return $layouts_cache;
+		$layouts_cache[ $cache_key ] = array();
+		return $layouts_cache[ $cache_key ];
 	}
 
 	$content_layouts = mrn_base_stack_get_content_builder_source_layouts();
 	if ( empty( $content_layouts ) ) {
-		$layouts_cache = array();
-		return $layouts_cache;
+		$layouts_cache[ $cache_key ] = array();
+		return $layouts_cache[ $cache_key ];
 	}
 
-	$layouts_cache = mrn_base_stack_clone_acf_keys_with_prefix( $content_layouts, 'after_content_' );
+	$allowed_names       = mrn_base_stack_get_after_content_layout_source_names();
+	$existing_only_names = array();
 
-	return $layouts_cache;
+	if ( $post_id > 0 && function_exists( 'mrn_base_stack_get_builder_layout_allowlist_used_layout_names' ) ) {
+		$used_names            = mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, 'page_after_content_rows' );
+		$base_allowed_lookup   = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
+		$existing_only_names   = array_values(
+			array_diff(
+				array_filter(
+					array_map( 'sanitize_key', $used_names )
+				),
+				array_keys( $base_allowed_lookup )
+			)
+		);
+		$allowed_names         = array_values(
+			array_unique(
+				array_merge(
+					$allowed_names,
+					$used_names
+				)
+			)
+		);
+	}
+
+	$allowed_lookup       = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
+	$existing_only_lookup = ! empty( $existing_only_names ) ? array_fill_keys( $existing_only_names, true ) : array();
+	$after_layouts        = array();
+
+	foreach ( $content_layouts as $layout_key => $layout ) {
+		if ( ! is_array( $layout ) ) {
+			continue;
+		}
+
+		$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+		if ( '' === $layout_name || ! isset( $allowed_lookup[ $layout_name ] ) ) {
+			continue;
+		}
+
+		if ( isset( $existing_only_lookup[ $layout_name ] ) ) {
+			$layout['max'] = -1;
+		}
+
+		$after_layouts[ $layout_key ] = $layout;
+	}
+
+	$layouts_cache[ $cache_key ] = ! empty( $after_layouts ) ? mrn_base_stack_clone_acf_keys_with_prefix( $after_layouts, 'after_content_' ) : array();
+
+	return $layouts_cache[ $cache_key ];
 }
 
 /**
@@ -395,7 +534,7 @@ function mrn_base_stack_get_tabbed_layout_source_names() {
 		$defaults
 	);
 
-	return mrn_base_stack_filter_builder_layout_source_names_for_context( $names );
+	return mrn_base_stack_filter_hidden_builder_layout_source_names( $names );
 }
 
 /**
@@ -420,7 +559,7 @@ function mrn_base_stack_get_two_column_column_layout_source_names() {
 		$defaults
 	);
 
-	return mrn_base_stack_filter_builder_layout_source_names_for_context( $names );
+	return mrn_base_stack_filter_hidden_builder_layout_source_names( $names );
 }
 
 /**
@@ -520,11 +659,8 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 	static $layouts_cache = array();
 	static $loading       = false;
 
-	$post_id          = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_post_id' ) ? mrn_base_stack_get_builder_layout_allowlist_post_id() : 0;
-	$allowlist_active = $post_id > 0
-		&& function_exists( 'mrn_base_stack_is_builder_layout_allowlist_context' )
-		&& mrn_base_stack_is_builder_layout_allowlist_context( $post_id );
-	$cache_key        = $allowlist_active ? 'post_' . $post_id : 'global';
+	$post_id   = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_post_id' ) ? mrn_base_stack_get_builder_layout_allowlist_post_id() : 0;
+	$cache_key = $post_id > 0 ? 'post_' . $post_id : 'global';
 
 	if ( isset( $layouts_cache[ $cache_key ] ) ) {
 		return $layouts_cache[ $cache_key ];
@@ -554,50 +690,24 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 	}
 
 	$allowed_names       = mrn_base_stack_get_tabbed_layout_source_names();
-	$existing_only_names = array();
-	if (
-		$allowlist_active
-		&& function_exists( 'mrn_base_stack_get_builder_layout_allowlist_catalog_from_field' )
-		&& function_exists( 'mrn_base_stack_get_builder_layout_allowlist_effective_names' )
-	) {
-		$catalog = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( $field );
-
-		if ( ! empty( $catalog ) ) {
-			$effective_names = mrn_base_stack_get_builder_layout_allowlist_effective_names( $post_id, 'page_content_rows', $catalog );
-			$effective_names = is_array( $effective_names ) ? $effective_names : array();
-			$effective_lookup = array_fill_keys(
-				array_map( 'sanitize_key', $effective_names ),
-				true
-			);
-			$allowed_names    = array_values(
-				array_filter(
-					$allowed_names,
-					static function ( $layout_name ) use ( $effective_lookup ) {
-						return isset( $effective_lookup[ $layout_name ] );
-					}
-				)
-				);
-		}
-
-		$base_allowed_lookup = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
-		$used_nested_names   = mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id );
-		$existing_only_names = array_values(
-			array_diff(
-				array_filter(
-					array_map( 'sanitize_key', $used_nested_names )
-				),
-				array_keys( $base_allowed_lookup )
+	$base_allowed_lookup = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
+	$used_nested_names   = $post_id > 0 ? mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id ) : array();
+	$existing_only_names = array_values(
+		array_diff(
+			array_filter(
+				array_map( 'sanitize_key', $used_nested_names )
+			),
+			array_keys( $base_allowed_lookup )
+		)
+	);
+	$allowed_names       = array_values(
+		array_unique(
+			array_merge(
+				$allowed_names,
+				$used_nested_names
 			)
-		);
-		$allowed_names = array_values(
-			array_unique(
-				array_merge(
-					$allowed_names,
-					$used_nested_names
-				)
-			)
-		);
-	}
+		)
+	);
 
 	$allowed_names  = array_values(
 		array_diff(
@@ -1323,8 +1433,6 @@ function mrn_base_stack_normalize_select_defaults_in_field_tree( $field ) {
 	return $field;
 }
 add_filter( 'acf/validate_field', 'mrn_base_stack_normalize_select_defaults_in_field_tree', 20 );
-add_filter( 'acf/load_field', 'mrn_base_stack_normalize_select_defaults_in_field_tree', 20 );
-add_filter( 'acf/prepare_field', 'mrn_base_stack_normalize_select_defaults_in_field_tree', 20 );
 
 /**
  * Ensure select fields always include required core defaults.
@@ -5154,7 +5262,6 @@ function mrn_base_stack_apply_primary_layout_contract_on_flexible_get_field( $fi
 
 		return $field;
 	}
-add_filter( 'acf/get_field', 'mrn_base_stack_apply_primary_layout_contract_on_flexible_get_field', 30 );
 
 /**
  * Recursively move row effect controls into a dedicated Effects tab.
