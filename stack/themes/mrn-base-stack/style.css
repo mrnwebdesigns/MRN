@@ -4626,6 +4626,61 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	gap: var(--mrn-space-stack-md);
 }
 
+.mrn-reusable-block--partners {
+	background: var(--mrn-partners-block-bg, #f8f9fc);
+	text-align: center;
+}
+
+.mrn-reusable-block--partners .mrn-partners-block__inner {
+	gap: clamp(2rem, 4vw, 3.375rem);
+}
+
+.mrn-reusable-block--partners .mrn-partners-block__header {
+	gap: var(--mrn-space-stack-xs);
+	margin: 0 auto;
+	max-width: 60rem;
+}
+
+.mrn-reusable-block--partners .mrn-partners-block__heading,
+.mrn-reusable-block--partners .mrn-partners-block__subheading {
+	color: var(--site-color-mid-dark-gray, #5e6776);
+	margin: 0 auto;
+	max-width: 60rem;
+}
+
+.mrn-reusable-block--partners .mrn-partners-block__grid {
+	align-items: center;
+	display: grid;
+	gap: 1.875rem clamp(2rem, 5vw, 3.75rem);
+	grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
+}
+
+.mrn-reusable-block--partners .mrn-partners-block__item {
+	align-items: center;
+	display: flex;
+	justify-content: center;
+	min-width: 0;
+}
+
+.mrn-reusable-block--partners .mrn-partners-block__link {
+	align-items: center;
+	border-radius: 4px;
+	display: inline-flex;
+	justify-content: center;
+}
+
+.mrn-reusable-block--partners .mrn-partners-block__link:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 6px;
+}
+
+.mrn-reusable-block--partners .mrn-partners-block__item img {
+	display: block;
+	height: auto;
+	max-width: 70px;
+	width: 100%;
+}
+
 .mrn-content-list-row__header {
 	display: grid;
 	gap: var(--mrn-space-stack-xs);
@@ -5883,7 +5938,9 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 .mrn-layout-section--reusable-grid.mrn-layout-surface,
 .mrn-layout-section--reusable-grid .mrn-layout-container.mrn-layout-surface,
 .mrn-layout-section--reusable-faq.mrn-layout-surface,
-.mrn-layout-section--reusable-faq .mrn-layout-container.mrn-layout-surface {
+.mrn-layout-section--reusable-faq .mrn-layout-container.mrn-layout-surface,
+.mrn-layout-section--reusable-partners.mrn-layout-surface,
+.mrn-layout-section--reusable-partners .mrn-layout-container.mrn-layout-surface {
 	padding-top: var(--mrn-row-padding-top, var(--mrn-row-space-fallback));
 	padding-right: var(--mrn-row-padding-right);
 	padding-bottom: var(--mrn-row-padding-bottom, var(--mrn-row-space-fallback));

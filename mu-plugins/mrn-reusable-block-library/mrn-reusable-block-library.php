@@ -3,7 +3,7 @@
  * Plugin Name: Reusable Block Library (MU)
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.16
+ * Version: 0.1.17
  */
 
 defined('ABSPATH') || exit;
@@ -94,6 +94,17 @@ function mrn_rbl_get_post_type_definitions(): array {
             'supports'       => array('title', 'revisions'),
             'starter_slug'   => 'reusable-search-form',
             'starter_title'  => 'Search Form',
+        ),
+        'mrn_reusable_partner' => array(
+            'singular'       => 'Partners',
+            'plural'         => 'Partners',
+            'list_label'     => 'Partners',
+            'add_new_label'  => 'Add New Partners',
+            'description'    => 'Partner logo sections that can be selected and placed into pages later.',
+            'menu_icon'      => 'dashicons-groups',
+            'supports'       => array('title', 'revisions'),
+            'starter_slug'   => 'reusable-partners',
+            'starter_title'  => 'Partners',
         ),
     );
 
@@ -335,6 +346,7 @@ function mrn_rbl_get_template_slug_for_post_type(string $post_type): string {
         'mrn_reusable_faq'   => 'faq',
         'mrn_reusable_grid'  => 'content-grid',
         'mrn_reusable_search' => 'search-form',
+        'mrn_reusable_partner' => 'partners',
     );
 
     return isset($map[$post_type]) ? $map[$post_type] : 'generic-block';
@@ -4608,6 +4620,124 @@ function mrn_rbl_register_acf_field_groups(): void {
                     'param'    => 'post_type',
                     'operator' => '==',
                     'value'    => 'mrn_reusable_search',
+                ),
+            ),
+        ),
+        'position'              => 'acf_after_title',
+        'style'                 => 'default',
+        'label_placement'       => 'top',
+        'instruction_placement' => 'label',
+        'active'                => true,
+        'show_in_rest'          => 1,
+    )));
+
+    acf_add_local_field_group(mrn_rbl_with_effects_fields(array(
+        'key'    => 'group_mrn_reusable_partner',
+        'title'  => 'Partners Fields',
+        'fields' => array(
+            array(
+                'key'       => 'field_mrn_reusable_partner_content_tab',
+                'label'     => 'Content',
+                'type'      => 'tab',
+                'placement' => 'top',
+            ),
+            mrn_rbl_get_inline_text_field('field_mrn_reusable_partner_label', 'Label', 'label'),
+            mrn_rbl_get_label_tag_field('field_mrn_reusable_partner_label_tag'),
+            mrn_rbl_get_inline_text_field('field_mrn_reusable_partner_heading', 'Heading', 'heading'),
+            mrn_rbl_get_text_tag_field('field_mrn_reusable_partner_heading_tag', 'Heading Tag', 'heading_tag', 'h2'),
+            mrn_rbl_get_inline_text_field('field_mrn_reusable_partner_subheading', 'Subheading', 'subheading'),
+            mrn_rbl_get_text_tag_field('field_mrn_reusable_partner_subheading_tag', 'Subheading Tag', 'subheading_tag', 'p'),
+            array(
+                'key'          => 'field_mrn_reusable_partner_logo_items',
+                'label'        => 'Logos',
+                'name'         => 'logo_items',
+                'type'         => 'repeater',
+                'layout'       => 'row',
+                'collapsed'    => 'field_mrn_reusable_partner_logo_link',
+                'min'          => 1,
+                'button_label' => 'Add Logo',
+                'sub_fields'   => array(
+                    array(
+                        'key'           => 'field_mrn_reusable_partner_logo_image',
+                        'label'         => 'Image',
+                        'name'          => 'image',
+                        'type'          => 'image',
+                        'return_format' => 'array',
+                        'preview_size'  => 'medium',
+                        'library'       => 'all',
+                        'wrapper'       => array(
+                            'width' => '50',
+                        ),
+                    ),
+                    array(
+                        'key'           => 'field_mrn_reusable_partner_logo_link',
+                        'label'         => 'Link',
+                        'name'          => 'link',
+                        'type'          => 'link',
+                        'return_format' => 'array',
+                        'wrapper'       => array(
+                            'width' => '50',
+                        ),
+                    ),
+                ),
+            ),
+            array(
+                'key'       => 'field_mrn_reusable_partner_config_tab',
+                'label'     => 'Configs',
+                'type'      => 'tab',
+                'placement' => 'top',
+            ),
+            mrn_rbl_get_anchor_field('field_mrn_reusable_partner_anchor'),
+            array(
+                'key'           => 'field_mrn_reusable_partner_background_color',
+                'label'         => 'Background color',
+                'name'          => 'background_color',
+                'type'          => 'select',
+                'choices'       => mrn_rbl_get_site_color_choices(),
+                'ui'            => 1,
+                'allow_null'    => 1,
+                'instructions'  => 'Select from Site Colors when available.',
+            ),
+            array(
+                'key'           => 'field_mrn_reusable_partner_bottom_accent',
+                'label'         => 'Bottom Accent',
+                'name'          => 'bottom_accent',
+                'type'          => 'true_false',
+                'ui'            => 1,
+                'default_value' => 0,
+                'ui_on_text'    => 'On',
+                'ui_off_text'   => 'Off',
+                'wrapper'       => array(
+                    'width' => '50',
+                ),
+            ),
+            array(
+                'key'           => 'field_mrn_reusable_partner_bottom_accent_style',
+                'label'         => 'Bottom Accent Style',
+                'name'          => 'bottom_accent_style',
+                'type'          => 'select',
+                'choices'       => function_exists('mrn_site_styles_get_graphic_element_choices')
+                    ? mrn_site_styles_get_graphic_element_choices()
+                    : array(
+                        '' => 'Select a Graphic Element',
+                    ),
+                'default_value' => '',
+                'ui'            => 1,
+                'allow_null'    => 1,
+                'instructions'  => 'Choose a saved graphic element from Site Styles.',
+                'wrapper'       => array(
+                    'width' => '50',
+                ),
+            ),
+            mrn_rbl_get_effects_tab_field('field_mrn_reusable_partner_effects_tab'),
+            mrn_rbl_get_motion_group_field('field_mrn_reusable_partner_motion_settings'),
+        ),
+        'location' => array(
+            array(
+                array(
+                    'param'    => 'post_type',
+                    'operator' => '==',
+                    'value'    => 'mrn_reusable_partner',
                 ),
             ),
         ),

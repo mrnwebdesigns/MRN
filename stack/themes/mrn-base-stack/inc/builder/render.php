@@ -192,6 +192,7 @@ function mrn_base_stack_get_reusable_block_shell_modifier( $post_type ) {
 		'mrn_reusable_faq'    => 'mrn-layout-section--reusable-faq',
 		'mrn_reusable_grid'   => 'mrn-layout-section--reusable-grid',
 		'mrn_reusable_search' => 'mrn-layout-section--reusable-search-form',
+		'mrn_reusable_partner' => 'mrn-layout-section--reusable-partners',
 	);
 
 	$post_type = sanitize_key( (string) $post_type );
@@ -213,6 +214,7 @@ function mrn_base_stack_get_reusable_block_row_modifier( $post_type ) {
 		'mrn_reusable_faq'    => 'mrn-content-builder__row--faq-block',
 		'mrn_reusable_grid'   => 'mrn-content-builder__row--content-grid',
 		'mrn_reusable_search' => 'mrn-content-builder__row--searchwp-form',
+		'mrn_reusable_partner' => 'mrn-content-builder__row--partners',
 	);
 
 	$post_type = sanitize_key( (string) $post_type );
@@ -524,6 +526,7 @@ function mrn_base_stack_get_page_specific_layout_map() {
 		'mrn_reusable_grid'   => 'grid',
 		'mrn_reusable_faq'    => 'faq',
 		'mrn_reusable_search' => 'searchwp_form',
+		'mrn_reusable_partner' => 'logos',
 	);
 }
 
@@ -540,6 +543,7 @@ function mrn_base_stack_get_page_specific_layout_key_map() {
 		'mrn_reusable_grid'   => 'layout_mrn_grid',
 		'mrn_reusable_faq'    => 'layout_mrn_faq',
 		'mrn_reusable_search' => 'layout_mrn_searchwp_form',
+		'mrn_reusable_partner' => 'layout_mrn_logos',
 	);
 }
 
