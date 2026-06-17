@@ -441,6 +441,11 @@ add_filter( 'mrn_universal_sticky_bar_post_types', 'mrn_base_stack_add_editorial
  * @return void
  */
 function mrn_base_stack_enqueue_shared_repeater_admin_assets() {
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( function_exists( 'mrn_base_stack_admin_is_safe_acf_editor_helper_screen' ) && ! mrn_base_stack_admin_is_safe_acf_editor_helper_screen( $screen ) ) {
+		return;
+	}
+
 	$repeater_controls_path    = get_template_directory() . '/js/admin-repeater-controls.js';
 	$repeater_controls_ver     = file_exists( $repeater_controls_path ) ? (string) filemtime( $repeater_controls_path ) : _S_VERSION;
 	$repeater_styles_path      = get_template_directory() . '/css/admin-repeater-controls.css';

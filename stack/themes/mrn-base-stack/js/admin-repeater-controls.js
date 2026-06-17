@@ -8,10 +8,27 @@
 	// Keep this off by default to avoid costly submit/heartbeat restore passes on very large editors.
 	var enableRowBodyDetachment = false;
 
+	function isUnsafeAcfEditorContext() {
+		var body = document.body;
+
+		if ( ! body ) {
+			return false;
+		}
+
+		return body.classList.contains( 'block-editor-page' ) ||
+			body.classList.contains( 'post-type-acf-field-group' ) ||
+			body.classList.contains( 'post-type-acf-field' ) ||
+			body.classList.contains( 'acf-admin-field-group' );
+	}
+
+	if ( isUnsafeAcfEditorContext() ) {
+		return;
+	}
+
 	function isInitialRepeaterCollapseEnabled() {
 		return !! (
 			window.mrnBaseStackBuilderAdmin &&
-			window.mrnBaseStackBuilderAdmin.initialCollapseEnabled
+			window.mrnBaseStackBuilderAdmin.initialRepeaterCollapseEnabled
 		);
 	}
 
@@ -329,7 +346,17 @@
 	function isClassicPostEditorScreen() {
 		var body = document.body;
 
-		return !! body && ( body.classList.contains( 'post-php' ) || body.classList.contains( 'post-new-php' ) );
+		return !! body &&
+			! isUnsafeAcfEditorContext() &&
+			( body.classList.contains( 'post-php' ) || body.classList.contains( 'post-new-php' ) );
+	}
+
+	function isInitialRepeaterFieldEligible( $field ) {
+		if ( ! $field || ! $field.length ) {
+			return false;
+		}
+
+		return ! $field.closest( '.layout, .acf-row, .acf-clone' ).length;
 	}
 
 		var initialRepeaterCollapseQueue = [];
@@ -482,6 +509,10 @@
 
 		getRepeaterFields( context ).each( function () {
 			var $field = $( this );
+
+			if ( ! isInitialRepeaterFieldEligible( $field ) ) {
+				return;
+			}
 
 			if ( $field.data( 'mrnInitialCollapseDone' ) ) {
 				return;

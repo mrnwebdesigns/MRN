@@ -352,6 +352,10 @@ function mrn_editor_lockdown_is_classic_post_screen( $screen ) {
 		return false;
 	}
 
+	if ( in_array( sanitize_key( (string) $screen->post_type ), array( 'acf-field', 'acf-field-group' ), true ) ) {
+		return false;
+	}
+
 	if ( method_exists( $screen, 'is_block_editor' ) && $screen->is_block_editor() ) {
 		return false;
 	}

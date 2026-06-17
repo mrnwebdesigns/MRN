@@ -6,6 +6,96 @@
  */
 
 /**
+ * Check whether stack ACF admin helpers should run on the current screen.
+ *
+ * @param mixed $screen Current admin screen.
+ * @return bool
+ */
+function mrn_base_stack_admin_is_safe_acf_editor_helper_screen( $screen ) {
+	if ( ! $screen instanceof WP_Screen ) {
+		return false;
+	}
+
+	if ( method_exists( $screen, 'is_block_editor' ) && $screen->is_block_editor() ) {
+		return false;
+	}
+
+	$post_type = sanitize_key( (string) $screen->post_type );
+	$screen_id = sanitize_key( (string) $screen->id );
+	$base      = sanitize_key( (string) $screen->base );
+	$excluded  = array(
+		'acf-field',
+		'acf-field-group',
+	);
+
+	if ( in_array( $post_type, $excluded, true ) || in_array( $screen_id, $excluded, true ) || in_array( $base, $excluded, true ) ) {
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Determine whether automatic ACF row-level collapsing may run.
+ *
+ * Automatic flexible-content/repeater row collapsing touches ACF internals and
+ * is disabled by default. Client sites must explicitly opt in before any page
+ * load row traversal or collapse-control clicks can run.
+ *
+ * @param string $row_type  ACF row type: flexible_content or repeater.
+ * @param string $post_type Current post type slug.
+ * @return bool
+ */
+function mrn_base_stack_admin_is_initial_acf_row_collapse_enabled( $row_type, $post_type = '' ) {
+	$row_type  = sanitize_key( (string) $row_type );
+	$post_type = sanitize_key( (string) $post_type );
+
+	/**
+	 * Legacy opt-in for the previous automatic ACF row precollapse behavior.
+	 *
+	 * Defaults to false so client sites do not traverse or mutate existing ACF
+	 * flexible-content/repeater rows on editor load unless they intentionally
+	 * restore the old behavior.
+	 *
+	 * @param bool   $enabled   Whether automatic ACF row collapsing is enabled.
+	 * @param string $row_type  ACF row type: flexible_content or repeater.
+	 * @param string $post_type Current post type slug.
+	 */
+	$enabled = (bool) apply_filters( 'mrn_base_stack_admin_initial_collapse_enabled', false, $row_type, $post_type );
+
+	/**
+	 * Shared opt-in for automatic ACF row-level collapsing.
+	 *
+	 * @param bool   $enabled   Whether automatic ACF row collapsing is enabled.
+	 * @param string $row_type  ACF row type: flexible_content or repeater.
+	 * @param string $post_type Current post type slug.
+	 */
+	$enabled = (bool) apply_filters( 'mrn_base_stack_admin_acf_row_collapse_enabled', $enabled, $row_type, $post_type );
+
+	if ( 'flexible_content' === $row_type ) {
+		/**
+		 * Opt in to automatic flexible-content row collapsing.
+		 *
+		 * @param bool   $enabled   Whether automatic flexible row collapsing is enabled.
+		 * @param string $post_type Current post type slug.
+		 */
+		return (bool) apply_filters( 'mrn_base_stack_admin_initial_flexible_row_collapse_enabled', $enabled, $post_type );
+	}
+
+	if ( 'repeater' === $row_type ) {
+		/**
+		 * Opt in to automatic repeater row collapsing.
+		 *
+		 * @param bool   $enabled   Whether automatic repeater row collapsing is enabled.
+		 * @param string $post_type Current post type slug.
+		 */
+		return (bool) apply_filters( 'mrn_base_stack_admin_initial_repeater_row_collapse_enabled', $enabled, $post_type );
+	}
+
+	return $enabled;
+}
+
+/**
  * Enqueue builder admin assets for supported classic editor screens.
  *
  * @param string $hook_suffix Current admin page hook suffix.
@@ -18,6 +108,10 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 
 	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 	if ( ! $screen instanceof WP_Screen ) {
+		return;
+	}
+
+	if ( ! mrn_base_stack_admin_is_safe_acf_editor_helper_screen( $screen ) ) {
 		return;
 	}
 
@@ -66,27 +160,32 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 		? mrn_base_stack_get_builder_row_flex_supported_fields()
 		: array( 'page_content_rows', 'page_after_content_rows', 'page_hero_rows', 'page_sidebar_rows' );
 
+	$initial_flexible_collapse_enabled = mrn_base_stack_admin_is_initial_acf_row_collapse_enabled( 'flexible_content', $post_type );
+	$initial_repeater_collapse_enabled = mrn_base_stack_admin_is_initial_acf_row_collapse_enabled( 'repeater', $post_type );
+
 	wp_localize_script(
 		'mrn-base-stack-content-builder-admin',
 		'mrnBaseStackBuilderAdmin',
 		array(
-			'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
-			'nonce'                    => wp_create_nonce( 'mrn-base-stack-convert-reusable-block' ),
-			'action'                   => 'mrn_base_stack_prepare_page_specific_block',
-			'actionTitle'              => 'Convert to page-specific',
-			'confirmTitle'             => 'Replace With Page-Specific Copy',
-			'confirmText'              => 'This will replace the reusable block reference in this row with a page-only copy you can edit here. The original reusable block will stay in the library unchanged.',
-			'confirmButton'            => 'Convert to Page-Specific',
-			'cancelButton'             => 'Cancel',
-			'emptySelectionText'       => 'Choose a reusable block first.',
-			'loadingText'              => 'Converting block...',
-			'successText'              => 'This row is now a page-specific block.',
-			'errorText'                => 'The block could not be converted.',
-			'contentListTaxonomies'    => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
-			'contentListDisplayModes'  => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
-			'contentListDisplayStyles' => function_exists( 'mrn_base_stack_get_content_list_display_style_choice_map' ) ? mrn_base_stack_get_content_list_display_style_choice_map() : array(),
-			'initialCollapseEnabled'   => (bool) apply_filters( 'mrn_base_stack_admin_initial_collapse_enabled', true ),
-			'rowFlex'                  => array(
+			'ajaxUrl'                        => admin_url( 'admin-ajax.php' ),
+			'nonce'                          => wp_create_nonce( 'mrn-base-stack-convert-reusable-block' ),
+			'action'                         => 'mrn_base_stack_prepare_page_specific_block',
+			'actionTitle'                    => 'Convert to page-specific',
+			'confirmTitle'                   => 'Replace With Page-Specific Copy',
+			'confirmText'                    => 'This will replace the reusable block reference in this row with a page-only copy you can edit here. The original reusable block will stay in the library unchanged.',
+			'confirmButton'                  => 'Convert to Page-Specific',
+			'cancelButton'                   => 'Cancel',
+			'emptySelectionText'             => 'Choose a reusable block first.',
+			'loadingText'                    => 'Converting block...',
+			'successText'                    => 'This row is now a page-specific block.',
+			'errorText'                      => 'The block could not be converted.',
+			'contentListTaxonomies'          => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
+			'contentListDisplayModes'        => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
+			'contentListDisplayStyles'       => function_exists( 'mrn_base_stack_get_content_list_display_style_choice_map' ) ? mrn_base_stack_get_content_list_display_style_choice_map() : array(),
+			'initialCollapseEnabled'         => $initial_flexible_collapse_enabled || $initial_repeater_collapse_enabled,
+			'initialFlexibleCollapseEnabled' => $initial_flexible_collapse_enabled,
+			'initialRepeaterCollapseEnabled' => $initial_repeater_collapse_enabled,
+			'rowFlex'                        => array(
 				'nonce'           => wp_create_nonce( 'mrn-base-stack-row-flex-layout' ),
 				'nonceField'      => 'mrn_base_stack_row_flex_nonce',
 				'payloadField'    => 'mrn_base_stack_row_flex_payload',

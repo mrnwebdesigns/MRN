@@ -7,8 +7,51 @@
 
 	var config = mrnBaseStackBuilderAdmin;
 
+	function isUnsafeAcfEditorContext() {
+		var body = document.body;
+
+		if ( ! body ) {
+			return false;
+		}
+
+		return body.classList.contains( 'block-editor-page' ) ||
+			body.classList.contains( 'post-type-acf-field-group' ) ||
+			body.classList.contains( 'post-type-acf-field' ) ||
+			body.classList.contains( 'acf-admin-field-group' );
+	}
+
+	if ( isUnsafeAcfEditorContext() ) {
+		return;
+	}
+
 	function isInitialFlexibleCollapseEnabled() {
-		return !! ( config && config.initialCollapseEnabled );
+		return !! ( config && config.initialFlexibleCollapseEnabled );
+	}
+
+	function isClassicPostEditorScreen() {
+		var body = document.body;
+
+		return !! body &&
+			! isUnsafeAcfEditorContext() &&
+			( body.classList.contains( 'post-php' ) || body.classList.contains( 'post-new-php' ) );
+	}
+
+	function getInitialFlexibleFieldNames() {
+		if ( config.rowFlex && $.isArray( config.rowFlex.supportedFields ) ) {
+			return config.rowFlex.supportedFields;
+		}
+
+		return [ 'page_content_rows', 'page_after_content_rows', 'page_hero_rows', 'page_sidebar_rows' ];
+	}
+
+	function isInitialFlexibleFieldEligible( $flexField ) {
+		var fieldName = $flexField.attr( 'data-name' ) || '';
+
+		if ( ! fieldName || getInitialFlexibleFieldNames().indexOf( fieldName ) === -1 ) {
+			return false;
+		}
+
+		return ! $flexField.closest( '.layout, .acf-row, .acf-clone' ).length;
 	}
 
 	function getContentListTaxonomyMap() {
@@ -553,7 +596,7 @@
 	}
 
 	function queueInitialFlexibleRows( context ) {
-		if ( ! isInitialFlexibleCollapseEnabled() ) {
+		if ( ! isInitialFlexibleCollapseEnabled() || ! isClassicPostEditorScreen() ) {
 			initialFlexibleCollapseQueue.length = 0;
 			return;
 		}
@@ -562,6 +605,10 @@
 
 			$( context || document ).find( '.acf-field-flexible-content' ).each( function() {
 				var $flexField = $( this );
+
+				if ( ! isInitialFlexibleFieldEligible( $flexField ) ) {
+					return;
+				}
 
 				if ( $flexField.data( 'mrn-initial-collapse-done' ) ) {
 				return;
