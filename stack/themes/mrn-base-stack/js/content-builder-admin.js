@@ -129,8 +129,70 @@
 		return $flexField.attr( 'data-name' ) === 'page_content_rows';
 	}
 
+	function getReusableBlockEditUrl( blockId ) {
+		var pattern = config.editBlockUrlPattern || '';
+
+		if ( ! pattern || ! blockId ) {
+			return '';
+		}
+
+		return pattern.replace( '__MRN_BLOCK_ID__', encodeURIComponent( blockId ) );
+	}
+
+	function updateReusableBlockEditLink( $row ) {
+		var $field = $row.find( '.acf-field[data-name="block"]' ).first();
+		var $input = $field.find( '> .acf-input' ).first();
+		var blockId;
+		var editUrl;
+		var $linkWrap;
+		var $link;
+
+		if ( ! $field.length || ! $input.length ) {
+			return;
+		}
+
+		blockId = getSelectedBlockId( $row );
+		editUrl = getReusableBlockEditUrl( blockId );
+		$linkWrap = $field.find( '.mrn-reusable-block-edit-link' ).first();
+
+		if ( ! editUrl ) {
+			$linkWrap.remove();
+			return;
+		}
+
+		if ( ! $linkWrap.length ) {
+			$linkWrap = $( '<p />' ).addClass( 'mrn-reusable-block-edit-link' );
+			$link = $( '<a />' )
+				.attr( {
+					target: '_blank',
+					rel: 'noopener',
+					title: config.editBlockTitle || config.editBlockText || 'Edit selected reusable block'
+				} )
+				.append( $( '<span />' ).addClass( 'dashicons dashicons-edit' ).attr( 'aria-hidden', 'true' ) )
+				.append( $( '<span />' ).addClass( 'mrn-reusable-block-edit-link__text' ) );
+			$linkWrap.append( $link );
+			$input.append( $linkWrap );
+		} else {
+			$link = $linkWrap.find( 'a' ).first();
+		}
+
+		$link
+			.attr( 'href', editUrl )
+			.attr( 'aria-label', config.editBlockTitle || config.editBlockText || 'Edit selected reusable block' );
+		$link.find( '.mrn-reusable-block-edit-link__text' ).text( config.editBlockText || 'Edit selected reusable block' );
+	}
+
+	function ensureReusableBlockEditLinks( context ) {
+		var $context = $( context || document );
+
+		$context.find( '.layout[data-layout="reusable_block"]' ).add( $context.filter( '.layout[data-layout="reusable_block"]' ) ).not( '.acf-clone' ).each( function() {
+			updateReusableBlockEditLink( $( this ) );
+		} );
+	}
+
 	function bootBuilderAdminUi( context ) {
 		ensureConversionActions( context );
+		ensureReusableBlockEditLinks( context );
 		scheduleContentListFilterSync( context );
 	}
 
@@ -926,6 +988,10 @@
 		}
 
 		scheduleContentListFilterSync( $row );
+	} );
+
+	$( document ).on( 'change select2:select select2:clear select2:unselect', '.layout[data-layout="reusable_block"] .acf-field[data-name="block"] select, .layout[data-layout="reusable_block"] .acf-field[data-name="block"] input[type="hidden"]', function() {
+		updateReusableBlockEditLink( $( this ).closest( '.layout[data-layout="reusable_block"]' ) );
 	} );
 
 	$( document ).on( 'change', '.layout[data-layout="content_lists"] .acf-field[data-name="display_mode"] select', function() {

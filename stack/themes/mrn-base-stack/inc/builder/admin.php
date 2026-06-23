@@ -132,11 +132,13 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 		wp_enqueue_editor();
 	}
 
+	$content_builder_admin_js_path = get_template_directory() . '/js/content-builder-admin.js';
+
 	wp_enqueue_script(
 		'mrn-base-stack-content-builder-admin',
 		get_template_directory_uri() . '/js/content-builder-admin.js',
 		array( 'jquery' ),
-		_S_VERSION,
+		file_exists( $content_builder_admin_js_path ) ? (string) filemtime( $content_builder_admin_js_path ) : _S_VERSION,
 		true
 	);
 
@@ -176,6 +178,9 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 			'confirmButton'                  => 'Convert to Page-Specific',
 			'cancelButton'                   => 'Cancel',
 			'emptySelectionText'             => 'Choose a reusable block first.',
+			'editBlockUrlPattern'            => admin_url( 'post.php?post=__MRN_BLOCK_ID__&action=edit' ),
+			'editBlockText'                  => 'Edit selected reusable block',
+			'editBlockTitle'                 => 'Edit this reusable block in a new tab',
 			'loadingText'                    => 'Converting block...',
 			'successText'                    => 'This row is now a page-specific block.',
 			'errorText'                      => 'The block could not be converted.',
@@ -252,6 +257,29 @@ function mrn_base_stack_admin_builder_action_styles() {
 			width: 20px;
 			height: 20px;
 			line-height: 20px;
+		}
+
+		.layout[data-layout="reusable_block"] .mrn-reusable-block-edit-link {
+			margin: 8px 0 0;
+		}
+
+		.layout[data-layout="reusable_block"] .mrn-reusable-block-edit-link a {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			text-decoration: none;
+		}
+
+		.layout[data-layout="reusable_block"] .mrn-reusable-block-edit-link a:hover,
+		.layout[data-layout="reusable_block"] .mrn-reusable-block-edit-link a:focus {
+			text-decoration: underline;
+		}
+
+		.layout[data-layout="reusable_block"] .mrn-reusable-block-edit-link .dashicons {
+			font-size: 16px;
+			width: 16px;
+			height: 16px;
+			line-height: 16px;
 		}
 
 		.layout[data-layout="content_lists"] > .acf-fields {
