@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 }
 
 final class MRN_Google_Fonts {
-	const VERSION = '0.5.0';
+	const VERSION = '0.5.2';
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
 	const PAGE_SLUG = 'google-fonts';
@@ -80,6 +80,7 @@ final class MRN_Google_Fonts {
 			'body_font_italics' => 0,
 			'heading_font_italics' => 0,
 			'accent_font_italics' => 0,
+			'font_faces' => array(),
 			'body_font_targets' => array('body_text', 'form_controls', 'buttons'),
 			'heading_font_targets' => array('headings'),
 			'accent_font_targets' => array(),
@@ -131,6 +132,7 @@ final class MRN_Google_Fonts {
 		$sanitized['body_font_italics'] = !empty($input['body_font_italics']) ? 1 : 0;
 		$sanitized['heading_font_italics'] = !empty($input['heading_font_italics']) ? 1 : 0;
 		$sanitized['accent_font_italics'] = !empty($input['accent_font_italics']) ? 1 : 0;
+		$sanitized['font_faces'] = self::sanitize_google_font_faces_config($input['font_faces'] ?? $defaults['font_faces'], false);
 		$sanitized['body_font_targets'] = self::sanitize_font_targets_value($input['body_font_targets'] ?? $defaults['body_font_targets']);
 		$sanitized['heading_font_targets'] = self::sanitize_font_targets_value($input['heading_font_targets'] ?? $defaults['heading_font_targets']);
 		$sanitized['accent_font_targets'] = self::sanitize_font_targets_value($input['accent_font_targets'] ?? $defaults['accent_font_targets']);
@@ -1016,7 +1018,7 @@ final class MRN_Google_Fonts {
 			return '';
 		}
 
-		$css_url = isset($manifest['css_url']) ? esc_url_raw((string) $manifest['css_url']) : '';
+		$css_url = self::resolve_local_manifest_css_url($manifest);
 		if ('' === $css_url || !wp_http_validate_url($css_url)) {
 			return '';
 		}
@@ -1054,17 +1056,81 @@ final class MRN_Google_Fonts {
 	 * @param string               $signature Current request signature.
 	 */
 	private static function local_manifest_matches_signature(array $manifest, string $signature): bool {
-		$manifest_signature = isset($manifest['signature']) ? (string) $manifest['signature'] : '';
+		$manifest_signature = self::sanitize_local_manifest_signature($manifest['signature'] ?? '');
+		$signature = self::sanitize_local_manifest_signature($signature);
 		if ('' === $signature || '' === $manifest_signature || !hash_equals($manifest_signature, $signature)) {
 			return false;
 		}
 
-		$css_path = isset($manifest['css_path']) ? (string) $manifest['css_path'] : '';
-		if ('' !== $css_path && !file_exists($css_path)) {
+		$css_path = self::resolve_local_manifest_css_path($manifest);
+		if ('' === $css_path || !file_exists($css_path)) {
 			return false;
 		}
 
-		return !empty($manifest['css_url']);
+		return '' !== self::resolve_local_manifest_css_url($manifest);
+	}
+
+	/**
+	 * Resolve a local manifest CSS path against the current uploads directory.
+	 *
+	 * Manifest paths are absolute and can become stale after a site pull, hosting
+	 * migration, or container path change. The request signature is stable, so use
+	 * it to rediscover the local build before falling back to remote Google CSS.
+	 *
+	 * @param array<string, mixed> $manifest Saved local manifest.
+	 */
+	private static function resolve_local_manifest_css_path(array $manifest): string {
+		$css_path = isset($manifest['css_path']) ? wp_normalize_path((string) $manifest['css_path']) : '';
+		if ('' !== $css_path && file_exists($css_path)) {
+			return $css_path;
+		}
+
+		$signature = self::sanitize_local_manifest_signature($manifest['signature'] ?? '');
+		if ('' === $signature) {
+			return '';
+		}
+
+		$root = self::get_local_assets_root();
+		if (empty($root['basedir'])) {
+			return '';
+		}
+
+		$derived_path = trailingslashit((string) $root['basedir']) . $signature . '/local-fonts.css';
+
+		return file_exists($derived_path) ? wp_normalize_path($derived_path) : '';
+	}
+
+	/**
+	 * Resolve a local manifest CSS URL against the current uploads URL.
+	 *
+	 * @param array<string, mixed> $manifest Saved local manifest.
+	 */
+	private static function resolve_local_manifest_css_url(array $manifest): string {
+		$signature = self::sanitize_local_manifest_signature($manifest['signature'] ?? '');
+		if ('' !== $signature) {
+			$root = self::get_local_assets_root();
+			if (!empty($root['basedir']) && !empty($root['baseurl'])) {
+				$derived_path = trailingslashit((string) $root['basedir']) . $signature . '/local-fonts.css';
+				if (file_exists($derived_path)) {
+					return esc_url_raw(trailingslashit((string) $root['baseurl']) . $signature . '/local-fonts.css');
+				}
+			}
+		}
+
+		$css_url = isset($manifest['css_url']) ? esc_url_raw((string) $manifest['css_url']) : '';
+
+		return wp_http_validate_url($css_url) ? $css_url : '';
+	}
+
+	/**
+	 * Sanitize and validate a local-build request signature.
+	 *
+	 * @param mixed $signature Raw signature value.
+	 */
+	private static function sanitize_local_manifest_signature($signature): string {
+		$signature = strtolower(sanitize_text_field((string) $signature));
+
+		return preg_match('/^[a-f0-9]{40}$/', $signature) ? $signature : '';
 	}
 
 	/**
@@ -2547,6 +2613,34 @@ final class MRN_Google_Fonts {
 			);
 		}
 
+		$families = self::apply_configured_google_font_faces($families, $settings);
+
+		/**
+		 * Filter normalized Google Fonts face requests before the CSS2 URL is built.
+		 *
+		 * Return an array keyed by family name. Each family can define normal and italic
+		 * weight lists, for example:
+		 *
+		 * array(
+		 *     'Source Sans 3' => array(
+		 *         'normal' => array(300, 400, 600, 700),
+		 *         'italic' => array(),
+		 *     ),
+		 *     'Lora' => array(
+		 *         'normal' => array(600, 700),
+		 *         'italic' => array(600, 700),
+		 *     ),
+		 * )
+		 *
+		 * Existing weight and italic settings are converted into this shape first, so
+		 * sites that do not use the filter keep the previous request behavior.
+		 *
+		 * @param array<string, array<string, array<int, string>>> $families Normalized family face map.
+		 * @param array<string, mixed>                             $settings Plugin settings.
+		 */
+		$families = apply_filters('mrn_google_fonts_family_faces', $families, $settings);
+		$families = self::sanitize_google_font_faces_config($families, true);
+
 		if (empty($families)) {
 			return array(
 				'url' => '',
@@ -2558,26 +2652,24 @@ final class MRN_Google_Fonts {
 		$query_parts = array();
 
 		foreach ($families as $family => $family_config) {
-			$weights = isset($family_config['weights']) && is_array($family_config['weights']) ? $family_config['weights'] : array();
-			$weight_values = array_slice(array_values(array_unique(array_filter($weights))), 0, 4);
-			sort($weight_values, SORT_NUMERIC);
-			if (empty($weight_values)) {
-				$weight_values = array('400');
+			$normal_weights = self::normalize_google_font_weight_values($family_config['normal'] ?? array(), 4, true);
+			$italic_weights = self::normalize_google_font_weight_values($family_config['italic'] ?? array(), 4, true);
+			if (empty($normal_weights) && empty($italic_weights)) {
+				$normal_weights = array('400');
 			}
-			$include_italics = !empty($family_config['italics']);
 
 			$family_param = str_replace('%20', '+', rawurlencode(trim((string) $family)));
-			if ($include_italics) {
+			if (!empty($italic_weights)) {
 				$tuples = array();
-				foreach ($weight_values as $weight_value) {
+				foreach ($normal_weights as $weight_value) {
 					$tuples[] = '0,' . $weight_value;
 				}
-				foreach ($weight_values as $weight_value) {
+				foreach ($italic_weights as $weight_value) {
 					$tuples[] = '1,' . $weight_value;
 				}
 				$query_parts[] = 'family=' . $family_param . ':ital,wght@' . implode(';', $tuples);
 			} else {
-				$query_parts[] = 'family=' . $family_param . ':wght@' . implode(';', $weight_values);
+				$query_parts[] = 'family=' . $family_param . ':wght@' . implode(';', $normal_weights);
 			}
 		}
 
@@ -2601,7 +2693,7 @@ final class MRN_Google_Fonts {
 	 * @param string                                                                                     $font_family Raw family setting.
 	 * @param string                                                                                     $weights_raw Raw weights setting.
 	 * @param bool                                                                                       $include_italics Whether to include italic tuples for this family.
-	 * @param array<string, array{weights: array<int, string>, italics: bool}> $families Aggregated map.
+	 * @param array<string, array{normal: array<int, string>, italic: array<int, string>}> $families Aggregated map.
 	 */
 	private static function collect_google_font_family_request(string $font_family, string $weights_raw, bool $include_italics, array &$families): void {
 		$family = self::normalize_primary_family_name($font_family);
@@ -2617,18 +2709,239 @@ final class MRN_Google_Fonts {
 
 		if (!isset($families[$family])) {
 			$families[$family] = array(
-				'weights' => array(),
-				'italics' => false,
+				'normal' => array(),
+				'italic' => array(),
 			);
 		}
 
 		foreach ($weights as $weight) {
-			$families[$family]['weights'][] = $weight;
+			$families[$family]['normal'][] = $weight;
 		}
 
 		if ($include_italics) {
-			$families[$family]['italics'] = true;
+			foreach ($weights as $weight) {
+				$families[$family]['italic'][] = $weight;
+			}
 		}
+	}
+
+	/**
+	 * Apply optional settings-level family face overrides.
+	 *
+	 * @param array<string, array<string, array<int, string>>> $families Aggregated family face map.
+	 * @param array<string, mixed>                             $settings Plugin settings.
+	 * @return array<string, array<string, array<int, string>>>
+	 */
+	private static function apply_configured_google_font_faces(array $families, array $settings): array {
+		$configured_faces = self::sanitize_google_font_faces_config($settings['font_faces'] ?? array(), true);
+		if (empty($configured_faces)) {
+			return $families;
+		}
+
+		foreach ($configured_faces as $family => $faces) {
+			$existing_key = self::find_google_font_family_key($families, (string) $family);
+			$target_key = ('' !== $existing_key) ? $existing_key : (string) $family;
+			$families[$target_key] = $faces;
+		}
+
+		return $families;
+	}
+
+	/**
+	 * Sanitize a family keyed face map.
+	 *
+	 * @param mixed $value Raw face config.
+	 * @param bool  $resolve_catalog Whether to resolve family names against the Google catalog.
+	 * @return array<string, array{normal: array<int, string>, italic: array<int, string>}>
+	 */
+	private static function sanitize_google_font_faces_config($value, bool $resolve_catalog = true): array {
+		if (!is_array($value)) {
+			return array();
+		}
+
+		$families = array();
+		foreach ($value as $family_key => $face_config) {
+			$family = is_string($family_key) ? $family_key : '';
+			if ('' === $family && is_array($face_config) && isset($face_config['family'])) {
+				$family = (string) $face_config['family'];
+			}
+
+			$family = self::normalize_primary_family_name(self::sanitize_font_family_value($family));
+			if ('' === $family || self::is_system_font_family($family)) {
+				continue;
+			}
+
+			if ($resolve_catalog) {
+				$family = self::resolve_catalog_family_name($family);
+			}
+
+			$faces = self::normalize_google_font_faces_value($face_config);
+			if (empty($faces['normal']) && empty($faces['italic'])) {
+				continue;
+			}
+
+			$existing_key = self::find_google_font_family_key($families, $family);
+			$target_key = ('' !== $existing_key) ? $existing_key : $family;
+			if (!isset($families[$target_key])) {
+				$families[$target_key] = array(
+					'normal' => array(),
+					'italic' => array(),
+				);
+			}
+
+			$families[$target_key]['normal'] = array_merge($families[$target_key]['normal'], $faces['normal']);
+			$families[$target_key]['italic'] = array_merge($families[$target_key]['italic'], $faces['italic']);
+		}
+
+		foreach ($families as $family => $faces) {
+			$families[$family]['normal'] = self::normalize_google_font_weight_values($faces['normal'] ?? array(), 0, false);
+			$families[$family]['italic'] = self::normalize_google_font_weight_values($faces['italic'] ?? array(), 0, false);
+		}
+
+		return $families;
+	}
+
+	/**
+	 * Normalize one family's face configuration.
+	 *
+	 * @param mixed $value Raw per-family face config.
+	 * @return array{normal: array<int, string>, italic: array<int, string>}
+	 */
+	private static function normalize_google_font_faces_value($value): array {
+		$faces = array(
+			'normal' => array(),
+			'italic' => array(),
+		);
+
+		if (is_string($value) || is_int($value)) {
+			$faces['normal'] = self::normalize_google_font_weight_values($value, 0, false);
+			return $faces;
+		}
+
+		if (!is_array($value)) {
+			return $faces;
+		}
+
+		if (isset($value['normal'])) {
+			$faces['normal'] = array_merge($faces['normal'], self::normalize_google_font_weight_values($value['normal'], 0, false));
+		}
+
+		if (isset($value['italic'])) {
+			$faces['italic'] = array_merge($faces['italic'], self::normalize_google_font_weight_values($value['italic'], 0, false));
+		}
+
+		if (isset($value['weights'])) {
+			$weights = self::normalize_google_font_weight_values($value['weights'], 0, false);
+			$faces['normal'] = array_merge($faces['normal'], $weights);
+			if (!empty($value['italics'])) {
+				$faces['italic'] = array_merge($faces['italic'], $weights);
+			}
+		}
+
+		if (isset($value['faces']) && is_array($value['faces'])) {
+			foreach ($value['faces'] as $face) {
+				if (!is_array($face)) {
+					continue;
+				}
+
+				$style = isset($face['style']) ? strtolower(trim((string) $face['style'])) : 'normal';
+				$style = ('italic' === $style || '1' === $style) ? 'italic' : 'normal';
+				$weight = self::normalize_google_font_weight_values($face['weight'] ?? '', 1, false);
+				if (empty($weight)) {
+					continue;
+				}
+
+				$faces[$style][] = $weight[0];
+			}
+		}
+
+		// Numeric arrays like array(300, 400) are treated as normal weights.
+		if (!isset($value['normal'], $value['italic'], $value['weights'], $value['faces'])) {
+			$faces['normal'] = array_merge($faces['normal'], self::normalize_google_font_weight_values($value, 0, false));
+		}
+
+		$faces['normal'] = self::normalize_google_font_weight_values($faces['normal'], 0, false);
+		$faces['italic'] = self::normalize_google_font_weight_values($faces['italic'], 0, false);
+
+		return $faces;
+	}
+
+	/**
+	 * Normalize weight lists while preserving the caller's first-seen order.
+	 *
+	 * @param mixed $value Raw weight list.
+	 * @param int   $limit Maximum number of weights to return. Zero means no limit.
+	 * @param bool  $sort Whether to sort numerically after applying uniqueness and limit.
+	 * @return array<int, string>
+	 */
+	private static function normalize_google_font_weight_values($value, int $limit = 0, bool $sort = false): array {
+		if (is_string($value)) {
+			$raw_weights = preg_split('/[\s,;]+/', $value);
+		} elseif (is_array($value)) {
+			$raw_weights = $value;
+		} else {
+			$raw_weights = array($value);
+		}
+
+		$weights = array();
+		foreach ((array) $raw_weights as $weight) {
+			if (is_array($weight)) {
+				continue;
+			}
+
+			$weight = preg_replace('/[^0-9]/', '', (string) $weight);
+			if ('' === $weight) {
+				continue;
+			}
+
+			$weight_int = (int) $weight;
+			if ($weight_int < 100 || $weight_int > 900) {
+				continue;
+			}
+
+			$weight = (string) $weight_int;
+			if (!in_array($weight, $weights, true)) {
+				$weights[] = $weight;
+			}
+		}
+
+		if ($limit > 0) {
+			$weights = array_slice($weights, 0, $limit);
+		}
+
+		if ($sort) {
+			sort($weights, SORT_NUMERIC);
+		}
+
+		return $weights;
+	}
+
+	/**
+	 * Find an existing family map key by normalized family name.
+	 *
+	 * @param array<string, mixed> $families Family map.
+	 */
+	private static function find_google_font_family_key(array $families, string $family): string {
+		$needle = self::normalize_google_font_family_lookup_key($family);
+		if ('' === $needle) {
+			return '';
+		}
+
+		foreach (array_keys($families) as $existing_family) {
+			if ($needle === self::normalize_google_font_family_lookup_key((string) $existing_family)) {
+				return (string) $existing_family;
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Normalize family names for case-insensitive matching.
+	 */
+	private static function normalize_google_font_family_lookup_key(string $family): string {
+		$family = strtolower(str_replace(array('-', '_'), ' ', $family));
+		return trim(preg_replace('/\s+/', ' ', $family));
 	}
 
 	/**
@@ -2703,16 +3016,55 @@ final class MRN_Google_Fonts {
 	 * @param string                   $url URL to test.
 	 */
 	private static function hints_contain_url(array $hints, string $url): bool {
+		$target = self::normalize_resource_hint_origin($url);
+		if ('' === $target) {
+			return false;
+		}
+
 		foreach ($hints as $hint) {
-			if (is_string($hint) && $hint === $url) {
-				return true;
+			$href = '';
+			if (is_string($hint)) {
+				$href = $hint;
+			} elseif (is_array($hint) && isset($hint['href'])) {
+				$href = (string) $hint['href'];
 			}
 
-			if (is_array($hint) && isset($hint['href']) && $hint['href'] === $url) {
+			if ('' === $href) {
+				continue;
+			}
+
+			if (self::normalize_resource_hint_origin($href) === $target) {
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	/**
+	 * Normalize a resource hint URL to a comparable origin.
+	 */
+	private static function normalize_resource_hint_origin(string $url): string {
+		$url = trim($url);
+		if ('' === $url) {
+			return '';
+		}
+
+		if (0 === strpos($url, '//')) {
+			$url = 'https:' . $url;
+		} elseif (false === strpos($url, '://')) {
+			$url = 'https://' . ltrim($url, '/');
+		}
+
+		$parts = wp_parse_url($url);
+		if (!is_array($parts) || empty($parts['host'])) {
+			return '';
+		}
+
+		$scheme = isset($parts['scheme']) ? strtolower((string) $parts['scheme']) : 'https';
+		$host = strtolower((string) $parts['host']);
+		$port = isset($parts['port']) ? ':' . (string) $parts['port'] : '';
+
+		return $scheme . '://' . $host . $port;
 	}
 }
