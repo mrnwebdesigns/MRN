@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Schema Bridge
  * Description: Shared structured data normalization for MRN sites.
- * Version: 0.3.2
+ * Version: 0.3.3
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_VERSION' ) ) {
-	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.3.2' );
+	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.3.3' );
 }
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_SCHEMA_HEALTH_OPTION' ) ) {
@@ -242,6 +242,106 @@ function mrn_schema_bridge_get_organization_reference( $graph ) {
 }
 
 /**
+ * Get or set whether the active schema provider already emitted ContactPage schema.
+ *
+ * @param bool|null $detected Optional detected state.
+ * @return bool
+ */
+function mrn_schema_bridge_provider_contact_page_schema_detected( $detected = null ) {
+	if ( null !== $detected ) {
+		$GLOBALS['mrn_schema_bridge_provider_contact_page_schema_detected'] = (bool) $detected;
+	}
+
+	return ! empty( $GLOBALS['mrn_schema_bridge_provider_contact_page_schema_detected'] );
+}
+
+/**
+ * Get the current queried contact page post when configured.
+ *
+ * @return WP_Post|null
+ */
+function mrn_schema_bridge_get_current_contact_page_post() {
+	if ( ! is_singular() ) {
+		return null;
+	}
+
+	$post = get_queried_object();
+
+	if ( ! $post instanceof WP_Post || 'page' !== $post->post_type ) {
+		return null;
+	}
+
+	if ( ! in_array( absint( $post->ID ), mrn_schema_bridge_get_contact_page_ids(), true ) ) {
+		return null;
+	}
+
+	return $post;
+}
+
+/**
+ * Build an organization main entity value with configured contact points.
+ *
+ * @return array<string,mixed>
+ */
+function mrn_schema_bridge_get_contact_page_main_entity() {
+	$main_entity    = mrn_schema_bridge_get_default_organization_reference();
+	$contact_points = mrn_schema_bridge_get_contact_points();
+
+	if ( ! empty( $contact_points ) ) {
+		$main_entity['@type']        = 'Organization';
+		$main_entity['contactPoint'] = 1 === count( $contact_points ) ? $contact_points[0] : $contact_points;
+	}
+
+	return $main_entity;
+}
+
+/**
+ * Enrich provider ContactPage nodes so supplemental output does not duplicate them.
+ *
+ * @param array<int, array<string, mixed>> $graph Schema graph.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_schema_bridge_enrich_contact_page_schema_graph( $graph ) {
+	$post = mrn_schema_bridge_get_current_contact_page_post();
+
+	if ( ! $post instanceof WP_Post ) {
+		return $graph;
+	}
+
+	$description            = mrn_schema_bridge_get_post_schema_description( $post );
+	$organization_reference = mrn_schema_bridge_get_default_organization_reference();
+	$main_entity            = mrn_schema_bridge_get_contact_page_main_entity();
+
+	foreach ( $graph as $index => $item ) {
+		if ( ! is_array( $item ) || ! mrn_schema_bridge_item_has_type( $item, 'ContactPage' ) ) {
+			continue;
+		}
+
+		mrn_schema_bridge_provider_contact_page_schema_detected( true );
+
+		if ( empty( $graph[ $index ]['publisher'] ) ) {
+			$graph[ $index ]['publisher'] = $organization_reference;
+		}
+
+		if ( empty( $graph[ $index ]['mainEntity'] ) ) {
+			$graph[ $index ]['mainEntity'] = $main_entity;
+		} elseif (
+			is_array( $graph[ $index ]['mainEntity'] )
+			&& empty( $graph[ $index ]['mainEntity']['contactPoint'] )
+			&& ! empty( $main_entity['contactPoint'] )
+		) {
+			$graph[ $index ]['mainEntity']['contactPoint'] = $main_entity['contactPoint'];
+		}
+
+		if ( '' !== $description && empty( $graph[ $index ]['description'] ) ) {
+			$graph[ $index ]['description'] = $description;
+		}
+	}
+
+	return $graph;
+}
+
+/**
  * Check whether a schema reference points to a removed author node.
  *
  * @param mixed              $value       Candidate schema value.
@@ -329,6 +429,7 @@ function mrn_schema_bridge_filter_schema_graph( $data ) {
 	}
 
 	$data = mrn_schema_bridge_strip_author_person_nodes( $data );
+	$data = mrn_schema_bridge_enrich_contact_page_schema_graph( $data );
 
 	return (array) apply_filters( 'mrn_schema_bridge_schema_graph', $data );
 }
@@ -903,13 +1004,6 @@ function mrn_schema_bridge_build_contact_page_schema_node( $post ) {
 	$description            = mrn_schema_bridge_get_post_schema_description( $post );
 	$image_url              = mrn_schema_bridge_get_post_schema_image_url( $post->ID );
 	$organization_reference = mrn_schema_bridge_get_default_organization_reference();
-	$contact_points         = mrn_schema_bridge_get_contact_points();
-	$main_entity            = $organization_reference;
-
-	if ( ! empty( $contact_points ) ) {
-		$main_entity['@type']        = 'Organization';
-		$main_entity['contactPoint'] = 1 === count( $contact_points ) ? $contact_points[0] : $contact_points;
-	}
 
 	$node = array(
 		'@type'            => 'ContactPage',
@@ -917,7 +1011,7 @@ function mrn_schema_bridge_build_contact_page_schema_node( $post ) {
 		'name'             => sanitize_text_field( (string) $title ),
 		'url'              => esc_url_raw( $url ),
 		'publisher'        => $organization_reference,
-		'mainEntity'       => $main_entity,
+		'mainEntity'       => mrn_schema_bridge_get_contact_page_main_entity(),
 		'mainEntityOfPage' => esc_url_raw( $url ),
 	);
 
@@ -958,7 +1052,11 @@ function mrn_schema_bridge_get_supplemental_schema_nodes() {
 		}
 	}
 
-	if ( 'page' === $post->post_type && in_array( absint( $post->ID ), mrn_schema_bridge_get_contact_page_ids(), true ) ) {
+	if (
+		'page' === $post->post_type
+		&& in_array( absint( $post->ID ), mrn_schema_bridge_get_contact_page_ids(), true )
+		&& ! mrn_schema_bridge_provider_contact_page_schema_detected()
+	) {
 		$contact_page_node = mrn_schema_bridge_build_contact_page_schema_node( $post );
 
 		if ( ! empty( $contact_page_node ) ) {
