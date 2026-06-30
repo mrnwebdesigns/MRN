@@ -78,6 +78,8 @@ The scan stores the last report in the `mrn_schema_bridge_schema_health_last_rep
 - `mrn_schema_bridge_project_post_types`
 - `mrn_schema_bridge_project_schema_node`
 
+`mrn_schema_bridge_supplemental_schema_nodes` receives the current `WP_Post` as its second argument, or `null` when no singular post context is available.
+
 ```php
 add_filter( 'mrn_schema_bridge_enabled', '__return_false' );
 ```

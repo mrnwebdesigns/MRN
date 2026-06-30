@@ -681,13 +681,13 @@ function mrn_schema_bridge_get_supplemental_schema_nodes() {
 	$nodes = array();
 
 	if ( ! is_singular() ) {
-		return (array) apply_filters( 'mrn_schema_bridge_supplemental_schema_nodes', $nodes );
+		return (array) apply_filters( 'mrn_schema_bridge_supplemental_schema_nodes', $nodes, null );
 	}
 
 	$post = get_queried_object();
 
 	if ( ! $post instanceof WP_Post ) {
-		return (array) apply_filters( 'mrn_schema_bridge_supplemental_schema_nodes', $nodes );
+		return (array) apply_filters( 'mrn_schema_bridge_supplemental_schema_nodes', $nodes, null );
 	}
 
 	if ( 'page' === $post->post_type && in_array( absint( $post->ID ), mrn_schema_bridge_get_service_page_ids(), true ) ) {
