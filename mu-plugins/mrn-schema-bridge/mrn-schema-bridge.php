@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Schema Bridge
  * Description: Shared structured data normalization for MRN sites.
- * Version: 0.3.0
+ * Version: 0.3.1
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_VERSION' ) ) {
-	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.3.0' );
+	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.3.1' );
 }
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_SCHEMA_HEALTH_OPTION' ) ) {
@@ -22,6 +22,14 @@ if ( ! defined( 'MRN_SCHEMA_BRIDGE_SERVICE_PAGE_IDS_OPTION' ) ) {
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_SERVICE_AREA_SERVED_OPTION' ) ) {
 	define( 'MRN_SCHEMA_BRIDGE_SERVICE_AREA_SERVED_OPTION', 'mrn_schema_bridge_service_area_served' );
+}
+
+if ( ! defined( 'MRN_SCHEMA_BRIDGE_POST_SCHEMA_DESCRIPTIONS_OPTION' ) ) {
+	define( 'MRN_SCHEMA_BRIDGE_POST_SCHEMA_DESCRIPTIONS_OPTION', 'mrn_schema_bridge_post_schema_descriptions' );
+}
+
+if ( ! defined( 'MRN_SCHEMA_BRIDGE_POST_SCHEMA_DESCRIPTION_META_KEY' ) ) {
+	define( 'MRN_SCHEMA_BRIDGE_POST_SCHEMA_DESCRIPTION_META_KEY', '_mrn_schema_bridge_schema_description' );
 }
 
 /**
@@ -418,6 +426,93 @@ function mrn_schema_bridge_get_service_area_served() {
 }
 
 /**
+ * Get the post meta key used for schema-only descriptions.
+ *
+ * @return string
+ */
+function mrn_schema_bridge_get_post_schema_description_meta_key() {
+	$meta_key = apply_filters( 'mrn_schema_bridge_post_schema_description_meta_key', MRN_SCHEMA_BRIDGE_POST_SCHEMA_DESCRIPTION_META_KEY );
+
+	return is_scalar( $meta_key ) ? sanitize_key( (string) $meta_key ) : '';
+}
+
+/**
+ * Normalize a post schema description map from an option or filter.
+ *
+ * @param mixed $raw Raw description map.
+ * @return array<string,string>
+ */
+function mrn_schema_bridge_normalize_post_schema_description_map( $raw ) {
+	if ( is_string( $raw ) ) {
+		$decoded = json_decode( $raw, true );
+
+		if ( is_array( $decoded ) ) {
+			$raw = $decoded;
+		}
+	}
+
+	if ( ! is_array( $raw ) ) {
+		return array();
+	}
+
+	$map = array();
+
+	foreach ( $raw as $key => $value ) {
+		if ( ! is_scalar( $key ) || ! is_scalar( $value ) ) {
+			continue;
+		}
+
+		$key         = sanitize_key( (string) $key );
+		$description = sanitize_text_field( (string) $value );
+
+		if ( '' !== $key && '' !== $description ) {
+			$map[ $key ] = $description;
+		}
+	}
+
+	return $map;
+}
+
+/**
+ * Get a schema-only description override for a post.
+ *
+ * @param WP_Post $post Post object.
+ * @return string
+ */
+function mrn_schema_bridge_get_post_schema_description_override( $post ) {
+	if ( ! $post instanceof WP_Post ) {
+		return '';
+	}
+
+	$meta_key = mrn_schema_bridge_get_post_schema_description_meta_key();
+
+	if ( '' !== $meta_key ) {
+		$meta_description = get_post_meta( $post->ID, $meta_key, true );
+
+		if ( is_scalar( $meta_description ) && '' !== trim( (string) $meta_description ) ) {
+			return sanitize_text_field( (string) $meta_description );
+		}
+	}
+
+	$raw_descriptions = get_option( MRN_SCHEMA_BRIDGE_POST_SCHEMA_DESCRIPTIONS_OPTION, array() );
+	$raw_descriptions = apply_filters( 'mrn_schema_bridge_post_schema_descriptions', $raw_descriptions, $post );
+	$descriptions     = mrn_schema_bridge_normalize_post_schema_description_map( $raw_descriptions );
+
+	$post_keys = array(
+		sanitize_key( (string) $post->ID ),
+		sanitize_key( (string) $post->post_name ),
+	);
+
+	foreach ( array_unique( $post_keys ) as $post_key ) {
+		if ( isset( $descriptions[ $post_key ] ) ) {
+			return $descriptions[ $post_key ];
+		}
+	}
+
+	return '';
+}
+
+/**
  * Get post description suitable for schema.
  *
  * @param WP_Post $post Post object.
@@ -428,7 +523,11 @@ function mrn_schema_bridge_get_post_schema_description( $post ) {
 		return '';
 	}
 
-	$description = has_excerpt( $post ) ? get_the_excerpt( $post ) : '';
+	$description = mrn_schema_bridge_get_post_schema_description_override( $post );
+
+	if ( '' === trim( (string) $description ) ) {
+		$description = has_excerpt( $post ) ? get_the_excerpt( $post ) : '';
+	}
 
 	if ( '' === trim( (string) $description ) ) {
 		$content     = wp_strip_all_tags( strip_shortcodes( (string) $post->post_content ) );

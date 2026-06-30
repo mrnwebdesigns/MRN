@@ -8,7 +8,7 @@ MRN Schema Bridge keeps shared schema policy out of child themes and out of site
 
 ## Version
 
-Current version: `0.3.0`
+Current version: `0.3.1`
 
 ## Features
 
@@ -17,6 +17,7 @@ Current version: `0.3.0`
 - Suppresses older base-stack business JSON-LD when a supported schema provider is active.
 - Adds supplemental `Service` schema for configured service pages.
 - Adds supplemental project/case-study `CreativeWork` schema for configured project post types.
+- Supports schema-only post descriptions through hidden post meta or a site option map.
 - Adds a Tools > Schema Health admin screen for same-site sitemap scans.
 - Keeps behavior filterable per site.
 - No-ops unless a supported schema provider is active.
@@ -24,6 +25,13 @@ Current version: `0.3.0`
 ## Supplemental Schema
 
 Service schema is opt-in by page ID through the `mrn_schema_bridge_service_page_ids` option or the `mrn_schema_bridge_service_page_ids` filter. The optional `mrn_schema_bridge_service_area_served` option/filter can add a simple `areaServed` value.
+
+Schema descriptions use the first available value from:
+
+1. Hidden post meta named `_mrn_schema_bridge_schema_description`.
+2. The `mrn_schema_bridge_post_schema_descriptions` option, keyed by post ID or post slug.
+3. The WordPress excerpt.
+4. Trimmed post content.
 
 Project/case-study schema defaults to the shared `mrn_case_study` post type and can be changed with the `mrn_schema_bridge_project_post_types` filter.
 
@@ -61,6 +69,9 @@ The scan stores the last report in the `mrn_schema_bridge_schema_health_last_rep
 - `mrn_schema_bridge_schema_health_request_timeout`
 - `mrn_schema_bridge_supported_schema_provider_loaded`
 - `mrn_schema_bridge_suppress_legacy_business_schema_enabled`
+- `mrn_schema_bridge_post_schema_description_meta_key`
+- `mrn_schema_bridge_post_schema_descriptions`
+- `mrn_schema_bridge_post_schema_description`
 - `mrn_schema_bridge_service_area_served`
 - `mrn_schema_bridge_service_page_ids`
 - `mrn_schema_bridge_service_schema_node`
