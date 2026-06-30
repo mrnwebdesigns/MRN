@@ -8,7 +8,7 @@ MRN Schema Bridge keeps shared schema policy out of child themes and out of site
 
 ## Version
 
-Current version: `0.3.1`
+Current version: `0.3.2`
 
 ## Features
 
@@ -16,6 +16,7 @@ Current version: `0.3.1`
 - Replaces references to removed authors with the site organization when needed.
 - Suppresses older base-stack business JSON-LD when a supported schema provider is active.
 - Adds supplemental `Service` schema for configured service pages.
+- Adds supplemental `ContactPage` schema for configured contact pages.
 - Adds supplemental project/case-study `CreativeWork` schema for configured project post types.
 - Supports schema-only post descriptions through hidden post meta or a site option map.
 - Adds a Tools > Schema Health admin screen for same-site sitemap scans.
@@ -25,6 +26,8 @@ Current version: `0.3.1`
 ## Supplemental Schema
 
 Service schema is opt-in by page ID through the `mrn_schema_bridge_service_page_ids` option or the `mrn_schema_bridge_service_page_ids` filter. The optional `mrn_schema_bridge_service_area_served` option/filter can add a simple `areaServed` value.
+
+ContactPage schema is opt-in by page ID through the `mrn_schema_bridge_contact_page_ids` option or the `mrn_schema_bridge_contact_page_ids` filter. Organization contact points can be supplied through the `mrn_schema_bridge_contact_points` option/filter as a single contact point object or a list of objects. Supported contact point fields are `contactType`, `email`, `telephone`, `url`, `areaServed`, and `availableLanguage`.
 
 Schema descriptions use the first available value from:
 
@@ -69,6 +72,9 @@ The scan stores the last report in the `mrn_schema_bridge_schema_health_last_rep
 - `mrn_schema_bridge_schema_health_request_timeout`
 - `mrn_schema_bridge_supported_schema_provider_loaded`
 - `mrn_schema_bridge_suppress_legacy_business_schema_enabled`
+- `mrn_schema_bridge_contact_page_ids`
+- `mrn_schema_bridge_contact_page_schema_node`
+- `mrn_schema_bridge_contact_points`
 - `mrn_schema_bridge_post_schema_description_meta_key`
 - `mrn_schema_bridge_post_schema_descriptions`
 - `mrn_schema_bridge_post_schema_description`

@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Schema Bridge
  * Description: Shared structured data normalization for MRN sites.
- * Version: 0.3.1
+ * Version: 0.3.2
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_VERSION' ) ) {
-	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.3.1' );
+	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.3.2' );
 }
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_SCHEMA_HEALTH_OPTION' ) ) {
@@ -22,6 +22,14 @@ if ( ! defined( 'MRN_SCHEMA_BRIDGE_SERVICE_PAGE_IDS_OPTION' ) ) {
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_SERVICE_AREA_SERVED_OPTION' ) ) {
 	define( 'MRN_SCHEMA_BRIDGE_SERVICE_AREA_SERVED_OPTION', 'mrn_schema_bridge_service_area_served' );
+}
+
+if ( ! defined( 'MRN_SCHEMA_BRIDGE_CONTACT_PAGE_IDS_OPTION' ) ) {
+	define( 'MRN_SCHEMA_BRIDGE_CONTACT_PAGE_IDS_OPTION', 'mrn_schema_bridge_contact_page_ids' );
+}
+
+if ( ! defined( 'MRN_SCHEMA_BRIDGE_CONTACT_POINTS_OPTION' ) ) {
+	define( 'MRN_SCHEMA_BRIDGE_CONTACT_POINTS_OPTION', 'mrn_schema_bridge_contact_points' );
 }
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_POST_SCHEMA_DESCRIPTIONS_OPTION' ) ) {
@@ -426,6 +434,208 @@ function mrn_schema_bridge_get_service_area_served() {
 }
 
 /**
+ * Get configured contact page IDs.
+ *
+ * @return array<int,int>
+ */
+function mrn_schema_bridge_get_contact_page_ids() {
+	$raw = get_option( MRN_SCHEMA_BRIDGE_CONTACT_PAGE_IDS_OPTION, array() );
+	$ids = array();
+
+	if ( is_string( $raw ) ) {
+		$raw = preg_split( '/[\s,]+/', $raw );
+	}
+
+	if ( is_array( $raw ) ) {
+		foreach ( $raw as $id ) {
+			$id = absint( $id );
+
+			if ( $id > 0 ) {
+				$ids[] = $id;
+			}
+		}
+	}
+
+	$ids = apply_filters( 'mrn_schema_bridge_contact_page_ids', $ids );
+
+	if ( ! is_array( $ids ) ) {
+		return array();
+	}
+
+	return array_values( array_unique( array_filter( array_map( 'absint', $ids ) ) ) );
+}
+
+/**
+ * Normalize scalar or list schema text values.
+ *
+ * @param mixed $value Candidate schema text value.
+ * @return string|array<int,string>
+ */
+function mrn_schema_bridge_normalize_schema_text_value( $value ) {
+	if ( is_scalar( $value ) ) {
+		return sanitize_text_field( (string) $value );
+	}
+
+	if ( ! is_array( $value ) ) {
+		return '';
+	}
+
+	$normalized = array();
+
+	foreach ( $value as $item ) {
+		if ( ! is_scalar( $item ) ) {
+			continue;
+		}
+
+		$item = sanitize_text_field( (string) $item );
+
+		if ( '' !== $item ) {
+			$normalized[] = $item;
+		}
+	}
+
+	return array_values( array_unique( $normalized ) );
+}
+
+/**
+ * Check whether an array looks like one contact point definition.
+ *
+ * @param array $value Candidate array.
+ * @return bool
+ */
+function mrn_schema_bridge_is_contact_point_shape( $value ) {
+	$known_keys = array(
+		'areaServed',
+		'area_served',
+		'availableLanguage',
+		'available_language',
+		'contactType',
+		'contact_type',
+		'email',
+		'phone',
+		'telephone',
+		'url',
+	);
+
+	foreach ( $known_keys as $key ) {
+		if ( array_key_exists( $key, $value ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Normalize a ContactPoint node.
+ *
+ * @param mixed $point Candidate contact point.
+ * @return array<string,mixed>
+ */
+function mrn_schema_bridge_normalize_contact_point( $point ) {
+	if ( ! is_array( $point ) ) {
+		return array();
+	}
+
+	$node = array(
+		'@type' => 'ContactPoint',
+	);
+
+	if ( isset( $point['contactType'] ) || isset( $point['contact_type'] ) ) {
+		$contact_type = isset( $point['contactType'] ) ? $point['contactType'] : $point['contact_type'];
+		$contact_type = is_scalar( $contact_type ) ? sanitize_text_field( (string) $contact_type ) : '';
+
+		if ( '' !== $contact_type ) {
+			$node['contactType'] = $contact_type;
+		}
+	}
+
+	if ( isset( $point['email'] ) && is_scalar( $point['email'] ) ) {
+		$email = sanitize_email( (string) $point['email'] );
+
+		if ( '' !== $email && is_email( $email ) ) {
+			$node['email'] = $email;
+		}
+	}
+
+	if ( isset( $point['telephone'] ) || isset( $point['phone'] ) ) {
+		$telephone = isset( $point['telephone'] ) ? $point['telephone'] : $point['phone'];
+		$telephone = is_scalar( $telephone ) ? sanitize_text_field( (string) $telephone ) : '';
+
+		if ( '' !== $telephone ) {
+			$node['telephone'] = $telephone;
+		}
+	}
+
+	if ( isset( $point['url'] ) && is_scalar( $point['url'] ) ) {
+		$url = esc_url_raw( (string) $point['url'] );
+
+		if ( '' !== $url ) {
+			$node['url'] = $url;
+		}
+	}
+
+	if ( isset( $point['areaServed'] ) || isset( $point['area_served'] ) ) {
+		$area_served = isset( $point['areaServed'] ) ? $point['areaServed'] : $point['area_served'];
+		$area_served = mrn_schema_bridge_normalize_schema_text_value( $area_served );
+
+		if ( ! empty( $area_served ) ) {
+			$node['areaServed'] = $area_served;
+		}
+	}
+
+	if ( isset( $point['availableLanguage'] ) || isset( $point['available_language'] ) ) {
+		$language = isset( $point['availableLanguage'] ) ? $point['availableLanguage'] : $point['available_language'];
+		$language = mrn_schema_bridge_normalize_schema_text_value( $language );
+
+		if ( ! empty( $language ) ) {
+			$node['availableLanguage'] = $language;
+		}
+	}
+
+	return count( $node ) > 1 ? $node : array();
+}
+
+/**
+ * Get configured organization contact points.
+ *
+ * @return array<int,array<string,mixed>>
+ */
+function mrn_schema_bridge_get_contact_points() {
+	$raw = get_option( MRN_SCHEMA_BRIDGE_CONTACT_POINTS_OPTION, array() );
+
+	if ( is_string( $raw ) ) {
+		$decoded = json_decode( $raw, true );
+
+		if ( is_array( $decoded ) ) {
+			$raw = $decoded;
+		}
+	}
+
+	$raw = apply_filters( 'mrn_schema_bridge_contact_points', $raw );
+
+	if ( ! is_array( $raw ) ) {
+		return array();
+	}
+
+	if ( mrn_schema_bridge_is_contact_point_shape( $raw ) ) {
+		$raw = array( $raw );
+	}
+
+	$points = array();
+
+	foreach ( $raw as $point ) {
+		$point = mrn_schema_bridge_normalize_contact_point( $point );
+
+		if ( ! empty( $point ) ) {
+			$points[] = $point;
+		}
+	}
+
+	return $points;
+}
+
+/**
  * Get the post meta key used for schema-only descriptions.
  *
  * @return string
@@ -673,6 +883,56 @@ function mrn_schema_bridge_build_project_schema_node( $post ) {
 }
 
 /**
+ * Build ContactPage schema for a configured contact page.
+ *
+ * @param WP_Post $post Page object.
+ * @return array<string,mixed>
+ */
+function mrn_schema_bridge_build_contact_page_schema_node( $post ) {
+	if ( ! $post instanceof WP_Post ) {
+		return array();
+	}
+
+	$url = get_permalink( $post );
+
+	if ( ! is_string( $url ) || '' === $url ) {
+		return array();
+	}
+
+	$title                  = get_the_title( $post );
+	$description            = mrn_schema_bridge_get_post_schema_description( $post );
+	$image_url              = mrn_schema_bridge_get_post_schema_image_url( $post->ID );
+	$organization_reference = mrn_schema_bridge_get_default_organization_reference();
+	$contact_points         = mrn_schema_bridge_get_contact_points();
+	$main_entity            = $organization_reference;
+
+	if ( ! empty( $contact_points ) ) {
+		$main_entity['@type']        = 'Organization';
+		$main_entity['contactPoint'] = 1 === count( $contact_points ) ? $contact_points[0] : $contact_points;
+	}
+
+	$node = array(
+		'@type'            => 'ContactPage',
+		'@id'              => mrn_schema_bridge_build_schema_id( $url, 'schema-contact-page' ),
+		'name'             => sanitize_text_field( (string) $title ),
+		'url'              => esc_url_raw( $url ),
+		'publisher'        => $organization_reference,
+		'mainEntity'       => $main_entity,
+		'mainEntityOfPage' => esc_url_raw( $url ),
+	);
+
+	if ( '' !== $description ) {
+		$node['description'] = $description;
+	}
+
+	if ( '' !== $image_url ) {
+		$node['image'] = $image_url;
+	}
+
+	return (array) apply_filters( 'mrn_schema_bridge_contact_page_schema_node', $node, $post );
+}
+
+/**
  * Get supplemental schema nodes for the current frontend request.
  *
  * @return array<int,array<string,mixed>>
@@ -695,6 +955,14 @@ function mrn_schema_bridge_get_supplemental_schema_nodes() {
 
 		if ( ! empty( $service_node ) ) {
 			$nodes[] = $service_node;
+		}
+	}
+
+	if ( 'page' === $post->post_type && in_array( absint( $post->ID ), mrn_schema_bridge_get_contact_page_ids(), true ) ) {
+		$contact_page_node = mrn_schema_bridge_build_contact_page_schema_node( $post );
+
+		if ( ! empty( $contact_page_node ) ) {
+			$nodes[] = $contact_page_node;
 		}
 	}
 
