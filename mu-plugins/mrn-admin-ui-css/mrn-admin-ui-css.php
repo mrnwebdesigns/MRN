@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Admin UI CSS (MU)
+ * Plugin Name: MRN Admin UI CSS
  * Description: Unified admin UI CSS loader for wp-admin.
  * Version: 3.1.13
  */

@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Google Fonts
+ * Plugin Name: MRN Google Fonts
  * Description: Performance-first Google Fonts runtime for frontend and Classic Editor, with optional MRN stack bridge support.
  * Author: MRN Web Designs
  * Version: 0.5.2

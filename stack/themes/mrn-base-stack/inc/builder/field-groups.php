@@ -2725,21 +2725,21 @@ function mrn_base_stack_register_acf_field_groups() {
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
-										'key'           => 'field_mrn_reusable_block_post',
-										'label'         => 'Block',
-										'name'          => 'block',
-										'aria-label'    => '',
-										'type'          => 'post_object',
-										'post_type'     => function_exists( 'mrn_rbl_get_post_types' ) ? mrn_rbl_get_post_types() : array(),
-										'return_format' => 'object',
-										'ui'            => 1,
-										'allow_null'    => 0,
-											'multiple'      => 0,
-											'instructions'  => 'Choose a reusable block from the library. Editing that block updates it everywhere it is used.',
-										),
-										mrn_base_stack_get_anchor_field( 'field_mrn_reusable_block_anchor', 'anchor', 'Placement Anchor ID' ),
+										'key'              => 'field_mrn_reusable_block_post',
+										'label'            => 'Block',
+										'name'             => 'block',
+										'aria-label'       => '',
+										'type'             => 'post_object',
+										'post_type'        => function_exists( 'mrn_rbl_get_post_types' ) ? mrn_rbl_get_post_types() : array(),
+										'return_format'    => 'object',
+										'ui'               => 1,
+										'allow_null'       => 0,
+										'multiple'         => 0,
+										'instructions'     => 'Choose a reusable block from the library. Editing that block updates it everywhere it is used.',
 									),
+									mrn_base_stack_get_anchor_field( 'field_mrn_reusable_block_anchor', 'anchor', 'Placement Anchor ID' ),
 								),
+							),
 							'layout_mrn_cta_block' => array(
 								'key'        => 'layout_mrn_cta_block',
 								'name'       => 'cta_block',
@@ -2848,31 +2848,31 @@ function mrn_base_stack_register_acf_field_groups() {
 
 		acf_add_local_field_group(
 			mrn_base_stack_with_effects_tabs(
-			array(
-				'key'                   => 'group_mrn_after_content_builder',
-				'title'                 => 'After Content',
-				'fields'                => array(
-					array(
-						'key'               => $after_content_field_key,
-						'label'             => 'After Content',
-						'name'              => 'page_after_content_rows',
+				array(
+					'key'                   => 'group_mrn_after_content_builder',
+					'title'                 => 'After Content',
+					'fields'                => array(
+						array(
+							'key'               => $after_content_field_key,
+							'label'             => 'After Content',
+							'name'              => 'page_after_content_rows',
 							'aria-label'        => '',
 							'type'              => 'flexible_content',
 							'button_label'      => 'Add After Content Row',
 							'layouts'           => array(),
 						),
 					),
-				'location'              => mrn_base_stack_get_after_content_location_rules(),
-				'menu_order'            => 20,
-				'position'              => 'acf_after_title',
-				'style'                 => 'default',
-				'label_placement'       => 'top',
-				'instruction_placement' => 'label',
-				'active'                => true,
-				'description'           => 'Secondary flexible-content area that renders after the main Content builder.',
-				'show_in_rest'          => 1,
+					'location'              => mrn_base_stack_get_after_content_location_rules(),
+					'menu_order'            => 20,
+					'position'              => 'acf_after_title',
+					'style'                 => 'default',
+					'label_placement'       => 'top',
+					'instruction_placement' => 'label',
+					'active'                => true,
+					'description'           => 'Secondary flexible-content area that renders after the main Content builder.',
+					'show_in_rest'          => 1,
+				)
 			)
-		)
-	);
+		);
 }
 add_action( 'acf/init', 'mrn_base_stack_register_acf_field_groups' );

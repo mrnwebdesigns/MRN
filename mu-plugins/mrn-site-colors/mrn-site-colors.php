@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Site Styles (MU)
+ * Plugin Name: MRN Site Styles
  * Description: Adds a Site Styles configuration page for shared color variables, graphic elements, and usage helpers.
  * Author: MRN Web Designs
  * Version: 0.1.13

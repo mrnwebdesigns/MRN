@@ -49,6 +49,9 @@ SLACK_USERNAME="${STACK_SLACK_USERNAME:-MRN Bootstrap}"
 SLACK_ICON_EMOJI="${STACK_SLACK_ICON_EMOJI:-:rocket:}"
 SENDGRID_MANAGEMENT_API_KEY="${MRN_SENDGRID_MANAGEMENT_API_KEY:-${STACK_SENDGRID_MANAGEMENT_API_KEY:-}}"
 SENDGRID_MANAGEMENT_API_KEY_FILE="${STACK_SENDGRID_MANAGEMENT_API_KEY_FILE:-${STACK_ROOT}/secrets/sendgrid-management-api-key.txt}"
+AUTO_PROVISION_SENDGRID="${STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION:-1}"
+AUTO_PROVISION_UPTIME_ROBOT="${STACK_BOOTSTRAP_UPTIME_ROBOT_AUTO_PROVISION:-1}"
+UPTIME_ROBOT_MONITOR_INTERVAL="${STACK_BOOTSTRAP_UPTIME_ROBOT_INTERVAL:-${STACK_UPTIME_ROBOT_MONITOR_INTERVAL:-300}}"
 RECAPTCHA_ENTERPRISE_PROJECT_ID="${MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID:-${STACK_RECAPTCHA_ENTERPRISE_PROJECT_ID:-}}"
 RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE="${STACK_RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE:-${STACK_ROOT}/secrets/recaptcha-enterprise-project-id.txt}"
 RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL="${MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL:-${STACK_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL:-}}"
@@ -392,6 +395,17 @@ add_warning() {
   local msg="$1"
   BOOTSTRAP_WARNINGS+=("${msg}")
   echo "WARNING: ${msg}" >&2
+}
+
+bootstrap_flag_enabled() {
+  case "${1:-}" in
+    0|false|False|FALSE|no|No|NO|off|Off|OFF)
+      return 1
+      ;;
+    *)
+      return 0
+      ;;
+  esac
 }
 
 resolve_shared_source_dir() {
@@ -1434,6 +1448,70 @@ run_importers() {
   done
 }
 
+provision_external_services() {
+  local sendgrid_code uptime_code uptime_interval
+
+  if ! run_wp plugin is-active mrn-config-helper >/dev/null 2>&1; then
+    add_warning "Skipped external service provisioning: MRN Config Helper is not active."
+    return 0
+  fi
+
+  if bootstrap_flag_enabled "${AUTO_PROVISION_SENDGRID}"; then
+    sendgrid_code="$(cat <<'PHP'
+if (!class_exists('MRN_Config_Helper') || !method_exists('MRN_Config_Helper', 'bootstrap_sendgrid_site_provisioning')) {
+    fwrite(STDERR, "MRN Config Helper does not support SendGrid bootstrap provisioning.\n");
+    exit(1);
+}
+
+$result = MRN_Config_Helper::bootstrap_sendgrid_site_provisioning(home_url('/'));
+$status = isset($result['status']) ? (string) $result['status'] : 'unknown';
+$message = isset($result['message']) ? (string) $result['message'] : 'No message returned.';
+
+echo "SendGrid provisioning {$status}: {$message}\n";
+
+if (in_array($status, array('warning', 'skipped'), true)) {
+    exit(2);
+}
+PHP
+)"
+    if ! run_wp eval "${sendgrid_code}"; then
+      add_warning "SendGrid automatic provisioning did not complete cleanly."
+    fi
+  else
+    echo "SendGrid automatic provisioning disabled by STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION."
+  fi
+
+  if bootstrap_flag_enabled "${AUTO_PROVISION_UPTIME_ROBOT}"; then
+    uptime_interval="${UPTIME_ROBOT_MONITOR_INTERVAL}"
+    if ! [[ "${uptime_interval}" =~ ^[0-9]+$ ]] || (( uptime_interval < 60 )); then
+      uptime_interval=300
+    fi
+
+    uptime_code="$(cat <<PHP
+if (!class_exists('MRN_Config_Helper') || !method_exists('MRN_Config_Helper', 'bootstrap_uptime_robot_monitor')) {
+    fwrite(STDERR, "MRN Config Helper does not support UptimeRobot bootstrap provisioning.\\n");
+    exit(1);
+}
+
+\$result = MRN_Config_Helper::bootstrap_uptime_robot_monitor(home_url('/'), ${uptime_interval});
+\$status = isset(\$result['status']) ? (string) \$result['status'] : 'unknown';
+\$message = isset(\$result['message']) ? (string) \$result['message'] : 'No message returned.';
+
+echo "UptimeRobot provisioning {\$status}: {\$message}\\n";
+
+if (in_array(\$status, array('warning', 'skipped'), true)) {
+    exit(2);
+}
+PHP
+)"
+    if ! run_wp eval "${uptime_code}"; then
+      add_warning "UptimeRobot automatic provisioning did not complete cleanly."
+    fi
+  else
+    echo "UptimeRobot automatic provisioning disabled by STACK_BOOTSTRAP_UPTIME_ROBOT_AUTO_PROVISION."
+  fi
+}
+
 ensure_updraft_local_retention_schedule() {
   if ! run_wp plugin is-installed updraftplus >/dev/null 2>&1; then
     echo "UpdraftPlus is not installed; skipping local retention cron verification."
@@ -1513,6 +1591,7 @@ main() {
   install_themes
   apply_wp_defaults
   run_importers
+  provision_external_services
   ensure_updraft_local_retention_schedule
   sudo -u "${SITE_USER}" touch "${SITE_PATH}/${MARKER_NAME}"
   echo "Bootstrap complete: ${SITE_PATH}"

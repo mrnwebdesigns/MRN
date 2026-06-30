@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Disable Comments (MU)
+ * Plugin Name: MRN Disable Comments
  * Description: Fully disables comments everywhere (UI + admin menu + admin bar + REST + XML-RPC + submission blocking).
  * Version: 1.2.3
  */

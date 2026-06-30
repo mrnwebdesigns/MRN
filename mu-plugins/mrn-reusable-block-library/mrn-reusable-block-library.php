@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Reusable Block Library (MU)
+ * Plugin Name: MRN Reusable Block Library
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
  * Version: 0.1.17

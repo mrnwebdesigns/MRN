@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Enable SVG Support (MU)
+ * Plugin Name: MRN SVG Support
  * Description: Allows SVG file uploads in WordPress.
  * Author: MRN Web Designs
  * Version: 1.0

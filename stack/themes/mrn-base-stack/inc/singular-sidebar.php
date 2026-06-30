@@ -121,9 +121,9 @@ function mrn_base_stack_get_sidebar_builder_layouts( $post_id = 0 ) {
 	$existing_only_names = array();
 
 	if ( $post_id > 0 && function_exists( 'mrn_base_stack_get_builder_layout_allowlist_used_layout_names' ) ) {
-		$used_names            = mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, 'page_sidebar_rows' );
-		$base_allowed_lookup   = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
-		$existing_only_names   = array_values(
+		$used_names          = mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, 'page_sidebar_rows' );
+		$base_allowed_lookup = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
+		$existing_only_names = array_values(
 			array_diff(
 				array_filter(
 					array_map( 'sanitize_key', $used_names )
@@ -131,7 +131,7 @@ function mrn_base_stack_get_sidebar_builder_layouts( $post_id = 0 ) {
 				array_keys( $base_allowed_lookup )
 			)
 		);
-		$allowed_names         = array_values(
+		$allowed_names       = array_values(
 			array_unique(
 				array_merge(
 					$allowed_names,

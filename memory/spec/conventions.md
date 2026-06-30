@@ -18,6 +18,7 @@
 - Keep edits scoped and minimal.
 - Prefer shared helpers over one-off patches.
 - Preserve canonical ownership boundaries between theme, plugins, MU plugins, and shared sources.
+- Keep internal MRN package identity separate from visible wp-admin UX: admin menu labels, page titles, buttons, and help copy should not include `MRN` unless the user explicitly asks for internal branding there.
 - For site update work, prefer additive or internal implementation changes over public markup-contract changes.
 - Do not rename or remove stable theme-facing classes, CSS variables, helper contracts, or other theming hooks unless the change is necessary and the downstream site impact is reviewed first.
 - Treat width rendering and wrapper layering as solved infrastructure when adding new layouts.

@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Admin UI CSS (MU Legacy)
+ * Plugin Name: MRN Admin UI CSS Legacy
  * Description: Legacy admin CSS loader retained for backwards compatibility. Automatically stands down when the unified MRN Admin UI CSS loader is present.
  * Version: 1.0.8
  */

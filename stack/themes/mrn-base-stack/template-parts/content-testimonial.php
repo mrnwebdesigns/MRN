@@ -5,28 +5,28 @@
  * @package mrn-base-stack
  */
 
-$mrn_post_id      = get_the_ID();
-$mrn_is_singular  = is_singular( 'testimonial' );
-$mrn_testimonial  = function_exists( 'mrn_base_stack_get_testimonial_data' ) ? mrn_base_stack_get_testimonial_data( $mrn_post_id ) : array();
-$mrn_label        = isset( $mrn_testimonial['label'] ) ? trim( (string) $mrn_testimonial['label'] ) : '';
-$mrn_heading      = isset( $mrn_testimonial['heading'] ) ? trim( (string) $mrn_testimonial['heading'] ) : '';
-$mrn_subheading   = isset( $mrn_testimonial['subheading'] ) ? trim( (string) $mrn_testimonial['subheading'] ) : '';
-$mrn_name         = isset( $mrn_testimonial['name'] ) ? (string) $mrn_testimonial['name'] : get_the_title();
-$mrn_company      = isset( $mrn_testimonial['company'] ) ? trim( (string) $mrn_testimonial['company'] ) : '';
-$mrn_position     = isset( $mrn_testimonial['position'] ) ? trim( (string) $mrn_testimonial['position'] ) : '';
-$mrn_website_url  = isset( $mrn_testimonial['website_url'] ) ? trim( (string) $mrn_testimonial['website_url'] ) : '';
-$mrn_content      = isset( $mrn_testimonial['content'] ) ? (string) $mrn_testimonial['content'] : '';
-$mrn_image_logo   = isset( $mrn_testimonial['image_logo'] ) && is_array( $mrn_testimonial['image_logo'] ) ? $mrn_testimonial['image_logo'] : null;
+$mrn_post_id       = get_the_ID();
+$mrn_is_singular   = is_singular( 'testimonial' );
+$mrn_testimonial   = function_exists( 'mrn_base_stack_get_testimonial_data' ) ? mrn_base_stack_get_testimonial_data( $mrn_post_id ) : array();
+$mrn_label         = isset( $mrn_testimonial['label'] ) ? trim( (string) $mrn_testimonial['label'] ) : '';
+$mrn_heading       = isset( $mrn_testimonial['heading'] ) ? trim( (string) $mrn_testimonial['heading'] ) : '';
+$mrn_subheading    = isset( $mrn_testimonial['subheading'] ) ? trim( (string) $mrn_testimonial['subheading'] ) : '';
+$mrn_name          = isset( $mrn_testimonial['name'] ) ? (string) $mrn_testimonial['name'] : get_the_title();
+$mrn_company       = isset( $mrn_testimonial['company'] ) ? trim( (string) $mrn_testimonial['company'] ) : '';
+$mrn_position      = isset( $mrn_testimonial['position'] ) ? trim( (string) $mrn_testimonial['position'] ) : '';
+$mrn_website_url   = isset( $mrn_testimonial['website_url'] ) ? trim( (string) $mrn_testimonial['website_url'] ) : '';
+$mrn_content       = isset( $mrn_testimonial['content'] ) ? (string) $mrn_testimonial['content'] : '';
+$mrn_image_logo    = isset( $mrn_testimonial['image_logo'] ) && is_array( $mrn_testimonial['image_logo'] ) ? $mrn_testimonial['image_logo'] : null;
 $mrn_display_style = isset( $mrn_testimonial['display_style'] ) ? sanitize_key( (string) $mrn_testimonial['display_style'] ) : 'story';
-$mrn_video_url    = isset( $mrn_testimonial['video_url'] ) ? trim( (string) $mrn_testimonial['video_url'] ) : '';
-$mrn_video_kind   = isset( $mrn_testimonial['video_kind'] ) ? trim( (string) $mrn_testimonial['video_kind'] ) : '';
-$mrn_video_mime   = isset( $mrn_testimonial['video_mime'] ) ? trim( (string) $mrn_testimonial['video_mime'] ) : '';
-$mrn_video_title  = sprintf(
+$mrn_video_url     = isset( $mrn_testimonial['video_url'] ) ? trim( (string) $mrn_testimonial['video_url'] ) : '';
+$mrn_video_kind    = isset( $mrn_testimonial['video_kind'] ) ? trim( (string) $mrn_testimonial['video_kind'] ) : '';
+$mrn_video_mime    = isset( $mrn_testimonial['video_mime'] ) ? trim( (string) $mrn_testimonial['video_mime'] ) : '';
+$mrn_video_title   = sprintf(
 	/* translators: %s: testimonial author name. */
 	__( 'Video testimonial from %s', 'mrn-base-stack' ),
 	wp_strip_all_tags( $mrn_name )
 );
-$mrn_archive_text = function_exists( 'mrn_base_stack_get_testimonial_excerpt' ) ? mrn_base_stack_get_testimonial_excerpt( $mrn_post_id ) : '';
+$mrn_archive_text    = function_exists( 'mrn_base_stack_get_testimonial_excerpt' ) ? mrn_base_stack_get_testimonial_excerpt( $mrn_post_id ) : '';
 $mrn_article_classes = array(
 	'mrn-testimonial',
 	'mrn-testimonial--display-' . sanitize_html_class( '' !== $mrn_display_style ? $mrn_display_style : 'story' ),

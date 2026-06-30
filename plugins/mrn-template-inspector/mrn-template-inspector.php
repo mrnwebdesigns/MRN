@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: MRN Template Inspector (Testing)
+ * Plugin Name: MRN Template Inspector
  * Description: Standalone local testing tool to inspect selected page elements, template tree, and related CSS, then open files in VS Code.
  * Author: MRN Web Designs
  * Version: 0.2.3

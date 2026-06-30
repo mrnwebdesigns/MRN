@@ -144,8 +144,8 @@ function mrn_base_stack_get_display_style_choices_for_entity( $entity_type, $ent
  * @return string
  */
 function mrn_base_stack_normalize_display_style( $style, $entity_type, $entity_subtype, $fallback = '' ) {
-	$style   = sanitize_key( (string) $style );
-	$styles  = mrn_base_stack_get_display_styles_for_entity( $entity_type, $entity_subtype );
+	$style    = sanitize_key( (string) $style );
+	$styles   = mrn_base_stack_get_display_styles_for_entity( $entity_type, $entity_subtype );
 	$fallback = sanitize_key( (string) $fallback );
 
 	if ( '' !== $style && isset( $styles[ $style ] ) ) {

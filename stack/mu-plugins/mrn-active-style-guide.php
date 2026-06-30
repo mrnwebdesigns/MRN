@@ -1,5 +1,9 @@
 <?php
 /**
+ * Plugin Name: MRN Active Style Guide
+ * Description: Loads the MRN Active Style Guide MU plugin from its subfolder.
+ * Version: 0.1.5
+ *
  * Bootstrap loader for the Active Style Guide MU plugin.
  */
 

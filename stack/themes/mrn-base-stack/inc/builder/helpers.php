@@ -98,7 +98,7 @@ function mrn_base_stack_get_hydrated_local_flexible_layouts( array $field ) {
 			continue;
 		}
 
-		$layout['sub_fields'] = $grouped[ $key ];
+		$layout['sub_fields']   = $grouped[ $key ];
 		$layouts[ $layout_key ] = $layout;
 	}
 
@@ -207,9 +207,9 @@ function mrn_base_stack_get_after_content_builder_layouts( $post_id = 0 ) {
 	$existing_only_names = array();
 
 	if ( $post_id > 0 && function_exists( 'mrn_base_stack_get_builder_layout_allowlist_used_layout_names' ) ) {
-		$used_names            = mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, 'page_after_content_rows' );
-		$base_allowed_lookup   = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
-		$existing_only_names   = array_values(
+		$used_names          = mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, 'page_after_content_rows' );
+		$base_allowed_lookup = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
+		$existing_only_names = array_values(
 			array_diff(
 				array_filter(
 					array_map( 'sanitize_key', $used_names )
@@ -217,7 +217,7 @@ function mrn_base_stack_get_after_content_builder_layouts( $post_id = 0 ) {
 				array_keys( $base_allowed_lookup )
 			)
 		);
-		$allowed_names         = array_values(
+		$allowed_names       = array_values(
 			array_unique(
 				array_merge(
 					$allowed_names,
@@ -310,7 +310,7 @@ function mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id ) {
 		return $cache[ $post_id ];
 	}
 
-	$meta         = get_post_meta( $post_id );
+	$meta         = get_post_meta( $post_id, '', false );
 	$layout_names = array();
 
 	if ( ! is_array( $meta ) ) {
@@ -365,7 +365,7 @@ function mrn_base_stack_get_two_column_used_nested_layout_names( $post_id ) {
 		return $cache[ $post_id ];
 	}
 
-	$meta         = get_post_meta( $post_id );
+	$meta         = get_post_meta( $post_id, '', false );
 	$layout_names = array();
 
 	if ( ! is_array( $meta ) ) {
@@ -709,7 +709,7 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 		)
 	);
 
-	$allowed_names  = array_values(
+	$allowed_names        = array_values(
 		array_diff(
 			array_values(
 				array_unique(
@@ -2526,14 +2526,14 @@ function mrn_base_stack_get_row_spacing_preset_field( $key, $name = 'row_spacing
 	return array(
 		'key'           => $key,
 		'label'         => $label,
-			'name'          => $name,
-			'aria-label'    => '',
-			'type'          => 'select',
-			'choices'       => array(
-				'' => 'Site Default',
-			),
-			'default_value' => '',
-			'ui'            => 1,
+		'name'          => $name,
+		'aria-label'    => '',
+		'type'          => 'select',
+		'choices'       => array(
+			'' => 'Site Default',
+		),
+		'default_value' => '',
+		'ui'            => 1,
 		'allow_null'    => 1,
 		'instructions'  => $instructions,
 		'wrapper'       => array(
@@ -5166,10 +5166,10 @@ function mrn_base_stack_should_apply_primary_layout_contract_to_flexible_field( 
 		return false;
 	}
 
-	$field_name    = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
-	$field_names   = mrn_base_stack_get_primary_builder_flexible_field_names();
-	$has_layouts   = isset( $field['layouts'] ) && is_array( $field['layouts'] ) && ! empty( $field['layouts'] );
-	$should_apply  = $has_layouts && '' !== $field_name && in_array( $field_name, $field_names, true );
+	$field_name   = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+	$field_names  = mrn_base_stack_get_primary_builder_flexible_field_names();
+	$has_layouts  = isset( $field['layouts'] ) && is_array( $field['layouts'] ) && ! empty( $field['layouts'] );
+	$should_apply = $has_layouts && '' !== $field_name && in_array( $field_name, $field_names, true );
 
 	if ( $should_apply && mrn_base_stack_flexible_field_has_primary_layout_contract( $field ) ) {
 		$should_apply = false;
@@ -5213,14 +5213,14 @@ function mrn_base_stack_apply_primary_layout_contract_on_flexible_load( $field )
 
 		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
 		$layout['sub_fields']            = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
-			$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
-			$field['layouts'][ $layout_key ] = $layout;
-		}
-
-		$field['_mrn_base_stack_contract_applied'] = true;
-
-		return $field;
+		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+		$field['layouts'][ $layout_key ] = $layout;
 	}
+
+	$field['_mrn_base_stack_contract_applied'] = true;
+
+	return $field;
+}
 add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_apply_primary_layout_contract_on_flexible_load', 30 );
 add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_apply_primary_layout_contract_on_flexible_load', 30 );
 
@@ -5254,14 +5254,14 @@ function mrn_base_stack_apply_primary_layout_contract_on_flexible_get_field( $fi
 
 		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
 		$layout['sub_fields']            = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
-			$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
-			$field['layouts'][ $layout_key ] = $layout;
-		}
-
-		$field['_mrn_base_stack_contract_applied'] = true;
-
-		return $field;
+		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+		$field['layouts'][ $layout_key ] = $layout;
 	}
+
+	$field['_mrn_base_stack_contract_applied'] = true;
+
+	return $field;
+}
 
 /**
  * Recursively move row effect controls into a dedicated Effects tab.

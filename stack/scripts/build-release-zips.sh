@@ -45,6 +45,8 @@ zip_directory() {
 			-x "$slug/.git/**/*" \
 			-x "$slug/.DS_Store" \
 			-x "$slug/**/.DS_Store" \
+			-x "$slug/.tmp/*" \
+			-x "$slug/.tmp/**/*" \
 			-x "$slug/node_modules/*" \
 			-x "$slug/node_modules/**/*" \
 			-x "$slug/playwright-report/*" \

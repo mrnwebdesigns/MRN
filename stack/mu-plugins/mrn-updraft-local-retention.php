@@ -1,5 +1,9 @@
 <?php
 /**
+ * Plugin Name: MRN Updraft Local Retention
+ * Description: Loads the MRN Updraft Local Retention MU plugin from its subfolder.
+ * Version: 0.1.0
+ *
  * Bootstrap loader for the Updraft local retention MU plugin.
  */
 

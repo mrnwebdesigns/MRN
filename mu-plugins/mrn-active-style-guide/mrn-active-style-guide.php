@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Style Guide (MU)
+ * Plugin Name: MRN Active Style Guide
  * Description: Adds a logged-in-only front-end style guide panel and full reference page for reviewing live brand styles.
  * Author: MRN Web Designs
  * Version: 0.1.5

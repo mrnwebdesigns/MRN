@@ -208,7 +208,7 @@ function mrn_base_stack_get_hidden_builder_layouts() {
  * Get the singular post types that use the theme's builder-style shell.
  *
  * @param array<int, string> $post_types Post type slugs.
- * @return array<int, string>
+ * @return array<int, array<int, array<string, mixed>>>
  */
 function mrn_base_stack_build_post_type_location_rules( array $post_types ) {
 	$locations = array();
@@ -634,7 +634,7 @@ function mrn_base_stack_post_requires_front_end_runtime( $post_id ) {
 		return true;
 	}
 
-	$meta = get_post_meta( $post_id );
+	$meta = get_post_meta( $post_id, '', false );
 	if ( ! is_array( $meta ) || empty( $meta ) ) {
 		return false;
 	}

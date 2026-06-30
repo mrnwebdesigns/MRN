@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Dashboard Support (MU)
+ * Plugin Name: MRN Dashboard Support
  * Description: Adds a fixed, non-collapsible, non-movable MRN Web Designs support widget pinned to the top-left of the WP dashboard.
  * Author: MRN Web Designs
  * Version: 1.0.3

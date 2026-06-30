@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: MRN Editor Lockdown (MU)
+ * Plugin Name: MRN Editor Lockdown
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.23
+ * Version: 1.0.24
  *
  * @package MRNEditorLockdown
  */
@@ -1449,3 +1449,132 @@ function mrn_editor_lockdown_admin_js() {
 	<?php
 }
 add_action( 'admin_print_footer_scripts', 'mrn_editor_lockdown_admin_js' );
+
+/**
+ * Normalize a saved Admin Menu Editor item when it represents a core update surface.
+ *
+ * @param array<string, mixed> $item        AME menu item.
+ * @param string               $menu_title  Stable menu title without dynamic badge markup.
+ * @param string               $capability  Required capability.
+ * @param string               $file        WordPress admin file.
+ * @return bool True when the item changed.
+ */
+function mrn_editor_lockdown_normalize_ame_item( &$item, $menu_title, $capability, $file ) {
+	if ( ! is_array( $item ) ) {
+		return false;
+	}
+
+	$changed = false;
+
+	if ( ! empty( $item['hidden'] ) ) {
+		$item['hidden'] = false;
+		$changed        = true;
+	}
+
+	if ( isset( $item['hidden_from_actor']['role:administrator'] ) ) {
+		unset( $item['hidden_from_actor']['role:administrator'] );
+		$changed = true;
+	}
+
+	if ( empty( $item['grant_access'] ) || ! is_array( $item['grant_access'] ) ) {
+		$item['grant_access'] = array();
+	}
+
+	if ( ! isset( $item['grant_access']['role:administrator'] ) || true !== $item['grant_access']['role:administrator'] ) {
+		$item['grant_access']['role:administrator'] = true;
+		$changed                                    = true;
+	}
+
+	if ( empty( $item['defaults'] ) || ! is_array( $item['defaults'] ) ) {
+		$item['defaults'] = array();
+	}
+
+	$defaults = array(
+		'menu_title'   => $menu_title,
+		'access_level' => $capability,
+		'file'         => $file,
+	);
+
+	foreach ( $defaults as $key => $value ) {
+		if ( ! isset( $item['defaults'][ $key ] ) || $value !== $item['defaults'][ $key ] ) {
+			$item['defaults'][ $key ] = $value;
+			$changed                  = true;
+		}
+	}
+
+	return $changed;
+}
+
+/**
+ * Repair AME configs that imported stale update badges or restricted update screens.
+ *
+ * @return bool True when an option changed.
+ */
+function mrn_editor_lockdown_repair_admin_update_menu_config() {
+	$changed = false;
+	$config  = get_option( 'ws_menu_editor_pro' );
+
+	if ( is_array( $config ) && isset( $config['custom_menu']['tree'] ) && is_array( $config['custom_menu']['tree'] ) ) {
+		$tree = &$config['custom_menu']['tree'];
+
+		if ( isset( $tree['index.php']['items'] ) && is_array( $tree['index.php']['items'] ) ) {
+			foreach ( $tree['index.php']['items'] as &$item ) {
+				$file        = isset( $item['defaults']['file'] ) ? (string) $item['defaults']['file'] : '';
+				$template_id = isset( $item['template_id'] ) ? (string) $item['template_id'] : '';
+
+				if ( 'update-core.php' === $file || 'index.php>update-core.php' === $template_id ) {
+					$changed = mrn_editor_lockdown_normalize_ame_item( $item, 'Updates', 'update_core', 'update-core.php' ) || $changed;
+				}
+			}
+			unset( $item );
+		}
+
+		if ( isset( $tree['plugins.php'] ) && is_array( $tree['plugins.php'] ) ) {
+			$changed = mrn_editor_lockdown_normalize_ame_item( $tree['plugins.php'], 'Plugins', 'activate_plugins', 'plugins.php' ) || $changed;
+		}
+
+		if ( isset( $tree['themes.php'] ) && is_array( $tree['themes.php'] ) && isset( $tree['themes.php']['items'] ) && is_array( $tree['themes.php']['items'] ) ) {
+			foreach ( $tree['themes.php']['items'] as &$item ) {
+				$file        = isset( $item['defaults']['file'] ) ? (string) $item['defaults']['file'] : '';
+				$template_id = isset( $item['template_id'] ) ? (string) $item['template_id'] : '';
+
+				if ( 'themes.php' === $file || 'themes.php>themes.php' === $template_id ) {
+					$changed = mrn_editor_lockdown_normalize_ame_item( $item, 'Themes', 'switch_themes', 'themes.php' ) || $changed;
+				}
+			}
+			unset( $item );
+		}
+
+		if ( $changed ) {
+			update_option( 'ws_menu_editor_pro', $config, false );
+		}
+	}
+
+	$toolbar_changed = false;
+	$toolbar_config  = get_option( 'ws_abe_admin_bar_settings' );
+
+	if ( is_array( $toolbar_config ) && isset( $toolbar_config['nodes']['updates'] ) ) {
+		unset( $toolbar_config['nodes']['updates'] );
+		$toolbar_changed = true;
+	}
+
+	if ( $toolbar_changed ) {
+		update_option( 'ws_abe_admin_bar_settings', $toolbar_config, false );
+	}
+
+	return $changed || $toolbar_changed;
+}
+
+/**
+ * Keep core update screens available even when a stale AME export is imported.
+ *
+ * @return void
+ */
+function mrn_editor_lockdown_repair_admin_update_menu_config_on_admin() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	mrn_editor_lockdown_repair_admin_update_menu_config();
+}
+add_action( 'admin_init', 'mrn_editor_lockdown_repair_admin_update_menu_config_on_admin', 1 );

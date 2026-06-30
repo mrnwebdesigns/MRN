@@ -68,14 +68,13 @@ MU_PLUGIN_DIRS=(
 	"mrn-admin-ui-css"
 	"mrn-dashboard-support"
 	"mrn-disable-comments"
-	"mrn-duplicate-enhance"
 	"mrn-editor-lockdown"
-	"mrn-editor-ui-css"
+	"mrn-public-security-hardening"
 	"mrn-reusable-block-library"
+	"mrn-schema-bridge"
 	"mrn-shared-assets"
 	"mrn-site-colors"
 	"mrn-updraft-local-retention"
-	"mrn-svg-support"
 )
 
 THEME_EXCLUDES=(

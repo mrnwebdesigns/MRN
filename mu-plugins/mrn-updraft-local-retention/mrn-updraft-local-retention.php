@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Updraft Local Retention (MU)
+ * Plugin Name: MRN Updraft Local Retention
  * Description: Keeps only a limited number of local Updraft backup sets while leaving remote retention untouched.
  * Author: MRN Web Designs
  * Version: 0.1.0

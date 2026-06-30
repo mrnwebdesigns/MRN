@@ -2,43 +2,43 @@
 # Generated from the current source plugin set, then normalized for stack rollout.
 # Rules:
 # - Exclude MU-managed plugins from the normal plugin manifest.
-# - Exclude local-only/stale entries like fluent-smtp and index.php.
+# - Exclude local-only/stale entries like index.php.
 # - Use package zip paths for premium/private plugins when available.
 
 /home/mrndev-stack-manager/stack/packages/admin-menu-editor-pro.zip
 /home/mrndev-stack-manager/stack/packages/advanced-custom-fields-pro.zip
 /home/mrndev-stack-manager/stack/packages/ame-branding-add-on.zip
-/home/mrndev-stack-manager/stack/packages/1320813_beehive-pro-3.4.18.zip
+/home/mrndev-stack-manager/stack/packages/background-video-popout-disabler.zip
 classic-editor
 enable-media-replace
 fluent-smtp
-media-library-organizer
+/home/mrndev-stack-manager/stack/packages/happyfiles-pro.zip
 /home/mrndev-stack-manager/stack/packages/mrn-acf-character-count.zip
+/home/mrndev-stack-manager/stack/packages/mrn-ai-assist.zip
+/home/mrndev-stack-manager/stack/packages/mrn-announcements.zip
 /home/mrndev-stack-manager/stack/packages/mrn-comment-management.zip
+/home/mrndev-stack-manager/stack/packages/mrn-contextual-content-editor.zip
 /home/mrndev-stack-manager/stack/packages/mrn-cookie-consent.zip
 /home/mrndev-stack-manager/stack/packages/mrn-dummy-content.zip
 /home/mrndev-stack-manager/stack/packages/mrn-editor-tools.zip
+/home/mrndev-stack-manager/stack/packages/mrn-fontawesome-profile-manager.zip
 /home/mrndev-stack-manager/stack/packages/mrn-gtm-injector.zip
 /home/mrndev-stack-manager/stack/packages/mrn-google-fonts.zip
 /home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip
 /home/mrndev-stack-manager/stack/packages/mrn-media-bulk-tools.zip
 /home/mrndev-stack-manager/stack/packages/mrn-recaptcha-enterprise-manager.zip
 /home/mrndev-stack-manager/stack/packages/mrn-seo-helper.zip
+/home/mrndev-stack-manager/stack/packages/mrn-template-inspector.zip
 /home/mrndev-stack-manager/stack/packages/mrn-universal-sticky-bar.zip
 post-duplicator
 post-types-order
-/home/mrndev-stack-manager/stack/packages/searchwp-4.5.7-1.zip
+/home/mrndev-stack-manager/stack/packages/searchwp-4.6.0.zip
 searchwp-live-ajax-search
 /home/mrndev-stack-manager/stack/packages/searchwp-editor-performance.zip
-show-current-template
 tinymce-advanced
-/home/mrndev-stack-manager/stack/packages/updraftplus.2.26.1.zip
-view-admin-as
-wp-crontrol
-/home/mrndev-stack-manager/stack/packages/1320813_defender-pro-5.9.zip
-/home/mrndev-stack-manager/stack/packages/1320813_hummingbird-pro-3.19.zip
-/home/mrndev-stack-manager/stack/packages/1320813_smush-pro-3.23.4.zip
+/home/mrndev-stack-manager/stack/packages/updraftplus.2.26.5.zip
+/home/mrndev-stack-manager/stack/packages/1320813_defender-pro-5.11.zip
 /home/mrndev-stack-manager/stack/packages/wp-toolbar-editor.zip
 /home/mrndev-stack-manager/stack/packages/wpforms.zip
-/home/mrndev-stack-manager/stack/packages/1320813_smartcrawl-pro-3.15.zip
-/home/mrndev-stack-manager/stack/packages/1320813_wpmu-dev-dashboard-4.11.29.zip
+/home/mrndev-stack-manager/stack/packages/1320813_smartcrawl-pro-3.16.2.zip
+/home/mrndev-stack-manager/stack/packages/1320813_wpmu-dev-dashboard-5.0.0.zip

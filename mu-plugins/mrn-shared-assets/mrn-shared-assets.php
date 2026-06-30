@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Shared Assets (MU)
+ * Plugin Name: MRN Shared Assets
  * Description: Provides shared runtime assets and metadata for stack-wide consumers.
  * Author: MRN Web Designs
  * Version: 0.1.3

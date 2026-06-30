@@ -11,6 +11,9 @@ Use this file to answer:
 
 This is an inventory and summary, not yet the full deep-dive documentation for every plugin.
 
+For the current Plugins-page names, header versions, repository ownership, and
+stack-dependency notes, use [`MRN_PLUGIN_AUDIT.md`](./MRN_PLUGIN_AUDIT.md).
+
 ## Standard Plugins
 
 ### `mrn-acf-character-count`

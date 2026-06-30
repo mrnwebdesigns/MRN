@@ -203,6 +203,282 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 add_action( 'admin_enqueue_scripts', 'mrn_base_stack_admin_enqueue_builder_assets' );
 
 /**
+ * Normalize ACF layout picker metadata.
+ *
+ * @param array<string, mixed> $metadata Raw metadata.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_normalize_acf_layout_picker_metadata( array $metadata ) {
+	$keywords = array();
+	if ( isset( $metadata['keywords'] ) ) {
+		$raw_keywords = is_array( $metadata['keywords'] ) ? $metadata['keywords'] : explode( ',', (string) $metadata['keywords'] );
+		$keywords     = array_values(
+			array_unique(
+				array_filter(
+					array_map(
+						static function ( $keyword ) {
+							return sanitize_text_field( wp_strip_all_tags( (string) $keyword ) );
+						},
+						$raw_keywords
+					)
+				)
+			)
+		);
+	}
+
+	return array(
+		'description'           => isset( $metadata['description'] ) ? sanitize_text_field( wp_strip_all_tags( (string) $metadata['description'] ) ) : '',
+		'icon'                  => isset( $metadata['icon'] ) ? mrn_base_stack_normalize_acf_layout_picker_dashicon( (string) $metadata['icon'] ) : '',
+		'preview_thumbnail_url' => isset( $metadata['preview_thumbnail_url'] ) ? esc_url_raw( (string) $metadata['preview_thumbnail_url'] ) : '',
+		'preview_alt_text'      => isset( $metadata['preview_alt_text'] ) ? sanitize_text_field( wp_strip_all_tags( (string) $metadata['preview_alt_text'] ) ) : '',
+		'category'              => isset( $metadata['category'] ) ? sanitize_text_field( wp_strip_all_tags( (string) $metadata['category'] ) ) : '',
+		'keywords'              => $keywords,
+	);
+}
+
+/**
+ * Normalize a Dashicons class for the ACF layout picker.
+ *
+ * @param string $dashicon Dashicon class.
+ * @return string
+ */
+function mrn_base_stack_normalize_acf_layout_picker_dashicon( $dashicon ) {
+	$dashicon = strtolower( trim( (string) $dashicon ) );
+	if ( '' === $dashicon || 'dashicons' === $dashicon ) {
+		return '';
+	}
+
+	if ( preg_match( '/dashicons-[a-z0-9-]+/', $dashicon, $matches ) ) {
+		return sanitize_html_class( $matches[0] );
+	}
+
+	$dashicon = preg_replace( '/[^a-z0-9-]/', '', $dashicon );
+	if ( '' === $dashicon ) {
+		return '';
+	}
+
+	if ( 0 !== strpos( $dashicon, 'dashicons-' ) ) {
+		$dashicon = 'dashicons-' . $dashicon;
+	}
+
+	return 'dashicons-dashicons' === $dashicon ? '' : sanitize_html_class( $dashicon );
+}
+
+/**
+ * Get metadata for one ACF flexible-content layout in the admin picker.
+ *
+ * @param string               $layout_name Layout name/slug.
+ * @param array<string, mixed> $layout      ACF layout definition.
+ * @param array<string, mixed> $field       ACF flexible-content field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_acf_layout_picker_metadata( $layout_name, $layout = array(), $field = array() ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	$layout      = is_array( $layout ) ? $layout : array();
+	$field       = is_array( $field ) ? $field : array();
+
+	$metadata = array(
+		'description'           => '',
+		'icon'                  => '',
+		'preview_thumbnail_url' => '',
+		'preview_alt_text'      => '',
+		'category'              => '',
+		'keywords'              => array(),
+	);
+
+	foreach ( array( 'description', 'instructions', 'picker_description', 'layout_picker_description' ) as $description_key ) {
+		if ( isset( $layout[ $description_key ] ) && '' !== trim( (string) $layout[ $description_key ] ) ) {
+			$metadata['description'] = (string) $layout[ $description_key ];
+			break;
+		}
+	}
+
+	foreach ( array( 'icon', 'dashicon', 'picker_icon', 'layout_picker_icon' ) as $icon_key ) {
+		if ( isset( $layout[ $icon_key ] ) && '' !== trim( (string) $layout[ $icon_key ] ) ) {
+			$metadata['icon'] = (string) $layout[ $icon_key ];
+			break;
+		}
+	}
+
+	foreach ( array( 'preview_thumbnail_url', 'preview_url', 'picker_preview_url', 'layout_picker_preview_url' ) as $preview_key ) {
+		if ( isset( $layout[ $preview_key ] ) && '' !== trim( (string) $layout[ $preview_key ] ) ) {
+			$metadata['preview_thumbnail_url'] = (string) $layout[ $preview_key ];
+			break;
+		}
+	}
+
+	foreach ( array( 'preview_alt_text', 'preview_alt', 'picker_preview_alt', 'layout_picker_preview_alt' ) as $alt_key ) {
+		if ( isset( $layout[ $alt_key ] ) && '' !== trim( (string) $layout[ $alt_key ] ) ) {
+			$metadata['preview_alt_text'] = (string) $layout[ $alt_key ];
+			break;
+		}
+	}
+
+	foreach ( array( 'category', 'group', 'picker_category', 'layout_picker_category' ) as $category_key ) {
+		if ( isset( $layout[ $category_key ] ) && '' !== trim( (string) $layout[ $category_key ] ) ) {
+			$metadata['category'] = (string) $layout[ $category_key ];
+			break;
+		}
+	}
+
+	foreach ( array( 'keywords', 'picker_keywords', 'layout_picker_keywords' ) as $keywords_key ) {
+		if ( isset( $layout[ $keywords_key ] ) ) {
+			$metadata['keywords'] = $layout[ $keywords_key ];
+			break;
+		}
+	}
+
+	/**
+	 * Filter metadata shown in the stack ACF flexible-content layout picker.
+	 *
+	 * @param array<string, mixed> $metadata    Picker metadata.
+	 * @param string               $layout_name Layout name/slug.
+	 * @param array<string, mixed> $layout      ACF layout definition.
+	 * @param array<string, mixed> $field       ACF flexible-content field definition.
+	 */
+	$metadata = apply_filters(
+		'mrn_base_stack_acf_layout_picker_metadata',
+		$metadata,
+		$layout_name,
+		$layout,
+		$field
+	);
+
+	return mrn_base_stack_normalize_acf_layout_picker_metadata( is_array( $metadata ) ? $metadata : array() );
+}
+
+/**
+ * Build a lightweight metadata map for the admin layout picker.
+ *
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_acf_layout_picker_metadata_map() {
+	$preloaded_map = array();
+	if ( function_exists( 'mrn_config_helper_get_acf_layout_picker_metadata_map' ) ) {
+		$preloaded_map = mrn_config_helper_get_acf_layout_picker_metadata_map();
+	} else {
+		$preloaded_map = function_exists( 'mrn_config_helper_get_builder_layout_picker_metadata' )
+			? mrn_config_helper_get_builder_layout_picker_metadata()
+			: array();
+		$preloaded_map = apply_filters( 'mrn_base_stack_acf_layout_picker_metadata_map', is_array( $preloaded_map ) ? $preloaded_map : array() );
+	}
+	if ( is_array( $preloaded_map ) && ! empty( $preloaded_map ) ) {
+		$map = array();
+		foreach ( $preloaded_map as $layout_name => $metadata ) {
+			$layout_name = sanitize_key( (string) $layout_name );
+			if ( '' === $layout_name || ! is_array( $metadata ) ) {
+				continue;
+			}
+
+			$map[ $layout_name ] = mrn_base_stack_normalize_acf_layout_picker_metadata( $metadata );
+		}
+
+		return $map;
+	}
+
+	if ( ! has_filter( 'mrn_base_stack_acf_layout_picker_metadata' ) ) {
+		return array();
+	}
+
+	$field_names = array( 'page_hero_rows', 'page_content_rows', 'page_after_content_rows', 'page_sidebar_rows' );
+	$map         = array();
+
+	foreach ( $field_names as $field_name ) {
+		$field_name = sanitize_key( $field_name );
+		$field      = array(
+			'name' => $field_name,
+		);
+		$catalog    = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_catalog' )
+			? mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name )
+			: array();
+
+		if ( empty( $catalog ) || ! is_array( $catalog ) ) {
+			continue;
+		}
+
+		foreach ( $catalog as $layout_name => $layout ) {
+			if ( ! is_array( $layout ) ) {
+				continue;
+			}
+
+			$layout_name = sanitize_key( (string) $layout_name );
+			if ( '' === $layout_name ) {
+				continue;
+			}
+
+			$metadata = mrn_base_stack_get_acf_layout_picker_metadata( $layout_name, $layout, $field );
+			if ( '' === $metadata['description'] && '' === $metadata['icon'] && '' === $metadata['preview_thumbnail_url'] && '' === $metadata['category'] && empty( $metadata['keywords'] ) ) {
+				continue;
+			}
+
+			$map[ $layout_name ] = $metadata;
+		}
+	}
+
+	return $map;
+}
+
+/**
+ * Enqueue the stack ACF flexible-content layout picker.
+ *
+ * @return void
+ */
+function mrn_base_stack_enqueue_acf_layout_picker_assets() {
+	if ( ! is_admin() ) {
+		return;
+	}
+
+	if ( function_exists( 'mrn_config_helper_has_acf_layout_picker' ) && mrn_config_helper_has_acf_layout_picker() ) {
+		return;
+	}
+
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( ! $screen instanceof WP_Screen || ! in_array( $screen->base, array( 'post', 'post-new' ), true ) ) {
+		return;
+	}
+
+	$post_type = sanitize_key( (string) $screen->post_type );
+	if ( '' === $post_type || ! in_array( $post_type, mrn_base_stack_get_singular_shell_post_types(), true ) ) {
+		return;
+	}
+
+	$css_path = get_template_directory() . '/css/acf-layout-picker.css';
+	$js_path  = get_template_directory() . '/js/acf-layout-picker.js';
+
+	if ( file_exists( $css_path ) ) {
+		wp_enqueue_style(
+			'mrn-base-stack-acf-layout-picker',
+			get_template_directory_uri() . '/css/acf-layout-picker.css',
+			array(),
+			(string) filemtime( $css_path )
+		);
+	}
+
+	if ( file_exists( $js_path ) ) {
+		wp_enqueue_script(
+			'mrn-base-stack-acf-layout-picker',
+			get_template_directory_uri() . '/js/acf-layout-picker.js',
+			array( 'acf-input' ),
+			(string) filemtime( $js_path ),
+			true
+		);
+
+		wp_localize_script(
+			'mrn-base-stack-acf-layout-picker',
+			'mrnBaseStackAcfLayoutPicker',
+			array(
+				'title'       => 'Add a Section',
+				'subtitle'    => 'Pick a layout to insert into this page.',
+				'searchLabel' => 'Search sections',
+				'emptyText'   => 'No sections match that search.',
+				'metadata'    => mrn_base_stack_get_acf_layout_picker_metadata_map(),
+			)
+		);
+	}
+}
+add_action( 'acf/input/admin_enqueue_scripts', 'mrn_base_stack_enqueue_acf_layout_picker_assets' );
+
+/**
  * Add lightweight admin CSS for custom content-builder row actions.
  *
  * @return void

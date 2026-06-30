@@ -64,10 +64,12 @@ function mrn_base_stack_get_builder_layout_allowlist_filter_hooks() {
 		'acf/load_field/key=field_mrn_page_content_rows',
 		'acf/load_field/key=field_mrn_page_after_content_rows',
 		'acf/load_field/key=field_mrn_sidebar_rows',
+		'acf/load_field/type=flexible_content',
 		'acf/prepare_field/key=field_mrn_page_hero_rows',
 		'acf/prepare_field/key=field_mrn_page_content_rows',
 		'acf/prepare_field/key=field_mrn_page_after_content_rows',
 		'acf/prepare_field/key=field_mrn_sidebar_rows',
+		'acf/prepare_field/type=flexible_content',
 	);
 }
 
@@ -83,6 +85,7 @@ function mrn_base_stack_run_without_builder_layout_allowlist_filters( callable $
 	foreach ( $hooks as $hook_name ) {
 		remove_filter( $hook_name, 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 	}
+	remove_filter( 'acf/load_fields', 'mrn_base_stack_filter_builder_layout_allowlist_fields', 20 );
 
 	try {
 		return $callback();
@@ -90,6 +93,7 @@ function mrn_base_stack_run_without_builder_layout_allowlist_filters( callable $
 		foreach ( $hooks as $hook_name ) {
 			add_filter( $hook_name, 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 		}
+		add_filter( 'acf/load_fields', 'mrn_base_stack_filter_builder_layout_allowlist_fields', 20, 2 );
 	}
 }
 
@@ -557,10 +561,10 @@ function mrn_base_stack_get_builder_layout_allowlist_configurable_names( array $
 		$names[] = $name;
 	}
 
-	$names                 = array_values( array_unique( $names ) );
-	$default_removed_names = 'page_sidebar_rows' === $field_name ? array() : array( 'body_text' );
-	$removed_names         = apply_filters( 'mrn_base_stack_builder_layout_allowlist_removed_layout_names', $default_removed_names, $field_name, $catalog );
-	$removed_names          = is_array( $removed_names )
+	$names                   = array_values( array_unique( $names ) );
+	$default_removed_names   = 'page_sidebar_rows' === $field_name ? array() : array( 'body_text' );
+	$removed_names           = apply_filters( 'mrn_base_stack_builder_layout_allowlist_removed_layout_names', $default_removed_names, $field_name, $catalog );
+	$removed_names           = is_array( $removed_names )
 		? array_values(
 			array_unique(
 				array_filter(
@@ -1145,14 +1149,44 @@ function mrn_base_stack_filter_builder_layout_allowlist_field_layouts( $field ) 
 
 	return $field;
 }
+
+/**
+ * Apply per-entry allowlist filtering to a loaded ACF field-group field list.
+ *
+ * Local field groups can hand ACF a full flexible-content source field before
+ * individual field filters hydrate the render-time clone store. This pass keeps
+ * the rendered admin clone templates aligned with the same allowlist contract.
+ *
+ * @param array<int|string, mixed>|mixed $fields Loaded field group fields.
+ * @param mixed                          $acf_parent ACF parent field/group reference.
+ * @return array<int|string, mixed>|mixed
+ */
+function mrn_base_stack_filter_builder_layout_allowlist_fields( $fields, $acf_parent = null ) {
+	unset( $acf_parent );
+
+	if ( ! is_array( $fields ) ) {
+		return $fields;
+	}
+
+	foreach ( $fields as $index => $field ) {
+		if ( is_array( $field ) ) {
+			$fields[ $index ] = mrn_base_stack_filter_builder_layout_allowlist_field_layouts( $field );
+		}
+	}
+
+	return $fields;
+}
 add_filter( 'acf/load_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/load_fields', 'mrn_base_stack_filter_builder_layout_allowlist_fields', 20, 2 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 
 /**
  * Hide non-addable existing-only layout choices in ACF popup menus.
@@ -1775,7 +1809,7 @@ function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post 
 			continue;
 		}
 
-		$catalog                    = mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name );
+		$catalog                   = mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name );
 		$allowlists[ $field_name ] = mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, $catalog );
 	}
 

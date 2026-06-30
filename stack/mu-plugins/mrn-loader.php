@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: MRN Loader (MU)
+ * Plugin Name: MRN Loader
  * Description: Loads MRN MU plugins from known subfolders in /wp-content/mu-plugins.
- * Version: 1.3.1
+ * Version: 1.3.2
  */
 
 defined('ABSPATH') || exit;
@@ -53,15 +53,14 @@ $mrn_loader_entries = array(
     WP_CONTENT_DIR . '/mu-plugins/mrn-admin-ui-css/mrn-admin-ui-css.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-dashboard-support/mrn-dashboard-support.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-disable-comments/mrn-disable-comments.php',
-    WP_CONTENT_DIR . '/mu-plugins/mrn-duplicate-enhance/mrn-duplicate-enhance.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php',
-    WP_CONTENT_DIR . '/mu-plugins/mrn-editor-ui-css/mrn-editor-ui-css.php',
+    WP_CONTENT_DIR . '/mu-plugins/mrn-public-security-hardening/mrn-public-security-hardening.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php',
+    WP_CONTENT_DIR . '/mu-plugins/mrn-schema-bridge/mrn-schema-bridge.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-shared-assets/mrn-shared-assets.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-site-colors/mrn-site-colors.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-updraft-local-retention/mrn-updraft-local-retention.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-active-style-guide/mrn-active-style-guide.php',
-    WP_CONTENT_DIR . '/mu-plugins/mrn-svg-support/mrn-svg-support.php',
 );
 
 foreach ($mrn_loader_entries as $entry_file) {

@@ -282,21 +282,21 @@ function mrn_base_stack_get_testimonial_data( $post_id = null ) {
 	$post_id = $post_id ? (int) $post_id : get_the_ID();
 
 	$data = array(
-		'label'       => '',
-		'heading'     => '',
-		'subheading'  => '',
-		'name'        => get_the_title( $post_id ),
-		'company'     => '',
-		'position'    => '',
-		'website_url' => '',
-		'content'     => '',
-		'image_logo'  => null,
+		'label'         => '',
+		'heading'       => '',
+		'subheading'    => '',
+		'name'          => get_the_title( $post_id ),
+		'company'       => '',
+		'position'      => '',
+		'website_url'   => '',
+		'content'       => '',
+		'image_logo'    => null,
 		'display_style' => 'story',
-		'video_remote' => '',
-		'video_upload' => null,
-		'video_url'    => '',
-		'video_kind'   => '',
-		'video_mime'   => '',
+		'video_remote'  => '',
+		'video_upload'  => null,
+		'video_url'     => '',
+		'video_kind'    => '',
+		'video_mime'    => '',
 	);
 
 	if ( ! $post_id || ! function_exists( 'get_field' ) ) {

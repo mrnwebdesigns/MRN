@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Post Duplicator Admin Bar Enhance
+ * Plugin Name: MRN Post Duplicator Admin Bar Enhance
  * Description: Adds a "Duplicate" item to the front-end admin bar that opens Post Duplicator's duplicate modal in the editor.
  * Author: MRN Web Designs
  * Version: 1.1.1
