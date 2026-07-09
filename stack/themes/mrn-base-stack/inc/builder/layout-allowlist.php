@@ -64,11 +64,13 @@ function mrn_base_stack_get_builder_layout_allowlist_filter_hooks() {
 		'acf/load_field/key=field_mrn_page_content_rows',
 		'acf/load_field/key=field_mrn_page_after_content_rows',
 		'acf/load_field/key=field_mrn_sidebar_rows',
+		'acf/load_field/key=field_mrn_page_template_sidebar_rows',
 		'acf/load_field/type=flexible_content',
 		'acf/prepare_field/key=field_mrn_page_hero_rows',
 		'acf/prepare_field/key=field_mrn_page_content_rows',
 		'acf/prepare_field/key=field_mrn_page_after_content_rows',
 		'acf/prepare_field/key=field_mrn_sidebar_rows',
+		'acf/prepare_field/key=field_mrn_page_template_sidebar_rows',
 		'acf/prepare_field/type=flexible_content',
 	);
 }
@@ -1180,11 +1182,13 @@ add_filter( 'acf/load_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filte
 add_filter( 'acf/load_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/load_field/key=field_mrn_page_template_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_fields', 'mrn_base_stack_filter_builder_layout_allowlist_fields', 20, 2 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/prepare_field/key=field_mrn_page_template_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 

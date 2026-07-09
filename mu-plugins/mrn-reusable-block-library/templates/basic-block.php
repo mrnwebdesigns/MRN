@@ -27,9 +27,8 @@ $heading_tag    = isset( $fields['heading_tag'] ) ? strtolower( (string) $fields
 $subheading     = isset( $fields['subheading'] ) ? trim( (string) $fields['subheading'] ) : '';
 $subheading_tag = isset( $fields['subheading_tag'] ) ? strtolower( (string) $fields['subheading_tag'] ) : 'p';
 $content      = isset( $fields['content'] ) ? (string) $fields['content'] : '';
-$image        = isset( $fields['image'] ) && is_array( $fields['image'] ) ? $fields['image'] : array();
-$image_url    = isset( $image['url'] ) ? (string) $image['url'] : '';
-$image_alt    = isset( $image['alt'] ) ? (string) $image['alt'] : '';
+$image        = $fields['image'] ?? null;
+$has_image    = function_exists( 'mrn_rbl_image_has_content' ) ? mrn_rbl_image_has_content( $image ) : false;
 $bg_color     = isset( $fields['bg_color'] ) ? (string) $fields['bg_color'] : '';
 $link_color   = isset( $fields['link_color'] ) ? (string) $fields['link_color'] : '';
 $image_place  = isset( $fields['image_placement'] ) ? sanitize_key( (string) $fields['image_placement'] ) : 'left';
@@ -55,7 +54,7 @@ $content_links = function_exists( 'mrn_rbl_get_content_links' )
 $primary_content_link = isset( $content_links[0] ) && is_array( $content_links[0] ) ? $content_links[0] : array();
 $primary_link_style   = isset( $primary_content_link['link_style'] ) && in_array( $primary_content_link['link_style'], array( 'link', 'button' ), true ) ? (string) $primary_content_link['link_style'] : 'link';
 
-if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $image_url && empty( $content_links ) ) {
+if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && ! $has_image && empty( $content_links ) ) {
 	return;
 }
 
@@ -117,9 +116,9 @@ echo function_exists( 'mrn_rbl_get_anchor_markup' ) ? mrn_rbl_get_anchor_markup(
 >
 		<div class="mrn-reusable-block__inner">
 			<div class="mrn-reusable-block__basic-inner mrn-layout-grid--media-stack">
-				<?php if ( '' !== $image_url ) : ?>
+				<?php if ( $has_image ) : ?>
 					<div class="mrn-reusable-block__media mrn-layout-content--media-stack-media mrn-ui__media">
-					<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $image_alt ); ?>" />
+					<?php echo function_exists( 'mrn_rbl_get_attachment_image' ) ? mrn_rbl_get_attachment_image( $image, 'mrn-content-media' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
 			<?php endif; ?>
 

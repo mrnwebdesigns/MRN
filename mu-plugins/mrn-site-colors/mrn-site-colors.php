@@ -3,7 +3,7 @@
  * Plugin Name: MRN Site Styles
  * Description: Adds a Site Styles configuration page for shared color variables, graphic elements, and usage helpers.
  * Author: MRN Web Designs
- * Version: 0.1.13
+ * Version: 0.1.15
  */
 
 defined('ABSPATH') || exit;
@@ -1220,7 +1220,7 @@ function mrn_site_styles_sanitize_row_spacing_shell_compensation_flag($value, st
  */
 function mrn_site_styles_get_row_spacing_name_choices(): array {
     return array(
-        'none' => 'None',
+        'none' => '0px',
         'extra-small' => 'Extra Small',
         'small' => 'Small',
         'medium' => 'Medium',
@@ -1239,8 +1239,13 @@ function mrn_site_styles_get_row_spacing_name_choices(): array {
 function mrn_site_styles_normalize_row_spacing_name_for_matching(string $name): string {
     $name = strtolower(trim($name));
     $name = preg_replace('/\s+/', ' ', $name);
+    $name = is_string($name) ? trim($name) : '';
 
-    return is_string($name) ? trim($name) : '';
+    if (in_array($name, array('none', 'zero', '0', '0px'), true)) {
+        return '0px';
+    }
+
+    return $name;
 }
 
 /**
@@ -1250,7 +1255,7 @@ function mrn_site_styles_normalize_row_spacing_name_for_matching(string $name): 
  */
 function mrn_site_styles_get_required_row_spacing_name_defaults(): array {
     $defaults = array(
-        'None' => '0px',
+        '0px' => '0px',
         'Extra Small' => '32px',
         'Small' => '48px',
         'Medium' => '64px',
@@ -1437,6 +1442,9 @@ function mrn_site_styles_get_row_spacing_name_choice_from_name(string $name): st
     }
 
     $normalized_name = strtolower($name);
+    if ('0px' === mrn_site_styles_normalize_row_spacing_name_for_matching($name)) {
+        return 'none';
+    }
 
     foreach (mrn_site_styles_get_row_spacing_name_choices() as $choice_key => $choice_label) {
         if ('custom' === $choice_key) {
@@ -1489,11 +1497,23 @@ function mrn_site_styles_get_row_spacing_base8_values(): array {
     }
 
     // Respect explicit non-step caps (for example 50px with a 4px step).
-    if (!in_array($max_px . 'px', $values, true)) {
+    if (0 < $max_px && !in_array($max_px . 'px', $values, true)) {
         $values[] = $max_px . 'px';
     }
 
     return $values;
+}
+
+/**
+ * Check whether a sanitized spacing value represents zero.
+ *
+ * @param string $value
+ * @return bool
+ */
+function mrn_site_styles_is_zero_spacing_dimension(string $value): bool {
+    $value = strtolower(trim(mrn_site_styles_sanitize_spacing_dimension($value)));
+
+    return '' !== $value && 1 === preg_match('/^-?0+(?:\\.0+)?(?:[a-z%]+)?$/', $value);
 }
 
 /**
@@ -1503,16 +1523,14 @@ function mrn_site_styles_get_row_spacing_base8_values(): array {
  * @return array<string, string>
  */
 function mrn_site_styles_get_row_spacing_value_choices(bool $allow_auto = false): array {
-    $choices = array(
-        '' => 'Select',
-    );
-
-    if ($allow_auto) {
-        $choices[mrn_site_styles_row_spacing_mobile_auto_keyword()] = 'Auto (derive from Desktop)';
-    }
+    $choices = array();
 
     foreach (mrn_site_styles_get_row_spacing_base8_values() as $value) {
         $choices[$value] = $value;
+    }
+
+    if ($allow_auto) {
+        $choices[mrn_site_styles_row_spacing_mobile_auto_keyword()] = 'Auto (derive from Desktop)';
     }
 
     $choices['custom'] = 'Custom';
@@ -1534,8 +1552,8 @@ function mrn_site_styles_get_row_spacing_value_choice_from_value(string $value, 
         return mrn_site_styles_row_spacing_mobile_auto_keyword();
     }
 
-    if ('' === $value) {
-        return '';
+    if ('' === $value || mrn_site_styles_is_zero_spacing_dimension($value)) {
+        return '0px';
     }
 
     $choices = mrn_site_styles_get_row_spacing_value_choices($allow_auto);
@@ -1557,7 +1575,8 @@ function mrn_site_styles_get_submitted_row_spacing_value(array $payload, string 
     $raw_value = isset($payload[$field])
         ? mrn_site_styles_sanitize_spacing_dimension((string) $payload[$field])
         : '';
-    $choice_key = isset($payload[$field . '_choice'])
+    $has_choice_key = array_key_exists($field . '_choice', $payload);
+    $choice_key = $has_choice_key
         ? sanitize_key((string) $payload[$field . '_choice'])
         : '';
     $custom_value = isset($payload[$field . '_custom'])
@@ -1566,9 +1585,13 @@ function mrn_site_styles_get_submitted_row_spacing_value(array $payload, string 
 
     $choices = mrn_site_styles_get_row_spacing_value_choices($allow_auto);
 
-    if ('' !== $choice_key) {
+    if ($has_choice_key) {
         if ('custom' === $choice_key) {
             return $custom_value;
+        }
+
+        if ('' === $choice_key || mrn_site_styles_is_zero_spacing_dimension($choice_key)) {
+            return '0px';
         }
 
         if (isset($choices[$choice_key])) {
@@ -1730,6 +1753,9 @@ function mrn_site_styles_sanitize_row_spacing_rows($rows): array {
             } else {
                 $name = (string) $name_choices[$name_choice];
             }
+        }
+        if ('0px' === mrn_site_styles_normalize_row_spacing_name_for_matching($name)) {
+            $name = '0px';
         }
 
         $slug_source = isset($row['slug']) && '' !== (string) $row['slug']

@@ -14,7 +14,7 @@ $heading_tag       = isset( $row['heading_tag'] ) ? strtolower( (string) $row['h
 $subheading        = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
 $subheading_tag    = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $content           = isset( $row['content'] ) ? (string) $row['content'] : '';
-$image             = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
+$image             = $row['image'] ?? null;
 $background_color  = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
 $bottom_accent     = ! empty( $row['bottom_accent'] );
 $accent_slug       = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
@@ -52,7 +52,7 @@ if ( ! in_array( $image_alignment, array( 'left', 'center', 'right' ), true ) ) 
 	$image_alignment = 'center';
 }
 
-$has_image     = ! empty( $image['ID'] ) || ! empty( $image['url'] );
+$has_image     = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image ) : false;
 $content_links = function_exists( 'mrn_rbl_get_content_links' )
 	? mrn_rbl_get_content_links(
 		$row,
@@ -173,11 +173,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 
 			<?php if ( $has_image ) : ?>
 					<div class="mrn-layout-content mrn-layout-content--media mrn-layout-content--media-stack-media mrn-image-content-row__media mrn-ui__media">
-					<?php if ( ! empty( $image['ID'] ) ) : ?>
-						<?php echo wp_get_attachment_image( (int) $image['ID'], 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					<?php else : ?>
-						<img src="<?php echo esc_url( $image['url'] ); ?>" alt="<?php echo esc_attr( $image['alt'] ?? '' ); ?>">
-					<?php endif; ?>
+					<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, 'mrn-content-media' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
 			<?php endif; ?>
 			</div>

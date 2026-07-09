@@ -41,7 +41,7 @@ foreach ( $tab_items as $tab_index => $tab_item ) {
 	}
 
 	$tab_label  = isset( $tab_item['tab_label'] ) ? trim( (string) $tab_item['tab_label'] ) : '';
-	$tab_image  = isset( $tab_item['tab_image'] ) && is_array( $tab_item['tab_image'] ) ? $tab_item['tab_image'] : array();
+	$tab_image  = $tab_item['tab_image'] ?? null;
 	$panel_rows = isset( $tab_item['panel_rows'] ) && is_array( $tab_item['panel_rows'] ) ? $tab_item['panel_rows'] : array();
 	$panel_row  = ! empty( $panel_rows[0] ) && is_array( $panel_rows[0] ) ? $panel_rows[0] : array();
 
@@ -65,7 +65,7 @@ foreach ( $tab_items as $tab_index => $tab_item ) {
 
 	$accessible_label = $tab_label;
 	if ( '' === $accessible_label ) {
-		$accessible_label = isset( $tab_image['alt'] ) ? trim( (string) $tab_image['alt'] ) : '';
+		$accessible_label = function_exists( 'mrn_base_stack_get_image_alt' ) ? mrn_base_stack_get_image_alt( $tab_image ) : '';
 	}
 
 	if ( '' === $accessible_label ) {
@@ -73,7 +73,7 @@ foreach ( $tab_items as $tab_index => $tab_item ) {
 		$accessible_label = sprintf( esc_html__( 'Tab %d', 'mrn-base-stack' ), (int) $tab_index + 1 );
 	}
 
-	$has_image = ! empty( $tab_image['ID'] ) || ! empty( $tab_image['url'] );
+	$has_image = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $tab_image ) : false;
 	if ( $has_image ) {
 		$has_tab_images = true;
 	}
@@ -189,21 +189,16 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 										>
 											<?php if ( ! empty( $tab_item['has_image'] ) ) : ?>
 												<span class="mrn-tabbed-layout__tab-media" aria-hidden="true">
-													<?php if ( ! empty( $tab_item['image']['ID'] ) ) : ?>
-														<?php
-														echo wp_get_attachment_image(
-															(int) $tab_item['image']['ID'],
-															'medium',
-															false,
-															array(
-																'class' => 'mrn-tabbed-layout__tab-image',
-																'alt'   => '',
-															)
-														); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-														?>
-													<?php elseif ( ! empty( $tab_item['image']['url'] ) ) : ?>
-														<img class="mrn-tabbed-layout__tab-image" src="<?php echo esc_url( $tab_item['image']['url'] ); ?>" alt="">
-													<?php endif; ?>
+													<?php
+													echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
+														$tab_item['image'],
+														'mrn-icon',
+														array(
+															'class' => 'mrn-tabbed-layout__tab-image',
+															'alt'   => '',
+														)
+													) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+													?>
 												</span>
 											<?php endif; ?>
 

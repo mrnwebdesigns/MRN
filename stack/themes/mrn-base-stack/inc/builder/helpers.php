@@ -563,6 +563,87 @@ function mrn_base_stack_get_two_column_column_layout_source_names() {
 }
 
 /**
+ * Build hero-only sizing controls for cloned Hero builder layouts.
+ *
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_hero_sizing_fields() {
+	return array(
+		array(
+			'key'           => 'field_mrn_hero_min_height',
+			'label'         => 'Hero Minimum Height',
+			'name'          => 'hero_min_height',
+			'aria-label'    => '',
+			'type'          => 'text',
+			'default_value' => '',
+			'placeholder'   => 'Example: 28rem, 70vh, clamp(18rem, 42vw, 34rem)',
+			'instructions'  => 'Optional. Leave blank for content-driven height.',
+			'wrapper'       => array(
+				'width' => '50',
+			),
+		),
+		array(
+			'key'           => 'field_mrn_hero_vertical_padding',
+			'label'         => 'Hero Vertical Padding',
+			'name'          => 'hero_vertical_padding',
+			'aria-label'    => '',
+			'type'          => 'text',
+			'default_value' => '',
+			'placeholder'   => 'Example: 4rem, 8vw, clamp(3rem, 8vw, 7rem)',
+			'instructions'  => 'Optional. Applies top and bottom padding inside this hero only.',
+			'wrapper'       => array(
+				'width' => '50',
+			),
+		),
+	);
+}
+
+/**
+ * Add hero-only sizing controls to cloned Hero layouts.
+ *
+ * @param array<string, mixed> $layout ACF layout definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_add_hero_sizing_fields_to_layout( array $layout ) {
+	$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+	if ( 'basic' !== $layout_name ) {
+		return $layout;
+	}
+
+	if ( ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+		$layout['sub_fields'] = array();
+	}
+
+	foreach ( $layout['sub_fields'] as $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		if ( in_array( $field_name, array( 'hero_min_height', 'hero_vertical_padding' ), true ) ) {
+			return $layout;
+		}
+	}
+
+	$insert_index = count( $layout['sub_fields'] );
+	foreach ( $layout['sub_fields'] as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		if ( 'section_width' === $field_name ) {
+			$insert_index = (int) $index + 1;
+			break;
+		}
+	}
+
+	array_splice( $layout['sub_fields'], $insert_index, 0, mrn_base_stack_get_hero_sizing_fields() );
+
+	return $layout;
+}
+
+/**
  * Clone selected top-level Content layouts for Hero field usage.
  *
  * @return array<string, array<string, mixed>>
@@ -617,6 +698,7 @@ function mrn_base_stack_get_hero_builder_layouts() {
 		}
 
 			$cloned_layout          = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_hero_' );
+			$cloned_layout          = mrn_base_stack_add_hero_sizing_fields_to_layout( $cloned_layout );
 			$cloned_key             = 'layout_mrn_hero_' . $layout_name;
 			$cloned_layout['key']   = $cloned_key;
 			$layouts[ $cloned_key ] = $cloned_layout;
@@ -942,31 +1024,7 @@ function mrn_base_stack_builder_value_has_content( $value ) {
  * @return bool
  */
 function mrn_base_stack_showcase_image_has_content( $image ) {
-	if ( is_numeric( $image ) ) {
-		return absint( $image ) > 0;
-	}
-
-	if ( is_string( $image ) ) {
-		return '' !== trim( $image );
-	}
-
-	if ( ! is_array( $image ) ) {
-		return false;
-	}
-
-	if ( isset( $image['ID'] ) && absint( $image['ID'] ) > 0 ) {
-		return true;
-	}
-
-	if ( isset( $image['id'] ) && absint( $image['id'] ) > 0 ) {
-		return true;
-	}
-
-	if ( isset( $image['url'] ) && is_string( $image['url'] ) && '' !== trim( $image['url'] ) ) {
-		return true;
-	}
-
-	return false;
+	return function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image ) : ! empty( $image );
 }
 
 /**
@@ -1348,9 +1406,7 @@ function mrn_base_stack_load_content_list_display_mode_field_choices( $field ) {
 	return $field;
 }
 add_filter( 'acf/load_field/key=field_mrn_content_lists_display_mode', 'mrn_base_stack_load_content_list_display_mode_field_choices' );
-add_filter( 'acf/load_field/name=display_mode', 'mrn_base_stack_load_content_list_display_mode_field_choices' );
 add_filter( 'acf/prepare_field/key=field_mrn_content_lists_display_mode', 'mrn_base_stack_load_content_list_display_mode_field_choices' );
-add_filter( 'acf/prepare_field/name=display_mode', 'mrn_base_stack_load_content_list_display_mode_field_choices' );
 
 /**
  * Load live display-style choices into the Content builder field.
@@ -1370,9 +1426,7 @@ function mrn_base_stack_load_content_list_display_style_field_choices( $field ) 
 	return $field;
 }
 add_filter( 'acf/load_field/key=field_mrn_content_lists_display_style', 'mrn_base_stack_load_content_list_display_style_field_choices' );
-add_filter( 'acf/load_field/name=display_style', 'mrn_base_stack_load_content_list_display_style_field_choices' );
 add_filter( 'acf/prepare_field/key=field_mrn_content_lists_display_style', 'mrn_base_stack_load_content_list_display_style_field_choices' );
-add_filter( 'acf/prepare_field/name=display_style', 'mrn_base_stack_load_content_list_display_style_field_choices' );
 
 /**
  * Recursively normalize select defaults on a full ACF field tree.
@@ -1823,8 +1877,8 @@ function mrn_base_stack_get_content_list_testimonial_media_markup( array $testim
 	$video_url   = isset( $testimonial['video_url'] ) ? trim( (string) $testimonial['video_url'] ) : '';
 	$video_kind  = isset( $testimonial['video_kind'] ) ? sanitize_key( (string) $testimonial['video_kind'] ) : '';
 	$video_mime  = isset( $testimonial['video_mime'] ) ? trim( (string) $testimonial['video_mime'] ) : '';
-	$image_logo  = isset( $testimonial['image_logo'] ) && is_array( $testimonial['image_logo'] ) ? $testimonial['image_logo'] : array();
-	$image_id    = isset( $image_logo['ID'] ) ? absint( $image_logo['ID'] ) : 0;
+	$image_logo  = $testimonial['image_logo'] ?? null;
+	$has_image   = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image_logo ) : false;
 	$video_title = sprintf(
 		/* translators: %s: testimonial author name. */
 		__( 'Video testimonial from %s', 'mrn-base-stack' ),
@@ -1851,9 +1905,9 @@ function mrn_base_stack_get_content_list_testimonial_media_markup( array $testim
 			role="group"
 			aria-label="<?php echo esc_attr( $video_title ); ?>"
 		></div>
-	<?php elseif ( $image_id ) : ?>
+	<?php elseif ( $has_image ) : ?>
 		<div class="mrn-content-list-row__testimonial-image mrn-ui__media">
-			<?php echo wp_get_attachment_image( $image_id, 'large' ); ?>
+			<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image_logo, 'mrn-testimonial' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</div>
 	<?php endif; ?>
 	<?php
@@ -2560,6 +2614,44 @@ function mrn_base_stack_get_anchor_field( $key, $name = 'anchor', $label = 'Anch
 		'instructions' => 'Optional anchor slug for one-page links. Enter the value without #.',
 		'wrapper'      => array(
 			'width' => '50',
+		),
+	);
+}
+
+/**
+ * Build shared decorative background video fields for builder rows.
+ *
+ * @param string $key_prefix Unique ACF key prefix.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_background_video_fields( $key_prefix ) {
+	$key_prefix = trim( (string) $key_prefix );
+
+	return array(
+		array(
+			'key'          => $key_prefix . '_remote',
+			'label'        => 'Background video URL',
+			'name'         => 'background_video',
+			'aria-label'   => '',
+			'type'         => 'url',
+			'instructions' => 'Optional decorative YouTube or Vimeo background video. Ignored when a video upload is set.',
+			'wrapper'      => array(
+				'width' => '50',
+			),
+		),
+		array(
+			'key'           => $key_prefix . '_upload',
+			'label'         => 'Background video upload',
+			'name'          => 'background_video_upload',
+			'aria-label'    => '',
+			'type'          => 'file',
+			'return_format' => 'array',
+			'library'       => 'all',
+			'mime_types'    => 'mp4,webm,mov',
+			'instructions'  => 'Optional decorative video upload. Uses background image as the poster when one is set.',
+			'wrapper'       => array(
+				'width' => '50',
+			),
 		),
 	);
 }
@@ -4190,6 +4282,188 @@ function mrn_base_stack_field_list_has_reusable_group_clone( array $fields ) {
 }
 
 /**
+ * Build the shared Display Styles tab field.
+ *
+ * @param string $key Field key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_builder_display_styles_tab_field( $key ) {
+	return array(
+		'key'        => sanitize_key( (string) $key ),
+		'label'      => 'Display Styles',
+		'name'       => '',
+		'aria-label' => '',
+		'type'       => 'tab',
+		'placement'  => 'top',
+		'endpoint'   => 0,
+	);
+}
+
+/**
+ * Build a builder layout Display Mode field.
+ *
+ * @param string $key Field key.
+ * @param string $layout_name Builder layout name.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_builder_layout_display_mode_field( $key, $layout_name ) {
+	$choices       = mrn_base_stack_get_builder_layout_display_mode_choices( $layout_name );
+	$default_value = mrn_base_stack_normalize_builder_layout_display_mode( '', $layout_name );
+
+	return array(
+		'key'           => sanitize_key( (string) $key ),
+		'label'         => 'Display Mode',
+		'name'          => 'display_mode',
+		'aria-label'    => '',
+		'type'          => 'select',
+		'choices'       => $choices,
+		'default_value' => $default_value,
+		'allow_null'    => 0,
+		'ui'            => 1,
+		'wrapper'       => array(
+			'width' => '50',
+		),
+	);
+}
+
+/**
+ * Build a builder layout Display Style field.
+ *
+ * @param string $key Field key.
+ * @param string $layout_name Builder layout name.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_builder_layout_display_style_field( $key, $layout_name ) {
+	$choices       = mrn_base_stack_get_builder_layout_display_style_choices( $layout_name );
+	$default_value = mrn_base_stack_normalize_builder_layout_display_style( '', $layout_name, '', 'default' );
+
+	return array(
+		'key'           => sanitize_key( (string) $key ),
+		'label'         => 'Display Style',
+		'name'          => 'display_style',
+		'aria-label'    => '',
+		'type'          => 'select',
+		'choices'       => $choices,
+		'default_value' => $default_value,
+		'allow_null'    => 0,
+		'ui'            => 1,
+		'wrapper'       => array(
+			'width' => '50',
+		),
+	);
+}
+
+/**
+ * Ensure a builder layout has a dedicated Display Styles tab.
+ *
+ * @param array<int, mixed> $fields Layout field definitions.
+ * @param string            $layout_name Builder layout name.
+ * @param string            $key_seed Optional key seed.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_ensure_builder_layout_display_style_fields( array $fields, $layout_name, $key_seed = '' ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+
+	if ( '' === $layout_name ) {
+		return $fields;
+	}
+
+	$mode_choices  = mrn_base_stack_get_builder_layout_display_mode_choices( $layout_name );
+	$style_choices = mrn_base_stack_get_builder_layout_display_style_choices( $layout_name );
+
+	if ( empty( $mode_choices ) && empty( $style_choices ) ) {
+		return $fields;
+	}
+
+	$seed = sanitize_key( (string) $key_seed );
+	if ( '' === $seed ) {
+		$seed = 'field_mrn_' . $layout_name . '_display';
+	}
+
+	$display_mode_field  = null;
+	$display_style_field = null;
+	$remaining_fields    = array();
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			$remaining_fields[] = $field;
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_name  = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( 'tab' === $field_type && 'display-styles' === $field_label ) {
+			continue;
+		}
+
+		if ( 'display_mode' === $field_name && 'select' === $field_type ) {
+			$display_mode_field = $field;
+			continue;
+		}
+
+		if ( 'display_style' === $field_name && 'select' === $field_type ) {
+			$display_style_field = $field;
+			continue;
+		}
+
+		$remaining_fields[] = $field;
+	}
+
+	if ( count( $mode_choices ) > 1 ) {
+		if ( ! is_array( $display_mode_field ) ) {
+			$display_mode_field = mrn_base_stack_get_builder_layout_display_mode_field( $seed . '_display_mode', $layout_name );
+		} elseif ( 'content_lists' !== $layout_name ) {
+			$display_mode_field['label']      = 'Display Mode';
+			$display_mode_field['choices']    = $mode_choices;
+			$display_mode_field['allow_null'] = 0;
+			$display_mode_field['ui']         = 1;
+		}
+	} else {
+		$display_mode_field = null;
+	}
+
+	if ( ! is_array( $display_style_field ) ) {
+		$display_style_field = mrn_base_stack_get_builder_layout_display_style_field( $seed . '_display_style', $layout_name );
+	} elseif ( 'content_lists' !== $layout_name ) {
+		$display_style_field['label']      = 'Display Style';
+		$display_style_field['choices']    = $style_choices;
+		$display_style_field['allow_null'] = 0;
+		$display_style_field['ui']         = 1;
+	}
+
+	$display_fields = array( mrn_base_stack_get_builder_display_styles_tab_field( $seed . '_display_styles_tab_contract' ) );
+
+	if ( is_array( $display_mode_field ) ) {
+		$display_fields[] = $display_mode_field;
+	}
+
+	if ( is_array( $display_style_field ) ) {
+		$display_fields[] = $display_style_field;
+	}
+
+	$insert_index = count( $remaining_fields );
+	foreach ( $remaining_fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( 'tab' === $field_type && in_array( $field_label, array( 'spacing', 'effects' ), true ) ) {
+			$insert_index = $index;
+			break;
+		}
+	}
+
+	array_splice( $remaining_fields, $insert_index, 0, $display_fields );
+
+	return array_values( $remaining_fields );
+}
+
+/**
  * Ensure shared row-spacing preset controls live in the Configs segment.
  *
  * @param array<int, mixed> $fields Layout/main field definitions.
@@ -4966,7 +5240,8 @@ add_filter( 'acf/load_field/type=repeater', 'mrn_base_stack_apply_primary_repeat
  * @param bool              $inject_internal_name Whether to inject the editor-only internal name field.
  * @return array<int, mixed>
  */
-function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inject_internal_name = true ) {
+function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inject_internal_name = true, $layout_name = '' ) {
+	$layout_name       = sanitize_key( (string) $layout_name );
 	$normalized_fields = array();
 
 	foreach ( $fields as $field ) {
@@ -4981,7 +5256,7 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 		$is_reusable_group_clone = mrn_base_stack_field_is_reusable_group_clone( $field );
 
 		if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) && ! $is_reusable_group_clone ) {
-			$field['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field['sub_fields'], false );
+			$field['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field['sub_fields'], false, '' );
 
 			if ( 'clone' === $field_type ) {
 				$field['sub_fields'] = mrn_base_stack_ensure_sub_content_width_field( $field['sub_fields'] );
@@ -4995,7 +5270,7 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 		}
 
 		if ( isset( $field['fields'] ) && is_array( $field['fields'] ) ) {
-			$field['fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field['fields'], false );
+			$field['fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field['fields'], false, '' );
 		}
 
 		if ( isset( $field['layouts'] ) && is_array( $field['layouts'] ) ) {
@@ -5005,7 +5280,8 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 				}
 
 				if ( isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ) {
-					$layout['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+					$nested_layout_name   = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : sanitize_key( (string) $layout_key );
+					$layout['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $nested_layout_name );
 				}
 
 				$field['layouts'][ $layout_key ] = $layout;
@@ -5019,6 +5295,7 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 	if ( $inject_internal_name ) {
 		$normalized_fields = mrn_base_stack_ensure_sub_content_width_field( $normalized_fields );
 		$normalized_fields = mrn_base_stack_group_main_config_fields_by_functionality( $normalized_fields );
+		$normalized_fields = mrn_base_stack_ensure_builder_layout_display_style_fields( $normalized_fields, $layout_name );
 	}
 
 	if ( ! $inject_internal_name ) {
@@ -5139,15 +5416,29 @@ function mrn_base_stack_flexible_field_has_primary_layout_contract( array $field
 			continue;
 		}
 
+		$has_internal_name      = false;
+		$has_display_styles_tab = false;
+
 		foreach ( $layout['sub_fields'] as $sub_field ) {
 			if ( ! is_array( $sub_field ) ) {
 				continue;
 			}
 
 			$field_name = isset( $sub_field['name'] ) ? sanitize_key( (string) $sub_field['name'] ) : '';
+			$field_type = isset( $sub_field['type'] ) ? sanitize_key( (string) $sub_field['type'] ) : '';
+			$field_label = isset( $sub_field['label'] ) ? sanitize_title( (string) $sub_field['label'] ) : '';
+
 			if ( 'internal_name' === $field_name ) {
-				return true;
+				$has_internal_name = true;
 			}
+
+			if ( 'tab' === $field_type && 'display-styles' === $field_label ) {
+				$has_display_styles_tab = true;
+			}
+		}
+
+		if ( $has_internal_name && $has_display_styles_tab ) {
+			return true;
 		}
 	}
 
@@ -5211,9 +5502,10 @@ function mrn_base_stack_apply_primary_layout_contract_on_flexible_load( $field )
 			continue;
 		}
 
-		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+		$layout_name                     = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : sanitize_key( (string) $layout_key );
+		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $layout_name );
 		$layout['sub_fields']            = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
-		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $layout_name );
 		$field['layouts'][ $layout_key ] = $layout;
 	}
 
@@ -5252,9 +5544,10 @@ function mrn_base_stack_apply_primary_layout_contract_on_flexible_get_field( $fi
 			continue;
 		}
 
-		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+		$layout_name                     = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : sanitize_key( (string) $layout_key );
+		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $layout_name );
 		$layout['sub_fields']            = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
-		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true );
+		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $layout_name );
 		$field['layouts'][ $layout_key ] = $layout;
 	}
 
@@ -7003,7 +7296,7 @@ function mrn_base_stack_get_button_link_icon_fields( $key_prefix, $link_style_fi
 			'name'          => 'link_icon_media_icon',
 			'aria-label'    => '',
 			'type'          => 'image',
-			'return_format' => 'array',
+			'return_format' => 'id',
 			'preview_size'  => 'thumbnail',
 			'library'       => 'all',
 			'mime_types'    => 'jpg,jpeg,png,gif,webp,svg',
@@ -7053,18 +7346,30 @@ function mrn_base_stack_get_button_link_icon_fields( $key_prefix, $link_style_fi
  * @return string
  */
 function mrn_base_stack_get_button_link_icon_source( array $row ) {
-	$icon_source = isset( $row['link_icon_source'] ) ? sanitize_key( (string) $row['link_icon_source'] ) : '';
-	$media_icon  = isset( $row['link_icon_media_icon'] ) && is_array( $row['link_icon_media_icon'] ) ? $row['link_icon_media_icon'] : array();
-	$media_id    = isset( $media_icon['ID'] ) ? absint( $media_icon['ID'] ) : 0;
-	$media_url   = isset( $media_icon['url'] ) ? esc_url_raw( (string) $media_icon['url'] ) : '';
+	$has_explicit_icon_source = array_key_exists( 'link_icon_source', $row );
+	$icon_source              = $has_explicit_icon_source ? sanitize_key( (string) $row['link_icon_source'] ) : '';
+	$media_icon  = $row['link_icon_media_icon'] ?? null;
+	$media_id    = function_exists( 'mrn_base_stack_get_image_attachment_id' ) ? mrn_base_stack_get_image_attachment_id( $media_icon ) : 0;
 	$fa_class    = isset( $row['link_icon_fa_class'] ) ? trim( (string) $row['link_icon_fa_class'] ) : '';
 	$dashicon    = mrn_base_stack_normalize_link_dashicon_class( isset( $row['link_icon_dashicon'] ) ? (string) $row['link_icon_dashicon'] : '' );
 
-	if ( in_array( $icon_source, array( 'dashicons', 'fontawesome', 'media' ), true ) ) {
-		return $icon_source;
+	if ( $has_explicit_icon_source ) {
+		if ( 'media' === $icon_source && $media_id > 0 ) {
+			return 'media';
+		}
+
+		if ( 'fontawesome' === $icon_source && '' !== $fa_class ) {
+			return 'fontawesome';
+		}
+
+		if ( 'dashicons' === $icon_source && '' !== $dashicon ) {
+			return 'dashicons';
+		}
+
+		return '';
 	}
 
-	if ( $media_id > 0 || '' !== $media_url ) {
+	if ( $media_id > 0 ) {
 		return 'media';
 	}
 
@@ -7095,22 +7400,48 @@ function mrn_base_stack_normalize_link_dashicon_class( $dashicon_raw ) {
 	}
 
 	if ( preg_match( '/dashicons-[a-z0-9-]+/i', $dashicon_raw, $matches ) ) {
-		return sanitize_html_class( strtolower( (string) $matches[0] ) );
+		$dashicon = sanitize_html_class( strtolower( (string) $matches[0] ) );
+		return mrn_base_stack_link_dashicon_exists( $dashicon ) ? $dashicon : '';
 	}
 
-	$dashicon = sanitize_html_class( $dashicon_raw );
+	$dashicon = strtolower( sanitize_html_class( $dashicon_raw ) );
 
 	if ( '' === $dashicon || 'dashicons' === $dashicon ) {
 		return '';
 	}
 
 	if ( 0 === strpos( $dashicon, 'dashicons-' ) ) {
-		return strlen( $dashicon ) > strlen( 'dashicons-' ) && 'dashicons-dashicons' !== $dashicon ? $dashicon : '';
+		return strlen( $dashicon ) > strlen( 'dashicons-' ) && 'dashicons-dashicons' !== $dashicon && mrn_base_stack_link_dashicon_exists( $dashicon ) ? $dashicon : '';
 	}
 
 	$dashicon = 'dashicons-' . $dashicon;
 
-	return 'dashicons-dashicons' === $dashicon ? '' : $dashicon;
+	return 'dashicons-dashicons' === $dashicon || ! mrn_base_stack_link_dashicon_exists( $dashicon ) ? '' : $dashicon;
+}
+
+/**
+ * Determine whether a normalized Dashicon class exists in WordPress core.
+ *
+ * @param string $dashicon Normalized Dashicon class.
+ * @return bool
+ */
+function mrn_base_stack_link_dashicon_exists( $dashicon ) {
+	$dashicon = strtolower( sanitize_html_class( (string) $dashicon ) );
+
+	if ( '' === $dashicon || 0 !== strpos( $dashicon, 'dashicons-' ) ) {
+		return false;
+	}
+
+	if ( ! function_exists( 'mrn_base_stack_get_dashicons' ) ) {
+		return true;
+	}
+
+	$icons = mrn_base_stack_get_dashicons();
+	if ( empty( $icons ) || ! is_array( $icons ) ) {
+		return true;
+	}
+
+	return in_array( substr( $dashicon, strlen( 'dashicons-' ) ), $icons, true );
 }
 
 /**
@@ -7186,32 +7517,26 @@ function mrn_base_stack_get_button_link_icon_markup( array $row ) {
 		return '<span class="mrn-ui__link-icon mrn-ui__link-icon--' . esc_attr( $position ) . ' mrn-ui__link-icon--dashicons" aria-hidden="true"' . $style_attr . '><span class="dashicons ' . esc_attr( $dashicon ) . '"></span></span>';
 	}
 
-	$media_icon = isset( $row['link_icon_media_icon'] ) && is_array( $row['link_icon_media_icon'] ) ? $row['link_icon_media_icon'] : array();
-	$media_id   = isset( $media_icon['ID'] ) ? absint( $media_icon['ID'] ) : 0;
-	$media_url  = isset( $media_icon['url'] ) ? esc_url( (string) $media_icon['url'] ) : '';
+	$media_icon = $row['link_icon_media_icon'] ?? null;
+	$media_id   = function_exists( 'mrn_base_stack_get_image_attachment_id' ) ? mrn_base_stack_get_image_attachment_id( $media_icon ) : 0;
 
 	if ( $media_id > 0 ) {
-		$image_markup = wp_get_attachment_image(
+		$image_markup = function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
 			$media_id,
-			'thumbnail',
-			false,
+			'mrn-icon',
 			array(
 				'class'       => 'mrn-ui__link-icon-image',
 				'alt'         => '',
 				'aria-hidden' => 'true',
 			)
-		);
+		) : '';
 
 		if ( '' !== $image_markup ) {
 			return '<span class="mrn-ui__link-icon mrn-ui__link-icon--' . esc_attr( $position ) . ' mrn-ui__link-icon--media" aria-hidden="true"' . $style_attr . '>' . $image_markup . '</span>';
 		}
 	}
 
-	if ( '' === $media_url ) {
-		return '';
-	}
-
-	return '<span class="mrn-ui__link-icon mrn-ui__link-icon--' . esc_attr( $position ) . ' mrn-ui__link-icon--media" aria-hidden="true"' . $style_attr . '><img class="mrn-ui__link-icon-image" src="' . esc_url( $media_url ) . '" alt="" /></span>';
+	return '';
 }
 
 /**
@@ -7534,30 +7859,24 @@ function mrn_base_stack_get_content_list_manual_post_ids( array $row, $target_po
 	);
 }
 
-/**
- * Build a CSS custom-property declaration for a selected background image.
- *
- * @param mixed  $image ACF image field value.
- * @param string $css_var CSS custom property name.
- * @return string
- */
-function mrn_base_stack_get_background_image_style( $image, $css_var ) {
-	$image_url = '';
+if ( ! function_exists( 'mrn_base_stack_get_background_image_style' ) ) {
+	/**
+	 * Build a CSS custom-property declaration for a selected background image.
+	 *
+	 * @param mixed  $image ACF image field value.
+	 * @param string $css_var CSS custom property name.
+	 * @return string
+	 */
+	function mrn_base_stack_get_background_image_style( $image, $css_var ) {
+		$image_url = function_exists( 'mrn_base_stack_get_attachment_image_url' ) ? mrn_base_stack_get_attachment_image_url( $image, 'mrn-background' ) : '';
+		$css_var   = trim( (string) $css_var );
 
-	if ( is_array( $image ) && ! empty( $image['url'] ) ) {
-		$image_url = (string) $image['url'];
-	} elseif ( is_string( $image ) ) {
-		$image_url = $image;
+		if ( '' === $image_url || '' === $css_var ) {
+			return '';
+		}
+
+		return $css_var . ": url('" . esc_url_raw( $image_url ) . "')";
 	}
-
-	$image_url = trim( $image_url );
-	$css_var   = trim( (string) $css_var );
-
-	if ( '' === $image_url || '' === $css_var ) {
-		return '';
-	}
-
-	return $css_var . ": url('" . esc_url_raw( $image_url ) . "')";
 }
 
 /**
@@ -7750,7 +8069,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'name'          => 'image',
 					'aria-label'    => '',
 					'type'          => 'image',
-					'return_format' => 'array',
+					'return_format' => 'id',
 					'preview_size'  => 'medium',
 					'library'       => 'all',
 					'wrapper'       => array(
@@ -7836,13 +8155,14 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'name'          => 'background_image',
 					'aria-label'    => '',
 					'type'          => 'image',
-					'return_format' => 'array',
+					'return_format' => 'id',
 					'preview_size'  => 'medium',
 					'library'       => 'all',
 					'wrapper'       => array(
 						'width' => '50',
 					),
 				),
+				...mrn_base_stack_get_background_video_fields( 'field_mrn_nested_basic_background_video' ),
 				array(
 					'key'           => 'field_mrn_nested_basic_bottom_accent',
 					'label'         => 'Accent',
@@ -7919,7 +8239,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 							'name'          => 'image',
 							'aria-label'    => '',
 							'type'          => 'image',
-							'return_format' => 'array',
+							'return_format' => 'id',
 							'preview_size'  => 'medium',
 							'library'       => 'all',
 							'wrapper'       => array(
@@ -8067,7 +8387,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'name'          => 'image',
 					'aria-label'    => '',
 					'type'          => 'image',
-					'return_format' => 'array',
+					'return_format' => 'id',
 					'preview_size'  => 'medium',
 					'library'       => 'all',
 				),
@@ -8349,7 +8669,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 							'name'          => 'image',
 							'aria-label'    => '',
 							'type'          => 'image',
-							'return_format' => 'array',
+							'return_format' => 'id',
 							'preview_size'  => 'medium',
 							'library'       => 'all',
 							'wrapper'       => array(

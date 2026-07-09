@@ -1,26 +1,29 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.05.06-front-end-runtime-autoload-for-reusable-interactions`
-- Release date: `2026-05-06`
+- Stack release: `2026.07.09-layout-engine-display-styles-and-sidebar-templates`
+- Release date: `2026-07-09`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.1`
+  - `mrn-base-stack` `1.2.47`
+  - `mrn-base-stack-child` `1.0.1`
 - MU plugins:
-  - `mrn-active-style-guide` `0.1.3`
-  - `mrn-admin-ui-css` `3.1.12`
-  - `mrn-shared-assets` `0.1.1`
-  - `mrn-editor-lockdown` `1.0.17`
-  - `mrn-reusable-block-library` `0.1.16`
-  - `mrn-site-colors` / `Site Styles` `0.1.4`
+  - `mrn-active-style-guide` `0.1.5`
+  - `mrn-admin-ui-css` `3.1.13`
+  - `mrn-shared-assets` `0.1.3`
+  - `mrn-editor-lockdown` `1.0.25`
+  - `mrn-reusable-block-library` `0.1.17`
+  - `mrn-schema-bridge` `0.3.3`
+  - `mrn-site-colors` / `Site Styles` `0.1.15`
 - Standard plugins:
-  - `mrn-config-helper` `0.1.35`
-  - `mrn-dummy-content` `0.1.14`
-  - `mrn-editor-tools` `1.8.17`
-  - `mrn-seo-helper` `0.2.9`
-  - `mrn-universal-sticky-bar` `1.1.1`
+  - `mrn-config-helper` `0.1.43`
+  - `mrn-dummy-content` `0.1.19`
+  - `mrn-editor-tools` `1.8.24`
+  - `mrn-seo-helper` `0.3.3`
+  - `mrn-template-inspector` `0.2.7`
+  - `mrn-universal-sticky-bar` `1.1.3`
   - `searchwp-editor-performance` `1.0.6`
 
 ## Stack Manifests

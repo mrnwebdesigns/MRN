@@ -1,5 +1,84 @@
 # Stack Changelog
 
+## 2026.07.09-layout-engine-display-styles-and-sidebar-templates
+- Expanded `mrn-base-stack` to `1.2.47`.
+- Expanded `mrn-base-stack-child` to `1.0.1`.
+- Expanded `mrn-editor-lockdown` to `1.0.25`.
+- Expanded `mrn-template-inspector` to `0.2.7`.
+- Added the Display Styles registry and layout field wiring so layouts can offer style choices that work alongside Display Modes without bloating row templates.
+- Split front-end layout assets into targeted files and added shared semantic image/media helpers for responsive row background imagery and background video.
+- Converted page sidebar selection from ACF position controls into WordPress page templates: `Sidebar Left` and `Sidebar Right`.
+- Removed the child-theme rollout starter template from selectable Page Attributes while keeping the child scaffold focused on site-specific overrides.
+- Kept the Page Attributes metabox open by default while preserving locked editor metabox ordering.
+
+## 2026.07.08-primary-menu-standalone-row
+- Expanded `mrn-base-stack` to `1.2.35`.
+- Moved the Primary menu out of the Header layout grid and rendered it as a standalone navigation row directly below the header.
+- Removed Primary menu from the Header Layout editor contract so it is no longer draggable with header components.
+
+## 2026.07.08-header-footer-appearance-spacing
+- Expanded `mrn-base-stack` to `1.2.34`.
+- Added Header/Footer Config appearance controls for background color, font color, link colors, and font family.
+- Added a Header/Footer Spacing subtab that reuses the shared row spacing preset contract.
+
+## 2026.07.08-header-footer-remove-content-tab
+- Expanded `mrn-base-stack` to `1.2.33`.
+- Removed the placeholder Content subtab from Header/Footer options so the subtab set only shows active control areas.
+
+## 2026.07.08-header-footer-content-width-contract
+- Expanded `mrn-base-stack` to `1.2.32`.
+- Aligned Header/Footer Content Width behavior with builder row width contracts so Full Width removes the inline gutter.
+
+## 2026.07.08-header-footer-content-width
+- Expanded `mrn-base-stack` to `1.2.31`.
+- Added Header/Footer Layout controls for Content Width using the same Content, Wide, and Full Width choices as builder rows.
+- Applied saved Header/Footer width choices to the front-end layout grid shell.
+
+## 2026.07.08-header-footer-layout-external-save-freeze
+- Expanded `mrn-base-stack` to `1.2.30`.
+- Bound the Header/Footer layout save freeze at the document level so the external `form="post"` Save Settings button is caught before blur/change handlers run.
+- Added version-prefixed admin asset URLs and no-cache headers for the Header/Footer settings screen to prevent stale editor JavaScript.
+
+## 2026.07.08-header-footer-layout-save-click-freeze
+- Expanded `mrn-base-stack` to `1.2.29`.
+- Froze Header/Footer layout editor re-renders as soon as the Save control is pressed so blur/change events cannot move chips before navigation.
+- Kept save payload mirroring intact while preventing click-time grid mutation.
+
+## 2026.07.08-header-footer-layout-submit-state-fix
+- Expanded `mrn-base-stack` to `1.2.28`.
+- Prevented Header/Footer layout Save from mutating the live grid editor state before the admin page refreshes.
+- Mirrored save-only layout JSON into hidden ACF request fields without dispatching editor change events during submit.
+
+## 2026.07.08-header-footer-layout-save-stability
+- Expanded `mrn-base-stack` to `1.2.27`.
+- Stabilized Header/Footer layout saves by preserving the full layout item map during submit and ACF persistence.
+- Kept disabled Config components hidden from the editor/front end without compacting or moving their saved grid positions.
+
+## 2026.07.08-header-footer-config-heading-dedupe
+- Expanded `mrn-base-stack` to `1.2.26`.
+- Prevented the Header/Footer Config fallback organizer from creating duplicate group headings when PHP-rendered headings are already present.
+- Kept the Config field layout polish without moving server-rendered ACF heading fields across Header/Footer tabs.
+
+## 2026.07.08-header-footer-config-organization
+- Expanded `mrn-base-stack` to `1.2.25`.
+- Reordered Header/Footer Config controls into user-facing groups for Navigation, Business Info, Search/Social, and Footer Text.
+- Added compact two-column admin layout hints for Config toggles and detail controls.
+
+## 2026.07.08-header-footer-layout-active-components
+- Expanded `mrn-base-stack` to `1.2.24`.
+- Removed disabled Header/Footer Config components from the layout-grid editor and saved layout JSON.
+- Filtered front-end layout placement data to enabled components so turned-off config components do not reserve grid slots or render.
+
+## 2026.07.08-header-footer-layout-save-fix
+- Expanded `mrn-base-stack` to `1.2.23`.
+- Fixed Header/Footer layout-grid saves so the custom grid editor mirrors its JSON into submitted ACF fields and a dedicated fallback request key before the options form posts.
+- Kept hidden layout storage fields submittable while visually removing them from the admin UI, and preserved direct Footer Layout tab links after save/reload.
+
+## 2026.07.07-bootstrap-credential-provisioning-hardening
+- Expanded `mrn-config-helper` to `0.1.43`.
+- Hardened fresh-site bootstrap credential writes so the reCAPTCHA Enterprise private key is written as a raw PHP string literal instead of being parsed as a WP-CLI option.
+- Improved UptimeRobot bootstrap diagnostics and treated duplicate-monitor API conflicts as an already-ready state.
+
 ## 2026.05.06-front-end-runtime-autoload-for-reusable-interactions
 - Expanded `mrn-base-stack` to `1.2.1`.
 - Updated stack runtime enqueue behavior so front-end interaction assets can load on singular shell content when layout builder is disabled but runtime markers are present in content/meta.

@@ -1123,6 +1123,7 @@ add_filter( 'acf/fields/flexible_content/layout_title/name=page_hero_rows', 'mrn
 add_filter( 'acf/fields/flexible_content/layout_title/name=page_sidebar_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_page_template_sidebar_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 
 /**

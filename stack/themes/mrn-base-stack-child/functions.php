@@ -6,7 +6,7 @@
  */
 
 if ( ! defined( 'MRN_BASE_STACK_CHILD_VERSION' ) ) {
-	define( 'MRN_BASE_STACK_CHILD_VERSION', '1.0.0' );
+	define( 'MRN_BASE_STACK_CHILD_VERSION', '1.0.1' );
 }
 
 if ( ! function_exists( 'mrn_base_stack_child_enqueue_styles' ) ) {

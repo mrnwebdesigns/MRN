@@ -207,34 +207,28 @@ if ( ! function_exists( 'mrn_base_stack_get_header_search_icon_markup' ) ) :
 		$icon_source   = isset( $header_options['header_search_icon_source'] ) ? (string) $header_options['header_search_icon_source'] : 'dashicons';
 		$standard_icon = isset( $header_options['header_search_standard_icon'] ) ? (string) $header_options['header_search_standard_icon'] : 'dashicons-search';
 		$fa_class      = isset( $header_options['header_search_fa_class'] ) ? trim( (string) $header_options['header_search_fa_class'] ) : '';
-		$media_icon    = isset( $header_options['header_search_media_icon'] ) && is_array( $header_options['header_search_media_icon'] ) ? $header_options['header_search_media_icon'] : array();
+		$media_icon    = $header_options['header_search_media_icon'] ?? null;
 
 		if ( 'fontawesome' === $icon_source && '' !== $fa_class ) {
 			return '<span class="mrn-site-search__icon mrn-site-search__icon--fontawesome" aria-hidden="true"><i class="' . esc_attr( $fa_class ) . '"></i></span>';
 		}
 
 		if ( 'media' === $icon_source ) {
-			$attachment_id = isset( $media_icon['ID'] ) ? absint( $media_icon['ID'] ) : 0;
-			$icon_url      = isset( $media_icon['url'] ) ? (string) $media_icon['url'] : '';
+			$attachment_id = function_exists( 'mrn_base_stack_get_image_attachment_id' ) ? mrn_base_stack_get_image_attachment_id( $media_icon ) : 0;
 
 			if ( $attachment_id > 0 ) {
-				$image = wp_get_attachment_image(
+				$image = function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
 					$attachment_id,
-					'thumbnail',
-					false,
+					'mrn-icon',
 					array(
 						'class' => 'mrn-site-search__icon-image',
 						'alt'   => '',
 					)
-				);
+				) : '';
 
 				if ( is_string( $image ) && '' !== $image ) {
 					return '<span class="mrn-site-search__icon mrn-site-search__icon--media" aria-hidden="true">' . $image . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				}
-			}
-
-			if ( '' !== $icon_url ) {
-				return '<span class="mrn-site-search__icon mrn-site-search__icon--media" aria-hidden="true"><img class="mrn-site-search__icon-image" src="' . esc_url( $icon_url ) . '" alt="" /></span>';
 			}
 		}
 
@@ -294,7 +288,7 @@ if ( ! function_exists( 'mrn_base_stack_get_searchwp_forms' ) ) :
 				continue;
 			}
 
-				$form_title = isset( $form['title'] ) ? trim( (string) $form['title'] ) : '';
+			$form_title = isset( $form['title'] ) ? trim( (string) $form['title'] ) : '';
 			if ( '' === $form_title ) {
 				/* translators: %d: SearchWP form ID. */
 				$form_title = sprintf( __( 'Search Form %d', 'mrn-base-stack' ), $form_id );
@@ -318,6 +312,127 @@ if ( ! function_exists( 'mrn_base_stack_get_searchwp_forms' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'mrn_base_stack_get_default_searchwp_form_id' ) ) :
+	/**
+	 * Resolve the stack-owned SearchWP form ID.
+	 *
+	 * @return int
+	 */
+	function mrn_base_stack_get_default_searchwp_form_id() {
+		$forms          = mrn_base_stack_get_searchwp_forms();
+		$stored_form_id = absint( get_option( 'mrn_base_stack_searchwp_form_id', 0 ) );
+
+		if ( $stored_form_id > 0 && isset( $forms[ $stored_form_id ] ) ) {
+			return $stored_form_id;
+		}
+
+		if ( empty( $forms ) ) {
+			return 0;
+		}
+
+		$form_ids = array_keys( $forms );
+
+		return absint( reset( $form_ids ) );
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_seed_searchwp_form' ) ) :
+	/**
+	 * Ensure the stack has one canonical SearchWP form to use in header/search layouts.
+	 *
+	 * @return void
+	 */
+	function mrn_base_stack_seed_searchwp_form() {
+		if ( ! shortcode_exists( 'searchwp_form' ) && ! class_exists( 'SearchWP\\Settings' ) ) {
+			return;
+		}
+
+		$form_id = mrn_base_stack_get_default_searchwp_form_id();
+
+		if ( $form_id < 1 ) {
+			$stored_forms = get_option( 'searchwp_forms', '' );
+			$decoded      = is_string( $stored_forms ) && '' !== $stored_forms ? json_decode( $stored_forms, true ) : array();
+			$decoded      = is_array( $decoded ) ? $decoded : array();
+			$decoded      = wp_parse_args(
+				$decoded,
+				array(
+					'forms'   => array(),
+					'next_id' => 1,
+				)
+			);
+
+			if ( ! isset( $decoded['forms'] ) || ! is_array( $decoded['forms'] ) ) {
+				$decoded['forms'] = array();
+			}
+
+			$form_id = absint( $decoded['next_id'] ?? 1 );
+			$form_id = $form_id > 0 ? $form_id : 1;
+
+			while ( isset( $decoded['forms'][ $form_id ] ) ) {
+				++$form_id;
+			}
+
+			$decoded['forms'][ $form_id ] = array(
+				'id'                           => $form_id,
+				'title'                        => __( 'Site Search', 'mrn-base-stack' ),
+				'engine'                       => 'default',
+				'target_url'                   => '/',
+				'input_name'                   => 's',
+				'template-include-search-form' => true,
+				'swp-layout-theme'             => 'basic',
+				'category-search'              => false,
+				'quick-search'                 => false,
+				'advanced-search'              => false,
+				'voice-search'                 => false,
+				'voice-search-auto-submit'     => false,
+				'post-type'                    => array(),
+				'category'                     => array(),
+				'field-label'                  => '',
+				'search-button'                => true,
+				'quick-search-items'           => array(),
+				'advanced-search-filters'      => array( 'authors', 'post_types', 'tags' ),
+				'swp-sfinput-shape'            => '',
+				'swp-sfbutton-filled'          => '',
+				'search-form-color'            => '',
+				'search-form-font-size'        => '',
+				'button-label'                 => __( 'Search', 'mrn-base-stack' ),
+				'button-background-color'      => '',
+				'button-font-color'            => '',
+				'button-font-size'             => '',
+			);
+			$decoded['next_id']           = $form_id + 1;
+			$encoded                     = wp_json_encode( $decoded );
+			$updated                     = class_exists( 'SearchWP\\Settings' ) ? \SearchWP\Settings::update( 'forms', $encoded ) : null;
+
+			if ( null === $updated ) {
+				update_option( 'searchwp_forms', $encoded, false );
+			}
+		}
+
+		$form_id = absint( $form_id );
+		if ( $form_id < 1 ) {
+			return;
+		}
+
+		update_option( 'mrn_base_stack_searchwp_form_id', $form_id, false );
+
+		$forms = mrn_base_stack_get_searchwp_forms();
+		if ( ! isset( $forms[ $form_id ] ) ) {
+			return;
+		}
+
+		$selected_header_form_id = function_exists( 'get_field' ) ? absint( get_field( 'header_searchwp_form_id', 'option' ) ) : absint( get_option( 'options_header_searchwp_form_id', 0 ) );
+		if ( $selected_header_form_id > 0 && isset( $forms[ $selected_header_form_id ] ) ) {
+			return;
+		}
+
+		update_option( 'options_header_searchwp_form_id', (string) $form_id, false );
+		update_option( '_options_header_searchwp_form_id', 'field_mrn_theme_header_searchwp_form_id', false );
+	}
+endif;
+add_action( 'acf/init', 'mrn_base_stack_seed_searchwp_form', 10 );
+add_action( 'init', 'mrn_base_stack_seed_searchwp_form', 30 );
+
 if ( ! function_exists( 'mrn_base_stack_get_searchwp_form_choices' ) ) :
 	/**
 	 * Build ACF-ready SearchWP form choices.
@@ -325,8 +440,8 @@ if ( ! function_exists( 'mrn_base_stack_get_searchwp_form_choices' ) ) :
 	 * @return array<string, string>
 	 */
 	function mrn_base_stack_get_searchwp_form_choices() {
-		$forms       = mrn_base_stack_get_searchwp_forms();
-			$choices = array();
+		$forms   = mrn_base_stack_get_searchwp_forms();
+		$choices = array();
 
 		foreach ( $forms as $form_id => $form ) {
 			/* translators: %d: SearchWP form ID. */
@@ -364,7 +479,7 @@ endif;
 
 if ( ! function_exists( 'mrn_base_stack_get_searchwp_form_markup' ) ) :
 	/**
-	 * Return rendered SearchWP form markup, with a theme search fallback.
+	 * Return rendered SearchWP form markup.
 	 *
 	 * @param int|string $form_id SearchWP form ID.
 	 * @return string
@@ -380,19 +495,7 @@ if ( ! function_exists( 'mrn_base_stack_get_searchwp_form_markup' ) ) :
 			}
 		}
 
-		ob_start();
-
-		if ( function_exists( 'mrn_base_stack_render_search_form_markup' ) ) {
-			mrn_base_stack_render_search_form_markup(
-				array(
-					'search_style' => 'full',
-				)
-			);
-		} else {
-			get_search_form();
-		}
-
-		return trim( (string) ob_get_clean() );
+		return '';
 	}
 endif;
 
@@ -470,7 +573,50 @@ if ( ! function_exists( 'mrn_base_stack_default_header_search' ) ) :
 	 * Default header search implementation.
 	 */
 	function mrn_base_stack_default_header_search() {
-		mrn_base_stack_render_search_form_markup();
+		$header_options = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+		$form_id        = absint( $header_options['header_searchwp_form_id'] ?? 0 );
+		$form_markup    = mrn_base_stack_get_searchwp_form_markup( $form_id );
+		$search_style   = isset( $header_options['header_search_style'] ) ? (string) $header_options['header_search_style'] : 'full';
+
+		if ( '' === trim( $form_markup ) ) {
+			return;
+		}
+
+		if ( 'icon_only' === $search_style ) {
+			$search_query = get_search_query();
+			$is_expanded  = '' !== $search_query;
+			$classes      = array(
+				'mrn-site-search',
+				'mrn-site-search--searchwp',
+				'mrn-site-search--icon-only',
+			);
+
+			if ( $is_expanded ) {
+				$classes[] = 'is-expanded';
+			}
+			?>
+			<div class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" data-mrn-search-toggle>
+				<button type="button" class="mrn-site-search__toggle" aria-expanded="<?php echo $is_expanded ? 'true' : 'false'; ?>" aria-controls="mrn-header-searchwp-input-wrap">
+					<?php echo mrn_base_stack_get_header_search_icon_markup( $header_options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<span class="screen-reader-text"><?php esc_html_e( 'Open search', 'mrn-base-stack' ); ?></span>
+				</button>
+				<div class="mrn-site-search__input-wrap" id="mrn-header-searchwp-input-wrap">
+					<div class="mrn-site-search__field mrn-site-search__field--searchwp">
+						<span class="mrn-site-search__prompt" aria-hidden="true" data-mrn-search-prompt><?php esc_html_e( 'Search', 'mrn-base-stack' ); ?></span>
+						<?php echo $form_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SearchWP shortcode output is plugin-rendered markup. ?>
+						<button type="button" class="mrn-site-search__clear" aria-label="<?php esc_attr_e( 'Clear search', 'mrn-base-stack' ); ?>" <?php echo '' === $search_query ? 'hidden' : ''; ?>>
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+				</div>
+			</div>
+			<?php
+			return;
+		}
+
+		echo '<div class="mrn-site-search mrn-site-search--searchwp">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $form_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SearchWP shortcode output is plugin-rendered markup.
+		echo '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 endif;
 add_action( 'mrn_base_stack_header_search', 'mrn_base_stack_default_header_search' );
@@ -546,6 +692,35 @@ if ( ! function_exists( 'mrn_base_stack_get_business_hours_display_rows' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'mrn_base_stack_render_singular_breadcrumbs' ) ) :
+	/**
+	 * Render the stack breadcrumb slot between the hero and content shell.
+	 *
+	 * @param int $post_id Current post ID.
+	 */
+	function mrn_base_stack_render_singular_breadcrumbs( $post_id = 0 ) {
+		if ( ! function_exists( 'mrn_render_breadcrumbs' ) || ! is_singular() ) {
+			return;
+		}
+
+		$post_id = $post_id ? (int) $post_id : get_the_ID();
+		$markup  = mrn_render_breadcrumbs(
+			array(
+				'echo'       => false,
+				'post_id'    => $post_id,
+				'placement'  => 'singular_header',
+				'wrap_class' => 'mrn-breadcrumbs-wrap--singular',
+			)
+		);
+
+		if ( '' === trim( (string) $markup ) ) {
+			return;
+		}
+
+		echo '<div class="mrn-singular-breadcrumbs-slot" data-mrn-layout-slot="breadcrumbs">' . $markup . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+endif;
+
 if ( ! function_exists( 'mrn_base_stack_get_footer_copyright_text' ) ) :
 	/**
 	 * Return the footer copyright line.
@@ -568,29 +743,92 @@ if ( ! function_exists( 'mrn_base_stack_get_footer_copyright_text' ) ) :
 	}
 endif;
 
-if ( ! function_exists( 'mrn_base_stack_render_social_links' ) ) :
+if ( ! function_exists( 'mrn_base_stack_get_configured_social_link_rows' ) ) :
 	/**
-	 * Render configured social links.
+	 * Return configured social rows that can render in a public social slot.
+	 *
+	 * @return array<int, array<string, mixed>>
 	 */
-	function mrn_base_stack_render_social_links() {
+	function mrn_base_stack_get_configured_social_link_rows() {
 		if ( ! function_exists( 'mrn_config_helper_get_social_links' ) ) {
-			return;
+			return array();
 		}
 
 		$social_links = mrn_config_helper_get_social_links();
 
 		if ( ! is_array( $social_links ) || empty( $social_links ) ) {
-			return;
+			return array();
 		}
 
-		echo '<ul class="mrn-social-links">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-
+		$renderable_links = array();
 		foreach ( $social_links as $row ) {
-			if ( ! is_array( $row ) || empty( $row['url'] ) ) {
+			if ( ! is_array( $row ) ) {
 				continue;
 			}
 
-			$url         = esc_url( (string) $row['url'] );
+			$url       = isset( $row['url'] ) ? esc_url( (string) $row['url'] ) : '';
+			$name      = isset( $row['name'] ) ? trim( (string) $row['name'] ) : '';
+			$alt_text  = isset( $row['alt_text'] ) ? trim( (string) $row['alt_text'] ) : '';
+			$icon_type = isset( $row['icon_type'] ) ? sanitize_key( (string) $row['icon_type'] ) : '';
+			$has_icon  = ( 'fontawesome' === $icon_type && ! empty( $row['fa_class'] ) )
+				|| ( 'dashicons' === $icon_type && ! empty( $row['dashicon'] ) )
+				|| ( 'media' === $icon_type && ! empty( $row['icon_id'] ) );
+
+			if ( '' === $url && '' === $name && '' === $alt_text && ! $has_icon ) {
+				continue;
+			}
+
+			$row['url']         = $url;
+			$renderable_links[] = $row;
+		}
+
+		return $renderable_links;
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_has_configured_social_links' ) ) :
+	/**
+	 * Determine whether configured social links can render.
+	 *
+	 * @return bool
+	 */
+	function mrn_base_stack_has_configured_social_links() {
+		return ! empty( mrn_base_stack_get_configured_social_link_rows() );
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_render_social_links' ) ) :
+	/**
+	 * Render configured social links.
+	 *
+	 * @param array<string, mixed> $args Optional render args.
+	 */
+	function mrn_base_stack_render_social_links( array $args = array() ) {
+		$social_links = mrn_base_stack_get_configured_social_link_rows();
+
+		if ( ! is_array( $social_links ) || empty( $social_links ) ) {
+			return;
+		}
+
+		$classes = array( 'mrn-social-links' );
+		if ( ! empty( $args['class'] ) && is_scalar( $args['class'] ) ) {
+			$extra_classes = preg_split( '/\s+/', trim( (string) $args['class'] ) );
+			foreach ( is_array( $extra_classes ) ? $extra_classes : array() as $extra_class ) {
+				$extra_class = sanitize_html_class( $extra_class );
+				if ( '' !== $extra_class ) {
+					$classes[] = $extra_class;
+				}
+			}
+		}
+
+		echo '<ul class="' . esc_attr( implode( ' ', array_unique( $classes ) ) ) . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+		foreach ( $social_links as $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+
+			$url         = isset( $row['url'] ) ? esc_url( (string) $row['url'] ) : '';
 			$icon_type   = isset( $row['icon_type'] ) ? (string) $row['icon_type'] : '';
 			$icon_id     = isset( $row['icon_id'] ) ? (int) $row['icon_id'] : 0;
 			$name        = isset( $row['name'] ) ? trim( (string) $row['name'] ) : '';
@@ -621,7 +859,11 @@ if ( ! function_exists( 'mrn_base_stack_render_social_links' ) ) :
 			$accessible_label = '' !== $alt_text ? $alt_text : ucwords( str_replace( '-', ' ', $label ) );
 
 			echo '<li class="mrn-social-links__item">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo '<a class="mrn-social-links__link" href="' . $url . '" target="_blank" rel="noopener noreferrer" aria-label="' . esc_attr( $accessible_label ) . '" title="' . esc_attr( $accessible_label ) . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			if ( '' !== $url ) {
+				echo '<a class="mrn-social-links__link" href="' . $url . '" target="_blank" rel="noopener noreferrer" aria-label="' . esc_attr( $accessible_label ) . '" title="' . esc_attr( $accessible_label ) . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			} else {
+				echo '<span class="mrn-social-links__link mrn-social-links__link--static" role="img" aria-label="' . esc_attr( $accessible_label ) . '" title="' . esc_attr( $accessible_label ) . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
 
 			if ( 'fontawesome' === $icon_type && ! empty( $row['fa_class'] ) ) {
 				echo '<span class="mrn-social-links__icon" aria-hidden="true"><i class="' . esc_attr( (string) $row['fa_class'] ) . '"></i></span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -633,7 +875,7 @@ if ( ! function_exists( 'mrn_base_stack_render_social_links' ) ) :
 				echo '<span class="mrn-social-links__text">' . esc_html( ucwords( str_replace( '-', ' ', $label ) ) ) . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 
-			echo '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo '' !== $url ? '</a>' : '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			echo '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 

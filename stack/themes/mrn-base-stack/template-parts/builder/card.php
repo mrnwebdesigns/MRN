@@ -47,9 +47,9 @@ foreach ( $items as $item ) {
 		? mrn_base_stack_get_repeater_item_primary_link( $item )
 		: array();
 	$item_link_url  = isset( $item_link_data['url'] ) ? (string) $item_link_data['url'] : '';
-	$item_img       = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+	$item_img       = $item['image'] ?? null;
 
-	if ( '' !== trim( wp_strip_all_tags( $item_text ) ) || '' !== $item_link_url || ! empty( $item_img['ID'] ) || ! empty( $item_img['url'] ) ) {
+	if ( '' !== trim( wp_strip_all_tags( $item_text ) ) || '' !== $item_link_url || ( function_exists( 'mrn_base_stack_image_has_content' ) && mrn_base_stack_image_has_content( $item_img ) ) ) {
 		$has_items = true;
 		break;
 	}
@@ -128,7 +128,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 						$item_link_data       = function_exists( 'mrn_base_stack_get_repeater_item_primary_link' )
 							? mrn_base_stack_get_repeater_item_primary_link( $item )
 							: array();
-						$item_image           = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+						$item_image           = $item['image'] ?? null;
 						$item_link_url        = isset( $item_link_data['url'] ) ? (string) $item_link_data['url'] : '';
 						$item_link_target     = isset( $item_link_data['target'] ) ? (string) $item_link_data['target'] : '';
 						$item_link_label      = isset( $item_link_data['text'] ) && '' !== trim( (string) $item_link_data['text'] )
@@ -143,7 +143,9 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 							'mrn-ui__item',
 						);
 
-						if ( '' === trim( wp_strip_all_tags( $item_text ) ) && '' === $item_link_url && empty( $item_image['ID'] ) && empty( $item_image['url'] ) ) {
+						$item_has_image       = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $item_image ) : false;
+
+						if ( '' === trim( wp_strip_all_tags( $item_text ) ) && '' === $item_link_url && ! $item_has_image ) {
 							continue;
 						}
 
@@ -152,13 +154,9 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 						}
 						?>
 						<article class="<?php echo esc_attr( implode( ' ', $item_class_names ) ); ?>">
-						<?php if ( ! empty( $item_image['ID'] ) ) : ?>
+						<?php if ( $item_has_image ) : ?>
 								<div class="mrn-card-row__image mrn-ui__media">
-								<?php echo wp_get_attachment_image( (int) $item_image['ID'], 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-							</div>
-						<?php elseif ( ! empty( $item_image['url'] ) ) : ?>
-								<div class="mrn-card-row__image mrn-ui__media">
-								<img src="<?php echo esc_url( $item_image['url'] ); ?>" alt="<?php echo esc_attr( $item_image['alt'] ?? '' ); ?>">
+								<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $item_image, 'mrn-card' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
 						<?php endif; ?>
 

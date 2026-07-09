@@ -64,13 +64,20 @@
 			if ( videoKind === 'local' ) {
 				var video = document.createElement( 'video' );
 				video.className = 'mrn-deferred-media__frame';
-				video.src = videoSrc;
 				video.autoplay = shouldAutoplay;
 				video.muted = shouldMute;
 				video.loop = shouldLoop;
 				video.playsInline = true;
 				video.controls = showControls;
 				video.preload = isBackgroundVideo ? 'none' : 'metadata';
+
+				var source = document.createElement( 'source' );
+				source.src = videoSrc;
+				if ( videoMime ) {
+					source.type = videoMime;
+				}
+				video.appendChild( source );
+
 				if ( isBackgroundVideo ) {
 					video.setAttribute( 'aria-hidden', 'true' );
 					video.setAttribute( 'tabindex', '-1' );
@@ -82,16 +89,12 @@
 					video.poster = videoPoster;
 				}
 
-				if ( videoMime ) {
-					video.setAttribute( 'type', videoMime );
-				}
-
 				mediaElement.appendChild( video );
 			} else {
 				var iframe = document.createElement( 'iframe' );
 				iframe.className = 'mrn-deferred-media__frame';
 				iframe.src = videoSrc;
-				iframe.title = isBackgroundVideo ? '' : videoTitle;
+				iframe.title = isBackgroundVideo ? 'Decorative background video' : videoTitle;
 				iframe.setAttribute( 'loading', 'lazy' );
 				iframe.setAttribute( 'allow', 'autoplay; fullscreen; picture-in-picture' );
 				iframe.setAttribute( 'allowfullscreen', 'allowfullscreen' );

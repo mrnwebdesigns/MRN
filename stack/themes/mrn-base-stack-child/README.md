@@ -18,11 +18,4 @@ Before activating on a site handoff:
 - For custom ACF flexible-content row wrappers, use `mrn_base_stack_get_row_spacing_attr_html_for_current_row()` and keep `mrn-content-builder__row` on the wrapper. The parent helper hydrates missing row-spacing selector fields from raw flexible-content meta so disabled/skipped ACF rows do not shift spacing onto the wrong visible row.
 - Keep direct `mrn_base_stack_get_row_spacing_contract( $row )` calls for code paths that already pass complete row data.
 
-## Included Starter Template
-
-- `templates/template-rollout-starter.php`
-  - Page template available in Classic Editor.
-  - Preserves parent shell and builder rendering contracts.
-  - Includes a guarded breadcrumb render point via `mrn_render_breadcrumbs()` for site-level placement control.
-
 The parent theme remains the source for shared builder/runtime behavior. Keep child changes focused on site-specific visual and template needs.

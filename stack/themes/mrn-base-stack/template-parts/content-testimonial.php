@@ -16,7 +16,7 @@ $mrn_company       = isset( $mrn_testimonial['company'] ) ? trim( (string) $mrn_
 $mrn_position      = isset( $mrn_testimonial['position'] ) ? trim( (string) $mrn_testimonial['position'] ) : '';
 $mrn_website_url   = isset( $mrn_testimonial['website_url'] ) ? trim( (string) $mrn_testimonial['website_url'] ) : '';
 $mrn_content       = isset( $mrn_testimonial['content'] ) ? (string) $mrn_testimonial['content'] : '';
-$mrn_image_logo    = isset( $mrn_testimonial['image_logo'] ) && is_array( $mrn_testimonial['image_logo'] ) ? $mrn_testimonial['image_logo'] : null;
+$mrn_image_logo    = $mrn_testimonial['image_logo'] ?? null;
 $mrn_display_style = isset( $mrn_testimonial['display_style'] ) ? sanitize_key( (string) $mrn_testimonial['display_style'] ) : 'story';
 $mrn_video_url     = isset( $mrn_testimonial['video_url'] ) ? trim( (string) $mrn_testimonial['video_url'] ) : '';
 $mrn_video_kind    = isset( $mrn_testimonial['video_kind'] ) ? trim( (string) $mrn_testimonial['video_kind'] ) : '';
@@ -50,9 +50,13 @@ $mrn_article_classes = array(
 			$mrn_shell_classes[] = 'mrn-singular-shell--has-sidebar';
 			$mrn_shell_classes[] = 'mrn-singular-shell--sidebar-' . sanitize_html_class( $mrn_sidebar_settings['layout'] );
 		}
+
+		if ( function_exists( 'mrn_base_stack_render_singular_breadcrumbs' ) ) {
+			mrn_base_stack_render_singular_breadcrumbs( $mrn_post_id );
+		}
 		?>
 
-		<div class="<?php echo esc_attr( implode( ' ', $mrn_shell_classes ) ); ?>">
+		<div class="<?php echo esc_attr( implode( ' ', $mrn_shell_classes ) ); ?>" data-mrn-layout-slot="content-shell">
 			<div class="mrn-singular-shell__main">
 				<?php if ( ! $mrn_has_hero ) : ?>
 					<header class="entry-header">
@@ -89,9 +93,9 @@ $mrn_article_classes = array(
 				<?php endif; ?>
 
 				<div class="entry-content entry-content--builder">
-					<?php if ( $mrn_image_logo && ! empty( $mrn_image_logo['ID'] ) ) : ?>
+					<?php if ( function_exists( 'mrn_base_stack_image_has_content' ) && mrn_base_stack_image_has_content( $mrn_image_logo ) ) : ?>
 						<div class="post-thumbnail">
-							<?php echo wp_get_attachment_image( (int) $mrn_image_logo['ID'], 'large' ); ?>
+							<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $mrn_image_logo, 'mrn-testimonial' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						</div>
 					<?php endif; ?>
 
@@ -177,9 +181,9 @@ $mrn_article_classes = array(
 				<?php endif; ?>
 			</header>
 
-			<?php if ( $mrn_image_logo && ! empty( $mrn_image_logo['ID'] ) ) : ?>
+			<?php if ( function_exists( 'mrn_base_stack_image_has_content' ) && mrn_base_stack_image_has_content( $mrn_image_logo ) ) : ?>
 				<a class="post-thumbnail" href="<?php echo esc_url( get_permalink() ); ?>" aria-hidden="true" tabindex="-1">
-					<?php echo wp_get_attachment_image( (int) $mrn_image_logo['ID'], 'medium' ); ?>
+					<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $mrn_image_logo, 'mrn-logo' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</a>
 			<?php endif; ?>
 

@@ -278,6 +278,16 @@ run_wp() {
   sudo -u "${SITE_USER}" wp --path="${WP_PATH}" "${args[@]}"
 }
 
+php_string_literal() {
+  local value
+  value="${1:-}"
+  php -r 'echo var_export($argv[1], true);' -- "${value}"
+}
+
+last_nonempty_line() {
+  sed '/^[[:space:]]*$/d' | tail -n 1
+}
+
 load_site_owner_authorized_key() {
   local key_line
 
@@ -1370,7 +1380,7 @@ install_themes() {
 }
 
 apply_wp_defaults() {
-  local recaptcha_private_key_literal recaptcha_integration_type
+  local recaptcha_private_key_literal recaptcha_private_key_php_literal recaptcha_integration_type
 
   run_wp option update permalink_structure '/%postname%/'
   # Discourage search engines from indexing bootstrap sites by default.
@@ -1405,7 +1415,9 @@ apply_wp_defaults() {
         | sed ':a;N;$!ba;s/\n/\\n/g'
     )"
     if [[ -n "${recaptcha_private_key_literal}" ]]; then
-      if ! run_wp config set MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY "${recaptcha_private_key_literal}" --type=constant; then
+      if ! recaptcha_private_key_php_literal="$(php_string_literal "${recaptcha_private_key_literal}")"; then
+        add_warning "Failed to prepare MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY for wp-config.php"
+      elif ! run_wp config set MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY "${recaptcha_private_key_php_literal}" --raw --type=constant; then
         add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY in wp-config.php"
       fi
     fi
@@ -1449,7 +1461,7 @@ run_importers() {
 }
 
 provision_external_services() {
-  local sendgrid_code uptime_code uptime_interval
+  local sendgrid_code uptime_code uptime_interval uptime_output uptime_warning_detail
 
   if ! run_wp plugin is-active mrn-config-helper >/dev/null 2>&1; then
     add_warning "Skipped external service provisioning: MRN Config Helper is not active."
@@ -1504,8 +1516,16 @@ if (in_array(\$status, array('warning', 'skipped'), true)) {
 }
 PHP
 )"
-    if ! run_wp eval "${uptime_code}"; then
-      add_warning "UptimeRobot automatic provisioning did not complete cleanly."
+    if ! uptime_output="$(run_wp eval "${uptime_code}" 2>&1)"; then
+      printf '%s\n' "${uptime_output}"
+      uptime_warning_detail="$(printf '%s\n' "${uptime_output}" | last_nonempty_line)"
+      if [[ -n "${uptime_warning_detail}" ]]; then
+        add_warning "UptimeRobot automatic provisioning did not complete cleanly: ${uptime_warning_detail}"
+      else
+        add_warning "UptimeRobot automatic provisioning did not complete cleanly."
+      fi
+    elif [[ -n "${uptime_output}" ]]; then
+      printf '%s\n' "${uptime_output}"
     fi
   else
     echo "UptimeRobot automatic provisioning disabled by STACK_BOOTSTRAP_UPTIME_ROBOT_AUTO_PROVISION."

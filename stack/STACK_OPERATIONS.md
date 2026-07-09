@@ -89,6 +89,12 @@ This ensures stack files are written as the app owner instead of a personal oper
   - `site-bootstrap.sh` runs after CloudPanel has already created `/home/<site-user>` and the site root.
   - It must ensure `/home/<site-user>/.ssh/authorized_keys` contains the canonical MRN site-owner public key from `stack/configs/site-owner-authorized-key.pub`, with `.ssh` at `700` and `authorized_keys` at `600`, owned by the site owner.
   - This fixes new-site provisioning only; older sites created before this bootstrap step may still need a one-time backfill if `SSH_VERIFY` fails.
+- Fresh CloudPanel SSL bootstrap for `*.mrndev.io` should use DNS-01/import instead of CloudPanel HTTP-01 when the hostname is behind the proxied wildcard.
+  - The zone normally has Cloudflare SSL mode `strict` and `Always Use HTTPS` enabled.
+  - The CloudPanel WordPress vhost also redirects HTTP to HTTPS before its `/.well-known` location can serve ACME tokens.
+  - That combination can make HTTP-01 fail with Cloudflare `526` before the origin certificate exists.
+  - Use `/Users/khofmeyer/Development/MRN/stack/scripts/cloudpanel-dns01-ssl.sh --domain <fqdn> --site-user <site-user> --execute` to issue the certificate through Cloudflare DNS-01 and stage it for CloudPanel import.
+  - The final import requires a root-capable CloudPanel shell unless `--install-ssh <root-capable-target>` is available.
 - When using direct site-owner SSH with a deploy helper, prefer the explicit host form:
   - `<site-user>@mrndev-site-owner`
 - Do not sync directly into live site `wp-content` paths as `mrn-ops`, `kyle`, or any other operator user.

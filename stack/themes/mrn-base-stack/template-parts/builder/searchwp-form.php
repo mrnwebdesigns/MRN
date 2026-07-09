@@ -25,6 +25,9 @@ $width_layers     = function_exists( 'mrn_base_stack_get_section_width_layers' )
 		'container_class' => 'mrn-layout-container--content',
 	);
 $form_id          = absint( $row['searchwp_form_id'] ?? 0 );
+if ( $form_id < 1 && function_exists( 'mrn_base_stack_get_default_searchwp_form_id' ) ) {
+	$form_id = mrn_base_stack_get_default_searchwp_form_id();
+}
 $form_markup      = function_exists( 'mrn_base_stack_get_searchwp_form_markup' ) ? mrn_base_stack_get_searchwp_form_markup( $form_id ) : '';
 
 $allowed_tags = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );

@@ -9,7 +9,24 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.2.4' );
+	define( '_S_VERSION', '1.2.47' );
+}
+
+/**
+ * Get the stack's canonical navigation locations.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_nav_menu_locations() {
+	return array(
+		'menu-1'           => esc_html__( 'Primary', 'mrn-base-stack' ),
+		'menu-3'           => esc_html__( 'Footer Primary', 'mrn-base-stack' ),
+		'header-secondary' => esc_html__( 'Header Secondary', 'mrn-base-stack' ),
+		'header-tertiary'  => esc_html__( 'Header Tertiary', 'mrn-base-stack' ),
+		'footer-secondary' => esc_html__( 'Footer Secondary', 'mrn-base-stack' ),
+		'footer-tertiary'  => esc_html__( 'Footer Tertiary', 'mrn-base-stack' ),
+		'privacy-center'   => esc_html__( 'Privacy Center Links', 'mrn-base-stack' ),
+	);
 }
 
 /**
@@ -46,20 +63,19 @@ function mrn_base_stack_setup() {
 		*/
 	add_theme_support( 'post-thumbnails' );
 
-	// This theme uses wp_nav_menu() in one location.
-	register_nav_menus(
-		array(
-			'menu-1'           => esc_html__( 'Primary', 'mrn-base-stack' ),
-			'menu-2'           => esc_html__( 'Utility (Legacy)', 'mrn-base-stack' ),
-			'menu-3'           => esc_html__( 'Footer Primary', 'mrn-base-stack' ),
-			'menu-4'           => esc_html__( 'Legal (Legacy)', 'mrn-base-stack' ),
-			'header-secondary' => esc_html__( 'Header Secondary', 'mrn-base-stack' ),
-			'header-tertiary'  => esc_html__( 'Header Tertiary', 'mrn-base-stack' ),
-			'footer-secondary' => esc_html__( 'Footer Secondary', 'mrn-base-stack' ),
-			'footer-tertiary'  => esc_html__( 'Footer Tertiary', 'mrn-base-stack' ),
-			'social-media'     => esc_html__( 'Social Media', 'mrn-base-stack' ),
-		)
-	);
+	add_image_size( 'mrn-hero', 1600, 1000, false );
+	add_image_size( 'mrn-banner', 1600, 600, true );
+	add_image_size( 'mrn-background', 1920, 1080, true );
+	add_image_size( 'mrn-content-media', 1200, 900, false );
+	add_image_size( 'mrn-card', 768, 512, true );
+	add_image_size( 'mrn-gallery', 900, 675, true );
+	add_image_size( 'mrn-logo', 480, 240, false );
+	add_image_size( 'mrn-team-member', 640, 640, true );
+	add_image_size( 'mrn-testimonial', 640, 480, false );
+	add_image_size( 'mrn-icon', 96, 96, false );
+
+	// Register the stack's canonical navigation slots.
+	register_nav_menus( mrn_base_stack_get_nav_menu_locations() );
 
 	/*
 		* Switch default core markup for search form, comment form, and comments
@@ -109,6 +125,103 @@ function mrn_base_stack_setup() {
 	);
 }
 add_action( 'after_setup_theme', 'mrn_base_stack_setup' );
+
+/**
+ * Ensure each stack navigation location has an editable menu assigned.
+ *
+ * @return void
+ */
+function mrn_base_stack_seed_nav_menus() {
+	$migration_version = '2026-07-07-v1';
+	$option_key        = 'mrn_base_stack_nav_menu_seed_version';
+	$locations          = mrn_base_stack_get_nav_menu_locations();
+	$assigned_locations = get_nav_menu_locations();
+	$stack_locations    = array_intersect_key( $assigned_locations, $locations );
+	$all_seeded         = true;
+	$needs_update       = false;
+
+	foreach ( $locations as $location => $label ) {
+		$assigned_menu_id = isset( $stack_locations[ $location ] ) ? (int) $stack_locations[ $location ] : 0;
+
+		if ( $assigned_menu_id > 0 && wp_get_nav_menu_object( $assigned_menu_id ) ) {
+			continue;
+		}
+
+		$menu = wp_get_nav_menu_object( $label );
+
+		if ( ! $menu ) {
+			$created_menu_id = wp_create_nav_menu( $label );
+
+			if ( is_wp_error( $created_menu_id ) ) {
+				$all_seeded = false;
+				continue;
+			}
+
+			$assigned_menu_id = (int) $created_menu_id;
+		} else {
+			$assigned_menu_id = (int) $menu->term_id;
+		}
+
+		$assigned_locations[ $location ] = $assigned_menu_id;
+		$needs_update                    = true;
+	}
+
+	if ( $needs_update ) {
+		set_theme_mod( 'nav_menu_locations', $assigned_locations );
+	}
+
+	if ( $all_seeded ) {
+		update_option( $option_key, $migration_version, false );
+	}
+}
+add_action( 'init', 'mrn_base_stack_seed_nav_menus', 20 );
+
+/**
+ * Determine whether a registered menu location has menu items.
+ *
+ * @param string $location Menu location slug.
+ * @return bool
+ */
+function mrn_base_stack_nav_location_has_items( $location ) {
+	$location  = sanitize_key( (string) $location );
+	$locations = get_nav_menu_locations();
+	$menu_id   = isset( $locations[ $location ] ) ? (int) $locations[ $location ] : 0;
+
+	if ( $menu_id <= 0 ) {
+		return false;
+	}
+
+	$items = wp_get_nav_menu_items(
+		$menu_id,
+		array(
+			'update_post_term_cache' => false,
+		)
+	);
+
+	return is_array( $items ) && ! empty( $items );
+}
+
+/**
+ * Determine whether pages should rely on stack builder fields instead of the
+ * WordPress stock body editor.
+ *
+ * @return bool
+ */
+function mrn_base_stack_pages_use_builder_only_content() {
+	return (bool) apply_filters( 'mrn_base_stack_pages_use_builder_only_content', true );
+}
+
+/**
+ * Remove the stock WordPress body editor from page edit screens.
+ *
+ * @return void
+ */
+function mrn_base_stack_disable_page_body_editor() {
+	if ( mrn_base_stack_pages_use_builder_only_content() ) {
+		remove_post_type_support( 'page', 'editor' );
+	}
+}
+add_action( 'init', 'mrn_base_stack_disable_page_body_editor', 20 );
 
 /**
  * Set the content width in pixels, based on the theme's design and stylesheet.
@@ -396,13 +509,13 @@ function mrn_base_stack_get_after_content_location_rules() {
 /**
  * Determine whether the layout-builder runtime should load.
  *
- * Layout-builder runtime stays off by default, but site-local experiments can
- * opt in without re-enabling the feature across the shared stack.
+ * Layout-builder runtime stays on by default for stack rollouts, while sites
+ * can still opt out during rollback windows.
  *
  * @return bool
  */
 function mrn_base_stack_is_layout_builder_enabled() {
-	$enabled = defined( 'MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER' ) ? (bool) MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER : false;
+	$enabled = defined( 'MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER' ) ? (bool) MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER : true;
 
 	/**
 	 * Filter whether the theme's ACF layout-builder runtime should load.
@@ -668,6 +781,11 @@ function mrn_base_stack_scripts() {
 	wp_style_add_data( 'mrn-base-stack-style', 'rtl', 'replace' );
 
 	$layout_builder_enabled = mrn_base_stack_is_layout_builder_enabled();
+
+	if ( $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'mrn_base_stack_enqueue_layout_styles_for_post' ) ) {
+		mrn_base_stack_enqueue_layout_styles_for_post( get_queried_object_id() );
+	}
+
 	$header_options         = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
 	$needs_fontawesome      = false;
 	$needs_dashicons        = false;
@@ -868,6 +986,41 @@ function mrn_base_stack_scripts() {
 	}
 }
 add_action( 'wp_enqueue_scripts', 'mrn_base_stack_scripts' );
+
+/**
+ * Enqueue SearchWP form assets when the stack header renders the SearchWP form.
+ *
+ * SearchWP registers these handles on `wp_enqueue_scripts`; this runs later so
+ * the theme can enqueue them before the form shortcode renders.
+ *
+ * @return void
+ */
+function mrn_base_stack_enqueue_header_searchwp_assets() {
+	$header_options = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+
+	if ( empty( $header_options['header_show_search'] ) || empty( $header_options['header_searchwp_form_id'] ) ) {
+		return;
+	}
+
+	if ( wp_style_is( 'searchwp-forms', 'registered' ) ) {
+		wp_enqueue_style( 'searchwp-forms' );
+	}
+
+	if ( wp_script_is( 'searchwp-forms', 'registered' ) ) {
+		wp_enqueue_script( 'searchwp-forms' );
+	}
+}
+add_action( 'wp_enqueue_scripts', 'mrn_base_stack_enqueue_header_searchwp_assets', 100 );
+
+/**
+ * Load responsive image helpers.
+ */
+require_once get_template_directory() . '/inc/image-helpers.php';
+
+/**
+ * Load front-end asset helpers.
+ */
+require_once get_template_directory() . '/inc/frontend-assets.php';
 
 /**
  * Load builder modules.
@@ -1651,6 +1804,10 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 	function mrn_base_stack_render_content_builder( $post_id = null ) {
 		$post_id = null !== $post_id ? absint( $post_id ) : get_the_ID();
 		if ( ! $post_id ) {
+			return;
+		}
+
+		if ( 'page' === get_post_type( $post_id ) && mrn_base_stack_pages_use_builder_only_content() ) {
 			return;
 		}
 

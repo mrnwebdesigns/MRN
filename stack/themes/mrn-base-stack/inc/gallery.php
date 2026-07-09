@@ -597,7 +597,7 @@ function mrn_base_stack_register_gallery_field_group() {
 							'name'              => 'image',
 							'aria-label'        => '',
 							'type'              => 'image',
-							'return_format'     => 'array',
+							'return_format'     => 'id',
 							'preview_size'      => 'medium',
 							'library'           => 'all',
 							'instructions'      => 'Required for image items.',
@@ -620,7 +620,7 @@ function mrn_base_stack_register_gallery_field_group() {
 							'name'              => 'preview_image',
 							'aria-label'        => '',
 							'type'              => 'image',
-							'return_format'     => 'array',
+							'return_format'     => 'id',
 							'preview_size'      => 'medium',
 							'library'           => 'all',
 							'instructions'      => 'Optional poster image shown in the grid for video or external embed items.',
@@ -1342,12 +1342,12 @@ function mrn_base_stack_get_gallery_items( $post_id = null ) {
 		}
 
 		$media_type           = mrn_base_stack_normalize_gallery_media_type( $row['media_type'] ?? 'image' );
-		$image                = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
-		$preview_image        = isset( $row['preview_image'] ) && is_array( $row['preview_image'] ) ? $row['preview_image'] : array();
+		$image                = $row['image'] ?? null;
+		$preview_image        = $row['preview_image'] ?? null;
 		$media_url            = isset( $row['media_url'] ) ? esc_url_raw( (string) $row['media_url'] ) : '';
 		$effective_media_type = mrn_base_stack_get_gallery_effective_media_type( $media_type, $media_url );
 
-		if ( 'image' === $media_type && empty( $image['ID'] ) && empty( $image['url'] ) ) {
+		if ( 'image' === $media_type && ( ! function_exists( 'mrn_base_stack_image_has_content' ) || ! mrn_base_stack_image_has_content( $image ) ) ) {
 			continue;
 		}
 
@@ -1356,10 +1356,10 @@ function mrn_base_stack_get_gallery_items( $post_id = null ) {
 		}
 
 		$display_image      = 'image' === $media_type ? $image : $preview_image;
-		$attachment_id      = ! empty( $display_image['ID'] ) ? (int) $display_image['ID'] : 0;
-		$thumb_url          = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'large' ) : ( $display_image['url'] ?? '' );
-		$full_url           = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'full' ) : ( $display_image['url'] ?? '' );
-		$alt                = $attachment_id ? get_post_meta( $attachment_id, '_wp_attachment_image_alt', true ) : ( $display_image['alt'] ?? '' );
+		$attachment_id      = function_exists( 'mrn_base_stack_get_image_attachment_id' ) ? mrn_base_stack_get_image_attachment_id( $display_image ) : 0;
+		$thumb_url          = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'mrn-gallery' ) : '';
+		$full_url           = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'full' ) : '';
+		$alt                = function_exists( 'mrn_base_stack_get_image_alt' ) ? mrn_base_stack_get_image_alt( $display_image, $attachment_id ) : '';
 		$caption            = isset( $row['caption'] ) ? trim( wp_strip_all_tags( (string) $row['caption'] ) ) : '';
 		$link               = isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : array();
 		$autoplay_thumbnail = ! empty( $row['autoplay_thumbnail'] );
@@ -1490,10 +1490,10 @@ function mrn_base_stack_sync_gallery_attachment_categories( $post_id ) {
 		}
 
 		$media_type        = mrn_base_stack_normalize_gallery_media_type( $row['media_type'] ?? 'image' );
-		$image             = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
-		$preview_image     = isset( $row['preview_image'] ) && is_array( $row['preview_image'] ) ? $row['preview_image'] : array();
+		$image             = $row['image'] ?? null;
+		$preview_image     = $row['preview_image'] ?? null;
 		$attachment_source = 'image' === $media_type ? $image : $preview_image;
-		$attachment_id     = ! empty( $attachment_source['ID'] ) ? (int) $attachment_source['ID'] : 0;
+		$attachment_id     = function_exists( 'mrn_base_stack_get_image_attachment_id' ) ? mrn_base_stack_get_image_attachment_id( $attachment_source ) : 0;
 
 		if ( 'image' === $media_type ) {
 			delete_post_meta( $post_id, 'gallery_items_' . $index . '_preview_image' );
@@ -1645,7 +1645,7 @@ function mrn_base_stack_get_gallery_markup( $post_id = null ) {
 					$link_target        = isset( $link['target'] ) ? (string) $link['target'] : '';
 					$caption            = isset( $item['caption'] ) ? (string) $item['caption'] : '';
 					$media_type         = isset( $item['effective_media_type'] ) ? (string) $item['effective_media_type'] : ( isset( $item['media_type'] ) ? mrn_base_stack_normalize_gallery_media_type( $item['media_type'] ) : 'image' );
-					$thumb_url          = isset( $item['thumb_url'] ) ? (string) $item['thumb_url'] : '';
+					$attachment_id      = isset( $item['attachment_id'] ) ? absint( $item['attachment_id'] ) : 0;
 					$alt                = isset( $item['alt'] ) ? (string) $item['alt'] : '';
 					$glightbox_data     = array();
 					$is_direct_video    = 'video' === $media_type && mrn_base_stack_is_direct_video_url( $item['full_url'] );
@@ -1684,8 +1684,8 @@ function mrn_base_stack_get_gallery_markup( $post_id = null ) {
 									data-description="<?php echo esc_attr( wp_strip_all_tags( $caption ) ); ?>"<?php endif; ?>
 								data-glightbox="<?php echo esc_attr( implode( '; ', $glightbox_data ) ); ?>"
 							>
-								<?php if ( '' !== $thumb_url ) : ?>
-									<img src="<?php echo esc_url( $thumb_url ); ?>" alt="<?php echo esc_attr( $alt ); ?>">
+								<?php if ( $attachment_id > 0 ) : ?>
+									<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $attachment_id, 'mrn-gallery', array( 'alt' => $alt ) ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 								<?php elseif ( $is_direct_video ) : ?>
 									<video
 										class="mrn-gallery__video-preview"
@@ -1735,8 +1735,8 @@ function mrn_base_stack_get_gallery_markup( $post_id = null ) {
 								if ( '_blank' === $link_target ) :
 									?>
 								rel="noopener noreferrer"<?php endif; ?>>
-								<?php if ( '' !== $thumb_url ) : ?>
-									<img src="<?php echo esc_url( $thumb_url ); ?>" alt="<?php echo esc_attr( $alt ); ?>">
+								<?php if ( $attachment_id > 0 ) : ?>
+									<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $attachment_id, 'mrn-gallery', array( 'alt' => $alt ) ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 								<?php elseif ( $is_direct_video ) : ?>
 									<video
 										class="mrn-gallery__video-preview"
@@ -1778,8 +1778,8 @@ function mrn_base_stack_get_gallery_markup( $post_id = null ) {
 							</a>
 						<?php else : ?>
 							<div class="mrn-gallery__trigger">
-								<?php if ( '' !== $thumb_url ) : ?>
-									<img src="<?php echo esc_url( $thumb_url ); ?>" alt="<?php echo esc_attr( $alt ); ?>">
+								<?php if ( $attachment_id > 0 ) : ?>
+									<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $attachment_id, 'mrn-gallery', array( 'alt' => $alt ) ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 								<?php elseif ( $is_direct_video ) : ?>
 									<video
 										class="mrn-gallery__video-preview"

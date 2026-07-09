@@ -18,7 +18,7 @@ $left_rows               = isset( $row['left_column_rows'] ) && is_array( $row['
 $right_rows              = isset( $row['right_column_rows'] ) && is_array( $row['right_column_rows'] ) ? $row['right_column_rows'] : array();
 $column_ratio            = isset( $row['column_ratio'] ) ? (string) $row['column_ratio'] : '50-50';
 $background_color        = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
-$background_image        = isset( $row['background_image'] ) && is_array( $row['background_image'] ) ? $row['background_image'] : array();
+$background_image        = $row['background_image'] ?? null;
 $background_video        = isset( $row['background_video'] ) ? (string) $row['background_video'] : '';
 $background_video_upload = isset( $row['background_video_upload'] ) && is_array( $row['background_video_upload'] ) ? $row['background_video_upload'] : array();
 $width_layers            = function_exists( 'mrn_base_stack_get_section_width_layers' )
@@ -58,38 +58,16 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 	$section_styles[] = '--mrn-two-column-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
-$background_image_style = function_exists( 'mrn_base_stack_get_background_image_style' )
-	? mrn_base_stack_get_background_image_style( $background_image, '--mrn-two-column-bg-image' )
-	: '';
-
-if ( '' !== $background_image_style ) {
-	$section_styles[] = $background_image_style;
-}
-
-$background_video_data = function_exists( 'mrn_base_stack_get_video_embed' ) ? mrn_base_stack_get_video_embed(
-	$background_video,
-	array(
-		'autoplay'   => true,
-		'muted'      => true,
-		'loop'       => true,
-		'controls'   => false,
-		'background' => true,
+$background_image_markup = function_exists( 'mrn_base_stack_get_background_image_markup' ) ? mrn_base_stack_get_background_image_markup( $background_image ) : '';
+$background_video_markup = function_exists( 'mrn_base_stack_get_background_video_markup' )
+	? mrn_base_stack_get_background_video_markup(
+		$background_video,
+		$background_video_upload,
+		array(
+			'poster_image' => $background_image,
+		)
 	)
-) : array(
-	'provider'  => '',
-	'embed_url' => '',
-);
-$background_video_url  = isset( $background_video_data['embed_url'] ) ? (string) $background_video_data['embed_url'] : '';
-$local_video_url       = isset( $background_video_upload['url'] ) ? (string) $background_video_upload['url'] : '';
-$local_video_mime      = isset( $background_video_upload['mime_type'] ) ? (string) $background_video_upload['mime_type'] : '';
-$background_video_kind = '';
-
-if ( '' !== $local_video_url ) {
-	$background_video_kind = 'local';
-	$background_video_url  = $local_video_url;
-} elseif ( '' !== $background_video_url ) {
-	$background_video_kind = 'remote';
-}
+	: '';
 
 $section_classes = array(
 	'mrn-content-builder__row',
@@ -97,47 +75,37 @@ $section_classes = array(
 );
 $section_attrs   = array();
 
-if ( '' !== $background_image_style ) {
+if ( '' !== $background_image_markup ) {
 	$section_classes[] = 'has-background-image';
 }
 
-if ( '' !== $background_video_url ) {
+if ( '' !== $background_video_markup ) {
 	$section_classes[] = 'has-background-video';
 }
 
+$display_contract = mrn_base_stack_get_builder_display_contract( $row, 'two_column_split' );
 $motion_contract = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
 	'classes'    => array(),
 	'attributes' => array(),
 );
+$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract );
 $section_classes = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
+$section_attrs   = mrn_base_stack_merge_builder_attributes( $section_attrs, $display_contract['attributes'] );
 $section_attrs   = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
+$surface_class     = ( '' !== $background_image_markup ? ' has-row-background-media' : '' ) . ( '' !== $background_video_markup ? ' has-row-background-video' : '' );
 echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-	<?php if ( '' !== $background_video_url ) : ?>
-		<div
-			class="mrn-section-background-media mrn-two-column-split__background-media"
-			data-video-src="<?php echo esc_url( $background_video_url ); ?>"
-			data-video-kind="<?php echo esc_attr( $background_video_kind ); ?>"
-			<?php if ( 'local' === $background_video_kind && '' !== $local_video_mime ) : ?>
-				data-video-mime="<?php echo esc_attr( $local_video_mime ); ?>"
-			<?php endif; ?>
-			data-video-background="true"
-			data-video-autoplay="true"
-			data-video-muted="true"
-			data-video-loop="true"
-			data-video-controls="false"
-			data-video-delay="2000"
-			data-video-desktop-only="true"
-			aria-hidden="true"
-		></div>
-	<?php endif; ?>
-	<div class="mrn-layout-section mrn-layout-section--two-column-split <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
-		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
+	<div class="mrn-layout-section mrn-layout-section--two-column-split <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' . esc_attr( $surface_class ) : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
+		<?php echo $is_full_width ? $background_image_markup : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Decorative image markup is escaped in the helper. ?>
+		<?php echo $is_full_width ? $background_video_markup : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Decorative video markup is escaped in the helper. ?>
+		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' . esc_attr( $surface_class ) : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
+			<?php echo ! $is_full_width ? $background_image_markup : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Decorative image markup is escaped in the helper. ?>
+			<?php echo ! $is_full_width ? $background_video_markup : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Decorative video markup is escaped in the helper. ?>
 			<div class="mrn-layout-grid mrn-layout-grid--two-column-split mrn-two-column-split mrn-layout-grid--split-shell mrn-ui__body">
 			<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
 					<header class="mrn-layout-content mrn-layout-content--text mrn-two-column-split__header mrn-two-column-split__header--split-shell mrn-ui__head">

@@ -52,33 +52,18 @@ if (!in_array($subheading_tag, $allowed_tags, true)) {
 }
 
 $normalize_image = static function ($image): array {
-    $image_id  = 0;
-    $image_url = '';
+    $image_id  = function_exists('mrn_rbl_get_image_attachment_id') ? mrn_rbl_get_image_attachment_id($image) : 0;
     $image_alt = '';
 
-    if (is_array($image)) {
-        if (!empty($image['ID']) && is_numeric($image['ID'])) {
-            $image_id = (int) $image['ID'];
-        } elseif (!empty($image['id']) && is_numeric($image['id'])) {
-            $image_id = (int) $image['id'];
-        }
-
-        $image_url = isset($image['url']) ? (string) $image['url'] : '';
-        $image_alt = isset($image['alt']) ? (string) $image['alt'] : '';
-    } elseif (is_numeric($image)) {
-        $image_id = (int) $image;
-    } elseif (is_string($image)) {
-        $image_url = $image;
-    }
-
-    if ($image_id > 0 && $image_url === '') {
-        $resolved_url = wp_get_attachment_image_url($image_id, 'full');
-        $image_url    = is_string($resolved_url) ? $resolved_url : '';
+    if (is_array($image) && isset($image['alt'])) {
+        $image_alt = (string) $image['alt'];
+    } elseif ($image_id > 0) {
+        $stored_alt = get_post_meta($image_id, '_wp_attachment_image_alt', true);
+        $image_alt  = is_scalar($stored_alt) ? (string) $stored_alt : '';
     }
 
     return array(
         'id'  => $image_id,
-        'url' => $image_url,
         'alt' => $image_alt,
     );
 };
@@ -106,7 +91,7 @@ foreach ($raw_items as $raw_item) {
     }
 
     $image = $normalize_image($raw_item['image'] ?? null);
-    if ($image['id'] < 1 && $image['url'] === '') {
+    if ($image['id'] < 1) {
         continue;
     }
 
@@ -216,11 +201,7 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
                             >
                         <?php endif; ?>
 
-                        <?php if ($image['id'] > 0) : ?>
-                            <?php echo wp_get_attachment_image((int) $image['id'], 'full'); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                        <?php else : ?>
-                            <img src="<?php echo esc_url($image['url']); ?>" alt="<?php echo esc_attr($image['alt']); ?>" loading="lazy" decoding="async">
-                        <?php endif; ?>
+                        <?php echo function_exists('mrn_rbl_get_attachment_image') ? mrn_rbl_get_attachment_image((int) $image['id'], 'mrn-logo') : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
                         <?php if ($link_url !== '') : ?>
                             </a>

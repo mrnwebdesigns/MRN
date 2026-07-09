@@ -155,7 +155,7 @@ function mrn_base_stack_register_testimonial_field_group() {
 					'name'          => 'testimonial_image_logo',
 					'aria-label'    => '',
 					'type'          => 'image',
-					'return_format' => 'array',
+					'return_format' => 'id',
 					'preview_size'  => 'medium',
 					'library'       => 'all',
 					'mime_types'    => 'jpg,jpeg,png,gif,webp,svg',
@@ -344,7 +344,7 @@ function mrn_base_stack_get_testimonial_data( $post_id = null ) {
 	}
 
 	$image_logo = get_field( 'testimonial_image_logo', $post_id );
-	if ( is_array( $image_logo ) ) {
+	if ( function_exists( 'mrn_base_stack_image_has_content' ) && mrn_base_stack_image_has_content( $image_logo ) ) {
 		$data['image_logo'] = $image_logo;
 	}
 

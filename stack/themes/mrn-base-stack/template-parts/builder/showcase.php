@@ -52,12 +52,12 @@ foreach ( $items as $item ) {
 		continue;
 	}
 
-	$image     = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+	$image     = $item['image'] ?? null;
 	$item_link = function_exists( 'mrn_base_stack_get_repeater_item_primary_link' )
 		? mrn_base_stack_get_repeater_item_primary_link( $item )
 		: array();
 
-	if ( empty( $image['ID'] ) && empty( $image['url'] ) ) {
+	if ( ! function_exists( 'mrn_base_stack_image_has_content' ) || ! mrn_base_stack_image_has_content( $image ) ) {
 		continue;
 	}
 
@@ -163,11 +163,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 								<?php endif; ?>
 							>
 						<?php endif; ?>
-						<?php if ( ! empty( $image['ID'] ) ) : ?>
-							<?php echo wp_get_attachment_image( (int) $image['ID'], 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<?php else : ?>
-							<img src="<?php echo esc_url( $image['url'] ); ?>" alt="<?php echo esc_attr( $image['alt'] ?? '' ); ?>">
-						<?php endif; ?>
+						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, 'mrn-gallery' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php if ( '' !== $url && ! $use_overlay_link ) : ?>
 							</a>
 						<?php endif; ?>

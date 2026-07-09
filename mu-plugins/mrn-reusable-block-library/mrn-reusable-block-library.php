@@ -643,6 +643,97 @@ function mrn_rbl_get_html_attributes(array $attributes): string {
 }
 
 /**
+ * Resolve an attachment ID from an ACF image value.
+ *
+ * @param mixed $image ACF image value, attachment ID, or legacy local URL.
+ */
+function mrn_rbl_get_image_attachment_id($image): int {
+    if (function_exists('mrn_base_stack_get_image_attachment_id')) {
+        return (int) mrn_base_stack_get_image_attachment_id($image);
+    }
+
+    if (is_numeric($image)) {
+        return absint($image);
+    }
+
+    if (is_array($image)) {
+        foreach (array('ID', 'id', 'attachment_id') as $key) {
+            if (isset($image[$key]) && is_numeric($image[$key])) {
+                return absint($image[$key]);
+            }
+        }
+
+        if (isset($image['url']) && is_string($image['url'])) {
+            return mrn_rbl_get_image_attachment_id($image['url']);
+        }
+
+        return 0;
+    }
+
+    if (!is_string($image)) {
+        return 0;
+    }
+
+    $url = trim($image);
+    if ('' === $url) {
+        return 0;
+    }
+
+    if (is_numeric($url)) {
+        return absint($url);
+    }
+
+    $attachment_id = attachment_url_to_postid(esc_url_raw($url));
+    if ($attachment_id > 0) {
+        return absint($attachment_id);
+    }
+
+    $full_size_candidate = preg_replace('/-\d+x\d+(\.[a-zA-Z0-9]+)(?:\?.*)?$/', '$1', $url);
+    if (is_string($full_size_candidate) && $full_size_candidate !== $url) {
+        $attachment_id = attachment_url_to_postid(esc_url_raw($full_size_candidate));
+    }
+
+    return $attachment_id > 0 ? absint($attachment_id) : 0;
+}
+
+/**
+ * Determine whether an image value can be rendered through WordPress media.
+ *
+ * @param mixed $image ACF image value, attachment ID, or legacy local URL.
+ */
+function mrn_rbl_image_has_content($image): bool {
+    return mrn_rbl_get_image_attachment_id($image) > 0;
+}
+
+/**
+ * Render an image using WordPress responsive image markup.
+ *
+ * @param mixed                $image ACF image value, attachment ID, or legacy local URL.
+ * @param string|int[]         $size  Registered image size.
+ * @param array<string, mixed> $attr  Image attributes.
+ */
+function mrn_rbl_get_attachment_image($image, $size = 'large', array $attr = array()): string {
+    if (function_exists('mrn_base_stack_get_attachment_image')) {
+        return (string) mrn_base_stack_get_attachment_image($image, $size, $attr);
+    }
+
+    $attachment_id = mrn_rbl_get_image_attachment_id($image);
+    if ($attachment_id <= 0) {
+        return '';
+    }
+
+    $attr = wp_parse_args(
+        $attr,
+        array(
+            'loading'  => 'lazy',
+            'decoding' => 'async',
+        )
+    );
+
+    return (string) wp_get_attachment_image($attachment_id, $size, false, $attr);
+}
+
+/**
  * Render arbitrary fields using the template contract for a reusable block type.
  *
  * @param string               $post_type
@@ -2939,7 +3030,7 @@ function mrn_rbl_get_button_link_icon_fields(string $key_prefix, string $button_
             'label'         => 'Media',
             'name'          => 'link_icon_media_icon',
             'type'          => 'image',
-            'return_format' => 'array',
+            'return_format' => 'id',
             'preview_size'  => 'thumbnail',
             'library'       => 'all',
             'mime_types'    => 'jpg,jpeg,png,gif,webp,svg',
@@ -3281,7 +3372,7 @@ function mrn_rbl_normalize_content_link(array $link, array $args = array()): arr
         'link_icon_source'     => isset($link['link_icon_source']) ? sanitize_key((string) $link['link_icon_source']) : '',
         'link_icon_dashicon'   => isset($link['link_icon_dashicon']) ? trim((string) $link['link_icon_dashicon']) : '',
         'link_icon_fa_class'   => isset($link['link_icon_fa_class']) ? trim((string) $link['link_icon_fa_class']) : '',
-        'link_icon_media_icon' => isset($link['link_icon_media_icon']) && is_array($link['link_icon_media_icon']) ? $link['link_icon_media_icon'] : array(),
+        'link_icon_media_icon' => $link['link_icon_media_icon'] ?? null,
         'link_icon_position'   => isset($link['link_icon_position']) ? sanitize_key((string) $link['link_icon_position']) : '',
         'link_icon_gap'        => $link['link_icon_gap'] ?? '',
     );
@@ -3292,7 +3383,7 @@ function mrn_rbl_normalize_content_link(array $link, array $args = array()): arr
         }
     }
 
-    if (empty($normalized['link_icon_media_icon']) && !empty($fallback_icon_fields['link_icon_media_icon']) && is_array($fallback_icon_fields['link_icon_media_icon'])) {
+    if (empty($normalized['link_icon_media_icon']) && !empty($fallback_icon_fields['link_icon_media_icon'])) {
         $normalized['link_icon_media_icon'] = $fallback_icon_fields['link_icon_media_icon'];
     }
 
@@ -3708,7 +3799,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'label'         => 'Background image',
                 'name'          => 'background_image',
                 'type'          => 'image',
-                'return_format' => 'array',
+                'return_format' => 'id',
                 'preview_size'  => 'medium',
                 'library'       => 'all',
                 'wrapper'       => array(
@@ -3807,7 +3898,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'label'         => 'Image',
                 'name'          => 'image',
                 'type'          => 'image',
-                'return_format' => 'array',
+                'return_format' => 'id',
                 'preview_size'  => 'medium',
                 'library'       => 'all',
                 'wrapper'       => array(
@@ -4662,7 +4753,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                         'label'         => 'Image',
                         'name'          => 'image',
                         'type'          => 'image',
-                        'return_format' => 'array',
+                        'return_format' => 'id',
                         'preview_size'  => 'medium',
                         'library'       => 'all',
                         'wrapper'       => array(
