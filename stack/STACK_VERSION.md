@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.07.10-two-column-split-gradient-controls`
-- Release date: `2026-07-10`
+- Stack release: `2026.07.15-body-text-layout-contract`
+- Release date: `2026-07-15`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.57`
+  - `mrn-base-stack` `1.2.58`
   - `mrn-base-stack-child` `1.0.1`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.5`
@@ -18,10 +18,11 @@
   - `mrn-schema-bridge` `0.3.3`
   - `mrn-site-colors` / `Site Styles` `0.1.15`
 - Standard plugins:
+  - `mrn-announcements` `1.5.0`
   - `mrn-config-helper` `0.1.43`
   - `mrn-dummy-content` `0.1.19`
   - `mrn-editor-tools` `1.8.24`
-  - `mrn-seo-helper` `0.3.3`
+  - `mrn-seo-helper` `0.3.4`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-universal-sticky-bar` `1.1.3`
   - `searchwp-editor-performance` `1.0.6`

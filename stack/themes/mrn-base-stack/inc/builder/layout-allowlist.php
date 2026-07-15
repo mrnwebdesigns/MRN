@@ -564,7 +564,7 @@ function mrn_base_stack_get_builder_layout_allowlist_configurable_names( array $
 	}
 
 	$names                   = array_values( array_unique( $names ) );
-	$default_removed_names   = 'page_sidebar_rows' === $field_name ? array() : array( 'body_text' );
+	$default_removed_names   = array();
 	$removed_names           = apply_filters( 'mrn_base_stack_builder_layout_allowlist_removed_layout_names', $default_removed_names, $field_name, $catalog );
 	$removed_names           = is_array( $removed_names )
 		? array_values(
@@ -594,6 +594,42 @@ function mrn_base_stack_get_builder_layout_allowlist_configurable_names( array $
 	if ( is_array( $post_type_allowed_names ) ) {
 		$names = array_values( array_intersect( $names, $post_type_allowed_names ) );
 	}
+
+	return mrn_base_stack_sort_builder_layout_allowlist_names_by_label( $names, $catalog );
+}
+
+/**
+ * Sort allowlist layout names by their editor-facing labels.
+ *
+ * @param array<int, string>                    $names Layout names.
+ * @param array<string, array<string, mixed>>   $catalog Layout catalog.
+ * @return array<int, string>
+ */
+function mrn_base_stack_sort_builder_layout_allowlist_names_by_label( array $names, array $catalog ) {
+	$names  = array_values( array_unique( array_filter( array_map( 'sanitize_key', $names ) ) ) );
+	$labels = array();
+
+	foreach ( $names as $name ) {
+		$label = isset( $catalog[ $name ]['label'] ) ? (string) $catalog[ $name ]['label'] : $name;
+		$label = trim( wp_strip_all_tags( $label ) );
+
+		$labels[ $name ] = '' !== $label ? $label : $name;
+	}
+
+	usort(
+		$names,
+		static function ( $left, $right ) use ( $labels ) {
+			$left_label  = isset( $labels[ $left ] ) ? $labels[ $left ] : $left;
+			$right_label = isset( $labels[ $right ] ) ? $labels[ $right ] : $right;
+			$comparison  = strnatcasecmp( $left_label, $right_label );
+
+			if ( 0 !== $comparison ) {
+				return $comparison;
+			}
+
+			return strnatcasecmp( $left, $right );
+		}
+	);
 
 	return $names;
 }

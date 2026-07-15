@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.07.15-body-text-layout-contract
+- Expanded `mrn-base-stack` to `1.2.58`.
+- Applied the shared Display Styles and row spacing runtime contracts to the Body Text layout.
+- Removed Body Text's built-in surface padding fallback so spacing is controlled by the shared spacing presets.
+- Restored Body Text to the per-entry Available Builder Layout Types selector and alphabetized those layout lists by label.
+
 ## 2026.07.10-two-column-split-gradient-controls
 - Expanded `mrn-base-stack` to `1.2.57`.
 - Added the shared gradient controls and overlay rendering contract to Two Column Split, including hero-builder usage.
