@@ -183,13 +183,14 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_content_lists_post_type',
-										'label'         => 'Content Type',
+										'label'         => 'Content Source',
 										'name'          => 'list_post_type',
 										'aria-label'    => '',
 										'type'          => 'select',
 										'choices'       => mrn_base_stack_get_content_list_post_type_choices(),
 										'default_value' => 'post',
 										'ui'            => 1,
+										'instructions'  => 'Choose the post type to query, such as Posts, Pages, Testimonials, Galleries, or Case Studies. Use Filter Source to narrow items within this source.',
 										'wrapper'       => array(
 											'width' => '25',
 										),

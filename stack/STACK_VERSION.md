@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.07.15-body-text-layout-contract`
+- Stack release: `2026.07.15-content-lists-layout-contract`
 - Release date: `2026-07-15`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.58`
+  - `mrn-base-stack` `1.2.59`
   - `mrn-base-stack-child` `1.0.1`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.5`

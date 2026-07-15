@@ -1,5 +1,13 @@
 # Stack Changelog
 
+## 2026.07.15-content-lists-layout-contract
+- Expanded `mrn-base-stack` to `1.2.59`.
+- Restored Content Lists Display Mode to the Display Styles tab while preserving its query-driven display choices.
+- Applied the tighter builder row render contract to Content Lists and removed its built-in surface padding fallback.
+- Loaded public custom post types into the Content Lists source and manual content picker so rows can query sources such as Testimonials.
+- Sourced Content Lists Display Mode choices only from Site Configurations display modes, filtered by the selected Content Source.
+- Honored selected Display Mode field lists when rendering Testimonial items in Content Lists.
+
 ## 2026.07.15-body-text-layout-contract
 - Expanded `mrn-base-stack` to `1.2.58`.
 - Applied the shared Display Styles and row spacing runtime contracts to the Body Text layout.

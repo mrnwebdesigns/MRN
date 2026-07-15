@@ -1232,12 +1232,7 @@ function mrn_base_stack_get_section_width_choices() {
  * @return array<string, string>
  */
 function mrn_base_stack_get_content_list_post_type_choices() {
-	static $cache     = null;
 	static $resolving = false;
-
-	if ( is_array( $cache ) ) {
-		return $cache;
-	}
 
 	if ( $resolving ) {
 		return array( 'post' => 'Posts' );
@@ -1288,9 +1283,14 @@ function mrn_base_stack_get_content_list_post_type_choices() {
 			$choices = array_merge( array( 'post' => 'Posts' ), $choices );
 		}
 
-		$cache = $choices;
+		uasort(
+			$choices,
+			static function ( $left, $right ) {
+				return strnatcasecmp( (string) $left, (string) $right );
+			}
+		);
 
-		return $cache;
+		return $choices;
 	} finally {
 		$resolving = false;
 	}
@@ -1311,7 +1311,10 @@ function mrn_base_stack_load_content_list_post_type_field_choices( $field ) {
 		return $field;
 	}
 
-	$field['choices'] = mrn_base_stack_get_content_list_post_type_choices();
+	$field['label']        = 'Content Source';
+	$field['choices']      = mrn_base_stack_get_content_list_post_type_choices();
+	$field['instructions'] = 'Choose the post type to query, such as Posts, Pages, Testimonials, Galleries, or Case Studies. Use Filter Source to narrow items within this source.';
+	$field['ui']           = 1;
 
 	return $field;
 }
@@ -1319,6 +1322,25 @@ add_filter( 'acf/load_field/key=field_mrn_content_lists_post_type', 'mrn_base_st
 add_filter( 'acf/load_field/name=list_post_type', 'mrn_base_stack_load_content_list_post_type_field_choices' );
 add_filter( 'acf/prepare_field/key=field_mrn_content_lists_post_type', 'mrn_base_stack_load_content_list_post_type_field_choices' );
 add_filter( 'acf/prepare_field/name=list_post_type', 'mrn_base_stack_load_content_list_post_type_field_choices' );
+
+/**
+ * Load live post-type choices into the Content builder manual post picker.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_load_content_list_filter_posts_field_choices( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field['post_type']    = array_keys( mrn_base_stack_get_content_list_post_type_choices() );
+	$field['instructions'] = 'Choose exact items from the selected public content sources. The rendered query still respects the selected Content Source.';
+
+	return $field;
+}
+add_filter( 'acf/load_field/key=field_mrn_content_lists_filter_posts', 'mrn_base_stack_load_content_list_filter_posts_field_choices' );
+add_filter( 'acf/prepare_field/key=field_mrn_content_lists_filter_posts', 'mrn_base_stack_load_content_list_filter_posts_field_choices' );
 
 /**
  * Determine whether a builder value contains meaningful content.
@@ -1939,10 +1961,6 @@ function mrn_base_stack_get_content_list_display_modes_for_post_type( $post_type
 		$filtered[ $mode_key ] = $mode_config;
 	}
 
-	if ( empty( $filtered ) && 'post' !== $post_type ) {
-		return mrn_base_stack_get_content_list_display_modes_for_post_type( 'post' );
-	}
-
 	return $filtered;
 }
 
@@ -2032,48 +2050,7 @@ function mrn_base_stack_get_content_list_display_style_choice_map() {
  * @return array<string, array<string, mixed>>
  */
 function mrn_base_stack_get_content_list_display_modes() {
-	$modes = array(
-		'standard'   => array(
-			'entity_type'      => 'post_type',
-			'entity_subtype'   => 'post',
-			'label'            => 'Standard',
-			'fields'           => array( 'title', 'featured_image', 'publish_date', 'excerpt', 'read_more' ),
-			'allows_image'     => true,
-			'allows_date'      => true,
-			'allows_excerpt'   => true,
-			'allows_read_more' => true,
-		),
-		'title_only' => array(
-			'entity_type'      => 'post_type',
-			'entity_subtype'   => 'post',
-			'label'            => 'Title Only',
-			'fields'           => array( 'title' ),
-			'allows_image'     => false,
-			'allows_date'      => false,
-			'allows_excerpt'   => false,
-			'allows_read_more' => false,
-		),
-		'video'      => array(
-			'entity_type'      => 'post_type',
-			'entity_subtype'   => 'testimonial',
-			'label'            => 'Video',
-			'fields'           => array( 'video', 'image', 'quote', 'name' ),
-			'allows_image'     => true,
-			'allows_date'      => false,
-			'allows_excerpt'   => true,
-			'allows_read_more' => false,
-		),
-		'text'       => array(
-			'entity_type'      => 'post_type',
-			'entity_subtype'   => 'testimonial',
-			'label'            => 'Text',
-			'fields'           => array( 'quote', 'name' ),
-			'allows_image'     => false,
-			'allows_date'      => false,
-			'allows_excerpt'   => true,
-			'allows_read_more' => false,
-		),
-	);
+	$modes = array();
 
 	if ( function_exists( 'mrn_config_helper_get_display_modes' ) ) {
 		$saved_modes = mrn_config_helper_get_display_modes();
@@ -2278,14 +2255,15 @@ function mrn_base_stack_get_content_list_testimonial_media_markup( array $testim
  */
 function mrn_base_stack_render_content_list_testimonial_item( WP_Post $item_post, array $args = array() ) {
 	$display_mode = mrn_base_stack_normalize_content_list_display_mode( $args['display_mode'] ?? '' );
-	if ( '' === $display_mode ) {
-		$display_mode = 'text';
+	$mode_config  = '' !== $display_mode ? mrn_base_stack_get_content_list_display_mode_config( $display_mode ) : mrn_base_stack_get_content_list_legacy_mode_config( $args );
+	$fields       = isset( $mode_config['fields'] ) && is_array( $mode_config['fields'] ) ? array_values( array_unique( array_map( 'sanitize_key', $mode_config['fields'] ) ) ) : array();
+
+	if ( empty( $fields ) ) {
+		$fields = array( 'title' );
 	}
 
-	if ( ! in_array( $display_mode, array( 'video', 'text' ), true ) ) {
-		$display_mode = 'text';
-	}
-
+	$uses_row_settings = '' === $display_mode;
+	$display_mode_slug = '' !== $display_mode ? $display_mode : 'row-settings';
 	$testimonial       = function_exists( 'mrn_base_stack_get_testimonial_data' ) ? mrn_base_stack_get_testimonial_data( $item_post->ID ) : array();
 	$row_display_style = function_exists( 'mrn_base_stack_normalize_content_list_display_style' )
 		? mrn_base_stack_normalize_content_list_display_style( $args['display_style'] ?? '', 'testimonial' )
@@ -2296,17 +2274,24 @@ function mrn_base_stack_render_content_list_testimonial_item( WP_Post $item_post
 		? mrn_base_stack_normalize_display_style( $display_style, 'post_type', 'testimonial', 'story' )
 		: sanitize_key( '' !== $display_style ? $display_style : 'story' );
 	$display_style     = '' !== $display_style ? $display_style : 'story';
-	$name              = isset( $testimonial['name'] ) ? trim( (string) $testimonial['name'] ) : get_the_title( $item_post );
-	$company           = isset( $testimonial['company'] ) ? trim( (string) $testimonial['company'] ) : '';
-	$position          = isset( $testimonial['position'] ) ? trim( (string) $testimonial['position'] ) : '';
+	$permalink         = get_permalink( $item_post );
+	$permalink         = is_string( $permalink ) ? $permalink : '';
+	$item_title        = get_the_title( $item_post );
 	$content           = isset( $testimonial['content'] ) ? (string) $testimonial['content'] : '';
 	$quote_html        = mrn_base_stack_get_content_list_testimonial_body_html( $content );
-	$media_markup      = 'video' === $display_mode ? mrn_base_stack_get_content_list_testimonial_media_markup( $testimonial ) : '';
+	$show_media        = ( ! $uses_row_settings || ! empty( $args['show_featured_image'] ) ) && ! empty( $mode_config['allows_image'] );
+	$show_date         = ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
+	$show_quote        = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] ) && '' !== $quote_html;
+	$show_read_more    = ( ! $uses_row_settings || ! empty( $args['show_read_more'] ) ) && ! empty( $mode_config['allows_read_more'] ) && '' !== $permalink;
+	$read_more_label   = isset( $args['read_more_label'] ) ? trim( (string) $args['read_more_label'] ) : 'Read More';
+	$media_markup      = $show_media ? mrn_base_stack_get_content_list_testimonial_media_markup( $testimonial ) : '';
+	$variant           = array( 'title' ) === $fields ? 'title_only' : 'testimonial';
 	$item_classes      = array(
 		'mrn-content-list-row__item',
 		'mrn-content-list-row__item--testimonial',
-		'mrn-content-list-row__item--display-' . $display_mode,
+		'mrn-content-list-row__item--display-' . $display_mode_slug,
 		'mrn-content-list-row__item--display-style-' . $display_style,
+		'mrn-content-list-row__item--variant-' . $variant,
 		'mrn-ui__item',
 		'mrn-testimonial',
 		'mrn-testimonial--display-' . $display_style,
@@ -2320,32 +2305,61 @@ function mrn_base_stack_render_content_list_testimonial_item( WP_Post $item_post
 	?>
 	<li
 		class="<?php echo esc_attr( implode( ' ', array_map( 'sanitize_html_class', $item_classes ) ) ); ?>"
-		data-display-mode="<?php echo esc_attr( $display_mode ); ?>"
+		data-display-mode="<?php echo esc_attr( $display_mode_slug ); ?>"
 		data-display-style="<?php echo esc_attr( $display_style ); ?>"
 	>
 		<article class="mrn-content-list-row__testimonial">
-			<?php echo $media_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Prepared above with escaped attributes/media. ?>
+			<?php $body_open = false; ?>
+			<?php foreach ( $fields as $field_key ) : ?>
+				<?php if ( in_array( $field_key, array( 'featured_image', 'image' ), true ) && '' !== $media_markup ) : ?>
+					<?php if ( $body_open ) : ?>
+						</div>
+						<?php $body_open = false; ?>
+					<?php endif; ?>
+					<?php echo $media_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Prepared above with escaped attributes/media. ?>
+					<?php continue; ?>
+				<?php endif; ?>
 
-			<div class="mrn-content-list-row__testimonial-body mrn-ui__body">
-				<?php if ( '' !== $quote_html ) : ?>
+				<?php
+				$should_render_body_field = (
+					( 'publish_date' === $field_key && $show_date ) ||
+					( 'title' === $field_key && '' !== $item_title ) ||
+					( in_array( $field_key, array( 'excerpt', 'body' ), true ) && $show_quote ) ||
+					( in_array( $field_key, array( 'read_more', 'link' ), true ) && $show_read_more )
+				);
+				?>
+				<?php if ( ! $should_render_body_field ) : ?>
+					<?php continue; ?>
+				<?php endif; ?>
+
+				<?php if ( ! $body_open ) : ?>
+					<div class="mrn-content-list-row__testimonial-body mrn-ui__body">
+					<?php $body_open = true; ?>
+				<?php endif; ?>
+
+				<?php if ( 'publish_date' === $field_key ) : ?>
+					<p class="mrn-content-list-row__meta"><?php echo esc_html( get_the_date( '', $item_post ) ); ?></p>
+				<?php elseif ( 'title' === $field_key ) : ?>
+					<h3 class="mrn-content-list-row__title mrn-ui__heading">
+						<?php if ( '' !== $permalink ) : ?>
+							<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
+						<?php else : ?>
+							<?php echo esc_html( $item_title ); ?>
+						<?php endif; ?>
+					</h3>
+				<?php elseif ( in_array( $field_key, array( 'excerpt', 'body' ), true ) ) : ?>
 					<blockquote class="mrn-content-list-row__testimonial-quote mrn-ui__text">
 						<?php echo $quote_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized by mrn_base_stack_get_content_list_testimonial_body_html(). ?>
 					</blockquote>
+				<?php elseif ( in_array( $field_key, array( 'read_more', 'link' ), true ) ) : ?>
+					<p class="mrn-content-list-row__link">
+						<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( '' !== $read_more_label ? $read_more_label : 'Read More' ); ?></a>
+					</p>
 				<?php endif; ?>
-
-				<?php if ( '' !== $name || '' !== $position || '' !== $company ) : ?>
-					<footer class="mrn-content-list-row__testimonial-meta">
-						<?php if ( '' !== $name ) : ?>
-							<cite class="mrn-content-list-row__testimonial-name"><?php echo esc_html( $name ); ?></cite>
-						<?php endif; ?>
-						<?php if ( '' !== $position || '' !== $company ) : ?>
-							<span class="mrn-content-list-row__testimonial-context">
-								<?php echo esc_html( implode( ', ', array_filter( array( $position, $company ) ) ) ); ?>
-							</span>
-						<?php endif; ?>
-					</footer>
-				<?php endif; ?>
-			</div>
+			<?php endforeach; ?>
+			<?php if ( $body_open ) : ?>
+				</div>
+			<?php endif; ?>
 		</article>
 	</li>
 	<?php
@@ -4867,8 +4881,9 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		return $fields;
 	}
 
-	$mode_choices  = mrn_base_stack_get_builder_layout_display_mode_choices( $layout_name );
-	$style_choices = mrn_base_stack_get_builder_layout_display_style_choices( $layout_name );
+	$is_content_lists = 'content_lists' === $layout_name;
+	$mode_choices     = $is_content_lists ? mrn_base_stack_get_content_list_display_mode_choices() : mrn_base_stack_get_builder_layout_display_mode_choices( $layout_name );
+	$style_choices    = $is_content_lists ? mrn_base_stack_get_content_list_display_style_choices() : mrn_base_stack_get_builder_layout_display_style_choices( $layout_name );
 
 	if ( empty( $mode_choices ) && empty( $style_choices ) ) {
 		return $fields;
@@ -4910,10 +4925,17 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		$remaining_fields[] = $field;
 	}
 
-	if ( count( $mode_choices ) > 1 ) {
+	if ( $is_content_lists ) {
+		if ( is_array( $display_mode_field ) ) {
+			$display_mode_field['label']      = 'Display Mode';
+			$display_mode_field['choices']    = $mode_choices;
+			$display_mode_field['allow_null'] = 1;
+			$display_mode_field['ui']         = 0;
+		}
+	} elseif ( count( $mode_choices ) > 1 ) {
 		if ( ! is_array( $display_mode_field ) ) {
 			$display_mode_field = mrn_base_stack_get_builder_layout_display_mode_field( $seed . '_display_mode', $layout_name );
-		} elseif ( 'content_lists' !== $layout_name ) {
+		} else {
 			$display_mode_field['label']      = 'Display Mode';
 			$display_mode_field['choices']    = $mode_choices;
 			$display_mode_field['allow_null'] = 0;
@@ -4923,9 +4945,14 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		$display_mode_field = null;
 	}
 
-	if ( ! is_array( $display_style_field ) ) {
+	if ( $is_content_lists && is_array( $display_style_field ) ) {
+		$display_style_field['label']      = 'Display Style';
+		$display_style_field['choices']    = $style_choices;
+		$display_style_field['allow_null'] = 1;
+		$display_style_field['ui']         = 0;
+	} elseif ( ! is_array( $display_style_field ) ) {
 		$display_style_field = mrn_base_stack_get_builder_layout_display_style_field( $seed . '_display_style', $layout_name );
-	} elseif ( 'content_lists' !== $layout_name ) {
+	} else {
 		$display_style_field['label']      = 'Display Style';
 		$display_style_field['choices']    = $style_choices;
 		$display_style_field['allow_null'] = 0;

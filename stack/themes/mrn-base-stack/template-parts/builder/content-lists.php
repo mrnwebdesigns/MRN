@@ -11,14 +11,14 @@ $context_post_id = isset( $context['post_id'] ) ? (int) $context['post_id'] : 0;
 $index           = isset( $context['index'] ) ? (int) $context['index'] : 0;
 
 $label          = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
-$label_tag      = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
+$label_tag      = mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' );
 $heading        = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
-$heading_tag    = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['heading_tag'] ?? '', 'h2' ) : 'h2';
+$heading_tag    = mrn_base_stack_normalize_text_tag( $row['heading_tag'] ?? '', 'h2' );
 $subheading     = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
-$subheading_tag = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['subheading_tag'] ?? '', 'p' ) : 'p';
+$subheading_tag = mrn_base_stack_normalize_text_tag( $row['subheading_tag'] ?? '', 'p' );
 $intro          = isset( $row['content'] ) ? (string) $row['content'] : '';
 
-$post_type_choices = function_exists( 'mrn_base_stack_get_content_list_post_type_choices' ) ? mrn_base_stack_get_content_list_post_type_choices() : array( 'post' => 'Posts' );
+$post_type_choices = mrn_base_stack_get_content_list_post_type_choices();
 $list_post_type    = isset( $row['list_post_type'] ) ? sanitize_key( (string) $row['list_post_type'] ) : 'post';
 if ( ! isset( $post_type_choices[ $list_post_type ] ) ) {
 	$list_post_type = isset( $post_type_choices['post'] ) ? 'post' : (string) array_key_first( $post_type_choices );
@@ -29,29 +29,20 @@ if ( ! in_array( $list_style, array( 'unordered', 'ordered' ), true ) ) {
 	$list_style = 'unordered';
 }
 
-$display_mode = function_exists( 'mrn_base_stack_normalize_content_list_display_mode' )
-	? mrn_base_stack_normalize_content_list_display_mode( $row['display_mode'] ?? '' )
-	: '';
+$display_mode  = mrn_base_stack_normalize_content_list_display_mode( $row['display_mode'] ?? '' );
+$display_style = mrn_base_stack_normalize_content_list_display_style( $row['display_style'] ?? '', $list_post_type );
 
-$display_style = function_exists( 'mrn_base_stack_normalize_content_list_display_style' )
-	? mrn_base_stack_normalize_content_list_display_style( $row['display_style'] ?? '', $list_post_type )
-	: '';
-
-if ( function_exists( 'mrn_base_stack_get_content_list_display_modes_for_post_type' ) ) {
-	$available_display_modes = mrn_base_stack_get_content_list_display_modes_for_post_type( $list_post_type );
-	if ( '' !== $display_mode && ! isset( $available_display_modes[ $display_mode ] ) ) {
-		$display_mode = '';
-	}
+$available_display_modes = mrn_base_stack_get_content_list_display_modes_for_post_type( $list_post_type );
+if ( '' !== $display_mode && ! isset( $available_display_modes[ $display_mode ] ) ) {
+	$display_mode = '';
 }
 
-if ( function_exists( 'mrn_base_stack_get_content_list_display_styles_for_post_type' ) ) {
-	$available_display_styles = mrn_base_stack_get_content_list_display_styles_for_post_type( $list_post_type );
-	if ( '' !== $display_style && ! isset( $available_display_styles[ $display_style ] ) ) {
-		$display_style = '';
-	}
+$available_display_styles = mrn_base_stack_get_content_list_display_styles_for_post_type( $list_post_type );
+if ( '' !== $display_style && ! isset( $available_display_styles[ $display_style ] ) ) {
+	$display_style = '';
 }
 
-$orderby_choices = function_exists( 'mrn_base_stack_get_content_list_orderby_choices' ) ? mrn_base_stack_get_content_list_orderby_choices() : array( 'date' => 'Publish Date' );
+$orderby_choices = mrn_base_stack_get_content_list_orderby_choices();
 $list_orderby    = isset( $row['orderby'] ) ? sanitize_key( (string) $row['orderby'] ) : 'date';
 if ( ! isset( $orderby_choices[ $list_orderby ] ) ) {
 	$list_orderby = 'date';
@@ -65,12 +56,8 @@ if ( ! in_array( $sort_order, array( 'ASC', 'DESC' ), true ) ) {
 $posts_per_page      = max( 1, absint( $row['posts_per_page'] ?? 10 ) );
 $offset              = absint( $row['offset'] ?? 0 );
 $filter_source       = isset( $row['filter_source'] ) ? sanitize_key( (string) $row['filter_source'] ) : 'none';
-$manual_post_ids     = ( 'manual_posts' === $filter_source && function_exists( 'mrn_base_stack_get_content_list_manual_post_ids' ) )
-	? mrn_base_stack_get_content_list_manual_post_ids( $row, $list_post_type )
-	: array();
-$tax_query           = function_exists( 'mrn_base_stack_get_content_list_tax_query' )
-	? mrn_base_stack_get_content_list_tax_query( $row, $context_post_id, $list_post_type )
-	: array();
+$manual_post_ids     = 'manual_posts' === $filter_source ? mrn_base_stack_get_content_list_manual_post_ids( $row, $list_post_type ) : array();
+$tax_query           = mrn_base_stack_get_content_list_tax_query( $row, $context_post_id, $list_post_type );
 $show_pagination     = ! empty( $row['enable_pagination'] );
 $show_featured_image = ! empty( $row['show_featured_image'] );
 $show_publish_date   = ! empty( $row['show_publish_date'] );
@@ -84,17 +71,9 @@ $background_color    = isset( $row['background_color'] ) ? trim( (string) $row['
 $bottom_accent       = ! empty( $row['bottom_accent'] );
 $accent_slug         = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
 
-$width_layers = function_exists( 'mrn_base_stack_get_section_width_layers' )
-	? mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'wide', 'wide' )
-	: array(
-		'width'           => 'wide',
-		'section_class'   => 'mrn-layout-section--contained',
-		'container_class' => 'mrn-layout-container--wide',
-	);
+$width_layers = mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'wide', 'wide' );
 
-$current_page = $show_pagination && function_exists( 'mrn_base_stack_get_content_list_current_page' )
-	? mrn_base_stack_get_content_list_current_page( $context_post_id, $index )
-	: 1;
+$current_page = $show_pagination ? mrn_base_stack_get_content_list_current_page( $context_post_id, $index ) : 1;
 $query_args   = array(
 	'post_type'           => $list_post_type,
 	'post_status'         => 'publish',
@@ -169,29 +148,23 @@ if ( '' !== $display_style ) {
 	$display_contract['attributes']['data-display-style'] = $display_style;
 }
 
-$accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
-	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
-	'attributes' => array(),
-);
-$motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
-	'classes'    => array(),
-	'attributes' => array(),
-);
-$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract ) : $section_classes;
-$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
-$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
-$section_attrs     = isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ? $display_contract['attributes'] : array();
-$section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
-$section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
-$section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
-$surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
+$accent_contract   = mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug );
+$motion_contract   = mrn_base_stack_get_builder_motion_contract( $row );
+$section_classes   = mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract );
+$section_classes   = mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract );
+$section_classes   = mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract );
+$section_attrs     = $display_contract['attributes'];
+$section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
+$section_attrs     = mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+$section_attr_html = mrn_base_stack_get_html_attributes( $section_attrs );
+$surface_style     = mrn_base_stack_get_inline_style_attribute( $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 $list_tag          = 'ordered' === $list_style ? 'ol' : 'ul';
 $pagination_html   = '';
 $row_anchor_id     = 'mrn-content-list-row-' . absint( $context_post_id ) . '-' . absint( $index );
 
 if ( $show_pagination && $query->max_num_pages > 1 ) {
-	$page_arg     = function_exists( 'mrn_base_stack_get_content_list_pagination_query_arg' ) ? mrn_base_stack_get_content_list_pagination_query_arg( $context_post_id, $index ) : 'mrn_list_page';
+	$page_arg     = mrn_base_stack_get_content_list_pagination_query_arg( $context_post_id, $index );
 	$base_url     = $context_post_id ? get_permalink( $context_post_id ) : '';
 	$current_args = array();
 
@@ -234,7 +207,8 @@ if ( $show_pagination && $query->max_num_pages > 1 ) {
 		)
 	);
 }
-echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
+$pagination_label = '' !== $heading ? $heading . ' pagination' : 'Content list pagination';
+echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section id="<?php echo esc_attr( $row_anchor_id ); ?>" class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<div class="mrn-layout-section mrn-layout-section--content-lists <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
@@ -243,13 +217,13 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				<?php if ( $has_label || $has_heading || $has_subheading ) : ?>
 					<div class="mrn-content-list-row__header mrn-ui__head">
 						<?php if ( $has_label ) : ?>
-							<<?php echo esc_html( $label_tag ); ?> class="mrn-ui__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
+							<<?php echo esc_html( $label_tag ); ?> class="mrn-ui__label"><?php echo mrn_base_stack_format_heading_inline_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
 						<?php endif; ?>
 						<?php if ( $has_heading ) : ?>
-							<<?php echo esc_html( $heading_tag ); ?> class="mrn-ui__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+							<<?php echo esc_html( $heading_tag ); ?> class="mrn-ui__heading"><?php echo mrn_base_stack_format_heading_inline_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
 						<?php endif; ?>
 						<?php if ( $has_subheading ) : ?>
-							<<?php echo esc_html( $subheading_tag ); ?> class="mrn-ui__sub"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $subheading ) : esc_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
+							<<?php echo esc_html( $subheading_tag ); ?> class="mrn-ui__sub"><?php echo mrn_base_stack_format_heading_inline_html( $subheading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $subheading_tag ); ?>>
 						<?php endif; ?>
 					</div>
 				<?php endif; ?>
@@ -268,7 +242,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 							$item_post = get_post();
 							?>
 							<?php
-							if ( $item_post instanceof WP_Post && function_exists( 'mrn_base_stack_render_content_list_item' ) ) {
+							if ( $item_post instanceof WP_Post ) {
 								$item_markup = mrn_base_stack_render_content_list_item(
 									$item_post,
 									array(
@@ -294,7 +268,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				</<?php echo esc_html( $list_tag ); ?>>
 
 				<?php if ( '' !== $pagination_html ) : ?>
-					<nav class="mrn-content-list-row__pagination" aria-label="Content list pagination">
+					<nav class="mrn-content-list-row__pagination" aria-label="<?php echo esc_attr( $pagination_label ); ?>">
 						<?php echo wp_kses_post( $pagination_html ); ?>
 					</nav>
 				<?php endif; ?>

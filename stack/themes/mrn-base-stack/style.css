@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.2.58
+Version: 1.2.59
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -4709,7 +4709,6 @@ a.mrn-social-links__link:focus-visible svg {
 .mrn-layout-section--content-lists.mrn-layout-surface,
 .mrn-layout-section--content-lists .mrn-layout-container.mrn-layout-surface {
 	background: var(--mrn-content-list-row-bg, transparent);
-	padding-block: clamp(1.75rem, 3.5vw, 3.5rem);
 }
 
 .mrn-layout-section--content-lists .mrn-layout-grid--content-lists {
@@ -4898,6 +4897,7 @@ a.mrn-social-links__link:focus-visible svg {
 	gap: var(--mrn-space-stack-sm);
 }
 
+.mrn-content-list-row__item--has-media .mrn-content-list-row__testimonial,
 .mrn-content-list-row__item--display-video .mrn-content-list-row__testimonial {
 	align-items: center;
 	grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
@@ -5981,6 +5981,7 @@ a.mrn-social-links__link:focus-visible svg {
 		grid-template-columns: 1fr;
 	}
 
+	.mrn-content-list-row__item--has-media .mrn-content-list-row__testimonial,
 	.mrn-content-list-row__item--display-video .mrn-content-list-row__testimonial {
 		grid-template-columns: 1fr;
 	}
