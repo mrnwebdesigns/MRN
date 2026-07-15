@@ -43,7 +43,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `background-video-popout-disabler` | MRN Background Video Pop-Out Disabler | 1.0.1 | <https://github.com/mrnwebdesigns/background-video-popout-disabler> | No stack requirement. |
 | `mrn-acf-character-count` | MRN ACF Character Count | 1.1.6 | <https://github.com/mrnwebdesigns/mrn-acf-character-count> | No stack requirement; ACF field context required. |
 | `mrn-ai-assist` | MRN AI Assist | 2.0.12 | <https://github.com/mrnwebdesigns/mrn-ai-assist> | No hard stack requirement; MRN SEO Helper/SmartCrawl integrations are optional feature paths. |
-| `mrn-announcements` | MRN Announcements | 1.4.8 | <https://github.com/mrnwebdesigns/mrn-announcements> | No stack requirement. |
+| `mrn-announcements` | MRN Announcements | 1.5.0 | <https://github.com/mrnwebdesigns/mrn-announcements> | Stack-aware optional USB integration; admin/data-only CPT with no public URL or SEO surface. |
 | `mrn-comment-management` | MRN Comment Management | 1.1.7 | <https://github.com/mrnwebdesigns/mrn-comment-management> | No stack requirement. |
 | `mrn-config-helper` | MRN Config Helper | 0.1.43 | <https://github.com/mrnwebdesigns/mrn-config-helper> | Stack-aware admin utility; can run standalone, but stack sites use more of its integrations. |
 | `mrn-contextual-content-editor` | MRN Contextual Content Editor | 0.1.0 | <https://github.com/mrnwebdesigns/MRN> | No hard stack requirement; ACF matching is optional. |
@@ -56,7 +56,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-media-bulk-tools` | MRN Media Bulk Tools | 0.1.0 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement. |
 | `mrn-pre-consent-update-backup` | MRN Pre-Consent Update Backup | 1.0.12 | <https://github.com/mrnwebdesigns/mrn-pre-consent-update-backup> | No stack requirement; requires UpdraftPlus to perform backups. |
 | `mrn-recaptcha-enterprise-manager` | MRN reCAPTCHA Enterprise Manager | 0.1.1 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; WPForms sync is optional. |
-| `mrn-seo-helper` | MRN SEO Helper | 0.3.3 | <https://github.com/mrnwebdesigns/mrn-seo-helper> | No hard stack requirement; ACF/SmartCrawl integrations are optional feature paths. |
+| `mrn-seo-helper` | MRN SEO Helper | 0.3.4 | <https://github.com/mrnwebdesigns/mrn-seo-helper> | No hard stack requirement; ACF/SmartCrawl integrations are optional feature paths and admin/data-only announcements are excluded. |
 | `mrn-template-inspector` | MRN Template Inspector | 0.2.7 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; local development tool. |
 | `mrn-universal-sticky-bar` | MRN Universal Sticky Bar | 1.1.3 | <https://github.com/mrnwebdesigns/mrn-universal-sticky-bar> | No hard stack requirement; Classic Editor screens expected. |
 | `searchwp-editor-performance` | MRN SearchWP Editor Performance | 1.0.6 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; SearchWP is required for runtime effect. |
@@ -78,7 +78,6 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-schema-bridge` | MRN Schema Bridge | 0.3.3 | <https://github.com/mrnwebdesigns/MRN> | No hard stack requirement; SmartCrawl/schema runtime is required for schema normalization effects. |
 | `mrn-shared-assets` | MRN Shared Assets | 0.1.3 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned shared asset provider. |
 | `mrn-site-colors` | MRN Site Styles | 0.1.15 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned design-token/configuration layer. |
-| `mrn-svg-support` | MRN SVG Support | 1.0 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement. |
 | `mrn-updraft-local-retention` | MRN Updraft Local Retention | 0.1.0 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; requires UpdraftPlus to have an effect. |
 
 ## Stack MU Wrapper Notes

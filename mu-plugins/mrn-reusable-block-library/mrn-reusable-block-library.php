@@ -3,7 +3,7 @@
  * Plugin Name: MRN Reusable Block Library
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.17
+ * Version: 0.1.21
  */
 
 defined('ABSPATH') || exit;
@@ -220,6 +220,30 @@ function mrn_rbl_register_post_types(): void {
     }
 }
 add_action('init', 'mrn_rbl_register_post_types');
+
+/**
+ * Apply the shared admin/data-only contract to every reusable block CPT.
+ *
+ * Reusing the definitions list means filtered or future block types inherit
+ * the same non-public behavior automatically.
+ *
+ * @param array $post_types Admin/data-only CPT configuration.
+ * @return array
+ */
+function mrn_rbl_register_admin_data_post_types(array $post_types): array {
+    foreach (mrn_rbl_get_post_types() as $post_type) {
+        $show_ui = mrn_rbl_is_post_type_visible($post_type);
+
+        $post_types[$post_type] = array(
+            'show_ui'       => $show_ui,
+            'show_in_menu'  => false,
+            'admin_cleanup' => true,
+        );
+    }
+
+    return $post_types;
+}
+add_filter('mrn_admin_data_post_types', 'mrn_rbl_register_admin_data_post_types');
 
 /**
  * Determine whether a REST request targets one of the reusable block CPT routes.
@@ -3772,6 +3796,18 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'media_upload' => 1,
                 'delay'        => 0,
             ),
+            array(
+                'key'           => 'field_mrn_cta_image',
+                'label'         => 'Image',
+                'name'          => 'image',
+                'type'          => 'image',
+                'return_format' => 'id',
+                'preview_size'  => 'medium',
+                'library'       => 'all',
+                'wrapper'       => array(
+                    'width' => '50',
+                ),
+            ),
             ...mrn_rbl_get_content_link_fields('field_mrn_cta_links', 'Links', 'links', 2),
             array(
                 'key'       => 'field_mrn_cta_config_tab',
@@ -3782,6 +3818,21 @@ function mrn_rbl_register_acf_field_groups(): void {
             ),
             mrn_rbl_get_anchor_field('field_mrn_cta_anchor'),
             mrn_rbl_get_section_width_field('field_mrn_cta_section_width', 'section_width', 'wide', 'Section Width (Content)'),
+            array(
+                'key'           => 'field_mrn_cta_image_placement',
+                'label'         => 'Image placement',
+                'name'          => 'image_placement',
+                'type'          => 'select',
+                'default_value' => 'left',
+                'choices'       => array(
+                    'left'  => 'Left',
+                    'right' => 'Right',
+                ),
+                'ui'            => 1,
+                'wrapper'       => array(
+                    'width' => '50',
+                ),
+            ),
             array(
                 'key'           => 'field_mrn_cta_bg_color',
                 'label'         => 'Background color',
@@ -3794,6 +3845,9 @@ function mrn_rbl_register_acf_field_groups(): void {
                     'width' => '50',
                 ),
             ),
+            ...(function_exists('mrn_base_stack_get_background_gradient_fields')
+                ? mrn_base_stack_get_background_gradient_fields('field_mrn_cta_background_gradient')
+                : array()),
             array(
                 'key'           => 'field_mrn_cta_background_image',
                 'label'         => 'Background image',
@@ -3806,6 +3860,9 @@ function mrn_rbl_register_acf_field_groups(): void {
                     'width' => '50',
                 ),
             ),
+            ...(function_exists('mrn_base_stack_get_background_video_fields')
+                ? mrn_base_stack_get_background_video_fields('field_mrn_cta_background_video')
+                : array()),
             array(
                 'key'           => 'field_mrn_cta_link_color',
                 'label'         => 'Link color',

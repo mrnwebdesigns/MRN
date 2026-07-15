@@ -2,12 +2,55 @@
 /**
  * Plugin Name: MRN Editor Lockdown
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.25
+ * Version: 1.0.26
  *
  * @package MRNEditorLockdown
  */
 
 defined( 'ABSPATH' ) || exit;
+
+/**
+ * Deny the Theme File Editor capability for every user, including admins.
+ *
+ * This blocks direct access to theme-editor.php without removing broader
+ * theme-management capabilities such as installing, activating, or updating
+ * themes.
+ *
+ * @param array $allcaps Effective capabilities for the current user.
+ * @return array
+ */
+function mrn_editor_lockdown_disable_theme_file_editor_capability( $allcaps ) {
+	if ( ! is_array( $allcaps ) ) {
+		$allcaps = array();
+	}
+
+	$disabled = function_exists( 'mrn_config_helper_is_theme_file_editor_disabled' )
+		? mrn_config_helper_is_theme_file_editor_disabled()
+		: true;
+
+	if ( $disabled ) {
+		$allcaps['edit_themes'] = false;
+	}
+
+	return $allcaps;
+}
+add_filter( 'user_has_cap', 'mrn_editor_lockdown_disable_theme_file_editor_capability', PHP_INT_MAX );
+
+/**
+ * Remove the Theme File Editor entry from Appearance as defense in depth.
+ *
+ * @return void
+ */
+function mrn_editor_lockdown_remove_theme_file_editor_menu() {
+	$disabled = function_exists( 'mrn_config_helper_is_theme_file_editor_disabled' )
+		? mrn_config_helper_is_theme_file_editor_disabled()
+		: true;
+
+	if ( $disabled ) {
+		remove_submenu_page( 'themes.php', 'theme-editor.php' );
+	}
+}
+add_action( 'admin_menu', 'mrn_editor_lockdown_remove_theme_file_editor_menu', PHP_INT_MAX );
 
 /**
  * Determine whether the heavyweight editor loading mask should run.

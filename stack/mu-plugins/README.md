@@ -8,6 +8,7 @@ The `mrn-loader.php` file owns the explicit subfolder load order.
 
 Current entries:
 - `mrn-loader`
+- `mrn-admin-data-post-types`
 - `mrn-active-style-guide`
 - `mrn-admin-ui-css`
 - `mrn-dashboard-support`

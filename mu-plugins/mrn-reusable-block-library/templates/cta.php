@@ -13,7 +13,12 @@ $heading_tag = isset($fields['heading_tag']) ? sanitize_key((string) $fields['he
 $subheading     = isset($fields['subheading']) ? (string) $fields['subheading'] : '';
 $subheading_tag = isset($fields['subheading_tag']) ? sanitize_key((string) $fields['subheading_tag']) : 'p';
 $copy        = isset($fields['content']) ? (string) $fields['content'] : '';
+$image       = $fields['image'] ?? null;
+$has_image   = function_exists('mrn_rbl_image_has_content') ? mrn_rbl_image_has_content($image) : false;
+$image_place = isset($fields['image_placement']) ? sanitize_key((string) $fields['image_placement']) : 'left';
 $background_image = $fields['background_image'] ?? null;
+$background_video = isset($fields['background_video']) ? (string) $fields['background_video'] : '';
+$background_video_upload = $fields['background_video_upload'] ?? null;
 $bg_color    = isset($fields['bg_color']) ? sanitize_title((string) $fields['bg_color']) : '';
 $link_color  = isset($fields['link_color']) ? sanitize_title((string) $fields['link_color']) : '';
 $accent      = !empty($fields['bottom_accent']);
@@ -26,6 +31,9 @@ if (!in_array($heading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div'
 }
 if (!in_array($subheading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span'), true)) {
     $subheading_tag = 'p';
+}
+if (!in_array($image_place, array('left', 'right'), true)) {
+    $image_place = 'left';
 }
 
 $links = function_exists('mrn_rbl_get_content_links')
@@ -79,15 +87,16 @@ foreach ($links as $index => $link) {
 
 $primary_link_style = isset($cta_links[0]['style']) ? (string) $cta_links[0]['style'] : 'button';
 
-if ($label === '' && $heading === '' && $subheading === '' && $copy === '' && empty($cta_links)) {
-    return;
-}
-
 $classes = array(
     'mrn-reusable-block',
     'mrn-reusable-block--cta',
     'mrn-reusable-block--cta-link-' . $primary_link_style,
+    'mrn-reusable-block--cta-image-' . sanitize_html_class($image_place),
 );
+
+if ($has_image) {
+    $classes[] = 'has-content-image';
+}
 
 $accent_contract = function_exists('mrn_site_styles_get_bottom_accent_contract')
     ? mrn_site_styles_get_bottom_accent_contract($accent, $accent_slug)
@@ -111,20 +120,72 @@ if (isset($motion_contract['classes']) && is_array($motion_contract['classes']))
 
 $styles = array();
 if ($bg_color !== '') {
-    $styles[] = '--mrn-cta-bg: var(--site-color-' . $bg_color . ')';
+    $styles[] = function_exists('mrn_site_colors_get_css_var')
+        ? '--mrn-cta-bg: var(' . mrn_site_colors_get_css_var($bg_color) . ')'
+        : '--mrn-cta-bg: var(--site-color-' . $bg_color . ')';
 }
 
-$background_image_style = function_exists('mrn_base_stack_get_background_image_style')
-    ? mrn_base_stack_get_background_image_style($background_image, '--mrn-cta-bg-image')
+$background_gradient_style = function_exists('mrn_base_stack_get_background_gradient_style_declaration')
+    ? mrn_base_stack_get_background_gradient_style_declaration($fields, '--mrn-cta-bg-gradient')
     : '';
 
-if ($background_image_style !== '') {
-    $styles[] = $background_image_style;
+$background_image_markup = function_exists('mrn_base_stack_get_background_image_markup')
+    ? mrn_base_stack_get_background_image_markup($background_image)
+    : '';
+$background_video_markup = function_exists('mrn_base_stack_get_background_video_markup')
+    ? mrn_base_stack_get_background_video_markup(
+        $background_video,
+        $background_video_upload,
+        array(
+            'poster_image' => $background_image,
+        )
+    )
+    : '';
+
+$has_gradient_data = !empty($fields['background_gradient_enabled'])
+    || !empty($fields['background_gradient_start_color'])
+    || !empty($fields['background_gradient_end_color']);
+
+$has_cta_data = $label !== ''
+    || trim(wp_strip_all_tags($heading)) !== ''
+    || trim(wp_strip_all_tags($subheading)) !== ''
+    || trim($copy) !== ''
+    || $has_image
+    || !empty($image)
+    || !empty($cta_links)
+    || $bg_color !== ''
+    || $link_color !== ''
+    || $accent
+    || $accent_slug !== ''
+    || $has_gradient_data
+    || !empty($background_image)
+    || $background_image_markup !== ''
+    || trim($background_video) !== ''
+    || !empty($background_video_upload);
+
+if (!$has_cta_data) {
+    return;
+}
+
+if ($background_gradient_style !== '') {
+    $styles[] = $background_gradient_style;
+    $classes[] = 'has-background-gradient';
+}
+
+if ($background_image_markup !== '') {
     $classes[] = 'has-background-image';
+    $classes[] = 'has-row-background-media';
+}
+
+if ($background_video_markup !== '') {
+    $classes[] = 'has-background-video';
+    $classes[] = 'has-row-background-video';
 }
 
 if ($link_color !== '') {
-    $styles[] = '--mrn-cta-link-color: var(--site-color-' . $link_color . ')';
+    $styles[] = function_exists('mrn_site_colors_get_css_var')
+        ? '--mrn-cta-link-color: var(' . mrn_site_colors_get_css_var($link_color) . ')'
+        : '--mrn-cta-link-color: var(--site-color-' . $link_color . ')';
 }
 
 $section_attrs = isset($accent_contract['attributes']) && is_array($accent_contract['attributes']) ? $accent_contract['attributes'] : array();
@@ -142,7 +203,16 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
         style="<?php echo esc_attr(implode('; ', $styles)); ?>"
     <?php endif; ?>
 >
-	    <div class="mrn-reusable-block__inner mrn-reusable-block__inner--callout mrn-ui__body">
+	    <?php echo $background_image_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Decorative image markup is escaped in the helper. ?>
+	    <?php echo $background_video_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Decorative video markup is escaped in the helper. ?>
+	    <div class="mrn-reusable-block__inner mrn-reusable-block__inner--callout mrn-reusable-block__cta-inner mrn-layout-grid--media-stack">
+	        <?php if ($has_image) : ?>
+	            <div class="mrn-reusable-block__media mrn-reusable-block__media--cta mrn-layout-content--media-stack-media mrn-ui__media">
+	                <?php echo function_exists('mrn_rbl_get_attachment_image') ? mrn_rbl_get_attachment_image($image, 'mrn-content-media') : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+	            </div>
+	        <?php endif; ?>
+
+	        <div class="mrn-reusable-block__content mrn-reusable-block__content--cta mrn-layout-content--media-stack-text mrn-ui__body">
 	        <?php if ($label !== '' || $heading !== '' || $subheading !== '') : ?>
 	            <div class="mrn-ui__head">
                 <?php if ($label !== '') : ?>
@@ -188,5 +258,6 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
+        </div>
     </div>
 </section>

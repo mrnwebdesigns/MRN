@@ -164,13 +164,31 @@ stack-dependency notes, use [`MRN_PLUGIN_AUDIT.md`](./MRN_PLUGIN_AUDIT.md).
 - Notes:
   - operational/admin utility plugin
 
+### `mrn-announcements`
+
+- Name: `MRN Announcements`
+- Version: `1.5.0`
+- Purpose:
+  - manages scheduled, targeted announcement bars and optional modals
+  - keeps announcement records admin/data-only with no standalone public URLs
+- Admin/UI:
+  - custom post type editor for announcement content, display rules, scheduling, modal settings, and style controls
+- Front-end / theming:
+  - renders active announcement bars only when eligible for the current request
+  - uses MRN Universal Sticky Bar compatibility when running in the stack
+- Developer-facing hooks:
+  - no custom public hook inventory captured yet
+- Notes:
+  - excluded from public queries, search, nav menus, sitemaps, SEO Helper, and SmartCrawl page-level SEO surfaces
+
 ### `mrn-seo-helper`
 
-- Name: `SEO Helper`
-- Version: `0.2.7`
+- Name: `MRN SEO Helper`
+- Version: `0.3.4`
 - Purpose:
   - registers baseline SEO ACF fields for posts and pages
   - syncs SEO field content into SmartCrawl-compatible storage
+  - excludes admin/data-only announcement records from supported SEO post types
 - Admin/UI:
   - ACF field registration
   - tools/admin notices
@@ -420,21 +438,6 @@ stack-dependency notes, use [`MRN_PLUGIN_AUDIT.md`](./MRN_PLUGIN_AUDIT.md).
   - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-site-styles.md`
 - Notes:
   - this is the current source of truth for shared color tokens and accent element definitions
-
-### `mrn-svg-support`
-
-- Name: `Enable SVG Support (MU)`
-- Version: `1.0`
-- Purpose:
-  - enables SVG uploads and improves SVG display in media views
-- Admin/UI:
-  - media library behavior
-- Front-end / theming:
-  - none expected
-- Developer-facing hooks:
-  - no custom public hook inventory captured yet
-- Notes:
-  - small platform utility MU plugin
 
 ## Next Documentation Pass
 

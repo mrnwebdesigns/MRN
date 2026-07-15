@@ -1,5 +1,18 @@
 # Stack Changelog
 
+## 2026.07.15-cta-layout-contract
+- Expanded `mrn-base-stack` to `1.2.64`.
+- Expanded `mrn-reusable-block-library` to `0.1.21`.
+- Normalized CTA editor tabs to the shared Content, Configs, Display Styles, Spacing, Layout, Effects order.
+- Removed duplicate Effects segments created by cloned reusable CTA fields in page builder rows.
+- Applied Display Style classes and attributes to cloned reusable row shells, including CTA.
+- Renamed page-owned CTA choices to Page Specific CTA and kept the legacy page-only CTA clone out of per-entry layout pickers.
+- Added Basic-style CTA appearance controls for gradients and background video, with matching front-end rendering.
+- Kept CTA width controls aligned with the shared Basic Configs > Appearance contract.
+- Updated CTA rendering so rows output when any CTA field has data, including background-only rows, while fully empty CTA rows stay suppressed.
+- Added CTA content image support with left/right placement controls and responsive media-stack rendering.
+- Limited Section Width (Sub-content) to collection-style layouts with real inner item wrappers.
+
 ## 2026.07.15-content-lists-layout-contract
 - Expanded `mrn-base-stack` to `1.2.59`.
 - Restored Content Lists Display Mode to the Display Styles tab while preserving its query-driven display choices.

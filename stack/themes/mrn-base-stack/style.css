@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.2.59
+Version: 1.2.64
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -2679,7 +2679,53 @@ button.mrn-ui__link--button {
 }
 
 .mrn-reusable-block--cta {
-	background: transparent;
+	background-color: var(--mrn-cta-bg, transparent);
+	background-image: var(--mrn-cta-bg-gradient, none);
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	position: relative;
+}
+
+.mrn-reusable-block--cta.has-background-gradient {
+	overflow: hidden;
+}
+
+.mrn-reusable-block--cta.has-background-gradient::before {
+	background-image: var(--mrn-cta-bg-gradient, none);
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	content: "";
+	inset: 0;
+	pointer-events: none;
+	position: absolute;
+	z-index: 1;
+}
+
+.mrn-reusable-block--cta.has-background-gradient > :not(.mrn-row-background-media):not(.mrn-section-background-media) {
+	position: relative;
+	z-index: 2;
+}
+
+.mrn-reusable-block--cta.has-content-image .mrn-reusable-block__cta-inner {
+	gap: clamp(1.5rem, 3vw, 3rem);
+}
+
+.mrn-shell-section--reusable-cta.mrn-shell-section--width-wide > .mrn-reusable-block--cta.has-content-image .mrn-reusable-block__cta-inner,
+.mrn-shell-section--reusable-cta.mrn-shell-section--width-full > .mrn-reusable-block--cta.has-content-image .mrn-reusable-block__cta-inner,
+.mrn-layout-section--reusable-cta.mrn-layout-section--contained .mrn-layout-container--wide > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta.has-content-image .mrn-reusable-block__cta-inner,
+.mrn-layout-section--reusable-cta.mrn-layout-section--full .mrn-layout-container--full > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta.has-content-image .mrn-reusable-block__cta-inner {
+	align-items: center;
+	grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+}
+
+.mrn-reusable-block--cta-image-right .mrn-reusable-block__media--cta {
+	order: 2;
+}
+
+.mrn-reusable-block--cta-image-right .mrn-reusable-block__content--cta {
+	order: 1;
 }
 
 /* Builder shell + Section Width for cloned CTA / Grid rows (see `mrn_base_stack_wrap_cloned_reusable_builder_markup()`). */
@@ -5733,6 +5779,11 @@ a.mrn-social-links__link:focus-visible svg {
 @media (max-width: 782px) {
 	.mrn-layout-section--reusable-cta.mrn-layout-section--contained .mrn-layout-container--wide > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta .mrn-reusable-block__inner--callout,
 	.mrn-layout-section--reusable-cta.mrn-layout-section--full .mrn-layout-container--full > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta .mrn-reusable-block__inner--callout {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.mrn-shell-section--reusable-cta.mrn-shell-section--width-wide > .mrn-reusable-block--cta.has-content-image .mrn-reusable-block__cta-inner,
+	.mrn-shell-section--reusable-cta.mrn-shell-section--width-full > .mrn-reusable-block--cta.has-content-image .mrn-reusable-block__cta-inner {
 		grid-template-columns: minmax(0, 1fr);
 	}
 

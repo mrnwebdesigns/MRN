@@ -3025,6 +3025,159 @@ function mrn_base_stack_get_background_video_fields( $key_prefix ) {
 }
 
 /**
+ * Build shared row background-gradient fields.
+ *
+ * @param string $key_prefix Unique ACF key prefix.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_background_gradient_fields( $key_prefix ) {
+	$key_prefix        = trim( (string) $key_prefix );
+	$enabled_field_key = $key_prefix . '_enabled';
+	$color_choices     = function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array();
+	$enabled_logic     = array(
+		array(
+			array(
+				'field'    => $enabled_field_key,
+				'operator' => '==',
+				'value'    => '1',
+			),
+		),
+	);
+
+	return array(
+		array(
+			'key'           => $enabled_field_key,
+			'label'         => 'Background gradient',
+			'name'          => 'background_gradient_enabled',
+			'aria-label'    => '',
+			'type'          => 'true_false',
+			'ui'            => 1,
+			'default_value' => 0,
+			'ui_on_text'    => 'On',
+			'ui_off_text'   => 'Off',
+			'wrapper'       => array(
+				'width' => '50',
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_start_color',
+			'label'             => 'Gradient start',
+			'name'              => 'background_gradient_start_color',
+			'aria-label'        => '',
+			'type'              => 'select',
+			'choices'           => $color_choices,
+			'ui'                => 1,
+			'allow_null'        => 1,
+			'instructions'      => 'Select from Site Colors when available.',
+			'conditional_logic' => $enabled_logic,
+			'wrapper'           => array(
+				'width' => '33',
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_end_color',
+			'label'             => 'Gradient end',
+			'name'              => 'background_gradient_end_color',
+			'aria-label'        => '',
+			'type'              => 'select',
+			'choices'           => $color_choices,
+			'ui'                => 1,
+			'allow_null'        => 1,
+			'instructions'      => 'Select from Site Colors when available.',
+			'conditional_logic' => $enabled_logic,
+			'wrapper'           => array(
+				'width' => '33',
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_start_opacity',
+			'label'             => 'Start opacity',
+			'name'              => 'background_gradient_start_opacity',
+			'aria-label'        => '',
+			'type'              => 'range',
+			'default_value'     => 100,
+			'min'               => 0,
+			'max'               => 100,
+			'step'              => 1,
+			'append'            => '%',
+			'instructions'      => 'Drag to adjust transparency for the first color.',
+			'conditional_logic' => $enabled_logic,
+			'wrapper'           => array(
+				'width' => '33',
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_end_opacity',
+			'label'             => 'End opacity',
+			'name'              => 'background_gradient_end_opacity',
+			'aria-label'        => '',
+			'type'              => 'range',
+			'default_value'     => 100,
+			'min'               => 0,
+			'max'               => 100,
+			'step'              => 1,
+			'append'            => '%',
+			'instructions'      => 'Drag to adjust transparency for the second color.',
+			'conditional_logic' => $enabled_logic,
+			'wrapper'           => array(
+				'width' => '33',
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_angle',
+			'label'             => 'Gradient angle',
+			'name'              => 'background_gradient_angle',
+			'aria-label'        => '',
+			'type'              => 'range',
+			'default_value'     => 180,
+			'min'               => 0,
+			'max'               => 360,
+			'step'              => 1,
+			'append'            => 'deg',
+			'instructions'      => 'Drag to rotate the gradient.',
+			'conditional_logic' => $enabled_logic,
+			'wrapper'           => array(
+				'width' => '34',
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_start_position',
+			'label'             => 'Start position',
+			'name'              => 'background_gradient_start_position',
+			'aria-label'        => '',
+			'type'              => 'range',
+			'default_value'     => 0,
+			'min'               => 0,
+			'max'               => 100,
+			'step'              => 1,
+			'append'            => '%',
+			'instructions'      => 'Drag to place the first color stop.',
+			'conditional_logic' => $enabled_logic,
+			'wrapper'           => array(
+				'width' => '50',
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_end_position',
+			'label'             => 'End position',
+			'name'              => 'background_gradient_end_position',
+			'aria-label'        => '',
+			'type'              => 'range',
+			'default_value'     => 100,
+			'min'               => 0,
+			'max'               => 100,
+			'step'              => 1,
+			'append'            => '%',
+			'instructions'      => 'Drag to place the second color stop.',
+			'conditional_logic' => $enabled_logic,
+			'wrapper'           => array(
+				'width' => '50',
+			),
+		),
+	);
+}
+
+/**
  * Normalize a gradient stop percentage for row background gradients.
  *
  * @param mixed $value Raw ACF value.
@@ -4638,12 +4791,68 @@ function mrn_base_stack_is_row_width_control_field( array $field ) {
 }
 
 /**
- * Ensure layouts with row-level width controls expose sub-content width.
+ * Determine whether a layout has a real inner collection width target.
+ *
+ * Sub-content width is intentionally limited to collection-style layouts where
+ * an inner repeated items wrapper can be narrower or wider than the outer
+ * section shell. One-off text/media/form rows use section width plus spacing.
+ *
+ * @param string $layout_name Builder layout name.
+ * @return bool
+ */
+function mrn_base_stack_layout_allows_sub_content_width( $layout_name ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	$allowed     = array(
+		'card',
+		'content_grid',
+		'content_lists',
+		'faq',
+		'faq_block',
+		'grid',
+		'logos',
+		'showcase',
+		'slider',
+		'stats',
+		'tabbed_layout',
+	);
+
+	return in_array( $layout_name, $allowed, true );
+}
+
+/**
+ * Remove sub-content width fields from layouts that should not expose them.
  *
  * @param array<int, mixed> $fields Layout/main field definitions.
  * @return array<int, mixed>
  */
-function mrn_base_stack_ensure_sub_content_width_field( array $fields ) {
+function mrn_base_stack_remove_sub_content_width_field( array $fields ) {
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		if ( 'sub_content_width' === $field_name ) {
+			unset( $fields[ $index ] );
+		}
+	}
+
+	return array_values( $fields );
+}
+
+/**
+ * Ensure collection layouts with row-level width controls expose sub-content width.
+ *
+ * @param array<int, mixed> $fields Layout/main field definitions.
+ * @param string            $layout_name Builder layout name.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_ensure_sub_content_width_field( array $fields, $layout_name = '' ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	if ( '' === $layout_name || ! mrn_base_stack_layout_allows_sub_content_width( $layout_name ) ) {
+		return mrn_base_stack_remove_sub_content_width_field( $fields );
+	}
+
 	$has_sub_content_width = false;
 	$has_section_width     = false;
 	$insert_after_index    = null;
@@ -5851,7 +6060,6 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 			$field['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $field['sub_fields'], false, '' );
 
 			if ( 'clone' === $field_type ) {
-				$field['sub_fields'] = mrn_base_stack_ensure_sub_content_width_field( $field['sub_fields'] );
 				$field['sub_fields'] = mrn_base_stack_group_main_config_fields_by_functionality( $field['sub_fields'], $field_key );
 			}
 
@@ -5885,7 +6093,7 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 
 	$normalized_fields = mrn_base_stack_apply_tag_field_column_layout( $normalized_fields );
 	if ( $inject_internal_name ) {
-		$normalized_fields = mrn_base_stack_ensure_sub_content_width_field( $normalized_fields );
+		$normalized_fields = mrn_base_stack_ensure_sub_content_width_field( $normalized_fields, $layout_name );
 		$normalized_fields = mrn_base_stack_group_main_config_fields_by_functionality( $normalized_fields );
 		$normalized_fields = mrn_base_stack_ensure_builder_layout_display_style_fields( $normalized_fields, $layout_name );
 		$normalized_fields = mrn_base_stack_apply_hero_spacing_tab_contract( $normalized_fields, $layout_name );
@@ -6013,6 +6221,7 @@ function mrn_base_stack_flexible_field_has_primary_layout_contract( array $field
 		$has_internal_name      = false;
 		$has_display_styles_tab = false;
 		$has_layout_tab         = false;
+		$effects_tab_count      = 0;
 
 		foreach ( $layout['sub_fields'] as $sub_field ) {
 			if ( ! is_array( $sub_field ) ) {
@@ -6034,9 +6243,13 @@ function mrn_base_stack_flexible_field_has_primary_layout_contract( array $field
 			if ( 'tab' === $field_type && 'layout' === $field_label ) {
 				$has_layout_tab = true;
 			}
+
+			if ( 'tab' === $field_type && 'effects' === $field_label ) {
+				$effects_tab_count++;
+			}
 		}
 
-		if ( $has_internal_name && $has_display_styles_tab && $has_layout_tab ) {
+		if ( $has_internal_name && $has_display_styles_tab && $has_layout_tab && $effects_tab_count < 2 ) {
 			return true;
 		}
 	}
@@ -6105,6 +6318,7 @@ function mrn_base_stack_apply_primary_layout_contract_on_flexible_load( $field )
 		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $layout_name );
 		$layout['sub_fields']            = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
 		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $layout_name );
+		$layout['sub_fields']            = mrn_base_stack_dedupe_effects_tab_segments( $layout['sub_fields'] );
 		$field['layouts'][ $layout_key ] = $layout;
 	}
 
@@ -6114,6 +6328,32 @@ function mrn_base_stack_apply_primary_layout_contract_on_flexible_load( $field )
 }
 add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_apply_primary_layout_contract_on_flexible_load', 30 );
 add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_apply_primary_layout_contract_on_flexible_load', 30 );
+
+/**
+ * Final cleanup for duplicate Effects segments created by expanded clone fields.
+ *
+ * @param array<string, mixed>|mixed $field ACF field definition.
+ * @return array<string, mixed>|mixed
+ */
+function mrn_base_stack_dedupe_flexible_layout_effects_on_load( $field ) {
+	if ( ! is_array( $field ) || ! isset( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
+		return $field;
+	}
+
+	foreach ( $field['layouts'] as $layout_key => $layout ) {
+		if ( ! is_array( $layout ) || ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+			continue;
+		}
+
+		$layout_name                     = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : sanitize_key( (string) $layout_key );
+		$layout['sub_fields']            = mrn_base_stack_dedupe_effects_tab_segments( $layout['sub_fields'] );
+		$field['layouts'][ $layout_key ] = $layout;
+	}
+
+	return $field;
+}
+add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_dedupe_flexible_layout_effects_on_load', 200 );
+add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_dedupe_flexible_layout_effects_on_load', 200 );
 
 /**
  * Apply shared row contracts when ACF retrieves field definitions from storage.
@@ -6147,6 +6387,7 @@ function mrn_base_stack_apply_primary_layout_contract_on_flexible_get_field( $fi
 		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $layout_name );
 		$layout['sub_fields']            = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
 		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $layout_name );
+		$layout['sub_fields']            = mrn_base_stack_dedupe_effects_tab_segments( $layout['sub_fields'] );
 		$field['layouts'][ $layout_key ] = $layout;
 	}
 
@@ -6241,6 +6482,66 @@ function mrn_base_stack_relocate_effect_fields( array $fields ) {
 	$remaining[] = mrn_base_stack_get_effects_tab_field( $effects_tab_key );
 
 	return array_merge( $remaining, $effects_fields );
+}
+
+/**
+ * Keep one top-level Effects tab when cloned reusable fields bring their own copy.
+ *
+ * @param array<int, mixed> $fields Field definitions.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_dedupe_effects_tab_segments( array $fields ) {
+	$effects_tab_indexes = array();
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( 'tab' === $field_type && 'effects' === $field_label ) {
+			$effects_tab_indexes[] = (int) $index;
+		}
+	}
+
+	if ( count( $effects_tab_indexes ) < 2 ) {
+		return $fields;
+	}
+
+	$keep_index    = (int) end( $effects_tab_indexes );
+	$deduped       = array();
+	$skip_segment  = false;
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			if ( ! $skip_segment ) {
+				$deduped[] = $field;
+			}
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( 'tab' === $field_type ) {
+			if ( 'effects' === $field_label && (int) $index !== $keep_index ) {
+				$skip_segment = true;
+				continue;
+			}
+
+			$skip_segment = false;
+		}
+
+		if ( $skip_segment ) {
+			continue;
+		}
+
+		$deduped[] = $field;
+	}
+
+	return array_values( $deduped );
 }
 
 /**
@@ -6390,6 +6691,14 @@ function mrn_base_stack_get_row_sub_content_width( array $row, $default_width = 
  * @return array{classes:array<int,string>,attributes:array<string,string>}
  */
 function mrn_base_stack_get_builder_sub_content_width_contract( array $row ) {
+	$layout_name = isset( $row['acf_fc_layout'] ) ? sanitize_key( (string) $row['acf_fc_layout'] ) : '';
+	if ( '' === $layout_name || ! mrn_base_stack_layout_allows_sub_content_width( $layout_name ) ) {
+		return array(
+			'classes'    => array(),
+			'attributes' => array(),
+		);
+	}
+
 	$width      = mrn_base_stack_get_row_sub_content_width( $row, 'wide' );
 	$width_slug = 'wide';
 
@@ -8927,12 +9236,12 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 		'layout_mrn_nested_cta' => array(
 			'key'        => 'layout_mrn_nested_cta',
 			'name'       => 'cta',
-			'label'      => 'CTA - label|heading|subheading|text with editor|link',
+			'label'      => 'Page Specific CTA',
 			'display'    => 'block',
 			'sub_fields' => array(
 				array(
 					'key'          => 'field_mrn_nested_cta_fields',
-					'label'        => 'CTA',
+					'label'        => 'Page Specific CTA',
 					'name'         => '',
 					'aria-label'   => '',
 					'type'         => 'clone',

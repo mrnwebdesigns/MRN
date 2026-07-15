@@ -6,6 +6,25 @@
  */
 
 /**
+ * Treat testimonials as component data rather than public destinations.
+ *
+ * @param array $post_types Admin/data-only CPT configuration.
+ * @return array
+ */
+function mrn_base_stack_register_testimonial_as_admin_data( $post_types ) {
+	$show_ui = function_exists( 'mrn_base_stack_is_admin_cpt_visible' ) ? mrn_base_stack_is_admin_cpt_visible( 'testimonial' ) : true;
+
+	$post_types['testimonial'] = array(
+		'show_ui'       => $show_ui,
+		'show_in_menu'  => $show_ui,
+		'admin_cleanup' => true,
+	);
+
+	return $post_types;
+}
+add_filter( 'mrn_admin_data_post_types', 'mrn_base_stack_register_testimonial_as_admin_data' );
+
+/**
  * Register the theme-owned Testimonial custom post type.
  *
  * @return void

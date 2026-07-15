@@ -892,12 +892,12 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_cta' => array(
 								'key'        => 'layout_mrn_cta',
 								'name'       => 'cta',
-								'label'      => 'CTA - label|heading|subheading|text with editor|link',
+								'label'      => 'Page Specific CTA',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
 										'key'          => 'field_mrn_page_cta_fields',
-										'label'        => 'CTA',
+										'label'        => 'Page Specific CTA',
 										'name'         => '',
 										'aria-label'   => '',
 										'type'         => 'clone',
@@ -3127,14 +3127,15 @@ function mrn_base_stack_register_acf_field_groups() {
 								),
 							),
 							'layout_mrn_cta_block' => array(
-								'key'        => 'layout_mrn_cta_block',
-								'name'       => 'cta_block',
-								'label'      => 'CTA (Page Only)',
-								'display'    => 'block',
-								'sub_fields' => array(
+								'key'              => 'layout_mrn_cta_block',
+								'name'             => 'cta_block',
+								'label'            => 'Page Specific CTA',
+								'display'          => 'block',
+								'mrn_is_page_only' => true,
+								'sub_fields'       => array(
 									array(
 										'key'          => 'field_mrn_page_cta_block_fields',
-										'label'        => 'CTA',
+										'label'        => 'Page Specific CTA',
 										'name'         => '',
 										'aria-label'   => '',
 										'type'         => 'clone',

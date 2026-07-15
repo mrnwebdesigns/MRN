@@ -50,6 +50,7 @@ function mrn_loader_include_once_if_needed($file) {
  * Known MRN plugin entrypoints under /wp-content/mu-plugins/<slug>/<entry-file>.
  */
 $mrn_loader_entries = array(
+    WP_CONTENT_DIR . '/mu-plugins/mrn-admin-data-post-types/mrn-admin-data-post-types.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-admin-ui-css/mrn-admin-ui-css.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-dashboard-support/mrn-dashboard-support.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-disable-comments/mrn-disable-comments.php',

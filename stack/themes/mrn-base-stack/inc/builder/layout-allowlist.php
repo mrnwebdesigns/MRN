@@ -347,9 +347,11 @@ function mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( array $
 			$label = ucfirst( str_replace( array( '-', '_' ), ' ', $name ) );
 		}
 
+		$is_page_only = ! empty( $layout['mrn_is_page_only'] ) || false !== stripos( $label, '(Page Only)' );
+
 		$catalog[ $name ] = array(
 			'label'        => $label,
-			'is_page_only' => false !== stripos( $label, '(Page Only)' ),
+			'is_page_only' => $is_page_only,
 		);
 	}
 

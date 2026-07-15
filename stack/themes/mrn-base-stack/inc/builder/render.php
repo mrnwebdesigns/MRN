@@ -103,6 +103,24 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 	$section_classes   = trim( 'mrn-layout-section ' . $section_modifier . ' ' . ( $width_layers['section_class'] ?? 'mrn-layout-section--contained' ) );
 	$container_classes = trim( 'mrn-layout-container ' . ( $width_layers['container_class'] ?? 'mrn-layout-container--wide' ) );
 	$row_attributes    = array();
+	$layout_name       = isset( $row['acf_fc_layout'] ) ? sanitize_key( (string) $row['acf_fc_layout'] ) : '';
+	if ( '' !== $layout_name && function_exists( 'mrn_base_stack_get_builder_display_contract' ) ) {
+		$display_contract = mrn_base_stack_get_builder_display_contract( $row, $layout_name );
+
+		if ( ! empty( $display_contract['classes'] ) && is_array( $display_contract['classes'] ) ) {
+			$row_classes = trim( $row_classes . ' ' . implode( ' ', array_filter( $display_contract['classes'], 'strlen' ) ) );
+		}
+
+		if ( function_exists( 'mrn_base_stack_merge_builder_attributes' ) ) {
+			$row_attributes = mrn_base_stack_merge_builder_attributes(
+				$row_attributes,
+				isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ? $display_contract['attributes'] : array()
+			);
+		} elseif ( isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ) {
+			$row_attributes = array_merge( $row_attributes, $display_contract['attributes'] );
+		}
+	}
+
 	if ( ! $include_motion_contract ) {
 		$flex_contract        = function_exists( 'mrn_base_stack_get_builder_flex_contract' ) ? mrn_base_stack_get_builder_flex_contract( $row ) : array(
 			'classes'    => array(),
@@ -282,7 +300,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				array(
 					'post_id'               => (int) $post_id,
 					'post_name'             => 'page-cta',
-					'block_name'            => 'Page CTA',
+					'block_name'            => 'Page Specific CTA',
 					'suppress_anchor'       => true,
 					'apply_motion_contract' => true,
 				)
@@ -470,7 +488,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				array(
 					'post_id'               => (int) $post_id,
 					'post_name'             => 'page-cta-block',
-					'block_name'            => 'Page CTA Block',
+					'block_name'            => 'Page Specific CTA Block',
 					'suppress_anchor'       => true,
 					'apply_motion_contract' => true,
 				)
@@ -879,7 +897,8 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 		if ( '' !== $title_text ) {
 			$heading_prefixes = array(
 				'basic'            => 'Basic',
-				'cta'              => 'CTA',
+				'cta'              => 'Page Specific CTA',
+				'cta_block'        => 'Page Specific CTA',
 				'grid'             => 'Grid',
 				'faq'              => 'FAQs/Accordion',
 				'slider'           => 'Slider',
@@ -939,12 +958,12 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 		return 'Basic: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
-	if ( 'cta' === $layout_name ) {
+	if ( in_array( $layout_name, array( 'cta', 'cta_block' ), true ) ) {
 		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'CTA: ' . esc_html( wp_strip_all_tags( $title_text ) );
+		return 'Page Specific CTA: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'grid' === $layout_name ) {
