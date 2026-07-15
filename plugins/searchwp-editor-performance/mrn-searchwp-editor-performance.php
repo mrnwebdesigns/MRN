@@ -3,7 +3,7 @@
  * Plugin Name: MRN SearchWP Editor Performance
  * Description: Local/development SearchWP indexer override to reduce editor load/save latency.
  * Version: 1.0.6
- * Author: MRN
+ * Author: MRN Web Designs
  */
 
 if (!defined('ABSPATH')) {
