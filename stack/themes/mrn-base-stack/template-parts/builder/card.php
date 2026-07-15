@@ -143,7 +143,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 							'mrn-ui__item',
 						);
 
-						$item_has_image       = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $item_image ) : false;
+						$item_has_image = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $item_image ) : false;
 
 						if ( '' === trim( wp_strip_all_tags( $item_text ) ) && '' === $item_link_url && ! $item_has_image ) {
 							continue;

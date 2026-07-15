@@ -318,18 +318,18 @@ function mrn_base_stack_get_background_video_markup( $remote_video, $video_uploa
 	}
 
 	$attrs = array(
-		'class'                   => implode( ' ', $wrapper_classes ),
+		'class'                         => implode( ' ', $wrapper_classes ),
 		'data-mrn-row-background-video' => 'true',
-		'data-video-src'          => esc_url( $video_url ),
-		'data-video-kind'         => $video_kind,
-		'data-video-background'   => 'true',
-		'data-video-autoplay'     => 'true',
-		'data-video-muted'        => 'true',
-		'data-video-loop'         => 'true',
-		'data-video-controls'     => 'false',
-		'data-video-delay'        => max( 0, (int) $args['delay'] ),
-		'data-video-desktop-only' => ! empty( $args['desktop_only'] ) ? 'true' : 'false',
-		'aria-hidden'             => 'true',
+		'data-video-src'                => esc_url( $video_url ),
+		'data-video-kind'               => $video_kind,
+		'data-video-background'         => 'true',
+		'data-video-autoplay'           => 'true',
+		'data-video-muted'              => 'true',
+		'data-video-loop'               => 'true',
+		'data-video-controls'           => 'false',
+		'data-video-delay'              => max( 0, (int) $args['delay'] ),
+		'data-video-desktop-only'       => ! empty( $args['desktop_only'] ) ? 'true' : 'false',
+		'aria-hidden'                   => 'true',
 	);
 
 	if ( 'local' === $video_kind && '' !== $video_mime ) {

@@ -82,7 +82,7 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 	$section_styles[] = '--mrn-logos-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
-$display_contract = mrn_base_stack_get_builder_display_contract( array_merge( $row, array( 'display_mode' => $display_mode ) ), 'logos' );
+$display_contract  = mrn_base_stack_get_builder_display_contract( array_merge( $row, array( 'display_mode' => $display_mode ) ), 'logos' );
 $accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 	'attributes' => array(),

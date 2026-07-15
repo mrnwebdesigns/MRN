@@ -100,7 +100,7 @@ function mrn_base_stack_get_display_styles_for_entity( $entity_type, $entity_sub
 			continue;
 		}
 
-		$style_entity_type    = isset( $style_config['entity_type'] ) ? sanitize_key( (string) $style_config['entity_type'] ) : 'post_type';
+		$style_entity_type        = isset( $style_config['entity_type'] ) ? sanitize_key( (string) $style_config['entity_type'] ) : 'post_type';
 		$style_entity_subtype_raw = isset( $style_config['entity_subtype'] ) ? trim( (string) $style_config['entity_subtype'] ) : '';
 		$style_entity_subtype     = '*' === $style_entity_subtype_raw ? '*' : sanitize_key( $style_entity_subtype_raw );
 

@@ -115,11 +115,11 @@ $mrn_tags_list       = get_the_term_list( $mrn_post_id, 'post_tag', '', esc_html
 									continue;
 								}
 
-								$mrn_service_text  = isset( $mrn_service['text'] ) ? (string) $mrn_service['text'] : '';
-								$mrn_service_image = $mrn_service['image'] ?? null;
+								$mrn_service_text      = isset( $mrn_service['text'] ) ? (string) $mrn_service['text'] : '';
+								$mrn_service_image     = $mrn_service['image'] ?? null;
 								$mrn_service_has_image = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $mrn_service_image ) : false;
-								$mrn_service_side  = isset( $mrn_service['image_position'] ) ? (string) $mrn_service['image_position'] : 'right';
-								$mrn_service_side  = in_array( $mrn_service_side, array( 'left', 'right' ), true ) ? $mrn_service_side : 'right';
+								$mrn_service_side      = isset( $mrn_service['image_position'] ) ? (string) $mrn_service['image_position'] : 'right';
+								$mrn_service_side      = in_array( $mrn_service_side, array( 'left', 'right' ), true ) ? $mrn_service_side : 'right';
 
 								if ( '' === trim( wp_strip_all_tags( $mrn_service_text ) ) && ! $mrn_service_has_image ) {
 									continue;

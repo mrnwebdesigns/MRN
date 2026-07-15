@@ -190,6 +190,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 											<?php if ( ! empty( $tab_item['has_image'] ) ) : ?>
 												<span class="mrn-tabbed-layout__tab-media" aria-hidden="true">
 													<?php
+													// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared image helper returns escaped wp_get_attachment_image markup.
 													echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
 														$tab_item['image'],
 														'mrn-icon',
@@ -197,7 +198,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 															'class' => 'mrn-tabbed-layout__tab-image',
 															'alt'   => '',
 														)
-													) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+													) : '';
 													?>
 												</span>
 											<?php endif; ?>

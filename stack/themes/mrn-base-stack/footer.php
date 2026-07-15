@@ -12,21 +12,21 @@
 ?>
 
 	<?php
-	$mrn_footer_options           = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
-	$mrn_business_information     = function_exists( 'mrn_base_stack_get_business_information' ) ? mrn_base_stack_get_business_information() : array();
-	$mrn_footer_logo              = function_exists( 'mrn_base_stack_get_business_logo' ) ? mrn_base_stack_get_business_logo( 'footer' ) : null;
-	$mrn_footer_address_lines     = function_exists( 'mrn_base_stack_get_business_address_lines' ) ? mrn_base_stack_get_business_address_lines() : array();
-	$mrn_footer_hours_rows        = function_exists( 'mrn_base_stack_get_business_hours_display_rows' ) ? mrn_base_stack_get_business_hours_display_rows() : array();
-	$mrn_footer_tertiary_location = 'footer-tertiary';
-	$mrn_footer_privacy_location  = has_nav_menu( 'privacy-center' ) ? 'privacy-center' : '';
-	$mrn_show_social_menu         = ! empty( $mrn_footer_options['footer_show_social_menu'] ) && mrn_base_stack_has_configured_social_links();
-	$mrn_show_tertiary_menu       = ! empty( $mrn_footer_options['footer_show_tertiary_menu'] ) && mrn_base_stack_nav_location_has_items( $mrn_footer_tertiary_location );
-	$mrn_show_privacy_links       = ! empty( $mrn_footer_options['footer_show_privacy_center_links'] ) && '' !== $mrn_footer_privacy_location && mrn_base_stack_nav_location_has_items( $mrn_footer_privacy_location );
-	$mrn_show_secondary_menu      = ! empty( $mrn_footer_options['footer_show_secondary_menu'] ) && mrn_base_stack_nav_location_has_items( 'footer-secondary' );
-	$mrn_show_primary_menu        = ! empty( $mrn_footer_options['footer_show_primary_menu'] ) && mrn_base_stack_nav_location_has_items( 'menu-3' );
-	$mrn_footer_social_icon_color = mrn_base_stack_normalize_site_color_slug( isset( $mrn_footer_options['footer_social_icon_color'] ) ? $mrn_footer_options['footer_social_icon_color'] : '' );
+	$mrn_footer_options                 = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+	$mrn_business_information           = function_exists( 'mrn_base_stack_get_business_information' ) ? mrn_base_stack_get_business_information() : array();
+	$mrn_footer_logo                    = function_exists( 'mrn_base_stack_get_business_logo' ) ? mrn_base_stack_get_business_logo( 'footer' ) : null;
+	$mrn_footer_address_lines           = function_exists( 'mrn_base_stack_get_business_address_lines' ) ? mrn_base_stack_get_business_address_lines() : array();
+	$mrn_footer_hours_rows              = function_exists( 'mrn_base_stack_get_business_hours_display_rows' ) ? mrn_base_stack_get_business_hours_display_rows() : array();
+	$mrn_footer_tertiary_location       = 'footer-tertiary';
+	$mrn_footer_privacy_location        = has_nav_menu( 'privacy-center' ) ? 'privacy-center' : '';
+	$mrn_show_social_menu               = ! empty( $mrn_footer_options['footer_show_social_menu'] ) && mrn_base_stack_has_configured_social_links();
+	$mrn_show_tertiary_menu             = ! empty( $mrn_footer_options['footer_show_tertiary_menu'] ) && mrn_base_stack_nav_location_has_items( $mrn_footer_tertiary_location );
+	$mrn_show_privacy_links             = ! empty( $mrn_footer_options['footer_show_privacy_center_links'] ) && '' !== $mrn_footer_privacy_location && mrn_base_stack_nav_location_has_items( $mrn_footer_privacy_location );
+	$mrn_show_secondary_menu            = ! empty( $mrn_footer_options['footer_show_secondary_menu'] ) && mrn_base_stack_nav_location_has_items( 'footer-secondary' );
+	$mrn_show_primary_menu              = ! empty( $mrn_footer_options['footer_show_primary_menu'] ) && mrn_base_stack_nav_location_has_items( 'menu-3' );
+	$mrn_footer_social_icon_color       = mrn_base_stack_normalize_site_color_slug( isset( $mrn_footer_options['footer_social_icon_color'] ) ? $mrn_footer_options['footer_social_icon_color'] : '' );
 	$mrn_footer_social_icon_hover_color = mrn_base_stack_normalize_site_color_slug( isset( $mrn_footer_options['footer_social_icon_hover_color'] ) ? $mrn_footer_options['footer_social_icon_hover_color'] : '' );
-	$mrn_footer_social_icon_style = '';
+	$mrn_footer_social_icon_style       = '';
 	if ( '' !== $mrn_footer_social_icon_color ) {
 		$mrn_footer_social_icon_style = '--mrn-social-icon-color: ' . mrn_base_stack_get_site_color_css_value( $mrn_footer_social_icon_color ) . ';';
 	}
@@ -83,23 +83,33 @@
 			'menu_class' => 'menu',
 			'aria_label' => __( 'Privacy center links', 'mrn-base-stack' ),
 		),
-		);
-		$mrn_footer_layout_grid       = isset( $mrn_footer_options['footer_layout_grid'] ) && is_array( $mrn_footer_options['footer_layout_grid'] ) ? $mrn_footer_options['footer_layout_grid'] : ( function_exists( 'mrn_base_stack_get_theme_header_footer_layout_grid' ) ? mrn_base_stack_get_theme_header_footer_layout_grid( 'footer' ) : array() );
-		$mrn_footer_attributes        = function_exists( 'mrn_base_stack_get_theme_header_footer_shell_attributes' ) ? mrn_base_stack_get_theme_header_footer_shell_attributes( 'footer', $mrn_footer_options, $mrn_footer_layout_grid ) : array();
-		$mrn_footer_attribute_html    = function_exists( 'mrn_base_stack_get_theme_header_footer_html_attributes' ) ? mrn_base_stack_get_theme_header_footer_html_attributes( $mrn_footer_attributes ) : '';
-		$mrn_footer_content_width     = isset( $mrn_footer_options['footer_content_width'] ) ? $mrn_footer_options['footer_content_width'] : 'wide';
-		$mrn_footer_width_class       = function_exists( 'mrn_base_stack_get_theme_header_footer_content_width_class' ) ? mrn_base_stack_get_theme_header_footer_content_width_class( $mrn_footer_content_width, 'wide' ) : 'mrn-theme-hf-layout-grid--width-wide';
+	);
+	$mrn_footer_layout_grid       = isset( $mrn_footer_options['footer_layout_grid'] ) && is_array( $mrn_footer_options['footer_layout_grid'] ) ? $mrn_footer_options['footer_layout_grid'] : ( function_exists( 'mrn_base_stack_get_theme_header_footer_layout_grid' ) ? mrn_base_stack_get_theme_header_footer_layout_grid( 'footer' ) : array() );
+	$mrn_footer_attributes        = function_exists( 'mrn_base_stack_get_theme_header_footer_shell_attributes' ) ? mrn_base_stack_get_theme_header_footer_shell_attributes( 'footer', $mrn_footer_options, $mrn_footer_layout_grid ) : array();
+	$mrn_footer_attribute_html    = function_exists( 'mrn_base_stack_get_theme_header_footer_html_attributes' ) ? mrn_base_stack_get_theme_header_footer_html_attributes( $mrn_footer_attributes ) : '';
+	$mrn_footer_content_width     = isset( $mrn_footer_options['footer_content_width'] ) ? $mrn_footer_options['footer_content_width'] : 'wide';
+	$mrn_footer_width_class       = function_exists( 'mrn_base_stack_get_theme_header_footer_content_width_class' ) ? mrn_base_stack_get_theme_header_footer_content_width_class( $mrn_footer_content_width, 'wide' ) : 'mrn-theme-hf-layout-grid--width-wide';
 	$mrn_footer_classes           = trim( 'site-footer mrn-theme-hf-layout-grid mrn-theme-hf-layout-grid--footer ' . $mrn_footer_width_class );
 	$mrn_footer_grid_item_style   = static function ( $item_key ) use ( $mrn_footer_layout_grid ) {
 		return function_exists( 'mrn_base_stack_get_theme_header_footer_layout_grid_item_style' ) ? mrn_base_stack_get_theme_header_footer_layout_grid_item_style( $mrn_footer_layout_grid, $item_key ) : '';
 	};
+	/* translators: %s: Site name. */
+	$mrn_footer_home_label = sprintf( __( '%s home', 'mrn-base-stack' ), get_bloginfo( 'name' ) );
 	?>
 
-		<footer id="colophon" class="<?php echo esc_attr( $mrn_footer_classes ); ?>"<?php echo '' !== $mrn_footer_attribute_html ? ' ' . $mrn_footer_attribute_html : ''; ?>>
+		<footer
+			id="colophon"
+			class="<?php echo esc_attr( $mrn_footer_classes ); ?>"
+			<?php
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Header/footer attribute helper escapes attribute names and values.
+				echo '' !== $mrn_footer_attribute_html ? ' ' . $mrn_footer_attribute_html : '';
+			?>
+		>
 		<?php if ( function_exists( 'mrn_base_stack_image_has_content' ) && mrn_base_stack_image_has_content( $mrn_footer_logo ) ) : ?>
 			<div class="mrn-theme-hf-layout-grid__item mrn-theme-hf-layout-grid__item--footer-brand mrn-site-footer__brand" data-mrn-layout-slot="footer" data-mrn-layout-item="footer_brand"<?php echo '' !== $mrn_footer_grid_item_style( 'footer_brand' ) ? ' style="' . esc_attr( $mrn_footer_grid_item_style( 'footer_brand' ) ) . '"' : ''; ?>>
-				<a class="custom-logo-link mrn-site-logo-link" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
+				<a class="custom-logo-link mrn-site-logo-link" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" aria-label="<?php echo esc_attr( $mrn_footer_home_label ); ?>">
 					<?php
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared image helper returns escaped wp_get_attachment_image markup.
 					echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
 						$mrn_footer_logo,
 						'mrn-logo',

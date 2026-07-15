@@ -114,7 +114,7 @@ function mrn_base_stack_migrate_page_sidebar_layouts_to_templates() {
 	$migration_key     = 'mrn_base_stack_page_sidebar_template_migration';
 	$migration_version = '2026-07-09-v1';
 
-	if ( $migration_version === get_option( $migration_key, '' ) ) {
+	if ( get_option( $migration_key, '' ) === $migration_version ) {
 		return;
 	}
 
@@ -127,6 +127,7 @@ function mrn_base_stack_migrate_page_sidebar_layouts_to_templates() {
 			'no_found_rows'          => true,
 			'update_post_meta_cache' => false,
 			'update_post_term_cache' => false,
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- One-time sidebar template migration needs a targeted legacy meta lookup.
 			'meta_query'             => array(
 				array(
 					'key'     => 'sidebar_layout',
@@ -315,8 +316,8 @@ add_filter( 'acf/prepare_field/key=field_mrn_page_template_sidebar_rows', 'mrn_b
 /**
  * Get the sidebar content field for a sidebar field group.
  *
- * @param bool   $layout_builder_enabled Whether builder rows should be used.
- * @param string $field_key Field key.
+ * @param bool                                          $layout_builder_enabled Whether builder rows should be used.
+ * @param string                                        $field_key Field key.
  * @param array<int, array<int, array<string, string>>> $conditional_logic Optional conditional logic.
  * @return array<string, mixed>
  */

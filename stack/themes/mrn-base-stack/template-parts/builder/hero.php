@@ -91,7 +91,7 @@ foreach ( $links as $index => $hero_link_source ) {
 		'icon_position' => $link_icon_position,
 	);
 }
-$has_image        = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image ) : false;
+$has_image = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image ) : false;
 
 if ( '' === $label && '' === $page_title && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $hero_links ) && ! $has_image ) {
 	return;
@@ -114,7 +114,7 @@ $background_gradient_style = function_exists( 'mrn_base_stack_get_background_gra
 	: '';
 
 if ( '' !== $background_gradient_style ) {
-	$section_styles[]   = $background_gradient_style;
+	$section_styles[]  = $background_gradient_style;
 	$section_classes[] = 'has-background-gradient';
 }
 
@@ -140,7 +140,7 @@ $background_video_markup = function_exists( 'mrn_base_stack_get_background_video
 		$background_video_upload,
 		array(
 			'class'        => 'mrn-section-background-media mrn-row-background-video mrn-hero__background-media',
-			'poster_image' => $background_image ?: $image,
+			'poster_image' => $background_image ? $background_image : $image,
 		)
 	)
 	: '';
@@ -155,13 +155,13 @@ if ( $has_image ) {
 }
 
 $display_contract = mrn_base_stack_get_builder_display_contract( $row, 'hero' );
-$accent_contract = function_exists( 'mrn_site_styles_get_bottom_accent_contract' )
+$accent_contract  = function_exists( 'mrn_site_styles_get_bottom_accent_contract' )
 	? mrn_site_styles_get_bottom_accent_contract( $bottom_accent, $accent_slug )
 	: array(
 		'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 		'attributes' => array(),
 	);
-$motion_contract = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
+$motion_contract  = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
 	'classes'    => array(),
 	'attributes' => array(),
 );
@@ -272,6 +272,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 		<?php if ( $has_image ) : ?>
 			<div class="mrn-hero__media mrn-hero__media--hero-shell">
 				<?php
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared image helper returns escaped wp_get_attachment_image markup.
 				echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
 					$image,
 					'mrn-hero',
@@ -279,7 +280,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 						'loading'       => false,
 						'fetchpriority' => 'high',
 					)
-				) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				) : '';
 				?>
 			</div>
 		<?php endif; ?>

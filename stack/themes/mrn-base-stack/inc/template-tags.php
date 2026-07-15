@@ -401,8 +401,8 @@ if ( ! function_exists( 'mrn_base_stack_seed_searchwp_form' ) ) :
 				'button-font-size'             => '',
 			);
 			$decoded['next_id']           = $form_id + 1;
-			$encoded                     = wp_json_encode( $decoded );
-			$updated                     = class_exists( 'SearchWP\\Settings' ) ? \SearchWP\Settings::update( 'forms', $encoded ) : null;
+			$encoded                      = wp_json_encode( $decoded );
+			$updated                      = class_exists( 'SearchWP\\Settings' ) ? \SearchWP\Settings::update( 'forms', $encoded ) : null;
 
 			if ( null === $updated ) {
 				update_option( 'searchwp_forms', $encoded, false );

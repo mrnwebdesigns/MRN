@@ -43,9 +43,9 @@ $right_row               = ! empty( $right_rows[0] ) && is_array( $right_rows[0]
 $allowed_custom_heading_tags = array( 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
 if ( $is_hero_context ) {
 	$heading_contract = mrn_base_stack_get_hero_heading_contract( $row, $context_post_id, 'h2' );
-	$hero_page_title = isset( $heading_contract['page_title'] ) ? trim( (string) $heading_contract['page_title'] ) : '';
-	$heading         = isset( $heading_contract['custom_heading'] ) ? trim( (string) $heading_contract['custom_heading'] ) : '';
-	$heading_tag     = isset( $heading_contract['custom_heading_tag'] ) ? strtolower( (string) $heading_contract['custom_heading_tag'] ) : 'h2';
+	$hero_page_title  = isset( $heading_contract['page_title'] ) ? trim( (string) $heading_contract['page_title'] ) : '';
+	$heading          = isset( $heading_contract['custom_heading'] ) ? trim( (string) $heading_contract['custom_heading'] ) : '';
+	$heading_tag      = isset( $heading_contract['custom_heading_tag'] ) ? strtolower( (string) $heading_contract['custom_heading_tag'] ) : 'h2';
 }
 
 $allowed_tags = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
@@ -102,14 +102,14 @@ if ( '' !== $background_gradient_style ) {
 }
 
 $display_contract = mrn_base_stack_get_builder_display_contract( $row, 'two_column_split' );
-$motion_contract = mrn_base_stack_get_builder_motion_contract( $row );
-$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract );
-$section_classes = mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract );
-$section_attrs   = mrn_base_stack_merge_builder_attributes( $section_attrs, $display_contract['attributes'] );
-$section_attrs   = mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
+$motion_contract  = mrn_base_stack_get_builder_motion_contract( $row );
+$section_classes  = mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract );
+$section_classes  = mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract );
+$section_attrs    = mrn_base_stack_merge_builder_attributes( $section_attrs, $display_contract['attributes'] );
+$section_attrs    = mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 
-$surface_style      = mrn_base_stack_get_inline_style_attribute( $section_styles );
-$grid_styles        = array();
+$surface_style = mrn_base_stack_get_inline_style_attribute( $section_styles );
+$grid_styles   = array();
 if ( '' !== $hero_min_height ) {
 	$grid_styles[] = 'min-height: ' . $hero_min_height;
 }

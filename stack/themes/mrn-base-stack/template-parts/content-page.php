@@ -11,8 +11,8 @@
 
 <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 	<?php
-	$mrn_post_id   = get_the_ID();
-	$mrn_has_hero    = mrn_base_stack_render_hero_builder( $mrn_post_id );
+	$mrn_post_id  = get_the_ID();
+	$mrn_has_hero = mrn_base_stack_render_hero_builder( $mrn_post_id );
 
 	if ( function_exists( 'mrn_base_stack_render_singular_breadcrumbs' ) ) {
 		mrn_base_stack_render_singular_breadcrumbs( $mrn_post_id );

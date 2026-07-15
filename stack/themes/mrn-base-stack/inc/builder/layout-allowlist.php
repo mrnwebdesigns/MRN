@@ -603,8 +603,8 @@ function mrn_base_stack_get_builder_layout_allowlist_configurable_names( array $
 /**
  * Sort allowlist layout names by their editor-facing labels.
  *
- * @param array<int, string>                    $names Layout names.
- * @param array<string, array<string, mixed>>   $catalog Layout catalog.
+ * @param array<int, string>                  $names Layout names.
+ * @param array<string, array<string, mixed>> $catalog Layout catalog.
  * @return array<int, string>
  */
 function mrn_base_stack_sort_builder_layout_allowlist_names_by_label( array $names, array $catalog ) {

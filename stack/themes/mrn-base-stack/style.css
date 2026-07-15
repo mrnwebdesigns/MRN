@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.2.64
+Version: 1.2.65
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -2763,18 +2763,6 @@ button.mrn-ui__link--button {
 	padding: 0;
 }
 
-.mrn-shell-section--reusable-grid.mrn-shell-section--width-content .mrn-content-grid__items {
-	gap: 1.5rem 1.75rem;
-}
-
-.mrn-shell-section--reusable-grid.mrn-shell-section--width-wide .mrn-content-grid__items {
-	gap: 2rem 2.75rem;
-}
-
-.mrn-shell-section--reusable-grid.mrn-shell-section--width-full .mrn-content-grid__items {
-	gap: clamp(2rem, 4vw, 3rem) clamp(2rem, 4vw, 3.5rem);
-}
-
 .mrn-shell-section--reusable-grid .mrn-content-grid {
 	max-width: none;
 }
@@ -2802,9 +2790,9 @@ button.mrn-ui__link--button {
 .mrn-content-grid__head .mrn-ui__heading {
 	max-width: none;
 	margin: 0;
-	font-size: clamp(2rem, 4vw, 3.4rem);
+	font-size: 3rem;
 	line-height: 1.02;
-	letter-spacing: -0.045em;
+	letter-spacing: 0;
 	font-weight: 500;
 }
 
@@ -2891,10 +2879,10 @@ button.mrn-ui__link--button {
 
 .mrn-content-grid__item-head .mrn-ui__heading {
 	margin: 0;
-	font-size: clamp(1.2rem, 1.6vw, 1.8rem);
+	font-size: 1.5rem;
 	line-height: 1.08;
 	font-weight: 500;
-	letter-spacing: -0.035em;
+	letter-spacing: 0;
 }
 
 .mrn-content-grid__item-body .mrn-ui__text {
@@ -3208,6 +3196,10 @@ a.mrn-social-links__link:focus-visible svg {
 	gap: 1rem;
 }
 
+.mrn-site-footer__copyright {
+	color: var(--mrn-theme-hf-font-color, #000000);
+}
+
 .mrn-site-footer__legal-text {
 	color: var(--mrn-shell-muted);
 	margin-bottom: 0.75rem;
@@ -3271,6 +3263,14 @@ a.mrn-social-links__link:focus-visible svg {
 	.mrn-reusable-block--grid-columns-4 .mrn-content-grid__items {
 		--mrn-content-grid-row-gap: 2rem;
 		--mrn-content-grid-column-gap: 2rem;
+	}
+
+	.mrn-content-grid__head .mrn-ui__heading {
+		font-size: 2rem;
+	}
+
+	.mrn-content-grid__item-head .mrn-ui__heading {
+		font-size: 1.25rem;
 	}
 
 	.mrn-content-grid__item {

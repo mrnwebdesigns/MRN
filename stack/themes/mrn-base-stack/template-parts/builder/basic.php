@@ -5,26 +5,26 @@
  * @package mrn-base-stack
  */
 
-$context          = is_array( $args ?? null ) ? $args : array();
-$row              = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
-$label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
-$label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
-$heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h2';
-$subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
-$subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
-$content          = isset( $row['content'] ) ? (string) $row['content'] : '';
-$image            = $row['image'] ?? null;
-$has_image        = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image ) : false;
-$background_image            = $row['background_image'] ?? null;
-$link_color                  = isset( $row['link_color'] ) ? trim( (string) $row['link_color'] ) : '';
-$image_placement             = isset( $row['image_placement'] ) ? sanitize_key( (string) $row['image_placement'] ) : 'left';
-$background_color            = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
-$background_video              = isset( $row['background_video'] ) ? (string) $row['background_video'] : '';
-$background_video_upload       = $row['background_video_upload'] ?? null;
-$bottom_accent                 = ! empty( $row['bottom_accent'] );
-$accent_slug                   = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
-$width_layers                  = function_exists( 'mrn_base_stack_get_section_width_layers' )
+$context                 = is_array( $args ?? null ) ? $args : array();
+$row                     = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
+$label                   = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
+$label_tag               = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
+$heading                 = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
+$heading_tag             = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h2';
+$subheading              = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag          = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
+$content                 = isset( $row['content'] ) ? (string) $row['content'] : '';
+$image                   = $row['image'] ?? null;
+$has_image               = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image ) : false;
+$background_image        = $row['background_image'] ?? null;
+$link_color              = isset( $row['link_color'] ) ? trim( (string) $row['link_color'] ) : '';
+$image_placement         = isset( $row['image_placement'] ) ? sanitize_key( (string) $row['image_placement'] ) : 'left';
+$background_color        = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
+$background_video        = isset( $row['background_video'] ) ? (string) $row['background_video'] : '';
+$background_video_upload = $row['background_video_upload'] ?? null;
+$bottom_accent           = ! empty( $row['bottom_accent'] );
+$accent_slug             = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
+$width_layers            = function_exists( 'mrn_base_stack_get_section_width_layers' )
 	? mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'wide', 'full-width' )
 	: array(
 		'width'           => 'wide',
@@ -106,7 +106,7 @@ if ( '' !== $background_video_markup ) {
 if ( '' !== $background_gradient_style ) {
 	$section_classes[] = 'has-background-gradient';
 }
-$display_contract = mrn_base_stack_get_builder_display_contract( $row, 'basic' );
+$display_contract  = mrn_base_stack_get_builder_display_contract( $row, 'basic' );
 $accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 	'attributes' => array(),

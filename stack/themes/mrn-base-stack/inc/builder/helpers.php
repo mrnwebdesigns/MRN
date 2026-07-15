@@ -551,7 +551,7 @@ function mrn_base_stack_add_hero_heading_fields_to_layout( array $layout ) {
 		}
 	}
 
-	$custom_title_logic = array(
+	$custom_title_logic          = array(
 		array(
 			array(
 				'field'    => $mode_field_key,
@@ -771,6 +771,7 @@ function mrn_base_stack_get_two_column_column_layout_source_names() {
 /**
  * Build hero-only sizing controls for cloned Hero builder layouts.
  *
+ * @param string $layout_name Builder layout name.
  * @return array<int, array<string, mixed>>
  */
 function mrn_base_stack_get_hero_sizing_fields( $layout_name = '' ) {
@@ -898,7 +899,7 @@ function mrn_base_stack_apply_hero_spacing_tab_contract( array $fields, $layout_
 
 		if ( in_array( $field_name, array( 'hero_min_height', 'hero_vertical_padding' ), true ) ) {
 			$hero_spacing_fields[] = $field;
-			$has_hero_sizing = true;
+			$has_hero_sizing       = true;
 			continue;
 		}
 
@@ -909,7 +910,7 @@ function mrn_base_stack_apply_hero_spacing_tab_contract( array $fields, $layout_
 		return $fields;
 	}
 
-	$insert_index = count( $remaining_fields );
+	$insert_index      = count( $remaining_fields );
 	$spacing_tab_index = null;
 
 	foreach ( $remaining_fields as $index => $field ) {
@@ -3181,11 +3182,11 @@ function mrn_base_stack_get_background_gradient_fields( $key_prefix ) {
  * Normalize a gradient stop percentage for row background gradients.
  *
  * @param mixed $value Raw ACF value.
- * @param float $default Default percentage.
+ * @param float $default_value Default percentage.
  * @return string
  */
-function mrn_base_stack_normalize_gradient_stop_value( $value, $default ) {
-	$value = is_scalar( $value ) && is_numeric( $value ) ? (float) $value : (float) $default;
+function mrn_base_stack_normalize_gradient_stop_value( $value, $default_value ) {
+	$value = is_scalar( $value ) && is_numeric( $value ) ? (float) $value : (float) $default_value;
 	$value = max( 0, min( 100, $value ) );
 
 	return rtrim( rtrim( number_format( $value, 2, '.', '' ), '0' ), '.' );
@@ -3259,7 +3260,7 @@ function mrn_base_stack_get_background_gradient_angle_value( array $row ) {
  * Build a CSS custom property declaration for a row background gradient.
  *
  * @param array<string, mixed> $row Builder row data.
- * @param string              $css_variable CSS custom property name.
+ * @param string               $css_variable CSS custom property name.
  * @return string
  */
 function mrn_base_stack_get_background_gradient_style_declaration( array $row, $css_variable ) {
@@ -4962,6 +4963,52 @@ function mrn_base_stack_field_is_reusable_group_clone( array $field ) {
 }
 
 /**
+ * Determine whether a field clones a reusable group that already owns the full tab contract.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return bool
+ */
+function mrn_base_stack_field_is_full_contract_reusable_group_clone( array $field ) {
+	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	if ( 'clone' !== $field_type || ! isset( $field['clone'] ) || ! is_array( $field['clone'] ) ) {
+		return false;
+	}
+
+	$full_contract_groups = array(
+		'group_mrn_reusable_content_grid',
+	);
+
+	foreach ( $field['clone'] as $clone_target ) {
+		$clone_key = is_string( $clone_target ) ? sanitize_key( $clone_target ) : '';
+		if ( '' !== $clone_key && in_array( $clone_key, $full_contract_groups, true ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Determine whether a field list contains a full-contract seamless reusable clone.
+ *
+ * @param array<int, mixed> $fields Layout/main field definitions.
+ * @return bool
+ */
+function mrn_base_stack_field_list_has_full_contract_reusable_group_clone( array $fields ) {
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		if ( mrn_base_stack_field_is_full_contract_reusable_group_clone( $field ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Determine whether a field list contains a seamless reusable group clone.
  *
  * Reusable clone groups already define their own tab structure. Row contracts
@@ -6039,6 +6086,7 @@ add_filter( 'acf/load_field/type=repeater', 'mrn_base_stack_apply_primary_repeat
  *
  * @param array<int, mixed> $fields ACF field definitions.
  * @param bool              $inject_internal_name Whether to inject the editor-only internal name field.
+ * @param string            $layout_name Builder layout name.
  * @return array<int, mixed>
  */
 function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inject_internal_name = true, $layout_name = '' ) {
@@ -6093,11 +6141,13 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 
 	$normalized_fields = mrn_base_stack_apply_tag_field_column_layout( $normalized_fields );
 	if ( $inject_internal_name ) {
-		$normalized_fields = mrn_base_stack_ensure_sub_content_width_field( $normalized_fields, $layout_name );
-		$normalized_fields = mrn_base_stack_group_main_config_fields_by_functionality( $normalized_fields );
-		$normalized_fields = mrn_base_stack_ensure_builder_layout_display_style_fields( $normalized_fields, $layout_name );
-		$normalized_fields = mrn_base_stack_apply_hero_spacing_tab_contract( $normalized_fields, $layout_name );
-		$normalized_fields = mrn_base_stack_ensure_builder_layout_tab( $normalized_fields, $layout_name );
+		if ( ! mrn_base_stack_field_list_has_full_contract_reusable_group_clone( $normalized_fields ) ) {
+			$normalized_fields = mrn_base_stack_ensure_sub_content_width_field( $normalized_fields, $layout_name );
+			$normalized_fields = mrn_base_stack_group_main_config_fields_by_functionality( $normalized_fields );
+			$normalized_fields = mrn_base_stack_ensure_builder_layout_display_style_fields( $normalized_fields, $layout_name );
+			$normalized_fields = mrn_base_stack_apply_hero_spacing_tab_contract( $normalized_fields, $layout_name );
+			$normalized_fields = mrn_base_stack_ensure_builder_layout_tab( $normalized_fields, $layout_name );
+		}
 	}
 
 	if ( ! $inject_internal_name ) {
@@ -6228,8 +6278,8 @@ function mrn_base_stack_flexible_field_has_primary_layout_contract( array $field
 				continue;
 			}
 
-			$field_name = isset( $sub_field['name'] ) ? sanitize_key( (string) $sub_field['name'] ) : '';
-			$field_type = isset( $sub_field['type'] ) ? sanitize_key( (string) $sub_field['type'] ) : '';
+			$field_name  = isset( $sub_field['name'] ) ? sanitize_key( (string) $sub_field['name'] ) : '';
+			$field_type  = isset( $sub_field['type'] ) ? sanitize_key( (string) $sub_field['type'] ) : '';
 			$field_label = isset( $sub_field['label'] ) ? sanitize_title( (string) $sub_field['label'] ) : '';
 
 			if ( 'internal_name' === $field_name ) {
@@ -6245,7 +6295,7 @@ function mrn_base_stack_flexible_field_has_primary_layout_contract( array $field
 			}
 
 			if ( 'tab' === $field_type && 'effects' === $field_label ) {
-				$effects_tab_count++;
+				++$effects_tab_count;
 			}
 		}
 
@@ -6510,9 +6560,9 @@ function mrn_base_stack_dedupe_effects_tab_segments( array $fields ) {
 		return $fields;
 	}
 
-	$keep_index    = (int) end( $effects_tab_indexes );
-	$deduped       = array();
-	$skip_segment  = false;
+	$keep_index   = (int) end( $effects_tab_indexes );
+	$deduped      = array();
+	$skip_segment = false;
 
 	foreach ( $fields as $index => $field ) {
 		if ( ! is_array( $field ) ) {
@@ -8256,10 +8306,10 @@ function mrn_base_stack_get_button_link_icon_fields( $key_prefix, $link_style_fi
 function mrn_base_stack_get_button_link_icon_source( array $row ) {
 	$has_explicit_icon_source = array_key_exists( 'link_icon_source', $row );
 	$icon_source              = $has_explicit_icon_source ? sanitize_key( (string) $row['link_icon_source'] ) : '';
-	$media_icon  = $row['link_icon_media_icon'] ?? null;
-	$media_id    = function_exists( 'mrn_base_stack_get_image_attachment_id' ) ? mrn_base_stack_get_image_attachment_id( $media_icon ) : 0;
-	$fa_class    = isset( $row['link_icon_fa_class'] ) ? trim( (string) $row['link_icon_fa_class'] ) : '';
-	$dashicon    = mrn_base_stack_normalize_link_dashicon_class( isset( $row['link_icon_dashicon'] ) ? (string) $row['link_icon_dashicon'] : '' );
+	$media_icon               = $row['link_icon_media_icon'] ?? null;
+	$media_id                 = function_exists( 'mrn_base_stack_get_image_attachment_id' ) ? mrn_base_stack_get_image_attachment_id( $media_icon ) : 0;
+	$fa_class                 = isset( $row['link_icon_fa_class'] ) ? trim( (string) $row['link_icon_fa_class'] ) : '';
+	$dashicon                 = mrn_base_stack_normalize_link_dashicon_class( isset( $row['link_icon_dashicon'] ) ? (string) $row['link_icon_dashicon'] : '' );
 
 	if ( $has_explicit_icon_source ) {
 		if ( 'media' === $icon_source && $media_id > 0 ) {

@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.2.64' );
+	define( '_S_VERSION', '1.2.65' );
 }
 
 /**
@@ -132,8 +132,8 @@ add_action( 'after_setup_theme', 'mrn_base_stack_setup' );
  * @return void
  */
 function mrn_base_stack_seed_nav_menus() {
-	$migration_version = '2026-07-07-v1';
-	$option_key        = 'mrn_base_stack_nav_menu_seed_version';
+	$migration_version  = '2026-07-07-v1';
+	$option_key         = 'mrn_base_stack_nav_menu_seed_version';
 	$locations          = mrn_base_stack_get_nav_menu_locations();
 	$assigned_locations = get_nav_menu_locations();
 	$stack_locations    = array_intersect_key( $assigned_locations, $locations );
@@ -786,11 +786,11 @@ function mrn_base_stack_scripts() {
 		mrn_base_stack_enqueue_layout_styles_for_post( get_queried_object_id() );
 	}
 
-	$header_options         = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
-	$needs_fontawesome      = false;
-	$needs_dashicons        = false;
-	$uses_icon_search       = ! empty( $header_options['header_show_search'] ) && isset( $header_options['header_search_style'] ) && 'icon_only' === $header_options['header_search_style'];
-	$search_icon_source     = isset( $header_options['header_search_icon_source'] ) ? (string) $header_options['header_search_icon_source'] : 'dashicons';
+	$header_options     = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+	$needs_fontawesome  = false;
+	$needs_dashicons    = false;
+	$uses_icon_search   = ! empty( $header_options['header_show_search'] ) && isset( $header_options['header_search_style'] ) && 'icon_only' === $header_options['header_search_style'];
+	$search_icon_source = isset( $header_options['header_search_icon_source'] ) ? (string) $header_options['header_search_icon_source'] : 'dashicons';
 
 	if ( 'fontawesome' === $search_icon_source && $uses_icon_search ) {
 		$needs_fontawesome = true;

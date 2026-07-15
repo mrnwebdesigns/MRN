@@ -64,9 +64,18 @@
 				'aria_label'    => __( 'Header secondary menu', 'mrn-base-stack' ),
 			),
 		);
-	?>
+		/* translators: %s: Site name. */
+		$mrn_header_home_label = sprintf( __( '%s home', 'mrn-base-stack' ), get_bloginfo( 'name' ) );
+		?>
 
-		<header id="masthead" class="<?php echo esc_attr( $mrn_header_classes ); ?>"<?php echo '' !== $mrn_header_attribute_html ? ' ' . $mrn_header_attribute_html : ''; ?>>
+		<header
+			id="masthead"
+			class="<?php echo esc_attr( $mrn_header_classes ); ?>"
+			<?php
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Header/footer attribute helper escapes attribute names and values.
+			echo '' !== $mrn_header_attribute_html ? ' ' . $mrn_header_attribute_html : '';
+			?>
+		>
 		<?php if ( $mrn_has_header_menu_rows ) : ?>
 			<div class="mrn-theme-hf-layout-grid__item mrn-theme-hf-layout-grid__item--secondary-menu mrn-site-header__menu-rows" data-mrn-layout-slot="secondary-menu" data-mrn-layout-item="secondary_menu"<?php echo '' !== $mrn_header_grid_item_style( 'secondary_menu' ) ? ' style="' . esc_attr( $mrn_header_grid_item_style( 'secondary_menu' ) ) . '"' : ''; ?>>
 				<?php foreach ( $mrn_header_rows as $mrn_header_row ) : ?>
@@ -99,8 +108,9 @@
 				<?php
 				if ( function_exists( 'mrn_base_stack_image_has_content' ) && mrn_base_stack_image_has_content( $mrn_business_logo ) ) :
 					?>
-					<a class="custom-logo-link mrn-site-logo-link" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
-					<?php
+					<a class="custom-logo-link mrn-site-logo-link" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" aria-label="<?php echo esc_attr( $mrn_header_home_label ); ?>">
+						<?php
+						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared image helper returns escaped wp_get_attachment_image markup.
 						echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
 							$mrn_business_logo,
 							'mrn-logo',
@@ -109,7 +119,7 @@
 								'alt'   => get_bloginfo( 'name' ),
 							)
 						) : '';
-					?>
+						?>
 					</a>
 					<?php
 				elseif ( $mrn_has_custom_logo ) :

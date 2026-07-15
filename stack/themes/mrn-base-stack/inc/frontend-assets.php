@@ -52,14 +52,14 @@ function mrn_base_stack_builder_row_has_background_media( array $row ) {
 /**
  * Collect conditional layout stylesheet keys from builder rows.
  *
- * @param mixed                $rows Builder rows.
- * @param array<string, bool>  $style_keys Collected style keys.
- * @param string               $field_context Current ACF field context.
- * @return void
+ * @param mixed               $rows Builder rows.
+ * @param array<string, bool> $style_keys Collected style keys.
+ * @param string              $field_context Current ACF field context.
+ * @return array<string, bool>
  */
-function mrn_base_stack_collect_layout_style_keys_from_rows( $rows, array &$style_keys, $field_context = '' ) {
+function mrn_base_stack_collect_layout_style_keys_from_rows( $rows, array $style_keys = array(), $field_context = '' ) {
 	if ( ! is_array( $rows ) ) {
-		return;
+		return $style_keys;
 	}
 
 	foreach ( $rows as $row ) {
@@ -107,7 +107,7 @@ function mrn_base_stack_collect_layout_style_keys_from_rows( $rows, array &$styl
 
 		foreach ( array( 'left_column_rows', 'right_column_rows', 'panel_rows' ) as $child_key ) {
 			if ( ! empty( $row[ $child_key ] ) && is_array( $row[ $child_key ] ) ) {
-				mrn_base_stack_collect_layout_style_keys_from_rows( $row[ $child_key ], $style_keys, $child_key );
+				$style_keys = mrn_base_stack_collect_layout_style_keys_from_rows( $row[ $child_key ], $style_keys, $child_key );
 			}
 		}
 
@@ -118,11 +118,13 @@ function mrn_base_stack_collect_layout_style_keys_from_rows( $rows, array &$styl
 
 			foreach ( $row[ $tabs_key ] as $tab_item ) {
 				if ( is_array( $tab_item ) && ! empty( $tab_item['panel_rows'] ) && is_array( $tab_item['panel_rows'] ) ) {
-					mrn_base_stack_collect_layout_style_keys_from_rows( $tab_item['panel_rows'], $style_keys, 'panel_rows' );
+					$style_keys = mrn_base_stack_collect_layout_style_keys_from_rows( $tab_item['panel_rows'], $style_keys, 'panel_rows' );
 				}
 			}
 		}
 	}
+
+	return $style_keys;
 }
 
 /**
@@ -138,7 +140,9 @@ function mrn_base_stack_get_layout_style_keys_for_post( $post_id ) {
 		return array();
 	}
 
-	$style_keys = array();
+	// phpcs:ignore Generic.Commenting.DocComment.MissingShort -- PHPStan local type assertion.
+	/** @var array<string, bool> $style_keys */
+	$style_keys  = array();
 	$field_names = array(
 		'page_hero_rows',
 		'page_content_rows',
@@ -147,7 +151,7 @@ function mrn_base_stack_get_layout_style_keys_for_post( $post_id ) {
 	);
 
 	foreach ( $field_names as $field_name ) {
-		mrn_base_stack_collect_layout_style_keys_from_rows( get_field( $field_name, $post_id ), $style_keys, $field_name );
+		$style_keys = mrn_base_stack_collect_layout_style_keys_from_rows( get_field( $field_name, $post_id ), $style_keys, $field_name );
 	}
 
 	/**

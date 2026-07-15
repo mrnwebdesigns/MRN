@@ -3,7 +3,7 @@
  * Plugin Name: MRN Reusable Block Library
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.21
+ * Version: 0.1.22
  */
 
 defined('ABSPATH') || exit;
@@ -2752,6 +2752,61 @@ function mrn_rbl_should_auto_enhance_field_group(array $field_group): bool {
 }
 
 /**
+ * Map reusable field groups to builder layout names for shared layout contracts.
+ *
+ * @param array<string, mixed> $field_group
+ * @return string
+ */
+function mrn_rbl_get_builder_layout_name_for_field_group(array $field_group): string {
+    $group_key = isset($field_group['key']) ? sanitize_key((string) $field_group['key']) : '';
+    $map       = array(
+        'group_mrn_reusable_content_grid' => 'grid',
+    );
+
+    return isset($map[$group_key]) ? $map[$group_key] : '';
+}
+
+/**
+ * Determine whether a reusable field group should expose the full layout tab stack.
+ *
+ * @param array<string, mixed> $field_group
+ * @return bool
+ */
+function mrn_rbl_field_group_uses_full_layout_contract(array $field_group): bool {
+    return '' !== mrn_rbl_get_builder_layout_name_for_field_group($field_group);
+}
+
+/**
+ * Apply the shared Display Styles, Spacing, Layout, Effects tab order to reusable groups.
+ *
+ * @param array<int, mixed> $fields
+ * @param string            $layout_name
+ * @return array<int, mixed>
+ */
+function mrn_rbl_apply_full_layout_tab_contract(array $fields, string $layout_name): array {
+    $layout_name = sanitize_key($layout_name);
+    if ('' === $layout_name) {
+        return $fields;
+    }
+
+    $key_seed = 'field_mrn_rbl_' . $layout_name;
+
+    if (function_exists('mrn_base_stack_ensure_builder_layout_display_style_fields')) {
+        $fields = mrn_base_stack_ensure_builder_layout_display_style_fields($fields, $layout_name, $key_seed);
+    }
+
+    if (function_exists('mrn_base_stack_ensure_row_spacing_preset_field')) {
+        $fields = mrn_base_stack_ensure_row_spacing_preset_field($fields, $key_seed);
+    }
+
+    if (function_exists('mrn_base_stack_ensure_builder_layout_tab')) {
+        $fields = mrn_base_stack_ensure_builder_layout_tab($fields, $layout_name, $key_seed);
+    }
+
+    return $fields;
+}
+
+/**
  * Ensure reusable-block field groups always include shared effects controls.
  *
  * @param array<string, mixed> $field_group
@@ -2764,6 +2819,13 @@ function mrn_rbl_with_effects_fields(array $field_group): array {
 
     $fields = isset($field_group['fields']) && is_array($field_group['fields']) ? $field_group['fields'] : array();
     $fields = mrn_rbl_apply_primary_layout_field_contract($fields);
+
+    if (mrn_rbl_field_group_uses_full_layout_contract($field_group)) {
+        $fields = mrn_rbl_apply_full_layout_tab_contract(
+            $fields,
+            mrn_rbl_get_builder_layout_name_for_field_group($field_group)
+        );
+    }
 
     if (mrn_rbl_fields_have_motion_group($fields)) {
         $field_group['fields'] = $fields;

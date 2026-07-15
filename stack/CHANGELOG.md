@@ -1,5 +1,14 @@
 # Stack Changelog
 
+## 2026.07.15-grid-layout-contract
+- Expanded `mrn-base-stack` to `1.2.65`.
+- Expanded `mrn-reusable-block-library` to `0.1.22`.
+- Added the shared Display Styles, Spacing, Layout, Effects tab order to the standalone Content Grid editor.
+- Prevented page-builder Content Grid clones from receiving a duplicate row-level tab stack when the reusable Grid contract already provides it.
+- Suppressed empty Content Grid sections/items before rendering so required blank repeater rows do not output empty markup.
+- Cleaned Grid CSS to use stable type sizes, zero letter spacing, and the shared grid spacing variables without redundant shell gap overrides.
+- Resolved adjacent theme QA blockers for footer/tabbed image helper escaping, logo-link accessible names, and footer copyright contrast.
+
 ## 2026.07.15-cta-layout-contract
 - Expanded `mrn-base-stack` to `1.2.64`.
 - Expanded `mrn-reusable-block-library` to `0.1.21`.
