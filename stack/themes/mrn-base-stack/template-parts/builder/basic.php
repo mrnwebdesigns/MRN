@@ -16,15 +16,15 @@ $subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row[
 $content          = isset( $row['content'] ) ? (string) $row['content'] : '';
 $image            = $row['image'] ?? null;
 $has_image        = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image ) : false;
-$background_image = $row['background_image'] ?? null;
-$link_color       = isset( $row['link_color'] ) ? trim( (string) $row['link_color'] ) : '';
-$image_placement  = isset( $row['image_placement'] ) ? sanitize_key( (string) $row['image_placement'] ) : 'left';
-$background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
-$background_video = isset( $row['background_video'] ) ? (string) $row['background_video'] : '';
-$background_video_upload = $row['background_video_upload'] ?? null;
-$bottom_accent    = ! empty( $row['bottom_accent'] );
-$accent_slug      = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
-$width_layers     = function_exists( 'mrn_base_stack_get_section_width_layers' )
+$background_image            = $row['background_image'] ?? null;
+$link_color                  = isset( $row['link_color'] ) ? trim( (string) $row['link_color'] ) : '';
+$image_placement             = isset( $row['image_placement'] ) ? sanitize_key( (string) $row['image_placement'] ) : 'left';
+$background_color            = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
+$background_video              = isset( $row['background_video'] ) ? (string) $row['background_video'] : '';
+$background_video_upload       = $row['background_video_upload'] ?? null;
+$bottom_accent                 = ! empty( $row['bottom_accent'] );
+$accent_slug                   = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
+$width_layers                  = function_exists( 'mrn_base_stack_get_section_width_layers' )
 	? mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'wide', 'full-width' )
 	: array(
 		'width'           => 'wide',
@@ -44,6 +44,14 @@ if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
 $section_styles = array();
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-basic-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
+}
+
+$background_gradient_style = function_exists( 'mrn_base_stack_get_background_gradient_style_declaration' )
+	? mrn_base_stack_get_background_gradient_style_declaration( $row, '--mrn-basic-row-bg-gradient' )
+	: '';
+
+if ( '' !== $background_gradient_style ) {
+	$section_styles[] = $background_gradient_style;
 }
 
 $background_image_markup = function_exists( 'mrn_base_stack_get_background_image_markup' ) ? mrn_base_stack_get_background_image_markup( $background_image ) : '';
@@ -94,6 +102,10 @@ if ( '' !== $background_image_markup ) {
 if ( '' !== $background_video_markup ) {
 	$section_classes[] = 'has-background-video';
 }
+
+if ( '' !== $background_gradient_style ) {
+	$section_classes[] = 'has-background-gradient';
+}
 $display_contract = mrn_base_stack_get_builder_display_contract( $row, 'basic' );
 $accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
@@ -112,7 +124,7 @@ $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' 
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
-$surface_class     = ( '' !== $background_image_markup ? ' has-row-background-media' : '' ) . ( '' !== $background_video_markup ? ' has-row-background-video' : '' );
+$surface_class     = ( '' !== $background_image_markup ? ' has-row-background-media' : '' ) . ( '' !== $background_video_markup ? ' has-row-background-video' : '' ) . ( '' !== $background_gradient_style ? ' has-background-gradient' : '' );
 echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>

@@ -10,8 +10,10 @@ $row                     = isset( $context['row'] ) && is_array( $context['row']
 $context_post_id         = isset( $context['post_id'] ) ? (int) $context['post_id'] : get_the_ID();
 $label                   = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
 $label_tag               = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading                 = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
-$heading_tag             = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h1';
+$heading_contract        = mrn_base_stack_get_hero_heading_contract( $row, $context_post_id, 'h2' );
+$page_title              = isset( $heading_contract['page_title'] ) ? trim( (string) $heading_contract['page_title'] ) : '';
+$heading                 = isset( $heading_contract['custom_heading'] ) ? trim( (string) $heading_contract['custom_heading'] ) : '';
+$heading_tag             = isset( $heading_contract['custom_heading_tag'] ) ? strtolower( (string) $heading_contract['custom_heading_tag'] ) : 'h2';
 $subheading              = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
 $subheading_tag          = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $content                 = isset( $row['content'] ) ? (string) $row['content'] : '';
@@ -32,15 +34,12 @@ $section_width           = function_exists( 'mrn_base_stack_normalize_section_wi
 	? mrn_base_stack_normalize_section_width( $row['section_width'] ?? '', 'wide' )
 	: 'wide';
 
-if ( '' === $heading && $context_post_id ) {
-	$heading = get_the_title( $context_post_id );
+$allowed_custom_heading_tags = array( 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
+if ( ! in_array( $heading_tag, $allowed_custom_heading_tags, true ) ) {
+	$heading_tag = 'h2';
 }
 
-$allowed_tags = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
-if ( ! in_array( $heading_tag, $allowed_tags, true ) ) {
-	$heading_tag = 'h1';
-}
-
+$allowed_tags = array_merge( array( 'h1' ), $allowed_custom_heading_tags );
 if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
 	$subheading_tag = 'p';
 }
@@ -94,7 +93,7 @@ foreach ( $links as $index => $hero_link_source ) {
 }
 $has_image        = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image ) : false;
 
-if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $hero_links ) && ! $has_image ) {
+if ( '' === $label && '' === $page_title && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $hero_links ) && ! $has_image ) {
 	return;
 }
 
@@ -108,6 +107,15 @@ $section_attrs   = array();
 
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-hero-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
+}
+
+$background_gradient_style = function_exists( 'mrn_base_stack_get_background_gradient_style_declaration' )
+	? mrn_base_stack_get_background_gradient_style_declaration( $row, '--mrn-hero-bg-gradient' )
+	: '';
+
+if ( '' !== $background_gradient_style ) {
+	$section_styles[]   = $background_gradient_style;
+	$section_classes[] = 'has-background-gradient';
 }
 
 $background_image_markup = function_exists( 'mrn_base_stack_get_background_image_markup' )
@@ -222,8 +230,12 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				<<?php echo esc_html( $label_tag ); ?> class="mrn-hero__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
 			<?php endif; ?>
 
+			<?php if ( '' !== $page_title ) : ?>
+				<h1 class="mrn-hero__heading mrn-hero__page-title"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $page_title ) : esc_html( $page_title ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h1>
+			<?php endif; ?>
+
 			<?php if ( '' !== $heading ) : ?>
-				<<?php echo esc_html( $heading_tag ); ?> class="mrn-hero__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+				<<?php echo esc_html( $heading_tag ); ?> class="mrn-hero__heading mrn-hero__heading--custom"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
 			<?php endif; ?>
 
 			<?php if ( '' !== $subheading ) : ?>

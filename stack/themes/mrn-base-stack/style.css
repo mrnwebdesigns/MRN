@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.2.47
+Version: 1.2.57
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -2152,16 +2152,14 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	margin-bottom: 0;
 }
 
-.mrn-content-builder__row .mrn-ui__link--button,
-.mrn-reusable-block .mrn-ui__link--button {
+.mrn-ui__link--button {
 	border: 1px solid currentColor;
 	display: inline-block;
 	padding: 0.75rem 1.125rem;
 	text-decoration: none;
 }
 
-.mrn-content-builder__row button.mrn-ui__link--button,
-.mrn-reusable-block button.mrn-ui__link--button {
+button.mrn-ui__link--button {
 	appearance: none;
 	background: transparent;
 	color: inherit;
@@ -2171,40 +2169,33 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	text-align: inherit;
 }
 
-.mrn-content-builder__row .mrn-ui__link-icon,
-.mrn-reusable-block .mrn-ui__link-icon {
+.mrn-ui__link-icon {
 	display: inline-flex;
 	align-items: center;
 	vertical-align: middle;
 }
 
-.mrn-content-builder__row .mrn-ui__link-icon--left,
-.mrn-reusable-block .mrn-ui__link-icon--left {
+.mrn-ui__link-icon--left {
 	margin-right: var(--mrn-link-icon-gap, var(--mrn-link-icon-margin-right, 10px));
 }
 
-.mrn-content-builder__row .mrn-ui__link-icon--right,
-.mrn-reusable-block .mrn-ui__link-icon--right {
+.mrn-ui__link-icon--right {
 	margin-left: var(--mrn-link-icon-gap, var(--mrn-link-icon-margin-left, 10px));
 }
 
-.mrn-content-builder__row .mrn-ui__link-icon-image,
-.mrn-reusable-block .mrn-ui__link-icon-image {
+.mrn-ui__link-icon-image {
 	display: block;
 	height: 1em;
 	width: auto;
 }
 
-.mrn-content-builder__row .mrn-ui__link--text,
-.mrn-reusable-block .mrn-ui__link--text {
+.mrn-ui__link--text {
 	text-decoration: underline;
 	text-underline-offset: 0.15em;
 }
 
-.mrn-content-builder__row .mrn-ui__link--text:hover,
-.mrn-content-builder__row .mrn-ui__link--text:focus,
-.mrn-reusable-block .mrn-ui__link--text:hover,
-.mrn-reusable-block .mrn-ui__link--text:focus {
+.mrn-ui__link--text:hover,
+.mrn-ui__link--text:focus {
 	text-decoration: none;
 }
 
@@ -2551,6 +2542,7 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 
 .mrn-content-builder__row--basic {
 	background-color: var(--mrn-basic-row-bg, transparent);
+	background-image: var(--mrn-basic-row-bg-gradient, none);
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
@@ -3810,6 +3802,7 @@ a.mrn-social-links__link:focus-visible svg {
 
 .mrn-content-builder__row--two-column-split {
 	background-color: var(--mrn-two-column-bg, transparent);
+	background-image: var(--mrn-two-column-bg-gradient, none);
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
@@ -4411,9 +4404,35 @@ a.mrn-social-links__link:focus-visible svg {
 .mrn-layout-section--basic.mrn-layout-surface,
 .mrn-layout-section--basic .mrn-layout-container.mrn-layout-surface {
 	background-color: var(--mrn-basic-row-bg, transparent);
+	background-image: var(--mrn-basic-row-bg-gradient, none);
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
+}
+
+.mrn-layout-section--basic.mrn-layout-surface.has-background-gradient,
+.mrn-layout-section--basic .mrn-layout-container.mrn-layout-surface.has-background-gradient {
+	overflow: hidden;
+	position: relative;
+}
+
+.mrn-layout-section--basic.mrn-layout-surface.has-background-gradient::before,
+.mrn-layout-section--basic .mrn-layout-container.mrn-layout-surface.has-background-gradient::before {
+	background-image: var(--mrn-basic-row-bg-gradient, none);
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	content: "";
+	inset: 0;
+	pointer-events: none;
+	position: absolute;
+	z-index: 1;
+}
+
+.mrn-layout-section--basic.mrn-layout-surface.has-background-gradient > :not(.mrn-row-background-media):not(.mrn-section-background-media),
+.mrn-layout-section--basic .mrn-layout-container.mrn-layout-surface.has-background-gradient > :not(.mrn-row-background-media):not(.mrn-section-background-media) {
+	position: relative;
+	z-index: 2;
 }
 
 .mrn-layout-section--basic.mrn-layout-section--full.mrn-layout-surface {
@@ -5433,10 +5452,36 @@ a.mrn-social-links__link:focus-visible svg {
 .mrn-layout-section--two-column-split.mrn-layout-surface,
 .mrn-layout-section--two-column-split .mrn-layout-container.mrn-layout-surface {
 	background-color: var(--mrn-two-column-bg, transparent);
+	background-image: var(--mrn-two-column-bg-gradient, none);
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover;
 	padding-block: clamp(2rem, 4vw, 4rem);
+}
+
+.mrn-layout-section--two-column-split.mrn-layout-surface.has-background-gradient,
+.mrn-layout-section--two-column-split .mrn-layout-container.mrn-layout-surface.has-background-gradient {
+	overflow: hidden;
+	position: relative;
+}
+
+.mrn-layout-section--two-column-split.mrn-layout-surface.has-background-gradient::before,
+.mrn-layout-section--two-column-split .mrn-layout-container.mrn-layout-surface.has-background-gradient::before {
+	background-image: var(--mrn-two-column-bg-gradient, none);
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	content: "";
+	inset: 0;
+	pointer-events: none;
+	position: absolute;
+	z-index: 1;
+}
+
+.mrn-layout-section--two-column-split.mrn-layout-surface.has-background-gradient > :not(.mrn-row-background-media):not(.mrn-section-background-media),
+.mrn-layout-section--two-column-split .mrn-layout-container.mrn-layout-surface.has-background-gradient > :not(.mrn-row-background-media):not(.mrn-section-background-media) {
+	position: relative;
+	z-index: 2;
 }
 
 .mrn-layout-section--two-column-split .mrn-layout-grid--two-column-split {

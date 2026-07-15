@@ -28,6 +28,52 @@
 		return !! ( config && config.initialFlexibleCollapseEnabled );
 	}
 
+	function getInitialCollapseDelayMs() {
+		var value = config && typeof config.initialCollapseDelayMs !== 'undefined' ? parseInt( config.initialCollapseDelayMs, 10 ) : 900;
+
+		return ! isNaN( value ) && value >= 0 ? value : 900;
+	}
+
+	function scheduleInitialCollapseStart( callback ) {
+		window.setTimeout( function() {
+			if ( hasEditorInteracted ) {
+				return;
+			}
+
+			if ( typeof window.requestIdleCallback === 'function' ) {
+				window.requestIdleCallback( function() {
+					if ( ! hasEditorInteracted ) {
+						callback();
+					}
+				}, { timeout: 1400 } );
+				return;
+			}
+
+			callback();
+		}, getInitialCollapseDelayMs() );
+	}
+
+	function resetInitialCollapseDirtyState() {
+		if ( hasEditorInteracted || ! initialFlexibleCollapseMutated ) {
+			return;
+		}
+
+		initialFlexibleCollapseMutated = false;
+
+		resetAcfUnloadDirtyState();
+		window.setTimeout( resetAcfUnloadDirtyState, 120 );
+	}
+
+	function resetAcfUnloadDirtyState() {
+		if ( hasEditorInteracted ) {
+			return;
+		}
+
+		if ( acf.unload && typeof acf.unload.reset === 'function' ) {
+			acf.unload.reset();
+		}
+	}
+
 	function isClassicPostEditorScreen() {
 		var body = document.body;
 
@@ -540,17 +586,21 @@
 		var initialBuilderBootstrapped = false;
 		var initialFlexibleCollapseQueue = [];
 		var initialFlexibleCollapseScheduled = false;
+		var initialFlexibleCollapseMutated = false;
 		var deferCollapseUntil = 0;
+		var hasEditorInteracted = false;
 		var interactionQuietPeriodMs = 900;
 		var interactionRetryDelayMs = 220;
 		var inputEditingRetryDelayMs = 260;
-		var maxInitialFlexibleCollapseRows = 120;
+		var configuredMaxInitialFlexibleCollapseRows = config && typeof config.initialFlexibleCollapseMaxRows !== 'undefined' ? parseInt( config.initialFlexibleCollapseMaxRows, 10 ) : 120;
+		var maxInitialFlexibleCollapseRows = ! isNaN( configuredMaxInitialFlexibleCollapseRows ) && configuredMaxInitialFlexibleCollapseRows >= 0 ? configuredMaxInitialFlexibleCollapseRows : 120;
 
 	function markEditorInteraction() {
 		var now = window.performance && typeof window.performance.now === 'function'
 			? window.performance.now()
 			: Date.now();
 
+		hasEditorInteracted = true;
 		deferCollapseUntil = now + interactionQuietPeriodMs;
 
 		// Prioritize editor responsiveness once the user starts interacting.
@@ -605,6 +655,12 @@
 		initialFlexibleCollapseScheduled = false;
 
 		if ( ! initialFlexibleCollapseQueue.length ) {
+			resetInitialCollapseDirtyState();
+			return;
+		}
+
+		if ( hasEditorInteracted ) {
+			initialFlexibleCollapseQueue.length = 0;
 			return;
 		}
 
@@ -639,6 +695,7 @@
 
 			if ( $toggle.length ) {
 				$toggle.trigger( 'click' );
+				initialFlexibleCollapseMutated = true;
 			}
 
 			processed += 1;
@@ -654,11 +711,19 @@
 
 		if ( initialFlexibleCollapseQueue.length ) {
 			scheduleInitialFlexibleCollapse();
+			return;
 		}
+
+		resetInitialCollapseDirtyState();
 	}
 
 	function queueInitialFlexibleRows( context ) {
 		if ( ! isInitialFlexibleCollapseEnabled() || ! isClassicPostEditorScreen() ) {
+			initialFlexibleCollapseQueue.length = 0;
+			return;
+		}
+
+		if ( hasEditorInteracted || maxInitialFlexibleCollapseRows <= 0 ) {
 			initialFlexibleCollapseQueue.length = 0;
 			return;
 		}
@@ -698,7 +763,9 @@
 				}
 			} );
 
-			scheduleInitialFlexibleCollapse();
+			if ( initialFlexibleCollapseQueue.length ) {
+				scheduleInitialFlexibleCollapse();
+			}
 		}
 
 	function getRows( $flexField ) {
@@ -954,9 +1021,9 @@
 		initialBuilderBootstrapped = true;
 		bootBuilderAdminUi( bootContext );
 		if ( isInitialFlexibleCollapseEnabled() ) {
-			window.setTimeout( function() {
+			scheduleInitialCollapseStart( function() {
 				queueInitialFlexibleRows( bootContext );
-			}, 40 );
+			} );
 		}
 	}
 

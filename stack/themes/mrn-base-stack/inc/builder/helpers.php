@@ -449,6 +449,212 @@ function mrn_base_stack_get_hero_builder_layout_source_names() {
 }
 
 /**
+ * Build the hero title mode field key for a cloned hero layout.
+ *
+ * @param string $layout_name ACF layout name.
+ * @return string
+ */
+function mrn_base_stack_get_hero_heading_mode_field_key( $layout_name ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	if ( '' === $layout_name ) {
+		$layout_name = 'row';
+	}
+
+	return 'field_mrn_hero_' . $layout_name . '_heading_mode';
+}
+
+/**
+ * Build the hero title mode control for cloned Hero builder layouts.
+ *
+ * @param string $layout_name ACF layout name.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_hero_heading_mode_field( $layout_name ) {
+	return array(
+		'key'           => mrn_base_stack_get_hero_heading_mode_field_key( $layout_name ),
+		'label'         => 'Hero Title',
+		'name'          => 'hero_heading_mode',
+		'_name'         => 'hero_heading_mode',
+		'aria-label'    => '',
+		'type'          => 'button_group',
+		'instructions'  => 'When this row is placed in the Hero area, the normal content title is hidden. Use Page Title renders the page/post title as the hero H1. Custom Title uses the Heading field as the hero H1. Page Title + Custom keeps the page/post title as the hero H1 and places the Heading field below it.',
+		'choices'       => array(
+			'title'        => 'Use Page Title',
+			'custom_title' => 'Custom Title',
+			'title_custom' => 'Page Title + Custom',
+		),
+		'default_value' => 'title',
+		'return_format' => 'value',
+		'layout'        => 'horizontal',
+		'wrapper'       => array(
+			'width' => '100',
+		),
+	);
+}
+
+/**
+ * Add hero title behavior controls to cloned Hero layouts.
+ *
+ * @param array<string, mixed> $layout ACF layout definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_add_hero_heading_fields_to_layout( array $layout ) {
+	$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+	if ( ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+		$layout['sub_fields'] = array();
+	}
+
+	$mode_field_key   = mrn_base_stack_get_hero_heading_mode_field_key( $layout_name );
+	$has_mode_field   = false;
+	$heading_index    = null;
+	$heading_tag_keys = array();
+
+	foreach ( $layout['sub_fields'] as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_key  = isset( $field['key'] ) && is_string( $field['key'] ) ? trim( $field['key'] ) : '';
+
+		if ( 'hero_heading_mode' === $field_name ) {
+			$has_mode_field = true;
+			if ( '' !== $field_key ) {
+				$mode_field_key = $field_key;
+			}
+			continue;
+		}
+
+		if ( 'heading' === $field_name && 'text' === $field_type && null === $heading_index ) {
+			$heading_index = (int) $index;
+			continue;
+		}
+
+		if ( 'heading_tag' === $field_name && 'select' === $field_type ) {
+			$heading_tag_keys[] = (int) $index;
+		}
+	}
+
+	if ( null === $heading_index ) {
+		return $layout;
+	}
+
+	if ( ! $has_mode_field ) {
+		array_splice( $layout['sub_fields'], $heading_index, 0, array( mrn_base_stack_get_hero_heading_mode_field( $layout_name ) ) );
+		++$heading_index;
+
+		foreach ( $heading_tag_keys as $key_index => $field_index ) {
+			if ( $field_index >= $heading_index ) {
+				$heading_tag_keys[ $key_index ] = $field_index + 1;
+			}
+		}
+	}
+
+	$custom_title_logic = array(
+		array(
+			array(
+				'field'    => $mode_field_key,
+				'operator' => '==',
+				'value'    => 'custom_title',
+			),
+		),
+		array(
+			array(
+				'field'    => $mode_field_key,
+				'operator' => '==',
+				'value'    => 'title_custom',
+			),
+		),
+	);
+	$secondary_heading_tag_logic = array(
+		array(
+			array(
+				'field'    => $mode_field_key,
+				'operator' => '==',
+				'value'    => 'title_custom',
+			),
+		),
+	);
+
+	if ( isset( $layout['sub_fields'][ $heading_index ] ) && is_array( $layout['sub_fields'][ $heading_index ] ) ) {
+		$layout['sub_fields'][ $heading_index ]['label']             = 'Heading';
+		$layout['sub_fields'][ $heading_index ]['instructions']      = 'Required for Custom Title. For Page Title + Custom, this displays below the page/post title inside the hero.';
+		$layout['sub_fields'][ $heading_index ]['conditional_logic'] = $custom_title_logic;
+		if ( ! isset( $layout['sub_fields'][ $heading_index ]['wrapper'] ) || ! is_array( $layout['sub_fields'][ $heading_index ]['wrapper'] ) ) {
+			$layout['sub_fields'][ $heading_index ]['wrapper'] = array();
+		}
+		$layout['sub_fields'][ $heading_index ]['wrapper']['width'] = '75';
+	}
+
+	foreach ( $heading_tag_keys as $heading_tag_index ) {
+		if ( ! isset( $layout['sub_fields'][ $heading_tag_index ] ) || ! is_array( $layout['sub_fields'][ $heading_tag_index ] ) ) {
+			continue;
+		}
+
+		$layout['sub_fields'][ $heading_tag_index ]['label']             = 'Custom Heading Tag';
+		$layout['sub_fields'][ $heading_tag_index ]['instructions']      = 'Controls the Page Title + Custom secondary heading only. Custom Title renders as the hero H1.';
+		$layout['sub_fields'][ $heading_tag_index ]['default_value']     = 'h2';
+		$layout['sub_fields'][ $heading_tag_index ]['conditional_logic'] = $secondary_heading_tag_logic;
+
+		if ( isset( $layout['sub_fields'][ $heading_tag_index ]['choices'] ) && is_array( $layout['sub_fields'][ $heading_tag_index ]['choices'] ) ) {
+			unset( $layout['sub_fields'][ $heading_tag_index ]['choices']['h1'] );
+		}
+
+		if ( ! isset( $layout['sub_fields'][ $heading_tag_index ]['wrapper'] ) || ! is_array( $layout['sub_fields'][ $heading_tag_index ]['wrapper'] ) ) {
+			$layout['sub_fields'][ $heading_tag_index ]['wrapper'] = array();
+		}
+		$layout['sub_fields'][ $heading_tag_index ]['wrapper']['width'] = '25';
+	}
+
+	return $layout;
+}
+
+/**
+ * Resolve the hero page title and optional custom heading contract.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @param int|string           $post_id Current post ID.
+ * @param string               $default_custom_tag Default tag for the optional custom heading.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_hero_heading_contract( array $row, $post_id, $default_custom_tag = 'h2' ) {
+	$post_id        = (int) $post_id;
+	$page_title     = $post_id ? trim( (string) get_the_title( $post_id ) ) : '';
+	$custom_heading = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
+	$raw_mode       = isset( $row['hero_heading_mode'] ) && is_scalar( $row['hero_heading_mode'] )
+		? sanitize_key( (string) $row['hero_heading_mode'] )
+		: '';
+	$mode           = in_array( $raw_mode, array( 'title', 'custom_title', 'title_custom' ), true )
+		? $raw_mode
+		: 'title';
+
+	if ( 'custom_title' === $mode ) {
+		$page_title     = $custom_heading;
+		$custom_heading = '';
+	} elseif ( 'title_custom' !== $mode ) {
+		$custom_heading = '';
+	}
+
+	$allowed_custom_tags = array( 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
+	$custom_heading_tag  = isset( $row['heading_tag'] ) && is_scalar( $row['heading_tag'] )
+		? strtolower( sanitize_key( (string) $row['heading_tag'] ) )
+		: strtolower( sanitize_key( (string) $default_custom_tag ) );
+
+	if ( ! in_array( $custom_heading_tag, $allowed_custom_tags, true ) ) {
+		$default_custom_tag = strtolower( sanitize_key( (string) $default_custom_tag ) );
+		$custom_heading_tag = in_array( $default_custom_tag, $allowed_custom_tags, true ) ? $default_custom_tag : 'h2';
+	}
+
+	return array(
+		'mode'               => $mode,
+		'page_title'         => $page_title,
+		'custom_heading'     => $custom_heading,
+		'custom_heading_tag' => $custom_heading_tag,
+	);
+}
+
+/**
  * Normalize a filterable list of layout names.
  *
  * @param mixed              $names Layout names supplied by a filter.
@@ -567,12 +773,19 @@ function mrn_base_stack_get_two_column_column_layout_source_names() {
  *
  * @return array<int, array<string, mixed>>
  */
-function mrn_base_stack_get_hero_sizing_fields() {
+function mrn_base_stack_get_hero_sizing_fields( $layout_name = '' ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	$key_prefix  = 'field_mrn_hero';
+	if ( '' !== $layout_name && 'basic' !== $layout_name ) {
+		$key_prefix .= '_' . $layout_name;
+	}
+
 	return array(
 		array(
-			'key'           => 'field_mrn_hero_min_height',
+			'key'           => $key_prefix . '_min_height',
 			'label'         => 'Hero Minimum Height',
 			'name'          => 'hero_min_height',
+			'_name'         => 'hero_min_height',
 			'aria-label'    => '',
 			'type'          => 'text',
 			'default_value' => '',
@@ -583,9 +796,10 @@ function mrn_base_stack_get_hero_sizing_fields() {
 			),
 		),
 		array(
-			'key'           => 'field_mrn_hero_vertical_padding',
+			'key'           => $key_prefix . '_vertical_padding',
 			'label'         => 'Hero Vertical Padding',
 			'name'          => 'hero_vertical_padding',
+			'_name'         => 'hero_vertical_padding',
 			'aria-label'    => '',
 			'type'          => 'text',
 			'default_value' => '',
@@ -599,6 +813,143 @@ function mrn_base_stack_get_hero_sizing_fields() {
 }
 
 /**
+ * Determine whether a hero layout receives hero-only sizing controls.
+ *
+ * @param string $layout_name Builder layout name.
+ * @return bool
+ */
+function mrn_base_stack_hero_layout_supports_sizing( $layout_name ) {
+	return in_array( sanitize_key( (string) $layout_name ), array( 'basic', 'two_column_split' ), true );
+}
+
+/**
+ * Build the hero-only Spacing accordion field.
+ *
+ * @param string $key Field key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_hero_spacing_accordion_field( $key ) {
+	return array(
+		'key'          => sanitize_key( (string) $key ),
+		'label'        => 'Hero Specific',
+		'name'         => '',
+		'aria-label'   => '',
+		'type'         => 'accordion',
+		'open'         => 0,
+		'multi_expand' => 1,
+		'endpoint'     => 0,
+	);
+}
+
+/**
+ * Build the end marker for the hero-only Spacing accordion.
+ *
+ * @param string $key Field key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_hero_spacing_accordion_end_field( $key ) {
+	return array(
+		'key'          => sanitize_key( (string) $key ),
+		'label'        => '',
+		'name'         => '',
+		'aria-label'   => '',
+		'type'         => 'accordion',
+		'endpoint'     => 1,
+		'multi_expand' => 1,
+	);
+}
+
+/**
+ * Move Hero-only spacing controls into the existing Spacing tab.
+ *
+ * @param array<int, mixed> $fields Layout field definitions.
+ * @param string            $layout_name Builder layout name.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_apply_hero_spacing_tab_contract( array $fields, $layout_name ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	if ( ! mrn_base_stack_hero_layout_supports_sizing( $layout_name ) ) {
+		return $fields;
+	}
+
+	$hero_spacing_fields = array();
+	$remaining_fields    = array();
+	$has_hero_sizing     = false;
+	$tab_key_seed        = 'field_mrn_hero_' . $layout_name . '_spacing';
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			$remaining_fields[] = $field;
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_name  = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+		$field_key   = isset( $field['key'] ) ? sanitize_key( (string) $field['key'] ) : '';
+
+		if ( 'tab' === $field_type && 'hero-specific' === $field_label ) {
+			continue;
+		}
+
+		if ( 'accordion' === $field_type && ( 'hero-specific' === $field_label || 0 === strpos( $field_key, $tab_key_seed ) ) ) {
+			continue;
+		}
+
+		if ( in_array( $field_name, array( 'hero_min_height', 'hero_vertical_padding' ), true ) ) {
+			$hero_spacing_fields[] = $field;
+			$has_hero_sizing = true;
+			continue;
+		}
+
+		$remaining_fields[] = $field;
+	}
+
+	if ( ! $has_hero_sizing ) {
+		return $fields;
+	}
+
+	$insert_index = count( $remaining_fields );
+	$spacing_tab_index = null;
+
+	foreach ( $remaining_fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( 'tab' === $field_type && 'spacing' === $field_label ) {
+			$spacing_tab_index = (int) $index;
+			continue;
+		}
+
+		if ( 'tab' === $field_type && in_array( $field_label, array( 'layout', 'effects' ), true ) ) {
+			$insert_index = (int) $index;
+			break;
+		}
+	}
+
+	if ( null !== $spacing_tab_index && $insert_index <= $spacing_tab_index ) {
+		$insert_index = $spacing_tab_index + 1;
+	}
+
+	array_splice(
+		$remaining_fields,
+		$insert_index,
+		0,
+		array_merge(
+			array( mrn_base_stack_get_hero_spacing_accordion_field( $tab_key_seed . '_hero_specific' ) ),
+			$hero_spacing_fields,
+			array( mrn_base_stack_get_hero_spacing_accordion_end_field( $tab_key_seed . '_hero_specific_end' ) )
+		)
+	);
+
+	return mrn_base_stack_ensure_builder_layout_tab( array_values( $remaining_fields ), $layout_name );
+}
+
+/**
  * Add hero-only sizing controls to cloned Hero layouts.
  *
  * @param array<string, mixed> $layout ACF layout definition.
@@ -606,7 +957,7 @@ function mrn_base_stack_get_hero_sizing_fields() {
  */
 function mrn_base_stack_add_hero_sizing_fields_to_layout( array $layout ) {
 	$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
-	if ( 'basic' !== $layout_name ) {
+	if ( ! mrn_base_stack_hero_layout_supports_sizing( $layout_name ) ) {
 		return $layout;
 	}
 
@@ -621,6 +972,7 @@ function mrn_base_stack_add_hero_sizing_fields_to_layout( array $layout ) {
 
 		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
 		if ( in_array( $field_name, array( 'hero_min_height', 'hero_vertical_padding' ), true ) ) {
+			$layout['sub_fields'] = mrn_base_stack_apply_hero_spacing_tab_contract( $layout['sub_fields'], $layout_name );
 			return $layout;
 		}
 	}
@@ -638,7 +990,8 @@ function mrn_base_stack_add_hero_sizing_fields_to_layout( array $layout ) {
 		}
 	}
 
-	array_splice( $layout['sub_fields'], $insert_index, 0, mrn_base_stack_get_hero_sizing_fields() );
+	array_splice( $layout['sub_fields'], $insert_index, 0, mrn_base_stack_get_hero_sizing_fields( $layout_name ) );
+	$layout['sub_fields'] = mrn_base_stack_apply_hero_spacing_tab_contract( $layout['sub_fields'], $layout_name );
 
 	return $layout;
 }
@@ -697,11 +1050,12 @@ function mrn_base_stack_get_hero_builder_layouts() {
 			$layout['sub_fields'] = array();
 		}
 
-			$cloned_layout          = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_hero_' );
-			$cloned_layout          = mrn_base_stack_add_hero_sizing_fields_to_layout( $cloned_layout );
-			$cloned_key             = 'layout_mrn_hero_' . $layout_name;
-			$cloned_layout['key']   = $cloned_key;
-			$layouts[ $cloned_key ] = $cloned_layout;
+		$cloned_layout          = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_hero_' );
+		$cloned_layout          = mrn_base_stack_add_hero_heading_fields_to_layout( $cloned_layout );
+		$cloned_layout          = mrn_base_stack_add_hero_sizing_fields_to_layout( $cloned_layout );
+		$cloned_key             = 'layout_mrn_hero_' . $layout_name;
+		$cloned_layout['key']   = $cloned_key;
+		$layouts[ $cloned_key ] = $cloned_layout;
 	}
 
 	$layouts_cache = $layouts;
@@ -2657,6 +3011,133 @@ function mrn_base_stack_get_background_video_fields( $key_prefix ) {
 }
 
 /**
+ * Normalize a gradient stop percentage for row background gradients.
+ *
+ * @param mixed $value Raw ACF value.
+ * @param float $default Default percentage.
+ * @return string
+ */
+function mrn_base_stack_normalize_gradient_stop_value( $value, $default ) {
+	$value = is_scalar( $value ) && is_numeric( $value ) ? (float) $value : (float) $default;
+	$value = max( 0, min( 100, $value ) );
+
+	return rtrim( rtrim( number_format( $value, 2, '.', '' ), '0' ), '.' );
+}
+
+/**
+ * Resolve a Site Colors CSS variable as an optional transparent color stop.
+ *
+ * @param string $color_slug Site Colors slug.
+ * @param mixed  $opacity Raw opacity percentage.
+ * @return string
+ */
+function mrn_base_stack_get_gradient_color_stop_value( $color_slug, $opacity ) {
+	$color_slug = trim( (string) $color_slug );
+	if ( '' === $color_slug || ! function_exists( 'mrn_site_colors_get_css_var' ) ) {
+		return '';
+	}
+
+	$opacity = mrn_base_stack_normalize_gradient_stop_value( $opacity, 100 );
+	if ( '100' === $opacity ) {
+		return 'var(' . mrn_site_colors_get_css_var( $color_slug ) . ')';
+	}
+
+	if ( '0' === $opacity ) {
+		return 'transparent';
+	}
+
+	return sprintf(
+		'color-mix(in srgb, var(%s) %s%%, transparent)',
+		mrn_site_colors_get_css_var( $color_slug ),
+		$opacity
+	);
+}
+
+/**
+ * Resolve a row background gradient angle, with compatibility for old direction values.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return string
+ */
+function mrn_base_stack_get_background_gradient_angle_value( array $row ) {
+	$angle = isset( $row['background_gradient_angle'] ) && is_scalar( $row['background_gradient_angle'] )
+		? trim( (string) $row['background_gradient_angle'] )
+		: '';
+
+	if ( '' !== $angle && is_numeric( $angle ) ) {
+		$angle_value = (float) $angle;
+		$angle_value = fmod( $angle_value, 360.0 );
+
+		if ( $angle_value < 0 ) {
+			$angle_value += 360.0;
+		}
+
+		return rtrim( rtrim( number_format( $angle_value, 2, '.', '' ), '0' ), '.' ) . 'deg';
+	}
+
+	$direction_key = isset( $row['background_gradient_direction'] ) && is_scalar( $row['background_gradient_direction'] )
+		? sanitize_key( (string) $row['background_gradient_direction'] )
+		: 'to-bottom';
+	$direction_map = array(
+		'to-bottom'       => 'to bottom',
+		'to-right'        => 'to right',
+		'to-bottom-right' => 'to bottom right',
+		'to-bottom-left'  => 'to bottom left',
+	);
+
+	return isset( $direction_map[ $direction_key ] ) ? $direction_map[ $direction_key ] : $direction_map['to-bottom'];
+}
+
+/**
+ * Build a CSS custom property declaration for a row background gradient.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @param string              $css_variable CSS custom property name.
+ * @return string
+ */
+function mrn_base_stack_get_background_gradient_style_declaration( array $row, $css_variable ) {
+	$css_variable = trim( (string) $css_variable );
+	if ( '' === $css_variable || 0 !== strpos( $css_variable, '--' ) ) {
+		return '';
+	}
+
+	if ( empty( $row['background_gradient_enabled'] ) || ! function_exists( 'mrn_site_colors_get_css_var' ) ) {
+		return '';
+	}
+
+	$start_color = isset( $row['background_gradient_start_color'] ) && is_scalar( $row['background_gradient_start_color'] )
+		? trim( (string) $row['background_gradient_start_color'] )
+		: '';
+	$end_color   = isset( $row['background_gradient_end_color'] ) && is_scalar( $row['background_gradient_end_color'] )
+		? trim( (string) $row['background_gradient_end_color'] )
+		: '';
+
+	if ( '' === $start_color || '' === $end_color ) {
+		return '';
+	}
+
+	$angle          = mrn_base_stack_get_background_gradient_angle_value( $row );
+	$start_position = mrn_base_stack_normalize_gradient_stop_value( $row['background_gradient_start_position'] ?? null, 0 );
+	$end_position   = mrn_base_stack_normalize_gradient_stop_value( $row['background_gradient_end_position'] ?? null, 100 );
+	$start_stop     = mrn_base_stack_get_gradient_color_stop_value( $start_color, $row['background_gradient_start_opacity'] ?? 100 );
+	$end_stop       = mrn_base_stack_get_gradient_color_stop_value( $end_color, $row['background_gradient_end_opacity'] ?? 100 );
+
+	if ( '' === $start_stop || '' === $end_stop ) {
+		return '';
+	}
+
+	return sprintf(
+		'%s: linear-gradient(%s, %s %s%%, %s %s%%)',
+		$css_variable,
+		$angle,
+		$start_stop,
+		$start_position,
+		$end_stop,
+		$end_position
+	);
+}
+
+/**
  * Shared motion effect choices for builder layouts.
  *
  * @return array<string, string>
@@ -4300,6 +4781,24 @@ function mrn_base_stack_get_builder_display_styles_tab_field( $key ) {
 }
 
 /**
+ * Build the shared Layout tab field.
+ *
+ * @param string $key Field key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_builder_layout_tab_field( $key ) {
+	return array(
+		'key'        => sanitize_key( (string) $key ),
+		'label'      => 'Layout',
+		'name'       => '',
+		'aria-label' => '',
+		'type'       => 'tab',
+		'placement'  => 'top',
+		'endpoint'   => 0,
+	);
+}
+
+/**
  * Build a builder layout Display Mode field.
  *
  * @param string $key Field key.
@@ -4459,6 +4958,72 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 	}
 
 	array_splice( $remaining_fields, $insert_index, 0, $display_fields );
+
+	return array_values( $remaining_fields );
+}
+
+/**
+ * Ensure the shared top-level Layout tab exists after Spacing and before Effects.
+ *
+ * @param array<int, mixed> $fields Layout field definitions.
+ * @param string            $layout_name Builder layout name.
+ * @param string            $key_seed Optional key seed.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name = '', $key_seed = '' ) {
+	$seed = sanitize_key( (string) $key_seed );
+	if ( '' === $seed ) {
+		$layout_name = sanitize_key( (string) $layout_name );
+		$seed        = '' !== $layout_name ? 'field_mrn_' . $layout_name : 'field_mrn_layout';
+	}
+
+	$remaining_fields = array();
+	$layout_tab       = null;
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			$remaining_fields[] = $field;
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( 'tab' === $field_type && 'layout' === $field_label ) {
+			if ( null === $layout_tab ) {
+				$layout_tab = $field;
+			}
+			continue;
+		}
+
+		$remaining_fields[] = $field;
+	}
+
+	if ( null === $layout_tab ) {
+		$layout_tab = mrn_base_stack_get_builder_layout_tab_field( $seed . '_layout_tab_contract' );
+	} else {
+		$layout_tab['label']     = 'Layout';
+		$layout_tab['type']      = 'tab';
+		$layout_tab['placement'] = 'top';
+		$layout_tab['endpoint']  = 0;
+	}
+
+	$insert_index = count( $remaining_fields );
+	foreach ( $remaining_fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( 'tab' === $field_type && 'effects' === $field_label ) {
+			$insert_index = (int) $index;
+			break;
+		}
+	}
+
+	array_splice( $remaining_fields, $insert_index, 0, array( $layout_tab ) );
 
 	return array_values( $remaining_fields );
 }
@@ -5296,6 +5861,8 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 		$normalized_fields = mrn_base_stack_ensure_sub_content_width_field( $normalized_fields );
 		$normalized_fields = mrn_base_stack_group_main_config_fields_by_functionality( $normalized_fields );
 		$normalized_fields = mrn_base_stack_ensure_builder_layout_display_style_fields( $normalized_fields, $layout_name );
+		$normalized_fields = mrn_base_stack_apply_hero_spacing_tab_contract( $normalized_fields, $layout_name );
+		$normalized_fields = mrn_base_stack_ensure_builder_layout_tab( $normalized_fields, $layout_name );
 	}
 
 	if ( ! $inject_internal_name ) {
@@ -5418,6 +5985,7 @@ function mrn_base_stack_flexible_field_has_primary_layout_contract( array $field
 
 		$has_internal_name      = false;
 		$has_display_styles_tab = false;
+		$has_layout_tab         = false;
 
 		foreach ( $layout['sub_fields'] as $sub_field ) {
 			if ( ! is_array( $sub_field ) ) {
@@ -5435,9 +6003,13 @@ function mrn_base_stack_flexible_field_has_primary_layout_contract( array $field
 			if ( 'tab' === $field_type && 'display-styles' === $field_label ) {
 				$has_display_styles_tab = true;
 			}
+
+			if ( 'tab' === $field_type && 'layout' === $field_label ) {
+				$has_layout_tab = true;
+			}
 		}
 
-		if ( $has_internal_name && $has_display_styles_tab ) {
+		if ( $has_internal_name && $has_display_styles_tab && $has_layout_tab ) {
 			return true;
 		}
 	}

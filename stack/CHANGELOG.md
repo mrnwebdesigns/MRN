@@ -1,5 +1,49 @@
 # Stack Changelog
 
+## 2026.07.10-two-column-split-gradient-controls
+- Expanded `mrn-base-stack` to `1.2.57`.
+- Added the shared gradient controls and overlay rendering contract to Two Column Split, including hero-builder usage.
+
+## 2026.07.10-gradient-color-opacity-controls
+- Expanded `mrn-base-stack` to `1.2.56`.
+- Added start and end opacity range controls for Basic/Hero gradient colors while preserving Site Color variables.
+
+## 2026.07.10-gradient-media-overlay-layer
+- Expanded `mrn-base-stack` to `1.2.55`.
+- Rendered Basic and Hero row gradients as overlay layers above decorative background image/video media and below row content.
+
+## 2026.07.10-basic-gradient-stop-controls
+- Expanded `mrn-base-stack` to `1.2.54`.
+- Replaced the Basic gradient direction dropdown with draggable angle and color-stop range controls.
+- Rendered Basic gradient styles through the Hero template when Basic is used in the Hero builder.
+
+## 2026.07.10-basic-gradient-controls
+- Expanded `mrn-base-stack` to `1.2.53`.
+- Added Basic layout background gradient controls under Configs > Appearance using Site Colors and directional rendering.
+
+## 2026.07.10-shared-link-button-contract
+- Expanded `mrn-base-stack` to `1.2.52`.
+- Made shared `mrn-ui__link--button` and link icon styles apply anywhere the shared class is rendered, including Hero buttons.
+
+## 2026.07.10-remove-hero-link-button-styling
+- Expanded `mrn-base-stack` to `1.2.51`.
+- Removed Hero-specific link border, padding, and no-underline styling so hero links are not treated as buttons by default.
+
+## 2026.07.10-hero-basic-link-style-contract
+- Expanded `mrn-base-stack` to `1.2.50`.
+- Scoped Hero Basic CTA border/padding styles to explicit button links so normal hero links render as links.
+
+## 2026.07.09-idle-acf-row-collapse-dirty-state-fix
+- Expanded `mrn-base-stack` to `1.2.49`.
+- Reset ACF's unload dirty-state after the automatic initial row-collapse pass, only when no editor interaction happened.
+- Prevented page-load collapse from causing a false "unsaved changes" browser warning when leaving an unchanged editor screen.
+
+## 2026.07.09-idle-acf-row-collapse
+- Expanded `mrn-base-stack` to `1.2.48`.
+- Restored automatic initial ACF flexible-content and repeater row collapsing for stack singular editors.
+- Scheduled initial collapse after a short idle delay, batched row toggles in tiny frames, capped row counts, and aborts the pass once the editor starts interacting with fields.
+- Added filters for the collapse delay and maximum initial flexible/repeater row counts so client sites can tune or disable the behavior without editing theme assets.
+
 ## 2026.07.09-layout-engine-display-styles-and-sidebar-templates
 - Expanded `mrn-base-stack` to `1.2.47`.
 - Expanded `mrn-base-stack-child` to `1.0.1`.

@@ -38,9 +38,9 @@ function mrn_base_stack_admin_is_safe_acf_editor_helper_screen( $screen ) {
 /**
  * Determine whether automatic ACF row-level collapsing may run.
  *
- * Automatic flexible-content/repeater row collapsing touches ACF internals and
- * is disabled by default. Client sites must explicitly opt in before any page
- * load row traversal or collapse-control clicks can run.
+ * Automatic flexible-content/repeater row collapsing is enabled for stack
+ * singular editors, but the JavaScript queues work after editor idle time and
+ * aborts once the editor starts interacting with fields.
  *
  * @param string $row_type  ACF row type: flexible_content or repeater.
  * @param string $post_type Current post type slug.
@@ -51,17 +51,16 @@ function mrn_base_stack_admin_is_initial_acf_row_collapse_enabled( $row_type, $p
 	$post_type = sanitize_key( (string) $post_type );
 
 	/**
-	 * Legacy opt-in for the previous automatic ACF row precollapse behavior.
+	 * Global switch for automatic ACF row collapse on editor load.
 	 *
-	 * Defaults to false so client sites do not traverse or mutate existing ACF
-	 * flexible-content/repeater rows on editor load unless they intentionally
-	 * restore the old behavior.
+	 * Defaults to true because the current implementation is idle-scheduled and
+	 * interaction-aware. Return false to keep all rows open by default.
 	 *
 	 * @param bool   $enabled   Whether automatic ACF row collapsing is enabled.
 	 * @param string $row_type  ACF row type: flexible_content or repeater.
 	 * @param string $post_type Current post type slug.
 	 */
-	$enabled = (bool) apply_filters( 'mrn_base_stack_admin_initial_collapse_enabled', false, $row_type, $post_type );
+	$enabled = (bool) apply_filters( 'mrn_base_stack_admin_initial_collapse_enabled', true, $row_type, $post_type );
 
 	/**
 	 * Shared opt-in for automatic ACF row-level collapsing.
@@ -164,6 +163,36 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 
 	$initial_flexible_collapse_enabled = mrn_base_stack_admin_is_initial_acf_row_collapse_enabled( 'flexible_content', $post_type );
 	$initial_repeater_collapse_enabled = mrn_base_stack_admin_is_initial_acf_row_collapse_enabled( 'repeater', $post_type );
+	$initial_collapse_delay_ms         = absint(
+		/**
+		 * Delay before initial ACF row collapse begins.
+		 *
+		 * The browser idle callback still gates execution after this delay when
+		 * available, so this value is only the earliest possible start.
+		 *
+		 * @param int    $delay_ms  Delay in milliseconds.
+		 * @param string $post_type Current post type slug.
+		 */
+		apply_filters( 'mrn_base_stack_admin_initial_acf_row_collapse_delay_ms', 900, $post_type )
+	);
+	$initial_flexible_collapse_max_rows = absint(
+		/**
+		 * Maximum flexible-content rows to collapse during initial editor cleanup.
+		 *
+		 * @param int    $max_rows  Maximum row count.
+		 * @param string $post_type Current post type slug.
+		 */
+		apply_filters( 'mrn_base_stack_admin_initial_flexible_row_collapse_max_rows', 120, $post_type )
+	);
+	$initial_repeater_collapse_max_rows = absint(
+		/**
+		 * Maximum repeater rows to collapse during initial editor cleanup.
+		 *
+		 * @param int    $max_rows  Maximum row count.
+		 * @param string $post_type Current post type slug.
+		 */
+		apply_filters( 'mrn_base_stack_admin_initial_repeater_row_collapse_max_rows', 160, $post_type )
+	);
 
 	wp_localize_script(
 		'mrn-base-stack-content-builder-admin',
@@ -190,6 +219,9 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 			'initialCollapseEnabled'         => $initial_flexible_collapse_enabled || $initial_repeater_collapse_enabled,
 			'initialFlexibleCollapseEnabled' => $initial_flexible_collapse_enabled,
 			'initialRepeaterCollapseEnabled' => $initial_repeater_collapse_enabled,
+			'initialCollapseDelayMs'         => $initial_collapse_delay_ms,
+			'initialFlexibleCollapseMaxRows' => $initial_flexible_collapse_max_rows,
+			'initialRepeaterCollapseMaxRows' => $initial_repeater_collapse_max_rows,
 			'rowFlex'                        => array(
 				'nonce'           => wp_create_nonce( 'mrn-base-stack-row-flex-layout' ),
 				'nonceField'      => 'mrn_base_stack_row_flex_nonce',

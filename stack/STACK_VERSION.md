@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.07.09-layout-engine-display-styles-and-sidebar-templates`
-- Release date: `2026-07-09`
+- Stack release: `2026.07.10-two-column-split-gradient-controls`
+- Release date: `2026-07-10`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.47`
+  - `mrn-base-stack` `1.2.57`
   - `mrn-base-stack-child` `1.0.1`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.5`

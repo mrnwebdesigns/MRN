@@ -25,11 +25,64 @@
 		return;
 	}
 
+	var config = window.mrnBaseStackBuilderAdmin || {};
+
 	function isInitialRepeaterCollapseEnabled() {
-		return !! (
-			window.mrnBaseStackBuilderAdmin &&
-			window.mrnBaseStackBuilderAdmin.initialRepeaterCollapseEnabled
-		);
+		return !! ( config && config.initialRepeaterCollapseEnabled );
+	}
+
+	function getInitialCollapseDelayMs() {
+		var value = config && typeof config.initialCollapseDelayMs !== 'undefined' ? parseInt( config.initialCollapseDelayMs, 10 ) : 900;
+
+		return ! isNaN( value ) && value >= 0 ? value : 900;
+	}
+
+	function scheduleInitialCollapseStart( callback ) {
+		window.setTimeout( function() {
+			if ( hasEditorInteracted ) {
+				markRepeaterPrecollapseReady();
+				return;
+			}
+
+			if ( typeof window.requestIdleCallback === 'function' ) {
+				window.requestIdleCallback( function() {
+					if ( hasEditorInteracted ) {
+						markRepeaterPrecollapseReady();
+						return;
+					}
+
+					callback();
+				}, { timeout: 1400 } );
+				return;
+			}
+
+			callback();
+		}, getInitialCollapseDelayMs() );
+	}
+
+	function resetInitialCollapseDirtyState() {
+		if ( hasEditorInteracted || ! initialRepeaterCollapseMutated ) {
+			return;
+		}
+
+		initialRepeaterCollapseMutated = false;
+
+		resetAcfUnloadDirtyState();
+		window.setTimeout( resetAcfUnloadDirtyState, 120 );
+	}
+
+	function resetAcfUnloadDirtyState() {
+		if ( hasEditorInteracted ) {
+			return;
+		}
+
+		if (
+			window.acf &&
+			window.acf.unload &&
+			typeof window.acf.unload.reset === 'function'
+		) {
+			window.acf.unload.reset();
+		}
 	}
 
 	function getRepeaterFields( context ) {
@@ -362,17 +415,21 @@
 		var initialRepeaterCollapseQueue = [];
 		var initialRepeaterCollapseScheduled = false;
 		var initialRepeaterPrecollapseReadyMarked = false;
+		var initialRepeaterCollapseMutated = false;
 		var deferCollapseUntil = 0;
+		var hasEditorInteracted = false;
 		var interactionQuietPeriodMs = 900;
 		var interactionRetryDelayMs = 220;
 		var inputEditingRetryDelayMs = 260;
-		var maxInitialRepeaterCollapseRows = 160;
+		var configuredMaxInitialRepeaterCollapseRows = config && typeof config.initialRepeaterCollapseMaxRows !== 'undefined' ? parseInt( config.initialRepeaterCollapseMaxRows, 10 ) : 160;
+		var maxInitialRepeaterCollapseRows = ! isNaN( configuredMaxInitialRepeaterCollapseRows ) && configuredMaxInitialRepeaterCollapseRows >= 0 ? configuredMaxInitialRepeaterCollapseRows : 160;
 
 	function markEditorInteraction() {
 		var now = window.performance && typeof window.performance.now === 'function'
 			? window.performance.now()
 			: Date.now();
 
+		hasEditorInteracted = true;
 		deferCollapseUntil = now + interactionQuietPeriodMs;
 
 		// Stop background initial collapsing after first user interaction.
@@ -411,6 +468,7 @@
 
 		initialRepeaterPrecollapseReadyMarked = true;
 		markInitialPrecollapseReady( 'data-mrn-repeater-precollapse' );
+		resetInitialCollapseDirtyState();
 	}
 
 	function scheduleInitialRepeaterCollapse() {
@@ -441,6 +499,12 @@
 			return;
 		}
 
+		if ( hasEditorInteracted ) {
+			initialRepeaterCollapseQueue.length = 0;
+			markRepeaterPrecollapseReady();
+			return;
+		}
+
 		if ( shouldDeferCollapseForInteraction() ) {
 			window.setTimeout( scheduleInitialRepeaterCollapse, interactionRetryDelayMs );
 			return;
@@ -461,6 +525,7 @@
 
 			// Use ACF's own toggle path so collapsed state remains consistent.
 			setRowCollapsed( $row, true );
+			initialRepeaterCollapseMutated = true;
 
 			processed += 1;
 
@@ -507,6 +572,11 @@
 			return;
 		}
 
+		if ( hasEditorInteracted || maxInitialRepeaterCollapseRows <= 0 ) {
+			markRepeaterPrecollapseReady();
+			return;
+		}
+
 		getRepeaterFields( context ).each( function () {
 			var $field = $( this );
 
@@ -540,7 +610,12 @@
 				}
 			} );
 
-			scheduleInitialRepeaterCollapse();
+			if ( initialRepeaterCollapseQueue.length ) {
+				scheduleInitialRepeaterCollapse();
+				return;
+			}
+
+			markRepeaterPrecollapseReady();
 		}
 
 	function ensureToolbar( $field ) {
@@ -701,7 +776,9 @@
 	} );
 
 	$( function () {
-		collapseInitialRows( document );
+		scheduleInitialCollapseStart( function () {
+			collapseInitialRows( document );
+		} );
 		refreshToolbars( document );
 		syncCloneRowBodyStates( document );
 	} );

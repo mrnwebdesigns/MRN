@@ -655,6 +655,191 @@ function mrn_base_stack_register_acf_field_groups() {
 											'width' => '50',
 										),
 									),
+									array(
+										'key'           => 'field_mrn_basic_background_gradient_enabled',
+										'label'         => 'Background gradient',
+										'name'          => 'background_gradient_enabled',
+										'aria-label'    => '',
+										'type'          => 'true_false',
+										'ui'            => 1,
+										'default_value' => 0,
+										'ui_on_text'    => 'On',
+										'ui_off_text'   => 'Off',
+										'wrapper'       => array(
+											'width' => '50',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_basic_background_gradient_start_color',
+										'label'             => 'Gradient start',
+										'name'              => 'background_gradient_start_color',
+										'aria-label'        => '',
+										'type'              => 'select',
+										'choices'           => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
+										'ui'                => 1,
+										'allow_null'        => 1,
+										'instructions'      => 'Select from Site Colors when available.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_basic_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_basic_background_gradient_end_color',
+										'label'             => 'Gradient end',
+										'name'              => 'background_gradient_end_color',
+										'aria-label'        => '',
+										'type'              => 'select',
+										'choices'           => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
+										'ui'                => 1,
+										'allow_null'        => 1,
+										'instructions'      => 'Select from Site Colors when available.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_basic_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_basic_background_gradient_start_opacity',
+										'label'             => 'Start opacity',
+										'name'              => 'background_gradient_start_opacity',
+										'aria-label'        => '',
+										'type'              => 'range',
+										'default_value'     => 100,
+										'min'               => 0,
+										'max'               => 100,
+										'step'              => 1,
+										'append'            => '%',
+										'instructions'      => 'Drag to adjust transparency for the first color.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_basic_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_basic_background_gradient_end_opacity',
+										'label'             => 'End opacity',
+										'name'              => 'background_gradient_end_opacity',
+										'aria-label'        => '',
+										'type'              => 'range',
+										'default_value'     => 100,
+										'min'               => 0,
+										'max'               => 100,
+										'step'              => 1,
+										'append'            => '%',
+										'instructions'      => 'Drag to adjust transparency for the second color.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_basic_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_basic_background_gradient_angle',
+										'label'             => 'Gradient angle',
+										'name'              => 'background_gradient_angle',
+										'aria-label'        => '',
+										'type'              => 'range',
+										'default_value'     => 180,
+										'min'               => 0,
+										'max'               => 360,
+										'step'              => 1,
+										'append'            => 'deg',
+										'instructions'      => 'Drag to rotate the gradient.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_basic_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '34',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_basic_background_gradient_start_position',
+										'label'             => 'Start position',
+										'name'              => 'background_gradient_start_position',
+										'aria-label'        => '',
+										'type'              => 'range',
+										'default_value'     => 0,
+										'min'               => 0,
+										'max'               => 100,
+										'step'              => 1,
+										'append'            => '%',
+										'instructions'      => 'Drag to place the first color stop.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_basic_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '50',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_basic_background_gradient_end_position',
+										'label'             => 'End position',
+										'name'              => 'background_gradient_end_position',
+										'aria-label'        => '',
+										'type'              => 'range',
+										'default_value'     => 100,
+										'min'               => 0,
+										'max'               => 100,
+										'step'              => 1,
+										'append'            => '%',
+										'instructions'      => 'Drag to place the second color stop.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_basic_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '50',
+										),
+									),
 									mrn_base_stack_get_section_width_field( 'field_mrn_basic_section_width', 'section_width', 'wide' ),
 									mrn_base_stack_get_anchor_field( 'field_mrn_basic_anchor' ),
 									mrn_base_stack_get_motion_group_field( 'field_mrn_basic_motion_settings' ),
@@ -1963,6 +2148,191 @@ function mrn_base_stack_register_acf_field_groups() {
 										'ui'            => 1,
 										'allow_null'    => 1,
 										'instructions'  => 'Select from Site Colors when available.',
+									),
+									array(
+										'key'           => 'field_mrn_two_column_split_background_gradient_enabled',
+										'label'         => 'Background gradient',
+										'name'          => 'background_gradient_enabled',
+										'aria-label'    => '',
+										'type'          => 'true_false',
+										'ui'            => 1,
+										'default_value' => 0,
+										'ui_on_text'    => 'On',
+										'ui_off_text'   => 'Off',
+										'wrapper'       => array(
+											'width' => '50',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_two_column_split_background_gradient_start_color',
+										'label'             => 'Gradient start',
+										'name'              => 'background_gradient_start_color',
+										'aria-label'        => '',
+										'type'              => 'select',
+										'choices'           => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
+										'ui'                => 1,
+										'allow_null'        => 1,
+										'instructions'      => 'Select from Site Colors when available.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_two_column_split_background_gradient_end_color',
+										'label'             => 'Gradient end',
+										'name'              => 'background_gradient_end_color',
+										'aria-label'        => '',
+										'type'              => 'select',
+										'choices'           => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
+										'ui'                => 1,
+										'allow_null'        => 1,
+										'instructions'      => 'Select from Site Colors when available.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_two_column_split_background_gradient_start_opacity',
+										'label'             => 'Start opacity',
+										'name'              => 'background_gradient_start_opacity',
+										'aria-label'        => '',
+										'type'              => 'range',
+										'default_value'     => 100,
+										'min'               => 0,
+										'max'               => 100,
+										'step'              => 1,
+										'append'            => '%',
+										'instructions'      => 'Drag to adjust transparency for the first color.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_two_column_split_background_gradient_end_opacity',
+										'label'             => 'End opacity',
+										'name'              => 'background_gradient_end_opacity',
+										'aria-label'        => '',
+										'type'              => 'range',
+										'default_value'     => 100,
+										'min'               => 0,
+										'max'               => 100,
+										'step'              => 1,
+										'append'            => '%',
+										'instructions'      => 'Drag to adjust transparency for the second color.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_two_column_split_background_gradient_angle',
+										'label'             => 'Gradient angle',
+										'name'              => 'background_gradient_angle',
+										'aria-label'        => '',
+										'type'              => 'range',
+										'default_value'     => 180,
+										'min'               => 0,
+										'max'               => 360,
+										'step'              => 1,
+										'append'            => 'deg',
+										'instructions'      => 'Drag to rotate the gradient.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '34',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_two_column_split_background_gradient_start_position',
+										'label'             => 'Start position',
+										'name'              => 'background_gradient_start_position',
+										'aria-label'        => '',
+										'type'              => 'range',
+										'default_value'     => 0,
+										'min'               => 0,
+										'max'               => 100,
+										'step'              => 1,
+										'append'            => '%',
+										'instructions'      => 'Drag to place the first color stop.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '50',
+										),
+									),
+									array(
+										'key'               => 'field_mrn_two_column_split_background_gradient_end_position',
+										'label'             => 'End position',
+										'name'              => 'background_gradient_end_position',
+										'aria-label'        => '',
+										'type'              => 'range',
+										'default_value'     => 100,
+										'min'               => 0,
+										'max'               => 100,
+										'step'              => 1,
+										'append'            => '%',
+										'instructions'      => 'Drag to place the second color stop.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '50',
+										),
 									),
 									array(
 										'key'           => 'field_mrn_two_column_split_background_image',

@@ -147,6 +147,26 @@
 		return $payload;
 	}
 
+	function findLayoutTabItem( $tabGroup ) {
+		var $tabItem = $tabGroup.find( 'li.mrn-row-flex-tab' ).first();
+
+		if ( $tabItem.length ) {
+			return $tabItem;
+		}
+
+		$tabGroup.children( 'li' ).each( function() {
+			var $candidate = $( this );
+			var $link = $candidate.children( 'a' ).first();
+
+			if ( $.trim( $link.text() ).toLowerCase() === 'layout' ) {
+				$tabItem = $candidate;
+				return false;
+			}
+		} );
+
+		return $tabItem;
+	}
+
 	function buildPanelMarkup( panelId ) {
 		return $(
 			'<div class="acf-field mrn-row-flex-panel" id="' + panelId + '" data-mrn-row-flex-panel="1">' +
@@ -267,13 +287,16 @@
 			return;
 		}
 
-		var $tabItem = $tabGroup.find( 'li.mrn-row-flex-tab' ).first();
+		var $tabItem = findLayoutTabItem( $tabGroup );
 		var panelId = 'mrn-row-flex-panel-' + fieldName + '-' + rowIndex + '-' + Math.floor( Math.random() * 1000000 );
 		var $panel = $fields.children( '.mrn-row-flex-panel' ).first();
 
 		if ( ! $tabItem.length ) {
 			$tabItem = $( '<li class="mrn-row-flex-tab"><a href="#" data-mrn-row-flex-tab="1">Layout</a></li>' );
 			$tabGroup.append( $tabItem );
+		} else {
+			$tabItem.addClass( 'mrn-row-flex-tab' );
+			$tabItem.children( 'a' ).first().attr( 'data-mrn-row-flex-tab', '1' );
 		}
 
 		if ( ! $panel.length ) {
