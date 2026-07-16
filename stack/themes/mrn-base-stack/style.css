@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.2.69
+Version: 1.2.70
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -4270,7 +4270,7 @@ a.mrn-social-links__link:focus-visible svg {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-size: clamp(1.25rem, 3vw, 2rem);
+	font-size: 1.75rem;
 	line-height: 1;
 }
 
@@ -4281,7 +4281,7 @@ a.mrn-social-links__link:focus-visible svg {
 }
 
 .mrn-stats-row__value {
-	font-size: clamp(2.75rem, 5vw, 4rem);
+	font-size: 3.25rem;
 	font-weight: 700;
 	line-height: 0.95;
 }
@@ -4289,7 +4289,7 @@ a.mrn-social-links__link:focus-visible svg {
 .mrn-stats-row__item .mrn-ui__label {
 	font-size: 0.95rem;
 	font-weight: 600;
-	letter-spacing: 0.04em;
+	letter-spacing: 0;
 	text-transform: uppercase;
 }
 
@@ -5375,25 +5375,6 @@ a.mrn-social-links__link:focus-visible svg {
 	}
 }
 
-.mrn-layout-section--stats.mrn-layout-surface,
-.mrn-layout-section--stats .mrn-layout-container.mrn-layout-surface {
-	background: var(--mrn-stats-row-bg, transparent);
-	padding-block: clamp(2rem, 4vw, 4rem);
-}
-
-.mrn-layout-section--stats.mrn-layout-section--contained .mrn-layout-container--content .mrn-stats-row__grid {
-	--mrn-stats-columns: 2;
-	gap: var(--mrn-space-stack-sm) var(--mrn-space-stack-md);
-}
-
-.mrn-layout-section--stats.mrn-layout-section--contained .mrn-layout-container--wide .mrn-stats-row__grid {
-	gap: var(--mrn-space-stack-md) var(--mrn-space-stack-lg);
-}
-
-.mrn-layout-section--stats.mrn-layout-section--full .mrn-layout-container--wide .mrn-stats-row__grid {
-	gap: var(--mrn-space-stack-lg) var(--mrn-space-stack-xl);
-}
-
 .mrn-layout-section--showcase.mrn-layout-surface,
 .mrn-layout-section--showcase .mrn-layout-container.mrn-layout-surface {
 	background: var(--mrn-showcase-row-bg, transparent);
@@ -5461,34 +5442,13 @@ a.mrn-social-links__link:focus-visible svg {
 	background: var(--mrn-stats-row-bg, transparent);
 }
 
-.mrn-layout-section--stats.mrn-layout-section--contained .mrn-layout-container--content .mrn-layout-grid--stats {
-	gap: var(--mrn-space-stack-md);
-}
-
 .mrn-layout-section--stats.mrn-layout-section--contained .mrn-layout-container--content .mrn-stats-row__grid {
+	--mrn-stats-columns: 2;
 	gap: var(--mrn-space-stack-sm) var(--mrn-space-stack-md);
-}
-
-.mrn-layout-section--stats.mrn-layout-section--contained .mrn-layout-container--content .mrn-stats-row__item--metrics-shell {
-	max-width: none;
-}
-
-.mrn-layout-section--stats.mrn-layout-section--contained .mrn-layout-container--wide .mrn-layout-grid--stats,
-.mrn-layout-section--stats.mrn-layout-section--full .mrn-layout-container--wide .mrn-layout-grid--stats {
-	gap: var(--mrn-space-stack-md);
 }
 
 .mrn-layout-section--stats.mrn-layout-section--contained .mrn-layout-container--wide .mrn-stats-row__grid {
 	gap: var(--mrn-space-stack-md) var(--mrn-space-stack-lg);
-}
-
-.mrn-layout-section--stats.mrn-layout-section--contained .mrn-layout-container--wide .mrn-stats-row__item--metrics-shell {
-	border-top: 1px solid rgba(28, 34, 43, 0.12);
-	padding-top: 1rem;
-}
-
-.mrn-layout-section--stats.mrn-layout-section--full.mrn-layout-surface {
-	padding-block: clamp(2.25rem, 4vw, 4rem);
 }
 
 .mrn-layout-section--stats.mrn-layout-section--full .mrn-layout-container--wide .mrn-stats-row__grid {
@@ -5504,15 +5464,6 @@ a.mrn-social-links__link:focus-visible svg {
 }
 
 @media (max-width: 782px) {
-	.mrn-layout-section--stats.mrn-layout-section--contained .mrn-layout-container--content .mrn-stats-row__item--metrics-shell {
-		max-width: 100%;
-	}
-
-	.mrn-layout-section--stats.mrn-layout-section--contained .mrn-layout-container--wide .mrn-stats-row__item--metrics-shell {
-		border-top: 0;
-		padding-top: 0;
-	}
-
 	.mrn-layout-section--stats.mrn-layout-section--full .mrn-layout-container--wide .mrn-stats-row__item--metrics-shell {
 		background: transparent;
 		border: 0;
@@ -6128,6 +6079,14 @@ a.mrn-social-links__link:focus-visible svg {
 @media (max-width: 480px) {
 	.mrn-logos-row__grid {
 		grid-template-columns: 1fr;
+	}
+
+	.mrn-stats-row__item .mrn-ui__link-icon {
+		font-size: 1.5rem;
+	}
+
+	.mrn-stats-row__value {
+		font-size: 2.5rem;
 	}
 
 	.mrn-stats-row__grid {

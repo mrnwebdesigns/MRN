@@ -5096,6 +5096,13 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		);
 	}
 
+	if ( 'stats' === $layout_name ) {
+		return array(
+			'columns',
+			'show_dividers',
+		);
+	}
+
 	return array();
 }
 
@@ -5255,6 +5262,44 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 				'instructions'  => 'Transition speed in milliseconds.',
 				'wrapper'       => array(
 					'width' => '34',
+				),
+			),
+		);
+	}
+
+	if ( 'stats' === $layout_name ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_columns',
+				'label'         => 'Columns',
+				'name'          => 'columns',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => array(
+					'2' => '2',
+					'3' => '3',
+					'4' => '4',
+				),
+				'default_value' => '2',
+				'allow_null'    => 0,
+				'ui'            => 1,
+				'instructions'  => 'Controls the number of stat columns on wide screens. Columns collapse responsively on smaller screens.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_show_dividers',
+				'label'         => 'Show Dividers',
+				'name'          => 'show_dividers',
+				'aria-label'    => '',
+				'type'          => 'true_false',
+				'ui'            => 1,
+				'default_value' => 1,
+				'ui_on_text'    => 'On',
+				'ui_off_text'   => 'Off',
+				'wrapper'       => array(
+					'width' => '50',
 				),
 			),
 		);

@@ -1,5 +1,14 @@
 # Stack Changelog
 
+## 2026.07.16-stats-layout-contract
+- Expanded `mrn-base-stack` to `1.2.70`.
+- Renamed the Stats builder layout label so the picker no longer exposes internal field hints.
+- Moved Stats Columns and Show Dividers into the shared Layout tab while preserving existing field keys and saved values.
+- Applied the shared Display Styles contract to the Stats front-end section output.
+- Removed legacy Stats shell padding and decorative item overrides so row spacing controls own section spacing.
+- Cleaned Stats typography to avoid viewport-scaled font sizes and non-zero letter spacing.
+- Cleaned the dynamic row-spacing save helper PHPCS annotations that support the shared spacing contract.
+
 ## 2026.07.16-logos-layout-contract
 - Expanded `mrn-base-stack` to `1.2.69`.
 - Expanded `mrn-reusable-block-library` to `0.1.26`.

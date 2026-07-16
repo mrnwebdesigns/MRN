@@ -2716,7 +2716,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_stats' => array(
 								'key'        => 'layout_mrn_stats',
 								'name'       => 'stats',
-								'label'      => 'Stats - label|heading|items',
+								'label'      => 'Stats',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(

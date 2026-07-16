@@ -133,15 +133,15 @@ if ( ! function_exists( 'mrn_base_stack_resolve_flexible_row_meta_index' ) ) {
 	 * keys returned by unformatted get_field() preserve indexes skipped by ACF's
 	 * frontend loop.
 	 *
-	 * @param int         $post_id         Post ID.
-	 * @param string      $flex_field      Flexible-content field name.
-	 * @param int|null    $visible_position Zero-based visible position, or null.
-	 * @param string      $expected_layout Optional expected acf_fc_layout value.
+	 * @param int      $post_id         Post ID.
+	 * @param string   $flex_field      Flexible-content field name.
+	 * @param int|null $visible_position Zero-based visible position, or null.
+	 * @param string   $expected_layout Optional expected acf_fc_layout value.
 	 * @return int Raw zero-based meta index, or -1 when no validated row exists.
 	 */
 	function mrn_base_stack_resolve_flexible_row_meta_index( $post_id, $flex_field, $visible_position = null, $expected_layout = '' ) {
-		$post_id        = function_exists( 'absint' ) ? absint( $post_id ) : abs( (int) $post_id );
-		$flex_field     = mrn_base_stack_sanitize_meta_key_fragment( $flex_field );
+		$post_id         = function_exists( 'absint' ) ? absint( $post_id ) : abs( (int) $post_id );
+		$flex_field      = mrn_base_stack_sanitize_meta_key_fragment( $flex_field );
 		$expected_layout = mrn_base_stack_sanitize_meta_key_fragment( $expected_layout );
 
 		if ( ! $post_id || '' === $flex_field || ! function_exists( 'get_field' ) ) {
@@ -433,7 +433,10 @@ if ( ! function_exists( 'mrn_base_stack_save_dynamic_row_spacing_values' ) ) {
 			return;
 		}
 
-		$payload = function_exists( 'wp_unslash' ) ? wp_unslash( $_POST['acf'] ) : $_POST['acf']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		// ACF validates the save request; this fallback sanitizes field keys and spacing values before use.
+		// phpcs:disable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput
+		$payload = function_exists( 'wp_unslash' ) ? wp_unslash( $_POST['acf'] ) : $_POST['acf'];
+		// phpcs:enable WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput
 		foreach ( $payload as $field_key => $submitted_rows ) {
 			if ( ! is_array( $submitted_rows ) ) {
 				continue;
@@ -459,8 +462,12 @@ if ( ! function_exists( 'mrn_base_stack_save_dynamic_row_spacing_values' ) ) {
 					if ( empty( $sub_field['key'] ) || ! in_array( $name, mrn_base_stack_get_row_spacing_selector_field_names(), true ) ) {
 						continue;
 					}
-					$layouts[ (string) $layout['key'] ]['name'] = $layout_name;
-					$layouts[ (string) $layout['key'] ]['fields'][ (string) $sub_field['key'] ] = $name;
+					$layout_key = (string) $layout['key'];
+					$field_key  = (string) $sub_field['key'];
+
+					$layouts[ $layout_key ]['name'] = $layout_name;
+
+					$layouts[ $layout_key ]['fields'][ $field_key ] = $name;
 				}
 			}
 
