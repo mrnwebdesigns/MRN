@@ -971,6 +971,8 @@ function mrn_base_stack_get_hero_layout_fields( $layout_name = '' ) {
 			'choices'       => mrn_base_stack_get_hero_content_alignment_choices(),
 			'default_value' => 'left',
 			'allow_null'    => 0,
+			'multiple'      => 0,
+			'return_format' => 'value',
 			'ui'            => 1,
 			'instructions'  => 'Aligns the hero title, text, and actions within the hero content area.',
 			'wrapper'       => array(
@@ -987,6 +989,8 @@ function mrn_base_stack_get_hero_layout_fields( $layout_name = '' ) {
 			'choices'       => mrn_base_stack_get_hero_vertical_alignment_choices(),
 			'default_value' => 'center',
 			'allow_null'    => 0,
+			'multiple'      => 0,
+			'return_format' => 'value',
 			'ui'            => 1,
 			'instructions'  => 'Aligns hero content vertically when this hero has enough height for vertical positioning.',
 			'wrapper'       => array(
@@ -5603,6 +5607,10 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		);
 	}
 
+	if ( 'two_column_split' === $layout_name ) {
+		return array( 'column_ratio' );
+	}
+
 	if ( 'logos' === $layout_name ) {
 		return array(
 			'display_mode',
@@ -5895,6 +5903,34 @@ function mrn_base_stack_normalize_card_stack_alignment( $alignment ) {
 }
 
 /**
+ * Get Two Column Split ratio choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_two_column_ratio_choices() {
+	return array(
+		'50-50' => __( '50 / 50', 'mrn-base-stack' ),
+		'60-40' => __( '60 / 40', 'mrn-base-stack' ),
+		'40-60' => __( '40 / 60', 'mrn-base-stack' ),
+		'67-33' => __( '67 / 33', 'mrn-base-stack' ),
+		'33-67' => __( '33 / 67', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Normalize Two Column Split ratio.
+ *
+ * @param string $ratio Candidate ratio.
+ * @return string
+ */
+function mrn_base_stack_normalize_two_column_ratio( $ratio ) {
+	$ratio   = sanitize_key( (string) $ratio );
+	$choices = mrn_base_stack_get_two_column_ratio_choices();
+
+	return isset( $choices[ $ratio ] ) ? $ratio : '50-50';
+}
+
+/**
  * Normalize a Tabbed Layout position.
  *
  * @param string $position Candidate position.
@@ -6024,6 +6060,28 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 		);
 
 		return $fields;
+	}
+
+	if ( 'two_column_split' === $layout_name ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_column_ratio',
+				'label'         => 'Column Split',
+				'name'          => 'column_ratio',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => mrn_base_stack_get_two_column_ratio_choices(),
+				'default_value' => '50-50',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'return_format' => 'value',
+				'ui'            => 1,
+				'instructions'  => 'Controls the wide-screen column widths. Columns stack to one column on smaller screens.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+		);
 	}
 
 	if ( 'logos' === $layout_name ) {
@@ -7926,10 +7984,14 @@ function mrn_base_stack_flexible_field_has_primary_layout_contract( array $field
 		return false;
 	}
 
+	$checked_layouts = 0;
+
 	foreach ( $field['layouts'] as $layout ) {
 		if ( ! is_array( $layout ) || ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
 			continue;
 		}
+
+		++$checked_layouts;
 
 		$has_internal_name      = false;
 		$has_display_styles_tab = false;
@@ -7962,12 +8024,12 @@ function mrn_base_stack_flexible_field_has_primary_layout_contract( array $field
 			}
 		}
 
-		if ( $has_internal_name && $has_display_styles_tab && $has_layout_tab && $effects_tab_count < 2 ) {
-			return true;
+		if ( ! $has_internal_name || ! $has_display_styles_tab || ! $has_layout_tab || $effects_tab_count > 1 ) {
+			return false;
 		}
 	}
 
-	return false;
+	return $checked_layouts > 0;
 }
 
 /**
@@ -9196,6 +9258,10 @@ function mrn_base_stack_get_builder_row_flex_supported_fields() {
 		'page_after_content_rows',
 		'page_hero_rows',
 		'page_sidebar_rows',
+		'left_column_rows',
+		'right_column_rows',
+		'panel_rows',
+		'card_rows',
 	);
 
 	/**
@@ -10605,7 +10671,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 		'layout_mrn_nested_body_text' => array(
 			'key'        => 'layout_mrn_nested_body_text',
 			'name'       => 'body_text',
-			'label'      => 'Text - rich text',
+			'label'      => 'Text - label|heading|subheading|rich text',
 			'display'    => 'block',
 			'sub_fields' => array(
 				array(
@@ -10616,9 +10682,15 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'type'       => 'tab',
 					'placement'  => 'top',
 				),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_nested_body_text_label', 'Label', 'label' ),
+				mrn_base_stack_get_label_tag_field( 'field_mrn_nested_body_text_label_tag' ),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_nested_body_text_heading', 'Heading', 'heading' ),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_body_text_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_nested_body_text_subheading', 'Subheading', 'subheading' ),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_body_text_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
 				array(
 					'key'          => 'field_mrn_nested_body_text_content',
-					'label'        => 'Body Text',
+					'label'        => 'Text area with editor',
 					'name'         => 'body_text',
 					'aria-label'   => '',
 					'type'         => 'wysiwyg',
@@ -11529,23 +11601,23 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'type'       => 'tab',
 					'placement'  => 'top',
 				),
-					array(
-						'key'          => 'field_mrn_nested_external_widget_title',
-						'label'        => 'Embed Title',
-						'name'         => 'embed_title',
-						'aria-label'   => '',
-						'type'         => 'text',
-						'instructions' => 'Used as the iframe title when the pasted embed does not include one.',
-					),
-					array(
-						'key'          => 'field_mrn_nested_external_widget_code',
-						'label'        => 'Snippet/Code',
-						'name'         => 'code',
-						'aria-label'   => '',
-						'type'         => 'textarea',
-						'rows'         => 8,
-						'instructions' => 'Paste a trusted iframe/embed/object snippet or shortcode. Script tags are not rendered.',
-					),
+				array(
+					'key'          => 'field_mrn_nested_external_widget_title',
+					'label'        => 'Embed Title',
+					'name'         => 'embed_title',
+					'aria-label'   => '',
+					'type'         => 'text',
+					'instructions' => 'Used as the iframe title when the pasted embed does not include one.',
+				),
+				array(
+					'key'          => 'field_mrn_nested_external_widget_code',
+					'label'        => 'Snippet/Code',
+					'name'         => 'embed_code',
+					'aria-label'   => '',
+					'type'         => 'textarea',
+					'rows'         => 8,
+					'instructions' => 'Paste a trusted iframe/embed/object snippet or shortcode. Script tags are not rendered.',
+				),
 				array(
 					'key'        => 'field_mrn_nested_external_widget_config_tab',
 					'label'      => 'Configs',

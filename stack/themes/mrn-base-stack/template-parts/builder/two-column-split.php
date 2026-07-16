@@ -18,7 +18,9 @@ $subheading              = isset( $row['subheading'] ) ? trim( (string) $row['su
 $subheading_tag          = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $left_rows               = isset( $row['left_column_rows'] ) && is_array( $row['left_column_rows'] ) ? $row['left_column_rows'] : array();
 $right_rows              = isset( $row['right_column_rows'] ) && is_array( $row['right_column_rows'] ) ? $row['right_column_rows'] : array();
-$column_ratio            = isset( $row['column_ratio'] ) ? (string) $row['column_ratio'] : '50-50';
+$column_ratio            = function_exists( 'mrn_base_stack_normalize_two_column_ratio' )
+	? mrn_base_stack_normalize_two_column_ratio( $row['column_ratio'] ?? '' )
+	: sanitize_key( (string) ( $row['column_ratio'] ?? '50-50' ) );
 $background_color        = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
 $background_image        = $row['background_image'] ?? null;
 $background_video        = isset( $row['background_video'] ) ? (string) $row['background_video'] : '';
