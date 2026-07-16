@@ -4953,6 +4953,19 @@ a.mrn-social-links__link:focus-visible svg {
 	grid-template-columns: minmax(0, 1fr);
 }
 
+.mrn-content-builder__row--image-content-position-top .mrn-layout-section--image-content .mrn-image-content-row__media {
+	order: -1;
+}
+
+.mrn-content-builder__row--image-content-position-top .mrn-layout-section--image-content .mrn-image-content-row__content,
+.mrn-content-builder__row--image-content-position-bottom .mrn-layout-section--image-content .mrn-image-content-row__media {
+	order: 1;
+}
+
+.mrn-content-builder__row--image-content-position-bottom .mrn-layout-section--image-content .mrn-image-content-row__content {
+	order: 0;
+}
+
 .mrn-layout-section--image-content.mrn-layout-section--contained .mrn-layout-container.mrn-layout-surface {
 	padding-block: clamp(1.5rem, 3vw, 2.75rem);
 }
@@ -4975,8 +4988,62 @@ a.mrn-social-links__link:focus-visible svg {
 	text-align: left;
 }
 
+.mrn-content-builder__row--image-content-align-center .mrn-layout-section--image-content .mrn-image-content-row__media {
+	text-align: center;
+}
+
 .mrn-content-builder__row--image-content-align-right .mrn-layout-section--image-content .mrn-image-content-row__media {
 	text-align: right;
+}
+
+.mrn-layout-section--image-content .mrn-image-content-row__figure {
+	display: inline-block;
+	margin: 0;
+	max-width: 100%;
+	text-align: inherit;
+	vertical-align: top;
+}
+
+.mrn-layout-section--image-content .mrn-image-content-row__figure img {
+	display: block;
+}
+
+.mrn-content-builder__row--image-content-size-cover .mrn-layout-section--image-content .mrn-image-content-row__figure {
+	display: block;
+	height: 100%;
+	width: 100%;
+}
+
+.mrn-content-builder__row--image-content-size-contained .mrn-layout-section--image-content.mrn-layout-section--contained .mrn-layout-container--wide .mrn-image-content-row__figure,
+.mrn-content-builder__row--image-content-size-contained .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--wide .mrn-image-content-row__figure,
+.mrn-content-builder__row--image-content-size-contained .mrn-layout-section--image-content.mrn-layout-section--full .mrn-layout-container--full .mrn-image-content-row__figure {
+	display: block;
+	width: 100%;
+}
+
+.mrn-image-content-row__caption {
+	color: var(--mrn-shell-muted, currentColor);
+	font-size: 0.875rem;
+	line-height: 1.45;
+	margin-top: 0.5rem;
+}
+
+.mrn-image-content-row__figure--caption-inside {
+	overflow: hidden;
+	position: relative;
+}
+
+.mrn-image-content-row__figure--caption-inside .mrn-image-content-row__caption {
+	background: rgba(17, 24, 39, 0.88);
+	border-radius: 4px;
+	color: #fff;
+	inset-block-end: 0.75rem;
+	inset-inline: 0.75rem;
+	margin-top: 0;
+	max-width: calc(100% - 1.5rem);
+	padding: 0.5rem 0.625rem;
+	position: absolute;
+	text-align: left;
 }
 
 .mrn-content-builder__row--image-content-size-contained .mrn-layout-section--image-content .mrn-image-content-row__media img {

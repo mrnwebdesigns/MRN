@@ -777,7 +777,10 @@ function mrn_base_stack_post_requires_front_end_runtime( $post_id ) {
  * Enqueue scripts and styles.
  */
 function mrn_base_stack_scripts() {
-	wp_enqueue_style( 'mrn-base-stack-style', get_stylesheet_uri(), array(), _S_VERSION );
+	$style_path = get_template_directory() . '/style.css';
+	$style_ver  = file_exists( $style_path ) ? _S_VERSION . '-' . (string) filemtime( $style_path ) : _S_VERSION;
+
+	wp_enqueue_style( 'mrn-base-stack-style', get_template_directory_uri() . '/style.css', array(), $style_ver );
 	wp_style_add_data( 'mrn-base-stack-style', 'rtl', 'replace' );
 
 	$layout_builder_enabled = mrn_base_stack_is_layout_builder_enabled();

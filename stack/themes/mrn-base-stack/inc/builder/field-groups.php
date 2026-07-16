@@ -1400,7 +1400,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_image_content' => array(
 								'key'        => 'layout_mrn_image_content',
 								'name'       => 'image_content',
-								'label'      => 'Image - label|heading|subheading|text with editor',
+								'label'      => 'Image Content',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -1417,7 +1417,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'name'       => '',
 										'aria-label' => '',
 										'type'       => 'message',
-										'message'    => 'Standard fields render before the image for this layout.',
+										'message'    => 'Use Image Position in the Layout tab to place the image visually before or after the content.',
 										'new_lines'  => 'wpautop',
 										'esc_html'   => 0,
 									),
@@ -1449,6 +1449,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'preview_size'  => 'large',
 										'library'       => 'all',
 									),
+									...mrn_base_stack_get_image_caption_fields( 'field_mrn_image_content_image_caption' ),
 									array(
 										'key'        => 'field_mrn_image_content_config_tab',
 										'label'      => 'Configs',
@@ -1467,6 +1468,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'choices'       => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
 										'ui'            => 1,
 										'allow_null'    => 1,
+										'multiple'      => 0,
 										'instructions'  => 'Select from Site Colors when available.',
 									),
 									mrn_base_stack_get_section_width_field( 'field_mrn_image_content_section_width', 'section_width', 'wide' ),
@@ -1496,6 +1498,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'default_value' => '',
 										'ui'            => 1,
 										'allow_null'    => 1,
+										'multiple'      => 0,
 										'instructions'  => 'Choose a saved graphic element from Site Styles.',
 										'wrapper'       => array(
 											'width' => '50',
@@ -1512,6 +1515,8 @@ function mrn_base_stack_register_acf_field_groups() {
 											'bottom' => 'Bottom',
 										),
 										'default_value' => 'top',
+										'allow_null'    => 0,
+										'multiple'      => 0,
 										'ui'            => 1,
 										'wrapper'       => array(
 											'width' => '25',
@@ -1528,6 +1533,8 @@ function mrn_base_stack_register_acf_field_groups() {
 											'cover'     => 'Cover',
 										),
 										'default_value' => 'contained',
+										'allow_null'    => 0,
+										'multiple'      => 0,
 										'ui'            => 1,
 										'wrapper'       => array(
 											'width' => '25',
@@ -1545,6 +1552,8 @@ function mrn_base_stack_register_acf_field_groups() {
 											'right'  => 'Right',
 										),
 										'default_value' => 'center',
+										'allow_null'    => 0,
+										'multiple'      => 0,
 										'ui'            => 1,
 										'wrapper'       => array(
 											'width' => '25',

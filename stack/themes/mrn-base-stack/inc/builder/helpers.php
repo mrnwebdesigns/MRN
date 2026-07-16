@@ -2989,6 +2989,98 @@ function mrn_base_stack_get_anchor_field( $key, $name = 'anchor', $label = 'Anch
 }
 
 /**
+ * Build shared image caption controls for builder rows.
+ *
+ * @param string $key_prefix Unique ACF field key prefix.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_image_caption_fields( $key_prefix ) {
+	$key_prefix       = trim( (string) $key_prefix );
+	$source_field_key = $key_prefix . '_source';
+	$caption_logic    = array(
+		array(
+			array(
+				'field'    => $source_field_key,
+				'operator' => '==',
+				'value'    => 'attachment',
+			),
+		),
+		array(
+			array(
+				'field'    => $source_field_key,
+				'operator' => '==',
+				'value'    => 'custom',
+			),
+		),
+	);
+
+	return array(
+		array(
+			'key'           => $source_field_key,
+			'label'         => 'Image Caption',
+			'name'          => 'image_caption_source',
+			'aria-label'    => '',
+			'type'          => 'select',
+			'choices'       => array(
+				'none'       => 'None',
+				'attachment' => 'Media Library Caption',
+				'custom'     => 'Custom Caption',
+			),
+			'default_value' => 'none',
+			'allow_null'    => 0,
+			'multiple'      => 0,
+			'ui'            => 1,
+			'instructions'  => 'Choose whether to render an image caption and where its text comes from.',
+			'wrapper'       => array(
+				'width' => '50',
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_style',
+			'label'             => 'Image Caption Style',
+			'name'              => 'image_caption_style',
+			'aria-label'        => '',
+			'type'              => 'select',
+			'choices'           => array(
+				'under'  => 'Under Image',
+				'inside' => 'Inside Image',
+			),
+			'default_value'     => 'under',
+			'allow_null'        => 0,
+			'multiple'          => 0,
+			'ui'                => 1,
+			'instructions'      => 'Inside image captions render as readable text over the image with a contrast overlay.',
+			'conditional_logic' => $caption_logic,
+			'wrapper'           => array(
+				'width' => '50',
+			),
+		),
+		array(
+			'key'               => $key_prefix . '_custom',
+			'label'             => 'Custom Caption',
+			'name'              => 'image_caption',
+			'aria-label'        => '',
+			'type'              => 'textarea',
+			'instructions'      => 'Limited inline HTML allowed: span, strong, em, br.',
+			'rows'              => 2,
+			'new_lines'         => 'br',
+			'conditional_logic' => array(
+				array(
+					array(
+						'field'    => $source_field_key,
+						'operator' => '==',
+						'value'    => 'custom',
+					),
+				),
+			),
+			'wrapper'           => array(
+				'width' => '100',
+			),
+		),
+	);
+}
+
+/**
  * Build shared decorative background video fields for builder rows.
  *
  * @param string $key_prefix Unique ACF key prefix.
@@ -5136,6 +5228,14 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		);
 	}
 
+	if ( 'image_content' === $layout_name ) {
+		return array(
+			'image_position',
+			'image_size',
+			'image_alignment',
+		);
+	}
+
 	return array();
 }
 
@@ -5747,6 +5847,69 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 				'instructions'  => 'Match the active panel height to the tallest tab panel.',
 				'wrapper'       => array(
 					'width' => '50',
+				),
+			),
+		);
+	}
+
+	if ( 'image_content' === $layout_name ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_image_position',
+				'label'         => 'Image Position',
+				'name'          => 'image_position',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => array(
+					'top'    => 'Top',
+					'bottom' => 'Bottom',
+				),
+				'default_value' => 'top',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'ui'            => 1,
+				'instructions'  => 'Controls whether the image renders before or after the text content.',
+				'wrapper'       => array(
+					'width' => '33',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_image_size',
+				'label'         => 'Image Size',
+				'name'          => 'image_size',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => array(
+					'contained' => 'Contained',
+					'cover'     => 'Cover',
+				),
+				'default_value' => 'contained',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'ui'            => 1,
+				'instructions'  => 'Contained preserves the full media. Cover crops the image to fill its media area.',
+				'wrapper'       => array(
+					'width' => '33',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_image_alignment',
+				'label'         => 'Image Alignment',
+				'name'          => 'image_alignment',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => array(
+					'left'   => 'Left',
+					'center' => 'Center',
+					'right'  => 'Right',
+				),
+				'default_value' => 'center',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'ui'            => 1,
+				'instructions'  => 'Aligns contained images inside the media area.',
+				'wrapper'       => array(
+					'width' => '34',
 				),
 			),
 		);
@@ -10170,7 +10333,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 		'layout_mrn_nested_image_content' => array(
 			'key'        => 'layout_mrn_nested_image_content',
 			'name'       => 'image_content',
-			'label'      => 'Image - label|heading|subheading|text with editor',
+			'label'      => 'Image Content',
 			'display'    => 'block',
 			'sub_fields' => array(
 				array(
@@ -10191,6 +10354,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'preview_size'  => 'medium',
 					'library'       => 'all',
 				),
+				...mrn_base_stack_get_image_caption_fields( 'field_mrn_nested_image_content_image_caption' ),
 				mrn_base_stack_get_inline_text_field( 'field_mrn_nested_image_content_label', 'Label', 'label' ),
 				mrn_base_stack_get_label_tag_field( 'field_mrn_nested_image_content_label_tag' ),
 				mrn_base_stack_get_inline_text_field( 'field_mrn_nested_image_content_heading', 'Heading', 'heading' ),
@@ -10226,6 +10390,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'choices'       => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
 					'ui'            => 1,
 					'allow_null'    => 1,
+					'multiple'      => 0,
 					'instructions'  => 'Select from Site Colors when available.',
 				),
 				array(
@@ -10252,6 +10417,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'default_value' => '',
 					'ui'            => 1,
 					'allow_null'    => 1,
+					'multiple'      => 0,
 					'instructions'  => 'Choose a saved graphic element from Site Styles.',
 					'wrapper'       => array(
 						'width' => '50',
@@ -10282,6 +10448,8 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'bottom' => 'Bottom',
 					),
 					'default_value' => 'top',
+					'allow_null'    => 0,
+					'multiple'      => 0,
 					'ui'            => 1,
 					'wrapper'       => array(
 						'width' => '50',
@@ -10298,6 +10466,8 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'cover'     => 'Cover',
 					),
 					'default_value' => 'contained',
+					'allow_null'    => 0,
+					'multiple'      => 0,
 					'ui'            => 1,
 					'wrapper'       => array(
 						'width' => '50',
@@ -10315,6 +10485,8 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'right'  => 'Right',
 					),
 					'default_value' => 'center',
+					'allow_null'    => 0,
+					'multiple'      => 0,
 					'ui'            => 1,
 				),
 				mrn_base_stack_get_anchor_field( 'field_mrn_nested_image_content_anchor' ),
