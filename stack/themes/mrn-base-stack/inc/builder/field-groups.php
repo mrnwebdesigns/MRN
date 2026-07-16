@@ -1846,7 +1846,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_card' => array(
 								'key'        => 'layout_mrn_card',
 								'name'       => 'card',
-								'label'      => 'Card - image|text|link',
+								'label'      => 'Card - card name|icon|card row|link',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -1871,9 +1871,10 @@ function mrn_base_stack_register_acf_field_groups() {
 										'aria-label'       => '',
 										'type'             => 'repeater',
 										'layout'           => 'row',
-										'collapsed'        => 'field_mrn_card_item_text',
+										'collapsed'        => 'field_mrn_card_item_label',
 										'button_label'     => 'Add Card',
 										'min'              => 1,
+										'instructions'     => 'Each card holds one builder row. The card order matches the row order.',
 										'sub_fields'       => array(
 											array(
 												'key'      => 'field_mrn_card_item_content_tab',
@@ -1885,32 +1886,17 @@ function mrn_base_stack_register_acf_field_groups() {
 												'endpoint' => 0,
 											),
 											array(
-												'key'     => 'field_mrn_card_item_image',
-												'label'   => 'Image',
-												'name'    => 'image',
+												'key'     => 'field_mrn_card_item_label',
+												'label'   => 'Card Name',
+												'name'    => 'card_label',
 												'aria-label' => '',
-												'type'    => 'image',
-												'return_format' => 'id',
-												'preview_size' => 'medium',
-												'library' => 'all',
+												'type'    => 'text',
+												'instructions' => 'Names the card header. The card content itself comes from the Card Row.',
 												'wrapper' => array(
-													'width' => '33',
+													'width' => '50',
 												),
 											),
-											array(
-												'key'     => 'field_mrn_card_item_text',
-												'label'   => 'Text',
-												'name'    => 'text',
-												'aria-label' => '',
-												'type'    => 'wysiwyg',
-												'tabs'    => 'all',
-												'toolbar' => 'full',
-												'media_upload' => 1,
-												'delay'   => 0,
-												'wrapper' => array(
-													'width' => '34',
-												),
-											),
+											...mrn_base_stack_get_button_link_icon_fields( 'field_mrn_card_item_icon', 'field_mrn_card_item_label' ),
 											array(
 												'key'     => 'field_mrn_card_item_link',
 												'label'   => 'Link',
@@ -1918,9 +1904,21 @@ function mrn_base_stack_register_acf_field_groups() {
 												'aria-label' => '',
 												'type'    => 'link',
 												'return_format' => 'array',
+												'instructions' => 'Optional card-level link. Adding a URL makes the card surface clickable. Links and buttons inside the Card Row remain clickable.',
 												'wrapper' => array(
-													'width' => '33',
+													'width' => '50',
 												),
+											),
+											array(
+												'key'      => 'field_mrn_card_item_rows',
+												'label'    => 'Card Row',
+												'name'     => 'card_rows',
+												'aria-label' => '',
+												'type'     => 'flexible_content',
+												'button_label' => 'Add Card Row',
+												'min'      => 1,
+												'max'      => 1,
+												'layouts'  => array(),
 											),
 											array(
 												'key'      => 'field_mrn_card_item_config_tab',
@@ -1945,20 +1943,6 @@ function mrn_base_stack_register_acf_field_groups() {
 													'width' => '50',
 												),
 											),
-											array(
-												'key'     => 'field_mrn_card_item_enable_row_effects',
-												'label'   => 'Enable Row Effects',
-												'name'    => 'enable_row_effects',
-												'aria-label' => '',
-												'type'    => 'true_false',
-												'ui'      => 1,
-												'default_value' => 0,
-												'ui_on_text' => 'On',
-												'ui_off_text' => 'Off',
-												'wrapper' => array(
-													'width' => '50',
-												),
-											),
 										),
 									),
 									array(
@@ -1979,43 +1963,6 @@ function mrn_base_stack_register_acf_field_groups() {
 										'ui'            => 1,
 										'allow_null'    => 1,
 										'instructions'  => 'Select from Site Colors when available.',
-									),
-									array(
-										'key'           => 'field_mrn_card_enable_full_item_link',
-										'label'         => 'Make Entire Card Clickable',
-										'name'          => 'enable_full_item_link',
-										'aria-label'    => '',
-										'type'          => 'true_false',
-										'ui'            => 1,
-										'default_value' => 0,
-										'ui_on_text'    => 'On',
-										'ui_off_text'   => 'Off',
-										'wrapper'       => array(
-											'width' => '25',
-										),
-									),
-									array(
-										'key'           => 'field_mrn_card_hide_item_link',
-										'label'         => 'Hide Link Label',
-										'name'          => 'hide_item_link',
-										'aria-label'    => '',
-										'type'          => 'true_false',
-										'ui'            => 1,
-										'default_value' => 0,
-										'ui_on_text'    => 'On',
-										'ui_off_text'   => 'Off',
-										'conditional_logic' => array(
-											array(
-												array(
-													'field'    => 'field_mrn_card_enable_full_item_link',
-													'operator' => '==',
-													'value'    => '1',
-												),
-											),
-										),
-										'wrapper'       => array(
-											'width' => '25',
-										),
 									),
 									mrn_base_stack_get_section_width_field( 'field_mrn_card_section_width', 'section_width', 'wide' ),
 									mrn_base_stack_get_anchor_field( 'field_mrn_card_anchor' ),

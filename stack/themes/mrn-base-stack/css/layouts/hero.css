@@ -84,6 +84,26 @@
 	margin-top: 0.5rem;
 }
 
+.mrn-hero--content-align-center .mrn-hero__content--hero-shell {
+	justify-items: center;
+	margin-inline: auto;
+	text-align: center;
+}
+
+.mrn-hero--content-align-right .mrn-hero__content--hero-shell {
+	justify-items: end;
+	margin-left: auto;
+	text-align: right;
+}
+
+.mrn-hero--content-align-center .mrn-hero__link-wrap {
+	justify-content: center;
+}
+
+.mrn-hero--content-align-right .mrn-hero__link-wrap {
+	justify-content: flex-end;
+}
+
 .mrn-hero__media--hero-shell {
 	justify-self: end;
 	max-width: 34rem;
@@ -100,6 +120,14 @@
 
 .mrn-hero.has-hero-media .mrn-hero__inner {
 	grid-template-columns: minmax(0, 1fr) minmax(16rem, 32rem);
+}
+
+.mrn-hero--vertical-align-top .mrn-hero__inner {
+	align-items: start;
+}
+
+.mrn-hero--vertical-align-bottom .mrn-hero__inner {
+	align-items: end;
 }
 
 .mrn-hero--width-content .mrn-hero__inner {

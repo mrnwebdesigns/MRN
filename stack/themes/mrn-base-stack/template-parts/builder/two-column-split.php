@@ -29,6 +29,12 @@ $hero_min_height         = $is_hero_context && isset( $row['hero_min_height'] ) 
 $hero_vertical_padding   = $is_hero_context && isset( $row['hero_vertical_padding'] ) && is_scalar( $row['hero_vertical_padding'] )
 	? mrn_base_stack_sanitize_spacing_dimension_value( (string) $row['hero_vertical_padding'] )
 	: '';
+$hero_content_alignment  = $is_hero_context
+	? mrn_base_stack_normalize_hero_content_alignment( $row['hero_content_alignment'] ?? '' )
+	: '';
+$hero_vertical_alignment = $is_hero_context
+	? mrn_base_stack_normalize_hero_vertical_alignment( $row['hero_vertical_alignment'] ?? '' )
+	: '';
 $width_layers            = mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'wide', 'wide' );
 $ratio_map               = array(
 	'50-50' => 'minmax(0, 1fr) minmax(0, 1fr)',
@@ -88,6 +94,12 @@ $section_classes = array(
 	'mrn-content-builder__row--two-column-split',
 );
 $section_attrs   = array();
+
+if ( $is_hero_context ) {
+	$section_classes[] = 'mrn-content-builder__row--hero-context';
+	$section_classes[] = 'mrn-content-builder__row--hero-content-align-' . sanitize_html_class( $hero_content_alignment );
+	$section_classes[] = 'mrn-content-builder__row--hero-vertical-align-' . sanitize_html_class( $hero_vertical_alignment );
+}
 
 if ( '' !== $background_image_markup ) {
 	$section_classes[] = 'has-background-image';

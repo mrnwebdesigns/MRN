@@ -30,6 +30,12 @@ $hero_min_height         = isset( $row['hero_min_height'] ) && is_scalar( $row['
 $hero_vertical_padding   = isset( $row['hero_vertical_padding'] ) && is_scalar( $row['hero_vertical_padding'] )
 	? mrn_base_stack_sanitize_spacing_dimension_value( (string) $row['hero_vertical_padding'] )
 	: '';
+$hero_content_alignment  = function_exists( 'mrn_base_stack_normalize_hero_content_alignment' )
+	? mrn_base_stack_normalize_hero_content_alignment( $row['hero_content_alignment'] ?? '' )
+	: 'left';
+$hero_vertical_alignment = function_exists( 'mrn_base_stack_normalize_hero_vertical_alignment' )
+	? mrn_base_stack_normalize_hero_vertical_alignment( $row['hero_vertical_alignment'] ?? '' )
+	: 'center';
 $section_width           = function_exists( 'mrn_base_stack_normalize_section_width' )
 	? mrn_base_stack_normalize_section_width( $row['section_width'] ?? '', 'wide' )
 	: 'wide';
@@ -101,6 +107,10 @@ $section_classes = array(
 	'mrn-hero',
 	'mrn-hero--default',
 	'mrn-hero--width-' . sanitize_html_class( 'full-width' === $section_width ? 'full' : $section_width ),
+	'mrn-hero--content-align-' . sanitize_html_class( $hero_content_alignment ),
+	'mrn-hero--vertical-align-' . sanitize_html_class( $hero_vertical_alignment ),
+	'mrn-content-builder__row--hero-content-align-' . sanitize_html_class( $hero_content_alignment ),
+	'mrn-content-builder__row--hero-vertical-align-' . sanitize_html_class( $hero_vertical_alignment ),
 );
 $section_styles  = array();
 $section_attrs   = array();

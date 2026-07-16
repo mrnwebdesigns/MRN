@@ -348,6 +348,61 @@ function mrn_base_stack_get_tabbed_layout_used_nested_layout_names( $post_id ) {
 }
 
 /**
+ * Get nested Card item layout names already saved in post meta.
+ *
+ * @param int $post_id Post ID.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_card_used_nested_layout_names( $post_id ) {
+	static $cache = array();
+
+	$post_id = absint( $post_id );
+
+	if ( $post_id < 1 ) {
+		return array();
+	}
+
+	if ( isset( $cache[ $post_id ] ) ) {
+		return $cache[ $post_id ];
+	}
+
+	$meta         = get_post_meta( $post_id, '', false );
+	$layout_names = array();
+
+	if ( ! is_array( $meta ) ) {
+		$cache[ $post_id ] = array();
+		return $cache[ $post_id ];
+	}
+
+	foreach ( $meta as $meta_key => $values ) {
+		if ( ! is_string( $meta_key ) || 0 !== strpos( $meta_key, 'page_content_rows_' ) ) {
+			continue;
+		}
+
+		if ( false === strpos( $meta_key, '_card_rows_' ) || 0 !== substr_compare( $meta_key, '_acf_fc_layout', -14 ) ) {
+			continue;
+		}
+
+		$raw_value = '';
+
+		if ( is_array( $values ) && ! empty( $values ) ) {
+			$raw_value = (string) $values[ count( $values ) - 1 ];
+		} elseif ( is_scalar( $values ) ) {
+			$raw_value = (string) $values;
+		}
+
+		$layout_name = sanitize_key( $raw_value );
+		if ( '' !== $layout_name ) {
+			$layout_names[] = $layout_name;
+		}
+	}
+
+	$cache[ $post_id ] = array_values( array_unique( $layout_names ) );
+
+	return $cache[ $post_id ];
+}
+
+/**
  * Get nested two-column layout names already saved in post meta.
  *
  * @param int $post_id Post ID.
@@ -745,6 +800,32 @@ function mrn_base_stack_get_tabbed_layout_source_names() {
 }
 
 /**
+ * Get content layout names that should be available inside Card items.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_card_layout_source_names() {
+	$defaults = array(
+		'body_text',
+		'basic',
+		'cta',
+		'image_content',
+		'external_widget',
+		'wpforms',
+		'searchwp_form',
+		'video',
+		'reusable_block',
+	);
+
+	$names = mrn_base_stack_normalize_builder_layout_source_names(
+		apply_filters( 'mrn_base_stack_card_layout_source_names', $defaults ),
+		$defaults
+	);
+
+	return mrn_base_stack_filter_hidden_builder_layout_source_names( $names );
+}
+
+/**
  * Get nested layout names that should be available inside Two Column Split columns.
  *
  * @return array<int, string>
@@ -812,6 +893,189 @@ function mrn_base_stack_get_hero_sizing_fields( $layout_name = '' ) {
 			),
 		),
 	);
+}
+
+/**
+ * Get Hero content alignment choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_hero_content_alignment_choices() {
+	return array(
+		'left'   => __( 'Left', 'mrn-base-stack' ),
+		'center' => __( 'Center', 'mrn-base-stack' ),
+		'right'  => __( 'Right', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Normalize Hero content alignment.
+ *
+ * @param string $alignment Candidate alignment.
+ * @return string
+ */
+function mrn_base_stack_normalize_hero_content_alignment( $alignment ) {
+	$alignment = sanitize_key( (string) $alignment );
+	$choices   = mrn_base_stack_get_hero_content_alignment_choices();
+
+	return isset( $choices[ $alignment ] ) ? $alignment : 'left';
+}
+
+/**
+ * Get Hero vertical alignment choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_hero_vertical_alignment_choices() {
+	return array(
+		'top'    => __( 'Top', 'mrn-base-stack' ),
+		'center' => __( 'Center', 'mrn-base-stack' ),
+		'bottom' => __( 'Bottom', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Normalize Hero vertical alignment.
+ *
+ * @param string $alignment Candidate alignment.
+ * @return string
+ */
+function mrn_base_stack_normalize_hero_vertical_alignment( $alignment ) {
+	$alignment = sanitize_key( (string) $alignment );
+	$choices   = mrn_base_stack_get_hero_vertical_alignment_choices();
+
+	return isset( $choices[ $alignment ] ) ? $alignment : 'center';
+}
+
+/**
+ * Build hero-only Layout controls for cloned Hero builder layouts.
+ *
+ * @param string $layout_name Builder layout name.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_hero_layout_fields( $layout_name = '' ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	$key_prefix  = 'field_mrn_hero';
+	if ( '' !== $layout_name && 'basic' !== $layout_name ) {
+		$key_prefix .= '_' . $layout_name;
+	}
+
+	return array(
+		array(
+			'key'           => $key_prefix . '_content_alignment',
+			'label'         => 'Content Alignment',
+			'name'          => 'hero_content_alignment',
+			'_name'         => 'hero_content_alignment',
+			'aria-label'    => '',
+			'type'          => 'select',
+			'choices'       => mrn_base_stack_get_hero_content_alignment_choices(),
+			'default_value' => 'left',
+			'allow_null'    => 0,
+			'ui'            => 1,
+			'instructions'  => 'Aligns the hero title, text, and actions within the hero content area.',
+			'wrapper'       => array(
+				'width' => '50',
+			),
+		),
+		array(
+			'key'           => $key_prefix . '_vertical_alignment',
+			'label'         => 'Vertical Alignment',
+			'name'          => 'hero_vertical_alignment',
+			'_name'         => 'hero_vertical_alignment',
+			'aria-label'    => '',
+			'type'          => 'select',
+			'choices'       => mrn_base_stack_get_hero_vertical_alignment_choices(),
+			'default_value' => 'center',
+			'allow_null'    => 0,
+			'ui'            => 1,
+			'instructions'  => 'Aligns hero content vertically when this hero has enough height for vertical positioning.',
+			'wrapper'       => array(
+				'width' => '50',
+			),
+		),
+	);
+}
+
+/**
+ * Place Hero-only controls inside the shared Layout tab.
+ *
+ * @param array<int, mixed> $fields Layout field definitions.
+ * @param string            $layout_name Builder layout name.
+ * @param bool              $add_missing Whether missing hero fields should be generated.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_apply_hero_layout_tab_contract( array $fields, $layout_name, $add_missing = false ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	if ( ! mrn_base_stack_hero_layout_supports_sizing( $layout_name ) ) {
+		return $fields;
+	}
+
+	$layout_field_map = array();
+	foreach ( mrn_base_stack_get_hero_layout_fields( $layout_name ) as $layout_field ) {
+		if ( isset( $layout_field['name'] ) ) {
+			$layout_field_map[ sanitize_key( (string) $layout_field['name'] ) ] = $layout_field;
+		}
+	}
+
+	$found_hero_fields = false;
+	$remaining_fields  = array();
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			$remaining_fields[] = $field;
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		if ( '' !== $field_name && isset( $layout_field_map[ $field_name ] ) ) {
+			$found_hero_fields = true;
+			foreach ( array( 'key', '_name', 'parent', 'parent_layout', 'default_value', 'conditional_logic' ) as $preserved_key ) {
+				if ( array_key_exists( $preserved_key, $field ) ) {
+					$layout_field_map[ $field_name ][ $preserved_key ] = $field[ $preserved_key ];
+				}
+			}
+			continue;
+		}
+
+		$remaining_fields[] = $field;
+	}
+
+	if ( ! $add_missing && ! $found_hero_fields ) {
+		return $fields;
+	}
+
+	$layout_fields = array();
+	foreach ( mrn_base_stack_get_hero_layout_fields( $layout_name ) as $field ) {
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		if ( '' !== $field_name && isset( $layout_field_map[ $field_name ] ) ) {
+			$layout_fields[] = $layout_field_map[ $field_name ];
+		}
+	}
+
+	$remaining_fields = mrn_base_stack_ensure_builder_layout_tab( array_values( $remaining_fields ), $layout_name, 'field_mrn_hero_' . $layout_name );
+
+	$insert_index = count( $remaining_fields );
+	foreach ( $remaining_fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+
+		if ( 'tab' === $field_type && 'layout' === $field_label ) {
+			$insert_index = (int) $index + 1;
+			continue;
+		}
+
+		if ( 'tab' === $field_type && 'effects' === $field_label ) {
+			break;
+		}
+	}
+
+	array_splice( $remaining_fields, $insert_index, 0, $layout_fields );
+
+	return array_values( $remaining_fields );
 }
 
 /**
@@ -999,6 +1263,27 @@ function mrn_base_stack_add_hero_sizing_fields_to_layout( array $layout ) {
 }
 
 /**
+ * Add hero-only Layout controls to cloned Hero layouts.
+ *
+ * @param array<string, mixed> $layout ACF layout definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_add_hero_layout_fields_to_layout( array $layout ) {
+	$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+	if ( ! mrn_base_stack_hero_layout_supports_sizing( $layout_name ) ) {
+		return $layout;
+	}
+
+	if ( ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+		$layout['sub_fields'] = array();
+	}
+
+	$layout['sub_fields'] = mrn_base_stack_apply_hero_layout_tab_contract( $layout['sub_fields'], $layout_name, true );
+
+	return $layout;
+}
+
+/**
  * Clone selected top-level Content layouts for Hero field usage.
  *
  * @return array<string, array<string, mixed>>
@@ -1055,6 +1340,7 @@ function mrn_base_stack_get_hero_builder_layouts() {
 		$cloned_layout          = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_hero_' );
 		$cloned_layout          = mrn_base_stack_add_hero_heading_fields_to_layout( $cloned_layout );
 		$cloned_layout          = mrn_base_stack_add_hero_sizing_fields_to_layout( $cloned_layout );
+		$cloned_layout          = mrn_base_stack_add_hero_layout_fields_to_layout( $cloned_layout );
 		$cloned_key             = 'layout_mrn_hero_' . $layout_name;
 		$cloned_layout['key']   = $cloned_key;
 		$layouts[ $cloned_key ] = $cloned_layout;
@@ -1214,6 +1500,138 @@ function mrn_base_stack_populate_tabbed_layout_panel_field( $field ) {
 }
 add_filter( 'acf/load_field/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_populate_tabbed_layout_panel_field', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_populate_tabbed_layout_panel_field', 20 );
+
+/**
+ * Clone page-builder layouts for use inside Card items.
+ *
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_card_nested_layouts() {
+	static $layouts_cache = array();
+	static $loading       = false;
+
+	$post_id   = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_post_id' ) ? mrn_base_stack_get_builder_layout_allowlist_post_id() : 0;
+	$cache_key = $post_id > 0 ? 'post_' . $post_id : 'global';
+
+	if ( isset( $layouts_cache[ $cache_key ] ) ) {
+		return $layouts_cache[ $cache_key ];
+	}
+
+	if ( $loading || ! function_exists( 'acf_get_field' ) ) {
+		return array();
+	}
+
+	$field = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_field_definition' )
+		? mrn_base_stack_get_builder_layout_allowlist_field_definition( 'page_content_rows' )
+		: array();
+
+	$has_complete_layouts = mrn_base_stack_builder_field_has_complete_layouts( $field );
+
+	if ( ! $has_complete_layouts ) {
+		$loading = true;
+		$field   = acf_get_field( 'field_mrn_page_content_rows' );
+		$loading = false;
+	}
+
+	$has_complete_layouts = mrn_base_stack_builder_field_has_complete_layouts( $field );
+
+	if ( ! $has_complete_layouts ) {
+		$layouts_cache[ $cache_key ] = array();
+		return $layouts_cache[ $cache_key ];
+	}
+
+	$allowed_names       = mrn_base_stack_get_card_layout_source_names();
+	$base_allowed_lookup = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
+	$used_nested_names   = $post_id > 0 ? mrn_base_stack_get_card_used_nested_layout_names( $post_id ) : array();
+	$existing_only_names = array_values(
+		array_diff(
+			array_filter(
+				array_map( 'sanitize_key', $used_nested_names )
+			),
+			array_keys( $base_allowed_lookup )
+		)
+	);
+	$allowed_names       = array_values(
+		array_unique(
+			array_merge(
+				$allowed_names,
+				$used_nested_names
+			)
+		)
+	);
+
+	$allowed_names        = array_values(
+		array_diff(
+			array_values(
+				array_unique(
+					array_filter(
+						array_map( 'sanitize_key', $allowed_names )
+					)
+				)
+			),
+			array( 'card' )
+		)
+	);
+	$allowed_lookup       = ! empty( $allowed_names ) ? array_fill_keys( $allowed_names, true ) : array();
+	$existing_only_lookup = ! empty( $existing_only_names ) ? array_fill_keys( $existing_only_names, true ) : array();
+	$layouts              = array();
+
+	foreach ( $field['layouts'] as $layout_key => $layout ) {
+		if ( ! is_array( $layout ) ) {
+			continue;
+		}
+
+		if ( ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+			$layout['sub_fields'] = array();
+		}
+
+		$layout_name = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : '';
+		if ( '' === $layout_name || 'card' === $layout_name ) {
+			continue;
+		}
+
+		if ( ! empty( $allowed_lookup ) && ! isset( $allowed_lookup[ $layout_name ] ) ) {
+			continue;
+		}
+
+		if ( isset( $existing_only_lookup[ $layout_name ] ) ) {
+			$layout['max'] = -1;
+		}
+
+		$cloned_layout        = mrn_base_stack_clone_acf_keys_with_prefix( $layout, 'field_mrn_card_item_row_' );
+		$cloned_key           = 'layout_mrn_card_item_row_' . $layout_name;
+		$cloned_layout['key'] = $cloned_key;
+
+		$layouts[ $cloned_key ] = $cloned_layout;
+	}
+
+	$layouts_cache[ $cache_key ] = $layouts;
+
+	return $layouts_cache[ $cache_key ];
+}
+
+/**
+ * Populate Card item nested row fields with builder layouts.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_populate_card_item_rows_field( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+	if ( 'card_rows' !== $field_name ) {
+		return $field;
+	}
+
+	$field['layouts'] = mrn_base_stack_get_card_nested_layouts();
+
+	return $field;
+}
+add_filter( 'acf/load_field/name=card_rows', 'mrn_base_stack_populate_card_item_rows_field', 20 );
+add_filter( 'acf/prepare_field/name=card_rows', 'mrn_base_stack_populate_card_item_rows_field', 20 );
 
 /**
  * Shared section-width choices for theme-owned builder layouts.
@@ -3914,7 +4332,7 @@ function mrn_base_stack_apply_tag_field_column_layout( array $fields ) {
  */
 function mrn_base_stack_ensure_repeater_subheading_contract( array $fields, $repeater_key = '', $repeater_name = '' ) {
 	$repeater_name = sanitize_key( (string) $repeater_name );
-	if ( in_array( $repeater_name, array( 'tabs', 'stat_items', 'showcase_items' ), true ) ) {
+	if ( in_array( $repeater_name, array( 'tabs', 'card_items', 'stat_items', 'showcase_items' ), true ) ) {
 		return $fields;
 	}
 
@@ -4260,7 +4678,6 @@ function mrn_base_stack_repeater_uses_primary_item_contract( $repeater_name ) {
 		$repeater_name,
 		array(
 			'grid_items',
-			'card_items',
 			'showcase_items',
 			'slider_items',
 			'logo_items',
@@ -5178,6 +5595,14 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		return array( 'faq_layout' );
 	}
 
+	if ( 'card' === $layout_name ) {
+		return array(
+			'card_layout',
+			'cards_per_row',
+			'card_stack_alignment',
+		);
+	}
+
 	if ( 'logos' === $layout_name ) {
 		return array(
 			'display_mode',
@@ -5270,6 +5695,14 @@ function mrn_base_stack_get_builder_layout_mode_choices( $layout_name ) {
 		);
 	}
 
+	if ( 'card' === $layout_name ) {
+		return array(
+			'grid'     => __( 'Grid', 'mrn-base-stack' ),
+			'list'     => __( 'List', 'mrn-base-stack' ),
+			'featured' => __( 'Featured First Card', 'mrn-base-stack' ),
+		);
+	}
+
 	if ( 'showcase' === $layout_name ) {
 		return array(
 			'flat'    => __( 'Grid', 'mrn-base-stack' ),
@@ -5298,6 +5731,10 @@ function mrn_base_stack_get_builder_layout_mode_field_name( $layout_name ) {
 
 	if ( 'showcase' === $layout_name ) {
 		return 'stagger_style';
+	}
+
+	if ( 'card' === $layout_name ) {
+		return 'card_layout';
 	}
 
 	return '';
@@ -5362,6 +5799,10 @@ function mrn_base_stack_get_builder_layout_mode_field( $layout_name, $key_seed )
 		$instructions = __( 'Choose whether logos render as a grid or a slider. Visual treatments belong in Display Styles.', 'mrn-base-stack' );
 	}
 
+	if ( 'card' === $layout_name ) {
+		$instructions = __( 'Choose the structural card arrangement. Display Styles control visual treatment.', 'mrn-base-stack' );
+	}
+
 	return array(
 		'key'           => $key_seed . '_layout_mode',
 		'label'         => 'Layout Mode',
@@ -5393,6 +5834,64 @@ function mrn_base_stack_get_tabbed_layout_position_choices() {
 		'left-center'   => __( 'Left of content - Center', 'mrn-base-stack' ),
 		'left-bottom'   => __( 'Left of content - Bottom', 'mrn-base-stack' ),
 	);
+}
+
+/**
+ * Get Card stack alignment choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_card_stack_alignment_choices() {
+	return array(
+		'left'   => __( 'Left', 'mrn-base-stack' ),
+		'center' => __( 'Center', 'mrn-base-stack' ),
+		'right'  => __( 'Right', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Get Card max-per-row choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_card_per_row_choices() {
+	return array(
+		'1' => __( '1', 'mrn-base-stack' ),
+		'2' => __( '2', 'mrn-base-stack' ),
+		'3' => __( '3', 'mrn-base-stack' ),
+		'4' => __( '4', 'mrn-base-stack' ),
+		'5' => __( '5', 'mrn-base-stack' ),
+		'6' => __( '6', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Normalize Card max-per-row.
+ *
+ * @param string|int $cards_per_row Candidate count.
+ * @return int
+ */
+function mrn_base_stack_normalize_card_per_row( $cards_per_row ) {
+	$cards_per_row = absint( $cards_per_row );
+
+	if ( $cards_per_row < 1 || $cards_per_row > 6 ) {
+		return 3;
+	}
+
+	return $cards_per_row;
+}
+
+/**
+ * Normalize Card stack alignment.
+ *
+ * @param string $alignment Candidate alignment.
+ * @return string
+ */
+function mrn_base_stack_normalize_card_stack_alignment( $alignment ) {
+	$alignment = sanitize_key( (string) $alignment );
+	$choices   = mrn_base_stack_get_card_stack_alignment_choices();
+
+	return isset( $choices[ $alignment ] ) ? $alignment : 'left';
 }
 
 /**
@@ -5485,6 +5984,46 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 				),
 			),
 		);
+	}
+
+	if ( 'card' === $layout_name ) {
+		$layout_mode_field = mrn_base_stack_get_builder_layout_mode_field( 'card', $key_seed );
+
+		$fields = is_array( $layout_mode_field ) ? array( $layout_mode_field ) : array();
+
+		$fields[] = array(
+			'key'           => $key_seed . '_cards_per_row',
+			'label'         => 'Max Cards Per Row',
+			'name'          => 'cards_per_row',
+			'aria-label'    => '',
+			'type'          => 'select',
+			'choices'       => mrn_base_stack_get_card_per_row_choices(),
+			'default_value' => '3',
+			'allow_null'    => 0,
+			'ui'            => 1,
+			'instructions'  => 'Caps the number of cards per row on wide screens. Cards wrap naturally on smaller screens. List mode always renders one card per row.',
+			'wrapper'       => array(
+				'width' => '50',
+			),
+		);
+
+		$fields[] = array(
+			'key'           => $key_seed . '_card_stack_alignment',
+			'label'         => 'Stack Alignment',
+			'name'          => 'card_stack_alignment',
+			'aria-label'    => '',
+			'type'          => 'select',
+			'choices'       => mrn_base_stack_get_card_stack_alignment_choices(),
+			'default_value' => 'left',
+			'allow_null'    => 0,
+			'ui'            => 1,
+			'instructions'  => 'Controls left, center, or right alignment when cards stack into one column.',
+			'wrapper'       => array(
+				'width' => '50',
+			),
+		);
+
+		return $fields;
 	}
 
 	if ( 'logos' === $layout_name ) {
@@ -7270,6 +7809,7 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 			$normalized_fields = mrn_base_stack_ensure_builder_layout_display_style_fields( $normalized_fields, $layout_name );
 			$normalized_fields = mrn_base_stack_apply_hero_spacing_tab_contract( $normalized_fields, $layout_name );
 			$normalized_fields = mrn_base_stack_ensure_builder_layout_tab( $normalized_fields, $layout_name );
+			$normalized_fields = mrn_base_stack_apply_hero_layout_tab_contract( $normalized_fields, $layout_name );
 		}
 	}
 
