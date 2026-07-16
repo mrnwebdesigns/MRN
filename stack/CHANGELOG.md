@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.07.16-team-members-locations-cpts
+- Expanded `mrn-base-stack` to `1.2.81`.
+- Registered Team Members (`team_member`) as a public, REST-enabled custom post type with a `/team/` archive route.
+- Added a per-member Public Profile Page control that defaults on; disabled records remain available to team components but lose their standalone page, preview/permalink actions, search exposure, and core sitemap entry.
+- Registered Locations (`location`) with the shared admin/data-only CPT contract so records remain queryable by stack components without public single pages, an archive/index, search exposure, previews, navigation visibility, or sitemap entries.
+- Left both post types field-ready without introducing placeholder ACF field groups.
+
 ## 2026.07.16-slider-layout-contract
 - Expanded `mrn-base-stack` to `1.2.78`.
 - Renamed the Slider builder layout label so the picker no longer exposes internal field hints.

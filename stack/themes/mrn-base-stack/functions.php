@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.2.78' );
+	define( '_S_VERSION', '1.2.81' );
 }
 
 /**
@@ -2461,6 +2461,11 @@ require_once get_template_directory() . '/inc/testimonial.php';
  * Load case-study modules.
  */
 require_once get_template_directory() . '/inc/case-study.php';
+
+/**
+ * Load field-ready content post type registrations.
+ */
+require_once get_template_directory() . '/inc/content-post-types.php';
 
 /**
  * Implement the Custom Header feature.
