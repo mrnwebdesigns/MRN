@@ -26,7 +26,23 @@ $legacy_intro  = isset($fields['block_content']) ? trim((string) $fields['block_
 $background_color = isset($fields['background_color']) ? sanitize_title((string) $fields['background_color']) : '';
 $accent        = !empty($fields['bottom_accent']);
 $accent_slug   = isset($fields['bottom_accent_style']) ? (string) $fields['bottom_accent_style'] : '';
+$display_mode  = isset($fields['display_mode']) ? sanitize_key((string) $fields['display_mode']) : 'grid';
+$logos_per_page = isset($fields['per_page']) ? max(3, min(6, (int) $fields['per_page'])) : 6;
+$show_arrows   = !empty($fields['show_arrows']);
+$show_pagination = !empty($fields['show_pagination']);
+$pause_on_hover = !array_key_exists('pause_on_hover', $fields) || !empty($fields['pause_on_hover']);
+$autoplay      = !empty($fields['autoplay']);
+$delay_start   = isset($fields['delay_start']) ? max(0, (float) $fields['delay_start']) : 0;
+$delay_time    = isset($fields['delay_time']) ? max(1, (float) $fields['delay_time']) : 5;
+$time_on_slide = isset($fields['time_on_slide']) ? max(100, (int) $fields['time_on_slide']) : 600;
 $raw_items     = isset($fields['logo_items']) && is_array($fields['logo_items']) ? $fields['logo_items'] : array();
+
+if (function_exists('mrn_base_stack_normalize_builder_layout_display_mode')) {
+    $display_mode = mrn_base_stack_normalize_builder_layout_display_mode($display_mode, 'logos');
+}
+if (!in_array($display_mode, array('grid', 'slider'), true)) {
+    $display_mode = 'grid';
+}
 
 if ($raw_items === array() && isset($fields['add_logo']) && is_array($fields['add_logo'])) {
     $raw_items = $fields['add_logo'];
@@ -110,7 +126,19 @@ $classes = array(
     'mrn-reusable-block--partners',
     'mrn-partners-block',
     'client-logos',
+    'mrn-reusable-block--partners-' . $display_mode,
 );
+
+$display_contract = function_exists('mrn_base_stack_get_builder_display_contract')
+    ? mrn_base_stack_get_builder_display_contract(array_merge($fields, array('display_mode' => $display_mode)), 'logos')
+    : array(
+        'classes'    => array(),
+        'attributes' => array(),
+    );
+
+if (isset($display_contract['classes']) && is_array($display_contract['classes'])) {
+    $classes = array_merge($classes, $display_contract['classes']);
+}
 
 $accent_contract = function_exists('mrn_site_styles_get_bottom_accent_contract')
     ? mrn_site_styles_get_bottom_accent_contract($accent, $accent_slug)
@@ -137,9 +165,12 @@ if ($background_color !== '' && function_exists('mrn_site_colors_get_css_var')) 
     $styles[] = '--mrn-partners-block-bg: var(' . mrn_site_colors_get_css_var($background_color) . ')';
 }
 
-$section_attrs = isset($accent_contract['attributes']) && is_array($accent_contract['attributes']) ? $accent_contract['attributes'] : array();
+$section_attrs = isset($display_contract['attributes']) && is_array($display_contract['attributes']) ? $display_contract['attributes'] : array();
+$section_attrs = function_exists('mrn_rbl_merge_attributes') ? mrn_rbl_merge_attributes($section_attrs, isset($accent_contract['attributes']) && is_array($accent_contract['attributes']) ? $accent_contract['attributes'] : array()) : array_merge($section_attrs, isset($accent_contract['attributes']) && is_array($accent_contract['attributes']) ? $accent_contract['attributes'] : array());
 $section_attrs = function_exists('mrn_rbl_merge_attributes') ? mrn_rbl_merge_attributes($section_attrs, isset($motion_contract['attributes']) && is_array($motion_contract['attributes']) ? $motion_contract['attributes'] : array()) : array_merge($section_attrs, isset($motion_contract['attributes']) && is_array($motion_contract['attributes']) ? $motion_contract['attributes'] : array());
 $section_attr_html = function_exists('mrn_rbl_get_html_attributes') ? mrn_rbl_get_html_attributes($section_attrs) : '';
+$slider_id = 'mrn-partners-' . ($block_post_id > 0 ? $block_post_id : abs(crc32($post_name))) . '-' . wp_generate_password(6, false, false);
+$slider_label = $heading !== '' ? wp_strip_all_tags($heading) : __('Partner logos', 'mrn-reusable-block-library');
 
 echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($context) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
@@ -152,7 +183,7 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
         style="<?php echo esc_attr(implode('; ', $styles)); ?>"
     <?php endif; ?>
 >
-    <div class="container mrn-reusable-block__inner mrn-partners-block__inner">
+    <div class="mrn-reusable-block__inner mrn-partners-block__inner mrn-ui__body">
         <?php if ($label !== '' || $heading !== '' || $subheading !== '') : ?>
             <header class="mrn-ui__head mrn-partners-block__header">
                 <?php if ($label !== '') : ?>
@@ -176,7 +207,60 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
         <?php endif; ?>
 
         <?php if ($items !== array()) : ?>
-            <div class="logo-grid mrn-partners-block__grid">
+            <?php if ('slider' === $display_mode) : ?>
+                <div
+                    id="<?php echo esc_attr($slider_id); ?>"
+                    class="splide mrn-splide mrn-logos-row__splide mrn-partners-block__splide"
+                    aria-label="<?php echo esc_attr($slider_label); ?>"
+                    data-per-page="<?php echo esc_attr((string) $logos_per_page); ?>"
+                    data-arrows="<?php echo esc_attr($show_arrows ? 'true' : 'false'); ?>"
+                    data-pagination="<?php echo esc_attr($show_pagination ? 'true' : 'false'); ?>"
+                    data-pause-on-hover="<?php echo esc_attr($pause_on_hover ? 'true' : 'false'); ?>"
+                    data-autoplay="<?php echo esc_attr($autoplay ? 'true' : 'false'); ?>"
+                    data-delay-start="<?php echo esc_attr((string) $delay_start); ?>"
+                    data-delay-time="<?php echo esc_attr((string) $delay_time); ?>"
+                    data-time-on-slide="<?php echo esc_attr((string) $time_on_slide); ?>"
+                >
+                    <div class="splide__track">
+                        <ul class="splide__list mrn-ui__items">
+                            <?php foreach ($items as $item) : ?>
+                                <?php
+                                $image       = $item['image'];
+                                $link        = $item['link'];
+                                $link_url    = isset($link['url']) ? (string) $link['url'] : '';
+                                $link_title  = isset($link['title']) ? (string) $link['title'] : '';
+                                $link_target = isset($link['target']) ? (string) $link['target'] : '';
+                                $aria_label  = $link_title !== '' ? $link_title : ($image['alt'] !== '' ? $image['alt'] : __('View partner', 'mrn-reusable-block-library'));
+                                ?>
+                                <li class="splide__slide">
+                                    <div class="logo-item mrn-partners-block__item mrn-logos-row__item mrn-ui__item">
+                                        <?php if ($link_url !== '') : ?>
+                                            <a
+                                                class="mrn-partners-block__link mrn-ui__link"
+                                                href="<?php echo esc_url($link_url); ?>"
+                                                aria-label="<?php echo esc_attr($aria_label); ?>"
+                                                <?php if ($link_target !== '') : ?>
+                                                    target="<?php echo esc_attr($link_target); ?>"
+                                                <?php endif; ?>
+                                                <?php if ($link_target === '_blank') : ?>
+                                                    rel="noopener noreferrer"
+                                                <?php endif; ?>
+                                            >
+                                        <?php endif; ?>
+
+                                        <?php echo function_exists('mrn_rbl_get_attachment_image') ? mrn_rbl_get_attachment_image((int) $image['id'], 'mrn-logo') : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
+                                        <?php if ($link_url !== '') : ?>
+                                            </a>
+                                        <?php endif; ?>
+                                    </div>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                </div>
+            <?php else : ?>
+            <div class="logo-grid mrn-partners-block__grid mrn-logos-row__grid mrn-logos-row__grid--logo-wall mrn-logos-row__grid--columns-<?php echo esc_attr((string) $logos_per_page); ?> mrn-ui__items">
                 <?php foreach ($items as $item) : ?>
                     <?php
                     $image       = $item['image'];
@@ -186,10 +270,10 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
                     $link_target = isset($link['target']) ? (string) $link['target'] : '';
                     $aria_label  = $link_title !== '' ? $link_title : ($image['alt'] !== '' ? $image['alt'] : __('View partner', 'mrn-reusable-block-library'));
                     ?>
-                    <div class="logo-item mrn-partners-block__item">
+                    <div class="logo-item mrn-partners-block__item mrn-logos-row__item mrn-logos-row__item--logo-wall mrn-ui__item">
                         <?php if ($link_url !== '') : ?>
                             <a
-                                class="mrn-partners-block__link"
+                                class="mrn-partners-block__link mrn-ui__link"
                                 href="<?php echo esc_url($link_url); ?>"
                                 aria-label="<?php echo esc_attr($aria_label); ?>"
                                 <?php if ($link_target !== '') : ?>
@@ -209,6 +293,7 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
                     </div>
                 <?php endforeach; ?>
             </div>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </section>

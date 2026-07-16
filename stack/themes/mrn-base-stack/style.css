@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.2.68
+Version: 1.2.69
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -4849,52 +4849,33 @@ a.mrn-social-links__link:focus-visible svg {
 }
 
 .mrn-reusable-block--partners {
-	background: var(--mrn-partners-block-bg, #f8f9fc);
-	text-align: center;
-}
-
-.mrn-content-builder__row.mrn-content-builder__row--partners {
-	--mrn-partners-row-margin-left: var(--mrn-row-margin-left-desktop, 30px);
-	--mrn-partners-row-margin-right: var(--mrn-row-margin-right-desktop, 30px);
-	container-type: inline-size;
-	margin-left: var(--mrn-partners-row-margin-left);
-	margin-right: var(--mrn-partners-row-margin-right);
-	width: calc(100% - var(--mrn-partners-row-margin-left) - var(--mrn-partners-row-margin-right));
-}
-
-.mrn-content-builder__row--partners .mrn-layout-content--reusable > .mrn-reusable-block--partners {
-	margin-inline: calc((100cqw - 100%) / -2);
-	width: 100cqw;
+	background: var(--mrn-partners-block-bg, transparent);
 }
 
 .mrn-reusable-block--partners .mrn-partners-block__inner {
-	gap: clamp(1rem, 2vw, 1.5rem);
+	display: grid;
+	gap: var(--mrn-space-stack-md);
 }
 
 .mrn-reusable-block--partners .mrn-partners-block__header {
 	gap: var(--mrn-space-stack-xs);
-	margin: 0 auto;
-	max-width: 60rem;
 }
 
 .mrn-reusable-block--partners .mrn-partners-block__heading,
 .mrn-reusable-block--partners .mrn-partners-block__subheading {
-	color: var(--site-color-mid-dark-gray, #5e6776);
-	margin: 0 auto;
-	max-width: 60rem;
+	margin: 0;
 }
 
 .mrn-reusable-block--partners .mrn-partners-block__grid {
 	align-items: center;
 	display: grid;
-	gap: 1.875rem clamp(2rem, 5vw, 3.75rem);
-	grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
+	gap: var(--mrn-space-stack-md);
 }
 
 .mrn-reusable-block--partners .mrn-partners-block__item {
 	align-items: center;
 	display: flex;
-	justify-content: center;
+	justify-content: flex-start;
 	min-width: 0;
 }
 
@@ -4913,15 +4894,8 @@ a.mrn-social-links__link:focus-visible svg {
 .mrn-reusable-block--partners .mrn-partners-block__item img {
 	display: block;
 	height: auto;
-	max-width: 70px;
-	width: 100%;
-}
-
-@media (max-width: 767px) {
-	.mrn-content-builder__row.mrn-content-builder__row--partners {
-		--mrn-partners-row-margin-left: var(--mrn-row-margin-left-mobile, 16px);
-		--mrn-partners-row-margin-right: var(--mrn-row-margin-right-mobile, 16px);
-	}
+	max-width: 100%;
+	width: auto;
 }
 
 .mrn-content-list-row__header {

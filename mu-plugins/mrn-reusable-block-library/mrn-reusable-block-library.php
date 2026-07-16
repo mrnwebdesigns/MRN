@@ -3,7 +3,7 @@
  * Plugin Name: MRN Reusable Block Library
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.25
+ * Version: 0.1.26
  */
 
 defined('ABSPATH') || exit;
@@ -2765,6 +2765,7 @@ function mrn_rbl_get_builder_layout_name_for_field_group(array $field_group): st
     $map       = array(
         'group_mrn_reusable_content_grid' => 'grid',
         'group_mrn_reusable_faq'          => 'faq',
+        'group_mrn_reusable_partner'      => 'logos',
     );
 
     return isset($map[$group_key]) ? $map[$group_key] : '';

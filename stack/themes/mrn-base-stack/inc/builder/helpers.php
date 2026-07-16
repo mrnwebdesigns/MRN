@@ -5083,6 +5083,19 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		return array( 'faq_layout' );
 	}
 
+	if ( 'logos' === $layout_name ) {
+		return array(
+			'per_page',
+			'show_arrows',
+			'show_pagination',
+			'pause_on_hover',
+			'autoplay',
+			'delay_start',
+			'delay_time',
+			'time_on_slide',
+		);
+	}
+
 	return array();
 }
 
@@ -5097,34 +5110,157 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 	$layout_name = sanitize_key( (string) $layout_name );
 	$key_seed    = sanitize_key( (string) $key_seed );
 
-	if ( 'faq' !== $layout_name && 'faq_block' !== $layout_name ) {
-		return array();
-	}
-
 	if ( '' === $key_seed ) {
 		$key_seed = 'field_mrn_' . $layout_name;
 	}
 
-	return array(
-		array(
-			'key'           => $key_seed . '_faq_layout',
-			'label'         => 'FAQ Layout',
-			'name'          => 'faq_layout',
-			'aria-label'    => '',
-			'type'          => 'select',
-			'choices'       => array(
-				'stacked' => 'Stacked',
-				'split'   => 'Split heading / items',
+	if ( 'faq' === $layout_name || 'faq_block' === $layout_name ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_faq_layout',
+				'label'         => 'FAQ Layout',
+				'name'          => 'faq_layout',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => array(
+					'stacked' => 'Stacked',
+					'split'   => 'Split heading / items',
+				),
+				'default_value' => 'stacked',
+				'allow_null'    => 0,
+				'ui'            => 1,
+				'instructions'  => 'Choose whether the section heading stacks above the accordion or sits beside the items.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
 			),
-			'default_value' => 'stacked',
-			'allow_null'    => 0,
-			'ui'            => 1,
-			'instructions'  => 'Choose whether the section heading stacks above the accordion or sits beside the items.',
-			'wrapper'       => array(
-				'width' => '50',
+		);
+	}
+
+	if ( 'logos' === $layout_name ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_per_page',
+				'label'         => 'Logos per Row/View',
+				'name'          => 'per_page',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => array(
+					'3' => '3',
+					'4' => '4',
+					'5' => '5',
+					'6' => '6',
+				),
+				'default_value' => '6',
+				'allow_null'    => 0,
+				'ui'            => 1,
+				'instructions'  => 'Controls grid columns and slider slides per view.',
+				'wrapper'       => array(
+					'width' => '25',
+				),
 			),
-		),
-	);
+			array(
+				'key'           => $key_seed . '_show_arrows',
+				'label'         => 'Show Arrows',
+				'name'          => 'show_arrows',
+				'aria-label'    => '',
+				'type'          => 'true_false',
+				'ui'            => 1,
+				'default_value' => 0,
+				'ui_on_text'    => 'On',
+				'ui_off_text'   => 'Off',
+				'wrapper'       => array(
+					'width' => '25',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_show_pagination',
+				'label'         => 'Show Pagination',
+				'name'          => 'show_pagination',
+				'aria-label'    => '',
+				'type'          => 'true_false',
+				'ui'            => 1,
+				'default_value' => 0,
+				'ui_on_text'    => 'On',
+				'ui_off_text'   => 'Off',
+				'wrapper'       => array(
+					'width' => '25',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_pause_on_hover',
+				'label'         => 'Pause on Hover',
+				'name'          => 'pause_on_hover',
+				'aria-label'    => '',
+				'type'          => 'true_false',
+				'ui'            => 1,
+				'default_value' => 1,
+				'ui_on_text'    => 'On',
+				'ui_off_text'   => 'Off',
+				'wrapper'       => array(
+					'width' => '25',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_autoplay',
+				'label'         => 'Autoplay',
+				'name'          => 'autoplay',
+				'aria-label'    => '',
+				'type'          => 'true_false',
+				'ui'            => 1,
+				'default_value' => 0,
+				'ui_on_text'    => 'On',
+				'ui_off_text'   => 'Off',
+				'wrapper'       => array(
+					'width' => '25',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_delay_start',
+				'label'         => 'Delay Start',
+				'name'          => 'delay_start',
+				'aria-label'    => '',
+				'type'          => 'number',
+				'default_value' => 0,
+				'min'           => 0,
+				'step'          => 0.5,
+				'instructions'  => 'Seconds to wait before autoplay begins.',
+				'wrapper'       => array(
+					'width' => '33',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_delay_time',
+				'label'         => 'Delay Time',
+				'name'          => 'delay_time',
+				'aria-label'    => '',
+				'type'          => 'number',
+				'default_value' => 5,
+				'min'           => 1,
+				'step'          => 0.5,
+				'instructions'  => 'Seconds each slide stays visible during autoplay.',
+				'wrapper'       => array(
+					'width' => '33',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_time_on_slide',
+				'label'         => 'Time on Slide',
+				'name'          => 'time_on_slide',
+				'aria-label'    => '',
+				'type'          => 'number',
+				'default_value' => 600,
+				'min'           => 100,
+				'step'          => 50,
+				'instructions'  => 'Transition speed in milliseconds.',
+				'wrapper'       => array(
+					'width' => '34',
+				),
+			),
+		);
+	}
+
+	return array();
 }
 
 /**
@@ -5323,6 +5459,7 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 	$layout_tab             = null;
 	$layout_contract_fields = mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $seed );
 	$layout_contract_names  = mrn_base_stack_get_builder_layout_contract_field_names( $layout_name );
+	$existing_layout_fields = array();
 
 	foreach ( $fields as $field ) {
 		if ( ! is_array( $field ) ) {
@@ -5342,6 +5479,9 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 		}
 
 		if ( '' !== $field_name && in_array( $field_name, $layout_contract_names, true ) ) {
+			if ( ! isset( $existing_layout_fields[ $field_name ] ) ) {
+				$existing_layout_fields[ $field_name ] = $field;
+			}
 			continue;
 		}
 
@@ -5355,6 +5495,41 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 		$layout_tab['type']      = 'tab';
 		$layout_tab['placement'] = 'top';
 		$layout_tab['endpoint']  = 0;
+	}
+
+	if ( ! empty( $layout_contract_fields ) && ! empty( $existing_layout_fields ) ) {
+		$merged_layout_contract_fields = array();
+		$used_existing_field_names     = array();
+
+		foreach ( $layout_contract_fields as $layout_contract_field ) {
+			if ( ! is_array( $layout_contract_field ) ) {
+				$merged_layout_contract_fields[] = $layout_contract_field;
+				continue;
+			}
+
+			$field_name = isset( $layout_contract_field['name'] ) ? sanitize_key( (string) $layout_contract_field['name'] ) : '';
+			if ( '' !== $field_name && isset( $existing_layout_fields[ $field_name ] ) && is_array( $existing_layout_fields[ $field_name ] ) ) {
+				$existing_field = $existing_layout_fields[ $field_name ];
+				foreach ( array( 'key', '_name', 'parent', 'parent_layout', 'default_value', 'conditional_logic' ) as $preserved_key ) {
+					if ( array_key_exists( $preserved_key, $existing_field ) ) {
+						$layout_contract_field[ $preserved_key ] = $existing_field[ $preserved_key ];
+					}
+				}
+				$used_existing_field_names[] = $field_name;
+			}
+
+			$merged_layout_contract_fields[] = $layout_contract_field;
+		}
+
+		foreach ( $existing_layout_fields as $field_name => $existing_field ) {
+			if ( in_array( $field_name, $used_existing_field_names, true ) ) {
+				continue;
+			}
+
+			$merged_layout_contract_fields[] = $existing_field;
+		}
+
+		$layout_contract_fields = $merged_layout_contract_fields;
 	}
 
 	$insert_index = count( $remaining_fields );
@@ -9681,7 +9856,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 		'layout_mrn_nested_logos' => array(
 			'key'        => 'layout_mrn_nested_logos',
 			'name'       => 'logos',
-			'label'      => 'Logos - label|heading|image|link',
+			'label'      => 'Page Specific Logos',
 			'display'    => 'block',
 			'sub_fields' => array(
 				array(
