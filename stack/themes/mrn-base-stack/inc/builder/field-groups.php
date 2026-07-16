@@ -2535,16 +2535,17 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_logos_display_mode',
-										'label'         => 'Display mode',
+										'label'         => 'Layout Mode',
 										'name'          => 'display_mode',
 										'aria-label'    => '',
 										'type'          => 'select',
-										'choices'       => array(
+										'choices'       => function_exists( 'mrn_base_stack_get_builder_layout_mode_choices' ) ? mrn_base_stack_get_builder_layout_mode_choices( 'logos' ) : array(
 											'grid'   => 'Grid',
 											'slider' => 'Slider',
 										),
 										'default_value' => 'grid',
 										'ui'            => 1,
+										'instructions'  => 'Choose whether logos render as a grid or a slider. Visual treatments belong in Display Styles.',
 										'wrapper'       => array(
 											'width' => '25',
 										),
@@ -2761,6 +2762,21 @@ function mrn_base_stack_register_acf_field_groups() {
 												'type'    => 'text',
 												'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
 											),
+											array(
+												'key'     => 'field_mrn_stats_item_animate_value',
+												'label'   => 'Spin In Value',
+												'name'    => 'animate_value',
+												'aria-label' => '',
+												'type'    => 'true_false',
+												'ui'      => 1,
+												'default_value' => 0,
+												'ui_on_text' => 'On',
+												'ui_off_text' => 'Off',
+												'instructions' => 'Animates this stat value when it scrolls into view. Respects reduced-motion preferences.',
+												'wrapper' => array(
+													'width' => '50',
+												),
+											),
 										),
 									),
 									array(
@@ -2854,7 +2870,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_showcase' => array(
 								'key'        => 'layout_mrn_showcase',
 								'name'       => 'showcase',
-								'label'      => 'Showcase - label|heading|image|link',
+								'label'      => 'Showcase',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -2983,17 +2999,18 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_showcase_stagger',
-										'label'         => 'Stagger style',
+										'label'         => 'Layout Mode',
 										'name'          => 'stagger_style',
 										'aria-label'    => '',
 										'type'          => 'select',
-										'choices'       => array(
+										'choices'       => function_exists( 'mrn_base_stack_get_builder_layout_mode_choices' ) ? mrn_base_stack_get_builder_layout_mode_choices( 'showcase' ) : array(
+											'flat'    => 'Grid',
 											'collage' => 'Collage',
 											'stacked' => 'Stacked',
-											'flat'    => 'Flat',
 										),
-										'default_value' => 'collage',
+										'default_value' => 'flat',
 										'ui'            => 1,
+										'instructions'  => 'Grid is the default for simple image groups. Collage is an editorial treatment for intentionally featured compositions.',
 										'wrapper'       => array(
 											'width' => '25',
 										),

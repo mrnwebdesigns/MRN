@@ -500,6 +500,119 @@
 		} );
 	}
 
+	function userPrefersReducedMotion() {
+		return 'function' === typeof window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+	}
+
+	function parseStatValue( value ) {
+		var source = 'string' === typeof value ? value.trim() : '';
+		var match;
+		var rawNumber;
+		var numericValue;
+
+		if ( '' === source ) {
+			return null;
+		}
+
+		match = source.match( /[+-]?\d[\d,]*(?:\.\d+)?/ );
+
+		if ( ! match ) {
+			return null;
+		}
+
+		rawNumber = match[ 0 ];
+		numericValue = parseFloat( rawNumber.replace( /,/g, '' ) );
+
+		if ( Number.isNaN( numericValue ) ) {
+			return null;
+		}
+
+		return {
+			prefix: source.slice( 0, match.index ),
+			suffix: source.slice( match.index + rawNumber.length ),
+			value: numericValue,
+			decimals: rawNumber.indexOf( '.' ) === -1 ? 0 : rawNumber.split( '.' )[ 1 ].length,
+			useGrouping: rawNumber.indexOf( ',' ) !== -1,
+			showPlus: rawNumber.charAt( 0 ) === '+',
+			finalText: source
+		};
+	}
+
+	function formatStatValue( parsed, value ) {
+		var decimals = parsed.decimals;
+		var numericValue = decimals > 0 ? Number( value.toFixed( decimals ) ) : Math.round( value );
+		var formattedValue;
+
+		if ( Object.is && Object.is( numericValue, -0 ) ) {
+			numericValue = 0;
+		}
+
+		if ( parsed.useGrouping && 'function' === typeof numericValue.toLocaleString ) {
+			formattedValue = numericValue.toLocaleString( undefined, {
+				minimumFractionDigits: decimals,
+				maximumFractionDigits: decimals
+			} );
+		} else {
+			formattedValue = decimals > 0 ? numericValue.toFixed( decimals ) : String( numericValue );
+		}
+
+		if ( parsed.showPlus && numericValue >= 0 && formattedValue.charAt( 0 ) !== '+' ) {
+			formattedValue = '+' + formattedValue;
+		}
+
+		return parsed.prefix + formattedValue + parsed.suffix;
+	}
+
+	function animateStatValue( valueElement ) {
+		var parsed = parseStatValue( valueElement.textContent || '' );
+		var animate = window.Motion && 'function' === typeof window.Motion.animate ? window.Motion.animate : null;
+
+		if ( valueElement.dataset.mrnStatAnimated ) {
+			return;
+		}
+
+		valueElement.dataset.mrnStatAnimated = 'true';
+
+		if ( ! parsed ) {
+			return;
+		}
+
+		if ( userPrefersReducedMotion() || ! animate ) {
+			valueElement.textContent = parsed.finalText;
+			return;
+		}
+
+		valueElement.textContent = formatStatValue( parsed, 0 );
+		valueElement.classList.add( 'is-mrn-stat-spinning' );
+
+		animate( 0, parsed.value, {
+			duration: 1.4,
+			ease: 'easeOut',
+			onUpdate: function( latest ) {
+				valueElement.textContent = formatStatValue( parsed, latest );
+			},
+			onComplete: function() {
+				valueElement.textContent = parsed.finalText;
+				valueElement.classList.remove( 'is-mrn-stat-spinning' );
+				valueElement.classList.add( 'is-mrn-stat-locked' );
+			}
+		} );
+	}
+
+	function initStatValueAnimations( inView ) {
+		var statValues = document.querySelectorAll( '[data-mrn-stat-animation="spin-in"]' );
+
+		if ( ! statValues.length ) {
+			return;
+		}
+
+		statValues.forEach( function( valueElement ) {
+			inView( valueElement, function() {
+				animateStatValue( valueElement );
+			}, { margin: '-20% 0px -20% 0px' } );
+		} );
+	}
+
 	function initGlobalApi( inView ) {
 		window.mrnBaseStack = window.mrnBaseStack || {};
 		window.mrnBaseStack.motion = window.Motion || {};
@@ -520,6 +633,7 @@
 		initGlobalApi( window.Motion.inView );
 		initSurfaceSections( window.Motion.inView );
 		initActiveClassEffects( window.Motion.inView );
+		initStatValueAnimations( window.Motion.inView );
 		initDarkScrollCardEffects();
 	}
 

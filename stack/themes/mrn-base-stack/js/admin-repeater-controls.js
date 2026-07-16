@@ -7,6 +7,7 @@
 
 	// Keep this off by default to avoid costly submit/heartbeat restore passes on very large editors.
 	var enableRowBodyDetachment = false;
+	var enableRepeaterBulkControls = false;
 
 	function isUnsafeAcfEditorContext() {
 		var body = document.body;
@@ -92,7 +93,10 @@
 			.filter( '.acf-field[data-type="repeater"]' )
 			.add( $context.find( '.acf-field[data-type="repeater"]' ) )
 			.add( $context.closest( '.acf-field[data-type="repeater"]' ) )
-			.not( '.acf-clone' );
+			.not( '.acf-clone' )
+			.filter( function () {
+				return ! $( this ).closest( '.acf-clone' ).length;
+			} );
 	}
 
 	function getRepeaterRows( $field ) {
@@ -126,13 +130,7 @@
 	}
 
 	function getRowCollapseToggle( $row ) {
-		var $toggle = $row.find( '> .acf-row-handle .acf-icon.-collapse, > .acf-row-handle.order .acf-icon.-collapse, > .acf-row-handle .acf-js-tooltip' ).first();
-
-		if ( ! $toggle.length ) {
-			$toggle = $row.find( '> .acf-row-handle, > .acf-row-handle.order' ).first();
-		}
-
-		return $toggle;
+		return $row.find( '> .acf-row-handle .acf-icon.-collapse, > .acf-row-handle.order .acf-icon.-collapse, > .acf-row-handle [data-event="collapse-row"], > .acf-row-handle.order [data-event="collapse-row"]' ).first();
 	}
 
 	function isRowCollapsed( $row ) {
@@ -556,7 +554,18 @@
 		$toggle = getRowCollapseToggle( $row );
 		if ( $toggle.length ) {
 			$toggle.trigger( 'click' );
+			return;
 		}
+
+		$row.toggleClass( '-collapsed', collapsed );
+		$row.toggleClass( 'collapsed', collapsed );
+
+		if ( collapsed ) {
+			syncRowBodyState( $row );
+			return;
+		}
+
+		restoreRowBodies( $row );
 	}
 
 	function collapseInitialRows( context ) {
@@ -623,6 +632,11 @@
 		var $existing = $label.find( '.mrn-acf-repeater-toolbar' ).first();
 		var $toolbar;
 
+		if ( ! enableRepeaterBulkControls ) {
+			$existing.remove();
+			return $();
+		}
+
 		if ( ! $label.length ) {
 			return $();
 		}
@@ -661,6 +675,11 @@
 		var $field;
 
 		event.preventDefault();
+
+		if ( ! enableRepeaterBulkControls ) {
+			return;
+		}
+
 		$field = $( this ).closest( '.acf-field[data-type="repeater"]' );
 
 		getRepeaterRows( $field ).each( function () {
@@ -672,6 +691,11 @@
 		var $field;
 
 		event.preventDefault();
+
+		if ( ! enableRepeaterBulkControls ) {
+			return;
+		}
+
 		$field = $( this ).closest( '.acf-field[data-type="repeater"]' );
 
 		getRepeaterRows( $field ).each( function () {

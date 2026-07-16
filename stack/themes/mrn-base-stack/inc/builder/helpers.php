@@ -3364,6 +3364,7 @@ function mrn_base_stack_get_motion_trigger_choices() {
 function mrn_base_stack_get_effects_tab_field_names() {
 	return array(
 		'enable_row_effects',
+		'hover_effect',
 		'tab_switch_effect',
 	);
 }
@@ -5085,6 +5086,7 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 
 	if ( 'logos' === $layout_name ) {
 		return array(
+			'display_mode',
 			'per_page',
 			'show_arrows',
 			'show_pagination',
@@ -5103,7 +5105,143 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		);
 	}
 
+	if ( 'showcase' === $layout_name ) {
+		return array(
+			'stagger_style',
+			'enable_full_item_link',
+			'hide_item_link',
+		);
+	}
+
 	return array();
+}
+
+/**
+ * Get structural layout-mode choices for layouts that offer multiple shapes.
+ *
+ * Layout modes control arrangement/structure. Display styles control the visual
+ * treatment applied to the chosen arrangement.
+ *
+ * @param string $layout_name Builder layout name.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_builder_layout_mode_choices( $layout_name ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+
+	if ( 'logos' === $layout_name ) {
+		return array(
+			'grid'   => __( 'Grid', 'mrn-base-stack' ),
+			'slider' => __( 'Slider', 'mrn-base-stack' ),
+		);
+	}
+
+	if ( 'showcase' === $layout_name ) {
+		return array(
+			'flat'    => __( 'Grid', 'mrn-base-stack' ),
+			'collage' => __( 'Collage', 'mrn-base-stack' ),
+			'stacked' => __( 'Stacked', 'mrn-base-stack' ),
+		);
+	}
+
+	return array();
+}
+
+/**
+ * Get the stored field name for a layout's structural mode.
+ *
+ * Existing names are preserved so saved content remains stable.
+ *
+ * @param string $layout_name Builder layout name.
+ * @return string
+ */
+function mrn_base_stack_get_builder_layout_mode_field_name( $layout_name ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+
+	if ( 'logos' === $layout_name ) {
+		return 'display_mode';
+	}
+
+	if ( 'showcase' === $layout_name ) {
+		return 'stagger_style';
+	}
+
+	return '';
+}
+
+/**
+ * Get layout-mode field names used by one builder layout.
+ *
+ * @param string $layout_name Builder layout name.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_builder_layout_mode_field_names( $layout_name ) {
+	$field_name = mrn_base_stack_get_builder_layout_mode_field_name( $layout_name );
+
+	return '' !== $field_name ? array( $field_name ) : array();
+}
+
+/**
+ * Normalize a structural layout mode for a builder layout.
+ *
+ * @param string $mode        Candidate mode.
+ * @param string $layout_name Builder layout name.
+ * @return string
+ */
+function mrn_base_stack_normalize_builder_layout_mode( $mode, $layout_name ) {
+	$mode    = sanitize_key( (string) $mode );
+	$choices = mrn_base_stack_get_builder_layout_mode_choices( $layout_name );
+
+	if ( '' !== $mode && isset( $choices[ $mode ] ) ) {
+		return $mode;
+	}
+
+	$first_mode = array_key_first( $choices );
+
+	return is_string( $first_mode ) ? $first_mode : '';
+}
+
+/**
+ * Build the shared structural Layout Mode field.
+ *
+ * @param string $layout_name Builder layout name.
+ * @param string $key_seed Field key seed.
+ * @return array<string, mixed>|null
+ */
+function mrn_base_stack_get_builder_layout_mode_field( $layout_name, $key_seed ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	$key_seed    = sanitize_key( (string) $key_seed );
+	$field_name  = mrn_base_stack_get_builder_layout_mode_field_name( $layout_name );
+	$choices     = mrn_base_stack_get_builder_layout_mode_choices( $layout_name );
+
+	if ( '' === $field_name || empty( $choices ) ) {
+		return null;
+	}
+
+	$instructions = __( 'Controls the structural arrangement for this layout. Display Styles control visual treatment.', 'mrn-base-stack' );
+
+	if ( 'showcase' === $layout_name ) {
+		$instructions = __( 'Grid is the default for simple image groups. Collage is an editorial treatment for intentionally featured compositions.', 'mrn-base-stack' );
+	}
+
+	if ( 'logos' === $layout_name ) {
+		$instructions = __( 'Choose whether logos render as a grid or a slider. Visual treatments belong in Display Styles.', 'mrn-base-stack' );
+	}
+
+	return array(
+		'key'           => $key_seed . '_layout_mode',
+		'label'         => 'Layout Mode',
+		'name'          => $field_name,
+		'aria-label'    => '',
+		'type'          => 'select',
+		'choices'       => $choices,
+		'default_value' => mrn_base_stack_normalize_builder_layout_mode( '', $layout_name ),
+		'allow_null'    => 0,
+		'ui'            => 1,
+		'instructions'  => $instructions,
+		'wrapper'       => array(
+			'width' => '50',
+		),
+	);
 }
 
 /**
@@ -5145,125 +5283,135 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 	}
 
 	if ( 'logos' === $layout_name ) {
-		return array(
+		$layout_mode_field = mrn_base_stack_get_builder_layout_mode_field( 'logos', $key_seed );
+		$fields            = array();
+
+		if ( is_array( $layout_mode_field ) ) {
+			$fields[] = $layout_mode_field;
+		}
+
+		return array_merge(
+			$fields,
 			array(
-				'key'           => $key_seed . '_per_page',
-				'label'         => 'Logos per Row/View',
-				'name'          => 'per_page',
-				'aria-label'    => '',
-				'type'          => 'select',
-				'choices'       => array(
-					'3' => '3',
-					'4' => '4',
-					'5' => '5',
-					'6' => '6',
+				array(
+					'key'           => $key_seed . '_per_page',
+					'label'         => 'Logos per Row/View',
+					'name'          => 'per_page',
+					'aria-label'    => '',
+					'type'          => 'select',
+					'choices'       => array(
+						'3' => '3',
+						'4' => '4',
+						'5' => '5',
+						'6' => '6',
+					),
+					'default_value' => '6',
+					'allow_null'    => 0,
+					'ui'            => 1,
+					'instructions'  => 'Controls grid columns and slider slides per view.',
+					'wrapper'       => array(
+						'width' => '25',
+					),
 				),
-				'default_value' => '6',
-				'allow_null'    => 0,
-				'ui'            => 1,
-				'instructions'  => 'Controls grid columns and slider slides per view.',
-				'wrapper'       => array(
-					'width' => '25',
+				array(
+					'key'           => $key_seed . '_show_arrows',
+					'label'         => 'Show Arrows',
+					'name'          => 'show_arrows',
+					'aria-label'    => '',
+					'type'          => 'true_false',
+					'ui'            => 1,
+					'default_value' => 0,
+					'ui_on_text'    => 'On',
+					'ui_off_text'   => 'Off',
+					'wrapper'       => array(
+						'width' => '25',
+					),
 				),
-			),
-			array(
-				'key'           => $key_seed . '_show_arrows',
-				'label'         => 'Show Arrows',
-				'name'          => 'show_arrows',
-				'aria-label'    => '',
-				'type'          => 'true_false',
-				'ui'            => 1,
-				'default_value' => 0,
-				'ui_on_text'    => 'On',
-				'ui_off_text'   => 'Off',
-				'wrapper'       => array(
-					'width' => '25',
+				array(
+					'key'           => $key_seed . '_show_pagination',
+					'label'         => 'Show Pagination',
+					'name'          => 'show_pagination',
+					'aria-label'    => '',
+					'type'          => 'true_false',
+					'ui'            => 1,
+					'default_value' => 0,
+					'ui_on_text'    => 'On',
+					'ui_off_text'   => 'Off',
+					'wrapper'       => array(
+						'width' => '25',
+					),
 				),
-			),
-			array(
-				'key'           => $key_seed . '_show_pagination',
-				'label'         => 'Show Pagination',
-				'name'          => 'show_pagination',
-				'aria-label'    => '',
-				'type'          => 'true_false',
-				'ui'            => 1,
-				'default_value' => 0,
-				'ui_on_text'    => 'On',
-				'ui_off_text'   => 'Off',
-				'wrapper'       => array(
-					'width' => '25',
+				array(
+					'key'           => $key_seed . '_pause_on_hover',
+					'label'         => 'Pause on Hover',
+					'name'          => 'pause_on_hover',
+					'aria-label'    => '',
+					'type'          => 'true_false',
+					'ui'            => 1,
+					'default_value' => 1,
+					'ui_on_text'    => 'On',
+					'ui_off_text'   => 'Off',
+					'wrapper'       => array(
+						'width' => '25',
+					),
 				),
-			),
-			array(
-				'key'           => $key_seed . '_pause_on_hover',
-				'label'         => 'Pause on Hover',
-				'name'          => 'pause_on_hover',
-				'aria-label'    => '',
-				'type'          => 'true_false',
-				'ui'            => 1,
-				'default_value' => 1,
-				'ui_on_text'    => 'On',
-				'ui_off_text'   => 'Off',
-				'wrapper'       => array(
-					'width' => '25',
+				array(
+					'key'           => $key_seed . '_autoplay',
+					'label'         => 'Autoplay',
+					'name'          => 'autoplay',
+					'aria-label'    => '',
+					'type'          => 'true_false',
+					'ui'            => 1,
+					'default_value' => 0,
+					'ui_on_text'    => 'On',
+					'ui_off_text'   => 'Off',
+					'wrapper'       => array(
+						'width' => '25',
+					),
 				),
-			),
-			array(
-				'key'           => $key_seed . '_autoplay',
-				'label'         => 'Autoplay',
-				'name'          => 'autoplay',
-				'aria-label'    => '',
-				'type'          => 'true_false',
-				'ui'            => 1,
-				'default_value' => 0,
-				'ui_on_text'    => 'On',
-				'ui_off_text'   => 'Off',
-				'wrapper'       => array(
-					'width' => '25',
+				array(
+					'key'           => $key_seed . '_delay_start',
+					'label'         => 'Delay Start',
+					'name'          => 'delay_start',
+					'aria-label'    => '',
+					'type'          => 'number',
+					'default_value' => 0,
+					'min'           => 0,
+					'step'          => 0.5,
+					'instructions'  => 'Seconds to wait before autoplay begins.',
+					'wrapper'       => array(
+						'width' => '33',
+					),
 				),
-			),
-			array(
-				'key'           => $key_seed . '_delay_start',
-				'label'         => 'Delay Start',
-				'name'          => 'delay_start',
-				'aria-label'    => '',
-				'type'          => 'number',
-				'default_value' => 0,
-				'min'           => 0,
-				'step'          => 0.5,
-				'instructions'  => 'Seconds to wait before autoplay begins.',
-				'wrapper'       => array(
-					'width' => '33',
+				array(
+					'key'           => $key_seed . '_delay_time',
+					'label'         => 'Delay Time',
+					'name'          => 'delay_time',
+					'aria-label'    => '',
+					'type'          => 'number',
+					'default_value' => 5,
+					'min'           => 1,
+					'step'          => 0.5,
+					'instructions'  => 'Seconds each slide stays visible during autoplay.',
+					'wrapper'       => array(
+						'width' => '33',
+					),
 				),
-			),
-			array(
-				'key'           => $key_seed . '_delay_time',
-				'label'         => 'Delay Time',
-				'name'          => 'delay_time',
-				'aria-label'    => '',
-				'type'          => 'number',
-				'default_value' => 5,
-				'min'           => 1,
-				'step'          => 0.5,
-				'instructions'  => 'Seconds each slide stays visible during autoplay.',
-				'wrapper'       => array(
-					'width' => '33',
+				array(
+					'key'           => $key_seed . '_time_on_slide',
+					'label'         => 'Time on Slide',
+					'name'          => 'time_on_slide',
+					'aria-label'    => '',
+					'type'          => 'number',
+					'default_value' => 600,
+					'min'           => 100,
+					'step'          => 50,
+					'instructions'  => 'Transition speed in milliseconds.',
+					'wrapper'       => array(
+						'width' => '34',
+					),
 				),
-			),
-			array(
-				'key'           => $key_seed . '_time_on_slide',
-				'label'         => 'Time on Slide',
-				'name'          => 'time_on_slide',
-				'aria-label'    => '',
-				'type'          => 'number',
-				'default_value' => 600,
-				'min'           => 100,
-				'step'          => 50,
-				'instructions'  => 'Transition speed in milliseconds.',
-				'wrapper'       => array(
-					'width' => '34',
-				),
-			),
+			)
 		);
 	}
 
@@ -5302,6 +5450,54 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 					'width' => '50',
 				),
 			),
+		);
+	}
+
+	if ( 'showcase' === $layout_name ) {
+		$layout_mode_field = mrn_base_stack_get_builder_layout_mode_field( 'showcase', $key_seed );
+		$fields            = is_array( $layout_mode_field ) ? array( $layout_mode_field ) : array();
+
+		return array_merge(
+			$fields,
+			array(
+				array(
+					'key'           => $key_seed . '_enable_full_item_link',
+					'label'         => 'Make Entire Showcase Clickable',
+					'name'          => 'enable_full_item_link',
+					'aria-label'    => '',
+					'type'          => 'true_false',
+					'ui'            => 1,
+					'default_value' => 0,
+					'ui_on_text'    => 'On',
+					'ui_off_text'   => 'Off',
+					'wrapper'       => array(
+						'width' => '25',
+					),
+				),
+				array(
+					'key'               => $key_seed . '_hide_item_link',
+					'label'             => 'Hide Link Label',
+					'name'              => 'hide_item_link',
+					'aria-label'        => '',
+					'type'              => 'true_false',
+					'ui'                => 1,
+					'default_value'     => 0,
+					'ui_on_text'        => 'On',
+					'ui_off_text'       => 'Off',
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => $key_seed . '_enable_full_item_link',
+								'operator' => '==',
+								'value'    => '1',
+							),
+						),
+					),
+					'wrapper'           => array(
+						'width' => '25',
+					),
+				),
+			)
 		);
 	}
 
@@ -5377,9 +5573,12 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		return $fields;
 	}
 
-	$is_content_lists = 'content_lists' === $layout_name;
-	$mode_choices     = $is_content_lists ? mrn_base_stack_get_content_list_display_mode_choices() : mrn_base_stack_get_builder_layout_display_mode_choices( $layout_name );
-	$style_choices    = $is_content_lists ? mrn_base_stack_get_content_list_display_style_choices() : mrn_base_stack_get_builder_layout_display_style_choices( $layout_name );
+	$is_content_lists  = 'content_lists' === $layout_name;
+	$mode_choices      = $is_content_lists ? mrn_base_stack_get_content_list_display_mode_choices() : mrn_base_stack_get_builder_layout_display_mode_choices( $layout_name );
+	$style_choices     = $is_content_lists ? mrn_base_stack_get_content_list_display_style_choices() : mrn_base_stack_get_builder_layout_display_style_choices( $layout_name );
+	$layout_mode_names = function_exists( 'mrn_base_stack_get_builder_layout_mode_field_names' )
+		? mrn_base_stack_get_builder_layout_mode_field_names( $layout_name )
+		: array();
 
 	if ( empty( $mode_choices ) && empty( $style_choices ) ) {
 		return $fields;
@@ -5409,6 +5608,11 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		}
 
 		if ( 'display_mode' === $field_name && 'select' === $field_type ) {
+			if ( in_array( $field_name, $layout_mode_names, true ) ) {
+				$remaining_fields[] = $field;
+				continue;
+			}
+
 			$display_mode_field = $field;
 			continue;
 		}
@@ -9965,16 +10169,14 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 				),
 				array(
 					'key'           => 'field_mrn_nested_logos_display_mode',
-					'label'         => 'Display mode',
+					'label'         => 'Layout Mode',
 					'name'          => 'display_mode',
 					'aria-label'    => '',
 					'type'          => 'select',
-					'choices'       => array(
-						'grid'   => 'Grid',
-						'slider' => 'Slider',
-					),
+					'choices'       => mrn_base_stack_get_builder_layout_mode_choices( 'logos' ),
 					'default_value' => 'grid',
 					'ui'            => 1,
+					'instructions'  => 'Choose whether logos render as a grid or a slider. Visual treatments belong in Display Styles.',
 					'wrapper'       => array(
 						'width' => '50',
 					),

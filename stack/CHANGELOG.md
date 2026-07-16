@@ -1,5 +1,47 @@
 # Stack Changelog
 
+## 2026.07.16-layout-mode-contract
+- Expanded `mrn-base-stack` to `1.2.77`.
+- Added a shared structural Layout Mode helper for item-based layouts that need multiple arrangements.
+- Moved Logos Grid/Slider control into the Layout contract while preserving the saved `display_mode` key and front-end classes.
+- Updated Showcase to use the shared Layout Mode helper while preserving the saved `stagger_style` key.
+- Kept Display Styles focused on visual treatment instead of structural arrangement.
+
+## 2026.07.16-showcase-image-layout
+- Expanded `mrn-base-stack` to `1.2.76`.
+- Changed Showcase Image Layout to default to a clean grid instead of collage for simple image groups.
+- Added Showcase item-count classes so one, two, and three image rows render with balanced column spans, including older rows saved with the collage option.
+- Removed overlapping collage grid placements so editorial Showcase layouts remain deterministic.
+
+## 2026.07.16-stats-stack-animation-runtime
+- Expanded `mrn-base-stack` to `1.2.75`.
+- Updated the per-stat value animation to use the stack-provided Motion runtime for numeric interpolation.
+- Kept the Stats visual spin/lock styling in CSS and preserved reduced-motion fallback behavior.
+
+## 2026.07.16-stats-item-animation
+- Expanded `mrn-base-stack` to `1.2.74`.
+- Moved Stats value spin-in animation from a row-level effect to a per-stat toggle.
+- Aligned Stats icon/value rendering so icon position applies beside the stat value.
+
+## 2026.07.16-repeater-bulk-controls-disabled
+- Expanded `mrn-base-stack` to `1.2.73`.
+- Disabled the shared ACF repeater Collapse All / Expand All toolbar because it adds confusing UI to nested row editors.
+- Left individual ACF row collapse behavior intact.
+
+## 2026.07.16-stats-value-animation
+- Expanded `mrn-base-stack` to `1.2.72`.
+- Added a Stats-only `Stat Value Animation` effect with a `Spin In` option and configurable duration.
+- Added front-end stat value spin/count animation that triggers once when numeric stats enter view and locks to the authored final value.
+- Preserved static stat output by default and respected reduced-motion preferences.
+
+## 2026.07.16-showcase-layout-contract
+- Expanded `mrn-base-stack` to `1.2.71`.
+- Renamed the Showcase builder layout label so the picker no longer exposes internal field hints.
+- Moved Showcase Stagger Style and full-item-link controls into the shared Layout tab while preserving existing field keys and saved values.
+- Moved Showcase Hover Effect into the shared Effects tab.
+- Applied the shared Display Styles contract to the Showcase front-end section output.
+- Removed legacy Showcase surface padding and duplicate shell overrides so row spacing controls own section spacing.
+
 ## 2026.07.16-stats-layout-contract
 - Expanded `mrn-base-stack` to `1.2.70`.
 - Renamed the Stats builder layout label so the picker no longer exposes internal field hints.

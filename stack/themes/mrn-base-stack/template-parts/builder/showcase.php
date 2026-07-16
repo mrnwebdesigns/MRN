@@ -15,7 +15,7 @@ $subheading            = isset( $row['subheading'] ) ? trim( (string) $row['subh
 $subheading_tag        = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $items                 = isset( $row['showcase_items'] ) && is_array( $row['showcase_items'] ) ? $row['showcase_items'] : array();
 $hover_effect          = isset( $row['hover_effect'] ) ? sanitize_key( (string) $row['hover_effect'] ) : 'lift';
-$stagger_style         = isset( $row['stagger_style'] ) ? sanitize_key( (string) $row['stagger_style'] ) : 'collage';
+$stagger_style         = isset( $row['stagger_style'] ) ? sanitize_key( (string) $row['stagger_style'] ) : 'flat';
 $enable_full_item_link = ! empty( $row['enable_full_item_link'] );
 $hide_item_link        = $enable_full_item_link && ! empty( $row['hide_item_link'] );
 $background_color      = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
@@ -43,7 +43,7 @@ if ( ! in_array( $hover_effect, array( 'lift', 'scale', 'none' ), true ) ) {
 }
 
 if ( ! in_array( $stagger_style, array( 'collage', 'stacked', 'flat' ), true ) ) {
-	$stagger_style = 'collage';
+	$stagger_style = 'flat';
 }
 
 $valid_items = array();
@@ -79,11 +79,14 @@ if ( '' === $label && '' === $heading && '' === $subheading && empty( $section_l
 	return;
 }
 
+$item_count      = count( $valid_items );
+$item_count_slug = $item_count > 6 ? 'many' : (string) $item_count;
 $section_classes = array(
 	'mrn-content-builder__row',
 	'mrn-content-builder__row--showcase',
 	'mrn-content-builder__row--showcase-hover-' . sanitize_html_class( $hover_effect ),
 	'mrn-content-builder__row--showcase-stagger-' . sanitize_html_class( $stagger_style ),
+	'mrn-content-builder__row--showcase-items-' . sanitize_html_class( $item_count_slug ),
 );
 if ( $enable_full_item_link ) {
 	$section_classes[] = 'mrn-content-builder__row--showcase-full-link';
@@ -94,6 +97,10 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 	$section_styles[] = '--mrn-showcase-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
+$display_contract  = function_exists( 'mrn_base_stack_get_builder_display_contract' ) ? mrn_base_stack_get_builder_display_contract( $row, 'showcase' ) : array(
+	'classes'    => array(),
+	'attributes' => array(),
+);
 $accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 	'attributes' => array(),
@@ -102,9 +109,11 @@ $motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contrac
 	'classes'    => array(),
 	'attributes' => array(),
 );
+$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract ) : $section_classes;
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
-$section_attrs     = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
+$section_attrs     = isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ? $display_contract['attributes'] : array();
+$section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
