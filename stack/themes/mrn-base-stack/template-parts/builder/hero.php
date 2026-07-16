@@ -37,7 +37,7 @@ $hero_vertical_alignment = function_exists( 'mrn_base_stack_normalize_hero_verti
 	? mrn_base_stack_normalize_hero_vertical_alignment( $row['hero_vertical_alignment'] ?? '' )
 	: 'center';
 $section_width           = function_exists( 'mrn_base_stack_normalize_section_width' )
-	? mrn_base_stack_normalize_section_width( $row['section_width'] ?? '', 'wide' )
+	? mrn_base_stack_resolve_row_width( $row['section_width'] ?? '', 'wide' )
 	: 'wide';
 
 $allowed_custom_heading_tags = array( 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );

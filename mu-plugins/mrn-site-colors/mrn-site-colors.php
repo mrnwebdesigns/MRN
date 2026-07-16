@@ -44,6 +44,20 @@ function mrn_site_styles_row_spacing_defaults_option_key(): string {
 }
 
 /**
+ * Option key for the site-wide builder row width default.
+ */
+function mrn_site_styles_row_width_default_option_key(): string {
+    return 'mrn_site_row_width_default';
+}
+
+/**
+ * Option key for the site-wide builder row width values.
+ */
+function mrn_site_styles_row_width_values_option_key(): string {
+    return 'mrn_site_row_width_values';
+}
+
+/**
  * Return the supported Site Styles transfer sections.
  *
  * @return array<string, string>
@@ -527,6 +541,8 @@ function mrn_site_styles_build_export_payload(array $sections = array()): array 
     if (in_array('row_spacing', $sections, true)) {
         $data['row_spacing'] = array(
             'defaults' => mrn_site_styles_get_row_spacing_defaults(),
+            'width_default' => mrn_site_styles_get_row_width_default(),
+            'width_values' => mrn_site_styles_get_row_width_values(),
             'presets' => mrn_site_styles_sanitize_row_spacing_rows(get_option(mrn_site_styles_row_spacing_option_key(), array())),
         );
     }
@@ -693,16 +709,22 @@ function mrn_site_styles_handle_import(): void {
     if (array_key_exists('row_spacing', $data)) {
         $row_spacing_payload = $data['row_spacing'];
         $row_spacing_defaults = mrn_site_styles_get_row_spacing_defaults();
+        $row_width_default = mrn_site_styles_get_row_width_default();
+        $row_width_values = mrn_site_styles_get_row_width_values();
         $row_spacing_presets = array();
 
         if (
             is_array($row_spacing_payload)
             && (
                 array_key_exists('defaults', $row_spacing_payload)
+                || array_key_exists('width_default', $row_spacing_payload)
+                || array_key_exists('width_values', $row_spacing_payload)
                 || array_key_exists('presets', $row_spacing_payload)
             )
         ) {
             $row_spacing_defaults = mrn_site_styles_sanitize_row_spacing_defaults($row_spacing_payload['defaults'] ?? array());
+            $row_width_default = mrn_site_styles_sanitize_row_width_default($row_spacing_payload['width_default'] ?? $row_width_default);
+            $row_width_values = mrn_site_styles_sanitize_row_width_values($row_spacing_payload['width_values'] ?? $row_width_values);
             $row_spacing_presets = mrn_site_styles_sanitize_row_spacing_rows($row_spacing_payload['presets'] ?? array());
         } else {
             // Backward compatibility for early row_spacing exports that stored only presets.
@@ -710,6 +732,8 @@ function mrn_site_styles_handle_import(): void {
         }
 
         update_option(mrn_site_styles_row_spacing_defaults_option_key(), $row_spacing_defaults, false);
+        update_option(mrn_site_styles_row_width_default_option_key(), $row_width_default, false);
+        update_option(mrn_site_styles_row_width_values_option_key(), $row_width_values, false);
         update_option(mrn_site_styles_row_spacing_option_key(), $row_spacing_presets, false);
         $imported_sections[] = 'Row Spacing';
     }
@@ -1179,6 +1203,85 @@ function mrn_site_styles_get_row_spacing_property_choices(): array {
         'padding-right' => 'Padding Right',
         'padding-bottom' => 'Padding Bottom',
         'padding-left' => 'Padding Left',
+    );
+}
+
+/**
+ * Get supported site-wide builder row width choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_site_styles_get_row_width_choices(): array {
+    return array(
+        'content' => 'Content',
+        'wide' => 'Wide',
+        'full-width' => 'Full Width',
+    );
+}
+
+/**
+ * Sanitize a site-wide builder row width default.
+ *
+ * @param mixed $value
+ */
+function mrn_site_styles_sanitize_row_width_default($value): string {
+    $value = is_scalar($value) ? sanitize_key((string) $value) : '';
+    return array_key_exists($value, mrn_site_styles_get_row_width_choices()) ? $value : 'wide';
+}
+
+/**
+ * Get the saved site-wide builder row width default.
+ */
+function mrn_site_styles_get_row_width_default(): string {
+    return mrn_site_styles_sanitize_row_width_default(
+        get_option(mrn_site_styles_row_width_default_option_key(), 'wide')
+    );
+}
+
+/**
+ * Get the built-in builder row width values.
+ *
+ * @return array<string, string>
+ */
+function mrn_site_styles_get_required_row_width_values(): array {
+    return array(
+        'content' => '780px',
+        'wide' => '1440px',
+    );
+}
+
+/**
+ * Sanitize configurable builder row width values.
+ *
+ * @param mixed $values
+ * @return array<string, string>
+ */
+function mrn_site_styles_sanitize_row_width_values($values): array {
+    $values = is_array($values) ? $values : array();
+    $defaults = mrn_site_styles_get_required_row_width_values();
+    $sanitized = array();
+    foreach ($defaults as $width_key => $default_value) {
+        $value = isset($values[$width_key]) && is_scalar($values[$width_key])
+            ? strtolower(trim((string) $values[$width_key]))
+            : '';
+
+        // Width caps must be positive, simple CSS dimensions. Full Width remains fluid at 100%.
+        if (!preg_match('/^(?:\d+(?:\.\d+)?|\.\d+)(?:px|rem|em|vw|%)$/', $value)) {
+            $value = $default_value;
+        }
+        $sanitized[$width_key] = $value;
+    }
+    return $sanitized;
+}
+
+/**
+ * Get the configured builder row width values with built-in fallbacks.
+ *
+ * @return array<string, string>
+ */
+function mrn_site_styles_get_row_width_values(): array {
+    return mrn_site_styles_sanitize_row_width_values(
+        get_option(mrn_site_styles_row_width_values_option_key(), array())
     );
 }
 
@@ -2098,6 +2201,10 @@ function mrn_site_colors_handle_save(): void {
     $row_spacing_rows = isset($_POST['mrn_site_row_spacing']) ? wp_unslash($_POST['mrn_site_row_spacing']) : array();
     // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Rows are unslashed here and sanitized in mrn_site_styles_sanitize_row_spacing_defaults().
     $row_spacing_defaults = isset($_POST['mrn_site_row_spacing_defaults']) ? wp_unslash($_POST['mrn_site_row_spacing_defaults']) : array();
+    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Value is unslashed and sanitized below.
+    $row_width_default = isset($_POST['mrn_site_row_width_default']) ? wp_unslash($_POST['mrn_site_row_width_default']) : mrn_site_styles_get_row_width_default();
+    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Values are unslashed and sanitized below.
+    $row_width_values = isset($_POST['mrn_site_row_width_values']) ? wp_unslash($_POST['mrn_site_row_width_values']) : mrn_site_styles_get_row_width_values();
 
     $prepared = mrn_site_colors_prepare_rows($rows);
     $sanitized = $prepared['sanitized'];
@@ -2105,11 +2212,15 @@ function mrn_site_colors_handle_save(): void {
     $sanitized_motion_presets = mrn_site_styles_sanitize_dark_scroll_card_preset_rows($dark_scroll_card_rows);
     $sanitized_row_spacing = mrn_site_styles_sanitize_row_spacing_rows($row_spacing_rows);
     $sanitized_row_spacing_defaults = mrn_site_styles_sanitize_row_spacing_defaults($row_spacing_defaults);
+    $sanitized_row_width_default = mrn_site_styles_sanitize_row_width_default($row_width_default);
+    $sanitized_row_width_values = mrn_site_styles_sanitize_row_width_values($row_width_values);
 
     update_option(mrn_site_colors_option_key(), $sanitized, false);
     update_option(mrn_site_styles_graphic_elements_option_key(), $sanitized_graphic_items, false);
     update_option(mrn_site_styles_dark_scroll_card_presets_option_key(), $sanitized_motion_presets, false);
     update_option(mrn_site_styles_row_spacing_defaults_option_key(), $sanitized_row_spacing_defaults, false);
+    update_option(mrn_site_styles_row_width_default_option_key(), $sanitized_row_width_default, false);
+    update_option(mrn_site_styles_row_width_values_option_key(), $sanitized_row_width_values, false);
     update_option(mrn_site_styles_row_spacing_option_key(), $sanitized_row_spacing, false);
 
     /**
@@ -2469,6 +2580,9 @@ function mrn_site_colors_render_page(): void {
     );
     $row_spacing_presets = mrn_site_styles_get_row_spacing_presets();
     $row_spacing_defaults = mrn_site_styles_get_row_spacing_defaults();
+    $row_width_default = mrn_site_styles_get_row_width_default();
+    $row_width_choices = mrn_site_styles_get_row_width_choices();
+    $row_width_values = mrn_site_styles_get_row_width_values();
     $row_spacing_property_choices = mrn_site_styles_get_row_spacing_property_choices();
     $row_spacing_name_choices = mrn_site_styles_get_row_spacing_name_choices();
     $row_spacing_desktop_value_choices = mrn_site_styles_get_row_spacing_value_choices(false);
@@ -3276,7 +3390,50 @@ function mrn_site_colors_render_page(): void {
 
                         <div class="mrn-site-styles-spacing-subpanel" data-mrn-site-styles-spacing-tab-panel="row-spacing">
                             <h3 style="margin:0;">Site Defaults</h3>
-                            <p class="description">Set baseline desktop and mobile spacing defaults for each margin/padding side. Choose base-4 pixel values (up to <code>104px</code>) from each dropdown, or select <code>Custom</code> to enter any CSS value. Use <code>auto</code> in mobile to scale from desktop, and enter a mobile value only when you need an override. Turn on <strong>Compensate Shell</strong> to offset the parent shell gutter on horizontal margins.</p>
+                            <p class="description">Set the baseline width and desktop/mobile spacing used when a builder row is set to <strong>Default</strong>. Explicit row selections continue to override these defaults.</p>
+                            <table class="widefat striped" style="margin-bottom:16px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:34%;">Setting</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" style="width:34%;">Section Width</th>
+                                        <td>
+                                            <select name="mrn_site_row_width_default">
+                                                <?php foreach ($row_width_choices as $width_key => $width_label) : ?>
+                                                    <option value="<?php echo esc_attr($width_key); ?>" <?php selected($width_key, $row_width_default); ?>><?php echo esc_html($width_label); ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <p class="description">Applies across theme-owned builder layouts when Section Width is Default.</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Content Width</th>
+                                        <td>
+                                            <input type="text" class="regular-text code" name="mrn_site_row_width_values[content]" value="<?php echo esc_attr($row_width_values['content'] ?? '780px'); ?>" placeholder="780px" />
+                                            <p class="description">Maximum content width. Built-in default: <code>780px</code>.</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Wide Width</th>
+                                        <td>
+                                            <input type="text" class="regular-text code" name="mrn_site_row_width_values[wide]" value="<?php echo esc_attr($row_width_values['wide'] ?? '1440px'); ?>" placeholder="1440px" />
+                                            <p class="description">Maximum wide width. Built-in default: <code>1440px</code>.</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Full Width</th>
+                                        <td>
+                                            <code>100%</code>
+                                            <p class="description">Full Width remains fluid and has no configurable maximum.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p class="description">For spacing, choose base-4 pixel values (up to <code>104px</code>) from each dropdown, or select <code>Custom</code> to enter any CSS value. Use <code>auto</code> in mobile to scale from desktop, and enter a mobile value only when you need an override. Turn on <strong>Compensate Shell</strong> to offset the parent shell gutter on horizontal margins.</p>
                             <table class="widefat striped mrn-site-styles-row-spacing-defaults-table">
                                 <thead>
                                     <tr>
@@ -4942,8 +5099,13 @@ function mrn_site_colors_print_css_variables(): void {
     $rows             = mrn_site_colors_get_all();
     $graphic_elements = mrn_site_styles_get_graphic_elements();
     $dark_scroll_card_presets = mrn_site_styles_get_dark_scroll_card_presets();
+    $row_width_values = mrn_site_styles_get_row_width_values();
 
     echo "<style id='mrn-site-styles-accent-base'>.has-bottom-accent[data-bottom-accent]{position:relative;margin-bottom:var(--mrn-accent-space,3em);}.has-bottom-accent[data-bottom-accent]::after{content:\"\";position:absolute;left:0;right:0;bottom:0;pointer-events:none;}</style>";
+    echo "<style id='mrn-site-styles-row-widths'>html:root{";
+    echo '--mrn-shell-content-width:' . esc_html($row_width_values['content'] ?? '780px') . ';';
+    echo '--mrn-shell-wide-width:' . esc_html($row_width_values['wide'] ?? '1440px') . ';';
+    echo '}</style>';
 
     if ($rows !== array()) {
         echo "<style id='mrn-site-colors-vars'>:root{";

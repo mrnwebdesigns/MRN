@@ -3000,14 +3000,16 @@ function mrn_base_stack_get_content_list_filter_match_choices() {
  * @return array<string, mixed>
  */
 function mrn_base_stack_get_section_width_field( $key, $name = 'section_width', $default_width = 'wide', $label = 'Section Width' ) {
+	unset( $default_width );
 	return array(
 		'key'               => $key,
 		'label'             => $label,
 		'name'              => $name,
 		'aria-label'        => '',
 		'type'              => 'select',
-		'choices'           => mrn_base_stack_get_section_width_choices(),
-		'default_value'     => $default_width,
+		'choices'           => array( '' => 'Default' ) + mrn_base_stack_get_section_width_choices(),
+		'default_value'     => '',
+		'instructions'      => 'Default uses the site-wide row width configured in Site Styles. Choose another value to override it for this row.',
 		'ui'                => 1,
 		'wrapper'           => array(
 			'width' => '50',
@@ -4239,7 +4241,10 @@ function mrn_base_stack_normalize_primary_layout_field( array $field ) {
 	}
 
 	if ( 'section_width' === $field_name && 'select' === $field_type ) {
-		$field['label'] = 'Section Width (Content)';
+		$field['label']         = 'Section Width (Content)';
+		$field['choices']       = array( '' => 'Default' ) + mrn_base_stack_get_section_width_choices();
+		$field['default_value'] = '';
+		$field['instructions']  = 'Default uses the site-wide row width configured in Site Styles. Choose another value to override it for this row.';
 	}
 
 	if ( 'sub_content_width' === $field_name && 'select' === $field_type ) {
@@ -8558,6 +8563,36 @@ function mrn_base_stack_normalize_section_width( $value, $default_width = 'wide'
 }
 
 /**
+ * Resolve the site-wide builder row width, retaining a layout fallback when
+ * Site Styles is unavailable.
+ *
+ * @param string $fallback_width Layout fallback width.
+ * @return string
+ */
+function mrn_base_stack_get_default_row_width( $fallback_width = 'wide' ) {
+	$fallback_width = mrn_base_stack_normalize_section_width( $fallback_width, 'wide' );
+	if ( ! function_exists( 'mrn_site_styles_get_row_width_default' ) ) {
+		return $fallback_width;
+	}
+	return mrn_base_stack_normalize_section_width( mrn_site_styles_get_row_width_default(), $fallback_width );
+}
+
+/**
+ * Resolve a builder row width through the site-wide default when unset.
+ *
+ * @param mixed  $value Raw stored row width.
+ * @param string $fallback_width Layout fallback width.
+ * @return string
+ */
+function mrn_base_stack_resolve_row_width( $value, $fallback_width = 'wide' ) {
+	$width = is_scalar( $value ) ? sanitize_key( (string) $value ) : '';
+	if ( '' === $width ) {
+		return mrn_base_stack_get_default_row_width( $fallback_width );
+	}
+	return mrn_base_stack_normalize_section_width( $value, mrn_base_stack_get_default_row_width( $fallback_width ) );
+}
+
+/**
  * Convert a section-width setting into a shell modifier class.
  *
  * @param mixed  $value Raw stored value.
@@ -8590,7 +8625,7 @@ function mrn_base_stack_get_section_width_class( $value, $default_width = 'wide'
  * @return array{width:string,section_class:string,container_class:string}
  */
 function mrn_base_stack_get_section_width_layers( $value, $default_width = 'wide', $full_container_width = 'wide' ) {
-	$width                = mrn_base_stack_normalize_section_width( $value, $default_width );
+	$width                = mrn_base_stack_resolve_row_width( $value, $default_width );
 	$full_container_width = mrn_base_stack_normalize_section_width( $full_container_width, 'wide' );
 
 	$section_class = 'mrn-layout-section--contained';
@@ -8630,7 +8665,7 @@ function mrn_base_stack_get_row_section_width_class( array $row, $default_width 
 		$value = 'full-width';
 	}
 
-	return mrn_base_stack_get_section_width_class( $value, $default_width );
+	return mrn_base_stack_get_section_width_class( $value, mrn_base_stack_get_default_row_width( $default_width ) );
 }
 
 /**

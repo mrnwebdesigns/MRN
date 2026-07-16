@@ -1297,13 +1297,16 @@ function mrn_rbl_get_section_width_choices(): array {
  * @return array<string, mixed>
  */
 function mrn_rbl_get_section_width_field(string $key, string $name = 'section_width', string $default_width = 'wide', string $label = 'Section Width (Content)'): array {
+    unset($default_width);
+
     return array(
         'key'           => $key,
         'label'         => $label,
         'name'          => $name,
         'type'          => 'select',
-        'choices'       => mrn_rbl_get_section_width_choices(),
-        'default_value' => $default_width,
+        'choices'       => array('' => 'Default') + mrn_rbl_get_section_width_choices(),
+        'default_value' => '',
+        'instructions'  => 'Default uses the site-wide row width configured in Site Styles. Choose another value to override it for this row.',
         'ui'            => 1,
         'wrapper'       => array(
             'width' => '50',
