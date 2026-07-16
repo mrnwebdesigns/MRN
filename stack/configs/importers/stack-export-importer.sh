@@ -200,6 +200,27 @@ echo "Imported JSON option: {$name}\n";'
   run_wp eval "${code}"
 }
 
+apply_advanced_editor_tools_json() {
+  local file_path="$1"
+  local escaped_file code
+
+  escaped_file="${file_path//\\/\\\\}"
+  escaped_file="${escaped_file//\'/\\\'}"
+  code='$file = '\'''"${escaped_file}"''\'';
+if (!is_file($file)) { fwrite(STDERR, "Advanced Editor Tools settings file not found.\n"); exit(1); }
+$json = file_get_contents($file);
+if (!is_string($json) || $json === "") { fwrite(STDERR, "Advanced Editor Tools settings file is empty or unreadable.\n"); exit(1); }
+$data = json_decode($json, true);
+if (!is_array($data) || !isset($data["settings"], $data["admin_settings"]) || !is_array($data["settings"]) || !is_array($data["admin_settings"])) {
+    fwrite(STDERR, "Invalid Advanced Editor Tools export payload.\n");
+    exit(1);
+}
+update_option("tadv_settings", $data["settings"]);
+update_option("tadv_admin_settings", $data["admin_settings"]);
+echo "Imported Advanced Editor Tools settings.\n";'
+  run_wp eval "${code}"
+}
+
 apply_option_text() {
   local storage="$1"
   local file_path="$2"
@@ -922,6 +943,14 @@ while IFS= read -r raw || [[ -n "${raw}" ]]; do
     fi
     if ! apply_ame_toolbar_editor_json "${file_path}"; then
       echo "Importer warning: failed importing AME Toolbar Editor settings from ${file_path}"
+      errors=$((errors + 1))
+    fi
+    continue
+  fi
+
+  if [[ "${type}" == "advanced_editor_tools_json" ]]; then
+    if ! apply_advanced_editor_tools_json "${file_path}"; then
+      echo "Importer warning: failed importing Advanced Editor Tools settings from ${file_path}"
       errors=$((errors + 1))
     fi
     continue
