@@ -5236,6 +5236,14 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		);
 	}
 
+	if ( 'external_widget' === $layout_name ) {
+		return array(
+			'embed_layout',
+			'embed_aspect_ratio',
+			'embed_min_height',
+		);
+	}
+
 	return array();
 }
 
@@ -5915,6 +5923,75 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 		);
 	}
 
+	if ( 'external_widget' === $layout_name ) {
+		$layout_field_key = $key_seed . '_embed_layout';
+
+		return array(
+			array(
+				'key'           => $layout_field_key,
+				'label'         => 'Embed Layout',
+				'name'          => 'embed_layout',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => array(
+					'natural' => 'Natural embed size',
+					'ratio'   => 'Fixed aspect ratio',
+				),
+				'default_value' => 'natural',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'ui'            => 1,
+				'instructions'  => 'Use natural for widgets that provide their own height. Use fixed aspect ratio for maps, videos, and responsive iframe embeds.',
+				'wrapper'       => array(
+					'width' => '34',
+				),
+			),
+			array(
+				'key'               => $key_seed . '_embed_aspect_ratio',
+				'label'             => 'Aspect Ratio',
+				'name'              => 'embed_aspect_ratio',
+				'aria-label'        => '',
+				'type'              => 'select',
+				'choices'           => array(
+					'16-9' => '16:9',
+					'4-3'  => '4:3',
+					'1-1'  => '1:1',
+					'21-9' => '21:9',
+				),
+				'default_value'     => '16-9',
+				'allow_null'        => 0,
+				'multiple'          => 0,
+				'ui'                => 1,
+				'conditional_logic' => array(
+					array(
+						array(
+							'field'    => $layout_field_key,
+							'operator' => '==',
+							'value'    => 'ratio',
+						),
+					),
+				),
+				'wrapper'           => array(
+					'width' => '33',
+				),
+			),
+			array(
+				'key'          => $key_seed . '_embed_min_height',
+				'label'        => 'Minimum Height',
+				'name'         => 'embed_min_height',
+				'aria-label'   => '',
+				'type'         => 'number',
+				'append'       => 'px',
+				'min'          => 0,
+				'step'         => 1,
+				'instructions' => 'Optional. Use when a widget needs extra vertical room.',
+				'wrapper'      => array(
+					'width' => '33',
+				),
+			),
+		);
+	}
+
 	return array();
 }
 
@@ -5929,6 +6006,10 @@ function mrn_base_stack_get_builder_display_styles_contract_field_names( $layout
 
 	if ( 'tabbed_layout' === $layout_name ) {
 		return array( 'tab_style' );
+	}
+
+	if ( 'external_widget' === $layout_name ) {
+		return array( 'iframe_border' );
 	}
 
 	return array();
@@ -5963,6 +6044,30 @@ function mrn_base_stack_get_builder_display_styles_contract_fields( $layout_name
 				'multiple'      => 0,
 				'ui'            => 1,
 				'instructions'  => 'Controls the visual treatment of the tab controls.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+		);
+	}
+
+	if ( 'external_widget' === $layout_name ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_iframe_border',
+				'label'         => 'Iframe Border',
+				'name'          => 'iframe_border',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => array(
+					'none'  => 'None',
+					'theme' => 'Theme border',
+				),
+				'default_value' => 'none',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'ui'            => 1,
+				'instructions'  => 'Controls the iframe element border when the embed outputs an iframe.',
 				'wrapper'       => array(
 					'width' => '50',
 				),
@@ -10855,14 +10960,23 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'type'       => 'tab',
 					'placement'  => 'top',
 				),
-				array(
-					'key'          => 'field_mrn_nested_external_widget_code',
-					'label'        => 'Snippet/Code',
-					'name'         => 'code',
-					'aria-label'   => '',
-					'type'         => 'textarea',
-					'rows'         => 8,
-				),
+					array(
+						'key'          => 'field_mrn_nested_external_widget_title',
+						'label'        => 'Embed Title',
+						'name'         => 'embed_title',
+						'aria-label'   => '',
+						'type'         => 'text',
+						'instructions' => 'Used as the iframe title when the pasted embed does not include one.',
+					),
+					array(
+						'key'          => 'field_mrn_nested_external_widget_code',
+						'label'        => 'Snippet/Code',
+						'name'         => 'code',
+						'aria-label'   => '',
+						'type'         => 'textarea',
+						'rows'         => 8,
+						'instructions' => 'Paste a trusted iframe/embed/object snippet or shortcode. Script tags are not rendered.',
+					),
 				array(
 					'key'        => 'field_mrn_nested_external_widget_config_tab',
 					'label'      => 'Configs',
