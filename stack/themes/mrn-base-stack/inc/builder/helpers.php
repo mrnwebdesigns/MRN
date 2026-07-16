@@ -5669,6 +5669,13 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		);
 	}
 
+	if ( 'video' === $layout_name ) {
+		return array(
+			'video_position',
+			'video_aspect_ratio',
+		);
+	}
+
 	if ( in_array( $layout_name, array( 'wpforms', 'searchwp_form' ), true ) ) {
 		return array( 'form_layout' );
 	}
@@ -5928,6 +5935,60 @@ function mrn_base_stack_normalize_two_column_ratio( $ratio ) {
 	$choices = mrn_base_stack_get_two_column_ratio_choices();
 
 	return isset( $choices[ $ratio ] ) ? $ratio : '50-50';
+}
+
+/**
+ * Get Video position choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_video_position_choices() {
+	return array(
+		'bottom' => __( 'Video below content', 'mrn-base-stack' ),
+		'top'    => __( 'Video above content', 'mrn-base-stack' ),
+		'right'  => __( 'Video right of content', 'mrn-base-stack' ),
+		'left'   => __( 'Video left of content', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Normalize Video position.
+ *
+ * @param string $position Candidate position.
+ * @return string
+ */
+function mrn_base_stack_normalize_video_position( $position ) {
+	$position = sanitize_key( (string) $position );
+	$choices  = mrn_base_stack_get_video_position_choices();
+
+	return isset( $choices[ $position ] ) ? $position : 'bottom';
+}
+
+/**
+ * Get Video aspect ratio choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_video_aspect_ratio_choices() {
+	return array(
+		'16-9' => __( '16:9', 'mrn-base-stack' ),
+		'4-3'  => __( '4:3', 'mrn-base-stack' ),
+		'1-1'  => __( '1:1', 'mrn-base-stack' ),
+		'21-9' => __( '21:9', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Normalize Video aspect ratio.
+ *
+ * @param string $ratio Candidate ratio.
+ * @return string
+ */
+function mrn_base_stack_normalize_video_aspect_ratio( $ratio ) {
+	$ratio   = sanitize_key( (string) $ratio );
+	$choices = mrn_base_stack_get_video_aspect_ratio_choices();
+
+	return isset( $choices[ $ratio ] ) ? $ratio : '16-9';
 }
 
 /**
@@ -6519,6 +6580,43 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 				'instructions'  => 'Aligns contained images inside the media area.',
 				'wrapper'       => array(
 					'width' => '34',
+				),
+			),
+		);
+	}
+
+	if ( 'video' === $layout_name ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_video_position',
+				'label'         => 'Video Position',
+				'name'          => 'video_position',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => mrn_base_stack_get_video_position_choices(),
+				'default_value' => 'bottom',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'ui'            => 1,
+				'instructions'  => 'Controls where the video sits relative to the text content. Left and right collapse responsively on smaller screens.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_video_aspect_ratio',
+				'label'         => 'Aspect Ratio',
+				'name'          => 'video_aspect_ratio',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => mrn_base_stack_get_video_aspect_ratio_choices(),
+				'default_value' => '16-9',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'ui'            => 1,
+				'instructions'  => 'Controls the reserved media area so deferred video loading does not shift the layout.',
+				'wrapper'       => array(
+					'width' => '50',
 				),
 			),
 		);
