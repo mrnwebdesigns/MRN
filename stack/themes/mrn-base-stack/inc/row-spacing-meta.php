@@ -121,7 +121,77 @@ if ( ! function_exists( 'mrn_base_stack_flex_row_matches_layout_name' ) ) {
 
 		$row_layout = mrn_base_stack_get_flex_row_layout_name( $row );
 
-		return '' === $row_layout || $current_layout === $row_layout;
+		return '' !== $row_layout && $current_layout === $row_layout;
+	}
+}
+
+if ( ! function_exists( 'mrn_base_stack_resolve_flexible_row_meta_index' ) ) {
+	/**
+	 * Map a zero-based visible flexible-content position to its raw saved index.
+	 *
+	 * Pass null for $visible_position to use ACF's current row context. Sparse
+	 * keys returned by unformatted get_field() preserve indexes skipped by ACF's
+	 * frontend loop.
+	 *
+	 * @param int         $post_id         Post ID.
+	 * @param string      $flex_field      Flexible-content field name.
+	 * @param int|null    $visible_position Zero-based visible position, or null.
+	 * @param string      $expected_layout Optional expected acf_fc_layout value.
+	 * @return int Raw zero-based meta index, or -1 when no validated row exists.
+	 */
+	function mrn_base_stack_resolve_flexible_row_meta_index( $post_id, $flex_field, $visible_position = null, $expected_layout = '' ) {
+		$post_id        = function_exists( 'absint' ) ? absint( $post_id ) : abs( (int) $post_id );
+		$flex_field     = mrn_base_stack_sanitize_meta_key_fragment( $flex_field );
+		$expected_layout = mrn_base_stack_sanitize_meta_key_fragment( $expected_layout );
+
+		if ( ! $post_id || '' === $flex_field || ! function_exists( 'get_field' ) ) {
+			return -1;
+		}
+
+		if ( null === $visible_position ) {
+			if ( ! function_exists( 'get_row_index' ) || ! is_numeric( get_row_index() ) ) {
+				return -1;
+			}
+
+			$offset = 1;
+			if ( function_exists( 'acf_get_setting' ) && is_numeric( acf_get_setting( 'row_index_offset' ) ) ) {
+				$offset = (int) acf_get_setting( 'row_index_offset' );
+			}
+			$visible_position = (int) get_row_index() - $offset;
+			if ( '' === $expected_layout && function_exists( 'get_row_layout' ) ) {
+				$expected_layout = mrn_base_stack_sanitize_meta_key_fragment( get_row_layout() );
+			}
+		}
+
+		if ( ! is_numeric( $visible_position ) || (int) $visible_position < 0 ) {
+			return -1;
+		}
+
+		$visible_position = (int) $visible_position;
+		$rows             = get_field( $flex_field, $post_id, false );
+		if ( ! is_array( $rows ) ) {
+			return -1;
+		}
+
+		$row_keys   = array_values( array_keys( $rows ) );
+		$candidates = array();
+		if ( isset( $row_keys[ $visible_position ] ) && is_numeric( $row_keys[ $visible_position ] ) ) {
+			$candidates[] = (int) $row_keys[ $visible_position ];
+		}
+		$candidates[] = $visible_position;
+
+		foreach ( array_values( array_unique( $candidates ) ) as $candidate ) {
+			if ( ! array_key_exists( $candidate, $rows ) ) {
+				continue;
+			}
+			if ( '' !== $expected_layout && ! mrn_base_stack_flex_row_matches_layout_name( $rows[ $candidate ], $expected_layout ) ) {
+				continue;
+			}
+
+			return $candidate;
+		}
+
+		return -1;
 	}
 }
 
@@ -143,24 +213,6 @@ if ( ! function_exists( 'mrn_base_stack_get_current_flex_row_meta_index' ) ) {
 			return -1;
 		}
 
-		$acf_row_index = get_row_index();
-		if ( ! is_numeric( $acf_row_index ) ) {
-			return -1;
-		}
-
-		$acf_row_index    = (int) $acf_row_index;
-		$row_index_offset = 1;
-		if ( function_exists( 'acf_get_setting' ) ) {
-			$acf_row_index_offset = acf_get_setting( 'row_index_offset' );
-			if ( is_numeric( $acf_row_index_offset ) ) {
-				$row_index_offset = (int) $acf_row_index_offset;
-			}
-		}
-		$visible_position = $acf_row_index - $row_index_offset;
-		if ( $visible_position < 0 ) {
-			return -1;
-		}
-
 		$post_id = $post_id ? absint( $post_id ) : 0;
 		if ( ! $post_id && function_exists( 'get_the_ID' ) ) {
 			$post_id = absint( get_the_ID() );
@@ -172,55 +224,8 @@ if ( ! function_exists( 'mrn_base_stack_get_current_flex_row_meta_index' ) ) {
 			return -1;
 		}
 
-		$rows = get_field( $flex_field, $post_id, false );
-		if ( ! is_array( $rows ) || empty( $rows ) ) {
-			return -1;
-		}
-
 		$current_layout = function_exists( 'get_row_layout' ) ? mrn_base_stack_sanitize_meta_key_fragment( get_row_layout() ) : '';
-		$row_keys       = array_values( array_keys( $rows ) );
-		$candidates     = array();
-
-		if ( array_key_exists( $visible_position, $row_keys ) && is_numeric( $row_keys[ $visible_position ] ) ) {
-			$candidates[] = (int) $row_keys[ $visible_position ];
-		}
-
-		$candidates[] = $visible_position;
-		$candidates[] = $acf_row_index - 1;
-		$candidates[] = $acf_row_index - $row_index_offset;
-		$candidates   = array_values( array_unique( array_filter( $candidates, 'is_int' ) ) );
-
-		foreach ( $candidates as $candidate_index ) {
-			if ( $candidate_index < 0 || ! array_key_exists( $candidate_index, $rows ) ) {
-				continue;
-			}
-
-			if ( ! mrn_base_stack_flex_row_matches_layout_name( $rows[ $candidate_index ], $current_layout ) ) {
-				continue;
-			}
-
-			return $candidate_index;
-		}
-
-		if ( '' !== $current_layout ) {
-			$raw_key_count = count( $row_keys );
-			for ( $position = $visible_position; $position < $raw_key_count; $position++ ) {
-				if ( ! isset( $row_keys[ $position ] ) || ! is_numeric( $row_keys[ $position ] ) ) {
-					continue;
-				}
-
-				$candidate_index = (int) $row_keys[ $position ];
-				if ( $candidate_index < 0 || ! array_key_exists( $candidate_index, $rows ) ) {
-					continue;
-				}
-
-				if ( mrn_base_stack_flex_row_matches_layout_name( $rows[ $candidate_index ], $current_layout ) ) {
-					return $candidate_index;
-				}
-			}
-		}
-
-		return -1;
+		return mrn_base_stack_resolve_flexible_row_meta_index( $post_id, $flex_field, null, $current_layout );
 	}
 }
 
@@ -400,4 +405,98 @@ if ( ! function_exists( 'mrn_base_stack_get_row_spacing_attr_html_for_current_ro
 
 		return implode( ' ', $parts );
 	}
+}
+
+if ( ! function_exists( 'mrn_base_stack_save_dynamic_row_spacing_values' ) ) {
+	/**
+	 * Persist adapter-provided row-spacing controls against validated raw rows.
+	 *
+	 * ACF can display dynamically injected subfields without owning their normal
+	 * save mapping. This fallback handles submitted top-level flexible fields and
+	 * writes both the value and field-key reference to the resolved raw row.
+	 *
+	 * @param int|string $post_id Post ID from acf/save_post.
+	 * @return void
+	 */
+	function mrn_base_stack_save_dynamic_row_spacing_values( $post_id ) {
+		$post_id = is_numeric( $post_id ) ? (int) $post_id : 0;
+		if ( $post_id <= 0 || empty( $_POST['acf'] ) || ! is_array( $_POST['acf'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- ACF validates its save request before this hook.
+			return;
+		}
+		if ( function_exists( 'wp_is_post_revision' ) && wp_is_post_revision( $post_id ) ) {
+			return;
+		}
+		if ( function_exists( 'wp_is_post_autosave' ) && wp_is_post_autosave( $post_id ) ) {
+			return;
+		}
+		if ( function_exists( 'current_user_can' ) && ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		$payload = function_exists( 'wp_unslash' ) ? wp_unslash( $_POST['acf'] ) : $_POST['acf']; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		foreach ( $payload as $field_key => $submitted_rows ) {
+			if ( ! is_array( $submitted_rows ) ) {
+				continue;
+			}
+
+			$field = function_exists( 'acf_get_field' ) ? acf_get_field( $field_key ) : null;
+			if ( ! is_array( $field ) && function_exists( 'get_field_object' ) ) {
+				$field = get_field_object( $field_key, $post_id, false, false );
+			}
+			if ( ! is_array( $field ) || 'flexible_content' !== ( $field['type'] ?? '' ) || empty( $field['name'] ) || empty( $field['layouts'] ) ) {
+				continue;
+			}
+
+			$flex_field = mrn_base_stack_sanitize_meta_key_fragment( $field['name'] );
+			$layouts    = array();
+			foreach ( $field['layouts'] as $layout ) {
+				if ( ! is_array( $layout ) || empty( $layout['key'] ) || empty( $layout['name'] ) ) {
+					continue;
+				}
+				$layout_name = mrn_base_stack_sanitize_meta_key_fragment( $layout['name'] );
+				foreach ( (array) ( $layout['sub_fields'] ?? array() ) as $sub_field ) {
+					$name = isset( $sub_field['name'] ) ? mrn_base_stack_sanitize_meta_key_fragment( $sub_field['name'] ) : '';
+					if ( empty( $sub_field['key'] ) || ! in_array( $name, mrn_base_stack_get_row_spacing_selector_field_names(), true ) ) {
+						continue;
+					}
+					$layouts[ (string) $layout['key'] ]['name'] = $layout_name;
+					$layouts[ (string) $layout['key'] ]['fields'][ (string) $sub_field['key'] ] = $name;
+				}
+			}
+
+			$visible_position = 0;
+			foreach ( $submitted_rows as $submitted_row ) {
+				if ( ! is_array( $submitted_row ) || 'acfcloneindex' === (string) ( $submitted_row['acf_fc_layout'] ?? '' ) ) {
+					continue;
+				}
+				$layout_key = (string) ( $submitted_row['acf_fc_layout'] ?? '' );
+				if ( isset( $layouts[ $layout_key ] ) ) {
+					$layout_name = $layouts[ $layout_key ]['name'];
+					$raw_index   = mrn_base_stack_resolve_flexible_row_meta_index( $post_id, $flex_field, $visible_position, $layout_name );
+					if ( $raw_index >= 0 ) {
+						foreach ( $layouts[ $layout_key ]['fields'] as $spacing_key => $spacing_name ) {
+							if ( ! array_key_exists( $spacing_key, $submitted_row ) ) {
+								continue;
+							}
+							$value    = is_scalar( $submitted_row[ $spacing_key ] ) ? trim( (string) $submitted_row[ $spacing_key ] ) : '';
+							$meta_key = $flex_field . '_' . $raw_index . '_' . $spacing_name;
+							if ( '' === $value ) {
+								delete_post_meta( $post_id, $meta_key );
+								delete_post_meta( $post_id, '_' . $meta_key );
+							} else {
+								$value = function_exists( 'sanitize_text_field' ) ? sanitize_text_field( $value ) : $value;
+								update_post_meta( $post_id, $meta_key, $value );
+								update_post_meta( $post_id, '_' . $meta_key, $spacing_key );
+							}
+						}
+					}
+				}
+				++$visible_position;
+			}
+		}
+	}
+}
+
+if ( function_exists( 'add_action' ) ) {
+	add_action( 'acf/save_post', 'mrn_base_stack_save_dynamic_row_spacing_values', 20 );
 }

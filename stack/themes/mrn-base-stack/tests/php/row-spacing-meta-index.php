@@ -29,6 +29,7 @@ $GLOBALS['mrn_row_spacing_meta_test'] = array(
 		'page_builder_fields_2_row_spacing_preset'            => 'Correct Visible Row',
 		'page_builder_fields_2_row_spacing_margin_top_preset' => 'Large',
 	),
+	'updated'          => array(),
 );
 
 if ( ! function_exists( 'sanitize_key' ) ) {
@@ -88,6 +89,40 @@ function get_post_meta( $post_id, $key, $single = false ) {
 		: '';
 }
 
+function add_action() {}
+function current_user_can() { return true; }
+function wp_is_post_revision() { return false; }
+function wp_is_post_autosave() { return false; }
+function wp_unslash( $value ) { return $value; }
+function sanitize_text_field( $value ) { return trim( strip_tags( (string) $value ) ); }
+function update_post_meta( $post_id, $key, $value ) {
+	unset( $post_id );
+	$GLOBALS['mrn_row_spacing_meta_test']['updated'][ $key ] = $value;
+}
+function delete_post_meta( $post_id, $key ) {
+	unset( $post_id );
+	unset( $GLOBALS['mrn_row_spacing_meta_test']['updated'][ $key ] );
+}
+function acf_get_field( $field_key ) {
+	if ( 'field_builder' !== $field_key ) {
+		return null;
+	}
+	return array(
+		'key'     => 'field_builder',
+		'name'    => 'generic_builder',
+		'type'    => 'flexible_content',
+		'layouts' => array(
+			array(
+				'key'        => 'layout_content',
+				'name'       => 'content_row',
+				'sub_fields' => array(
+					array( 'key' => 'field_spacing', 'name' => 'row_spacing_preset' ),
+				),
+			),
+		),
+	);
+}
+
 require_once __DIR__ . '/../../inc/row-spacing-meta.php';
 
 function mrn_base_stack_get_row_spacing_contract( array $row = array() ) {
@@ -123,6 +158,29 @@ function mrn_row_spacing_meta_test_assert( $condition, $message ) {
 $resolved_index = mrn_base_stack_get_current_flex_row_meta_index( 'page_builder_fields', 123 );
 mrn_row_spacing_meta_test_assert( 2 === $resolved_index, 'visible row after a skipped raw row resolves to raw meta index 2' );
 
+$GLOBALS['mrn_row_spacing_meta_test']['raw_rows']['sequential_builder'] = array(
+	0 => array( 'acf_fc_layout' => 'hero_row' ),
+	1 => array( 'acf_fc_layout' => 'content_row' ),
+);
+mrn_row_spacing_meta_test_assert(
+	1 === mrn_base_stack_resolve_flexible_row_meta_index( 123, 'sequential_builder', 1, 'content_row' ),
+	'normal sequential rows retain their existing zero-based mapping'
+);
+
+$GLOBALS['mrn_row_spacing_meta_test']['raw_rows']['long_builder'] = array();
+for ( $index = 0; $index <= 6; ++$index ) {
+	$GLOBALS['mrn_row_spacing_meta_test']['raw_rows']['long_builder'][ $index ] = array( 'acf_fc_layout' => 'content_row' );
+}
+$GLOBALS['mrn_row_spacing_meta_test']['raw_rows']['long_builder'][8] = array( 'acf_fc_layout' => 'target_row' );
+mrn_row_spacing_meta_test_assert(
+	8 === mrn_base_stack_resolve_flexible_row_meta_index( 123, 'long_builder', 7, 'target_row' ),
+	'visible row 8 maps to raw saved row 9 when one earlier row is skipped'
+);
+mrn_row_spacing_meta_test_assert(
+	-1 === mrn_base_stack_resolve_flexible_row_meta_index( 123, 'long_builder', 7, 'wrong_row' ),
+	'a candidate with the wrong acf_fc_layout is rejected'
+);
+
 $hydrated = mrn_base_stack_hydrate_row_spacing_selectors_from_meta(
 	array(
 		'acf_fc_layout' => 'content_row',
@@ -134,6 +192,26 @@ $hydrated = mrn_base_stack_hydrate_row_spacing_selectors_from_meta(
 mrn_row_spacing_meta_test_assert(
 	isset( $hydrated['row_spacing_preset'] ) && 'Correct Visible Row' === $hydrated['row_spacing_preset'],
 	'hydration reads the visible row spacing preset'
+);
+
+$GLOBALS['mrn_row_spacing_meta_test']['raw_rows']['generic_builder'] = array(
+	0 => array( 'acf_fc_layout' => 'hero_row' ),
+	2 => array( 'acf_fc_layout' => 'content_row' ),
+);
+$_POST['acf'] = array(
+	'field_builder' => array(
+		array( 'acf_fc_layout' => 'layout_hero' ),
+		array( 'acf_fc_layout' => 'layout_content', 'field_spacing' => 'Extra Large' ),
+	),
+);
+mrn_base_stack_save_dynamic_row_spacing_values( 123 );
+mrn_row_spacing_meta_test_assert(
+	'Extra Large' === ( $GLOBALS['mrn_row_spacing_meta_test']['updated']['generic_builder_2_row_spacing_preset'] ?? '' ),
+	'dynamic row-spacing values save to the resolved raw row'
+);
+mrn_row_spacing_meta_test_assert(
+	! isset( $GLOBALS['mrn_row_spacing_meta_test']['updated']['generic_builder_1_row_spacing_preset'] ),
+	'dynamic row-spacing values do not save to the skipped neighboring row'
 );
 mrn_row_spacing_meta_test_assert(
 	isset( $hydrated['row_spacing_margin_top_preset'] ) && 'Large' === $hydrated['row_spacing_margin_top_preset'],
