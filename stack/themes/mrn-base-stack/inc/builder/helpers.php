@@ -5612,6 +5612,10 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		);
 	}
 
+	if ( 'reusable_block' === $layout_name ) {
+		return array( 'section_width' );
+	}
+
 	if ( 'card' === $layout_name ) {
 		return array(
 			'card_layout',
@@ -6182,6 +6186,17 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 				'wrapper'       => array(
 					'width' => '50',
 				),
+			),
+		);
+	}
+
+	if ( 'reusable_block' === $layout_name ) {
+		return array(
+			mrn_base_stack_get_section_width_field(
+				$key_seed . '_section_width',
+				'section_width',
+				'wide',
+				'Block Width'
 			),
 		);
 	}
@@ -12021,6 +12036,15 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'multiple'      => 0,
 					'instructions'  => 'Choose a reusable block from the library. Editing that block updates it everywhere it is used.',
 				),
+				array(
+					'key'        => 'field_mrn_nested_reusable_block_config_tab',
+					'label'      => 'Configs',
+					'name'       => '',
+					'aria-label' => '',
+					'type'       => 'tab',
+					'placement'  => 'top',
+					'endpoint'   => 0,
+				),
 				mrn_base_stack_get_anchor_field( 'field_mrn_nested_reusable_block_anchor' ),
 				array(
 					'key'           => 'field_mrn_nested_reusable_block_include_in_faq_jump_nav',
@@ -12048,6 +12072,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 						'width' => '100',
 					),
 				),
+				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_reusable_block_motion_settings' ),
 			),
 		),
 		'layout_mrn_nested_faq_jump_nav' => array(

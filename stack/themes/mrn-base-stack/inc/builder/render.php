@@ -638,16 +638,42 @@ function mrn_base_stack_get_reusable_block_builder_row( WP_Post $block, array $h
 	$row['__mrn_reusable_block_id']        = (int) $block->ID;
 	$row['__mrn_reusable_block_post_type'] = (string) $block->post_type;
 
+	$placement_override_fields = array(
+		'anchor',
+		'internal_name',
+		'include_in_faq_jump_nav',
+		'faq_jump_nav_label',
+		'section_width',
+		'motion_settings',
+	);
+
+	if ( function_exists( 'mrn_base_stack_get_row_spacing_side_selector_definitions' ) ) {
+		foreach ( mrn_base_stack_get_row_spacing_side_selector_definitions() as $spacing_definition ) {
+			$field_name = isset( $spacing_definition['name'] ) && is_scalar( $spacing_definition['name'] ) ? sanitize_key( (string) $spacing_definition['name'] ) : '';
+			if ( '' !== $field_name ) {
+				$placement_override_fields[] = $field_name;
+			}
+		}
+	}
+
 	$override_fields = apply_filters(
 		'mrn_base_stack_reusable_block_placement_override_fields',
-		array( 'anchor', 'internal_name', 'include_in_faq_jump_nav', 'faq_jump_nav_label' ),
+		$placement_override_fields,
 		$block,
 		$host_row
 	);
-	$override_fields = is_array( $override_fields ) ? array_filter( array_map( 'sanitize_key', $override_fields ) ) : array( 'anchor', 'internal_name', 'include_in_faq_jump_nav', 'faq_jump_nav_label' );
+	$override_fields = is_array( $override_fields ) ? array_filter( array_map( 'sanitize_key', $override_fields ) ) : $placement_override_fields;
 
 	foreach ( $override_fields as $field_name ) {
 		if ( ! array_key_exists( $field_name, $host_row ) ) {
+			continue;
+		}
+
+		if ( 'motion_settings' === $field_name ) {
+			$motion_settings = is_array( $host_row[ $field_name ] ) ? $host_row[ $field_name ] : array();
+			if ( ! empty( $motion_settings['enabled'] ) ) {
+				$row[ $field_name ] = $motion_settings;
+			}
 			continue;
 		}
 

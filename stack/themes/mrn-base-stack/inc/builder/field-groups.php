@@ -3102,6 +3102,15 @@ function mrn_base_stack_register_acf_field_groups() {
 										'multiple'         => 0,
 										'instructions'     => 'Choose a reusable block from the library. Editing that block updates it everywhere it is used.',
 									),
+									array(
+										'key'        => 'field_mrn_reusable_block_config_tab',
+										'label'      => 'Configs',
+										'name'       => '',
+										'aria-label' => '',
+										'type'       => 'tab',
+										'placement'  => 'top',
+										'endpoint'   => 0,
+									),
 									mrn_base_stack_get_anchor_field( 'field_mrn_reusable_block_anchor', 'anchor', 'Placement Anchor ID' ),
 									array(
 										'key'              => 'field_mrn_reusable_block_include_in_faq_jump_nav',
@@ -3129,6 +3138,7 @@ function mrn_base_stack_register_acf_field_groups() {
 											'width' => '100',
 										),
 									),
+									mrn_base_stack_get_motion_group_field( 'field_mrn_reusable_block_motion_settings' ),
 								),
 							),
 							'layout_mrn_cta_block' => array(
