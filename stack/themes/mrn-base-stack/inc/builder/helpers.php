@@ -5236,7 +5236,7 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		);
 	}
 
-	if ( 'wpforms' === $layout_name ) {
+	if ( in_array( $layout_name, array( 'wpforms', 'searchwp_form' ), true ) ) {
 		return array( 'form_layout' );
 	}
 
@@ -5927,7 +5927,7 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 		);
 	}
 
-	if ( 'wpforms' === $layout_name ) {
+	if ( in_array( $layout_name, array( 'wpforms', 'searchwp_form' ), true ) ) {
 		return array(
 			array(
 				'key'           => $key_seed . '_form_layout',

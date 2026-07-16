@@ -114,4 +114,5 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				</div>
 			</div>
 		</div>
+	</div>
 </section>
