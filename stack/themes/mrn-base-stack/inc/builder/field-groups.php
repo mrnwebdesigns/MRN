@@ -2470,7 +2470,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_logos' => array(
 								'key'        => 'layout_mrn_logos',
 								'name'       => 'logos',
-								'label'      => 'Page Specific Logos',
+								'label'      => 'Page Specific Logos/Partners',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(

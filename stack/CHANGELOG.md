@@ -3,7 +3,7 @@
 ## 2026.07.16-logos-layout-contract
 - Expanded `mrn-base-stack` to `1.2.69`.
 - Expanded `mrn-reusable-block-library` to `0.1.26`.
-- Renamed the page-owned Logos builder layout to Page Specific Logos.
+- Renamed the page-owned Logos/Partners builder layout to Page Specific Logos/Partners.
 - Mapped reusable Partners fields to the shared Logos layout contract so it receives Display Styles, Spacing, Layout, and Effects tabs.
 - Moved Logos row/view and slider mechanics into the shared Layout tab while keeping Display Mode and Display Style in Display Styles.
 - Updated reusable Partners rendering to honor Logos grid/slider display contracts and removed legacy width/margin shell CSS from its block styling.

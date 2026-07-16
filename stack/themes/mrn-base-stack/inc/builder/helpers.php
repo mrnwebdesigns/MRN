@@ -9856,7 +9856,7 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 		'layout_mrn_nested_logos' => array(
 			'key'        => 'layout_mrn_nested_logos',
 			'name'       => 'logos',
-			'label'      => 'Page Specific Logos',
+			'label'      => 'Page Specific Logos/Partners',
 			'display'    => 'block',
 			'sub_fields' => array(
 				array(
