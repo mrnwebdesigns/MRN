@@ -929,8 +929,8 @@ function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name,
 	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog, $field_name );
 	$default_map        = array(
 		'page_hero_rows'          => array( 'basic', 'two_column_split' ),
-		'page_content_rows'       => array( 'basic', 'image_content', 'two_column_split', 'reusable_block', 'grid' ),
-		'page_after_content_rows' => array( 'basic', 'two_column_split', 'logos', 'reusable_block', 'cta' ),
+		'page_content_rows'       => array( 'basic', 'image_content', 'two_column_split', 'reusable_block', 'grid', 'faq_jump_nav' ),
+		'page_after_content_rows' => array( 'basic', 'two_column_split', 'logos', 'reusable_block', 'cta', 'faq_jump_nav' ),
 		'page_sidebar_rows'       => array( 'body_text', 'content_lists', 'basic', 'cta', 'image_content', 'external_widget' ),
 	);
 	$alias_map          = array(
@@ -948,6 +948,7 @@ function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name,
 		'wpforms'          => array( 'wpforms' ),
 		'video'            => array( 'video' ),
 		'faq'              => array( 'faq' ),
+		'faq_jump_nav'     => array( 'faq_jump_nav' ),
 	);
 	$defaults           = array();
 	$requested_defaults = isset( $default_map[ $field_name ] ) && is_array( $default_map[ $field_name ] )

@@ -56,8 +56,9 @@ if ( function_exists( 'get_field' ) ) {
 }
 
 if ( array_key_exists( 'section_width', $row ) && function_exists( 'mrn_base_stack_wrap_reusable_builder_markup' ) ) {
-	$wrapped_row = $row;
-	if ( function_exists( 'mrn_base_stack_normalize_anchor_id' ) && '' === mrn_base_stack_normalize_anchor_id( $wrapped_row['anchor'] ?? '' ) && '' !== $fallback_anchor ) {
+	$wrapped_row    = $row;
+	$default_anchor = function_exists( 'mrn_base_stack_get_builder_row_default_anchor' ) ? mrn_base_stack_get_builder_row_default_anchor( $wrapped_row ) : '';
+	if ( function_exists( 'mrn_base_stack_normalize_anchor_id' ) && '' === mrn_base_stack_normalize_anchor_id( $wrapped_row['anchor'] ?? '' ) && '' === mrn_base_stack_normalize_anchor_id( $default_anchor ) && '' !== $fallback_anchor ) {
 		$wrapped_row['anchor'] = $fallback_anchor;
 	}
 

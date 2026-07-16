@@ -3086,12 +3086,12 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_faq' => array(
 								'key'        => 'layout_mrn_faq',
 								'name'       => 'faq',
-								'label'      => 'FAQs/Accordion - label|heading|items',
+								'label'      => 'Page Specific FAQ/Accordion',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
 										'key'          => 'field_mrn_page_faq_fields',
-										'label'        => 'FAQs/Accordion',
+										'label'        => 'Page Specific FAQ/Accordion',
 										'name'         => '',
 										'aria-label'   => '',
 										'type'         => 'clone',
@@ -3102,6 +3102,37 @@ function mrn_base_stack_register_acf_field_groups() {
 										'prefix_name'  => 0,
 									),
 									mrn_base_stack_get_motion_group_field( 'field_mrn_page_faq_motion_settings' ),
+								),
+							),
+							'layout_mrn_faq_jump_nav' => array(
+								'key'        => 'layout_mrn_faq_jump_nav',
+								'name'       => 'faq_jump_nav',
+								'label'      => 'FAQ Jump Nav',
+								'display'    => 'block',
+								'sub_fields' => array(
+									array(
+										'key'        => 'field_mrn_faq_jump_nav_content_tab',
+										'label'      => 'Content',
+										'name'       => '',
+										'aria-label' => '',
+										'type'       => 'tab',
+										'placement'  => 'top',
+									),
+									mrn_base_stack_get_inline_text_field( 'field_mrn_faq_jump_nav_label', 'Label', 'label' ),
+									mrn_base_stack_get_label_tag_field( 'field_mrn_faq_jump_nav_label_tag' ),
+									mrn_base_stack_get_inline_text_field( 'field_mrn_faq_jump_nav_heading', 'Heading', 'heading' ),
+									mrn_base_stack_get_text_tag_field( 'field_mrn_faq_jump_nav_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
+									array(
+										'key'        => 'field_mrn_faq_jump_nav_config_tab',
+										'label'      => 'Configs',
+										'name'       => '',
+										'aria-label' => '',
+										'type'       => 'tab',
+										'placement'  => 'top',
+										'endpoint'   => 0,
+									),
+									mrn_base_stack_get_section_width_field( 'field_mrn_faq_jump_nav_section_width', 'section_width', 'content' ),
+									mrn_base_stack_get_anchor_field( 'field_mrn_faq_jump_nav_anchor' ),
 								),
 							),
 							'layout_mrn_reusable_block' => array(
@@ -3124,6 +3155,32 @@ function mrn_base_stack_register_acf_field_groups() {
 										'instructions'     => 'Choose a reusable block from the library. Editing that block updates it everywhere it is used.',
 									),
 									mrn_base_stack_get_anchor_field( 'field_mrn_reusable_block_anchor', 'anchor', 'Placement Anchor ID' ),
+									array(
+										'key'              => 'field_mrn_reusable_block_include_in_faq_jump_nav',
+										'label'            => 'Include FAQ Block in Jump Nav',
+										'name'             => 'include_in_faq_jump_nav',
+										'aria-label'       => '',
+										'type'             => 'true_false',
+										'instructions'     => 'Only used when the selected reusable block is a FAQ/Accordion. FAQ Jump Nav Label is required. Placement Anchor ID is optional and overrides the label-generated target.',
+										'ui'               => 1,
+										'default_value'    => 0,
+										'ui_on_text'       => 'Include',
+										'ui_off_text'      => 'Omit',
+										'wrapper'          => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'              => 'field_mrn_reusable_block_faq_jump_nav_label',
+										'label'            => 'FAQ Jump Nav Label',
+										'name'             => 'faq_jump_nav_label',
+										'aria-label'       => '',
+										'type'             => 'text',
+										'instructions'     => 'Required when this FAQ placement should appear in a page FAQ Jump Nav. If Placement Anchor ID is blank, this label also generates the jump target.',
+										'wrapper'          => array(
+											'width' => '100',
+										),
+									),
 								),
 							),
 							'layout_mrn_cta_block' => array(
@@ -3191,14 +3248,15 @@ function mrn_base_stack_register_acf_field_groups() {
 								),
 							),
 							'layout_mrn_faq_block' => array(
-								'key'        => 'layout_mrn_faq_block',
-								'name'       => 'faq_block',
-								'label'      => 'FAQs/Accordion (Page Only)',
-								'display'    => 'block',
-								'sub_fields' => array(
+								'key'              => 'layout_mrn_faq_block',
+								'name'             => 'faq_block',
+								'label'            => 'Page Specific FAQ/Accordion',
+								'display'          => 'block',
+								'mrn_is_page_only' => true,
+								'sub_fields'       => array(
 									array(
 										'key'          => 'field_mrn_page_faq_block_fields',
-										'label'        => 'FAQs/Accordion',
+										'label'        => 'Page Specific FAQ/Accordion',
 										'name'         => '',
 										'aria-label'   => '',
 										'type'         => 'clone',

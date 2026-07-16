@@ -183,7 +183,18 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 
 	$row_attribute_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $row_attributes ) : '';
 
-	$anchor_markup = function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : '';
+		$anchor_fallback = '';
+		$anchor_row      = $row;
+	if ( in_array( $layout_name, array( 'faq', 'faq_block' ), true ) && function_exists( 'mrn_base_stack_get_faq_jump_nav_anchor_from_row' ) ) {
+		$anchor_fallback = mrn_base_stack_get_faq_jump_nav_anchor_from_row( $row );
+		$anchor_source   = function_exists( 'mrn_base_stack_normalize_anchor_id' )
+			? mrn_base_stack_normalize_anchor_id( $row['anchor'] ?? '' )
+			: sanitize_title( (string) ( $row['anchor'] ?? '' ) );
+		if ( '' !== $anchor_fallback && $anchor_source !== $anchor_fallback ) {
+			$anchor_row['anchor'] = '';
+		}
+	}
+		$anchor_markup = function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $anchor_row, $anchor_fallback ) : '';
 
 	return sprintf(
 		'%6$s<div class="%1$s"%5$s><div class="%2$s"><div class="%3$s"><div class="mrn-layout-grid mrn-layout-grid--reusable"><div class="mrn-layout-content mrn-layout-content--reusable">%4$s</div></div></div></div></div>',
@@ -365,6 +376,11 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 		}
 
 		return false;
+	}
+
+	if ( 'faq_jump_nav' === $layout ) {
+		get_template_part( 'template-parts/builder/faq-jump-nav', null, $context );
+		return true;
 	}
 
 	if ( 'image_content' === $layout ) {
@@ -624,14 +640,19 @@ function mrn_base_stack_get_reusable_block_builder_row( WP_Post $block, array $h
 
 	$override_fields = apply_filters(
 		'mrn_base_stack_reusable_block_placement_override_fields',
-		array( 'anchor' ),
+		array( 'anchor', 'internal_name', 'include_in_faq_jump_nav', 'faq_jump_nav_label' ),
 		$block,
 		$host_row
 	);
-	$override_fields = is_array( $override_fields ) ? array_filter( array_map( 'sanitize_key', $override_fields ) ) : array( 'anchor' );
+	$override_fields = is_array( $override_fields ) ? array_filter( array_map( 'sanitize_key', $override_fields ) ) : array( 'anchor', 'internal_name', 'include_in_faq_jump_nav', 'faq_jump_nav_label' );
 
 	foreach ( $override_fields as $field_name ) {
 		if ( ! array_key_exists( $field_name, $host_row ) ) {
+			continue;
+		}
+
+		if ( in_array( $field_name, array( 'internal_name', 'include_in_faq_jump_nav', 'faq_jump_nav_label' ), true ) ) {
+			$row[ $field_name ] = $host_row[ $field_name ];
 			continue;
 		}
 
@@ -688,6 +709,207 @@ function mrn_base_stack_render_reusable_block_as_builder_row( WP_Post $block, ar
 
 	echo $markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Row markup is escaped by the matching builder template.
 	return true;
+}
+
+/**
+ * Get builder fields that may contain FAQ rows for page jump navigation.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_faq_jump_nav_builder_field_names() {
+	return array(
+		'page_content_rows',
+		'page_after_content_rows',
+		'page_sidebar_rows',
+	);
+}
+
+/**
+ * Resolve a reusable block row's selected post.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return WP_Post|null
+ */
+function mrn_base_stack_get_reusable_block_post_from_row( array $row ) {
+	$block = $row['block'] ?? null;
+
+	if ( $block instanceof WP_Post ) {
+		return $block;
+	}
+
+	if ( is_numeric( $block ) ) {
+		$post = get_post( (int) $block );
+		return $post instanceof WP_Post ? $post : null;
+	}
+
+	if ( function_exists( 'mrn_rbl_get_block_post' ) ) {
+		$post = mrn_rbl_get_block_post( $block );
+		return $post instanceof WP_Post ? $post : null;
+	}
+
+	return null;
+}
+
+/**
+ * Build the FAQ jump-nav anchor from a row.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return string
+ */
+function mrn_base_stack_get_faq_jump_nav_anchor_from_row( array $row ) {
+	if ( empty( $row['include_in_faq_jump_nav'] ) ) {
+		return '';
+	}
+
+	$label  = isset( $row['faq_jump_nav_label'] ) ? trim( wp_strip_all_tags( (string) $row['faq_jump_nav_label'] ) ) : '';
+	$source = isset( $row['anchor'] ) ? (string) $row['anchor'] : '';
+	if ( '' !== trim( $source ) && preg_match( '/^\d+$/', trim( $source ) ) ) {
+		$source = '';
+	}
+	if ( '' === trim( $source ) && function_exists( 'mrn_base_stack_get_builder_row_default_anchor' ) ) {
+		$source = mrn_base_stack_get_builder_row_default_anchor( $row );
+	}
+	if ( '' === trim( $source ) && '' !== $label ) {
+		$source = $label;
+	}
+
+	if ( '' === trim( $source ) ) {
+		return '';
+	}
+
+	return function_exists( 'mrn_base_stack_normalize_anchor_id' )
+		? mrn_base_stack_normalize_anchor_id( $source )
+		: sanitize_title( $source );
+}
+
+/**
+ * Build a FAQ jump-nav entry from a FAQ row.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_faq_jump_nav_entry_from_row( array $row ) {
+	$layout = isset( $row['acf_fc_layout'] ) ? sanitize_key( (string) $row['acf_fc_layout'] ) : '';
+	if ( ! in_array( $layout, array( 'faq', 'faq_block' ), true ) ) {
+		return array();
+	}
+
+	if ( empty( $row['include_in_faq_jump_nav'] ) ) {
+		return array();
+	}
+
+	$label  = isset( $row['faq_jump_nav_label'] ) ? trim( wp_strip_all_tags( (string) $row['faq_jump_nav_label'] ) ) : '';
+	$anchor = mrn_base_stack_get_faq_jump_nav_anchor_from_row( $row );
+
+	if ( '' === $anchor || '' === $label ) {
+		return array();
+	}
+
+	return array(
+		'anchor' => $anchor,
+		'label'  => $label,
+	);
+}
+
+/**
+ * Recursively collect FAQ jump-nav entries from builder rows.
+ *
+ * @param array<int, mixed>                 $rows Builder rows.
+ * @param array<int, array<string, string>> $entries Current entries.
+ * @return array<int, array<string, string>>
+ */
+function mrn_base_stack_collect_faq_jump_nav_entries_from_rows( array $rows, array $entries = array() ) {
+	foreach ( $rows as $row ) {
+		if ( ! is_array( $row ) ) {
+			continue;
+		}
+
+		$layout = isset( $row['acf_fc_layout'] ) ? sanitize_key( (string) $row['acf_fc_layout'] ) : '';
+		if ( in_array( $layout, array( 'faq', 'faq_block' ), true ) ) {
+			$entry = mrn_base_stack_get_faq_jump_nav_entry_from_row( $row );
+			if ( ! empty( $entry ) ) {
+				$entries[] = $entry;
+			}
+		} elseif ( 'reusable_block' === $layout ) {
+			$block = mrn_base_stack_get_reusable_block_post_from_row( $row );
+			if ( $block instanceof WP_Post && 'mrn_reusable_faq' === $block->post_type ) {
+				$faq_row = mrn_base_stack_get_reusable_block_builder_row( $block, $row );
+				foreach ( array( 'anchor', 'internal_name', 'include_in_faq_jump_nav', 'faq_jump_nav_label' ) as $placement_field ) {
+					$faq_row[ $placement_field ] = array_key_exists( $placement_field, $row ) ? $row[ $placement_field ] : '';
+				}
+				$entry = mrn_base_stack_get_faq_jump_nav_entry_from_row( $faq_row );
+				if ( ! empty( $entry ) ) {
+					$entries[] = $entry;
+				}
+			}
+		}
+
+		foreach ( $row as $value ) {
+			if ( ! is_array( $value ) ) {
+				continue;
+			}
+
+			$child_rows = array();
+			foreach ( $value as $child ) {
+				if ( is_array( $child ) && isset( $child['acf_fc_layout'] ) ) {
+					$child_rows[] = $child;
+				}
+			}
+
+			if ( ! empty( $child_rows ) ) {
+				$entries = mrn_base_stack_collect_faq_jump_nav_entries_from_rows( $child_rows, $entries );
+			}
+		}
+	}
+
+	return $entries;
+}
+
+/**
+ * Get explicit FAQ jump-nav entries for a page.
+ *
+ * @param int|null $post_id Current post ID.
+ * @return array<int, array<string, string>>
+ */
+function mrn_base_stack_get_faq_jump_nav_entries( $post_id = null ) {
+	if ( ! function_exists( 'get_field' ) ) {
+		return array();
+	}
+
+	$post_id = $post_id ? (int) $post_id : get_the_ID();
+	if ( $post_id < 1 ) {
+		return array();
+	}
+
+	static $cache = array();
+	if ( isset( $cache[ $post_id ] ) ) {
+		return $cache[ $post_id ];
+	}
+
+	$entries = array();
+	foreach ( mrn_base_stack_get_faq_jump_nav_builder_field_names() as $field_name ) {
+		$rows = get_field( $field_name, $post_id );
+		if ( ! is_array( $rows ) || empty( $rows ) ) {
+			continue;
+		}
+
+		$entries = mrn_base_stack_collect_faq_jump_nav_entries_from_rows( $rows, $entries );
+	}
+
+	$unique = array();
+	$seen   = array();
+	foreach ( $entries as $entry ) {
+		$anchor = isset( $entry['anchor'] ) ? (string) $entry['anchor'] : '';
+		if ( '' === $anchor || isset( $seen[ $anchor ] ) ) {
+			continue;
+		}
+
+		$seen[ $anchor ] = true;
+		$unique[]        = $entry;
+	}
+
+	$cache[ $post_id ] = $unique;
+	return $unique;
 }
 
 /**
@@ -901,6 +1123,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 				'cta_block'        => 'Page Specific CTA',
 				'grid'             => 'Grid',
 				'faq'              => 'FAQs/Accordion',
+				'faq_jump_nav'     => 'FAQ Jump Nav',
 				'slider'           => 'Slider',
 				'tabbed_layout'    => 'Tabbed Layout',
 				'logos'            => 'Logos',
@@ -980,6 +1203,14 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 		}
 
 		return 'FAQs/Accordion: ' . esc_html( wp_strip_all_tags( $title_text ) );
+	}
+
+	if ( 'faq_jump_nav' === $layout_name ) {
+		if ( '' === $title_text ) {
+			return 'FAQ Jump Nav';
+		}
+
+		return 'FAQ Jump Nav: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'slider' === $layout_name ) {

@@ -162,6 +162,7 @@ function mrn_base_stack_get_after_content_layout_source_names() {
 		'logos',
 		'reusable_block',
 		'cta',
+		'faq_jump_nav',
 	);
 
 	$names = mrn_base_stack_normalize_builder_layout_source_names(
@@ -2980,7 +2981,7 @@ function mrn_base_stack_get_anchor_field( $key, $name = 'anchor', $label = 'Anch
 		'name'         => $name,
 		'aria-label'   => '',
 		'type'         => 'text',
-		'instructions' => 'Optional anchor slug for one-page links. Enter the value without #.',
+		'instructions' => 'Optional anchor slug for one-page links. Enter the value without #. When blank, Name (admin use only) becomes the default anchor.',
 		'wrapper'      => array(
 			'width' => '50',
 		),
@@ -3632,7 +3633,7 @@ function mrn_base_stack_get_internal_layout_name_field( $key ) {
 		'name'         => 'internal_name',
 		'aria-label'   => '',
 		'type'         => 'text',
-		'instructions' => 'Optional editor-only row name used in the layout list. This is not rendered on the front end.',
+		'instructions' => 'Optional editor-only row name used in the layout list. Also becomes the default row anchor when Anchor ID is blank.',
 		'wrapper'      => array(
 			'width' => '50',
 		),
@@ -4734,7 +4735,7 @@ function mrn_base_stack_get_main_config_field_group_key( array $field ) {
 		return 'appearance';
 	}
 
-	if ( in_array( $field_name, array( 'anchor', 'anchor_id' ), true ) ) {
+	if ( in_array( $field_name, array( 'anchor', 'anchor_id', 'include_in_faq_jump_nav', 'faq_jump_nav_label' ), true ) ) {
 		return 'layout';
 	}
 
@@ -4976,6 +4977,7 @@ function mrn_base_stack_field_is_full_contract_reusable_group_clone( array $fiel
 
 	$full_contract_groups = array(
 		'group_mrn_reusable_content_grid',
+		'group_mrn_reusable_faq',
 	);
 
 	foreach ( $field['clone'] as $clone_target ) {
@@ -5065,6 +5067,63 @@ function mrn_base_stack_get_builder_layout_tab_field( $key ) {
 		'type'       => 'tab',
 		'placement'  => 'top',
 		'endpoint'   => 0,
+	);
+}
+
+/**
+ * Get layout-specific field names owned by the shared Layout tab.
+ *
+ * @param string $layout_name Builder layout name.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+
+	if ( 'faq' === $layout_name || 'faq_block' === $layout_name ) {
+		return array( 'faq_layout' );
+	}
+
+	return array();
+}
+
+/**
+ * Build layout-specific controls for the shared Layout tab.
+ *
+ * @param string $layout_name Builder layout name.
+ * @param string $key_seed Field key seed.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_seed ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	$key_seed    = sanitize_key( (string) $key_seed );
+
+	if ( 'faq' !== $layout_name && 'faq_block' !== $layout_name ) {
+		return array();
+	}
+
+	if ( '' === $key_seed ) {
+		$key_seed = 'field_mrn_' . $layout_name;
+	}
+
+	return array(
+		array(
+			'key'           => $key_seed . '_faq_layout',
+			'label'         => 'FAQ Layout',
+			'name'          => 'faq_layout',
+			'aria-label'    => '',
+			'type'          => 'select',
+			'choices'       => array(
+				'stacked' => 'Stacked',
+				'split'   => 'Split heading / items',
+			),
+			'default_value' => 'stacked',
+			'allow_null'    => 0,
+			'ui'            => 1,
+			'instructions'  => 'Choose whether the section heading stacks above the accordion or sits beside the items.',
+			'wrapper'       => array(
+				'width' => '50',
+			),
+		),
 	);
 }
 
@@ -5254,14 +5313,16 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
  * @return array<int, mixed>
  */
 function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name = '', $key_seed = '' ) {
-	$seed = sanitize_key( (string) $key_seed );
+	$layout_name = sanitize_key( (string) $layout_name );
+	$seed        = sanitize_key( (string) $key_seed );
 	if ( '' === $seed ) {
-		$layout_name = sanitize_key( (string) $layout_name );
-		$seed        = '' !== $layout_name ? 'field_mrn_' . $layout_name : 'field_mrn_layout';
+		$seed = '' !== $layout_name ? 'field_mrn_' . $layout_name : 'field_mrn_layout';
 	}
 
-	$remaining_fields = array();
-	$layout_tab       = null;
+	$remaining_fields       = array();
+	$layout_tab             = null;
+	$layout_contract_fields = mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $seed );
+	$layout_contract_names  = mrn_base_stack_get_builder_layout_contract_field_names( $layout_name );
 
 	foreach ( $fields as $field ) {
 		if ( ! is_array( $field ) ) {
@@ -5271,11 +5332,16 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 
 		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
 		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+		$field_name  = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
 
 		if ( 'tab' === $field_type && 'layout' === $field_label ) {
 			if ( null === $layout_tab ) {
 				$layout_tab = $field;
 			}
+			continue;
+		}
+
+		if ( '' !== $field_name && in_array( $field_name, $layout_contract_names, true ) ) {
 			continue;
 		}
 
@@ -5306,7 +5372,12 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 		}
 	}
 
-	array_splice( $remaining_fields, $insert_index, 0, array( $layout_tab ) );
+	array_splice(
+		$remaining_fields,
+		$insert_index,
+		0,
+		array_merge( array( $layout_tab ), $layout_contract_fields )
+	);
 
 	return array_values( $remaining_fields );
 }
@@ -6824,6 +6895,18 @@ function mrn_base_stack_get_unique_builder_anchor_id( $anchor_id ) {
 }
 
 /**
+ * Get the default anchor fallback for a builder row.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return string
+ */
+function mrn_base_stack_get_builder_row_default_anchor( array $row ) {
+	$internal_name = isset( $row['internal_name'] ) ? trim( wp_strip_all_tags( (string) $row['internal_name'] ) ) : '';
+
+	return '' !== $internal_name ? $internal_name : '';
+}
+
+/**
  * Build the top-of-row anchor markup for a builder row.
  *
  * @param array<string, mixed> $row Builder row data.
@@ -6832,6 +6915,10 @@ function mrn_base_stack_get_unique_builder_anchor_id( $anchor_id ) {
  */
 function mrn_base_stack_get_builder_anchor_markup( array $row, $fallback_anchor = '' ) {
 	$anchor_id = mrn_base_stack_normalize_anchor_id( $row['anchor'] ?? '' );
+
+	if ( '' === $anchor_id ) {
+		$anchor_id = mrn_base_stack_normalize_anchor_id( mrn_base_stack_get_builder_row_default_anchor( $row ) );
+	}
 
 	if ( '' === $anchor_id && '' !== $fallback_anchor ) {
 		$anchor_id = mrn_base_stack_normalize_anchor_id( $fallback_anchor );

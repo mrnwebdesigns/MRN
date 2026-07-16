@@ -3,7 +3,7 @@
  * Plugin Name: MRN Reusable Block Library
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.22
+ * Version: 0.1.25
  */
 
 defined('ABSPATH') || exit;
@@ -583,6 +583,9 @@ function mrn_rbl_get_anchor_markup(array $context): string {
 
     $fields = isset($context['fields']) && is_array($context['fields']) ? $context['fields'] : array();
     $anchor = mrn_rbl_normalize_anchor_id($fields['anchor'] ?? '');
+    if ($anchor === '') {
+        $anchor = mrn_rbl_normalize_anchor_id($fields['internal_name'] ?? '');
+    }
 
     if ($anchor === '') {
         return '';
@@ -810,7 +813,7 @@ function mrn_rbl_render_block_as_stack_row(WP_Post $post, array $extra_context =
 
     $host_row = isset($extra_context['host_row']) && is_array($extra_context['host_row']) ? $extra_context['host_row'] : array();
 
-    foreach (array('section_width', 'sub_content_width', 'anchor', 'motion_settings') as $field_name) {
+    foreach (array('section_width', 'sub_content_width', 'anchor', 'internal_name', 'include_in_faq_jump_nav', 'faq_jump_nav_label', 'motion_settings') as $field_name) {
         if (array_key_exists($field_name, $extra_context) && !array_key_exists($field_name, $host_row)) {
             $host_row[$field_name] = $extra_context[$field_name];
         }
@@ -1260,7 +1263,7 @@ function mrn_rbl_get_anchor_field(string $key, string $name = 'anchor', string $
         'label'        => $label,
         'name'         => $name,
         'type'         => 'text',
-        'instructions' => 'Optional anchor slug for one-page links. Enter the value without #.',
+        'instructions' => 'Optional anchor slug for one-page links. Enter the value without #. When blank, Name (admin use only) becomes the default anchor.',
         'wrapper'      => array(
             'width' => '50',
         ),
@@ -1420,7 +1423,7 @@ function mrn_rbl_get_internal_layout_name_field(string $key): array {
         'label'        => 'Name (admin use only)',
         'name'         => 'internal_name',
         'type'         => 'text',
-        'instructions' => 'Optional editor-only row name used in the layout list. This is not rendered on the front end.',
+        'instructions' => 'Optional editor-only row name used in the layout list. Also becomes the default row anchor when Anchor ID is blank.',
         'wrapper'      => array(
             'width' => '50',
         ),
@@ -2208,7 +2211,7 @@ function mrn_rbl_get_main_config_field_group_key(array $field): string {
         return 'appearance';
     }
 
-    if (in_array($field_name, array('anchor', 'anchor_id'), true)) {
+    if (in_array($field_name, array('anchor', 'anchor_id', 'include_in_faq_jump_nav', 'faq_jump_nav_label'), true)) {
         return 'layout';
     }
 
@@ -2761,6 +2764,7 @@ function mrn_rbl_get_builder_layout_name_for_field_group(array $field_group): st
     $group_key = isset($field_group['key']) ? sanitize_key((string) $field_group['key']) : '';
     $map       = array(
         'group_mrn_reusable_content_grid' => 'grid',
+        'group_mrn_reusable_faq'          => 'faq',
     );
 
     return isset($map[$group_key]) ? $map[$group_key] : '';
@@ -4993,7 +4997,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                         'type'    => 'text',
                         'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
                         'wrapper' => array(
-                            'width' => '40',
+                            'width' => '100',
                         ),
                     ),
                     array(
@@ -5006,7 +5010,7 @@ function mrn_rbl_register_acf_field_groups(): void {
                         'media_upload' => 1,
                         'delay'        => 0,
                         'wrapper'      => array(
-                            'width' => '60',
+                            'width' => '100',
                         ),
                     ),
                 ),
@@ -5018,6 +5022,30 @@ function mrn_rbl_register_acf_field_groups(): void {
                 'placement' => 'top',
             ),
             mrn_rbl_get_anchor_field('field_mrn_faq_anchor'),
+            array(
+                'key'           => 'field_mrn_faq_include_in_jump_nav',
+                'label'         => 'Include in FAQ Jump Nav',
+                'name'          => 'include_in_faq_jump_nav',
+                'type'          => 'true_false',
+                'instructions'  => 'Turn this on only when a page FAQ Jump Nav should link to this FAQ section. Jump Nav Label is required. Anchor ID is optional and overrides the label-generated target.',
+                'ui'            => 1,
+                'default_value' => 0,
+                'ui_on_text'    => 'Include',
+                'ui_off_text'   => 'Omit',
+                'wrapper'       => array(
+                    'width' => '33',
+                ),
+            ),
+            array(
+                'key'               => 'field_mrn_faq_jump_nav_label',
+                'label'             => 'Jump Nav Label',
+                'name'              => 'faq_jump_nav_label',
+                'type'              => 'text',
+                'instructions'      => 'Required when this FAQ should appear in a page FAQ Jump Nav. If Anchor ID is blank, this label also generates the jump target.',
+                'wrapper'           => array(
+                    'width' => '100',
+                ),
+            ),
             mrn_rbl_get_section_width_field('field_mrn_faq_section_width', 'section_width', 'wide', 'Section Width (Content)'),
             mrn_rbl_get_sub_content_width_field('field_mrn_faq_sub_content_width', 'sub_content_width', 'content', 'Section Width (Sub-content)'),
             array(

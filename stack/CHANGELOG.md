@@ -1,5 +1,31 @@
 # Stack Changelog
 
+## 2026.07.15-default-row-anchors
+- Expanded `mrn-base-stack` to `1.2.68`.
+- Expanded `mrn-reusable-block-library` to `0.1.25`.
+- Made Name (admin use only) the default row anchor source whenever Anchor ID is blank.
+- Preserved explicit Anchor ID as the highest-priority anchor source.
+- Aligned FAQ Jump Nav, reusable block placements, cloned reusable layouts, and standalone reusable-block rendering with the same default-anchor contract.
+
+## 2026.07.15-faq-jump-nav
+- Expanded `mrn-base-stack` to `1.2.67`.
+- Expanded `mrn-reusable-block-library` to `0.1.24`.
+- Added an explicit FAQ Jump Nav builder layout for linking between multiple FAQ/Accordion sections on a page.
+- Added FAQ nav opt-in fields to the reusable FAQ contract: Include in FAQ Jump Nav and Jump Nav Label.
+- Added page-placement FAQ nav controls to saved reusable block placements so reusable FAQs can be used more than once with unique page anchors/labels.
+- Rendered FAQ Jump Nav links only when a FAQ section has the nav toggle enabled and a Jump Nav Label, with Anchor ID available as an override.
+
+## 2026.07.15-faq-layout-contract
+- Expanded `mrn-base-stack` to `1.2.66`.
+- Expanded `mrn-reusable-block-library` to `0.1.23`.
+- Added the shared Display Styles, Spacing, Layout, Effects tab order to the standalone FAQs/Accordion editor, including a real FAQ Layout control for stacked or split heading/items presentation.
+- Prevented page-builder FAQ clones from receiving a duplicate row-level tab stack when the reusable FAQ contract already provides it.
+- Renamed the page-owned FAQ builder layout to Page Specific FAQ/Accordion.
+- Suppressed empty FAQs/Accordion sections and answer-only rows before rendering so the output keeps valid native details/summary structure.
+- Cleaned FAQ CSS to use stable type sizes, zero letter spacing, inherited text color, and native details-open visibility without relying on JavaScript.
+- Cleaned ACF WYSIWYG editor controls so media, form, snippet, AI Assist, and Visual/Text controls align predictably in cloned builder layouts.
+- Stacked FAQ item question and answer fields at full row width so WYSIWYG editors span the available builder editor space.
+
 ## 2026.07.15-grid-layout-contract
 - Expanded `mrn-base-stack` to `1.2.65`.
 - Expanded `mrn-reusable-block-library` to `0.1.22`.

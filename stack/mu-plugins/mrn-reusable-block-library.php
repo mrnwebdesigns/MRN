@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Reusable Block Library
  * Description: Loads the MRN Reusable Block Library MU plugin from its subfolder.
- * Version: 0.1.22
+ * Version: 0.1.25
  *
  * Bootstrap loader for the Reusable Block Library MU plugin.
  */

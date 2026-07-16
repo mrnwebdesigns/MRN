@@ -25,3 +25,157 @@
 .acf-field[data-type="repeater"] > .acf-input > .acf-repeater > .values > .acf-row:not(.acf-clone):nth-child(even) > .acf-row-handle.order {
 	background-color: var(--mrn-acf-repeater-row-bg-even);
 }
+
+/*
+ * ACF WYSIWYG controls.
+ * Keeps Classic Editor action buttons, tabs, and the TinyMCE chrome aligned in
+ * cloned builder layouts where third-party buttons are added to the toolbar.
+ */
+.acf-field-wysiwyg .acf-editor-wrap,
+.acf-field[data-type="wysiwyg"] .acf-editor-wrap,
+.acf-editor-wrap {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: none;
+}
+
+.acf-field-wysiwyg .wp-editor-tools,
+.acf-field[data-type="wysiwyg"] .wp-editor-tools,
+.acf-editor-wrap .wp-editor-tools {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 6px;
+	margin: 0;
+	padding: 0 0 6px;
+}
+
+.acf-field-wysiwyg .wp-editor-tools::after,
+.acf-field[data-type="wysiwyg"] .wp-editor-tools::after,
+.acf-editor-wrap .wp-editor-tools::after {
+	content: none;
+}
+
+.acf-field-wysiwyg .wp-media-buttons,
+.acf-field[data-type="wysiwyg"] .wp-media-buttons,
+.acf-editor-wrap .wp-media-buttons {
+	display: contents;
+	margin: 0;
+	padding: 0;
+}
+
+.acf-field-wysiwyg .wp-media-buttons .button,
+.acf-field-wysiwyg .wp-editor-tools > .button,
+.acf-field[data-type="wysiwyg"] .wp-media-buttons .button,
+.acf-field[data-type="wysiwyg"] .wp-editor-tools > .button,
+.acf-editor-wrap .wp-media-buttons .button,
+.acf-editor-wrap .wp-editor-tools > .button {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	height: 32px;
+	min-height: 32px;
+	margin: 0 !important;
+	padding: 0 10px;
+	font-size: 13px;
+	line-height: 1.2;
+}
+
+.acf-field-wysiwyg .wp-media-buttons .button,
+.acf-field[data-type="wysiwyg"] .wp-media-buttons .button,
+.acf-editor-wrap .wp-media-buttons .button {
+	order: 1;
+}
+
+.acf-field-wysiwyg .wp-media-buttons .wp-media-buttons-icon,
+.acf-field-wysiwyg .wp-editor-tools > .button .dashicons,
+.acf-field[data-type="wysiwyg"] .wp-media-buttons .wp-media-buttons-icon,
+.acf-field[data-type="wysiwyg"] .wp-editor-tools > .button .dashicons,
+.acf-editor-wrap .wp-media-buttons .wp-media-buttons-icon,
+.acf-editor-wrap .wp-editor-tools > .button .dashicons {
+	margin: 0;
+}
+
+.acf-field-wysiwyg .wp-editor-tools > .mrn-ai-assist-js-editor-button,
+.acf-field[data-type="wysiwyg"] .wp-editor-tools > .mrn-ai-assist-js-editor-button,
+.acf-editor-wrap .wp-editor-tools > .mrn-ai-assist-js-editor-button {
+	order: 2;
+}
+
+.acf-field-wysiwyg .wp-editor-tabs,
+.acf-field[data-type="wysiwyg"] .wp-editor-tabs,
+.acf-editor-wrap .wp-editor-tabs {
+	display: flex;
+	align-items: flex-end;
+	order: 3;
+	float: none;
+	margin: 0 0 0 auto;
+}
+
+.acf-field-wysiwyg .wp-switch-editor,
+.acf-field[data-type="wysiwyg"] .wp-switch-editor,
+.acf-editor-wrap .wp-switch-editor {
+	display: inline-flex;
+	align-items: center;
+	height: 32px;
+	min-height: 32px;
+	margin: 0 0 0 4px;
+	padding: 0 10px;
+	font-size: 13px;
+	line-height: 1.2;
+	top: auto;
+}
+
+.acf-field-wysiwyg .wp-editor-container,
+.acf-field[data-type="wysiwyg"] .wp-editor-container,
+.acf-editor-wrap .wp-editor-container {
+	clear: both;
+	border-color: #c3c4c7;
+}
+
+.acf-field-wysiwyg .mce-top-part::before,
+.acf-field[data-type="wysiwyg"] .mce-top-part::before,
+.acf-editor-wrap .mce-top-part::before {
+	box-shadow: none;
+}
+
+.acf-field-wysiwyg .mce-toolbar-grp,
+.acf-field[data-type="wysiwyg"] .mce-toolbar-grp,
+.acf-editor-wrap .mce-toolbar-grp {
+	border-bottom-color: #dcdcde;
+}
+
+.acf-field-wysiwyg .mce-toolbar .mce-btn,
+.acf-field[data-type="wysiwyg"] .mce-toolbar .mce-btn,
+.acf-editor-wrap .mce-toolbar .mce-btn {
+	margin: 2px;
+}
+
+@media (max-width: 782px) {
+	.acf-field-wysiwyg .acf-editor-wrap,
+	.acf-field[data-type="wysiwyg"] .acf-editor-wrap,
+	.acf-editor-wrap {
+		max-width: 100%;
+	}
+
+	.acf-field-wysiwyg .wp-editor-tools,
+	.acf-field[data-type="wysiwyg"] .wp-editor-tools,
+	.acf-editor-wrap .wp-editor-tools {
+		align-items: stretch;
+	}
+
+	.acf-field-wysiwyg .wp-media-buttons,
+	.acf-field[data-type="wysiwyg"] .wp-media-buttons,
+	.acf-editor-wrap .wp-media-buttons {
+		display: flex;
+		flex-basis: 100%;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+
+	.acf-field-wysiwyg .wp-editor-tabs,
+	.acf-field[data-type="wysiwyg"] .wp-editor-tabs,
+	.acf-editor-wrap .wp-editor-tabs {
+		margin-left: 0;
+	}
+}

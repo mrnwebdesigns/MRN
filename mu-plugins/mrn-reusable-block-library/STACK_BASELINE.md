@@ -3,7 +3,7 @@
 ## Baseline Snapshot
 - Date pinned: 2026-06-30
 - Plugin source path: `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library`
-- Current plugin version: `0.1.22`
+- Current plugin version: `0.1.25`
 - Intended integration target: mrn-shared-mu-plugin-loader
 - Current release model: shared MU plugin release unit
 
