@@ -3747,6 +3747,7 @@ a.mrn-social-links__link:focus-visible svg {
 }
 
 .mrn-slider-row__slide {
+	align-content: start;
 	background: transparent;
 	border: 0;
 	border-radius: 0;
@@ -3771,6 +3772,28 @@ a.mrn-social-links__link:focus-visible svg {
 
 .mrn-slider-row__slide-content .mrn-ui__head .mrn-ui__heading {
 	margin: 0;
+}
+
+.mrn-slider-row__slide--full-link {
+	cursor: pointer;
+	position: relative;
+}
+
+.mrn-slider-row__slide--full-link .mrn-ui__text :is(a, button, input, select, textarea, [role="button"]) {
+	position: relative;
+	z-index: 3;
+}
+
+.mrn-slider-row__slide-overlay-link {
+	display: block;
+	inset: 0;
+	position: absolute;
+	z-index: 2;
+}
+
+.mrn-slider-row__slide-overlay-link:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
 }
 
 /*--------------------------------------------------------------
@@ -5252,7 +5275,6 @@ a.mrn-social-links__link:focus-visible svg {
 .mrn-layout-section--slider.mrn-layout-surface,
 .mrn-layout-section--slider .mrn-layout-container.mrn-layout-surface {
 	background: var(--mrn-slider-row-bg, transparent);
-	padding-block: clamp(2rem, 4vw, 4rem);
 }
 
 .mrn-layout-section--slider .mrn-layout-grid--slider {
@@ -5286,6 +5308,11 @@ a.mrn-social-links__link:focus-visible svg {
 }
 
 .mrn-layout-section--slider .mrn-slider-row__slide--slider-shell {
+	align-items: start;
+}
+
+.mrn-content-builder__row--slider-images-only .mrn-slider-row__slide--slider-shell {
+	align-content: center;
 	align-items: center;
 }
 

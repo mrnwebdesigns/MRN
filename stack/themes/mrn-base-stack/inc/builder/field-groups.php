@@ -934,7 +934,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_slider' => array(
 								'key'        => 'layout_mrn_slider',
 								'name'       => 'slider',
-								'label'      => 'Slider - label|heading|subheading|slides',
+								'label'      => 'Slider',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -971,20 +971,12 @@ function mrn_base_stack_register_acf_field_groups() {
 												'placement' => 'top',
 												'endpoint' => 0,
 											),
-											array(
-												'key'     => 'field_mrn_slider_item_image',
-												'label'   => 'Image',
-												'name'    => 'image',
-												'aria-label' => '',
-												'type'    => 'image',
-												'return_format' => 'id',
-												'preview_size' => 'medium',
-												'library' => 'all',
-											),
 											mrn_base_stack_get_inline_text_field( 'field_mrn_slider_item_label', 'Label', 'label' ),
 											mrn_base_stack_get_label_tag_field( 'field_mrn_slider_item_label_tag' ),
 											mrn_base_stack_get_inline_text_field( 'field_mrn_slider_item_heading', 'Heading', 'heading' ),
 											mrn_base_stack_get_text_tag_field( 'field_mrn_slider_item_heading_tag', 'heading_tag', 'h3', 'Heading Tag' ),
+											mrn_base_stack_get_inline_text_field( 'field_mrn_slider_item_subheading', 'Subheading', 'subheading' ),
+											mrn_base_stack_get_text_tag_field( 'field_mrn_slider_item_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
 											array(
 												'key'     => 'field_mrn_slider_item_content',
 												'label'   => 'Text area with editor',
@@ -997,11 +989,35 @@ function mrn_base_stack_register_acf_field_groups() {
 												'delay'   => 0,
 											),
 											array(
-												'key'   => 'field_mrn_slider_item_link',
-												'label' => 'Link',
-												'name'  => 'link',
+												'key'     => 'field_mrn_slider_item_image',
+												'label'   => 'Image',
+												'name'    => 'image',
 												'aria-label' => '',
-												'type'  => 'link',
+												'type'    => 'image',
+												'return_format' => 'id',
+												'preview_size' => 'medium',
+												'library' => 'all',
+											),
+											array(
+												'key'           => 'field_mrn_slider_item_link_display',
+												'label'         => 'Link Display',
+												'name'          => 'link_display',
+												'aria-label'    => '',
+												'type'          => 'select',
+												'choices'       => array(
+													'visible'    => 'Show link/button at end',
+													'full_slide' => 'Hide link and make entire slide clickable',
+												),
+												'default_value' => 'visible',
+												'ui'            => 1,
+												'instructions'  => 'When the slide is clickable, the link is hidden visually and the whole slide uses the configured link URL.',
+											),
+											array(
+												'key'           => 'field_mrn_slider_item_link',
+												'label'         => 'Link',
+												'name'          => 'link',
+												'aria-label'    => '',
+												'type'          => 'link',
 												'return_format' => 'array',
 											),
 											array(
@@ -1097,7 +1113,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_per_page',
-										'label'         => 'Slides per view',
+										'label'         => 'Slides per View',
 										'name'          => 'per_page',
 										'aria-label'    => '',
 										'type'          => 'select',
@@ -1114,7 +1130,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_show_arrows',
-										'label'         => 'Show arrows',
+										'label'         => 'Show Arrows',
 										'name'          => 'show_arrows',
 										'aria-label'    => '',
 										'type'          => 'true_false',
@@ -1128,7 +1144,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_show_pagination',
-										'label'         => 'Show pagination',
+										'label'         => 'Show Pagination',
 										'name'          => 'show_pagination',
 										'aria-label'    => '',
 										'type'          => 'true_false',
@@ -1142,7 +1158,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_pause_on_hover',
-										'label'         => 'Pause on hover',
+										'label'         => 'Pause on Hover',
 										'name'          => 'pause_on_hover',
 										'aria-label'    => '',
 										'type'          => 'true_false',
@@ -1170,7 +1186,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_delay_start',
-										'label'         => 'Delay start',
+										'label'         => 'Delay Start',
 										'name'          => 'delay_start',
 										'aria-label'    => '',
 										'type'          => 'number',
@@ -1184,7 +1200,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_delay_time',
-										'label'         => 'Delay time',
+										'label'         => 'Delay Time',
 										'name'          => 'delay_time',
 										'aria-label'    => '',
 										'type'          => 'number',
@@ -1198,7 +1214,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_time_on_slide',
-										'label'         => 'Time on slide',
+										'label'         => 'Time on Slide',
 										'name'          => 'time_on_slide',
 										'aria-label'    => '',
 										'type'          => 'number',

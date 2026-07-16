@@ -5098,6 +5098,19 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		);
 	}
 
+	if ( 'slider' === $layout_name ) {
+		return array(
+			'per_page',
+			'show_arrows',
+			'show_pagination',
+			'pause_on_hover',
+			'autoplay',
+			'delay_start',
+			'delay_time',
+			'time_on_slide',
+		);
+	}
+
 	if ( 'stats' === $layout_name ) {
 		return array(
 			'columns',
@@ -5412,6 +5425,128 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 					),
 				),
 			)
+		);
+	}
+
+	if ( 'slider' === $layout_name ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_per_page',
+				'label'         => 'Slides per View',
+				'name'          => 'per_page',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => array(
+					'1' => '1',
+					'2' => '2',
+					'3' => '3',
+				),
+				'default_value' => '1',
+				'allow_null'    => 0,
+				'ui'            => 1,
+				'instructions'  => 'Controls how many slides are visible per view.',
+				'wrapper'       => array(
+					'width' => '25',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_show_arrows',
+				'label'         => 'Show Arrows',
+				'name'          => 'show_arrows',
+				'aria-label'    => '',
+				'type'          => 'true_false',
+				'ui'            => 1,
+				'default_value' => 1,
+				'ui_on_text'    => 'On',
+				'ui_off_text'   => 'Off',
+				'wrapper'       => array(
+					'width' => '25',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_show_pagination',
+				'label'         => 'Show Pagination',
+				'name'          => 'show_pagination',
+				'aria-label'    => '',
+				'type'          => 'true_false',
+				'ui'            => 1,
+				'default_value' => 1,
+				'ui_on_text'    => 'On',
+				'ui_off_text'   => 'Off',
+				'wrapper'       => array(
+					'width' => '25',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_pause_on_hover',
+				'label'         => 'Pause on Hover',
+				'name'          => 'pause_on_hover',
+				'aria-label'    => '',
+				'type'          => 'true_false',
+				'ui'            => 1,
+				'default_value' => 1,
+				'ui_on_text'    => 'On',
+				'ui_off_text'   => 'Off',
+				'wrapper'       => array(
+					'width' => '25',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_autoplay',
+				'label'         => 'Autoplay',
+				'name'          => 'autoplay',
+				'aria-label'    => '',
+				'type'          => 'true_false',
+				'ui'            => 1,
+				'default_value' => 0,
+				'ui_on_text'    => 'On',
+				'ui_off_text'   => 'Off',
+				'wrapper'       => array(
+					'width' => '25',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_delay_start',
+				'label'         => 'Delay Start',
+				'name'          => 'delay_start',
+				'aria-label'    => '',
+				'type'          => 'number',
+				'default_value' => 0,
+				'min'           => 0,
+				'step'          => 0.5,
+				'instructions'  => 'Seconds to wait before autoplay begins.',
+				'wrapper'       => array(
+					'width' => '33',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_delay_time',
+				'label'         => 'Delay Time',
+				'name'          => 'delay_time',
+				'aria-label'    => '',
+				'type'          => 'number',
+				'default_value' => 5,
+				'min'           => 1,
+				'step'          => 0.5,
+				'instructions'  => 'Seconds each slide stays visible during autoplay.',
+				'wrapper'       => array(
+					'width' => '33',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_time_on_slide',
+				'label'         => 'Time on Slide',
+				'name'          => 'time_on_slide',
+				'aria-label'    => '',
+				'type'          => 'number',
+				'default_value' => 600,
+				'min'           => 100,
+				'step'          => 50,
+				'instructions'  => 'Transition speed in milliseconds.',
+				'wrapper'       => array(
+					'width' => '34',
+				),
+			),
 		);
 	}
 

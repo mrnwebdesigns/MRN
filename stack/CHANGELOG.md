@@ -1,5 +1,15 @@
 # Stack Changelog
 
+## 2026.07.16-slider-layout-contract
+- Expanded `mrn-base-stack` to `1.2.78`.
+- Renamed the Slider builder layout label so the picker no longer exposes internal field hints.
+- Moved Slider per-view, navigation, autoplay, and timing controls into the shared Layout contract.
+- Applied the shared Display Styles contract to Slider front-end output.
+- Removed Slider-specific hardcoded surface padding so spacing is controlled by the spacing contract.
+- Renamed the injected row-flex admin tab to Flexbox so it no longer masks layout-specific controls.
+- Added focused keyboard navigation for slider touch and keyboard use.
+- Added item-level Slider subheadings and a per-slide option to hide the visible link while making the full slide clickable.
+
 ## 2026.07.16-layout-mode-contract
 - Expanded `mrn-base-stack` to `1.2.77`.
 - Added a shared structural Layout Mode helper for item-based layouts that need multiple arrangements.

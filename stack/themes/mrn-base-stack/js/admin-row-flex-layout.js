@@ -147,7 +147,7 @@
 		return $payload;
 	}
 
-	function findLayoutTabItem( $tabGroup ) {
+	function findFlexboxTabItem( $tabGroup ) {
 		var $tabItem = $tabGroup.find( 'li.mrn-row-flex-tab' ).first();
 
 		if ( $tabItem.length ) {
@@ -158,13 +158,34 @@
 			var $candidate = $( this );
 			var $link = $candidate.children( 'a' ).first();
 
-			if ( $.trim( $link.text() ).toLowerCase() === 'layout' ) {
+			if ( $.trim( $link.text() ).toLowerCase() === 'flexbox' ) {
 				$tabItem = $candidate;
 				return false;
 			}
 		} );
 
 		return $tabItem;
+	}
+
+	function getFlexboxTabInsertTarget( $tabGroup ) {
+		var $layoutTab = $();
+		var $effectsTab = $();
+
+		$tabGroup.children( 'li' ).each( function() {
+			var $candidate = $( this );
+			var label = $.trim( $candidate.children( 'a' ).first().text() ).toLowerCase();
+
+			if ( label === 'layout' ) {
+				$layoutTab = $candidate;
+			} else if ( label === 'effects' && ! $effectsTab.length ) {
+				$effectsTab = $candidate;
+			}
+		} );
+
+		return {
+			after: $layoutTab,
+			before: $effectsTab
+		};
 	}
 
 	function buildPanelMarkup( panelId ) {
@@ -287,16 +308,24 @@
 			return;
 		}
 
-		var $tabItem = findLayoutTabItem( $tabGroup );
+		var $tabItem = findFlexboxTabItem( $tabGroup );
 		var panelId = 'mrn-row-flex-panel-' + fieldName + '-' + rowIndex + '-' + Math.floor( Math.random() * 1000000 );
 		var $panel = $fields.children( '.mrn-row-flex-panel' ).first();
 
 		if ( ! $tabItem.length ) {
-			$tabItem = $( '<li class="mrn-row-flex-tab"><a href="#" data-mrn-row-flex-tab="1">Layout</a></li>' );
-			$tabGroup.append( $tabItem );
+			var insertTarget = getFlexboxTabInsertTarget( $tabGroup );
+			$tabItem = $( '<li class="mrn-row-flex-tab"><a href="#" data-mrn-row-flex-tab="1">Flexbox</a></li>' );
+
+			if ( insertTarget.after.length ) {
+				insertTarget.after.after( $tabItem );
+			} else if ( insertTarget.before.length ) {
+				insertTarget.before.before( $tabItem );
+			} else {
+				$tabGroup.append( $tabItem );
+			}
 		} else {
 			$tabItem.addClass( 'mrn-row-flex-tab' );
-			$tabItem.children( 'a' ).first().attr( 'data-mrn-row-flex-tab', '1' );
+			$tabItem.children( 'a' ).first().attr( 'data-mrn-row-flex-tab', '1' ).text( 'Flexbox' );
 		}
 
 		if ( ! $panel.length ) {

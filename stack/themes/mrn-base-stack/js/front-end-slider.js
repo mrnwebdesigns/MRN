@@ -161,6 +161,10 @@
 		var timeOnSlide = parseInt( sliderElement.getAttribute( 'data-time-on-slide' ) || '600', 10 );
 		var autoplayDelay = Math.max( 0, Math.round( ( delayStart || 0 ) * 1000 ) );
 
+		if ( ! showArrows && ! showPagination && ! sliderElement.hasAttribute( 'tabindex' ) ) {
+			sliderElement.setAttribute( 'tabindex', '0' );
+		}
+
 		var splide = new window.Splide( sliderElement, {
 			type: 'slide',
 			perPage: Math.max( 1, Math.min( 6, perPage || 1 ) ),
@@ -173,6 +177,7 @@
 			pauseOnFocus: true,
 			interval: Math.max( 1000, Math.round( ( delayTime || 5 ) * 1000 ) ),
 			speed: Math.max( 100, timeOnSlide || 600 ),
+			keyboard: 'focused',
 			rewind: true,
 			breakpoints: {
 				1200: {

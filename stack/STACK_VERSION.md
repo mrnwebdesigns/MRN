@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.07.16-layout-mode-contract`
+- Stack release: `2026.07.16-slider-layout-contract`
 - Release date: `2026-07-16`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.77`
+  - `mrn-base-stack` `1.2.78`
   - `mrn-base-stack-child` `1.0.1`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.5`
