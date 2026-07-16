@@ -11,8 +11,16 @@
  * @return array<int, string>
  */
 function mrn_base_stack_get_sidebar_supported_post_types() {
-	$fallback_post_types = array( 'post', 'page', 'case_study', 'testimonial' );
-	$post_types          = $fallback_post_types;
+	$fallback_post_types = array( 'post', 'page' );
+	$registered_cpts     = get_post_types(
+		array(
+			'_builtin' => false,
+			'public'   => true,
+			'show_ui'  => true,
+		),
+		'names'
+	);
+	$post_types          = array_merge( $fallback_post_types, array_values( $registered_cpts ) );
 
 	/**
 	 * Filter the post types that can opt into the singular sidebar shell.
@@ -35,6 +43,72 @@ function mrn_base_stack_get_sidebar_supported_post_types() {
 
 	return ! empty( $post_types ) ? $post_types : $fallback_post_types;
 }
+
+/**
+ * Determine whether a post type should receive the shared sidebar templates.
+ *
+ * @param string $post_type Post type slug.
+ * @return bool
+ */
+function mrn_base_stack_post_type_supports_sidebar_templates( $post_type ) {
+	return in_array( sanitize_key( (string) $post_type ), mrn_base_stack_get_sidebar_supported_post_types(), true );
+}
+
+/**
+ * Expose the sidebar templates in Page/Post Attributes for every editorial CPT.
+ *
+ * The generic theme_templates filter is intentionally used so CPTs registered
+ * after the theme ships receive the templates without a static header update.
+ *
+ * @param array<string, string> $templates Available templates.
+ * @param WP_Theme              $theme     Active theme object.
+ * @param WP_Post|null          $post      Post being edited, when available.
+ * @param string                $post_type Post type slug.
+ * @return array<string, string>
+ */
+function mrn_base_stack_add_sidebar_templates_to_post_type( $templates, $theme, $post, $post_type ) {
+	unset( $theme, $post );
+
+	if ( ! mrn_base_stack_post_type_supports_sidebar_templates( $post_type ) ) {
+		return $templates;
+	}
+
+	$templates['page-sidebar-left.php']  = __( 'Sidebar Left', 'mrn-base-stack' );
+	$templates['page-sidebar-right.php'] = __( 'Sidebar Right', 'mrn-base-stack' );
+
+	return $templates;
+}
+add_filter( 'theme_templates', 'mrn_base_stack_add_sidebar_templates_to_post_type', 10, 4 );
+
+/**
+ * Enable the template selector for newly registered editorial CPTs.
+ *
+ * @param string       $post_type        Post type slug.
+ * @param WP_Post_Type $post_type_object Registered post type object.
+ * @return void
+ */
+function mrn_base_stack_enable_sidebar_template_selector( $post_type, $post_type_object ) {
+	if ( ! $post_type_object instanceof WP_Post_Type || ! $post_type_object->public || ! $post_type_object->show_ui ) {
+		return;
+	}
+
+	if ( mrn_base_stack_post_type_supports_sidebar_templates( $post_type ) ) {
+		add_post_type_support( $post_type, 'page-attributes' );
+	}
+}
+add_action( 'registered_post_type', 'mrn_base_stack_enable_sidebar_template_selector', 10, 2 );
+
+/**
+ * Cover built-in post types, which register before the theme is loaded.
+ *
+ * @return void
+ */
+function mrn_base_stack_enable_existing_sidebar_template_selectors() {
+	foreach ( mrn_base_stack_get_sidebar_supported_post_types() as $post_type ) {
+		add_post_type_support( $post_type, 'page-attributes' );
+	}
+}
+add_action( 'init', 'mrn_base_stack_enable_existing_sidebar_template_selectors', 100 );
 
 /**
  * Get page templates that render a sidebar shell.
@@ -106,21 +180,21 @@ function mrn_base_stack_get_page_template_for_sidebar_layout( $layout ) {
 }
 
 /**
- * Convert saved page sidebar-position settings to Page Attributes templates.
+ * Convert saved sidebar-position settings to Post/Page Attributes templates.
  *
  * @return void
  */
 function mrn_base_stack_migrate_page_sidebar_layouts_to_templates() {
 	$migration_key     = 'mrn_base_stack_page_sidebar_template_migration';
-	$migration_version = '2026-07-09-v1';
+	$migration_version = '2026-07-16-v2';
 
 	if ( get_option( $migration_key, '' ) === $migration_version ) {
 		return;
 	}
 
-	$page_ids = get_posts(
+	$post_ids = get_posts(
 		array(
-			'post_type'              => 'page',
+			'post_type'              => mrn_base_stack_get_sidebar_supported_post_types(),
 			'post_status'            => 'any',
 			'fields'                 => 'ids',
 			'posts_per_page'         => -1,
@@ -138,19 +212,19 @@ function mrn_base_stack_migrate_page_sidebar_layouts_to_templates() {
 		)
 	);
 
-	foreach ( $page_ids as $page_id ) {
-		$page_id          = absint( $page_id );
-		$current_template = get_page_template_slug( $page_id );
+	foreach ( $post_ids as $post_id ) {
+		$post_id          = absint( $post_id );
+		$current_template = get_page_template_slug( $post_id );
 
 		if ( '' !== $current_template && 'default' !== $current_template ) {
 			continue;
 		}
 
-		$layout        = sanitize_key( (string) get_post_meta( $page_id, 'sidebar_layout', true ) );
+		$layout        = sanitize_key( (string) get_post_meta( $post_id, 'sidebar_layout', true ) );
 		$template_slug = mrn_base_stack_get_page_template_for_sidebar_layout( $layout );
 
 		if ( '' !== $template_slug ) {
-			update_post_meta( $page_id, '_wp_page_template', $template_slug );
+			update_post_meta( $post_id, '_wp_page_template', $template_slug );
 		}
 	}
 
@@ -365,62 +439,7 @@ function mrn_base_stack_register_singular_sidebar_field_group() {
 	}
 
 	$layout_builder_enabled       = mrn_base_stack_is_layout_builder_enabled();
-	$position_location_rules      = mrn_base_stack_get_sidebar_location_rules();
 	$page_template_location_rules = mrn_base_stack_get_page_template_sidebar_location_rules();
-	$position_conditional_logic   = array(
-		array(
-			array(
-				'field'    => 'field_mrn_sidebar_layout',
-				'operator' => '!=',
-				'value'    => 'none',
-			),
-		),
-	);
-	$fields                       = array(
-		array(
-			'key'           => 'field_mrn_sidebar_layout',
-			'label'         => 'Sidebar Position',
-			'name'          => 'sidebar_layout',
-			'aria-label'    => '',
-			'type'          => 'button_group',
-			'choices'       => array(
-				'none'  => 'None',
-				'left'  => 'Left Sidebar',
-				'right' => 'Right Sidebar',
-			),
-			'default_value' => 'none',
-			'layout'        => 'horizontal',
-			'return_format' => 'value',
-			'instructions'  => 'Choose whether this entry renders a sidebar, and where it sits when enabled.',
-		),
-	);
-
-	$fields[] = mrn_base_stack_get_sidebar_content_field(
-		$layout_builder_enabled,
-		$layout_builder_enabled ? 'field_mrn_sidebar_rows' : 'field_mrn_sidebar_content',
-		$position_conditional_logic
-	);
-
-	if ( ! empty( $position_location_rules ) ) {
-		acf_add_local_field_group(
-			array(
-				'key'                   => 'group_mrn_singular_sidebar',
-				'title'                 => 'Sidebar',
-				'fields'                => $fields,
-				'location'              => $position_location_rules,
-				'menu_order'            => 30,
-				'position'              => 'acf_after_title',
-				'style'                 => 'default',
-				'label_placement'       => 'top',
-				'instruction_placement' => 'label',
-				'active'                => true,
-				'description'           => $layout_builder_enabled
-					? 'Theme-owned singular sidebar controls and builder rows for sidebar-enabled singular content types.'
-					: 'Theme-owned singular sidebar controls for sidebar-enabled singular content types.',
-				'show_in_rest'          => 1,
-			)
-		);
-	}
 
 	if ( ! empty( $page_template_location_rules ) ) {
 		acf_add_local_field_group(
@@ -472,23 +491,7 @@ function mrn_base_stack_get_singular_sidebar_settings( $post_id = null ) {
 		return $settings;
 	}
 
-	if ( 'page' === $post_type ) {
-		$settings['layout'] = mrn_base_stack_get_sidebar_layout_for_page_template( get_page_template_slug( $post_id ) );
-		return $settings;
-	}
-
-	if ( ! function_exists( 'get_field' ) ) {
-		return $settings;
-	}
-
-	$layout = get_field( 'sidebar_layout', $post_id );
-	$layout = is_string( $layout ) ? sanitize_key( $layout ) : 'none';
-
-	if ( ! in_array( $layout, array( 'none', 'left', 'right' ), true ) ) {
-		$layout = 'none';
-	}
-
-	$settings['layout'] = $layout;
+	$settings['layout'] = mrn_base_stack_get_sidebar_layout_for_page_template( get_page_template_slug( $post_id ) );
 
 	return $settings;
 }

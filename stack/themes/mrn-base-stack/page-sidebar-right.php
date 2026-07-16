@@ -1,7 +1,7 @@
 <?php
 /**
  * Template Name: Sidebar Right
- * Template Post Type: page
+ * Template Post Type: post, page, gallery, testimonial, case_study
  *
  * @package mrn-base-stack
  */
@@ -15,7 +15,13 @@ get_header();
 		while ( have_posts() ) :
 			the_post();
 
-			get_template_part( 'template-parts/content', 'page_with_sidebars' );
+			$mrn_post_type = sanitize_key( (string) get_post_type() );
+
+			if ( 'page' === $mrn_post_type ) {
+				get_template_part( 'template-parts/content', 'page_with_sidebars' );
+			} else {
+				get_template_part( 'template-parts/content', $mrn_post_type );
+			}
 
 		endwhile;
 		?>
