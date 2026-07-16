@@ -7,6 +7,18 @@
 - Registered Locations (`location`) with the shared admin/data-only CPT contract so records remain queryable by stack components without public single pages, an archive/index, search exposure, previews, navigation visibility, or sitemap entries.
 - Left both post types field-ready without introducing placeholder ACF field groups.
 
+## 2026.07.16-tabbed-layout-tab-options
+- Expanded `mrn-base-stack` to `1.2.80`.
+- Added Tabbed Layout tab position controls for top left/center/right and left-of-content top/center/bottom.
+- Added Tabbed Layout tab style controls for text, dividers, underline, underline track, outline pill, soft pill, button, segmented, filled, filled segmented, and tab treatments under Display Styles.
+
+## 2026.07.16-tabbed-layout-contract
+- Expanded `mrn-base-stack` to `1.2.79`.
+- Renamed the Tabbed Layout builder label so the picker no longer exposes internal field hints.
+- Moved Tabbed Layout orientation and equal-height controls into the shared Layout contract.
+- Applied the shared Display Styles contract and background color surface handling to Tabbed Layout front-end output.
+- Simplified each Tabbed Layout tab to a tab name, shared icon controls, and one nested row.
+
 ## 2026.07.16-slider-layout-contract
 - Expanded `mrn-base-stack` to `1.2.78`.
 - Renamed the Slider builder layout label so the picker no longer exposes internal field hints.

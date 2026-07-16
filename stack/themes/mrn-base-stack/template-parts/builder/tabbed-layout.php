@@ -16,7 +16,11 @@ $heading_tag     = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_
 $subheading      = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
 $subheading_tag  = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['subheading_tag'] ?? '', 'p' ) : 'p';
 $tab_items       = isset( $row['tabs'] ) && is_array( $row['tabs'] ) ? $row['tabs'] : array();
-$tab_orientation = isset( $row['tab_orientation'] ) ? sanitize_key( (string) $row['tab_orientation'] ) : 'horizontal';
+$background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
+$legacy_orientation = isset( $row['tab_orientation'] ) ? sanitize_key( (string) $row['tab_orientation'] ) : '';
+$tab_position    = function_exists( 'mrn_base_stack_normalize_tabbed_layout_position' ) ? mrn_base_stack_normalize_tabbed_layout_position( $row['tab_position'] ?? '', $legacy_orientation ) : sanitize_key( (string) ( $row['tab_position'] ?? '' ) );
+$tab_style       = function_exists( 'mrn_base_stack_normalize_tabbed_layout_tab_style' ) ? mrn_base_stack_normalize_tabbed_layout_tab_style( $row['tab_style'] ?? '' ) : sanitize_key( (string) ( $row['tab_style'] ?? 'pill' ) );
+$tab_orientation = 0 === strpos( $tab_position, 'left-' ) ? 'vertical' : 'horizontal';
 $equal_heights   = ! empty( $row['equal_panel_heights'] );
 $switch_effect   = isset( $row['tab_switch_effect'] ) ? sanitize_key( (string) $row['tab_switch_effect'] ) : 'instant';
 $uses_slider     = 'slide' === $switch_effect;
@@ -33,17 +37,18 @@ $layout_uid      = function_exists( 'wp_unique_id' )
 	? wp_unique_id( 'mrn-tabbed-layout-' . absint( $context_post_id ) . '-' . absint( $row_index ) . '-' )
 	: 'mrn-tabbed-layout-' . absint( $context_post_id ) . '-' . absint( $row_index ) . '-' . wp_generate_password( 6, false, false );
 $rendered_tabs   = array();
-$has_tab_images  = false;
+$has_tab_icons   = false;
 
 foreach ( $tab_items as $tab_index => $tab_item ) {
 	if ( ! is_array( $tab_item ) ) {
 		continue;
 	}
 
-	$tab_label  = isset( $tab_item['tab_label'] ) ? trim( (string) $tab_item['tab_label'] ) : '';
-	$tab_image  = $tab_item['tab_image'] ?? null;
-	$panel_rows = isset( $tab_item['panel_rows'] ) && is_array( $tab_item['panel_rows'] ) ? $tab_item['panel_rows'] : array();
-	$panel_row  = ! empty( $panel_rows[0] ) && is_array( $panel_rows[0] ) ? $panel_rows[0] : array();
+	$tab_label      = isset( $tab_item['tab_label'] ) ? trim( (string) $tab_item['tab_label'] ) : '';
+	$icon_markup    = function_exists( 'mrn_base_stack_get_button_link_icon_markup' ) ? mrn_base_stack_get_button_link_icon_markup( $tab_item ) : '';
+	$icon_position  = function_exists( 'mrn_base_stack_get_button_link_icon_position' ) ? mrn_base_stack_get_button_link_icon_position( $tab_item ) : 'left';
+	$panel_rows     = isset( $tab_item['panel_rows'] ) && is_array( $tab_item['panel_rows'] ) ? $tab_item['panel_rows'] : array();
+	$panel_row      = ! empty( $panel_rows[0] ) && is_array( $panel_rows[0] ) ? $panel_rows[0] : array();
 
 	if ( empty( $panel_row ) ) {
 		continue;
@@ -65,17 +70,12 @@ foreach ( $tab_items as $tab_index => $tab_item ) {
 
 	$accessible_label = $tab_label;
 	if ( '' === $accessible_label ) {
-		$accessible_label = function_exists( 'mrn_base_stack_get_image_alt' ) ? mrn_base_stack_get_image_alt( $tab_image ) : '';
-	}
-
-	if ( '' === $accessible_label ) {
 		/* translators: %d: Tab number. */
 		$accessible_label = sprintf( esc_html__( 'Tab %d', 'mrn-base-stack' ), (int) $tab_index + 1 );
 	}
 
-	$has_image = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $tab_image ) : false;
-	if ( $has_image ) {
-		$has_tab_images = true;
+	if ( '' !== $icon_markup ) {
+		$has_tab_icons = true;
 	}
 
 	$rendered_tabs[] = array(
@@ -83,9 +83,10 @@ foreach ( $tab_items as $tab_index => $tab_item ) {
 		'panel_id'         => $layout_uid . 'panel-' . ( (int) $tab_index + 1 ),
 		'label'            => $tab_label,
 		'accessible_label' => $accessible_label,
-		'image'            => $tab_image,
-		'has_image'        => $has_image,
-		'is_image_only'    => $has_image && '' === $tab_label,
+		'icon_markup'      => $icon_markup,
+		'icon_position'    => $icon_position,
+		'has_icon'         => '' !== $icon_markup,
+		'is_icon_only'     => '' !== $icon_markup && '' === $tab_label,
 		'markup'           => $panel_markup,
 	);
 }
@@ -98,19 +99,33 @@ $section_classes = array(
 	'mrn-content-builder__row',
 	'mrn-content-builder__row--tabbed-layout',
 );
+$section_styles  = array();
 
-if ( ! in_array( $tab_orientation, array( 'horizontal', 'vertical' ), true ) ) {
+if ( ! in_array( $tab_position, array( 'top-left', 'top-center', 'top-right', 'left-top', 'left-center', 'left-bottom' ), true ) ) {
+	$tab_position    = 'top-left';
 	$tab_orientation = 'horizontal';
+}
+
+if ( ! in_array( $tab_style, array( 'link', 'text-dividers', 'underline', 'underline-track', 'pill', 'soft-pill', 'button', 'segmented', 'filled', 'filled-segmented', 'tab' ), true ) ) {
+	$tab_style = 'pill';
 }
 
 if ( ! in_array( $switch_effect, array( 'instant', 'fade', 'slide' ), true ) ) {
 	$switch_effect = 'instant';
 }
 
-if ( $has_tab_images ) {
-	$section_classes[] = 'mrn-content-builder__row--tabbed-layout-has-images';
+if ( $has_tab_icons ) {
+	$section_classes[] = 'mrn-content-builder__row--tabbed-layout-has-icons';
 }
 
+if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
+	$section_styles[] = '--mrn-tabbed-layout-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
+}
+
+$display_contract  = function_exists( 'mrn_base_stack_get_builder_display_contract' ) ? mrn_base_stack_get_builder_display_contract( $row, 'tabbed_layout' ) : array(
+	'classes'    => array(),
+	'attributes' => array(),
+);
 $accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 	'attributes' => array(),
@@ -119,17 +134,25 @@ $motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contrac
 	'classes'    => array(),
 	'attributes' => array(),
 );
+$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract ) : $section_classes;
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
-$section_attrs     = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
+$section_attrs     = isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ? $display_contract['attributes'] : array();
+$section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' )
+	? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() )
+	: array_merge( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' )
 	? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() )
 	: array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
+$surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
+$is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
 $tablist_label     = '' !== $heading ? wp_strip_all_tags( $heading ) : esc_html__( 'Tabbed content', 'mrn-base-stack' );
 $root_classes      = array(
 	'mrn-tabbed-layout',
 	'mrn-tabbed-layout--orientation-' . sanitize_html_class( $tab_orientation ),
+	'mrn-tabbed-layout--position-' . sanitize_html_class( $tab_position ),
+	'mrn-tabbed-layout--tab-style-' . sanitize_html_class( $tab_style ),
 	'mrn-tabbed-layout--transition-' . sanitize_html_class( $switch_effect ),
 );
 
@@ -141,8 +164,8 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 ?>
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<div class="<?php echo esc_attr( implode( ' ', $root_classes ) ); ?>" data-mrn-tabbed-layout data-mrn-equal-panel-heights="<?php echo $equal_heights ? 'true' : 'false'; ?>">
-		<div class="mrn-layout-section mrn-layout-section--tabbed-layout <?php echo esc_attr( $width_layers['section_class'] ); ?>">
-			<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?>">
+		<div class="mrn-layout-section mrn-layout-section--tabbed-layout <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
+			<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 				<div class="mrn-layout-grid mrn-layout-grid--tabbed-layout mrn-ui__body">
 					<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
 						<header class="mrn-layout-content mrn-layout-content--text mrn-tabbed-layout__header mrn-ui__head">
@@ -165,12 +188,12 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 										<?php
 										$button_classes = array( 'mrn-tabbed-layout__tab' );
 
-										if ( ! empty( $tab_item['has_image'] ) ) {
-											$button_classes[] = 'mrn-tabbed-layout__tab--has-image';
+										if ( ! empty( $tab_item['has_icon'] ) ) {
+											$button_classes[] = 'mrn-tabbed-layout__tab--has-icon';
 										}
 
-										if ( ! empty( $tab_item['is_image_only'] ) ) {
-											$button_classes[] = 'mrn-tabbed-layout__tab--image-only';
+										if ( ! empty( $tab_item['is_icon_only'] ) ) {
+											$button_classes[] = 'mrn-tabbed-layout__tab--icon-only';
 										}
 
 										if ( 0 === $tab_index ) {
@@ -187,25 +210,16 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 											tabindex="<?php echo 0 === $tab_index ? '0' : '-1'; ?>"
 											data-mrn-tab-button
 										>
-											<?php if ( ! empty( $tab_item['has_image'] ) ) : ?>
-												<span class="mrn-tabbed-layout__tab-media" aria-hidden="true">
+											<?php if ( '' !== $tab_item['label'] ) : ?>
+												<span class="mrn-tabbed-layout__tab-label">
 													<?php
-													// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared image helper returns escaped wp_get_attachment_image markup.
-													echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
-														$tab_item['image'],
-														'mrn-icon',
-														array(
-															'class' => 'mrn-tabbed-layout__tab-image',
-															'alt'   => '',
-														)
-													) : '';
+													echo function_exists( 'mrn_base_stack_get_compact_link_label_markup' )
+														? mrn_base_stack_get_compact_link_label_markup( $tab_item['label'], (string) $tab_item['icon_markup'], (string) $tab_item['icon_position'] ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon helper returns escaped markup and label helper escapes the label.
+														: esc_html( $tab_item['label'] );
 													?>
 												</span>
-											<?php endif; ?>
-
-											<?php if ( '' !== $tab_item['label'] ) : ?>
-												<span class="mrn-tabbed-layout__tab-label"><?php echo esc_html( $tab_item['label'] ); ?></span>
 											<?php else : ?>
+												<?php echo $tab_item['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in shared helper output. ?>
 												<span class="screen-reader-text"><?php echo esc_html( $tab_item['accessible_label'] ); ?></span>
 											<?php endif; ?>
 										</button>

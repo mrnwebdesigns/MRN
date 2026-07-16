@@ -3664,7 +3664,10 @@ function mrn_base_stack_normalize_primary_layout_field( array $field ) {
 		$field['wrapper']['width'] = '75';
 
 		if ( 'tab_label' === $field_name ) {
-			$field['instructions'] = '';
+			$field['label']            = 'Tab Name';
+			$field['instructions']     = '';
+			$field['required']         = 1;
+			$field['wrapper']['width'] = '50';
 		}
 	}
 
@@ -4168,7 +4171,6 @@ function mrn_base_stack_repeater_uses_primary_item_contract( $repeater_name ) {
 			'card_items',
 			'showcase_items',
 			'slider_items',
-			'tabs',
 			'logo_items',
 		),
 		true
@@ -5126,6 +5128,14 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		);
 	}
 
+	if ( 'tabbed_layout' === $layout_name ) {
+		return array(
+			'tab_position',
+			'tab_orientation',
+			'equal_panel_heights',
+		);
+	}
+
 	return array();
 }
 
@@ -5255,6 +5265,76 @@ function mrn_base_stack_get_builder_layout_mode_field( $layout_name, $key_seed )
 			'width' => '50',
 		),
 	);
+}
+
+/**
+ * Get tab position choices for Tabbed Layout.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_tabbed_layout_position_choices() {
+	return array(
+		'top-left'      => __( 'Top - Left', 'mrn-base-stack' ),
+		'top-center'    => __( 'Top - Center', 'mrn-base-stack' ),
+		'top-right'     => __( 'Top - Right', 'mrn-base-stack' ),
+		'left-top'      => __( 'Left of content - Top', 'mrn-base-stack' ),
+		'left-center'   => __( 'Left of content - Center', 'mrn-base-stack' ),
+		'left-bottom'   => __( 'Left of content - Bottom', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Normalize a Tabbed Layout position.
+ *
+ * @param string $position Candidate position.
+ * @param string $legacy_orientation Legacy orientation fallback.
+ * @return string
+ */
+function mrn_base_stack_normalize_tabbed_layout_position( $position, $legacy_orientation = '' ) {
+	$position = sanitize_key( (string) $position );
+	$choices  = mrn_base_stack_get_tabbed_layout_position_choices();
+
+	if ( '' !== $position && isset( $choices[ $position ] ) ) {
+		return $position;
+	}
+
+	$legacy_orientation = sanitize_key( (string) $legacy_orientation );
+
+	return 'vertical' === $legacy_orientation ? 'left-top' : 'top-left';
+}
+
+/**
+ * Get tab style choices for Tabbed Layout.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_tabbed_layout_tab_style_choices() {
+	return array(
+		'link'             => __( 'Text', 'mrn-base-stack' ),
+		'text-dividers'    => __( 'Text Dividers', 'mrn-base-stack' ),
+		'underline'        => __( 'Underline', 'mrn-base-stack' ),
+		'underline-track'  => __( 'Underline Track', 'mrn-base-stack' ),
+		'pill'             => __( 'Outline Pill', 'mrn-base-stack' ),
+		'soft-pill'        => __( 'Soft Pill', 'mrn-base-stack' ),
+		'button'           => __( 'Button', 'mrn-base-stack' ),
+		'segmented'        => __( 'Segmented', 'mrn-base-stack' ),
+		'filled'           => __( 'Filled', 'mrn-base-stack' ),
+		'filled-segmented' => __( 'Filled Segmented', 'mrn-base-stack' ),
+		'tab'              => __( 'Tab', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Normalize a Tabbed Layout tab style.
+ *
+ * @param string $style Candidate style.
+ * @return string
+ */
+function mrn_base_stack_normalize_tabbed_layout_tab_style( $style ) {
+	$style   = sanitize_key( (string) $style );
+	$choices = mrn_base_stack_get_tabbed_layout_tab_style_choices();
+
+	return isset( $choices[ $style ] ) ? $style : 'pill';
 }
 
 /**
@@ -5636,6 +5716,97 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 		);
 	}
 
+	if ( 'tabbed_layout' === $layout_name ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_tab_position',
+				'label'         => 'Tab Position',
+				'name'          => 'tab_position',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => mrn_base_stack_get_tabbed_layout_position_choices(),
+				'default_value' => 'top-left',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'ui'            => 1,
+				'instructions'  => 'Controls where the tab controls sit relative to the panel content.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_equal_panel_heights',
+				'label'         => 'Equalize Panel Heights',
+				'name'          => 'equal_panel_heights',
+				'aria-label'    => '',
+				'type'          => 'true_false',
+				'ui'            => 1,
+				'default_value' => 0,
+				'ui_on_text'    => 'On',
+				'ui_off_text'   => 'Off',
+				'instructions'  => 'Match the active panel height to the tallest tab panel.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+		);
+	}
+
+	return array();
+}
+
+/**
+ * Get layout-specific field names owned by the shared Display Styles tab.
+ *
+ * @param string $layout_name Builder layout name.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_builder_display_styles_contract_field_names( $layout_name ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+
+	if ( 'tabbed_layout' === $layout_name ) {
+		return array( 'tab_style' );
+	}
+
+	return array();
+}
+
+/**
+ * Build layout-specific controls for the shared Display Styles tab.
+ *
+ * @param string $layout_name Builder layout name.
+ * @param string $key_seed Field key seed.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_builder_display_styles_contract_fields( $layout_name, $key_seed ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	$key_seed    = sanitize_key( (string) $key_seed );
+
+	if ( '' === $key_seed ) {
+		$key_seed = 'field_mrn_' . $layout_name . '_display';
+	}
+
+	if ( 'tabbed_layout' === $layout_name ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_tab_style',
+				'label'         => 'Tab Style',
+				'name'          => 'tab_style',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => mrn_base_stack_get_tabbed_layout_tab_style_choices(),
+				'default_value' => 'pill',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'ui'            => 1,
+				'instructions'  => 'Controls the visual treatment of the tab controls.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+		);
+	}
+
 	return array();
 }
 
@@ -5714,8 +5885,14 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 	$layout_mode_names = function_exists( 'mrn_base_stack_get_builder_layout_mode_field_names' )
 		? mrn_base_stack_get_builder_layout_mode_field_names( $layout_name )
 		: array();
+	$display_contract_names = function_exists( 'mrn_base_stack_get_builder_display_styles_contract_field_names' )
+		? mrn_base_stack_get_builder_display_styles_contract_field_names( $layout_name )
+		: array();
+	$display_contract_fields = function_exists( 'mrn_base_stack_get_builder_display_styles_contract_fields' )
+		? mrn_base_stack_get_builder_display_styles_contract_fields( $layout_name, '' !== $key_seed ? $key_seed : 'field_mrn_' . $layout_name . '_display' )
+		: array();
 
-	if ( empty( $mode_choices ) && empty( $style_choices ) ) {
+	if ( empty( $mode_choices ) && empty( $style_choices ) && empty( $display_contract_fields ) ) {
 		return $fields;
 	}
 
@@ -5754,6 +5931,10 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 
 		if ( 'display_style' === $field_name && 'select' === $field_type ) {
 			$display_style_field = $field;
+			continue;
+		}
+
+		if ( '' !== $field_name && in_array( $field_name, $display_contract_names, true ) ) {
 			continue;
 		}
 
@@ -5802,6 +5983,12 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 
 	if ( is_array( $display_style_field ) ) {
 		$display_fields[] = $display_style_field;
+	}
+
+	foreach ( $display_contract_fields as $display_contract_field ) {
+		if ( is_array( $display_contract_field ) ) {
+			$display_fields[] = $display_contract_field;
+		}
 	}
 
 	$insert_index = count( $remaining_fields );
@@ -5884,6 +6071,7 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 	if ( ! empty( $layout_contract_fields ) && ! empty( $existing_layout_fields ) ) {
 		$merged_layout_contract_fields = array();
 		$used_existing_field_names     = array();
+		$generated_layout_field_names  = array();
 
 		foreach ( $layout_contract_fields as $layout_contract_field ) {
 			if ( ! is_array( $layout_contract_field ) ) {
@@ -5892,6 +6080,10 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 			}
 
 			$field_name = isset( $layout_contract_field['name'] ) ? sanitize_key( (string) $layout_contract_field['name'] ) : '';
+			if ( '' !== $field_name ) {
+				$generated_layout_field_names[] = $field_name;
+			}
+
 			if ( '' !== $field_name && isset( $existing_layout_fields[ $field_name ] ) && is_array( $existing_layout_fields[ $field_name ] ) ) {
 				$existing_field = $existing_layout_fields[ $field_name ];
 				foreach ( array( 'key', '_name', 'parent', 'parent_layout', 'default_value', 'conditional_logic' ) as $preserved_key ) {
@@ -5906,6 +6098,10 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 		}
 
 		foreach ( $existing_layout_fields as $field_name => $existing_field ) {
+			if ( ! in_array( $field_name, $generated_layout_field_names, true ) ) {
+				continue;
+			}
+
 			if ( in_array( $field_name, $used_existing_field_names, true ) ) {
 				continue;
 			}

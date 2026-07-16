@@ -1231,7 +1231,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_tabbed_layout' => array(
 								'key'        => 'layout_mrn_tabbed_layout',
 								'name'       => 'tabbed_layout',
-								'label'      => 'Tabbed Layout - tabs|rows',
+								'label'      => 'Tabbed Layout',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -1261,38 +1261,18 @@ function mrn_base_stack_register_acf_field_groups() {
 										'instructions'     => 'Each tab holds one builder row. The tab order matches the row order.',
 										'sub_fields'       => array(
 											array(
-												'key'      => 'field_mrn_tabbed_layout_tab_content_tab',
-												'label'    => 'Content',
-												'name'     => '',
-												'aria-label' => '',
-												'type'     => 'tab',
-												'placement' => 'top',
-												'endpoint' => 0,
-											),
-											array(
 												'key'     => 'field_mrn_tabbed_layout_tab_label',
-												'label'   => 'Tab Label',
+												'label'   => 'Tab Name',
 												'name'    => 'tab_label',
 												'aria-label' => '',
 												'type'    => 'text',
-												'instructions' => 'Optional when using an image-only tab.',
+												'required' => 1,
+												'instructions' => 'Names the tab button. This is not content inside the tab panel.',
 												'wrapper' => array(
 													'width' => '50',
 												),
 											),
-											array(
-												'key'     => 'field_mrn_tabbed_layout_tab_image',
-												'label'   => 'Tab Image',
-												'name'    => 'tab_image',
-												'aria-label' => '',
-												'type'    => 'image',
-												'return_format' => 'id',
-												'preview_size' => 'medium',
-												'library' => 'all',
-												'wrapper' => array(
-													'width' => '50',
-												),
-											),
+											...mrn_base_stack_get_button_link_icon_fields( 'field_mrn_tabbed_layout_tab_icon', 'field_mrn_tabbed_layout_tab_label' ),
 											array(
 												'key'      => 'field_mrn_tabbed_layout_panel_rows',
 												'label'    => 'Tab Row',
@@ -1303,43 +1283,6 @@ function mrn_base_stack_register_acf_field_groups() {
 												'min'      => 1,
 												'max'      => 1,
 												'layouts'  => array(),
-											),
-											array(
-												'key'      => 'field_mrn_tabbed_layout_tab_config_tab',
-												'label'    => 'Configs',
-												'name'     => '',
-												'aria-label' => '',
-												'type'     => 'tab',
-												'placement' => 'top',
-												'endpoint' => 0,
-											),
-											array(
-												'key'     => 'field_mrn_tabbed_layout_tab_background_color',
-												'label'   => 'Background Color',
-												'name'    => 'background_color',
-												'aria-label' => '',
-												'type'    => 'select',
-												'choices' => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
-												'ui'      => 1,
-												'allow_null' => 1,
-												'instructions' => 'Select from Site Colors when available.',
-												'wrapper' => array(
-													'width' => '50',
-												),
-											),
-											array(
-												'key'     => 'field_mrn_tabbed_layout_tab_enable_row_effects',
-												'label'   => 'Enable Row Effects',
-												'name'    => 'enable_row_effects',
-												'aria-label' => '',
-												'type'    => 'true_false',
-												'ui'      => 1,
-												'default_value' => 0,
-												'ui_on_text' => 'On',
-												'ui_off_text' => 'Off',
-												'wrapper' => array(
-													'width' => '50',
-												),
 											),
 										),
 									),
@@ -1361,6 +1304,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'choices'      => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
 										'ui'           => 1,
 										'allow_null'   => 1,
+										'multiple'     => 0,
 										'instructions' => 'Select from Site Colors when available.',
 										'wrapper'      => array(
 											'width' => '50',
@@ -1379,6 +1323,8 @@ function mrn_base_stack_register_acf_field_groups() {
 											'vertical'   => 'Vertical',
 										),
 										'default_value' => 'horizontal',
+										'allow_null'    => 0,
+										'multiple'      => 0,
 										'ui'            => 1,
 										'wrapper'       => array(
 											'width' => '50',
@@ -1401,7 +1347,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_tabbed_layout_switch_effect',
-										'label'         => 'Tab Switch Effect',
+										'label'         => 'Tab Animation',
 										'name'          => 'tab_switch_effect',
 										'aria-label'    => '',
 										'type'          => 'select',
@@ -1411,6 +1357,9 @@ function mrn_base_stack_register_acf_field_groups() {
 											'slide'   => 'Slide',
 										),
 										'default_value' => 'instant',
+										'allow_null'    => 0,
+										'multiple'      => 0,
+										'instructions'  => 'Fade uses lightweight CSS. Slide uses the stack Splide library already loaded for tabbed layouts.',
 										'ui'            => 1,
 										'wrapper'       => array(
 											'width' => '50',
