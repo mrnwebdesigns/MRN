@@ -3326,11 +3326,44 @@ button.mrn-ui__link--button {
 	padding: 0;
 }
 
+.mrn-content-builder__row--faq-jump-nav-align-center .mrn-faq-jump-nav__head {
+	text-align: center;
+}
+
+.mrn-content-builder__row--faq-jump-nav-align-center .mrn-faq-jump-nav__list {
+	justify-content: center;
+}
+
+.mrn-content-builder__row--faq-jump-nav-align-right .mrn-faq-jump-nav__head {
+	text-align: right;
+}
+
+.mrn-content-builder__row--faq-jump-nav-align-right .mrn-faq-jump-nav__list {
+	justify-content: flex-end;
+}
+
+.mrn-content-builder__row--faq-jump-nav-wrap-scroll .mrn-faq-jump-nav__list {
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	scroll-padding-inline: var(--mrn-space-inline-sm, 0.75rem);
+}
+
+.mrn-content-builder__row--faq-jump-nav-wrap-scroll .mrn-faq-jump-nav__link {
+	white-space: nowrap;
+}
+
+.mrn-content-builder__row--faq-jump-nav-wrap-scroll .mrn-faq-jump-nav__item {
+	flex: 0 0 auto;
+}
+
 .mrn-faq-jump-nav__item {
+	flex: 0 1 auto;
 	margin: 0;
 }
 
 .mrn-faq-jump-nav__link {
+	overflow-wrap: anywhere;
 	text-decoration: underline;
 	text-underline-offset: 0.16em;
 }

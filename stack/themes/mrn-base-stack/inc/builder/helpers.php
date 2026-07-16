@@ -840,6 +840,7 @@ function mrn_base_stack_get_two_column_column_layout_source_names() {
 		'external_widget',
 		'wpforms',
 		'reusable_block',
+		'faq_jump_nav',
 	);
 
 	$names = mrn_base_stack_normalize_builder_layout_source_names(
@@ -5599,6 +5600,13 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		return array( 'faq_layout' );
 	}
 
+	if ( 'faq_jump_nav' === $layout_name ) {
+		return array(
+			'jump_nav_alignment',
+			'jump_nav_wrap',
+		);
+	}
+
 	if ( 'card' === $layout_name ) {
 		return array(
 			'card_layout',
@@ -6046,6 +6054,57 @@ function mrn_base_stack_normalize_tabbed_layout_tab_style( $style ) {
 }
 
 /**
+ * Get FAQ Jump Nav alignment choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_faq_jump_nav_alignment_choices() {
+	return array(
+		'left'   => __( 'Left', 'mrn-base-stack' ),
+		'center' => __( 'Center', 'mrn-base-stack' ),
+		'right'  => __( 'Right', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Normalize FAQ Jump Nav alignment.
+ *
+ * @param string $alignment Candidate alignment.
+ * @return string
+ */
+function mrn_base_stack_normalize_faq_jump_nav_alignment( $alignment ) {
+	$alignment = sanitize_key( (string) $alignment );
+	$choices   = mrn_base_stack_get_faq_jump_nav_alignment_choices();
+
+	return isset( $choices[ $alignment ] ) ? $alignment : 'left';
+}
+
+/**
+ * Get FAQ Jump Nav wrapping choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_faq_jump_nav_wrap_choices() {
+	return array(
+		'wrap'   => __( 'Wrap to multiple lines', 'mrn-base-stack' ),
+		'scroll' => __( 'Single-line horizontal scroll', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Normalize FAQ Jump Nav wrapping.
+ *
+ * @param string $wrap Candidate wrapping behavior.
+ * @return string
+ */
+function mrn_base_stack_normalize_faq_jump_nav_wrap( $wrap ) {
+	$wrap    = sanitize_key( (string) $wrap );
+	$choices = mrn_base_stack_get_faq_jump_nav_wrap_choices();
+
+	return isset( $choices[ $wrap ] ) ? $wrap : 'wrap';
+}
+
+/**
  * Build layout-specific controls for the shared Layout tab.
  *
  * @param string $layout_name Builder layout name.
@@ -6076,6 +6135,45 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 				'allow_null'    => 0,
 				'ui'            => 1,
 				'instructions'  => 'Choose whether the section heading stacks above the accordion or sits beside the items.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+		);
+	}
+
+	if ( 'faq_jump_nav' === $layout_name ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_jump_nav_alignment',
+				'label'         => 'List Alignment',
+				'name'          => 'jump_nav_alignment',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => mrn_base_stack_get_faq_jump_nav_alignment_choices(),
+				'default_value' => 'left',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'return_format' => 'value',
+				'ui'            => 1,
+				'instructions'  => 'Controls the alignment of the jump links within the selected section width.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_jump_nav_wrap',
+				'label'         => 'Link Wrapping',
+				'name'          => 'jump_nav_wrap',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => mrn_base_stack_get_faq_jump_nav_wrap_choices(),
+				'default_value' => 'wrap',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'return_format' => 'value',
+				'ui'            => 1,
+				'instructions'  => 'Wrap is the default. Horizontal scroll preserves one line while remaining touch friendly on narrow screens.',
 				'wrapper'       => array(
 					'width' => '50',
 				),
@@ -11889,6 +11987,64 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'instructions'  => 'Choose a reusable block from the library. Editing that block updates it everywhere it is used.',
 				),
 				mrn_base_stack_get_anchor_field( 'field_mrn_nested_reusable_block_anchor' ),
+				array(
+					'key'           => 'field_mrn_nested_reusable_block_include_in_faq_jump_nav',
+					'label'         => 'Include FAQ Block in Jump Nav',
+					'name'          => 'include_in_faq_jump_nav',
+					'aria-label'    => '',
+					'type'          => 'true_false',
+					'instructions'  => 'Only used when the selected reusable block is a FAQ/Accordion. FAQ Jump Nav Label is required. Placement Anchor ID is optional and overrides the label-generated target.',
+					'ui'            => 1,
+					'default_value' => 0,
+					'ui_on_text'    => 'Include',
+					'ui_off_text'   => 'Omit',
+					'wrapper'       => array(
+						'width' => '33',
+					),
+				),
+				array(
+					'key'          => 'field_mrn_nested_reusable_block_faq_jump_nav_label',
+					'label'        => 'FAQ Jump Nav Label',
+					'name'         => 'faq_jump_nav_label',
+					'aria-label'   => '',
+					'type'         => 'text',
+					'instructions' => 'Required when this FAQ placement should appear in a page FAQ Jump Nav. If Placement Anchor ID is blank, this label also generates the jump target.',
+					'wrapper'      => array(
+						'width' => '100',
+					),
+				),
+			),
+		),
+		'layout_mrn_nested_faq_jump_nav' => array(
+			'key'        => 'layout_mrn_nested_faq_jump_nav',
+			'name'       => 'faq_jump_nav',
+			'label'      => 'FAQ Jump Nav',
+			'display'    => 'block',
+			'sub_fields' => array(
+				array(
+					'key'        => 'field_mrn_nested_faq_jump_nav_content_tab',
+					'label'      => 'Content',
+					'name'       => '',
+					'aria-label' => '',
+					'type'       => 'tab',
+					'placement'  => 'top',
+				),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_nested_faq_jump_nav_label', 'Label', 'label' ),
+				mrn_base_stack_get_label_tag_field( 'field_mrn_nested_faq_jump_nav_label_tag' ),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_nested_faq_jump_nav_heading', 'Heading', 'heading' ),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_faq_jump_nav_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
+				array(
+					'key'        => 'field_mrn_nested_faq_jump_nav_config_tab',
+					'label'      => 'Configs',
+					'name'       => '',
+					'aria-label' => '',
+					'type'       => 'tab',
+					'placement'  => 'top',
+					'endpoint'   => 0,
+				),
+				mrn_base_stack_get_section_width_field( 'field_mrn_nested_faq_jump_nav_section_width', 'section_width', 'content' ),
+				mrn_base_stack_get_anchor_field( 'field_mrn_nested_faq_jump_nav_anchor' ),
+				mrn_base_stack_get_motion_group_field( 'field_mrn_nested_faq_jump_nav_motion_settings' ),
 			),
 		),
 	);

@@ -14,6 +14,8 @@ $label           = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
 $label_tag       = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
 $heading         = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
 $heading_tag     = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['heading_tag'] ?? '', 'h2' ) : 'h2';
+$alignment       = function_exists( 'mrn_base_stack_normalize_faq_jump_nav_alignment' ) ? mrn_base_stack_normalize_faq_jump_nav_alignment( $row['jump_nav_alignment'] ?? '' ) : sanitize_key( (string) ( $row['jump_nav_alignment'] ?? 'left' ) );
+$wrap            = function_exists( 'mrn_base_stack_normalize_faq_jump_nav_wrap' ) ? mrn_base_stack_normalize_faq_jump_nav_wrap( $row['jump_nav_wrap'] ?? '' ) : sanitize_key( (string) ( $row['jump_nav_wrap'] ?? 'wrap' ) );
 
 if ( empty( $entries ) ) {
 	return;
@@ -30,6 +32,8 @@ $width_layers = function_exists( 'mrn_base_stack_get_section_width_layers' )
 $section_classes   = array(
 	'mrn-content-builder__row',
 	'mrn-content-builder__row--faq-jump-nav',
+	'mrn-content-builder__row--faq-jump-nav-align-' . sanitize_html_class( $alignment ),
+	'mrn-content-builder__row--faq-jump-nav-wrap-' . sanitize_html_class( $wrap ),
 );
 $display_contract  = function_exists( 'mrn_base_stack_get_builder_display_contract' ) ? mrn_base_stack_get_builder_display_contract( $row, 'faq_jump_nav' ) : array(
 	'classes'    => array(),

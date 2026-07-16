@@ -3080,6 +3080,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									mrn_base_stack_get_section_width_field( 'field_mrn_faq_jump_nav_section_width', 'section_width', 'content' ),
 									mrn_base_stack_get_anchor_field( 'field_mrn_faq_jump_nav_anchor' ),
+									mrn_base_stack_get_motion_group_field( 'field_mrn_faq_jump_nav_motion_settings' ),
 								),
 							),
 							'layout_mrn_reusable_block' => array(

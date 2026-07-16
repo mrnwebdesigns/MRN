@@ -277,7 +277,9 @@ function mrn_base_stack_get_page_template_sidebar_location_rules() {
  * Get top-level layout names that can be added to singular sidebars.
  *
  * This intentionally excludes nested/composite builder layouts so sidebar
- * fields do not become another full recursive builder surface.
+ * fields do not become another full recursive builder surface. FAQ Jump Nav is
+ * a utility layout and remains safe because it only reads FAQ placements from
+ * the current entry.
  *
  * @return array<int, string>
  */
@@ -288,6 +290,7 @@ function mrn_base_stack_get_sidebar_layout_source_names() {
 		'basic',
 		'cta',
 		'image_content',
+		'faq_jump_nav',
 	);
 
 	$names = mrn_base_stack_normalize_builder_layout_source_names(
@@ -359,6 +362,10 @@ function mrn_base_stack_get_sidebar_builder_layouts( $post_id = 0 ) {
 
 		if ( isset( $existing_only_lookup[ $layout_name ] ) ) {
 			$layout['max'] = -1;
+		}
+
+		if ( isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) && function_exists( 'mrn_base_stack_apply_primary_layout_field_contract' ) ) {
+			$layout['sub_fields'] = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $layout_name );
 		}
 
 		$sidebar_layouts[ $layout_key ] = $layout;
