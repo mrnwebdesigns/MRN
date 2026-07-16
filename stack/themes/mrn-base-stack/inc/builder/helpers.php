@@ -5236,6 +5236,10 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		);
 	}
 
+	if ( 'wpforms' === $layout_name ) {
+		return array( 'form_layout' );
+	}
+
 	if ( 'external_widget' === $layout_name ) {
 		return array(
 			'embed_layout',
@@ -5918,6 +5922,31 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 				'instructions'  => 'Aligns contained images inside the media area.',
 				'wrapper'       => array(
 					'width' => '34',
+				),
+			),
+		);
+	}
+
+	if ( 'wpforms' === $layout_name ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_form_layout',
+				'label'         => 'Form Layout',
+				'name'          => 'form_layout',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => array(
+					'stacked'    => 'Stacked',
+					'form-right' => 'Content left / form right',
+					'form-left'  => 'Form left / content right',
+				),
+				'default_value' => 'stacked',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'ui'            => 1,
+				'instructions'  => 'Controls how the intro content and selected form are arranged.',
+				'wrapper'       => array(
+					'width' => '50',
 				),
 			),
 		);
