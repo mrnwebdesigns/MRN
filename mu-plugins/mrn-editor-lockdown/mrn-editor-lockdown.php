@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Editor Lockdown
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.26
+ * Version: 1.0.28
  *
  * @package MRNEditorLockdown
  */
@@ -159,10 +159,12 @@ function mrn_editor_lockdown_get_layouts() {
 			'screen_layout' => 2,
 			'meta_box_order' => array(
 				'normal'   => 'postexcerpt,slugdiv,authordiv',
-				'side'     => 'acf-group_69a1c0f3a1b01,categorydiv,tagsdiv-post_tag,submitdiv',
+				'side'     => 'acf-group_69a1c0f3a1b01,postimagediv,categorydiv,tagsdiv-post_tag,submitdiv,mrn-builder-layout-allowlist,mrn-config-helper-breadcrumbs',
 				'advanced' => 'ame-cpe-content-permissions',
 			),
 			'closed' => array(
+				'mrn-builder-layout-allowlist',
+				'mrn-config-helper-breadcrumbs',
 				'ame-cpe-content-permissions',
 			),
 		),
@@ -170,10 +172,12 @@ function mrn_editor_lockdown_get_layouts() {
 			'screen_layout' => 2,
 			'meta_box_order' => array(
 				'normal'   => 'slugdiv,authordiv,revisionsdiv',
-				'side'     => 'acf-group_69a1c0f3a1b01,submitdiv,pageparentdiv',
+				'side'     => 'acf-group_69a1c0f3a1b01,postimagediv,submitdiv,pageparentdiv,mrn-builder-layout-allowlist,mrn-config-helper-breadcrumbs',
 				'advanced' => 'ame-cpe-content-permissions',
 			),
 			'closed' => array(
+				'mrn-builder-layout-allowlist',
+				'mrn-config-helper-breadcrumbs',
 				'ame-cpe-content-permissions',
 			),
 		),
