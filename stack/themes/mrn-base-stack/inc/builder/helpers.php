@@ -5652,7 +5652,7 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		return array( 'section_width' );
 	}
 
-	if ( in_array( $layout_name, array( 'cta', 'cta_block' ), true ) ) {
+	if ( in_array( $layout_name, array( 'basic', 'basic_block', 'cta', 'cta_block' ), true ) ) {
 		return array( 'image_placement' );
 	}
 
@@ -6241,7 +6241,7 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 		);
 	}
 
-	if ( in_array( $layout_name, array( 'cta', 'cta_block' ), true ) ) {
+	if ( in_array( $layout_name, array( 'basic', 'basic_block', 'cta', 'cta_block' ), true ) ) {
 		return array(
 			array(
 				'key'           => $key_seed . '_image_placement',
@@ -6257,7 +6257,7 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 				'allow_null'    => 0,
 				'multiple'      => 0,
 				'ui'            => 1,
-				'instructions'  => 'Controls whether the CTA image sits left or right of the content on wide screens. Mobile stacks naturally.',
+				'instructions'  => 'Controls whether the image sits left or right of the content on wide screens. Mobile stacks naturally.',
 				'wrapper'       => array(
 					'width' => '50',
 				),

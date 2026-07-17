@@ -561,7 +561,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_basic' => array(
 								'key'        => 'layout_mrn_basic',
 								'name'       => 'basic',
-								'label'      => 'Basic - label|heading|subheading|text with editor|image|link',
+								'label'      => 'Page Specific Basic',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -999,25 +999,25 @@ function mrn_base_stack_register_acf_field_groups() {
 												'library' => 'all',
 											),
 											array(
-												'key'           => 'field_mrn_slider_item_link_display',
-												'label'         => 'Link Display',
-												'name'          => 'link_display',
-												'aria-label'    => '',
-												'type'          => 'select',
-												'choices'       => array(
+												'key'     => 'field_mrn_slider_item_link_display',
+												'label'   => 'Link Display',
+												'name'    => 'link_display',
+												'aria-label' => '',
+												'type'    => 'select',
+												'choices' => array(
 													'visible'    => 'Show link/button at end',
 													'full_slide' => 'Hide link and make entire slide clickable',
 												),
 												'default_value' => 'visible',
-												'ui'            => 1,
-												'instructions'  => 'When the slide is clickable, the link is hidden visually and the whole slide uses the configured link URL.',
+												'ui'      => 1,
+												'instructions' => 'When the slide is clickable, the link is hidden visually and the whole slide uses the configured link URL.',
 											),
 											array(
-												'key'           => 'field_mrn_slider_item_link',
-												'label'         => 'Link',
-												'name'          => 'link',
-												'aria-label'    => '',
-												'type'          => 'link',
+												'key'   => 'field_mrn_slider_item_link',
+												'label' => 'Link',
+												'name'  => 'link',
+												'aria-label' => '',
+												'type'  => 'link',
 												'return_format' => 'array',
 											),
 											array(
@@ -1261,14 +1261,14 @@ function mrn_base_stack_register_acf_field_groups() {
 										'instructions'     => 'Each tab holds one builder row. The tab order matches the row order.',
 										'sub_fields'       => array(
 											array(
-												'key'     => 'field_mrn_tabbed_layout_tab_label',
-												'label'   => 'Tab Name',
-												'name'    => 'tab_label',
+												'key'      => 'field_mrn_tabbed_layout_tab_label',
+												'label'    => 'Tab Name',
+												'name'     => 'tab_label',
 												'aria-label' => '',
-												'type'    => 'text',
+												'type'     => 'text',
 												'required' => 1,
 												'instructions' => 'Names the tab button. This is not content inside the tab panel.',
-												'wrapper' => array(
+												'wrapper'  => array(
 													'width' => '50',
 												),
 											),
@@ -3166,12 +3166,12 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_basic_block' => array(
 								'key'        => 'layout_mrn_basic_block',
 								'name'       => 'basic_block',
-								'label'      => 'Basic Block (Page Only)',
+								'label'      => 'Page Specific Basic',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
 										'key'          => 'field_mrn_page_basic_block_fields',
-										'label'        => 'Basic Block',
+										'label'        => 'Page Specific Basic',
 										'name'         => '',
 										'aria-label'   => '',
 										'type'         => 'clone',

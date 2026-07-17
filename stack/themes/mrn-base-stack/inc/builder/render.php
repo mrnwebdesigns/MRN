@@ -456,7 +456,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				array(
 					'post_id'               => (int) $post_id,
 					'post_name'             => 'page-basic-block',
-					'block_name'            => 'Page Basic Block',
+					'block_name'            => 'Page Specific Basic',
 					'suppress_anchor'       => true,
 					'apply_motion_contract' => true,
 				)
