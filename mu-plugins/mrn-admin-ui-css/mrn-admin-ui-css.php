@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Admin UI CSS
  * Description: Unified admin UI CSS loader for wp-admin.
- * Version: 3.1.13
+ * Version: 3.2.0
  */
 
 defined('ABSPATH') || exit;
@@ -41,8 +41,20 @@ add_action('admin_enqueue_scripts', function ($hook) {
     }
   }
 
+  // Load the shared admin design foundations on every wp-admin screen.
+  $foundations_file = trailingslashit(WPMU_PLUGIN_DIR) . 'mrn-admin-ui-css/mrn-admin-foundations.css';
+  if (file_exists($foundations_file)) {
+    wp_enqueue_style(
+      'mrn-admin-ui-foundations',
+      content_url('mu-plugins/mrn-admin-ui-css/mrn-admin-foundations.css'),
+      array(),
+      (string) filemtime($foundations_file),
+      'all'
+    );
+  }
+
   // Always inject minimal ad-hiding rules, including on editor screens.
-  wp_register_style('mrn-admin-ui-ads-only', false, array(), '3.1.13');
+  wp_register_style('mrn-admin-ui-ads-only', false, array(), '3.2.0');
   wp_enqueue_style('mrn-admin-ui-ads-only');
   wp_add_inline_style(
     'mrn-admin-ui-ads-only',

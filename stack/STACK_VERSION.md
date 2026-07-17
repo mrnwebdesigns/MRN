@@ -13,16 +13,16 @@
   - `mrn-active-style-guide` `0.1.5`
   - `mrn-admin-ui-css` `3.1.13`
   - `mrn-shared-assets` `0.1.3`
-  - `mrn-editor-lockdown` `1.0.25`
+  - `mrn-editor-lockdown` `1.0.32`
   - `mrn-reusable-block-library` `0.1.26`
   - `mrn-schema-bridge` `0.4.1`
   - `mrn-site-colors` / `Site Styles` `0.1.38`
 - Standard plugins:
   - `mrn-announcements` `1.6.1`
   - `mrn-config-helper` `0.1.43`
+  - `mrn-seo-helper` `0.3.4`
   - `mrn-dummy-content` `0.1.19`
   - `mrn-editor-tools` `1.8.24`
-  - `mrn-seo-helper` `0.3.4`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-universal-sticky-bar` `1.1.3`
   - `searchwp-editor-performance` `1.0.6`

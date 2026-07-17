@@ -16,11 +16,12 @@
 function mrn_base_stack_get_content_post_type_definitions() {
 	return array(
 		'team_member' => array(
-			'singular'      => __( 'Team Member', 'mrn-base-stack' ),
-			'plural'        => __( 'Team Members', 'mrn-base-stack' ),
-			'rewrite_slug'  => 'team',
-			'menu_icon'     => 'dashicons-groups',
-			'menu_position' => 10,
+			'singular'       => __( 'Team Member', 'mrn-base-stack' ),
+			'plural'         => __( 'Team Members', 'mrn-base-stack' ),
+			'rewrite_slug'   => 'team',
+			'menu_icon'      => 'dashicons-groups',
+			'menu_position'  => 10,
+			'side_metaboxes' => array( 'acf-group_mrn_team_member_settings' ),
 		),
 		'location'    => array(
 			'singular'      => __( 'Location', 'mrn-base-stack' ),
@@ -31,6 +32,45 @@ function mrn_base_stack_get_content_post_type_definitions() {
 		),
 	);
 }
+
+/**
+ * Place stack-owned CPT metaboxes inside the shared locked editor layout.
+ *
+ * Every CPT in this registry inherits the Editor Lockdown fallback contract.
+ * CPT-specific sidebar boxes can be declared with `side_metaboxes`; they are
+ * placed after the SEO Helper and before the remaining standard sidebar boxes.
+ *
+ * @param array  $layout    Dynamic Editor Lockdown layout.
+ * @param string $post_type Post type slug.
+ * @return array
+ */
+function mrn_base_stack_filter_content_post_type_metabox_layout( $layout, $post_type ) {
+	$definitions = mrn_base_stack_get_content_post_type_definitions();
+	$post_type   = sanitize_key( (string) $post_type );
+
+	if ( ! isset( $definitions[ $post_type ] ) || ! is_array( $layout ) ) {
+		return $layout;
+	}
+
+	$side_metaboxes = isset( $definitions[ $post_type ]['side_metaboxes'] ) && is_array( $definitions[ $post_type ]['side_metaboxes'] )
+		? array_values( array_filter( array_map( 'sanitize_key', $definitions[ $post_type ]['side_metaboxes'] ) ) )
+		: array();
+
+	if ( empty( $side_metaboxes ) || empty( $layout['meta_box_order']['side'] ) ) {
+		return $layout;
+	}
+
+	$side_order = array_values( array_filter( array_map( 'trim', explode( ',', (string) $layout['meta_box_order']['side'] ) ) ) );
+	$side_order = array_values( array_diff( $side_order, $side_metaboxes ) );
+	$position   = array_search( 'mrn-builder-layout-allowlist', $side_order, true );
+	$position   = false === $position ? count( $side_order ) : $position;
+
+	array_splice( $side_order, $position, 0, $side_metaboxes );
+	$layout['meta_box_order']['side'] = implode( ',', $side_order );
+
+	return $layout;
+}
+add_filter( 'mrn_editor_lockdown_dynamic_layout', 'mrn_base_stack_filter_content_post_type_metabox_layout', 10, 2 );
 
 /**
  * Treat locations as reusable data rather than public destinations.

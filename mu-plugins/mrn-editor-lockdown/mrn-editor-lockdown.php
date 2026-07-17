@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Editor Lockdown
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.28
+ * Version: 1.0.32
  *
  * @package MRNEditorLockdown
  */
@@ -152,6 +152,62 @@ function mrn_editor_lockdown_get_visible_hidden_metaboxes( $hidden ) {
 }
 
 /**
+ * Build the universal locked-editor sidebar order.
+ *
+ * Screens only render boxes they actually register, so one canonical order can
+ * safely cover Posts, Pages, reusable blocks, and custom post types.
+ *
+ * @param string[] $taxonomy_metaboxes Taxonomy metabox IDs for the post type.
+ * @return string
+ */
+function mrn_editor_lockdown_get_standard_side_order( $taxonomy_metaboxes = array() ) {
+	$taxonomy_metaboxes = is_array( $taxonomy_metaboxes )
+		? array_values( array_filter( array_map( 'sanitize_key', $taxonomy_metaboxes ) ) )
+		: array();
+
+	$order = array_merge(
+		array(
+			mrn_editor_lockdown_get_seo_helper_metabox_id(),
+			'postimagediv',
+			'submitdiv',
+		),
+		$taxonomy_metaboxes,
+		array(
+			'pageparentdiv',
+			'mrn-builder-layout-allowlist',
+			'mrn-config-helper-breadcrumbs',
+			mrn_editor_lockdown_get_schema_bridge_metabox_id(),
+			'authordiv',
+		)
+	);
+
+	return implode( ',', array_values( array_unique( $order ) ) );
+}
+
+/**
+ * Get utility metaboxes that remain collapsed across locked editor screens.
+ *
+ * @param string[] $additional Additional collapsed metabox IDs.
+ * @return string[]
+ */
+function mrn_editor_lockdown_get_standard_closed_metaboxes( $additional = array() ) {
+	$additional = is_array( $additional ) ? $additional : array();
+
+	return array_values(
+		array_unique(
+			array_merge(
+				array(
+					'mrn-builder-layout-allowlist',
+					'mrn-config-helper-breadcrumbs',
+					mrn_editor_lockdown_get_schema_bridge_metabox_id(),
+				),
+				$additional
+			)
+		)
+	);
+}
+
+/**
  * Get enforced metabox layout settings for supported post types.
  *
  * @return array<string, array<string, mixed>>
@@ -168,41 +224,28 @@ function mrn_editor_lockdown_get_layouts() {
 			'screen_layout' => 2,
 			'meta_box_order' => array(
 				'normal'   => 'postexcerpt,slugdiv',
-				'side'     => 'acf-group_69a1c0f3a1b01,postimagediv,categorydiv,tagsdiv-post_tag,submitdiv,mrn-builder-layout-allowlist,mrn-config-helper-breadcrumbs,mrn-schema-bridge-controls,authordiv',
+				'side'     => mrn_editor_lockdown_get_standard_side_order( array( 'categorydiv', 'tagsdiv-post_tag' ) ),
 				'advanced' => 'ame-cpe-content-permissions',
 			),
-			'closed' => array(
-				'mrn-builder-layout-allowlist',
-				'mrn-config-helper-breadcrumbs',
-				mrn_editor_lockdown_get_schema_bridge_metabox_id(),
-				'ame-cpe-content-permissions',
-			),
+			'closed' => mrn_editor_lockdown_get_standard_closed_metaboxes( array( 'ame-cpe-content-permissions' ) ),
 		),
 		'page' => array(
 			'screen_layout' => 2,
 			'meta_box_order' => array(
 				'normal'   => 'slugdiv,revisionsdiv',
-				'side'     => 'acf-group_69a1c0f3a1b01,postimagediv,submitdiv,pageparentdiv,mrn-builder-layout-allowlist,mrn-config-helper-breadcrumbs,mrn-schema-bridge-controls,authordiv',
+				'side'     => mrn_editor_lockdown_get_standard_side_order( array( 'categorydiv', 'tagsdiv-post_tag' ) ),
 				'advanced' => 'ame-cpe-content-permissions',
 			),
-			'closed' => array(
-				'mrn-builder-layout-allowlist',
-				'mrn-config-helper-breadcrumbs',
-				mrn_editor_lockdown_get_schema_bridge_metabox_id(),
-				'ame-cpe-content-permissions',
-			),
+			'closed' => mrn_editor_lockdown_get_standard_closed_metaboxes( array( 'ame-cpe-content-permissions' ) ),
 		),
 		'gallery' => array(
 			'screen_layout' => 2,
 			'meta_box_order' => array(
 				'normal'   => 'slugdiv,revisionsdiv',
-				'side'     => 'submitdiv,gallery_categorydiv,gallery_tagdiv,postimagediv,mrn-schema-bridge-controls,authordiv',
+				'side'     => mrn_editor_lockdown_get_standard_side_order( array( 'gallery_categorydiv', 'gallery_tagdiv' ) ),
 				'advanced' => 'ame-cpe-content-permissions',
 			),
-			'closed' => array(
-				mrn_editor_lockdown_get_schema_bridge_metabox_id(),
-				'ame-cpe-content-permissions',
-			),
+			'closed' => mrn_editor_lockdown_get_standard_closed_metaboxes( array( 'ame-cpe-content-permissions' ) ),
 		),
 	);
 
@@ -233,12 +276,10 @@ function mrn_editor_lockdown_get_reusable_layout() {
 		'screen_layout' => 2,
 		'meta_box_order' => array(
 			'normal'   => 'slugdiv,revisionsdiv',
-			'side'     => mrn_editor_lockdown_prepend_seo_helper_to_side_order( 'submitdiv,mrn-schema-bridge-controls,authordiv' ),
+			'side'     => mrn_editor_lockdown_get_standard_side_order(),
 			'advanced' => '',
 		),
-		'closed' => array(
-			mrn_editor_lockdown_get_schema_bridge_metabox_id(),
-		),
+		'closed' => mrn_editor_lockdown_get_standard_closed_metaboxes(),
 	);
 
 	return $layout;
@@ -303,29 +344,39 @@ function mrn_editor_lockdown_get_dynamic_post_types() {
 /**
  * Get the fallback locked layout for dynamically discovered classic-editor screens.
  *
+ * @param string $post_type Post type slug.
  * @return array<string, mixed>
  */
-function mrn_editor_lockdown_get_dynamic_layout() {
-	static $layout = null;
+function mrn_editor_lockdown_get_dynamic_layout( $post_type = '' ) {
+	static $base_layout = null;
 
-	if ( null !== $layout ) {
-		return $layout;
+	if ( null === $base_layout ) {
+		$base_layout = array(
+			'screen_layout' => 2,
+			'meta_box_order' => array(
+				'normal'   => 'slugdiv,revisionsdiv',
+				'side'     => mrn_editor_lockdown_get_standard_side_order( array( 'categorydiv', 'tagsdiv-post_tag' ) ),
+				'advanced' => 'ame-cpe-content-permissions',
+			),
+			'closed' => mrn_editor_lockdown_get_standard_closed_metaboxes( array( 'ame-cpe-content-permissions' ) ),
+		);
 	}
 
-	$layout = array(
-		'screen_layout' => 2,
-		'meta_box_order' => array(
-			'normal'   => 'slugdiv,revisionsdiv',
-			'side'     => mrn_editor_lockdown_prepend_seo_helper_to_side_order( 'submitdiv,pageparentdiv,categorydiv,tagsdiv-post_tag,postimagediv,mrn-schema-bridge-controls,authordiv' ),
-			'advanced' => 'ame-cpe-content-permissions',
-		),
-		'closed' => array(
-			mrn_editor_lockdown_get_schema_bridge_metabox_id(),
-			'ame-cpe-content-permissions',
-		),
-	);
+	$post_type = sanitize_key( (string) $post_type );
+	$layout    = $base_layout;
 
-	return $layout;
+	/**
+	 * Filter the locked fallback layout for one dynamically discovered CPT.
+	 *
+	 * Stack-owned CPT registries can use this to place their specific metaboxes
+	 * without replacing the shared two-column, SEO-first layout contract.
+	 *
+	 * @param array<string, mixed> $layout    Locked layout settings.
+	 * @param string               $post_type Post type slug.
+	 */
+	$filtered = apply_filters( 'mrn_editor_lockdown_dynamic_layout', $layout, $post_type );
+
+	return is_array( $filtered ) ? $filtered : $layout;
 }
 
 /**
@@ -356,7 +407,7 @@ function mrn_editor_lockdown_get_layout_for_post_type( $post_type ) {
 	}
 
 	if ( in_array( $post_type, mrn_editor_lockdown_get_dynamic_post_types(), true ) ) {
-		$cache[ $post_type ] = mrn_editor_lockdown_get_dynamic_layout();
+		$cache[ $post_type ] = mrn_editor_lockdown_get_dynamic_layout( $post_type );
 		return $cache[ $post_type ];
 	}
 
@@ -717,6 +768,61 @@ function mrn_editor_lockdown_register_option_filters() {
 	}
 }
 add_action( 'init', 'mrn_editor_lockdown_register_option_filters', 20 );
+
+/**
+ * Keep Admin Menu Editor from removing the required SEO Helper metabox.
+ *
+ * Imported AME screen configurations can retain `isPresent=false` for a box
+ * that was unavailable when the export was created. SEO Helper is part of the
+ * locked editor contract, so normalize existing screen entries back to present.
+ *
+ * @return void
+ */
+function mrn_editor_lockdown_repair_ame_seo_metabox_config() {
+	$option_name = 'ws_ame_meta_boxes';
+	$raw_config  = get_option( $option_name, '' );
+
+	if ( ! is_string( $raw_config ) || '' === $raw_config ) {
+		return;
+	}
+
+	$config = json_decode( $raw_config, true );
+
+	if ( ! is_array( $config ) || empty( $config['screens'] ) || ! is_array( $config['screens'] ) ) {
+		return;
+	}
+
+	$metabox_id = mrn_editor_lockdown_get_seo_helper_metabox_id();
+	$changed    = false;
+
+	foreach ( $config['screens'] as &$screen ) {
+		if ( ! is_array( $screen ) ) {
+			continue;
+		}
+
+		foreach ( array( 'metaBoxes:', 'metaBoxes' ) as $collection_key ) {
+			if ( empty( $screen[ $collection_key ][ $metabox_id ] ) || ! is_array( $screen[ $collection_key ][ $metabox_id ] ) ) {
+				continue;
+			}
+
+			$box = &$screen[ $collection_key ][ $metabox_id ];
+
+			if ( empty( $box['isPresent'] ) || empty( $box['wasPresent'] ) ) {
+				$box['isPresent']  = true;
+				$box['wasPresent'] = true;
+				$changed           = true;
+			}
+
+			unset( $box );
+		}
+	}
+	unset( $screen );
+
+	if ( $changed ) {
+		update_option( $option_name, wp_json_encode( $config ), false );
+	}
+}
+add_action( 'admin_init', 'mrn_editor_lockdown_repair_ame_seo_metabox_config', 0 );
 
 /**
  * Output light admin CSS to remove easy layout customization paths.

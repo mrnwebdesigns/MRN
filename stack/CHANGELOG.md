@@ -24,10 +24,15 @@
 
 ## 2026.07.16-team-members-locations-cpts
 - Expanded `mrn-base-stack` to `1.2.81`.
+- Expanded `mrn-editor-lockdown` to `1.0.32`.
 - Registered Team Members (`team_member`) as a public, REST-enabled custom post type with a `/team/` archive route.
 - Added a per-member Public Profile Page control that defaults on; disabled records remain available to team components but lose their standalone page, preview/permalink actions, search exposure, and core sitemap entry.
 - Registered Locations (`location`) with the shared admin/data-only CPT contract so records remain queryable by stack components without public single pages, an archive/index, search exposure, previews, navigation visibility, or sitemap entries.
-- Left both post types field-ready without introducing placeholder ACF field groups.
+- Left both post types ready for their dedicated content fields without introducing placeholder content groups.
+- Enrolled both CPTs in the shared locked two-column metabox layout and added a registry-driven placement contract so future stack-owned CPT settings boxes can be positioned after SEO without one-off screen-order code.
+- Standardized the Page sidebar order as SEO Helper, Featured Image, Publish, available category/tag boxes, Page Attributes, collapsed Available Builders, collapsed Breadcrumb Trail, and Author last.
+- Applied the same SEO-first sidebar and collapsed-utility contract to Posts, reusable blocks, explicit editorial CPT layouts, and all dynamically discovered Classic Editor CPTs; unsupported boxes remain absent while registered boxes retain the canonical relative order.
+- Added an Admin Menu Editor metabox-config repair so stale imports cannot mark the required SEO Helper box absent and remove it from Posts, Pages, or CPT editor screens.
 
 ## 2026.07.16-tabbed-layout-tab-options
 - Expanded `mrn-base-stack` to `1.2.80`.
