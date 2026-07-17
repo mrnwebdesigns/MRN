@@ -133,7 +133,8 @@ add_action('admin_init', function () {
         return;
     }
 
-    if (!isset($_SERVER['REQUEST_METHOD']) || strtoupper((string) $_SERVER['REQUEST_METHOD']) !== 'POST') {
+    $request_method = isset($_SERVER['REQUEST_METHOD']) ? sanitize_text_field(wp_unslash($_SERVER['REQUEST_METHOD'])) : '';
+    if ('POST' !== strtoupper($request_method)) {
         return;
     }
 
@@ -210,7 +211,7 @@ function mrn_render_support_widget() {
 
     // Fallback for non-standard setups where content_url does not map as expected.
     if (!empty($_SERVER['HTTP_HOST'])) {
-        $host = preg_replace('/:\d+$/', '', (string) $_SERVER['HTTP_HOST']);
+        $host = preg_replace('/:\d+$/', '', sanitize_text_field(wp_unslash($_SERVER['HTTP_HOST'])));
         if (is_string($host) && $host !== '') {
             $fallback_url = (is_ssl() ? 'https://' : 'http://') . $host . '/wp-content/mu-plugins/mrn-dashboard-support/mrn-logo.png';
             $logo_url = is_string($logo_url) && $logo_url !== '' ? $logo_url : $fallback_url;

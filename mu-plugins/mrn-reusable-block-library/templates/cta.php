@@ -250,9 +250,11 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
                 >
                     <?php
                     $cta_link_label = '' !== $cta_link['text'] ? (string) $cta_link['text'] : (string) $cta_link['url'];
-                    echo function_exists('mrn_base_stack_get_compact_link_label_markup')
-                        ? mrn_base_stack_get_compact_link_label_markup($cta_link_label, (string) $cta_link['icon_markup'], (string) $cta_link['icon_position'])
-                        : esc_html($cta_link_label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
+                    echo wp_kses_post(
+                        function_exists('mrn_base_stack_get_compact_link_label_markup')
+                            ? mrn_base_stack_get_compact_link_label_markup($cta_link_label, (string) $cta_link['icon_markup'], (string) $cta_link['icon_position'])
+                            : esc_html($cta_link_label)
+                    );
                     ?>
                 </<?php echo esc_html($cta_link['tag']); ?>>
                 <?php endforeach; ?>
