@@ -1389,6 +1389,15 @@ apply_wp_defaults() {
   if ! run_wp config set WP_ENVIRONMENT_TYPE development --type=constant; then
     add_warning "Failed to set WP_ENVIRONMENT_TYPE=development in wp-config.php"
   fi
+  # Disable WordPress's native background updater while preserving explicit
+  # updates initiated by administrators or the authenticated MainWP connection.
+  # Hosting control-plane updaters operate outside WordPress and are unaffected.
+  if ! run_wp config set AUTOMATIC_UPDATER_DISABLED true --raw --type=constant; then
+    add_warning "Failed to set AUTOMATIC_UPDATER_DISABLED=true in wp-config.php"
+  fi
+  if ! run_wp config set WP_AUTO_UPDATE_CORE false --raw --type=constant; then
+    add_warning "Failed to set WP_AUTO_UPDATE_CORE=false in wp-config.php"
+  fi
   # Expose the stack-managed SendGrid management key to WordPress when available.
   if [[ -n "${SENDGRID_MANAGEMENT_API_KEY}" ]]; then
     if ! run_wp config set MRN_SENDGRID_MANAGEMENT_API_KEY "${SENDGRID_MANAGEMENT_API_KEY}" --type=constant; then
