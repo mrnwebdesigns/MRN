@@ -80,6 +80,15 @@ function mrn_editor_lockdown_get_seo_helper_metabox_id() {
 }
 
 /**
+ * Schema Bridge controls metabox ID.
+ *
+ * @return string
+ */
+function mrn_editor_lockdown_get_schema_bridge_metabox_id() {
+	return 'mrn-schema-bridge-controls';
+}
+
+/**
  * Legacy SmartCrawl SEO metabox ID.
  *
  * @return string
@@ -158,26 +167,28 @@ function mrn_editor_lockdown_get_layouts() {
 		'post' => array(
 			'screen_layout' => 2,
 			'meta_box_order' => array(
-				'normal'   => 'postexcerpt,slugdiv,authordiv',
-				'side'     => 'acf-group_69a1c0f3a1b01,postimagediv,categorydiv,tagsdiv-post_tag,submitdiv,mrn-builder-layout-allowlist,mrn-config-helper-breadcrumbs',
+				'normal'   => 'postexcerpt,slugdiv',
+				'side'     => 'acf-group_69a1c0f3a1b01,postimagediv,categorydiv,tagsdiv-post_tag,submitdiv,mrn-builder-layout-allowlist,mrn-config-helper-breadcrumbs,mrn-schema-bridge-controls,authordiv',
 				'advanced' => 'ame-cpe-content-permissions',
 			),
 			'closed' => array(
 				'mrn-builder-layout-allowlist',
 				'mrn-config-helper-breadcrumbs',
+				mrn_editor_lockdown_get_schema_bridge_metabox_id(),
 				'ame-cpe-content-permissions',
 			),
 		),
 		'page' => array(
 			'screen_layout' => 2,
 			'meta_box_order' => array(
-				'normal'   => 'slugdiv,authordiv,revisionsdiv',
-				'side'     => 'acf-group_69a1c0f3a1b01,postimagediv,submitdiv,pageparentdiv,mrn-builder-layout-allowlist,mrn-config-helper-breadcrumbs',
+				'normal'   => 'slugdiv,revisionsdiv',
+				'side'     => 'acf-group_69a1c0f3a1b01,postimagediv,submitdiv,pageparentdiv,mrn-builder-layout-allowlist,mrn-config-helper-breadcrumbs,mrn-schema-bridge-controls,authordiv',
 				'advanced' => 'ame-cpe-content-permissions',
 			),
 			'closed' => array(
 				'mrn-builder-layout-allowlist',
 				'mrn-config-helper-breadcrumbs',
+				mrn_editor_lockdown_get_schema_bridge_metabox_id(),
 				'ame-cpe-content-permissions',
 			),
 		),
@@ -185,10 +196,11 @@ function mrn_editor_lockdown_get_layouts() {
 			'screen_layout' => 2,
 			'meta_box_order' => array(
 				'normal'   => 'slugdiv,revisionsdiv',
-				'side'     => 'submitdiv,gallery_categorydiv,gallery_tagdiv,postimagediv',
+				'side'     => 'submitdiv,gallery_categorydiv,gallery_tagdiv,postimagediv,mrn-schema-bridge-controls,authordiv',
 				'advanced' => 'ame-cpe-content-permissions',
 			),
 			'closed' => array(
+				mrn_editor_lockdown_get_schema_bridge_metabox_id(),
 				'ame-cpe-content-permissions',
 			),
 		),
@@ -221,10 +233,12 @@ function mrn_editor_lockdown_get_reusable_layout() {
 		'screen_layout' => 2,
 		'meta_box_order' => array(
 			'normal'   => 'slugdiv,revisionsdiv',
-			'side'     => mrn_editor_lockdown_prepend_seo_helper_to_side_order( 'submitdiv' ),
+			'side'     => mrn_editor_lockdown_prepend_seo_helper_to_side_order( 'submitdiv,mrn-schema-bridge-controls,authordiv' ),
 			'advanced' => '',
 		),
-		'closed' => array(),
+		'closed' => array(
+			mrn_editor_lockdown_get_schema_bridge_metabox_id(),
+		),
 	);
 
 	return $layout;
@@ -302,10 +316,11 @@ function mrn_editor_lockdown_get_dynamic_layout() {
 		'screen_layout' => 2,
 		'meta_box_order' => array(
 			'normal'   => 'slugdiv,revisionsdiv',
-			'side'     => mrn_editor_lockdown_prepend_seo_helper_to_side_order( 'submitdiv,authordiv,pageparentdiv,categorydiv,tagsdiv-post_tag,postimagediv' ),
+			'side'     => mrn_editor_lockdown_prepend_seo_helper_to_side_order( 'submitdiv,pageparentdiv,categorydiv,tagsdiv-post_tag,postimagediv,mrn-schema-bridge-controls,authordiv' ),
 			'advanced' => 'ame-cpe-content-permissions',
 		),
 		'closed' => array(
+			mrn_editor_lockdown_get_schema_bridge_metabox_id(),
 			'ame-cpe-content-permissions',
 		),
 	);
