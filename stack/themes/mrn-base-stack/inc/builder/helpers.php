@@ -7053,13 +7053,13 @@ function mrn_base_stack_ensure_builder_layout_display_style_fields( array $field
 		return $fields;
 	}
 
-	$is_content_lists  = 'content_lists' === $layout_name;
-	$mode_choices      = $is_content_lists ? mrn_base_stack_get_content_list_display_mode_choices() : mrn_base_stack_get_builder_layout_display_mode_choices( $layout_name );
-	$style_choices     = $is_content_lists ? mrn_base_stack_get_content_list_display_style_choices() : mrn_base_stack_get_builder_layout_display_style_choices( $layout_name );
-	$layout_mode_names = function_exists( 'mrn_base_stack_get_builder_layout_mode_field_names' )
+	$is_content_lists        = 'content_lists' === $layout_name;
+	$mode_choices            = $is_content_lists ? mrn_base_stack_get_content_list_display_mode_choices() : mrn_base_stack_get_builder_layout_display_mode_choices( $layout_name );
+	$style_choices           = $is_content_lists ? mrn_base_stack_get_content_list_display_style_choices() : mrn_base_stack_get_builder_layout_display_style_choices( $layout_name );
+	$layout_mode_names       = function_exists( 'mrn_base_stack_get_builder_layout_mode_field_names' )
 		? mrn_base_stack_get_builder_layout_mode_field_names( $layout_name )
 		: array();
-	$display_contract_names = function_exists( 'mrn_base_stack_get_builder_display_styles_contract_field_names' )
+	$display_contract_names  = function_exists( 'mrn_base_stack_get_builder_display_styles_contract_field_names' )
 		? mrn_base_stack_get_builder_display_styles_contract_field_names( $layout_name )
 		: array();
 	$display_contract_fields = function_exists( 'mrn_base_stack_get_builder_display_styles_contract_fields' )
