@@ -338,7 +338,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				array(
 					'post_id'               => (int) $post_id,
 					'post_name'             => 'page-grid',
-					'block_name'            => 'Page Grid',
+					'block_name'            => 'Page Specific Grid',
 					'suppress_anchor'       => true,
 					'apply_motion_contract' => true,
 				)
@@ -462,33 +462,6 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_basic', 'wide', false );
-			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
-			return true;
-		}
-
-		return false;
-	}
-
-	if ( 'content_grid' === $layout ) {
-		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			$markup         = mrn_rbl_render_fields_as_block(
-				'mrn_reusable_grid',
-				$row,
-				array(
-					'post_id'               => (int) $post_id,
-					'post_name'             => 'page-content-grid',
-					'block_name'            => 'Page Content Grid',
-					'suppress_anchor'       => true,
-					'apply_motion_contract' => true,
-				)
-			);
-			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
-				$markup,
-				$row,
-				'mrn_reusable_grid',
-				'wide',
-				false
-			);
 			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
 		}

@@ -5328,7 +5328,6 @@ function mrn_base_stack_layout_allows_sub_content_width( $layout_name ) {
 	$layout_name = sanitize_key( (string) $layout_name );
 	$allowed     = array(
 		'card',
-		'content_grid',
 		'content_lists',
 		'faq',
 		'faq_block',

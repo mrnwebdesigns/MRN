@@ -913,12 +913,12 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_grid' => array(
 								'key'        => 'layout_mrn_grid',
 								'name'       => 'grid',
-								'label'      => 'Grid - label|heading|subheading|repeater',
+								'label'      => 'Page Specific Grid',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
 										'key'          => 'field_mrn_page_grid_fields',
-										'label'        => 'Grid',
+										'label'        => 'Page Specific Grid',
 										'name'         => '',
 										'aria-label'   => '',
 										'type'         => 'clone',
@@ -3182,27 +3182,6 @@ function mrn_base_stack_register_acf_field_groups() {
 										'prefix_name'  => 0,
 									),
 									mrn_base_stack_get_motion_group_field( 'field_mrn_page_basic_block_motion_settings' ),
-								),
-							),
-							'layout_mrn_content_grid' => array(
-								'key'        => 'layout_mrn_content_grid',
-								'name'       => 'content_grid',
-								'label'      => 'Content Grid (Page Only)',
-								'display'    => 'block',
-								'sub_fields' => array(
-									array(
-										'key'          => 'field_mrn_page_content_grid_fields',
-										'label'        => 'Content Grid',
-										'name'         => '',
-										'aria-label'   => '',
-										'type'         => 'clone',
-										'clone'        => array( 'group_mrn_reusable_content_grid' ),
-										'display'      => 'seamless',
-										'layout'       => 'block',
-										'prefix_label' => 0,
-										'prefix_name'  => 0,
-									),
-									mrn_base_stack_get_motion_group_field( 'field_mrn_page_content_grid_motion_settings' ),
 								),
 							),
 							'layout_mrn_faq_block' => array(
