@@ -1144,10 +1144,14 @@ function mrn_base_stack_reorder_theme_header_footer_config_fields( array $fields
 
 		$field_key = isset( $field['key'] ) ? (string) $field['key'] : '';
 
-		if ( 'field_mrn_theme_header_tab' === $field_key || 'field_mrn_theme_footer_tab' === $field_key ) {
+		if ( in_array( $field_key, array( 'field_mrn_theme_header_tab', 'field_mrn_theme_mobile_menu_tab', 'field_mrn_theme_footer_tab' ), true ) ) {
 			$flush_section();
 			$ordered[] = $field;
-			$section   = 'field_mrn_theme_header_tab' === $field_key ? 'header' : 'footer';
+			if ( 'field_mrn_theme_header_tab' === $field_key ) {
+				$section = 'header';
+			} elseif ( 'field_mrn_theme_footer_tab' === $field_key ) {
+				$section = 'footer';
+			}
 			continue;
 		}
 
@@ -1921,6 +1925,17 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
  * @return array<int, mixed>
  */
 function mrn_base_stack_prepare_theme_header_footer_subtab_fields( array $fields ) {
+	if ( function_exists( 'mrn_base_stack_get_mobile_navigation_fields' ) ) {
+		$mobile_fields = mrn_base_stack_get_mobile_navigation_fields();
+
+		foreach ( $fields as $field_index => $field ) {
+			if ( is_array( $field ) && isset( $field['key'] ) && 'field_mrn_theme_footer_tab' === $field['key'] ) {
+				array_splice( $fields, $field_index, 0, $mobile_fields );
+				break;
+			}
+		}
+	}
+
 	$fields          = mrn_base_stack_reorder_theme_header_footer_config_fields( $fields );
 	$prepared        = array();
 	$current_section = '';
@@ -1944,6 +1959,12 @@ function mrn_base_stack_prepare_theme_header_footer_subtab_fields( array $fields
 			$current_section = 'footer';
 			$prepared[]      = $field;
 			$prepared        = array_merge( $prepared, mrn_base_stack_get_theme_header_footer_subtab_fields( $current_section ) );
+			continue;
+		}
+
+		if ( 'field_mrn_theme_mobile_menu_tab' === $field_key ) {
+			$current_section = '';
+			$prepared[]      = $field;
 			continue;
 		}
 

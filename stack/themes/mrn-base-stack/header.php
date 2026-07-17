@@ -49,12 +49,25 @@
 		$mrn_header_primary_nav_width_slug = 'full-width' === $mrn_header_primary_nav_width ? 'full' : $mrn_header_primary_nav_width;
 		$mrn_header_primary_nav_style      = $mrn_header_primary_nav_inherits && function_exists( 'mrn_base_stack_get_theme_header_footer_appearance_style' ) ? mrn_base_stack_get_theme_header_footer_appearance_style( 'header', $mrn_header_options ) : '';
 		$mrn_header_primary_nav_classes    = 'main-navigation mrn-site-primary-navigation';
-		$mrn_header_primary_nav_classes   .= '' !== $mrn_header_primary_nav_width_slug ? ' mrn-site-primary-navigation--width-' . sanitize_html_class( $mrn_header_primary_nav_width_slug ) : ' mrn-site-primary-navigation--independent';
-		$mrn_header_classes                = trim( 'site-header mrn-theme-hf-layout-grid mrn-theme-hf-layout-grid--header ' . $mrn_header_width_class );
-		$mrn_header_grid_item_style        = static function ( $item_key ) use ( $mrn_header_layout_grid ) {
+		$mrn_mobile_navigation_options     = function_exists( 'mrn_base_stack_get_mobile_navigation_options' ) ? mrn_base_stack_get_mobile_navigation_options() : array( 'enabled' => false );
+		$mrn_mobile_navigation_enabled     = ! empty( $mrn_mobile_navigation_options['enabled'] );
+		$mrn_mobile_navigation_uses_header = ! isset( $mrn_mobile_navigation_options['use_site_header'] ) || ! empty( $mrn_mobile_navigation_options['use_site_header'] );
+		$mrn_mobile_navigation_style       = $mrn_mobile_navigation_enabled && function_exists( 'mrn_base_stack_get_mobile_navigation_style' ) ? mrn_base_stack_get_mobile_navigation_style( $mrn_mobile_navigation_options ) : '';
+		$mrn_mobile_navigation_bottom      = $mrn_mobile_navigation_enabled && function_exists( 'mrn_base_stack_get_mobile_navigation_bottom_markup' ) ? mrn_base_stack_get_mobile_navigation_bottom_markup( $mrn_mobile_navigation_options ) : '';
+		$mrn_mobile_navigation_action      = $mrn_mobile_navigation_enabled && ! $mrn_mobile_navigation_uses_header && function_exists( 'mrn_base_stack_get_mobile_navigation_header_action_markup' ) ? mrn_base_stack_get_mobile_navigation_header_action_markup( $mrn_mobile_navigation_options ) : '';
+		$mrn_mobile_navigation_logo        = ! empty( $mrn_mobile_navigation_options['mobile_logo_id'] ) ? absint( $mrn_mobile_navigation_options['mobile_logo_id'] ) : $mrn_business_logo;
+		/* translators: %s: Menu item label. */
+		$mrn_mobile_submenu_open_label = __( 'Open %s submenu', 'mrn-base-stack' );
+		/* translators: %s: Menu item label. */
+		$mrn_mobile_submenu_close_label  = __( 'Close %s submenu', 'mrn-base-stack' );
+		$mrn_header_primary_nav_classes .= $mrn_mobile_navigation_enabled ? ' mrn-mobile-navigation' : '';
+		$mrn_header_primary_nav_classes .= $mrn_mobile_navigation_enabled && ! $mrn_mobile_navigation_uses_header ? ' mrn-mobile-navigation--full-screen' : '';
+		$mrn_header_primary_nav_classes .= '' !== $mrn_header_primary_nav_width_slug ? ' mrn-site-primary-navigation--width-' . sanitize_html_class( $mrn_header_primary_nav_width_slug ) : ' mrn-site-primary-navigation--independent';
+		$mrn_header_classes              = trim( 'site-header mrn-theme-hf-layout-grid mrn-theme-hf-layout-grid--header ' . $mrn_header_width_class );
+		$mrn_header_grid_item_style      = static function ( $item_key ) use ( $mrn_header_layout_grid ) {
 			return function_exists( 'mrn_base_stack_get_theme_header_footer_layout_grid_item_style' ) ? mrn_base_stack_get_theme_header_footer_layout_grid_item_style( $mrn_header_layout_grid, $item_key ) : '';
 		};
-		$mrn_header_rows                   = array(
+		$mrn_header_rows                 = array(
 			array(
 				'show'          => $mrn_show_secondary_menu,
 				'modifier'      => 'secondary',
@@ -179,8 +192,50 @@
 		</header><!-- #masthead -->
 
 		<?php if ( $mrn_show_primary_menu ) : ?>
-			<nav id="site-navigation" class="<?php echo esc_attr( $mrn_header_primary_nav_classes ); ?>" aria-label="<?php esc_attr_e( 'Primary menu', 'mrn-base-stack' ); ?>"<?php echo '' !== $mrn_header_primary_nav_style ? ' style="' . esc_attr( $mrn_header_primary_nav_style ) . '"' : ''; ?>>
-				<button class="menu-toggle" aria-controls="primary-menu" aria-expanded="false"><?php esc_html_e( 'Primary Menu', 'mrn-base-stack' ); ?></button>
+			<nav id="site-navigation" class="<?php echo esc_attr( $mrn_header_primary_nav_classes ); ?>" aria-label="<?php esc_attr_e( 'Primary menu', 'mrn-base-stack' ); ?>"<?php echo $mrn_mobile_navigation_enabled ? ' data-mrn-mobile-navigation data-submenu-open-label="' . esc_attr( $mrn_mobile_submenu_open_label ) . '" data-submenu-close-label="' . esc_attr( $mrn_mobile_submenu_close_label ) . '"' : ''; ?><?php echo '' !== trim( $mrn_header_primary_nav_style . ';' . $mrn_mobile_navigation_style, ';' ) ? ' style="' . esc_attr( trim( $mrn_header_primary_nav_style . ';' . $mrn_mobile_navigation_style, ';' ) ) . '"' : ''; ?>>
+				<button class="menu-toggle" aria-controls="<?php echo $mrn_mobile_navigation_enabled ? 'mrn-mobile-navigation-panel' : 'primary-menu'; ?>" aria-expanded="false" aria-label="<?php esc_attr_e( 'Open navigation', 'mrn-base-stack' ); ?>"<?php echo $mrn_mobile_navigation_enabled ? ' data-close-label="' . esc_attr__( 'Close navigation', 'mrn-base-stack' ) . '"' : ''; ?>>
+					<?php if ( $mrn_mobile_navigation_enabled ) : ?>
+						<span class="mrn-mobile-navigation__toggle-bar" aria-hidden="true"></span>
+						<span class="mrn-mobile-navigation__toggle-bar" aria-hidden="true"></span>
+						<span class="mrn-mobile-navigation__toggle-bar" aria-hidden="true"></span>
+						<span class="screen-reader-text"><?php esc_html_e( 'Menu', 'mrn-base-stack' ); ?></span>
+					<?php else : ?>
+						<?php esc_html_e( 'Primary Menu', 'mrn-base-stack' ); ?>
+					<?php endif; ?>
+				</button>
+				<?php if ( $mrn_mobile_navigation_enabled ) : ?>
+					<div id="mrn-mobile-navigation-panel" class="mrn-mobile-navigation__panel">
+						<?php if ( ! $mrn_mobile_navigation_uses_header ) : ?>
+							<div class="mrn-mobile-navigation__drawer-header">
+								<div class="mrn-mobile-navigation__drawer-branding">
+									<?php if ( function_exists( 'mrn_base_stack_image_has_content' ) && mrn_base_stack_image_has_content( $mrn_mobile_navigation_logo ) ) : ?>
+										<a class="mrn-mobile-navigation__logo-link" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" aria-label="<?php echo esc_attr( $mrn_header_home_label ); ?>">
+											<?php
+											// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared image helper returns escaped attachment markup.
+											echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
+												$mrn_mobile_navigation_logo,
+												'mrn-logo',
+												array(
+													'class' => 'mrn-mobile-navigation__logo',
+													'alt' => get_bloginfo( 'name' ),
+												)
+											) : '';
+											?>
+										</a>
+									<?php elseif ( $mrn_has_custom_logo ) : ?>
+										<?php the_custom_logo(); ?>
+									<?php else : ?>
+										<a class="mrn-mobile-navigation__site-title" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a>
+									<?php endif; ?>
+								</div>
+								<?php if ( '' !== $mrn_mobile_navigation_action ) : ?>
+									<div class="mrn-mobile-navigation__header-action">
+										<?php echo $mrn_mobile_navigation_action; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Mobile-navigation helper escapes built-in output; extension filter owns added markup. ?>
+									</div>
+								<?php endif; ?>
+							</div>
+						<?php endif; ?>
+				<?php endif; ?>
 				<?php
 				wp_nav_menu(
 					array(
@@ -191,5 +246,13 @@
 					)
 				);
 				?>
+				<?php if ( $mrn_mobile_navigation_enabled ) : ?>
+						<?php if ( '' !== $mrn_mobile_navigation_bottom ) : ?>
+							<div class="mrn-mobile-navigation__bottom">
+								<?php echo $mrn_mobile_navigation_bottom; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Reusable block renderer and extension hooks own escaping. ?>
+							</div>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
 			</nav><!-- #site-navigation -->
 		<?php endif; ?>

@@ -886,7 +886,19 @@ function mrn_base_stack_scripts() {
 		wp_enqueue_style( 'dashicons' );
 	}
 
-	wp_enqueue_script( 'mrn-base-stack-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
+	$mobile_navigation_options = function_exists( 'mrn_base_stack_get_mobile_navigation_options' ) ? mrn_base_stack_get_mobile_navigation_options() : array( 'enabled' => false );
+
+	if ( ! empty( $mobile_navigation_options['enabled'] ) ) {
+		$mobile_navigation_style_path  = get_template_directory() . '/css/mobile-navigation.css';
+		$mobile_navigation_script_path = get_template_directory() . '/js/mobile-navigation.js';
+		$mobile_navigation_style_ver   = file_exists( $mobile_navigation_style_path ) ? _S_VERSION . '-' . (string) filemtime( $mobile_navigation_style_path ) : _S_VERSION;
+		$mobile_navigation_script_ver  = file_exists( $mobile_navigation_script_path ) ? _S_VERSION . '-' . (string) filemtime( $mobile_navigation_script_path ) : _S_VERSION;
+
+		wp_enqueue_style( 'mrn-base-stack-mobile-navigation', get_template_directory_uri() . '/css/mobile-navigation.css', array( 'mrn-base-stack-style' ), $mobile_navigation_style_ver );
+		wp_enqueue_script( 'mrn-base-stack-mobile-navigation', get_template_directory_uri() . '/js/mobile-navigation.js', array(), $mobile_navigation_script_ver, true );
+	} else {
+		wp_enqueue_script( 'mrn-base-stack-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
+	}
 
 	if ( $uses_icon_search ) {
 		wp_enqueue_script(
@@ -1024,6 +1036,11 @@ require_once get_template_directory() . '/inc/image-helpers.php';
  * Load front-end asset helpers.
  */
 require_once get_template_directory() . '/inc/frontend-assets.php';
+
+/**
+ * Standard mobile navigation settings and rendering helpers.
+ */
+require_once get_template_directory() . '/inc/mobile-navigation.php';
 
 /**
  * Load builder modules.
