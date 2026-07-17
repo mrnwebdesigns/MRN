@@ -5498,8 +5498,13 @@ function mrn_base_stack_field_is_full_contract_reusable_group_clone( array $fiel
 	}
 
 	$full_contract_groups = array(
+		'group_mrn_reusable_basic_block',
 		'group_mrn_reusable_content_grid',
+		'group_mrn_reusable_content_lists',
+		'group_mrn_reusable_cta',
 		'group_mrn_reusable_faq',
+		'group_mrn_reusable_partner',
+		'group_mrn_reusable_search_form',
 	);
 
 	foreach ( $field['clone'] as $clone_target ) {
@@ -5554,6 +5559,37 @@ function mrn_base_stack_field_list_has_reusable_group_clone( array $fields ) {
 	}
 
 	return false;
+}
+
+/**
+ * Remove parent motion settings when a seamless reusable clone owns the full contract.
+ *
+ * Full-contract reusable groups provide their own Effects tab and motion group.
+ * Page-specific wrapper layouts may still contain legacy sibling motion groups,
+ * which would render duplicate controls after ACF expands the seamless clone.
+ *
+ * @param array<int, mixed> $fields Layout/main field definitions.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_remove_parent_motion_settings_for_full_contract_clone( array $fields ) {
+	if ( ! mrn_base_stack_field_list_has_full_contract_reusable_group_clone( $fields ) ) {
+		return $fields;
+	}
+
+	foreach ( $fields as $index => $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+
+		if ( 'motion_settings' === $field_name && 'group' === $field_type ) {
+			unset( $fields[ $index ] );
+		}
+	}
+
+	return array_values( $fields );
 }
 
 /**
@@ -5614,6 +5650,10 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 
 	if ( 'reusable_block' === $layout_name ) {
 		return array( 'section_width' );
+	}
+
+	if ( in_array( $layout_name, array( 'cta', 'cta_block' ), true ) ) {
+		return array( 'image_placement' );
 	}
 
 	if ( 'card' === $layout_name ) {
@@ -6197,6 +6237,30 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 				'section_width',
 				'wide',
 				'Block Width'
+			),
+		);
+	}
+
+	if ( in_array( $layout_name, array( 'cta', 'cta_block' ), true ) ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_image_placement',
+				'label'         => 'Image Position',
+				'name'          => 'image_placement',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => array(
+					'left'  => 'Left',
+					'right' => 'Right',
+				),
+				'default_value' => 'left',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'ui'            => 1,
+				'instructions'  => 'Controls whether the CTA image sits left or right of the content on wide screens. Mobile stacks naturally.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
 			),
 		);
 	}
@@ -8075,6 +8139,7 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 		$normalized_fields[] = mrn_base_stack_normalize_primary_layout_field( $field );
 	}
 
+	$normalized_fields = mrn_base_stack_remove_parent_motion_settings_for_full_contract_clone( $normalized_fields );
 	$normalized_fields = mrn_base_stack_apply_tag_field_column_layout( $normalized_fields );
 	if ( $inject_internal_name ) {
 		if ( ! mrn_base_stack_field_list_has_full_contract_reusable_group_clone( $normalized_fields ) ) {

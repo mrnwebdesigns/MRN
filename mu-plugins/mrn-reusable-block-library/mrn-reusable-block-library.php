@@ -2764,14 +2764,37 @@ function mrn_rbl_should_auto_enhance_field_group(array $field_group): bool {
  * @return string
  */
 function mrn_rbl_get_builder_layout_name_for_field_group(array $field_group): string {
-    $group_key = isset($field_group['key']) ? sanitize_key((string) $field_group['key']) : '';
-    $map       = array(
-        'group_mrn_reusable_content_grid' => 'grid',
-        'group_mrn_reusable_faq'          => 'faq',
-        'group_mrn_reusable_partner'      => 'logos',
+    $group_key          = isset($field_group['key']) ? sanitize_key((string) $field_group['key']) : '';
+    $group_to_post_type = array(
+        'group_mrn_reusable_basic_block'  => 'mrn_reusable_basic',
+        'group_mrn_reusable_content_grid' => 'mrn_reusable_grid',
+        'group_mrn_reusable_content_lists' => 'mrn_reusable_list',
+        'group_mrn_reusable_cta'          => 'mrn_reusable_cta',
+        'group_mrn_reusable_faq'          => 'mrn_reusable_faq',
+        'group_mrn_reusable_partner'      => 'mrn_reusable_partner',
+        'group_mrn_reusable_search_form'  => 'mrn_reusable_search',
     );
 
-    return isset($map[$group_key]) ? $map[$group_key] : '';
+    if (isset($group_to_post_type[$group_key]) && function_exists('mrn_base_stack_get_page_specific_layout_map')) {
+        $layout_map = mrn_base_stack_get_page_specific_layout_map();
+        $post_type  = $group_to_post_type[$group_key];
+
+        if (is_array($layout_map) && isset($layout_map[$post_type])) {
+            return sanitize_key((string) $layout_map[$post_type]);
+        }
+    }
+
+    $fallback_map = array(
+        'group_mrn_reusable_basic_block'   => 'basic_block',
+        'group_mrn_reusable_content_grid'  => 'grid',
+        'group_mrn_reusable_content_lists' => 'content_lists',
+        'group_mrn_reusable_cta'           => 'cta',
+        'group_mrn_reusable_faq'           => 'faq',
+        'group_mrn_reusable_partner'       => 'logos',
+        'group_mrn_reusable_search_form'   => 'searchwp_form',
+    );
+
+    return isset($fallback_map[$group_key]) ? $fallback_map[$group_key] : '';
 }
 
 /**
