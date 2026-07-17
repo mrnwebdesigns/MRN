@@ -5,30 +5,30 @@
  * @package mrn-base-stack
  */
 
-$context               = is_array( $args ?? null ) ? $args : array();
-$row                   = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
-$context_post_id       = isset( $context['post_id'] ) ? (int) $context['post_id'] : get_the_ID();
-$row_index             = isset( $context['index'] ) ? (int) $context['index'] : 0;
-$label                 = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
-$label_tag             = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading               = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
-$heading_tag           = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['heading_tag'] ?? '', 'h2' ) : 'h2';
-$subheading            = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
-$subheading_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['subheading_tag'] ?? '', 'p' ) : 'p';
-$items                 = isset( $row['card_items'] ) && is_array( $row['card_items'] ) ? $row['card_items'] : array();
-$card_layout           = function_exists( 'mrn_base_stack_normalize_builder_layout_mode' )
+$context              = is_array( $args ?? null ) ? $args : array();
+$row                  = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
+$context_post_id      = isset( $context['post_id'] ) ? (int) $context['post_id'] : get_the_ID();
+$row_index            = isset( $context['index'] ) ? (int) $context['index'] : 0;
+$label                = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
+$label_tag            = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
+$heading              = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
+$heading_tag          = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['heading_tag'] ?? '', 'h2' ) : 'h2';
+$subheading           = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag       = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['subheading_tag'] ?? '', 'p' ) : 'p';
+$items                = isset( $row['card_items'] ) && is_array( $row['card_items'] ) ? $row['card_items'] : array();
+$card_layout          = function_exists( 'mrn_base_stack_normalize_builder_layout_mode' )
 	? mrn_base_stack_normalize_builder_layout_mode( $row['card_layout'] ?? '', 'card' )
 	: sanitize_key( (string) ( $row['card_layout'] ?? 'grid' ) );
-$card_stack_alignment  = function_exists( 'mrn_base_stack_normalize_card_stack_alignment' )
+$card_stack_alignment = function_exists( 'mrn_base_stack_normalize_card_stack_alignment' )
 	? mrn_base_stack_normalize_card_stack_alignment( $row['card_stack_alignment'] ?? '' )
 	: sanitize_key( (string) ( $row['card_stack_alignment'] ?? 'left' ) );
-$cards_per_row         = function_exists( 'mrn_base_stack_normalize_card_per_row' )
+$cards_per_row        = function_exists( 'mrn_base_stack_normalize_card_per_row' )
 	? mrn_base_stack_normalize_card_per_row( $row['cards_per_row'] ?? 3 )
 	: absint( $row['cards_per_row'] ?? 3 );
-$background_color      = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
-$bottom_accent         = ! empty( $row['bottom_accent'] );
-$accent_slug           = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
-$width_layers          = function_exists( 'mrn_base_stack_get_section_width_layers' )
+$background_color     = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
+$bottom_accent        = ! empty( $row['bottom_accent'] );
+$accent_slug          = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
+$width_layers         = function_exists( 'mrn_base_stack_get_section_width_layers' )
 	? mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'wide', 'wide' )
 	: array(
 		'width'           => 'wide',
@@ -81,7 +81,7 @@ foreach ( $items as $item_index => $item ) {
 
 	if ( '' !== $item_link_url ) {
 		$item_class_names[] = 'mrn-card-row__item--full-link';
-		$has_card_links    = true;
+		$has_card_links     = true;
 	}
 
 	if ( '' !== $item_background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {

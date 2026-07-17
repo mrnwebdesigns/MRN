@@ -63,11 +63,11 @@ foreach ( $items as $item ) {
 		continue;
 	}
 
-	$item_label   = isset( $item['label'] ) ? (string) $item['label'] : '';
-	$item_heading = isset( $item['heading'] ) ? (string) $item['heading'] : '';
-	$item_subhead = isset( $item['subheading'] ) ? (string) $item['subheading'] : '';
-	$item_content = isset( $item['content'] ) ? (string) $item['content'] : '';
-	$item_link    = function_exists( 'mrn_base_stack_get_repeater_item_primary_link' )
+	$item_label    = isset( $item['label'] ) ? (string) $item['label'] : '';
+	$item_heading  = isset( $item['heading'] ) ? (string) $item['heading'] : '';
+	$item_subhead  = isset( $item['subheading'] ) ? (string) $item['subheading'] : '';
+	$item_content  = isset( $item['content'] ) ? (string) $item['content'] : '';
+	$item_link     = function_exists( 'mrn_base_stack_get_repeater_item_primary_link' )
 		? mrn_base_stack_get_repeater_item_primary_link(
 			$item,
 			array(
@@ -76,7 +76,7 @@ foreach ( $items as $item ) {
 			)
 		)
 		: array();
-	$item_image   = $item['image'] ?? null;
+	$item_image    = $item['image'] ?? null;
 	$item_has_data = (
 		'' !== trim( wp_strip_all_tags( $item_label ) ) ||
 		'' !== trim( wp_strip_all_tags( $item_heading ) ) ||
@@ -180,14 +180,14 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 								continue;
 							}
 
-								$item_label     = isset( $item['label'] ) ? trim( (string) $item['label'] ) : '';
-								$item_label_tag = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $item['label_tag'] ?? '', 'p' ) : 'p';
-								$item_heading   = isset( $item['heading'] ) ? trim( (string) $item['heading'] ) : '';
-								$item_tag       = isset( $item['heading_tag'] ) ? strtolower( (string) $item['heading_tag'] ) : 'h3';
-								$item_subheading = isset( $item['subheading'] ) ? trim( (string) $item['subheading'] ) : '';
+								$item_label          = isset( $item['label'] ) ? trim( (string) $item['label'] ) : '';
+								$item_label_tag      = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $item['label_tag'] ?? '', 'p' ) : 'p';
+								$item_heading        = isset( $item['heading'] ) ? trim( (string) $item['heading'] ) : '';
+								$item_tag            = isset( $item['heading_tag'] ) ? strtolower( (string) $item['heading_tag'] ) : 'h3';
+								$item_subheading     = isset( $item['subheading'] ) ? trim( (string) $item['subheading'] ) : '';
 								$item_subheading_tag = isset( $item['subheading_tag'] ) ? strtolower( (string) $item['subheading_tag'] ) : 'p';
-								$item_content   = isset( $item['content'] ) ? (string) $item['content'] : '';
-								$item_link_data = function_exists( 'mrn_base_stack_get_repeater_item_primary_link' )
+								$item_content        = isset( $item['content'] ) ? (string) $item['content'] : '';
+								$item_link_data      = function_exists( 'mrn_base_stack_get_repeater_item_primary_link' )
 									? mrn_base_stack_get_repeater_item_primary_link(
 										$item,
 										array(
@@ -201,11 +201,11 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 										'target'     => '',
 										'link_style' => $legacy_link_style,
 									);
-								$item_link_url  = isset( $item_link_data['url'] ) ? trim( (string) $item_link_data['url'] ) : '';
-								$item_image     = $item['image'] ?? null;
-								$item_has_image = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $item_image ) : false;
-								$item_link_display = isset( $item['link_display'] ) ? sanitize_key( (string) $item['link_display'] ) : 'visible';
-								$item_classes   = array(
+								$item_link_url       = isset( $item_link_data['url'] ) ? trim( (string) $item_link_data['url'] ) : '';
+								$item_image          = $item['image'] ?? null;
+								$item_has_image      = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $item_image ) : false;
+								$item_link_display   = isset( $item['link_display'] ) ? sanitize_key( (string) $item['link_display'] ) : 'visible';
+								$item_classes        = array(
 									'mrn-slider-row__slide',
 									'mrn-slider-row__slide--slider-shell',
 									'mrn-ui__item',

@@ -85,19 +85,19 @@ if ( ! function_exists( 'mrn_base_stack_kses_external_widget_markup' ) ) {
 					'width'      => true,
 				),
 				'iframe' => array(
-					'allow'          => true,
+					'allow'           => true,
 					'allowfullscreen' => true,
-					'aria-label'     => true,
-					'class'          => true,
-					'frameborder'    => true,
-					'height'         => true,
-					'loading'        => true,
-					'name'           => true,
-					'referrerpolicy' => true,
-					'sandbox'        => true,
-					'src'            => true,
-					'title'          => true,
-					'width'          => true,
+					'aria-label'      => true,
+					'class'           => true,
+					'frameborder'     => true,
+					'height'          => true,
+					'loading'         => true,
+					'name'            => true,
+					'referrerpolicy'  => true,
+					'sandbox'         => true,
+					'src'             => true,
+					'title'           => true,
+					'width'           => true,
 				),
 				'object' => array(
 					'aria-label' => true,
@@ -208,8 +208,8 @@ $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' 
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
-$embed_markup       = mrn_base_stack_kses_external_widget_markup( do_shortcode( $embed_code ) );
-$embed_markup       = mrn_base_stack_prepare_external_widget_markup( $embed_markup, $embed_title, $iframe_border );
+$embed_markup      = mrn_base_stack_kses_external_widget_markup( do_shortcode( $embed_code ) );
+$embed_markup      = mrn_base_stack_prepare_external_widget_markup( $embed_markup, $embed_title, $iframe_border );
 echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>

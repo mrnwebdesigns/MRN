@@ -80,13 +80,13 @@ $aspect_ratio_css = array(
 	'21-9' => '21 / 9',
 );
 $video_title      = '' !== $heading ? wp_strip_all_tags( $heading ) : __( 'Embedded video', 'mrn-base-stack' );
-$section_classes = array(
+$section_classes  = array(
 	'mrn-content-builder__row',
 	'mrn-content-builder__row--video',
 	'mrn-content-builder__row--video-position-' . sanitize_html_class( $video_position ),
 	'mrn-content-builder__row--video-ratio-' . sanitize_html_class( $video_aspect_ratio ),
 );
-$section_styles  = array();
+$section_styles   = array();
 
 if ( $has_text_content ) {
 	$section_classes[] = 'has-video-content';

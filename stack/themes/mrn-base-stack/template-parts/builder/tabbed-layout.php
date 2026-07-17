@@ -5,50 +5,50 @@
  * @package mrn-base-stack
  */
 
-$context         = is_array( $args ?? null ) ? $args : array();
-$row             = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
-$context_post_id = isset( $context['post_id'] ) ? (int) $context['post_id'] : get_the_ID();
-$row_index       = isset( $context['index'] ) ? (int) $context['index'] : 0;
-$label           = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
-$label_tag       = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading         = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
-$heading_tag     = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['heading_tag'] ?? '', 'h2' ) : 'h2';
-$subheading      = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
-$subheading_tag  = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['subheading_tag'] ?? '', 'p' ) : 'p';
-$tab_items       = isset( $row['tabs'] ) && is_array( $row['tabs'] ) ? $row['tabs'] : array();
-$background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
+$context            = is_array( $args ?? null ) ? $args : array();
+$row                = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
+$context_post_id    = isset( $context['post_id'] ) ? (int) $context['post_id'] : get_the_ID();
+$row_index          = isset( $context['index'] ) ? (int) $context['index'] : 0;
+$label              = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
+$label_tag          = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
+$heading            = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
+$heading_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['heading_tag'] ?? '', 'h2' ) : 'h2';
+$subheading         = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag     = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['subheading_tag'] ?? '', 'p' ) : 'p';
+$tab_items          = isset( $row['tabs'] ) && is_array( $row['tabs'] ) ? $row['tabs'] : array();
+$background_color   = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
 $legacy_orientation = isset( $row['tab_orientation'] ) ? sanitize_key( (string) $row['tab_orientation'] ) : '';
-$tab_position    = function_exists( 'mrn_base_stack_normalize_tabbed_layout_position' ) ? mrn_base_stack_normalize_tabbed_layout_position( $row['tab_position'] ?? '', $legacy_orientation ) : sanitize_key( (string) ( $row['tab_position'] ?? '' ) );
-$tab_style       = function_exists( 'mrn_base_stack_normalize_tabbed_layout_tab_style' ) ? mrn_base_stack_normalize_tabbed_layout_tab_style( $row['tab_style'] ?? '' ) : sanitize_key( (string) ( $row['tab_style'] ?? 'pill' ) );
-$tab_orientation = 0 === strpos( $tab_position, 'left-' ) ? 'vertical' : 'horizontal';
-$equal_heights   = ! empty( $row['equal_panel_heights'] );
-$switch_effect   = isset( $row['tab_switch_effect'] ) ? sanitize_key( (string) $row['tab_switch_effect'] ) : 'instant';
-$uses_slider     = 'slide' === $switch_effect;
-$bottom_accent   = ! empty( $row['bottom_accent'] );
-$accent_slug     = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
-$width_layers    = function_exists( 'mrn_base_stack_get_section_width_layers' )
+$tab_position       = function_exists( 'mrn_base_stack_normalize_tabbed_layout_position' ) ? mrn_base_stack_normalize_tabbed_layout_position( $row['tab_position'] ?? '', $legacy_orientation ) : sanitize_key( (string) ( $row['tab_position'] ?? '' ) );
+$tab_style          = function_exists( 'mrn_base_stack_normalize_tabbed_layout_tab_style' ) ? mrn_base_stack_normalize_tabbed_layout_tab_style( $row['tab_style'] ?? '' ) : sanitize_key( (string) ( $row['tab_style'] ?? 'pill' ) );
+$tab_orientation    = 0 === strpos( $tab_position, 'left-' ) ? 'vertical' : 'horizontal';
+$equal_heights      = ! empty( $row['equal_panel_heights'] );
+$switch_effect      = isset( $row['tab_switch_effect'] ) ? sanitize_key( (string) $row['tab_switch_effect'] ) : 'instant';
+$uses_slider        = 'slide' === $switch_effect;
+$bottom_accent      = ! empty( $row['bottom_accent'] );
+$accent_slug        = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
+$width_layers       = function_exists( 'mrn_base_stack_get_section_width_layers' )
 	? mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'wide', 'wide' )
 	: array(
 		'width'           => 'wide',
 		'section_class'   => 'mrn-layout-section--contained',
 		'container_class' => 'mrn-layout-container--wide',
 	);
-$layout_uid      = function_exists( 'wp_unique_id' )
+$layout_uid         = function_exists( 'wp_unique_id' )
 	? wp_unique_id( 'mrn-tabbed-layout-' . absint( $context_post_id ) . '-' . absint( $row_index ) . '-' )
 	: 'mrn-tabbed-layout-' . absint( $context_post_id ) . '-' . absint( $row_index ) . '-' . wp_generate_password( 6, false, false );
-$rendered_tabs   = array();
-$has_tab_icons   = false;
+$rendered_tabs      = array();
+$has_tab_icons      = false;
 
 foreach ( $tab_items as $tab_index => $tab_item ) {
 	if ( ! is_array( $tab_item ) ) {
 		continue;
 	}
 
-	$tab_label      = isset( $tab_item['tab_label'] ) ? trim( (string) $tab_item['tab_label'] ) : '';
-	$icon_markup    = function_exists( 'mrn_base_stack_get_button_link_icon_markup' ) ? mrn_base_stack_get_button_link_icon_markup( $tab_item ) : '';
-	$icon_position  = function_exists( 'mrn_base_stack_get_button_link_icon_position' ) ? mrn_base_stack_get_button_link_icon_position( $tab_item ) : 'left';
-	$panel_rows     = isset( $tab_item['panel_rows'] ) && is_array( $tab_item['panel_rows'] ) ? $tab_item['panel_rows'] : array();
-	$panel_row      = ! empty( $panel_rows[0] ) && is_array( $panel_rows[0] ) ? $panel_rows[0] : array();
+	$tab_label     = isset( $tab_item['tab_label'] ) ? trim( (string) $tab_item['tab_label'] ) : '';
+	$icon_markup   = function_exists( 'mrn_base_stack_get_button_link_icon_markup' ) ? mrn_base_stack_get_button_link_icon_markup( $tab_item ) : '';
+	$icon_position = function_exists( 'mrn_base_stack_get_button_link_icon_position' ) ? mrn_base_stack_get_button_link_icon_position( $tab_item ) : 'left';
+	$panel_rows    = isset( $tab_item['panel_rows'] ) && is_array( $tab_item['panel_rows'] ) ? $tab_item['panel_rows'] : array();
+	$panel_row     = ! empty( $panel_rows[0] ) && is_array( $panel_rows[0] ) ? $panel_rows[0] : array();
 
 	if ( empty( $panel_row ) ) {
 		continue;
