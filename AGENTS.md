@@ -42,6 +42,9 @@ When fixing issues:
 4. Explain impact and risks
 
 Release baseline:
+- After changing a plugin, theme, MU-plugin, stack runtime code, or the QA engine, run the smallest relevant MRN QA suite before declaring the work complete. Use full release/signoff QA only when release readiness, deployment, or a user request requires it.
+- Report QA rows that were intentionally skipped and why. Never describe a release as complete when a required runtime check is blocked or skipped.
+- QA may inspect and report automatically, but it must not commit, push, deploy, or modify production without the user's explicit authorization.
 - For "Run QA", "MRN QA", plugin QA, theme QA, file QA, or release QA, use the MRN QA Engine.
 - Preferred command: `mrn-qa run --project-root /Users/khofmeyer/Development/MRN`
 - For whole plugin/theme/directory QA, use `MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Development/MRN`
