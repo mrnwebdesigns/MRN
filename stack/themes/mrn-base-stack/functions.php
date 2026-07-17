@@ -2458,6 +2458,11 @@ require_once get_template_directory() . '/inc/display-styles.php';
 require_once get_template_directory() . '/inc/theme-options.php';
 
 /**
+ * Load editable 404 page settings.
+ */
+require_once get_template_directory() . '/inc/not-found.php';
+
+/**
  * Load menu link attribute modules.
  */
 require_once get_template_directory() . '/inc/menu-link-attributes.php';
