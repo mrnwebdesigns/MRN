@@ -24,9 +24,11 @@
 	}
 
 	function getFocusableElements() {
-		return Array.from( panel.querySelectorAll( 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])' ) ).filter( function( element ) {
+		const panelElements = Array.from( panel.querySelectorAll( 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])' ) ).filter( function( element ) {
 			return ! element.hidden && element.getClientRects().length > 0;
 		} );
+
+		return [ button ].concat( panelElements );
 	}
 
 	function setSubmenuState( item, expanded ) {
@@ -136,10 +138,7 @@
 		button.setAttribute( 'aria-label', button.dataset.closeLabel );
 		panel.scrollTop = 0;
 
-		const focusable = getFocusableElements();
-		if ( focusable.length ) {
-			focusable[ 0 ].focus();
-		}
+		button.focus();
 	}
 
 	function syncMode() {
