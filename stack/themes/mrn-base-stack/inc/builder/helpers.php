@@ -5681,6 +5681,15 @@ function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) 
 		);
 	}
 
+	if ( 'grid' === $layout_name ) {
+		return array(
+			'columns',
+			'equal_height',
+			'enable_full_item_link',
+			'hide_item_link',
+		);
+	}
+
 	if ( 'slider' === $layout_name ) {
 		return array(
 			'per_page',
@@ -6320,6 +6329,86 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 				'ui'            => 1,
 				'instructions'  => 'Controls the wide-screen column widths. Columns stack to one column on smaller screens.',
 				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+		);
+	}
+
+	if ( 'grid' === $layout_name ) {
+		return array(
+			array(
+				'key'           => $key_seed . '_columns',
+				'label'         => 'Max Items Per Row',
+				'name'          => 'columns',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => array(
+					'2' => '2',
+					'3' => '3',
+					'4' => '4',
+				),
+				'default_value' => '3',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'return_format' => 'value',
+				'ui'            => 1,
+				'instructions'  => 'Caps the number of grid items per row on wide screens. Items shrink and wrap naturally on smaller screens.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_equal_height',
+				'label'         => 'Equal Height Items',
+				'name'          => 'equal_height',
+				'aria-label'    => '',
+				'type'          => 'true_false',
+				'ui'            => 1,
+				'default_value' => 0,
+				'ui_on_text'    => 'On',
+				'ui_off_text'   => 'Off',
+				'instructions'  => 'Keeps item bodies aligned when rows contain uneven content.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+			array(
+				'key'           => $key_seed . '_enable_full_item_link',
+				'label'         => 'Full Item Link',
+				'name'          => 'enable_full_item_link',
+				'aria-label'    => '',
+				'type'          => 'true_false',
+				'ui'            => 1,
+				'default_value' => 0,
+				'ui_on_text'    => 'On',
+				'ui_off_text'   => 'Off',
+				'instructions'  => 'Uses the item link as the full grid-item click target when an item has a link.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+			array(
+				'key'               => $key_seed . '_hide_item_link',
+				'label'             => 'Hide Visible Link',
+				'name'              => 'hide_item_link',
+				'aria-label'        => '',
+				'type'              => 'true_false',
+				'ui'                => 1,
+				'default_value'     => 0,
+				'ui_on_text'        => 'Hide',
+				'ui_off_text'       => 'Show',
+				'instructions'      => 'Keeps the full-item link active while hiding the visible link label.',
+				'conditional_logic' => array(
+					array(
+						array(
+							'field'    => $key_seed . '_enable_full_item_link',
+							'operator' => '==',
+							'value'    => '1',
+						),
+					),
+				),
+				'wrapper'           => array(
 					'width' => '50',
 				),
 			),
