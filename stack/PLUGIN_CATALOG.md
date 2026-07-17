@@ -167,7 +167,7 @@ stack-dependency notes, use [`MRN_PLUGIN_AUDIT.md`](./MRN_PLUGIN_AUDIT.md).
 ### `mrn-announcements`
 
 - Name: `MRN Announcements`
-- Version: `1.6.0`
+- Version: `1.6.1`
 - Purpose:
   - manages scheduled, targeted announcement bars and optional modals
   - keeps announcement records admin/data-only with no standalone public URLs

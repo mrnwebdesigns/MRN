@@ -18,7 +18,7 @@
   - `mrn-schema-bridge` `0.4.1`
   - `mrn-site-colors` / `Site Styles` `0.1.37`
 - Standard plugins:
-  - `mrn-announcements` `1.6.0`
+  - `mrn-announcements` `1.6.1`
   - `mrn-config-helper` `0.1.43`
   - `mrn-dummy-content` `0.1.19`
   - `mrn-editor-tools` `1.8.24`
