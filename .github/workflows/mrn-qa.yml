@@ -60,7 +60,7 @@ jobs:
         with:
           repository: mrnwebdesigns/MRN-qa-engine
           ref: e12f203079de129cd7ff5579cdac9f7fb5583939
-          path: ${{ runner.temp }}/mrn-qa-engine
+          path: .mrn-qa-engine
           token: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
           persist-credentials: false
 
@@ -69,7 +69,7 @@ jobs:
           mkdir -p reports
           export MRN_QA_STACK_ROOT="$GITHUB_WORKSPACE"
           export MRN_QA_CHANGED_FILES="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
-          "$RUNNER_TEMP/mrn-qa-engine/bin/mrn-qa" run \
+          "$GITHUB_WORKSPACE/.mrn-qa-engine/bin/mrn-qa" run \
             --project-root "$GITHUB_WORKSPACE" \
             --output-file "$GITHUB_WORKSPACE/reports/mrn-qa-ci.md"
 
