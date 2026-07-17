@@ -157,7 +157,7 @@ function mrn_base_stack_get_content_builder_source_layouts() {
  */
 function mrn_base_stack_get_after_content_layout_source_names() {
 	$defaults = array(
-		'basic',
+		'basic_block',
 		'two_column_split',
 		'logos',
 		'reusable_block',
@@ -486,7 +486,7 @@ function mrn_base_stack_builder_field_has_complete_layouts( $field ) {
  * @return array<int, string>
  */
 function mrn_base_stack_get_hero_builder_layout_source_names() {
-	$defaults = array( 'basic', 'two_column_split' );
+	$defaults = array( 'basic_block', 'two_column_split' );
 	$names    = apply_filters( 'mrn_base_stack_hero_builder_layout_source_names', $defaults );
 
 	if ( ! is_array( $names ) ) {
@@ -781,7 +781,7 @@ function mrn_base_stack_filter_builder_layout_source_names_for_context( array $n
 function mrn_base_stack_get_tabbed_layout_source_names() {
 	$defaults = array(
 		'body_text',
-		'basic',
+		'basic_block',
 		'cta',
 		'image_content',
 		'external_widget',
@@ -807,7 +807,7 @@ function mrn_base_stack_get_tabbed_layout_source_names() {
 function mrn_base_stack_get_card_layout_source_names() {
 	$defaults = array(
 		'body_text',
-		'basic',
+		'basic_block',
 		'cta',
 		'image_content',
 		'external_widget',
@@ -1090,7 +1090,7 @@ function mrn_base_stack_apply_hero_layout_tab_contract( array $fields, $layout_n
  * @return bool
  */
 function mrn_base_stack_hero_layout_supports_sizing( $layout_name ) {
-	return in_array( sanitize_key( (string) $layout_name ), array( 'basic', 'two_column_split' ), true );
+	return in_array( sanitize_key( (string) $layout_name ), array( 'basic_block', 'two_column_split' ), true );
 }
 
 /**

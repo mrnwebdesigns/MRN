@@ -21,7 +21,7 @@ function mrn_base_stack_render_hero_row( array $row, $post_id, $index ) {
 	$layout  = (string) $row['acf_fc_layout'];
 	$context = mrn_base_stack_get_builder_row_context( $row, $post_id, $index );
 
-	if ( 'basic' === $layout ) {
+	if ( 'basic_block' === $layout ) {
 		get_template_part( 'template-parts/builder/hero', null, $context );
 		return true;
 	}
@@ -1118,6 +1118,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 		if ( '' !== $title_text ) {
 			$heading_prefixes = array(
 				'basic'            => 'Basic',
+				'basic_block'      => 'Page Specific Basic',
 				'cta'              => 'Page Specific CTA',
 				'cta_block'        => 'Page Specific CTA',
 				'grid'             => 'Grid',
@@ -1172,12 +1173,12 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 		return 'Reusable Block: ' . esc_html( $block_title );
 	}
 
-	if ( 'basic' === $layout_name ) {
+	if ( in_array( $layout_name, array( 'basic', 'basic_block' ), true ) ) {
 		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Basic: ' . esc_html( wp_strip_all_tags( $title_text ) );
+		return ( 'basic_block' === $layout_name ? 'Page Specific Basic: ' : 'Basic: ' ) . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( in_array( $layout_name, array( 'cta', 'cta_block' ), true ) ) {

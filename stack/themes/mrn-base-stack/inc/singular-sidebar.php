@@ -287,7 +287,7 @@ function mrn_base_stack_get_sidebar_layout_source_names() {
 	$defaults = array(
 		'body_text',
 		'content_lists',
-		'basic',
+		'basic_block',
 		'cta',
 		'image_content',
 		'faq_jump_nav',
