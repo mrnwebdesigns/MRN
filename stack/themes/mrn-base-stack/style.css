@@ -846,7 +846,6 @@ body {
 .site-footer.mrn-theme-hf-layout-grid {
 	background-color: var(--mrn-theme-hf-bg-color, transparent);
 	color: var(--mrn-theme-hf-font-color, inherit);
-	font-family: var(--mrn-theme-hf-font-family, inherit);
 }
 
 .site-header.mrn-theme-hf-layout-grid[data-mrn-row-spacing],
@@ -888,7 +887,6 @@ body {
 .main-navigation.mrn-site-primary-navigation {
 	background-color: var(--mrn-theme-hf-bg-color, transparent);
 	color: var(--mrn-theme-hf-font-color, inherit);
-	font-family: var(--mrn-theme-hf-font-family, inherit);
 	margin-left: auto;
 	margin-right: auto;
 	padding-left: var(--mrn-shell-gutter);

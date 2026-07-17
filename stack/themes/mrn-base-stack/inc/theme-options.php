@@ -355,170 +355,6 @@ function mrn_base_stack_get_theme_header_footer_color_choices() {
 }
 
 /**
- * Return basic web-safe font choices for Header/Footer typography.
- *
- * @return array<string, string>
- */
-function mrn_base_stack_get_theme_header_footer_basic_font_choices() {
-	return array(
-		''                                       => __( 'Theme Default', 'mrn-base-stack' ),
-		'system-ui'                              => __( 'System UI', 'mrn-base-stack' ),
-		'Arial, Helvetica, sans-serif'           => __( 'Arial', 'mrn-base-stack' ),
-		'Helvetica, Arial, sans-serif'           => __( 'Helvetica', 'mrn-base-stack' ),
-		'Georgia, serif'                         => __( 'Georgia', 'mrn-base-stack' ),
-		'"Times New Roman", Times, serif'        => __( 'Times New Roman', 'mrn-base-stack' ),
-		'Verdana, Geneva, sans-serif'            => __( 'Verdana', 'mrn-base-stack' ),
-		'Tahoma, Geneva, sans-serif'             => __( 'Tahoma', 'mrn-base-stack' ),
-		'"Trebuchet MS", Arial, sans-serif'      => __( 'Trebuchet MS', 'mrn-base-stack' ),
-		'"Courier New", Courier, monospace'      => __( 'Courier New', 'mrn-base-stack' ),
-		'serif'                                  => __( 'Generic Serif', 'mrn-base-stack' ),
-		'sans-serif'                             => __( 'Generic Sans Serif', 'mrn-base-stack' ),
-		'monospace'                              => __( 'Generic Monospace', 'mrn-base-stack' ),
-	);
-}
-
-/**
- * Sanitize a font family or font stack value.
- *
- * @param mixed $value Raw font family value.
- * @return string
- */
-function mrn_base_stack_sanitize_theme_header_footer_font_family( $value ) {
-	$value = is_scalar( $value ) ? trim( (string) $value ) : '';
-	if ( '' === $value ) {
-		return '';
-	}
-
-	$value = str_replace( array( "\r", "\n", "\t" ), ' ', $value );
-	$value = preg_replace( '/[^a-zA-Z0-9 ,._"\'-]/', '', $value );
-	$value = is_string( $value ) ? preg_replace( '/\s+/', ' ', $value ) : '';
-	$value = is_string( $value ) ? trim( $value ) : '';
-
-	return substr( $value, 0, 120 );
-}
-
-/**
- * Return configured Google Fonts families plus basic web defaults.
- *
- * @return array<string, string>
- */
-function mrn_base_stack_get_theme_header_footer_font_choices() {
-	$choices  = mrn_base_stack_get_theme_header_footer_basic_font_choices();
-	$settings = array();
-
-	if ( class_exists( 'MRN_Google_Fonts' ) && is_callable( array( 'MRN_Google_Fonts', 'get_settings' ) ) ) {
-		$settings = MRN_Google_Fonts::get_settings();
-	} else {
-		$settings = get_option( 'mrn_google_fonts_settings', array() );
-	}
-
-	if ( ! is_array( $settings ) ) {
-		return $choices;
-	}
-
-	$families = array();
-	foreach ( array( 'body_font_family', 'heading_font_family', 'accent_font_family' ) as $setting_key ) {
-		if ( ! empty( $settings[ $setting_key ] ) ) {
-			$families[] = $settings[ $setting_key ];
-		}
-	}
-
-	if ( ! empty( $settings['font_faces'] ) && is_array( $settings['font_faces'] ) ) {
-		foreach ( $settings['font_faces'] as $family_key => $face_config ) {
-			if ( is_string( $family_key ) && '' !== trim( $family_key ) ) {
-				$families[] = $family_key;
-				continue;
-			}
-
-			if ( is_array( $face_config ) && ! empty( $face_config['family'] ) ) {
-				$families[] = $face_config['family'];
-			}
-		}
-	}
-
-	foreach ( $families as $family ) {
-		$family = mrn_base_stack_sanitize_theme_header_footer_font_family( $family );
-		$family = trim( str_replace( array( '"', "'" ), '', $family ) );
-		$family = is_string( $family ) ? preg_replace( '/\s+/', ' ', $family ) : '';
-		$family = is_string( $family ) ? trim( $family ) : '';
-
-		if ( '' === $family || isset( $choices[ $family ] ) ) {
-			continue;
-		}
-
-		$choices[ $family ] = $family;
-	}
-
-	return $choices;
-}
-
-/**
- * Normalize a Header/Footer font family option to an allowed value.
- *
- * @param mixed $value Raw font family value.
- * @return string
- */
-function mrn_base_stack_normalize_theme_header_footer_font_family( $value ) {
-	$value = mrn_base_stack_sanitize_theme_header_footer_font_family( $value );
-	if ( '' === $value ) {
-		return '';
-	}
-
-	$choices = mrn_base_stack_get_theme_header_footer_font_choices();
-
-	return isset( $choices[ $value ] ) ? $value : '';
-}
-
-/**
- * Convert a font family choice into a CSS font stack.
- *
- * @param mixed $value Raw font family value.
- * @return string
- */
-function mrn_base_stack_get_theme_header_footer_font_stack( $value ) {
-	$value = mrn_base_stack_normalize_theme_header_footer_font_family( $value );
-	if ( '' === $value ) {
-		return '';
-	}
-
-	$format_family = static function ( $family ) {
-		$family = trim( str_replace( array( '"', "'" ), '', (string) $family ) );
-		if ( '' === $family ) {
-			return '';
-		}
-
-		$lower = strtolower( $family );
-		if ( in_array( $lower, array( 'system-ui', '-apple-system', 'blinkmacsystemfont', 'sans-serif', 'serif', 'monospace', 'cursive', 'fantasy', 'inherit' ), true ) ) {
-			return $lower;
-		}
-
-		if ( preg_match( '/^[a-zA-Z0-9_-]+$/', $family ) ) {
-			return $family;
-		}
-
-		return '"' . str_replace( '"', '', $family ) . '"';
-	};
-
-	if ( false !== strpos( $value, ',' ) ) {
-		$parts = array();
-		foreach ( explode( ',', $value ) as $part ) {
-			$part = $format_family( $part );
-			if ( '' !== $part ) {
-				$parts[] = $part;
-			}
-		}
-
-		return implode( ', ', $parts );
-	}
-
-	if ( 'system-ui' === strtolower( $value ) ) {
-		return 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-	}
-
-	return $format_family( $value ) . ', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
-}
-
-/**
  * Build a Header/Footer Site Styles color select.
  *
  * @param string $section Section key.
@@ -540,29 +376,6 @@ function mrn_base_stack_get_theme_header_footer_color_field( $section, $suffix, 
 		'allow_null'    => 1,
 		'ui'            => 1,
 		'return_format' => 'value',
-	);
-}
-
-/**
- * Build a Header/Footer font-family select.
- *
- * @param string $section Section key.
- * @return array<string, mixed>
- */
-function mrn_base_stack_get_theme_header_footer_font_family_field( $section ) {
-	$section = sanitize_key( (string) $section );
-
-	return array(
-		'key'           => 'field_mrn_theme_' . $section . '_font_family',
-		'label'         => __( 'Font Family', 'mrn-base-stack' ),
-		'name'          => $section . '_font_family',
-		'type'          => 'select',
-		'choices'       => mrn_base_stack_get_theme_header_footer_font_choices(),
-		'default_value' => '',
-		'allow_null'    => 1,
-		'ui'            => 1,
-		'return_format' => 'value',
-		'instructions'  => __( 'Includes basic web defaults plus Google Fonts configured in Site Styles.', 'mrn-base-stack' ),
 	);
 }
 
@@ -823,11 +636,6 @@ function mrn_base_stack_get_theme_header_footer_appearance_style( $section, arra
 		}
 	}
 
-	$font_stack = isset( $options[ $section . '_font_family' ] ) ? mrn_base_stack_get_theme_header_footer_font_stack( $options[ $section . '_font_family' ] ) : '';
-	if ( '' !== $font_stack ) {
-		$styles[] = '--mrn-theme-hf-font-family: ' . $font_stack;
-	}
-
 	if ( empty( $styles ) ) {
 		return '';
 	}
@@ -949,7 +757,6 @@ function mrn_base_stack_get_theme_header_footer_config_field_groups( $section ) 
 					'field_mrn_theme_header_font_color',
 					'field_mrn_theme_header_link_color',
 					'field_mrn_theme_header_link_hover_color',
-					'field_mrn_theme_header_font_family',
 				),
 			),
 			'navigation' => array(
@@ -991,7 +798,6 @@ function mrn_base_stack_get_theme_header_footer_config_field_groups( $section ) 
 					'field_mrn_theme_footer_font_color',
 					'field_mrn_theme_footer_link_color',
 					'field_mrn_theme_footer_link_hover_color',
-					'field_mrn_theme_footer_font_family',
 				),
 			),
 			'navigation' => array(
@@ -2078,7 +1884,6 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					mrn_base_stack_get_theme_header_footer_color_field( 'header', 'font_color', __( 'Font Color', 'mrn-base-stack' ) ),
 					mrn_base_stack_get_theme_header_footer_color_field( 'header', 'link_color', __( 'Link Color', 'mrn-base-stack' ) ),
 					mrn_base_stack_get_theme_header_footer_color_field( 'header', 'link_hover_color', __( 'Link Hover Color', 'mrn-base-stack' ) ),
-					mrn_base_stack_get_theme_header_footer_font_family_field( 'header' ),
 					array(
 						'key'           => 'field_mrn_theme_header_show_utility_menu',
 						'label'         => __( 'Show Secondary Menu', 'mrn-base-stack' ),
@@ -2326,7 +2131,6 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					mrn_base_stack_get_theme_header_footer_color_field( 'footer', 'font_color', __( 'Font Color', 'mrn-base-stack' ) ),
 					mrn_base_stack_get_theme_header_footer_color_field( 'footer', 'link_color', __( 'Link Color', 'mrn-base-stack' ) ),
 					mrn_base_stack_get_theme_header_footer_color_field( 'footer', 'link_hover_color', __( 'Link Hover Color', 'mrn-base-stack' ) ),
-					mrn_base_stack_get_theme_header_footer_font_family_field( 'footer' ),
 					array(
 						'key'           => 'field_mrn_theme_footer_show_social_menu',
 						'label'         => __( 'Show Social Icons', 'mrn-base-stack' ),
@@ -3345,7 +3149,6 @@ function mrn_base_stack_get_theme_header_footer_options() {
 	$header_font_color           = mrn_base_stack_normalize_site_color_slug( get_field( 'header_font_color', 'option' ) );
 	$header_link_color           = mrn_base_stack_normalize_site_color_slug( get_field( 'header_link_color', 'option' ) );
 	$header_link_hover_color     = mrn_base_stack_normalize_site_color_slug( get_field( 'header_link_hover_color', 'option' ) );
-	$header_font_family          = mrn_base_stack_normalize_theme_header_footer_font_family( get_field( 'header_font_family', 'option' ) );
 	$searchwp_forms              = function_exists( 'mrn_base_stack_get_searchwp_forms' ) ? mrn_base_stack_get_searchwp_forms() : array();
 	$default_searchwp_form_id    = function_exists( 'mrn_base_stack_get_default_searchwp_form_id' ) ? mrn_base_stack_get_default_searchwp_form_id() : 0;
 	$standard_icon_choices       = array_keys( mrn_base_stack_get_header_search_standard_icon_choices() );
@@ -3392,7 +3195,6 @@ function mrn_base_stack_get_theme_header_footer_options() {
 	$footer_font_color              = mrn_base_stack_normalize_site_color_slug( get_field( 'footer_font_color', 'option' ) );
 	$footer_link_color              = mrn_base_stack_normalize_site_color_slug( get_field( 'footer_link_color', 'option' ) );
 	$footer_link_hover_color        = mrn_base_stack_normalize_site_color_slug( get_field( 'footer_link_hover_color', 'option' ) );
-	$footer_font_family             = mrn_base_stack_normalize_theme_header_footer_font_family( get_field( 'footer_font_family', 'option' ) );
 	$footer_social_icon_color       = '' !== $footer_social_icon_color ? $footer_social_icon_color : $default_site_color_slug;
 	$footer_social_icon_hover_color = '' !== $footer_social_icon_hover_color ? $footer_social_icon_hover_color : $default_site_color_slug;
 
@@ -3401,7 +3203,6 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		'header_font_color'                          => $header_font_color,
 		'header_link_color'                          => $header_link_color,
 		'header_link_hover_color'                    => $header_link_hover_color,
-		'header_font_family'                         => $header_font_family,
 		'header_show_social_menu'                    => (bool) get_field( 'header_show_social_menu', 'option' ),
 		'header_show_tertiary_menu'                  => (bool) get_field( 'header_show_tertiary_menu', 'option' ),
 		'header_show_secondary_menu'                 => $header_show_secondary_menu,
@@ -3422,7 +3223,6 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		'footer_font_color'                          => $footer_font_color,
 		'footer_link_color'                          => $footer_link_color,
 		'footer_link_hover_color'                    => $footer_link_hover_color,
-		'footer_font_family'                         => $footer_font_family,
 		'footer_show_social_menu'                    => $footer_show_social_menu,
 		'footer_social_icon_color'                   => $footer_social_icon_color,
 		'footer_social_icon_hover_color'             => $footer_social_icon_hover_color,
