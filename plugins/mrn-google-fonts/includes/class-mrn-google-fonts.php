@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 }
 
 final class MRN_Google_Fonts {
-	const VERSION = '0.5.2';
+	const VERSION = '0.5.3';
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
 	const PAGE_SLUG = 'google-fonts';
@@ -108,6 +108,21 @@ final class MRN_Google_Fonts {
 	}
 
 	/**
+	 * Whether Site Styles owns tag/selector typography assignments.
+	 *
+	 * @param array<string, mixed> $settings Plugin settings.
+	 */
+	private static function site_styles_owns_typography(array $settings): bool {
+		if (!function_exists('mrn_site_styles_get_typography')) {
+			return false;
+		}
+
+		return 'stack' === MRN_Google_Fonts_Stack_Bridge::get_runtime_mode(
+			(string) ($settings['stack_bridge_mode'] ?? 'auto')
+		);
+	}
+
+	/**
 	 * Sanitize settings before storage.
 	 *
 	 * @param mixed $input Raw input.
@@ -133,9 +148,15 @@ final class MRN_Google_Fonts {
 		$sanitized['heading_font_italics'] = !empty($input['heading_font_italics']) ? 1 : 0;
 		$sanitized['accent_font_italics'] = !empty($input['accent_font_italics']) ? 1 : 0;
 		$sanitized['font_faces'] = self::sanitize_google_font_faces_config($input['font_faces'] ?? $defaults['font_faces'], false);
-		$sanitized['body_font_targets'] = self::sanitize_font_targets_value($input['body_font_targets'] ?? $defaults['body_font_targets']);
-		$sanitized['heading_font_targets'] = self::sanitize_font_targets_value($input['heading_font_targets'] ?? $defaults['heading_font_targets']);
-		$sanitized['accent_font_targets'] = self::sanitize_font_targets_value($input['accent_font_targets'] ?? $defaults['accent_font_targets']);
+		$existing = get_option(self::OPTION_KEY, array());
+		$existing = is_array($existing) ? $existing : array();
+		$ownership_settings = array_replace($defaults, $existing, $input);
+		foreach (array('body_font_targets', 'heading_font_targets', 'accent_font_targets') as $targets_key) {
+			$fallback_targets = self::site_styles_owns_typography($ownership_settings)
+				? ($existing[$targets_key] ?? $defaults[$targets_key])
+				: $defaults[$targets_key];
+			$sanitized[$targets_key] = self::sanitize_font_targets_value($input[$targets_key] ?? $fallback_targets);
+		}
 
 		$allowed_subsets = array('latin', 'latin-ext');
 		$subset = sanitize_key((string) ($input['subset'] ?? $defaults['subset']));
@@ -727,6 +748,7 @@ final class MRN_Google_Fonts {
 		$clear_action_url = add_query_arg('action', self::CLEAR_LOCAL_ACTION, admin_url('admin-post.php'));
 		$target_options = self::get_font_target_options();
 		$defaults = self::default_settings();
+		$site_styles_owns_typography = self::site_styles_owns_typography($settings);
 		$font_slots = array(
 			'body' => array(
 				'label' => 'Body',
@@ -759,6 +781,11 @@ final class MRN_Google_Fonts {
 				'italics_description' => 'Include italic styles for accent weights.',
 			),
 		);
+		if ($site_styles_owns_typography) {
+			$font_slots['body']['label'] = 'Primary';
+			$font_slots['heading']['label'] = 'Secondary';
+			$font_slots['accent']['label'] = 'Accent';
+		}
 
 		$catalog = self::get_google_font_family_catalog();
 		$configured_families = array();
@@ -823,7 +850,13 @@ final class MRN_Google_Fonts {
 			data-mrn-google-fonts-datalist-id="<?php echo esc_attr($datalist_id); ?>"
 		>
 			<p><strong>Google Font Chooser</strong></p>
-			<p class="description" style="margin:0 0 12px;">Each card below controls one font. Assign selectors per card. When selector targets overlap, Accent overrides Heading and Heading overrides Body.</p>
+			<p class="description" style="margin:0 0 12px;">
+				<?php if ($site_styles_owns_typography) : ?>
+					Choose the font families and variants to load. Assign families to tags in <strong>Site Styles → Typography</strong>.
+				<?php else : ?>
+					Each card below controls one font. Assign selectors per card. When selector targets overlap, Accent overrides Heading and Heading overrides Body.
+				<?php endif; ?>
+			</p>
 			<?php
 			$target_groups = array();
 			foreach ($target_options as $target_key => $target_meta) {
@@ -892,6 +925,7 @@ final class MRN_Google_Fonts {
 							<p class="description">Uses Google CSS2 <code>ital,wght</code> tuples for variable-font-safe local builds.</p>
 						</div>
 
+						<?php if (!$site_styles_owns_typography) : ?>
 						<div class="mrn-google-fonts-field">
 							<label for="<?php echo esc_attr($targets_input_id); ?>">Assign target selectors</label>
 							<input type="hidden" name="<?php echo esc_attr((string) $slot['targets_name']); ?>" value="" />
@@ -913,6 +947,7 @@ final class MRN_Google_Fonts {
 							</select>
 							<p class="description">Use Cmd/Ctrl-click for multi-select. Individual <code>H1</code>-<code>H6</code> targets are in the Headings group.</p>
 						</div>
+						<?php endif; ?>
 					</section>
 				<?php endforeach; ?>
 			</div>
@@ -1612,7 +1647,7 @@ final class MRN_Google_Fonts {
 				</div>
 
 			<div class="mrn-google-fonts-site-tab-panel" data-mrn-google-fonts-site-tab-panel="font-settings" hidden>
-				<p>Font families, weights, italics, and selector assignments are edited in <strong>Font Builder</strong> to avoid duplicate save fields in Site Styles.</p>
+				<p>Font families, weights, italics, and local font files are managed in <strong>Font Builder</strong>. Tag assignments are managed in <strong>Site Styles → Typography</strong>.</p>
 				<p>
 					<label>
 						<input type="checkbox" name="<?php echo esc_attr($option_name); ?>[enabled]" value="1" <?php checked(!empty($settings['enabled'])); ?> />
@@ -1921,6 +1956,7 @@ final class MRN_Google_Fonts {
 			</div>
 			<?php
 			$target_options = self::get_font_target_options();
+			$site_styles_owns_typography = self::site_styles_owns_typography($settings);
 			$font_slots = array(
 				'body' => array(
 					'label' => 'Body',
@@ -1968,6 +2004,7 @@ final class MRN_Google_Fonts {
 						Include <?php echo esc_html(strtolower((string) $slot_meta['label'])); ?> italic styles
 					</label>
 				</div>
+				<?php if (!$site_styles_owns_typography) : ?>
 				<div class="mrn-google-fonts-field">
 					<label for="mrn-google-fonts-<?php echo esc_attr($slot_key); ?>-targets"><?php echo esc_html((string) $slot_meta['label']); ?> target selectors</label>
 					<input type="hidden" name="<?php echo esc_attr($option_name); ?>[<?php echo esc_attr($targets_key); ?>][]" value="" />
@@ -1978,6 +2015,7 @@ final class MRN_Google_Fonts {
 					</select>
 					<p class="description">Use Cmd/Ctrl-click to choose multiple selector groups.</p>
 				</div>
+				<?php endif; ?>
 			<?php endforeach; ?>
 			<div class="mrn-google-fonts-field">
 				<label for="mrn-google-fonts-display">Font display strategy</label>
@@ -2508,6 +2546,10 @@ final class MRN_Google_Fonts {
 	 * @param string               $context  Target context: frontend|editor.
 	 */
 	private static function build_font_target_css(array $settings, string $context): string {
+		if (self::site_styles_owns_typography($settings)) {
+			return '';
+		}
+
 		$context = ('editor' === $context) ? 'editor' : 'frontend';
 		$selector_key = ('editor' === $context) ? 'editor_selector' : 'frontend_selector';
 		$defaults = self::default_settings();
