@@ -232,12 +232,11 @@ body.mrn-acf-layout-picker-open {
 .mrn-acf-layout-picker__card-description {
 	display: block;
 	max-width: 100%;
-	overflow: hidden;
 	color: #6b7280;
 	font-size: 11px;
 	line-height: 1.35;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	overflow-wrap: anywhere;
+	white-space: normal;
 	opacity: 1;
 }
 
