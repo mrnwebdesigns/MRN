@@ -1579,7 +1579,7 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 	font-weight: 700;
 }
 
-.mrn-content-builder--404 {
+.mrn-not-found__inner + .mrn-content-builder--404 {
 	margin-top: var(--mrn-shell-section-space-tight);
 }
 

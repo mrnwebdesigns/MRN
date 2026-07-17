@@ -124,7 +124,6 @@ function mrn_base_stack_register_not_found_field_group() {
 					'label'         => __( 'Heading', 'mrn-base-stack' ),
 					'name'          => 'not_found_title',
 					'type'          => 'text',
-					'required'      => 1,
 					'default_value' => __( 'This page wandered off.', 'mrn-base-stack' ),
 				),
 				array(
@@ -142,7 +141,6 @@ function mrn_base_stack_register_not_found_field_group() {
 					'label'         => __( 'Home Button Label', 'mrn-base-stack' ),
 					'name'          => 'not_found_home_label',
 					'type'          => 'text',
-					'required'      => 1,
 					'default_value' => __( 'Take me home', 'mrn-base-stack' ),
 				),
 				array(
@@ -158,7 +156,6 @@ function mrn_base_stack_register_not_found_field_group() {
 					'label'             => __( 'Search Heading', 'mrn-base-stack' ),
 					'name'              => 'not_found_search_heading',
 					'type'              => 'text',
-					'required'          => 1,
 					'default_value'     => __( 'Search for what you need', 'mrn-base-stack' ),
 					'conditional_logic' => array(
 						array(
@@ -175,7 +172,6 @@ function mrn_base_stack_register_not_found_field_group() {
 					'label'         => __( 'Helpful Links Heading', 'mrn-base-stack' ),
 					'name'          => 'not_found_links_heading',
 					'type'          => 'text',
-					'required'      => 1,
 					'default_value' => __( 'Or try one of these', 'mrn-base-stack' ),
 				),
 				array(
@@ -271,19 +267,6 @@ function mrn_base_stack_get_not_found_options() {
 	$options['show_search']   = (bool) $options['show_search'];
 	$options['helpful_links'] = is_array( $options['helpful_links'] ) ? $options['helpful_links'] : array();
 	$options['content_rows']  = is_array( $options['content_rows'] ) ? $options['content_rows'] : array();
-
-	$required_defaults = array(
-		'title'          => __( 'This page wandered off.', 'mrn-base-stack' ),
-		'home_label'     => __( 'Take me home', 'mrn-base-stack' ),
-		'search_heading' => __( 'Search for what you need', 'mrn-base-stack' ),
-		'links_heading'  => __( 'Or try one of these', 'mrn-base-stack' ),
-	);
-
-	foreach ( $required_defaults as $option_key => $default_value ) {
-		if ( ! is_string( $options[ $option_key ] ) || '' === trim( $options[ $option_key ] ) ) {
-			$options[ $option_key ] = $default_value;
-		}
-	}
 
 	return $options;
 }
