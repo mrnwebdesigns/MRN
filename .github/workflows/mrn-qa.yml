@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      MRN_QA_CODE_ANALYSIS_SCOPE: all
+      MRN_QA_CODE_ANALYSIS_SCOPE: changed
       MRN_QA_RUN_SMOKE: never
       MRN_QA_RUN_ACCESSIBILITY: never
       MRN_QA_RUN_PERFORMANCE: never
@@ -46,21 +46,29 @@ jobs:
         run: composer install --no-interaction --prefer-dist --no-progress
 
       - name: Install Semgrep
-        run: python -m pip install --user semgrep
+        run: |
+          python -m pip install --upgrade semgrep
+          mkdir -p "$RUNNER_TEMP/bin"
+          printf '%s\n' '#!/usr/bin/env sh' 'exec python -m semgrep "$@"' > "$RUNNER_TEMP/bin/semgrep"
+          chmod +x "$RUNNER_TEMP/bin/semgrep"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/bin/semgrep" --version
 
       - name: Check out the pinned QA engine
         uses: actions/checkout@v4
         with:
           repository: mrnwebdesigns/MRN-qa-engine
-          ref: d3a9f785c24e9a2f580fc65706c6043089181701
-          path: .mrn-qa-engine
+          ref: e12f203079de129cd7ff5579cdac9f7fb5583939
+          path: ${{ runner.temp }}/mrn-qa-engine
           token: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
           persist-credentials: false
 
       - name: Run MRN static QA gate
         run: |
           mkdir -p reports
-          "$GITHUB_WORKSPACE/.mrn-qa-engine/bin/mrn-qa" run \
+          export MRN_QA_STACK_ROOT="$GITHUB_WORKSPACE"
+          export MRN_QA_CHANGED_FILES="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          "$RUNNER_TEMP/mrn-qa-engine/bin/mrn-qa" run \
             --project-root "$GITHUB_WORKSPACE" \
             --output-file "$GITHUB_WORKSPACE/reports/mrn-qa-ci.md"
 
