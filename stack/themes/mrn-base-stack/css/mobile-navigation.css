@@ -125,12 +125,16 @@
 .mrn-mobile-navigation__drawer-header {
 	align-items: center;
 	border-bottom: 1px solid var(--mrn-mobile-menu-divider);
-	display: flex;
+	display: none;
 	flex: 0 0 auto;
 	gap: 1rem;
 	justify-content: space-between;
 	min-height: 76px;
 	padding: max(1rem, env(safe-area-inset-top)) 5rem 1rem max(1.25rem, env(safe-area-inset-left));
+}
+
+.mrn-mobile-navigation[data-mrn-mobile-active="true"] .mrn-mobile-navigation__drawer-header {
+	display: flex;
 }
 
 .mrn-mobile-navigation__drawer-branding {
