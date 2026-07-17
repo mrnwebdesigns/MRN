@@ -3,7 +3,7 @@
  * Plugin Name: MRN Site Styles
  * Description: Adds a Site Styles configuration page for shared colors, typography, graphic elements, and usage helpers.
  * Author: MRN Web Designs
- * Version: 0.1.37
+ * Version: 0.1.38
  */
 
 defined('ABSPATH') || exit;
@@ -3128,9 +3128,18 @@ function mrn_site_colors_render_page(): void {
                 padding: 12px 16px 16px;
             }
 
-            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-group-even > td { background: #fff; }
-            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-group-odd > td { background: #f0f0f1; }
-            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-appearance-row > td { border-bottom: 2px solid #c3c4c7; }
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-group-even { background: #fff; }
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-group-odd { background: #f0f0f1; }
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-row > td,
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-appearance-row > td {
+                background: transparent !important;
+            }
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-appearance-row > td {
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
+                border-bottom: 2px solid #c3c4c7;
+            }
 
             .mrn-site-styles-typography-appearance {
                 display: grid;

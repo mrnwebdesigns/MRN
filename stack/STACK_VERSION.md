@@ -16,7 +16,7 @@
   - `mrn-editor-lockdown` `1.0.25`
   - `mrn-reusable-block-library` `0.1.26`
   - `mrn-schema-bridge` `0.4.1`
-  - `mrn-site-colors` / `Site Styles` `0.1.37`
+  - `mrn-site-colors` / `Site Styles` `0.1.38`
 - Standard plugins:
   - `mrn-announcements` `1.6.1`
   - `mrn-config-helper` `0.1.43`
