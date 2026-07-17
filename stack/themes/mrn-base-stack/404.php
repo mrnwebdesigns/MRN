@@ -83,6 +83,12 @@ $mrn_not_found_options = function_exists( 'mrn_base_stack_get_not_found_options'
 				</div>
 			<?php endif; ?>
 		</div>
+
+		<?php
+		if ( function_exists( 'mrn_base_stack_render_not_found_content' ) ) {
+			mrn_base_stack_render_not_found_content( $mrn_not_found_options['content_rows'] ?? array() );
+		}
+		?>
 	</section>
 </main><!-- #main -->
 

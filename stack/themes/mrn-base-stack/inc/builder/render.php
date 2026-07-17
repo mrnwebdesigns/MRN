@@ -1371,10 +1371,59 @@ add_filter( 'acf/fields/flexible_content/layout_title/name=page_content_rows', '
 add_filter( 'acf/fields/flexible_content/layout_title/name=page_after_content_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/name=page_hero_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/name=page_sidebar_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/name=not_found_content_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_page_template_sidebar_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+
+/**
+ * Render an array of flexible-content builder rows.
+ *
+ * This lower-level renderer supports non-post contexts, such as theme option
+ * pages, while preserving the existing post/page builder contract.
+ *
+ * @param array<int, array<string, mixed>> $rows Builder rows.
+ * @param int                              $post_id Optional context post ID.
+ * @param string                           $field_name Source field name.
+ * @param string                           $wrapper_class Wrapper class for the builder markup.
+ * @return bool True when at least one builder row was rendered.
+ */
+function mrn_base_stack_render_builder_rows( array $rows, $post_id = 0, $field_name = '', $wrapper_class = 'mrn-content-builder' ) {
+	$post_id       = absint( $post_id );
+	$field_name    = sanitize_key( (string) $field_name );
+	$rendered_rows = array();
+
+	foreach ( $rows as $index => $row ) {
+		if ( ! is_array( $row ) ) {
+			continue;
+		}
+
+		$row['__mrn_builder_post_id']    = $post_id;
+		$row['__mrn_builder_field_name'] = $field_name;
+		$row['__mrn_builder_row_index']  = (int) $index;
+
+		ob_start();
+		mrn_base_stack_render_builder_row( $row, $post_id, $index );
+		$row_markup = trim( (string) ob_get_clean() );
+
+		if ( '' === $row_markup ) {
+			continue;
+		}
+
+		$rendered_rows[] = $row_markup;
+	}
+
+	if ( empty( $rendered_rows ) ) {
+		return false;
+	}
+
+	echo '<div class="' . esc_attr( trim( $wrapper_class ) ) . '">';
+	echo implode( '', $rendered_rows ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	echo '</div>';
+
+	return true;
+}
 
 /**
  * Render a flexible-content builder field for posts and pages.
@@ -1399,37 +1448,7 @@ function mrn_base_stack_render_builder_field( $field_name, $post_id = null, $wra
 		return false;
 	}
 
-	$rendered_rows = array();
-
-	foreach ( $rows as $index => $row ) {
-		if ( ! is_array( $row ) ) {
-			continue;
-		}
-
-		$row['__mrn_builder_post_id']    = (int) $post_id;
-		$row['__mrn_builder_field_name'] = sanitize_key( (string) $field_name );
-		$row['__mrn_builder_row_index']  = (int) $index;
-
-		ob_start();
-		mrn_base_stack_render_builder_row( $row, $post_id, $index );
-		$row_markup = trim( (string) ob_get_clean() );
-
-		if ( '' === $row_markup ) {
-			continue;
-		}
-
-		$rendered_rows[] = $row_markup;
-	}
-
-	if ( empty( $rendered_rows ) ) {
-		return false;
-	}
-
-	echo '<div class="' . esc_attr( trim( $wrapper_class ) ) . '">';
-	echo implode( '', $rendered_rows ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-	echo '</div>';
-
-	return true;
+	return mrn_base_stack_render_builder_rows( $rows, $post_id, $field_name, $wrapper_class );
 }
 
 /**
