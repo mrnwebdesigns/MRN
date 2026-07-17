@@ -2,14 +2,132 @@
 /**
  * Plugin Name: MRN Public Security Hardening
  * Description: Shared public hardening for MRN brochure/client sites.
- * Version: 0.1.0
+ * Version: 0.2.0
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION' ) ) {
-	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.1.0' );
+	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.2.0' );
+}
+
+/**
+ * Get the stack-owned UptimeRobot health-check page slug.
+ *
+ * @return string
+ */
+function mrn_public_security_get_uptime_robot_check_slug() {
+	$slug = apply_filters( 'mrn_public_security_uptime_robot_check_slug', 'uptimerobot-check' );
+
+	if ( ! is_string( $slug ) ) {
+		return 'uptimerobot-check';
+	}
+
+	$slug = sanitize_title( $slug );
+
+	return '' !== $slug ? $slug : 'uptimerobot-check';
+}
+
+/**
+ * Check whether the current request is for the stack health-check page.
+ *
+ * @return bool
+ */
+function mrn_public_security_is_uptime_robot_check_request() {
+	return ! is_admin() && function_exists( 'is_page' ) && is_page( mrn_public_security_get_uptime_robot_check_slug() );
+}
+
+/**
+ * Prevent the health-check page from being indexed or followed.
+ *
+ * @param array $robots Existing robots directives.
+ * @return array
+ */
+function mrn_public_security_uptime_robot_check_robots( $robots ) {
+	if ( ! is_array( $robots ) ) {
+		$robots = array();
+	}
+
+	if ( mrn_public_security_is_uptime_robot_check_request() ) {
+		unset( $robots['index'], $robots['follow'] );
+		$robots['noindex']   = true;
+		$robots['nofollow']  = true;
+		$robots['noarchive'] = true;
+	}
+
+	return $robots;
+}
+
+/**
+ * Add an HTTP robots directive for the health-check response.
+ *
+ * @param array $headers Existing response headers.
+ * @return array
+ */
+function mrn_public_security_uptime_robot_check_headers( $headers ) {
+	if ( mrn_public_security_is_uptime_robot_check_request() ) {
+		$headers['X-Robots-Tag'] = 'noindex, nofollow, noarchive';
+	}
+
+	return $headers;
+}
+add_filter( 'wp_headers', 'mrn_public_security_uptime_robot_check_headers' );
+
+/**
+ * Keep compliant crawlers away from the health-check path.
+ *
+ * @param string $output Existing robots.txt content.
+ * @return string
+ */
+function mrn_public_security_disallow_uptime_robot_check_crawling( $output ) {
+	$directive = 'Disallow: /' . mrn_public_security_get_uptime_robot_check_slug();
+
+	if ( false === strpos( $output, $directive ) ) {
+		$output = rtrim( $output ) . "\n" . $directive . "\n";
+	}
+
+	return $output;
+}
+add_filter( 'robots_txt', 'mrn_public_security_disallow_uptime_robot_check_crawling' );
+
+/**
+ * Exclude the health-check page from the core WordPress page sitemap.
+ *
+ * @param array  $args      Sitemap query arguments.
+ * @param string $post_type Sitemap post type.
+ * @return array
+ */
+function mrn_public_security_exclude_uptime_robot_check_from_sitemap( $args, $post_type ) {
+	if ( 'page' !== $post_type ) {
+		return $args;
+	}
+
+	$page = get_page_by_path( mrn_public_security_get_uptime_robot_check_slug(), OBJECT, 'page' );
+
+	if ( $page instanceof WP_Post ) {
+		$excluded            = isset( $args['post__not_in'] ) && is_array( $args['post__not_in'] ) ? $args['post__not_in'] : array();
+		$excluded[]          = $page->ID;
+		$args['post__not_in'] = array_values( array_unique( array_map( 'absint', $excluded ) ) );
+	}
+
+	return $args;
+}
+add_filter( 'wp_sitemaps_posts_query_args', 'mrn_public_security_exclude_uptime_robot_check_from_sitemap', 10, 2 );
+
+/**
+ * Render legacy robots metadata when the WordPress robots API is unavailable.
+ */
+function mrn_public_security_render_uptime_robot_check_noindex_meta() {
+	if ( mrn_public_security_is_uptime_robot_check_request() ) {
+		echo '<meta name="robots" content="noindex, nofollow, noarchive" />' . "\n";
+	}
+}
+
+if ( function_exists( 'wp_robots' ) ) {
+	add_filter( 'wp_robots', 'mrn_public_security_uptime_robot_check_robots', 20 );
+} else {
+	add_action( 'wp_head', 'mrn_public_security_render_uptime_robot_check_noindex_meta', 1 );
 }
 
 /**

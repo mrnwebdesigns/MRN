@@ -1445,6 +1445,69 @@ apply_wp_defaults() {
   fi
 }
 
+provision_uptime_robot_check_page() {
+  local page_code page_output
+
+  page_code="$(cat <<'PHP'
+$slug = 'uptimerobot-check';
+$page = get_page_by_path( $slug, OBJECT, 'page' );
+
+if ( $page instanceof WP_Post ) {
+    $page_id = wp_update_post(
+        array(
+            'ID'          => $page->ID,
+            'post_name'   => $slug,
+            'post_status' => 'publish',
+        ),
+        true
+    );
+    $action = 'verified';
+} else {
+    $page_id = wp_insert_post(
+        array(
+            'post_type'      => 'page',
+            'post_status'    => 'publish',
+            'post_title'     => 'UptimeRobot Check',
+            'post_name'      => $slug,
+            'post_content'   => 'OK',
+            'comment_status' => 'closed',
+            'ping_status'    => 'closed',
+        ),
+        true
+    );
+    $action = 'created';
+}
+
+if ( is_wp_error( $page_id ) ) {
+    fwrite( STDERR, $page_id->get_error_message() . "\n" );
+    exit( 1 );
+}
+
+if ( $slug !== get_post_field( 'post_name', $page_id ) ) {
+    if ( 'created' === $action ) {
+        wp_delete_post( $page_id, true );
+    }
+    fwrite( STDERR, "Could not reserve /{$slug}/ because its permalink is already in use.\n" );
+    exit( 1 );
+}
+
+update_post_meta( $page_id, '_mrn_uptimerobot_check', '1' );
+update_post_meta( $page_id, '_yoast_wpseo_meta-robots-noindex', '1' );
+update_post_meta( $page_id, '_yoast_wpseo_meta-robots-nofollow', '1' );
+
+echo "UptimeRobot check page {$action}: " . get_permalink( $page_id ) . "\n";
+PHP
+)"
+
+  if ! page_output="$(run_wp eval "${page_code}" 2>&1)"; then
+    printf '%s\n' "${page_output}" >&2
+    echo "Failed to provision the required UptimeRobot check page at /uptimerobot-check/." >&2
+    return 1
+  fi
+
+  printf '%s\n' "${page_output}"
+}
+
 run_importers() {
   if [[ ! -d "${IMPORTERS_DIR}" ]]; then
     return 0
@@ -1505,7 +1568,7 @@ if (!class_exists('MRN_Config_Helper') || !method_exists('MRN_Config_Helper', 'b
     exit(1);
 }
 
-\$result = MRN_Config_Helper::bootstrap_uptime_robot_monitor(home_url('/'), ${uptime_interval});
+\$result = MRN_Config_Helper::bootstrap_uptime_robot_monitor(home_url('/uptimerobot-check/'), ${uptime_interval});
 \$status = isset(\$result['status']) ? (string) \$result['status'] : 'unknown';
 \$message = isset(\$result['message']) ? (string) \$result['message'] : 'No message returned.';
 
@@ -1610,6 +1673,7 @@ main() {
   sync_shared_runtime
   install_themes
   apply_wp_defaults
+  provision_uptime_robot_check_page
   run_importers
   provision_external_services
   ensure_updraft_local_retention_schedule

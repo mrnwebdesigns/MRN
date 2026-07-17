@@ -9,6 +9,7 @@ Shared MU plugin for public-facing security hardening on normal MRN brochure and
 - Removes `author_name` and `author_url` from oEmbed responses.
 - Returns early REST `rest_forbidden` responses for unauthenticated write requests to known admin-only scanner-noise routes.
 - Serves `/.well-known/security.txt` from WordPress/plugin logic.
+- Protects the stack-owned `/uptimerobot-check/` health page with `noindex`, `nofollow`, `noarchive`, an `X-Robots-Tag` response header, a `robots.txt` disallow rule, and core sitemap exclusion.
 
 ## Default REST Guarded Routes
 
@@ -102,6 +103,12 @@ add_filter(
 );
 ```
 
+### UptimeRobot health check
+
+- `mrn_public_security_uptime_robot_check_slug`
+
+The default slug is `uptimerobot-check`. Stack bootstrap creates and publishes that page, and UptimeRobot monitors its permalink rather than the homepage.
+
 ## QA Checklist
 
 - `php -l mrn-public-security-hardening.php` passes.
@@ -110,3 +117,4 @@ add_filter(
 - oEmbed response data does not include `author_name` or `author_url`.
 - Unauthenticated `POST {}` requests to guarded REST routes return `401 rest_forbidden`, not a missing-parameter `400`.
 - Authenticated administrators can still reach the guarded REST routes for normal plugin handling.
+- `/uptimerobot-check/` returns an `X-Robots-Tag: noindex, nofollow, noarchive` header, is disallowed in `/robots.txt`, and is absent from the core page sitemap.
