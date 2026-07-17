@@ -1538,6 +1538,7 @@ function mrn_schema_bridge_build_testimonial_schema_node( $post, $data, $context
 	$context_url = esc_url_raw( (string) $context_url );
 	$name        = isset( $data['name'] ) ? sanitize_text_field( (string) $data['name'] ) : '';
 	$text        = isset( $data['content'] ) ? wp_strip_all_tags( (string) $data['content'] ) : '';
+	$text        = wp_specialchars_decode( $text, ENT_QUOTES );
 	$text        = preg_replace( '/\s+/u', ' ', $text );
 	$text        = is_string( $text ) ? trim( $text ) : '';
 
