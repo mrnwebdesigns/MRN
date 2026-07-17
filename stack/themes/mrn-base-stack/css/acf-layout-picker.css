@@ -238,12 +238,6 @@ body.mrn-acf-layout-picker-open {
 	line-height: 1.35;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	opacity: 0;
-	transition: opacity 0.15s ease;
-}
-
-.mrn-acf-layout-picker__card:hover .mrn-acf-layout-picker__card-description,
-.mrn-acf-layout-picker__card:focus-visible .mrn-acf-layout-picker__card-description {
 	opacity: 1;
 }
 
