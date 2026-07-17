@@ -58,10 +58,6 @@ function wp_strip_all_tags( $value ) {
 	return strip_tags( (string) $value ); // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- WordPress stub.
 }
 
-function wp_specialchars_decode( $value ) {
-	return html_entity_decode( (string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
-}
-
 function wp_json_encode( $value ) {
 	return json_encode( $value ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- WordPress stub.
 }
