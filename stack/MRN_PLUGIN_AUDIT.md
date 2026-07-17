@@ -75,7 +75,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-editor-ui-css` | MRN Admin UI CSS Legacy | 1.0.8 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned legacy compatibility loader. |
 | `mrn-public-security-hardening` | MRN Public Security Hardening | 0.1.0 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement. |
 | `mrn-reusable-block-library` | MRN Reusable Block Library | 0.1.17 | <https://github.com/mrnwebdesigns/MRN> | Optional stack styling; usable without the stack, but MRN stack/theme CSS gives the finished presentation. |
-| `mrn-schema-bridge` | MRN Schema Bridge | 0.3.3 | <https://github.com/mrnwebdesigns/MRN> | No hard stack requirement; SmartCrawl/schema runtime is required for schema normalization effects. |
+| `mrn-schema-bridge` | MRN Schema Bridge | 0.4.1 | <https://github.com/mrnwebdesigns/MRN> | SmartCrawl is the preferred base graph; standalone supplemental schema remains available when it is absent. |
 | `mrn-shared-assets` | MRN Shared Assets | 0.1.3 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned shared asset provider. |
 | `mrn-site-colors` | MRN Site Styles | 0.1.15 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned design-token/configuration layer. |
 | `mrn-updraft-local-retention` | MRN Updraft Local Retention | 0.1.0 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; requires UpdraftPlus to have an effect. |
@@ -84,5 +84,5 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 
 - Existing root wrappers in `stack/mu-plugins/*.php` now carry matching `MRN ...` headers and synced versions for the wrappers they represent.
 - `stack/mu-plugins/mrn-editor-lockdown.php` is synced to `MRN Editor Lockdown 1.0.25`.
-- `stack/mu-plugins/mrn-schema-bridge.php` is synced to `MRN Schema Bridge 0.3.3`.
+- `stack/mu-plugins/mrn-schema-bridge.php` is synced to `MRN Schema Bridge 0.4.1`.
 - Missing root wrappers should not be added casually; load order is owned by `MRN Loader` so stack MU behavior stays explicit.

@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Schema Bridge
  * Description: Shared structured data normalization for MRN sites.
- * Version: 0.3.3
+ * Version: 0.4.1
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_VERSION' ) ) {
-	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.3.3' );
+	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.4.1' );
 }
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_SCHEMA_HEALTH_OPTION' ) ) {
@@ -40,6 +40,18 @@ if ( ! defined( 'MRN_SCHEMA_BRIDGE_POST_SCHEMA_DESCRIPTION_META_KEY' ) ) {
 	define( 'MRN_SCHEMA_BRIDGE_POST_SCHEMA_DESCRIPTION_META_KEY', '_mrn_schema_bridge_schema_description' );
 }
 
+if ( ! defined( 'MRN_SCHEMA_BRIDGE_SCHEMA_MODE_META_KEY' ) ) {
+	define( 'MRN_SCHEMA_BRIDGE_SCHEMA_MODE_META_KEY', '_mrn_schema_bridge_schema_mode' );
+}
+
+if ( ! defined( 'MRN_SCHEMA_BRIDGE_PAGE_INTENT_META_KEY' ) ) {
+	define( 'MRN_SCHEMA_BRIDGE_PAGE_INTENT_META_KEY', '_mrn_schema_bridge_page_intent' );
+}
+
+if ( ! defined( 'MRN_SCHEMA_BRIDGE_SMARTCRAWL_DEFAULTS_OPTION' ) ) {
+	define( 'MRN_SCHEMA_BRIDGE_SMARTCRAWL_DEFAULTS_OPTION', 'mrn_schema_bridge_smartcrawl_defaults_version' );
+}
+
 /**
  * Check whether schema graph normalization is enabled.
  *
@@ -47,6 +59,48 @@ if ( ! defined( 'MRN_SCHEMA_BRIDGE_POST_SCHEMA_DESCRIPTION_META_KEY' ) ) {
  */
 function mrn_schema_bridge_enabled() {
 	return (bool) apply_filters( 'mrn_schema_bridge_enabled', true );
+}
+
+/**
+ * Read a canonical schema setting from Business Information.
+ *
+ * ACF stores option-page values in its own option namespace. Using get_field()
+ * keeps the bridge aligned with the public Business Information contract while
+ * still allowing non-ACF sites to provide values through the filter.
+ *
+ * @param string $name    Field name without the schema_ prefix.
+ * @param mixed  $default Default value.
+ * @return mixed
+ */
+function mrn_schema_bridge_get_business_schema_setting( $name, $default = '' ) {
+	$name  = sanitize_key( (string) $name );
+	$value = $default;
+
+	if ( '' !== $name && function_exists( 'get_field' ) ) {
+		$field_value = get_field( 'schema_' . $name, 'option' );
+		$field_known = function_exists( 'get_field_object' ) && is_array( get_field_object( 'schema_' . $name, 'option', false, false ) );
+
+		if ( $field_known || ( null !== $field_value && false !== $field_value && '' !== $field_value ) ) {
+			$value = $field_value;
+		}
+	}
+
+	return apply_filters( 'mrn_schema_bridge_business_schema_setting', $value, $name, $default );
+}
+
+/**
+ * Return the site-wide author entity policy.
+ *
+ * @return string organization, public, or allowlist.
+ */
+function mrn_schema_bridge_get_author_policy() {
+	$policy = sanitize_key( (string) mrn_schema_bridge_get_business_schema_setting( 'author_policy', 'organization' ) );
+
+	if ( ! in_array( $policy, array( 'organization', 'public', 'allowlist' ), true ) ) {
+		$policy = 'organization';
+	}
+
+	return (string) apply_filters( 'mrn_schema_bridge_author_policy', $policy );
 }
 
 /**
@@ -184,6 +238,10 @@ function mrn_schema_bridge_is_author_person_node( $item ) {
 		return true;
 	}
 
+	if ( 'public' === mrn_schema_bridge_get_author_policy() ) {
+		return false;
+	}
+
 	if ( ! $looks_like_author ) {
 		return false;
 	}
@@ -192,7 +250,11 @@ function mrn_schema_bridge_is_author_person_node( $item ) {
 		return false;
 	}
 
-	return ! in_array( $name, mrn_schema_bridge_get_public_author_names(), true );
+	if ( 'allowlist' === mrn_schema_bridge_get_author_policy() ) {
+		return ! in_array( $name, mrn_schema_bridge_get_public_author_names(), true );
+	}
+
+	return true;
 }
 
 /**
@@ -242,6 +304,116 @@ function mrn_schema_bridge_get_organization_reference( $graph ) {
 }
 
 /**
+ * Get the configured public organization type.
+ *
+ * @return string
+ */
+function mrn_schema_bridge_get_organization_type() {
+	$type    = sanitize_text_field( (string) mrn_schema_bridge_get_business_schema_setting( 'organization_type', 'Organization' ) );
+	$allowed = apply_filters(
+		'mrn_schema_bridge_allowed_organization_types',
+		array(
+			'Organization',
+			'Corporation',
+			'EducationalOrganization',
+			'GovernmentOrganization',
+			'LocalBusiness',
+			'MedicalOrganization',
+			'NGO',
+			'ProfessionalService',
+		)
+	);
+
+	if ( ! is_array( $allowed ) || ! in_array( $type, $allowed, true ) ) {
+		return 'Organization';
+	}
+
+	return $type;
+}
+
+/**
+ * Build canonical public organization properties from Business Information.
+ *
+ * @return array<string,mixed>
+ */
+function mrn_schema_bridge_get_canonical_organization_properties() {
+	$properties = array(
+		'@type' => mrn_schema_bridge_get_organization_type(),
+		'name'  => sanitize_text_field( (string) get_bloginfo( 'name' ) ),
+		'url'   => esc_url_raw( home_url( '/' ) ),
+	);
+
+	if ( function_exists( 'mrn_base_stack_get_business_schema_data' ) ) {
+		$theme_schema = mrn_base_stack_get_business_schema_data();
+
+		if ( is_array( $theme_schema ) ) {
+			foreach ( array( 'address', 'contactPoint', 'description', 'logo', 'openingHoursSpecification', 'sameAs', 'telephone' ) as $property ) {
+				if ( ! empty( $theme_schema[ $property ] ) ) {
+					$properties[ $property ] = $theme_schema[ $property ];
+				}
+			}
+		}
+	}
+
+	$scalar_fields = array(
+		'legal_name'     => 'legalName',
+		'alternate_name' => 'alternateName',
+		'email'          => 'email',
+		'area_served'    => 'areaServed',
+	);
+
+	foreach ( $scalar_fields as $field => $property ) {
+		$value = mrn_schema_bridge_get_business_schema_setting( $field, '' );
+		$value = is_scalar( $value ) ? sanitize_text_field( (string) $value ) : '';
+
+		if ( '' !== $value ) {
+			$properties[ $property ] = $value;
+		}
+	}
+
+	if ( ! empty( $properties['email'] ) ) {
+		$properties['email'] = sanitize_email( (string) $properties['email'] );
+	}
+
+	$latitude  = mrn_schema_bridge_get_business_schema_setting( 'latitude', '' );
+	$longitude = mrn_schema_bridge_get_business_schema_setting( 'longitude', '' );
+
+	if ( is_numeric( $latitude ) && is_numeric( $longitude ) ) {
+		$properties['geo'] = array(
+			'@type'     => 'GeoCoordinates',
+			'latitude'  => (float) $latitude,
+			'longitude' => (float) $longitude,
+		);
+	}
+
+	return (array) apply_filters( 'mrn_schema_bridge_canonical_organization_properties', $properties );
+}
+
+/**
+ * Enrich SmartCrawl's publishing organization from canonical stack data.
+ *
+ * @param array<int,array<string,mixed>> $graph Schema graph.
+ * @return array<int,array<string,mixed>>
+ */
+function mrn_schema_bridge_enrich_organization_schema_graph( $graph ) {
+	$properties = mrn_schema_bridge_get_canonical_organization_properties();
+
+	foreach ( $graph as $index => $item ) {
+		if ( ! is_array( $item ) || empty( $item['@id'] ) || false === strpos( (string) $item['@id'], '#schema-publishing-organization' ) ) {
+			continue;
+		}
+
+		foreach ( $properties as $property => $value ) {
+			if ( '' !== $value && array() !== $value ) {
+				$graph[ $index ][ $property ] = $value;
+			}
+		}
+	}
+
+	return $graph;
+}
+
+/**
  * Get or set whether the active schema provider already emitted ContactPage schema.
  *
  * @param bool|null $detected Optional detected state.
@@ -271,7 +443,10 @@ function mrn_schema_bridge_get_current_contact_page_post() {
 		return null;
 	}
 
-	if ( ! in_array( absint( $post->ID ), mrn_schema_bridge_get_contact_page_ids(), true ) ) {
+	if (
+		! mrn_schema_bridge_post_has_intent( $post, 'contact' )
+		&& ! in_array( absint( $post->ID ), mrn_schema_bridge_get_contact_page_ids(), true )
+	) {
 		return null;
 	}
 
@@ -429,11 +604,179 @@ function mrn_schema_bridge_filter_schema_graph( $data ) {
 	}
 
 	$data = mrn_schema_bridge_strip_author_person_nodes( $data );
+	$data = mrn_schema_bridge_enrich_organization_schema_graph( $data );
+	$data = mrn_schema_bridge_apply_page_intent_to_schema_graph( $data );
 	$data = mrn_schema_bridge_enrich_contact_page_schema_graph( $data );
+	$data = mrn_schema_bridge_enrich_project_schema_graph( $data );
+	$data = mrn_schema_bridge_append_supplemental_nodes_to_graph( $data );
+
+	$GLOBALS['mrn_schema_bridge_supplemental_injected'] = true;
 
 	return (array) apply_filters( 'mrn_schema_bridge_schema_graph', $data );
 }
 add_filter( 'wds_schema_printer_schema_data', 'mrn_schema_bridge_filter_schema_graph', 20 );
+
+/**
+ * Apply the selected page intent to SmartCrawl's primary WebPage node.
+ *
+ * @param array<int,array<string,mixed>> $graph Schema graph.
+ * @return array<int,array<string,mixed>>
+ */
+function mrn_schema_bridge_apply_page_intent_to_schema_graph( $graph ) {
+	if ( ! is_singular() ) {
+		return $graph;
+	}
+
+	$post = get_queried_object();
+
+	if ( ! $post instanceof WP_Post || 'none' === mrn_schema_bridge_get_post_schema_mode( $post ) ) {
+		return $graph;
+	}
+
+	$type_map = array(
+		'about'      => 'AboutPage',
+		'collection' => 'CollectionPage',
+		'contact'    => 'ContactPage',
+		'profile'    => 'ProfilePage',
+	);
+	$intent   = mrn_schema_bridge_get_post_page_intent( $post );
+
+	if ( 'auto' === $intent && 'team_member' === $post->post_type ) {
+		$intent = 'profile';
+	} elseif ( 'auto' === $intent && 'gallery' === $post->post_type ) {
+		$intent = 'collection';
+	}
+
+	if ( empty( $type_map[ $intent ] ) ) {
+		return $graph;
+	}
+
+	foreach ( $graph as $index => $node ) {
+		if ( ! is_array( $node ) || ! mrn_schema_bridge_item_has_type( $node, 'WebPage' ) ) {
+			continue;
+		}
+
+		$types = mrn_schema_bridge_get_item_types( $node );
+		$types = array_values( array_diff( $types, array( 'WebPage' ) ) );
+		array_unshift( $types, $type_map[ $intent ] );
+		$graph[ $index ]['@type'] = 1 === count( $types ) ? $types[0] : array_values( array_unique( $types ) );
+
+		if ( 'profile' === $intent ) {
+			$profile_node = mrn_schema_bridge_build_profile_page_schema_node( $post );
+
+			if ( ! empty( $profile_node['mainEntity'] ) ) {
+				$graph[ $index ]['mainEntity'] = $profile_node['mainEntity'];
+			}
+		}
+		break;
+	}
+
+	return $graph;
+}
+
+/**
+ * Enrich an existing provider Article for a stack case study.
+ *
+ * @param array<int,array<string,mixed>> $graph Schema graph.
+ * @return array<int,array<string,mixed>>
+ */
+function mrn_schema_bridge_enrich_project_schema_graph( $graph ) {
+	if ( ! is_singular() ) {
+		return $graph;
+	}
+
+	$post = get_queried_object();
+
+	if ( ! $post instanceof WP_Post || ! in_array( $post->post_type, mrn_schema_bridge_get_project_post_types(), true ) ) {
+		return $graph;
+	}
+
+	$url          = get_permalink( $post );
+	$description  = mrn_schema_bridge_get_post_schema_description( $post );
+	$image_url    = mrn_schema_bridge_get_post_schema_image_url( $post->ID );
+	$organization = mrn_schema_bridge_get_default_organization_reference();
+
+	foreach ( $graph as $index => $node ) {
+		if ( ! is_array( $node ) || ! mrn_schema_bridge_item_has_type( $node, 'Article' ) ) {
+			continue;
+		}
+
+		$graph[ $index ]['headline']      = sanitize_text_field( (string) get_the_title( $post ) );
+		$graph[ $index ]['datePublished'] = get_post_time( DATE_W3C, true, $post );
+		$graph[ $index ]['dateModified']  = get_post_modified_time( DATE_W3C, true, $post );
+
+		if ( empty( $graph[ $index ]['author'] ) ) {
+			$graph[ $index ]['author'] = $organization;
+		}
+
+		if ( empty( $graph[ $index ]['publisher'] ) ) {
+			$graph[ $index ]['publisher'] = $organization;
+		}
+
+		if ( '' !== $description ) {
+			$graph[ $index ]['description'] = $description;
+		}
+
+		if ( '' !== $image_url ) {
+			$graph[ $index ]['image'] = $image_url;
+		}
+
+		if ( is_string( $url ) && '' !== $url ) {
+			$graph[ $index ]['mainEntityOfPage'] = mrn_schema_bridge_get_webpage_reference( $url );
+		}
+	}
+
+	return $graph;
+}
+
+/**
+ * Append bridge-owned nodes to the provider graph without duplicating types.
+ *
+ * @param array<int,array<string,mixed>> $graph Schema graph.
+ * @return array<int,array<string,mixed>>
+ */
+function mrn_schema_bridge_append_supplemental_nodes_to_graph( $graph ) {
+	$nodes          = mrn_schema_bridge_get_supplemental_schema_nodes();
+	$existing_ids   = array();
+	$existing_types = array();
+
+	foreach ( $graph as $node ) {
+		if ( ! is_array( $node ) ) {
+			continue;
+		}
+
+		if ( ! empty( $node['@id'] ) && is_scalar( $node['@id'] ) ) {
+			$existing_ids[] = (string) $node['@id'];
+		}
+
+		$existing_types = array_merge( $existing_types, mrn_schema_bridge_get_item_types( $node ) );
+	}
+
+	$singleton_types = array( 'Article', 'ContactPage', 'CreativeWork', 'ImageGallery', 'ProfilePage', 'Service' );
+
+	foreach ( $nodes as $node ) {
+		$id    = ! empty( $node['@id'] ) && is_scalar( $node['@id'] ) ? (string) $node['@id'] : '';
+		$types = mrn_schema_bridge_get_item_types( $node );
+
+		if ( '' !== $id && in_array( $id, $existing_ids, true ) ) {
+			continue;
+		}
+
+		if ( ! empty( array_intersect( $singleton_types, $types, $existing_types ) ) ) {
+			continue;
+		}
+
+		$graph[] = $node;
+
+		if ( '' !== $id ) {
+			$existing_ids[] = $id;
+		}
+
+		$existing_types = array_merge( $existing_types, $types );
+	}
+
+	return $graph;
+}
 
 /**
  * Check whether supplemental schema output is enabled.
@@ -468,8 +811,9 @@ function mrn_schema_bridge_build_schema_id( $url, $fragment ) {
  * @return array<string,string>
  */
 function mrn_schema_bridge_get_default_organization_reference() {
+	$fragment = mrn_schema_bridge_supported_schema_provider_loaded() ? 'schema-publishing-organization' : 'organization';
 	$reference = array(
-		'@id' => mrn_schema_bridge_build_schema_id( home_url( '/' ), 'schema-publishing-organization' ),
+		'@id' => mrn_schema_bridge_build_schema_id( home_url( '/' ), $fragment ),
 	);
 
 	return (array) apply_filters( 'mrn_schema_bridge_default_organization_reference', $reference );
@@ -487,6 +831,62 @@ function mrn_schema_bridge_get_webpage_reference( $url ) {
 	);
 
 	return (array) apply_filters( 'mrn_schema_bridge_webpage_reference', $reference, $url );
+}
+
+/**
+ * Get the supplemental schema mode for a post.
+ *
+ * @param WP_Post|int|null $post Post object or ID.
+ * @return string auto, override, or none.
+ */
+function mrn_schema_bridge_get_post_schema_mode( $post = null ) {
+	$post = get_post( $post );
+
+	if ( ! $post instanceof WP_Post ) {
+		return 'auto';
+	}
+
+	$mode = sanitize_key( (string) get_post_meta( $post->ID, MRN_SCHEMA_BRIDGE_SCHEMA_MODE_META_KEY, true ) );
+
+	return in_array( $mode, array( 'auto', 'override', 'none' ), true ) ? $mode : 'auto';
+}
+
+/**
+ * Get the semantic page intent selected for a post.
+ *
+ * @param WP_Post|int|null $post Post object or ID.
+ * @return string
+ */
+function mrn_schema_bridge_get_post_page_intent( $post = null ) {
+	$post = get_post( $post );
+
+	if ( ! $post instanceof WP_Post ) {
+		return 'auto';
+	}
+
+	if ( 'override' !== mrn_schema_bridge_get_post_schema_mode( $post ) ) {
+		return 'auto';
+	}
+
+	$intent  = sanitize_key( (string) get_post_meta( $post->ID, MRN_SCHEMA_BRIDGE_PAGE_INTENT_META_KEY, true ) );
+	$allowed = array( 'auto', 'about', 'collection', 'contact', 'profile', 'service', 'standard' );
+
+	if ( ! in_array( $intent, $allowed, true ) ) {
+		$intent = 'auto';
+	}
+
+	return (string) apply_filters( 'mrn_schema_bridge_post_page_intent', $intent, $post );
+}
+
+/**
+ * Check whether a post has a selected semantic intent.
+ *
+ * @param WP_Post $post   Post object.
+ * @param string  $intent Intent key.
+ * @return bool
+ */
+function mrn_schema_bridge_post_has_intent( $post, $intent ) {
+	return $post instanceof WP_Post && sanitize_key( (string) $intent ) === mrn_schema_bridge_get_post_page_intent( $post );
 }
 
 /**
@@ -528,6 +928,10 @@ function mrn_schema_bridge_get_service_page_ids() {
  */
 function mrn_schema_bridge_get_service_area_served() {
 	$area = get_option( MRN_SCHEMA_BRIDGE_SERVICE_AREA_SERVED_OPTION, '' );
+
+	if ( ! is_scalar( $area ) || '' === trim( (string) $area ) ) {
+		$area = mrn_schema_bridge_get_business_schema_setting( 'area_served', '' );
+	}
 	$area = is_scalar( $area ) ? sanitize_text_field( (string) $area ) : '';
 	$area = apply_filters( 'mrn_schema_bridge_service_area_served', $area );
 
@@ -705,6 +1109,11 @@ function mrn_schema_bridge_normalize_contact_point( $point ) {
 function mrn_schema_bridge_get_contact_points() {
 	$raw = get_option( MRN_SCHEMA_BRIDGE_CONTACT_POINTS_OPTION, array() );
 
+	if ( empty( $raw ) ) {
+		$organization = mrn_schema_bridge_get_canonical_organization_properties();
+		$raw          = ! empty( $organization['contactPoint'] ) ? $organization['contactPoint'] : array();
+	}
+
 	if ( is_string( $raw ) ) {
 		$decoded = json_decode( $raw, true );
 
@@ -836,6 +1245,14 @@ function mrn_schema_bridge_get_post_schema_description( $post ) {
 
 	$description = mrn_schema_bridge_get_post_schema_description_override( $post );
 
+	if ( '' === trim( (string) $description ) && 'case_study' === $post->post_type && function_exists( 'mrn_base_stack_get_case_study_excerpt' ) ) {
+		$description = mrn_base_stack_get_case_study_excerpt( $post->ID, 40 );
+	}
+
+	if ( '' === trim( (string) $description ) && 'gallery' === $post->post_type && function_exists( 'mrn_base_stack_get_gallery_smartcrawl_markup' ) ) {
+		$description = wp_trim_words( wp_strip_all_tags( mrn_base_stack_get_gallery_smartcrawl_markup( $post->ID ) ), 40, '' );
+	}
+
 	if ( '' === trim( (string) $description ) ) {
 		$description = has_excerpt( $post ) ? get_the_excerpt( $post ) : '';
 	}
@@ -892,7 +1309,7 @@ function mrn_schema_bridge_build_service_schema_node( $post ) {
 		'serviceType'      => sanitize_text_field( (string) $title ),
 		'url'              => esc_url_raw( $url ),
 		'provider'         => mrn_schema_bridge_get_default_organization_reference(),
-		'mainEntityOfPage' => esc_url_raw( $url ),
+		'mainEntityOfPage' => mrn_schema_bridge_get_webpage_reference( $url ),
 	);
 
 	if ( '' !== $description ) {
@@ -916,7 +1333,7 @@ function mrn_schema_bridge_build_service_schema_node( $post ) {
  * @return array<int,string>
  */
 function mrn_schema_bridge_get_project_post_types() {
-	$post_types = apply_filters( 'mrn_schema_bridge_project_post_types', array( 'mrn_case_study' ) );
+	$post_types = apply_filters( 'mrn_schema_bridge_project_post_types', array( 'case_study', 'mrn_case_study' ) );
 
 	if ( ! is_array( $post_types ) ) {
 		return array();
@@ -959,13 +1376,17 @@ function mrn_schema_bridge_build_project_schema_node( $post ) {
 	$organization_reference = mrn_schema_bridge_get_default_organization_reference();
 
 	$node = array(
-		'@type'            => 'CreativeWork',
+		'@type'            => array( 'Article', 'CreativeWork' ),
 		'@id'              => mrn_schema_bridge_build_schema_id( $url, 'schema-project-work' ),
 		'name'             => sanitize_text_field( (string) $title ),
+		'headline'         => sanitize_text_field( (string) $title ),
 		'url'              => esc_url_raw( $url ),
+		'author'           => $organization_reference,
 		'creator'          => $organization_reference,
 		'publisher'        => $organization_reference,
-		'mainEntityOfPage' => esc_url_raw( $url ),
+		'datePublished'    => get_post_time( DATE_W3C, true, $post ),
+		'dateModified'     => get_post_modified_time( DATE_W3C, true, $post ),
+		'mainEntityOfPage' => mrn_schema_bridge_get_webpage_reference( $url ),
 		'about'            => array(
 			'@type' => 'Project',
 			'name'  => sanitize_text_field( (string) $title ),
@@ -982,6 +1403,298 @@ function mrn_schema_bridge_build_project_schema_node( $post ) {
 
 	return (array) apply_filters( 'mrn_schema_bridge_project_schema_node', $node, $post );
 }
+
+/**
+ * Build ProfilePage schema for a public team member profile.
+ *
+ * @param WP_Post $post Team member post.
+ * @return array<string,mixed>
+ */
+function mrn_schema_bridge_build_profile_page_schema_node( $post ) {
+	if ( ! $post instanceof WP_Post ) {
+		return array();
+	}
+
+	if ( function_exists( 'mrn_base_stack_team_member_has_public_profile' ) && ! mrn_base_stack_team_member_has_public_profile( $post ) ) {
+		return array();
+	}
+
+	$url = get_permalink( $post );
+
+	if ( ! is_string( $url ) || '' === $url ) {
+		return array();
+	}
+
+	$person = array(
+		'@type' => 'Person',
+		'@id'   => mrn_schema_bridge_build_schema_id( $url, 'schema-profile-person' ),
+		'name'  => sanitize_text_field( (string) get_the_title( $post ) ),
+		'url'   => esc_url_raw( $url ),
+	);
+
+	$description = mrn_schema_bridge_get_post_schema_description( $post );
+	$image_url   = mrn_schema_bridge_get_post_schema_image_url( $post->ID );
+
+	if ( '' !== $description ) {
+		$person['description'] = $description;
+	}
+
+	if ( '' !== $image_url ) {
+		$person['image'] = $image_url;
+	}
+
+	$node = array(
+		'@type'         => 'ProfilePage',
+		'@id'           => mrn_schema_bridge_build_schema_id( $url, 'schema-profile-page' ),
+		'name'          => sanitize_text_field( (string) get_the_title( $post ) ),
+		'url'           => esc_url_raw( $url ),
+		'dateCreated'   => get_post_time( DATE_W3C, true, $post ),
+		'dateModified'  => get_post_modified_time( DATE_W3C, true, $post ),
+		'mainEntity'    => $person,
+		'isPartOf'      => mrn_schema_bridge_get_webpage_reference( home_url( '/' ) ),
+	);
+
+	return (array) apply_filters( 'mrn_schema_bridge_profile_page_schema_node', $node, $post );
+}
+
+/**
+ * Build ImageGallery schema from visible stack gallery items.
+ *
+ * @param WP_Post $post Gallery post.
+ * @return array<string,mixed>
+ */
+function mrn_schema_bridge_build_gallery_schema_node( $post ) {
+	if ( ! $post instanceof WP_Post || ! function_exists( 'mrn_base_stack_get_gallery_items' ) ) {
+		return array();
+	}
+
+	$url   = get_permalink( $post );
+	$items = mrn_base_stack_get_gallery_items( $post->ID );
+
+	if ( ! is_string( $url ) || '' === $url || ! is_array( $items ) ) {
+		return array();
+	}
+
+	$images = array();
+
+	foreach ( $items as $item ) {
+		if ( ! is_array( $item ) || 'image' !== ( $item['effective_media_type'] ?? '' ) || empty( $item['full_url'] ) ) {
+			continue;
+		}
+
+		$image = array(
+			'@type'      => 'ImageObject',
+			'contentUrl' => esc_url_raw( (string) $item['full_url'] ),
+		);
+
+		if ( ! empty( $item['caption'] ) ) {
+			$image['caption'] = sanitize_text_field( (string) $item['caption'] );
+		} elseif ( ! empty( $item['alt'] ) ) {
+			$image['name'] = sanitize_text_field( (string) $item['alt'] );
+		}
+
+		$images[] = $image;
+	}
+
+	$node = array(
+		'@type'            => array( 'ImageGallery', 'CollectionPage' ),
+		'@id'              => mrn_schema_bridge_build_schema_id( $url, 'schema-image-gallery' ),
+		'name'             => sanitize_text_field( (string) get_the_title( $post ) ),
+		'url'              => esc_url_raw( $url ),
+		'mainEntityOfPage' => mrn_schema_bridge_get_webpage_reference( $url ),
+		'publisher'        => mrn_schema_bridge_get_default_organization_reference(),
+	);
+
+	$description = mrn_schema_bridge_get_post_schema_description( $post );
+
+	if ( '' !== $description ) {
+		$node['description'] = $description;
+	}
+
+	if ( ! empty( $images ) ) {
+		$node['hasPart'] = $images;
+	}
+
+	return (array) apply_filters( 'mrn_schema_bridge_gallery_schema_node', $node, $post );
+}
+
+/**
+ * Build Quotation schema for a testimonial that is visibly rendered.
+ *
+ * Testimonials are intentionally not represented as Review, Rating, or
+ * AggregateRating entities. The supplied data must match the visible theme
+ * output for the testimonial.
+ *
+ * @param WP_Post            $post        Testimonial post.
+ * @param array<string,mixed> $data       Visible testimonial data.
+ * @param string             $context_url URL of the page rendering the quote.
+ * @return array<string,mixed>
+ */
+function mrn_schema_bridge_build_testimonial_schema_node( $post, $data, $context_url ) {
+	if ( ! $post instanceof WP_Post || 'testimonial' !== $post->post_type || ! is_array( $data ) ) {
+		return array();
+	}
+
+	$context_url = esc_url_raw( (string) $context_url );
+	$name        = isset( $data['name'] ) ? sanitize_text_field( (string) $data['name'] ) : '';
+	$text        = isset( $data['content'] ) ? wp_strip_all_tags( (string) $data['content'] ) : '';
+	$text        = preg_replace( '/\s+/u', ' ', $text );
+	$text        = is_string( $text ) ? trim( $text ) : '';
+
+	if ( '' === $context_url || '' === $name || '' === $text ) {
+		return array();
+	}
+
+	$speaker = array(
+		'@type' => 'Person',
+		'name'  => $name,
+	);
+
+	$position    = isset( $data['position'] ) ? sanitize_text_field( (string) $data['position'] ) : '';
+	$company     = isset( $data['company'] ) ? sanitize_text_field( (string) $data['company'] ) : '';
+	$website_url = isset( $data['website_url'] ) ? esc_url_raw( (string) $data['website_url'] ) : '';
+
+	if ( '' !== $position ) {
+		$speaker['jobTitle'] = $position;
+	}
+
+	if ( '' !== $company ) {
+		$speaker['worksFor'] = array(
+			'@type' => 'Organization',
+			'name'  => $company,
+		);
+
+		if ( '' !== $website_url ) {
+			$speaker['worksFor']['url'] = $website_url;
+		}
+	} elseif ( '' !== $website_url ) {
+		$speaker['url'] = $website_url;
+	}
+
+	$node = array(
+		'@type'               => 'Quotation',
+		'@id'                 => mrn_schema_bridge_build_schema_id( $context_url, 'schema-testimonial-' . absint( $post->ID ) ),
+		/* translators: %s: testimonial speaker name. */
+		'name'                => sprintf( __( 'Testimonial from %s', 'mrn-schema-bridge' ), $name ),
+		'text'                => $text,
+		'spokenByCharacter'   => $speaker,
+		'about'               => mrn_schema_bridge_get_default_organization_reference(),
+		'isPartOf'            => mrn_schema_bridge_get_webpage_reference( $context_url ),
+		'mainEntityOfPage'    => mrn_schema_bridge_get_webpage_reference( $context_url ),
+	);
+
+	return (array) apply_filters( 'mrn_schema_bridge_testimonial_schema_node', $node, $post, $data, $context_url );
+}
+
+/**
+ * Resolve the public page that currently contains a rendered testimonial.
+ *
+ * @param WP_Post $testimonial Testimonial post.
+ * @return string
+ */
+function mrn_schema_bridge_get_testimonial_context_url( $testimonial ) {
+	$queried_object = get_queried_object();
+
+	if ( $queried_object instanceof WP_Post ) {
+		$url = get_permalink( $queried_object );
+		if ( is_string( $url ) && '' !== $url ) {
+			return esc_url_raw( $url );
+		}
+	}
+
+	if ( function_exists( 'is_post_type_archive' ) && is_post_type_archive( 'testimonial' ) ) {
+		$url = get_post_type_archive_link( 'testimonial' );
+		if ( is_string( $url ) && '' !== $url ) {
+			return esc_url_raw( $url );
+		}
+	}
+
+	$url = get_permalink( $testimonial );
+
+	return is_string( $url ) ? esc_url_raw( $url ) : '';
+}
+
+/**
+ * Add or read a rendered-testimonial registry entry for this request.
+ *
+ * @param array<string,mixed>|null $record Optional record to register.
+ * @return array<int,array<string,mixed>>
+ */
+function mrn_schema_bridge_rendered_testimonial_registry( $record = null ) {
+	static $records = array();
+
+	if ( is_array( $record ) && ! empty( $record['node']['@id'] ) ) {
+		$records[ (string) $record['node']['@id'] ] = $record;
+	}
+
+	return array_values( $records );
+}
+
+/**
+ * Register a testimonial after the base theme visibly renders its quote.
+ *
+ * @param WP_Post|mixed      $post Testimonial post.
+ * @param array<string,mixed> $data Visible testimonial data.
+ * @return void
+ */
+function mrn_schema_bridge_register_rendered_testimonial( $post, $data ) {
+	if ( ! mrn_schema_bridge_enabled() || ! mrn_schema_bridge_supplemental_schema_enabled() || ! $post instanceof WP_Post ) {
+		return;
+	}
+
+	$context_post = get_queried_object();
+
+	if ( $context_post instanceof WP_Post && 'none' === mrn_schema_bridge_get_post_schema_mode( $context_post ) ) {
+		return;
+	}
+
+	$context_url = mrn_schema_bridge_get_testimonial_context_url( $post );
+	$node        = mrn_schema_bridge_build_testimonial_schema_node( $post, $data, $context_url );
+
+	if ( empty( $node ) ) {
+		return;
+	}
+
+	mrn_schema_bridge_rendered_testimonial_registry(
+		array(
+			'node' => $node,
+		)
+	);
+}
+add_action( 'mrn_base_stack_testimonial_rendered', 'mrn_schema_bridge_register_rendered_testimonial', 10, 2 );
+
+/**
+ * Print one deduplicated graph for testimonials rendered in the page body.
+ *
+ * This runs in the footer because dynamic builder queries are not known when
+ * the provider graph is assembled in wp_head.
+ *
+ * @return void
+ */
+function mrn_schema_bridge_print_rendered_testimonial_schema() {
+	$records = mrn_schema_bridge_rendered_testimonial_registry();
+	$nodes   = array();
+
+	foreach ( $records as $record ) {
+		if ( isset( $record['node'] ) && is_array( $record['node'] ) ) {
+			$nodes[] = $record['node'];
+		}
+	}
+
+	$nodes = apply_filters( 'mrn_schema_bridge_rendered_testimonial_schema_nodes', $nodes );
+
+	if ( ! is_array( $nodes ) || empty( $nodes ) ) {
+		return;
+	}
+
+	$schema = array(
+		'@context' => 'https://schema.org',
+		'@graph'   => array_values( array_filter( $nodes, 'is_array' ) ),
+	);
+
+	echo '<script type="application/ld+json" id="mrn-schema-bridge-testimonials">' . wp_json_encode( $schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+}
+add_action( 'wp_footer', 'mrn_schema_bridge_print_rendered_testimonial_schema', 20 );
 
 /**
  * Build ContactPage schema for a configured contact page.
@@ -1012,7 +1725,7 @@ function mrn_schema_bridge_build_contact_page_schema_node( $post ) {
 		'url'              => esc_url_raw( $url ),
 		'publisher'        => $organization_reference,
 		'mainEntity'       => mrn_schema_bridge_get_contact_page_main_entity(),
-		'mainEntityOfPage' => esc_url_raw( $url ),
+		'mainEntityOfPage' => mrn_schema_bridge_get_webpage_reference( $url ),
 	);
 
 	if ( '' !== $description ) {
@@ -1044,7 +1757,17 @@ function mrn_schema_bridge_get_supplemental_schema_nodes() {
 		return (array) apply_filters( 'mrn_schema_bridge_supplemental_schema_nodes', $nodes, null );
 	}
 
-	if ( 'page' === $post->post_type && in_array( absint( $post->ID ), mrn_schema_bridge_get_service_page_ids(), true ) ) {
+	if ( 'none' === mrn_schema_bridge_get_post_schema_mode( $post ) ) {
+		return array();
+	}
+
+	if (
+		'page' === $post->post_type
+		&& (
+			mrn_schema_bridge_post_has_intent( $post, 'service' )
+			|| in_array( absint( $post->ID ), mrn_schema_bridge_get_service_page_ids(), true )
+		)
+	) {
 		$service_node = mrn_schema_bridge_build_service_schema_node( $post );
 
 		if ( ! empty( $service_node ) ) {
@@ -1054,7 +1777,10 @@ function mrn_schema_bridge_get_supplemental_schema_nodes() {
 
 	if (
 		'page' === $post->post_type
-		&& in_array( absint( $post->ID ), mrn_schema_bridge_get_contact_page_ids(), true )
+		&& (
+			mrn_schema_bridge_post_has_intent( $post, 'contact' )
+			|| in_array( absint( $post->ID ), mrn_schema_bridge_get_contact_page_ids(), true )
+		)
 		&& ! mrn_schema_bridge_provider_contact_page_schema_detected()
 	) {
 		$contact_page_node = mrn_schema_bridge_build_contact_page_schema_node( $post );
@@ -1072,6 +1798,22 @@ function mrn_schema_bridge_get_supplemental_schema_nodes() {
 		}
 	}
 
+	if ( 'team_member' === $post->post_type || mrn_schema_bridge_post_has_intent( $post, 'profile' ) ) {
+		$profile_node = mrn_schema_bridge_build_profile_page_schema_node( $post );
+
+		if ( ! empty( $profile_node ) ) {
+			$nodes[] = $profile_node;
+		}
+	}
+
+	if ( 'gallery' === $post->post_type ) {
+		$gallery_node = mrn_schema_bridge_build_gallery_schema_node( $post );
+
+		if ( ! empty( $gallery_node ) ) {
+			$nodes[] = $gallery_node;
+		}
+	}
+
 	$nodes = apply_filters( 'mrn_schema_bridge_supplemental_schema_nodes', $nodes, $post );
 
 	return is_array( $nodes ) ? array_values( array_filter( $nodes, 'is_array' ) ) : array();
@@ -1084,6 +1826,10 @@ function mrn_schema_bridge_get_supplemental_schema_nodes() {
  */
 function mrn_schema_bridge_print_supplemental_schema() {
 	if ( ! mrn_schema_bridge_enabled() || ! mrn_schema_bridge_supplemental_schema_enabled() ) {
+		return;
+	}
+
+	if ( ! empty( $GLOBALS['mrn_schema_bridge_supplemental_injected'] ) ) {
 		return;
 	}
 
@@ -1116,6 +1862,194 @@ function mrn_schema_bridge_supported_schema_provider_loaded() {
 }
 
 /**
+ * Get the canonical business logo attachment ID.
+ *
+ * @return int
+ */
+function mrn_schema_bridge_get_business_logo_id() {
+	$logo = function_exists( 'mrn_base_stack_get_business_logo' ) ? mrn_base_stack_get_business_logo( 'header' ) : 0;
+
+	if ( is_array( $logo ) && ! empty( $logo['ID'] ) ) {
+		return absint( $logo['ID'] );
+	}
+
+	return absint( $logo );
+}
+
+/**
+ * Overlay canonical stack identity values on SmartCrawl social options.
+ *
+ * @param mixed $options SmartCrawl option value.
+ * @return array<string,mixed>
+ */
+function mrn_schema_bridge_filter_smartcrawl_social_options( $options ) {
+	$options = is_array( $options ) ? $options : array();
+	$logo_id = mrn_schema_bridge_get_business_logo_id();
+	$logo_url = $logo_id ? wp_get_attachment_image_url( $logo_id, 'full' ) : '';
+
+	$options['disable-schema']    = false;
+	$options['schema_type']       = 'Organization';
+	$options['sitename']          = sanitize_text_field( (string) get_bloginfo( 'name' ) );
+	$options['organization_name'] = sanitize_text_field( (string) get_bloginfo( 'name' ) );
+
+	if ( is_string( $logo_url ) && '' !== $logo_url ) {
+		$options['organization_logo'] = esc_url_raw( $logo_url );
+	}
+
+	return $options;
+}
+add_filter( 'option_wds_social_options', 'mrn_schema_bridge_filter_smartcrawl_social_options', 20 );
+
+/**
+ * Overlay canonical stack identity values on SmartCrawl schema options.
+ *
+ * @param mixed $options SmartCrawl option value.
+ * @return array<string,mixed>
+ */
+function mrn_schema_bridge_filter_smartcrawl_schema_options( $options ) {
+	$options  = is_array( $options ) ? $options : array();
+	$identity = mrn_schema_bridge_get_canonical_organization_properties();
+	$logo_id  = mrn_schema_bridge_get_business_logo_id();
+
+	if ( $logo_id > 0 ) {
+		$options['schema_website_logo'] = $logo_id;
+	}
+
+	if ( ! empty( $identity['description'] ) ) {
+		$options['organization_description'] = sanitize_text_field( (string) $identity['description'] );
+	}
+
+	if ( ! empty( $identity['telephone'] ) ) {
+		$options['organization_phone_number'] = sanitize_text_field( (string) $identity['telephone'] );
+	}
+
+	return $options;
+}
+add_filter( 'option_wds_schema_options', 'mrn_schema_bridge_filter_smartcrawl_schema_options', 20 );
+
+/**
+ * Apply non-destructive SmartCrawl defaults once per bridge release.
+ *
+ * Existing values are preserved. MRN SEO Helper remains the owner of public
+ * post-type title and description templates.
+ *
+ * @return void
+ */
+function mrn_schema_bridge_apply_smartcrawl_defaults() {
+	if ( ! mrn_schema_bridge_supported_schema_provider_loaded() ) {
+		return;
+	}
+
+	if ( MRN_SCHEMA_BRIDGE_VERSION === get_option( MRN_SCHEMA_BRIDGE_SMARTCRAWL_DEFAULTS_OPTION, '' ) ) {
+		return;
+	}
+
+	$settings_defaults = array(
+		'sitemap'                    => true,
+		'onpage'                     => true,
+		'social'                     => true,
+		'instant_indexing'            => true,
+		'analysis-seo'               => true,
+		'analysis-readability'       => true,
+		'general-suppress-generator' => true,
+		'keep_settings_on_uninstall' => true,
+		'keep_data_on_uninstall'     => true,
+		'usage_tracking'             => false,
+	);
+	$schema_defaults = array(
+		'schema_enable_post_type_archives' => true,
+		'schema_enable_taxonomy_archives'  => true,
+		'schema_archive_main_entity_type'  => 'ItemList',
+		'schema_enable_test_button'        => true,
+		'schema_enable_comments'           => false,
+		'schema_enable_author_archives'    => false,
+		'schema_enable_search'             => false,
+		'schema_enable_date_archives'      => false,
+		'schema_enable_audio'              => false,
+		'schema_enable_video'              => false,
+	);
+	$social_defaults = array(
+		'disable-schema'      => false,
+		'schema_type'         => 'Organization',
+		'sitename'            => sanitize_text_field( (string) get_bloginfo( 'name' ) ),
+		'organization_name'   => sanitize_text_field( (string) get_bloginfo( 'name' ) ),
+		'twitter-card-enable' => true,
+		'og-enable'           => true,
+	);
+	$sitemap_defaults = array(
+		'override-native'                       => true,
+		'wds_sitemap-setup'                     => true,
+		'sitemap-stylesheet'                    => true,
+		'sitemap-disable-automatic-regeneration' => 'auto',
+		'sitemap-update-frequency'              => 'weekly',
+		'items-per-sitemap'                     => 2000,
+		'enable-news-sitemap'                   => false,
+	);
+
+	$option_defaults = array(
+		'wds_settings_options' => $settings_defaults,
+		'wds_schema_options'   => $schema_defaults,
+		'wds_social_options'   => $social_defaults,
+		'wds_sitemap_options'  => $sitemap_defaults,
+	);
+
+	foreach ( $option_defaults as $option_name => $defaults ) {
+		$current = get_option( $option_name, array() );
+		$current = is_array( $current ) ? $current : array();
+		update_option( $option_name, array_merge( $defaults, $current ), false );
+	}
+
+	update_option( MRN_SCHEMA_BRIDGE_SMARTCRAWL_DEFAULTS_OPTION, MRN_SCHEMA_BRIDGE_VERSION, false );
+}
+add_action( 'init', 'mrn_schema_bridge_apply_smartcrawl_defaults', 20 );
+
+/**
+ * Append one user-agent policy when another plugin has not already supplied it.
+ *
+ * @param string $output     Existing robots.txt output.
+ * @param string $user_agent User agent token.
+ * @param bool   $allow      Whether the crawler is allowed.
+ * @return string
+ */
+function mrn_schema_bridge_append_robots_policy( $output, $user_agent, $allow ) {
+	if ( false !== stripos( $output, 'User-agent: ' . $user_agent ) ) {
+		return $output;
+	}
+
+	$output .= "\nUser-agent: " . $user_agent . "\n";
+	$output .= $allow ? "Allow: /\n" : "Disallow: /\n";
+
+	return $output;
+}
+
+/**
+ * Add separate AI search/retrieval and model-training crawler policies.
+ *
+ * @param string $output Existing robots.txt output.
+ * @param bool   $public Whether WordPress considers the site public.
+ * @return string
+ */
+function mrn_schema_bridge_filter_robots_txt( $output, $public ) {
+	if ( ! $public || '1' !== (string) get_option( 'blog_public', '1' ) ) {
+		return $output;
+	}
+
+	$search_allowed   = (bool) mrn_schema_bridge_get_business_schema_setting( 'ai_search_crawlers', true );
+	$training_allowed = (bool) mrn_schema_bridge_get_business_schema_setting( 'ai_training_crawlers', false );
+
+	foreach ( array( 'OAI-SearchBot', 'Claude-SearchBot', 'Claude-User' ) as $user_agent ) {
+		$output = mrn_schema_bridge_append_robots_policy( $output, $user_agent, $search_allowed );
+	}
+
+	foreach ( array( 'GPTBot', 'ClaudeBot', 'Google-Extended' ) as $user_agent ) {
+		$output = mrn_schema_bridge_append_robots_policy( $output, $user_agent, $training_allowed );
+	}
+
+	return ltrim( $output );
+}
+add_filter( 'robots_txt', 'mrn_schema_bridge_filter_robots_txt', 20, 2 );
+
+/**
  * Check whether legacy theme business schema output should be suppressed.
  *
  * @return bool
@@ -1141,6 +2075,120 @@ function mrn_schema_bridge_suppress_legacy_business_schema() {
 	remove_action( 'wp_head', 'mrn_base_stack_print_business_schema', 40 );
 }
 add_action( 'wp', 'mrn_schema_bridge_suppress_legacy_business_schema', 1 );
+
+/**
+ * Register the Classic Editor schema controls for public content.
+ *
+ * @return void
+ */
+function mrn_schema_bridge_register_post_schema_meta_box() {
+	$post_types = get_post_types(
+		array(
+			'public'  => true,
+			'show_ui' => true,
+		),
+		'names'
+	);
+
+	foreach ( $post_types as $post_type ) {
+		if ( in_array( $post_type, array( 'attachment' ), true ) ) {
+			continue;
+		}
+
+		add_meta_box(
+			'mrn-schema-bridge-controls',
+			__( 'SEO & Schema', 'mrn-schema-bridge' ),
+			'mrn_schema_bridge_render_post_schema_meta_box',
+			$post_type,
+			'side',
+			'default'
+		);
+	}
+}
+add_action( 'add_meta_boxes', 'mrn_schema_bridge_register_post_schema_meta_box' );
+
+/**
+ * Render the post-level schema controls.
+ *
+ * @param WP_Post $post Current post.
+ * @return void
+ */
+function mrn_schema_bridge_render_post_schema_meta_box( $post ) {
+	$mode        = mrn_schema_bridge_get_post_schema_mode( $post );
+	$intent      = sanitize_key( (string) get_post_meta( $post->ID, MRN_SCHEMA_BRIDGE_PAGE_INTENT_META_KEY, true ) );
+	$description = mrn_schema_bridge_get_post_schema_description_override( $post );
+	$intent      = '' !== $intent ? $intent : 'auto';
+
+	wp_nonce_field( 'mrn_schema_bridge_save_post_schema', 'mrn_schema_bridge_schema_nonce' );
+	?>
+	<p>
+		<label for="mrn-schema-bridge-mode"><strong><?php esc_html_e( 'Schema mode', 'mrn-schema-bridge' ); ?></strong></label>
+		<select id="mrn-schema-bridge-mode" name="mrn_schema_bridge_schema_mode" class="widefat">
+			<option value="auto" <?php selected( $mode, 'auto' ); ?>><?php esc_html_e( 'Auto (recommended)', 'mrn-schema-bridge' ); ?></option>
+			<option value="override" <?php selected( $mode, 'override' ); ?>><?php esc_html_e( 'Use selected page intent', 'mrn-schema-bridge' ); ?></option>
+			<option value="none" <?php selected( $mode, 'none' ); ?>><?php esc_html_e( 'No supplemental schema', 'mrn-schema-bridge' ); ?></option>
+		</select>
+	</p>
+	<p>
+		<label for="mrn-schema-bridge-intent"><strong><?php esc_html_e( 'Page intent', 'mrn-schema-bridge' ); ?></strong></label>
+		<select id="mrn-schema-bridge-intent" name="mrn_schema_bridge_page_intent" class="widefat">
+			<?php
+			$intents = array(
+				'auto'       => __( 'Standard page', 'mrn-schema-bridge' ),
+				'about'      => __( 'About page', 'mrn-schema-bridge' ),
+				'collection' => __( 'Collection page', 'mrn-schema-bridge' ),
+				'contact'    => __( 'Contact page', 'mrn-schema-bridge' ),
+				'profile'    => __( 'Profile page', 'mrn-schema-bridge' ),
+				'service'    => __( 'Service page', 'mrn-schema-bridge' ),
+			);
+			foreach ( $intents as $value => $label ) :
+				?>
+				<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $intent, $value ); ?>><?php echo esc_html( $label ); ?></option>
+			<?php endforeach; ?>
+		</select>
+		<small><?php esc_html_e( 'Used only when Schema mode selects the page intent.', 'mrn-schema-bridge' ); ?></small>
+	</p>
+	<p>
+		<label for="mrn-schema-bridge-description"><strong><?php esc_html_e( 'Schema description override', 'mrn-schema-bridge' ); ?></strong></label>
+		<textarea id="mrn-schema-bridge-description" name="mrn_schema_bridge_schema_description" class="widefat" rows="4"><?php echo esc_textarea( $description ); ?></textarea>
+		<small><?php esc_html_e( 'Leave blank to use the excerpt or visible page content.', 'mrn-schema-bridge' ); ?></small>
+	</p>
+	<?php
+}
+
+/**
+ * Save post-level schema controls.
+ *
+ * @param int $post_id Post ID.
+ * @return void
+ */
+function mrn_schema_bridge_save_post_schema_meta( $post_id ) {
+	if (
+		empty( $_POST['mrn_schema_bridge_schema_nonce'] )
+		|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['mrn_schema_bridge_schema_nonce'] ) ), 'mrn_schema_bridge_save_post_schema' )
+		|| ! current_user_can( 'edit_post', $post_id )
+		|| ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
+	) {
+		return;
+	}
+
+	$mode   = isset( $_POST['mrn_schema_bridge_schema_mode'] ) ? sanitize_key( wp_unslash( $_POST['mrn_schema_bridge_schema_mode'] ) ) : 'auto';
+	$intent = isset( $_POST['mrn_schema_bridge_page_intent'] ) ? sanitize_key( wp_unslash( $_POST['mrn_schema_bridge_page_intent'] ) ) : 'auto';
+	$description = isset( $_POST['mrn_schema_bridge_schema_description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['mrn_schema_bridge_schema_description'] ) ) : '';
+
+	$mode   = in_array( $mode, array( 'auto', 'override', 'none' ), true ) ? $mode : 'auto';
+	$intent = in_array( $intent, array( 'auto', 'about', 'collection', 'contact', 'profile', 'service' ), true ) ? $intent : 'auto';
+
+	update_post_meta( $post_id, MRN_SCHEMA_BRIDGE_SCHEMA_MODE_META_KEY, $mode );
+	update_post_meta( $post_id, MRN_SCHEMA_BRIDGE_PAGE_INTENT_META_KEY, $intent );
+
+	if ( '' === $description ) {
+		delete_post_meta( $post_id, MRN_SCHEMA_BRIDGE_POST_SCHEMA_DESCRIPTION_META_KEY );
+	} else {
+		update_post_meta( $post_id, MRN_SCHEMA_BRIDGE_POST_SCHEMA_DESCRIPTION_META_KEY, $description );
+	}
+}
+add_action( 'save_post', 'mrn_schema_bridge_save_post_schema_meta' );
 
 /**
  * Get the capability required to access schema health tools.
@@ -1572,9 +2620,18 @@ function mrn_schema_bridge_schema_health_extract_nodes( $value, &$nodes ) {
  * @return bool
  */
 function mrn_schema_bridge_schema_health_is_organization_node( $node ) {
-	return mrn_schema_bridge_item_has_type( $node, 'Organization' )
-		|| mrn_schema_bridge_item_has_type( $node, 'ProfessionalService' )
-		|| mrn_schema_bridge_item_has_type( $node, 'LocalBusiness' );
+	$organization_types = array(
+		'Organization',
+		'Corporation',
+		'EducationalOrganization',
+		'GovernmentOrganization',
+		'LocalBusiness',
+		'MedicalOrganization',
+		'NGO',
+		'ProfessionalService',
+	);
+
+	return ! empty( array_intersect( $organization_types, mrn_schema_bridge_get_item_types( $node ) ) );
 }
 
 /**
@@ -1646,6 +2703,24 @@ function mrn_schema_bridge_schema_health_scan_url( $url ) {
 		);
 	}
 
+	if ( preg_match( '#<meta\b(?=[^>]*name=["\'](?:robots|googlebot)["\'])(?=[^>]*content=["\'][^"\']*noindex)[^>]*>#i', $response['body'] ) ) {
+		mrn_schema_bridge_schema_health_add_warning(
+			$row,
+			'noindex',
+			__( 'The page includes a noindex directive.', 'mrn-schema-bridge' ),
+			__( 'Remove noindex or remove the URL from the public sitemap.', 'mrn-schema-bridge' )
+		);
+	}
+
+	if ( ! preg_match( '#<link\b(?=[^>]*rel=["\']canonical["\'])(?=[^>]*href=["\'][^"\']+["\'])[^>]*>#i', $response['body'] ) ) {
+		mrn_schema_bridge_schema_health_add_warning(
+			$row,
+			'missing_canonical',
+			__( 'No canonical link was detected.', 'mrn-schema-bridge' ),
+			__( 'Confirm SmartCrawl canonical output is enabled for this template.', 'mrn-schema-bridge' )
+		);
+	}
+
 	$blocks = mrn_schema_bridge_schema_health_extract_json_ld_blocks( $response['body'] );
 	$nodes  = array();
 
@@ -1678,6 +2753,8 @@ function mrn_schema_bridge_schema_health_scan_url( $url ) {
 
 	$organization_count       = 0;
 	$organization_image_count = 0;
+	$organization_ids         = array();
+	$duplicate_organization_ids = array();
 	$internal_author_count    = 0;
 	$types                    = array();
 
@@ -1693,6 +2770,16 @@ function mrn_schema_bridge_schema_health_scan_url( $url ) {
 		if ( mrn_schema_bridge_schema_health_is_organization_node( $node ) ) {
 			++$organization_count;
 
+			$organization_id = ! empty( $node['@id'] ) && is_scalar( $node['@id'] ) ? (string) $node['@id'] : '';
+
+			if ( '' !== $organization_id ) {
+				if ( in_array( $organization_id, $organization_ids, true ) ) {
+					$duplicate_organization_ids[] = $organization_id;
+				} else {
+					$organization_ids[] = $organization_id;
+				}
+			}
+
 			if ( mrn_schema_bridge_schema_health_node_has_image( $node ) ) {
 				++$organization_image_count;
 			}
@@ -1701,20 +2788,48 @@ function mrn_schema_bridge_schema_health_scan_url( $url ) {
 		if ( mrn_schema_bridge_is_author_person_node( $node ) ) {
 			++$internal_author_count;
 		}
+
+		$required_properties = array();
+
+		if ( mrn_schema_bridge_item_has_type( $node, 'Service' ) ) {
+			$required_properties = array( 'name', 'provider', 'mainEntityOfPage' );
+		} elseif ( mrn_schema_bridge_item_has_type( $node, 'Article' ) ) {
+			$required_properties = array( 'headline', 'author', 'datePublished', 'dateModified' );
+		} elseif ( mrn_schema_bridge_item_has_type( $node, 'ProfilePage' ) ) {
+			$required_properties = array( 'mainEntity' );
+		} elseif ( mrn_schema_bridge_item_has_type( $node, 'LocalBusiness' ) ) {
+			$required_properties = array( 'name', 'url', 'address', 'telephone' );
+		}
+
+		foreach ( $required_properties as $property ) {
+			if ( empty( $node[ $property ] ) ) {
+				mrn_schema_bridge_schema_health_add_warning(
+					$row,
+					'missing_' . sanitize_key( $property ),
+					sprintf(
+						/* translators: 1: schema type, 2: property name. */
+						__( '%1$s schema is missing %2$s.', 'mrn-schema-bridge' ),
+						implode( '/', mrn_schema_bridge_get_item_types( $node ) ),
+						$property
+					),
+					__( 'Complete the visible source content or its schema mapping.', 'mrn-schema-bridge' )
+				);
+			}
+		}
 	}
 
 	$row['schema_types'] = array_values( array_unique( array_filter( $types ) ) );
 
-	if ( $organization_count > 1 ) {
+	if ( ! empty( $duplicate_organization_ids ) ) {
 		mrn_schema_bridge_schema_health_add_warning(
 			$row,
 			'duplicate_organization',
 			sprintf(
-				/* translators: %d: number of organization-like schema nodes. */
-				__( 'Detected %d organization-like schema nodes.', 'mrn-schema-bridge' ),
-				$organization_count
+				/* translators: %d: number of duplicate organization identifiers. */
+				__( 'Detected %d repeated organization identifier(s).', 'mrn-schema-bridge' ),
+				count( array_unique( $duplicate_organization_ids ) )
 			),
-			__( 'Choose one source of Organization schema or add a site-specific bridge rule to suppress duplicates.', 'mrn-schema-bridge' )
+			__( 'Choose one owner for each organization entity or merge nodes with the same @id.', 'mrn-schema-bridge' )
 		);
 	}
 

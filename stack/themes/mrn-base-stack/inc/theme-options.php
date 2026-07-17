@@ -2313,6 +2313,129 @@ function mrn_base_stack_register_theme_options_field_groups() {
 			'title'                 => __( 'Business Information', 'mrn-base-stack' ),
 			'fields'                => array(
 				array(
+					'key'       => 'field_mrn_business_schema_identity_tab',
+					'label'     => __( 'Identity & Schema', 'mrn-base-stack' ),
+					'name'      => '',
+					'type'      => 'tab',
+					'placement' => 'top',
+					'endpoint'  => 0,
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_organization_type',
+					'label'         => __( 'Organization Type', 'mrn-base-stack' ),
+					'name'          => 'schema_organization_type',
+					'type'          => 'select',
+					'instructions'  => __( 'Choose the most specific public type that accurately describes the organization.', 'mrn-base-stack' ),
+					'choices'       => array(
+						'Organization'             => __( 'Organization', 'mrn-base-stack' ),
+						'Corporation'              => __( 'Corporation', 'mrn-base-stack' ),
+						'EducationalOrganization'  => __( 'Educational Organization', 'mrn-base-stack' ),
+						'GovernmentOrganization'   => __( 'Government Organization', 'mrn-base-stack' ),
+						'LocalBusiness'            => __( 'Local Business', 'mrn-base-stack' ),
+						'MedicalOrganization'      => __( 'Medical Organization', 'mrn-base-stack' ),
+						'NGO'                      => __( 'Nonprofit / NGO', 'mrn-base-stack' ),
+						'ProfessionalService'      => __( 'Professional Service', 'mrn-base-stack' ),
+					),
+					'default_value' => 'Organization',
+					'allow_null'    => 0,
+					'ui'            => 1,
+					'wrapper'       => array( 'width' => '50' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_author_policy',
+					'label'         => __( 'Article Author Policy', 'mrn-base-stack' ),
+					'name'          => 'schema_author_policy',
+					'type'          => 'select',
+					'instructions'  => __( 'Organization-authored sites hide internal WordPress users. Public authors keeps real author entities. Allowlist uses developer filters.', 'mrn-base-stack' ),
+					'choices'       => array(
+						'organization' => __( 'Organization authored', 'mrn-base-stack' ),
+						'public'       => __( 'Public authors', 'mrn-base-stack' ),
+						'allowlist'    => __( 'Developer allowlist', 'mrn-base-stack' ),
+					),
+					'default_value' => 'organization',
+					'allow_null'    => 0,
+					'ui'            => 1,
+					'wrapper'       => array( 'width' => '50' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_legal_name',
+					'label'         => __( 'Legal Name', 'mrn-base-stack' ),
+					'name'          => 'schema_legal_name',
+					'type'          => 'text',
+					'instructions'  => __( 'Use only when the registered legal name differs from the public site name.', 'mrn-base-stack' ),
+					'default_value' => '',
+					'wrapper'       => array( 'width' => '50' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_alternate_name',
+					'label'         => __( 'Alternate Name', 'mrn-base-stack' ),
+					'name'          => 'schema_alternate_name',
+					'type'          => 'text',
+					'instructions'  => __( 'Public abbreviation, former name, or commonly used brand variation.', 'mrn-base-stack' ),
+					'default_value' => '',
+					'wrapper'       => array( 'width' => '50' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_email',
+					'label'         => __( 'Public Email', 'mrn-base-stack' ),
+					'name'          => 'schema_email',
+					'type'          => 'email',
+					'instructions'  => __( 'Published in organization schema; leave blank if the address should not be public.', 'mrn-base-stack' ),
+					'default_value' => '',
+					'wrapper'       => array( 'width' => '50' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_area_served',
+					'label'         => __( 'Primary Area Served', 'mrn-base-stack' ),
+					'name'          => 'schema_area_served',
+					'type'          => 'text',
+					'instructions'  => __( 'Plain-language primary service area, such as North Carolina or United States.', 'mrn-base-stack' ),
+					'default_value' => '',
+					'wrapper'       => array( 'width' => '50' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_latitude',
+					'label'         => __( 'Latitude', 'mrn-base-stack' ),
+					'name'          => 'schema_latitude',
+					'type'          => 'number',
+					'step'          => 'any',
+					'default_value' => '',
+					'wrapper'       => array( 'width' => '25' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_longitude',
+					'label'         => __( 'Longitude', 'mrn-base-stack' ),
+					'name'          => 'schema_longitude',
+					'type'          => 'number',
+					'step'          => 'any',
+					'default_value' => '',
+					'wrapper'       => array( 'width' => '25' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_ai_search_crawlers',
+					'label'         => __( 'AI Search Crawlers', 'mrn-base-stack' ),
+					'name'          => 'schema_ai_search_crawlers',
+					'type'          => 'true_false',
+					'instructions'  => __( 'Allow supported AI search and user-retrieval crawlers in robots.txt.', 'mrn-base-stack' ),
+					'default_value' => 1,
+					'ui'            => 1,
+					'ui_on_text'    => __( 'Allowed', 'mrn-base-stack' ),
+					'ui_off_text'   => __( 'Blocked', 'mrn-base-stack' ),
+					'wrapper'       => array( 'width' => '25' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_ai_training_crawlers',
+					'label'         => __( 'AI Training Crawlers', 'mrn-base-stack' ),
+					'name'          => 'schema_ai_training_crawlers',
+					'type'          => 'true_false',
+					'instructions'  => __( 'Allow model-training crawlers. Search visibility is controlled separately.', 'mrn-base-stack' ),
+					'default_value' => 0,
+					'ui'            => 1,
+					'ui_on_text'    => __( 'Allowed', 'mrn-base-stack' ),
+					'ui_off_text'   => __( 'Blocked', 'mrn-base-stack' ),
+					'wrapper'       => array( 'width' => '25' ),
+				),
+				array(
 					'key'           => 'field_mrn_business_profile',
 					'label'         => __( 'Business Profile', 'mrn-base-stack' ),
 					'name'          => 'business_profile',
@@ -2955,9 +3078,12 @@ function mrn_base_stack_get_business_schema_data() {
 	$same_as = array_values( array_filter( array_unique( $same_as ) ) );
 	$address = isset( $business_information['address'] ) && is_array( $business_information['address'] ) ? $business_information['address'] : array();
 
-	$schema = array(
+	$organization_type = function_exists( 'get_field' ) ? sanitize_text_field( (string) get_field( 'schema_organization_type', 'option' ) ) : '';
+	$allowed_types     = array( 'Organization', 'Corporation', 'EducationalOrganization', 'GovernmentOrganization', 'LocalBusiness', 'MedicalOrganization', 'NGO', 'ProfessionalService' );
+	$organization_type = in_array( $organization_type, $allowed_types, true ) ? $organization_type : 'Organization';
+	$schema            = array(
 		'@context' => 'https://schema.org',
-		'@type'    => 'Organization',
+		'@type'    => $organization_type,
 		'@id'      => trailingslashit( home_url( '/' ) ) . '#organization',
 		'name'     => get_bloginfo( 'name' ),
 		'url'      => home_url( '/' ),
@@ -2965,6 +3091,38 @@ function mrn_base_stack_get_business_schema_data() {
 
 	if ( ! empty( $business_information['business_profile'] ) ) {
 		$schema['description'] = wp_strip_all_tags( (string) $business_information['business_profile'] );
+	}
+
+	if ( function_exists( 'get_field' ) ) {
+		$schema_scalar_fields = array(
+			'schema_legal_name'     => 'legalName',
+			'schema_alternate_name' => 'alternateName',
+			'schema_email'          => 'email',
+			'schema_area_served'    => 'areaServed',
+		);
+
+		foreach ( $schema_scalar_fields as $field_name => $property_name ) {
+			$value = sanitize_text_field( (string) get_field( $field_name, 'option' ) );
+
+			if ( '' !== $value ) {
+				$schema[ $property_name ] = $value;
+			}
+		}
+
+		if ( ! empty( $schema['email'] ) ) {
+			$schema['email'] = sanitize_email( (string) $schema['email'] );
+		}
+
+		$latitude  = get_field( 'schema_latitude', 'option' );
+		$longitude = get_field( 'schema_longitude', 'option' );
+
+		if ( is_numeric( $latitude ) && is_numeric( $longitude ) ) {
+			$schema['geo'] = array(
+				'@type'     => 'GeoCoordinates',
+				'latitude'  => (float) $latitude,
+				'longitude' => (float) $longitude,
+			);
+		}
 	}
 
 	$business_logo_url = function_exists( 'mrn_base_stack_get_attachment_image_url' ) ? mrn_base_stack_get_attachment_image_url( $business_logo, 'mrn-logo' ) : '';

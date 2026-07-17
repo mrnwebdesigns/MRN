@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.07.16-team-members-locations-cpts`
-- Release date: `2026-07-16`
+- Stack release: `2026.07.17-testimonial-schema`
+- Release date: `2026-07-17`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.81`
+  - `mrn-base-stack` `1.2.83`
   - `mrn-base-stack-child` `1.0.1`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.5`
@@ -15,7 +15,7 @@
   - `mrn-shared-assets` `0.1.3`
   - `mrn-editor-lockdown` `1.0.25`
   - `mrn-reusable-block-library` `0.1.26`
-  - `mrn-schema-bridge` `0.3.3`
+  - `mrn-schema-bridge` `0.4.1`
   - `mrn-site-colors` / `Site Styles` `0.1.15`
 - Standard plugins:
   - `mrn-announcements` `1.5.0`

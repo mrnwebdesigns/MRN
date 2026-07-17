@@ -2786,6 +2786,9 @@ function mrn_base_stack_render_content_list_testimonial_item( WP_Post $item_post
 				</div>
 			<?php endif; ?>
 		</article>
+		<?php if ( $show_quote ) : ?>
+			<?php do_action( 'mrn_base_stack_testimonial_rendered', $item_post, $testimonial ); ?>
+		<?php endif; ?>
 	</li>
 	<?php
 

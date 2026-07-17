@@ -1,11 +1,11 @@
 # Stack Baseline - MRN Schema Bridge
 
 ## Baseline Snapshot
-- Date pinned: 2026-06-30
+- Date pinned: 2026-07-17
 - Plugin source path: `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-schema-bridge`
 - Intended integration target: MRN shared MU plugin loader and normal MRN brochure/client sites
 - Current release model: shared MU plugin release unit
-- Current plugin version: `0.2.1`
+- Current plugin version: `0.4.1`
 
 ## Why This File Exists
 This directory follows MRN QA Engine discovery standards so the schema plugin can be checked independently from unrelated stack work.

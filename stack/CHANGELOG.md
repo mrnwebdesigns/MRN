@@ -1,5 +1,21 @@
 # Stack Changelog
 
+## 2026.07.17-testimonial-schema
+- Expanded `mrn-base-stack` to `1.2.83` and `mrn-schema-bridge` to `0.4.1`.
+- Added render-aware testimonial schema: only testimonial quotes visibly output by the base theme are registered, deduplicated, and emitted as one footer `Quotation` graph.
+- Mapped visible testimonial text and attribution to `Quotation`, `Person`, and optional employer `Organization` data without adding `Review`, `Rating`, or `AggregateRating` markup.
+
+## 2026.07.17-schema-discovery-baseline
+- Expanded `mrn-base-stack` to `1.2.82` and `mrn-schema-bridge` to `0.4.0`.
+- Made Business Information the canonical organization identity source and added an Identity & Schema tab for organization type, names, public email, service area, coordinates, author policy, and separate AI search/training crawler policies.
+- Added public-content SEO & Schema controls for automatic output, semantic page-intent overrides, supplemental-schema suppression, and schema description overrides.
+- Merged bridge-owned Service, ContactPage, case-study, ProfilePage, and ImageGallery nodes into SmartCrawl's graph with entity/type deduplication and stable WebPage references.
+- Fixed base-stack `case_study` schema coverage and added field-aware case-study and gallery descriptions.
+- Added non-destructive SmartCrawl defaults for schema, social identity, sitemap ownership, instant indexing, analysis, and conservative archive/media behavior while retaining MRN SEO Helper ownership of title/meta templates.
+- Added virtual robots.txt policy for AI search/retrieval versus training crawlers; no `llms.txt` output was added.
+- Expanded Schema Health with canonical/noindex checks, repeated-entity-ID detection, and required property checks for Service, Article, ProfilePage, and LocalBusiness nodes.
+- Added focused schema bridge contract regression coverage.
+
 ## 2026.07.16-team-members-locations-cpts
 - Expanded `mrn-base-stack` to `1.2.81`.
 - Registered Team Members (`team_member`) as a public, REST-enabled custom post type with a `/team/` archive route.

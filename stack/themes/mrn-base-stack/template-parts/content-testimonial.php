@@ -195,3 +195,6 @@ $mrn_article_classes = array(
 		</div>
 	<?php endif; ?>
 </article>
+<?php if ( ( $mrn_is_singular && '' !== trim( wp_strip_all_tags( $mrn_content ) ) ) || ( ! $mrn_is_singular && '' !== $mrn_archive_text ) ) : ?>
+	<?php do_action( 'mrn_base_stack_testimonial_rendered', get_post( $mrn_post_id ), $mrn_testimonial ); ?>
+<?php endif; ?>

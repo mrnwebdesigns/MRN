@@ -2,10 +2,10 @@
   "project": "mrn-schema-bridge",
   "release_unit": "standalone-plugin",
   "baseline": {
-    "pinned_at": "2026-06-30",
+    "pinned_at": "2026-07-17",
     "repo_path": "/Users/khofmeyer/Development/MRN/mu-plugins/mrn-schema-bridge",
     "integration_target": "mrn-shared-mu-plugin-loader",
     "integration_mode": "shared-mu-plugin",
-    "plugin_version": "0.3.1"
+    "plugin_version": "0.4.1"
   }
 }

@@ -63,6 +63,8 @@ This matters because theme/MU deploy and standard-plugin deploy are different fl
 
 Run these from the repo root unless noted otherwise.
 
+For schema-affecting releases, first review `SCHEMA_DISCOVERY_BASELINE.md` and run its schema bridge contract test. After launch, require a production sitemap scan from **Tools > Schema Health**.
+
 1. Theme QA
 
 ```bash
