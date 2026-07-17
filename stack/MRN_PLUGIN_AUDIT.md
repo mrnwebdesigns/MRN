@@ -43,7 +43,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `background-video-popout-disabler` | MRN Background Video Pop-Out Disabler | 1.0.1 | <https://github.com/mrnwebdesigns/background-video-popout-disabler> | No stack requirement. |
 | `mrn-acf-character-count` | MRN ACF Character Count | 1.1.6 | <https://github.com/mrnwebdesigns/mrn-acf-character-count> | No stack requirement; ACF field context required. |
 | `mrn-ai-assist` | MRN AI Assist | 2.0.12 | <https://github.com/mrnwebdesigns/mrn-ai-assist> | No hard stack requirement; MRN SEO Helper/SmartCrawl integrations are optional feature paths. |
-| `mrn-announcements` | MRN Announcements | 1.5.0 | <https://github.com/mrnwebdesigns/mrn-announcements> | Stack-aware optional USB integration; admin/data-only CPT with no public URL or SEO surface. |
+| `mrn-announcements` | MRN Announcements | 1.6.0 | <https://github.com/mrnwebdesigns/mrn-announcements> | Standalone-capable; optional stack Business Information and USB integrations; admin/data-only CPT with no public URL or SEO surface. |
 | `mrn-comment-management` | MRN Comment Management | 1.1.7 | <https://github.com/mrnwebdesigns/mrn-comment-management> | No stack requirement. |
 | `mrn-config-helper` | MRN Config Helper | 0.1.43 | <https://github.com/mrnwebdesigns/mrn-config-helper> | Stack-aware admin utility; can run standalone, but stack sites use more of its integrations. |
 | `mrn-contextual-content-editor` | MRN Contextual Content Editor | 0.1.0 | <https://github.com/mrnwebdesigns/MRN> | No hard stack requirement; ACF matching is optional. |

@@ -52,7 +52,9 @@ zip_directory() {
 			-x "$slug/playwright-report/*" \
 			-x "$slug/playwright-report/**/*" \
 			-x "$slug/test-results/*" \
-			-x "$slug/test-results/**/*"
+			-x "$slug/test-results/**/*" \
+			-x "$slug/zip/*" \
+			-x "$slug/zip/**/*"
 	)
 
 	echo "Built $zip_path"

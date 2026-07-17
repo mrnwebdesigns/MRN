@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.07.17-business-information-announcements
+- Expanded `mrn-announcements` to `1.6.0` while preserving standalone manual scheduling.
+- Added optional Business Information rules for outside-hours, closed-holiday, and modified-holiday announcements.
+- Added three published-but-Off presets with render-time hours, holiday, and next-opening message tokens; no announcement is automatically enabled.
+
 ## 2026.07.17-testimonial-schema
 - Expanded `mrn-base-stack` to `1.2.83` and `mrn-schema-bridge` to `0.4.1`.
 - Added render-aware testimonial schema: only testimonial quotes visibly output by the base theme are registered, deduplicated, and emitted as one footer `Quotation` graph.

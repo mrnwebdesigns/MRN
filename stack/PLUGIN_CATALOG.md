@@ -167,17 +167,19 @@ stack-dependency notes, use [`MRN_PLUGIN_AUDIT.md`](./MRN_PLUGIN_AUDIT.md).
 ### `mrn-announcements`
 
 - Name: `MRN Announcements`
-- Version: `1.5.0`
+- Version: `1.6.0`
 - Purpose:
   - manages scheduled, targeted announcement bars and optional modals
   - keeps announcement records admin/data-only with no standalone public URLs
 - Admin/UI:
   - custom post type editor for announcement content, display rules, scheduling, modal settings, and style controls
+  - creates disabled-by-default Business Information presets when the compatible stack contract is available
 - Front-end / theming:
   - renders active announcement bars only when eligible for the current request
   - uses MRN Universal Sticky Bar compatibility when running in the stack
 - Developer-facing hooks:
-  - no custom public hook inventory captured yet
+  - `mrn_announcements_has_business_information_provider`
+  - `mrn_announcements_business_information`
 - Notes:
   - excluded from public queries, search, nav menus, sitemaps, SEO Helper, and SmartCrawl page-level SEO surfaces
 
