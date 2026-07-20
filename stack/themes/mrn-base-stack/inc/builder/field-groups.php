@@ -144,7 +144,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_content_lists' => array(
 								'key'        => 'layout_mrn_content_lists',
 								'name'       => 'content_lists',
-								'label'      => 'Content - query|pagination|count',
+								'label'      => 'Reference Content - query|pagination|count',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(

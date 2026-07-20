@@ -717,7 +717,32 @@ if ( ! function_exists( 'mrn_base_stack_render_singular_breadcrumbs' ) ) :
 			return;
 		}
 
-		echo '<div class="mrn-singular-breadcrumbs-slot" data-mrn-layout-slot="breadcrumbs">' . $markup . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo '<div class="mrn-singular-breadcrumbs-slot mrn-layout-container mrn-layout-container--wide" data-mrn-layout-slot="breadcrumbs">' . $markup . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_render_singular_accessible_title' ) ) :
+	/**
+	 * Render a non-visual H1 when a singular entry has no hero H1.
+	 *
+	 * @param int $post_id Current post ID.
+	 */
+	function mrn_base_stack_render_singular_accessible_title( $post_id = 0 ) {
+		if ( ! is_singular() ) {
+			return;
+		}
+
+		$post_id = $post_id ? (int) $post_id : get_the_ID();
+		$title   = $post_id ? trim( (string) get_the_title( $post_id ) ) : '';
+
+		if ( '' === $title ) {
+			return;
+		}
+
+		printf(
+			'<h1 class="screen-reader-text mrn-singular-title-fallback">%s</h1>',
+			esc_html( $title )
+		);
 	}
 endif;
 

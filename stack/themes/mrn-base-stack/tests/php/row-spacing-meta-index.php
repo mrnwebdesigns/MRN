@@ -89,10 +89,24 @@ function get_post_meta( $post_id, $key, $single = false ) {
 		: '';
 }
 
-function add_action() {}
-function current_user_can() { return true; }
-function wp_is_post_revision() { return false; }
-function wp_is_post_autosave() { return false; }
+function add_action( $hook_name, $callback, $priority = 10, $accepted_args = 1 ) {
+	unset( $hook_name, $callback, $priority, $accepted_args );
+}
+function current_user_can( $capability, ...$args ) {
+	unset( $capability, $args );
+
+	return true;
+}
+function wp_is_post_revision( $post ) {
+	unset( $post );
+
+	return false;
+}
+function wp_is_post_autosave( $post ) {
+	unset( $post );
+
+	return false;
+}
 function wp_unslash( $value ) { return $value; }
 function sanitize_text_field( $value ) { return trim( strip_tags( (string) $value ) ); }
 function update_post_meta( $post_id, $key, $value ) {

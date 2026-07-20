@@ -1320,6 +1320,112 @@ function mrn_base_stack_get_default_theme_header_footer_layout_grid( $section ) 
 }
 
 /**
+ * Check whether a Header/Footer grid placement overlaps occupied cells.
+ *
+ * @param array<string, bool> $occupied    Occupied cell map keyed by row:column.
+ * @param int                 $row         Candidate row.
+ * @param int                 $column      Candidate column.
+ * @param int                 $column_span Candidate column span.
+ * @return bool
+ */
+function mrn_base_stack_theme_header_footer_layout_position_is_open( array $occupied, $row, $column, $column_span ) {
+	$row         = max( 1, absint( $row ) );
+	$column      = max( 1, absint( $column ) );
+	$column_span = max( 1, absint( $column_span ) );
+
+	for ( $cell_column = $column; $cell_column < $column + $column_span; $cell_column++ ) {
+		if ( ! empty( $occupied[ $row . ':' . $cell_column ] ) ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * Mark a Header/Footer grid placement as occupied.
+ *
+ * @param array<string, bool> $occupied    Occupied cell map keyed by row:column.
+ * @param int                 $row         Row.
+ * @param int                 $column      Column.
+ * @param int                 $column_span Column span.
+ * @return array<string, bool>
+ */
+function mrn_base_stack_theme_header_footer_layout_mark_occupied( array $occupied, $row, $column, $column_span ) {
+	$row         = max( 1, absint( $row ) );
+	$column      = max( 1, absint( $column ) );
+	$column_span = max( 1, absint( $column_span ) );
+
+	for ( $cell_column = $column; $cell_column < $column + $column_span; $cell_column++ ) {
+		$occupied[ $row . ':' . $cell_column ] = true;
+	}
+
+	return $occupied;
+}
+
+/**
+ * Find a non-overlapping Header/Footer grid position.
+ *
+ * Collisions are resolved by preserving the selected column first and moving
+ * the colliding item downward. If that column is full, the resolver falls
+ * back to the first available position in reading order.
+ *
+ * @param array<string, bool> $occupied         Occupied cell map keyed by row:column.
+ * @param int                 $preferred_row    Preferred row.
+ * @param int                 $preferred_column Preferred column.
+ * @param int                 $column_span      Column span.
+ * @param int                 $rows             Current row count.
+ * @param int                 $columns          Column count.
+ * @return array{row:int,column:int,rows:int}
+ */
+function mrn_base_stack_find_theme_header_footer_layout_open_position( array $occupied, $preferred_row, $preferred_column, $column_span, $rows, $columns ) {
+	$rows             = min( 12, max( 1, absint( $rows ) ) );
+	$columns          = min( 6, max( 1, absint( $columns ) ) );
+	$column_span      = min( $columns, max( 1, absint( $column_span ) ) );
+	$preferred_row    = min( $rows, max( 1, absint( $preferred_row ) ) );
+	$preferred_column = min( max( 1, $columns - $column_span + 1 ), max( 1, absint( $preferred_column ) ) );
+
+	for ( $row = $preferred_row; $row <= $rows; $row++ ) {
+		if ( mrn_base_stack_theme_header_footer_layout_position_is_open( $occupied, $row, $preferred_column, $column_span ) ) {
+			return array(
+				'row'    => $row,
+				'column' => $preferred_column,
+				'rows'   => $rows,
+			);
+		}
+	}
+
+	while ( $rows < 12 ) {
+		++$rows;
+		if ( mrn_base_stack_theme_header_footer_layout_position_is_open( $occupied, $rows, $preferred_column, $column_span ) ) {
+			return array(
+				'row'    => $rows,
+				'column' => $preferred_column,
+				'rows'   => $rows,
+			);
+		}
+	}
+
+	for ( $row = 1; $row <= $rows; $row++ ) {
+		for ( $column = 1; $column <= $columns - $column_span + 1; $column++ ) {
+			if ( mrn_base_stack_theme_header_footer_layout_position_is_open( $occupied, $row, $column, $column_span ) ) {
+				return array(
+					'row'    => $row,
+					'column' => $column,
+					'rows'   => $rows,
+				);
+			}
+		}
+	}
+
+	return array(
+		'row'    => $preferred_row,
+		'column' => $preferred_column,
+		'rows'   => $rows,
+	);
+}
+
+/**
  * Normalize a Header/Footer grid layout contract.
  *
  * @param mixed                     $layout  Raw layout data.
@@ -1357,6 +1463,7 @@ function mrn_base_stack_normalize_theme_header_footer_layout_grid( $layout, $sec
 	$rows    = min( 12, max( 1, $rows ) );
 
 	$normalized_items = array();
+	$occupied         = array();
 
 	foreach ( $items as $item_key => $item_label ) {
 		$item_default = isset( $default_items[ $item_key ] ) && is_array( $default_items[ $item_key ] ) ? $default_items[ $item_key ] : array();
@@ -1368,6 +1475,15 @@ function mrn_base_stack_normalize_theme_header_footer_layout_grid( $layout, $sec
 		$row         = min( $rows, max( 1, $row ) );
 		$column_span = min( $columns, max( 1, $column_span ) );
 		$column      = min( max( 1, $columns - $column_span + 1 ), max( 1, $column ) );
+
+		if ( ! mrn_base_stack_theme_header_footer_layout_position_is_open( $occupied, $row, $column, $column_span ) ) {
+			$position = mrn_base_stack_find_theme_header_footer_layout_open_position( $occupied, $row, $column, $column_span, $rows, $columns );
+			$row      = $position['row'];
+			$column   = $position['column'];
+			$rows     = $position['rows'];
+		}
+
+		$occupied = mrn_base_stack_theme_header_footer_layout_mark_occupied( $occupied, $row, $column, $column_span );
 
 		$normalized_items[ $item_key ] = array(
 			'row'        => $row,

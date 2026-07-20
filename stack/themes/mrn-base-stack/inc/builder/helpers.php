@@ -266,6 +266,7 @@ function mrn_base_stack_populate_after_content_builder_field( $field ) {
 	}
 
 	$field['layouts'] = mrn_base_stack_get_after_content_builder_layouts();
+	$field            = mrn_base_stack_apply_primary_layout_contract_to_flexible_layouts( $field );
 
 	return $field;
 }
@@ -5631,132 +5632,444 @@ function mrn_base_stack_get_builder_layout_tab_field( $key ) {
 }
 
 /**
+ * Determine whether a builder layout supports the row section-width contract.
+ *
+ * @param string $layout_name Builder layout name.
+ * @return bool
+ */
+function mrn_base_stack_layout_allows_section_width( $layout_name ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	$allowed     = array(
+		'basic',
+		'basic_block',
+		'body_text',
+		'card',
+		'content_lists',
+		'cta',
+		'cta_block',
+		'external_widget',
+		'faq',
+		'faq_block',
+		'faq_jump_nav',
+		'grid',
+		'image_content',
+		'logos',
+		'reusable_block',
+		'searchwp_form',
+		'showcase',
+		'slider',
+		'stats',
+		'tabbed_layout',
+		'two_column_split',
+		'video',
+		'wpforms',
+	);
+
+	return in_array( $layout_name, $allowed, true );
+}
+
+/**
+ * Get shared width field names owned by the Layout tab.
+ *
+ * @param string $layout_name Builder layout name.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_builder_layout_width_contract_field_names( $layout_name ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	$field_names = array();
+
+	if ( mrn_base_stack_layout_allows_section_width( $layout_name ) ) {
+		$field_names[] = 'section_width';
+	}
+
+	if ( mrn_base_stack_layout_allows_sub_content_width( $layout_name ) ) {
+		$field_names[] = 'sub_content_width';
+	}
+
+	return $field_names;
+}
+
+/**
+ * Get shared width fields owned by the Layout tab.
+ *
+ * @param string $layout_name Builder layout name.
+ * @param string $key_seed Field key seed.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_builder_layout_width_contract_fields( $layout_name, $key_seed ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	$key_seed    = sanitize_key( (string) $key_seed );
+
+	if ( '' === $key_seed ) {
+		$key_seed = 'field_mrn_' . $layout_name;
+	}
+
+	$fields = array();
+
+	if ( mrn_base_stack_layout_allows_section_width( $layout_name ) ) {
+		$fields[] = mrn_base_stack_get_section_width_field(
+			$key_seed . '_section_width',
+			'section_width',
+			'wide',
+			'reusable_block' === $layout_name ? 'Block Width' : 'Section Width'
+		);
+	}
+
+	if ( mrn_base_stack_layout_allows_sub_content_width( $layout_name ) ) {
+		$fields[] = mrn_base_stack_get_sub_content_width_field(
+			$key_seed . '_sub_content_width',
+			'sub_content_width',
+			'Section Width (Sub-content)'
+		);
+	}
+
+	return $fields;
+}
+
+/**
+ * Get row-flex control field names owned by the Layout tab.
+ *
+ * @param string $layout_name Builder layout name.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_builder_layout_flex_contract_field_names( $layout_name ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+
+	if ( '' === $layout_name ) {
+		return array();
+	}
+
+	return array( 'row_flex_controls' );
+}
+
+/**
+ * Check whether an ACF field is the row-flex controls UI.
+ *
+ * Older normalized fields could be left as nameless Flexbox message fields,
+ * so identify the control by name, label, or panel markup before the Layout
+ * contract inserts the current field.
+ *
+ * @param array<string, mixed> $field ACF field definition.
+ * @return bool
+ */
+function mrn_base_stack_is_builder_layout_flex_controls_field( array $field ) {
+	$field_name  = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+	$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
+	$message     = isset( $field['message'] ) && is_string( $field['message'] ) ? $field['message'] : '';
+
+	if ( 'row_flex_controls' === $field_name ) {
+		return true;
+	}
+
+	if ( 'message' !== $field_type ) {
+		return false;
+	}
+
+	return 'flexbox' === $field_label || false !== strpos( $message, 'data-mrn-row-flex-panel' );
+}
+
+/**
+ * Get static row-flex admin controls markup.
+ *
+ * The controls are hydrated and saved by `admin-row-flex-layout.js`, but the
+ * field should still render a complete UI shell before JavaScript runs.
+ *
+ * @return string
+ */
+function mrn_base_stack_get_builder_row_flex_controls_markup() {
+	return '<div class="mrn-row-flex-panel" data-mrn-row-flex-panel="1">'
+		. '<div class="mrn-row-flex-panel__content">'
+		. '<p class="mrn-row-flex-panel__description">Configure a lightweight row-level flex wrapper without adding ACF fields.</p>'
+		. '<div class="mrn-row-flex-panel__grid">'
+		. '<div class="mrn-row-flex-panel__control">'
+		. '<label class="mrn-row-flex-panel__checkbox">'
+		. '<input type="checkbox" data-mrn-row-flex-control="enabled" />'
+		. '<span>Enable Flexbox</span>'
+		. '</label>'
+		. '</div>'
+		. '<div class="mrn-row-flex-panel__control">'
+		. '<label class="mrn-row-flex-panel__control-label">Apply To</label>'
+		. '<select data-mrn-row-flex-control="scope">'
+		. '<option value="row">Row</option>'
+		. '<option value="repeaters">Repeaters Only</option>'
+		. '</select>'
+		. '</div>'
+		. '<div class="mrn-row-flex-panel__control">'
+		. '<label class="mrn-row-flex-panel__control-label">Direction</label>'
+		. '<select data-mrn-row-flex-control="direction">'
+		. '<option value="row">Row</option>'
+		. '<option value="row-reverse">Row Reverse</option>'
+		. '<option value="column">Column</option>'
+		. '<option value="column-reverse">Column Reverse</option>'
+		. '</select>'
+		. '</div>'
+		. '<div class="mrn-row-flex-panel__control">'
+		. '<label class="mrn-row-flex-panel__control-label">Justify Content</label>'
+		. '<select data-mrn-row-flex-control="justify">'
+		. '<option value="flex-start">Start</option>'
+		. '<option value="center">Center</option>'
+		. '<option value="flex-end">End</option>'
+		. '<option value="space-between">Space Between</option>'
+		. '<option value="space-around">Space Around</option>'
+		. '<option value="space-evenly">Space Evenly</option>'
+		. '</select>'
+		. '</div>'
+		. '<div class="mrn-row-flex-panel__control">'
+		. '<label class="mrn-row-flex-panel__control-label">Align Items</label>'
+		. '<select data-mrn-row-flex-control="align">'
+		. '<option value="stretch">Stretch</option>'
+		. '<option value="flex-start">Start</option>'
+		. '<option value="center">Center</option>'
+		. '<option value="flex-end">End</option>'
+		. '<option value="baseline">Baseline</option>'
+		. '</select>'
+		. '</div>'
+		. '<div class="mrn-row-flex-panel__control">'
+		. '<label class="mrn-row-flex-panel__control-label">Wrap</label>'
+		. '<select data-mrn-row-flex-control="wrap">'
+		. '<option value="nowrap">No Wrap</option>'
+		. '<option value="wrap">Wrap</option>'
+		. '<option value="wrap-reverse">Wrap Reverse</option>'
+		. '</select>'
+		. '</div>'
+		. '<div class="mrn-row-flex-panel__control">'
+		. '<label class="mrn-row-flex-panel__control-label">Gap (px)</label>'
+		. '<input type="number" min="0" max="160" step="0.5" data-mrn-row-flex-control="gap" />'
+		. '</div>'
+		. '</div>'
+		. '</div>'
+		. '</div>';
+}
+
+/**
+ * Get the row-flex control mount field owned by the Layout tab.
+ *
+ * The controls save to a separate hidden JSON payload, so this ACF field only
+ * gives ACF's tab system a stable place to render the admin UI.
+ *
+ * @param string $layout_name Builder layout name.
+ * @param string $key_seed Field key seed.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_builder_layout_flex_contract_fields( $layout_name, $key_seed ) {
+	$layout_name = sanitize_key( (string) $layout_name );
+	$key_seed    = sanitize_key( (string) $key_seed );
+
+	if ( '' === $layout_name ) {
+		return array();
+	}
+
+	if ( '' === $key_seed ) {
+		$key_seed = 'field_mrn_' . $layout_name;
+	}
+
+	return array(
+		array(
+			'key'       => $key_seed . '_row_flex_controls',
+			'label'     => 'Flexbox',
+			'name'      => 'row_flex_controls',
+			'type'      => 'message',
+			'message'   => mrn_base_stack_get_builder_row_flex_controls_markup(),
+			'new_lines' => '',
+			'esc_html'  => 0,
+			'wrapper'   => array(
+				'width' => '100',
+			),
+		),
+	);
+}
+
+/**
+ * Deduplicate generated Layout tab fields by ACF field name.
+ *
+ * @param array<int, mixed> $fields Layout contract fields.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_dedupe_builder_layout_contract_fields( array $fields ) {
+	$deduped    = array();
+	$seen_names = array();
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			$deduped[] = $field;
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		if ( '' !== $field_name ) {
+			if ( isset( $seen_names[ $field_name ] ) ) {
+				continue;
+			}
+			$seen_names[ $field_name ] = true;
+		}
+
+		$deduped[] = $field;
+	}
+
+	return $deduped;
+}
+
+/**
  * Get layout-specific field names owned by the shared Layout tab.
  *
  * @param string $layout_name Builder layout name.
  * @return array<int, string>
  */
 function mrn_base_stack_get_builder_layout_contract_field_names( $layout_name ) {
-	$layout_name = sanitize_key( (string) $layout_name );
+	$layout_name    = sanitize_key( (string) $layout_name );
+	$contract_names = array_merge(
+		mrn_base_stack_get_builder_layout_width_contract_field_names( $layout_name ),
+		mrn_base_stack_get_builder_layout_flex_contract_field_names( $layout_name )
+	);
 
 	if ( 'faq' === $layout_name || 'faq_block' === $layout_name ) {
-		return array( 'faq_layout' );
+		return array_merge( $contract_names, array( 'faq_layout' ) );
 	}
 
 	if ( 'faq_jump_nav' === $layout_name ) {
-		return array(
-			'jump_nav_alignment',
-			'jump_nav_wrap',
+		return array_merge(
+			$contract_names,
+			array(
+				'jump_nav_alignment',
+				'jump_nav_wrap',
+			)
 		);
 	}
 
-	if ( 'reusable_block' === $layout_name ) {
-		return array( 'section_width' );
-	}
-
 	if ( in_array( $layout_name, array( 'basic', 'basic_block', 'cta', 'cta_block' ), true ) ) {
-		return array( 'image_placement' );
+		return array_merge( $contract_names, array( 'image_placement' ) );
 	}
 
 	if ( 'card' === $layout_name ) {
-		return array(
-			'card_layout',
-			'cards_per_row',
-			'card_stack_alignment',
+		return array_merge(
+			$contract_names,
+			array(
+				'card_layout',
+				'cards_per_row',
+				'card_stack_alignment',
+			)
 		);
 	}
 
 	if ( 'two_column_split' === $layout_name ) {
-		return array( 'column_ratio' );
+		return array_merge( $contract_names, array( 'column_ratio' ) );
 	}
 
 	if ( 'logos' === $layout_name ) {
-		return array(
-			'display_mode',
-			'per_page',
-			'show_arrows',
-			'show_pagination',
-			'pause_on_hover',
-			'autoplay',
-			'delay_start',
-			'delay_time',
-			'time_on_slide',
+		return array_merge(
+			$contract_names,
+			array(
+				'display_mode',
+				'per_page',
+				'show_arrows',
+				'show_pagination',
+				'pause_on_hover',
+				'autoplay',
+				'delay_start',
+				'delay_time',
+				'time_on_slide',
+			)
 		);
 	}
 
 	if ( 'grid' === $layout_name ) {
-		return array(
-			'columns',
-			'equal_height',
-			'enable_full_item_link',
-			'hide_item_link',
+		return array_merge(
+			$contract_names,
+			array(
+				'columns',
+				'equal_height',
+				'enable_full_item_link',
+				'hide_item_link',
+			)
 		);
 	}
 
 	if ( 'slider' === $layout_name ) {
-		return array(
-			'per_page',
-			'show_arrows',
-			'show_pagination',
-			'pause_on_hover',
-			'autoplay',
-			'delay_start',
-			'delay_time',
-			'time_on_slide',
+		return array_merge(
+			$contract_names,
+			array(
+				'per_page',
+				'show_arrows',
+				'show_pagination',
+				'pause_on_hover',
+				'autoplay',
+				'delay_start',
+				'delay_time',
+				'time_on_slide',
+			)
 		);
 	}
 
 	if ( 'stats' === $layout_name ) {
-		return array(
-			'columns',
-			'show_dividers',
+		return array_merge(
+			$contract_names,
+			array(
+				'columns',
+				'show_dividers',
+			)
 		);
 	}
 
 	if ( 'showcase' === $layout_name ) {
-		return array(
-			'stagger_style',
-			'enable_full_item_link',
-			'hide_item_link',
+		return array_merge(
+			$contract_names,
+			array(
+				'stagger_style',
+				'enable_full_item_link',
+				'hide_item_link',
+			)
 		);
 	}
 
 	if ( 'tabbed_layout' === $layout_name ) {
-		return array(
-			'tab_position',
-			'tab_orientation',
-			'equal_panel_heights',
+		return array_merge(
+			$contract_names,
+			array(
+				'tab_position',
+				'tab_orientation',
+				'equal_panel_heights',
+			)
 		);
 	}
 
 	if ( 'image_content' === $layout_name ) {
-		return array(
-			'image_position',
-			'image_size',
-			'image_alignment',
+		return array_merge(
+			$contract_names,
+			array(
+				'image_position',
+				'image_size',
+				'image_alignment',
+			)
 		);
 	}
 
 	if ( 'video' === $layout_name ) {
-		return array(
-			'video_position',
-			'video_aspect_ratio',
+		return array_merge(
+			$contract_names,
+			array(
+				'video_position',
+				'video_aspect_ratio',
+			)
 		);
 	}
 
 	if ( in_array( $layout_name, array( 'wpforms', 'searchwp_form' ), true ) ) {
-		return array( 'form_layout' );
+		return array_merge( $contract_names, array( 'form_layout' ) );
 	}
 
 	if ( 'external_widget' === $layout_name ) {
-		return array(
-			'embed_layout',
-			'embed_aspect_ratio',
-			'embed_min_height',
+		return array_merge(
+			$contract_names,
+			array(
+				'embed_layout',
+				'embed_aspect_ratio',
+				'embed_min_height',
+			)
 		);
 	}
 
-	return array();
+	return $contract_names;
 }
 
 /**
@@ -5935,7 +6248,7 @@ function mrn_base_stack_get_card_stack_alignment_choices() {
 /**
  * Get Card max-per-row choices.
  *
- * @return array<string, string>
+ * @return array<int, string>
  */
 function mrn_base_stack_get_card_per_row_choices() {
 	return array(
@@ -6248,6 +6561,22 @@ function mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $key_s
 				'section_width',
 				'wide',
 				'Block Width'
+			),
+		);
+	}
+
+	if ( 'content_lists' === $layout_name ) {
+		return array(
+			mrn_base_stack_get_section_width_field(
+				$key_seed . '_section_width',
+				'section_width',
+				'wide',
+				'Section Width'
+			),
+			mrn_base_stack_get_sub_content_width_field(
+				$key_seed . '_sub_content_width',
+				'sub_content_width',
+				'Section Width (Sub-content)'
 			),
 		);
 	}
@@ -7293,7 +7622,13 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 
 	$remaining_fields       = array();
 	$layout_tab             = null;
-	$layout_contract_fields = mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $seed );
+	$layout_contract_fields = mrn_base_stack_dedupe_builder_layout_contract_fields(
+		array_merge(
+			mrn_base_stack_get_builder_layout_width_contract_fields( $layout_name, $seed ),
+			mrn_base_stack_get_builder_layout_contract_fields( $layout_name, $seed ),
+			mrn_base_stack_get_builder_layout_flex_contract_fields( $layout_name, $seed )
+		)
+	);
 	$layout_contract_names  = mrn_base_stack_get_builder_layout_contract_field_names( $layout_name );
 	$existing_layout_fields = array();
 
@@ -7306,6 +7641,13 @@ function mrn_base_stack_ensure_builder_layout_tab( array $fields, $layout_name =
 		$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
 		$field_label = isset( $field['label'] ) ? sanitize_title( (string) $field['label'] ) : '';
 		$field_name  = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+
+		if ( mrn_base_stack_is_builder_layout_flex_controls_field( $field ) ) {
+			if ( 'row_flex_controls' === $field_name && ! isset( $existing_layout_fields[ $field_name ] ) ) {
+				$existing_layout_fields[ $field_name ] = $field;
+			}
+			continue;
+		}
 
 		if ( 'tab' === $field_type && 'layout' === $field_label ) {
 			if ( null === $layout_tab ) {
@@ -8435,6 +8777,35 @@ function mrn_base_stack_should_apply_primary_layout_contract_to_flexible_field( 
 }
 
 /**
+ * Apply shared row contracts to every layout in a flexible-content field.
+ *
+ * @param array<string, mixed> $field ACF flexible-content field definition.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_apply_primary_layout_contract_to_flexible_layouts( array $field ) {
+	if ( ! isset( $field['layouts'] ) || ! is_array( $field['layouts'] ) ) {
+		return $field;
+	}
+
+	foreach ( $field['layouts'] as $layout_key => $layout ) {
+		if ( ! is_array( $layout ) || ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+			continue;
+		}
+
+		$layout_name                     = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : sanitize_key( (string) $layout_key );
+		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $layout_name );
+		$layout['sub_fields']            = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
+		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $layout_name );
+		$layout['sub_fields']            = mrn_base_stack_dedupe_effects_tab_segments( $layout['sub_fields'] );
+		$field['layouts'][ $layout_key ] = $layout;
+	}
+
+	$field['_mrn_base_stack_contract_applied'] = true;
+
+	return $field;
+}
+
+/**
  * Apply shared row contracts to flexible-content fields loaded from ACF UI.
  *
  * This ensures UI-managed field groups receive the same row-level Configs
@@ -8456,22 +8827,7 @@ function mrn_base_stack_apply_primary_layout_contract_on_flexible_load( $field )
 		return $field;
 	}
 
-	foreach ( $field['layouts'] as $layout_key => $layout ) {
-		if ( ! is_array( $layout ) || ! isset( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
-			continue;
-		}
-
-		$layout_name                     = isset( $layout['name'] ) ? sanitize_key( (string) $layout['name'] ) : sanitize_key( (string) $layout_key );
-		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $layout_name );
-		$layout['sub_fields']            = mrn_base_stack_relocate_effect_fields( $layout['sub_fields'] );
-		$layout['sub_fields']            = mrn_base_stack_apply_primary_layout_field_contract( $layout['sub_fields'], true, $layout_name );
-		$layout['sub_fields']            = mrn_base_stack_dedupe_effects_tab_segments( $layout['sub_fields'] );
-		$field['layouts'][ $layout_key ] = $layout;
-	}
-
-	$field['_mrn_base_stack_contract_applied'] = true;
-
-	return $field;
+	return mrn_base_stack_apply_primary_layout_contract_to_flexible_layouts( $field );
 }
 add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_apply_primary_layout_contract_on_flexible_load', 30 );
 add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_apply_primary_layout_contract_on_flexible_load', 30 );

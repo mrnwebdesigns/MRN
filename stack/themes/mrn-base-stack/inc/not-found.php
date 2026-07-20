@@ -82,12 +82,24 @@ function mrn_base_stack_get_not_found_builder_layouts() {
 			continue;
 		}
 
-		if ( 'content_lists' === $layout_name && ! empty( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ) {
+		if ( ! empty( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ) {
 			$layout['sub_fields'] = array_values(
 				array_filter(
 					$layout['sub_fields'],
-					static function ( $field ) {
-						return ! is_array( $field ) || 'enable_pagination' !== ( $field['name'] ?? '' );
+					static function ( $field ) use ( $layout_name ) {
+						if ( ! is_array( $field ) ) {
+							return true;
+						}
+
+						$field_name  = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+						$field_type  = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+						$field_label = isset( $field['label'] ) ? sanitize_text_field( (string) $field['label'] ) : '';
+
+						if ( 'row_flex_controls' === $field_name || ( 'message' === $field_type && 'Flexbox' === $field_label ) ) {
+							return false;
+						}
+
+						return 'content_lists' !== $layout_name || 'enable_pagination' !== $field_name;
 					}
 				)
 			);

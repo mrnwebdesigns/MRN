@@ -22,9 +22,7 @@
 	<div class="mrn-singular-shell mrn-singular-shell--page" data-mrn-layout-slot="content-shell">
 		<div class="mrn-singular-shell__main">
 			<?php if ( ! $mrn_has_hero ) : ?>
-				<header class="entry-header">
-					<?php the_title( '<h1 class="entry-title">', '</h1>' ); ?>
-				</header><!-- .entry-header -->
+				<?php mrn_base_stack_render_singular_accessible_title( $mrn_post_id ); ?>
 			<?php endif; ?>
 
 			<?php

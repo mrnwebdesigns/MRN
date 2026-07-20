@@ -149,7 +149,7 @@ verify_local_admin_credentials() {
 }
 
 BASE_URL="$(run_wp option get home | tail -n 1)"
-SAMPLE_PAGE_PATH="$(run_wp eval '$page = get_page_by_path("sample-page"); echo $page ? wp_make_link_relative( get_permalink( $page ) ) : "/sample-page/";' | tail -n 1)"
+SAMPLE_PAGE_PATH="$(run_wp eval '$page = get_page_by_path("sample-page"); if (! $page) { $pages = get_posts(array("post_type" => "page", "post_status" => "publish", "numberposts" => 1, "orderby" => "menu_order title", "order" => "ASC")); $page = $pages ? $pages[0] : null; } echo $page ? wp_make_link_relative( get_permalink( $page ) ) : "/";' | tail -n 1)"
 SAMPLE_PAGE_EDIT_PATH="$(run_wp eval '$page = get_page_by_path("sample-page"); echo $page ? "/wp-admin/post.php?post=" . (int) $page->ID . "&action=edit" : "";' | tail -n 1)"
 SETTINGS_PAGE_PATH="$(run_wp eval 'echo is_plugin_active("mrn-config-helper/mrn-config-helper.php") ? "/wp-admin/options-general.php?page=mrn-config-helper" : "";' | tail -n 1)"
 EDITOR_TOOLS_PAGE_PATH="$(run_wp eval 'echo is_plugin_active("mrn-editor-tools/mrn-editor-tools.php") ? "/wp-admin/options-general.php?page=mrn-editor-tools" : "";' | tail -n 1)"

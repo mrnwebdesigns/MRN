@@ -141,11 +141,13 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 		true
 	);
 
+	$row_flex_admin_js_path = get_template_directory() . '/js/admin-row-flex-layout.js';
+
 	wp_enqueue_script(
 		'mrn-base-stack-row-flex-layout-admin',
 		get_template_directory_uri() . '/js/admin-row-flex-layout.js',
 		array( 'jquery', 'mrn-base-stack-content-builder-admin' ),
-		_S_VERSION,
+		file_exists( $row_flex_admin_js_path ) ? (string) filemtime( $row_flex_admin_js_path ) : _S_VERSION,
 		true
 	);
 
@@ -642,23 +644,10 @@ function mrn_base_stack_admin_builder_action_styles() {
 				color: #646970;
 			}
 
-			.layout .acf-tab-group li.mrn-row-flex-tab a {
-				font-weight: 600;
-			}
-
-			.layout .acf-field.mrn-row-flex-panel {
-				display: none;
+			.layout .mrn-row-flex-panel {
 				border-top: 1px solid #dcdcde;
 				padding: 16px;
 				background: #fff;
-			}
-
-			.layout.mrn-row-flex-tab-active > .acf-fields > .acf-field:not(.mrn-row-flex-panel) {
-				display: none !important;
-			}
-
-			.layout.mrn-row-flex-tab-active > .acf-fields > .acf-field.mrn-row-flex-panel {
-				display: block !important;
 			}
 
 			.layout .mrn-row-flex-panel__description {

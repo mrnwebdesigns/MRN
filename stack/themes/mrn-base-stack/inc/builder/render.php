@@ -1133,7 +1133,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 				'two_column_split' => 'Two Column Split',
 				'video'            => 'Video',
 				'body_text'        => 'Text',
-				'content_lists'    => 'Content',
+				'content_lists'    => 'Reference Content',
 				'wpforms'          => 'WPForms',
 				'searchwp_form'    => 'SearchWP Form',
 				'card'             => 'Card',
@@ -1301,17 +1301,17 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 
 	if ( 'content_lists' === $layout_name ) {
 		if ( '' !== $title_text ) {
-			return 'Content: ' . esc_html( wp_strip_all_tags( $title_text ) );
+			return 'Reference Content: ' . esc_html( wp_strip_all_tags( $title_text ) );
 		}
 
 		$post_type = sanitize_key( mrn_base_stack_get_builder_sub_field_value( 'list_post_type', array(), $row_values ) );
 		$choices   = function_exists( 'mrn_base_stack_get_content_list_post_type_choices' ) ? mrn_base_stack_get_content_list_post_type_choices() : array();
 
 		if ( isset( $choices[ $post_type ] ) ) {
-			return 'Content: ' . esc_html( $choices[ $post_type ] );
+			return 'Reference Content: ' . esc_html( $choices[ $post_type ] );
 		}
 
-		return 'Content';
+		return 'Reference Content';
 	}
 
 	if ( 'wpforms' === $layout_name ) {

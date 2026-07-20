@@ -111,22 +111,33 @@ function mrn_base_stack_register_content_post_types() {
 					'menu_name'             => $plural,
 					'name_admin_bar'        => $singular,
 					'add_new'               => __( 'Add New', 'mrn-base-stack' ),
+					/* translators: %s: singular post type label. */
 					'add_new_item'          => sprintf( __( 'Add New %s', 'mrn-base-stack' ), $singular ),
+					/* translators: %s: singular post type label. */
 					'new_item'              => sprintf( __( 'New %s', 'mrn-base-stack' ), $singular ),
+					/* translators: %s: singular post type label. */
 					'edit_item'             => sprintf( __( 'Edit %s', 'mrn-base-stack' ), $singular ),
+					/* translators: %s: singular post type label. */
 					'view_item'             => sprintf( __( 'View %s', 'mrn-base-stack' ), $singular ),
+					/* translators: %s: plural post type label. */
 					'view_items'            => sprintf( __( 'View %s', 'mrn-base-stack' ), $plural ),
+					/* translators: %s: plural post type label. */
 					'all_items'             => sprintf( __( 'All %s', 'mrn-base-stack' ), $plural ),
+					/* translators: %s: plural post type label. */
 					'search_items'          => sprintf( __( 'Search %s', 'mrn-base-stack' ), $plural ),
 					'not_found'             => __( 'No items found.', 'mrn-base-stack' ),
 					'not_found_in_trash'    => __( 'No items found in Trash.', 'mrn-base-stack' ),
+					/* translators: %s: singular post type label. */
 					'archives'              => sprintf( __( '%s Archives', 'mrn-base-stack' ), $singular ),
+					/* translators: %s: singular post type label. */
 					'attributes'            => sprintf( __( '%s Attributes', 'mrn-base-stack' ), $singular ),
 					'featured_image'        => __( 'Featured image', 'mrn-base-stack' ),
 					'set_featured_image'    => __( 'Set featured image', 'mrn-base-stack' ),
 					'remove_featured_image' => __( 'Remove featured image', 'mrn-base-stack' ),
 					'use_featured_image'    => __( 'Use as featured image', 'mrn-base-stack' ),
+					/* translators: %s: plural post type label. */
 					'items_list_navigation' => sprintf( __( '%s list navigation', 'mrn-base-stack' ), $plural ),
+					/* translators: %s: plural post type label. */
 					'items_list'            => sprintf( __( '%s list', 'mrn-base-stack' ), $plural ),
 				),
 				'public'              => true,
@@ -316,9 +327,11 @@ function mrn_base_stack_filter_team_member_sitemap_query_args( $args, $post_type
 	}
 
 	if ( ! isset( $args['meta_query'] ) || ! is_array( $args['meta_query'] ) ) {
+		// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Sitemap exclusion uses the stack's public-profile meta flag.
 		$args['meta_query'] = array();
 	}
 
+	// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Sitemap exclusion uses the stack's public-profile meta flag.
 	$args['meta_query'][] = array(
 		'relation' => 'OR',
 		array(

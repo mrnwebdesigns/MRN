@@ -78,6 +78,77 @@
 		return Object.keys(items || {});
 	}
 
+	function getCellKey(row, column) {
+		return String(row) + ':' + String(column);
+	}
+
+	function isPositionOpen(occupied, row, column, columnSpan) {
+		var cellColumn;
+
+		for (cellColumn = column; cellColumn < column + columnSpan; cellColumn += 1) {
+			if (occupied[getCellKey(row, cellColumn)]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	function markPositionOccupied(occupied, row, column, columnSpan) {
+		var cellColumn;
+
+		for (cellColumn = column; cellColumn < column + columnSpan; cellColumn += 1) {
+			occupied[getCellKey(row, cellColumn)] = true;
+		}
+	}
+
+	function findOpenPosition(occupied, preferredRow, preferredColumn, columnSpan, rows, columns) {
+		var row;
+		var column;
+
+		preferredRow = clamp(preferredRow, MIN_ROWS, rows);
+		preferredColumn = clamp(preferredColumn, MIN_COLUMNS, Math.max(MIN_COLUMNS, columns - columnSpan + 1));
+
+		for (row = preferredRow; row <= rows; row += 1) {
+			if (isPositionOpen(occupied, row, preferredColumn, columnSpan)) {
+				return {
+					row: row,
+					column: preferredColumn,
+					rows: rows
+				};
+			}
+		}
+
+		while (rows < MAX_ROWS) {
+			rows += 1;
+			if (isPositionOpen(occupied, rows, preferredColumn, columnSpan)) {
+				return {
+					row: rows,
+					column: preferredColumn,
+					rows: rows
+				};
+			}
+		}
+
+		for (row = MIN_ROWS; row <= rows; row += 1) {
+			for (column = MIN_COLUMNS; column <= columns - columnSpan + 1; column += 1) {
+				if (isPositionOpen(occupied, row, column, columnSpan)) {
+					return {
+						row: row,
+						column: column,
+						rows: rows
+					};
+				}
+			}
+		}
+
+		return {
+			row: preferredRow,
+			column: preferredColumn,
+			rows: rows
+		};
+	}
+
 	function getSectionPanelFields(section, subtab) {
 		return document.querySelectorAll('.acf-field.mrn-theme-hf-subtab-section--' + section + '.mrn-theme-hf-subtab--' + subtab);
 	}
@@ -278,6 +349,7 @@
 		var rawItems = layout && layout.items ? layout.items : {};
 		var keys = getItemKeys(items);
 		var defaultKeys = Object.keys(defaultItems || {});
+		var occupied = {};
 		var defaultKey;
 		var defaultItem;
 		var index;
@@ -301,10 +373,22 @@
 			var item = rawItems[itemKey] || itemDefault;
 			var columnSpan = clamp(item.columnSpan || itemDefault.columnSpan || 1, MIN_COLUMNS, normalized.columns);
 			var columnMax = Math.max(1, normalized.columns - columnSpan + 1);
+			var row = clamp(item.row || itemDefault.row || 1, MIN_ROWS, normalized.rows);
+			var column = clamp(item.column || itemDefault.column || 1, MIN_COLUMNS, columnMax);
+			var position;
+
+			if (!isPositionOpen(occupied, row, column, columnSpan)) {
+				position = findOpenPosition(occupied, row, column, columnSpan, normalized.rows, normalized.columns);
+				row = position.row;
+				column = position.column;
+				normalized.rows = position.rows;
+			}
+
+			markPositionOccupied(occupied, row, column, columnSpan);
 
 			normalized.items[itemKey] = {
-				row: clamp(item.row || itemDefault.row || 1, MIN_ROWS, normalized.rows),
-				column: clamp(item.column || itemDefault.column || 1, MIN_COLUMNS, columnMax),
+				row: row,
+				column: column,
 				columnSpan: columnSpan
 			};
 		}
