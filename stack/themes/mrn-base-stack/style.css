@@ -3406,6 +3406,7 @@ button.mrn-ui__link--button {
 .mrn-content-grid--collection-shell {
 	display: grid;
 	gap: var(--mrn-space-stack-md);
+	grid-template-columns: minmax(0, 1fr);
 }
 
 .mrn-content-grid__head {
@@ -3431,6 +3432,17 @@ button.mrn-ui__link--button {
 	grid-template-columns: var(--mrn-content-grid-template);
 	row-gap: var(--mrn-content-grid-row-gap);
 	column-gap: var(--mrn-content-grid-column-gap);
+	width: 100%;
+}
+
+.mrn-content-builder__row--content-grid .mrn-content-grid__items.mrn-ui__items:not(.splide__list) {
+	margin-inline: 0;
+	max-width: none;
+	width: 100%;
+}
+
+.mrn-content-builder__row--content-grid .mrn-content-grid__item {
+	max-width: none;
 	width: 100%;
 }
 

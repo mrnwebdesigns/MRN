@@ -962,43 +962,46 @@ function mrn_base_stack_get_hero_layout_fields( $layout_name = '' ) {
 		$key_prefix .= '_' . $layout_name;
 	}
 
-	return array(
+	return array_merge(
 		array(
-			'key'           => $key_prefix . '_content_alignment',
-			'label'         => 'Content Alignment',
-			'name'          => 'hero_content_alignment',
-			'_name'         => 'hero_content_alignment',
-			'aria-label'    => '',
-			'type'          => 'select',
-			'choices'       => mrn_base_stack_get_hero_content_alignment_choices(),
-			'default_value' => 'left',
-			'allow_null'    => 0,
-			'multiple'      => 0,
-			'return_format' => 'value',
-			'ui'            => 1,
-			'instructions'  => 'Aligns the hero title, text, and actions within the hero content area.',
-			'wrapper'       => array(
-				'width' => '50',
+			array(
+				'key'           => $key_prefix . '_content_alignment',
+				'label'         => 'Content Alignment',
+				'name'          => 'hero_content_alignment',
+				'_name'         => 'hero_content_alignment',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => mrn_base_stack_get_hero_content_alignment_choices(),
+				'default_value' => 'left',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'return_format' => 'value',
+				'ui'            => 1,
+				'instructions'  => 'Aligns the hero title, text, and actions within the hero content area.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
+			),
+			array(
+				'key'           => $key_prefix . '_vertical_alignment',
+				'label'         => 'Vertical Alignment',
+				'name'          => 'hero_vertical_alignment',
+				'_name'         => 'hero_vertical_alignment',
+				'aria-label'    => '',
+				'type'          => 'select',
+				'choices'       => mrn_base_stack_get_hero_vertical_alignment_choices(),
+				'default_value' => 'center',
+				'allow_null'    => 0,
+				'multiple'      => 0,
+				'return_format' => 'value',
+				'ui'            => 1,
+				'instructions'  => 'Aligns hero content vertically when this hero has enough height for vertical positioning.',
+				'wrapper'       => array(
+					'width' => '50',
+				),
 			),
 		),
-		array(
-			'key'           => $key_prefix . '_vertical_alignment',
-			'label'         => 'Vertical Alignment',
-			'name'          => 'hero_vertical_alignment',
-			'_name'         => 'hero_vertical_alignment',
-			'aria-label'    => '',
-			'type'          => 'select',
-			'choices'       => mrn_base_stack_get_hero_vertical_alignment_choices(),
-			'default_value' => 'center',
-			'allow_null'    => 0,
-			'multiple'      => 0,
-			'return_format' => 'value',
-			'ui'            => 1,
-			'instructions'  => 'Aligns hero content vertically when this hero has enough height for vertical positioning.',
-			'wrapper'       => array(
-				'width' => '50',
-			),
-		),
+		mrn_base_stack_get_background_capability_fields( $key_prefix . '_background' )
 	);
 }
 
@@ -1023,8 +1026,8 @@ function mrn_base_stack_apply_hero_layout_tab_contract( array $fields, $layout_n
 		}
 	}
 
-	$found_hero_fields = false;
-	$remaining_fields  = array();
+	$found_hero_layout_fields = false;
+	$remaining_fields         = array();
 
 	foreach ( $fields as $field ) {
 		if ( ! is_array( $field ) ) {
@@ -1034,7 +1037,9 @@ function mrn_base_stack_apply_hero_layout_tab_contract( array $fields, $layout_n
 
 		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
 		if ( '' !== $field_name && isset( $layout_field_map[ $field_name ] ) ) {
-			$found_hero_fields = true;
+			if ( 0 === strpos( $field_name, 'hero_' ) ) {
+				$found_hero_layout_fields = true;
+			}
 			foreach ( array( 'key', '_name', 'parent', 'parent_layout', 'default_value', 'conditional_logic' ) as $preserved_key ) {
 				if ( array_key_exists( $preserved_key, $field ) ) {
 					$layout_field_map[ $field_name ][ $preserved_key ] = $field[ $preserved_key ];
@@ -1046,7 +1051,7 @@ function mrn_base_stack_apply_hero_layout_tab_contract( array $fields, $layout_n
 		$remaining_fields[] = $field;
 	}
 
-	if ( ! $add_missing && ! $found_hero_fields ) {
+	if ( ! $add_missing && ! $found_hero_layout_fields ) {
 		return $fields;
 	}
 
@@ -3544,6 +3549,75 @@ function mrn_base_stack_get_background_video_fields( $key_prefix ) {
 				'width' => '50',
 			),
 		),
+	);
+}
+
+/**
+ * Build a shared row background color field.
+ *
+ * @param string $key Field key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_background_color_field( $key ) {
+	return array(
+		'key'          => sanitize_key( (string) $key ),
+		'label'        => 'Background Color',
+		'name'         => 'background_color',
+		'aria-label'   => '',
+		'type'         => 'select',
+		'choices'      => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
+		'ui'           => 1,
+		'allow_null'   => 1,
+		'instructions' => 'Select from Site Colors when available.',
+		'wrapper'      => array(
+			'width' => '50',
+		),
+	);
+}
+
+/**
+ * Build a shared decorative background image field.
+ *
+ * @param string $key Field key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_background_image_field( $key ) {
+	return array(
+		'key'           => sanitize_key( (string) $key ),
+		'label'         => 'Background image',
+		'name'          => 'background_image',
+		'aria-label'    => '',
+		'type'          => 'image',
+		'return_format' => 'id',
+		'preview_size'  => 'medium',
+		'library'       => 'all',
+		'wrapper'       => array(
+			'width' => '50',
+		),
+	);
+}
+
+/**
+ * Build the full shared row background field set.
+ *
+ * @param string $key_prefix Base key prefix ending in `_background`.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_background_capability_fields( $key_prefix ) {
+	$key_prefix = sanitize_key( (string) $key_prefix );
+	if ( '' === $key_prefix ) {
+		$key_prefix = 'field_mrn_background';
+	}
+
+	return array_merge(
+		array(
+			mrn_base_stack_get_background_color_field( $key_prefix . '_color' ),
+		),
+		mrn_base_stack_get_background_gradient_fields( $key_prefix . '_gradient' ),
+		array(
+			mrn_base_stack_get_background_image_field( $key_prefix . '_image' ),
+		),
+		mrn_base_stack_get_background_video_fields( $key_prefix . '_video' )
 	);
 }
 

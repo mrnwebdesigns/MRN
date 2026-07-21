@@ -14,6 +14,7 @@
 	var observer = null;
 	var scanTimer = 0;
 	var observationTimer = 0;
+	var closeTimer = 0;
 
 	function onReady(callback) {
 		if (document.readyState === 'loading') {
@@ -307,13 +308,25 @@
 				return;
 			}
 
+			event.preventDefault();
+
+			if (active && active.isSelecting) {
+				return;
+			}
+
 			var layout = layouts[parseInt(card.dataset.index, 10)];
 			if (!layout || !layout.link) {
 				return;
 			}
 
+			active.isSelecting = true;
+			active.modal.setAttribute('aria-busy', 'true');
+			active.cards.forEach(function (pickerCard) {
+				pickerCard.disabled = true;
+			});
+
 			triggerNativeLink(layout.link);
-			closePicker(false);
+			scheduleClosePicker(false);
 		});
 
 		grid.addEventListener('mouseover', function (event) {
@@ -404,6 +417,16 @@
 	}
 
 	function triggerNativeLink(link) {
+		if (window.jQuery && typeof window.jQuery.fn.trigger === 'function') {
+			window.jQuery(link).trigger('click');
+			return;
+		}
+
+		if (typeof link.click === 'function') {
+			link.click();
+			return;
+		}
+
 		var event = new MouseEvent('click', {
 			bubbles: true,
 			cancelable: true,
@@ -411,6 +434,17 @@
 		});
 
 		link.dispatchEvent(event);
+	}
+
+	function scheduleClosePicker(cancelled) {
+		if (closeTimer) {
+			window.clearTimeout(closeTimer);
+		}
+
+		closeTimer = window.setTimeout(function () {
+			closeTimer = 0;
+			closePicker(cancelled);
+		}, 75);
 	}
 
 	function loadPreview(card) {
@@ -436,6 +470,11 @@
 	function closePicker(cancelled) {
 		if (!active) {
 			return;
+		}
+
+		if (closeTimer) {
+			window.clearTimeout(closeTimer);
+			closeTimer = 0;
 		}
 
 		stopWatchingForPopup();
