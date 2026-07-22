@@ -66,7 +66,11 @@ function mrn_base_stack_render_hero_builder( $post_id = null ) {
 		$row['__mrn_builder_field_name'] = 'page_hero_rows';
 		$row['__mrn_builder_row_index']  = (int) $index;
 
-		if ( mrn_base_stack_render_hero_row( $row, $post_id, $index ) ) {
+		ob_start();
+		$row_rendered = mrn_base_stack_render_hero_row( $row, $post_id, $index );
+		$row_markup   = trim( (string) ob_get_clean() );
+		if ( $row_rendered && '' !== $row_markup ) {
+			echo mrn_base_stack_add_contextual_editor_row_scope( $row_markup, $post_id, 'page_hero_rows', $index, (string) $row['acf_fc_layout'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Template markup is escaped by its renderer; the helper only adds escaped attributes.
 			$rendered = true;
 		}
 	}
@@ -1378,6 +1382,59 @@ add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_page_templat
 add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 
 /**
+ * Get a stable ACF field key for a builder field name.
+ *
+ * @param string $field_name Builder field name.
+ * @return string
+ */
+function mrn_base_stack_get_builder_contextual_field_key( $field_name ) {
+	$field_name = sanitize_key( (string) $field_name );
+	$targets    = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_targets' )
+		? mrn_base_stack_get_builder_layout_allowlist_targets()
+		: array();
+	if ( isset( $targets[ $field_name ]['field_key'] ) ) {
+		return sanitize_key( (string) $targets[ $field_name ]['field_key'] );
+	}
+
+	$fallbacks = array(
+		'page_template_sidebar_rows' => 'field_mrn_page_template_sidebar_rows',
+	);
+
+	return isset( $fallbacks[ $field_name ] ) ? $fallbacks[ $field_name ] : '';
+}
+
+/**
+ * Add editor-only ACF row scope to the rendered row container.
+ *
+ * The contextual editor helper performs its own capability check, so public
+ * markup remains unchanged when the visitor cannot edit the post.
+ *
+ * @param string $markup     Rendered row HTML.
+ * @param int    $post_id    Source post ID.
+ * @param string $field_name Flexible-content field name.
+ * @param int    $row_index  Zero-based row index.
+ * @param string $layout     Flexible-content layout name.
+ * @return string
+ */
+function mrn_base_stack_add_contextual_editor_row_scope( $markup, $post_id, $field_name, $row_index, $layout ) {
+	if ( ! function_exists( 'mrn_contextual_content_editor_inject_attrs' ) ) {
+		return is_string( $markup ) ? $markup : '';
+	}
+
+	return mrn_contextual_content_editor_inject_attrs(
+		$markup,
+		array(
+			'post_id'          => absint( $post_id ),
+			'target_class'     => 'mrn-content-builder__row',
+			'scope_field_key'  => mrn_base_stack_get_builder_contextual_field_key( $field_name ),
+			'scope_field_name' => sanitize_key( (string) $field_name ),
+			'scope_layout'     => sanitize_key( (string) $layout ),
+			'scope_row'        => max( 0, (int) $row_index ),
+		)
+	);
+}
+
+/**
  * Render an array of flexible-content builder rows.
  *
  * This lower-level renderer supports non-post contexts, such as theme option
@@ -1411,7 +1468,8 @@ function mrn_base_stack_render_builder_rows( array $rows, $post_id = 0, $field_n
 			continue;
 		}
 
-		$rendered_rows[] = $row_markup;
+		$layout          = isset( $row['acf_fc_layout'] ) ? sanitize_key( (string) $row['acf_fc_layout'] ) : '';
+		$rendered_rows[] = mrn_base_stack_add_contextual_editor_row_scope( $row_markup, $post_id, $field_name, $index, $layout );
 	}
 
 	if ( empty( $rendered_rows ) ) {
