@@ -10,7 +10,7 @@ Shared MU plugin for public-facing security hardening on normal MRN brochure and
 - Returns early REST `rest_forbidden` responses for unauthenticated write requests to known admin-only scanner-noise routes.
 - Serves `/.well-known/security.txt` from WordPress/plugin logic.
 - Protects the stack-owned `/uptimerobot-check/` health page with `noindex`, `nofollow`, `noarchive`, an `X-Robots-Tag` response header, a `robots.txt` disallow rule, and core sitemap exclusion.
-- Adds a read-only admin status page at `Tools > MRN Public Security`.
+- Adds a read-only admin status page at `Advanced > Public Security` when the MRN Advanced admin menu is available.
 
 ## Admin Status Page
 
@@ -24,6 +24,8 @@ The status page shows the current filtered state for:
 - UptimeRobot check-page slug and page presence
 
 It also includes a copy button for the per-site rollout prompt. The page does not save options; site-specific changes should still be handled with filters or site-local configuration.
+
+The admin menu label intentionally omits `MRN`. By default, the page is placed under the Admin Menu Editor top-level item titled `Advanced`; sites without that parent fall back to WordPress Tools unless a filter supplies a different parent.
 
 ## Default REST Guarded Routes
 
@@ -43,6 +45,22 @@ mrn-qa run --project-root /Users/khofmeyer/Development/MRN/mu-plugins/mrn-public
 The committed `.mrn-qa.env`, `stack.lock`, `STACK_BASELINE.md`, `phpcs.xml.dist`, `phpstan.neon.dist`, and Semgrep config make this shared MU plugin scannable as a standalone security plugin while keeping browser/runtime checks tied to explicit site QA.
 
 ## Filters
+
+### Admin Page
+
+- `mrn_public_security_admin_capability`
+- `mrn_public_security_admin_parent_slug`
+- `mrn_public_security_admin_page_title`
+- `mrn_public_security_admin_menu_title`
+
+```php
+add_filter(
+	'mrn_public_security_admin_parent_slug',
+	function () {
+		return '#ame-unclickable-menu-item-1';
+	}
+);
+```
 
 ### Author Archives
 
