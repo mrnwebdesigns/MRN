@@ -2,14 +2,29 @@
 /**
  * Plugin Name: MRN Public Security Hardening
  * Description: Shared public hardening for MRN brochure/client sites.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION' ) ) {
-	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.2.0' );
+	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.3.0' );
+}
+
+/**
+ * Parse a URL with WordPress normalization when available.
+ *
+ * @param string $url       URL to parse.
+ * @param int    $component Optional parse component.
+ * @return mixed
+ */
+function mrn_public_security_parse_url( $url, $component = -1 ) {
+	if ( function_exists( 'wp_parse_url' ) ) {
+		return wp_parse_url( $url, $component );
+	}
+
+	return parse_url( $url, $component ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Fallback for very old WordPress installs without wp_parse_url().
 }
 
 /**
@@ -247,7 +262,7 @@ if ( function_exists( 'wp_robots' ) ) {
  * @return array
  */
 function mrn_public_security_strip_oembed_author_data( $data, $post = null, $width = 0, $height = 0 ) {
-	$enabled = (bool) apply_filters( 'mrn_public_security_oembed_strip_author_enabled', true, $data, $post, $width, $height );
+	$enabled = mrn_public_security_oembed_strip_author_enabled( $data, $post, $width, $height );
 
 	if ( ! $enabled || ! is_array( $data ) ) {
 		return $data;
@@ -260,6 +275,19 @@ function mrn_public_security_strip_oembed_author_data( $data, $post = null, $wid
 add_filter( 'oembed_response_data', 'mrn_public_security_strip_oembed_author_data', 20, 4 );
 
 /**
+ * Check whether oEmbed author stripping is enabled.
+ *
+ * @param array $data   oEmbed response data.
+ * @param mixed $post   Embedded post object.
+ * @param int   $width  Requested width.
+ * @param int   $height Requested height.
+ * @return bool
+ */
+function mrn_public_security_oembed_strip_author_enabled( $data = array(), $post = null, $width = 0, $height = 0 ) {
+	return (bool) apply_filters( 'mrn_public_security_oembed_strip_author_enabled', true, $data, $post, $width, $height );
+}
+
+/**
  * Normalize a REST route string for comparison.
  *
  * @param mixed $route Candidate route.
@@ -270,7 +298,7 @@ function mrn_public_security_normalize_rest_route( $route ) {
 		return '';
 	}
 
-	$path = function_exists( 'wp_parse_url' ) ? wp_parse_url( $route, PHP_URL_PATH ) : parse_url( $route, PHP_URL_PATH );
+	$path = mrn_public_security_parse_url( $route, PHP_URL_PATH );
 
 	if ( is_string( $path ) && '' !== $path ) {
 		$route = $path;
@@ -341,7 +369,7 @@ function mrn_public_security_get_request_path() {
 		return '';
 	}
 
-	$path = function_exists( 'wp_parse_url' ) ? wp_parse_url( $request_uri, PHP_URL_PATH ) : parse_url( $request_uri, PHP_URL_PATH );
+	$path = mrn_public_security_parse_url( $request_uri, PHP_URL_PATH );
 
 	if ( ! is_string( $path ) || '' === $path ) {
 		return '';
@@ -363,9 +391,7 @@ function mrn_public_security_get_request_rest_route() {
 	}
 
 	$request_uri = mrn_public_security_get_request_uri();
-	$query       = '' !== $request_uri && function_exists( 'wp_parse_url' )
-		? wp_parse_url( $request_uri, PHP_URL_QUERY )
-		: parse_url( $request_uri, PHP_URL_QUERY );
+	$query       = '' !== $request_uri ? mrn_public_security_parse_url( $request_uri, PHP_URL_QUERY ) : '';
 
 	if ( is_string( $query ) && '' !== $query ) {
 		$query_vars = array();
@@ -384,9 +410,7 @@ function mrn_public_security_get_request_rest_route() {
 
 	$rest_prefix = function_exists( 'rest_get_url_prefix' ) ? rest_get_url_prefix() : 'wp-json';
 	$rest_prefix = trim( (string) $rest_prefix, '/' );
-	$rest_path   = function_exists( 'wp_parse_url' )
-		? wp_parse_url( home_url( '/' . $rest_prefix ), PHP_URL_PATH )
-		: parse_url( home_url( '/' . $rest_prefix ), PHP_URL_PATH );
+	$rest_path   = mrn_public_security_parse_url( home_url( '/' . $rest_prefix ), PHP_URL_PATH );
 
 	if ( is_string( $rest_path ) && '' !== $rest_path ) {
 		$rest_path = untrailingslashit( rawurldecode( $rest_path ) );
@@ -471,6 +495,21 @@ function mrn_public_security_is_guarded_rest_method() {
  * @return bool
  */
 function mrn_public_security_current_user_can_guarded_rest_route() {
+	foreach ( mrn_public_security_get_guarded_rest_capabilities() as $capability ) {
+		if ( is_string( $capability ) && '' !== $capability && current_user_can( $capability ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Get capabilities allowed through guarded REST routes.
+ *
+ * @return array
+ */
+function mrn_public_security_get_guarded_rest_capabilities() {
 	$capabilities = apply_filters(
 		'mrn_public_security_guarded_rest_capabilities',
 		array(
@@ -480,16 +519,27 @@ function mrn_public_security_current_user_can_guarded_rest_route() {
 	);
 
 	if ( ! is_array( $capabilities ) ) {
-		return false;
+		return array();
 	}
 
+	$normalized = array();
+
 	foreach ( $capabilities as $capability ) {
-		if ( is_string( $capability ) && '' !== $capability && current_user_can( $capability ) ) {
-			return true;
+		if ( is_string( $capability ) && '' !== trim( $capability ) ) {
+			$normalized[] = trim( $capability );
 		}
 	}
 
-	return false;
+	return array_values( array_unique( $normalized ) );
+}
+
+/**
+ * Check whether the REST scanner-noise guard is enabled.
+ *
+ * @return bool
+ */
+function mrn_public_security_rest_guard_enabled() {
+	return (bool) apply_filters( 'mrn_public_security_rest_guard_enabled', true );
 }
 
 /**
@@ -503,7 +553,7 @@ function mrn_public_security_guard_rest_routes_before_validation( $result ) {
 		return $result;
 	}
 
-	if ( ! (bool) apply_filters( 'mrn_public_security_rest_guard_enabled', true ) ) {
+	if ( ! mrn_public_security_rest_guard_enabled() ) {
 		return $result;
 	}
 
@@ -552,9 +602,7 @@ function mrn_public_security_is_security_txt_request() {
 		return false;
 	}
 
-	$target_path = function_exists( 'wp_parse_url' )
-		? wp_parse_url( home_url( '/.well-known/security.txt' ), PHP_URL_PATH )
-		: parse_url( home_url( '/.well-known/security.txt' ), PHP_URL_PATH );
+	$target_path = mrn_public_security_parse_url( home_url( '/.well-known/security.txt' ), PHP_URL_PATH );
 
 	if ( ! is_string( $target_path ) || '' === $target_path ) {
 		$target_path = '/.well-known/security.txt';
@@ -722,3 +770,371 @@ function mrn_public_security_maybe_serve_security_txt() {
 	exit;
 }
 add_action( 'parse_request', 'mrn_public_security_maybe_serve_security_txt', 0 );
+
+/**
+ * Get the admin capability required to view the status page.
+ *
+ * @return string
+ */
+function mrn_public_security_admin_capability() {
+	$default = function_exists( 'is_network_admin' ) && is_network_admin() ? 'manage_network_options' : 'manage_options';
+	$cap     = apply_filters( 'mrn_public_security_admin_capability', $default );
+
+	return is_string( $cap ) && '' !== $cap ? $cap : $default;
+}
+
+/**
+ * Register the site admin status page.
+ */
+function mrn_public_security_register_admin_page() {
+	$hook = add_management_page(
+		__( 'MRN Public Security', 'mrn-public-security-hardening' ),
+		__( 'MRN Public Security', 'mrn-public-security-hardening' ),
+		mrn_public_security_admin_capability(),
+		'mrn-public-security-hardening',
+		'mrn_public_security_render_admin_page'
+	);
+
+	if ( $hook ) {
+		$GLOBALS['mrn_public_security_admin_page_hooks'][] = $hook;
+	}
+}
+add_action( 'admin_menu', 'mrn_public_security_register_admin_page' );
+
+/**
+ * Register the network admin status page.
+ */
+function mrn_public_security_register_network_admin_page() {
+	$hook = add_submenu_page(
+		'settings.php',
+		__( 'MRN Public Security', 'mrn-public-security-hardening' ),
+		__( 'MRN Public Security', 'mrn-public-security-hardening' ),
+		mrn_public_security_admin_capability(),
+		'mrn-public-security-hardening',
+		'mrn_public_security_render_admin_page'
+	);
+
+	if ( $hook ) {
+		$GLOBALS['mrn_public_security_admin_page_hooks'][] = $hook;
+	}
+}
+
+if ( function_exists( 'is_multisite' ) && is_multisite() ) {
+	add_action( 'network_admin_menu', 'mrn_public_security_register_network_admin_page' );
+}
+
+/**
+ * Enqueue assets for the status page.
+ *
+ * @param string $hook_suffix Current admin page hook.
+ */
+function mrn_public_security_enqueue_admin_assets( $hook_suffix ) {
+	$hooks = isset( $GLOBALS['mrn_public_security_admin_page_hooks'] ) && is_array( $GLOBALS['mrn_public_security_admin_page_hooks'] )
+		? $GLOBALS['mrn_public_security_admin_page_hooks']
+		: array();
+
+	if ( ! in_array( $hook_suffix, $hooks, true ) ) {
+		return;
+	}
+
+	wp_register_style( 'mrn-public-security-admin', false, array(), MRN_PUBLIC_SECURITY_HARDENING_VERSION );
+	wp_enqueue_style( 'mrn-public-security-admin' );
+	wp_add_inline_style(
+		'mrn-public-security-admin',
+		'.mrn-public-security-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:18px 0}.mrn-public-security-card{background:#fff;border:1px solid #c3c4c7;border-radius:4px;padding:16px}.mrn-public-security-card h2{font-size:16px;margin:0 0 12px}.mrn-public-security-status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:600}.mrn-public-security-status--good{background:#edfaef;color:#0a6b22}.mrn-public-security-status--warn{background:#fcf9e8;color:#755100}.mrn-public-security-status--off{background:#f6f7f7;color:#50575e}.mrn-public-security-status--info{background:#eef5fb;color:#0a4b78}.mrn-public-security-list{margin:8px 0 0 18px}.mrn-public-security-list li{margin:3px 0}.mrn-public-security-prompt{width:100%;min-height:320px;font-family:Menlo,Consolas,monospace;font-size:12px}.mrn-public-security-actions{display:flex;align-items:center;gap:10px;margin:10px 0}.mrn-public-security-copy-status{min-height:20px}.mrn-public-security-meta{margin:6px 0;color:#50575e}.mrn-public-security-table th{width:180px}'
+	);
+
+	wp_register_script( 'mrn-public-security-admin', '', array(), MRN_PUBLIC_SECURITY_HARDENING_VERSION, true );
+	wp_enqueue_script( 'mrn-public-security-admin' );
+	wp_add_inline_script(
+		'mrn-public-security-admin',
+		"(function(){function setStatus(message){var status=document.getElementById('mrn-public-security-copy-status');if(status){status.textContent=message;}}document.addEventListener('click',function(event){var button=event.target.closest ? event.target.closest('[data-mrn-public-security-copy]') : null;if(!button){return;}var targetId=button.getAttribute('data-mrn-public-security-copy');var target=document.getElementById(targetId);if(!target){return;}var text=target.value || target.textContent || '';if(window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText){window.navigator.clipboard.writeText(text).then(function(){setStatus(button.getAttribute('data-success-message') || 'Copied.');},function(){target.focus();target.select();document.execCommand('copy');setStatus(button.getAttribute('data-success-message') || 'Copied.');});return;}target.focus();target.select();document.execCommand('copy');setStatus(button.getAttribute('data-success-message') || 'Copied.');});}());"
+	);
+}
+add_action( 'admin_enqueue_scripts', 'mrn_public_security_enqueue_admin_assets' );
+
+/**
+ * Render a status badge.
+ *
+ * @param string $status Status key.
+ * @param string $label  Label.
+ */
+function mrn_public_security_render_admin_status_badge( $status, $label ) {
+	$allowed = array( 'good', 'warn', 'off', 'info' );
+
+	if ( ! in_array( $status, $allowed, true ) ) {
+		$status = 'info';
+	}
+
+	printf(
+		'<span class="mrn-public-security-status mrn-public-security-status--%1$s">%2$s</span>',
+		esc_attr( $status ),
+		esc_html( $label )
+	);
+}
+
+/**
+ * Format an array for admin display.
+ *
+ * @param array $items Items to display.
+ * @return string
+ */
+function mrn_public_security_format_admin_list_value( $items ) {
+	if ( empty( $items ) ) {
+		return __( 'None', 'mrn-public-security-hardening' );
+	}
+
+	$items = array_map( 'sanitize_text_field', array_map( 'strval', $items ) );
+
+	return implode( ', ', $items );
+}
+
+/**
+ * Check whether the default policy page exists.
+ *
+ * @return bool
+ */
+function mrn_public_security_security_txt_default_policy_page_exists() {
+	$policy_path = apply_filters( 'mrn_public_security_security_txt_default_policy_path', 'privacy-center' );
+
+	if ( ! is_string( $policy_path ) || '' === trim( $policy_path ) || ! function_exists( 'get_page_by_path' ) ) {
+		return false;
+	}
+
+	$page = get_page_by_path( trim( $policy_path, '/' ), OBJECT, 'page' );
+
+	return $page && 'publish' === get_post_status( $page );
+}
+
+/**
+ * Build the copyable per-site rollout prompt.
+ *
+ * @return string
+ */
+function mrn_public_security_get_site_completion_prompt() {
+	$prompt = <<<PROMPT
+Review and finish MRN Public Security Hardening rollout for this site.
+
+What the shared MU plugin does:
+- Redirects public author archives like /author/{username}/ to home_url('/') by default.
+- Removes author_name and author_url from oEmbed responses.
+- Guards known admin-only vendor REST write routes so unauthenticated scanner requests get 401 rest_forbidden before required-parameter validation:
+  - /smartcrawl/v1/instant-indexing
+  - /wpmudev-dashboard/v1/plugins/action
+- Serves /.well-known/security.txt through WordPress/plugin logic.
+- Keeps behavior filterable per site for author redirects/noindex, oEmbed stripping, guarded REST routes/methods/capabilities, and all security.txt fields.
+
+What still needs to be done per site:
+1. Confirm the shared MU plugin is present and loaded by the MRN MU loader.
+2. Remove any older site-specific hardening MU plugin that duplicates this behavior.
+3. Decide the site-specific security.txt contact:
+   - Default is the site admin_email.
+   - Prefer adding a per-site filter for a real monitored mailbox if needed.
+4. Decide the security.txt Policy URL:
+   - The plugin only uses /privacy-center/ if that page exists.
+   - Create that page or filter/omit the policy URL per site.
+5. Confirm the site canonical/home URL is correct, since security.txt Canonical uses home_url().
+6. Add per-site filters for any extra scanner-noise REST routes if needed.
+7. If the site intentionally uses public author archives, disable redirects and rely on/filter the noindex fallback.
+8. Runtime verify on the actual site:
+   - /.well-known/security.txt returns 200
+   - /author/{username}/ redirects by default
+   - oEmbed output does not expose author fields
+   - unauthenticated POST {} to guarded REST routes returns 401, not 400
+   - authenticated admins are not blocked
+9. If deploying to production/staging, follow MRN deployment standards, including a DB-only UpdraftPlus backup before any SSH deploy.
+
+Do not hardcode client domains in the shared plugin. Use filters or site-local configuration only.
+PROMPT;
+
+	return (string) apply_filters( 'mrn_public_security_admin_site_completion_prompt', $prompt );
+}
+
+/**
+ * Render the read-only admin status page.
+ */
+function mrn_public_security_render_admin_page() {
+	if ( ! current_user_can( mrn_public_security_admin_capability() ) ) {
+		wp_die( esc_html__( 'Sorry, you are not allowed to access this page.', 'mrn-public-security-hardening' ) );
+	}
+
+	$security_txt_fields = mrn_public_security_get_security_txt_fields();
+	$policy_url          = isset( $security_txt_fields['Policy'] ) && is_string( $security_txt_fields['Policy'] ) ? $security_txt_fields['Policy'] : '';
+	$contact             = isset( $security_txt_fields['Contact'] ) && is_string( $security_txt_fields['Contact'] ) ? $security_txt_fields['Contact'] : '';
+	$expires             = isset( $security_txt_fields['Expires'] ) && is_string( $security_txt_fields['Expires'] ) ? $security_txt_fields['Expires'] : '';
+	$canonical           = isset( $security_txt_fields['Canonical'] ) && is_string( $security_txt_fields['Canonical'] ) ? $security_txt_fields['Canonical'] : '';
+	$prompt              = mrn_public_security_get_site_completion_prompt();
+	$health_slug         = mrn_public_security_get_uptime_robot_check_slug();
+	$health_page         = function_exists( 'get_page_by_path' ) ? get_page_by_path( $health_slug, OBJECT, 'page' ) : null;
+	?>
+	<div class="wrap">
+		<h1><?php esc_html_e( 'MRN Public Security Hardening', 'mrn-public-security-hardening' ); ?></h1>
+		<p class="description">
+			<?php esc_html_e( 'Read-only status for shared public hardening behavior. Configure site exceptions with filters, not stored options.', 'mrn-public-security-hardening' ); ?>
+		</p>
+
+		<div class="mrn-public-security-grid">
+			<div class="mrn-public-security-card">
+				<h2><?php esc_html_e( 'Plugin', 'mrn-public-security-hardening' ); ?></h2>
+				<?php mrn_public_security_render_admin_status_badge( 'good', __( 'Loaded', 'mrn-public-security-hardening' ) ); ?>
+				<p class="mrn-public-security-meta">
+					<?php
+					printf(
+						/* translators: %s: plugin version. */
+						esc_html__( 'Version %s', 'mrn-public-security-hardening' ),
+						esc_html( MRN_PUBLIC_SECURITY_HARDENING_VERSION )
+					);
+					?>
+				</p>
+				<p class="mrn-public-security-meta"><?php echo esc_html( plugin_basename( __FILE__ ) ); ?></p>
+			</div>
+
+			<div class="mrn-public-security-card">
+				<h2><?php esc_html_e( 'Author Archives', 'mrn-public-security-hardening' ); ?></h2>
+				<?php
+				if ( mrn_public_security_author_archive_redirect_enabled() ) {
+					mrn_public_security_render_admin_status_badge( 'good', __( 'Redirecting', 'mrn-public-security-hardening' ) );
+				} elseif ( mrn_public_security_author_archive_noindex_enabled() ) {
+					mrn_public_security_render_admin_status_badge( 'warn', __( 'Noindex fallback', 'mrn-public-security-hardening' ) );
+				} else {
+					mrn_public_security_render_admin_status_badge( 'off', __( 'Disabled', 'mrn-public-security-hardening' ) );
+				}
+				?>
+				<table class="widefat striped mrn-public-security-table">
+					<tbody>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Redirect target', 'mrn-public-security-hardening' ); ?></th>
+							<td><?php echo esc_url( apply_filters( 'mrn_public_security_author_archive_redirect_target', home_url( '/' ) ) ); ?></td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Noindex fallback', 'mrn-public-security-hardening' ); ?></th>
+							<td><?php echo esc_html( mrn_public_security_author_archive_noindex_enabled() ? __( 'Enabled', 'mrn-public-security-hardening' ) : __( 'Disabled', 'mrn-public-security-hardening' ) ); ?></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="mrn-public-security-card">
+				<h2><?php esc_html_e( 'oEmbed', 'mrn-public-security-hardening' ); ?></h2>
+				<?php
+				mrn_public_security_render_admin_status_badge(
+					mrn_public_security_oembed_strip_author_enabled() ? 'good' : 'off',
+					mrn_public_security_oembed_strip_author_enabled() ? __( 'Author fields stripped', 'mrn-public-security-hardening' ) : __( 'Disabled', 'mrn-public-security-hardening' )
+				);
+				?>
+				<p class="mrn-public-security-meta"><?php esc_html_e( 'Removes author_name and author_url from oEmbed response data.', 'mrn-public-security-hardening' ); ?></p>
+			</div>
+
+			<div class="mrn-public-security-card">
+				<h2><?php esc_html_e( 'REST Scanner Guard', 'mrn-public-security-hardening' ); ?></h2>
+				<?php
+				mrn_public_security_render_admin_status_badge(
+					mrn_public_security_rest_guard_enabled() ? 'good' : 'off',
+					mrn_public_security_rest_guard_enabled() ? __( 'Enabled', 'mrn-public-security-hardening' ) : __( 'Disabled', 'mrn-public-security-hardening' )
+				);
+				?>
+				<table class="widefat striped mrn-public-security-table">
+					<tbody>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Guarded routes', 'mrn-public-security-hardening' ); ?></th>
+							<td><?php echo esc_html( mrn_public_security_format_admin_list_value( mrn_public_security_get_guarded_rest_routes() ) ); ?></td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Guarded methods', 'mrn-public-security-hardening' ); ?></th>
+							<td><?php echo esc_html( mrn_public_security_format_admin_list_value( mrn_public_security_get_guarded_rest_methods() ) ); ?></td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Allowed capabilities', 'mrn-public-security-hardening' ); ?></th>
+							<td><?php echo esc_html( mrn_public_security_format_admin_list_value( mrn_public_security_get_guarded_rest_capabilities() ) ); ?></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="mrn-public-security-card">
+				<h2><?php esc_html_e( 'security.txt', 'mrn-public-security-hardening' ); ?></h2>
+				<?php
+				mrn_public_security_render_admin_status_badge(
+					mrn_public_security_security_txt_enabled() ? 'good' : 'off',
+					mrn_public_security_security_txt_enabled() ? __( 'Served by WordPress', 'mrn-public-security-hardening' ) : __( 'Disabled', 'mrn-public-security-hardening' )
+				);
+				?>
+				<table class="widefat striped mrn-public-security-table">
+					<tbody>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'URL', 'mrn-public-security-hardening' ); ?></th>
+							<td><a href="<?php echo esc_url( home_url( '/.well-known/security.txt' ) ); ?>"><?php echo esc_html( home_url( '/.well-known/security.txt' ) ); ?></a></td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Contact', 'mrn-public-security-hardening' ); ?></th>
+							<td><?php echo esc_html( '' !== $contact ? $contact : __( 'Not set', 'mrn-public-security-hardening' ) ); ?></td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Canonical', 'mrn-public-security-hardening' ); ?></th>
+							<td><?php echo esc_html( '' !== $canonical ? $canonical : __( 'Not set', 'mrn-public-security-hardening' ) ); ?></td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Policy', 'mrn-public-security-hardening' ); ?></th>
+							<td>
+								<?php
+								if ( '' !== $policy_url ) {
+									echo esc_html( $policy_url );
+								} elseif ( mrn_public_security_security_txt_default_policy_page_exists() ) {
+									esc_html_e( 'Available through filter', 'mrn-public-security-hardening' );
+								} else {
+									esc_html_e( 'Omitted until /privacy-center/ exists or a filter supplies a URL', 'mrn-public-security-hardening' );
+								}
+								?>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Expires', 'mrn-public-security-hardening' ); ?></th>
+							<td><?php echo esc_html( '' !== $expires ? $expires : __( 'Not set', 'mrn-public-security-hardening' ) ); ?></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="mrn-public-security-card">
+				<h2><?php esc_html_e( 'UptimeRobot Check Page', 'mrn-public-security-hardening' ); ?></h2>
+				<?php
+				mrn_public_security_render_admin_status_badge(
+					$health_page ? 'good' : 'warn',
+					$health_page ? __( 'Page found', 'mrn-public-security-hardening' ) : __( 'Page not found', 'mrn-public-security-hardening' )
+				);
+				?>
+				<table class="widefat striped mrn-public-security-table">
+					<tbody>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Slug', 'mrn-public-security-hardening' ); ?></th>
+							<td><?php echo esc_html( $health_slug ); ?></td>
+						</tr>
+						<tr>
+							<th scope="row"><?php esc_html_e( 'Robots handling', 'mrn-public-security-hardening' ); ?></th>
+							<td><?php esc_html_e( 'noindex, nofollow, noarchive when requested', 'mrn-public-security-hardening' ); ?></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<div class="mrn-public-security-card">
+			<h2><?php esc_html_e( 'Per-site Rollout Prompt', 'mrn-public-security-hardening' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Copy this into a site-specific work thread to finish runtime setup and validation.', 'mrn-public-security-hardening' ); ?></p>
+			<div class="mrn-public-security-actions">
+				<button
+					type="button"
+					class="button button-primary"
+					data-mrn-public-security-copy="mrn-public-security-prompt"
+					data-success-message="<?php echo esc_attr__( 'Prompt copied.', 'mrn-public-security-hardening' ); ?>"
+				>
+					<?php esc_html_e( 'Copy prompt', 'mrn-public-security-hardening' ); ?>
+				</button>
+				<span id="mrn-public-security-copy-status" class="mrn-public-security-copy-status" aria-live="polite"></span>
+			</div>
+			<label class="screen-reader-text" for="mrn-public-security-prompt"><?php esc_html_e( 'Per-site rollout prompt', 'mrn-public-security-hardening' ); ?></label>
+			<textarea id="mrn-public-security-prompt" class="large-text code mrn-public-security-prompt" readonly><?php echo esc_textarea( $prompt ); ?></textarea>
+		</div>
+	</div>
+	<?php
+}

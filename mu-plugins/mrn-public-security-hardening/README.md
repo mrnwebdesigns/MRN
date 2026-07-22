@@ -10,6 +10,20 @@ Shared MU plugin for public-facing security hardening on normal MRN brochure and
 - Returns early REST `rest_forbidden` responses for unauthenticated write requests to known admin-only scanner-noise routes.
 - Serves `/.well-known/security.txt` from WordPress/plugin logic.
 - Protects the stack-owned `/uptimerobot-check/` health page with `noindex`, `nofollow`, `noarchive`, an `X-Robots-Tag` response header, a `robots.txt` disallow rule, and core sitemap exclusion.
+- Adds a read-only admin status page at `Tools > MRN Public Security`.
+
+## Admin Status Page
+
+The status page shows the current filtered state for:
+
+- plugin/version loading
+- author archive redirect and noindex fallback
+- oEmbed author field stripping
+- guarded REST routes, methods, and allowed capabilities
+- generated `security.txt` fields
+- UptimeRobot check-page slug and page presence
+
+It also includes a copy button for the per-site rollout prompt. The page does not save options; site-specific changes should still be handled with filters or site-local configuration.
 
 ## Default REST Guarded Routes
 
