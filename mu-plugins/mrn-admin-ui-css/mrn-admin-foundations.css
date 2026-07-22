@@ -10,6 +10,55 @@
 	--mrn-admin-radius-component: 8px;
 	--mrn-admin-radius-tab-native: 4px;
 	--mrn-admin-editor-toolbar-gap: 6px;
+	--mrn-admin-action-gap: 8px;
+}
+
+/*
+ * Semantic action contract.
+ *
+ * These selectors only arrange WordPress-native controls. They deliberately
+ * do not replace .button, .button-primary, .button-link-delete, .row-actions,
+ * .notice, or .nav-tab styling owned by WordPress core.
+ */
+[data-mrn-admin-ui-contract] .mrn-admin-action-group {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--mrn-admin-action-gap);
+}
+
+[data-mrn-admin-ui-contract] .row-actions form,
+[data-mrn-admin-ui-contract] .mrn-admin-inline-action {
+	display: inline;
+}
+
+[data-mrn-admin-ui-contract] .mrn-admin-action-with-icon {
+	align-items: center;
+	display: inline-flex;
+	gap: 5px;
+}
+
+[data-mrn-admin-ui-contract] .mrn-admin-action-with-icon .dashicons {
+	font-size: 16px;
+	height: 16px;
+	line-height: 16px;
+	width: 16px;
+}
+
+[data-mrn-admin-ui-contract] .mrn-admin-card-remove {
+	align-items: center;
+	display: inline-flex;
+	justify-content: center;
+	min-height: 30px;
+	min-width: 30px;
+	padding: 4px;
+}
+
+[data-mrn-admin-ui-contract] .mrn-admin-card-remove .dashicons {
+	font-size: 18px;
+	height: 18px;
+	line-height: 18px;
+	width: 18px;
 }
 
 /* Actions */

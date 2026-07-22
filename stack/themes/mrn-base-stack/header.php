@@ -28,11 +28,13 @@
 	<?php
 		$mrn_header_options                = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
 		$mrn_business_information          = function_exists( 'mrn_base_stack_get_business_information' ) ? mrn_base_stack_get_business_information() : array();
+		$mrn_header_primary_location       = 'menu-1';
+		$mrn_header_primary_menu_id        = isset( $mrn_header_options['header_primary_menu_id'] ) ? absint( $mrn_header_options['header_primary_menu_id'] ) : 0;
 		$mrn_header_secondary_location     = 'header-secondary';
 		$mrn_header_tertiary_location      = 'header-tertiary';
 		$mrn_show_secondary_menu           = ! empty( $mrn_header_options['header_show_secondary_menu'] ) && has_nav_menu( $mrn_header_secondary_location );
 		$mrn_show_tertiary_menu            = ! empty( $mrn_header_options['header_show_tertiary_menu'] ) && function_exists( 'mrn_base_stack_nav_location_has_items' ) && mrn_base_stack_nav_location_has_items( $mrn_header_tertiary_location );
-		$mrn_show_primary_menu             = function_exists( 'mrn_base_stack_nav_location_has_items' ) && mrn_base_stack_nav_location_has_items( 'menu-1' );
+		$mrn_show_primary_menu             = mrn_base_stack_nav_menu_selection_has_items( $mrn_header_primary_menu_id, $mrn_header_primary_location );
 		$mrn_show_search                   = ! empty( $mrn_header_options['header_show_search'] ) && ! empty( $mrn_header_options['header_searchwp_form_id'] ) && function_exists( 'mrn_base_stack_has_action' ) && mrn_base_stack_has_action( 'mrn_base_stack_header_search' );
 		$mrn_show_business_phone           = ! empty( $mrn_header_options['header_show_business_phone'] ) && ! empty( $mrn_business_information['phone'] ) && ! empty( $mrn_business_information['phone_uri'] );
 		$mrn_show_business_profile         = ! empty( $mrn_header_options['header_show_business_profile'] ) && ! empty( $mrn_business_information['business_profile'] );
@@ -67,6 +69,15 @@
 		$mrn_header_grid_item_style      = static function ( $item_key ) use ( $mrn_header_layout_grid ) {
 			return function_exists( 'mrn_base_stack_get_theme_header_footer_layout_grid_item_style' ) ? mrn_base_stack_get_theme_header_footer_layout_grid_item_style( $mrn_header_layout_grid, $item_key ) : '';
 		};
+		$mrn_header_primary_menu_args    = mrn_base_stack_get_nav_menu_selection_args(
+			$mrn_header_primary_menu_id,
+			$mrn_header_primary_location,
+			array(
+				'menu_id'    => 'primary-menu',
+				'container'  => false,
+				'menu_class' => 'menu',
+			)
+		);
 		$mrn_header_rows                 = array(
 			array(
 				'show'          => $mrn_show_secondary_menu,
@@ -238,12 +249,7 @@
 				<?php endif; ?>
 				<?php
 				wp_nav_menu(
-					array(
-						'theme_location' => 'menu-1',
-						'menu_id'        => 'primary-menu',
-						'container'      => false,
-						'menu_class'     => 'menu',
-					)
+					$mrn_header_primary_menu_args
 				);
 				?>
 				<?php if ( $mrn_mobile_navigation_enabled ) : ?>

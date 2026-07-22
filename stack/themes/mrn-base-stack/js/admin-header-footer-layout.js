@@ -5,6 +5,7 @@
 	var MAX_COLUMNS = 6;
 	var MIN_ROWS = 1;
 	var MAX_ROWS = 12;
+	var layoutBuilder = window.MRNAdminLayoutBuilder;
 	var activePointerDrag = null;
 	var CONFIG_GROUPS = {
 		header: [
@@ -48,105 +49,16 @@
 		]
 	};
 
-	function parseJson(value, fallback) {
-		if (typeof value !== 'string' || value.trim() === '') {
-			return fallback;
-		}
-
-		try {
-			return JSON.parse(value);
-		} catch (error) {
-			return fallback;
-		}
+	if (!layoutBuilder) {
+		return;
 	}
 
-	function clone(value) {
-		return parseJson(JSON.stringify(value || {}), {});
-	}
-
-	function clamp(value, min, max) {
-		var number = parseInt(value, 10);
-
-		if (isNaN(number)) {
-			number = min;
-		}
-
-		return Math.min(max, Math.max(min, number));
-	}
+	var parseJson = layoutBuilder.parseJson;
+	var clone = layoutBuilder.clone;
+	var clamp = layoutBuilder.clamp;
 
 	function getItemKeys(items) {
 		return Object.keys(items || {});
-	}
-
-	function getCellKey(row, column) {
-		return String(row) + ':' + String(column);
-	}
-
-	function isPositionOpen(occupied, row, column, columnSpan) {
-		var cellColumn;
-
-		for (cellColumn = column; cellColumn < column + columnSpan; cellColumn += 1) {
-			if (occupied[getCellKey(row, cellColumn)]) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	function markPositionOccupied(occupied, row, column, columnSpan) {
-		var cellColumn;
-
-		for (cellColumn = column; cellColumn < column + columnSpan; cellColumn += 1) {
-			occupied[getCellKey(row, cellColumn)] = true;
-		}
-	}
-
-	function findOpenPosition(occupied, preferredRow, preferredColumn, columnSpan, rows, columns) {
-		var row;
-		var column;
-
-		preferredRow = clamp(preferredRow, MIN_ROWS, rows);
-		preferredColumn = clamp(preferredColumn, MIN_COLUMNS, Math.max(MIN_COLUMNS, columns - columnSpan + 1));
-
-		for (row = preferredRow; row <= rows; row += 1) {
-			if (isPositionOpen(occupied, row, preferredColumn, columnSpan)) {
-				return {
-					row: row,
-					column: preferredColumn,
-					rows: rows
-				};
-			}
-		}
-
-		while (rows < MAX_ROWS) {
-			rows += 1;
-			if (isPositionOpen(occupied, rows, preferredColumn, columnSpan)) {
-				return {
-					row: rows,
-					column: preferredColumn,
-					rows: rows
-				};
-			}
-		}
-
-		for (row = MIN_ROWS; row <= rows; row += 1) {
-			for (column = MIN_COLUMNS; column <= columns - columnSpan + 1; column += 1) {
-				if (isPositionOpen(occupied, row, column, columnSpan)) {
-					return {
-						row: row,
-						column: column,
-						rows: rows
-					};
-				}
-			}
-		}
-
-		return {
-			row: preferredRow,
-			column: preferredColumn,
-			rows: rows
-		};
 	}
 
 	function getSectionPanelFields(section, subtab) {
@@ -344,51 +256,48 @@
 	}
 
 	function normalizeLayout(layout, defaults, items) {
-		var normalized = {};
-		var defaultItems = defaults && defaults.items ? defaults.items : {};
-		var rawItems = layout && layout.items ? layout.items : {};
-		var keys = getItemKeys(items);
-		var defaultKeys = Object.keys(defaultItems || {});
-		var occupied = {};
-		var defaultKey;
-		var defaultItem;
+		return layoutBuilder.normalizeGridLayout(layout, defaults, items, {
+			minColumns: MIN_COLUMNS,
+			maxColumns: MAX_COLUMNS,
+			minRows: MIN_ROWS,
+			maxRows: MAX_ROWS
+		});
+	}
+
+	function normalizeStateLayout(state, layout) {
+		var source = layout || state.layout || {};
+		var sourceItems = source.items || {};
+		var defaultItems = state.defaults && state.defaults.items ? state.defaults.items : {};
+		var activeDefaults = clone(state.defaults);
+		var activeKeys = getItemKeys(state.items);
+		var allKeys = getItemKeys(state.allItems);
+		var normalized;
 		var index;
+		var itemKey;
+		var item;
+		var columnSpan;
 
-		normalized.columns = clamp(layout && layout.columns ? layout.columns : defaults.columns, MIN_COLUMNS, MAX_COLUMNS);
-		normalized.rows = clamp(layout && layout.rows ? layout.rows : defaults.rows, MIN_ROWS, MAX_ROWS);
-		normalized.items = {};
-
-		for (index = 0; index < defaultKeys.length; index += 1) {
-			defaultKey = defaultKeys[index];
-			defaultItem = defaultItems[defaultKey] || {};
-
-			if (!rawItems[defaultKey] && defaultItem.row) {
-				normalized.rows = clamp(Math.max(normalized.rows, defaultItem.row), MIN_ROWS, MAX_ROWS);
+		activeDefaults.items = {};
+		for (index = 0; index < activeKeys.length; index += 1) {
+			itemKey = activeKeys[index];
+			if (defaultItems[itemKey]) {
+				activeDefaults.items[itemKey] = clone(defaultItems[itemKey]);
 			}
 		}
 
-		for (index = 0; index < keys.length; index += 1) {
-			var itemKey = keys[index];
-			var itemDefault = defaultItems[itemKey] || {};
-			var item = rawItems[itemKey] || itemDefault;
-			var columnSpan = clamp(item.columnSpan || itemDefault.columnSpan || 1, MIN_COLUMNS, normalized.columns);
-			var columnMax = Math.max(1, normalized.columns - columnSpan + 1);
-			var row = clamp(item.row || itemDefault.row || 1, MIN_ROWS, normalized.rows);
-			var column = clamp(item.column || itemDefault.column || 1, MIN_COLUMNS, columnMax);
-			var position;
+		normalized = normalizeLayout(source, activeDefaults, state.items);
 
-			if (!isPositionOpen(occupied, row, column, columnSpan)) {
-				position = findOpenPosition(occupied, row, column, columnSpan, normalized.rows, normalized.columns);
-				row = position.row;
-				column = position.column;
-				normalized.rows = position.rows;
+		for (index = 0; index < allKeys.length; index += 1) {
+			itemKey = allKeys[index];
+			if (state.items[itemKey]) {
+				continue;
 			}
 
-			markPositionOccupied(occupied, row, column, columnSpan);
-
+			item = sourceItems[itemKey] || defaultItems[itemKey] || {};
+			columnSpan = clamp(item.columnSpan || 1, MIN_COLUMNS, normalized.columns);
 			normalized.items[itemKey] = {
-				row: row,
-				column: column,
+				row: clamp(item.row || 1, MIN_ROWS, MAX_ROWS),
+				column: clamp(item.column || 1, MIN_COLUMNS, Math.max(MIN_COLUMNS, normalized.columns - columnSpan + 1)),
 				columnSpan: columnSpan
 			};
 		}
@@ -436,12 +345,6 @@
 		var selector = '.acf-field[data-name="' + storageName + '"] textarea, .acf-field[data-name="' + storageName + '"] input';
 
 		return scope.querySelector(selector) || document.querySelector(selector);
-	}
-
-	function getLayoutFromStorage(storage, defaults, items) {
-		var stored = storage ? parseJson(storage.value, null) : null;
-
-		return normalizeLayout(stored || defaults, defaults, items);
 	}
 
 	function getSubmitInputName(state) {
@@ -548,7 +451,7 @@
 	}
 
 	function syncEditorStorageForSubmit(state) {
-		var value = JSON.stringify(normalizeLayout(state.layout, state.defaults, state.allItems));
+		var value = JSON.stringify(normalizeStateLayout(state));
 		var submitInput = ensureSubmitInput(state);
 		var requestInput = ensureRequestInput(state);
 
@@ -733,7 +636,7 @@
 		}
 
 		state.items = getActiveItems(state.allItems, state.toggleFields, state.editor);
-		state.layout = normalizeLayout(state.layout, state.defaults, state.allItems);
+		state.layout = normalizeStateLayout(state);
 
 		if (state.selectedItem && !state.items[state.selectedItem]) {
 			state.selectedItem = '';
@@ -833,7 +736,7 @@
 		}
 
 		state.selectedItem = itemKey;
-		state.layout = normalizeLayout(state.layout, state.defaults, state.allItems);
+		state.layout = normalizeStateLayout(state);
 		syncStorage(state);
 		renderEditor(state);
 	}
@@ -1027,7 +930,7 @@
 		var cell = document.createElement('button');
 
 		cell.type = 'button';
-		cell.className = 'mrn-theme-hf-layout-grid-editor__cell';
+		cell.className = 'mrn-theme-hf-layout-grid-editor__cell mrn-admin-layout-builder__cell';
 		cell.style.gridColumn = String(column);
 		cell.style.gridRow = String(row);
 		cell.textContent = 'R' + row + ' C' + column;
@@ -1092,7 +995,7 @@
 			item.columnSpan = span;
 			item.column = clamp(item.column, MIN_COLUMNS, Math.max(1, state.layout.columns - span + 1));
 			state.selectedItem = itemKey;
-			state.layout = normalizeLayout(state.layout, state.defaults, state.allItems);
+			state.layout = normalizeStateLayout(state);
 			syncStorage(state);
 			renderEditor(state);
 		});
@@ -1113,7 +1016,7 @@
 		var label = document.createElement('span');
 		var meta = document.createElement('span');
 
-		chip.className = 'mrn-theme-hf-layout-grid-editor__chip';
+		chip.className = 'mrn-theme-hf-layout-grid-editor__chip mrn-admin-layout-builder__item';
 		if (state.selectedItem === itemKey) {
 			chip.className += ' is-selected';
 		}
@@ -1180,7 +1083,7 @@
 			return;
 		}
 
-		state.layout = normalizeLayout(state.layout, state.defaults, state.allItems);
+		state.layout = normalizeStateLayout(state);
 		state.columnsInput.value = String(state.layout.columns);
 		state.rowsInput.value = String(state.layout.rows);
 		state.canvas.style.setProperty('--mrn-hf-layout-columns', String(state.layout.columns));
@@ -1264,7 +1167,7 @@
 		}
 
 		state.layout[key] = nextValue;
-		state.layout = normalizeLayout(state.layout, state.defaults, state.allItems);
+		state.layout = normalizeStateLayout(state);
 		syncStorage(state);
 		renderEditor(state);
 	}
@@ -1319,7 +1222,8 @@
 			draggingItem: '',
 			isSubmitting: false
 		};
-		state.layout = getLayoutFromStorage(storage, state.defaults, items);
+		state.layout = storage ? parseJson(storage.value, null) : null;
+		state.layout = normalizeStateLayout(state, state.layout || clone(state.defaults));
 		editor.__mrnThemeHfLayoutState = state;
 		bindFormSubmit(state);
 		bindToggleFields(state);
@@ -1343,7 +1247,7 @@
 		});
 
 		resetButton.addEventListener('click', function () {
-			state.layout = normalizeLayout(clone(state.defaults), state.defaults, state.allItems);
+			state.layout = normalizeStateLayout(state, clone(state.defaults));
 			state.selectedItem = '';
 			syncStorage(state);
 			renderEditor(state);

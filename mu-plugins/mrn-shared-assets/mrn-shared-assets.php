@@ -3,10 +3,60 @@
  * Plugin Name: MRN Shared Assets
  * Description: Provides shared runtime assets and metadata for stack-wide consumers.
  * Author: MRN Web Designs
- * Version: 0.1.3
+ * Version: 0.2.0
  */
 
 defined('ABSPATH') || exit;
+
+/**
+ * Get the shared admin layout builder version.
+ */
+function mrn_shared_assets_admin_layout_builder_version(): string {
+    return '1.0.1';
+}
+
+/**
+ * Get the shared admin layout builder asset URL.
+ *
+ * @param string $file Asset filename.
+ */
+function mrn_shared_assets_admin_layout_builder_url(string $file): string {
+    $allowed = array('admin-layout-builder.css', 'admin-layout-builder.js');
+    $file = sanitize_file_name($file);
+
+    if (!in_array($file, $allowed, true)) {
+        return '';
+    }
+
+    return trailingslashit(content_url('mu-plugins/mrn-shared-assets/assets/admin-layout-builder')) . $file;
+}
+
+/**
+ * Enqueue the reusable admin layout builder contract.
+ *
+ * Consumers keep their own fields and persistence. This contract supplies
+ * shared grid math, accessible tabs, sortable lanes, and visual primitives.
+ *
+ * @param string $script_handle Optional script handle.
+ * @param string $style_handle  Optional style handle.
+ */
+function mrn_shared_assets_enqueue_admin_layout_builder(string $script_handle = 'mrn-shared-admin-layout-builder', string $style_handle = 'mrn-shared-admin-layout-builder'): void {
+    $version = mrn_shared_assets_admin_layout_builder_version();
+
+    wp_enqueue_style(
+        $style_handle,
+        mrn_shared_assets_admin_layout_builder_url('admin-layout-builder.css'),
+        array(),
+        $version
+    );
+    wp_enqueue_script(
+        $script_handle,
+        mrn_shared_assets_admin_layout_builder_url('admin-layout-builder.js'),
+        array('jquery', 'jquery-ui-sortable'),
+        $version,
+        true
+    );
+}
 
 /**
  * Get the bundled Font Awesome version.

@@ -3,7 +3,7 @@
 ## Baseline Snapshot
 - Date pinned: 2026-06-30
 - Plugin source path: `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets`
-- Current plugin version: `0.1.3`
+- Current plugin version: `0.2.0`
 - Intended integration target: mrn-shared-mu-plugin-loader
 - Current release model: shared MU plugin release unit
 

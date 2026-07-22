@@ -2,10 +2,62 @@
 /**
  * Plugin Name: MRN Admin UI CSS
  * Description: Unified admin UI CSS loader for wp-admin.
- * Version: 3.2.0
+ * Version: 3.2.2
  */
 
 defined('ABSPATH') || exit;
+
+if (!function_exists('mrn_admin_ui_contract_version')) {
+  /**
+   * Return the semantic MRN admin UI contract version.
+   *
+   * Consumers must continue to use WordPress-native markup and classes when
+   * this function is unavailable. The contract enhances those primitives; it
+   * does not replace them.
+   *
+   * @return string
+   */
+  function mrn_admin_ui_contract_version() {
+    return '1.1.0';
+  }
+}
+
+if (!function_exists('mrn_admin_ui_contract_get')) {
+  /**
+   * Expose stable native class and language choices to stack consumers.
+   *
+   * @return array<string, mixed>
+   */
+  function mrn_admin_ui_contract_get() {
+    $contract = array(
+      'version' => mrn_admin_ui_contract_version(),
+      'classes' => array(
+        'primary_action'     => 'button button-primary',
+        'secondary_action'   => 'button',
+        'link_action'        => 'button-link',
+        'destructive_action' => 'button-link-delete',
+        'card_remove'        => 'button-link-delete mrn-admin-card-remove',
+        'row_actions'        => 'row-actions',
+        'notice_success'     => 'notice notice-success is-dismissible',
+        'notice_error'       => 'notice notice-error',
+        'tabs'               => 'nav-tab-wrapper',
+        'tab'                => 'nav-tab',
+        'tab_active'         => 'nav-tab-active',
+      ),
+      'verbs' => array(
+        'trash'              => __('Move to Trash', 'mrn-admin-ui-css'),
+        'delete_permanently' => __('Delete permanently', 'mrn-admin-ui-css'),
+        'remove'             => __('Remove', 'mrn-admin-ui-css'),
+        'restore'            => __('Restore', 'mrn-admin-ui-css'),
+      ),
+      'icons' => array(
+        'trash' => 'dashicons dashicons-trash',
+      ),
+    );
+
+    return apply_filters('mrn_admin_ui_contract', $contract);
+  }
+}
 
 add_action('admin_enqueue_scripts', function ($hook) {
 
@@ -54,7 +106,7 @@ add_action('admin_enqueue_scripts', function ($hook) {
   }
 
   // Always inject minimal ad-hiding rules, including on editor screens.
-  wp_register_style('mrn-admin-ui-ads-only', false, array(), '3.2.0');
+  wp_register_style('mrn-admin-ui-ads-only', false, array(), '3.2.2');
   wp_enqueue_style('mrn-admin-ui-ads-only');
   wp_add_inline_style(
     'mrn-admin-ui-ads-only',

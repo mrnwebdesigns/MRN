@@ -277,6 +277,41 @@ function mrn_base_stack_get_theme_header_footer_content_width_choices() {
 }
 
 /**
+ * Return editable WordPress menus for Header/Footer menu selectors.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_nav_menu_choices() {
+	$choices = array(
+		'' => __( 'Assigned Primary location', 'mrn-base-stack' ),
+	);
+	$menus   = wp_get_nav_menus(
+		array(
+			'hide_empty' => false,
+		)
+	);
+
+	if ( ! is_array( $menus ) ) {
+		return $choices;
+	}
+
+	foreach ( $menus as $menu ) {
+		if ( ! $menu instanceof WP_Term ) {
+			continue;
+		}
+
+		$menu_id = absint( $menu->term_id );
+		if ( $menu_id < 1 ) {
+			continue;
+		}
+
+		$choices[ (string) $menu_id ] = $menu->name;
+	}
+
+	return $choices;
+}
+
+/**
  * Normalize a Header/Footer content width value.
  *
  * @param mixed  $value Raw stored value.
@@ -764,6 +799,7 @@ function mrn_base_stack_get_theme_header_footer_config_field_groups( $section ) 
 				'fields' => array(
 					'field_mrn_theme_header_show_utility_menu',
 					'field_mrn_theme_header_show_tertiary_menu',
+					'field_mrn_theme_header_primary_menu_id',
 					'field_mrn_theme_header_primary_nav_inherit_header_settings',
 				),
 			),
@@ -1452,7 +1488,7 @@ function mrn_base_stack_normalize_theme_header_footer_layout_grid( $layout, $sec
 	$rows          = isset( $layout['rows'] ) ? absint( $layout['rows'] ) : absint( $default['rows'] );
 
 	foreach ( $default_items as $item_key => $item_default ) {
-		if ( isset( $raw_items[ $item_key ] ) || ! is_array( $item_default ) || empty( $item_default['row'] ) ) {
+		if ( ! isset( $items[ $item_key ] ) || isset( $raw_items[ $item_key ] ) || ! is_array( $item_default ) || empty( $item_default['row'] ) ) {
 			continue;
 		}
 
@@ -1497,6 +1533,57 @@ function mrn_base_stack_normalize_theme_header_footer_layout_grid( $layout, $sec
 		'rows'    => $rows,
 		'items'   => $normalized_items,
 	);
+}
+
+/**
+ * Normalize an editable grid while preserving disabled item placements.
+ *
+ * Disabled components remain in storage for future re-enabling, but they do
+ * not reserve cells or force extra rows in the visible editor layout.
+ *
+ * @param mixed  $layout  Raw layout data.
+ * @param string $section Section key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_normalize_theme_header_footer_editor_layout_grid( $layout, $section ) {
+	$section = sanitize_key( (string) $section );
+	if ( is_string( $layout ) && '' !== trim( $layout ) ) {
+		$decoded = json_decode( $layout, true );
+		$layout  = is_array( $decoded ) ? $decoded : array();
+	}
+
+	if ( ! is_array( $layout ) ) {
+		$layout = array();
+	}
+
+	$all_items     = mrn_base_stack_get_theme_header_footer_layout_items( $section );
+	$active_items  = mrn_base_stack_get_theme_header_footer_active_layout_items( $section );
+	$default       = mrn_base_stack_get_default_theme_header_footer_layout_grid( $section );
+	$raw_items     = isset( $layout['items'] ) && is_array( $layout['items'] ) ? $layout['items'] : array();
+	$default_items = isset( $default['items'] ) && is_array( $default['items'] ) ? $default['items'] : array();
+	$normalized    = mrn_base_stack_normalize_theme_header_footer_layout_grid( $layout, $section, $active_items );
+	$columns       = isset( $normalized['columns'] ) ? min( 6, max( 1, absint( $normalized['columns'] ) ) ) : 1;
+
+	foreach ( $all_items as $item_key => $item_label ) {
+		unset( $item_label );
+
+		if ( isset( $active_items[ $item_key ] ) ) {
+			continue;
+		}
+
+		$item        = isset( $raw_items[ $item_key ] ) && is_array( $raw_items[ $item_key ] ) ? $raw_items[ $item_key ] : ( isset( $default_items[ $item_key ] ) && is_array( $default_items[ $item_key ] ) ? $default_items[ $item_key ] : array() );
+		$column_span = isset( $item['columnSpan'] ) ? absint( $item['columnSpan'] ) : 1;
+		$column_span = min( $columns, max( 1, $column_span ) );
+		$column      = isset( $item['column'] ) ? absint( $item['column'] ) : 1;
+
+		$normalized['items'][ $item_key ] = array(
+			'row'        => isset( $item['row'] ) ? min( 12, max( 1, absint( $item['row'] ) ) ) : 1,
+			'column'     => min( max( 1, $columns - $column_span + 1 ), max( 1, $column ) ),
+			'columnSpan' => $column_span,
+		);
+	}
+
+	return $normalized;
 }
 
 /**
@@ -1603,7 +1690,7 @@ function mrn_base_stack_get_theme_header_footer_layout_editor_markup( $section )
 	ob_start();
 	?>
 	<div
-		class="mrn-theme-hf-layout-grid-editor"
+		class="mrn-theme-hf-layout-grid-editor mrn-admin-layout-builder"
 		data-mrn-theme-hf-layout-editor
 		data-section="<?php echo esc_attr( $section ); ?>"
 		data-storage-name="<?php echo esc_attr( $section . '_layout_grid' ); ?>"
@@ -1611,7 +1698,7 @@ function mrn_base_stack_get_theme_header_footer_layout_editor_markup( $section )
 		data-toggle-fields="<?php echo esc_attr( $toggles_json ); ?>"
 		data-default-layout="<?php echo esc_attr( $layout_json ); ?>"
 	>
-		<div class="mrn-theme-hf-layout-grid-editor__toolbar">
+		<div class="mrn-theme-hf-layout-grid-editor__toolbar mrn-admin-layout-builder__toolbar">
 			<h3 class="mrn-theme-hf-layout-grid-editor__title"><?php echo esc_html( $section_label ); ?> <?php esc_html_e( 'Grid', 'mrn-base-stack' ); ?></h3>
 			<label>
 				<span><?php esc_html_e( 'Columns', 'mrn-base-stack' ); ?></span>
@@ -1624,7 +1711,7 @@ function mrn_base_stack_get_theme_header_footer_layout_editor_markup( $section )
 			<button type="button" class="button" data-mrn-layout-reset><?php esc_html_e( 'Reset', 'mrn-base-stack' ); ?></button>
 		</div>
 		<div class="mrn-theme-hf-layout-grid-editor__selected" data-mrn-layout-selected aria-live="polite"></div>
-		<div class="mrn-theme-hf-layout-grid-editor__canvas" data-mrn-layout-canvas></div>
+		<div class="mrn-theme-hf-layout-grid-editor__canvas mrn-admin-layout-builder__canvas" data-mrn-layout-canvas></div>
 	</div>
 	<?php
 
@@ -1644,8 +1731,7 @@ function mrn_base_stack_sanitize_theme_header_footer_layout_grid_value( $value, 
 
 	$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
 	$section    = 0 === strpos( $field_name, 'footer_' ) ? 'footer' : 'header';
-	$items      = mrn_base_stack_get_theme_header_footer_layout_items( $section );
-	$layout     = mrn_base_stack_normalize_theme_header_footer_layout_grid( $value, $section, $items );
+	$layout     = mrn_base_stack_normalize_theme_header_footer_editor_layout_grid( $value, $section );
 	$json       = wp_json_encode( $layout );
 
 	return is_string( $json ) ? $json : mrn_base_stack_get_default_theme_header_footer_layout_grid_json( $section );
@@ -1681,8 +1767,7 @@ function mrn_base_stack_save_theme_header_footer_layout_grid_request( $post_id, 
 			continue;
 		}
 
-		$items  = mrn_base_stack_get_theme_header_footer_layout_items( $section );
-		$layout = mrn_base_stack_normalize_theme_header_footer_layout_grid( $request[ $section ], $section, $items );
+		$layout = mrn_base_stack_normalize_theme_header_footer_editor_layout_grid( $request[ $section ], $section );
 		$json   = wp_json_encode( $layout );
 		if ( ! is_string( $json ) ) {
 			continue;
@@ -2019,6 +2104,19 @@ function mrn_base_stack_register_theme_options_field_groups() {
 						'required'      => 0,
 						'default_value' => 0,
 						'ui'            => 1,
+					),
+					array(
+						'key'           => 'field_mrn_theme_header_primary_menu_id',
+						'label'         => __( 'Primary Menu', 'mrn-base-stack' ),
+						'name'          => 'header_primary_menu_id',
+						'type'          => 'select',
+						'choices'       => mrn_base_stack_get_nav_menu_choices(),
+						'default_value' => '',
+						'allow_null'    => 0,
+						'multiple'      => 0,
+						'ui'            => 1,
+						'return_format' => 'value',
+						'instructions'  => __( 'Choose the WordPress menu that renders in the stack Primary menu area. Leave on Assigned Primary location to use Appearance > Menus.', 'mrn-base-stack' ),
 					),
 					array(
 						'key'           => 'field_mrn_theme_header_primary_nav_inherit_header_settings',
@@ -3368,6 +3466,7 @@ function mrn_base_stack_get_theme_header_footer_options() {
 			'header_show_tertiary_menu'                  => false,
 			'header_show_secondary_menu'                 => false,
 			'header_show_utility_menu'                   => false,
+			'header_primary_menu_id'                     => 0,
 			'header_primary_nav_inherit_header_settings' => true,
 			'header_show_search'                         => false,
 			'header_searchwp_form_id'                    => 0,
@@ -3423,6 +3522,7 @@ function mrn_base_stack_get_theme_header_footer_options() {
 	$header_font_color           = mrn_base_stack_normalize_site_color_slug( get_field( 'header_font_color', 'option' ) );
 	$header_link_color           = mrn_base_stack_normalize_site_color_slug( get_field( 'header_link_color', 'option' ) );
 	$header_link_hover_color     = mrn_base_stack_normalize_site_color_slug( get_field( 'header_link_hover_color', 'option' ) );
+	$header_primary_menu_id      = absint( get_field( 'header_primary_menu_id', 'option' ) );
 	$searchwp_forms              = function_exists( 'mrn_base_stack_get_searchwp_forms' ) ? mrn_base_stack_get_searchwp_forms() : array();
 	$default_searchwp_form_id    = function_exists( 'mrn_base_stack_get_default_searchwp_form_id' ) ? mrn_base_stack_get_default_searchwp_form_id() : 0;
 	$standard_icon_choices       = array_keys( mrn_base_stack_get_header_search_standard_icon_choices() );
@@ -3456,6 +3556,10 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		$header_searchwp_form_id = absint( $default_searchwp_form_id );
 	}
 
+	if ( $header_primary_menu_id > 0 && ! wp_get_nav_menu_object( $header_primary_menu_id ) ) {
+		$header_primary_menu_id = 0;
+	}
+
 	$header_show_secondary_menu     = (bool) get_field( 'header_show_utility_menu', 'option' );
 	$header_primary_nav_inherit_raw = get_option( 'options_header_primary_nav_inherit_header_settings', '__mrn_missing__' );
 	$header_primary_nav_inherit     = '__mrn_missing__' === $header_primary_nav_inherit_raw ? true : (bool) get_field( 'header_primary_nav_inherit_header_settings', 'option' );
@@ -3481,6 +3585,7 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		'header_show_tertiary_menu'                  => (bool) get_field( 'header_show_tertiary_menu', 'option' ),
 		'header_show_secondary_menu'                 => $header_show_secondary_menu,
 		'header_show_utility_menu'                   => (bool) get_field( 'header_show_utility_menu', 'option' ),
+		'header_primary_menu_id'                     => $header_primary_menu_id,
 		'header_primary_nav_inherit_header_settings' => $header_primary_nav_inherit,
 		'header_show_search'                         => (bool) get_field( 'header_show_search', 'option' ),
 		'header_searchwp_form_id'                    => $header_searchwp_form_id,
@@ -3847,6 +3952,12 @@ function mrn_base_stack_enqueue_theme_header_footer_layout_assets( $hook_suffix 
 		return;
 	}
 
+	if ( ! function_exists( 'mrn_shared_assets_enqueue_admin_layout_builder' ) ) {
+		return;
+	}
+
+	mrn_shared_assets_enqueue_admin_layout_builder();
+
 	$style_path  = get_template_directory() . '/css/admin-header-footer-layout.css';
 	$script_path = get_template_directory() . '/js/admin-header-footer-layout.js';
 	$style_ver   = file_exists( $style_path ) ? _S_VERSION . '-' . (string) filemtime( $style_path ) : _S_VERSION;
@@ -3855,14 +3966,14 @@ function mrn_base_stack_enqueue_theme_header_footer_layout_assets( $hook_suffix 
 	wp_enqueue_style(
 		'mrn-base-stack-admin-header-footer-layout',
 		get_template_directory_uri() . '/css/admin-header-footer-layout.css',
-		array(),
+		array( 'mrn-shared-admin-layout-builder' ),
 		$style_ver
 	);
 
 	wp_enqueue_script(
 		'mrn-base-stack-admin-header-footer-layout',
 		get_template_directory_uri() . '/js/admin-header-footer-layout.js',
-		array( 'jquery' ),
+		array( 'jquery', 'mrn-shared-admin-layout-builder' ),
 		$script_ver,
 		true
 	);

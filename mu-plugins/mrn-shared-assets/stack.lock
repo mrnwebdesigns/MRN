@@ -6,6 +6,6 @@
     "repo_path": "/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets",
     "integration_target": "mrn-shared-mu-plugin-loader",
     "integration_mode": "shared-mu-plugin",
-    "plugin_version": "0.1.3"
+    "plugin_version": "0.2.0"
   }
 }

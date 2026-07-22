@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.2.81' );
+	define( '_S_VERSION', '1.2.87' );
 }
 
 /**
@@ -187,7 +187,19 @@ function mrn_base_stack_nav_location_has_items( $location ) {
 	$locations = get_nav_menu_locations();
 	$menu_id   = isset( $locations[ $location ] ) ? (int) $locations[ $location ] : 0;
 
-	if ( $menu_id <= 0 ) {
+	return mrn_base_stack_nav_menu_has_items( $menu_id );
+}
+
+/**
+ * Determine whether a menu object has menu items.
+ *
+ * @param int|string $menu_id Menu term ID.
+ * @return bool
+ */
+function mrn_base_stack_nav_menu_has_items( $menu_id ) {
+	$menu_id = absint( $menu_id );
+
+	if ( $menu_id <= 0 || ! wp_get_nav_menu_object( $menu_id ) ) {
 		return false;
 	}
 
@@ -199,6 +211,46 @@ function mrn_base_stack_nav_location_has_items( $location ) {
 	);
 
 	return is_array( $items ) && ! empty( $items );
+}
+
+/**
+ * Determine whether a selected menu or fallback menu location has menu items.
+ *
+ * @param int|string $menu_id  Optional selected menu term ID.
+ * @param string     $location Menu location slug used when no menu is selected.
+ * @return bool
+ */
+function mrn_base_stack_nav_menu_selection_has_items( $menu_id, $location ) {
+	$menu_id = absint( $menu_id );
+
+	if ( $menu_id > 0 ) {
+		return mrn_base_stack_nav_menu_has_items( $menu_id );
+	}
+
+	return mrn_base_stack_nav_location_has_items( $location );
+}
+
+/**
+ * Build wp_nav_menu args for a selected menu or registered location.
+ *
+ * @param int|string           $menu_id  Optional selected menu term ID.
+ * @param string               $location Menu location slug used when no menu is selected.
+ * @param array<string, mixed> $args     Base wp_nav_menu args.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_nav_menu_selection_args( $menu_id, $location, array $args ) {
+	$menu_id  = absint( $menu_id );
+	$location = sanitize_key( (string) $location );
+
+	if ( $menu_id > 0 ) {
+		$args['menu'] = $menu_id;
+		unset( $args['theme_location'] );
+	} else {
+		$args['theme_location'] = $location;
+		unset( $args['menu'] );
+	}
+
+	return $args;
 }
 
 /**

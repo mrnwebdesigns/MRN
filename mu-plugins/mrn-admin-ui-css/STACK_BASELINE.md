@@ -3,7 +3,7 @@
 ## Baseline Snapshot
 - Date pinned: 2026-06-30
 - Plugin source path: `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-admin-ui-css`
-- Current plugin version: `3.1.13`
+- Current plugin version: `3.2.2`
 - Intended integration target: mrn-shared-mu-plugin-loader
 - Current release model: shared MU plugin release unit
 
