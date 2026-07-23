@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.07.17-testimonial-schema`
-- Release date: `2026-07-17`
+- Stack release: `2026.07.23-acf-focal-point`
+- Release date: `2026-07-23`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
@@ -18,6 +18,7 @@
   - `mrn-schema-bridge` `0.4.1`
   - `mrn-site-colors` / `Site Styles` `0.1.38`
 - Standard plugins:
+  - `mrn-acf-focal-point` `1.1.2`
   - `mrn-announcements` `1.6.1`
   - `mrn-config-helper` `0.1.43`
   - `mrn-seo-helper` `0.3.4`

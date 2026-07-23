@@ -32,6 +32,24 @@ stack-dependency notes, use [`MRN_PLUGIN_AUDIT.md`](./MRN_PLUGIN_AUDIT.md).
 - Notes:
   - utility plugin for editor feedback
 
+### `mrn-acf-focal-point`
+
+- Name: `MRN ACF Focal Point`
+- Version: `1.1.2`
+- Purpose:
+  - adds focal-point controls to every standard ACF Image field without requiring field-group configuration changes
+  - stores focal coordinates on the selected attachment and applies them to WordPress image output
+- Admin/UI:
+  - collapsed focal-point panel beneath populated ACF Image fields
+  - editors can expand the panel and click or use the keyboard to override the centered default
+- Front-end / theming:
+  - adds the saved focal point as an `object-position` style through WordPress attachment-image attributes
+- Developer-facing hooks:
+  - standard ACF image-field and WordPress attachment-image filters
+- Notes:
+  - requires ACF for editor controls
+  - packaged and activated by the standard new-site bootstrap
+
 ### `mrn-comment-management`
 
 - Name: `Comment Management`

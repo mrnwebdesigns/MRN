@@ -14,6 +14,7 @@ enable-media-replace
 fluent-smtp
 /home/mrndev-stack-manager/stack/packages/happyfiles-pro.zip
 /home/mrndev-stack-manager/stack/packages/mrn-acf-character-count.zip
+/home/mrndev-stack-manager/stack/packages/mrn-acf-focal-point.zip
 /home/mrndev-stack-manager/stack/packages/mrn-ai-assist.zip
 /home/mrndev-stack-manager/stack/packages/mrn-announcements.zip
 /home/mrndev-stack-manager/stack/packages/mrn-comment-management.zip

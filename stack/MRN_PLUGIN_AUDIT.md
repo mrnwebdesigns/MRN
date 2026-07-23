@@ -42,6 +42,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | --- | --- | --- | --- | --- |
 | `background-video-popout-disabler` | MRN Background Video Pop-Out Disabler | 1.0.1 | <https://github.com/mrnwebdesigns/background-video-popout-disabler> | No stack requirement. |
 | `mrn-acf-character-count` | MRN ACF Character Count | 1.1.6 | <https://github.com/mrnwebdesigns/mrn-acf-character-count> | No stack requirement; ACF field context required. |
+| `mrn-acf-focal-point` | MRN ACF Focal Point | 1.1.2 | <https://github.com/mrnwebdesigns/mrn-acf-focal-point> | No hard stack requirement; ACF image fields are required for editor controls. |
 | `mrn-ai-assist` | MRN AI Assist | 2.0.12 | <https://github.com/mrnwebdesigns/mrn-ai-assist> | No hard stack requirement; MRN SEO Helper/SmartCrawl integrations are optional feature paths. |
 | `mrn-announcements` | MRN Announcements | 1.6.1 | <https://github.com/mrnwebdesigns/mrn-announcements> | Standalone-capable; optional stack Business Information and USB integrations; admin/data-only CPT with no public URL or SEO surface. |
 | `mrn-comment-management` | MRN Comment Management | 1.1.7 | <https://github.com/mrnwebdesigns/mrn-comment-management> | No stack requirement. |

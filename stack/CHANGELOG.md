@@ -1,5 +1,9 @@
 # Stack Changelog
 
+## 2026.07.23-acf-focal-point
+- Added `mrn-acf-focal-point` `1.1.2` to the canonical stack inventory and new-site plugin manifest.
+- New site bootstraps now install and activate the packaged focal-point plugin so every standard ACF Image field receives collapsed focal-point controls automatically.
+
 ## 2026.07.17-business-information-announcements
 - Expanded `mrn-announcements` to `1.6.1` while preserving standalone manual scheduling.
 - Added optional Business Information rules for outside-hours, closed-holiday, and modified-holiday announcements.
