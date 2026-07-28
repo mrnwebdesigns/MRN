@@ -19,7 +19,7 @@ BOOTSTRAP_WARNINGS=()
 usage() {
   cat <<'USAGE'
 Usage:
-  site-bootstrap.sh --site-path /home/<user>/htdocs/<domain> [--site-user <user>] [--plugins-file <path>] [--themes-file <path>] [--licenses-file <path>] [--notify-email <email>]
+  site-bootstrap.sh --site-path /home/<user>/htdocs/<domain> [--site-user <user>] [--plugins-file <path>] [--themes-file <path>] [--licenses-file <path>] [--notify-email <email>] [--test-notifications]
 
 Notes:
   - Run as root (recommended on CloudPanel and required to provision site-owner SSH files with the correct ownership/perms).
@@ -41,6 +41,7 @@ SITE_PATH=""
 SITE_USER=""
 SITE_HOME=""
 WP_PATH=""
+TEST_NOTIFICATIONS="false"
 NOTIFY_EMAIL="${STACK_NOTIFY_EMAIL:-${BOOTSTRAP_NOTIFY_EMAIL:-wordpress_admin@mrnwebdesigns.com}}"
 SLACK_WEBHOOK_URL="${STACK_SLACK_WEBHOOK_URL:-${BOOTSTRAP_SLACK_WEBHOOK_URL:-}}"
 SLACK_WEBHOOK_URL_FILE="${STACK_SLACK_WEBHOOK_URL_FILE:-${STACK_ROOT}/secrets/slack-webhook-url.txt}"
@@ -117,6 +118,10 @@ while [[ $# -gt 0 ]]; do
       NOTIFY_EMAIL="${2:-}"
       shift 2
       ;;
+    --test-notifications)
+      TEST_NOTIFICATIONS="true"
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -134,20 +139,31 @@ send_notification() {
   subject="$1"
   body="$2"
   if [[ -z "${NOTIFY_EMAIL}" ]]; then
+    echo "Email notification skipped: no recipient configured."
     return 0
   fi
   if command -v mail >/dev/null 2>&1; then
-    printf '%s\n' "${body}" | mail -s "${subject}" "${NOTIFY_EMAIL}" || true
+    if printf '%s\n' "${body}" | mail -s "${subject}" "${NOTIFY_EMAIL}"; then
+      echo "Email notification sent via mail to ${NOTIFY_EMAIL}: ${subject}"
+    else
+      echo "WARNING: Email notification failed via mail to ${NOTIFY_EMAIL}: ${subject}" >&2
+    fi
     return 0
   fi
   if command -v sendmail >/dev/null 2>&1; then
-    {
+    if {
       printf 'To: %s\n' "${NOTIFY_EMAIL}"
       printf 'Subject: %s\n' "${subject}"
       printf '\n'
       printf '%s\n' "${body}"
-    } | sendmail -t || true
+    } | sendmail -t; then
+      echo "Email notification sent via sendmail to ${NOTIFY_EMAIL}: ${subject}"
+    else
+      echo "WARNING: Email notification failed via sendmail to ${NOTIFY_EMAIL}: ${subject}" >&2
+    fi
+    return 0
   fi
+  echo "WARNING: Email notification skipped because neither mail nor sendmail is available." >&2
 }
 
 json_escape() {
@@ -166,8 +182,14 @@ send_slack_notification() {
   local color="${3:-#1f6feb}"
   local domain channel_field payload
 
-  [[ -n "${SLACK_WEBHOOK_URL}" ]] || return 0
-  command -v curl >/dev/null 2>&1 || return 0
+  if [[ -z "${SLACK_WEBHOOK_URL}" ]]; then
+    echo "Slack notification skipped: webhook URL is not configured."
+    return 0
+  fi
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "WARNING: Slack notification skipped because curl is not available." >&2
+    return 0
+  fi
 
   domain="$(basename "${SITE_PATH:-unknown}")"
   if [[ -n "${SLACK_CHANNEL}" ]]; then
@@ -191,7 +213,11 @@ send_slack_notification() {
     ]
   }'
 
-  curl -sS -X POST -H 'Content-type: application/json' --data "${payload}" "${SLACK_WEBHOOK_URL}" >/dev/null || true
+  if curl -sS -X POST -H 'Content-type: application/json' --data "${payload}" "${SLACK_WEBHOOK_URL}" >/dev/null; then
+    echo "Slack notification sent: ${title}"
+  else
+    echo "WARNING: Slack notification failed: ${title}" >&2
+  fi
 }
 
 notify_failure() {
@@ -218,6 +244,20 @@ EOF
 }
 
 trap 'notify_failure "$?" "$LINENO" "$BASH_COMMAND"' ERR
+
+if [[ "${TEST_NOTIFICATIONS}" == "true" ]]; then
+  if [[ -z "${SITE_PATH}" ]]; then
+    SITE_PATH="/notification-test"
+  fi
+  send_notification \
+    "MRN Bootstrap Notification Test" \
+    "MRN bootstrap notification test from ${STACK_ROOT}."
+  send_slack_notification \
+    "MRN Bootstrap Notification Test" \
+    "MRN bootstrap notification test from ${STACK_ROOT}." \
+    "#1f6feb"
+  exit 0
+fi
 
 if [[ -z "${SITE_PATH}" ]]; then
   echo "Missing required argument: --site-path" >&2
@@ -286,6 +326,18 @@ php_string_literal() {
 
 last_nonempty_line() {
   sed '/^[[:space:]]*$/d' | tail -n 1
+}
+
+run_wp_config_set_quiet() {
+  local name="$1"
+  shift
+
+  if run_wp config set "${name}" "$@" >/dev/null 2>&1; then
+    echo "Configured ${name} in wp-config.php"
+    return 0
+  fi
+
+  return 1
 }
 
 load_site_owner_authorized_key() {
@@ -1400,19 +1452,19 @@ apply_wp_defaults() {
   fi
   # Expose the stack-managed SendGrid management key to WordPress when available.
   if [[ -n "${SENDGRID_MANAGEMENT_API_KEY}" ]]; then
-    if ! run_wp config set MRN_SENDGRID_MANAGEMENT_API_KEY "${SENDGRID_MANAGEMENT_API_KEY}" --type=constant; then
+    if ! run_wp_config_set_quiet MRN_SENDGRID_MANAGEMENT_API_KEY "${SENDGRID_MANAGEMENT_API_KEY}" --type=constant; then
       add_warning "Failed to set MRN_SENDGRID_MANAGEMENT_API_KEY in wp-config.php"
     fi
   fi
   # Expose stack-managed reCAPTCHA Enterprise credentials for code-locked plugin mode.
   if [[ -n "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" ]]; then
-    if ! run_wp config set MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" --type=constant; then
+    if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" --type=constant; then
       add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID in wp-config.php"
     fi
   fi
 
   if [[ -n "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" ]]; then
-    if ! run_wp config set MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" --type=constant; then
+    if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" --type=constant; then
       add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL in wp-config.php"
     fi
   fi
@@ -1426,14 +1478,14 @@ apply_wp_defaults() {
     if [[ -n "${recaptcha_private_key_literal}" ]]; then
       if ! recaptcha_private_key_php_literal="$(php_string_literal "${recaptcha_private_key_literal}")"; then
         add_warning "Failed to prepare MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY for wp-config.php"
-      elif ! run_wp config set MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY "${recaptcha_private_key_php_literal}" --raw --type=constant; then
+      elif ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY "${recaptcha_private_key_php_literal}" --raw --type=constant; then
         add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY in wp-config.php"
       fi
     fi
   fi
 
   if [[ -n "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" ]]; then
-    if ! run_wp config set MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" --type=constant; then
+    if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" --type=constant; then
       add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS in wp-config.php"
     fi
   fi
@@ -1445,7 +1497,7 @@ apply_wp_defaults() {
         | tr '[:lower:]' '[:upper:]'
     )"
     if [[ "${recaptcha_integration_type}" == "SCORE" || "${recaptcha_integration_type}" == "CHECKBOX" ]]; then
-      if ! run_wp config set MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE "${recaptcha_integration_type}" --type=constant; then
+      if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE "${recaptcha_integration_type}" --type=constant; then
         add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE in wp-config.php"
       fi
     else
