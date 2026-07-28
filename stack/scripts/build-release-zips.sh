@@ -64,9 +64,13 @@ build_plugins() {
 	local source_root="${ROOT_DIR}/plugins"
 	local release_root="${ROOT_DIR}/releases/plugins"
 	local slugs=("$@")
+	local slug
 
 	if [[ ${#slugs[@]} -eq 0 ]]; then
-		mapfile -t slugs < <(list_directories "$source_root")
+		slugs=()
+		while IFS= read -r slug; do
+			slugs+=( "$slug" )
+		done < <(list_directories "$source_root")
 	fi
 
 	for slug in "${slugs[@]}"; do
@@ -78,9 +82,13 @@ build_mu_plugins() {
 	local source_root="${ROOT_DIR}/mu-plugins"
 	local release_root="${ROOT_DIR}/releases/mu-plugins"
 	local slugs=("$@")
+	local slug
 
 	if [[ ${#slugs[@]} -eq 0 ]]; then
-		mapfile -t slugs < <(list_directories "$source_root")
+		slugs=()
+		while IFS= read -r slug; do
+			slugs+=( "$slug" )
+		done < <(list_directories "$source_root")
 	fi
 
 	for slug in "${slugs[@]}"; do
