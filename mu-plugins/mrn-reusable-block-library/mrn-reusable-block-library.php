@@ -3,7 +3,7 @@
  * Plugin Name: MRN Reusable Block Library
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.26
+ * Version: 0.1.27
  */
 
 defined('ABSPATH') || exit;
@@ -321,8 +321,8 @@ function mrn_rbl_rest_permission_check() {
 /**
  * Replace public read permissions on reusable block REST routes with editor-only access.
  *
- * @param array<string, array<int, array<string, mixed>>> $endpoints
- * @return array<string, array<int, array<string, mixed>>>
+ * @param array<string, array<int|string, array<string, mixed>>> $endpoints
+ * @return array<string, array<int|string, array<string, mixed>>>
  */
 function mrn_rbl_lock_rest_endpoints(array $endpoints): array {
     foreach ($endpoints as $route => $handlers) {
@@ -344,7 +344,7 @@ function mrn_rbl_lock_rest_endpoints(array $endpoints): array {
         }
 
         foreach ($handlers as $index => $handler) {
-            if (!is_array($handler)) {
+            if (!is_int($index) || !is_array($handler) || !isset($handler['methods'])) {
                 continue;
             }
 

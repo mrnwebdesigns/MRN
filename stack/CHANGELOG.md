@@ -1,5 +1,9 @@
 # Stack Changelog
 
+## 2026.07.30-reusable-block-rest-schema
+- Expanded `mrn-reusable-block-library` to `0.1.27`.
+- Kept the reusable-block editor permission callback on REST request handlers without corrupting route-level schema callbacks consumed by WooCommerce and the WordPress REST index.
+
 ## 2026.07.23-acf-focal-point
 - Added `mrn-acf-focal-point` `1.1.2` to the canonical stack inventory and new-site plugin manifest.
 - New site bootstraps now install and activate the packaged focal-point plugin so every standard ACF Image field receives collapsed focal-point controls automatically.
