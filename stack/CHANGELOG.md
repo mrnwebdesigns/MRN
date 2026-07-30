@@ -1,6 +1,8 @@
 # Stack Changelog
 
-## 2026.07.30-reusable-block-rest-schema
+## 2026.07.30-woocommerce-admin-compatibility
+- Expanded `mrn-admin-ui-css` to `3.2.3`.
+- Scoped generic admin ad-suppression selectors to descendants of the WordPress admin body so WooCommerce feature classes on the body cannot hide the entire setup wizard.
 - Expanded `mrn-reusable-block-library` to `0.1.27`.
 - Kept the reusable-block editor permission callback on REST request handlers without corrupting route-level schema callbacks consumed by WooCommerce and the WordPress REST index.
 

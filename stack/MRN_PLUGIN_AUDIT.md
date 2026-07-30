@@ -69,7 +69,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | --- | --- | --- | --- | --- |
 | `mrn-loader` | MRN Loader | 1.3.2 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned; required for stack MU subfolder loading. |
 | `mrn-active-style-guide` | MRN Active Style Guide | 0.1.5 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned front-end reference tool. |
-| `mrn-admin-ui-css` | MRN Admin UI CSS | 3.1.13 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned admin UI layer. |
+| `mrn-admin-ui-css` | MRN Admin UI CSS | 3.2.3 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned admin UI layer. |
 | `mrn-dashboard-support` | MRN Dashboard Support | 1.0.3 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement. |
 | `mrn-disable-comments` | MRN Disable Comments | 1.2.3 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement. |
 | `mrn-duplicate-enhance` | MRN Post Duplicator Admin Bar Enhance | 1.1.1 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; depends on Post Duplicator behavior being available. |

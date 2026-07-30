@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.07.30-reusable-block-rest-schema`
+- Stack release: `2026.07.30-woocommerce-admin-compatibility`
 - Release date: `2026-07-30`
 - Status: `current baseline`
 
@@ -11,7 +11,7 @@
   - `mrn-base-stack-child` `1.0.1`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.5`
-  - `mrn-admin-ui-css` `3.1.13`
+  - `mrn-admin-ui-css` `3.2.3`
   - `mrn-shared-assets` `0.1.3`
   - `mrn-editor-lockdown` `1.0.32`
   - `mrn-reusable-block-library` `0.1.27`

@@ -24,14 +24,14 @@
  * Common class names used by plugins for ads, banners, or upsells
  */
 
-[class*="advertisement"],
-[class*="promo"],
-[class*="promotion"],
-[class*="marketing"],
-[class*="upsell"],
-[class*="upgrade"],
-[class*="pro-banner"],
-[class*="premium-banner"] {
+body.wp-admin [class*="advertisement"],
+body.wp-admin [class*="promo"],
+body.wp-admin [class*="promotion"],
+body.wp-admin [class*="marketing"],
+body.wp-admin [class*="upsell"],
+body.wp-admin [class*="upgrade"],
+body.wp-admin [class*="pro-banner"],
+body.wp-admin [class*="premium-banner"] {
     display: none !important;
 }
 
