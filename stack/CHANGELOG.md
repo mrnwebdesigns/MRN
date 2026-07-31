@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.07.31-acf-field-tree-finalization
+- Expanded `mrn-base-stack` to `1.2.88` and `mrn-reusable-block-library` to `0.1.28`.
+- Finalized MRN flexible-content and repeater field trees after all runtime contract mutations so nested select fields always retain ACF's required `multiple` and `return_format` defaults.
+- Kept normalization scoped to completed builder trees instead of restoring the costly global load/prepare hooks removed during the builder hydration performance work.
+- Completed reusable link Icon Position definitions at their source and added focused regression coverage for nested select trees.
+- Updated the development-only WordPress Coding Standards dependency to `3.4.1` to clear its published security advisory before release QA.
+
 ## 2026.07.30-woocommerce-admin-compatibility
 - Expanded `mrn-admin-ui-css` to `3.2.3`.
 - Scoped generic admin ad-suppression selectors to descendants of the WordPress admin body so WooCommerce feature classes on the body cannot hide the entire setup wizard.

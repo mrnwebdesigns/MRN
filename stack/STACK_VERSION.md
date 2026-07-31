@@ -1,20 +1,20 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.07.30-woocommerce-admin-compatibility`
-- Release date: `2026-07-30`
+- Stack release: `2026.07.31-acf-field-tree-finalization`
+- Release date: `2026-07-31`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.83`
+  - `mrn-base-stack` `1.2.88`
   - `mrn-base-stack-child` `1.0.1`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.5`
   - `mrn-admin-ui-css` `3.2.3`
   - `mrn-shared-assets` `0.1.3`
   - `mrn-editor-lockdown` `1.0.32`
-  - `mrn-reusable-block-library` `0.1.27`
+  - `mrn-reusable-block-library` `0.1.28`
   - `mrn-schema-bridge` `0.4.1`
   - `mrn-site-colors` / `Site Styles` `0.1.38`
 - Standard plugins:

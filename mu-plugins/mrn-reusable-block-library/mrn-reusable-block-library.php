@@ -3,7 +3,7 @@
  * Plugin Name: MRN Reusable Block Library
  * Description: Adds a reusable block library powered by typed custom post types for editor-managed content blocks.
  * Author: MRN Web Designs
- * Version: 0.1.27
+ * Version: 0.1.28
  */
 
 defined('ABSPATH') || exit;
@@ -3166,6 +3166,7 @@ function mrn_rbl_get_button_link_icon_fields(string $key_prefix, string $button_
                 'right' => 'Right',
             ),
             'default_value' => 'left',
+            'multiple'      => 0,
             'return_format' => 'value',
             'ui'            => 1,
             'wrapper'       => array(
