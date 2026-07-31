@@ -115,6 +115,27 @@ mrn_acf_finalization_test_assert( 'label' === $icon_field['return_format'], 'val
 $invalid_field = $finalized['layouts']['layout_test']['sub_fields'][1]['sub_fields'][1];
 mrn_acf_finalization_test_assert( 'value' === $invalid_field['return_format'], 'invalid return_format is normalized' );
 
+$cloned_layouts = mrn_base_stack_finalize_cloned_acf_layouts(
+	array(
+		'layout_clone' => array(
+			'key'        => 'layout_clone',
+			'name'       => 'clone',
+			'sub_fields' => array(
+				array(
+					'key'  => 'field_cloned_section_width',
+					'name' => 'section_width',
+					'type' => 'select',
+				),
+			),
+		),
+	)
+);
+mrn_acf_finalization_test_assert_selects_complete( $cloned_layouts['layout_clone'], 'cloned_layouts.layout_clone' );
+mrn_acf_finalization_test_assert(
+	0 === $cloned_layouts['layout_clone']['sub_fields'][0]['multiple'],
+	'clone factories finalize select fields before caching layouts'
+);
+
 $late_hooks = array_filter(
 	$GLOBALS['mrn_acf_finalization_test_hooks'],
 	static function ( $hook ) {

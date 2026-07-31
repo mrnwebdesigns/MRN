@@ -5,6 +5,7 @@
 - Finalized MRN flexible-content and repeater field trees after all runtime contract mutations so nested select fields always retain ACF's required `multiple` and `return_format` defaults.
 - Kept normalization scoped to completed builder trees instead of restoring the costly global load/prepare hooks removed during the builder hydration performance work.
 - Completed reusable link Icon Position definitions at their source and added focused regression coverage for nested select trees.
+- Finalized Hero, After Content, tab-panel, and card clone-factory outputs before ACF registers their independently loaded sub-fields.
 - Updated the development-only WordPress Coding Standards dependency to `3.4.1` to clear its published security advisory before release QA.
 
 ## 2026.07.30-woocommerce-admin-compatibility

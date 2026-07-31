@@ -100,6 +100,28 @@ function mrn_base_stack_finalize_acf_builder_field_tree( $field ) {
 	return mrn_base_stack_normalize_select_defaults_in_field_tree( $field );
 }
 
+/**
+ * Finalize layouts produced by MRN's runtime clone factories before caching.
+ *
+ * ACF can register cloned layout sub-fields independently of their containing
+ * flexible-content field. Finalizing at the clone factory keeps those stored
+ * definitions complete before ACF creates value-loading field instances.
+ *
+ * @param array<string|int, mixed> $layouts Cloned ACF layout definitions.
+ * @return array<string|int, mixed>
+ */
+function mrn_base_stack_finalize_cloned_acf_layouts( array $layouts ) {
+	foreach ( $layouts as $layout_key => $layout ) {
+		if ( ! is_array( $layout ) ) {
+			continue;
+		}
+
+		$layouts[ $layout_key ] = mrn_base_stack_normalize_select_defaults_in_field_tree( $layout );
+	}
+
+	return $layouts;
+}
+
 // Contract mutations run through priority 200; finalize only completed builder trees.
 add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_finalize_acf_builder_field_tree', 999 );
 add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_finalize_acf_builder_field_tree', 999 );

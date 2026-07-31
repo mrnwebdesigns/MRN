@@ -249,7 +249,8 @@ function mrn_base_stack_get_after_content_builder_layouts( $post_id = 0 ) {
 		$after_layouts[ $layout_key ] = $layout;
 	}
 
-	$layouts_cache[ $cache_key ] = ! empty( $after_layouts ) ? mrn_base_stack_clone_acf_keys_with_prefix( $after_layouts, 'after_content_' ) : array();
+	$cloned_layouts              = ! empty( $after_layouts ) ? mrn_base_stack_clone_acf_keys_with_prefix( $after_layouts, 'after_content_' ) : array();
+	$layouts_cache[ $cache_key ] = mrn_base_stack_finalize_cloned_acf_layouts( $cloned_layouts );
 
 	return $layouts_cache[ $cache_key ];
 }
@@ -1357,7 +1358,7 @@ function mrn_base_stack_get_hero_builder_layouts() {
 		$layouts[ $cloned_key ] = $cloned_layout;
 	}
 
-	$layouts_cache = $layouts;
+	$layouts_cache = mrn_base_stack_finalize_cloned_acf_layouts( $layouts );
 
 	return $layouts_cache;
 }
@@ -1489,7 +1490,7 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 		$layouts[ $cloned_key ] = $cloned_layout;
 	}
 
-	$layouts_cache[ $cache_key ] = $layouts;
+	$layouts_cache[ $cache_key ] = mrn_base_stack_finalize_cloned_acf_layouts( $layouts );
 
 	return $layouts_cache[ $cache_key ];
 }
@@ -1616,7 +1617,7 @@ function mrn_base_stack_get_card_nested_layouts() {
 		$layouts[ $cloned_key ] = $cloned_layout;
 	}
 
-	$layouts_cache[ $cache_key ] = $layouts;
+	$layouts_cache[ $cache_key ] = mrn_base_stack_finalize_cloned_acf_layouts( $layouts );
 
 	return $layouts_cache[ $cache_key ];
 }
