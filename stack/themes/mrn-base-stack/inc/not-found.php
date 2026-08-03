@@ -64,8 +64,15 @@ function mrn_base_stack_get_not_found_builder_layout_source_names() {
  * @return array<string, array<string, mixed>>
  */
 function mrn_base_stack_get_not_found_builder_layouts() {
+	static $layouts_cache = null;
+
+	if ( is_array( $layouts_cache ) ) {
+		return $layouts_cache;
+	}
+
 	if ( ! function_exists( 'mrn_base_stack_get_content_builder_source_layouts' ) || ! function_exists( 'mrn_base_stack_clone_acf_keys_with_prefix' ) ) {
-		return array();
+		$layouts_cache = array();
+		return $layouts_cache;
 	}
 
 	$source_layouts = mrn_base_stack_get_content_builder_source_layouts();
@@ -108,8 +115,32 @@ function mrn_base_stack_get_not_found_builder_layouts() {
 		$layouts[ $layout_key ] = $layout;
 	}
 
-	return mrn_base_stack_clone_acf_keys_with_prefix( $layouts, 'not_found_' );
+	$layouts_cache = mrn_base_stack_clone_acf_keys_with_prefix( $layouts, 'not_found_' );
+
+	return $layouts_cache;
 }
+
+/**
+ * Populate the 404 builder only when ACF loads that specific editor field.
+ *
+ * Building the canonical Content layout tree is intentionally deferred so
+ * ordinary frontend, REST, cron, and unrelated admin requests do not pay the
+ * cloning cost for a field that only appears on the 404 options screen.
+ *
+ * @param array<string, mixed>|mixed $field ACF field definition.
+ * @return array<string, mixed>|mixed
+ */
+function mrn_base_stack_populate_not_found_builder_field( $field ) {
+	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	$field['layouts'] = mrn_base_stack_get_not_found_builder_layouts();
+
+	return $field;
+}
+add_filter( 'acf/load_field/key=field_mrn_404_content_rows', 'mrn_base_stack_populate_not_found_builder_field', 15 );
+add_filter( 'acf/prepare_field/key=field_mrn_404_content_rows', 'mrn_base_stack_populate_not_found_builder_field', 15 );
 
 /**
  * Register editable 404 page fields.
@@ -211,7 +242,7 @@ function mrn_base_stack_register_not_found_field_group() {
 					'type'         => 'flexible_content',
 					'instructions' => __( 'Add focused recovery content below the 404 panel. Available layouts are limited to Text, Content listings, and WPForms.', 'mrn-base-stack' ),
 					'button_label' => __( 'Add Content Row', 'mrn-base-stack' ),
-					'layouts'      => mrn_base_stack_get_not_found_builder_layouts(),
+					'layouts'      => array(),
 				),
 			),
 			'location'              => array(
