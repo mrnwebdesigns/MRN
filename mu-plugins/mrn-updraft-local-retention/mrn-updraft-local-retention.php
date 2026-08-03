@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: MRN Updraft Local Retention
- * Description: Keeps only a limited number of local Updraft backup sets while leaving remote retention untouched.
+ * Plugin Name: MRN Updraft Backup Policy
+ * Description: Limits local Updraft backup sets and repairs missing scheduled backup events after restores.
  * Author: MRN Web Designs
- * Version: 0.1.0
+ * Version: 0.2.0
  */
 
 defined('ABSPATH') || exit;
@@ -17,6 +17,56 @@ const MRN_UPDRAFT_LOCAL_RETENTION_CRON_HOOK = 'mrn_updraft_local_retention_clean
  * Default number of local backup sets to retain.
  */
 const MRN_UPDRAFT_LOCAL_RETENTION_MAX_SETS = 4;
+
+/**
+ * Resolve the next occurrence of a configured Updraft HH:MM start time.
+ *
+ * @param int|false $default_timestamp Updraft's proposed first run.
+ * @param string    $option_name       Start-time option name.
+ * @return int|false
+ */
+function mrn_updraft_local_retention_get_next_start_time($default_timestamp, string $option_name) {
+	$start_time = get_option($option_name, '');
+	if (!is_string($start_time) || 1 !== preg_match('/^(\d{2}):(\d{2})$/', $start_time, $matches)) {
+		return $default_timestamp;
+	}
+
+	$hour   = (int) $matches[1];
+	$minute = (int) $matches[2];
+	if ($hour > 23 || $minute > 59) {
+		return $default_timestamp;
+	}
+
+	$now      = new DateTimeImmutable('now', wp_timezone());
+	$next_run = $now->setTime($hour, $minute);
+	if ($next_run <= $now) {
+		$next_run = $next_run->modify('+1 day');
+	}
+
+	return $next_run->getTimestamp();
+}
+
+/**
+ * Enforce the configured file backup start time after all Updraft filters.
+ *
+ * @param int|false $default_timestamp Updraft's proposed first run.
+ * @return int|false
+ */
+function mrn_updraft_local_retention_filter_files_start_time($default_timestamp) {
+	return mrn_updraft_local_retention_get_next_start_time($default_timestamp, 'updraft_starttime_files');
+}
+add_filter('updraftplus_schedule_firsttime_files', 'mrn_updraft_local_retention_filter_files_start_time', 999);
+
+/**
+ * Enforce the configured database backup start time after all Updraft filters.
+ *
+ * @param int|false $default_timestamp Updraft's proposed first run.
+ * @return int|false
+ */
+function mrn_updraft_local_retention_filter_database_start_time($default_timestamp) {
+	return mrn_updraft_local_retention_get_next_start_time($default_timestamp, 'updraft_starttime_db');
+}
+add_filter('updraftplus_schedule_firsttime_db', 'mrn_updraft_local_retention_filter_database_start_time', 999);
 
 /**
  * Ensure the recurring cleanup event exists.
@@ -50,6 +100,51 @@ function mrn_updraft_local_retention_schedule_cleanup(): void {
 	wp_schedule_event($next_run->getTimestamp(), 'daily', MRN_UPDRAFT_LOCAL_RETENTION_CRON_HOOK);
 }
 add_action('init', 'mrn_updraft_local_retention_schedule_cleanup');
+
+/**
+ * Restore Updraft's file and database cron events when a database restore leaves
+ * the saved schedule settings in place but omits the corresponding WP-Cron rows.
+ */
+function mrn_updraft_local_retention_repair_backup_schedules(): void {
+	global $updraftplus;
+
+	if (!is_object($updraftplus)) {
+		return;
+	}
+
+	$schedules = array(
+		array(
+			'hook'     => 'updraft_backup',
+			'option'   => 'updraft_interval',
+			'scheduler' => 'schedule_backup',
+		),
+		array(
+			'hook'     => 'updraft_backup_database',
+			'option'   => 'updraft_interval_database',
+			'scheduler' => 'schedule_backup_database',
+		),
+	);
+
+	foreach ($schedules as $schedule) {
+		$interval = get_option($schedule['option'], 'manual');
+		$interval = is_string($interval) ? sanitize_key($interval) : 'manual';
+
+		if ('manual' === $interval || '' === $interval) {
+			continue;
+		}
+
+		if (false !== wp_next_scheduled($schedule['hook'])) {
+			continue;
+		}
+
+		if (!method_exists($updraftplus, $schedule['scheduler'])) {
+			continue;
+		}
+
+		$updraftplus->{$schedule['scheduler']}($interval);
+	}
+}
+add_action('init', 'mrn_updraft_local_retention_repair_backup_schedules', 20);
 
 /**
  * Determine the local Updraft storage directory.

@@ -118,13 +118,16 @@ rsync -rlt --omit-dir-times --delete \
 - Avoid preserving local owner/group/permission metadata onto live site paths.
   - Use content-only sync flags such as `-rlt` instead of `-a` when syncing into live site directories.
   - Then normalize directories to `755` and files to `644` as the site owner.
-- Before any individual-site live write, run a full Updraft backup from the site-owner context:
-  - `wp updraftplus backup --include-files='plugins,themes,uploads,others' --send-to-cloud --always-keep --label='<label>'`
+- Code-only individual-site writes do not create an Updraft backup. Use Git or the managed package as the code rollback source.
+- For a write that changes stored data or runs a migration, create a database-only backup from the site-owner context:
+  - `wp updraftplus backup --include-files= --send-to-cloud --label='<label>'`
+- Routine backups remain under normal retention; do not use `--always-keep` for deployments.
 - Treat malformed Updraft placeholder values as part of deploy readiness.
   - Check `updraft_service`, `updraft_email`, `updraft_report_warningsonly`, `updraft_report_wholebackup`, and `updraft_report_dbbackup`.
   - If those values contain placeholder entries such as `"0"` or empty-string array values, remove only the placeholders, keep the real storage backend, and rerun the same backup until the latest log is clean.
 - Canonical preflight helper for the site-owner SSH verify plus Updraft readiness pass:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh --site-hostname <site-hostname>`
+  - Add `--with-db-backup` only for data-changing or migration work.
 - If there is no dedicated helper for the exact live site change, sync only the changed live surface instead of broad site-wide paths.
   - Example: for a single MU plugin release, sync only that MU plugin directory as the site owner.
 - After the broad normalization pass, run `stat` on representative changed files.

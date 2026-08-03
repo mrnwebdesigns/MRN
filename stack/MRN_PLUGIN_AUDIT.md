@@ -80,7 +80,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-schema-bridge` | MRN Schema Bridge | 0.4.1 | <https://github.com/mrnwebdesigns/MRN> | SmartCrawl is the preferred base graph; standalone supplemental schema remains available when it is absent. |
 | `mrn-shared-assets` | MRN Shared Assets | 0.1.3 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned shared asset provider. |
 | `mrn-site-colors` | MRN Site Styles | 0.1.15 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned design-token/configuration layer. |
-| `mrn-updraft-local-retention` | MRN Updraft Local Retention | 0.1.0 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; requires UpdraftPlus to have an effect. |
+| `mrn-updraft-local-retention` | MRN Updraft Backup Policy | 0.2.0 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; requires UpdraftPlus to enforce local retention and repair missing backup cron events. |
 
 ## Stack MU Wrapper Notes
 

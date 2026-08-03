@@ -36,14 +36,15 @@ Prefer:
 
 1. Identify the scope of the change.
    - Confirm whether the work touches a normal plugin, MU plugin, shared runtime file, stack theme, or more than one layer.
-2. Resolve the live site owner and back up first.
+2. Resolve the live site owner and decide whether stored data changes.
    - Resolve the target owner with `/Users/khofmeyer/Development/MRN/stack/scripts/resolve-live-site-owner.sh <site-hostname>`.
    - Verify the direct site-owner SSH path before any write.
    - New sites should receive that direct site-owner SSH authorization during stack bootstrap; if an older site still fails the verify step, treat it as a one-time site-owner `authorized_keys` backfill instead of a theme/plugin deploy bug.
    - Prefer the canonical helper:
      `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh --site-hostname <site-hostname>`
-   - Run a full Updraft backup for `plugins`, `themes`, `uploads`, `others`, and database before deploying.
-   - If Updraft storage/report settings contain placeholder values such as `"0"` or empty-string array entries, normalize only those placeholders and rerun the backup until the latest log is clean.
+   - Code-only deployments do not create a backup. Git is the rollback source for code.
+   - If the deployment changes stored data or runs a migration, add `--with-db-backup` to create a labeled database-only backup.
+   - If Updraft storage/report settings contain placeholder values such as `"0"` or empty-string array entries, normalize only those placeholders before continuing.
 3. Review theme impact.
    - If rendering, template structure, helper output, classes, variables, or accent hooks changed, include the parent theme update in the rollout plan.
 4. Check live-theme compatibility.

@@ -1,6 +1,10 @@
-# MRN Updraft Local Retention
+# MRN Updraft Backup Policy
 
 WordPress plugin release unit for `mrn-updraft-local-retention`.
+
+The MU plugin keeps no more than four local Updraft backup sets. It also
+recreates missing Updraft file and database cron events when saved non-manual
+schedule settings survive a database restore without their WP-Cron rows.
 
 ## QA Engine
 

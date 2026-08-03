@@ -7,12 +7,14 @@ Usage:
   preflight-live-site-deploy.sh \
     --site-hostname <site-hostname> \
     [--discovery-ssh-host <ssh-host>] \
+    [--with-db-backup] \
     [--backup-label <label>] \
     [--skip-backup]
 
 Description:
   Resolve the live site owner, verify the direct site-owner SSH path, normalize
-  malformed Updraft placeholder settings, and run a pre-deploy Updraft backup.
+  malformed Updraft placeholder settings, and verify deploy readiness. Code-only
+  deploys do not create a backup unless --with-db-backup is provided.
 
 Output:
   Prints shell-friendly key=value lines for:
@@ -26,7 +28,8 @@ Output:
 Notes:
   - Human-readable progress is written to stderr.
   - Use the printed SSH_LOGIN for direct site-owner deploy writes.
-  - Backup is skipped when --skip-backup is provided.
+  - --with-db-backup creates a database-only backup for database-changing work.
+  - --skip-backup remains accepted for compatibility and is now the default.
 EOF
 }
 
@@ -42,7 +45,7 @@ note() {
 SITE_HOSTNAME=""
 DISCOVERY_SSH_HOST="mrndev"
 BACKUP_LABEL=""
-SKIP_BACKUP=0
+RUN_DB_BACKUP=0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 while [[ $# -gt 0 ]]; do
@@ -59,8 +62,12 @@ while [[ $# -gt 0 ]]; do
 			BACKUP_LABEL="${2:-}"
 			shift 2
 			;;
+		--with-db-backup)
+			RUN_DB_BACKUP=1
+			shift
+			;;
 		--skip-backup)
-			SKIP_BACKUP=1
+			RUN_DB_BACKUP=0
 			shift
 			;;
 		-h|--help)
@@ -205,13 +212,13 @@ if [[ "${BEFORE_STATE}" != "${AFTER_STATE}" ]]; then
 	note "Normalized Updraft placeholder values for ${SITE_HOSTNAME}."
 fi
 
-if [[ "${SKIP_BACKUP}" -eq 0 ]]; then
+if [[ "${RUN_DB_BACKUP}" -eq 1 ]]; then
 	if [[ -z "${BACKUP_LABEL}" ]]; then
 		BACKUP_LABEL="predeploy-$(sanitize_label "${SITE_HOSTNAME}")-$(date +%Y%m%d%H%M%S)"
 	fi
 
-	note "Starting Updraft backup on ${SITE_HOSTNAME} as ${SITE_USER}."
-	BACKUP_OUTPUT="$(run_site_wp "updraftplus backup --include-files='plugins,themes,uploads,others' --send-to-cloud --always-keep --label='${BACKUP_LABEL}'" 2>&1)" || fail "Updraft backup command failed for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
+	note "Starting database-only Updraft backup on ${SITE_HOSTNAME} as ${SITE_USER}."
+	BACKUP_OUTPUT="$(run_site_wp "updraftplus backup --include-files= --send-to-cloud --label='${BACKUP_LABEL}'" 2>&1)" || fail "Updraft backup command failed for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
 
 	if has_backup_warning "${BACKUP_OUTPUT}"; then
 		fail "Updraft backup output still contains configuration warnings for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
@@ -232,7 +239,7 @@ if [[ "${SKIP_BACKUP}" -eq 0 ]]; then
 		done
 	fi
 
-	note "Updraft backup started cleanly for ${SITE_HOSTNAME} (${BACKUP_LABEL})."
+	note "Updraft database backup started cleanly for ${SITE_HOSTNAME} (${BACKUP_LABEL})."
 fi
 
 printf 'SITE_HOSTNAME=%s\n' "${SITE_HOSTNAME}"

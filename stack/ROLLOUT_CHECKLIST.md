@@ -126,7 +126,16 @@ This helper is responsible for:
 - resolving `SITE_USER` / `SITE_ROOT`
 - verifying the direct `mrndev-site-owner` SSH path
 - removing malformed Updraft placeholder values without inventing new settings
-- starting a clean Updraft backup before the deploy continues
+- verifying deploy readiness without creating a backup for code-only work
+
+For a deployment that changes stored data or runs a migration, request an
+explicit database-only backup:
+
+```bash
+/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh \
+  --site-hostname default-configs.mrndev.io \
+  --with-db-backup
+```
 
 ## Deploy Path Decision
 
