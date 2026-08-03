@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.2.90' );
+	define( '_S_VERSION', '1.2.91' );
 }
 
 /**
@@ -897,25 +897,8 @@ function mrn_base_stack_scripts() {
 		}
 	}
 
-	if ( $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'get_field' ) && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs' ) ) {
-		$post_id      = get_queried_object_id();
-		$builder_sets = array();
-
-		if ( $post_id ) {
-			$builder_sets = array(
-				get_field( 'page_hero_rows', $post_id ),
-				get_field( 'page_content_rows', $post_id ),
-				get_field( 'page_after_content_rows', $post_id ),
-			);
-		}
-
-		foreach ( $builder_sets as $builder_rows ) {
-			mrn_base_stack_collect_builder_link_icon_asset_needs( $builder_rows, $needs_fontawesome, $needs_dashicons );
-
-			if ( $needs_fontawesome && $needs_dashicons ) {
-				break;
-			}
-		}
+	if ( $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs_from_post_meta' ) ) {
+		mrn_base_stack_collect_builder_link_icon_asset_needs_from_post_meta( get_queried_object_id(), $needs_fontawesome, $needs_dashicons );
 	}
 
 	if ( $layout_builder_enabled && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs' ) && function_exists( 'mrn_rbl_get_post_types' ) && is_singular( mrn_rbl_get_post_types() ) && function_exists( 'get_fields' ) ) {

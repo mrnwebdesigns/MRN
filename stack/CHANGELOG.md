@@ -4,10 +4,11 @@
 - Expanded `mrn-environment-runtime` to `0.2.0` with an explicit SEO-indexing policy.
 - Added Site Health and administrator diagnostics when SmartCrawl remains active where development or staging policy disables indexing work.
 - Kept plugin reconciliation in deployment tooling so the runtime remains read-only and adds no frontend database or remote work.
-- Expanded `mrn-base-stack` to `1.2.90` and deferred 404 builder layout cloning until ACF loads that editor field.
+- Expanded `mrn-base-stack` to `1.2.91` and deferred 404 builder layout cloning until ACF loads that editor field.
 - Removed the full Content-layout hydration cost from ordinary frontend, REST, cron, and unrelated admin requests while preserving all 404 editor layouts.
 - Replaced frontend asset discovery over four fully formatted ACF builder trees with one raw post-meta index scan.
 - Preserved conditional hero and background-media styles while removing multi-second ACF formatting work from builder pages.
+- Indexed builder link-icon source/class metadata directly, preserving conditional Font Awesome and Dashicons loading without reformatting three full ACF builder trees.
 
 ## 2026.08.03-environment-runtime
 - Added `mrn-environment-runtime` `0.1.0` as a lightweight, read-only WordPress view of the deployment-managed environment contract.

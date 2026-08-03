@@ -198,6 +198,65 @@ function mrn_base_stack_get_layout_style_keys_for_post( $post_id ) {
 }
 
 /**
+ * Collect builder link-icon asset needs from raw post meta.
+ *
+ * ACF stores each link icon control under a shared meta-key prefix. Reading
+ * those small scalar values avoids formatting every builder row solely to
+ * decide whether Font Awesome or Dashicons should enqueue.
+ *
+ * @param int  $post_id Post ID.
+ * @param bool $needs_fontawesome Whether Font Awesome is needed.
+ * @param bool $needs_dashicons Whether Dashicons are needed.
+ * @return void
+ */
+function mrn_base_stack_collect_builder_link_icon_asset_needs_from_post_meta( $post_id, &$needs_fontawesome, &$needs_dashicons ) {
+	$post_id = absint( $post_id );
+	if ( $post_id < 1 || ! function_exists( 'get_post_meta' ) ) {
+		return;
+	}
+
+	$post_meta = get_post_meta( $post_id, '', false );
+	if ( ! is_array( $post_meta ) ) {
+		return;
+	}
+
+	$icon_records = array();
+	foreach ( $post_meta as $meta_key => $meta_values ) {
+		if ( ! is_string( $meta_key ) || '' === $meta_key || '_' === $meta_key[0] || ! is_array( $meta_values ) ) {
+			continue;
+		}
+
+		if ( ! preg_match( '/^(.*)link_icon_(source|fa_class|dashicon)$/', $meta_key, $matches ) ) {
+			continue;
+		}
+
+		$value = reset( $meta_values );
+		if ( ! is_scalar( $value ) ) {
+			continue;
+		}
+
+		$icon_records[ $matches[1] ][ $matches[2] ] = trim( (string) $value );
+	}
+
+	foreach ( $icon_records as $record ) {
+		$source   = isset( $record['source'] ) ? sanitize_key( $record['source'] ) : '';
+		$fa_class = isset( $record['fa_class'] ) ? trim( $record['fa_class'] ) : '';
+		$dashicon = isset( $record['dashicon'] ) ? trim( $record['dashicon'] ) : '';
+
+		if ( ( '' === $source || 'fontawesome' === $source ) && '' !== $fa_class ) {
+			$needs_fontawesome = true;
+		}
+		if ( ( '' === $source || 'dashicons' === $source ) && '' !== $dashicon && 'dashicons' !== strtolower( $dashicon ) ) {
+			$needs_dashicons = true;
+		}
+
+		if ( $needs_fontawesome && $needs_dashicons ) {
+			return;
+		}
+	}
+}
+
+/**
  * Enqueue conditional layout styles for a post.
  *
  * @param int $post_id Post ID.
