@@ -375,6 +375,15 @@ ensure_site_owner_direct_ssh() {
     exit 1
   fi
 
+  # CloudPanel creates site homes as group-writable. OpenSSH StrictModes then
+  # ignores ~/.ssh/authorized_keys even when that file and directory are 600/700.
+  # The site owner keeps write access; the CloudPanel webadmin ACL keeps its
+  # read/execute access through the resulting ACL mask.
+  if ! chmod g-w,o-w "${SITE_HOME}"; then
+    echo "Could not remove group/other write access from site home: ${SITE_HOME}" >&2
+    exit 1
+  fi
+
   key_line="$(load_site_owner_authorized_key)"
   key_type="$(printf '%s\n' "${key_line}" | awk '{print $1}')"
   key_blob="$(printf '%s\n' "${key_line}" | awk '{print $2}')"

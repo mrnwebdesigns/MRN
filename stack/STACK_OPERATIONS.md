@@ -87,7 +87,8 @@ This ensures stack files are written as the app owner instead of a personal oper
   - Do not substitute `kyle` or `mrn-ops` as the write path for a live site refresh.
 - Fresh site bootstrap owns new-site direct site-owner SSH readiness.
   - `site-bootstrap.sh` runs after CloudPanel has already created `/home/<site-user>` and the site root.
-  - It must ensure `/home/<site-user>/.ssh/authorized_keys` contains the canonical MRN site-owner public key from `stack/configs/site-owner-authorized-key.pub`, with `.ssh` at `700` and `authorized_keys` at `600`, owned by the site owner.
+  - It must remove group/other write access from `/home/<site-user>` so OpenSSH StrictModes accepts per-site keys, then ensure `.ssh` is `700` and `authorized_keys` is `600`, owned by the site owner.
+  - It must ensure `/home/<site-user>/.ssh/authorized_keys` contains the canonical MRN site-owner public key from `stack/configs/site-owner-authorized-key.pub`.
   - This fixes new-site provisioning only; older sites created before this bootstrap step may still need a one-time backfill if `SSH_VERIFY` fails.
 - Fresh CloudPanel SSL bootstrap for `*.mrndev.io` should use DNS-01/import instead of CloudPanel HTTP-01 when the hostname is behind the proxied wildcard.
   - The zone normally has Cloudflare SSL mode `strict` and `Always Use HTTPS` enabled.

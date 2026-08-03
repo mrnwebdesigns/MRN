@@ -104,6 +104,7 @@ SSH_DIR="${HOME_DIR}/.ssh"
 AUTH_KEYS="${SSH_DIR}/authorized_keys"
 PLUGIN_DIR="${SITE_ROOT}/wp-content/plugins/mrn-config-helper"
 
+sudo -n chmod g-w,o-w "${HOME_DIR}"
 sudo -n install -d -m 700 -o "${SITE_USER}" -g "${SITE_USER}" "${SSH_DIR}"
 sudo -n touch "${AUTH_KEYS}"
 sudo -n chown "${SITE_USER}:${SITE_USER}" "${AUTH_KEYS}"
