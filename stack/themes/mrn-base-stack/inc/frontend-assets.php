@@ -136,22 +136,56 @@ function mrn_base_stack_collect_layout_style_keys_from_rows( $rows, array $style
 function mrn_base_stack_get_layout_style_keys_for_post( $post_id ) {
 	$post_id = (int) $post_id;
 
-	if ( ! $post_id || ! function_exists( 'get_field' ) ) {
+	if ( ! $post_id || ! function_exists( 'get_post_meta' ) ) {
 		return array();
 	}
 
 	// phpcs:ignore Generic.Commenting.DocComment.MissingShort -- PHPStan local type assertion.
 	/** @var array<string, bool> $style_keys */
-	$style_keys  = array();
-	$field_names = array(
-		'page_hero_rows',
-		'page_content_rows',
-		'page_after_content_rows',
-		'page_sidebar_rows',
-	);
+	$style_keys = array();
+	$post_meta  = get_post_meta( $post_id, '', false );
 
-	foreach ( $field_names as $field_name ) {
-		$style_keys = mrn_base_stack_collect_layout_style_keys_from_rows( get_field( $field_name, $post_id ), $style_keys, $field_name );
+	if ( is_array( $post_meta ) ) {
+		foreach ( $post_meta as $meta_key => $meta_values ) {
+			if ( ! is_string( $meta_key ) || '' === $meta_key || '_' === $meta_key[0] || ! is_array( $meta_values ) ) {
+				continue;
+			}
+
+			if ( preg_match( '/_(?:background_image|background_video|background_video_upload)$/', $meta_key ) ) {
+				foreach ( $meta_values as $meta_value ) {
+					$meta_value = function_exists( 'maybe_unserialize' ) ? maybe_unserialize( $meta_value ) : $meta_value;
+					if ( ( is_scalar( $meta_value ) && '' !== trim( (string) $meta_value ) && '0' !== (string) $meta_value ) || ( is_array( $meta_value ) && ! empty( $meta_value ) ) ) {
+						$style_keys['row_background_media'] = true;
+						break;
+					}
+				}
+			}
+
+			if ( ! preg_match( '/(?:^|_)rows$/', $meta_key ) ) {
+				continue;
+			}
+
+			foreach ( $meta_values as $meta_value ) {
+				$layout_names = function_exists( 'maybe_unserialize' ) ? maybe_unserialize( $meta_value ) : $meta_value;
+				if ( ! is_array( $layout_names ) ) {
+					continue;
+				}
+
+				foreach ( $layout_names as $layout_name ) {
+					if ( ! is_scalar( $layout_name ) ) {
+						continue;
+					}
+
+					$layout_name = sanitize_key( (string) $layout_name );
+					if ( '' === $layout_name ) {
+						continue;
+					}
+
+					$style_key                = 'page_hero_rows' === $meta_key && 'basic' === $layout_name ? 'hero' : $layout_name;
+					$style_keys[ $style_key ] = true;
+				}
+			}
+		}
 	}
 
 	/**
