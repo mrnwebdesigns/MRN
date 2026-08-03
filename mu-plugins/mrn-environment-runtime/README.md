@@ -10,8 +10,9 @@ Infrastructure may set these constants in `wp-config.php`:
 - `MRN_OBJECT_CACHE_POLICY`: `disabled`, `review_required`, or `enabled`
 - `MRN_DEPLOY_CACHE_PURGE`: `object` or `all`
 - `MRN_SEARCHWP_POLICY`: `disabled` or `configured`
+- `MRN_SEO_INDEXING_POLICY`: `disabled` or `configured`
 - `MRN_IMPORT_TOOLS_POLICY`: `disabled` or `temporary`
 - `MRN_ASSET_VERSION_SOURCE`: currently `commit_sha`
 - `MRN_DEPLOYMENT_REF`: optional safe commit or release reference
 
-`WP_ENVIRONMENT_TYPE` remains WordPress's canonical environment value. The plugin reports the resolved contract in Site Health and warns administrators when SearchWP is active in an environment where policy disables it. It does not activate/deactivate plugins, clear provider caches, or perform deployments.
+`WP_ENVIRONMENT_TYPE` remains WordPress's canonical environment value. The plugin reports the resolved contract in Site Health and warns administrators when SearchWP or an SEO indexing plugin is active in an environment where policy disables it. It does not activate/deactivate plugins, clear provider caches, or perform deployments.

@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.03-environment-runtime`
+- Stack release: `2026.08.03-environment-runtime.1`
 - Release date: `2026-08-03`
 - Status: `current baseline`
 
@@ -14,7 +14,7 @@
   - `mrn-admin-ui-css` `3.2.3`
   - `mrn-shared-assets` `0.1.3`
   - `mrn-editor-lockdown` `1.0.32`
-  - `mrn-environment-runtime` `0.1.0`
+  - `mrn-environment-runtime` `0.2.0`
   - `mrn-reusable-block-library` `0.1.28`
   - `mrn-schema-bridge` `0.4.1`
   - `mrn-site-colors` / `Site Styles` `0.1.38`

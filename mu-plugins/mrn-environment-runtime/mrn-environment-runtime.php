@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Environment Runtime
  * Description: Reports the deployment-managed environment and performance policy without adding frontend work.
- * Version: 0.1.0
+ * Version: 0.2.0
  * Author: MRN Web Designs
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_ENVIRONMENT_RUNTIME_VERSION' ) ) {
-	define( 'MRN_ENVIRONMENT_RUNTIME_VERSION', '0.1.0' );
+	define( 'MRN_ENVIRONMENT_RUNTIME_VERSION', '0.2.0' );
 }
 
 /**
@@ -62,6 +62,7 @@ function mrn_environment_runtime_contract() {
 		'object_cache'        => mrn_environment_runtime_constant( 'MRN_OBJECT_CACHE_POLICY', array( 'disabled', 'review_required', 'enabled' ), 'disabled' ),
 		'deploy_cache_purge'  => mrn_environment_runtime_constant( 'MRN_DEPLOY_CACHE_PURGE', array( 'object', 'all' ), 'object' ),
 		'searchwp'            => mrn_environment_runtime_constant( 'MRN_SEARCHWP_POLICY', array( 'disabled', 'configured' ), 'disabled' ),
+		'seo_indexing'        => mrn_environment_runtime_constant( 'MRN_SEO_INDEXING_POLICY', array( 'disabled', 'configured' ), 'disabled' ),
 		'import_tools'        => mrn_environment_runtime_constant( 'MRN_IMPORT_TOOLS_POLICY', array( 'disabled', 'temporary' ), 'disabled' ),
 		'asset_version_source'=> mrn_environment_runtime_constant( 'MRN_ASSET_VERSION_SOURCE', array( 'commit_sha' ), 'commit_sha' ),
 		'deployment_ref'      => mrn_environment_runtime_deployment_ref(),
@@ -116,6 +117,37 @@ function mrn_environment_runtime_active_searchwp_plugins() {
 }
 
 /**
+ * Find active SEO indexing plugins for policy diagnostics.
+ *
+ * This only runs in wp-admin Site Health/admin-notice requests.
+ *
+ * @return array<int, string>
+ */
+function mrn_environment_runtime_active_seo_indexing_plugins() {
+	$active = get_option( 'active_plugins', array() );
+	$active = is_array( $active ) ? $active : array();
+
+	if ( is_multisite() ) {
+		$network_active = get_site_option( 'active_sitewide_plugins', array() );
+		if ( is_array( $network_active ) ) {
+			$active = array_merge( $active, array_keys( $network_active ) );
+		}
+	}
+
+	$seo_plugins = array_filter(
+		$active,
+		static function ( $plugin ) {
+			return is_string( $plugin ) && (
+				0 === strpos( $plugin, 'wpmu-dev-seo/' ) ||
+				0 === strpos( $plugin, 'smartcrawl-seo/' )
+			);
+		}
+	);
+
+	return array_values( $seo_plugins );
+}
+
+/**
  * Add the contract to WordPress Site Health information.
  *
  * @param array $information Existing Site Health information.
@@ -135,6 +167,10 @@ function mrn_environment_runtime_debug_information( $information ) {
 	$fields['searchwp_policy_match'] = array(
 		'label' => 'SearchWP policy match',
 		'value' => 'disabled' === $contract['searchwp'] && ! empty( mrn_environment_runtime_active_searchwp_plugins() ) ? 'no' : 'yes',
+	);
+	$fields['seo_indexing_policy_match'] = array(
+		'label' => 'SEO indexing policy match',
+		'value' => 'disabled' === $contract['seo_indexing'] && ! empty( mrn_environment_runtime_active_seo_indexing_plugins() ) ? 'no' : 'yes',
 	);
 
 	$information['mrn-environment-runtime'] = array(
@@ -165,7 +201,28 @@ function mrn_environment_runtime_searchwp_notice() {
 	);
 }
 
+/**
+ * Warn administrators when SEO indexing conflicts with environment policy.
+ */
+function mrn_environment_runtime_seo_indexing_notice() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	$contract = mrn_environment_runtime_contract();
+	$active   = mrn_environment_runtime_active_seo_indexing_plugins();
+	if ( 'disabled' !== $contract['seo_indexing'] || empty( $active ) ) {
+		return;
+	}
+
+	printf(
+		'<div class="notice notice-warning"><p>%s</p></div>',
+		esc_html__( 'MRN environment policy disables SEO indexing here, but an SEO indexing plugin is active. Run the environment-policy reconciliation before performance testing.', 'mrn-environment-runtime' )
+	);
+}
+
 if ( function_exists( 'is_admin' ) && is_admin() ) {
 	add_filter( 'debug_information', 'mrn_environment_runtime_debug_information' );
 	add_action( 'admin_notices', 'mrn_environment_runtime_searchwp_notice' );
+	add_action( 'admin_notices', 'mrn_environment_runtime_seo_indexing_notice' );
 }

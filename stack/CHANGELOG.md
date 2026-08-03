@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.08.03-environment-runtime.1
+- Expanded `mrn-environment-runtime` to `0.2.0` with an explicit SEO-indexing policy.
+- Added Site Health and administrator diagnostics when SmartCrawl remains active where development or staging policy disables indexing work.
+- Kept plugin reconciliation in deployment tooling so the runtime remains read-only and adds no frontend database or remote work.
+
 ## 2026.08.03-environment-runtime
 - Added `mrn-environment-runtime` `0.1.0` as a lightweight, read-only WordPress view of the deployment-managed environment contract.
 - Kept the frontend runtime free of database reads, remote requests, and added assets.

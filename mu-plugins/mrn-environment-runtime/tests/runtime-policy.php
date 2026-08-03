@@ -9,6 +9,7 @@ define( 'MRN_WORKLOAD_CLASS', 'dynamic' );
 define( 'MRN_PAGE_CACHE_POLICY', 'disabled' );
 define( 'MRN_OBJECT_CACHE_POLICY', 'review_required' );
 define( 'MRN_SEARCHWP_POLICY', 'disabled' );
+define( 'MRN_SEO_INDEXING_POLICY', 'disabled' );
 define( 'MRN_IMPORT_TOOLS_POLICY', 'temporary' );
 define( 'MRN_DEPLOY_CACHE_PURGE', 'object' );
 define( 'MRN_ASSET_VERSION_SOURCE', 'commit_sha' );
@@ -32,7 +33,7 @@ if ( 'development' !== $contract['environment'] ) {
 if ( 'dynamic' !== $contract['workload_class'] || 'disabled' !== $contract['page_cache'] ) {
 	throw new RuntimeException( 'Performance policy resolution failed.' );
 }
-if ( 'disabled' !== $contract['searchwp'] || 'temporary' !== $contract['import_tools'] ) {
+if ( 'disabled' !== $contract['searchwp'] || 'disabled' !== $contract['seo_indexing'] || 'temporary' !== $contract['import_tools'] ) {
 	throw new RuntimeException( 'Plugin feature policy resolution failed.' );
 }
 if ( 'abc123_featureunsafe' !== $contract['deployment_ref'] ) {
