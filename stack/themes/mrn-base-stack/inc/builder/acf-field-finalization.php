@@ -6,7 +6,7 @@
  */
 
 /**
- * Recursively normalize select defaults on a full ACF field tree.
+ * Recursively normalize required ACF runtime keys on a full field tree.
  *
  * @param mixed $field Field or layout field definition.
  * @return mixed
@@ -19,6 +19,11 @@ function mrn_base_stack_normalize_select_defaults_in_field_tree( $field ) {
 	// ACF core validators assume this key exists across field types.
 	if ( ! array_key_exists( 'required', $field ) ) {
 		$field['required'] = 0;
+	}
+
+	// Flexible-content formatting indexes returned values by the original name.
+	if ( isset( $field['name'] ) && is_string( $field['name'] ) && '' !== trim( $field['name'] ) && ! isset( $field['_name'] ) ) {
+		$field['_name'] = $field['name'];
 	}
 
 	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
@@ -127,3 +132,18 @@ add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_finalize_acf
 add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_finalize_acf_builder_field_tree', 999 );
 add_filter( 'acf/load_field/type=repeater', 'mrn_base_stack_finalize_acf_builder_field_tree', 999 );
 add_filter( 'acf/prepare_field/type=repeater', 'mrn_base_stack_finalize_acf_builder_field_tree', 999 );
+
+// Key-specific population can run after ACF's type hook; finalize that result too.
+$mrn_base_stack_builder_field_keys = array(
+	'field_mrn_page_hero_rows',
+	'field_mrn_page_content_rows',
+	'field_mrn_page_after_content_rows',
+	'field_mrn_sidebar_rows',
+	'field_mrn_page_template_sidebar_rows',
+	'field_mrn_404_content_rows',
+);
+
+foreach ( $mrn_base_stack_builder_field_keys as $mrn_base_stack_builder_field_key ) {
+	add_filter( 'acf/load_field/key=' . $mrn_base_stack_builder_field_key, 'mrn_base_stack_finalize_acf_builder_field_tree', 999 );
+	add_filter( 'acf/prepare_field/key=' . $mrn_base_stack_builder_field_key, 'mrn_base_stack_finalize_acf_builder_field_tree', 999 );
+}

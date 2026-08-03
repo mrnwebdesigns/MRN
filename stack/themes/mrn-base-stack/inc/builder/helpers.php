@@ -8773,6 +8773,31 @@ function mrn_base_stack_should_apply_primary_layout_contract_to_flexible_field( 
 }
 
 /**
+ * Determine whether ACF builder field definitions need editor contracts.
+ *
+ * ACF runs `acf/load_field` while formatting values on public requests. The
+ * primary layout contract recursively rebuilds the complete flexible-content
+ * schema and is only needed by editing interfaces. Running that mutation for
+ * visitors adds substantial work without changing the rendered field values.
+ *
+ * @return bool
+ */
+function mrn_base_stack_should_prepare_builder_editor_contracts() {
+	$should_prepare = is_admin();
+
+	if ( ! $should_prepare && function_exists( 'wp_doing_ajax' ) && wp_doing_ajax() ) {
+		$should_prepare = true;
+	}
+
+	/**
+	 * Filter whether editor-only ACF builder contracts should be prepared.
+	 *
+	 * @param bool $should_prepare Whether the current request needs editor contracts.
+	 */
+	return (bool) apply_filters( 'mrn_base_stack_should_prepare_builder_editor_contracts', $should_prepare );
+}
+
+/**
  * Apply shared row contracts to every layout in a flexible-content field.
  *
  * @param array<string, mixed> $field ACF flexible-content field definition.
@@ -8812,6 +8837,10 @@ function mrn_base_stack_apply_primary_layout_contract_to_flexible_layouts( array
  */
 function mrn_base_stack_apply_primary_layout_contract_on_flexible_load( $field ) {
 	if ( ! is_array( $field ) ) {
+		return $field;
+	}
+
+	if ( ! mrn_base_stack_should_prepare_builder_editor_contracts() ) {
 		return $field;
 	}
 

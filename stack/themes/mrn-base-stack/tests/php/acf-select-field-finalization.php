@@ -48,6 +48,11 @@ function mrn_acf_finalization_test_assert_selects_complete( $field, $path = 'roo
 		mrn_acf_finalization_test_assert( array_key_exists( 'return_format', $field ), "{$path} includes return_format" );
 	}
 
+	if ( ! empty( $field['name'] ) ) {
+		mrn_acf_finalization_test_assert( isset( $field['_name'] ), "{$path} includes _name" );
+		mrn_acf_finalization_test_assert( $field['name'] === $field['_name'], "{$path} preserves its original name" );
+	}
+
 	foreach ( array( 'sub_fields', 'fields' ) as $child_key ) {
 		foreach ( (array) ( $field[ $child_key ] ?? array() ) as $index => $child_field ) {
 			mrn_acf_finalization_test_assert_selects_complete( $child_field, "{$path}.{$child_key}.{$index}" );
@@ -143,11 +148,11 @@ $late_hooks = array_filter(
 	}
 );
 
-mrn_acf_finalization_test_assert( 4 === count( $late_hooks ), 'four targeted builder finalization hooks are registered' );
+mrn_acf_finalization_test_assert( 16 === count( $late_hooks ), 'type and key-specific builder finalization hooks are registered' );
 foreach ( $late_hooks as $hook ) {
 	mrn_acf_finalization_test_assert( 999 === $hook['priority'], $hook['hook'] . ' runs after contract mutations' );
 	mrn_acf_finalization_test_assert(
-		false !== strpos( $hook['hook'], 'type=flexible_content' ) || false !== strpos( $hook['hook'], 'type=repeater' ),
+		false !== strpos( $hook['hook'], 'type=flexible_content' ) || false !== strpos( $hook['hook'], 'type=repeater' ) || false !== strpos( $hook['hook'], 'key=field_mrn_' ),
 		$hook['hook'] . ' stays scoped to builder tree types'
 	);
 }
