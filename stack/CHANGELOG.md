@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.08.03-environment-runtime
+- Added `mrn-environment-runtime` `0.1.0` as a lightweight, read-only WordPress view of the deployment-managed environment contract.
+- Kept the frontend runtime free of database reads, remote requests, and added assets.
+- Added Site Health diagnostics for environment, workload, cache, deploy purge, SearchWP, import-tool, asset-version, and deployment-reference policy.
+- Added an administrator warning when SearchWP is active in an environment where rollout policy disables it.
+
 ## 2026.07.31-acf-field-tree-finalization
 - Expanded `mrn-base-stack` to `1.2.88` and `mrn-reusable-block-library` to `0.1.28`.
 - Finalized MRN flexible-content and repeater field trees after all runtime contract mutations so nested select fields always retain ACF's required `multiple` and `return_format` defaults.

@@ -14,6 +14,7 @@ Current entries:
 - `mrn-dashboard-support`
 - `mrn-disable-comments`
 - `mrn-editor-lockdown`
+- `mrn-environment-runtime`
 - `mrn-public-security-hardening`
 - `mrn-reusable-block-library`
 - `mrn-schema-bridge`

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Loader
  * Description: Loads MRN MU plugins from known subfolders in /wp-content/mu-plugins.
- * Version: 1.3.2
+ * Version: 1.4.0
  */
 
 defined('ABSPATH') || exit;
@@ -55,6 +55,7 @@ $mrn_loader_entries = array(
     WP_CONTENT_DIR . '/mu-plugins/mrn-dashboard-support/mrn-dashboard-support.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-disable-comments/mrn-disable-comments.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php',
+    WP_CONTENT_DIR . '/mu-plugins/mrn-environment-runtime/mrn-environment-runtime.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-public-security-hardening/mrn-public-security-hardening.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-schema-bridge/mrn-schema-bridge.php',

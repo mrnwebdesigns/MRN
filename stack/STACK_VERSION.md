@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.07.31-acf-field-tree-finalization`
-- Release date: `2026-07-31`
+- Stack release: `2026.08.03-environment-runtime`
+- Release date: `2026-08-03`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
@@ -14,6 +14,7 @@
   - `mrn-admin-ui-css` `3.2.3`
   - `mrn-shared-assets` `0.1.3`
   - `mrn-editor-lockdown` `1.0.32`
+  - `mrn-environment-runtime` `0.1.0`
   - `mrn-reusable-block-library` `0.1.28`
   - `mrn-schema-bridge` `0.4.1`
   - `mrn-site-colors` / `Site Styles` `0.1.38`
