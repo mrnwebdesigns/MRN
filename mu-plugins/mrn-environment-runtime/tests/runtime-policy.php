@@ -40,4 +40,27 @@ if ( 'abc123_featureunsafe' !== $contract['deployment_ref'] ) {
 	throw new RuntimeException( 'Deployment reference sanitization failed.' );
 }
 
+$opcache = mrn_environment_runtime_opcache_information(
+	array(
+		'opcache_enabled' => true,
+		'cache_full'      => false,
+		'memory_usage'    => array(
+			'used_memory'   => 805306368,
+			'free_memory'   => 805306368,
+			'wasted_memory' => 0,
+		),
+		'opcache_statistics' => array(
+			'opcache_hit_rate'  => 97.25,
+			'num_cached_scripts' => 24500,
+		),
+	)
+);
+
+if ( 'yes' !== $opcache['enabled'] || 'no' !== $opcache['cache_full'] || '1536' !== $opcache['memory_mb'] ) {
+	throw new RuntimeException( 'OPcache capacity reporting failed.' );
+}
+if ( '50.0' !== $opcache['free_percent'] || '97.3' !== $opcache['hit_rate'] || '24500' !== $opcache['cached_scripts'] ) {
+	throw new RuntimeException( 'OPcache health calculation failed.' );
+}
+
 echo "Environment runtime policy tests passed.\n";

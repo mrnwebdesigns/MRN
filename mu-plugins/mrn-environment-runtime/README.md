@@ -15,4 +15,8 @@ Infrastructure may set these constants in `wp-config.php`:
 - `MRN_ASSET_VERSION_SOURCE`: currently `commit_sha`
 - `MRN_DEPLOYMENT_REF`: optional safe commit or release reference
 
-`WP_ENVIRONMENT_TYPE` remains WordPress's canonical environment value. The plugin reports the resolved contract in Site Health and warns administrators when SearchWP or an SEO indexing plugin is active in an environment where policy disables it. It does not activate/deactivate plugins, clear provider caches, or perform deployments.
+`WP_ENVIRONMENT_TYPE` remains WordPress's canonical environment value. The plugin reports the resolved contract in Site Health and warns administrators when SearchWP or an SEO indexing plugin is active in an environment where policy disables it.
+
+Site Health also reports PHP-FPM OPcache capacity, free memory, fullness, cached script count, and hit rate. An administrator notice appears when the shared cache is full. These checks run only in `wp-admin`; the public frontend still receives no database reads, remote requests, or assets from this runtime.
+
+The plugin does not activate/deactivate plugins, change PHP configuration, clear provider caches, or perform deployments. Infrastructure remains responsible for capacity changes and reconciliation.

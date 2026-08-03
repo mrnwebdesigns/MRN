@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Environment Runtime
  * Description: Reports the deployment-managed environment and performance policy without adding frontend work.
- * Version: 0.2.0
+ * Version: 0.3.0
  * Author: MRN Web Designs
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_ENVIRONMENT_RUNTIME_VERSION' ) ) {
-	define( 'MRN_ENVIRONMENT_RUNTIME_VERSION', '0.2.0' );
+	define( 'MRN_ENVIRONMENT_RUNTIME_VERSION', '0.3.0' );
 }
 
 /**
@@ -85,6 +85,49 @@ function mrn_environment_runtime_deployment_ref() {
 }
 
 /**
+ * Return display-safe PHP OPcache health information.
+ *
+ * This is called only from wp-admin Site Health and admin notices. Passing a
+ * status array keeps the calculation independently testable.
+ *
+ * @param array<string, mixed>|false|null $status Optional OPcache status.
+ * @return array<string, string>
+ */
+function mrn_environment_runtime_opcache_information( $status = null ) {
+	if ( null === $status ) {
+		$status = function_exists( 'opcache_get_status' ) ? opcache_get_status( false ) : false;
+	}
+
+	if ( ! is_array( $status ) || empty( $status['opcache_enabled'] ) ) {
+		return array(
+			'enabled'        => 'no',
+			'cache_full'     => 'unknown',
+			'memory_mb'      => '0',
+			'free_percent'   => '0.0',
+			'hit_rate'       => '0.0',
+			'cached_scripts' => '0',
+		);
+	}
+
+	$memory       = isset( $status['memory_usage'] ) && is_array( $status['memory_usage'] ) ? $status['memory_usage'] : array();
+	$statistics   = isset( $status['opcache_statistics'] ) && is_array( $status['opcache_statistics'] ) ? $status['opcache_statistics'] : array();
+	$used_memory  = max( 0, (int) ( $memory['used_memory'] ?? 0 ) );
+	$free_memory  = max( 0, (int) ( $memory['free_memory'] ?? 0 ) );
+	$total_memory = $used_memory + $free_memory;
+	$free_percent = $total_memory > 0 ? ( $free_memory / $total_memory ) * 100 : 0.0;
+	$hit_rate     = max( 0.0, min( 100.0, (float) ( $statistics['opcache_hit_rate'] ?? 0.0 ) ) );
+
+	return array(
+		'enabled'        => 'yes',
+		'cache_full'     => ! empty( $status['cache_full'] ) ? 'yes' : 'no',
+		'memory_mb'      => number_format( $total_memory / 1048576, 0, '.', '' ),
+		'free_percent'   => number_format( $free_percent, 1, '.', '' ),
+		'hit_rate'       => number_format( $hit_rate, 1, '.', '' ),
+		'cached_scripts' => (string) max( 0, (int) ( $statistics['num_cached_scripts'] ?? 0 ) ),
+	);
+}
+
+/**
  * Find active SearchWP components for policy diagnostics.
  *
  * This only runs in wp-admin Site Health/admin-notice requests.
@@ -155,6 +198,7 @@ function mrn_environment_runtime_active_seo_indexing_plugins() {
  */
 function mrn_environment_runtime_debug_information( $information ) {
 	$contract = mrn_environment_runtime_contract();
+	$opcache  = mrn_environment_runtime_opcache_information();
 	$fields   = array();
 
 	foreach ( $contract as $key => $value ) {
@@ -172,6 +216,30 @@ function mrn_environment_runtime_debug_information( $information ) {
 		'label' => 'SEO indexing policy match',
 		'value' => 'disabled' === $contract['seo_indexing'] && ! empty( mrn_environment_runtime_active_seo_indexing_plugins() ) ? 'no' : 'yes',
 	);
+	$fields['opcache_enabled'] = array(
+		'label' => 'PHP OPcache enabled',
+		'value' => $opcache['enabled'],
+	);
+	$fields['opcache_cache_full'] = array(
+		'label' => 'PHP OPcache full',
+		'value' => $opcache['cache_full'],
+	);
+	$fields['opcache_memory_mb'] = array(
+		'label' => 'PHP OPcache capacity (MB)',
+		'value' => $opcache['memory_mb'],
+	);
+	$fields['opcache_free_percent'] = array(
+		'label' => 'PHP OPcache free memory (%)',
+		'value' => $opcache['free_percent'],
+	);
+	$fields['opcache_hit_rate'] = array(
+		'label' => 'PHP OPcache hit rate (%)',
+		'value' => $opcache['hit_rate'],
+	);
+	$fields['opcache_cached_scripts'] = array(
+		'label' => 'PHP OPcache cached scripts',
+		'value' => $opcache['cached_scripts'],
+	);
 
 	$information['mrn-environment-runtime'] = array(
 		'label'  => 'MRN Environment Runtime',
@@ -179,6 +247,25 @@ function mrn_environment_runtime_debug_information( $information ) {
 	);
 
 	return $information;
+}
+
+/**
+ * Warn administrators when PHP OPcache cannot cache additional scripts.
+ */
+function mrn_environment_runtime_opcache_notice() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	$opcache = mrn_environment_runtime_opcache_information();
+	if ( 'yes' !== $opcache['cache_full'] ) {
+		return;
+	}
+
+	printf(
+		'<div class="notice notice-error"><p>%s</p></div>',
+		esc_html__( 'PHP OPcache is full. Increase server-level OPcache capacity and verify healthy free memory before performance testing or production rollout.', 'mrn-environment-runtime' )
+	);
 }
 
 /**
@@ -225,4 +312,5 @@ if ( function_exists( 'is_admin' ) && is_admin() ) {
 	add_filter( 'debug_information', 'mrn_environment_runtime_debug_information' );
 	add_action( 'admin_notices', 'mrn_environment_runtime_searchwp_notice' );
 	add_action( 'admin_notices', 'mrn_environment_runtime_seo_indexing_notice' );
+	add_action( 'admin_notices', 'mrn_environment_runtime_opcache_notice' );
 }
