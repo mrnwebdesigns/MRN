@@ -2,10 +2,45 @@
 /**
  * Plugin Name: MRN Disable Comments
  * Description: Fully disables comments everywhere (UI + admin menu + admin bar + REST + XML-RPC + submission blocking).
- * Version: 1.2.3
+ * Version: 1.2.4
  */
 
 defined('ABSPATH') || exit;
+
+/**
+ * Whether this stack site intentionally allows WordPress comments.
+ *
+ * The MU plugin loads before normal plugins, so read the Config Helper option
+ * directly instead of depending on Config Helper runtime functions.
+ */
+function mrn_dc_comments_allowed_by_policy() {
+  $allowed = false;
+
+  if (defined('MRN_STACK_COMMENTS_ENABLED')) {
+    $allowed = (bool) MRN_STACK_COMMENTS_ENABLED;
+  } else {
+    $settings = get_option('mrn_helper_settings', array());
+
+    if (is_array($settings) && array_key_exists('allow_wordpress_comments', $settings)) {
+      $allowed = !empty($settings['allow_wordpress_comments']);
+    }
+  }
+
+  return (bool) apply_filters('mrn_stack_comments_allowed', $allowed);
+}
+
+/**
+ * Whether the stack should register its comment-disabling hooks.
+ */
+function mrn_dc_should_disable_comments() {
+  $disable = !mrn_dc_comments_allowed_by_policy();
+
+  return (bool) apply_filters('mrn_disable_comments_enabled', $disable);
+}
+
+if (!mrn_dc_should_disable_comments()) {
+  return;
+}
 
 /**
  * Block comment creation everywhere.
