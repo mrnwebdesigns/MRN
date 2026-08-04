@@ -39,6 +39,7 @@ stack/themes/mrn-base-stack.zip
 
 # Local stack symlink helpers; the real MU plugin source now lives in /mu-plugins
 stack/mu-plugins/mrn-active-style-guide
+stack/mu-plugins/mrn-disable-comments
 stack/mu-plugins/mrn-editor-lockdown
 stack/mu-plugins/mrn-editor-ui-css
 stack/mu-plugins/mrn-reusable-block-library
