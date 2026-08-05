@@ -6056,7 +6056,7 @@ a.mrn-social-links__link:focus-visible svg {
 }
 
 .mrn-layout-section--external-widget .mrn-layout-grid--external-widget {
-	gap: 0;
+	gap: var(--mrn-space-stack-lg);
 }
 
 .mrn-layout-section--external-widget .mrn-layout-grid--embed-shell {
@@ -6101,6 +6101,10 @@ a.mrn-social-links__link:focus-visible svg {
 }
 
 .mrn-layout-section--external-widget .mrn-external-widget-row__content--embed-shell > :last-child {
+	margin-bottom: 0;
+}
+
+.mrn-external-widget-row__text > :last-child {
 	margin-bottom: 0;
 }
 

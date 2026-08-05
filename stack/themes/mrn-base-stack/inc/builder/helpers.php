@@ -49,6 +49,22 @@ function mrn_base_stack_clone_acf_keys_with_prefix( array $value, $prefix ) {
 }
 
 /**
+ * Finalize cloned ACF layouts when the runtime finalizer has loaded.
+ *
+ * @param array<string|int, mixed> $layouts Cloned ACF layout definitions.
+ * @return array<string|int, mixed>
+ */
+function mrn_base_stack_maybe_finalize_cloned_acf_layouts( array $layouts ) {
+	$finalize_cloned_layouts = 'mrn_base_stack_finalize_cloned_acf_layouts';
+
+	if ( ! function_exists( $finalize_cloned_layouts ) ) {
+		return $layouts;
+	}
+
+	return call_user_func( $finalize_cloned_layouts, $layouts );
+}
+
+/**
  * Hydrate shallow ACF local flexible-content layouts with their local subfields.
  *
  * ACF stores local flexible-content subfields flattened under the parent field
@@ -250,7 +266,7 @@ function mrn_base_stack_get_after_content_builder_layouts( $post_id = 0 ) {
 	}
 
 	$cloned_layouts              = ! empty( $after_layouts ) ? mrn_base_stack_clone_acf_keys_with_prefix( $after_layouts, 'after_content_' ) : array();
-	$layouts_cache[ $cache_key ] = mrn_base_stack_finalize_cloned_acf_layouts( $cloned_layouts );
+	$layouts_cache[ $cache_key ] = mrn_base_stack_maybe_finalize_cloned_acf_layouts( $cloned_layouts );
 
 	return $layouts_cache[ $cache_key ];
 }
@@ -1358,7 +1374,7 @@ function mrn_base_stack_get_hero_builder_layouts() {
 		$layouts[ $cloned_key ] = $cloned_layout;
 	}
 
-	$layouts_cache = mrn_base_stack_finalize_cloned_acf_layouts( $layouts );
+	$layouts_cache = mrn_base_stack_maybe_finalize_cloned_acf_layouts( $layouts );
 
 	return $layouts_cache;
 }
@@ -1490,7 +1506,7 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 		$layouts[ $cloned_key ] = $cloned_layout;
 	}
 
-	$layouts_cache[ $cache_key ] = mrn_base_stack_finalize_cloned_acf_layouts( $layouts );
+	$layouts_cache[ $cache_key ] = mrn_base_stack_maybe_finalize_cloned_acf_layouts( $layouts );
 
 	return $layouts_cache[ $cache_key ];
 }
@@ -1617,7 +1633,7 @@ function mrn_base_stack_get_card_nested_layouts() {
 		$layouts[ $cloned_key ] = $cloned_layout;
 	}
 
-	$layouts_cache[ $cache_key ] = mrn_base_stack_finalize_cloned_acf_layouts( $layouts );
+	$layouts_cache[ $cache_key ] = mrn_base_stack_maybe_finalize_cloned_acf_layouts( $layouts );
 
 	return $layouts_cache[ $cache_key ];
 }
@@ -2261,7 +2277,9 @@ function mrn_base_stack_prepare_dynamic_content_list_select_fields( $field ) {
 		return $field;
 	}
 
-	$field = mrn_base_stack_normalize_select_field_defaults( $field );
+	if ( function_exists( 'mrn_base_stack_normalize_select_field_defaults' ) ) {
+		$field = mrn_base_stack_normalize_select_field_defaults( $field );
+	}
 
 	$is_content_list_layout = false !== strpos( $parent_layout, 'content_lists' );
 
@@ -12385,13 +12403,22 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'type'       => 'tab',
 					'placement'  => 'top',
 				),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_nested_external_widget_label', 'Label', 'label' ),
+				mrn_base_stack_get_label_tag_field( 'field_mrn_nested_external_widget_label_tag' ),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_nested_external_widget_heading', 'Heading', 'heading' ),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_external_widget_heading_tag', 'heading_tag', 'h3', 'Heading Tag' ),
+				mrn_base_stack_get_inline_text_field( 'field_mrn_nested_external_widget_subheading', 'Subheading', 'subheading' ),
+				mrn_base_stack_get_text_tag_field( 'field_mrn_nested_external_widget_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
 				array(
-					'key'          => 'field_mrn_nested_external_widget_title',
-					'label'        => 'Embed Title',
-					'name'         => 'embed_title',
-					'aria-label'   => '',
-					'type'         => 'text',
-					'instructions' => 'Used as the iframe title when the pasted embed does not include one.',
+					'key'           => 'field_mrn_nested_external_widget_intro',
+					'label'         => 'Text area with editor',
+					'name'          => 'intro',
+					'aria-label'    => '',
+					'type'          => 'wysiwyg',
+					'tabs'          => 'all',
+					'toolbar'       => 'full',
+					'media_upload'  => 1,
+					'delay'         => 0,
 				),
 				array(
 					'key'          => 'field_mrn_nested_external_widget_code',
@@ -12410,6 +12437,14 @@ function mrn_base_stack_get_two_column_nested_layouts() {
 					'type'       => 'tab',
 					'placement'  => 'top',
 					'endpoint'   => 0,
+				),
+				array(
+					'key'          => 'field_mrn_nested_external_widget_title',
+					'label'        => 'Iframe Title',
+					'name'         => 'embed_title',
+					'aria-label'   => '',
+					'type'         => 'text',
+					'instructions' => 'Used as the iframe title when the pasted embed does not include one.',
 				),
 				array(
 					'key'           => 'field_mrn_nested_external_widget_background_color',

@@ -1138,6 +1138,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 				'video'            => 'Video',
 				'body_text'        => 'Text',
 				'content_lists'    => 'Reference Content',
+				'external_widget'  => 'Shortcode / Embed',
 				'wpforms'          => 'WPForms',
 				'searchwp_form'    => 'SearchWP Form',
 				'card'             => 'Card',
