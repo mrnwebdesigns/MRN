@@ -48,6 +48,7 @@ if (!function_exists('mrn_sticky_toolbar_render')) {
 	 * - toolbar_id (string)
 	 * - form_id (string)
 	 * - save_label (string)
+	 * - show_save (bool)
 	 * - title (string)
 	 * - aria_label (string)
 	 * - tabs (array of [key,label,active])
@@ -56,6 +57,7 @@ if (!function_exists('mrn_sticky_toolbar_render')) {
 		$toolbar_id = isset($args['toolbar_id']) ? sanitize_html_class((string) $args['toolbar_id']) : 'mrn-settings-toolbar';
 		$form_id = isset($args['form_id']) ? sanitize_html_class((string) $args['form_id']) : '';
 		$save_label = isset($args['save_label']) ? (string) $args['save_label'] : 'Save Settings';
+		$show_save = !array_key_exists('show_save', $args) || (bool) $args['show_save'];
 		$aria_label = isset($args['aria_label']) ? (string) $args['aria_label'] : 'Settings tabs';
 		$tabs = isset($args['tabs']) && is_array($args['tabs']) ? $args['tabs'] : array();
 
@@ -115,7 +117,9 @@ if (!function_exists('mrn_sticky_toolbar_render')) {
 						<?php endforeach; ?>
 					</nav>
 				<?php endif; ?>
-				<button type="submit" class="button button-primary mrn-settings-tab mrn-settings-tab--save"<?php echo $form_id !== '' ? ' form="' . esc_attr($form_id) . '"' : ''; ?>><?php echo esc_html($save_label); ?></button>
+				<?php if ($show_save) : ?>
+					<button type="submit" class="button button-primary mrn-settings-tab mrn-settings-tab--save"<?php echo $form_id !== '' ? ' form="' . esc_attr($form_id) . '"' : ''; ?>><?php echo esc_html($save_label); ?></button>
+				<?php endif; ?>
 			</div>
 		</div>
 		<div class="mrn-admin-toolbar-spacer" data-mrn-toolbar-spacer-for="<?php echo esc_attr($toolbar_id); ?>" aria-hidden="true"></div>
@@ -147,6 +151,11 @@ if (!function_exists('mrn_sticky_toolbar_render')) {
 				var spacer = document.querySelector('[data-mrn-toolbar-spacer-for="' + toolbarId + '"]');
 				if (!spacer) {
 					return;
+				}
+
+				var wpBodyContent = document.getElementById('wpbody-content');
+				if (wpBodyContent && wpBodyContent.firstElementChild !== spacer) {
+					wpBodyContent.insertBefore(spacer, wpBodyContent.firstElementChild || wpBodyContent.firstChild);
 				}
 
 				spacer.style.height = Math.ceil(toolbar.getBoundingClientRect().height + 10) + 'px';

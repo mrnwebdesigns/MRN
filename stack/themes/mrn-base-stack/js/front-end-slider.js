@@ -44,6 +44,7 @@
 		var videoKind = mediaElement.getAttribute( 'data-video-kind' ) || 'remote';
 		var videoMime = mediaElement.getAttribute( 'data-video-mime' ) || '';
 		var videoPoster = mediaElement.getAttribute( 'data-video-poster' ) || '';
+		var videoTitle = mediaElement.getAttribute( 'data-video-title' ) || 'Embedded video';
 		var isBackgroundVideo = mediaElement.getAttribute( 'data-video-background' ) === 'true';
 		var shouldAutoplay = mediaElement.getAttribute( 'data-video-autoplay' ) === 'true';
 		var shouldMute = mediaElement.getAttribute( 'data-video-muted' ) === 'true';
@@ -63,24 +64,29 @@
 			if ( videoKind === 'local' ) {
 				var video = document.createElement( 'video' );
 				video.className = 'mrn-deferred-media__frame';
-				video.src = videoSrc;
 				video.autoplay = shouldAutoplay;
 				video.muted = shouldMute;
 				video.loop = shouldLoop;
 				video.playsInline = true;
 				video.controls = showControls;
 				video.preload = isBackgroundVideo ? 'none' : 'metadata';
+
+				var source = document.createElement( 'source' );
+				source.src = videoSrc;
+				if ( videoMime ) {
+					source.type = videoMime;
+				}
+				video.appendChild( source );
+
 				if ( isBackgroundVideo ) {
 					video.setAttribute( 'aria-hidden', 'true' );
 					video.setAttribute( 'tabindex', '-1' );
+				} else if ( videoTitle ) {
+					video.setAttribute( 'aria-label', videoTitle );
 				}
 
 				if ( videoPoster ) {
 					video.poster = videoPoster;
-				}
-
-				if ( videoMime ) {
-					video.setAttribute( 'type', videoMime );
 				}
 
 				mediaElement.appendChild( video );
@@ -88,7 +94,7 @@
 				var iframe = document.createElement( 'iframe' );
 				iframe.className = 'mrn-deferred-media__frame';
 				iframe.src = videoSrc;
-				iframe.title = isBackgroundVideo ? '' : 'Embedded video';
+				iframe.title = isBackgroundVideo ? 'Decorative background video' : videoTitle;
 				iframe.setAttribute( 'loading', 'lazy' );
 				iframe.setAttribute( 'allow', 'autoplay; fullscreen; picture-in-picture' );
 				iframe.setAttribute( 'allowfullscreen', 'allowfullscreen' );
@@ -155,6 +161,10 @@
 		var timeOnSlide = parseInt( sliderElement.getAttribute( 'data-time-on-slide' ) || '600', 10 );
 		var autoplayDelay = Math.max( 0, Math.round( ( delayStart || 0 ) * 1000 ) );
 
+		if ( ! showArrows && ! showPagination && ! sliderElement.hasAttribute( 'tabindex' ) ) {
+			sliderElement.setAttribute( 'tabindex', '0' );
+		}
+
 		var splide = new window.Splide( sliderElement, {
 			type: 'slide',
 			perPage: Math.max( 1, Math.min( 6, perPage || 1 ) ),
@@ -167,6 +177,7 @@
 			pauseOnFocus: true,
 			interval: Math.max( 1000, Math.round( ( delayTime || 5 ) * 1000 ) ),
 			speed: Math.max( 100, timeOnSlide || 600 ),
+			keyboard: 'focused',
 			rewind: true,
 			breakpoints: {
 				1200: {

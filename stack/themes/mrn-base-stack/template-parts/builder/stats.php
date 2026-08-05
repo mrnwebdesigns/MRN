@@ -44,6 +44,7 @@ foreach ( $items as $item ) {
 
 	$value         = isset( $item['value'] ) ? trim( (string) $item['value'] ) : '';
 	$item_label    = isset( $item['item_label'] ) ? trim( (string) $item['item_label'] ) : '';
+	$animate_value = ! empty( $item['animate_value'] );
 	$icon_position = function_exists( 'mrn_base_stack_get_button_link_icon_position' ) ? mrn_base_stack_get_button_link_icon_position( $item ) : 'left';
 	$icon_markup   = function_exists( 'mrn_base_stack_get_button_link_icon_markup' ) ? mrn_base_stack_get_button_link_icon_markup( $item ) : '';
 
@@ -79,6 +80,7 @@ foreach ( $items as $item ) {
 		'icon_markup'    => $icon_markup,
 		'icon_position'  => $icon_position,
 		'value'          => $value,
+		'animate_value'  => $animate_value,
 		'item_label'     => $item_label,
 		'item_label_tag' => function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $item['item_label_tag'] ?? '', 'p' ) : 'p',
 	);
@@ -104,6 +106,10 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 	$section_styles[] = '--mrn-stats-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
+$display_contract  = function_exists( 'mrn_base_stack_get_builder_display_contract' ) ? mrn_base_stack_get_builder_display_contract( $row, 'stats' ) : array(
+	'classes'    => array(),
+	'attributes' => array(),
+);
 $accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 	'attributes' => array(),
@@ -112,9 +118,11 @@ $motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contrac
 	'classes'    => array(),
 	'attributes' => array(),
 );
+$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract ) : $section_classes;
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
-$section_attrs     = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
+$section_attrs     = isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ? $display_contract['attributes'] : array();
+$section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
@@ -143,14 +151,32 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 					<div class="mrn-stats-row__grid mrn-stats-row__grid--metrics-shell mrn-ui__items">
 					<?php foreach ( $valid_items as $item ) : ?>
 							<div class="mrn-stats-row__item mrn-stats-row__item--metrics-shell mrn-ui__item">
-							<?php if ( '' !== $item['icon_markup'] && ( 'left' === $item['icon_position'] || '' === $item['value'] ) ) : ?>
-								<?php echo $item['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in shared helper output. ?>
-							<?php endif; ?>
-							<?php if ( '' !== $item['value'] ) : ?>
-								<div class="mrn-stats-row__value mrn-ui__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $item['value'] ) : esc_html( $item['value'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
-							<?php endif; ?>
-							<?php if ( '' !== $item['icon_markup'] && 'right' === $item['icon_position'] && '' !== $item['value'] ) : ?>
-								<?php echo $item['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in shared helper output. ?>
+							<?php if ( '' !== $item['icon_markup'] || '' !== $item['value'] ) : ?>
+								<div class="mrn-stats-row__metric mrn-stats-row__metric--icon-<?php echo esc_attr( $item['icon_position'] ); ?>">
+								<?php if ( '' !== $item['icon_markup'] && ( 'left' === $item['icon_position'] || '' === $item['value'] ) ) : ?>
+									<?php echo $item['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in shared helper output. ?>
+								<?php endif; ?>
+								<?php if ( '' !== $item['value'] ) : ?>
+									<?php
+									$value_classes = array( 'mrn-stats-row__value', 'mrn-ui__heading' );
+									$value_attrs   = array();
+
+									if ( ! empty( $item['animate_value'] ) ) {
+										$value_classes[] = 'mrn-stats-row__value--animated';
+										$value_attrs     = array(
+											'data-mrn-stat-animation' => 'spin-in',
+											'aria-label' => trim( wp_strip_all_tags( $item['value'] ) ),
+										);
+									}
+
+									$value_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $value_attrs ) : '';
+									?>
+								<div class="<?php echo esc_attr( implode( ' ', $value_classes ) ); ?>"<?php echo '' !== $value_attr_html ? ' ' . $value_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $item['value'] ) : esc_html( $item['value'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+								<?php endif; ?>
+								<?php if ( '' !== $item['icon_markup'] && 'right' === $item['icon_position'] && '' !== $item['value'] ) : ?>
+									<?php echo $item['icon_markup']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon markup is escaped in shared helper output. ?>
+								<?php endif; ?>
+							</div>
 							<?php endif; ?>
 						<?php if ( '' !== $item['item_label'] ) : ?>
 								<<?php echo esc_html( $item['item_label_tag'] ); ?> class="mrn-ui__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $item['item_label'] ) : esc_html( $item['item_label'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $item['item_label_tag'] ); ?>>

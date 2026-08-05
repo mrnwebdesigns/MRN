@@ -5,25 +5,26 @@
  * @package mrn-base-stack
  */
 
-$context          = is_array( $args ?? null ) ? $args : array();
-$row              = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
-$label            = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
-$label_tag        = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading          = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
-$heading_tag      = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h2';
-$subheading       = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
-$subheading_tag   = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
-$content          = isset( $row['content'] ) ? (string) $row['content'] : '';
-$image            = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
-$image_url        = isset( $image['url'] ) ? (string) $image['url'] : '';
-$image_alt        = isset( $image['alt'] ) ? (string) $image['alt'] : '';
-$background_image = isset( $row['background_image'] ) && is_array( $row['background_image'] ) ? $row['background_image'] : array();
-$link_color       = isset( $row['link_color'] ) ? trim( (string) $row['link_color'] ) : '';
-$image_placement  = isset( $row['image_placement'] ) ? sanitize_key( (string) $row['image_placement'] ) : 'left';
-$background_color = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
-$bottom_accent    = ! empty( $row['bottom_accent'] );
-$accent_slug      = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
-$width_layers     = function_exists( 'mrn_base_stack_get_section_width_layers' )
+$context                 = is_array( $args ?? null ) ? $args : array();
+$row                     = isset( $context['row'] ) && is_array( $context['row'] ) ? $context['row'] : array();
+$label                   = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
+$label_tag               = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
+$heading                 = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
+$heading_tag             = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h2';
+$subheading              = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
+$subheading_tag          = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
+$content                 = isset( $row['content'] ) ? (string) $row['content'] : '';
+$image                   = $row['image'] ?? null;
+$has_image               = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image ) : false;
+$background_image        = $row['background_image'] ?? null;
+$link_color              = isset( $row['link_color'] ) ? trim( (string) $row['link_color'] ) : '';
+$image_placement         = isset( $row['image_placement'] ) ? sanitize_key( (string) $row['image_placement'] ) : 'left';
+$background_color        = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
+$background_video        = isset( $row['background_video'] ) ? (string) $row['background_video'] : '';
+$background_video_upload = $row['background_video_upload'] ?? null;
+$bottom_accent           = ! empty( $row['bottom_accent'] );
+$accent_slug             = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
+$width_layers            = function_exists( 'mrn_base_stack_get_section_width_layers' )
 	? mrn_base_stack_get_section_width_layers( $row['section_width'] ?? '', 'wide', 'full-width' )
 	: array(
 		'width'           => 'wide',
@@ -45,13 +46,24 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 	$section_styles[] = '--mrn-basic-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
-$background_image_style = function_exists( 'mrn_base_stack_get_background_image_style' )
-	? mrn_base_stack_get_background_image_style( $background_image, '--mrn-basic-row-bg-image' )
+$background_gradient_style = function_exists( 'mrn_base_stack_get_background_gradient_style_declaration' )
+	? mrn_base_stack_get_background_gradient_style_declaration( $row, '--mrn-basic-row-bg-gradient' )
 	: '';
 
-if ( '' !== $background_image_style ) {
-	$section_styles[] = $background_image_style;
+if ( '' !== $background_gradient_style ) {
+	$section_styles[] = $background_gradient_style;
 }
+
+$background_image_markup = function_exists( 'mrn_base_stack_get_background_image_markup' ) ? mrn_base_stack_get_background_image_markup( $background_image ) : '';
+$background_video_markup = function_exists( 'mrn_base_stack_get_background_video_markup' )
+	? mrn_base_stack_get_background_video_markup(
+		$background_video,
+		$background_video_upload,
+		array(
+			'poster_image' => $background_image,
+		)
+	)
+	: '';
 
 if ( ! in_array( $image_placement, array( 'left', 'right' ), true ) ) {
 	$image_placement = 'left';
@@ -72,7 +84,7 @@ $content_links        = function_exists( 'mrn_rbl_get_content_links' )
 $primary_content_link = isset( $content_links[0] ) && is_array( $content_links[0] ) ? $content_links[0] : array();
 $primary_link_style   = isset( $primary_content_link['link_style'] ) && in_array( $primary_content_link['link_style'], array( 'link', 'button' ), true ) ? (string) $primary_content_link['link_style'] : 'link';
 
-if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $image_url && empty( $content_links ) ) {
+if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && ! $has_image && empty( $content_links ) ) {
 	return;
 }
 
@@ -83,9 +95,18 @@ $section_classes = array(
 	'mrn-content-builder__row--basic-image-' . sanitize_html_class( $image_placement ),
 );
 
-if ( '' !== $background_image_style ) {
+if ( '' !== $background_image_markup ) {
 	$section_classes[] = 'has-background-image';
 }
+
+if ( '' !== $background_video_markup ) {
+	$section_classes[] = 'has-background-video';
+}
+
+if ( '' !== $background_gradient_style ) {
+	$section_classes[] = 'has-background-gradient';
+}
+$display_contract  = mrn_base_stack_get_builder_display_contract( $row, 'basic' );
 $accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 	'attributes' => array(),
@@ -94,22 +115,29 @@ $motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contrac
 	'classes'    => array(),
 	'attributes' => array(),
 );
+$section_classes   = mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract );
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
-$section_attrs     = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
+$section_attrs     = $display_contract['attributes'];
+$section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
 $is_full_width     = 'full-width' === ( $width_layers['width'] ?? '' );
+$surface_class     = ( '' !== $background_image_markup ? ' has-row-background-media' : '' ) . ( '' !== $background_video_markup ? ' has-row-background-video' : '' ) . ( '' !== $background_gradient_style ? ' has-background-gradient' : '' );
 echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-	<div class="mrn-layout-section mrn-layout-section--basic <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
-		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
+	<div class="mrn-layout-section mrn-layout-section--basic <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' . esc_attr( $surface_class ) : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
+		<?php echo $is_full_width ? $background_image_markup : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Decorative image markup is escaped in the helper. ?>
+		<?php echo $is_full_width ? $background_video_markup : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Decorative video markup is escaped in the helper. ?>
+		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' . esc_attr( $surface_class ) : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
+			<?php echo ! $is_full_width ? $background_image_markup : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Decorative image markup is escaped in the helper. ?>
+			<?php echo ! $is_full_width ? $background_video_markup : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Decorative video markup is escaped in the helper. ?>
 			<div class="mrn-layout-grid mrn-layout-grid--basic mrn-layout-grid--media-stack mrn-basic-row__inner">
-				<?php if ( '' !== $image_url ) : ?>
+				<?php if ( $has_image ) : ?>
 					<div class="mrn-layout-content mrn-layout-content--media mrn-layout-content--media-stack-media mrn-basic-row__media mrn-ui__media">
-					<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $image_alt ); ?>" />
+					<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, 'mrn-content-media' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
 			<?php endif; ?>
 

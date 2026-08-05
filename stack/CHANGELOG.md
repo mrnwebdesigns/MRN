@@ -1,5 +1,340 @@
 # Stack Changelog
 
+## 2026.08.03-environment-runtime.1
+- Expanded `mrn-environment-runtime` to `0.2.0` with an explicit SEO-indexing policy.
+- Added Site Health and administrator diagnostics when SmartCrawl remains active where development or staging policy disables indexing work.
+- Kept plugin reconciliation in deployment tooling so the runtime remains read-only and adds no frontend database or remote work.
+- Expanded `mrn-base-stack` to `1.2.91` and deferred 404 builder layout cloning until ACF loads that editor field.
+- Removed the full Content-layout hydration cost from ordinary frontend, REST, cron, and unrelated admin requests while preserving all 404 editor layouts.
+- Replaced frontend asset discovery over four fully formatted ACF builder trees with one raw post-meta index scan.
+- Preserved conditional hero and background-media styles while removing multi-second ACF formatting work from builder pages.
+- Indexed builder link-icon source/class metadata directly, preserving conditional Font Awesome and Dashicons loading without reformatting three full ACF builder trees.
+
+## 2026.08.03-environment-runtime
+- Added `mrn-environment-runtime` `0.1.0` as a lightweight, read-only WordPress view of the deployment-managed environment contract.
+- Kept the frontend runtime free of database reads, remote requests, and added assets.
+- Added Site Health diagnostics for environment, workload, cache, deploy purge, SearchWP, import-tool, asset-version, and deployment-reference policy.
+- Added an administrator warning when SearchWP is active in an environment where rollout policy disables it.
+- Corrected CloudPanel site-home permissions during bootstrap/remediation so OpenSSH StrictModes accepts site-specific GitHub Actions keys from `authorized_keys`.
+
+## 2026.07.31-acf-field-tree-finalization
+- Expanded `mrn-base-stack` to `1.2.88` and `mrn-reusable-block-library` to `0.1.28`.
+- Finalized MRN flexible-content and repeater field trees after all runtime contract mutations so nested select fields always retain ACF's required `multiple` and `return_format` defaults.
+- Kept normalization scoped to completed builder trees instead of restoring the costly global load/prepare hooks removed during the builder hydration performance work.
+- Completed reusable link Icon Position definitions at their source and added focused regression coverage for nested select trees.
+- Finalized Hero, After Content, tab-panel, and card clone-factory outputs before ACF registers their independently loaded sub-fields.
+- Updated the development-only WordPress Coding Standards dependency to `3.4.1` to clear its published security advisory before release QA.
+
+## 2026.07.30-woocommerce-admin-compatibility
+- Expanded `mrn-admin-ui-css` to `3.2.3`.
+- Scoped generic admin ad-suppression selectors to descendants of the WordPress admin body so WooCommerce feature classes on the body cannot hide the entire setup wizard.
+- Expanded `mrn-reusable-block-library` to `0.1.27`.
+- Kept the reusable-block editor permission callback on REST request handlers without corrupting route-level schema callbacks consumed by WooCommerce and the WordPress REST index.
+
+## 2026.07.23-acf-focal-point
+- Added `mrn-acf-focal-point` `1.1.2` to the canonical stack inventory and new-site plugin manifest.
+- New site bootstraps now install and activate the packaged focal-point plugin so every standard ACF Image field receives collapsed focal-point controls automatically.
+
+## 2026.07.17-business-information-announcements
+- Expanded `mrn-announcements` to `1.6.1` while preserving standalone manual scheduling.
+- Added optional Business Information rules for outside-hours, closed-holiday, and modified-holiday announcements.
+- Added three published-but-Off presets with render-time hours, holiday, and next-opening message tokens; no announcement is automatically enabled.
+- Restored the Announcements navigation after curated Admin Menu Editor profiles that predate the plugin replace the generated post type menu.
+
+## 2026.07.17-testimonial-schema
+- Expanded `mrn-base-stack` to `1.2.83` and `mrn-schema-bridge` to `0.4.1`.
+- Added render-aware testimonial schema: only testimonial quotes visibly output by the base theme are registered, deduplicated, and emitted as one footer `Quotation` graph.
+- Mapped visible testimonial text and attribution to `Quotation`, `Person`, and optional employer `Organization` data without adding `Review`, `Rating`, or `AggregateRating` markup.
+
+## 2026.07.17-schema-discovery-baseline
+- Expanded `mrn-base-stack` to `1.2.82` and `mrn-schema-bridge` to `0.4.0`.
+- Made Business Information the canonical organization identity source and added an Identity & Schema tab for organization type, names, public email, service area, coordinates, author policy, and separate AI search/training crawler policies.
+- Added public-content SEO & Schema controls for automatic output, semantic page-intent overrides, supplemental-schema suppression, and schema description overrides.
+- Merged bridge-owned Service, ContactPage, case-study, ProfilePage, and ImageGallery nodes into SmartCrawl's graph with entity/type deduplication and stable WebPage references.
+- Fixed base-stack `case_study` schema coverage and added field-aware case-study and gallery descriptions.
+- Added non-destructive SmartCrawl defaults for schema, social identity, sitemap ownership, instant indexing, analysis, and conservative archive/media behavior while retaining MRN SEO Helper ownership of title/meta templates.
+- Added virtual robots.txt policy for AI search/retrieval versus training crawlers; no `llms.txt` output was added.
+- Expanded Schema Health with canonical/noindex checks, repeated-entity-ID detection, and required property checks for Service, Article, ProfilePage, and LocalBusiness nodes.
+- Added focused schema bridge contract regression coverage.
+
+## 2026.07.16-team-members-locations-cpts
+- Expanded `mrn-base-stack` to `1.2.81`.
+- Expanded `mrn-editor-lockdown` to `1.0.32`.
+- Registered Team Members (`team_member`) as a public, REST-enabled custom post type with a `/team/` archive route.
+- Added a per-member Public Profile Page control that defaults on; disabled records remain available to team components but lose their standalone page, preview/permalink actions, search exposure, and core sitemap entry.
+- Registered Locations (`location`) with the shared admin/data-only CPT contract so records remain queryable by stack components without public single pages, an archive/index, search exposure, previews, navigation visibility, or sitemap entries.
+- Left both post types ready for their dedicated content fields without introducing placeholder content groups.
+- Enrolled both CPTs in the shared locked two-column metabox layout and added a registry-driven placement contract so future stack-owned CPT settings boxes can be positioned after SEO without one-off screen-order code.
+- Standardized the Page sidebar order as SEO Helper, Featured Image, Publish, available category/tag boxes, Page Attributes, collapsed Available Builders, collapsed Breadcrumb Trail, and Author last.
+- Applied the same SEO-first sidebar and collapsed-utility contract to Posts, reusable blocks, explicit editorial CPT layouts, and all dynamically discovered Classic Editor CPTs; unsupported boxes remain absent while registered boxes retain the canonical relative order.
+- Added an Admin Menu Editor metabox-config repair so stale imports cannot mark the required SEO Helper box absent and remove it from Posts, Pages, or CPT editor screens.
+
+## 2026.07.16-tabbed-layout-tab-options
+- Expanded `mrn-base-stack` to `1.2.80`.
+- Added Tabbed Layout tab position controls for top left/center/right and left-of-content top/center/bottom.
+- Added Tabbed Layout tab style controls for text, dividers, underline, underline track, outline pill, soft pill, button, segmented, filled, filled segmented, and tab treatments under Display Styles.
+
+## 2026.07.16-tabbed-layout-contract
+- Expanded `mrn-base-stack` to `1.2.79`.
+- Renamed the Tabbed Layout builder label so the picker no longer exposes internal field hints.
+- Moved Tabbed Layout orientation and equal-height controls into the shared Layout contract.
+- Applied the shared Display Styles contract and background color surface handling to Tabbed Layout front-end output.
+- Simplified each Tabbed Layout tab to a tab name, shared icon controls, and one nested row.
+
+## 2026.07.16-slider-layout-contract
+- Expanded `mrn-base-stack` to `1.2.78`.
+- Renamed the Slider builder layout label so the picker no longer exposes internal field hints.
+- Moved Slider per-view, navigation, autoplay, and timing controls into the shared Layout contract.
+- Applied the shared Display Styles contract to Slider front-end output.
+- Removed Slider-specific hardcoded surface padding so spacing is controlled by the spacing contract.
+- Renamed the injected row-flex admin tab to Flexbox so it no longer masks layout-specific controls.
+- Added focused keyboard navigation for slider touch and keyboard use.
+- Added item-level Slider subheadings and a per-slide option to hide the visible link while making the full slide clickable.
+
+## 2026.07.16-layout-mode-contract
+- Expanded `mrn-base-stack` to `1.2.77`.
+- Added a shared structural Layout Mode helper for item-based layouts that need multiple arrangements.
+- Moved Logos Grid/Slider control into the Layout contract while preserving the saved `display_mode` key and front-end classes.
+- Updated Showcase to use the shared Layout Mode helper while preserving the saved `stagger_style` key.
+- Kept Display Styles focused on visual treatment instead of structural arrangement.
+
+## 2026.07.16-showcase-image-layout
+- Expanded `mrn-base-stack` to `1.2.76`.
+- Changed Showcase Image Layout to default to a clean grid instead of collage for simple image groups.
+- Added Showcase item-count classes so one, two, and three image rows render with balanced column spans, including older rows saved with the collage option.
+- Removed overlapping collage grid placements so editorial Showcase layouts remain deterministic.
+
+## 2026.07.16-stats-stack-animation-runtime
+- Expanded `mrn-base-stack` to `1.2.75`.
+- Updated the per-stat value animation to use the stack-provided Motion runtime for numeric interpolation.
+- Kept the Stats visual spin/lock styling in CSS and preserved reduced-motion fallback behavior.
+
+## 2026.07.16-stats-item-animation
+- Expanded `mrn-base-stack` to `1.2.74`.
+- Moved Stats value spin-in animation from a row-level effect to a per-stat toggle.
+- Aligned Stats icon/value rendering so icon position applies beside the stat value.
+
+## 2026.07.16-repeater-bulk-controls-disabled
+- Expanded `mrn-base-stack` to `1.2.73`.
+- Disabled the shared ACF repeater Collapse All / Expand All toolbar because it adds confusing UI to nested row editors.
+- Left individual ACF row collapse behavior intact.
+
+## 2026.07.16-stats-value-animation
+- Expanded `mrn-base-stack` to `1.2.72`.
+- Added a Stats-only `Stat Value Animation` effect with a `Spin In` option and configurable duration.
+- Added front-end stat value spin/count animation that triggers once when numeric stats enter view and locks to the authored final value.
+- Preserved static stat output by default and respected reduced-motion preferences.
+
+## 2026.07.16-showcase-layout-contract
+- Expanded `mrn-base-stack` to `1.2.71`.
+- Renamed the Showcase builder layout label so the picker no longer exposes internal field hints.
+- Moved Showcase Stagger Style and full-item-link controls into the shared Layout tab while preserving existing field keys and saved values.
+- Moved Showcase Hover Effect into the shared Effects tab.
+- Applied the shared Display Styles contract to the Showcase front-end section output.
+- Removed legacy Showcase surface padding and duplicate shell overrides so row spacing controls own section spacing.
+
+## 2026.07.16-stats-layout-contract
+- Expanded `mrn-base-stack` to `1.2.70`.
+- Renamed the Stats builder layout label so the picker no longer exposes internal field hints.
+- Moved Stats Columns and Show Dividers into the shared Layout tab while preserving existing field keys and saved values.
+- Applied the shared Display Styles contract to the Stats front-end section output.
+- Removed legacy Stats shell padding and decorative item overrides so row spacing controls own section spacing.
+- Cleaned Stats typography to avoid viewport-scaled font sizes and non-zero letter spacing.
+- Cleaned the dynamic row-spacing save helper PHPCS annotations that support the shared spacing contract.
+
+## 2026.07.16-logos-layout-contract
+- Expanded `mrn-base-stack` to `1.2.69`.
+- Expanded `mrn-reusable-block-library` to `0.1.26`.
+- Renamed the page-owned Logos/Partners builder layout to Page Specific Logos/Partners.
+- Mapped reusable Partners fields to the shared Logos layout contract so it receives Display Styles, Spacing, Layout, and Effects tabs.
+- Moved Logos row/view and slider mechanics into the shared Layout tab while keeping Display Mode and Display Style in Display Styles.
+- Updated reusable Partners rendering to honor Logos grid/slider display contracts and removed legacy width/margin shell CSS from its block styling.
+
+## 2026.07.15-default-row-anchors
+- Expanded `mrn-base-stack` to `1.2.68`.
+- Expanded `mrn-reusable-block-library` to `0.1.25`.
+- Made Name (admin use only) the default row anchor source whenever Anchor ID is blank.
+- Preserved explicit Anchor ID as the highest-priority anchor source.
+- Aligned FAQ Jump Nav, reusable block placements, cloned reusable layouts, and standalone reusable-block rendering with the same default-anchor contract.
+
+## 2026.07.15-faq-jump-nav
+- Expanded `mrn-base-stack` to `1.2.67`.
+- Expanded `mrn-reusable-block-library` to `0.1.24`.
+- Added an explicit FAQ Jump Nav builder layout for linking between multiple FAQ/Accordion sections on a page.
+- Added FAQ nav opt-in fields to the reusable FAQ contract: Include in FAQ Jump Nav and Jump Nav Label.
+- Added page-placement FAQ nav controls to saved reusable block placements so reusable FAQs can be used more than once with unique page anchors/labels.
+- Rendered FAQ Jump Nav links only when a FAQ section has the nav toggle enabled and a Jump Nav Label, with Anchor ID available as an override.
+
+## 2026.07.15-faq-layout-contract
+- Expanded `mrn-base-stack` to `1.2.66`.
+- Expanded `mrn-reusable-block-library` to `0.1.23`.
+- Added the shared Display Styles, Spacing, Layout, Effects tab order to the standalone FAQs/Accordion editor, including a real FAQ Layout control for stacked or split heading/items presentation.
+- Prevented page-builder FAQ clones from receiving a duplicate row-level tab stack when the reusable FAQ contract already provides it.
+- Renamed the page-owned FAQ builder layout to Page Specific FAQ/Accordion.
+- Suppressed empty FAQs/Accordion sections and answer-only rows before rendering so the output keeps valid native details/summary structure.
+- Cleaned FAQ CSS to use stable type sizes, zero letter spacing, inherited text color, and native details-open visibility without relying on JavaScript.
+- Cleaned ACF WYSIWYG editor controls so media, form, snippet, AI Assist, and Visual/Text controls align predictably in cloned builder layouts.
+- Stacked FAQ item question and answer fields at full row width so WYSIWYG editors span the available builder editor space.
+
+## 2026.07.15-grid-layout-contract
+- Expanded `mrn-base-stack` to `1.2.65`.
+- Expanded `mrn-reusable-block-library` to `0.1.22`.
+- Added the shared Display Styles, Spacing, Layout, Effects tab order to the standalone Content Grid editor.
+- Prevented page-builder Content Grid clones from receiving a duplicate row-level tab stack when the reusable Grid contract already provides it.
+- Suppressed empty Content Grid sections/items before rendering so required blank repeater rows do not output empty markup.
+- Cleaned Grid CSS to use stable type sizes, zero letter spacing, and the shared grid spacing variables without redundant shell gap overrides.
+- Resolved adjacent theme QA blockers for footer/tabbed image helper escaping, logo-link accessible names, and footer copyright contrast.
+
+## 2026.07.15-cta-layout-contract
+- Expanded `mrn-base-stack` to `1.2.64`.
+- Expanded `mrn-reusable-block-library` to `0.1.21`.
+- Normalized CTA editor tabs to the shared Content, Configs, Display Styles, Spacing, Layout, Effects order.
+- Removed duplicate Effects segments created by cloned reusable CTA fields in page builder rows.
+- Applied Display Style classes and attributes to cloned reusable row shells, including CTA.
+- Renamed page-owned CTA choices to Page Specific CTA and kept the legacy page-only CTA clone out of per-entry layout pickers.
+- Added Basic-style CTA appearance controls for gradients and background video, with matching front-end rendering.
+- Kept CTA width controls aligned with the shared Basic Configs > Appearance contract.
+- Updated CTA rendering so rows output when any CTA field has data, including background-only rows, while fully empty CTA rows stay suppressed.
+- Added CTA content image support with left/right placement controls and responsive media-stack rendering.
+- Limited Section Width (Sub-content) to collection-style layouts with real inner item wrappers.
+
+## 2026.07.15-content-lists-layout-contract
+- Expanded `mrn-base-stack` to `1.2.59`.
+- Restored Content Lists Display Mode to the Display Styles tab while preserving its query-driven display choices.
+- Applied the tighter builder row render contract to Content Lists and removed its built-in surface padding fallback.
+- Loaded public custom post types into the Content Lists source and manual content picker so rows can query sources such as Testimonials.
+- Sourced Content Lists Display Mode choices only from Site Configurations display modes, filtered by the selected Content Source.
+- Honored selected Display Mode field lists when rendering Testimonial items in Content Lists.
+
+## 2026.07.15-body-text-layout-contract
+- Expanded `mrn-base-stack` to `1.2.58`.
+- Applied the shared Display Styles and row spacing runtime contracts to the Body Text layout.
+- Removed Body Text's built-in surface padding fallback so spacing is controlled by the shared spacing presets.
+- Restored Body Text to the per-entry Available Builder Layout Types selector and alphabetized those layout lists by label.
+
+## 2026.07.10-two-column-split-gradient-controls
+- Expanded `mrn-base-stack` to `1.2.57`.
+- Added the shared gradient controls and overlay rendering contract to Two Column Split, including hero-builder usage.
+
+## 2026.07.10-gradient-color-opacity-controls
+- Expanded `mrn-base-stack` to `1.2.56`.
+- Added start and end opacity range controls for Basic/Hero gradient colors while preserving Site Color variables.
+
+## 2026.07.10-gradient-media-overlay-layer
+- Expanded `mrn-base-stack` to `1.2.55`.
+- Rendered Basic and Hero row gradients as overlay layers above decorative background image/video media and below row content.
+
+## 2026.07.10-basic-gradient-stop-controls
+- Expanded `mrn-base-stack` to `1.2.54`.
+- Replaced the Basic gradient direction dropdown with draggable angle and color-stop range controls.
+- Rendered Basic gradient styles through the Hero template when Basic is used in the Hero builder.
+
+## 2026.07.10-basic-gradient-controls
+- Expanded `mrn-base-stack` to `1.2.53`.
+- Added Basic layout background gradient controls under Configs > Appearance using Site Colors and directional rendering.
+
+## 2026.07.10-shared-link-button-contract
+- Expanded `mrn-base-stack` to `1.2.52`.
+- Made shared `mrn-ui__link--button` and link icon styles apply anywhere the shared class is rendered, including Hero buttons.
+
+## 2026.07.10-remove-hero-link-button-styling
+- Expanded `mrn-base-stack` to `1.2.51`.
+- Removed Hero-specific link border, padding, and no-underline styling so hero links are not treated as buttons by default.
+
+## 2026.07.10-hero-basic-link-style-contract
+- Expanded `mrn-base-stack` to `1.2.50`.
+- Scoped Hero Basic CTA border/padding styles to explicit button links so normal hero links render as links.
+
+## 2026.07.09-idle-acf-row-collapse-dirty-state-fix
+- Expanded `mrn-base-stack` to `1.2.49`.
+- Reset ACF's unload dirty-state after the automatic initial row-collapse pass, only when no editor interaction happened.
+- Prevented page-load collapse from causing a false "unsaved changes" browser warning when leaving an unchanged editor screen.
+
+## 2026.07.09-idle-acf-row-collapse
+- Expanded `mrn-base-stack` to `1.2.48`.
+- Restored automatic initial ACF flexible-content and repeater row collapsing for stack singular editors.
+- Scheduled initial collapse after a short idle delay, batched row toggles in tiny frames, capped row counts, and aborts the pass once the editor starts interacting with fields.
+- Added filters for the collapse delay and maximum initial flexible/repeater row counts so client sites can tune or disable the behavior without editing theme assets.
+
+## 2026.07.09-layout-engine-display-styles-and-sidebar-templates
+- Expanded `mrn-base-stack` to `1.2.47`.
+- Expanded `mrn-base-stack-child` to `1.0.1`.
+- Expanded `mrn-editor-lockdown` to `1.0.25`.
+- Expanded `mrn-template-inspector` to `0.2.7`.
+- Added the Display Styles registry and layout field wiring so layouts can offer style choices that work alongside Display Modes without bloating row templates.
+- Split front-end layout assets into targeted files and added shared semantic image/media helpers for responsive row background imagery and background video.
+- Converted page sidebar selection from ACF position controls into WordPress page templates: `Sidebar Left` and `Sidebar Right`.
+- Removed the child-theme rollout starter template from selectable Page Attributes while keeping the child scaffold focused on site-specific overrides.
+- Kept the Page Attributes metabox open by default while preserving locked editor metabox ordering.
+
+## 2026.07.08-primary-menu-standalone-row
+- Expanded `mrn-base-stack` to `1.2.35`.
+- Moved the Primary menu out of the Header layout grid and rendered it as a standalone navigation row directly below the header.
+- Removed Primary menu from the Header Layout editor contract so it is no longer draggable with header components.
+
+## 2026.07.08-header-footer-appearance-spacing
+- Expanded `mrn-base-stack` to `1.2.34`.
+- Added Header/Footer Config appearance controls for background color, font color, link colors, and font family.
+- Added a Header/Footer Spacing subtab that reuses the shared row spacing preset contract.
+
+## 2026.07.08-header-footer-remove-content-tab
+- Expanded `mrn-base-stack` to `1.2.33`.
+- Removed the placeholder Content subtab from Header/Footer options so the subtab set only shows active control areas.
+
+## 2026.07.08-header-footer-content-width-contract
+- Expanded `mrn-base-stack` to `1.2.32`.
+- Aligned Header/Footer Content Width behavior with builder row width contracts so Full Width removes the inline gutter.
+
+## 2026.07.08-header-footer-content-width
+- Expanded `mrn-base-stack` to `1.2.31`.
+- Added Header/Footer Layout controls for Content Width using the same Content, Wide, and Full Width choices as builder rows.
+- Applied saved Header/Footer width choices to the front-end layout grid shell.
+
+## 2026.07.08-header-footer-layout-external-save-freeze
+- Expanded `mrn-base-stack` to `1.2.30`.
+- Bound the Header/Footer layout save freeze at the document level so the external `form="post"` Save Settings button is caught before blur/change handlers run.
+- Added version-prefixed admin asset URLs and no-cache headers for the Header/Footer settings screen to prevent stale editor JavaScript.
+
+## 2026.07.08-header-footer-layout-save-click-freeze
+- Expanded `mrn-base-stack` to `1.2.29`.
+- Froze Header/Footer layout editor re-renders as soon as the Save control is pressed so blur/change events cannot move chips before navigation.
+- Kept save payload mirroring intact while preventing click-time grid mutation.
+
+## 2026.07.08-header-footer-layout-submit-state-fix
+- Expanded `mrn-base-stack` to `1.2.28`.
+- Prevented Header/Footer layout Save from mutating the live grid editor state before the admin page refreshes.
+- Mirrored save-only layout JSON into hidden ACF request fields without dispatching editor change events during submit.
+
+## 2026.07.08-header-footer-layout-save-stability
+- Expanded `mrn-base-stack` to `1.2.27`.
+- Stabilized Header/Footer layout saves by preserving the full layout item map during submit and ACF persistence.
+- Kept disabled Config components hidden from the editor/front end without compacting or moving their saved grid positions.
+
+## 2026.07.08-header-footer-config-heading-dedupe
+- Expanded `mrn-base-stack` to `1.2.26`.
+- Prevented the Header/Footer Config fallback organizer from creating duplicate group headings when PHP-rendered headings are already present.
+- Kept the Config field layout polish without moving server-rendered ACF heading fields across Header/Footer tabs.
+
+## 2026.07.08-header-footer-config-organization
+- Expanded `mrn-base-stack` to `1.2.25`.
+- Reordered Header/Footer Config controls into user-facing groups for Navigation, Business Info, Search/Social, and Footer Text.
+- Added compact two-column admin layout hints for Config toggles and detail controls.
+
+## 2026.07.08-header-footer-layout-active-components
+- Expanded `mrn-base-stack` to `1.2.24`.
+- Removed disabled Header/Footer Config components from the layout-grid editor and saved layout JSON.
+- Filtered front-end layout placement data to enabled components so turned-off config components do not reserve grid slots or render.
+
+## 2026.07.08-header-footer-layout-save-fix
+- Expanded `mrn-base-stack` to `1.2.23`.
+- Fixed Header/Footer layout-grid saves so the custom grid editor mirrors its JSON into submitted ACF fields and a dedicated fallback request key before the options form posts.
+- Kept hidden layout storage fields submittable while visually removing them from the admin UI, and preserved direct Footer Layout tab links after save/reload.
+
+## 2026.07.07-bootstrap-credential-provisioning-hardening
+- Expanded `mrn-config-helper` to `0.1.43`.
+- Hardened fresh-site bootstrap credential writes so the reCAPTCHA Enterprise private key is written as a raw PHP string literal instead of being parsed as a WP-CLI option.
+- Improved UptimeRobot bootstrap diagnostics and treated duplicate-monitor API conflicts as an already-ready state.
+
 ## 2026.05.06-front-end-runtime-autoload-for-reusable-interactions
 - Expanded `mrn-base-stack` to `1.2.1`.
 - Updated stack runtime enqueue behavior so front-end interaction assets can load on singular shell content when layout builder is disabled but runtime markers are present in content/meta.

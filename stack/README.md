@@ -17,13 +17,15 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 - A stack workflow/ops guide (`STACK_OPERATIONS.md`) for local symlink workflow, server ownership, and sync/deploy rules.
 - A Local environment pull/deploy guide (`../local/LOCAL_ENV_WORKFLOW.md`) for using Local like a site environment endpoint.
 - A canonical rollout checklist (`ROLLOUT_CHECKLIST.md`) for pre-flight QA, deploy-path decisions, post-deploy verification, and live parity checks.
-- A plugin inventory (`PLUGIN_CATALOG.md`) and plugin doc template (`PLUGIN_DOC_TEMPLATE.md`) for documenting MRN plugins and MU plugins.
+- A schema and AI discovery baseline (`SCHEMA_DISCOVERY_BASELINE.md`) for SmartCrawl ownership, CPT mappings, editor controls, crawler policy, and launch checks.
+- A plugin inventory (`PLUGIN_CATALOG.md`), current plugin naming/repo audit (`MRN_PLUGIN_AUDIT.md`), and plugin doc template (`PLUGIN_DOC_TEMPLATE.md`) for documenting MRN plugins and MU plugins.
 - First deep-dive plugin docs live in `plugin-docs/`.
 - A per-site bootstrap script (`scripts/site-bootstrap.sh`).
 - A CloudPanel cron scanner (`scripts/bootstrap-new-sites.sh`) that bootstraps only once per site.
-- A canonical direct site-owner SSH public key file (`configs/site-owner-authorized-key.pub`) that bootstrap installs into each new site owner's `authorized_keys`.
+- A canonical direct site-owner SSH public key file (`configs/site-owner-authorized-key.pub`) that bootstrap installs into each new site owner's `authorized_keys`, after removing group/other home-directory write access required by OpenSSH StrictModes.
 - A canonical stack feature-deploy helper (`scripts/deploy-feature-stack-and-default-configs.sh`) that mirrors stack theme and MU changes to both the stack server and `default-configs.mrndev.io`.
-- A live-site preflight helper (`scripts/preflight-live-site-deploy.sh`) that resolves the site owner, verifies direct site-owner SSH, normalizes malformed Updraft placeholder settings, and starts a clean pre-deploy backup.
+- A live-site preflight helper (`scripts/preflight-live-site-deploy.sh`) that resolves the site owner, verifies direct site-owner SSH, normalizes malformed Updraft placeholder settings, and supports an explicit database-only backup for data-changing work.
+- A canonical backup policy (`BACKUP_POLICY.md`) with per-site S3 prefixes, staggered daily schedules, four-set retention, and no automatic backup for code-only deployments.
 - A Local environment workflow helper (`../local/scripts/local-env-workflow.sh`) that pulls into Local and deploys with an explicit site-vs-stack scope prompt.
 - A repo shortcut command (`../scripts/mrn`) for `mrn pull-site` and `mrn deploy-site`.
 - A nightly Local sync helper (`../local/scripts/nightly-pull-mrndev-sites.sh`) for discovered `*.mrndev.io` sites.
@@ -44,6 +46,12 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 
 1. Edit `manifests/plugins.txt` with your plugin slugs or zip URLs.
 2. Review defaults inside `scripts/site-bootstrap.sh` (timezone, permalink, admin email).
+   - Optional stack-managed reCAPTCHA Enterprise secret files consumed by bootstrap:
+   - `secrets/recaptcha-enterprise-project-id.txt`
+   - `secrets/recaptcha-enterprise-service-account-email.txt`
+   - `secrets/recaptcha-enterprise-private-key.pem`
+   - `secrets/recaptcha-enterprise-allowed-domains.txt` (optional)
+   - `secrets/recaptcha-enterprise-default-integration-type.txt` (optional)
 3. Add optional plugin import scripts to `configs/importers/`.
 4. Manage importer mappings in `manifests/importers.txt` (or through Stack Manager UI).
    - Supported by default importer script:

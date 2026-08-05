@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: MRN Template Inspector (Testing)
+ * Plugin Name: MRN Template Inspector
  * Description: Standalone local testing tool to inspect selected page elements, template tree, and related CSS, then open files in VS Code.
  * Author: MRN Web Designs
- * Version: 0.2.3
+ * Version: 0.2.7
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -93,6 +93,15 @@ function mrn_template_inspector_render_toolbar_children( $wp_admin_bar ) {
 				'id'     => 'mrn-inspector-selection-pick',
 				'parent' => 'mrn-inspector-root',
 				'title'  => 'Selection: Pick Element',
+				'href'   => '#',
+			)
+		);
+
+		$wp_admin_bar->add_node(
+			array(
+				'id'     => 'mrn-inspector-spacing-toggle',
+				'parent' => 'mrn-inspector-root',
+				'title'  => 'Stack Spacing: Off',
 				'href'   => '#',
 			)
 		);
@@ -764,6 +773,7 @@ function mrn_template_inspector_render_selection_script() {
 			(function () {
 				const config = window.MRNTemplateInspectorSelection;
 				let triggerLink = document.querySelector('#wp-admin-bar-mrn-inspector-selection-pick > a');
+				let spacingToggleLink = document.querySelector('#wp-admin-bar-mrn-inspector-spacing-toggle > a');
 				if (!config) {
 					return;
 				}
@@ -772,6 +782,12 @@ function mrn_template_inspector_render_selection_script() {
 				let hoverBox = null;
 				let panel = null;
 				let panelBody = null;
+				let spacingOverlayActive = false;
+					let spacingOverlayFrame = 0;
+					let spacingOverlayLayer = null;
+					let spacingHoverTarget = null;
+					let spacingMutationObserver = null;
+					const spacingStorageKey = 'mrn-ti-stack-spacing-overlay-active';
 
 				function ensureFloatingLauncher() {
 					let launcher = document.getElementById('mrn-ti-floating-launcher');
@@ -797,6 +813,32 @@ function mrn_template_inspector_render_selection_script() {
 					launcher.style.boxShadow = '0 8px 18px rgba(0,0,0,0.25)';
 					document.body.appendChild(launcher);
 					return launcher;
+				}
+
+				function ensureFloatingSpacingToggle() {
+					let toggle = document.getElementById('mrn-ti-floating-spacing-toggle');
+					if (toggle) {
+						return toggle;
+					}
+
+					toggle = document.createElement('button');
+					toggle.type = 'button';
+					toggle.id = 'mrn-ti-floating-spacing-toggle';
+					toggle.textContent = 'Stack Spacing: Off';
+					toggle.style.position = 'fixed';
+					toggle.style.left = '16px';
+					toggle.style.bottom = '52px';
+					toggle.style.zIndex = '2147483644';
+					toggle.style.border = '1px solid #1e88e5';
+					toggle.style.background = '#10233a';
+					toggle.style.color = '#bbdefb';
+					toggle.style.borderRadius = '8px';
+					toggle.style.padding = '8px 10px';
+					toggle.style.font = '12px/1.2 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
+					toggle.style.cursor = 'pointer';
+					toggle.style.boxShadow = '0 8px 18px rgba(0,0,0,0.25)';
+					document.body.appendChild(toggle);
+					return toggle;
 				}
 
 			function ensureHoverBox() {
@@ -964,12 +1006,539 @@ function mrn_template_inspector_render_selection_script() {
 						return true;
 					}
 
+					if (el.closest('#mrn-ti-floating-spacing-toggle')) {
+						return true;
+					}
+
+					if (el.closest('#mrn-ti-spacing-overlay')) {
+						return true;
+					}
+
 					if (el.closest('#wpadminbar')) {
 						return true;
 					}
 
 				const box = panel;
 				return !!(box && box.contains(el));
+			}
+
+			function ensureSpacingOverlayLayer() {
+				if (spacingOverlayLayer) {
+					return spacingOverlayLayer;
+				}
+
+				spacingOverlayLayer = document.createElement('div');
+				spacingOverlayLayer.id = 'mrn-ti-spacing-overlay';
+				spacingOverlayLayer.setAttribute('aria-hidden', 'true');
+				spacingOverlayLayer.style.position = 'fixed';
+				spacingOverlayLayer.style.left = '0';
+				spacingOverlayLayer.style.top = '0';
+				spacingOverlayLayer.style.width = '100vw';
+				spacingOverlayLayer.style.height = '100vh';
+				spacingOverlayLayer.style.zIndex = '2147483645';
+				spacingOverlayLayer.style.pointerEvents = 'none';
+				spacingOverlayLayer.style.font = '11px/1.35 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
+				spacingOverlayLayer.style.display = 'none';
+				document.body.appendChild(spacingOverlayLayer);
+				return spacingOverlayLayer;
+			}
+
+			function readSpacingOverlayPreference() {
+				try {
+					return window.localStorage.getItem(spacingStorageKey) === '1';
+				} catch (e) {
+					return false;
+				}
+			}
+
+			function writeSpacingOverlayPreference(isEnabled) {
+				try {
+					window.localStorage.setItem(spacingStorageKey, isEnabled ? '1' : '0');
+				} catch (e) {
+					// Ignore storage failures in private browsing or locked-down runtimes.
+				}
+			}
+
+			function parsePixelValue(value) {
+				const parsed = parseFloat(String(value || ''));
+				return Number.isFinite(parsed) ? parsed : 0;
+			}
+
+			function formatCssValue(value) {
+				const raw = String(value || '').trim();
+				if (!raw) {
+					return '0';
+				}
+
+				const parsed = parseFloat(raw);
+				if (Number.isFinite(parsed) && raw.indexOf('px') !== -1) {
+					const rounded = Math.round(parsed * 100) / 100;
+					return String(rounded).replace(/\.0$/, '') + 'px';
+				}
+
+				return raw;
+			}
+
+			function getBoxValues(style, prefix) {
+				return {
+					top: style.getPropertyValue(prefix + '-top'),
+					right: style.getPropertyValue(prefix + '-right'),
+					bottom: style.getPropertyValue(prefix + '-bottom'),
+					left: style.getPropertyValue(prefix + '-left')
+				};
+			}
+
+			function getBoxPixels(values) {
+				return {
+					top: parsePixelValue(values.top),
+					right: parsePixelValue(values.right),
+					bottom: parsePixelValue(values.bottom),
+					left: parsePixelValue(values.left)
+				};
+			}
+
+					function formatBoxValues(values) {
+						return [
+							formatCssValue(values.top),
+							formatCssValue(values.right),
+							formatCssValue(values.bottom),
+							formatCssValue(values.left)
+						].join(' / ');
+					}
+
+				function collectGapSummary(el, style) {
+					const summaries = [];
+					const ownRowGap = String(style.rowGap || '').trim();
+					const ownColumnGap = String(style.columnGap || '').trim();
+					if (ownRowGap && ownRowGap !== 'normal' && (parsePixelValue(ownRowGap) || parsePixelValue(ownColumnGap))) {
+						summaries.push(formatCssValue(ownRowGap) + ' / ' + formatCssValue(ownColumnGap));
+					}
+
+					const gapTarget = el.querySelector('.mrn-layout-grid, .mrn-ui__body, .mrn-ui__items');
+					if (gapTarget instanceof Element) {
+						const gapStyle = window.getComputedStyle(gapTarget);
+						const rowGap = String(gapStyle.rowGap || '').trim();
+						const columnGap = String(gapStyle.columnGap || '').trim();
+						if (rowGap && rowGap !== 'normal' && (parsePixelValue(rowGap) || parsePixelValue(columnGap))) {
+							summaries.push(formatCssValue(rowGap) + ' / ' + formatCssValue(columnGap));
+						}
+					}
+
+					return summaries;
+				}
+
+					function getSpacingTargetMeta(el) {
+						const spacingName = String(el.getAttribute('data-mrn-row-spacing') || '').trim();
+						if (spacingName) {
+							return {
+								setOnRow: true
+							};
+						}
+
+					const modifier = Array.from(el.classList || []).find(function (className) {
+						return className.indexOf('mrn-content-builder__row--') === 0;
+					});
+
+						if (modifier) {
+							return {
+								setOnRow: false
+							};
+						}
+
+						if (el.classList && el.classList.contains('entry-content--builder')) {
+							return {
+								setOnRow: false
+							};
+						}
+
+						if (el.classList && el.classList.contains('entry-header')) {
+							return {
+								setOnRow: false
+							};
+						}
+
+						if (el.classList && el.classList.contains('post-thumbnail')) {
+							return {
+								setOnRow: false
+							};
+						}
+
+						if (el.classList && el.classList.contains('mrn-singular-shell')) {
+							return {
+								setOnRow: false
+							};
+						}
+
+						if (el.classList && el.classList.contains('site-main')) {
+							return {
+								setOnRow: false
+							};
+						}
+
+						return {
+							setOnRow: false
+						};
+					}
+
+			function clampOverlayPosition(value, min, max) {
+				if (max < min) {
+					return min;
+				}
+
+				return Math.max(min, Math.min(max, value));
+			}
+
+			function addSpacingOverlayPart(layer, left, top, width, height, background, border) {
+				if (width <= 0 || height <= 0) {
+					return;
+				}
+
+				const part = document.createElement('div');
+				part.style.position = 'fixed';
+				part.style.left = Math.round(left) + 'px';
+				part.style.top = Math.round(top) + 'px';
+				part.style.width = Math.round(width) + 'px';
+				part.style.height = Math.round(height) + 'px';
+				part.style.boxSizing = 'border-box';
+				part.style.pointerEvents = 'none';
+				part.style.background = background;
+				part.style.border = border;
+				layer.appendChild(part);
+			}
+
+					function addSpacingTooltip(layer, el, rect, style, marginValues, paddingValues) {
+						const meta = getSpacingTargetMeta(el);
+						const gapSummary = collectGapSummary(el, style);
+						const parts = [
+							'Row: ' + (meta.setOnRow ? 'yes' : 'no'),
+							'M ' + formatBoxValues(marginValues),
+							'P ' + formatBoxValues(paddingValues)
+						];
+
+						if (gapSummary.length) {
+							parts.push('G ' + gapSummary.join(' | '));
+						}
+
+						const label = document.createElement('div');
+						label.textContent = parts.join('  |  ');
+						label.style.position = 'fixed';
+						label.style.left = '0';
+						label.style.top = '0';
+						label.style.maxWidth = 'calc(100vw - 24px)';
+						label.style.padding = '7px 10px';
+						label.style.borderRadius = '3px';
+						label.style.border = '0';
+						label.style.background = '#303842';
+						label.style.color = '#d7dee8';
+						label.style.whiteSpace = 'nowrap';
+						label.style.boxShadow = '0 8px 18px rgba(0,0,0,0.28)';
+						label.style.pointerEvents = 'none';
+						label.style.font = '12px/1.2 -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
+
+						const arrow = document.createElement('div');
+						arrow.style.position = 'absolute';
+						arrow.style.left = '50%';
+						arrow.style.width = '0';
+						arrow.style.height = '0';
+						arrow.style.marginLeft = '-7px';
+						arrow.style.borderLeft = '7px solid transparent';
+						arrow.style.borderRight = '7px solid transparent';
+						label.appendChild(arrow);
+						layer.appendChild(label);
+
+						const labelRect = label.getBoundingClientRect();
+						const aboveTop = rect.top - labelRect.height - 14;
+						const placeBelow = aboveTop < 36;
+						const left = clampOverlayPosition(
+							rect.left + (rect.width / 2) - (labelRect.width / 2),
+							8,
+							window.innerWidth - labelRect.width - 8
+						);
+						const top = placeBelow ? rect.bottom + 14 : aboveTop;
+
+						label.style.left = Math.round(left) + 'px';
+						label.style.top = Math.round(clampOverlayPosition(top, 36, window.innerHeight - labelRect.height - 8)) + 'px';
+
+						if (placeBelow) {
+							arrow.style.top = '-7px';
+							arrow.style.borderBottom = '7px solid #303842';
+						} else {
+							arrow.style.bottom = '-7px';
+							arrow.style.borderTop = '7px solid #303842';
+						}
+				}
+
+				function drawSpacingTarget(layer, el, showTooltip) {
+				const rect = el.getBoundingClientRect();
+				const style = window.getComputedStyle(el);
+				const marginValues = getBoxValues(style, 'margin');
+				const paddingValues = getBoxValues(style, 'padding');
+				const margin = getBoxPixels(marginValues);
+				const padding = getBoxPixels(paddingValues);
+				const marginFill = 'rgba(255, 152, 0, 0.22)';
+				const marginBorder = '1px solid rgba(255, 152, 0, 0.75)';
+				const paddingFill = 'rgba(76, 175, 80, 0.24)';
+				const paddingBorder = '1px solid rgba(76, 175, 80, 0.80)';
+				const contentFill = 'rgba(30, 136, 229, 0.08)';
+				const contentBorder = '1px solid rgba(30, 136, 229, 0.95)';
+
+				addSpacingOverlayPart(layer, rect.left - margin.left, rect.top - margin.top, rect.width + margin.left + margin.right, margin.top, marginFill, marginBorder);
+				addSpacingOverlayPart(layer, rect.left - margin.left, rect.bottom, rect.width + margin.left + margin.right, margin.bottom, marginFill, marginBorder);
+				addSpacingOverlayPart(layer, rect.left - margin.left, rect.top, margin.left, rect.height, marginFill, marginBorder);
+				addSpacingOverlayPart(layer, rect.right, rect.top, margin.right, rect.height, marginFill, marginBorder);
+
+				addSpacingOverlayPart(layer, rect.left, rect.top, rect.width, padding.top, paddingFill, paddingBorder);
+				addSpacingOverlayPart(layer, rect.left, rect.bottom - padding.bottom, rect.width, padding.bottom, paddingFill, paddingBorder);
+				addSpacingOverlayPart(layer, rect.left, rect.top + padding.top, padding.left, Math.max(0, rect.height - padding.top - padding.bottom), paddingFill, paddingBorder);
+				addSpacingOverlayPart(layer, rect.right - padding.right, rect.top + padding.top, padding.right, Math.max(0, rect.height - padding.top - padding.bottom), paddingFill, paddingBorder);
+
+				addSpacingOverlayPart(
+					layer,
+					rect.left + padding.left,
+					rect.top + padding.top,
+					Math.max(0, rect.width - padding.left - padding.right),
+					Math.max(0, rect.height - padding.top - padding.bottom),
+					contentFill,
+					contentBorder
+				);
+					addSpacingOverlayPart(layer, rect.left, rect.top, rect.width, rect.height, 'rgba(30, 136, 229, 0.04)', '2px solid rgba(30, 136, 229, 0.95)');
+
+					if (showTooltip) {
+						addSpacingTooltip(layer, el, rect, style, marginValues, paddingValues);
+					}
+				}
+
+				function getSpacingFallbackTargetSelector() {
+					return [
+						'.entry-content--builder',
+						'.entry-header',
+						'.post-thumbnail',
+						'.mrn-singular-shell',
+						'.mrn-shell-section',
+						'.mrn-layout-section',
+						'.mrn-layout-surface',
+						'.site-main'
+					].join(', ');
+				}
+
+				function getSpacingTargetSelector() {
+					const explicitSelector = '[data-mrn-row-spacing], .mrn-content-builder__row';
+					if (document.querySelector(explicitSelector)) {
+						return explicitSelector;
+					}
+
+					return getSpacingFallbackTargetSelector();
+				}
+
+				function findHoveredSpacingTarget(target) {
+					if (!(target instanceof Element) || isInspectorUIElement(target)) {
+						return null;
+					}
+
+					const candidate = target.closest(getSpacingTargetSelector());
+					if (!(candidate instanceof Element) || isInspectorUIElement(candidate)) {
+						return null;
+					}
+
+					const rect = candidate.getBoundingClientRect();
+					if (rect.width <= 0 || rect.height <= 0 || rect.bottom < 0 || rect.top > window.innerHeight) {
+						return null;
+					}
+
+					const style = window.getComputedStyle(candidate);
+					if (style.display === 'none' || style.visibility === 'hidden') {
+						return null;
+					}
+
+					return candidate;
+				}
+
+				function onSpacingMouseMove(event) {
+					if (!spacingOverlayActive) {
+						return;
+					}
+
+					const nextTarget = findHoveredSpacingTarget(event.target);
+					if (nextTarget === spacingHoverTarget) {
+						return;
+					}
+
+					spacingHoverTarget = nextTarget;
+					scheduleSpacingOverlayUpdate();
+				}
+
+				function collectSpacingTargets() {
+					const targets = [];
+					const seen = new Set();
+					const candidates = Array.from(document.querySelectorAll(getSpacingTargetSelector()));
+
+				for (const el of candidates) {
+					if (!(el instanceof Element) || seen.has(el) || isInspectorUIElement(el)) {
+						continue;
+					}
+
+					seen.add(el);
+					const rect = el.getBoundingClientRect();
+					if (rect.width <= 0 || rect.height <= 0 || rect.bottom < -160 || rect.top > window.innerHeight + 160) {
+						continue;
+					}
+
+					const style = window.getComputedStyle(el);
+					if (style.display === 'none' || style.visibility === 'hidden') {
+						continue;
+					}
+
+					targets.push(el);
+					if (targets.length >= 60) {
+						break;
+					}
+				}
+
+				return targets;
+			}
+
+			function showSpacingEmptyState(layer) {
+				const note = document.createElement('div');
+				note.textContent = 'No stack or theme spacing targets found on this viewport.';
+				note.style.position = 'fixed';
+				note.style.left = '16px';
+				note.style.top = '48px';
+				note.style.padding = '7px 9px';
+				note.style.border = '1px solid rgba(255,255,255,0.22)';
+				note.style.borderRadius = '6px';
+				note.style.background = 'rgba(16, 19, 23, 0.94)';
+				note.style.color = '#f5f6f7';
+				note.style.boxShadow = '0 8px 20px rgba(0,0,0,0.32)';
+				layer.appendChild(note);
+			}
+
+			function updateSpacingOverlay() {
+				spacingOverlayFrame = 0;
+				if (!spacingOverlayActive) {
+					return;
+				}
+
+				const layer = ensureSpacingOverlayLayer();
+				layer.style.display = 'block';
+				layer.innerHTML = '';
+
+				const targets = collectSpacingTargets();
+					if (!targets.length) {
+						showSpacingEmptyState(layer);
+						return;
+					}
+
+					for (const target of targets) {
+						if (target !== spacingHoverTarget) {
+							continue;
+						}
+
+						drawSpacingTarget(layer, target, true);
+						break;
+					}
+				}
+
+			function scheduleSpacingOverlayUpdate() {
+				if (!spacingOverlayActive || spacingOverlayFrame) {
+					return;
+				}
+
+				spacingOverlayFrame = window.requestAnimationFrame(updateSpacingOverlay);
+			}
+
+			function onSpacingMutation(mutations) {
+				for (const mutation of mutations) {
+					const target = mutation.target;
+					if (target instanceof Element && isInspectorUIElement(target)) {
+						continue;
+					}
+
+					scheduleSpacingOverlayUpdate();
+					return;
+				}
+			}
+
+				function bindSpacingOverlayWatchers() {
+					document.addEventListener('mousemove', onSpacingMouseMove, true);
+					window.addEventListener('scroll', scheduleSpacingOverlayUpdate, true);
+					window.addEventListener('resize', scheduleSpacingOverlayUpdate, true);
+
+				if ('MutationObserver' in window && document.body) {
+					spacingMutationObserver = new MutationObserver(onSpacingMutation);
+					spacingMutationObserver.observe(document.body, {
+						attributes: true,
+						childList: true,
+						subtree: true,
+						attributeFilter: ['class', 'style', 'data-mrn-row-spacing']
+					});
+				}
+			}
+
+				function unbindSpacingOverlayWatchers() {
+					document.removeEventListener('mousemove', onSpacingMouseMove, true);
+					window.removeEventListener('scroll', scheduleSpacingOverlayUpdate, true);
+					window.removeEventListener('resize', scheduleSpacingOverlayUpdate, true);
+
+				if (spacingMutationObserver) {
+					spacingMutationObserver.disconnect();
+					spacingMutationObserver = null;
+				}
+			}
+
+			function updateSpacingToggleLabel() {
+				if (!spacingToggleLink) {
+					return;
+				}
+
+				spacingToggleLink.textContent = 'Stack Spacing: ' + (spacingOverlayActive ? 'On' : 'Off');
+				spacingToggleLink.setAttribute('aria-pressed', spacingOverlayActive ? 'true' : 'false');
+			}
+
+			function startSpacingOverlay() {
+				if (spacingOverlayActive) {
+					scheduleSpacingOverlayUpdate();
+					return;
+				}
+
+					spacingOverlayActive = true;
+					spacingHoverTarget = null;
+					writeSpacingOverlayPreference(true);
+					updateSpacingToggleLabel();
+				ensureSpacingOverlayLayer();
+				bindSpacingOverlayWatchers();
+				scheduleSpacingOverlayUpdate();
+			}
+
+			function stopSpacingOverlay() {
+					spacingOverlayActive = false;
+					spacingHoverTarget = null;
+					writeSpacingOverlayPreference(false);
+					updateSpacingToggleLabel();
+				unbindSpacingOverlayWatchers();
+
+				if (spacingOverlayFrame) {
+					window.cancelAnimationFrame(spacingOverlayFrame);
+					spacingOverlayFrame = 0;
+				}
+
+				if (spacingOverlayLayer) {
+					spacingOverlayLayer.innerHTML = '';
+					spacingOverlayLayer.style.display = 'none';
+				}
+			}
+
+			function toggleSpacingOverlay(event) {
+				if (event) {
+					event.preventDefault();
+					event.stopPropagation();
+				}
+
+				if (spacingOverlayActive) {
+					stopSpacingOverlay();
+					return;
+				}
+
+				startSpacingOverlay();
 			}
 
 			function setHoverBoxForElement(el) {
@@ -1276,6 +1845,11 @@ function mrn_template_inspector_render_selection_script() {
 
 				if (isPanelVisible()) {
 					hidePanel();
+					return;
+				}
+
+				if (spacingOverlayActive) {
+					stopSpacingOverlay();
 				}
 			}
 
@@ -1283,6 +1857,18 @@ function mrn_template_inspector_render_selection_script() {
 
 				if (!triggerLink) {
 					triggerLink = ensureFloatingLauncher();
+				}
+
+				if (!spacingToggleLink) {
+					spacingToggleLink = ensureFloatingSpacingToggle();
+				}
+
+				if (spacingToggleLink) {
+					spacingToggleLink.addEventListener('click', toggleSpacingOverlay);
+					updateSpacingToggleLabel();
+					if (readSpacingOverlayPreference()) {
+						startSpacingOverlay();
+					}
 				}
 
 				if (!triggerLink) {

@@ -23,9 +23,11 @@ $subheading  = isset($fields['subheading']) ? (string) $fields['subheading'] : '
 $subheading_tag = isset($fields['subheading_tag']) ? sanitize_key((string) $fields['subheading_tag']) : 'p';
 $items       = isset($fields['faq_items']) && is_array($fields['faq_items']) ? $fields['faq_items'] : array();
 $bg_color    = isset($fields['bg_color']) ? (string) $fields['bg_color'] : '';
+$faq_layout  = isset($fields['faq_layout']) ? sanitize_key((string) $fields['faq_layout']) : 'stacked';
 $start_open  = !empty($fields['start_open']);
 $bottom_accent = !empty($fields['bottom_accent']);
 $bottom_accent_style = isset($fields['bottom_accent_style']) ? (string) $fields['bottom_accent_style'] : '';
+$renderable_items = array();
 
 if (!in_array($heading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span'), true)) {
     $heading_tag = 'h2';
@@ -33,14 +35,46 @@ if (!in_array($heading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div'
 if (!in_array($subheading_tag, array('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span'), true)) {
     $subheading_tag = 'p';
 }
+if (!in_array($faq_layout, array('stacked', 'split'), true)) {
+    $faq_layout = 'stacked';
+}
 
-if ($items === array()) {
+foreach ($items as $item) {
+    if (!is_array($item)) {
+        continue;
+    }
+
+    $question = isset($item['question']) ? trim((string) $item['question']) : '';
+    $answer   = isset($item['answer']) ? (string) $item['answer'] : '';
+
+    if ($question === '') {
+        continue;
+    }
+
+    $renderable_items[] = array(
+        'question' => $question,
+        'answer'   => $answer,
+    );
+}
+
+if ($renderable_items === array()) {
     return;
 }
 
 $classes = array(
     'mrn-reusable-block',
     'mrn-reusable-block--faq',
+);
+$has_header = $label !== '' || $heading !== '' || $subheading !== '';
+
+if ('split' === $faq_layout && !$has_header) {
+    $faq_layout = 'stacked';
+}
+
+$faq_classes = array(
+    'mrn-faq',
+    'mrn-faq--editorial-shell',
+    'mrn-faq--layout-' . $faq_layout,
 );
 
 $inline_styles = array();
@@ -84,51 +118,40 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
         style="<?php echo esc_attr(implode('; ', $inline_styles)); ?>"
     <?php endif; ?>
 >
-	    <div class="mrn-reusable-block__inner mrn-ui__body">
-	        <div class="mrn-faq mrn-faq--editorial-shell">
-	            <?php if ($label !== '' || $heading !== '' || $subheading !== '') : ?>
-	                <div class="mrn-ui__head">
-                    <?php if ($label !== '') : ?>
-	                        <<?php echo esc_html($label_tag); ?> class="mrn-ui__label">
-                            <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($label) : esc_html($label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                        </<?php echo esc_html($label_tag); ?>>
-                    <?php endif; ?>
+    <div class="mrn-reusable-block__inner mrn-ui__body">
+        <div class="<?php echo esc_attr(implode(' ', $faq_classes)); ?>">
+            <?php if ($has_header) : ?>
+                <div class="mrn-ui__head">
+                <?php if ($label !== '') : ?>
+                    <<?php echo esc_html($label_tag); ?> class="mrn-ui__label">
+                        <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($label) : esc_html($label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    </<?php echo esc_html($label_tag); ?>>
+                <?php endif; ?>
 
-                    <?php if ($heading !== '') : ?>
-	                        <<?php echo esc_html($heading_tag); ?> class="mrn-ui__heading">
-                            <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($heading) : esc_html($heading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                        </<?php echo esc_html($heading_tag); ?>>
-                    <?php endif; ?>
+                <?php if ($heading !== '') : ?>
+                    <<?php echo esc_html($heading_tag); ?> class="mrn-ui__heading">
+                        <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($heading) : esc_html($heading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    </<?php echo esc_html($heading_tag); ?>>
+                <?php endif; ?>
 
-                    <?php if ($subheading !== '') : ?>
-	                        <<?php echo esc_html($subheading_tag); ?> class="mrn-ui__sub">
-                            <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($subheading) : esc_html($subheading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                        </<?php echo esc_html($subheading_tag); ?>>
-                    <?php endif; ?>
+                <?php if ($subheading !== '') : ?>
+                    <<?php echo esc_html($subheading_tag); ?> class="mrn-ui__sub">
+                        <?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($subheading) : esc_html($subheading); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                    </<?php echo esc_html($subheading_tag); ?>>
+                <?php endif; ?>
                 </div>
             <?php endif; ?>
 
-	            <div class="mrn-faq__items mrn-ui__items">
-                <?php foreach ($items as $index => $item) : ?>
+            <div class="mrn-faq__items mrn-ui__items">
+                <?php foreach ($renderable_items as $index => $item) : ?>
                     <?php
-                    if (!is_array($item)) {
-                        continue;
-                    }
-
                     $question = isset($item['question']) ? (string) $item['question'] : '';
                     $answer   = isset($item['answer']) ? (string) $item['answer'] : '';
-
-                    if ($question === '' && $answer === '') {
-                        continue;
-                    }
                     ?>
-	                    <details class="mrn-faq__item mrn-ui__item"<?php echo ($start_open && $index === 0) ? ' open' : ''; ?>>
-	                        <?php if ($question !== '') : ?>
-	                            <summary class="mrn-faq__question mrn-ui__heading"><?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($question) : esc_html($question); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></summary>
-                        <?php endif; ?>
-
+                    <details class="mrn-faq__item mrn-ui__item"<?php echo ($start_open && $index === 0) ? ' open' : ''; ?>>
+                        <summary class="mrn-faq__question mrn-ui__heading"><?php echo function_exists('mrn_base_stack_format_heading_inline_html') ? mrn_base_stack_format_heading_inline_html($question) : esc_html($question); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></summary>
                         <?php if ($answer !== '') : ?>
-	                            <div class="mrn-faq__answer mrn-ui__text">
+                            <div class="mrn-faq__answer mrn-ui__text">
                                 <?php echo wp_kses_post(wpautop($answer)); ?>
                             </div>
                         <?php endif; ?>

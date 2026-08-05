@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: Site Styles (MU)
- * Description: Adds a Site Styles configuration page for shared color variables, graphic elements, and usage helpers.
+ * Plugin Name: MRN Site Styles
+ * Description: Adds a Site Styles configuration page for shared colors, typography, graphic elements, and usage helpers.
  * Author: MRN Web Designs
- * Version: 0.1.13
+ * Version: 0.1.38
  */
 
 defined('ABSPATH') || exit;
@@ -44,6 +44,27 @@ function mrn_site_styles_row_spacing_defaults_option_key(): string {
 }
 
 /**
+ * Option key for the site-wide builder row width default.
+ */
+function mrn_site_styles_row_width_default_option_key(): string {
+    return 'mrn_site_row_width_default';
+}
+
+/**
+ * Option key for the site-wide builder row width values.
+ */
+function mrn_site_styles_row_width_values_option_key(): string {
+    return 'mrn_site_row_width_values';
+}
+
+/**
+ * Option key for tag-level typography rules.
+ */
+function mrn_site_styles_typography_option_key(): string {
+    return 'mrn_site_typography';
+}
+
+/**
  * Return the supported Site Styles transfer sections.
  *
  * @return array<string, string>
@@ -51,6 +72,7 @@ function mrn_site_styles_row_spacing_defaults_option_key(): string {
 function mrn_site_styles_get_transfer_sections(): array {
     $sections = array(
         'colors' => 'Site Colors',
+        'typography' => 'Typography',
         'graphic_elements' => 'Graphic Elements',
         'dark_scroll_card_presets' => 'Motion Presets',
         'row_spacing' => 'Row Spacing',
@@ -87,6 +109,11 @@ function mrn_site_styles_get_core_tabs(): array {
             'key' => 'colors',
             'label' => 'Site Colors',
             'icon' => 'dashicons-art',
+        ),
+        array(
+            'key' => 'typography',
+            'label' => 'Typography',
+            'icon' => 'dashicons-editor-textcolor',
         ),
         array(
             'key' => 'graphic-elements',
@@ -326,6 +353,251 @@ function mrn_site_styles_hex_to_rgb_triplet(string $hex): string {
 }
 
 /**
+ * Return tag choices that may receive global typography rules.
+ *
+ * @return array<string, string>
+ */
+function mrn_site_styles_get_typography_tag_choices(): array {
+    return array(
+        'body' => 'Body', 'p' => 'Paragraph (p)', 'h1' => 'Heading 1 (h1)',
+        'h2' => 'Heading 2 (h2)', 'h3' => 'Heading 3 (h3)', 'h4' => 'Heading 4 (h4)',
+        'h5' => 'Heading 5 (h5)', 'h6' => 'Heading 6 (h6)', 'a' => 'Links (a)',
+        'ul' => 'Unordered lists (ul)', 'ol' => 'Ordered lists (ol)', 'li' => 'List items (li)',
+        'blockquote' => 'Blockquotes', 'button' => 'Buttons', 'label' => 'Labels',
+        'input' => 'Inputs', 'select' => 'Selects', 'textarea' => 'Textareas',
+        'small' => 'Small text', 'strong' => 'Strong text',
+        'custom' => 'Custom Named Style',
+    );
+}
+
+/** Return the safe CSS selector for a typography target. */
+function mrn_site_styles_get_typography_selector(string $target): string {
+    return $target;
+}
+
+/** Normalize a reusable typography style slug. */
+function mrn_site_styles_normalize_typography_style_slug(string $value): string {
+    $slug = sanitize_title($value);
+    return '' !== $slug ? $slug : 'style';
+}
+
+/** @return array<string, string> */
+function mrn_site_styles_get_typography_effect_choices(): array {
+    return array(
+        '' => 'None',
+        'subtle-shadow' => 'Subtle Shadow',
+        'strong-shadow' => 'Strong Shadow',
+        'outline' => 'Outline',
+    );
+}
+
+/** @return array<int, array<string, string>> */
+function mrn_site_styles_get_default_typography_rows(): array {
+    $defaults = array(
+        array('tag' => 'body', 'desktop_size' => '1rem', 'mobile_size' => '1rem', 'font_weight' => '400', 'line_height' => '1.6'),
+        array('tag' => 'p', 'desktop_size' => '1rem', 'mobile_size' => '1rem', 'font_weight' => '400', 'line_height' => '1.6'),
+        array('tag' => 'h1', 'desktop_size' => '3rem', 'mobile_size' => '2.25rem', 'font_weight' => '700', 'line_height' => '1.1'),
+        array('tag' => 'h2', 'desktop_size' => '2.25rem', 'mobile_size' => '1.75rem', 'font_weight' => '700', 'line_height' => '1.2'),
+        array('tag' => 'h3', 'desktop_size' => '1.75rem', 'mobile_size' => '1.5rem', 'font_weight' => '600', 'line_height' => '1.25'),
+        array('tag' => 'h4', 'desktop_size' => '1.375rem', 'mobile_size' => '1.25rem', 'font_weight' => '600', 'line_height' => '1.3'),
+        array('tag' => 'h5', 'desktop_size' => '1.125rem', 'mobile_size' => '1.0625rem', 'font_weight' => '600', 'line_height' => '1.35'),
+        array('tag' => 'h6', 'desktop_size' => '1rem', 'mobile_size' => '1rem', 'font_weight' => '600', 'line_height' => '1.4'),
+        array('tag' => 'a'),
+        array('tag' => 'button', 'desktop_size' => '0.95rem', 'mobile_size' => '0.95rem', 'font_weight' => '700', 'line_height' => '1.2'),
+    );
+    return array_map(
+        static function (array $row): array {
+            return array_merge(array('name' => '', 'slug' => '', 'font_family' => '', 'desktop_size' => '', 'mobile_size' => '', 'font_weight' => '', 'line_height' => '', 'letter_spacing' => '', 'text_transform' => '', 'color' => '', 'hover_color' => '', 'visited_color' => '', 'active_color' => '', 'effect' => ''), $row);
+        },
+        $defaults
+    );
+}
+
+/**
+ * Sanitize a CSS dimension used by typography controls.
+ */
+function mrn_site_styles_sanitize_typography_dimension($value, bool $allow_normal = false, bool $allow_unitless = false, bool $allow_negative = false, bool $assume_rem_for_unitless = false): string {
+    $value = strtolower(trim(sanitize_text_field((string) $value)));
+    if ('' === $value || ($allow_normal && 'normal' === $value)) {
+        return $value;
+    }
+
+    if ($allow_unitless && preg_match('/^(?:\d+(?:\.\d+)?|\.\d+)$/', $value)) {
+        return $value;
+    }
+    if ($assume_rem_for_unitless && preg_match('/^(?:\d+(?:\.\d+)?|\.\d+)$/', $value)) {
+        return $value . 'rem';
+    }
+    $sign = $allow_negative ? '-?' : '';
+    return preg_match('/^(?:0|' . $sign . '(?:\d+(?:\.\d+)?|\.\d+)(?:px|rem|em|%|vw|vh|ch))$/', $value) ? $value : '';
+}
+
+/**
+ * Sanitize tag-level typography rows.
+ *
+ * @param mixed $rows
+ * @return array<int, array<string, string>>
+ */
+function mrn_site_styles_sanitize_typography_rows($rows): array {
+    if (!is_array($rows)) {
+        return array();
+    }
+
+    $allowed_tags = mrn_site_styles_get_typography_tag_choices();
+    $allowed_weights = array('' => true, '100' => true, '200' => true, '300' => true, '400' => true, '500' => true, '600' => true, '700' => true, '800' => true, '900' => true);
+    $allowed_transforms = array('' => true, 'none' => true, 'uppercase' => true, 'lowercase' => true, 'capitalize' => true);
+    $allowed_effects = mrn_site_styles_get_typography_effect_choices();
+    $allowed_colors = array('' => true);
+    foreach (mrn_site_colors_get_all() as $color_row) {
+        $allowed_colors[(string) ($color_row['slug'] ?? '')] = true;
+    }
+    $sanitized = array();
+    foreach ($rows as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        $tag = sanitize_key((string) ($row['tag'] ?? ''));
+        if (!isset($allowed_tags[$tag])) {
+            continue;
+        }
+
+        $family = trim(sanitize_text_field((string) ($row['font_family'] ?? '')));
+        // Font-family is deliberately limited to names, spaces, commas, quotes, and hyphens.
+        if ('' !== $family && !preg_match('/^[a-zA-Z0-9 ,\x27"-]+$/', $family)) {
+            $family = '';
+        }
+        $weight = sanitize_text_field((string) ($row['font_weight'] ?? ''));
+        $transform = sanitize_key((string) ($row['text_transform'] ?? ''));
+        $raw_color = trim((string) ($row['color'] ?? ''));
+        $color = '' === $raw_color ? '' : mrn_site_colors_normalize_slug($raw_color);
+        $effect = sanitize_key((string) ($row['effect'] ?? ''));
+        $name = sanitize_text_field((string) ($row['name'] ?? ''));
+        $slug_source = trim((string) ($row['slug'] ?? ''));
+        $slug = '' !== $slug_source ? mrn_site_styles_normalize_typography_style_slug($slug_source) : ('' !== $name ? mrn_site_styles_normalize_typography_style_slug($name) : '');
+        if ('custom' === $tag && '' === $name) {
+            continue;
+        }
+
+        $state_colors = array();
+        foreach (array('hover_color', 'visited_color', 'active_color') as $state_key) {
+            $raw_state_color = trim((string) ($row[$state_key] ?? ''));
+            $state_color = '' === $raw_state_color ? '' : mrn_site_colors_normalize_slug($raw_state_color);
+            $state_colors[$state_key] = 'a' === $tag && isset($allowed_colors[$state_color]) ? $state_color : '';
+        }
+
+        $sanitized[] = array(
+            'tag' => $tag,
+            'name' => $name,
+            'slug' => $slug,
+            'font_family' => $family,
+            'desktop_size' => mrn_site_styles_sanitize_typography_dimension($row['desktop_size'] ?? '', false, false, false, true),
+            'mobile_size' => mrn_site_styles_sanitize_typography_dimension($row['mobile_size'] ?? '', false, false, false, true),
+            'font_weight' => isset($allowed_weights[$weight]) ? $weight : '',
+            'line_height' => mrn_site_styles_sanitize_typography_dimension($row['line_height'] ?? '', true, true),
+            'letter_spacing' => mrn_site_styles_sanitize_typography_dimension($row['letter_spacing'] ?? '', true, false, true),
+            'text_transform' => isset($allowed_transforms[$transform]) ? $transform : '',
+            'color' => isset($allowed_colors[$color]) ? $color : '',
+            'hover_color' => $state_colors['hover_color'],
+            'visited_color' => $state_colors['visited_color'],
+            'active_color' => $state_colors['active_color'],
+            'effect' => isset($allowed_effects[$effect]) ? $effect : '',
+        );
+    }
+
+    return $sanitized;
+}
+
+/** @return array<int, array<string, string>> */
+function mrn_site_styles_get_typography(): array {
+    $stored = get_option(mrn_site_styles_typography_option_key(), null);
+    if (null === $stored) {
+        $stored = mrn_site_styles_get_default_typography_rows();
+    }
+    return mrn_site_styles_sanitize_typography_rows($stored);
+}
+
+/** Build sanitized typography CSS, optionally scoped to an editor wrapper. */
+function mrn_site_styles_get_typography_css(string $scope = ''): string {
+    $scope = '.editor-styles-wrapper' === $scope ? $scope . ' ' : '';
+    $css = '';
+    $mobile_rules = array();
+    $tag_choices = mrn_site_styles_get_typography_tag_choices();
+
+    foreach (mrn_site_styles_get_typography() as $row) {
+        $tag = (string) ($row['tag'] ?? '');
+        if (!isset($tag_choices[$tag])) {
+            continue;
+        }
+        $selector = 'custom' === $tag
+            ? '.mrn-type-' . mrn_site_styles_normalize_typography_style_slug((string) ($row['slug'] ?? $row['name'] ?? 'style'))
+            : mrn_site_styles_get_typography_selector($tag);
+        if ('custom' !== $tag && '' !== ($row['name'] ?? '')) {
+            $selector .= ',.mrn-type-' . mrn_site_styles_normalize_typography_style_slug((string) ($row['slug'] ?? $row['name']));
+        }
+        $declarations = array();
+        foreach (array('font_family' => 'font-family', 'desktop_size' => 'font-size', 'font_weight' => 'font-weight', 'line_height' => 'line-height', 'letter_spacing' => 'letter-spacing', 'text_transform' => 'text-transform') as $key => $property) {
+            $value = (string) ($row[$key] ?? '');
+            if ('' !== $value) {
+                $declarations[] = $property . ':' . $value;
+            }
+        }
+        $color = (string) ($row['color'] ?? '');
+        if ('' !== $color) {
+            $declarations[] = 'color:var(' . mrn_site_colors_get_css_var($color) . ')';
+        }
+        $effect = (string) ($row['effect'] ?? '');
+        if ('subtle-shadow' === $effect) {
+            $declarations[] = 'text-shadow:0 1px 2px rgb(0 0 0 / 0.2)';
+        } elseif ('strong-shadow' === $effect) {
+            $declarations[] = 'text-shadow:0 2px 5px rgb(0 0 0 / 0.4)';
+        } elseif ('outline' === $effect) {
+            $declarations[] = '-webkit-text-stroke:1px currentColor';
+        }
+        if ($declarations !== array()) {
+            $scoped_selector = implode(',', array_map(static function (string $part) use ($scope): string { return $scope . trim($part); }, explode(',', $selector)));
+            $css .= $scoped_selector . '{' . implode(';', $declarations) . ';}';
+        }
+        // Preserve the conventional link-state cascade: visited, hover/focus, active.
+        foreach (array('visited_color' => ':visited', 'hover_color' => ':hover,:focus', 'active_color' => ':active') as $state_key => $state_suffixes) {
+            $state_color = (string) ($row[$state_key] ?? '');
+            if ('' === $state_color) {
+                continue;
+            }
+            $state_selectors = array();
+            foreach (explode(',', $selector) as $selector_part) {
+                foreach (explode(',', $state_suffixes) as $suffix) {
+                    $state_selectors[] = $scope . trim($selector_part) . $suffix;
+                }
+            }
+            $css .= implode(',', $state_selectors) . '{color:var(' . mrn_site_colors_get_css_var($state_color) . ');}';
+        }
+        $mobile_size = (string) ($row['mobile_size'] ?? '');
+        if ('' !== $mobile_size) {
+            $mobile_selector = implode(',', array_map(static function (string $part) use ($scope): string { return $scope . trim($part); }, explode(',', $selector)));
+            $mobile_rules[] = $mobile_selector . '{font-size:' . $mobile_size . ';}';
+        }
+    }
+    if ($mobile_rules !== array()) {
+        $css .= '@media (max-width:782px){' . implode('', $mobile_rules) . '}';
+    }
+
+    return $css;
+}
+
+/** @return array<string, string> Reusable named typography classes keyed by class name. */
+function mrn_site_styles_get_typography_style_choices(): array {
+    $choices = array();
+    foreach (mrn_site_styles_get_typography() as $row) {
+        if ('' === ($row['name'] ?? '')) {
+            continue;
+        }
+        $class = 'mrn-type-' . mrn_site_styles_normalize_typography_style_slug((string) ($row['slug'] ?? $row['name']));
+        $choices[$class] = (string) $row['name'];
+    }
+    return $choices;
+}
+
+/**
  * Sanitize stored color rows.
  *
  * @param mixed $rows
@@ -516,6 +788,10 @@ function mrn_site_styles_build_export_payload(array $sections = array()): array 
         $data['colors'] = mrn_site_colors_sanitize_rows(get_option(mrn_site_colors_option_key(), array()));
     }
 
+    if (in_array('typography', $sections, true)) {
+        $data['typography'] = mrn_site_styles_get_typography();
+    }
+
     if (in_array('graphic_elements', $sections, true)) {
         $data['graphic_elements'] = mrn_site_styles_sanitize_graphic_element_rows(get_option(mrn_site_styles_graphic_elements_option_key(), array()));
     }
@@ -527,6 +803,8 @@ function mrn_site_styles_build_export_payload(array $sections = array()): array 
     if (in_array('row_spacing', $sections, true)) {
         $data['row_spacing'] = array(
             'defaults' => mrn_site_styles_get_row_spacing_defaults(),
+            'width_default' => mrn_site_styles_get_row_width_default(),
+            'width_values' => mrn_site_styles_get_row_width_values(),
             'presets' => mrn_site_styles_sanitize_row_spacing_rows(get_option(mrn_site_styles_row_spacing_option_key(), array())),
         );
     }
@@ -678,6 +956,11 @@ function mrn_site_styles_handle_import(): void {
         $imported_sections[] = 'Site Colors';
     }
 
+    if (array_key_exists('typography', $data)) {
+        update_option(mrn_site_styles_typography_option_key(), mrn_site_styles_sanitize_typography_rows($data['typography']), false);
+        $imported_sections[] = 'Typography';
+    }
+
     if (array_key_exists('graphic_elements', $data)) {
         $graphic_elements = mrn_site_styles_sanitize_graphic_element_rows($data['graphic_elements']);
         update_option(mrn_site_styles_graphic_elements_option_key(), $graphic_elements, false);
@@ -693,16 +976,22 @@ function mrn_site_styles_handle_import(): void {
     if (array_key_exists('row_spacing', $data)) {
         $row_spacing_payload = $data['row_spacing'];
         $row_spacing_defaults = mrn_site_styles_get_row_spacing_defaults();
+        $row_width_default = mrn_site_styles_get_row_width_default();
+        $row_width_values = mrn_site_styles_get_row_width_values();
         $row_spacing_presets = array();
 
         if (
             is_array($row_spacing_payload)
             && (
                 array_key_exists('defaults', $row_spacing_payload)
+                || array_key_exists('width_default', $row_spacing_payload)
+                || array_key_exists('width_values', $row_spacing_payload)
                 || array_key_exists('presets', $row_spacing_payload)
             )
         ) {
             $row_spacing_defaults = mrn_site_styles_sanitize_row_spacing_defaults($row_spacing_payload['defaults'] ?? array());
+            $row_width_default = mrn_site_styles_sanitize_row_width_default($row_spacing_payload['width_default'] ?? $row_width_default);
+            $row_width_values = mrn_site_styles_sanitize_row_width_values($row_spacing_payload['width_values'] ?? $row_width_values);
             $row_spacing_presets = mrn_site_styles_sanitize_row_spacing_rows($row_spacing_payload['presets'] ?? array());
         } else {
             // Backward compatibility for early row_spacing exports that stored only presets.
@@ -710,6 +999,8 @@ function mrn_site_styles_handle_import(): void {
         }
 
         update_option(mrn_site_styles_row_spacing_defaults_option_key(), $row_spacing_defaults, false);
+        update_option(mrn_site_styles_row_width_default_option_key(), $row_width_default, false);
+        update_option(mrn_site_styles_row_width_values_option_key(), $row_width_values, false);
         update_option(mrn_site_styles_row_spacing_option_key(), $row_spacing_presets, false);
         $imported_sections[] = 'Row Spacing';
     }
@@ -1183,6 +1474,89 @@ function mrn_site_styles_get_row_spacing_property_choices(): array {
 }
 
 /**
+ * Get supported site-wide builder row width choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_site_styles_get_row_width_choices(): array {
+    return array(
+        'content' => 'Content',
+        'wide' => 'Wide',
+        'full-width' => 'Full Width',
+    );
+}
+
+/**
+ * Sanitize a site-wide builder row width default.
+ *
+ * @param mixed $value
+ */
+function mrn_site_styles_sanitize_row_width_default($value): string {
+    $value = is_scalar($value) ? sanitize_key((string) $value) : '';
+
+    return array_key_exists($value, mrn_site_styles_get_row_width_choices()) ? $value : 'wide';
+}
+
+/**
+ * Get the saved site-wide builder row width default.
+ */
+function mrn_site_styles_get_row_width_default(): string {
+    return mrn_site_styles_sanitize_row_width_default(
+        get_option(mrn_site_styles_row_width_default_option_key(), 'wide')
+    );
+}
+
+/**
+ * Get the built-in builder row width values.
+ *
+ * @return array<string, string>
+ */
+function mrn_site_styles_get_required_row_width_values(): array {
+    return array(
+        'content' => '780px',
+        'wide' => '1440px',
+    );
+}
+
+/**
+ * Sanitize configurable builder row width values.
+ *
+ * @param mixed $values
+ * @return array<string, string>
+ */
+function mrn_site_styles_sanitize_row_width_values($values): array {
+    $values = is_array($values) ? $values : array();
+    $defaults = mrn_site_styles_get_required_row_width_values();
+    $sanitized = array();
+
+    foreach ($defaults as $width_key => $default_value) {
+        $value = isset($values[$width_key]) && is_scalar($values[$width_key])
+            ? strtolower(trim((string) $values[$width_key]))
+            : '';
+
+        // Width caps must be positive, simple CSS dimensions. Full Width remains fluid at 100%.
+        if (!preg_match('/^(?:\d+(?:\.\d+)?|\.\d+)(?:px|rem|em|vw|%)$/', $value)) {
+            $value = $default_value;
+        }
+
+        $sanitized[$width_key] = $value;
+    }
+
+    return $sanitized;
+}
+
+/**
+ * Get the configured builder row width values with built-in fallbacks.
+ *
+ * @return array<string, string>
+ */
+function mrn_site_styles_get_row_width_values(): array {
+    return mrn_site_styles_sanitize_row_width_values(
+        get_option(mrn_site_styles_row_width_values_option_key(), array())
+    );
+}
+
+/**
  * Check whether a row spacing property supports shell gutter compensation.
  *
  * Compensation offsets the parent shell gutter on horizontal margins only.
@@ -1220,7 +1594,7 @@ function mrn_site_styles_sanitize_row_spacing_shell_compensation_flag($value, st
  */
 function mrn_site_styles_get_row_spacing_name_choices(): array {
     return array(
-        'none' => 'None',
+        'none' => '0px',
         'extra-small' => 'Extra Small',
         'small' => 'Small',
         'medium' => 'Medium',
@@ -1239,8 +1613,13 @@ function mrn_site_styles_get_row_spacing_name_choices(): array {
 function mrn_site_styles_normalize_row_spacing_name_for_matching(string $name): string {
     $name = strtolower(trim($name));
     $name = preg_replace('/\s+/', ' ', $name);
+    $name = is_string($name) ? trim($name) : '';
 
-    return is_string($name) ? trim($name) : '';
+    if (in_array($name, array('none', 'zero', '0', '0px'), true)) {
+        return '0px';
+    }
+
+    return $name;
 }
 
 /**
@@ -1250,7 +1629,7 @@ function mrn_site_styles_normalize_row_spacing_name_for_matching(string $name): 
  */
 function mrn_site_styles_get_required_row_spacing_name_defaults(): array {
     $defaults = array(
-        'None' => '0px',
+        '0px' => '0px',
         'Extra Small' => '32px',
         'Small' => '48px',
         'Medium' => '64px',
@@ -1437,6 +1816,9 @@ function mrn_site_styles_get_row_spacing_name_choice_from_name(string $name): st
     }
 
     $normalized_name = strtolower($name);
+    if ('0px' === mrn_site_styles_normalize_row_spacing_name_for_matching($name)) {
+        return 'none';
+    }
 
     foreach (mrn_site_styles_get_row_spacing_name_choices() as $choice_key => $choice_label) {
         if ('custom' === $choice_key) {
@@ -1489,11 +1871,23 @@ function mrn_site_styles_get_row_spacing_base8_values(): array {
     }
 
     // Respect explicit non-step caps (for example 50px with a 4px step).
-    if (!in_array($max_px . 'px', $values, true)) {
+    if (0 < $max_px && !in_array($max_px . 'px', $values, true)) {
         $values[] = $max_px . 'px';
     }
 
     return $values;
+}
+
+/**
+ * Check whether a sanitized spacing value represents zero.
+ *
+ * @param string $value
+ * @return bool
+ */
+function mrn_site_styles_is_zero_spacing_dimension(string $value): bool {
+    $value = strtolower(trim(mrn_site_styles_sanitize_spacing_dimension($value)));
+
+    return '' !== $value && 1 === preg_match('/^-?0+(?:\\.0+)?(?:[a-z%]+)?$/', $value);
 }
 
 /**
@@ -1503,16 +1897,14 @@ function mrn_site_styles_get_row_spacing_base8_values(): array {
  * @return array<string, string>
  */
 function mrn_site_styles_get_row_spacing_value_choices(bool $allow_auto = false): array {
-    $choices = array(
-        '' => 'Select',
-    );
-
-    if ($allow_auto) {
-        $choices[mrn_site_styles_row_spacing_mobile_auto_keyword()] = 'Auto (derive from Desktop)';
-    }
+    $choices = array();
 
     foreach (mrn_site_styles_get_row_spacing_base8_values() as $value) {
         $choices[$value] = $value;
+    }
+
+    if ($allow_auto) {
+        $choices[mrn_site_styles_row_spacing_mobile_auto_keyword()] = 'Auto (derive from Desktop)';
     }
 
     $choices['custom'] = 'Custom';
@@ -1534,8 +1926,8 @@ function mrn_site_styles_get_row_spacing_value_choice_from_value(string $value, 
         return mrn_site_styles_row_spacing_mobile_auto_keyword();
     }
 
-    if ('' === $value) {
-        return '';
+    if ('' === $value || mrn_site_styles_is_zero_spacing_dimension($value)) {
+        return '0px';
     }
 
     $choices = mrn_site_styles_get_row_spacing_value_choices($allow_auto);
@@ -1557,7 +1949,8 @@ function mrn_site_styles_get_submitted_row_spacing_value(array $payload, string 
     $raw_value = isset($payload[$field])
         ? mrn_site_styles_sanitize_spacing_dimension((string) $payload[$field])
         : '';
-    $choice_key = isset($payload[$field . '_choice'])
+    $has_choice_key = array_key_exists($field . '_choice', $payload);
+    $choice_key = $has_choice_key
         ? sanitize_key((string) $payload[$field . '_choice'])
         : '';
     $custom_value = isset($payload[$field . '_custom'])
@@ -1566,9 +1959,13 @@ function mrn_site_styles_get_submitted_row_spacing_value(array $payload, string 
 
     $choices = mrn_site_styles_get_row_spacing_value_choices($allow_auto);
 
-    if ('' !== $choice_key) {
+    if ($has_choice_key) {
         if ('custom' === $choice_key) {
             return $custom_value;
+        }
+
+        if ('' === $choice_key || mrn_site_styles_is_zero_spacing_dimension($choice_key)) {
+            return '0px';
         }
 
         if (isset($choices[$choice_key])) {
@@ -1730,6 +2127,9 @@ function mrn_site_styles_sanitize_row_spacing_rows($rows): array {
             } else {
                 $name = (string) $name_choices[$name_choice];
             }
+        }
+        if ('0px' === mrn_site_styles_normalize_row_spacing_name_for_matching($name)) {
+            $name = '0px';
         }
 
         $slug_source = isset($row['slug']) && '' !== (string) $row['slug']
@@ -1989,6 +2389,12 @@ function mrn_site_styles_get_row_spacing_presets(): array {
  * @return array<int, array<string, string>>
  */
 function mrn_site_styles_get_row_spacing_presets_resolved(): array {
+    static $resolved_cache = null;
+
+    if (is_array($resolved_cache)) {
+        return $resolved_cache;
+    }
+
     $resolved = array();
 
     foreach (mrn_site_styles_get_row_spacing_presets() as $row) {
@@ -2009,6 +2415,8 @@ function mrn_site_styles_get_row_spacing_presets_resolved(): array {
             'compensate_shell' => $compensate_shell,
         );
     }
+
+    $resolved_cache = $resolved;
 
     return $resolved;
 }
@@ -2036,6 +2444,8 @@ function mrn_site_colors_handle_save(): void {
 
     if ('' === $submitted_section && isset($_POST['mrn_site_colors_submit'])) {
         $submitted_section = 'colors';
+    } elseif ('' === $submitted_section && isset($_POST['mrn_site_typography_submit'])) {
+        $submitted_section = 'typography';
     } elseif ('' === $submitted_section && isset($_POST['mrn_site_graphic_elements_submit'])) {
         $submitted_section = 'graphic-elements';
     } elseif ('' === $submitted_section && isset($_POST['mrn_site_dark_scroll_card_presets_submit'])) {
@@ -2056,6 +2466,8 @@ function mrn_site_colors_handle_save(): void {
 
     // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Rows are unslashed here and sanitized in mrn_site_colors_prepare_rows().
     $rows = isset($_POST['mrn_site_colors']) ? wp_unslash($_POST['mrn_site_colors']) : array();
+    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Rows are sanitized in mrn_site_styles_sanitize_typography_rows().
+    $typography_rows = isset($_POST['mrn_site_typography']) ? wp_unslash($_POST['mrn_site_typography']) : array();
     // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Rows are unslashed here and sanitized in mrn_site_styles_sanitize_graphic_element_rows().
     $graphic_element_rows = isset($_POST['mrn_site_graphic_elements']) ? wp_unslash($_POST['mrn_site_graphic_elements']) : array();
     // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Rows are unslashed here and sanitized in mrn_site_styles_sanitize_dark_scroll_card_preset_rows().
@@ -2064,18 +2476,28 @@ function mrn_site_colors_handle_save(): void {
     $row_spacing_rows = isset($_POST['mrn_site_row_spacing']) ? wp_unslash($_POST['mrn_site_row_spacing']) : array();
     // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Rows are unslashed here and sanitized in mrn_site_styles_sanitize_row_spacing_defaults().
     $row_spacing_defaults = isset($_POST['mrn_site_row_spacing_defaults']) ? wp_unslash($_POST['mrn_site_row_spacing_defaults']) : array();
+    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Value is unslashed and sanitized below.
+    $row_width_default = isset($_POST['mrn_site_row_width_default']) ? wp_unslash($_POST['mrn_site_row_width_default']) : mrn_site_styles_get_row_width_default();
+    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Values are unslashed and sanitized below.
+    $row_width_values = isset($_POST['mrn_site_row_width_values']) ? wp_unslash($_POST['mrn_site_row_width_values']) : mrn_site_styles_get_row_width_values();
 
     $prepared = mrn_site_colors_prepare_rows($rows);
     $sanitized = $prepared['sanitized'];
+    $sanitized_typography = mrn_site_styles_sanitize_typography_rows($typography_rows);
     $sanitized_graphic_items = mrn_site_styles_sanitize_graphic_element_rows($graphic_element_rows);
     $sanitized_motion_presets = mrn_site_styles_sanitize_dark_scroll_card_preset_rows($dark_scroll_card_rows);
     $sanitized_row_spacing = mrn_site_styles_sanitize_row_spacing_rows($row_spacing_rows);
     $sanitized_row_spacing_defaults = mrn_site_styles_sanitize_row_spacing_defaults($row_spacing_defaults);
+    $sanitized_row_width_default = mrn_site_styles_sanitize_row_width_default($row_width_default);
+    $sanitized_row_width_values = mrn_site_styles_sanitize_row_width_values($row_width_values);
 
     update_option(mrn_site_colors_option_key(), $sanitized, false);
+    update_option(mrn_site_styles_typography_option_key(), $sanitized_typography, false);
     update_option(mrn_site_styles_graphic_elements_option_key(), $sanitized_graphic_items, false);
     update_option(mrn_site_styles_dark_scroll_card_presets_option_key(), $sanitized_motion_presets, false);
     update_option(mrn_site_styles_row_spacing_defaults_option_key(), $sanitized_row_spacing_defaults, false);
+    update_option(mrn_site_styles_row_width_default_option_key(), $sanitized_row_width_default, false);
+    update_option(mrn_site_styles_row_width_values_option_key(), $sanitized_row_width_values, false);
     update_option(mrn_site_styles_row_spacing_option_key(), $sanitized_row_spacing, false);
 
     /**
@@ -2420,6 +2842,40 @@ function mrn_site_styles_render_row_spacing_row(int $index, array $row): void {
     <?php
 }
 
+/** Render one typography rule row. */
+function mrn_site_styles_render_typography_row(int $index, array $row): void {
+    $tags = mrn_site_styles_get_typography_tag_choices();
+    $effects = mrn_site_styles_get_typography_effect_choices();
+    $tag = sanitize_key((string) ($row['tag'] ?? ''));
+    ?>
+    <tr class="mrn-site-styles-typography-row <?php echo 0 === $index % 2 ? 'mrn-site-styles-typography-group-even' : 'mrn-site-styles-typography-group-odd'; ?>">
+        <td><select name="mrn_site_typography[<?php echo esc_attr((string) $index); ?>][tag]" class="mrn-site-styles-typography-tag">
+            <?php foreach ($tags as $value => $label) : ?>
+                <option value="<?php echo esc_attr($value); ?>" <?php selected($tag, $value); ?>><?php echo esc_html($label); ?></option>
+            <?php endforeach; ?>
+        </select></td>
+        <td><input type="text" class="regular-text mrn-site-styles-typography-name" name="mrn_site_typography[<?php echo esc_attr((string) $index); ?>][name]" value="<?php echo esc_attr((string) ($row['name'] ?? '')); ?>" placeholder="Large Link" /><input type="hidden" name="mrn_site_typography[<?php echo esc_attr((string) $index); ?>][slug]" value="<?php echo esc_attr((string) ($row['slug'] ?? '')); ?>" /></td>
+        <td><input type="text" class="regular-text" name="mrn_site_typography[<?php echo esc_attr((string) $index); ?>][font_family]" value="<?php echo esc_attr((string) ($row['font_family'] ?? '')); ?>" placeholder='Inter, Arial, sans-serif' /></td>
+        <td><input type="text" class="small-text code" name="mrn_site_typography[<?php echo esc_attr((string) $index); ?>][desktop_size]" value="<?php echo esc_attr((string) ($row['desktop_size'] ?? '')); ?>" placeholder="2rem" /></td>
+        <td><input type="text" class="small-text code" name="mrn_site_typography[<?php echo esc_attr((string) $index); ?>][mobile_size]" value="<?php echo esc_attr((string) ($row['mobile_size'] ?? '')); ?>" placeholder="1.5rem" /></td>
+        <td><select name="mrn_site_typography[<?php echo esc_attr((string) $index); ?>][font_weight]"><option value="">Theme default</option><?php foreach (range(100, 900, 100) as $weight) : ?><option value="<?php echo esc_attr((string) $weight); ?>" <?php selected((string) ($row['font_weight'] ?? ''), (string) $weight); ?>><?php echo esc_html((string) $weight); ?></option><?php endforeach; ?></select></td>
+        <td><input type="text" class="small-text code" name="mrn_site_typography[<?php echo esc_attr((string) $index); ?>][line_height]" value="<?php echo esc_attr((string) ($row['line_height'] ?? '')); ?>" placeholder="1.5" /></td>
+        <td><input type="text" class="small-text code" name="mrn_site_typography[<?php echo esc_attr((string) $index); ?>][letter_spacing]" value="<?php echo esc_attr((string) ($row['letter_spacing'] ?? '')); ?>" placeholder="0.02em" /></td>
+        <td><button type="button" class="button button-secondary button-small mrn-site-styles-typography-remove">Remove</button></td>
+    </tr>
+    <tr class="mrn-site-styles-typography-appearance-row <?php echo 0 === $index % 2 ? 'mrn-site-styles-typography-group-even' : 'mrn-site-styles-typography-group-odd'; ?>">
+        <td colspan="9"><div class="mrn-site-styles-typography-appearance">
+            <label><span>Text Transform</span><select name="mrn_site_typography[<?php echo esc_attr((string) $index); ?>][text_transform]"><?php foreach (array('' => 'Theme default', 'none' => 'None', 'uppercase' => 'Uppercase', 'lowercase' => 'Lowercase', 'capitalize' => 'Capitalize') as $value => $label) : ?><option value="<?php echo esc_attr($value); ?>" <?php selected((string) ($row['text_transform'] ?? ''), $value); ?>><?php echo esc_html($label); ?></option><?php endforeach; ?></select></label>
+            <?php foreach (array('color' => 'Color', 'hover_color' => 'Hover / Focus', 'visited_color' => 'Visited', 'active_color' => 'Active') as $color_key => $color_label) : ?>
+                <?php $is_link_state = in_array($color_key, array('hover_color', 'visited_color', 'active_color'), true); ?>
+                <label class="<?php echo $is_link_state ? 'mrn-site-styles-typography-link-state' : ''; ?>" <?php echo $is_link_state && 'a' !== $tag ? 'hidden' : ''; ?>><span><?php echo esc_html($color_label); ?></span><select name="mrn_site_typography[<?php echo esc_attr((string) $index); ?>][<?php echo esc_attr($color_key); ?>]"><option value="">Theme default</option><?php foreach (mrn_site_colors_get_all() as $color_row) : ?><option value="<?php echo esc_attr((string) ($color_row['slug'] ?? '')); ?>" <?php selected((string) ($row[$color_key] ?? ''), (string) ($color_row['slug'] ?? '')); ?>><?php echo esc_html((string) ($color_row['name'] ?? '')); ?></option><?php endforeach; ?></select></label>
+            <?php endforeach; ?>
+            <label><span>Effect</span><select name="mrn_site_typography[<?php echo esc_attr((string) $index); ?>][effect]"><?php foreach ($effects as $value => $label) : ?><option value="<?php echo esc_attr($value); ?>" <?php selected((string) ($row['effect'] ?? ''), $value); ?>><?php echo esc_html($label); ?></option><?php endforeach; ?></select></label>
+        </div><p class="description">Hover / Focus intentionally shares one accessible interaction color. Font Awesome icon appearance is managed by the Font Awesome plugin.</p></td>
+    </tr>
+    <?php
+}
+
 /**
  * Render the Site Styles settings page.
  */
@@ -2429,12 +2885,16 @@ function mrn_site_colors_render_page(): void {
     }
 
     $rows             = mrn_site_colors_get_all();
+    $typography       = mrn_site_styles_get_typography();
     $graphic_elements = mrn_site_styles_get_graphic_elements();
     $dark_scroll_card_presets = mrn_site_styles_sanitize_dark_scroll_card_preset_rows(
         get_option(mrn_site_styles_dark_scroll_card_presets_option_key(), array())
     );
     $row_spacing_presets = mrn_site_styles_get_row_spacing_presets();
     $row_spacing_defaults = mrn_site_styles_get_row_spacing_defaults();
+    $row_width_default = mrn_site_styles_get_row_width_default();
+    $row_width_choices = mrn_site_styles_get_row_width_choices();
+    $row_width_values = mrn_site_styles_get_row_width_values();
     $row_spacing_property_choices = mrn_site_styles_get_row_spacing_property_choices();
     $row_spacing_name_choices = mrn_site_styles_get_row_spacing_name_choices();
     $row_spacing_desktop_value_choices = mrn_site_styles_get_row_spacing_value_choices(false);
@@ -2537,8 +2997,14 @@ function mrn_site_colors_render_page(): void {
             }
 
             .mrn-site-styles-panels {
-                max-width: 1100px;
+                max-width: none;
                 margin-top: 20px;
+            }
+
+            /* The shared toolbar spacer is rendered inside this page's wrap.
+             * It otherwise creates a second, unnecessary gap before the form. */
+            body.settings_page_mrn-site-styles .wrap > .mrn-admin-toolbar-spacer {
+                display: none;
             }
 
             .mrn-site-styles-card {
@@ -2555,6 +3021,140 @@ function mrn_site_colors_render_page(): void {
             .mrn-site-styles-motion-table {
                 max-width: 1100px;
                 table-layout: fixed;
+            }
+
+            .mrn-site-styles-typography-table {
+                display: block;
+                width: 100%;
+                min-width: 0;
+                table-layout: auto;
+                border-collapse: separate;
+                border-spacing: 0;
+                overflow: visible !important;
+            }
+
+            .mrn-site-styles-typography-table thead,
+            .mrn-site-styles-typography-table tbody,
+            .mrn-site-styles-typography-table tr {
+                display: block;
+            }
+
+            .mrn-site-styles-typography-table thead,
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-row {
+                display: grid;
+                grid-template-columns: minmax(150px, 1.35fr) minmax(150px, 1.25fr) minmax(150px, 1fr) 90px 90px 90px 80px 90px 90px;
+                width: 100%;
+                box-sizing: border-box;
+                min-width: 980px;
+            }
+
+            .mrn-site-styles-typography-table tbody {
+                width: 100%;
+            }
+
+            .mrn-site-styles-typography-table thead tr {
+                display: contents;
+            }
+
+            .mrn-site-styles-typography-table-scroll {
+                height: min(560px, calc(100vh - 230px));
+                margin-top: 20px;
+                overflow: auto;
+                overscroll-behavior: contain;
+                position: relative;
+                border: 1px solid #c3c4c7;
+                border-radius: 8px;
+                scrollbar-gutter: stable;
+            }
+
+            .mrn-site-styles-typography-table th {
+                line-height: 1.2;
+                white-space: normal;
+            }
+
+            .mrn-site-styles-typography-table thead {
+                position: sticky;
+                top: 0;
+                z-index: 20;
+            }
+
+            .mrn-site-styles-typography-table thead th {
+                background: #f6f7f7;
+                box-shadow: inset 0 -1px 0 #8c8f94, 0 2px 3px rgba(0, 0, 0, 0.08);
+            }
+
+            .mrn-site-styles-typography-table th,
+            .mrn-site-styles-typography-table td {
+                padding: 8px 7px;
+                vertical-align: top;
+            }
+
+            .mrn-site-styles-panel[data-mrn-site-styles-panel="typography"] {
+                width: 100%;
+                max-width: none;
+            }
+
+            .mrn-site-styles-typography-table input,
+            .mrn-site-styles-typography-table select {
+                width: 100%;
+                min-width: 0;
+                box-sizing: border-box;
+            }
+
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-row td:nth-child(4) input,
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-row td:nth-child(5) input,
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-row td:nth-child(7) input {
+                width: 72px;
+            }
+
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-row td:nth-child(6) select {
+                width: 78px;
+            }
+
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-row td:nth-child(8) input {
+                width: 84px;
+            }
+
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-row td:nth-child(3) input,
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-row td:nth-child(3) select {
+                width: 170px;
+            }
+
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-appearance-row {
+                min-width: 980px;
+            }
+
+            .mrn-site-styles-typography-appearance-row td {
+                padding: 12px 16px 16px;
+            }
+
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-group-even { background: #fff; }
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-group-odd { background: #f0f0f1; }
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-row > td,
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-appearance-row > td {
+                background: transparent !important;
+            }
+            .mrn-site-styles-typography-table tbody tr.mrn-site-styles-typography-appearance-row > td {
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
+                border-bottom: 2px solid #c3c4c7;
+            }
+
+            .mrn-site-styles-typography-appearance {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(130px, 200px));
+                gap: 12px;
+            }
+
+            .mrn-site-styles-typography-appearance label span {
+                display: block;
+                margin-bottom: 4px;
+                font-weight: 600;
+            }
+
+            @media (max-width: 1200px) {
+                .mrn-site-styles-typography-appearance { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
             }
 
             .mrn-site-styles-motion-table th,
@@ -3041,6 +3641,25 @@ function mrn_site_colors_render_page(): void {
                     </div>
                 </section>
 
+                <section class="mrn-site-styles-panel" data-mrn-site-styles-panel="typography" <?php echo 'typography' === $active_tab ? '' : 'hidden'; ?>>
+                    <div class="mrn-site-styles-card">
+                        <h2 style="margin-top:0;">Typography</h2>
+                        <p>Start with a practical baseline for body text, headings, links, and buttons. Add or remove targets as needed; blank fields retain the active theme's value. Mobile size applies at 782px and below.</p>
+                        <div class="mrn-site-styles-typography-table-scroll" tabindex="0" aria-label="Typography rules">
+                            <table class="widefat mrn-site-styles-typography-table">
+                                <thead><tr><th>Target</th><th>Style<br>Name</th><th>Font<br>Family</th><th>Desktop<br>Size</th><th>Mobile<br>Size</th><th>Font<br>Weight</th><th>Line<br>Height</th><th>Letter<br>Spacing</th><th>Action</th></tr></thead>
+                                <tbody id="mrn-site-styles-typography-rows">
+                                    <?php foreach (array_values($typography) as $index => $row) : ?>
+                                        <?php mrn_site_styles_render_typography_row((int) $index, $row); ?>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="mrn-site-styles-panel-actions"><button type="button" class="button" id="mrn-site-styles-typography-add">Add Typography Rule</button></p>
+                        <p class="description">Choose <strong>Custom Named Style</strong> and enter a name such as <strong>Large Link</strong>. It becomes a reusable class such as <code>mrn-type-large-link</code> and is available through <code>mrn_site_styles_get_typography_style_choices()</code>. Font sizes accept px, rem, em, %, vw, vh, and ch; a bare number such as <code>1.5</code> is saved as <code>1.5rem</code>.</p>
+                    </div>
+                </section>
+
                 <section class="mrn-site-styles-panel" data-mrn-site-styles-panel="graphic-elements" <?php echo 'graphic-elements' === $active_tab ? '' : 'hidden'; ?>>
                     <div class="mrn-site-styles-card">
                         <h2 style="margin-top:0;">Graphic Elements</h2>
@@ -3242,7 +3861,50 @@ function mrn_site_colors_render_page(): void {
 
                         <div class="mrn-site-styles-spacing-subpanel" data-mrn-site-styles-spacing-tab-panel="row-spacing">
                             <h3 style="margin:0;">Site Defaults</h3>
-                            <p class="description">Set baseline desktop and mobile spacing defaults for each margin/padding side. Choose base-4 pixel values (up to <code>104px</code>) from each dropdown, or select <code>Custom</code> to enter any CSS value. Use <code>auto</code> in mobile to scale from desktop, and enter a mobile value only when you need an override. Turn on <strong>Compensate Shell</strong> to offset the parent shell gutter on horizontal margins.</p>
+                            <p class="description">Set the baseline width and desktop/mobile spacing used when a builder row is set to <strong>Default</strong>. Explicit row selections continue to override these defaults.</p>
+                            <table class="widefat striped" style="margin-bottom:16px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:34%;">Setting</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" style="width:34%;">Section Width</th>
+                                        <td>
+                                            <select name="mrn_site_row_width_default">
+                                                <?php foreach ($row_width_choices as $width_key => $width_label) : ?>
+                                                    <option value="<?php echo esc_attr($width_key); ?>" <?php selected($width_key, $row_width_default); ?>><?php echo esc_html($width_label); ?></option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <p class="description">Applies across theme-owned builder layouts when Section Width is Default.</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Content Width</th>
+                                        <td>
+                                            <input type="text" class="regular-text code" name="mrn_site_row_width_values[content]" value="<?php echo esc_attr($row_width_values['content'] ?? '780px'); ?>" placeholder="780px" />
+                                            <p class="description">Maximum content width. Built-in default: <code>780px</code>.</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Wide Width</th>
+                                        <td>
+                                            <input type="text" class="regular-text code" name="mrn_site_row_width_values[wide]" value="<?php echo esc_attr($row_width_values['wide'] ?? '1440px'); ?>" placeholder="1440px" />
+                                            <p class="description">Maximum wide width. Built-in default: <code>1440px</code>.</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row">Full Width</th>
+                                        <td>
+                                            <code>100%</code>
+                                            <p class="description">Full Width remains fluid and has no configurable maximum.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p class="description">For spacing, choose base-4 pixel values (up to <code>104px</code>) from each dropdown, or select <code>Custom</code> to enter any CSS value. Use <code>auto</code> in mobile to scale from desktop, and enter a mobile value only when you need an override. Turn on <strong>Compensate Shell</strong> to offset the parent shell gutter on horizontal margins.</p>
                             <table class="widefat striped mrn-site-styles-row-spacing-defaults-table">
                                 <thead>
                                     <tr>
@@ -3374,7 +4036,7 @@ function mrn_site_colors_render_page(): void {
                     }
 
                     $tab_key = isset($tab['key']) ? sanitize_key((string) $tab['key']) : '';
-                    if ('' === $tab_key || in_array($tab_key, array('colors', 'graphic-elements', 'motion-presets', 'spacing'), true)) {
+                    if ('' === $tab_key || in_array($tab_key, array('colors', 'typography', 'graphic-elements', 'motion-presets', 'spacing'), true)) {
                         continue;
                     }
                     ?>
@@ -3417,6 +4079,8 @@ function mrn_site_colors_render_page(): void {
             const addGraphicButton = document.getElementById('mrn-site-styles-graphic-add');
             const motionRowsContainer = document.getElementById('mrn-site-styles-motion-rows');
             const addMotionButton = document.getElementById('mrn-site-styles-motion-add');
+            const typographyRowsContainer = document.getElementById('mrn-site-styles-typography-rows');
+            const addTypographyButton = document.getElementById('mrn-site-styles-typography-add');
             let refreshSeparatorSiteColorOptions = function () {};
             let scheduleSeparatorRender = function () {};
 
@@ -3481,6 +4145,94 @@ function mrn_site_colors_render_page(): void {
                 });
 
                 setActiveTab(initialTab, false);
+            }
+
+            if (typographyRowsContainer && addTypographyButton) {
+                const tagChoices = <?php echo wp_json_encode(mrn_site_styles_get_typography_tag_choices()); ?>;
+                const typographyColors = <?php echo wp_json_encode(array_column(mrn_site_colors_get_all(), 'name', 'slug')); ?>;
+                const typographyEffects = <?php echo wp_json_encode(mrn_site_styles_get_typography_effect_choices()); ?>;
+                let typographyIndex = Array.from(typographyRowsContainer.querySelectorAll('.mrn-site-styles-typography-row')).reduce(function (max, row) {
+                    const field = row.querySelector('[name^="mrn_site_typography["]');
+                    const match = field ? field.name.match(/^mrn_site_typography\[(\d+)\]/) : null;
+                    return match ? Math.max(max, Number(match[1]) + 1) : max;
+                }, 0);
+
+                function refreshTypographyStripes() {
+                    Array.from(typographyRowsContainer.querySelectorAll('.mrn-site-styles-typography-row')).forEach(function (row, position) {
+                        const appearanceRow = row.nextElementSibling;
+                        const evenClass = 'mrn-site-styles-typography-group-even';
+                        const oddClass = 'mrn-site-styles-typography-group-odd';
+                        row.classList.toggle(evenClass, position % 2 === 0);
+                        row.classList.toggle(oddClass, position % 2 !== 0);
+                        if (appearanceRow && appearanceRow.classList.contains('mrn-site-styles-typography-appearance-row')) {
+                            appearanceRow.classList.toggle(evenClass, position % 2 === 0);
+                            appearanceRow.classList.toggle(oddClass, position % 2 !== 0);
+                        }
+                    });
+                }
+
+                function bindTypographyRow(row) {
+                    const remove = row.querySelector('.mrn-site-styles-typography-remove');
+                    const target = row.querySelector('.mrn-site-styles-typography-tag');
+                    function syncLinkStates() {
+                        const appearanceRow = row.nextElementSibling;
+                        if (!appearanceRow || !appearanceRow.classList.contains('mrn-site-styles-typography-appearance-row')) {
+                            return;
+                        }
+                        Array.from(appearanceRow.querySelectorAll('.mrn-site-styles-typography-link-state')).forEach(function (field) {
+                            field.hidden = !target || target.value !== 'a';
+                        });
+                    }
+                    if (target) {
+                        target.addEventListener('change', syncLinkStates);
+                    }
+                    if (remove) {
+                        remove.addEventListener('click', function () {
+                            const appearanceRow = row.nextElementSibling;
+                            if (appearanceRow && appearanceRow.classList.contains('mrn-site-styles-typography-appearance-row')) {
+                                appearanceRow.remove();
+                            }
+                            row.remove();
+                            refreshTypographyStripes();
+                            notifyFormChanged();
+                        });
+                    }
+                    syncLinkStates();
+                }
+
+                Array.from(typographyRowsContainer.querySelectorAll('.mrn-site-styles-typography-row')).forEach(bindTypographyRow);
+                refreshTypographyStripes();
+                addTypographyButton.addEventListener('click', function () {
+                    const index = typographyIndex++;
+                    const options = Object.keys(tagChoices).map(function (tag) {
+                        return '<option value="' + tag + '">' + tagChoices[tag] + '</option>';
+                    }).join('');
+                    const colorOptions = '<option value="">Theme default</option>' + Object.keys(typographyColors).map(function (slug) { return '<option value="' + slug + '">' + typographyColors[slug] + '</option>'; }).join('');
+                    const effectOptions = Object.keys(typographyEffects).map(function (effect) { return '<option value="' + effect + '">' + typographyEffects[effect] + '</option>'; }).join('');
+                    const row = document.createElement('tr');
+                    row.className = 'mrn-site-styles-typography-row';
+                    row.innerHTML = '<td><select class="mrn-site-styles-typography-tag" name="mrn_site_typography[' + index + '][tag]">' + options + '</select></td>' +
+                        '<td><input type="text" class="regular-text mrn-site-styles-typography-name" name="mrn_site_typography[' + index + '][name]" placeholder="Large Link"><input type="hidden" name="mrn_site_typography[' + index + '][slug]" value=""></td>' +
+                        '<td><input type="text" class="regular-text" name="mrn_site_typography[' + index + '][font_family]" placeholder="Inter, Arial, sans-serif"></td>' +
+                        '<td><input type="text" class="small-text code" name="mrn_site_typography[' + index + '][desktop_size]" placeholder="2rem"></td>' +
+                        '<td><input type="text" class="small-text code" name="mrn_site_typography[' + index + '][mobile_size]" placeholder="1.5rem"></td>' +
+                        '<td><select name="mrn_site_typography[' + index + '][font_weight]"><option value="">Theme default</option>' + [100,200,300,400,500,600,700,800,900].map(function (weight) { return '<option value="' + weight + '">' + weight + '</option>'; }).join('') + '</select></td>' +
+                        '<td><input type="text" class="small-text code" name="mrn_site_typography[' + index + '][line_height]" placeholder="1.5"></td>' +
+                        '<td><input type="text" class="small-text code" name="mrn_site_typography[' + index + '][letter_spacing]" placeholder="0.02em"></td>' +
+                        '<td><button type="button" class="button button-secondary button-small mrn-site-styles-typography-remove">Remove</button></td>';
+                    const appearanceRow = document.createElement('tr');
+                    appearanceRow.className = 'mrn-site-styles-typography-appearance-row';
+                    appearanceRow.innerHTML = '<td colspan="9"><div class="mrn-site-styles-typography-appearance">' +
+                        '<label><span>Text Transform</span><select name="mrn_site_typography[' + index + '][text_transform]"><option value="">Theme default</option><option value="none">None</option><option value="uppercase">Uppercase</option><option value="lowercase">Lowercase</option><option value="capitalize">Capitalize</option></select></label>' +
+                        [['color','Color'],['hover_color','Hover / Focus'],['visited_color','Visited'],['active_color','Active']].map(function (item) { const isState = item[0] !== 'color'; return '<label class="' + (isState ? 'mrn-site-styles-typography-link-state' : '') + '"' + (isState ? ' hidden' : '') + '><span>' + item[1] + '</span><select name="mrn_site_typography[' + index + '][' + item[0] + ']">' + colorOptions + '</select></label>'; }).join('') +
+                        '<label><span>Effect</span><select name="mrn_site_typography[' + index + '][effect]">' + effectOptions + '</select></label></div>' +
+                        '<p class="description">Hover / Focus intentionally shares one accessible interaction color. Font Awesome icon appearance is managed by the Font Awesome plugin.</p></td>';
+                    typographyRowsContainer.appendChild(row);
+                    typographyRowsContainer.appendChild(appearanceRow);
+                    bindTypographyRow(row);
+                    refreshTypographyStripes();
+                    notifyFormChanged();
+                });
             }
 
             if (!rowsContainer || !addButton || !graphicRowsContainer || !addGraphicButton || !motionRowsContainer || !addMotionButton) {
@@ -4908,8 +5660,14 @@ function mrn_site_colors_print_css_variables(): void {
     $rows             = mrn_site_colors_get_all();
     $graphic_elements = mrn_site_styles_get_graphic_elements();
     $dark_scroll_card_presets = mrn_site_styles_get_dark_scroll_card_presets();
+    $row_width_values = mrn_site_styles_get_row_width_values();
 
     echo "<style id='mrn-site-styles-accent-base'>.has-bottom-accent[data-bottom-accent]{position:relative;margin-bottom:var(--mrn-accent-space,3em);}.has-bottom-accent[data-bottom-accent]::after{content:\"\";position:absolute;left:0;right:0;bottom:0;pointer-events:none;}</style>";
+
+    echo "<style id='mrn-site-styles-row-widths'>html:root{";
+    echo '--mrn-shell-content-width:' . esc_html($row_width_values['content'] ?? '780px') . ';';
+    echo '--mrn-shell-wide-width:' . esc_html($row_width_values['wide'] ?? '1440px') . ';';
+    echo '}</style>';
 
     if ($rows !== array()) {
         echo "<style id='mrn-site-colors-vars'>:root{";
@@ -4926,6 +5684,23 @@ function mrn_site_colors_print_css_variables(): void {
         }
 
         echo '}</style>';
+    }
+
+    $typography_css = '';
+    if (!is_admin()) {
+        $typography_css = mrn_site_styles_get_typography_css();
+    } elseif (function_exists('get_current_screen')) {
+        $screen = get_current_screen();
+        if ($screen && in_array((string) $screen->base, array('post', 'post-new'), true)) {
+            $typography_css = mrn_site_styles_get_typography_css('.editor-styles-wrapper');
+        }
+    }
+
+    // Admin output is scoped to the block editor canvas; Classic Editor uses content_style above.
+    if ('' !== $typography_css) {
+        echo "<style id='mrn-site-styles-typography'>";
+        echo $typography_css; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS is built from strict allowlists and sanitizers.
+        echo '</style>';
     }
 
     if ($graphic_elements !== array()) {

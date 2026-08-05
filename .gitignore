@@ -8,6 +8,13 @@
 create_qa_pages.php
 test_db_connection.php
 
+# MRN Local Hub runtime state and private DB artifacts
+/.mrn-site.json
+/logs/
+/dumps/
+/backups/
+*.sql
+
 # macOS / tooling noise
 .DS_Store
 */.DS_Store
@@ -32,6 +39,7 @@ stack/themes/mrn-base-stack.zip
 
 # Local stack symlink helpers; the real MU plugin source now lives in /mu-plugins
 stack/mu-plugins/mrn-active-style-guide
+stack/mu-plugins/mrn-disable-comments
 stack/mu-plugins/mrn-editor-lockdown
 stack/mu-plugins/mrn-editor-ui-css
 stack/mu-plugins/mrn-reusable-block-library
@@ -41,12 +49,16 @@ stack/mu-plugins/mrn-updraft-local-retention
 stack/mu-plugins/mrn-svg-support
 
 # Separate child repos that are still intentionally independent
-plugins/mrn-acf-character-count/
-plugins/mrn-comment-management/
-plugins/mrn-config-helper/
-plugins/mrn-cookie-consent/
-plugins/mrn-editor-tools/
-plugins/mrn-fontawesome-profile-manager/
-plugins/mrn-gtm-injector/
-plugins/mrn-seo-helper/
-plugins/mrn-universal-sticky-bar/
+plugins/background-video-popout-disabler
+plugins/mrn-acf-character-count
+plugins/mrn-acf-focal-point
+plugins/mrn-announcements
+plugins/mrn-comment-management
+plugins/mrn-config-helper
+plugins/mrn-cookie-consent
+plugins/mrn-dummy-content
+plugins/mrn-editor-tools
+plugins/mrn-fontawesome-profile-manager
+plugins/mrn-gtm-injector
+plugins/mrn-seo-helper
+plugins/mrn-universal-sticky-bar

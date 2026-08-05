@@ -8,6 +8,9 @@ WP_PATH="${WP_PATH:-}"
 IMPORT_MANIFEST="${STACK_ROOT}/manifests/importers.txt"
 EXPORTS_DIR="${STACK_ROOT}/configs/exports"
 WP_SKIP_PLUGINS="${STACK_IMPORTER_SKIP_PLUGINS:-}"
+MRN_BRANDING_ASSETS_READY=0
+MRN_BRANDING_TOOLBAR_URL=""
+MRN_BRANDING_LOGIN_URL=""
 
 if [[ -z "${SITE_PATH}" || -z "${SITE_USER}" || -z "${WP_PATH}" ]]; then
   echo "Importer context missing (SITE_PATH/SITE_USER/WP_PATH). Skipping importer."
@@ -29,6 +32,152 @@ run_wp() {
   fi
 }
 
+ensure_mrn_branding_assets() {
+  if [[ "${MRN_BRANDING_ASSETS_READY}" == "1" ]]; then
+    return 0
+  fi
+
+  local toolbar_source login_source escaped_toolbar_source escaped_login_source code output
+  toolbar_source="${EXPORTS_DIR}/mrn-logo-png.png"
+  login_source="${EXPORTS_DIR}/MRN-Login.png"
+
+  if [[ ! -f "${toolbar_source}" || ! -f "${login_source}" ]]; then
+    echo "MRN branding asset warning: bundled logo files were not found." >&2
+    return 1
+  fi
+
+  escaped_toolbar_source="${toolbar_source//\\/\\\\}"
+  escaped_toolbar_source="${escaped_toolbar_source//\'/\\\'}"
+  escaped_login_source="${login_source//\\/\\\\}"
+  escaped_login_source="${escaped_login_source//\'/\\\'}"
+
+  code='$toolbar_source = '\'''"${escaped_toolbar_source}"''\'';
+$login_source = '\'''"${escaped_login_source}"''\'';
+$uploads = wp_upload_dir();
+if (!is_array($uploads) || !empty($uploads["error"]) || empty($uploads["basedir"]) || empty($uploads["baseurl"])) {
+    fwrite(STDERR, "Could not resolve WordPress uploads directory for MRN branding assets.\n");
+    exit(1);
+}
+$target_dir = trailingslashit($uploads["basedir"]) . "mrn-stack-branding";
+$target_url = trailingslashit($uploads["baseurl"]) . "mrn-stack-branding";
+if (!wp_mkdir_p($target_dir)) {
+    fwrite(STDERR, "Could not create MRN branding uploads directory.\n");
+    exit(1);
+}
+$assets = [
+    "toolbar" => [$toolbar_source, $target_dir . "/mrn-admin-menu-logo.png", $target_url . "/mrn-admin-menu-logo.png"],
+    "login" => [$login_source, $target_dir . "/mrn-login-logo.png", $target_url . "/mrn-login-logo.png"],
+];
+foreach ($assets as $asset) {
+    [$source, $destination] = $asset;
+    if (!is_file($source) || !copy($source, $destination)) {
+        fwrite(STDERR, "Could not install MRN branding asset: {$source}\n");
+        exit(1);
+    }
+    @chmod($destination, 0644);
+}
+echo "toolbar_url=" . esc_url_raw($assets["toolbar"][2]) . "\n";
+echo "login_url=" . esc_url_raw($assets["login"][2]) . "\n";'
+
+  if ! output="$(run_wp eval "${code}")"; then
+    return 1
+  fi
+
+  MRN_BRANDING_TOOLBAR_URL="$(printf '%s\n' "${output}" | awk -F= '$1 == "toolbar_url" {print substr($0, index($0, "=") + 1)}' | tail -n 1)"
+  MRN_BRANDING_LOGIN_URL="$(printf '%s\n' "${output}" | awk -F= '$1 == "login_url" {print substr($0, index($0, "=") + 1)}' | tail -n 1)"
+
+  if [[ -z "${MRN_BRANDING_TOOLBAR_URL}" || -z "${MRN_BRANDING_LOGIN_URL}" ]]; then
+    echo "MRN branding asset warning: installer did not return usable asset URLs." >&2
+    return 1
+  fi
+
+  MRN_BRANDING_ASSETS_READY=1
+  echo "Installed MRN branding assets for AME: ${MRN_BRANDING_TOOLBAR_URL}, ${MRN_BRANDING_LOGIN_URL}" >&2
+  return 0
+}
+
+prepare_ame_container_import_file() {
+  local source_file="$1"
+  local tmp_file escaped_source escaped_tmp escaped_toolbar_url escaped_login_url code
+
+  if ! ensure_mrn_branding_assets; then
+    printf '%s' "${source_file}"
+    return 0
+  fi
+
+  tmp_file="$(mktemp "${TMPDIR:-/tmp}/mrn-ame-container.XXXXXX")"
+  chmod 0666 "${tmp_file}" 2>/dev/null || true
+
+  escaped_source="${source_file//\\/\\\\}"
+  escaped_source="${escaped_source//\'/\\\'}"
+  escaped_tmp="${tmp_file//\\/\\\\}"
+  escaped_tmp="${escaped_tmp//\'/\\\'}"
+  escaped_toolbar_url="${MRN_BRANDING_TOOLBAR_URL//\\/\\\\}"
+  escaped_toolbar_url="${escaped_toolbar_url//\'/\\\'}"
+  escaped_login_url="${MRN_BRANDING_LOGIN_URL//\\/\\\\}"
+  escaped_login_url="${escaped_login_url//\'/\\\'}"
+
+  code='$source = '\'''"${escaped_source}"''\'';
+$target = '\'''"${escaped_tmp}"''\'';
+$toolbar_url = '\'''"${escaped_toolbar_url}"''\'';
+$login_url = '\'''"${escaped_login_url}"''\'';
+$json = file_get_contents($source);
+if (!is_string($json) || $json === "") {
+    fwrite(STDERR, "AME container file is empty or unreadable while preparing branding assets.\n");
+    exit(1);
+}
+$container = json_decode($json, true);
+if (!is_array($container) || !isset($container["settings"]) || !is_array($container["settings"])) {
+    fwrite(STDERR, "Invalid AME container JSON while preparing branding assets.\n");
+    exit(1);
+}
+if (!isset($container["settings"]["branding"]) || !is_array($container["settings"]["branding"])) {
+    $container["settings"]["branding"] = [];
+}
+$container["settings"]["branding"]["is_toolbar_wp_logo_hidden"] = true;
+$container["settings"]["branding"]["custom_toolbar_logo"] = [
+    "attachmentId" => 0,
+    "attachmentSiteId" => 0,
+    "attachmentUrl" => null,
+    "externalUrl" => $toolbar_url,
+    "width" => 16,
+    "height" => 16,
+];
+if (empty($container["settings"]["branding"]["custom_toolbar_logo_link"])) {
+    $container["settings"]["branding"]["custom_toolbar_logo_link"] = "https://mrnwebdesigns.com";
+}
+if (!isset($container["settings"]["login-page"]) || !is_array($container["settings"]["login-page"])) {
+    $container["settings"]["login-page"] = [];
+}
+$container["settings"]["login-page"]["logo_image"] = [
+    "attachmentSiteId" => 0,
+    "attachmentUrl" => null,
+    "externalUrl" => $login_url,
+    "width" => 90,
+    "height" => 90,
+];
+if (empty($container["settings"]["login-page"]["logo_link_url"])) {
+    $container["settings"]["login-page"]["logo_link_url"] = "https://mrnwebdesigns.com";
+}
+if (empty($container["settings"]["login-page"]["logo_title_text"])) {
+    $container["settings"]["login-page"]["logo_title_text"] = "Created by MRN Web Designs";
+}
+$encoded = wp_json_encode($container, JSON_UNESCAPED_SLASHES);
+if (!is_string($encoded) || $encoded === "" || file_put_contents($target, $encoded) === false) {
+    fwrite(STDERR, "Could not write prepared AME container with MRN branding assets.\n");
+    exit(1);
+}
+echo "Prepared AME container with site-local MRN branding assets.\n";'
+
+  if ! run_wp eval "${code}" >&2; then
+    rm -f "${tmp_file}"
+    printf '%s' "${source_file}"
+    return 0
+  fi
+
+  printf '%s' "${tmp_file}"
+}
+
 apply_option_json() {
   local storage="$1"
   local file_path="$2"
@@ -48,6 +197,27 @@ if (!is_array($data)) { fwrite(STDERR, "Invalid JSON config payload.\n"); exit(1
 $name = '\'''"${escaped_name}"''\'';
 if ("'"${storage}"'" === "site_option_json") { update_site_option($name, $data); } else { update_option($name, $data); }
 echo "Imported JSON option: {$name}\n";'
+  run_wp eval "${code}"
+}
+
+apply_advanced_editor_tools_json() {
+  local file_path="$1"
+  local escaped_file code
+
+  escaped_file="${file_path//\\/\\\\}"
+  escaped_file="${escaped_file//\'/\\\'}"
+  code='$file = '\'''"${escaped_file}"''\'';
+if (!is_file($file)) { fwrite(STDERR, "Advanced Editor Tools settings file not found.\n"); exit(1); }
+$json = file_get_contents($file);
+if (!is_string($json) || $json === "") { fwrite(STDERR, "Advanced Editor Tools settings file is empty or unreadable.\n"); exit(1); }
+$data = json_decode($json, true);
+if (!is_array($data) || !isset($data["settings"], $data["admin_settings"]) || !is_array($data["settings"]) || !is_array($data["admin_settings"])) {
+    fwrite(STDERR, "Invalid Advanced Editor Tools export payload.\n");
+    exit(1);
+}
+update_option("tadv_settings", $data["settings"]);
+update_option("tadv_admin_settings", $data["admin_settings"]);
+echo "Imported Advanced Editor Tools settings.\n";'
   run_wp eval "${code}"
 }
 
@@ -268,12 +438,19 @@ echo "Imported unified exporter payload sections: {$imported}; AME components im
 
 apply_ame_toolbar_editor_json() {
   local file_path="$1"
-  local escaped_file code
+  local escaped_file escaped_toolbar_url code
 
   escaped_file="${file_path//\\/\\\\}"
   escaped_file="${escaped_file//\'/\\\'}"
+  escaped_toolbar_url=""
+
+  if ensure_mrn_branding_assets; then
+    escaped_toolbar_url="${MRN_BRANDING_TOOLBAR_URL//\\/\\\\}"
+    escaped_toolbar_url="${escaped_toolbar_url//\'/\\\'}"
+  fi
 
   code='$file = '\'''"${escaped_file}"''\'';
+$toolbarLogoUrl = '\'''"${escaped_toolbar_url}"''\'';
 if (!is_file($file)) { fwrite(STDERR, "AME Toolbar Editor file not found.\n"); exit(1); }
 $json = file_get_contents($file);
 if (!is_string($json) || $json === "") { fwrite(STDERR, "AME Toolbar Editor file is empty or unreadable.\n"); exit(1); }
@@ -293,6 +470,28 @@ if (!is_array($nodes)) {
     exit(1);
 }
 
+if ($toolbarLogoUrl !== "") {
+    if (!isset($settings["nodes"]) || !is_array($settings["nodes"])) {
+        $settings["nodes"] = [];
+    }
+    if (!isset($settings["nodes"]["wp-logo"]) || !is_array($settings["nodes"]["wp-logo"])) {
+        $settings["nodes"]["wp-logo"] = [
+            "id" => "wp-logo",
+            "group" => false,
+            "parent" => false,
+            "is_custom" => false,
+            "is_hidden" => false,
+        ];
+    }
+    if (!isset($settings["nodes"]["wp-logo"]["defaults"]) || !is_array($settings["nodes"]["wp-logo"]["defaults"])) {
+        $settings["nodes"]["wp-logo"]["defaults"] = [];
+    }
+    $settings["nodes"]["wp-logo"]["is_hidden"] = false;
+    $settings["nodes"]["wp-logo"]["defaults"]["title"] = "<img src=\"" . esc_url($toolbarLogoUrl) . "\" style=\"display: inline-block; max-height: 100%;padding: 0; margin: 0; vertical-align: top; position: relative;top: 50%; -ms-transform: translateY(-50%); transform: translateY(-50%);\">";
+    $settings["nodes"]["wp-logo"]["defaults"]["href"] = "https://mrnwebdesigns.com";
+    $settings["nodes"]["wp-logo"]["defaults"]["titleAttr"] = "";
+}
+
 update_option("ws_abe_admin_bar_settings", $settings);
 update_option("ws_abe_admin_bar_nodes", $nodes);
 update_option("ws_abe_override_global_menu", !empty($override));
@@ -303,16 +502,25 @@ echo "Imported AME Toolbar Editor settings.\n";'
 
 apply_ame_container_json() {
   local file_path="$1"
-  local escaped_file code cli_output
+  local escaped_file code cli_output import_file temp_import_file status
 
-  escaped_file="${file_path//\\/\\\\}"
+  import_file="$(prepare_ame_container_import_file "${file_path}")"
+  temp_import_file=""
+  if [[ "${import_file}" != "${file_path}" ]]; then
+    temp_import_file="${import_file}"
+  fi
+
+  escaped_file="${import_file//\\/\\\\}"
   escaped_file="${escaped_file//\'/\\\'}"
 
-  if cli_output="$(run_wp admin-menu-editor import "${file_path}" 2>&1)"; then
+  if cli_output="$(run_wp admin-menu-editor import "${import_file}" 2>&1)"; then
     printf '%s\n' "${cli_output}"
     echo "AME container import complete via wp admin-menu-editor import."
-    if ! apply_ame_roles_component_from_container "${file_path}"; then
+    if ! apply_ame_roles_component_from_container "${import_file}"; then
       echo "WARNING: AME roles-and-capabilities follow-up import failed." >&2
+    fi
+    if [[ -n "${temp_import_file}" ]]; then
+      rm -f "${temp_import_file}"
     fi
     return 0
   fi
@@ -447,7 +655,12 @@ if (($successful <= 0) && ($failed > 0)) {
     exit(1);
 }
 echo "AME container import complete: success={$successful}, skipped={$skipped}, failed={$failed}\n";'
-  run_wp eval "${code}"
+  status=0
+  run_wp eval "${code}" || status=$?
+  if [[ -n "${temp_import_file}" ]]; then
+    rm -f "${temp_import_file}"
+  fi
+  return "${status}"
 }
 
 apply_ame_roles_component_from_container() {
@@ -626,6 +839,42 @@ foreach ($placeholder_array_keys as $key) {
     }
 }
 
+// Apply the shared backup policy to every imported site. Use a deterministic
+// overnight slot so CloudPanel sites do not all start large jobs at midnight.
+$site_host = (string) wp_parse_url(home_url("/"), PHP_URL_HOST);
+$site_namespace = sanitize_title($site_host);
+if ("" === $site_namespace) {
+    $site_namespace = "wordpress-site";
+}
+$schedule_slot = abs((int) crc32($site_host)) % 240;
+$schedule_time = sprintf("%02d:%02d", 1 + intdiv($schedule_slot, 60), $schedule_slot % 60);
+
+$settings["updraft_interval"] = "daily";
+$settings["updraft_interval_database"] = "daily";
+$settings["updraft_starttime_files"] = $schedule_time;
+$settings["updraft_starttime_db"] = $schedule_time;
+$settings["updraft_retain"] = "4";
+$settings["updraft_retain_db"] = "4";
+$settings["updraft_delete_local"] = "1";
+$settings["updraft_include_wpcore"] = "0";
+
+// The Updraft S3 path is "bucket/optional-prefix". Give each site its own
+// prefix so a restore or remote rescan cannot import another site history.
+if (isset($settings["updraft_s3"]["settings"]) && is_array($settings["updraft_s3"]["settings"])) {
+    foreach ($settings["updraft_s3"]["settings"] as $instance_id => $instance_settings) {
+        if (!is_array($instance_settings)) {
+            continue;
+        }
+        $current_path = isset($instance_settings["path"]) ? trim((string) $instance_settings["path"], "/") : "";
+        $path_parts = array_values(array_filter(explode("/", $current_path), "strlen"));
+        $bucket = $path_parts[0] ?? "";
+        if ("" === $bucket) {
+            continue;
+        }
+        $settings["updraft_s3"]["settings"][$instance_id]["path"] = $bucket . "/sites/" . $site_namespace;
+    }
+}
+
 $imported = 0;
 foreach ($settings as $key => $value) {
     if (!is_string($key) || $key === "") {
@@ -639,6 +888,19 @@ foreach ($settings as $key => $value) {
 // as individual options because Updraft reads them that way.
 update_option($option_name, $settings);
 echo "Imported Updraft settings into {$imported} individual options and {$option_name}\n";
+echo "Applied Updraft policy for {$site_namespace}: daily at {$schedule_time}, retain 4\n";
+
+// Direct option imports do not invoke the settings API callbacks that normally
+// create the Updraft WP-Cron rows. Schedule them explicitly after import.
+global $updraftplus;
+if (is_object($updraftplus)) {
+    if (method_exists($updraftplus, "schedule_backup")) {
+        $updraftplus->schedule_backup($settings["updraft_interval"]);
+    }
+    if (method_exists($updraftplus, "schedule_backup_database")) {
+        $updraftplus->schedule_backup_database($settings["updraft_interval_database"]);
+    }
+}
 
 // If the MU retention helper is available, reconcile its schedule immediately
 // after importing Updraft settings.
@@ -730,6 +992,14 @@ while IFS= read -r raw || [[ -n "${raw}" ]]; do
     fi
     if ! apply_ame_toolbar_editor_json "${file_path}"; then
       echo "Importer warning: failed importing AME Toolbar Editor settings from ${file_path}"
+      errors=$((errors + 1))
+    fi
+    continue
+  fi
+
+  if [[ "${type}" == "advanced_editor_tools_json" ]]; then
+    if ! apply_advanced_editor_tools_json "${file_path}"; then
+      echo "Importer warning: failed importing Advanced Editor Tools settings from ${file_path}"
       errors=$((errors + 1))
     fi
     continue

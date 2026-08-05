@@ -13,6 +13,7 @@ It can be used without `mrn-base-stack`, but it does not bring the full `mrn-bas
   - `mrn_reusable_cta`
   - `mrn_reusable_faq`
   - `mrn_reusable_grid`
+  - `mrn_reusable_partner`
 - a fallback generic template
 - shortcode rendering via `[mrn_block id="123"]` or `[mrn_block slug="my-block"]`
 
@@ -41,6 +42,7 @@ Current template slugs:
 - `cta`
 - `faq`
 - `content-grid`
+- `partners`
 - `generic-block`
 
 The plugin lookup is implemented in `mrn_rbl_locate_template()` in [mrn-reusable-block-library.php](/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php).
@@ -55,6 +57,7 @@ To use this plugin outside `mrn-base-stack`, a receiving theme should do at leas
    - `.mrn-reusable-block--cta`
    - `.mrn-reusable-block--faq`
    - `.mrn-reusable-block--content-grid`
+   - `.mrn-reusable-block--partners`
 2. Decide whether to use the plugin templates as-is or override them in `mrn-blocks/`.
 3. Provide styling for the shared family classes used by the current templates if you want behavior close to `mrn-base-stack`.
 
@@ -82,6 +85,13 @@ These classes come from the theme-side layout family work. Another theme does no
 ### FAQ
 
 - `mrn-faq--editorial-shell`
+
+### Partners
+
+- `mrn-partners-block`
+- `mrn-partners-block__inner`
+- `mrn-partners-block__grid`
+- `mrn-partners-block__item`
 
 ## Integration Options
 

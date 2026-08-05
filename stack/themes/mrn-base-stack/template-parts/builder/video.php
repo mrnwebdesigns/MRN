@@ -16,6 +16,8 @@ $subheading_tag      = isset( $row['subheading_tag'] ) ? strtolower( (string) $r
 $content             = isset( $row['content'] ) ? (string) $row['content'] : '';
 $remote_video        = isset( $row['video_remote'] ) ? (string) $row['video_remote'] : '';
 $upload_video        = isset( $row['video_upload'] ) && is_array( $row['video_upload'] ) ? $row['video_upload'] : array();
+$video_position      = function_exists( 'mrn_base_stack_normalize_video_position' ) ? mrn_base_stack_normalize_video_position( $row['video_position'] ?? '' ) : sanitize_key( (string) ( $row['video_position'] ?? 'bottom' ) );
+$video_aspect_ratio  = function_exists( 'mrn_base_stack_normalize_video_aspect_ratio' ) ? mrn_base_stack_normalize_video_aspect_ratio( $row['video_aspect_ratio'] ?? '' ) : sanitize_key( (string) ( $row['video_aspect_ratio'] ?? '16-9' ) );
 $background_color    = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
 $bottom_accent       = ! empty( $row['bottom_accent'] );
 $accent_slug         = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
@@ -64,20 +66,46 @@ if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
 	$subheading_tag = 'p';
 }
 
-if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && '' === $resolved_video_url ) {
+$has_text_content = '' !== $label || '' !== $heading || '' !== $subheading || '' !== trim( wp_strip_all_tags( $content ) );
+$has_video_media  = '' !== $resolved_video_url;
+
+if ( ! $has_text_content && ! $has_video_media ) {
 	return;
 }
 
-$section_classes = array(
+$aspect_ratio_css = array(
+	'16-9' => '16 / 9',
+	'4-3'  => '4 / 3',
+	'1-1'  => '1 / 1',
+	'21-9' => '21 / 9',
+);
+$video_title      = '' !== $heading ? wp_strip_all_tags( $heading ) : __( 'Embedded video', 'mrn-base-stack' );
+$section_classes  = array(
 	'mrn-content-builder__row',
 	'mrn-content-builder__row--video',
+	'mrn-content-builder__row--video-position-' . sanitize_html_class( $video_position ),
+	'mrn-content-builder__row--video-ratio-' . sanitize_html_class( $video_aspect_ratio ),
 );
-$section_styles  = array();
+$section_styles   = array();
+
+if ( $has_text_content ) {
+	$section_classes[] = 'has-video-content';
+}
+
+if ( $has_video_media ) {
+	$section_classes[] = 'has-video-media';
+}
 
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
 	$section_styles[] = '--mrn-video-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
+$section_styles[] = '--mrn-video-aspect-ratio: ' . $aspect_ratio_css[ $video_aspect_ratio ];
+
+$display_contract  = function_exists( 'mrn_base_stack_get_builder_display_contract' ) ? mrn_base_stack_get_builder_display_contract( $row, 'video' ) : array(
+	'classes'    => array(),
+	'attributes' => array(),
+);
 $accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 	'attributes' => array(),
@@ -86,9 +114,11 @@ $motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contrac
 	'classes'    => array(),
 	'attributes' => array(),
 );
+$section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract ) : $section_classes;
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
-$section_attrs     = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
+$section_attrs     = isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ? $display_contract['attributes'] : array();
+$section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 $surface_style     = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
@@ -99,7 +129,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 	<div class="mrn-layout-section mrn-layout-section--video <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 			<div class="mrn-layout-grid mrn-layout-grid--video mrn-video-row mrn-layout-grid--video-feature">
-			<?php if ( '' !== $label || '' !== $heading || '' !== $subheading || '' !== trim( wp_strip_all_tags( $content ) ) ) : ?>
+			<?php if ( $has_text_content ) : ?>
 					<div class="mrn-layout-content mrn-layout-content--text mrn-video-row__content mrn-video-row__content--video-feature mrn-ui__body">
 					<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
 							<div class="mrn-video-row__header mrn-video-row__header--video-feature mrn-ui__head">
@@ -125,11 +155,12 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				</div>
 			<?php endif; ?>
 
-			<?php if ( '' !== $resolved_video_url ) : ?>
+			<?php if ( $has_video_media ) : ?>
 				<div
 						class="mrn-layout-content mrn-layout-content--media mrn-video-row__media mrn-video-row__media--video-feature mrn-ui__media"
 					data-video-src="<?php echo esc_url( $resolved_video_url ); ?>"
 					data-video-kind="<?php echo esc_attr( $resolved_video_kind ); ?>"
+					data-video-title="<?php echo esc_attr( $video_title ); ?>"
 					<?php if ( 'local' === $resolved_video_kind && '' !== $resolved_video_mime ) : ?>
 						data-video-mime="<?php echo esc_attr( $resolved_video_mime ); ?>"
 					<?php endif; ?>

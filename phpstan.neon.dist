@@ -9,6 +9,8 @@ parameters:
         - phpstan-bootstrap.php
     scanFiles:
         - stack/themes/mrn-base-stack/functions.php
+        - stack/themes/mrn-base-stack/inc/display-styles.php
+        - stack/themes/mrn-base-stack/inc/row-spacing-meta.php
     parallel:
         maximumNumberOfProcesses: 4
     reportUnmatchedIgnoredErrors: false

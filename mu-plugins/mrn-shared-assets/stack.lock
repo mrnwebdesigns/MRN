@@ -1,0 +1,11 @@
+{
+  "project": "mrn-shared-assets",
+  "release_unit": "standalone-plugin",
+  "baseline": {
+    "pinned_at": "2026-06-30",
+    "repo_path": "/Users/khofmeyer/Development/MRN/mu-plugins/mrn-shared-assets",
+    "integration_target": "mrn-shared-mu-plugin-loader",
+    "integration_mode": "shared-mu-plugin",
+    "plugin_version": "0.2.0"
+  }
+}

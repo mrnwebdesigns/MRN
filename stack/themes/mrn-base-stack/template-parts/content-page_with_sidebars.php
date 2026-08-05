@@ -25,23 +25,23 @@
 		$mrn_shell_classes[] = 'mrn-singular-shell--has-sidebar';
 		$mrn_shell_classes[] = 'mrn-singular-shell--sidebar-' . sanitize_html_class( $mrn_sidebar_settings['layout'] );
 	}
+
+	if ( $mrn_is_singular && function_exists( 'mrn_base_stack_render_singular_breadcrumbs' ) ) {
+		mrn_base_stack_render_singular_breadcrumbs( $mrn_post_id );
+	}
 	?>
 
-	<div class="<?php echo esc_attr( implode( ' ', $mrn_shell_classes ) ); ?>">
+	<div class="<?php echo esc_attr( implode( ' ', $mrn_shell_classes ) ); ?>" data-mrn-layout-slot="content-shell">
 		<div class="mrn-singular-shell__main">
 			<?php if ( ! $mrn_has_hero ) : ?>
-				<header class="entry-header">
-					<?php
-					if ( $mrn_is_singular ) :
-						the_title( '<h1 class="entry-title">', '</h1>' );
-					else :
-						the_title( '<h2 class="entry-title"><a href="' . esc_url( get_permalink() ) . '" rel="bookmark">', '</a></h2>' );
-					endif;
-					?>
-				</header><!-- .entry-header -->
+				<?php mrn_base_stack_render_singular_accessible_title( $mrn_post_id ); ?>
 			<?php endif; ?>
 
-			<?php mrn_base_stack_post_thumbnail(); ?>
+			<?php
+			if ( ! $mrn_has_hero ) {
+				mrn_base_stack_post_thumbnail();
+			}
+			?>
 
 			<div class="entry-content entry-content--builder">
 				<?php

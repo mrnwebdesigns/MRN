@@ -1,26 +1,32 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.05.06-front-end-runtime-autoload-for-reusable-interactions`
-- Release date: `2026-05-06`
+- Stack release: `2026.08.03-environment-runtime.1`
+- Release date: `2026-08-03`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.1`
+  - `mrn-base-stack` `1.2.91`
+  - `mrn-base-stack-child` `1.0.1`
 - MU plugins:
-  - `mrn-active-style-guide` `0.1.3`
-  - `mrn-admin-ui-css` `3.1.12`
-  - `mrn-shared-assets` `0.1.1`
-  - `mrn-editor-lockdown` `1.0.17`
-  - `mrn-reusable-block-library` `0.1.16`
-  - `mrn-site-colors` / `Site Styles` `0.1.4`
+  - `mrn-active-style-guide` `0.1.5`
+  - `mrn-admin-ui-css` `3.2.3`
+  - `mrn-shared-assets` `0.1.3`
+  - `mrn-editor-lockdown` `1.0.32`
+  - `mrn-environment-runtime` `0.2.0`
+  - `mrn-reusable-block-library` `0.1.28`
+  - `mrn-schema-bridge` `0.4.1`
+  - `mrn-site-colors` / `Site Styles` `0.1.38`
 - Standard plugins:
-  - `mrn-config-helper` `0.1.35`
-  - `mrn-dummy-content` `0.1.14`
-  - `mrn-editor-tools` `1.8.17`
-  - `mrn-seo-helper` `0.2.9`
-  - `mrn-universal-sticky-bar` `1.1.1`
+  - `mrn-acf-focal-point` `1.1.2`
+  - `mrn-announcements` `1.6.1`
+  - `mrn-config-helper` `0.1.43`
+  - `mrn-seo-helper` `0.3.4`
+  - `mrn-dummy-content` `0.1.19`
+  - `mrn-editor-tools` `1.8.24`
+  - `mrn-template-inspector` `0.2.7`
+  - `mrn-universal-sticky-bar` `1.1.3`
   - `searchwp-editor-performance` `1.0.6`
 
 ## Stack Manifests

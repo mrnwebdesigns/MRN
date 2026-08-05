@@ -26,65 +26,88 @@
 	<a class="skip-link screen-reader-text" href="#primary"><?php esc_html_e( 'Skip to content', 'mrn-base-stack' ); ?></a>
 
 	<?php
-	$mrn_header_options            = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
-	$mrn_business_information      = function_exists( 'mrn_base_stack_get_business_information' ) ? mrn_base_stack_get_business_information() : array();
-	$mrn_header_secondary_location = has_nav_menu( 'header-secondary' ) ? 'header-secondary' : 'menu-2';
-	$mrn_show_social_menu          = ! empty( $mrn_header_options['header_show_social_menu'] ) && has_nav_menu( 'social-media' );
-	$mrn_show_tertiary_menu        = ! empty( $mrn_header_options['header_show_tertiary_menu'] ) && has_nav_menu( 'header-tertiary' );
-	$mrn_show_secondary_menu       = ! empty( $mrn_header_options['header_show_secondary_menu'] ) && has_nav_menu( $mrn_header_secondary_location );
-	$mrn_show_primary_menu         = ! empty( $mrn_header_options['header_show_primary_menu'] ) && has_nav_menu( 'menu-1' );
-	$mrn_header_social_icon_tone   = function_exists( 'mrn_base_stack_normalize_social_icon_tone' )
-		? mrn_base_stack_normalize_social_icon_tone( isset( $mrn_header_options['header_social_icon_tone'] ) ? $mrn_header_options['header_social_icon_tone'] : 'dark' )
-		: 'dark';
-	$mrn_header_social_menu_class  = 'mrn-social-links mrn-social-links--icon-tone-' . sanitize_html_class( $mrn_header_social_icon_tone );
-	$mrn_show_search               = ! empty( $mrn_header_options['header_show_search'] ) && function_exists( 'mrn_base_stack_has_action' ) && mrn_base_stack_has_action( 'mrn_base_stack_header_search' );
-	$mrn_show_business_phone       = ! empty( $mrn_header_options['header_show_business_phone'] ) && ! empty( $mrn_business_information['phone'] ) && ! empty( $mrn_business_information['phone_uri'] );
-	$mrn_show_business_profile     = ! empty( $mrn_header_options['header_show_business_profile'] ) && ! empty( $mrn_business_information['business_profile'] );
-	$mrn_has_header_meta           = $mrn_show_search || $mrn_show_business_phone || $mrn_show_business_profile;
-	$mrn_has_header_menu_rows      = $mrn_show_social_menu || $mrn_show_tertiary_menu || $mrn_show_secondary_menu;
-	$mrn_business_logo             = function_exists( 'mrn_base_stack_get_business_logo' ) ? mrn_base_stack_get_business_logo( 'header' ) : null;
-	$mrn_has_custom_logo           = function_exists( 'has_custom_logo' ) && has_custom_logo();
-	$mrn_header_rows               = array(
-		array(
-			'show'          => $mrn_show_social_menu,
-			'modifier'      => 'social',
-			'location'      => 'social-media',
-			'menu_id'       => 'header-social-menu',
-			'menu_class'    => $mrn_header_social_menu_class,
-			'icon_tone'     => $mrn_header_social_icon_tone,
-			'aria_label'    => __( 'Social menu', 'mrn-base-stack' ),
-		),
-		array(
-			'show'          => $mrn_show_tertiary_menu,
-			'modifier'      => 'tertiary',
-			'location'      => 'header-tertiary',
-			'menu_id'       => 'header-tertiary-menu',
-			'menu_class'    => 'menu',
-			'aria_label'    => __( 'Header tertiary menu', 'mrn-base-stack' ),
-		),
-		array(
-			'show'          => $mrn_show_secondary_menu,
-			'modifier'      => 'secondary',
-			'location'      => $mrn_header_secondary_location,
-			'menu_id'       => 'header-secondary-menu',
-			'menu_class'    => 'menu',
-			'aria_label'    => __( 'Header secondary menu', 'mrn-base-stack' ),
-		),
-	);
-	?>
+		$mrn_header_options                = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+		$mrn_business_information          = function_exists( 'mrn_base_stack_get_business_information' ) ? mrn_base_stack_get_business_information() : array();
+		$mrn_header_primary_location       = 'menu-1';
+		$mrn_header_primary_menu_id        = isset( $mrn_header_options['header_primary_menu_id'] ) ? absint( $mrn_header_options['header_primary_menu_id'] ) : 0;
+		$mrn_header_secondary_location     = 'header-secondary';
+		$mrn_header_tertiary_location      = 'header-tertiary';
+		$mrn_show_secondary_menu           = ! empty( $mrn_header_options['header_show_secondary_menu'] ) && has_nav_menu( $mrn_header_secondary_location );
+		$mrn_show_tertiary_menu            = ! empty( $mrn_header_options['header_show_tertiary_menu'] ) && function_exists( 'mrn_base_stack_nav_location_has_items' ) && mrn_base_stack_nav_location_has_items( $mrn_header_tertiary_location );
+		$mrn_show_primary_menu             = mrn_base_stack_nav_menu_selection_has_items( $mrn_header_primary_menu_id, $mrn_header_primary_location );
+		$mrn_show_search                   = ! empty( $mrn_header_options['header_show_search'] ) && ! empty( $mrn_header_options['header_searchwp_form_id'] ) && function_exists( 'mrn_base_stack_has_action' ) && mrn_base_stack_has_action( 'mrn_base_stack_header_search' );
+		$mrn_show_business_phone           = ! empty( $mrn_header_options['header_show_business_phone'] ) && ! empty( $mrn_business_information['phone'] ) && ! empty( $mrn_business_information['phone_uri'] );
+		$mrn_show_business_profile         = ! empty( $mrn_header_options['header_show_business_profile'] ) && ! empty( $mrn_business_information['business_profile'] );
+		$mrn_has_header_menu_rows          = $mrn_show_secondary_menu;
+		$mrn_business_logo                 = function_exists( 'mrn_base_stack_get_business_logo' ) ? mrn_base_stack_get_business_logo( 'header' ) : null;
+		$mrn_has_custom_logo               = function_exists( 'has_custom_logo' ) && has_custom_logo();
+		$mrn_header_layout_grid            = isset( $mrn_header_options['header_layout_grid'] ) && is_array( $mrn_header_options['header_layout_grid'] ) ? $mrn_header_options['header_layout_grid'] : ( function_exists( 'mrn_base_stack_get_theme_header_footer_layout_grid' ) ? mrn_base_stack_get_theme_header_footer_layout_grid( 'header' ) : array() );
+		$mrn_header_attributes             = function_exists( 'mrn_base_stack_get_theme_header_footer_shell_attributes' ) ? mrn_base_stack_get_theme_header_footer_shell_attributes( 'header', $mrn_header_options, $mrn_header_layout_grid ) : array();
+		$mrn_header_attribute_html         = function_exists( 'mrn_base_stack_get_theme_header_footer_html_attributes' ) ? mrn_base_stack_get_theme_header_footer_html_attributes( $mrn_header_attributes ) : '';
+		$mrn_header_content_width          = isset( $mrn_header_options['header_content_width'] ) ? $mrn_header_options['header_content_width'] : 'wide';
+		$mrn_header_width_class            = function_exists( 'mrn_base_stack_get_theme_header_footer_content_width_class' ) ? mrn_base_stack_get_theme_header_footer_content_width_class( $mrn_header_content_width, 'wide' ) : 'mrn-theme-hf-layout-grid--width-wide';
+		$mrn_header_primary_nav_inherits   = ! isset( $mrn_header_options['header_primary_nav_inherit_header_settings'] ) || ! empty( $mrn_header_options['header_primary_nav_inherit_header_settings'] );
+		$mrn_header_primary_nav_width      = $mrn_header_primary_nav_inherits && function_exists( 'mrn_base_stack_normalize_theme_header_footer_content_width' ) ? mrn_base_stack_normalize_theme_header_footer_content_width( $mrn_header_content_width, 'wide' ) : '';
+		$mrn_header_primary_nav_width_slug = 'full-width' === $mrn_header_primary_nav_width ? 'full' : $mrn_header_primary_nav_width;
+		$mrn_header_primary_nav_style      = $mrn_header_primary_nav_inherits && function_exists( 'mrn_base_stack_get_theme_header_footer_appearance_style' ) ? mrn_base_stack_get_theme_header_footer_appearance_style( 'header', $mrn_header_options ) : '';
+		$mrn_header_primary_nav_classes    = 'main-navigation mrn-site-primary-navigation';
+		$mrn_mobile_navigation_options     = function_exists( 'mrn_base_stack_get_mobile_navigation_options' ) ? mrn_base_stack_get_mobile_navigation_options() : array( 'enabled' => false );
+		$mrn_mobile_navigation_enabled     = ! empty( $mrn_mobile_navigation_options['enabled'] );
+		$mrn_mobile_navigation_uses_header = ! isset( $mrn_mobile_navigation_options['use_site_header'] ) || ! empty( $mrn_mobile_navigation_options['use_site_header'] );
+		$mrn_mobile_navigation_style       = $mrn_mobile_navigation_enabled && function_exists( 'mrn_base_stack_get_mobile_navigation_style' ) ? mrn_base_stack_get_mobile_navigation_style( $mrn_mobile_navigation_options ) : '';
+		$mrn_mobile_navigation_bottom      = $mrn_mobile_navigation_enabled && function_exists( 'mrn_base_stack_get_mobile_navigation_bottom_markup' ) ? mrn_base_stack_get_mobile_navigation_bottom_markup( $mrn_mobile_navigation_options ) : '';
+		$mrn_mobile_navigation_action      = $mrn_mobile_navigation_enabled && ! $mrn_mobile_navigation_uses_header && function_exists( 'mrn_base_stack_get_mobile_navigation_header_action_markup' ) ? mrn_base_stack_get_mobile_navigation_header_action_markup( $mrn_mobile_navigation_options ) : '';
+		$mrn_mobile_navigation_logo        = ! empty( $mrn_mobile_navigation_options['mobile_logo_id'] ) ? absint( $mrn_mobile_navigation_options['mobile_logo_id'] ) : $mrn_business_logo;
+		/* translators: %s: Menu item label. */
+		$mrn_mobile_submenu_open_label = __( 'Open %s submenu', 'mrn-base-stack' );
+		/* translators: %s: Menu item label. */
+		$mrn_mobile_submenu_close_label  = __( 'Close %s submenu', 'mrn-base-stack' );
+		$mrn_header_primary_nav_classes .= $mrn_mobile_navigation_enabled ? ' mrn-mobile-navigation' : '';
+		$mrn_header_primary_nav_classes .= $mrn_mobile_navigation_enabled && ! $mrn_mobile_navigation_uses_header ? ' mrn-mobile-navigation--full-screen' : '';
+		$mrn_header_primary_nav_classes .= '' !== $mrn_header_primary_nav_width_slug ? ' mrn-site-primary-navigation--width-' . sanitize_html_class( $mrn_header_primary_nav_width_slug ) : ' mrn-site-primary-navigation--independent';
+		$mrn_header_classes              = trim( 'site-header mrn-theme-hf-layout-grid mrn-theme-hf-layout-grid--header ' . $mrn_header_width_class );
+		$mrn_header_grid_item_style      = static function ( $item_key ) use ( $mrn_header_layout_grid ) {
+			return function_exists( 'mrn_base_stack_get_theme_header_footer_layout_grid_item_style' ) ? mrn_base_stack_get_theme_header_footer_layout_grid_item_style( $mrn_header_layout_grid, $item_key ) : '';
+		};
+		$mrn_header_primary_menu_args    = mrn_base_stack_get_nav_menu_selection_args(
+			$mrn_header_primary_menu_id,
+			$mrn_header_primary_location,
+			array(
+				'menu_id'    => 'primary-menu',
+				'container'  => false,
+				'menu_class' => 'menu',
+			)
+		);
+		$mrn_header_rows                 = array(
+			array(
+				'show'          => $mrn_show_secondary_menu,
+				'modifier'      => 'secondary',
+				'location'      => $mrn_header_secondary_location,
+				'menu_id'       => 'header-secondary-menu',
+				'menu_class'    => 'menu',
+				'aria_label'    => __( 'Header secondary menu', 'mrn-base-stack' ),
+			),
+		);
+		/* translators: %s: Site name. */
+		$mrn_header_home_label = sprintf( __( '%s home', 'mrn-base-stack' ), get_bloginfo( 'name' ) );
+		?>
 
-	<header id="masthead" class="site-header">
+		<header
+			id="masthead"
+			class="<?php echo esc_attr( $mrn_header_classes ); ?>"
+			<?php
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Header/footer attribute helper escapes attribute names and values.
+			echo '' !== $mrn_header_attribute_html ? ' ' . $mrn_header_attribute_html : '';
+			?>
+		>
 		<?php if ( $mrn_has_header_menu_rows ) : ?>
-			<div class="mrn-site-header__menu-rows">
+			<div class="mrn-theme-hf-layout-grid__item mrn-theme-hf-layout-grid__item--secondary-menu mrn-site-header__menu-rows" data-mrn-layout-slot="secondary-menu" data-mrn-layout-item="secondary_menu"<?php echo '' !== $mrn_header_grid_item_style( 'secondary_menu' ) ? ' style="' . esc_attr( $mrn_header_grid_item_style( 'secondary_menu' ) ) . '"' : ''; ?>>
 				<?php foreach ( $mrn_header_rows as $mrn_header_row ) : ?>
 					<?php if ( empty( $mrn_header_row['show'] ) || empty( $mrn_header_row['location'] ) ) : ?>
 						<?php continue; ?>
 					<?php endif; ?>
 					<?php
 					$mrn_header_nav_class = 'mrn-site-header__menu-nav mrn-site-header__menu-nav--' . sanitize_html_class( (string) $mrn_header_row['modifier'] );
-					if ( ! empty( $mrn_header_row['icon_tone'] ) ) {
-						$mrn_header_nav_class .= ' mrn-site-header__menu-nav--icon-tone-' . sanitize_html_class( (string) $mrn_header_row['icon_tone'] );
-					}
 					?>
 					<div class="mrn-site-header__menu-row mrn-site-header__menu-row--<?php echo esc_attr( $mrn_header_row['modifier'] ); ?>">
 						<nav class="<?php echo esc_attr( $mrn_header_nav_class ); ?>" aria-label="<?php echo esc_attr( $mrn_header_row['aria_label'] ); ?>">
@@ -104,23 +127,23 @@
 			</div>
 		<?php endif; ?>
 
-		<div class="mrn-site-header__main mrn-site-header__menu-row mrn-site-header__menu-row--primary">
+		<div class="mrn-theme-hf-layout-grid__item mrn-theme-hf-layout-grid__item--header-brand mrn-site-header__main" data-mrn-layout-slot="header" data-mrn-layout-item="header_brand"<?php echo '' !== $mrn_header_grid_item_style( 'header_brand' ) ? ' style="' . esc_attr( $mrn_header_grid_item_style( 'header_brand' ) ) . '"' : ''; ?>>
 			<div class="site-branding">
 				<?php
-				if ( ! empty( $mrn_business_logo['ID'] ) ) :
+				if ( function_exists( 'mrn_base_stack_image_has_content' ) && mrn_base_stack_image_has_content( $mrn_business_logo ) ) :
 					?>
-					<a class="custom-logo-link mrn-site-logo-link" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home">
-					<?php
-						echo wp_get_attachment_image(
-							(int) $mrn_business_logo['ID'],
-							'full',
-							false,
+					<a class="custom-logo-link mrn-site-logo-link" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" aria-label="<?php echo esc_attr( $mrn_header_home_label ); ?>">
+						<?php
+						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared image helper returns escaped wp_get_attachment_image markup.
+						echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
+							$mrn_business_logo,
+							'mrn-logo',
 							array(
 								'class' => 'custom-logo mrn-site-logo',
 								'alt'   => get_bloginfo( 'name' ),
 							)
-						);
-					?>
+						) : '';
+						?>
 					</a>
 					<?php
 				elseif ( $mrn_has_custom_logo ) :
@@ -141,37 +164,101 @@
 					<p class="site-description"><?php echo $mrn_base_stack_description; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
 				<?php endif; ?>
 			</div><!-- .site-branding -->
+		</div>
 
-			<?php if ( $mrn_show_primary_menu ) : ?>
-				<nav id="site-navigation" class="main-navigation mrn-site-header__menu-nav mrn-site-header__menu-nav--primary" aria-label="<?php esc_attr_e( 'Primary menu', 'mrn-base-stack' ); ?>">
-					<button class="menu-toggle" aria-controls="primary-menu" aria-expanded="false"><?php esc_html_e( 'Primary Menu', 'mrn-base-stack' ); ?></button>
+		<?php if ( $mrn_show_business_profile ) : ?>
+			<div class="mrn-theme-hf-layout-grid__item mrn-theme-hf-layout-grid__item--business-profile mrn-site-header__meta" data-mrn-layout-slot="business-profile" data-mrn-layout-item="business_profile"<?php echo '' !== $mrn_header_grid_item_style( 'business_profile' ) ? ' style="' . esc_attr( $mrn_header_grid_item_style( 'business_profile' ) ) . '"' : ''; ?>>
+				<div class="mrn-site-header__business-text"><?php echo esc_html( $mrn_business_information['business_profile'] ); ?></div>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( $mrn_show_business_phone ) : ?>
+			<div class="mrn-theme-hf-layout-grid__item mrn-theme-hf-layout-grid__item--business-phone mrn-site-header__meta" data-mrn-layout-slot="business-phone" data-mrn-layout-item="business_phone"<?php echo '' !== $mrn_header_grid_item_style( 'business_phone' ) ? ' style="' . esc_attr( $mrn_header_grid_item_style( 'business_phone' ) ) . '"' : ''; ?>>
+				<a class="mrn-site-header__phone" href="<?php echo esc_url( $mrn_business_information['phone_uri'] ); ?>"><?php echo esc_html( $mrn_business_information['phone'] ); ?></a>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( $mrn_show_search && function_exists( 'mrn_base_stack_render_header_search' ) ) : ?>
+			<div class="mrn-theme-hf-layout-grid__item mrn-theme-hf-layout-grid__item--search mrn-site-header__meta" data-mrn-layout-slot="search" data-mrn-layout-item="search"<?php echo '' !== $mrn_header_grid_item_style( 'search' ) ? ' style="' . esc_attr( $mrn_header_grid_item_style( 'search' ) ) . '"' : ''; ?>>
+				<?php mrn_base_stack_render_header_search(); ?>
+			</div>
+		<?php endif; ?>
+
+			<?php if ( $mrn_show_tertiary_menu ) : ?>
+				<div class="mrn-theme-hf-layout-grid__item mrn-theme-hf-layout-grid__item--header-tertiary-menu mrn-site-header__navigation mrn-site-header__menu-row mrn-site-header__menu-row--tertiary" data-mrn-layout-slot="header-tertiary" data-mrn-layout-item="header_tertiary_menu"<?php echo '' !== $mrn_header_grid_item_style( 'header_tertiary_menu' ) ? ' style="' . esc_attr( $mrn_header_grid_item_style( 'header_tertiary_menu' ) ) . '"' : ''; ?>>
+					<nav class="mrn-site-header__menu-nav mrn-site-header__menu-nav--tertiary" aria-label="<?php esc_attr_e( 'Header tertiary menu', 'mrn-base-stack' ); ?>">
 					<?php
 					wp_nav_menu(
 						array(
-							'theme_location' => 'menu-1',
-							'menu_id'        => 'primary-menu',
+							'theme_location' => $mrn_header_tertiary_location,
+							'menu_id'        => 'header-tertiary-menu',
+							'container'      => false,
+							'menu_class'     => 'menu',
 						)
 					);
 					?>
-				</nav><!-- #site-navigation -->
+					</nav>
+				</div>
 			<?php endif; ?>
-		</div>
+		</header><!-- #masthead -->
 
-		<?php if ( $mrn_has_header_meta ) : ?>
-			<div class="mrn-site-header__meta">
-				<?php if ( $mrn_show_business_profile ) : ?>
-					<div class="mrn-site-header__business-text"><?php echo esc_html( $mrn_business_information['business_profile'] ); ?></div>
+		<?php if ( $mrn_show_primary_menu ) : ?>
+			<nav id="site-navigation" class="<?php echo esc_attr( $mrn_header_primary_nav_classes ); ?>" aria-label="<?php esc_attr_e( 'Primary menu', 'mrn-base-stack' ); ?>"<?php echo $mrn_mobile_navigation_enabled ? ' data-mrn-mobile-navigation data-submenu-open-label="' . esc_attr( $mrn_mobile_submenu_open_label ) . '" data-submenu-close-label="' . esc_attr( $mrn_mobile_submenu_close_label ) . '"' : ''; ?><?php echo '' !== trim( $mrn_header_primary_nav_style . ';' . $mrn_mobile_navigation_style, ';' ) ? ' style="' . esc_attr( trim( $mrn_header_primary_nav_style . ';' . $mrn_mobile_navigation_style, ';' ) ) . '"' : ''; ?>>
+				<button class="menu-toggle" aria-controls="<?php echo $mrn_mobile_navigation_enabled ? 'mrn-mobile-navigation-panel' : 'primary-menu'; ?>" aria-expanded="false" aria-label="<?php esc_attr_e( 'Open navigation', 'mrn-base-stack' ); ?>"<?php echo $mrn_mobile_navigation_enabled ? ' data-close-label="' . esc_attr__( 'Close navigation', 'mrn-base-stack' ) . '"' : ''; ?>>
+					<?php if ( $mrn_mobile_navigation_enabled ) : ?>
+						<span class="mrn-mobile-navigation__toggle-bar" aria-hidden="true"></span>
+						<span class="mrn-mobile-navigation__toggle-bar" aria-hidden="true"></span>
+						<span class="mrn-mobile-navigation__toggle-bar" aria-hidden="true"></span>
+						<span class="screen-reader-text"><?php esc_html_e( 'Menu', 'mrn-base-stack' ); ?></span>
+					<?php else : ?>
+						<?php esc_html_e( 'Primary Menu', 'mrn-base-stack' ); ?>
+					<?php endif; ?>
+				</button>
+				<?php if ( $mrn_mobile_navigation_enabled ) : ?>
+					<div id="mrn-mobile-navigation-panel" class="mrn-mobile-navigation__panel">
+						<?php if ( ! $mrn_mobile_navigation_uses_header ) : ?>
+							<div class="mrn-mobile-navigation__drawer-header">
+								<div class="mrn-mobile-navigation__drawer-branding">
+									<?php if ( function_exists( 'mrn_base_stack_image_has_content' ) && mrn_base_stack_image_has_content( $mrn_mobile_navigation_logo ) ) : ?>
+										<a class="mrn-mobile-navigation__logo-link" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" aria-label="<?php echo esc_attr( $mrn_header_home_label ); ?>">
+											<?php
+											// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared image helper returns escaped attachment markup.
+											echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
+												$mrn_mobile_navigation_logo,
+												'mrn-logo',
+												array(
+													'class' => 'mrn-mobile-navigation__logo',
+													'alt' => get_bloginfo( 'name' ),
+												)
+											) : '';
+											?>
+										</a>
+									<?php elseif ( $mrn_has_custom_logo ) : ?>
+										<?php the_custom_logo(); ?>
+									<?php else : ?>
+										<a class="mrn-mobile-navigation__site-title" href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a>
+									<?php endif; ?>
+								</div>
+								<?php if ( '' !== $mrn_mobile_navigation_action ) : ?>
+									<div class="mrn-mobile-navigation__header-action">
+										<?php echo $mrn_mobile_navigation_action; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Mobile-navigation helper escapes built-in output; extension filter owns added markup. ?>
+									</div>
+								<?php endif; ?>
+							</div>
+						<?php endif; ?>
 				<?php endif; ?>
-
-				<?php if ( $mrn_show_business_phone ) : ?>
-					<a class="mrn-site-header__phone" href="<?php echo esc_url( $mrn_business_information['phone_uri'] ); ?>"><?php echo esc_html( $mrn_business_information['phone'] ); ?></a>
-				<?php endif; ?>
-
 				<?php
-				if ( $mrn_show_search && function_exists( 'mrn_base_stack_render_header_search' ) ) {
-					mrn_base_stack_render_header_search();
-				}
+				wp_nav_menu(
+					$mrn_header_primary_menu_args
+				);
 				?>
-			</div>
+				<?php if ( $mrn_mobile_navigation_enabled ) : ?>
+						<?php if ( '' !== $mrn_mobile_navigation_bottom ) : ?>
+							<div class="mrn-mobile-navigation__bottom">
+								<?php echo $mrn_mobile_navigation_bottom; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Reusable block renderer and extension hooks own escaping. ?>
+							</div>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
+			</nav><!-- #site-navigation -->
 		<?php endif; ?>
-	</header><!-- #masthead -->

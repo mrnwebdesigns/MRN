@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Dashboard Support (MU)
+ * Plugin Name: MRN Dashboard Support
  * Description: Adds a fixed, non-collapsible, non-movable MRN Web Designs support widget pinned to the top-left of the WP dashboard.
  * Author: MRN Web Designs
  * Version: 1.0.3
@@ -133,7 +133,8 @@ add_action('admin_init', function () {
         return;
     }
 
-    if (!isset($_SERVER['REQUEST_METHOD']) || strtoupper((string) $_SERVER['REQUEST_METHOD']) !== 'POST') {
+    $request_method = isset($_SERVER['REQUEST_METHOD']) ? sanitize_text_field(wp_unslash($_SERVER['REQUEST_METHOD'])) : '';
+    if ('POST' !== strtoupper($request_method)) {
         return;
     }
 
@@ -210,7 +211,7 @@ function mrn_render_support_widget() {
 
     // Fallback for non-standard setups where content_url does not map as expected.
     if (!empty($_SERVER['HTTP_HOST'])) {
-        $host = preg_replace('/:\d+$/', '', (string) $_SERVER['HTTP_HOST']);
+        $host = preg_replace('/:\d+$/', '', sanitize_text_field(wp_unslash($_SERVER['HTTP_HOST'])));
         if (is_string($host) && $host !== '') {
             $fallback_url = (is_ssl() ? 'https://' : 'http://') . $host . '/wp-content/mu-plugins/mrn-dashboard-support/mrn-logo.png';
             $logo_url = is_string($logo_url) && $logo_url !== '' ? $logo_url : $fallback_url;
@@ -280,8 +281,9 @@ function mrn_render_support_widget() {
     echo '</p>';
 
     echo '<p style="margin-top:10px;font-size:12px;color:#555;">
-        Clicking the button opens your email client with site details added below
-        so you can start typing your message right away.
+        Click the button to open your email client with our support address
+        (<a href="' . esc_url('mailto:' . $support_email) . '">' . esc_html($support_email) . '</a>) and site details already filled in, so you
+        can start typing your message right away.
     </p>';
 
     echo '</div>';

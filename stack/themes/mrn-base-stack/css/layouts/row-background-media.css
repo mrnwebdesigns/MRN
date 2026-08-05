@@ -1,0 +1,56 @@
+/**
+ * Row background media.
+ */
+
+.mrn-section-background-media {
+	border: 0;
+	height: 56.25vw;
+	left: 50%;
+	min-height: 100%;
+	min-width: 100%;
+	overflow: hidden;
+	pointer-events: none;
+	position: absolute;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: 100vw;
+	z-index: 0;
+}
+
+.has-row-background-media,
+.has-row-background-video {
+	overflow: hidden;
+	position: relative;
+}
+
+.has-row-background-media > :not(.mrn-row-background-media):not(.mrn-section-background-media),
+.has-row-background-video > :not(.mrn-row-background-media):not(.mrn-section-background-media) {
+	position: relative;
+	z-index: 1;
+}
+
+.mrn-row-background-media {
+	inset: 0;
+	overflow: hidden;
+	pointer-events: none;
+	position: absolute;
+	z-index: 0;
+}
+
+.mrn-row-background-media__image {
+	display: block;
+	height: 100%;
+	max-width: none;
+	object-fit: cover;
+	object-position: center;
+	width: 100%;
+}
+
+.mrn-deferred-media__frame {
+	border: 0;
+	height: 100%;
+	left: 0;
+	position: absolute;
+	top: 0;
+	width: 100%;
+}

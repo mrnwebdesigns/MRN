@@ -298,22 +298,26 @@
 
 	function addChooserControl( group ) {
 		var $input = group.source.find( '.acf-input' ).first();
-		var $control;
+		var $control = $input.find( '.mrn-icon-chooser-control' ).first();
 
-		if ( ! $input.length || $input.find( '.mrn-icon-chooser-control' ).length ) {
+		if ( ! $input.length ) {
 			return;
 		}
 
-		$control = $(
-			'<div class="mrn-icon-chooser-control">' +
-				'<button type="button" class="button mrn-icon-chooser-open">Choose Icon</button>' +
-				'<span class="mrn-icon-chooser-preview"></span>' +
-				'<span class="mrn-icon-chooser-selection"></span>' +
-			'</div>'
-		);
+		if ( ! $control.length ) {
+			$control = $(
+				'<div class="mrn-icon-chooser-control">' +
+					'<button type="button" class="button mrn-icon-chooser-open">Choose Icon</button>' +
+					'<span class="mrn-icon-chooser-preview"></span>' +
+					'<span class="mrn-icon-chooser-selection"></span>' +
+				'</div>'
+			);
 
+			$input.prepend( $control );
+		}
+
+		// ACF clones field markup without jQuery data; always bind the live group.
 		$control.data( 'mrnIconChooserGroup', group );
-		$input.prepend( $control );
 		hideStorageFields( group );
 		updateChooserDisplay( group );
 	}

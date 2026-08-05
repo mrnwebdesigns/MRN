@@ -32,7 +32,7 @@ _mrn() {
 	fi
 
 	if [[ ${COMP_CWORD} -eq 1 ]]; then
-		COMPREPLY=( $(compgen -W "pull-site deploy-site nightly-pull completion install-completion help" -- "${cur}") )
+		COMPREPLY=( $(compgen -W "pull-site deploy-site nightly-pull local-hub completion install-completion help" -- "${cur}") )
 		return 0
 	fi
 
@@ -126,6 +126,9 @@ _mrn() {
 			;;
 		completion|install-completion)
 			COMPREPLY=( $(compgen -W "zsh bash" -- "${cur}") )
+			;;
+		local-hub)
+			COMPREPLY=( $(compgen -W "--doctor" -- "${cur}") )
 			;;
 		*)
 			COMPREPLY=()

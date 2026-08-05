@@ -1,0 +1,76 @@
+name: MRN QA
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mrn-qa-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  code-gate:
+    name: Code gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MRN_QA_STACK_ROOT: ${{ github.workspace }}
+      MRN_QA_CODE_ANALYSIS_SCOPE: all
+      MRN_QA_RUN_SMOKE: never
+      MRN_QA_RUN_ACCESSIBILITY: never
+      MRN_QA_RUN_PERFORMANCE: never
+      MRN_QA_RUN_API: static
+      MRN_QA_PLAYWRIGHT_PROVIDER: engine
+    steps:
+      - name: Check out MRN
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install MRN PHP QA dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Install Semgrep
+        run: |
+          python -m pip install semgrep
+          python -c "import semgrep"
+
+      - name: Check out the pinned QA engine
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/MRN-qa-engine
+          ref: d3a9f785c24e9a2f580fc65706c6043089181701
+          path: .mrn-qa-engine
+          token: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
+          persist-credentials: false
+
+      - name: Run MRN static QA gate
+        run: |
+          mkdir -p reports
+          "$GITHUB_WORKSPACE/.mrn-qa-engine/bin/mrn-qa" run \
+            --project-root "$GITHUB_WORKSPACE" \
+            --output-file "$GITHUB_WORKSPACE/reports/mrn-qa-ci.md"
+
+      - name: Upload QA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mrn-qa-report
+          path: reports/mrn-qa-ci.md
+          if-no-files-found: warn

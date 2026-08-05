@@ -87,8 +87,15 @@ This ensures stack files are written as the app owner instead of a personal oper
   - Do not substitute `kyle` or `mrn-ops` as the write path for a live site refresh.
 - Fresh site bootstrap owns new-site direct site-owner SSH readiness.
   - `site-bootstrap.sh` runs after CloudPanel has already created `/home/<site-user>` and the site root.
-  - It must ensure `/home/<site-user>/.ssh/authorized_keys` contains the canonical MRN site-owner public key from `stack/configs/site-owner-authorized-key.pub`, with `.ssh` at `700` and `authorized_keys` at `600`, owned by the site owner.
+  - It must remove group/other write access from `/home/<site-user>` so OpenSSH StrictModes accepts per-site keys, then ensure `.ssh` is `700` and `authorized_keys` is `600`, owned by the site owner.
+  - It must ensure `/home/<site-user>/.ssh/authorized_keys` contains the canonical MRN site-owner public key from `stack/configs/site-owner-authorized-key.pub`.
   - This fixes new-site provisioning only; older sites created before this bootstrap step may still need a one-time backfill if `SSH_VERIFY` fails.
+- Fresh CloudPanel SSL bootstrap for `*.mrndev.io` should use DNS-01/import instead of CloudPanel HTTP-01 when the hostname is behind the proxied wildcard.
+  - The zone normally has Cloudflare SSL mode `strict` and `Always Use HTTPS` enabled.
+  - The CloudPanel WordPress vhost also redirects HTTP to HTTPS before its `/.well-known` location can serve ACME tokens.
+  - That combination can make HTTP-01 fail with Cloudflare `526` before the origin certificate exists.
+  - Use `/Users/khofmeyer/Development/MRN/stack/scripts/cloudpanel-dns01-ssl.sh --domain <fqdn> --site-user <site-user> --execute` to issue the certificate through Cloudflare DNS-01 and stage it for CloudPanel import.
+  - The final import requires a root-capable CloudPanel shell unless `--install-ssh <root-capable-target>` is available.
 - When using direct site-owner SSH with a deploy helper, prefer the explicit host form:
   - `<site-user>@mrndev-site-owner`
 - Do not sync directly into live site `wp-content` paths as `mrn-ops`, `kyle`, or any other operator user.
@@ -112,13 +119,16 @@ rsync -rlt --omit-dir-times --delete \
 - Avoid preserving local owner/group/permission metadata onto live site paths.
   - Use content-only sync flags such as `-rlt` instead of `-a` when syncing into live site directories.
   - Then normalize directories to `755` and files to `644` as the site owner.
-- Before any individual-site live write, run a full Updraft backup from the site-owner context:
-  - `wp updraftplus backup --include-files='plugins,themes,uploads,others' --send-to-cloud --always-keep --label='<label>'`
+- Code-only individual-site writes do not create an Updraft backup. Use Git or the managed package as the code rollback source.
+- For a write that changes stored data or runs a migration, create a database-only backup from the site-owner context:
+  - `wp updraftplus backup --include-files= --send-to-cloud --label='<label>'`
+- Routine backups remain under normal retention; do not use `--always-keep` for deployments.
 - Treat malformed Updraft placeholder values as part of deploy readiness.
   - Check `updraft_service`, `updraft_email`, `updraft_report_warningsonly`, `updraft_report_wholebackup`, and `updraft_report_dbbackup`.
   - If those values contain placeholder entries such as `"0"` or empty-string array values, remove only the placeholders, keep the real storage backend, and rerun the same backup until the latest log is clean.
 - Canonical preflight helper for the site-owner SSH verify plus Updraft readiness pass:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh --site-hostname <site-hostname>`
+  - Add `--with-db-backup` only for data-changing or migration work.
 - If there is no dedicated helper for the exact live site change, sync only the changed live surface instead of broad site-wide paths.
   - Example: for a single MU plugin release, sync only that MU plugin directory as the site owner.
 - After the broad normalization pass, run `stat` on representative changed files.

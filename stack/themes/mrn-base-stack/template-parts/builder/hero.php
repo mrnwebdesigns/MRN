@@ -10,28 +10,42 @@ $row                     = isset( $context['row'] ) && is_array( $context['row']
 $context_post_id         = isset( $context['post_id'] ) ? (int) $context['post_id'] : get_the_ID();
 $label                   = isset( $row['label'] ) ? trim( (string) $row['label'] ) : '';
 $label_tag               = function_exists( 'mrn_base_stack_normalize_text_tag' ) ? mrn_base_stack_normalize_text_tag( $row['label_tag'] ?? '', 'p' ) : 'p';
-$heading                 = isset( $row['heading'] ) ? trim( (string) $row['heading'] ) : '';
-$heading_tag             = isset( $row['heading_tag'] ) ? strtolower( (string) $row['heading_tag'] ) : 'h1';
+$heading_contract        = mrn_base_stack_get_hero_heading_contract( $row, $context_post_id, 'h2' );
+$page_title              = isset( $heading_contract['page_title'] ) ? trim( (string) $heading_contract['page_title'] ) : '';
+$heading                 = isset( $heading_contract['custom_heading'] ) ? trim( (string) $heading_contract['custom_heading'] ) : '';
+$heading_tag             = isset( $heading_contract['custom_heading_tag'] ) ? strtolower( (string) $heading_contract['custom_heading_tag'] ) : 'h2';
 $subheading              = isset( $row['subheading'] ) ? trim( (string) $row['subheading'] ) : '';
 $subheading_tag          = isset( $row['subheading_tag'] ) ? strtolower( (string) $row['subheading_tag'] ) : 'p';
 $content                 = isset( $row['content'] ) ? (string) $row['content'] : '';
-$image                   = isset( $row['image'] ) && is_array( $row['image'] ) ? $row['image'] : array();
-$background_image        = isset( $row['background_image'] ) && is_array( $row['background_image'] ) ? $row['background_image'] : array();
+$image                   = $row['image'] ?? null;
+$background_image        = $row['background_image'] ?? null;
 $background_video        = isset( $row['background_video'] ) ? (string) $row['background_video'] : '';
 $background_video_upload = isset( $row['background_video_upload'] ) && is_array( $row['background_video_upload'] ) ? $row['background_video_upload'] : array();
 $background_color        = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
 $bottom_accent           = ! empty( $row['bottom_accent'] );
 $accent_slug             = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
+$hero_min_height         = isset( $row['hero_min_height'] ) && is_scalar( $row['hero_min_height'] )
+	? mrn_base_stack_sanitize_spacing_dimension_value( (string) $row['hero_min_height'] )
+	: '';
+$hero_vertical_padding   = isset( $row['hero_vertical_padding'] ) && is_scalar( $row['hero_vertical_padding'] )
+	? mrn_base_stack_sanitize_spacing_dimension_value( (string) $row['hero_vertical_padding'] )
+	: '';
+$hero_content_alignment  = function_exists( 'mrn_base_stack_normalize_hero_content_alignment' )
+	? mrn_base_stack_normalize_hero_content_alignment( $row['hero_content_alignment'] ?? '' )
+	: 'left';
+$hero_vertical_alignment = function_exists( 'mrn_base_stack_normalize_hero_vertical_alignment' )
+	? mrn_base_stack_normalize_hero_vertical_alignment( $row['hero_vertical_alignment'] ?? '' )
+	: 'center';
+$section_width           = function_exists( 'mrn_base_stack_normalize_section_width' )
+	? mrn_base_stack_resolve_row_width( $row['section_width'] ?? '', 'wide' )
+	: 'wide';
 
-if ( '' === $heading && $context_post_id ) {
-	$heading = get_the_title( $context_post_id );
+$allowed_custom_heading_tags = array( 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
+if ( ! in_array( $heading_tag, $allowed_custom_heading_tags, true ) ) {
+	$heading_tag = 'h2';
 }
 
-$allowed_tags = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' );
-if ( ! in_array( $heading_tag, $allowed_tags, true ) ) {
-	$heading_tag = 'h1';
-}
-
+$allowed_tags = array_merge( array( 'h1' ), $allowed_custom_heading_tags );
 if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
 	$subheading_tag = 'p';
 }
@@ -83,40 +97,20 @@ foreach ( $links as $index => $hero_link_source ) {
 		'icon_position' => $link_icon_position,
 	);
 }
-$image_url        = isset( $image['url'] ) ? (string) $image['url'] : '';
-$image_alt        = isset( $image['alt'] ) ? (string) $image['alt'] : '';
-$video_embed      = function_exists( 'mrn_base_stack_get_video_embed' ) ? mrn_base_stack_get_video_embed(
-	$background_video,
-	array(
-		'autoplay'   => true,
-		'muted'      => true,
-		'loop'       => true,
-		'controls'   => false,
-		'background' => true,
-	)
-) : array(
-	'provider'  => '',
-	'embed_url' => '',
-);
-$video_url        = isset( $video_embed['embed_url'] ) ? (string) $video_embed['embed_url'] : '';
-$local_video_url  = isset( $background_video_upload['url'] ) ? (string) $background_video_upload['url'] : '';
-$local_video_mime = isset( $background_video_upload['mime_type'] ) ? (string) $background_video_upload['mime_type'] : '';
-$video_kind       = '';
+$has_image = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $image ) : false;
 
-if ( '' !== $local_video_url ) {
-	$video_kind = 'local';
-	$video_url  = $local_video_url;
-} elseif ( '' !== $video_url ) {
-	$video_kind = 'remote';
-}
-
-if ( '' === $label && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $hero_links ) && '' === $image_url ) {
+if ( '' === $label && '' === $page_title && '' === $heading && '' === $subheading && '' === trim( wp_strip_all_tags( $content ) ) && empty( $hero_links ) && ! $has_image ) {
 	return;
 }
 
 $section_classes = array(
 	'mrn-hero',
 	'mrn-hero--default',
+	'mrn-hero--width-' . sanitize_html_class( 'full-width' === $section_width ? 'full' : $section_width ),
+	'mrn-hero--content-align-' . sanitize_html_class( $hero_content_alignment ),
+	'mrn-hero--vertical-align-' . sanitize_html_class( $hero_vertical_alignment ),
+	'mrn-content-builder__row--hero-content-align-' . sanitize_html_class( $hero_content_alignment ),
+	'mrn-content-builder__row--hero-vertical-align-' . sanitize_html_class( $hero_vertical_alignment ),
 );
 $section_styles  = array();
 $section_attrs   = array();
@@ -125,33 +119,64 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 	$section_styles[] = '--mrn-hero-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
-$background_image_style = function_exists( 'mrn_base_stack_get_background_image_style' )
-	? mrn_base_stack_get_background_image_style( $background_image, '--mrn-hero-bg-image' )
+$background_gradient_style = function_exists( 'mrn_base_stack_get_background_gradient_style_declaration' )
+	? mrn_base_stack_get_background_gradient_style_declaration( $row, '--mrn-hero-bg-gradient' )
 	: '';
 
-if ( '' !== $background_image_style ) {
-	$section_styles[]  = $background_image_style;
+if ( '' !== $background_gradient_style ) {
+	$section_styles[]  = $background_gradient_style;
+	$section_classes[] = 'has-background-gradient';
+}
+
+$background_image_markup = function_exists( 'mrn_base_stack_get_background_image_markup' )
+	? mrn_base_stack_get_background_image_markup(
+		$background_image,
+		array(
+			'class'         => 'mrn-row-background-media mrn-hero__background-image',
+			'loading'       => 'eager',
+			'fetchpriority' => 'high',
+		)
+	)
+	: '';
+
+if ( '' !== $background_image_markup ) {
 	$section_classes[] = 'has-background-image';
+	$section_classes[] = 'has-row-background-media';
 }
 
-if ( '' !== $video_url ) {
+$background_video_markup = function_exists( 'mrn_base_stack_get_background_video_markup' )
+	? mrn_base_stack_get_background_video_markup(
+		$background_video,
+		$background_video_upload,
+		array(
+			'class'        => 'mrn-section-background-media mrn-row-background-video mrn-hero__background-media',
+			'poster_image' => $background_image ? $background_image : $image,
+		)
+	)
+	: '';
+
+if ( '' !== $background_video_markup ) {
 	$section_classes[] = 'has-background-video';
+	$section_classes[] = 'has-row-background-video';
 }
 
-if ( '' !== $image_url ) {
+if ( $has_image ) {
 	$section_classes[] = 'has-hero-media';
 }
 
-$accent_contract = function_exists( 'mrn_site_styles_get_bottom_accent_contract' )
+$display_contract = mrn_base_stack_get_builder_display_contract( $row, 'hero' );
+$accent_contract  = function_exists( 'mrn_site_styles_get_bottom_accent_contract' )
 	? mrn_site_styles_get_bottom_accent_contract( $bottom_accent, $accent_slug )
 	: array(
 		'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 		'attributes' => array(),
 	);
-$motion_contract = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
+$motion_contract  = function_exists( 'mrn_base_stack_get_builder_motion_contract' ) ? mrn_base_stack_get_builder_motion_contract( $row ) : array(
 	'classes'    => array(),
 	'attributes' => array(),
 );
+
+$section_classes = array_merge( $section_classes, $display_contract['classes'] );
 
 if ( isset( $accent_contract['classes'] ) && is_array( $accent_contract['classes'] ) ) {
 	$section_classes = array_merge( $section_classes, $accent_contract['classes'] );
@@ -161,9 +186,22 @@ if ( isset( $motion_contract['classes'] ) && is_array( $motion_contract['classes
 	$section_classes = array_merge( $section_classes, $motion_contract['classes'] );
 }
 
+$section_attrs = $display_contract['attributes'];
+
 if ( isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ) {
-	$section_attrs = $accent_contract['attributes'];
+	$section_attrs = function_exists( 'mrn_base_stack_merge_builder_attributes' )
+		? mrn_base_stack_merge_builder_attributes( $section_attrs, $accent_contract['attributes'] )
+		: array_merge( $section_attrs, $accent_contract['attributes'] );
 }
+
+$inner_styles = array();
+if ( '' !== $hero_min_height ) {
+	$inner_styles[] = 'min-height: ' . $hero_min_height;
+}
+if ( '' !== $hero_vertical_padding ) {
+	$inner_styles[] = 'padding-block: ' . $hero_vertical_padding;
+}
+$inner_style = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $inner_styles ) : implode( '; ', $inner_styles );
 
 if ( function_exists( 'mrn_base_stack_merge_builder_attributes' ) ) {
 	$section_attrs = mrn_base_stack_merge_builder_attributes(
@@ -174,29 +212,40 @@ if ( function_exists( 'mrn_base_stack_merge_builder_attributes' ) ) {
 	$section_attrs = array_merge( $section_attrs, $motion_contract['attributes'] );
 }
 
+$section_style = function_exists( 'mrn_base_stack_get_inline_style_attribute' ) ? mrn_base_stack_get_inline_style_attribute( $section_styles ) : implode( '; ', $section_styles );
+
+if ( '' !== $section_style ) {
+	if ( function_exists( 'mrn_base_stack_merge_builder_attributes' ) ) {
+		$section_attrs = mrn_base_stack_merge_builder_attributes(
+			$section_attrs,
+			array(
+				'style' => $section_style,
+			)
+		);
+	} else {
+		$existing_section_style = isset( $section_attrs['style'] ) && is_scalar( $section_attrs['style'] ) ? trim( (string) $section_attrs['style'] ) : '';
+		$section_attrs['style'] = '' !== $existing_section_style ? $existing_section_style . '; ' . $section_style : $section_style;
+	}
+}
+
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
 echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
-<section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php echo ! empty( $section_styles ) ? ' style="' . esc_attr( implode( '; ', $section_styles ) ) . '"' : ''; ?>>
-	<?php if ( '' !== $video_url ) : ?>
-		<div class="mrn-section-background-media mrn-hero__background-media" data-video-src="<?php echo esc_url( $video_url ); ?>" data-video-kind="<?php echo esc_attr( $video_kind ); ?>"
-		<?php
-		if ( 'local' === $video_kind && '' !== $local_video_mime ) :
-			?>
-			data-video-mime="<?php echo esc_attr( $local_video_mime ); ?>"<?php endif; ?>
-			<?php
-			if ( '' !== $image_url ) :
-				?>
-			data-video-poster="<?php echo esc_url( $image_url ); ?>"<?php endif; ?> data-video-background="true" data-video-autoplay="true" data-video-muted="true" data-video-loop="true" data-video-controls="false" data-video-delay="2000" data-video-desktop-only="true" aria-hidden="true"></div>
-	<?php endif; ?>
-	<div class="mrn-hero__inner">
+<section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+	<?php echo $background_image_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Decorative image markup is escaped in the helper. ?>
+	<?php echo $background_video_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Decorative video markup is escaped in the helper. ?>
+	<div class="mrn-hero__inner"<?php echo '' !== $inner_style ? ' style="' . esc_attr( $inner_style ) . '"' : ''; ?>>
 		<div class="mrn-hero__content mrn-hero__content--hero-shell">
 			<?php if ( '' !== $label ) : ?>
 				<<?php echo esc_html( $label_tag ); ?> class="mrn-hero__label"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $label ) : esc_html( $label ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $label_tag ); ?>>
 			<?php endif; ?>
 
+			<?php if ( '' !== $page_title ) : ?>
+				<h1 class="mrn-hero__heading mrn-hero__page-title"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $page_title ) : esc_html( $page_title ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h1>
+			<?php endif; ?>
+
 			<?php if ( '' !== $heading ) : ?>
-				<<?php echo esc_html( $heading_tag ); ?> class="mrn-hero__heading"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
+				<<?php echo esc_html( $heading_tag ); ?> class="mrn-hero__heading mrn-hero__heading--custom"><?php echo function_exists( 'mrn_base_stack_format_heading_inline_html' ) ? mrn_base_stack_format_heading_inline_html( $heading ) : esc_html( $heading ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></<?php echo esc_html( $heading_tag ); ?>>
 			<?php endif; ?>
 
 			<?php if ( '' !== $subheading ) : ?>
@@ -230,9 +279,19 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				<?php endif; ?>
 		</div>
 
-		<?php if ( '' !== $image_url ) : ?>
+		<?php if ( $has_image ) : ?>
 			<div class="mrn-hero__media mrn-hero__media--hero-shell">
-				<img src="<?php echo esc_url( $image_url ); ?>" alt="<?php echo esc_attr( $image_alt ); ?>" />
+				<?php
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Shared image helper returns escaped wp_get_attachment_image markup.
+				echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
+					$image,
+					'mrn-hero',
+					array(
+						'loading'       => false,
+						'fetchpriority' => 'high',
+					)
+				) : '';
+				?>
 			</div>
 		<?php endif; ?>
 	</div>

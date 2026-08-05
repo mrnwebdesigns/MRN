@@ -147,9 +147,47 @@
 		return $payload;
 	}
 
-	function buildPanelMarkup( panelId ) {
+	function findTabItemByLabel( $tabGroup, label ) {
+		var $tabItem = $tabGroup.find( 'li.mrn-row-flex-tab' ).first();
+		var normalizedLabel = $.trim( String( label || '' ) ).toLowerCase();
+
+		if ( $tabItem.length && ( ! normalizedLabel || $.trim( $tabItem.children( 'a' ).first().text() ).toLowerCase() === normalizedLabel ) ) {
+			return $tabItem;
+		}
+
+		$tabItem = $();
+		$tabGroup.children( 'li' ).each( function() {
+			var $candidate = $( this );
+			var $link = $candidate.children( 'a' ).first();
+
+			if ( $.trim( $link.text() ).toLowerCase() === normalizedLabel ) {
+				$tabItem = $candidate;
+				return false;
+			}
+		} );
+
+		return $tabItem;
+	}
+
+	function removeLegacyFlexboxTabItem( $tabGroup ) {
+		var $flexboxTab = findTabItemByLabel( $tabGroup, 'flexbox' );
+
+		if ( $flexboxTab.length ) {
+			$flexboxTab.remove();
+		}
+	}
+
+	function findFlexPanelForRow( $row ) {
+		return $row
+			.children( '.acf-fields' )
+			.children( '.acf-field[data-name="row_flex_controls"]' )
+			.find( '[data-mrn-row-flex-panel]' )
+			.first();
+	}
+
+	function buildPanelContents( panelId ) {
 		return $(
-			'<div class="acf-field mrn-row-flex-panel" id="' + panelId + '" data-mrn-row-flex-panel="1">' +
+			'<div class="mrn-row-flex-panel__content" id="' + panelId + '">' +
 					'<p class="mrn-row-flex-panel__description">Configure a lightweight row-level flex wrapper without adding ACF fields.</p>' +
 					'<div class="mrn-row-flex-panel__grid">' +
 						'<div class="mrn-row-flex-panel__control">' +
@@ -212,6 +250,16 @@
 		);
 	}
 
+	function ensurePanelContents( $panel, panelId ) {
+		if ( ! $panel.length ) {
+			return;
+		}
+
+		if ( ! $panel.find( '[data-mrn-row-flex-control]' ).length ) {
+			$panel.empty().append( buildPanelContents( panelId ) );
+		}
+	}
+
 	function applySettingsToPanel( $panel, settings ) {
 		var normalized = normalizeFlexSettings( settings );
 		$panel.find( '[data-mrn-row-flex-control="enabled"]' ).prop( 'checked', !! normalized.enabled );
@@ -267,21 +315,19 @@
 			return;
 		}
 
-		var $tabItem = $tabGroup.find( 'li.mrn-row-flex-tab' ).first();
-		var panelId = 'mrn-row-flex-panel-' + fieldName + '-' + rowIndex + '-' + Math.floor( Math.random() * 1000000 );
-		var $panel = $fields.children( '.mrn-row-flex-panel' ).first();
+		removeLegacyFlexboxTabItem( $tabGroup );
 
-		if ( ! $tabItem.length ) {
-			$tabItem = $( '<li class="mrn-row-flex-tab"><a href="#" data-mrn-row-flex-tab="1">Layout</a></li>' );
-			$tabGroup.append( $tabItem );
+		if ( ! findTabItemByLabel( $tabGroup, 'layout' ).length ) {
+			return;
 		}
 
+		var $panel = findFlexPanelForRow( $row );
 		if ( ! $panel.length ) {
-			$panel = buildPanelMarkup( panelId );
-			$fields.append( $panel );
+			return;
 		}
 
-		$tabItem.find( 'a' ).attr( 'aria-controls', $panel.attr( 'id' ) || panelId );
+		var panelId = 'mrn-row-flex-panel-' + fieldName + '-' + rowIndex + '-' + Math.floor( Math.random() * 1000000 );
+		ensurePanelContents( $panel, panelId );
 		applySettingsToPanel( $panel, getSavedSettings( fieldName, rowIndex ) );
 	}
 
@@ -324,7 +370,7 @@
 
 			getRows( $flexField ).each( function( index ) {
 				var $row = $( this );
-				var $panel = $row.children( '.acf-fields' ).children( '.mrn-row-flex-panel' ).first();
+				var $panel = findFlexPanelForRow( $row );
 
 				if ( ! $panel.length ) {
 					return;
@@ -368,22 +414,6 @@
 			ensureLayoutTabs( $el || document );
 		} );
 	}
-
-	$( document ).on( 'click', '.layout .acf-tab-group li.mrn-row-flex-tab > a', function( event ) {
-		event.preventDefault();
-		var $row = $( this ).closest( '.layout' );
-		var $tabItem = $( this ).closest( 'li' );
-
-		$tabItem.addClass( 'active' );
-		$tabItem.siblings().removeClass( 'active' );
-		$row.addClass( 'mrn-row-flex-tab-active' );
-	} );
-
-	$( document ).on( 'click', '.layout .acf-tab-group li:not(.mrn-row-flex-tab) > a', function() {
-		var $row = $( this ).closest( '.layout' );
-		$row.removeClass( 'mrn-row-flex-tab-active' );
-		$row.find( '.acf-tab-group li.mrn-row-flex-tab' ).removeClass( 'active' );
-	} );
 
 	$( document ).on( 'change', '.layout .mrn-row-flex-panel [data-mrn-row-flex-control="enabled"]', function() {
 		var $panel = $( this ).closest( '.mrn-row-flex-panel' );

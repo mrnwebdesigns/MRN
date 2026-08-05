@@ -7,7 +7,7 @@
 
 	searchForms.forEach( function ( form ) {
 		const toggle = form.querySelector( '.mrn-site-search__toggle' );
-		const input = form.querySelector( '.mrn-site-search__input' );
+		const input = form.querySelector( '.mrn-site-search__input' ) || form.querySelector( 'input[type="search"]' );
 		const clearButton = form.querySelector( '.mrn-site-search__clear' );
 		const prompt = form.querySelector( '[data-mrn-search-prompt]' );
 
@@ -67,6 +67,8 @@
 		if ( clearButton ) {
 			clearButton.addEventListener( 'click', function () {
 				input.value = '';
+				input.dispatchEvent( new Event( 'input', { bubbles: true } ) );
+				input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 				syncClearButton();
 				syncPrompt();
 				input.focus();

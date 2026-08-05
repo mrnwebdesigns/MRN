@@ -1,6 +1,6 @@
 <?php
 /**
- * Content Lists reusable block template.
+ * Content reusable block template.
  *
  * @var array<string, mixed> $context
  */
@@ -38,6 +38,17 @@ if ( ! in_array( $list_style, array( 'unordered', 'ordered' ), true ) ) {
 $display_mode = function_exists( 'mrn_base_stack_normalize_content_list_display_mode' )
 	? mrn_base_stack_normalize_content_list_display_mode( $fields['display_mode'] ?? 'standard' )
 	: 'standard';
+
+$display_style = function_exists( 'mrn_base_stack_normalize_content_list_display_style' )
+	? mrn_base_stack_normalize_content_list_display_style( $fields['display_style'] ?? '', $post_type )
+	: sanitize_key( (string) ( $fields['display_style'] ?? '' ) );
+
+if ( function_exists( 'mrn_base_stack_get_content_list_display_styles_for_post_type' ) ) {
+	$available_display_styles = mrn_base_stack_get_content_list_display_styles_for_post_type( $post_type );
+	if ( '' !== $display_style && ! isset( $available_display_styles[ $display_style ] ) ) {
+		$display_style = '';
+	}
+}
 
 $orderby_choices = function_exists( 'mrn_base_stack_get_content_list_orderby_choices' ) ? mrn_base_stack_get_content_list_orderby_choices() : array( 'date' => 'Publish Date' );
 $orderby         = isset( $fields['orderby'] ) ? sanitize_key( (string) $fields['orderby'] ) : 'date';
@@ -131,6 +142,10 @@ $classes = array(
 	'mrn-reusable-block--content-lists-display-' . $display_mode,
 );
 
+if ( '' !== $display_style ) {
+	$classes[] = 'mrn-reusable-block--content-lists-style-' . $display_style;
+}
+
 $accent_contract = function_exists( 'mrn_site_styles_get_bottom_accent_contract' )
 	? mrn_site_styles_get_bottom_accent_contract( $bottom_accent, $accent_slug )
 	: array(
@@ -215,6 +230,7 @@ echo function_exists( 'mrn_rbl_get_anchor_markup' ) ? mrn_rbl_get_anchor_markup(
 	class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>"
 	data-block-id="<?php echo esc_attr( (string) $block_id ); ?>"
 	data-block-slug="<?php echo esc_attr( $block_slug ); ?>"
+	data-display-style="<?php echo esc_attr( $display_style ); ?>"
 	<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 	<?php if ( $inline_styles !== array() ) : ?>
 		style="<?php echo esc_attr( implode( '; ', $inline_styles ) ); ?>"
@@ -254,6 +270,7 @@ echo function_exists( 'mrn_rbl_get_anchor_markup' ) ? mrn_rbl_get_anchor_markup(
 							$item_post,
 							array(
 								'display_mode'        => $display_mode,
+								'display_style'       => $display_style,
 								'show_featured_image' => $show_featured_image,
 								'show_publish_date'   => $show_publish_date,
 								'show_excerpt'        => $show_excerpt,

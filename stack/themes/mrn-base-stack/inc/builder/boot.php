@@ -9,6 +9,8 @@ require_once __DIR__ . '/admin.php';
 
 require_once __DIR__ . '/layout-allowlist.php';
 
+require_once __DIR__ . '/acf-field-finalization.php';
+
 require_once __DIR__ . '/helpers.php';
 
 require_once __DIR__ . '/render.php';

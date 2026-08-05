@@ -21,7 +21,7 @@
                     "parent": false,
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wp-logo": {
@@ -43,7 +43,7 @@
                     "parent": false,
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wp-logo-external": {
@@ -65,7 +65,7 @@
                     "parent": "wp-logo",
                     "group": true
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "site-name": {
@@ -75,8 +75,8 @@
                 "is_custom": false,
                 "is_hidden": false,
                 "defaults": {
-                    "title": "Morgan Development",
-                    "href": "https://morgandevelopment.mrndev.io/",
+                    "title": "Platform",
+                    "href": "https://platform.localhost/",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -86,9 +86,9 @@
                     "id": "site-name",
                     "parent": false,
                     "group": false,
-                    "menu_title": "Morgan Development"
+                    "menu_title": "Platform"
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "view-site": {
@@ -99,7 +99,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Visit Site",
-                    "href": "https://morgandevelopment.mrndev.io/",
+                    "href": "https://platform.localhost/",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -110,8 +110,29 @@
                     "parent": "site-name",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
+            },
+            "command-palette": {
+                "id": "command-palette",
+                "group": false,
+                "parent": false,
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "<span class=\"ab-icon\" aria-hidden=\"true\"></span><span class=\"ab-label\"><kbd>\u2318K</kbd><span class=\"screen-reader-text\"> Open command palette</span></span>",
+                    "href": "#",
+                    "class": "hide-if-no-js",
+                    "html": "<script>\n( \t( applePattern, appleOSLabel ) => {\n\t\tif ( ! ( new RegExp( applePattern, 'i' ) ).test( navigator.userAgent ) ) {\n\t\t\treturn;\n\t\t}\n\t\tconst kbd = document.querySelector( '#wp-admin-bar-command-palette .ab-label kbd' );\n\t\tif ( kbd ) {\n\t\t\tkbd.textContent = appleOSLabel;\n\t\t}\n\t} )( \"Macintosh|Mac OS X|Mac_PowerPC\", \"\\u2318K\" );\n//# sourceURL=wp_admin_bar_command_palette_menu\n</script>\n",
+                    "onclick": "wp.data.dispatch( \"core/commands\" ).open(); return false;",
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "command-palette",
+                    "parent": false,
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
             },
             "dashboard": {
                 "id": "dashboard",
@@ -121,7 +142,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Dashboard",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/",
+                    "href": "https://platform.localhost/wp-admin/",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -132,7 +153,7 @@
                     "id": "dashboard",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836530,
+                "last_seen_timestamp": 1784756714,
                 "is_visible_to_actor": []
             },
             "appearance": {
@@ -154,7 +175,7 @@
                     "id": "appearance",
                     "group": true
                 },
-                "last_seen_timestamp": 1773836530,
+                "last_seen_timestamp": 1784756714,
                 "is_visible_to_actor": []
             },
             "themes": {
@@ -165,7 +186,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Themes",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/themes.php",
+                    "href": "https://platform.localhost/wp-admin/themes.php",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -176,7 +197,7 @@
                     "id": "themes",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836530,
+                "last_seen_timestamp": 1784756714,
                 "is_visible_to_actor": []
             },
             "widgets": {
@@ -187,7 +208,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Widgets",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/widgets.php",
+                    "href": "https://platform.localhost/wp-admin/widgets.php",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -198,7 +219,7 @@
                     "id": "widgets",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836530,
+                "last_seen_timestamp": 1784756714,
                 "is_visible_to_actor": []
             },
             "menus": {
@@ -209,7 +230,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Menus",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/nav-menus.php",
+                    "href": "https://platform.localhost/wp-admin/nav-menus.php",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -220,7 +241,7 @@
                     "id": "menus",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836530,
+                "last_seen_timestamp": 1784756714,
                 "is_visible_to_actor": []
             },
             "background": {
@@ -231,7 +252,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Background",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/themes.php?page=custom-background",
+                    "href": "https://platform.localhost/wp-admin/themes.php?page=custom-background",
                     "class": "hide-if-customize",
                     "html": null,
                     "onclick": null,
@@ -242,7 +263,7 @@
                     "id": "background",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836530,
+                "last_seen_timestamp": 1784756714,
                 "is_visible_to_actor": []
             },
             "header": {
@@ -253,7 +274,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Header",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/themes.php?page=custom-header",
+                    "href": "https://platform.localhost/wp-admin/themes.php?page=custom-header",
                     "class": "hide-if-customize",
                     "html": null,
                     "onclick": null,
@@ -264,7 +285,7 @@
                     "id": "header",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836530,
+                "last_seen_timestamp": 1784756714,
                 "is_visible_to_actor": []
             },
             "plugins": {
@@ -275,7 +296,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Plugins",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/plugins.php",
+                    "href": "https://platform.localhost/wp-admin/plugins.php",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -286,7 +307,7 @@
                     "parent": "site-name",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836530,
+                "last_seen_timestamp": 1784756714,
                 "is_visible_to_actor": []
             },
             "site-editor": {
@@ -311,28 +332,6 @@
                 "last_seen_timestamp": 1771515430,
                 "is_visible_to_actor": []
             },
-            "updates": {
-                "id": "updates",
-                "group": false,
-                "parent": false,
-                "is_custom": false,
-                "is_hidden": false,
-                "defaults": {
-                    "title": "<span class=\"ab-icon\" aria-hidden=\"true\"></span><span class=\"ab-label\" aria-hidden=\"true\">5</span><span class=\"screen-reader-text updates-available-text\">5 updates available</span>",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/update-core.php",
-                    "class": "",
-                    "html": null,
-                    "onclick": null,
-                    "target": null,
-                    "titleAttr": null,
-                    "tabindex": null,
-                    "id": "updates",
-                    "parent": false,
-                    "group": false
-                },
-                "last_seen_timestamp": 1773652172,
-                "is_visible_to_actor": []
-            },
             "customize": {
                 "id": "customize",
                 "group": false,
@@ -341,7 +340,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Customize",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/customize.php?url=https%3A%2F%2Fmorgandevelopment.mrndev.io%2F",
+                    "href": "https://platform.localhost/wp-admin/customize.php?url=https%3A%2F%2Fplatform.localhost%2Fabout%2F",
                     "class": "hide-if-no-customize",
                     "html": null,
                     "onclick": null,
@@ -352,7 +351,7 @@
                     "parent": false,
                     "group": false
                 },
-                "last_seen_timestamp": 1773836530,
+                "last_seen_timestamp": 1784756714,
                 "is_visible_to_actor": []
             },
             "comments": {
@@ -385,7 +384,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "<span class=\"ab-icon\" aria-hidden=\"true\"></span><span class=\"ab-label\">New</span>",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/post-new.php",
+                    "href": "https://platform.localhost/wp-admin/post-new.php",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -397,7 +396,7 @@
                     "group": false,
                     "menu_title": "New"
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "new-post": {
@@ -408,7 +407,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Post",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/post-new.php",
+                    "href": "https://platform.localhost/wp-admin/post-new.php",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -419,7 +418,7 @@
                     "parent": "new-content",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "new-media": {
@@ -430,7 +429,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Media",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/media-new.php",
+                    "href": "https://platform.localhost/wp-admin/media-new.php",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -441,7 +440,7 @@
                     "parent": "new-content",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "new-page": {
@@ -452,7 +451,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Page",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/post-new.php?post_type=page",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=page",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -463,8 +462,302 @@
                     "parent": "new-content",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
+            },
+            "new-mrn_reusable_cta": {
+                "id": "new-mrn_reusable_cta",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "CTA",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=mrn_reusable_cta",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-mrn_reusable_cta",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
+            },
+            "new-mrn_reusable_basic": {
+                "id": "new-mrn_reusable_basic",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Basic Block",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=mrn_reusable_basic",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-mrn_reusable_basic",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
+            },
+            "new-mrn_reusable_faq": {
+                "id": "new-mrn_reusable_faq",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "FAQs / Accordion",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=mrn_reusable_faq",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-mrn_reusable_faq",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
+            },
+            "new-mrn_reusable_grid": {
+                "id": "new-mrn_reusable_grid",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Content Grid",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=mrn_reusable_grid",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-mrn_reusable_grid",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
+            },
+            "new-mrn_reusable_list": {
+                "id": "new-mrn_reusable_list",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Content",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=mrn_reusable_list",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-mrn_reusable_list",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
+            },
+            "new-mrn_reusable_search": {
+                "id": "new-mrn_reusable_search",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Search Form",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=mrn_reusable_search",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-mrn_reusable_search",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
+            },
+            "new-mrn_reusable_partner": {
+                "id": "new-mrn_reusable_partner",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Partners",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=mrn_reusable_partner",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-mrn_reusable_partner",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
+            },
+            "new-mrn_announcement": {
+                "id": "new-mrn_announcement",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Announcement",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=mrn_announcement",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-mrn_announcement",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
+            },
+            "new-mrn_mega_menu": {
+                "id": "new-mrn_mega_menu",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Mega Layout",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=mrn_mega_menu",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-mrn_mega_menu",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784653121
+            },
+            "new-gallery": {
+                "id": "new-gallery",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Gallery",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=gallery",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-gallery",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
+            },
+            "new-testimonial": {
+                "id": "new-testimonial",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Testimonial",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=testimonial",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-testimonial",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
+            },
+            "new-case_study": {
+                "id": "new-case_study",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Case Study",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=case_study",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-case_study",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
+            },
+            "new-team_member": {
+                "id": "new-team_member",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Team Member",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=team_member",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-team_member",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
+            },
+            "new-location": {
+                "id": "new-location",
+                "group": false,
+                "parent": "new-content",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Location",
+                    "href": "https://platform.localhost/wp-admin/post-new.php?post_type=location",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "new-location",
+                    "parent": "new-content",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
             },
             "new-service": {
                 "id": "new-service",
@@ -516,7 +809,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "User",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/user-new.php",
+                    "href": "https://platform.localhost/wp-admin/user-new.php",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -527,7 +820,7 @@
                     "parent": "new-content",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "archive": {
@@ -538,7 +831,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "View Posts",
-                    "href": "https://morgandevelopment.mrndev.io",
+                    "href": "https://platform.localhost",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -549,7 +842,7 @@
                     "parent": false,
                     "group": false
                 },
-                "last_seen_timestamp": 1773652172
+                "last_seen_timestamp": 1784653926
             },
             "wpforms": {
                 "id": "wpforms",
@@ -559,7 +852,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "WPForms",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-builder",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-builder",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -570,8 +863,29 @@
                     "parent": "new-content",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
+            },
+            "mrn-active-style-guide": {
+                "id": "mrn-active-style-guide",
+                "group": false,
+                "parent": false,
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Style Guide",
+                    "href": "https://platform.localhost/about/?mrn-style-guide=open",
+                    "class": "mrn-active-style-guide-admin-bar",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-active-style-guide",
+                    "parent": false,
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
             },
             "preview": {
                 "id": "preview",
@@ -580,19 +894,19 @@
                 "is_custom": false,
                 "is_hidden": false,
                 "defaults": {
-                    "title": "View Post",
-                    "href": "http://mrn-plugin-stack.local/?p=154&#038;preview=true",
+                    "title": "View Page",
+                    "href": "https://platform.localhost/?page_id=679&#038;preview=true",
                     "class": "",
                     "html": null,
                     "onclick": null,
-                    "target": "wp-preview-154",
+                    "target": "wp-preview-679",
                     "titleAttr": null,
                     "tabindex": null,
                     "id": "preview",
                     "parent": false,
                     "group": false
                 },
-                "last_seen_timestamp": 1770753120,
+                "last_seen_timestamp": 1784724800,
                 "is_visible_to_actor": []
             },
             "mrn-editor-tools-refresh-top": {
@@ -625,7 +939,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Edit Page",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/post.php?post=20&amp;action=edit",
+                    "href": "https://platform.localhost/wp-admin/post.php?post=324&amp;action=edit",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -636,7 +950,7 @@
                     "parent": false,
                     "group": false
                 },
-                "last_seen_timestamp": 1773836530,
+                "last_seen_timestamp": 1784756714,
                 "is_visible_to_actor": []
             },
             "view": {
@@ -647,7 +961,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "View Page",
-                    "href": "https://morgandevelopment.mrndev.io/who-we-serve/",
+                    "href": "https://platform.localhost/",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -658,7 +972,7 @@
                     "parent": false,
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784810531,
                 "is_visible_to_actor": []
             },
             "wds_wizard": {
@@ -669,7 +983,7 @@
                 "is_hidden": true,
                 "defaults": {
                     "title": "SmartCrawl Pro",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=wds_wizard",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wds_wizard",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -680,7 +994,7 @@
                     "parent": false,
                     "group": false
                 },
-                "last_seen_timestamp": 1772703166,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wds_wizard_dashboard": {
@@ -691,7 +1005,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Dashboard",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=wds_wizard",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wds_wizard",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -702,7 +1016,7 @@
                     "parent": "wds_wizard",
                     "group": false
                 },
-                "last_seen_timestamp": 1772703166,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wds_health": {
@@ -713,7 +1027,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "SEO Health",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=wds_health",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wds_health",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -724,7 +1038,7 @@
                     "parent": "wds_wizard",
                     "group": false
                 },
-                "last_seen_timestamp": 1772703166,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wds_onpage": {
@@ -735,7 +1049,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Title & Meta",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=wds_onpage",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wds_onpage",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -746,7 +1060,7 @@
                     "parent": "wds_wizard",
                     "group": false
                 },
-                "last_seen_timestamp": 1772703166,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wds_schema": {
@@ -757,7 +1071,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Schema",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=wds_schema",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wds_schema",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -768,7 +1082,7 @@
                     "parent": "wds_wizard",
                     "group": false
                 },
-                "last_seen_timestamp": 1772703166,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wds_instant_indexing": {
@@ -779,7 +1093,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Instant Indexing",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=wds_instant_indexing",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wds_instant_indexing",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -790,7 +1104,7 @@
                     "parent": "wds_wizard",
                     "group": false
                 },
-                "last_seen_timestamp": 1772703166,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wds_social": {
@@ -801,7 +1115,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Social",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=wds_social",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wds_social",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -812,7 +1126,7 @@
                     "parent": "wds_wizard",
                     "group": false
                 },
-                "last_seen_timestamp": 1772703166,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wds_sitemap": {
@@ -823,7 +1137,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Sitemaps",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=wds_sitemap",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wds_sitemap",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -834,7 +1148,7 @@
                     "parent": "wds_wizard",
                     "group": false
                 },
-                "last_seen_timestamp": 1772703166,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wds-advanced": {
@@ -845,7 +1159,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Advanced Tools",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=wds-advanced",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wds-advanced",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -856,7 +1170,7 @@
                     "parent": "wds_wizard",
                     "group": false
                 },
-                "last_seen_timestamp": 1772703166,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wds_settings": {
@@ -867,7 +1181,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Settings",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=wds_settings",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wds_settings",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -878,7 +1192,7 @@
                     "parent": "wds_wizard",
                     "group": false
                 },
-                "last_seen_timestamp": 1772703166,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wphb": {
@@ -965,7 +1279,7 @@
                     "parent": false,
                     "group": true
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "ame-quick-search-tb": {
@@ -997,7 +1311,7 @@
                 "is_custom": false,
                 "is_hidden": false,
                 "defaults": {
-                    "title": "<form action=\"https://morgandevelopment.mrndev.io/\" method=\"get\" id=\"adminbarsearch\"><input class=\"adminbar-input\" name=\"s\" id=\"adminbar-search\" type=\"text\" value=\"\" maxlength=\"150\" /><label for=\"adminbar-search\" class=\"screen-reader-text\">Search</label><input type=\"submit\" class=\"adminbar-button\" value=\"Search\" /></form>",
+                    "title": "<form action=\"https://platform.localhost/\" method=\"get\" id=\"adminbarsearch\"><input class=\"adminbar-input\" name=\"s\" id=\"adminbar-search\" type=\"text\" value=\"\" maxlength=\"150\" /><label for=\"adminbar-search\" class=\"screen-reader-text\">Search</label><input type=\"submit\" class=\"adminbar-button\" value=\"Search\" /></form>",
                     "href": false,
                     "class": "admin-bar-search",
                     "html": null,
@@ -1009,7 +1323,7 @@
                     "id": "search",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836530,
+                "last_seen_timestamp": 1784756714,
                 "is_visible_to_actor": []
             },
             "vaa": {
@@ -1129,7 +1443,7 @@
                 "is_custom": false,
                 "is_hidden": false,
                 "defaults": {
-                    "title": "Keraweb • Jory Hogeveen",
+                    "title": "Keraweb \u2022 Jory Hogeveen",
                     "href": "https://profiles.wordpress.org/keraweb/",
                     "class": "",
                     "html": null,
@@ -1921,7 +2235,7 @@
                 "is_custom": false,
                 "is_hidden": false,
                 "defaults": {
-                    "title": "<select id=\"vaa-caps-selectrolecaps\" name=\"vaa_caps_selectrolecaps\" class=\"selectbox\"><option value=\"default\" >Default</option><option data-caps=\"{&quot;switch_themes&quot;:true,&quot;edit_themes&quot;:true,&quot;activate_plugins&quot;:true,&quot;edit_plugins&quot;:true,&quot;edit_users&quot;:true,&quot;edit_files&quot;:true,&quot;manage_options&quot;:true,&quot;moderate_comments&quot;:true,&quot;manage_categories&quot;:true,&quot;manage_links&quot;:true,&quot;upload_files&quot;:true,&quot;import&quot;:true,&quot;unfiltered_html&quot;:true,&quot;edit_posts&quot;:true,&quot;edit_others_posts&quot;:true,&quot;edit_published_posts&quot;:true,&quot;publish_posts&quot;:true,&quot;edit_pages&quot;:true,&quot;read&quot;:true,&quot;level_10&quot;:true,&quot;level_9&quot;:true,&quot;level_8&quot;:true,&quot;level_7&quot;:true,&quot;level_6&quot;:true,&quot;level_5&quot;:true,&quot;level_4&quot;:true,&quot;level_3&quot;:true,&quot;level_2&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;edit_others_pages&quot;:true,&quot;edit_published_pages&quot;:true,&quot;publish_pages&quot;:true,&quot;delete_pages&quot;:true,&quot;delete_others_pages&quot;:true,&quot;delete_published_pages&quot;:true,&quot;delete_posts&quot;:true,&quot;delete_others_posts&quot;:true,&quot;delete_published_posts&quot;:true,&quot;delete_private_posts&quot;:true,&quot;edit_private_posts&quot;:true,&quot;read_private_posts&quot;:true,&quot;delete_private_pages&quot;:true,&quot;edit_private_pages&quot;:true,&quot;read_private_pages&quot;:true,&quot;delete_users&quot;:true,&quot;create_users&quot;:true,&quot;unfiltered_upload&quot;:true,&quot;edit_dashboard&quot;:true,&quot;update_plugins&quot;:true,&quot;delete_plugins&quot;:true,&quot;install_plugins&quot;:true,&quot;update_themes&quot;:true,&quot;install_themes&quot;:true,&quot;update_core&quot;:true,&quot;list_users&quot;:true,&quot;remove_users&quot;:true,&quot;promote_users&quot;:true,&quot;edit_theme_options&quot;:true,&quot;delete_themes&quot;:true,&quot;export&quot;:true,&quot;beehive_manage_settings&quot;:true,&quot;beehive_view_analytics&quot;:true,&quot;manage_privacy&quot;:true,&quot;duplicate_posts&quot;:true,&quot;duplicate_others_posts&quot;:true,&quot;edit_free-to-view live channel&quot;:true,&quot;read_free-to-view live channel&quot;:true,&quot;delete_free-to-view live channel&quot;:true,&quot;edit_free-to-view live channels&quot;:true,&quot;edit_others_free-to-view live channels&quot;:true,&quot;publish_free-to-view live channels&quot;:true,&quot;read_private_free-to-view live channels&quot;:true,&quot;delete_free-to-view live channels&quot;:true,&quot;delete_private_free-to-view live channels&quot;:true,&quot;delete_published_free-to-view live channels&quot;:true,&quot;delete_others_free-to-view live channels&quot;:true,&quot;edit_private_free-to-view live channels&quot;:true,&quot;edit_published_free-to-view live channels&quot;:true,&quot;edit_free-to-view vod&quot;:true,&quot;read_free-to-view vod&quot;:true,&quot;delete_free-to-view vod&quot;:true,&quot;edit_free-to-view vods&quot;:true,&quot;edit_others_free-to-view vods&quot;:true,&quot;publish_free-to-view vods&quot;:true,&quot;read_private_free-to-view vods&quot;:true,&quot;delete_free-to-view vods&quot;:true,&quot;delete_private_free-to-view vods&quot;:true,&quot;delete_published_free-to-view vods&quot;:true,&quot;delete_others_free-to-view vods&quot;:true,&quot;edit_private_free-to-view vods&quot;:true,&quot;edit_published_free-to-view vods&quot;:true}\" value=\"administrator\" >= Administrator</option><option data-caps=\"{&quot;switch_themes&quot;:true,&quot;edit_themes&quot;:true,&quot;activate_plugins&quot;:true,&quot;edit_plugins&quot;:true,&quot;edit_users&quot;:true,&quot;edit_files&quot;:true,&quot;manage_options&quot;:true,&quot;moderate_comments&quot;:true,&quot;manage_categories&quot;:true,&quot;manage_links&quot;:true,&quot;upload_files&quot;:true,&quot;import&quot;:true,&quot;unfiltered_html&quot;:true,&quot;edit_posts&quot;:true,&quot;edit_others_posts&quot;:true,&quot;edit_published_posts&quot;:true,&quot;publish_posts&quot;:true,&quot;edit_pages&quot;:true,&quot;read&quot;:true,&quot;level_10&quot;:true,&quot;level_9&quot;:true,&quot;level_8&quot;:true,&quot;level_7&quot;:true,&quot;level_6&quot;:true,&quot;level_5&quot;:true,&quot;level_4&quot;:true,&quot;level_3&quot;:true,&quot;level_2&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;edit_others_pages&quot;:true,&quot;edit_published_pages&quot;:true,&quot;publish_pages&quot;:true,&quot;delete_pages&quot;:true,&quot;delete_others_pages&quot;:true,&quot;delete_published_pages&quot;:true,&quot;delete_posts&quot;:true,&quot;delete_others_posts&quot;:true,&quot;delete_published_posts&quot;:true,&quot;delete_private_posts&quot;:true,&quot;edit_private_posts&quot;:true,&quot;read_private_posts&quot;:true,&quot;delete_private_pages&quot;:true,&quot;edit_private_pages&quot;:true,&quot;read_private_pages&quot;:true,&quot;delete_users&quot;:true,&quot;create_users&quot;:true,&quot;unfiltered_upload&quot;:true,&quot;edit_dashboard&quot;:true,&quot;update_plugins&quot;:true,&quot;delete_plugins&quot;:true,&quot;install_plugins&quot;:true,&quot;update_themes&quot;:true,&quot;install_themes&quot;:true,&quot;update_core&quot;:true,&quot;list_users&quot;:true,&quot;remove_users&quot;:true,&quot;promote_users&quot;:true,&quot;edit_theme_options&quot;:true,&quot;delete_themes&quot;:true,&quot;export&quot;:true,&quot;beehive_manage_settings&quot;:true,&quot;beehive_view_analytics&quot;:true,&quot;manage_privacy&quot;:true,&quot;duplicate_posts&quot;:true,&quot;duplicate_others_posts&quot;:true,&quot;edit_free-to-view live channel&quot;:true,&quot;read_free-to-view live channel&quot;:true,&quot;delete_free-to-view live channel&quot;:true,&quot;edit_free-to-view live channels&quot;:true,&quot;edit_others_free-to-view live channels&quot;:true,&quot;publish_free-to-view live channels&quot;:true,&quot;read_private_free-to-view live channels&quot;:true,&quot;delete_free-to-view live channels&quot;:true,&quot;delete_private_free-to-view live channels&quot;:true,&quot;delete_published_free-to-view live channels&quot;:true,&quot;delete_others_free-to-view live channels&quot;:true,&quot;edit_private_free-to-view live channels&quot;:true,&quot;edit_published_free-to-view live channels&quot;:true,&quot;edit_free-to-view vod&quot;:true,&quot;read_free-to-view vod&quot;:true,&quot;delete_free-to-view vod&quot;:true,&quot;edit_free-to-view vods&quot;:true,&quot;edit_others_free-to-view vods&quot;:true,&quot;publish_free-to-view vods&quot;:true,&quot;read_private_free-to-view vods&quot;:true,&quot;delete_free-to-view vods&quot;:true,&quot;delete_private_free-to-view vods&quot;:true,&quot;delete_published_free-to-view vods&quot;:true,&quot;delete_others_free-to-view vods&quot;:true,&quot;edit_private_free-to-view vods&quot;:true,&quot;edit_published_free-to-view vods&quot;:true}\" data-reverse=\"1\" value=\"reversed-administrator\" >≠ Administrator</option><option data-caps=\"{&quot;moderate_comments&quot;:true,&quot;manage_categories&quot;:true,&quot;manage_links&quot;:true,&quot;upload_files&quot;:true,&quot;unfiltered_html&quot;:true,&quot;edit_posts&quot;:true,&quot;edit_others_posts&quot;:true,&quot;edit_published_posts&quot;:true,&quot;publish_posts&quot;:true,&quot;edit_pages&quot;:true,&quot;read&quot;:true,&quot;level_7&quot;:true,&quot;level_6&quot;:true,&quot;level_5&quot;:true,&quot;level_4&quot;:true,&quot;level_3&quot;:true,&quot;level_2&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;edit_others_pages&quot;:true,&quot;edit_published_pages&quot;:true,&quot;publish_pages&quot;:true,&quot;delete_pages&quot;:true,&quot;delete_others_pages&quot;:true,&quot;delete_published_pages&quot;:true,&quot;delete_posts&quot;:true,&quot;delete_others_posts&quot;:true,&quot;delete_published_posts&quot;:true,&quot;delete_private_posts&quot;:true,&quot;edit_private_posts&quot;:true,&quot;read_private_posts&quot;:true,&quot;delete_private_pages&quot;:true,&quot;edit_private_pages&quot;:true,&quot;read_private_pages&quot;:true,&quot;duplicate_posts&quot;:true,&quot;manage_options&quot;:true,&quot;manage_privacy&quot;:true}\" value=\"editor\" >= Editor</option><option data-caps=\"{&quot;moderate_comments&quot;:true,&quot;manage_categories&quot;:true,&quot;manage_links&quot;:true,&quot;upload_files&quot;:true,&quot;unfiltered_html&quot;:true,&quot;edit_posts&quot;:true,&quot;edit_others_posts&quot;:true,&quot;edit_published_posts&quot;:true,&quot;publish_posts&quot;:true,&quot;edit_pages&quot;:true,&quot;read&quot;:true,&quot;level_7&quot;:true,&quot;level_6&quot;:true,&quot;level_5&quot;:true,&quot;level_4&quot;:true,&quot;level_3&quot;:true,&quot;level_2&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;edit_others_pages&quot;:true,&quot;edit_published_pages&quot;:true,&quot;publish_pages&quot;:true,&quot;delete_pages&quot;:true,&quot;delete_others_pages&quot;:true,&quot;delete_published_pages&quot;:true,&quot;delete_posts&quot;:true,&quot;delete_others_posts&quot;:true,&quot;delete_published_posts&quot;:true,&quot;delete_private_posts&quot;:true,&quot;edit_private_posts&quot;:true,&quot;read_private_posts&quot;:true,&quot;delete_private_pages&quot;:true,&quot;edit_private_pages&quot;:true,&quot;read_private_pages&quot;:true,&quot;duplicate_posts&quot;:true,&quot;manage_options&quot;:true,&quot;manage_privacy&quot;:true}\" data-reverse=\"1\" value=\"reversed-editor\" >≠ Editor</option><option data-caps=\"{&quot;upload_files&quot;:true,&quot;edit_posts&quot;:true,&quot;edit_published_posts&quot;:true,&quot;publish_posts&quot;:true,&quot;read&quot;:true,&quot;level_2&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;delete_posts&quot;:true,&quot;delete_published_posts&quot;:true,&quot;duplicate_posts&quot;:true}\" value=\"author\" >= Author</option><option data-caps=\"{&quot;upload_files&quot;:true,&quot;edit_posts&quot;:true,&quot;edit_published_posts&quot;:true,&quot;publish_posts&quot;:true,&quot;read&quot;:true,&quot;level_2&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;delete_posts&quot;:true,&quot;delete_published_posts&quot;:true,&quot;duplicate_posts&quot;:true}\" data-reverse=\"1\" value=\"reversed-author\" >≠ Author</option><option data-caps=\"{&quot;edit_posts&quot;:true,&quot;read&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;delete_posts&quot;:true,&quot;duplicate_posts&quot;:true}\" value=\"contributor\" >= Contributor</option><option data-caps=\"{&quot;edit_posts&quot;:true,&quot;read&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;delete_posts&quot;:true,&quot;duplicate_posts&quot;:true}\" data-reverse=\"1\" value=\"reversed-contributor\" >≠ Contributor</option><option data-caps=\"{&quot;read&quot;:true,&quot;level_0&quot;:true}\" value=\"subscriber\" >= Subscriber</option><option data-caps=\"{&quot;read&quot;:true,&quot;level_0&quot;:true}\" data-reverse=\"1\" value=\"reversed-subscriber\" >≠ Subscriber</option></select>",
+                    "title": "<select id=\"vaa-caps-selectrolecaps\" name=\"vaa_caps_selectrolecaps\" class=\"selectbox\"><option value=\"default\" >Default</option><option data-caps=\"{&quot;switch_themes&quot;:true,&quot;edit_themes&quot;:true,&quot;activate_plugins&quot;:true,&quot;edit_plugins&quot;:true,&quot;edit_users&quot;:true,&quot;edit_files&quot;:true,&quot;manage_options&quot;:true,&quot;moderate_comments&quot;:true,&quot;manage_categories&quot;:true,&quot;manage_links&quot;:true,&quot;upload_files&quot;:true,&quot;import&quot;:true,&quot;unfiltered_html&quot;:true,&quot;edit_posts&quot;:true,&quot;edit_others_posts&quot;:true,&quot;edit_published_posts&quot;:true,&quot;publish_posts&quot;:true,&quot;edit_pages&quot;:true,&quot;read&quot;:true,&quot;level_10&quot;:true,&quot;level_9&quot;:true,&quot;level_8&quot;:true,&quot;level_7&quot;:true,&quot;level_6&quot;:true,&quot;level_5&quot;:true,&quot;level_4&quot;:true,&quot;level_3&quot;:true,&quot;level_2&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;edit_others_pages&quot;:true,&quot;edit_published_pages&quot;:true,&quot;publish_pages&quot;:true,&quot;delete_pages&quot;:true,&quot;delete_others_pages&quot;:true,&quot;delete_published_pages&quot;:true,&quot;delete_posts&quot;:true,&quot;delete_others_posts&quot;:true,&quot;delete_published_posts&quot;:true,&quot;delete_private_posts&quot;:true,&quot;edit_private_posts&quot;:true,&quot;read_private_posts&quot;:true,&quot;delete_private_pages&quot;:true,&quot;edit_private_pages&quot;:true,&quot;read_private_pages&quot;:true,&quot;delete_users&quot;:true,&quot;create_users&quot;:true,&quot;unfiltered_upload&quot;:true,&quot;edit_dashboard&quot;:true,&quot;update_plugins&quot;:true,&quot;delete_plugins&quot;:true,&quot;install_plugins&quot;:true,&quot;update_themes&quot;:true,&quot;install_themes&quot;:true,&quot;update_core&quot;:true,&quot;list_users&quot;:true,&quot;remove_users&quot;:true,&quot;promote_users&quot;:true,&quot;edit_theme_options&quot;:true,&quot;delete_themes&quot;:true,&quot;export&quot;:true,&quot;beehive_manage_settings&quot;:true,&quot;beehive_view_analytics&quot;:true,&quot;manage_privacy&quot;:true,&quot;duplicate_posts&quot;:true,&quot;duplicate_others_posts&quot;:true,&quot;edit_free-to-view live channel&quot;:true,&quot;read_free-to-view live channel&quot;:true,&quot;delete_free-to-view live channel&quot;:true,&quot;edit_free-to-view live channels&quot;:true,&quot;edit_others_free-to-view live channels&quot;:true,&quot;publish_free-to-view live channels&quot;:true,&quot;read_private_free-to-view live channels&quot;:true,&quot;delete_free-to-view live channels&quot;:true,&quot;delete_private_free-to-view live channels&quot;:true,&quot;delete_published_free-to-view live channels&quot;:true,&quot;delete_others_free-to-view live channels&quot;:true,&quot;edit_private_free-to-view live channels&quot;:true,&quot;edit_published_free-to-view live channels&quot;:true,&quot;edit_free-to-view vod&quot;:true,&quot;read_free-to-view vod&quot;:true,&quot;delete_free-to-view vod&quot;:true,&quot;edit_free-to-view vods&quot;:true,&quot;edit_others_free-to-view vods&quot;:true,&quot;publish_free-to-view vods&quot;:true,&quot;read_private_free-to-view vods&quot;:true,&quot;delete_free-to-view vods&quot;:true,&quot;delete_private_free-to-view vods&quot;:true,&quot;delete_published_free-to-view vods&quot;:true,&quot;delete_others_free-to-view vods&quot;:true,&quot;edit_private_free-to-view vods&quot;:true,&quot;edit_published_free-to-view vods&quot;:true}\" value=\"administrator\" >= Administrator</option><option data-caps=\"{&quot;switch_themes&quot;:true,&quot;edit_themes&quot;:true,&quot;activate_plugins&quot;:true,&quot;edit_plugins&quot;:true,&quot;edit_users&quot;:true,&quot;edit_files&quot;:true,&quot;manage_options&quot;:true,&quot;moderate_comments&quot;:true,&quot;manage_categories&quot;:true,&quot;manage_links&quot;:true,&quot;upload_files&quot;:true,&quot;import&quot;:true,&quot;unfiltered_html&quot;:true,&quot;edit_posts&quot;:true,&quot;edit_others_posts&quot;:true,&quot;edit_published_posts&quot;:true,&quot;publish_posts&quot;:true,&quot;edit_pages&quot;:true,&quot;read&quot;:true,&quot;level_10&quot;:true,&quot;level_9&quot;:true,&quot;level_8&quot;:true,&quot;level_7&quot;:true,&quot;level_6&quot;:true,&quot;level_5&quot;:true,&quot;level_4&quot;:true,&quot;level_3&quot;:true,&quot;level_2&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;edit_others_pages&quot;:true,&quot;edit_published_pages&quot;:true,&quot;publish_pages&quot;:true,&quot;delete_pages&quot;:true,&quot;delete_others_pages&quot;:true,&quot;delete_published_pages&quot;:true,&quot;delete_posts&quot;:true,&quot;delete_others_posts&quot;:true,&quot;delete_published_posts&quot;:true,&quot;delete_private_posts&quot;:true,&quot;edit_private_posts&quot;:true,&quot;read_private_posts&quot;:true,&quot;delete_private_pages&quot;:true,&quot;edit_private_pages&quot;:true,&quot;read_private_pages&quot;:true,&quot;delete_users&quot;:true,&quot;create_users&quot;:true,&quot;unfiltered_upload&quot;:true,&quot;edit_dashboard&quot;:true,&quot;update_plugins&quot;:true,&quot;delete_plugins&quot;:true,&quot;install_plugins&quot;:true,&quot;update_themes&quot;:true,&quot;install_themes&quot;:true,&quot;update_core&quot;:true,&quot;list_users&quot;:true,&quot;remove_users&quot;:true,&quot;promote_users&quot;:true,&quot;edit_theme_options&quot;:true,&quot;delete_themes&quot;:true,&quot;export&quot;:true,&quot;beehive_manage_settings&quot;:true,&quot;beehive_view_analytics&quot;:true,&quot;manage_privacy&quot;:true,&quot;duplicate_posts&quot;:true,&quot;duplicate_others_posts&quot;:true,&quot;edit_free-to-view live channel&quot;:true,&quot;read_free-to-view live channel&quot;:true,&quot;delete_free-to-view live channel&quot;:true,&quot;edit_free-to-view live channels&quot;:true,&quot;edit_others_free-to-view live channels&quot;:true,&quot;publish_free-to-view live channels&quot;:true,&quot;read_private_free-to-view live channels&quot;:true,&quot;delete_free-to-view live channels&quot;:true,&quot;delete_private_free-to-view live channels&quot;:true,&quot;delete_published_free-to-view live channels&quot;:true,&quot;delete_others_free-to-view live channels&quot;:true,&quot;edit_private_free-to-view live channels&quot;:true,&quot;edit_published_free-to-view live channels&quot;:true,&quot;edit_free-to-view vod&quot;:true,&quot;read_free-to-view vod&quot;:true,&quot;delete_free-to-view vod&quot;:true,&quot;edit_free-to-view vods&quot;:true,&quot;edit_others_free-to-view vods&quot;:true,&quot;publish_free-to-view vods&quot;:true,&quot;read_private_free-to-view vods&quot;:true,&quot;delete_free-to-view vods&quot;:true,&quot;delete_private_free-to-view vods&quot;:true,&quot;delete_published_free-to-view vods&quot;:true,&quot;delete_others_free-to-view vods&quot;:true,&quot;edit_private_free-to-view vods&quot;:true,&quot;edit_published_free-to-view vods&quot;:true}\" data-reverse=\"1\" value=\"reversed-administrator\" >\u2260 Administrator</option><option data-caps=\"{&quot;moderate_comments&quot;:true,&quot;manage_categories&quot;:true,&quot;manage_links&quot;:true,&quot;upload_files&quot;:true,&quot;unfiltered_html&quot;:true,&quot;edit_posts&quot;:true,&quot;edit_others_posts&quot;:true,&quot;edit_published_posts&quot;:true,&quot;publish_posts&quot;:true,&quot;edit_pages&quot;:true,&quot;read&quot;:true,&quot;level_7&quot;:true,&quot;level_6&quot;:true,&quot;level_5&quot;:true,&quot;level_4&quot;:true,&quot;level_3&quot;:true,&quot;level_2&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;edit_others_pages&quot;:true,&quot;edit_published_pages&quot;:true,&quot;publish_pages&quot;:true,&quot;delete_pages&quot;:true,&quot;delete_others_pages&quot;:true,&quot;delete_published_pages&quot;:true,&quot;delete_posts&quot;:true,&quot;delete_others_posts&quot;:true,&quot;delete_published_posts&quot;:true,&quot;delete_private_posts&quot;:true,&quot;edit_private_posts&quot;:true,&quot;read_private_posts&quot;:true,&quot;delete_private_pages&quot;:true,&quot;edit_private_pages&quot;:true,&quot;read_private_pages&quot;:true,&quot;duplicate_posts&quot;:true,&quot;manage_options&quot;:true,&quot;manage_privacy&quot;:true}\" value=\"editor\" >= Editor</option><option data-caps=\"{&quot;moderate_comments&quot;:true,&quot;manage_categories&quot;:true,&quot;manage_links&quot;:true,&quot;upload_files&quot;:true,&quot;unfiltered_html&quot;:true,&quot;edit_posts&quot;:true,&quot;edit_others_posts&quot;:true,&quot;edit_published_posts&quot;:true,&quot;publish_posts&quot;:true,&quot;edit_pages&quot;:true,&quot;read&quot;:true,&quot;level_7&quot;:true,&quot;level_6&quot;:true,&quot;level_5&quot;:true,&quot;level_4&quot;:true,&quot;level_3&quot;:true,&quot;level_2&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;edit_others_pages&quot;:true,&quot;edit_published_pages&quot;:true,&quot;publish_pages&quot;:true,&quot;delete_pages&quot;:true,&quot;delete_others_pages&quot;:true,&quot;delete_published_pages&quot;:true,&quot;delete_posts&quot;:true,&quot;delete_others_posts&quot;:true,&quot;delete_published_posts&quot;:true,&quot;delete_private_posts&quot;:true,&quot;edit_private_posts&quot;:true,&quot;read_private_posts&quot;:true,&quot;delete_private_pages&quot;:true,&quot;edit_private_pages&quot;:true,&quot;read_private_pages&quot;:true,&quot;duplicate_posts&quot;:true,&quot;manage_options&quot;:true,&quot;manage_privacy&quot;:true}\" data-reverse=\"1\" value=\"reversed-editor\" >\u2260 Editor</option><option data-caps=\"{&quot;upload_files&quot;:true,&quot;edit_posts&quot;:true,&quot;edit_published_posts&quot;:true,&quot;publish_posts&quot;:true,&quot;read&quot;:true,&quot;level_2&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;delete_posts&quot;:true,&quot;delete_published_posts&quot;:true,&quot;duplicate_posts&quot;:true}\" value=\"author\" >= Author</option><option data-caps=\"{&quot;upload_files&quot;:true,&quot;edit_posts&quot;:true,&quot;edit_published_posts&quot;:true,&quot;publish_posts&quot;:true,&quot;read&quot;:true,&quot;level_2&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;delete_posts&quot;:true,&quot;delete_published_posts&quot;:true,&quot;duplicate_posts&quot;:true}\" data-reverse=\"1\" value=\"reversed-author\" >\u2260 Author</option><option data-caps=\"{&quot;edit_posts&quot;:true,&quot;read&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;delete_posts&quot;:true,&quot;duplicate_posts&quot;:true}\" value=\"contributor\" >= Contributor</option><option data-caps=\"{&quot;edit_posts&quot;:true,&quot;read&quot;:true,&quot;level_1&quot;:true,&quot;level_0&quot;:true,&quot;delete_posts&quot;:true,&quot;duplicate_posts&quot;:true}\" data-reverse=\"1\" value=\"reversed-contributor\" >\u2260 Contributor</option><option data-caps=\"{&quot;read&quot;:true,&quot;level_0&quot;:true}\" value=\"subscriber\" >= Subscriber</option><option data-caps=\"{&quot;read&quot;:true,&quot;level_0&quot;:true}\" data-reverse=\"1\" value=\"reversed-subscriber\" >\u2260 Subscriber</option></select>",
                     "href": false,
                     "class": "ab-vaa-select select-role-caps vaa-column-one-half vaa-column-last",
                     "html": "",
@@ -2219,7 +2533,7 @@
                     "parent": "top-secondary",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "my-account": {
@@ -2229,8 +2543,8 @@
                 "is_custom": false,
                 "is_hidden": false,
                 "defaults": {
-                    "title": "Welcome, <span class=\"display-name\">mrn</span><img alt='' src='https://secure.gravatar.com/avatar/839b8d286ef4c71bd9d36a8aaf200428af3c1c41171f7e744ddfd07eeb1d4d85?s=26&#038;d=mm&#038;r=g' srcset='https://secure.gravatar.com/avatar/839b8d286ef4c71bd9d36a8aaf200428af3c1c41171f7e744ddfd07eeb1d4d85?s=52&#038;d=mm&#038;r=g 2x' class='avatar avatar-26 photo' height='26' width='26' loading='lazy' decoding='async'/>",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/profile.php",
+                    "title": "Welcome, <span class=\"display-name\">mrn-admin</span><img alt='' src='https://secure.gravatar.com/avatar/87a1dc7cfb41b6e355b18f3baa508ce3423234b99ceaebc4d6e09a939197b399?s=26&#038;d=mm&#038;r=g' srcset='https://secure.gravatar.com/avatar/87a1dc7cfb41b6e355b18f3baa508ce3423234b99ceaebc4d6e09a939197b399?s=52&#038;d=mm&#038;r=g 2x' class='avatar avatar-26 photo' height='26' width='26' loading='lazy' decoding='async'/>",
+                    "href": "https://platform.localhost/wp-admin/profile.php",
                     "class": "with-avatar",
                     "html": null,
                     "onclick": null,
@@ -2240,9 +2554,9 @@
                     "id": "my-account",
                     "parent": "top-secondary",
                     "group": false,
-                    "menu_title": "Welcome, mrn"
+                    "menu_title": "Welcome, mrn-admin"
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "user-actions": {
@@ -2264,7 +2578,7 @@
                     "parent": "my-account",
                     "group": true
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "user-info": {
@@ -2274,8 +2588,8 @@
                 "is_custom": false,
                 "is_hidden": false,
                 "defaults": {
-                    "title": "<img alt='' src='https://secure.gravatar.com/avatar/839b8d286ef4c71bd9d36a8aaf200428af3c1c41171f7e744ddfd07eeb1d4d85?s=64&#038;d=mm&#038;r=g' srcset='https://secure.gravatar.com/avatar/839b8d286ef4c71bd9d36a8aaf200428af3c1c41171f7e744ddfd07eeb1d4d85?s=128&#038;d=mm&#038;r=g 2x' class='avatar avatar-64 photo' height='64' width='64' loading='lazy' decoding='async'/><span class='display-name'>mrn</span><span class='display-name edit-profile'>Edit Profile</span>",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/profile.php",
+                    "title": "<img alt='' src='https://secure.gravatar.com/avatar/87a1dc7cfb41b6e355b18f3baa508ce3423234b99ceaebc4d6e09a939197b399?s=64&#038;d=mm&#038;r=g' srcset='https://secure.gravatar.com/avatar/87a1dc7cfb41b6e355b18f3baa508ce3423234b99ceaebc4d6e09a939197b399?s=128&#038;d=mm&#038;r=g 2x' class='avatar avatar-64 photo' height='64' width='64' loading='lazy' decoding='async'/><span class='display-name'>mrn-admin</span><span class='display-name edit-profile'>Edit Profile</span>",
+                    "href": "https://platform.localhost/wp-admin/profile.php",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2286,7 +2600,7 @@
                     "parent": "user-actions",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "logout": {
@@ -2297,7 +2611,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Log Out",
-                    "href": "https://morgandevelopment.mrndev.io/wp-login.php?action=logout&amp;_wpnonce=b745a48411",
+                    "href": "https://platform.localhost/wp-login.php?action=logout&amp;_wpnonce=e3eacf0344",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2308,7 +2622,7 @@
                     "parent": "user-actions",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-menu": {
@@ -2319,7 +2633,7 @@
                 "is_hidden": true,
                 "defaults": {
                     "title": "WPForms",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-overview",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-overview",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2330,7 +2644,7 @@
                     "parent": false,
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-forms": {
@@ -2341,7 +2655,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "All Forms",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-overview",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-overview",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2352,7 +2666,7 @@
                     "parent": "wpforms-menu",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-add-new": {
@@ -2363,7 +2677,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Add New Form",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-builder",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-builder",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2374,7 +2688,7 @@
                     "parent": "wpforms-menu",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-entries": {
@@ -2385,7 +2699,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Entries",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-entries",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-entries",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2396,7 +2710,7 @@
                     "parent": "wpforms-menu",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-payments": {
@@ -2407,7 +2721,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Payments",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-payments",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-payments",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2418,7 +2732,7 @@
                     "parent": "wpforms-menu",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-settings": {
@@ -2429,7 +2743,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Settings",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-settings",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-settings",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2440,7 +2754,7 @@
                     "parent": "wpforms-menu",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-general-settings": {
@@ -2451,7 +2765,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "General",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-settings&view=general",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-settings&view=general",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2462,7 +2776,7 @@
                     "parent": "wpforms-settings",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-email-settings": {
@@ -2473,7 +2787,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Email",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-settings&view=email",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-settings&view=email",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2484,7 +2798,7 @@
                     "parent": "wpforms-settings",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-captcha-settings": {
@@ -2495,7 +2809,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "CAPTCHA",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-settings&view=captcha",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-settings&view=captcha",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2506,7 +2820,7 @@
                     "parent": "wpforms-settings",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-validation-settings": {
@@ -2517,7 +2831,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Validation",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-settings&view=validation",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-settings&view=validation",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2528,7 +2842,7 @@
                     "parent": "wpforms-settings",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-payments-settings": {
@@ -2539,7 +2853,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Payments",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-settings&view=payments",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-settings&view=payments",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2550,7 +2864,7 @@
                     "parent": "wpforms-settings",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-integrations-settings": {
@@ -2561,7 +2875,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Integrations",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-settings&view=integrations",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-settings&view=integrations",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2572,7 +2886,7 @@
                     "parent": "wpforms-settings",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-geolocation-settings": {
@@ -2583,7 +2897,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Geolocation",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-settings&view=geolocation",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-settings&view=geolocation",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2594,7 +2908,7 @@
                     "parent": "wpforms-settings",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-access-settings": {
@@ -2605,7 +2919,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Access Control",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-settings&view=access",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-settings&view=access",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2616,7 +2930,7 @@
                     "parent": "wpforms-settings",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-misc-settings": {
@@ -2627,7 +2941,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Misc",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-settings&view=misc",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-settings&view=misc",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2638,7 +2952,7 @@
                     "parent": "wpforms-settings",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-tools": {
@@ -2649,7 +2963,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Tools",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-tools",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-tools",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2660,7 +2974,7 @@
                     "parent": "wpforms-menu",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-tools-import": {
@@ -2671,7 +2985,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Import",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-tools&view=import",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-tools&view=import",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2682,7 +2996,7 @@
                     "parent": "wpforms-tools",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-tools-export": {
@@ -2693,7 +3007,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Export",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-tools&view=export",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-tools&view=export",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2704,7 +3018,7 @@
                     "parent": "wpforms-tools",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-tools-entry-automation": {
@@ -2715,7 +3029,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Entry Automation",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-tools&view=entry-automation",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-tools&view=entry-automation",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2726,7 +3040,7 @@
                     "parent": "wpforms-tools",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-tools-system": {
@@ -2737,7 +3051,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "System Info",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-tools&view=system",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-tools&view=system",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2748,7 +3062,7 @@
                     "parent": "wpforms-tools",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-tools-action-scheduler": {
@@ -2759,7 +3073,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Scheduled Actions",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-tools&view=action-scheduler&s=wpforms",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-tools&view=action-scheduler&s=wpforms",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2770,7 +3084,7 @@
                     "parent": "wpforms-tools",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-tools-action-scheduler-all": {
@@ -2781,7 +3095,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "View All",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-tools&view=action-scheduler&s=wpforms&orderby=hook&order=desc",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-tools&view=action-scheduler&s=wpforms&orderby=hook&order=desc",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2792,7 +3106,7 @@
                     "parent": "wpforms-tools-action-scheduler",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-tools-action-scheduler-complete": {
@@ -2803,7 +3117,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Completed Actions",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-tools&view=action-scheduler&s=wpforms&status=complete&orderby=hook&order=desc",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-tools&view=action-scheduler&s=wpforms&status=complete&orderby=hook&order=desc",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2814,7 +3128,7 @@
                     "parent": "wpforms-tools-action-scheduler",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-tools-action-scheduler-failed": {
@@ -2825,7 +3139,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Failed Actions",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-tools&view=action-scheduler&s=wpforms&status=failed&orderby=hook&order=desc",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-tools&view=action-scheduler&s=wpforms&status=failed&orderby=hook&order=desc",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2836,7 +3150,7 @@
                     "parent": "wpforms-tools-action-scheduler",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-tools-action-scheduler-pending": {
@@ -2847,7 +3161,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Pending Actions",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-tools&view=action-scheduler&s=wpforms&status=pending&orderby=hook&order=desc",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-tools&view=action-scheduler&s=wpforms&status=pending&orderby=hook&order=desc",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2858,7 +3172,7 @@
                     "parent": "wpforms-tools-action-scheduler",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-tools-action-scheduler-past-due": {
@@ -2869,7 +3183,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Past Due Actions",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-tools&view=action-scheduler&s=wpforms&status=past-due&orderby=hook&order=desc",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-tools&view=action-scheduler&s=wpforms&status=past-due&orderby=hook&order=desc",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2880,7 +3194,7 @@
                     "parent": "wpforms-tools-action-scheduler",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-tools-logs": {
@@ -2891,7 +3205,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Logs",
-                    "href": "http://mrn-plugin-stack.local/wp-admin/admin.php?page=wpforms-tools&view=logs",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-tools&view=logs",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2902,8 +3216,29 @@
                     "parent": "wpforms-tools",
                     "group": false
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
+            },
+            "wpforms-tools-wpcode": {
+                "id": "wpforms-tools-wpcode",
+                "group": false,
+                "parent": "wpforms-tools",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Code Snippets",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=wpforms-tools&view=wpcode",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "wpforms-tools-wpcode",
+                    "parent": "wpforms-tools",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784815076
             },
             "wpforms-community": {
                 "id": "wpforms-community",
@@ -2925,7 +3260,7 @@
                     "group": false,
                     "rel": "noopener noreferrer"
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "wpforms-help-docs": {
@@ -2948,8 +3283,344 @@
                     "group": false,
                     "rel": "noopener noreferrer"
                 },
-                "last_seen_timestamp": 1771515430,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
+            },
+            "mrn-cce-root": {
+                "id": "mrn-cce-root",
+                "group": false,
+                "parent": false,
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Context Edit: Off",
+                    "href": false,
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-cce-root",
+                    "parent": false,
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-cce-toggle": {
+                "id": "mrn-cce-toggle",
+                "group": false,
+                "parent": "mrn-cce-root",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Turn Context Edit off (Ctrl/Command+Shift+E)",
+                    "href": "https://platform.localhost/about/",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-cce-toggle",
+                    "parent": "mrn-cce-root",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-cce-edit-current": {
+                "id": "mrn-cce-edit-current",
+                "group": false,
+                "parent": "mrn-cce-root",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Edit Current Content",
+                    "href": "https://platform.localhost/wp-admin/post.php?post=324&#038;action=edit",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-cce-edit-current",
+                    "parent": "mrn-cce-root",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-inspector-root": {
+                "id": "mrn-inspector-root",
+                "group": false,
+                "parent": false,
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Template Inspector",
+                    "href": "#",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-inspector-root",
+                    "parent": false,
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-inspector-selection-pick": {
+                "id": "mrn-inspector-selection-pick",
+                "group": false,
+                "parent": "mrn-inspector-root",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Selection: Pick Element",
+                    "href": "#",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-inspector-selection-pick",
+                    "parent": "mrn-inspector-root",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-inspector-spacing-toggle": {
+                "id": "mrn-inspector-spacing-toggle",
+                "group": false,
+                "parent": "mrn-inspector-root",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Stack Spacing: Off",
+                    "href": "#",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-inspector-spacing-toggle",
+                    "parent": "mrn-inspector-root",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-inspector-template-label": {
+                "id": "mrn-inspector-template-label",
+                "group": false,
+                "parent": "mrn-inspector-root",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Template: page.php",
+                    "href": "http://127.0.0.1:17777/open?path=L3Nydi9tcm4tc2l0ZXMvcGxhdGZvcm0vcHVibGljL3dwLWNvbnRlbnQvdGhlbWVzL21ybi1iYXNlLXN0YWNrL3BhZ2UucGhw&#038;line=1&#038;back=https://platform.localhost/about/",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-inspector-template-label",
+                    "parent": "mrn-inspector-root",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-inspector-main-css-open": {
+                "id": "mrn-inspector-main-css-open",
+                "group": false,
+                "parent": "mrn-inspector-root",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Main CSS: style.css",
+                    "href": "http://127.0.0.1:17777/open?path=L3Nydi9tcm4tc2l0ZXMvcGxhdGZvcm0vcHVibGljL3dwLWNvbnRlbnQvdGhlbWVzL21ybi1iYXNlLXN0YWNrLWNoaWxkL3N0eWxlLmNzcw=&#038;line=1&#038;back=https://platform.localhost/about/",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-inspector-main-css-open",
+                    "parent": "mrn-inspector-root",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-inspector-template-tree": {
+                "id": "mrn-inspector-template-tree",
+                "group": false,
+                "parent": "mrn-inspector-root",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "Template Tree",
+                    "href": "#",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-inspector-template-tree",
+                    "parent": "mrn-inspector-root",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-inspector-template-tree-node-0": {
+                "id": "mrn-inspector-template-tree-node-0",
+                "group": false,
+                "parent": "mrn-inspector-template-tree",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "header.php",
+                    "href": "http://127.0.0.1:17777/open?path=L3Nydi9tcm4tc2l0ZXMvcGxhdGZvcm0vcHVibGljL3dwLWNvbnRlbnQvdGhlbWVzL21ybi1iYXNlLXN0YWNrL2hlYWRlci5waHA&#038;line=1&#038;back=https://platform.localhost/about/",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-inspector-template-tree-node-0",
+                    "parent": "mrn-inspector-template-tree",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-inspector-css-0": {
+                "id": "mrn-inspector-css-0",
+                "group": false,
+                "parent": "mrn-inspector-root",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "CSS [mrn-base-stack-mobile-navigation]: mobile-navigation.css",
+                    "href": "http://127.0.0.1:17777/open?path=L3Nydi9tcm4tc2l0ZXMvcGxhdGZvcm0vcHVibGljL3dwLWNvbnRlbnQvdGhlbWVzL21ybi1iYXNlLXN0YWNrL2Nzcy9tb2JpbGUtbmF2aWdhdGlvbi5jc3M&#038;line=1&#038;back=https://platform.localhost/about/",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-inspector-css-0",
+                    "parent": "mrn-inspector-root",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-inspector-css-1": {
+                "id": "mrn-inspector-css-1",
+                "group": false,
+                "parent": "mrn-inspector-root",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "CSS [mrn-base-stack-splide]: splide.min.css",
+                    "href": "http://127.0.0.1:17777/open?path=L3Nydi9tcm4tc2l0ZXMvcGxhdGZvcm0vcHVibGljL3dwLWNvbnRlbnQvdGhlbWVzL21ybi1iYXNlLXN0YWNrL2Nzcy92ZW5kb3Ivc3BsaWRlLm1pbi5jc3M&#038;line=1&#038;back=https://platform.localhost/about/",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-inspector-css-1",
+                    "parent": "mrn-inspector-root",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-inspector-css-2": {
+                "id": "mrn-inspector-css-2",
+                "group": false,
+                "parent": "mrn-inspector-root",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "CSS [style.css]: style.css",
+                    "href": "http://127.0.0.1:17777/open?path=L3Nydi9tcm4tc2l0ZXMvcGxhdGZvcm0vcHVibGljL3dwLWNvbnRlbnQvdGhlbWVzL21ybi1iYXNlLXN0YWNrL3N0eWxlLmNzcw=&#038;line=1&#038;back=https://platform.localhost/about/",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-inspector-css-2",
+                    "parent": "mrn-inspector-root",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-inspector-css-3": {
+                "id": "mrn-inspector-css-3",
+                "group": false,
+                "parent": "mrn-inspector-root",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "CSS [style.css]: style.css",
+                    "href": "http://127.0.0.1:17777/open?path=L3Nydi9tcm4tc2l0ZXMvcGxhdGZvcm0vcHVibGljL3dwLWNvbnRlbnQvdGhlbWVzL21ybi1iYXNlLXN0YWNrLWNoaWxkL3N0eWxlLmNzcw=&#038;line=1&#038;back=https://platform.localhost/about/",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-inspector-css-3",
+                    "parent": "mrn-inspector-root",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756714
+            },
+            "mrn-inspector-css-4": {
+                "id": "mrn-inspector-css-4",
+                "group": false,
+                "parent": "mrn-inspector-root",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "CSS [style.css]: style.css",
+                    "href": "http://127.0.0.1:17777/open?path=L3Nydi9tcm4tc2l0ZXMvcGxhdGZvcm0vcHVibGljL3dwLWNvbnRlbnQvdGhlbWVzL21ybi1iYXNlLXN0YWNrLWNoaWxkL3N0eWxlLmNzcw=&#038;line=1&#038;back=https://platform.localhost/",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-inspector-css-4",
+                    "parent": "mrn-inspector-root",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784756673
+            },
+            "mrn-inspector-css-5": {
+                "id": "mrn-inspector-css-5",
+                "group": false,
+                "parent": "mrn-inspector-root",
+                "is_custom": false,
+                "is_hidden": false,
+                "defaults": {
+                    "title": "CSS [style.css]: style.css",
+                    "href": "http://127.0.0.1:17777/open?path=L3Nydi9tcm4tc2l0ZXMvcGxhdGZvcm0vcHVibGljL3dwLWNvbnRlbnQvdGhlbWVzL21ybi1iYXNlLXN0YWNrLWNoaWxkL3N0eWxlLmNzcw=&#038;line=1&#038;back=https://platform.localhost/",
+                    "class": "",
+                    "html": null,
+                    "onclick": null,
+                    "target": null,
+                    "titleAttr": null,
+                    "tabindex": null,
+                    "id": "mrn-inspector-css-5",
+                    "parent": "mrn-inspector-root",
+                    "group": false
+                },
+                "last_seen_timestamp": 1784296183
             },
             "wpforms-upgrade": {
                 "id": "wpforms-upgrade",
@@ -2981,8 +3652,8 @@
                 "is_custom": false,
                 "is_hidden": true,
                 "defaults": {
-                    "title": "<span>SearchWP</span> ",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=searchwp-algorithm",
+                    "title": "<span>SearchWP</span> <span class=\"wp-ui-notification searchwp-menu-notification-counter\" style=\"\n\t\t\tdisplay: inline-block;\n\t\t\tmin-width: 18px;\n\t\t\theight: 18px;\n\t\t\tborder-radius: 9px;\n\t\t\tmargin: 7px 0 0 2px;\n\t\t\tvertical-align: top;\n\t\t\tfont-size: 11px;\n\t\t\tline-height: 1.6;\n\t\t\ttext-align: center;\n\t\t\">1</span>",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=searchwp-algorithm",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -2993,7 +3664,7 @@
                     "parent": false,
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "searchwp_notifications": {
@@ -3004,7 +3675,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Notifications<span style=\"margin-top: 10px; line-height: 1;\" class=\"searchwp-admin-menu-notification-indicator\"></span>",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=searchwp-settings#notifications",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=searchwp-settings#notifications",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -3015,7 +3686,7 @@
                     "parent": "searchwp",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "searchwp_support": {
@@ -3026,7 +3697,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "<span style=\"color: #ff6b6b; line-height: 1;\">Activate License</span>",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=searchwp-settings",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=searchwp-settings",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -3037,7 +3708,7 @@
                     "parent": "searchwp",
                     "group": false
                 },
-                "last_seen_timestamp": 1773035200,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "searchwp_settings": {
@@ -3048,7 +3719,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Algorithm",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=searchwp-algorithm",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=searchwp-algorithm",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -3059,7 +3730,7 @@
                     "parent": "searchwp",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "searchwp_metrics": {
@@ -3091,7 +3762,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Statistics",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/admin.php?page=searchwp-statistics",
+                    "href": "https://platform.localhost/wp-admin/admin.php?page=searchwp-statistics",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -3102,7 +3773,7 @@
                     "parent": "searchwp",
                     "group": false
                 },
-                "last_seen_timestamp": 1773035200,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "searchwp_index_status": {
@@ -3157,7 +3828,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Test Schema",
-                    "href": "https://search.google.com/test/rich-results?url=https%3A%2F%2Fmorgandevelopment.mrndev.io%2Fabout-us%2F%3Fnocache%3D1772703166&user_agent=2",
+                    "href": "https://search.google.com/test/rich-results?url=https%3A%2F%2Fplatform.localhost%2Fabout%2F%3Fnocache%3D1784756714&user_agent=2",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -3168,7 +3839,7 @@
                     "parent": false,
                     "group": false
                 },
-                "last_seen_timestamp": 1772703166,
+                "last_seen_timestamp": 1784756714,
                 "is_visible_to_actor": []
             },
             "mrn-post-duplicator-duplicate": {
@@ -3298,7 +3969,7 @@
                     "parent": false,
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "updraft_admin_node_status": {
@@ -3309,7 +3980,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Backup / Restore",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/options-general.php?page=updraftplus&tab=backups",
+                    "href": "https://platform.localhost/wp-admin/options-general.php?page=updraftplus&tab=backups",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -3320,7 +3991,7 @@
                     "parent": "updraft_admin_node",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "updraft_admin_node_migrate": {
@@ -3331,7 +4002,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Migrate / Clone",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/options-general.php?page=updraftplus&tab=migrate",
+                    "href": "https://platform.localhost/wp-admin/options-general.php?page=updraftplus&tab=migrate",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -3342,7 +4013,7 @@
                     "parent": "updraft_admin_node",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "updraft_admin_node_settings": {
@@ -3353,7 +4024,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Settings",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/options-general.php?page=updraftplus&tab=settings",
+                    "href": "https://platform.localhost/wp-admin/options-general.php?page=updraftplus&tab=settings",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -3364,7 +4035,7 @@
                     "parent": "updraft_admin_node",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "updraft_admin_node_expert_content": {
@@ -3375,7 +4046,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Advanced Tools",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/options-general.php?page=updraftplus&tab=expert",
+                    "href": "https://platform.localhost/wp-admin/options-general.php?page=updraftplus&tab=expert",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -3386,7 +4057,7 @@
                     "parent": "updraft_admin_node",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "updraft_admin_node_addons": {
@@ -3397,7 +4068,7 @@
                 "is_hidden": false,
                 "defaults": {
                     "title": "Extensions",
-                    "href": "https://morgandevelopment.mrndev.io/wp-admin/options-general.php?page=updraftplus&tab=addons",
+                    "href": "https://platform.localhost/wp-admin/options-general.php?page=updraftplus&tab=addons",
                     "class": "",
                     "html": null,
                     "onclick": null,
@@ -3408,7 +4079,7 @@
                     "parent": "updraft_admin_node",
                     "group": false
                 },
-                "last_seen_timestamp": 1773836918,
+                "last_seen_timestamp": 1784815076,
                 "is_visible_to_actor": []
             },
             "updraft_admin_node_premium": {

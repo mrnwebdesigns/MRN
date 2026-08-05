@@ -258,6 +258,19 @@ test.describe('MRN stack site smoke QA', () => {
 		expectNoPageIssues(issues, 'Sample page');
 	});
 
+	test('mobile drawer branding stays hidden at desktop width', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 720 });
+		await page.goto('/', { waitUntil: 'networkidle' });
+
+		const navigation = page.locator('[data-mrn-mobile-navigation]').first();
+
+		test.skip((await navigation.count()) === 0, 'Mobile navigation is not enabled in this runtime.');
+
+		await expect(navigation).toHaveAttribute('data-mrn-mobile-active', 'false');
+		await expect(navigation.locator(':scope > .menu-toggle')).toBeHidden();
+		await expect(navigation.locator('.mrn-mobile-navigation__drawer-header')).toBeHidden();
+	});
+
 	for (const testCase of motionTargetCases) {
 		test(`motion target applies effect to configured target: ${testCase.label}`, async ({ page }) => {
 			await expectMotionTargetCase(page, testCase);

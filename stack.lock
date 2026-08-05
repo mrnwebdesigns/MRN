@@ -1,0 +1,18 @@
+{
+  "project": "MRN",
+  "release_unit": "stack-workspace",
+  "baseline": {
+    "pinned_at": "2026-07-20",
+    "repo_path": "/Users/khofmeyer/Development/MRN",
+    "integration_target": "mrn-stack",
+    "integration_mode": "coordinated-stack-workspace",
+    "stack_release": "2026.07.17-testimonial-schema",
+    "theme": {
+      "mrn-base-stack": "1.2.83",
+      "mrn-base-stack-child": "1.0.1"
+    },
+    "standard_plugins": {
+      "mrn-config-helper": "0.1.43"
+    }
+  }
+}

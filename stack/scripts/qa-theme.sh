@@ -68,7 +68,13 @@ else
 fi
 
 echo
-echo "5. Parallel lint"
+echo "5. Focused PHP regressions"
+while IFS= read -r -d '' php_test; do
+	php "${php_test}"
+done < <(find "${THEME_DIR}/tests/php" -type f -name '*.php' -print0 2>/dev/null | sort -z)
+
+echo
+echo "6. Parallel lint"
 if [[ -x "${THEME_DIR}/vendor/bin/parallel-lint" ]]; then
 	if ! "${THEME_DIR}/vendor/bin/parallel-lint" --exclude "${THEME_DIR}/vendor" "${THEME_DIR}"; then
 		STATUS=1
@@ -78,9 +84,13 @@ else
 fi
 
 echo
-echo "6. PHPCS"
+echo "7. PHPCS"
 if [[ -x "${THEME_DIR}/vendor/bin/phpcs" && -f "${THEME_DIR}/phpcs.xml.dist" ]]; then
-	if ! "${THEME_DIR}/vendor/bin/phpcs" --standard="${THEME_DIR}/phpcs.xml.dist" "${THEME_DIR}"; then
+	if ! "${THEME_DIR}/vendor/bin/phpcs" \
+		-d memory_limit="${MRN_QA_PHPCS_MEMORY_LIMIT:-2G}" \
+		--parallel="${MRN_QA_PHPCS_PARALLEL:-1}" \
+		--standard="${THEME_DIR}/phpcs.xml.dist" \
+		"${THEME_DIR}"; then
 		STATUS=1
 	fi
 else
@@ -88,7 +98,7 @@ else
 fi
 
 echo
-echo "7. PHPStan (shared MRN config)"
+echo "8. PHPStan (shared MRN config)"
 if [[ -x "${REPO_ROOT}/vendor/bin/phpstan" && -f "${REPO_ROOT}/phpstan.neon.dist" ]]; then
 	if ! php "${REPO_ROOT}/vendor/bin/phpstan" analyse \
 		--configuration="${REPO_ROOT}/phpstan.neon.dist" \

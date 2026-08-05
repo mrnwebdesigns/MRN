@@ -7,8 +7,97 @@
 
 	var config = mrnBaseStackBuilderAdmin;
 
+	function isUnsafeAcfEditorContext() {
+		var body = document.body;
+
+		if ( ! body ) {
+			return false;
+		}
+
+		return body.classList.contains( 'block-editor-page' ) ||
+			body.classList.contains( 'post-type-acf-field-group' ) ||
+			body.classList.contains( 'post-type-acf-field' ) ||
+			body.classList.contains( 'acf-admin-field-group' );
+	}
+
+	if ( isUnsafeAcfEditorContext() ) {
+		return;
+	}
+
 	function isInitialFlexibleCollapseEnabled() {
-		return !! ( config && config.initialCollapseEnabled );
+		return !! ( config && config.initialFlexibleCollapseEnabled );
+	}
+
+	function getInitialCollapseDelayMs() {
+		var value = config && typeof config.initialCollapseDelayMs !== 'undefined' ? parseInt( config.initialCollapseDelayMs, 10 ) : 900;
+
+		return ! isNaN( value ) && value >= 0 ? value : 900;
+	}
+
+	function scheduleInitialCollapseStart( callback ) {
+		window.setTimeout( function() {
+			if ( hasEditorInteracted ) {
+				return;
+			}
+
+			if ( typeof window.requestIdleCallback === 'function' ) {
+				window.requestIdleCallback( function() {
+					if ( ! hasEditorInteracted ) {
+						callback();
+					}
+				}, { timeout: 1400 } );
+				return;
+			}
+
+			callback();
+		}, getInitialCollapseDelayMs() );
+	}
+
+	function resetInitialCollapseDirtyState() {
+		if ( hasEditorInteracted || ! initialFlexibleCollapseMutated ) {
+			return;
+		}
+
+		initialFlexibleCollapseMutated = false;
+
+		resetAcfUnloadDirtyState();
+		window.setTimeout( resetAcfUnloadDirtyState, 120 );
+	}
+
+	function resetAcfUnloadDirtyState() {
+		if ( hasEditorInteracted ) {
+			return;
+		}
+
+		if ( acf.unload && typeof acf.unload.reset === 'function' ) {
+			acf.unload.reset();
+		}
+	}
+
+	function isClassicPostEditorScreen() {
+		var body = document.body;
+
+		return !! body &&
+			! isUnsafeAcfEditorContext() &&
+			( body.classList.contains( 'post-php' ) || body.classList.contains( 'post-new-php' ) );
+	}
+
+	function getInitialFlexibleFieldNames() {
+		if ( config.rowFlex && $.isArray( config.rowFlex.supportedFields ) ) {
+			return config.rowFlex.supportedFields;
+		}
+
+		return [ 'page_content_rows', 'page_after_content_rows', 'page_hero_rows', 'page_sidebar_rows' ];
+	}
+
+	function isInitialFlexibleFieldEligible( $flexField ) {
+		var fieldName = $flexField.attr( 'data-name' ) || '';
+
+		if ( ! fieldName || getInitialFlexibleFieldNames().indexOf( fieldName ) === -1 ) {
+			return false;
+		}
+
+		return ! $flexField.closest( '.layout, .acf-row, .acf-clone' ).length;
 	}
 
 	function getContentListTaxonomyMap() {
@@ -22,6 +111,14 @@
 	function getContentListDisplayModeMap() {
 		if ( config.contentListDisplayModes && typeof config.contentListDisplayModes === 'object' ) {
 			return config.contentListDisplayModes;
+		}
+
+		return {};
+	}
+
+	function getContentListDisplayStyleMap() {
+		if ( config.contentListDisplayStyles && typeof config.contentListDisplayStyles === 'object' ) {
+			return config.contentListDisplayStyles;
 		}
 
 		return {};
@@ -78,8 +175,70 @@
 		return $flexField.attr( 'data-name' ) === 'page_content_rows';
 	}
 
+	function getReusableBlockEditUrl( blockId ) {
+		var pattern = config.editBlockUrlPattern || '';
+
+		if ( ! pattern || ! blockId ) {
+			return '';
+		}
+
+		return pattern.replace( '__MRN_BLOCK_ID__', encodeURIComponent( blockId ) );
+	}
+
+	function updateReusableBlockEditLink( $row ) {
+		var $field = $row.find( '.acf-field[data-name="block"]' ).first();
+		var $input = $field.find( '> .acf-input' ).first();
+		var blockId;
+		var editUrl;
+		var $linkWrap;
+		var $link;
+
+		if ( ! $field.length || ! $input.length ) {
+			return;
+		}
+
+		blockId = getSelectedBlockId( $row );
+		editUrl = getReusableBlockEditUrl( blockId );
+		$linkWrap = $field.find( '.mrn-reusable-block-edit-link' ).first();
+
+		if ( ! editUrl ) {
+			$linkWrap.remove();
+			return;
+		}
+
+		if ( ! $linkWrap.length ) {
+			$linkWrap = $( '<p />' ).addClass( 'mrn-reusable-block-edit-link' );
+			$link = $( '<a />' )
+				.attr( {
+					target: '_blank',
+					rel: 'noopener',
+					title: config.editBlockTitle || config.editBlockText || 'Edit selected reusable block'
+				} )
+				.append( $( '<span />' ).addClass( 'dashicons dashicons-edit' ).attr( 'aria-hidden', 'true' ) )
+				.append( $( '<span />' ).addClass( 'mrn-reusable-block-edit-link__text' ) );
+			$linkWrap.append( $link );
+			$input.append( $linkWrap );
+		} else {
+			$link = $linkWrap.find( 'a' ).first();
+		}
+
+		$link
+			.attr( 'href', editUrl )
+			.attr( 'aria-label', config.editBlockTitle || config.editBlockText || 'Edit selected reusable block' );
+		$link.find( '.mrn-reusable-block-edit-link__text' ).text( config.editBlockText || 'Edit selected reusable block' );
+	}
+
+	function ensureReusableBlockEditLinks( context ) {
+		var $context = $( context || document );
+
+		$context.find( '.layout[data-layout="reusable_block"]' ).add( $context.filter( '.layout[data-layout="reusable_block"]' ) ).not( '.acf-clone' ).each( function() {
+			updateReusableBlockEditLink( $( this ) );
+		} );
+	}
+
 	function bootBuilderAdminUi( context ) {
 		ensureConversionActions( context );
+		ensureReusableBlockEditLinks( context );
 		scheduleContentListFilterSync( context );
 	}
 
@@ -291,17 +450,22 @@
 			var $taxonomyField = getContentListField( $row, 'filter_taxonomy' );
 			var $termsField = getContentListField( $row, 'filter_terms' );
 			var $displayModeField = getContentListField( $row, 'display_mode' );
+			var $displayStyleField = getContentListField( $row, 'display_style' );
 			var $postTypeSelect = getContentListSelect( $postTypeField );
 			var $taxonomySelect = getContentListSelect( $taxonomyField );
 			var $termsSelect = getContentListSelect( $termsField );
 			var $displayModeSelect = getContentListSelect( $displayModeField );
+			var $displayStyleSelect = getContentListSelect( $displayStyleField );
 			var postType = $postTypeSelect.val() || '';
 			var taxonomy = $taxonomySelect.val() || '';
 			var taxonomyMap = getContentListTaxonomyMap();
 			var displayModeMap = getContentListDisplayModeMap();
+			var displayStyleMap = getContentListDisplayStyleMap();
 			var allowedTaxonomies = taxonomyMap[ postType ] || {};
 			var allowedDisplayModes = displayModeMap[ postType ] || {};
+			var allowedDisplayStyles = displayStyleMap[ postType ] || {};
 			var displayModeUiChanged = false;
+			var displayStyleUiChanged = false;
 			var taxonomyUiChanged = false;
 			var termsUiChanged = false;
 
@@ -325,6 +489,23 @@
 
 				if ( displayModeUiChanged ) {
 					$displayModeSelect.trigger( 'change' );
+				}
+			}
+
+			if ( $displayStyleSelect.length ) {
+				var displayStyle = $displayStyleSelect.val() || '';
+
+				if ( displayStyle && ! Object.prototype.hasOwnProperty.call( allowedDisplayStyles, displayStyle ) ) {
+					displayStyle = '';
+				}
+
+				displayStyleUiChanged = rebuildSelectOptions( $displayStyleSelect, allowedDisplayStyles, displayStyle, {
+					allowBlank: true,
+					blankLabel: 'Use Content Default'
+				} );
+
+				if ( displayStyleUiChanged ) {
+					$displayStyleSelect.trigger( 'change' );
 				}
 			}
 
@@ -405,17 +586,21 @@
 		var initialBuilderBootstrapped = false;
 		var initialFlexibleCollapseQueue = [];
 		var initialFlexibleCollapseScheduled = false;
+		var initialFlexibleCollapseMutated = false;
 		var deferCollapseUntil = 0;
+		var hasEditorInteracted = false;
 		var interactionQuietPeriodMs = 900;
 		var interactionRetryDelayMs = 220;
 		var inputEditingRetryDelayMs = 260;
-		var maxInitialFlexibleCollapseRows = 120;
+		var configuredMaxInitialFlexibleCollapseRows = config && typeof config.initialFlexibleCollapseMaxRows !== 'undefined' ? parseInt( config.initialFlexibleCollapseMaxRows, 10 ) : 120;
+		var maxInitialFlexibleCollapseRows = ! isNaN( configuredMaxInitialFlexibleCollapseRows ) && configuredMaxInitialFlexibleCollapseRows >= 0 ? configuredMaxInitialFlexibleCollapseRows : 120;
 
 	function markEditorInteraction() {
 		var now = window.performance && typeof window.performance.now === 'function'
 			? window.performance.now()
 			: Date.now();
 
+		hasEditorInteracted = true;
 		deferCollapseUntil = now + interactionQuietPeriodMs;
 
 		// Prioritize editor responsiveness once the user starts interacting.
@@ -470,6 +655,12 @@
 		initialFlexibleCollapseScheduled = false;
 
 		if ( ! initialFlexibleCollapseQueue.length ) {
+			resetInitialCollapseDirtyState();
+			return;
+		}
+
+		if ( hasEditorInteracted ) {
+			initialFlexibleCollapseQueue.length = 0;
 			return;
 		}
 
@@ -504,6 +695,7 @@
 
 			if ( $toggle.length ) {
 				$toggle.trigger( 'click' );
+				initialFlexibleCollapseMutated = true;
 			}
 
 			processed += 1;
@@ -519,11 +711,19 @@
 
 		if ( initialFlexibleCollapseQueue.length ) {
 			scheduleInitialFlexibleCollapse();
+			return;
 		}
+
+		resetInitialCollapseDirtyState();
 	}
 
 	function queueInitialFlexibleRows( context ) {
-		if ( ! isInitialFlexibleCollapseEnabled() ) {
+		if ( ! isInitialFlexibleCollapseEnabled() || ! isClassicPostEditorScreen() ) {
+			initialFlexibleCollapseQueue.length = 0;
+			return;
+		}
+
+		if ( hasEditorInteracted || maxInitialFlexibleCollapseRows <= 0 ) {
 			initialFlexibleCollapseQueue.length = 0;
 			return;
 		}
@@ -532,6 +732,10 @@
 
 			$( context || document ).find( '.acf-field-flexible-content' ).each( function() {
 				var $flexField = $( this );
+
+				if ( ! isInitialFlexibleFieldEligible( $flexField ) ) {
+					return;
+				}
 
 				if ( $flexField.data( 'mrn-initial-collapse-done' ) ) {
 				return;
@@ -559,7 +763,9 @@
 				}
 			} );
 
-			scheduleInitialFlexibleCollapse();
+			if ( initialFlexibleCollapseQueue.length ) {
+				scheduleInitialFlexibleCollapse();
+			}
 		}
 
 	function getRows( $flexField ) {
@@ -815,9 +1021,9 @@
 		initialBuilderBootstrapped = true;
 		bootBuilderAdminUi( bootContext );
 		if ( isInitialFlexibleCollapseEnabled() ) {
-			window.setTimeout( function() {
+			scheduleInitialCollapseStart( function() {
 				queueInitialFlexibleRows( bootContext );
-			}, 40 );
+			} );
 		}
 	}
 
@@ -849,6 +1055,10 @@
 		}
 
 		scheduleContentListFilterSync( $row );
+	} );
+
+	$( document ).on( 'change select2:select select2:clear select2:unselect', '.layout[data-layout="reusable_block"] .acf-field[data-name="block"] select, .layout[data-layout="reusable_block"] .acf-field[data-name="block"] input[type="hidden"]', function() {
+		updateReusableBlockEditLink( $( this ).closest( '.layout[data-layout="reusable_block"]' ) );
 	} );
 
 	$( document ).on( 'change', '.layout[data-layout="content_lists"] .acf-field[data-name="display_mode"] select', function() {

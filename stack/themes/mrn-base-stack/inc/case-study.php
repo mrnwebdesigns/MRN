@@ -146,7 +146,7 @@ function mrn_base_stack_register_case_study_field_group() {
 							'name'          => 'image',
 							'aria-label'    => '',
 							'type'          => 'image',
-							'return_format' => 'array',
+							'return_format' => 'id',
 							'preview_size'  => 'medium',
 							'library'       => 'all',
 							'mime_types'    => 'jpg,jpeg,png,gif,webp,svg',
@@ -193,7 +193,7 @@ function mrn_base_stack_register_case_study_field_group() {
 					'name'          => 'case_study_strategy_image',
 					'aria-label'    => '',
 					'type'          => 'image',
-					'return_format' => 'array',
+					'return_format' => 'id',
 					'preview_size'  => 'medium',
 					'library'       => 'all',
 					'mime_types'    => 'jpg,jpeg,png,gif,webp,svg',
@@ -302,7 +302,7 @@ function mrn_base_stack_get_case_study_data( $post_id = null ) {
 				$image_position = 'right';
 			}
 
-			if ( '' === trim( wp_strip_all_tags( $text ) ) && ! is_array( $image ) ) {
+			if ( '' === trim( wp_strip_all_tags( $text ) ) && ( ! function_exists( 'mrn_base_stack_image_has_content' ) || ! mrn_base_stack_image_has_content( $image ) ) ) {
 				continue;
 			}
 
@@ -320,7 +320,7 @@ function mrn_base_stack_get_case_study_data( $post_id = null ) {
 	}
 
 	$strategy_image = get_field( 'case_study_strategy_image', $post_id );
-	if ( is_array( $strategy_image ) ) {
+	if ( function_exists( 'mrn_base_stack_image_has_content' ) && mrn_base_stack_image_has_content( $strategy_image ) ) {
 		$data['strategy_image'] = $strategy_image;
 	}
 

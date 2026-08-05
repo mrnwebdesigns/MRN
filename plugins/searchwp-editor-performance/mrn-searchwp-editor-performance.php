@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: SearchWP Editor Performance
+ * Plugin Name: MRN SearchWP Editor Performance
  * Description: Local/development SearchWP indexer override to reduce editor load/save latency.
  * Version: 1.0.6
- * Author: MRN
+ * Author: MRN Web Designs
  */
 
 if (!defined('ABSPATH')) {
@@ -96,7 +96,7 @@ final class MRN_SearchWP_Editor_Performance {
 		$pagenow = isset($GLOBALS['pagenow']) ? strtolower((string) $GLOBALS['pagenow']) : '';
 
 		if ('' === $pagenow && isset($_SERVER['SCRIPT_NAME'])) {
-			$pagenow = strtolower((string) wp_basename(wp_unslash((string) $_SERVER['SCRIPT_NAME'])));
+			$pagenow = strtolower((string) wp_basename(sanitize_text_field(wp_unslash($_SERVER['SCRIPT_NAME']))));
 		}
 
 		return in_array($pagenow, array('post.php', 'post-new.php'), true);

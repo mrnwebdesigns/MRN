@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Style Guide (MU)
+ * Plugin Name: MRN Active Style Guide
  * Description: Adds a logged-in-only front-end style guide panel and full reference page for reviewing live brand styles.
  * Author: MRN Web Designs
  * Version: 0.1.5
@@ -520,6 +520,8 @@ function mrn_active_style_guide_get_frontend_helper_functions(): array {
         'mrn_base_stack_get_section_width_layers()',
         'mrn_base_stack_get_builder_anchor_markup()',
         'mrn_base_stack_get_builder_motion_contract()',
+        'mrn_base_stack_get_row_spacing_attr_html_for_current_row()',
+        'mrn_base_stack_hydrate_row_spacing_selectors_from_meta()',
         'mrn_base_stack_get_row_spacing_contract()',
         'mrn_base_stack_get_builder_sub_content_width_contract()',
         'mrn_base_stack_get_builder_flex_contract()',
@@ -754,7 +756,7 @@ function mrn_active_style_guide_get_starter_css_snippets(): array {
  */
 function mrn_active_style_guide_get_starter_php_snippets(): array {
     return array(
-        'Row Spacing Contract (Shared Wrapper)' => "\$row_spacing_contract = function_exists('mrn_base_stack_get_row_spacing_contract')\n    ? mrn_base_stack_get_row_spacing_contract(is_array(\$row) ? \$row : array())\n    : array('classes' => array(), 'attributes' => array());\n\n\$section_attrs = isset(\$section_attrs) && is_array(\$section_attrs) ? \$section_attrs : array();\n\nif (!empty(\$row_spacing_contract['attributes']) && is_array(\$row_spacing_contract['attributes'])) {\n    if (function_exists('mrn_base_stack_merge_builder_attributes')) {\n        \$section_attrs = mrn_base_stack_merge_builder_attributes(\$section_attrs, \$row_spacing_contract['attributes']);\n    } else {\n        \$section_attrs = array_merge(\$section_attrs, \$row_spacing_contract['attributes']);\n    }\n}\n\n\$section_attr_html = function_exists('mrn_base_stack_get_html_attributes')\n    ? mrn_base_stack_get_html_attributes(\$section_attrs)\n    : '';",
+        'Row Spacing Contract (Current Row Wrapper)' => "\$row = isset(\$row) && is_array(\$row) ? \$row : array();\n\n\$section_attr_html = function_exists('mrn_base_stack_get_row_spacing_attr_html_for_current_row')\n    ? mrn_base_stack_get_row_spacing_attr_html_for_current_row(\$row)\n    : '';",
         'Row Wrapper Output' => "<section class=\"your-row-class\"<?php echo '' !== \$section_attr_html ? ' ' . \$section_attr_html : ''; ?>>\n    ...\n</section>",
     );
 }
@@ -787,9 +789,12 @@ function mrn_active_style_guide_get_child_theme_row_spacing_reference(): array {
     return array(
         'Default path (no child override)' => 'No child-theme code is needed when the parent template renders the row wrapper. Parent stack output already applies Site Styles spacing.',
         'When child code is required' => 'Only custom child templates that output their own section wrapper need row spacing integration.',
-        'Use shared row spacing wrapper' => 'Call mrn_base_stack_get_row_spacing_contract() in custom child templates.',
+        'Use shared row spacing wrapper' => 'Call mrn_base_stack_get_row_spacing_attr_html_for_current_row() in custom child templates that render inside the active ACF row loop.',
+        'Hydrate missing selector fields' => 'The shared wrapper hydrates missing row-spacing selector fields from raw flexible-content meta before resolving the spacing contract.',
+        'Disabled row safety' => 'The stack resolves the current visible row to the raw flexible-content meta index so disabled/skipped ACF rows do not shift spacing to the previous row.',
+        'Complete row data remains supported' => 'Call mrn_base_stack_get_row_spacing_contract() directly only when the row payload already contains complete selector data.',
         'Avoid builder-only helper calls' => 'Do not call mrn_base_stack_get_builder_row_spacing_contract() directly from child templates.',
-        'Render merged attributes' => 'Merge contract attributes into your section attributes, then print the final attribute string on the section tag.',
+        'Render shared attributes' => 'Print the escaped attribute string returned by the shared wrapper on the section tag.',
         'Keep stable row wrapper class' => 'Keep .mrn-content-builder__row on custom row wrappers so stack hooks and CSS contracts stay stable.',
         'Use contract-aware CSS' => 'Custom section CSS must consume --mrn-row-padding-* / --mrn-row-margin-* variables instead of fixed spacing values.',
         'Output behavior' => 'data-mrn-row-spacing and --mrn-row-* variables emit only when spacing resolves from row data/presets.',
@@ -821,7 +826,7 @@ function mrn_active_style_guide_get_child_theme_row_spacing_contract_reference()
  */
 function mrn_active_style_guide_get_child_theme_row_spacing_snippets(): array {
     return array(
-        'Child Theme Row Spacing Drop-In (Template)' => "<?php\n\$row = isset(\$row) && is_array(\$row) ? \$row : array();\n\n\$row_spacing_contract = function_exists('mrn_base_stack_get_row_spacing_contract')\n    ? mrn_base_stack_get_row_spacing_contract(\$row)\n    : array('classes' => array(), 'attributes' => array());\n\n\$section_attrs = isset(\$section_attrs) && is_array(\$section_attrs) ? \$section_attrs : array();\nif (!empty(\$row_spacing_contract['attributes']) && is_array(\$row_spacing_contract['attributes'])) {\n    if (function_exists('mrn_base_stack_merge_builder_attributes')) {\n        \$section_attrs = mrn_base_stack_merge_builder_attributes(\$section_attrs, \$row_spacing_contract['attributes']);\n    } else {\n        \$section_attrs = array_merge(\$section_attrs, \$row_spacing_contract['attributes']);\n    }\n}\n\nif (function_exists('mrn_base_stack_get_html_attributes')) {\n    \$section_attr_html = mrn_base_stack_get_html_attributes(\$section_attrs);\n} else {\n    \$rendered_attrs = array();\n    foreach (\$section_attrs as \$attr_name => \$attr_value) {\n        if (!is_string(\$attr_name) || '' === \$attr_name || !is_scalar(\$attr_value)) {\n            continue;\n        }\n        \$rendered_attrs[] = sprintf('%s=\"%s\"', esc_attr(\$attr_name), esc_attr((string) \$attr_value));\n    }\n    \$section_attr_html = implode(' ', \$rendered_attrs);\n}\n?>\n<section class=\"welcome-section mrn-content-builder__row\"<?php echo '' !== \$section_attr_html ? ' ' . \$section_attr_html : ''; ?>>\n    ...\n</section>",
+        'Child Theme Row Spacing Drop-In (Template)' => "<?php\n\$row = isset(\$row) && is_array(\$row) ? \$row : array();\n\$section_attr_html = function_exists('mrn_base_stack_get_row_spacing_attr_html_for_current_row')\n    ? mrn_base_stack_get_row_spacing_attr_html_for_current_row(\$row)\n    : '';\n?>\n<section class=\"welcome-section mrn-content-builder__row\"<?php echo '' !== \$section_attr_html ? ' ' . \$section_attr_html : ''; ?>>\n    ...\n</section>",
         'Child Theme Row Spacing CSS (Custom Section)' => ".welcome-section {\n    padding-top: var(--mrn-row-padding-top, var(--space-64));\n    padding-right: var(--mrn-row-padding-right, 0);\n    padding-bottom: var(--mrn-row-padding-bottom, var(--space-64));\n    padding-left: var(--mrn-row-padding-left, 0);\n}",
         'Child Theme Row Spacing CSS (Optional Global Contract)' => ".mrn-content-builder__row[data-mrn-row-spacing] {\n    margin-top: var(--mrn-row-margin-top-desktop, 0);\n    margin-right: var(--mrn-row-margin-right-desktop, 0);\n    margin-bottom: var(--mrn-row-margin-bottom-desktop, 0);\n    margin-left: var(--mrn-row-margin-left-desktop, 0);\n    padding-top: var(--mrn-row-padding-top-desktop, 0);\n    padding-right: var(--mrn-row-padding-right-desktop, 0);\n    padding-bottom: var(--mrn-row-padding-bottom-desktop, 0);\n    padding-left: var(--mrn-row-padding-left-desktop, 0);\n}\n\n@media (max-width: 767px) {\n    .mrn-content-builder__row[data-mrn-row-spacing] {\n        margin-top: var(--mrn-row-margin-top-mobile, var(--mrn-row-margin-top-desktop, 0));\n        margin-right: var(--mrn-row-margin-right-mobile, var(--mrn-row-margin-right-desktop, 0));\n        margin-bottom: var(--mrn-row-margin-bottom-mobile, var(--mrn-row-margin-bottom-desktop, 0));\n        margin-left: var(--mrn-row-margin-left-mobile, var(--mrn-row-margin-left-desktop, 0));\n        padding-top: var(--mrn-row-padding-top-mobile, var(--mrn-row-padding-top-desktop, 0));\n        padding-right: var(--mrn-row-padding-right-mobile, var(--mrn-row-padding-right-desktop, 0));\n        padding-bottom: var(--mrn-row-padding-bottom-mobile, var(--mrn-row-padding-bottom-desktop, 0));\n        padding-left: var(--mrn-row-padding-left-mobile, var(--mrn-row-padding-left-desktop, 0));\n    }\n}",
     );
@@ -1379,7 +1384,7 @@ function mrn_active_style_guide_render_developer_reference_page(): void {
                 mrn_active_style_guide_render_developer_reference_snippet_section(
                     'mrn-devref-starter-php-snippets',
                     'Starter PHP Snippets',
-                    'Use shared stack wrappers in templates. For row spacing, call mrn_base_stack_get_row_spacing_contract() instead of directly calling builder-only internals.',
+                    'Use shared stack wrappers in templates. For row spacing, call mrn_base_stack_get_row_spacing_attr_html_for_current_row() instead of directly calling builder-only internals.',
                     $starter_php_snippets
                 );
                 */

@@ -44,9 +44,7 @@ if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
 	$subheading_tag = 'p';
 }
 
-if ( ! in_array( $display_mode, array( 'grid', 'slider' ), true ) ) {
-	$display_mode = 'grid';
-}
+$display_mode = mrn_base_stack_normalize_builder_layout_display_mode( $display_mode, 'logos' );
 
 $valid_items = array();
 foreach ( $items as $item ) {
@@ -54,12 +52,12 @@ foreach ( $items as $item ) {
 		continue;
 	}
 
-	$image     = isset( $item['image'] ) && is_array( $item['image'] ) ? $item['image'] : array();
+	$image     = $item['image'] ?? null;
 	$item_link = function_exists( 'mrn_base_stack_get_repeater_item_primary_link' )
 		? mrn_base_stack_get_repeater_item_primary_link( $item )
 		: array();
 
-	if ( empty( $image['ID'] ) && empty( $image['url'] ) ) {
+	if ( ! function_exists( 'mrn_base_stack_image_has_content' ) || ! mrn_base_stack_image_has_content( $image ) ) {
 		continue;
 	}
 
@@ -84,6 +82,7 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 	$section_styles[] = '--mrn-logos-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
+$display_contract  = mrn_base_stack_get_builder_display_contract( array_merge( $row, array( 'display_mode' => $display_mode ) ), 'logos' );
 $accent_contract   = function_exists( 'mrn_base_stack_get_builder_accent_contract' ) ? mrn_base_stack_get_builder_accent_contract( $bottom_accent, $accent_slug ) : array(
 	'classes'    => $bottom_accent ? array( 'has-bottom-accent' ) : array(),
 	'attributes' => array(),
@@ -92,9 +91,11 @@ $motion_contract   = function_exists( 'mrn_base_stack_get_builder_motion_contrac
 	'classes'    => array(),
 	'attributes' => array(),
 );
+$section_classes   = mrn_base_stack_merge_builder_section_classes( $section_classes, $display_contract );
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $accent_contract ) : $section_classes;
 $section_classes   = function_exists( 'mrn_base_stack_merge_builder_section_classes' ) ? mrn_base_stack_merge_builder_section_classes( $section_classes, $motion_contract ) : $section_classes;
-$section_attrs     = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
+$section_attrs     = $display_contract['attributes'];
+$section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array() );
 $section_attrs     = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 $slider_id         = 'mrn-logos-' . $row_index . '-' . wp_generate_password( 6, false, false );
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
@@ -157,11 +158,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 											<?php endif; ?>
 										>
 									<?php endif; ?>
-									<?php if ( ! empty( $image['ID'] ) ) : ?>
-										<?php echo wp_get_attachment_image( (int) $image['ID'], 'medium' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-									<?php else : ?>
-										<img src="<?php echo esc_url( $image['url'] ); ?>" alt="<?php echo esc_attr( $image['alt'] ?? '' ); ?>">
-									<?php endif; ?>
+									<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, 'mrn-logo' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 									<?php if ( '' !== $url ) : ?>
 										</a>
 									<?php endif; ?>
@@ -193,11 +190,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 								<?php endif; ?>
 							>
 						<?php endif; ?>
-						<?php if ( ! empty( $image['ID'] ) ) : ?>
-							<?php echo wp_get_attachment_image( (int) $image['ID'], 'medium' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						<?php else : ?>
-							<img src="<?php echo esc_url( $image['url'] ); ?>" alt="<?php echo esc_attr( $image['alt'] ?? '' ); ?>">
-						<?php endif; ?>
+						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $image, 'mrn-logo' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<?php if ( '' !== $url ) : ?>
 							</a>
 						<?php endif; ?>

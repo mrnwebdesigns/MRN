@@ -19,7 +19,7 @@ BOOTSTRAP_WARNINGS=()
 usage() {
   cat <<'USAGE'
 Usage:
-  site-bootstrap.sh --site-path /home/<user>/htdocs/<domain> [--site-user <user>] [--plugins-file <path>] [--themes-file <path>] [--licenses-file <path>] [--notify-email <email>]
+  site-bootstrap.sh --site-path /home/<user>/htdocs/<domain> [--site-user <user>] [--plugins-file <path>] [--themes-file <path>] [--licenses-file <path>] [--notify-email <email>] [--test-notifications]
 
 Notes:
   - Run as root (recommended on CloudPanel and required to provision site-owner SSH files with the correct ownership/perms).
@@ -41,6 +41,7 @@ SITE_PATH=""
 SITE_USER=""
 SITE_HOME=""
 WP_PATH=""
+TEST_NOTIFICATIONS="false"
 NOTIFY_EMAIL="${STACK_NOTIFY_EMAIL:-${BOOTSTRAP_NOTIFY_EMAIL:-wordpress_admin@mrnwebdesigns.com}}"
 SLACK_WEBHOOK_URL="${STACK_SLACK_WEBHOOK_URL:-${BOOTSTRAP_SLACK_WEBHOOK_URL:-}}"
 SLACK_WEBHOOK_URL_FILE="${STACK_SLACK_WEBHOOK_URL_FILE:-${STACK_ROOT}/secrets/slack-webhook-url.txt}"
@@ -49,6 +50,19 @@ SLACK_USERNAME="${STACK_SLACK_USERNAME:-MRN Bootstrap}"
 SLACK_ICON_EMOJI="${STACK_SLACK_ICON_EMOJI:-:rocket:}"
 SENDGRID_MANAGEMENT_API_KEY="${MRN_SENDGRID_MANAGEMENT_API_KEY:-${STACK_SENDGRID_MANAGEMENT_API_KEY:-}}"
 SENDGRID_MANAGEMENT_API_KEY_FILE="${STACK_SENDGRID_MANAGEMENT_API_KEY_FILE:-${STACK_ROOT}/secrets/sendgrid-management-api-key.txt}"
+AUTO_PROVISION_SENDGRID="${STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION:-1}"
+AUTO_PROVISION_UPTIME_ROBOT="${STACK_BOOTSTRAP_UPTIME_ROBOT_AUTO_PROVISION:-1}"
+UPTIME_ROBOT_MONITOR_INTERVAL="${STACK_BOOTSTRAP_UPTIME_ROBOT_INTERVAL:-${STACK_UPTIME_ROBOT_MONITOR_INTERVAL:-300}}"
+RECAPTCHA_ENTERPRISE_PROJECT_ID="${MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID:-${STACK_RECAPTCHA_ENTERPRISE_PROJECT_ID:-}}"
+RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE="${STACK_RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE:-${STACK_ROOT}/secrets/recaptcha-enterprise-project-id.txt}"
+RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL="${MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL:-${STACK_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL:-}}"
+RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL_FILE="${STACK_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL_FILE:-${STACK_ROOT}/secrets/recaptcha-enterprise-service-account-email.txt}"
+RECAPTCHA_ENTERPRISE_PRIVATE_KEY="${MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY:-${STACK_RECAPTCHA_ENTERPRISE_PRIVATE_KEY:-}}"
+RECAPTCHA_ENTERPRISE_PRIVATE_KEY_FILE="${STACK_RECAPTCHA_ENTERPRISE_PRIVATE_KEY_FILE:-${STACK_ROOT}/secrets/recaptcha-enterprise-private-key.pem}"
+RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS="${MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS:-${STACK_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS:-}}"
+RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS_FILE="${STACK_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS_FILE:-${STACK_ROOT}/secrets/recaptcha-enterprise-allowed-domains.txt}"
+RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE="${MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE:-${STACK_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE:-}}"
+RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE_FILE="${STACK_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE_FILE:-${STACK_ROOT}/secrets/recaptcha-enterprise-default-integration-type.txt}"
 
 if [[ -z "${SLACK_WEBHOOK_URL}" && -f "${SLACK_WEBHOOK_URL_FILE}" ]]; then
   SLACK_WEBHOOK_URL="$(tr -d '\r\n' < "${SLACK_WEBHOOK_URL_FILE}")"
@@ -56,6 +70,26 @@ fi
 
 if [[ -z "${SENDGRID_MANAGEMENT_API_KEY}" && -f "${SENDGRID_MANAGEMENT_API_KEY_FILE}" ]]; then
   SENDGRID_MANAGEMENT_API_KEY="$(tr -d '\r\n' < "${SENDGRID_MANAGEMENT_API_KEY_FILE}")"
+fi
+
+if [[ -z "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" && -f "${RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE}" ]]; then
+  RECAPTCHA_ENTERPRISE_PROJECT_ID="$(tr -d '\r\n' < "${RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE}")"
+fi
+
+if [[ -z "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" && -f "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL_FILE}" ]]; then
+  RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL="$(tr -d '\r\n' < "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL_FILE}")"
+fi
+
+if [[ -z "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY}" && -f "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY_FILE}" ]]; then
+  RECAPTCHA_ENTERPRISE_PRIVATE_KEY="$(tr -d '\r' < "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY_FILE}")"
+fi
+
+if [[ -z "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" && -f "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS_FILE}" ]]; then
+  RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS="$(tr -d '\r\n' < "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS_FILE}")"
+fi
+
+if [[ -z "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE}" && -f "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE_FILE}" ]]; then
+  RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE="$(tr -d '\r\n' < "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE_FILE}")"
 fi
 
 while [[ $# -gt 0 ]]; do
@@ -84,6 +118,10 @@ while [[ $# -gt 0 ]]; do
       NOTIFY_EMAIL="${2:-}"
       shift 2
       ;;
+    --test-notifications)
+      TEST_NOTIFICATIONS="true"
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -101,20 +139,31 @@ send_notification() {
   subject="$1"
   body="$2"
   if [[ -z "${NOTIFY_EMAIL}" ]]; then
+    echo "Email notification skipped: no recipient configured."
     return 0
   fi
   if command -v mail >/dev/null 2>&1; then
-    printf '%s\n' "${body}" | mail -s "${subject}" "${NOTIFY_EMAIL}" || true
+    if printf '%s\n' "${body}" | mail -s "${subject}" "${NOTIFY_EMAIL}"; then
+      echo "Email notification sent via mail to ${NOTIFY_EMAIL}: ${subject}"
+    else
+      echo "WARNING: Email notification failed via mail to ${NOTIFY_EMAIL}: ${subject}" >&2
+    fi
     return 0
   fi
   if command -v sendmail >/dev/null 2>&1; then
-    {
+    if {
       printf 'To: %s\n' "${NOTIFY_EMAIL}"
       printf 'Subject: %s\n' "${subject}"
       printf '\n'
       printf '%s\n' "${body}"
-    } | sendmail -t || true
+    } | sendmail -t; then
+      echo "Email notification sent via sendmail to ${NOTIFY_EMAIL}: ${subject}"
+    else
+      echo "WARNING: Email notification failed via sendmail to ${NOTIFY_EMAIL}: ${subject}" >&2
+    fi
+    return 0
   fi
+  echo "WARNING: Email notification skipped because neither mail nor sendmail is available." >&2
 }
 
 json_escape() {
@@ -133,8 +182,14 @@ send_slack_notification() {
   local color="${3:-#1f6feb}"
   local domain channel_field payload
 
-  [[ -n "${SLACK_WEBHOOK_URL}" ]] || return 0
-  command -v curl >/dev/null 2>&1 || return 0
+  if [[ -z "${SLACK_WEBHOOK_URL}" ]]; then
+    echo "Slack notification skipped: webhook URL is not configured."
+    return 0
+  fi
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "WARNING: Slack notification skipped because curl is not available." >&2
+    return 0
+  fi
 
   domain="$(basename "${SITE_PATH:-unknown}")"
   if [[ -n "${SLACK_CHANNEL}" ]]; then
@@ -158,7 +213,11 @@ send_slack_notification() {
     ]
   }'
 
-  curl -sS -X POST -H 'Content-type: application/json' --data "${payload}" "${SLACK_WEBHOOK_URL}" >/dev/null || true
+  if curl -sS -X POST -H 'Content-type: application/json' --data "${payload}" "${SLACK_WEBHOOK_URL}" >/dev/null; then
+    echo "Slack notification sent: ${title}"
+  else
+    echo "WARNING: Slack notification failed: ${title}" >&2
+  fi
 }
 
 notify_failure() {
@@ -185,6 +244,20 @@ EOF
 }
 
 trap 'notify_failure "$?" "$LINENO" "$BASH_COMMAND"' ERR
+
+if [[ "${TEST_NOTIFICATIONS}" == "true" ]]; then
+  if [[ -z "${SITE_PATH}" ]]; then
+    SITE_PATH="/notification-test"
+  fi
+  send_notification \
+    "MRN Bootstrap Notification Test" \
+    "MRN bootstrap notification test from ${STACK_ROOT}."
+  send_slack_notification \
+    "MRN Bootstrap Notification Test" \
+    "MRN bootstrap notification test from ${STACK_ROOT}." \
+    "#1f6feb"
+  exit 0
+fi
 
 if [[ -z "${SITE_PATH}" ]]; then
   echo "Missing required argument: --site-path" >&2
@@ -245,6 +318,28 @@ run_wp() {
   sudo -u "${SITE_USER}" wp --path="${WP_PATH}" "${args[@]}"
 }
 
+php_string_literal() {
+  local value
+  value="${1:-}"
+  php -r 'echo var_export($argv[1], true);' -- "${value}"
+}
+
+last_nonempty_line() {
+  sed '/^[[:space:]]*$/d' | tail -n 1
+}
+
+run_wp_config_set_quiet() {
+  local name="$1"
+  shift
+
+  if run_wp config set "${name}" "$@" >/dev/null 2>&1; then
+    echo "Configured ${name} in wp-config.php"
+    return 0
+  fi
+
+  return 1
+}
+
 load_site_owner_authorized_key() {
   local key_line
 
@@ -277,6 +372,15 @@ ensure_site_owner_direct_ssh() {
 
   if [[ ! -d "${SITE_HOME}" ]]; then
     echo "Site home directory missing for ${SITE_USER}: ${SITE_HOME}" >&2
+    exit 1
+  fi
+
+  # CloudPanel creates site homes as group-writable. OpenSSH StrictModes then
+  # ignores ~/.ssh/authorized_keys even when that file and directory are 600/700.
+  # The site owner keeps write access; the CloudPanel webadmin ACL keeps its
+  # read/execute access through the resulting ACL mask.
+  if ! chmod g-w,o-w "${SITE_HOME}"; then
+    echo "Could not remove group/other write access from site home: ${SITE_HOME}" >&2
     exit 1
   fi
 
@@ -362,6 +466,17 @@ add_warning() {
   local msg="$1"
   BOOTSTRAP_WARNINGS+=("${msg}")
   echo "WARNING: ${msg}" >&2
+}
+
+bootstrap_flag_enabled() {
+  case "${1:-}" in
+    0|false|False|FALSE|no|No|NO|off|Off|OFF)
+      return 1
+      ;;
+    *)
+      return 0
+      ;;
+  esac
 }
 
 resolve_shared_source_dir() {
@@ -1217,6 +1332,12 @@ install_themes() {
     version=""
     flag=""
     activate="0"
+    slug=""
+    before_list=()
+    after_list=()
+    inferred_slug=""
+    install_output=""
+    fallback_slug=""
 
     if [[ "${clean}" == *"|"* ]]; then
       source="$(printf '%s' "${clean%%|*}" | tr -d '\r' | xargs)"
@@ -1320,6 +1441,8 @@ install_themes() {
 }
 
 apply_wp_defaults() {
+  local recaptcha_private_key_literal recaptcha_private_key_php_literal recaptcha_integration_type
+
   run_wp option update permalink_structure '/%postname%/'
   # Discourage search engines from indexing bootstrap sites by default.
   run_wp option update blog_public 0
@@ -1327,12 +1450,188 @@ apply_wp_defaults() {
   if ! run_wp config set WP_ENVIRONMENT_TYPE development --type=constant; then
     add_warning "Failed to set WP_ENVIRONMENT_TYPE=development in wp-config.php"
   fi
+  # Disable WordPress's native background updater while preserving explicit
+  # updates initiated by administrators or the authenticated MainWP connection.
+  # Hosting control-plane updaters operate outside WordPress and are unaffected.
+  if ! run_wp config set AUTOMATIC_UPDATER_DISABLED true --raw --type=constant; then
+    add_warning "Failed to set AUTOMATIC_UPDATER_DISABLED=true in wp-config.php"
+  fi
+  if ! run_wp config set WP_AUTO_UPDATE_CORE false --raw --type=constant; then
+    add_warning "Failed to set WP_AUTO_UPDATE_CORE=false in wp-config.php"
+  fi
   # Expose the stack-managed SendGrid management key to WordPress when available.
   if [[ -n "${SENDGRID_MANAGEMENT_API_KEY}" ]]; then
-    if ! run_wp config set MRN_SENDGRID_MANAGEMENT_API_KEY "${SENDGRID_MANAGEMENT_API_KEY}" --type=constant; then
+    if ! run_wp_config_set_quiet MRN_SENDGRID_MANAGEMENT_API_KEY "${SENDGRID_MANAGEMENT_API_KEY}" --type=constant; then
       add_warning "Failed to set MRN_SENDGRID_MANAGEMENT_API_KEY in wp-config.php"
     fi
   fi
+  # Expose stack-managed reCAPTCHA Enterprise credentials for code-locked plugin mode.
+  if [[ -n "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" ]]; then
+    if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" --type=constant; then
+      add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID in wp-config.php"
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" ]]; then
+    if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" --type=constant; then
+      add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL in wp-config.php"
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY}" ]]; then
+    recaptcha_private_key_literal="$(
+      printf '%s' "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY}" \
+        | tr -d '\r' \
+        | sed ':a;N;$!ba;s/\n/\\n/g'
+    )"
+    if [[ -n "${recaptcha_private_key_literal}" ]]; then
+      if ! recaptcha_private_key_php_literal="$(php_string_literal "${recaptcha_private_key_literal}")"; then
+        add_warning "Failed to prepare MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY for wp-config.php"
+      elif ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY "${recaptcha_private_key_php_literal}" --raw --type=constant; then
+        add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY in wp-config.php"
+      fi
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" ]]; then
+    if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" --type=constant; then
+      add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS in wp-config.php"
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE}" ]]; then
+    recaptcha_integration_type="$(
+      printf '%s' "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE}" \
+        | tr -d '\r\n' \
+        | tr '[:lower:]' '[:upper:]'
+    )"
+    if [[ "${recaptcha_integration_type}" == "SCORE" || "${recaptcha_integration_type}" == "CHECKBOX" ]]; then
+      if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE "${recaptcha_integration_type}" --type=constant; then
+        add_warning "Failed to set MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE in wp-config.php"
+      fi
+    else
+      add_warning "Skipped MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE: expected SCORE or CHECKBOX."
+    fi
+  fi
+}
+
+reconcile_development_environment_policy() {
+  local plugin_slug hook
+  local -a disabled_plugins=(
+    searchwp
+    searchwp-live-ajax-search
+    searchwp-editor-performance
+    wpmu-dev-seo
+    smartcrawl-seo
+  )
+  local -a disabled_cron_hooks=(
+    searchwp_indexer_cron
+    searchwp_index_controller_cron
+    searchwp_maintenance
+    searchwp_usage_tracking
+    searchwp_email_summaries_cron
+    wds_sitemap_validity_check
+    wds_cron_download_geodb
+    wds_daily_moz_data_hook
+  )
+
+  if ! run_wp config set MRN_SEARCHWP_POLICY disabled --type=constant; then
+    add_warning "Failed to set MRN_SEARCHWP_POLICY=disabled in wp-config.php"
+  fi
+  if ! run_wp config set MRN_SEO_INDEXING_POLICY disabled --type=constant; then
+    add_warning "Failed to set MRN_SEO_INDEXING_POLICY=disabled in wp-config.php"
+  fi
+
+  for plugin_slug in "${disabled_plugins[@]}"; do
+    if ! run_wp plugin is-installed "${plugin_slug}" >/dev/null 2>&1; then
+      continue
+    fi
+    if run_wp plugin is-active "${plugin_slug}" >/dev/null 2>&1; then
+      if ! run_wp plugin deactivate "${plugin_slug}" >/dev/null 2>&1; then
+        add_warning "Failed to deactivate development-disabled plugin: ${plugin_slug}"
+        continue
+      fi
+      echo "Environment policy deactivated plugin: ${plugin_slug}"
+    fi
+    if run_wp plugin is-active "${plugin_slug}" >/dev/null 2>&1; then
+      add_warning "Development-disabled plugin remains active: ${plugin_slug}"
+    fi
+  done
+
+  for hook in "${disabled_cron_hooks[@]}"; do
+    run_wp cron event delete "${hook}" >/dev/null 2>&1 || true
+    if run_wp eval "exit(wp_next_scheduled('${hook}') === false ? 0 : 1);" >/dev/null 2>&1; then
+      continue
+    fi
+    add_warning "Development-disabled cron hook remains scheduled: ${hook}"
+  done
+
+  if ! run_wp cache flush >/dev/null 2>&1; then
+    add_warning "Failed to flush the WordPress object cache after environment reconciliation"
+  fi
+}
+
+provision_uptime_robot_check_page() {
+  local page_code page_output
+
+  page_code="$(cat <<'PHP'
+$slug = 'uptimerobot-check';
+$page = get_page_by_path( $slug, OBJECT, 'page' );
+
+if ( $page instanceof WP_Post ) {
+    $page_id = wp_update_post(
+        array(
+            'ID'          => $page->ID,
+            'post_name'   => $slug,
+            'post_status' => 'publish',
+        ),
+        true
+    );
+    $action = 'verified';
+} else {
+    $page_id = wp_insert_post(
+        array(
+            'post_type'      => 'page',
+            'post_status'    => 'publish',
+            'post_title'     => 'UptimeRobot Check',
+            'post_name'      => $slug,
+            'post_content'   => 'OK',
+            'comment_status' => 'closed',
+            'ping_status'    => 'closed',
+        ),
+        true
+    );
+    $action = 'created';
+}
+
+if ( is_wp_error( $page_id ) ) {
+    fwrite( STDERR, $page_id->get_error_message() . "\n" );
+    exit( 1 );
+}
+
+if ( $slug !== get_post_field( 'post_name', $page_id ) ) {
+    if ( 'created' === $action ) {
+        wp_delete_post( $page_id, true );
+    }
+    fwrite( STDERR, "Could not reserve /{$slug}/ because its permalink is already in use.\n" );
+    exit( 1 );
+}
+
+update_post_meta( $page_id, '_mrn_uptimerobot_check', '1' );
+update_post_meta( $page_id, '_yoast_wpseo_meta-robots-noindex', '1' );
+update_post_meta( $page_id, '_yoast_wpseo_meta-robots-nofollow', '1' );
+
+echo "UptimeRobot check page {$action}: " . get_permalink( $page_id ) . "\n";
+PHP
+)"
+
+  if ! page_output="$(run_wp eval "${page_code}" 2>&1)"; then
+    printf '%s\n' "${page_output}" >&2
+    echo "Failed to provision the required UptimeRobot check page at /uptimerobot-check/." >&2
+    return 1
+  fi
+
+  printf '%s\n' "${page_output}"
 }
 
 run_importers() {
@@ -1348,6 +1647,78 @@ run_importers() {
       STACK_ROOT="${STACK_ROOT}" SITE_PATH="${SITE_PATH}" SITE_USER="${SITE_USER}" WP_PATH="${WP_PATH}" "${importer}"
     fi
   done
+}
+
+provision_external_services() {
+  local sendgrid_code uptime_code uptime_interval uptime_output uptime_warning_detail
+
+  if ! run_wp plugin is-active mrn-config-helper >/dev/null 2>&1; then
+    add_warning "Skipped external service provisioning: MRN Config Helper is not active."
+    return 0
+  fi
+
+  if bootstrap_flag_enabled "${AUTO_PROVISION_SENDGRID}"; then
+    sendgrid_code="$(cat <<'PHP'
+if (!class_exists('MRN_Config_Helper') || !method_exists('MRN_Config_Helper', 'bootstrap_sendgrid_site_provisioning')) {
+    fwrite(STDERR, "MRN Config Helper does not support SendGrid bootstrap provisioning.\n");
+    exit(1);
+}
+
+$result = MRN_Config_Helper::bootstrap_sendgrid_site_provisioning(home_url('/'));
+$status = isset($result['status']) ? (string) $result['status'] : 'unknown';
+$message = isset($result['message']) ? (string) $result['message'] : 'No message returned.';
+
+echo "SendGrid provisioning {$status}: {$message}\n";
+
+if (in_array($status, array('warning', 'skipped'), true)) {
+    exit(2);
+}
+PHP
+)"
+    if ! run_wp eval "${sendgrid_code}"; then
+      add_warning "SendGrid automatic provisioning did not complete cleanly."
+    fi
+  else
+    echo "SendGrid automatic provisioning disabled by STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION."
+  fi
+
+  if bootstrap_flag_enabled "${AUTO_PROVISION_UPTIME_ROBOT}"; then
+    uptime_interval="${UPTIME_ROBOT_MONITOR_INTERVAL}"
+    if ! [[ "${uptime_interval}" =~ ^[0-9]+$ ]] || (( uptime_interval < 60 )); then
+      uptime_interval=300
+    fi
+
+    uptime_code="$(cat <<PHP
+if (!class_exists('MRN_Config_Helper') || !method_exists('MRN_Config_Helper', 'bootstrap_uptime_robot_monitor')) {
+    fwrite(STDERR, "MRN Config Helper does not support UptimeRobot bootstrap provisioning.\\n");
+    exit(1);
+}
+
+\$result = MRN_Config_Helper::bootstrap_uptime_robot_monitor(home_url('/uptimerobot-check/'), ${uptime_interval});
+\$status = isset(\$result['status']) ? (string) \$result['status'] : 'unknown';
+\$message = isset(\$result['message']) ? (string) \$result['message'] : 'No message returned.';
+
+echo "UptimeRobot provisioning {\$status}: {\$message}\\n";
+
+if (in_array(\$status, array('warning', 'skipped'), true)) {
+    exit(2);
+}
+PHP
+)"
+    if ! uptime_output="$(run_wp eval "${uptime_code}" 2>&1)"; then
+      printf '%s\n' "${uptime_output}"
+      uptime_warning_detail="$(printf '%s\n' "${uptime_output}" | last_nonempty_line)"
+      if [[ -n "${uptime_warning_detail}" ]]; then
+        add_warning "UptimeRobot automatic provisioning did not complete cleanly: ${uptime_warning_detail}"
+      else
+        add_warning "UptimeRobot automatic provisioning did not complete cleanly."
+      fi
+    elif [[ -n "${uptime_output}" ]]; then
+      printf '%s\n' "${uptime_output}"
+    fi
+  else
+    echo "UptimeRobot automatic provisioning disabled by STACK_BOOTSTRAP_UPTIME_ROBOT_AUTO_PROVISION."
+  fi
 }
 
 ensure_updraft_local_retention_schedule() {
@@ -1428,7 +1799,10 @@ main() {
   sync_shared_runtime
   install_themes
   apply_wp_defaults
+  provision_uptime_robot_check_page
   run_importers
+  provision_external_services
+  reconcile_development_environment_policy
   ensure_updraft_local_retention_schedule
   sudo -u "${SITE_USER}" touch "${SITE_PATH}/${MARKER_NAME}"
   echo "Bootstrap complete: ${SITE_PATH}"

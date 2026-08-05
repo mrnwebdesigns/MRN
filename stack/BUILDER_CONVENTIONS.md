@@ -1255,17 +1255,30 @@ Current approved advanced pattern:
   - one nested layout in the right column
   - includes `Background color` as a standard section-level config
   - should still not add extra presentation controls to the `Reusable Block` wrapper used inside the columns
-  - current allowed nested layout set:
+  - current authoring layout set:
     - `Text - label|title|text with editor`
     - `Basic - label|title|text with editor|image|link`
-    - `Card - image|text|link`
     - `CTA - label|title|text with editor|link`
-    - `Grid - label|title|repeater`
     - `Image - label|title|text with editor`
     - `Video - remote|upload`
-    - `Logos - label|heading|image|link`
     - `External - widget/iFrame`
+    - `WPForms`
     - `Reusable Block`
+
+- `Tabbed Layout`
+  - tab panels can contain nested rows, but they use a curated panel catalog rather than cloning the entire `Content` builder
+  - current authoring layout set:
+    - `Text - label|title|text with editor`
+    - `Basic - label|title|text with editor|image|link`
+    - `CTA - label|title|text with editor|link`
+    - `Image - label|title|text with editor`
+    - `External - widget/iFrame`
+    - `WPForms`
+    - `SearchWP Form`
+    - `Video - remote|upload`
+    - `Reusable Block`
+
+The complete legacy nested catalog may remain in code for saved-content compatibility, but new nested authoring controls should use the smallest context-specific catalog that solves the layout need.
 
 Avoid turning nested columns into full multi-row mini-builders unless there is a strong reason.
 Do not add recursive split-inside-split layouts unless a future thread makes that an explicit decision.

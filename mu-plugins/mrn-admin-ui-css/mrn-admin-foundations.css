@@ -1,0 +1,121 @@
+/**
+ * MRN admin design foundations.
+ *
+ * Keep rules component-scoped. This file loads on every wp-admin screen,
+ * including editor and app screens where the cleanup stylesheet is skipped.
+ */
+
+:root {
+	--mrn-admin-radius-control: 6px;
+	--mrn-admin-radius-component: 8px;
+	--mrn-admin-radius-tab-native: 4px;
+	--mrn-admin-editor-toolbar-gap: 6px;
+	--mrn-admin-action-gap: 8px;
+}
+
+/*
+ * Semantic action contract.
+ *
+ * These selectors only arrange WordPress-native controls. They deliberately
+ * do not replace .button, .button-primary, .button-link-delete, .row-actions,
+ * .notice, or .nav-tab styling owned by WordPress core.
+ */
+[data-mrn-admin-ui-contract] .mrn-admin-action-group {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--mrn-admin-action-gap);
+}
+
+[data-mrn-admin-ui-contract] .row-actions form,
+[data-mrn-admin-ui-contract] .mrn-admin-inline-action {
+	display: inline;
+}
+
+[data-mrn-admin-ui-contract] .mrn-admin-action-with-icon {
+	align-items: center;
+	display: inline-flex;
+	gap: 5px;
+}
+
+[data-mrn-admin-ui-contract] .mrn-admin-action-with-icon .dashicons {
+	font-size: 16px;
+	height: 16px;
+	line-height: 16px;
+	width: 16px;
+}
+
+[data-mrn-admin-ui-contract] .mrn-admin-card-remove {
+	align-items: center;
+	display: inline-flex;
+	justify-content: center;
+	min-height: 30px;
+	min-width: 30px;
+	padding: 4px;
+}
+
+[data-mrn-admin-ui-contract] .mrn-admin-card-remove .dashicons {
+	font-size: 18px;
+	height: 18px;
+	line-height: 18px;
+	width: 18px;
+}
+
+/* Actions */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.button,
+.page-title-action {
+	border-radius: var(--mrn-admin-radius-component) !important;
+}
+
+/* Text-like controls; deliberately excludes checks, radios, toggles and files. */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="url"],
+input[type="tel"],
+input[type="number"],
+input[type="password"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+select,
+textarea {
+	border-radius: var(--mrn-admin-radius-control);
+}
+
+/* Containers */
+.postbox,
+.stuffbox,
+.wp-list-table,
+table.widefat {
+	border-radius: var(--mrn-admin-radius-component) !important;
+	overflow: hidden;
+}
+
+/* Native edge tabs must remain attached to the panel above them. */
+#screen-meta-links .show-settings,
+.mrn-editor-sidebar-toggle {
+	border-radius: 0 0 var(--mrn-admin-radius-tab-native) var(--mrn-admin-radius-tab-native) !important;
+}
+
+/* Classic Editor tabs attach to the editor below them. */
+.wp-switch-editor {
+	border-radius: var(--mrn-admin-radius-component) var(--mrn-admin-radius-component) 0 0 !important;
+}
+
+/* The stack ACF toolbar reserves a 6px control gap; bridge only its tab edge. */
+.acf-field-wysiwyg .wp-switch-editor,
+.acf-field[data-type="wysiwyg"] .wp-switch-editor,
+.acf-editor-wrap .wp-switch-editor {
+	top: calc(var(--mrn-admin-editor-toolbar-gap) + 1px) !important;
+}
+
+/* ACF field-group tabs attach directly to their content panel. */
+.acf-tab-wrap.-top .acf-tab-group > li > a,
+.acf-fields > .acf-tab-wrap .acf-tab-group > li > a {
+	border-radius: var(--mrn-admin-radius-component) var(--mrn-admin-radius-component) 0 0 !important;
+}

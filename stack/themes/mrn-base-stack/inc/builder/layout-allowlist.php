@@ -27,6 +27,11 @@ function mrn_base_stack_get_builder_layout_allowlist_targets() {
 			'group_key' => 'group_mrn_after_content_builder',
 			'label'     => 'After Content',
 		),
+		'page_sidebar_rows' => array(
+			'field_key' => 'field_mrn_sidebar_rows',
+			'group_key' => 'group_mrn_singular_sidebar',
+			'label'     => 'Sidebar',
+		),
 	);
 }
 
@@ -38,7 +43,13 @@ function mrn_base_stack_get_builder_layout_allowlist_targets() {
  * @return bool
  */
 function mrn_base_stack_should_render_builder_layout_allowlist_target( $field_name, $post_type ) {
-	unset( $field_name, $post_type );
+	$field_name = sanitize_key( (string) $field_name );
+	$post_type  = sanitize_key( (string) $post_type );
+
+	if ( 'page_sidebar_rows' === $field_name && function_exists( 'mrn_base_stack_get_sidebar_supported_post_types' ) ) {
+		return in_array( $post_type, mrn_base_stack_get_sidebar_supported_post_types(), true );
+	}
+
 	return true;
 }
 
@@ -52,9 +63,15 @@ function mrn_base_stack_get_builder_layout_allowlist_filter_hooks() {
 		'acf/load_field/key=field_mrn_page_hero_rows',
 		'acf/load_field/key=field_mrn_page_content_rows',
 		'acf/load_field/key=field_mrn_page_after_content_rows',
+		'acf/load_field/key=field_mrn_sidebar_rows',
+		'acf/load_field/key=field_mrn_page_template_sidebar_rows',
+		'acf/load_field/type=flexible_content',
 		'acf/prepare_field/key=field_mrn_page_hero_rows',
 		'acf/prepare_field/key=field_mrn_page_content_rows',
 		'acf/prepare_field/key=field_mrn_page_after_content_rows',
+		'acf/prepare_field/key=field_mrn_sidebar_rows',
+		'acf/prepare_field/key=field_mrn_page_template_sidebar_rows',
+		'acf/prepare_field/type=flexible_content',
 	);
 }
 
@@ -70,6 +87,7 @@ function mrn_base_stack_run_without_builder_layout_allowlist_filters( callable $
 	foreach ( $hooks as $hook_name ) {
 		remove_filter( $hook_name, 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 	}
+	remove_filter( 'acf/load_fields', 'mrn_base_stack_filter_builder_layout_allowlist_fields', 20 );
 
 	try {
 		return $callback();
@@ -77,6 +95,7 @@ function mrn_base_stack_run_without_builder_layout_allowlist_filters( callable $
 		foreach ( $hooks as $hook_name ) {
 			add_filter( $hook_name, 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 		}
+		add_filter( 'acf/load_fields', 'mrn_base_stack_filter_builder_layout_allowlist_fields', 20, 2 );
 	}
 }
 
@@ -110,8 +129,8 @@ function mrn_base_stack_build_sanitized_builder_layout_allowlist_payload( array 
 	$allowlists = array();
 
 	foreach ( $targets as $field_name => $target ) {
-		$catalog            = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name ) );
-		$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
+		$catalog            = mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name );
+		$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog, $field_name );
 		if ( isset( $catalog_input[ $field_name ] ) ) {
 			$posted_catalog_names = array_values(
 				array_unique(
@@ -227,6 +246,10 @@ function mrn_base_stack_get_builder_layout_allowlist_context_post_type( $post_id
 		$post_type = sanitize_key( (string) get_post_type( absint( wp_unslash( $_REQUEST['post'] ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only context lookup.
 	}
 
+	if ( '' === $post_type && isset( $_REQUEST['post_ID'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only context lookup.
+		$post_type = sanitize_key( (string) get_post_type( absint( wp_unslash( $_REQUEST['post_ID'] ) ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only context lookup.
+	}
+
 	return $post_type;
 }
 
@@ -324,14 +347,75 @@ function mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( array $
 			$label = ucfirst( str_replace( array( '-', '_' ), ' ', $name ) );
 		}
 
+		$is_page_only = ! empty( $layout['mrn_is_page_only'] ) || false !== stripos( $label, '(Page Only)' );
+
 		$catalog[ $name ] = array(
 			'label'        => $label,
-			'layout'       => $layout,
-			'is_page_only' => false !== stripos( $label, '(Page Only)' ),
+			'is_page_only' => $is_page_only,
 		);
 	}
 
 	return $catalog;
+}
+
+/**
+ * Resolve a lightweight layout catalog for an allowlist target.
+ *
+ * @param string $field_name Flexible-content field name.
+ * @return array<string, array<string, mixed>>
+ */
+function mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name ) {
+	static $cache = array();
+
+	$field_name = sanitize_key( (string) $field_name );
+	if ( isset( $cache[ $field_name ] ) ) {
+		return $cache[ $field_name ];
+	}
+
+	if ( 'page_content_rows' === $field_name ) {
+		$cache[ $field_name ] = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field(
+			mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name )
+		);
+
+		return $cache[ $field_name ];
+	}
+
+	$content_catalog = array();
+	if ( function_exists( 'mrn_base_stack_get_content_builder_source_layouts' ) ) {
+		$content_catalog = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field(
+			array(
+				'layouts' => mrn_base_stack_get_content_builder_source_layouts(),
+			)
+		);
+	}
+
+	$source_names = array();
+	if ( 'page_hero_rows' === $field_name && function_exists( 'mrn_base_stack_get_hero_builder_layout_source_names' ) ) {
+		$source_names = mrn_base_stack_get_hero_builder_layout_source_names();
+	} elseif ( 'page_after_content_rows' === $field_name && function_exists( 'mrn_base_stack_get_after_content_layout_source_names' ) ) {
+		$source_names = mrn_base_stack_get_after_content_layout_source_names();
+	} elseif ( 'page_sidebar_rows' === $field_name && function_exists( 'mrn_base_stack_get_sidebar_layout_source_names' ) ) {
+		$source_names = mrn_base_stack_get_sidebar_layout_source_names();
+	}
+
+	if ( empty( $content_catalog ) || empty( $source_names ) ) {
+		$cache[ $field_name ] = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field(
+			mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name )
+		);
+
+		return $cache[ $field_name ];
+	}
+
+	$catalog = array();
+	foreach ( $source_names as $layout_name ) {
+		$layout_name = sanitize_key( (string) $layout_name );
+		if ( isset( $content_catalog[ $layout_name ] ) ) {
+			$catalog[ $layout_name ] = $content_catalog[ $layout_name ];
+		}
+	}
+
+	$cache[ $field_name ] = $catalog;
+	return $cache[ $field_name ];
 }
 
 /**
@@ -461,10 +545,12 @@ function mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id
  * Configurable names exclude internal page-only rows.
  *
  * @param array<string, array<string, mixed>> $catalog Field catalog.
+ * @param string                              $field_name Optional flexible-content field name.
  * @return array<int, string>
  */
-function mrn_base_stack_get_builder_layout_allowlist_configurable_names( array $catalog ) {
-	$names = array();
+function mrn_base_stack_get_builder_layout_allowlist_configurable_names( array $catalog, $field_name = '' ) {
+	$field_name = sanitize_key( (string) $field_name );
+	$names      = array();
 
 	foreach ( $catalog as $name => $layout_meta ) {
 		$name = sanitize_key( (string) $name );
@@ -479,9 +565,10 @@ function mrn_base_stack_get_builder_layout_allowlist_configurable_names( array $
 		$names[] = $name;
 	}
 
-	$names                  = array_values( array_unique( $names ) );
-	$removed_names          = apply_filters( 'mrn_base_stack_builder_layout_allowlist_removed_layout_names', array( 'body_text' ) );
-	$removed_names          = is_array( $removed_names )
+	$names                   = array_values( array_unique( $names ) );
+	$default_removed_names   = array();
+	$removed_names           = apply_filters( 'mrn_base_stack_builder_layout_allowlist_removed_layout_names', $default_removed_names, $field_name, $catalog );
+	$removed_names           = is_array( $removed_names )
 		? array_values(
 			array_unique(
 				array_filter(
@@ -489,8 +576,10 @@ function mrn_base_stack_get_builder_layout_allowlist_configurable_names( array $
 				)
 			)
 		)
-		: array( 'body_text' );
-	$sitewide_allowed_names = mrn_base_stack_get_sitewide_allowed_builder_layout_names();
+		: $default_removed_names;
+	$sitewide_allowed_names  = mrn_base_stack_get_sitewide_allowed_builder_layout_names();
+	$sitewide_hidden_names   = mrn_base_stack_get_sitewide_hidden_builder_layout_names();
+	$post_type_allowed_names = mrn_base_stack_get_post_type_allowed_builder_layout_names();
 
 	if ( ! empty( $removed_names ) ) {
 		$names = array_values( array_diff( $names, $removed_names ) );
@@ -500,7 +589,110 @@ function mrn_base_stack_get_builder_layout_allowlist_configurable_names( array $
 		$names = array_values( array_intersect( $names, $sitewide_allowed_names ) );
 	}
 
+	if ( ! empty( $sitewide_hidden_names ) ) {
+		$names = array_values( array_diff( $names, $sitewide_hidden_names ) );
+	}
+
+	if ( is_array( $post_type_allowed_names ) ) {
+		$names = array_values( array_intersect( $names, $post_type_allowed_names ) );
+	}
+
+	return mrn_base_stack_sort_builder_layout_allowlist_names_by_label( $names, $catalog );
+}
+
+/**
+ * Sort allowlist layout names by their editor-facing labels.
+ *
+ * @param array<int, string>                  $names Layout names.
+ * @param array<string, array<string, mixed>> $catalog Layout catalog.
+ * @return array<int, string>
+ */
+function mrn_base_stack_sort_builder_layout_allowlist_names_by_label( array $names, array $catalog ) {
+	$names  = array_values( array_unique( array_filter( array_map( 'sanitize_key', $names ) ) ) );
+	$labels = array();
+
+	foreach ( $names as $name ) {
+		$label = isset( $catalog[ $name ]['label'] ) ? (string) $catalog[ $name ]['label'] : $name;
+		$label = trim( wp_strip_all_tags( $label ) );
+
+		$labels[ $name ] = '' !== $label ? $label : $name;
+	}
+
+	usort(
+		$names,
+		static function ( $left, $right ) use ( $labels ) {
+			$left_label  = isset( $labels[ $left ] ) ? $labels[ $left ] : $left;
+			$right_label = isset( $labels[ $right ] ) ? $labels[ $right ] : $right;
+			$comparison  = strnatcasecmp( $left_label, $right_label );
+
+			if ( 0 !== $comparison ) {
+				return $comparison;
+			}
+
+			return strnatcasecmp( $left, $right );
+		}
+	);
+
 	return $names;
+}
+
+/**
+ * Get raw site-wide hidden builder layout names from the Config Helper option.
+ *
+ * Returns `null` when the option has not been saved so callers can distinguish
+ * between "no Config Helper setting yet" and an explicit empty hidden list.
+ *
+ * @return array<int, string>|null
+ */
+function mrn_base_stack_get_raw_sitewide_hidden_builder_layout_names() {
+	$settings = get_option( 'mrn_helper_settings', null );
+
+	if ( ! is_array( $settings ) || ! array_key_exists( 'disabled_builder_layouts', $settings ) ) {
+		return null;
+	}
+
+	$hidden_names = is_array( $settings['disabled_builder_layouts'] )
+		? $settings['disabled_builder_layouts']
+		: array();
+
+	return array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $hidden_names )
+			)
+		)
+	);
+}
+
+/**
+ * Get the site-wide hidden builder layout names.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_sitewide_hidden_builder_layout_names() {
+	$raw_hidden_names = mrn_base_stack_get_raw_sitewide_hidden_builder_layout_names();
+
+	if ( is_array( $raw_hidden_names ) ) {
+		$hidden_names = $raw_hidden_names;
+	} elseif ( function_exists( 'mrn_base_stack_get_hidden_builder_layouts' ) ) {
+		$hidden_names = mrn_base_stack_get_hidden_builder_layouts();
+	} elseif ( function_exists( 'mrn_config_helper_get_hidden_builder_layouts' ) ) {
+		$hidden_names = mrn_config_helper_get_hidden_builder_layouts();
+	} else {
+		$hidden_names = array();
+	}
+
+	if ( ! is_array( $hidden_names ) ) {
+		return array();
+	}
+
+	return array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $hidden_names )
+			)
+		)
+	);
 }
 
 /**
@@ -519,6 +711,7 @@ function mrn_base_stack_get_sitewide_allowed_builder_layout_names() {
 	$allowed_names                     = mrn_config_helper_get_allowed_builder_layouts();
 	$settings                          = get_option( 'mrn_helper_settings', null );
 	$has_saved_allowed_builder_layouts = is_array( $settings ) && array_key_exists( 'allowed_builder_layouts', $settings ) && is_array( $settings['allowed_builder_layouts'] );
+	$has_saved_hidden_builder_layouts  = is_array( $settings ) && array_key_exists( 'disabled_builder_layouts', $settings ) && is_array( $settings['disabled_builder_layouts'] );
 
 	$allowed_names = is_array( $allowed_names )
 		? array_values(
@@ -529,6 +722,10 @@ function mrn_base_stack_get_sitewide_allowed_builder_layout_names() {
 			)
 		)
 		: array();
+
+	if ( $has_saved_hidden_builder_layouts ) {
+		return $allowed_names;
+	}
 
 	/**
 	 * Keep sitewide-post handoff stable when Config Helper resolves a partial
@@ -563,6 +760,43 @@ function mrn_base_stack_get_sitewide_allowed_builder_layout_names() {
 	 * been saved. This keeps new/dynamic layouts available by default.
 	 */
 	return null;
+}
+
+/**
+ * Get Config Helper allowed builder layout names for the current post type.
+ *
+ * Returns `null` when Config Helper does not expose CPT-aware settings so
+ * callers can keep the older site-wide behavior.
+ *
+ * @param string $post_type Optional post type slug. Current editor context is used when omitted.
+ * @return array<int, string>|null
+ */
+function mrn_base_stack_get_post_type_allowed_builder_layout_names( $post_type = '' ) {
+	if ( ! function_exists( 'mrn_config_helper_get_allowed_builder_layouts_for_post_type' ) ) {
+		return null;
+	}
+
+	$post_type = sanitize_key( (string) $post_type );
+	if ( '' === $post_type ) {
+		$post_type = mrn_base_stack_get_builder_layout_allowlist_context_post_type( mrn_base_stack_get_builder_layout_allowlist_post_id() );
+	}
+
+	if ( '' === $post_type ) {
+		return null;
+	}
+
+	$allowed_names = mrn_config_helper_get_allowed_builder_layouts_for_post_type( $post_type );
+	if ( ! is_array( $allowed_names ) ) {
+		return null;
+	}
+
+	return array_values(
+		array_unique(
+			array_filter(
+				array_map( 'sanitize_key', $allowed_names )
+			)
+		)
+	);
 }
 
 /**
@@ -607,6 +841,29 @@ function mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id ) 
 }
 
 /**
+ * Determine whether a saved allowlist payload actually contains a field.
+ *
+ * This lets newly introduced allowlist targets keep using defaults until an
+ * editor explicitly saves choices for that target.
+ *
+ * @param int    $post_id Post ID.
+ * @param string $field_name Flexible-content field name.
+ * @return bool
+ */
+function mrn_base_stack_builder_layout_allowlist_saved_field_exists( $post_id, $field_name ) {
+	$post_id    = absint( $post_id );
+	$field_name = sanitize_key( (string) $field_name );
+
+	if ( $post_id < 1 || '' === $field_name ) {
+		return false;
+	}
+
+	$raw = get_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key(), true );
+
+	return is_array( $raw ) && array_key_exists( $field_name, $raw );
+}
+
+/**
  * Determine whether saved allowlist settings should be used for a post.
  *
  * New auto-draft posts should always start from defaults.
@@ -643,6 +900,7 @@ function mrn_base_stack_get_builder_layout_allowlist_default_limits() {
 		'page_hero_rows'          => 4,
 		'page_content_rows'       => 8,
 		'page_after_content_rows' => 6,
+		'page_sidebar_rows'       => 6,
 	);
 	$limits   = apply_filters( 'mrn_base_stack_builder_layout_allowlist_default_limits', $defaults );
 
@@ -668,14 +926,15 @@ function mrn_base_stack_get_builder_layout_allowlist_default_limits() {
  */
 function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, array $catalog ) {
 	$field_name         = sanitize_key( (string) $field_name );
-	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
+	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog, $field_name );
 	$default_map        = array(
-		'page_hero_rows'          => array( 'basic', 'two_column_split' ),
-		'page_content_rows'       => array( 'basic', 'image_content', 'two_column_split', 'reusable_block', 'grid' ),
-		'page_after_content_rows' => array( 'basic', 'two_column_split', 'logos', 'reusable_block', 'cta' ),
+		'page_hero_rows'          => array( 'basic_block', 'two_column_split' ),
+		'page_content_rows'       => array( 'basic_block', 'image_content', 'two_column_split', 'reusable_block', 'grid', 'faq_jump_nav' ),
+		'page_after_content_rows' => array( 'basic_block', 'two_column_split', 'logos', 'reusable_block', 'cta', 'faq_jump_nav' ),
+		'page_sidebar_rows'       => array( 'body_text', 'content_lists', 'basic_block', 'cta', 'image_content', 'external_widget', 'faq_jump_nav' ),
 	);
 	$alias_map          = array(
-		'basic'            => array( 'basic' ),
+		'basic_block'      => array( 'basic_block' ),
 		'image_content'    => array( 'image_content' ),
 		'two_column_split' => array( 'two_column_split' ),
 		'reusable_block'   => array( 'reusable_block' ),
@@ -683,6 +942,13 @@ function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name,
 		'logos'            => array( 'logos' ),
 		'cta'              => array( 'cta' ),
 		'searchwp_form'    => array( 'searchwp_form' ),
+		'body_text'        => array( 'body_text' ),
+		'content_lists'    => array( 'content_lists' ),
+		'external_widget'  => array( 'external_widget' ),
+		'wpforms'          => array( 'wpforms' ),
+		'video'            => array( 'video' ),
+		'faq'              => array( 'faq' ),
+		'faq_jump_nav'     => array( 'faq_jump_nav' ),
 	);
 	$defaults           = array();
 	$requested_defaults = isset( $default_map[ $field_name ] ) && is_array( $default_map[ $field_name ] )
@@ -749,10 +1015,15 @@ function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name,
 function mrn_base_stack_get_builder_layout_allowlist_configured_names( $post_id, $field_name, array $catalog ) {
 	$post_id            = absint( $post_id );
 	$field_name         = sanitize_key( (string) $field_name );
-	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
+	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog, $field_name );
 	$configured_names   = mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, $catalog );
 
-	if ( $post_id > 0 && mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id ) && metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() ) ) {
+	if (
+		$post_id > 0
+		&& mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id )
+		&& metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() )
+		&& mrn_base_stack_builder_layout_allowlist_saved_field_exists( $post_id, $field_name )
+	) {
 		$saved_settings   = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
 		$configured_names = isset( $saved_settings[ $field_name ] ) && is_array( $saved_settings[ $field_name ] )
 			? $saved_settings[ $field_name ]
@@ -813,7 +1084,7 @@ function mrn_base_stack_get_builder_layout_allowlist_effective_names( $post_id, 
 	$field_name         = sanitize_key( (string) $field_name );
 	$all_layout_names   = array_keys( $catalog );
 	$configured_names   = mrn_base_stack_get_builder_layout_allowlist_configured_names( $post_id, $field_name, $catalog );
-	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
+	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog, $field_name );
 
 	$used_names = $post_id > 0 ? mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, $field_name ) : array();
 	$effective  = array_values(
@@ -919,12 +1190,46 @@ function mrn_base_stack_filter_builder_layout_allowlist_field_layouts( $field ) 
 
 	return $field;
 }
+
+/**
+ * Apply per-entry allowlist filtering to a loaded ACF field-group field list.
+ *
+ * Local field groups can hand ACF a full flexible-content source field before
+ * individual field filters hydrate the render-time clone store. This pass keeps
+ * the rendered admin clone templates aligned with the same allowlist contract.
+ *
+ * @param array<int|string, mixed>|mixed $fields Loaded field group fields.
+ * @param mixed                          $acf_parent ACF parent field/group reference.
+ * @return array<int|string, mixed>|mixed
+ */
+function mrn_base_stack_filter_builder_layout_allowlist_fields( $fields, $acf_parent = null ) {
+	unset( $acf_parent );
+
+	if ( ! is_array( $fields ) ) {
+		return $fields;
+	}
+
+	foreach ( $fields as $index => $field ) {
+		if ( is_array( $field ) ) {
+			$fields[ $index ] = mrn_base_stack_filter_builder_layout_allowlist_field_layouts( $field );
+		}
+	}
+
+	return $fields;
+}
 add_filter( 'acf/load_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/load_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/load_field/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/load_field/key=field_mrn_page_template_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/load_fields', 'mrn_base_stack_filter_builder_layout_allowlist_fields', 20, 2 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 add_filter( 'acf/prepare_field/key=field_mrn_page_after_content_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/prepare_field/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/prepare_field/key=field_mrn_page_template_sidebar_rows', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
+add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_filter_builder_layout_allowlist_field_layouts', 20 );
 
 /**
  * Hide non-addable existing-only layout choices in ACF popup menus.
@@ -1010,15 +1315,15 @@ function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
 			continue;
 		}
 
-		$catalog            = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name ) );
-		$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog );
+		$catalog            = mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name );
+		$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog, $field_name );
 		$label              = isset( $target['label'] ) ? (string) $target['label'] : ucfirst( str_replace( array( '-', '_' ), ' ', $field_name ) );
 
 		if ( empty( $catalog ) ) {
 			continue;
 		}
 
-		$selected       = $has_saved
+		$selected       = $has_saved && mrn_base_stack_builder_layout_allowlist_saved_field_exists( $post_id, $field_name )
 			? ( isset( $saved[ $field_name ] ) && is_array( $saved[ $field_name ] ) ? $saved[ $field_name ] : array() )
 			: mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, $catalog );
 		$selected       = array_fill_keys(
@@ -1534,15 +1839,21 @@ function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post 
 			continue;
 		}
 
-		$allowlists[ $field_name ] = isset( $existing[ $field_name ] ) && is_array( $existing[ $field_name ] )
-			? array_values(
-				array_unique(
-					array_filter(
-						array_map( 'sanitize_key', $existing[ $field_name ] )
+		if ( mrn_base_stack_builder_layout_allowlist_saved_field_exists( $post_id, $field_name ) ) {
+			$allowlists[ $field_name ] = isset( $existing[ $field_name ] ) && is_array( $existing[ $field_name ] )
+				? array_values(
+					array_unique(
+						array_filter(
+							array_map( 'sanitize_key', $existing[ $field_name ] )
+						)
 					)
 				)
-			)
-			: array();
+				: array();
+			continue;
+		}
+
+		$catalog                   = mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name );
+		$allowlists[ $field_name ] = mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, $catalog );
 	}
 
 	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key(), $allowlists );

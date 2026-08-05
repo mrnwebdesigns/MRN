@@ -56,5 +56,15 @@ echo "WP-CLI binary: ${WP_BIN}"
 
 run_wp option get home
 run_wp eval 'echo wp_get_theme()->get("Name") . "|" . wp_get_theme()->get("Version") . PHP_EOL;'
-run_wp eval 'echo function_exists("mrn_base_stack_get_builder_add_row_layout_menu_items") ? "builder-menu-helper:loaded\n" : "builder-menu-helper:missing\n";'
-run_wp eval 'if (! function_exists("acf_get_field")) { echo "acf:missing\n"; return; } $field = acf_get_field("field_mrn_page_content_rows"); echo (is_array($field) && ! empty($field["layouts"])) ? "builder-layouts:loaded\n" : "builder-layouts:missing\n";'
+
+builder_runtime_state="$(run_wp eval 'if ( function_exists("mrn_base_stack_is_layout_builder_enabled") ) { echo mrn_base_stack_is_layout_builder_enabled() ? "enabled" : "disabled"; } else { echo "unknown"; }')"
+builder_runtime_state="$(printf '%s\n' "${builder_runtime_state}" | tail -n 1)"
+echo "builder-runtime:${builder_runtime_state}"
+
+if [[ "${builder_runtime_state}" == "disabled" ]]; then
+	echo "builder-menu-helper:skipped-disabled"
+	echo "builder-layouts:skipped-disabled"
+else
+	run_wp eval 'echo function_exists("mrn_base_stack_get_builder_add_row_layout_menu_items") ? "builder-menu-helper:loaded\n" : "builder-menu-helper:missing\n";'
+	run_wp eval 'if (! function_exists("acf_get_field")) { echo "acf:missing\n"; return; } $field = acf_get_field("field_mrn_page_content_rows"); echo (is_array($field) && ! empty($field["layouts"])) ? "builder-layouts:loaded\n" : "builder-layouts:missing\n";'
+fi

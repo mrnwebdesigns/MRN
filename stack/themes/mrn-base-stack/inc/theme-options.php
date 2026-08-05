@@ -260,6 +260,793 @@ function mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, $s
 }
 
 /**
+ * Return the shared row width choices for Header/Footer content width controls.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_theme_header_footer_content_width_choices() {
+	if ( function_exists( 'mrn_base_stack_get_section_width_choices' ) ) {
+		return mrn_base_stack_get_section_width_choices();
+	}
+
+	return array(
+		'content'    => __( 'Content', 'mrn-base-stack' ),
+		'wide'       => __( 'Wide', 'mrn-base-stack' ),
+		'full-width' => __( 'Full Width', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Return editable WordPress menus for Header/Footer menu selectors.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_nav_menu_choices() {
+	$choices = array(
+		'' => __( 'Assigned Primary location', 'mrn-base-stack' ),
+	);
+	$menus   = wp_get_nav_menus(
+		array(
+			'hide_empty' => false,
+		)
+	);
+
+	if ( ! is_array( $menus ) ) {
+		return $choices;
+	}
+
+	foreach ( $menus as $menu ) {
+		if ( ! $menu instanceof WP_Term ) {
+			continue;
+		}
+
+		$menu_id = absint( $menu->term_id );
+		if ( $menu_id < 1 ) {
+			continue;
+		}
+
+		$choices[ (string) $menu_id ] = $menu->name;
+	}
+
+	return $choices;
+}
+
+/**
+ * Normalize a Header/Footer content width value.
+ *
+ * @param mixed  $value Raw stored value.
+ * @param string $default_width Default width choice.
+ * @return string
+ */
+function mrn_base_stack_normalize_theme_header_footer_content_width( $value, $default_width = 'wide' ) {
+	if ( function_exists( 'mrn_base_stack_normalize_section_width' ) ) {
+		return mrn_base_stack_normalize_section_width( $value, $default_width );
+	}
+
+	$width = is_string( $value ) ? sanitize_key( $value ) : '';
+
+	if ( in_array( $value, array( 1, '1', true, 'true' ), true ) ) {
+		$width = 'full-width';
+	}
+
+	if ( ! in_array( $width, array( 'content', 'wide', 'full-width' ), true ) ) {
+		$width = $default_width;
+	}
+
+	return $width;
+}
+
+/**
+ * Build a Header/Footer content-width ACF field.
+ *
+ * @param string $section Section key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_theme_header_footer_content_width_field( $section ) {
+	$section = sanitize_key( (string) $section );
+
+	return array(
+		'key'               => 'field_mrn_theme_' . $section . '_content_width',
+		'label'             => __( 'Content Width', 'mrn-base-stack' ),
+		'name'              => $section . '_content_width',
+		'type'              => 'select',
+		'choices'           => mrn_base_stack_get_theme_header_footer_content_width_choices(),
+		'default_value'     => 'wide',
+		'allow_null'        => 0,
+		'multiple'          => 0,
+		'ui'                => 1,
+		'return_format'     => 'value',
+		'instructions'      => __( 'Uses the same width options as builder rows.', 'mrn-base-stack' ),
+		'wrapper'           => array(
+			'width' => '50',
+		),
+	);
+}
+
+/**
+ * Convert a Header/Footer content width into a grid modifier class.
+ *
+ * @param mixed  $value Raw stored value.
+ * @param string $default_width Default width choice.
+ * @return string
+ */
+function mrn_base_stack_get_theme_header_footer_content_width_class( $value, $default_width = 'wide' ) {
+	$width = mrn_base_stack_normalize_theme_header_footer_content_width( $value, $default_width );
+	$slug  = 'full-width' === $width ? 'full' : $width;
+
+	return 'mrn-theme-hf-layout-grid--width-' . sanitize_html_class( $slug );
+}
+
+/**
+ * Return Site Styles color choices with a theme-default option.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_theme_header_footer_color_choices() {
+	return array_merge(
+		array( '' => __( 'Theme Default', 'mrn-base-stack' ) ),
+		mrn_base_stack_get_site_color_choices()
+	);
+}
+
+/**
+ * Build a Header/Footer Site Styles color select.
+ *
+ * @param string $section Section key.
+ * @param string $suffix  Field suffix.
+ * @param string $label   Field label.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_theme_header_footer_color_field( $section, $suffix, $label ) {
+	$section = sanitize_key( (string) $section );
+	$suffix  = sanitize_key( (string) $suffix );
+
+	return array(
+		'key'           => 'field_mrn_theme_' . $section . '_' . $suffix,
+		'label'         => $label,
+		'name'          => $section . '_' . $suffix,
+		'type'          => 'select',
+		'choices'       => mrn_base_stack_get_theme_header_footer_color_choices(),
+		'default_value' => '',
+		'allow_null'    => 1,
+		'ui'            => 1,
+		'return_format' => 'value',
+	);
+}
+
+/**
+ * Return Header/Footer spacing selector definitions.
+ *
+ * @return array<int, array<string, string>>
+ */
+function mrn_base_stack_get_theme_header_footer_spacing_selector_definitions() {
+	if ( function_exists( 'mrn_base_stack_get_row_spacing_side_selector_definitions' ) ) {
+		return mrn_base_stack_get_row_spacing_side_selector_definitions();
+	}
+
+	if ( function_exists( 'mrn_base_stack_get_disabled_builder_row_spacing_side_selector_definitions' ) ) {
+		return mrn_base_stack_get_disabled_builder_row_spacing_side_selector_definitions();
+	}
+
+	return array(
+		array(
+			'name'  => 'row_spacing_margin_top_preset',
+			'label' => 'Margin Top',
+			'scope' => 'margin-top',
+		),
+		array(
+			'name'  => 'row_spacing_margin_right_preset',
+			'label' => 'Margin Right',
+			'scope' => 'margin-right',
+		),
+		array(
+			'name'  => 'row_spacing_margin_bottom_preset',
+			'label' => 'Margin Bottom',
+			'scope' => 'margin-bottom',
+		),
+		array(
+			'name'  => 'row_spacing_margin_left_preset',
+			'label' => 'Margin Left',
+			'scope' => 'margin-left',
+		),
+		array(
+			'name'  => 'row_spacing_padding_top_preset',
+			'label' => 'Padding Top',
+			'scope' => 'padding-top',
+		),
+		array(
+			'name'  => 'row_spacing_padding_right_preset',
+			'label' => 'Padding Right',
+			'scope' => 'padding-right',
+		),
+		array(
+			'name'  => 'row_spacing_padding_bottom_preset',
+			'label' => 'Padding Bottom',
+			'scope' => 'padding-bottom',
+		),
+		array(
+			'name'  => 'row_spacing_padding_left_preset',
+			'label' => 'Padding Left',
+			'scope' => 'padding-left',
+		),
+	);
+}
+
+/**
+ * Return spacing preset choices for a Header/Footer spacing selector.
+ *
+ * @param string $scope Selector scope.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_theme_header_footer_spacing_preset_choices( $scope = '' ) {
+	if ( function_exists( 'mrn_base_stack_get_row_spacing_preset_choices' ) ) {
+		return mrn_base_stack_get_row_spacing_preset_choices( $scope );
+	}
+
+	if ( function_exists( 'mrn_base_stack_get_disabled_builder_row_spacing_choices' ) ) {
+		return mrn_base_stack_get_disabled_builder_row_spacing_choices( $scope );
+	}
+
+	return array( '' => __( 'Site Default', 'mrn-base-stack' ) );
+}
+
+/**
+ * Convert a row-spacing selector name to a Header/Footer option field name.
+ *
+ * @param string $section Section key.
+ * @param string $row_selector_name Row-spacing selector field name.
+ * @return string
+ */
+function mrn_base_stack_get_theme_header_footer_spacing_option_name( $section, $row_selector_name ) {
+	$section           = sanitize_key( (string) $section );
+	$row_selector_name = sanitize_key( (string) $row_selector_name );
+
+	return str_replace( 'row_spacing_', $section . '_spacing_', $row_selector_name );
+}
+
+/**
+ * Return Header/Footer spacing option maps keyed by row-spacing selector name.
+ *
+ * @param string $section Section key.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_theme_header_footer_spacing_option_map( $section ) {
+	$map = array();
+
+	foreach ( mrn_base_stack_get_theme_header_footer_spacing_selector_definitions() as $definition ) {
+		$row_selector_name = isset( $definition['name'] ) ? sanitize_key( (string) $definition['name'] ) : '';
+		if ( '' === $row_selector_name ) {
+			continue;
+		}
+
+		$map[ $row_selector_name ] = mrn_base_stack_get_theme_header_footer_spacing_option_name( $section, $row_selector_name );
+	}
+
+	return $map;
+}
+
+/**
+ * Return default Header/Footer spacing option values.
+ *
+ * @param string $section Section key.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_default_theme_header_footer_spacing_options( $section ) {
+	$defaults = array();
+
+	foreach ( mrn_base_stack_get_theme_header_footer_spacing_option_map( $section ) as $option_name ) {
+		$defaults[ $option_name ] = '';
+	}
+
+	return $defaults;
+}
+
+/**
+ * Build Header/Footer spacing fields.
+ *
+ * @param string $section Section key.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_theme_header_footer_spacing_fields( $section ) {
+	$section = sanitize_key( (string) $section );
+	$fields  = array();
+
+	foreach ( mrn_base_stack_get_theme_header_footer_spacing_selector_definitions() as $definition ) {
+		$row_selector_name = isset( $definition['name'] ) ? sanitize_key( (string) $definition['name'] ) : '';
+		$label             = isset( $definition['label'] ) ? sanitize_text_field( (string) $definition['label'] ) : '';
+		$scope             = isset( $definition['scope'] ) ? sanitize_key( (string) $definition['scope'] ) : '';
+
+		if ( '' === $row_selector_name || '' === $label || '' === $scope ) {
+			continue;
+		}
+
+		$option_name = mrn_base_stack_get_theme_header_footer_spacing_option_name( $section, $row_selector_name );
+		$fields[]    = array(
+			'key'           => 'field_mrn_theme_' . $option_name,
+			'label'         => $label,
+			'name'          => $option_name,
+			'type'          => 'select',
+			'choices'       => mrn_base_stack_get_theme_header_footer_spacing_preset_choices( $scope ),
+			'default_value' => '',
+			'allow_null'    => 1,
+			'ui'            => 1,
+			'return_format' => 'value',
+			'wrapper'       => array(
+				'width' => '25',
+			),
+		);
+	}
+
+	return $fields;
+}
+
+/**
+ * Return saved Header/Footer spacing options.
+ *
+ * @param string $section Section key.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_theme_header_footer_spacing_options( $section ) {
+	$options = mrn_base_stack_get_default_theme_header_footer_spacing_options( $section );
+
+	if ( ! function_exists( 'get_field' ) ) {
+		return $options;
+	}
+
+	foreach ( array_keys( $options ) as $option_name ) {
+		$value = get_field( $option_name, 'option' );
+		$value = is_scalar( $value ) ? trim( sanitize_text_field( (string) $value ) ) : '';
+
+		$options[ $option_name ] = $value;
+	}
+
+	return $options;
+}
+
+/**
+ * Convert saved Header/Footer spacing options into a row-spacing payload.
+ *
+ * @param string               $section Section key.
+ * @param array<string, mixed> $options Header/Footer options.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_theme_header_footer_spacing_row( $section, array $options ) {
+	$row = array();
+
+	foreach ( mrn_base_stack_get_theme_header_footer_spacing_option_map( $section ) as $row_selector_name => $option_name ) {
+		$value = isset( $options[ $option_name ] ) && is_scalar( $options[ $option_name ] ) ? trim( (string) $options[ $option_name ] ) : '';
+
+		$row[ $row_selector_name ] = $value;
+	}
+
+	return $row;
+}
+
+/**
+ * Return the row-spacing contract for Header/Footer shell spacing.
+ *
+ * @param string               $section Section key.
+ * @param array<string, mixed> $options Header/Footer options.
+ * @return array{classes:array<int,string>,attributes:array<string,string>}
+ */
+function mrn_base_stack_get_theme_header_footer_spacing_contract( $section, array $options ) {
+	if ( ! function_exists( 'mrn_base_stack_get_row_spacing_contract' ) ) {
+		return array(
+			'classes'    => array(),
+			'attributes' => array(),
+		);
+	}
+
+	return mrn_base_stack_get_row_spacing_contract( mrn_base_stack_get_theme_header_footer_spacing_row( $section, $options ) );
+}
+
+/**
+ * Return Header/Footer appearance styles as an inline style value.
+ *
+ * @param string               $section Section key.
+ * @param array<string, mixed> $options Header/Footer options.
+ * @return string
+ */
+function mrn_base_stack_get_theme_header_footer_appearance_style( $section, array $options ) {
+	$section = sanitize_key( (string) $section );
+	$styles  = array();
+
+	if ( ! in_array( $section, array( 'header', 'footer' ), true ) ) {
+		return '';
+	}
+
+	$color_vars = array(
+		'background_color' => '--mrn-theme-hf-bg-color',
+		'font_color'       => '--mrn-theme-hf-font-color',
+		'link_color'       => '--mrn-theme-hf-link-color',
+		'link_hover_color' => '--mrn-theme-hf-link-hover-color',
+	);
+
+	foreach ( $color_vars as $suffix => $css_var ) {
+		$option_name = $section . '_' . $suffix;
+		$color_value = isset( $options[ $option_name ] ) ? mrn_base_stack_get_site_color_css_value( $options[ $option_name ] ) : '';
+
+		if ( '' !== $color_value ) {
+			$styles[] = $css_var . ': ' . $color_value;
+		}
+	}
+
+	if ( empty( $styles ) ) {
+		return '';
+	}
+
+	return function_exists( 'mrn_base_stack_get_inline_style_attribute' )
+		? mrn_base_stack_get_inline_style_attribute( $styles )
+		: implode( '; ', array_values( array_filter( array_map( 'trim', $styles ), 'strlen' ) ) );
+}
+
+/**
+ * Merge Header/Footer HTML attributes with special handling for style attributes.
+ *
+ * @param array<string, string> $attributes Existing attributes.
+ * @param array<string, string> $extra_attributes Extra attributes.
+ * @return array<string, string>
+ */
+function mrn_base_stack_merge_theme_header_footer_attributes( array $attributes, array $extra_attributes ) {
+	if ( function_exists( 'mrn_base_stack_merge_builder_attributes' ) ) {
+		return mrn_base_stack_merge_builder_attributes( $attributes, $extra_attributes );
+	}
+
+	foreach ( $extra_attributes as $attribute_name => $attribute_value ) {
+		$attribute_name  = is_string( $attribute_name ) ? trim( $attribute_name ) : '';
+		$attribute_value = is_scalar( $attribute_value ) ? trim( (string) $attribute_value ) : '';
+
+		if ( '' === $attribute_name || '' === $attribute_value ) {
+			continue;
+		}
+
+		if ( isset( $attributes[ $attribute_name ] ) && 'style' === strtolower( $attribute_name ) ) {
+			$existing_style = is_scalar( $attributes[ $attribute_name ] ) ? trim( (string) $attributes[ $attribute_name ] ) : '';
+			if ( '' !== $existing_style ) {
+				$attribute_value = $existing_style . '; ' . $attribute_value;
+			}
+		}
+
+		$attributes[ $attribute_name ] = $attribute_value;
+	}
+
+	return $attributes;
+}
+
+/**
+ * Convert Header/Footer attributes into escaped HTML.
+ *
+ * @param array<string, string> $attributes Attribute map.
+ * @return string
+ */
+function mrn_base_stack_get_theme_header_footer_html_attributes( array $attributes ) {
+	if ( function_exists( 'mrn_base_stack_get_html_attributes' ) ) {
+		return mrn_base_stack_get_html_attributes( $attributes );
+	}
+
+	$parts = array();
+	foreach ( $attributes as $attribute_name => $attribute_value ) {
+		$attribute_name  = is_string( $attribute_name ) ? trim( $attribute_name ) : '';
+		$attribute_value = is_scalar( $attribute_value ) ? trim( (string) $attribute_value ) : '';
+
+		if ( '' === $attribute_name || '' === $attribute_value ) {
+			continue;
+		}
+
+		$parts[] = sprintf( '%s="%s"', esc_attr( $attribute_name ), esc_attr( $attribute_value ) );
+	}
+
+	return implode( ' ', $parts );
+}
+
+/**
+ * Build front-end attributes for the Header/Footer layout grid shell.
+ *
+ * @param string               $section Section key.
+ * @param array<string, mixed> $options Header/Footer options.
+ * @param array<string, mixed> $layout  Layout grid contract.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_theme_header_footer_shell_attributes( $section, array $options, array $layout ) {
+	$attributes = array();
+	$grid_style = mrn_base_stack_get_theme_header_footer_layout_grid_shell_style( $layout );
+	$grid_style = is_string( $grid_style ) ? rtrim( trim( $grid_style ), ';' ) : '';
+	if ( '' !== $grid_style ) {
+		$attributes['style'] = $grid_style;
+	}
+
+	$appearance_style = mrn_base_stack_get_theme_header_footer_appearance_style( $section, $options );
+	if ( '' !== $appearance_style ) {
+		$attributes = mrn_base_stack_merge_theme_header_footer_attributes(
+			$attributes,
+			array( 'style' => $appearance_style )
+		);
+	}
+
+	$spacing_contract = mrn_base_stack_get_theme_header_footer_spacing_contract( $section, $options );
+	if ( ! empty( $spacing_contract['attributes'] ) && is_array( $spacing_contract['attributes'] ) ) {
+		$attributes = mrn_base_stack_merge_theme_header_footer_attributes(
+			$attributes,
+			$spacing_contract['attributes']
+		);
+	}
+
+	return $attributes;
+}
+
+/**
+ * Return grouped Config field order for Header/Footer options.
+ *
+ * @param string $section Section key.
+ * @return array<string, array{label:string, fields:array<int,string>}>
+ */
+function mrn_base_stack_get_theme_header_footer_config_field_groups( $section ) {
+	$section = sanitize_key( (string) $section );
+
+	if ( 'header' === $section ) {
+		return array(
+			'appearance' => array(
+				'label'  => __( 'Appearance', 'mrn-base-stack' ),
+				'fields' => array(
+					'field_mrn_theme_header_background_color',
+					'field_mrn_theme_header_font_color',
+					'field_mrn_theme_header_link_color',
+					'field_mrn_theme_header_link_hover_color',
+				),
+			),
+			'navigation' => array(
+				'label'  => __( 'Navigation', 'mrn-base-stack' ),
+				'fields' => array(
+					'field_mrn_theme_header_show_utility_menu',
+					'field_mrn_theme_header_show_tertiary_menu',
+					'field_mrn_theme_header_primary_menu_id',
+					'field_mrn_theme_header_primary_nav_inherit_header_settings',
+				),
+			),
+			'business' => array(
+				'label'  => __( 'Business Info', 'mrn-base-stack' ),
+				'fields' => array(
+					'field_mrn_theme_header_show_business_profile',
+					'field_mrn_theme_header_show_business_phone',
+				),
+			),
+			'search' => array(
+				'label'  => __( 'Search', 'mrn-base-stack' ),
+				'fields' => array(
+					'field_mrn_theme_header_show_search',
+					'field_mrn_theme_header_searchwp_form_id',
+					'field_mrn_theme_header_search_style',
+					'field_mrn_theme_header_search_icon_source',
+					'field_mrn_theme_header_search_standard_icon',
+					'field_mrn_theme_header_search_fa_class',
+					'field_mrn_theme_header_search_media_icon',
+				),
+			),
+		);
+	}
+
+	if ( 'footer' === $section ) {
+		return array(
+			'appearance' => array(
+				'label'  => __( 'Appearance', 'mrn-base-stack' ),
+				'fields' => array(
+					'field_mrn_theme_footer_background_color',
+					'field_mrn_theme_footer_font_color',
+					'field_mrn_theme_footer_link_color',
+					'field_mrn_theme_footer_link_hover_color',
+				),
+			),
+			'navigation' => array(
+				'label'  => __( 'Navigation', 'mrn-base-stack' ),
+				'fields' => array(
+					'field_mrn_theme_footer_show_footer_menu',
+					'field_mrn_theme_footer_show_secondary_menu',
+					'field_mrn_theme_footer_show_tertiary_menu',
+					'field_mrn_theme_footer_show_privacy_center_links',
+				),
+			),
+			'business'   => array(
+				'label'  => __( 'Business Info', 'mrn-base-stack' ),
+				'fields' => array(
+					'field_mrn_theme_footer_show_business_profile',
+					'field_mrn_theme_footer_show_business_phone',
+					'field_mrn_theme_footer_show_text_phone',
+					'field_mrn_theme_footer_show_address',
+					'field_mrn_theme_footer_show_business_hours',
+				),
+			),
+			'social'     => array(
+				'label'  => __( 'Social', 'mrn-base-stack' ),
+				'fields' => array(
+					'field_mrn_theme_footer_show_social_menu',
+					'field_mrn_theme_footer_social_icon_color',
+					'field_mrn_theme_footer_social_icon_hover_color',
+				),
+			),
+			'text'       => array(
+				'label'  => __( 'Footer Text', 'mrn-base-stack' ),
+				'fields' => array(
+					'field_mrn_theme_footer_copyright_text',
+					'field_mrn_theme_footer_legal_text',
+				),
+			),
+		);
+	}
+
+	return array();
+}
+
+/**
+ * Build a Config heading field.
+ *
+ * @param string $section Section key.
+ * @param string $slug    Heading slug.
+ * @param string $label   Heading label.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_theme_header_footer_config_heading_field( $section, $slug, $label ) {
+	$section = sanitize_key( (string) $section );
+	$slug    = sanitize_key( (string) $slug );
+
+	return array(
+		'key'       => 'field_mrn_theme_' . $section . '_config_heading_' . $slug,
+		'label'     => '',
+		'name'      => '',
+		'type'      => 'message',
+		'message'   => '<h3 class="mrn-theme-hf-config-heading__title">' . esc_html( $label ) . '</h3>',
+		'esc_html'  => 0,
+		'new_lines' => '',
+		'wrapper'   => array(
+			'class' => 'mrn-theme-hf-config-heading',
+		),
+	);
+}
+
+/**
+ * Apply Config field grouping and order without changing option names.
+ *
+ * @param string            $section Section key.
+ * @param array<int, array> $fields  Raw section fields.
+ * @return array<int, array>
+ */
+function mrn_base_stack_order_theme_header_footer_config_fields( $section, array $fields ) {
+	$groups        = mrn_base_stack_get_theme_header_footer_config_field_groups( $section );
+	$fields_by_key = array();
+	$used_keys     = array();
+	$ordered       = array();
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) || empty( $field['key'] ) ) {
+			continue;
+		}
+
+		$fields_by_key[ (string) $field['key'] ] = $field;
+	}
+
+	foreach ( $groups as $group_slug => $group ) {
+		$group_fields = array();
+		$field_keys   = isset( $group['fields'] ) && is_array( $group['fields'] ) ? $group['fields'] : array();
+
+		foreach ( $field_keys as $field_key ) {
+			if ( ! isset( $fields_by_key[ $field_key ] ) ) {
+				continue;
+			}
+
+			$group_fields[]          = $fields_by_key[ $field_key ];
+			$used_keys[ $field_key ] = true;
+		}
+
+		if ( empty( $group_fields ) ) {
+			continue;
+		}
+
+		$ordered[] = mrn_base_stack_get_theme_header_footer_config_heading_field(
+			$section,
+			$group_slug,
+			isset( $group['label'] ) ? (string) $group['label'] : ''
+		);
+		$ordered   = array_merge( $ordered, $group_fields );
+	}
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) || empty( $field['key'] ) || isset( $used_keys[ (string) $field['key'] ] ) ) {
+			continue;
+		}
+
+		$ordered[] = $field;
+	}
+
+	return $ordered;
+}
+
+/**
+ * Reorder Header/Footer Config fields while preserving top-level ACF tabs.
+ *
+ * @param array<int, array> $fields Raw field group fields.
+ * @return array<int, array>
+ */
+function mrn_base_stack_reorder_theme_header_footer_config_fields( array $fields ) {
+	$ordered        = array();
+	$section        = '';
+	$section_fields = array();
+
+	$flush_section = static function () use ( &$ordered, &$section, &$section_fields ) {
+		if ( '' !== $section ) {
+			$ordered = array_merge( $ordered, mrn_base_stack_order_theme_header_footer_config_fields( $section, $section_fields ) );
+		}
+
+		$section        = '';
+		$section_fields = array();
+	};
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+
+		$field_key = isset( $field['key'] ) ? (string) $field['key'] : '';
+
+		if ( in_array( $field_key, array( 'field_mrn_theme_header_tab', 'field_mrn_theme_mobile_menu_tab', 'field_mrn_theme_footer_tab' ), true ) ) {
+			$flush_section();
+			$ordered[] = $field;
+			if ( 'field_mrn_theme_header_tab' === $field_key ) {
+				$section = 'header';
+			} elseif ( 'field_mrn_theme_footer_tab' === $field_key ) {
+				$section = 'footer';
+			}
+			continue;
+		}
+
+		if ( '' !== $section ) {
+			$section_fields[] = $field;
+			continue;
+		}
+
+		$ordered[] = $field;
+	}
+
+	$flush_section();
+
+	return $ordered;
+}
+
+/**
+ * Apply admin layout hints to Header/Footer Config fields.
+ *
+ * @param array<string, mixed> $field Field config.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_prepare_theme_header_footer_config_field( array $field ) {
+	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+
+	if ( ! isset( $field['wrapper'] ) || ! is_array( $field['wrapper'] ) ) {
+		$field['wrapper'] = array();
+	}
+
+	if ( 'message' === $field_type && ! empty( $field['wrapper']['class'] ) && false !== strpos( (string) $field['wrapper']['class'], 'mrn-theme-hf-config-heading' ) ) {
+		$field['wrapper']['width'] = '100';
+		return $field;
+	}
+
+	if ( 'true_false' === $field_type ) {
+		$field['wrapper']['width'] = '50';
+		$field                     = mrn_base_stack_append_field_wrapper_class( $field, 'mrn-theme-hf-config-toggle' );
+	}
+
+	if ( in_array( $field_type, array( 'select', 'button_group', 'image' ), true ) ) {
+		$field['wrapper']['width'] = '50';
+		$field                     = mrn_base_stack_append_field_wrapper_class( $field, 'mrn-theme-hf-config-detail' );
+	}
+
+	if ( in_array( $field_type, array( 'text', 'textarea' ), true ) ) {
+		$field['wrapper']['width'] = '100';
+		$field                     = mrn_base_stack_append_field_wrapper_class( $field, 'mrn-theme-hf-config-detail' );
+	}
+
+	return $field;
+}
+
+/**
  * Return the universal sub-tab contract for Theme Header/Footer options.
  *
  * @return array<string, mixed>
@@ -268,10 +1055,10 @@ function mrn_base_stack_get_theme_header_footer_subtab_contract() {
 	return array(
 		'default'    => 'configs',
 		'tabs'       => array(
-			'content' => __( 'Content', 'mrn-base-stack' ),
 			'configs' => __( 'Configs', 'mrn-base-stack' ),
 			'effects' => __( 'Effects', 'mrn-base-stack' ),
 			'layout'  => __( 'Layout', 'mrn-base-stack' ),
+			'spacing' => __( 'Spacing', 'mrn-base-stack' ),
 		),
 		'appearance' => array(
 			'tab_set_gap_px'      => 10,
@@ -307,6 +1094,698 @@ function mrn_base_stack_get_theme_header_footer_subtab_appearance() {
 		'tab_border_color'    => $tab_border_hex,
 	);
 }
+
+/**
+ * Return layout-grid item labels for a Header/Footer section.
+ *
+ * @param string $section Section key.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_theme_header_footer_layout_items( $section ) {
+	$section = sanitize_key( (string) $section );
+
+	if ( 'header' === $section ) {
+		return array(
+			'secondary_menu'        => __( 'Secondary Menu', 'mrn-base-stack' ),
+			'header_brand'          => __( 'Header', 'mrn-base-stack' ),
+			'header_tertiary_menu'  => __( 'Header Tertiary Menu', 'mrn-base-stack' ),
+			'business_profile'      => __( 'Business Profile', 'mrn-base-stack' ),
+			'business_phone'        => __( 'Business Phone', 'mrn-base-stack' ),
+			'search'                => __( 'Search', 'mrn-base-stack' ),
+		);
+	}
+
+	if ( 'footer' === $section ) {
+		return array(
+			'footer_brand'          => __( 'Footer', 'mrn-base-stack' ),
+			'business_profile'      => __( 'Business Profile', 'mrn-base-stack' ),
+			'business_phone'        => __( 'Business Phone', 'mrn-base-stack' ),
+			'text_phone'            => __( 'Text / SMS / RCS', 'mrn-base-stack' ),
+			'address'               => __( 'Address', 'mrn-base-stack' ),
+			'business_hours'        => __( 'Business Hours', 'mrn-base-stack' ),
+			'footer_primary_menu'   => __( 'Footer Primary Menu', 'mrn-base-stack' ),
+			'footer_secondary_menu' => __( 'Footer Secondary Menu', 'mrn-base-stack' ),
+			'footer_tertiary_menu'  => __( 'Footer Tertiary Menu', 'mrn-base-stack' ),
+			'social_media'          => __( 'Social Media', 'mrn-base-stack' ),
+			'privacy_center_links'  => __( 'Privacy Center Links', 'mrn-base-stack' ),
+			'copyright'             => __( 'Copyright', 'mrn-base-stack' ),
+		);
+	}
+
+	return array();
+}
+
+/**
+ * Return layout-grid items controlled by Header/Footer config toggles.
+ *
+ * Items omitted from this map are structural and stay available whenever their
+ * section exists.
+ *
+ * @param string $section Section key.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_theme_header_footer_layout_item_toggle_fields( $section ) {
+	$section = sanitize_key( (string) $section );
+
+	if ( 'header' === $section ) {
+		return array(
+			'secondary_menu'       => 'header_show_utility_menu',
+			'header_tertiary_menu' => 'header_show_tertiary_menu',
+			'business_profile'     => 'header_show_business_profile',
+			'business_phone'       => 'header_show_business_phone',
+			'search'               => 'header_show_search',
+		);
+	}
+
+	if ( 'footer' === $section ) {
+		return array(
+			'business_profile'      => 'footer_show_business_profile',
+			'business_phone'        => 'footer_show_business_phone',
+			'text_phone'            => 'footer_show_text_phone',
+			'address'               => 'footer_show_address',
+			'business_hours'        => 'footer_show_business_hours',
+			'footer_primary_menu'   => 'footer_show_footer_menu',
+			'footer_secondary_menu' => 'footer_show_secondary_menu',
+			'footer_tertiary_menu'  => 'footer_show_tertiary_menu',
+			'social_media'          => 'footer_show_social_menu',
+			'privacy_center_links'  => 'footer_show_privacy_center_links',
+		);
+	}
+
+	return array();
+}
+
+/**
+ * Determine whether a layout-grid item is enabled by current config values.
+ *
+ * @param string              $section  Section key.
+ * @param string              $item_key Layout item key.
+ * @param array<string,mixed> $options Optional normalized options.
+ * @return bool
+ */
+function mrn_base_stack_is_theme_header_footer_layout_item_enabled( $section, $item_key, $options = null ) {
+	$section       = sanitize_key( (string) $section );
+	$item_key      = sanitize_key( (string) $item_key );
+	$toggle_fields = mrn_base_stack_get_theme_header_footer_layout_item_toggle_fields( $section );
+
+	if ( empty( $toggle_fields[ $item_key ] ) ) {
+		return true;
+	}
+
+	$field_name = $toggle_fields[ $item_key ];
+	$field_key  = 'field_mrn_theme_' . $field_name;
+
+	if ( isset( $_POST['acf'] ) && is_array( $_POST['acf'] ) && array_key_exists( $field_key, $_POST['acf'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$value = sanitize_text_field( wp_unslash( $_POST['acf'][ $field_key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		return ! empty( $value ) && '0' !== (string) $value;
+	}
+
+	if ( is_array( $options ) && array_key_exists( $field_name, $options ) ) {
+		return ! empty( $options[ $field_name ] );
+	}
+
+	if ( function_exists( 'get_field' ) ) {
+		return (bool) get_field( $field_name, 'option' );
+	}
+
+	return false;
+}
+
+/**
+ * Return layout-grid item labels filtered to enabled config components.
+ *
+ * @param string              $section Section key.
+ * @param array<string,mixed> $options Optional normalized options.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_theme_header_footer_active_layout_items( $section, $options = null ) {
+	$items  = mrn_base_stack_get_theme_header_footer_layout_items( $section );
+	$active = array();
+
+	foreach ( $items as $item_key => $item_label ) {
+		if ( mrn_base_stack_is_theme_header_footer_layout_item_enabled( $section, $item_key, $options ) ) {
+			$active[ $item_key ] = $item_label;
+		}
+	}
+
+	return $active;
+}
+
+/**
+ * Return the default grid contract for a Header/Footer section.
+ *
+ * @param string $section Section key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_default_theme_header_footer_layout_grid( $section ) {
+	$section = sanitize_key( (string) $section );
+
+	if ( 'header' === $section ) {
+		return array(
+			'columns' => 3,
+			'rows'    => 4,
+			'items'   => array(
+				'secondary_menu' => array(
+					'row'         => 1,
+					'column'      => 1,
+					'columnSpan'  => 3,
+				),
+				'header_brand' => array(
+					'row'        => 2,
+					'column'     => 1,
+					'columnSpan' => 1,
+				),
+				'business_profile' => array(
+					'row'        => 2,
+					'column'     => 2,
+					'columnSpan' => 1,
+				),
+				'business_phone' => array(
+					'row'        => 2,
+					'column'     => 3,
+					'columnSpan' => 1,
+				),
+				'search'               => array(
+					'row'        => 3,
+					'column'     => 3,
+					'columnSpan' => 1,
+				),
+				'header_tertiary_menu' => array(
+					'row'        => 4,
+					'column'     => 1,
+					'columnSpan' => 3,
+				),
+			),
+		);
+	}
+
+	if ( 'footer' === $section ) {
+		return array(
+			'columns' => 3,
+			'rows'    => 5,
+			'items'   => array(
+				'footer_brand'          => array(
+					'row'        => 1,
+					'column'     => 1,
+					'columnSpan' => 1,
+				),
+				'business_profile' => array(
+					'row'        => 1,
+					'column'     => 2,
+					'columnSpan' => 1,
+				),
+				'business_phone' => array(
+					'row'        => 1,
+					'column'     => 3,
+					'columnSpan' => 1,
+				),
+				'text_phone' => array(
+					'row'        => 2,
+					'column'     => 1,
+					'columnSpan' => 1,
+				),
+				'address' => array(
+					'row'        => 2,
+					'column'     => 2,
+					'columnSpan' => 1,
+				),
+				'business_hours' => array(
+					'row'        => 2,
+					'column'     => 3,
+					'columnSpan' => 1,
+				),
+				'footer_primary_menu' => array(
+					'row'        => 3,
+					'column'     => 1,
+					'columnSpan' => 1,
+				),
+				'footer_secondary_menu' => array(
+					'row'        => 3,
+					'column'     => 2,
+					'columnSpan' => 1,
+				),
+				'footer_tertiary_menu' => array(
+					'row'        => 4,
+					'column'     => 1,
+					'columnSpan' => 1,
+				),
+				'social_media' => array(
+					'row'        => 4,
+					'column'     => 2,
+					'columnSpan' => 1,
+				),
+				'privacy_center_links' => array(
+					'row'        => 4,
+					'column'     => 3,
+					'columnSpan' => 1,
+				),
+				'copyright' => array(
+					'row'        => 5,
+					'column'     => 1,
+					'columnSpan' => 3,
+				),
+			),
+		);
+	}
+
+	return array(
+		'columns' => 1,
+		'rows'    => 1,
+		'items'   => array(),
+	);
+}
+
+/**
+ * Check whether a Header/Footer grid placement overlaps occupied cells.
+ *
+ * @param array<string, bool> $occupied    Occupied cell map keyed by row:column.
+ * @param int                 $row         Candidate row.
+ * @param int                 $column      Candidate column.
+ * @param int                 $column_span Candidate column span.
+ * @return bool
+ */
+function mrn_base_stack_theme_header_footer_layout_position_is_open( array $occupied, $row, $column, $column_span ) {
+	$row         = max( 1, absint( $row ) );
+	$column      = max( 1, absint( $column ) );
+	$column_span = max( 1, absint( $column_span ) );
+
+	for ( $cell_column = $column; $cell_column < $column + $column_span; $cell_column++ ) {
+		if ( ! empty( $occupied[ $row . ':' . $cell_column ] ) ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * Mark a Header/Footer grid placement as occupied.
+ *
+ * @param array<string, bool> $occupied    Occupied cell map keyed by row:column.
+ * @param int                 $row         Row.
+ * @param int                 $column      Column.
+ * @param int                 $column_span Column span.
+ * @return array<string, bool>
+ */
+function mrn_base_stack_theme_header_footer_layout_mark_occupied( array $occupied, $row, $column, $column_span ) {
+	$row         = max( 1, absint( $row ) );
+	$column      = max( 1, absint( $column ) );
+	$column_span = max( 1, absint( $column_span ) );
+
+	for ( $cell_column = $column; $cell_column < $column + $column_span; $cell_column++ ) {
+		$occupied[ $row . ':' . $cell_column ] = true;
+	}
+
+	return $occupied;
+}
+
+/**
+ * Find a non-overlapping Header/Footer grid position.
+ *
+ * Collisions are resolved by preserving the selected column first and moving
+ * the colliding item downward. If that column is full, the resolver falls
+ * back to the first available position in reading order.
+ *
+ * @param array<string, bool> $occupied         Occupied cell map keyed by row:column.
+ * @param int                 $preferred_row    Preferred row.
+ * @param int                 $preferred_column Preferred column.
+ * @param int                 $column_span      Column span.
+ * @param int                 $rows             Current row count.
+ * @param int                 $columns          Column count.
+ * @return array{row:int,column:int,rows:int}
+ */
+function mrn_base_stack_find_theme_header_footer_layout_open_position( array $occupied, $preferred_row, $preferred_column, $column_span, $rows, $columns ) {
+	$rows             = min( 12, max( 1, absint( $rows ) ) );
+	$columns          = min( 6, max( 1, absint( $columns ) ) );
+	$column_span      = min( $columns, max( 1, absint( $column_span ) ) );
+	$preferred_row    = min( $rows, max( 1, absint( $preferred_row ) ) );
+	$preferred_column = min( max( 1, $columns - $column_span + 1 ), max( 1, absint( $preferred_column ) ) );
+
+	for ( $row = $preferred_row; $row <= $rows; $row++ ) {
+		if ( mrn_base_stack_theme_header_footer_layout_position_is_open( $occupied, $row, $preferred_column, $column_span ) ) {
+			return array(
+				'row'    => $row,
+				'column' => $preferred_column,
+				'rows'   => $rows,
+			);
+		}
+	}
+
+	while ( $rows < 12 ) {
+		++$rows;
+		if ( mrn_base_stack_theme_header_footer_layout_position_is_open( $occupied, $rows, $preferred_column, $column_span ) ) {
+			return array(
+				'row'    => $rows,
+				'column' => $preferred_column,
+				'rows'   => $rows,
+			);
+		}
+	}
+
+	for ( $row = 1; $row <= $rows; $row++ ) {
+		for ( $column = 1; $column <= $columns - $column_span + 1; $column++ ) {
+			if ( mrn_base_stack_theme_header_footer_layout_position_is_open( $occupied, $row, $column, $column_span ) ) {
+				return array(
+					'row'    => $row,
+					'column' => $column,
+					'rows'   => $rows,
+				);
+			}
+		}
+	}
+
+	return array(
+		'row'    => $preferred_row,
+		'column' => $preferred_column,
+		'rows'   => $rows,
+	);
+}
+
+/**
+ * Normalize a Header/Footer grid layout contract.
+ *
+ * @param mixed                     $layout  Raw layout data.
+ * @param string                    $section Section key.
+ * @param array<string, mixed>|null $items Optional layout items.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_normalize_theme_header_footer_layout_grid( $layout, $section, ?array $items = null ) {
+	$section = sanitize_key( (string) $section );
+	if ( is_string( $layout ) && '' !== trim( $layout ) ) {
+		$decoded = json_decode( $layout, true );
+		$layout  = is_array( $decoded ) ? $decoded : array();
+	}
+
+	if ( ! is_array( $layout ) ) {
+		$layout = array();
+	}
+
+	$default       = mrn_base_stack_get_default_theme_header_footer_layout_grid( $section );
+	$items         = null !== $items ? $items : mrn_base_stack_get_theme_header_footer_layout_items( $section );
+	$raw_items     = isset( $layout['items'] ) && is_array( $layout['items'] ) ? $layout['items'] : array();
+	$default_items = isset( $default['items'] ) && is_array( $default['items'] ) ? $default['items'] : array();
+	$columns       = isset( $layout['columns'] ) ? absint( $layout['columns'] ) : absint( $default['columns'] );
+	$rows          = isset( $layout['rows'] ) ? absint( $layout['rows'] ) : absint( $default['rows'] );
+
+	foreach ( $default_items as $item_key => $item_default ) {
+		if ( ! isset( $items[ $item_key ] ) || isset( $raw_items[ $item_key ] ) || ! is_array( $item_default ) || empty( $item_default['row'] ) ) {
+			continue;
+		}
+
+		$rows = max( $rows, absint( $item_default['row'] ) );
+	}
+
+	$columns = min( 6, max( 1, $columns ) );
+	$rows    = min( 12, max( 1, $rows ) );
+
+	$normalized_items = array();
+	$occupied         = array();
+
+	foreach ( $items as $item_key => $item_label ) {
+		$item_default = isset( $default_items[ $item_key ] ) && is_array( $default_items[ $item_key ] ) ? $default_items[ $item_key ] : array();
+		$item         = isset( $raw_items[ $item_key ] ) && is_array( $raw_items[ $item_key ] ) ? $raw_items[ $item_key ] : $item_default;
+		$row          = isset( $item['row'] ) ? absint( $item['row'] ) : absint( isset( $item_default['row'] ) ? $item_default['row'] : 1 );
+		$column       = isset( $item['column'] ) ? absint( $item['column'] ) : absint( isset( $item_default['column'] ) ? $item_default['column'] : 1 );
+		$column_span  = isset( $item['columnSpan'] ) ? absint( $item['columnSpan'] ) : absint( isset( $item_default['columnSpan'] ) ? $item_default['columnSpan'] : 1 );
+
+		$row         = min( $rows, max( 1, $row ) );
+		$column_span = min( $columns, max( 1, $column_span ) );
+		$column      = min( max( 1, $columns - $column_span + 1 ), max( 1, $column ) );
+
+		if ( ! mrn_base_stack_theme_header_footer_layout_position_is_open( $occupied, $row, $column, $column_span ) ) {
+			$position = mrn_base_stack_find_theme_header_footer_layout_open_position( $occupied, $row, $column, $column_span, $rows, $columns );
+			$row      = $position['row'];
+			$column   = $position['column'];
+			$rows     = $position['rows'];
+		}
+
+		$occupied = mrn_base_stack_theme_header_footer_layout_mark_occupied( $occupied, $row, $column, $column_span );
+
+		$normalized_items[ $item_key ] = array(
+			'row'        => $row,
+			'column'     => $column,
+			'columnSpan' => $column_span,
+		);
+	}
+
+	return array(
+		'columns' => $columns,
+		'rows'    => $rows,
+		'items'   => $normalized_items,
+	);
+}
+
+/**
+ * Normalize an editable grid while preserving disabled item placements.
+ *
+ * Disabled components remain in storage for future re-enabling, but they do
+ * not reserve cells or force extra rows in the visible editor layout.
+ *
+ * @param mixed  $layout  Raw layout data.
+ * @param string $section Section key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_normalize_theme_header_footer_editor_layout_grid( $layout, $section ) {
+	$section = sanitize_key( (string) $section );
+	if ( is_string( $layout ) && '' !== trim( $layout ) ) {
+		$decoded = json_decode( $layout, true );
+		$layout  = is_array( $decoded ) ? $decoded : array();
+	}
+
+	if ( ! is_array( $layout ) ) {
+		$layout = array();
+	}
+
+	$all_items     = mrn_base_stack_get_theme_header_footer_layout_items( $section );
+	$active_items  = mrn_base_stack_get_theme_header_footer_active_layout_items( $section );
+	$default       = mrn_base_stack_get_default_theme_header_footer_layout_grid( $section );
+	$raw_items     = isset( $layout['items'] ) && is_array( $layout['items'] ) ? $layout['items'] : array();
+	$default_items = isset( $default['items'] ) && is_array( $default['items'] ) ? $default['items'] : array();
+	$normalized    = mrn_base_stack_normalize_theme_header_footer_layout_grid( $layout, $section, $active_items );
+	$columns       = isset( $normalized['columns'] ) ? min( 6, max( 1, absint( $normalized['columns'] ) ) ) : 1;
+
+	foreach ( $all_items as $item_key => $item_label ) {
+		unset( $item_label );
+
+		if ( isset( $active_items[ $item_key ] ) ) {
+			continue;
+		}
+
+		$item        = isset( $raw_items[ $item_key ] ) && is_array( $raw_items[ $item_key ] ) ? $raw_items[ $item_key ] : ( isset( $default_items[ $item_key ] ) && is_array( $default_items[ $item_key ] ) ? $default_items[ $item_key ] : array() );
+		$column_span = isset( $item['columnSpan'] ) ? absint( $item['columnSpan'] ) : 1;
+		$column_span = min( $columns, max( 1, $column_span ) );
+		$column      = isset( $item['column'] ) ? absint( $item['column'] ) : 1;
+
+		$normalized['items'][ $item_key ] = array(
+			'row'        => isset( $item['row'] ) ? min( 12, max( 1, absint( $item['row'] ) ) ) : 1,
+			'column'     => min( max( 1, $columns - $column_span + 1 ), max( 1, $column ) ),
+			'columnSpan' => $column_span,
+		);
+	}
+
+	return $normalized;
+}
+
+/**
+ * Return saved Header/Footer grid layout for theme consumers.
+ *
+ * @param string $section Section key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_theme_header_footer_layout_grid( $section ) {
+	$section = sanitize_key( (string) $section );
+	$field   = $section . '_layout_grid';
+	$value   = function_exists( 'get_field' ) ? get_field( $field, 'option' ) : array();
+	$items   = mrn_base_stack_get_theme_header_footer_active_layout_items( $section );
+
+	return mrn_base_stack_normalize_theme_header_footer_layout_grid( $value, $section, $items );
+}
+
+/**
+ * Return inline CSS variables for a Header/Footer layout grid shell.
+ *
+ * @param array<string, mixed> $layout Normalized layout data.
+ * @return string
+ */
+function mrn_base_stack_get_theme_header_footer_layout_grid_shell_style( array $layout ) {
+	$columns = isset( $layout['columns'] ) ? min( 6, max( 1, absint( $layout['columns'] ) ) ) : 1;
+
+	return '--mrn-hf-layout-columns: repeat(' . $columns . ', minmax(0, 1fr));';
+}
+
+/**
+ * Return inline grid placement CSS for one Header/Footer layout item.
+ *
+ * @param array<string, mixed> $layout   Normalized layout data.
+ * @param string               $item_key Layout item key.
+ * @return string
+ */
+function mrn_base_stack_get_theme_header_footer_layout_grid_item_style( array $layout, $item_key ) {
+	$item_key = sanitize_key( (string) $item_key );
+	$items    = isset( $layout['items'] ) && is_array( $layout['items'] ) ? $layout['items'] : array();
+
+	if ( ! isset( $items[ $item_key ] ) || ! is_array( $items[ $item_key ] ) ) {
+		return '';
+	}
+
+	$item        = $items[ $item_key ];
+	$columns     = isset( $layout['columns'] ) ? min( 6, max( 1, absint( $layout['columns'] ) ) ) : 1;
+	$row         = isset( $item['row'] ) ? min( 12, max( 1, absint( $item['row'] ) ) ) : 1;
+	$column_span = isset( $item['columnSpan'] ) ? min( $columns, max( 1, absint( $item['columnSpan'] ) ) ) : 1;
+	$column      = isset( $item['column'] ) ? min( max( 1, $columns - $column_span + 1 ), max( 1, absint( $item['column'] ) ) ) : 1;
+	$style       = 'grid-column: ' . $column . ' / span ' . $column_span . '; grid-row: ' . $row . ';';
+
+	if ( $column > 1 && $column + $column_span - 1 >= $columns ) {
+		$style .= ' --mrn-hf-item-inline-align: flex-end; --mrn-hf-item-text-align: right;';
+	}
+
+	return $style;
+}
+
+/**
+ * Return serialized default layout JSON for an ACF field.
+ *
+ * @param string $section Section key.
+ * @return string
+ */
+function mrn_base_stack_get_default_theme_header_footer_layout_grid_json( $section ) {
+	$json = wp_json_encode( mrn_base_stack_get_default_theme_header_footer_layout_grid( $section ) );
+
+	return is_string( $json ) ? $json : '{}';
+}
+
+/**
+ * Build the Header/Footer layout editor markup.
+ *
+ * @param string $section Section key.
+ * @return string
+ */
+function mrn_base_stack_get_theme_header_footer_layout_editor_markup( $section ) {
+	$section = sanitize_key( (string) $section );
+	$items   = mrn_base_stack_get_theme_header_footer_layout_items( $section );
+
+	if ( empty( $items ) ) {
+		return '';
+	}
+
+	$section_label  = 'header' === $section ? __( 'Header', 'mrn-base-stack' ) : __( 'Footer', 'mrn-base-stack' );
+	$default_layout = mrn_base_stack_get_default_theme_header_footer_layout_grid( $section );
+	$toggle_fields  = mrn_base_stack_get_theme_header_footer_layout_item_toggle_fields( $section );
+	$items_json     = wp_json_encode( $items );
+	$layout_json    = wp_json_encode( $default_layout );
+	$toggles_json   = wp_json_encode( $toggle_fields );
+
+	if ( ! is_string( $items_json ) ) {
+		$items_json = '{}';
+	}
+
+	if ( ! is_string( $layout_json ) ) {
+		$layout_json = '{}';
+	}
+
+	if ( ! is_string( $toggles_json ) ) {
+		$toggles_json = '{}';
+	}
+
+	ob_start();
+	?>
+	<div
+		class="mrn-theme-hf-layout-grid-editor mrn-admin-layout-builder"
+		data-mrn-theme-hf-layout-editor
+		data-section="<?php echo esc_attr( $section ); ?>"
+		data-storage-name="<?php echo esc_attr( $section . '_layout_grid' ); ?>"
+		data-items="<?php echo esc_attr( $items_json ); ?>"
+		data-toggle-fields="<?php echo esc_attr( $toggles_json ); ?>"
+		data-default-layout="<?php echo esc_attr( $layout_json ); ?>"
+	>
+		<div class="mrn-theme-hf-layout-grid-editor__toolbar mrn-admin-layout-builder__toolbar">
+			<h3 class="mrn-theme-hf-layout-grid-editor__title"><?php echo esc_html( $section_label ); ?> <?php esc_html_e( 'Grid', 'mrn-base-stack' ); ?></h3>
+			<label>
+				<span><?php esc_html_e( 'Columns', 'mrn-base-stack' ); ?></span>
+				<input type="number" min="1" max="6" step="1" data-mrn-layout-columns>
+			</label>
+			<label>
+				<span><?php esc_html_e( 'Rows', 'mrn-base-stack' ); ?></span>
+				<input type="number" min="1" max="12" step="1" data-mrn-layout-rows>
+			</label>
+			<button type="button" class="button" data-mrn-layout-reset><?php esc_html_e( 'Reset', 'mrn-base-stack' ); ?></button>
+		</div>
+		<div class="mrn-theme-hf-layout-grid-editor__selected" data-mrn-layout-selected aria-live="polite"></div>
+		<div class="mrn-theme-hf-layout-grid-editor__canvas mrn-admin-layout-builder__canvas" data-mrn-layout-canvas></div>
+	</div>
+	<?php
+
+	return trim( (string) ob_get_clean() );
+}
+
+/**
+ * Sanitize saved Header/Footer layout-grid fields.
+ *
+ * @param mixed $value   Submitted field value.
+ * @param mixed $post_id ACF post ID.
+ * @param array $field   ACF field definition.
+ * @return string
+ */
+function mrn_base_stack_sanitize_theme_header_footer_layout_grid_value( $value, $post_id, $field ) {
+	unset( $post_id );
+
+	$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+	$section    = 0 === strpos( $field_name, 'footer_' ) ? 'footer' : 'header';
+	$layout     = mrn_base_stack_normalize_theme_header_footer_editor_layout_grid( $value, $section );
+	$json       = wp_json_encode( $layout );
+
+	return is_string( $json ) ? $json : mrn_base_stack_get_default_theme_header_footer_layout_grid_json( $section );
+}
+add_filter( 'acf/update_value/name=header_layout_grid', 'mrn_base_stack_sanitize_theme_header_footer_layout_grid_value', 10, 3 );
+add_filter( 'acf/update_value/name=footer_layout_grid', 'mrn_base_stack_sanitize_theme_header_footer_layout_grid_value', 10, 3 );
+
+/**
+ * Persist layout-grid JSON posted by the custom Header/Footer grid editor.
+ *
+ * The grid editor mirrors its state into a dedicated request key because the
+ * visual editor lives beside ACF message fields and the storage textarea is
+ * intentionally hidden from authors.
+ *
+ * @param mixed  $post_id   ACF options page post id.
+ * @param string $menu_slug ACF options page slug.
+ * @return void
+ */
+function mrn_base_stack_save_theme_header_footer_layout_grid_request( $post_id, $menu_slug ) {
+	unset( $post_id );
+
+	if ( 'mrn-theme-header-footer' !== $menu_slug || empty( $_POST['mrn_theme_hf_layout_grid'] ) || ! is_array( $_POST['mrn_theme_hf_layout_grid'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_theme_options' ) ) {
+		return;
+	}
+
+	$request = map_deep( wp_unslash( $_POST['mrn_theme_hf_layout_grid'] ), 'sanitize_textarea_field' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	foreach ( array( 'header', 'footer' ) as $section ) {
+		if ( ! isset( $request[ $section ] ) || ! is_string( $request[ $section ] ) ) {
+			continue;
+		}
+
+		$layout = mrn_base_stack_normalize_theme_header_footer_editor_layout_grid( $request[ $section ], $section );
+		$json   = wp_json_encode( $layout );
+		if ( ! is_string( $json ) ) {
+			continue;
+		}
+
+		$field_name = $section . '_layout_grid';
+		$field_key  = 'field_mrn_theme_' . $field_name;
+
+		if ( function_exists( 'update_field' ) ) {
+			update_field( $field_key, $json, 'option' );
+			continue;
+		}
+
+		update_option( 'options_' . $field_name, $json, false );
+		update_option( '_options_' . $field_name, $field_key, false );
+	}
+}
+add_action( 'acf/options_page/save', 'mrn_base_stack_save_theme_header_footer_layout_grid_request', 20, 2 );
 
 /**
  * Build section-specific sub-tab fields for Theme Header/Footer options.
@@ -375,24 +1854,27 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
 		'new_lines' => 'br',
 	);
 
-	$contents_placeholder = array(
-		'key'       => 'field_mrn_theme_' . $section . '_content_placeholder',
-		'label'     => __( 'Content', 'mrn-base-stack' ),
-		'name'      => '',
-		'type'      => 'message',
-		'message'   => __( 'Header/Footer links are managed through WordPress menus. Add menu items there and they will render as their own rows in the assigned menu output.', 'mrn-base-stack' ),
-		'esc_html'  => 1,
-		'new_lines' => 'br',
+	$layout_storage = array(
+		'key'           => 'field_mrn_theme_' . $section . '_layout_grid',
+		'label'         => '',
+		'name'          => $section . '_layout_grid',
+		'type'          => 'textarea',
+		'default_value' => mrn_base_stack_get_default_theme_header_footer_layout_grid_json( $section ),
+		'rows'          => 3,
+		'new_lines'     => '',
 	);
 
-	$layout_placeholder = array(
-		'key'       => 'field_mrn_theme_' . $section . '_layout_placeholder',
+	$content_width  = mrn_base_stack_get_theme_header_footer_content_width_field( $section );
+	$spacing_fields = mrn_base_stack_get_theme_header_footer_spacing_fields( $section );
+
+	$layout_editor = array(
+		'key'       => 'field_mrn_theme_' . $section . '_layout_grid_editor',
 		'label'     => __( 'Layout', 'mrn-base-stack' ),
 		'name'      => '',
 		'type'      => 'message',
-		'message'   => __( 'Layout controls will be added in a follow-up update.', 'mrn-base-stack' ),
-		'esc_html'  => 1,
-		'new_lines' => 'br',
+		'message'   => mrn_base_stack_get_theme_header_footer_layout_editor_markup( $section ),
+		'esc_html'  => 0,
+		'new_lines' => '',
 	);
 
 	$effects_placeholder = array(
@@ -405,25 +1887,41 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
 		'new_lines' => 'br',
 	);
 
-	$subtab_nav           = mrn_base_stack_append_field_wrapper_class( $subtab_nav, 'mrn-theme-hf-subtabs-nav' );
-	$contents_placeholder = mrn_base_stack_append_field_wrapper_class(
-		$contents_placeholder,
-		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'content' )
+	$subtab_nav          = mrn_base_stack_append_field_wrapper_class( $subtab_nav, 'mrn-theme-hf-subtabs-nav' );
+	$layout_storage      = mrn_base_stack_append_field_wrapper_class(
+		$layout_storage,
+		'mrn-theme-hf-layout-grid-storage-field'
 	);
-	$layout_placeholder   = mrn_base_stack_append_field_wrapper_class(
-		$layout_placeholder,
-		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'layout' )
+	$content_width       = mrn_base_stack_append_field_wrapper_class(
+		$content_width,
+		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'layout' ) . ' mrn-theme-hf-layout-width-field'
 	);
-	$effects_placeholder  = mrn_base_stack_append_field_wrapper_class(
+	$layout_editor       = mrn_base_stack_append_field_wrapper_class(
+		$layout_editor,
+		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'layout' ) . ' mrn-theme-hf-layout-grid-editor-field'
+	);
+	$effects_placeholder = mrn_base_stack_append_field_wrapper_class(
 		$effects_placeholder,
 		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'effects' )
 	);
+	foreach ( $spacing_fields as $spacing_index => $spacing_field ) {
+		$spacing_fields[ $spacing_index ] = mrn_base_stack_append_field_wrapper_class(
+			$spacing_field,
+			mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'spacing' ) . ' mrn-theme-hf-spacing-field'
+		);
+	}
 
-	return array(
-		$subtab_nav,
-		$contents_placeholder,
-		$layout_placeholder,
-		$effects_placeholder,
+	return array_merge(
+		array(
+			$subtab_nav,
+			$layout_storage,
+			$content_width,
+			$layout_editor,
+		),
+		$spacing_fields,
+		array(
+			$effects_placeholder,
+		)
 	);
 }
 
@@ -434,6 +1932,18 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
  * @return array<int, mixed>
  */
 function mrn_base_stack_prepare_theme_header_footer_subtab_fields( array $fields ) {
+	if ( function_exists( 'mrn_base_stack_get_mobile_navigation_fields' ) ) {
+		$mobile_fields = mrn_base_stack_get_mobile_navigation_fields();
+
+		foreach ( $fields as $field_index => $field ) {
+			if ( is_array( $field ) && isset( $field['key'] ) && 'field_mrn_theme_footer_tab' === $field['key'] ) {
+				array_splice( $fields, $field_index, 0, $mobile_fields );
+				break;
+			}
+		}
+	}
+
+	$fields          = mrn_base_stack_reorder_theme_header_footer_config_fields( $fields );
 	$prepared        = array();
 	$current_section = '';
 
@@ -459,7 +1969,14 @@ function mrn_base_stack_prepare_theme_header_footer_subtab_fields( array $fields
 			continue;
 		}
 
+		if ( 'field_mrn_theme_mobile_menu_tab' === $field_key ) {
+			$current_section = '';
+			$prepared[]      = $field;
+			continue;
+		}
+
 		if ( '' !== $current_section && 'tab' !== $field_type ) {
+			$field = mrn_base_stack_prepare_theme_header_footer_config_field( $field );
 			$field = mrn_base_stack_append_field_wrapper_class(
 				$field,
 				mrn_base_stack_get_theme_header_footer_subtab_panel_class( $current_section, 'configs' )
@@ -473,32 +1990,73 @@ function mrn_base_stack_prepare_theme_header_footer_subtab_fields( array $fields
 }
 
 /**
- * Return the available social icon tone choices for menu-based social rows.
+ * Return Site Styles color choices for theme-owned controls.
  *
  * @return array<string, string>
  */
-function mrn_base_stack_get_social_icon_tone_choices() {
-	return array(
-		'dark'  => __( 'Dark', 'mrn-base-stack' ),
-		'light' => __( 'Light', 'mrn-base-stack' ),
-	);
+function mrn_base_stack_get_site_color_choices() {
+	$choices = array();
+
+	foreach ( mrn_site_colors_get_all() as $row ) {
+		$slug  = isset( $row['slug'] ) ? (string) $row['slug'] : '';
+		$name  = isset( $row['name'] ) ? (string) $row['name'] : '';
+		$value = isset( $row['value'] ) ? (string) $row['value'] : '';
+
+		if ( '' === $slug || '' === $name ) {
+			continue;
+		}
+
+		$choices[ $slug ] = '' !== $value ? $name . ' (' . $value . ')' : $name;
+	}
+
+	return $choices;
 }
 
 /**
- * Normalize the configured social icon tone value.
+ * Return the first configured Site Styles color slug.
  *
- * @param mixed $tone Raw icon tone option.
  * @return string
  */
-function mrn_base_stack_normalize_social_icon_tone( $tone ) {
-	$tone    = sanitize_key( (string) $tone );
-	$choices = array_keys( mrn_base_stack_get_social_icon_tone_choices() );
+function mrn_base_stack_get_default_site_color_slug() {
+	$choices = mrn_base_stack_get_site_color_choices();
+	$slug    = array_key_first( $choices );
 
-	if ( ! in_array( $tone, $choices, true ) ) {
-		return 'dark';
+	return is_string( $slug ) ? $slug : '';
+}
+
+/**
+ * Normalize a Site Styles color slug for theme option usage.
+ *
+ * @param mixed $slug Raw color slug.
+ * @return string
+ */
+function mrn_base_stack_normalize_site_color_slug( $slug ) {
+	$slug = is_scalar( $slug ) ? (string) $slug : '';
+	$slug = mrn_site_colors_normalize_slug( $slug );
+
+	if ( '' === $slug ) {
+		return '';
 	}
 
-	return $tone;
+	$choices = mrn_base_stack_get_site_color_choices();
+
+	return isset( $choices[ $slug ] ) ? $slug : '';
+}
+
+/**
+ * Return a CSS-safe value for a configured Site Styles color.
+ *
+ * @param mixed $slug Raw color slug.
+ * @return string
+ */
+function mrn_base_stack_get_site_color_css_value( $slug ) {
+	$slug = mrn_base_stack_normalize_site_color_slug( $slug );
+
+	if ( '' === $slug ) {
+		return '';
+	}
+
+	return 'var(' . mrn_site_colors_get_css_var( $slug ) . ')';
 }
 
 /**
@@ -523,35 +2081,19 @@ function mrn_base_stack_register_theme_options_field_groups() {
 						'placement' => 'top',
 						'endpoint'  => 0,
 					),
+					mrn_base_stack_get_theme_header_footer_color_field( 'header', 'background_color', __( 'Background Color', 'mrn-base-stack' ) ),
+					mrn_base_stack_get_theme_header_footer_color_field( 'header', 'font_color', __( 'Font Color', 'mrn-base-stack' ) ),
+					mrn_base_stack_get_theme_header_footer_color_field( 'header', 'link_color', __( 'Link Color', 'mrn-base-stack' ) ),
+					mrn_base_stack_get_theme_header_footer_color_field( 'header', 'link_hover_color', __( 'Link Hover Color', 'mrn-base-stack' ) ),
 					array(
-						'key'           => 'field_mrn_theme_header_show_social_menu',
-						'label'         => __( 'Show Social Menu', 'mrn-base-stack' ),
-						'name'          => 'header_show_social_menu',
+						'key'           => 'field_mrn_theme_header_show_utility_menu',
+						'label'         => __( 'Show Secondary Menu', 'mrn-base-stack' ),
+						'name'          => 'header_show_utility_menu',
 						'type'          => 'true_false',
-						'instructions'  => __( 'Uses the Social Media menu location.', 'mrn-base-stack' ),
+						'instructions'  => __( 'Uses the Header Secondary menu location.', 'mrn-base-stack' ),
 						'required'      => 0,
 						'default_value' => 0,
 						'ui'            => 1,
-					),
-					array(
-						'key'               => 'field_mrn_theme_header_social_icon_tone',
-						'label'             => __( 'Social Icon Tone', 'mrn-base-stack' ),
-						'name'              => 'header_social_icon_tone',
-						'type'              => 'button_group',
-						'choices'           => mrn_base_stack_get_social_icon_tone_choices(),
-						'default_value'     => 'dark',
-						'layout'            => 'horizontal',
-						'return_format'     => 'value',
-						'instructions'      => __( 'Controls icon tone for the Social Media menu when rendered in the Header.', 'mrn-base-stack' ),
-						'conditional_logic' => array(
-							array(
-								array(
-									'field'    => 'field_mrn_theme_header_show_social_menu',
-									'operator' => '==',
-									'value'    => '1',
-								),
-							),
-						),
 					),
 					array(
 						'key'           => 'field_mrn_theme_header_show_tertiary_menu',
@@ -564,21 +2106,24 @@ function mrn_base_stack_register_theme_options_field_groups() {
 						'ui'            => 1,
 					),
 					array(
-						'key'           => 'field_mrn_theme_header_show_utility_menu',
-						'label'         => __( 'Show Secondary Menu', 'mrn-base-stack' ),
-						'name'          => 'header_show_utility_menu',
-						'type'          => 'true_false',
-						'instructions'  => __( 'Uses the Header Secondary menu location (falls back to Utility legacy location).', 'mrn-base-stack' ),
-						'required'      => 0,
-						'default_value' => 0,
+						'key'           => 'field_mrn_theme_header_primary_menu_id',
+						'label'         => __( 'Primary Menu', 'mrn-base-stack' ),
+						'name'          => 'header_primary_menu_id',
+						'type'          => 'select',
+						'choices'       => mrn_base_stack_get_nav_menu_choices(),
+						'default_value' => '',
+						'allow_null'    => 0,
+						'multiple'      => 0,
 						'ui'            => 1,
+						'return_format' => 'value',
+						'instructions'  => __( 'Choose the WordPress menu that renders in the stack Primary menu area. Leave on Assigned Primary location to use Appearance > Menus.', 'mrn-base-stack' ),
 					),
 					array(
-						'key'           => 'field_mrn_theme_header_show_primary_menu',
-						'label'         => __( 'Show Primary Menu', 'mrn-base-stack' ),
-						'name'          => 'header_show_primary_menu',
+						'key'           => 'field_mrn_theme_header_primary_nav_inherit_header_settings',
+						'label'         => __( 'Primary Menu Matches Header', 'mrn-base-stack' ),
+						'name'          => 'header_primary_nav_inherit_header_settings',
 						'type'          => 'true_false',
-						'instructions'  => __( 'Uses the Primary menu location.', 'mrn-base-stack' ),
+						'instructions'  => __( 'Applies the Header colors, font, and content width to the standalone Primary menu row.', 'mrn-base-stack' ),
 						'required'      => 0,
 						'default_value' => 1,
 						'ui'            => 1,
@@ -588,10 +2133,34 @@ function mrn_base_stack_register_theme_options_field_groups() {
 						'label'         => __( 'Show Search', 'mrn-base-stack' ),
 						'name'          => 'header_show_search',
 						'type'          => 'true_false',
-						'instructions'  => __( 'Shows the stack search trigger area. This is intended for the stack search experience, not the default WordPress search form.', 'mrn-base-stack' ),
+						'instructions'  => __( 'Shows the stack SearchWP form area.', 'mrn-base-stack' ),
 						'required'      => 0,
 						'default_value' => 0,
 						'ui'            => 1,
+					),
+					array(
+						'key'               => 'field_mrn_theme_header_searchwp_form_id',
+						'label'             => __( 'SearchWP Form', 'mrn-base-stack' ),
+						'name'              => 'header_searchwp_form_id',
+						'type'              => 'select',
+						'choices'           => function_exists( 'mrn_base_stack_get_searchwp_form_choices' ) ? mrn_base_stack_get_searchwp_form_choices() : array(),
+						'default_value'     => function_exists( 'mrn_base_stack_get_default_searchwp_form_id' ) ? (string) mrn_base_stack_get_default_searchwp_form_id() : '',
+						'allow_null'        => 0,
+						'multiple'          => 0,
+						'required'          => 1,
+						'ui'                => 1,
+						'ajax'              => 0,
+						'return_format'     => 'value',
+						'instructions'      => __( 'Uses the stack SearchWP form for the header search area.', 'mrn-base-stack' ),
+						'conditional_logic' => array(
+							array(
+								array(
+									'field'    => 'field_mrn_theme_header_show_search',
+									'operator' => '==',
+									'value'    => '1',
+								),
+							),
+						),
 					),
 					array(
 						'key'               => 'field_mrn_theme_header_search_style',
@@ -716,7 +2285,7 @@ function mrn_base_stack_register_theme_options_field_groups() {
 						'label'             => __( 'Media Icon', 'mrn-base-stack' ),
 						'name'              => 'header_search_media_icon',
 						'type'              => 'image',
-						'return_format'     => 'array',
+						'return_format'     => 'id',
 						'preview_size'      => 'thumbnail',
 						'library'           => 'all',
 						'mime_types'        => 'jpg,jpeg,png,gif,webp,svg',
@@ -772,25 +2341,57 @@ function mrn_base_stack_register_theme_options_field_groups() {
 						'placement' => 'top',
 						'endpoint'  => 0,
 					),
+					mrn_base_stack_get_theme_header_footer_color_field( 'footer', 'background_color', __( 'Background Color', 'mrn-base-stack' ) ),
+					mrn_base_stack_get_theme_header_footer_color_field( 'footer', 'font_color', __( 'Font Color', 'mrn-base-stack' ) ),
+					mrn_base_stack_get_theme_header_footer_color_field( 'footer', 'link_color', __( 'Link Color', 'mrn-base-stack' ) ),
+					mrn_base_stack_get_theme_header_footer_color_field( 'footer', 'link_hover_color', __( 'Link Hover Color', 'mrn-base-stack' ) ),
 					array(
 						'key'           => 'field_mrn_theme_footer_show_social_menu',
-						'label'         => __( 'Show Social Menu', 'mrn-base-stack' ),
+						'label'         => __( 'Show Social Icons', 'mrn-base-stack' ),
 						'name'          => 'footer_show_social_menu',
 						'type'          => 'true_false',
-						'instructions'  => __( 'Uses the Social Media menu location.', 'mrn-base-stack' ),
+						'instructions'  => __( 'Uses Social Site Configuration. Icons still render when a configured social row has no URL.', 'mrn-base-stack' ),
 						'default_value' => 0,
 						'ui'            => 1,
 					),
 					array(
-						'key'               => 'field_mrn_theme_footer_social_icon_tone',
-						'label'             => __( 'Social Icon Tone', 'mrn-base-stack' ),
-						'name'              => 'footer_social_icon_tone',
-						'type'              => 'button_group',
-						'choices'           => mrn_base_stack_get_social_icon_tone_choices(),
-						'default_value'     => 'dark',
-						'layout'            => 'horizontal',
+						'key'               => 'field_mrn_theme_footer_social_icon_color',
+						'label'             => __( 'Social Icon Color', 'mrn-base-stack' ),
+						'name'              => 'footer_social_icon_color',
+						'type'              => 'select',
+						'choices'           => mrn_base_stack_get_site_color_choices(),
+						'default_value'     => mrn_base_stack_get_default_site_color_slug(),
+						'allow_null'        => 0,
+						'multiple'          => 0,
+						'required'          => 1,
+						'ui'                => 1,
+						'ajax'              => 0,
 						'return_format'     => 'value',
-						'instructions'      => __( 'Controls icon tone for the Social Media menu when rendered in the Footer.', 'mrn-base-stack' ),
+						'instructions'      => __( 'Uses a Site Styles color for Social Site Configuration icons when rendered in the Footer.', 'mrn-base-stack' ),
+						'conditional_logic' => array(
+							array(
+								array(
+									'field'    => 'field_mrn_theme_footer_show_social_menu',
+									'operator' => '==',
+									'value'    => '1',
+								),
+							),
+						),
+					),
+					array(
+						'key'               => 'field_mrn_theme_footer_social_icon_hover_color',
+						'label'             => __( 'Social Icon Hover Color', 'mrn-base-stack' ),
+						'name'              => 'footer_social_icon_hover_color',
+						'type'              => 'select',
+						'choices'           => mrn_base_stack_get_site_color_choices(),
+						'default_value'     => mrn_base_stack_get_default_site_color_slug(),
+						'allow_null'        => 0,
+						'multiple'          => 0,
+						'required'          => 1,
+						'ui'                => 1,
+						'ajax'              => 0,
+						'return_format'     => 'value',
+						'instructions'      => __( 'Uses a Site Styles color for Footer social icon hover and focus states.', 'mrn-base-stack' ),
 						'conditional_logic' => array(
 							array(
 								array(
@@ -804,9 +2405,18 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					array(
 						'key'           => 'field_mrn_theme_footer_show_tertiary_menu',
 						'label'         => __( 'Show Tertiary Menu', 'mrn-base-stack' ),
-						'name'          => 'footer_show_legal_menu',
+						'name'          => 'footer_show_tertiary_menu',
 						'type'          => 'true_false',
-						'instructions'  => __( 'Uses the Footer Tertiary menu location (falls back to Legal legacy location).', 'mrn-base-stack' ),
+						'instructions'  => __( 'Uses the Footer Tertiary menu location.', 'mrn-base-stack' ),
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
+						'key'           => 'field_mrn_theme_footer_show_privacy_center_links',
+						'label'         => __( 'Show Privacy Center Links', 'mrn-base-stack' ),
+						'name'          => 'footer_show_privacy_center_links',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Uses the Privacy Center Links menu location.', 'mrn-base-stack' ),
 						'default_value' => 0,
 						'ui'            => 1,
 					),
@@ -917,6 +2527,129 @@ function mrn_base_stack_register_theme_options_field_groups() {
 			'title'                 => __( 'Business Information', 'mrn-base-stack' ),
 			'fields'                => array(
 				array(
+					'key'       => 'field_mrn_business_schema_identity_tab',
+					'label'     => __( 'Identity & Schema', 'mrn-base-stack' ),
+					'name'      => '',
+					'type'      => 'tab',
+					'placement' => 'top',
+					'endpoint'  => 0,
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_organization_type',
+					'label'         => __( 'Organization Type', 'mrn-base-stack' ),
+					'name'          => 'schema_organization_type',
+					'type'          => 'select',
+					'instructions'  => __( 'Choose the most specific public type that accurately describes the organization.', 'mrn-base-stack' ),
+					'choices'       => array(
+						'Organization'             => __( 'Organization', 'mrn-base-stack' ),
+						'Corporation'              => __( 'Corporation', 'mrn-base-stack' ),
+						'EducationalOrganization'  => __( 'Educational Organization', 'mrn-base-stack' ),
+						'GovernmentOrganization'   => __( 'Government Organization', 'mrn-base-stack' ),
+						'LocalBusiness'            => __( 'Local Business', 'mrn-base-stack' ),
+						'MedicalOrganization'      => __( 'Medical Organization', 'mrn-base-stack' ),
+						'NGO'                      => __( 'Nonprofit / NGO', 'mrn-base-stack' ),
+						'ProfessionalService'      => __( 'Professional Service', 'mrn-base-stack' ),
+					),
+					'default_value' => 'Organization',
+					'allow_null'    => 0,
+					'ui'            => 1,
+					'wrapper'       => array( 'width' => '50' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_author_policy',
+					'label'         => __( 'Article Author Policy', 'mrn-base-stack' ),
+					'name'          => 'schema_author_policy',
+					'type'          => 'select',
+					'instructions'  => __( 'Organization-authored sites hide internal WordPress users. Public authors keeps real author entities. Allowlist uses developer filters.', 'mrn-base-stack' ),
+					'choices'       => array(
+						'organization' => __( 'Organization authored', 'mrn-base-stack' ),
+						'public'       => __( 'Public authors', 'mrn-base-stack' ),
+						'allowlist'    => __( 'Developer allowlist', 'mrn-base-stack' ),
+					),
+					'default_value' => 'organization',
+					'allow_null'    => 0,
+					'ui'            => 1,
+					'wrapper'       => array( 'width' => '50' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_legal_name',
+					'label'         => __( 'Legal Name', 'mrn-base-stack' ),
+					'name'          => 'schema_legal_name',
+					'type'          => 'text',
+					'instructions'  => __( 'Use only when the registered legal name differs from the public site name.', 'mrn-base-stack' ),
+					'default_value' => '',
+					'wrapper'       => array( 'width' => '50' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_alternate_name',
+					'label'         => __( 'Alternate Name', 'mrn-base-stack' ),
+					'name'          => 'schema_alternate_name',
+					'type'          => 'text',
+					'instructions'  => __( 'Public abbreviation, former name, or commonly used brand variation.', 'mrn-base-stack' ),
+					'default_value' => '',
+					'wrapper'       => array( 'width' => '50' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_email',
+					'label'         => __( 'Public Email', 'mrn-base-stack' ),
+					'name'          => 'schema_email',
+					'type'          => 'email',
+					'instructions'  => __( 'Published in organization schema; leave blank if the address should not be public.', 'mrn-base-stack' ),
+					'default_value' => '',
+					'wrapper'       => array( 'width' => '50' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_area_served',
+					'label'         => __( 'Primary Area Served', 'mrn-base-stack' ),
+					'name'          => 'schema_area_served',
+					'type'          => 'text',
+					'instructions'  => __( 'Plain-language primary service area, such as North Carolina or United States.', 'mrn-base-stack' ),
+					'default_value' => '',
+					'wrapper'       => array( 'width' => '50' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_latitude',
+					'label'         => __( 'Latitude', 'mrn-base-stack' ),
+					'name'          => 'schema_latitude',
+					'type'          => 'number',
+					'step'          => 'any',
+					'default_value' => '',
+					'wrapper'       => array( 'width' => '25' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_longitude',
+					'label'         => __( 'Longitude', 'mrn-base-stack' ),
+					'name'          => 'schema_longitude',
+					'type'          => 'number',
+					'step'          => 'any',
+					'default_value' => '',
+					'wrapper'       => array( 'width' => '25' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_ai_search_crawlers',
+					'label'         => __( 'AI Search Crawlers', 'mrn-base-stack' ),
+					'name'          => 'schema_ai_search_crawlers',
+					'type'          => 'true_false',
+					'instructions'  => __( 'Allow supported AI search and user-retrieval crawlers in robots.txt.', 'mrn-base-stack' ),
+					'default_value' => 1,
+					'ui'            => 1,
+					'ui_on_text'    => __( 'Allowed', 'mrn-base-stack' ),
+					'ui_off_text'   => __( 'Blocked', 'mrn-base-stack' ),
+					'wrapper'       => array( 'width' => '25' ),
+				),
+				array(
+					'key'           => 'field_mrn_business_schema_ai_training_crawlers',
+					'label'         => __( 'AI Training Crawlers', 'mrn-base-stack' ),
+					'name'          => 'schema_ai_training_crawlers',
+					'type'          => 'true_false',
+					'instructions'  => __( 'Allow model-training crawlers. Search visibility is controlled separately.', 'mrn-base-stack' ),
+					'default_value' => 0,
+					'ui'            => 1,
+					'ui_on_text'    => __( 'Allowed', 'mrn-base-stack' ),
+					'ui_off_text'   => __( 'Blocked', 'mrn-base-stack' ),
+					'wrapper'       => array( 'width' => '25' ),
+				),
+				array(
 					'key'           => 'field_mrn_business_profile',
 					'label'         => __( 'Business Profile', 'mrn-base-stack' ),
 					'name'          => 'business_profile',
@@ -951,7 +2684,7 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					'wrapper'       => array(
 						'width' => '50',
 					),
-					'return_format' => 'array',
+					'return_format' => 'id',
 					'preview_size'  => 'medium',
 					'library'       => 'all',
 				),
@@ -965,7 +2698,7 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					'wrapper'       => array(
 						'width' => '50',
 					),
-					'return_format' => 'array',
+					'return_format' => 'id',
 					'preview_size'  => 'medium',
 					'library'       => 'all',
 				),
@@ -979,7 +2712,7 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					'wrapper'       => array(
 						'width' => '50',
 					),
-					'return_format' => 'array',
+					'return_format' => 'id',
 					'preview_size'  => 'medium',
 					'library'       => 'all',
 				),
@@ -993,7 +2726,7 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					'wrapper'       => array(
 						'width' => '50',
 					),
-					'return_format' => 'array',
+					'return_format' => 'id',
 					'preview_size'  => 'medium',
 					'library'       => 'all',
 				),
@@ -1559,9 +3292,12 @@ function mrn_base_stack_get_business_schema_data() {
 	$same_as = array_values( array_filter( array_unique( $same_as ) ) );
 	$address = isset( $business_information['address'] ) && is_array( $business_information['address'] ) ? $business_information['address'] : array();
 
-	$schema = array(
+	$organization_type = function_exists( 'get_field' ) ? sanitize_text_field( (string) get_field( 'schema_organization_type', 'option' ) ) : '';
+	$allowed_types     = array( 'Organization', 'Corporation', 'EducationalOrganization', 'GovernmentOrganization', 'LocalBusiness', 'MedicalOrganization', 'NGO', 'ProfessionalService' );
+	$organization_type = in_array( $organization_type, $allowed_types, true ) ? $organization_type : 'Organization';
+	$schema            = array(
 		'@context' => 'https://schema.org',
-		'@type'    => 'Organization',
+		'@type'    => $organization_type,
 		'@id'      => trailingslashit( home_url( '/' ) ) . '#organization',
 		'name'     => get_bloginfo( 'name' ),
 		'url'      => home_url( '/' ),
@@ -1571,8 +3307,41 @@ function mrn_base_stack_get_business_schema_data() {
 		$schema['description'] = wp_strip_all_tags( (string) $business_information['business_profile'] );
 	}
 
-	if ( ! empty( $business_logo['url'] ) ) {
-		$schema['logo'] = esc_url_raw( $business_logo['url'] );
+	if ( function_exists( 'get_field' ) ) {
+		$schema_scalar_fields = array(
+			'schema_legal_name'     => 'legalName',
+			'schema_alternate_name' => 'alternateName',
+			'schema_email'          => 'email',
+			'schema_area_served'    => 'areaServed',
+		);
+
+		foreach ( $schema_scalar_fields as $field_name => $property_name ) {
+			$value = sanitize_text_field( (string) get_field( $field_name, 'option' ) );
+
+			if ( '' !== $value ) {
+				$schema[ $property_name ] = $value;
+			}
+		}
+
+		if ( ! empty( $schema['email'] ) ) {
+			$schema['email'] = sanitize_email( (string) $schema['email'] );
+		}
+
+		$latitude  = get_field( 'schema_latitude', 'option' );
+		$longitude = get_field( 'schema_longitude', 'option' );
+
+		if ( is_numeric( $latitude ) && is_numeric( $longitude ) ) {
+			$schema['geo'] = array(
+				'@type'     => 'GeoCoordinates',
+				'latitude'  => (float) $latitude,
+				'longitude' => (float) $longitude,
+			);
+		}
+	}
+
+	$business_logo_url = function_exists( 'mrn_base_stack_get_attachment_image_url' ) ? mrn_base_stack_get_attachment_image_url( $business_logo, 'mrn-logo' ) : '';
+	if ( '' !== $business_logo_url ) {
+		$schema['logo'] = esc_url_raw( $business_logo_url );
 	}
 
 	if ( ! empty( $business_information['phone'] ) ) {
@@ -1656,7 +3425,7 @@ add_action( 'wp_head', 'mrn_base_stack_print_business_schema', 40 );
  * - footer_inverted
  *
  * @param string $context Logo context.
- * @return array<string, mixed>|null
+ * @return mixed|null
  */
 function mrn_base_stack_get_business_logo( $context = 'header' ) {
 	$business_information = mrn_base_stack_get_business_information();
@@ -1671,7 +3440,7 @@ function mrn_base_stack_get_business_logo( $context = 'header' ) {
 	$keys = isset( $map[ $context ] ) ? $map[ $context ] : $map['header'];
 
 	foreach ( $keys as $key ) {
-		if ( ! empty( $business_information[ $key ] ) && is_array( $business_information[ $key ] ) ) {
+		if ( ! empty( $business_information[ $key ] ) && function_exists( 'mrn_base_stack_image_has_content' ) && mrn_base_stack_image_has_content( $business_information[ $key ] ) ) {
 			return $business_information[ $key ];
 		}
 	}
@@ -1685,36 +3454,57 @@ function mrn_base_stack_get_business_logo( $context = 'header' ) {
  * @return array<string, mixed>
  */
 function mrn_base_stack_get_theme_header_footer_options() {
-	$defaults = array(
-		'header_show_social_menu'      => false,
-		'header_social_icon_tone'      => 'dark',
-		'header_show_tertiary_menu'    => false,
-		'header_show_secondary_menu'   => false,
-		'header_show_primary_menu'     => true,
-		'header_show_utility_menu'     => false,
-		'header_show_search'           => false,
-		'header_search_style'          => 'full',
-		'header_search_icon_source'    => 'dashicons',
-		'header_search_standard_icon'  => 'dashicons-search',
-		'header_search_fa_class'       => 'fa-solid fa-magnifying-glass',
-		'header_search_media_icon'     => array(),
-		'header_show_business_phone'   => false,
-		'header_show_business_profile' => false,
-		'footer_show_social_menu'      => false,
-		'footer_social_icon_tone'      => 'dark',
-		'footer_show_tertiary_menu'    => false,
-		'footer_show_secondary_menu'   => false,
-		'footer_show_primary_menu'     => false,
-		'footer_show_footer_menu'      => false,
-		'footer_show_legal_menu'       => false,
-		'footer_show_business_profile' => false,
-		'footer_show_business_phone'   => false,
-		'footer_show_text_phone'       => false,
-		'footer_show_address'          => false,
-		'footer_show_business_hours'   => false,
-		'footer_show_social_links'     => false,
-		'footer_copyright_text'        => '',
-		'footer_legal_text'            => '',
+	$default_site_color_slug = mrn_base_stack_get_default_site_color_slug();
+	$defaults                = array_merge(
+		array(
+			'header_background_color'                    => '',
+			'header_font_color'                          => '',
+			'header_link_color'                          => '',
+			'header_link_hover_color'                    => '',
+			'header_font_family'                         => '',
+			'header_show_social_menu'                    => false,
+			'header_show_tertiary_menu'                  => false,
+			'header_show_secondary_menu'                 => false,
+			'header_show_utility_menu'                   => false,
+			'header_primary_menu_id'                     => 0,
+			'header_primary_nav_inherit_header_settings' => true,
+			'header_show_search'                         => false,
+			'header_searchwp_form_id'                    => 0,
+			'header_search_style'                        => 'full',
+			'header_search_icon_source'                  => 'dashicons',
+			'header_search_standard_icon'                => 'dashicons-search',
+			'header_search_fa_class'                     => 'fa-solid fa-magnifying-glass',
+			'header_search_media_icon'                   => null,
+			'header_show_business_phone'                 => false,
+			'header_show_business_profile'               => false,
+			'header_content_width'                       => 'wide',
+			'header_layout_grid'                         => mrn_base_stack_get_default_theme_header_footer_layout_grid( 'header' ),
+			'footer_background_color'                    => '',
+			'footer_font_color'                          => '',
+			'footer_link_color'                          => '',
+			'footer_link_hover_color'                    => '',
+			'footer_font_family'                         => '',
+			'footer_show_social_menu'                    => false,
+			'footer_social_icon_color'                   => $default_site_color_slug,
+			'footer_social_icon_hover_color'             => $default_site_color_slug,
+			'footer_show_tertiary_menu'                  => false,
+			'footer_show_secondary_menu'                 => false,
+			'footer_show_primary_menu'                   => false,
+			'footer_show_footer_menu'                    => false,
+			'footer_show_privacy_center_links'           => false,
+			'footer_show_business_profile'               => false,
+			'footer_show_business_phone'                 => false,
+			'footer_show_text_phone'                     => false,
+			'footer_show_address'                        => false,
+			'footer_show_business_hours'                 => false,
+			'footer_show_social_links'                   => false,
+			'footer_copyright_text'                      => '',
+			'footer_legal_text'                          => '',
+			'footer_content_width'                       => 'wide',
+			'footer_layout_grid'                         => mrn_base_stack_get_default_theme_header_footer_layout_grid( 'footer' ),
+		),
+		mrn_base_stack_get_default_theme_header_footer_spacing_options( 'header' ),
+		mrn_base_stack_get_default_theme_header_footer_spacing_options( 'footer' )
 	);
 
 	if ( ! function_exists( 'get_field' ) ) {
@@ -1726,6 +3516,15 @@ function mrn_base_stack_get_theme_header_footer_options() {
 	$header_search_standard_icon = (string) get_field( 'header_search_standard_icon', 'option' );
 	$header_search_fa_class      = (string) get_field( 'header_search_fa_class', 'option' );
 	$header_search_media_icon    = get_field( 'header_search_media_icon', 'option' );
+	$header_searchwp_form_id     = absint( get_field( 'header_searchwp_form_id', 'option' ) );
+	$header_content_width        = mrn_base_stack_normalize_theme_header_footer_content_width( get_field( 'header_content_width', 'option' ), 'wide' );
+	$header_background_color     = mrn_base_stack_normalize_site_color_slug( get_field( 'header_background_color', 'option' ) );
+	$header_font_color           = mrn_base_stack_normalize_site_color_slug( get_field( 'header_font_color', 'option' ) );
+	$header_link_color           = mrn_base_stack_normalize_site_color_slug( get_field( 'header_link_color', 'option' ) );
+	$header_link_hover_color     = mrn_base_stack_normalize_site_color_slug( get_field( 'header_link_hover_color', 'option' ) );
+	$header_primary_menu_id      = absint( get_field( 'header_primary_menu_id', 'option' ) );
+	$searchwp_forms              = function_exists( 'mrn_base_stack_get_searchwp_forms' ) ? mrn_base_stack_get_searchwp_forms() : array();
+	$default_searchwp_form_id    = function_exists( 'mrn_base_stack_get_default_searchwp_form_id' ) ? mrn_base_stack_get_default_searchwp_form_id() : 0;
 	$standard_icon_choices       = array_keys( mrn_base_stack_get_header_search_standard_icon_choices() );
 	$fontawesome_choices         = array_keys( mrn_base_stack_get_header_search_fontawesome_choices() );
 
@@ -1749,49 +3548,84 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		$header_search_fa_class = 'fa-solid fa-magnifying-glass';
 	}
 
-	if ( ! is_array( $header_search_media_icon ) ) {
-		$header_search_media_icon = array();
+	if ( ! function_exists( 'mrn_base_stack_image_has_content' ) || ! mrn_base_stack_image_has_content( $header_search_media_icon ) ) {
+		$header_search_media_icon = null;
 	}
 
-	$header_show_secondary_menu = (bool) get_field( 'header_show_utility_menu', 'option' );
-	$header_show_primary_field  = get_field( 'header_show_primary_menu', 'option' );
-	$header_show_primary_menu   = null === $header_show_primary_field ? true : (bool) $header_show_primary_field;
-	$header_social_icon_tone    = mrn_base_stack_normalize_social_icon_tone( get_field( 'header_social_icon_tone', 'option' ) );
-	$footer_show_primary_menu   = (bool) get_field( 'footer_show_footer_menu', 'option' );
-	$footer_show_tertiary_menu  = (bool) get_field( 'footer_show_legal_menu', 'option' );
-	$footer_show_social_menu    = (bool) get_field( 'footer_show_social_menu', 'option' );
-	$footer_social_icon_tone    = mrn_base_stack_normalize_social_icon_tone( get_field( 'footer_social_icon_tone', 'option' ) );
+	if ( $header_searchwp_form_id < 1 || ! isset( $searchwp_forms[ $header_searchwp_form_id ] ) ) {
+		$header_searchwp_form_id = absint( $default_searchwp_form_id );
+	}
+
+	if ( $header_primary_menu_id > 0 && ! wp_get_nav_menu_object( $header_primary_menu_id ) ) {
+		$header_primary_menu_id = 0;
+	}
+
+	$header_show_secondary_menu     = (bool) get_field( 'header_show_utility_menu', 'option' );
+	$header_primary_nav_inherit_raw = get_option( 'options_header_primary_nav_inherit_header_settings', '__mrn_missing__' );
+	$header_primary_nav_inherit     = '__mrn_missing__' === $header_primary_nav_inherit_raw ? true : (bool) get_field( 'header_primary_nav_inherit_header_settings', 'option' );
+	$footer_show_primary_menu       = (bool) get_field( 'footer_show_footer_menu', 'option' );
+	$footer_show_tertiary_menu      = (bool) get_field( 'footer_show_tertiary_menu', 'option' );
+	$footer_show_social_menu        = (bool) get_field( 'footer_show_social_menu', 'option' );
+	$footer_social_icon_color       = mrn_base_stack_normalize_site_color_slug( get_field( 'footer_social_icon_color', 'option' ) );
+	$footer_social_icon_hover_color = mrn_base_stack_normalize_site_color_slug( get_field( 'footer_social_icon_hover_color', 'option' ) );
+	$footer_content_width           = mrn_base_stack_normalize_theme_header_footer_content_width( get_field( 'footer_content_width', 'option' ), 'wide' );
+	$footer_background_color        = mrn_base_stack_normalize_site_color_slug( get_field( 'footer_background_color', 'option' ) );
+	$footer_font_color              = mrn_base_stack_normalize_site_color_slug( get_field( 'footer_font_color', 'option' ) );
+	$footer_link_color              = mrn_base_stack_normalize_site_color_slug( get_field( 'footer_link_color', 'option' ) );
+	$footer_link_hover_color        = mrn_base_stack_normalize_site_color_slug( get_field( 'footer_link_hover_color', 'option' ) );
+	$footer_social_icon_color       = '' !== $footer_social_icon_color ? $footer_social_icon_color : $default_site_color_slug;
+	$footer_social_icon_hover_color = '' !== $footer_social_icon_hover_color ? $footer_social_icon_hover_color : $default_site_color_slug;
 
 	$options = array(
-		'header_show_social_menu'      => (bool) get_field( 'header_show_social_menu', 'option' ),
-		'header_social_icon_tone'      => $header_social_icon_tone,
-		'header_show_tertiary_menu'    => (bool) get_field( 'header_show_tertiary_menu', 'option' ),
-		'header_show_secondary_menu'   => $header_show_secondary_menu,
-		'header_show_primary_menu'     => $header_show_primary_menu,
-		'header_show_utility_menu'     => (bool) get_field( 'header_show_utility_menu', 'option' ),
-		'header_show_search'           => (bool) get_field( 'header_show_search', 'option' ),
-		'header_search_style'          => $header_search_style,
-		'header_search_icon_source'    => $header_search_icon_source,
-		'header_search_standard_icon'  => $header_search_standard_icon,
-		'header_search_fa_class'       => $header_search_fa_class,
-		'header_search_media_icon'     => $header_search_media_icon,
-		'header_show_business_phone'   => (bool) get_field( 'header_show_business_phone', 'option' ),
-		'header_show_business_profile' => (bool) get_field( 'header_show_business_profile', 'option' ),
-		'footer_show_social_menu'      => $footer_show_social_menu,
-		'footer_social_icon_tone'      => $footer_social_icon_tone,
-		'footer_show_tertiary_menu'    => $footer_show_tertiary_menu,
-		'footer_show_secondary_menu'   => (bool) get_field( 'footer_show_secondary_menu', 'option' ),
-		'footer_show_primary_menu'     => $footer_show_primary_menu,
-		'footer_show_footer_menu'      => $footer_show_primary_menu,
-		'footer_show_legal_menu'       => $footer_show_tertiary_menu,
-		'footer_show_business_profile' => (bool) get_field( 'footer_show_business_profile', 'option' ),
-		'footer_show_business_phone'   => (bool) get_field( 'footer_show_business_phone', 'option' ),
-		'footer_show_text_phone'       => (bool) get_field( 'footer_show_text_phone', 'option' ),
-		'footer_show_address'          => (bool) get_field( 'footer_show_address', 'option' ),
-		'footer_show_business_hours'   => (bool) get_field( 'footer_show_business_hours', 'option' ),
-		'footer_show_social_links'     => (bool) get_field( 'footer_show_social_links', 'option' ),
-		'footer_copyright_text'        => (string) get_field( 'footer_copyright_text', 'option' ),
-		'footer_legal_text'            => (string) get_field( 'footer_legal_text', 'option' ),
+		'header_background_color'                    => $header_background_color,
+		'header_font_color'                          => $header_font_color,
+		'header_link_color'                          => $header_link_color,
+		'header_link_hover_color'                    => $header_link_hover_color,
+		'header_show_social_menu'                    => (bool) get_field( 'header_show_social_menu', 'option' ),
+		'header_show_tertiary_menu'                  => (bool) get_field( 'header_show_tertiary_menu', 'option' ),
+		'header_show_secondary_menu'                 => $header_show_secondary_menu,
+		'header_show_utility_menu'                   => (bool) get_field( 'header_show_utility_menu', 'option' ),
+		'header_primary_menu_id'                     => $header_primary_menu_id,
+		'header_primary_nav_inherit_header_settings' => $header_primary_nav_inherit,
+		'header_show_search'                         => (bool) get_field( 'header_show_search', 'option' ),
+		'header_searchwp_form_id'                    => $header_searchwp_form_id,
+		'header_search_style'                        => $header_search_style,
+		'header_search_icon_source'                  => $header_search_icon_source,
+		'header_search_standard_icon'                => $header_search_standard_icon,
+		'header_search_fa_class'                     => $header_search_fa_class,
+		'header_search_media_icon'                   => $header_search_media_icon,
+		'header_show_business_phone'                 => (bool) get_field( 'header_show_business_phone', 'option' ),
+		'header_show_business_profile'               => (bool) get_field( 'header_show_business_profile', 'option' ),
+		'header_content_width'                       => $header_content_width,
+		'header_layout_grid'                         => mrn_base_stack_get_theme_header_footer_layout_grid( 'header' ),
+		'footer_background_color'                    => $footer_background_color,
+		'footer_font_color'                          => $footer_font_color,
+		'footer_link_color'                          => $footer_link_color,
+		'footer_link_hover_color'                    => $footer_link_hover_color,
+		'footer_show_social_menu'                    => $footer_show_social_menu,
+		'footer_social_icon_color'                   => $footer_social_icon_color,
+		'footer_social_icon_hover_color'             => $footer_social_icon_hover_color,
+		'footer_show_tertiary_menu'                  => $footer_show_tertiary_menu,
+		'footer_show_secondary_menu'                 => (bool) get_field( 'footer_show_secondary_menu', 'option' ),
+		'footer_show_primary_menu'                   => $footer_show_primary_menu,
+		'footer_show_footer_menu'                    => $footer_show_primary_menu,
+		'footer_show_privacy_center_links'           => (bool) get_field( 'footer_show_privacy_center_links', 'option' ),
+		'footer_show_business_profile'               => (bool) get_field( 'footer_show_business_profile', 'option' ),
+		'footer_show_business_phone'                 => (bool) get_field( 'footer_show_business_phone', 'option' ),
+		'footer_show_text_phone'                     => (bool) get_field( 'footer_show_text_phone', 'option' ),
+		'footer_show_address'                        => (bool) get_field( 'footer_show_address', 'option' ),
+		'footer_show_business_hours'                 => (bool) get_field( 'footer_show_business_hours', 'option' ),
+		'footer_show_social_links'                   => (bool) get_field( 'footer_show_social_links', 'option' ),
+		'footer_copyright_text'                      => (string) get_field( 'footer_copyright_text', 'option' ),
+		'footer_legal_text'                          => (string) get_field( 'footer_legal_text', 'option' ),
+		'footer_content_width'                       => $footer_content_width,
+		'footer_layout_grid'                         => mrn_base_stack_get_theme_header_footer_layout_grid( 'footer' ),
+	);
+
+	$options = array_merge(
+		$options,
+		mrn_base_stack_get_theme_header_footer_spacing_options( 'header' ),
+		mrn_base_stack_get_theme_header_footer_spacing_options( 'footer' )
 	);
 
 	return wp_parse_args( $options, $defaults );
@@ -2094,6 +3928,65 @@ function mrn_base_stack_is_theme_header_footer_options_screen() {
 }
 
 /**
+ * Keep the Header/Footer settings screen from serving stale admin HTML/assets.
+ *
+ * @return void
+ */
+function mrn_base_stack_send_theme_header_footer_options_no_store_headers() {
+	if ( ! is_admin() || empty( $_GET['page'] ) || 'mrn-theme-header-footer' !== sanitize_key( wp_unslash( $_GET['page'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return;
+	}
+
+	nocache_headers();
+}
+add_action( 'admin_init', 'mrn_base_stack_send_theme_header_footer_options_no_store_headers', 0 );
+
+/**
+ * Enqueue Header/Footer layout editor assets.
+ *
+ * @param string $hook_suffix Current admin hook suffix.
+ * @return void
+ */
+function mrn_base_stack_enqueue_theme_header_footer_layout_assets( $hook_suffix ) {
+	if ( 'toplevel_page_mrn-theme-header-footer' !== $hook_suffix ) {
+		return;
+	}
+
+	if ( ! function_exists( 'mrn_shared_assets_enqueue_admin_layout_builder' ) ) {
+		return;
+	}
+
+	mrn_shared_assets_enqueue_admin_layout_builder();
+
+	$style_path  = get_template_directory() . '/css/admin-header-footer-layout.css';
+	$script_path = get_template_directory() . '/js/admin-header-footer-layout.js';
+	$style_ver   = file_exists( $style_path ) ? _S_VERSION . '-' . (string) filemtime( $style_path ) : _S_VERSION;
+	$script_ver  = file_exists( $script_path ) ? _S_VERSION . '-' . (string) filemtime( $script_path ) : _S_VERSION;
+
+	wp_enqueue_style(
+		'mrn-base-stack-admin-header-footer-layout',
+		get_template_directory_uri() . '/css/admin-header-footer-layout.css',
+		array( 'mrn-shared-admin-layout-builder' ),
+		$style_ver
+	);
+
+	wp_enqueue_script(
+		'mrn-base-stack-admin-header-footer-layout',
+		get_template_directory_uri() . '/js/admin-header-footer-layout.js',
+		array( 'jquery', 'mrn-shared-admin-layout-builder' ),
+		$script_ver,
+		true
+	);
+
+	wp_add_inline_script(
+		'mrn-base-stack-admin-header-footer-layout',
+		'window.requestAnimationFrame(function(){ if (window.mrnThemeHeaderFooterLayout && typeof window.mrnThemeHeaderFooterLayout.initialize === "function") { window.mrnThemeHeaderFooterLayout.initialize(); } });',
+		'after'
+	);
+}
+add_action( 'admin_enqueue_scripts', 'mrn_base_stack_enqueue_theme_header_footer_layout_assets' );
+
+/**
  * Print structural CSS so Header/Footer sub-tabs render with native WP tab look.
  *
  * @return void
@@ -2165,6 +4058,49 @@ function mrn_base_stack_print_theme_header_footer_subtab_layout_css() {
 			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-subtab-panel[hidden] {
 				display: none !important;
 			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-config-heading {
+				border-top: 1px solid #dcdcde;
+				clear: both;
+				margin-top: 12px;
+				padding: 18px 12px 8px;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-config-heading:first-of-type {
+				margin-top: 0;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-config-heading > .acf-label {
+				display: none;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-config-heading > .acf-input {
+				margin: 0;
+				width: 100%;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-config-heading .acf-input > .acf-message {
+				margin: 0;
+				padding: 0;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .mrn-theme-hf-config-heading__title {
+				font-size: 14px;
+				line-height: 1.4;
+				margin: 0;
+			}
+
+			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-config-toggle,
+			body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-config-detail {
+				min-height: 92px;
+			}
+
+			@media (max-width: 782px) {
+				body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-config-toggle,
+				body.toplevel_page_mrn-theme-header-footer .acf-field.mrn-theme-hf-config-detail {
+					width: 100% !important;
+				}
+			}
 		</style>
 		<?php
 }
@@ -2214,24 +4150,24 @@ function mrn_base_stack_print_theme_header_footer_subtab_script() {
 				window.history.replaceState(null, '', url);
 			}
 
-			function getPanels($nav, section) {
-				var $fieldContainer = $nav.closest('.acf-fields');
-				if (!$fieldContainer.length) {
-					return $();
+				function getPanels($nav, section) {
+					var $fieldContainer = $nav.closest('.acf-fields');
+					if (!$fieldContainer.length) {
+						return $();
+					}
+
+					return $fieldContainer.children('.acf-field.mrn-theme-hf-subtab-panel.mrn-theme-hf-subtab-section--' + section);
 				}
 
-				return $fieldContainer.children('.acf-field.mrn-theme-hf-subtab-panel.mrn-theme-hf-subtab-section--' + section);
-			}
+				function activateSubtab($nav, requestedTab, shouldFocus, shouldUpdateHash) {
+					var section = String($nav.attr('data-mrn-theme-hf-section') || '').toLowerCase();
+					if (!section) {
+						return;
+					}
 
-			function activateSubtab($nav, requestedTab, shouldFocus) {
-				var section = String($nav.attr('data-mrn-theme-hf-section') || '').toLowerCase();
-				if (!section) {
-					return;
-				}
-
-				var $tabs = $nav.find(tabSelector);
-				if (!$tabs.length) {
-					return;
+					var $tabs = $nav.find(tabSelector);
+					if (!$tabs.length) {
+						return;
 				}
 
 				var tab = String(requestedTab || '').toLowerCase();
@@ -2253,11 +4189,13 @@ function mrn_base_stack_print_theme_header_footer_subtab_script() {
 				if ($panels.length) {
 					$panels.prop('hidden', true).attr('aria-hidden', 'true').removeClass('is-active');
 					$panels.filter('.mrn-theme-hf-subtab--' + tab).prop('hidden', false).attr('aria-hidden', 'false').addClass('is-active');
-				}
+					}
 
-				$nav.attr('data-mrn-theme-hf-active', tab);
-				updateSectionHash(section, tab);
-			}
+					$nav.attr('data-mrn-theme-hf-active', tab);
+					if (shouldUpdateHash) {
+						updateSectionHash(section, tab);
+					}
+				}
 
 			function initializeSubtabs(context) {
 				var $scope = context && context.jquery ? context : $(context || document);
@@ -2269,15 +4207,15 @@ function mrn_base_stack_print_theme_header_footer_subtab_script() {
 					var hashTab = getHashTabForSection(section);
 					var activeTab = String($nav.attr('data-mrn-theme-hf-active') || hashTab || defaultTab).toLowerCase();
 
-					activateSubtab($nav, activeTab, false);
-				});
-			}
+						activateSubtab($nav, activeTab, false, false);
+					});
+				}
 
-			$(document).on('click', '.mrn-theme-hf-subtabs ' + tabSelector, function (event) {
-				event.preventDefault();
-				var $tab = $(this);
-				activateSubtab($tab.closest('.mrn-theme-hf-subtabs'), String($tab.attr('data-mrn-theme-hf-subtab') || ''), true);
-			});
+				$(document).on('click', '.mrn-theme-hf-subtabs ' + tabSelector, function (event) {
+					event.preventDefault();
+					var $tab = $(this);
+					activateSubtab($tab.closest('.mrn-theme-hf-subtabs'), String($tab.attr('data-mrn-theme-hf-subtab') || ''), true, true);
+				});
 
 			$(document).on('keydown', '.mrn-theme-hf-subtabs ' + tabSelector, function (event) {
 				var key = event.key || '';
@@ -2302,15 +4240,15 @@ function mrn_base_stack_print_theme_header_footer_subtab_script() {
 					nextIndex = 0;
 				} else if (key === 'End') {
 					nextIndex = $tabs.length - 1;
-				} else if (key === 'ArrowRight') {
-					nextIndex = (currentIndex + 1) % $tabs.length;
-				} else if (key === 'ArrowLeft') {
-					nextIndex = (currentIndex - 1 + $tabs.length) % $tabs.length;
-				}
+					} else if (key === 'ArrowRight') {
+						nextIndex = (currentIndex + 1) % $tabs.length;
+					} else if (key === 'ArrowLeft') {
+						nextIndex = (currentIndex - 1 + $tabs.length) % $tabs.length;
+					}
 
-				var $nextTab = $tabs.eq(nextIndex);
-				activateSubtab($nav, String($nextTab.attr('data-mrn-theme-hf-subtab') || ''), true);
-			});
+					var $nextTab = $tabs.eq(nextIndex);
+					activateSubtab($nav, String($nextTab.attr('data-mrn-theme-hf-subtab') || ''), true, true);
+				});
 
 			$(function () {
 				initializeSubtabs(document);

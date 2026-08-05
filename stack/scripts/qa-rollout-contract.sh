@@ -9,19 +9,24 @@ Usage:
 Default checks:
   - local theme version matches packaged zip version
   - stack shared runtime exists on the server
-  - live site shared runtime exists
-  - stack/live Updraft local retention MU plugin files exist
-  - live site schedules the Updraft local retention cron hook
-  - live active stylesheet resolves
-  - live active theme version matches local source
+  - live site shared runtime exists when a live rollout target is configured or discoverable
+  - stack/live Updraft local retention MU plugin files exist when a live rollout target is configured or discoverable
+  - live site schedules the Updraft local retention cron hook when a live rollout target is configured or discoverable
+  - live active stylesheet resolves when a live rollout target is configured or discoverable
+  - live active theme version matches local source when a live rollout target is configured or discoverable
   - case study files and CPT exist when local source includes them
 EOF
 }
 
-SSH_HOST="mrndev-stack-manager@167.99.54.77"
+SSH_HOST="${MRN_ROLLOUT_SSH_HOST:-mrndev}"
 STACK_ROOT_REMOTE="/home/mrndev-stack-manager/stack"
-LIVE_SITE_ROOT="${MRN_DEFAULT_CONFIGS_LIVE_SITE_ROOT:-/home/default-configs-stack/htdocs/default-configs.mrndev.io}"
+LIVE_SITE_ROOT="${MRN_DEFAULT_CONFIGS_LIVE_SITE_ROOT:-}"
 EXPECTED_THEME_SLUG="${MRN_DEFAULT_CONFIGS_THEME_SLUG:-default-configs}"
+LIVE_SITE_ROOT_EXPLICIT=0
+
+if [[ -n "${MRN_DEFAULT_CONFIGS_LIVE_SITE_ROOT:-}" ]]; then
+	LIVE_SITE_ROOT_EXPLICIT=1
+fi
 
 while [[ $# -gt 0 ]]; do
 	case "$1" in
@@ -31,6 +36,7 @@ while [[ $# -gt 0 ]]; do
 			;;
 		--live-site-root)
 			LIVE_SITE_ROOT="${2:-}"
+			LIVE_SITE_ROOT_EXPLICIT=1
 			shift 2
 			;;
 		--stack-root-remote)
@@ -59,11 +65,8 @@ LOCAL_THEME_DIR="${REPO_ROOT}/stack/themes/mrn-base-stack"
 LOCAL_THEME_ZIP="${REPO_ROOT}/releases/stack/mrn-base-stack.zip"
 
 REMOTE_SHARED_DIR="${STACK_ROOT_REMOTE}/shared"
-REMOTE_LIVE_SHARED_DIR="${LIVE_SITE_ROOT}/wp-content/shared"
 REMOTE_STACK_RETENTION_WRAPPER="${STACK_ROOT_REMOTE}/mu-plugins/mrn-updraft-local-retention.php"
 REMOTE_STACK_RETENTION_MAIN="${STACK_ROOT_REMOTE}/mu-plugins/mrn-updraft-local-retention/mrn-updraft-local-retention.php"
-REMOTE_LIVE_RETENTION_WRAPPER="${LIVE_SITE_ROOT}/wp-content/mu-plugins/mrn-updraft-local-retention.php"
-REMOTE_LIVE_RETENTION_MAIN="${LIVE_SITE_ROOT}/wp-content/mu-plugins/mrn-updraft-local-retention/mrn-updraft-local-retention.php"
 REMOTE_ACTIVE_THEME_SLUG=""
 REMOTE_ACTIVE_THEME_DIR=""
 
@@ -122,13 +125,33 @@ remote_file_exists "${REMOTE_SHARED_DIR}/mrn-sticky-settings-toolbar.php" || fai
 remote_file_exists "${REMOTE_SHARED_DIR}/mrn-universal-sticky-bar-assets.php" || fail "Remote stack shared runtime missing mrn-universal-sticky-bar-assets.php"
 pass "Remote stack shared runtime exists"
 
-remote_dir_exists "${REMOTE_LIVE_SHARED_DIR}" || fail "Live site shared runtime missing: ${REMOTE_LIVE_SHARED_DIR}"
-remote_file_exists "${REMOTE_LIVE_SHARED_DIR}/mrn-sticky-settings-toolbar.php" || fail "Live site shared runtime missing mrn-sticky-settings-toolbar.php"
-pass "Live site shared runtime exists"
-
 remote_file_exists "${REMOTE_STACK_RETENTION_WRAPPER}" || fail "Remote stack MU wrapper missing: ${REMOTE_STACK_RETENTION_WRAPPER}"
 remote_file_exists "${REMOTE_STACK_RETENTION_MAIN}" || fail "Remote stack MU plugin missing: ${REMOTE_STACK_RETENTION_MAIN}"
 pass "Remote stack Updraft local retention MU plugin exists"
+
+if [[ -z "${LIVE_SITE_ROOT}" ]]; then
+	LIVE_SITE_ROOT="$(
+		ssh "${SSH_HOST}" "find /home -maxdepth 3 -type d -path '*/htdocs/default-configs.mrndev.io' 2>/dev/null | head -n1" | tr -d '\r' | xargs
+	)"
+fi
+
+if [[ -z "${LIVE_SITE_ROOT}" ]]; then
+	pass "No default-configs live site found; live rollout checks skipped"
+	echo "Rollout contract verified for stack runtime (no default-configs live target installed)"
+	exit 0
+fi
+
+if [[ "${LIVE_SITE_ROOT_EXPLICIT}" == "1" ]]; then
+	remote_dir_exists "${LIVE_SITE_ROOT}" || fail "Configured live site root missing: ${LIVE_SITE_ROOT}"
+fi
+
+REMOTE_LIVE_SHARED_DIR="${LIVE_SITE_ROOT}/wp-content/shared"
+REMOTE_LIVE_RETENTION_WRAPPER="${LIVE_SITE_ROOT}/wp-content/mu-plugins/mrn-updraft-local-retention.php"
+REMOTE_LIVE_RETENTION_MAIN="${LIVE_SITE_ROOT}/wp-content/mu-plugins/mrn-updraft-local-retention/mrn-updraft-local-retention.php"
+
+remote_dir_exists "${REMOTE_LIVE_SHARED_DIR}" || fail "Live site shared runtime missing: ${REMOTE_LIVE_SHARED_DIR}"
+remote_file_exists "${REMOTE_LIVE_SHARED_DIR}/mrn-sticky-settings-toolbar.php" || fail "Live site shared runtime missing mrn-sticky-settings-toolbar.php"
+pass "Live site shared runtime exists"
 
 remote_file_exists "${REMOTE_LIVE_RETENTION_WRAPPER}" || fail "Live site MU wrapper missing: ${REMOTE_LIVE_RETENTION_WRAPPER}"
 remote_file_exists "${REMOTE_LIVE_RETENTION_MAIN}" || fail "Live site MU plugin missing: ${REMOTE_LIVE_RETENTION_MAIN}"

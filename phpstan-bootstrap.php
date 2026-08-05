@@ -96,3 +96,24 @@ if ( ! function_exists( 'mrn_rbl_get_content_link_fields' ) ) {
 		return array();
 	}
 }
+
+if ( ! function_exists( 'mrn_site_colors_get_all' ) ) {
+	/**
+	 * @return array<int, array<string, mixed>>
+	 */
+	function mrn_site_colors_get_all(): array {
+		return array();
+	}
+}
+
+if ( ! function_exists( 'mrn_site_colors_normalize_slug' ) ) {
+	function mrn_site_colors_normalize_slug( string $value ): string {
+		return $value;
+	}
+}
+
+if ( ! function_exists( 'mrn_site_colors_get_css_var' ) ) {
+	function mrn_site_colors_get_css_var( string $slug ): string {
+		return '--mrn-site-color-' . $slug;
+	}
+}

@@ -1,0 +1,12 @@
+parameters:
+    level: 3
+    paths:
+        - mrn-public-security-hardening.php
+    tmpDir: .tmp/phpstan
+    reportUnmatchedIgnoredErrors: false
+    treatPhpDocTypesAsCertain: false
+    excludePaths:
+        analyse:
+            - */vendor/*
+            - */node_modules/*
+            - .tmp/*

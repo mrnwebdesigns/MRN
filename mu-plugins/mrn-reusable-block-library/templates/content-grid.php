@@ -40,6 +40,55 @@ if (!in_array($columns, array('2', '3', '4'), true)) {
     $columns = '3';
 }
 
+$renderable_items = array();
+foreach ($grid_items as $item) {
+    if (!is_array($item)) {
+        continue;
+    }
+
+    $candidate_item = $item;
+    foreach (array('item_url', 'link_url', 'url') as $legacy_url_key) {
+        if (isset($candidate_item[$legacy_url_key]) && is_string($candidate_item[$legacy_url_key]) && trim($candidate_item[$legacy_url_key]) !== '') {
+            $candidate_item['url'] = trim($candidate_item[$legacy_url_key]);
+            break;
+        }
+    }
+
+    if (isset($candidate_item['link']) && is_string($candidate_item['link']) && trim($candidate_item['link']) !== '') {
+        $candidate_item['url'] = trim($candidate_item['link']);
+    }
+
+    $candidate_link = function_exists('mrn_base_stack_get_repeater_item_primary_link')
+        ? mrn_base_stack_get_repeater_item_primary_link(
+            $candidate_item,
+            array(
+                'fallback_link_style' => $item_link_style,
+            )
+        )
+        : (function_exists('mrn_rbl_normalize_content_link')
+            ? mrn_rbl_normalize_content_link(
+                $candidate_item,
+                array(
+                    'fallback_link_style' => $item_link_style,
+                )
+            )
+            : array());
+    $candidate_link_url = isset($candidate_link['url']) ? trim((string) $candidate_link['url']) : '';
+
+    if (
+        trim((string) ($item['label'] ?? '')) !== ''
+        || trim((string) ($item['heading'] ?? '')) !== ''
+        || trim((string) ($item['content'] ?? '')) !== ''
+        || $candidate_link_url !== ''
+    ) {
+        $renderable_items[] = $item;
+    }
+}
+
+if ($label === '' && $heading === '' && $subheading === '' && $renderable_items === array()) {
+    return;
+}
+
 $classes = array(
     'mrn-reusable-block',
     'mrn-reusable-block--content-grid',
@@ -121,9 +170,9 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
             </div>
         <?php endif; ?>
 
-        <?php if ($grid_items !== array()) : ?>
-	            <div class="mrn-content-grid__items mrn-content-grid__items--collection-shell mrn-ui__items">
-                <?php foreach ($grid_items as $item) : ?>
+        <?php if ($renderable_items !== array()) : ?>
+		            <div class="mrn-content-grid__items mrn-content-grid__items--collection-shell mrn-ui__items">
+                <?php foreach ($renderable_items as $item) : ?>
                     <?php
                     if (!is_array($item)) {
                         continue;
@@ -172,12 +221,16 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
                     $link_icon_markup = function_exists('mrn_base_stack_get_button_link_icon_markup')
                         ? mrn_base_stack_get_button_link_icon_markup($normalized_link)
                         : '';
-                    $link_icon_position = function_exists('mrn_base_stack_get_button_link_icon_position')
-                        ? mrn_base_stack_get_button_link_icon_position($normalized_link)
-                        : 'left';
-                    $link_label = $link_text !== '' ? $link_text : $link_url;
-                    $link_aria_label = $link_text !== ''
-                        ? $link_text
+	                    $link_icon_position = function_exists('mrn_base_stack_get_button_link_icon_position')
+	                        ? mrn_base_stack_get_button_link_icon_position($normalized_link)
+	                        : 'left';
+	                    $link_label = $link_text !== '' ? $link_text : $link_url;
+	                    $link_label_markup = esc_html($link_label);
+	                    if (function_exists('mrn_base_stack_get_compact_link_label_markup')) {
+	                        $link_label_markup = mrn_base_stack_get_compact_link_label_markup($link_label, $link_icon_markup, $link_icon_position);
+	                    }
+	                    $link_aria_label = $link_text !== ''
+	                        ? $link_text
                         : ($item_heading !== ''
                             ? wp_strip_all_tags($item_heading)
                             : __('View grid item', 'mrn-reusable-block-library'));
@@ -235,21 +288,13 @@ echo function_exists('mrn_rbl_get_anchor_markup') ? mrn_rbl_get_anchor_markup($c
                                             class="<?php echo esc_attr(trim($link_class_names)); ?>"
                                             <?php echo '' !== $link_attr_html ? $link_attr_html : 'href="' . esc_url($link_url) . '"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                                         >
-                                            <?php
-                                            echo function_exists('mrn_base_stack_get_compact_link_label_markup')
-                                                ? mrn_base_stack_get_compact_link_label_markup($link_label, $link_icon_markup, $link_icon_position)
-                                                : esc_html($link_label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
-                                            ?>
+	                                            <?php echo $link_label_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Prepared link label markup is escaped above or by helper. ?>
                                         </a>
                                     </div>
                                 <?php elseif (!$hide_item_link) : ?>
                                     <div class="mrn-content-grid__item-link-wrap">
                                         <span class="<?php echo esc_attr(trim($link_class_names)); ?>">
-                                            <?php
-                                            echo function_exists('mrn_base_stack_get_compact_link_label_markup')
-                                                ? mrn_base_stack_get_compact_link_label_markup($link_label, $link_icon_markup, $link_icon_position)
-                                                : esc_html($link_label); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper escapes text and icon markup is escaped at source.
-                                            ?>
+	                                            <?php echo $link_label_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Prepared link label markup is escaped above or by helper. ?>
                                         </span>
                                     </div>
                                 <?php endif; ?>

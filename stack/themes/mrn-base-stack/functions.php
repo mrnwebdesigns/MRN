@@ -9,7 +9,24 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.2.2' );
+	define( '_S_VERSION', '1.2.92' );
+}
+
+/**
+ * Get the stack's canonical navigation locations.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_nav_menu_locations() {
+	return array(
+		'menu-1'           => esc_html__( 'Primary', 'mrn-base-stack' ),
+		'menu-3'           => esc_html__( 'Footer Primary', 'mrn-base-stack' ),
+		'header-secondary' => esc_html__( 'Header Secondary', 'mrn-base-stack' ),
+		'header-tertiary'  => esc_html__( 'Header Tertiary', 'mrn-base-stack' ),
+		'footer-secondary' => esc_html__( 'Footer Secondary', 'mrn-base-stack' ),
+		'footer-tertiary'  => esc_html__( 'Footer Tertiary', 'mrn-base-stack' ),
+		'privacy-center'   => esc_html__( 'Privacy Center Links', 'mrn-base-stack' ),
+	);
 }
 
 /**
@@ -46,20 +63,19 @@ function mrn_base_stack_setup() {
 		*/
 	add_theme_support( 'post-thumbnails' );
 
-	// This theme uses wp_nav_menu() in one location.
-	register_nav_menus(
-		array(
-			'menu-1'           => esc_html__( 'Primary', 'mrn-base-stack' ),
-			'menu-2'           => esc_html__( 'Utility (Legacy)', 'mrn-base-stack' ),
-			'menu-3'           => esc_html__( 'Footer Primary', 'mrn-base-stack' ),
-			'menu-4'           => esc_html__( 'Legal (Legacy)', 'mrn-base-stack' ),
-			'header-secondary' => esc_html__( 'Header Secondary', 'mrn-base-stack' ),
-			'header-tertiary'  => esc_html__( 'Header Tertiary', 'mrn-base-stack' ),
-			'footer-secondary' => esc_html__( 'Footer Secondary', 'mrn-base-stack' ),
-			'footer-tertiary'  => esc_html__( 'Footer Tertiary', 'mrn-base-stack' ),
-			'social-media'     => esc_html__( 'Social Media', 'mrn-base-stack' ),
-		)
-	);
+	add_image_size( 'mrn-hero', 1600, 1000, false );
+	add_image_size( 'mrn-banner', 1600, 600, true );
+	add_image_size( 'mrn-background', 1920, 1080, true );
+	add_image_size( 'mrn-content-media', 1200, 900, false );
+	add_image_size( 'mrn-card', 768, 512, true );
+	add_image_size( 'mrn-gallery', 900, 675, true );
+	add_image_size( 'mrn-logo', 480, 240, false );
+	add_image_size( 'mrn-team-member', 640, 640, true );
+	add_image_size( 'mrn-testimonial', 640, 480, false );
+	add_image_size( 'mrn-icon', 96, 96, false );
+
+	// Register the stack's canonical navigation slots.
+	register_nav_menus( mrn_base_stack_get_nav_menu_locations() );
 
 	/*
 		* Switch default core markup for search form, comment form, and comments
@@ -109,6 +125,155 @@ function mrn_base_stack_setup() {
 	);
 }
 add_action( 'after_setup_theme', 'mrn_base_stack_setup' );
+
+/**
+ * Ensure each stack navigation location has an editable menu assigned.
+ *
+ * @return void
+ */
+function mrn_base_stack_seed_nav_menus() {
+	$migration_version  = '2026-07-07-v1';
+	$option_key         = 'mrn_base_stack_nav_menu_seed_version';
+	$locations          = mrn_base_stack_get_nav_menu_locations();
+	$assigned_locations = get_nav_menu_locations();
+	$stack_locations    = array_intersect_key( $assigned_locations, $locations );
+	$all_seeded         = true;
+	$needs_update       = false;
+
+	foreach ( $locations as $location => $label ) {
+		$assigned_menu_id = isset( $stack_locations[ $location ] ) ? (int) $stack_locations[ $location ] : 0;
+
+		if ( $assigned_menu_id > 0 && wp_get_nav_menu_object( $assigned_menu_id ) ) {
+			continue;
+		}
+
+		$menu = wp_get_nav_menu_object( $label );
+
+		if ( ! $menu ) {
+			$created_menu_id = wp_create_nav_menu( $label );
+
+			if ( is_wp_error( $created_menu_id ) ) {
+				$all_seeded = false;
+				continue;
+			}
+
+			$assigned_menu_id = (int) $created_menu_id;
+		} else {
+			$assigned_menu_id = (int) $menu->term_id;
+		}
+
+		$assigned_locations[ $location ] = $assigned_menu_id;
+		$needs_update                    = true;
+	}
+
+	if ( $needs_update ) {
+		set_theme_mod( 'nav_menu_locations', $assigned_locations );
+	}
+
+	if ( $all_seeded ) {
+		update_option( $option_key, $migration_version, false );
+	}
+}
+add_action( 'init', 'mrn_base_stack_seed_nav_menus', 20 );
+
+/**
+ * Determine whether a registered menu location has menu items.
+ *
+ * @param string $location Menu location slug.
+ * @return bool
+ */
+function mrn_base_stack_nav_location_has_items( $location ) {
+	$location  = sanitize_key( (string) $location );
+	$locations = get_nav_menu_locations();
+	$menu_id   = isset( $locations[ $location ] ) ? (int) $locations[ $location ] : 0;
+
+	return mrn_base_stack_nav_menu_has_items( $menu_id );
+}
+
+/**
+ * Determine whether a menu object has menu items.
+ *
+ * @param int|string $menu_id Menu term ID.
+ * @return bool
+ */
+function mrn_base_stack_nav_menu_has_items( $menu_id ) {
+	$menu_id = absint( $menu_id );
+
+	if ( $menu_id <= 0 || ! wp_get_nav_menu_object( $menu_id ) ) {
+		return false;
+	}
+
+	$items = wp_get_nav_menu_items(
+		$menu_id,
+		array(
+			'update_post_term_cache' => false,
+		)
+	);
+
+	return is_array( $items ) && ! empty( $items );
+}
+
+/**
+ * Determine whether a selected menu or fallback menu location has menu items.
+ *
+ * @param int|string $menu_id  Optional selected menu term ID.
+ * @param string     $location Menu location slug used when no menu is selected.
+ * @return bool
+ */
+function mrn_base_stack_nav_menu_selection_has_items( $menu_id, $location ) {
+	$menu_id = absint( $menu_id );
+
+	if ( $menu_id > 0 ) {
+		return mrn_base_stack_nav_menu_has_items( $menu_id );
+	}
+
+	return mrn_base_stack_nav_location_has_items( $location );
+}
+
+/**
+ * Build wp_nav_menu args for a selected menu or registered location.
+ *
+ * @param int|string           $menu_id  Optional selected menu term ID.
+ * @param string               $location Menu location slug used when no menu is selected.
+ * @param array<string, mixed> $args     Base wp_nav_menu args.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_nav_menu_selection_args( $menu_id, $location, array $args ) {
+	$menu_id  = absint( $menu_id );
+	$location = sanitize_key( (string) $location );
+
+	if ( $menu_id > 0 ) {
+		$args['menu'] = $menu_id;
+		unset( $args['theme_location'] );
+	} else {
+		$args['theme_location'] = $location;
+		unset( $args['menu'] );
+	}
+
+	return $args;
+}
+
+/**
+ * Determine whether pages should rely on stack builder fields instead of the
+ * WordPress stock body editor.
+ *
+ * @return bool
+ */
+function mrn_base_stack_pages_use_builder_only_content() {
+	return (bool) apply_filters( 'mrn_base_stack_pages_use_builder_only_content', true );
+}
+
+/**
+ * Remove the stock WordPress body editor from page edit screens.
+ *
+ * @return void
+ */
+function mrn_base_stack_disable_page_body_editor() {
+	if ( mrn_base_stack_pages_use_builder_only_content() ) {
+		remove_post_type_support( 'page', 'editor' );
+	}
+}
+add_action( 'init', 'mrn_base_stack_disable_page_body_editor', 20 );
 
 /**
  * Set the content width in pixels, based on the theme's design and stylesheet.
@@ -208,7 +373,7 @@ function mrn_base_stack_get_hidden_builder_layouts() {
  * Get the singular post types that use the theme's builder-style shell.
  *
  * @param array<int, string> $post_types Post type slugs.
- * @return array<int, string>
+ * @return array<int, array<int, array<string, mixed>>>
  */
 function mrn_base_stack_build_post_type_location_rules( array $post_types ) {
 	$locations = array();
@@ -396,12 +561,20 @@ function mrn_base_stack_get_after_content_location_rules() {
 /**
  * Determine whether the layout-builder runtime should load.
  *
- * This rollback track keeps layout-builder functionality fully disabled.
+ * Layout-builder runtime stays on by default for stack rollouts, while sites
+ * can still opt out during rollback windows.
  *
  * @return bool
  */
 function mrn_base_stack_is_layout_builder_enabled() {
-	return false;
+	$enabled = defined( 'MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER' ) ? (bool) MRN_BASE_STACK_ENABLE_LAYOUT_BUILDER : true;
+
+	/**
+	 * Filter whether the theme's ACF layout-builder runtime should load.
+	 *
+	 * @param bool $enabled Whether builder runtime is enabled.
+	 */
+	return (bool) apply_filters( 'mrn_base_stack_enable_layout_builder', $enabled );
 }
 
 /**
@@ -433,6 +606,11 @@ add_filter( 'mrn_universal_sticky_bar_post_types', 'mrn_base_stack_add_editorial
  * @return void
  */
 function mrn_base_stack_enqueue_shared_repeater_admin_assets() {
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( function_exists( 'mrn_base_stack_admin_is_safe_acf_editor_helper_screen' ) && ! mrn_base_stack_admin_is_safe_acf_editor_helper_screen( $screen ) ) {
+		return;
+	}
+
 	$repeater_controls_path    = get_template_directory() . '/js/admin-repeater-controls.js';
 	$repeater_controls_ver     = file_exists( $repeater_controls_path ) ? (string) filemtime( $repeater_controls_path ) : _S_VERSION;
 	$repeater_styles_path      = get_template_directory() . '/css/admin-repeater-controls.css';
@@ -508,6 +686,9 @@ add_action( 'admin_enqueue_scripts', 'mrn_base_stack_enqueue_gallery_admin_asset
  * Enqueue Motion inView assets for front-end effects.
  */
 function mrn_base_stack_enqueue_motion_assets() {
+	$effects_path    = get_template_directory() . '/js/front-end-effects.js';
+	$effects_version = file_exists( $effects_path ) ? _S_VERSION . '.' . (string) filemtime( $effects_path ) : _S_VERSION;
+
 	wp_enqueue_script(
 		'mrn-base-stack-motion',
 		get_template_directory_uri() . '/js/vendor/motion.js',
@@ -520,7 +701,7 @@ function mrn_base_stack_enqueue_motion_assets() {
 		'mrn-base-stack-front-end-effects',
 		get_template_directory_uri() . '/js/front-end-effects.js',
 		array( 'mrn-base-stack-motion' ),
-		_S_VERSION,
+		$effects_version,
 		true
 	);
 }
@@ -621,7 +802,7 @@ function mrn_base_stack_post_requires_front_end_runtime( $post_id ) {
 		return true;
 	}
 
-	$meta = get_post_meta( $post_id );
+	$meta = get_post_meta( $post_id, '', false );
 	if ( ! is_array( $meta ) || empty( $meta ) ) {
 		return false;
 	}
@@ -651,15 +832,23 @@ function mrn_base_stack_post_requires_front_end_runtime( $post_id ) {
  * Enqueue scripts and styles.
  */
 function mrn_base_stack_scripts() {
-	wp_enqueue_style( 'mrn-base-stack-style', get_stylesheet_uri(), array(), _S_VERSION );
+	$style_path = get_template_directory() . '/style.css';
+	$style_ver  = file_exists( $style_path ) ? _S_VERSION . '-' . (string) filemtime( $style_path ) : _S_VERSION;
+
+	wp_enqueue_style( 'mrn-base-stack-style', get_template_directory_uri() . '/style.css', array(), $style_ver );
 	wp_style_add_data( 'mrn-base-stack-style', 'rtl', 'replace' );
 
 	$layout_builder_enabled = mrn_base_stack_is_layout_builder_enabled();
-	$header_options         = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
-	$needs_fontawesome      = false;
-	$needs_dashicons        = false;
-	$uses_icon_search       = ! empty( $header_options['header_show_search'] ) && isset( $header_options['header_search_style'] ) && 'icon_only' === $header_options['header_search_style'];
-	$search_icon_source     = isset( $header_options['header_search_icon_source'] ) ? (string) $header_options['header_search_icon_source'] : 'dashicons';
+
+	if ( $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'mrn_base_stack_enqueue_layout_styles_for_post' ) ) {
+		mrn_base_stack_enqueue_layout_styles_for_post( get_queried_object_id() );
+	}
+
+	$header_options     = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+	$needs_fontawesome  = false;
+	$needs_dashicons    = false;
+	$uses_icon_search   = ! empty( $header_options['header_show_search'] ) && isset( $header_options['header_search_style'] ) && 'icon_only' === $header_options['header_search_style'];
+	$search_icon_source = isset( $header_options['header_search_icon_source'] ) ? (string) $header_options['header_search_icon_source'] : 'dashicons';
 
 	if ( 'fontawesome' === $search_icon_source && $uses_icon_search ) {
 		$needs_fontawesome = true;
@@ -711,25 +900,8 @@ function mrn_base_stack_scripts() {
 		}
 	}
 
-	if ( $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'get_field' ) && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs' ) ) {
-		$post_id      = get_queried_object_id();
-		$builder_sets = array();
-
-		if ( $post_id ) {
-			$builder_sets = array(
-				get_field( 'page_hero_rows', $post_id ),
-				get_field( 'page_content_rows', $post_id ),
-				get_field( 'page_after_content_rows', $post_id ),
-			);
-		}
-
-		foreach ( $builder_sets as $builder_rows ) {
-			mrn_base_stack_collect_builder_link_icon_asset_needs( $builder_rows, $needs_fontawesome, $needs_dashicons );
-
-			if ( $needs_fontawesome && $needs_dashicons ) {
-				break;
-			}
-		}
+	if ( $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs_from_post_meta' ) ) {
+		mrn_base_stack_collect_builder_link_icon_asset_needs_from_post_meta( get_queried_object_id(), $needs_fontawesome, $needs_dashicons );
 	}
 
 	if ( $layout_builder_enabled && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs' ) && function_exists( 'mrn_rbl_get_post_types' ) && is_singular( mrn_rbl_get_post_types() ) && function_exists( 'get_fields' ) ) {
@@ -752,7 +924,19 @@ function mrn_base_stack_scripts() {
 		wp_enqueue_style( 'dashicons' );
 	}
 
-	wp_enqueue_script( 'mrn-base-stack-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
+	$mobile_navigation_options = function_exists( 'mrn_base_stack_get_mobile_navigation_options' ) ? mrn_base_stack_get_mobile_navigation_options() : array( 'enabled' => false );
+
+	if ( ! empty( $mobile_navigation_options['enabled'] ) ) {
+		$mobile_navigation_style_path  = get_template_directory() . '/css/mobile-navigation.css';
+		$mobile_navigation_script_path = get_template_directory() . '/js/mobile-navigation.js';
+		$mobile_navigation_style_ver   = file_exists( $mobile_navigation_style_path ) ? _S_VERSION . '-' . (string) filemtime( $mobile_navigation_style_path ) : _S_VERSION;
+		$mobile_navigation_script_ver  = file_exists( $mobile_navigation_script_path ) ? _S_VERSION . '-' . (string) filemtime( $mobile_navigation_script_path ) : _S_VERSION;
+
+		wp_enqueue_style( 'mrn-base-stack-mobile-navigation', get_template_directory_uri() . '/css/mobile-navigation.css', array( 'mrn-base-stack-style' ), $mobile_navigation_style_ver );
+		wp_enqueue_script( 'mrn-base-stack-mobile-navigation', get_template_directory_uri() . '/js/mobile-navigation.js', array(), $mobile_navigation_script_ver, true );
+	} else {
+		wp_enqueue_script( 'mrn-base-stack-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
+	}
 
 	if ( $uses_icon_search ) {
 		wp_enqueue_script(
@@ -772,6 +956,10 @@ function mrn_base_stack_scripts() {
 		if ( $post_id && mrn_base_stack_post_requires_front_end_runtime( $post_id ) ) {
 			$should_enqueue_builder_runtime = true;
 		}
+	}
+
+	if ( ! $should_enqueue_builder_runtime && is_singular( 'testimonial' ) && function_exists( 'mrn_base_stack_testimonial_requires_front_end_runtime' ) ) {
+		$should_enqueue_builder_runtime = mrn_base_stack_testimonial_requires_front_end_runtime( get_queried_object_id() );
 	}
 
 	/**
@@ -851,6 +1039,46 @@ function mrn_base_stack_scripts() {
 	}
 }
 add_action( 'wp_enqueue_scripts', 'mrn_base_stack_scripts' );
+
+/**
+ * Enqueue SearchWP form assets when the stack header renders the SearchWP form.
+ *
+ * SearchWP registers these handles on `wp_enqueue_scripts`; this runs later so
+ * the theme can enqueue them before the form shortcode renders.
+ *
+ * @return void
+ */
+function mrn_base_stack_enqueue_header_searchwp_assets() {
+	$header_options = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+
+	if ( empty( $header_options['header_show_search'] ) || empty( $header_options['header_searchwp_form_id'] ) ) {
+		return;
+	}
+
+	if ( wp_style_is( 'searchwp-forms', 'registered' ) ) {
+		wp_enqueue_style( 'searchwp-forms' );
+	}
+
+	if ( wp_script_is( 'searchwp-forms', 'registered' ) ) {
+		wp_enqueue_script( 'searchwp-forms' );
+	}
+}
+add_action( 'wp_enqueue_scripts', 'mrn_base_stack_enqueue_header_searchwp_assets', 100 );
+
+/**
+ * Load responsive image helpers.
+ */
+require_once get_template_directory() . '/inc/image-helpers.php';
+
+/**
+ * Load front-end asset helpers.
+ */
+require_once get_template_directory() . '/inc/frontend-assets.php';
+
+/**
+ * Standard mobile navigation settings and rendering helpers.
+ */
+require_once get_template_directory() . '/inc/mobile-navigation.php';
 
 /**
  * Load builder modules.
@@ -1637,6 +1865,10 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 			return;
 		}
 
+		if ( 'page' === get_post_type( $post_id ) && mrn_base_stack_pages_use_builder_only_content() ) {
+			return;
+		}
+
 		$content = get_post_field( 'post_content', $post_id );
 		if ( ! is_string( $content ) || '' === trim( $content ) ) {
 			return;
@@ -1778,6 +2010,11 @@ if ( mrn_base_stack_is_layout_builder_enabled() ) {
 		);
 	}
 }
+
+/**
+ * Load flexible-content row-spacing meta helpers.
+ */
+require_once get_template_directory() . '/inc/row-spacing-meta.php';
 
 /**
  * Get a stable row-spacing contract for row wrappers across builder modes.
@@ -2249,9 +2486,19 @@ if ( ! function_exists( 'mrn_base_stack_get_row_spacing_contract' ) ) {
 }
 
 /**
+ * Load display-style helpers.
+ */
+require_once get_template_directory() . '/inc/display-styles.php';
+
+/**
  * Load theme options modules.
  */
 require_once get_template_directory() . '/inc/theme-options.php';
+
+/**
+ * Load editable 404 page settings.
+ */
+require_once get_template_directory() . '/inc/not-found.php';
 
 /**
  * Load menu link attribute modules.
@@ -2277,6 +2524,11 @@ require_once get_template_directory() . '/inc/testimonial.php';
  * Load case-study modules.
  */
 require_once get_template_directory() . '/inc/case-study.php';
+
+/**
+ * Load field-ready content post type registrations.
+ */
+require_once get_template_directory() . '/inc/content-post-types.php';
 
 /**
  * Implement the Custom Header feature.

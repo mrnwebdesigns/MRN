@@ -21,7 +21,7 @@ function mrn_base_stack_render_hero_row( array $row, $post_id, $index ) {
 	$layout  = (string) $row['acf_fc_layout'];
 	$context = mrn_base_stack_get_builder_row_context( $row, $post_id, $index );
 
-	if ( 'basic' === $layout ) {
+	if ( 'basic_block' === $layout ) {
 		get_template_part( 'template-parts/builder/hero', null, $context );
 		return true;
 	}
@@ -66,7 +66,11 @@ function mrn_base_stack_render_hero_builder( $post_id = null ) {
 		$row['__mrn_builder_field_name'] = 'page_hero_rows';
 		$row['__mrn_builder_row_index']  = (int) $index;
 
-		if ( mrn_base_stack_render_hero_row( $row, $post_id, $index ) ) {
+		ob_start();
+		$row_rendered = mrn_base_stack_render_hero_row( $row, $post_id, $index );
+		$row_markup   = trim( (string) ob_get_clean() );
+		if ( $row_rendered && '' !== $row_markup ) {
+			echo mrn_base_stack_add_contextual_editor_row_scope( $row_markup, $post_id, 'page_hero_rows', $index, (string) $row['acf_fc_layout'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Template markup is escaped by its renderer; the helper only adds escaped attributes.
 			$rendered = true;
 		}
 	}
@@ -103,6 +107,24 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 	$section_classes   = trim( 'mrn-layout-section ' . $section_modifier . ' ' . ( $width_layers['section_class'] ?? 'mrn-layout-section--contained' ) );
 	$container_classes = trim( 'mrn-layout-container ' . ( $width_layers['container_class'] ?? 'mrn-layout-container--wide' ) );
 	$row_attributes    = array();
+	$layout_name       = isset( $row['acf_fc_layout'] ) ? sanitize_key( (string) $row['acf_fc_layout'] ) : '';
+	if ( '' !== $layout_name && function_exists( 'mrn_base_stack_get_builder_display_contract' ) ) {
+		$display_contract = mrn_base_stack_get_builder_display_contract( $row, $layout_name );
+
+		if ( ! empty( $display_contract['classes'] ) && is_array( $display_contract['classes'] ) ) {
+			$row_classes = trim( $row_classes . ' ' . implode( ' ', array_filter( $display_contract['classes'], 'strlen' ) ) );
+		}
+
+		if ( function_exists( 'mrn_base_stack_merge_builder_attributes' ) ) {
+			$row_attributes = mrn_base_stack_merge_builder_attributes(
+				$row_attributes,
+				isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ? $display_contract['attributes'] : array()
+			);
+		} elseif ( isset( $display_contract['attributes'] ) && is_array( $display_contract['attributes'] ) ) {
+			$row_attributes = array_merge( $row_attributes, $display_contract['attributes'] );
+		}
+	}
+
 	if ( ! $include_motion_contract ) {
 		$flex_contract        = function_exists( 'mrn_base_stack_get_builder_flex_contract' ) ? mrn_base_stack_get_builder_flex_contract( $row ) : array(
 			'classes'    => array(),
@@ -165,7 +187,18 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
 
 	$row_attribute_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $row_attributes ) : '';
 
-	$anchor_markup = function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : '';
+		$anchor_fallback = '';
+		$anchor_row      = $row;
+	if ( in_array( $layout_name, array( 'faq', 'faq_block' ), true ) && function_exists( 'mrn_base_stack_get_faq_jump_nav_anchor_from_row' ) ) {
+		$anchor_fallback = mrn_base_stack_get_faq_jump_nav_anchor_from_row( $row );
+		$anchor_source   = function_exists( 'mrn_base_stack_normalize_anchor_id' )
+			? mrn_base_stack_normalize_anchor_id( $row['anchor'] ?? '' )
+			: sanitize_title( (string) ( $row['anchor'] ?? '' ) );
+		if ( '' !== $anchor_fallback && $anchor_source !== $anchor_fallback ) {
+			$anchor_row['anchor'] = '';
+		}
+	}
+		$anchor_markup = function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $anchor_row, $anchor_fallback ) : '';
 
 	return sprintf(
 		'%6$s<div class="%1$s"%5$s><div class="%2$s"><div class="%3$s"><div class="mrn-layout-grid mrn-layout-grid--reusable"><div class="mrn-layout-content mrn-layout-content--reusable">%4$s</div></div></div></div></div>',
@@ -186,12 +219,13 @@ function mrn_base_stack_wrap_cloned_reusable_builder_markup( $inner_markup, arra
  */
 function mrn_base_stack_get_reusable_block_shell_modifier( $post_type ) {
 	$map = array(
-		'mrn_reusable_basic'  => 'mrn-layout-section--reusable-basic',
-		'mrn_reusable_cta'    => 'mrn-layout-section--reusable-cta',
-		'mrn_reusable_list'   => 'mrn-layout-section--reusable-content-lists',
-		'mrn_reusable_faq'    => 'mrn-layout-section--reusable-faq',
-		'mrn_reusable_grid'   => 'mrn-layout-section--reusable-grid',
-		'mrn_reusable_search' => 'mrn-layout-section--reusable-search-form',
+		'mrn_reusable_basic'   => 'mrn-layout-section--reusable-basic',
+		'mrn_reusable_cta'     => 'mrn-layout-section--reusable-cta',
+		'mrn_reusable_list'    => 'mrn-layout-section--reusable-content-lists',
+		'mrn_reusable_faq'     => 'mrn-layout-section--reusable-faq',
+		'mrn_reusable_grid'    => 'mrn-layout-section--reusable-grid',
+		'mrn_reusable_search'  => 'mrn-layout-section--reusable-search-form',
+		'mrn_reusable_partner' => 'mrn-layout-section--reusable-partners',
 	);
 
 	$post_type = sanitize_key( (string) $post_type );
@@ -207,12 +241,13 @@ function mrn_base_stack_get_reusable_block_shell_modifier( $post_type ) {
  */
 function mrn_base_stack_get_reusable_block_row_modifier( $post_type ) {
 	$map = array(
-		'mrn_reusable_basic'  => 'mrn-content-builder__row--basic-block',
-		'mrn_reusable_cta'    => 'mrn-content-builder__row--cta',
-		'mrn_reusable_list'   => 'mrn-content-builder__row--content-lists',
-		'mrn_reusable_faq'    => 'mrn-content-builder__row--faq-block',
-		'mrn_reusable_grid'   => 'mrn-content-builder__row--content-grid',
-		'mrn_reusable_search' => 'mrn-content-builder__row--searchwp-form',
+		'mrn_reusable_basic'   => 'mrn-content-builder__row--basic-block',
+		'mrn_reusable_cta'     => 'mrn-content-builder__row--cta',
+		'mrn_reusable_list'    => 'mrn-content-builder__row--content-lists',
+		'mrn_reusable_faq'     => 'mrn-content-builder__row--faq-block',
+		'mrn_reusable_grid'    => 'mrn-content-builder__row--content-grid',
+		'mrn_reusable_search'  => 'mrn-content-builder__row--searchwp-form',
+		'mrn_reusable_partner' => 'mrn-content-builder__row--partners',
 	);
 
 	$post_type = sanitize_key( (string) $post_type );
@@ -280,7 +315,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				array(
 					'post_id'               => (int) $post_id,
 					'post_name'             => 'page-cta',
-					'block_name'            => 'Page CTA',
+					'block_name'            => 'Page Specific CTA',
 					'suppress_anchor'       => true,
 					'apply_motion_contract' => true,
 				)
@@ -307,7 +342,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				array(
 					'post_id'               => (int) $post_id,
 					'post_name'             => 'page-grid',
-					'block_name'            => 'Page Grid',
+					'block_name'            => 'Page Specific Grid',
 					'suppress_anchor'       => true,
 					'apply_motion_contract' => true,
 				)
@@ -345,6 +380,11 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 		}
 
 		return false;
+	}
+
+	if ( 'faq_jump_nav' === $layout ) {
+		get_template_part( 'template-parts/builder/faq-jump-nav', null, $context );
+		return true;
 	}
 
 	if ( 'image_content' === $layout ) {
@@ -420,39 +460,12 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				array(
 					'post_id'               => (int) $post_id,
 					'post_name'             => 'page-basic-block',
-					'block_name'            => 'Page Basic Block',
+					'block_name'            => 'Page Specific Basic',
 					'suppress_anchor'       => true,
 					'apply_motion_contract' => true,
 				)
 			);
 			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup( $markup, $row, 'mrn_reusable_basic', 'wide', false );
-			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
-			return true;
-		}
-
-		return false;
-	}
-
-	if ( 'content_grid' === $layout ) {
-		if ( function_exists( 'mrn_rbl_render_fields_as_block' ) ) {
-			$markup         = mrn_rbl_render_fields_as_block(
-				'mrn_reusable_grid',
-				$row,
-				array(
-					'post_id'               => (int) $post_id,
-					'post_name'             => 'page-content-grid',
-					'block_name'            => 'Page Content Grid',
-					'suppress_anchor'       => true,
-					'apply_motion_contract' => true,
-				)
-			);
-			$wrapped_markup = mrn_base_stack_wrap_reusable_builder_markup(
-				$markup,
-				$row,
-				'mrn_reusable_grid',
-				'wide',
-				false
-			);
 			echo $wrapped_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Wrapped reusable markup is escaped within the helper.
 			return true;
 		}
@@ -468,7 +481,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 				array(
 					'post_id'               => (int) $post_id,
 					'post_name'             => 'page-cta-block',
-					'block_name'            => 'Page CTA Block',
+					'block_name'            => 'Page Specific CTA Block',
 					'suppress_anchor'       => true,
 					'apply_motion_contract' => true,
 				)
@@ -518,12 +531,13 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
  */
 function mrn_base_stack_get_page_specific_layout_map() {
 	return array(
-		'mrn_reusable_cta'    => 'cta',
-		'mrn_reusable_basic'  => 'basic_block',
-		'mrn_reusable_list'   => 'content_lists',
-		'mrn_reusable_grid'   => 'grid',
-		'mrn_reusable_faq'    => 'faq',
-		'mrn_reusable_search' => 'searchwp_form',
+		'mrn_reusable_cta'     => 'cta',
+		'mrn_reusable_basic'   => 'basic_block',
+		'mrn_reusable_list'    => 'content_lists',
+		'mrn_reusable_grid'    => 'grid',
+		'mrn_reusable_faq'     => 'faq',
+		'mrn_reusable_search'  => 'searchwp_form',
+		'mrn_reusable_partner' => 'logos',
 	);
 }
 
@@ -534,13 +548,371 @@ function mrn_base_stack_get_page_specific_layout_map() {
  */
 function mrn_base_stack_get_page_specific_layout_key_map() {
 	return array(
-		'mrn_reusable_cta'    => 'layout_mrn_cta',
-		'mrn_reusable_basic'  => 'layout_mrn_basic_block',
-		'mrn_reusable_list'   => 'layout_mrn_content_lists',
-		'mrn_reusable_grid'   => 'layout_mrn_grid',
-		'mrn_reusable_faq'    => 'layout_mrn_faq',
-		'mrn_reusable_search' => 'layout_mrn_searchwp_form',
+		'mrn_reusable_cta'     => 'layout_mrn_cta',
+		'mrn_reusable_basic'   => 'layout_mrn_basic_block',
+		'mrn_reusable_list'    => 'layout_mrn_content_lists',
+		'mrn_reusable_grid'    => 'layout_mrn_grid',
+		'mrn_reusable_faq'     => 'layout_mrn_faq',
+		'mrn_reusable_search'  => 'layout_mrn_searchwp_form',
+		'mrn_reusable_partner' => 'layout_mrn_logos',
 	);
+}
+
+/**
+ * Determine whether a host reusable-block row value should override saved block fields.
+ *
+ * @param mixed $value Field value.
+ * @return bool
+ */
+function mrn_base_stack_reusable_block_host_value_is_meaningful( $value ) {
+	if ( is_array( $value ) ) {
+		foreach ( $value as $item ) {
+			if ( mrn_base_stack_reusable_block_host_value_is_meaningful( $item ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	if ( is_bool( $value ) ) {
+		return true === $value;
+	}
+
+	if ( is_scalar( $value ) ) {
+		return '' !== trim( (string) $value );
+	}
+
+	return null !== $value;
+}
+
+/**
+ * Convert a reusable block post into the matching page builder row contract.
+ *
+ * Reusable block placement is intended to behave like a saved instance of the
+ * page row layout, not like a parallel rendering system.
+ *
+ * @param WP_Post              $block    Reusable block post.
+ * @param array<string, mixed> $host_row The `reusable_block` row placing it.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_reusable_block_builder_row( WP_Post $block, array $host_row = array() ) {
+	if ( ! function_exists( 'get_fields' ) ) {
+		return array();
+	}
+
+	$layout_map = mrn_base_stack_get_page_specific_layout_map();
+	$layout     = isset( $layout_map[ $block->post_type ] ) ? (string) $layout_map[ $block->post_type ] : '';
+
+	if ( '' === $layout ) {
+		return array();
+	}
+
+	$block_fields = get_fields( $block->ID );
+	$row          = is_array( $block_fields ) ? $block_fields : array();
+
+	$row['acf_fc_layout']                  = $layout;
+	$row['__mrn_reusable_block_id']        = (int) $block->ID;
+	$row['__mrn_reusable_block_post_type'] = (string) $block->post_type;
+
+	$placement_override_fields = array(
+		'anchor',
+		'internal_name',
+		'include_in_faq_jump_nav',
+		'faq_jump_nav_label',
+		'section_width',
+		'motion_settings',
+	);
+
+	if ( function_exists( 'mrn_base_stack_get_row_spacing_side_selector_definitions' ) ) {
+		foreach ( mrn_base_stack_get_row_spacing_side_selector_definitions() as $spacing_definition ) {
+			$field_name = isset( $spacing_definition['name'] ) && is_scalar( $spacing_definition['name'] ) ? sanitize_key( (string) $spacing_definition['name'] ) : '';
+			if ( '' !== $field_name ) {
+				$placement_override_fields[] = $field_name;
+			}
+		}
+	}
+
+	$override_fields = apply_filters(
+		'mrn_base_stack_reusable_block_placement_override_fields',
+		$placement_override_fields,
+		$block,
+		$host_row
+	);
+	$override_fields = is_array( $override_fields ) ? array_filter( array_map( 'sanitize_key', $override_fields ) ) : $placement_override_fields;
+
+	foreach ( $override_fields as $field_name ) {
+		if ( ! array_key_exists( $field_name, $host_row ) ) {
+			continue;
+		}
+
+		if ( 'motion_settings' === $field_name ) {
+			$motion_settings = is_array( $host_row[ $field_name ] ) ? $host_row[ $field_name ] : array();
+			if ( ! empty( $motion_settings['enabled'] ) ) {
+				$row[ $field_name ] = $motion_settings;
+			}
+			continue;
+		}
+
+		if ( in_array( $field_name, array( 'internal_name', 'include_in_faq_jump_nav', 'faq_jump_nav_label' ), true ) ) {
+			$row[ $field_name ] = $host_row[ $field_name ];
+			continue;
+		}
+
+		if ( mrn_base_stack_reusable_block_host_value_is_meaningful( $host_row[ $field_name ] ) ) {
+			$row[ $field_name ] = $host_row[ $field_name ];
+		}
+	}
+
+	return $row;
+}
+
+/**
+ * Render a reusable block through its matching page builder row layout and return markup.
+ *
+ * @param WP_Post              $block    Reusable block post.
+ * @param array<string, mixed> $host_row The `reusable_block` row placing it.
+ * @param int                  $post_id  Host post ID.
+ * @param int                  $index    Host row index.
+ * @return string
+ */
+function mrn_base_stack_get_reusable_block_builder_row_markup( WP_Post $block, array $host_row, $post_id, $index ) {
+	$row = mrn_base_stack_get_reusable_block_builder_row( $block, $host_row );
+
+	if ( empty( $row['acf_fc_layout'] ) ) {
+		return '';
+	}
+
+	$row['__mrn_builder_post_id']    = (int) $post_id;
+	$row['__mrn_builder_field_name'] = isset( $host_row['__mrn_builder_field_name'] ) ? (string) $host_row['__mrn_builder_field_name'] : '';
+	$row['__mrn_builder_row_index']  = (int) $index;
+
+	ob_start();
+	$rendered = mrn_base_stack_render_builder_row( $row, $post_id, $index );
+	$markup   = (string) ob_get_clean();
+
+	return $rendered && '' !== trim( $markup ) ? $markup : '';
+}
+
+/**
+ * Render a reusable block through its matching page builder row layout.
+ *
+ * @param WP_Post              $block   Reusable block post.
+ * @param array<string, mixed> $host_row The `reusable_block` row placing it.
+ * @param int                  $post_id Host post ID.
+ * @param int                  $index   Host row index.
+ * @return bool
+ */
+function mrn_base_stack_render_reusable_block_as_builder_row( WP_Post $block, array $host_row, $post_id, $index ) {
+	$markup = mrn_base_stack_get_reusable_block_builder_row_markup( $block, $host_row, $post_id, $index );
+
+	if ( '' === $markup ) {
+		return false;
+	}
+
+	echo $markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Row markup is escaped by the matching builder template.
+	return true;
+}
+
+/**
+ * Get builder fields that may contain FAQ rows for page jump navigation.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_faq_jump_nav_builder_field_names() {
+	return array(
+		'page_content_rows',
+		'page_after_content_rows',
+		'page_sidebar_rows',
+	);
+}
+
+/**
+ * Resolve a reusable block row's selected post.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return WP_Post|null
+ */
+function mrn_base_stack_get_reusable_block_post_from_row( array $row ) {
+	$block = $row['block'] ?? null;
+
+	if ( $block instanceof WP_Post ) {
+		return $block;
+	}
+
+	if ( is_numeric( $block ) ) {
+		$post = get_post( (int) $block );
+		return $post instanceof WP_Post ? $post : null;
+	}
+
+	if ( function_exists( 'mrn_rbl_get_block_post' ) ) {
+		$post = mrn_rbl_get_block_post( $block );
+		return $post instanceof WP_Post ? $post : null;
+	}
+
+	return null;
+}
+
+/**
+ * Build the FAQ jump-nav anchor from a row.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return string
+ */
+function mrn_base_stack_get_faq_jump_nav_anchor_from_row( array $row ) {
+	if ( empty( $row['include_in_faq_jump_nav'] ) ) {
+		return '';
+	}
+
+	$label  = isset( $row['faq_jump_nav_label'] ) ? trim( wp_strip_all_tags( (string) $row['faq_jump_nav_label'] ) ) : '';
+	$source = isset( $row['anchor'] ) ? (string) $row['anchor'] : '';
+	if ( '' !== trim( $source ) && preg_match( '/^\d+$/', trim( $source ) ) ) {
+		$source = '';
+	}
+	if ( '' === trim( $source ) && function_exists( 'mrn_base_stack_get_builder_row_default_anchor' ) ) {
+		$source = mrn_base_stack_get_builder_row_default_anchor( $row );
+	}
+	if ( '' === trim( $source ) && '' !== $label ) {
+		$source = $label;
+	}
+
+	if ( '' === trim( $source ) ) {
+		return '';
+	}
+
+	return function_exists( 'mrn_base_stack_normalize_anchor_id' )
+		? mrn_base_stack_normalize_anchor_id( $source )
+		: sanitize_title( $source );
+}
+
+/**
+ * Build a FAQ jump-nav entry from a FAQ row.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_faq_jump_nav_entry_from_row( array $row ) {
+	$layout = isset( $row['acf_fc_layout'] ) ? sanitize_key( (string) $row['acf_fc_layout'] ) : '';
+	if ( ! in_array( $layout, array( 'faq', 'faq_block' ), true ) ) {
+		return array();
+	}
+
+	if ( empty( $row['include_in_faq_jump_nav'] ) ) {
+		return array();
+	}
+
+	$label  = isset( $row['faq_jump_nav_label'] ) ? trim( wp_strip_all_tags( (string) $row['faq_jump_nav_label'] ) ) : '';
+	$anchor = mrn_base_stack_get_faq_jump_nav_anchor_from_row( $row );
+
+	if ( '' === $anchor || '' === $label ) {
+		return array();
+	}
+
+	return array(
+		'anchor' => $anchor,
+		'label'  => $label,
+	);
+}
+
+/**
+ * Recursively collect FAQ jump-nav entries from builder rows.
+ *
+ * @param array<int, mixed>                 $rows Builder rows.
+ * @param array<int, array<string, string>> $entries Current entries.
+ * @return array<int, array<string, string>>
+ */
+function mrn_base_stack_collect_faq_jump_nav_entries_from_rows( array $rows, array $entries = array() ) {
+	foreach ( $rows as $row ) {
+		if ( ! is_array( $row ) ) {
+			continue;
+		}
+
+		$layout = isset( $row['acf_fc_layout'] ) ? sanitize_key( (string) $row['acf_fc_layout'] ) : '';
+		if ( in_array( $layout, array( 'faq', 'faq_block' ), true ) ) {
+			$entry = mrn_base_stack_get_faq_jump_nav_entry_from_row( $row );
+			if ( ! empty( $entry ) ) {
+				$entries[] = $entry;
+			}
+		} elseif ( 'reusable_block' === $layout ) {
+			$block = mrn_base_stack_get_reusable_block_post_from_row( $row );
+			if ( $block instanceof WP_Post && 'mrn_reusable_faq' === $block->post_type ) {
+				$faq_row = mrn_base_stack_get_reusable_block_builder_row( $block, $row );
+				foreach ( array( 'anchor', 'internal_name', 'include_in_faq_jump_nav', 'faq_jump_nav_label' ) as $placement_field ) {
+					$faq_row[ $placement_field ] = array_key_exists( $placement_field, $row ) ? $row[ $placement_field ] : '';
+				}
+				$entry = mrn_base_stack_get_faq_jump_nav_entry_from_row( $faq_row );
+				if ( ! empty( $entry ) ) {
+					$entries[] = $entry;
+				}
+			}
+		}
+
+		foreach ( $row as $value ) {
+			if ( ! is_array( $value ) ) {
+				continue;
+			}
+
+			$child_rows = array();
+			foreach ( $value as $child ) {
+				if ( is_array( $child ) && isset( $child['acf_fc_layout'] ) ) {
+					$child_rows[] = $child;
+				}
+			}
+
+			if ( ! empty( $child_rows ) ) {
+				$entries = mrn_base_stack_collect_faq_jump_nav_entries_from_rows( $child_rows, $entries );
+			}
+		}
+	}
+
+	return $entries;
+}
+
+/**
+ * Get explicit FAQ jump-nav entries for a page.
+ *
+ * @param int|null $post_id Current post ID.
+ * @return array<int, array<string, string>>
+ */
+function mrn_base_stack_get_faq_jump_nav_entries( $post_id = null ) {
+	if ( ! function_exists( 'get_field' ) ) {
+		return array();
+	}
+
+	$post_id = $post_id ? (int) $post_id : get_the_ID();
+	if ( $post_id < 1 ) {
+		return array();
+	}
+
+	static $cache = array();
+	if ( isset( $cache[ $post_id ] ) ) {
+		return $cache[ $post_id ];
+	}
+
+	$entries = array();
+	foreach ( mrn_base_stack_get_faq_jump_nav_builder_field_names() as $field_name ) {
+		$rows = get_field( $field_name, $post_id );
+		if ( ! is_array( $rows ) || empty( $rows ) ) {
+			continue;
+		}
+
+		$entries = mrn_base_stack_collect_faq_jump_nav_entries_from_rows( $rows, $entries );
+	}
+
+	$unique = array();
+	$seen   = array();
+	foreach ( $entries as $entry ) {
+		$anchor = isset( $entry['anchor'] ) ? (string) $entry['anchor'] : '';
+		if ( '' === $anchor || isset( $seen[ $anchor ] ) ) {
+			continue;
+		}
+
+		$seen[ $anchor ] = true;
+		$unique[]        = $entry;
+	}
+
+	$cache[ $post_id ] = $unique;
+	return $unique;
 }
 
 /**
@@ -727,7 +1099,9 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	$row_values              = function_exists( 'get_row' ) ? get_row( true ) : array();
 	$row_values              = is_array( $row_values ) ? $row_values : array();
 	$internal                = mrn_base_stack_get_builder_sub_field_value( 'internal_name', array(), $row_values );
+	$label                   = mrn_base_stack_get_builder_sub_field_value( 'label', array(), $row_values );
 	$heading                 = mrn_base_stack_get_builder_sub_field_value( 'heading', array(), $row_values );
+	$title_text              = '' !== $heading ? $heading : $label;
 	static $post_title_cache = array();
 
 	$is_layout_title_ajax = false;
@@ -745,12 +1119,15 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	 * Keep labels simple and avoid expensive per-row lookups so save/publish stays responsive.
 	 */
 	if ( $is_layout_title_ajax ) {
-		if ( '' !== $heading ) {
+		if ( '' !== $title_text ) {
 			$heading_prefixes = array(
 				'basic'            => 'Basic',
-				'cta'              => 'CTA',
+				'basic_block'      => 'Page Specific Basic',
+				'cta'              => 'Page Specific CTA',
+				'cta_block'        => 'Page Specific CTA',
 				'grid'             => 'Grid',
 				'faq'              => 'FAQs/Accordion',
+				'faq_jump_nav'     => 'FAQ Jump Nav',
 				'slider'           => 'Slider',
 				'tabbed_layout'    => 'Tabbed Layout',
 				'logos'            => 'Logos',
@@ -760,7 +1137,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 				'two_column_split' => 'Two Column Split',
 				'video'            => 'Video',
 				'body_text'        => 'Text',
-				'content_lists'    => 'Content Lists',
+				'content_lists'    => 'Reference Content',
 				'wpforms'          => 'WPForms',
 				'searchwp_form'    => 'SearchWP Form',
 				'card'             => 'Card',
@@ -768,10 +1145,10 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 			$prefix           = isset( $heading_prefixes[ $layout_name ] ) ? $heading_prefixes[ $layout_name ] : '';
 
 			if ( '' !== $prefix ) {
-				return $prefix . ': ' . esc_html( wp_strip_all_tags( $heading ) );
+				return $prefix . ': ' . esc_html( wp_strip_all_tags( $title_text ) );
 			}
 
-			return esc_html( wp_strip_all_tags( $heading ) );
+			return esc_html( wp_strip_all_tags( $title_text ) );
 		}
 
 		return $title;
@@ -800,49 +1177,57 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 		return 'Reusable Block: ' . esc_html( $block_title );
 	}
 
-	if ( 'basic' === $layout_name ) {
-		if ( '' === $heading ) {
+	if ( in_array( $layout_name, array( 'basic', 'basic_block' ), true ) ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Basic: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return ( 'basic_block' === $layout_name ? 'Page Specific Basic: ' : 'Basic: ' ) . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
-	if ( 'cta' === $layout_name ) {
-		if ( '' === $heading ) {
+	if ( in_array( $layout_name, array( 'cta', 'cta_block' ), true ) ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'CTA: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Page Specific CTA: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'grid' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Grid: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Grid: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'faq' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'FAQs/Accordion: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'FAQs/Accordion: ' . esc_html( wp_strip_all_tags( $title_text ) );
+	}
+
+	if ( 'faq_jump_nav' === $layout_name ) {
+		if ( '' === $title_text ) {
+			return 'FAQ Jump Nav';
+		}
+
+		return 'FAQ Jump Nav: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'slider' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Slider: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Slider: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'tabbed_layout' === $layout_name ) {
-		if ( '' !== $heading ) {
-			return 'Tabbed Layout: ' . esc_html( wp_strip_all_tags( $heading ) );
+		if ( '' !== $title_text ) {
+			return 'Tabbed Layout: ' . esc_html( wp_strip_all_tags( $title_text ) );
 		}
 
 		$tabs = array_key_exists( 'tabs', $row_values ) ? $row_values['tabs'] : get_sub_field( 'tabs' );
@@ -863,79 +1248,79 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'logos' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-			return '<div class="mrn-shell-section mrn-shell-section--logos">Logos: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
+		return '<div class="mrn-shell-section mrn-shell-section--logos">Logos: ' . esc_html( wp_strip_all_tags( $title_text ) ) . '</div>';
 	}
 
 	if ( 'stats' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-			return '<div class="mrn-shell-section mrn-shell-section--stats">Stats: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
+		return '<div class="mrn-shell-section mrn-shell-section--stats">Stats: ' . esc_html( wp_strip_all_tags( $title_text ) ) . '</div>';
 	}
 
 	if ( 'showcase' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-			return '<div class="mrn-shell-section mrn-shell-section--showcase">Showcase: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
+		return '<div class="mrn-shell-section mrn-shell-section--showcase">Showcase: ' . esc_html( wp_strip_all_tags( $title_text ) ) . '</div>';
 	}
 
 	if ( 'image_content' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Image: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Image: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'two_column_split' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Two Column Split: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Two Column Split: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'video' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Video: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Video: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'body_text' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-		return 'Text: ' . esc_html( wp_strip_all_tags( $heading ) );
+		return 'Text: ' . esc_html( wp_strip_all_tags( $title_text ) );
 	}
 
 	if ( 'content_lists' === $layout_name ) {
-		if ( '' !== $heading ) {
-			return 'Content Lists: ' . esc_html( wp_strip_all_tags( $heading ) );
+		if ( '' !== $title_text ) {
+			return 'Reference Content: ' . esc_html( wp_strip_all_tags( $title_text ) );
 		}
 
 		$post_type = sanitize_key( mrn_base_stack_get_builder_sub_field_value( 'list_post_type', array(), $row_values ) );
 		$choices   = function_exists( 'mrn_base_stack_get_content_list_post_type_choices' ) ? mrn_base_stack_get_content_list_post_type_choices() : array();
 
 		if ( isset( $choices[ $post_type ] ) ) {
-			return 'Content Lists: ' . esc_html( $choices[ $post_type ] );
+			return 'Reference Content: ' . esc_html( $choices[ $post_type ] );
 		}
 
-		return 'Content Lists';
+		return 'Reference Content';
 	}
 
 	if ( 'wpforms' === $layout_name ) {
-		if ( '' !== $heading ) {
-			return 'WPForms: ' . esc_html( wp_strip_all_tags( $heading ) );
+		if ( '' !== $title_text ) {
+			return 'WPForms: ' . esc_html( wp_strip_all_tags( $title_text ) );
 		}
 
 		$form    = array_key_exists( 'form', $row_values ) ? $row_values['form'] : get_sub_field( 'form' );
@@ -961,8 +1346,8 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'searchwp_form' === $layout_name ) {
-		if ( '' !== $heading ) {
-			return 'SearchWP Form: ' . esc_html( wp_strip_all_tags( $heading ) );
+		if ( '' !== $title_text ) {
+			return 'SearchWP Form: ' . esc_html( wp_strip_all_tags( $title_text ) );
 		}
 
 		$form_id    = array_key_exists( 'searchwp_form_id', $row_values ) ? $row_values['searchwp_form_id'] : get_sub_field( 'searchwp_form_id' );
@@ -977,18 +1362,126 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( 'card' === $layout_name ) {
-		if ( '' === $heading ) {
+		if ( '' === $title_text ) {
 			return $title;
 		}
 
-			return '<div class="mrn-shell-section mrn-shell-section--card">Card: ' . esc_html( wp_strip_all_tags( $heading ) ) . '</div>';
+		return '<div class="mrn-shell-section mrn-shell-section--card">Card: ' . esc_html( wp_strip_all_tags( $title_text ) ) . '</div>';
 	}
 
 	return $title;
 }
 add_filter( 'acf/fields/flexible_content/layout_title/name=page_content_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/name=page_after_content_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/name=page_hero_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/name=page_sidebar_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/name=not_found_content_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_page_hero_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_sidebar_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_page_template_sidebar_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
 add_filter( 'acf/fields/flexible_content/layout_title/key=field_mrn_tabbed_layout_panel_rows', 'mrn_base_stack_filter_builder_layout_title', 10, 4 );
+
+/**
+ * Get a stable ACF field key for a builder field name.
+ *
+ * @param string $field_name Builder field name.
+ * @return string
+ */
+function mrn_base_stack_get_builder_contextual_field_key( $field_name ) {
+	$field_name = sanitize_key( (string) $field_name );
+	$targets    = function_exists( 'mrn_base_stack_get_builder_layout_allowlist_targets' )
+		? mrn_base_stack_get_builder_layout_allowlist_targets()
+		: array();
+	if ( isset( $targets[ $field_name ]['field_key'] ) ) {
+		return sanitize_key( (string) $targets[ $field_name ]['field_key'] );
+	}
+
+	$fallbacks = array(
+		'page_template_sidebar_rows' => 'field_mrn_page_template_sidebar_rows',
+	);
+
+	return isset( $fallbacks[ $field_name ] ) ? $fallbacks[ $field_name ] : '';
+}
+
+/**
+ * Add editor-only ACF row scope to the rendered row container.
+ *
+ * The contextual editor helper performs its own capability check, so public
+ * markup remains unchanged when the visitor cannot edit the post.
+ *
+ * @param string $markup     Rendered row HTML.
+ * @param int    $post_id    Source post ID.
+ * @param string $field_name Flexible-content field name.
+ * @param int    $row_index  Zero-based row index.
+ * @param string $layout     Flexible-content layout name.
+ * @return string
+ */
+function mrn_base_stack_add_contextual_editor_row_scope( $markup, $post_id, $field_name, $row_index, $layout ) {
+	if ( ! function_exists( 'mrn_contextual_content_editor_inject_attrs' ) ) {
+		return is_string( $markup ) ? $markup : '';
+	}
+
+	return mrn_contextual_content_editor_inject_attrs(
+		$markup,
+		array(
+			'post_id'          => absint( $post_id ),
+			'target_class'     => 'mrn-content-builder__row',
+			'scope_field_key'  => mrn_base_stack_get_builder_contextual_field_key( $field_name ),
+			'scope_field_name' => sanitize_key( (string) $field_name ),
+			'scope_layout'     => sanitize_key( (string) $layout ),
+			'scope_row'        => max( 0, (int) $row_index ),
+		)
+	);
+}
+
+/**
+ * Render an array of flexible-content builder rows.
+ *
+ * This lower-level renderer supports non-post contexts, such as theme option
+ * pages, while preserving the existing post/page builder contract.
+ *
+ * @param array<int, array<string, mixed>> $rows Builder rows.
+ * @param int                              $post_id Optional context post ID.
+ * @param string                           $field_name Source field name.
+ * @param string                           $wrapper_class Wrapper class for the builder markup.
+ * @return bool True when at least one builder row was rendered.
+ */
+function mrn_base_stack_render_builder_rows( array $rows, $post_id = 0, $field_name = '', $wrapper_class = 'mrn-content-builder' ) {
+	$post_id       = absint( $post_id );
+	$field_name    = sanitize_key( (string) $field_name );
+	$rendered_rows = array();
+
+	foreach ( $rows as $index => $row ) {
+		if ( ! is_array( $row ) ) {
+			continue;
+		}
+
+		$row['__mrn_builder_post_id']    = $post_id;
+		$row['__mrn_builder_field_name'] = $field_name;
+		$row['__mrn_builder_row_index']  = (int) $index;
+
+		ob_start();
+		mrn_base_stack_render_builder_row( $row, $post_id, $index );
+		$row_markup = trim( (string) ob_get_clean() );
+
+		if ( '' === $row_markup ) {
+			continue;
+		}
+
+		$layout          = isset( $row['acf_fc_layout'] ) ? sanitize_key( (string) $row['acf_fc_layout'] ) : '';
+		$rendered_rows[] = mrn_base_stack_add_contextual_editor_row_scope( $row_markup, $post_id, $field_name, $index, $layout );
+	}
+
+	if ( empty( $rendered_rows ) ) {
+		return false;
+	}
+
+	echo '<div class="' . esc_attr( trim( $wrapper_class ) ) . '">';
+	echo implode( '', $rendered_rows ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	echo '</div>';
+
+	return true;
+}
 
 /**
  * Render a flexible-content builder field for posts and pages.
@@ -1013,37 +1506,7 @@ function mrn_base_stack_render_builder_field( $field_name, $post_id = null, $wra
 		return false;
 	}
 
-	$rendered_rows = array();
-
-	foreach ( $rows as $index => $row ) {
-		if ( ! is_array( $row ) ) {
-			continue;
-		}
-
-		$row['__mrn_builder_post_id']    = (int) $post_id;
-		$row['__mrn_builder_field_name'] = sanitize_key( (string) $field_name );
-		$row['__mrn_builder_row_index']  = (int) $index;
-
-		ob_start();
-		mrn_base_stack_render_builder_row( $row, $post_id, $index );
-		$row_markup = trim( (string) ob_get_clean() );
-
-		if ( '' === $row_markup ) {
-			continue;
-		}
-
-		$rendered_rows[] = $row_markup;
-	}
-
-	if ( empty( $rendered_rows ) ) {
-		return false;
-	}
-
-	echo '<div class="' . esc_attr( trim( $wrapper_class ) ) . '">';
-	echo implode( '', $rendered_rows ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-	echo '</div>';
-
-	return true;
+	return mrn_base_stack_render_builder_rows( $rows, $post_id, $field_name, $wrapper_class );
 }
 
 /**

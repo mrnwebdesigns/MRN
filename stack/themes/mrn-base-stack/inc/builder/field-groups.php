@@ -144,7 +144,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_content_lists' => array(
 								'key'        => 'layout_mrn_content_lists',
 								'name'       => 'content_lists',
-								'label'      => 'Content Lists - query|pagination|count',
+								'label'      => 'Reference Content - query|pagination|count',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -183,20 +183,21 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_content_lists_post_type',
-										'label'         => 'Content Type',
+										'label'         => 'Content Source',
 										'name'          => 'list_post_type',
 										'aria-label'    => '',
 										'type'          => 'select',
 										'choices'       => mrn_base_stack_get_content_list_post_type_choices(),
 										'default_value' => 'post',
 										'ui'            => 1,
+										'instructions'  => 'Choose the post type to query, such as Posts, Pages, Testimonials, Galleries, or Case Studies. Use Filter Source to narrow items within this source.',
 										'wrapper'       => array(
-											'width' => '33',
+											'width' => '25',
 										),
 									),
 									array(
 										'key'           => 'field_mrn_content_lists_style',
-										'label'         => 'List Style',
+										'label'         => 'List Marker Style',
 										'name'          => 'list_style',
 										'aria-label'    => '',
 										'type'          => 'select',
@@ -204,7 +205,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'default_value' => 'unordered',
 										'ui'            => 1,
 										'wrapper'       => array(
-											'width' => '33',
+											'width' => '25',
 										),
 									),
 									array(
@@ -217,7 +218,22 @@ function mrn_base_stack_register_acf_field_groups() {
 										'default_value' => '',
 										'ui'            => 0,
 										'wrapper'       => array(
-											'width' => '34',
+											'width' => '25',
+										),
+									),
+									array(
+										'key'           => 'field_mrn_content_lists_display_style',
+										'label'         => 'Display Style',
+										'name'          => 'display_style',
+										'aria-label'    => '',
+										'type'          => 'select',
+										'choices'       => mrn_base_stack_get_content_list_display_style_choices(),
+										'default_value' => '',
+										'allow_null'    => 1,
+										'ui'            => 0,
+										'instructions'  => 'Choose a visual treatment for the selected content type. Leave blank to use the content item default.',
+										'wrapper'       => array(
+											'width' => '25',
 										),
 									),
 									array(
@@ -542,160 +558,15 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 								),
 							),
-							'layout_mrn_basic' => array(
-								'key'        => 'layout_mrn_basic',
-								'name'       => 'basic',
-								'label'      => 'Basic - label|heading|subheading|text with editor|image|link',
-								'display'    => 'block',
-								'sub_fields' => array(
-									array(
-										'key'        => 'field_mrn_basic_content_tab',
-										'label'      => 'Content',
-										'name'       => '',
-										'aria-label' => '',
-										'type'       => 'tab',
-										'placement'  => 'top',
-									),
-									mrn_base_stack_get_inline_text_field( 'field_mrn_basic_label', 'Label', 'label' ),
-									mrn_base_stack_get_label_tag_field( 'field_mrn_basic_label_tag' ),
-									mrn_base_stack_get_inline_text_field( 'field_mrn_basic_heading', 'Heading', 'heading' ),
-									mrn_base_stack_get_text_tag_field( 'field_mrn_basic_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
-									mrn_base_stack_get_inline_text_field( 'field_mrn_basic_subheading', 'Subheading', 'subheading' ),
-									mrn_base_stack_get_text_tag_field( 'field_mrn_basic_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
-									array(
-										'key'           => 'field_mrn_basic_content',
-										'label'         => 'Text area with editor',
-										'name'          => 'content',
-										'aria-label'    => '',
-										'type'          => 'wysiwyg',
-										'tabs'          => 'all',
-										'toolbar'       => 'full',
-										'media_upload'  => 1,
-										'delay'         => 0,
-									),
-									array(
-										'key'           => 'field_mrn_basic_image',
-										'label'         => 'Image',
-										'name'          => 'image',
-										'aria-label'    => '',
-										'type'          => 'image',
-										'return_format' => 'array',
-										'preview_size'  => 'medium',
-										'library'       => 'all',
-										'wrapper'       => array(
-											'width' => '50',
-										),
-									),
-									...mrn_rbl_get_content_link_fields( 'field_mrn_basic_links', 'Links', 'links', 1 ),
-									array(
-										'key'        => 'field_mrn_basic_config_tab',
-										'label'      => 'Configs',
-										'name'       => '',
-										'aria-label' => '',
-										'type'       => 'tab',
-										'placement'  => 'top',
-										'endpoint'   => 0,
-									),
-									array(
-										'key'           => 'field_mrn_basic_link_color',
-										'label'         => 'Link color',
-										'name'          => 'link_color',
-										'aria-label'    => '',
-										'type'          => 'select',
-										'choices'       => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
-										'ui'            => 1,
-										'allow_null'    => 1,
-										'instructions'  => 'Select from Site Colors when available.',
-										'wrapper'       => array(
-											'width' => '50',
-										),
-									),
-									array(
-										'key'           => 'field_mrn_basic_image_placement',
-										'label'         => 'Image placement',
-										'name'          => 'image_placement',
-										'aria-label'    => '',
-										'type'          => 'select',
-										'choices'       => array(
-											'left'  => 'Left',
-											'right' => 'Right',
-										),
-										'default_value' => 'left',
-										'ui'            => 1,
-										'wrapper'       => array(
-											'width' => '50',
-										),
-									),
-									array(
-										'key'           => 'field_mrn_basic_background_color',
-										'label'         => 'Background color',
-										'name'          => 'background_color',
-										'aria-label'    => '',
-										'type'          => 'select',
-										'choices'       => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
-										'ui'            => 1,
-										'allow_null'    => 1,
-										'instructions'  => 'Select from Site Colors when available.',
-										'wrapper'       => array(
-											'width' => '50',
-										),
-									),
-									mrn_base_stack_get_section_width_field( 'field_mrn_basic_section_width', 'section_width', 'wide' ),
-									mrn_base_stack_get_anchor_field( 'field_mrn_basic_anchor' ),
-									mrn_base_stack_get_motion_group_field( 'field_mrn_basic_motion_settings' ),
-									array(
-										'key'           => 'field_mrn_basic_background_image',
-										'label'         => 'Background image',
-										'name'          => 'background_image',
-										'aria-label'    => '',
-										'type'          => 'image',
-										'return_format' => 'array',
-										'preview_size'  => 'medium',
-										'library'       => 'all',
-										'wrapper'       => array(
-											'width' => '50',
-										),
-									),
-									array(
-										'key'           => 'field_mrn_basic_bottom_accent',
-										'label'         => 'Accent',
-										'name'          => 'bottom_accent',
-										'aria-label'    => '',
-										'type'          => 'true_false',
-										'ui'            => 1,
-										'default_value' => 0,
-										'ui_on_text'    => 'On',
-										'ui_off_text'   => 'Off',
-										'wrapper'       => array(
-											'width' => '50',
-										),
-									),
-									array(
-										'key'           => 'field_mrn_basic_bottom_accent_style',
-										'label'         => 'Accent Style',
-										'name'          => 'bottom_accent_style',
-										'aria-label'    => '',
-										'type'          => 'select',
-										'choices'       => function_exists( 'mrn_site_styles_get_graphic_element_choices' ) ? mrn_site_styles_get_graphic_element_choices() : array( '' => 'Select a Graphic Element' ),
-										'default_value' => '',
-										'ui'            => 1,
-										'allow_null'    => 1,
-										'instructions'  => 'Choose a saved graphic element from Site Styles.',
-										'wrapper'       => array(
-											'width' => '50',
-										),
-									),
-								),
-							),
 							'layout_mrn_cta' => array(
 								'key'        => 'layout_mrn_cta',
 								'name'       => 'cta',
-								'label'      => 'CTA - label|heading|subheading|text with editor|link',
+								'label'      => 'Page Specific CTA',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
 										'key'          => 'field_mrn_page_cta_fields',
-										'label'        => 'CTA',
+										'label'        => 'Page Specific CTA',
 										'name'         => '',
 										'aria-label'   => '',
 										'type'         => 'clone',
@@ -711,12 +582,12 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_grid' => array(
 								'key'        => 'layout_mrn_grid',
 								'name'       => 'grid',
-								'label'      => 'Grid - label|heading|subheading|repeater',
+								'label'      => 'Page Specific Grid',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
 										'key'          => 'field_mrn_page_grid_fields',
-										'label'        => 'Grid',
+										'label'        => 'Page Specific Grid',
 										'name'         => '',
 										'aria-label'   => '',
 										'type'         => 'clone',
@@ -732,7 +603,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_slider' => array(
 								'key'        => 'layout_mrn_slider',
 								'name'       => 'slider',
-								'label'      => 'Slider - label|heading|subheading|slides',
+								'label'      => 'Slider',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -769,20 +640,12 @@ function mrn_base_stack_register_acf_field_groups() {
 												'placement' => 'top',
 												'endpoint' => 0,
 											),
-											array(
-												'key'     => 'field_mrn_slider_item_image',
-												'label'   => 'Image',
-												'name'    => 'image',
-												'aria-label' => '',
-												'type'    => 'image',
-												'return_format' => 'array',
-												'preview_size' => 'medium',
-												'library' => 'all',
-											),
 											mrn_base_stack_get_inline_text_field( 'field_mrn_slider_item_label', 'Label', 'label' ),
 											mrn_base_stack_get_label_tag_field( 'field_mrn_slider_item_label_tag' ),
 											mrn_base_stack_get_inline_text_field( 'field_mrn_slider_item_heading', 'Heading', 'heading' ),
 											mrn_base_stack_get_text_tag_field( 'field_mrn_slider_item_heading_tag', 'heading_tag', 'h3', 'Heading Tag' ),
+											mrn_base_stack_get_inline_text_field( 'field_mrn_slider_item_subheading', 'Subheading', 'subheading' ),
+											mrn_base_stack_get_text_tag_field( 'field_mrn_slider_item_subheading_tag', 'subheading_tag', 'p', 'Subheading Tag' ),
 											array(
 												'key'     => 'field_mrn_slider_item_content',
 												'label'   => 'Text area with editor',
@@ -793,6 +656,30 @@ function mrn_base_stack_register_acf_field_groups() {
 												'toolbar' => 'full',
 												'media_upload' => 1,
 												'delay'   => 0,
+											),
+											array(
+												'key'     => 'field_mrn_slider_item_image',
+												'label'   => 'Image',
+												'name'    => 'image',
+												'aria-label' => '',
+												'type'    => 'image',
+												'return_format' => 'id',
+												'preview_size' => 'medium',
+												'library' => 'all',
+											),
+											array(
+												'key'     => 'field_mrn_slider_item_link_display',
+												'label'   => 'Link Display',
+												'name'    => 'link_display',
+												'aria-label' => '',
+												'type'    => 'select',
+												'choices' => array(
+													'visible'    => 'Show link/button at end',
+													'full_slide' => 'Hide link and make entire slide clickable',
+												),
+												'default_value' => 'visible',
+												'ui'      => 1,
+												'instructions' => 'When the slide is clickable, the link is hidden visually and the whole slide uses the configured link URL.',
 											),
 											array(
 												'key'   => 'field_mrn_slider_item_link',
@@ -895,7 +782,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_per_page',
-										'label'         => 'Slides per view',
+										'label'         => 'Slides per View',
 										'name'          => 'per_page',
 										'aria-label'    => '',
 										'type'          => 'select',
@@ -912,7 +799,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_show_arrows',
-										'label'         => 'Show arrows',
+										'label'         => 'Show Arrows',
 										'name'          => 'show_arrows',
 										'aria-label'    => '',
 										'type'          => 'true_false',
@@ -926,7 +813,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_show_pagination',
-										'label'         => 'Show pagination',
+										'label'         => 'Show Pagination',
 										'name'          => 'show_pagination',
 										'aria-label'    => '',
 										'type'          => 'true_false',
@@ -940,7 +827,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_pause_on_hover',
-										'label'         => 'Pause on hover',
+										'label'         => 'Pause on Hover',
 										'name'          => 'pause_on_hover',
 										'aria-label'    => '',
 										'type'          => 'true_false',
@@ -968,7 +855,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_delay_start',
-										'label'         => 'Delay start',
+										'label'         => 'Delay Start',
 										'name'          => 'delay_start',
 										'aria-label'    => '',
 										'type'          => 'number',
@@ -982,7 +869,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_delay_time',
-										'label'         => 'Delay time',
+										'label'         => 'Delay Time',
 										'name'          => 'delay_time',
 										'aria-label'    => '',
 										'type'          => 'number',
@@ -996,7 +883,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_slider_time_on_slide',
-										'label'         => 'Time on slide',
+										'label'         => 'Time on Slide',
 										'name'          => 'time_on_slide',
 										'aria-label'    => '',
 										'type'          => 'number',
@@ -1013,7 +900,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_tabbed_layout' => array(
 								'key'        => 'layout_mrn_tabbed_layout',
 								'name'       => 'tabbed_layout',
-								'label'      => 'Tabbed Layout - tabs|rows',
+								'label'      => 'Tabbed Layout',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -1043,38 +930,18 @@ function mrn_base_stack_register_acf_field_groups() {
 										'instructions'     => 'Each tab holds one builder row. The tab order matches the row order.',
 										'sub_fields'       => array(
 											array(
-												'key'      => 'field_mrn_tabbed_layout_tab_content_tab',
-												'label'    => 'Content',
-												'name'     => '',
+												'key'      => 'field_mrn_tabbed_layout_tab_label',
+												'label'    => 'Tab Name',
+												'name'     => 'tab_label',
 												'aria-label' => '',
-												'type'     => 'tab',
-												'placement' => 'top',
-												'endpoint' => 0,
-											),
-											array(
-												'key'     => 'field_mrn_tabbed_layout_tab_label',
-												'label'   => 'Tab Label',
-												'name'    => 'tab_label',
-												'aria-label' => '',
-												'type'    => 'text',
-												'instructions' => 'Optional when using an image-only tab.',
-												'wrapper' => array(
+												'type'     => 'text',
+												'required' => 1,
+												'instructions' => 'Names the tab button. This is not content inside the tab panel.',
+												'wrapper'  => array(
 													'width' => '50',
 												),
 											),
-											array(
-												'key'     => 'field_mrn_tabbed_layout_tab_image',
-												'label'   => 'Tab Image',
-												'name'    => 'tab_image',
-												'aria-label' => '',
-												'type'    => 'image',
-												'return_format' => 'array',
-												'preview_size' => 'medium',
-												'library' => 'all',
-												'wrapper' => array(
-													'width' => '50',
-												),
-											),
+											...mrn_base_stack_get_button_link_icon_fields( 'field_mrn_tabbed_layout_tab_icon', 'field_mrn_tabbed_layout_tab_label' ),
 											array(
 												'key'      => 'field_mrn_tabbed_layout_panel_rows',
 												'label'    => 'Tab Row',
@@ -1085,43 +952,6 @@ function mrn_base_stack_register_acf_field_groups() {
 												'min'      => 1,
 												'max'      => 1,
 												'layouts'  => array(),
-											),
-											array(
-												'key'      => 'field_mrn_tabbed_layout_tab_config_tab',
-												'label'    => 'Configs',
-												'name'     => '',
-												'aria-label' => '',
-												'type'     => 'tab',
-												'placement' => 'top',
-												'endpoint' => 0,
-											),
-											array(
-												'key'     => 'field_mrn_tabbed_layout_tab_background_color',
-												'label'   => 'Background Color',
-												'name'    => 'background_color',
-												'aria-label' => '',
-												'type'    => 'select',
-												'choices' => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
-												'ui'      => 1,
-												'allow_null' => 1,
-												'instructions' => 'Select from Site Colors when available.',
-												'wrapper' => array(
-													'width' => '50',
-												),
-											),
-											array(
-												'key'     => 'field_mrn_tabbed_layout_tab_enable_row_effects',
-												'label'   => 'Enable Row Effects',
-												'name'    => 'enable_row_effects',
-												'aria-label' => '',
-												'type'    => 'true_false',
-												'ui'      => 1,
-												'default_value' => 0,
-												'ui_on_text' => 'On',
-												'ui_off_text' => 'Off',
-												'wrapper' => array(
-													'width' => '50',
-												),
 											),
 										),
 									),
@@ -1143,6 +973,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'choices'      => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
 										'ui'           => 1,
 										'allow_null'   => 1,
+										'multiple'     => 0,
 										'instructions' => 'Select from Site Colors when available.',
 										'wrapper'      => array(
 											'width' => '50',
@@ -1161,6 +992,8 @@ function mrn_base_stack_register_acf_field_groups() {
 											'vertical'   => 'Vertical',
 										),
 										'default_value' => 'horizontal',
+										'allow_null'    => 0,
+										'multiple'      => 0,
 										'ui'            => 1,
 										'wrapper'       => array(
 											'width' => '50',
@@ -1183,7 +1016,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_tabbed_layout_switch_effect',
-										'label'         => 'Tab Switch Effect',
+										'label'         => 'Tab Animation',
 										'name'          => 'tab_switch_effect',
 										'aria-label'    => '',
 										'type'          => 'select',
@@ -1193,6 +1026,9 @@ function mrn_base_stack_register_acf_field_groups() {
 											'slide'   => 'Slide',
 										),
 										'default_value' => 'instant',
+										'allow_null'    => 0,
+										'multiple'      => 0,
+										'instructions'  => 'Fade uses lightweight CSS. Slide uses the stack Splide library already loaded for tabbed layouts.',
 										'ui'            => 1,
 										'wrapper'       => array(
 											'width' => '50',
@@ -1233,7 +1069,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_image_content' => array(
 								'key'        => 'layout_mrn_image_content',
 								'name'       => 'image_content',
-								'label'      => 'Image - label|heading|subheading|text with editor',
+								'label'      => 'Image Content',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -1250,7 +1086,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'name'       => '',
 										'aria-label' => '',
 										'type'       => 'message',
-										'message'    => 'Standard fields render before the image for this layout.',
+										'message'    => 'Use Image Position in the Layout tab to place the image visually before or after the content.',
 										'new_lines'  => 'wpautop',
 										'esc_html'   => 0,
 									),
@@ -1278,10 +1114,11 @@ function mrn_base_stack_register_acf_field_groups() {
 										'name'          => 'image',
 										'aria-label'    => '',
 										'type'          => 'image',
-										'return_format' => 'array',
+										'return_format' => 'id',
 										'preview_size'  => 'large',
 										'library'       => 'all',
 									),
+									...mrn_base_stack_get_image_caption_fields( 'field_mrn_image_content_image_caption' ),
 									array(
 										'key'        => 'field_mrn_image_content_config_tab',
 										'label'      => 'Configs',
@@ -1300,6 +1137,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'choices'       => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
 										'ui'            => 1,
 										'allow_null'    => 1,
+										'multiple'      => 0,
 										'instructions'  => 'Select from Site Colors when available.',
 									),
 									mrn_base_stack_get_section_width_field( 'field_mrn_image_content_section_width', 'section_width', 'wide' ),
@@ -1329,6 +1167,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'default_value' => '',
 										'ui'            => 1,
 										'allow_null'    => 1,
+										'multiple'      => 0,
 										'instructions'  => 'Choose a saved graphic element from Site Styles.',
 										'wrapper'       => array(
 											'width' => '50',
@@ -1345,6 +1184,8 @@ function mrn_base_stack_register_acf_field_groups() {
 											'bottom' => 'Bottom',
 										),
 										'default_value' => 'top',
+										'allow_null'    => 0,
+										'multiple'      => 0,
 										'ui'            => 1,
 										'wrapper'       => array(
 											'width' => '25',
@@ -1361,6 +1202,8 @@ function mrn_base_stack_register_acf_field_groups() {
 											'cover'     => 'Cover',
 										),
 										'default_value' => 'contained',
+										'allow_null'    => 0,
+										'multiple'      => 0,
 										'ui'            => 1,
 										'wrapper'       => array(
 											'width' => '25',
@@ -1378,6 +1221,8 @@ function mrn_base_stack_register_acf_field_groups() {
 											'right'  => 'Right',
 										),
 										'default_value' => 'center',
+										'allow_null'    => 0,
+										'multiple'      => 0,
 										'ui'            => 1,
 										'wrapper'       => array(
 											'width' => '25',
@@ -1400,6 +1245,14 @@ function mrn_base_stack_register_acf_field_groups() {
 										'placement'  => 'top',
 									),
 									array(
+										'key'          => 'field_mrn_external_widget_title',
+										'label'        => 'Embed Title',
+										'name'         => 'embed_title',
+										'aria-label'   => '',
+										'type'         => 'text',
+										'instructions' => 'Used as the iframe title when the pasted embed does not include one.',
+									),
+									array(
 										'key'          => 'field_mrn_external_widget_code',
 										'label'        => 'Snippet/Code',
 										'name'         => 'embed_code',
@@ -1407,7 +1260,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'type'         => 'textarea',
 										'rows'         => 8,
 										'new_lines'    => '',
-										'instructions' => 'Paste trusted widget, iframe, or embed snippet markup.',
+										'instructions' => 'Paste a trusted iframe/embed/object snippet or shortcode. Script tags are not rendered.',
 									),
 									array(
 										'key'        => 'field_mrn_external_widget_config_tab',
@@ -1600,10 +1453,10 @@ function mrn_base_stack_register_acf_field_groups() {
 										'type'          => 'select',
 										'choices'       => function_exists( 'mrn_base_stack_get_searchwp_form_choices' ) ? mrn_base_stack_get_searchwp_form_choices() : array(),
 										'ui'            => 1,
-										'allow_null'    => 1,
-										'default_value' => '',
-										'placeholder'   => 'Default site search form',
-										'instructions'  => 'Choose from the SearchWP forms available on this site. Leave blank to use the default site search form.',
+										'allow_null'    => 0,
+										'required'      => 1,
+										'default_value' => function_exists( 'mrn_base_stack_get_default_searchwp_form_id' ) ? (string) mrn_base_stack_get_default_searchwp_form_id() : '',
+										'instructions'  => 'Choose from the SearchWP forms available on this site.',
 									),
 									array(
 										'key'        => 'field_mrn_searchwp_form_config_tab',
@@ -1662,7 +1515,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_card' => array(
 								'key'        => 'layout_mrn_card',
 								'name'       => 'card',
-								'label'      => 'Card - image|text|link',
+								'label'      => 'Card - card name|icon|card row|link',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -1687,9 +1540,10 @@ function mrn_base_stack_register_acf_field_groups() {
 										'aria-label'       => '',
 										'type'             => 'repeater',
 										'layout'           => 'row',
-										'collapsed'        => 'field_mrn_card_item_text',
+										'collapsed'        => 'field_mrn_card_item_label',
 										'button_label'     => 'Add Card',
 										'min'              => 1,
+										'instructions'     => 'Each card holds one builder row. The card order matches the row order.',
 										'sub_fields'       => array(
 											array(
 												'key'      => 'field_mrn_card_item_content_tab',
@@ -1701,32 +1555,17 @@ function mrn_base_stack_register_acf_field_groups() {
 												'endpoint' => 0,
 											),
 											array(
-												'key'     => 'field_mrn_card_item_image',
-												'label'   => 'Image',
-												'name'    => 'image',
+												'key'     => 'field_mrn_card_item_label',
+												'label'   => 'Card Name',
+												'name'    => 'card_label',
 												'aria-label' => '',
-												'type'    => 'image',
-												'return_format' => 'array',
-												'preview_size' => 'medium',
-												'library' => 'all',
+												'type'    => 'text',
+												'instructions' => 'Names the card header. The card content itself comes from the Card Row.',
 												'wrapper' => array(
-													'width' => '33',
+													'width' => '50',
 												),
 											),
-											array(
-												'key'     => 'field_mrn_card_item_text',
-												'label'   => 'Text',
-												'name'    => 'text',
-												'aria-label' => '',
-												'type'    => 'wysiwyg',
-												'tabs'    => 'all',
-												'toolbar' => 'full',
-												'media_upload' => 1,
-												'delay'   => 0,
-												'wrapper' => array(
-													'width' => '34',
-												),
-											),
+											...mrn_base_stack_get_button_link_icon_fields( 'field_mrn_card_item_icon', 'field_mrn_card_item_label' ),
 											array(
 												'key'     => 'field_mrn_card_item_link',
 												'label'   => 'Link',
@@ -1734,9 +1573,21 @@ function mrn_base_stack_register_acf_field_groups() {
 												'aria-label' => '',
 												'type'    => 'link',
 												'return_format' => 'array',
+												'instructions' => 'Optional card-level link. Adding a URL makes the card surface clickable. Links and buttons inside the Card Row remain clickable.',
 												'wrapper' => array(
-													'width' => '33',
+													'width' => '50',
 												),
+											),
+											array(
+												'key'      => 'field_mrn_card_item_rows',
+												'label'    => 'Card Row',
+												'name'     => 'card_rows',
+												'aria-label' => '',
+												'type'     => 'flexible_content',
+												'button_label' => 'Add Card Row',
+												'min'      => 1,
+												'max'      => 1,
+												'layouts'  => array(),
 											),
 											array(
 												'key'      => 'field_mrn_card_item_config_tab',
@@ -1761,20 +1612,6 @@ function mrn_base_stack_register_acf_field_groups() {
 													'width' => '50',
 												),
 											),
-											array(
-												'key'     => 'field_mrn_card_item_enable_row_effects',
-												'label'   => 'Enable Row Effects',
-												'name'    => 'enable_row_effects',
-												'aria-label' => '',
-												'type'    => 'true_false',
-												'ui'      => 1,
-												'default_value' => 0,
-												'ui_on_text' => 'On',
-												'ui_off_text' => 'Off',
-												'wrapper' => array(
-													'width' => '50',
-												),
-											),
 										),
 									),
 									array(
@@ -1795,43 +1632,6 @@ function mrn_base_stack_register_acf_field_groups() {
 										'ui'            => 1,
 										'allow_null'    => 1,
 										'instructions'  => 'Select from Site Colors when available.',
-									),
-									array(
-										'key'           => 'field_mrn_card_enable_full_item_link',
-										'label'         => 'Make Entire Card Clickable',
-										'name'          => 'enable_full_item_link',
-										'aria-label'    => '',
-										'type'          => 'true_false',
-										'ui'            => 1,
-										'default_value' => 0,
-										'ui_on_text'    => 'On',
-										'ui_off_text'   => 'Off',
-										'wrapper'       => array(
-											'width' => '25',
-										),
-									),
-									array(
-										'key'           => 'field_mrn_card_hide_item_link',
-										'label'         => 'Hide Link Label',
-										'name'          => 'hide_item_link',
-										'aria-label'    => '',
-										'type'          => 'true_false',
-										'ui'            => 1,
-										'default_value' => 0,
-										'ui_on_text'    => 'On',
-										'ui_off_text'   => 'Off',
-										'conditional_logic' => array(
-											array(
-												array(
-													'field'    => 'field_mrn_card_enable_full_item_link',
-													'operator' => '==',
-													'value'    => '1',
-												),
-											),
-										),
-										'wrapper'       => array(
-											'width' => '25',
-										),
 									),
 									mrn_base_stack_get_section_width_field( 'field_mrn_card_section_width', 'section_width', 'wide' ),
 									mrn_base_stack_get_anchor_field( 'field_mrn_card_anchor' ),
@@ -1895,7 +1695,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'type'          => 'flexible_content',
 										'button_label'  => 'Add Left Layout',
 										'max'           => 1,
-										'layouts'       => mrn_base_stack_get_two_column_nested_layouts(),
+										'layouts'       => mrn_base_stack_get_two_column_column_layouts(),
 										'wrapper'       => array(
 											'width' => '50',
 										),
@@ -1908,7 +1708,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'type'          => 'flexible_content',
 										'button_label'  => 'Add Right Layout',
 										'max'           => 1,
-										'layouts'       => mrn_base_stack_get_two_column_nested_layouts(),
+										'layouts'       => mrn_base_stack_get_two_column_column_layouts(),
 										'wrapper'       => array(
 											'width' => '50',
 										),
@@ -1928,14 +1728,15 @@ function mrn_base_stack_register_acf_field_groups() {
 										'aria-label'    => '',
 										'type'          => 'select',
 										'default_value' => '50-50',
-										'choices'       => array(
-											'50-50' => '50 / 50',
-											'60-40' => '60 / 40',
-											'40-60' => '40 / 60',
-											'67-33' => '67 / 33',
-											'33-67' => '33 / 67',
-										),
+										'choices'       => mrn_base_stack_get_two_column_ratio_choices(),
+										'allow_null'    => 0,
+										'multiple'      => 0,
+										'return_format' => 'value',
 										'ui'            => 1,
+										'instructions'  => 'Controls the wide-screen column widths. Columns stack to one column on smaller screens.',
+										'wrapper'       => array(
+											'width' => '50',
+										),
 									),
 									array(
 										'key'           => 'field_mrn_two_column_split_background_color',
@@ -1948,6 +1749,205 @@ function mrn_base_stack_register_acf_field_groups() {
 										'allow_null'    => 1,
 										'instructions'  => 'Select from Site Colors when available.',
 									),
+									array(
+										'key'           => 'field_mrn_two_column_split_background_gradient_enabled',
+										'label'         => 'Background gradient',
+										'name'          => 'background_gradient_enabled',
+										'aria-label'    => '',
+										'type'          => 'true_false',
+										'ui'            => 1,
+										'default_value' => 0,
+										'ui_on_text'    => 'On',
+										'ui_off_text'   => 'Off',
+										'wrapper'       => array(
+											'width' => '50',
+										),
+									),
+									array(
+										'key'          => 'field_mrn_two_column_split_background_gradient_start_color',
+										'label'        => 'Gradient start',
+										'name'         => 'background_gradient_start_color',
+										'aria-label'   => '',
+										'type'         => 'select',
+										'choices'      => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
+										'ui'           => 1,
+										'allow_null'   => 1,
+										'instructions' => 'Select from Site Colors when available.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'      => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'          => 'field_mrn_two_column_split_background_gradient_end_color',
+										'label'        => 'Gradient end',
+										'name'         => 'background_gradient_end_color',
+										'aria-label'   => '',
+										'type'         => 'select',
+										'choices'      => function_exists( 'mrn_rbl_get_site_color_choices' ) ? mrn_rbl_get_site_color_choices() : array(),
+										'ui'           => 1,
+										'allow_null'   => 1,
+										'instructions' => 'Select from Site Colors when available.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'      => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'           => 'field_mrn_two_column_split_background_gradient_start_opacity',
+										'label'         => 'Start opacity',
+										'name'          => 'background_gradient_start_opacity',
+										'aria-label'    => '',
+										'type'          => 'range',
+										'default_value' => 100,
+										'min'           => 0,
+										'max'           => 100,
+										'step'          => 1,
+										'append'        => '%',
+										'instructions'  => 'Drag to adjust transparency for the first color.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'       => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'           => 'field_mrn_two_column_split_background_gradient_end_opacity',
+										'label'         => 'End opacity',
+										'name'          => 'background_gradient_end_opacity',
+										'aria-label'    => '',
+										'type'          => 'range',
+										'default_value' => 100,
+										'min'           => 0,
+										'max'           => 100,
+										'step'          => 1,
+										'append'        => '%',
+										'instructions'  => 'Drag to adjust transparency for the second color.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'       => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'           => 'field_mrn_two_column_split_background_gradient_angle',
+										'label'         => 'Gradient angle',
+										'name'          => 'background_gradient_angle',
+										'aria-label'    => '',
+										'type'          => 'range',
+										'default_value' => 180,
+										'min'           => 0,
+										'max'           => 360,
+										'step'          => 1,
+										'append'        => 'deg',
+										'instructions'  => 'Drag to rotate the gradient.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'       => array(
+											'width' => '34',
+										),
+									),
+									array(
+										'key'           => 'field_mrn_two_column_split_background_gradient_start_position',
+										'label'         => 'Start position',
+										'name'          => 'background_gradient_start_position',
+										'aria-label'    => '',
+										'type'          => 'range',
+										'default_value' => 0,
+										'min'           => 0,
+										'max'           => 100,
+										'step'          => 1,
+										'append'        => '%',
+										'instructions'  => 'Drag to place the first color stop.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'       => array(
+											'width' => '50',
+										),
+									),
+									array(
+										'key'           => 'field_mrn_two_column_split_background_gradient_end_position',
+										'label'         => 'End position',
+										'name'          => 'background_gradient_end_position',
+										'aria-label'    => '',
+										'type'          => 'range',
+										'default_value' => 100,
+										'min'           => 0,
+										'max'           => 100,
+										'step'          => 1,
+										'append'        => '%',
+										'instructions'  => 'Drag to place the second color stop.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_two_column_split_background_gradient_enabled',
+													'operator' => '==',
+													'value'    => '1',
+												),
+											),
+										),
+										'wrapper'       => array(
+											'width' => '50',
+										),
+									),
+									array(
+										'key'           => 'field_mrn_two_column_split_background_image',
+										'label'         => 'Background image',
+										'name'          => 'background_image',
+										'aria-label'    => '',
+										'type'          => 'image',
+										'return_format' => 'id',
+										'preview_size'  => 'medium',
+										'library'       => 'all',
+										'wrapper'       => array(
+											'width' => '50',
+										),
+									),
+									...mrn_base_stack_get_background_video_fields( 'field_mrn_two_column_split_background_video' ),
 									mrn_base_stack_get_section_width_field( 'field_mrn_two_column_split_section_width', 'section_width', 'wide' ),
 									mrn_base_stack_get_anchor_field( 'field_mrn_two_column_split_anchor' ),
 									mrn_base_stack_get_motion_group_field( 'field_mrn_two_column_split_motion_settings' ),
@@ -2069,7 +2069,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_logos' => array(
 								'key'        => 'layout_mrn_logos',
 								'name'       => 'logos',
-								'label'      => 'Logos - label|heading|image|link',
+								'label'      => 'Page Specific Logos/Partners',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -2103,7 +2103,7 @@ function mrn_base_stack_register_acf_field_groups() {
 												'name'    => 'image',
 												'aria-label' => '',
 												'type'    => 'image',
-												'return_format' => 'array',
+												'return_format' => 'id',
 												'preview_size' => 'medium',
 												'library' => 'all',
 												'wrapper' => array(
@@ -2134,16 +2134,17 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_logos_display_mode',
-										'label'         => 'Display mode',
+										'label'         => 'Layout Mode',
 										'name'          => 'display_mode',
 										'aria-label'    => '',
 										'type'          => 'select',
-										'choices'       => array(
+										'choices'       => function_exists( 'mrn_base_stack_get_builder_layout_mode_choices' ) ? mrn_base_stack_get_builder_layout_mode_choices( 'logos' ) : array(
 											'grid'   => 'Grid',
 											'slider' => 'Slider',
 										),
 										'default_value' => 'grid',
 										'ui'            => 1,
+										'instructions'  => 'Choose whether logos render as a grid or a slider. Visual treatments belong in Display Styles.',
 										'wrapper'       => array(
 											'width' => '25',
 										),
@@ -2315,7 +2316,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_stats' => array(
 								'key'        => 'layout_mrn_stats',
 								'name'       => 'stats',
-								'label'      => 'Stats - label|heading|items',
+								'label'      => 'Stats',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -2359,6 +2360,21 @@ function mrn_base_stack_register_acf_field_groups() {
 												'aria-label' => '',
 												'type'    => 'text',
 												'instructions' => 'Limited inline HTML allowed: span, strong, em, br.',
+											),
+											array(
+												'key'     => 'field_mrn_stats_item_animate_value',
+												'label'   => 'Spin In Value',
+												'name'    => 'animate_value',
+												'aria-label' => '',
+												'type'    => 'true_false',
+												'ui'      => 1,
+												'default_value' => 0,
+												'ui_on_text' => 'On',
+												'ui_off_text' => 'Off',
+												'instructions' => 'Animates this stat value when it scrolls into view. Respects reduced-motion preferences.',
+												'wrapper' => array(
+													'width' => '50',
+												),
 											),
 										),
 									),
@@ -2453,7 +2469,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_showcase' => array(
 								'key'        => 'layout_mrn_showcase',
 								'name'       => 'showcase',
-								'label'      => 'Showcase - label|heading|image|link',
+								'label'      => 'Showcase',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -2496,7 +2512,7 @@ function mrn_base_stack_register_acf_field_groups() {
 												'name'    => 'image',
 												'aria-label' => '',
 												'type'    => 'image',
-												'return_format' => 'array',
+												'return_format' => 'id',
 												'preview_size' => 'medium',
 												'library' => 'all',
 												'wrapper' => array(
@@ -2582,17 +2598,18 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_showcase_stagger',
-										'label'         => 'Stagger style',
+										'label'         => 'Layout Mode',
 										'name'          => 'stagger_style',
 										'aria-label'    => '',
 										'type'          => 'select',
-										'choices'       => array(
+										'choices'       => function_exists( 'mrn_base_stack_get_builder_layout_mode_choices' ) ? mrn_base_stack_get_builder_layout_mode_choices( 'showcase' ) : array(
+											'flat'    => 'Grid',
 											'collage' => 'Collage',
 											'stacked' => 'Stacked',
-											'flat'    => 'Flat',
 										),
-										'default_value' => 'collage',
+										'default_value' => 'flat',
 										'ui'            => 1,
+										'instructions'  => 'Grid is the default for simple image groups. Collage is an editorial treatment for intentionally featured compositions.',
 										'wrapper'       => array(
 											'width' => '25',
 										),
@@ -2685,12 +2702,12 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_faq' => array(
 								'key'        => 'layout_mrn_faq',
 								'name'       => 'faq',
-								'label'      => 'FAQs/Accordion - label|heading|items',
+								'label'      => 'Page Specific FAQ/Accordion',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
 										'key'          => 'field_mrn_page_faq_fields',
-										'label'        => 'FAQs/Accordion',
+										'label'        => 'Page Specific FAQ/Accordion',
 										'name'         => '',
 										'aria-label'   => '',
 										'type'         => 'clone',
@@ -2703,6 +2720,38 @@ function mrn_base_stack_register_acf_field_groups() {
 									mrn_base_stack_get_motion_group_field( 'field_mrn_page_faq_motion_settings' ),
 								),
 							),
+							'layout_mrn_faq_jump_nav' => array(
+								'key'        => 'layout_mrn_faq_jump_nav',
+								'name'       => 'faq_jump_nav',
+								'label'      => 'FAQ Jump Nav',
+								'display'    => 'block',
+								'sub_fields' => array(
+									array(
+										'key'        => 'field_mrn_faq_jump_nav_content_tab',
+										'label'      => 'Content',
+										'name'       => '',
+										'aria-label' => '',
+										'type'       => 'tab',
+										'placement'  => 'top',
+									),
+									mrn_base_stack_get_inline_text_field( 'field_mrn_faq_jump_nav_label', 'Label', 'label' ),
+									mrn_base_stack_get_label_tag_field( 'field_mrn_faq_jump_nav_label_tag' ),
+									mrn_base_stack_get_inline_text_field( 'field_mrn_faq_jump_nav_heading', 'Heading', 'heading' ),
+									mrn_base_stack_get_text_tag_field( 'field_mrn_faq_jump_nav_heading_tag', 'heading_tag', 'h2', 'Heading Tag' ),
+									array(
+										'key'        => 'field_mrn_faq_jump_nav_config_tab',
+										'label'      => 'Configs',
+										'name'       => '',
+										'aria-label' => '',
+										'type'       => 'tab',
+										'placement'  => 'top',
+										'endpoint'   => 0,
+									),
+									mrn_base_stack_get_section_width_field( 'field_mrn_faq_jump_nav_section_width', 'section_width', 'content' ),
+									mrn_base_stack_get_anchor_field( 'field_mrn_faq_jump_nav_anchor' ),
+									mrn_base_stack_get_motion_group_field( 'field_mrn_faq_jump_nav_motion_settings' ),
+								),
+							),
 							'layout_mrn_reusable_block' => array(
 								'key'        => 'layout_mrn_reusable_block',
 								'name'       => 'reusable_block',
@@ -2710,32 +2759,67 @@ function mrn_base_stack_register_acf_field_groups() {
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
-										'key'           => 'field_mrn_reusable_block_post',
-										'label'         => 'Block',
-										'name'          => 'block',
-										'aria-label'    => '',
-										'type'          => 'post_object',
-										'post_type'     => function_exists( 'mrn_rbl_get_post_types' ) ? mrn_rbl_get_post_types() : array(),
-										'return_format' => 'object',
-										'ui'            => 1,
-										'allow_null'    => 0,
-										'multiple'      => 0,
-										'instructions'  => 'Choose a reusable block from the library. Editing that block updates it everywhere it is used.',
+										'key'              => 'field_mrn_reusable_block_post',
+										'label'            => 'Block',
+										'name'             => 'block',
+										'aria-label'       => '',
+										'type'             => 'post_object',
+										'post_type'        => function_exists( 'mrn_rbl_get_post_types' ) ? mrn_rbl_get_post_types() : array(),
+										'return_format'    => 'object',
+										'ui'               => 1,
+										'allow_null'       => 0,
+										'multiple'         => 0,
+										'instructions'     => 'Choose a reusable block from the library. Editing that block updates it everywhere it is used.',
 									),
-									mrn_base_stack_get_section_width_field( 'field_mrn_reusable_block_section_width' ),
-									mrn_base_stack_get_anchor_field( 'field_mrn_reusable_block_anchor' ),
+									array(
+										'key'        => 'field_mrn_reusable_block_config_tab',
+										'label'      => 'Configs',
+										'name'       => '',
+										'aria-label' => '',
+										'type'       => 'tab',
+										'placement'  => 'top',
+										'endpoint'   => 0,
+									),
+									mrn_base_stack_get_anchor_field( 'field_mrn_reusable_block_anchor', 'anchor', 'Placement Anchor ID' ),
+									array(
+										'key'              => 'field_mrn_reusable_block_include_in_faq_jump_nav',
+										'label'            => 'Include FAQ Block in Jump Nav',
+										'name'             => 'include_in_faq_jump_nav',
+										'aria-label'       => '',
+										'type'             => 'true_false',
+										'instructions'     => 'Only used when the selected reusable block is a FAQ/Accordion. FAQ Jump Nav Label is required. Placement Anchor ID is optional and overrides the label-generated target.',
+										'ui'               => 1,
+										'default_value'    => 0,
+										'ui_on_text'       => 'Include',
+										'ui_off_text'      => 'Omit',
+										'wrapper'          => array(
+											'width' => '33',
+										),
+									),
+									array(
+										'key'              => 'field_mrn_reusable_block_faq_jump_nav_label',
+										'label'            => 'FAQ Jump Nav Label',
+										'name'             => 'faq_jump_nav_label',
+										'aria-label'       => '',
+										'type'             => 'text',
+										'instructions'     => 'Required when this FAQ placement should appear in a page FAQ Jump Nav. If Placement Anchor ID is blank, this label also generates the jump target.',
+										'wrapper'          => array(
+											'width' => '100',
+										),
+									),
 									mrn_base_stack_get_motion_group_field( 'field_mrn_reusable_block_motion_settings' ),
 								),
 							),
 							'layout_mrn_cta_block' => array(
-								'key'        => 'layout_mrn_cta_block',
-								'name'       => 'cta_block',
-								'label'      => 'CTA (Page Only)',
-								'display'    => 'block',
-								'sub_fields' => array(
+								'key'              => 'layout_mrn_cta_block',
+								'name'             => 'cta_block',
+								'label'            => 'Page Specific CTA',
+								'display'          => 'block',
+								'mrn_is_page_only' => true,
+								'sub_fields'       => array(
 									array(
 										'key'          => 'field_mrn_page_cta_block_fields',
-										'label'        => 'CTA',
+										'label'        => 'Page Specific CTA',
 										'name'         => '',
 										'aria-label'   => '',
 										'type'         => 'clone',
@@ -2751,12 +2835,12 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_basic_block' => array(
 								'key'        => 'layout_mrn_basic_block',
 								'name'       => 'basic_block',
-								'label'      => 'Basic Block (Page Only)',
+								'label'      => 'Page Specific Basic',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
 										'key'          => 'field_mrn_page_basic_block_fields',
-										'label'        => 'Basic Block',
+										'label'        => 'Page Specific Basic',
 										'name'         => '',
 										'aria-label'   => '',
 										'type'         => 'clone',
@@ -2769,36 +2853,16 @@ function mrn_base_stack_register_acf_field_groups() {
 									mrn_base_stack_get_motion_group_field( 'field_mrn_page_basic_block_motion_settings' ),
 								),
 							),
-							'layout_mrn_content_grid' => array(
-								'key'        => 'layout_mrn_content_grid',
-								'name'       => 'content_grid',
-								'label'      => 'Content Grid (Page Only)',
-								'display'    => 'block',
-								'sub_fields' => array(
-									array(
-										'key'          => 'field_mrn_page_content_grid_fields',
-										'label'        => 'Content Grid',
-										'name'         => '',
-										'aria-label'   => '',
-										'type'         => 'clone',
-										'clone'        => array( 'group_mrn_reusable_content_grid' ),
-										'display'      => 'seamless',
-										'layout'       => 'block',
-										'prefix_label' => 0,
-										'prefix_name'  => 0,
-									),
-									mrn_base_stack_get_motion_group_field( 'field_mrn_page_content_grid_motion_settings' ),
-								),
-							),
 							'layout_mrn_faq_block' => array(
-								'key'        => 'layout_mrn_faq_block',
-								'name'       => 'faq_block',
-								'label'      => 'FAQs/Accordion (Page Only)',
-								'display'    => 'block',
-								'sub_fields' => array(
+								'key'              => 'layout_mrn_faq_block',
+								'name'             => 'faq_block',
+								'label'            => 'Page Specific FAQ/Accordion',
+								'display'          => 'block',
+								'mrn_is_page_only' => true,
+								'sub_fields'       => array(
 									array(
 										'key'          => 'field_mrn_page_faq_block_fields',
-										'label'        => 'FAQs/Accordion',
+										'label'        => 'Page Specific FAQ/Accordion',
 										'name'         => '',
 										'aria-label'   => '',
 										'type'         => 'clone',
@@ -2831,41 +2895,35 @@ function mrn_base_stack_register_acf_field_groups() {
 		)
 	);
 
-	$content_builder_fields  = function_exists( 'acf_get_fields' ) ? acf_get_fields( 'group_mrn_content_builder' ) : array();
-	$after_content_layouts   = array();
-	$after_content_field_key = 'field_mrn_page_after_content_rows';
+		$after_content_field_key = 'field_mrn_page_after_content_rows';
 
-	if ( is_array( $content_builder_fields ) && ! empty( $content_builder_fields[0]['layouts'] ) && is_array( $content_builder_fields[0]['layouts'] ) ) {
-		$after_content_layouts = mrn_base_stack_clone_acf_keys_with_prefix( $content_builder_fields[0]['layouts'], 'after_content_' );
-	}
-
-	acf_add_local_field_group(
-		mrn_base_stack_with_effects_tabs(
-			array(
-				'key'                   => 'group_mrn_after_content_builder',
-				'title'                 => 'After Content',
-				'fields'                => array(
-					array(
-						'key'               => $after_content_field_key,
-						'label'             => 'After Content',
-						'name'              => 'page_after_content_rows',
-						'aria-label'        => '',
-						'type'              => 'flexible_content',
-						'button_label'      => 'Add After Content Row',
-						'layouts'           => $after_content_layouts,
+		acf_add_local_field_group(
+			mrn_base_stack_with_effects_tabs(
+				array(
+					'key'                   => 'group_mrn_after_content_builder',
+					'title'                 => 'After Content',
+					'fields'                => array(
+						array(
+							'key'               => $after_content_field_key,
+							'label'             => 'After Content',
+							'name'              => 'page_after_content_rows',
+							'aria-label'        => '',
+							'type'              => 'flexible_content',
+							'button_label'      => 'Add After Content Row',
+							'layouts'           => array(),
+						),
 					),
-				),
-				'location'              => mrn_base_stack_get_after_content_location_rules(),
-				'menu_order'            => 20,
-				'position'              => 'acf_after_title',
-				'style'                 => 'default',
-				'label_placement'       => 'top',
-				'instruction_placement' => 'label',
-				'active'                => true,
-				'description'           => 'Secondary flexible-content area that renders after the main Content builder.',
-				'show_in_rest'          => 1,
+					'location'              => mrn_base_stack_get_after_content_location_rules(),
+					'menu_order'            => 20,
+					'position'              => 'acf_after_title',
+					'style'                 => 'default',
+					'label_placement'       => 'top',
+					'instruction_placement' => 'label',
+					'active'                => true,
+					'description'           => 'Secondary flexible-content area that renders after the main Content builder.',
+					'show_in_rest'          => 1,
+				)
 			)
-		)
-	);
+		);
 }
 add_action( 'acf/init', 'mrn_base_stack_register_acf_field_groups' );

@@ -15,7 +15,7 @@ $mrn_client_overview = isset( $mrn_case_study['client_overview'] ) ? (string) $m
 $mrn_challenge       = isset( $mrn_case_study['challenge'] ) ? (string) $mrn_case_study['challenge'] : '';
 $mrn_services        = isset( $mrn_case_study['services'] ) && is_array( $mrn_case_study['services'] ) ? $mrn_case_study['services'] : array();
 $mrn_strategy_text   = isset( $mrn_case_study['strategy_content'] ) ? (string) $mrn_case_study['strategy_content'] : '';
-$mrn_strategy_image  = isset( $mrn_case_study['strategy_image'] ) && is_array( $mrn_case_study['strategy_image'] ) ? $mrn_case_study['strategy_image'] : null;
+$mrn_strategy_image  = $mrn_case_study['strategy_image'] ?? null;
 $mrn_strategy_side   = isset( $mrn_case_study['strategy_image_position'] ) ? (string) $mrn_case_study['strategy_image_position'] : 'right';
 $mrn_categories_list = get_the_term_list( $mrn_post_id, 'category', '', esc_html__( ', ', 'mrn-base-stack' ) );
 $mrn_tags_list       = get_the_term_list( $mrn_post_id, 'post_tag', '', esc_html_x( ', ', 'list item separator', 'mrn-base-stack' ) );
@@ -37,9 +37,13 @@ $mrn_tags_list       = get_the_term_list( $mrn_post_id, 'post_tag', '', esc_html
 			$mrn_shell_classes[] = 'mrn-singular-shell--has-sidebar';
 			$mrn_shell_classes[] = 'mrn-singular-shell--sidebar-' . sanitize_html_class( $mrn_sidebar_settings['layout'] );
 		}
+
+		if ( function_exists( 'mrn_base_stack_render_singular_breadcrumbs' ) ) {
+			mrn_base_stack_render_singular_breadcrumbs( $mrn_post_id );
+		}
 		?>
 
-		<div class="<?php echo esc_attr( implode( ' ', $mrn_shell_classes ) ); ?>">
+		<div class="<?php echo esc_attr( implode( ' ', $mrn_shell_classes ) ); ?>" data-mrn-layout-slot="content-shell">
 			<div class="mrn-singular-shell__main">
 				<?php if ( ! $mrn_has_hero ) : ?>
 					<header class="entry-header">
@@ -111,19 +115,20 @@ $mrn_tags_list       = get_the_term_list( $mrn_post_id, 'post_tag', '', esc_html
 									continue;
 								}
 
-								$mrn_service_text  = isset( $mrn_service['text'] ) ? (string) $mrn_service['text'] : '';
-								$mrn_service_image = isset( $mrn_service['image'] ) && is_array( $mrn_service['image'] ) ? $mrn_service['image'] : null;
-								$mrn_service_side  = isset( $mrn_service['image_position'] ) ? (string) $mrn_service['image_position'] : 'right';
-								$mrn_service_side  = in_array( $mrn_service_side, array( 'left', 'right' ), true ) ? $mrn_service_side : 'right';
+								$mrn_service_text      = isset( $mrn_service['text'] ) ? (string) $mrn_service['text'] : '';
+								$mrn_service_image     = $mrn_service['image'] ?? null;
+								$mrn_service_has_image = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $mrn_service_image ) : false;
+								$mrn_service_side      = isset( $mrn_service['image_position'] ) ? (string) $mrn_service['image_position'] : 'right';
+								$mrn_service_side      = in_array( $mrn_service_side, array( 'left', 'right' ), true ) ? $mrn_service_side : 'right';
 
-								if ( '' === trim( wp_strip_all_tags( $mrn_service_text ) ) && ! $mrn_service_image ) {
+								if ( '' === trim( wp_strip_all_tags( $mrn_service_text ) ) && ! $mrn_service_has_image ) {
 									continue;
 								}
 								?>
 								<div class="mrn-case-study-section mrn-case-study-section--media mrn-case-study-section--media-<?php echo esc_attr( $mrn_service_side ); ?>">
-									<?php if ( 'left' === $mrn_service_side && $mrn_service_image && ! empty( $mrn_service_image['ID'] ) ) : ?>
+									<?php if ( 'left' === $mrn_service_side && $mrn_service_has_image ) : ?>
 										<div class="mrn-case-study-section__media">
-											<?php echo wp_get_attachment_image( (int) $mrn_service_image['ID'], 'large' ); ?>
+											<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $mrn_service_image, 'mrn-content-media' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 										</div>
 									<?php endif; ?>
 
@@ -133,9 +138,9 @@ $mrn_tags_list       = get_the_term_list( $mrn_post_id, 'post_tag', '', esc_html
 										</div>
 									<?php endif; ?>
 
-									<?php if ( 'right' === $mrn_service_side && $mrn_service_image && ! empty( $mrn_service_image['ID'] ) ) : ?>
+									<?php if ( 'right' === $mrn_service_side && $mrn_service_has_image ) : ?>
 										<div class="mrn-case-study-section__media">
-											<?php echo wp_get_attachment_image( (int) $mrn_service_image['ID'], 'large' ); ?>
+											<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $mrn_service_image, 'mrn-content-media' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 										</div>
 									<?php endif; ?>
 								</div>
@@ -143,13 +148,14 @@ $mrn_tags_list       = get_the_term_list( $mrn_post_id, 'post_tag', '', esc_html
 						</section>
 					<?php endif; ?>
 
-					<?php if ( '' !== trim( wp_strip_all_tags( $mrn_strategy_text ) ) || ( $mrn_strategy_image && ! empty( $mrn_strategy_image['ID'] ) ) ) : ?>
+					<?php $mrn_strategy_has_image = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $mrn_strategy_image ) : false; ?>
+					<?php if ( '' !== trim( wp_strip_all_tags( $mrn_strategy_text ) ) || $mrn_strategy_has_image ) : ?>
 						<section class="mrn-case-study-section">
 							<h2><?php esc_html_e( 'Strategy and Approach', 'mrn-base-stack' ); ?></h2>
 							<div class="mrn-case-study-section mrn-case-study-section--media mrn-case-study-section--media-<?php echo esc_attr( in_array( $mrn_strategy_side, array( 'left', 'right' ), true ) ? $mrn_strategy_side : 'right' ); ?>">
-								<?php if ( 'left' === $mrn_strategy_side && $mrn_strategy_image && ! empty( $mrn_strategy_image['ID'] ) ) : ?>
+								<?php if ( 'left' === $mrn_strategy_side && $mrn_strategy_has_image ) : ?>
 									<div class="mrn-case-study-section__media">
-										<?php echo wp_get_attachment_image( (int) $mrn_strategy_image['ID'], 'large' ); ?>
+										<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $mrn_strategy_image, 'mrn-content-media' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 									</div>
 								<?php endif; ?>
 
@@ -159,9 +165,9 @@ $mrn_tags_list       = get_the_term_list( $mrn_post_id, 'post_tag', '', esc_html
 									</div>
 								<?php endif; ?>
 
-								<?php if ( 'right' === $mrn_strategy_side && $mrn_strategy_image && ! empty( $mrn_strategy_image['ID'] ) ) : ?>
+								<?php if ( 'right' === $mrn_strategy_side && $mrn_strategy_has_image ) : ?>
 									<div class="mrn-case-study-section__media">
-										<?php echo wp_get_attachment_image( (int) $mrn_strategy_image['ID'], 'large' ); ?>
+										<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $mrn_strategy_image, 'mrn-content-media' ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 									</div>
 								<?php endif; ?>
 							</div>

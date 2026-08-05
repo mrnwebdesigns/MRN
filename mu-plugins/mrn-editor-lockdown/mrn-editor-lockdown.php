@@ -1,13 +1,56 @@
 <?php
 /**
- * Plugin Name: MRN Editor Lockdown (MU)
+ * Plugin Name: MRN Editor Lockdown
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.18
+ * Version: 1.0.32
  *
  * @package MRNEditorLockdown
  */
 
 defined( 'ABSPATH' ) || exit;
+
+/**
+ * Deny the Theme File Editor capability for every user, including admins.
+ *
+ * This blocks direct access to theme-editor.php without removing broader
+ * theme-management capabilities such as installing, activating, or updating
+ * themes.
+ *
+ * @param array $allcaps Effective capabilities for the current user.
+ * @return array
+ */
+function mrn_editor_lockdown_disable_theme_file_editor_capability( $allcaps ) {
+	if ( ! is_array( $allcaps ) ) {
+		$allcaps = array();
+	}
+
+	$disabled = function_exists( 'mrn_config_helper_is_theme_file_editor_disabled' )
+		? mrn_config_helper_is_theme_file_editor_disabled()
+		: true;
+
+	if ( $disabled ) {
+		$allcaps['edit_themes'] = false;
+	}
+
+	return $allcaps;
+}
+add_filter( 'user_has_cap', 'mrn_editor_lockdown_disable_theme_file_editor_capability', PHP_INT_MAX );
+
+/**
+ * Remove the Theme File Editor entry from Appearance as defense in depth.
+ *
+ * @return void
+ */
+function mrn_editor_lockdown_remove_theme_file_editor_menu() {
+	$disabled = function_exists( 'mrn_config_helper_is_theme_file_editor_disabled' )
+		? mrn_config_helper_is_theme_file_editor_disabled()
+		: true;
+
+	if ( $disabled ) {
+		remove_submenu_page( 'themes.php', 'theme-editor.php' );
+	}
+}
+add_action( 'admin_menu', 'mrn_editor_lockdown_remove_theme_file_editor_menu', PHP_INT_MAX );
 
 /**
  * Determine whether the heavyweight editor loading mask should run.
@@ -34,6 +77,15 @@ function mrn_editor_lockdown_is_loading_indicator_enabled() {
  */
 function mrn_editor_lockdown_get_seo_helper_metabox_id() {
 	return 'acf-group_69a1c0f3a1b01';
+}
+
+/**
+ * Schema Bridge controls metabox ID.
+ *
+ * @return string
+ */
+function mrn_editor_lockdown_get_schema_bridge_metabox_id() {
+	return 'mrn-schema-bridge-controls';
 }
 
 /**
@@ -100,6 +152,62 @@ function mrn_editor_lockdown_get_visible_hidden_metaboxes( $hidden ) {
 }
 
 /**
+ * Build the universal locked-editor sidebar order.
+ *
+ * Screens only render boxes they actually register, so one canonical order can
+ * safely cover Posts, Pages, reusable blocks, and custom post types.
+ *
+ * @param string[] $taxonomy_metaboxes Taxonomy metabox IDs for the post type.
+ * @return string
+ */
+function mrn_editor_lockdown_get_standard_side_order( $taxonomy_metaboxes = array() ) {
+	$taxonomy_metaboxes = is_array( $taxonomy_metaboxes )
+		? array_values( array_filter( array_map( 'sanitize_key', $taxonomy_metaboxes ) ) )
+		: array();
+
+	$order = array_merge(
+		array(
+			mrn_editor_lockdown_get_seo_helper_metabox_id(),
+			'postimagediv',
+			'submitdiv',
+		),
+		$taxonomy_metaboxes,
+		array(
+			'pageparentdiv',
+			'mrn-builder-layout-allowlist',
+			'mrn-config-helper-breadcrumbs',
+			mrn_editor_lockdown_get_schema_bridge_metabox_id(),
+			'authordiv',
+		)
+	);
+
+	return implode( ',', array_values( array_unique( $order ) ) );
+}
+
+/**
+ * Get utility metaboxes that remain collapsed across locked editor screens.
+ *
+ * @param string[] $additional Additional collapsed metabox IDs.
+ * @return string[]
+ */
+function mrn_editor_lockdown_get_standard_closed_metaboxes( $additional = array() ) {
+	$additional = is_array( $additional ) ? $additional : array();
+
+	return array_values(
+		array_unique(
+			array_merge(
+				array(
+					'mrn-builder-layout-allowlist',
+					'mrn-config-helper-breadcrumbs',
+					mrn_editor_lockdown_get_schema_bridge_metabox_id(),
+				),
+				$additional
+			)
+		)
+	);
+}
+
+/**
  * Get enforced metabox layout settings for supported post types.
  *
  * @return array<string, array<string, mixed>>
@@ -115,36 +223,29 @@ function mrn_editor_lockdown_get_layouts() {
 		'post' => array(
 			'screen_layout' => 2,
 			'meta_box_order' => array(
-				'normal'   => 'postexcerpt,slugdiv,authordiv',
-				'side'     => 'acf-group_69a1c0f3a1b01,categorydiv,tagsdiv-post_tag,submitdiv',
+				'normal'   => 'postexcerpt,slugdiv',
+				'side'     => mrn_editor_lockdown_get_standard_side_order( array( 'categorydiv', 'tagsdiv-post_tag' ) ),
 				'advanced' => 'ame-cpe-content-permissions',
 			),
-			'closed' => array(
-				'ame-cpe-content-permissions',
-			),
+			'closed' => mrn_editor_lockdown_get_standard_closed_metaboxes( array( 'ame-cpe-content-permissions' ) ),
 		),
 		'page' => array(
 			'screen_layout' => 2,
 			'meta_box_order' => array(
-				'normal'   => 'slugdiv,authordiv,revisionsdiv',
-				'side'     => 'acf-group_69a1c0f3a1b01,submitdiv,pageparentdiv',
+				'normal'   => 'slugdiv,revisionsdiv',
+				'side'     => mrn_editor_lockdown_get_standard_side_order( array( 'categorydiv', 'tagsdiv-post_tag' ) ),
 				'advanced' => 'ame-cpe-content-permissions',
 			),
-			'closed' => array(
-				'pageparentdiv',
-				'ame-cpe-content-permissions',
-			),
+			'closed' => mrn_editor_lockdown_get_standard_closed_metaboxes( array( 'ame-cpe-content-permissions' ) ),
 		),
 		'gallery' => array(
 			'screen_layout' => 2,
 			'meta_box_order' => array(
 				'normal'   => 'slugdiv,revisionsdiv',
-				'side'     => 'submitdiv,gallery_categorydiv,tagsdiv-gallery_tag,postimagediv',
+				'side'     => mrn_editor_lockdown_get_standard_side_order( array( 'gallery_categorydiv', 'gallery_tagdiv' ) ),
 				'advanced' => 'ame-cpe-content-permissions',
 			),
-			'closed' => array(
-				'ame-cpe-content-permissions',
-			),
+			'closed' => mrn_editor_lockdown_get_standard_closed_metaboxes( array( 'ame-cpe-content-permissions' ) ),
 		),
 	);
 
@@ -175,10 +276,10 @@ function mrn_editor_lockdown_get_reusable_layout() {
 		'screen_layout' => 2,
 		'meta_box_order' => array(
 			'normal'   => 'slugdiv,revisionsdiv',
-			'side'     => mrn_editor_lockdown_prepend_seo_helper_to_side_order( 'submitdiv' ),
+			'side'     => mrn_editor_lockdown_get_standard_side_order(),
 			'advanced' => '',
 		),
-		'closed' => array(),
+		'closed' => mrn_editor_lockdown_get_standard_closed_metaboxes(),
 	);
 
 	return $layout;
@@ -243,28 +344,39 @@ function mrn_editor_lockdown_get_dynamic_post_types() {
 /**
  * Get the fallback locked layout for dynamically discovered classic-editor screens.
  *
+ * @param string $post_type Post type slug.
  * @return array<string, mixed>
  */
-function mrn_editor_lockdown_get_dynamic_layout() {
-	static $layout = null;
+function mrn_editor_lockdown_get_dynamic_layout( $post_type = '' ) {
+	static $base_layout = null;
 
-	if ( null !== $layout ) {
-		return $layout;
+	if ( null === $base_layout ) {
+		$base_layout = array(
+			'screen_layout' => 2,
+			'meta_box_order' => array(
+				'normal'   => 'slugdiv,revisionsdiv',
+				'side'     => mrn_editor_lockdown_get_standard_side_order( array( 'categorydiv', 'tagsdiv-post_tag' ) ),
+				'advanced' => 'ame-cpe-content-permissions',
+			),
+			'closed' => mrn_editor_lockdown_get_standard_closed_metaboxes( array( 'ame-cpe-content-permissions' ) ),
+		);
 	}
 
-	$layout = array(
-		'screen_layout' => 2,
-		'meta_box_order' => array(
-			'normal'   => 'slugdiv,revisionsdiv',
-			'side'     => mrn_editor_lockdown_prepend_seo_helper_to_side_order( 'submitdiv,authordiv,pageparentdiv,categorydiv,tagsdiv-post_tag,postimagediv' ),
-			'advanced' => 'ame-cpe-content-permissions',
-		),
-		'closed' => array(
-			'ame-cpe-content-permissions',
-		),
-	);
+	$post_type = sanitize_key( (string) $post_type );
+	$layout    = $base_layout;
 
-	return $layout;
+	/**
+	 * Filter the locked fallback layout for one dynamically discovered CPT.
+	 *
+	 * Stack-owned CPT registries can use this to place their specific metaboxes
+	 * without replacing the shared two-column, SEO-first layout contract.
+	 *
+	 * @param array<string, mixed> $layout    Locked layout settings.
+	 * @param string               $post_type Post type slug.
+	 */
+	$filtered = apply_filters( 'mrn_editor_lockdown_dynamic_layout', $layout, $post_type );
+
+	return is_array( $filtered ) ? $filtered : $layout;
 }
 
 /**
@@ -295,7 +407,7 @@ function mrn_editor_lockdown_get_layout_for_post_type( $post_type ) {
 	}
 
 	if ( in_array( $post_type, mrn_editor_lockdown_get_dynamic_post_types(), true ) ) {
-		$cache[ $post_type ] = mrn_editor_lockdown_get_dynamic_layout();
+		$cache[ $post_type ] = mrn_editor_lockdown_get_dynamic_layout( $post_type );
 		return $cache[ $post_type ];
 	}
 
@@ -349,6 +461,10 @@ function mrn_editor_lockdown_is_classic_post_screen( $screen ) {
 	}
 
 	if ( 'post' !== $screen->base ) {
+		return false;
+	}
+
+	if ( in_array( sanitize_key( (string) $screen->post_type ), array( 'acf-field', 'acf-field-group' ), true ) ) {
 		return false;
 	}
 
@@ -654,6 +770,61 @@ function mrn_editor_lockdown_register_option_filters() {
 add_action( 'init', 'mrn_editor_lockdown_register_option_filters', 20 );
 
 /**
+ * Keep Admin Menu Editor from removing the required SEO Helper metabox.
+ *
+ * Imported AME screen configurations can retain `isPresent=false` for a box
+ * that was unavailable when the export was created. SEO Helper is part of the
+ * locked editor contract, so normalize existing screen entries back to present.
+ *
+ * @return void
+ */
+function mrn_editor_lockdown_repair_ame_seo_metabox_config() {
+	$option_name = 'ws_ame_meta_boxes';
+	$raw_config  = get_option( $option_name, '' );
+
+	if ( ! is_string( $raw_config ) || '' === $raw_config ) {
+		return;
+	}
+
+	$config = json_decode( $raw_config, true );
+
+	if ( ! is_array( $config ) || empty( $config['screens'] ) || ! is_array( $config['screens'] ) ) {
+		return;
+	}
+
+	$metabox_id = mrn_editor_lockdown_get_seo_helper_metabox_id();
+	$changed    = false;
+
+	foreach ( $config['screens'] as &$screen ) {
+		if ( ! is_array( $screen ) ) {
+			continue;
+		}
+
+		foreach ( array( 'metaBoxes:', 'metaBoxes' ) as $collection_key ) {
+			if ( empty( $screen[ $collection_key ][ $metabox_id ] ) || ! is_array( $screen[ $collection_key ][ $metabox_id ] ) ) {
+				continue;
+			}
+
+			$box = &$screen[ $collection_key ][ $metabox_id ];
+
+			if ( empty( $box['isPresent'] ) || empty( $box['wasPresent'] ) ) {
+				$box['isPresent']  = true;
+				$box['wasPresent'] = true;
+				$changed           = true;
+			}
+
+			unset( $box );
+		}
+	}
+	unset( $screen );
+
+	if ( $changed ) {
+		update_option( $option_name, wp_json_encode( $config ), false );
+	}
+}
+add_action( 'admin_init', 'mrn_editor_lockdown_repair_ame_seo_metabox_config', 0 );
+
+/**
  * Output light admin CSS to remove easy layout customization paths.
  *
  * @return void
@@ -678,7 +849,8 @@ function mrn_editor_lockdown_admin_css() {
 			content: '';
 			position: fixed;
 			inset: 0;
-			background: rgba(17, 20, 24, 0.86);
+			background: rgba(255, 255, 255, 0.9);
+			backdrop-filter: blur(3px);
 			z-index: 100000;
 		}
 
@@ -688,13 +860,14 @@ function mrn_editor_lockdown_admin_css() {
 			position: fixed;
 			top: 50%;
 			left: 50%;
-			width: 48px;
-			height: 48px;
-			margin: -40px 0 0 -24px;
+			width: 42px;
+			height: 42px;
+			margin: -38px 0 0 -21px;
 			border-radius: 50%;
-			border: 4px solid rgba(255, 255, 255, 0.35);
-			border-top-color: #ffffff;
-			animation: mrnEditorPageLoaderSpin 0.9s linear infinite;
+			background: conic-gradient(from 90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.36) 36%, #ffffff 72%, rgba(255, 255, 255, 0));
+			-webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+			mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+			animation: mrnEditorPageLoaderSpin 0.82s linear infinite;
 			z-index: 100001;
 		}
 
@@ -704,91 +877,104 @@ function mrn_editor_lockdown_admin_css() {
 			left: 50%;
 			width: min(88vw, 520px);
 			margin-top: 24px;
+			padding: 14px 18px;
 			transform: translateX(-50%);
 			text-align: center;
-			color: #111111;
+			color: #ffffff;
+			background: #111111;
+			border: 1px solid rgba(255, 255, 255, 0.16);
+			border-radius: 8px;
+			box-shadow: 0 18px 46px rgba(17, 17, 17, 0.24);
 			font-size: 14px;
 			font-weight: 600;
-			letter-spacing: 0.02em;
+			letter-spacing: 0;
 			line-height: 1.4;
 			text-wrap: balance;
 			z-index: 100002;
 			pointer-events: none;
-			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 		}
 
 		body.post-php:not(.mrn-editor-page-ready):not(.mrn-editor-loading-message-live) #wpwrap::before,
 		body.post-new-php:not(.mrn-editor-page-ready):not(.mrn-editor-loading-message-live) #wpwrap::before {
-			content: 'Summoning your editing desk...';
+			content: 'Preparing the editor workspace...';
 			position: fixed;
 			top: 50%;
 			left: 50%;
 			width: min(88vw, 520px);
 			margin-top: 24px;
+			padding: 14px 18px;
 			transform: translateX(-50%);
 			text-align: center;
-			color: #f4f7fb;
+			color: #ffffff;
+			background: #111111;
+			border: 1px solid rgba(255, 255, 255, 0.16);
+			border-radius: 8px;
+			box-shadow: 0 18px 46px rgba(17, 17, 17, 0.24);
 			font-size: 14px;
 			font-weight: 600;
-			letter-spacing: 0.02em;
+			letter-spacing: 0;
 			line-height: 1.4;
 			text-wrap: balance;
 			z-index: 100002;
 			pointer-events: none;
-			text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 		}
 
 	<?php endif; ?>
 
 	<?php if ( $loading_indicator_enabled ) : ?>
 		html.mrn-editor-loading-indicator-live::before {
-			content: '';
+			content: 'Preparing editor controls...';
 			position: fixed;
 			top: 50%;
 			left: 50%;
-			width: 56px;
-			height: 56px;
-			margin: -74px 0 0 -28px;
-			border-radius: 50%;
-			border: 5px solid rgba(255, 255, 255, 0.28);
-			border-top-color: #ffffff;
-			background: rgba(17, 20, 24, 0.42);
-			box-shadow: 0 0 0 8px rgba(17, 20, 24, 0.14), 0 10px 24px rgba(0, 0, 0, 0.22);
-			z-index: 100004;
+			width: min(88vw, 360px);
+			min-height: 34px;
+			padding: 20px 28px 20px 82px;
+			box-sizing: border-box;
+			transform: translate(-50%, -50%);
+			border: 1px solid rgba(255, 255, 255, 0.16);
+			border-radius: 8px;
+			background: #111111;
+			box-shadow: 0 18px 46px rgba(17, 17, 17, 0.24);
+			color: #ffffff;
+			font-size: 14px;
+			font-weight: 700;
+			letter-spacing: 0;
+			line-height: 1.35;
+			text-align: left;
 			pointer-events: none;
-			animation: mrnEditorPageLoaderSpin 0.82s linear infinite;
+			z-index: 100003;
 		}
 
-			html.mrn-editor-loading-indicator-live::after {
-				content: 'Preparing editor controls...';
-				position: fixed;
-				inset: 0;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				padding-top: 26px;
-				background: rgba(255, 255, 255, 0.38);
-				color: #111111;
-				font-size: 15px;
-				font-weight: 700;
-				letter-spacing: 0.02em;
-				line-height: 1.25;
-				text-shadow: none;
-				z-index: 100003;
-				pointer-events: none;
-				animation: mrnEditorLoaderPulse 1.05s ease-in-out infinite;
-			}
+		html.mrn-editor-loading-indicator-live::after {
+			content: '';
+			position: fixed;
+			top: 50%;
+			left: calc(50% - min(44vw, 180px) + 42px);
+			width: 34px;
+			height: 34px;
+			margin: -17px 0 0 -17px;
+			border-radius: 50%;
+			background: conic-gradient(from 90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.36) 36%, #ffffff 72%, rgba(255, 255, 255, 0));
+			-webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+			mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+			pointer-events: none;
+			z-index: 100004;
+			animation: mrnEditorPageLoaderSpin 0.78s linear infinite;
+		}
 
 		@media (max-width: 782px) {
-			html.mrn-editor-loading-indicator-live::after {
-				padding-top: 22px;
+			html.mrn-editor-loading-indicator-live::before {
+				width: min(90vw, 320px);
+				padding: 18px 22px 18px 74px;
 				font-size: 13px;
 			}
 
-			html.mrn-editor-loading-indicator-live::before {
-				width: 48px;
-				height: 48px;
-				margin: -66px 0 0 -24px;
+			html.mrn-editor-loading-indicator-live::after {
+				left: calc(50% - min(45vw, 160px) + 38px);
+				width: 30px;
+				height: 30px;
+				margin: -15px 0 0 -15px;
 			}
 		}
 	<?php endif; ?>
@@ -796,17 +982,6 @@ function mrn_editor_lockdown_admin_css() {
 		@keyframes mrnEditorPageLoaderSpin {
 			to {
 				transform: rotate(360deg);
-			}
-		}
-
-		@keyframes mrnEditorLoaderPulse {
-			0%,
-			100% {
-				opacity: 0.95;
-			}
-
-			50% {
-				opacity: 0.72;
 			}
 		}
 
@@ -967,6 +1142,7 @@ function mrn_editor_lockdown_admin_css() {
 
 			html.mrn-editor-loading-indicator-live::after {
 				animation: none;
+				background: conic-gradient(from 90deg, rgba(255, 255, 255, 0.18), #ffffff 70%, rgba(255, 255, 255, 0.18));
 			}
 		}
 
@@ -1032,35 +1208,21 @@ function mrn_editor_lockdown_admin_js() {
 			var loadingMessageStartStorageKey = 'mrnEditorLoadingMessageStart:v1:' + postType;
 			var loadingMaskEnabled = <?php echo wp_json_encode( mrn_editor_lockdown_is_loading_mask_enabled() ); ?>;
 			var loadingIndicatorEnabled = <?php echo wp_json_encode( mrn_editor_lockdown_is_loading_indicator_enabled() ); ?>;
-			var loadingMessageIcons = ['🚀', '💣', '🧨', '⚡', '🛰️', '🛠️', '🎯', '🧪', '🔥', '✨'];
 			var loadingMessageStartPhrases = [
-				'Aligning your metaboxes',
-				'Bribing the sidebar gremlins',
-				'Polishing the publish button',
-				'Checking every tiny click target',
-				'Sharpening your headline pencils',
-				'Warming up the permalink engine',
-				'Untangling classic editor cables',
-				'Tuning the SEO helper radar',
-				'Buffing up content controls',
-				'Loading keyboard shortcut fuel',
-				'Calibrating preview thrusters',
-				'Dusting off the formatting toolbox',
-				'Rehearsing your save-draft backup plan',
-				'Smoothing out admin panel corners',
-				'Syncing title fields and slug magic',
-				'Packing extra speed into this screen',
-				'Running one last quality checkpoint',
-				'Prepping your content launchpad',
-				'Teaching buttons to behave politely',
-				'Deploying tiny UX elves'
+				'Preparing editor controls',
+				'Loading content fields',
+				'Organizing sidebar panels',
+				'Checking editor state',
+				'Loading publishing tools',
+				'Preparing reusable content',
+				'Syncing editor settings',
+				'Finalizing admin controls'
 			];
 			var loadingMessageEndPhrases = [
-				'for liftoff',
-				'before the big reveal',
-				'so everything feels snappy',
-				'without waking the bugs',
-				'with cinematic confidence'
+				'for this page',
+				'for a smoother edit',
+				'before the screen is ready',
+				'with the current layout'
 			];
 			var loadingMessages = [];
 			var loadingStartIndex;
@@ -1079,7 +1241,7 @@ function mrn_editor_lockdown_admin_js() {
 					return;
 				}
 
-				loadingMessageEl.textContent = loadingMessages[index % loadingMessages.length] + ' ' + loadingMessageIcons[index % loadingMessageIcons.length];
+				loadingMessageEl.textContent = loadingMessages[index % loadingMessages.length];
 			}
 
 			function getRandomLoadingMessageStartIndex() {
@@ -1454,3 +1616,132 @@ function mrn_editor_lockdown_admin_js() {
 	<?php
 }
 add_action( 'admin_print_footer_scripts', 'mrn_editor_lockdown_admin_js' );
+
+/**
+ * Normalize a saved Admin Menu Editor item when it represents a core update surface.
+ *
+ * @param array<string, mixed> $item        AME menu item.
+ * @param string               $menu_title  Stable menu title without dynamic badge markup.
+ * @param string               $capability  Required capability.
+ * @param string               $file        WordPress admin file.
+ * @return bool True when the item changed.
+ */
+function mrn_editor_lockdown_normalize_ame_item( &$item, $menu_title, $capability, $file ) {
+	if ( ! is_array( $item ) ) {
+		return false;
+	}
+
+	$changed = false;
+
+	if ( ! empty( $item['hidden'] ) ) {
+		$item['hidden'] = false;
+		$changed        = true;
+	}
+
+	if ( isset( $item['hidden_from_actor']['role:administrator'] ) ) {
+		unset( $item['hidden_from_actor']['role:administrator'] );
+		$changed = true;
+	}
+
+	if ( empty( $item['grant_access'] ) || ! is_array( $item['grant_access'] ) ) {
+		$item['grant_access'] = array();
+	}
+
+	if ( ! isset( $item['grant_access']['role:administrator'] ) || true !== $item['grant_access']['role:administrator'] ) {
+		$item['grant_access']['role:administrator'] = true;
+		$changed                                    = true;
+	}
+
+	if ( empty( $item['defaults'] ) || ! is_array( $item['defaults'] ) ) {
+		$item['defaults'] = array();
+	}
+
+	$defaults = array(
+		'menu_title'   => $menu_title,
+		'access_level' => $capability,
+		'file'         => $file,
+	);
+
+	foreach ( $defaults as $key => $value ) {
+		if ( ! isset( $item['defaults'][ $key ] ) || $value !== $item['defaults'][ $key ] ) {
+			$item['defaults'][ $key ] = $value;
+			$changed                  = true;
+		}
+	}
+
+	return $changed;
+}
+
+/**
+ * Repair AME configs that imported stale update badges or restricted update screens.
+ *
+ * @return bool True when an option changed.
+ */
+function mrn_editor_lockdown_repair_admin_update_menu_config() {
+	$changed = false;
+	$config  = get_option( 'ws_menu_editor_pro' );
+
+	if ( is_array( $config ) && isset( $config['custom_menu']['tree'] ) && is_array( $config['custom_menu']['tree'] ) ) {
+		$tree = &$config['custom_menu']['tree'];
+
+		if ( isset( $tree['index.php']['items'] ) && is_array( $tree['index.php']['items'] ) ) {
+			foreach ( $tree['index.php']['items'] as &$item ) {
+				$file        = isset( $item['defaults']['file'] ) ? (string) $item['defaults']['file'] : '';
+				$template_id = isset( $item['template_id'] ) ? (string) $item['template_id'] : '';
+
+				if ( 'update-core.php' === $file || 'index.php>update-core.php' === $template_id ) {
+					$changed = mrn_editor_lockdown_normalize_ame_item( $item, 'Updates', 'update_core', 'update-core.php' ) || $changed;
+				}
+			}
+			unset( $item );
+		}
+
+		if ( isset( $tree['plugins.php'] ) && is_array( $tree['plugins.php'] ) ) {
+			$changed = mrn_editor_lockdown_normalize_ame_item( $tree['plugins.php'], 'Plugins', 'activate_plugins', 'plugins.php' ) || $changed;
+		}
+
+		if ( isset( $tree['themes.php'] ) && is_array( $tree['themes.php'] ) && isset( $tree['themes.php']['items'] ) && is_array( $tree['themes.php']['items'] ) ) {
+			foreach ( $tree['themes.php']['items'] as &$item ) {
+				$file        = isset( $item['defaults']['file'] ) ? (string) $item['defaults']['file'] : '';
+				$template_id = isset( $item['template_id'] ) ? (string) $item['template_id'] : '';
+
+				if ( 'themes.php' === $file || 'themes.php>themes.php' === $template_id ) {
+					$changed = mrn_editor_lockdown_normalize_ame_item( $item, 'Themes', 'switch_themes', 'themes.php' ) || $changed;
+				}
+			}
+			unset( $item );
+		}
+
+		if ( $changed ) {
+			update_option( 'ws_menu_editor_pro', $config, false );
+		}
+	}
+
+	$toolbar_changed = false;
+	$toolbar_config  = get_option( 'ws_abe_admin_bar_settings' );
+
+	if ( is_array( $toolbar_config ) && isset( $toolbar_config['nodes']['updates'] ) ) {
+		unset( $toolbar_config['nodes']['updates'] );
+		$toolbar_changed = true;
+	}
+
+	if ( $toolbar_changed ) {
+		update_option( 'ws_abe_admin_bar_settings', $toolbar_config, false );
+	}
+
+	return $changed || $toolbar_changed;
+}
+
+/**
+ * Keep core update screens available even when a stale AME export is imported.
+ *
+ * @return void
+ */
+function mrn_editor_lockdown_repair_admin_update_menu_config_on_admin() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	mrn_editor_lockdown_repair_admin_update_menu_config();
+}
+add_action( 'admin_init', 'mrn_editor_lockdown_repair_admin_update_menu_config_on_admin', 1 );

@@ -47,6 +47,10 @@ Phase 2 runtime for a performance-first Google Fonts workflow.
   - build now persists posted builder values first (so separate Save is not required)
   - build auto-enables frontend runtime when disabled and reports that in the success notice
   - `Clear Local Build` removes cached local files and falls back to remote runtime
+- Lean remote request contract:
+  - `font_faces` settings can override requested faces per family
+  - `mrn_google_fonts_family_faces` can filter requested faces before the Google CSS2 URL is built
+  - legacy weight fields and italic toggles keep their previous behavior when no face map is supplied
 - Settings transfer:
   - Google Fonts appears as a selectable section in the existing Site Styles Import/Export box
   - local built files are not exported and should be rebuilt after import
@@ -90,6 +94,30 @@ Override in a child theme stylesheet loaded after Google Fonts runtime:
 
 If enqueueing a separate child-theme CSS file, ensure it is loaded after runtime styles so the cascade wins.
 
+## Lean Face Request Contract
+
+Sites can trim unused remote font faces without changing CSS variable output or style handles. Return a family-keyed face map from `mrn_google_fonts_family_faces`:
+
+```php
+add_filter(
+	'mrn_google_fonts_family_faces',
+	function ( array $families ): array {
+		$families['Source Sans 3'] = array(
+			'normal' => array( 300, 400, 600, 700 ),
+			'italic' => array(),
+		);
+		$families['Lora'] = array(
+			'normal' => array( 600, 700 ),
+			'italic' => array( 600, 700 ),
+		);
+
+		return $families;
+	}
+);
+```
+
+The same shape is accepted in the optional `font_faces` settings key. When no face map is supplied, the builder keeps the older behavior: configured weights are requested as normal faces, and the italic toggle requests matching italic faces.
+
 ## Frontend QA Checklist
 
 Use this quick pass before release on stack-owned pages:
@@ -112,9 +140,10 @@ Run this lightweight check before release when TinyMCE font-format behavior chan
 
 ```bash
 php plugins/mrn-google-fonts/tests/tinymce-font-formats-regression.php
+php plugins/mrn-google-fonts/tests/google-fonts-request-faces-regression.php
 ```
 
-It asserts that injected TinyMCE `font_formats` remain alphabetically sorted and free of duplicate labels.
+These checks assert that injected TinyMCE `font_formats` remain alphabetically sorted and free of duplicate labels, and that the Google Fonts CSS2 URL builder preserves legacy output while supporting lean per-family face maps.
 
 ## Not Implemented Yet
 
