@@ -1233,7 +1233,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_external_widget' => array(
 								'key'        => 'layout_mrn_external_widget',
 								'name'       => 'external_widget',
-								'label'      => 'External - widget/iFrame',
+								'label'      => 'Shortcode / Embed',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(

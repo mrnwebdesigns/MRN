@@ -929,8 +929,8 @@ function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name,
 	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog, $field_name );
 	$default_map        = array(
 		'page_hero_rows'          => array( 'basic_block', 'two_column_split' ),
-		'page_content_rows'       => array( 'basic_block', 'image_content', 'two_column_split', 'reusable_block', 'grid', 'faq_jump_nav' ),
-		'page_after_content_rows' => array( 'basic_block', 'two_column_split', 'logos', 'reusable_block', 'cta', 'faq_jump_nav' ),
+		'page_content_rows'       => array( 'basic_block', 'image_content', 'two_column_split', 'reusable_block', 'grid', 'external_widget', 'faq_jump_nav' ),
+		'page_after_content_rows' => array( 'basic_block', 'two_column_split', 'logos', 'reusable_block', 'cta', 'external_widget', 'faq_jump_nav' ),
 		'page_sidebar_rows'       => array( 'body_text', 'content_lists', 'basic_block', 'cta', 'image_content', 'external_widget', 'faq_jump_nav' ),
 	);
 	$alias_map          = array(
