@@ -2408,6 +2408,27 @@ body[data-mrn-surface="dark"] .mrn-site-header__utility-nav a {
 	transition: background-color 220ms linear, color 220ms linear, border-color 220ms linear, box-shadow 220ms linear, filter 220ms linear;
 }
 
+.mrn-motion-effect--stacked-cards .mrn-ui__items {
+	display: block;
+}
+
+.mrn-motion-effect--stacked-cards .mrn-ui__items > .mrn-ui__item {
+	filter: brightness(var(--mrn-stack-brightness, 1));
+	position: sticky;
+	top: calc(var(--mrn-stack-top, 2rem) + (var(--mrn-stack-index, 0) * var(--mrn-stack-offset, 1rem)));
+	transform: scale(var(--mrn-stack-scale, 1));
+	transform-origin: center top;
+	transition: filter 80ms linear, transform 80ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mrn-motion-effect--stacked-cards .mrn-ui__items > .mrn-ui__item {
+		filter: none;
+		transform: none;
+		transition: none;
+	}
+}
+
 .mrn-content-builder__row .mrn-ui__label,
 .mrn-reusable-block .mrn-ui__label {
 	font-size: 0.875rem;
