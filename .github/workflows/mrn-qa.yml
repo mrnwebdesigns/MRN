@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
+      MRN_QA_STACK_ROOT: ${{ github.workspace }}
       MRN_QA_CODE_ANALYSIS_SCOPE: all
       MRN_QA_RUN_SMOKE: never
       MRN_QA_RUN_ACCESSIBILITY: never
