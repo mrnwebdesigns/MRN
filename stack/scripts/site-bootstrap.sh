@@ -1515,6 +1515,62 @@ apply_wp_defaults() {
   fi
 }
 
+reconcile_development_environment_policy() {
+  local plugin_slug hook
+  local -a disabled_plugins=(
+    searchwp
+    searchwp-live-ajax-search
+    searchwp-editor-performance
+    wpmu-dev-seo
+    smartcrawl-seo
+  )
+  local -a disabled_cron_hooks=(
+    searchwp_indexer_cron
+    searchwp_index_controller_cron
+    searchwp_maintenance
+    searchwp_usage_tracking
+    searchwp_email_summaries_cron
+    wds_sitemap_validity_check
+    wds_cron_download_geodb
+    wds_daily_moz_data_hook
+  )
+
+  if ! run_wp config set MRN_SEARCHWP_POLICY disabled --type=constant; then
+    add_warning "Failed to set MRN_SEARCHWP_POLICY=disabled in wp-config.php"
+  fi
+  if ! run_wp config set MRN_SEO_INDEXING_POLICY disabled --type=constant; then
+    add_warning "Failed to set MRN_SEO_INDEXING_POLICY=disabled in wp-config.php"
+  fi
+
+  for plugin_slug in "${disabled_plugins[@]}"; do
+    if ! run_wp plugin is-installed "${plugin_slug}" >/dev/null 2>&1; then
+      continue
+    fi
+    if run_wp plugin is-active "${plugin_slug}" >/dev/null 2>&1; then
+      if ! run_wp plugin deactivate "${plugin_slug}" >/dev/null 2>&1; then
+        add_warning "Failed to deactivate development-disabled plugin: ${plugin_slug}"
+        continue
+      fi
+      echo "Environment policy deactivated plugin: ${plugin_slug}"
+    fi
+    if run_wp plugin is-active "${plugin_slug}" >/dev/null 2>&1; then
+      add_warning "Development-disabled plugin remains active: ${plugin_slug}"
+    fi
+  done
+
+  for hook in "${disabled_cron_hooks[@]}"; do
+    run_wp cron event delete "${hook}" >/dev/null 2>&1 || true
+    if run_wp eval "exit(wp_next_scheduled('${hook}') === false ? 0 : 1);" >/dev/null 2>&1; then
+      continue
+    fi
+    add_warning "Development-disabled cron hook remains scheduled: ${hook}"
+  done
+
+  if ! run_wp cache flush >/dev/null 2>&1; then
+    add_warning "Failed to flush the WordPress object cache after environment reconciliation"
+  fi
+}
+
 provision_uptime_robot_check_page() {
   local page_code page_output
 
@@ -1746,6 +1802,7 @@ main() {
   provision_uptime_robot_check_page
   run_importers
   provision_external_services
+  reconcile_development_environment_policy
   ensure_updraft_local_retention_schedule
   sudo -u "${SITE_USER}" touch "${SITE_PATH}/${MARKER_NAME}"
   echo "Bootstrap complete: ${SITE_PATH}"
