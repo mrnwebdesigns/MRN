@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Public Security Hardening
  * Description: Shared public hardening for MRN brochure/client sites.
- * Version: 0.3.2
+ * Version: 0.3.3
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION' ) ) {
-	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.3.2' );
+	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.3.3' );
 }
 
 /**
@@ -99,7 +99,14 @@ function mrn_public_security_disallow_uptime_robot_check_crawling( $output ) {
 	$directive = 'Disallow: /' . mrn_public_security_get_uptime_robot_check_slug();
 
 	if ( false === strpos( $output, $directive ) ) {
-		$output = rtrim( $output ) . "\n" . $directive . "\n";
+		$matched = preg_match( '/^User-agent:[\t ]*\*[\t ]*\R/im', $output, $matches, PREG_OFFSET_CAPTURE );
+
+		if ( 1 === $matched && isset( $matches[0][0], $matches[0][1] ) ) {
+			$insert_at = (int) $matches[0][1] + strlen( $matches[0][0] );
+			$output    = substr( $output, 0, $insert_at ) . $directive . "\n" . substr( $output, $insert_at );
+		} else {
+			$output = "User-agent: *\n" . $directive . "\n" . ltrim( $output );
+		}
 	}
 
 	return $output;

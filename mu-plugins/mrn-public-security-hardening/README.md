@@ -9,7 +9,7 @@ Shared MU plugin for public-facing security hardening on normal MRN brochure and
 - Removes `author_name` and `author_url` from oEmbed responses.
 - Returns early REST `rest_forbidden` responses for unauthenticated write requests to known admin-only scanner-noise routes.
 - Serves `/.well-known/security.txt` from WordPress/plugin logic.
-- Protects the stack-owned `/uptimerobot-check/` health page with `noindex`, `nofollow`, `noarchive`, an `X-Robots-Tag` response header, a `robots.txt` disallow rule, and core sitemap exclusion.
+- Protects the stack-owned `/uptimerobot-check/` health page with `noindex`, `nofollow`, `noarchive`, an `X-Robots-Tag` response header, a `robots.txt` disallow rule in the first wildcard crawler block for Cloudflare compatibility, and core sitemap exclusion.
 - Adds a read-only admin status page at `Advanced > Public Security` when the MRN Advanced admin menu is available.
 
 ## Admin Status Page

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Public Security Hardening
  * Description: Loads the MRN Public Security Hardening MU plugin from its subfolder.
- * Version: 0.3.2
+ * Version: 0.3.3
  *
  * Bootstrap loader for the MRN Public Security Hardening MU plugin.
  */
