@@ -67,8 +67,9 @@
   - a nonce-protected admin connection test against UptimeRobot's `getMonitors` API
   - a shared external-API secret resolution pattern for future services
   - current-site monitor management for UptimeRobot:
-    - fetch matching monitors for the current site URL
-    - add a new monitor for the current site
+    - default to the stack-owned `/uptimerobot-check/` URL
+    - fetch matching monitors for the dedicated health-check URL
+    - add a new monitor during the production-launch workflow
     - remove an existing matching monitor
 - Uses the WordPress media modal on its own settings page for social icon selection.
 - Also supports a searchable Font Awesome chooser for social icons when the shared asset layer is available.
@@ -232,6 +233,8 @@
   - environment variable `MRN_UPTIME_ROBOT_API_KEY`
   - environment variable `UPTIME_ROBOT_API_KEY`
   - database fallback in `mrn_helper_settings`
+- New-site stack bootstrap creates and protects `/uptimerobot-check/` but defers UptimeRobot monitor creation by default until production launch.
+- `STACK_BOOTSTRAP_UPTIME_ROBOT_AUTO_PROVISION=1` remains an explicit override for environments that intentionally provision monitoring during bootstrap.
 - Future API keys should follow the same external-first, DB-fallback pattern instead of introducing one-off storage logic.
 - Stack bootstrap now seeds the Config Helper option from a stack secret payload:
   - importer mapping: `option_json|secret:mrn-config-helper-settings.json|mrn_helper_settings`
