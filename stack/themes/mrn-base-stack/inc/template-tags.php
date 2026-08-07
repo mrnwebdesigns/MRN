@@ -989,7 +989,8 @@ if ( ! function_exists( 'mrn_base_stack_get_header_utility_message_markup' ) ) :
 			<?php endif; ?>
 			<?php if ( '' !== $options['link']['url'] ) : ?>
 				<a class="<?php echo esc_attr( implode( ' ', array_unique( $link_classes ) ) ); ?>" href="<?php echo esc_url( $options['link']['url'] ); ?>"<?php echo '_blank' === $options['link']['target'] ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
-					<?php echo esc_html( $options['link']['title'] ) . mrn_base_stack_get_header_utility_message_link_icon_markup( $options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon helper escapes classes, styles, and media attributes. ?>
+					<span class="mrn-site-header__utility-message-link-label"><?php echo esc_html( $options['link']['title'] ); ?></span>
+					<?php echo mrn_base_stack_get_header_utility_message_link_icon_markup( $options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon helper escapes classes, styles, and media attributes. ?>
 				</a>
 			<?php endif; ?>
 		</div>
