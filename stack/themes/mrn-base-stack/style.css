@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.2.93
+Version: 1.2.95
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -817,6 +817,11 @@ body {
 	grid-template-columns: var(--mrn-hf-layout-columns, minmax(0, 1fr));
 }
 
+.site-header.mrn-theme-hf-layout-stack {
+	display: block;
+}
+
+.mrn-theme-hf-layout--width-content,
 .mrn-theme-hf-layout-grid--width-content {
 	margin-left: auto;
 	margin-right: auto;
@@ -824,6 +829,7 @@ body {
 	width: min(100%, calc(var(--mrn-shell-content-width) + (2 * var(--mrn-shell-gutter))));
 }
 
+.mrn-theme-hf-layout--width-wide,
 .mrn-theme-hf-layout-grid--width-wide {
 	margin-left: auto;
 	margin-right: auto;
@@ -831,24 +837,29 @@ body {
 	width: min(100%, calc(var(--mrn-shell-wide-width) + (2 * var(--mrn-shell-gutter))));
 }
 
+.mrn-theme-hf-layout--width-full,
 .mrn-theme-hf-layout-grid--width-full {
 	max-width: none;
 	width: 100%;
 }
 
+.site-header.mrn-theme-hf-layout--width-full,
 .site-header.mrn-theme-hf-layout-grid--width-full,
+.site-footer.mrn-theme-hf-layout--width-full,
 .site-footer.mrn-theme-hf-layout-grid--width-full {
 	padding-left: 0;
 	padding-right: 0;
 }
 
 .site-header.mrn-theme-hf-layout-grid,
+.site-header.mrn-theme-hf-layout-stack,
 .site-footer.mrn-theme-hf-layout-grid {
 	background-color: var(--mrn-theme-hf-bg-color, transparent);
 	color: var(--mrn-theme-hf-font-color, inherit);
 }
 
 .site-header.mrn-theme-hf-layout-grid[data-mrn-row-spacing],
+.site-header.mrn-theme-hf-layout-stack[data-mrn-row-spacing],
 .site-footer.mrn-theme-hf-layout-grid[data-mrn-row-spacing] {
 	padding-top: var(--mrn-row-padding-top, var(--mrn-shell-section-space-tight));
 	padding-right: var(--mrn-row-padding-right, var(--mrn-shell-gutter));
@@ -860,8 +871,12 @@ body {
 	padding-bottom: var(--mrn-row-padding-bottom, var(--mrn-shell-section-space-tight));
 }
 
+.site-header.mrn-theme-hf-layout--width-content[data-mrn-row-spacing],
+.site-header.mrn-theme-hf-layout--width-wide[data-mrn-row-spacing],
 .site-header.mrn-theme-hf-layout-grid--width-content[data-mrn-row-spacing],
 .site-header.mrn-theme-hf-layout-grid--width-wide[data-mrn-row-spacing],
+.site-footer.mrn-theme-hf-layout--width-content[data-mrn-row-spacing],
+.site-footer.mrn-theme-hf-layout--width-wide[data-mrn-row-spacing],
 .site-footer.mrn-theme-hf-layout-grid--width-content[data-mrn-row-spacing],
 .site-footer.mrn-theme-hf-layout-grid--width-wide[data-mrn-row-spacing] {
 	margin-left: auto;
@@ -869,18 +884,22 @@ body {
 }
 
 .site-header.mrn-theme-hf-layout-grid a:not(.mrn-social-links__link),
+.site-header.mrn-theme-hf-layout-stack a:not(.mrn-social-links__link),
 .site-footer.mrn-theme-hf-layout-grid a:not(.mrn-social-links__link) {
 	color: var(--mrn-theme-hf-link-color, currentColor);
 }
 
 .site-header.mrn-theme-hf-layout-grid a:not(.mrn-social-links__link):hover,
 .site-header.mrn-theme-hf-layout-grid a:not(.mrn-social-links__link):focus-visible,
+.site-header.mrn-theme-hf-layout-stack a:not(.mrn-social-links__link):hover,
+.site-header.mrn-theme-hf-layout-stack a:not(.mrn-social-links__link):focus-visible,
 .site-footer.mrn-theme-hf-layout-grid a:not(.mrn-social-links__link):hover,
 .site-footer.mrn-theme-hf-layout-grid a:not(.mrn-social-links__link):focus-visible {
 	color: var(--mrn-theme-hf-link-hover-color, var(--mrn-theme-hf-link-color, currentColor));
 }
 
-.site-header.mrn-theme-hf-layout-grid .mrn-site-header__meta {
+.site-header.mrn-theme-hf-layout-grid .mrn-site-header__meta,
+.site-header.mrn-theme-hf-layout-stack .mrn-site-header__meta {
 	color: var(--mrn-theme-hf-font-color, var(--mrn-shell-muted));
 }
 
@@ -1051,7 +1070,8 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 .mrn-site-header__utility-row,
 .mrn-site-header__meta,
 .mrn-site-header__main,
-.mrn-site-header__navigation {
+.mrn-site-header__navigation,
+.mrn-site-header__utility-message-item {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
@@ -1062,6 +1082,30 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 .mrn-site-header__meta {
 	font-size: 0.95rem;
 	color: var(--mrn-shell-muted);
+}
+
+.mrn-site-header__utility-message {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.mrn-site-header__utility-message-text,
+.mrn-site-header__utility-message-link {
+	display: inline-flex;
+	align-items: center;
+}
+
+.mrn-site-header__utility-message-link {
+	color: inherit;
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+}
+
+.mrn-site-header__utility-message-link:hover,
+.mrn-site-header__utility-message-link:focus-visible {
+	text-decoration: none;
 }
 
 .mrn-site-header__menu-nav .menu,
@@ -1406,6 +1450,13 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 }
 
 .mrn-theme-hf-layout-grid__item {
+	margin: 0;
+	max-width: none;
+	min-width: 0;
+	width: 100%;
+}
+
+.mrn-theme-hf-layout-stack__item {
 	margin: 0;
 	max-width: none;
 	min-width: 0;

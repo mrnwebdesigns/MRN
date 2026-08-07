@@ -468,9 +468,362 @@
 		}
 	}
 
+	function normalizeOrder(order, items) {
+		var itemKeys = getItemKeys(items);
+		var validItems = {};
+		var normalized = [];
+		var normalizedMap = {};
+		var index;
+		var itemKey;
+
+		if (!Array.isArray(order)) {
+			order = [];
+		}
+
+		for (index = 0; index < itemKeys.length; index += 1) {
+			validItems[itemKeys[index]] = true;
+		}
+
+		for (index = 0; index < order.length; index += 1) {
+			itemKey = String(order[index] || '');
+			if (!itemKey || !validItems[itemKey] || normalizedMap[itemKey]) {
+				continue;
+			}
+
+			normalized.push(itemKey);
+			normalizedMap[itemKey] = true;
+		}
+
+		for (index = 0; index < itemKeys.length; index += 1) {
+			itemKey = itemKeys[index];
+			if (normalizedMap[itemKey]) {
+				continue;
+			}
+
+			normalized.push(itemKey);
+		}
+
+		return normalized;
+	}
+
+	function getActiveOrder(state) {
+		var activeOrder = [];
+		var index;
+		var itemKey;
+
+		for (index = 0; index < state.order.length; index += 1) {
+			itemKey = state.order[index];
+			if (state.items[itemKey]) {
+				activeOrder.push(itemKey);
+			}
+		}
+
+		return activeOrder;
+	}
+
+	function getOrderSubmitInputName(state) {
+		var storageName = state.storage && state.storage.getAttribute ? state.storage.getAttribute('name') : '';
+		var section = state.editor ? state.editor.getAttribute('data-section') || '' : '';
+
+		if (storageName) {
+			return storageName;
+		}
+
+		if (section) {
+			return 'acf[field_mrn_theme_' + section + '_layout_order]';
+		}
+
+		return '';
+	}
+
+	function ensureOrderSubmitInput(state) {
+		var section = state.editor ? state.editor.getAttribute('data-section') || '' : '';
+		var form = state.editor && state.editor.closest ? state.editor.closest('form') : null;
+		var name = getOrderSubmitInputName(state);
+		var selector;
+		var input;
+
+		if (!form && state.storage && state.storage.closest) {
+			form = state.storage.closest('form');
+		}
+
+		if (!form || !name || !section) {
+			return null;
+		}
+
+		if (state.submitInput && state.submitInput.parentNode === form) {
+			state.submitInput.name = name;
+			return state.submitInput;
+		}
+
+		selector = 'input[type="hidden"][data-mrn-theme-hf-order-submit="' + section + '"]';
+		input = form.querySelector(selector);
+		if (!input) {
+			input = document.createElement('input');
+			input.type = 'hidden';
+			input.setAttribute('data-mrn-theme-hf-order-submit', section);
+			form.appendChild(input);
+		}
+
+		input.name = name;
+		state.submitInput = input;
+
+		return input;
+	}
+
+	function ensureOrderRequestInput(state) {
+		var section = state.editor ? state.editor.getAttribute('data-section') || '' : '';
+		var form = state.editor && state.editor.closest ? state.editor.closest('form') : null;
+		var selector;
+		var input;
+
+		if (!form && state.storage && state.storage.closest) {
+			form = state.storage.closest('form');
+		}
+
+		if (!form || !section) {
+			return null;
+		}
+
+		if (state.requestInput && state.requestInput.parentNode === form) {
+			return state.requestInput;
+		}
+
+		selector = 'input[type="hidden"][data-mrn-theme-hf-order-request="' + section + '"]';
+		input = form.querySelector(selector);
+		if (!input) {
+			input = document.createElement('input');
+			input.type = 'hidden';
+			input.setAttribute('data-mrn-theme-hf-order-request', section);
+			form.appendChild(input);
+		}
+
+		input.name = 'mrn_theme_hf_layout_order[' + section + ']';
+		state.requestInput = input;
+
+		return input;
+	}
+
+	function syncOrderStorage(state, shouldDispatch) {
+		var value = JSON.stringify(normalizeOrder(state.order, state.allItems));
+		var submitInput = ensureOrderSubmitInput(state);
+		var requestInput = ensureOrderRequestInput(state);
+
+		if (state.storage) {
+			state.storage.value = value;
+			if (shouldDispatch) {
+				state.storage.dispatchEvent(new Event('input', { bubbles: true }));
+				state.storage.dispatchEvent(new Event('change', { bubbles: true }));
+			}
+		}
+
+		if (submitInput) {
+			submitInput.value = value;
+		}
+
+		if (requestInput) {
+			requestInput.value = value;
+		}
+	}
+
+	function syncOrderEditorStorageForSubmit(state) {
+		state.order = normalizeOrder(state.order, state.allItems);
+		syncOrderStorage(state, false);
+	}
+
+	function setOrderStatus(state, message) {
+		if (!state.status) {
+			return;
+		}
+
+		state.status.textContent = message || '';
+	}
+
+	function replaceActiveOrder(state, activeOrder) {
+		var activeMap = {};
+		var replaced = {};
+		var result = [];
+		var activeIndex = 0;
+		var index;
+		var itemKey;
+
+		for (index = 0; index < activeOrder.length; index += 1) {
+			activeMap[activeOrder[index]] = true;
+		}
+
+		for (index = 0; index < state.order.length; index += 1) {
+			itemKey = state.order[index];
+			if (activeMap[itemKey]) {
+				if (activeIndex < activeOrder.length) {
+					result.push(activeOrder[activeIndex]);
+					replaced[activeOrder[activeIndex]] = true;
+					activeIndex += 1;
+				}
+				continue;
+			}
+
+			result.push(itemKey);
+		}
+
+		for (index = 0; index < activeOrder.length; index += 1) {
+			itemKey = activeOrder[index];
+			if (!replaced[itemKey]) {
+				result.push(itemKey);
+			}
+		}
+
+		state.order = normalizeOrder(result, state.allItems);
+	}
+
+	function moveOrderItem(state, itemKey, direction) {
+		var activeOrder;
+		var index;
+		var targetIndex;
+		var movedLabel;
+
+		if (state.isSubmitting) {
+			return;
+		}
+
+		activeOrder = getActiveOrder(state);
+		index = activeOrder.indexOf(itemKey);
+		targetIndex = index + direction;
+
+		if (index < 0 || targetIndex < 0 || targetIndex >= activeOrder.length) {
+			return;
+		}
+
+		activeOrder.splice(index, 1);
+		activeOrder.splice(targetIndex, 0, itemKey);
+		replaceActiveOrder(state, activeOrder);
+		syncOrderStorage(state, true);
+		renderOrderEditor(state);
+
+		movedLabel = state.allItems[itemKey] || itemKey;
+		setOrderStatus(state, movedLabel + ' moved to position ' + (targetIndex + 1) + '.');
+	}
+
+	function refreshOrderActiveItems(state, shouldRender) {
+		if (state.isSubmitting) {
+			return;
+		}
+
+		state.items = getActiveItems(state.allItems, state.toggleFields, state.editor);
+		state.order = normalizeOrder(state.order, state.allItems);
+		syncOrderStorage(state, true);
+
+		if (shouldRender) {
+			renderOrderEditor(state);
+		}
+	}
+
+	function bindOrderToggleFields(state) {
+		var form = state.editor && state.editor.closest ? state.editor.closest('form') : null;
+		var fields = state.toggleFields || {};
+		var itemKeys = getItemKeys(fields);
+		var boundFields = {};
+		var index;
+		var fieldName;
+		var field;
+
+		for (index = 0; index < itemKeys.length; index += 1) {
+			fieldName = String(fields[itemKeys[index]] || '');
+			if (!fieldName || boundFields[fieldName]) {
+				continue;
+			}
+
+			field = getToggleField(form, fieldName);
+			if (!field || field.__mrnThemeHfOrderToggleBound) {
+				boundFields[fieldName] = true;
+				continue;
+			}
+
+			field.__mrnThemeHfOrderToggleBound = true;
+			field.addEventListener('input', function () {
+				refreshOrderActiveItems(state, true);
+			}, true);
+			field.addEventListener('change', function () {
+				refreshOrderActiveItems(state, true);
+			}, true);
+
+			boundFields[fieldName] = true;
+		}
+	}
+
+	function createOrderItem(state, itemKey, index, itemCount) {
+		var row = document.createElement('li');
+		var label = document.createElement('span');
+		var meta = document.createElement('span');
+		var actions = document.createElement('span');
+		var upButton = document.createElement('button');
+		var downButton = document.createElement('button');
+		var itemLabel = state.allItems[itemKey] || itemKey;
+
+		row.className = 'mrn-theme-hf-layout-order-editor__item';
+		row.setAttribute('data-mrn-order-item', itemKey);
+
+		label.className = 'mrn-theme-hf-layout-order-editor__item-label';
+		label.textContent = itemLabel;
+		row.appendChild(label);
+
+		meta.className = 'mrn-theme-hf-layout-order-editor__item-meta';
+		meta.textContent = String(index + 1);
+		row.appendChild(meta);
+
+		actions.className = 'mrn-theme-hf-layout-order-editor__item-actions';
+
+		upButton.type = 'button';
+		upButton.className = 'button button-small';
+		upButton.textContent = 'Up';
+		upButton.disabled = index === 0;
+		upButton.setAttribute('aria-label', 'Move ' + itemLabel + ' up');
+		upButton.addEventListener('click', function () {
+			moveOrderItem(state, itemKey, -1);
+		});
+		actions.appendChild(upButton);
+
+		downButton.type = 'button';
+		downButton.className = 'button button-small';
+		downButton.textContent = 'Down';
+		downButton.disabled = index >= itemCount - 1;
+		downButton.setAttribute('aria-label', 'Move ' + itemLabel + ' down');
+		downButton.addEventListener('click', function () {
+			moveOrderItem(state, itemKey, 1);
+		});
+		actions.appendChild(downButton);
+
+		row.appendChild(actions);
+
+		return row;
+	}
+
+	function renderOrderEditor(state) {
+		var activeOrder;
+		var index;
+
+		if (state.isSubmitting) {
+			return;
+		}
+
+		activeOrder = getActiveOrder(state);
+		state.list.innerHTML = '';
+
+		for (index = 0; index < activeOrder.length; index += 1) {
+			state.list.appendChild(createOrderItem(state, activeOrder[index], index, activeOrder.length));
+		}
+
+		if (!activeOrder.length) {
+			var empty = document.createElement('li');
+			empty.className = 'mrn-theme-hf-layout-order-editor__empty';
+			empty.textContent = 'No active header properties are enabled.';
+			state.list.appendChild(empty);
+		}
+	}
+
 	function syncAllEditorStorage(context) {
 		var root = context && context.querySelectorAll ? context : document;
 		var editors = root.querySelectorAll('[data-mrn-theme-hf-layout-editor]');
+		var orderEditors = root.querySelectorAll('[data-mrn-theme-hf-order-editor]');
 		var index;
 		var state;
 
@@ -480,15 +833,30 @@
 				syncEditorStorageForSubmit(state);
 			}
 		}
+
+		for (index = 0; index < orderEditors.length; index += 1) {
+			state = orderEditors[index].__mrnThemeHfOrderState;
+			if (state) {
+				syncOrderEditorStorageForSubmit(state);
+			}
+		}
 	}
 
 	function setSubmitStateForForm(form, isSubmitting) {
 		var editors = form ? form.querySelectorAll('[data-mrn-theme-hf-layout-editor]') : [];
+		var orderEditors = form ? form.querySelectorAll('[data-mrn-theme-hf-order-editor]') : [];
 		var index;
 		var state;
 
 		for (index = 0; index < editors.length; index += 1) {
 			state = editors[index].__mrnThemeHfLayoutState;
+			if (state) {
+				state.isSubmitting = !!isSubmitting;
+			}
+		}
+
+		for (index = 0; index < orderEditors.length; index += 1) {
+			state = orderEditors[index].__mrnThemeHfOrderState;
 			if (state) {
 				state.isSubmitting = !!isSubmitting;
 			}
@@ -547,11 +915,19 @@
 	function setSubmitStateForAllEditors(root, isSubmitting) {
 		var scope = root && root.querySelectorAll ? root : document;
 		var editors = scope.querySelectorAll('[data-mrn-theme-hf-layout-editor]');
+		var orderEditors = scope.querySelectorAll('[data-mrn-theme-hf-order-editor]');
 		var index;
 		var state;
 
 		for (index = 0; index < editors.length; index += 1) {
 			state = editors[index].__mrnThemeHfLayoutState;
+			if (state) {
+				state.isSubmitting = !!isSubmitting;
+			}
+		}
+
+		for (index = 0; index < orderEditors.length; index += 1) {
+			state = orderEditors[index].__mrnThemeHfOrderState;
 			if (state) {
 				state.isSubmitting = !!isSubmitting;
 			}
@@ -1257,6 +1633,67 @@
 		renderEditor(state);
 	}
 
+	function initializeOrderEditor(editor) {
+		var storage;
+		var defaults;
+		var items;
+		var toggleFields;
+		var resetButton;
+		var list;
+		var state;
+
+		if (editor.__mrnThemeHfOrderState) {
+			return;
+		}
+
+		storage = findStorageField(editor);
+		defaults = parseJson(editor.getAttribute('data-default-order') || '', []);
+		items = parseJson(editor.getAttribute('data-items') || '', {});
+		toggleFields = parseJson(editor.getAttribute('data-toggle-fields') || '', {});
+		resetButton = editor.querySelector('[data-mrn-order-reset]');
+		list = editor.querySelector('[data-mrn-order-list]');
+
+		if (!resetButton || !list) {
+			return;
+		}
+
+		state = {
+			editor: editor,
+			storage: storage,
+			defaults: normalizeOrder(defaults, items),
+			allItems: items,
+			toggleFields: toggleFields,
+			items: getActiveItems(items, toggleFields, editor),
+			resetButton: resetButton,
+			list: list,
+			status: editor.querySelector('[data-mrn-order-status]'),
+			isSubmitting: false
+		};
+		state.order = normalizeOrder(storage ? parseJson(storage.value, null) : null, items);
+		if (!state.order.length) {
+			state.order = normalizeOrder(state.defaults, items);
+		}
+
+		editor.__mrnThemeHfOrderState = state;
+		bindFormSubmit(state);
+		bindOrderToggleFields(state);
+		refreshOrderActiveItems(state, false);
+
+		resetButton.addEventListener('click', function () {
+			if (state.isSubmitting) {
+				return;
+			}
+
+			state.order = normalizeOrder(state.defaults, state.allItems);
+			syncOrderStorage(state, true);
+			renderOrderEditor(state);
+			setOrderStatus(state, 'Header sort order reset.');
+		});
+
+		syncOrderStorage(state, true);
+		renderOrderEditor(state);
+	}
+
 	function initializeEditors(context) {
 		var root = context && context.querySelectorAll ? context : document;
 		var editors = root.querySelectorAll('[data-mrn-theme-hf-layout-editor]');
@@ -1267,10 +1704,21 @@
 		}
 	}
 
+	function initializeOrderEditors(context) {
+		var root = context && context.querySelectorAll ? context : document;
+		var editors = root.querySelectorAll('[data-mrn-theme-hf-order-editor]');
+		var index;
+
+		for (index = 0; index < editors.length; index += 1) {
+			initializeOrderEditor(editors[index]);
+		}
+	}
+
 	function initializeAllEditors() {
 		bindDocumentSubmitFreeze();
 		organizeAllConfigFields();
 		initializeEditors(document);
+		initializeOrderEditors(document);
 	}
 
 	window.mrnThemeHeaderFooterLayout = {
@@ -1307,12 +1755,12 @@
 						continue;
 					}
 
-					if (node.matches && node.matches('[data-mrn-theme-hf-layout-editor]')) {
+					if (node.matches && (node.matches('[data-mrn-theme-hf-layout-editor]') || node.matches('[data-mrn-theme-hf-order-editor]'))) {
 						shouldInitialize = true;
 						break;
 					}
 
-					if (node.querySelector && node.querySelector('[data-mrn-theme-hf-layout-editor]')) {
+					if (node.querySelector && (node.querySelector('[data-mrn-theme-hf-layout-editor]') || node.querySelector('[data-mrn-theme-hf-order-editor]'))) {
 						shouldInitialize = true;
 						break;
 					}
@@ -1337,10 +1785,12 @@
 	if (window.acf && typeof window.acf.addAction === 'function') {
 		window.acf.addAction('ready', function ($el) {
 			initializeEditors($el && $el[0] ? $el[0] : document);
+			initializeOrderEditors($el && $el[0] ? $el[0] : document);
 		});
 
 		window.acf.addAction('append', function ($el) {
 			initializeEditors($el && $el[0] ? $el[0] : document);
+			initializeOrderEditors($el && $el[0] ? $el[0] : document);
 		});
 	}
 })();

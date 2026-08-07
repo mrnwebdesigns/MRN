@@ -88,7 +88,7 @@
 	$mrn_footer_attributes        = function_exists( 'mrn_base_stack_get_theme_header_footer_shell_attributes' ) ? mrn_base_stack_get_theme_header_footer_shell_attributes( 'footer', $mrn_footer_options, $mrn_footer_layout_grid ) : array();
 	$mrn_footer_attribute_html    = function_exists( 'mrn_base_stack_get_theme_header_footer_html_attributes' ) ? mrn_base_stack_get_theme_header_footer_html_attributes( $mrn_footer_attributes ) : '';
 	$mrn_footer_content_width     = isset( $mrn_footer_options['footer_content_width'] ) ? $mrn_footer_options['footer_content_width'] : 'wide';
-	$mrn_footer_width_class       = function_exists( 'mrn_base_stack_get_theme_header_footer_content_width_class' ) ? mrn_base_stack_get_theme_header_footer_content_width_class( $mrn_footer_content_width, 'wide' ) : 'mrn-theme-hf-layout-grid--width-wide';
+	$mrn_footer_width_class       = function_exists( 'mrn_base_stack_get_theme_header_footer_content_width_class' ) ? mrn_base_stack_get_theme_header_footer_content_width_class( $mrn_footer_content_width, 'wide' ) : 'mrn-theme-hf-layout--width-wide';
 	$mrn_footer_classes           = trim( 'site-footer mrn-theme-hf-layout-grid mrn-theme-hf-layout-grid--footer ' . $mrn_footer_width_class );
 	$mrn_footer_grid_item_style   = static function ( $item_key ) use ( $mrn_footer_layout_grid ) {
 		return function_exists( 'mrn_base_stack_get_theme_header_footer_layout_grid_item_style' ) ? mrn_base_stack_get_theme_header_footer_layout_grid_item_style( $mrn_footer_layout_grid, $item_key ) : '';

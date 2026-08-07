@@ -768,6 +768,116 @@ if ( ! function_exists( 'mrn_base_stack_get_footer_copyright_text' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'mrn_base_stack_get_header_utility_message_options' ) ) :
+	/**
+	 * Return normalized Header Utility Message options.
+	 *
+	 * @return array{enabled:bool,text:string,link:array<string,string>,link_style:string}
+	 */
+	function mrn_base_stack_get_header_utility_message_options() {
+		$options = array(
+			'enabled'    => false,
+			'text'       => '',
+			'link'       => array(
+				'url'    => '',
+				'title'  => '',
+				'target' => '',
+			),
+			'link_style' => 'link',
+		);
+
+		if ( ! function_exists( 'get_field' ) ) {
+			return $options;
+		}
+
+		$link       = get_field( 'header_utility_message_link', 'option' );
+		$link_style = sanitize_key( (string) get_field( 'header_utility_message_link_style', 'option' ) );
+
+		if ( ! in_array( $link_style, array( 'link', 'button' ), true ) ) {
+			$link_style = 'link';
+		}
+
+		$options['enabled']    = (bool) get_field( 'header_utility_message_enabled', 'option' );
+		$options['text']       = function_exists( 'mrn_base_stack_sanitize_limited_inline_html' )
+			? mrn_base_stack_sanitize_limited_inline_html( get_field( 'header_utility_message_text', 'option' ) )
+			: wp_kses(
+				(string) get_field( 'header_utility_message_text', 'option' ),
+				array(
+					'span'   => array(
+						'class' => true,
+					),
+					'strong' => array(),
+					'em'     => array(),
+					'br'     => array(),
+				)
+			);
+		$options['link_style'] = $link_style;
+
+		if ( is_array( $link ) && ! empty( $link['url'] ) && ! empty( $link['title'] ) ) {
+			$options['link'] = array(
+				'url'    => esc_url( (string) $link['url'] ),
+				'title'  => sanitize_text_field( (string) $link['title'] ),
+				'target' => ! empty( $link['target'] ) ? sanitize_key( (string) $link['target'] ) : '',
+			);
+		}
+
+		return $options;
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_has_header_utility_message' ) ) :
+	/**
+	 * Determine whether the Header Utility Message should render.
+	 *
+	 * @return bool
+	 */
+	function mrn_base_stack_has_header_utility_message() {
+		$options = mrn_base_stack_get_header_utility_message_options();
+
+		return ! empty( $options['enabled'] ) && ( '' !== $options['text'] || '' !== $options['link']['url'] );
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_get_header_utility_message_markup' ) ) :
+	/**
+	 * Return Header Utility Message markup.
+	 *
+	 * @return string
+	 */
+	function mrn_base_stack_get_header_utility_message_markup() {
+		if ( ! mrn_base_stack_has_header_utility_message() ) {
+			return '';
+		}
+
+		$options      = mrn_base_stack_get_header_utility_message_options();
+		$link_classes = array(
+			'mrn-site-header__utility-message-link',
+			'mrn-site-header__utility-message-link--' . sanitize_html_class( $options['link_style'] ),
+		);
+
+		if ( 'button' === $options['link_style'] ) {
+			$link_classes[] = 'mrn-ui__link';
+			$link_classes[] = 'mrn-ui__link--button';
+		}
+
+		ob_start();
+		?>
+		<div class="mrn-site-header__utility-message">
+			<?php if ( '' !== $options['text'] ) : ?>
+				<span class="mrn-site-header__utility-message-text"><?php echo $options['text']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized by mrn_base_stack_get_header_utility_message_options(). ?></span>
+			<?php endif; ?>
+			<?php if ( '' !== $options['link']['url'] ) : ?>
+				<a class="<?php echo esc_attr( implode( ' ', array_unique( $link_classes ) ) ); ?>" href="<?php echo esc_url( $options['link']['url'] ); ?>"<?php echo '_blank' === $options['link']['target'] ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
+					<?php echo esc_html( $options['link']['title'] ); ?>
+				</a>
+			<?php endif; ?>
+		</div>
+		<?php
+
+		return trim( (string) ob_get_clean() );
+	}
+endif;
+
 if ( ! function_exists( 'mrn_base_stack_get_configured_social_link_rows' ) ) :
 	/**
 	 * Return configured social rows that can render in a public social slot.

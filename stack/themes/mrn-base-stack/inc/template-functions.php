@@ -53,7 +53,11 @@ function mrn_base_stack_sanitize_limited_inline_html( $value ) {
 		return '';
 	}
 
-	return trim( wp_kses( (string) $value, mrn_base_stack_get_limited_inline_html_allowed_tags() ) );
+	$value = (string) $value;
+	$value = preg_replace( '#<(script|style|iframe|object|embed|template|noscript)\b[^>]*>.*?</\1>#is', '', $value );
+	$value = is_string( $value ) ? $value : '';
+
+	return trim( wp_kses( $value, mrn_base_stack_get_limited_inline_html_allowed_tags() ) );
 }
 
 /**

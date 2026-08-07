@@ -884,6 +884,22 @@
                     "required_capability_read_only": "edit_theme_options",
                     "f": "it"
                 },
+                "mrn-header-utility-message": {
+                    "template_id": ">mrn-header-utility-message",
+                    "local_id": "26CHeaderUtility",
+                    "defaults": {
+                        "menu_title": "Header Utility Message",
+                        "access_level": "edit_theme_options",
+                        "file": "mrn-header-utility-message",
+                        "css_class": "menu-top toplevel_page_mrn-header-utility-message",
+                        "hookname": "toplevel_page_mrn-header-utility-message",
+                        "icon_url": "dashicons-megaphone",
+                        "is_plugin_page": true,
+                        "url": "admin.php?page=mrn-header-utility-message"
+                    },
+                    "required_capability_read_only": "edit_theme_options",
+                    "f": "it"
+                },
                 "mrn-business-information": {
                     "template_id": ">mrn-business-information",
                     "local_id": "25CiBOmWWXn",

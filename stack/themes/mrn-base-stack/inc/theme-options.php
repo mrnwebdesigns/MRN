@@ -206,12 +206,24 @@ function mrn_base_stack_register_theme_options_pages() {
 
 	acf_add_options_page(
 		array(
+			'page_title' => __( 'Header Utility Message', 'mrn-base-stack' ),
+			'menu_title' => __( 'Header Utility Message', 'mrn-base-stack' ),
+			'menu_slug'  => 'mrn-header-utility-message',
+			'capability' => 'edit_theme_options',
+			'redirect'   => false,
+			'position'   => 62,
+			'icon_url'   => 'dashicons-megaphone',
+		)
+	);
+
+	acf_add_options_page(
+		array(
 			'page_title' => __( 'Business Information', 'mrn-base-stack' ),
 			'menu_title' => __( 'Business Information', 'mrn-base-stack' ),
 			'menu_slug'  => 'mrn-business-information',
 			'capability' => 'edit_theme_options',
 			'redirect'   => false,
-			'position'   => 62,
+			'position'   => 63,
 			'icon_url'   => 'dashicons-building',
 		)
 	);
@@ -364,7 +376,7 @@ function mrn_base_stack_get_theme_header_footer_content_width_field( $section ) 
 }
 
 /**
- * Convert a Header/Footer content width into a grid modifier class.
+ * Convert a Header/Footer content width into a shell modifier class.
  *
  * @param mixed  $value Raw stored value.
  * @param string $default_width Default width choice.
@@ -374,7 +386,7 @@ function mrn_base_stack_get_theme_header_footer_content_width_class( $value, $de
 	$width = mrn_base_stack_normalize_theme_header_footer_content_width( $value, $default_width );
 	$slug  = 'full-width' === $width ? 'full' : $width;
 
-	return 'mrn-theme-hf-layout-grid--width-' . sanitize_html_class( $slug );
+	return 'mrn-theme-hf-layout--width-' . sanitize_html_class( $slug );
 }
 
 /**
@@ -740,19 +752,22 @@ function mrn_base_stack_get_theme_header_footer_html_attributes( array $attribut
 }
 
 /**
- * Build front-end attributes for the Header/Footer layout grid shell.
+ * Build front-end attributes for the Header/Footer shell.
  *
  * @param string               $section Section key.
  * @param array<string, mixed> $options Header/Footer options.
  * @param array<string, mixed> $layout  Layout grid contract.
+ * @param bool                 $use_grid Whether to emit grid CSS variables.
  * @return array<string, string>
  */
-function mrn_base_stack_get_theme_header_footer_shell_attributes( $section, array $options, array $layout ) {
+function mrn_base_stack_get_theme_header_footer_shell_attributes( $section, array $options, array $layout, $use_grid = true ) {
 	$attributes = array();
-	$grid_style = mrn_base_stack_get_theme_header_footer_layout_grid_shell_style( $layout );
-	$grid_style = is_string( $grid_style ) ? rtrim( trim( $grid_style ), ';' ) : '';
-	if ( '' !== $grid_style ) {
-		$attributes['style'] = $grid_style;
+	if ( $use_grid ) {
+		$grid_style = mrn_base_stack_get_theme_header_footer_layout_grid_shell_style( $layout );
+		$grid_style = is_string( $grid_style ) ? rtrim( trim( $grid_style ), ';' ) : '';
+		if ( '' !== $grid_style ) {
+			$attributes['style'] = $grid_style;
+		}
 	}
 
 	$appearance_style = mrn_base_stack_get_theme_header_footer_appearance_style( $section, $options );
@@ -1106,12 +1121,13 @@ function mrn_base_stack_get_theme_header_footer_layout_items( $section ) {
 
 	if ( 'header' === $section ) {
 		return array(
-			'secondary_menu'        => __( 'Secondary Menu', 'mrn-base-stack' ),
-			'header_brand'          => __( 'Header', 'mrn-base-stack' ),
-			'header_tertiary_menu'  => __( 'Header Tertiary Menu', 'mrn-base-stack' ),
-			'business_profile'      => __( 'Business Profile', 'mrn-base-stack' ),
-			'business_phone'        => __( 'Business Phone', 'mrn-base-stack' ),
-			'search'                => __( 'Search', 'mrn-base-stack' ),
+			'secondary_menu'         => __( 'Secondary Menu', 'mrn-base-stack' ),
+			'header_utility_message' => __( 'Header Utility Message', 'mrn-base-stack' ),
+			'header_brand'           => __( 'Header', 'mrn-base-stack' ),
+			'business_profile'       => __( 'Business Profile', 'mrn-base-stack' ),
+			'business_phone'         => __( 'Business Phone', 'mrn-base-stack' ),
+			'search'                 => __( 'Search', 'mrn-base-stack' ),
+			'header_tertiary_menu'   => __( 'Header Tertiary Menu', 'mrn-base-stack' ),
 		);
 	}
 
@@ -1232,6 +1248,80 @@ function mrn_base_stack_get_theme_header_footer_active_layout_items( $section, $
 }
 
 /**
+ * Return the default non-grid render order for Header/Footer items.
+ *
+ * @param string $section Section key.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_default_theme_header_footer_layout_order( $section ) {
+	return array_keys( mrn_base_stack_get_theme_header_footer_layout_items( $section ) );
+}
+
+/**
+ * Normalize a Header/Footer non-grid render order.
+ *
+ * @param mixed                     $order Raw order data.
+ * @param string                    $section Section key.
+ * @param array<string, mixed>|null $items Optional item map.
+ * @return array<int, string>
+ */
+function mrn_base_stack_normalize_theme_header_footer_layout_order( $order, $section, ?array $items = null ) {
+	$section = sanitize_key( (string) $section );
+	if ( is_string( $order ) && '' !== trim( $order ) ) {
+		$decoded = json_decode( $order, true );
+		$order   = is_array( $decoded ) ? $decoded : array();
+	}
+
+	if ( ! is_array( $order ) ) {
+		$order = array();
+	}
+
+	$items          = null !== $items ? $items : mrn_base_stack_get_theme_header_footer_layout_items( $section );
+	$valid_items    = array_fill_keys( array_keys( $items ), true );
+	$normalized     = array();
+	$normalized_map = array();
+
+	foreach ( $order as $order_key => $order_item ) {
+		$item_key = is_string( $order_item ) ? sanitize_key( $order_item ) : ( is_string( $order_key ) ? sanitize_key( $order_key ) : '' );
+
+		if ( '' === $item_key || empty( $valid_items[ $item_key ] ) || isset( $normalized_map[ $item_key ] ) ) {
+			continue;
+		}
+
+		$normalized[]                = $item_key;
+		$normalized_map[ $item_key ] = true;
+	}
+
+	foreach ( $items as $item_key => $item_label ) {
+		unset( $item_label );
+
+		if ( isset( $normalized_map[ $item_key ] ) ) {
+			continue;
+		}
+
+		$normalized[] = $item_key;
+	}
+
+	return $normalized;
+}
+
+/**
+ * Return saved Header/Footer non-grid item order.
+ *
+ * @param string              $section Section key.
+ * @param array<string,mixed> $options Optional normalized options.
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_theme_header_footer_layout_order( $section, $options = null ) {
+	$section = sanitize_key( (string) $section );
+	$field   = $section . '_layout_order';
+	$value   = function_exists( 'get_field' ) ? get_field( $field, 'option' ) : array();
+	$items   = mrn_base_stack_get_theme_header_footer_active_layout_items( $section, $options );
+
+	return mrn_base_stack_normalize_theme_header_footer_layout_order( $value, $section, $items );
+}
+
+/**
  * Return the default grid contract for a Header/Footer section.
  *
  * @param string $section Section key.
@@ -1247,8 +1337,13 @@ function mrn_base_stack_get_default_theme_header_footer_layout_grid( $section ) 
 			'items'   => array(
 				'secondary_menu' => array(
 					'row'         => 1,
-					'column'      => 1,
-					'columnSpan'  => 3,
+					'column'      => 3,
+					'columnSpan'  => 1,
+				),
+				'header_utility_message' => array(
+					'row'        => 1,
+					'column'     => 2,
+					'columnSpan' => 1,
 				),
 				'header_brand' => array(
 					'row'        => 2,
@@ -1265,7 +1360,7 @@ function mrn_base_stack_get_default_theme_header_footer_layout_grid( $section ) 
 					'column'     => 3,
 					'columnSpan' => 1,
 				),
-				'search'               => array(
+				'search' => array(
 					'row'        => 3,
 					'column'     => 3,
 					'columnSpan' => 1,
@@ -1655,6 +1750,18 @@ function mrn_base_stack_get_default_theme_header_footer_layout_grid_json( $secti
 }
 
 /**
+ * Return serialized default Header/Footer order JSON for an ACF field.
+ *
+ * @param string $section Section key.
+ * @return string
+ */
+function mrn_base_stack_get_default_theme_header_footer_layout_order_json( $section ) {
+	$json = wp_json_encode( mrn_base_stack_get_default_theme_header_footer_layout_order( $section ) );
+
+	return is_string( $json ) ? $json : '[]';
+}
+
+/**
  * Build the Header/Footer layout editor markup.
  *
  * @param string $section Section key.
@@ -1719,6 +1826,63 @@ function mrn_base_stack_get_theme_header_footer_layout_editor_markup( $section )
 }
 
 /**
+ * Build the Header/Footer non-grid order editor markup.
+ *
+ * @param string $section Section key.
+ * @return string
+ */
+function mrn_base_stack_get_theme_header_footer_layout_order_editor_markup( $section ) {
+	$section = sanitize_key( (string) $section );
+	$items   = mrn_base_stack_get_theme_header_footer_layout_items( $section );
+
+	if ( empty( $items ) ) {
+		return '';
+	}
+
+	$section_label = 'header' === $section ? __( 'Header', 'mrn-base-stack' ) : __( 'Footer', 'mrn-base-stack' );
+	$default_order = mrn_base_stack_get_default_theme_header_footer_layout_order( $section );
+	$toggle_fields = mrn_base_stack_get_theme_header_footer_layout_item_toggle_fields( $section );
+	$items_json    = wp_json_encode( $items );
+	$order_json    = wp_json_encode( $default_order );
+	$toggles_json  = wp_json_encode( $toggle_fields );
+
+	if ( ! is_string( $items_json ) ) {
+		$items_json = '{}';
+	}
+
+	if ( ! is_string( $order_json ) ) {
+		$order_json = '[]';
+	}
+
+	if ( ! is_string( $toggles_json ) ) {
+		$toggles_json = '{}';
+	}
+
+	ob_start();
+	?>
+	<div
+		class="mrn-theme-hf-layout-order-editor mrn-admin-layout-builder"
+		data-mrn-theme-hf-order-editor
+		data-section="<?php echo esc_attr( $section ); ?>"
+		data-storage-name="<?php echo esc_attr( $section . '_layout_order' ); ?>"
+		data-items="<?php echo esc_attr( $items_json ); ?>"
+		data-toggle-fields="<?php echo esc_attr( $toggles_json ); ?>"
+		data-default-order="<?php echo esc_attr( $order_json ); ?>"
+	>
+		<div class="mrn-theme-hf-layout-order-editor__toolbar mrn-admin-layout-builder__toolbar">
+			<h3 class="mrn-theme-hf-layout-order-editor__title"><?php echo esc_html( $section_label ); ?> <?php esc_html_e( 'Sort Order', 'mrn-base-stack' ); ?></h3>
+			<button type="button" class="button" data-mrn-order-reset><?php esc_html_e( 'Reset', 'mrn-base-stack' ); ?></button>
+		</div>
+		<p class="description"><?php esc_html_e( 'Used when the header grid is off. Active properties render in this order with lightweight wrappers for child-theme styling.', 'mrn-base-stack' ); ?></p>
+		<ol class="mrn-theme-hf-layout-order-editor__list" data-mrn-order-list></ol>
+		<div class="mrn-theme-hf-layout-order-editor__status screen-reader-text" data-mrn-order-status aria-live="polite"></div>
+	</div>
+	<?php
+
+	return trim( (string) ob_get_clean() );
+}
+
+/**
  * Sanitize saved Header/Footer layout-grid fields.
  *
  * @param mixed $value   Submitted field value.
@@ -1738,6 +1902,49 @@ function mrn_base_stack_sanitize_theme_header_footer_layout_grid_value( $value, 
 }
 add_filter( 'acf/update_value/name=header_layout_grid', 'mrn_base_stack_sanitize_theme_header_footer_layout_grid_value', 10, 3 );
 add_filter( 'acf/update_value/name=footer_layout_grid', 'mrn_base_stack_sanitize_theme_header_footer_layout_grid_value', 10, 3 );
+
+/**
+ * Sanitize saved Header/Footer layout-order fields.
+ *
+ * @param mixed $value   Submitted field value.
+ * @param mixed $post_id ACF post ID.
+ * @param array $field   ACF field definition.
+ * @return string
+ */
+function mrn_base_stack_sanitize_theme_header_footer_layout_order_value( $value, $post_id, $field ) {
+	unset( $post_id );
+
+	$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+	$section    = 0 === strpos( $field_name, 'footer_' ) ? 'footer' : 'header';
+	$order      = mrn_base_stack_normalize_theme_header_footer_layout_order( $value, $section, mrn_base_stack_get_theme_header_footer_layout_items( $section ) );
+	$json       = wp_json_encode( $order );
+
+	return is_string( $json ) ? $json : mrn_base_stack_get_default_theme_header_footer_layout_order_json( $section );
+}
+add_filter( 'acf/update_value/name=header_layout_order', 'mrn_base_stack_sanitize_theme_header_footer_layout_order_value', 10, 3 );
+
+/**
+ * Sanitize Header Utility Message text before storage.
+ *
+ * @param mixed $value Raw field value.
+ * @return string
+ */
+function mrn_base_stack_sanitize_header_utility_message_text_value( $value ) {
+	return function_exists( 'mrn_base_stack_sanitize_limited_inline_html' )
+		? mrn_base_stack_sanitize_limited_inline_html( $value )
+		: wp_kses(
+			is_scalar( $value ) ? (string) $value : '',
+			array(
+				'span'   => array(
+					'class' => true,
+				),
+				'strong' => array(),
+				'em'     => array(),
+				'br'     => array(),
+			)
+		);
+}
+add_filter( 'acf/update_value/name=header_utility_message_text', 'mrn_base_stack_sanitize_header_utility_message_text_value' );
 
 /**
  * Persist layout-grid JSON posted by the custom Header/Footer grid editor.
@@ -1786,6 +1993,50 @@ function mrn_base_stack_save_theme_header_footer_layout_grid_request( $post_id, 
 	}
 }
 add_action( 'acf/options_page/save', 'mrn_base_stack_save_theme_header_footer_layout_grid_request', 20, 2 );
+
+/**
+ * Persist layout-order JSON posted by the custom Header/Footer order editor.
+ *
+ * @param mixed  $post_id   ACF options page post id.
+ * @param string $menu_slug ACF options page slug.
+ * @return void
+ */
+function mrn_base_stack_save_theme_header_footer_layout_order_request( $post_id, $menu_slug ) {
+	unset( $post_id );
+
+	if ( 'mrn-theme-header-footer' !== $menu_slug || empty( $_POST['mrn_theme_hf_layout_order'] ) || ! is_array( $_POST['mrn_theme_hf_layout_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		return;
+	}
+
+	if ( ! current_user_can( 'edit_theme_options' ) ) {
+		return;
+	}
+
+	$request = map_deep( wp_unslash( $_POST['mrn_theme_hf_layout_order'] ), 'sanitize_textarea_field' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+	foreach ( array( 'header' ) as $section ) {
+		if ( ! isset( $request[ $section ] ) || ! is_string( $request[ $section ] ) ) {
+			continue;
+		}
+
+		$order = mrn_base_stack_normalize_theme_header_footer_layout_order( $request[ $section ], $section, mrn_base_stack_get_theme_header_footer_layout_items( $section ) );
+		$json  = wp_json_encode( $order );
+		if ( ! is_string( $json ) ) {
+			continue;
+		}
+
+		$field_name = $section . '_layout_order';
+		$field_key  = 'field_mrn_theme_' . $field_name;
+
+		if ( function_exists( 'update_field' ) ) {
+			update_field( $field_key, $json, 'option' );
+			continue;
+		}
+
+		update_option( 'options_' . $field_name, $json, false );
+		update_option( '_options_' . $field_name, $field_key, false );
+	}
+}
+add_action( 'acf/options_page/save', 'mrn_base_stack_save_theme_header_footer_layout_order_request', 21, 2 );
 
 /**
  * Build section-specific sub-tab fields for Theme Header/Footer options.
@@ -1866,6 +2117,7 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
 
 	$content_width  = mrn_base_stack_get_theme_header_footer_content_width_field( $section );
 	$spacing_fields = mrn_base_stack_get_theme_header_footer_spacing_fields( $section );
+	$layout_fields  = array();
 
 	$layout_editor = array(
 		'key'       => 'field_mrn_theme_' . $section . '_layout_grid_editor',
@@ -1877,6 +2129,69 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
 		'new_lines' => '',
 	);
 
+	if ( 'header' === $section ) {
+		$use_layout_grid = array(
+			'key'           => 'field_mrn_theme_header_use_layout_grid',
+			'label'         => __( 'Use Header Grid', 'mrn-base-stack' ),
+			'name'          => 'header_use_layout_grid',
+			'type'          => 'true_false',
+			'instructions'  => __( 'When on, the header uses the configurable grid. When off, active header properties render in the sort order below with lightweight wrappers for child-theme layout.', 'mrn-base-stack' ),
+			'default_value' => 1,
+			'ui'            => 1,
+			'ui_on_text'    => __( 'On', 'mrn-base-stack' ),
+			'ui_off_text'   => __( 'Off', 'mrn-base-stack' ),
+		);
+
+		$layout_order_storage = array(
+			'key'               => 'field_mrn_theme_header_layout_order',
+			'label'             => '',
+			'name'              => 'header_layout_order',
+			'type'              => 'textarea',
+			'default_value'     => mrn_base_stack_get_default_theme_header_footer_layout_order_json( 'header' ),
+			'rows'              => 3,
+			'new_lines'         => '',
+			'conditional_logic' => array(
+				array(
+					array(
+						'field'    => 'field_mrn_theme_header_use_layout_grid',
+						'operator' => '!=',
+						'value'    => '1',
+					),
+				),
+			),
+		);
+
+		$layout_order_editor = array(
+			'key'               => 'field_mrn_theme_header_layout_order_editor',
+			'label'             => __( 'Sort Order', 'mrn-base-stack' ),
+			'name'              => '',
+			'type'              => 'message',
+			'message'           => mrn_base_stack_get_theme_header_footer_layout_order_editor_markup( 'header' ),
+			'esc_html'          => 0,
+			'new_lines'         => '',
+			'conditional_logic' => array(
+				array(
+					array(
+						'field'    => 'field_mrn_theme_header_use_layout_grid',
+						'operator' => '!=',
+						'value'    => '1',
+					),
+				),
+			),
+		);
+
+		$layout_storage['conditional_logic'] = array(
+			array(
+				array(
+					'field'    => 'field_mrn_theme_header_use_layout_grid',
+					'operator' => '==',
+					'value'    => '1',
+				),
+			),
+		);
+		$layout_editor['conditional_logic']  = $layout_storage['conditional_logic'];
+	}
+
 	$effects_placeholder = array(
 		'key'       => 'field_mrn_theme_' . $section . '_effects_placeholder',
 		'label'     => __( 'Effects', 'mrn-base-stack' ),
@@ -1887,19 +2202,47 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
 		'new_lines' => 'br',
 	);
 
-	$subtab_nav          = mrn_base_stack_append_field_wrapper_class( $subtab_nav, 'mrn-theme-hf-subtabs-nav' );
-	$layout_storage      = mrn_base_stack_append_field_wrapper_class(
+	$subtab_nav     = mrn_base_stack_append_field_wrapper_class( $subtab_nav, 'mrn-theme-hf-subtabs-nav' );
+	$layout_storage = mrn_base_stack_append_field_wrapper_class(
 		$layout_storage,
 		'mrn-theme-hf-layout-grid-storage-field'
 	);
-	$content_width       = mrn_base_stack_append_field_wrapper_class(
+	$content_width  = mrn_base_stack_append_field_wrapper_class(
 		$content_width,
 		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'layout' ) . ' mrn-theme-hf-layout-width-field'
 	);
-	$layout_editor       = mrn_base_stack_append_field_wrapper_class(
+	$layout_editor  = mrn_base_stack_append_field_wrapper_class(
 		$layout_editor,
 		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'layout' ) . ' mrn-theme-hf-layout-grid-editor-field'
 	);
+	if ( 'header' === $section ) {
+		$use_layout_grid      = mrn_base_stack_append_field_wrapper_class(
+			$use_layout_grid,
+			mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'layout' ) . ' mrn-theme-hf-layout-mode-field'
+		);
+		$layout_order_storage = mrn_base_stack_append_field_wrapper_class(
+			$layout_order_storage,
+			'mrn-theme-hf-layout-order-storage-field'
+		);
+		$layout_order_editor  = mrn_base_stack_append_field_wrapper_class(
+			$layout_order_editor,
+			mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'layout' ) . ' mrn-theme-hf-layout-order-editor-field'
+		);
+		$layout_fields        = array(
+			$use_layout_grid,
+			$layout_storage,
+			$content_width,
+			$layout_editor,
+			$layout_order_storage,
+			$layout_order_editor,
+		);
+	} else {
+		$layout_fields = array(
+			$layout_storage,
+			$content_width,
+			$layout_editor,
+		);
+	}
 	$effects_placeholder = mrn_base_stack_append_field_wrapper_class(
 		$effects_placeholder,
 		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'effects' )
@@ -1914,10 +2257,8 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
 	return array_merge(
 		array(
 			$subtab_nav,
-			$layout_storage,
-			$content_width,
-			$layout_editor,
 		),
+		$layout_fields,
 		$spacing_fields,
 		array(
 			$effects_placeholder,
@@ -2509,6 +2850,69 @@ function mrn_base_stack_register_theme_options_field_groups() {
 						'param'    => 'options_page',
 						'operator' => '==',
 						'value'    => 'mrn-theme-header-footer',
+					),
+				),
+			),
+			'menu_order'            => 0,
+			'position'              => 'normal',
+			'style'                 => 'default',
+			'label_placement'       => 'top',
+			'instruction_placement' => 'label',
+			'active'                => true,
+		)
+	);
+
+	acf_add_local_field_group(
+		array(
+			'key'                   => 'group_mrn_header_utility_message',
+			'title'                 => __( 'Header Utility Message', 'mrn-base-stack' ),
+			'fields'                => array(
+				array(
+					'key'           => 'field_mrn_header_utility_message_enabled',
+					'label'         => __( 'Active', 'mrn-base-stack' ),
+					'name'          => 'header_utility_message_enabled',
+					'type'          => 'true_false',
+					'instructions'  => __( 'Controls whether the Header Utility Message renders in the header grid. Placement stays in Theme Header/Footer Layout.', 'mrn-base-stack' ),
+					'required'      => 0,
+					'default_value' => 0,
+					'ui'            => 1,
+				),
+				array(
+					'key'           => 'field_mrn_header_utility_message_text',
+					'label'         => __( 'Message', 'mrn-base-stack' ),
+					'name'          => 'header_utility_message_text',
+					'type'          => 'text',
+					'instructions'  => __( 'Short, frequently updated header copy. Limited inline HTML allowed: span, strong, em, br.', 'mrn-base-stack' ),
+					'default_value' => '',
+				),
+				array(
+					'key'           => 'field_mrn_header_utility_message_link',
+					'label'         => __( 'Link', 'mrn-base-stack' ),
+					'name'          => 'header_utility_message_link',
+					'type'          => 'link',
+					'return_format' => 'array',
+					'instructions'  => __( 'Optional action link, such as Shop Now. Use a link field instead of adding buttons in the message text.', 'mrn-base-stack' ),
+				),
+				array(
+					'key'           => 'field_mrn_header_utility_message_link_style',
+					'label'         => __( 'Link Style', 'mrn-base-stack' ),
+					'name'          => 'header_utility_message_link_style',
+					'type'          => 'button_group',
+					'choices'       => array(
+						'link'   => __( 'Text Link', 'mrn-base-stack' ),
+						'button' => __( 'Button', 'mrn-base-stack' ),
+					),
+					'default_value' => 'link',
+					'layout'        => 'horizontal',
+					'return_format' => 'value',
+				),
+			),
+			'location'              => array(
+				array(
+					array(
+						'param'    => 'options_page',
+						'operator' => '==',
+						'value'    => 'mrn-header-utility-message',
 					),
 				),
 			),
@@ -3478,7 +3882,9 @@ function mrn_base_stack_get_theme_header_footer_options() {
 			'header_show_business_phone'                 => false,
 			'header_show_business_profile'               => false,
 			'header_content_width'                       => 'wide',
+			'header_use_layout_grid'                     => true,
 			'header_layout_grid'                         => mrn_base_stack_get_default_theme_header_footer_layout_grid( 'header' ),
+			'header_layout_order'                        => mrn_base_stack_get_default_theme_header_footer_layout_order( 'header' ),
 			'footer_background_color'                    => '',
 			'footer_font_color'                          => '',
 			'footer_link_color'                          => '',
@@ -3561,6 +3967,8 @@ function mrn_base_stack_get_theme_header_footer_options() {
 	}
 
 	$header_show_secondary_menu     = (bool) get_field( 'header_show_utility_menu', 'option' );
+	$header_use_layout_grid_raw     = get_option( 'options_header_use_layout_grid', '__mrn_missing__' );
+	$header_use_layout_grid         = '__mrn_missing__' === $header_use_layout_grid_raw ? true : (bool) get_field( 'header_use_layout_grid', 'option' );
 	$header_primary_nav_inherit_raw = get_option( 'options_header_primary_nav_inherit_header_settings', '__mrn_missing__' );
 	$header_primary_nav_inherit     = '__mrn_missing__' === $header_primary_nav_inherit_raw ? true : (bool) get_field( 'header_primary_nav_inherit_header_settings', 'option' );
 	$footer_show_primary_menu       = (bool) get_field( 'footer_show_footer_menu', 'option' );
@@ -3597,7 +4005,9 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		'header_show_business_phone'                 => (bool) get_field( 'header_show_business_phone', 'option' ),
 		'header_show_business_profile'               => (bool) get_field( 'header_show_business_profile', 'option' ),
 		'header_content_width'                       => $header_content_width,
+		'header_use_layout_grid'                     => $header_use_layout_grid,
 		'header_layout_grid'                         => mrn_base_stack_get_theme_header_footer_layout_grid( 'header' ),
+		'header_layout_order'                        => mrn_base_stack_get_theme_header_footer_layout_order( 'header' ),
 		'footer_background_color'                    => $footer_background_color,
 		'footer_font_color'                          => $footer_font_color,
 		'footer_link_color'                          => $footer_link_color,
@@ -3806,6 +4216,11 @@ function mrn_base_stack_get_theme_options_toolbar_config( $screen_id ) {
 			'toolbar_id' => 'mrn-theme-header-footer-toolbar',
 			'title'      => __( 'Theme Header/Footer', 'mrn-base-stack' ),
 			'page_class' => 'toplevel_page_mrn-theme-header-footer',
+		),
+		'toplevel_page_mrn-header-utility-message' => array(
+			'toolbar_id' => 'mrn-header-utility-message-toolbar',
+			'title'      => __( 'Header Utility Message', 'mrn-base-stack' ),
+			'page_class' => 'toplevel_page_mrn-header-utility-message',
 		),
 		'toplevel_page_mrn-business-information' => array(
 			'toolbar_id' => 'mrn-business-information-toolbar',
