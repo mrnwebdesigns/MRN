@@ -686,6 +686,9 @@ add_action( 'admin_enqueue_scripts', 'mrn_base_stack_enqueue_gallery_admin_asset
  * Enqueue Motion inView assets for front-end effects.
  */
 function mrn_base_stack_enqueue_motion_assets() {
+	$effects_path    = get_template_directory() . '/js/front-end-effects.js';
+	$effects_version = file_exists( $effects_path ) ? _S_VERSION . '.' . (string) filemtime( $effects_path ) : _S_VERSION;
+
 	wp_enqueue_script(
 		'mrn-base-stack-motion',
 		get_template_directory_uri() . '/js/vendor/motion.js',
@@ -698,7 +701,7 @@ function mrn_base_stack_enqueue_motion_assets() {
 		'mrn-base-stack-front-end-effects',
 		get_template_directory_uri() . '/js/front-end-effects.js',
 		array( 'mrn-base-stack-motion' ),
-		_S_VERSION,
+		$effects_version,
 		true
 	);
 }

@@ -71,7 +71,7 @@ function mrn_base_stack_collect_layout_style_keys_from_rows( $rows, array $style
 		$style_layout = $layout;
 
 		if ( '' !== $layout ) {
-			if ( 'page_hero_rows' === $field_context && 'basic' === $layout ) {
+			if ( 'page_hero_rows' === $field_context ) {
 				$style_keys['hero'] = true;
 				$style_layout       = 'hero';
 			} else {
@@ -181,7 +181,7 @@ function mrn_base_stack_get_layout_style_keys_for_post( $post_id ) {
 						continue;
 					}
 
-					$style_key                = 'page_hero_rows' === $meta_key && 'basic' === $layout_name ? 'hero' : $layout_name;
+					$style_key                = 'page_hero_rows' === $meta_key ? 'hero' : $layout_name;
 					$style_keys[ $style_key ] = true;
 				}
 			}

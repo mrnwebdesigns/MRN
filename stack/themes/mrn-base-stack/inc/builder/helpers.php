@@ -1738,7 +1738,9 @@ function mrn_base_stack_get_content_list_post_type_choices() {
 			}
 		);
 
-		return $choices;
+		$choices = apply_filters( 'mrn_base_stack_content_list_post_type_choices', $choices );
+
+		return is_array( $choices ) ? $choices : array();
 	} finally {
 		$resolving = false;
 	}
@@ -2749,6 +2751,11 @@ function mrn_base_stack_render_content_list_testimonial_item( WP_Post $item_post
  * @return string
  */
 function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $args = array() ) {
+	$pre_rendered_markup = apply_filters( 'mrn_base_stack_pre_render_content_list_item', '', $item_post, $args );
+	if ( is_string( $pre_rendered_markup ) && '' !== trim( $pre_rendered_markup ) ) {
+		return $pre_rendered_markup;
+	}
+
 	if ( 'testimonial' === get_post_type( $item_post ) && function_exists( 'mrn_base_stack_render_content_list_testimonial_item' ) ) {
 		return mrn_base_stack_render_content_list_testimonial_item( $item_post, $args );
 	}
@@ -2850,7 +2857,9 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 	</li>
 	<?php
 
-	return (string) ob_get_clean();
+	$item_markup = (string) ob_get_clean();
+
+	return (string) apply_filters( 'mrn_base_stack_content_list_item_markup', $item_markup, $item_post, $args );
 }
 
 /**
@@ -3851,6 +3860,7 @@ function mrn_base_stack_get_motion_effect_choices() {
 		'surface'          => 'Switch Light/Dark Surface',
 		'active-class'     => 'Mark Row As Active',
 		'dark-scroll-card' => 'Darken Card On Scroll',
+		'stacked-cards'    => 'Stack Cards On Scroll',
 	);
 }
 
@@ -10441,6 +10451,17 @@ function mrn_base_stack_get_motion_contract_for_settings( $settings ) {
 			'attributes' => array(
 				'data-mrn-motion-effect' => 'dark-scroll-card',
 				'data-mrn-effect-preset' => $preset,
+				'data-mrn-motion-margin' => $margin,
+				'data-mrn-motion-target' => $target,
+			),
+		);
+	}
+
+	if ( 'stacked-cards' === $effect ) {
+		return array(
+			'classes'    => array( 'mrn-motion-effect--stacked-cards' ),
+			'attributes' => array(
+				'data-mrn-motion-effect' => 'stacked-cards',
 				'data-mrn-motion-margin' => $margin,
 				'data-mrn-motion-target' => $target,
 			),

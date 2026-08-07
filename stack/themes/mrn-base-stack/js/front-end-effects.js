@@ -335,6 +335,47 @@
 		} );
 	}
 
+	function initStackedCardEffects() {
+		var motionSections = document.querySelectorAll( '[data-mrn-motion-effect="stacked-cards"]' );
+
+		if ( ! motionSections.length ) {
+			return;
+		}
+
+		motionSections.forEach( function( sectionElement ) {
+			var targetElement = findMotionTarget( sectionElement );
+			var cardElements = Array.prototype.slice.call( targetElement.children || [] );
+
+			if ( ! cardElements.length ) {
+				cardElements = Array.prototype.slice.call( sectionElement.querySelectorAll( '.mrn-ui__items > .mrn-ui__item' ) );
+			}
+
+			cardElements.forEach( function( cardElement, index ) {
+				cardElement.style.setProperty( '--mrn-stack-index', String( index ) );
+
+				if ( userPrefersReducedMotion() || ! window.Motion || 'function' !== typeof window.Motion.scroll ) {
+					return;
+				}
+
+				window.Motion.scroll(
+					function( progress ) {
+						var p = clamp( progress );
+						var scale = 1 - ( p * 0.025 );
+						var brightness = 1 - ( p * 0.08 );
+
+						cardElement.style.setProperty( '--mrn-stack-scale', scale.toFixed( 4 ) );
+						cardElement.style.setProperty( '--mrn-stack-brightness', brightness.toFixed( 4 ) );
+					},
+					{
+						target: cardElement,
+						offset: [ 'end 88%', 'end 32%' ],
+						axis: 'y'
+					}
+				);
+			} );
+		} );
+	}
+
 	function navigateButtonLink( buttonElement ) {
 		var url = buttonElement && buttonElement.getAttribute ? buttonElement.getAttribute( 'data-mrn-link-url' ) : '';
 		var target = buttonElement && buttonElement.getAttribute ? buttonElement.getAttribute( 'data-mrn-link-target' ) : '';
@@ -635,6 +676,7 @@
 		initActiveClassEffects( window.Motion.inView );
 		initStatValueAnimations( window.Motion.inView );
 		initDarkScrollCardEffects();
+		initStackedCardEffects();
 	}
 
 	if ( document.readyState === 'loading' ) {
