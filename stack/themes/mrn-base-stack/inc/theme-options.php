@@ -809,6 +809,12 @@ function mrn_base_stack_get_theme_header_footer_config_field_groups( $section ) 
 					'field_mrn_theme_header_link_hover_color',
 				),
 			),
+			'site_identity' => array(
+				'label'  => __( 'Site Identity', 'mrn-base-stack' ),
+				'fields' => array(
+					'field_mrn_theme_header_show_tagline',
+				),
+			),
 			'navigation' => array(
 				'label'  => __( 'Navigation', 'mrn-base-stack' ),
 				'fields' => array(
@@ -851,6 +857,12 @@ function mrn_base_stack_get_theme_header_footer_config_field_groups( $section ) 
 					'field_mrn_theme_footer_link_hover_color',
 				),
 			),
+			'site_identity' => array(
+				'label'  => __( 'Site Identity', 'mrn-base-stack' ),
+				'fields' => array(
+					'field_mrn_theme_footer_show_tagline',
+				),
+			),
 			'navigation' => array(
 				'label'  => __( 'Navigation', 'mrn-base-stack' ),
 				'fields' => array(
@@ -860,7 +872,7 @@ function mrn_base_stack_get_theme_header_footer_config_field_groups( $section ) 
 					'field_mrn_theme_footer_show_privacy_center_links',
 				),
 			),
-			'business'   => array(
+			'business' => array(
 				'label'  => __( 'Business Info', 'mrn-base-stack' ),
 				'fields' => array(
 					'field_mrn_theme_footer_show_business_profile',
@@ -870,7 +882,7 @@ function mrn_base_stack_get_theme_header_footer_config_field_groups( $section ) 
 					'field_mrn_theme_footer_show_business_hours',
 				),
 			),
-			'social'     => array(
+			'social' => array(
 				'label'  => __( 'Social', 'mrn-base-stack' ),
 				'fields' => array(
 					'field_mrn_theme_footer_show_social_menu',
@@ -878,7 +890,7 @@ function mrn_base_stack_get_theme_header_footer_config_field_groups( $section ) 
 					'field_mrn_theme_footer_social_icon_hover_color',
 				),
 			),
-			'text'       => array(
+			'text' => array(
 				'label'  => __( 'Footer Text', 'mrn-base-stack' ),
 				'fields' => array(
 					'field_mrn_theme_footer_copyright_text',
@@ -1124,6 +1136,7 @@ function mrn_base_stack_get_theme_header_footer_layout_items( $section ) {
 			'secondary_menu'         => __( 'Secondary Menu', 'mrn-base-stack' ),
 			'header_utility_message' => __( 'Header Utility Message', 'mrn-base-stack' ),
 			'header_brand'           => __( 'Header', 'mrn-base-stack' ),
+			'header_tagline'         => __( 'Tagline', 'mrn-base-stack' ),
 			'business_profile'       => __( 'Business Profile', 'mrn-base-stack' ),
 			'business_phone'         => __( 'Business Phone', 'mrn-base-stack' ),
 			'search'                 => __( 'Search', 'mrn-base-stack' ),
@@ -1134,6 +1147,7 @@ function mrn_base_stack_get_theme_header_footer_layout_items( $section ) {
 	if ( 'footer' === $section ) {
 		return array(
 			'footer_brand'          => __( 'Footer', 'mrn-base-stack' ),
+			'footer_tagline'        => __( 'Tagline', 'mrn-base-stack' ),
 			'business_profile'      => __( 'Business Profile', 'mrn-base-stack' ),
 			'business_phone'        => __( 'Business Phone', 'mrn-base-stack' ),
 			'text_phone'            => __( 'Text / SMS / RCS', 'mrn-base-stack' ),
@@ -1166,6 +1180,7 @@ function mrn_base_stack_get_theme_header_footer_layout_item_toggle_fields( $sect
 	if ( 'header' === $section ) {
 		return array(
 			'secondary_menu'       => 'header_show_utility_menu',
+			'header_tagline'       => 'header_show_tagline',
 			'header_tertiary_menu' => 'header_show_tertiary_menu',
 			'business_profile'     => 'header_show_business_profile',
 			'business_phone'       => 'header_show_business_phone',
@@ -1175,6 +1190,7 @@ function mrn_base_stack_get_theme_header_footer_layout_item_toggle_fields( $sect
 
 	if ( 'footer' === $section ) {
 		return array(
+			'footer_tagline'        => 'footer_show_tagline',
 			'business_profile'      => 'footer_show_business_profile',
 			'business_phone'        => 'footer_show_business_phone',
 			'text_phone'            => 'footer_show_text_phone',
@@ -1350,8 +1366,13 @@ function mrn_base_stack_get_default_theme_header_footer_layout_grid( $section ) 
 					'column'     => 1,
 					'columnSpan' => 1,
 				),
-				'business_profile' => array(
+				'header_tagline' => array(
 					'row'        => 2,
+					'column'     => 2,
+					'columnSpan' => 1,
+				),
+				'business_profile' => array(
+					'row'        => 3,
 					'column'     => 2,
 					'columnSpan' => 1,
 				),
@@ -1377,10 +1398,15 @@ function mrn_base_stack_get_default_theme_header_footer_layout_grid( $section ) 
 	if ( 'footer' === $section ) {
 		return array(
 			'columns' => 3,
-			'rows'    => 5,
+			'rows'    => 6,
 			'items'   => array(
 				'footer_brand'          => array(
 					'row'        => 1,
+					'column'     => 1,
+					'columnSpan' => 1,
+				),
+				'footer_tagline'        => array(
+					'row'        => 2,
 					'column'     => 1,
 					'columnSpan' => 1,
 				),
@@ -1395,47 +1421,47 @@ function mrn_base_stack_get_default_theme_header_footer_layout_grid( $section ) 
 					'columnSpan' => 1,
 				),
 				'text_phone' => array(
-					'row'        => 2,
+					'row'        => 3,
 					'column'     => 1,
 					'columnSpan' => 1,
 				),
 				'address' => array(
-					'row'        => 2,
+					'row'        => 3,
 					'column'     => 2,
 					'columnSpan' => 1,
 				),
 				'business_hours' => array(
-					'row'        => 2,
+					'row'        => 3,
 					'column'     => 3,
 					'columnSpan' => 1,
 				),
 				'footer_primary_menu' => array(
-					'row'        => 3,
+					'row'        => 4,
 					'column'     => 1,
 					'columnSpan' => 1,
 				),
 				'footer_secondary_menu' => array(
-					'row'        => 3,
+					'row'        => 4,
 					'column'     => 2,
 					'columnSpan' => 1,
 				),
 				'footer_tertiary_menu' => array(
-					'row'        => 4,
+					'row'        => 5,
 					'column'     => 1,
 					'columnSpan' => 1,
 				),
 				'social_media' => array(
-					'row'        => 4,
+					'row'        => 5,
 					'column'     => 2,
 					'columnSpan' => 1,
 				),
 				'privacy_center_links' => array(
-					'row'        => 4,
+					'row'        => 5,
 					'column'     => 3,
 					'columnSpan' => 1,
 				),
 				'copyright' => array(
-					'row'        => 5,
+					'row'        => 6,
 					'column'     => 1,
 					'columnSpan' => 3,
 				),
@@ -2427,6 +2453,16 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					mrn_base_stack_get_theme_header_footer_color_field( 'header', 'link_color', __( 'Link Color', 'mrn-base-stack' ) ),
 					mrn_base_stack_get_theme_header_footer_color_field( 'header', 'link_hover_color', __( 'Link Hover Color', 'mrn-base-stack' ) ),
 					array(
+						'key'           => 'field_mrn_theme_header_show_tagline',
+						'label'         => __( 'Show Tagline', 'mrn-base-stack' ),
+						'name'          => 'header_show_tagline',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Renders the WordPress General Settings tagline as its own Header layout item. The tagline never controls the page title.', 'mrn-base-stack' ),
+						'required'      => 0,
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
 						'key'           => 'field_mrn_theme_header_show_utility_menu',
 						'label'         => __( 'Show Secondary Menu', 'mrn-base-stack' ),
 						'name'          => 'header_show_utility_menu',
@@ -2687,6 +2723,16 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					mrn_base_stack_get_theme_header_footer_color_field( 'footer', 'link_color', __( 'Link Color', 'mrn-base-stack' ) ),
 					mrn_base_stack_get_theme_header_footer_color_field( 'footer', 'link_hover_color', __( 'Link Hover Color', 'mrn-base-stack' ) ),
 					array(
+						'key'           => 'field_mrn_theme_footer_show_tagline',
+						'label'         => __( 'Show Tagline', 'mrn-base-stack' ),
+						'name'          => 'footer_show_tagline',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Renders the WordPress General Settings tagline as its own Footer layout item. The tagline never controls the page title.', 'mrn-base-stack' ),
+						'required'      => 0,
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
 						'key'           => 'field_mrn_theme_footer_show_social_menu',
 						'label'         => __( 'Show Social Icons', 'mrn-base-stack' ),
 						'name'          => 'footer_show_social_menu',
@@ -2905,6 +2951,144 @@ function mrn_base_stack_register_theme_options_field_groups() {
 					'default_value' => 'link',
 					'layout'        => 'horizontal',
 					'return_format' => 'value',
+				),
+				array(
+					'key'           => 'field_mrn_header_utility_message_link_icon_enabled',
+					'label'         => __( 'Show Link Icon', 'mrn-base-stack' ),
+					'name'          => 'header_utility_message_link_icon_enabled',
+					'type'          => 'true_false',
+					'instructions'  => __( 'Adds a decorative icon after the utility message link text.', 'mrn-base-stack' ),
+					'required'      => 0,
+					'default_value' => 0,
+					'ui'            => 1,
+				),
+				array(
+					'key'               => 'field_mrn_header_utility_message_link_icon_source',
+					'label'             => __( 'Icon Source', 'mrn-base-stack' ),
+					'name'              => 'header_utility_message_link_icon_source',
+					'type'              => 'button_group',
+					'choices'           => array(
+						'dashicons'   => __( 'Dashicons', 'mrn-base-stack' ),
+						'fontawesome' => __( 'Font Awesome', 'mrn-base-stack' ),
+						'media'       => __( 'Media', 'mrn-base-stack' ),
+					),
+					'default_value'     => 'dashicons',
+					'layout'            => 'horizontal',
+					'return_format'     => 'value',
+					'wrapper'           => array(
+						'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--source',
+					),
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_header_utility_message_link_icon_enabled',
+								'operator' => '==',
+								'value'    => '1',
+							),
+						),
+					),
+				),
+				array(
+					'key'               => 'field_mrn_header_utility_message_link_icon_dashicon',
+					'label'             => __( 'Dashicon', 'mrn-base-stack' ),
+					'name'              => 'header_utility_message_link_icon_dashicon',
+					'type'              => 'select',
+					'choices'           => mrn_base_stack_get_header_search_standard_icon_choices(),
+					'default_value'     => 'dashicons-arrow-right-alt2',
+					'return_format'     => 'value',
+					'ui'                => 1,
+					'wrapper'           => array(
+						'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--dashicons',
+					),
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_header_utility_message_link_icon_enabled',
+								'operator' => '==',
+								'value'    => '1',
+							),
+							array(
+								'field'    => 'field_mrn_header_utility_message_link_icon_source',
+								'operator' => '==',
+								'value'    => 'dashicons',
+							),
+						),
+					),
+				),
+				array(
+					'key'               => 'field_mrn_header_utility_message_link_icon_fa_class',
+					'label'             => __( 'Font Awesome Icon', 'mrn-base-stack' ),
+					'name'              => 'header_utility_message_link_icon_fa_class',
+					'type'              => 'select',
+					'choices'           => mrn_base_stack_get_header_search_fontawesome_choices(),
+					'default_value'     => 'fa-solid fa-arrow-right',
+					'return_format'     => 'value',
+					'ui'                => 1,
+					'wrapper'           => array(
+						'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--fontawesome',
+					),
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_header_utility_message_link_icon_enabled',
+								'operator' => '==',
+								'value'    => '1',
+							),
+							array(
+								'field'    => 'field_mrn_header_utility_message_link_icon_source',
+								'operator' => '==',
+								'value'    => 'fontawesome',
+							),
+						),
+					),
+				),
+				array(
+					'key'               => 'field_mrn_header_utility_message_link_icon_media',
+					'label'             => __( 'Media Icon', 'mrn-base-stack' ),
+					'name'              => 'header_utility_message_link_icon_media',
+					'type'              => 'image',
+					'return_format'     => 'id',
+					'preview_size'      => 'thumbnail',
+					'library'           => 'all',
+					'mime_types'        => 'jpg,jpeg,png,gif,webp,svg',
+					'instructions'      => __( 'Upload or choose the icon image to render after the utility message link.', 'mrn-base-stack' ),
+					'wrapper'           => array(
+						'class' => 'mrn-icon-chooser-field mrn-icon-chooser-field--media',
+					),
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_header_utility_message_link_icon_enabled',
+								'operator' => '==',
+								'value'    => '1',
+							),
+							array(
+								'field'    => 'field_mrn_header_utility_message_link_icon_source',
+								'operator' => '==',
+								'value'    => 'media',
+							),
+						),
+					),
+				),
+				array(
+					'key'               => 'field_mrn_header_utility_message_link_icon_gap',
+					'label'             => __( 'Icon Gap', 'mrn-base-stack' ),
+					'name'              => 'header_utility_message_link_icon_gap',
+					'type'              => 'number',
+					'default_value'     => 8,
+					'min'               => 0,
+					'step'              => 1,
+					'append'            => 'px',
+					'instructions'      => __( 'Space between the utility message link text and trailing icon.', 'mrn-base-stack' ),
+					'conditional_logic' => array(
+						array(
+							array(
+								'field'    => 'field_mrn_header_utility_message_link_icon_enabled',
+								'operator' => '==',
+								'value'    => '1',
+							),
+						),
+					),
 				),
 			),
 			'location'              => array(
@@ -3870,6 +4054,7 @@ function mrn_base_stack_get_theme_header_footer_options() {
 			'header_show_tertiary_menu'                  => false,
 			'header_show_secondary_menu'                 => false,
 			'header_show_utility_menu'                   => false,
+			'header_show_tagline'                        => false,
 			'header_primary_menu_id'                     => 0,
 			'header_primary_nav_inherit_header_settings' => true,
 			'header_show_search'                         => false,
@@ -3897,6 +4082,7 @@ function mrn_base_stack_get_theme_header_footer_options() {
 			'footer_show_secondary_menu'                 => false,
 			'footer_show_primary_menu'                   => false,
 			'footer_show_footer_menu'                    => false,
+			'footer_show_tagline'                        => false,
 			'footer_show_privacy_center_links'           => false,
 			'footer_show_business_profile'               => false,
 			'footer_show_business_phone'                 => false,
@@ -3993,6 +4179,7 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		'header_show_tertiary_menu'                  => (bool) get_field( 'header_show_tertiary_menu', 'option' ),
 		'header_show_secondary_menu'                 => $header_show_secondary_menu,
 		'header_show_utility_menu'                   => (bool) get_field( 'header_show_utility_menu', 'option' ),
+		'header_show_tagline'                        => (bool) get_field( 'header_show_tagline', 'option' ),
 		'header_primary_menu_id'                     => $header_primary_menu_id,
 		'header_primary_nav_inherit_header_settings' => $header_primary_nav_inherit,
 		'header_show_search'                         => (bool) get_field( 'header_show_search', 'option' ),
@@ -4019,6 +4206,7 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		'footer_show_secondary_menu'                 => (bool) get_field( 'footer_show_secondary_menu', 'option' ),
 		'footer_show_primary_menu'                   => $footer_show_primary_menu,
 		'footer_show_footer_menu'                    => $footer_show_primary_menu,
+		'footer_show_tagline'                        => (bool) get_field( 'footer_show_tagline', 'option' ),
 		'footer_show_privacy_center_links'           => (bool) get_field( 'footer_show_privacy_center_links', 'option' ),
 		'footer_show_business_profile'               => (bool) get_field( 'footer_show_business_profile', 'option' ),
 		'footer_show_business_phone'                 => (bool) get_field( 'footer_show_business_phone', 'option' ),

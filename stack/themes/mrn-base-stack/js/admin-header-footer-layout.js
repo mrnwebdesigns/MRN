@@ -10,6 +10,11 @@
 	var CONFIG_GROUPS = {
 		header: [
 			{
+				slug: 'site_identity',
+				label: 'Site Identity',
+				fields: ['header_show_tagline']
+			},
+			{
 				slug: 'navigation',
 				label: 'Navigation',
 				fields: ['header_show_utility_menu', 'header_show_tertiary_menu', 'header_primary_nav_inherit_header_settings']
@@ -26,6 +31,11 @@
 			}
 		],
 		footer: [
+			{
+				slug: 'site_identity',
+				label: 'Site Identity',
+				fields: ['footer_show_tagline']
+			},
 			{
 				slug: 'navigation',
 				label: 'Navigation',

@@ -772,7 +772,7 @@ if ( ! function_exists( 'mrn_base_stack_get_header_utility_message_options' ) ) 
 	/**
 	 * Return normalized Header Utility Message options.
 	 *
-	 * @return array{enabled:bool,text:string,link:array<string,string>,link_style:string}
+	 * @return array{enabled:bool,text:string,link:array<string,string>,link_style:string,link_icon:array<string,mixed>}
 	 */
 	function mrn_base_stack_get_header_utility_message_options() {
 		$options = array(
@@ -784,18 +784,51 @@ if ( ! function_exists( 'mrn_base_stack_get_header_utility_message_options' ) ) 
 				'target' => '',
 			),
 			'link_style' => 'link',
+			'link_icon'  => array(
+				'enabled'    => false,
+				'source'     => 'dashicons',
+				'dashicon'   => 'dashicons-arrow-right-alt2',
+				'fa_class'   => 'fa-solid fa-arrow-right',
+				'media_icon' => null,
+				'gap'        => 8,
+			),
 		);
 
 		if ( ! function_exists( 'get_field' ) ) {
 			return $options;
 		}
 
-		$link       = get_field( 'header_utility_message_link', 'option' );
-		$link_style = sanitize_key( (string) get_field( 'header_utility_message_link_style', 'option' ) );
+		$link                = get_field( 'header_utility_message_link', 'option' );
+		$link_style          = sanitize_key( (string) get_field( 'header_utility_message_link_style', 'option' ) );
+		$link_icon_source    = sanitize_key( (string) get_field( 'header_utility_message_link_icon_source', 'option' ) );
+		$link_icon_dashicon  = (string) get_field( 'header_utility_message_link_icon_dashicon', 'option' );
+		$link_icon_fa_class  = trim( (string) get_field( 'header_utility_message_link_icon_fa_class', 'option' ) );
+		$link_icon_media     = get_field( 'header_utility_message_link_icon_media', 'option' );
+		$link_icon_gap       = get_field( 'header_utility_message_link_icon_gap', 'option' );
+		$dashicon_choices    = function_exists( 'mrn_base_stack_get_header_search_standard_icon_choices' ) ? array_keys( mrn_base_stack_get_header_search_standard_icon_choices() ) : array();
+		$fontawesome_choices = function_exists( 'mrn_base_stack_get_header_search_fontawesome_choices' ) ? array_keys( mrn_base_stack_get_header_search_fontawesome_choices() ) : array();
 
 		if ( ! in_array( $link_style, array( 'link', 'button' ), true ) ) {
 			$link_style = 'link';
 		}
+
+		if ( ! in_array( $link_icon_source, array( 'dashicons', 'fontawesome', 'media' ), true ) ) {
+			$link_icon_source = 'dashicons';
+		}
+
+		if ( ! in_array( $link_icon_dashicon, $dashicon_choices, true ) ) {
+			$link_icon_dashicon = 'dashicons-arrow-right-alt2';
+		}
+
+		if ( ! in_array( $link_icon_fa_class, $fontawesome_choices, true ) ) {
+			$link_icon_fa_class = 'fa-solid fa-arrow-right';
+		}
+
+		if ( ! function_exists( 'mrn_base_stack_image_has_content' ) || ! mrn_base_stack_image_has_content( $link_icon_media ) ) {
+			$link_icon_media = null;
+		}
+
+		$link_icon_gap = is_numeric( $link_icon_gap ) ? max( 0, (float) $link_icon_gap ) : 8;
 
 		$options['enabled']    = (bool) get_field( 'header_utility_message_enabled', 'option' );
 		$options['text']       = function_exists( 'mrn_base_stack_sanitize_limited_inline_html' )
@@ -812,6 +845,14 @@ if ( ! function_exists( 'mrn_base_stack_get_header_utility_message_options' ) ) 
 				)
 			);
 		$options['link_style'] = $link_style;
+		$options['link_icon']  = array(
+			'enabled'    => (bool) get_field( 'header_utility_message_link_icon_enabled', 'option' ),
+			'source'     => $link_icon_source,
+			'dashicon'   => $link_icon_dashicon,
+			'fa_class'   => $link_icon_fa_class,
+			'media_icon' => $link_icon_media,
+			'gap'        => $link_icon_gap,
+		);
 
 		if ( is_array( $link ) && ! empty( $link['url'] ) && ! empty( $link['title'] ) ) {
 			$options['link'] = array(
@@ -822,6 +863,86 @@ if ( ! function_exists( 'mrn_base_stack_get_header_utility_message_options' ) ) 
 		}
 
 		return $options;
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_format_header_utility_message_icon_gap' ) ) :
+	/**
+	 * Format the utility message link icon gap as a CSS length.
+	 *
+	 * @param mixed $gap Raw gap value.
+	 * @return string
+	 */
+	function mrn_base_stack_format_header_utility_message_icon_gap( $gap ) {
+		$gap = is_numeric( $gap ) ? max( 0, (float) $gap ) : 8;
+
+		if ( 0.0 === fmod( $gap, 1.0 ) ) {
+			return (string) (int) $gap . 'px';
+		}
+
+		return rtrim( rtrim( sprintf( '%.2f', $gap ), '0' ), '.' ) . 'px';
+	}
+endif;
+
+if ( ! function_exists( 'mrn_base_stack_get_header_utility_message_link_icon_markup' ) ) :
+	/**
+	 * Return the utility message trailing link icon markup.
+	 *
+	 * @param array<string, mixed> $options Header Utility Message options.
+	 * @return string
+	 */
+	function mrn_base_stack_get_header_utility_message_link_icon_markup( array $options ) {
+		$link_icon = isset( $options['link_icon'] ) && is_array( $options['link_icon'] ) ? $options['link_icon'] : array();
+
+		if ( empty( $link_icon['enabled'] ) ) {
+			return '';
+		}
+
+		$source     = isset( $link_icon['source'] ) ? sanitize_key( (string) $link_icon['source'] ) : 'dashicons';
+		$gap        = mrn_base_stack_format_header_utility_message_icon_gap( $link_icon['gap'] ?? 8 );
+		$style_attr = ' style="--mrn-link-icon-gap:' . esc_attr( $gap ) . ';"';
+		$classes    = 'mrn-ui__link-icon mrn-ui__link-icon--right mrn-site-header__utility-message-link-icon';
+
+		if ( 'fontawesome' === $source ) {
+			$fa_class = isset( $link_icon['fa_class'] ) ? trim( (string) $link_icon['fa_class'] ) : '';
+
+			if ( '' === $fa_class || ( function_exists( 'mrn_fapm_icon_is_allowed' ) && ! mrn_fapm_icon_is_allowed( $fa_class ) ) ) {
+				return '';
+			}
+
+			return '<span class="' . esc_attr( $classes . ' mrn-ui__link-icon--fontawesome' ) . '" aria-hidden="true"' . $style_attr . '><i class="' . esc_attr( $fa_class ) . '"></i></span>';
+		}
+
+		if ( 'media' === $source ) {
+			$attachment_id = function_exists( 'mrn_base_stack_get_image_attachment_id' ) ? mrn_base_stack_get_image_attachment_id( $link_icon['media_icon'] ?? null ) : 0;
+
+			if ( $attachment_id > 0 ) {
+				$image = function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
+					$attachment_id,
+					'mrn-icon',
+					array(
+						'class'       => 'mrn-ui__link-icon-image',
+						'alt'         => '',
+						'aria-hidden' => 'true',
+					)
+				) : '';
+
+				if ( is_string( $image ) && '' !== $image ) {
+					return '<span class="' . esc_attr( $classes . ' mrn-ui__link-icon--media' ) . '" aria-hidden="true"' . $style_attr . '>' . $image . '</span>';
+				}
+			}
+
+			return '';
+		}
+
+		$dashicon         = isset( $link_icon['dashicon'] ) ? sanitize_html_class( (string) $link_icon['dashicon'] ) : 'dashicons-arrow-right-alt2';
+		$dashicon_choices = function_exists( 'mrn_base_stack_get_header_search_standard_icon_choices' ) ? array_keys( mrn_base_stack_get_header_search_standard_icon_choices() ) : array();
+
+		if ( ! in_array( $dashicon, $dashicon_choices, true ) ) {
+			$dashicon = 'dashicons-arrow-right-alt2';
+		}
+
+		return '<span class="' . esc_attr( $classes . ' mrn-ui__link-icon--dashicons' ) . '" aria-hidden="true"' . $style_attr . '><span class="dashicons ' . esc_attr( $dashicon ) . '"></span></span>';
 	}
 endif;
 
@@ -868,7 +989,7 @@ if ( ! function_exists( 'mrn_base_stack_get_header_utility_message_markup' ) ) :
 			<?php endif; ?>
 			<?php if ( '' !== $options['link']['url'] ) : ?>
 				<a class="<?php echo esc_attr( implode( ' ', array_unique( $link_classes ) ) ); ?>" href="<?php echo esc_url( $options['link']['url'] ); ?>"<?php echo '_blank' === $options['link']['target'] ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
-					<?php echo esc_html( $options['link']['title'] ); ?>
+					<?php echo esc_html( $options['link']['title'] ) . mrn_base_stack_get_header_utility_message_link_icon_markup( $options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Icon helper escapes classes, styles, and media attributes. ?>
 				</a>
 			<?php endif; ?>
 		</div>

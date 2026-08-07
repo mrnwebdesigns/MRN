@@ -15,6 +15,7 @@
 	$mrn_footer_options                 = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
 	$mrn_business_information           = function_exists( 'mrn_base_stack_get_business_information' ) ? mrn_base_stack_get_business_information() : array();
 	$mrn_footer_logo                    = function_exists( 'mrn_base_stack_get_business_logo' ) ? mrn_base_stack_get_business_logo( 'footer' ) : null;
+	$mrn_footer_description             = function_exists( 'mrn_base_stack_get_site_tagline' ) ? mrn_base_stack_get_site_tagline() : wp_kses_post( get_bloginfo( 'description', 'display' ) );
 	$mrn_footer_address_lines           = function_exists( 'mrn_base_stack_get_business_address_lines' ) ? mrn_base_stack_get_business_address_lines() : array();
 	$mrn_footer_hours_rows              = function_exists( 'mrn_base_stack_get_business_hours_display_rows' ) ? mrn_base_stack_get_business_hours_display_rows() : array();
 	$mrn_footer_tertiary_location       = 'footer-tertiary';
@@ -34,6 +35,7 @@
 		$mrn_footer_social_icon_style .= ' --mrn-social-icon-hover-color: ' . mrn_base_stack_get_site_color_css_value( $mrn_footer_social_icon_hover_color ) . ';';
 	}
 	$mrn_footer_social_menu_class = 'mrn-social-links';
+	$mrn_show_footer_tagline      = ! empty( $mrn_footer_options['footer_show_tagline'] ) && ( '' !== $mrn_footer_description || is_customize_preview() );
 	$mrn_show_business_profile    = ! empty( $mrn_footer_options['footer_show_business_profile'] ) && ! empty( $mrn_business_information['business_profile'] );
 	$mrn_show_business_phone      = ! empty( $mrn_footer_options['footer_show_business_phone'] ) && ! empty( $mrn_business_information['phone'] ) && ! empty( $mrn_business_information['phone_uri'] );
 	$mrn_show_text_phone          = ! empty( $mrn_footer_options['footer_show_text_phone'] ) && ! empty( $mrn_business_information['text_phone'] ) && ! empty( $mrn_business_information['text_phone_uri'] );
@@ -120,6 +122,12 @@
 					) : '';
 					?>
 				</a>
+			</div>
+		<?php endif; ?>
+
+		<?php if ( $mrn_show_footer_tagline ) : ?>
+			<div class="mrn-theme-hf-layout-grid__item mrn-theme-hf-layout-grid__item--footer-tagline mrn-site-footer__tagline" data-mrn-layout-slot="footer-tagline" data-mrn-layout-item="footer_tagline"<?php echo '' !== $mrn_footer_grid_item_style( 'footer_tagline' ) ? ' style="' . esc_attr( $mrn_footer_grid_item_style( 'footer_tagline' ) ) . '"' : ''; ?>>
+				<p class="site-description"><?php echo $mrn_footer_description; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized by mrn_base_stack_get_site_tagline() or wp_kses_post(). ?></p>
 			</div>
 		<?php endif; ?>
 

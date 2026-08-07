@@ -42,9 +42,11 @@
 		$mrn_has_header_menu_rows          = $mrn_show_secondary_menu;
 		$mrn_business_logo                 = function_exists( 'mrn_base_stack_get_business_logo' ) ? mrn_base_stack_get_business_logo( 'header' ) : null;
 		$mrn_has_custom_logo               = function_exists( 'has_custom_logo' ) && has_custom_logo();
+		$mrn_base_stack_description        = function_exists( 'mrn_base_stack_get_site_tagline' ) ? mrn_base_stack_get_site_tagline() : wp_kses_post( get_bloginfo( 'description', 'display' ) );
+		$mrn_show_header_tagline           = ! empty( $mrn_header_options['header_show_tagline'] ) && ( '' !== $mrn_base_stack_description || is_customize_preview() );
 		$mrn_header_layout_grid            = isset( $mrn_header_options['header_layout_grid'] ) && is_array( $mrn_header_options['header_layout_grid'] ) ? $mrn_header_options['header_layout_grid'] : ( function_exists( 'mrn_base_stack_get_theme_header_footer_layout_grid' ) ? mrn_base_stack_get_theme_header_footer_layout_grid( 'header' ) : array() );
 		$mrn_header_use_layout_grid        = ! isset( $mrn_header_options['header_use_layout_grid'] ) || ! empty( $mrn_header_options['header_use_layout_grid'] );
-		$mrn_header_default_layout_order   = function_exists( 'mrn_base_stack_get_default_theme_header_footer_layout_order' ) ? mrn_base_stack_get_default_theme_header_footer_layout_order( 'header' ) : array( 'secondary_menu', 'header_utility_message', 'header_brand', 'business_profile', 'business_phone', 'search', 'header_tertiary_menu' );
+		$mrn_header_default_layout_order   = function_exists( 'mrn_base_stack_get_default_theme_header_footer_layout_order' ) ? mrn_base_stack_get_default_theme_header_footer_layout_order( 'header' ) : array( 'secondary_menu', 'header_utility_message', 'header_brand', 'header_tagline', 'business_profile', 'business_phone', 'search', 'header_tertiary_menu' );
 		$mrn_header_layout_order           = isset( $mrn_header_options['header_layout_order'] ) && is_array( $mrn_header_options['header_layout_order'] ) ? $mrn_header_options['header_layout_order'] : ( function_exists( 'mrn_base_stack_get_theme_header_footer_layout_order' ) ? mrn_base_stack_get_theme_header_footer_layout_order( 'header' ) : $mrn_header_default_layout_order );
 		$mrn_header_layout_order           = ! empty( $mrn_header_layout_order ) ? $mrn_header_layout_order : $mrn_header_default_layout_order;
 		$mrn_header_attributes             = function_exists( 'mrn_base_stack_get_theme_header_footer_shell_attributes' ) ? mrn_base_stack_get_theme_header_footer_shell_attributes( 'header', $mrn_header_options, $mrn_header_layout_grid, $mrn_header_use_layout_grid ) : array();
@@ -113,7 +115,7 @@
 		);
 		/* translators: %s: Site name. */
 		$mrn_header_home_label  = sprintf( __( '%s home', 'mrn-base-stack' ), get_bloginfo( 'name' ) );
-		$mrn_header_render_item = static function ( $mrn_header_item_key ) use ( $mrn_header_item_attributes, $mrn_has_header_menu_rows, $mrn_header_rows, $mrn_show_header_utility_message, $mrn_business_logo, $mrn_has_custom_logo, $mrn_header_home_label, $mrn_show_business_profile, $mrn_business_information, $mrn_show_business_phone, $mrn_show_search, $mrn_show_tertiary_menu, $mrn_header_tertiary_location ) {
+		$mrn_header_render_item = static function ( $mrn_header_item_key ) use ( $mrn_header_item_attributes, $mrn_has_header_menu_rows, $mrn_header_rows, $mrn_show_header_utility_message, $mrn_business_logo, $mrn_has_custom_logo, $mrn_header_home_label, $mrn_show_header_tagline, $mrn_base_stack_description, $mrn_show_business_profile, $mrn_business_information, $mrn_show_business_phone, $mrn_show_search, $mrn_show_tertiary_menu, $mrn_header_tertiary_location ) {
 			switch ( $mrn_header_item_key ) {
 				case 'secondary_menu':
 					if ( ! $mrn_has_header_menu_rows ) {
@@ -190,13 +192,19 @@
 								<p class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></p>
 								<?php
 							endif;
-
-							$mrn_base_stack_description = function_exists( 'mrn_base_stack_get_site_tagline' ) ? mrn_base_stack_get_site_tagline() : get_bloginfo( 'description', 'display' );
-							if ( $mrn_base_stack_description || is_customize_preview() ) :
-								?>
-								<p class="site-description"><?php echo $mrn_base_stack_description; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized by mrn_base_stack_get_site_tagline(). ?></p>
-							<?php endif; ?>
+							?>
 						</div><!-- .site-branding -->
+					</div>
+					<?php
+					break;
+
+				case 'header_tagline':
+					if ( ! $mrn_show_header_tagline ) {
+						return;
+					}
+					?>
+					<div <?php echo $mrn_header_item_attributes( 'header_tagline', 'header-tagline', 'mrn-site-header__tagline-item' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Attribute helper escapes attribute names and values. ?>>
+						<p class="site-description mrn-site-header__tagline"><?php echo $mrn_base_stack_description; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized by mrn_base_stack_get_site_tagline(). ?></p>
 					</div>
 					<?php
 					break;

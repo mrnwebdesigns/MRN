@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.2.95' );
+	define( '_S_VERSION', '1.2.96' );
 }
 
 /**
@@ -856,6 +856,26 @@ function mrn_base_stack_scripts() {
 
 	if ( ( 'dashicons' === $search_icon_source || 'standard' === $search_icon_source ) && $uses_icon_search ) {
 		$needs_dashicons = true;
+	}
+
+	if ( function_exists( 'mrn_base_stack_get_header_utility_message_options' ) ) {
+		$utility_message_options = mrn_base_stack_get_header_utility_message_options();
+		$utility_message_icon    = isset( $utility_message_options['link_icon'] ) && is_array( $utility_message_options['link_icon'] ) ? $utility_message_options['link_icon'] : array();
+		$utility_message_source  = isset( $utility_message_icon['source'] ) ? sanitize_key( (string) $utility_message_icon['source'] ) : '';
+
+		if (
+			! empty( $utility_message_options['enabled'] )
+			&& ! empty( $utility_message_options['link']['url'] )
+			&& ! empty( $utility_message_icon['enabled'] )
+		) {
+			if ( 'fontawesome' === $utility_message_source ) {
+				$needs_fontawesome = true;
+			}
+
+			if ( 'dashicons' === $utility_message_source ) {
+				$needs_dashicons = true;
+			}
+		}
 	}
 
 	if ( function_exists( 'mrn_config_helper_get_social_links' ) ) {
