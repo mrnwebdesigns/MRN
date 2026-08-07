@@ -158,10 +158,10 @@
 					<?php
 				endif;
 
-				$mrn_base_stack_description = get_bloginfo( 'description', 'display' );
+				$mrn_base_stack_description = function_exists( 'mrn_base_stack_get_site_tagline' ) ? mrn_base_stack_get_site_tagline() : get_bloginfo( 'description', 'display' );
 				if ( $mrn_base_stack_description || is_customize_preview() ) :
 					?>
-					<p class="site-description"><?php echo $mrn_base_stack_description; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
+					<p class="site-description"><?php echo $mrn_base_stack_description; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized by mrn_base_stack_get_site_tagline(). ?></p>
 				<?php endif; ?>
 			</div><!-- .site-branding -->
 		</div>

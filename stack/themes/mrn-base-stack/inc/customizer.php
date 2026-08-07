@@ -49,7 +49,9 @@ function mrn_base_stack_customize_partial_blogname() {
  * @return void
  */
 function mrn_base_stack_customize_partial_blogdescription() {
-	bloginfo( 'description' );
+	echo function_exists( 'mrn_base_stack_get_site_tagline' )
+		? mrn_base_stack_get_site_tagline() // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized by helper.
+		: esc_html( get_bloginfo( 'description' ) );
 }
 
 /**

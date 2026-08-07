@@ -8,6 +8,46 @@
  */
 
 ( function( $ ) {
+	function sanitizeLimitedInlineHtml( value ) {
+		var template = document.createElement( 'template' );
+		var allowed = {
+			BR: [],
+			EM: [],
+			SPAN: [ 'class' ],
+			STRONG: [],
+		};
+
+		function clean( parent ) {
+			Array.prototype.slice.call( parent.childNodes ).forEach( function( child ) {
+				var allowedAttributes;
+
+				if ( 1 === child.nodeType ) {
+					allowedAttributes = allowed[ child.nodeName ];
+
+					if ( ! allowedAttributes ) {
+						child.parentNode.replaceChild( document.createTextNode( child.textContent || '' ), child );
+						return;
+					}
+
+					Array.prototype.slice.call( child.attributes ).forEach( function( attribute ) {
+						if ( -1 === allowedAttributes.indexOf( attribute.name.toLowerCase() ) ) {
+							child.removeAttribute( attribute.name );
+						}
+					} );
+
+					clean( child );
+				} else if ( 3 !== child.nodeType ) {
+					child.parentNode.removeChild( child );
+				}
+			} );
+		}
+
+		template.innerHTML = String( value || '' );
+		clean( template.content );
+
+		return template.innerHTML;
+	}
+
 	// Site title and description.
 	wp.customize( 'blogname', function( value ) {
 		value.bind( function( to ) {
@@ -16,7 +56,7 @@
 	} );
 	wp.customize( 'blogdescription', function( value ) {
 		value.bind( function( to ) {
-			$( '.site-description' ).text( to );
+			$( '.site-description' ).html( sanitizeLimitedInlineHtml( to ) );
 		} );
 	} );
 
