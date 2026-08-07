@@ -2573,7 +2573,19 @@ button.mrn-ui__link--button {
 .mrn-ui__link-icon {
 	display: inline-flex;
 	align-items: center;
+	text-decoration: none;
 	vertical-align: middle;
+}
+
+.site-header a .mrn-ui__link-icon,
+.site-header a:hover .mrn-ui__link-icon,
+.site-header a:focus .mrn-ui__link-icon,
+.site-header a:focus-visible .mrn-ui__link-icon,
+.site-footer a .mrn-ui__link-icon,
+.site-footer a:hover .mrn-ui__link-icon,
+.site-footer a:focus .mrn-ui__link-icon,
+.site-footer a:focus-visible .mrn-ui__link-icon {
+	text-decoration: none;
 }
 
 .mrn-ui__link-icon--left {
