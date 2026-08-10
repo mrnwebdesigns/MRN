@@ -117,7 +117,9 @@
 			}
 		});
 		if (data.type === 'links') data.links = Array.from(block.querySelectorAll('.mrn-mm-link-row')).map((row) => ({ label: row.querySelector('[data-link-field="label"]').value, url: row.querySelector('[data-link-field="url"]').value, target: row.querySelector('[data-link-field="target"]').value }));
-		if (data.type === 'categories') data.category_ids = Array.from(block.querySelectorAll('[data-category-id]:checked')).map((input) => Number(input.dataset.categoryId));
+		if (data.type === 'categories') data.category_ids = Array.from(block.querySelectorAll('[data-category-id]:checked'))
+			.sort((first, second) => Number(first.dataset.categoryOrder) - Number(second.dataset.categoryOrder))
+			.map((input) => Number(input.dataset.categoryId));
 		const position = rectFor(block);
 		return { ...data, grid_row: position.row, grid_column: position.column, column_span: position.span };
 	}

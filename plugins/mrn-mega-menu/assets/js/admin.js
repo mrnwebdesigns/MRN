@@ -336,7 +336,9 @@
 					}));
 				}
 				if (data.type === 'categories') {
-					data.category_ids = Array.from(block.querySelectorAll('[data-category-id]:checked')).map((input) => Number(input.dataset.categoryId));
+					data.category_ids = Array.from(block.querySelectorAll('[data-category-id]:checked'))
+						.sort((first, second) => Number(first.dataset.categoryOrder) - Number(second.dataset.categoryOrder))
+						.map((input) => Number(input.dataset.categoryId));
 				}
 					columnData.blocks.push(data);
 				});

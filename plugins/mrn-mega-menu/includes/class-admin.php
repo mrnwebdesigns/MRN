@@ -423,22 +423,89 @@ final class Admin {
 	}
 
 	private static function render_category_fields( $block ) {
-		$selected = isset( $block['category_ids'] ) && is_array( $block['category_ids'] ) ? array_map( 'absint', $block['category_ids'] ) : array();
-		$terms    = taxonomy_exists( 'product_cat' ) ? get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false ) ) : array();
+		$selected          = isset( $block['category_ids'] ) && is_array( $block['category_ids'] ) ? array_values( array_filter( array_map( 'absint', $block['category_ids'] ) ) ) : array();
+		$selected_positions = array_flip( $selected );
+		$terms             = taxonomy_exists( 'product_cat' ) ? get_terms(
+			array(
+				'taxonomy'     => 'product_cat',
+				'hide_empty'   => false,
+				'hierarchical' => true,
+				'orderby'      => 'name',
+				'order'        => 'ASC',
+				'number'       => 0,
+			)
+		) : array();
+		$label_id          = wp_unique_id( 'mrn-mm-categories-' );
 		?>
 		<div class="mrn-mm-field">
-			<span><?php esc_html_e( 'Categories', 'mrn-mega-menu' ); ?></span>
-			<div class="mrn-mm-check-list">
+			<span id="<?php echo esc_attr( $label_id ); ?>"><?php esc_html_e( 'Categories', 'mrn-mega-menu' ); ?></span>
+			<div class="mrn-mm-check-list" role="group" aria-labelledby="<?php echo esc_attr( $label_id ); ?>">
 				<?php if ( is_wp_error( $terms ) || empty( $terms ) ) : ?>
 					<p><?php esc_html_e( 'No product categories are available yet.', 'mrn-mega-menu' ); ?></p>
 				<?php else : ?>
-					<?php foreach ( $terms as $term ) : ?>
-						<label><input type="checkbox" data-category-id="<?php echo esc_attr( $term->term_id ); ?>" <?php checked( in_array( (int) $term->term_id, $selected, true ) ); ?>><span><?php echo esc_html( $term->name ); ?></span></label>
-					<?php endforeach; ?>
+					<?php self::render_category_tree( $terms, $selected_positions ); ?>
 				<?php endif; ?>
 			</div>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Render WooCommerce product categories using their stored taxonomy hierarchy.
+	 *
+	 * @param WP_Term[] $terms              Product category terms.
+	 * @param int[]     $selected_positions Selected term IDs mapped to their saved order.
+	 * @return void
+	 */
+	private static function render_category_tree( $terms, $selected_positions ) {
+		$terms_by_parent = array();
+		$known_term_ids  = array_map( 'intval', wp_list_pluck( $terms, 'term_id' ) );
+		$tree_position   = 0;
+
+		foreach ( $terms as $term ) {
+			$parent_id = in_array( (int) $term->parent, $known_term_ids, true ) ? (int) $term->parent : 0;
+
+			$terms_by_parent[ $parent_id ][] = $term;
+		}
+
+		echo '<ul class="mrn-mm-category-tree">';
+		self::render_category_branch( 0, $terms_by_parent, $selected_positions, $tree_position );
+		echo '</ul>';
+	}
+
+	/**
+	 * Render one branch of the product category checklist.
+	 *
+	 * @param int        $parent_id          Parent term ID.
+	 * @param WP_Term[][] $terms_by_parent   Terms grouped by parent term ID.
+	 * @param int[]      $selected_positions Selected term IDs mapped to their saved order.
+	 * @param int        $tree_position      Current hierarchy display position.
+	 * @return void
+	 */
+	private static function render_category_branch( $parent_id, $terms_by_parent, $selected_positions, &$tree_position ) {
+		if ( empty( $terms_by_parent[ $parent_id ] ) ) {
+			return;
+		}
+
+		foreach ( $terms_by_parent[ $parent_id ] as $term ) {
+			$term_id        = (int) $term->term_id;
+			$is_selected    = array_key_exists( $term_id, $selected_positions );
+			$selection_order = $is_selected ? (int) $selected_positions[ $term_id ] : count( $selected_positions ) + $tree_position;
+			++$tree_position;
+			?>
+			<li class="mrn-mm-category-tree__item">
+				<label>
+					<input type="checkbox" data-category-id="<?php echo esc_attr( $term_id ); ?>" data-category-order="<?php echo esc_attr( $selection_order ); ?>" <?php checked( $is_selected ); ?>>
+					<span><?php echo esc_html( $term->name ); ?></span>
+				</label>
+				<?php if ( ! empty( $terms_by_parent[ $term_id ] ) ) : ?>
+					<ul>
+						<?php self::render_category_branch( $term_id, $terms_by_parent, $selected_positions, $tree_position ); ?>
+					</ul>
+				<?php endif; ?>
+			</li>
+			<?php
+		}
 	}
 
 	private static function render_product_fields( $block ) {

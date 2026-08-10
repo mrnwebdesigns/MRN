@@ -9,7 +9,7 @@ A focused WordPress menu enhancement layer with optional, first-class WooCommerc
 - Optional reusable Mega Layouts with one independently editable mega menu per top-level parent and one-to-six visual columns inside each mega menu
 - Custom link groups using the native WordPress link search and picker
 - Native WordPress menu blocks using the assigned item's children, an entire saved menu, or one selected parent branch
-- WooCommerce product category blocks
+- WooCommerce product category blocks with a hierarchy-aware category picker
 - Featured, on-sale, latest, and searchable manually selected product blocks
 - Promotional image, message, and call-to-action blocks
 - Content-width and full-width panels
