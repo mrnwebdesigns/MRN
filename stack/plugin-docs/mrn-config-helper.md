@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.39`
+- Current version: `0.1.52`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper`
 
@@ -93,6 +93,16 @@
   - `mrn_render_breadcrumbs( $args = [] )`
   - `mrn_get_breadcrumb_items( $args = [] )`
   - shortcode: `[mrn_breadcrumbs]` (+ `view` attribute)
+- WooCommerce breadcrumb behavior activates only when WooCommerce and `product_cat` are available:
+  - products use `Home -> Shop -> selected product-category ancestors -> Product`
+  - product-category archives include Shop and the complete category hierarchy
+  - the Shop page behaves as the product archive
+  - selection order is explicit validated context, signed category-origin context, supported SEO primary-category metadata, then deepest assigned category
+  - equal-depth fallback ties use the lowest term ID for stable output
+  - `woocommerce_product_category` supplies explicit renderer context
+  - `mrn_breadcrumb_woocommerce_context` supplies explicit context by filter
+  - `mrn_breadcrumb_woocommerce_product_category` can override the final selection when its result is assigned to the product
+  - visible output and JSON-LD continue using the same normalized item array
 - UptimeRobot helper return shape:
   - `api_key`
   - `source` (`constant`, `environment`, or `database`)

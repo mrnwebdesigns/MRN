@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.03-environment-runtime.1`
-- Release date: `2026-08-03`
+- Stack release: `2026.08.11-woocommerce-breadcrumbs`
+- Release date: `2026-08-11`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
@@ -21,7 +21,7 @@
 - Standard plugins:
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-announcements` `1.6.1`
-  - `mrn-config-helper` `0.1.43`
+  - `mrn-config-helper` `0.1.52`
   - `mrn-seo-helper` `0.3.4`
   - `mrn-dummy-content` `0.1.19`
   - `mrn-editor-tools` `1.8.24`
