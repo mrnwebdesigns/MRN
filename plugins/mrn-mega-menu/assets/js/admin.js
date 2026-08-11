@@ -324,8 +324,6 @@
 						data.product_ids = field.tagName === 'SELECT'
 							? Array.from(field.selectedOptions).map((option) => Number(option.value)).filter(Boolean)
 							: field.value.split(',').map((id) => parseInt(id.trim(), 10)).filter(Boolean);
-					} else if (field.type === 'checkbox') {
-						data[field.dataset.field] = field.checked ? 1 : 0;
 					} else {
 						data[field.dataset.field] = field.type === 'number' ? Number(field.value) : field.value;
 					}

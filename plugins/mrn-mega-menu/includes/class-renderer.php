@@ -453,8 +453,12 @@ final class Renderer {
 	}
 
 	private static function render_categories( $block ) {
-		$ids               = isset( $block['category_ids'] ) && is_array( $block['category_ids'] ) ? $block['category_ids'] : array();
-		$show_descriptions = ! empty( $block['show_category_descriptions'] );
+		$ids              = isset( $block['category_ids'] ) && is_array( $block['category_ids'] ) ? $block['category_ids'] : array();
+		$display          = isset( $block['category_display'] ) && in_array( $block['category_display'], array( 'links', 'links_descriptions', 'descriptions' ), true )
+			? $block['category_display']
+			: ( ! empty( $block['show_category_descriptions'] ) ? 'links_descriptions' : 'links' );
+		$show_links       = 'descriptions' !== $display;
+		$show_descriptions = 'links' !== $display;
 		if ( ! taxonomy_exists( 'product_cat' ) || empty( $ids ) ) {
 			return;
 		}
@@ -465,11 +469,12 @@ final class Renderer {
 				$term = get_term( absint( $term_id ), 'product_cat' );
 				if ( ! $term || is_wp_error( $term ) ) { continue; }
 				$url = get_term_link( $term );
-				if ( is_wp_error( $url ) ) { continue; }
+				if ( $show_links && is_wp_error( $url ) ) { continue; }
 				$description = $show_descriptions ? trim( wp_strip_all_tags( html_entity_decode( (string) $term->description, ENT_QUOTES, get_bloginfo( 'charset' ) ), true ) ) : '';
+				if ( ! $show_links && '' === $description ) { continue; }
 				?>
-				<li>
-					<a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $term->name ); ?><span aria-hidden="true">&rarr;</span></a>
+				<li<?php echo $show_links ? '' : ' class="mrn-mega-menu__category--description-only"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static class attribute. ?>>
+					<?php if ( $show_links ) : ?><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $term->name ); ?><span aria-hidden="true">&rarr;</span></a><?php endif; ?>
 					<?php if ( '' !== $description ) : ?><p class="mrn-mega-menu__category-description"><?php echo esc_html( $description ); ?></p><?php endif; ?>
 				</li>
 			<?php endforeach; ?>

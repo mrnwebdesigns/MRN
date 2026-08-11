@@ -250,6 +250,11 @@
 	margin: -2px 5px 10px;
 }
 
+.mrn-mega-menu__category--description-only .mrn-mega-menu__category-description {
+	margin: 0;
+	padding: 10px 5px;
+}
+
 .mrn-mega-menu__native-item--parent > a {
 	color: var(--mrn-mega-link) !important;
 	font-size: .78rem !important;
