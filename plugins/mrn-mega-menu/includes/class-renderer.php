@@ -32,6 +32,9 @@ final class Renderer {
 		if ( empty( $items ) || ! is_array( $items ) ) {
 			return $items;
 		}
+		if ( self::uses_native_mobile_fallback( $args ) ) {
+			return $items;
+		}
 
 		$menu_id = 0;
 		if ( isset( $args->menu ) && is_object( $args->menu ) && isset( $args->menu->term_id ) ) {
@@ -95,6 +98,24 @@ final class Renderer {
 				}
 			)
 		);
+	}
+
+	/**
+	 * Whether this menu keeps its native hierarchy for a responsive mobile fallback.
+	 *
+	 * The stack renders one primary menu for both desktop and mobile. Keeping the
+	 * native children in that instance lets desktop use mega panels while the
+	 * mobile drawer uses the standard nested menu controls.
+	 *
+	 * @param object|array<string, mixed> $args wp_nav_menu() arguments.
+	 * @return bool
+	 */
+	private static function uses_native_mobile_fallback( $args ) {
+		if ( is_object( $args ) ) {
+			return ! empty( $args->mrn_mega_menu_mobile_fallback );
+		}
+
+		return is_array( $args ) && ! empty( $args['mrn_mega_menu_mobile_fallback'] );
 	}
 
 	public static function enqueue_assets() {

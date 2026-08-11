@@ -405,6 +405,23 @@
 	position: relative !important;
 }
 
+[data-mrn-mobile-active="true"] .mrn-has-mega-menu > .mrn-mega-menu {
+	display: none !important;
+}
+
+[data-mrn-mobile-active="true"] .mrn-has-mega-menu > .sub-menu:not([hidden]) {
+	display: block !important;
+}
+
+[data-mrn-mobile-active="true"] .mrn-has-mega-menu > .mrn-mobile-navigation__submenu-toggle {
+	display: flex !important;
+}
+
+[data-mrn-mobile-active="true"] .mrn-has-mega-menu > [data-mrn-mega-menu-trigger]::after,
+[data-mrn-mobile-active="true"] .mrn-has-mega-menu > [data-mrn-mega-menu-trigger] .mrn-mega-menu__trigger-arrow {
+	display: none;
+}
+
 [data-mrn-mobile-active="true"] .mrn-mega-menu {
 	left: auto;
 	position: static;

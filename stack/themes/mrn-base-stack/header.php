@@ -100,9 +100,10 @@
 			$mrn_header_primary_menu_id,
 			$mrn_header_primary_location,
 			array(
-				'menu_id'    => 'primary-menu',
-				'container'  => false,
-				'menu_class' => 'menu',
+				'menu_id'                         => 'primary-menu',
+				'container'                       => false,
+				'menu_class'                      => 'menu',
+				'mrn_mega_menu_mobile_fallback'   => $mrn_mobile_navigation_enabled,
 			)
 		);
 		$mrn_header_rows                 = array(
