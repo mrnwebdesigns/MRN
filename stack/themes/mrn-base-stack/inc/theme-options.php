@@ -2522,13 +2522,13 @@ function mrn_base_stack_register_theme_options_field_groups() {
 						'type'              => 'select',
 						'choices'           => function_exists( 'mrn_base_stack_get_searchwp_form_choices' ) ? mrn_base_stack_get_searchwp_form_choices() : array(),
 						'default_value'     => function_exists( 'mrn_base_stack_get_default_searchwp_form_id' ) ? (string) mrn_base_stack_get_default_searchwp_form_id() : '',
-						'allow_null'        => 0,
+						'allow_null'        => 1,
 						'multiple'          => 0,
-						'required'          => 1,
+						'required'          => 0,
 						'ui'                => 1,
 						'ajax'              => 0,
 						'return_format'     => 'value',
-						'instructions'      => __( 'Uses the stack SearchWP form for the header search area.', 'mrn-base-stack' ),
+						'instructions'      => __( 'Uses the stack SearchWP form for the header search area. Leave blank to keep Show Search on without rendering a form.', 'mrn-base-stack' ),
 						'conditional_logic' => array(
 							array(
 								array(
@@ -4116,7 +4116,6 @@ function mrn_base_stack_get_theme_header_footer_options() {
 	$header_link_hover_color     = mrn_base_stack_normalize_site_color_slug( get_field( 'header_link_hover_color', 'option' ) );
 	$header_primary_menu_id      = absint( get_field( 'header_primary_menu_id', 'option' ) );
 	$searchwp_forms              = function_exists( 'mrn_base_stack_get_searchwp_forms' ) ? mrn_base_stack_get_searchwp_forms() : array();
-	$default_searchwp_form_id    = function_exists( 'mrn_base_stack_get_default_searchwp_form_id' ) ? mrn_base_stack_get_default_searchwp_form_id() : 0;
 	$standard_icon_choices       = array_keys( mrn_base_stack_get_header_search_standard_icon_choices() );
 	$fontawesome_choices         = array_keys( mrn_base_stack_get_header_search_fontawesome_choices() );
 
@@ -4144,8 +4143,8 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		$header_search_media_icon = null;
 	}
 
-	if ( $header_searchwp_form_id < 1 || ! isset( $searchwp_forms[ $header_searchwp_form_id ] ) ) {
-		$header_searchwp_form_id = absint( $default_searchwp_form_id );
+	if ( $header_searchwp_form_id > 0 && ! isset( $searchwp_forms[ $header_searchwp_form_id ] ) ) {
+		$header_searchwp_form_id = 0;
 	}
 
 	if ( $header_primary_menu_id > 0 && ! wp_get_nav_menu_object( $header_primary_menu_id ) ) {

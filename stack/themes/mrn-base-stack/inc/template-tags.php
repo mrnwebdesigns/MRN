@@ -421,8 +421,15 @@ if ( ! function_exists( 'mrn_base_stack_seed_searchwp_form' ) ) :
 			return;
 		}
 
-		$selected_header_form_id = function_exists( 'get_field' ) ? absint( get_field( 'header_searchwp_form_id', 'option' ) ) : absint( get_option( 'options_header_searchwp_form_id', 0 ) );
+		$selected_header_form_id      = function_exists( 'get_field' ) ? absint( get_field( 'header_searchwp_form_id', 'option' ) ) : absint( get_option( 'options_header_searchwp_form_id', 0 ) );
+		$has_header_form_saved_value  = false !== get_option( 'options_header_searchwp_form_id', false );
+		$has_header_form_saved_field  = false !== get_option( '_options_header_searchwp_form_id', false );
+		$has_header_form_saved_choice = $has_header_form_saved_value || $has_header_form_saved_field;
 		if ( $selected_header_form_id > 0 && isset( $forms[ $selected_header_form_id ] ) ) {
+			return;
+		}
+
+		if ( $has_header_form_saved_choice ) {
 			return;
 		}
 

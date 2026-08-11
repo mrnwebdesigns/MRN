@@ -71,6 +71,7 @@
 		$mrn_mobile_submenu_close_label  = __( 'Close %s submenu', 'mrn-base-stack' );
 		$mrn_header_primary_nav_classes .= $mrn_mobile_navigation_enabled ? ' mrn-mobile-navigation' : '';
 		$mrn_header_primary_nav_classes .= $mrn_mobile_navigation_enabled && ! $mrn_mobile_navigation_uses_header ? ' mrn-mobile-navigation--full-screen' : '';
+		$mrn_header_primary_nav_classes .= $mrn_mobile_navigation_enabled && ! empty( $mrn_mobile_navigation_options['center_to_canvas'] ) ? ' mrn-mobile-navigation--center-canvas' : '';
 		$mrn_header_primary_nav_classes .= '' !== $mrn_header_primary_nav_width_slug ? ' mrn-site-primary-navigation--width-' . sanitize_html_class( $mrn_header_primary_nav_width_slug ) : ' mrn-site-primary-navigation--independent';
 		$mrn_header_classes              = trim( 'site-header ' . ( $mrn_header_use_layout_grid ? 'mrn-theme-hf-layout-grid mrn-theme-hf-layout-grid--header ' : 'mrn-theme-hf-layout-stack mrn-theme-hf-layout-stack--header ' ) . $mrn_header_width_class );
 		$mrn_header_grid_item_style      = static function ( $item_key ) use ( $mrn_header_layout_grid ) {
