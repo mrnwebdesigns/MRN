@@ -12,6 +12,8 @@ A focused WordPress menu enhancement layer with optional, first-class WooCommerc
 - WooCommerce product category blocks with a hierarchy-aware category picker
 - Featured, on-sale, latest, and searchable manually selected product blocks
 - Promotional image, message, and call-to-action blocks
+- Bounded promotional media that stays inside its assigned menu column regardless of the source image dimensions
+- Published Reusable Block Library content that remains centrally editable
 - Content-width and full-width panels
 - Mouse, touch, and keyboard controls with Escape and outside-click closing
 - Responsive columns and reduced-motion support
@@ -56,6 +58,7 @@ The plugin detects the stack through public PHP contracts rather than filesystem
 - The stack admin/data-only post-type contract for optional Mega Layout records
 - MRN Tokens in human-readable menu copy using `{token:token_name}`
 - Capability detection for shared assets and base-theme business information
+- Direct rendering of published Reusable Block Library content inside menu panels, without page-row wrappers or duplicate anchors
 - The stack-owned admin layout builder for tabs, sortable columns, shared grid math, and layout styling
 - Native Appearance → Menus item management with per-item leading and navigation-arrow icons
 - Incremental “Add mega menu” controls plus per-layout parent-label, trigger-icon, trigger-arrow, and child-arrow overrides

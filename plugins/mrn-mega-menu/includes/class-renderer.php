@@ -285,10 +285,17 @@ final class Renderer {
 
 	private static function render_block( $block, $assigned_item_id, $use_grid = false, $child_arrow_icon = array() ) {
 		$type = isset( $block['type'] ) ? $block['type'] : '';
-		if ( ! in_array( $type, array( 'menu', 'links', 'categories', 'products', 'promo' ), true ) ) {
+		if ( ! in_array( $type, array( 'menu', 'links', 'categories', 'products', 'promo', 'reusable' ), true ) ) {
 			return;
 		}
-		$title = isset( $block['title'] ) ? Stack_Integration::resolve_text( $block['title'] ) : '';
+		$title         = isset( $block['title'] ) ? Stack_Integration::resolve_text( $block['title'] ) : '';
+		$reusable_html = '';
+		if ( 'reusable' === $type ) {
+			$reusable_html = Stack_Integration::render_reusable_block( isset( $block['reusable_block_id'] ) ? $block['reusable_block_id'] : 0 );
+			if ( '' === $reusable_html ) {
+				return;
+			}
+		}
 		?>
 		<?php
 		$style = '';
@@ -310,6 +317,8 @@ final class Renderer {
 				self::render_categories( $block );
 			} elseif ( 'products' === $type ) {
 				self::render_products( $block );
+			} elseif ( 'reusable' === $type ) {
+				echo $reusable_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Output is rendered by the trusted Reusable Block Library template contract.
 			} else {
 				self::render_promo( $block );
 			}
@@ -509,7 +518,11 @@ final class Renderer {
 		$url      = isset( $block['url'] ) ? $block['url'] : '';
 		$label    = isset( $block['link_label'] ) ? Stack_Integration::resolve_text( $block['link_label'] ) : '';
 		if ( $image_id ) {
-			echo wp_kses_post( wp_get_attachment_image( $image_id, 'large', false, array( 'class' => 'mrn-mega-menu__promo-image', 'loading' => 'lazy' ) ) );
+			?>
+			<div class="mrn-mega-menu__promo-media">
+				<?php echo wp_kses_post( wp_get_attachment_image( $image_id, 'large', false, array( 'class' => 'mrn-mega-menu__promo-image', 'loading' => 'lazy' ) ) ); ?>
+			</div>
+			<?php
 		}
 		if ( $text ) {
 			?><p class="mrn-mega-menu__promo-text"><?php echo esc_html( $text ); ?></p><?php

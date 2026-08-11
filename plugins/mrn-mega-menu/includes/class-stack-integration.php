@@ -71,6 +71,7 @@ final class Stack_Integration {
 			'shared_assets'         => function_exists( 'mrn_shared_assets_get_fontawesome_icons' ),
 			'admin_layout_builder'  => function_exists( 'mrn_shared_assets_enqueue_admin_layout_builder' ),
 			'business_information'  => function_exists( 'mrn_base_stack_get_business_information' ),
+			'reusable_blocks'       => function_exists( 'mrn_rbl_get_post_types' ) && function_exists( 'mrn_rbl_get_render_context' ) && function_exists( 'mrn_rbl_render_context' ),
 		);
 
 		/**
@@ -167,6 +168,96 @@ final class Stack_Integration {
 		 * @param string $text     Original stored copy.
 		 */
 		return (string) apply_filters( 'mrn_mega_menu_resolve_text', is_string( $resolved ) ? $resolved : $text, $text );
+	}
+
+	/**
+	 * Return published blocks from the optional Reusable Block Library.
+	 *
+	 * @return array<int, \WP_Post>
+	 */
+	public static function get_reusable_blocks() {
+		static $blocks = null;
+		if ( is_array( $blocks ) ) {
+			return $blocks;
+		}
+
+		$capabilities = self::get_capabilities();
+		if ( empty( $capabilities['reusable_blocks'] ) ) {
+			$blocks = array();
+			return $blocks;
+		}
+
+		$post_types = array_filter( array_map( 'sanitize_key', (array) mrn_rbl_get_post_types() ) );
+		if ( empty( $post_types ) ) {
+			$blocks = array();
+			return $blocks;
+		}
+
+		$blocks = get_posts(
+			array(
+				'post_type'              => $post_types,
+				'post_status'            => 'publish',
+				'posts_per_page'         => -1,
+				'orderby'                => 'title',
+				'order'                  => 'ASC',
+				'no_found_rows'          => true,
+				'suppress_filters'       => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+			)
+		);
+
+		return $blocks;
+	}
+
+	/**
+	 * Build an editor label that distinguishes similarly named block types.
+	 *
+	 * @param \WP_Post $post Reusable block post.
+	 * @return string
+	 */
+	public static function get_reusable_block_label( $post ) {
+		if ( ! $post instanceof \WP_Post ) {
+			return '';
+		}
+
+		$title     = '' !== trim( (string) $post->post_title ) ? $post->post_title : sprintf( __( 'Reusable block #%d', 'mrn-mega-menu' ), $post->ID );
+		$type      = get_post_type_object( $post->post_type );
+		$type_name = $type && isset( $type->labels->singular_name ) ? $type->labels->singular_name : '';
+
+		return $type_name ? sprintf( __( '%1$s — %2$s', 'mrn-mega-menu' ), $title, $type_name ) : $title;
+	}
+
+	/**
+	 * Render one published library block directly inside a mega-menu panel.
+	 *
+	 * @param int $post_id Reusable block post ID.
+	 * @return string
+	 */
+	public static function render_reusable_block( $post_id ) {
+		$capabilities = self::get_capabilities();
+		$post         = get_post( absint( $post_id ) );
+		if ( empty( $capabilities['reusable_blocks'] ) || ! $post instanceof \WP_Post || 'publish' !== $post->post_status ) {
+			return '';
+		}
+
+		$post_types = array_map( 'sanitize_key', (array) mrn_rbl_get_post_types() );
+		if ( ! in_array( $post->post_type, $post_types, true ) ) {
+			return '';
+		}
+
+		static $render_index = 0;
+		++$render_index;
+		$context = mrn_rbl_get_render_context(
+			$post,
+			array(
+				'host_post_id'   => get_queried_object_id(),
+				'host_row_index' => $render_index,
+				'suppress_anchor' => true,
+			)
+		);
+
+		return mrn_rbl_render_context( $context );
 	}
 
 	/**

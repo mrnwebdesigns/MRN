@@ -130,6 +130,8 @@
 
 .mrn-mega-menu__block {
 	margin: 0;
+	max-width: 100%;
+	min-width: 0;
 }
 
 .mrn-mega-menu__heading {
@@ -305,19 +307,27 @@
 	font-size: .84rem;
 }
 
-.mrn-mega-menu__promo-image {
-	aspect-ratio: 16 / 9;
+.mrn-mega-menu__promo-media {
 	border-radius: 6px;
-	display: block;
-	height: auto;
+	height: clamp(120px, 14vw, 220px);
 	margin: 0 0 12px;
-	object-fit: cover;
+	overflow: hidden;
 	width: 100%;
+}
+
+.mrn-mega-menu__promo-image {
+	display: block;
+	height: 100% !important;
+	margin: 0 !important;
+	max-width: 100% !important;
+	object-fit: cover;
+	width: 100% !important;
 }
 
 .mrn-mega-menu__promo-text {
 	font-size: .9rem;
 	margin: 0 0 10px;
+	overflow-wrap: anywhere;
 }
 
 .mrn-mega-menu__promo-link {

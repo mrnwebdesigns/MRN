@@ -219,6 +219,7 @@ final class Admin {
 			<button type="button" data-add-block="categories"><span class="dashicons dashicons-category"></span><span><strong><?php esc_html_e( 'Product categories', 'mrn-mega-menu' ); ?></strong><small><?php esc_html_e( 'Selected WooCommerce categories', 'mrn-mega-menu' ); ?></small></span></button>
 			<button type="button" data-add-block="products"><span class="dashicons dashicons-cart"></span><span><strong><?php esc_html_e( 'Products', 'mrn-mega-menu' ); ?></strong><small><?php esc_html_e( 'Featured, sale, latest, or selected', 'mrn-mega-menu' ); ?></small></span></button>
 			<button type="button" data-add-block="promo"><span class="dashicons dashicons-format-image"></span><span><strong><?php esc_html_e( 'Promotion', 'mrn-mega-menu' ); ?></strong><small><?php esc_html_e( 'Image, message, and call to action', 'mrn-mega-menu' ); ?></small></span></button>
+			<button type="button" data-add-block="reusable"><span class="dashicons dashicons-screenoptions"></span><span><strong><?php esc_html_e( 'Reusable block', 'mrn-mega-menu' ); ?></strong><small><?php esc_html_e( 'Published content from the block library', 'mrn-mega-menu' ); ?></small></span></button>
 		</div>
 		<?php
 	}
@@ -273,6 +274,7 @@ final class Admin {
 					<button type="button" data-add-block="categories"><span class="dashicons dashicons-category"></span><span><strong><?php esc_html_e( 'Product categories', 'mrn-mega-menu' ); ?></strong><small><?php esc_html_e( 'Selected WooCommerce categories', 'mrn-mega-menu' ); ?></small></span></button>
 					<button type="button" data-add-block="products"><span class="dashicons dashicons-cart"></span><span><strong><?php esc_html_e( 'Products', 'mrn-mega-menu' ); ?></strong><small><?php esc_html_e( 'Featured, sale, latest, or selected', 'mrn-mega-menu' ); ?></small></span></button>
 					<button type="button" data-add-block="promo"><span class="dashicons dashicons-format-image"></span><span><strong><?php esc_html_e( 'Promotion', 'mrn-mega-menu' ); ?></strong><small><?php esc_html_e( 'Image, message, and call to action', 'mrn-mega-menu' ); ?></small></span></button>
+					<button type="button" data-add-block="reusable"><span class="dashicons dashicons-screenoptions"></span><span><strong><?php esc_html_e( 'Reusable block', 'mrn-mega-menu' ); ?></strong><small><?php esc_html_e( 'Published content from the block library', 'mrn-mega-menu' ); ?></small></span></button>
 				</div>
 			</div>
 		</section>
@@ -282,12 +284,16 @@ final class Admin {
 	private static function render_block( $block, $block_index ) {
 		$type  = isset( $block['type'] ) ? sanitize_key( $block['type'] ) : 'links';
 		$title = isset( $block['title'] ) ? $block['title'] : '';
+		if ( 'reusable' === $type && ! empty( $block['reusable_block_id'] ) ) {
+			$title = Stack_Integration::get_reusable_block_label( get_post( absint( $block['reusable_block_id'] ) ) );
+		}
 		$names = array(
 			'menu'       => __( 'WordPress menu', 'mrn-mega-menu' ),
 			'links'      => __( 'Custom link group', 'mrn-mega-menu' ),
 			'categories' => __( 'Product categories', 'mrn-mega-menu' ),
 			'products'   => __( 'Products', 'mrn-mega-menu' ),
 			'promo'      => __( 'Promotion', 'mrn-mega-menu' ),
+			'reusable'   => __( 'Reusable block', 'mrn-mega-menu' ),
 		);
 		if ( ! isset( $names[ $type ] ) ) {
 			$type = 'links';
@@ -314,6 +320,10 @@ final class Admin {
 
 	private static function render_block_fields( $type, $block ) {
 		$title = isset( $block['title'] ) ? $block['title'] : '';
+		if ( 'reusable' === $type ) {
+			self::render_reusable_block_fields( $block );
+			return;
+		}
 		?>
 		<label class="mrn-mm-field">
 			<span><?php echo 'promo' === $type ? esc_html__( 'Headline', 'mrn-mega-menu' ) : esc_html__( 'Heading', 'mrn-mega-menu' ); ?></span>
@@ -343,6 +353,26 @@ final class Admin {
 		} elseif ( 'promo' === $type ) {
 			self::render_promo_fields( $block );
 		}
+	}
+
+	private static function render_reusable_block_fields( $block ) {
+		$selected_id = isset( $block['reusable_block_id'] ) ? absint( $block['reusable_block_id'] ) : 0;
+		$blocks      = Stack_Integration::get_reusable_blocks();
+		?>
+		<label class="mrn-mm-field">
+			<span><?php esc_html_e( 'Reusable block', 'mrn-mega-menu' ); ?></span>
+			<select data-field="reusable_block_id" class="mrn-mm-reusable-block-select">
+				<option value="0"><?php esc_html_e( 'Select a published reusable block', 'mrn-mega-menu' ); ?></option>
+				<?php foreach ( $blocks as $reusable_block ) : ?>
+					<option value="<?php echo esc_attr( $reusable_block->ID ); ?>" <?php selected( $selected_id, $reusable_block->ID ); ?>><?php echo esc_html( Stack_Integration::get_reusable_block_label( $reusable_block ) ); ?></option>
+				<?php endforeach; ?>
+			</select>
+			<small><?php esc_html_e( 'The menu always displays the latest published content from the Reusable Block Library.', 'mrn-mega-menu' ); ?></small>
+		</label>
+		<?php if ( empty( $blocks ) ) : ?>
+			<p class="description"><?php esc_html_e( 'No published reusable blocks are available, or the Reusable Block Library is inactive.', 'mrn-mega-menu' ); ?></p>
+		<?php endif; ?>
+		<?php
 	}
 
 	private static function render_menu_fields( $block ) {
@@ -566,7 +596,7 @@ final class Admin {
 	}
 
 	private static function render_templates() {
-		foreach ( array( 'menu', 'links', 'categories', 'products', 'promo' ) as $type ) {
+		foreach ( array( 'menu', 'links', 'categories', 'products', 'promo', 'reusable' ) as $type ) {
 			ob_start();
 			self::render_block( array( 'type' => $type ), 0 );
 			$template = ob_get_clean();
@@ -700,7 +730,7 @@ final class Admin {
 
 	private static function sanitize_block( $block ) {
 		$type = isset( $block['type'] ) ? sanitize_key( $block['type'] ) : '';
-		if ( ! in_array( $type, array( 'menu', 'links', 'categories', 'products', 'promo' ), true ) ) {
+		if ( ! in_array( $type, array( 'menu', 'links', 'categories', 'products', 'promo', 'reusable' ), true ) ) {
 			return null;
 		}
 		$clean = array(
@@ -736,6 +766,8 @@ final class Admin {
 			$clean['source']      = isset( $block['source'] ) && in_array( $block['source'], $sources, true ) ? $block['source'] : 'featured';
 			$clean['limit']       = isset( $block['limit'] ) ? max( 1, min( 8, absint( $block['limit'] ) ) ) : 4;
 			$clean['product_ids'] = isset( $block['product_ids'] ) && is_array( $block['product_ids'] ) ? array_slice( array_values( array_unique( array_filter( array_map( 'absint', $block['product_ids'] ) ) ) ), 0, 20 ) : array();
+		} elseif ( 'reusable' === $type ) {
+			$clean['reusable_block_id'] = isset( $block['reusable_block_id'] ) ? absint( $block['reusable_block_id'] ) : 0;
 		} else {
 			$clean['image_id']   = isset( $block['image_id'] ) ? absint( $block['image_id'] ) : 0;
 			$clean['text']       = isset( $block['text'] ) ? self::short_text( $block['text'], 240 ) : '';
@@ -789,6 +821,7 @@ final class Admin {
 			'categories' => 'dashicons-category',
 			'products'   => 'dashicons-cart',
 			'promo'      => 'dashicons-format-image',
+			'reusable'   => 'dashicons-screenoptions',
 		);
 		return isset( $icons[ $type ] ) ? $icons[ $type ] : 'dashicons-admin-links';
 	}
