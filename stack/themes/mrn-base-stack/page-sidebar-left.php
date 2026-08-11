@@ -1,7 +1,7 @@
 <?php
 /**
  * Template Name: Sidebar Left
- * Template Post Type: post, page, gallery, testimonial, case_study
+ * Template Post Type: post, page, gallery, testimonial, case_study, job_posting
  *
  * @package mrn-base-stack
  */

@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.08.11-careers-cpt
+- Expanded `mrn-base-stack` to `1.2.101`.
+- Added the stack-owned Careers admin section backed by the `job_posting` post type, with each record labeled as a Job Posting.
+- Added ACF fields for job-posting title contract content, summary, department, employment type, workplace type, location, compensation, application deadline, application URL/email, responsibilities, qualifications, and benefits.
+- Added singular/archive rendering for job postings with hero, breadcrumb, sidebar, content-builder, after-content, taxonomy, thumbnail, and apply-link support.
+
 ## 2026.08.11-woocommerce-breadcrumbs
 - Expanded `mrn-config-helper` to `0.1.53` with optional WooCommerce-aware breadcrumb resolution.
 - Added the configured Shop page and complete selected `product_cat` hierarchy to product breadcrumbs while preserving the shared MRN renderer, settings, accessibility markup, and schema pipeline.

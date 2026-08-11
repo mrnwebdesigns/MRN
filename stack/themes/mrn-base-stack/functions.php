@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.2.100' );
+	define( '_S_VERSION', '1.2.101' );
 }
 
 /**
@@ -324,7 +324,7 @@ function mrn_base_stack_is_admin_cpt_visible( $post_type ) {
  * @return array<int, string>
  */
 function mrn_base_stack_get_editorial_cpts() {
-	$post_types = array( 'gallery', 'testimonial', 'case_study' );
+	$post_types = array( 'gallery', 'testimonial', 'case_study', 'job_posting' );
 
 	/**
 	 * Filter the theme-owned editorial CPT slugs.
@@ -334,7 +334,7 @@ function mrn_base_stack_get_editorial_cpts() {
 	$post_types = apply_filters( 'mrn_base_stack_editorial_cpts', $post_types );
 
 	if ( ! is_array( $post_types ) ) {
-		return array( 'gallery', 'testimonial', 'case_study' );
+		return array( 'gallery', 'testimonial', 'case_study', 'job_posting' );
 	}
 
 	$post_types = array_values(
@@ -345,7 +345,7 @@ function mrn_base_stack_get_editorial_cpts() {
 		)
 	);
 
-	return ! empty( $post_types ) ? $post_types : array( 'gallery', 'testimonial', 'case_study' );
+	return ! empty( $post_types ) ? $post_types : array( 'gallery', 'testimonial', 'case_study', 'job_posting' );
 }
 
 /**
@@ -2544,6 +2544,11 @@ require_once get_template_directory() . '/inc/testimonial.php';
  * Load case-study modules.
  */
 require_once get_template_directory() . '/inc/case-study.php';
+
+/**
+ * Load careers modules.
+ */
+require_once get_template_directory() . '/inc/careers.php';
 
 /**
  * Load field-ready content post type registrations.

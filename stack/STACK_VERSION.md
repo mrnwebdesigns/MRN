@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.11-woocommerce-breadcrumbs`
+- Stack release: `2026.08.11-careers-cpt`
 - Release date: `2026-08-11`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.91`
+  - `mrn-base-stack` `1.2.101`
   - `mrn-base-stack-child` `1.0.1`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.5`
