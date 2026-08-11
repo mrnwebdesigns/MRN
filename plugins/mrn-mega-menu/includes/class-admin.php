@@ -158,11 +158,13 @@ final class Admin {
 						<p class="mrn-mm-stack-help"><?php echo wp_kses_post( __( 'Stack tokens are available in headings, link labels, promotion headlines, messages, and button labels. Example: <code>{token:phone}</code>.', 'mrn-mega-menu' ) ); ?></p>
 					<?php endif; ?>
 				</div>
-				<fieldset class="mrn-mm-segmented">
-					<legend class="screen-reader-text"><?php esc_html_e( 'Panel width', 'mrn-mega-menu' ); ?></legend>
-					<label><input type="radio" name="mrn_mega_menu_width" value="content" <?php checked( 'content', $width ); ?>><span><?php esc_html_e( 'Content width', 'mrn-mega-menu' ); ?></span></label>
-					<label><input type="radio" name="mrn_mega_menu_width" value="full" <?php checked( 'full', $width ); ?>><span><?php esc_html_e( 'Full width', 'mrn-mega-menu' ); ?></span></label>
-				</fieldset>
+				<div class="mrn-mm-layout-settings" aria-label="<?php esc_attr_e( 'Mega menu layout settings', 'mrn-mega-menu' ); ?>">
+					<label class="mrn-mm-toggle">
+						<input type="checkbox" name="mrn_mega_menu_width" value="full" <?php checked( 'full', $width ); ?>>
+						<span><?php esc_html_e( 'Full width panel', 'mrn-mega-menu' ); ?></span>
+					</label>
+					<p class="description"><?php esc_html_e( 'When enabled, the opened panel expands to the site full-width shell. When off, it stays within the site content shell.', 'mrn-mega-menu' ); ?></p>
+				</div>
 			</div>
 
 			<div class="mrn-mm-panels-toolbar">

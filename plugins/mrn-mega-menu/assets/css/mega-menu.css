@@ -86,6 +86,11 @@
 	width: min(calc(100vw - 32px), 1200px);
 }
 
+.mrn-mega-menu--full {
+	max-width: none;
+	width: 100vw;
+}
+
 .mrn-mega-menu__surface {
 	background: var(--mrn-mega-surface);
 	border: 1px solid var(--mrn-mega-border);
@@ -107,6 +112,10 @@
 	grid-template-columns: repeat(var(--mrn-mega-columns), minmax(0, 1fr));
 	margin: 0 auto;
 	max-width: 1240px;
+}
+
+.mrn-mega-menu--full .mrn-mega-menu__columns {
+	max-width: none;
 }
 
 .mrn-mega-menu__column {

@@ -13,12 +13,15 @@
 .mrn-mm-runtime-badge .dashicons { font-size: 15px; height: 15px; width: 15px; }
 .mrn-mm-runtime-badge--stack { background: #dcfce7; color: #166534; }
 .mrn-mm-builder__intro .mrn-mm-stack-help { border-left: 3px solid #22c55e; color: #3f5368; margin-top: 10px; padding-left: 10px; }
-.mrn-mm-segmented { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; margin: 0; padding: 3px; white-space: nowrap; }
-.mrn-mm-segmented label { margin: 0; }
-.mrn-mm-segmented input { opacity: 0; position: absolute; }
-.mrn-mm-segmented span { border-radius: 5px; cursor: pointer; display: block; padding: 7px 11px; }
-.mrn-mm-segmented input:checked + span { background: #e5f0ff; color: #0a4b9f; font-weight: 600; }
-.mrn-mm-segmented input:focus-visible + span { box-shadow: 0 0 0 2px #2271b1; }
+.mrn-mm-layout-settings { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; display: grid; gap: 6px; margin: 0; max-width: 320px; padding: 12px; }
+.mrn-mm-layout-settings .description { margin: 0; }
+.mrn-mm-toggle { align-items: center; cursor: pointer; display: flex; gap: 10px; margin: 0; }
+.mrn-mm-toggle input { -webkit-appearance: none; appearance: none; background: #94a3b8; border: 0; border-radius: 999px; box-shadow: inset 0 0 0 2px rgb(255 255 255 / 55%); cursor: pointer; height: 28px; margin: 0; position: relative; transition: background-color .15s ease; width: 50px; }
+.mrn-mm-toggle input::before { background: #fff; border-radius: 50%; box-shadow: 0 1px 2px rgb(15 23 42 / 24%); content: ""; height: 22px; left: 3px; position: absolute; top: 3px; transition: transform .15s ease; width: 22px; }
+.mrn-mm-toggle input:checked { background: #2271b1; }
+.mrn-mm-toggle input:checked::before { transform: translateX(22px); }
+.mrn-mm-toggle input:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2271b1; outline: 0; }
+.mrn-mm-toggle span { color: #172033; font-weight: 700; }
 .mrn-mm-builder__layout-controls { align-items: center; display: flex; gap: 12px; padding: 18px 24px 0; }
 .mrn-mm-builder__layout-controls > span { font-weight: 600; }
 .mrn-mm-columns-toolbar { align-items: flex-end; display: flex; gap: 20px; justify-content: space-between; }
