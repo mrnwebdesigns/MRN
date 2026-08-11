@@ -11,7 +11,9 @@
 	const button = navigation.querySelector( ':scope > .menu-toggle' );
 	const panel = navigation.querySelector( ':scope > .mrn-mobile-navigation__panel' );
 	const menu = panel ? panel.querySelector( ':scope > .menu' ) : null;
-	const mobileQuery = window.matchMedia( '(max-width: 1199px)' );
+	const configuredBreakpoint = parseInt( window.getComputedStyle( navigation ).getPropertyValue( '--mrn-mobile-menu-breakpoint' ), 10 );
+	const mobileBreakpoint = Number.isFinite( configuredBreakpoint ) && configuredBreakpoint >= 320 && configuredBreakpoint <= 1600 ? configuredBreakpoint : 1199;
+	const mobileQuery = window.matchMedia( '(max-width: ' + mobileBreakpoint + 'px)' );
 	const submenuOpenLabel = navigation.dataset.submenuOpenLabel || 'Open %s submenu';
 	const submenuCloseLabel = navigation.dataset.submenuCloseLabel || 'Close %s submenu';
 	let restoreFocus = null;

@@ -85,9 +85,24 @@ function mrn_base_stack_get_mobile_navigation_fields() {
 			'label'         => __( 'Enable Standard Mobile/Tablet Menu', 'mrn-base-stack' ),
 			'name'          => 'mobile_menu_enabled',
 			'type'          => 'true_false',
-			'instructions'  => __( 'Uses the Primary menu as a full-height mobile/tablet drawer through 1199px, below the theme’s 1200px desktop-navigation breakpoint. Choose below whether the drawer uses the site header or covers the full viewport.', 'mrn-base-stack' ),
+			'instructions'  => __( 'Uses the Primary menu as a full-height mobile/tablet drawer. Choose the activation breakpoint below, then choose whether the drawer uses the site header or covers the full viewport.', 'mrn-base-stack' ),
 			'default_value' => 1,
 			'ui'            => 1,
+		),
+		array(
+			'key'           => 'field_mrn_mobile_menu_breakpoint',
+			'label'         => __( 'Mobile Menu Breakpoint', 'mrn-base-stack' ),
+			'name'          => 'mobile_menu_breakpoint',
+			'type'          => 'range',
+			'instructions'  => __( 'The mobile drawer is active at and below this viewport width. The default is 1199px.', 'mrn-base-stack' ),
+			'default_value' => 1199,
+			'min'           => 320,
+			'max'           => 1600,
+			'step'          => 1,
+			'append'        => 'px',
+			'wrapper'       => array(
+				'width' => '50',
+			),
 		),
 		array(
 			'key'           => 'field_mrn_mobile_menu_use_site_header',
@@ -411,6 +426,7 @@ function mrn_base_stack_get_mobile_navigation_fields() {
 function mrn_base_stack_get_mobile_navigation_options() {
 	$defaults = array(
 		'enabled'                  => true,
+		'breakpoint'               => 1199,
 		'use_site_header'          => true,
 		'mobile_logo_id'           => 0,
 		'logo_max_height'          => 48,
@@ -456,6 +472,7 @@ function mrn_base_stack_get_mobile_navigation_options() {
 	}
 
 	$stored_enabled                 = get_option( 'options_mobile_menu_enabled', null );
+	$stored_breakpoint              = get_option( 'options_mobile_menu_breakpoint', null );
 	$stored_use_site_header         = get_option( 'options_mobile_menu_use_site_header', null );
 	$stored_logo_max_height         = get_option( 'options_mobile_menu_logo_max_height', null );
 	$stored_background_transparency = get_option( 'options_mobile_menu_background_transparency_enabled', null );
@@ -464,12 +481,14 @@ function mrn_base_stack_get_mobile_navigation_options() {
 	$stored_blur_amount             = get_option( 'options_mobile_menu_blur_amount', null );
 	$stored_submenu_transparency    = get_option( 'options_mobile_menu_submenu_transparency_enabled', null );
 	$stored_submenu_opacity         = get_option( 'options_mobile_menu_submenu_opacity', null );
+	$breakpoint                     = null === $stored_breakpoint ? 1199 : absint( get_field( 'mobile_menu_breakpoint', 'option' ) );
 	$background_opacity             = null === $stored_background_opacity ? 94 : absint( get_field( 'mobile_menu_background_opacity', 'option' ) );
 	$blur_amount                    = null === $stored_blur_amount ? 16 : absint( get_field( 'mobile_menu_blur_amount', 'option' ) );
 	$submenu_opacity                = null === $stored_submenu_opacity ? 8 : absint( get_field( 'mobile_menu_submenu_opacity', 'option' ) );
 	$logo_max_height                = null === $stored_logo_max_height ? 48 : absint( get_field( 'mobile_menu_logo_max_height', 'option' ) );
 	$options                        = array(
 		'enabled'                  => null === $stored_enabled ? true : (bool) get_field( 'mobile_menu_enabled', 'option' ),
+		'breakpoint'               => min( 1600, max( 320, $breakpoint ) ),
 		'use_site_header'          => null === $stored_use_site_header ? true : (bool) get_field( 'mobile_menu_use_site_header', 'option' ),
 		'mobile_logo_id'           => absint( get_field( 'mobile_menu_logo', 'option' ) ),
 		'logo_max_height'          => min( 120, max( 24, $logo_max_height ) ),
@@ -530,6 +549,7 @@ function mrn_base_stack_get_mobile_navigation_style( array $options ) {
 	$styles[] = '--mrn-mobile-menu-submenu-opacity:' . min( 100, $submenu_opacity ) . '%';
 	$styles[] = '--mrn-mobile-menu-blur:' . min( 40, $blur_amount ) . 'px';
 	$styles[] = '--mrn-mobile-menu-logo-max-height:' . min( 120, max( 24, absint( $options['logo_max_height'] ?? 48 ) ) ) . 'px';
+	$styles[] = '--mrn-mobile-menu-breakpoint:' . min( 1600, max( 320, absint( $options['breakpoint'] ?? 1199 ) ) ) . 'px';
 
 	return implode( ';', $styles );
 }

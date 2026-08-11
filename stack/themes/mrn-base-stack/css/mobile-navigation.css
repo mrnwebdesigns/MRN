@@ -1,6 +1,6 @@
 /*
  * Standard mobile/tablet drawer.
- * JavaScript applies the active state through 1199px.
+ * JavaScript applies the active state through the configured breakpoint.
  */
 .mrn-mobile-navigation__panel {
 	display: contents;
