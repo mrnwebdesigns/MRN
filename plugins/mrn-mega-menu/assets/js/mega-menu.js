@@ -54,7 +54,7 @@
 			return;
 		}
 		panel.style.setProperty('--mrn-mega-menu-offset-left', '0px');
-		panel.style.setProperty('--mrn-mega-menu-offset-left', `${panel.getBoundingClientRect().left}px`);
+		panel.style.setProperty('--mrn-mega-menu-offset-left', `${-panel.getBoundingClientRect().left}px`);
 	}
 
 	function close(item, returnFocus) {
