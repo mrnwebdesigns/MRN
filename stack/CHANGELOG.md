@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.08.11-services-cpt
+- Expanded `mrn-base-stack` to `1.2.102`.
+- Added the stack-owned Services admin section backed by the `service` post type.
+- Added ACF fields for service title contract content, summary, audience, included features, process/approach, benefits, service area, linked location, pricing note, and primary CTA.
+- Added singular/archive rendering for services with hero, breadcrumb, sidebar, content-builder, after-content, taxonomy, thumbnail, and CTA support.
+
 ## 2026.08.11-careers-cpt
 - Expanded `mrn-base-stack` to `1.2.101`.
 - Added the stack-owned Careers admin section backed by the `job_posting` post type, with each record labeled as a Job Posting.
