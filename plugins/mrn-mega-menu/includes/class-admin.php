@@ -457,6 +457,7 @@ final class Admin {
 	private static function render_category_fields( $block ) {
 		$selected          = isset( $block['category_ids'] ) && is_array( $block['category_ids'] ) ? array_values( array_filter( array_map( 'absint', $block['category_ids'] ) ) ) : array();
 		$selected_positions = array_flip( $selected );
+		$show_descriptions = ! empty( $block['show_category_descriptions'] );
 		$terms             = taxonomy_exists( 'product_cat' ) ? get_terms(
 			array(
 				'taxonomy'     => 'product_cat',
@@ -479,6 +480,11 @@ final class Admin {
 				<?php endif; ?>
 			</div>
 		</div>
+		<label class="mrn-mm-toggle">
+			<input type="checkbox" data-field="show_category_descriptions" value="1" <?php checked( $show_descriptions ); ?>>
+			<span><?php esc_html_e( 'Show category descriptions', 'mrn-mega-menu' ); ?></span>
+		</label>
+		<p class="description"><?php esc_html_e( 'Displays each selected WooCommerce category description below its category link. Categories without a description remain link-only.', 'mrn-mega-menu' ); ?></p>
 		<?php
 	}
 
@@ -761,6 +767,7 @@ final class Admin {
 			}
 		} elseif ( 'categories' === $type ) {
 			$clean['category_ids'] = isset( $block['category_ids'] ) && is_array( $block['category_ids'] ) ? array_slice( array_values( array_unique( array_filter( array_map( 'absint', $block['category_ids'] ) ) ) ), 0, 20 ) : array();
+			$clean['show_category_descriptions'] = empty( $block['show_category_descriptions'] ) ? 0 : 1;
 		} elseif ( 'products' === $type ) {
 			$sources              = array( 'featured', 'sale', 'latest', 'manual' );
 			$clean['source']      = isset( $block['source'] ) && in_array( $block['source'], $sources, true ) ? $block['source'] : 'featured';

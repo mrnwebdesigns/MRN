@@ -453,7 +453,8 @@ final class Renderer {
 	}
 
 	private static function render_categories( $block ) {
-		$ids = isset( $block['category_ids'] ) && is_array( $block['category_ids'] ) ? $block['category_ids'] : array();
+		$ids               = isset( $block['category_ids'] ) && is_array( $block['category_ids'] ) ? $block['category_ids'] : array();
+		$show_descriptions = ! empty( $block['show_category_descriptions'] );
 		if ( ! taxonomy_exists( 'product_cat' ) || empty( $ids ) ) {
 			return;
 		}
@@ -465,8 +466,12 @@ final class Renderer {
 				if ( ! $term || is_wp_error( $term ) ) { continue; }
 				$url = get_term_link( $term );
 				if ( is_wp_error( $url ) ) { continue; }
+				$description = $show_descriptions ? trim( wp_strip_all_tags( html_entity_decode( (string) $term->description, ENT_QUOTES, get_bloginfo( 'charset' ) ), true ) ) : '';
 				?>
-				<li><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $term->name ); ?><span aria-hidden="true">&rarr;</span></a></li>
+				<li>
+					<a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $term->name ); ?><span aria-hidden="true">&rarr;</span></a>
+					<?php if ( '' !== $description ) : ?><p class="mrn-mega-menu__category-description"><?php echo esc_html( $description ); ?></p><?php endif; ?>
+				</li>
 			<?php endforeach; ?>
 		</ul>
 		<?php
