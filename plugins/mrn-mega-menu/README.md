@@ -15,6 +15,7 @@ A focused WordPress menu enhancement layer with optional, first-class WooCommerc
 - Bounded promotional media that stays inside its assigned menu column regardless of the source image dimensions
 - Published Reusable Block Library content that remains centrally editable
 - Content-width and full-width panels
+- Full-width layouts retain viewport width when themes add content-driven menu sizing rules
 - Mouse, touch, and keyboard controls with Escape and outside-click closing
 - Responsive columns and reduced-motion support
 - Drag-and-drop content blocks between columns and sortable custom link rows, with keyboard move controls retained

@@ -269,7 +269,7 @@ final class Stack_Integration {
 		}
 
 		$css = '.mrn-mega-menu--stack.mrn-mega-menu--content{width:min(calc(100vw - (2 * var(--mrn-shell-gutter,16px))),var(--mrn-shell-wide-width,1200px));}'
-			. '.mrn-mega-menu--stack.mrn-mega-menu--full{width:100vw;max-width:none;}'
+			. '.mrn-mega-menu--stack.mrn-mega-menu--full{width:100vw!important;max-width:none;}'
 			. '.mrn-mega-menu--stack.mrn-mega-menu--full .mrn-mega-menu__columns{max-width:none;}'
 			. '.mrn-mega-menu--stack .mrn-mega-menu__surface{background:var(--site-color-white,#fff);color:var(--site-color-black,#172033);}'
 			. '.mrn-mega-menu--stack .mrn-mega-menu__heading{color:var(--site-color-black,#172033);}'

@@ -91,7 +91,7 @@
 	max-width: none;
 	right: auto;
 	transform: translateX(var(--mrn-mega-menu-offset-left, 0px));
-	width: 100vw;
+	width: 100vw !important;
 }
 
 .mrn-mega-menu__surface {
