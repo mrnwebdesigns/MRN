@@ -1,10 +1,11 @@
 # Stack Changelog
 
 ## 2026.08.11-woocommerce-breadcrumbs
-- Expanded `mrn-config-helper` to `0.1.52` with optional WooCommerce-aware breadcrumb resolution.
+- Expanded `mrn-config-helper` to `0.1.53` with optional WooCommerce-aware breadcrumb resolution.
 - Added the configured Shop page and complete selected `product_cat` hierarchy to product breadcrumbs while preserving the shared MRN renderer, settings, accessibility markup, and schema pipeline.
 - Added validated explicit/filter context, signed category-archive navigation context, supported SEO primary-category metadata, and a deterministic deepest-category fallback.
 - Added product-category ancestor and Shop archive coverage, request-local term caching, cache isolation for valid context URLs, and focused WooCommerce/non-WooCommerce regression tests.
+- Extended the documented context filter to product-link generation so filtered and AJAX catalogs can carry their single validated category selection instead of falling back to another assigned branch.
 
 ## 2026.08.03-environment-runtime.1
 - Expanded `mrn-environment-runtime` to `0.2.0` with an explicit SEO-indexing policy.
