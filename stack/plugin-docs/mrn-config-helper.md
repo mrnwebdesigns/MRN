@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.52`
+- Current version: `0.1.53`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper`
 
@@ -100,6 +100,7 @@
   - equal-depth fallback ties use the lowest term ID for stable output
   - `woocommerce_product_category` supplies explicit renderer context
   - `mrn_breadcrumb_woocommerce_context` supplies explicit context by filter
+  - custom and AJAX catalogs can use that filter during `archive_link` generation to carry a single reliable filtered category
   - `mrn_breadcrumb_woocommerce_product_category` can override the final selection when its result is assigned to the product
   - visible output and JSON-LD continue using the same normalized item array
 - UptimeRobot helper return shape:
