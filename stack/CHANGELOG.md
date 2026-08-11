@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.08.11-shortcode-form-output
+- Expanded `mrn-base-stack` to `1.2.103`.
+- Preserved accessible form controls rendered by trusted shortcodes inside the External Widget layout while continuing to reject scripts, inline event handlers, and unapproved markup.
+- Restored interactive shortcode output such as WooCommerce order tracking forms.
+
 ## 2026.08.11-services-cpt
 - Expanded `mrn-base-stack` to `1.2.102`.
 - Added the stack-owned Services admin section backed by the `service` post type.

@@ -52,7 +52,12 @@ if ( ! function_exists( 'mrn_base_stack_prepare_external_widget_markup' ) ) {
 
 if ( ! function_exists( 'mrn_base_stack_kses_external_widget_markup' ) ) {
 	/**
-	 * Limit external widget output to embed-safe markup.
+	 * Limit external widget output to embed- and shortcode-safe markup.
+	 *
+	 * Shortcodes can legitimately render interactive forms (for example,
+	 * WooCommerce order tracking). Keep the controls and their accessibility
+	 * attributes while continuing to reject scripts, inline event handlers, and
+	 * unapproved markup.
 	 *
 	 * @param string $markup Trusted embed or shortcode output.
 	 * @return string
@@ -61,7 +66,7 @@ if ( ! function_exists( 'mrn_base_stack_kses_external_widget_markup' ) ) {
 		return wp_kses(
 			(string) $markup,
 			array(
-				'a'      => array(
+				'a'        => array(
 					'aria-label' => true,
 					'class'      => true,
 					'href'       => true,
@@ -69,13 +74,24 @@ if ( ! function_exists( 'mrn_base_stack_kses_external_widget_markup' ) ) {
 					'target'     => true,
 					'title'      => true,
 				),
-				'div'    => array(
+				'div'      => array(
 					'aria-label' => true,
 					'class'      => true,
 					'id'         => true,
 					'role'       => true,
 				),
-				'embed'  => array(
+				'button'   => array(
+					'aria-describedby' => true,
+					'aria-label'       => true,
+					'class'            => true,
+					'disabled'         => true,
+					'id'               => true,
+					'name'             => true,
+					'type'             => true,
+					'value'            => true,
+				),
+				'br'       => array(),
+				'embed'    => array(
 					'aria-label' => true,
 					'class'      => true,
 					'height'     => true,
@@ -84,7 +100,22 @@ if ( ! function_exists( 'mrn_base_stack_kses_external_widget_markup' ) ) {
 					'type'       => true,
 					'width'      => true,
 				),
-				'iframe' => array(
+				'fieldset' => array(
+					'class'    => true,
+					'disabled' => true,
+					'id'       => true,
+				),
+				'form'     => array(
+					'action'     => true,
+					'class'      => true,
+					'enctype'    => true,
+					'id'         => true,
+					'method'     => true,
+					'name'       => true,
+					'novalidate' => true,
+					'role'       => true,
+				),
+				'iframe'   => array(
 					'allow'           => true,
 					'allowfullscreen' => true,
 					'aria-label'      => true,
@@ -99,7 +130,37 @@ if ( ! function_exists( 'mrn_base_stack_kses_external_widget_markup' ) ) {
 					'title'           => true,
 					'width'           => true,
 				),
-				'object' => array(
+				'input'    => array(
+					'aria-describedby' => true,
+					'aria-label'       => true,
+					'autocomplete'     => true,
+					'checked'          => true,
+					'class'            => true,
+					'disabled'         => true,
+					'id'               => true,
+					'max'              => true,
+					'maxlength'        => true,
+					'min'              => true,
+					'minlength'        => true,
+					'multiple'         => true,
+					'name'             => true,
+					'pattern'          => true,
+					'placeholder'      => true,
+					'readonly'         => true,
+					'required'         => true,
+					'size'             => true,
+					'step'             => true,
+					'type'             => true,
+					'value'            => true,
+				),
+				'label'    => array(
+					'class' => true,
+					'for'   => true,
+				),
+				'legend'   => array(
+					'class' => true,
+				),
+				'object'   => array(
 					'aria-label' => true,
 					'class'      => true,
 					'data'       => true,
@@ -109,17 +170,49 @@ if ( ! function_exists( 'mrn_base_stack_kses_external_widget_markup' ) ) {
 					'type'       => true,
 					'width'      => true,
 				),
-				'p'      => array(
+				'p'        => array(
 					'class' => true,
 				),
-				'param'  => array(
+				'param'    => array(
 					'name'  => true,
 					'value' => true,
 				),
-				'span'   => array(
+				'span'     => array(
 					'aria-label' => true,
 					'class'      => true,
 				),
+				'select'   => array(
+					'autocomplete' => true,
+					'class'        => true,
+					'disabled'     => true,
+					'id'           => true,
+					'multiple'     => true,
+					'name'         => true,
+					'required'     => true,
+					'size'         => true,
+				),
+				'option'   => array(
+					'disabled' => true,
+					'label'    => true,
+					'selected' => true,
+					'value'    => true,
+				),
+				'textarea' => array(
+					'autocomplete' => true,
+					'class'        => true,
+					'cols'         => true,
+					'disabled'     => true,
+					'id'           => true,
+					'maxlength'    => true,
+					'minlength'    => true,
+					'name'         => true,
+					'placeholder'  => true,
+					'readonly'     => true,
+					'required'     => true,
+					'rows'         => true,
+				),
+				'em'       => array(),
+				'strong'   => array(),
 			)
 		);
 	}
