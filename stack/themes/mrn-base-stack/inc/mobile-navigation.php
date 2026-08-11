@@ -99,15 +99,6 @@ function mrn_base_stack_get_mobile_navigation_fields() {
 			'ui'            => 1,
 		),
 		array(
-			'key'           => 'field_mrn_mobile_menu_center_to_canvas',
-			'label'         => __( 'Center Menu To Canvas', 'mrn-base-stack' ),
-			'name'          => 'mobile_menu_center_to_canvas',
-			'type'          => 'true_false',
-			'instructions'  => __( 'Centers the primary menu list within the mobile drawer canvas. Leave off for the default full-width mobile menu stack.', 'mrn-base-stack' ),
-			'default_value' => 0,
-			'ui'            => 1,
-		),
-		array(
 			'key'               => 'field_mrn_mobile_menu_full_screen_heading',
 			'label'             => '',
 			'name'              => '',
@@ -421,7 +412,6 @@ function mrn_base_stack_get_mobile_navigation_options() {
 	$defaults = array(
 		'enabled'                  => true,
 		'use_site_header'          => true,
-		'center_to_canvas'         => false,
 		'mobile_logo_id'           => 0,
 		'logo_max_height'          => 48,
 		'header_action_type'       => 'none',
@@ -467,7 +457,6 @@ function mrn_base_stack_get_mobile_navigation_options() {
 
 	$stored_enabled                 = get_option( 'options_mobile_menu_enabled', null );
 	$stored_use_site_header         = get_option( 'options_mobile_menu_use_site_header', null );
-	$stored_center_to_canvas        = get_option( 'options_mobile_menu_center_to_canvas', null );
 	$stored_logo_max_height         = get_option( 'options_mobile_menu_logo_max_height', null );
 	$stored_background_transparency = get_option( 'options_mobile_menu_background_transparency_enabled', null );
 	$stored_background_opacity      = get_option( 'options_mobile_menu_background_opacity', null );
@@ -482,7 +471,6 @@ function mrn_base_stack_get_mobile_navigation_options() {
 	$options                        = array(
 		'enabled'                  => null === $stored_enabled ? true : (bool) get_field( 'mobile_menu_enabled', 'option' ),
 		'use_site_header'          => null === $stored_use_site_header ? true : (bool) get_field( 'mobile_menu_use_site_header', 'option' ),
-		'center_to_canvas'         => null === $stored_center_to_canvas ? false : (bool) get_field( 'mobile_menu_center_to_canvas', 'option' ),
 		'mobile_logo_id'           => absint( get_field( 'mobile_menu_logo', 'option' ) ),
 		'logo_max_height'          => min( 120, max( 24, $logo_max_height ) ),
 		'header_action_type'       => $header_action_type,

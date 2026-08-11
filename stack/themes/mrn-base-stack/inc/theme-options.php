@@ -822,6 +822,7 @@ function mrn_base_stack_get_theme_header_footer_config_field_groups( $section ) 
 					'field_mrn_theme_header_show_tertiary_menu',
 					'field_mrn_theme_header_primary_menu_id',
 					'field_mrn_theme_header_primary_nav_inherit_header_settings',
+					'field_mrn_theme_header_primary_nav_center_to_canvas',
 				),
 			),
 			'business' => array(
@@ -2506,6 +2507,16 @@ function mrn_base_stack_register_theme_options_field_groups() {
 						'ui'            => 1,
 					),
 					array(
+						'key'           => 'field_mrn_theme_header_primary_nav_center_to_canvas',
+						'label'         => __( 'Center Primary Menu To Canvas', 'mrn-base-stack' ),
+						'name'          => 'header_primary_nav_center_to_canvas',
+						'type'          => 'true_false',
+						'instructions'  => __( 'Centers the Primary menu in a full-width navigation row. When enabled, this overrides the content-width portion of Primary Menu Matches Header while preserving inherited colors and font settings.', 'mrn-base-stack' ),
+						'required'      => 0,
+						'default_value' => 0,
+						'ui'            => 1,
+					),
+					array(
 						'key'           => 'field_mrn_theme_header_show_search',
 						'label'         => __( 'Show Search', 'mrn-base-stack' ),
 						'name'          => 'header_show_search',
@@ -4057,6 +4068,7 @@ function mrn_base_stack_get_theme_header_footer_options() {
 			'header_show_tagline'                        => false,
 			'header_primary_menu_id'                     => 0,
 			'header_primary_nav_inherit_header_settings' => true,
+			'header_primary_nav_center_to_canvas'        => false,
 			'header_show_search'                         => false,
 			'header_searchwp_form_id'                    => 0,
 			'header_search_style'                        => 'full',
@@ -4156,6 +4168,8 @@ function mrn_base_stack_get_theme_header_footer_options() {
 	$header_use_layout_grid         = '__mrn_missing__' === $header_use_layout_grid_raw ? true : (bool) get_field( 'header_use_layout_grid', 'option' );
 	$header_primary_nav_inherit_raw = get_option( 'options_header_primary_nav_inherit_header_settings', '__mrn_missing__' );
 	$header_primary_nav_inherit     = '__mrn_missing__' === $header_primary_nav_inherit_raw ? true : (bool) get_field( 'header_primary_nav_inherit_header_settings', 'option' );
+	$header_primary_nav_center_raw  = get_option( 'options_header_primary_nav_center_to_canvas', '__mrn_missing__' );
+	$header_primary_nav_center      = '__mrn_missing__' === $header_primary_nav_center_raw ? false : (bool) get_field( 'header_primary_nav_center_to_canvas', 'option' );
 	$footer_show_primary_menu       = (bool) get_field( 'footer_show_footer_menu', 'option' );
 	$footer_show_tertiary_menu      = (bool) get_field( 'footer_show_tertiary_menu', 'option' );
 	$footer_show_social_menu        = (bool) get_field( 'footer_show_social_menu', 'option' );
@@ -4181,6 +4195,7 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		'header_show_tagline'                        => (bool) get_field( 'header_show_tagline', 'option' ),
 		'header_primary_menu_id'                     => $header_primary_menu_id,
 		'header_primary_nav_inherit_header_settings' => $header_primary_nav_inherit,
+		'header_primary_nav_center_to_canvas'        => $header_primary_nav_center,
 		'header_show_search'                         => (bool) get_field( 'header_show_search', 'option' ),
 		'header_searchwp_form_id'                    => $header_searchwp_form_id,
 		'header_search_style'                        => $header_search_style,

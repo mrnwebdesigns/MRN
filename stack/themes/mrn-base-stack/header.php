@@ -54,7 +54,8 @@
 		$mrn_header_content_width          = isset( $mrn_header_options['header_content_width'] ) ? $mrn_header_options['header_content_width'] : 'wide';
 		$mrn_header_width_class            = function_exists( 'mrn_base_stack_get_theme_header_footer_content_width_class' ) ? mrn_base_stack_get_theme_header_footer_content_width_class( $mrn_header_content_width, 'wide' ) : 'mrn-theme-hf-layout--width-wide';
 		$mrn_header_primary_nav_inherits   = ! isset( $mrn_header_options['header_primary_nav_inherit_header_settings'] ) || ! empty( $mrn_header_options['header_primary_nav_inherit_header_settings'] );
-		$mrn_header_primary_nav_width      = $mrn_header_primary_nav_inherits && function_exists( 'mrn_base_stack_normalize_theme_header_footer_content_width' ) ? mrn_base_stack_normalize_theme_header_footer_content_width( $mrn_header_content_width, 'wide' ) : '';
+		$mrn_header_primary_nav_center     = ! empty( $mrn_header_options['header_primary_nav_center_to_canvas'] );
+		$mrn_header_primary_nav_width      = $mrn_header_primary_nav_center ? 'full-width' : ( $mrn_header_primary_nav_inherits && function_exists( 'mrn_base_stack_normalize_theme_header_footer_content_width' ) ? mrn_base_stack_normalize_theme_header_footer_content_width( $mrn_header_content_width, 'wide' ) : '' );
 		$mrn_header_primary_nav_width_slug = 'full-width' === $mrn_header_primary_nav_width ? 'full' : $mrn_header_primary_nav_width;
 		$mrn_header_primary_nav_style      = $mrn_header_primary_nav_inherits && function_exists( 'mrn_base_stack_get_theme_header_footer_appearance_style' ) ? mrn_base_stack_get_theme_header_footer_appearance_style( 'header', $mrn_header_options ) : '';
 		$mrn_header_primary_nav_classes    = 'main-navigation mrn-site-primary-navigation';
@@ -71,7 +72,7 @@
 		$mrn_mobile_submenu_close_label  = __( 'Close %s submenu', 'mrn-base-stack' );
 		$mrn_header_primary_nav_classes .= $mrn_mobile_navigation_enabled ? ' mrn-mobile-navigation' : '';
 		$mrn_header_primary_nav_classes .= $mrn_mobile_navigation_enabled && ! $mrn_mobile_navigation_uses_header ? ' mrn-mobile-navigation--full-screen' : '';
-		$mrn_header_primary_nav_classes .= $mrn_mobile_navigation_enabled && ! empty( $mrn_mobile_navigation_options['center_to_canvas'] ) ? ' mrn-mobile-navigation--center-canvas' : '';
+		$mrn_header_primary_nav_classes .= $mrn_header_primary_nav_center ? ' mrn-site-primary-navigation--center-canvas' : '';
 		$mrn_header_primary_nav_classes .= '' !== $mrn_header_primary_nav_width_slug ? ' mrn-site-primary-navigation--width-' . sanitize_html_class( $mrn_header_primary_nav_width_slug ) : ' mrn-site-primary-navigation--independent';
 		$mrn_header_classes              = trim( 'site-header ' . ( $mrn_header_use_layout_grid ? 'mrn-theme-hf-layout-grid mrn-theme-hf-layout-grid--header ' : 'mrn-theme-hf-layout-stack mrn-theme-hf-layout-stack--header ' ) . $mrn_header_width_class );
 		$mrn_header_grid_item_style      = static function ( $item_key ) use ( $mrn_header_layout_grid ) {
@@ -156,7 +157,7 @@
 					}
 					?>
 					<div <?php echo $mrn_header_item_attributes( 'header_utility_message', 'header-utility-message', 'mrn-site-header__utility-message-item' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Attribute helper escapes attribute names and values. ?>>
-						<?php echo mrn_base_stack_get_header_utility_message_markup(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper sanitizes text, URL, target, classes, and link title. ?>
+						<?php echo function_exists( 'mrn_base_stack_get_header_utility_message_markup' ) ? mrn_base_stack_get_header_utility_message_markup() : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Helper sanitizes text, URL, target, classes, and link title. ?>
 					</div>
 					<?php
 					break;

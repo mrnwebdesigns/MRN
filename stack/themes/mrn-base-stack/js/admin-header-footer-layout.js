@@ -17,7 +17,7 @@
 			{
 				slug: 'navigation',
 				label: 'Navigation',
-				fields: ['header_show_utility_menu', 'header_show_tertiary_menu', 'header_primary_nav_inherit_header_settings']
+				fields: ['header_show_utility_menu', 'header_show_tertiary_menu', 'header_primary_menu_id', 'header_primary_nav_inherit_header_settings', 'header_primary_nav_center_to_canvas']
 			},
 			{
 				slug: 'business',
