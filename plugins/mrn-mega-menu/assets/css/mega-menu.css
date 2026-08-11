@@ -87,7 +87,10 @@
 }
 
 .mrn-mega-menu--full {
+	left: 0;
 	max-width: none;
+	right: auto;
+	transform: translateX(calc(-1 * var(--mrn-mega-menu-offset-left, 0px)));
 	width: 100vw;
 }
 
