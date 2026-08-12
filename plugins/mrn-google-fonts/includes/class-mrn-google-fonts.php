@@ -22,6 +22,8 @@ final class MRN_Google_Fonts {
 	const BUILD_LOCAL_ACTION = 'mrn_google_fonts_build_local_assets';
 	const CLEAR_LOCAL_ACTION = 'mrn_google_fonts_clear_local_assets';
 	const FONT_CATALOG_TRANSIENT = 'mrn_google_fonts_catalog_v2';
+	const OWNERSHIP_DIAGNOSTICS_TRANSIENT = 'mrn_google_fonts_ownership_diagnostics';
+	const FRONTEND_DIAGNOSTICS_TRANSIENT = 'mrn_google_fonts_frontend_diagnostics';
 	const FONT_CATALOG_FALLBACK_TTL = 15 * MINUTE_IN_SECONDS;
 	const FONT_CATALOG_URL = 'https://fonts.google.com/metadata/fonts';
 	const GOOGLE_FONTS_CSS_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
@@ -1044,6 +1046,14 @@ final class MRN_Google_Fonts {
 				<?php endif; ?>
 				<p>Downloaded files: <code><?php echo esc_html((string) $status['file_count']); ?></code></p>
 			<?php endif; ?>
+			<p>Local directory: <strong><?php echo !empty($status['directory_readable']) ? 'readable' : 'unreadable'; ?></strong> / <strong><?php echo !empty($status['directory_writable']) ? 'writable' : 'not writable'; ?></strong></p>
+			<p>Remote Google Fonts on frontend: <strong><?php echo null === $status['remote_google_fonts_detected'] ? 'not checked' : (!empty($status['remote_google_fonts_detected']) ? 'detected' : 'not detected'); ?></strong></p>
+			<?php if (!empty($status['ownership_conflicts'])) : ?>
+				<p>Duplicate font ownership: <strong>detected</strong> — competing handles: <code><?php echo esc_html(implode(', ', (array) $status['ownership_conflicts'])); ?></code></p>
+			<?php else : ?>
+				<p>Duplicate Google font ownership: <strong>not detected in the latest frontend request</strong></p>
+			<?php endif; ?>
+			<p>Migration status: <strong><?php echo !empty($status['fully_migrated']) ? 'fully migrated' : 'action required'; ?></strong></p>
 			<p class="description">Build local files to serve fonts from your domain and avoid Google CDN requests on stack-owned pages.</p>
 			<?php wp_nonce_field('mrn_google_fonts_local_assets', 'mrn_google_fonts_local_assets_nonce'); ?>
 			<input type="hidden" name="mrn_google_fonts_redirect_to" value="<?php echo esc_url($redirect_to); ?>" />
@@ -1108,6 +1118,17 @@ final class MRN_Google_Fonts {
 		$manifest = self::get_local_manifest();
 		$validation = self::validate_local_manifest($manifest);
 		$active = !is_wp_error($validation) && self::local_manifest_matches_signature($manifest, $request_signature);
+		$root = self::get_local_assets_root();
+		$build_directory = self::sanitize_relative_asset_path($manifest['build_relative_directory'] ?? '');
+		$directory = !empty($root['basedir']) && '' !== $build_directory ? trailingslashit((string) $root['basedir']) . $build_directory : (string) ($root['basedir'] ?? '');
+		$ownership = get_transient(self::OWNERSHIP_DIAGNOSTICS_TRANSIENT);
+		$ownership = is_array($ownership) ? $ownership : array();
+		$frontend = get_transient(self::FRONTEND_DIAGNOSTICS_TRANSIENT);
+		if (!is_array($frontend)) {
+			$frontend = array('remote_google_fonts_detected' => self::detect_remote_google_fonts_on_frontend(), 'checked_at' => time());
+			set_transient(self::FRONTEND_DIAGNOSTICS_TRANSIENT, $frontend, 5 * MINUTE_IN_SECONDS);
+		}
+		$remote = array_key_exists('remote_google_fonts_detected', $frontend) ? $frontend['remote_google_fonts_detected'] : null;
 
 		return array(
 			'active' => $active,
@@ -1123,6 +1144,11 @@ final class MRN_Google_Fonts {
 			'delivery_mode' => self::get_delivery_mode($settings),
 			'request_signature' => $request_signature,
 			'request_url' => isset($google_request['url']) && is_string($google_request['url']) ? (string) $google_request['url'] : '',
+			'directory_readable' => '' !== $directory && is_readable($directory),
+			'directory_writable' => '' !== $directory && is_writable($directory),
+			'ownership_conflicts' => array_values(array_filter(array_map('sanitize_key', (array) ($ownership['conflicts'] ?? array())))),
+			'remote_google_fonts_detected' => is_bool($remote) ? $remote : null,
+			'fully_migrated' => 'local_only' === self::get_delivery_mode($settings) && $active && false === $remote && empty($ownership['conflicts']),
 		);
 	}
 
@@ -1176,6 +1202,8 @@ final class MRN_Google_Fonts {
 			'family_count' => isset($saved['family_count']) ? absint($saved['family_count']) : 0,
 			'families' => isset($saved['families']) && is_array($saved['families']) ? array_values(array_map('sanitize_text_field', $saved['families'])) : array(),
 			'faces' => isset($saved['faces']) && is_array($saved['faces']) ? $saved['faces'] : array(),
+			'subset' => isset($saved['subset']) ? sanitize_key((string) $saved['subset']) : '',
+			'font_display' => isset($saved['font_display']) ? sanitize_key((string) $saved['font_display']) : '',
 			'formats' => isset($saved['formats']) && is_array($saved['formats']) ? array_values(array_map('sanitize_key', $saved['formats'])) : array(),
 			'files' => isset($saved['files']) && is_array($saved['files']) ? $saved['files'] : array(),
 			'css_checksum' => isset($saved['css_checksum']) ? sanitize_text_field((string) $saved['css_checksum']) : '',
@@ -1515,6 +1543,8 @@ final class MRN_Google_Fonts {
 			'family_count' => $family_count,
 			'families' => array_values(array_map('strval', $google_request['families'] ?? array())),
 			'faces' => self::get_configured_faces_for_manifest($settings),
+			'subset' => sanitize_key((string) ($settings['subset'] ?? 'latin')),
+			'font_display' => sanitize_key((string) ($settings['font_display'] ?? 'swap')),
 			'formats' => array_values(array_unique($formats)),
 			'files' => $file_records,
 			'css_checksum' => hash_file('sha256', trailingslashit($target_dir) . 'local-fonts.css'),
@@ -1791,6 +1821,8 @@ final class MRN_Google_Fonts {
 			'family_count' => (int) ($manifest['family_count'] ?? 0),
 			'families' => array(),
 			'faces' => array(),
+			'subset' => sanitize_key((string) ($manifest['subset'] ?? 'latin')),
+			'font_display' => sanitize_key((string) ($manifest['font_display'] ?? 'swap')),
 			'formats' => array_values(array_unique($formats)),
 			'files' => $files,
 			'css_checksum' => hash('sha256', $portable_css),
@@ -3013,7 +3045,7 @@ final class MRN_Google_Fonts {
 				$conflicts[] = sanitize_key((string) $handle);
 			}
 		}
-		set_transient('mrn_google_fonts_ownership_diagnostics', array('conflicts' => array_values(array_unique($conflicts)), 'checked_at' => time()), DAY_IN_SECONDS);
+		set_transient(self::OWNERSHIP_DIAGNOSTICS_TRANSIENT, array('conflicts' => array_values(array_unique($conflicts)), 'checked_at' => time()), DAY_IN_SECONDS);
 	}
 
 	public static function render_diagnostic_notice(): void {

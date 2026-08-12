@@ -74,6 +74,8 @@ $GLOBALS['mrn_v2_options'][MRN_Google_Fonts::LOCAL_OPTION_KEY] = array(
 	'generated_at' => time(),
 	'file_count' => 1,
 	'family_count' => 1,
+	'subset' => 'latin-ext',
+	'font_display' => 'optional',
 );
 $dry = MRN_Google_Fonts::migrate_local_manifest(true);
 assert_manifest(!is_wp_error($dry) && !empty($dry['changed']), 'Legacy migration dry-run did not report a safe conversion.');
@@ -81,6 +83,7 @@ $result = MRN_Google_Fonts::migrate_local_manifest(false);
 assert_manifest(!is_wp_error($result), 'Legacy migration failed.');
 $saved = $GLOBALS['mrn_v2_options'][MRN_Google_Fonts::LOCAL_OPTION_KEY];
 assert_manifest(2 === $saved['schema_version'], 'Migrated manifest schema is not v2.');
+assert_manifest('latin-ext' === $saved['subset'] && 'optional' === $saved['font_display'], 'Migrated manifest did not preserve subset/display metadata.');
 assert_manifest(!isset($saved['css_url'], $saved['css_path'], $saved['directory']), 'Migrated manifest retained environment-specific fields.');
 assert_manifest(false === strpos((string) file_get_contents($build . '/local-fonts.css'), 'old.example'), 'Migrated CSS retained an obsolete environment URL.');
 $repeat = MRN_Google_Fonts::migrate_local_manifest(false);
