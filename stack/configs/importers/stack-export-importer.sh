@@ -32,6 +32,30 @@ run_wp() {
   fi
 }
 
+apply_happyfiles_defaults() {
+  local code
+
+  if ! run_wp plugin is-active happyfiles-pro >/dev/null 2>&1 && ! run_wp plugin is-active happyfiles >/dev/null 2>&1; then
+    echo "HappyFiles is not active. Skipping HappyFiles defaults."
+    return 0
+  fi
+
+  code="$(cat <<'PHP'
+$access = get_option( 'happyfiles_folder_access', [] );
+if ( ! is_array( $access ) ) {
+    $access = [];
+}
+
+$access['editor'] = 'full';
+update_option( 'happyfiles_folder_access', $access );
+
+echo "HappyFiles folder access default applied: editor=full\n";
+PHP
+)"
+
+  run_wp eval "${code}"
+}
+
 ensure_mrn_branding_assets() {
   if [[ "${MRN_BRANDING_ASSETS_READY}" == "1" ]]; then
     return 0
@@ -1047,6 +1071,11 @@ while IFS= read -r raw || [[ -n "${raw}" ]]; do
   echo "Importer warning: unknown mapping type '${type}'"
   errors=$((errors + 1))
 done < "${IMPORT_MANIFEST}"
+
+if ! apply_happyfiles_defaults; then
+  echo "Importer warning: failed applying HappyFiles defaults."
+  errors=$((errors + 1))
+fi
 
 if [[ "${errors}" -gt 0 ]]; then
   echo "Importer completed with ${errors} warning(s)."
