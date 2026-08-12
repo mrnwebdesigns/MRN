@@ -8,9 +8,14 @@ if (!defined('ABSPATH')) {
 }
 
 final class MRN_Google_Fonts {
-	const VERSION = '0.5.3';
+	/** @var array<int, string> */
+	private static $preload_urls = array();
+	const VERSION = '1.0.0';
+	const MANIFEST_SCHEMA_VERSION = 2;
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
+	const BUILD_HISTORY_OPTION_KEY = 'mrn_google_fonts_build_history';
+	const MIGRATION_OPTION_KEY = 'mrn_google_fonts_migration_status';
 	const PAGE_SLUG = 'google-fonts';
 	const SITE_STYLES_TAB_KEY = 'google-fonts';
 	const SITE_STYLES_TRANSFER_SECTION_KEY = 'google_fonts';
@@ -43,6 +48,10 @@ final class MRN_Google_Fonts {
 		add_action('mrn_site_styles_render_notices', array(__CLASS__, 'render_site_styles_notice'));
 		add_action('admin_post_' . self::BUILD_LOCAL_ACTION, array(__CLASS__, 'handle_build_local_assets'));
 		add_action('admin_post_' . self::CLEAR_LOCAL_ACTION, array(__CLASS__, 'handle_clear_local_assets'));
+		add_action('admin_notices', array(__CLASS__, 'render_diagnostic_notice'));
+		add_action('admin_init', array(__CLASS__, 'maybe_auto_migrate_legacy_manifest'));
+		add_action('wp_head', array(__CLASS__, 'record_frontend_font_ownership'), 999);
+		add_action('wp_head', array(__CLASS__, 'render_local_font_preloads'), 1);
 	}
 
 	/**
@@ -68,6 +77,7 @@ final class MRN_Google_Fonts {
 	public static function default_settings(): array {
 		return array(
 			'enabled' => 0,
+			'delivery_mode' => 'local_only',
 			'load_on_frontend' => 1,
 			'frontend_load_scope' => 'all',
 			'load_in_classic_editor' => 1,
@@ -86,6 +96,8 @@ final class MRN_Google_Fonts {
 			'accent_font_targets' => array(),
 			'subset' => 'latin',
 			'font_display' => 'swap',
+			'fallback_font_stack' => 'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif',
+			'preload_fonts' => 0,
 			'stack_bridge_mode' => 'auto',
 			'designer_notes' => '',
 		);
@@ -103,8 +115,22 @@ final class MRN_Google_Fonts {
 		if (!is_array($saved)) {
 			return $defaults;
 		}
+		// Existing installations keep their prior local-first/remote-fallback behavior
+		// until an operator explicitly completes the local-only migration.
+		if (!array_key_exists('delivery_mode', $saved) && !empty($saved)) {
+			$saved['delivery_mode'] = 'local_preferred';
+		}
 
 		return array_replace($defaults, $saved);
+	}
+
+	/** Migrate a valid legacy manifest opportunistically without downloading files. */
+	public static function maybe_auto_migrate_legacy_manifest(): void {
+		$manifest = self::get_local_manifest();
+		if (empty($manifest['signature']) || self::MANIFEST_SCHEMA_VERSION === (int) ($manifest['schema_version'] ?? 0)) {
+			return;
+		}
+		self::migrate_local_manifest(false);
 	}
 
 	/**
@@ -134,8 +160,11 @@ final class MRN_Google_Fonts {
 
 		$sanitized = $defaults;
 		$sanitized['enabled'] = !empty($input['enabled']) ? 1 : 0;
+		$delivery_mode = sanitize_key((string) ($input['delivery_mode'] ?? $defaults['delivery_mode']));
+		$sanitized['delivery_mode'] = in_array($delivery_mode, array('local_only', 'local_preferred', 'remote'), true) ? $delivery_mode : 'local_only';
 		$sanitized['load_on_frontend'] = !empty($input['load_on_frontend']) ? 1 : 0;
 		$sanitized['load_in_classic_editor'] = !empty($input['load_in_classic_editor']) ? 1 : 0;
+		$sanitized['preload_fonts'] = !empty($input['preload_fonts']) ? 1 : 0;
 		$sanitized['frontend_load_scope'] = self::sanitize_frontend_load_scope_value($input['frontend_load_scope'] ?? $defaults['frontend_load_scope']);
 
 		$sanitized['body_font_family'] = self::sanitize_font_family_value($input['body_font_family'] ?? $defaults['body_font_family']);
@@ -171,6 +200,7 @@ final class MRN_Google_Fonts {
 		$sanitized['stack_bridge_mode'] = in_array($bridge_mode, $allowed_bridge_modes, true) ? $bridge_mode : $defaults['stack_bridge_mode'];
 
 		$sanitized['designer_notes'] = sanitize_textarea_field((string) ($input['designer_notes'] ?? ''));
+		$sanitized['fallback_font_stack'] = self::sanitize_fallback_stack($input['fallback_font_stack'] ?? $defaults['fallback_font_stack']);
 
 		return $sanitized;
 	}
@@ -199,9 +229,17 @@ final class MRN_Google_Fonts {
 	 * @param string $hook Current admin hook.
 	 */
 	public static function enqueue_admin_assets(string $hook): void {
-		if ('settings_page_' . self::PAGE_SLUG !== $hook) {
+		if (!in_array($hook, array('settings_page_' . self::PAGE_SLUG, 'settings_page_mrn-site-styles'), true)) {
 			return;
 		}
+
+		wp_enqueue_script(
+			'mrn-google-fonts-admin-chooser',
+			MRN_GOOGLE_FONTS_URL . 'assets/js/admin-chooser.js',
+			array(),
+			self::VERSION,
+			true
+		);
 
 		wp_register_style('mrn-google-fonts-admin', false, array(), self::VERSION);
 		wp_enqueue_style('mrn-google-fonts-admin');
@@ -223,7 +261,8 @@ final class MRN_Google_Fonts {
 		$runtime_mode = MRN_Google_Fonts_Stack_Bridge::get_runtime_mode((string) $settings['stack_bridge_mode']);
 		$google_request = self::build_google_fonts_request($settings);
 		$deps = array();
-		$local_css_url = self::get_local_css_url_for_request($settings, $google_request);
+		$delivery_mode = self::get_delivery_mode($settings);
+		$local_css_url = 'remote' === $delivery_mode ? '' : self::get_local_css_url_for_request($settings, $google_request, 'local_only' === $delivery_mode);
 
 		if ('' !== $local_css_url) {
 			wp_enqueue_style(
@@ -233,7 +272,8 @@ final class MRN_Google_Fonts {
 				self::VERSION
 			);
 			$deps[] = 'mrn-google-fonts-local';
-		} elseif (!empty($google_request['url']) && is_string($google_request['url'])) {
+		} elseif ('local_only' !== $delivery_mode && !empty($google_request['url']) && is_string($google_request['url'])) {
+			// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- The versioned Google CSS2 URL is an external immutable request contract.
 			wp_enqueue_style(
 				'mrn-google-fonts-remote',
 				$google_request['url'],
@@ -241,6 +281,10 @@ final class MRN_Google_Fonts {
 				null
 			);
 			$deps[] = 'mrn-google-fonts-remote';
+		}
+
+		if ('' !== $local_css_url && !empty($settings['preload_fonts'])) {
+			self::enqueue_local_font_preloads(self::get_local_manifest());
 		}
 
 		wp_enqueue_style(
@@ -255,9 +299,10 @@ final class MRN_Google_Fonts {
 			wp_add_inline_style('mrn-google-fonts-frontend', $font_face_css);
 		}
 
-		$body_stack = self::build_font_stack((string) $settings['body_font_family']);
-		$heading_stack = self::build_font_stack((string) $settings['heading_font_family']);
-		$accent_stack = self::build_font_stack((string) ($settings['accent_font_family'] ?? 'system-ui'));
+		$fallback_stack = self::sanitize_fallback_stack($settings['fallback_font_stack'] ?? '');
+		$body_stack = self::build_font_stack((string) $settings['body_font_family'], $fallback_stack);
+		$heading_stack = self::build_font_stack((string) $settings['heading_font_family'], $fallback_stack);
+		$accent_stack = self::build_font_stack((string) ($settings['accent_font_family'] ?? 'system-ui'), $fallback_stack);
 
 		$css = ':root{--mrn-font-body:' . $body_stack . ';--mrn-font-heading:' . $heading_stack . ';--mrn-font-accent:' . $accent_stack . ';}';
 		$css .= self::build_font_target_css($settings, 'frontend');
@@ -282,7 +327,11 @@ final class MRN_Google_Fonts {
 		}
 
 		$google_request = self::build_google_fonts_request($settings);
-		if ('' !== self::get_local_css_url_for_request($settings, $google_request)) {
+		$delivery_mode = self::get_delivery_mode($settings);
+		if ('remote' !== $delivery_mode && '' !== self::get_local_css_url_for_request($settings, $google_request, 'local_only' === $delivery_mode)) {
+			return $hints;
+		}
+		if ('local_only' === $delivery_mode) {
 			return $hints;
 		}
 
@@ -327,13 +376,14 @@ final class MRN_Google_Fonts {
 		}
 
 		$google_request = self::build_google_fonts_request($settings);
-		$local_css_url = self::get_local_css_url_for_request($settings, $google_request);
+		$delivery_mode = self::get_delivery_mode($settings);
+		$local_css_url = 'remote' === $delivery_mode ? '' : self::get_local_css_url_for_request($settings, $google_request, 'local_only' === $delivery_mode);
 		if ('' !== $local_css_url) {
 			if ('' !== $styles) {
 				$styles .= ',';
 			}
 			$styles .= esc_url_raw($local_css_url);
-		} elseif (!empty($google_request['url']) && is_string($google_request['url'])) {
+		} elseif ('local_only' !== $delivery_mode && !empty($google_request['url']) && is_string($google_request['url'])) {
 			if ('' !== $styles) {
 				$styles .= ',';
 			}
@@ -362,9 +412,10 @@ final class MRN_Google_Fonts {
 
 		// _WP_Editors::_parse_init() wraps string values in double quotes without escaping.
 		// Keep TinyMCE content_style JS-safe by avoiding unescaped double quotes here.
-		$body_stack = str_replace('"', "'", self::build_font_stack((string) $plugin_settings['body_font_family']));
-		$heading_stack = str_replace('"', "'", self::build_font_stack((string) $plugin_settings['heading_font_family']));
-		$accent_stack = str_replace('"', "'", self::build_font_stack((string) ($plugin_settings['accent_font_family'] ?? 'system-ui')));
+		$fallback_stack = self::sanitize_fallback_stack($plugin_settings['fallback_font_stack'] ?? '');
+		$body_stack = str_replace('"', "'", self::build_font_stack((string) $plugin_settings['body_font_family'], $fallback_stack));
+		$heading_stack = str_replace('"', "'", self::build_font_stack((string) $plugin_settings['heading_font_family'], $fallback_stack));
+		$accent_stack = str_replace('"', "'", self::build_font_stack((string) ($plugin_settings['accent_font_family'] ?? 'system-ui'), $fallback_stack));
 		$css = ':root{--mrn-font-body:' . $body_stack . ';--mrn-font-heading:' . $heading_stack . ';--mrn-font-accent:' . $accent_stack . ';}';
 		$css .= self::build_font_target_css($plugin_settings, 'editor');
 
@@ -625,7 +676,7 @@ final class MRN_Google_Fonts {
 
 		self::redirect_with_notice(
 			$redirect_to,
-			'Local font cache cleared. Runtime will use Google CSS2 until local assets are rebuilt.',
+			'Local font cache cleared. Local-only mode will use the configured fallback stack until local assets are rebuilt; it will not use Google-hosted fonts.',
 			'success'
 		);
 	}
@@ -963,11 +1014,11 @@ final class MRN_Google_Fonts {
 			</datalist>
 
 			<p class="description" style="margin-top:10px;">Save settings, then run <strong>Build Local Fonts</strong> to self-host and avoid Google CDN requests on frontend pages.</p>
-			<script src="<?php echo esc_url(MRN_GOOGLE_FONTS_URL . 'assets/js/admin-chooser.js?ver=' . rawurlencode((string) self::VERSION)); ?>"></script>
 		</div>
 
 		<div class="mrn-google-fonts-status">
 			<p><strong>Local Font Builder</strong></p>
+			<p>Delivery mode: <code><?php echo esc_html((string) $status['delivery_mode']); ?></code><?php echo 'local_only' === $status['delivery_mode'] ? ' — remote fallback is prohibited.' : ''; ?></p>
 			<?php if (empty($status['request_url'])) : ?>
 				<p>No Google request is configured yet. Set at least one non-system family before building local files.</p>
 			<?php else : ?>
@@ -982,6 +1033,11 @@ final class MRN_Google_Fonts {
 				<?php endif; ?>
 				<?php if (!empty($status['generated_at'])) : ?>
 					<p>Last build: <code><?php echo esc_html(wp_date('Y-m-d H:i:s', (int) $status['generated_at'])); ?></code></p>
+				<?php endif; ?>
+				<p>Manifest schema: <code><?php echo esc_html((string) $status['schema_version']); ?></code></p>
+				<p>Manifest validation: <strong><?php echo !empty($status['valid']) ? 'valid' : 'invalid'; ?></strong> — <?php echo esc_html((string) $status['validation_message']); ?></p>
+				<?php if (!empty($status['validated_at'])) : ?>
+					<p>Last validation: <code><?php echo esc_html(wp_date('Y-m-d H:i:s', (int) $status['validated_at'])); ?></code></p>
 				<?php endif; ?>
 				<?php if (!empty($status['family_count'])) : ?>
 					<p>Configured families: <code><?php echo esc_html((string) $status['family_count']); ?></code></p>
@@ -1015,6 +1071,31 @@ final class MRN_Google_Fonts {
 		<?php
 	}
 
+	/** Render delivery, fallback, and preload controls. */
+	private static function render_delivery_controls(array $settings, string $id_prefix): void {
+		$option_name = self::OPTION_KEY;
+		$mode = self::get_delivery_mode($settings);
+		?>
+		<div class="mrn-google-fonts-field">
+			<label for="<?php echo esc_attr($id_prefix); ?>-delivery-mode"><strong>Font delivery mode</strong></label>
+			<select id="<?php echo esc_attr($id_prefix); ?>-delivery-mode" name="<?php echo esc_attr($option_name); ?>[delivery_mode]">
+				<option value="local_only" <?php selected('local_only', $mode); ?>>Local only (required for MRN production)</option>
+				<option value="local_preferred" <?php selected('local_preferred', $mode); ?>>Local preferred (remote fallback allowed)</option>
+				<option value="remote" <?php selected('remote', $mode); ?>>Remote Google Fonts</option>
+			</select>
+			<p class="description"><strong>Local only never requests fonts.googleapis.com or fonts.gstatic.com.</strong> If no valid local build exists, the fallback stack below is used and administrators are warned.</p>
+		</div>
+		<div class="mrn-google-fonts-field">
+			<label for="<?php echo esc_attr($id_prefix); ?>-fallback-stack"><strong>Fallback font stack</strong></label>
+			<input class="large-text code" id="<?php echo esc_attr($id_prefix); ?>-fallback-stack" name="<?php echo esc_attr($option_name); ?>[fallback_font_stack]" value="<?php echo esc_attr((string) ($settings['fallback_font_stack'] ?? '')); ?>" />
+		</div>
+		<div class="mrn-google-fonts-field">
+			<label><input type="hidden" name="<?php echo esc_attr($option_name); ?>[preload_fonts]" value="0" /><input type="checkbox" name="<?php echo esc_attr($option_name); ?>[preload_fonts]" value="1" <?php checked(!empty($settings['preload_fonts'])); ?> /> Preload up to four validated local WOFF2 files</label>
+			<p class="description">Enable only after page-level performance QA confirms the files are critical.</p>
+		</div>
+		<?php
+	}
+
 	/**
 	 * Return local-build status for current settings.
 	 *
@@ -1025,15 +1106,21 @@ final class MRN_Google_Fonts {
 		$google_request = self::build_google_fonts_request($settings);
 		$request_signature = self::get_request_signature($google_request, $settings);
 		$manifest = self::get_local_manifest();
-		$active = self::local_manifest_matches_signature($manifest, $request_signature);
+		$validation = self::validate_local_manifest($manifest);
+		$active = !is_wp_error($validation) && self::local_manifest_matches_signature($manifest, $request_signature);
 
 		return array(
 			'active' => $active,
-			'has_manifest' => !empty($manifest['signature']) && !empty($manifest['css_url']),
+			'valid' => !is_wp_error($validation),
+			'validation_message' => is_wp_error($validation) ? $validation->get_error_message() : 'Valid',
+			'has_manifest' => !empty($manifest['signature']) && !empty($manifest['css_relative_path']),
+			'schema_version' => isset($manifest['schema_version']) ? (int) $manifest['schema_version'] : 0,
 			'generated_at' => isset($manifest['generated_at']) ? (int) $manifest['generated_at'] : 0,
+			'validated_at' => isset($manifest['validated_at']) ? (int) $manifest['validated_at'] : 0,
 			'file_count' => isset($manifest['file_count']) ? (int) $manifest['file_count'] : 0,
 			'family_count' => isset($manifest['family_count']) ? (int) $manifest['family_count'] : 0,
-			'css_url' => isset($manifest['css_url']) ? (string) $manifest['css_url'] : '',
+			'css_url' => self::resolve_local_manifest_css_url($manifest),
+			'delivery_mode' => self::get_delivery_mode($settings),
 			'request_signature' => $request_signature,
 			'request_url' => isset($google_request['url']) && is_string($google_request['url']) ? (string) $google_request['url'] : '',
 		);
@@ -1045,12 +1132,14 @@ final class MRN_Google_Fonts {
 	 * @param array<string, mixed> $settings Plugin settings.
 	 * @param array<string, mixed> $google_request Google request payload.
 	 */
-	private static function get_local_css_url_for_request(array $settings, array $google_request): string {
+	private static function get_local_css_url_for_request(array $settings, array $google_request, bool $allow_last_known_good = false): string {
 		$manifest = self::get_local_manifest();
 		$request_signature = self::get_request_signature($google_request, $settings);
 
 		if (!self::local_manifest_matches_signature($manifest, $request_signature)) {
-			return '';
+			if (!$allow_last_known_good || is_wp_error(self::validate_local_manifest($manifest))) {
+				return '';
+			}
 		}
 
 		$css_url = self::resolve_local_manifest_css_url($manifest);
@@ -1066,21 +1155,30 @@ final class MRN_Google_Fonts {
 	 *
 	 * @return array<string, mixed>
 	 */
-	private static function get_local_manifest(): array {
+	public static function get_local_manifest(): array {
 		$saved = get_option(self::LOCAL_OPTION_KEY, array());
 		if (!is_array($saved)) {
 			return array();
 		}
 
 		return array(
+			'schema_version' => isset($saved['schema_version']) ? absint($saved['schema_version']) : 0,
 			'signature' => isset($saved['signature']) ? sanitize_text_field((string) $saved['signature']) : '',
+			'css_relative_path' => isset($saved['css_relative_path']) ? self::sanitize_relative_asset_path((string) $saved['css_relative_path']) : '',
+			'build_relative_directory' => isset($saved['build_relative_directory']) ? self::sanitize_relative_asset_path((string) $saved['build_relative_directory']) : '',
+			// Legacy fields are read only so migrate can convert them; new writes never persist them.
 			'css_url' => isset($saved['css_url']) ? esc_url_raw((string) $saved['css_url']) : '',
 			'css_path' => isset($saved['css_path']) ? (string) $saved['css_path'] : '',
 			'directory' => isset($saved['directory']) ? (string) $saved['directory'] : '',
 			'generated_at' => isset($saved['generated_at']) ? absint($saved['generated_at']) : 0,
+			'validated_at' => isset($saved['validated_at']) ? absint($saved['validated_at']) : 0,
 			'file_count' => isset($saved['file_count']) ? absint($saved['file_count']) : 0,
 			'family_count' => isset($saved['family_count']) ? absint($saved['family_count']) : 0,
-			'request_url' => isset($saved['request_url']) ? esc_url_raw((string) $saved['request_url']) : '',
+			'families' => isset($saved['families']) && is_array($saved['families']) ? array_values(array_map('sanitize_text_field', $saved['families'])) : array(),
+			'faces' => isset($saved['faces']) && is_array($saved['faces']) ? $saved['faces'] : array(),
+			'formats' => isset($saved['formats']) && is_array($saved['formats']) ? array_values(array_map('sanitize_key', $saved['formats'])) : array(),
+			'files' => isset($saved['files']) && is_array($saved['files']) ? $saved['files'] : array(),
+			'css_checksum' => isset($saved['css_checksum']) ? sanitize_text_field((string) $saved['css_checksum']) : '',
 		);
 	}
 
@@ -1094,6 +1192,9 @@ final class MRN_Google_Fonts {
 		$manifest_signature = self::sanitize_local_manifest_signature($manifest['signature'] ?? '');
 		$signature = self::sanitize_local_manifest_signature($signature);
 		if ('' === $signature || '' === $manifest_signature || !hash_equals($manifest_signature, $signature)) {
+			return false;
+		}
+		if (self::MANIFEST_SCHEMA_VERSION === (int) ($manifest['schema_version'] ?? 0) && is_wp_error(self::validate_local_manifest($manifest))) {
 			return false;
 		}
 
@@ -1115,6 +1216,14 @@ final class MRN_Google_Fonts {
 	 * @param array<string, mixed> $manifest Saved local manifest.
 	 */
 	private static function resolve_local_manifest_css_path(array $manifest): string {
+		$relative_path = self::sanitize_relative_asset_path($manifest['css_relative_path'] ?? '');
+		if ('' !== $relative_path) {
+			$root = self::get_local_assets_root();
+			$portable_path = trailingslashit((string) ($root['basedir'] ?? '')) . $relative_path;
+			if (!empty($root['basedir']) && file_exists($portable_path)) {
+				return wp_normalize_path($portable_path);
+			}
+		}
 		$css_path = isset($manifest['css_path']) ? wp_normalize_path((string) $manifest['css_path']) : '';
 		if ('' !== $css_path && file_exists($css_path)) {
 			return $css_path;
@@ -1141,6 +1250,14 @@ final class MRN_Google_Fonts {
 	 * @param array<string, mixed> $manifest Saved local manifest.
 	 */
 	private static function resolve_local_manifest_css_url(array $manifest): string {
+		$relative_path = self::sanitize_relative_asset_path($manifest['css_relative_path'] ?? '');
+		if ('' !== $relative_path) {
+			$root = self::get_local_assets_root();
+			$portable_path = trailingslashit((string) ($root['basedir'] ?? '')) . $relative_path;
+			if (!empty($root['baseurl']) && file_exists($portable_path)) {
+				return esc_url_raw(trailingslashit((string) $root['baseurl']) . $relative_path);
+			}
+		}
 		$signature = self::sanitize_local_manifest_signature($manifest['signature'] ?? '');
 		if ('' !== $signature) {
 			$root = self::get_local_assets_root();
@@ -1248,7 +1365,7 @@ final class MRN_Google_Fonts {
 	 * @param array<string, mixed> $settings Plugin settings.
 	 * @return array<string, mixed>|\WP_Error
 	 */
-	private static function build_local_assets(array $settings) {
+	public static function build_local_assets(array $settings) {
 		$google_request = self::build_google_fonts_request($settings);
 		$request_url = isset($google_request['url']) && is_string($google_request['url']) ? (string) $google_request['url'] : '';
 		$family_count = !empty($google_request['families']) && is_array($google_request['families']) ? count($google_request['families']) : 0;
@@ -1284,13 +1401,11 @@ final class MRN_Google_Fonts {
 		}
 
 		$root_basedir = (string) $root['basedir'];
-		$root_baseurl = (string) $root['baseurl'];
 		if (!is_dir($root_basedir) && !wp_mkdir_p($root_basedir)) {
 			return new WP_Error('mrn_google_fonts_upload_create', 'Could not create the local font storage directory.');
 		}
 
 		$target_dir = trailingslashit($root_basedir) . $request_signature;
-		$target_url = trailingslashit($root_baseurl) . $request_signature;
 		$working_dir = trailingslashit($root_basedir) . $request_signature . '-tmp-' . wp_generate_password(6, false, false);
 
 		if (!wp_mkdir_p($working_dir)) {
@@ -1298,6 +1413,8 @@ final class MRN_Google_Fonts {
 		}
 
 		$replace_map = array();
+		$file_records = array();
+		$formats = array();
 		$file_count = 0;
 
 		foreach ($font_urls as $index => $font_url) {
@@ -1338,8 +1455,26 @@ final class MRN_Google_Fonts {
 				self::delete_directory_recursive($working_dir, $root_basedir);
 				return new WP_Error('mrn_google_fonts_write_failed', 'Could not write a downloaded font file to local storage.');
 			}
+			if (!is_readable($file_path) || filesize($file_path) < 100) {
+				self::delete_directory_recursive($working_dir, $root_basedir);
+				return new WP_Error('mrn_google_fonts_download_invalid', 'A downloaded font file was incomplete or unreadable. The previous local build remains active.');
+			}
 
-			$replace_map[$font_url] = trailingslashit($target_url) . $filename;
+			$format = strtolower((string) pathinfo($filename, PATHINFO_EXTENSION));
+			if (!in_array($format, array('woff2', 'woff'), true)) {
+				self::delete_directory_recursive($working_dir, $root_basedir);
+				return new WP_Error('mrn_google_fonts_unsupported_format', 'Google returned an unsupported font format. The previous local build remains active.');
+			}
+
+			// A relative CSS URL keeps the build portable across domains, subdirectories, and multisite paths.
+			$replace_map[$font_url] = $filename;
+			$file_records[] = array(
+				'relative_path' => $request_signature . '/' . $filename,
+				'checksum' => hash_file('sha256', $file_path),
+				'format' => $format,
+				'size' => filesize($file_path),
+			);
+			$formats[] = $format;
 			$file_count++;
 		}
 
@@ -1352,32 +1487,54 @@ final class MRN_Google_Fonts {
 			return new WP_Error('mrn_google_fonts_css_write_failed', 'Could not write local font-face CSS.');
 		}
 
+		$previous_target = '';
 		if (is_dir($target_dir)) {
-			self::delete_directory_recursive($target_dir, $root_basedir);
+			$previous_target = $target_dir . '-previous-' . time();
+			if (!@rename($target_dir, $previous_target)) {
+				self::delete_directory_recursive($working_dir, $root_basedir);
+				return new WP_Error('mrn_google_fonts_preserve_failed', 'Could not preserve the current local build. No files were changed.');
+			}
 		}
 
 		if (!@rename($working_dir, $target_dir)) {
+			if ('' !== $previous_target) {
+				@rename($previous_target, $target_dir);
+			}
 			self::delete_directory_recursive($working_dir, $root_basedir);
 			return new WP_Error('mrn_google_fonts_finalize_failed', 'Could not finalize local font build directory.');
 		}
 
-		$previous_manifest = self::get_local_manifest();
-		if (!empty($previous_manifest['signature']) && (string) $previous_manifest['signature'] !== $request_signature) {
-			self::maybe_delete_manifest_directory($previous_manifest);
-		}
-
 		$manifest = array(
+			'schema_version' => self::MANIFEST_SCHEMA_VERSION,
 			'signature' => $request_signature,
-			'css_url' => trailingslashit($target_url) . 'local-fonts.css',
-			'css_path' => trailingslashit($target_dir) . 'local-fonts.css',
-			'directory' => $target_dir,
+			'css_relative_path' => $request_signature . '/local-fonts.css',
+			'build_relative_directory' => $request_signature,
 			'generated_at' => time(),
+			'validated_at' => time(),
 			'file_count' => $file_count,
 			'family_count' => $family_count,
-			'request_url' => $request_url,
+			'families' => array_values(array_map('strval', $google_request['families'] ?? array())),
+			'faces' => self::get_configured_faces_for_manifest($settings),
+			'formats' => array_values(array_unique($formats)),
+			'files' => $file_records,
+			'css_checksum' => hash_file('sha256', trailingslashit($target_dir) . 'local-fonts.css'),
 		);
 
+		$validation = self::validate_local_manifest($manifest);
+		if (is_wp_error($validation)) {
+			self::delete_directory_recursive($target_dir, $root_basedir);
+			if ('' !== $previous_target) {
+				@rename($previous_target, $target_dir);
+			}
+			return new WP_Error('mrn_google_fonts_build_validation_failed', $validation->get_error_message() . ' The previous local build remains active.');
+		}
+
+		$previous_manifest = self::get_local_manifest();
 		update_option(self::LOCAL_OPTION_KEY, $manifest, false);
+		self::record_build_history($previous_manifest);
+		if ('' !== $previous_target) {
+			self::delete_directory_recursive($previous_target, $root_basedir);
+		}
 
 		return $manifest;
 	}
@@ -1498,6 +1655,257 @@ final class MRN_Google_Fonts {
 	}
 
 	/**
+	 * Validate the portable manifest and all referenced files.
+	 *
+	 * @param array<string, mixed> $manifest Manifest to validate.
+	 * @return true|\WP_Error
+	 */
+	public static function validate_local_manifest(array $manifest) {
+		if (self::MANIFEST_SCHEMA_VERSION !== (int) ($manifest['schema_version'] ?? 0)) {
+			return new WP_Error('mrn_google_fonts_manifest_schema', 'The local font manifest needs migration to schema version ' . self::MANIFEST_SCHEMA_VERSION . '.');
+		}
+
+		$root = self::get_local_assets_root();
+		if (empty($root['basedir']) || empty($root['baseurl'])) {
+			return new WP_Error('mrn_google_fonts_manifest_uploads', 'The WordPress uploads directory is unavailable.');
+		}
+
+		$css_relative_path = self::sanitize_relative_asset_path($manifest['css_relative_path'] ?? '');
+		if ('' === $css_relative_path) {
+			return new WP_Error('mrn_google_fonts_manifest_css_path', 'The local font stylesheet path is missing or unsafe.');
+		}
+
+		$css_path = trailingslashit((string) $root['basedir']) . $css_relative_path;
+		if (!is_file($css_path) || !is_readable($css_path)) {
+			return new WP_Error('mrn_google_fonts_manifest_css_missing', 'The local font stylesheet is missing or unreadable.');
+		}
+
+		$expected_css_checksum = strtolower((string) ($manifest['css_checksum'] ?? ''));
+		if (!preg_match('/^[a-f0-9]{64}$/', $expected_css_checksum) || !hash_equals($expected_css_checksum, hash_file('sha256', $css_path))) {
+			return new WP_Error('mrn_google_fonts_manifest_css_corrupt', 'The local font stylesheet checksum is invalid.');
+		}
+
+		$files = isset($manifest['files']) && is_array($manifest['files']) ? $manifest['files'] : array();
+		if (empty($files) && !empty($manifest['families'])) {
+			return new WP_Error('mrn_google_fonts_manifest_files_empty', 'The manifest does not reference any local font files.');
+		}
+
+		foreach ($files as $file) {
+			if (!is_array($file)) {
+				return new WP_Error('mrn_google_fonts_manifest_file_record', 'A local font manifest record is malformed.');
+			}
+			$relative_path = self::sanitize_relative_asset_path($file['relative_path'] ?? '');
+			$checksum = strtolower((string) ($file['checksum'] ?? ''));
+			$format = sanitize_key((string) ($file['format'] ?? ''));
+			if ('' === $relative_path || !in_array($format, array('woff2', 'woff'), true) || !preg_match('/^[a-f0-9]{64}$/', $checksum)) {
+				return new WP_Error('mrn_google_fonts_manifest_file_metadata', 'A local font file record contains invalid metadata.');
+			}
+			$path = trailingslashit((string) $root['basedir']) . $relative_path;
+			if (!is_file($path) || !is_readable($path)) {
+				return new WP_Error('mrn_google_fonts_manifest_file_missing', 'A referenced local font file is missing or unreadable.');
+			}
+			if (!hash_equals($checksum, hash_file('sha256', $path))) {
+				return new WP_Error('mrn_google_fonts_manifest_file_corrupt', 'A referenced local font file failed checksum validation.');
+			}
+		}
+
+		$css_url = self::resolve_local_manifest_css_url($manifest);
+		$current_base_url = trailingslashit((string) $root['baseurl']);
+		if ('' === $css_url || 0 !== strpos($css_url, $current_base_url)) {
+			return new WP_Error('mrn_google_fonts_manifest_url_mismatch', 'The generated stylesheet URL does not belong to the current site uploads URL.');
+		}
+
+		return true;
+	}
+
+	/**
+	 * Convert a valid legacy absolute-path manifest into the portable schema.
+	 *
+	 * @return array<string, mixed>|\WP_Error
+	 */
+	public static function migrate_local_manifest(bool $dry_run = false) {
+		$manifest = self::get_local_manifest();
+		if (self::MANIFEST_SCHEMA_VERSION === (int) ($manifest['schema_version'] ?? 0)) {
+			$validation = self::validate_local_manifest($manifest);
+			return is_wp_error($validation) ? $validation : array('changed' => false, 'message' => 'Portable manifest is already current and valid.');
+		}
+
+		$signature = self::sanitize_local_manifest_signature($manifest['signature'] ?? '');
+		$root = self::get_local_assets_root();
+		if ('' === $signature || empty($root['basedir'])) {
+			return new WP_Error('mrn_google_fonts_migrate_source', 'No valid legacy local build was found. Run a local build to create one.');
+		}
+
+		$build_dir = trailingslashit((string) $root['basedir']) . $signature;
+		$css_path = trailingslashit($build_dir) . 'local-fonts.css';
+		if (!is_readable($css_path)) {
+			return new WP_Error('mrn_google_fonts_migrate_css', 'The legacy stylesheet is not available under the current uploads directory.');
+		}
+
+		$css = (string) file_get_contents($css_path);
+		$files = array();
+		$formats = array();
+		foreach (self::extract_local_css_font_filenames($css) as $filename) {
+			$font_path = trailingslashit($build_dir) . $filename;
+			if (!is_readable($font_path)) {
+				continue;
+			}
+			$format = strtolower((string) pathinfo($filename, PATHINFO_EXTENSION));
+			if (!in_array($format, array('woff2', 'woff'), true)) {
+				continue;
+			}
+			$files[] = array(
+				'relative_path' => $signature . '/' . $filename,
+				'checksum' => hash_file('sha256', $font_path),
+				'format' => $format,
+				'size' => filesize($font_path),
+			);
+			$formats[] = $format;
+		}
+
+		if (empty($files)) {
+			return new WP_Error('mrn_google_fonts_migrate_files', 'Legacy local font files could not be validated. The existing manifest was left unchanged.');
+		}
+
+		$portable_css = preg_replace_callback(
+			'/url\(([^)]+)\)/i',
+			static function (array $matches): string {
+				$url = trim((string) $matches[1], " \t\n\r\0\x0B'\"");
+				$filename = basename((string) wp_parse_url($url, PHP_URL_PATH));
+				return '' === $filename ? $matches[0] : 'url(' . $filename . ')';
+			},
+			$css
+		);
+		if (!is_string($portable_css) || '' === trim($portable_css)) {
+			return new WP_Error('mrn_google_fonts_migrate_css_rewrite', 'The legacy stylesheet could not be rewritten safely.');
+		}
+
+		$portable = array(
+			'schema_version' => self::MANIFEST_SCHEMA_VERSION,
+			'signature' => $signature,
+			'css_relative_path' => $signature . '/local-fonts.css',
+			'build_relative_directory' => $signature,
+			'generated_at' => (int) ($manifest['generated_at'] ?? time()),
+			'validated_at' => time(),
+			'file_count' => count($files),
+			'family_count' => (int) ($manifest['family_count'] ?? 0),
+			'families' => array(),
+			'faces' => array(),
+			'formats' => array_values(array_unique($formats)),
+			'files' => $files,
+			'css_checksum' => hash('sha256', $portable_css),
+		);
+
+		if ($dry_run) {
+			return array('changed' => true, 'dry_run' => true, 'message' => 'Legacy manifest and stylesheet can be migrated without downloading fonts.');
+		}
+
+		$backup_css_path = $css_path . '.legacy-' . time();
+		if (!@copy($css_path, $backup_css_path) || false === @file_put_contents($css_path, $portable_css, LOCK_EX)) {
+			return new WP_Error('mrn_google_fonts_migrate_write', 'Could not preserve and rewrite the legacy stylesheet. The manifest was left unchanged.');
+		}
+		$validation = self::validate_local_manifest($portable);
+		if (is_wp_error($validation)) {
+			@copy($backup_css_path, $css_path);
+			return $validation;
+		}
+		update_option(self::LOCAL_OPTION_KEY, $portable, false);
+		update_option(self::MIGRATION_OPTION_KEY, array('status' => 'success', 'timestamp' => time(), 'schema_version' => self::MANIFEST_SCHEMA_VERSION), false);
+
+		return array('changed' => true, 'message' => 'Legacy manifest migrated to the portable schema without downloading fonts.');
+	}
+
+	/**
+	 * Return automation-friendly runtime status.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public static function get_runtime_status(bool $check_frontend = false): array {
+		$settings = self::get_settings();
+		$manifest = self::get_local_manifest();
+		$validation = self::validate_local_manifest($manifest);
+		$remote = $check_frontend ? self::detect_remote_google_fonts_on_frontend() : null;
+
+		return array(
+			'version' => self::VERSION,
+			'enabled' => !empty($settings['enabled']),
+			'frontend_runtime' => !empty($settings['load_on_frontend']),
+			'delivery_mode' => self::get_delivery_mode($settings),
+			'manifest_schema_version' => (int) ($manifest['schema_version'] ?? 0),
+			'manifest_valid' => !is_wp_error($validation),
+			'manifest_message' => is_wp_error($validation) ? $validation->get_error_message() : 'Valid',
+			'last_successful_build' => (int) ($manifest['generated_at'] ?? 0),
+			'last_successful_validation' => (int) ($manifest['validated_at'] ?? 0),
+			'file_count' => (int) ($manifest['file_count'] ?? 0),
+			'families' => array_values(array_map('strval', $manifest['families'] ?? array())),
+			'remote_google_fonts_detected' => $remote,
+			'fully_migrated' => 'local_only' === self::get_delivery_mode($settings) && !empty($settings['enabled']) && !empty($settings['load_on_frontend']) && !is_wp_error($validation) && false === $remote,
+		);
+	}
+
+	/** Detect remote Google Fonts URLs in the public homepage HTML. */
+	private static function detect_remote_google_fonts_on_frontend(): ?bool {
+		$response = wp_remote_get(home_url('/'), array('timeout' => 15, 'redirection' => 3, 'reject_unsafe_urls' => true));
+		if (is_wp_error($response) || 200 !== (int) wp_remote_retrieve_response_code($response)) {
+			return null;
+		}
+		$body = strtolower((string) wp_remote_retrieve_body($response));
+		return false !== strpos($body, 'fonts.googleapis.com') || false !== strpos($body, 'fonts.gstatic.com');
+	}
+
+	/** @return array<int, string> */
+	private static function extract_local_css_font_filenames(string $css): array {
+		$matches = array();
+		$files = array();
+		if (!preg_match_all('/url\(([^)]+)\)/i', $css, $matches)) {
+			return array();
+		}
+		foreach ($matches[1] as $value) {
+			$url = trim((string) $value, " \t\n\r\0\x0B'\"");
+			$filename = basename((string) wp_parse_url($url, PHP_URL_PATH));
+			if (preg_match('/^[A-Za-z0-9._-]+\.(woff2?|WOFF2?)$/', $filename)) {
+				$files[] = $filename;
+			}
+		}
+		return array_values(array_unique($files));
+	}
+
+	/** Sanitize a path relative to the plugin uploads root. */
+	private static function sanitize_relative_asset_path($path): string {
+		$path = ltrim(wp_normalize_path((string) $path), '/');
+		if ('' === $path || false !== strpos($path, '../') || preg_match('#^[A-Za-z]:/#', $path) || false !== strpos($path, '://')) {
+			return '';
+		}
+		return preg_match('#^[A-Za-z0-9._/-]+$#', $path) ? $path : '';
+	}
+
+	/** @return array<string, mixed> */
+	private static function get_configured_faces_for_manifest(array $settings): array {
+		$request = self::build_google_fonts_request($settings);
+		return array(
+			'families' => array_values(array_map('strval', $request['families'] ?? array())),
+			'body' => array('weights' => self::sanitize_font_weights_value($settings['body_font_weights'] ?? '400'), 'italic' => !empty($settings['body_font_italics'])),
+			'heading' => array('weights' => self::sanitize_font_weights_value($settings['heading_font_weights'] ?? '700'), 'italic' => !empty($settings['heading_font_italics'])),
+			'accent' => array('weights' => self::sanitize_font_weights_value($settings['accent_font_weights'] ?? '400'), 'italic' => !empty($settings['accent_font_italics'])),
+		);
+	}
+
+	private static function record_build_history(array $manifest): void {
+		if (empty($manifest['signature'])) {
+			return;
+		}
+		$history = get_option(self::BUILD_HISTORY_OPTION_KEY, array());
+		$history = is_array($history) ? $history : array();
+		$history[] = array(
+			'schema_version' => (int) ($manifest['schema_version'] ?? 0),
+			'signature' => self::sanitize_local_manifest_signature($manifest['signature'] ?? ''),
+			'css_relative_path' => self::sanitize_relative_asset_path($manifest['css_relative_path'] ?? ''),
+			'generated_at' => (int) ($manifest['generated_at'] ?? 0),
+		);
+		update_option(self::BUILD_HISTORY_OPTION_KEY, array_slice($history, -5), false);
+	}
+
+	/**
 	 * Build deterministic local filename for a downloaded font file.
 	 */
 	private static function build_local_font_filename(string $font_url, int $index): string {
@@ -1517,6 +1925,13 @@ final class MRN_Google_Fonts {
 	 */
 	private static function maybe_delete_manifest_directory(array $manifest): void {
 		$directory = isset($manifest['directory']) ? (string) $manifest['directory'] : '';
+		if ('' === $directory) {
+			$relative_directory = self::sanitize_relative_asset_path($manifest['build_relative_directory'] ?? '');
+			$root = self::get_local_assets_root();
+			if ('' !== $relative_directory && !empty($root['basedir'])) {
+				$directory = trailingslashit((string) $root['basedir']) . $relative_directory;
+			}
+		}
 		if ('' === $directory || !is_dir($directory)) {
 			return;
 		}
@@ -1648,6 +2063,7 @@ final class MRN_Google_Fonts {
 
 			<div class="mrn-google-fonts-site-tab-panel" data-mrn-google-fonts-site-tab-panel="font-settings" hidden>
 				<p>Font families, weights, italics, and local font files are managed in <strong>Font Builder</strong>. Tag assignments are managed in <strong>Site Styles → Typography</strong>.</p>
+				<?php self::render_delivery_controls($settings, 'mrn-site-styles-google-fonts'); ?>
 				<p>
 					<label>
 						<input type="checkbox" name="<?php echo esc_attr($option_name); ?>[enabled]" value="1" <?php checked(!empty($settings['enabled'])); ?> />
@@ -1925,6 +2341,7 @@ final class MRN_Google_Fonts {
 		}
 
 		if ('font-settings' === $tab) {
+			self::render_delivery_controls($settings, 'mrn-google-fonts');
 			?>
 			<p class="mrn-google-fonts-field">
 				<label>
@@ -2520,10 +2937,11 @@ final class MRN_Google_Fonts {
 	/**
 	 * Build escaped font stack for CSS insertion.
 	 */
-	private static function build_font_stack(string $font_family): string {
+	private static function build_font_stack(string $font_family, string $fallback_stack = ''): string {
+		$fallback_stack = self::sanitize_fallback_stack($fallback_stack);
 		$font_family = trim($font_family);
 		if ('' === $font_family || 'system-ui' === strtolower($font_family)) {
-			return 'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+			return $fallback_stack;
 		}
 
 		// Single custom family plus system fallbacks.
@@ -2536,7 +2954,82 @@ final class MRN_Google_Fonts {
 			$family = (string) reset($parts);
 		}
 
-		return '"' . $family . '",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+		return '"' . $family . '",' . $fallback_stack;
+	}
+
+	/** Sanitize a CSS font fallback list without accepting declarations or URLs. */
+	private static function sanitize_fallback_stack($value): string {
+		$default = 'system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+		$value = trim((string) $value);
+		if ('' === $value || false !== strpos($value, ';') || false !== stripos($value, 'url(') || false !== strpos($value, '{') || false !== strpos($value, '}')) {
+			return $default;
+		}
+		$value = preg_replace('/[^A-Za-z0-9\-\s,"\']/', '', $value);
+		$value = trim((string) $value, " \t\n\r\0\x0B,");
+		return '' === $value ? $default : $value;
+	}
+
+	private static function get_delivery_mode(array $settings): string {
+		$mode = sanitize_key((string) ($settings['delivery_mode'] ?? 'local_only'));
+		return in_array($mode, array('local_only', 'local_preferred', 'remote'), true) ? $mode : 'local_only';
+	}
+
+	private static function enqueue_local_font_preloads(array $manifest): void {
+		if (is_wp_error(self::validate_local_manifest($manifest))) {
+			return;
+		}
+		$root = self::get_local_assets_root();
+		foreach (array_slice((array) ($manifest['files'] ?? array()), 0, 4) as $file) {
+			if (!is_array($file) || 'woff2' !== sanitize_key((string) ($file['format'] ?? ''))) {
+				continue;
+			}
+			$relative_path = self::sanitize_relative_asset_path($file['relative_path'] ?? '');
+			if ('' !== $relative_path) {
+				self::$preload_urls[] = esc_url_raw(trailingslashit((string) $root['baseurl']) . $relative_path);
+			}
+		}
+		self::$preload_urls = array_values(array_unique(self::$preload_urls));
+	}
+
+	public static function render_local_font_preloads(): void {
+		foreach (self::$preload_urls as $url) {
+			echo '<link rel="preload" href="' . esc_url($url) . '" as="font" type="font/woff2" crossorigin />' . "\n";
+		}
+	}
+
+	/** Store lightweight same-request ownership diagnostics for the admin status screen. */
+	public static function record_frontend_font_ownership(): void {
+		if (is_admin() || !function_exists('wp_styles')) {
+			return;
+		}
+		$styles = wp_styles();
+		$conflicts = array();
+		foreach ((array) $styles->queue as $handle) {
+			if (0 === strpos((string) $handle, 'mrn-google-fonts')) {
+				continue;
+			}
+			$src = isset($styles->registered[$handle]->src) ? (string) $styles->registered[$handle]->src : '';
+			if (false !== stripos($src, 'fonts.googleapis.com') || false !== stripos($src, 'fonts.gstatic.com')) {
+				$conflicts[] = sanitize_key((string) $handle);
+			}
+		}
+		set_transient('mrn_google_fonts_ownership_diagnostics', array('conflicts' => array_values(array_unique($conflicts)), 'checked_at' => time()), DAY_IN_SECONDS);
+	}
+
+	public static function render_diagnostic_notice(): void {
+		if (!current_user_can('manage_options')) {
+			return;
+		}
+		$settings = self::get_settings();
+		if (empty($settings['enabled']) || 'local_only' !== self::get_delivery_mode($settings)) {
+			return;
+		}
+		$validation = self::validate_local_manifest(self::get_local_manifest());
+		if (!is_wp_error($validation)) {
+			return;
+		}
+		$url = add_query_arg(array('page' => self::PAGE_SLUG, 'tab' => 'font-builder'), admin_url('options-general.php'));
+		echo '<div class="notice notice-warning"><p><strong>' . esc_html__('MRN Google Fonts local-only warning:', 'mrn-google-fonts') . '</strong> ' . esc_html($validation->get_error_message()) . ' ' . esc_html__('Remote fallback is prohibited; visitors will use the configured CSS fallback stack until a valid local build is available.', 'mrn-google-fonts') . ' <a href="' . esc_url($url) . '">' . esc_html__('Review font diagnostics', 'mrn-google-fonts') . '</a>.</p></div>';
 	}
 
 	/**

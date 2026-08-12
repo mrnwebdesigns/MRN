@@ -3,7 +3,7 @@
 ## Baseline Snapshot
 - Date pinned: 2026-06-30
 - Plugin source path: `/Users/khofmeyer/Development/MRN/plugins/mrn-google-fonts`
-- Current plugin version: `0.5.2`
+- Current plugin version: `1.0.0`
 - Intended integration target: mrn-plugin-stack
 - Current release model: in-repo standard plugin release unit
 

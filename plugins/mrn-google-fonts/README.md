@@ -1,6 +1,18 @@
 # Google Fonts
 
-Phase 2 runtime for a performance-first Google Fonts workflow.
+Production typography owner for local, portable Google Fonts delivery.
+
+## Version 1.0.0
+
+- Adds explicit `local_only`, `local_preferred`, and `remote` delivery modes.
+- Makes `local_only` the default for fresh installs. Existing installs retain `local_preferred` until deliberately migrated.
+- Prohibits all Google-hosted stylesheet, font, and resource-hint fallback in `local_only`.
+- Uses portable schema-v2 manifests containing only uploads-relative paths, families/faces, formats, SHA-256 checksums, and timestamps.
+- Resolves filesystem paths and public URLs from the current WordPress uploads directory at runtime, including multisite and subdirectory installations.
+- Migrates valid legacy absolute-path/old-domain manifests without re-downloading fonts and preserves the previous stylesheet during conversion.
+- Builds into a temporary directory, validates every file, and promotes atomically; the last known-good manifest remains active after failed builds.
+- Adds delivery/fallback/preload controls, actionable administrator warnings, and manifest diagnostics.
+- Adds `wp mrn-google-fonts status|build|validate|migrate` commands. Use WP-CLI's global `--url` for multisite selection and `migrate --dry-run` for previews.
 
 ## Goals
 
@@ -43,10 +55,10 @@ Phase 2 runtime for a performance-first Google Fonts workflow.
   - `Build Local Fonts` downloads selected `.woff2` files from Google CSS2 into uploads
   - per-family italic toggles use Google CSS2 `ital,wght` tuples for variable-font-safe requests
   - saves a local manifest in `mrn_google_fonts_local_manifest`
-  - frontend/editor automatically prefer the matching local CSS build and skip Google CDN
+  - frontend/editor follow the configured delivery mode; `local_only` never contacts Google
   - build now persists posted builder values first (so separate Save is not required)
   - build auto-enables frontend runtime when disabled and reports that in the success notice
-  - `Clear Local Build` removes cached local files and falls back to remote runtime
+  - `Clear Local Build` removes cached local files; `local_only` uses the configured fallback stack until rebuilt
 - Lean remote request contract:
   - `font_faces` settings can override requested faces per family
   - `mrn_google_fonts_family_faces` can filter requested faces before the Google CSS2 URL is built
@@ -126,7 +138,7 @@ Use this quick pass before release on stack-owned pages:
 2. Set only required weights/italics for each family and click `Build Local Fonts`.
 3. Confirm build notice reports files/families and no errors.
 4. On a frontend page, verify in devtools that:
-   - `mrn-google-fonts-local-css` is loaded (preferred) or `mrn-google-fonts-remote-css` fallback.
+   - `mrn-google-fonts-local-css` is loaded in production `local_only` mode.
    - `mrn-google-fonts-frontend-css` is loaded.
    - `--mrn-font-body`, `--mrn-font-heading`, and `--mrn-font-accent` are present on `:root`.
 5. Check computed typography on representative selectors for each assigned family target group.
@@ -141,6 +153,8 @@ Run this lightweight check before release when TinyMCE font-format behavior chan
 ```bash
 php plugins/mrn-google-fonts/tests/tinymce-font-formats-regression.php
 php plugins/mrn-google-fonts/tests/google-fonts-request-faces-regression.php
+php plugins/mrn-google-fonts/tests/local-only-delivery-regression.php
+php plugins/mrn-google-fonts/tests/portable-manifest-v2-regression.php
 ```
 
 These checks assert that injected TinyMCE `font_formats` remain alphabetically sorted and free of duplicate labels, and that the Google Fonts CSS2 URL builder preserves legacy output while supporting lean per-family face maps.

@@ -3,7 +3,7 @@
  * Plugin Name: MRN Google Fonts
  * Description: Performance-first Google Fonts runtime for frontend and Classic Editor, with optional MRN stack bridge support.
  * Author: MRN Web Designs
- * Version: 0.5.3
+ * Version: 1.0.0
  */
 
 if (!defined('ABSPATH')) {
@@ -16,5 +16,7 @@ define('MRN_GOOGLE_FONTS_URL', plugin_dir_url(__FILE__));
 
 require_once MRN_GOOGLE_FONTS_DIR . 'includes/class-mrn-google-fonts-stack-bridge.php';
 require_once MRN_GOOGLE_FONTS_DIR . 'includes/class-mrn-google-fonts.php';
+require_once MRN_GOOGLE_FONTS_DIR . 'includes/class-mrn-google-fonts-cli.php';
 
 MRN_Google_Fonts::init();
+MRN_Google_Fonts_CLI::init();
