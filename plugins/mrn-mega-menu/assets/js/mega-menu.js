@@ -4,7 +4,9 @@
 	const items = Array.from(document.querySelectorAll('.mrn-has-mega-menu'));
 	const closeTimers = new WeakMap();
 	const triggerAttributes = new WeakMap();
+	const triggerPointerTypes = new WeakMap();
 	const nativeMobileTriggers = new WeakSet();
+	let touchArmedItem = null;
 	if (!items.length) return;
 
 	function cancelScheduledClose(item) {
@@ -33,6 +35,24 @@
 			item.closest('[data-mrn-mobile-active="true"]') &&
 			item.querySelector(':scope > .sub-menu')
 		);
+	}
+
+	function parentClickBehavior(trigger) {
+		return trigger?.dataset.mrnParentClick === 'link' ? 'link' : 'toggle';
+	}
+
+	function usesFinePointer() {
+		return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+	}
+
+	function resetTouchState(item) {
+		if (!item || touchArmedItem === item) touchArmedItem = null;
+	}
+
+	function firstPanelControl(panel) {
+		return Array.from(panel.querySelectorAll('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+			.find((control) => !control.classList.contains('mrn-mega-menu__close') && !control.disabled && !control.hidden) ||
+			panel.querySelector('.mrn-mega-menu__close');
 	}
 
 	function sizePanel(panel) {
@@ -71,6 +91,7 @@
 		item.classList.remove('is-mega-menu-open');
 		if (!usesNativeMobileMenu(item)) trigger.setAttribute('aria-expanded', 'false');
 		panel.hidden = true;
+		resetTouchState(item);
 		if (returnFocus) trigger.focus();
 	}
 
@@ -130,29 +151,47 @@
 		const { trigger, panel } = parts(item);
 		if (!trigger || !panel) return;
 		syncTriggerMode(item);
+		trigger.addEventListener('pointerdown', (event) => {
+			triggerPointerTypes.set(trigger, event.pointerType || '');
+		});
 
 		trigger.addEventListener('click', (event) => {
 			if (usesNativeMobileMenu(item)) return;
+			if (parentClickBehavior(trigger) === 'link') {
+				// Enter produces a synthetic click (detail 0) and follows the native link.
+				const pointerType = triggerPointerTypes.get(trigger) || '';
+				const coarseActivation = pointerType === 'touch' || (!pointerType && window.matchMedia('(pointer: coarse)').matches);
+				if (event.detail === 0 || !coarseActivation) {
+					resetTouchState();
+					return;
+				}
+				if (touchArmedItem === item && trigger.getAttribute('aria-expanded') === 'true') {
+					resetTouchState();
+					return;
+				}
+				event.preventDefault();
+				event.stopPropagation();
+				open(item);
+				touchArmedItem = item;
+				return;
+			}
 			event.preventDefault();
 			event.stopPropagation();
-			if (trigger.getAttribute('aria-expanded') !== 'true') {
-				open(item);
-			} else if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-				close(item, false);
-			}
+			if (trigger.getAttribute('aria-expanded') === 'true') close(item, false);
+			else open(item);
 		});
 
 		item.querySelector('.mrn-mega-menu__close')?.addEventListener('click', () => close(item, true));
 
 		item.addEventListener('mouseenter', () => {
-			if (!usesNativeMobileMenu(item) && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+			if (!usesNativeMobileMenu(item) && usesFinePointer()) {
 				cancelScheduledClose(item);
 				open(item);
 			}
 		});
 
 		item.addEventListener('mouseleave', () => {
-			if (window.matchMedia('(hover: hover) and (pointer: fine)').matches && !item.contains(document.activeElement)) scheduleClose(item);
+			if (usesFinePointer() && !item.contains(document.activeElement)) scheduleClose(item);
 		});
 
 		item.addEventListener('focusout', (event) => {
@@ -173,7 +212,7 @@
 			if (event.key === 'ArrowDown' && event.target === trigger) {
 				event.preventDefault();
 				open(item);
-				panel.querySelector('a, button')?.focus();
+				firstPanelControl(panel)?.focus();
 			}
 		});
 	});

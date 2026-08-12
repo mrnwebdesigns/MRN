@@ -180,15 +180,23 @@ final class Renderer {
 		}
 
 		self::$render_instances++;
-		$instance   = absint( $item->ID ) . '-' . self::$render_instances;
-		$control_id = 'mrn-mega-menu-trigger-' . $instance;
-		$panel_dom  = 'mrn-mega-menu-panel-' . $instance;
-		$label      = sanitize_text_field( $panel['label_override'] ?? '' );
-		$label      = $label ? Stack_Integration::resolve_text( $label ) : wp_strip_all_tags( $item->title );
+		$instance       = absint( $item->ID ) . '-' . self::$render_instances;
+		$control_id     = 'mrn-mega-menu-trigger-' . $instance;
+		$panel_dom      = 'mrn-mega-menu-panel-' . $instance;
+		$label          = sanitize_text_field( $panel['label_override'] ?? '' );
+		$label          = $label ? Stack_Integration::resolve_text( $label ) : wp_strip_all_tags( $item->title );
+		$parent_click   = Plugin::resolve_parent_click( $item->ID, $panel );
+		$has_usable_url = Plugin::has_usable_parent_url( $item->url ?? '' );
+		if ( 'link' === $parent_click && ! $has_usable_url ) {
+			$parent_click = 'toggle';
+		}
+		$role         = $has_usable_url ? '' : ' role="button"';
 		$attributes = sprintf(
-			'id="%1$s" data-mrn-mega-menu-trigger %3$s role="button" aria-expanded="false" aria-controls="%2$s" aria-haspopup="true"',
+			'id="%1$s" data-mrn-mega-menu-trigger data-mrn-parent-click="%3$s"%4$s %5$s aria-expanded="false" aria-controls="%2$s" aria-haspopup="true"',
 			esc_attr( $control_id ),
 			esc_attr( $panel_dom ),
+			esc_attr( $parent_click ),
+			$role,
 			$arrow_icon['value'] ? 'data-mrn-custom-arrow' : ''
 		);
 		$trigger_output = preg_replace( '/<a\s/', '<a ' . $attributes . ' ', $item_output, 1 );

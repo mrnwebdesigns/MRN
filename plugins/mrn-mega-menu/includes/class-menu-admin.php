@@ -204,6 +204,7 @@ final class Menu_Admin {
 					$menu_id       = absint( $menu->term_id );
 					$enabled       = Plugin::is_menu_mega( $menu_id );
 					$layout_id     = Plugin::get_menu_layout_id( $menu_id );
+					$parent_click  = Plugin::get_menu_parent_click( $menu_id );
 					$usage         = self::menu_usage( $menu_id, $header_id, $locations, $assigned );
 					$trigger_count = self::parent_trigger_count( $menu_id );
 					$sources       = self::content_sources( $layout_id );
@@ -229,6 +230,12 @@ final class Menu_Admin {
 							</select>
 							<a class="button-link mrn-mega-edit-selected-layout" href="<?php echo esc_url( $edit_layout_url ); ?>"<?php echo $edit_layout_url ? '' : ' hidden'; ?>><?php esc_html_e( 'Edit layout', 'mrn-mega-menu' ); ?></a>
 								<p class="description"><?php esc_html_e( 'Choose Automatic for the native parent → children behavior. Choose a published layout only when every parent should use that reusable panel recipe.', 'mrn-mega-menu' ); ?></p>
+								<label for="mrn-mega-parent-click-<?php echo esc_attr( $menu_id ); ?>"><?php esc_html_e( 'Parent item click behavior', 'mrn-mega-menu' ); ?></label><br>
+								<select id="mrn-mega-parent-click-<?php echo esc_attr( $menu_id ); ?>" name="parent_click">
+									<option value="toggle" <?php selected( $parent_click, 'toggle' ); ?>><?php esc_html_e( 'Open mega menu only', 'mrn-mega-menu' ); ?></option>
+									<option value="link" <?php selected( $parent_click, 'link' ); ?>><?php esc_html_e( 'Open mega menu and allow parent link', 'mrn-mega-menu' ); ?></option>
+								</select>
+								<p class="description"><?php esc_html_e( 'Open-only is the default. When links are allowed, desktop hover and Arrow Down open the panel, click or Enter follows the parent URL, touch opens on the first tap and follows on the second, and Space toggles without navigating.', 'mrn-mega-menu' ); ?></p>
 								<p class="description"><strong><?php esc_html_e( 'Content:', 'mrn-mega-menu' ); ?></strong> <?php echo esc_html( implode( '; ', $sources ) ); ?></p>
 							</div>
 						</td>
@@ -259,7 +266,8 @@ final class Menu_Admin {
 				document.querySelectorAll('.mrn-mega-menu-setting[data-menu-id]').forEach(function (row) {
 					settings[row.dataset.menuId] = {
 						enabled: row.querySelector('input[name="mega_enabled"]').checked ? 1 : 0,
-						layout_id: row.querySelector('select[name="layout_id"]').value
+						layout_id: row.querySelector('select[name="layout_id"]').value,
+						parent_click: row.querySelector('select[name="parent_click"]').value
 					};
 				});
 				var settingsInput = bulkForm.querySelector('input[name="menu_settings"]');
@@ -466,8 +474,9 @@ final class Menu_Admin {
 			wp_die( esc_html__( 'The selected WordPress menu does not exist.', 'mrn-mega-menu' ) );
 		}
 
-		$enabled   = ! empty( $_POST['mega_enabled'] );
-		$layout_id = isset( $_POST['layout_id'] ) ? absint( $_POST['layout_id'] ) : 0;
+		$enabled      = ! empty( $_POST['mega_enabled'] );
+		$layout_id    = isset( $_POST['layout_id'] ) ? absint( $_POST['layout_id'] ) : 0;
+		$parent_click = Plugin::sanitize_parent_click( isset( $_POST['parent_click'] ) ? sanitize_text_field( wp_unslash( $_POST['parent_click'] ) ) : 'toggle' );
 		if ( $layout_id && ( Plugin::POST_TYPE !== get_post_type( $layout_id ) || 'publish' !== get_post_status( $layout_id ) ) ) {
 			$layout_id = 0;
 		}
@@ -475,9 +484,11 @@ final class Menu_Admin {
 		if ( $enabled ) {
 			update_term_meta( $menu_id, Plugin::MENU_META_ENABLED, '1' );
 			update_term_meta( $menu_id, Plugin::MENU_META_LAYOUT_ID, $layout_id );
+			update_term_meta( $menu_id, Plugin::MENU_META_PARENT_CLICK, $parent_click );
 		} else {
 			delete_term_meta( $menu_id, Plugin::MENU_META_ENABLED );
 			delete_term_meta( $menu_id, Plugin::MENU_META_LAYOUT_ID );
+			delete_term_meta( $menu_id, Plugin::MENU_META_PARENT_CLICK );
 		}
 
 		wp_safe_redirect( add_query_arg( array( 'page' => self::PAGE_SLUG, 'updated' => '1' ), admin_url( 'themes.php' ) ) );
@@ -500,17 +511,20 @@ final class Menu_Admin {
 			if ( ! $menu_id || ! is_array( $setting ) || ! wp_get_nav_menu_object( $menu_id ) ) {
 				continue;
 			}
-			$enabled   = ! empty( $setting['enabled'] );
-			$layout_id = isset( $setting['layout_id'] ) ? absint( $setting['layout_id'] ) : 0;
+			$enabled      = ! empty( $setting['enabled'] );
+			$layout_id    = isset( $setting['layout_id'] ) ? absint( $setting['layout_id'] ) : 0;
+			$parent_click = Plugin::sanitize_parent_click( $setting['parent_click'] ?? 'toggle' );
 			if ( $layout_id && ( Plugin::POST_TYPE !== get_post_type( $layout_id ) || 'publish' !== get_post_status( $layout_id ) ) ) {
 				$layout_id = 0;
 			}
 			if ( $enabled ) {
 				update_term_meta( $menu_id, Plugin::MENU_META_ENABLED, '1' );
 				update_term_meta( $menu_id, Plugin::MENU_META_LAYOUT_ID, $layout_id );
+				update_term_meta( $menu_id, Plugin::MENU_META_PARENT_CLICK, $parent_click );
 			} else {
 				delete_term_meta( $menu_id, Plugin::MENU_META_ENABLED );
 				delete_term_meta( $menu_id, Plugin::MENU_META_LAYOUT_ID );
+				delete_term_meta( $menu_id, Plugin::MENU_META_PARENT_CLICK );
 			}
 		}
 		wp_safe_redirect( add_query_arg( array( 'page' => self::PAGE_SLUG, 'updated' => '1' ), admin_url( 'themes.php' ) ) );

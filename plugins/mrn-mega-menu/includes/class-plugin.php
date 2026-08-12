@@ -12,6 +12,7 @@ final class Plugin {
 	public const OPTION_ASSIGNMENTS = 'mrn_mega_menu_assignments';
 	public const MENU_META_ENABLED = '_mrn_mega_menu_enabled';
 	public const MENU_META_LAYOUT_ID = '_mrn_mega_menu_layout_id';
+	public const MENU_META_PARENT_CLICK = '_mrn_mega_menu_parent_click';
 	public const ITEM_META_ICON = '_mrn_mega_menu_item_icon';
 	public const ITEM_META_ARROW_ICON = '_mrn_mega_menu_arrow_icon';
 
@@ -161,6 +162,69 @@ final class Plugin {
 	}
 
 	/**
+	 * Sanitize a menu-level parent click behavior.
+	 *
+	 * Missing and unknown values intentionally resolve to toggle so existing
+	 * menus keep the pre-0.16.13 behavior.
+	 *
+	 * @param mixed $value Raw setting value.
+	 * @return string Either toggle or link.
+	 */
+	public static function sanitize_parent_click( $value ) {
+		return 'link' === sanitize_key( is_scalar( $value ) ? (string) $value : '' ) ? 'link' : 'toggle';
+	}
+
+	/**
+	 * Sanitize a panel-level parent click override.
+	 *
+	 * @param mixed $value Raw setting value.
+	 * @return string Either inherit, toggle, or link.
+	 */
+	public static function sanitize_parent_click_override( $value ) {
+		$value = sanitize_key( is_scalar( $value ) ? (string) $value : '' );
+		return in_array( $value, array( 'toggle', 'link' ), true ) ? $value : 'inherit';
+	}
+
+	/**
+	 * Return the configured default for a WordPress menu.
+	 *
+	 * @param int $menu_id WordPress nav menu term ID.
+	 * @return string Either toggle or link.
+	 */
+	public static function get_menu_parent_click( $menu_id ) {
+		return self::sanitize_parent_click( get_term_meta( absint( $menu_id ), self::MENU_META_PARENT_CLICK, true ) );
+	}
+
+	/**
+	 * Resolve one assigned top-level item's parent click behavior.
+	 *
+	 * @param int                  $item_id Menu item post ID.
+	 * @param array<string, mixed> $panel   Resolved panel configuration.
+	 * @return string Either toggle or link.
+	 */
+	public static function resolve_parent_click( $item_id, $panel ) {
+		$override = self::sanitize_parent_click_override( $panel['parent_click'] ?? 'inherit' );
+		if ( 'inherit' !== $override ) {
+			return $override;
+		}
+
+		$menu_ids = wp_get_object_terms( absint( $item_id ), 'nav_menu', array( 'fields' => 'ids' ) );
+		$menu_id  = ! is_wp_error( $menu_ids ) && ! empty( $menu_ids ) ? absint( reset( $menu_ids ) ) : 0;
+		return $menu_id ? self::get_menu_parent_click( $menu_id ) : 'toggle';
+	}
+
+	/**
+	 * Whether a native menu item URL is a usable navigation destination.
+	 *
+	 * @param mixed $url Native WordPress menu item URL.
+	 * @return bool
+	 */
+	public static function has_usable_parent_url( $url ) {
+		$url = is_scalar( $url ) ? trim( (string) $url ) : '';
+		return '' !== $url && '#' !== $url;
+	}
+
+	/**
 	 * Sanitize a shared-icon-chooser value for storage and front-end output.
 	 *
 	 * @param mixed $icon Raw icon value.
@@ -256,6 +320,7 @@ final class Plugin {
 				$normalized['panels'][] = array(
 					'menu_item_id'  => absint( $panel['menu_item_id'] ?? 0 ),
 					'label_override' => sanitize_text_field( $panel['label_override'] ?? '' ),
+					'parent_click'  => self::sanitize_parent_click_override( $panel['parent_click'] ?? 'inherit' ),
 					'item_icon'     => self::sanitize_icon( $panel['item_icon'] ?? array() ),
 					'arrow_icon'    => self::sanitize_icon( $panel['arrow_icon'] ?? array() ),
 					'child_arrow_icon' => self::sanitize_icon( $panel['child_arrow_icon'] ?? ( $panel['child_icon'] ?? array() ) ),
@@ -276,6 +341,7 @@ final class Plugin {
 				$normalized['panels'][] = array(
 					'menu_item_id'  => $menu_item_id,
 					'label_override' => '',
+					'parent_click'  => 'inherit',
 					'item_icon'     => array( 'type' => '', 'value' => '' ),
 					'arrow_icon'    => array( 'type' => '', 'value' => '' ),
 					'child_arrow_icon' => array( 'type' => '', 'value' => '' ),
@@ -288,6 +354,7 @@ final class Plugin {
 			$normalized['panels'][] = array(
 				'menu_item_id'  => 0,
 				'label_override' => '',
+				'parent_click'  => 'inherit',
 				'item_icon'     => array( 'type' => '', 'value' => '' ),
 				'arrow_icon'    => array( 'type' => '', 'value' => '' ),
 				'child_arrow_icon' => array( 'type' => '', 'value' => '' ),

@@ -6,6 +6,7 @@ A focused WordPress menu enhancement layer with optional, first-class WooCommerc
 
 - Native WordPress menus that can be standard or mega-enabled
 - Automatic mega panels for top-level parents using their own children
+- Configurable top-level parent clicks, with a menu-wide default and stable menu-item-ID overrides for link or toggle behavior
 - Optional reusable Mega Layouts with one independently editable mega menu per top-level parent and one-to-six visual columns inside each mega menu
 - Custom link groups using the native WordPress link search and picker
 - Native WordPress menu blocks using the assigned item's children, an entire saved menu, or one selected parent branch
@@ -31,7 +32,7 @@ A focused WordPress menu enhancement layer with optional, first-class WooCommerc
 
 The workspace uses the MRN Universal Sticky Bar for **Menus** and **Reusable Layouts** navigation when that shared contract is available. A standard WordPress tab bar is used when it is not, so the plugin remains standalone-safe.
 
-Each top-level parent with children becomes a mega trigger. Hover, click, Enter, Space, or Arrow Down opens its panel, and the same parent closes it again. The underlying object remains a normal WordPress menu.
+Each top-level parent with children becomes a mega trigger. By default, click, Enter, or Space toggles its panel without navigating, preserving the original plugin behavior. Administrators can allow the original WordPress parent URL globally or override one assigned parent by its menu-item ID. In link mode, desktop hover and Arrow Down open the panel, click or Enter follows the URL, touch uses a first tap to open and a second tap to follow, and Space toggles without navigating. Escape closes the panel and returns focus to the parent. The underlying object remains a normal WordPress menu.
 
 Template files use the normal WordPress API; no special renderer is required:
 
@@ -62,7 +63,7 @@ The plugin detects the stack through public PHP contracts rather than filesystem
 - Direct rendering of published Reusable Block Library content inside menu panels, without page-row wrappers or duplicate anchors
 - The stack-owned admin layout builder for tabs, sortable columns, shared grid math, and layout styling
 - Native Appearance → Menus item management with per-item leading and navigation-arrow icons
-- Incremental “Add mega menu” controls plus per-layout parent-label, trigger-icon, trigger-arrow, and child-arrow overrides
+- Incremental “Add mega menu” controls plus per-layout parent-label, parent-click, trigger-icon, trigger-arrow, and child-arrow overrides
 - One page-level Save settings action for all menu behavior assignments
 - Universal Sticky Bar integration with Mega Menu-specific save and admin-link behavior
 
@@ -76,3 +77,11 @@ Integration filters:
 - `mrn_mega_menu_stack_capabilities`
 - `mrn_mega_menu_resolve_text`
 - `mrn_mega_menu_use_sticky_toolbar`
+
+## Changelog
+
+### 0.16.13
+
+- Added a backward-compatible menu-wide parent click setting and per-top-level-item overrides stored by WordPress menu-item ID.
+- Preserved linked anchors and their original URLs, exposed resolved behavior through `data-mrn-parent-click`, and added fine-pointer, touch, and keyboard interaction rules.
+- Kept unusable parent destinations such as empty URLs and `#` in accessible toggle-only mode.

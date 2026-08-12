@@ -125,6 +125,7 @@ final class Admin {
 				array(
 					'menu_item_id'  => 0,
 					'label_override' => '',
+					'parent_click'  => 'inherit',
 					'item_icon'     => array( 'type' => '', 'value' => '' ),
 					'arrow_icon'    => array( 'type' => '', 'value' => '' ),
 					'child_arrow_icon' => array( 'type' => '', 'value' => '' ),
@@ -236,6 +237,7 @@ final class Admin {
 			</div>
 			<div class="mrn-mm-panel-icons">
 				<label class="mrn-mm-panel-label-override"><span><?php esc_html_e( 'Parent navigation label', 'mrn-mega-menu' ); ?></span><input type="text" data-panel-field="label_override" value="<?php echo esc_attr( $panel['label_override'] ?? '' ); ?>" placeholder="<?php echo esc_attr( $panel_label ); ?>"><small><?php esc_html_e( 'Overrides the visible top-level label for this layout without renaming the WordPress menu item.', 'mrn-mega-menu' ); ?></small></label>
+				<label class="mrn-mm-panel-parent-click"><span><?php esc_html_e( 'Parent item click behavior', 'mrn-mega-menu' ); ?></span><select data-panel-field="parent_click"><option value="inherit" <?php selected( $panel['parent_click'] ?? 'inherit', 'inherit' ); ?>><?php esc_html_e( 'Use global setting', 'mrn-mega-menu' ); ?></option><option value="toggle" <?php selected( $panel['parent_click'] ?? 'inherit', 'toggle' ); ?>><?php esc_html_e( 'Open mega menu only', 'mrn-mega-menu' ); ?></option><option value="link" <?php selected( $panel['parent_click'] ?? 'inherit', 'link' ); ?>><?php esc_html_e( 'Allow parent link', 'mrn-mega-menu' ); ?></option></select><small><?php esc_html_e( 'Applies only to this assigned WordPress menu-item ID. Linked parents navigate on desktop and Enter; touch users tap once to open and again to follow. Space always toggles the panel.', 'mrn-mega-menu' ); ?></small></label>
 				<?php self::render_icon_control( 'item_icon', __( 'Navigation item icon', 'mrn-mega-menu' ), $panel['item_icon'] ?? array(), __( 'Overrides the icon configured on the native WordPress menu item for this layout.', 'mrn-mega-menu' ) ); ?>
 				<?php self::render_icon_control( 'arrow_icon', __( 'Navigation arrow icon', 'mrn-mega-menu' ), $panel['arrow_icon'] ?? array(), __( 'Overrides the arrow used to indicate this item opens a mega menu.', 'mrn-mega-menu' ) ); ?>
 				<?php self::render_icon_control( 'child_arrow_icon', __( 'Child navigation arrow', 'mrn-mega-menu' ), $panel['child_arrow_icon'] ?? array(), __( 'Replaces the default trailing arrow on child links. A child item’s own navigation arrow takes precedence.', 'mrn-mega-menu' ) ); ?>
@@ -681,6 +683,7 @@ final class Admin {
 			$clean_panel = array(
 				'menu_item_id'  => absint( $panel['menu_item_id'] ?? 0 ),
 				'label_override' => sanitize_text_field( $panel['label_override'] ?? '' ),
+				'parent_click'  => Plugin::sanitize_parent_click_override( $panel['parent_click'] ?? 'inherit' ),
 				'item_icon'     => Plugin::sanitize_icon( $panel['item_icon'] ?? array() ),
 				'arrow_icon'    => Plugin::sanitize_icon( $panel['arrow_icon'] ?? array() ),
 				'child_arrow_icon' => Plugin::sanitize_icon( $panel['child_arrow_icon'] ?? ( $panel['child_icon'] ?? array() ) ),
@@ -707,6 +710,7 @@ final class Admin {
 			$clean['panels'][] = array(
 				'menu_item_id'  => 0,
 				'label_override' => '',
+				'parent_click'  => 'inherit',
 				'item_icon'     => array( 'type' => '', 'value' => '' ),
 				'arrow_icon'    => array( 'type' => '', 'value' => '' ),
 				'child_arrow_icon' => array( 'type' => '', 'value' => '' ),
