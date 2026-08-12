@@ -49,7 +49,6 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-config-helper` | MRN Config Helper | 0.1.43 | <https://github.com/mrnwebdesigns/mrn-config-helper> | Stack-aware admin utility; can run standalone, but stack sites use more of its integrations. |
 | `mrn-contextual-content-editor` | MRN Contextual Content Editor | 0.1.0 | <https://github.com/mrnwebdesigns/MRN> | No hard stack requirement; ACF matching is optional. |
 | `mrn-cookie-consent` | MRN Cookie Consent | 1.1.36 | <https://github.com/mrnwebdesigns/mrn-cookie-consent> | No hard stack requirement; MRN GTM Injector integration is optional. |
-| `mrn-dummy-content` | MRN Dummy Content | 0.1.19 | <https://github.com/mrnwebdesigns/mrn-dummy-content> | Stack-aware QA/demo utility; can run outside the stack but is most useful against MRN builder fields. |
 | `mrn-editor-tools` | MRN Editor Enhancements | 1.8.24 | <https://github.com/mrnwebdesigns/mrn-editor-tools> | No stack requirement; Classic Editor/ACF editor context expected. |
 | `mrn-fontawesome-profile-manager` | MRN Font Awesome Profile Manager | 0.4.0 | <https://github.com/mrnwebdesigns/mrn-fontawesome-profile-manager> | Optional stack bridge for Site Configurations/Site Styles. |
 | `mrn-google-fonts` | MRN Google Fonts | 0.5.2 | <https://github.com/mrnwebdesigns/MRN> | Optional stack bridge for Site Styles; standalone mode supported. |

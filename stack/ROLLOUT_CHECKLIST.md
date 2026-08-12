@@ -179,7 +179,6 @@ Standard plugins are not part of the feature deploy helper.
 
 Examples:
 
-- `mrn-dummy-content`
 - `mrn-config-helper`
 - `mrn-editor-tools`
 - `mrn-seo-helper`

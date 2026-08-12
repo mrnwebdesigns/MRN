@@ -1257,21 +1257,6 @@
                             "f": "itp"
                         },
                         {
-                            "template_id": "tools.php>mrn-dummy-content",
-                            "local_id": "74CtutwoPnZ",
-                            "grant_access": {
-                                "role:editor": false
-                            },
-                            "defaults": {
-                                "menu_title": "Dummy Content",
-                                "access_level": "manage_options",
-                                "file": "mrn-dummy-content",
-                                "is_plugin_page": true,
-                                "url": "tools.php?page=mrn-dummy-content"
-                            },
-                            "f": "itp"
-                        },
-                        {
                             "template_id": "tools.php>mrn-seo-helper",
                             "local_id": "82CEcxLBNRj",
                             "defaults": {

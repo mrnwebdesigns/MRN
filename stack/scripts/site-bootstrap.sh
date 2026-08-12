@@ -722,6 +722,35 @@ reset_standard_plugins() {
   done
 }
 
+remove_retired_stack_plugins() {
+  local -a retired_plugins
+  local plugin_slug
+
+  retired_plugins=(
+    mrn-dummy-content
+  )
+
+  for plugin_slug in "${retired_plugins[@]}"; do
+    if ! run_wp plugin is-installed "${plugin_slug}" >/dev/null 2>&1; then
+      continue
+    fi
+
+    if run_wp plugin is-active "${plugin_slug}" >/dev/null 2>&1; then
+      if ! run_wp plugin deactivate "${plugin_slug}" >/dev/null 2>&1; then
+        add_warning "Failed to deactivate retired stack plugin: ${plugin_slug}"
+        continue
+      fi
+    fi
+
+    if ! run_wp plugin delete "${plugin_slug}" >/dev/null 2>&1; then
+      add_warning "Failed to delete retired stack plugin: ${plugin_slug}"
+      continue
+    fi
+
+    echo "Removed retired stack plugin: ${plugin_slug}"
+  done
+}
+
 ensure_all_plugins_active() {
   local -a inactive_plugins
   mapfile -t inactive_plugins < <(run_wp plugin list --status=inactive --field=name 2>/dev/null || true)
@@ -1791,6 +1820,7 @@ main() {
   echo "Bootstrapping site: ${SITE_PATH} (owner: ${SITE_USER})"
   ensure_site_owner_direct_ssh
   reset_standard_plugins
+  remove_retired_stack_plugins
   install_plugins
   ensure_all_plugins_active
   configure_post_types_order
