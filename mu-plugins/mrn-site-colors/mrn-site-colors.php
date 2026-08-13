@@ -521,6 +521,8 @@ function mrn_site_styles_get_typography_css(string $scope = ''): string {
     $scope = '.editor-styles-wrapper' === $scope ? $scope . ' ' : '';
     $css = '';
     $mobile_rules = array();
+    $root_declarations = array();
+    $mobile_root_declarations = array();
     $tag_choices = mrn_site_styles_get_typography_tag_choices();
 
     foreach (mrn_site_styles_get_typography() as $row) {
@@ -528,6 +530,8 @@ function mrn_site_styles_get_typography_css(string $scope = ''): string {
         if (!isset($tag_choices[$tag])) {
             continue;
         }
+        $is_element_target = 'custom' !== $tag;
+        $type_var_prefix = $is_element_target ? '--mrn-type-' . sanitize_key($tag) . '-' : '';
         $selector = 'custom' === $tag
             ? '.mrn-type-' . mrn_site_styles_normalize_typography_style_slug((string) ($row['slug'] ?? $row['name'] ?? 'style'))
             : mrn_site_styles_get_typography_selector($tag);
@@ -539,11 +543,18 @@ function mrn_site_styles_get_typography_css(string $scope = ''): string {
             $value = (string) ($row[$key] ?? '');
             if ('' !== $value) {
                 $declarations[] = $property . ':' . $value;
+                if ($is_element_target) {
+                    $root_declarations[] = $type_var_prefix . $property . ':' . $value;
+                }
             }
         }
         $color = (string) ($row['color'] ?? '');
         if ('' !== $color) {
-            $declarations[] = 'color:var(' . mrn_site_colors_get_css_var($color) . ')';
+            $color_value = 'var(' . mrn_site_colors_get_css_var($color) . ')';
+            $declarations[] = 'color:' . $color_value;
+            if ($is_element_target) {
+                $root_declarations[] = $type_var_prefix . 'color:' . $color_value;
+            }
         }
         $effect = (string) ($row['effect'] ?? '');
         if ('subtle-shadow' === $effect) {
@@ -575,10 +586,20 @@ function mrn_site_styles_get_typography_css(string $scope = ''): string {
         if ('' !== $mobile_size) {
             $mobile_selector = implode(',', array_map(static function (string $part) use ($scope): string { return $scope . trim($part); }, explode(',', $selector)));
             $mobile_rules[] = $mobile_selector . '{font-size:' . $mobile_size . ';}';
+            if ($is_element_target) {
+                $mobile_root_declarations[] = $type_var_prefix . 'font-size:' . $mobile_size;
+            }
         }
     }
-    if ($mobile_rules !== array()) {
-        $css .= '@media (max-width:782px){' . implode('', $mobile_rules) . '}';
+    if ($root_declarations !== array()) {
+        $css = ':root{' . implode(';', $root_declarations) . ';}' . $css;
+    }
+    if ($mobile_rules !== array() || $mobile_root_declarations !== array()) {
+        $mobile_css = '';
+        if ($mobile_root_declarations !== array()) {
+            $mobile_css .= ':root{' . implode(';', $mobile_root_declarations) . ';}';
+        }
+        $css .= '@media (max-width:782px){' . $mobile_css . implode('', $mobile_rules) . '}';
     }
 
     return $css;
