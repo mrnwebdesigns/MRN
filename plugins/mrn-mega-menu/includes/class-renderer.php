@@ -461,12 +461,17 @@ final class Renderer {
 	}
 
 	private static function render_categories( $block ) {
-		$ids              = isset( $block['category_ids'] ) && is_array( $block['category_ids'] ) ? $block['category_ids'] : array();
-		$display          = isset( $block['category_display'] ) && in_array( $block['category_display'], array( 'links', 'links_descriptions', 'descriptions' ), true )
+		$ids             = isset( $block['category_ids'] ) && is_array( $block['category_ids'] ) ? $block['category_ids'] : array();
+		$display         = isset( $block['category_display'] ) && in_array( $block['category_display'], array( 'links', 'links_descriptions', 'descriptions' ), true )
 			? $block['category_display']
 			: ( ! empty( $block['show_category_descriptions'] ) ? 'links_descriptions' : 'links' );
-		$show_links       = 'descriptions' !== $display;
-		$show_descriptions = 'links' !== $display;
+		$name_display    = isset( $block['category_name_display'] ) && in_array( $block['category_name_display'], array( 'link', 'text', 'hidden' ), true )
+			? $block['category_name_display']
+			: ( 'descriptions' === $display ? 'hidden' : 'link' );
+		$description_source = isset( $block['category_description_source'] ) && in_array( $block['category_description_source'], array( 'none', 'description', 'short_description' ), true )
+			? $block['category_description_source']
+			: ( 'links' === $display ? 'none' : 'description' );
+		$name_tag       = isset( $block['category_name_tag'] ) && in_array( $block['category_name_tag'], array( 'span', 'p', 'h2', 'h3', 'h4', 'h5', 'h6' ), true ) ? $block['category_name_tag'] : 'span';
 		if ( ! taxonomy_exists( 'product_cat' ) || empty( $ids ) ) {
 			return;
 		}
@@ -477,12 +482,22 @@ final class Renderer {
 				$term = get_term( absint( $term_id ), 'product_cat' );
 				if ( ! $term || is_wp_error( $term ) ) { continue; }
 				$url = get_term_link( $term );
-				if ( $show_links && is_wp_error( $url ) ) { continue; }
-				$description = $show_descriptions ? trim( wp_strip_all_tags( html_entity_decode( (string) $term->description, ENT_QUOTES, get_bloginfo( 'charset' ) ), true ) ) : '';
-				if ( ! $show_links && '' === $description ) { continue; }
+				if ( 'link' === $name_display && is_wp_error( $url ) ) { continue; }
+				$description = '';
+				if ( 'description' === $description_source ) {
+					$description = (string) $term->description;
+				} elseif ( 'short_description' === $description_source ) {
+					$description = (string) get_term_meta( $term->term_id, 'short_description', true );
+				}
+				$description = trim( wp_strip_all_tags( html_entity_decode( $description, ENT_QUOTES, get_bloginfo( 'charset' ) ), true ) );
+				if ( 'hidden' === $name_display && '' === $description ) { continue; }
 				?>
-				<li<?php echo $show_links ? '' : ' class="mrn-mega-menu__category--description-only"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static class attribute. ?>>
-					<?php if ( $show_links ) : ?><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $term->name ); ?><span aria-hidden="true">&rarr;</span></a><?php endif; ?>
+				<li<?php echo 'hidden' !== $name_display ? '' : ' class="mrn-mega-menu__category--description-only"'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static class attribute. ?>>
+					<?php if ( 'hidden' !== $name_display ) : ?>
+						<<?php echo esc_attr( $name_tag ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Value is restricted to the local semantic tag allowlist. ?> class="mrn-mega-menu__category-name<?php echo 'text' === $name_display ? ' mrn-mega-menu__category-name--text' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Static modifier class. ?>">
+							<?php if ( 'link' === $name_display ) : ?><a href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $term->name ); ?><span aria-hidden="true">&rarr;</span></a><?php else : ?><?php echo esc_html( $term->name ); ?><?php endif; ?>
+						</<?php echo esc_attr( $name_tag ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Value is restricted to the local semantic tag allowlist. ?>>
+					<?php endif; ?>
 					<?php if ( '' !== $description ) : ?><p class="mrn-mega-menu__category-description"><?php echo esc_html( $description ); ?></p><?php endif; ?>
 				</li>
 			<?php endforeach; ?>

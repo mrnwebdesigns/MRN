@@ -103,6 +103,9 @@ final class Admin {
 				'lastColumn'    => __( 'A mega menu must keep at least one layout column.', 'mrn-mega-menu' ),
 				'lastPanel'     => __( 'A layout must keep at least one mega menu.', 'mrn-mega-menu' ),
 				'columnRemoved' => __( 'Column removed.', 'mrn-mega-menu' ),
+				'columnCopied'  => __( 'Column copied. Paste it into any column in this layout.', 'mrn-mega-menu' ),
+				'columnPasted'  => __( 'Copied column pasted. Save or update the layout to publish this change.', 'mrn-mega-menu' ),
+				'confirmPasteColumn' => __( 'Replace this column and all of its content with the copied column?', 'mrn-mega-menu' ),
 				'blockMoved'   => __( 'Block moved.', 'mrn-mega-menu' ),
 				'linkMoved'    => __( 'Link moved.', 'mrn-mega-menu' ),
 				'mediaTitle'    => __( 'Choose a promotion image', 'mrn-mega-menu' ),
@@ -243,7 +246,7 @@ final class Admin {
 				<?php self::render_icon_control( 'child_arrow_icon', __( 'Child navigation arrow', 'mrn-mega-menu' ), $panel['child_arrow_icon'] ?? array(), __( 'Replaces the default trailing arrow on child links. A child item’s own navigation arrow takes precedence.', 'mrn-mega-menu' ) ); ?>
 			</div>
 			<div class="mrn-mm-columns-toolbar mrn-admin-layout-builder__toolbar">
-				<div><strong><?php esc_html_e( 'Layout columns', 'mrn-mega-menu' ); ?></strong><p class="description"><?php esc_html_e( 'These columns appear together inside this one mega menu and stack on smaller screens.', 'mrn-mega-menu' ); ?></p></div>
+				<div><strong><?php esc_html_e( 'Layout columns', 'mrn-mega-menu' ); ?></strong><p class="description"><?php esc_html_e( 'These columns appear together inside this one mega menu and stack on smaller screens. Use Copy and Paste in a column header to duplicate its content between top-level menu items.', 'mrn-mega-menu' ); ?></p></div>
 				<label><?php esc_html_e( 'Columns', 'mrn-mega-menu' ); ?><input type="number" class="mrn-mm-column-count" min="1" max="6" value="<?php echo esc_attr( max( 1, min( 6, count( $columns ) ) ) ); ?>"></label>
 			</div>
 			<div class="mrn-mm-columns-scroll mrn-admin-layout-builder__scroll" tabindex="0" aria-label="<?php echo esc_attr( sprintf( __( 'Layout columns for %s. Scroll horizontally to see additional columns.', 'mrn-mega-menu' ), $panel_label ) ); ?>">
@@ -261,7 +264,7 @@ final class Admin {
 		<section class="mrn-mm-column mrn-admin-layout-builder__lane" data-column-index="<?php echo esc_attr( $column_index ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Layout column %d', 'mrn-mega-menu' ), $column_index + 1 ) ); ?>">
 			<div class="mrn-mm-column__header">
 				<strong><?php echo esc_html( sprintf( __( 'Layout column %d', 'mrn-mega-menu' ), $column_index + 1 ) ); ?></strong>
-				<div class="mrn-mm-column__actions"><span class="mrn-mm-block-count"><?php echo esc_html( sprintf( _n( '%d block', '%d blocks', count( $blocks ), 'mrn-mega-menu' ), count( $blocks ) ) ); ?></span><button type="button" class="button-link-delete mrn-admin-card-remove mrn-mm-remove-column" aria-label="<?php esc_attr_e( 'Remove layout column', 'mrn-mega-menu' ); ?>" title="<?php esc_attr_e( 'Remove layout column', 'mrn-mega-menu' ); ?>"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button></div>
+				<div class="mrn-mm-column__actions"><span class="mrn-mm-block-count"><?php echo esc_html( sprintf( _n( '%d block', '%d blocks', count( $blocks ), 'mrn-mega-menu' ), count( $blocks ) ) ); ?></span><button type="button" class="button-link mrn-mm-copy-column" aria-label="<?php esc_attr_e( 'Copy layout column', 'mrn-mega-menu' ); ?>" title="<?php esc_attr_e( 'Copy layout column', 'mrn-mega-menu' ); ?>"><span class="dashicons dashicons-admin-page" aria-hidden="true"></span></button><button type="button" class="button-link mrn-mm-paste-column" aria-label="<?php esc_attr_e( 'Paste copied layout column', 'mrn-mega-menu' ); ?>" title="<?php esc_attr_e( 'Paste copied layout column', 'mrn-mega-menu' ); ?>" disabled><span class="dashicons dashicons-clipboard" aria-hidden="true"></span></button><button type="button" class="button-link-delete mrn-admin-card-remove mrn-mm-remove-column" aria-label="<?php esc_attr_e( 'Remove layout column', 'mrn-mega-menu' ); ?>" title="<?php esc_attr_e( 'Remove layout column', 'mrn-mega-menu' ); ?>"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button></div>
 			</div>
 			<div class="mrn-mm-blocks">
 				<?php foreach ( $blocks as $block_index => $block ) : ?>
@@ -462,6 +465,13 @@ final class Admin {
 		$category_display  = isset( $block['category_display'] ) && in_array( $block['category_display'], array( 'links', 'links_descriptions', 'descriptions' ), true )
 			? $block['category_display']
 			: ( ! empty( $block['show_category_descriptions'] ) ? 'links_descriptions' : 'links' );
+		$name_display      = isset( $block['category_name_display'] ) && in_array( $block['category_name_display'], array( 'link', 'text', 'hidden' ), true )
+			? $block['category_name_display']
+			: ( 'descriptions' === $category_display ? 'hidden' : 'link' );
+		$description_source = isset( $block['category_description_source'] ) && in_array( $block['category_description_source'], array( 'none', 'description', 'short_description' ), true )
+			? $block['category_description_source']
+			: ( 'links' === $category_display ? 'none' : 'description' );
+		$name_tag          = self::sanitize_category_name_tag( $block['category_name_tag'] ?? 'span' );
 		$terms             = taxonomy_exists( 'product_cat' ) ? get_terms(
 			array(
 				'taxonomy'     => 'product_cat',
@@ -485,13 +495,31 @@ final class Admin {
 			</div>
 		</div>
 		<label class="mrn-mm-field">
-			<span><?php esc_html_e( 'Display', 'mrn-mega-menu' ); ?></span>
-			<select data-field="category_display">
-				<option value="links" <?php selected( $category_display, 'links' ); ?>><?php esc_html_e( 'Category links only', 'mrn-mega-menu' ); ?></option>
-				<option value="links_descriptions" <?php selected( $category_display, 'links_descriptions' ); ?>><?php esc_html_e( 'Category links and descriptions', 'mrn-mega-menu' ); ?></option>
-				<option value="descriptions" <?php selected( $category_display, 'descriptions' ); ?>><?php esc_html_e( 'Category descriptions only', 'mrn-mega-menu' ); ?></option>
+			<span><?php esc_html_e( 'Category name', 'mrn-mega-menu' ); ?></span>
+			<select data-field="category_name_display">
+				<option value="link" <?php selected( $name_display, 'link' ); ?>><?php esc_html_e( 'Linked category name', 'mrn-mega-menu' ); ?></option>
+				<option value="text" <?php selected( $name_display, 'text' ); ?>><?php esc_html_e( 'Plain category name', 'mrn-mega-menu' ); ?></option>
+				<option value="hidden" <?php selected( $name_display, 'hidden' ); ?>><?php esc_html_e( 'Hide category name', 'mrn-mega-menu' ); ?></option>
 			</select>
-			<small><?php esc_html_e( 'Description-only mode omits category names and links. Selected categories without descriptions are not displayed.', 'mrn-mega-menu' ); ?></small>
+			<small><?php esc_html_e( 'Choose whether the category name links to its archive, renders as plain text, or is omitted.', 'mrn-mega-menu' ); ?></small>
+		</label>
+		<label class="mrn-mm-field">
+			<span><?php esc_html_e( 'Category name HTML tag', 'mrn-mega-menu' ); ?></span>
+			<select data-field="category_name_tag">
+				<?php foreach ( array( 'span', 'p', 'h2', 'h3', 'h4', 'h5', 'h6' ) as $tag ) : ?>
+					<option value="<?php echo esc_attr( $tag ); ?>" <?php selected( $name_tag, $tag ); ?>>&lt;<?php echo esc_html( $tag ); ?>&gt;</option>
+				<?php endforeach; ?>
+			</select>
+			<small><?php esc_html_e( 'Use a heading tag only when it fits the surrounding page hierarchy. Existing blocks default to a span.', 'mrn-mega-menu' ); ?></small>
+		</label>
+		<label class="mrn-mm-field">
+			<span><?php esc_html_e( 'Description', 'mrn-mega-menu' ); ?></span>
+			<select data-field="category_description_source">
+				<option value="none" <?php selected( $description_source, 'none' ); ?>><?php esc_html_e( 'No description', 'mrn-mega-menu' ); ?></option>
+				<option value="description" <?php selected( $description_source, 'description' ); ?>><?php esc_html_e( 'Category description', 'mrn-mega-menu' ); ?></option>
+				<option value="short_description" <?php selected( $description_source, 'short_description' ); ?>><?php esc_html_e( 'Short Description', 'mrn-mega-menu' ); ?></option>
+			</select>
+			<small><?php esc_html_e( 'Short Description reads the product-category term field with the short_description key. Empty selected descriptions are omitted.', 'mrn-mega-menu' ); ?></small>
 		</label>
 		<?php
 	}
@@ -778,9 +806,18 @@ final class Admin {
 		} elseif ( 'categories' === $type ) {
 			$clean['category_ids'] = isset( $block['category_ids'] ) && is_array( $block['category_ids'] ) ? array_slice( array_values( array_unique( array_filter( array_map( 'absint', $block['category_ids'] ) ) ) ), 0, 20 ) : array();
 			$category_displays         = array( 'links', 'links_descriptions', 'descriptions' );
-			$clean['category_display'] = isset( $block['category_display'] ) && in_array( $block['category_display'], $category_displays, true )
+			$legacy_display            = isset( $block['category_display'] ) && in_array( $block['category_display'], $category_displays, true )
 				? $block['category_display']
 				: ( ! empty( $block['show_category_descriptions'] ) ? 'links_descriptions' : 'links' );
+			$name_displays             = array( 'link', 'text', 'hidden' );
+			$description_sources       = array( 'none', 'description', 'short_description' );
+			$clean['category_name_display'] = isset( $block['category_name_display'] ) && in_array( $block['category_name_display'], $name_displays, true )
+				? $block['category_name_display']
+				: ( 'descriptions' === $legacy_display ? 'hidden' : 'link' );
+			$clean['category_name_tag'] = self::sanitize_category_name_tag( $block['category_name_tag'] ?? 'span' );
+			$clean['category_description_source'] = isset( $block['category_description_source'] ) && in_array( $block['category_description_source'], $description_sources, true )
+				? $block['category_description_source']
+				: ( 'links' === $legacy_display ? 'none' : 'description' );
 		} elseif ( 'products' === $type ) {
 			$sources              = array( 'featured', 'sale', 'latest', 'manual' );
 			$clean['source']      = isset( $block['source'] ) && in_array( $block['source'], $sources, true ) ? $block['source'] : 'featured';
@@ -800,6 +837,11 @@ final class Admin {
 	private static function short_text( $value, $length ) {
 		$value = sanitize_text_field( $value );
 		return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $length ) : substr( $value, 0, $length );
+	}
+
+	private static function sanitize_category_name_tag( $value ) {
+		$value = is_scalar( $value ) ? strtolower( (string) $value ) : '';
+		return in_array( $value, array( 'span', 'p', 'h2', 'h3', 'h4', 'h5', 'h6' ), true ) ? $value : 'span';
 	}
 
 	public static function remove_assignment( $post_id ) {

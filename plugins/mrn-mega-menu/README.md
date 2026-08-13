@@ -10,7 +10,7 @@ A focused WordPress menu enhancement layer with optional, first-class WooCommerc
 - Optional reusable Mega Layouts with one independently editable mega menu per top-level parent and one-to-six visual columns inside each mega menu
 - Custom link groups using the native WordPress link search and picker
 - Native WordPress menu blocks using the assigned item's children, an entire saved menu, or one selected parent branch
-- WooCommerce product category blocks with a hierarchy-aware picker and links-only, links-with-descriptions, or descriptions-only output
+- WooCommerce product category blocks with a hierarchy-aware picker, linked/plain/hidden names, selectable semantic name tags, and full or short descriptions
 - Featured, on-sale, latest, and searchable manually selected product blocks
 - Promotional image, message, and call-to-action blocks
 - Bounded promotional media that stays inside its assigned menu column regardless of the source image dimensions
@@ -79,6 +79,18 @@ Integration filters:
 - `mrn_mega_menu_use_sticky_toolbar`
 
 ## Changelog
+
+### 0.16.15
+
+- Added accessible copy and paste controls to layout columns in the mega-menu editor.
+- Copied columns can be pasted into columns belonging to other top-level menu items while preserving all supported block settings and content.
+- Pasting into a populated column requires confirmation and continues through the existing server-side layout sanitization on save.
+
+### 0.16.14
+
+- Added the WooCommerce product-category `short_description` term field as a category-block description source.
+- Added independent controls for linked, plain, or hidden category names and an allowlisted `span`, `p`, or `h2`–`h6` name tag.
+- Preserved existing category-block output by mapping legacy links-only, links-with-descriptions, and descriptions-only settings to the new controls.
 
 ### 0.16.13
 
