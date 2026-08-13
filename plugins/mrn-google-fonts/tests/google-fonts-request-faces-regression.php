@@ -129,6 +129,19 @@ $configured_url = build_request_url($configured_settings);
 $expected_lean_url = 'https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&family=Lora:ital,wght@0,600;0,700;1,600;1,700&display=swap';
 assert_or_exit($expected_lean_url === $configured_url, 'Settings-level font_faces contract did not produce the lean Freedom House URL.');
 
+$fleet_settings = $base_settings;
+$fleet_settings['accent_font_family'] = 'Roboto';
+$fleet_settings['accent_font_targets'] = array('navigation');
+$fleet_settings['font_faces'] = array(
+	'Source Sans 3' => array('normal' => array(300, 400, 500, 600, 700), 'italic' => array()),
+	'Lora' => array('normal' => array(600, 700), 'italic' => array()),
+	'Roboto' => array('normal' => array(400, 500), 'italic' => array()),
+	'Montserrat' => array('normal' => array(400), 'italic' => array()),
+);
+$fleet_url = build_request_url($fleet_settings);
+$expected_fleet_url = 'https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700&family=Lora:wght@600;700&family=Roboto:wght@400;500&family=Montserrat:wght@400&display=swap';
+assert_or_exit($expected_fleet_url === $fleet_url, 'Fleet request truncated required weights or configured families.');
+
 add_filter(
 	'mrn_google_fonts_family_faces',
 	static function (array $families): array {

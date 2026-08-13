@@ -12,7 +12,7 @@ final class MRN_Google_Fonts {
 	private static $preload_urls = array();
 	/** @var int */
 	private static $head_suppression_buffer_level = 0;
-	const VERSION = '1.0.3';
+	const VERSION = '1.0.4';
 	const MANIFEST_SCHEMA_VERSION = 2;
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
@@ -3408,12 +3408,12 @@ final class MRN_Google_Fonts {
 			);
 		}
 
-		$families = array_slice($families, 0, 3, true);
+		$families = array_slice($families, 0, 8, true);
 		$query_parts = array();
 
 		foreach ($families as $family => $family_config) {
-			$normal_weights = self::normalize_google_font_weight_values($family_config['normal'] ?? array(), 4, true);
-			$italic_weights = self::normalize_google_font_weight_values($family_config['italic'] ?? array(), 4, true);
+			$normal_weights = self::normalize_google_font_weight_values($family_config['normal'] ?? array(), 9, true);
+			$italic_weights = self::normalize_google_font_weight_values($family_config['italic'] ?? array(), 9, true);
 			if (empty($normal_weights) && empty($italic_weights)) {
 				$normal_weights = array('400');
 			}
