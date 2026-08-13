@@ -463,6 +463,53 @@
 		if (window.jQuery) window.jQuery(document.body).trigger('wc-enhanced-select-init');
 	}
 
+	function normalizeCategorySearch(value) {
+		return String(value || '')
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.toLocaleLowerCase()
+			.trim();
+	}
+
+	function filterCategories(input) {
+		const picker = input.closest('.mrn-mm-category-picker');
+		const tree = picker?.querySelector('.mrn-mm-category-tree');
+		if (!picker || !tree) return;
+
+		const query = normalizeCategorySearch(input.value);
+		let matchCount = 0;
+		const visit = (item, ancestorMatches = false) => {
+			const label = item.querySelector(':scope > label span')?.textContent || '';
+			const selfMatches = !query || normalizeCategorySearch(label).includes(query);
+			if (query && selfMatches) matchCount += 1;
+
+			let descendantMatches = false;
+			item.querySelectorAll(':scope > ul > .mrn-mm-category-tree__item').forEach((child) => {
+				if (visit(child, ancestorMatches || selfMatches)) descendantMatches = true;
+			});
+
+			const visible = !query || ancestorMatches || selfMatches || descendantMatches;
+			item.hidden = !visible;
+			return selfMatches || descendantMatches;
+		};
+
+		tree.querySelectorAll(':scope > .mrn-mm-category-tree__item').forEach((item) => visit(item));
+		const total = tree.querySelectorAll('.mrn-mm-category-tree__item').length;
+		const visibleCount = query ? matchCount : total;
+		const status = picker.querySelector('.mrn-mm-category-search__status');
+		const empty = picker.querySelector('.mrn-mm-category-search__empty');
+		const clear = picker.querySelector('.mrn-mm-category-search__clear');
+		if (status) {
+			status.textContent = visibleCount === 0
+				? MRNMegaMenuAdmin.noCategoryResults
+				: visibleCount === 1
+					? MRNMegaMenuAdmin.categoryResult
+					: MRNMegaMenuAdmin.categoryResults.replace('%d', String(visibleCount));
+		}
+		if (empty) empty.hidden = visibleCount !== 0;
+		if (clear) clear.hidden = !query;
+	}
+
 	function populateMenuRoots(blockBody) {
 		const menuSelect = blockBody.querySelector('.mrn-mm-menu-select');
 		const rootSelect = blockBody.querySelector('.mrn-mm-menu-root');
@@ -598,6 +645,17 @@
 			return;
 		}
 
+		const clearCategorySearch = event.target.closest('.mrn-mm-category-search__clear');
+		if (clearCategorySearch) {
+			const input = clearCategorySearch.closest('.mrn-mm-category-picker')?.querySelector('.mrn-mm-category-search__input');
+			if (input) {
+				input.value = '';
+				filterCategories(input);
+				input.focus();
+			}
+			return;
+		}
+
 		const buildAssigned = event.target.closest('.mrn-mm-build-assigned');
 		if (buildAssigned) {
 			buildAssignedMenuPanels();
@@ -716,6 +774,10 @@
 	});
 
 	builder.addEventListener('input', (event) => {
+		if (event.target.matches('.mrn-mm-category-search__input')) {
+			filterCategories(event.target);
+			return;
+		}
 		if (event.target.matches('.mrn-mm-column-count')) {
 			setColumnCount(event.target.value, event.target.closest('.mrn-mm-panel'));
 			return;
