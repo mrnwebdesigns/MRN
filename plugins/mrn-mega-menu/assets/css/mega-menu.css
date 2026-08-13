@@ -250,6 +250,23 @@
 	margin: -2px 5px 10px;
 }
 
+.mrn-mega-menu__category-name {
+	color: var(--mrn-mega-link);
+	display: block;
+	font: inherit;
+	margin: 0;
+}
+
+.mrn-mega-menu__category-name--text {
+	align-items: center;
+	display: flex;
+	font-size: .92rem;
+	font-weight: 500;
+	line-height: 1.35;
+	min-height: 42px;
+	padding: 9px 5px;
+}
+
 .mrn-mega-menu__category--description-only .mrn-mega-menu__category-description {
 	margin: 0;
 	padding: 10px 5px;

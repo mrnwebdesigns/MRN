@@ -462,6 +462,13 @@ final class Admin {
 		$category_display  = isset( $block['category_display'] ) && in_array( $block['category_display'], array( 'links', 'links_descriptions', 'descriptions' ), true )
 			? $block['category_display']
 			: ( ! empty( $block['show_category_descriptions'] ) ? 'links_descriptions' : 'links' );
+		$name_display      = isset( $block['category_name_display'] ) && in_array( $block['category_name_display'], array( 'link', 'text', 'hidden' ), true )
+			? $block['category_name_display']
+			: ( 'descriptions' === $category_display ? 'hidden' : 'link' );
+		$description_source = isset( $block['category_description_source'] ) && in_array( $block['category_description_source'], array( 'none', 'description', 'short_description' ), true )
+			? $block['category_description_source']
+			: ( 'links' === $category_display ? 'none' : 'description' );
+		$name_tag          = self::sanitize_category_name_tag( $block['category_name_tag'] ?? 'span' );
 		$terms             = taxonomy_exists( 'product_cat' ) ? get_terms(
 			array(
 				'taxonomy'     => 'product_cat',
@@ -485,13 +492,31 @@ final class Admin {
 			</div>
 		</div>
 		<label class="mrn-mm-field">
-			<span><?php esc_html_e( 'Display', 'mrn-mega-menu' ); ?></span>
-			<select data-field="category_display">
-				<option value="links" <?php selected( $category_display, 'links' ); ?>><?php esc_html_e( 'Category links only', 'mrn-mega-menu' ); ?></option>
-				<option value="links_descriptions" <?php selected( $category_display, 'links_descriptions' ); ?>><?php esc_html_e( 'Category links and descriptions', 'mrn-mega-menu' ); ?></option>
-				<option value="descriptions" <?php selected( $category_display, 'descriptions' ); ?>><?php esc_html_e( 'Category descriptions only', 'mrn-mega-menu' ); ?></option>
+			<span><?php esc_html_e( 'Category name', 'mrn-mega-menu' ); ?></span>
+			<select data-field="category_name_display">
+				<option value="link" <?php selected( $name_display, 'link' ); ?>><?php esc_html_e( 'Linked category name', 'mrn-mega-menu' ); ?></option>
+				<option value="text" <?php selected( $name_display, 'text' ); ?>><?php esc_html_e( 'Plain category name', 'mrn-mega-menu' ); ?></option>
+				<option value="hidden" <?php selected( $name_display, 'hidden' ); ?>><?php esc_html_e( 'Hide category name', 'mrn-mega-menu' ); ?></option>
 			</select>
-			<small><?php esc_html_e( 'Description-only mode omits category names and links. Selected categories without descriptions are not displayed.', 'mrn-mega-menu' ); ?></small>
+			<small><?php esc_html_e( 'Choose whether the category name links to its archive, renders as plain text, or is omitted.', 'mrn-mega-menu' ); ?></small>
+		</label>
+		<label class="mrn-mm-field">
+			<span><?php esc_html_e( 'Category name HTML tag', 'mrn-mega-menu' ); ?></span>
+			<select data-field="category_name_tag">
+				<?php foreach ( array( 'span', 'p', 'h2', 'h3', 'h4', 'h5', 'h6' ) as $tag ) : ?>
+					<option value="<?php echo esc_attr( $tag ); ?>" <?php selected( $name_tag, $tag ); ?>>&lt;<?php echo esc_html( $tag ); ?>&gt;</option>
+				<?php endforeach; ?>
+			</select>
+			<small><?php esc_html_e( 'Use a heading tag only when it fits the surrounding page hierarchy. Existing blocks default to a span.', 'mrn-mega-menu' ); ?></small>
+		</label>
+		<label class="mrn-mm-field">
+			<span><?php esc_html_e( 'Description', 'mrn-mega-menu' ); ?></span>
+			<select data-field="category_description_source">
+				<option value="none" <?php selected( $description_source, 'none' ); ?>><?php esc_html_e( 'No description', 'mrn-mega-menu' ); ?></option>
+				<option value="description" <?php selected( $description_source, 'description' ); ?>><?php esc_html_e( 'Category description', 'mrn-mega-menu' ); ?></option>
+				<option value="short_description" <?php selected( $description_source, 'short_description' ); ?>><?php esc_html_e( 'Short Description', 'mrn-mega-menu' ); ?></option>
+			</select>
+			<small><?php esc_html_e( 'Short Description reads the product-category term field with the short_description key. Empty selected descriptions are omitted.', 'mrn-mega-menu' ); ?></small>
 		</label>
 		<?php
 	}
@@ -778,9 +803,18 @@ final class Admin {
 		} elseif ( 'categories' === $type ) {
 			$clean['category_ids'] = isset( $block['category_ids'] ) && is_array( $block['category_ids'] ) ? array_slice( array_values( array_unique( array_filter( array_map( 'absint', $block['category_ids'] ) ) ) ), 0, 20 ) : array();
 			$category_displays         = array( 'links', 'links_descriptions', 'descriptions' );
-			$clean['category_display'] = isset( $block['category_display'] ) && in_array( $block['category_display'], $category_displays, true )
+			$legacy_display            = isset( $block['category_display'] ) && in_array( $block['category_display'], $category_displays, true )
 				? $block['category_display']
 				: ( ! empty( $block['show_category_descriptions'] ) ? 'links_descriptions' : 'links' );
+			$name_displays             = array( 'link', 'text', 'hidden' );
+			$description_sources       = array( 'none', 'description', 'short_description' );
+			$clean['category_name_display'] = isset( $block['category_name_display'] ) && in_array( $block['category_name_display'], $name_displays, true )
+				? $block['category_name_display']
+				: ( 'descriptions' === $legacy_display ? 'hidden' : 'link' );
+			$clean['category_name_tag'] = self::sanitize_category_name_tag( $block['category_name_tag'] ?? 'span' );
+			$clean['category_description_source'] = isset( $block['category_description_source'] ) && in_array( $block['category_description_source'], $description_sources, true )
+				? $block['category_description_source']
+				: ( 'links' === $legacy_display ? 'none' : 'description' );
 		} elseif ( 'products' === $type ) {
 			$sources              = array( 'featured', 'sale', 'latest', 'manual' );
 			$clean['source']      = isset( $block['source'] ) && in_array( $block['source'], $sources, true ) ? $block['source'] : 'featured';
@@ -800,6 +834,11 @@ final class Admin {
 	private static function short_text( $value, $length ) {
 		$value = sanitize_text_field( $value );
 		return function_exists( 'mb_substr' ) ? mb_substr( $value, 0, $length ) : substr( $value, 0, $length );
+	}
+
+	private static function sanitize_category_name_tag( $value ) {
+		$value = is_scalar( $value ) ? strtolower( (string) $value ) : '';
+		return in_array( $value, array( 'span', 'p', 'h2', 'h3', 'h4', 'h5', 'h6' ), true ) ? $value : 'span';
 	}
 
 	public static function remove_assignment( $post_id ) {

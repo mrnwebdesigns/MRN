@@ -2,9 +2,9 @@
 
 ## Baseline Snapshot
 
-- Date pinned: 2026-08-12
+- Date pinned: 2026-08-13
 - Plugin source path: `/Users/khofmeyer/Development/MRN/plugins/mrn-mega-menu`
-- Current plugin version: `0.16.13`
+- Current plugin version: `0.16.14`
 - Intended integration target: mrn-plugin-stack
 - Current release model: in-repo standard plugin release unit
 
