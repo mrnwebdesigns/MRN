@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 final class MRN_Google_Fonts {
 	/** @var array<int, string> */
 	private static $preload_urls = array();
-	const VERSION = '1.0.0';
+	const VERSION = '1.0.1';
 	const MANIFEST_SCHEMA_VERSION = 2;
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
@@ -54,6 +54,102 @@ final class MRN_Google_Fonts {
 		add_action('admin_init', array(__CLASS__, 'maybe_auto_migrate_legacy_manifest'));
 		add_action('wp_head', array(__CLASS__, 'record_frontend_font_ownership'), 999);
 		add_action('wp_head', array(__CLASS__, 'render_local_font_preloads'), 1);
+		add_filter('mainwp_child_extra_execution', array(__CLASS__, 'handle_mainwp_child_execution'), 10, 2);
+	}
+
+	/**
+	 * Execute guarded font operations through MainWP Child's signed connection.
+	 *
+	 * @param array<string, mixed> $information Existing extension response.
+	 * @param mixed                $post        Authenticated MainWP request data.
+	 * @return array<string, mixed>
+	 */
+	public static function handle_mainwp_child_execution(array $information, $post): array {
+		$post = is_array($post) ? $post : array();
+		$action = sanitize_key((string) wp_unslash($post['mrn_google_fonts_action'] ?? ''));
+		if ('' === $action) {
+			return $information;
+		}
+
+		if (!in_array($action, array('status', 'validate', 'migrate', 'build', 'configure_build'), true)) {
+			return self::mainwp_error('mrn_google_fonts_mainwp_action', 'The requested font operation is not supported.');
+		}
+
+		if ('status' === $action) {
+			return self::mainwp_success(
+				array(
+					'status' => self::get_runtime_status(!empty($post['check_frontend'])),
+					'settings' => self::get_settings(),
+					'active_theme' => function_exists('wp_get_theme') ? wp_get_theme()->get_stylesheet() : '',
+				)
+			);
+		}
+
+		if ('validate' === $action) {
+			$validation = self::validate_local_manifest(self::get_local_manifest());
+			return is_wp_error($validation)
+				? self::mainwp_error($validation->get_error_code(), $validation->get_error_message())
+				: self::mainwp_success(array('status' => self::get_runtime_status(!empty($post['check_frontend']))));
+		}
+
+		if ('migrate' === $action) {
+			$result = self::migrate_local_manifest(!empty($post['dry_run']));
+			return is_wp_error($result)
+				? self::mainwp_error($result->get_error_code(), $result->get_error_message())
+				: self::mainwp_success(array('migration' => $result, 'status' => self::get_runtime_status(false)));
+		}
+
+		if ('build' === $action) {
+			$result = self::build_local_assets(self::get_settings());
+			if (is_wp_error($result)) {
+				return self::mainwp_error($result->get_error_code(), $result->get_error_message());
+			}
+			$validation = self::validate_local_manifest(self::get_local_manifest());
+			return is_wp_error($validation)
+				? self::mainwp_error($validation->get_error_code(), $validation->get_error_message())
+				: self::mainwp_success(array('build' => $result, 'status' => self::get_runtime_status(false)));
+		}
+
+		$settings_json = (string) wp_unslash($post['settings_json'] ?? '');
+		$proposed = json_decode($settings_json, true);
+		if (!is_array($proposed)) {
+			return self::mainwp_error('mrn_google_fonts_mainwp_settings', 'The proposed font settings are invalid JSON.');
+		}
+		$settings = self::sanitize_settings($proposed);
+		$settings['delivery_mode'] = 'local_only';
+		$settings['enabled'] = 1;
+		$settings['load_on_frontend'] = 1;
+		$result = self::build_local_assets($settings);
+		if (is_wp_error($result)) {
+			return self::mainwp_error($result->get_error_code(), $result->get_error_message());
+		}
+		$validation = self::validate_local_manifest(self::get_local_manifest());
+		if (is_wp_error($validation)) {
+			return self::mainwp_error($validation->get_error_code(), $validation->get_error_message());
+		}
+		update_option(self::OPTION_KEY, $settings, false);
+
+		return self::mainwp_success(
+			array(
+				'build' => $result,
+				'settings' => self::get_settings(),
+				'status' => self::get_runtime_status(false),
+			)
+		);
+	}
+
+	/** @param array<string, mixed> $data */
+	private static function mainwp_success(array $data): array {
+		return array('success' => true, 'plugin_version' => self::VERSION, 'data' => $data);
+	}
+
+	private static function mainwp_error(string $code, string $message): array {
+		return array(
+			'success' => false,
+			'plugin_version' => self::VERSION,
+			'error_code' => sanitize_key($code),
+			'message' => sanitize_text_field($message),
+		);
 	}
 
 	/**

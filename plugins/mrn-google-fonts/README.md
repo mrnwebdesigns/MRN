@@ -155,6 +155,7 @@ php plugins/mrn-google-fonts/tests/tinymce-font-formats-regression.php
 php plugins/mrn-google-fonts/tests/google-fonts-request-faces-regression.php
 php plugins/mrn-google-fonts/tests/local-only-delivery-regression.php
 php plugins/mrn-google-fonts/tests/portable-manifest-v2-regression.php
+php plugins/mrn-google-fonts/tests/mainwp-child-execution-regression.php
 ```
 
 These checks assert that injected TinyMCE `font_formats` remain alphabetically sorted and free of duplicate labels, and that the Google Fonts CSS2 URL builder preserves legacy output while supporting lean per-family face maps.
