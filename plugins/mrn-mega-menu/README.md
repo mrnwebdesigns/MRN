@@ -80,6 +80,12 @@ Integration filters:
 
 ## Changelog
 
+### 0.16.15
+
+- Added accessible copy and paste controls to layout columns in the mega-menu editor.
+- Copied columns can be pasted into columns belonging to other top-level menu items while preserving all supported block settings and content.
+- Pasting into a populated column requires confirmation and continues through the existing server-side layout sanitization on save.
+
 ### 0.16.14
 
 - Added the WooCommerce product-category `short_description` term field as a category-block description source.

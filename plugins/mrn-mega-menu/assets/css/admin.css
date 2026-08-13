@@ -76,6 +76,9 @@
 .mrn-mm-column__header { align-items: center; display: flex; justify-content: space-between; padding: 2px 2px 10px; }
 .mrn-mm-column__header strong { color: #334155; }
 .mrn-mm-column__actions { align-items: center; display: flex; gap: 8px; }
+.mrn-mm-column__actions .button-link { align-items: center; display: inline-flex; justify-content: center; min-height: 28px; min-width: 28px; text-decoration: none; }
+.mrn-mm-column__actions .button-link:disabled { color: #a7aaad; cursor: not-allowed; }
+.mrn-mm-column.is-copied { border-color: #2271b1; box-shadow: 0 0 0 1px #2271b1; }
 .mrn-mm-column__actions .mrn-mm-remove-column { text-decoration: none; }
 .mrn-mm-builder .mrn-admin-card-remove { align-items: center; display: inline-flex; justify-content: center; min-height: 30px; min-width: 30px; padding: 4px; }
 .mrn-mm-builder .mrn-admin-card-remove .dashicons { font-size: 18px; height: 18px; line-height: 18px; width: 18px; }

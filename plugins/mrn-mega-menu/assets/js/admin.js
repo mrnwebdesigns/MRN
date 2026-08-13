@@ -11,6 +11,7 @@
 	const layoutBuilder = window.MRNAdminLayoutBuilder || null;
 	let activeLinkRow = null;
 	let pickerReturnFocus = null;
+	let copiedColumn = null;
 
 	function iconControlMarkup(field, label, description) {
 		return `<div class="mrn-mm-icon-control" data-mrn-icon-control><span class="mrn-mm-icon-control__label">${label}</span><input type="hidden" data-icon-value data-panel-field="${field}" value='{"type":"","value":""}'><span class="mrn-mm-icon-preview" data-icon-preview aria-hidden="true"></span><button type="button" class="button" data-choose-icon>Choose icon</button><button type="button" class="button-link" data-clear-icon hidden>Clear</button><small>${description}</small></div>`;
@@ -21,7 +22,7 @@
 		section.className = 'mrn-mm-column mrn-admin-layout-builder__lane';
 		section.dataset.columnIndex = index;
 		section.setAttribute('aria-label', `Layout column ${index + 1}`);
-		section.innerHTML = `<div class="mrn-mm-column__header"><strong>Layout column ${index + 1}</strong><div class="mrn-mm-column__actions"><span class="mrn-mm-block-count">0 blocks</span><button type="button" class="button-link-delete mrn-admin-card-remove mrn-mm-remove-column" aria-label="Remove layout column" title="Remove layout column"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button></div></div><div class="mrn-mm-blocks"></div><div class="mrn-mm-add"><button type="button" class="button mrn-mm-add__toggle" aria-expanded="false">+ Add content</button><div class="mrn-mm-add__menu" hidden><button type="button" data-add-block="menu"><span class="dashicons dashicons-menu-alt3"></span><span><strong>WordPress menu</strong><small>Use native menu items and ordering</small></span></button><button type="button" data-add-block="links"><span class="dashicons dashicons-editor-ul"></span><span><strong>Custom link group</strong><small>Build one-off links here</small></span></button><button type="button" data-add-block="categories"><span class="dashicons dashicons-category"></span><span><strong>Product categories</strong><small>Selected WooCommerce categories</small></span></button><button type="button" data-add-block="products"><span class="dashicons dashicons-cart"></span><span><strong>Products</strong><small>Featured, sale, latest, or selected</small></span></button><button type="button" data-add-block="promo"><span class="dashicons dashicons-format-image"></span><span><strong>Promotion</strong><small>Image, message, and call to action</small></span></button><button type="button" data-add-block="reusable"><span class="dashicons dashicons-screenoptions"></span><span><strong>Reusable block</strong><small>Published content from the block library</small></span></button></div></div>`;
+		section.innerHTML = `<div class="mrn-mm-column__header"><strong>Layout column ${index + 1}</strong><div class="mrn-mm-column__actions"><span class="mrn-mm-block-count">0 blocks</span><button type="button" class="button-link mrn-mm-copy-column" aria-label="Copy layout column" title="Copy layout column"><span class="dashicons dashicons-admin-page" aria-hidden="true"></span></button><button type="button" class="button-link mrn-mm-paste-column" aria-label="Paste copied layout column" title="Paste copied layout column" disabled><span class="dashicons dashicons-clipboard" aria-hidden="true"></span></button><button type="button" class="button-link-delete mrn-admin-card-remove mrn-mm-remove-column" aria-label="Remove layout column" title="Remove layout column"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button></div></div><div class="mrn-mm-blocks"></div><div class="mrn-mm-add"><button type="button" class="button mrn-mm-add__toggle" aria-expanded="false">+ Add content</button><div class="mrn-mm-add__menu" hidden><button type="button" data-add-block="menu"><span class="dashicons dashicons-menu-alt3"></span><span><strong>WordPress menu</strong><small>Use native menu items and ordering</small></span></button><button type="button" data-add-block="links"><span class="dashicons dashicons-editor-ul"></span><span><strong>Custom link group</strong><small>Build one-off links here</small></span></button><button type="button" data-add-block="categories"><span class="dashicons dashicons-category"></span><span><strong>Product categories</strong><small>Selected WooCommerce categories</small></span></button><button type="button" data-add-block="products"><span class="dashicons dashicons-cart"></span><span><strong>Products</strong><small>Featured, sale, latest, or selected</small></span></button><button type="button" data-add-block="promo"><span class="dashicons dashicons-format-image"></span><span><strong>Promotion</strong><small>Image, message, and call to action</small></span></button><button type="button" data-add-block="reusable"><span class="dashicons dashicons-screenoptions"></span><span><strong>Reusable block</strong><small>Published content from the block library</small></span></button></div></div>`;
 		return section;
 	}
 
@@ -35,7 +36,7 @@
 		panel.dataset.panelIndex = index;
 		panel.dataset.menuItemId = String(item?.id || 0);
 		panel.setAttribute('role', 'tabpanel');
-		panel.innerHTML = `<div class="mrn-mm-panel__header"><div><h3>Mega menu: <span class="mrn-mm-panel-name"></span></h3><p class="description">Choose the visual columns inside this dropdown, then drag content between them.</p></div><button type="button" class="button-link-delete mrn-admin-card-remove mrn-mm-remove-panel" aria-label="Remove mega menu" title="Remove mega menu"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button></div><div class="mrn-mm-panel-icons"><label class="mrn-mm-panel-label-override"><span>Parent navigation label</span><input type="text" data-panel-field="label_override"><small>Overrides the visible top-level label for this layout without renaming the WordPress menu item.</small></label><label class="mrn-mm-panel-parent-click"><span>Parent item click behavior</span><select data-panel-field="parent_click"><option value="inherit">Use global setting</option><option value="toggle">Open mega menu only</option><option value="link">Allow parent link</option></select><small>Applies only to this assigned WordPress menu-item ID. Linked parents navigate on desktop and Enter; touch users tap once to open and again to follow. Space always toggles the panel.</small></label>${iconControlMarkup('item_icon', 'Navigation item icon', 'Overrides the icon configured on the native WordPress menu item for this layout.')}${iconControlMarkup('arrow_icon', 'Navigation arrow icon', 'Overrides the arrow used to indicate this item opens a mega menu.')}${iconControlMarkup('child_arrow_icon', 'Child navigation arrow', 'Replaces the default trailing arrow on child links. A child item’s own navigation arrow takes precedence.')}</div><div class="mrn-mm-columns-toolbar mrn-admin-layout-builder__toolbar"><div><strong>Layout columns</strong><p class="description">These columns appear together inside this one mega menu and stack on smaller screens.</p></div><label>Columns<input type="number" class="mrn-mm-column-count" min="1" max="6" value="1"></label></div><div class="mrn-mm-columns-scroll mrn-admin-layout-builder__scroll" tabindex="0"><div class="mrn-mm-columns mrn-admin-layout-builder__lanes" data-columns="1"></div></div>`;
+		panel.innerHTML = `<div class="mrn-mm-panel__header"><div><h3>Mega menu: <span class="mrn-mm-panel-name"></span></h3><p class="description">Choose the visual columns inside this dropdown, then drag content between them.</p></div><button type="button" class="button-link-delete mrn-admin-card-remove mrn-mm-remove-panel" aria-label="Remove mega menu" title="Remove mega menu"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button></div><div class="mrn-mm-panel-icons"><label class="mrn-mm-panel-label-override"><span>Parent navigation label</span><input type="text" data-panel-field="label_override"><small>Overrides the visible top-level label for this layout without renaming the WordPress menu item.</small></label><label class="mrn-mm-panel-parent-click"><span>Parent item click behavior</span><select data-panel-field="parent_click"><option value="inherit">Use global setting</option><option value="toggle">Open mega menu only</option><option value="link">Allow parent link</option></select><small>Applies only to this assigned WordPress menu-item ID. Linked parents navigate on desktop and Enter; touch users tap once to open and again to follow. Space always toggles the panel.</small></label>${iconControlMarkup('item_icon', 'Navigation item icon', 'Overrides the icon configured on the native WordPress menu item for this layout.')}${iconControlMarkup('arrow_icon', 'Navigation arrow icon', 'Overrides the arrow used to indicate this item opens a mega menu.')}${iconControlMarkup('child_arrow_icon', 'Child navigation arrow', 'Replaces the default trailing arrow on child links. A child item’s own navigation arrow takes precedence.')}</div><div class="mrn-mm-columns-toolbar mrn-admin-layout-builder__toolbar"><div><strong>Layout columns</strong><p class="description">These columns appear together inside this one mega menu and stack on smaller screens. Use Copy and Paste in a column header to duplicate its content between top-level menu items.</p></div><label>Columns<input type="number" class="mrn-mm-column-count" min="1" max="6" value="1"></label></div><div class="mrn-mm-columns-scroll mrn-admin-layout-builder__scroll" tabindex="0"><div class="mrn-mm-columns mrn-admin-layout-builder__lanes" data-columns="1"></div></div>`;
 		panel.querySelector('.mrn-mm-panel-name').textContent = item?.title || `Unassigned ${index + 1}`;
 		panel.querySelector('[data-panel-field="label_override"]').placeholder = item?.title || '';
 		panel.querySelector('.mrn-mm-columns').appendChild(columnMarkup(0));
@@ -175,6 +176,7 @@
 			const countInput = panel.querySelector('.mrn-mm-column-count');
 			if (countInput) countInput.value = String(columns.length);
 		});
+		updatePasteButtons();
 	}
 
 	function updateCount(column) {
@@ -296,6 +298,124 @@
 		});
 	}
 
+	function extractBlockData(block, includeClipboardData = false) {
+		const data = {};
+		block.querySelectorAll('[data-field]').forEach((field) => {
+			if (field.dataset.field === 'product_ids') {
+				data.product_ids = field.tagName === 'SELECT'
+					? Array.from(field.selectedOptions).map((option) => Number(option.value)).filter(Boolean)
+					: field.value.split(',').map((id) => parseInt(id.trim(), 10)).filter(Boolean);
+			} else {
+				data[field.dataset.field] = field.type === 'number' ? Number(field.value) : field.value;
+			}
+		});
+		if (data.type === 'links') {
+			data.links = Array.from(block.querySelectorAll('.mrn-mm-link-row')).map((row) => ({
+				label: row.querySelector('[data-link-field="label"]').value,
+				url: row.querySelector('[data-link-field="url"]').value,
+				target: row.querySelector('[data-link-field="target"]').value
+			}));
+		}
+		if (data.type === 'categories') {
+			data.category_ids = Array.from(block.querySelectorAll('[data-category-id]:checked'))
+				.sort((first, second) => Number(first.dataset.categoryOrder) - Number(second.dataset.categoryOrder))
+				.map((input) => Number(input.dataset.categoryId));
+		}
+		if (includeClipboardData && data.type === 'promo') {
+			data.clipboard_image_preview_url = block.querySelector('.mrn-mm-promo-image__preview img')?.src || '';
+		}
+		return data;
+	}
+
+	function extractColumnData(column, includeClipboardData = false) {
+		return {
+			blocks: Array.from(column.querySelectorAll(':scope > .mrn-mm-blocks > .mrn-mm-block'))
+				.map((block) => extractBlockData(block, includeClipboardData))
+		};
+	}
+
+	function populateBlockFromData(block, data) {
+		block.querySelectorAll('[data-field]').forEach((field) => {
+			const value = data[field.dataset.field];
+			if (typeof value === 'undefined') return;
+			if (field.dataset.field === 'product_ids' && field.tagName === 'SELECT') {
+				const selected = Array.isArray(value) ? value.map(String) : [];
+				Array.from(field.options).forEach((option) => { option.selected = selected.includes(option.value); });
+				return;
+			}
+			field.value = Array.isArray(value) ? value.join(',') : String(value);
+		});
+
+		const body = block.querySelector('.mrn-mm-block__body');
+		if (data.type === 'menu') {
+			populateMenuRoots(body);
+			const root = body.querySelector('[data-field="root_item_id"]');
+			if (root) root.value = String(data.root_item_id || 0);
+			const branchMode = body.querySelector('.mrn-mm-branch-mode');
+			if (branchMode) branchMode.hidden = !root || root.value === '0';
+		}
+		if (data.type === 'links') {
+			const rows = block.querySelector('.mrn-mm-link-rows');
+			const template = builder.querySelector('template[data-link-template]');
+			rows?.replaceChildren();
+			(data.links || []).forEach((link) => {
+				if (!rows || !template) return;
+				rows.appendChild(template.content.cloneNode(true));
+				const row = rows.lastElementChild;
+				row.querySelector('[data-link-field="label"]').value = link.label || '';
+				row.querySelector('[data-link-field="url"]').value = link.url || '';
+				row.querySelector('[data-link-field="target"]').value = link.target === '_blank' ? '_blank' : '';
+			});
+		}
+		if (data.type === 'categories') {
+			const selected = (data.category_ids || []).map(Number);
+			block.querySelectorAll('[data-category-id]').forEach((input) => {
+				const selectionIndex = selected.indexOf(Number(input.dataset.categoryId));
+				input.checked = selectionIndex >= 0;
+				if (selectionIndex >= 0) input.dataset.categoryOrder = String(selectionIndex);
+			});
+		}
+		if (data.type === 'products') {
+			const manual = body.querySelector('.mrn-mm-manual-products');
+			if (manual) manual.hidden = data.source !== 'manual';
+		}
+		if (data.type === 'promo' && data.clipboard_image_preview_url) {
+			const image = block.querySelector('.mrn-mm-promo-image');
+			const preview = document.createElement('img');
+			preview.alt = '';
+			preview.src = data.clipboard_image_preview_url;
+			image.querySelector('.mrn-mm-promo-image__preview').replaceChildren(preview);
+			image.querySelector('.mrn-mm-remove-image').hidden = false;
+			image.querySelector('.mrn-mm-choose-image').textContent = 'Replace image';
+		}
+
+		const title = block.querySelector('[data-field="title"]')?.value || '';
+		const summary = block.querySelector('.mrn-mm-block__header small');
+		if (summary) {
+			if (data.type === 'reusable') {
+				const reusable = block.querySelector('.mrn-mm-reusable-block-select');
+				summary.textContent = reusable?.value !== '0' ? reusable?.selectedOptions[0]?.textContent || 'Untitled' : 'Untitled';
+			} else {
+				summary.textContent = title || 'Untitled';
+			}
+		}
+	}
+
+	function appendBlockFromData(column, data) {
+		const template = builder.querySelector(`template[data-block-template="${data.type}"]`);
+		if (!template) return;
+		const fragment = template.content.cloneNode(true);
+		const block = fragment.querySelector('.mrn-mm-block');
+		populateBlockFromData(block, data);
+		column.querySelector('.mrn-mm-blocks').appendChild(fragment);
+	}
+
+	function updatePasteButtons() {
+		builder.querySelectorAll('.mrn-mm-paste-column').forEach((button) => {
+			button.disabled = !copiedColumn;
+		});
+	}
+
 	function serialize() {
 		const layout = {
 			width: builder.querySelector('[name="mrn_mega_menu_width"]:checked')?.value || 'content',
@@ -317,33 +437,7 @@
 				columns: []
 			};
 			panel.querySelectorAll(':scope > .mrn-mm-columns-scroll > .mrn-mm-columns > .mrn-mm-column').forEach((column) => {
-				const columnData = { blocks: [] };
-				column.querySelectorAll(':scope > .mrn-mm-blocks > .mrn-mm-block').forEach((block) => {
-				const data = {};
-				block.querySelectorAll('[data-field]').forEach((field) => {
-					if (field.dataset.field === 'product_ids') {
-						data.product_ids = field.tagName === 'SELECT'
-							? Array.from(field.selectedOptions).map((option) => Number(option.value)).filter(Boolean)
-							: field.value.split(',').map((id) => parseInt(id.trim(), 10)).filter(Boolean);
-					} else {
-						data[field.dataset.field] = field.type === 'number' ? Number(field.value) : field.value;
-					}
-				});
-				if (data.type === 'links') {
-					data.links = Array.from(block.querySelectorAll('.mrn-mm-link-row')).map((row) => ({
-						label: row.querySelector('[data-link-field="label"]').value,
-						url: row.querySelector('[data-link-field="url"]').value,
-						target: row.querySelector('[data-link-field="target"]').value
-					}));
-				}
-				if (data.type === 'categories') {
-					data.category_ids = Array.from(block.querySelectorAll('[data-category-id]:checked'))
-						.sort((first, second) => Number(first.dataset.categoryOrder) - Number(second.dataset.categoryOrder))
-						.map((input) => Number(input.dataset.categoryId));
-				}
-					columnData.blocks.push(data);
-				});
-				panelData.columns.push(columnData);
+				panelData.columns.push(extractColumnData(column));
 			});
 			layout.panels.push(panelData);
 		});
@@ -475,6 +569,32 @@
 			refreshSortables();
 			serialize();
 			notifyLayoutChange(MRNMegaMenuAdmin.columnRemoved);
+			return;
+		}
+
+		const copyColumn = event.target.closest('.mrn-mm-copy-column');
+		if (copyColumn) {
+			const column = copyColumn.closest('.mrn-mm-column');
+			copiedColumn = JSON.parse(JSON.stringify(extractColumnData(column, true)));
+			builder.querySelectorAll('.mrn-mm-column').forEach((candidate) => candidate.classList.remove('is-copied'));
+			column.classList.add('is-copied');
+			updatePasteButtons();
+			announce(MRNMegaMenuAdmin.columnCopied);
+			return;
+		}
+
+		const pasteColumn = event.target.closest('.mrn-mm-paste-column');
+		if (pasteColumn && copiedColumn) {
+			const column = pasteColumn.closest('.mrn-mm-column');
+			const blocks = column.querySelector('.mrn-mm-blocks');
+			if (blocks.querySelector('.mrn-mm-block') && !window.confirm(MRNMegaMenuAdmin.confirmPasteColumn)) return;
+			blocks.replaceChildren();
+			copiedColumn.blocks.forEach((block) => appendBlockFromData(column, block));
+			updateCount(column);
+			initializeWooSearch();
+			refreshSortables();
+			serialize();
+			notifyLayoutChange(MRNMegaMenuAdmin.columnPasted);
 			return;
 		}
 

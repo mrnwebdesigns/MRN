@@ -103,6 +103,9 @@ final class Admin {
 				'lastColumn'    => __( 'A mega menu must keep at least one layout column.', 'mrn-mega-menu' ),
 				'lastPanel'     => __( 'A layout must keep at least one mega menu.', 'mrn-mega-menu' ),
 				'columnRemoved' => __( 'Column removed.', 'mrn-mega-menu' ),
+				'columnCopied'  => __( 'Column copied. Paste it into any column in this layout.', 'mrn-mega-menu' ),
+				'columnPasted'  => __( 'Copied column pasted. Save or update the layout to publish this change.', 'mrn-mega-menu' ),
+				'confirmPasteColumn' => __( 'Replace this column and all of its content with the copied column?', 'mrn-mega-menu' ),
 				'blockMoved'   => __( 'Block moved.', 'mrn-mega-menu' ),
 				'linkMoved'    => __( 'Link moved.', 'mrn-mega-menu' ),
 				'mediaTitle'    => __( 'Choose a promotion image', 'mrn-mega-menu' ),
@@ -243,7 +246,7 @@ final class Admin {
 				<?php self::render_icon_control( 'child_arrow_icon', __( 'Child navigation arrow', 'mrn-mega-menu' ), $panel['child_arrow_icon'] ?? array(), __( 'Replaces the default trailing arrow on child links. A child item’s own navigation arrow takes precedence.', 'mrn-mega-menu' ) ); ?>
 			</div>
 			<div class="mrn-mm-columns-toolbar mrn-admin-layout-builder__toolbar">
-				<div><strong><?php esc_html_e( 'Layout columns', 'mrn-mega-menu' ); ?></strong><p class="description"><?php esc_html_e( 'These columns appear together inside this one mega menu and stack on smaller screens.', 'mrn-mega-menu' ); ?></p></div>
+				<div><strong><?php esc_html_e( 'Layout columns', 'mrn-mega-menu' ); ?></strong><p class="description"><?php esc_html_e( 'These columns appear together inside this one mega menu and stack on smaller screens. Use Copy and Paste in a column header to duplicate its content between top-level menu items.', 'mrn-mega-menu' ); ?></p></div>
 				<label><?php esc_html_e( 'Columns', 'mrn-mega-menu' ); ?><input type="number" class="mrn-mm-column-count" min="1" max="6" value="<?php echo esc_attr( max( 1, min( 6, count( $columns ) ) ) ); ?>"></label>
 			</div>
 			<div class="mrn-mm-columns-scroll mrn-admin-layout-builder__scroll" tabindex="0" aria-label="<?php echo esc_attr( sprintf( __( 'Layout columns for %s. Scroll horizontally to see additional columns.', 'mrn-mega-menu' ), $panel_label ) ); ?>">
@@ -261,7 +264,7 @@ final class Admin {
 		<section class="mrn-mm-column mrn-admin-layout-builder__lane" data-column-index="<?php echo esc_attr( $column_index ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Layout column %d', 'mrn-mega-menu' ), $column_index + 1 ) ); ?>">
 			<div class="mrn-mm-column__header">
 				<strong><?php echo esc_html( sprintf( __( 'Layout column %d', 'mrn-mega-menu' ), $column_index + 1 ) ); ?></strong>
-				<div class="mrn-mm-column__actions"><span class="mrn-mm-block-count"><?php echo esc_html( sprintf( _n( '%d block', '%d blocks', count( $blocks ), 'mrn-mega-menu' ), count( $blocks ) ) ); ?></span><button type="button" class="button-link-delete mrn-admin-card-remove mrn-mm-remove-column" aria-label="<?php esc_attr_e( 'Remove layout column', 'mrn-mega-menu' ); ?>" title="<?php esc_attr_e( 'Remove layout column', 'mrn-mega-menu' ); ?>"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button></div>
+				<div class="mrn-mm-column__actions"><span class="mrn-mm-block-count"><?php echo esc_html( sprintf( _n( '%d block', '%d blocks', count( $blocks ), 'mrn-mega-menu' ), count( $blocks ) ) ); ?></span><button type="button" class="button-link mrn-mm-copy-column" aria-label="<?php esc_attr_e( 'Copy layout column', 'mrn-mega-menu' ); ?>" title="<?php esc_attr_e( 'Copy layout column', 'mrn-mega-menu' ); ?>"><span class="dashicons dashicons-admin-page" aria-hidden="true"></span></button><button type="button" class="button-link mrn-mm-paste-column" aria-label="<?php esc_attr_e( 'Paste copied layout column', 'mrn-mega-menu' ); ?>" title="<?php esc_attr_e( 'Paste copied layout column', 'mrn-mega-menu' ); ?>" disabled><span class="dashicons dashicons-clipboard" aria-hidden="true"></span></button><button type="button" class="button-link-delete mrn-admin-card-remove mrn-mm-remove-column" aria-label="<?php esc_attr_e( 'Remove layout column', 'mrn-mega-menu' ); ?>" title="<?php esc_attr_e( 'Remove layout column', 'mrn-mega-menu' ); ?>"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button></div>
 			</div>
 			<div class="mrn-mm-blocks">
 				<?php foreach ( $blocks as $block_index => $block ) : ?>
