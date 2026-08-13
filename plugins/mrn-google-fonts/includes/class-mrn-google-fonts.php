@@ -151,6 +151,7 @@ final class MRN_Google_Fonts {
 			return self::mainwp_error($validation->get_error_code(), $validation->get_error_message());
 		}
 		update_option(self::OPTION_KEY, $settings, false);
+		delete_transient(self::FRONTEND_DIAGNOSTICS_TRANSIENT);
 
 		return self::mainwp_success(
 			array(
@@ -3127,6 +3128,11 @@ final class MRN_Google_Fonts {
 	 */
 	private static function should_load_frontend_runtime(array $settings): bool {
 		if (is_admin() || empty($settings['enabled']) || empty($settings['load_on_frontend'])) {
+			return false;
+		}
+
+		$frontend_diagnostics = get_transient(self::FRONTEND_DIAGNOSTICS_TRANSIENT);
+		if ('local_only' === self::get_delivery_mode($settings) && is_array($frontend_diagnostics) && true === ($frontend_diagnostics['remote_google_fonts_detected'] ?? null)) {
 			return false;
 		}
 

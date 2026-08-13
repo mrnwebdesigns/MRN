@@ -30,7 +30,7 @@ function is_search(): bool { return false; }
 function apply_filters($hook, $value) { unset($hook); return $value; }
 function wp_enqueue_style($handle, $src = '', $deps = array(), $version = false): void { $GLOBALS['mrn_test_styles'][$handle] = array('src' => $src, 'deps' => $deps, 'version' => $version); }
 function wp_add_inline_style($handle, $css): void { $GLOBALS['mrn_test_styles'][$handle]['inline'] = $css; }
-function get_transient($key) { unset($key); return array('Lora'); }
+function get_transient($key) { return $GLOBALS['mrn_test_transients'][$key] ?? array('Lora'); }
 function wp_parse_url($url, $component = -1) { return -1 === $component ? parse_url((string) $url) : parse_url((string) $url, $component); }
 function wp_upload_dir($time = null, $create = true): array { unset($time, $create); return array('basedir' => sys_get_temp_dir(), 'baseurl' => 'https://site.example/uploads', 'error' => false); }
 function wp_normalize_path($path): string { return str_replace('\\', '/', (string) $path); }
@@ -70,6 +70,12 @@ $raw_head = '<link rel="preconnect" href="https://fonts.gstatic.com"><link rel="
 $filtered_head = MRN_Google_Fonts::suppress_remote_font_markup($raw_head);
 assert_delivery(false === strpos($filtered_head, 'fonts.googleapis.com') && false === strpos($filtered_head, 'fonts.gstatic.com'), 'local_only did not suppress direct head markup for Google Fonts.');
 assert_delivery(false !== strpos($filtered_head, 'https://example.com/theme.css') && false !== strpos($filtered_head, 'body{color:#000}'), 'local_only damaged unrelated head markup.');
+
+$GLOBALS['mrn_test_styles'] = array();
+$GLOBALS['mrn_test_transients'][MRN_Google_Fonts::FRONTEND_DIAGNOSTICS_TRANSIENT] = array('remote_google_fonts_detected' => true);
+MRN_Google_Fonts::enqueue_frontend_assets();
+assert_delivery(array() === $GLOBALS['mrn_test_styles'], 'local_only did not fail closed after an unsuppressed remote font source was detected.');
+unset($GLOBALS['mrn_test_transients'][MRN_Google_Fonts::FRONTEND_DIAGNOSTICS_TRANSIENT]);
 
 $GLOBALS['mrn_test_styles'] = array();
 $settings['delivery_mode'] = 'local_preferred';
