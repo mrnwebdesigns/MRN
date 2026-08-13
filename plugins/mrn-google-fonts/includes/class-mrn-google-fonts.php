@@ -12,7 +12,7 @@ final class MRN_Google_Fonts {
 	private static $preload_urls = array();
 	/** @var int */
 	private static $head_suppression_buffer_level = 0;
-	const VERSION = '1.0.6';
+	const VERSION = '1.0.7';
 	const MANIFEST_SCHEMA_VERSION = 2;
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
@@ -2083,14 +2083,70 @@ final class MRN_Google_Fonts {
 		);
 	}
 
-	/** Detect remote Google Fonts URLs in the public homepage HTML. */
+	/** Detect remote Google Fonts URLs in homepage HTML and same-origin stylesheets. */
 	private static function detect_remote_google_fonts_on_frontend(): ?bool {
 		$response = wp_remote_get(home_url('/'), array('timeout' => 15, 'redirection' => 3, 'reject_unsafe_urls' => true));
 		if (is_wp_error($response) || 200 !== (int) wp_remote_retrieve_response_code($response)) {
 			return null;
 		}
-		$body = strtolower((string) wp_remote_retrieve_body($response));
-		return false !== strpos($body, 'fonts.googleapis.com') || false !== strpos($body, 'fonts.gstatic.com');
+		$body = (string) wp_remote_retrieve_body($response);
+		if (self::contains_remote_google_font_url($body)) {
+			return true;
+		}
+
+		$home_host = strtolower((string) wp_parse_url(home_url('/'), PHP_URL_HOST));
+		$tags = array();
+		if (!preg_match_all('/<link\b[^>]*>/i', $body, $tags)) {
+			return false;
+		}
+		$checked = 0;
+		foreach ($tags[0] as $tag) {
+			if ($checked >= 30 || !preg_match('/\brel\s*=\s*(["\'])[^"\']*stylesheet[^"\']*\1/i', (string) $tag)) {
+				continue;
+			}
+			$href_match = array();
+			if (!preg_match('/\bhref\s*=\s*(["\'])(.*?)\1/i', (string) $tag, $href_match)) {
+				continue;
+			}
+			$url = self::resolve_frontend_stylesheet_url(html_entity_decode((string) $href_match[2], ENT_QUOTES, 'UTF-8'));
+			if ('' === $url || $home_host !== strtolower((string) wp_parse_url($url, PHP_URL_HOST))) {
+				continue;
+			}
+			$checked++;
+			$stylesheet = wp_remote_get($url, array('timeout' => 8, 'redirection' => 2, 'reject_unsafe_urls' => true));
+			if (!is_wp_error($stylesheet) && 200 === (int) wp_remote_retrieve_response_code($stylesheet) && self::contains_remote_google_font_url((string) wp_remote_retrieve_body($stylesheet))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** Resolve a frontend stylesheet reference without allowing cross-origin diagnostic fetches. */
+	private static function resolve_frontend_stylesheet_url(string $url): string {
+		$url = trim($url);
+		if ('' === $url || 0 === strpos($url, 'data:')) {
+			return '';
+		}
+		if (0 === strpos($url, '//')) {
+			$scheme = (string) wp_parse_url(home_url('/'), PHP_URL_SCHEME);
+			return $scheme . ':' . $url;
+		}
+		if (0 === strpos($url, '/')) {
+			$scheme = (string) wp_parse_url(home_url('/'), PHP_URL_SCHEME);
+			$host = (string) wp_parse_url(home_url('/'), PHP_URL_HOST);
+			$port = wp_parse_url(home_url('/'), PHP_URL_PORT);
+			return $scheme . '://' . $host . ($port ? ':' . (int) $port : '') . $url;
+		}
+		if (!preg_match('#^https?://#i', $url)) {
+			return trailingslashit(home_url('/')) . ltrim($url, './');
+		}
+		return $url;
+	}
+
+	/** Check markup or CSS for a Google-hosted font URL. */
+	private static function contains_remote_google_font_url(string $content): bool {
+		$content = strtolower($content);
+		return false !== strpos($content, 'fonts.googleapis.com') || false !== strpos($content, 'fonts.gstatic.com');
 	}
 
 	/** @return array<int, string> */
