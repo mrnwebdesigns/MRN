@@ -12,7 +12,7 @@ final class MRN_Google_Fonts {
 	private static $preload_urls = array();
 	/** @var int */
 	private static $head_suppression_buffer_level = 0;
-	const VERSION = '1.0.5';
+	const VERSION = '1.0.6';
 	const MANIFEST_SCHEMA_VERSION = 2;
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
@@ -2058,6 +2058,13 @@ final class MRN_Google_Fonts {
 		$manifest = self::get_local_manifest();
 		$validation = self::validate_local_manifest($manifest);
 		$remote = $check_frontend ? self::detect_remote_google_fonts_on_frontend() : null;
+		if ($check_frontend) {
+			set_transient(
+				self::FRONTEND_DIAGNOSTICS_TRANSIENT,
+				array('remote_google_fonts_detected' => $remote, 'checked_at' => time()),
+				5 * MINUTE_IN_SECONDS
+			);
+		}
 
 		return array(
 			'version' => self::VERSION,
