@@ -66,6 +66,10 @@ assert_delivery(array('https://example.com') === $hints, 'local_only did not rem
 assert_delivery(false === MRN_Google_Fonts::filter_competing_remote_font_src('//fonts.googleapis.com/css2?family=Lora', 'theme-fonts'), 'local_only did not suppress a competing Google stylesheet source.');
 assert_delivery('' === MRN_Google_Fonts::filter_competing_remote_font_tag('<link href="https://fonts.googleapis.com/css2?family=Lora" rel="stylesheet">', 'theme-fonts', 'https://fonts.googleapis.com/css2?family=Lora', 'all'), 'local_only did not suppress a competing Google stylesheet tag.');
 assert_delivery('https://example.com/theme.css' === MRN_Google_Fonts::filter_competing_remote_font_src('https://example.com/theme.css', 'theme-style'), 'local_only suppressed an unrelated stylesheet source.');
+$raw_head = '<link rel="preconnect" href="https://fonts.gstatic.com"><link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lora"><link rel="stylesheet" href="https://example.com/theme.css"><style>@import url("https://fonts.googleapis.com/css2?family=Lora");body{color:#000}</style>';
+$filtered_head = MRN_Google_Fonts::suppress_remote_font_markup($raw_head);
+assert_delivery(false === strpos($filtered_head, 'fonts.googleapis.com') && false === strpos($filtered_head, 'fonts.gstatic.com'), 'local_only did not suppress direct head markup for Google Fonts.');
+assert_delivery(false !== strpos($filtered_head, 'https://example.com/theme.css') && false !== strpos($filtered_head, 'body{color:#000}'), 'local_only damaged unrelated head markup.');
 
 $GLOBALS['mrn_test_styles'] = array();
 $settings['delivery_mode'] = 'local_preferred';

@@ -10,7 +10,9 @@ if (!defined('ABSPATH')) {
 final class MRN_Google_Fonts {
 	/** @var array<int, string> */
 	private static $preload_urls = array();
-	const VERSION = '1.0.2';
+	/** @var int */
+	private static $head_suppression_buffer_level = 0;
+	const VERSION = '1.0.3';
 	const MANIFEST_SCHEMA_VERSION = 2;
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
@@ -56,6 +58,8 @@ final class MRN_Google_Fonts {
 		add_action('admin_notices', array(__CLASS__, 'render_diagnostic_notice'));
 		add_action('admin_init', array(__CLASS__, 'maybe_auto_migrate_legacy_manifest'));
 		add_action('wp_head', array(__CLASS__, 'record_frontend_font_ownership'), 999);
+		add_action('wp_head', array(__CLASS__, 'start_remote_font_markup_suppression'), -PHP_INT_MAX);
+		add_action('wp_head', array(__CLASS__, 'finish_remote_font_markup_suppression'), PHP_INT_MAX);
 		add_action('wp_head', array(__CLASS__, 'render_local_font_preloads'), 1);
 		add_filter('mainwp_child_extra_execution', array(__CLASS__, 'handle_mainwp_child_execution'), 10, 2);
 	}
@@ -122,6 +126,15 @@ final class MRN_Google_Fonts {
 		$settings['delivery_mode'] = 'local_only';
 		$settings['enabled'] = 1;
 		$settings['load_on_frontend'] = 1;
+		if (!empty($post['dry_run'])) {
+			return self::mainwp_success(
+				array(
+					'dry_run' => true,
+					'proposed_settings' => $settings,
+					'status' => self::get_runtime_status(false),
+				)
+			);
+		}
 		$result = self::build_local_assets($settings);
 		if (is_wp_error($result)) {
 			return self::mainwp_error($result->get_error_code(), $result->get_error_message());
@@ -519,6 +532,31 @@ final class MRN_Google_Fonts {
 	/** Whether a URL or HTML fragment references Google Fonts delivery hosts. */
 	private static function is_remote_google_font_url(string $value): bool {
 		return false !== stripos($value, 'fonts.googleapis.com') || false !== stripos($value, 'fonts.gstatic.com');
+	}
+
+	/** Begin buffering the document head so direct theme font tags can be suppressed. */
+	public static function start_remote_font_markup_suppression(): void {
+		$settings = self::get_settings();
+		if (self::should_load_frontend_runtime($settings) && 'local_only' === self::get_delivery_mode($settings)) {
+			ob_start(array(__CLASS__, 'suppress_remote_font_markup'));
+			self::$head_suppression_buffer_level = ob_get_level();
+		}
+	}
+
+	/** Flush the document-head suppression buffer. */
+	public static function finish_remote_font_markup_suppression(): void {
+		$settings = self::get_settings();
+		if (self::should_load_frontend_runtime($settings) && 'local_only' === self::get_delivery_mode($settings) && self::$head_suppression_buffer_level > 0 && ob_get_level() >= self::$head_suppression_buffer_level) {
+			ob_end_flush();
+			self::$head_suppression_buffer_level = 0;
+		}
+	}
+
+	/** Remove direct Google Fonts links and inline imports from captured head markup. */
+	public static function suppress_remote_font_markup(string $html): string {
+		$html = (string) preg_replace('#<link\b[^>]*(?:fonts\.googleapis|fonts\.gstatic)\.com[^>]*>\s*#i', '', $html);
+		$html = (string) preg_replace('#@import\s+(?:url\()?\s*[\'\"]?(?:https?:)?//fonts\.googleapis\.com/[^;\'\"\)]+[\'\"]?\s*\)?\s*;?#i', '', $html);
+		return $html;
 	}
 
 	/**
