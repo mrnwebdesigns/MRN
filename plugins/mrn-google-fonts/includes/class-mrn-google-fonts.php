@@ -12,7 +12,7 @@ final class MRN_Google_Fonts {
 	private static $preload_urls = array();
 	/** @var int */
 	private static $head_suppression_buffer_level = 0;
-	const VERSION = '1.0.4';
+	const VERSION = '1.0.5';
 	const MANIFEST_SCHEMA_VERSION = 2;
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
@@ -78,7 +78,7 @@ final class MRN_Google_Fonts {
 			return $information;
 		}
 
-		if (!in_array($action, array('status', 'validate', 'migrate', 'build', 'configure_build'), true)) {
+		if (!in_array($action, array('status', 'validate', 'migrate', 'build', 'configure_build', 'disable'), true)) {
 			return self::mainwp_error('mrn_google_fonts_mainwp_action', 'The requested font operation is not supported.');
 		}
 
@@ -97,6 +97,13 @@ final class MRN_Google_Fonts {
 			return is_wp_error($validation)
 				? self::mainwp_error($validation->get_error_code(), $validation->get_error_message())
 				: self::mainwp_success(array('status' => self::get_runtime_status(!empty($post['check_frontend']))));
+		}
+
+		if ('disable' === $action) {
+			$settings = self::get_settings();
+			$settings['enabled'] = 0;
+			update_option(self::OPTION_KEY, $settings, false);
+			return self::mainwp_success(array('disabled' => true, 'settings' => self::get_settings()));
 		}
 
 		if ('migrate' === $action) {

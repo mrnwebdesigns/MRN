@@ -6,6 +6,6 @@
     "repo_path": "/Users/khofmeyer/Development/MRN/plugins/mrn-google-fonts",
     "integration_target": "mrn-plugin-stack",
     "integration_mode": "in-repo-plugin",
-    "plugin_version": "1.0.4"
+    "plugin_version": "1.0.5"
   }
 }
