@@ -5,16 +5,16 @@ This is the canonical structured-data and crawler baseline for new MRN stack sit
 ## Ownership
 
 - **Business Information** is the canonical source for organization identity, contact details, service area, coordinates, author policy, and AI crawler policy.
-- **SmartCrawl** owns the base `WebSite`, `WebPage`, breadcrumb, article, canonical, social, and XML sitemap output.
-- **MRN Schema Bridge** enriches and normalizes the SmartCrawl graph and supplies stack-specific content mappings.
+- **Active SEO provider** owns the base `WebSite`, `WebPage`, breadcrumb, article, canonical, social, and XML sitemap output. SEOPress is the preferred provider for new stack sites; SmartCrawl remains supported for existing sites during migration.
+- **MRN Schema Bridge** enriches and normalizes supported provider graphs and supplies stack-specific content mappings.
 - **MRN SEO Helper** owns public post-type title and meta-description templates.
 - Themes and content components should provide visible source data, not emit a competing site-wide schema graph.
 
 ## Rollout Defaults
 
-MRN Schema Bridge fills missing SmartCrawl settings once per bridge release. Existing site choices win.
+MRN Schema Bridge fills missing SmartCrawl settings once per bridge release on legacy SmartCrawl sites. Existing site choices win.
 
-The baseline enables SmartCrawl's sitemap, title/meta, social, instant-indexing, SEO-analysis, and readability modules; configures organization site representation from Business Information; and gives SmartCrawl XML sitemap ownership with automatic regeneration.
+The baseline lets the active SEO provider own sitemap, title/meta, social/canonical, and base schema output. Stack-owned helpers configure provider-compatible metadata while Business Information remains the canonical organization source.
 
 Author, date, search, comment, audio, and video schema remain conservative until a site intentionally configures them.
 
@@ -22,7 +22,7 @@ Author, date, search, comment, audio, and video schema remain conservative until
 
 | Content or intent | Baseline schema |
 | --- | --- |
-| Home and standard pages | SmartCrawl `WebSite` and `WebPage` graph |
+| Home and standard pages | Active provider `WebSite` and `WebPage` graph |
 | About page | `AboutPage` |
 | Contact page | `ContactPage` plus organization `ContactPoint` data |
 | Service page or service CPT | `Service` linked to the canonical organization and page |
@@ -30,7 +30,7 @@ Author, date, search, comment, audio, and video schema remain conservative until
 | Public team profile | `ProfilePage` and `Person` |
 | Visible gallery | `CollectionPage` and `ImageGallery` |
 | Visible testimonial quote | `Quotation` with speaker attribution; never a rating by default |
-| Other public CPTs | Safe SmartCrawl `WebPage`/article baseline until explicitly mapped |
+| Other public CPTs | Safe active-provider `WebPage`/article baseline until explicitly mapped |
 
 The Classic Editor **SEO & Schema** panel defaults to **Auto**. Editors can override a page to About, Collection, Contact, Profile, or Service, add a schema description, or disable only bridge-owned supplemental schema. It does not expose raw JSON-LD.
 
@@ -54,7 +54,7 @@ The stack does not publish `llms.txt`. Revisit it only if major AI retrieval sys
 1. Complete **Business Information > Identity & Schema** before launch.
 2. Confirm the organization name, logo, URL, type, phone, address, area served, and coordinates are accurate.
 3. Choose the author policy and independently review AI retrieval and model-training preferences.
-4. Confirm SmartCrawl modules and site representation were initialized without overwriting intentional settings.
+4. Confirm the active SEO provider, sitemap, title/meta templates, and site representation were initialized without overwriting intentional settings.
 5. Assign explicit page intent only where Auto cannot infer it.
 6. Confirm every public CPT has an indexation decision, title/meta template, archive decision, sitemap inclusion decision, and schema mapping.
 7. Run **Tools > Schema Health** against the production sitemap after the site becomes public.

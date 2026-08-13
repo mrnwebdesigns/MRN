@@ -8,7 +8,7 @@ MRN Schema Bridge keeps shared schema policy out of child themes and out of site
 
 ## Version
 
-Current version: `0.4.1`
+Current version: `0.4.2`
 
 ## Features
 
@@ -23,25 +23,25 @@ Current version: `0.4.1`
 - Adds render-aware `Quotation` schema only for testimonials visibly output by the base theme.
 - Supports schema-only post descriptions through hidden post meta or a site option map.
 - Adds an SEO & Schema Classic Editor panel for page intent and description overrides.
-- Enriches SmartCrawl organization identity from the canonical Business Information screen.
-- Applies non-destructive SmartCrawl schema, social, sitemap, and analysis defaults.
+- Enriches active-provider organization identity from the canonical Business Information screen.
+- Applies non-destructive SmartCrawl schema, social, sitemap, and analysis defaults for legacy SmartCrawl sites.
 - Publishes separate robots.txt policies for AI search/retrieval and model-training crawlers.
 - Adds a Tools > Schema Health admin screen for same-site sitemap scans.
 - Keeps behavior filterable per site.
-- Merges supplemental nodes into SmartCrawl's graph when available and emits a standalone supplemental graph only when needed.
+- Merges supplemental nodes into supported provider graphs when available and emits a standalone supplemental graph only when needed.
 
 ## Schema Ownership
 
 - Business Information owns public organization identity, address, phone, hours, logo, and schema policy.
-- SmartCrawl owns the base `WebSite`, `WebPage`, breadcrumb, article, sitemap, canonical, and social graph.
+- The active SEO provider owns the base `WebSite`, `WebPage`, breadcrumb, article, sitemap, canonical, and social graph. SEOPress is the preferred new-stack provider; SmartCrawl remains supported for existing sites during migration.
 - MRN Schema Bridge enriches and normalizes that graph and owns stack-specific CPT/page mappings.
-- Theme components supply visible source data and do not print competing schema when SmartCrawl is active.
+- Theme components supply visible source data and do not print competing site-wide schema when a supported provider is active.
 
 Rendered testimonials are the exception to head-time graph merging: dynamic Content rows are not resolved until the page body renders, so the base theme reports visible testimonial quotes to the bridge and the bridge emits one deduplicated `Quotation` graph in the footer. It never converts testimonials into `Review`, `Rating`, or `AggregateRating` entities.
 
 The Business Information > Identity & Schema tab controls organization type, legal/alternate name, public email, area served, coordinates, author policy, and AI crawler policy.
 
-The post editor's SEO & Schema panel defaults to Auto. Use the page-intent override only for About, Collection, Contact, Profile, or Service pages. The None option disables bridge-owned supplemental schema without removing SmartCrawl's safe base WebPage graph.
+The post editor's SEO & Schema panel defaults to Auto. Use the page-intent override only for About, Collection, Contact, Profile, or Service pages. The None option disables bridge-owned supplemental schema without removing the active provider's safe base WebPage graph.
 
 ## Supplemental Schema
 
@@ -58,9 +58,9 @@ Schema descriptions use the first available value from:
 
 Project/case-study schema defaults to the base-stack `case_study` post type and retains `mrn_case_study` compatibility. It can be changed with the `mrn_schema_bridge_project_post_types` filter.
 
-## SmartCrawl Rollout Defaults
+## Provider Rollout Defaults
 
-On first load for each bridge release, existing SmartCrawl values are preserved and missing defaults are filled for:
+On first load for each bridge release, existing SmartCrawl values are preserved and missing defaults are filled for legacy SmartCrawl sites:
 
 - sitemap, title/meta, social, instant indexing, SEO analysis, and readability modules
 - organization site representation and canonical Business Information name/logo
@@ -185,7 +185,7 @@ mrn-qa run --project-root /Users/khofmeyer/Development/MRN/mu-plugins/mrn-schema
 - Public authors can be preserved with `mrn_schema_bridge_public_author_names`.
 - Removed author references are replaced with the organization reference.
 - Tools > Schema Health can run a same-site sitemap scan.
-- Supplemental nodes are merged into SmartCrawl output when available and otherwise print as one JSON-LD graph.
+- Supplemental nodes are merged into supported provider output when available and otherwise print as one JSON-LD graph.
 - `robots.txt` reflects the configured AI search and training crawler policy on public sites.
 - Auto, About, Contact, Service, Profile, Gallery, and Case Study templates render the expected graph without duplicate entity IDs.
 - Only testimonials whose quote text is visibly rendered produce `Quotation` nodes; repeated output is deduplicated and no review/rating types are emitted.

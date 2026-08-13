@@ -1,5 +1,13 @@
 # Stack Changelog
 
+## 2026.08.13-seopress-provider-layer
+- Switched new stack plugin rollout from SmartCrawl Pro to SEOPress plus SEOPress Pro while keeping SmartCrawl adapter support for existing sites.
+- Expanded `mrn-seo-helper` to `0.4.0` with active-provider selection, SmartCrawl and SEOPress metadata adapters, provider-aware editor sync, and provider meta-key diagnostics.
+- Expanded `mrn-config-helper` to `0.1.54` so breadcrumb schema ownership can defer to the active SEO provider instead of SmartCrawl specifically.
+- Expanded `mrn-schema-bridge` to `0.4.2` with supported-provider schema graph filtering and SEOPress schema array enrichment.
+- Expanded `mrn-announcements` to `1.6.2` so admin/data-only announcements stay out of SEOPress metaboxes as well as legacy SEO surfaces.
+- Added SEOPress license activation support to CloudPanel and RunCloud stack rollout paths, including dev/staging indexing cleanup for SEOPress scheduled jobs.
+
 ## 2026.08.11-shortcode-form-output
 - Expanded `mrn-base-stack` to `1.2.103`.
 - Preserved accessible form controls rendered by trusted shortcodes inside the External Widget layout while continuing to reject scripts, inline event handlers, and unapproved markup.

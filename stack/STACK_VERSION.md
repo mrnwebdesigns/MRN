@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.11-shortcode-form-output`
-- Release date: `2026-08-11`
+- Stack release: `2026.08.13-seopress-provider-layer`
+- Release date: `2026-08-13`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
@@ -16,13 +16,13 @@
   - `mrn-editor-lockdown` `1.0.32`
   - `mrn-environment-runtime` `0.2.0`
   - `mrn-reusable-block-library` `0.1.28`
-  - `mrn-schema-bridge` `0.4.1`
+  - `mrn-schema-bridge` `0.4.2`
   - `mrn-site-colors` / `Site Styles` `0.1.38`
 - Standard plugins:
   - `mrn-acf-focal-point` `1.1.2`
-  - `mrn-announcements` `1.6.1`
-  - `mrn-config-helper` `0.1.53`
-  - `mrn-seo-helper` `0.3.4`
+  - `mrn-announcements` `1.6.2`
+  - `mrn-config-helper` `0.1.54`
+  - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-universal-sticky-bar` `1.1.3`

@@ -1044,6 +1044,73 @@ if (!is_array($response) || !($response["success"] ?? false)) {
 }
 
 echo "Applied and activated SearchWP license key.\n";
+	'
+  }
+
+  apply_seopress_license_mapping() {
+    local raw_value="$1"
+    local value_mode="${2:-text}"
+    local payload_b64
+
+    payload_b64="$(printf '%s' "${raw_value}" | base64 | tr -d '\n')"
+    run_wp eval '
+$raw = base64_decode("'"${payload_b64}"'", true);
+if ($raw === false) {
+    fwrite(STDERR, "Invalid SEOPress license payload.\n");
+    exit(1);
+}
+
+$mode = "'"${value_mode}"'";
+$key = "";
+if ($mode === "json") {
+    $decoded = json_decode($raw, true);
+    if (!is_array($decoded)) {
+        fwrite(STDERR, "SEOPress license JSON payload is invalid.\n");
+        exit(1);
+    }
+    $candidate = $decoded["key"] ?? ($decoded["license_key"] ?? "");
+    if (is_string($candidate)) {
+        $key = trim($candidate);
+    }
+} else {
+    $key = trim($raw);
+}
+
+if ($key === "") {
+    fwrite(STDERR, "SEOPress license key is empty.\n");
+    exit(1);
+}
+
+if (!function_exists("seopress_pro_run_license_activation")) {
+    $license_file = WP_PLUGIN_DIR . "/wp-seopress-pro/inc/admin/callbacks/License.php";
+    if (is_file($license_file)) {
+        require_once $license_file;
+    }
+}
+
+if (!function_exists("seopress_pro_run_license_activation")) {
+    fwrite(STDERR, "SEOPress Pro license API is unavailable.\n");
+    exit(1);
+}
+
+update_option("seopress_pro_license_key", $key, false);
+$result = seopress_pro_run_license_activation($key);
+if (!is_array($result) || empty($result["success"])) {
+    $message = "SEOPress license activation failed.";
+    if (is_array($result) && !empty($result["message"]) && is_scalar($result["message"])) {
+        $message .= " " . (string) $result["message"];
+    }
+    update_option("seopress_pro_license_key_error", $message, false);
+    fwrite(STDERR, $message . "\n");
+    exit(1);
+}
+
+if ("valid" !== (string) get_option("seopress_pro_license_status", "")) {
+    fwrite(STDERR, "SEOPress license activation did not verify a valid status.\n");
+    exit(1);
+}
+
+echo "Applied and activated SEOPress license key.\n";
 '
   }
 
@@ -1279,6 +1346,20 @@ echo "Applied AME license payload for {$siteUrl}\n";
       fi
       if ! apply_searchwp_license_mapping "${value}" "${searchwp_mode}" >/dev/null; then
         add_warning "Failed to apply/activate SearchWP license mapping for ${plugin_basename}."
+        continue
+      fi
+      echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
+      continue
+    fi
+
+    if [[ "${plugin_basename}" == "wp-seopress-pro/seopress-pro.php" && "${option_name}" == "seopress_pro_license_key" ]]; then
+      local seopress_mode
+      seopress_mode="text"
+      if [[ "${value_ref}" == json:* || "${value_ref}" == filejson:* || "${value_ref}" == secretfilejson:* ]]; then
+        seopress_mode="json"
+      fi
+      if ! apply_seopress_license_mapping "${value}" "${seopress_mode}" >/dev/null; then
+        add_warning "Failed to apply/activate SEOPress license mapping for ${plugin_basename}."
         continue
       fi
       echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
@@ -1549,20 +1630,40 @@ reconcile_development_environment_policy() {
   local -a disabled_plugins=(
     searchwp
     searchwp-live-ajax-search
-    searchwp-editor-performance
-    wpmu-dev-seo
-    smartcrawl-seo
-  )
-  local -a disabled_cron_hooks=(
-    searchwp_indexer_cron
-    searchwp_index_controller_cron
-    searchwp_maintenance
+	    searchwp-editor-performance
+	    wpmu-dev-seo
+	    smartcrawl-seo
+	    wp-seopress
+	    wp-seopress-pro
+	  )
+	  local -a disabled_cron_hooks=(
+	    searchwp_indexer_cron
+	    searchwp_index_controller_cron
+	    searchwp_maintenance
     searchwp_usage_tracking
     searchwp_email_summaries_cron
-    wds_sitemap_validity_check
-    wds_cron_download_geodb
-    wds_daily_moz_data_hook
-  )
+	    wds_sitemap_validity_check
+	    wds_cron_download_geodb
+	    wds_daily_moz_data_hook
+	    seopress_404_email_alerts_cron
+	    seopress_404_send_alert_cron
+	    seopress_alerts_cron
+	    seopress_broken_links_run_task_cron
+	    seopress_broken_links_watchdog_cron
+	    seopress_get_insights_gsc_cron
+	    seopress_google_analytics_cron
+	    seopress_insights_gsc_cron
+	    seopress_license_validation_cron
+	    seopress_matomo_analytics_cron
+	    seopress_page_speed_insights_cron
+	    seopress_request_google_analytics_cron
+	    seopress_request_matomo_analytics_cron
+	    seopress_request_page_speed_insights_cron
+	    seopress_schedule_license_validation_cron
+	    seopress_send_alerts_cron
+	    seopress_site_audit_run_task_cron
+	    seopress_site_audit_watchdog_cron
+	  )
 
   if ! run_wp config set MRN_SEARCHWP_POLICY disabled --type=constant; then
     add_warning "Failed to set MRN_SEARCHWP_POLICY=disabled in wp-config.php"

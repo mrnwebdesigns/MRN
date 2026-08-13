@@ -182,16 +182,16 @@ stack-dependency notes, use [`MRN_PLUGIN_AUDIT.md`](./MRN_PLUGIN_AUDIT.md).
 ### `mrn-seo-helper`
 
 - Name: `MRN SEO Helper`
-- Version: `0.3.4`
+- Version: `0.4.0`
 - Purpose:
   - registers baseline SEO ACF fields for posts and pages
-  - syncs SEO field content into SmartCrawl-compatible storage
+  - syncs SEO field content into the active provider's compatible storage
   - excludes admin/data-only announcement records from supported SEO post types
 - Admin/UI:
   - ACF field registration
   - tools/admin notices
-  - Tools page shows the detected environment and whether SEO fields are currently required or optional
-  - Tools page includes an override switch to force fields to remain required in local/dev
+  - Tools page shows the detected environment, active provider, provider key mapping, and whether SEO fields are currently required or optional
+  - Tools page includes controls for provider selection and an override switch to force fields to remain required in local/dev
 - Front-end / theming:
   - indirectly affects rendered SEO/meta behavior through synced data
 - Developer-facing hooks:

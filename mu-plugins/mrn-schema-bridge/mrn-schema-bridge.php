@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Schema Bridge
  * Description: Shared structured data normalization for MRN sites.
- * Version: 0.4.1
+ * Version: 0.4.2
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_VERSION' ) ) {
-	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.4.1' );
+	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.4.2' );
 }
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_SCHEMA_HEALTH_OPTION' ) ) {
@@ -390,7 +390,7 @@ function mrn_schema_bridge_get_canonical_organization_properties() {
 }
 
 /**
- * Enrich SmartCrawl's publishing organization from canonical stack data.
+ * Enrich the provider organization node from canonical stack data.
  *
  * @param array<int,array<string,mixed>> $graph Schema graph.
  * @return array<int,array<string,mixed>>
@@ -399,7 +399,16 @@ function mrn_schema_bridge_enrich_organization_schema_graph( $graph ) {
 	$properties = mrn_schema_bridge_get_canonical_organization_properties();
 
 	foreach ( $graph as $index => $item ) {
-		if ( ! is_array( $item ) || empty( $item['@id'] ) || false === strpos( (string) $item['@id'], '#schema-publishing-organization' ) ) {
+		if ( ! is_array( $item ) ) {
+			continue;
+		}
+
+		$is_provider_org = ! empty( $item['@id'] ) && false !== strpos( (string) $item['@id'], '#schema-publishing-organization' );
+		$is_org_type     = mrn_schema_bridge_item_has_type( $item, 'Organization' )
+			|| mrn_schema_bridge_item_has_type( $item, 'ProfessionalService' )
+			|| mrn_schema_bridge_item_has_type( $item, 'LocalBusiness' );
+
+		if ( ! $is_provider_org && ! $is_org_type ) {
 			continue;
 		}
 
@@ -603,18 +612,73 @@ function mrn_schema_bridge_filter_schema_graph( $data ) {
 		return $data;
 	}
 
-	$data = mrn_schema_bridge_strip_author_person_nodes( $data );
-	$data = mrn_schema_bridge_enrich_organization_schema_graph( $data );
-	$data = mrn_schema_bridge_apply_page_intent_to_schema_graph( $data );
-	$data = mrn_schema_bridge_enrich_contact_page_schema_graph( $data );
-	$data = mrn_schema_bridge_enrich_project_schema_graph( $data );
-	$data = mrn_schema_bridge_append_supplemental_nodes_to_graph( $data );
+	$data = mrn_schema_bridge_filter_provider_schema_graph( $data, true );
 
 	$GLOBALS['mrn_schema_bridge_supplemental_injected'] = true;
 
 	return (array) apply_filters( 'mrn_schema_bridge_schema_graph', $data );
 }
 add_filter( 'wds_schema_printer_schema_data', 'mrn_schema_bridge_filter_schema_graph', 20 );
+
+/**
+ * Normalize a full provider graph or an individual provider schema node.
+ *
+ * @param array $data                Schema graph or node data.
+ * @param bool  $append_supplemental Whether to append MRN supplemental nodes.
+ * @return array
+ */
+function mrn_schema_bridge_filter_provider_schema_graph( $data, $append_supplemental = true ) {
+	$is_full_graph = isset( $data['@graph'] ) && is_array( $data['@graph'] );
+	$graph         = $is_full_graph ? $data['@graph'] : $data;
+
+	if ( ! is_array( $graph ) ) {
+		return $data;
+	}
+
+	$is_list = empty( $graph ) || array_keys( $graph ) === range( 0, count( $graph ) - 1 );
+	if ( ! $is_list ) {
+		$graph = array( $graph );
+	}
+
+	$graph = mrn_schema_bridge_strip_author_person_nodes( $graph );
+	$graph = mrn_schema_bridge_enrich_organization_schema_graph( $graph );
+	$graph = mrn_schema_bridge_apply_page_intent_to_schema_graph( $graph );
+	$graph = mrn_schema_bridge_enrich_contact_page_schema_graph( $graph );
+	$graph = mrn_schema_bridge_enrich_project_schema_graph( $graph );
+
+	if ( $append_supplemental ) {
+		$graph = mrn_schema_bridge_append_supplemental_nodes_to_graph( $graph );
+	}
+
+	if ( $is_full_graph ) {
+		$data['@graph'] = $graph;
+		return $data;
+	}
+
+	if ( ! $is_list ) {
+		return isset( $graph[0] ) && is_array( $graph[0] ) ? $graph[0] : $data;
+	}
+
+	return $graph;
+}
+
+/**
+ * Normalize individual SEOPress schema templates.
+ *
+ * @param array  $data        SEOPress schema template data.
+ * @param string $schema_name SEOPress schema template name.
+ * @return array
+ */
+function mrn_schema_bridge_filter_seopress_schema_array( $data, $schema_name = '' ) {
+	unset( $schema_name );
+
+	if ( ! mrn_schema_bridge_enabled() || ! is_array( $data ) ) {
+		return $data;
+	}
+
+	return mrn_schema_bridge_filter_provider_schema_graph( $data, false );
+}
+add_filter( 'seopress_schema_get_array_json', 'mrn_schema_bridge_filter_seopress_schema_array', 20, 2 );
 
 /**
  * Apply the selected page intent to SmartCrawl's primary WebPage node.
@@ -811,7 +875,7 @@ function mrn_schema_bridge_build_schema_id( $url, $fragment ) {
  * @return array<string,string>
  */
 function mrn_schema_bridge_get_default_organization_reference() {
-	$fragment = mrn_schema_bridge_supported_schema_provider_loaded() ? 'schema-publishing-organization' : 'organization';
+	$fragment = 'smartcrawl' === mrn_schema_bridge_get_active_schema_provider() ? 'schema-publishing-organization' : 'organization';
 	$reference = array(
 		'@id' => mrn_schema_bridge_build_schema_id( home_url( '/' ), $fragment ),
 	);
@@ -1855,11 +1919,56 @@ add_action( 'wp_head', 'mrn_schema_bridge_print_supplemental_schema', 41 );
  * @return bool
  */
 function mrn_schema_bridge_supported_schema_provider_loaded() {
-	$loaded = defined( 'SMARTCRAWL_VERSION' )
-		|| defined( 'SMARTCRAWL_PLUGIN_DIR' )
-		|| defined( 'SMARTCRAWL_PLUGIN_BASENAME' );
+	$loaded = mrn_schema_bridge_smartcrawl_provider_loaded() || mrn_schema_bridge_seopress_provider_loaded();
 
 	return (bool) apply_filters( 'mrn_schema_bridge_supported_schema_provider_loaded', $loaded );
+}
+
+/**
+ * Resolve the active schema provider.
+ *
+ * @return string smartcrawl, seopress, or none.
+ */
+function mrn_schema_bridge_get_active_schema_provider() {
+	if ( function_exists( 'mrn_seo_helper_get_active_provider' ) ) {
+		$provider = sanitize_key( (string) mrn_seo_helper_get_active_provider() );
+		if ( in_array( $provider, array( 'smartcrawl', 'seopress', 'none' ), true ) ) {
+			return $provider;
+		}
+	}
+
+	if ( mrn_schema_bridge_seopress_provider_loaded() && ! mrn_schema_bridge_smartcrawl_provider_loaded() ) {
+		return 'seopress';
+	}
+
+	if ( mrn_schema_bridge_smartcrawl_provider_loaded() ) {
+		return 'smartcrawl';
+	}
+
+	return 'none';
+}
+
+/**
+ * Check whether SmartCrawl is loaded.
+ *
+ * @return bool
+ */
+function mrn_schema_bridge_smartcrawl_provider_loaded() {
+	return defined( 'SMARTCRAWL_VERSION' )
+		|| defined( 'SMARTCRAWL_PLUGIN_DIR' )
+		|| defined( 'SMARTCRAWL_PLUGIN_BASENAME' )
+		|| class_exists( '\SmartCrawl\SmartCrawl' );
+}
+
+/**
+ * Check whether SEOPress is loaded.
+ *
+ * @return bool
+ */
+function mrn_schema_bridge_seopress_provider_loaded() {
+	return defined( 'SEOPRESS_VERSION' )
+		|| function_exists( 'seopress_get_service' )
+		|| class_exists( '\SEOPress\Core\Kernel' );
 }
 
 /**
@@ -1937,7 +2046,7 @@ add_filter( 'option_wds_schema_options', 'mrn_schema_bridge_filter_smartcrawl_sc
  * @return void
  */
 function mrn_schema_bridge_apply_smartcrawl_defaults() {
-	if ( ! mrn_schema_bridge_supported_schema_provider_loaded() ) {
+	if ( ! mrn_schema_bridge_smartcrawl_provider_loaded() ) {
 		return;
 	}
 
