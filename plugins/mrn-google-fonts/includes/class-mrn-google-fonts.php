@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 final class MRN_Google_Fonts {
 	/** @var array<int, string> */
 	private static $preload_urls = array();
-	const VERSION = '1.0.1';
+	const VERSION = '1.0.2';
 	const MANIFEST_SCHEMA_VERSION = 2;
 	const OPTION_KEY = 'mrn_google_fonts_settings';
 	const LOCAL_OPTION_KEY = 'mrn_google_fonts_local_manifest';
@@ -37,6 +37,9 @@ final class MRN_Google_Fonts {
 		add_action('admin_enqueue_scripts', array(__CLASS__, 'enqueue_admin_assets'));
 		add_action('wp_ajax_mrn_google_fonts_search_families', array(__CLASS__, 'ajax_search_families'));
 		add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue_frontend_assets'), 20);
+		add_action('wp_enqueue_scripts', array(__CLASS__, 'suppress_competing_remote_font_assets'), PHP_INT_MAX);
+		add_filter('style_loader_src', array(__CLASS__, 'filter_competing_remote_font_src'), PHP_INT_MAX, 2);
+		add_filter('style_loader_tag', array(__CLASS__, 'filter_competing_remote_font_tag'), PHP_INT_MAX, 4);
 		add_filter('wp_resource_hints', array(__CLASS__, 'filter_resource_hints'), 10, 2);
 		add_filter('mce_css', array(__CLASS__, 'append_editor_css'));
 		// Run late so our configured Google font list survives downstream TinyMCE init filters.
@@ -424,6 +427,18 @@ final class MRN_Google_Fonts {
 			return $hints;
 		}
 
+		if ('local_only' === self::get_delivery_mode($settings)) {
+			return array_values(
+				array_filter(
+					$hints,
+					static function ($hint): bool {
+						$url = is_array($hint) ? (string) ($hint['href'] ?? '') : (string) $hint;
+						return !self::is_remote_google_font_url($url);
+					}
+				)
+			);
+		}
+
 		$google_request = self::build_google_fonts_request($settings);
 		$delivery_mode = self::get_delivery_mode($settings);
 		if ('remote' !== $delivery_mode && '' !== self::get_local_css_url_for_request($settings, $google_request, 'local_only' === $delivery_mode)) {
@@ -460,6 +475,50 @@ final class MRN_Google_Fonts {
 		}
 
 		return $hints;
+	}
+
+	/** Remove queued Google-hosted font styles when local-only owns delivery. */
+	public static function suppress_competing_remote_font_assets(): void {
+		$settings = self::get_settings();
+		if (!self::should_load_frontend_runtime($settings) || 'local_only' !== self::get_delivery_mode($settings) || !function_exists('wp_styles')) {
+			return;
+		}
+
+		$styles = wp_styles();
+		foreach ((array) $styles->queue as $handle) {
+			if (0 === strpos((string) $handle, 'mrn-google-fonts')) {
+				continue;
+			}
+			$src = isset($styles->registered[$handle]->src) ? (string) $styles->registered[$handle]->src : '';
+			if (self::is_remote_google_font_url($src)) {
+				wp_dequeue_style((string) $handle);
+			}
+		}
+	}
+
+	/** Suppress late-registered Google-hosted styles in local-only mode. */
+	public static function filter_competing_remote_font_src($src, string $handle = '') {
+		unset($handle);
+		$settings = self::get_settings();
+		if (self::should_load_frontend_runtime($settings) && 'local_only' === self::get_delivery_mode($settings) && self::is_remote_google_font_url((string) $src)) {
+			return false;
+		}
+		return $src;
+	}
+
+	/** Suppress literal Google-hosted stylesheet tags that pass through WordPress. */
+	public static function filter_competing_remote_font_tag(string $html, string $handle = '', string $href = '', string $media = ''): string {
+		unset($handle, $media);
+		$settings = self::get_settings();
+		if (self::should_load_frontend_runtime($settings) && 'local_only' === self::get_delivery_mode($settings) && (self::is_remote_google_font_url($href) || self::is_remote_google_font_url($html))) {
+			return '';
+		}
+		return $html;
+	}
+
+	/** Whether a URL or HTML fragment references Google Fonts delivery hosts. */
+	private static function is_remote_google_font_url(string $value): bool {
+		return false !== stripos($value, 'fonts.googleapis.com') || false !== stripos($value, 'fonts.gstatic.com');
 	}
 
 	/**

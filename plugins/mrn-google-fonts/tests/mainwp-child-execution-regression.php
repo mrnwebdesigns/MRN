@@ -37,6 +37,6 @@ $invalid = MRN_Google_Fonts::handle_mainwp_child_execution(
 );
 assert_mainwp_execution(false === ($invalid['success'] ?? true), 'An unsupported operation was not rejected.');
 assert_mainwp_execution('mrn_google_fonts_mainwp_action' === ($invalid['error_code'] ?? ''), 'The unsupported operation returned the wrong error code.');
-assert_mainwp_execution('1.0.1' === ($invalid['plugin_version'] ?? ''), 'The MainWP response did not identify the expected plugin version.');
+assert_mainwp_execution('1.0.2' === ($invalid['plugin_version'] ?? ''), 'The MainWP response did not identify the expected plugin version.');
 
 fwrite(STDOUT, "PASS: MainWP Child execution is isolated to the plugin action key and rejects unsupported operations.\n");

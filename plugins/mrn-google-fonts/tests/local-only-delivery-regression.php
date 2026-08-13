@@ -61,8 +61,11 @@ assert_delivery(!isset($GLOBALS['mrn_test_styles']['mrn-google-fonts-remote']), 
 assert_delivery(isset($GLOBALS['mrn_test_styles']['mrn-google-fonts-frontend']), 'Fallback typography stylesheet was not enqueued.');
 assert_delivery(false === strpos((string) ($GLOBALS['mrn_test_styles']['mrn-google-fonts-frontend']['inline'] ?? ''), 'fonts.googleapis.com'), 'Fallback CSS contains a Google Fonts URL.');
 
-$hints = MRN_Google_Fonts::filter_resource_hints(array(), 'preconnect');
-assert_delivery(array() === $hints, 'local_only emitted Google resource hints.');
+$hints = MRN_Google_Fonts::filter_resource_hints(array('https://example.com', '//fonts.googleapis.com', array('href' => 'https://fonts.gstatic.com')), 'preconnect');
+assert_delivery(array('https://example.com') === $hints, 'local_only did not remove competing Google resource hints.');
+assert_delivery(false === MRN_Google_Fonts::filter_competing_remote_font_src('//fonts.googleapis.com/css2?family=Lora', 'theme-fonts'), 'local_only did not suppress a competing Google stylesheet source.');
+assert_delivery('' === MRN_Google_Fonts::filter_competing_remote_font_tag('<link href="https://fonts.googleapis.com/css2?family=Lora" rel="stylesheet">', 'theme-fonts', 'https://fonts.googleapis.com/css2?family=Lora', 'all'), 'local_only did not suppress a competing Google stylesheet tag.');
+assert_delivery('https://example.com/theme.css' === MRN_Google_Fonts::filter_competing_remote_font_src('https://example.com/theme.css', 'theme-style'), 'local_only suppressed an unrelated stylesheet source.');
 
 $GLOBALS['mrn_test_styles'] = array();
 $settings['delivery_mode'] = 'local_preferred';
