@@ -27,6 +27,7 @@
   - `mrn-mega-menu` `0.16.16`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-universal-sticky-bar` `1.1.3`
+  - `searchwp-editor-performance` `1.0.7`
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)

@@ -35,6 +35,7 @@ post-duplicator
 post-types-order
 /home/mrndev-stack-manager/stack/packages/searchwp-4.6.0.zip
 searchwp-live-ajax-search
+/home/mrndev-stack-manager/stack/packages/searchwp-editor-performance.zip
 tinymce-advanced
 /home/mrndev-stack-manager/stack/packages/updraftplus.2.26.5.zip
 /home/mrndev-stack-manager/stack/packages/1320813_defender-pro-5.11.zip

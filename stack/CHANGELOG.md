@@ -2,8 +2,8 @@
 
 ## 2026.08.14-hosting-environment-alignment
 - Kept environment selection in the existing hosting-platform contract: `stack` or `plain` site profile plus `dev`, `staging`, or `production` environment.
-- Removed deprecated `searchwp-editor-performance` from new stack bundle installation because the hosting policy already keeps SearchWP inactive in development and staging.
-- Retained the standalone adapter repository and hosting policy's deactivation check as backward compatibility for existing installations; no site was changed.
+- Kept `searchwp-editor-performance` in new stack bundles because the approved MRN development contract enables SearchWP frontend search while suppressing expensive editor and indexing behavior.
+- Identified the future hosting policy's current development/staging SearchWP disablement as contract drift that must be reconciled before this release is consumed there.
 - Deferred optional-feature removal until the hosting platform can select declared site capabilities without introducing a second environment-profile system.
 
 ## 2026.08.14-mega-menu-static-analysis-hardening
