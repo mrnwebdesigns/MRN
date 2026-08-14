@@ -18,7 +18,7 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 - A Local environment pull/deploy guide (`../local/LOCAL_ENV_WORKFLOW.md`) for using Local like a site environment endpoint.
 - A canonical rollout checklist (`ROLLOUT_CHECKLIST.md`) for pre-flight QA, deploy-path decisions, post-deploy verification, and live parity checks.
 - A schema and AI discovery baseline (`SCHEMA_DISCOVERY_BASELINE.md`) for SmartCrawl ownership, CPT mappings, editor controls, crawler policy, and launch checks.
-- A plugin inventory (`PLUGIN_CATALOG.md`), current plugin naming/repo audit (`MRN_PLUGIN_AUDIT.md`), and plugin doc template (`PLUGIN_DOC_TEMPLATE.md`) for documenting MRN plugins and MU plugins.
+- An authoritative machine-readable component inventory (`manifests/component-catalog.json`), human catalog (`PLUGIN_CATALOG.md`), governance rules (`PLUGIN_GOVERNANCE.md`), historical plugin audit (`MRN_PLUGIN_AUDIT.md`), and plugin doc template (`PLUGIN_DOC_TEMPLATE.md`). Catalog inclusion does not imply default installation.
 - First deep-dive plugin docs live in `plugin-docs/`.
 - A per-site bootstrap script (`scripts/site-bootstrap.sh`).
 - A CloudPanel cron scanner (`scripts/bootstrap-new-sites.sh`) that bootstraps only once per site.

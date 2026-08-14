@@ -1,5 +1,7 @@
 # MRN Plugin Audit
 
+> Historical snapshot: this document is retained as prior audit evidence. Current inventory, versions, ownership classifications, and product tiers are authoritative in [`manifests/component-catalog.json`](./manifests/component-catalog.json) and summarized in [`PLUGIN_CATALOG.md`](./PLUGIN_CATALOG.md).
+
 Last audited: 2026-07-09
 
 This audit tracks the active MRN WordPress plugin and MU-plugin sources, their Plugins-page display names, current header versions, repository ownership, and stack dependency posture.
@@ -79,7 +81,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-schema-bridge` | MRN Schema Bridge | 0.4.1 | <https://github.com/mrnwebdesigns/MRN> | SmartCrawl is the preferred base graph; standalone supplemental schema remains available when it is absent. |
 | `mrn-shared-assets` | MRN Shared Assets | 0.1.3 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned shared asset provider. |
 | `mrn-site-colors` | MRN Site Styles | 0.1.15 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned design-token/configuration layer. |
-| `mrn-updraft-local-retention` | MRN Updraft Backup Policy | 0.2.0 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; requires UpdraftPlus to enforce local retention and repair missing backup cron events. |
+| `mrn-updraft-local-retention` | MRN Updraft Backup Policy | 0.3.0 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; requires UpdraftPlus. Enforces daily 4-set backup policy, deterministic scheduling, local cleanup, cron repair, and warns when S3 lacks a site-specific prefix. |
 
 ## Stack MU Wrapper Notes
 

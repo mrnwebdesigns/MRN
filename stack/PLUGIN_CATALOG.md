@@ -1,450 +1,99 @@
-# Plugin Catalog
+# MRN WordPress Component Catalog
 
-This is the starting inventory for the current MRN plugin and MU-plugin set.
+Last classified: 2026-08-14
 
-Use this file to answer:
+This is the human-readable index of MRN-owned WordPress components. The authoritative machine-readable source is [`manifests/component-catalog.json`](./manifests/component-catalog.json), and the rules governing it are in [`PLUGIN_GOVERNANCE.md`](./PLUGIN_GOVERNANCE.md).
 
-- what each plugin does
-- whether it exposes developer-facing hooks
-- whether it prints front-end styles, tokens, or other theming behavior
-- where detailed docs should live next
+Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberately retaining the component. It does **not** mean the component should be installed on every website.
 
-This is an inventory and summary, not yet the full deep-dive documentation for every plugin.
+`Current distribution` describes today's stack behavior. `Target tier` is the approved Phase 1 classification and does not itself change bootstrap, packaging, activation, deployment, or MU loading.
 
-For the current Plugins-page names, header versions, repository ownership, and
-stack-dependency notes, use [`MRN_PLUGIN_AUDIT.md`](./MRN_PLUGIN_AUDIT.md).
+## Production Platform
 
-## Standard Plugins
+| Slug | Version | Current distribution | Target tier | Responsibility |
+| --- | ---: | --- | --- | --- |
+| `mrn-loader` | 1.4.0 | MU loader | Platform required | Loads explicitly approved MU component entrypoints. |
+| `mrn-admin-data-post-types` | 0.1.0 | MU loader | Platform required | Applies shared admin/data-only post-type policy. |
+| `mrn-admin-ui-css` | 3.2.3 | MU loader | Platform required | Provides shared WordPress admin presentation and usability rules. |
+| `mrn-dashboard-support` | 1.0.3 | MU loader | Platform required | Provides MRN support information and dashboard metadata. |
+| `mrn-disable-comments` | 1.2.4 | MU loader | Platform required | Enforces the MRN no-comments policy. |
+| `mrn-editor-lockdown` | 1.0.32 | MU loader | Platform required | Applies shared editor, metabox, and capability policy. |
+| `mrn-environment-runtime` | 0.3.1 | MU loader | Platform required | Provides environment and runtime diagnostics. |
+| `mrn-public-security-hardening` | 0.3.3 | MU loader | Platform required | Applies shared public REST and discovery hardening. |
+| `mrn-shared-assets` | 0.2.0 | MU loader | Platform required | Provides shared asset and icon interfaces. |
+| `mrn-site-colors` | 0.1.38 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
+| `mrn-updraft-local-retention` | 0.3.0 | MU loader | Platform required | Enforces shared backup schedule and retention policy. |
 
-### `mrn-acf-character-count`
+## Optional Shared Features
 
-- Name: `ACF Character Count`
-- Version: `1.1.4`
-- Purpose:
-  - adds live character counts under selected ACF fields in admin
-- Admin/UI:
-  - settings page in wp-admin
-  - ACF input screen integration
-- Front-end / theming:
-  - none expected
-- Developer-facing hooks:
-  - none identified in the main file
-- Notes:
-  - utility plugin for editor feedback
+| Slug | Version | Current distribution | Target tier | Responsibility |
+| --- | ---: | --- | --- | --- |
+| `mrn-ai-assist` | 2.0.13 | Standard bootstrap | Optional shared | Queued AI-assisted content, SEO, and media-alt workflows. |
+| `mrn-announcements` | 1.6.2 | Standard bootstrap | Optional shared | Scheduled and targeted announcement bars and modals. |
+| `mrn-contextual-content-editor` | 0.4.10 | Standard bootstrap | Optional shared | Contextual logged-in content-editing links. |
+| `mrn-editor-tools` | 1.8.25 | Standard bootstrap | Optional shared | Classic Editor, TinyMCE, and ACF WYSIWYG enhancements. |
+| `mrn-media-bulk-tools` | 0.12.1 | Standard bootstrap | Optional shared | Media audit, usage indexing, and bulk maintenance. |
+| `mrn-mega-menu` | 0.16.15 candidate | Standard bootstrap; duplicate source | Optional shared | Accessible content-rich mega-menu administration and rendering. |
+| `mrn-tokens` | 0.1.3 | Catalog only | Optional shared | Reusable content-token registry, shortcode, and authenticated REST API. |
 
-### `mrn-acf-focal-point`
+## Optional Integration Adapters
 
-- Name: `MRN ACF Focal Point`
-- Version: `1.1.2`
-- Purpose:
-  - adds focal-point controls to every standard ACF Image field without requiring field-group configuration changes
-  - stores focal coordinates on the selected attachment and applies them to WordPress image output
-- Admin/UI:
-  - collapsed focal-point panel beneath populated ACF Image fields
-  - editors can expand the panel and click or use the keyboard to override the centered default
-- Front-end / theming:
-  - adds the saved focal point as an `object-position` style through WordPress attachment-image attributes
-- Developer-facing hooks:
-  - standard ACF image-field and WordPress attachment-image filters
-- Notes:
-  - requires ACF for editor controls
-  - packaged and activated by the standard new-site bootstrap
+| Slug | Version | Current distribution | Target tier | Integration |
+| --- | ---: | --- | --- | --- |
+| `mrn-acf-character-count` | 1.1.8 | Standard bootstrap | Optional integration | ACF editor character counts. |
+| `mrn-acf-focal-point` | 1.1.2 | Standard bootstrap | Optional integration | ACF image focal-point metadata and rendering. |
+| `mrn-cookie-consent` | 1.1.40 | Standard bootstrap | Optional integration | Silktide and Google Consent Mode. |
+| `mrn-fontawesome-profile-manager` | 0.5.0 | Standard bootstrap | Optional integration | Font Awesome profiles and local assets. |
+| `mrn-google-fonts` | 1.0.7 | Standard bootstrap | Optional integration | Google/local fonts and Site Styles. |
+| `mrn-gtm-injector` | 1.0.13 | Standard bootstrap | Optional integration | Google Tag Manager. |
+| `mrn-recaptcha-enterprise-manager` | 0.1.1 | Standard bootstrap | Optional integration | reCAPTCHA Enterprise and WPForms. |
+| `mrn-schema-bridge` | 0.4.2 | MU loader | Optional integration | SmartCrawl, SEOPress, theme, and schema normalization. |
+| `mrn-seo-helper` | 0.4.0 | Standard bootstrap | Optional integration | ACF SEO fields and supported SEO providers. |
+| `mrn-pre-consent-update-backup` | 1.0.12 | Catalog only | Optional integration | UpdraftPlus/update-consent workflow. |
 
-### `mrn-comment-management`
+## Dashboard-Only Operations
 
-- Name: `Comment Management`
-- Version: `1.1.5`
-- Purpose:
-  - admin auditing and safe bulk deletion of comments
-- Admin/UI:
-  - Tools page
-- Front-end / theming:
-  - none expected
-- Developer-facing hooks:
-  - no custom hooks identified in the main file
-- Notes:
-  - operational/admin utility, not a presentation plugin
+| Slug | Version | Responsibility |
+| --- | ---: | --- |
+| `mrn-mainwp-operations-api` | 0.3.0 | Scoped MainWP operations for backups, package installation, and font management. |
+| `mrn-wp-control` | 1.1.1 | Restricted MainWP account provisioning through WP-CLI. |
+| `mrn-wp-control-table-exporter` | 1.4.1 | CSV export for supported WP Control/MainWP tables. |
 
-### `mrn-config-helper`
+## Development and Maintenance
 
-- Name: `Config Helper`
-- Version: `0.1.37`
-- Purpose:
-  - centralized site configuration and admin workflow helpers
-- Admin/UI:
-  - settings page
-  - media-library validation helpers
-  - editor/admin behavior helpers
-  - WPForms notification locking behavior
-- Front-end / theming:
-  - not primarily a front-end/theming plugin
-  - exposes site-wide social links for theme consumption via `mrn_config_helper_get_social_links()`
-  - social rows can now use Dashicons, media-library icons, or Font Awesome classes
-- Developer-facing hooks:
-  - `mrn_config_helper_get_social_links()`
-  - integrates heavily with WPForms and WordPress hooks
-- Notes:
-  - cross-cutting admin utility plugin
-  - Site Configurations social icon rows now use the canonical shared admin icon chooser from `mrn-shared-assets`
-  - deep doc: [`mrn-config-helper.md`](./plugin-docs/mrn-config-helper.md)
+| Slug | Version | Current distribution | Target tier | Responsibility |
+| --- | ---: | --- | --- | --- |
+| `mrn-active-style-guide` | 0.1.5 | MU loader | Development only | Logged-in design-system reference and diagnostics. |
+| `mrn-template-inspector` | 0.2.7 | Standard bootstrap | Development only | Template and request-context inspection. |
+| `searchwp-editor-performance` | 1.0.6 | Standard bootstrap; duplicate source | Development only | Development SearchWP editor-performance suppression. |
+| `mrn-dummy-content` | 0.3.0 | Catalog only | Development only | Development content fixtures. |
+| `mrn-comment-management` | 1.1.7 | Standard bootstrap | Maintenance only | Explicit comment audit and deletion. |
+| `mrn-database-retention` | 1.0.0 | Catalog only | Maintenance only | Allowlisted third-party operational-data retention. |
+| `mrn-layout-import-export` | 0.1.2 | Catalog only | Maintenance only | ACF builder layout migration. |
 
-### `mrn-cookie-consent`
+## Review Queue
 
-- Name: `Cookie Consent`
-- Version: `1.1.19`
-- Purpose:
-  - Silktide consent integration with Consent Mode v2 and GTM-friendly runtime behavior
-- Admin/UI:
-  - settings page
-  - setup/runtime notices
-- Front-end / theming:
-  - prints consent default script in `wp_head`
-  - enqueues consent assets on the front end
-- Developer-facing hooks:
-  - `mrn_silktide_consent_css_url`
-  - `mrn_silktide_consent_js_url`
-- Notes:
-  - front-end behavior plugin with real runtime impact
+No disposition in this section authorizes a code move, manifest change, deletion, or archive.
 
-### `mrn-editor-tools`
+| Slug | Version | Current state | Decision needed |
+| --- | ---: | --- | --- |
+| `background-video-popout-disabler` | 1.0.1 | Standard bootstrap | Keep optional or move presentation behavior into the base theme. |
+| `mrn-config-helper` | 0.1.54 | Standard bootstrap | Define the stable settings shell and later extract integration boundaries. |
+| `mrn-google-reviews` | 1.0.0 | Incubator/catalog only | Complete source, secret-management, QA, and release-readiness review. |
+| `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Catalog only | Keep independently optional, integrate with Mega Menu, or archive. |
+| `mrn-reusable-block-library` | 0.1.28 | MU loader | Decide whether it is a mandatory base-theme contract or optional shared feature. |
+| `mrn-universal-sticky-bar` | 1.1.8 | Standard bootstrap | Keep independent or move implementation into the platform with compatibility shims. |
+| `mrn-duplicate-enhance` | 1.1.1 | MU source only | Convert to an optional Post Duplicator adapter or archive. |
+| `mrn-editor-ui-css` | 1.0.8 | MU source only | Confirm supersession and archive after explicit approval. |
 
-- Name: `Editor Enhancements`
-- Version: `1.8.17`
-- Purpose:
-  - classic editor and ACF WYSIWYG enhancements
-  - snippets, wrap buttons, style helpers, icon tools
-- Admin/UI:
-  - settings/admin page
-  - TinyMCE integration
-  - ACF WYSIWYG toolbar integration
-- Front-end / theming:
-  - editor-style support and shortcode handling
-  - not a primary front-end design-token plugin
-  - now consumes shared Font Awesome assets from `mrn-shared-assets` when available
-- Developer-facing hooks:
-  - no obvious custom MRN hooks in the main file
-  - extends TinyMCE through WordPress/ACF hook points
-- Deep doc:
-  - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-editor-enhancements.md`
-- Notes:
-  - core editor-experience plugin in this stack
-  - icon picking now reuses the canonical shared admin icon chooser from `mrn-shared-assets`
+## Source Reconciliation Required
 
-### `mrn-gtm-injector`
+- `mrn-mega-menu`: the MRN source is 0.16.15; a divergent standalone source is 0.16.13.
+- `searchwp-editor-performance`: the MRN and standalone sources both report 1.0.6 but contain different code.
+- `MRN-disable-core-auto-updates`: sunset approved on 2026-08-14. It is not part of the target MRN product catalog; no existing-site action is authorized by this decision.
 
-- Name: `GTM Injector`
-- Version: `1.0.7`
-- Purpose:
-  - manages GTM container ID and injects GTM markup in recommended locations
-- Admin/UI:
-  - settings page
-- Front-end / theming:
-  - outputs GTM scripts in `wp_head` and `wp_body_open`
-- Developer-facing hooks:
-  - `mrn_gtm_output_enabled`
-- Notes:
-  - front-end runtime integration plugin
+The duplicate-source items remain Phase 2 decisions. Phase 1 does not select, move, delete, or archive either copy.
 
-### `mrn-license-vault`
+## Current Bootstrap Warning
 
-- Name: `License Vault`
-- Version: `0.2.4`
-- Purpose:
-  - scans, stores, populates, strips, imports, and exports plugin license data
-- Admin/UI:
-  - admin page with multiple management actions
-- Front-end / theming:
-  - none expected
-- Developer-facing hooks:
-  - no custom public hook inventory captured yet
-- Notes:
-  - operational/admin utility plugin
-
-### `mrn-announcements`
-
-- Name: `MRN Announcements`
-- Version: `1.6.1`
-- Purpose:
-  - manages scheduled, targeted announcement bars and optional modals
-  - keeps announcement records admin/data-only with no standalone public URLs
-- Admin/UI:
-  - custom post type editor for announcement content, display rules, scheduling, modal settings, and style controls
-  - creates disabled-by-default Business Information presets when the compatible stack contract is available
-- Front-end / theming:
-  - renders active announcement bars only when eligible for the current request
-  - uses MRN Universal Sticky Bar compatibility when running in the stack
-- Developer-facing hooks:
-  - `mrn_announcements_has_business_information_provider`
-  - `mrn_announcements_business_information`
-- Notes:
-  - excluded from public queries, search, nav menus, sitemaps, SEO Helper, and SmartCrawl page-level SEO surfaces
-
-### `mrn-seo-helper`
-
-- Name: `MRN SEO Helper`
-- Version: `0.4.0`
-- Purpose:
-  - registers baseline SEO ACF fields for posts and pages
-  - syncs SEO field content into the active provider's compatible storage
-  - excludes admin/data-only announcement records from supported SEO post types
-- Admin/UI:
-  - ACF field registration
-  - tools/admin notices
-  - Tools page shows the detected environment, active provider, provider key mapping, and whether SEO fields are currently required or optional
-  - Tools page includes controls for provider selection and an override switch to force fields to remain required in local/dev
-- Front-end / theming:
-  - indirectly affects rendered SEO/meta behavior through synced data
-- Developer-facing hooks:
-  - no custom public hook inventory captured yet
-- Notes:
-  - content-model helper plugin, not a design/theming plugin
-  - environment detection prefers `wp_get_environment_type()` and falls back to `WP_ENV`
-  - `local` and `development` make SEO Title and Meta Description optional by default
-
-### `mrn-unified-exporter`
-
-- Name: `Unified Exporter`
-- Version: `1.2.4`
-- Purpose:
-  - exports/imports Editor Enhancements and AME-related config in one workflow
-- Admin/UI:
-  - admin page
-  - export/import/analyze actions
-- Front-end / theming:
-  - none expected
-- Developer-facing hooks:
-  - no custom public hook inventory captured yet
-- Notes:
-  - stack utility and migration/helper plugin
-
-### `mrn-universal-sticky-bar`
-
-- Name: `MRN Universal Sticky Bar`
-- Version: `1.0.8`
-- Purpose:
-  - adds a sticky action bar to classic editor screens
-- Admin/UI:
-  - classic post/page/reusable block editor UX
-- Front-end / theming:
-  - none expected
-- Developer-facing hooks:
-  - `mrn_universal_sticky_bar_post_types`
-- Notes:
-  - editor-experience plugin with direct admin UX impact
-
-### `searchwp-editor-performance`
-
-- Name: `SearchWP Editor Performance`
-- Version: `1.0.6`
-- Purpose:
-  - avoids expensive SearchWP loopback method detection during post editor requests in local/development
-  - reduces logged-in edit and save latency on ACF-heavy pages where SearchWP source callbacks fire repeatedly on save/meta updates
-  - short-circuits SearchWP source hook registration for classic `editpost` saves to avoid repeated index-drop overhead during one publish request
-  - skips SearchWP core bootstrap entirely for classic post editor requests so source hooks are never registered for those requests
-  - applies the bootstrap suppression on `plugins_loaded` at max priority to stay effective regardless plugin load order
-  - guards pluggable nonce calls during early plugin bootstrap to avoid admin-request fatals before `wp_verify_nonce()` is available
-- Admin/UI:
-  - no new settings or menus
-  - modifies SearchWP indexer behavior in local/development only
-- Front-end / theming:
-  - none expected
-- Developer-facing hooks:
-  - no custom public hooks
-  - recognizes override constants:
-  - `MRN_SEARCHWP_EDITOR_PERF_FORCE`
-  - `MRN_SEARCHWP_EDITOR_PERF_DISABLE`
-- Notes:
-  - stack utility plugin meant to stay inert on production unless explicitly forced
-  - packaged as a standard plugin for stack bootstrap and rollout parity
-
-## MU Plugins
-
-### `mrn-active-style-guide`
-
-- Name: `Style Guide (MU)`
-- Version: `0.1.2`
-- Purpose:
-  - logged-in-only front-end style guide panel and full reference page
-- Admin/UI:
-  - admin menu + admin bar entry
-- Front-end / theming:
-  - yes, explicitly front-end oriented
-  - uses the live active theme header/footer context
-- Developer-facing hooks:
-  - function-oriented integration surface, but no major custom public hook API yet
-- Notes:
-  - reference tool for reviewing front-end styling in live context
-  - deep doc:
-    - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-active-style-guide.md`
-
-### `mrn-admin-ui-css`
-
-- Name: `Admin UI CSS (MU)`
-- Version: `3.1.13`
-- Purpose:
-  - unified wp-admin CSS loader
-- Admin/UI:
-  - broad admin styling cleanup
-  - suppresses selected third-party admin promos and dashboard noise when they conflict with the stack admin UX
-- Front-end / theming:
-  - admin only
-- Developer-facing hooks:
-  - no custom public hook inventory captured yet
-- Notes:
-  - should be documented carefully because admin CSS can become broad-impact
-  - currently hides the Media Library Organizer Pro promo notice and the Themeisle `WordPress Guides/Tutorials` dashboard widget plus its Screen Options toggle
-
-### `mrn-shared-assets`
-
-- Name: `Shared Assets (MU)`
-- Version: `0.1.1`
-- Purpose:
-  - owns stack-wide runtime assets that should not belong to one feature plugin
-  - currently provides the shared Font Awesome bundle, icon metadata, and the canonical admin icon chooser
-- Admin/UI:
-  - none directly
-- Front-end / theming:
-  - provides shared asset helpers for intentional theme or plugin consumption
-  - does not print Font Awesome globally by itself
-- Developer-facing hooks:
-  - `mrn_shared_assets_fontawesome_version()`
-  - `mrn_shared_assets_fontawesome_css_url()`
-  - `mrn_shared_assets_enqueue_fontawesome()`
-  - `mrn_shared_assets_get_fontawesome_icons()`
-  - `mrn_shared_assets_admin_icon_chooser_css_url()`
-  - `mrn_shared_assets_admin_icon_chooser_js_url()`
-  - `mrn_shared_assets_enqueue_admin_icon_chooser()`
-- Notes:
-  - stack asset-owner MU plugin
-  - deep doc:
-    - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-shared-assets.md`
-
-### `mrn-dashboard-support`
-
-- Name: `Dashboard Support (MU)`
-- Version: `1.0.3`
-- Purpose:
-  - fixed support widget on the dashboard
-- Admin/UI:
-  - dashboard widget
-- Front-end / theming:
-  - none
-- Developer-facing hooks:
-  - no custom public hook inventory captured yet
-- Notes:
-  - stack/admin support utility
-
-### `mrn-disable-comments`
-
-- Name: `Disable Comments (MU)`
-- Version: `1.2.3`
-- Purpose:
-  - globally disables comments across UI, REST, XML-RPC, feeds, and defaults
-- Admin/UI:
-  - broad admin cleanup around comments
-- Front-end / theming:
-  - affects front-end comment behavior by disabling it globally
-- Developer-facing hooks:
-  - no custom MRN hooks identified in the main file
-- Notes:
-  - behavioral platform MU plugin
-
-### `mrn-duplicate-enhance`
-
-- Name: `Post Duplicator Admin Bar Enhance`
-- Version: `1.1.1`
-- Purpose:
-  - adds front-end admin bar access to duplication behavior
-- Admin/UI:
-  - front-end admin bar entry and editor auto-open behavior
-- Front-end / theming:
-  - minor front-end admin-bar behavior for logged-in users
-- Developer-facing hooks:
-  - no custom public hook inventory captured yet
-- Notes:
-  - workflow convenience MU plugin
-
-### `mrn-editor-lockdown`
-
-- Name: `MRN Editor Lockdown (MU)`
-- Version: `1.0.0`
-- Purpose:
-  - enforces metabox ordering/layout on classic post, page, and reusable block screens
-- Admin/UI:
-  - strong admin/editor layout control
-- Front-end / theming:
-  - none
-- Developer-facing hooks:
-  - no custom public hook inventory captured yet
-- Deep doc:
-  - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-editor-lockdown.md`
-- Notes:
-  - intended to control metabox shell/layout, not to own the content builder itself
-
-### `mrn-editor-ui-css`
-
-- Name: `Admin UI CSS (MU Legacy)`
-- Version: `1.0.8`
-- Purpose:
-  - backwards-compatible legacy admin CSS loader
-- Admin/UI:
-  - admin only
-- Front-end / theming:
-  - none
-- Developer-facing hooks:
-  - no custom public hook inventory captured yet
-- Notes:
-  - stands down automatically when unified admin UI CSS is present
-
-### `mrn-reusable-block-library`
-
-- Name: `Reusable Block Library (MU)`
-- Version: `0.1.15`
-- Purpose:
-  - typed reusable content block system
-- Admin/UI:
-  - reusable block post types
-  - editor/admin UX for reusable block types
-  - custom admin menu behavior
-- Front-end / theming:
-  - yes
-  - owns reusable block render templates, with theme override support
-- Developer-facing hooks:
-  - `mrn_rbl_post_type_definitions`
-- Deep doc:
-  - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-reusable-block-library.md`
-- Notes:
-  - central shared-content platform plugin in this stack
-
-### `mrn-site-colors`
-
-- Name: `Site Styles (MU)`
-- Version: `0.1.2`
-- Purpose:
-  - shared design token registry for site colors and graphic elements
-- Admin/UI:
-  - `Settings -> Site Styles`
-- Front-end / theming:
-  - yes, explicitly a front-end token/theming source
-  - prints CSS variables on front-end, admin, and login
-- Developer-facing hooks / APIs:
-  - helper functions such as:
-    - `mrn_site_colors_get_css_var()`
-    - `mrn_site_styles_get_graphic_element_choices()`
-    - `mrn_site_styles_get_bottom_accent_contract()`
-- Deep doc:
-  - `/Users/khofmeyer/Development/MRN/stack/plugin-docs/mrn-site-styles.md`
-- Notes:
-  - this is the current source of truth for shared color tokens and accent element definitions
-
-## Next Documentation Pass
-
-For each plugin, the next deeper pass should capture:
-
-1. feature summary
-2. admin screens/settings owned
-3. front-end output or theming behavior
-4. custom hooks/filters/actions exposed for developers
-5. template override paths, if any
-6. data/options stored
-7. rollout/package notes
+The existing [`manifests/plugins.txt`](./manifests/plugins.txt) remains unchanged and currently installs several components classified above as optional, development-only, or maintenance-only. A later approved installer/profile phase will correct that behavior.
