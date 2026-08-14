@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.53`
+- Current version: `0.1.54`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper`
 

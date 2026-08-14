@@ -12,7 +12,7 @@
       "mrn-base-stack-child": "1.0.1"
     },
     "standard_plugins": {
-      "mrn-config-helper": "0.1.43"
+      "mrn-config-helper": "0.1.54"
     }
   }
 }
