@@ -115,6 +115,7 @@
 
 .mrn-mobile-navigation[data-mrn-mobile-active="true"].mrn-mobile-navigation--full-screen.is-open > .menu-toggle {
 	bottom: auto;
+	left: auto;
 	margin: 0;
 	position: fixed;
 	right: max(1rem, env(safe-area-inset-right));
