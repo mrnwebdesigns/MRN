@@ -102,10 +102,10 @@ Cleanup work proceeds one approved phase at a time:
 
 Classification does not authorize archive, deletion, packaging changes, deployment, activation, deactivation, or migration. Each later phase requires a reviewed change list and explicit approval.
 
-## Current Phase 1 Findings
+## Current Governance Decisions
 
-- `mrn-mega-menu` has two divergent physical sources and needs a Phase 2 canonical-source decision.
-- `searchwp-editor-performance` has two same-version but different physical sources and needs a Phase 2 canonical-source decision.
+- `mrn-mega-menu` is canonical in `MRN/plugins/mrn-mega-menu`; its version and release artifact follow the MRN stack repository.
+- `searchwp-editor-performance` is canonical in its standalone repository under `MRN-plugins`; the MRN stack is a versioned artifact consumer.
 - `MRN-disable-core-auto-updates` was approved for sunset on 2026-08-14 and is excluded from the target product catalog. This does not authorize changes to existing sites.
 - `mrn-editor-ui-css` is a legacy, non-allowlisted MU source and is an archive candidate, not yet approved for archival.
 - `mrn-duplicate-enhance` is a non-allowlisted integration module requiring a product-boundary decision.

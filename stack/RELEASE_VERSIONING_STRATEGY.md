@@ -42,6 +42,7 @@
    - `stack/scripts/build-release-zips.sh theme`
    - `stack/scripts/build-release-zips.sh plugins <slug ...>`
    - `stack/scripts/build-release-zips.sh mu-plugins <slug ...>`
+   - Named plugin builds resolve canonical in-repo sources first and then the sibling `MRN-plugins` workspace. Set `MRN_STANDALONE_PLUGINS_ROOT` when the standalone repositories are checked out elsewhere.
 6. Run release QA (theme/security/smoke/perf/rollout-contract as applicable).
 7. Record release notes in:
    - `stack/CHANGELOG.md`

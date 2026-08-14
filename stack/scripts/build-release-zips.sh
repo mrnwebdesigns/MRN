@@ -3,6 +3,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+STANDALONE_PLUGINS_ROOT="${MRN_STANDALONE_PLUGINS_ROOT:-$(cd "${ROOT_DIR}/.." && pwd)/MRN-plugins}"
 
 usage() {
 	cat <<'EOF'
@@ -14,6 +15,9 @@ Usage:
 
 Builds fresh zip artifacts into /releases from local source directories.
 Release zips are build artifacts only and are gitignored.
+
+Named plugins resolve from MRN/plugins first, then from the sibling
+MRN-plugins workspace. Override the latter with MRN_STANDALONE_PLUGINS_ROOT.
 EOF
 }
 
@@ -60,8 +64,26 @@ zip_directory() {
 	echo "Built $zip_path"
 }
 
+resolve_plugin_source_root() {
+	local slug="$1"
+
+	if [[ -d "${ROOT_DIR}/plugins/${slug}" ]]; then
+		printf '%s\n' "${ROOT_DIR}/plugins"
+		return 0
+	fi
+
+	if [[ -d "${STANDALONE_PLUGINS_ROOT}/${slug}" ]]; then
+		printf '%s\n' "${STANDALONE_PLUGINS_ROOT}"
+		return 0
+	fi
+
+	echo "Missing plugin source: ${slug}. Checked ${ROOT_DIR}/plugins and ${STANDALONE_PLUGINS_ROOT}." >&2
+	return 1
+}
+
 build_plugins() {
-	local source_root="${ROOT_DIR}/plugins"
+	local in_repo_source_root="${ROOT_DIR}/plugins"
+	local source_root
 	local release_root="${ROOT_DIR}/releases/plugins"
 	local slugs=("$@")
 	local slug
@@ -70,10 +92,11 @@ build_plugins() {
 		slugs=()
 		while IFS= read -r slug; do
 			slugs+=( "$slug" )
-		done < <(list_directories "$source_root")
+		done < <(list_directories "$in_repo_source_root")
 	fi
 
 	for slug in "${slugs[@]}"; do
+		source_root="$(resolve_plugin_source_root "$slug")"
 		zip_directory "$source_root" "$release_root" "$slug"
 	done
 }

@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.08.14-canonical-plugin-sources
+- Confirmed `mrn-mega-menu` `0.16.15` as an in-repo MRN release unit and retired the older unversioned workspace duplicate.
+- Confirmed `searchwp-editor-performance` `1.0.7` as an independently versioned standalone repository and removed its duplicate MRN source tree.
+- Added named-plugin build-source resolution so stack release tooling can package an explicitly requested standalone plugin checkout without duplicating its source.
+- Updated the component catalog and governance documents with the resolved ownership and release boundaries; no installed site copies were changed.
+
 ## 2026.08.14-searchwp-development-contract
 - Expanded `mrn-base-stack` to `1.2.105` and made SearchWP the exclusive stack search-form provider with no native WordPress form fallback.
 - Added idempotent provisioning of one editable SearchWP `Site Search` form without overwriting other SearchWP forms or explicit administrator header choices.

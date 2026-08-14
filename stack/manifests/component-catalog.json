@@ -446,13 +446,13 @@
       "version": "0.16.15",
       "runtime_type": "standard-plugin",
       "classification": "shared-feature",
-      "lifecycle": "source-conflict",
+      "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-shared",
-      "source": {"repository": "MRN candidate", "path": "plugins/mrn-mega-menu", "state": "duplicate-canonical-decision-required", "alternate": "/Users/khofmeyer/Development/MRN-plugins/mrn-mega-menu at 0.16.13"},
+      "source": {"repository": "MRN", "path": "plugins/mrn-mega-menu", "state": "canonical-in-repo"},
       "dependencies": {"hard": ["WordPress menus"], "soft": ["WooCommerce", "MRN base theme", "mrn-hierarchical-menu-taxonomies"], "release_group": "navigation-contract"},
       "data": {"options": ["mega-menu assignments"], "tables": [], "cron": [], "routes": ["three privileged admin-post actions"], "external_services": [], "post_types": ["mrn_mega_menu"], "meta": ["post, term and menu-item metadata"]},
-      "purpose": "Provides accessible content-rich mega-menu administration and rendering; Phase 2 must resolve duplicate source ownership."
+      "purpose": "Provides accessible content-rich mega-menu administration and rendering."
     },
     {
       "slug": "mrn-recaptcha-enterprise-manager",
@@ -528,16 +528,16 @@
     {
       "slug": "searchwp-editor-performance",
       "name": "MRN SearchWP Editor Performance",
-      "version": "1.0.6",
+      "version": "1.0.7",
       "runtime_type": "standard-plugin",
       "classification": "development-adapter",
-      "lifecycle": "source-conflict",
+      "lifecycle": "supported-development",
       "current_distribution": "standard-bootstrap",
       "target_tier": "development-only",
-      "source": {"repository": "MRN candidate", "path": "plugins/searchwp-editor-performance", "state": "duplicate-canonical-decision-required", "alternate": "/Users/khofmeyer/Development/MRN-plugins/searchwp-editor-performance at 1.0.6 with different source"},
+      "source": {"repository": "searchwp-editor-performance", "path": "/Users/khofmeyer/Development/MRN-plugins/searchwp-editor-performance", "state": "canonical-standalone"},
       "dependencies": {"hard": ["SearchWP for runtime effect"], "soft": ["local/development environment"], "release_group": "development-tools"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": ["SearchWP"]},
-      "purpose": "Suppresses expensive SearchWP editor behavior in development; Phase 2 must resolve duplicate source ownership."
+      "purpose": "Suppresses expensive SearchWP editor behavior in development."
     },
     {
       "slug": "mrn-database-retention",

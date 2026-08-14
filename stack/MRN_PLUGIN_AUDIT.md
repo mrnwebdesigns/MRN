@@ -56,13 +56,13 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-google-fonts` | MRN Google Fonts | 0.5.2 | <https://github.com/mrnwebdesigns/MRN> | Optional stack bridge for Site Styles; standalone mode supported. |
 | `mrn-gtm-injector` | MRN GTM Injector | 1.0.13 | <https://github.com/mrnwebdesigns/mrn-gtm-injector> | No stack requirement. |
 | `mrn-media-bulk-tools` | MRN Media Tools | 0.8.0 | <https://github.com/mrnwebdesigns/MRN> | Optional HappyFiles folder display; legacy slug retained for update compatibility. |
-| `mrn-mega-menu` | MRN Mega Menu | 0.16.13 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned standard plugin; WooCommerce and shared stack integrations are optional and standalone-safe. |
+| `mrn-mega-menu` | MRN Mega Menu | 0.16.15 | <https://github.com/mrnwebdesigns/MRN> | Canonical in-repo standard plugin; WooCommerce and shared stack integrations are optional and standalone-safe. |
 | `mrn-pre-consent-update-backup` | MRN Pre-Consent Update Backup | 1.0.12 | <https://github.com/mrnwebdesigns/mrn-pre-consent-update-backup> | No stack requirement; requires UpdraftPlus to perform backups. |
 | `mrn-recaptcha-enterprise-manager` | MRN reCAPTCHA Enterprise Manager | 0.1.1 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; WPForms sync is optional. |
 | `mrn-seo-helper` | MRN SEO Helper | 0.3.4 | <https://github.com/mrnwebdesigns/mrn-seo-helper> | No hard stack requirement; ACF/SmartCrawl integrations are optional feature paths and admin/data-only announcements are excluded. |
 | `mrn-template-inspector` | MRN Template Inspector | 0.2.7 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; local development tool. |
 | `mrn-universal-sticky-bar` | MRN Universal Sticky Bar | 1.1.3 | <https://github.com/mrnwebdesigns/mrn-universal-sticky-bar> | No hard stack requirement; Classic Editor screens expected. |
-| `searchwp-editor-performance` | MRN SearchWP Editor Performance | 1.0.6 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; SearchWP is required for runtime effect. |
+| `searchwp-editor-performance` | MRN SearchWP Editor Performance | 1.0.7 | <https://github.com/mrnwebdesigns/searchwp-editor-performance> | Canonical standalone development adapter; SearchWP is required for runtime effect. |
 
 ## MU Plugins
 

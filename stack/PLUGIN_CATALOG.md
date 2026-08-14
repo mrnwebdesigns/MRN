@@ -33,7 +33,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-contextual-content-editor` | 0.4.10 | Standard bootstrap | Optional shared | Contextual logged-in content-editing links. |
 | `mrn-editor-tools` | 1.8.25 | Standard bootstrap | Optional shared | Classic Editor, TinyMCE, and ACF WYSIWYG enhancements. |
 | `mrn-media-bulk-tools` | 0.12.1 | Standard bootstrap | Optional shared | Media audit, usage indexing, and bulk maintenance. |
-| `mrn-mega-menu` | 0.16.15 candidate | Standard bootstrap; duplicate source | Optional shared | Accessible content-rich mega-menu administration and rendering. |
+| `mrn-mega-menu` | 0.16.15 | Standard bootstrap | Optional shared | Accessible content-rich mega-menu administration and rendering. |
 | `mrn-tokens` | 0.1.3 | Catalog only | Optional shared | Reusable content-token registry, shortcode, and authenticated REST API. |
 
 ## Optional Integration Adapters
@@ -65,7 +65,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | --- | ---: | --- | --- | --- |
 | `mrn-active-style-guide` | 0.1.5 | MU loader | Development only | Logged-in design-system reference and diagnostics. |
 | `mrn-template-inspector` | 0.2.7 | Standard bootstrap | Development only | Template and request-context inspection. |
-| `searchwp-editor-performance` | 1.0.6 | Standard bootstrap; duplicate source | Development only | Development SearchWP editor-performance suppression. |
+| `searchwp-editor-performance` | 1.0.7 | Standard bootstrap | Development only | Development SearchWP editor-performance suppression. |
 | `mrn-dummy-content` | 0.3.0 | Catalog only | Development only | Development content fixtures. |
 | `mrn-comment-management` | 1.1.7 | Standard bootstrap | Maintenance only | Explicit comment audit and deletion. |
 | `mrn-database-retention` | 1.0.0 | Catalog only | Maintenance only | Allowlisted third-party operational-data retention. |
@@ -86,13 +86,11 @@ No disposition in this section authorizes a code move, manifest change, deletion
 | `mrn-duplicate-enhance` | 1.1.1 | MU source only | Convert to an optional Post Duplicator adapter or archive. |
 | `mrn-editor-ui-css` | 1.0.8 | MU source only | Confirm supersession and archive after explicit approval. |
 
-## Source Reconciliation Required
+## Canonical Source Decisions
 
-- `mrn-mega-menu`: the MRN source is 0.16.15; a divergent standalone source is 0.16.13.
-- `searchwp-editor-performance`: the MRN and standalone sources both report 1.0.6 but contain different code.
+- `mrn-mega-menu`: canonical in `MRN/plugins/mrn-mega-menu`; the unversioned, older `MRN-plugins` duplicate was retired without changing installed copies.
+- `searchwp-editor-performance`: canonical in the independent `mrnwebdesigns/searchwp-editor-performance` repository; the stack records and packages its release but does not own a duplicate source tree.
 - `MRN-disable-core-auto-updates`: sunset approved on 2026-08-14. It is not part of the target MRN product catalog; no existing-site action is authorized by this decision.
-
-The duplicate-source items remain Phase 2 decisions. Phase 1 does not select, move, delete, or archive either copy.
 
 ## Current Bootstrap Warning
 
