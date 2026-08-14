@@ -1,5 +1,13 @@
 # Stack Changelog
 
+## 2026.08.14-searchwp-development-contract
+- Expanded `mrn-base-stack` to `1.2.105` and made SearchWP the exclusive stack search-form provider with no native WordPress form fallback.
+- Added idempotent provisioning of one editable SearchWP `Site Search` form without overwriting other SearchWP forms or explicit administrator header choices.
+- Enabled the canonical SearchWP form in new header configurations and added an administrator error when stack search is enabled without SearchWP or a valid selected form.
+- Kept SearchWP, SearchWP Live Ajax Search, and the development-only editor-performance adapter active during stack development while pausing SearchWP indexing, summaries, and scheduled indexing/telemetry work.
+- Expanded `mrn-environment-runtime` to `0.3.1` with a `frontend_only` SearchWP policy and diagnostics when SearchWP core is unavailable under a frontend-enabled policy.
+- Replaced native search forms in the 404 and no-results templates with the canonical SearchWP form contract.
+
 ## 2026.08.13-seopress-provider-layer
 - Switched new stack plugin rollout from SmartCrawl Pro to SEOPress plus SEOPress Pro while keeping SmartCrawl adapter support for existing sites.
 - Expanded `mrn-seo-helper` to `0.4.0` with active-provider selection, SmartCrawl and SEOPress metadata adapters, provider-aware editor sync, and provider meta-key diagnostics.

@@ -36,14 +36,18 @@
 
 			<p><?php esc_html_e( 'Sorry, but nothing matched your search terms. Please try again with some different keywords.', 'mrn-base-stack' ); ?></p>
 			<?php
-			get_search_form();
+			if ( function_exists( 'mrn_base_stack_render_search_form_markup' ) ) :
+				mrn_base_stack_render_search_form_markup();
+			endif;
 
 		else :
 			?>
 
 			<p><?php esc_html_e( 'It seems we can&rsquo;t find what you&rsquo;re looking for. Perhaps searching can help.', 'mrn-base-stack' ); ?></p>
 			<?php
-			get_search_form();
+			if ( function_exists( 'mrn_base_stack_render_search_form_markup' ) ) :
+				mrn_base_stack_render_search_form_markup();
+			endif;
 
 		endif;
 		?>

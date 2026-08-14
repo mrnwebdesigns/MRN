@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.2.104
+Version: 1.2.105
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -1749,32 +1749,12 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 }
 
 .mrn-not-found__search-form {
-	display: flex;
-	gap: 0.65rem;
+	width: 100%;
 }
 
-.mrn-not-found__search-input {
-	background: var(--mrn-shell-bg);
-	border: 1px solid var(--mrn-shell-border);
-	border-radius: 999px;
-	flex: 1 1 auto;
-	min-width: 0;
-	padding: 0.8rem 1rem;
-}
-
-.mrn-not-found__search-button {
-	background: transparent;
-	border: 1px solid var(--mrn-shell-accent);
-	border-radius: 999px;
-	color: var(--mrn-shell-accent);
-	font-weight: 700;
-	padding: 0.8rem 1.1rem;
-}
-
-.mrn-not-found__search-button:hover,
-.mrn-not-found__search-button:focus-visible {
-	background: var(--mrn-shell-accent);
-	color: var(--mrn-shell-accent-soft);
+.mrn-not-found__search-form .searchwp-form,
+.mrn-not-found__search-form .swp-flex--row {
+	width: 100%;
 }
 
 .mrn-not-found__link-list {
@@ -1811,14 +1791,6 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 
 	.mrn-not-found__orbit--two {
 		inset: -10% 24%;
-	}
-}
-
-@media (max-width: 480px) {
-
-	.mrn-not-found__search-form {
-		align-items: stretch;
-		flex-direction: column;
 	}
 }
 

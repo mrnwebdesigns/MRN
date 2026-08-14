@@ -2523,7 +2523,7 @@ function mrn_base_stack_register_theme_options_field_groups() {
 						'type'          => 'true_false',
 						'instructions'  => __( 'Shows the stack SearchWP form area.', 'mrn-base-stack' ),
 						'required'      => 0,
-						'default_value' => 0,
+						'default_value' => 1,
 						'ui'            => 1,
 					),
 					array(
@@ -4069,7 +4069,7 @@ function mrn_base_stack_get_theme_header_footer_options() {
 			'header_primary_menu_id'                     => 0,
 			'header_primary_nav_inherit_header_settings' => true,
 			'header_primary_nav_center_to_canvas'        => false,
-			'header_show_search'                         => false,
+			'header_show_search'                         => true,
 			'header_searchwp_form_id'                    => 0,
 			'header_search_style'                        => 'full',
 			'header_search_icon_source'                  => 'dashicons',

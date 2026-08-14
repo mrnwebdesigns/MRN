@@ -321,18 +321,20 @@ if ( ! function_exists( 'mrn_base_stack_get_default_searchwp_form_id' ) ) :
 	function mrn_base_stack_get_default_searchwp_form_id() {
 		$forms          = mrn_base_stack_get_searchwp_forms();
 		$stored_form_id = absint( get_option( 'mrn_base_stack_searchwp_form_id', 0 ) );
+		$canonical_name = __( 'Site Search', 'mrn-base-stack' );
 
 		if ( $stored_form_id > 0 && isset( $forms[ $stored_form_id ] ) ) {
 			return $stored_form_id;
 		}
 
-		if ( empty( $forms ) ) {
-			return 0;
+		foreach ( $forms as $form_id => $form ) {
+			$form_title = isset( $form['title'] ) ? trim( (string) $form['title'] ) : '';
+			if ( $canonical_name === $form_title ) {
+				return absint( $form_id );
+			}
 		}
 
-		$form_ids = array_keys( $forms );
-
-		return absint( reset( $form_ids ) );
+		return 0;
 	}
 endif;
 
@@ -343,7 +345,7 @@ if ( ! function_exists( 'mrn_base_stack_seed_searchwp_form' ) ) :
 	 * @return void
 	 */
 	function mrn_base_stack_seed_searchwp_form() {
-		if ( ! shortcode_exists( 'searchwp_form' ) && ! class_exists( 'SearchWP\\Settings' ) ) {
+		if ( ! class_exists( 'SearchWP\\Settings' ) || ! shortcode_exists( 'searchwp_form' ) ) {
 			return;
 		}
 
@@ -402,10 +404,13 @@ if ( ! function_exists( 'mrn_base_stack_seed_searchwp_form' ) ) :
 			);
 			$decoded['next_id']           = $form_id + 1;
 			$encoded                      = wp_json_encode( $decoded );
-			$updated                      = class_exists( 'SearchWP\\Settings' ) ? \SearchWP\Settings::update( 'forms', $encoded ) : null;
+			if ( ! is_string( $encoded ) || '' === $encoded ) {
+				return;
+			}
 
-			if ( null === $updated ) {
-				update_option( 'searchwp_forms', $encoded, false );
+			$updated = \SearchWP\Settings::update( 'forms', $encoded );
+			if ( ! is_string( $updated ) || $encoded !== $updated ) {
+				return;
 			}
 		}
 
@@ -425,16 +430,21 @@ if ( ! function_exists( 'mrn_base_stack_seed_searchwp_form' ) ) :
 		$has_header_form_saved_value  = false !== get_option( 'options_header_searchwp_form_id', false );
 		$has_header_form_saved_field  = false !== get_option( '_options_header_searchwp_form_id', false );
 		$has_header_form_saved_choice = $has_header_form_saved_value || $has_header_form_saved_field;
-		if ( $selected_header_form_id > 0 && isset( $forms[ $selected_header_form_id ] ) ) {
-			return;
+		$form_selection_complete      = $selected_header_form_id > 0 && isset( $forms[ $selected_header_form_id ] );
+
+		if ( ! $has_header_form_saved_choice ) {
+			update_option( 'options_header_searchwp_form_id', (string) $form_id, false );
+			update_option( '_options_header_searchwp_form_id', 'field_mrn_theme_header_searchwp_form_id', false );
+			$form_selection_complete = true;
 		}
 
-		if ( $has_header_form_saved_choice ) {
-			return;
-		}
+		$has_header_search_saved_value = false !== get_option( 'options_header_show_search', false );
+		$has_header_search_saved_field = false !== get_option( '_options_header_show_search', false );
 
-		update_option( 'options_header_searchwp_form_id', (string) $form_id, false );
-		update_option( '_options_header_searchwp_form_id', 'field_mrn_theme_header_searchwp_form_id', false );
+		if ( $form_selection_complete && ! $has_header_search_saved_value && ! $has_header_search_saved_field ) {
+			update_option( 'options_header_show_search', '1', false );
+			update_option( '_options_header_show_search', 'field_mrn_theme_header_show_search', false );
+		}
 	}
 endif;
 add_action( 'acf/init', 'mrn_base_stack_seed_searchwp_form', 10 );
@@ -508,72 +518,63 @@ endif;
 
 if ( ! function_exists( 'mrn_base_stack_render_search_form_markup' ) ) :
 	/**
-	 * Render the stack header search form.
+	 * Render the stack SearchWP form without a native WordPress fallback.
 	 *
 	 * @param array<string, mixed> $args Optional rendering overrides.
 	 */
 	function mrn_base_stack_render_search_form_markup( $args = array() ) {
-		$args           = is_array( $args ) ? $args : array();
-		$search_query   = get_search_query();
-		$header_options = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
-		$search_style   = isset( $args['search_style'] ) ? (string) $args['search_style'] : ( isset( $header_options['header_search_style'] ) ? (string) $header_options['header_search_style'] : 'full' );
+		$args        = is_array( $args ) ? $args : array();
+		$form_id     = isset( $args['form_id'] ) ? absint( $args['form_id'] ) : mrn_base_stack_get_default_searchwp_form_id();
+		$form_markup = mrn_base_stack_get_searchwp_form_markup( $form_id );
 
-		if ( 'icon_only' === $search_style ) {
-			$is_expanded = '' !== $search_query;
-			$form_class  = 'mrn-site-search searchwp-form mrn-site-search--icon-only';
+		if ( '' !== trim( $form_markup ) ) {
+			echo $form_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SearchWP shortcode output is plugin-rendered markup.
+		}
+	}
+endif;
 
-			if ( $is_expanded ) {
-				$form_class .= ' is-expanded';
-			}
-			?>
-			<form role="search" method="get" class="<?php echo esc_attr( $form_class ); ?>" action="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'Search site content', 'mrn-base-stack' ); ?>" data-mrn-search-toggle>
-				<label class="screen-reader-text" for="mrn-header-search-input"><?php esc_html_e( 'Search for:', 'mrn-base-stack' ); ?></label>
-				<button type="button" class="mrn-site-search__toggle" aria-expanded="<?php echo $is_expanded ? 'true' : 'false'; ?>" aria-controls="mrn-header-search-input-wrap">
-					<?php echo mrn_base_stack_get_header_search_icon_markup( $header_options ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					<span class="screen-reader-text"><?php esc_html_e( 'Open search', 'mrn-base-stack' ); ?></span>
-				</button>
-				<div class="mrn-site-search__input-wrap" id="mrn-header-search-input-wrap">
-					<div class="mrn-site-search__field">
-						<span class="mrn-site-search__prompt" aria-hidden="true" data-mrn-search-prompt><?php esc_html_e( 'Search', 'mrn-base-stack' ); ?></span>
-						<input
-							type="search"
-							id="mrn-header-search-input"
-							class="mrn-site-search__input"
-							placeholder=""
-							value="<?php echo esc_attr( $search_query ); ?>"
-							name="s"
-							autocomplete="off"
-						/>
-						<button type="button" class="mrn-site-search__clear" aria-label="<?php esc_attr_e( 'Clear search', 'mrn-base-stack' ); ?>" <?php echo '' === $search_query ? 'hidden' : ''; ?>>
-							<span aria-hidden="true">&times;</span>
-						</button>
-					</div>
-				</div>
-			</form>
-			<?php
-
+if ( ! function_exists( 'mrn_base_stack_searchwp_configuration_notice' ) ) :
+	/**
+	 * Warn administrators when stack search is enabled without a usable SearchWP form.
+	 */
+	function mrn_base_stack_searchwp_configuration_notice() {
+		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
-		?>
-		<form role="search" method="get" class="mrn-site-search searchwp-form" action="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'Search site content', 'mrn-base-stack' ); ?>">
-			<label class="screen-reader-text" for="mrn-header-search-input"><?php esc_html_e( 'Search for:', 'mrn-base-stack' ); ?></label>
-			<div class="mrn-site-search__input-wrap">
-				<input
-					type="search"
-					id="mrn-header-search-input"
-					class="mrn-site-search__input"
-					placeholder="<?php esc_attr_e( 'Search…', 'mrn-base-stack' ); ?>"
-					value="<?php echo esc_attr( $search_query ); ?>"
-					name="s"
-					autocomplete="off"
-				/>
-				<button type="submit" class="mrn-site-search__button"><?php esc_html_e( 'Search', 'mrn-base-stack' ); ?></button>
-			</div>
-		</form>
-		<?php
+		$header_options = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+		if ( empty( $header_options['header_show_search'] ) ) {
+			return;
+		}
+
+		if ( ! class_exists( 'SearchWP\\Settings' ) || ! shortcode_exists( 'searchwp_form' ) ) {
+			printf(
+				'<div class="notice notice-error"><p>%s</p></div>',
+				esc_html__( 'MRN header search is enabled, but SearchWP is inactive or its Search Forms feature is unavailable. Activate SearchWP to restore the stack search form; no native WordPress fallback is rendered.', 'mrn-base-stack' )
+			);
+			return;
+		}
+
+		$form_id = absint( $header_options['header_searchwp_form_id'] ?? 0 );
+		$forms   = mrn_base_stack_get_searchwp_forms();
+		if ( $form_id > 0 && isset( $forms[ $form_id ] ) ) {
+			return;
+		}
+
+		$forms_url = add_query_arg( 'page', 'searchwp-forms', admin_url( 'admin.php' ) );
+		printf(
+			'<div class="notice notice-error"><p>%s</p></div>',
+			wp_kses_post(
+				sprintf(
+					/* translators: %s: URL to SearchWP Forms. */
+					__( 'MRN header search is enabled, but its SearchWP form is missing or invalid. Review <a href="%s">SearchWP Forms</a>; no native WordPress fallback is rendered.', 'mrn-base-stack' ),
+					esc_url( $forms_url )
+				)
+			)
+		);
 	}
 endif;
+add_action( 'admin_notices', 'mrn_base_stack_searchwp_configuration_notice' );
 
 if ( ! function_exists( 'mrn_base_stack_default_header_search' ) ) :
 	/**

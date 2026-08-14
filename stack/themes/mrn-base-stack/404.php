@@ -62,11 +62,13 @@ $mrn_show_not_found_panel = $mrn_has_primary_content || $mrn_has_recovery_conten
 							<?php if ( ! empty( $mrn_not_found_options['search_heading'] ) ) : ?>
 								<h2 class="mrn-not-found__recovery-title"><?php echo esc_html( $mrn_not_found_options['search_heading'] ); ?></h2>
 							<?php endif; ?>
-							<form role="search" method="get" class="mrn-not-found__search-form" action="<?php echo esc_url( home_url( '/' ) ); ?>">
-								<label class="screen-reader-text" for="mrn-404-search-input"><?php esc_html_e( 'Search this site', 'mrn-base-stack' ); ?></label>
-								<input id="mrn-404-search-input" class="mrn-not-found__search-input" type="search" name="s" value="<?php echo esc_attr( get_search_query() ); ?>" placeholder="<?php esc_attr_e( 'What were you looking for?', 'mrn-base-stack' ); ?>">
-								<button class="mrn-not-found__search-button" type="submit"><?php esc_html_e( 'Search', 'mrn-base-stack' ); ?></button>
-							</form>
+							<div class="mrn-not-found__search-form">
+								<?php
+								if ( function_exists( 'mrn_base_stack_render_search_form_markup' ) ) {
+									mrn_base_stack_render_search_form_markup();
+								}
+								?>
+							</div>
 						</div>
 					<?php endif; ?>
 

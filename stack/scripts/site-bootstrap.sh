@@ -1628,45 +1628,52 @@ apply_wp_defaults() {
 reconcile_development_environment_policy() {
   local plugin_slug hook
   local -a disabled_plugins=(
-    searchwp
-    searchwp-live-ajax-search
-	    searchwp-editor-performance
-	    wpmu-dev-seo
-	    smartcrawl-seo
-	    wp-seopress
-	    wp-seopress-pro
-	  )
-	  local -a disabled_cron_hooks=(
-	    searchwp_indexer_cron
-	    searchwp_index_controller_cron
-	    searchwp_maintenance
+    wpmu-dev-seo
+    smartcrawl-seo
+    wp-seopress
+    wp-seopress-pro
+  )
+  local -a disabled_cron_hooks=(
+    searchwp_indexer_cron
+    searchwp_index_controller_cron
+    searchwp_maintenance
     searchwp_usage_tracking
     searchwp_email_summaries_cron
-	    wds_sitemap_validity_check
-	    wds_cron_download_geodb
-	    wds_daily_moz_data_hook
-	    seopress_404_email_alerts_cron
-	    seopress_404_send_alert_cron
-	    seopress_alerts_cron
-	    seopress_broken_links_run_task_cron
-	    seopress_broken_links_watchdog_cron
-	    seopress_get_insights_gsc_cron
-	    seopress_google_analytics_cron
-	    seopress_insights_gsc_cron
-	    seopress_license_validation_cron
-	    seopress_matomo_analytics_cron
-	    seopress_page_speed_insights_cron
-	    seopress_request_google_analytics_cron
-	    seopress_request_matomo_analytics_cron
-	    seopress_request_page_speed_insights_cron
-	    seopress_schedule_license_validation_cron
-	    seopress_send_alerts_cron
-	    seopress_site_audit_run_task_cron
-	    seopress_site_audit_watchdog_cron
-	  )
+    wds_sitemap_validity_check
+    wds_cron_download_geodb
+    wds_daily_moz_data_hook
+    seopress_404_email_alerts_cron
+    seopress_404_send_alert_cron
+    seopress_alerts_cron
+    seopress_broken_links_run_task_cron
+    seopress_broken_links_watchdog_cron
+    seopress_get_insights_gsc_cron
+    seopress_google_analytics_cron
+    seopress_insights_gsc_cron
+    seopress_license_validation_cron
+    seopress_matomo_analytics_cron
+    seopress_page_speed_insights_cron
+    seopress_request_google_analytics_cron
+    seopress_request_matomo_analytics_cron
+    seopress_request_page_speed_insights_cron
+    seopress_schedule_license_validation_cron
+    seopress_send_alerts_cron
+    seopress_site_audit_run_task_cron
+    seopress_site_audit_watchdog_cron
+  )
 
-  if ! run_wp config set MRN_SEARCHWP_POLICY disabled --type=constant; then
-    add_warning "Failed to set MRN_SEARCHWP_POLICY=disabled in wp-config.php"
+  # Keep SearchWP forms and frontend search active for stack development while
+  # pausing index maintenance and scheduled provider work.
+  if ! run_wp config set MRN_SEARCHWP_POLICY frontend_only --type=constant; then
+    add_warning "Failed to set MRN_SEARCHWP_POLICY=frontend_only in wp-config.php"
+  fi
+  if run_wp plugin is-active searchwp >/dev/null 2>&1; then
+    if ! run_wp option update searchwp_indexer_paused 1 >/dev/null; then
+      add_warning "Failed to pause SearchWP indexing for the development frontend-only policy."
+    fi
+    if ! run_wp option update searchwp_disable_email_summaries 1 >/dev/null; then
+      add_warning "Failed to disable SearchWP email summaries for the development frontend-only policy."
+    fi
   fi
   if ! run_wp config set MRN_SEO_INDEXING_POLICY disabled --type=constant; then
     add_warning "Failed to set MRN_SEO_INDEXING_POLICY=disabled in wp-config.php"
