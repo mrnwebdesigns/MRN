@@ -531,13 +531,13 @@
       "version": "1.0.7",
       "runtime_type": "standard-plugin",
       "classification": "development-adapter",
-      "lifecycle": "supported-development",
-      "current_distribution": "standard-bootstrap",
+      "lifecycle": "deprecated",
+      "current_distribution": "catalog-only",
       "target_tier": "development-only",
       "source": {"repository": "searchwp-editor-performance", "path": "/Users/khofmeyer/Development/MRN-plugins/searchwp-editor-performance", "state": "canonical-standalone"},
       "dependencies": {"hard": ["SearchWP for runtime effect"], "soft": ["local/development environment"], "release_group": "development-tools"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": ["SearchWP"]},
-      "purpose": "Suppresses expensive SearchWP editor behavior in development."
+      "purpose": "Legacy adapter retained for existing environments; new hosting policy keeps SearchWP inactive in development and staging, so new stack bundles do not install it."
     },
     {
       "slug": "mrn-database-retention",

@@ -105,8 +105,9 @@ Classification does not authorize archive, deletion, packaging changes, deployme
 ## Current Governance Decisions
 
 - `mrn-mega-menu` is canonical in `MRN/plugins/mrn-mega-menu`; its version and release artifact follow the MRN stack repository.
-- `searchwp-editor-performance` is canonical in its standalone repository under `MRN-plugins`; the MRN stack is a versioned artifact consumer.
+- `searchwp-editor-performance` is canonical in its standalone repository under `MRN-plugins`, but is deprecated and excluded from new stack bundles. Existing copies remain a compatibility concern; the hosting environment policy retains its fail-safe deactivation check.
 - `MRN-disable-core-auto-updates` was approved for sunset on 2026-08-14 and is excluded from the target product catalog. This does not authorize changes to existing sites.
 - `mrn-editor-ui-css` is a legacy, non-allowlisted MU source and is an archive candidate, not yet approved for archival.
 - `mrn-duplicate-enhance` is a non-allowlisted integration module requiring a product-boundary decision.
-- several optional, development, and maintenance components are currently in the standard bootstrap; Phase 4 will address installation profiles only after sunset decisions are approved.
+- environment selection remains owned by the future hosting platform's existing `stack`/`plain` site profiles and `dev`/`staging`/`production` environment policy. The MRN repository must not introduce a competing environment-profile vocabulary.
+- several optional and maintenance components remain in the standard bootstrap. Removing them requires feature-selection support in the hosting platform so site capabilities can be declared without duplicating environment policy.

@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.08.14-hosting-environment-alignment
+- Kept environment selection in the existing hosting-platform contract: `stack` or `plain` site profile plus `dev`, `staging`, or `production` environment.
+- Removed deprecated `searchwp-editor-performance` from new stack bundle installation because the hosting policy already keeps SearchWP inactive in development and staging.
+- Retained the standalone adapter repository and hosting policy's deactivation check as backward compatibility for existing installations; no site was changed.
+- Deferred optional-feature removal until the hosting platform can select declared site capabilities without introducing a second environment-profile system.
+
 ## 2026.08.14-mega-menu-static-analysis-hardening
 - Expanded `mrn-mega-menu` to `0.16.16` and eliminated all 24 PHPStan findings rather than accepting advisory-only success.
 - Replaced global asset/path/version constants with the typed `MRN_Mega_Menu\\Plugin` runtime contract.

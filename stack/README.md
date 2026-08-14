@@ -2,6 +2,12 @@
 
 This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 
+## Environment and installation ownership
+
+The future hosting platform owns site and environment selection. Its canonical vocabulary is the `stack` or `plain` site profile combined with the `dev`, `staging`, or `production` environment. This repository owns WordPress component source, release metadata, package inputs, and compatibility contracts; it does not define a competing environment-profile system.
+
+`manifests/plugins.txt` is currently the Stack bundle input consumed by the hosting platform. Optional feature selection belongs in the hosting platform and should resolve components from the MRN catalog. Development-only, maintenance-only, and optional components must not become production defaults merely because MRN maintains them.
+
 ## What this gives you
 
 - A plugin manifest (`manifests/plugins.txt`) for install/activate.

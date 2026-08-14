@@ -65,7 +65,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | --- | ---: | --- | --- | --- |
 | `mrn-active-style-guide` | 0.1.5 | MU loader | Development only | Logged-in design-system reference and diagnostics. |
 | `mrn-template-inspector` | 0.2.7 | Standard bootstrap | Development only | Template and request-context inspection. |
-| `searchwp-editor-performance` | 1.0.7 | Standard bootstrap | Development only | Development SearchWP editor-performance suppression. |
+| `searchwp-editor-performance` | 1.0.7 | Catalog only | Development only | Deprecated adapter retained for existing environments; omitted from new bundles because hosting policy keeps SearchWP inactive in development and staging. |
 | `mrn-dummy-content` | 0.3.0 | Catalog only | Development only | Development content fixtures. |
 | `mrn-comment-management` | 1.1.7 | Standard bootstrap | Maintenance only | Explicit comment audit and deletion. |
 | `mrn-database-retention` | 1.0.0 | Catalog only | Maintenance only | Allowlisted third-party operational-data retention. |
@@ -94,4 +94,4 @@ No disposition in this section authorizes a code move, manifest change, deletion
 
 ## Current Bootstrap Warning
 
-The existing [`manifests/plugins.txt`](./manifests/plugins.txt) remains unchanged and currently installs several components classified above as optional, development-only, or maintenance-only. A later approved installer/profile phase will correct that behavior.
+The approved installer cleanup has begun. `searchwp-editor-performance` is no longer installed by new stack bundles. The existing [`manifests/plugins.txt`](./manifests/plugins.txt) still includes optional and maintenance components; those require feature-selection support in the hosting platform before they can be removed safely from the shared bundle input.
