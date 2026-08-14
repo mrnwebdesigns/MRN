@@ -1,0 +1,11 @@
+{
+  "project": "mrn-editor-ui-css",
+  "release_unit": "archived-plugin",
+  "baseline": {
+    "pinned_at": "2026-08-14",
+    "repo_path": "/Users/khofmeyer/Development/MRN/archive/mu-plugins/mrn-editor-ui-css",
+    "integration_target": "none",
+    "integration_mode": "archived",
+    "plugin_version": "1.0.8"
+  }
+}

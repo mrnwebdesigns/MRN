@@ -219,15 +219,15 @@
       "slug": "mrn-duplicate-enhance",
       "name": "MRN Post Duplicator Admin Bar Enhance",
       "version": "1.1.1",
-      "runtime_type": "mu-component",
+      "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
-      "lifecycle": "review",
-      "current_distribution": "mu-source-only",
-      "target_tier": "review",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-duplicate-enhance", "state": "confirmed"},
+      "lifecycle": "supported-optional",
+      "current_distribution": "catalog-only",
+      "target_tier": "optional-integration",
+      "source": {"repository": "MRN", "path": "plugins/mrn-duplicate-enhance", "state": "confirmed"},
       "dependencies": {"hard": ["Post Duplicator"], "soft": ["WordPress admin bar"], "release_group": null},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
-      "purpose": "Adds Post Duplicator behavior to editor/admin-bar workflows; review optional-plugin versus archive disposition."
+      "purpose": "Adds an optional front-end admin-bar shortcut to the Post Duplicator editor workflow."
     },
     {
       "slug": "mrn-editor-ui-css",
@@ -235,13 +235,13 @@
       "version": "1.0.8",
       "runtime_type": "mu-component",
       "classification": "legacy-compatibility",
-      "lifecycle": "archive-candidate",
-      "current_distribution": "mu-source-only",
-      "target_tier": "archive-candidate",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-editor-ui-css", "state": "confirmed"},
+      "lifecycle": "archived",
+      "current_distribution": "archived",
+      "target_tier": "archived",
+      "source": {"repository": "MRN", "path": "archive/mu-plugins/mrn-editor-ui-css", "state": "archived"},
       "dependencies": {"hard": ["WordPress admin"], "soft": ["mrn-admin-ui-css"], "release_group": null},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
-      "purpose": "Legacy admin CSS compatibility loader superseded by MRN Admin UI CSS; no archive action is approved yet."
+      "purpose": "Archived legacy admin CSS compatibility loader superseded by MRN Admin UI CSS."
     },
 
     {

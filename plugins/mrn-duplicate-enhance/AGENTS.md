@@ -1,12 +1,12 @@
 # AGENTS.md - MRN Post Duplicator Admin Bar Enhance
 
 ## Purpose
-This directory contains the MRN Post Duplicator Admin Bar Enhance WordPress plugin shared MU plugin release unit.
+This directory contains the optional MRN Post Duplicator integration plugin release unit.
 
 ## Rules
 - Keep changes scoped to this plugin release unit.
 - Preserve WordPress security controls for admin actions, REST/AJAX/admin-post handlers, nonces, capabilities, sanitization, and escaping.
-- Treat `MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Development/MRN/mu-plugins/mrn-duplicate-enhance` as the canonical plugin readiness signal.
+- Treat `MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Development/MRN/plugins/mrn-duplicate-enhance` as the canonical plugin readiness signal.
 
 ## Safety
 - Never auto-deploy from this plugin directory.

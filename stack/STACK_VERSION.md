@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.14-hosting-environment-alignment`
+- Stack release: `2026.08.14-legacy-mu-source-cleanup`
 - Release date: `2026-08-14`
 - Status: `current baseline`
 

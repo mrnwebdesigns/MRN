@@ -1,0 +1,11 @@
+{
+  "project": "mrn-duplicate-enhance",
+  "release_unit": "standalone-plugin",
+  "baseline": {
+    "pinned_at": "2026-08-14",
+    "repo_path": "/Users/khofmeyer/Development/MRN/plugins/mrn-duplicate-enhance",
+    "integration_target": "optional-plugin-catalog",
+    "integration_mode": "optional-standard-plugin",
+    "plugin_version": "1.1.1"
+  }
+}

@@ -77,7 +77,7 @@ add_action('admin_enqueue_scripts', function ($hook) {
     return;
   }
 
-  $url = trailingslashit(WPMU_PLUGIN_URL) . 'mrn-admin.css';
+  $url = content_url('mu-plugins/mrn-admin.css');
 
   wp_enqueue_style(
     'mrn-admin-css',

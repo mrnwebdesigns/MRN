@@ -7,12 +7,6 @@ parameters:
 			path: mu-plugins/mrn-disable-comments/mrn-disable-comments.php
 
 		-
-			message: '#^Found usage of constant WPMU_PLUGIN_URL\. Use plugins_url\(\) instead\.$#'
-			identifier: phpstanWP.wpConstant.fetch
-			count: 1
-			path: mu-plugins/mrn-editor-ui-css/mrn-editor-ui-css.php
-
-		-
 			message: '#^Variable \$ids in empty\(\) always exists and is not falsy\.$#'
 			identifier: empty.variable
 			count: 1

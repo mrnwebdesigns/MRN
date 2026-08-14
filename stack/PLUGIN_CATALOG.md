@@ -43,6 +43,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-acf-character-count` | 1.1.8 | Standard bootstrap | Optional integration | ACF editor character counts. |
 | `mrn-acf-focal-point` | 1.1.2 | Standard bootstrap | Optional integration | ACF image focal-point metadata and rendering. |
 | `mrn-cookie-consent` | 1.1.40 | Standard bootstrap | Optional integration | Silktide and Google Consent Mode. |
+| `mrn-duplicate-enhance` | 1.1.1 | Catalog only | Optional integration | Optional Post Duplicator admin-bar workflow adapter. |
 | `mrn-fontawesome-profile-manager` | 0.5.0 | Standard bootstrap | Optional integration | Font Awesome profiles and local assets. |
 | `mrn-google-fonts` | 1.0.7 | Standard bootstrap | Optional integration | Google/local fonts and Site Styles. |
 | `mrn-gtm-injector` | 1.0.13 | Standard bootstrap | Optional integration | Google Tag Manager. |
@@ -83,8 +84,12 @@ No disposition in this section authorizes a code move, manifest change, deletion
 | `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Catalog only | Keep independently optional, integrate with Mega Menu, or archive. |
 | `mrn-reusable-block-library` | 0.1.28 | MU loader | Decide whether it is a mandatory base-theme contract or optional shared feature. |
 | `mrn-universal-sticky-bar` | 1.1.8 | Standard bootstrap | Keep independent or move implementation into the platform with compatibility shims. |
-| `mrn-duplicate-enhance` | 1.1.1 | MU source only | Convert to an optional Post Duplicator adapter or archive. |
-| `mrn-editor-ui-css` | 1.0.8 | MU source only | Confirm supersession and archive after explicit approval. |
+
+## Archived Components
+
+| Slug | Version | Disposition | Evidence |
+| --- | ---: | --- | --- |
+| `mrn-editor-ui-css` | 1.0.8 | Archived | Superseded by `mrn-admin-ui-css`; absent from the MU loader and runtime sync source. |
 
 ## Canonical Source Decisions
 

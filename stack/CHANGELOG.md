@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.08.14-legacy-mu-source-cleanup
+- Archived `mrn-editor-ui-css` after confirming the active `mrn-admin-ui-css` component supersedes it and neither supported runtime sync path shipped it.
+- Removed the obsolete PHPStan baseline entry tied to the archived legacy loader.
+- Reclassified `mrn-duplicate-enhance` as an optional Post Duplicator integration and moved its canonical source from the inactive MU source tree to the standard plugin catalog.
+- Kept the Post Duplicator adapter out of the default plugin manifest; no installed site or runtime was changed.
+
 ## 2026.08.14-hosting-environment-alignment
 - Kept environment selection in the existing hosting-platform contract: `stack` or `plain` site profile plus `dev`, `staging`, or `production` environment.
 - Kept `searchwp-editor-performance` in new stack bundles because the approved MRN development contract enables SearchWP frontend search while suppressing expensive editor and indexing behavior.
