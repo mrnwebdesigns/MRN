@@ -41,8 +41,8 @@ final class Menu_Admin {
 			$dependencies[] = 'mrn-shared-icon-chooser';
 		}
 		wp_enqueue_media();
-		wp_enqueue_style( 'mrn-mega-menu-admin', MRN_MEGA_MENU_URL . 'assets/css/admin.css', array(), MRN_MEGA_MENU_VERSION );
-		wp_enqueue_script( 'mrn-mega-menu-icon-controls', MRN_MEGA_MENU_URL . 'assets/js/icon-controls.js', $dependencies, MRN_MEGA_MENU_VERSION, true );
+		wp_enqueue_style( 'mrn-mega-menu-admin', Plugin::asset_url( 'assets/css/admin.css' ), array(), Plugin::VERSION );
+		wp_enqueue_script( 'mrn-mega-menu-icon-controls', Plugin::asset_url( 'assets/js/icon-controls.js' ), $dependencies, Plugin::VERSION, true );
 	}
 
 	/**
@@ -308,8 +308,8 @@ final class Menu_Admin {
 	private static function load_sticky_toolbar() {
 		$available = function_exists( 'mrn_sticky_toolbar_render' ) && function_exists( 'mrn_sticky_toolbar_render_css' );
 		if ( ! $available ) {
-			if ( file_exists( MRN_MEGA_MENU_PATH . 'includes/mrn-sticky-settings-toolbar.php' ) ) {
-				require_once MRN_MEGA_MENU_PATH . 'includes/mrn-sticky-settings-toolbar.php';
+			if ( file_exists( Plugin::path( 'includes/mrn-sticky-settings-toolbar.php' ) ) ) {
+				require_once Plugin::path( 'includes/mrn-sticky-settings-toolbar.php' );
 			}
 			$available = function_exists( 'mrn_sticky_toolbar_render' ) && function_exists( 'mrn_sticky_toolbar_render_css' );
 		}
@@ -319,10 +319,11 @@ final class Menu_Admin {
 
 	private static function render_sticky_toolbar( $view, $menus_url, $layouts_url ) {
 		if ( function_exists( 'mrn_sticky_toolbar_universal_css' ) ) {
-			echo '<style>' . mrn_sticky_toolbar_universal_css() . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Trusted shared stack CSS.
+			echo '<style>' . call_user_func( 'mrn_sticky_toolbar_universal_css' ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Trusted shared stack CSS.
 		}
 
-		mrn_sticky_toolbar_render_css(
+		call_user_func(
+			'mrn_sticky_toolbar_render_css',
 			array(
 				'toolbar_id'          => 'mrn-mega-menu-workspace-toolbar',
 				'page_class'          => 'appearance_page_' . self::PAGE_SLUG,
@@ -334,7 +335,8 @@ final class Menu_Admin {
 				'spacer_height_mobile' => 120,
 			)
 		);
-		mrn_sticky_toolbar_render(
+		call_user_func(
+			'mrn_sticky_toolbar_render',
 			array(
 				'toolbar_id' => 'mrn-mega-menu-workspace-toolbar',
 				'form_id'    => 'menus' === $view ? 'mrn-mega-menu-save-all' : '',
@@ -556,8 +558,9 @@ final class Menu_Admin {
 		$parents = array();
 		if ( is_array( $items ) ) {
 			foreach ( $items as $item ) {
-				if ( absint( $item->menu_item_parent ) ) {
-					$parents[ absint( $item->menu_item_parent ) ] = true;
+				$parent_id = Plugin::get_menu_item_parent_id( $item );
+				if ( $parent_id ) {
+					$parents[ $parent_id ] = true;
 				}
 			}
 		}

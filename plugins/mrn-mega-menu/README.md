@@ -80,6 +80,14 @@ Integration filters:
 
 ## Changelog
 
+### 0.16.16
+
+- Replaced bootstrap-global asset and path constants with a discoverable plugin runtime API.
+- Normalized WordPress nav-menu parent properties without relying on undeclared `WP_Post` members.
+- Made optional sticky-toolbar and Reusable Block Library calls fail closed through callable integration boundaries.
+- Corrected global WordPress term annotations and eliminated all Mega Menu PHPStan findings.
+- Enabled strict PHPStan enforcement in the plugin QA profile so advisory errors fail future QA runs.
+
 ### 0.16.15
 
 - Added accessible copy and paste controls to layout columns in the mega-menu editor.

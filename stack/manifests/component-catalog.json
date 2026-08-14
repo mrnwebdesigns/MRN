@@ -443,7 +443,7 @@
     {
       "slug": "mrn-mega-menu",
       "name": "MRN Mega Menu",
-      "version": "0.16.15",
+      "version": "0.16.16",
       "runtime_type": "standard-plugin",
       "classification": "shared-feature",
       "lifecycle": "supported",

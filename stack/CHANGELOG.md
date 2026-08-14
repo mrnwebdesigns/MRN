@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.08.14-mega-menu-static-analysis-hardening
+- Expanded `mrn-mega-menu` to `0.16.16` and eliminated all 24 PHPStan findings rather than accepting advisory-only success.
+- Replaced global asset/path/version constants with the typed `MRN_Mega_Menu\\Plugin` runtime contract.
+- Normalized dynamic nav-menu parent data, corrected global `WP_Term` annotations, and made optional toolbar/reusable-block integration calls fail closed.
+- Added focused regression coverage for plugin asset paths and dynamic WordPress menu-parent properties.
+
 ## 2026.08.14-canonical-plugin-sources
 - Confirmed `mrn-mega-menu` `0.16.15` as an in-repo MRN release unit and retired the older unversioned workspace duplicate.
 - Confirmed `searchwp-editor-performance` `1.0.7` as an independently versioned standalone repository and removed its duplicate MRN source tree.

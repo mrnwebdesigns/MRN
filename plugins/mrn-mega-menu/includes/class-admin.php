@@ -89,10 +89,10 @@ final class Admin {
 		if ( wp_style_is( 'woocommerce_admin_styles', 'registered' ) ) {
 			wp_enqueue_style( 'woocommerce_admin_styles' );
 		}
-		wp_enqueue_style( 'mrn-mega-menu-admin', MRN_MEGA_MENU_URL . 'assets/css/admin.css', $style_dependencies, MRN_MEGA_MENU_VERSION );
-		wp_enqueue_script( 'mrn-mega-menu-icon-controls', MRN_MEGA_MENU_URL . 'assets/js/icon-controls.js', array_values( array_unique( array_merge( array( 'jquery' ), $script_dependencies ) ) ), MRN_MEGA_MENU_VERSION, true );
+		wp_enqueue_style( 'mrn-mega-menu-admin', Plugin::asset_url( 'assets/css/admin.css' ), $style_dependencies, Plugin::VERSION );
+		wp_enqueue_script( 'mrn-mega-menu-icon-controls', Plugin::asset_url( 'assets/js/icon-controls.js' ), array_values( array_unique( array_merge( array( 'jquery' ), $script_dependencies ) ) ), Plugin::VERSION, true );
 		$script_dependencies[] = 'mrn-mega-menu-icon-controls';
-		wp_enqueue_script( 'mrn-mega-menu-admin', MRN_MEGA_MENU_URL . 'assets/js/admin.js', $script_dependencies, MRN_MEGA_MENU_VERSION, true );
+		wp_enqueue_script( 'mrn-mega-menu-admin', Plugin::asset_url( 'assets/js/admin.js' ), $script_dependencies, Plugin::VERSION, true );
 		wp_localize_script(
 			'mrn-mega-menu-admin',
 			'MRNMegaMenuAdmin',
@@ -434,7 +434,7 @@ final class Admin {
 				continue;
 			}
 			foreach ( $items as $item ) {
-				if ( 0 !== absint( $item->menu_item_parent ) ) {
+				if ( 0 !== Plugin::get_menu_item_parent_id( $item ) ) {
 					continue;
 				}
 				$data[ $menu->term_id ][] = array(
@@ -527,7 +527,7 @@ final class Admin {
 	/**
 	 * Render WooCommerce product categories using their stored taxonomy hierarchy.
 	 *
-	 * @param WP_Term[] $terms              Product category terms.
+	 * @param \WP_Term[] $terms              Product category terms.
 	 * @param int[]     $selected_positions Selected term IDs mapped to their saved order.
 	 * @return void
 	 */
@@ -551,7 +551,7 @@ final class Admin {
 	 * Render one branch of the product category checklist.
 	 *
 	 * @param int        $parent_id          Parent term ID.
-	 * @param WP_Term[][] $terms_by_parent   Terms grouped by parent term ID.
+	 * @param \WP_Term[][] $terms_by_parent   Terms grouped by parent term ID.
 	 * @param int[]      $selected_positions Selected term IDs mapped to their saved order.
 	 * @param int        $tree_position      Current hierarchy display position.
 	 * @return void

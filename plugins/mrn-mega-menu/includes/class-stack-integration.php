@@ -11,6 +11,17 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Stack_Integration {
 	/**
+	 * Invoke an optional integration function without creating a hard dependency.
+	 *
+	 * @param string $function Function name.
+	 * @param mixed  ...$args  Function arguments.
+	 * @return mixed|null
+	 */
+	private static function call_optional( $function, ...$args ) {
+		return is_callable( $function ) ? call_user_func_array( $function, $args ) : null;
+	}
+
+	/**
 	 * Register integration hooks without requiring any stack component.
 	 */
 	public static function init() {
@@ -187,7 +198,7 @@ final class Stack_Integration {
 			return $blocks;
 		}
 
-		$post_types = array_filter( array_map( 'sanitize_key', (array) mrn_rbl_get_post_types() ) );
+		$post_types = array_filter( array_map( 'sanitize_key', (array) self::call_optional( 'mrn_rbl_get_post_types' ) ) );
 		if ( empty( $post_types ) ) {
 			$blocks = array();
 			return $blocks;
@@ -241,14 +252,15 @@ final class Stack_Integration {
 			return '';
 		}
 
-		$post_types = array_map( 'sanitize_key', (array) mrn_rbl_get_post_types() );
+		$post_types = array_map( 'sanitize_key', (array) self::call_optional( 'mrn_rbl_get_post_types' ) );
 		if ( ! in_array( $post->post_type, $post_types, true ) ) {
 			return '';
 		}
 
 		static $render_index = 0;
 		++$render_index;
-		$context = mrn_rbl_get_render_context(
+		$context = self::call_optional(
+			'mrn_rbl_get_render_context',
 			$post,
 			array(
 				'host_post_id'   => get_queried_object_id(),
@@ -257,7 +269,9 @@ final class Stack_Integration {
 			)
 		);
 
-		return mrn_rbl_render_context( $context );
+		$rendered = self::call_optional( 'mrn_rbl_render_context', $context );
+
+		return is_string( $rendered ) ? $rendered : '';
 	}
 
 	/**

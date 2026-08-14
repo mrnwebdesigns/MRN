@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class Plugin {
+	public const VERSION = '0.16.16';
 	public const POST_TYPE = 'mrn_mega_menu';
 	public const META_LAYOUT = '_mrn_mega_menu_layout';
 	public const OPTION_ASSIGNMENTS = 'mrn_mega_menu_assignments';
@@ -15,6 +16,36 @@ final class Plugin {
 	public const MENU_META_PARENT_CLICK = '_mrn_mega_menu_parent_click';
 	public const ITEM_META_ICON = '_mrn_mega_menu_item_icon';
 	public const ITEM_META_ARROW_ICON = '_mrn_mega_menu_arrow_icon';
+
+	/**
+	 * Resolve a plugin-relative asset URL without global bootstrap constants.
+	 *
+	 * @param string $relative_path Path relative to the plugin root.
+	 */
+	public static function asset_url( $relative_path ) {
+		return plugins_url( ltrim( (string) $relative_path, '/' ), dirname( __DIR__ ) . '/mrn-mega-menu.php' );
+	}
+
+	/**
+	 * Resolve a plugin-relative filesystem path.
+	 *
+	 * @param string $relative_path Path relative to the plugin root.
+	 */
+	public static function path( $relative_path = '' ) {
+		return trailingslashit( dirname( __DIR__ ) ) . ltrim( (string) $relative_path, '/' );
+	}
+
+	/**
+	 * Read WordPress' runtime menu-parent property without assuming it exists on
+	 * every WP_Post instance supplied by integrations or tests.
+	 *
+	 * @param mixed $item Potential nav-menu item object.
+	 */
+	public static function get_menu_item_parent_id( $item ) {
+		$properties = is_object( $item ) ? get_object_vars( $item ) : array();
+
+		return absint( $properties['menu_item_parent'] ?? 0 );
+	}
 
 	public static function init() {
 		Stack_Integration::init();
@@ -116,7 +147,7 @@ final class Plugin {
 
 			$parents = array();
 			foreach ( $items as $item ) {
-				$parent_id = absint( $item->menu_item_parent );
+				$parent_id = self::get_menu_item_parent_id( $item );
 				if ( $parent_id ) {
 					$parents[ $parent_id ] = true;
 				}
@@ -125,7 +156,7 @@ final class Plugin {
 				$item_id = absint( $item->ID );
 				$has_native_children = isset( $parents[ $item_id ] );
 				$has_layout_panel    = $layout_id && in_array( $item_id, $layout_parents, true );
-				if ( 0 === absint( $item->menu_item_parent ) && ( $has_native_children || $has_layout_panel ) && ( ! $layout_id || $has_layout_panel ) ) {
+				if ( 0 === self::get_menu_item_parent_id( $item ) && ( $has_native_children || $has_layout_panel ) && ( ! $layout_id || $has_layout_panel ) ) {
 					$assignments[ $item_id ] = $layout_id;
 				}
 			}

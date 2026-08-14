@@ -2,10 +2,10 @@
   "project": "mrn-mega-menu",
   "release_unit": "standalone-plugin",
   "baseline": {
-    "pinned_at": "2026-08-13",
+    "pinned_at": "2026-08-14",
     "repo_path": "/Users/khofmeyer/Development/MRN/plugins/mrn-mega-menu",
     "integration_target": "mrn-plugin-stack",
     "integration_mode": "in-repo-plugin",
-    "plugin_version": "0.16.15"
+    "plugin_version": "0.16.16"
   }
 }

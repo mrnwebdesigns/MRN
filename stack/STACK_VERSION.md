@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.14-searchwp-development-contract`
+- Stack release: `2026.08.14-mega-menu-static-analysis-hardening`
 - Release date: `2026-08-14`
 - Status: `current baseline`
 
@@ -24,6 +24,7 @@
   - `mrn-config-helper` `0.1.54`
   - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`
+  - `mrn-mega-menu` `0.16.16`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-universal-sticky-bar` `1.1.3`
   - `searchwp-editor-performance` `1.0.7`

@@ -55,7 +55,7 @@ final class Renderer {
 		if ( $layout_id && $visible_parent ) {
 			$parent_by_id = array();
 			foreach ( $items as $item ) {
-				$parent_by_id[ absint( $item->ID ) ] = absint( $item->menu_item_parent );
+				$parent_by_id[ absint( $item->ID ) ] = Plugin::get_menu_item_parent_id( $item );
 			}
 			$items = array_values(
 				array_filter(
@@ -78,14 +78,14 @@ final class Renderer {
 		}
 		$parent_by_id = array();
 		foreach ( $items as $item ) {
-			$parent_by_id[ absint( $item->ID ) ] = absint( $item->menu_item_parent );
+			$parent_by_id[ absint( $item->ID ) ] = Plugin::get_menu_item_parent_id( $item );
 		}
 
 		return array_values(
 			array_filter(
 				$items,
 				static function ( $item ) use ( $assigned_parents, $parent_by_id ) {
-					$parent = absint( $item->menu_item_parent );
+					$parent = Plugin::get_menu_item_parent_id( $item );
 					$seen   = array();
 					while ( $parent && ! isset( $seen[ $parent ] ) ) {
 						if ( isset( $assigned_parents[ $parent ] ) ) {
@@ -122,12 +122,12 @@ final class Renderer {
 		if ( empty( self::assignments() ) ) {
 			return;
 		}
-		wp_enqueue_style( 'mrn-mega-menu', MRN_MEGA_MENU_URL . 'assets/css/mega-menu.css', array(), MRN_MEGA_MENU_VERSION );
+		wp_enqueue_style( 'mrn-mega-menu', Plugin::asset_url( 'assets/css/mega-menu.css' ), array(), Plugin::VERSION );
 		wp_enqueue_style( 'dashicons' );
 		if ( function_exists( 'mrn_shared_assets_enqueue_fontawesome' ) ) {
 			mrn_shared_assets_enqueue_fontawesome( 'mrn-mega-menu-fontawesome', 'mega-menu' );
 		}
-		wp_enqueue_script( 'mrn-mega-menu', MRN_MEGA_MENU_URL . 'assets/js/mega-menu.js', array(), MRN_MEGA_MENU_VERSION, true );
+		wp_enqueue_script( 'mrn-mega-menu', Plugin::asset_url( 'assets/js/mega-menu.js' ), array(), Plugin::VERSION, true );
 	}
 
 	public static function menu_item_classes( $classes, $item, $args, $depth ) {
@@ -365,7 +365,7 @@ final class Renderer {
 		$children    = array();
 		$items_by_id = array();
 		foreach ( $items as $item ) {
-			$item_parent                = absint( $item->menu_item_parent );
+			$item_parent                = Plugin::get_menu_item_parent_id( $item );
 			$children[ $item_parent ][] = $item;
 			$items_by_id[ $item->ID ]   = $item;
 		}
