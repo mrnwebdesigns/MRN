@@ -14,7 +14,7 @@
 	<?php
 	$mrn_footer_options                 = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
 	$mrn_business_information           = function_exists( 'mrn_base_stack_get_business_information' ) ? mrn_base_stack_get_business_information() : array();
-	$mrn_footer_logo                    = function_exists( 'mrn_base_stack_get_business_logo' ) ? mrn_base_stack_get_business_logo( 'footer' ) : null;
+	$mrn_footer_logo                    = function_exists( 'mrn_base_stack_get_business_logo' ) ? mrn_base_stack_get_business_logo( 'footer', $mrn_business_information ) : null;
 	$mrn_footer_description             = function_exists( 'mrn_base_stack_get_site_tagline' ) ? mrn_base_stack_get_site_tagline() : wp_kses_post( get_bloginfo( 'description', 'display' ) );
 	$mrn_footer_address_lines           = function_exists( 'mrn_base_stack_get_business_address_lines' ) ? mrn_base_stack_get_business_address_lines() : array();
 	$mrn_footer_hours_rows              = function_exists( 'mrn_base_stack_get_business_hours_display_rows' ) ? mrn_base_stack_get_business_hours_display_rows() : array();

@@ -3741,6 +3741,13 @@ add_action( 'acf/init', 'mrn_base_stack_register_theme_options_field_groups', 20
  * @return array<string, mixed>
  */
 function mrn_base_stack_get_business_information() {
+	static $cached_business_information = null;
+
+	if ( null !== $cached_business_information ) {
+		// Arrays are returned by value, so consumer writes use copy-on-write and cannot alter this request cache.
+		return $cached_business_information;
+	}
+
 	$defaults = array(
 		'business_profile'     => '',
 		'years_in_business'    => '',
@@ -3758,7 +3765,9 @@ function mrn_base_stack_get_business_information() {
 	);
 
 	if ( ! function_exists( 'get_field' ) ) {
-		return $defaults;
+		$cached_business_information = $defaults;
+
+		return $cached_business_information;
 	}
 
 	$business_information = array(
@@ -3805,7 +3814,9 @@ function mrn_base_stack_get_business_information() {
 		'holiday_hours'        => get_field( 'holiday_hours', 'option' ),
 	);
 
-	return wp_parse_args( $business_information, $defaults );
+	$cached_business_information = wp_parse_args( $business_information, $defaults );
+
+	return $cached_business_information;
 }
 
 /**
@@ -3874,7 +3885,7 @@ function mrn_base_stack_get_schema_time( $value ) {
  */
 function mrn_base_stack_get_business_schema_data() {
 	$business_information = mrn_base_stack_get_business_information();
-	$business_logo        = mrn_base_stack_get_business_logo( 'header' );
+	$business_logo        = mrn_base_stack_get_business_logo( 'header', $business_information );
 	$social_links         = function_exists( 'mrn_config_helper_get_social_links' ) ? mrn_config_helper_get_social_links() : array();
 	$same_as              = array();
 
@@ -4023,11 +4034,12 @@ add_action( 'wp_head', 'mrn_base_stack_print_business_schema', 40 );
  * - footer
  * - footer_inverted
  *
- * @param string $context Logo context.
+ * @param string                    $context              Logo context.
+ * @param array<string, mixed>|null $business_information Optional preloaded business information payload.
  * @return mixed|null
  */
-function mrn_base_stack_get_business_logo( $context = 'header' ) {
-	$business_information = mrn_base_stack_get_business_information();
+function mrn_base_stack_get_business_logo( $context = 'header', $business_information = null ) {
+	$business_information = is_array( $business_information ) ? $business_information : mrn_base_stack_get_business_information();
 
 	$map = array(
 		'header'          => array( 'logo', 'logo_inverted' ),
