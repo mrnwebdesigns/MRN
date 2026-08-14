@@ -12,9 +12,10 @@ Usage:
     [--skip-backup]
 
 Description:
-  Resolve the live site owner, verify the direct site-owner SSH path, normalize
-  malformed Updraft placeholder settings, and verify deploy readiness. Code-only
-  deploys do not create a backup unless --with-db-backup is provided.
+  Resolve the live site owner, verify the direct site-owner SSH path, detect
+  malformed Updraft placeholder settings, and verify deploy readiness. Every
+  real deployment must provide --with-db-backup; --skip-backup is only for a
+  dry run or genuinely read-only readiness check.
 
 Output:
   Prints shell-friendly key=value lines for:
@@ -28,8 +29,8 @@ Output:
 Notes:
   - Human-readable progress is written to stderr.
   - Use the printed SSH_LOGIN for direct site-owner deploy writes.
-  - --with-db-backup creates a database-only backup for database-changing work.
-  - --skip-backup remains accepted for compatibility and is now the default.
+  - --with-db-backup creates and verifies a database-only remote backup.
+  - --skip-backup remains accepted only for dry-run/readiness callers.
 EOF
 }
 
@@ -46,6 +47,7 @@ SITE_HOSTNAME=""
 DISCOVERY_SSH_HOST="mrndev"
 BACKUP_LABEL=""
 RUN_DB_BACKUP=0
+BACKUP_MODE_SET=0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 while [[ $# -gt 0 ]]; do
@@ -64,10 +66,12 @@ while [[ $# -gt 0 ]]; do
 			;;
 		--with-db-backup)
 			RUN_DB_BACKUP=1
+			BACKUP_MODE_SET=1
 			shift
 			;;
 		--skip-backup)
 			RUN_DB_BACKUP=0
+			BACKUP_MODE_SET=1
 			shift
 			;;
 		-h|--help)
@@ -83,6 +87,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ -n "${SITE_HOSTNAME}" ]] || fail "--site-hostname is required."
+[[ "${BACKUP_MODE_SET}" -eq 1 ]] || fail "Choose --with-db-backup for a deployment or --skip-backup for a dry-run/read-only readiness check."
 
 for required in date grep sed ssh tr; do
 	command -v "${required}" >/dev/null 2>&1 || fail "Required command not found: ${required}"
@@ -173,7 +178,7 @@ echo wp_json_encode($out);
 PHP
 )
 
-UPDRAFT_NORMALIZE_CODE=$(cat <<'PHP'
+UPDRAFT_NORMALIZED_STATE_CODE=$(cat <<'PHP'
 $keys = [
     'updraft_service',
     'updraft_email',
@@ -181,35 +186,34 @@ $keys = [
     'updraft_report_wholebackup',
     'updraft_report_dbbackup',
 ];
+$out = [];
 foreach ($keys as $key) {
     $value = get_option($key, null);
     if ($value === null) {
+        $out[$key] = null;
         continue;
     }
     if (is_array($value)) {
-        $filtered = array_values(array_filter($value, static function ($item) {
+        $out[$key] = array_values(array_filter($value, static function ($item) {
             return $item !== '0' && $item !== '' && $item !== 0 && $item !== null;
         }));
-        update_option($key, $filtered);
         continue;
     }
     if ($value === '0' || $value === '' || $value === 0) {
-        delete_option($key);
+        $out[$key] = null;
+        continue;
     }
-}
-$out = [];
-foreach ($keys as $key) {
-    $out[$key] = get_option($key, null);
+    $out[$key] = $value;
 }
 echo wp_json_encode($out);
 PHP
 )
 
 BEFORE_STATE="$(run_site_php "${UPDRAFT_STATE_CODE}" | tr -d '\r')"
-AFTER_STATE="$(run_site_php "${UPDRAFT_NORMALIZE_CODE}" | tr -d '\r')"
+NORMALIZED_STATE="$(run_site_php "${UPDRAFT_NORMALIZED_STATE_CODE}" | tr -d '\r')"
 
-if [[ "${BEFORE_STATE}" != "${AFTER_STATE}" ]]; then
-	note "Normalized Updraft placeholder values for ${SITE_HOSTNAME}."
+if [[ "${BEFORE_STATE}" != "${NORMALIZED_STATE}" ]]; then
+	fail "Updraft settings contain malformed placeholder values for ${SITE_HOSTNAME}; preflight is read-only and will not change them before a verified backup. Resolve the settings through an approved recovery path, then rerun preflight."
 fi
 
 if [[ "${RUN_DB_BACKUP}" -eq 1 ]]; then
@@ -229,17 +233,26 @@ if [[ "${RUN_DB_BACKUP}" -eq 1 ]]; then
 		BACKUP_JOB_ID="$(printf '%s\n' "${BACKUP_OUTPUT}" | grep -Eo 'job id:[[:space:]]+[[:alnum:]]+' | awk '{print $3}' | tail -n 1)"
 	fi
 
-	if [[ -n "${BACKUP_JOB_ID}" ]]; then
-		for attempt in 1 2 3 4 5; do
-			sleep 2
-			PROGRESS_OUTPUT="$(run_site_wp "updraftplus backup_progress ${BACKUP_JOB_ID}" 2>&1 || true)"
-			if has_backup_warning "${PROGRESS_OUTPUT}"; then
-				fail "Updraft backup progress log contains warnings for ${SITE_HOSTNAME}: ${PROGRESS_OUTPUT}"
-			fi
-		done
-	fi
+	[[ -n "${BACKUP_JOB_ID}" ]] || fail "Updraft backup command did not return a job ID for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
 
-	note "Updraft database backup started cleanly for ${SITE_HOSTNAME} (${BACKUP_LABEL})."
+	BACKUP_COMPLETE=0
+	for (( attempt=1; attempt<=60; attempt++ )); do
+		sleep 5
+		PROGRESS_OUTPUT="$(run_site_wp "updraftplus backup_progress ${BACKUP_JOB_ID}" 2>&1 || true)"
+		if has_backup_warning "${PROGRESS_OUTPUT}"; then
+			fail "Updraft backup progress log contains warnings for ${SITE_HOSTNAME}: ${PROGRESS_OUTPUT}"
+		fi
+		if printf '%s' "${PROGRESS_OUTPUT}" | grep -Eiq 'backup succeeded and is now complete|backup.*completed successfully'; then
+			BACKUP_COMPLETE=1
+			break
+		fi
+		if printf '%s' "${PROGRESS_OUTPUT}" | grep -Eiq 'backup failed|errors? occurred|apparently unsuccessfully'; then
+			fail "Updraft backup failed for ${SITE_HOSTNAME}: ${PROGRESS_OUTPUT}"
+		fi
+	done
+
+	[[ "${BACKUP_COMPLETE}" -eq 1 ]] || fail "Updraft backup did not complete within 300 seconds for ${SITE_HOSTNAME} (job ${BACKUP_JOB_ID})."
+	note "Updraft database backup completed cleanly for ${SITE_HOSTNAME} (${BACKUP_LABEL}, job ${BACKUP_JOB_ID})."
 fi
 
 printf 'SITE_HOSTNAME=%s\n' "${SITE_HOSTNAME}"

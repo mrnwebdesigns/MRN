@@ -48,7 +48,10 @@ Deployment habits to preserve:
 - For live theme deploys, refresh the active site theme directory and preserve the live stylesheet slug, `Theme Name`, and `Text Domain` unless the handoff explicitly changes the theme architecture
 - Fresh site bootstrap now owns direct site-owner SSH authorization by ensuring `/home/<site-user>/.ssh/authorized_keys` contains the canonical MRN site-owner public key from `stack/configs/site-owner-authorized-key.pub`; older sites may still need a one-time backfill
 - Canonical live-site preflight helper is `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh`, and stack feature deploys should call it before any live refresh
-- For Updraft preflight backups, run a full `plugins,themes,uploads,others` plus database backup and only normalize malformed placeholder `0` or empty-array values if they reappear
+- Before every non-dry-run write to a shared development, staging, or production WordPress runtime, the deploy helper/job must create and verify a labeled database-only Updraft backup sent to the configured remote destination. QA remains read-only and reports whether this deployment gate is present and ready.
+- Routine scheduled and manual development backups use the rolling four-set limit. Use Always Keep only for named milestones before risky work and remove the protection when the milestone is no longer useful.
+- Never scan a shared S3 bucket root: remotely scanned/imported sets are exempt from automatic retention. Provision each development site with a unique prefix ending in `sites/<hostname>` and never invent or expose remote credentials.
+- Updraft preflight detects malformed placeholder `0` or empty-array values and blocks before backup or deployment; it must not mutate them as a pre-backup side effect.
 - Updraft settings imports should strip placeholder `"0"` and empty-string array rows for `updraft_service` and reporting/email options so new sites do not inherit broken backup config
 - The stack feature deploy helper now strips inherited/default ACLs from the live rollout-owned theme, shared runtime, and MU runtime trees before enforcing `644` representative file modes
 - After live file sync plus chmod normalization, run `stat` on representative changed files and re-fix any unexpected mode before calling the deploy complete

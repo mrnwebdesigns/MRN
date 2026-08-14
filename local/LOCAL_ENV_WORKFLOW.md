@@ -266,7 +266,7 @@ Deploy behavior:
 1. Runs canonical preflight (`preflight-live-site-deploy.sh`) by default:
    - site-owner resolution
    - direct SSH verify
-   - Updraft normalization/backup
+   - read-only Updraft readiness checks and a verified database-only remote backup
 2. Prompts for scope:
    - `site` = deploy local DB/uploads (site-specific content/config updates)
    - `stack` = deploy canonical stack code (theme/plugins/mu/shared) from this repo
@@ -276,7 +276,7 @@ Helpful flags:
 
 - `--deploy-scope site|stack` to skip scope prompt.
 - `--yes` to skip confirmation prompt.
-- `--skip-backup` only when intentionally bypassing preflight backup.
+- `--dry-run` for a read-only preview without a backup. Non-dry-run deploys cannot bypass the backup gate.
 - `--skip-db` / `--skip-uploads` to narrow site-scope deploys.
 - `--delete-uploads` to mirror uploads exactly during site-scope deploy.
 - `--dry-run` for rsync previews (DB write steps skipped).

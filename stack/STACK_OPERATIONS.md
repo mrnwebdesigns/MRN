@@ -119,16 +119,16 @@ rsync -rlt --omit-dir-times --delete \
 - Avoid preserving local owner/group/permission metadata onto live site paths.
   - Use content-only sync flags such as `-rlt` instead of `-a` when syncing into live site directories.
   - Then normalize directories to `755` and files to `644` as the site owner.
-- Code-only individual-site writes do not create an Updraft backup. Use Git or the managed package as the code rollback source.
-- For a write that changes stored data or runs a migration, create a database-only backup from the site-owner context:
+- Before every non-dry-run write to a shared development, staging, or production site, create and verify a database-only backup from the site-owner context:
   - `wp updraftplus backup --include-files= --send-to-cloud --label='<label>'`
+- Use Git or the managed package as the code rollback source, but do not treat Git rollback as a substitute for the database backup gate.
 - Routine backups remain under normal retention; do not use `--always-keep` for deployments.
 - Treat malformed Updraft placeholder values as part of deploy readiness.
   - Check `updraft_service`, `updraft_email`, `updraft_report_warningsonly`, `updraft_report_wholebackup`, and `updraft_report_dbbackup`.
-  - If those values contain placeholder entries such as `"0"` or empty-string array values, remove only the placeholders, keep the real storage backend, and rerun the same backup until the latest log is clean.
+  - If those values contain placeholder entries such as `"0"` or empty-string array values, stop before writing. Preflight reports the blocker but does not normalize settings before a verified backup. Use an explicitly approved recovery path, preserve the real storage backend, then rerun preflight and the backup gate.
 - Canonical preflight helper for the site-owner SSH verify plus Updraft readiness pass:
-  - `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh --site-hostname <site-hostname>`
-  - Add `--with-db-backup` only for data-changing or migration work.
+  - deployment: `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh --site-hostname <site-hostname> --with-db-backup`
+  - read-only readiness: `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh --site-hostname <site-hostname> --skip-backup`
 - If there is no dedicated helper for the exact live site change, sync only the changed live surface instead of broad site-wide paths.
   - Example: for a single MU plugin release, sync only that MU plugin directory as the site owner.
 - After the broad normalization pass, run `stat` on representative changed files.
@@ -225,12 +225,12 @@ When updating stack-managed assets:
 For individual live-site deploys:
 
 1. confirm the exact approved release state, including whether local is ahead of `origin/main`
-2. take the required Updraft backup before writing live files
-3. inspect backup output and settings for malformed placeholder values such as:
+2. take and verify the required Updraft database-only remote backup before writing live files
+3. require preflight to block on malformed placeholder values such as:
    - `updraft_email = ""`
    - report arrays stored as `["0"]`
-4. normalize only those malformed reporting placeholders if they reappear
-   - the canonical helper for this preflight is `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh`
+4. resolve malformed placeholders only through an explicitly approved recovery path, then rerun the canonical helper
+   - `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh`
 5. sync only the intended live site paths as `SITE_USER`
 6. verify the changed runtime files are present and loaded after deploy
 

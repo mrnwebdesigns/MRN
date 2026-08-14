@@ -13,12 +13,29 @@
 
 ## Deployments
 
-- Code-only theme, plugin, and MU-plugin deployments do not create backups.
-- Use Git for rollback of site-owned and shared code.
-- Use `--with-db-backup` only when a deployment changes stored data, runs a
-  migration, or makes another non-code database change.
+- Before every non-dry-run write to a shared development, staging, or production
+  WordPress runtime, create and verify a database-only remote backup. This
+  includes code-only theme, plugin, and MU-plugin deployments.
+- Use Git for code rollback; the database backup protects WordPress state,
+  configuration, and schema that can still be affected during plugin loading.
+- Deployment helpers must pass `--with-db-backup`. `--skip-backup` is allowed
+  only for a dry run or a genuinely read-only readiness check.
 - Explicit pre-deploy backups are database-only, are labeled, and remain under
   normal retention. They are not marked `always_keep`.
+- QA does not create the backup. QA reports whether the backup gate and runtime
+  prerequisites are ready; the deployment job performs and verifies the backup
+  immediately before its first remote write.
+
+## Development Workflow
+
+- Routine scheduled and manual backups share the rolling four-set retention.
+- Use **Always Keep** only for a named milestone before risky work.
+- Remove Always Keep protection when that milestone is no longer useful.
+- Never scan a shared bucket root; remotely scanned imports are exempt from
+  Updraft's normal retention.
+- Provision every development site with a unique S3 prefix ending in
+  `sites/<hostname>`. Development sites do not have to be enrolled in MainWP;
+  use the dedicated site-owner SSH path when they are managed directly.
 
 ## Restores and Cleanup
 
@@ -34,5 +51,7 @@
 ## Recommended Retention Exceptions
 
 Create a separately documented archive outside normal Updraft retention for a
-legal, launch, or migration milestone. Do not use `always_keep` for routine
-deployments.
+legal, launch, or migration milestone. A temporary `always_keep` backup is
+acceptable for an explicitly named risky-development milestone, but it must be
+reviewed and unprotected when no longer useful. Do not use `always_keep` for
+routine deployments.

@@ -118,18 +118,18 @@ Before any live-site write, run the canonical preflight helper for the target si
 
 ```bash
 /Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh \
-  --site-hostname default-configs.mrndev.io
+  --site-hostname default-configs.mrndev.io \
+  --skip-backup
 ```
 
 This helper is responsible for:
 
 - resolving `SITE_USER` / `SITE_ROOT`
 - verifying the direct `mrndev-site-owner` SSH path
-- removing malformed Updraft placeholder values without inventing new settings
-- verifying deploy readiness without creating a backup for code-only work
+- detecting malformed Updraft placeholder values without changing them before the backup gate
+- verifying deploy readiness and, when called by a real deployment, creating and verifying the required database-only remote backup
 
-For a deployment that changes stored data or runs a migration, request an
-explicit database-only backup:
+For every non-dry-run deployment, request the required database-only backup:
 
 ```bash
 /Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh \

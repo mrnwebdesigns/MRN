@@ -59,3 +59,15 @@ Release baseline:
 - performance review
 - stack plugin parity check for UI/runtime-dependent releases (`stack/scripts/audit-config-helper-parity.sh`)
 - site-owner deploy readiness check (site-owner SSH + write access for the target live plugin/theme paths)
+
+MRN Updraft backup policy:
+- Treat `stack/BACKUP_POLICY.md` as the canonical backup policy for Codex work in this repository.
+- Stack-managed development, staging, and production sites use daily Updraft file/database backups, `4/4` retention, local deletion after remote transfer, WordPress-core exclusion, deterministic 01:00-04:59 scheduling, and a unique S3 prefix ending in `sites/<hostname>`.
+- Development sites do not need to be added to MainWP. Use their dedicated site-owner SSH path when auditing or applying the policy manually.
+- Routine scheduled and manual development backups stay inside the rolling four-set limit. Do not mark routine backups `always_keep`.
+- Use **Always Keep** only for an explicitly named milestone before risky work, and remove that protection when the milestone is no longer useful.
+- Never scan a shared S3 bucket root. Updraft treats backups discovered by remote scan as imported and exempts them from automatic retention.
+- Never delete shared-root remote objects until ownership is proven. When correcting a legacy shared prefix, first isolate the site, then clear only stale local history or delete individually verified site-owned objects.
+- Before any non-dry-run write to a shared development, staging, or production WordPress runtime, the deployment workflow must create and verify a labeled, database-only Updraft backup sent to the configured remote destination. A Git push or QA pass does not satisfy this gate by itself.
+- QA remains read-only: it verifies backup-policy/deploy readiness and reports blockers. The deployment helper or deployment job performs the required backup immediately before the write.
+- If a push triggers automatic deployment, verify that the deployment job contains the backup-and-verification gate before allowing the push/deploy workflow to proceed.

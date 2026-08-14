@@ -5,7 +5,7 @@ usage() {
 	cat <<'EOF'
 Usage:
   deploy-live-theme.sh \
-    [--site-hostname <site-hostname>] \
+    --site-hostname <site-hostname> \
     --site-user <site-user> \
     --site-path <absolute-site-root> \
     --theme-src <local-theme-dir> \
@@ -20,6 +20,7 @@ Usage:
 
 Example:
   deploy-live-theme.sh \
+    --site-hostname default-configs.mrndev.io \
     --ssh-host mrndev-ops \
     --site-user mrndev-default-configs-stack \
     --site-path /home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io \
@@ -30,6 +31,7 @@ Example:
 
 Direct site-owner example:
   deploy-live-theme.sh \
+    --site-hostname default-configs.mrndev.io \
     --ssh-host mrndev-default-configs-stack@167.99.54.77 \
     --site-user mrndev-default-configs-stack \
     --site-path /home/mrndev-default-configs-stack/htdocs/default-configs.mrndev.io \
@@ -117,44 +119,42 @@ while [[ $# -gt 0 ]]; do
 		esac
 done
 
-if [[ -z "$SITE_USER" || -z "$SITE_PATH" || -z "$THEME_SRC" || -z "$REMOTE_THEME_PATH" ]]; then
+if [[ -z "$SITE_HOSTNAME" || -z "$SITE_USER" || -z "$SITE_PATH" || -z "$THEME_SRC" || -z "$REMOTE_THEME_PATH" ]]; then
 	usage >&2
 	exit 1
 fi
 
-if [[ -n "${SITE_HOSTNAME}" ]]; then
-	PREP_DISCOVERY_HOST="${DISCOVERY_SSH_HOST:-${SSH_HOST}}"
-	PREP_OUTPUT="$("${SCRIPT_DIR}/preflight-live-site-deploy.sh" --site-hostname "${SITE_HOSTNAME}" --discovery-ssh-host "${PREP_DISCOVERY_HOST}")"
-	RESOLVED_SITE_USER=""
-	RESOLVED_SITE_ROOT=""
-	RESOLVED_SSH_LOGIN=""
+PREP_DISCOVERY_HOST="${DISCOVERY_SSH_HOST:-${SSH_HOST}}"
+PREP_OUTPUT="$("${SCRIPT_DIR}/preflight-live-site-deploy.sh" --site-hostname "${SITE_HOSTNAME}" --discovery-ssh-host "${PREP_DISCOVERY_HOST}" --with-db-backup)"
+RESOLVED_SITE_USER=""
+RESOLVED_SITE_ROOT=""
+RESOLVED_SSH_LOGIN=""
 
-	while IFS='=' read -r key value; do
-		case "${key}" in
-			SITE_USER) RESOLVED_SITE_USER="${value}" ;;
-			SITE_ROOT) RESOLVED_SITE_ROOT="${value}" ;;
-			SSH_LOGIN) RESOLVED_SSH_LOGIN="${value}" ;;
-		esac
-	done <<< "${PREP_OUTPUT}"
+while IFS='=' read -r key value; do
+	case "${key}" in
+		SITE_USER) RESOLVED_SITE_USER="${value}" ;;
+		SITE_ROOT) RESOLVED_SITE_ROOT="${value}" ;;
+		SSH_LOGIN) RESOLVED_SSH_LOGIN="${value}" ;;
+	esac
+done <<< "${PREP_OUTPUT}"
 
-	if [[ -z "${RESOLVED_SITE_USER}" || -z "${RESOLVED_SITE_ROOT}" || -z "${RESOLVED_SSH_LOGIN}" ]]; then
-		echo "Live-site preflight did not return complete details for ${SITE_HOSTNAME}." >&2
-		exit 1
-	fi
-
-	if [[ "${SITE_USER}" != "${RESOLVED_SITE_USER}" ]]; then
-		echo "Resolved site owner (${RESOLVED_SITE_USER}) does not match --site-user (${SITE_USER})." >&2
-		exit 1
-	fi
-
-	if [[ "${SITE_PATH}" != "${RESOLVED_SITE_ROOT}" ]]; then
-		echo "Resolved site path (${RESOLVED_SITE_ROOT}) does not match --site-path (${SITE_PATH})." >&2
-		exit 1
-	fi
-
-	SSH_HOST="${RESOLVED_SSH_LOGIN}"
-	DIRECT_SSH=1
+if [[ -z "${RESOLVED_SITE_USER}" || -z "${RESOLVED_SITE_ROOT}" || -z "${RESOLVED_SSH_LOGIN}" ]]; then
+	echo "Live-site preflight did not return complete details for ${SITE_HOSTNAME}." >&2
+	exit 1
 fi
+
+if [[ "${SITE_USER}" != "${RESOLVED_SITE_USER}" ]]; then
+	echo "Resolved site owner (${RESOLVED_SITE_USER}) does not match --site-user (${SITE_USER})." >&2
+	exit 1
+fi
+
+if [[ "${SITE_PATH}" != "${RESOLVED_SITE_ROOT}" ]]; then
+	echo "Resolved site path (${RESOLVED_SITE_ROOT}) does not match --site-path (${SITE_PATH})." >&2
+	exit 1
+fi
+
+SSH_HOST="${RESOLVED_SSH_LOGIN}"
+DIRECT_SSH=1
 
 if [[ ! -d "$THEME_SRC" ]]; then
 	echo "Theme source directory not found: $THEME_SRC" >&2

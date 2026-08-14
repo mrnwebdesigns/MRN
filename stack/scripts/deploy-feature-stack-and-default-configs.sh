@@ -272,7 +272,11 @@ PREP_ARGS=(
 	--discovery-ssh-host "${SSH_HOST}"
 )
 
-PREP_ARGS+=(--skip-backup)
+if [[ "${DRY_RUN}" -eq 1 ]]; then
+	PREP_ARGS+=(--skip-backup)
+else
+	PREP_ARGS+=(--with-db-backup)
+fi
 
 PREP_OUTPUT="$("${SCRIPT_DIR}/preflight-live-site-deploy.sh" "${PREP_ARGS[@]}")"
 

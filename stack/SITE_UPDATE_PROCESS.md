@@ -41,10 +41,9 @@ Prefer:
    - Verify the direct site-owner SSH path before any write.
    - New sites should receive that direct site-owner SSH authorization during stack bootstrap; if an older site still fails the verify step, treat it as a one-time site-owner `authorized_keys` backfill instead of a theme/plugin deploy bug.
    - Prefer the canonical helper:
-     `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh --site-hostname <site-hostname>`
-   - Code-only deployments do not create a backup. Git is the rollback source for code.
-   - If the deployment changes stored data or runs a migration, add `--with-db-backup` to create a labeled database-only backup.
-   - If Updraft storage/report settings contain placeholder values such as `"0"` or empty-string array entries, normalize only those placeholders before continuing.
+     `/Users/khofmeyer/Development/MRN/stack/scripts/preflight-live-site-deploy.sh --site-hostname <site-hostname> --with-db-backup`
+   - Every non-dry-run write to a shared dev, staging, or production runtime creates and verifies a database-only remote backup immediately before the write. Git remains the rollback source for code, but is not a substitute for the database safety gate.
+   - If Updraft storage/report settings contain placeholder values such as `"0"` or empty-string array entries, stop before the backup and correct them through an approved recovery path; preflight must not mutate the site first.
 3. Review theme impact.
    - If rendering, template structure, helper output, classes, variables, or accent hooks changed, include the parent theme update in the rollout plan.
 4. Check live-theme compatibility.

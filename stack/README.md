@@ -24,8 +24,8 @@ This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 - A CloudPanel cron scanner (`scripts/bootstrap-new-sites.sh`) that bootstraps only once per site.
 - A canonical direct site-owner SSH public key file (`configs/site-owner-authorized-key.pub`) that bootstrap installs into each new site owner's `authorized_keys`, after removing group/other home-directory write access required by OpenSSH StrictModes.
 - A canonical stack feature-deploy helper (`scripts/deploy-feature-stack-and-default-configs.sh`) that mirrors stack theme and MU changes to both the stack server and `default-configs.mrndev.io`.
-- A live-site preflight helper (`scripts/preflight-live-site-deploy.sh`) that resolves the site owner, verifies direct site-owner SSH, normalizes malformed Updraft placeholder settings, and supports an explicit database-only backup for data-changing work.
-- A canonical backup policy (`BACKUP_POLICY.md`) with per-site S3 prefixes, staggered daily schedules, four-set retention, and no automatic backup for code-only deployments.
+- A live-site preflight helper (`scripts/preflight-live-site-deploy.sh`) that resolves the site owner, verifies direct site-owner SSH, detects malformed Updraft placeholder settings, and requires a verified database-only remote backup before every real deployment.
+- A canonical backup policy (`BACKUP_POLICY.md`) with per-site S3 prefixes, staggered daily schedules, four-set retention, development-backup hygiene, and a backup gate for all non-dry-run shared-runtime writes.
 - A Local environment workflow helper (`../local/scripts/local-env-workflow.sh`) that pulls into Local and deploys with an explicit site-vs-stack scope prompt.
 - A repo shortcut command (`../scripts/mrn`) for `mrn pull-site` and `mrn deploy-site`.
 - A nightly Local sync helper (`../local/scripts/nightly-pull-mrndev-sites.sh`) for discovered `*.mrndev.io` sites.

@@ -1121,9 +1121,11 @@ resolve_deploy_target() {
 		--discovery-ssh-host "${DISCOVERY_SSH_HOST}"
 	)
 
+
 	if [[ "${SKIP_BACKUP}" -eq 1 ]]; then
-		preflight_args+=(--skip-backup)
+		fail "--skip-backup cannot be used for a non-dry-run deploy. Use --dry-run for a read-only preview."
 	fi
+	preflight_args+=(--with-db-backup)
 
 	output="$("${PREFLIGHT_SCRIPT}" "${preflight_args[@]}")" || fail "Preflight failed for ${SITE_HOSTNAME}."
 	parse_site_context "${output}"

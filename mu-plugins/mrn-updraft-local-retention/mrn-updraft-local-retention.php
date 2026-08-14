@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: MRN Updraft Backup Policy
- * Description: Limits local Updraft backup sets and repairs missing scheduled backup events after restores.
+ * Description: Enforces the MRN Updraft backup policy, limits local backup sets, and repairs missing scheduled events.
  * Author: MRN Web Designs
- * Version: 0.2.0
+ * Version: 0.3.0
  */
 
 defined('ABSPATH') || exit;
@@ -17,6 +17,169 @@ const MRN_UPDRAFT_LOCAL_RETENTION_CRON_HOOK = 'mrn_updraft_local_retention_clean
  * Default number of local backup sets to retain.
  */
 const MRN_UPDRAFT_LOCAL_RETENTION_MAX_SETS = 4;
+
+/**
+ * Resolve the canonical site hostname used for deterministic scheduling and
+ * remote-prefix validation.
+ */
+function mrn_updraft_backup_policy_get_hostname(): string {
+	$hostname = wp_parse_url(home_url('/'), PHP_URL_HOST);
+	$hostname = is_string($hostname) ? strtolower(rtrim($hostname, '.')) : '';
+
+	return preg_match('/^[a-z0-9.-]+$/', $hostname) ? $hostname : '';
+}
+
+/**
+ * Calculate a stable daily backup time between 01:00 and 04:59.
+ */
+function mrn_updraft_backup_policy_get_start_time(): string {
+	$hostname = mrn_updraft_backup_policy_get_hostname();
+	if ('' === $hostname) {
+		return '03:00';
+	}
+
+	$minute_index = (int) ((int) sprintf('%u', crc32($hostname)) % 240);
+	$hour = 1 + intdiv($minute_index, 60);
+	$minute = $minute_index % 60;
+
+	return sprintf('%02d:%02d', $hour, $minute);
+}
+
+/**
+ * Read an Updraft option through its own options layer when available.
+ *
+ * @param string $name    Option name.
+ * @param mixed  $default Default value.
+ * @return mixed
+ */
+function mrn_updraft_backup_policy_get_option(string $name, $default = false) {
+	if (class_exists('UpdraftPlus_Options') && method_exists('UpdraftPlus_Options', 'get_updraft_option')) {
+		return UpdraftPlus_Options::get_updraft_option($name, $default);
+	}
+
+	return get_option($name, $default);
+}
+
+/**
+ * Update an Updraft option through its own options layer when available.
+ *
+ * @param string $name  Option name.
+ * @param mixed  $value New value.
+ */
+function mrn_updraft_backup_policy_update_option(string $name, $value): void {
+	if (class_exists('UpdraftPlus_Options') && method_exists('UpdraftPlus_Options', 'update_updraft_option')) {
+		UpdraftPlus_Options::update_updraft_option($name, $value);
+		return;
+	}
+
+	update_option($name, $value);
+}
+
+/**
+ * Enforce the non-secret MRN backup policy on every stack runtime.
+ *
+ * Remote storage credentials and destinations are deliberately excluded. They
+ * must be provisioned separately and are validated below without being changed.
+ */
+function mrn_updraft_backup_policy_enforce_settings(): void {
+	$start_time = mrn_updraft_backup_policy_get_start_time();
+	$desired = array(
+		'updraft_interval'          => 'daily',
+		'updraft_interval_database' => 'daily',
+		'updraft_retain'            => '4',
+		'updraft_retain_db'         => '4',
+		'updraft_delete_local'      => '1',
+		'updraft_include_wpcore'    => '0',
+		'updraft_starttime_files'   => $start_time,
+		'updraft_starttime_db'      => $start_time,
+	);
+	$schedule_changed = false;
+
+	foreach ($desired as $name => $value) {
+		if ((string) mrn_updraft_backup_policy_get_option($name, '') === (string) $value) {
+			continue;
+		}
+
+		mrn_updraft_backup_policy_update_option($name, $value);
+		if (in_array($name, array('updraft_interval', 'updraft_interval_database', 'updraft_starttime_files', 'updraft_starttime_db'), true)) {
+			$schedule_changed = true;
+		}
+	}
+
+	if ($schedule_changed) {
+		wp_clear_scheduled_hook('updraft_backup');
+		wp_clear_scheduled_hook('updraft_backup_database');
+	}
+}
+add_action('init', 'mrn_updraft_backup_policy_enforce_settings', 15);
+
+/**
+ * Inspect S3 configuration without returning or changing credential values.
+ *
+ * @return array{configured:bool,isolated:bool,expected_suffix:string}
+ */
+function mrn_updraft_backup_policy_get_remote_status(): array {
+	$hostname = mrn_updraft_backup_policy_get_hostname();
+	$expected_suffix = '' !== $hostname ? 'sites/' . $hostname : '';
+	$services = array_values((array) mrn_updraft_backup_policy_get_option('updraft_service', array()));
+	$status = array(
+		'configured'      => in_array('s3', $services, true),
+		'isolated'        => false,
+		'expected_suffix' => $expected_suffix,
+	);
+
+	if (!$status['configured'] || '' === $expected_suffix) {
+		return $status;
+	}
+
+	$s3 = mrn_updraft_backup_policy_get_option('updraft_s3', array());
+	$settings_list = is_array($s3) && isset($s3['settings']) && is_array($s3['settings'])
+		? $s3['settings']
+		: array($s3);
+
+	foreach ($settings_list as $settings) {
+		if (!is_array($settings) || empty($settings['path']) || !is_string($settings['path'])) {
+			continue;
+		}
+
+		$path = trim($settings['path'], '/');
+		$suffix_with_separator = '/' . $expected_suffix;
+		if ($path === $expected_suffix || substr($path, -strlen($suffix_with_separator)) === $suffix_with_separator) {
+			$status['isolated'] = true;
+			break;
+		}
+	}
+
+	return $status;
+}
+
+/**
+ * Warn administrators when remote backups are missing or share a bucket root.
+ */
+function mrn_updraft_backup_policy_remote_notice(): void {
+	if (!current_user_can('manage_options')) {
+		return;
+	}
+
+	$status = mrn_updraft_backup_policy_get_remote_status();
+	if ($status['configured'] && $status['isolated']) {
+		return;
+	}
+
+	$message = !$status['configured']
+		? __('MRN backup policy: Amazon S3 remote storage is not configured.', 'mrn-updraft-local-retention')
+		: sprintf(
+			/* translators: %s is the required non-secret S3 path suffix. */
+			__('MRN backup policy: the S3 destination must use a unique path ending in %s. Remote retention is unsafe while sites share a bucket root.', 'mrn-updraft-local-retention'),
+			$status['expected_suffix']
+		);
+
+	printf(
+		'<div class="notice notice-error"><p>%s</p></div>',
+		esc_html($message)
+	);
+}
+add_action('admin_notices', 'mrn_updraft_backup_policy_remote_notice');
 
 /**
  * Resolve the next occurrence of a configured Updraft HH:MM start time.
