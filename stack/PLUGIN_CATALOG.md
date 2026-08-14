@@ -23,6 +23,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-shared-assets` | 0.2.0 | MU loader | Platform required | Provides shared asset and icon interfaces. |
 | `mrn-site-colors` | 0.1.38 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
 | `mrn-updraft-local-retention` | 0.3.0 | MU loader | Platform required | Enforces shared backup schedule and retention policy. |
+| `mrn-universal-sticky-bar` | 1.1.8 | Standard bootstrap | Platform required | Provides the shared settings/editor action bar; independently released for non-Stack use. |
 
 ## Optional Shared Features
 
@@ -83,7 +84,6 @@ No disposition in this section authorizes a code move, manifest change, deletion
 | `mrn-google-reviews` | 1.0.0 | Incubator/catalog only | Complete source, secret-management, QA, and release-readiness review. |
 | `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Catalog only | Keep independently optional, integrate with Mega Menu, or archive. |
 | `mrn-reusable-block-library` | 0.1.28 | MU loader | Decide whether it is a mandatory base-theme contract or optional shared feature. |
-| `mrn-universal-sticky-bar` | 1.1.8 | Standard bootstrap | Keep independent or move implementation into the platform with compatibility shims. |
 
 ## Archived Components
 
@@ -95,6 +95,7 @@ No disposition in this section authorizes a code move, manifest change, deletion
 
 - `mrn-mega-menu`: canonical in `MRN/plugins/mrn-mega-menu`; the unversioned, older `MRN-plugins` duplicate was retired without changing installed copies.
 - `searchwp-editor-performance`: canonical in the independent `mrnwebdesigns/searchwp-editor-performance` repository; the stack records and packages its release but does not own a duplicate source tree.
+- `mrn-universal-sticky-bar`: canonical in its independent repository and required by the Stack profile. It remains a standard plugin because it is independently useful off-stack; the Stack manifest and rollout contract enforce installation and shared-helper compatibility.
 - `MRN-disable-core-auto-updates`: sunset approved on 2026-08-14. It is not part of the target MRN product catalog; no existing-site action is authorized by this decision.
 
 ## Current Bootstrap Warning

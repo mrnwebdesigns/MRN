@@ -9,7 +9,8 @@ Current shared source:
 Rule:
 - Edit the shared source here first.
 - Consume `mrn-sticky-settings-toolbar.php` directly from `wp-content/shared` when possible.
-- Plugin-local `includes/mrn-sticky-settings-toolbar.php` files should be thin loaders only, not forked copies.
+- In-repo plugin-local `includes/mrn-sticky-settings-toolbar.php` files should be thin loaders, not forked copies.
+- The independently released `mrn-universal-sticky-bar` retains a full fallback for non-Stack installs; it must remain byte-identical to this canonical source, and the rollout-contract check enforces that parity.
 - New code should call the unique `mrn_sticky_toolbar_*` API instead of the legacy `mrn_render_admin_top_bar*` wrapper names.
 
 ## USB Settings Toolbar Contract

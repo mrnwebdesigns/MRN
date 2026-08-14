@@ -502,13 +502,13 @@
       "version": "1.1.8",
       "runtime_type": "standard-plugin",
       "classification": "platform-ui",
-      "lifecycle": "supported-review",
+      "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
-      "target_tier": "review",
+      "target_tier": "platform-required",
       "source": {"repository": "mrn-universal-sticky-bar", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress Classic Editor workflow"], "soft": ["MRN plugins with settings screens"], "release_group": "shared-admin-ui-contract"},
+      "dependencies": {"hard": ["WordPress", "MRN shared toolbar runtime on Stack sites"], "soft": ["WordPress Classic Editor workflow", "MRN plugins with settings screens"], "release_group": "shared-admin-ui-contract"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
-      "purpose": "Provides the shared sticky settings/editor action-bar implementation and compatibility API; review platform ownership."
+      "purpose": "Provides the required Stack settings/editor action-bar implementation and compatibility API while retaining an independently deployable standalone fallback."
     },
 
     {

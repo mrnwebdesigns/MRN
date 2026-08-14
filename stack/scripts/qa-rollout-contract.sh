@@ -7,6 +7,8 @@ Usage:
   qa-rollout-contract.sh [--ssh-host <ssh-host>] [--live-site-root <path>] [--stack-root-remote <path>] [--expected-theme-slug <slug>]
 
 Default checks:
+  - required Stack plugins are present in the local plugin manifest
+  - standalone sticky-toolbar fallback matches the canonical shared source
   - local theme version matches packaged zip version
   - stack shared runtime exists on the server
   - live site shared runtime exists when a live rollout target is configured or discoverable
@@ -63,6 +65,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 LOCAL_THEME_DIR="${REPO_ROOT}/stack/themes/mrn-base-stack"
 LOCAL_THEME_ZIP="${REPO_ROOT}/releases/stack/mrn-base-stack.zip"
+LOCAL_PLUGINS_MANIFEST="${REPO_ROOT}/stack/manifests/plugins.txt"
+LOCAL_STICKY_HELPER="${REPO_ROOT}/shared/mrn-sticky-settings-toolbar.php"
+LOCAL_STICKY_FALLBACK="${REPO_ROOT}/plugins/mrn-universal-sticky-bar/includes/mrn-sticky-settings-toolbar.php"
 
 REMOTE_SHARED_DIR="${STACK_ROOT_REMOTE}/shared"
 REMOTE_STACK_RETENTION_WRAPPER="${STACK_ROOT_REMOTE}/mu-plugins/mrn-updraft-local-retention.php"
@@ -101,6 +106,15 @@ remote_dir_exists() {
 
 require_command ssh
 require_command unzip
+
+[[ -f "${LOCAL_PLUGINS_MANIFEST}" ]] || fail "Local plugin manifest not found: ${LOCAL_PLUGINS_MANIFEST}"
+grep -Fxq '/home/mrndev-stack-manager/stack/packages/mrn-universal-sticky-bar.zip' "${LOCAL_PLUGINS_MANIFEST}" || fail "Required Stack plugin missing from manifest: mrn-universal-sticky-bar"
+pass "Required Stack plugin manifest includes mrn-universal-sticky-bar"
+
+[[ -f "${LOCAL_STICKY_HELPER}" ]] || fail "Canonical sticky-toolbar helper not found: ${LOCAL_STICKY_HELPER}"
+[[ -f "${LOCAL_STICKY_FALLBACK}" ]] || fail "Standalone sticky-toolbar fallback not found: ${LOCAL_STICKY_FALLBACK}"
+cmp -s "${LOCAL_STICKY_HELPER}" "${LOCAL_STICKY_FALLBACK}" || fail "Standalone sticky-toolbar fallback differs from the canonical shared source"
+pass "Standalone sticky-toolbar fallback matches the canonical shared source"
 
 [[ -d "${LOCAL_THEME_DIR}" ]] || fail "Local theme directory not found: ${LOCAL_THEME_DIR}"
 [[ -f "${LOCAL_THEME_DIR}/style.css" ]] || fail "Local theme style.css not found."

@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.08.14-sticky-bar-platform-requirement
+- Classified `mrn-universal-sticky-bar` `1.1.8` as required on every MRN Stack site while preserving its independent release boundary and standalone fallback.
+- Confirmed the Stack plugin manifest already installs and activates the plugin during bootstrap; no site deployment or activation was performed.
+- Synchronized the standalone fallback with the canonical Stack shared toolbar source and added rollout-contract checks for required-manifest membership and byte-identical helper parity.
+
 ## 2026.08.14-legacy-mu-source-cleanup
 - Archived `mrn-editor-ui-css` after confirming the active `mrn-admin-ui-css` component supersedes it and neither supported runtime sync path shipped it.
 - Removed the obsolete PHPStan baseline entry tied to the archived legacy loader.
