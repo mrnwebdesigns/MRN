@@ -92,7 +92,57 @@ Use Production Hub when environment-level facts are needed instead of static ass
 - Use shared tooling and scripts defined in canonical MRN stack/repo workflows and deployment contracts.
 - Apply per-project/site-specific edits only to approved scopes.
 
-## 5) Environment terminology
+## 5) MRN WordPress Stack model
+
+Use this model to avoid conflating hosting architecture with stack release and component versions.
+
+### 1) PLATFORM GENERATION
+
+- LEGACY STACK = CloudPanel
+- FUTURE STACK = RunCloud
+
+Platform generation describes the hosting/runtime/deployment architecture and migration status.
+
+Never infer platform generation from a stack release label or an individual plugin/component version.
+
+### 2) STACK RELEASE / BASELINE SNAPSHOT
+
+- Source of truth: `stack/STACK_VERSION.md`
+- Current verified release: `2026.08.14-sticky-bar-platform-requirement`
+- In stack language, this is a stack release/baseline snapshot label, not a platform-generation name.
+- A release label may reflect a significant change included in that baseline and is not itself a statement about platform architecture.
+
+### 3) INDIVIDUAL STACK COMPONENTS
+
+Components within the stack are independently identified/versioned where applicable.
+
+- Example:
+  - MRN Universal Sticky Bar
+    - Slug: `mrn-universal-sticky-bar`
+    - Current version in current baseline: `1.1.8`
+    - Classification: platform-required standard plugin
+    - Its inclusion/version is part of the stack baseline, but it is not a stack generation.
+
+### Discovery rule (before changes)
+
+When working on an MRN-managed WordPress site, always distinguish:
+
+1. Which PLATFORM GENERATION is it on? (CloudPanel or RunCloud)
+2. Which STACK RELEASE/BASELINE is it aligned with? (compare against `stack/STACK_VERSION.md` and applicable manifests)
+3. Which COMPONENT VERSIONS are installed? (verify against the applicable stack baseline/catalog)
+
+Do not treat these three concepts as interchangeable.
+
+The Future/RunCloud stack is still under active development. Do not assume a stack release label means a completed Future/RunCloud architecture.
+
+Before stack-level deployment or migration:
+
+- determine platform generation
+- determine applicable stack baseline
+- verify component compatibility
+- follow backup/preflight/QA requirements
+
+## 6) Environment terminology
 
 - LOCAL
   - Runtime and tools managed in Local Hub/TheHub (`thehub.localhost`) and local site runtimes.
@@ -105,7 +155,7 @@ Use Production Hub when environment-level facts are needed instead of static ass
 
 Never treat LOCAL, `mrndev.io` review, and production environments as interchangeable.
 
-## 6) Deployment safety (global standards)
+## 7) Deployment safety (global standards)
 
 - Backup-before-write:
   - Required precondition: verified database-only backup before non-dry-run remote writes to shared/dev/staging/production targets.
@@ -116,7 +166,7 @@ Never treat LOCAL, `mrndev.io` review, and production environments as interchang
 - Production confirmation boundaries:
   - Confirm target is production and explicit before executing production writes.
 
-## 7) Staleness model
+## 8) Staleness model
 
 | Policy/Convention | Authoritative source | Last validated in this pass | Validation method |
 | --- | --- | --- | --- |
@@ -131,7 +181,7 @@ Never treat LOCAL, `mrndev.io` review, and production environments as interchang
 Dynamic state policy:
 - Treat host routes, token presence, and live access as dynamic. Validate against current runtime/tool state during task execution before assuming connectivity or scope.
 
-## 8) Portability for future CLAUDE.md
+## 9) Portability for future CLAUDE.md
 
 - This file is vendor-neutral and repo-native.
 - A future `CLAUDE.md` should reference this file as the global source, adding only Claude-specific behavior notes.
