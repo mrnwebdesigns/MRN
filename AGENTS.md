@@ -71,3 +71,11 @@ MRN Updraft backup policy:
 - Before any non-dry-run write to a shared development, staging, or production WordPress runtime, the deployment workflow must create and verify a labeled, database-only Updraft backup sent to the configured remote destination. A Git push or QA pass does not satisfy this gate by itself.
 - QA remains read-only: it verifies backup-policy/deploy readiness and reports blockers. The deployment helper or deployment job performs the required backup immediately before the write.
 - If a push triggers automatic deployment, verify that the deployment job contains the backup-and-verification gate before allowing the push/deploy workflow to proceed.
+
+## Global MRN operating context
+
+For MRN-wide conventions (Local Hub vs Production Hub, access strategy, SSH/deployment safety), load:
+- /Users/khofmeyer/Development/MRN/docs/MRN-AGENT-OPERATING-CONTEXT.md
+
+Project-specific instructions in this repo still apply as overrides in their scope.
+
