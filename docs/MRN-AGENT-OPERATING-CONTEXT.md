@@ -111,6 +111,7 @@ Never infer platform generation from a stack release label or an individual plug
 - Current verified release: `2026.08.14-sticky-bar-platform-requirement`
 - In stack language, this is a stack release/baseline snapshot label, not a platform-generation name.
 - A release label may reflect a significant change included in that baseline and is not itself a statement about platform architecture.
+- For rollout decisions, treat component catalog records as the durable source of plugin-model reality.
 
 ### 3) INDIVIDUAL STACK COMPONENTS
 
