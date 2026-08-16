@@ -16,7 +16,6 @@ Current entries:
 - `mrn-editor-lockdown`
 - `mrn-environment-runtime`
 - `mrn-public-security-hardening`
-- `mrn-reusable-block-library`
 - `mrn-schema-bridge`
 - `mrn-shared-assets`
 - `mrn-site-colors`

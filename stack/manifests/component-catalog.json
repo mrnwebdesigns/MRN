@@ -177,15 +177,15 @@
       "slug": "mrn-reusable-block-library",
       "name": "MRN Reusable Block Library",
       "version": "0.1.28",
-      "runtime_type": "mu-component",
+      "runtime_type": "standard-plugin",
       "classification": "shared-feature",
       "lifecycle": "supported",
-      "current_distribution": "mu-loader",
-      "target_tier": "review",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-reusable-block-library", "state": "confirmed"},
+      "current_distribution": "catalog-only",
+      "target_tier": "optional-shared",
+      "source": {"repository": "MRN", "path": "plugins/mrn-reusable-block-library", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress"], "soft": ["ACF", "MRN base theme", "mrn-editor-lockdown"], "release_group": "editor-content-contract"},
       "data": {"options": ["mrn_rbl_legacy_cleanup_complete", "starter signature"], "tables": [], "cron": [], "routes": [], "external_services": [], "post_types": ["mrn_reusable_* types"]},
-      "purpose": "Owns reusable content post types, fields and rendering helpers; review whether it is a required theme contract or optional feature."
+      "purpose": "Optional stack-shared reusable content-model and rendering feature used when a site needs reusable blocks."
     },
     {
       "slug": "mrn-schema-bridge",

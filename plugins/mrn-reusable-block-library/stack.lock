@@ -1,0 +1,11 @@
+{
+  "project": "mrn-reusable-block-library",
+  "release_unit": "standalone-plugin",
+  "baseline": {
+    "pinned_at": "2026-08-16",
+    "repo_path": "/Users/khofmeyer/Development/MRN/plugins/mrn-reusable-block-library",
+    "integration_target": "optional-plugin-catalog",
+    "integration_mode": "optional-standard-plugin",
+    "plugin_version": "0.1.28"
+  }
+}

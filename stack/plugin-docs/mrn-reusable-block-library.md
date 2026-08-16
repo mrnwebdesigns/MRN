@@ -1,13 +1,13 @@
-# Reusable Block Library (MU)
+# Reusable Block Library
 
 ## Summary
 
-- Name: `Reusable Block Library (MU)`
+- Name: `Reusable Block Library`
 - Slug: `mrn-reusable-block-library`
-- Type: MU plugin
-- Current version: `0.1.6`
+- Type: standard plugin
+- Current version: `0.1.28`
 - Source path:
-  - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library`
+  - `/Users/khofmeyer/Development/MRN/plugins/mrn-reusable-block-library`
 
 ## Purpose
 
@@ -47,6 +47,8 @@ Current built-in types:
 - `mrn_reusable_faq`
 - `mrn_reusable_grid`
 - `mrn_reusable_list`
+- `mrn_reusable_search`
+- `mrn_reusable_partner`
 
 ## Admin Surface Area
 
@@ -127,7 +129,7 @@ Theme override path:
 
 If no theme override exists, the plugin falls back to:
 
-- `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/`
+- `/Users/khofmeyer/Development/MRN/plugins/mrn-reusable-block-library/templates/`
 
 Current built-in template mapping:
 
@@ -135,6 +137,10 @@ Current built-in template mapping:
 - `mrn_reusable_cta` -> `cta`
 - `mrn_reusable_faq` -> `faq`
 - `mrn_reusable_grid` -> `content-grid`
+- `mrn_reusable_list` -> `content-lists`
+- `mrn_reusable_search` -> `search-form`
+- `mrn_reusable_partner` -> `partners`
+- fallback -> `generic-block`
 
 ## Front-End / Theming Behavior
 
@@ -185,9 +191,9 @@ It also manages starter-block provisioning and admin presentation data indirectl
 
 ## Rollout / Packaging Notes
 
-- This plugin rolls out through stack MU source sync, not through the standard plugin manifest.
+- This plugin is catalog-only as an optional shared standard plugin in `plugins/` and is not loaded by the MU loader.
 - It is part of the stack baseline.
-- Current packaged baseline in memory: `0.1.3`
+- Current packaged baseline in memory: `0.1.28`
 
 ## Risks / Gotchas
 

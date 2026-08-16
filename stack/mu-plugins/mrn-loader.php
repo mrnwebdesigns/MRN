@@ -57,7 +57,6 @@ $mrn_loader_entries = array(
     WP_CONTENT_DIR . '/mu-plugins/mrn-editor-lockdown/mrn-editor-lockdown.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-environment-runtime/mrn-environment-runtime.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-public-security-hardening/mrn-public-security-hardening.php',
-    WP_CONTENT_DIR . '/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-schema-bridge/mrn-schema-bridge.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-shared-assets/mrn-shared-assets.php',
     WP_CONTENT_DIR . '/mu-plugins/mrn-site-colors/mrn-site-colors.php',

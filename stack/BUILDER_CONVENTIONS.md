@@ -16,8 +16,8 @@ This document explains how the MRN stack models page content, reusable content, 
   - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/functions.php`
   - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/template-parts/builder/`
 - Reusable block source:
-  - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
-  - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-reusable-block-library/templates/`
+  - `/Users/khofmeyer/Development/MRN/plugins/mrn-reusable-block-library/mrn-reusable-block-library.php`
+  - `/Users/khofmeyer/Development/MRN/plugins/mrn-reusable-block-library/templates/`
 - Shared style token source:
   - `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-site-colors/mrn-site-colors.php`
 

@@ -35,6 +35,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-editor-tools` | 1.8.25 | Standard bootstrap | Optional shared | Classic Editor, TinyMCE, and ACF WYSIWYG enhancements. |
 | `mrn-media-bulk-tools` | 0.12.1 | Standard bootstrap | Optional shared | Media audit, usage indexing, and bulk maintenance. |
 | `mrn-mega-menu` | 0.16.16 | Standard bootstrap | Optional shared | Accessible content-rich mega-menu administration and rendering. |
+| `mrn-reusable-block-library` | 0.1.28 | Catalog only | Optional shared | Shared reusable block content types and render helpers for sites that need reusable content workflows. |
 | `mrn-tokens` | 0.1.3 | Catalog only | Optional shared | Reusable content-token registry, shortcode, and authenticated REST API. |
 
 ## Optional Integration Adapters
@@ -83,7 +84,6 @@ No disposition in this section authorizes a code move, manifest change, deletion
 | `mrn-config-helper` | 0.1.54 | Standard bootstrap | Define the stable settings shell and later extract integration boundaries. |
 | `mrn-google-reviews` | 1.0.0 | Incubator/catalog only | Complete source, secret-management, QA, and release-readiness review. |
 | `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Catalog only | Keep independently optional, integrate with Mega Menu, or archive. |
-| `mrn-reusable-block-library` | 0.1.28 | MU loader | Decide whether it is a mandatory base-theme contract or optional shared feature. |
 
 ## Archived Components
 
