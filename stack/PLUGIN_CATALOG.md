@@ -1,6 +1,6 @@
 # MRN WordPress Component Catalog
 
-Last classified: 2026-08-16
+Last classified: 2026-08-17
 
 This is the human-readable index of MRN-owned WordPress components. The authoritative machine-readable source is [`manifests/component-catalog.json`](./manifests/component-catalog.json), and the rules governing it are in [`PLUGIN_GOVERNANCE.md`](./PLUGIN_GOVERNANCE.md).
 
@@ -23,6 +23,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-shared-assets` | 0.2.0 | MU loader | Platform required | Provides shared asset and icon interfaces. |
 | `mrn-site-colors` | 0.1.38 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
 | `mrn-updraft-local-retention` | 0.3.0 | MU loader | Platform required | Enforces shared backup schedule and retention policy. |
+| `mrn-config-helper` | 0.1.54 | Standard bootstrap | Platform required | Shared site configuration shell, breadcrumb runtime, and launch/admin integrations. |
 | `mrn-universal-sticky-bar` | 1.1.8 | Standard bootstrap | Platform required | Provides the shared settings/editor action bar; independently released for non-Stack use. |
 
 ## Optional Shared Features
@@ -81,7 +82,6 @@ No disposition in this section authorizes a code move, manifest change, deletion
 | Slug | Version | Current state | Decision needed |
 | --- | ---: | --- | --- |
 | `background-video-popout-disabler` | 1.0.1 | Standard bootstrap | Keep optional or move presentation behavior into the base theme. |
-| `mrn-config-helper` | 0.1.54 | Standard bootstrap | Define the stable settings shell and later extract integration boundaries. |
 | `mrn-google-reviews` | 1.0.0 | Incubator/catalog only | Complete source, secret-management, QA, and release-readiness review. |
 | `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Catalog only | Keep independently optional, integrate with Mega Menu, or archive. |
 

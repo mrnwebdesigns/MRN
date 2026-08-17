@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-08-16",
+  "catalog_updated": "2026-08-17",
   "authority": "This file is the authoritative inventory and classification source for MRN-owned WordPress plugins and MU components. Inclusion does not imply installation.",
   "product_model": {
     "platform-required": "Installed on a production MRN stack because it provides mandatory platform behavior.",
@@ -334,13 +334,13 @@
       "version": "0.1.54",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
-      "lifecycle": "supported-review",
+      "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
-      "target_tier": "review",
+      "target_tier": "platform-required",
       "source": {"repository": "mrn-config-helper", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["ACF", "WPForms", "WooCommerce", "SmartCrawl", "SEOPress", "MRN Shared Assets"], "release_group": "config-helper-decomposition"},
       "data": {"options": ["mrn_helper_settings", "selected third-party settings"], "tables": [], "cron": [], "routes": ["seven privileged admin-post actions", "three media AJAX integrations"], "external_services": ["SendGrid", "UptimeRobot", "WPForms", "WooCommerce", "SEO providers"], "meta": ["breadcrumb and media-related metadata"]},
-      "purpose": "Provides broad site configuration and integration behavior; scheduled for an approval-gated boundary review, not automatic consolidation."
+      "purpose": "Provides the shared site configuration shell, breadcrumb runtime, and launch/admin integrations required by Stack sites."
     },
     {
       "slug": "mrn-contextual-content-editor",

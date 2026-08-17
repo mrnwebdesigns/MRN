@@ -171,6 +171,14 @@
 - Current context or placement is disabled in Breadcrumb `Behavior` settings.
 - Template area does not call breadcrumb render helper for that request type.
 
+## Downstream consumers and stable contract
+
+- `mrn-base-stack` and its theme helpers consume Config Helper through the public wrapper APIs for social links, hidden CPTs, display modes and styles, builder allowlists, breadcrumb settings, and ACF layout-picker metadata.
+- `mrn-disable-comments`, `mrn-editor-lockdown`, `mrn-reusable-block-library`, and `mrn-fontawesome-profile-manager` are supported downstream integrations that should keep using the public wrappers, hooks, and contracts instead of private implementation details.
+- `stack/scripts/site-bootstrap.sh` is a required launch-time consumer of `MRN_Config_Helper::bootstrap_sendgrid_site_provisioning()` and `MRN_Config_Helper::bootstrap_uptime_robot_monitor()`.
+- Direct writes to `mrn_helper_settings` belong inside Config Helper. External consumers should prefer the public contract wherever possible.
+- `mrn-config-helper` is foundational MRN platform infrastructure, not a disposable utility plugin. Removing, deactivating, or omitting it from an MRN Stack site is unsupported and can break shared configuration, runtime behavior, and Stack provisioning.
+
 ## Developer Hooks / Extension Points
 
 - Public class helper:
