@@ -30,6 +30,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 
 | Slug | Version | Current distribution | Target tier | Responsibility |
 | --- | ---: | --- | --- | --- |
+| `background-video-popout-disabler` | 1.0.1 | Standard bootstrap | Optional shared | Front-end helper for stack-profile background-video markup; suppresses browser picture-in-picture/pop-out controls on likely background videos. |
 | `mrn-ai-assist` | 2.0.13 | Standard bootstrap | Optional shared | Queued AI-assisted content, SEO, and media-alt workflows. |
 | `mrn-announcements` | 1.6.2 | Standard bootstrap | Optional shared | Scheduled and targeted announcement bars and modals. |
 | `mrn-contextual-content-editor` | 0.4.10 | Standard bootstrap | Optional shared | Contextual logged-in content-editing links. |
@@ -49,6 +50,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-duplicate-enhance` | 1.1.1 | Catalog only | Optional integration | Optional Post Duplicator admin-bar workflow adapter. |
 | `mrn-fontawesome-profile-manager` | 0.5.0 | Standard bootstrap | Optional integration | Font Awesome profiles and local assets. |
 | `mrn-google-fonts` | 1.0.7 | Standard bootstrap | Optional integration | Google/local fonts and Site Styles. |
+| `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Catalog only | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories. |
 | `mrn-gtm-injector` | 1.0.13 | Standard bootstrap | Optional integration | Google Tag Manager. |
 | `mrn-recaptcha-enterprise-manager` | 0.1.1 | Standard bootstrap | Optional integration | reCAPTCHA Enterprise and WPForms. |
 | `mrn-schema-bridge` | 0.4.2 | MU loader | Optional integration | SmartCrawl, SEOPress, theme, and schema normalization. |
@@ -81,9 +83,7 @@ No disposition in this section authorizes a code move, manifest change, deletion
 
 | Slug | Version | Current state | Decision needed |
 | --- | ---: | --- | --- |
-| `background-video-popout-disabler` | 1.0.1 | Standard bootstrap | Keep optional or move presentation behavior into the base theme. |
 | `mrn-google-reviews` | 1.0.0 | Incubator/catalog only | Complete source, secret-management, QA, and release-readiness review. |
-| `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Catalog only | Keep independently optional, integrate with Mega Menu, or archive. |
 
 ## Archived Components
 

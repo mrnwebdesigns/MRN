@@ -250,13 +250,13 @@
       "version": "1.0.1",
       "runtime_type": "standard-plugin",
       "classification": "presentation-feature",
-      "lifecycle": "review",
+      "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
-      "target_tier": "review",
+      "target_tier": "optional-shared",
       "source": {"repository": "background-video-popout-disabler", "path": "/Users/khofmeyer/Development/MRN-plugins/background-video-popout-disabler", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress frontend"], "soft": ["MRN base theme background-video markup"], "release_group": null},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
-      "purpose": "Disables browser picture-in-picture behavior for likely background videos; review theme ownership."
+      "purpose": "Disables browser picture-in-picture behavior for stack-profile background videos and builder background-video markup; optional shared presentation helper."
     },
     {
       "slug": "mrn-acf-character-count",
@@ -517,13 +517,13 @@
       "version": "0.1.0",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
-      "lifecycle": "review",
+      "lifecycle": "supported",
       "current_distribution": "catalog-only",
-      "target_tier": "review",
+      "target_tier": "optional-integration",
       "source": {"repository": "MRN", "path": "plugins/mrn-hierarchical-menu-taxonomies", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress menus"], "soft": ["WooCommerce product categories", "MRN Mega Menu"], "release_group": "navigation-contract"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
-      "purpose": "Adds complete hierarchical taxonomy trees to menu administration; review independent product value."
+      "purpose": "Expands the classic menu builder so hierarchical taxonomy panels render complete parent/child trees for supported terms."
     },
     {
       "slug": "searchwp-editor-performance",

@@ -8,7 +8,7 @@
 /home/mrndev-stack-manager/stack/packages/admin-menu-editor-pro.zip
 /home/mrndev-stack-manager/stack/packages/advanced-custom-fields-pro.zip
 /home/mrndev-stack-manager/stack/packages/ame-branding-add-on.zip
-/home/mrndev-stack-manager/stack/packages/background-video-popout-disabler.zip
+/home/mrndev-stack-manager/stack/packages/background-video-popout-disabler.zip|stack
 classic-editor
 enable-media-replace
 fluent-smtp
