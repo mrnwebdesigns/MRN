@@ -559,7 +559,7 @@
       "version": "0.3.0",
       "runtime_type": "standard-plugin",
       "classification": "development-tool",
-      "lifecycle": "review",
+      "lifecycle": "supported-development",
       "current_distribution": "catalog-only",
       "target_tier": "development-only",
       "source": {"repository": "mrn-dummy-content", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-dummy-content", "state": "confirmed"},
