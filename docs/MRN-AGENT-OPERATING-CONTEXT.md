@@ -59,6 +59,9 @@ Use Production Hub when environment-level facts are needed instead of static ass
 - Production Hub and any 1Password-backed MRN credential-resolution tooling must respect this same account boundary.
 - Never copy, migrate, synchronize, import, or expose credentials from `thehofmeyers` in order to complete an MRN operation.
 - For infrastructure/provider access, Production Hub lookup is preferred where supported.
+- When MRN tooling invokes `op`, it must set `OP_ACCOUNT=mrnwebdesigns.1password.com` explicitly, or use an MRN launcher that exports that value, so `op` cannot implicitly select the personal account.
+- Production Hub continues to use the MRN account mapping it already owns.
+- The SSH Agent is a separate authentication path and follows the same MRN account-boundary policy, but it is not controlled by `OP_ACCOUNT`.
 - Never write passwords, API keys, tokens, private keys, recovery codes, or secret values into:
   - This document
   - `AGENTS.md`

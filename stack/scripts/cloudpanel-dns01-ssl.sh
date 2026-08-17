@@ -8,7 +8,7 @@ REMOTE_HOST="${MRN_SSL_REMOTE_HOST:-mrndev-ops}"
 REMOTE_USER="${MRN_SSL_REMOTE_USER:-mrn-ops}"
 INSTALL_SSH="${MRN_SSL_INSTALL_SSH:-}"
 SUDO_IMPORT="${MRN_SSL_SUDO_IMPORT:-0}"
-OP_ACCOUNT="${MRN_SSL_OP_ACCOUNT:-hofmeyer.1password.com}"
+export OP_ACCOUNT="mrnwebdesigns.1password.com"
 OP_VAULT="${MRN_SSL_OP_VAULT:-Production Hub}"
 OP_ITEM="${MRN_SSL_OP_ITEM:-Production Hub - Cloudflare}"
 CERTBOT_VENV="${MRN_SSL_CERTBOT_VENV:-/tmp/mrn-certbot-venv}"
@@ -146,7 +146,7 @@ CF_TOKEN="${CLOUDFLARE_API_TOKEN:-}"
 if [[ -z "${CF_TOKEN}" ]]; then
   command -v op >/dev/null 2>&1 || die "op CLI is required when CLOUDFLARE_API_TOKEN is not set."
   CF_TOKEN="$(
-    op --account "${OP_ACCOUNT}" read "op://${OP_VAULT}/${OP_ITEM}/CLOUDFLARE_API_TOKEN"
+    op read "op://${OP_VAULT}/${OP_ITEM}/CLOUDFLARE_API_TOKEN"
   )"
 fi
 [[ -n "${CF_TOKEN}" ]] || die "Cloudflare API token is empty."
