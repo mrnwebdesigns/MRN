@@ -36,6 +36,16 @@ Intent:
 Non-goal:
 - Do not confuse Local Hub with Production Hub.
 
+### Pulled client site layout
+
+- A pulled client site lives at `/Users/khofmeyer/Development/MRN-sites/{site-slug}/`.
+- `public/` inside that folder is the WordPress document root. Site metadata, backups, dumps, and logs live beside `public/`, not inside it.
+- Do client-site work in the local runtime under `public/`, served by the site's `.localhost` URL.
+- Develop site-specific child themes and per-site plugins in their real runtime locations under `public/wp-content/themes/`, `plugins/`, or `mu-plugins/`.
+- Keep the shared MRN stack independent from client sites. The base theme and the child-theme template belong to the stack, not to a site repository.
+- Do not git-track shared MRN plugins inside a client-site repository. Distribute shared plugins and base-theme updates through MainWP unless the owner explicitly asks for site-local debugging.
+- Child themes are site-specific. Do not propagate child-theme changes to other sites unless the owner explicitly requests a cross-site migration.
+
 ## 2) PRODUCTION HUB
 
 - Name: Production Hub.
@@ -45,6 +55,15 @@ Non-goal:
 - Scope: separate from runtime/LocalHub site operations.
 
 Use Production Hub when environment-level facts are needed instead of static assumptions.
+
+Locations:
+- Repository: `/Users/khofmeyer/LocalSites_production-hub` (symlink to `/Users/khofmeyer/Local Sites/_production-hub`).
+- MCP server: `<repo>/mcp-server/server.mjs`, run with `node` and `PRODUCTION_HUB_DIR` set to the repository path. Both Codex and Claude Code use this same implementation; do not create a second one.
+- Provider and key aliases: `<repo>/manifests/credential-model.json`.
+- 1Password vault/item mapping: `<repo>/manifests/onepassword-map.json` (for example Cloudflare maps to the `Production Hub - Cloudflare` item).
+- Useful scripts: `<repo>/scripts/onepassword_sync.py`, `<repo>/scripts/bootstrap-1password-production-hub.sh`, and `/Users/khofmeyer/Development/mrn-runcloud-stack/scripts/phase-1/sync-cloudflare-from-production-hub.sh`.
+
+Available operations include hub overview, provider templates, import reports, missing-key summaries, and secure provider value lookup. Credential-retrieval rules are in section 3; do not restate them here.
 
 ## 3) 1Password policy
 
@@ -81,6 +100,14 @@ Use Production Hub when environment-level facts are needed instead of static ass
 - SSH is an escalation / break-glass path, not the default WordPress management path.
 - Prefer provider/site-specific hostnames and aliases over hard-coded legacy values.
 - Prefer dynamic resolution (Production Hub, Local Hub manifests, and local SSH config) for target-specific routing.
+
+MRN SSH identities are normally served by the 1Password SSH agent rather than by
+key files on disk:
+
+- macOS agent socket: `/Users/khofmeyer/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock`. Use it when the shell's default `SSH_AUTH_SOCK` exposes no identities.
+- List identities with `SSH_AUTH_SOCK="<socket>" ssh-add -l` before concluding a key is missing.
+- The first use of an identity, or any use needing an approval or fingerprint prompt, requires an interactive/TTY session. Do not use `BatchMode=yes` for it — a non-interactive signing test can fail before the 1Password prompt is ever shown.
+- Account-boundary rules for these credentials are in section 3.
 
 ### Tailscale
 - Use project/host-specific tailscale aliases where defined in local SSH config and associated inventory.
@@ -119,6 +146,15 @@ Use Production Hub when environment-level facts are needed instead of static ass
 - Keep public `*.mrndev.io` hostnames in the production networking posture; do not hard-code SSH assumptions for these hosts.
 - Resolve ssh access details dynamically via current inventory/config, then validate reachability before privileged actions.
 
+SSH access convention for CloudPanel `mrndev.io` sites:
+
+- These sites share the CloudPanel server at origin `167.99.54.77`.
+- Public site hostnames such as `{site}.mrndev.io` stay Cloudflare-proxied. Cloudflare does not proxy SSH on port 22, so SSH will not work through a proxied hostname.
+- For each site that needs SSH access, create a Cloudflare **DNS-only** A record `ssh.{site}.mrndev.io` pointing at the origin. For `quantumbloom.mrndev.io` the record name is `ssh.quantumbloom`, target `167.99.54.77`, proxy off.
+- Prefer `ssh.{site}.mrndev.io` over `{site}-ssh.mrndev.io`. The latter can fall through a proxied wildcard and resolve to Cloudflare edge addresses.
+- Verify with `dig +short @1.1.1.1 ssh.{site}.mrndev.io A` and `nc -vz ssh.{site}.mrndev.io 22` before handing the host to anyone.
+- Connect as `ssh <cloudpanel-ssh-user>@ssh.{site}.mrndev.io`. Confirm the CloudPanel SSH user exists first; users are per-site, for example `freedomhouse-stack`.
+
 ### MainWP
 - MainWP is MRN's preferred and authoritative operational interface for WordPress site management whenever the required operation can safely be performed through MainWP or approved MRN tooling built around MainWP.
 - Use MainWP for as much as reasonably and safely possible, including supported updates, backups, update inventory/discovery, site status/readiness checks, maintenance orchestration, post-update verification, and supported MRN shared plugin/theme/stack component deployments.
@@ -129,6 +165,17 @@ Use Production Hub when environment-level facts are needed instead of static ass
 ### Shared deployment tooling
 - Use shared tooling and scripts defined in canonical MRN stack/repo workflows and deployment contracts.
 - Apply per-project/site-specific edits only to approved scopes.
+
+### Site deployment standard
+
+- GitHub Actions is the preferred deployment path for site-owned code wherever a site repository and deploy SSH exist. Examples: Morgan Development deploys by Actions plus rsync to SiteGround; Freedom House updates server-side deploy repositories by Actions.
+- Deploy only site-owned surfaces — a child or active theme, a site-owned standalone theme, or a site-specific plugin.
+- Never deploy WordPress core, uploads/media, Local Hub metadata, logs, dumps, backups, cache output, shared MRN plugins, or vendor/pro plugin runtime copies unless the owner asks for that exact target.
+- The backup gate in section 7 applies. For a WordPress runtime the concrete mechanism is a remote UpdraftPlus database-only backup, preferably by WP-CLI:
+  `wp updraftplus backup --include-files= --send-to-cloud=true --label="<pre-deploy label>"`.
+- If WP-CLI, UpdraftPlus, or that backup command is unavailable, stop and report the blocker. Do not deploy without the database backup.
+- Flush WordPress cache and transients after deploying, when WP-CLI is available.
+- Non-WordPress MRN services have their own documented release procedures and backup mechanisms; follow the runbook in the service's own repository.
 
 ## 5) MRN WordPress Stack model
 
@@ -251,6 +298,9 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
 - The QA Engine may cover, where applicable, PHP lint, WordPress coding/security checks, PHPStan/static analysis, WordPress API/security surface review, capability/nonce/sanitization/escaping checks, REST/admin-ajax/admin-post coverage, accessibility, performance, release readiness, and other configured MRN QA suites.
 - Do not assume every QA suite applies to every project.
 - Use the smallest applicable MRN QA scope.
+- Preferred command: `mrn-qa run`. If it is not on `PATH`, use `/Users/khofmeyer/Development/MRN-qa-engine/bin/mrn-qa run`.
+- Pass the repository actually being worked on as `--project-root`. Do not pass the stack root `/Users/khofmeyer/Development/MRN` for client-site QA unless the owner is explicitly asking for stack or plugin-stack QA. For a pulled site, that means the site folder, for example `--project-root /Users/khofmeyer/Development/MRN-sites/{slug}`, letting the runtime target auto-detect the site's `.localhost` URL.
+- Use auto gates by default, and report which static, API, accessibility, performance, and runtime checks ran or were skipped.
 - After changing an MRN plugin, theme, MU-plugin, Stack runtime component, or QA Engine component, run the smallest relevant MRN QA suite required by the existing repository/project policy before declaring the work complete.
 - Do not interpret `tests passed` or `git diff is clean` as equivalent to MRN QA when MRN QA is required.
 - Do not deploy merely because QA passes; deployment authorization and backup gates remain separate requirements.
