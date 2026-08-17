@@ -173,14 +173,31 @@ Never treat LOCAL, `mrndev.io` review, and production environments as interchang
 
 ## 7) Deployment safety (global standards)
 
-- Backup-before-write:
-  - Required precondition: verified database-only backup before non-dry-run remote writes to shared/dev/staging/production targets.
-- If required backup cannot be verified: stop and report blocker; do not write.
+- Backup-before-mutation:
+  - For MRN-managed WordPress sites, no mutation that can affect the site's WordPress runtime, database, code, files, configuration, plugins, themes, MU plugins, WordPress core, or customer-visible state should begin until the applicable MRN backup gate has successfully passed.
+  - This applies regardless of execution path: QA Engine, MainWP / MRN MainWP tooling, approved deployment tooling, provider tooling, or SSH.
+  - Using SSH or another lower-level access path does not bypass the backup requirement.
+  - Read-only inspection does not require creating a new backup merely to inspect the system.
+  - Before an actual mutation:
+    1. Determine the applicable backup policy for that operation.
+    2. Use the highest-level supported MRN workflow to create and verify the backup.
+    3. Do not merely start a backup and assume success.
+    4. Verify successful completion according to the applicable policy before the first mutation.
+  - Preserve the existing backup-scope distinctions in `stack/BACKUP_POLICY.md`:
+    - General Stack / deployment writes: follow `stack/BACKUP_POLICY.md` and the documented verified database-only remote Updraft backup immediately before the write.
+    - QA Engine protected update / campaign workflows: follow the stricter QA Engine evidence requirements, including fresh provider-complete backup and applicable restore-readiness / restore-drill evidence.
+    - Dry-run / read-only exceptions remain read-only.
+  - Do not weaken a stricter workflow merely because the global minimum is less strict.
+  - If the required backup cannot be created or verified, stop and do not perform the mutation.
+  - Do not use SSH, direct database access, file manipulation, or provider tooling as a workaround for a failed backup gate.
 - Deployment scoping:
   - Deploy only approved site-owned paths unless explicitly requested otherwise.
   - Preserve existing live/site behavior and compatibility unless user explicitly requests a migration or behavior change.
 - Production confirmation boundaries:
   - Confirm target is production and explicit before executing production writes.
+- Operations hierarchy relationship:
+  - QA Engine first when supported -> MainWP / MRN tooling -> approved lower-level tooling -> SSH last resort.
+  - The backup gate applies before the mutation regardless of which execution layer is used.
 
 ## 8) Staleness model
 
@@ -197,7 +214,57 @@ Never treat LOCAL, `mrndev.io` review, and production environments as interchang
 Dynamic state policy:
 - Treat host routes, token presence, and live access as dynamic. Validate against current runtime/tool state during task execution before assuming connectivity or scope.
 
-## 9) Portability for future CLAUDE.md
+## 9) MRN QA routing
+
+Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; this section establishes the global routing distinction.
+
+### A. MRN QA execution
+
+- When the owner asks to `QA this`, `run QA`, `QA the plugin`, `QA the theme`, `QA this code`, `run MRN QA`, or gives an equivalent instruction to perform MRN code QA, use the MRN QA Engine / established MRN QA workflow.
+- Do not substitute an ad-hoc collection of local checks and call that `MRN QA`.
+- The agent may run the smallest relevant local checks during development, but a request specifically for MRN QA should use the established QA Engine/workflow when available.
+- Follow the applicable project/repository QA instructions and scopes.
+- The QA Engine may cover, where applicable, PHP lint, WordPress coding/security checks, PHPStan/static analysis, WordPress API/security surface review, capability/nonce/sanitization/escaping checks, REST/admin-ajax/admin-post coverage, accessibility, performance, release readiness, and other configured MRN QA suites.
+- Do not assume every QA suite applies to every project.
+- Use the smallest applicable MRN QA scope.
+- After changing an MRN plugin, theme, MU-plugin, Stack runtime component, or QA Engine component, run the smallest relevant MRN QA suite required by the existing repository/project policy before declaring the work complete.
+- Do not interpret `tests passed` or `git diff is clean` as equivalent to MRN QA when MRN QA is required.
+- Do not deploy merely because QA passes; deployment authorization and backup gates remain separate requirements.
+
+### B. WordPress operations orchestration
+
+- For supported WordPress site maintenance/update operations, use this routing order when the verified workflow exists and is available: QA Engine first -> MainWP / MRN MainWP tooling -> approved lower-level tooling -> SSH last resort.
+- This is an operational-routing rule, not merely a code-QA rule.
+- Running QA itself is normally read-only and does not require creating a site backup.
+- A backup is required when the workflow is about to perform a covered site/runtime mutation.
+- Code QA does not itself trigger an Updraft backup.
+- Site mutation requires the applicable backup gate to pass first.
+- Protected update / campaign workflows use the stricter QA Engine backup + restore-evidence requirements.
+
+## 10) MRN commit gate
+
+- For MRN code repositories, a commit must not be created until the smallest applicable MRN QA suite has been run and passed for the change being committed.
+- This applies, where applicable, to WordPress plugins, themes, MU plugins, MRN Stack runtime/components, QA Engine code, shared MRN tooling, deployment/runtime code, and other production-affecting MRN code repositories.
+- Normal order: code change -> smallest applicable local/development validation -> MRN QA -> fix failures if any -> rerun MRN QA -> commit only after QA passes.
+- Do not commit first and plan to QA afterward unless the owner explicitly authorizes an emergency/checkpoint exception.
+- A clean `git diff`, syntax check, unit test, or ad-hoc local validation is not automatically equivalent to MRN QA when the repository requires MRN QA.
+- Use the smallest relevant QA scope rather than automatically running the largest possible suite.
+- If MRN QA cannot run because of infrastructure/tooling failure, stop before committing and report the blocker unless the owner explicitly authorizes a checkpoint/exception.
+
+### Checkpoint / recovery exception
+
+- A preservation/recovery checkpoint commit may be allowed without full release QA only when the owner explicitly approves it as a recovery/checkpoint commit.
+- The purpose must be preserving otherwise at-risk work.
+- The commit must be clearly not being treated as release-ready.
+- The missing QA/validation must be explicitly documented.
+- This exception must not silently become the normal development workflow.
+
+### Relationship to deployment
+
+- QA passing authorizes neither deployment nor production mutation.
+- The sequence remains: QA pass -> commit may proceed -> deployment remains separately gated by owner/production authorization, applicable backup policy, environment safety, MainWP/QA Engine routing, and deployment-specific validation.
+
+## 11) Portability for future CLAUDE.md
 
 - This file is vendor-neutral and repo-native.
 - A future `CLAUDE.md` should reference this file as the global source, adding only Claude-specific behavior notes.
