@@ -8,6 +8,8 @@ The future hosting platform owns site and environment selection. Its canonical v
 
 `manifests/plugins.txt` is currently the Stack bundle input consumed by the hosting platform. Optional feature selection belongs in the hosting platform and should resolve components from the MRN catalog. Development-only, maintenance-only, and optional components must not become production defaults merely because MRN maintains them.
 
+`scripts/site-bootstrap.sh` honors `--site-profile` and `MRN_SITE_PROFILE` (`stack` or `plain`) and supports profile-scoped manifest entries that end in `|stack` or `|plain` so optional shared plugins can stay out of the plain-profile bootstrap.
+
 ## What this gives you
 
 - A plugin manifest (`manifests/plugins.txt`) for install/activate.
@@ -50,7 +52,7 @@ The future hosting platform owns site and environment selection. Its canonical v
 
 ## First setup
 
-1. Edit `manifests/plugins.txt` with your plugin slugs or zip URLs.
+1. Edit `manifests/plugins.txt` with your plugin slugs or zip URLs, and add `|stack` or `|plain` when an entry should be profile-scoped.
 2. Review defaults inside `scripts/site-bootstrap.sh` (timezone, permalink, admin email).
    - Optional stack-managed reCAPTCHA Enterprise secret files consumed by bootstrap:
    - `secrets/recaptcha-enterprise-project-id.txt`

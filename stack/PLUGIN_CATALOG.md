@@ -1,6 +1,6 @@
 # MRN WordPress Component Catalog
 
-Last classified: 2026-08-14
+Last classified: 2026-08-16
 
 This is the human-readable index of MRN-owned WordPress components. The authoritative machine-readable source is [`manifests/component-catalog.json`](./manifests/component-catalog.json), and the rules governing it are in [`PLUGIN_GOVERNANCE.md`](./PLUGIN_GOVERNANCE.md).
 
@@ -35,7 +35,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-editor-tools` | 1.8.25 | Standard bootstrap | Optional shared | Classic Editor, TinyMCE, and ACF WYSIWYG enhancements. |
 | `mrn-media-bulk-tools` | 0.12.1 | Standard bootstrap | Optional shared | Media audit, usage indexing, and bulk maintenance. |
 | `mrn-mega-menu` | 0.16.16 | Standard bootstrap | Optional shared | Accessible content-rich mega-menu administration and rendering. |
-| `mrn-reusable-block-library` | 0.1.28 | Catalog only | Optional shared | Shared reusable block content types and render helpers for sites that need reusable content workflows. |
+| `mrn-reusable-block-library` | 0.1.28 | Standard bootstrap | Optional shared | Shared reusable block content types and render helpers for stack-profile sites that need reusable content workflows. |
 | `mrn-tokens` | 0.1.3 | Catalog only | Optional shared | Reusable content-token registry, shortcode, and authenticated REST API. |
 
 ## Optional Integration Adapters
@@ -100,4 +100,4 @@ No disposition in this section authorizes a code move, manifest change, deletion
 
 ## Current Bootstrap Warning
 
-The existing [`manifests/plugins.txt`](./manifests/plugins.txt) still includes optional and maintenance components; those require feature-selection support in the hosting platform before they can be removed safely from the shared bundle input. `searchwp-editor-performance` remains a deliberate development dependency while SearchWP frontend search is enabled in development.
+The existing [`manifests/plugins.txt`](./manifests/plugins.txt) now supports profile-scoped entries such as `|stack` and `|plain`, which keeps selected optional components out of the plain-profile bootstrap. Remaining optional and maintenance components still require feature-selection support in the hosting platform before they can be removed safely from the shared bundle input. `searchwp-editor-performance` remains a deliberate development dependency while SearchWP frontend search is enabled in development.

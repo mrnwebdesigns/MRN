@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-08-14",
+  "catalog_updated": "2026-08-16",
   "authority": "This file is the authoritative inventory and classification source for MRN-owned WordPress plugins and MU components. Inclusion does not imply installation.",
   "product_model": {
     "platform-required": "Installed on a production MRN stack because it provides mandatory platform behavior.",
@@ -180,12 +180,12 @@
       "runtime_type": "standard-plugin",
       "classification": "shared-feature",
       "lifecycle": "supported",
-      "current_distribution": "catalog-only",
+      "current_distribution": "standard-bootstrap",
       "target_tier": "optional-shared",
       "source": {"repository": "MRN", "path": "plugins/mrn-reusable-block-library", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress"], "soft": ["ACF", "MRN base theme", "mrn-editor-lockdown"], "release_group": "editor-content-contract"},
       "data": {"options": ["mrn_rbl_legacy_cleanup_complete", "starter signature"], "tables": [], "cron": [], "routes": [], "external_services": [], "post_types": ["mrn_reusable_* types"]},
-      "purpose": "Optional stack-shared reusable content-model and rendering feature used when a site needs reusable blocks."
+      "purpose": "Optional stack-shared reusable content-model and rendering feature used when a stack-profile site needs reusable content workflows."
     },
     {
       "slug": "mrn-schema-bridge",

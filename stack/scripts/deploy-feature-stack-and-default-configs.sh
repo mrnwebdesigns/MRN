@@ -70,7 +70,6 @@ MU_PLUGIN_DIRS=(
 	"mrn-disable-comments"
 	"mrn-editor-lockdown"
 	"mrn-public-security-hardening"
-	"mrn-reusable-block-library"
 	"mrn-schema-bridge"
 	"mrn-shared-assets"
 	"mrn-site-colors"

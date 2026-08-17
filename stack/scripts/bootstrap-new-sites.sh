@@ -7,6 +7,7 @@ MARKER_NAME=".mrn_bootstrapped"
 SITES_ROOT="/home"
 SITE_DISCOVERY_GLOB=""
 NOTIFY_EMAIL=""
+SITE_PROFILE="${MRN_SITE_PROFILE:-stack}"
 DRY_RUN="false"
 STATUS_DIR=""
 STATUS_FILE=""
@@ -14,7 +15,7 @@ STATUS_FILE=""
 usage() {
   cat <<'USAGE'
 Usage:
-  bootstrap-new-sites.sh --stack-root /opt/mrnplugins [--site-discovery-glob '/home/*stack*/htdocs/*,/home/*strap*/htdocs/*'] [--notify-email you@example.com] [--sites-root /home] [--dry-run]
+  bootstrap-new-sites.sh --stack-root /opt/mrnplugins [--site-discovery-glob '/home/*stack*/htdocs/*,/home/*strap*/htdocs/*'] [--notify-email you@example.com] [--site-profile <stack|plain>] [--sites-root /home] [--dry-run]
 
 This script scans CloudPanel-style paths:
   /home/<site-user>/htdocs/<domain>
@@ -42,6 +43,10 @@ while [[ $# -gt 0 ]]; do
       NOTIFY_EMAIL="${2:-}"
       shift 2
       ;;
+    --site-profile)
+      SITE_PROFILE="${2:-}"
+      shift 2
+      ;;
     --dry-run)
       DRY_RUN="true"
       shift
@@ -61,6 +66,15 @@ done
 if [[ -z "${STACK_ROOT}" ]]; then
   STACK_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
+
+SITE_PROFILE="$(printf '%s' "${SITE_PROFILE}" | tr '[:upper:]' '[:lower:]' | xargs)"
+case "${SITE_PROFILE}" in
+  stack|plain)
+    ;;
+  *)
+    SITE_PROFILE="stack"
+    ;;
+esac
 
 SITE_BOOTSTRAP="${STACK_ROOT}/scripts/site-bootstrap.sh"
 STATUS_DIR="${STACK_ROOT}/runtime"
@@ -184,13 +198,13 @@ scan_and_bootstrap() {
     fi
 
     if [[ -n "${NOTIFY_EMAIL:-}" ]]; then
-      if ! "${SITE_BOOTSTRAP}" --site-path "${domain_dir}" --notify-email "${NOTIFY_EMAIL}"; then
+      if ! "${SITE_BOOTSTRAP}" --site-path "${domain_dir}" --site-profile "${SITE_PROFILE}" --notify-email "${NOTIFY_EMAIL}"; then
         echo "Bootstrap failed for ${domain_dir}; continuing scan." >&2
         failed_count=$((failed_count + 1))
         write_bootstrap_status "1" "${current_index}" "${total_targets}" "${domain_dir}" "$(basename "${domain_dir}")" "failed"
       fi
     else
-      if ! "${SITE_BOOTSTRAP}" --site-path "${domain_dir}"; then
+      if ! "${SITE_BOOTSTRAP}" --site-path "${domain_dir}" --site-profile "${SITE_PROFILE}"; then
         echo "Bootstrap failed for ${domain_dir}; continuing scan." >&2
         failed_count=$((failed_count + 1))
         write_bootstrap_status "1" "${current_index}" "${total_targets}" "${domain_dir}" "$(basename "${domain_dir}")" "failed"

@@ -19,14 +19,17 @@ BOOTSTRAP_WARNINGS=()
 usage() {
   cat <<'USAGE'
 Usage:
-  site-bootstrap.sh --site-path /home/<user>/htdocs/<domain> [--site-user <user>] [--plugins-file <path>] [--themes-file <path>] [--licenses-file <path>] [--notify-email <email>] [--test-notifications]
+  site-bootstrap.sh --site-path /home/<user>/htdocs/<domain> [--site-user <user>] [--site-profile <stack|plain>] [--plugins-file <path>] [--themes-file <path>] [--licenses-file <path>] [--notify-email <email>] [--test-notifications]
 
 Notes:
   - Run as root (recommended on CloudPanel and required to provision site-owner SSH files with the correct ownership/perms).
   - Plugin manifest format:
       plugin-slug
       plugin-slug|version
+      plugin-slug|stack
+      plugin-slug|version|plain
       https://example.com/plugin.zip
+      https://example.com/plugin.zip|stack
   - Theme manifest format:
       theme-slug
       theme-slug|version
@@ -39,6 +42,7 @@ USAGE
 
 SITE_PATH=""
 SITE_USER=""
+SITE_PROFILE="${MRN_SITE_PROFILE:-stack}"
 SITE_HOME=""
 WP_PATH=""
 TEST_NOTIFICATIONS="false"
@@ -102,6 +106,10 @@ while [[ $# -gt 0 ]]; do
       SITE_USER="${2:-}"
       shift 2
       ;;
+    --site-profile)
+      SITE_PROFILE="${2:-}"
+      shift 2
+      ;;
     --plugins-file)
       PLUGINS_FILE="${2:-}"
       shift 2
@@ -133,6 +141,15 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+SITE_PROFILE="$(printf '%s' "${SITE_PROFILE}" | tr '[:upper:]' '[:lower:]' | xargs)"
+case "${SITE_PROFILE}" in
+  stack|plain)
+    ;;
+  *)
+    SITE_PROFILE="stack"
+    ;;
+esac
 
 send_notification() {
   local subject body
@@ -309,7 +326,7 @@ fi
 
 send_slack_notification \
   "MRN Bootstrap Started: $(basename "${SITE_PATH}")" \
-  "Bootstrap started for ${SITE_PATH}\nWordPress path: ${WP_PATH}\nSite user: ${SITE_USER}" \
+  "Bootstrap started for ${SITE_PATH}\nWordPress path: ${WP_PATH}\nSite user: ${SITE_USER}\nSite profile: ${SITE_PROFILE}" \
   "#1f6feb"
 
 run_wp() {
@@ -625,30 +642,47 @@ install_plugins() {
   fi
 
   while IFS= read -r line || [[ -n "${line}" ]]; do
-    local clean slug version source installed_slug
+    local clean slug version source installed_slug scope
+    local -a manifest_fields
     clean="${line%%#*}"
     clean="$(echo "${clean}" | xargs)"
     [[ -z "${clean}" ]] && continue
 
-    if [[ "${clean}" == http* ]]; then
-      echo "Installing plugin from URL: ${clean}"
-      if ! installed_slug="$(infer_new_plugin_slug "${clean}")"; then
-        add_warning "Failed to install plugin from URL: ${clean}"
+    IFS='|' read -r -a manifest_fields <<< "${clean}"
+    source="${manifest_fields[0]}"
+    version=""
+    scope=""
+
+    if [[ "${#manifest_fields[@]}" -eq 2 ]]; then
+      if [[ "${manifest_fields[1]}" == "stack" || "${manifest_fields[1]}" == "plain" ]]; then
+        scope="${manifest_fields[1]}"
+      else
+        version="${manifest_fields[1]}"
+      fi
+    elif [[ "${#manifest_fields[@]}" -ge 3 ]]; then
+      version="${manifest_fields[1]}"
+      scope="${manifest_fields[2]}"
+    fi
+
+    if [[ -n "${scope}" && "${scope}" != "${SITE_PROFILE}" ]]; then
+      echo "Skipping plugin for site profile ${SITE_PROFILE}: ${source} (scope: ${scope})"
+      continue
+    fi
+
+    slug="${source}"
+
+    if [[ "${source}" == http* ]]; then
+      echo "Installing plugin from URL: ${source}"
+      if ! installed_slug="$(infer_new_plugin_slug "${source}")"; then
+        add_warning "Failed to install plugin from URL: ${source}"
         continue
       fi
       if ! run_wp plugin is-active "${installed_slug}" >/dev/null 2>&1; then
         if ! run_wp plugin activate "${installed_slug}"; then
-          add_warning "Installed but failed to activate plugin slug '${installed_slug}' from URL: ${clean}"
+          add_warning "Installed but failed to activate plugin slug '${installed_slug}' from URL: ${source}"
         fi
       fi
       continue
-    fi
-
-    slug="${clean%%|*}"
-    source="${clean}"
-    version=""
-    if [[ "${clean}" == *"|"* ]]; then
-      version="${clean#*|}"
     fi
 
     if run_wp plugin is-installed "${slug}" >/dev/null 2>&1; then
@@ -1560,6 +1594,9 @@ apply_wp_defaults() {
   if ! run_wp config set WP_ENVIRONMENT_TYPE development --type=constant; then
     add_warning "Failed to set WP_ENVIRONMENT_TYPE=development in wp-config.php"
   fi
+  if ! run_wp config set MRN_SITE_PROFILE "${SITE_PROFILE}" --type=constant; then
+    add_warning "Failed to set MRN_SITE_PROFILE=${SITE_PROFILE} in wp-config.php"
+  fi
   # Disable WordPress's native background updater while preserving explicit
   # updates initiated by administrators or the authenticated MainWP connection.
   # Hosting control-plane updaters operate outside WordPress and are unaffected.
@@ -1925,7 +1962,7 @@ sync_shared_runtime() {
 
 main() {
   local domain body
-  echo "Bootstrapping site: ${SITE_PATH} (owner: ${SITE_USER})"
+  echo "Bootstrapping site: ${SITE_PATH} (owner: ${SITE_USER}, profile: ${SITE_PROFILE})"
   ensure_site_owner_direct_ssh
   reset_standard_plugins
   remove_retired_stack_plugins

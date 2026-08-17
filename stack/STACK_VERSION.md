@@ -15,7 +15,6 @@
   - `mrn-shared-assets` `0.1.3`
   - `mrn-editor-lockdown` `1.0.32`
   - `mrn-environment-runtime` `0.3.1`
-  - `mrn-reusable-block-library` `0.1.28`
   - `mrn-schema-bridge` `0.4.2`
   - `mrn-site-colors` / `Site Styles` `0.1.38`
 - Standard plugins:
@@ -28,6 +27,9 @@
   - `mrn-template-inspector` `0.2.7`
   - `mrn-universal-sticky-bar` `1.1.8`
   - `searchwp-editor-performance` `1.0.7`
+
+- Profile-gated standard plugins:
+  - `mrn-reusable-block-library` `0.1.28` (`MRN_SITE_PROFILE=stack`)
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)

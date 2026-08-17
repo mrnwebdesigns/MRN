@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.08.16-reusable-block-library-stack-profile
+- Added profile-scoped plugin-manifest support to new-site bootstrap so optional shared entries can be selected with `stack` or `plain` instead of being forced into one universal bundle.
+- Selected `mrn-reusable-block-library` for the stack profile, kept the plain profile free of it, and wrote `MRN_SITE_PROFILE` into `wp-config.php` for runtime parity.
+- Kept the plugin on the standard plugin release path and left existing client sites untouched.
+
 ## 2026.08.14-sticky-bar-platform-requirement
 - Classified `mrn-universal-sticky-bar` `1.1.8` as required on every MRN Stack site while preserving its independent release boundary and standalone fallback.
 - Confirmed the Stack plugin manifest already installs and activates the plugin during bootstrap; no site deployment or activation was performed.

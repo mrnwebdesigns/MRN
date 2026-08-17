@@ -191,7 +191,8 @@ It also manages starter-block provisioning and admin presentation data indirectl
 
 ## Rollout / Packaging Notes
 
-- This plugin is catalog-only as an optional shared standard plugin in `plugins/` and is not loaded by the MU loader.
+- This plugin is selected by the Stack profile through the `manifests/plugins.txt` entry tagged `|stack`, and plain-profile bootstraps skip that line.
+- It is not loaded by the MU loader.
 - It is part of the stack baseline.
 - Current packaged baseline in memory: `0.1.28`
 
