@@ -83,7 +83,7 @@ No disposition in this section authorizes a code move, manifest change, deletion
 
 | Slug | Version | Current state | Decision needed |
 | --- | ---: | --- | --- |
-| `mrn-google-reviews` | 1.0.0 | Incubator/catalog only | Complete source, secret-management, QA, and release-readiness review. |
+| `mrn-google-reviews` | 1.0.0 | Incubator/catalog only; source is uncommitted | Held out of the stack on 2026-08-17 because the plugin is incomplete. Completion still requires committed source, secret-management, QA, and release-readiness review. |
 
 ## Archived Components
 
