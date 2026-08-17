@@ -65,6 +65,8 @@ Locations:
 
 Available operations include hub overview, provider templates, import reports, missing-key summaries, and secure provider value lookup. Credential-retrieval rules are in section 3; do not restate them here.
 
+If `op` is not authenticated in the MCP server environment, have the caller sign in there or supply `OP_SERVICE_ACCOUNT_TOKEN`. Do not rotate secrets and do not modify the encrypted vault format unless the owner explicitly requests it.
+
 ## 3) 1Password policy
 
 - 1Password is an authoritative credential source.
@@ -154,6 +156,15 @@ SSH access convention for CloudPanel `mrndev.io` sites:
 - Prefer `ssh.{site}.mrndev.io` over `{site}-ssh.mrndev.io`. The latter can fall through a proxied wildcard and resolve to Cloudflare edge addresses.
 - Verify with `dig +short @1.1.1.1 ssh.{site}.mrndev.io A` and `nc -vz ssh.{site}.mrndev.io 22` before handing the host to anyone.
 - Connect as `ssh <cloudpanel-ssh-user>@ssh.{site}.mrndev.io`. Confirm the CloudPanel SSH user exists first; users are per-site, for example `freedomhouse-stack`.
+
+### SiteGround
+
+- SiteGround SSH identities live in the 1Password SSH agent; see the agent notes under SSH above.
+- The shared public-key stub is `/Users/khofmeyer/.ssh/siteground.pub` and should match the 1Password `Siteground` identity.
+- SiteGround SSH uses a non-default port. Verification shape:
+  `SSH_AUTH_SOCK="<1password-agent-socket>" ssh -tt -p 18765 -i /Users/khofmeyer/.ssh/siteground.pub -o IdentitiesOnly=yes -o PreferredAuthentications=publickey -o PasswordAuthentication=no <user>@<host>`
+- Use `-tt` rather than `BatchMode=yes` for first use, so the 1Password approval prompt can appear.
+- Host and user values are per-site and change between customers. Resolve them from Production Hub or the site's own records rather than reusing a remembered pair.
 
 ### MainWP
 - MainWP is MRN's preferred and authoritative operational interface for WordPress site management whenever the required operation can safely be performed through MainWP or approved MRN tooling built around MainWP.
@@ -301,6 +312,8 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
 - Preferred command: `mrn-qa run`. If it is not on `PATH`, use `/Users/khofmeyer/Development/MRN-qa-engine/bin/mrn-qa run`.
 - Pass the repository actually being worked on as `--project-root`. Do not pass the stack root `/Users/khofmeyer/Development/MRN` for client-site QA unless the owner is explicitly asking for stack or plugin-stack QA. For a pulled site, that means the site folder, for example `--project-root /Users/khofmeyer/Development/MRN-sites/{slug}`, letting the runtime target auto-detect the site's `.localhost` URL.
 - Use auto gates by default, and report which static, API, accessibility, performance, and runtime checks ran or were skipped.
+- WordPress API QA is required coverage where applicable: REST routes, admin-ajax, admin-post, permission callbacks, nonces, capabilities and auth, sanitization, escaping, and `/wp-json/` runtime health.
+- Accessibility QA is required coverage where applicable: axe-core WCAG A/AA scans when a runtime is available, semantic markup, headings, labels and control names, image alt text, keyboard and focus risk, visible text and link names, and a WCAG 2.1 AA baseline wherever MRN controls the output.
 - After changing an MRN plugin, theme, MU-plugin, Stack runtime component, or QA Engine component, run the smallest relevant MRN QA suite required by the existing repository/project policy before declaring the work complete.
 - Do not interpret `tests passed` or `git diff is clean` as equivalent to MRN QA when MRN QA is required.
 - Do not deploy merely because QA passes; deployment authorization and backup gates remain separate requirements.
