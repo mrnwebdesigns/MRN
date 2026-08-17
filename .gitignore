@@ -2,6 +2,7 @@
 .local/
 .tmp/
 .cursor/
+.claude/
 .repo-migration-backups/
 .worktrees/
 .release-snapshots/
