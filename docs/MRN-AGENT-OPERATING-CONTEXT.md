@@ -49,6 +49,15 @@ Use Production Hub when environment-level facts are needed instead of static ass
 ## 3) 1Password policy
 
 - 1Password is an authoritative credential source.
+- MRN SSH is normally authenticated through the MRN/business 1Password account -> 1Password SSH Agent -> SSH client -> target host.
+- Private SSH keys are normally stored and managed in the MRN/business 1Password account and exposed to SSH through the 1Password SSH Agent, not loose private-key files in project repositories.
+- If an expected SSH identity is not available through the MRN/business account and SSH Agent, stop and report the missing credential rather than falling back to `thehofmeyers` or creating replacement key files.
+- For all MRN business, client, development, infrastructure, hosting, deployment, DNS, provider, API, SSH, RunCloud, DigitalOcean, Cloudflare, MainWP, Production Hub, WordPress, and related operations, use only the MRN/business 1Password account.
+- The personal 1Password account `thehofmeyers` is explicitly out of scope for MRN operations and must never be searched or used to satisfy an MRN credential need.
+- If multiple 1Password accounts are available, explicitly target the MRN/business account before credential discovery.
+- Never fall back to `thehofmeyers`. If an MRN credential is missing from the MRN/business account, stop and report the missing credential as a configuration issue.
+- Production Hub and any 1Password-backed MRN credential-resolution tooling must respect this same account boundary.
+- Never copy, migrate, synchronize, import, or expose credentials from `thehofmeyers` in order to complete an MRN operation.
 - For infrastructure/provider access, Production Hub lookup is preferred where supported.
 - Never write passwords, API keys, tokens, private keys, recovery codes, or secret values into:
   - This document
@@ -63,7 +72,10 @@ Use Production Hub when environment-level facts are needed instead of static ass
 ## 4) Infrastructure conventions
 
 ### SSH
-- Use alias- and host-aware routing from durable local SSH configuration.
+- When SSH is required, use alias- and host-aware routing from durable local SSH configuration and check `~/.ssh/config` aliases before inventing a new connection command manually.
+- Treat TheHub / `.mrn-site.json` as connection-metadata discovery/failsafe sources for hostname, user, port, provider, environment identity, and deployment method when authoritative details are unclear.
+- Prefer documented private/Tailscale SSH paths where configured; do not reopen public SSH merely because a public-IP attempt fails.
+- SSH is an escalation / break-glass path, not the default WordPress management path.
 - Prefer provider/site-specific hostnames and aliases over hard-coded legacy values.
 - Prefer dynamic resolution (Production Hub, Local Hub manifests, and local SSH config) for target-specific routing.
 
@@ -85,7 +97,10 @@ Use Production Hub when environment-level facts are needed instead of static ass
 - Resolve ssh access details dynamically via current inventory/config, then validate reachability before privileged actions.
 
 ### MainWP
-- Use as the governed shared deployment and stack-management path for applicable shared components.
+- MainWP is MRN's preferred and authoritative operational interface for WordPress site management whenever the required operation can safely be performed through MainWP or approved MRN tooling built around MainWP.
+- Use MainWP for as much as reasonably and safely possible, including supported updates, backups, update inventory/discovery, site status/readiness checks, maintenance orchestration, post-update verification, and supported MRN shared plugin/theme/stack component deployments.
+- Do not default to SSH simply because SSH access exists.
+- MainWP-first does not override backup-before-write, QA, environment-separation, or production-authorization requirements.
 - Respect repo-level deployment scope and MRN deployment policies.
 
 ### Shared deployment tooling
