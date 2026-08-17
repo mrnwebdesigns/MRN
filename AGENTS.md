@@ -61,7 +61,7 @@ Release baseline:
 - site-owner deploy readiness check (site-owner SSH + write access for the target live plugin/theme paths)
 
 MRN Updraft backup policy:
-- Treat `stack/BACKUP_POLICY.md` as the canonical backup policy for Codex work in this repository.
+- Treat `stack/BACKUP_POLICY.md` as the canonical backup policy for all agent work in this repository.
 - Stack-managed development, staging, and production sites use daily Updraft file/database backups, `4/4` retention, local deletion after remote transfer, WordPress-core exclusion, deterministic 01:00-04:59 scheduling, and a unique S3 prefix ending in `sites/<hostname>`.
 - Development sites do not need to be added to MainWP. Use their dedicated site-owner SSH path when auditing or applying the policy manually.
 - Routine scheduled and manual development backups stay inside the rolling four-set limit. Do not mark routine backups `always_keep`.

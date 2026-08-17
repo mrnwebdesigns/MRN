@@ -94,6 +94,26 @@ Use Production Hub when environment-level facts are needed instead of static ass
 - Treat as RunCloud-supported infrastructure dependency where stack manifests/scripts require it.
 - Resolve account/project-specific live state dynamically before applying host assumptions.
 
+### Cloudflare
+
+- MRN agents may legitimately have access to multiple Cloudflare accounts. Every
+  visible account is part of infrastructure MRN manages; broad visibility is
+  intentional and is not a misconfiguration.
+- This is deliberately different from the 1Password boundary in section 3. Do not
+  apply the 1Password single-account rule to Cloudflare.
+- Before any Cloudflare operation, identify the correct account and zone for the
+  specific client/site being worked on. Resolve them from current state —
+  Production Hub, site manifests, or a live account/zone lookup — not from memory
+  or from a previous task in the same session.
+- Verify the resolved zone belongs to the intended account before acting.
+- Never mutate an account or zone merely because it is visible. Visibility is not
+  authorization, and a near-miss on account selection is a cross-client incident.
+- Treat DNS, proxy status, WAF, and certificate changes as production mutations
+  subject to the applicable confirmation requirements in section 7.
+- Read-only lookups across accounts are acceptable for discovery and verification.
+- A Cloudflare-proxied hostname resolves to edge addresses in public DNS. Resolve
+  an origin from the zone record, not from `dig`.
+
 ### CloudPanel / `mrndev.io`
 - Treat `mrndev.io` as review/development/staging infrastructure unless explicitly marked production.
 - Keep public `*.mrndev.io` hostnames in the production networking posture; do not hard-code SSH assumptions for these hosts.
@@ -207,7 +227,8 @@ Never treat LOCAL, `mrndev.io` review, and production environments as interchang
 | Policy/Convention | Authoritative source | Last validated in this pass | Validation method |
 | --- | --- | --- | --- |
 | Global Codex configuration and MCP/tool wiring | `/Users/khofmeyer/.codex/config.toml` | 2026-08-16 | file timestamp + key inspection |
-| Global instructions and MRN-specific operating rules | `/Users/khofmeyer/.codex/AGENTS.md` | 2026-07-08 | file timestamp + direct inspection |
+| Codex global instructions and MRN-specific operating rules | `/Users/khofmeyer/.codex/AGENTS.md` | 2026-07-08 | file timestamp + direct inspection |
+| Claude Code global bootstrap into shared MRN policy | `/Users/khofmeyer/.claude/CLAUDE.md` | 2026-08-17 | file created + direct inspection |
 | Repo-level MRN safety and conventions | `/Users/khofmeyer/Development/MRN/AGENTS.md` | 2026-08-13 | file timestamp + direct inspection |
 | Backup/deploy contract | `/Users/khofmeyer/Development/MRN/stack/BACKUP_POLICY.md` | 2026-08-13 | file timestamp + direct inspection |
 | TheHub runtime conventions and docs | `/Users/khofmeyer/Development/MRN-local-hub/README.md` and `~/.mrn-local-hub/settings.json` | 2026-07-20 | file timestamp + config read |
@@ -267,8 +288,12 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
 - QA passing authorizes neither deployment nor production mutation.
 - The sequence remains: QA pass -> commit may proceed -> deployment remains separately gated by owner/production authorization, applicable backup policy, environment safety, MainWP/QA Engine routing, and deployment-specific validation.
 
-## 11) Portability for future CLAUDE.md
+## 11) Vendor bootstrap portability
 
-- This file is vendor-neutral and repo-native.
-- A future `CLAUDE.md` should reference this file as the global source, adding only Claude-specific behavior notes.
-- Keep this file as the canonical MRN operating context; project and tool-specific behavior should remain where it is authored.
+- This file is vendor-neutral and repo-native. It is the canonical MRN operating context for every agent.
+- Each agent has a small vendor-specific bootstrap that points here and duplicates nothing:
+  - Codex: `/Users/khofmeyer/.codex/AGENTS.md`
+  - Claude Code: `/Users/khofmeyer/.claude/CLAUDE.md`
+- A vendor bootstrap may contain only detection rules, read order, fail-closed behavior, and vendor-specific mechanics. Policy belongs here or in the applicable `AGENTS.md`.
+- Claude Code does not discover `AGENTS.md` automatically; its bootstrap must state the discovery step explicitly. Codex discovers `AGENTS.md` natively.
+- Keep project and tool-specific behavior where it is authored.
