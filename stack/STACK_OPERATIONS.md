@@ -11,24 +11,40 @@ This document explains the operational rules for local development, stack syncin
 
 ## Local Development Rule
 
-The local MRN test site should point to canonical source via symlinks.
+The local MRN test site must track canonical source, so that runtime QA validates the code being changed rather than a stale copy.
 
-### Plugins
+**Do not use symlinks for this.** The local runtime is the `mrn-openlitespeed` Lima VM, and OpenLiteSpeed inside that VM does not resolve symlinks pointing at host paths outside the site tree. Replacing the site's component directories with symlinks produces `HTTP 200` responses with an empty body, which looks like a rendering bug rather than a wiring problem. WP-CLI keeps working throughout, because it runs on the host, so the breakage is invisible from the command line.
 
-- MRN normal plugins should symlink to:
-  - `/Users/khofmeyer/Development/MRN/plugins/`
+Sync copies instead, using the same pattern the bootstrap uses:
 
-### MU Plugins
+```bash
+SITE=/Users/khofmeyer/Development/MRN-sites/platform/public/wp-content
+for d in mu-plugins/*/; do rsync -a "$d" "$SITE/mu-plugins/$(basename "$d")/"; done
+rsync -a stack/mu-plugins/*.php "$SITE/mu-plugins/"
+rsync -a stack/themes/mrn-base-stack/ "$SITE/themes/mrn-base-stack/"
+rsync -a stack/themes/mrn-base-stack-child/ "$SITE/themes/mrn-base-stack-child/"
+for d in "$SITE/plugins"/mrn-*; do
+  s=$(basename "$d"); [ -d "plugins/$s" ] && rsync -a "plugins/$s/" "$d/"
+done
+```
 
-- MRN MU plugins should symlink to:
-  - `/Users/khofmeyer/Development/MRN/mu-plugins/`
+Canonical sources are `MRN/plugins/`, `MRN/mu-plugins/`, `MRN/stack/mu-plugins/*.php` for the wrapper loaders, and `MRN/stack/themes/`.
 
-### Theme
+After any bulk replacement of site files, restart the web service or PHP will serve stale cached bytecode for deleted inodes and return `HTTP 500`:
 
-- The local active stack theme slug should symlink to:
-  - `/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack`
+```bash
+limactl shell mrn-openlitespeed -- sudo systemctl restart lshttpd
+```
 
-This is the preferred local workflow because it keeps local testing aligned with the real source of truth.
+Verify with a cache-busting request before trusting a QA result:
+
+```bash
+curl -sS -o /dev/null -w '%{http_code} %{size_download}\n' "https://platform.localhost/?nocache=$$" --insecure
+```
+
+A non-trivial byte count matters as much as the status code. An empty `200` means the site is broken.
+
+Check for drift before relying on a runtime QA row. A local site that has fallen behind will report passing accessibility, performance, and browser-smoke rows for code that is not the code under review.
 
 ## Local Environment Pull/Deploy Rule
 
