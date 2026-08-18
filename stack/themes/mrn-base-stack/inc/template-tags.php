@@ -426,13 +426,13 @@ if ( ! function_exists( 'mrn_base_stack_seed_searchwp_form' ) ) :
 			return;
 		}
 
-		$selected_header_form_id      = function_exists( 'get_field' ) ? absint( get_field( 'header_searchwp_form_id', 'option' ) ) : absint( get_option( 'options_header_searchwp_form_id', 0 ) );
-		$has_header_form_saved_value  = false !== get_option( 'options_header_searchwp_form_id', false );
-		$has_header_form_saved_field  = false !== get_option( '_options_header_searchwp_form_id', false );
-		$has_header_form_saved_choice = $has_header_form_saved_value || $has_header_form_saved_field;
-		$form_selection_complete      = $selected_header_form_id > 0 && isset( $forms[ $selected_header_form_id ] );
+		$selected_header_form_id = function_exists( 'get_field' ) ? absint( get_field( 'header_searchwp_form_id', 'option' ) ) : absint( get_option( 'options_header_searchwp_form_id', 0 ) );
+		$form_selection_complete = $selected_header_form_id > 0 && isset( $forms[ $selected_header_form_id ] );
 
-		if ( ! $has_header_form_saved_choice ) {
+		// Self-heal an invalid/blank selection (for example a routine options-page
+		// save that persisted this field's unset default of 0 before an admin ever
+		// chose a form) instead of only filling in a never-saved option row.
+		if ( ! $form_selection_complete ) {
 			update_option( 'options_header_searchwp_form_id', (string) $form_id, false );
 			update_option( '_options_header_searchwp_form_id', 'field_mrn_theme_header_searchwp_form_id', false );
 			$form_selection_complete = true;

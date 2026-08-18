@@ -121,5 +121,14 @@ namespace {
 	mrn_searchwp_test_assert( '2' === get_option( 'options_header_searchwp_form_id', '' ), 'a valid administrator-selected form is preserved' );
 	mrn_searchwp_test_assert( '0' === get_option( 'options_header_show_search', '' ), 'an explicit administrator search toggle is preserved' );
 
+	// Simulate a routine options-page save that persisted this field's unset
+	// default of 0 before an admin ever chose a form -- the exact state that
+	// otherwise permanently blocks the header search notice from clearing.
+	update_option( 'options_header_searchwp_form_id', '0', false );
+	update_option( '_options_header_searchwp_form_id', 'field_mrn_theme_header_searchwp_form_id', false );
+	mrn_base_stack_seed_searchwp_form();
+
+	mrn_searchwp_test_assert( '3' === get_option( 'options_header_searchwp_form_id', '' ), 'a blank saved selection self-heals to the canonical form' );
+
 	echo "PASS: SearchWP form provisioning contract.\n";
 }
