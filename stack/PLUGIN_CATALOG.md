@@ -18,7 +18,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-dashboard-support` | 1.0.3 | MU loader | Platform required | Provides MRN support information and dashboard metadata. |
 | `mrn-disable-comments` | 1.2.4 | MU loader | Platform required | Enforces the MRN no-comments policy. |
 | `mrn-editor-lockdown` | 1.0.32 | MU loader | Platform required | Applies shared editor, metabox, and capability policy. |
-| `mrn-environment-runtime` | 0.3.1 | MU loader | Platform required | Provides environment and runtime diagnostics. |
+| `mrn-environment-runtime` | 0.4.0 | MU loader | Platform required | Provides environment and runtime diagnostics. |
 | `mrn-public-security-hardening` | 0.3.3 | MU loader | Platform required | Applies shared public REST and discovery hardening. |
 | `mrn-shared-assets` | 0.2.0 | MU loader | Platform required | Provides shared asset and icon interfaces. |
 | `mrn-site-colors` | 0.1.38 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
@@ -53,7 +53,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Catalog only | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories. |
 | `mrn-gtm-injector` | 1.0.13 | Standard bootstrap | Optional integration | Google Tag Manager. |
 | `mrn-recaptcha-enterprise-manager` | 0.1.1 | Standard bootstrap | Optional integration | reCAPTCHA Enterprise and WPForms. |
-| `mrn-schema-bridge` | 0.4.2 | MU loader | Optional integration | SmartCrawl, SEOPress, theme, and schema normalization. |
+| `mrn-schema-bridge` | 0.4.2 | MU loader | Optional integration | SEOPress (preferred), legacy SmartCrawl, theme, and schema normalization. |
 | `mrn-seo-helper` | 0.4.0 | Standard bootstrap | Optional integration | ACF SEO fields and supported SEO providers. |
 | `mrn-pre-consent-update-backup` | 1.0.12 | Catalog only | Optional integration | UpdraftPlus/update-consent workflow. |
 
@@ -69,7 +69,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 
 | Slug | Version | Current distribution | Target tier | Responsibility |
 | --- | ---: | --- | --- | --- |
-| `mrn-active-style-guide` | 0.1.5 | MU loader | Development only | Logged-in design-system reference and diagnostics. |
+| `mrn-active-style-guide` | 0.1.6 | MU loader | Development only | Logged-in design-system reference and diagnostics. |
 | `mrn-template-inspector` | 0.2.7 | Standard bootstrap | Development only | Template and request-context inspection. |
 | `searchwp-editor-performance` | 1.0.7 | Standard bootstrap | Development only | Keeps development SearchWP frontend search available while suppressing expensive editor and indexing behavior. |
 | `mrn-dummy-content` | 0.3.0 | Catalog only | Development only | Development content fixtures. |

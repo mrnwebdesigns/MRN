@@ -1,10 +1,10 @@
 # Stack Baseline - MRN Workspace
 
 ## Baseline Snapshot
-- Date pinned: 2026-07-20
+- Date pinned: 2026-08-18
 - Workspace path: `/Users/khofmeyer/Development/MRN`
-- Stack release: `2026.07.17-testimonial-schema`
-- Current theme package: `mrn-base-stack` `1.2.83`
+- Stack release: `2026.08.16-reusable-block-library-stack-profile`
+- Current theme package: `mrn-base-stack` `1.2.106`
 - Intended integration target: MRN stack and local platform runtime
 - Current release model: coordinated stack workspace
 

@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Environment Runtime
  * Description: Reports the deployment-managed environment and performance policy without adding frontend work.
- * Version: 0.3.1
+ * Version: 0.4.0
  * Author: MRN Web Designs
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_ENVIRONMENT_RUNTIME_VERSION' ) ) {
-	define( 'MRN_ENVIRONMENT_RUNTIME_VERSION', '0.3.1' );
+	define( 'MRN_ENVIRONMENT_RUNTIME_VERSION', '0.4.0' );
 }
 
 /**
@@ -46,6 +46,190 @@ function mrn_environment_runtime_environment_type() {
 	return in_array( $environment, array( 'local', 'development', 'staging', 'production' ), true )
 		? $environment
 		: 'production';
+}
+
+/**
+ * Return the site host, lowercased and stripped of port and leading "www.".
+ *
+ * @param string|null $url Optional URL override for testing.
+ * @return string Empty string when the host cannot be resolved.
+ */
+function mrn_environment_runtime_site_host( $url = null ) {
+	if ( null === $url ) {
+		$url = function_exists( 'home_url' ) ? home_url( '/' ) : '';
+	}
+
+	if ( ! is_string( $url ) || '' === $url ) {
+		return '';
+	}
+
+	$host = parse_url( $url, PHP_URL_HOST ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Runs before WordPress helpers are guaranteed.
+	if ( ! is_string( $host ) || '' === $host ) {
+		// Accept a bare host as well as a full URL.
+		$host = preg_replace( '#^.*://#', '', $url );
+		$host = is_string( $host ) ? strtok( $host, '/' ) : '';
+	}
+
+	if ( ! is_string( $host ) ) {
+		return '';
+	}
+
+	$host = strtolower( trim( $host ) );
+	$host = preg_replace( '/:\d+$/', '', $host );
+	$host = preg_replace( '/^www\./', '', (string) $host );
+
+	return (string) $host;
+}
+
+/**
+ * Return suffixes that always indicate a non-production host.
+ *
+ * These are local, review, and hosting-provider temporary domains. A site
+ * reachable only at one of these is never a customer-facing production site.
+ *
+ * @return array<int, string>
+ */
+function mrn_environment_runtime_non_production_suffixes() {
+	$suffixes = array(
+		'localhost',
+		'.localhost',
+		'.local',
+		'.test',
+		'.invalid',
+		'.example',
+		'.mrndev.io',
+		'.tempurl.host',
+		'.wpengine.com',
+		'.wpenginepowered.com',
+		'.kinsta.cloud',
+		'.pantheonsite.io',
+		'.sg-host.com',
+		'.siteground.site',
+		'.myftpupload.com',
+		'.cloudwaysapps.com',
+	);
+
+	if ( function_exists( 'apply_filters' ) ) {
+		$filtered = apply_filters( 'mrn_environment_runtime_non_production_suffixes', $suffixes );
+		if ( is_array( $filtered ) ) {
+			$suffixes = $filtered;
+		}
+	}
+
+	return $suffixes;
+}
+
+/**
+ * Classify a host as a production or non-production destination.
+ *
+ * Deliberately conservative: a host is only called non-production on positive
+ * evidence. Anything else is treated as production so a real launch is never
+ * silently assumed to be a review site.
+ *
+ * @param string|null $host Optional host override for testing.
+ * @return string production, non_production, or unknown.
+ */
+function mrn_environment_runtime_host_signal( $host = null ) {
+	if ( null === $host ) {
+		$host = mrn_environment_runtime_site_host();
+	}
+
+	$host = is_string( $host ) ? strtolower( trim( $host ) ) : '';
+	if ( '' === $host ) {
+		return 'unknown';
+	}
+
+	// Bare IP addresses are provisioning artifacts, never a launched domain.
+	if ( filter_var( $host, FILTER_VALIDATE_IP ) ) {
+		return 'non_production';
+	}
+
+	// A single-label host has no public domain.
+	if ( false === strpos( $host, '.' ) ) {
+		return 'non_production';
+	}
+
+	foreach ( mrn_environment_runtime_non_production_suffixes() as $suffix ) {
+		$suffix = strtolower( (string) $suffix );
+		if ( '' === $suffix ) {
+			continue;
+		}
+		if ( $host === $suffix || $host === ltrim( $suffix, '.' ) ) {
+			return 'non_production';
+		}
+		if ( '.' === substr( $suffix, 0, 1 ) && substr( $host, -strlen( $suffix ) ) === $suffix ) {
+			return 'non_production';
+		}
+	}
+
+	/*
+	 * Environment-token labels such as "staging", "staging3", or "dev-humbird".
+	 * The trailing group requires a digit or separator so real customer labels
+	 * like "devon-smith" are not misread as development hosts.
+	 */
+	foreach ( explode( '.', $host ) as $label ) {
+		if ( preg_match( '/^(staging|stage|dev|test|qa|preview|sandbox|demo)([0-9]+)?([-_].*)?$/', $label ) ) {
+			return 'non_production';
+		}
+	}
+
+	return 'production';
+}
+
+/**
+ * Compare the declared environment against the host the site actually answers on.
+ *
+ * The policy constants are written once at bootstrap and never revisited, so a
+ * site migrated to a live domain keeps its development contract. Every other
+ * check in this component compares the declared contract against plugin state,
+ * which stays self-consistent and silent in exactly that case. This is the
+ * external referent that catches it, and it works on any host because it runs
+ * inside WordPress rather than in provisioning tooling.
+ *
+ * @param string|null $host Optional host override for testing.
+ * @return array<string, mixed>
+ */
+function mrn_environment_runtime_environment_alignment( $host = null ) {
+	$declared = mrn_environment_runtime_environment_type();
+	$host     = null === $host ? mrn_environment_runtime_site_host() : $host;
+	$signal   = mrn_environment_runtime_host_signal( $host );
+	$contract = mrn_environment_runtime_contract();
+
+	$status  = 'aligned';
+	$risks   = array();
+
+	if ( 'unknown' === $signal ) {
+		$status = 'unknown';
+	} elseif ( 'production' === $signal && 'production' !== $declared ) {
+		$status = 'live_without_production_policy';
+
+		if ( function_exists( 'get_option' ) && ! get_option( 'blog_public' ) ) {
+			$risks[] = 'search engines are discouraged (blog_public is off)';
+		}
+		if ( 'disabled' === $contract['seo_indexing'] ) {
+			$risks[] = 'SEO indexing policy is disabled';
+		}
+		if ( 'frontend_only' === $contract['searchwp'] ) {
+			$risks[] = 'the SearchWP index is paused, so site search serves stale results';
+		}
+	} elseif ( 'non_production' === $signal && 'production' === $declared ) {
+		$status = 'production_policy_on_non_production_host';
+
+		if ( function_exists( 'get_option' ) && get_option( 'blog_public' ) ) {
+			$risks[] = 'a review host is open to search engines';
+		}
+		if ( 'configured' === $contract['seo_indexing'] ) {
+			$risks[] = 'SEO indexing is configured on a review host';
+		}
+	}
+
+	return array(
+		'declared'    => $declared,
+		'host'        => $host,
+		'host_signal' => $signal,
+		'status'      => $status,
+		'risks'       => $risks,
+	);
 }
 
 /**
@@ -262,6 +446,19 @@ function mrn_environment_runtime_debug_information( $information ) {
 		'label' => 'SEO indexing policy match',
 		'value' => 'disabled' === $contract['seo_indexing'] && ! empty( mrn_environment_runtime_active_seo_indexing_plugins() ) ? 'no' : 'yes',
 	);
+	$alignment = mrn_environment_runtime_environment_alignment();
+	$fields['site_host'] = array(
+		'label' => 'Site host',
+		'value' => '' === $alignment['host'] ? 'unknown' : $alignment['host'],
+	);
+	$fields['host_signal'] = array(
+		'label' => 'Host signal',
+		'value' => $alignment['host_signal'],
+	);
+	$fields['environment_alignment'] = array(
+		'label' => 'Environment alignment',
+		'value' => $alignment['status'],
+	);
 	$fields['opcache_enabled'] = array(
 		'label' => 'PHP OPcache enabled',
 		'value' => $opcache['enabled'],
@@ -377,9 +574,59 @@ function mrn_environment_runtime_seo_indexing_notice() {
 	);
 }
 
+/**
+ * Warn administrators when the declared environment disagrees with the live host.
+ */
+function mrn_environment_runtime_environment_alignment_notice() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	$alignment = mrn_environment_runtime_environment_alignment();
+	if ( ! in_array( $alignment['status'], array( 'live_without_production_policy', 'production_policy_on_non_production_host' ), true ) ) {
+		return;
+	}
+
+	$detail = empty( $alignment['risks'] )
+		? ''
+		: ' ' . sprintf(
+			/* translators: %s: comma-separated list of detected risks. */
+			esc_html__( 'Detected: %s.', 'mrn-environment-runtime' ),
+			esc_html( implode( '; ', $alignment['risks'] ) )
+		);
+
+	if ( 'live_without_production_policy' === $alignment['status'] ) {
+		printf(
+			'<div class="notice notice-error"><p><strong>%s</strong> %s%s</p></div>',
+			esc_html__( 'MRN: this site is live but still running a non-production policy.', 'mrn-environment-runtime' ),
+			sprintf(
+				/* translators: 1: host name, 2: declared environment type. */
+				esc_html__( '%1$s looks like a production domain, but the environment is declared as %2$s.', 'mrn-environment-runtime' ),
+				esc_html( $alignment['host'] ),
+				esc_html( $alignment['declared'] )
+			),
+			$detail // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped parts above.
+		);
+
+		return;
+	}
+
+	printf(
+		'<div class="notice notice-warning"><p><strong>%s</strong> %s%s</p></div>',
+		esc_html__( 'MRN: production policy is active on a review host.', 'mrn-environment-runtime' ),
+		sprintf(
+			/* translators: %s: host name. */
+			esc_html__( '%s is not a production domain, but the environment is declared as production.', 'mrn-environment-runtime' ),
+			esc_html( $alignment['host'] )
+		),
+		$detail // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Built from escaped parts above.
+	);
+}
+
 if ( function_exists( 'is_admin' ) && is_admin() ) {
 	add_filter( 'debug_information', 'mrn_environment_runtime_debug_information' );
 	add_action( 'admin_notices', 'mrn_environment_runtime_searchwp_notice' );
+	add_action( 'admin_notices', 'mrn_environment_runtime_environment_alignment_notice' );
 	add_action( 'admin_notices', 'mrn_environment_runtime_seo_indexing_notice' );
 	add_action( 'admin_notices', 'mrn_environment_runtime_opcache_notice' );
 }

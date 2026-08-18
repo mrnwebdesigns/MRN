@@ -137,9 +137,10 @@ rsync -rlt --omit-dir-times --delete \
 - Current canonical helper for live theme refreshes:
   - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-live-theme.sh`
   - pass `--site-hostname <site-hostname>` to make it run the canonical site-owner SSH and Updraft preflight before syncing
-- Default live-site theme assumption:
-  - stack-managed sites run a cloned active stylesheet directory until the site is explicitly handed to the development/front-end team for child-theme setup
-  - if a site is still clone-style (`stylesheet == template`), live theme deploys should target that active stylesheet directory and preserve the live stylesheet slug, `Theme Name`, and `Text Domain`
+- Live-site theme shape must be resolved, never assumed:
+  - resolve `stylesheet` and `template` on the target site before planning a theme deploy; both bootstraps now activate `mrn-base-stack-child`, so clone-style is not the default for new sites
+  - existing sites vary: some run a site child on a renamed clone acting as the parent, some are clone-style, and a dated snapshot directory can be left active after maintenance
+  - if a site is clone-style (`stylesheet == template`), live theme deploys should target that active stylesheet directory and preserve the live stylesheet slug, `Theme Name`, and `Text Domain`
   - if a site is in child-theme mode (`stylesheet != template`), deploy stack parent source into the active template directory (parent), not the child stylesheet directory
   - never sync stack source `mrn-base-stack` into an active child stylesheet path during normal rollouts
   - `deploy-live-theme.sh` now hard-fails that path by default; only use `--force-stack-source-child-overwrite` for intentional emergency recovery and document it in rollout notes
@@ -147,7 +148,7 @@ rsync -rlt --omit-dir-times --delete \
   - `/Users/khofmeyer/Development/MRN/stack/scripts/deploy-feature-stack-and-default-configs.sh`
 - Use the feature deploy helper when stack theme or stack MU plugin work needs to stay mirrored to the stack server and the `default-configs` site in one step.
 - The feature deploy helper must also mirror `/Users/khofmeyer/Development/MRN/shared` into `wp-content/shared` on `default-configs.mrndev.io` because settings-style sticky bars and other shared runtime helpers load from that path.
-- The feature deploy helper must sync the local stack theme into the live site's active stylesheet directory, not just `/wp-content/themes/mrn-base-stack/`, because `default-configs.mrndev.io` may still run a cloned active theme slug such as `default-configs`.
+- The feature deploy helper must sync the local stack theme into the live site's active stylesheet directory rather than only `/wp-content/themes/mrn-base-stack/`, because `default-configs.mrndev.io` is clone-style: its active stylesheet is `default-configs` and `stylesheet == template`. This applies only while that stays true. If the site ever moves to child-theme mode, the stack source belongs in the parent template directory instead, and the never-overwrite-an-active-child rule above takes precedence.
 - The feature deploy helper must resolve `default-configs.mrndev.io`, verify direct site-owner SSH, run the Updraft preflight helper, and write the live site refresh through `<site-user>@mrndev-site-owner`.
 - The feature deploy helper must strip inherited/default ACLs from its rollout-owned live theme, shared runtime, and MU runtime trees before verifying `644` file modes so cloned-theme ACL inheritance does not cause false post-sync failures.
 - The feature deploy helper must verify its post-sync permission normalization and fail if sync-user-owned live files remain outside `644`.
@@ -195,14 +196,19 @@ rsync -rlt --omit-dir-times --delete \
   - `mrn-base-stack`
 - The stack should install the packaged theme zip, not a bare wp.org slug.
 
-Current expected manifest pattern:
+Current manifest pattern in `manifests/themes.txt`:
 
 ```text
-/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip|active
+/home/mrndev-stack-manager/stack/themes/mrn-base-stack.zip
+/home/mrndev-stack-manager/stack/themes/mrn-base-stack-child.zip|active
 ```
 
+The parent installs without the `active` flag and the child is the activated theme, so a newly bootstrapped site is in child-theme mode from the start.
+
+Marking `mrn-base-stack.zip|active` instead would re-enable the dormant clone-and-rename path in `site-bootstrap.sh`, which triggers only when the activated slug is `mrn-base-stack` or `underscores` (`STACK_SITE_THEME_CLONE_SOURCE_SLUG`). That code is still present but unreachable under the manifest above, so changing this line silently changes the theme model for every new CloudPanel site. The RunCloud bundle installer has no clone path at all and always activates the declared slug directly.
+
 The stack does not pull fresh `_s` from upstream on each rollout.
-- Keep the packaged theme zip in the existing flat-root format with `style.css` at the archive root; current rollout QA reads the version directly from that location.
+- Package the theme zip with a single top-level directory matching the theme slug, so `style.css` sits at `mrn-base-stack/style.css`. `build-release-zips.sh` produces this by design, and WordPress requires it to install a theme from a zip. Rollout QA reads the version from the live installed theme directory, not from the archive root.
 
 ## Bootstrap Execution Rule
 

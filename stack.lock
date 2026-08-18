@@ -2,14 +2,14 @@
   "project": "MRN",
   "release_unit": "stack-workspace",
   "baseline": {
-    "pinned_at": "2026-07-20",
+    "pinned_at": "2026-08-18",
     "repo_path": "/Users/khofmeyer/Development/MRN",
     "integration_target": "mrn-stack",
     "integration_mode": "coordinated-stack-workspace",
-    "stack_release": "2026.07.17-testimonial-schema",
+    "stack_release": "2026.08.16-reusable-block-library-stack-profile",
     "theme": {
-      "mrn-base-stack": "1.2.83",
-      "mrn-base-stack-child": "1.0.1"
+      "mrn-base-stack": "1.2.106",
+      "mrn-base-stack-child": "1.1.0"
     },
     "standard_plugins": {
       "mrn-config-helper": "0.1.54"

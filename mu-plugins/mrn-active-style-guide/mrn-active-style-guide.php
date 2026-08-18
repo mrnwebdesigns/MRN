@@ -3,7 +3,7 @@
  * Plugin Name: MRN Active Style Guide
  * Description: Adds a logged-in-only front-end style guide panel and full reference page for reviewing live brand styles.
  * Author: MRN Web Designs
- * Version: 0.1.5
+ * Version: 0.1.6
  */
 
 defined('ABSPATH') || exit;
@@ -644,7 +644,7 @@ function mrn_active_style_guide_get_breadcrumb_child_theme_reference(): array {
         'Turn off globally' => 'Disable breadcrumbs in Config Helper > Breadcrumbs > Advanced Breadcrumbs.',
         'Turn off for specific contexts' => 'Use Breadcrumb Behavior context toggles (singular, archive, search, home, 404).',
         'Turn off for a specific template' => 'Keep global breadcrumbs on and return an empty array from mrn_breadcrumb_items when your template condition matches.',
-        'Schema ownership' => 'Use Schema Source in settings (Auto, Stack, SmartCrawl, None) to avoid duplicate JSON-LD output.',
+        'Schema ownership' => 'Use Schema Source in settings (Auto, SEO provider JSON-LD, MRN stack JSON-LD, Disabled) to avoid duplicate JSON-LD output.',
     );
 }
 
@@ -660,7 +660,7 @@ function mrn_active_style_guide_get_breadcrumb_implementation_reference(): array
         'Shortcode integration' => 'Use [mrn_breadcrumbs] in Classic Editor content where template-level placement is not available.',
         'Manual override requirements' => 'Set Trail Mode to "Dynamic with per-page manual override" and enable "Use manual breadcrumb override" in the entry metabox.',
         'Accessibility baseline' => 'If custom markup is used, preserve nav landmark, list semantics, keyboard-reachable links, and aria-current="page" for the active crumb.',
-        'SEO/schema baseline' => 'Set Schema Source intentionally (Auto, Stack, SmartCrawl, None) so only one breadcrumb schema source is active.',
+        'SEO/schema baseline' => 'Set Schema Source intentionally (Auto, SEO provider JSON-LD, MRN stack JSON-LD, Disabled) so only one breadcrumb schema source is active.',
         'Verification checklist' => 'Verify on at least one page/post/archive/search/404 target where enabled. Confirm visible output, semantic structure, and no duplicate schema.',
     );
 }

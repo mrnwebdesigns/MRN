@@ -28,7 +28,7 @@ Product quality:
 Safety:
 - Assume shared components affect multiple features
 - Treat site updates as coordinated stack changes when rendering, helpers, or theming hooks are involved
-- Treat cloned live site themes as the default stack runtime surface until a site is explicitly handed to the development/front-end team for child-theme setup
+- Resolve each site's theme shape from its live `stylesheet` and `template` values before a theme deploy; both bootstraps now activate a child theme, so clone-style is not the default
 - Avoid breaking:
   - builder layouts
   - reusable blocks

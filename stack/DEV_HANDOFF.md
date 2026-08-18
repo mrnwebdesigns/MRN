@@ -446,7 +446,7 @@ Current helper/output:
 
 Important QA note:
 
-- SmartCrawl Pro may also output organization schema
+- The active SEO provider (SEOPress on new stack sites, legacy SmartCrawl on migrating sites) may also output organization schema
 - schema duplication/conflict should be reviewed during site QA
 
 ## Search

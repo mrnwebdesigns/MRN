@@ -1,20 +1,20 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.14-sticky-bar-platform-requirement`
-- Release date: `2026-08-14`
+- Stack release: `2026.08.16-reusable-block-library-stack-profile`
+- Release date: `2026-08-16`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.105`
-  - `mrn-base-stack-child` `1.0.1`
+  - `mrn-base-stack` `1.2.106`
+  - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
-  - `mrn-active-style-guide` `0.1.5`
+  - `mrn-active-style-guide` `0.1.6`
   - `mrn-admin-ui-css` `3.2.3`
   - `mrn-shared-assets` `0.1.3`
   - `mrn-editor-lockdown` `1.0.32`
-  - `mrn-environment-runtime` `0.3.1`
+  - `mrn-environment-runtime` `0.4.0`
   - `mrn-schema-bridge` `0.4.2`
   - `mrn-site-colors` / `Site Styles` `0.1.38`
 - Standard plugins:

@@ -8,12 +8,24 @@ Updating a site is not a plugin-only action.
 
 Because MRN sites are built from coordinated plugins, MU plugins, shared runtime files, and the stack theme, every site update should evaluate whether the live active theme also needs to be updated.
 
-For stack-managed sites, assume:
+Do not assume a theme shape. Resolve it per site from `stylesheet` and `template`, because four shapes are in use:
 
-- the site runs a cloned active theme directory based on the shared stack theme
-- a child theme is introduced later only when the site is handed to the development/front-end team
+| Shape | `stylesheet` | `template` | Seen on |
+| --- | --- | --- | --- |
+| Newly bootstrapped | `mrn-base-stack-child` | `mrn-base-stack` | any site from either bootstrap |
+| Site child on a renamed clone | `<site>-child` | `<site>` (clone of the stack theme) | mrnwebdesigns.com, freedomhouserecovery.org |
+| Clone-style | `<site>` | same as `stylesheet` | default-configs.mrndev.io |
+| Snapshot left active | a dated copy such as `<site>-child02.prelink-<timestamp>` | `<site>` | see the rollout note below |
 
-That means shared code updates should preserve the live theme slug plus `Theme Name` and `Text Domain`, and should keep stable theming hooks available for later front-end handoff work whenever practical.
+Both bootstraps now activate `mrn-base-stack-child` directly, so a new site is in child-theme mode from birth rather than after a front-end handoff. Existing live sites are commonly in child mode too, on a renamed clone acting as the parent.
+
+Resolve it with `wp option get stylesheet` and `wp option get template` before planning any theme deploy. Shared code updates should still preserve the live theme slug plus `Theme Name` and `Text Domain`, and keep stable theming hooks available.
+
+## Snapshot Directories Left Active
+
+A theme directory can be left active as a dated snapshot after a maintenance or relink operation. On `freedomhouserecovery.org` the active stylesheet is `freedomhouse-child02.prelink-20260529-175707`, while the canonical `freedomhouse-child02` sits inactive at the same version.
+
+When that happens, edits to the canonical child directory have no effect on the live site, and a deploy that targets the canonical slug will appear to succeed while changing nothing visible. Always resolve the live `stylesheet` value rather than assuming the canonical child slug is active. Treat a dated active stylesheet as a site issue to resolve deliberately, not as a directory to deploy into.
 
 ## Stable Theming Contract
 
@@ -47,7 +59,8 @@ Prefer:
 3. Review theme impact.
    - If rendering, template structure, helper output, classes, variables, or accent hooks changed, include the parent theme update in the rollout plan.
 4. Check live-theme compatibility.
-   - Assume the site is running its cloned active theme directory unless a front-end handoff has already introduced a child theme.
+   - Resolve `stylesheet` and `template` on the live site first. Do not assume a shape from the site's age or from whether a front-end handoff happened.
+   - If `stylesheet == template`, the site is clone-style: deploy into that active stylesheet directory and preserve its slug, `Theme Name`, and `Text Domain`.
    - If `stylesheet != template`, treat the site as child-theme mode and deploy stack parent source into the active parent template directory only.
    - Do not sync `stack/themes/mrn-base-stack` into a child stylesheet directory during normal rollout work.
    - The live theme helper now blocks this risky path by default; `--force-stack-source-child-overwrite` is emergency-only and requires rollout-note documentation.
@@ -82,4 +95,4 @@ If that happens:
 
 Use this wording in the master Google Doc:
 
-> Site updates should be treated as stack updates, not plugin-only swaps. When code changes are prepared for a site, review the affected plugins, MU plugins, shared runtime files, and the live active theme together. Stack-managed sites should be assumed to run a cloned active theme until they are explicitly handed to the development/front-end team for child-theme setup, so theme updates should preserve the live stylesheet slug, `Theme Name`, `Text Domain`, and stable theming hooks whenever possible. Do not rename or remove shared class names, CSS variables, data attributes, or other styling hooks unless the change is necessary and documented in the rollout notes. If a breaking theming change is required, the update plan must include the active-theme change, any needed later handoff follow-up, and documentation updates for the master Google Doc.
+> Site updates should be treated as stack updates, not plugin-only swaps. When code changes are prepared for a site, review the affected plugins, MU plugins, shared runtime files, and the live active theme together. Theme shape varies per site and must be resolved from the live `stylesheet` and `template` values rather than assumed. Newly built sites run a parent plus child theme from the start, while many existing sites run a site-specific child on a renamed clone of the stack theme, and a few run a clone directly. Theme updates should preserve the live stylesheet slug, `Theme Name`, `Text Domain`, and stable theming hooks whenever possible. Do not rename or remove shared class names, CSS variables, data attributes, or other styling hooks unless the change is necessary and documented in the rollout notes. If a breaking theming change is required, the update plan must include the active-theme change, any needed later handoff follow-up, and documentation updates for the master Google Doc.

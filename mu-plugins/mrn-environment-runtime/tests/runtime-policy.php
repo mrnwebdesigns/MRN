@@ -42,6 +42,10 @@ function is_multisite() {
 	return false;
 }
 
+function esc_html( $text ) {
+	return $text;
+}
+
 require dirname( __DIR__ ) . '/mrn-environment-runtime.php';
 
 $contract = mrn_environment_runtime_contract();
@@ -86,6 +90,70 @@ if ( 'yes' !== $opcache['enabled'] || 'no' !== $opcache['cache_full'] || '1536' 
 }
 if ( '50.0' !== $opcache['free_percent'] || '97.3' !== $opcache['hit_rate'] || '24500' !== $opcache['cached_scripts'] ) {
 	throw new RuntimeException( 'OPcache health calculation failed.' );
+}
+
+// --- Host signal classification -------------------------------------------
+
+$host_cases = array(
+	// Production domains.
+	'mrnwebdesigns.com'              => 'production',
+	'freedomhouserecovery.org'       => 'production',
+	'devon-smith.com'                => 'production',
+	'demoulas-market.com'            => 'production',
+	'www.thecaryingplace.org'        => 'production',
+	// Local, review, and provider temporary hosts.
+	'platform.localhost'             => 'non_production',
+	'localhost'                      => 'non_production',
+	'quantumbloom.mrndev.io'         => 'non_production',
+	'runcloudtest-staging.mrndev.io' => 'non_production',
+	'eloghomes.tempurl.host'         => 'non_production',
+	'example.wpengine.com'           => 'non_production',
+	'example.sg-host.com'            => 'non_production',
+	'192.168.1.10'                   => 'non_production',
+	// Environment-token labels on otherwise real domains.
+	'staging3.bestdaypsych.com'      => 'non_production',
+	'bdp.dev-humbird.com'            => 'non_production',
+	'qa.example.com'                 => 'non_production',
+	'demo.example.com'               => 'non_production',
+);
+
+foreach ( $host_cases as $host => $expected ) {
+	$actual = mrn_environment_runtime_host_signal( $host );
+	if ( $expected !== $actual ) {
+		throw new RuntimeException( esc_html( "Host signal for {$host} expected {$expected}, got {$actual}." ) );
+	}
+}
+
+if ( 'unknown' !== mrn_environment_runtime_host_signal( '' ) ) {
+	throw new RuntimeException( 'Empty host should be unknown.' );
+}
+
+if ( 'mrnwebdesigns.com' !== mrn_environment_runtime_site_host( 'https://www.mrnwebdesigns.com:8443/path' ) ) {
+	throw new RuntimeException( 'Host normalization failed.' );
+}
+
+// --- Environment alignment -------------------------------------------------
+
+// Declared development (see wp_get_environment_type stub) on a live domain.
+$live = mrn_environment_runtime_environment_alignment( 'freedomhouserecovery.org' );
+if ( 'live_without_production_policy' !== $live['status'] ) {
+	throw new RuntimeException( 'Live domain with development policy was not flagged.' );
+}
+if ( ! in_array( 'SEO indexing policy is disabled', $live['risks'], true ) ) {
+	throw new RuntimeException( 'Disabled SEO indexing risk was not reported.' );
+}
+if ( ! in_array( 'the SearchWP index is paused, so site search serves stale results', $live['risks'], true ) ) {
+	throw new RuntimeException( 'Paused SearchWP index risk was not reported.' );
+}
+
+// Same declared policy on a review host is the expected, aligned case.
+$review = mrn_environment_runtime_environment_alignment( 'quantumbloom.mrndev.io' );
+if ( 'aligned' !== $review['status'] ) {
+	throw new RuntimeException( 'Review host with development policy should be aligned.' );
+}
+
+if ( 'unknown' !== mrn_environment_runtime_environment_alignment( '' )['status'] ) {
+	throw new RuntimeException( 'Unresolvable host should report unknown alignment.' );
 }
 
 echo "Environment runtime policy tests passed.\n";

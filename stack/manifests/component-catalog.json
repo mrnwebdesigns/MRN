@@ -106,7 +106,7 @@
     {
       "slug": "mrn-environment-runtime",
       "name": "MRN Environment Runtime",
-      "version": "0.3.1",
+      "version": "0.4.0",
       "runtime_type": "mu-component",
       "classification": "platform",
       "lifecycle": "supported",

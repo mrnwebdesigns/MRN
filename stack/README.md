@@ -25,7 +25,7 @@ The future hosting platform owns site and environment selection. Its canonical v
 - A stack workflow/ops guide (`STACK_OPERATIONS.md`) for local symlink workflow, server ownership, and sync/deploy rules.
 - A Local environment pull/deploy guide (`../local/LOCAL_ENV_WORKFLOW.md`) for using Local like a site environment endpoint.
 - A canonical rollout checklist (`ROLLOUT_CHECKLIST.md`) for pre-flight QA, deploy-path decisions, post-deploy verification, and live parity checks.
-- A schema and AI discovery baseline (`SCHEMA_DISCOVERY_BASELINE.md`) for SmartCrawl ownership, CPT mappings, editor controls, crawler policy, and launch checks.
+- A schema and AI discovery baseline (`SCHEMA_DISCOVERY_BASELINE.md`) for active SEO provider ownership, CPT mappings, editor controls, crawler policy, and launch checks.
 - An authoritative machine-readable component inventory (`manifests/component-catalog.json`), human catalog (`PLUGIN_CATALOG.md`), governance rules (`PLUGIN_GOVERNANCE.md`), historical plugin audit (`MRN_PLUGIN_AUDIT.md`), and plugin doc template (`PLUGIN_DOC_TEMPLATE.md`). Catalog inclusion does not imply default installation.
 - First deep-dive plugin docs live in `plugin-docs/`.
 - A per-site bootstrap script (`scripts/site-bootstrap.sh`).

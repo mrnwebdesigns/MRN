@@ -2,6 +2,8 @@
 
 > Historical snapshot: this document is retained as prior audit evidence. Current inventory, versions, ownership classifications, and product tiers are authoritative in [`manifests/component-catalog.json`](./manifests/component-catalog.json) and summarized in [`PLUGIN_CATALOG.md`](./PLUGIN_CATALOG.md).
 
+> Superseded since this snapshot: SEOPress is the preferred SEO/schema provider for new stack sites and SmartCrawl is retained only for existing sites during migration. Rows below that describe SmartCrawl as the preferred base graph reflect the 2026-07-09 state and are evidence, not current guidance. See [`SCHEMA_DISCOVERY_BASELINE.md`](./SCHEMA_DISCOVERY_BASELINE.md) and [`THIRD_PARTY_PLUGIN_AUDIT.md`](./THIRD_PARTY_PLUGIN_AUDIT.md).
+
 Last audited: 2026-07-09
 
 This audit tracks the active MRN WordPress plugin and MU-plugin sources, their Plugins-page display names, current header versions, repository ownership, and stack dependency posture.
