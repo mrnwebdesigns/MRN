@@ -13,9 +13,9 @@ Do not assume a theme shape. Resolve it per site from `stylesheet` and `template
 | Shape | `stylesheet` | `template` | Seen on |
 | --- | --- | --- | --- |
 | Newly bootstrapped | `mrn-base-stack-child` | `mrn-base-stack` | any site from either bootstrap |
-| Site child on a renamed clone | `<site>-child` | `<site>` (clone of the stack theme) | mrnwebdesigns.com, freedomhouserecovery.org |
+| Site child on a renamed clone | `<site>-child` | `<site>` (clone of the stack theme) | common on established sites |
 | Clone-style | `<site>` | same as `stylesheet` | default-configs.mrndev.io |
-| Snapshot left active | a dated copy such as `<site>-child02.prelink-<timestamp>` | `<site>` | see the rollout note below |
+| Snapshot left active | a dated copy such as `<site>-child.prelink-<timestamp>` | `<site>` | see the rollout note below |
 
 Both bootstraps now activate `mrn-base-stack-child` directly, so a new site is in child-theme mode from birth rather than after a front-end handoff. Existing live sites are commonly in child mode too, on a renamed clone acting as the parent.
 
@@ -23,7 +23,7 @@ Resolve it with `wp option get stylesheet` and `wp option get template` before p
 
 ## Snapshot Directories Left Active
 
-A theme directory can be left active as a dated snapshot after a maintenance or relink operation. On `freedomhouserecovery.org` the active stylesheet is `freedomhouse-child02.prelink-20260529-175707`, while the canonical `freedomhouse-child02` sits inactive at the same version.
+A theme directory can be left active as a dated snapshot after a maintenance or relink operation, leaving an active stylesheet such as `<site>-child.prelink-<timestamp>` while the canonical child sits inactive at the same version.
 
 When that happens, edits to the canonical child directory have no effect on the live site, and a deploy that targets the canonical slug will appear to succeed while changing nothing visible. Always resolve the live `stylesheet` value rather than assuming the canonical child slug is active. Treat a dated active stylesheet as a site issue to resolve deliberately, not as a directory to deploy into.
 

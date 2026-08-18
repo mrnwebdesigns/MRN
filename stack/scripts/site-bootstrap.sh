@@ -1584,6 +1584,68 @@ install_themes() {
   echo "No active theme specified in manifest; keeping current active theme."
 }
 
+remove_default_content() {
+  local active_stylesheet active_template theme slug title
+  local -a stock_themes
+
+  active_stylesheet="$(run_wp option get stylesheet 2>/dev/null | tr -d '\r' | xargs)"
+  active_template="$(run_wp option get template 2>/dev/null | tr -d '\r' | xargs)"
+
+  if [[ -z "${active_stylesheet}" ]]; then
+    add_warning "Could not resolve the active stylesheet; skipped stock theme removal."
+    return 0
+  fi
+
+  # Only WordPress's bundled twenty* themes are removed, and never the active
+  # theme or its parent, so a clone-style or child-theme site cannot lose its
+  # runtime to this cleanup.
+  mapfile -t stock_themes < <(run_wp theme list --field=name 2>/dev/null || true)
+  for theme in "${stock_themes[@]}"; do
+    theme="$(printf '%s' "${theme}" | tr -d '\r' | xargs)"
+    [[ -n "${theme}" ]] || continue
+    [[ "${theme}" == twenty* ]] || continue
+    if [[ "${theme}" == "${active_stylesheet}" || "${theme}" == "${active_template}" ]]; then
+      add_warning "Refused to delete stock theme in use: ${theme}"
+      continue
+    fi
+    if ! run_wp theme delete "${theme}" >/dev/null 2>&1; then
+      add_warning "Failed to delete stock theme: ${theme}"
+      continue
+    fi
+    echo "Removed stock theme: ${theme}"
+  done
+
+  # Hello Dolly ships with WordPress rather than the host, so it can reappear
+  # after reset_standard_plugins depending on the core version installed.
+  if run_wp plugin is-installed hello >/dev/null 2>&1; then
+    run_wp plugin deactivate hello >/dev/null 2>&1 || true
+    if run_wp plugin delete hello >/dev/null 2>&1; then
+      echo "Removed stock plugin: hello"
+    else
+      add_warning "Failed to delete stock plugin: hello"
+    fi
+  fi
+
+  # Default content is only removed when it still matches WordPress's shipped
+  # title and slug, so an editor's real page at the same slug is never deleted.
+  while IFS='|' read -r slug title; do
+    [[ -n "${slug}" ]] || continue
+    if ! run_wp eval "
+\$post = get_page_by_path('${slug}', OBJECT, array('post','page'));
+if ( ! \$post ) { exit(1); }
+if ( trim( \$post->post_title ) !== '${title}' ) { exit(1); }
+wp_delete_post( \$post->ID, true );
+exit(0);
+" >/dev/null 2>&1; then
+      continue
+    fi
+    echo "Removed default content: ${slug}"
+  done <<'DEFAULTS'
+hello-world|Hello world!
+sample-page|Sample Page
+DEFAULTS
+}
+
 apply_wp_defaults() {
   local recaptcha_private_key_literal recaptcha_private_key_php_literal recaptcha_integration_type
 
@@ -1973,6 +2035,7 @@ main() {
   sync_mu_plugins
   sync_shared_runtime
   install_themes
+  remove_default_content
   apply_wp_defaults
   provision_uptime_robot_check_page
   run_importers

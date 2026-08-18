@@ -1,6 +1,9 @@
 # Stack Changelog
 
 ## 2026.08.16-reusable-block-library-stack-profile
+- Stopped new sites rolling out with WordPress's shipped defaults. Neither bootstrap removed the bundled `twenty*` themes, and the RunCloud `cleanup.*` keys were read by the schema validator and nothing else, so a RunCloud site also kept Hello Dolly and the default posts. CloudPanel `site-bootstrap.sh` now runs `remove_default_content` after theme activation, and the RunCloud bundle installer performs the same cleanup driven by `application.remove_default_*` in `stack-manifest.yaml`, shipped in the checksum-verified bundle as `manifests/cleanup.txt`. The active theme and its parent are never deleted, and default posts are removed only while they still carry WordPress's shipped title and slug.
+- Made the stack bundle builder locale-safe. Its private-key scan compared raw ZIP bytes against a regex, which raised `invalid byte sequence in US-ASCII` under a C/POSIX locale and aborted the build, so a bundle apply run from cron or CI without a UTF-8 locale would fail confusingly.
+- Removed client-site names from the stack theme-shape documentation. The patterns belong in stack docs; the specific sites do not.
 - Added profile-scoped plugin-manifest support to new-site bootstrap so optional shared entries can be selected with `stack` or `plain` instead of being forced into one universal bundle.
 - Selected `mrn-reusable-block-library` for the stack profile, kept the plain profile free of it, and wrote `MRN_SITE_PROFILE` into `wp-config.php` for runtime parity.
 - Kept the plugin on the standard plugin release path and left existing client sites untouched.
