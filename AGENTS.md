@@ -17,6 +17,13 @@ WordPress rules:
   - escaping
   - nonce/capability checks
 
+Content ownership:
+- Site content belongs in ACF or the appropriate WordPress data store, and is created and edited there. Never build a WordPress site whose content lives in code.
+- Never fix a content issue by editing a hardcoded value in a theme, plugin, or template. Content in code cannot be edited by the client, diverges between environments, and turns every copy change into a developer task and a deploy.
+- Theme-level fallback arrays and default strings are a safety net for an unset field, not the place where content is authored. If a live value appears to come from a fallback, the field is unset: populate the field and leave the fallback alone.
+- Apply content changes as replayable scripts run with `wp eval-file` and commit them with the work, so the change is versioned and can be replayed to staging and production rather than re-entered by hand in each environment.
+- Never hardcode an environment URL in content or in a content script. Resolve destinations at run time with WordPress APIs (`get_permalink()`, `get_page_by_path()`, `home_url()`), so the same value is correct on local, staging, and production.
+
 Product quality:
 - Accessibility and frontend performance are required, not optional polish
 - Theme-owned frontend work should preserve or improve a WCAG 2.1 AA baseline where the stack controls markup, styles, and behavior
