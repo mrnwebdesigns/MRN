@@ -1,6 +1,7 @@
 # Stack Changelog
 
 ## 2026.08.16-reusable-block-library-stack-profile
+- Closed the last three CloudPanel/RunCloud bootstrap parity gaps. Post Types Order defaults, the `/uptimerobot-check/` page, and Updraft local-retention cron verification now run at RunCloud stack bundle apply, so a site provisioned on either platform starts in the same state. Added the installer's first test coverage, mutation-tested rather than assumed: the initial active-theme guard case passed with the guard removed, because the `twenty*` filter runs first, so the case now covers a site whose active theme is itself a stock theme.
 - Synced six stack MU wrapper `Version:` headers to the components they load: `mrn-active-style-guide`, `mrn-editor-lockdown`, `mrn-environment-runtime`, `mrn-schema-bridge`, `mrn-shared-assets`, and `mrn-site-colors`. MainWP reads the wrapper header rather than the component, so a stale wrapper reports a stale version to every fleet inventory. Two of the six drifted in this same baseline when components were bumped without their wrappers.
 - Added a wrapper-versus-component version parity check to `qa-rollout-contract.sh` so this drift fails a release instead of going unnoticed.
 - Inlined the constant entrypoint path in the stack MU wrappers. Each assigned `__DIR__ . '/<slug>/<slug>.php'` to a local variable and then used that variable in `require_once`, which trips the dynamic-include security rule for no benefit, since the path is a compile-time constant. `mrn-loader` keeps its dynamic include: it is the hardcoded allow-list the rule asks for.
