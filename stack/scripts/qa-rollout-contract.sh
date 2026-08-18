@@ -10,6 +10,7 @@ Default checks:
   - required Stack plugins are present in the local plugin manifest
   - standalone sticky-toolbar fallback matches the canonical shared source
   - local theme version matches packaged zip version
+  - stack MU wrapper versions match the components they load
   - stack shared runtime exists on the server
   - live site shared runtime exists when a live rollout target is configured or discoverable
   - stack/live Updraft local retention MU plugin files exist when a live rollout target is configured or discoverable
@@ -133,6 +134,26 @@ ZIP_THEME_VERSION="$(
 [[ -n "${ZIP_THEME_VERSION}" ]] || fail "Could not read packaged theme version from ${LOCAL_THEME_ZIP}"
 [[ "${ZIP_THEME_VERSION}" == "${LOCAL_THEME_VERSION}" ]] || fail "Packaged theme version (${ZIP_THEME_VERSION}) does not match local source (${LOCAL_THEME_VERSION})"
 pass "Packaged theme zip version matches local source"
+
+# Each stack MU wrapper declares its own Version header, and MainWP reads that
+# header rather than the component it loads. A wrapper left behind its component
+# reports a stale version to every fleet inventory, so treat the mismatch as a
+# release-blocking drift rather than cosmetic.
+WRAPPER_DRIFT=""
+for wrapper in "${REPO_ROOT}/stack/mu-plugins"/*.php; do
+	[[ -f "${wrapper}" ]] || continue
+	wrapper_slug="$(basename "${wrapper}" .php)"
+	component="${REPO_ROOT}/mu-plugins/${wrapper_slug}/${wrapper_slug}.php"
+	[[ -f "${component}" ]] || continue
+	wrapper_version="$(sed -n 's/^[ *]*Version:[[:space:]]*//p' "${wrapper}" | head -n1 | tr -d '\r' | xargs)"
+	component_version="$(sed -n 's/^[ *]*Version:[[:space:]]*//p' "${component}" | head -n1 | tr -d '\r' | xargs)"
+	[[ -n "${component_version}" ]] || continue
+	if [[ "${wrapper_version}" != "${component_version}" ]]; then
+		WRAPPER_DRIFT+="${wrapper_slug} (${wrapper_version:-none} vs ${component_version}) "
+	fi
+done
+[[ -z "${WRAPPER_DRIFT}" ]] || fail "Stack MU wrapper versions behind their components: ${WRAPPER_DRIFT}"
+pass "Stack MU wrapper versions match their components"
 
 remote_dir_exists "${REMOTE_SHARED_DIR}" || fail "Remote stack shared runtime missing: ${REMOTE_SHARED_DIR}"
 remote_file_exists "${REMOTE_SHARED_DIR}/mrn-sticky-settings-toolbar.php" || fail "Remote stack shared runtime missing mrn-sticky-settings-toolbar.php"

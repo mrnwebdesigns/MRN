@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Editor Lockdown
  * Description: Loads the MRN Editor Lockdown MU plugin from its subfolder.
- * Version: 1.0.26
+ * Version: 1.0.32
  */
 
 defined( 'ABSPATH' ) || exit;

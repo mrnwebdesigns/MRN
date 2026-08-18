@@ -7,8 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$mrn_admin_data_post_types_main = __DIR__ . '/mrn-admin-data-post-types/mrn-admin-data-post-types.php';
 
-if ( file_exists( $mrn_admin_data_post_types_main ) ) {
-	require_once $mrn_admin_data_post_types_main;
+if ( file_exists( __DIR__ . '/mrn-admin-data-post-types/mrn-admin-data-post-types.php' ) ) {
+	require_once __DIR__ . '/mrn-admin-data-post-types/mrn-admin-data-post-types.php';
 }
