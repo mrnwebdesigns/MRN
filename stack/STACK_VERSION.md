@@ -23,7 +23,7 @@
   - `mrn-config-helper` `0.1.54`
   - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`
-  - `mrn-mega-menu` `0.16.16`
+  - `mrn-mega-menu` `0.16.17`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-universal-sticky-bar` `1.1.8`
   - `searchwp-editor-performance` `1.0.7`
