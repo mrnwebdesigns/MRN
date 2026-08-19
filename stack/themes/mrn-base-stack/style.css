@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.2.106
+Version: 1.2.107
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -54,6 +54,21 @@ Nicolas Gallagher and Jonathan Neal https://necolas.github.io/normalize.css/
 	--mrn-ui-panel-radius: 0;
 	--mrn-ui-panel-shadow: none;
 	--mrn-ui-panel-padding: 0;
+	/*
+	 * FAQ block spacing. The block reads these as var(--name, 0), so leaving them
+	 * undefined resolves every one to 0. That is not a cosmetic default: the
+	 * .mrn-faq__item[open] .mrn-faq__answer rule outranks a plain child-theme
+	 * .mrn-faq__answer padding rule, so an undefined value actively overrides a
+	 * site's own spacing the moment an answer opens.
+	 *
+	 * Declared on :root, deliberately, so they behave as overridable defaults.
+	 * Declaring them on .mrn-faq instead would place them closer to the answer
+	 * element than a child theme's own wrapper rule and silently win against it.
+	 */
+	--mrn-faq-gap: var(--mrn-space-stack-md);
+	--mrn-faq-item-gap: var(--mrn-space-stack-sm);
+	--mrn-faq-question-padding: var(--mrn-space-stack-sm) 0;
+	--mrn-faq-answer-padding: 0 0 var(--mrn-space-stack-sm);
 }
 
 /*--------------------------------------------------------------
