@@ -24,6 +24,7 @@ fluent-smtp
 /home/mrndev-stack-manager/stack/packages/mrn-gtm-injector.zip
 /home/mrndev-stack-manager/stack/packages/mrn-google-fonts.zip
 /home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip
+/home/mrndev-stack-manager/stack/packages/mrn-sendgrid-provisioning.zip
 /home/mrndev-stack-manager/stack/packages/mrn-media-bulk-tools.zip
 /home/mrndev-stack-manager/stack/packages/mrn-mega-menu.zip
 /home/mrndev-stack-manager/stack/packages/mrn-recaptcha-enterprise-manager.zip

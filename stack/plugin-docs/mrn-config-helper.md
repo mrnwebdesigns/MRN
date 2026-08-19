@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.54`
+- Current version: `0.1.55`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-config-helper`
 
@@ -33,7 +33,6 @@
 - The `Admin` tab is visible only to users with the `administrator` role.
 - Current settings areas include:
   - Site Identity
-  - SendGrid / Fluent SMTP
   - WPForms Notifications
   - Google Tag Manager
   - External APIs
@@ -42,6 +41,8 @@
   - Display Modes
   - Dashboard Controls
   - Back-end content type visibility
+  - Content-only post types (public page/archive/indexing removal)
+  - Content-only search-result destination (optional, engine-agnostic — see `mrn-admin-data-post-types` README)
   - Builder layout visibility
 - The Breadcrumbs tab currently includes secondary tabs:
   - `Advanced Breadcrumbs`
@@ -56,12 +57,7 @@
   - entity-aware mode creation for supported renderable items
   - field selection and ordering for mode output
   - a public saved-mode registry used by `Content`
-- SendGrid / Fluent SMTP currently includes:
-  - site SendGrid sending-key storage/sync for Fluent SMTP
-  - host-managed SendGrid management-key status
-  - site-specific SendGrid key creation
-  - SendGrid domain-auth creation and validation
-  - stored DNS records for the current authenticated domain
+- SendGrid Subuser provisioning, the site sending key, and domain authentication moved to the independent `mrn-sendgrid-provisioning` plugin (`Settings -> SendGrid Provisioning`); the Integrations tab here now only links out to it. Config Helper still exposes `mrn_config_helper_get_site_sender_name()`/`_email()` for that plugin to sync sender identity into FluentSMTP.
 - External APIs currently includes:
   - UptimeRobot API key storage fallback
   - a nonce-protected admin connection test against UptimeRobot's `getMonitors` API
@@ -175,7 +171,7 @@
 
 - `mrn-base-stack` and its theme helpers consume Config Helper through the public wrapper APIs for social links, hidden CPTs, display modes and styles, builder allowlists, breadcrumb settings, and ACF layout-picker metadata.
 - `mrn-disable-comments`, `mrn-editor-lockdown`, `mrn-reusable-block-library`, and `mrn-fontawesome-profile-manager` are supported downstream integrations that should keep using the public wrappers, hooks, and contracts instead of private implementation details.
-- `stack/scripts/site-bootstrap.sh` is a required launch-time consumer of `MRN_Config_Helper::bootstrap_sendgrid_site_provisioning()` and `MRN_Config_Helper::bootstrap_uptime_robot_monitor()`.
+- `stack/scripts/site-bootstrap.sh` is a required launch-time consumer of `MRN_Config_Helper::bootstrap_uptime_robot_monitor()` and, separately, `MRN_SendGrid_Provisioning::bootstrap_site_provisioning()` in the `mrn-sendgrid-provisioning` plugin.
 - Direct writes to `mrn_helper_settings` belong inside Config Helper. External consumers should prefer the public contract wherever possible.
 - `mrn-config-helper` is foundational MRN platform infrastructure, not a disposable utility plugin. Removing, deactivating, or omitting it from an MRN Stack site is unsupported and can break shared configuration, runtime behavior, and Stack provisioning.
 
@@ -216,18 +212,22 @@
 - Main option:
   - `mrn_helper_settings`
 - Also syncs into other plugin options when configured:
-  - Fluent SMTP option: `fluentmail-settings`
   - GTM Injector option: `mrn_gtm_settings`
   - legacy GTM option: `mrn_gtm_container_id`
 - Current `mrn_helper_settings` areas include:
   - sender name/email
   - site notification email
-  - site SendGrid API key
-  - SendGrid domain/auth metadata
   - GTM container ID
   - UptimeRobot API key fallback
   - dashboard lock roles
   - disabled admin CPT/reusable-library post types
+  - content-only post types (public page/archive/indexing removal; mirrored into
+    the `mrn-admin-data-post-types` MU-plugin's own `mrn_admin_data_post_types_manual`
+    option, which is the actual enforcement source of truth)
+  - content-only search-result destinations (post type => page ID; mirrored into
+    the MU-plugin's own `mrn_admin_data_post_types_search_destinations` option,
+    which is the actual resolver source of truth — see that plugin's README for
+    the engine-agnostic resolver API)
   - disabled builder layouts
   - social links
   - display styles
@@ -238,15 +238,7 @@
     - enabled flag
     - legacy manual items
     - chip-based manual items
-- SendGrid management key resolution order:
-  - constant `MRN_SENDGRID_MANAGEMENT_API_KEY`
-  - environment variable `MRN_SENDGRID_MANAGEMENT_API_KEY`
-  - environment variable `SENDGRID_MANAGEMENT_API_KEY`
-- Stack bootstrap is one supported way to inject the SendGrid management key into site `wp-config.php` from the stack secret file:
-  - local secret path: `/Users/khofmeyer/Development/MRN/stack/secrets/sendgrid-management-api-key.txt`
-  - server secret path: `/home/mrndev-stack-manager/stack/secrets/sendgrid-management-api-key.txt`
-  - target constant: `MRN_SENDGRID_MANAGEMENT_API_KEY`
-- For non-stack production sites, the same key should be provided by the host/deploy environment through a constant or environment variable instead of the WordPress database.
+- SendGrid management key resolution, subuser/domain-auth storage, and the stack-secret injection path are documented against `mrn-sendgrid-provisioning`, not here.
 - UptimeRobot key resolution order:
   - constant `MRN_UPTIME_ROBOT_API_KEY`
   - environment variable `MRN_UPTIME_ROBOT_API_KEY`
@@ -268,6 +260,15 @@
 - GTM Injector
 - WPForms
 - shared MRN sticky settings toolbar helper
+- `mrn-admin-data-post-types` MU-plugin (optional): the Admin -> Content Types
+  "Content Only Post Types" toggle calls
+  `mrn_admin_data_post_types_set_manual_selection()` on save and
+  `mrn_admin_data_post_types_get_code_declared()` to gray out CPTs already
+  forced admin/data-only in code. The "Content Only Search Destination" picker
+  (a `wp_dropdown_pages()` select per content-only post type) similarly calls
+  `mrn_admin_data_post_types_set_search_destination()` on save. Guarded with
+  `function_exists()`, so both degrade gracefully (settings still save) if
+  that MU-plugin is absent — the destination just has no enforcement effect.
 - shared Font Awesome runtime asset layer via `mrn-shared-assets`
 
 ## Security Notes

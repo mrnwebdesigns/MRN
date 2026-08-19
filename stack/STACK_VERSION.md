@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.16-reusable-block-library-stack-profile`
-- Release date: `2026-08-16`
+- Stack release: `2026.08.19-sendgrid-subuser-provisioning`
+- Release date: `2026-08-19`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
@@ -20,7 +20,8 @@
 - Standard plugins:
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-announcements` `1.6.2`
-  - `mrn-config-helper` `0.1.54`
+  - `mrn-config-helper` `0.1.55`
+  - `mrn-sendgrid-provisioning` `0.1.0`
   - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`
   - `mrn-mega-menu` `0.16.17`

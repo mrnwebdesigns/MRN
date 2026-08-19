@@ -331,7 +331,7 @@
     {
       "slug": "mrn-config-helper",
       "name": "MRN Config Helper",
-      "version": "0.1.54",
+      "version": "0.1.55",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
       "lifecycle": "supported",
@@ -339,8 +339,22 @@
       "target_tier": "platform-required",
       "source": {"repository": "mrn-config-helper", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["ACF", "WPForms", "WooCommerce", "SmartCrawl", "SEOPress", "MRN Shared Assets"], "release_group": "config-helper-decomposition"},
-      "data": {"options": ["mrn_helper_settings", "selected third-party settings"], "tables": [], "cron": [], "routes": ["seven privileged admin-post actions", "three media AJAX integrations"], "external_services": ["SendGrid", "UptimeRobot", "WPForms", "WooCommerce", "SEO providers"], "meta": ["breadcrumb and media-related metadata"]},
+      "data": {"options": ["mrn_helper_settings", "selected third-party settings"], "tables": [], "cron": [], "routes": ["four privileged admin-post actions", "three media AJAX integrations"], "external_services": ["UptimeRobot", "WPForms", "WooCommerce", "SEO providers"], "meta": ["breadcrumb and media-related metadata"]},
       "purpose": "Provides the shared site configuration shell, breadcrumb runtime, and launch/admin integrations required by Stack sites."
+    },
+    {
+      "slug": "mrn-sendgrid-provisioning",
+      "name": "MRN SendGrid Provisioning",
+      "version": "0.1.0",
+      "runtime_type": "standard-plugin",
+      "classification": "platform-shared-hybrid",
+      "lifecycle": "supported",
+      "current_distribution": "standard-bootstrap",
+      "target_tier": "platform-required",
+      "source": {"repository": "mrn-sendgrid-provisioning", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-sendgrid-provisioning", "state": "confirmed-symlinked"},
+      "dependencies": {"hard": ["WordPress"], "soft": ["mrn-config-helper", "Fluent SMTP"], "release_group": "config-helper-decomposition"},
+      "data": {"options": ["mrn_sendgrid_provisioning_settings"], "tables": [], "cron": [], "routes": ["four privileged admin-post actions"], "external_services": ["SendGrid", "Fluent SMTP"], "meta": []},
+      "purpose": "Provisions a per-site SendGrid Subuser, mail-only site API key, and domain authentication so each Stack site has isolated SendGrid sending identity, split out of mrn-config-helper."
     },
     {
       "slug": "mrn-contextual-content-editor",

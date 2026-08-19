@@ -1807,11 +1807,17 @@ apply_wp_defaults() {
 
 reconcile_development_environment_policy() {
   local plugin_slug hook
+  # fluent-smtp stays installed but inactive on every dev/review bootstrap so a
+  # new site can't send real mail before go-live, even though SendGrid
+  # subuser/domain-auth provisioning still runs to get DNS ready ahead of
+  # time. Reactivating it and delivering the site API key is handled by the
+  # separate MainWP-driven go-live delivery tooling, not by this script.
   local -a disabled_plugins=(
     wpmu-dev-seo
     smartcrawl-seo
     wp-seopress
     wp-seopress-pro
+    fluent-smtp
   )
   local -a disabled_cron_hooks=(
     searchwp_indexer_cron
@@ -1876,8 +1882,13 @@ reconcile_development_environment_policy() {
   done
 
   for hook in "${disabled_cron_hooks[@]}"; do
-    run_wp cron event delete "${hook}" >/dev/null 2>&1 || true
-    if run_wp eval "exit(wp_next_scheduled('${hook}') === false ? 0 : 1);" >/dev/null 2>&1; then
+    # SearchWP (and other still-active plugins) re-schedule their own cron
+    # hooks from init/constructor code on every normal WordPress bootstrap, so
+    # a delete followed by a plugin-loaded verification call can observe the
+    # hook already re-armed. Skip loading plugins/themes for both the delete
+    # and the verification so the cron option itself is the only thing touched.
+    run_wp cron event delete "${hook}" --skip-plugins --skip-themes >/dev/null 2>&1 || true
+    if run_wp eval "exit(wp_next_scheduled('${hook}') === false ? 0 : 1);" --skip-plugins --skip-themes >/dev/null 2>&1; then
       continue
     fi
     add_warning "Development-disabled cron hook remains scheduled: ${hook}"
@@ -1969,19 +1980,17 @@ run_importers() {
 provision_external_services() {
   local sendgrid_code uptime_code uptime_interval uptime_output uptime_warning_detail
 
-  if ! run_wp plugin is-active mrn-config-helper >/dev/null 2>&1; then
-    add_warning "Skipped external service provisioning: MRN Config Helper is not active."
-    return 0
-  fi
-
   if bootstrap_flag_enabled "${AUTO_PROVISION_SENDGRID}"; then
-    sendgrid_code="$(cat <<'PHP'
-if (!class_exists('MRN_Config_Helper') || !method_exists('MRN_Config_Helper', 'bootstrap_sendgrid_site_provisioning')) {
-    fwrite(STDERR, "MRN Config Helper does not support SendGrid bootstrap provisioning.\n");
+    if ! run_wp plugin is-active mrn-sendgrid-provisioning >/dev/null 2>&1; then
+      add_warning "Skipped SendGrid provisioning: MRN SendGrid Provisioning is not active."
+    else
+      sendgrid_code="$(cat <<'PHP'
+if (!class_exists('MRN_SendGrid_Provisioning') || !method_exists('MRN_SendGrid_Provisioning', 'bootstrap_site_provisioning')) {
+    fwrite(STDERR, "MRN SendGrid Provisioning does not support bootstrap provisioning.\n");
     exit(1);
 }
 
-$result = MRN_Config_Helper::bootstrap_sendgrid_site_provisioning(home_url('/'));
+$result = MRN_SendGrid_Provisioning::bootstrap_site_provisioning(home_url('/'));
 $status = isset($result['status']) ? (string) $result['status'] : 'unknown';
 $message = isset($result['message']) ? (string) $result['message'] : 'No message returned.';
 
@@ -1992,11 +2001,17 @@ if (in_array($status, array('warning', 'skipped'), true)) {
 }
 PHP
 )"
-    if ! run_wp eval "${sendgrid_code}"; then
-      add_warning "SendGrid automatic provisioning did not complete cleanly."
+      if ! run_wp eval "${sendgrid_code}"; then
+        add_warning "SendGrid automatic provisioning did not complete cleanly."
+      fi
     fi
   else
     echo "SendGrid automatic provisioning disabled by STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION."
+  fi
+
+  if ! run_wp plugin is-active mrn-config-helper >/dev/null 2>&1; then
+    add_warning "Skipped UptimeRobot provisioning: MRN Config Helper is not active."
+    return 0
   fi
 
   if bootstrap_flag_enabled "${AUTO_PROVISION_UPTIME_ROBOT}"; then

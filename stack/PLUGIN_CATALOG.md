@@ -1,6 +1,6 @@
 # MRN WordPress Component Catalog
 
-Last classified: 2026-08-17
+Last classified: 2026-08-19
 
 This is the human-readable index of MRN-owned WordPress components. The authoritative machine-readable source is [`manifests/component-catalog.json`](./manifests/component-catalog.json), and the rules governing it are in [`PLUGIN_GOVERNANCE.md`](./PLUGIN_GOVERNANCE.md).
 
@@ -25,7 +25,8 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-updraft-local-retention` | 0.3.0 | MU loader | Platform required | Enforces shared backup schedule and retention policy. |
 | `mrn-schema-bridge` | 0.4.2 | MU loader | Platform required | SEOPress (preferred), legacy SmartCrawl, theme, and schema normalization. |
 | `mrn-active-style-guide` | 0.1.6 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
-| `mrn-config-helper` | 0.1.54 | Standard bootstrap | Platform required | Shared site configuration shell, breadcrumb runtime, and launch/admin integrations. |
+| `mrn-config-helper` | 0.1.55 | Standard bootstrap | Platform required | Shared site configuration shell, breadcrumb runtime, and launch/admin integrations. |
+| `mrn-sendgrid-provisioning` | 0.1.0 | Standard bootstrap | Platform required | Provisions a per-site SendGrid Subuser, mail-only site API key, and domain authentication; split out of `mrn-config-helper`. |
 | `mrn-universal-sticky-bar` | 1.1.8 | Standard bootstrap | Platform required | Provides the shared settings/editor action bar; independently released for non-Stack use. |
 
 ## Optional Shared Features
@@ -97,6 +98,7 @@ No disposition in this section authorizes a code move, manifest change, deletion
 ## Canonical Source Decisions
 
 - `mrn-mega-menu`: canonical in `MRN/plugins/mrn-mega-menu`; the unversioned, older `MRN-plugins` duplicate was retired without changing installed copies.
+- `mrn-sendgrid-provisioning`: canonical in the independent `mrnwebdesigns/mrn-sendgrid-provisioning` repository, symlinked into the stack the same way as `mrn-config-helper`. SendGrid Subuser/domain-auth/site-key provisioning moved here from `mrn-config-helper` on 2026-08-19; `mrn-config-helper` keeps only a settings-page link and the public `mrn_config_helper_get_site_sender_name()`/`_email()` wrappers this plugin consumes.
 - `searchwp-editor-performance`: canonical in the independent `mrnwebdesigns/searchwp-editor-performance` repository; the stack records and packages its release but does not own a duplicate source tree.
 - `mrn-universal-sticky-bar`: canonical in its independent repository and required by the Stack profile. It remains a standard plugin because it is independently useful off-stack; the Stack manifest and rollout contract enforce installation and shared-helper compatibility.
 - `MRN-disable-core-auto-updates`: sunset approved on 2026-08-14. It is not part of the target MRN product catalog; no existing-site action is authorized by this decision.
