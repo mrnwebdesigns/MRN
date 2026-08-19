@@ -26,8 +26,7 @@ $intro            = isset( $fields['intro'] ) ? (string) $fields['intro'] : '';
 $background_color = isset( $fields['background_color'] ) ? trim( (string) $fields['background_color'] ) : '';
 $bottom_accent    = ! empty( $fields['bottom_accent'] );
 $accent_slug      = isset( $fields['bottom_accent_style'] ) ? (string) $fields['bottom_accent_style'] : '';
-$form_id          = absint( $fields['searchwp_form_id'] ?? 0 );
-$form_markup      = function_exists( 'mrn_base_stack_get_searchwp_form_markup' ) ? mrn_base_stack_get_searchwp_form_markup( $form_id ) : '';
+$form_markup      = function_exists( 'mrn_base_stack_get_search_form_markup' ) ? mrn_base_stack_get_search_form_markup() : '';
 
 if ( '' === trim( $form_markup ) ) {
 	return;
@@ -60,7 +59,7 @@ if ( isset( $motion_contract['classes'] ) && is_array( $motion_contract['classes
 
 $inline_styles = array();
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
-	$inline_styles[] = '--mrn-searchwp-form-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
+	$inline_styles[] = '--mrn-search-form-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
 $section_attrs     = isset( $accent_contract['attributes'] ) && is_array( $accent_contract['attributes'] ) ? $accent_contract['attributes'] : array();
@@ -101,7 +100,7 @@ echo function_exists( 'mrn_rbl_get_anchor_markup' ) ? mrn_rbl_get_anchor_markup(
 			</div>
 		<?php endif; ?>
 
-		<div class="mrn-searchwp-form-block__form">
+		<div class="mrn-search-form-block__form">
 			<?php echo $form_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</div>
 	</div>

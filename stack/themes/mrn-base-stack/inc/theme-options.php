@@ -836,7 +836,6 @@ function mrn_base_stack_get_theme_header_footer_config_field_groups( $section ) 
 				'label'  => __( 'Search', 'mrn-base-stack' ),
 				'fields' => array(
 					'field_mrn_theme_header_show_search',
-					'field_mrn_theme_header_searchwp_form_id',
 					'field_mrn_theme_header_search_style',
 					'field_mrn_theme_header_search_icon_source',
 					'field_mrn_theme_header_search_standard_icon',
@@ -2521,34 +2520,10 @@ function mrn_base_stack_register_theme_options_field_groups() {
 						'label'         => __( 'Show Search', 'mrn-base-stack' ),
 						'name'          => 'header_show_search',
 						'type'          => 'true_false',
-						'instructions'  => __( 'Shows the stack SearchWP form area.', 'mrn-base-stack' ),
+						'instructions'  => __( 'Shows the stack header search form.', 'mrn-base-stack' ),
 						'required'      => 0,
 						'default_value' => 1,
 						'ui'            => 1,
-					),
-					array(
-						'key'               => 'field_mrn_theme_header_searchwp_form_id',
-						'label'             => __( 'SearchWP Form', 'mrn-base-stack' ),
-						'name'              => 'header_searchwp_form_id',
-						'type'              => 'select',
-						'choices'           => function_exists( 'mrn_base_stack_get_searchwp_form_choices' ) ? mrn_base_stack_get_searchwp_form_choices() : array(),
-						'default_value'     => function_exists( 'mrn_base_stack_get_default_searchwp_form_id' ) ? (string) mrn_base_stack_get_default_searchwp_form_id() : '',
-						'allow_null'        => 1,
-						'multiple'          => 0,
-						'required'          => 0,
-						'ui'                => 1,
-						'ajax'              => 0,
-						'return_format'     => 'value',
-						'instructions'      => __( 'Uses the stack SearchWP form for the header search area. Leave blank to keep Show Search on without rendering a form.', 'mrn-base-stack' ),
-						'conditional_logic' => array(
-							array(
-								array(
-									'field'    => 'field_mrn_theme_header_show_search',
-									'operator' => '==',
-									'value'    => '1',
-								),
-							),
-						),
 					),
 					array(
 						'key'               => 'field_mrn_theme_header_search_style',
@@ -4082,7 +4057,6 @@ function mrn_base_stack_get_theme_header_footer_options() {
 			'header_primary_nav_inherit_header_settings' => true,
 			'header_primary_nav_center_to_canvas'        => false,
 			'header_show_search'                         => true,
-			'header_searchwp_form_id'                    => 0,
 			'header_search_style'                        => 'full',
 			'header_search_icon_source'                  => 'dashicons',
 			'header_search_standard_icon'                => 'dashicons-search',
@@ -4132,14 +4106,12 @@ function mrn_base_stack_get_theme_header_footer_options() {
 	$header_search_standard_icon = (string) get_field( 'header_search_standard_icon', 'option' );
 	$header_search_fa_class      = (string) get_field( 'header_search_fa_class', 'option' );
 	$header_search_media_icon    = get_field( 'header_search_media_icon', 'option' );
-	$header_searchwp_form_id     = absint( get_field( 'header_searchwp_form_id', 'option' ) );
 	$header_content_width        = mrn_base_stack_normalize_theme_header_footer_content_width( get_field( 'header_content_width', 'option' ), 'wide' );
 	$header_background_color     = mrn_base_stack_normalize_site_color_slug( get_field( 'header_background_color', 'option' ) );
 	$header_font_color           = mrn_base_stack_normalize_site_color_slug( get_field( 'header_font_color', 'option' ) );
 	$header_link_color           = mrn_base_stack_normalize_site_color_slug( get_field( 'header_link_color', 'option' ) );
 	$header_link_hover_color     = mrn_base_stack_normalize_site_color_slug( get_field( 'header_link_hover_color', 'option' ) );
 	$header_primary_menu_id      = absint( get_field( 'header_primary_menu_id', 'option' ) );
-	$searchwp_forms              = function_exists( 'mrn_base_stack_get_searchwp_forms' ) ? mrn_base_stack_get_searchwp_forms() : array();
 	$standard_icon_choices       = array_keys( mrn_base_stack_get_header_search_standard_icon_choices() );
 	$fontawesome_choices         = array_keys( mrn_base_stack_get_header_search_fontawesome_choices() );
 
@@ -4165,10 +4137,6 @@ function mrn_base_stack_get_theme_header_footer_options() {
 
 	if ( ! function_exists( 'mrn_base_stack_image_has_content' ) || ! mrn_base_stack_image_has_content( $header_search_media_icon ) ) {
 		$header_search_media_icon = null;
-	}
-
-	if ( $header_searchwp_form_id > 0 && ! isset( $searchwp_forms[ $header_searchwp_form_id ] ) ) {
-		$header_searchwp_form_id = 0;
 	}
 
 	if ( $header_primary_menu_id > 0 && ! wp_get_nav_menu_object( $header_primary_menu_id ) ) {
@@ -4209,7 +4177,6 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		'header_primary_nav_inherit_header_settings' => $header_primary_nav_inherit,
 		'header_primary_nav_center_to_canvas'        => $header_primary_nav_center,
 		'header_show_search'                         => (bool) get_field( 'header_show_search', 'option' ),
-		'header_searchwp_form_id'                    => $header_searchwp_form_id,
 		'header_search_style'                        => $header_search_style,
 		'header_search_icon_source'                  => $header_search_icon_source,
 		'header_search_standard_icon'                => $header_search_standard_icon,

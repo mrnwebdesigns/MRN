@@ -1061,31 +1061,6 @@ function mrn_base_stack_scripts() {
 add_action( 'wp_enqueue_scripts', 'mrn_base_stack_scripts' );
 
 /**
- * Enqueue SearchWP form assets when the stack header renders the SearchWP form.
- *
- * SearchWP registers these handles on `wp_enqueue_scripts`; this runs later so
- * the theme can enqueue them before the form shortcode renders.
- *
- * @return void
- */
-function mrn_base_stack_enqueue_header_searchwp_assets() {
-	$header_options = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
-
-	if ( empty( $header_options['header_show_search'] ) || empty( $header_options['header_searchwp_form_id'] ) ) {
-		return;
-	}
-
-	if ( wp_style_is( 'searchwp-forms', 'registered' ) ) {
-		wp_enqueue_style( 'searchwp-forms' );
-	}
-
-	if ( wp_script_is( 'searchwp-forms', 'registered' ) ) {
-		wp_enqueue_script( 'searchwp-forms' );
-	}
-}
-add_action( 'wp_enqueue_scripts', 'mrn_base_stack_enqueue_header_searchwp_assets', 100 );
-
-/**
  * Load responsive image helpers.
  */
 require_once get_template_directory() . '/inc/image-helpers.php';

@@ -1,6 +1,9 @@
 <?php
 /**
- * Builder row: SearchWP Form.
+ * Builder row: Search Form.
+ *
+ * Layout type key stays `searchwp_form` for compatibility with rows already
+ * saved on existing pages; only the rendering behind it changed.
  *
  * @package mrn-base-stack
  */
@@ -25,11 +28,7 @@ $width_layers     = function_exists( 'mrn_base_stack_get_section_width_layers' )
 		'section_class'   => 'mrn-layout-section--contained',
 		'container_class' => 'mrn-layout-container--content',
 	);
-$form_id          = absint( $row['searchwp_form_id'] ?? 0 );
-if ( $form_id < 1 && function_exists( 'mrn_base_stack_get_default_searchwp_form_id' ) ) {
-	$form_id = mrn_base_stack_get_default_searchwp_form_id();
-}
-$form_markup = function_exists( 'mrn_base_stack_get_searchwp_form_markup' ) ? mrn_base_stack_get_searchwp_form_markup( $form_id ) : '';
+$form_markup      = function_exists( 'mrn_base_stack_get_search_form_markup' ) ? mrn_base_stack_get_search_form_markup() : '';
 
 if ( ! in_array( $form_layout, array( 'stacked', 'form-right', 'form-left' ), true ) ) {
 	$form_layout = 'stacked';
@@ -41,8 +40,8 @@ if ( '' === trim( $form_markup ) ) {
 
 $section_classes  = array(
 	'mrn-content-builder__row',
-	'mrn-content-builder__row--searchwp-form',
-	'mrn-content-builder__row--searchwp-form-layout-' . sanitize_html_class( $form_layout ),
+	'mrn-content-builder__row--search-form',
+	'mrn-content-builder__row--search-form-layout-' . sanitize_html_class( $form_layout ),
 );
 $section_styles   = array();
 $display_contract = function_exists( 'mrn_base_stack_get_builder_display_contract' ) ? mrn_base_stack_get_builder_display_contract( $row, 'searchwp_form' ) : array(
@@ -65,7 +64,7 @@ $section_attrs    = function_exists( 'mrn_base_stack_merge_builder_attributes' )
 $section_attrs    = function_exists( 'mrn_base_stack_merge_builder_attributes' ) ? mrn_base_stack_merge_builder_attributes( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() ) : array_merge( $section_attrs, isset( $motion_contract['attributes'] ) && is_array( $motion_contract['attributes'] ) ? $motion_contract['attributes'] : array() );
 
 if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' ) ) {
-	$section_styles[] = '--mrn-searchwp-form-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
+	$section_styles[] = '--mrn-search-form-row-bg: var(' . mrn_site_colors_get_css_var( $background_color ) . ')';
 }
 
 $section_attr_html = function_exists( 'mrn_base_stack_get_html_attributes' ) ? mrn_base_stack_get_html_attributes( $section_attrs ) : '';
@@ -76,11 +75,11 @@ $has_intro_content = '' !== $label || '' !== $heading || '' !== $subheading || '
 echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper.
 ?>
 <section class="<?php echo esc_attr( implode( ' ', $section_classes ) ); ?>"<?php echo '' !== $section_attr_html ? ' ' . $section_attr_html : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-	<div class="mrn-layout-section mrn-layout-section--searchwp-form <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
+	<div class="mrn-layout-section mrn-layout-section--search-form <?php echo esc_attr( $width_layers['section_class'] ); ?><?php echo $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
 		<div class="mrn-layout-container <?php echo esc_attr( $width_layers['container_class'] ); ?><?php echo ! $is_full_width ? ' mrn-layout-surface' : ''; ?>"<?php echo ! $is_full_width && '' !== $surface_style ? ' style="' . esc_attr( $surface_style ) . '"' : ''; ?>>
-			<div class="mrn-layout-grid mrn-layout-grid--searchwp-form mrn-layout-grid--form-shell">
+			<div class="mrn-layout-grid mrn-layout-grid--search-form mrn-layout-grid--form-shell">
 				<?php if ( $has_intro_content ) : ?>
-					<div class="mrn-layout-content mrn-layout-content--text mrn-layout-content--form-shell-text mrn-searchwp-form-row__content mrn-ui__body">
+					<div class="mrn-layout-content mrn-layout-content--text mrn-layout-content--form-shell-text mrn-search-form-row__content mrn-ui__body">
 						<?php if ( '' !== $label || '' !== $heading || '' !== $subheading ) : ?>
 							<div class="mrn-ui__head">
 								<?php if ( '' !== $label ) : ?>
@@ -105,7 +104,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 					</div>
 				<?php endif; ?>
 
-				<div class="mrn-layout-content mrn-layout-content--form mrn-layout-content--form-shell-form mrn-searchwp-form-row__form">
+				<div class="mrn-layout-content mrn-layout-content--form mrn-layout-content--form-shell-form mrn-search-form-row__form">
 					<?php echo $form_markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
 			</div>

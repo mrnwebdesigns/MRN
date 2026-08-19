@@ -246,7 +246,7 @@ function mrn_base_stack_get_reusable_block_row_modifier( $post_type ) {
 		'mrn_reusable_list'    => 'mrn-content-builder__row--content-lists',
 		'mrn_reusable_faq'     => 'mrn-content-builder__row--faq-block',
 		'mrn_reusable_grid'    => 'mrn-content-builder__row--content-grid',
-		'mrn_reusable_search'  => 'mrn-content-builder__row--searchwp-form',
+		'mrn_reusable_search'  => 'mrn-content-builder__row--search-form',
 		'mrn_reusable_partner' => 'mrn-content-builder__row--partners',
 	);
 
@@ -433,7 +433,7 @@ function mrn_base_stack_render_builder_row( array $row, $post_id, $index ) {
 	}
 
 	if ( 'searchwp_form' === $layout ) {
-		get_template_part( 'template-parts/builder/searchwp-form', null, $context );
+		get_template_part( 'template-parts/builder/search-form', null, $context );
 		return true;
 	}
 
@@ -1140,7 +1140,7 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 				'content_lists'    => 'Reference Content',
 				'external_widget'  => 'Shortcode / Embed',
 				'wpforms'          => 'WPForms',
-				'searchwp_form'    => 'SearchWP Form',
+				'searchwp_form'    => 'Search Form',
 				'card'             => 'Card',
 			);
 			$prefix           = isset( $heading_prefixes[ $layout_name ] ) ? $heading_prefixes[ $layout_name ] : '';
@@ -1348,18 +1348,10 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 
 	if ( 'searchwp_form' === $layout_name ) {
 		if ( '' !== $title_text ) {
-			return 'SearchWP Form: ' . esc_html( wp_strip_all_tags( $title_text ) );
+			return 'Search Form: ' . esc_html( wp_strip_all_tags( $title_text ) );
 		}
 
-		$form_id    = array_key_exists( 'searchwp_form_id', $row_values ) ? $row_values['searchwp_form_id'] : get_sub_field( 'searchwp_form_id' );
-		$form_title = function_exists( 'mrn_base_stack_get_searchwp_form_title' ) ? mrn_base_stack_get_searchwp_form_title( $form_id ) : '';
-		$form_title = is_string( $form_title ) ? trim( $form_title ) : '';
-
-		if ( '' !== $form_title ) {
-			return 'SearchWP Form: ' . esc_html( $form_title );
-		}
-
-		return 'SearchWP Form';
+		return 'Search Form';
 	}
 
 	if ( 'card' === $layout_name ) {

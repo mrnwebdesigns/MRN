@@ -1434,7 +1434,7 @@ function mrn_base_stack_register_acf_field_groups() {
 							'layout_mrn_searchwp_form' => array(
 								'key'        => 'layout_mrn_searchwp_form',
 								'name'       => 'searchwp_form',
-								'label'      => 'SearchWP Form - label|heading|subheading|rich text|form',
+								'label'      => 'Search Form - label|heading|subheading|rich text|form',
 								'display'    => 'block',
 								'sub_fields' => array(
 									array(
@@ -1461,19 +1461,6 @@ function mrn_base_stack_register_acf_field_groups() {
 										'toolbar'       => 'full',
 										'media_upload'  => 1,
 										'delay'         => 0,
-									),
-									array(
-										'key'           => 'field_mrn_searchwp_form_form_id',
-										'label'         => 'Search Form',
-										'name'          => 'searchwp_form_id',
-										'aria-label'    => '',
-										'type'          => 'select',
-										'choices'       => function_exists( 'mrn_base_stack_get_searchwp_form_choices' ) ? mrn_base_stack_get_searchwp_form_choices() : array(),
-										'ui'            => 1,
-										'allow_null'    => 0,
-										'required'      => 1,
-										'default_value' => function_exists( 'mrn_base_stack_get_default_searchwp_form_id' ) ? (string) mrn_base_stack_get_default_searchwp_form_id() : '',
-										'instructions'  => 'Choose from the SearchWP forms available on this site.',
 									),
 									array(
 										'key'        => 'field_mrn_searchwp_form_config_tab',
