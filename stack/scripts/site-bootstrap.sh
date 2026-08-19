@@ -15,6 +15,7 @@ MARKER_NAME=".mrn_bootstrapped"
 DEFAULT_THEME_STARTER="underscores"
 SITE_THEME_CLONE_SOURCE_SLUG="${STACK_SITE_THEME_CLONE_SOURCE_SLUG:-mrn-base-stack}"
 BOOTSTRAP_WARNINGS=()
+BOOTSTRAP_LICENSE_FAILURES=()
 
 usage() {
   cat <<'USAGE'
@@ -483,6 +484,13 @@ add_warning() {
   local msg="$1"
   BOOTSTRAP_WARNINGS+=("${msg}")
   echo "WARNING: ${msg}" >&2
+}
+
+add_license_failure() {
+  local msg="$1"
+  BOOTSTRAP_LICENSE_FAILURES+=("${msg}")
+  BOOTSTRAP_WARNINGS+=("${msg}")
+  echo "LICENSE FAILURE: ${msg}" >&2
 }
 
 bootstrap_flag_enabled() {
@@ -1383,7 +1391,7 @@ echo "Applied AME license payload for {$siteUrl}\n";
         fi
       fi
       if [[ ! -f "${file_path}" ]]; then
-        add_warning "Skipped license mapping for ${plugin_basename}: file not found (${file_path})."
+        add_license_failure "License source missing for active plugin ${plugin_basename}: ${file_path}"
         continue
       fi
       value="$(cat "${file_path}")"
@@ -1396,7 +1404,7 @@ echo "Applied AME license payload for {$siteUrl}\n";
         ame_mode="json"
       fi
       if ! apply_ame_license_mapping "${value}" "${ame_mode}" >/dev/null; then
-        add_warning "Failed to apply AME license mapping for ${plugin_basename}."
+        add_license_failure "Failed to apply AME license mapping for ${plugin_basename}."
         continue
       fi
       echo "Applied license mapping: ${plugin_basename} -> ${option_name} (ame-site-aware)"
@@ -1410,7 +1418,7 @@ echo "Applied AME license payload for {$siteUrl}\n";
         wpforms_mode="json"
       fi
       if ! apply_wpforms_license_mapping "${value}" "${wpforms_mode}" >/dev/null; then
-        add_warning "Failed to apply/verify WPForms license mapping for ${plugin_basename}."
+        add_license_failure "Failed to apply/verify WPForms license mapping for ${plugin_basename}."
         continue
       fi
       echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
@@ -1424,7 +1432,7 @@ echo "Applied AME license payload for {$siteUrl}\n";
         updraft_mode="json"
       fi
       if ! apply_updraft_premium_mapping "${value}" "${updraft_mode}" >/dev/null; then
-        add_warning "Failed to apply/verify Updraft Premium mapping for ${plugin_basename}."
+        add_license_failure "Failed to apply/verify Updraft Premium mapping for ${plugin_basename}."
         continue
       fi
       echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
@@ -1438,7 +1446,7 @@ echo "Applied AME license payload for {$siteUrl}\n";
         searchwp_mode="json"
       fi
       if ! apply_searchwp_license_mapping "${value}" "${searchwp_mode}" >/dev/null; then
-        add_warning "Failed to apply/activate SearchWP license mapping for ${plugin_basename}."
+        add_license_failure "Failed to apply/activate SearchWP license mapping for ${plugin_basename}."
         continue
       fi
       echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
@@ -1452,7 +1460,7 @@ echo "Applied AME license payload for {$siteUrl}\n";
         seopress_mode="json"
       fi
       if ! apply_seopress_license_mapping "${value}" "${seopress_mode}" >/dev/null; then
-        add_warning "Failed to apply/activate SEOPress license mapping for ${plugin_basename}."
+        add_license_failure "Failed to apply/activate SEOPress license mapping for ${plugin_basename}."
         continue
       fi
       echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
@@ -1466,7 +1474,7 @@ echo "Applied AME license payload for {$siteUrl}\n";
         acf_mode="json"
       fi
       if ! apply_acf_pro_license_mapping "${value}" "${acf_mode}" >/dev/null; then
-        add_warning "Failed to apply/activate ACF Pro license mapping for ${plugin_basename}."
+        add_license_failure "Failed to apply/activate ACF Pro license mapping for ${plugin_basename}."
         continue
       fi
       echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
@@ -1480,7 +1488,7 @@ echo "Applied AME license payload for {$siteUrl}\n";
         happyfiles_mode="json"
       fi
       if ! apply_happyfiles_license_mapping "${value}" "${happyfiles_mode}" >/dev/null; then
-        add_warning "Failed to apply/activate HappyFiles license mapping for ${plugin_basename}."
+        add_license_failure "Failed to apply/activate HappyFiles license mapping for ${plugin_basename}."
         continue
       fi
       echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
@@ -2130,6 +2138,33 @@ Themes manifest: ${THEMES_FILE}
 Plugins manifest: ${PLUGINS_FILE}
 EOF
   )
+  if [[ "${#BOOTSTRAP_LICENSE_FAILURES[@]}" -gt 0 ]]; then
+    local license_lines license_body
+    license_lines="$(printf '%s\n' "${BOOTSTRAP_LICENSE_FAILURES[@]}")"
+    license_body=$(
+      cat <<EOF
+MRN bootstrap could not license one or more active premium plugins.
+
+Site path: ${SITE_PATH}
+WordPress path: ${WP_PATH}
+Domain: ${domain}
+Site user: ${SITE_USER}
+
+License failures:
+${license_lines}
+
+The site was built but is NOT release ready. Resolve the license sources and re-run bootstrap.
+EOF
+    )
+    send_notification "MRN Bootstrap LICENSE FAILURE: ${domain}" "${license_body}"
+    send_slack_notification "MRN Bootstrap LICENSE FAILURE: ${domain}" "${license_body}" "#d1242f"
+    if bootstrap_flag_enabled "${MRN_REQUIRE_LICENSES:-1}"; then
+      echo "Bootstrap failed: unresolved premium plugin licenses." >&2
+      printf '%s\n' "${BOOTSTRAP_LICENSE_FAILURES[@]}" >&2
+      return 1
+    fi
+  fi
+
   send_notification "MRN Bootstrap Success: ${domain}" "${body}"
   send_slack_notification "MRN Bootstrap Success: ${domain}" "${body}" "#1f883d"
 

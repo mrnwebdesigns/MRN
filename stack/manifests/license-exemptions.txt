@@ -1,0 +1,6 @@
+# Third-party packaged plugins that legitimately need no licenses.txt row.
+# Format: <package-zip-basename>|<reason>
+# Every third-party package zip in plugins.txt must either match a licenses.txt
+# row or be listed here with a reason. qa-license-coverage.sh enforces this.
+ame-branding-add-on.zip|Add-on covered by the parent Admin Menu Editor Pro license; vendor confirmation pending.
+wp-toolbar-editor.zip|Add-on covered by the parent Admin Menu Editor Pro license; vendor confirmation pending.

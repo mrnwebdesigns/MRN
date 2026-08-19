@@ -104,6 +104,27 @@ What it checks:
 - builder Add Row helper is loaded
 - ACF builder layouts are registered
 
+### License Coverage QA
+
+Verify that every third-party packaged plugin in the bootstrap manifest is
+either licensed or has a declared exemption:
+
+```bash
+/Users/khofmeyer/Development/MRN/stack/scripts/qa-license-coverage.sh
+```
+
+What it checks:
+
+- every third-party package zip in `manifests/plugins.txt` either matches a
+  `manifests/licenses.txt` mapping or is listed in
+  `manifests/license-exemptions.txt` with a reason
+- every secret file referenced by `licenses.txt` is declared in the
+  vendor-neutral `manifests/credential-files.txt` map
+
+This is a static manifest check. It never reads secret values and never
+contacts a secret provider. Run it whenever a third-party plugin is added to or
+removed from the bootstrap manifest.
+
 ### Rollout Contract QA
 
 Verify the stack rollout contract for `default-configs.mrndev.io`:
