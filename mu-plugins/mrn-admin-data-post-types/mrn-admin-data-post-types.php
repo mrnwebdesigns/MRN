@@ -8,19 +8,20 @@
 
 defined( 'ABSPATH' ) || exit;
 
+const MRN_ADMIN_DATA_POST_TYPES_OPTION = 'mrn_admin_data_post_types_manual';
+const MRN_ADMIN_DATA_POST_TYPES_SEARCH_DESTINATIONS_OPTION = 'mrn_admin_data_post_types_search_destinations';
+
 /**
- * Return the normalized admin/data-only CPT configuration.
+ * Normalize a raw `mrn_admin_data_post_types` filter payload into config shape.
  *
- * Theme and plugin code should add CPT keys with the
- * `mrn_admin_data_post_types` filter. A plain key uses the defaults; an
- * associative entry may override `show_ui`, `show_in_menu`, and
- * `admin_cleanup`.
+ * A plain key uses the defaults; an associative entry may override
+ * `show_ui`, `show_in_menu`, and `admin_cleanup`.
  *
+ * @param array $requested Raw filter/option payload.
  * @return array<string, array<string, bool|string>>
  */
-function mrn_admin_data_post_types_get_config() {
-	$requested = apply_filters( 'mrn_admin_data_post_types', array() );
-	$config    = array();
+function mrn_admin_data_post_types_normalize_config( $requested ) {
+	$config = array();
 
 	if ( ! is_array( $requested ) ) {
 		return $config;
@@ -47,6 +48,169 @@ function mrn_admin_data_post_types_get_config() {
 	}
 
 	return $config;
+}
+
+/**
+ * Get the CPT keys declared in code via the `mrn_admin_data_post_types`
+ * filter, independent of any admin-selected manual selection.
+ *
+ * @return string[]
+ */
+function mrn_admin_data_post_types_get_code_declared() {
+	return array_keys( mrn_admin_data_post_types_normalize_config( apply_filters( 'mrn_admin_data_post_types', array() ) ) );
+}
+
+/**
+ * Get the CPT keys an administrator selected through Site Configurations,
+ * stored independently of the code-level filter contract.
+ *
+ * @return string[]
+ */
+function mrn_admin_data_post_types_get_manual_selection() {
+	$stored = get_option( MRN_ADMIN_DATA_POST_TYPES_OPTION, array() );
+
+	if ( ! is_array( $stored ) ) {
+		return array();
+	}
+
+	return array_values( array_unique( array_filter( array_map( 'sanitize_key', $stored ) ) ) );
+}
+
+/**
+ * Store the admin-selected CPT list from Site Configurations.
+ *
+ * Callers are responsible for their own capability checks; this only
+ * sanitizes and persists the selection.
+ *
+ * @param array $post_types Post type keys.
+ * @return void
+ */
+function mrn_admin_data_post_types_set_manual_selection( array $post_types ) {
+	$sanitized = array_values( array_unique( array_filter( array_map( 'sanitize_key', $post_types ) ) ) );
+
+	update_option( MRN_ADMIN_DATA_POST_TYPES_OPTION, $sanitized );
+}
+
+/**
+ * Get the stored post-type -> destination-page-ID search map.
+ *
+ * @return array<string, int> Post type key => page ID (always > 0).
+ */
+function mrn_admin_data_post_types_get_search_destinations() {
+	$stored = get_option( MRN_ADMIN_DATA_POST_TYPES_SEARCH_DESTINATIONS_OPTION, array() );
+
+	if ( ! is_array( $stored ) ) {
+		return array();
+	}
+
+	$destinations = array();
+
+	foreach ( $stored as $post_type => $page_id ) {
+		$post_type = sanitize_key( (string) $post_type );
+		$page_id   = absint( $page_id );
+
+		if ( '' === $post_type || $page_id <= 0 ) {
+			continue;
+		}
+
+		$destinations[ $post_type ] = $page_id;
+	}
+
+	return $destinations;
+}
+
+/**
+ * Set or clear one CPT's search-result destination page.
+ *
+ * Callers are responsible for their own capability checks; this only
+ * sanitizes and persists the mapping. Pass `$page_id` as `0` to clear an
+ * existing entry.
+ *
+ * @param string $post_type Post type key.
+ * @param int    $page_id   Destination page ID, or 0 to clear.
+ * @return void
+ */
+function mrn_admin_data_post_types_set_search_destination( $post_type, $page_id ) {
+	$post_type = sanitize_key( (string) $post_type );
+	$page_id   = absint( $page_id );
+
+	if ( '' === $post_type ) {
+		return;
+	}
+
+	$destinations = mrn_admin_data_post_types_get_search_destinations();
+
+	if ( $page_id > 0 ) {
+		$destinations[ $post_type ] = $page_id;
+	} else {
+		unset( $destinations[ $post_type ] );
+	}
+
+	update_option( MRN_ADMIN_DATA_POST_TYPES_SEARCH_DESTINATIONS_OPTION, $destinations );
+}
+
+/**
+ * Whether a CPT has a configured search-result destination.
+ *
+ * Cheap lookup (no `get_permalink()` call) safe to use during CPT
+ * registration.
+ *
+ * @param string $post_type Post type key.
+ * @return bool
+ */
+function mrn_admin_data_post_types_has_search_destination( $post_type ) {
+	$destinations = mrn_admin_data_post_types_get_search_destinations();
+
+	return ! empty( $destinations[ sanitize_key( (string) $post_type ) ] );
+}
+
+/**
+ * Resolve the URL a search result for this CPT should link to.
+ *
+ * This is the engine-agnostic integration point: any search implementation
+ * (a theme template, a SearchWP-specific filter, Relevanssi, a REST search
+ * endpoint, etc.) can call this to get the right link for a content-only
+ * post type instead of a broken/absent single URL. Nothing here assumes or
+ * wires up a specific search plugin.
+ *
+ * @param string $post_type Post type key.
+ * @return string Destination URL, or '' if none is configured or usable.
+ */
+function mrn_admin_data_post_types_get_search_destination_url( $post_type ) {
+	$post_type = sanitize_key( (string) $post_type );
+	$page_id   = mrn_admin_data_post_types_get_search_destinations()[ $post_type ] ?? 0;
+	$url       = '';
+
+	if ( $page_id > 0 && 'page' === get_post_type( $page_id ) && 'publish' === get_post_status( $page_id ) ) {
+		$url = (string) get_permalink( $page_id );
+	}
+
+	/**
+	 * Filter the resolved search-result destination URL for a content-only post type.
+	 *
+	 * @param string $url       Resolved URL, possibly empty.
+	 * @param string $post_type Post type key.
+	 * @param int    $page_id   Configured destination page ID (0 if none).
+	 */
+	return (string) apply_filters( 'mrn_admin_data_post_types_search_destination_url', $url, $post_type, $page_id );
+}
+
+/**
+ * Return the normalized admin/data-only CPT configuration.
+ *
+ * Theme and plugin code should add CPT keys with the
+ * `mrn_admin_data_post_types` filter; administrators may also select CPTs
+ * through Site Configurations -> Admin -> Content Types. Code-declared
+ * entries always take precedence over a manually-selected entry for the
+ * same post type.
+ *
+ * @return array<string, array<string, bool|string>>
+ */
+function mrn_admin_data_post_types_get_config() {
+	$manual_config = mrn_admin_data_post_types_normalize_config( array_fill_keys( mrn_admin_data_post_types_get_manual_selection(), array() ) );
+	$code_config   = mrn_admin_data_post_types_normalize_config( apply_filters( 'mrn_admin_data_post_types', array() ) );
+
+	return array_merge( $manual_config, $code_config );
 }
 
 /**
@@ -80,7 +244,7 @@ function mrn_admin_data_post_types_filter_registration_args( $args, $post_type )
 		array(
 			'public'              => false,
 			'publicly_queryable'  => false,
-			'exclude_from_search' => true,
+			'exclude_from_search' => ! mrn_admin_data_post_types_has_search_destination( $post_type ),
 			'show_in_nav_menus'   => false,
 			'has_archive'         => false,
 			'rewrite'             => false,

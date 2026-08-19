@@ -131,7 +131,12 @@ if ( ! function_exists( 'mrn_base_stack_post_thumbnail' ) ) :
 
 		<?php else : ?>
 
-			<a class="post-thumbnail" href="<?php the_permalink(); ?>" aria-hidden="true" tabindex="-1">
+			<?php
+			$mrn_base_stack_thumbnail_link = is_search() && function_exists( 'mrn_base_stack_get_search_result_permalink' )
+				? mrn_base_stack_get_search_result_permalink()
+				: get_permalink();
+			?>
+			<a class="post-thumbnail" href="<?php echo esc_url( $mrn_base_stack_thumbnail_link ); ?>" aria-hidden="true" tabindex="-1">
 				<?php
 					the_post_thumbnail(
 						'post-thumbnail',
@@ -628,6 +633,41 @@ if ( ! function_exists( 'mrn_base_stack_default_header_search' ) ) :
 	}
 endif;
 add_action( 'mrn_base_stack_header_search', 'mrn_base_stack_default_header_search' );
+
+if ( ! function_exists( 'mrn_base_stack_get_search_result_permalink' ) ) :
+	/**
+	 * Resolve the link a search result should use.
+	 *
+	 * For a normal public post type this is just `get_permalink()`. For a
+	 * content-only CPT (see the `mrn-admin-data-post-types` MU-plugin) with a
+	 * configured search-result destination page, this resolves to that page
+	 * instead, since the CPT itself has no public single URL. Every search
+	 * result on this site funnels through this same template regardless of
+	 * which engine matched it (native WP search or a SearchWP-seeded form,
+	 * which submits back to this same search results page), so this one
+	 * helper is the engine-agnostic fix point.
+	 *
+	 * @param WP_Post|int|null $post Post object or ID. Defaults to the current post.
+	 * @return string
+	 */
+	function mrn_base_stack_get_search_result_permalink( $post = null ) {
+		$post = get_post( $post );
+
+		if ( ! $post ) {
+			return '';
+		}
+
+		if ( function_exists( 'mrn_admin_data_post_types_get_search_destination_url' ) ) {
+			$destination_url = mrn_admin_data_post_types_get_search_destination_url( $post->post_type );
+
+			if ( '' !== $destination_url ) {
+				return $destination_url;
+			}
+		}
+
+		return (string) get_permalink( $post );
+	}
+endif;
 
 if ( ! function_exists( 'mrn_base_stack_get_business_address_lines' ) ) :
 	/**
