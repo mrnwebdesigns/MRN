@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Environment Runtime
  * Description: Reports the deployment-managed environment and performance policy without adding frontend work.
- * Version: 0.4.0
+ * Version: 0.5.0
  * Author: MRN Web Designs
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_ENVIRONMENT_RUNTIME_VERSION' ) ) {
-	define( 'MRN_ENVIRONMENT_RUNTIME_VERSION', '0.4.0' );
+	define( 'MRN_ENVIRONMENT_RUNTIME_VERSION', '0.5.0' );
 }
 
 /**
@@ -209,8 +209,8 @@ function mrn_environment_runtime_environment_alignment( $host = null ) {
 		if ( 'disabled' === $contract['seo_indexing'] ) {
 			$risks[] = 'SEO indexing policy is disabled';
 		}
-		if ( 'frontend_only' === $contract['searchwp'] ) {
-			$risks[] = 'the SearchWP index is paused, so site search serves stale results';
+		if ( 'disabled' === $contract['relevanssi'] ) {
+			$risks[] = 'Relevanssi is disabled, so site search falls back to unranked native results';
 		}
 	} elseif ( 'non_production' === $signal && 'production' === $declared ) {
 		$status = 'production_policy_on_non_production_host';
@@ -245,7 +245,7 @@ function mrn_environment_runtime_contract() {
 		'page_cache'          => mrn_environment_runtime_constant( 'MRN_PAGE_CACHE_POLICY', array( 'disabled', 'server_native', 'redis' ), 'disabled' ),
 		'object_cache'        => mrn_environment_runtime_constant( 'MRN_OBJECT_CACHE_POLICY', array( 'disabled', 'review_required', 'enabled' ), 'disabled' ),
 		'deploy_cache_purge'  => mrn_environment_runtime_constant( 'MRN_DEPLOY_CACHE_PURGE', array( 'object', 'all' ), 'object' ),
-		'searchwp'            => mrn_environment_runtime_constant( 'MRN_SEARCHWP_POLICY', array( 'disabled', 'frontend_only', 'configured' ), 'disabled' ),
+		'relevanssi'          => mrn_environment_runtime_constant( 'MRN_RELEVANSSI_POLICY', array( 'disabled', 'configured' ), 'disabled' ),
 		'seo_indexing'        => mrn_environment_runtime_constant( 'MRN_SEO_INDEXING_POLICY', array( 'disabled', 'configured' ), 'disabled' ),
 		'import_tools'        => mrn_environment_runtime_constant( 'MRN_IMPORT_TOOLS_POLICY', array( 'disabled', 'temporary' ), 'disabled' ),
 		'asset_version_source'=> mrn_environment_runtime_constant( 'MRN_ASSET_VERSION_SOURCE', array( 'commit_sha' ), 'commit_sha' ),
@@ -312,13 +312,13 @@ function mrn_environment_runtime_opcache_information( $status = null ) {
 }
 
 /**
- * Find active SearchWP components for policy diagnostics.
+ * Find active Relevanssi components for policy diagnostics.
  *
  * This only runs in wp-admin Site Health/admin-notice requests.
  *
  * @return array<int, string>
  */
-function mrn_environment_runtime_active_searchwp_plugins() {
+function mrn_environment_runtime_active_relevanssi_plugins() {
 	$active = get_option( 'active_plugins', array() );
 	$active = is_array( $active ) ? $active : array();
 
@@ -329,48 +329,25 @@ function mrn_environment_runtime_active_searchwp_plugins() {
 		}
 	}
 
-	$searchwp_plugins = array_filter(
+	$relevanssi_plugins = array_filter(
 		$active,
 		static function ( $plugin ) {
-			return is_string( $plugin ) && (
-				0 === strpos( $plugin, 'searchwp/' ) ||
-				0 === strpos( $plugin, 'searchwp-live-ajax-search/' ) ||
-				0 === strpos( $plugin, 'searchwp-editor-performance/' )
-			);
+			return is_string( $plugin ) && 0 === strpos( $plugin, 'relevanssi/' );
 		}
 	);
 
-	return array_values( $searchwp_plugins );
+	return array_values( $relevanssi_plugins );
 }
 
 /**
- * Determine whether SearchWP core is active.
+ * Determine whether Relevanssi is active.
  *
  * This only runs in wp-admin Site Health/admin-notice requests.
  *
  * @return bool
  */
-function mrn_environment_runtime_searchwp_core_is_active() {
-	foreach ( mrn_environment_runtime_active_searchwp_plugins() as $plugin ) {
-		if ( 0 === strpos( $plugin, 'searchwp/' ) ) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-/**
- * Determine whether SearchWP's persistent indexer pause is enabled.
- *
- * This only runs in wp-admin Site Health/admin-notice requests.
- *
- * @return bool
- */
-function mrn_environment_runtime_searchwp_indexer_is_paused() {
-	$value = get_option( 'searchwp_indexer_paused', '0' );
-
-	return in_array( $value, array( true, 1, '1' ), true );
+function mrn_environment_runtime_relevanssi_core_is_active() {
+	return ! empty( mrn_environment_runtime_active_relevanssi_plugins() );
 }
 
 /**
@@ -422,25 +399,18 @@ function mrn_environment_runtime_debug_information( $information ) {
 		);
 	}
 
-	$searchwp_active = mrn_environment_runtime_active_searchwp_plugins();
-	$searchwp_core   = mrn_environment_runtime_searchwp_core_is_active();
-	$indexer_paused  = mrn_environment_runtime_searchwp_indexer_is_paused();
+	$relevanssi_active = mrn_environment_runtime_active_relevanssi_plugins();
+	$relevanssi_core   = mrn_environment_runtime_relevanssi_core_is_active();
 
-	if ( 'disabled' === $contract['searchwp'] ) {
-		$searchwp_match = empty( $searchwp_active );
-	} elseif ( 'frontend_only' === $contract['searchwp'] ) {
-		$searchwp_match = $searchwp_core && $indexer_paused;
+	if ( 'disabled' === $contract['relevanssi'] ) {
+		$relevanssi_match = empty( $relevanssi_active );
 	} else {
-		$searchwp_match = $searchwp_core && ! $indexer_paused;
+		$relevanssi_match = $relevanssi_core;
 	}
 
-	$fields['searchwp_policy_match'] = array(
-		'label' => 'SearchWP policy match',
-		'value' => $searchwp_match ? 'yes' : 'no',
-	);
-	$fields['searchwp_indexer_paused'] = array(
-		'label' => 'SearchWP indexer paused',
-		'value' => $indexer_paused ? 'yes' : 'no',
+	$fields['relevanssi_policy_match'] = array(
+		'label' => 'Relevanssi policy match',
+		'value' => $relevanssi_match ? 'yes' : 'no',
 	);
 	$fields['seo_indexing_policy_match'] = array(
 		'label' => 'SEO indexing policy match',
@@ -512,43 +482,28 @@ function mrn_environment_runtime_opcache_notice() {
 }
 
 /**
- * Warn administrators when SearchWP conflicts with environment policy.
+ * Warn administrators when Relevanssi conflicts with environment policy.
  */
-function mrn_environment_runtime_searchwp_notice() {
+function mrn_environment_runtime_relevanssi_notice() {
 	if ( ! current_user_can( 'manage_options' ) ) {
 		return;
 	}
 
 	$contract = mrn_environment_runtime_contract();
-	$active   = mrn_environment_runtime_active_searchwp_plugins();
-	if ( 'disabled' === $contract['searchwp'] && ! empty( $active ) ) {
+	$active   = mrn_environment_runtime_active_relevanssi_plugins();
+
+	if ( 'disabled' === $contract['relevanssi'] && ! empty( $active ) ) {
 		printf(
 			'<div class="notice notice-warning"><p>%s</p></div>',
-			esc_html__( 'MRN environment policy disables SearchWP here, but one or more SearchWP components are active. Run the environment-policy reconciliation before performance testing.', 'mrn-environment-runtime' )
+			esc_html__( 'MRN environment policy disables Relevanssi here, but Relevanssi is active. Run the environment-policy reconciliation before performance testing.', 'mrn-environment-runtime' )
 		);
 		return;
 	}
 
-	if ( in_array( $contract['searchwp'], array( 'frontend_only', 'configured' ), true ) && ! mrn_environment_runtime_searchwp_core_is_active() ) {
+	if ( 'configured' === $contract['relevanssi'] && ! mrn_environment_runtime_relevanssi_core_is_active() ) {
 		printf(
 			'<div class="notice notice-error"><p>%s</p></div>',
-			esc_html__( 'MRN environment policy requires SearchWP forms and frontend search, but SearchWP core is inactive. Activate SearchWP or change the environment policy.', 'mrn-environment-runtime' )
-		);
-		return;
-	}
-
-	if ( 'frontend_only' === $contract['searchwp'] && ! mrn_environment_runtime_searchwp_indexer_is_paused() ) {
-		printf(
-			'<div class="notice notice-warning"><p>%s</p></div>',
-			esc_html__( 'MRN SearchWP policy is frontend-only, but the SearchWP indexer is not paused. Run development environment-policy reconciliation before performance testing.', 'mrn-environment-runtime' )
-		);
-		return;
-	}
-
-	if ( 'configured' === $contract['searchwp'] && mrn_environment_runtime_searchwp_indexer_is_paused() ) {
-		printf(
-			'<div class="notice notice-error"><p>%s</p></div>',
-			esc_html__( 'MRN SearchWP policy is configured for full search, but the SearchWP indexer is still paused. Unpause and rebuild the index before production release.', 'mrn-environment-runtime' )
+			esc_html__( 'MRN environment policy requires Relevanssi search, but Relevanssi is inactive. Activate Relevanssi or change the environment policy.', 'mrn-environment-runtime' )
 		);
 		return;
 	}
@@ -625,7 +580,7 @@ function mrn_environment_runtime_environment_alignment_notice() {
 
 if ( function_exists( 'is_admin' ) && is_admin() ) {
 	add_filter( 'debug_information', 'mrn_environment_runtime_debug_information' );
-	add_action( 'admin_notices', 'mrn_environment_runtime_searchwp_notice' );
+	add_action( 'admin_notices', 'mrn_environment_runtime_relevanssi_notice' );
 	add_action( 'admin_notices', 'mrn_environment_runtime_environment_alignment_notice' );
 	add_action( 'admin_notices', 'mrn_environment_runtime_seo_indexing_notice' );
 	add_action( 'admin_notices', 'mrn_environment_runtime_opcache_notice' );
