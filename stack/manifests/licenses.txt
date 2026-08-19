@@ -4,3 +4,4 @@ updraftplus/updraftplus.php|updraftplus-addons_options|secretfilejson:updraft-pr
 searchwp/index.php|searchwp_license_key|secretfile:searchwp-license.txt
 advanced-custom-fields-pro/acf.php|acf_pro_license|secretfile:acf-pro-license.txt
 wp-seopress-pro/seopress-pro.php|seopress_pro_license_key|secretfile:seopress-license.txt
+happyfiles-pro/happyfiles-pro.php|happyfiles_license_key|secretfile:happyfiles-license.txt

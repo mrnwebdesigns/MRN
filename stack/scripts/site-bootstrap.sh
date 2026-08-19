@@ -1148,6 +1148,65 @@ echo "Applied and activated SEOPress license key.\n";
 '
   }
 
+  apply_happyfiles_license_mapping() {
+    local raw_value="$1"
+    local value_mode="${2:-text}"
+    local payload_b64
+
+    payload_b64="$(printf '%s' "${raw_value}" | base64 | tr -d '\n')"
+    run_wp eval '
+$raw = base64_decode("'"${payload_b64}"'", true);
+if ($raw === false) {
+    fwrite(STDERR, "Invalid HappyFiles license payload.\n");
+    exit(1);
+}
+
+$mode = "'"${value_mode}"'";
+$key = "";
+if ($mode === "json") {
+    $decoded = json_decode($raw, true);
+    if (!is_array($decoded)) {
+        fwrite(STDERR, "HappyFiles license JSON payload is invalid.\n");
+        exit(1);
+    }
+    $candidate = $decoded["key"] ?? ($decoded["license_key"] ?? "");
+    if (is_string($candidate)) {
+        $key = trim($candidate);
+    }
+} else {
+    $key = trim($raw);
+}
+
+if ($key === "") {
+    fwrite(STDERR, "HappyFiles license key is empty.\n");
+    exit(1);
+}
+
+// HappyFiles activates from the add_option_happyfiles_license_key hook, so the
+// option must be absent for the vendor activation request to run. Clearing both
+// options first makes the write an add rather than an update.
+delete_option("happyfiles_license_key");
+delete_option("happyfiles_license_status");
+update_option("happyfiles_license_key", $key);
+
+$status = get_option("happyfiles_license_status", []);
+if (empty($status)) {
+    fwrite(STDERR, "HappyFiles license activation returned no status.\n");
+    exit(1);
+}
+if (is_array($status) && isset($status["type"]) && "error" === (string) $status["type"]) {
+    $message = "HappyFiles license activation failed.";
+    if (!empty($status["message"]) && is_scalar($status["message"])) {
+        $message .= " " . (string) $status["message"];
+    }
+    fwrite(STDERR, $message . "\n");
+    exit(1);
+}
+
+echo "Applied and activated HappyFiles license key.\n";
+'
+  }
+
   apply_acf_pro_license_mapping() {
     local raw_value="$1"
     local value_mode="${2:-text}"
@@ -1408,6 +1467,20 @@ echo "Applied AME license payload for {$siteUrl}\n";
       fi
       if ! apply_acf_pro_license_mapping "${value}" "${acf_mode}" >/dev/null; then
         add_warning "Failed to apply/activate ACF Pro license mapping for ${plugin_basename}."
+        continue
+      fi
+      echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
+      continue
+    fi
+
+    if [[ "${plugin_basename}" == "happyfiles-pro/happyfiles-pro.php" && "${option_name}" == "happyfiles_license_key" ]]; then
+      local happyfiles_mode
+      happyfiles_mode="text"
+      if [[ "${value_ref}" == json:* || "${value_ref}" == filejson:* || "${value_ref}" == secretfilejson:* ]]; then
+        happyfiles_mode="json"
+      fi
+      if ! apply_happyfiles_license_mapping "${value}" "${happyfiles_mode}" >/dev/null; then
+        add_warning "Failed to apply/activate HappyFiles license mapping for ${plugin_basename}."
         continue
       fi
       echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
