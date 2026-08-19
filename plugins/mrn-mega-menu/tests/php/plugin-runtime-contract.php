@@ -29,7 +29,7 @@ require_once dirname( __DIR__, 2 ) . '/includes/class-plugin.php';
 
 use MRN_Mega_Menu\Plugin;
 
-if ( '0.16.16' !== Plugin::VERSION ) {
+if ( '0.16.17' !== Plugin::VERSION ) {
 	throw new RuntimeException( 'Plugin runtime version is not synchronized.' );
 }
 

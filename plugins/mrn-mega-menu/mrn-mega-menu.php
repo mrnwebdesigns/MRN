@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Mega Menu
  * Description: A focused, accessible mega menu builder with first-class WooCommerce support.
- * Version: 0.16.16
+ * Version: 0.16.17
  * Author: MRN Web Designs
  * Text Domain: mrn-mega-menu
  * Requires at least: 6.0

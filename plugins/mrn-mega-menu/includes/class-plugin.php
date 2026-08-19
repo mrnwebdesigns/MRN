@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 final class Plugin {
-	public const VERSION = '0.16.16';
+	public const VERSION = '0.16.17';
 	public const POST_TYPE = 'mrn_mega_menu';
 	public const META_LAYOUT = '_mrn_mega_menu_layout';
 	public const OPTION_ASSIGNMENTS = 'mrn_mega_menu_assignments';
@@ -217,6 +217,17 @@ final class Plugin {
 	}
 
 	/**
+	 * Sanitize a panel-level display mode.
+	 *
+	 * @param mixed $value Raw setting value.
+	 * @return string Either mega or dropdown.
+	 */
+	public static function sanitize_display_mode( $value ) {
+		$value = sanitize_key( is_scalar( $value ) ? (string) $value : '' );
+		return 'dropdown' === $value ? 'dropdown' : 'mega';
+	}
+
+	/**
 	 * Return the configured default for a WordPress menu.
 	 *
 	 * @param int $menu_id WordPress nav menu term ID.
@@ -351,6 +362,7 @@ final class Plugin {
 				$normalized['panels'][] = array(
 					'menu_item_id'  => absint( $panel['menu_item_id'] ?? 0 ),
 					'label_override' => sanitize_text_field( $panel['label_override'] ?? '' ),
+					'display_mode'  => self::sanitize_display_mode( $panel['display_mode'] ?? 'mega' ),
 					'parent_click'  => self::sanitize_parent_click_override( $panel['parent_click'] ?? 'inherit' ),
 					'item_icon'     => self::sanitize_icon( $panel['item_icon'] ?? array() ),
 					'arrow_icon'    => self::sanitize_icon( $panel['arrow_icon'] ?? array() ),
@@ -372,6 +384,7 @@ final class Plugin {
 				$normalized['panels'][] = array(
 					'menu_item_id'  => $menu_item_id,
 					'label_override' => '',
+					'display_mode'  => 'mega',
 					'parent_click'  => 'inherit',
 					'item_icon'     => array( 'type' => '', 'value' => '' ),
 					'arrow_icon'    => array( 'type' => '', 'value' => '' ),
@@ -385,6 +398,7 @@ final class Plugin {
 			$normalized['panels'][] = array(
 				'menu_item_id'  => 0,
 				'label_override' => '',
+				'display_mode'  => 'mega',
 				'parent_click'  => 'inherit',
 				'item_icon'     => array( 'type' => '', 'value' => '' ),
 				'arrow_icon'    => array( 'type' => '', 'value' => '' ),

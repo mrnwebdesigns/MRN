@@ -131,8 +131,14 @@ final class Renderer {
 	}
 
 	public static function menu_item_classes( $classes, $item, $args, $depth ) {
-		if ( 0 === (int) $depth && isset( self::assignments()[ $item->ID ] ) ) {
-			$classes[] = 'mrn-has-mega-menu';
+		$assignments = self::assignments();
+		if ( 0 !== (int) $depth || ! isset( $assignments[ $item->ID ] ) ) {
+			return $classes;
+		}
+		$classes[] = 'mrn-has-mega-menu';
+		$panel = self::find_panel( absint( $assignments[ $item->ID ] ), $item->ID );
+		if ( is_array( $panel ) && 'dropdown' === Plugin::sanitize_display_mode( $panel['display_mode'] ?? 'mega' ) ) {
+			$classes[] = 'mrn-mega-menu-dropdown-item';
 		}
 		return $classes;
 	}
@@ -253,8 +259,22 @@ final class Renderer {
 		$layout  = Plugin::get_layout( $panel_id );
 		$columns = isset( $panel['columns'] ) && is_array( $panel['columns'] ) ? $panel['columns'] : array();
 		$child_arrow_icon = Plugin::sanitize_icon( $panel['child_arrow_icon'] ?? ( $panel['child_icon'] ?? array() ) );
+		$display_mode = Plugin::sanitize_display_mode( $panel['display_mode'] ?? 'mega' );
+		if ( 'dropdown' === $display_mode ) {
+			$visible_columns = array_values(
+				array_filter(
+					$columns,
+					static function ( $column ) {
+						return ! isset( $column['visible_in_dropdown'] ) || ! empty( $column['visible_in_dropdown'] );
+					}
+				)
+			);
+			// An empty selection is a misconfiguration, not an intent to hide every column.
+			$columns = $visible_columns ? $visible_columns : $columns;
+		}
 		$width   = isset( $layout['width'] ) && 'full' === $layout['width'] ? 'full' : 'content';
-		$classes = array( 'mrn-mega-menu', 'mrn-mega-menu--' . $width );
+		$classes = array( 'mrn-mega-menu' );
+		$classes[] = 'dropdown' === $display_mode ? 'mrn-mega-menu--dropdown' : 'mrn-mega-menu--' . $width;
 		if ( Stack_Integration::is_stack_available() ) {
 			$classes[] = 'mrn-mega-menu--stack';
 		}

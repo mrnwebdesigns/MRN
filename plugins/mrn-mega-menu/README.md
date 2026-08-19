@@ -15,7 +15,7 @@ A focused WordPress menu enhancement layer with optional, first-class WooCommerc
 - Promotional image, message, and call-to-action blocks
 - Bounded promotional media that stays inside its assigned menu column regardless of the source image dimensions
 - Published Reusable Block Library content that remains centrally editable
-- Content-width and full-width panels
+- Content-width and full-width panels, or a simple single-column dropdown that opens a narrow list anchored under the parent item instead of a full mega panel, with a per-column choice of which columns feed that dropdown
 - Full-width layouts retain viewport width when themes add content-driven menu sizing rules
 - Mouse, touch, and keyboard controls with Escape and outside-click closing
 - Responsive columns and reduced-motion support
@@ -79,6 +79,12 @@ Integration filters:
 - `mrn_mega_menu_use_sticky_toolbar`
 
 ## Changelog
+
+### 0.16.17
+
+- Removed the orphaned spatial-grid editor (unenqueued JS, unused sanitize/render branches) left over from before the panel/column builder.
+- Added a per-mega-menu "Menu style" setting: Full mega menu (unchanged) or a Simple dropdown that opens a narrow, single-anchor flyout instead of the full-width panel.
+- Added a per-column "Show in dropdown" toggle so a Simple dropdown can pull content from any chosen subset of that mega menu's layout columns.
 
 ### 0.16.16
 

@@ -6,6 +6,6 @@
     "repo_path": "/Users/khofmeyer/Development/MRN/plugins/mrn-mega-menu",
     "integration_target": "mrn-plugin-stack",
     "integration_mode": "in-repo-plugin",
-    "plugin_version": "0.16.16"
+    "plugin_version": "0.16.17"
   }
 }

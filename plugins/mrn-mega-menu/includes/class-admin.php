@@ -128,6 +128,7 @@ final class Admin {
 				array(
 					'menu_item_id'  => 0,
 					'label_override' => '',
+					'display_mode'  => 'mega',
 					'parent_click'  => 'inherit',
 					'item_icon'     => array( 'type' => '', 'value' => '' ),
 					'arrow_icon'    => array( 'type' => '', 'value' => '' ),
@@ -215,13 +216,15 @@ final class Admin {
 		$columns      = isset( $panel['columns'] ) && is_array( $panel['columns'] ) ? $panel['columns'] : array( array( 'blocks' => array() ) );
 		$menu_item_id = absint( $panel['menu_item_id'] ?? 0 );
 		$panel_label  = self::panel_label( $panel, $panel_index );
+		$display_mode = Plugin::sanitize_display_mode( $panel['display_mode'] ?? 'mega' );
 		?>
-		<section class="mrn-mm-panel" id="mrn-mm-panel-<?php echo esc_attr( $panel_index ); ?>" role="tabpanel" aria-labelledby="mrn-mm-panel-tab-<?php echo esc_attr( $panel_index ); ?>" data-panel-index="<?php echo esc_attr( $panel_index ); ?>" data-menu-item-id="<?php echo esc_attr( $menu_item_id ); ?>"<?php echo $active ? '' : ' hidden'; ?>>
+		<section class="mrn-mm-panel" id="mrn-mm-panel-<?php echo esc_attr( $panel_index ); ?>" role="tabpanel" aria-labelledby="mrn-mm-panel-tab-<?php echo esc_attr( $panel_index ); ?>" data-panel-index="<?php echo esc_attr( $panel_index ); ?>" data-menu-item-id="<?php echo esc_attr( $menu_item_id ); ?>" data-display-mode="<?php echo esc_attr( $display_mode ); ?>"<?php echo $active ? '' : ' hidden'; ?>>
 			<div class="mrn-mm-panel__header">
 				<div><h3><?php echo esc_html( sprintf( __( 'Mega menu: %s', 'mrn-mega-menu' ), $panel_label ) ); ?></h3><p class="description"><?php esc_html_e( 'Choose the visual columns inside this dropdown, then drag content between them.', 'mrn-mega-menu' ); ?></p></div>
 				<button type="button" class="button-link-delete mrn-admin-card-remove mrn-mm-remove-panel" aria-label="<?php esc_attr_e( 'Remove mega menu', 'mrn-mega-menu' ); ?>" title="<?php esc_attr_e( 'Remove mega menu', 'mrn-mega-menu' ); ?>"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button>
 			</div>
 			<div class="mrn-mm-panel-icons">
+				<label class="mrn-mm-panel-display-mode"><span><?php esc_html_e( 'Menu style', 'mrn-mega-menu' ); ?></span><select data-panel-field="display_mode"><option value="mega" <?php selected( $display_mode, 'mega' ); ?>><?php esc_html_e( 'Full mega menu', 'mrn-mega-menu' ); ?></option><option value="dropdown" <?php selected( $display_mode, 'dropdown' ); ?>><?php esc_html_e( 'Simple dropdown (single narrow column)', 'mrn-mega-menu' ); ?></option></select><small><?php esc_html_e( 'A simple dropdown opens as a narrow list anchored under this item instead of the full-width mega panel. Choose which layout columns it uses below.', 'mrn-mega-menu' ); ?></small></label>
 				<label class="mrn-mm-panel-label-override"><span><?php esc_html_e( 'Parent navigation label', 'mrn-mega-menu' ); ?></span><input type="text" data-panel-field="label_override" value="<?php echo esc_attr( $panel['label_override'] ?? '' ); ?>" placeholder="<?php echo esc_attr( $panel_label ); ?>"><small><?php esc_html_e( 'Overrides the visible top-level label for this layout without renaming the WordPress menu item.', 'mrn-mega-menu' ); ?></small></label>
 				<label class="mrn-mm-panel-parent-click"><span><?php esc_html_e( 'Parent item click behavior', 'mrn-mega-menu' ); ?></span><select data-panel-field="parent_click"><option value="inherit" <?php selected( $panel['parent_click'] ?? 'inherit', 'inherit' ); ?>><?php esc_html_e( 'Use global setting', 'mrn-mega-menu' ); ?></option><option value="toggle" <?php selected( $panel['parent_click'] ?? 'inherit', 'toggle' ); ?>><?php esc_html_e( 'Open mega menu only', 'mrn-mega-menu' ); ?></option><option value="link" <?php selected( $panel['parent_click'] ?? 'inherit', 'link' ); ?>><?php esc_html_e( 'Allow parent link', 'mrn-mega-menu' ); ?></option></select><small><?php esc_html_e( 'Applies only to this assigned WordPress menu-item ID. Linked parents navigate on desktop and Enter; touch users tap once to open and again to follow. Space always toggles the panel.', 'mrn-mega-menu' ); ?></small></label>
 				<?php self::render_icon_control( 'item_icon', __( 'Navigation item icon', 'mrn-mega-menu' ), $panel['item_icon'] ?? array(), __( 'Overrides the icon configured on the native WordPress menu item for this layout.', 'mrn-mega-menu' ) ); ?>
@@ -243,12 +246,14 @@ final class Admin {
 
 	private static function render_column( $column, $column_index ) {
 		$blocks = isset( $column['blocks'] ) && is_array( $column['blocks'] ) ? $column['blocks'] : array();
+		$visible_in_dropdown = ! isset( $column['visible_in_dropdown'] ) || ! empty( $column['visible_in_dropdown'] );
 		?>
 		<section class="mrn-mm-column mrn-admin-layout-builder__lane" data-column-index="<?php echo esc_attr( $column_index ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'Layout column %d', 'mrn-mega-menu' ), $column_index + 1 ) ); ?>">
 			<div class="mrn-mm-column__header">
 				<strong><?php echo esc_html( sprintf( __( 'Layout column %d', 'mrn-mega-menu' ), $column_index + 1 ) ); ?></strong>
 				<div class="mrn-mm-column__actions"><span class="mrn-mm-block-count"><?php echo esc_html( sprintf( _n( '%d block', '%d blocks', count( $blocks ), 'mrn-mega-menu' ), count( $blocks ) ) ); ?></span><button type="button" class="button-link mrn-mm-copy-column" aria-label="<?php esc_attr_e( 'Copy layout column', 'mrn-mega-menu' ); ?>" title="<?php esc_attr_e( 'Copy layout column', 'mrn-mega-menu' ); ?>"><span class="dashicons dashicons-admin-page" aria-hidden="true"></span></button><button type="button" class="button-link mrn-mm-paste-column" aria-label="<?php esc_attr_e( 'Paste copied layout column', 'mrn-mega-menu' ); ?>" title="<?php esc_attr_e( 'Paste copied layout column', 'mrn-mega-menu' ); ?>" disabled><span class="dashicons dashicons-clipboard" aria-hidden="true"></span></button><button type="button" class="button-link-delete mrn-admin-card-remove mrn-mm-remove-column" aria-label="<?php esc_attr_e( 'Remove layout column', 'mrn-mega-menu' ); ?>" title="<?php esc_attr_e( 'Remove layout column', 'mrn-mega-menu' ); ?>"><span class="dashicons dashicons-trash" aria-hidden="true"></span></button></div>
 			</div>
+			<label class="mrn-mm-column__dropdown-toggle"><input type="checkbox" data-column-field="visible_in_dropdown" <?php checked( $visible_in_dropdown ); ?>> <?php esc_html_e( 'Show in dropdown', 'mrn-mega-menu' ); ?></label>
 			<div class="mrn-mm-blocks">
 				<?php foreach ( $blocks as $block_index => $block ) : ?>
 					<?php self::render_block( $block, $block_index ); ?>
@@ -691,6 +696,7 @@ final class Admin {
 			$clean_panel = array(
 				'menu_item_id'  => absint( $panel['menu_item_id'] ?? 0 ),
 				'label_override' => sanitize_text_field( $panel['label_override'] ?? '' ),
+				'display_mode'  => Plugin::sanitize_display_mode( $panel['display_mode'] ?? 'mega' ),
 				'parent_click'  => Plugin::sanitize_parent_click_override( $panel['parent_click'] ?? 'inherit' ),
 				'item_icon'     => Plugin::sanitize_icon( $panel['item_icon'] ?? array() ),
 				'arrow_icon'    => Plugin::sanitize_icon( $panel['arrow_icon'] ?? array() ),
@@ -699,7 +705,10 @@ final class Admin {
 			);
 			$columns = isset( $panel['columns'] ) && is_array( $panel['columns'] ) ? array_slice( $panel['columns'], 0, 6 ) : array();
 			foreach ( $columns as $column ) {
-				$clean_column = array( 'blocks' => array() );
+				$clean_column = array(
+					'blocks'              => array(),
+					'visible_in_dropdown' => ! isset( $column['visible_in_dropdown'] ) || ! empty( $column['visible_in_dropdown'] ),
+				);
 				$blocks       = isset( $column['blocks'] ) && is_array( $column['blocks'] ) ? array_slice( $column['blocks'], 0, 20 ) : array();
 				foreach ( $blocks as $block ) {
 					$clean_block = self::sanitize_block( $block );
@@ -710,7 +719,7 @@ final class Admin {
 				$clean_panel['columns'][] = $clean_column;
 			}
 			if ( empty( $clean_panel['columns'] ) ) {
-				$clean_panel['columns'][] = array( 'blocks' => array() );
+				$clean_panel['columns'][] = array( 'blocks' => array(), 'visible_in_dropdown' => true );
 			}
 			$clean['panels'][] = $clean_panel;
 		}
@@ -718,11 +727,12 @@ final class Admin {
 			$clean['panels'][] = array(
 				'menu_item_id'  => 0,
 				'label_override' => '',
+				'display_mode'  => 'mega',
 				'parent_click'  => 'inherit',
 				'item_icon'     => array( 'type' => '', 'value' => '' ),
 				'arrow_icon'    => array( 'type' => '', 'value' => '' ),
 				'child_arrow_icon' => array( 'type' => '', 'value' => '' ),
-				'columns'       => array( array( 'blocks' => array() ) ),
+				'columns'       => array( array( 'blocks' => array(), 'visible_in_dropdown' => true ) ),
 			);
 		}
 		return $clean;
