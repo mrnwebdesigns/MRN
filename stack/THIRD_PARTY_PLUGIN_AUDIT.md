@@ -1,6 +1,6 @@
 # Third-Party Plugin Audit
 
-Checked: 2026-08-13
+Checked: 2026-08-13 (premium packages refreshed 2026-08-19)
 
 Scope: non-custom plugins and package zips referenced by `stack/manifests/plugins.txt`.
 
@@ -25,26 +25,26 @@ Scope: non-custom plugins and package zips referenced by `stack/manifests/plugin
 
 | Plugin | Stack source | Stack/current version | Latest checked | Status |
 | --- | --- | ---: | ---: | --- |
-| Admin Menu Editor Pro | `admin-menu-editor-pro.zip` | 2.33.4 | 2.33.4 | Updated from Downloads. |
-| Advanced Custom Fields Pro | `advanced-custom-fields-pro.zip` | 6.8.4 | 6.8.4 | Updated from Downloads. |
-| AME Branding Add-on | `ame-branding-add-on.zip` | 1.3.12 | 1.3.12 | Updated from Downloads. |
-| AME Toolbar Editor | `wp-toolbar-editor.zip` | 1.5.1 | not publicly confirmed separately | Kept available package. |
+| Admin Menu Editor Pro | `admin-menu-editor-pro.zip` | 2.34 | 2.34 | Refreshed 2026-08-19. |
+| Advanced Custom Fields Pro | `advanced-custom-fields-pro.zip` | 6.8.7 | 6.8.7 | Refreshed 2026-08-19. Includes upstream security fixes for image/gallery field validation and encryption handling. |
+| AME Branding Add-on | `ame-branding-add-on.zip` | 1.3.13 | 1.3.13 | Refreshed 2026-08-19. No license mapping exists; assumed to inherit the Admin Menu Editor Pro license (unconfirmed). |
+| AME Toolbar Editor | `wp-toolbar-editor.zip` | 1.5.2 | not publicly confirmed separately | Refreshed 2026-08-19. No license mapping exists; assumed to inherit the Admin Menu Editor Pro license (unconfirmed). |
 | Classic Editor | `classic-editor` slug | latest at install | 1.7.0 | Current via WordPress.org. |
 | Enable Media Replace | `enable-media-replace` slug | latest at install | 4.2.2 | Current via WordPress.org. |
 | FluentSMTP | `fluent-smtp` slug | latest at install | 2.2.95 | Current via WordPress.org. |
-| HappyFiles Pro | `happyfiles-pro.zip` | 1.9.1 | not confirmed; vendor changelog is dynamic/account-gated | Added provided package. |
+| HappyFiles Pro | `happyfiles-pro.zip` | 1.9.1 | not confirmed; vendor changelog is dynamic/account-gated | Unchanged at 1.9.1. No license mapping exists and its licensing model is unconfirmed. |
 | Post Duplicator | `post-duplicator` slug | latest at install | 3.0.15 | Current via WordPress.org. |
 | Post Types Order | `post-types-order` slug | latest at install | 2.4.8 | Current via WordPress.org. |
-| SearchWP | `searchwp-4.6.0.zip` | 4.6.0 | 4.6.0 | Updated from Downloads. |
+| SearchWP | `searchwp-4.6.1.zip` | 4.6.1 | 4.6.1 | Refreshed 2026-08-19. Manifest reference is version-pinned by filename. |
 | SearchWP Live Ajax Search | `searchwp-live-ajax-search` slug | latest at install | 1.8.7 | Current via WordPress.org. |
 | SEOPress | `wp-seopress` slug | latest at install | not checked | New preferred stack SEO provider installed from WordPress.org. |
 | SEOPress Pro | `wp-seopress-pro-10-1-1.zip` | 10.1.1 | 10.1.1 | Added from Downloads. |
 | Advanced Editor Tools | `tinymce-advanced` slug | latest at install | 5.9.2 | Current via WordPress.org. |
-| UpdraftPlus Premium | `updraftplus.2.26.5.zip` | 2.26.5.26 | 2.26.5 | Updated to current patched premium branch. |
+| UpdraftPlus Premium | `updraftplus.2.26.6.zip` | 2.26.6 | 2.26.6 | Refreshed 2026-08-19. Manifest reference is version-pinned by filename. |
 | Defender Pro | removed from stack manifest | 5.11.0 legacy package | 5.11.0 | Removed 2026-08-19 with all WPMU DEV plugins. Package retained on the stack manager, unreferenced. |
 | SmartCrawl Pro | removed from new stack manifest | 3.16.2 legacy package | 3.16.2 | Supported by provider adapters for existing sites during migration. |
 | WPMU DEV Dashboard | removed from stack manifest | 5.0.0 legacy package | 5.0.0 | Removed 2026-08-19 with all WPMU DEV plugins. Package retained on the stack manager, unreferenced. |
-| WPForms | `wpforms.zip` | 1.10.2.1 | 1.10.2.1 public/Lite signal | Updated from Downloads. |
+| WPForms | `wpforms.zip` | 1.10.2.1 | 2.0.0.5 | Held at 1.10.2.1 on 2026-08-19. WPForms 2.0.0.5 is available and its license handler contract was verified intact, but the major version is untested against existing MRN forms. |
 
 ## Sources Checked
 
