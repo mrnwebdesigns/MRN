@@ -198,23 +198,6 @@ final class Admin {
 		<?php
 	}
 
-	private static function editor_grid( $layout, $columns ) {
-		$count  = max( 1, min( 12, count( $columns ) ) );
-		$blocks = array();
-		$rows   = isset( $layout['rows'] ) ? max( 1, min( 12, absint( $layout['rows'] ) ) ) : 1;
-		foreach ( $columns as $column_index => $column ) {
-			$column_blocks = isset( $column['blocks'] ) && is_array( $column['blocks'] ) ? $column['blocks'] : array();
-			foreach ( $column_blocks as $row_index => $block ) {
-				$block['grid_column'] = isset( $block['grid_column'] ) ? max( 1, min( $count, absint( $block['grid_column'] ) ) ) : $column_index + 1;
-				$block['grid_row']    = isset( $block['grid_row'] ) ? max( 1, min( 12, absint( $block['grid_row'] ) ) ) : $row_index + 1;
-				$block['column_span'] = isset( $block['column_span'] ) ? max( 1, min( $count - $block['grid_column'] + 1, absint( $block['column_span'] ) ) ) : 1;
-				$rows                 = max( $rows, $block['grid_row'] );
-				$blocks[]             = $block;
-			}
-		}
-		return array( 'columns' => $count, 'rows' => min( 12, $rows ), 'blocks' => $blocks );
-	}
-
 	private static function render_add_menu() {
 		?>
 		<div class="mrn-mm-add__menu" hidden>
@@ -698,9 +681,6 @@ final class Admin {
 	}
 
 	private static function sanitize_layout( $layout ) {
-		if ( isset( $layout['grid'] ) && is_array( $layout['grid'] ) ) {
-			$layout = self::sanitize_grid_layout( $layout );
-		}
 		$layout = Plugin::normalize_layout( $layout );
 		$clean = array(
 			'width'  => isset( $layout['width'] ) && 'full' === $layout['width'] ? 'full' : 'content',
@@ -744,30 +724,6 @@ final class Admin {
 				'child_arrow_icon' => array( 'type' => '', 'value' => '' ),
 				'columns'       => array( array( 'blocks' => array() ) ),
 			);
-		}
-		return $clean;
-	}
-
-	private static function sanitize_grid_layout( $layout ) {
-		$grid         = $layout['grid'];
-		$column_count = isset( $grid['columns'] ) ? max( 1, min( 12, absint( $grid['columns'] ) ) ) : 1;
-		$row_count    = isset( $grid['rows'] ) ? max( 1, min( 12, absint( $grid['rows'] ) ) ) : 1;
-		$clean        = array(
-			'width'   => isset( $layout['width'] ) && 'full' === $layout['width'] ? 'full' : 'content',
-			'rows'    => $row_count,
-			'columns' => array_fill( 0, $column_count, array( 'blocks' => array() ) ),
-		);
-		$blocks       = isset( $grid['blocks'] ) && is_array( $grid['blocks'] ) ? array_slice( $grid['blocks'], 0, 60 ) : array();
-		foreach ( $blocks as $block ) {
-			$clean_block = self::sanitize_block( $block );
-			if ( ! $clean_block ) {
-				continue;
-			}
-			$column                      = isset( $block['grid_column'] ) ? max( 1, min( $column_count, absint( $block['grid_column'] ) ) ) : 1;
-			$clean_block['grid_column']  = $column;
-			$clean_block['grid_row']     = isset( $block['grid_row'] ) ? max( 1, min( $row_count, absint( $block['grid_row'] ) ) ) : 1;
-			$clean_block['column_span']  = isset( $block['column_span'] ) ? max( 1, min( $column_count - $column + 1, absint( $block['column_span'] ) ) ) : 1;
-			$clean['columns'][ $column - 1 ]['blocks'][] = $clean_block;
 		}
 		return $clean;
 	}

@@ -136,46 +136,6 @@
 .mrn-mm-promo-image__preview { align-items: center; background: #f1f5f9; border: 1px dashed #94a3b8; border-radius: 6px; display: flex; height: 72px; justify-content: center; overflow: hidden; width: 96px; }
 .mrn-mm-promo-image__preview img { height: 100%; object-fit: cover; width: 100%; }
 
-/* Spatial grid editor: mirrors the Header Grid interaction contract. */
-.mrn-mm-grid-toolbar { align-items: center; display: flex; justify-content: space-between; padding: 18px 24px 8px; }
-.mrn-mm-grid-toolbar__controls { align-items: end; display: flex; gap: 10px; }
-.mrn-mm-grid-toolbar__controls label { display: grid; font-weight: 600; gap: 5px; }
-.mrn-mm-grid-toolbar__controls input { height: 42px; width: 72px; }
-.mrn-mm-grid-toolbar__controls .button { min-height: 42px; }
-.mrn-mm-grid-help { margin: 0 !important; padding: 0 24px 14px; }
-.mrn-mm-grid-canvas { --mrn-mm-grid-columns: 3; --mrn-mm-grid-rows: 1; background: #f8fafc; border: 1px solid #dcdcde; margin: 0 24px; min-height: calc(var(--mrn-mm-grid-rows) * 112px + 20px); overflow-x: auto; overflow-y: hidden; padding: 10px; position: relative; }
-.mrn-mm-grid-cells, .mrn-mm-grid-blocks { display: grid; gap: 8px; grid-template-columns: repeat(var(--mrn-mm-grid-columns), minmax(0, 1fr)); grid-template-rows: repeat(var(--mrn-mm-grid-rows), 104px); }
-.mrn-mm-grid-cells, .mrn-mm-grid-blocks { min-width: calc(var(--mrn-mm-grid-columns) * 180px + (var(--mrn-mm-grid-columns) - 1) * 10px); }
-.mrn-mm-grid-cells { height: calc(var(--mrn-mm-grid-rows) * 104px + (var(--mrn-mm-grid-rows) - 1) * 8px); }
-.mrn-mm-grid-blocks { bottom: 10px; left: 10px; pointer-events: none; position: absolute; right: 10px; top: 10px; width: max(calc(100% - 20px), calc(var(--mrn-mm-grid-columns) * 180px + (var(--mrn-mm-grid-columns) - 1) * 10px)); }
-.mrn-mm-grid-cell { align-items: flex-end; background: #fff; border: 1px dashed #c3c4c7; color: #8c8f94; cursor: pointer; display: flex; font-size: 11px; justify-content: flex-start; min-height: 104px; padding: 8px; text-align: left; }
-.mrn-mm-grid-cell:hover, .mrn-mm-grid-cell:focus-visible { background: #f0f6fc; border-color: #2271b1; box-shadow: inset 0 0 0 1px #2271b1; color: #135e96; outline: 0; }
-.mrn-mm-grid-blocks > .mrn-mm-block { align-self: stretch; border-color: #72aee6; box-shadow: 0 1px 2px rgb(0 0 0 / 8%); height: 104px; min-height: 0; overflow: visible; pointer-events: auto; position: relative; z-index: 2; }
-.mrn-mm-grid-blocks > .mrn-mm-block.is-selected { box-shadow: 0 0 0 2px #72aee6, 0 4px 12px rgb(0 0 0 / 12%); z-index: 4; }
-.mrn-mm-grid-blocks > .mrn-mm-block.is-dragging { opacity: .55; }
-.mrn-mm-grid-blocks .mrn-mm-block__header { height: 100%; min-height: 0; padding-bottom: 31px; position: relative; }
-.mrn-mm-grid-blocks .mrn-mm-block__drag { min-width: 30px; padding: 6px !important; }
-.mrn-mm-grid-blocks .mrn-mm-block__toggle { align-items: center; flex-wrap: wrap; gap: 5px; padding: 7px 5px 5px 7px; }
-.mrn-mm-grid-blocks .mrn-mm-block__toggle > .dashicons:first-child { display: none; }
-.mrn-mm-grid-blocks .mrn-mm-block__toggle strong { font-size: 12px; line-height: 1.2; }
-.mrn-mm-grid-blocks .mrn-mm-block__toggle small { font-size: 11px; line-height: 1.2; }
-.mrn-mm-grid-blocks .mrn-mm-block__chevron { font-size: 16px; height: 16px; width: 16px; }
-.mrn-mm-grid-blocks .mrn-mm-block__actions { bottom: 4px; left: 36px; padding: 0; position: absolute; right: 5px; }
-.mrn-mm-grid-blocks .mrn-mm-block__actions .mrn-mm-remove { background: transparent !important; border: 0 !important; box-shadow: none !important; font-size: 11px; min-height: auto; opacity: 0; padding: 3px !important; }
-.mrn-mm-grid-blocks .mrn-mm-block:hover .mrn-mm-remove, .mrn-mm-grid-blocks .mrn-mm-block:focus-within .mrn-mm-remove, .mrn-mm-grid-blocks .mrn-mm-block.is-selected .mrn-mm-remove { opacity: 1; }
-.mrn-mm-block__position { color: #646970; flex-basis: 100%; font-size: 10px; line-height: 1.1; margin-left: 0; }
-.mrn-mm-span-control { align-items: center; display: flex; font-size: 11px; font-weight: 600; gap: 4px; }
-.mrn-mm-span-control select { font-size: 11px; height: 25px; min-height: 25px; padding: 0 18px 0 5px; width: 42px; }
-.mrn-mm-grid-blocks .mrn-mm-block__body { background: #fff; border: 1px solid #c3c4c7; border-radius: 8px; box-shadow: 0 12px 36px rgb(0 0 0 / 24%); max-height: calc(100vh - 150px); overflow: auto; position: fixed; right: 28px; top: 110px; width: min(420px, calc(100vw - 56px)); z-index: 100001; }
-.mrn-mm-grid-add { padding: 14px 24px 24px; position: relative; width: min(360px, calc(100% - 48px)); }
-.mrn-mm-grid-add .mrn-mm-add__menu { left: 24px; max-width: 420px; position: absolute; right: 0; top: 52px; z-index: 20; }
-@media (max-width: 782px) {
-	.mrn-mm-grid-toolbar { align-items: flex-start; flex-direction: column; gap: 12px; }
-	.mrn-mm-grid-canvas { overflow-x: auto; }
-	.mrn-mm-grid-cells, .mrn-mm-grid-blocks { min-width: calc(var(--mrn-mm-grid-columns) * 180px); }
-	.mrn-mm-grid-blocks .mrn-mm-block__body { right: 14px; top: 74px; width: calc(100vw - 28px); }
-}
-
 /* Column-based mega-menu editor. Mega menus stack content within columns; they do not use explicit rows. */
 .mrn-mm-columns-toolbar { align-items: flex-end; display: flex; justify-content: space-between; padding: 18px 24px 14px; }
 .mrn-mm-columns-toolbar p { margin: 5px 0 0; }

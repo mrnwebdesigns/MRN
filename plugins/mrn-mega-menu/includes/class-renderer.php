@@ -253,14 +253,6 @@ final class Renderer {
 		$layout  = Plugin::get_layout( $panel_id );
 		$columns = isset( $panel['columns'] ) && is_array( $panel['columns'] ) ? $panel['columns'] : array();
 		$child_arrow_icon = Plugin::sanitize_icon( $panel['child_arrow_icon'] ?? ( $panel['child_icon'] ?? array() ) );
-		$blocks  = array();
-		foreach ( $columns as $column ) {
-			foreach ( isset( $column['blocks'] ) && is_array( $column['blocks'] ) ? $column['blocks'] : array() as $block ) {
-				$blocks[] = $block;
-			}
-		}
-		// Mega menus are column-based. Legacy grid coordinates are intentionally ignored.
-		$is_grid = false;
 		$width   = isset( $layout['width'] ) && 'full' === $layout['width'] ? 'full' : 'content';
 		$classes = array( 'mrn-mega-menu', 'mrn-mega-menu--' . $width );
 		if ( Stack_Integration::is_stack_available() ) {
@@ -274,16 +266,12 @@ final class Renderer {
 					<strong><?php echo esc_html( $label ); ?></strong>
 					<button type="button" class="mrn-mega-menu__close"><span aria-hidden="true">&times;</span><span class="screen-reader-text"><?php echo esc_html( sprintf( __( 'Close %s menu', 'mrn-mega-menu' ), $label ) ); ?></span></button>
 				</div>
-				<div class="mrn-mega-menu__columns<?php echo $is_grid ? ' mrn-mega-menu__columns--grid' : ''; ?>" data-columns="<?php echo esc_attr( max( 1, min( 12, count( $columns ) ) ) ); ?>" data-grid-layout="<?php echo $is_grid ? 'true' : 'false'; ?>" style="--mrn-mega-columns: <?php echo esc_attr( max( 1, min( 12, count( $columns ) ) ) ); ?>">
-					<?php if ( $is_grid ) : ?>
-						<?php foreach ( $blocks as $block ) : ?><?php self::render_block( $block, $assigned_item_id, true, $child_arrow_icon ); ?><?php endforeach; ?>
-					<?php else : ?>
-						<?php foreach ( $columns as $column ) : ?>
-							<div class="mrn-mega-menu__column">
-								<?php foreach ( isset( $column['blocks'] ) && is_array( $column['blocks'] ) ? $column['blocks'] : array() as $block ) : ?><?php self::render_block( $block, $assigned_item_id, false, $child_arrow_icon ); ?><?php endforeach; ?>
-							</div>
-						<?php endforeach; ?>
-					<?php endif; ?>
+				<div class="mrn-mega-menu__columns" data-columns="<?php echo esc_attr( max( 1, min( 12, count( $columns ) ) ) ); ?>" style="--mrn-mega-columns: <?php echo esc_attr( max( 1, min( 12, count( $columns ) ) ) ); ?>">
+					<?php foreach ( $columns as $column ) : ?>
+						<div class="mrn-mega-menu__column">
+							<?php foreach ( isset( $column['blocks'] ) && is_array( $column['blocks'] ) ? $column['blocks'] : array() as $block ) : ?><?php self::render_block( $block, $assigned_item_id, $child_arrow_icon ); ?><?php endforeach; ?>
+						</div>
+					<?php endforeach; ?>
 				</div>
 			</div>
 		</div>
@@ -291,7 +279,7 @@ final class Renderer {
 		return ob_get_clean();
 	}
 
-	private static function render_block( $block, $assigned_item_id, $use_grid = false, $child_arrow_icon = array() ) {
+	private static function render_block( $block, $assigned_item_id, $child_arrow_icon = array() ) {
 		$type = isset( $block['type'] ) ? $block['type'] : '';
 		if ( ! in_array( $type, array( 'menu', 'links', 'categories', 'products', 'promo', 'reusable' ), true ) ) {
 			return;
@@ -305,16 +293,7 @@ final class Renderer {
 			}
 		}
 		?>
-		<?php
-		$style = '';
-		if ( $use_grid ) {
-			$column = max( 1, absint( $block['grid_column'] ) );
-			$row    = max( 1, absint( $block['grid_row'] ) );
-			$span   = max( 1, absint( isset( $block['column_span'] ) ? $block['column_span'] : 1 ) );
-			$style  = sprintf( 'grid-column:%1$d / span %2$d;grid-row:%3$d', $column, $span, $row );
-		}
-		?>
-		<section class="mrn-mega-menu__block mrn-mega-menu__block--<?php echo esc_attr( $type ); ?>"<?php echo $style ? ' style="' . esc_attr( $style ) . '"' : ''; ?>>
+		<section class="mrn-mega-menu__block mrn-mega-menu__block--<?php echo esc_attr( $type ); ?>">
 			<?php if ( $title ) : ?><h3 class="mrn-mega-menu__heading"><?php echo esc_html( $title ); ?></h3><?php endif; ?>
 			<?php
 			if ( 'menu' === $type ) {
