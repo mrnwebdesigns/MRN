@@ -41,9 +41,9 @@ Scope: non-custom plugins and package zips referenced by `stack/manifests/plugin
 | SEOPress Pro | `wp-seopress-pro-10-1-1.zip` | 10.1.1 | 10.1.1 | Added from Downloads. |
 | Advanced Editor Tools | `tinymce-advanced` slug | latest at install | 5.9.2 | Current via WordPress.org. |
 | UpdraftPlus Premium | `updraftplus.2.26.5.zip` | 2.26.5.26 | 2.26.5 | Updated to current patched premium branch. |
-| Defender Pro | `1320813_defender-pro-5.11.zip` | 5.11.0 | 5.11.0 | Updated from Downloads. |
+| Defender Pro | removed from stack manifest | 5.11.0 legacy package | 5.11.0 | Removed 2026-08-19 with all WPMU DEV plugins. Package retained on the stack manager, unreferenced. |
 | SmartCrawl Pro | removed from new stack manifest | 3.16.2 legacy package | 3.16.2 | Supported by provider adapters for existing sites during migration. |
-| WPMU DEV Dashboard | `1320813_wpmu-dev-dashboard-5.0.0.zip` | 5.0.0 | 5.0.0 | Updated to latest available public changelog version. |
+| WPMU DEV Dashboard | removed from stack manifest | 5.0.0 legacy package | 5.0.0 | Removed 2026-08-19 with all WPMU DEV plugins. Package retained on the stack manager, unreferenced. |
 | WPForms | `wpforms.zip` | 1.10.2.1 | 1.10.2.1 public/Lite signal | Updated from Downloads. |
 
 ## Sources Checked
