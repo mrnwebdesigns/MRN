@@ -55,7 +55,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: mrnwebdesigns/MRN-qa-engine
-          ref: 47aed240e36af9a0388c36ab3c0ff553d776a4d5
+          ref: 63016a3aedb7ae6a83054c1f542744b3b7b9e94a
           path: .mrn-qa-engine
           token: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
           persist-credentials: false
