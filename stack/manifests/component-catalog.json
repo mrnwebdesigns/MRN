@@ -205,7 +205,7 @@
     {
       "slug": "mrn-active-style-guide",
       "name": "MRN Active Style Guide",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "runtime_type": "mu-component",
       "classification": "development-tool",
       "lifecycle": "supported-development",
@@ -653,7 +653,7 @@
     {
       "slug": "mrn-wp-control-table-exporter",
       "name": "WP Control Table Exporter",
-      "version": "1.4.1",
+      "version": "1.4.4",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",

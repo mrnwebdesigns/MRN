@@ -204,7 +204,7 @@ Never infer platform generation from a stack release label or an individual plug
 ### 2) STACK RELEASE / BASELINE SNAPSHOT
 
 - Source of truth: `stack/STACK_VERSION.md`
-- Current verified release: `2026.08.14-sticky-bar-platform-requirement`
+- Current verified release: read the value from `stack/STACK_VERSION.md`. This document deliberately does not duplicate it, because a copied release label drifts silently.
 - In stack language, this is a stack release/baseline snapshot label, not a platform-generation name.
 - A release label may reflect a significant change included in that baseline and is not itself a statement about platform architecture.
 - For rollout decisions, treat component catalog records as the durable source of plugin-model reality.
@@ -216,7 +216,7 @@ Components within the stack are independently identified/versioned where applica
 - Example:
   - MRN Universal Sticky Bar
     - Slug: `mrn-universal-sticky-bar`
-    - Current version in current baseline: `1.1.8`
+    - Current version in current baseline: read it from `stack/manifests/component-catalog.json` (illustrative example only; versions are never duplicated here).
     - Classification: platform-required standard plugin
     - Its inclusion/version is part of the stack baseline, but it is not a stack generation.
 

@@ -62,7 +62,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | --- | ---: | --- |
 | `mrn-mainwp-operations-api` | 0.3.0 | Scoped MainWP operations for backups, package installation, and font management. |
 | `mrn-wp-control` | 1.1.1 | Restricted MainWP account provisioning through WP-CLI. |
-| `mrn-wp-control-table-exporter` | 1.4.1 | CSV export for supported WP Control/MainWP tables. |
+| `mrn-wp-control-table-exporter` | 1.4.4 | CSV export for supported WP Control/MainWP tables. |
 | `mrn-mainwp-mcp` | 0.1.0 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |
 
 ## Development and Maintenance
@@ -83,7 +83,7 @@ No disposition in this section authorizes a code move, manifest change, deletion
 | Slug | Version | Current state | Decision needed |
 | --- | ---: | --- | --- |
 | `mrn-contextual-content-editor` | 0.4.10 | Catalog only | Removed from the bootstrap manifest on 2026-08-19 because it is not production ready. Re-entry requires a production-readiness review. |
-| `mrn-google-reviews` | 1.0.0 | Incubator/catalog only; source is uncommitted | Held out of the stack on 2026-08-17 because the plugin is incomplete. Completion still requires committed source, secret-management, QA, and release-readiness review. |
+| `mrn-google-reviews` | 1.0.0 | Incubator/catalog only | Held out of the stack on 2026-08-17 because the plugin is incomplete. Source was committed and pushed on 2026-08-19 (`mrnwebdesigns/mrn-google-reviews`, private). Completion still requires secret-management, QA, and release-readiness review. |
 
 ## Archived Components
 
