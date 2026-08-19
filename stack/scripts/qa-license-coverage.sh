@@ -30,7 +30,7 @@ done < <(
 
 is_mrn_owned() {
   case "$1" in
-    mrn-*|searchwp-editor-performance|background-video-popout-disabler) return 0 ;;
+    mrn-*|background-video-popout-disabler) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -45,7 +45,7 @@ has_license_mapping() {
   for folder in "${license_folders[@]}"; do
     [[ -z "${folder}" ]] && continue
     if [[ "${base}" == "${folder}" ]]; then return 0; fi
-    # Package filenames may carry a version suffix, e.g. searchwp-4.6.1.zip.
+    # Package filenames may carry a version suffix, e.g. updraftplus.2.26.6.zip.
     case "${base}" in
       "${folder}"[-._]*) return 0 ;;
     esac

@@ -177,7 +177,7 @@ Current first-pass header contract:
   - site title
 - stack search integration expected through the theme hook:
   - `mrn_base_stack_header_search`
-- current default implementation uses a SearchWP-friendly search form rather than the old starter-theme bare search pattern
+- current default implementation uses a native WordPress search form, progressively enhanced by Relevanssi when active, rather than the old starter-theme bare search pattern
 
 Current business logo variants available in `Business Information`:
 

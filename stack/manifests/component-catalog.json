@@ -107,7 +107,7 @@
     {
       "slug": "mrn-environment-runtime",
       "name": "MRN Environment Runtime",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "runtime_type": "mu-component",
       "classification": "platform",
       "lifecycle": "supported",
@@ -331,7 +331,7 @@
     {
       "slug": "mrn-config-helper",
       "name": "MRN Config Helper",
-      "version": "0.1.55",
+      "version": "0.1.56",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
       "lifecycle": "supported",
@@ -539,31 +539,17 @@
       "purpose": "Expands the classic menu builder so hierarchical taxonomy panels render complete parent/child trees for supported terms."
     },
     {
-      "slug": "searchwp-editor-performance",
-      "name": "MRN SearchWP Editor Performance",
-      "version": "1.0.7",
-      "runtime_type": "standard-plugin",
-      "classification": "development-adapter",
-      "lifecycle": "supported-development",
-      "current_distribution": "standard-bootstrap",
-      "target_tier": "development-only",
-      "source": {"repository": "searchwp-editor-performance", "path": "/Users/khofmeyer/Development/MRN-plugins/searchwp-editor-performance", "state": "canonical-standalone"},
-      "dependencies": {"hard": ["SearchWP for runtime effect"], "soft": ["local/development environment"], "release_group": "development-tools"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": ["SearchWP"]},
-      "purpose": "Suppresses expensive SearchWP editor and indexing behavior while SearchWP remains available for frontend search during development."
-    },
-    {
       "slug": "mrn-database-retention",
       "name": "MRN Database Retention",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "runtime_type": "standard-plugin",
       "classification": "maintenance-integration",
       "lifecycle": "supported-review",
       "current_distribution": "standard-bootstrap",
       "target_tier": "maintenance-only",
       "source": {"repository": "mrn-database-retention", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["MainWP", "Action Scheduler", "SearchWP", "Defender"], "release_group": null},
-      "data": {"options": ["retention report and lock state"], "tables": ["operates on allowlisted third-party tables; owns none"], "cron": ["four retention/maintenance hooks"], "routes": ["mrn-db-retention WP-CLI command"], "external_services": ["MainWP", "SearchWP", "Defender", "Action Scheduler"]},
+      "dependencies": {"hard": ["WordPress"], "soft": ["MainWP", "Action Scheduler", "Defender"], "release_group": null},
+      "data": {"options": ["retention report and lock state"], "tables": ["operates on allowlisted third-party tables; owns none"], "cron": ["four retention/maintenance hooks"], "routes": ["mrn-db-retention WP-CLI command"], "external_services": ["MainWP", "Defender", "Action Scheduler"]},
       "purpose": "Applies explicitly configured retention to supported third-party operational data."
     },
     {

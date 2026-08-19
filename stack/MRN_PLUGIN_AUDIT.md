@@ -64,7 +64,6 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-seo-helper` | MRN SEO Helper | 0.3.4 | <https://github.com/mrnwebdesigns/mrn-seo-helper> | No hard stack requirement; ACF/SmartCrawl integrations are optional feature paths and admin/data-only announcements are excluded. |
 | `mrn-template-inspector` | MRN Template Inspector | 0.2.7 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; local development tool. |
 | `mrn-universal-sticky-bar` | MRN Universal Sticky Bar | 1.1.3 | <https://github.com/mrnwebdesigns/mrn-universal-sticky-bar> | No hard stack requirement; Classic Editor screens expected. |
-| `searchwp-editor-performance` | MRN SearchWP Editor Performance | 1.0.7 | <https://github.com/mrnwebdesigns/searchwp-editor-performance> | Canonical standalone development adapter; SearchWP is required for runtime effect. |
 
 ## MU Plugins
 

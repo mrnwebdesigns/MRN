@@ -317,8 +317,8 @@ Header logo priority:
 Header search contract:
 
 - theme hook: `mrn_base_stack_header_search`
-- current default implementation is a SearchWP-friendly search form
-- this is intentionally not the old starter-theme bare search fallback
+- current default implementation is a native WordPress search form, enhanced by Relevanssi via the standard `get_search_form` filter when active
+- the form renders unconditionally, so search never fully breaks when a search-relevance plugin is missing or misconfigured
 
 ### Footer
 
@@ -453,10 +453,9 @@ Important QA note:
 
 Current search stack:
 
-- SearchWP
-- SearchWP Live Ajax Search
+- Relevanssi (Free edition; no license/activation required)
 
-The header now has a SearchWP-friendly baseline implementation, but this area is still a valid place for future refinement if the team wants a stronger branded/modal search experience.
+The search form renders as native WordPress markup unconditionally, with Relevanssi enhancing relevance via the standard `get_search_form` filter when active — search is never fully broken by a missing/misconfigured search plugin. This area is still a valid place for future refinement if the team wants a stronger branded/modal search experience; Relevanssi Free has no built-in ajax/live search, so that would need a small custom ajax layer.
 
 ## Plugin Set
 
@@ -507,7 +506,7 @@ If a site should receive the same fields during bootstrap, those fields must be 
 - theme/layout class contracts emitted by the builder
 - Site Styles tokens
 - source-controlled header/footer/business information helpers
-- SearchWP-friendly header search baseline
+- native header search baseline, progressively enhanced by Relevanssi when active
 - reusable block data coming through the theme/reusable rendering system
 
 Do not assume:
@@ -531,7 +530,7 @@ Do not assume:
 - header/footer toggles behave correctly
 - business information renders correctly
 - social icons render correctly for both media and Font Awesome sources
-- SearchWP header search works on the site
+- header search works on the site (native results with Relevanssi inactive, ranked results with it active)
 - schema output reviewed for duplication/conflict
 - standard layouts tested responsively
 - accent/background behavior tested where used

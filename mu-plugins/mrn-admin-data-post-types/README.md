@@ -100,9 +100,9 @@ The base theme (`mrn-base-stack`) is the first adopter:
 the resolver and falls back to `get_permalink()`, used by
 `template-parts/content-search.php` and the search-context branch of
 `mrn_base_stack_post_thumbnail()`. Every on-site search result — whether
-matched by native WP search or a SearchWP-seeded form (which submits back to
-this same search results page) — renders through that one template, so fixing
-the link there covers both without assuming which engine matched the post.
+matched by native WP search or Relevanssi-enhanced relevance (submitting back
+to this same search results page) — renders through that one template, so
+fixing the link there covers both without assuming which engine matched the post.
 
 ## Current stack adopters
 

@@ -35,8 +35,9 @@ Scope: non-custom plugins and package zips referenced by `stack/manifests/plugin
 | HappyFiles Pro | `happyfiles-pro.zip` | 1.9.1 | not confirmed; vendor changelog is dynamic/account-gated | Unchanged at 1.9.1. No license mapping exists and its licensing model is unconfirmed. |
 | Post Duplicator | `post-duplicator` slug | latest at install | 3.0.15 | Current via WordPress.org. |
 | Post Types Order | `post-types-order` slug | latest at install | 2.4.8 | Current via WordPress.org. |
-| SearchWP | `searchwp-4.6.1.zip` | 4.6.1 | 4.6.1 | Refreshed 2026-08-19. Manifest reference is version-pinned by filename. |
-| SearchWP Live Ajax Search | `searchwp-live-ajax-search` slug | latest at install | 1.8.7 | Current via WordPress.org. |
+| SearchWP | removed from stack manifest | 4.6.1 legacy package | 4.6.1 | Removed 2026-08-19; replaced stack-wide by Relevanssi. Package retained on the stack manager, unreferenced. |
+| SearchWP Live Ajax Search | removed from stack manifest | n/a | n/a | Removed 2026-08-19 with SearchWP core. |
+| Relevanssi | `relevanssi` slug | latest at install | not checked | Added 2026-08-19. Free edition; no license mapping needed. Replaces SearchWP stack-wide. |
 | SEOPress | `wp-seopress` slug | latest at install | not checked | New preferred stack SEO provider installed from WordPress.org. |
 | SEOPress Pro | `wp-seopress-pro-10-1-1.zip` | 10.1.1 | 10.1.1 | Added from Downloads. |
 | Advanced Editor Tools | `tinymce-advanced` slug | latest at install | 5.9.2 | Current via WordPress.org. |

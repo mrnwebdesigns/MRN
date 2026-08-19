@@ -71,10 +71,9 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | Slug | Version | Current distribution | Target tier | Responsibility |
 | --- | ---: | --- | --- | --- |
 | `mrn-template-inspector` | 0.2.7 | Standard bootstrap | Development only | Template and request-context inspection. |
-| `searchwp-editor-performance` | 1.0.7 | Standard bootstrap | Development only | Keeps development SearchWP frontend search available while suppressing expensive editor and indexing behavior. |
 | `mrn-dummy-content` | 0.3.0 | Catalog only | Development only | Development content fixtures. |
 | `mrn-comment-management` | 1.1.7 | Standard bootstrap | Maintenance only | Explicit comment audit and deletion. |
-| `mrn-database-retention` | 1.0.0 | Standard bootstrap | Maintenance only | Allowlisted third-party operational-data retention. |
+| `mrn-database-retention` | 1.1.0 | Standard bootstrap | Maintenance only | Allowlisted third-party operational-data retention. |
 | `mrn-layout-import-export` | 0.1.2 | Standard bootstrap | Maintenance only | ACF builder layout migration. |
 
 ## Review Queue
@@ -94,15 +93,15 @@ No disposition in this section authorizes a code move, manifest change, deletion
 | `mrn-duplicate-enhance` | 1.1.1 | Archived | Archived 2026-08-19. Optional Post Duplicator admin-bar adapter; removed from the bootstrap manifest. Source retained at `plugins/mrn-duplicate-enhance`. |
 | `mrn-license-vault` | 0.2.5 | Archived | Archived 2026-08-19. Credential-handling admin tool with no canonical source; only the packaged zip on the stack manager exists. Zip retained, not deleted. |
 | `mrn-unified-exporter` | 1.2.5 | Archived | Archived 2026-08-19. Settings-export maintenance tool with no canonical source; only the packaged zip on the stack manager exists. Zip retained, not deleted. |
+| `searchwp-editor-performance` | 1.0.7 | Archived | Archived 2026-08-19. SearchWP was removed stack-wide in favor of Relevanssi, which indexes synchronously on save with no persistent background indexer/cron for this plugin to protect against. Source retained at the independent `mrnwebdesigns/searchwp-editor-performance` repository, marked retired; removed from the bootstrap manifest. |
 
 ## Canonical Source Decisions
 
 - `mrn-mega-menu`: canonical in `MRN/plugins/mrn-mega-menu`; the unversioned, older `MRN-plugins` duplicate was retired without changing installed copies.
 - `mrn-sendgrid-provisioning`: canonical in the independent `mrnwebdesigns/mrn-sendgrid-provisioning` repository, symlinked into the stack the same way as `mrn-config-helper`. SendGrid Subuser/domain-auth/site-key provisioning moved here from `mrn-config-helper` on 2026-08-19; `mrn-config-helper` keeps only a settings-page link and the public `mrn_config_helper_get_site_sender_name()`/`_email()` wrappers this plugin consumes.
-- `searchwp-editor-performance`: canonical in the independent `mrnwebdesigns/searchwp-editor-performance` repository; the stack records and packages its release but does not own a duplicate source tree.
 - `mrn-universal-sticky-bar`: canonical in its independent repository and required by the Stack profile. It remains a standard plugin because it is independently useful off-stack; the Stack manifest and rollout contract enforce installation and shared-helper compatibility.
 - `MRN-disable-core-auto-updates`: sunset approved on 2026-08-14. It is not part of the target MRN product catalog; no existing-site action is authorized by this decision.
 
 ## Current Bootstrap Warning
 
-The existing [`manifests/plugins.txt`](./manifests/plugins.txt) now supports profile-scoped entries such as `|stack` and `|plain`, which keeps selected optional components out of the plain-profile bootstrap. Remaining optional and maintenance components still require feature-selection support in the hosting platform before they can be removed safely from the shared bundle input. `searchwp-editor-performance` remains a deliberate development dependency while SearchWP frontend search is enabled in development.
+The existing [`manifests/plugins.txt`](./manifests/plugins.txt) now supports profile-scoped entries such as `|stack` and `|plain`, which keeps selected optional components out of the plain-profile bootstrap. Remaining optional and maintenance components still require feature-selection support in the hosting platform before they can be removed safely from the shared bundle input.

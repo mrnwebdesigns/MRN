@@ -1001,94 +1001,6 @@ echo "Applied and verified WPForms license key.\n";
 '
   }
 
-  apply_searchwp_license_mapping() {
-    local raw_value="$1"
-    local value_mode="${2:-text}"
-    local payload_b64
-
-    payload_b64="$(printf '%s' "${raw_value}" | base64 | tr -d '\n')"
-    run_wp eval '
-$raw = base64_decode("'"${payload_b64}"'", true);
-if ($raw === false) {
-    fwrite(STDERR, "Invalid SearchWP license payload.\n");
-    exit(1);
-}
-
-$mode = "'"${value_mode}"'";
-$key = "";
-if ($mode === "json") {
-    $decoded = json_decode($raw, true);
-    if (!is_array($decoded)) {
-        fwrite(STDERR, "SearchWP license JSON payload is invalid.\n");
-        exit(1);
-    }
-    $candidate = $decoded["key"] ?? ($decoded["license_key"] ?? "");
-    if (is_string($candidate)) {
-        $key = trim($candidate);
-    }
-} else {
-    $key = trim($raw);
-}
-
-if ($key === "") {
-    fwrite(STDERR, "SearchWP license key is empty.\n");
-    exit(1);
-}
-
-if (!defined("SEARCHWP_PREFIX")) {
-    $bootstrap = WP_PLUGIN_DIR . "/searchwp/bootstrap.php";
-    if (is_file($bootstrap)) {
-        require_once $bootstrap;
-    }
-}
-if (!defined("SEARCHWP_PREFIX")) {
-    define("SEARCHWP_PREFIX", "searchwp_");
-}
-
-// Persist raw key to support SearchWP upgrader fallback.
-update_option(SEARCHWP_PREFIX . "license_key", $key);
-
-if (!class_exists("\\SearchWP\\Settings")) {
-    $settingsFile = WP_PLUGIN_DIR . "/searchwp/includes/Settings.php";
-    if (is_file($settingsFile)) {
-        require_once $settingsFile;
-    }
-}
-if (!class_exists("\\SearchWP\\License")) {
-    $licenseFile = WP_PLUGIN_DIR . "/searchwp/includes/License.php";
-    if (is_file($licenseFile)) {
-        require_once $licenseFile;
-    }
-}
-
-if (!class_exists("\\SearchWP\\License")) {
-    fwrite(STDERR, "SearchWP license class not available.\n");
-    exit(1);
-}
-
-$response = \SearchWP\License::activate($key);
-if (!is_array($response) || !($response["success"] ?? false)) {
-    // Keep a minimal payload so key is visible in settings even if activation endpoint fails.
-    update_option(SEARCHWP_PREFIX . "license", [
-        "key" => $key,
-        "status" => "invalid",
-    ]);
-    $msg = "SearchWP license activation failed.";
-    if (is_array($response) && isset($response["data"])) {
-        if (is_string($response["data"])) {
-            $msg .= " " . $response["data"];
-        } elseif (is_object($response["data"]) && isset($response["data"]->error)) {
-            $msg .= " " . (string) $response["data"]->error;
-        }
-    }
-    fwrite(STDERR, $msg . "\n");
-    exit(1);
-}
-
-echo "Applied and activated SearchWP license key.\n";
-	'
-  }
-
   apply_seopress_license_mapping() {
     local raw_value="$1"
     local value_mode="${2:-text}"
@@ -1433,20 +1345,6 @@ echo "Applied AME license payload for {$siteUrl}\n";
       fi
       if ! apply_updraft_premium_mapping "${value}" "${updraft_mode}" >/dev/null; then
         add_license_failure "Failed to apply/verify Updraft Premium mapping for ${plugin_basename}."
-        continue
-      fi
-      echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
-      continue
-    fi
-
-    if [[ ( "${plugin_basename}" == "searchwp/searchwp.php" || "${plugin_basename}" == "searchwp/index.php" ) && ( "${option_name}" == "searchwp_license_key" || "${option_name}" == "searchwp_license" ) ]]; then
-      local searchwp_mode
-      searchwp_mode="text"
-      if [[ "${value_ref}" == json:* || "${value_ref}" == filejson:* || "${value_ref}" == secretfilejson:* ]]; then
-        searchwp_mode="json"
-      fi
-      if ! apply_searchwp_license_mapping "${value}" "${searchwp_mode}" >/dev/null; then
-        add_license_failure "Failed to apply/activate SearchWP license mapping for ${plugin_basename}."
         continue
       fi
       echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
@@ -1820,11 +1718,6 @@ reconcile_development_environment_policy() {
     fluent-smtp
   )
   local -a disabled_cron_hooks=(
-    searchwp_indexer_cron
-    searchwp_index_controller_cron
-    searchwp_maintenance
-    searchwp_usage_tracking
-    searchwp_email_summaries_cron
     wds_sitemap_validity_check
     wds_cron_download_geodb
     wds_daily_moz_data_hook
@@ -1848,18 +1741,11 @@ reconcile_development_environment_policy() {
     seopress_site_audit_watchdog_cron
   )
 
-  # Keep SearchWP forms and frontend search active for stack development while
-  # pausing index maintenance and scheduled provider work.
-  if ! run_wp config set MRN_SEARCHWP_POLICY frontend_only --type=constant; then
-    add_warning "Failed to set MRN_SEARCHWP_POLICY=frontend_only in wp-config.php"
-  fi
-  if run_wp plugin is-active searchwp >/dev/null 2>&1; then
-    if ! run_wp option update searchwp_indexer_paused 1 >/dev/null; then
-      add_warning "Failed to pause SearchWP indexing for the development frontend-only policy."
-    fi
-    if ! run_wp option update searchwp_disable_email_summaries 1 >/dev/null; then
-      add_warning "Failed to disable SearchWP email summaries for the development frontend-only policy."
-    fi
+  # Relevanssi indexes synchronously on save with no persistent background
+  # indexer/cron, so stack development needs no indexer-pause step the way
+  # SearchWP did; the policy constant is a simple active/inactive contract.
+  if ! run_wp config set MRN_RELEVANSSI_POLICY configured --type=constant; then
+    add_warning "Failed to set MRN_RELEVANSSI_POLICY=configured in wp-config.php"
   fi
   if ! run_wp config set MRN_SEO_INDEXING_POLICY disabled --type=constant; then
     add_warning "Failed to set MRN_SEO_INDEXING_POLICY=disabled in wp-config.php"
@@ -1882,8 +1768,8 @@ reconcile_development_environment_policy() {
   done
 
   for hook in "${disabled_cron_hooks[@]}"; do
-    # SearchWP (and other still-active plugins) re-schedule their own cron
-    # hooks from init/constructor code on every normal WordPress bootstrap, so
+    # Still-active plugins re-schedule their own cron hooks from
+    # init/constructor code on every normal WordPress bootstrap, so
     # a delete followed by a plugin-loaded verification call can observe the
     # hook already re-armed. Skip loading plugins/themes for both the delete
     # and the verification so the cron option itself is the only thing touched.

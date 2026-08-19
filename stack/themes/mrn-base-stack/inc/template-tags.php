@@ -343,9 +343,9 @@ if ( ! function_exists( 'mrn_base_stack_get_search_result_permalink' ) ) :
 	 * configured search-result destination page, this resolves to that page
 	 * instead, since the CPT itself has no public single URL. Every search
 	 * result on this site funnels through this same template regardless of
-	 * which engine matched it (native WP search or a SearchWP-seeded form,
-	 * which submits back to this same search results page), so this one
-	 * helper is the engine-agnostic fix point.
+	 * which engine matched it (native WP search or Relevanssi-enhanced
+	 * relevance, submitting back to this same search results page), so this
+	 * one helper is the engine-agnostic fix point.
 	 *
 	 * @param WP_Post|int|null $post Post object or ID. Defaults to the current post.
 	 * @return string
