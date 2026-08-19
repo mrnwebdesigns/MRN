@@ -45,7 +45,6 @@ wp-seopress
 /home/mrndev-stack-manager/stack/packages/wp-seopress-pro-10-1-1.zip
 /home/mrndev-stack-manager/stack/packages/1320813_wpmu-dev-dashboard-5.0.0.zip
 /home/mrndev-stack-manager/stack/packages/mrn-database-retention.zip
-/home/mrndev-stack-manager/stack/packages/mrn-duplicate-enhance.zip
 /home/mrndev-stack-manager/stack/packages/mrn-hierarchical-menu-taxonomies.zip
 /home/mrndev-stack-manager/stack/packages/mrn-layout-import-export.zip
 /home/mrndev-stack-manager/stack/packages/mrn-tokens.zip

@@ -48,7 +48,6 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-acf-character-count` | 1.1.8 | Standard bootstrap | Optional integration | ACF editor character counts. |
 | `mrn-acf-focal-point` | 1.1.2 | Standard bootstrap | Optional integration | ACF image focal-point metadata and rendering. |
 | `mrn-cookie-consent` | 1.1.40 | Standard bootstrap | Optional integration | Silktide and Google Consent Mode. |
-| `mrn-duplicate-enhance` | 1.1.1 | Standard bootstrap | Optional integration | Optional Post Duplicator admin-bar workflow adapter. |
 | `mrn-fontawesome-profile-manager` | 0.5.0 | Standard bootstrap | Optional integration | Font Awesome profiles and local assets. |
 | `mrn-google-fonts` | 1.0.7 | Standard bootstrap | Optional integration | Google/local fonts and Site Styles. |
 | `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Standard bootstrap | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories. |
@@ -64,6 +63,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-mainwp-operations-api` | 0.3.0 | Scoped MainWP operations for backups, package installation, and font management. |
 | `mrn-wp-control` | 1.1.1 | Restricted MainWP account provisioning through WP-CLI. |
 | `mrn-wp-control-table-exporter` | 1.4.1 | CSV export for supported WP Control/MainWP tables. |
+| `mrn-mainwp-mcp` | 0.1.0 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |
 
 ## Development and Maintenance
 
@@ -90,6 +90,7 @@ No disposition in this section authorizes a code move, manifest change, deletion
 | Slug | Version | Disposition | Evidence |
 | --- | ---: | --- | --- |
 | `mrn-editor-ui-css` | 1.0.8 | Archived | Superseded by `mrn-admin-ui-css`; absent from the MU loader and runtime sync source. |
+| `mrn-duplicate-enhance` | 1.1.1 | Archived | Archived 2026-08-19. Optional Post Duplicator admin-bar adapter; removed from the bootstrap manifest. Source retained at `plugins/mrn-duplicate-enhance`. |
 | `mrn-license-vault` | 0.2.5 | Archived | Archived 2026-08-19. Credential-handling admin tool with no canonical source; only the packaged zip on the stack manager exists. Zip retained, not deleted. |
 | `mrn-unified-exporter` | 1.2.5 | Archived | Archived 2026-08-19. Settings-export maintenance tool with no canonical source; only the packaged zip on the stack manager exists. Zip retained, not deleted. |
 

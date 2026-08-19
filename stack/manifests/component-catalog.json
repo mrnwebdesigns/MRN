@@ -16,7 +16,8 @@
     "standard-bootstrap": "Currently listed in stack/manifests/plugins.txt and activated by new-site bootstrap.",
     "mu-loader": "Currently loaded by the MRN MU loader.",
     "mu-source-only": "Source exists in the MU tree but is not in the current loader allowlist.",
-    "catalog-only": "Available source is cataloged but not currently installed by the stack bootstrap."
+    "catalog-only": "Available source is cataloged but not currently installed by the stack bootstrap.",
+    "tooling-only": "Agent or operator tooling that is never installed on a WordPress site."
   },
   "components": [
     {
@@ -221,13 +222,13 @@
       "version": "1.1.1",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
-      "lifecycle": "supported-optional",
-      "current_distribution": "standard-bootstrap",
-      "target_tier": "optional-integration",
-      "source": {"repository": "MRN", "path": "plugins/mrn-duplicate-enhance", "state": "confirmed"},
+      "lifecycle": "archived",
+      "current_distribution": "archived",
+      "target_tier": "archived",
+      "source": {"repository": "MRN", "path": "plugins/mrn-duplicate-enhance", "state": "archived-source-retained"},
       "dependencies": {"hard": ["Post Duplicator"], "soft": ["WordPress admin bar"], "release_group": null},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
-      "purpose": "Adds an optional front-end admin-bar shortcut to the Post Duplicator editor workflow."
+      "purpose": "Archived on 2026-08-19. Added an optional front-end admin-bar shortcut to the Post Duplicator editor workflow. Source is retained at plugins/mrn-duplicate-enhance."
     },
     {
       "slug": "mrn-editor-ui-css",
@@ -690,6 +691,20 @@
       "dependencies": {"hard": ["WordPress admin"], "soft": ["mrn-editor-tools", "Admin Menu Editor Pro"], "release_group": null},
       "data": {"options": [], "tables": [], "cron": [], "routes": ["privileged export actions"], "external_services": []},
       "purpose": "Archived on 2026-08-19. Exported Editor Enhancements and Admin Menu Editor Pro settings in one run. No canonical source exists; the only artifact is the packaged zip retained on the stack manager."
+    },
+    {
+      "slug": "mrn-mainwp-mcp",
+      "name": "MRN MainWP MCP",
+      "version": "0.1.0",
+      "runtime_type": "node-tooling",
+      "classification": "operations-tooling",
+      "lifecycle": "supported",
+      "current_distribution": "tooling-only",
+      "target_tier": "dashboard-only",
+      "source": {"repository": "mrn-mainwp-mcp", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-mcp", "state": "confirmed"},
+      "dependencies": {"hard": ["Node.js", "MainWP Dashboard"], "soft": ["mainwp_onboard.py", "WordPress Abilities API", "Production Hub"], "release_group": null},
+      "data": {"options": [], "tables": [], "cron": [], "routes": ["MCP tool surface"], "external_services": ["MainWP Dashboard"]},
+      "purpose": "Portable Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. It is agent tooling for the MainWP/management runtime and is never installed on a WordPress site."
     }
   ],
   "external_unknowns": [
