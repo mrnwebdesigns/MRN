@@ -23,6 +23,8 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-shared-assets` | 0.2.0 | MU loader | Platform required | Provides shared asset and icon interfaces. |
 | `mrn-site-colors` | 0.1.38 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
 | `mrn-updraft-local-retention` | 0.3.0 | MU loader | Platform required | Enforces shared backup schedule and retention policy. |
+| `mrn-schema-bridge` | 0.4.2 | MU loader | Platform required | SEOPress (preferred), legacy SmartCrawl, theme, and schema normalization. |
+| `mrn-active-style-guide` | 0.1.6 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
 | `mrn-config-helper` | 0.1.54 | Standard bootstrap | Platform required | Shared site configuration shell, breadcrumb runtime, and launch/admin integrations. |
 | `mrn-universal-sticky-bar` | 1.1.8 | Standard bootstrap | Platform required | Provides the shared settings/editor action bar; independently released for non-Stack use. |
 
@@ -33,12 +35,11 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `background-video-popout-disabler` | 1.0.1 | Standard bootstrap | Optional shared | Front-end helper for stack-profile background-video markup; suppresses browser picture-in-picture/pop-out controls on likely background videos. |
 | `mrn-ai-assist` | 2.0.13 | Standard bootstrap | Optional shared | Queued AI-assisted content, SEO, and media-alt workflows. |
 | `mrn-announcements` | 1.6.2 | Standard bootstrap | Optional shared | Scheduled and targeted announcement bars and modals. |
-| `mrn-contextual-content-editor` | 0.4.10 | Standard bootstrap | Optional shared | Contextual logged-in content-editing links. |
 | `mrn-editor-tools` | 1.8.25 | Standard bootstrap | Optional shared | Classic Editor, TinyMCE, and ACF WYSIWYG enhancements. |
 | `mrn-media-bulk-tools` | 0.12.1 | Standard bootstrap | Optional shared | Media audit, usage indexing, and bulk maintenance. |
 | `mrn-mega-menu` | 0.16.16 | Standard bootstrap | Optional shared | Accessible content-rich mega-menu administration and rendering. |
 | `mrn-reusable-block-library` | 0.1.28 | Standard bootstrap | Optional shared | Shared reusable block content types and render helpers for stack-profile sites that need reusable content workflows. |
-| `mrn-tokens` | 0.1.3 | Catalog only | Optional shared | Reusable content-token registry, shortcode, and authenticated REST API. |
+| `mrn-tokens` | 0.1.3 | Standard bootstrap | Optional shared | Reusable content-token registry, shortcode, and authenticated REST API. |
 
 ## Optional Integration Adapters
 
@@ -47,13 +48,12 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-acf-character-count` | 1.1.8 | Standard bootstrap | Optional integration | ACF editor character counts. |
 | `mrn-acf-focal-point` | 1.1.2 | Standard bootstrap | Optional integration | ACF image focal-point metadata and rendering. |
 | `mrn-cookie-consent` | 1.1.40 | Standard bootstrap | Optional integration | Silktide and Google Consent Mode. |
-| `mrn-duplicate-enhance` | 1.1.1 | Catalog only | Optional integration | Optional Post Duplicator admin-bar workflow adapter. |
+| `mrn-duplicate-enhance` | 1.1.1 | Standard bootstrap | Optional integration | Optional Post Duplicator admin-bar workflow adapter. |
 | `mrn-fontawesome-profile-manager` | 0.5.0 | Standard bootstrap | Optional integration | Font Awesome profiles and local assets. |
 | `mrn-google-fonts` | 1.0.7 | Standard bootstrap | Optional integration | Google/local fonts and Site Styles. |
-| `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Catalog only | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories. |
+| `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Standard bootstrap | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories. |
 | `mrn-gtm-injector` | 1.0.13 | Standard bootstrap | Optional integration | Google Tag Manager. |
 | `mrn-recaptcha-enterprise-manager` | 0.1.1 | Standard bootstrap | Optional integration | reCAPTCHA Enterprise and WPForms. |
-| `mrn-schema-bridge` | 0.4.2 | MU loader | Optional integration | SEOPress (preferred), legacy SmartCrawl, theme, and schema normalization. |
 | `mrn-seo-helper` | 0.4.0 | Standard bootstrap | Optional integration | ACF SEO fields and supported SEO providers. |
 | `mrn-pre-consent-update-backup` | 1.0.12 | Catalog only | Optional integration | UpdraftPlus/update-consent workflow. |
 
@@ -69,13 +69,12 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 
 | Slug | Version | Current distribution | Target tier | Responsibility |
 | --- | ---: | --- | --- | --- |
-| `mrn-active-style-guide` | 0.1.6 | MU loader | Development only | Logged-in design-system reference and diagnostics. |
 | `mrn-template-inspector` | 0.2.7 | Standard bootstrap | Development only | Template and request-context inspection. |
 | `searchwp-editor-performance` | 1.0.7 | Standard bootstrap | Development only | Keeps development SearchWP frontend search available while suppressing expensive editor and indexing behavior. |
 | `mrn-dummy-content` | 0.3.0 | Catalog only | Development only | Development content fixtures. |
 | `mrn-comment-management` | 1.1.7 | Standard bootstrap | Maintenance only | Explicit comment audit and deletion. |
-| `mrn-database-retention` | 1.0.0 | Catalog only | Maintenance only | Allowlisted third-party operational-data retention. |
-| `mrn-layout-import-export` | 0.1.2 | Catalog only | Maintenance only | ACF builder layout migration. |
+| `mrn-database-retention` | 1.0.0 | Standard bootstrap | Maintenance only | Allowlisted third-party operational-data retention. |
+| `mrn-layout-import-export` | 0.1.2 | Standard bootstrap | Maintenance only | ACF builder layout migration. |
 
 ## Review Queue
 
@@ -83,6 +82,7 @@ No disposition in this section authorizes a code move, manifest change, deletion
 
 | Slug | Version | Current state | Decision needed |
 | --- | ---: | --- | --- |
+| `mrn-contextual-content-editor` | 0.4.10 | Catalog only | Removed from the bootstrap manifest on 2026-08-19 because it is not production ready. Re-entry requires a production-readiness review. |
 | `mrn-google-reviews` | 1.0.0 | Incubator/catalog only; source is uncommitted | Held out of the stack on 2026-08-17 because the plugin is incomplete. Completion still requires committed source, secret-management, QA, and release-readiness review. |
 
 ## Archived Components
@@ -90,6 +90,8 @@ No disposition in this section authorizes a code move, manifest change, deletion
 | Slug | Version | Disposition | Evidence |
 | --- | ---: | --- | --- |
 | `mrn-editor-ui-css` | 1.0.8 | Archived | Superseded by `mrn-admin-ui-css`; absent from the MU loader and runtime sync source. |
+| `mrn-license-vault` | 0.2.5 | Archived | Archived 2026-08-19. Credential-handling admin tool with no canonical source; only the packaged zip on the stack manager exists. Zip retained, not deleted. |
+| `mrn-unified-exporter` | 1.2.5 | Archived | Archived 2026-08-19. Settings-export maintenance tool with no canonical source; only the packaged zip on the stack manager exists. Zip retained, not deleted. |
 
 ## Canonical Source Decisions
 

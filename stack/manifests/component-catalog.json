@@ -195,7 +195,7 @@
       "classification": "integration-adapter",
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
-      "target_tier": "optional-integration",
+      "target_tier": "platform-required",
       "source": {"repository": "MRN", "path": "mu-plugins/mrn-schema-bridge", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress"], "soft": ["SmartCrawl", "SEOPress", "MRN base theme", "mrn-seo-helper"], "release_group": "seo-provider-contract"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": ["SmartCrawl", "SEOPress"]},
@@ -209,7 +209,7 @@
       "classification": "development-tool",
       "lifecycle": "supported-development",
       "current_distribution": "mu-loader",
-      "target_tier": "development-only",
+      "target_tier": "platform-required",
       "source": {"repository": "MRN", "path": "mu-plugins/mrn-active-style-guide", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress"], "soft": ["MRN Site Styles", "MRN base theme"], "release_group": "development-tools"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
@@ -222,7 +222,7 @@
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported-optional",
-      "current_distribution": "catalog-only",
+      "current_distribution": "standard-bootstrap",
       "target_tier": "optional-integration",
       "source": {"repository": "MRN", "path": "plugins/mrn-duplicate-enhance", "state": "confirmed"},
       "dependencies": {"hard": ["Post Duplicator"], "soft": ["WordPress admin bar"], "release_group": null},
@@ -243,7 +243,6 @@
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
       "purpose": "Archived legacy admin CSS compatibility loader superseded by MRN Admin UI CSS."
     },
-
     {
       "slug": "background-video-popout-disabler",
       "name": "MRN Background Video Pop-Out Disabler",
@@ -348,13 +347,13 @@
       "version": "0.4.10",
       "runtime_type": "standard-plugin",
       "classification": "shared-feature",
-      "lifecycle": "supported",
-      "current_distribution": "standard-bootstrap",
+      "lifecycle": "review",
+      "current_distribution": "catalog-only",
       "target_tier": "optional-shared",
       "source": {"repository": "MRN", "path": "plugins/mrn-contextual-content-editor", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress"], "soft": ["Classic Editor", "ACF"], "release_group": "editor-content-contract"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
-      "purpose": "Adds contextual logged-in links to the appropriate content editing surface."
+      "purpose": "Adds contextual logged-in links to the appropriate content editing surface; held out of the stack pending production readiness."
     },
     {
       "slug": "mrn-cookie-consent",
@@ -510,7 +509,6 @@
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
       "purpose": "Provides the required Stack settings/editor action-bar implementation and compatibility API while retaining an independently deployable standalone fallback."
     },
-
     {
       "slug": "mrn-hierarchical-menu-taxonomies",
       "name": "MRN Hierarchical Menu Taxonomies",
@@ -518,7 +516,7 @@
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
-      "current_distribution": "catalog-only",
+      "current_distribution": "standard-bootstrap",
       "target_tier": "optional-integration",
       "source": {"repository": "MRN", "path": "plugins/mrn-hierarchical-menu-taxonomies", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress menus"], "soft": ["WooCommerce product categories", "MRN Mega Menu"], "release_group": "navigation-contract"},
@@ -546,7 +544,7 @@
       "runtime_type": "standard-plugin",
       "classification": "maintenance-integration",
       "lifecycle": "supported-review",
-      "current_distribution": "catalog-only",
+      "current_distribution": "standard-bootstrap",
       "target_tier": "maintenance-only",
       "source": {"repository": "mrn-database-retention", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress"], "soft": ["MainWP", "Action Scheduler", "SearchWP", "Defender"], "release_group": null},
@@ -588,7 +586,7 @@
       "runtime_type": "standard-plugin",
       "classification": "migration-tool",
       "lifecycle": "supported",
-      "current_distribution": "catalog-only",
+      "current_distribution": "standard-bootstrap",
       "target_tier": "maintenance-only",
       "source": {"repository": "mrn-layout-import-export", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-layout-import-export", "state": "confirmed"},
       "dependencies": {"hard": ["ACF builder layouts"], "soft": ["MRN base theme content model"], "release_group": null},
@@ -630,7 +628,7 @@
       "runtime_type": "standard-plugin",
       "classification": "shared-feature",
       "lifecycle": "supported",
-      "current_distribution": "catalog-only",
+      "current_distribution": "standard-bootstrap",
       "target_tier": "optional-shared",
       "source": {"repository": "mrn-tokens", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-tokens", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress"], "soft": [], "release_group": null},
@@ -664,6 +662,34 @@
       "dependencies": {"hard": ["supported WP Control/MainWP admin tables"], "soft": [], "release_group": "mainwp-operations"},
       "data": {"options": ["mrn_wpcte_settings"], "tables": [], "cron": [], "routes": [], "external_services": ["MainWP/WP Control admin UI"]},
       "purpose": "Adds client-side CSV export to supported management tables."
+    },
+    {
+      "slug": "mrn-license-vault",
+      "name": "License Vault",
+      "version": "0.2.5",
+      "runtime_type": "standard-plugin",
+      "classification": "maintenance-tool",
+      "lifecycle": "archived",
+      "current_distribution": "archived",
+      "target_tier": "archived",
+      "source": {"repository": null, "path": null, "state": "archived-no-source"},
+      "dependencies": {"hard": ["WordPress admin"], "soft": ["licensed third-party plugins"], "release_group": null},
+      "data": {"options": ["vaulted license keys"], "tables": [], "cron": [], "routes": ["privileged license scan/populate/strip actions"], "external_services": []},
+      "purpose": "Archived on 2026-08-19. Scanned, vaulted, populated and stripped plugin license keys from one admin UI. No canonical source exists; the only artifact is the packaged zip retained on the stack manager."
+    },
+    {
+      "slug": "mrn-unified-exporter",
+      "name": "Unified Exporter",
+      "version": "1.2.5",
+      "runtime_type": "standard-plugin",
+      "classification": "maintenance-tool",
+      "lifecycle": "archived",
+      "current_distribution": "archived",
+      "target_tier": "archived",
+      "source": {"repository": null, "path": null, "state": "archived-no-source"},
+      "dependencies": {"hard": ["WordPress admin"], "soft": ["mrn-editor-tools", "Admin Menu Editor Pro"], "release_group": null},
+      "data": {"options": [], "tables": [], "cron": [], "routes": ["privileged export actions"], "external_services": []},
+      "purpose": "Archived on 2026-08-19. Exported Editor Enhancements and Admin Menu Editor Pro settings in one run. No canonical source exists; the only artifact is the packaged zip retained on the stack manager."
     }
   ],
   "external_unknowns": [
