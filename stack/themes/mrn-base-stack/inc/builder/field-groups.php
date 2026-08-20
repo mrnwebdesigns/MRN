@@ -2027,6 +2027,29 @@ function mrn_base_stack_register_acf_field_groups() {
 										),
 									),
 									array(
+										'key'               => 'field_mrn_video_thumbnail',
+										'label'             => 'Thumbnail Image',
+										'name'              => 'video_thumbnail',
+										'aria-label'        => '',
+										'type'              => 'image',
+										'return_format'     => 'id',
+										'preview_size'      => 'medium',
+										'library'           => 'all',
+										'instructions'      => 'Required for Thumbnail + Modal display mode. Shown with a play icon; selecting it opens the video in a lightbox instead of playing inline.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_video_display_mode',
+													'operator' => '==',
+													'value'    => 'modal',
+												),
+											),
+										),
+										'wrapper'           => array(
+											'width' => '50',
+										),
+									),
+									array(
 										'key'        => 'field_mrn_video_config_tab',
 										'label'      => 'Configs',
 										'name'       => '',
@@ -2034,6 +2057,24 @@ function mrn_base_stack_register_acf_field_groups() {
 										'type'       => 'tab',
 										'placement'  => 'top',
 										'endpoint'   => 0,
+									),
+									array(
+										'key'           => 'field_mrn_video_display_mode',
+										'label'         => 'Display Mode',
+										'name'          => 'video_display_mode',
+										'aria-label'    => '',
+										'type'          => 'button_group',
+										'choices'       => array(
+											'inline' => 'Inline',
+											'modal'  => 'Thumbnail + Modal',
+										),
+										'default_value' => 'inline',
+										'layout'        => 'horizontal',
+										'return_format' => 'value',
+										'instructions'  => 'Inline plays the video in place once scrolled into view. Thumbnail + Modal shows a poster image with a play icon that opens the video in a lightbox.',
+										'wrapper'       => array(
+											'width' => '50',
+										),
 									),
 									array(
 										'key'           => 'field_mrn_video_background_color',

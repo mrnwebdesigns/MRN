@@ -4925,6 +4925,55 @@ a.mrn-social-links__link:focus-visible svg {
 	box-shadow: none;
 }
 
+.mrn-video-row__trigger {
+	display: block;
+	width: 100%;
+	height: 100%;
+	position: relative;
+	cursor: pointer;
+}
+
+.mrn-video-row__thumbnail {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.36s ease;
+}
+
+.mrn-video-row__trigger:hover .mrn-video-row__thumbnail,
+.mrn-video-row__trigger:focus-visible .mrn-video-row__thumbnail {
+	transform: scale( 1.03 );
+}
+
+.mrn-video-row__play {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate( -50%, -50% );
+	display: grid;
+	place-items: center;
+	width: 4.5rem;
+	height: 4.5rem;
+	border-radius: 50%;
+	background: rgba( 255, 255, 255, 0.92 );
+	box-shadow: 0 1.25rem 2.5rem rgba( 0, 0, 0, 0.24 );
+	transition: transform 0.28s ease, background 0.28s ease;
+}
+
+.mrn-video-row__trigger:hover .mrn-video-row__play,
+.mrn-video-row__trigger:focus-visible .mrn-video-row__play {
+	transform: translate( -50%, -50% ) scale( 1.08 );
+	background: #fff;
+}
+
+.mrn-video-row__play svg {
+	width: 1.5rem;
+	height: 1.5rem;
+	fill: #0c1016;
+	margin-left: 0.15rem;
+}
+
 /*--------------------------------------------------------------
 # MRN Builder: Logos
 --------------------------------------------------------------*/
