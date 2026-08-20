@@ -650,7 +650,7 @@
 		statValues.forEach( function( valueElement ) {
 			inView( valueElement, function() {
 				animateStatValue( valueElement );
-			}, { margin: '-20% 0px -20% 0px' } );
+			}, { amount: 'all' } );
 		} );
 	}
 
