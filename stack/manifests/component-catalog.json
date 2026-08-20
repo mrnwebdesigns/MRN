@@ -37,15 +37,15 @@
     {
       "slug": "mrn-admin-data-post-types",
       "name": "MRN Admin Data Post Types",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "runtime_type": "mu-component",
       "classification": "platform",
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
       "source": {"repository": "MRN", "path": "mu-plugins/mrn-admin-data-post-types", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress"], "soft": [], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "dependencies": {"hard": ["WordPress"], "soft": ["mrn-config-helper", "mrn-seo-helper"], "release_group": "mrn-platform"},
+      "data": {"options": ["mrn_admin_data_post_types_manual", "mrn_admin_data_post_types_search_destinations"], "tables": [], "cron": [], "routes": [], "external_services": []},
       "purpose": "Applies shared admin/data-only policy to selected post types."
     },
     {

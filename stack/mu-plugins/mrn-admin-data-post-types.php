@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Admin Data Post Types
  * Description: Loads the MRN Admin Data Post Types MU plugin from its subfolder.
- * Version: 0.1.0
+ * Version: 0.2.0
  */
 
 defined( 'ABSPATH' ) || exit;

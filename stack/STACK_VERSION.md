@@ -1,16 +1,17 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.20-backup-policy-dev-schedule`
+- Stack release: `2026.08.20-content-only-cpt-toggle`
 - Release date: `2026-08-20`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.110`
+  - `mrn-base-stack` `1.2.111`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.6`
+  - `mrn-admin-data-post-types` `0.2.0`
   - `mrn-admin-ui-css` `3.2.3`
   - `mrn-shared-assets` `0.1.3`
   - `mrn-editor-lockdown` `1.0.32`

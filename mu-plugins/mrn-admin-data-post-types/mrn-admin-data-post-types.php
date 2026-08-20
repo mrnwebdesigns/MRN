@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Admin Data Post Types
  * Description: Makes selected custom post types admin/data-only without blocking programmatic queries.
- * Version: 0.1.0
+ * Version: 0.2.0
  * Author: MRN
  */
 
