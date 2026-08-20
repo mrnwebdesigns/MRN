@@ -5201,6 +5201,26 @@ a.mrn-social-links__link:focus-visible svg {
 	margin: 0;
 }
 
+.mrn-card-row__content ul {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	list-style: none;
+	margin: 0.75rem 0 0;
+	padding: 0;
+}
+
+.mrn-card-row__content ul li {
+	background: var(--mrn-card-pill-bg, color-mix(in srgb, currentColor 6%, transparent));
+	border: 1px solid var(--mrn-card-pill-border, color-mix(in srgb, currentColor 14%, transparent));
+	border-radius: 999px;
+	display: inline-flex;
+	font-size: 0.8125rem;
+	line-height: 1.3;
+	margin: 0;
+	padding: 0.4rem 0.85rem;
+}
+
 .mrn-stats-row__header {
 	margin-bottom: 0;
 }

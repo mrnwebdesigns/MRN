@@ -450,6 +450,25 @@ Layout templates should not hardcode one-off max-width containers. Instead, they
   - Background color
   - Accent
 
+### Card
+
+- Label, Title field, HTML tag for text field, Subheading
+- Section-level Links repeater
+- Cards repeater (min 1). Each card item:
+  - Card Name
+  - Icon (source + position)
+  - Optional Link (adding a URL makes the whole card surface clickable)
+  - Card Row: a nested flexible-content field (`min:1, max:1`) — exactly one nested builder row per card, chosen from the same layout vocabulary used inside Two Column Split (Text, Basic, CTA, Image Content, Shortcode/Embed, WPForms, Search Form, Video, Reusable Block)
+  - Background Color
+- Configs: Background Color, Section Width, Anchor, Motion, Accent
+- There is no first-class image field or tag/pill sub-repeater on the card item itself. An image belongs inside the nested Card Row (for example a Basic or Image Content row). A short list of feature tags belongs in that same nested row's rich text as a plain bulleted list — see the Card Pill List Rule below — rather than adding a new field.
+
+### Card Pill List Rule
+
+- A bulleted list (`<ul><li>`) typed into a card's nested Card Row rich text renders as a row of pill/tag chips, not a normal bulleted list.
+- This is scoped to `.mrn-card-row__content ul` only — bulleted lists elsewhere (Text rows, blog content, other layouts) are unaffected.
+- Do not add a dedicated tag/pill repeater field for this. Author it as a plain bulleted list inside the nested row's rich text editor.
+
 ### Slider
 
 - Label
