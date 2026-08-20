@@ -35,6 +35,7 @@ fluent-smtp
 post-duplicator
 post-types-order
 relevanssi
+relevanssi-live-ajax-search
 tinymce-advanced
 /home/mrndev-stack-manager/stack/packages/updraftplus.2.26.6.zip
 /home/mrndev-stack-manager/stack/packages/wp-toolbar-editor.zip

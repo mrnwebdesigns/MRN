@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.2.107
+Version: 1.2.110
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -1384,6 +1384,34 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 .mrn-site-search--icon-only.is-expanded {
 	width: min(22rem, calc(100vw - 2rem));
 	z-index: 30;
+}
+
+/*
+ * Relevanssi Live Ajax Search sets its own inline position/top/left/width via
+ * JS, computed against the toggled input's layout. Inside the icon-only
+ * header search that math lands off to the side instead of under the field,
+ * so the panel needs a forced position; `!important` there overrides those
+ * inline styles, not a theme specificity conflict.
+ *
+ * The result links separately need `!important` on color: the header/footer
+ * link-color rule (`.site-header.mrn-theme-hf-layout-grid a:not(...)`, etc.)
+ * out-specifies a plain `.mrn-site-search__input-wrap ... a` selector, so
+ * without it the links keep the header's light link color on the plugin's
+ * white result panel and become unreadable.
+ */
+.mrn-site-search__input-wrap .relevanssi-live-search-results {
+	position: absolute !important;
+	top: 100% !important;
+	left: 0 !important;
+	right: 0 !important;
+	width: 100% !important;
+	margin-top: 0.5rem;
+	color: var(--mrn-shell-text, #1c222b);
+}
+
+.mrn-site-search__input-wrap .relevanssi-live-search-result a,
+.mrn-site-search__input-wrap .relevanssi-live-search-result-status p {
+	color: var(--mrn-shell-text, #1c222b) !important;
 }
 
 .mrn-site-search--icon-only.is-expanded .mrn-site-search__toggle {

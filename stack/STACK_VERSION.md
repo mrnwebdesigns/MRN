@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.19-sendgrid-subuser-provisioning`
+- Stack release: `2026.08.19-relevanssi-live-search`
 - Release date: `2026-08-19`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.107`
+  - `mrn-base-stack` `1.2.110`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.6`

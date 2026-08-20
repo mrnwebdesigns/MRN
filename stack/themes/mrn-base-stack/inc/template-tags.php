@@ -251,6 +251,10 @@ if ( ! function_exists( 'mrn_base_stack_get_search_form_markup' ) ) :
 	 * onto a theme's native form via that same filter, can add its own
 	 * enhancements/hidden fields transparently when active.
 	 *
+	 * `data-rlvlive="true"` is a guaranteed-attach hint for Relevanssi Live
+	 * Ajax Search: harmless when that plugin is absent, and removes any
+	 * reliance on its default form auto-detection when it's active.
+	 *
 	 * @return string
 	 */
 	function mrn_base_stack_get_search_form_markup() {
@@ -260,7 +264,7 @@ if ( ! function_exists( 'mrn_base_stack_get_search_form_markup' ) ) :
 		?>
 		<form role="search" method="get" class="mrn-site-search__form" action="<?php echo esc_url( home_url( '/' ) ); ?>">
 			<label for="<?php echo esc_attr( $unique_id ); ?>" class="screen-reader-text"><?php esc_html_e( 'Search for:', 'mrn-base-stack' ); ?></label>
-			<input type="search" id="<?php echo esc_attr( $unique_id ); ?>" class="mrn-site-search__input search-field" placeholder="<?php echo esc_attr_x( 'Search&hellip;', 'search field placeholder', 'mrn-base-stack' ); ?>" value="<?php echo esc_attr( get_search_query() ); ?>" name="s" />
+			<input type="search" id="<?php echo esc_attr( $unique_id ); ?>" class="mrn-site-search__input search-field" placeholder="<?php echo esc_attr_x( 'Search&hellip;', 'search field placeholder', 'mrn-base-stack' ); ?>" value="<?php echo esc_attr( get_search_query() ); ?>" name="s" data-rlvlive="true" />
 			<button type="submit" class="mrn-site-search__submit search-submit">
 				<span class="screen-reader-text"><?php esc_html_e( 'Search', 'mrn-base-stack' ); ?></span>
 			</button>
