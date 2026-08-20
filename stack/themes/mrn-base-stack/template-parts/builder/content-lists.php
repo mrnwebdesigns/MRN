@@ -53,6 +53,11 @@ if ( ! in_array( $sort_order, array( 'ASC', 'DESC' ), true ) ) {
 	$sort_order = 'DESC';
 }
 
+if ( 'grid' === $display_style ) {
+	$list_orderby = 'menu_order';
+	$sort_order   = 'ASC';
+}
+
 $posts_per_page      = max( 1, absint( $row['posts_per_page'] ?? 10 ) );
 $offset              = absint( $row['offset'] ?? 0 );
 $filter_source       = isset( $row['filter_source'] ) ? sanitize_key( (string) $row['filter_source'] ) : 'none';

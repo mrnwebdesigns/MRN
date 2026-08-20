@@ -200,6 +200,16 @@ These are the current preferred content patterns in the stack.
 - Current `Content Lists` consumption rule:
   - only display modes with entity type `Post Type` and an item matching the selected content type should appear in the builder dropdown
 
+### Content Lists Display Style Rule
+
+- `Display Style` (distinct from `Display Mode`) is a per-post-type presentation preset managed in `Site Configurations -> Display Modes`, seeded with defaults in `mrn-config-helper`'s `get_default_display_styles()`.
+- `Display Mode` controls which fields render; `Display Style` controls how they're presented. The two are independent axes.
+- `Grid` is a stack-wide `Display Style` value (`grid`), currently seeded as a default for the `post` post type and available to register for any post type via Site Configurations. It:
+  - lays the list items out as a responsive card grid (`mrn-content-builder__row--content-lists-style-grid`) instead of a stacked list, regardless of the row's `List Style` (Unordered/Ordered) setting.
+  - wraps the excerpt field in a native `<details>/<summary>` disclosure (reusing the same zero-JS accessible pattern as FAQ/Accordion) instead of a flat paragraph, so a card can reveal more text on demand.
+  - **forces query ordering to `menu_order` / `ASC`, overriding the row's own Order By selection.** A grid of cards is expected to reflect the post type's own manual/drag-and-drop order, not a date sort. The target post type must support `page-attributes` (so editors can drag-reorder it in wp-admin) for this to be meaningful.
+- Do not add a second grid/card layout system to Content Lists for a specific site or post type. Register a new `Display Style` entry (or extend the `grid` rendering) instead.
+
 ### Section Width
 
 - Theme-owned layouts now use a shared `Section Width` setting where width matters visually.

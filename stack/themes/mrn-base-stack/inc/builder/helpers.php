@@ -2762,6 +2762,9 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 
 	$display_mode      = mrn_base_stack_normalize_content_list_display_mode( $args['display_mode'] ?? '' );
 	$mode_config       = '' !== $display_mode ? mrn_base_stack_get_content_list_display_mode_config( $display_mode ) : mrn_base_stack_get_content_list_legacy_mode_config( $args );
+	$display_style     = function_exists( 'mrn_base_stack_normalize_content_list_display_style' )
+		? mrn_base_stack_normalize_content_list_display_style( $args['display_style'] ?? '', get_post_type( $item_post ) )
+		: '';
 	$permalink         = get_permalink( $item_post );
 	$item_title        = get_the_title( $item_post );
 	$uses_row_settings = '' === $display_mode;
@@ -2775,12 +2778,17 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 	$fields            = isset( $mode_config['fields'] ) && is_array( $mode_config['fields'] ) ? array_values( array_unique( array_map( 'sanitize_key', $mode_config['fields'] ) ) ) : array();
 	$variant           = array( 'title' ) === $fields ? 'title_only' : 'card';
 	$image_first       = ! empty( $fields ) && 'featured_image' === $fields[0];
+	$is_grid_style     = 'grid' === $display_style;
 	$item_classes      = array(
 		'mrn-content-list-row__item',
 		'mrn-ui__item',
 		'mrn-content-list-row__item--display-' . ( '' !== $display_mode ? $display_mode : 'row-settings' ),
 		'mrn-content-list-row__item--variant-' . $variant,
 	);
+
+	if ( '' !== $display_style ) {
+		$item_classes[] = 'mrn-content-list-row__item--display-style-' . $display_style;
+	}
 
 	if ( $show_image ) {
 		$item_classes[] = 'mrn-content-list-row__item--has-image';
@@ -2791,7 +2799,12 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 
 	ob_start();
 	?>
-	<li class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>">
+	<li
+		class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>"
+		<?php if ( '' !== $display_style ) : ?>
+			data-display-style="<?php echo esc_attr( $display_style ); ?>"
+		<?php endif; ?>
+	>
 		<?php if ( 'title_only' === $variant ) : ?>
 			<div class="mrn-content-list-row__body mrn-ui__body">
 				<div class="mrn-content-list-row__head mrn-ui__head">
@@ -2840,7 +2853,12 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 									<?php echo esc_html( $item_title ); ?>
 								<?php endif; ?>
 							</h3>
-						<?php elseif ( 'excerpt' === $field_key && '' !== $item_excerpt ) : ?>
+						<?php elseif ( 'excerpt' === $field_key && '' !== $item_excerpt && $is_grid_style ) : ?>
+								<details class="mrn-content-list-row__details">
+									<summary class="mrn-content-list-row__summary"><?php echo esc_html( $read_more_label ); ?></summary>
+									<p class="mrn-content-list-row__excerpt mrn-ui__text"><?php echo esc_html( $item_excerpt ); ?></p>
+								</details>
+							<?php elseif ( 'excerpt' === $field_key && '' !== $item_excerpt ) : ?>
 								<p class="mrn-content-list-row__excerpt mrn-ui__text"><?php echo esc_html( $item_excerpt ); ?></p>
 							<?php elseif ( 'read_more' === $field_key && $show_read_more ) : ?>
 									<p class="mrn-content-list-row__link">
