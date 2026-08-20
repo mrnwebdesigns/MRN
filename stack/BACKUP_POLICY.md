@@ -2,7 +2,15 @@
 
 ## Scheduled Backups
 
-- Run one combined Updraft file and database backup per day.
+- Run one combined Updraft file and database backup per day on staging and
+  production.
+- Development/review environments (any host `mrn-environment-runtime`
+  classifies as `non_production`, for example `*.mrndev.io`) skip this routine
+  daily schedule instead of running it: `mrn-updraft-local-retention` enforces
+  `updraft_interval`/`updraft_interval_database` as `manual` there rather than
+  `daily`. This only turns off the time-based cron; it does not change the
+  Deployments gate below, which still runs unconditionally on every
+  environment, including development/review.
 - Retain four scheduled backup sets locally and remotely.
 - Exclude WordPress core because it is reproducible.
 - Delete local archives after successful remote transfer.
@@ -15,7 +23,11 @@
 
 - Before every non-dry-run write to a shared development, staging, or production
   WordPress runtime, create and verify a database-only remote backup. This
-  includes code-only theme, plugin, and MU-plugin deployments.
+  includes code-only theme, plugin, and MU-plugin deployments. This applies
+  unconditionally, including development/review environments that otherwise
+  skip the routine daily schedule above — it protects against the write
+  itself, not time-based drift, so it does not depend on the scheduled-backup
+  cadence.
 - Use Git for code rollback; the database backup protects WordPress state,
   configuration, and schema that can still be affected during plugin loading.
 - Deployment helpers must pass `--with-db-backup`. `--skip-backup` is allowed

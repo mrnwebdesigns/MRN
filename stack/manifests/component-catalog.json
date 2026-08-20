@@ -163,14 +163,14 @@
     {
       "slug": "mrn-updraft-local-retention",
       "name": "MRN Updraft Backup Policy",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "runtime_type": "mu-component",
       "classification": "platform-policy",
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
       "source": {"repository": "MRN", "path": "mu-plugins/mrn-updraft-local-retention", "state": "confirmed"},
-      "dependencies": {"hard": ["UpdraftPlus"], "soft": ["S3 remote storage"], "release_group": "mrn-platform"},
+      "dependencies": {"hard": ["UpdraftPlus"], "soft": ["S3 remote storage", "mrn-environment-runtime"], "release_group": "mrn-platform"},
       "data": {"options": ["UpdraftPlus schedule and retention options"], "tables": [], "cron": ["UpdraftPlus schedules and repair checks"], "routes": [], "external_services": ["UpdraftPlus", "configured remote backup storage"]},
       "purpose": "Enforces the shared backup schedule, retention and remote-storage policy."
     },

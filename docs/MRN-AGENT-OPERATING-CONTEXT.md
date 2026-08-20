@@ -351,7 +351,19 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
 - QA passing authorizes neither deployment nor production mutation.
 - The sequence remains: QA pass -> commit may proceed -> deployment remains separately gated by owner/production authorization, applicable backup policy, environment safety, MainWP/QA Engine routing, and deployment-specific validation.
 
-## 11) Vendor bootstrap portability
+## 11) Git hygiene gate
+
+- At the start of any MRN work in a plugin, theme, MU-plugin, stack, site, or other MRN repository, check the repository/component being touched for hanging branches and uncommitted work: `git -C <path> status --short` and `git -C <path> branch -a`.
+- A hanging branch is any local (or unmerged remote-tracking) branch other than the branch currently in use for this work, with no active task tied to it. Treat a branch as hanging if its purpose cannot be confirmed as current, intentional work in progress; do not assume it is safe to ignore.
+- Uncommitted work includes unstaged changes, staged-but-uncommitted changes, and untracked files relevant to the component.
+- This check is routine, not just a pre-release step: run it whenever starting work on any MRN-owned component, not only immediately before deployment or rollout.
+- If hanging branches or uncommitted work are found:
+  - Warn the owner immediately, naming the specific branch(es) and/or files, before doing anything else with that component.
+  - Treat this as a hard stop on adding that component to a rollout, deploy, release, stack manifest, or component catalog, the same weight as a failed QA or backup gate. Do not proceed with that inclusion until it is resolved.
+  - Resume only after the owner explicitly resolves it (merges/deletes the branch, or commits/stashes/discards the changes) or explicitly authorizes a documented exception.
+- Applies across all MRN repositories, not only the primary stack repo, including Local Hub, QA Engine, Production Hub, the RunCloud stack repo, and pulled `MRN-sites/{slug}` site repos.
+
+## 12) Vendor bootstrap portability
 
 - This file is vendor-neutral and repo-native. It is the canonical MRN operating context for every agent.
 - Each agent has a small vendor-specific bootstrap that points here and duplicates nothing:

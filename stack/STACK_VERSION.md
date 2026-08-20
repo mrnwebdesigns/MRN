@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.19-relevanssi-live-search`
-- Release date: `2026-08-19`
+- Stack release: `2026.08.20-backup-policy-dev-schedule`
+- Release date: `2026-08-20`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components

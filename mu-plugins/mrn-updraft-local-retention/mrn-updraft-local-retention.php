@@ -3,7 +3,7 @@
  * Plugin Name: MRN Updraft Backup Policy
  * Description: Enforces the MRN Updraft backup policy, limits local backup sets, and repairs missing scheduled events.
  * Author: MRN Web Designs
- * Version: 0.3.0
+ * Version: 0.4.0
  */
 
 defined('ABSPATH') || exit;
@@ -27,6 +27,38 @@ function mrn_updraft_backup_policy_get_hostname(): string {
 	$hostname = is_string($hostname) ? strtolower(rtrim($hostname, '.')) : '';
 
 	return preg_match('/^[a-z0-9.-]+$/', $hostname) ? $hostname : '';
+}
+
+/**
+ * Sanitize the resolved hostname into the S3-path-safe slug documented in
+ * BACKUP_POLICY.md's `sites/<sanitized-hostname>` convention (dots and other
+ * non-alphanumeric separators become hyphens).
+ */
+function mrn_updraft_backup_policy_get_sanitized_hostname(): string {
+	$hostname = mrn_updraft_backup_policy_get_hostname();
+	if ('' === $hostname) {
+		return '';
+	}
+
+	$sanitized = preg_replace('/[^a-z0-9]+/', '-', $hostname);
+
+	return is_string($sanitized) ? trim($sanitized, '-') : '';
+}
+
+/**
+ * Determine whether the current site is a development/review environment
+ * (for example `*.mrndev.io`) rather than staging or production.
+ *
+ * Reuses mrn-environment-runtime's conservative host classification instead
+ * of duplicating suffix-matching logic. Defaults to false (production-like)
+ * when that component is unavailable, matching its own conservative default.
+ */
+function mrn_updraft_backup_policy_is_dev_environment(): bool {
+	if (!function_exists('mrn_environment_runtime_host_signal')) {
+		return false;
+	}
+
+	return 'non_production' === mrn_environment_runtime_host_signal();
 }
 
 /**
@@ -80,12 +112,18 @@ function mrn_updraft_backup_policy_update_option(string $name, $value): void {
  *
  * Remote storage credentials and destinations are deliberately excluded. They
  * must be provisioned separately and are validated below without being changed.
+ *
+ * Development/review environments skip the routine scheduled backup (interval
+ * enforced as `manual` instead of `daily`); the deploy-time backup gate is
+ * separate, always on-demand via `wp updraftplus backup`, and unaffected by
+ * this schedule setting on any environment.
  */
 function mrn_updraft_backup_policy_enforce_settings(): void {
 	$start_time = mrn_updraft_backup_policy_get_start_time();
+	$schedule_interval = mrn_updraft_backup_policy_is_dev_environment() ? 'manual' : 'daily';
 	$desired = array(
-		'updraft_interval'          => 'daily',
-		'updraft_interval_database' => 'daily',
+		'updraft_interval'          => $schedule_interval,
+		'updraft_interval_database' => $schedule_interval,
 		'updraft_retain'            => '4',
 		'updraft_retain_db'         => '4',
 		'updraft_delete_local'      => '1',
@@ -119,7 +157,7 @@ add_action('init', 'mrn_updraft_backup_policy_enforce_settings', 15);
  * @return array{configured:bool,isolated:bool,expected_suffix:string}
  */
 function mrn_updraft_backup_policy_get_remote_status(): array {
-	$hostname = mrn_updraft_backup_policy_get_hostname();
+	$hostname = mrn_updraft_backup_policy_get_sanitized_hostname();
 	$expected_suffix = '' !== $hostname ? 'sites/' . $hostname : '';
 	$services = array_values((array) mrn_updraft_backup_policy_get_option('updraft_service', array()));
 	$status = array(
