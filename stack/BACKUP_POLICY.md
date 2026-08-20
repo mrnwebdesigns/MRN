@@ -16,8 +16,12 @@
 - Delete local archives after successful remote transfer.
 - Assign each site a deterministic time between 01:00 and 04:59 so shared
   servers do not start every backup at midnight.
-- Store each site in its own S3 prefix:
-  `bucket/sites/<sanitized-hostname>`.
+- Store each site in its own S3 prefix: `bucket/sites/<site-slug>`, where
+  `<site-slug>` is the sanitized first label of the hostname (for example
+  `trilliant` for `trilliant.mrndev.io`), not the full hostname. This keeps one
+  stable prefix for a site's backup history as it moves between environments
+  (`trilliant.localhost` locally, `trilliant.mrndev.io` in review, an eventual
+  production domain) instead of fragmenting per environment/TLD.
 
 ## Deployments
 
@@ -46,8 +50,9 @@
 - Never scan a shared bucket root; remotely scanned imports are exempt from
   Updraft's normal retention.
 - Provision every development site with a unique S3 prefix ending in
-  `sites/<hostname>`. Development sites do not have to be enrolled in MainWP;
-  use the dedicated site-owner SSH path when they are managed directly.
+  `sites/<site-slug>` (the site's stable slug, not its per-environment
+  hostname). Development sites do not have to be enrolled in MainWP; use the
+  dedicated site-owner SSH path when they are managed directly.
 
 ## Restores and Cleanup
 

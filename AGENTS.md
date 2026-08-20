@@ -72,7 +72,7 @@ Release baseline:
 
 MRN Updraft backup policy:
 - Treat `stack/BACKUP_POLICY.md` as the canonical backup policy for all agent work in this repository.
-- Stack-managed staging and production sites use daily Updraft file/database backups, `4/4` retention, local deletion after remote transfer, WordPress-core exclusion, deterministic 01:00-04:59 scheduling, and a unique S3 prefix ending in `sites/<sanitized-hostname>`.
+- Stack-managed staging and production sites use daily Updraft file/database backups, `4/4` retention, local deletion after remote transfer, WordPress-core exclusion, deterministic 01:00-04:59 scheduling, and a unique S3 prefix ending in `sites/<site-slug>` (the site's stable slug, not its per-environment hostname — the same site keeps one prefix across local/review/production).
 - Development/review environments (for example `*.mrndev.io`) do not run that routine daily schedule; `mrn-updraft-local-retention` enforces `updraft_interval`/`updraft_interval_database` as `manual` there instead. The pre-deploy backup gate further below still applies unconditionally on every environment, including development/review — it protects against the write itself, not time-based drift, so it never depends on the scheduled-backup cadence.
 - Development sites do not need to be added to MainWP. Use their dedicated site-owner SSH path when auditing or applying the policy manually.
 - Routine scheduled backups on staging/production, and every manual or pre-deploy backup on any environment, stay inside the rolling four-set limit. Do not mark routine backups `always_keep`.
