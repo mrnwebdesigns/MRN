@@ -1,0 +1,11 @@
+{
+  "project": "mrn-recovery-agent",
+  "release_unit": "standalone-plugin",
+  "baseline": {
+    "pinned_at": "2026-08-20",
+    "repo_path": "/Users/khofmeyer/Development/MRN/mu-plugins/mrn-recovery-agent",
+    "integration_target": "mrn-shared-mu-plugin-loader",
+    "integration_mode": "shared-mu-plugin",
+    "plugin_version": "0.1.0"
+  }
+}

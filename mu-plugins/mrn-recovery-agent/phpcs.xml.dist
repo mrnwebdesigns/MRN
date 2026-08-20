@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ruleset name="MRN Recovery Agent">
+	<description>WordPress coding standards for the MRN Recovery Agent MU plugin.</description>
+	<file>mrn-recovery-agent.php</file>
+	<file>tests</file>
+	<exclude-pattern>vendor/*</exclude-pattern>
+	<rule ref="WordPress" />
+	<rule ref="WordPress-Extra" />
+	<rule ref="WordPress-Docs" />
+	<!--
+	tests/status-endpoint.php intentionally contains a small mock
+	WP_REST_Request class named for what it tests, not for that class —
+	this sniff cannot be suppressed with an inline phpcs:ignore/disable
+	comment because it is evaluated against the whole file up front.
+	-->
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<exclude-pattern>tests/*</exclude-pattern>
+	</rule>
+</ruleset>
