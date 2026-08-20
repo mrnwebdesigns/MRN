@@ -1035,6 +1035,29 @@ function mrn_base_stack_scripts() {
 			true
 		);
 
+		wp_enqueue_style(
+			'mrn-base-stack-glightbox',
+			get_template_directory_uri() . '/css/vendor/glightbox.min.css',
+			array(),
+			'3.3.1'
+		);
+
+		wp_enqueue_script(
+			'mrn-base-stack-glightbox',
+			get_template_directory_uri() . '/js/vendor/glightbox.min.js',
+			array(),
+			'3.3.1',
+			true
+		);
+
+		wp_enqueue_script(
+			'mrn-base-stack-front-end-video-modal',
+			get_template_directory_uri() . '/js/front-end-video-modal.js',
+			array( 'mrn-base-stack-glightbox' ),
+			_S_VERSION,
+			true
+		);
+
 	}
 
 	if ( is_singular( 'gallery' ) ) {

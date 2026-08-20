@@ -6428,6 +6428,31 @@ function mrn_base_stack_normalize_video_aspect_ratio( $ratio ) {
 }
 
 /**
+ * Get Video display mode choices.
+ *
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_video_display_mode_choices() {
+	return array(
+		'inline' => __( 'Inline', 'mrn-base-stack' ),
+		'modal'  => __( 'Thumbnail + Modal', 'mrn-base-stack' ),
+	);
+}
+
+/**
+ * Normalize Video display mode.
+ *
+ * @param string $mode Candidate display mode.
+ * @return string
+ */
+function mrn_base_stack_normalize_video_display_mode( $mode ) {
+	$mode    = sanitize_key( (string) $mode );
+	$choices = mrn_base_stack_get_video_display_mode_choices();
+
+	return isset( $choices[ $mode ] ) ? $mode : 'inline';
+}
+
+/**
  * Normalize a Tabbed Layout position.
  *
  * @param string $position Candidate position.

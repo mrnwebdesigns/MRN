@@ -750,6 +750,8 @@ Front-enders should rely on these hooks:
   - `video_upload`
 - precedence:
   - if both are set, `video_upload` wins over `video_remote`
+- thumbnail field (Thumbnail + Modal display mode only):
+  - `video_thumbnail`
 
 ### Video Rendering Rule
 
@@ -763,23 +765,37 @@ Front-enders should rely on these hooks:
 - This layout renders video as normal foreground media inside the content section.
 - Unlike hero background video, it does not autoplay by default.
 
+### Video Display Mode Rule
+
+- `Display Mode` config controls how the video plays:
+  - `Inline` (default) — the existing deferred in-place embed. Unchanged behavior; preserves existing content.
+  - `Thumbnail + Modal` — renders the `video_thumbnail` image with a play-icon overlay; selecting it opens the video in a lightbox instead of playing inline.
+- `Thumbnail + Modal` requires both a resolved video source (remote or upload) and a `video_thumbnail` image. If either is missing, rendering falls back to `Inline` behavior.
+- The modal reuses the stack's existing GLightbox integration (`js/vendor/glightbox.min.js`), the same library already used by the Gallery CPT, rather than introducing a second modal/lightbox framework.
+- Do not build a bespoke video modal for a specific layout or site; extend this contract instead.
+
 ### Video Front-End Contract
 
 Front-enders should rely on:
 
 - wrapper classes:
   - `mrn-content-builder__row--video`
+  - `mrn-content-builder__row--video-display-inline` / `mrn-content-builder__row--video-display-modal`
 - content hooks:
   - `.mrn-video-row__label`
   - `.mrn-video-row__heading`
   - `.mrn-video-row__text`
   - `.mrn-video-row__media`
-- deferred media frame:
+- deferred media frame (`Inline` mode):
   - `.mrn-deferred-media__frame`
+- modal trigger (`Thumbnail + Modal` mode):
+  - `.mrn-video-row__trigger` (the `.glightbox` anchor)
+  - `.mrn-video-row__thumbnail`
+  - `.mrn-video-row__play`
 
 ### Video Performance Rule
 
-- Video layout reuses the deferred-loading path:
+- Video layout reuses the deferred-loading path in `Inline` mode:
   - wait until the section is in or near view
   - then inject the real iframe or `<video>` element
 - Current defaults:
@@ -787,6 +803,7 @@ Front-enders should rely on:
   - no loop
   - controls enabled
   - uploaded local files use `preload=\"metadata\"`
+- `Thumbnail + Modal` mode never injects an iframe/video element until the visitor opens the lightbox, so it is at least as cheap as the deferred inline path.
 
 ## Heading Markup Rule
 
