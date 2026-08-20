@@ -60,6 +60,24 @@ jobs:
           token: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
           persist-credentials: false
 
+      # plugins/<slug> in the MRN checkout are gitignored local symlinks
+      # (../../MRN-plugins/<slug>) into these standalone repos -- see
+      # ".gitignore" and "stack/RELEASE_VERSIONING_STRATEGY.md". Cloning
+      # each one to the same sibling-relative location the symlinks expect
+      # makes the existing symlinks resolve in CI exactly like they do on a
+      # dev machine that checked out MRN and MRN-plugins as siblings, with
+      # no changes needed to the QA engine itself.
+      - name: Check out standalone plugin repos
+        env:
+          GH_TOKEN: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/../MRN-plugins"
+          repos="background-video-popout-disabler mrn-acf-character-count mrn-acf-focal-point mrn-ai-assist mrn-announcements mrn-comment-management mrn-config-helper mrn-cookie-consent mrn-editor-tools mrn-fontawesome-profile-manager mrn-gtm-injector mrn-sendgrid-provisioning mrn-seo-helper mrn-universal-sticky-bar"
+          for slug in $repos; do
+            gh repo clone "mrnwebdesigns/${slug}" "$GITHUB_WORKSPACE/../MRN-plugins/${slug}" -- --depth 1
+          done
+
       - name: Run MRN static QA gate
         run: |
           mkdir -p reports
