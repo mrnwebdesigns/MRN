@@ -169,7 +169,7 @@ rsync -rlt --omit-dir-times --delete \
 - The feature deploy helper must strip inherited/default ACLs from its rollout-owned live theme, shared runtime, and MU runtime trees before verifying `644` file modes so cloned-theme ACL inheritance does not cause false post-sync failures.
 - The feature deploy helper must verify its post-sync permission normalization and fail if sync-user-owned live files remain outside `644`.
 - Standard plugins still follow their own plugin release flow and are not part of the stack feature deploy helper.
-- When a stack-packaged standard plugin changes, rebuild its local zip, sync that artifact into `/home/mrndev-stack-manager/stack/packages/<plugin>.zip`, and if the plugin is meant to be live on `default-configs.mrndev.io`, run a forced `wp plugin install ... --force --activate` against that site so the live version matches the refreshed package.
+- When a stack-packaged standard plugin changes, rebuild its local zip and sync that artifact into `/home/mrndev-stack-manager/stack/packages/<plugin>.zip`.
 - Site plugin updates should run via direct site-owner SSH.
   - If a site owner cannot update a plugin due to file ownership or mode, treat that as a deploy blocker and remediate ownership/mode first.
 - Fresh site bootstrap must delete any preinstalled standard plugins from the host before installing the stack manifest so new sites match the stack plugin set exactly.

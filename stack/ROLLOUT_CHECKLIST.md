@@ -189,8 +189,7 @@ Current stack-standard-plugin path:
 
 1. Rebuild the local zip artifact in `/Users/khofmeyer/Development/MRN/releases/plugins/`.
 2. Sync that zip to `/home/mrndev-stack-manager/stack/packages/<plugin>.zip`.
-3. If the plugin is active on `default-configs.mrndev.io`, run `wp plugin install /home/mrndev-stack-manager/stack/packages/<plugin>.zip --force --activate --path=/home/default-configs-stack/htdocs/default-configs.mrndev.io`.
-4. Verify the resulting live version with `wp plugin list`.
+3. Verify the synced package's version/checksum matches the rebuilt local zip.
 
 ## Deploy Checklist
 
