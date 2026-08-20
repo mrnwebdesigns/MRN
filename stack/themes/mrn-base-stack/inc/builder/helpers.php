@@ -1734,6 +1734,29 @@ function mrn_base_stack_get_content_list_post_type_choices() {
 			$choices[ $post_type ] = $label;
 		}
 
+		$admin_data_post_types = function_exists( 'mrn_admin_data_post_types_get_config' ) ? mrn_admin_data_post_types_get_config() : array();
+
+		foreach ( array_keys( $admin_data_post_types ) as $admin_data_post_type ) {
+			$admin_data_post_type = sanitize_key( (string) $admin_data_post_type );
+
+			if ( '' === $admin_data_post_type || isset( $choices[ $admin_data_post_type ] ) || in_array( $admin_data_post_type, $excluded, true ) ) {
+				continue;
+			}
+
+			$post_type_object = get_post_type_object( $admin_data_post_type );
+
+			if ( ! $post_type_object instanceof WP_Post_Type ) {
+				continue;
+			}
+
+			$label = isset( $post_type_object->labels->name ) ? trim( (string) $post_type_object->labels->name ) : '';
+			if ( '' === $label ) {
+				$label = ucfirst( str_replace( array( '-', '_' ), ' ', $admin_data_post_type ) );
+			}
+
+			$choices[ $admin_data_post_type ] = $label;
+		}
+
 		if ( empty( $choices['post'] ) ) {
 			$choices = array_merge( array( 'post' => 'Posts' ), $choices );
 		}
@@ -2612,6 +2635,7 @@ function mrn_base_stack_get_content_list_item_permalink( WP_Post $item_post, arr
 	}
 
 	$permalink = get_permalink( $item_post );
+	$permalink = (string) apply_filters( 'mrn_base_stack_content_list_item_permalink', $permalink, $item_post, $args );
 
 	return is_string( $permalink ) ? $permalink : '';
 }
@@ -2935,6 +2959,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 		: '';
 	$permalink         = mrn_base_stack_get_content_list_item_permalink( $item_post, $args );
 	$item_title        = get_the_title( $item_post );
+	$title_icon_html   = (string) apply_filters( 'mrn_base_stack_content_list_item_title_icon_html', '', $item_post, $args );
 	$uses_row_settings = '' === $display_mode;
 	$show_date         = ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
 	$show_excerpt      = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] );
@@ -2985,6 +3010,9 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 			<div class="mrn-content-list-row__body mrn-ui__body">
 				<div class="mrn-content-list-row__head mrn-ui__head">
 					<span class="mrn-content-list-row__title mrn-content-list-row__title--only mrn-ui__heading">
+						<?php if ( '' !== $title_icon_html ) : ?>
+							<span class="mrn-content-list-row__title-icon" aria-hidden="true"><?php echo $title_icon_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built internally from a trusted FA class allowlist. ?></span>
+						<?php endif; ?>
 						<?php if ( '' !== $permalink ) : ?>
 							<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
 						<?php else : ?>
@@ -3023,6 +3051,9 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 							<p class="mrn-content-list-row__meta"><?php echo esc_html( get_the_date( '', $item_post ) ); ?></p>
 						<?php elseif ( 'title' === $field_key && '' !== $item_title ) : ?>
 								<h3 class="mrn-content-list-row__title mrn-ui__heading">
+									<?php if ( '' !== $title_icon_html ) : ?>
+										<span class="mrn-content-list-row__title-icon" aria-hidden="true"><?php echo $title_icon_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built internally from a trusted FA class allowlist. ?></span>
+									<?php endif; ?>
 									<?php if ( '' !== $permalink ) : ?>
 										<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
 								<?php else : ?>
@@ -11470,6 +11501,10 @@ function mrn_base_stack_collect_builder_link_icon_asset_needs( $value, &$needs_f
 
 	if ( 'dashicons' === $icon_source ) {
 		$needs_dashicons = true;
+	}
+
+	if ( isset( $value['list_post_type'] ) && 'resource' === $value['list_post_type'] ) {
+		$needs_fontawesome = true;
 	}
 
 	foreach ( $value as $child ) {
