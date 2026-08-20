@@ -177,7 +177,7 @@
     {
       "slug": "mrn-updraft-local-retention",
       "name": "MRN Updraft Backup Policy",
-      "version": "0.3.0",
+      "version": "0.5.0",
       "runtime_type": "mu-component",
       "classification": "platform-policy",
       "lifecycle": "supported",
