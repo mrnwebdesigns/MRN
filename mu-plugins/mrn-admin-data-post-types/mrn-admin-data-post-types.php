@@ -328,3 +328,20 @@ function mrn_admin_data_post_types_filter_sitemap_post_types( $post_types ) {
 	return $post_types;
 }
 add_filter( 'wp_sitemaps_post_types', 'mrn_admin_data_post_types_filter_sitemap_post_types', 100 );
+
+/**
+ * Exclude every admin/data-only CPT from the SEO Helper plugin's fields.
+ *
+ * A content-only CPT has no public page, so SEO Helper's title/description/
+ * focus-keyword fields have nothing to describe. This covers every current
+ * and future content-only CPT automatically, with no per-CPT code needed.
+ *
+ * @param array $excluded Post type keys already excluded from SEO Helper.
+ * @return array
+ */
+function mrn_admin_data_post_types_filter_seo_helper_excluded_post_types( $excluded ) {
+	$excluded = is_array( $excluded ) ? $excluded : array();
+
+	return array_values( array_unique( array_merge( $excluded, array_keys( mrn_admin_data_post_types_get_config() ) ) ) );
+}
+add_filter( 'mrn_seo_helper_excluded_post_types', 'mrn_admin_data_post_types_filter_seo_helper_excluded_post_types' );

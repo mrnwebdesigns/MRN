@@ -104,6 +104,17 @@ matched by native WP search or Relevanssi-enhanced relevance (submitting back
 to this same search results page) — renders through that one template, so
 fixing the link there covers both without assuming which engine matched the post.
 
+## SEO Helper exclusion
+
+Every content-only CPT is automatically excluded from the `mrn-seo-helper`
+plugin's title/description/focus-keyword fields — there's no public page for
+those fields to describe. This is fully automatic (a filter on
+`mrn_seo_helper_excluded_post_types`, mirroring the sitemap exclusion above)
+and needs no site-level action, unlike the opt-in search destination. Scoped
+to `mrn-seo-helper` only, the stack's one first-class SEO integration —
+optional third-party SEO plugins (SmartCrawl, SEOPress, etc.) are not covered
+and should be excluded per-CPT if a site runs one of them.
+
 ## Current stack adopters
 
 - The base theme's `testimonial` CPT.

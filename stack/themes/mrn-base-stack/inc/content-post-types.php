@@ -207,6 +207,29 @@ function mrn_base_stack_register_team_member_profile_field() {
 add_action( 'acf/init', 'mrn_base_stack_register_team_member_profile_field' );
 
 /**
+ * Disable the per-member public-profile toggle when Team Member is forced
+ * Content Only site-wide (Site Configurations -> Admin -> Content Types).
+ *
+ * The whole CPT has no public pages in that state, so the per-post setting
+ * has no effect regardless of its value — leaving it live and "Enabled"
+ * would misleadingly imply that member still has a profile page.
+ *
+ * @param array $field ACF field array.
+ * @return array
+ */
+function mrn_base_stack_maybe_disable_team_member_profile_field( $field ) {
+	if ( ! function_exists( 'mrn_admin_data_post_types_get_post_type_config' ) || null === mrn_admin_data_post_types_get_post_type_config( 'team_member' ) ) {
+		return $field;
+	}
+
+	$field['disabled']     = true;
+	$field['instructions'] = __( 'Team Member is currently set to Content Only in Site Configurations, so every team member already has no public profile page — this setting has no effect right now.', 'mrn-base-stack' );
+
+	return $field;
+}
+add_filter( 'acf/prepare_field/key=field_mrn_team_member_public_profile', 'mrn_base_stack_maybe_disable_team_member_profile_field' );
+
+/**
  * Determine whether a team member has a public profile destination.
  *
  * Records without saved toggle metadata remain public for backward safety.
