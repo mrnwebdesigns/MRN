@@ -924,6 +924,10 @@ function mrn_base_stack_scripts() {
 		mrn_base_stack_collect_builder_link_icon_asset_needs_from_post_meta( get_queried_object_id(), $needs_fontawesome, $needs_dashicons );
 	}
 
+	if ( $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'mrn_base_stack_resource_content_list_needs_fontawesome_from_post_meta' ) && mrn_base_stack_resource_content_list_needs_fontawesome_from_post_meta( get_queried_object_id() ) ) {
+		$needs_fontawesome = true;
+	}
+
 	if ( $layout_builder_enabled && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs' ) && function_exists( 'mrn_rbl_get_post_types' ) && is_singular( mrn_rbl_get_post_types() ) && function_exists( 'get_fields' ) ) {
 		$reusable_post_id = get_queried_object_id();
 
@@ -2529,6 +2533,11 @@ require_once get_template_directory() . '/inc/careers.php';
  * Load services modules.
  */
 require_once get_template_directory() . '/inc/services.php';
+
+/**
+ * Load resource modules.
+ */
+require_once get_template_directory() . '/inc/resources.php';
 
 /**
  * Load field-ready content post type registrations.
