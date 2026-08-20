@@ -78,6 +78,20 @@ jobs:
             gh repo clone "mrnwebdesigns/${slug}" "$GITHUB_WORKSPACE/../MRN-plugins/${slug}" -- --depth 1
           done
 
+          # plugins/<slug> itself is gitignored (untracked), so a fresh CI
+          # checkout has nothing there at all -- create the same relative
+          # symlinks a local dev machine has after checking out MRN and
+          # MRN-plugins as siblings.
+          cd "$GITHUB_WORKSPACE/plugins"
+          for slug in $repos; do
+            [ -e "$slug" ] && continue
+            if [ "$slug" = "mrn-ai-assist" ]; then
+              ln -s "../../MRN-plugins/mrn-ai-assist/wordpress-plugin" "$slug"
+            else
+              ln -s "../../MRN-plugins/${slug}" "$slug"
+            fi
+          done
+
       - name: Run MRN static QA gate
         run: |
           mkdir -p reports
