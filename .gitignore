@@ -53,6 +53,7 @@ stack/mu-plugins/mrn-svg-support
 plugins/background-video-popout-disabler
 plugins/mrn-acf-character-count
 plugins/mrn-acf-focal-point
+plugins/mrn-ai-assist
 plugins/mrn-announcements
 plugins/mrn-comment-management
 plugins/mrn-config-helper
@@ -61,5 +62,6 @@ plugins/mrn-dummy-content
 plugins/mrn-editor-tools
 plugins/mrn-fontawesome-profile-manager
 plugins/mrn-gtm-injector
+plugins/mrn-sendgrid-provisioning
 plugins/mrn-seo-helper
 plugins/mrn-universal-sticky-bar
