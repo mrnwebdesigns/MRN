@@ -2574,6 +2574,40 @@ function mrn_base_stack_get_content_list_legacy_mode_config( array $args = array
 }
 
 /**
+ * Resolve a safe destination for a Content-list item.
+ *
+ * Content-only post types remain queryable for builder output but are not
+ * public destinations. Team Member profiles can also be disabled per item.
+ *
+ * @param WP_Post              $item_post Post to resolve.
+ * @param array<string, mixed> $args      Render arguments.
+ * @return string
+ */
+function mrn_base_stack_get_content_list_item_permalink( WP_Post $item_post, array $args = array() ) {
+	if ( array_key_exists( 'link_items', $args ) && empty( $args['link_items'] ) ) {
+		return '';
+	}
+
+	$post_type_object = get_post_type_object( $item_post->post_type );
+	if ( $post_type_object instanceof WP_Post_Type && empty( $post_type_object->publicly_queryable ) ) {
+		return '';
+	}
+
+	if (
+		'team_member' === $item_post->post_type
+		&& function_exists( 'mrn_base_stack_team_member_has_public_profile' )
+		&& ! mrn_base_stack_team_member_has_public_profile( $item_post )
+	) {
+		return '';
+	}
+
+	$permalink = get_permalink( $item_post );
+	$permalink = (string) apply_filters( 'mrn_base_stack_content_list_item_permalink', $permalink, $item_post, $args );
+
+	return is_string( $permalink ) ? $permalink : '';
+}
+
+/**
  * Prepare testimonial body HTML for Content row rendering.
  *
  * @param string $content Testimonial content.
