@@ -2744,6 +2744,101 @@ function mrn_base_stack_render_content_list_testimonial_item( WP_Post $item_post
 }
 
 /**
+ * Render a Team Member Content-list item.
+ *
+ * @param WP_Post              $item_post Post to render.
+ * @param array<string, mixed> $args Render arguments.
+ * @return string
+ */
+function mrn_base_stack_render_content_list_team_member_item( WP_Post $item_post, array $args = array() ) {
+	$display_mode      = mrn_base_stack_normalize_content_list_display_mode( $args['display_mode'] ?? '' );
+	$mode_config       = '' !== $display_mode ? mrn_base_stack_get_content_list_display_mode_config( $display_mode ) : mrn_base_stack_get_content_list_legacy_mode_config( $args );
+	$uses_row_settings = '' === $display_mode;
+	$display_mode_slug = '' !== $display_mode ? $display_mode : 'row-settings';
+	$display_style     = function_exists( 'mrn_base_stack_normalize_content_list_display_style' )
+		? mrn_base_stack_normalize_content_list_display_style( $args['display_style'] ?? '', 'team_member' )
+		: '';
+	$is_grid_style      = 'grid' === $display_style;
+	$permalink          = get_permalink( $item_post );
+	$permalink          = is_string( $permalink ) ? $permalink : '';
+	$item_title         = get_the_title( $item_post );
+	$position           = function_exists( 'get_field' ) ? trim( (string) get_field( 'team_member_position', $item_post->ID ) ) : '';
+	$bio_raw            = function_exists( 'get_field' ) ? (string) get_field( 'team_member_bio', $item_post->ID ) : '';
+	$bio_html           = mrn_base_stack_get_content_list_testimonial_body_html( $bio_raw );
+	$show_image         = ( ! $uses_row_settings || ! empty( $args['show_featured_image'] ) ) && ! empty( $mode_config['allows_image'] ) && has_post_thumbnail( $item_post );
+	$show_bio           = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] ) && '' !== $bio_html;
+	$show_read_more     = ( ! $uses_row_settings || ! empty( $args['show_read_more'] ) ) && ! empty( $mode_config['allows_read_more'] ) && '' !== $permalink;
+	$read_more_label    = isset( $args['read_more_label'] ) ? trim( (string) $args['read_more_label'] ) : 'Read More';
+	$item_classes       = array(
+		'mrn-content-list-row__item',
+		'mrn-content-list-row__item--team-member',
+		'mrn-content-list-row__item--display-' . $display_mode_slug,
+		'mrn-ui__item',
+	);
+
+	if ( '' !== $display_style ) {
+		$item_classes[] = 'mrn-content-list-row__item--display-style-' . $display_style;
+	}
+
+	if ( $show_image ) {
+		$item_classes[] = 'mrn-content-list-row__item--has-image';
+	}
+
+	ob_start();
+	?>
+	<li
+		class="<?php echo esc_attr( implode( ' ', array_map( 'sanitize_html_class', $item_classes ) ) ); ?>"
+		<?php if ( '' !== $display_style ) : ?>
+			data-display-style="<?php echo esc_attr( $display_style ); ?>"
+		<?php endif; ?>
+	>
+		<article class="mrn-content-list-row__card">
+			<?php if ( $show_image ) : ?>
+				<div class="mrn-content-list-row__media mrn-ui__media">
+					<?php echo get_the_post_thumbnail( $item_post, 'mrn-team-member' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</div>
+			<?php endif; ?>
+			<div class="mrn-content-list-row__body mrn-ui__body">
+				<?php if ( '' !== $item_title || '' !== $position ) : ?>
+					<div class="mrn-content-list-row__head mrn-ui__head">
+						<?php if ( '' !== $item_title ) : ?>
+							<h3 class="mrn-content-list-row__title mrn-ui__heading">
+								<?php if ( '' !== $permalink ) : ?>
+									<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
+								<?php else : ?>
+									<?php echo esc_html( $item_title ); ?>
+								<?php endif; ?>
+							</h3>
+						<?php endif; ?>
+						<?php if ( '' !== $position ) : ?>
+							<p class="mrn-content-list-row__meta mrn-content-list-row__position"><?php echo esc_html( $position ); ?></p>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( $show_bio && $is_grid_style ) : ?>
+					<details class="mrn-content-list-row__details">
+						<summary class="mrn-content-list-row__summary"><?php echo esc_html( $read_more_label ); ?></summary>
+						<div class="mrn-content-list-row__excerpt mrn-ui__text"><?php echo $bio_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized by mrn_base_stack_get_content_list_testimonial_body_html(). ?></div>
+					</details>
+				<?php elseif ( $show_bio ) : ?>
+					<div class="mrn-content-list-row__excerpt mrn-ui__text"><?php echo $bio_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized by mrn_base_stack_get_content_list_testimonial_body_html(). ?></div>
+				<?php endif; ?>
+
+				<?php if ( $show_read_more ) : ?>
+					<p class="mrn-content-list-row__link">
+						<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $read_more_label ); ?></a>
+					</p>
+				<?php endif; ?>
+			</div>
+		</article>
+	</li>
+	<?php
+
+	return (string) ob_get_clean();
+}
+
+/**
  * Render one query result item for the Content layout.
  *
  * @param WP_Post              $item_post Post to render.
@@ -2758,6 +2853,10 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 
 	if ( 'testimonial' === get_post_type( $item_post ) && function_exists( 'mrn_base_stack_render_content_list_testimonial_item' ) ) {
 		return mrn_base_stack_render_content_list_testimonial_item( $item_post, $args );
+	}
+
+	if ( 'team_member' === get_post_type( $item_post ) && function_exists( 'mrn_base_stack_render_content_list_team_member_item' ) ) {
+		return mrn_base_stack_render_content_list_team_member_item( $item_post, $args );
 	}
 
 	$display_mode      = mrn_base_stack_normalize_content_list_display_mode( $args['display_mode'] ?? '' );

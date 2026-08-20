@@ -22,6 +22,7 @@ function mrn_base_stack_get_content_post_type_definitions() {
 			'menu_icon'      => 'dashicons-groups',
 			'menu_position'  => 10,
 			'side_metaboxes' => array( 'acf-group_mrn_team_member_settings' ),
+			'supports'       => array( 'title', 'thumbnail', 'page-attributes', 'revisions' ),
 		),
 		'location'    => array(
 			'singular'      => __( 'Location', 'mrn-base-stack' ),
@@ -151,7 +152,9 @@ function mrn_base_stack_register_content_post_types() {
 				),
 				'menu_position'       => $definition['menu_position'],
 				'menu_icon'           => $definition['menu_icon'],
-				'supports'            => array( 'title', 'thumbnail', 'revisions' ),
+				'supports'            => isset( $definition['supports'] ) && is_array( $definition['supports'] )
+					? $definition['supports']
+					: array( 'title', 'thumbnail', 'revisions' ),
 				'publicly_queryable'  => true,
 				'show_in_nav_menus'   => true,
 				'show_in_admin_bar'   => $show_ui,
@@ -205,6 +208,62 @@ function mrn_base_stack_register_team_member_profile_field() {
 	);
 }
 add_action( 'acf/init', 'mrn_base_stack_register_team_member_profile_field' );
+
+/**
+ * Register the team member's job title and bio fields.
+ *
+ * @return void
+ */
+function mrn_base_stack_register_team_member_field_group() {
+	if ( ! function_exists( 'acf_add_local_field_group' ) ) {
+		return;
+	}
+
+	acf_add_local_field_group(
+		array(
+			'key'                   => 'group_mrn_team_member_profile',
+			'title'                 => __( 'Team Member', 'mrn-base-stack' ),
+			'fields'                => array(
+				array(
+					'key'          => 'field_mrn_team_member_position',
+					'label'        => __( 'Job Title', 'mrn-base-stack' ),
+					'name'         => 'team_member_position',
+					'aria-label'   => '',
+					'type'         => 'text',
+					'instructions' => __( 'Shown directly under the name.', 'mrn-base-stack' ),
+					'wrapper'      => array(
+						'width' => '50',
+					),
+				),
+				array(
+					'key'          => 'field_mrn_team_member_bio',
+					'label'        => __( 'Bio', 'mrn-base-stack' ),
+					'name'         => 'team_member_bio',
+					'aria-label'   => '',
+					'type'         => 'wysiwyg',
+					'tabs'         => 'all',
+					'toolbar'      => 'full',
+					'media_upload' => 1,
+					'delay'        => 0,
+				),
+			),
+			'location'              => array(
+				array(
+					array(
+						'param'    => 'post_type',
+						'operator' => '==',
+						'value'    => 'team_member',
+					),
+				),
+			),
+			'position'              => 'acf_after_title',
+			'style'                 => 'default',
+			'label_placement'       => 'top',
+			'instruction_placement' => 'label',
+		)
+	);
+}
+add_action( 'acf/init', 'mrn_base_stack_register_team_member_field_group' );
 
 /**
  * Determine whether a team member has a public profile destination.

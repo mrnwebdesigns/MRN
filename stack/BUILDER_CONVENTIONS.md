@@ -209,6 +209,12 @@ These are the current preferred content patterns in the stack.
   - wraps the excerpt field in a native `<details>/<summary>` disclosure (reusing the same zero-JS accessible pattern as FAQ/Accordion) instead of a flat paragraph, so a card can reveal more text on demand.
   - **forces query ordering to `menu_order` / `ASC`, overriding the row's own Order By selection.** A grid of cards is expected to reflect the post type's own manual/drag-and-drop order, not a date sort. The target post type must support `page-attributes` (so editors can drag-reorder it in wp-admin) for this to be meaningful.
 - Do not add a second grid/card layout system to Content Lists for a specific site or post type. Register a new `Display Style` entry (or extend the `grid` rendering) instead.
+- `team_member` is a theme-owned content post type (`inc/content-post-types.php`) with a dedicated Content-list renderer (`mrn_base_stack_render_content_list_team_member_item()`), mirroring the existing `testimonial` renderer pattern for post types whose real fields aren't in the generic field-choice vocabulary:
+  - `post_title` = Name, native `thumbnail` = Photo (both already supported by the generic Display Mode field set).
+  - `team_member_position` (text) = Job Title, always shown under the name when set — not gated by Display Mode field selection, since it's core identity rather than an optional extra.
+  - `team_member_bio` (WYSIWYG) = Bio, shown when the `excerpt` field is selected in Display Mode, in the same `Grid`-style `<details>/<summary>` disclosure documented above.
+  - `page-attributes` support enables `menu_order` for the `Grid` style's forced ordering; editors reorder team members via drag-and-drop in wp-admin.
+- When a post type's real content lives in custom fields the generic `title/featured_image/publish_date/excerpt/read_more` vocabulary can't see (as with `testimonial` and `team_member`), add a dedicated Content-list renderer function following this same pattern rather than extending the generic renderer with post-type-specific branches.
 
 ### Section Width
 
