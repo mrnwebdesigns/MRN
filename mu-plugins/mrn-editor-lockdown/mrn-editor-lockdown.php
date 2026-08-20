@@ -885,6 +885,7 @@ function mrn_editor_lockdown_admin_css() {
 			border: 1px solid rgba(255, 255, 255, 0.16);
 			border-radius: 8px;
 			box-shadow: 0 18px 46px rgba(17, 17, 17, 0.24);
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 			font-size: 14px;
 			font-weight: 600;
 			letter-spacing: 0;
@@ -910,6 +911,7 @@ function mrn_editor_lockdown_admin_css() {
 			border: 1px solid rgba(255, 255, 255, 0.16);
 			border-radius: 8px;
 			box-shadow: 0 18px 46px rgba(17, 17, 17, 0.24);
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 			font-size: 14px;
 			font-weight: 600;
 			letter-spacing: 0;
@@ -937,6 +939,7 @@ function mrn_editor_lockdown_admin_css() {
 			background: #111111;
 			box-shadow: 0 18px 46px rgba(17, 17, 17, 0.24);
 			color: #ffffff;
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 			font-size: 14px;
 			font-weight: 700;
 			letter-spacing: 0;
