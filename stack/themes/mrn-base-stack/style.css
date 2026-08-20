@@ -646,30 +646,33 @@ table {
 
 /* Links
 --------------------------------------------- */
+/*
+ * Neutral, token-based defaults for sites that haven't configured Site
+ * Styles' `a` typography row yet. Every value here is expected to be
+ * overridden by Site Styles/child-theme CSS on a real site build — this is
+ * a baseline, not a brand choice. Replaces unmodified Underscores
+ * boilerplate (royalblue/purple/midnightblue) that had no relationship to
+ * any MRN brand and stripped the hover underline / used a legacy low-
+ * visibility focus outline.
+ */
 a {
-	color: #4169e1;
+	color: var(--mrn-shell-accent, #1c222b);
 	text-decoration: underline;
 	text-underline-offset: 0.15em;
 }
 
 a:visited {
-	color: #800080;
-}
-
-a:hover,
-a:focus,
-a:active {
-	color: #191970;
-	text-decoration: none;
-}
-
-a:focus {
-	outline: thin dotted;
+	color: var(--mrn-shell-accent, #1c222b);
 }
 
 a:hover,
 a:active {
-	outline: 0;
+	color: var(--mrn-shell-muted, #626d7a);
+}
+
+a:focus-visible {
+	outline: 2px solid var(--mrn-shell-accent, #1c222b);
+	outline-offset: 2px;
 }
 
 /* Forms

@@ -5801,6 +5801,14 @@ function mrn_site_colors_print_css_variables(): void {
         echo '</style>';
     }
 }
-add_action('wp_head', 'mrn_site_colors_print_css_variables', 5);
+// Priority 20: WordPress core prints enqueued stylesheets during wp_head at
+// priority 8 (wp_print_styles). A theme's own hardcoded element defaults
+// (e.g. mrn-base-stack's Underscores-derived `a { color: #4169e1 }`) live in
+// those enqueued stylesheets, so at equal CSS specificity the later-printed
+// rule wins the cascade. Printing Site Styles' output after that print pass
+// guarantees it wins for every tag it configures, without requiring every
+// site's child theme to duplicate the override. See stack-themes/mrn-base-
+// stack history around the Trilliant link-color cascade bug for context.
+add_action('wp_head', 'mrn_site_colors_print_css_variables', 20);
 add_action('admin_head', 'mrn_site_colors_print_css_variables', 5);
 add_action('login_head', 'mrn_site_colors_print_css_variables', 5);
