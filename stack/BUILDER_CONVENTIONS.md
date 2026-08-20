@@ -485,6 +485,12 @@ Layout templates should not hardcode one-off max-width containers. Instead, they
 - This is scoped to `.mrn-card-row__content ul` only — bulleted lists elsewhere (Text rows, blog content, other layouts) are unaffected.
 - Do not add a dedicated tag/pill repeater field for this. Author it as a plain bulleted list inside the nested row's rich text editor.
 
+### CTA Checklist Rule
+
+- A bulleted list (`<ul><li>`) typed into the reusable **CTA** block's `content` field renders as a checkmark list instead of a normal bulleted list, scoped to `.mrn-reusable-block--cta .mrn-ui__text ul` only.
+- The checkmark color follows the block's own `Link color` field (falls back to `currentColor` when unset) — no separate color control.
+- Do not add a dedicated checklist/items repeater field for this. Author it as a plain bulleted list inside the CTA block's `content` field.
+
 ### Slider
 
 - Label

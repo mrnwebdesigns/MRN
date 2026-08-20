@@ -3568,6 +3568,32 @@ button.mrn-ui__link--button {
 	gap: clamp(1.5rem, 3vw, 3rem);
 }
 
+.mrn-reusable-block--cta .mrn-ui__text ul {
+	display: grid;
+	gap: 0.6rem;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.mrn-reusable-block--cta .mrn-ui__text ul li {
+	padding-left: 1.75rem;
+	position: relative;
+}
+
+.mrn-reusable-block--cta .mrn-ui__text ul li::before {
+	background: var(--mrn-cta-link-color, currentColor);
+	content: "";
+	height: 1.1rem;
+	left: 0;
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2l-3.5-3.6L4 14.1l5 5 11-11-1.4-1.4z'/%3E%3C/svg%3E") center / 60% no-repeat;
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2l-3.5-3.6L4 14.1l5 5 11-11-1.4-1.4z'/%3E%3C/svg%3E") center / 60% no-repeat;
+	position: absolute;
+	top: 0.15em;
+	width: 1.1rem;
+	border-radius: 50%;
+}
+
 .mrn-shell-section--reusable-cta.mrn-shell-section--width-wide > .mrn-reusable-block--cta.has-content-image .mrn-reusable-block__cta-inner,
 .mrn-shell-section--reusable-cta.mrn-shell-section--width-full > .mrn-reusable-block--cta.has-content-image .mrn-reusable-block__cta-inner,
 .mrn-layout-section--reusable-cta.mrn-layout-section--contained .mrn-layout-container--wide > .mrn-layout-grid--reusable > .mrn-layout-content--reusable > .mrn-reusable-block--cta.has-content-image .mrn-reusable-block__cta-inner,
