@@ -11620,6 +11620,15 @@ function mrn_base_stack_get_video_embed( $url, array $options = array() ) {
 		);
 	}
 
+	if ( preg_match( '~drive\.google\.com/file/d/([A-Za-z0-9_-]+)~', $sanitized_url, $matches ) ) {
+		$file_id = $matches[1];
+
+		return array(
+			'provider'  => 'google_drive',
+			'embed_url' => sprintf( 'https://drive.google.com/file/d/%s/preview', rawurlencode( $file_id ) ),
+		);
+	}
+
 	return array(
 		'provider'  => '',
 		'embed_url' => '',

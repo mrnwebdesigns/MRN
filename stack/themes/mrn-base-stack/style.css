@@ -5293,6 +5293,10 @@ a.mrn-social-links__link:focus-visible svg {
 	--mrn-stats-columns: 4;
 }
 
+.mrn-content-builder__row--stats-columns-5 .mrn-stats-row__grid {
+	--mrn-stats-columns: 5;
+}
+
 .mrn-stats-row__item {
 	display: grid;
 	gap: var(--mrn-stats-item-gap, 0);
@@ -5329,6 +5333,11 @@ a.mrn-social-links__link:focus-visible svg {
 }
 
 .mrn-stats-row__value {
+	background: linear-gradient(90deg, var(--site-color-pulse-green, #23ae49), var(--site-color-lime-green, #cdd789));
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+	-webkit-text-fill-color: transparent;
 	font-size: 3.25rem;
 	font-weight: 700;
 	line-height: 0.95;
