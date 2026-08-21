@@ -294,6 +294,9 @@ test.describe('MRN stack site smoke QA', () => {
 		await expect(firstLink).toHaveCSS('font-weight', '400');
 
 		if (await navigation.evaluate((element) => element.classList.contains('mrn-mobile-navigation--push'))) {
+			const panel = navigation.locator(':scope > .mrn-mobile-navigation__panel');
+			const panelWidth = await panel.evaluate((element) => element.getBoundingClientRect().width);
+			expect(panelWidth).toBe(page.viewportSize().width);
 			await expect(page.locator('html')).toHaveClass(/mrn-mobile-navigation-push-open/);
 			await expect(page.locator('#page > :not(#site-navigation):not(.skip-link)').first()).not.toHaveCSS('translate', 'none');
 		}
