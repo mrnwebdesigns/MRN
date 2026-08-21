@@ -3,7 +3,7 @@
 ## Baseline Snapshot
 - Date pinned: 2026-08-20
 - Plugin source path: `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-recovery-agent`
-- Current plugin version: `0.1.0`
+- Current plugin version: `0.1.1`
 - Intended integration target: mrn-shared-mu-plugin-loader
 - Current release model: shared MU plugin release unit
 

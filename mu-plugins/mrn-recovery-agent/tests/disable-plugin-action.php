@@ -74,6 +74,16 @@ function sanitize_file_name( $name ) {
  */
 function add_action() {}
 
+/**
+ * Minimal stand-in for wp_json_encode(), used only by the audit-log call.
+ *
+ * @param mixed $data Data to encode.
+ * @return string|false
+ */
+function wp_json_encode( $data ) {
+	return json_encode( $data );
+}
+
 // Intentionally NOT defined: deactivate_plugin(), activate_plugin(),
 // get_site_option(), update_site_option(). If mrn_recovery_agent_disable_plugin()
 // or mrn_recovery_agent_enable_plugin() ever calls any of these, this script
@@ -109,6 +119,26 @@ if ( empty( $result['ok'] ) ) {
 $active = get_option( 'active_plugins' );
 if ( ! in_array( 'broken-plugin/broken-plugin.php', $active, true ) ) {
 	throw new RuntimeException( 'broken-plugin was not restored to active_plugins.' );
+}
+
+// --- the shutdown tripwire's exact call shape must reach the durable audit
+// log, not just the single-slot "last disabled" option (regression test:
+// live testing on a real site found the tripwire's autonomous heal never
+// reached mrn_recovery_agent_audit_log, since it called disable_plugin()
+// directly without the logging wrapper /action uses) ---
+$GLOBALS['__mrn_test_options']['mrn_recovery_agent_audit_log'] = array();
+$tripwire_result = mrn_recovery_agent_disable_plugin( 'broken-plugin', 'shutdown_tripwire_auto_heal' );
+mrn_recovery_agent_audit_log( 'disable_plugin', 'broken-plugin', 'shutdown_tripwire_auto_heal', $tripwire_result );
+$log = get_option( 'mrn_recovery_agent_audit_log' );
+if ( ! is_array( $log ) || count( $log ) !== 1 ) {
+	throw new RuntimeException( 'Expected exactly one audit log entry after a tripwire-style heal.' );
+}
+$entry = $log[0];
+if ( 'disable_plugin' !== $entry['action'] || 'broken-plugin' !== $entry['target'] || 'shutdown_tripwire_auto_heal' !== $entry['reason'] ) {
+	throw new RuntimeException( 'Audit log entry did not record the tripwire heal correctly.' );
+}
+if ( true !== $entry['ok'] ) {
+	throw new RuntimeException( 'Audit log entry did not record the heal as successful.' );
 }
 
 echo "disable-plugin-action: OK\n";

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Recovery Agent
  * Description: Detects and self-heals fatal-PHP-error failures caused by a QA Engine-triggered plugin/theme update, without requiring SSH or a host API.
- * Version: 0.1.0
+ * Version: 0.1.1
  * Author: MRN Web Designs
  *
  * @package MRN_Recovery_Agent
@@ -11,7 +11,7 @@
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_RECOVERY_AGENT_VERSION' ) ) {
-	define( 'MRN_RECOVERY_AGENT_VERSION', '0.1.0' );
+	define( 'MRN_RECOVERY_AGENT_VERSION', '0.1.1' );
 }
 
 // This must run at top-level, unconditionally, as early as possible in this
@@ -55,7 +55,13 @@ function mrn_recovery_agent_shutdown_tripwire() {
 		return;
 	}
 
-	mrn_recovery_agent_disable_plugin( $slug, 'shutdown_tripwire_auto_heal' );
+	$result = mrn_recovery_agent_disable_plugin( $slug, 'shutdown_tripwire_auto_heal' );
+	// The tripwire calls mrn_recovery_agent_disable_plugin() directly rather
+	// than going through the /action REST route, so it must log itself —
+	// confirmed missing during live testing: an autonomous heal was only
+	// visible in the single-slot "last disabled" option, never in the
+	// durable audit trail an /action-triggered heal produces.
+	mrn_recovery_agent_audit_log( 'disable_plugin', $slug, 'shutdown_tripwire_auto_heal', $result );
 }
 
 /**
