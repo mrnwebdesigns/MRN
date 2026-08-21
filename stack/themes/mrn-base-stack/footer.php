@@ -41,6 +41,7 @@
 	$mrn_show_text_phone          = ! empty( $mrn_footer_options['footer_show_text_phone'] ) && ! empty( $mrn_business_information['text_phone'] ) && ! empty( $mrn_business_information['text_phone_uri'] );
 	$mrn_show_address             = ! empty( $mrn_footer_options['footer_show_address'] ) && ! empty( $mrn_footer_address_lines );
 	$mrn_show_business_hours      = ! empty( $mrn_footer_options['footer_show_business_hours'] ) && ! empty( $mrn_footer_hours_rows );
+	$mrn_show_back_to_top         = ! empty( $mrn_footer_options['footer_show_back_to_top'] );
 	$mrn_footer_legal_text        = ! empty( $mrn_footer_options['footer_legal_text'] ) ? (string) $mrn_footer_options['footer_legal_text'] : '';
 	$mrn_footer_body_rows         = array(
 		array(
@@ -91,7 +92,7 @@
 	$mrn_footer_attribute_html    = function_exists( 'mrn_base_stack_get_theme_header_footer_html_attributes' ) ? mrn_base_stack_get_theme_header_footer_html_attributes( $mrn_footer_attributes ) : '';
 	$mrn_footer_content_width     = isset( $mrn_footer_options['footer_content_width'] ) ? $mrn_footer_options['footer_content_width'] : 'wide';
 	$mrn_footer_width_class       = function_exists( 'mrn_base_stack_get_theme_header_footer_content_width_class' ) ? mrn_base_stack_get_theme_header_footer_content_width_class( $mrn_footer_content_width, 'wide' ) : 'mrn-theme-hf-layout--width-wide';
-	$mrn_footer_classes           = trim( 'site-footer mrn-theme-hf-layout-grid mrn-theme-hf-layout-grid--footer ' . $mrn_footer_width_class );
+	$mrn_footer_classes           = trim( 'site-footer mrn-theme-hf-layout-grid mrn-theme-hf-layout-grid--footer ' . $mrn_footer_width_class . ( $mrn_show_back_to_top ? ' mrn-site-footer--has-back-to-top' : '' ) );
 	$mrn_footer_grid_item_style   = static function ( $item_key ) use ( $mrn_footer_layout_grid ) {
 		return function_exists( 'mrn_base_stack_get_theme_header_footer_layout_grid_item_style' ) ? mrn_base_stack_get_theme_header_footer_layout_grid_item_style( $mrn_footer_layout_grid, $item_key ) : '';
 	};
@@ -234,6 +235,13 @@
 				<div class="mrn-site-footer__copyright"><?php echo esc_html( mrn_base_stack_get_footer_copyright_text() ); ?></div>
 			</div>
 		</div><!-- .site-info -->
+
+			<?php if ( $mrn_show_back_to_top ) : ?>
+				<a class="mrn-back-to-top" href="#page" aria-label="<?php esc_attr_e( 'Back to top', 'mrn-base-stack' ); ?>" data-mrn-back-to-top>
+					<span class="dashicons dashicons-arrow-up-alt2" aria-hidden="true"></span>
+					<span class="screen-reader-text"><?php esc_html_e( 'Back to top', 'mrn-base-stack' ); ?></span>
+				</a>
+			<?php endif; ?>
 	</footer><!-- #colophon -->
 </div><!-- #page -->
 

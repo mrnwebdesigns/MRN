@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.2.113
+Version: 1.2.114
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -979,6 +979,60 @@ body {
 .site-footer.mrn-theme-hf-layout-grid a:not(.mrn-social-links__link):hover,
 .site-footer.mrn-theme-hf-layout-grid a:not(.mrn-social-links__link):focus-visible {
 	color: var(--mrn-theme-hf-link-hover-color, var(--mrn-theme-hf-link-color, currentColor));
+}
+
+.site-footer.mrn-site-footer--has-back-to-top {
+	position: relative;
+}
+
+.site-footer.mrn-theme-hf-layout-grid a.mrn-back-to-top {
+	align-items: center;
+	background: var(--mrn-theme-hf-link-color, #1d2327);
+	border: 2px solid var(--mrn-theme-hf-bg-color, #fff);
+	border-radius: 50%;
+	color: var(--mrn-theme-hf-bg-color, #fff);
+	display: inline-flex;
+	height: 3.5rem;
+	justify-content: center;
+	left: 50%;
+	position: absolute;
+	text-decoration: none;
+	top: 0;
+	transform: translate(-50%, -50%);
+	transition: background-color 180ms ease, color 180ms ease, translate 180ms ease;
+	width: 3.5rem;
+	z-index: 2;
+}
+
+.site-footer.mrn-theme-hf-layout-grid a.mrn-back-to-top:hover,
+.site-footer.mrn-theme-hf-layout-grid a.mrn-back-to-top:focus-visible {
+	background: var(--mrn-theme-hf-link-hover-color, var(--mrn-theme-hf-link-color, #1d2327));
+	color: var(--mrn-theme-hf-bg-color, #fff);
+	translate: 0 -0.2rem;
+}
+
+.site-footer.mrn-theme-hf-layout-grid a.mrn-back-to-top:focus-visible {
+	outline: 3px solid currentColor;
+	outline-offset: 3px;
+}
+
+.site-footer.mrn-theme-hf-layout-grid a.mrn-back-to-top.is-obstructed {
+	opacity: 0;
+	pointer-events: none;
+	visibility: hidden;
+}
+
+.mrn-back-to-top .dashicons {
+	font-size: 1.5rem;
+	height: 1.5rem;
+	line-height: 1;
+	width: 1.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.site-footer.mrn-theme-hf-layout-grid a.mrn-back-to-top {
+		transition: none;
+	}
 }
 
 .site-header.mrn-theme-hf-layout-grid .mrn-site-header__meta,
