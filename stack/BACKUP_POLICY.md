@@ -2,7 +2,8 @@
 
 ## Scheduled Backups
 
-- Run one combined Updraft file and database backup per day.
+- Run one combined Updraft file and database backup per day for shared
+  development/review, staging, and production sites.
 - Retain four scheduled backup sets locally and remotely.
 - Exclude WordPress core because it is reproducible.
 - Delete local archives after successful remote transfer.
@@ -11,15 +12,32 @@
 - Store each site in its own S3 prefix:
   `bucket/sites/<sanitized-hostname>`.
 
+## Local Development Exception
+
+- LOCAL means a site managed by Local Hub and served from a local runtime, such
+  as a `.localhost` URL or a manifest with a `local-*` runtime.
+- Local sites are disposable development environments. Do not schedule
+  Updraft backups, send local backups to S3, provision a local S3 prefix, or
+  require a backup gate before code, theme, plugin, or MU-plugin writes.
+- Git is the rollback mechanism for local code. Treat local database/content
+  snapshots as explicit, temporary opt-in operations only when a destructive
+  migration or other exceptional data change warrants one. Keep those
+  snapshots local, label them, and remove them after the work is verified.
+- This exception does not apply to externally reachable development/review
+  sites such as `mrndev.io`, staging, or production.
+
 ## Deployments
 
 - Before every non-dry-run write to a shared development, staging, or production
   WordPress runtime, create and verify a database-only remote backup. This
   includes code-only theme, plugin, and MU-plugin deployments.
+- LOCAL deployments are excluded from this remote-backup gate under the Local
+  Development Exception above.
 - Use Git for code rollback; the database backup protects WordPress state,
   configuration, and schema that can still be affected during plugin loading.
-- Deployment helpers must pass `--with-db-backup`. `--skip-backup` is allowed
-  only for a dry run or a genuinely read-only readiness check.
+- Deployment helpers must pass `--with-db-backup` for shared development,
+  staging, and production deployments. `--skip-backup` is allowed for LOCAL
+  deployments and for dry-run or genuinely read-only readiness checks.
 - Explicit pre-deploy backups are database-only, are labeled, and remain under
   normal retention. They are not marked `always_keep`.
 - QA does not create the backup. QA reports whether the backup gate and runtime
