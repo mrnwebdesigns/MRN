@@ -239,6 +239,7 @@
 	function bootBuilderAdminUi( context ) {
 		ensureConversionActions( context );
 		ensureReusableBlockEditLinks( context );
+		syncContentListLinkToggle( context );
 		scheduleContentListFilterSync( context );
 	}
 
@@ -252,6 +253,51 @@
 		}
 
 		return $field.find( 'select' ).first();
+	}
+
+	function getContentListContentOnlyPostTypes() {
+		if ( config.contentOnlyPostTypes && $.isArray( config.contentOnlyPostTypes ) ) {
+			return config.contentOnlyPostTypes;
+		}
+
+		return [];
+	}
+
+	function syncContentListLinkToggle( context ) {
+		var contentOnlyPostTypes = getContentListContentOnlyPostTypes();
+
+		$( context || document ).filter( '.layout[data-layout="content_lists"]' ).add( $( context || document ).find( '.layout[data-layout="content_lists"]' ) ).not( '.acf-clone' ).each( function() {
+			var $row = $( this );
+			var $postTypeField = getContentListField( $row, 'list_post_type' );
+			var $linkField = getContentListField( $row, 'link_items' );
+			var postType = String( getContentListSelect( $postTypeField ).val() || '' );
+			var isContentOnly = contentOnlyPostTypes.indexOf( postType ) !== -1;
+			var $checkbox = $linkField.find( 'input[type="checkbox"]' ).first();
+			var $note = $linkField.find( '.mrn-content-list-link-note' ).first();
+
+			if ( ! $linkField.length || ! $checkbox.length ) {
+				return;
+			}
+
+			$linkField
+				.toggleClass( 'mrn-content-list-links-disabled', isContentOnly )
+				.attr( 'aria-disabled', isContentOnly ? 'true' : 'false' );
+			$checkbox.prop( 'disabled', isContentOnly );
+
+			if ( isContentOnly ) {
+				if ( ! $note.length ) {
+					$note = $( '<p />' )
+						.addClass( 'description mrn-content-list-link-note' )
+						.attr( 'role', 'note' )
+						.appendTo( $linkField.find( '> .acf-input' ).first() );
+				}
+
+				$note.text( config.contentOnlyLinksDisabledText || 'Content Only items do not have public profile URLs, so item links are disabled.' );
+				return;
+			}
+
+			$note.remove();
+		} );
 	}
 
 	function getObjectKeys( object ) {
@@ -558,6 +604,7 @@
 			}
 
 			setContentListLegacyPresentationState( $row, '' === ( $displayModeSelect.val() || '' ) );
+			syncContentListLinkToggle( $row );
 			$row.removeData( 'mrnSuppressContentListSync' );
 			setContentListSyncState( $row, false );
 		} );

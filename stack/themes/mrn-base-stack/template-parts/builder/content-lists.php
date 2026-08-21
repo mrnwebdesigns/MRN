@@ -68,6 +68,7 @@ $show_featured_image = ! empty( $row['show_featured_image'] );
 $show_publish_date   = ! empty( $row['show_publish_date'] );
 $show_excerpt        = ! empty( $row['show_excerpt'] );
 $excerpt_length      = max( 5, absint( $row['excerpt_length'] ?? 24 ) );
+$link_items          = ! array_key_exists( 'link_items', $row ) || ! empty( $row['link_items'] );
 $show_read_more      = ! empty( $row['show_read_more'] );
 $read_more_label     = isset( $row['read_more_label'] ) ? trim( (string) $row['read_more_label'] ) : 'Read More';
 $empty_message       = isset( $row['empty_message'] ) ? trim( (string) $row['empty_message'] ) : 'No content found.';
@@ -257,6 +258,7 @@ echo mrn_base_stack_get_builder_anchor_markup( $row ); // phpcs:ignore WordPress
 										'show_publish_date' => $show_publish_date,
 										'show_excerpt'    => $show_excerpt,
 										'excerpt_length'  => $excerpt_length,
+										'link_items'      => $link_items,
 										'show_read_more'  => $show_read_more,
 										'read_more_label' => $read_more_label,
 									)

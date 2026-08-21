@@ -455,6 +455,21 @@ function mrn_base_stack_register_acf_field_groups() {
 										),
 									),
 									array(
+										'key'           => 'field_mrn_content_lists_link_items',
+										'label'         => 'Enable Item Links',
+										'name'          => 'link_items',
+										'aria-label'    => '',
+										'type'          => 'true_false',
+										'ui'            => 1,
+										'default_value' => 1,
+										'ui_on_text'    => 'On',
+										'ui_off_text'   => 'Off',
+										'instructions'  => 'When enabled, item titles and read-more links use the item profile URL when that destination is public.',
+										'wrapper'       => array(
+											'width' => '25',
+										),
+									),
+									array(
 										'key'           => 'field_mrn_content_lists_show_read_more',
 										'label'         => 'Show Read More Link',
 										'name'          => 'show_read_more',

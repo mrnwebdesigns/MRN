@@ -1691,7 +1691,6 @@ function mrn_base_stack_get_content_list_post_type_choices() {
 	try {
 		$post_types = get_post_types(
 			array(
-				'public'  => true,
 				'show_ui' => true,
 			),
 			'objects'
@@ -1716,6 +1715,14 @@ function mrn_base_stack_get_content_list_post_type_choices() {
 			}
 
 			if ( in_array( $post_type, $excluded, true ) ) {
+				continue;
+			}
+
+			$is_public       = ! empty( $post_type_object->public );
+			$is_content_only = function_exists( 'mrn_admin_data_post_types_get_post_type_config' )
+				&& null !== mrn_admin_data_post_types_get_post_type_config( $post_type );
+
+			if ( ! $is_public && ! $is_content_only ) {
 				continue;
 			}
 
@@ -1744,6 +1751,32 @@ function mrn_base_stack_get_content_list_post_type_choices() {
 	} finally {
 		$resolving = false;
 	}
+}
+
+/**
+ * Get post types that are configured as Content Only for the builder UI.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_content_list_content_only_post_types() {
+	if ( ! function_exists( 'mrn_admin_data_post_types_get_post_type_config' ) ) {
+		return array();
+	}
+
+	$post_types   = get_post_types( array( 'show_ui' => true ), 'objects' );
+	$content_only = array();
+
+	foreach ( $post_types as $post_type => $post_type_object ) {
+		if ( ! $post_type_object instanceof WP_Post_Type || ! empty( $post_type_object->public ) ) {
+			continue;
+		}
+
+		if ( null !== mrn_admin_data_post_types_get_post_type_config( $post_type ) ) {
+			$content_only[] = $post_type;
+		}
+	}
+
+	return array_values( array_unique( array_map( 'sanitize_key', $content_only ) ) );
 }
 
 /**
@@ -2551,6 +2584,39 @@ function mrn_base_stack_get_content_list_legacy_mode_config( array $args = array
 }
 
 /**
+ * Resolve a safe destination for a Content-list item.
+ *
+ * Content-only post types remain queryable for builder output but are not
+ * public destinations. Team Member profiles can also be disabled per item.
+ *
+ * @param WP_Post              $item_post Post to resolve.
+ * @param array<string, mixed> $args      Render arguments.
+ * @return string
+ */
+function mrn_base_stack_get_content_list_item_permalink( WP_Post $item_post, array $args = array() ) {
+	if ( array_key_exists( 'link_items', $args ) && empty( $args['link_items'] ) ) {
+		return '';
+	}
+
+	$post_type_object = get_post_type_object( $item_post->post_type );
+	if ( $post_type_object instanceof WP_Post_Type && empty( $post_type_object->publicly_queryable ) ) {
+		return '';
+	}
+
+	if (
+		'team_member' === $item_post->post_type
+		&& function_exists( 'mrn_base_stack_team_member_has_public_profile' )
+		&& ! mrn_base_stack_team_member_has_public_profile( $item_post )
+	) {
+		return '';
+	}
+
+	$permalink = get_permalink( $item_post );
+
+	return is_string( $permalink ) ? $permalink : '';
+}
+
+/**
  * Prepare testimonial body HTML for Content row rendering.
  *
  * @param string $content Testimonial content.
@@ -2647,8 +2713,7 @@ function mrn_base_stack_render_content_list_testimonial_item( WP_Post $item_post
 		? mrn_base_stack_normalize_display_style( $display_style, 'post_type', 'testimonial', 'story' )
 		: sanitize_key( '' !== $display_style ? $display_style : 'story' );
 	$display_style     = '' !== $display_style ? $display_style : 'story';
-	$permalink         = get_permalink( $item_post );
-	$permalink         = is_string( $permalink ) ? $permalink : '';
+	$permalink         = mrn_base_stack_get_content_list_item_permalink( $item_post, $args );
 	$item_title        = get_the_title( $item_post );
 	$content           = isset( $testimonial['content'] ) ? (string) $testimonial['content'] : '';
 	$quote_html        = mrn_base_stack_get_content_list_testimonial_body_html( $content );
@@ -2759,8 +2824,7 @@ function mrn_base_stack_render_content_list_team_member_item( WP_Post $item_post
 		? mrn_base_stack_normalize_content_list_display_style( $args['display_style'] ?? '', 'team_member' )
 		: '';
 	$is_grid_style     = 'grid' === $display_style;
-	$permalink         = get_permalink( $item_post );
-	$permalink         = is_string( $permalink ) ? $permalink : '';
+	$permalink         = mrn_base_stack_get_content_list_item_permalink( $item_post, $args );
 	$item_title        = get_the_title( $item_post );
 	$position          = function_exists( 'get_field' ) ? trim( (string) get_field( 'team_member_position', $item_post->ID ) ) : '';
 	$bio_raw           = function_exists( 'get_field' ) ? (string) get_field( 'team_member_bio', $item_post->ID ) : '';
@@ -2869,7 +2933,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 	$display_style     = function_exists( 'mrn_base_stack_normalize_content_list_display_style' )
 		? mrn_base_stack_normalize_content_list_display_style( $args['display_style'] ?? '', get_post_type( $item_post ) )
 		: '';
-	$permalink         = get_permalink( $item_post );
+	$permalink         = mrn_base_stack_get_content_list_item_permalink( $item_post, $args );
 	$item_title        = get_the_title( $item_post );
 	$uses_row_settings = '' === $display_mode;
 	$show_date         = ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
