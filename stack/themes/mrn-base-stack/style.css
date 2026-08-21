@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.2.107
+Version: 1.2.115
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -3407,6 +3407,15 @@ button.mrn-ui__link--button {
 	margin-block: 0;
 }
 
+.wpforms-form button:focus-visible,
+.wpforms-form input[type="button"]:focus-visible,
+.wpforms-form input[type="reset"]:focus-visible,
+.wpforms-form input[type="submit"]:focus-visible,
+.wpforms-form .wpforms-submit:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
 @media (min-width: 768px) {
 	.mrn-content-builder__row--wpforms-layout-form-right .mrn-layout-section--wpforms .mrn-layout-grid--wpforms,
 	.mrn-content-builder__row--wpforms-layout-form-left .mrn-layout-section--wpforms .mrn-layout-grid--wpforms {
@@ -5227,24 +5236,25 @@ a.mrn-social-links__link:focus-visible svg {
 	margin: 0;
 }
 
+/* Card decks keep their pill/list contract explicit and override-friendly. */
 .mrn-card-row__content ul {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0.5rem;
+	gap: var(--mrn-card-pill-gap, 0.5rem);
 	list-style: none;
-	margin: 0.75rem 0 0;
-	padding: 0;
+	margin: var(--mrn-card-pill-margin, 0.75rem 0 0);
+	padding: var(--mrn-card-pill-padding, 0);
 }
 
 .mrn-card-row__content ul li {
 	background: var(--mrn-card-pill-bg, color-mix(in srgb, currentColor 6%, transparent));
 	border: 1px solid var(--mrn-card-pill-border, color-mix(in srgb, currentColor 14%, transparent));
-	border-radius: 999px;
+	border-radius: var(--mrn-card-pill-radius, 999px);
 	display: inline-flex;
-	font-size: 0.8125rem;
-	line-height: 1.3;
+	font-size: var(--mrn-card-pill-font-size, 0.8125rem);
+	line-height: var(--mrn-card-pill-line-height, 1.3);
 	margin: 0;
-	padding: 0.4rem 0.85rem;
+	padding: var(--mrn-card-pill-item-padding, 0.4rem 0.85rem);
 }
 
 .mrn-stats-row__header {
@@ -5305,6 +5315,17 @@ a.mrn-social-links__link:focus-visible svg {
 
 .mrn-stats-row__item--metrics-shell {
 	min-width: 0;
+	--mrn-stats-value-color: currentColor;
+	--mrn-stats-value-font-family: inherit;
+	--mrn-stats-value-font-size: 3.25rem;
+	--mrn-stats-value-font-weight: 700;
+	--mrn-stats-value-line-height: 0.95;
+	--mrn-stats-label-color: inherit;
+	--mrn-stats-label-font-family: inherit;
+	--mrn-stats-label-font-size: 0.95rem;
+	--mrn-stats-label-font-weight: 600;
+	--mrn-stats-label-letter-spacing: 0;
+	--mrn-stats-label-text-transform: uppercase;
 }
 
 .mrn-stats-row__metric {
@@ -5333,14 +5354,11 @@ a.mrn-social-links__link:focus-visible svg {
 }
 
 .mrn-stats-row__value {
-	background: linear-gradient(90deg, var(--site-color-pulse-green, #23ae49), var(--site-color-lime-green, #cdd789));
-	background-clip: text;
-	-webkit-background-clip: text;
-	color: transparent;
-	-webkit-text-fill-color: transparent;
-	font-size: 3.25rem;
-	font-weight: 700;
-	line-height: 0.95;
+	color: var(--mrn-stats-value-color, currentColor);
+	font-family: var(--mrn-stats-value-font-family, inherit);
+	font-size: var(--mrn-stats-value-font-size, 3.25rem);
+	font-weight: var(--mrn-stats-value-font-weight, 700);
+	line-height: var(--mrn-stats-value-line-height, 0.95);
 	min-width: 0;
 }
 
@@ -5371,10 +5389,12 @@ a.mrn-social-links__link:focus-visible svg {
 }
 
 .mrn-stats-row__item .mrn-ui__label {
-	font-size: 0.95rem;
-	font-weight: 600;
-	letter-spacing: 0;
-	text-transform: uppercase;
+	color: var(--mrn-stats-label-color, inherit);
+	font-family: var(--mrn-stats-label-font-family, inherit);
+	font-size: var(--mrn-stats-label-font-size, 0.95rem);
+	font-weight: var(--mrn-stats-label-font-weight, 600);
+	letter-spacing: var(--mrn-stats-label-letter-spacing, 0);
+	text-transform: var(--mrn-stats-label-text-transform, uppercase);
 }
 
 .mrn-showcase-row__header {
@@ -6148,7 +6168,7 @@ a.mrn-social-links__link:focus-visible svg {
 	padding: 0;
 }
 
-.mrn-content-list-row__item--has-image .mrn-content-list-row__card {
+.mrn-content-list-row__item[data-card-layout='media-split'] .mrn-content-list-row__card {
 	grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
 }
 
@@ -6174,7 +6194,8 @@ a.mrn-social-links__link:focus-visible svg {
 	background: var(--mrn-content-list-grid-item-bg, transparent);
 }
 
-.mrn-content-list-row__item--display-style-grid.mrn-content-list-row__item--has-image .mrn-content-list-row__card {
+.mrn-content-list-row__item[data-card-layout='vertical'] .mrn-content-list-row__card,
+.mrn-content-list-row__item--display-style-grid .mrn-content-list-row__card {
 	grid-template-columns: minmax(0, 1fr);
 }
 
@@ -7347,7 +7368,7 @@ a.mrn-social-links__link:focus-visible svg {
 		max-width: none;
 	}
 
-	.mrn-content-list-row__item--has-image .mrn-content-list-row__card {
+	.mrn-content-list-row__item[data-card-layout='media-split'] .mrn-content-list-row__card {
 		grid-template-columns: 1fr;
 	}
 

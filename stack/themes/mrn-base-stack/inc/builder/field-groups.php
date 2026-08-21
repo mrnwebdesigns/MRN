@@ -2027,15 +2027,15 @@ function mrn_base_stack_register_acf_field_groups() {
 										),
 									),
 									array(
-										'key'               => 'field_mrn_video_thumbnail',
-										'label'             => 'Thumbnail Image',
-										'name'              => 'video_thumbnail',
-										'aria-label'        => '',
-										'type'              => 'image',
-										'return_format'     => 'id',
-										'preview_size'      => 'medium',
-										'library'           => 'all',
-										'instructions'      => 'Required for Thumbnail + Modal display mode. Shown with a play icon; selecting it opens the video in a lightbox instead of playing inline.',
+										'key'           => 'field_mrn_video_thumbnail',
+										'label'         => 'Thumbnail Image',
+										'name'          => 'video_thumbnail',
+										'aria-label'    => '',
+										'type'          => 'image',
+										'return_format' => 'id',
+										'preview_size'  => 'medium',
+										'library'       => 'all',
+										'instructions'  => 'Required for Thumbnail + Modal display mode. Shown with a play icon; selecting it opens the video in a lightbox instead of playing inline.',
 										'conditional_logic' => array(
 											array(
 												array(
@@ -2045,7 +2045,7 @@ function mrn_base_stack_register_acf_field_groups() {
 												),
 											),
 										),
-										'wrapper'           => array(
+										'wrapper'       => array(
 											'width' => '50',
 										),
 									),

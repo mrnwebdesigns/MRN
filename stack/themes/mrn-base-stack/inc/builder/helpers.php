@@ -2758,18 +2758,20 @@ function mrn_base_stack_render_content_list_team_member_item( WP_Post $item_post
 	$display_style     = function_exists( 'mrn_base_stack_normalize_content_list_display_style' )
 		? mrn_base_stack_normalize_content_list_display_style( $args['display_style'] ?? '', 'team_member' )
 		: '';
-	$is_grid_style      = 'grid' === $display_style;
-	$permalink          = get_permalink( $item_post );
-	$permalink          = is_string( $permalink ) ? $permalink : '';
-	$item_title         = get_the_title( $item_post );
-	$position           = function_exists( 'get_field' ) ? trim( (string) get_field( 'team_member_position', $item_post->ID ) ) : '';
-	$bio_raw            = function_exists( 'get_field' ) ? (string) get_field( 'team_member_bio', $item_post->ID ) : '';
-	$bio_html           = mrn_base_stack_get_content_list_testimonial_body_html( $bio_raw );
-	$show_image         = ( ! $uses_row_settings || ! empty( $args['show_featured_image'] ) ) && ! empty( $mode_config['allows_image'] ) && has_post_thumbnail( $item_post );
-	$show_bio           = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] ) && '' !== $bio_html;
-	$show_read_more     = ( ! $uses_row_settings || ! empty( $args['show_read_more'] ) ) && ! empty( $mode_config['allows_read_more'] ) && '' !== $permalink;
-	$read_more_label    = isset( $args['read_more_label'] ) ? trim( (string) $args['read_more_label'] ) : 'Read More';
-	$item_classes       = array(
+	$is_grid_style     = 'grid' === $display_style;
+	$permalink         = get_permalink( $item_post );
+	$permalink         = is_string( $permalink ) ? $permalink : '';
+	$item_title        = get_the_title( $item_post );
+	$position          = function_exists( 'get_field' ) ? trim( (string) get_field( 'team_member_position', $item_post->ID ) ) : '';
+	$bio_raw           = function_exists( 'get_field' ) ? (string) get_field( 'team_member_bio', $item_post->ID ) : '';
+	$bio_html          = mrn_base_stack_get_content_list_testimonial_body_html( $bio_raw );
+	$show_image        = ( ! $uses_row_settings || ! empty( $args['show_featured_image'] ) ) && ! empty( $mode_config['allows_image'] ) && has_post_thumbnail( $item_post );
+	$show_bio          = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] ) && '' !== $bio_html;
+	$show_read_more    = ( ! $uses_row_settings || ! empty( $args['show_read_more'] ) ) && ! empty( $mode_config['allows_read_more'] ) && '' !== $permalink;
+	$read_more_label   = isset( $args['read_more_label'] ) ? trim( (string) $args['read_more_label'] ) : 'Read More';
+	$card_layout       = 'vertical';
+
+	$item_classes = array(
 		'mrn-content-list-row__item',
 		'mrn-content-list-row__item--team-member',
 		'mrn-content-list-row__item--display-' . $display_mode_slug,
@@ -2784,6 +2786,8 @@ function mrn_base_stack_render_content_list_team_member_item( WP_Post $item_post
 		$item_classes[] = 'mrn-content-list-row__item--has-image';
 	}
 
+	$item_classes[] = 'mrn-content-list-row__item--card-layout-' . $card_layout;
+
 	ob_start();
 	?>
 	<li
@@ -2791,6 +2795,7 @@ function mrn_base_stack_render_content_list_team_member_item( WP_Post $item_post
 		<?php if ( '' !== $display_style ) : ?>
 			data-display-style="<?php echo esc_attr( $display_style ); ?>"
 		<?php endif; ?>
+		data-card-layout="<?php echo esc_attr( $card_layout ); ?>"
 	>
 		<article class="mrn-content-list-row__card">
 			<?php if ( $show_image ) : ?>
@@ -2878,6 +2883,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 	$variant           = array( 'title' ) === $fields ? 'title_only' : 'card';
 	$image_first       = ! empty( $fields ) && 'featured_image' === $fields[0];
 	$is_grid_style     = 'grid' === $display_style;
+	$card_layout       = 'vertical';
 	$item_classes      = array(
 		'mrn-content-list-row__item',
 		'mrn-ui__item',
@@ -2894,7 +2900,13 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 		if ( $image_first ) {
 			$item_classes[] = 'mrn-content-list-row__item--image-leading';
 		}
+
+		if ( ! $is_grid_style ) {
+			$card_layout = 'media-split';
+		}
 	}
+
+	$item_classes[] = 'mrn-content-list-row__item--card-layout-' . $card_layout;
 
 	ob_start();
 	?>
@@ -2903,6 +2915,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 		<?php if ( '' !== $display_style ) : ?>
 			data-display-style="<?php echo esc_attr( $display_style ); ?>"
 		<?php endif; ?>
+		data-card-layout="<?php echo esc_attr( $card_layout ); ?>"
 	>
 		<?php if ( 'title_only' === $variant ) : ?>
 			<div class="mrn-content-list-row__body mrn-ui__body">

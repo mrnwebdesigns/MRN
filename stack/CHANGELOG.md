@@ -1,5 +1,13 @@
 # Stack Changelog
 
+## 2026.08.21-base-stack-compatibility-contracts
+- Expanded `mrn-base-stack` to `1.2.115`.
+- Replaced the broad image-bearing content-list card selector with an explicit `data-card-layout` contract so legacy media-split cards can keep their layout while `Grid` and `team_member` cards stay vertical by default.
+- Switched Stats values back to an overridable `currentColor`-driven contract with explicit typography variables instead of a hardcoded gradient default, preserving child-theme color control.
+- Kept card-deck pill styling scoped to `.mrn-card-row__content` but exposed the pill metrics as CSS custom properties so child themes can retheme chips without changing markup.
+- Moved child-theme stylesheet loading late in `wp_enqueue_scripts` so site overrides remain authoritative after parent layout assets and updates.
+- Added Playwright coverage for wide, tablet, and mobile breakpoints, five-column team-member grids, explicit media-split card layouts, card-deck pill lists, stats typography/color, overflow, and child-style precedence.
+
 ## 2026.08.16-reusable-block-library-stack-profile
 - Closed the last three CloudPanel/RunCloud bootstrap parity gaps. Post Types Order defaults, the `/uptimerobot-check/` page, and Updraft local-retention cron verification now run at RunCloud stack bundle apply, so a site provisioned on either platform starts in the same state. Added the installer's first test coverage, mutation-tested rather than assumed: the initial active-theme guard case passed with the guard removed, because the `twenty*` filter runs first, so the case now covers a site whose active theme is itself a stock theme.
 - Synced six stack MU wrapper `Version:` headers to the components they load: `mrn-active-style-guide`, `mrn-editor-lockdown`, `mrn-environment-runtime`, `mrn-schema-bridge`, `mrn-shared-assets`, and `mrn-site-colors`. MainWP reads the wrapper header rather than the component, so a stale wrapper reports a stale version to every fleet inventory. Two of the six drifted in this same baseline when components were bumped without their wrappers.

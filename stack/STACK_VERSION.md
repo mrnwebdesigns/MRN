@@ -7,7 +7,7 @@
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.106`
+  - `mrn-base-stack` `1.2.115`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.6`

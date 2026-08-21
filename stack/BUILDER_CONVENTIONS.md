@@ -209,6 +209,11 @@ These are the current preferred content patterns in the stack.
   - wraps the excerpt field in a native `<details>/<summary>` disclosure (reusing the same zero-JS accessible pattern as FAQ/Accordion) instead of a flat paragraph, so a card can reveal more text on demand.
   - **forces query ordering to `menu_order` / `ASC`, overriding the row's own Order By selection.** A grid of cards is expected to reflect the post type's own manual/drag-and-drop order, not a date sort. The target post type must support `page-attributes` (so editors can drag-reorder it in wp-admin) for this to be meaningful.
 - Do not add a second grid/card layout system to Content Lists for a specific site or post type. Register a new `Display Style` entry (or extend the `grid` rendering) instead.
+- Item card layout is an explicit contract on the rendered item, not a side effect of `has-image`:
+  - `data-card-layout="media-split"` opts into the two-column card treatment for legacy image-led cards.
+  - `data-card-layout="vertical"` keeps the card stacked.
+  - `Display Style = Grid` and `team_member` items always render vertical cards, even when the item includes a featured image.
+  - `has-image` means media exists; it does not choose the layout.
 - `team_member` is a theme-owned content post type (`inc/content-post-types.php`) with a dedicated Content-list renderer (`mrn_base_stack_render_content_list_team_member_item()`), mirroring the existing `testimonial` renderer pattern for post types whose real fields aren't in the generic field-choice vocabulary:
   - `post_title` = Name, native `thumbnail` = Photo (both already supported by the generic Display Mode field set).
   - `team_member_position` (text) = Job Title, always shown under the name when set — not gated by Display Mode field selection, since it's core identity rather than an optional extra.
@@ -484,6 +489,7 @@ Layout templates should not hardcode one-off max-width containers. Instead, they
 - A bulleted list (`<ul><li>`) typed into a card's nested Card Row rich text renders as a row of pill/tag chips, not a normal bulleted list.
 - This is scoped to `.mrn-card-row__content ul` only — bulleted lists elsewhere (Text rows, blog content, other layouts) are unaffected.
 - Do not add a dedicated tag/pill repeater field for this. Author it as a plain bulleted list inside the nested row's rich text editor.
+- The pill surface is contract-driven through the card wrapper, and child themes can retheme it with `--mrn-card-pill-*` custom properties instead of changing markup.
 
 ### CTA Checklist Rule
 
@@ -1149,6 +1155,7 @@ Current configs:
 - `Accent`
 
 Do not force this into `Grid` just because both use repeaters. `Stats` is a specific content pattern with a clearer front-end contract.
+- Stats values inherit `currentColor` by default and expose `--mrn-stats-value-*` / `--mrn-stats-label-*` custom properties for color and typography. If a design wants the old gradient-style emphasis, opt in explicitly through a modifier or custom-property override instead of relying on the default.
 
 ## Showcase Layout Rule
 
