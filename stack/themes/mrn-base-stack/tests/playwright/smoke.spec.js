@@ -271,6 +271,37 @@ test.describe('MRN stack site smoke QA', () => {
 		await expect(navigation.locator('.mrn-mobile-navigation__drawer-header')).toBeHidden();
 	});
 
+	test('mobile drawer keeps phone styling through its tablet breakpoint', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 720 });
+		await page.goto('/', { waitUntil: 'networkidle' });
+
+		const navigation = page.locator('[data-mrn-mobile-navigation]').first();
+
+		test.skip((await navigation.count()) === 0, 'Mobile navigation is not enabled in this runtime.');
+
+		const breakpoint = await navigation.evaluate((element) => parseInt(window.getComputedStyle(element).getPropertyValue('--mrn-mobile-menu-breakpoint'), 10));
+		await page.setViewportSize({ width: Math.min(800, breakpoint), height: 720 });
+		await expect(navigation).toHaveAttribute('data-mrn-mobile-active', 'true');
+
+		const toggle = navigation.locator(':scope > .menu-toggle');
+		await toggle.evaluate((element) => element.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+		await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+		const menu = navigation.locator('.mrn-mobile-navigation__panel > .menu');
+		const firstLink = menu.locator(':scope > li > a').first();
+		await expect(menu).toHaveCSS('gap', '0px');
+		await expect(firstLink).toHaveCSS('white-space', 'normal');
+		await expect(firstLink).toHaveCSS('font-weight', '400');
+
+		if (await navigation.evaluate((element) => element.classList.contains('mrn-mobile-navigation--push'))) {
+			await expect(page.locator('html')).toHaveClass(/mrn-mobile-navigation-push-open/);
+			await expect(page.locator('#page > :not(#site-navigation):not(.skip-link)').first()).not.toHaveCSS('translate', 'none');
+		}
+
+		await page.keyboard.press('Escape');
+		await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+	});
+
 	for (const testCase of motionTargetCases) {
 		test(`motion target applies effect to configured target: ${testCase.label}`, async ({ page }) => {
 			await expectMotionTargetCase(page, testCase);

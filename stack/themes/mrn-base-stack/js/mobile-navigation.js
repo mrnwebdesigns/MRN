@@ -14,6 +14,12 @@
 	const configuredBreakpoint = parseInt( window.getComputedStyle( navigation ).getPropertyValue( '--mrn-mobile-menu-breakpoint' ), 10 );
 	const mobileBreakpoint = Number.isFinite( configuredBreakpoint ) && configuredBreakpoint >= 320 && configuredBreakpoint <= 1600 ? configuredBreakpoint : 1199;
 	const mobileQuery = window.matchMedia( '(max-width: ' + mobileBreakpoint + 'px)' );
+	const pushesPage = navigation.classList.contains( 'mrn-mobile-navigation--push' );
+	const pageShell = document.querySelector( '#page' );
+	const pushTargets = pushesPage && pageShell ? Array.from( pageShell.children ).filter( function( element ) {
+		return element !== navigation && ! element.classList.contains( 'skip-link' );
+	} ) : [];
+	const pushTargetInertStates = new Map();
 	const submenuOpenLabel = navigation.dataset.submenuOpenLabel || 'Open %s submenu';
 	const submenuCloseLabel = navigation.dataset.submenuCloseLabel || 'Close %s submenu';
 	let restoreFocus = null;
@@ -84,6 +90,38 @@
 		navigation.style.setProperty( '--mrn-mobile-menu-top', Math.max( 0, Math.round( rectangle.bottom ) ) + 'px' );
 	}
 
+	function setPushState( isOpen ) {
+		if ( ! pushesPage ) {
+			return;
+		}
+
+		if ( isOpen ) {
+			document.documentElement.style.setProperty( '--mrn-mobile-menu-push-distance', '-' + Math.round( panel.getBoundingClientRect().width ) + 'px' );
+			pushTargets.forEach( function( element ) {
+				pushTargetInertStates.set( element, element.hasAttribute( 'inert' ) );
+				element.setAttribute( 'inert', '' );
+			} );
+		} else {
+			pushTargets.forEach( function( element ) {
+				if ( ! pushTargetInertStates.get( element ) ) {
+					element.removeAttribute( 'inert' );
+				}
+			} );
+			pushTargetInertStates.clear();
+		}
+
+		document.documentElement.classList.toggle( 'mrn-mobile-navigation-push-open', isOpen );
+	}
+
+	function clearPushMode() {
+		if ( ! pushesPage ) {
+			return;
+		}
+
+		document.documentElement.classList.remove( 'mrn-mobile-navigation-push-open', 'mrn-mobile-navigation-push-ready' );
+		document.documentElement.style.removeProperty( '--mrn-mobile-menu-push-distance' );
+	}
+
 	function unlockPage() {
 		document.documentElement.classList.remove( 'mrn-mobile-navigation-locked' );
 		document.body.classList.remove( 'mrn-mobile-navigation-locked' );
@@ -105,6 +143,7 @@
 		}
 
 		navigation.classList.remove( 'is-open' );
+		setPushState( false );
 		button.setAttribute( 'aria-expanded', 'false' );
 		button.setAttribute( 'aria-label', button.dataset.openLabel );
 		unlockPage();
@@ -135,6 +174,7 @@
 		document.documentElement.classList.add( 'mrn-mobile-navigation-locked' );
 		document.body.classList.add( 'mrn-mobile-navigation-locked' );
 		updateOffset();
+		setPushState( true );
 		navigation.classList.add( 'is-open' );
 		button.setAttribute( 'aria-expanded', 'true' );
 		button.setAttribute( 'aria-label', button.dataset.closeLabel );
@@ -150,6 +190,7 @@
 
 		if ( ! isMobile ) {
 			closeDrawer( false );
+			clearPushMode();
 			navigation.querySelectorAll( '.menu-item-has-children' ).forEach( function( item ) {
 				const toggle = item.querySelector( ':scope > .mrn-mobile-navigation__submenu-toggle' );
 				const submenu = item.querySelector( ':scope > .sub-menu' );
@@ -161,6 +202,10 @@
 				}
 			} );
 			return;
+		}
+
+		if ( pushesPage ) {
+			document.documentElement.classList.add( 'mrn-mobile-navigation-push-ready' );
 		}
 
 		navigation.querySelectorAll( '.menu-item-has-children' ).forEach( function( item ) {

@@ -114,6 +114,20 @@ function mrn_base_stack_get_mobile_navigation_fields() {
 			'ui'            => 1,
 		),
 		array(
+			'key'           => 'field_mrn_mobile_menu_drawer_mode',
+			'label'         => __( 'Drawer Interaction', 'mrn-base-stack' ),
+			'name'          => 'mobile_menu_drawer_mode',
+			'type'          => 'button_group',
+			'choices'       => array(
+				'overlay' => __( 'Overlay Page', 'mrn-base-stack' ),
+				'push'    => __( 'Push Page', 'mrn-base-stack' ),
+			),
+			'default_value' => 'overlay',
+			'layout'        => 'horizontal',
+			'return_format' => 'value',
+			'instructions'  => __( 'Overlay keeps the page in place. Push slides the drawer in from the right while moving the page to the left.', 'mrn-base-stack' ),
+		),
+		array(
 			'key'               => 'field_mrn_mobile_menu_full_screen_heading',
 			'label'             => '',
 			'name'              => '',
@@ -428,6 +442,7 @@ function mrn_base_stack_get_mobile_navigation_options() {
 		'enabled'                  => true,
 		'breakpoint'               => 1199,
 		'use_site_header'          => true,
+		'drawer_mode'              => 'overlay',
 		'mobile_logo_id'           => 0,
 		'logo_max_height'          => 48,
 		'header_action_type'       => 'none',
@@ -460,6 +475,10 @@ function mrn_base_stack_get_mobile_navigation_options() {
 	if ( ! in_array( $header_action_type, array( 'none', 'contact_button', 'token' ), true ) ) {
 		$header_action_type = 'none';
 	}
+	$drawer_mode = sanitize_key( (string) get_field( 'mobile_menu_drawer_mode', 'option' ) );
+	if ( ! in_array( $drawer_mode, array( 'overlay', 'push' ), true ) ) {
+		$drawer_mode = 'overlay';
+	}
 	$contact_button = get_field( 'mobile_menu_contact_button', 'option' );
 	if ( ! is_array( $contact_button ) || empty( $contact_button['url'] ) || empty( $contact_button['title'] ) ) {
 		$contact_button = array();
@@ -490,6 +509,7 @@ function mrn_base_stack_get_mobile_navigation_options() {
 		'enabled'                  => null === $stored_enabled ? true : (bool) get_field( 'mobile_menu_enabled', 'option' ),
 		'breakpoint'               => min( 1600, max( 320, $breakpoint ) ),
 		'use_site_header'          => null === $stored_use_site_header ? true : (bool) get_field( 'mobile_menu_use_site_header', 'option' ),
+		'drawer_mode'              => $drawer_mode,
 		'mobile_logo_id'           => absint( get_field( 'mobile_menu_logo', 'option' ) ),
 		'logo_max_height'          => min( 120, max( 24, $logo_max_height ) ),
 		'header_action_type'       => $header_action_type,

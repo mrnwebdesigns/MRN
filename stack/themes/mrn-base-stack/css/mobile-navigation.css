@@ -106,6 +106,13 @@
 	z-index: 999;
 }
 
+.mrn-mobile-navigation[data-mrn-mobile-active="true"].mrn-mobile-navigation--push .mrn-mobile-navigation__panel {
+	left: auto;
+	right: 0;
+	transform: translateX(100%);
+	width: min(calc(100vw - 3.5rem), 24rem);
+}
+
 .mrn-mobile-navigation[data-mrn-mobile-active="true"].mrn-mobile-navigation--full-screen .mrn-mobile-navigation__panel {
 	height: 100vh;
 	max-height: 100vh;
@@ -204,12 +211,34 @@
 	visibility: visible;
 }
 
+.mrn-mobile-navigation[data-mrn-mobile-active="true"].mrn-mobile-navigation--push.is-open .mrn-mobile-navigation__panel {
+	transform: translateX(0);
+}
+
+html.mrn-mobile-navigation-push-ready #page > :not(#site-navigation):not(.skip-link) {
+	translate: 0 0;
+	transition: translate 340ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html.mrn-mobile-navigation-push-ready,
+html.mrn-mobile-navigation-push-ready body {
+	overflow-x: hidden;
+}
+
+html.mrn-mobile-navigation-push-open #page > :not(#site-navigation):not(.skip-link) {
+	pointer-events: none;
+	translate: var(--mrn-mobile-menu-push-distance, 0) 0;
+}
+
 .mrn-mobile-navigation[data-mrn-mobile-active="true"] .mrn-mobile-navigation__panel > .menu {
+	align-items: stretch;
 	display: flex;
 	flex: 0 0 auto;
 	flex-direction: column;
+	gap: 0;
 	list-style: none;
 	margin: 0;
+	min-height: 0;
 	padding: 0;
 	width: 100%;
 }
@@ -226,11 +255,16 @@
 }
 
 .mrn-mobile-navigation[data-mrn-mobile-active="true"] .mrn-mobile-navigation__panel > .menu > li > a {
+	border-radius: 0;
 	display: block;
 	font-size: 1.0625rem;
+	font-weight: 400;
+	gap: 0;
 	line-height: 1.4;
+	min-height: 0;
 	padding: 1.125rem 1.5rem;
 	text-decoration: none;
+	white-space: normal;
 }
 
 .mrn-mobile-navigation[data-mrn-mobile-active="true"] .mrn-mobile-navigation__panel > .menu > li.menu-item-has-children > a {
@@ -349,6 +383,7 @@ body.mrn-mobile-navigation-locked {
 
 @media (prefers-reduced-motion: reduce) {
 
+	html.mrn-mobile-navigation-push-ready #page > :not(#site-navigation):not(.skip-link),
 	.mrn-mobile-navigation__panel,
 	.mrn-mobile-navigation__toggle-bar,
 	.mrn-mobile-navigation__submenu-toggle svg {

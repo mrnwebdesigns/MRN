@@ -62,6 +62,7 @@
 		$mrn_mobile_navigation_options     = function_exists( 'mrn_base_stack_get_mobile_navigation_options' ) ? mrn_base_stack_get_mobile_navigation_options() : array( 'enabled' => false );
 		$mrn_mobile_navigation_enabled     = ! empty( $mrn_mobile_navigation_options['enabled'] );
 		$mrn_mobile_navigation_uses_header = ! isset( $mrn_mobile_navigation_options['use_site_header'] ) || ! empty( $mrn_mobile_navigation_options['use_site_header'] );
+		$mrn_mobile_navigation_pushes_page = isset( $mrn_mobile_navigation_options['drawer_mode'] ) && 'push' === $mrn_mobile_navigation_options['drawer_mode'];
 		$mrn_mobile_navigation_style       = $mrn_mobile_navigation_enabled && function_exists( 'mrn_base_stack_get_mobile_navigation_style' ) ? mrn_base_stack_get_mobile_navigation_style( $mrn_mobile_navigation_options ) : '';
 		$mrn_mobile_navigation_bottom      = $mrn_mobile_navigation_enabled && function_exists( 'mrn_base_stack_get_mobile_navigation_bottom_markup' ) ? mrn_base_stack_get_mobile_navigation_bottom_markup( $mrn_mobile_navigation_options ) : '';
 		$mrn_mobile_navigation_action      = $mrn_mobile_navigation_enabled && ! $mrn_mobile_navigation_uses_header && function_exists( 'mrn_base_stack_get_mobile_navigation_header_action_markup' ) ? mrn_base_stack_get_mobile_navigation_header_action_markup( $mrn_mobile_navigation_options ) : '';
@@ -72,6 +73,7 @@
 		$mrn_mobile_submenu_close_label  = __( 'Close %s submenu', 'mrn-base-stack' );
 		$mrn_header_primary_nav_classes .= $mrn_mobile_navigation_enabled ? ' mrn-mobile-navigation' : '';
 		$mrn_header_primary_nav_classes .= $mrn_mobile_navigation_enabled && ! $mrn_mobile_navigation_uses_header ? ' mrn-mobile-navigation--full-screen' : '';
+		$mrn_header_primary_nav_classes .= $mrn_mobile_navigation_enabled && $mrn_mobile_navigation_pushes_page ? ' mrn-mobile-navigation--push' : '';
 		$mrn_header_primary_nav_classes .= $mrn_header_primary_nav_center ? ' mrn-site-primary-navigation--center-canvas' : '';
 		$mrn_header_primary_nav_classes .= '' !== $mrn_header_primary_nav_width_slug ? ' mrn-site-primary-navigation--width-' . sanitize_html_class( $mrn_header_primary_nav_width_slug ) : ' mrn-site-primary-navigation--independent';
 		$mrn_header_classes              = trim( 'site-header ' . ( $mrn_header_use_layout_grid ? 'mrn-theme-hf-layout-grid mrn-theme-hf-layout-grid--header ' : 'mrn-theme-hf-layout-stack mrn-theme-hf-layout-stack--header ' ) . $mrn_header_width_class );

@@ -12,6 +12,11 @@ function absint( $value ) {
 
 require dirname( __DIR__, 2 ) . '/inc/mobile-navigation.php';
 
+$default_options = mrn_base_stack_get_mobile_navigation_options();
+if ( 'overlay' !== $default_options['drawer_mode'] ) {
+	throw new RuntimeException( 'Default mobile navigation drawer interaction was not preserved.' );
+}
+
 $configured_style = mrn_base_stack_get_mobile_navigation_style(
 	array(
 		'breakpoint' => 900,
