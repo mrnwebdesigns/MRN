@@ -89,7 +89,7 @@ done
 [[ -n "${SITE_HOSTNAME}" ]] || fail "--site-hostname is required."
 [[ "${BACKUP_MODE_SET}" -eq 1 ]] || fail "Choose --with-db-backup for a deployment or --skip-backup for a dry-run/read-only readiness check."
 
-for required in date grep sed ssh tr; do
+for required in base64 date grep sed ssh tr; do
 	command -v "${required}" >/dev/null 2>&1 || fail "Required command not found: ${required}"
 done
 
@@ -222,36 +222,124 @@ if [[ "${RUN_DB_BACKUP}" -eq 1 ]]; then
 	fi
 
 	note "Starting database-only Updraft backup on ${SITE_HOSTNAME} as ${SITE_USER}."
-	BACKUP_OUTPUT="$(run_site_wp "updraftplus backup --include-files= --send-to-cloud --label='${BACKUP_LABEL}'" 2>&1)" || fail "Updraft backup command failed for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
-
-	if has_backup_warning "${BACKUP_OUTPUT}"; then
-		fail "Updraft backup output still contains configuration warnings for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
-	fi
-
-	BACKUP_JOB_ID="$(printf '%s\n' "${BACKUP_OUTPUT}" | grep -Eo 'backup_progress[[:space:]]+[[:alnum:]]+' | awk '{print $2}' | tail -n 1)"
-	if [[ -z "${BACKUP_JOB_ID}" ]]; then
-		BACKUP_JOB_ID="$(printf '%s\n' "${BACKUP_OUTPUT}" | grep -Eo 'job id:[[:space:]]+[[:alnum:]]+' | awk '{print $3}' | tail -n 1)"
-	fi
-
-	[[ -n "${BACKUP_JOB_ID}" ]] || fail "Updraft backup command did not return a job ID for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
-
 	BACKUP_COMPLETE=0
-	for (( attempt=1; attempt<=60; attempt++ )); do
-		sleep 5
-		PROGRESS_OUTPUT="$(run_site_wp "updraftplus backup_progress ${BACKUP_JOB_ID}" 2>&1 || true)"
-		if has_backup_warning "${PROGRESS_OUTPUT}"; then
-			fail "Updraft backup progress log contains warnings for ${SITE_HOSTNAME}: ${PROGRESS_OUTPUT}"
+	if run_site_wp "cli has-command 'updraftplus backup'" >/dev/null 2>&1; then
+		BACKUP_OUTPUT="$(run_site_wp "updraftplus backup --include-files= --send-to-cloud --label='${BACKUP_LABEL}'" 2>&1)" || fail "Updraft backup command failed for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
+
+		if has_backup_warning "${BACKUP_OUTPUT}"; then
+			fail "Updraft backup output still contains configuration warnings for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
 		fi
-		if printf '%s' "${PROGRESS_OUTPUT}" | grep -Eiq 'backup succeeded and is now complete|backup.*completed successfully'; then
-			BACKUP_COMPLETE=1
-			break
+
+		BACKUP_JOB_ID="$(printf '%s\n' "${BACKUP_OUTPUT}" | grep -Eo 'backup_progress[[:space:]]+[[:alnum:]]+' | awk '{print $2}' | tail -n 1)"
+		if [[ -z "${BACKUP_JOB_ID}" ]]; then
+			BACKUP_JOB_ID="$(printf '%s\n' "${BACKUP_OUTPUT}" | grep -Eo 'job id:[[:space:]]+[[:alnum:]]+' | awk '{print $3}' | tail -n 1)"
 		fi
-		if printf '%s' "${PROGRESS_OUTPUT}" | grep -Eiq 'backup failed|errors? occurred|apparently unsuccessfully'; then
-			fail "Updraft backup failed for ${SITE_HOSTNAME}: ${PROGRESS_OUTPUT}"
-		fi
-	done
+
+		[[ -n "${BACKUP_JOB_ID}" ]] || fail "Updraft backup command did not return a job ID for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
+
+		for (( attempt=1; attempt<=60; attempt++ )); do
+			sleep 5
+			PROGRESS_OUTPUT="$(run_site_wp "updraftplus backup_progress ${BACKUP_JOB_ID}" 2>&1 || true)"
+			if has_backup_warning "${PROGRESS_OUTPUT}"; then
+				fail "Updraft backup progress log contains warnings for ${SITE_HOSTNAME}: ${PROGRESS_OUTPUT}"
+			fi
+			if printf '%s' "${PROGRESS_OUTPUT}" | grep -Eiq 'backup succeeded and is now complete|backup.*completed successfully'; then
+				BACKUP_COMPLETE=1
+				break
+			fi
+			if printf '%s' "${PROGRESS_OUTPUT}" | grep -Eiq 'backup failed|errors? occurred|apparently unsuccessfully'; then
+				fail "Updraft backup failed for ${SITE_HOSTNAME}: ${PROGRESS_OUTPUT}"
+			fi
+		done
+	else
+		note "Updraft CLI backup command is unavailable; using the core Updraft backup engine."
+		BACKUP_LABEL_BASE64="$(printf '%s' "${BACKUP_LABEL}" | base64 | tr -d '\r\n')"
+		UPDRAFT_CORE_BACKUP_CODE=$(cat <<PHP
+if (!isset(\$GLOBALS['_ENV']) || !is_array(\$GLOBALS['_ENV'])) {
+    \$GLOBALS['_ENV'] = [];
+}
+global \$updraftplus;
+\$label = base64_decode('${BACKUP_LABEL_BASE64}', true);
+if (false === \$label || !is_object(\$updraftplus) || !method_exists(\$updraftplus, 'backupnow_database')) {
+    fwrite(STDERR, "Updraft core backup engine is unavailable.\n");
+    exit(11);
+}
+\$result = \$updraftplus->backupnow_database([
+    'label' => \$label,
+    'nocloud' => false,
+]);
+echo "\nMRN_UPDRAFT_BACKUP=" . wp_json_encode([
+    'result' => true === \$result,
+    'nonce' => \$updraftplus->file_nonce,
+    'label' => \$label,
+]);
+if (true !== \$result) {
+    exit(12);
+}
+PHP
+)
+		BACKUP_OUTPUT="$(run_site_php "${UPDRAFT_CORE_BACKUP_CODE}" 2>&1)" || fail "Updraft core backup failed for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
+		BACKUP_JOB_ID="$(printf '%s\n' "${BACKUP_OUTPUT}" | grep -Eo '"nonce":"[0-9a-f]{12}"' | cut -d'"' -f4 | tail -n 1)"
+		[[ -n "${BACKUP_JOB_ID}" ]] || fail "Updraft core backup did not return a job ID for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
+		BACKUP_COMPLETE=1
+	fi
 
 	[[ "${BACKUP_COMPLETE}" -eq 1 ]] || fail "Updraft backup did not complete within 300 seconds for ${SITE_HOSTNAME} (job ${BACKUP_JOB_ID})."
+
+	BACKUP_LABEL_BASE64="$(printf '%s' "${BACKUP_LABEL}" | base64 | tr -d '\r\n')"
+	UPDRAFT_VERIFY_CODE=$(cat <<PHP
+\$nonce = '${BACKUP_JOB_ID}';
+\$label = base64_decode('${BACKUP_LABEL_BASE64}', true);
+\$backup = UpdraftPlus_Backup_History::get_backup_set_by_nonce(\$nonce);
+\$services = is_array(\$backup) && isset(\$backup['service']) ? array_values(array_filter((array) \$backup['service'])) : [];
+\$sha256 = is_array(\$backup) && isset(\$backup['checksums']['sha256']['db0']) ? \$backup['checksums']['sha256']['db0'] : '';
+\$forbidden_file_entities = ['plugins', 'themes', 'uploads', 'others', 'wpcore', 'more'];
+\$has_file_backup = false;
+foreach (\$forbidden_file_entities as \$entity) {
+    if (!empty(\$backup[\$entity])) {
+        \$has_file_backup = true;
+        break;
+    }
+}
+global \$updraftplus;
+\$log_file = trailingslashit(\$updraftplus->backups_dir_location()) . 'log.' . \$nonce . '.txt';
+\$log = is_readable(\$log_file) ? file_get_contents(\$log_file) : '';
+\$log_complete = false !== stripos(\$log, 'The backup succeeded and is now complete');
+\$log_uploaded = false !== stripos(\$log, 'Recording as successfully uploaded');
+\$log_failed = 1 === preg_match('/Backup aborted|Backup failed|apparently unsuccessfully|errors occurred/i', \$log);
+\$valid = is_array(\$backup)
+    && isset(\$backup['nonce'], \$backup['label'], \$backup['db'], \$backup['db-size'])
+    && \$nonce === \$backup['nonce']
+    && \$label === \$backup['label']
+    && is_string(\$backup['db'])
+    && '' !== \$backup['db']
+    && (int) \$backup['db-size'] > 0
+    && 1 === preg_match('/^[0-9a-f]{64}$/', \$sha256)
+    && !\$has_file_backup
+    && !empty(\$services)
+    && !in_array('none', \$services, true)
+    && \$log_complete
+    && \$log_uploaded
+    && !\$log_failed;
+echo "MRN_UPDRAFT_VERIFY=" . wp_json_encode([
+    'valid' => \$valid,
+    'nonce' => \$nonce,
+    'label' => is_array(\$backup) && isset(\$backup['label']) ? \$backup['label'] : null,
+    'database' => is_array(\$backup) && isset(\$backup['db']) ? \$backup['db'] : null,
+    'database_size' => is_array(\$backup) && isset(\$backup['db-size']) ? (int) \$backup['db-size'] : 0,
+    'sha256' => \$sha256,
+    'services' => \$services,
+    'has_file_backup' => \$has_file_backup,
+    'log_complete' => \$log_complete,
+    'log_uploaded' => \$log_uploaded,
+    'log_failed' => \$log_failed,
+]);
+if (!\$valid) {
+    exit(13);
+}
+PHP
+)
+	VERIFY_BACKUP_OUTPUT="$(run_site_php "${UPDRAFT_VERIFY_CODE}" 2>&1)" || fail "Updraft backup verification failed for ${SITE_HOSTNAME} (job ${BACKUP_JOB_ID}): ${VERIFY_BACKUP_OUTPUT}"
 	note "Updraft database backup completed cleanly for ${SITE_HOSTNAME} (${BACKUP_LABEL}, job ${BACKUP_JOB_ID})."
 fi
 
