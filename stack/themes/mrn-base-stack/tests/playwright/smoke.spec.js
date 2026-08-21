@@ -271,6 +271,37 @@ test.describe('MRN stack site smoke QA', () => {
 		await expect(navigation.locator('.mrn-mobile-navigation__drawer-header')).toBeHidden();
 	});
 
+	test('enabled back-to-top control stays centered on the footer edge', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'networkidle' });
+
+		const control = page.locator('.site-footer > .mrn-back-to-top').first();
+		test.skip((await control.count()) === 0, 'Back to top is not enabled in this runtime.');
+
+		await expect(control).toHaveAttribute('href', '#page');
+		await expect(control).toHaveAttribute('aria-label', 'Back to top');
+
+		const footer = page.locator('.site-footer').first();
+		await footer.scrollIntoViewIfNeeded();
+		const consentPanel = page.locator('#stcm-banner:visible, #silktide-banner:visible').first();
+		if ((await consentPanel.count()) > 0 && await control.isHidden()) {
+			await consentPanel.evaluate((element) => {
+				element.style.display = 'none';
+			});
+		}
+
+		await expect(control).toBeVisible();
+		await expect(control).toHaveCSS('position', 'absolute');
+		await expect(control.locator('.dashicons-arrow-up-alt2')).toBeVisible();
+		const controlBox = await control.boundingBox();
+		const footerBox = await footer.boundingBox();
+		expect(controlBox).not.toBeNull();
+		expect(footerBox).not.toBeNull();
+		expect(Math.abs((controlBox.x + controlBox.width / 2) - (footerBox.x + footerBox.width / 2))).toBeLessThanOrEqual(2);
+
+		await control.evaluate((element) => element.click());
+		await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(1);
+	});
+
 	for (const testCase of motionTargetCases) {
 		test(`motion target applies effect to configured target: ${testCase.label}`, async ({ page }) => {
 			await expectMotionTargetCase(page, testCase);

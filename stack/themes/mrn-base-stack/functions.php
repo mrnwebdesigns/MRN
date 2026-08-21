@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.2.115' );
+	define( '_S_VERSION', '1.2.116' );
 }
 
 /**
@@ -845,6 +845,7 @@ function mrn_base_stack_scripts() {
 	}
 
 	$header_options     = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+	$uses_back_to_top   = ! empty( $header_options['footer_show_back_to_top'] );
 	$needs_fontawesome  = false;
 	$needs_dashicons    = false;
 	$uses_icon_search   = ! empty( $header_options['header_show_search'] ) && isset( $header_options['header_search_style'] ) && 'icon_only' === $header_options['header_search_style'];
@@ -854,8 +855,17 @@ function mrn_base_stack_scripts() {
 		$needs_fontawesome = true;
 	}
 
-	if ( ( 'dashicons' === $search_icon_source || 'standard' === $search_icon_source ) && $uses_icon_search ) {
+	if (
+		( ( 'dashicons' === $search_icon_source || 'standard' === $search_icon_source ) && $uses_icon_search )
+		|| $uses_back_to_top
+	) {
 		$needs_dashicons = true;
+	}
+
+	if ( $uses_back_to_top ) {
+		$back_to_top_path = get_template_directory() . '/js/back-to-top.js';
+		$back_to_top_ver  = file_exists( $back_to_top_path ) ? _S_VERSION . '-' . (string) filemtime( $back_to_top_path ) : _S_VERSION;
+		wp_enqueue_script( 'mrn-base-stack-back-to-top', get_template_directory_uri() . '/js/back-to-top.js', array(), $back_to_top_ver, true );
 	}
 
 	if ( function_exists( 'mrn_base_stack_get_header_utility_message_options' ) ) {
