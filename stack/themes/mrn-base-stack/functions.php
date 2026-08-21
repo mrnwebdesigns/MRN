@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.2.116' );
+	define( '_S_VERSION', '1.3.0' );
 }
 
 /**
@@ -705,6 +705,23 @@ function mrn_base_stack_enqueue_motion_assets() {
 		true
 	);
 }
+
+/**
+ * Stage motion effects before first paint without hiding no-JavaScript output.
+ *
+ * @return void
+ */
+function mrn_base_stack_prepare_motion_effects() {
+	if ( ! wp_script_is( 'mrn-base-stack-front-end-effects', 'enqueued' ) ) {
+		return;
+	}
+
+	wp_print_inline_script_tag(
+		"( function() { var root = document.documentElement; root.classList.add( 'mrn-motion-effects-enabled' ); window.setTimeout( function() { if ( ! root.classList.contains( 'mrn-motion-effects-ready' ) ) { root.classList.remove( 'mrn-motion-effects-enabled' ); } }, 2000 ); }() );",
+		array( 'id' => 'mrn-base-stack-motion-prep' )
+	);
+}
+add_action( 'wp_head', 'mrn_base_stack_prepare_motion_effects', 1 );
 
 /**
  * Return front-end marker fragments that indicate runtime JS is needed.

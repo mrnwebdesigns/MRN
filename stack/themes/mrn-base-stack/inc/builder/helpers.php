@@ -4053,6 +4053,7 @@ function mrn_base_stack_get_motion_effect_choices() {
 	return array(
 		'surface'          => 'Switch Light/Dark Surface',
 		'active-class'     => 'Mark Row As Active',
+		'text-reveal'      => 'Subtle Text Reveal',
 		'dark-scroll-card' => 'Darken Card On Scroll',
 		'stacked-cards'    => 'Stack Cards On Scroll',
 	);
@@ -4140,6 +4141,66 @@ function mrn_base_stack_get_motion_target_choices() {
 }
 
 /**
+ * Return only motion targets supported by a builder layout field.
+ *
+ * The field key identifies the layout because every top-level and nested
+ * builder layout receives its own motion-settings field. Unknown keys retain
+ * the complete target catalog for backward compatibility.
+ *
+ * @param string $field_key Motion-settings ACF field key.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_motion_target_choices_for_field( $field_key ) {
+	$all_choices = mrn_base_stack_get_motion_target_choices();
+	$context     = sanitize_key( (string) $field_key );
+	$context     = preg_replace( '/^field_mrn_/', '', $context );
+	$context     = preg_replace( '/_motion_settings$/', '', (string) $context );
+
+	foreach ( array( 'hero_field_mrn_', 'nested_', 'page_' ) as $prefix ) {
+		if ( 0 === strpos( (string) $context, $prefix ) ) {
+			$context = substr( (string) $context, strlen( $prefix ) );
+			break;
+		}
+	}
+
+	$aliases = array(
+		'basic_block' => 'basic',
+		'cta_block'   => 'cta',
+		'faq_block'   => 'faq',
+	);
+	$context = $aliases[ $context ] ?? $context;
+
+	$profiles = array(
+		'basic'            => array( 'row', 'surface', 'content', 'media', 'header' ),
+		'body_text'        => array( 'row', 'surface', 'content', 'header' ),
+		'card'             => array( 'row', 'surface', 'content', 'header', 'items' ),
+		'content_lists'    => array( 'row', 'surface', 'content', 'header', 'items' ),
+		'cta'              => array( 'row', 'surface', 'content', 'media' ),
+		'external_widget'  => array( 'row', 'surface', 'content', 'header' ),
+		'faq'              => array( 'row', 'surface', 'content', 'header', 'items' ),
+		'faq_jump_nav'     => array( 'row', 'surface', 'content', 'header' ),
+		'grid'             => array( 'row', 'surface', 'content', 'header', 'items' ),
+		'image_content'    => array( 'row', 'surface', 'content', 'media', 'header' ),
+		'logos'            => array( 'row', 'surface', 'content', 'header', 'items' ),
+		'reusable_block'   => array( 'row', 'surface', 'content', 'media', 'header', 'items' ),
+		'searchwp_form'    => array( 'row', 'surface', 'content', 'header' ),
+		'showcase'         => array( 'row', 'surface', 'content', 'header', 'items' ),
+		'slider'           => array( 'row', 'surface', 'content', 'header', 'items' ),
+		'stats'            => array( 'row', 'surface', 'content', 'header', 'items' ),
+		'tabbed_layout'    => array( 'row', 'surface', 'content', 'header' ),
+		'two_column_split' => array( 'row', 'surface', 'content', 'header', 'left-column', 'right-column' ),
+		'video'            => array( 'row', 'surface', 'content', 'media', 'header' ),
+		'wpforms'          => array( 'row', 'surface', 'content', 'header' ),
+	);
+
+	if ( ! isset( $profiles[ $context ] ) ) {
+		return $all_choices;
+	}
+
+	return array_intersect_key( $all_choices, array_fill_keys( $profiles[ $context ], true ) );
+}
+
+/**
  * Normalize a stored motion target to a supported value.
  *
  * @param mixed $value Raw stored target value.
@@ -4171,6 +4232,26 @@ function mrn_base_stack_get_motion_margin_for_trigger( $value ) {
 
 	if ( 'late' === $trigger ) {
 		return '-45% 0px -10% 0px';
+	}
+
+	return '-35% 0px -35% 0px';
+}
+
+/**
+ * Convert a trigger position into the one-shot text reveal viewport margin.
+ *
+ * @param mixed $value Raw stored trigger value.
+ * @return string
+ */
+function mrn_base_stack_get_text_reveal_margin_for_trigger( $value ) {
+	$trigger = is_string( $value ) ? sanitize_key( $value ) : '';
+
+	if ( 'early' === $trigger ) {
+		return '-20% 0px -20% 0px';
+	}
+
+	if ( 'late' === $trigger ) {
+		return '-45% 0px -40% 0px';
 	}
 
 	return '-35% 0px -35% 0px';
@@ -4257,10 +4338,10 @@ function mrn_base_stack_get_motion_group_field( $key, $name = 'motion_settings',
 				'name'              => 'target',
 				'aria-label'        => '',
 				'type'              => 'select',
-				'choices'           => mrn_base_stack_get_motion_target_choices(),
+				'choices'           => mrn_base_stack_get_motion_target_choices_for_field( $key ),
 				'default_value'     => 'row',
 				'ui'                => 1,
-				'instructions'      => 'Choose which part of the layout should receive the effect.',
+				'instructions'      => 'Choose which supported part of this layout should receive the effect.',
 				'wrapper'           => array(
 					'width' => '33',
 				),
@@ -10628,9 +10709,14 @@ function mrn_base_stack_get_motion_contract_for_settings( $settings ) {
 		);
 	}
 
-	$effect = $settings['effect'];
-	$margin = '' !== $settings['margin'] ? $settings['margin'] : mrn_base_stack_get_motion_margin_for_trigger( $settings['trigger_position'] ?? '' );
-	$target = mrn_base_stack_normalize_motion_target( $settings['target'] ?? 'row' );
+	$effect  = $settings['effect'];
+	$trigger = $settings['trigger_position'] ?? '';
+	$margin  = '' !== $settings['margin'] ? $settings['margin'] : mrn_base_stack_get_motion_margin_for_trigger( $trigger );
+	$target  = mrn_base_stack_normalize_motion_target( $settings['target'] ?? 'row' );
+
+	if ( 'text-reveal' === $effect && '' === $settings['margin'] ) {
+		$margin = mrn_base_stack_get_text_reveal_margin_for_trigger( $trigger );
+	}
 
 	if ( 'surface' === $effect ) {
 		$surface = $settings['surface'];
@@ -10656,6 +10742,17 @@ function mrn_base_stack_get_motion_contract_for_settings( $settings ) {
 			'attributes' => array(
 				'data-mrn-motion-effect' => 'active-class',
 				'data-mrn-motion-class'  => $active_class,
+				'data-mrn-motion-margin' => $margin,
+				'data-mrn-motion-target' => $target,
+			),
+		);
+	}
+
+	if ( 'text-reveal' === $effect ) {
+		return array(
+			'classes'    => array( 'mrn-motion-effect--text-reveal' ),
+			'attributes' => array(
+				'data-mrn-motion-effect' => 'text-reveal',
 				'data-mrn-motion-margin' => $margin,
 				'data-mrn-motion-target' => $target,
 			),

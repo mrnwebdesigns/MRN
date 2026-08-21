@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.16-reusable-block-library-stack-profile`
-- Release date: `2026-08-16`
+- Stack release: `2026.08.21-subtle-text-reveal`
+- Release date: `2026-08-21`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.115`
+  - `mrn-base-stack` `1.3.0`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.6`

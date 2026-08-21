@@ -1,5 +1,13 @@
 # Stack Changelog
 
+## 2026.08.21-subtle-text-reveal
+- Expanded `mrn-base-stack` to `1.3.0`.
+- Added `Subtle Text Reveal` as a first-class Effects-tab option for builder layouts and reusable blocks, with shared row/content/media/header/items target resolution.
+- Limited each layout's `Apply To` menu to the structural motion targets that layout supports while preserving the full catalog for extension fields.
+- Added first-paint staging, a one-shot fade-and-rise entrance, a later viewport trigger, a no-runtime fallback, and `prefers-reduced-motion` handling without layout shift.
+- Added browser coverage that verifies target preparation, hidden pre-entry state, settled visibility, and no replay after reverse scrolling.
+- Included the new optional footer back-to-top control and its collision-aware runtime in the current stack baseline.
+
 ## 2026.08.21-base-stack-compatibility-contracts
 - Expanded `mrn-base-stack` to `1.2.115`.
 - Replaced the broad image-bearing content-list card selector with an explicit `data-card-layout` contract so legacy media-split cards can keep their layout while `Grid` and `team_member` cards stay vertical by default.
