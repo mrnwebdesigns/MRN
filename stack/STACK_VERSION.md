@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.21-subtle-text-reveal`
-- Release date: `2026-08-21`
+- Stack release: `2026.08.22-runtime-report-transport`
+- Release date: `2026-08-22`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
