@@ -20,6 +20,8 @@ test_db_connection.php
 .DS_Store
 */.DS_Store
 .playwright/
+__pycache__/
+*.py[cod]
 
 # Release artifacts
 releases/clone/

@@ -20,7 +20,7 @@
 - Standard plugins:
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-announcements` `1.6.2`
-  - `mrn-config-helper` `0.1.54`
+  - `mrn-config-helper` `0.1.56`
   - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`
   - `mrn-mega-menu` `0.16.17`

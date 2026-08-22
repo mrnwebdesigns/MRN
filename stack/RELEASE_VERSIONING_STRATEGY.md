@@ -47,7 +47,24 @@
 7. Record release notes in:
    - `stack/CHANGELOG.md`
    - `stack/STACK_VERSION.md`
-8. Deploy in stack-first order for stack-owned runtime changes, then rollout surfaces.
+8. Generate the immutable release lock after all runtime source commits are final:
+   - `python3 stack/scripts/generate-stack-release-lock.py --output stack/manifests/stack-release.lock.json`
+   - commit the generated lock separately so its recorded source commits remain exact
+9. Deploy in stack-first order for stack-owned runtime changes, then rollout surfaces.
+
+## Release Lock
+
+`stack/manifests/stack-release.lock.json` is generated from the component
+catalog, theme manifest, version headers, and exact Git commits. It uses the
+`sha256-tree-v1` digest: SHA-256 over sorted records containing each deployable
+file's relative path, SHA-256, and byte size. Git metadata, local caches,
+`node_modules`, Playwright output, and packaging scratch directories are
+excluded. Symlinks are rejected so a digest cannot silently include content
+outside the declared release source.
+
+The generator fails closed on missing components, duplicate slugs, dirty
+external component repositories, missing version headers, or catalog/header
+version drift. Do not hand-edit the generated lock.
 
 ## Enforcement Baseline
 - No release should be marked ready when:
