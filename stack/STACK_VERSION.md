@@ -10,6 +10,7 @@
   - `mrn-base-stack` `1.3.0`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
+  - `mrn-loader` `1.5.0`
   - `mrn-active-style-guide` `0.1.6`
   - `mrn-admin-ui-css` `3.2.3`
   - `mrn-shared-assets` `0.1.3`
