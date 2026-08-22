@@ -268,6 +268,7 @@ def build_lock(repo_root, catalog_path, stack_version_path, theme_manifest_path,
                 "slug": theme["slug"],
                 "version": version,
                 "active": theme["active"],
+                "verification_mode": "site-derived" if theme["active"] else "exact",
                 "deployed_path": f"themes/{theme['slug']}",
                 "source": {
                     "repository": "MRN",

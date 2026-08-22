@@ -66,6 +66,11 @@ The generator fails closed on missing components, duplicate slugs, dirty
 external component repositories, missing version headers, or catalog/header
 version drift. Do not hand-edit the generated lock.
 
+Theme records declare their verification mode. The parent theme is `exact` and
+must match its release hash. The generic active child in the bootstrap manifest
+is `site-derived`: it is the source template for a site-owned, renamed child
+theme and must not be treated as an exact fleet runtime slug or hash.
+
 ## Enforcement Baseline
 - No release should be marked ready when:
   - version sync points are inconsistent

@@ -89,6 +89,20 @@ class ReleaseLockTests(unittest.TestCase):
 
             self.assertEqual("1.2.3", release_lock.read_header_version(path))
 
+    def test_active_manifest_theme_is_site_derived(self):
+        with tempfile.TemporaryDirectory() as root:
+            manifest = Path(root) / "themes.txt"
+            manifest.write_text(
+                "/packages/mrn-base-stack.zip\n"
+                "/packages/mrn-base-stack-child.zip|active\n",
+                encoding="utf-8",
+            )
+
+            themes = release_lock.parse_theme_manifest(manifest)
+
+            self.assertFalse(themes[0]["active"])
+            self.assertTrue(themes[1]["active"])
+
 
 if __name__ == "__main__":
     unittest.main()
