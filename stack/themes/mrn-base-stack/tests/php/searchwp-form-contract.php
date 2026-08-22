@@ -44,7 +44,9 @@ namespace {
 		return true;
 	}
 
-	function apply_filters( $hook_name, $value ) {
+	function apply_filters( $hook_name, $value, ...$args ) {
+		unset( $args );
+
 		return $value;
 	}
 
