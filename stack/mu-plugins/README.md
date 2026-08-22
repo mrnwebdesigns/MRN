@@ -8,11 +8,13 @@ The `mrn-loader.php` file owns the explicit subfolder load order.
 
 ## Runtime Report
 
-Loader `1.5.0` exposes a read-only stack report for parity verification:
+Loader `1.5.1` exposes a read-only stack report for parity verification:
 
 - WP-CLI: `wp mrn stack-report`
 - REST: `GET /wp-json/mrn/v1/stack-report`
 - PHP: `mrn_loader_get_runtime_report()`
+- MainWP Child signed transport: `mrn_stack_report_action=report` through
+  `extra_execution`
 
 The REST route requires `manage_options` by default. Change that capability only
 through `mrn_loader_runtime_report_capability`; never make the route public. The
@@ -23,6 +25,10 @@ MU collisions. It does not expose absolute server paths or credentials.
 When `mrn-stack-release.lock.json` is deployed beside the loader, runtime hashes
 and versions are compared to that release. Without a lock, the report remains
 useful for loader/component presence but cannot claim release parity.
+
+The MainWP transport is not a public endpoint. It runs only inside MainWP
+Child's authenticated `mainwp_child_extra_execution` request and leaves other
+extension responses untouched unless the exact report action is present.
 
 Current entries:
 - `mrn-loader`

@@ -23,7 +23,7 @@
     {
       "slug": "mrn-loader",
       "name": "MRN Loader",
-      "version": "1.5.0",
+      "version": "1.5.1",
       "runtime_type": "mu-loader",
       "classification": "platform",
       "lifecycle": "supported",

@@ -2,12 +2,12 @@
 /**
  * Plugin Name: MRN Loader
  * Description: Loads MRN MU plugins from known subfolders in /wp-content/mu-plugins.
- * Version: 1.5.0
+ * Version: 1.5.1
  */
 
 defined('ABSPATH') || exit;
 
-define('MRN_LOADER_VERSION', '1.5.0');
+define('MRN_LOADER_VERSION', '1.5.1');
 define('MRN_LOADER_RUNTIME_REPORT_SCHEMA_VERSION', 1);
 define('MRN_LOADER_HASH_ALGORITHM', 'sha256-tree-v1');
 
@@ -506,6 +506,33 @@ function mrn_loader_get_runtime_report() {
 
     return apply_filters('mrn_loader_runtime_report', $report);
 }
+
+/**
+ * Return the runtime report through MainWP Child's signed connection.
+ *
+ * MainWP invokes this filter only after authenticating the dashboard request.
+ * Requests without the explicit report action leave other extension responses
+ * untouched.
+ *
+ * @param array $information Existing MainWP Child extension response.
+ * @param mixed $post        Authenticated MainWP request data.
+ * @return array
+ */
+function mrn_loader_handle_mainwp_child_execution($information, $post) {
+    $information = is_array($information) ? $information : array();
+    $post = is_array($post) ? $post : array();
+    $action = sanitize_key((string) wp_unslash($post['mrn_stack_report_action'] ?? ''));
+    if ('report' !== $action) {
+        return $information;
+    }
+
+    return array(
+        'success'        => true,
+        'loader_version' => MRN_LOADER_VERSION,
+        'report'         => mrn_loader_get_runtime_report(),
+    );
+}
+add_filter('mainwp_child_extra_execution', 'mrn_loader_handle_mainwp_child_execution', 10, 2);
 
 /**
  * Restrict runtime-report access to trusted administrators by default.

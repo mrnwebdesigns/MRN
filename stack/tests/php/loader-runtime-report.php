@@ -10,6 +10,7 @@ define('WP_CONTENT_DIR', $content_root);
 define('WP_PLUGIN_DIR', $content_root . '/plugins');
 
 $mrn_test_actions = array();
+$mrn_test_filters = array();
 /** @var array<string,array<string,mixed>> $mrn_test_routes */
 $mrn_test_routes = array();
 $mrn_test_can_manage = false;
@@ -19,8 +20,42 @@ function add_action($hook, $callback) {
     $mrn_test_actions[$hook][] = $callback;
 }
 
+function add_filter($hook, $callback, $priority = 10, $accepted_args = 1) {
+    global $mrn_test_filters;
+    $mrn_test_filters[$hook][] = array($callback, $priority, $accepted_args);
+}
+
 function apply_filters($hook, $value) {
     return $value;
+}
+
+function sanitize_key($value) {
+    return preg_replace('/[^a-z0-9_\-]/', '', strtolower((string) $value));
+}
+
+function wp_unslash($value) {
+    return $value;
+}
+
+function wp_parse_url($url, $component = -1) {
+    return parse_url($url, $component);
+}
+
+function home_url($path = '/') {
+    return 'https://example.test' . $path;
+}
+
+function wp_get_environment_type() {
+    return 'local';
+}
+
+function get_option($name, $default = false) {
+    $options = array(
+        'active_plugins' => array(),
+        'template'       => 'mrn-base-stack',
+        'stylesheet'     => 'example-child',
+    );
+    return $options[$name] ?? $default;
 }
 
 function current_user_can($capability) {
@@ -81,6 +116,21 @@ mrn_test_assert(is_callable($route['permission_callback']), 'REST route needs a 
 mrn_test_assert(!$route['permission_callback'](), 'anonymous runtime-report access must be denied');
 $mrn_test_can_manage = true;
 mrn_test_assert($route['permission_callback'](), 'manage_options access must be allowed');
+
+$existing = array('another_extension' => true);
+mrn_test_assert(
+    mrn_loader_handle_mainwp_child_execution($existing, array()) === $existing,
+    'unrelated MainWP child execution must remain untouched'
+);
+$mainwp_response = mrn_loader_handle_mainwp_child_execution(
+    $existing,
+    array('mrn_stack_report_action' => 'report')
+);
+mrn_test_assert(!empty($mainwp_response['success']), 'signed MainWP transport should succeed');
+mrn_test_assert(
+    isset($mainwp_response['report']['schema_version']),
+    'signed MainWP transport should return the runtime report'
+);
 
 $iterator = new RecursiveIteratorIterator(
     new RecursiveDirectoryIterator($temporary_root, FilesystemIterator::SKIP_DOTS),
