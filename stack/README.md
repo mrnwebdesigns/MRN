@@ -48,6 +48,11 @@ The future hosting platform owns site and environment selection. Its canonical v
 2. A cron job runs `scripts/bootstrap-new-sites.sh` every 1-5 minutes.
 3. The script finds unbootstrapped sites and runs `scripts/site-bootstrap.sh`.
 4. Bootstrap clears host-provided standard plugins, installs the stack manifest, syncs MU plugins and `wp-content/shared`, activates the stack theme clone, and authorizes the canonical MRN site-owner public key for direct site-owner SSH.
+
+For immutable platform updates to an existing site, use the assembled,
+backup-gated workflow in [`VERIFIED_RELEASE_DEPLOY.md`](VERIFIED_RELEASE_DEPLOY.md).
+It preserves each site's child stylesheet and verifies the live runtime against
+the selected release lock before reporting success.
 5. A marker file is created so the same site is not bootstrapped again.
 
 ## First setup

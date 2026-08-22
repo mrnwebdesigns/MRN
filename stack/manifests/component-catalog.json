@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-08-17",
+  "catalog_updated": "2026-08-22",
   "authority": "This file is the authoritative inventory and classification source for MRN-owned WordPress plugins and MU components. Inclusion does not imply installation.",
   "product_model": {
     "platform-required": "Installed on a production MRN stack because it provides mandatory platform behavior.",
@@ -33,6 +33,20 @@
       "dependencies": {"hard": ["WordPress"], "soft": [], "release_group": "mrn-platform"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
       "purpose": "Loads approved MRN MU component entrypoints and exposes a capability-protected runtime parity report."
+    },
+    {
+      "slug": "mrn-shared-runtime",
+      "name": "MRN Shared Runtime",
+      "version": "1.0.0",
+      "runtime_type": "shared-runtime",
+      "classification": "platform",
+      "lifecycle": "supported",
+      "current_distribution": "shared-runtime",
+      "target_tier": "platform-required",
+      "source": {"repository": "MRN", "path": "shared", "state": "confirmed"},
+      "dependencies": {"hard": ["WordPress"], "soft": ["MRN base theme", "MRN Site Styles"], "release_group": "mrn-platform"},
+      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "purpose": "Provides the versioned and checksummed wp-content/shared helper surface used by stack themes and MU components."
     },
     {
       "slug": "mrn-admin-data-post-types",

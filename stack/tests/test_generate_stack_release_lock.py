@@ -76,10 +76,47 @@ class ReleaseLockTests(unittest.TestCase):
                 "runtime_report_schema_version": 1,
             },
             "components": [component, dict(component)],
-            "themes": [{"slug": "fixture"}],
+            "themes": [
+                {
+                    "slug": "fixture",
+                    "verification_mode": "exact",
+                    "deployment_role": "parent-template",
+                }
+            ],
         }
 
         with self.assertRaisesRegex(release_lock.ReleaseLockError, "duplicate"):
+            release_lock.validate_lock(payload)
+
+    def test_validate_lock_requires_shared_runtime(self):
+        payload = {
+            "schema_version": 1,
+            "release_id": "fixture",
+            "released_at": "2026-08-22T00:00:00Z",
+            "source": {"repository": "MRN", "git_commit": "a" * 40},
+            "stack_version": "fixture",
+            "hash_algorithm": "sha256-tree-v1",
+            "compatibility": {
+                "minimum_loader_version": "1.0.0",
+                "runtime_report_schema_version": 1,
+            },
+            "components": [
+                {
+                    "slug": "mrn-loader",
+                    "runtime_type": "mu-loader",
+                    "deployed_path": "mu-plugins/mrn-loader.php",
+                }
+            ],
+            "themes": [
+                {
+                    "slug": "mrn-base-stack",
+                    "verification_mode": "exact",
+                    "deployment_role": "parent-template",
+                }
+            ],
+        }
+
+        with self.assertRaisesRegex(release_lock.ReleaseLockError, "shared-runtime"):
             release_lock.validate_lock(payload)
 
     def test_header_version_parser_reads_wordpress_header(self):

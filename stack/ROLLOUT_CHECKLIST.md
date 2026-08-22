@@ -1,5 +1,10 @@
 # Stack Rollout Checklist
 
+For a complete immutable platform release, prefer
+[`VERIFIED_RELEASE_DEPLOY.md`](VERIFIED_RELEASE_DEPLOY.md). The older feature
+helper remains scoped to the stack server and `default-configs.mrndev.io`; it is
+not a substitute for a full release-lock deployment to an arbitrary site.
+
 This is the canonical pre-flight, deploy, and parity checklist for MRN stack rollouts.
 
 Use it when you want a site to be as close to local parity as practical, especially for:

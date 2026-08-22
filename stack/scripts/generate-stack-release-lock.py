@@ -194,6 +194,8 @@ def deployed_component_path(entry):
         return f"mu-plugins/{slug}"
     if entry["runtime_type"] == "standard-plugin":
         return f"plugins/{slug}"
+    if entry["runtime_type"] == "shared-runtime":
+        return "shared"
     raise ReleaseLockError(
         f"Unsupported runtime type for platform-required component {slug}: "
         f"{entry['runtime_type']}"
@@ -269,6 +271,9 @@ def build_lock(repo_root, catalog_path, stack_version_path, theme_manifest_path,
                 "version": version,
                 "active": theme["active"],
                 "verification_mode": "site-derived" if theme["active"] else "exact",
+                "deployment_role": (
+                    "active-stylesheet-template" if theme["active"] else "parent-template"
+                ),
                 "deployed_path": f"themes/{theme['slug']}",
                 "source": {
                     "repository": "MRN",
@@ -320,6 +325,36 @@ def validate_lock(payload):
     slugs = [entry.get("slug") for entry in payload["components"]]
     if len(slugs) != len(set(slugs)):
         raise ReleaseLockError("Release lock contains duplicate component slugs")
+    allowed_runtime_types = {
+        "mu-loader",
+        "mu-component",
+        "standard-plugin",
+        "shared-runtime",
+    }
+    deployed_paths = []
+    for component in payload["components"]:
+        if component.get("runtime_type") not in allowed_runtime_types:
+            raise ReleaseLockError(
+                f"Unsupported locked runtime type: {component.get('runtime_type')}"
+            )
+        deployed_paths.append(component.get("deployed_path"))
+    if len(deployed_paths) != len(set(deployed_paths)):
+        raise ReleaseLockError("Release lock contains duplicate component paths")
+    if sum(entry.get("runtime_type") == "shared-runtime" for entry in payload["components"]) != 1:
+        raise ReleaseLockError("Release lock must contain one shared-runtime component")
+
+    exact_parent_themes = 0
+    for theme in payload["themes"]:
+        mode = theme.get("verification_mode")
+        role = theme.get("deployment_role")
+        if mode not in {"exact", "site-derived"}:
+            raise ReleaseLockError(f"Unsupported theme verification mode: {mode}")
+        if role not in {"parent-template", "active-stylesheet-template"}:
+            raise ReleaseLockError(f"Unsupported theme deployment role: {role}")
+        if mode == "exact" and role == "parent-template":
+            exact_parent_themes += 1
+    if exact_parent_themes != 1:
+        raise ReleaseLockError("Release lock must contain one exact parent-template theme")
     return payload
 
 
