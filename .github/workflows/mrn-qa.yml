@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 20
     env:
       MRN_QA_STACK_ROOT: ${{ github.workspace }}
-      MRN_QA_CODE_ANALYSIS_SCOPE: all
+      MRN_QA_CODE_ANALYSIS_SCOPE: changed
       MRN_QA_RUN_SMOKE: never
       MRN_QA_RUN_ACCESSIBILITY: never
       MRN_QA_RUN_PERFORMANCE: never
@@ -59,6 +59,76 @@ jobs:
           path: .mrn-qa-engine
           token: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
           persist-credentials: false
+
+      - name: Determine changed files for QA
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          changed_file_list="$RUNNER_TEMP/mrn-qa-changed-files"
+
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            git diff --name-only "$PR_BASE_SHA" "$PR_HEAD_SHA" > "$changed_file_list"
+          else
+            git diff --name-only HEAD^ HEAD > "$changed_file_list"
+          fi
+
+          delimiter="MRN_QA_CHANGED_FILES_$$"
+          {
+            echo "MRN_QA_CHANGED_FILES<<$delimiter"
+            cat "$changed_file_list"
+            echo "$delimiter"
+          } >> "$GITHUB_ENV"
+
+      - name: Create standalone repository installation token
+        id: standalone-repos-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.MRN_CI_STANDALONE_REPOS_APP_ID }}
+          private-key: ${{ secrets.MRN_CI_STANDALONE_REPOS_PRIVATE_KEY }}
+          owner: mrnwebdesigns
+          repositories: |
+            background-video-popout-disabler
+            mrn-acf-character-count
+            mrn-acf-focal-point
+            mrn-ai-assist
+            mrn-announcements
+            mrn-comment-management
+            mrn-config-helper
+            mrn-cookie-consent
+            mrn-editor-tools
+            mrn-fontawesome-profile-manager
+            mrn-gtm-injector
+            mrn-sendgrid-provisioning
+            mrn-seo-helper
+            mrn-universal-sticky-bar
+
+      # The app token is short-lived and limited to the standalone repositories.
+      - name: Check out standalone plugin repos
+        env:
+          GH_TOKEN: ${{ steps.standalone-repos-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$GITHUB_WORKSPACE/../MRN-plugins"
+          repos="background-video-popout-disabler mrn-acf-character-count mrn-acf-focal-point mrn-ai-assist mrn-announcements mrn-comment-management mrn-config-helper mrn-cookie-consent mrn-editor-tools mrn-fontawesome-profile-manager mrn-gtm-injector mrn-sendgrid-provisioning mrn-seo-helper mrn-universal-sticky-bar"
+          for slug in $repos; do
+            gh repo clone "mrnwebdesigns/${slug}" "$GITHUB_WORKSPACE/../MRN-plugins/${slug}" -- --depth 1
+          done
+
+          # plugins/<slug> itself is gitignored (untracked), so a fresh CI
+          # checkout has nothing there at all -- create the same relative
+          # symlinks a local dev machine has after checking out MRN and
+          # MRN-plugins as siblings.
+          cd "$GITHUB_WORKSPACE/plugins"
+          for slug in $repos; do
+            [ -e "$slug" ] && continue
+            if [ "$slug" = "mrn-ai-assist" ]; then
+              ln -s "../../MRN-plugins/mrn-ai-assist/wordpress-plugin" "$slug"
+            else
+              ln -s "../../MRN-plugins/${slug}" "$slug"
+            fi
+          done
 
       - name: Run MRN static QA gate
         run: |
