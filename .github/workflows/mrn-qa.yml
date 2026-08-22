@@ -60,16 +60,33 @@ jobs:
           token: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
           persist-credentials: false
 
-      # plugins/<slug> in the MRN checkout are gitignored local symlinks
-      # (../../MRN-plugins/<slug>) into these standalone repos -- see
-      # ".gitignore" and "stack/RELEASE_VERSIONING_STRATEGY.md". Cloning
-      # each one to the same sibling-relative location the symlinks expect
-      # makes the existing symlinks resolve in CI exactly like they do on a
-      # dev machine that checked out MRN and MRN-plugins as siblings, with
-      # no changes needed to the QA engine itself.
+      - name: Create standalone repository installation token
+        id: standalone-repos-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.MRN_CI_STANDALONE_REPOS_APP_ID }}
+          private-key: ${{ secrets.MRN_CI_STANDALONE_REPOS_PRIVATE_KEY }}
+          owner: mrnwebdesigns
+          repositories: |
+            background-video-popout-disabler
+            mrn-acf-character-count
+            mrn-acf-focal-point
+            mrn-ai-assist
+            mrn-announcements
+            mrn-comment-management
+            mrn-config-helper
+            mrn-cookie-consent
+            mrn-editor-tools
+            mrn-fontawesome-profile-manager
+            mrn-gtm-injector
+            mrn-sendgrid-provisioning
+            mrn-seo-helper
+            mrn-universal-sticky-bar
+
+      # The app token is short-lived and limited to the standalone repositories.
       - name: Check out standalone plugin repos
         env:
-          GH_TOKEN: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
+          GH_TOKEN: ${{ steps.standalone-repos-token.outputs.token }}
         run: |
           set -euo pipefail
           mkdir -p "$GITHUB_WORKSPACE/../MRN-plugins"
