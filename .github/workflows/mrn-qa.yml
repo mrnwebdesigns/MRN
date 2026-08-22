@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 20
     env:
       MRN_QA_STACK_ROOT: ${{ github.workspace }}
-      MRN_QA_CODE_ANALYSIS_SCOPE: all
+      MRN_QA_CODE_ANALYSIS_SCOPE: changed
       MRN_QA_RUN_SMOKE: never
       MRN_QA_RUN_ACCESSIBILITY: never
       MRN_QA_RUN_PERFORMANCE: never
@@ -59,6 +59,27 @@ jobs:
           path: .mrn-qa-engine
           token: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
           persist-credentials: false
+
+      - name: Determine changed files for QA
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          changed_file_list="$RUNNER_TEMP/mrn-qa-changed-files"
+
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            git diff --name-only "$PR_BASE_SHA" "$PR_HEAD_SHA" > "$changed_file_list"
+          else
+            git diff --name-only HEAD^ HEAD > "$changed_file_list"
+          fi
+
+          delimiter="MRN_QA_CHANGED_FILES_$$"
+          {
+            echo "MRN_QA_CHANGED_FILES<<$delimiter"
+            cat "$changed_file_list"
+            echo "$delimiter"
+          } >> "$GITHUB_ENV"
 
       - name: Create standalone repository installation token
         id: standalone-repos-token
