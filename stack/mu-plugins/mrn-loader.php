@@ -2,12 +2,12 @@
 /**
  * Plugin Name: MRN Loader
  * Description: Loads MRN MU plugins from known subfolders in /wp-content/mu-plugins.
- * Version: 1.5.1
+ * Version: 1.6.0
  */
 
 defined('ABSPATH') || exit;
 
-define('MRN_LOADER_VERSION', '1.5.1');
+define('MRN_LOADER_VERSION', '1.6.0');
 define('MRN_LOADER_RUNTIME_REPORT_SCHEMA_VERSION', 1);
 define('MRN_LOADER_HASH_ALGORITHM', 'sha256-tree-v1');
 
@@ -297,6 +297,24 @@ function mrn_loader_component_matches_release($runtime, $expected) {
 }
 
 /**
+ * Resolve a locked theme role to the site's actual runtime slug.
+ *
+ * @param array $expected_theme Locked theme record.
+ * @return string
+ */
+function mrn_loader_resolve_theme_runtime_slug($expected_theme) {
+    $slug = (string) ($expected_theme['slug'] ?? '');
+    $deployment_role = (string) ($expected_theme['deployment_role'] ?? '');
+    if ('parent-template' === $deployment_role) {
+        return (string) get_option('template');
+    }
+    if ('active-stylesheet-template' === $deployment_role) {
+        return (string) get_option('stylesheet');
+    }
+    return $slug;
+}
+
+/**
  * Shape one component record without exposing an absolute server path.
  *
  * @param string     $slug         Component slug.
@@ -442,6 +460,20 @@ function mrn_loader_get_runtime_report() {
                 !empty($plugin['loaded']),
                 $expected
             );
+            continue;
+        }
+
+        if ($runtime_type === 'shared-runtime') {
+            $source = WP_CONTENT_DIR . '/shared';
+            $entry_file = $source . '/' . $slug . '.php';
+            $components[] = mrn_loader_shape_runtime_component(
+                $slug,
+                $runtime_type,
+                $source,
+                $entry_file,
+                is_readable($entry_file),
+                $expected
+            );
         }
     }
 
@@ -458,13 +490,15 @@ function mrn_loader_get_runtime_report() {
             continue;
         }
         $slug = (string) $expected_theme['slug'];
-        $source = WP_CONTENT_DIR . '/themes/' . $slug;
+        $runtime_slug = mrn_loader_resolve_theme_runtime_slug($expected_theme);
+        $source = WP_CONTENT_DIR . '/themes/' . $runtime_slug;
         $hash = is_dir($source) ? mrn_loader_tree_hash($source) : null;
         $runtime_theme = array(
             'slug'            => $slug,
+            'runtime_slug'    => $runtime_slug,
             'version'         => mrn_loader_read_version_header($source . '/style.css'),
-            'active'          => get_option('stylesheet') === $slug,
-            'path'            => 'themes/' . $slug,
+            'active'          => get_option('stylesheet') === $runtime_slug,
+            'path'            => 'themes/' . $runtime_slug,
             'hash_algorithm'  => $hash['algorithm'] ?? MRN_LOADER_HASH_ALGORITHM,
             'sha256'          => $hash['sha256'] ?? null,
             'file_count'      => $hash['file_count'] ?? 0,

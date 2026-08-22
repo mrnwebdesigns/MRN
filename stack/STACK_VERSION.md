@@ -1,16 +1,17 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.22-runtime-report-transport`
+- Stack release: `2026.08.22-verified-release-deploy`
 - Release date: `2026-08-22`
-- Status: `current baseline`
+- Status: `release candidate`
 
 ## Included MRN-Owned Components
 - Theme:
   - `mrn-base-stack` `1.3.0`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
-  - `mrn-loader` `1.5.1`
+  - `mrn-loader` `1.6.0`
+  - `mrn-shared-runtime` `1.0.0`
   - `mrn-active-style-guide` `0.1.6`
   - `mrn-admin-ui-css` `3.2.3`
   - `mrn-shared-assets` `0.1.3`

@@ -97,6 +97,38 @@ mrn_test_assert(is_array($actual_hash), 'tree hash should be available');
 mrn_test_assert($actual_hash['sha256'] === $expected_hash, 'tree hash must match sha256-tree-v1');
 mrn_test_assert($actual_hash['file_count'] === 2, 'tree hash should count deployable files');
 
+$shared = $content_root . '/shared';
+mkdir($shared, 0777, true);
+file_put_contents(
+    $shared . '/mrn-shared-runtime.php',
+    "<?php /** Version: 1.0.0 */\n"
+);
+$shared_record = mrn_loader_shape_runtime_component(
+    'mrn-shared-runtime',
+    'shared-runtime',
+    $shared,
+    $shared . '/mrn-shared-runtime.php',
+    true,
+    array('version' => '1.0.0')
+);
+mrn_test_assert($shared_record['loaded'], 'shared runtime metadata should be available');
+mrn_test_assert(
+    $shared_record['runtime_type'] === 'shared-runtime',
+    'shared runtime should retain its runtime type'
+);
+mrn_test_assert(
+    mrn_loader_resolve_theme_runtime_slug(
+        array('slug' => 'mrn-base-stack', 'deployment_role' => 'parent-template')
+    ) === 'mrn-base-stack',
+    'parent role should resolve the live template slug'
+);
+mrn_test_assert(
+    mrn_loader_resolve_theme_runtime_slug(
+        array('slug' => 'mrn-base-stack-child', 'deployment_role' => 'active-stylesheet-template')
+    ) === 'example-child',
+    'child template role should resolve the live stylesheet slug'
+);
+
 $wrapper = $content_root . '/mu-plugins/fixture.php';
 file_put_contents($wrapper, "<?php require_once __DIR__ . '/fixture/fixture.php';\n");
 mrn_test_assert(
