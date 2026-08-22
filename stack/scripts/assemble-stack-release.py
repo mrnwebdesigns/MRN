@@ -207,9 +207,9 @@ def main(argv=None):
         default=Path(
             os.environ.get(
                 "MRN_STANDALONE_PLUGINS_ROOT",
-                str(default_root.parent / "MRN-plugins"),
+                "~/Development/MRN-plugins",
             )
-        ),
+        ).expanduser(),
         type=Path,
     )
     parser.add_argument("--output", required=True, type=Path)

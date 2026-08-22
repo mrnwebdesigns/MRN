@@ -1,8 +1,10 @@
 import importlib.util
 import json
+import os
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
@@ -154,6 +156,26 @@ class AssembleStackReleaseTests(unittest.TestCase):
                 self.root / "plugins",
                 self.root / "release",
             )
+
+    def test_cli_default_standalone_root_is_independent_of_repo_location(self):
+        expected = Path.home() / "Development/MRN-plugins"
+
+        with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(
+            assembler, "assemble", return_value={"release_id": "fixture"}
+        ) as assemble:
+            result = assembler.main(
+                [
+                    "--release-lock",
+                    str(self.lock_path),
+                    "--repo-root",
+                    str(self.repo),
+                    "--output",
+                    str(self.root / "release"),
+                ]
+            )
+
+        self.assertEqual(0, result)
+        self.assertEqual(expected, assemble.call_args.args[2])
 
 
 if __name__ == "__main__":
