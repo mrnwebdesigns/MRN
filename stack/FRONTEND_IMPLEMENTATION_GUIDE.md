@@ -74,8 +74,11 @@ Builder authoring behavior:
 - Current supported effects are:
   - `Switch Light/Dark Surface`
   - `Mark Row As Active`
+  - `Subtle Text Reveal`
   - `Darken Card On Scroll`
+  - `Stack Cards On Scroll`
 - Effect-specific controls appear conditionally based on the selected effect.
+- The `Apply To` menu is contextual to the current layout. It only offers structural targets that the layout can render; for example, media is available on image-bearing layouts and left/right targets are limited to Two Column Split.
 
 The stack also includes a built-in active-surface pattern:
 
@@ -133,6 +136,13 @@ Current builder output contract:
   - `data-mrn-motion-class="is-mrn-in-view"`
   - `data-mrn-motion-margin="..."`
   - `data-mrn-motion-target="row|surface|content|media|header|items|left-column|right-column"`
+- `Subtle Text Reveal` renders:
+  - class: `mrn-motion-effect--text-reveal`
+  - `data-mrn-motion-effect="text-reveal"`
+  - `data-mrn-motion-margin="..."`
+  - `data-mrn-motion-target="row|surface|content|media|header|items|left-column|right-column"`
+  - prepares its resolved target before first paint, fades and rises once, and remains visible after reverse scrolling
+  - bypasses animation for `prefers-reduced-motion: reduce` and restores ordinary visible content when the runtime is unavailable
 - `Darken Card On Scroll` renders:
   - class: `mrn-motion-effect--dark-scroll-card`
   - `data-mrn-motion-effect="dark-scroll-card"`
@@ -145,6 +155,9 @@ Class and attribute reference:
 - `mrn-motion-effect--active-class`
   - marker class for rows using the active-class effect
   - gives front-enders a stable styling hook for effect-specific CSS
+- `mrn-motion-effect--text-reveal`
+  - marker class for the stack-owned one-shot fade-and-rise entrance
+  - resolves the configured target through the same protected selector map as other non-surface effects
 - `mrn-motion-effect--dark-scroll-card`
   - marker class for rows using the scroll-darkening card treatment
   - intended to pair with Motion-driven inline style updates on the row surface and child content

@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.2.107' );
+	define( '_S_VERSION', '1.3.0' );
 }
 
 /**
@@ -707,6 +707,23 @@ function mrn_base_stack_enqueue_motion_assets() {
 }
 
 /**
+ * Stage motion effects before first paint without hiding no-JavaScript output.
+ *
+ * @return void
+ */
+function mrn_base_stack_prepare_motion_effects() {
+	if ( ! wp_script_is( 'mrn-base-stack-front-end-effects', 'enqueued' ) ) {
+		return;
+	}
+
+	wp_print_inline_script_tag(
+		"( function() { var root = document.documentElement; root.classList.add( 'mrn-motion-effects-enabled' ); window.setTimeout( function() { if ( ! root.classList.contains( 'mrn-motion-effects-ready' ) ) { root.classList.remove( 'mrn-motion-effects-enabled' ); } }, 2000 ); }() );",
+		array( 'id' => 'mrn-base-stack-motion-prep' )
+	);
+}
+add_action( 'wp_head', 'mrn_base_stack_prepare_motion_effects', 1 );
+
+/**
  * Return front-end marker fragments that indicate runtime JS is needed.
  *
  * @return array<int, string>
@@ -845,6 +862,7 @@ function mrn_base_stack_scripts() {
 	}
 
 	$header_options     = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+	$uses_back_to_top   = ! empty( $header_options['footer_show_back_to_top'] );
 	$needs_fontawesome  = false;
 	$needs_dashicons    = false;
 	$uses_icon_search   = ! empty( $header_options['header_show_search'] ) && isset( $header_options['header_search_style'] ) && 'icon_only' === $header_options['header_search_style'];
@@ -854,8 +872,17 @@ function mrn_base_stack_scripts() {
 		$needs_fontawesome = true;
 	}
 
-	if ( ( 'dashicons' === $search_icon_source || 'standard' === $search_icon_source ) && $uses_icon_search ) {
+	if (
+		( ( 'dashicons' === $search_icon_source || 'standard' === $search_icon_source ) && $uses_icon_search )
+		|| $uses_back_to_top
+	) {
 		$needs_dashicons = true;
+	}
+
+	if ( $uses_back_to_top ) {
+		$back_to_top_path = get_template_directory() . '/js/back-to-top.js';
+		$back_to_top_ver  = file_exists( $back_to_top_path ) ? _S_VERSION . '-' . (string) filemtime( $back_to_top_path ) : _S_VERSION;
+		wp_enqueue_script( 'mrn-base-stack-back-to-top', get_template_directory_uri() . '/js/back-to-top.js', array(), $back_to_top_ver, true );
 	}
 
 	if ( function_exists( 'mrn_base_stack_get_header_utility_message_options' ) ) {
@@ -1027,6 +1054,29 @@ function mrn_base_stack_scripts() {
 			'mrn-base-stack-front-end-tabs',
 			get_template_directory_uri() . '/js/front-end-tabs.js',
 			array( 'mrn-base-stack-splide' ),
+			_S_VERSION,
+			true
+		);
+
+		wp_enqueue_style(
+			'mrn-base-stack-glightbox',
+			get_template_directory_uri() . '/css/vendor/glightbox.min.css',
+			array(),
+			'3.3.1'
+		);
+
+		wp_enqueue_script(
+			'mrn-base-stack-glightbox',
+			get_template_directory_uri() . '/js/vendor/glightbox.min.js',
+			array(),
+			'3.3.1',
+			true
+		);
+
+		wp_enqueue_script(
+			'mrn-base-stack-front-end-video-modal',
+			get_template_directory_uri() . '/js/front-end-video-modal.js',
+			array( 'mrn-base-stack-glightbox' ),
 			_S_VERSION,
 			true
 		);

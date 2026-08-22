@@ -7,8 +7,8 @@ Usage:
   deploy-feature-stack-and-default-configs.sh [--ssh-host <ssh-host>] [--dry-run]
 
 Description:
-  Sync the canonical stack theme, stack MU plugin source, and stack MU loader
-  wrappers to both:
+  Sync the canonical stack theme, stack MU plugin source, loader wrappers, and
+  immutable release lock to both:
   - the stack server source-of-truth paths
   - the default-configs live site
 
@@ -57,6 +57,7 @@ LIVE_SITE_USER=""
 LIVE_SITE_SSH_LOGIN=""
 LOCAL_THEME_DIR="${REPO_ROOT}/stack/themes/mrn-base-stack"
 LOCAL_STACK_MU_DIR="${REPO_ROOT}/stack/mu-plugins"
+LOCAL_STACK_RELEASE_LOCK="${REPO_ROOT}/stack/manifests/stack-release.lock.json"
 LOCAL_MU_SOURCE_ROOT="${REPO_ROOT}/mu-plugins"
 LOCAL_SHARED_DIR="${REPO_ROOT}/shared"
 LIVE_SITE_THEME_DIR=""
@@ -65,10 +66,12 @@ STACK_SYNC_USER="${SSH_HOST%%@*}"
 
 MU_PLUGIN_DIRS=(
 	"mrn-active-style-guide"
+	"mrn-admin-data-post-types"
 	"mrn-admin-ui-css"
 	"mrn-dashboard-support"
 	"mrn-disable-comments"
 	"mrn-editor-lockdown"
+	"mrn-environment-runtime"
 	"mrn-public-security-hardening"
 	"mrn-schema-bridge"
 	"mrn-shared-assets"
@@ -116,7 +119,7 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
 	RSYNC_FLAGS+=(--dry-run --itemize-changes)
 fi
 
-for required in rsync ssh; do
+for required in python3 rsync ssh; do
 	if ! command -v "${required}" >/dev/null 2>&1; then
 		echo "Required command not found: ${required}" >&2
 		exit 1
@@ -132,6 +135,14 @@ if [[ ! -d "${LOCAL_SHARED_DIR}" ]]; then
 	echo "Shared source directory not found: ${LOCAL_SHARED_DIR}" >&2
 	exit 1
 fi
+
+if [[ ! -f "${LOCAL_STACK_RELEASE_LOCK}" ]]; then
+	echo "Stack release lock not found: ${LOCAL_STACK_RELEASE_LOCK}" >&2
+	exit 1
+fi
+
+python3 "${REPO_ROOT}/stack/scripts/generate-stack-release-lock.py" \
+	--check "${LOCAL_STACK_RELEASE_LOCK}" >/dev/null
 
 for slug in "${MU_PLUGIN_DIRS[@]}"; do
 	if [[ ! -d "${LOCAL_MU_SOURCE_ROOT}/${slug}" ]]; then
@@ -347,6 +358,13 @@ for wrapper in "${LOCAL_STACK_MU_DIR}"/mrn-*.php; do
 		"${LIVE_SITE_SSH_LOGIN}:${LIVE_SITE_ROOT}/wp-content/mu-plugins/$(basename "${wrapper}")"
 done
 
+run_rsync \
+	"${LOCAL_STACK_RELEASE_LOCK}" \
+	"${SSH_HOST}:${STACK_ROOT_REMOTE}/mu-plugins/mrn-stack-release.lock.json"
+run_rsync \
+	"${LOCAL_STACK_RELEASE_LOCK}" \
+	"${LIVE_SITE_SSH_LOGIN}:${LIVE_SITE_ROOT}/wp-content/mu-plugins/mrn-stack-release.lock.json"
+
 if [[ "${DRY_RUN}" -eq 0 ]]; then
 	run_remote "${LIVE_SITE_SSH_LOGIN}" "perl -0pi -e 's/^Theme Name:\\s*.*\$/Theme Name: ${LIVE_SITE_THEME_NAME}/m; s/^Text Domain:\\s*.*\$/Text Domain: ${LIVE_SITE_TEXT_DOMAIN}/m;' '${LIVE_SITE_THEME_DIR}/style.css'"
 	run_remote "${LIVE_SITE_SSH_LOGIN}" "rm -rf '${LIVE_SITE_THEME_DIR}/test-results' '${LIVE_SITE_THEME_DIR}/playwright-report'"
@@ -375,6 +393,7 @@ if [[ "${DRY_RUN}" -eq 0 ]]; then
 	verify_remote_path_owner_mode "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_THEME_DIR}/style.css" "${LIVE_SITE_USER}" "644" "live theme style.css"
 	verify_remote_path_owner_mode "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/shared/mrn-sticky-settings-toolbar.php" "${LIVE_SITE_USER}" "644" "live shared runtime representative file"
 	verify_remote_path_owner_mode "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/mu-plugins/mrn-site-colors/mrn-site-colors.php" "${LIVE_SITE_USER}" "644" "live mu-plugin representative file"
+	verify_remote_path_owner_mode "${LIVE_SITE_SSH_LOGIN}" "${LIVE_SITE_ROOT}/wp-content/mu-plugins/mrn-stack-release.lock.json" "${LIVE_SITE_USER}" "644" "live stack release lock"
 
 	if [[ "${LIVE_SITE_ACTIVE_STYLESHEET}" != "${LIVE_SITE_THEME_SLUG}" ]]; then
 		run_remote "${LIVE_SITE_SSH_LOGIN}" "wp theme activate '${LIVE_SITE_THEME_SLUG}' --path='${LIVE_SITE_ROOT}'" >/dev/null

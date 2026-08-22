@@ -200,6 +200,27 @@ These are the current preferred content patterns in the stack.
 - Current `Content Lists` consumption rule:
   - only display modes with entity type `Post Type` and an item matching the selected content type should appear in the builder dropdown
 
+### Content Lists Display Style Rule
+
+- `Display Style` (distinct from `Display Mode`) is a per-post-type presentation preset managed in `Site Configurations -> Display Modes`, seeded with defaults in `mrn-config-helper`'s `get_default_display_styles()`.
+- `Display Mode` controls which fields render; `Display Style` controls how they're presented. The two are independent axes.
+- `Grid` is a stack-wide `Display Style` value (`grid`), currently seeded as a default for the `post` post type and available to register for any post type via Site Configurations. It:
+  - lays the list items out as a responsive card grid (`mrn-content-builder__row--content-lists-style-grid`) instead of a stacked list, regardless of the row's `List Style` (Unordered/Ordered) setting.
+  - wraps the excerpt field in a native `<details>/<summary>` disclosure (reusing the same zero-JS accessible pattern as FAQ/Accordion) instead of a flat paragraph, so a card can reveal more text on demand.
+  - **forces query ordering to `menu_order` / `ASC`, overriding the row's own Order By selection.** A grid of cards is expected to reflect the post type's own manual/drag-and-drop order, not a date sort. The target post type must support `page-attributes` (so editors can drag-reorder it in wp-admin) for this to be meaningful.
+- Do not add a second grid/card layout system to Content Lists for a specific site or post type. Register a new `Display Style` entry (or extend the `grid` rendering) instead.
+- Item card layout is an explicit contract on the rendered item, not a side effect of `has-image`:
+  - `data-card-layout="media-split"` opts into the two-column card treatment for legacy image-led cards.
+  - `data-card-layout="vertical"` keeps the card stacked.
+  - `Display Style = Grid` and `team_member` items always render vertical cards, even when the item includes a featured image.
+  - `has-image` means media exists; it does not choose the layout.
+- `team_member` is a theme-owned content post type (`inc/content-post-types.php`) with a dedicated Content-list renderer (`mrn_base_stack_render_content_list_team_member_item()`), mirroring the existing `testimonial` renderer pattern for post types whose real fields aren't in the generic field-choice vocabulary:
+  - `post_title` = Name, native `thumbnail` = Photo (both already supported by the generic Display Mode field set).
+  - `team_member_position` (text) = Job Title, always shown under the name when set — not gated by Display Mode field selection, since it's core identity rather than an optional extra.
+  - `team_member_bio` (WYSIWYG) = Bio, shown when the `excerpt` field is selected in Display Mode, in the same `Grid`-style `<details>/<summary>` disclosure documented above.
+  - `page-attributes` support enables `menu_order` for the `Grid` style's forced ordering; editors reorder team members via drag-and-drop in wp-admin.
+- When a post type's real content lives in custom fields the generic `title/featured_image/publish_date/excerpt/read_more` vocabulary can't see (as with `testimonial` and `team_member`), add a dedicated Content-list renderer function following this same pattern rather than extending the generic renderer with post-type-specific branches.
+
 ### Section Width
 
 - Theme-owned layouts now use a shared `Section Width` setting where width matters visually.
@@ -449,6 +470,32 @@ Layout templates should not hardcode one-off max-width containers. Instead, they
   - Link color
   - Background color
   - Accent
+
+### Card
+
+- Label, Title field, HTML tag for text field, Subheading
+- Section-level Links repeater
+- Cards repeater (min 1). Each card item:
+  - Card Name
+  - Icon (source + position)
+  - Optional Link (adding a URL makes the whole card surface clickable)
+  - Card Row: a nested flexible-content field (`min:1, max:1`) — exactly one nested builder row per card, chosen from the same layout vocabulary used inside Two Column Split (Text, Basic, CTA, Image Content, Shortcode/Embed, WPForms, Search Form, Video, Reusable Block)
+  - Background Color
+- Configs: Background Color, Section Width, Anchor, Motion, Accent
+- There is no first-class image field or tag/pill sub-repeater on the card item itself. An image belongs inside the nested Card Row (for example a Basic or Image Content row). A short list of feature tags belongs in that same nested row's rich text as a plain bulleted list — see the Card Pill List Rule below — rather than adding a new field.
+
+### Card Pill List Rule
+
+- A bulleted list (`<ul><li>`) typed into a card's nested Card Row rich text renders as a row of pill/tag chips, not a normal bulleted list.
+- This is scoped to `.mrn-card-row__content ul` only — bulleted lists elsewhere (Text rows, blog content, other layouts) are unaffected.
+- Do not add a dedicated tag/pill repeater field for this. Author it as a plain bulleted list inside the nested row's rich text editor.
+- The pill surface is contract-driven through the card wrapper, and child themes can retheme it with `--mrn-card-pill-*` custom properties instead of changing markup.
+
+### CTA Checklist Rule
+
+- A bulleted list (`<ul><li>`) typed into the reusable **CTA** block's `content` field renders as a checkmark list instead of a normal bulleted list, scoped to `.mrn-reusable-block--cta .mrn-ui__text ul` only.
+- The checkmark color follows the block's own `Link color` field (falls back to `currentColor` when unset) — no separate color control.
+- Do not add a dedicated checklist/items repeater field for this. Author it as a plain bulleted list inside the CTA block's `content` field.
 
 ### Slider
 
@@ -750,6 +797,8 @@ Front-enders should rely on these hooks:
   - `video_upload`
 - precedence:
   - if both are set, `video_upload` wins over `video_remote`
+- thumbnail field (Thumbnail + Modal display mode only):
+  - `video_thumbnail`
 
 ### Video Rendering Rule
 
@@ -763,23 +812,37 @@ Front-enders should rely on these hooks:
 - This layout renders video as normal foreground media inside the content section.
 - Unlike hero background video, it does not autoplay by default.
 
+### Video Display Mode Rule
+
+- `Display Mode` config controls how the video plays:
+  - `Inline` (default) — the existing deferred in-place embed. Unchanged behavior; preserves existing content.
+  - `Thumbnail + Modal` — renders the `video_thumbnail` image with a play-icon overlay; selecting it opens the video in a lightbox instead of playing inline.
+- `Thumbnail + Modal` requires both a resolved video source (remote or upload) and a `video_thumbnail` image. If either is missing, rendering falls back to `Inline` behavior.
+- The modal reuses the stack's existing GLightbox integration (`js/vendor/glightbox.min.js`), the same library already used by the Gallery CPT, rather than introducing a second modal/lightbox framework.
+- Do not build a bespoke video modal for a specific layout or site; extend this contract instead.
+
 ### Video Front-End Contract
 
 Front-enders should rely on:
 
 - wrapper classes:
   - `mrn-content-builder__row--video`
+  - `mrn-content-builder__row--video-display-inline` / `mrn-content-builder__row--video-display-modal`
 - content hooks:
   - `.mrn-video-row__label`
   - `.mrn-video-row__heading`
   - `.mrn-video-row__text`
   - `.mrn-video-row__media`
-- deferred media frame:
+- deferred media frame (`Inline` mode):
   - `.mrn-deferred-media__frame`
+- modal trigger (`Thumbnail + Modal` mode):
+  - `.mrn-video-row__trigger` (the `.glightbox` anchor)
+  - `.mrn-video-row__thumbnail`
+  - `.mrn-video-row__play`
 
 ### Video Performance Rule
 
-- Video layout reuses the deferred-loading path:
+- Video layout reuses the deferred-loading path in `Inline` mode:
   - wait until the section is in or near view
   - then inject the real iframe or `<video>` element
 - Current defaults:
@@ -787,6 +850,7 @@ Front-enders should rely on:
   - no loop
   - controls enabled
   - uploaded local files use `preload=\"metadata\"`
+- `Thumbnail + Modal` mode never injects an iframe/video element until the visitor opens the lightbox, so it is at least as cheap as the deferred inline path.
 
 ## Heading Markup Rule
 
@@ -1091,6 +1155,7 @@ Current configs:
 - `Accent`
 
 Do not force this into `Grid` just because both use repeaters. `Stats` is a specific content pattern with a clearer front-end contract.
+- Stats values inherit `currentColor` by default and expose `--mrn-stats-value-*` / `--mrn-stats-label-*` custom properties for color and typography. If a design wants the old gradient-style emphasis, opt in explicitly through a modifier or custom-property override instead of relying on the default.
 
 ## Showcase Layout Rule
 

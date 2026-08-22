@@ -18,6 +18,8 @@ $remote_video        = isset( $row['video_remote'] ) ? (string) $row['video_remo
 $upload_video        = isset( $row['video_upload'] ) && is_array( $row['video_upload'] ) ? $row['video_upload'] : array();
 $video_position      = function_exists( 'mrn_base_stack_normalize_video_position' ) ? mrn_base_stack_normalize_video_position( $row['video_position'] ?? '' ) : sanitize_key( (string) ( $row['video_position'] ?? 'bottom' ) );
 $video_aspect_ratio  = function_exists( 'mrn_base_stack_normalize_video_aspect_ratio' ) ? mrn_base_stack_normalize_video_aspect_ratio( $row['video_aspect_ratio'] ?? '' ) : sanitize_key( (string) ( $row['video_aspect_ratio'] ?? '16-9' ) );
+$display_mode        = function_exists( 'mrn_base_stack_normalize_video_display_mode' ) ? mrn_base_stack_normalize_video_display_mode( $row['video_display_mode'] ?? '' ) : sanitize_key( (string) ( $row['video_display_mode'] ?? 'inline' ) );
+$thumbnail_image     = isset( $row['video_thumbnail'] ) ? $row['video_thumbnail'] : 0;
 $background_color    = isset( $row['background_color'] ) ? trim( (string) $row['background_color'] ) : '';
 $bottom_accent       = ! empty( $row['bottom_accent'] );
 $accent_slug         = isset( $row['bottom_accent_style'] ) ? (string) $row['bottom_accent_style'] : '';
@@ -66,8 +68,13 @@ if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
 	$subheading_tag = 'p';
 }
 
-$has_text_content = '' !== $label || '' !== $heading || '' !== $subheading || '' !== trim( wp_strip_all_tags( $content ) );
-$has_video_media  = '' !== $resolved_video_url;
+$has_text_content    = '' !== $label || '' !== $heading || '' !== $subheading || '' !== trim( wp_strip_all_tags( $content ) );
+$has_video_media     = '' !== $resolved_video_url;
+$has_thumbnail       = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $thumbnail_image ) : ! empty( $thumbnail_image );
+$is_modal_mode       = 'modal' === $display_mode && $has_video_media && $has_thumbnail;
+$remote_provider     = isset( $remote_video_embed['provider'] ) ? (string) $remote_video_embed['provider'] : '';
+$modal_lightbox_type = 'google_drive' === $remote_provider ? 'iframe' : 'video';
+$modal_href          = 'local' === $resolved_video_kind ? $local_video_url : ( 'google_drive' === $remote_provider ? $remote_video_url : $remote_video );
 
 if ( ! $has_text_content && ! $has_video_media ) {
 	return;
@@ -85,6 +92,7 @@ $section_classes  = array(
 	'mrn-content-builder__row--video',
 	'mrn-content-builder__row--video-position-' . sanitize_html_class( $video_position ),
 	'mrn-content-builder__row--video-ratio-' . sanitize_html_class( $video_aspect_ratio ),
+	'mrn-content-builder__row--video-display-' . sanitize_html_class( $is_modal_mode ? 'modal' : 'inline' ),
 );
 $section_styles   = array();
 
@@ -155,7 +163,21 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				</div>
 			<?php endif; ?>
 
-			<?php if ( $has_video_media ) : ?>
+			<?php if ( $is_modal_mode ) : ?>
+				<div class="mrn-layout-content mrn-layout-content--media mrn-video-row__media mrn-video-row__media--video-feature mrn-video-row__media--modal mrn-ui__media">
+					<a
+						class="mrn-video-row__trigger glightbox"
+						href="<?php echo esc_url( $modal_href ); ?>"
+						data-type="<?php echo esc_attr( $modal_lightbox_type ); ?>"
+						aria-label="<?php echo esc_attr( sprintf( /* translators: %s: video heading. */ __( 'Play video: %s', 'mrn-base-stack' ), $video_title ) ); ?>"
+					>
+						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $thumbnail_image, 'mrn-content-media', array( 'class' => 'mrn-video-row__thumbnail' ) ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<span class="mrn-video-row__play" aria-hidden="true">
+							<svg viewBox="0 0 24 24" focusable="false"><path d="M8 5v14l11-7z"></path></svg>
+						</span>
+					</a>
+				</div>
+			<?php elseif ( $has_video_media ) : ?>
 				<div
 						class="mrn-layout-content mrn-layout-content--media mrn-video-row__media mrn-video-row__media--video-feature mrn-ui__media"
 					data-video-src="<?php echo esc_url( $resolved_video_url ); ?>"

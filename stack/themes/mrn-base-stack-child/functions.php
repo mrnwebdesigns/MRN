@@ -14,7 +14,8 @@ if ( ! function_exists( 'mrn_base_stack_child_enqueue_styles' ) ) {
 	 * Load parent and child styles in deterministic order.
 	 *
 	 * Re-bind the parent handle to the parent stylesheet and then layer child
-	 * overrides on top.
+	 * overrides on top. Run late so site-level overrides stay authoritative
+	 * after parent layout assets and updates.
 	 *
 	 * @return void
 	 */
@@ -46,4 +47,4 @@ if ( ! function_exists( 'mrn_base_stack_child_enqueue_styles' ) ) {
 		);
 	}
 }
-add_action( 'wp_enqueue_scripts', 'mrn_base_stack_child_enqueue_styles', 20 );
+add_action( 'wp_enqueue_scripts', 'mrn_base_stack_child_enqueue_styles', 999 );

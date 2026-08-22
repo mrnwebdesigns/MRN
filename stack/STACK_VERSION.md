@@ -1,15 +1,16 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.16-reusable-block-library-stack-profile`
-- Release date: `2026-08-16`
+- Stack release: `2026.08.22-runtime-report-transport`
+- Release date: `2026-08-22`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.106`
+  - `mrn-base-stack` `1.3.0`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
+  - `mrn-loader` `1.5.1`
   - `mrn-active-style-guide` `0.1.6`
   - `mrn-admin-ui-css` `3.2.3`
   - `mrn-shared-assets` `0.1.3`
@@ -20,7 +21,7 @@
 - Standard plugins:
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-announcements` `1.6.2`
-  - `mrn-config-helper` `0.1.54`
+  - `mrn-config-helper` `0.1.56`
   - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`
   - `mrn-mega-menu` `0.16.17`

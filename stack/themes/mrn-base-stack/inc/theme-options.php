@@ -2219,15 +2219,31 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
 		$layout_editor['conditional_logic']  = $layout_storage['conditional_logic'];
 	}
 
-	$effects_placeholder = array(
-		'key'       => 'field_mrn_theme_' . $section . '_effects_placeholder',
-		'label'     => __( 'Effects', 'mrn-base-stack' ),
-		'name'      => '',
-		'type'      => 'message',
-		'message'   => __( 'Effects controls will be added in a follow-up update.', 'mrn-base-stack' ),
-		'esc_html'  => 1,
-		'new_lines' => 'br',
-	);
+	if ( 'footer' === $section ) {
+		$effects_fields = array(
+			array(
+				'key'           => 'field_mrn_theme_footer_show_back_to_top',
+				'label'         => __( 'Show Back to Top', 'mrn-base-stack' ),
+				'name'          => 'footer_show_back_to_top',
+				'type'          => 'true_false',
+				'instructions'  => __( 'Adds a centered link to the top edge of the footer. The control stays out of fixed screen corners used by consent and accessibility plugins.', 'mrn-base-stack' ),
+				'default_value' => 0,
+				'ui'            => 1,
+			),
+		);
+	} else {
+		$effects_fields = array(
+			array(
+				'key'       => 'field_mrn_theme_' . $section . '_effects_placeholder',
+				'label'     => __( 'Effects', 'mrn-base-stack' ),
+				'name'      => '',
+				'type'      => 'message',
+				'message'   => __( 'Effects controls will be added in a follow-up update.', 'mrn-base-stack' ),
+				'esc_html'  => 1,
+				'new_lines' => 'br',
+			),
+		);
+	}
 
 	$subtab_nav     = mrn_base_stack_append_field_wrapper_class( $subtab_nav, 'mrn-theme-hf-subtabs-nav' );
 	$layout_storage = mrn_base_stack_append_field_wrapper_class(
@@ -2270,10 +2286,12 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
 			$layout_editor,
 		);
 	}
-	$effects_placeholder = mrn_base_stack_append_field_wrapper_class(
-		$effects_placeholder,
-		mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'effects' )
-	);
+	foreach ( $effects_fields as $effects_index => $effects_field ) {
+		$effects_fields[ $effects_index ] = mrn_base_stack_append_field_wrapper_class(
+			$effects_field,
+			mrn_base_stack_get_theme_header_footer_subtab_panel_class( $section, 'effects' )
+		);
+	}
 	foreach ( $spacing_fields as $spacing_index => $spacing_field ) {
 		$spacing_fields[ $spacing_index ] = mrn_base_stack_append_field_wrapper_class(
 			$spacing_field,
@@ -2287,9 +2305,7 @@ function mrn_base_stack_get_theme_header_footer_subtab_fields( $section ) {
 		),
 		$layout_fields,
 		$spacing_fields,
-		array(
-			$effects_placeholder,
-		)
+		$effects_fields
 	);
 }
 
@@ -4113,6 +4129,7 @@ function mrn_base_stack_get_theme_header_footer_options() {
 			'footer_show_text_phone'                     => false,
 			'footer_show_address'                        => false,
 			'footer_show_business_hours'                 => false,
+			'footer_show_back_to_top'                    => false,
 			'footer_show_social_links'                   => false,
 			'footer_copyright_text'                      => '',
 			'footer_legal_text'                          => '',
@@ -4239,6 +4256,7 @@ function mrn_base_stack_get_theme_header_footer_options() {
 		'footer_show_text_phone'                     => (bool) get_field( 'footer_show_text_phone', 'option' ),
 		'footer_show_address'                        => (bool) get_field( 'footer_show_address', 'option' ),
 		'footer_show_business_hours'                 => (bool) get_field( 'footer_show_business_hours', 'option' ),
+		'footer_show_back_to_top'                    => (bool) get_field( 'footer_show_back_to_top', 'option' ),
 		'footer_show_social_links'                   => (bool) get_field( 'footer_show_social_links', 'option' ),
 		'footer_copyright_text'                      => (string) get_field( 'footer_copyright_text', 'option' ),
 		'footer_legal_text'                          => (string) get_field( 'footer_legal_text', 'option' ),

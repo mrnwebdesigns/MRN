@@ -455,6 +455,21 @@ function mrn_base_stack_register_acf_field_groups() {
 										),
 									),
 									array(
+										'key'           => 'field_mrn_content_lists_link_items',
+										'label'         => 'Enable Item Links',
+										'name'          => 'link_items',
+										'aria-label'    => '',
+										'type'          => 'true_false',
+										'ui'            => 1,
+										'default_value' => 1,
+										'ui_on_text'    => 'On',
+										'ui_off_text'   => 'Off',
+										'instructions'  => 'When enabled, item titles and read-more links use the item profile URL when that destination is public.',
+										'wrapper'       => array(
+											'width' => '25',
+										),
+									),
+									array(
 										'key'           => 'field_mrn_content_lists_show_read_more',
 										'label'         => 'Show Read More Link',
 										'name'          => 'show_read_more',
@@ -2027,6 +2042,29 @@ function mrn_base_stack_register_acf_field_groups() {
 										),
 									),
 									array(
+										'key'           => 'field_mrn_video_thumbnail',
+										'label'         => 'Thumbnail Image',
+										'name'          => 'video_thumbnail',
+										'aria-label'    => '',
+										'type'          => 'image',
+										'return_format' => 'id',
+										'preview_size'  => 'medium',
+										'library'       => 'all',
+										'instructions'  => 'Required for Thumbnail + Modal display mode. Shown with a play icon; selecting it opens the video in a lightbox instead of playing inline.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_video_display_mode',
+													'operator' => '==',
+													'value'    => 'modal',
+												),
+											),
+										),
+										'wrapper'       => array(
+											'width' => '50',
+										),
+									),
+									array(
 										'key'        => 'field_mrn_video_config_tab',
 										'label'      => 'Configs',
 										'name'       => '',
@@ -2034,6 +2072,24 @@ function mrn_base_stack_register_acf_field_groups() {
 										'type'       => 'tab',
 										'placement'  => 'top',
 										'endpoint'   => 0,
+									),
+									array(
+										'key'           => 'field_mrn_video_display_mode',
+										'label'         => 'Display Mode',
+										'name'          => 'video_display_mode',
+										'aria-label'    => '',
+										'type'          => 'button_group',
+										'choices'       => array(
+											'inline' => 'Inline',
+											'modal'  => 'Thumbnail + Modal',
+										),
+										'default_value' => 'inline',
+										'layout'        => 'horizontal',
+										'return_format' => 'value',
+										'instructions'  => 'Inline plays the video in place once scrolled into view. Thumbnail + Modal shows a poster image with a play icon that opens the video in a lightbox.',
+										'wrapper'       => array(
+											'width' => '50',
+										),
 									),
 									array(
 										'key'           => 'field_mrn_video_background_color',
@@ -2414,6 +2470,7 @@ function mrn_base_stack_register_acf_field_groups() {
 											'2' => '2',
 											'3' => '3',
 											'4' => '4',
+											'5' => '5',
 										),
 										'default_value' => '2',
 										'ui'            => 1,

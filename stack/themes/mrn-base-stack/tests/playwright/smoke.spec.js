@@ -271,6 +271,77 @@ test.describe('MRN stack site smoke QA', () => {
 		await expect(navigation.locator('.mrn-mobile-navigation__drawer-header')).toBeHidden();
 	});
 
+	test('enabled back-to-top control stays centered on the footer edge', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'networkidle' });
+
+		const control = page.locator('.site-footer > .mrn-back-to-top').first();
+		test.skip((await control.count()) === 0, 'Back to top is not enabled in this runtime.');
+
+		await expect(control).toHaveAttribute('href', '#page');
+		await expect(control).toHaveAttribute('aria-label', 'Back to top');
+
+		const footer = page.locator('.site-footer').first();
+		await footer.scrollIntoViewIfNeeded();
+		const consentPanel = page.locator('#stcm-banner:visible, #silktide-banner:visible').first();
+		if ((await consentPanel.count()) > 0 && await control.isHidden()) {
+			await consentPanel.evaluate((element) => {
+				element.style.display = 'none';
+			});
+		}
+
+		await expect(control).toBeVisible();
+		await expect(control).toHaveCSS('position', 'absolute');
+		await expect(control.locator('.dashicons-arrow-up-alt2')).toBeVisible();
+		const controlBox = await control.boundingBox();
+		const footerBox = await footer.boundingBox();
+		expect(controlBox).not.toBeNull();
+		expect(footerBox).not.toBeNull();
+		expect(Math.abs((controlBox.x + controlBox.width / 2) - (footerBox.x + footerBox.width / 2))).toBeLessThanOrEqual(2);
+
+		await control.evaluate((element) => element.click());
+		await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(1);
+	});
+
+	test('subtle text reveal is prepared before entry and runs only once', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 720 });
+		await page.goto('/', { waitUntil: 'networkidle' });
+
+		const section = page.locator('[data-mrn-motion-effect="text-reveal"]').first();
+		test.skip((await section.count()) === 0, 'Subtle Text Reveal is not configured in this runtime.');
+
+		await expect(section).toHaveClass(/is-mrn-text-reveal-prepared/);
+		await expect(page.locator('html')).toHaveClass(/mrn-motion-effects-ready/);
+
+		const targetType = await section.getAttribute('data-mrn-motion-target');
+		const targetSelectors = {
+			content: '.mrn-layout-content--text, .mrn-reusable-block__content, .mrn-hero__content, .mrn-reusable-block__inner, .mrn-ui__body',
+			media: '.mrn-ui__media, .mrn-reusable-block__media, .mrn-hero__media, .mrn-section-background-media',
+			header: '.mrn-ui__head, .mrn-card-row__head, .mrn-content-list-row__header, .mrn-hero__content',
+			items: '.mrn-ui__items, .mrn-card-row__grid, .mrn-content-list-row__items, .mrn-faq__items',
+		};
+		const target = targetSelectors[targetType]
+			? section.locator(targetSelectors[targetType]).first()
+			: section;
+
+		await expect(target).toHaveClass(/is-mrn-text-reveal-target/);
+		const initialBox = await target.boundingBox();
+		if (initialBox && initialBox.y > 720) {
+			await expect(target).toHaveCSS('opacity', '0');
+		}
+
+		await target.scrollIntoViewIfNeeded();
+		await expect(target).toHaveClass(/has-mrn-text-revealed/);
+		await expect(target).toHaveCSS('opacity', '1');
+		await expect(target).toHaveCSS('transform', 'none');
+
+		await page.evaluate(() => window.scrollTo(0, 0));
+		await page.waitForTimeout(150);
+		await target.scrollIntoViewIfNeeded();
+		await page.waitForTimeout(150);
+		await expect(target).not.toHaveClass(/is-mrn-text-reveal-active/);
+		await expect(target).toHaveClass(/has-mrn-text-revealed/);
+	});
+
 	for (const testCase of motionTargetCases) {
 		test(`motion target applies effect to configured target: ${testCase.label}`, async ({ page }) => {
 			await expectMotionTargetCase(page, testCase);

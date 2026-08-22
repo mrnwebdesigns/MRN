@@ -23,7 +23,7 @@
     {
       "slug": "mrn-loader",
       "name": "MRN Loader",
-      "version": "1.4.0",
+      "version": "1.5.1",
       "runtime_type": "mu-loader",
       "classification": "platform",
       "lifecycle": "supported",
@@ -32,7 +32,7 @@
       "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-loader.php", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress"], "soft": [], "release_group": "mrn-platform"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
-      "purpose": "Loads the explicitly approved MRN MU component entrypoints."
+      "purpose": "Loads approved MRN MU component entrypoints and exposes a capability-protected runtime parity report."
     },
     {
       "slug": "mrn-admin-data-post-types",
@@ -331,7 +331,7 @@
     {
       "slug": "mrn-config-helper",
       "name": "MRN Config Helper",
-      "version": "0.1.54",
+      "version": "0.1.56",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
       "lifecycle": "supported",
