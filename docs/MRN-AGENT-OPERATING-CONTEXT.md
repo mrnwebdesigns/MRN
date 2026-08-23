@@ -325,6 +325,22 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
 - Do not interpret `tests passed` or `git diff is clean` as equivalent to MRN QA when MRN QA is required.
 - Do not deploy merely because QA passes; deployment authorization and backup gates remain separate requirements.
 
+### Concurrent development boundary
+
+- MRN assumes concurrent work. Follow
+  `docs/MRN-CONCURRENT-DEVELOPMENT-POLICY.md`: one task, one branch, one dedicated
+  worktree.
+- Do not use a dirty canonical checkout as a shared feature workspace and do not
+  modify another task's worktree.
+- Task acceptance QA is scoped to the staged/changed task source plus applicable
+  task-specific runtime checks. Unrelated monorepo findings and another task's
+  unstaged files do not block that task's commit.
+- Explicit component, repository, release, parity, and fleet QA may be broader.
+  Failures block the broader operation requested, not unrelated task acceptance.
+- Merging source is not stack promotion. A release is current only after clean
+  merged `main` produces an immutable release lock and deterministic artifacts,
+  and deployed inventory is read back and verified against that lock.
+
 ### B. WordPress operations orchestration
 
 - For supported WordPress site maintenance/update operations, use this routing order when the verified workflow exists and is available: QA Engine first -> MainWP / MRN MainWP tooling -> approved lower-level tooling -> SSH last resort.
@@ -343,6 +359,11 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
 - Do not commit first and plan to QA afterward unless the owner explicitly authorizes an emergency/checkpoint exception.
 - A clean `git diff`, syntax check, unit test, or ad-hoc local validation is not automatically equivalent to MRN QA when the repository requires MRN QA.
 - Use the smallest relevant QA scope rather than automatically running the largest possible suite.
+- The mechanical gate runs against the staged index snapshot with a fixed
+  changed-file static-analysis scope. It must not inherit settings that broaden
+  the proof to unrelated repository source or shared runtime routes.
+- The mechanical proof does not replace applicable task-scoped runtime,
+  accessibility, API, performance, or integration QA.
 - If MRN QA cannot run because of infrastructure/tooling failure, stop before committing and report the blocker unless the owner explicitly authorizes a checkpoint/exception.
 
 ### Checkpoint / recovery exception
