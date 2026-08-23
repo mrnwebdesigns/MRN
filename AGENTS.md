@@ -3,6 +3,12 @@ WORKING RULES
 Scope:
 - Work on one feature/task at a time
 - Do not modify unrelated systems
+- Assume other MRN tasks are active. Use one dedicated branch and worktree per
+  task; do not develop in a dirty canonical checkout or another task's worktree.
+- Follow `docs/MRN-CONCURRENT-DEVELOPMENT-POLICY.md`. Task acceptance and stack
+  promotion are separate gates: unrelated work must not block a feature commit,
+  and a merge must not be called released until clean `main` is locked, deployed,
+  and verified.
 
 Implementation:
 - Prefer existing helpers, APIs, and contracts
@@ -50,6 +56,11 @@ When fixing issues:
 
 Release baseline:
 - After changing a plugin, theme, MU-plugin, stack runtime code, or the QA engine, run the smallest relevant MRN QA suite before declaring the work complete. Use full release/signoff QA only when release readiness, deployment, or a user request requires it.
+- The commit gate proves only the staged task snapshot. Run applicable runtime,
+  accessibility, API, performance, and integration checks against the task's own
+  project/runtime. Full repository, parity, fleet, and release-lock checks belong
+  to an explicit promotion gate and do not attach unrelated baseline debt to
+  every feature commit.
 - Report QA rows that were intentionally skipped and why. Never describe a release as complete when a required runtime check is blocked or skipped.
 - QA may inspect and report automatically, but it must not commit, push, deploy, or modify production without the user's explicit authorization.
 - For "Run QA", "MRN QA", plugin QA, theme QA, file QA, or release QA, use the MRN QA Engine.

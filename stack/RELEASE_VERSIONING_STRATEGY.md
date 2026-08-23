@@ -34,26 +34,38 @@
   - plugin header and runtime constants where the component defines them
 
 ## Release Flow (Going Forward)
-1. Identify approved release scope from `git diff --name-only origin/main..HEAD`.
-2. Detect changed deployable components (theme/plugin/MU).
-3. Apply required version bumps using the bump rules above.
-4. Verify header/runtime version consistency for each changed component.
-5. Rebuild release artifacts:
+1. Create a dedicated release worktree from clean, current, merged `main`. Do
+   not promote from a feature worktree, a dirty canonical checkout, or an
+   unmerged branch.
+2. Identify the complete release scope by comparing `main` with the previous
+   immutable release lock and inventorying every changed deployable component.
+   `git diff --name-only origin/main..HEAD` is useful for a feature task, but it
+   is not sufficient for promotion after several branches have merged.
+3. Detect changed deployable components (theme/plugin/MU/runtime/deployment
+   contract).
+4. Apply required version bumps using the bump rules above.
+5. Verify header/runtime version consistency for each changed component.
+6. Rebuild release artifacts:
    - `stack/scripts/build-release-zips.sh theme`
    - `stack/scripts/build-release-zips.sh plugins <slug ...>`
    - `stack/scripts/build-release-zips.sh mu-plugins <slug ...>`
    - Named plugin builds resolve canonical in-repo sources first and then the sibling `MRN-plugins` workspace. Set `MRN_STANDALONE_PLUGINS_ROOT` when the standalone repositories are checked out elsewhere.
-6. Run release QA (theme/security/smoke/perf/rollout-contract as applicable).
-7. Record release notes in:
+7. Run release QA (theme/security/smoke/perf/accessibility/API/parity/rollout
+   contract as applicable). Feature-gate isolation does not waive promotion QA.
+8. Record release notes in:
    - `stack/CHANGELOG.md`
    - `stack/STACK_VERSION.md`
-8. Generate the immutable release lock after all runtime source commits are final:
+9. Generate the immutable release lock after all runtime source commits are final:
    - `python3 stack/scripts/generate-stack-release-lock.py --output stack/manifests/stack-release.lock.json`
    - commit the generated lock separately so its recorded source commits remain exact
-9. Build a deterministic MainWP MU package from that exact lock when preparing an existing-site fleet rollout:
+10. Build a deterministic MainWP MU package from that exact lock when preparing an existing-site fleet rollout:
    - `python3 stack/scripts/build-mainwp-mu-release.py --rollout-id <unique-rollout-id> --output-dir releases/mainwp-mu/<unique-rollout-id>`
    - use the generated `checksums.json`, exact `plan.json`, and ZIP as the preflight/apply identity; never hand-author the plan or package
-10. Deploy in stack-first order for stack-owned runtime changes, then rollout surfaces.
+11. Deploy in stack-first order for stack-owned runtime changes, then rollout
+    surfaces.
+12. Read back target component versions/hashes and compare them with the release
+    lock. Do not mark the stack current until source, catalog, lock, artifacts,
+    deployment evidence, and target inventory agree.
 
 ## Release Lock
 
@@ -79,3 +91,11 @@ theme and must not be treated as an exact fleet runtime slug or hash.
   - version sync points are inconsistent
   - release artifacts were not rebuilt for changed deployables
   - required QA scripts for the affected surfaces were skipped without explicit reason
+  - the release worktree is dirty or is not based on current merged `main`
+  - a deployable change since the prior lock is missing from the release inventory
+  - runtime/fleet inventory differs from the generated release lock
+
+Feature acceptance and stack promotion follow
+`docs/MRN-CONCURRENT-DEVELOPMENT-POLICY.md`. An unrelated baseline finding does
+not block an isolated feature commit, but unresolved release-scope or runtime
+drift blocks promotion.
