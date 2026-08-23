@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.23-mainwp-mu-fleet`
+- Stack release: `2026.08.23-mainwp-mu-fleet-r1`
 - Release date: `2026-08-23`
 - Status: `release candidate`
 
@@ -26,7 +26,7 @@
   - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`
   - `mrn-mega-menu` `0.16.17`
-  - `mrn-stack-deployment-agent` `0.1.0`
+  - `mrn-stack-deployment-agent` `0.1.1`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-universal-sticky-bar` `1.1.8`
   - `searchwp-editor-performance` `1.0.7`

@@ -611,7 +611,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.7.0",
+      "version": "0.7.1",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -625,7 +625,7 @@
     {
       "slug": "mrn-stack-deployment-agent",
       "name": "MRN Stack Deployment Agent",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "runtime_type": "standard-plugin",
       "classification": "operations-agent",
       "lifecycle": "supported",

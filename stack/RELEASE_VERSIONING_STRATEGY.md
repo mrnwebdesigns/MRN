@@ -50,7 +50,10 @@
 8. Generate the immutable release lock after all runtime source commits are final:
    - `python3 stack/scripts/generate-stack-release-lock.py --output stack/manifests/stack-release.lock.json`
    - commit the generated lock separately so its recorded source commits remain exact
-9. Deploy in stack-first order for stack-owned runtime changes, then rollout surfaces.
+9. Build a deterministic MainWP MU package from that exact lock when preparing an existing-site fleet rollout:
+   - `python3 stack/scripts/build-mainwp-mu-release.py --rollout-id <unique-rollout-id> --output-dir releases/mainwp-mu/<unique-rollout-id>`
+   - use the generated `checksums.json`, exact `plan.json`, and ZIP as the preflight/apply identity; never hand-author the plan or package
+10. Deploy in stack-first order for stack-owned runtime changes, then rollout surfaces.
 
 ## Release Lock
 
