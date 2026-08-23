@@ -178,6 +178,14 @@ Use this when the rollout includes any of:
 This helper is responsible for keeping the stack server copy and `default-configs.mrndev.io` aligned for those surfaces.
 It now performs the live-site preflight and writes the `default-configs.mrndev.io` refresh through the site-owner SSH path.
 
+For an existing-site fleet rollout, use the plan-locked MainWP path documented in
+[`MAINWP_FLEET_ROLLOUT_PLAN.md`](./MAINWP_FLEET_ROLLOUT_PLAN.md) after the canonical
+stack source and release lock are ready. MainWP distribution does not replace the
+stack-source deploy above; it distributes that exact approved release to existing
+sites in backup-gated batches. The child deployment agent must be installed and
+verified first. Never substitute an arbitrary development site for the named
+production canary.
+
 ### Standard Plugins
 
 Standard plugins are not part of the feature deploy helper.
