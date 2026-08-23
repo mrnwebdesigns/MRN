@@ -28,6 +28,7 @@ fluent-smtp
 /home/mrndev-stack-manager/stack/packages/mrn-mega-menu.zip
 /home/mrndev-stack-manager/stack/packages/mrn-recaptcha-enterprise-manager.zip
 /home/mrndev-stack-manager/stack/packages/mrn-seo-helper.zip
+/home/mrndev-stack-manager/stack/packages/mrn-stack-deployment-agent.zip
 /home/mrndev-stack-manager/stack/packages/mrn-template-inspector.zip
 /home/mrndev-stack-manager/stack/packages/mrn-reusable-block-library.zip|stack
 /home/mrndev-stack-manager/stack/packages/mrn-universal-sticky-bar.zip

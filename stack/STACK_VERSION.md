@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.22-verified-release-deploy`
-- Release date: `2026-08-22`
+- Stack release: `2026.08.23-mainwp-mu-fleet`
+- Release date: `2026-08-23`
 - Status: `release candidate`
 
 ## Included MRN-Owned Components
@@ -26,6 +26,7 @@
   - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`
   - `mrn-mega-menu` `0.16.17`
+  - `mrn-stack-deployment-agent` `0.1.0`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-universal-sticky-bar` `1.1.8`
   - `searchwp-editor-performance` `1.0.7`
@@ -43,4 +44,6 @@
 - This file tracks the current stack baseline, not every historical package ever shipped.
 - Third-party packages in `manifests/plugins.txt` keep their own upstream versions and package filenames.
 - Current baseline keeps the canonical AME export payloads, importer/manifests, bootstrap helper, shared shim, and stack MU wrapper loaders tracked in the main repo so release/deploy flows can verify and sync them consistently.
+- This release adds the child-side MainWP deployment agent to new-site bootstrap and defines `mrnwebdesigns.com` as the required first production canary for the backup-gated MU fleet rollout. No development site may substitute for that canary.
+- The Dashboard-only `mrn-mainwp-operations-api` controller remains an independently released MainWP control-plane component and is not installed on child sites.
 - Use [`CHANGELOG.md`](/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md) for release notes.

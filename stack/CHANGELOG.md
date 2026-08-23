@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.08.23-mainwp-mu-fleet
+- Added `mrn-stack-deployment-agent` `0.1.0` to the standard new-site plugin baseline as a zero-frontend, MainWP-authenticated child agent for exact MRN MU release preflight, apply, and rollback operations.
+- Added the Dashboard-only `mrn-mainwp-operations-api` `0.7.0` release contract for checksum-validated MU packages, batches of no more than 25 sites, fresh verified backup receipts, per-site results, and fail-closed rollback handling.
+- Updated the component catalog, plugin manifest, and rollout checklist so MainWP is the fleet control plane rather than requiring manual MU-plugin installation across existing sites.
+- Added the canonical MainWP fleet rollout plan and designated `mrnwebdesigns.com` as the required first production canary; a development site cannot substitute for it.
+- Kept production unchanged in this release-preparation step. Canary installation or MU mutation still requires a fresh verified remote database-only backup, an exact operation preview, and explicit owner confirmation.
+
 ## 2026.08.21-subtle-text-reveal
 - Expanded `mrn-base-stack` to `1.3.0`.
 - Added `Subtle Text Reveal` as a first-class Effects-tab option for builder layouts and reusable blocks, with shared row/content/media/header/items target resolution.
