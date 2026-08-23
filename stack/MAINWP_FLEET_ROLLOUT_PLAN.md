@@ -51,12 +51,13 @@ without this seeding step.
 
 1. Finalize and commit all in-scope MRN source repositories.
 2. Generate the stack release lock from clean, exact commits.
-3. Build a release plan containing the release ID, rollout ID, lock SHA-256,
-   exact MU targets, exact payload paths, file SHA-256 values, legacy paths, and
-   protected paths.
-4. Package `plan.json` and only the declared payload files into a ZIP.
-5. Record the plan and package SHA-256 values in the rollout notes.
-6. Validate the package independently on the Dashboard and child agent before
+3. Run `python3 stack/scripts/build-mainwp-mu-release.py --rollout-id
+   <unique-rollout-id> --output-dir releases/mainwp-mu/<unique-rollout-id>`.
+   The builder verifies source trees against the lock, derives exact MU targets,
+   includes the runtime release lock, and emits deterministic plan/package bytes.
+4. Record the generated `checksums.json`, exact `plan.json`, and package filename
+   in the rollout notes. Never hand-author or modify these artifacts.
+5. Validate the package independently on the Dashboard and child agent before
    any promotion.
 
 ## Phase 4: Canary Preflight And Apply

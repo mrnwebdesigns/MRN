@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.08.23-mainwp-mu-fleet-r1
+- Updated `mrn-stack-deployment-agent` to `0.1.1` and `mrn-mainwp-operations-api` to `0.7.1` so the exact immutable `mu-plugins/mrn-stack-release.lock.json` file can travel with an MU release while arbitrary JSON payloads remain rejected.
+- Added a deterministic MainWP MU release builder that verifies the canonical lock against exact source commits, emits a checksum-locked plan and ZIP, and produces identical artifacts from identical inputs.
+- Preserved `mrnwebdesigns.com` as the required first production canary and retained the fresh remote database-only backup, exact preview, explicit owner confirmation, bounded batch, and rollback gates.
+
 ## 2026.08.23-mainwp-mu-fleet
 - Added `mrn-stack-deployment-agent` `0.1.0` to the standard new-site plugin baseline as a zero-frontend, MainWP-authenticated child agent for exact MRN MU release preflight, apply, and rollback operations.
 - Added the Dashboard-only `mrn-mainwp-operations-api` `0.7.0` release contract for checksum-validated MU packages, batches of no more than 25 sites, fresh verified backup receipts, per-site results, and fail-closed rollback handling.
