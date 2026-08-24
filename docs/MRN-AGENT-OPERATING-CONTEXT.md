@@ -1,5 +1,13 @@
 # MRN Agent Operating Context
 
+## Owner output preference
+
+- Whenever text is intended for the owner to copy and paste elsewhere, place the
+  complete copy-ready text in a fenced code block so supported clients display a
+  copy button.
+- This applies to prompts, commands, messages, templates, configuration snippets,
+  and other handoff text. Keep surrounding explanation outside the fenced block.
+
 ## Canonical Purpose
 This document is the vendor-neutral, version-controlled baseline for MRN-wide agent behavior.
 
