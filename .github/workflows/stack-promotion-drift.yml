@@ -1,0 +1,50 @@
+name: Stack promotion drift
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "17 10 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stack-promotion-drift
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Merged-source release inventory
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out complete release history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Audit merged source against immutable lock
+        id: promotion-audit
+        shell: bash
+        run: |
+          set +e
+          mkdir -p outputs
+          python3 stack/scripts/qa-stack-promotion.py \
+            --mode audit \
+            --report outputs/stack-promotion-audit.json
+          audit_status=$?
+          set -e
+          echo "exit_code=${audit_status}" >> "${GITHUB_OUTPUT}"
+          exit "${audit_status}"
+
+      - name: Preserve promotion inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stack-promotion-audit
+          path: outputs/stack-promotion-audit.json
+          if-no-files-found: error
+          retention-days: 30

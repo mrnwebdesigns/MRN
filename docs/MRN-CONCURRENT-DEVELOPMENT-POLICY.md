@@ -60,6 +60,11 @@ Pull-request code gates use the same changed-file boundary. A PR that modifies
 the QA workflow or policy may test those files without inheriting unrelated
 monorepo findings.
 
+The separate `Stack promotion drift` workflow runs after merges to `main`, on a
+daily schedule, and on explicit dispatch. It is not a pull-request task gate.
+Its failure records visible release debt and preserves the machine-readable
+inventory while isolated feature work continues normally.
+
 ## Component and Full QA
 
 The owner or release process may explicitly request broader QA:
@@ -88,6 +93,8 @@ Only a dedicated release task may promote the stack. It must:
    every changed deployable theme, plugin, MU plugin, runtime component, and
    deployment contract. This inventory prevents a merged component from being
    omitted merely because its original task ended.
+   `stack/scripts/qa-stack-promotion.py --mode audit` is the canonical
+   machine-readable merged-source inventory for this step.
 3. Synchronize component versions, catalog records, manifests, stack version,
    and release notes for the complete promotion scope.
 4. Run required full component, repository, contract, runtime, accessibility,
@@ -96,6 +103,9 @@ Only a dedicated release task may promote the stack. It must:
    release or its required runtime checks.
 5. Generate `stack/manifests/stack-release.lock.json` only after all release
    source commits are final. Never generate a release lock from a dirty tree.
+   Commit the lock separately, then run
+   `stack/scripts/qa-stack-promotion.py --mode candidate` to reconcile it with
+   current merged `origin/main` and the prior committed lock.
 6. Build deterministic artifacts from the exact lock and preserve their
    checksums, source commits, plan, and rollout identity.
 7. Deploy through the approved backup and authorization gates.

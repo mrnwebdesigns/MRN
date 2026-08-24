@@ -29,6 +29,7 @@ releases/mu-plugins/
 releases/plugins/
 releases/stack/
 releases/*.zip
+outputs/stack-promotion-*.json
 stack/configs/exports/*.bak-*
 
 # Stack secrets and generated theme output
