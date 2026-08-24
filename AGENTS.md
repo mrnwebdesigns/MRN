@@ -24,6 +24,22 @@ Content ownership:
 - Apply content changes as replayable scripts run with `wp eval-file` and commit them with the work, so the change is versioned and can be replayed to staging and production rather than re-entered by hand in each environment.
 - Never hardcode an environment URL in content or in a content script. Resolve destinations at run time with WordPress APIs (`get_permalink()`, `get_page_by_path()`, `home_url()`), so the same value is correct on local, staging, and production.
 
+WordPress site-building and QA content policy:
+- Treat client-requested content and media changes as site-building work, not as disposable local edits. This applies to every MRN WordPress site, site project, and follow-up thread.
+- Keep content and media separate from theme code. Do not make a direct edit inside `wp-content/uploads` the only record of an approved change, and do not treat a file in Downloads or another untracked folder as a deployable source of truth.
+- For every approved Client Review or equivalent QA content/media change, create a tracked migration bundle with:
+  - an idempotent `scripts/content/<change-id>-<slug>.php` script intended to run through `wp eval-file`;
+  - the approved source asset(s), or a tracked manifest/checksum and documented source location when the assets are too large for the repository;
+  - the exact target page, attachment, ACF field/repeater row, menu item, or other WordPress record;
+  - required alt text, captions, labels, and any environment-independent lookup values.
+- For ACF image fields and repeater rows, prefer importing the approved asset as a new attachment and updating the exact field reference. Preserve the old attachment until the replacement is verified; do not delete or orphan media as part of the first QA pass.
+- If an existing attachment must be preserved for stable references, the migration must update the original file through WordPress-aware tooling, refresh attachment metadata and generated sizes, and verify the resulting URLs. A raw filename overwrite is not an acceptable substitute.
+- Migration scripts must be safe to rerun: detect an already-applied change, refuse ambiguous matches, avoid hardcoded attachment IDs where a stable lookup exists, and report exactly what changed.
+- The standard handoff sequence is: apply locally -> provide the local preview URL, original comment URL, and change summary -> receive owner approval -> run the smallest applicable MRN QA -> commit the migration bundle -> apply to the approved remote environment through the authorized deployment/content workflow -> verify the remote URL -> reply to the original review comment with the commit hash and verification summary.
+- Local preview approval does not authorize a remote write. Before any staging, development, or production database/media mutation, pass the applicable backup gate, then run the same migration bundle and flush relevant caches/transients.
+- Do not commit generated uploads, cache output, database dumps, or environment-specific runtime files as a substitute for a migration. The committed migration bundle is the audit trail and replay mechanism; the WordPress media library remains the runtime content store.
+- For visual QA, use the supplied designer-approved asset rather than compensating for a mismatched asset with arbitrary CSS transforms, cropping, or per-item scaling. Verify the asset at the affected desktop, tablet, and mobile layouts when the component is responsive.
+
 Product quality:
 - Accessibility and frontend performance are required, not optional polish
 - Theme-owned frontend work should preserve or improve a WCAG 2.1 AA baseline where the stack controls markup, styles, and behavior
@@ -89,4 +105,3 @@ For MRN-wide conventions (Local Hub vs Production Hub, access strategy, SSH/depl
 - /Users/khofmeyer/Development/MRN/docs/MRN-AGENT-OPERATING-CONTEXT.md
 
 Project-specific instructions in this repo still apply as overrides in their scope.
-
