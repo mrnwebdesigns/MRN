@@ -106,6 +106,9 @@ final class Admin {
 				'columnCopied'  => __( 'Column copied. Paste it into any column in this layout.', 'mrn-mega-menu' ),
 				'columnPasted'  => __( 'Copied column pasted. Save or update the layout to publish this change.', 'mrn-mega-menu' ),
 				'confirmPasteColumn' => __( 'Replace this column and all of its content with the copied column?', 'mrn-mega-menu' ),
+				'categoryResult' => __( '1 category found.', 'mrn-mega-menu' ),
+				'categoryResults' => __( '%d categories found.', 'mrn-mega-menu' ),
+				'noCategoryResults' => __( 'No categories found.', 'mrn-mega-menu' ),
 				'blockMoved'   => __( 'Block moved.', 'mrn-mega-menu' ),
 				'linkMoved'    => __( 'Link moved.', 'mrn-mega-menu' ),
 				'mediaTitle'    => __( 'Choose a promotion image', 'mrn-mega-menu' ),
@@ -474,12 +477,23 @@ final class Admin {
 		?>
 		<div class="mrn-mm-field">
 			<span id="<?php echo esc_attr( $label_id ); ?>"><?php esc_html_e( 'Categories', 'mrn-mega-menu' ); ?></span>
-			<div class="mrn-mm-check-list" role="group" aria-labelledby="<?php echo esc_attr( $label_id ); ?>">
+			<div class="mrn-mm-category-picker">
+				<label class="mrn-mm-category-search">
+					<span><?php esc_html_e( 'Search categories', 'mrn-mega-menu' ); ?></span>
+					<span class="mrn-mm-category-search__controls">
+						<input type="search" class="mrn-mm-category-search__input" placeholder="<?php esc_attr_e( 'Search by category name', 'mrn-mega-menu' ); ?>" autocomplete="off">
+						<button type="button" class="button mrn-mm-category-search__clear" hidden><?php esc_html_e( 'Clear', 'mrn-mega-menu' ); ?></button>
+					</span>
+				</label>
+				<p class="mrn-mm-category-search__status screen-reader-text" aria-live="polite"></p>
+				<div class="mrn-mm-check-list" role="group" aria-labelledby="<?php echo esc_attr( $label_id ); ?>">
 				<?php if ( is_wp_error( $terms ) || empty( $terms ) ) : ?>
 					<p><?php esc_html_e( 'No product categories are available yet.', 'mrn-mega-menu' ); ?></p>
 				<?php else : ?>
 					<?php self::render_category_tree( $terms, $selected_positions ); ?>
+					<p class="mrn-mm-category-search__empty" hidden><?php esc_html_e( 'No categories found.', 'mrn-mega-menu' ); ?></p>
 				<?php endif; ?>
+				</div>
 			</div>
 		</div>
 		<label class="mrn-mm-field">

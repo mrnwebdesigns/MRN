@@ -94,6 +94,12 @@ Integration filters:
 - Corrected global WordPress term annotations and eliminated all Mega Menu PHPStan findings.
 - Enabled strict PHPStan enforcement in the plugin QA profile so advisory errors fail future QA runs.
 
+### 0.16.16
+
+- Added category-name search to WooCommerce Product Categories blocks in the mega-menu editor.
+- Preserved category hierarchy context and checked selections while filtering, with accessible result announcements and a clear control.
+- Preserved semantic category-heading typography through the stack's shared heading variables.
+
 ### 0.16.15
 
 - Added accessible copy and paste controls to layout columns in the mega-menu editor.

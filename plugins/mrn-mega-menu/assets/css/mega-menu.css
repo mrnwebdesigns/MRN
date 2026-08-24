@@ -536,7 +536,11 @@
 	}
 }
 
+/* The stack breakpoint can keep the drawer active above this plugin's 901px
+ * desktop breakpoint. Reset the desktop flex item whenever the runtime says
+ * mobile navigation is active so the parent link and submenu remain stacked. */
 [data-mrn-mobile-active="true"] .mrn-has-mega-menu {
+	display: block;
 	position: relative !important;
 }
 

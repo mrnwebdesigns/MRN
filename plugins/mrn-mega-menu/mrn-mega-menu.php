@@ -13,6 +13,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+define( 'MRN_MEGA_MENU_VERSION', '0.16.17' );
+define( 'MRN_MEGA_MENU_FILE', __FILE__ );
+define( 'MRN_MEGA_MENU_PATH', plugin_dir_path( __FILE__ ) );
+define( 'MRN_MEGA_MENU_URL', plugin_dir_url( __FILE__ ) );
+
 require_once __DIR__ . '/includes/class-plugin.php';
 require_once __DIR__ . '/includes/class-stack-integration.php';
 require_once __DIR__ . '/includes/class-admin.php';
