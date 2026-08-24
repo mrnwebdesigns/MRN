@@ -246,6 +246,43 @@ class PromotionTests(unittest.TestCase):
             inventory["deployment_contracts"],
         )
 
+    def test_external_inventory_detects_default_branch_drift(self):
+        with tempfile.TemporaryDirectory() as root:
+            standalone = Path(root) / "standalone"
+            repository = standalone / "required-external"
+            origin = Path(root) / "required-external.git"
+            repository.mkdir(parents=True)
+            run("git", "init", "--initial-branch=main", cwd=repository)
+            run("git", "config", "user.email", "qa@example.com", cwd=repository)
+            run("git", "config", "user.name", "QA Fixture", cwd=repository)
+            (repository / "plugin.php").write_text("<?php\n", encoding="utf-8")
+            run("git", "add", ".", cwd=repository)
+            run("git", "commit", "-m", "Initial", cwd=repository)
+            run("git", "init", "--bare", origin, cwd=repository)
+            run("git", "remote", "add", "origin", origin, cwd=repository)
+            run("git", "push", "-u", "origin", "main", cwd=repository)
+
+            inventory = promotion.external_source_inventory(
+                {
+                    "components": [
+                        {
+                            "slug": "required-external",
+                            "source": {
+                                "repository": "required-external",
+                                "git_commit": "0" * 40,
+                            },
+                        }
+                    ]
+                },
+                standalone,
+            )
+
+            self.assertEqual("drift", inventory[0]["status"])
+            self.assertEqual(
+                run("git", "rev-parse", "HEAD", cwd=repository).stdout.strip(),
+                inventory[0]["default_commit"],
+            )
+
     def test_audit_blocks_required_changes_after_current_lock(self):
         with tempfile.TemporaryDirectory() as root:
             fixture = GitFixture(root)

@@ -26,8 +26,35 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Create required-source installation token
+        id: required-sources-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.MRN_CI_STANDALONE_REPOS_APP_ID }}
+          private-key: ${{ secrets.MRN_CI_STANDALONE_REPOS_PRIVATE_KEY }}
+          owner: mrnwebdesigns
+          repositories: |
+            mrn-config-helper
+            mrn-stack-deployment-agent
+            mrn-universal-sticky-bar
+
+      - name: Check out required standalone sources
+        env:
+          GH_TOKEN: ${{ steps.required-sources-token.outputs.token }}
+          MRN_STANDALONE_PLUGINS_ROOT: ${{ runner.temp }}/MRN-plugins
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "${MRN_STANDALONE_PLUGINS_ROOT}"
+          for slug in mrn-config-helper mrn-stack-deployment-agent mrn-universal-sticky-bar; do
+            gh repo clone "mrnwebdesigns/${slug}" \
+              "${MRN_STANDALONE_PLUGINS_ROOT}/${slug}" -- --depth 1
+          done
+
       - name: Audit merged source against immutable lock
         id: promotion-audit
+        env:
+          MRN_STANDALONE_PLUGINS_ROOT: ${{ runner.temp }}/MRN-plugins
         shell: bash
         run: |
           set +e
