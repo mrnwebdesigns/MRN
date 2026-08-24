@@ -735,6 +735,19 @@
 				animateStatValue( valueElement );
 			}, { margin: '-20% 0px -20% 0px' } );
 		} );
+
+		// Give the observer time to initialize, then cover stats already visible
+		// on first load when no scroll event occurs.
+		window.setTimeout( function() {
+			statValues.forEach( function( valueElement ) {
+				var rect = valueElement.getBoundingClientRect();
+				var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+
+				if ( rect.top < viewportHeight && rect.bottom > 0 ) {
+					animateStatValue( valueElement );
+				}
+			} );
+		}, 650 );
 	}
 
 	function initGlobalApi( inView ) {

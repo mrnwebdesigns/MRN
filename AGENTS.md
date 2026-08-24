@@ -9,6 +9,13 @@ Implementation:
 - Avoid duplicating logic across theme/plugins
 - Keep changes minimal and targeted
 
+Shared Stack ownership:
+- Shared theme behavior belongs in `/Users/khofmeyer/Development/MRN/stack/`.
+- Do not copy Stack templates, JavaScript, CSS, or animation logic into a
+  client site's child theme because the mounted parent theme is ignored or
+  difficult to edit. Fix the canonical Stack source or use an existing Stack
+  extension point; child themes are for genuinely site-specific behavior.
+
 WordPress rules:
 - Respect Classic Editor workflows
 - Separate admin behavior vs frontend rendering

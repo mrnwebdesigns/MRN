@@ -18,6 +18,7 @@ Critical constraints:
 - Preserve existing builder behavior unless explicitly told otherwise
 - Preserve shared theme hook contracts, including CSS classes, CSS variables, data attributes, and helper output used by other parts of the system
 - Treat site updates as stack updates, not plugin-only swaps
+- Shared Stack behavior must be fixed in the canonical `/Users/khofmeyer/Development/MRN/stack/` source. Never duplicate Stack templates, JavaScript, CSS, or animation logic in a client child theme merely because the mounted parent theme is ignored; use a Stack extension point or update Stack instead.
 - Stack sites run a cloned active site theme by default; only add a child theme later when the site is handed to the development/front-end team
 - Prefer existing helpers, APIs, and established contracts over one-off logic
 - Assume changes may affect multiple connected areas

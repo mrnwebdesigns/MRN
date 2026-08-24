@@ -157,6 +157,17 @@ function mrn_base_stack_register_job_posting_field_group() {
 					),
 				),
 				array(
+					'key'          => 'field_mrn_job_posting_area',
+					'label'        => 'Area',
+					'name'         => 'job_posting_area',
+					'aria-label'   => '',
+					'type'         => 'text',
+					'instructions' => 'Optional metro or service area, such as Raleigh - Durham.',
+					'wrapper'      => array(
+						'width' => '50',
+					),
+				),
+				array(
 					'key'           => 'field_mrn_job_posting_location_record',
 					'label'         => 'Linked Location',
 					'name'          => 'job_posting_location_record',
@@ -335,6 +346,7 @@ function mrn_base_stack_get_job_posting_data( $post_id = null ) {
 		'workplace_type'       => '',
 		'workplace_type_key'   => '',
 		'location'             => '',
+		'area'                 => '',
 		'location_record'      => 0,
 		'compensation_note'    => '',
 		'application_deadline' => '',
@@ -363,7 +375,7 @@ function mrn_base_stack_get_job_posting_data( $post_id = null ) {
 		}
 	}
 
-	foreach ( array( 'department', 'location', 'compensation_note', 'application_deadline', 'application_url', 'application_email' ) as $key ) {
+	foreach ( array( 'department', 'location', 'area', 'compensation_note', 'application_deadline', 'application_url', 'application_email' ) as $key ) {
 		$value = get_field( 'job_posting_' . $key, $post_id );
 		if ( is_string( $value ) ) {
 			$data[ $key ] = trim( $value );
