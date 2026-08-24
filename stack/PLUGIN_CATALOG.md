@@ -26,7 +26,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-schema-bridge` | 0.4.2 | MU loader | Platform required | SEOPress (preferred), legacy SmartCrawl, theme, and schema normalization. |
 | `mrn-active-style-guide` | 0.1.6 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
 | `mrn-config-helper` | 0.1.54 | Standard bootstrap | Platform required | Shared site configuration shell, breadcrumb runtime, and launch/admin integrations. |
-| `mrn-stack-deployment-agent` | 0.1.1 | Standard bootstrap | Platform required | Zero-frontend MainWP-authenticated agent for plan-locked MU preflight, atomic promotion, and rollback. |
+| `mrn-stack-deployment-agent` | 0.1.5 | Standard bootstrap | Platform required | Zero-frontend MainWP-authenticated agent for plan-locked MU preflight, atomic promotion, and rollback. |
 | `mrn-universal-sticky-bar` | 1.1.8 | Standard bootstrap | Platform required | Provides the shared settings/editor action bar; independently released for non-Stack use. |
 
 ## Optional Shared Features
@@ -61,10 +61,10 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 
 | Slug | Version | Responsibility |
 | --- | ---: | --- |
-| `mrn-mainwp-operations-api` | 0.7.1 | Scoped MainWP operations for backups, package installation, font management, and MU release orchestration. |
+| `mrn-mainwp-operations-api` | 0.7.3 | Scoped MainWP operations for backups, package installation, font management, and MU release orchestration. |
 | `mrn-wp-control` | 1.1.1 | Restricted MainWP account provisioning through WP-CLI. |
 | `mrn-wp-control-table-exporter` | 1.4.4 | CSV export for supported WP Control/MainWP tables. |
-| `mrn-mainwp-mcp` | 0.1.0 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |
+| `mrn-mainwp-mcp` | 0.1.1 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |
 
 ## Development and Maintenance
 
