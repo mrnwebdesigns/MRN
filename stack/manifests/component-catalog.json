@@ -547,7 +547,7 @@
       "lifecycle": "supported-review",
       "current_distribution": "standard-bootstrap",
       "target_tier": "maintenance-only",
-      "source": {"repository": "mrn-database-retention", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention", "state": "confirmed"},
+      "source": {"repository": "mrn-database-retention", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["MainWP", "Action Scheduler", "Defender", "Relevanssi"], "release_group": null},
       "data": {"options": ["retention report and lock state"], "tables": ["operates on allowlisted third-party tables; owns none"], "cron": ["four retention/maintenance hooks"], "routes": ["mrn-db-retention WP-CLI command"], "external_services": ["MainWP", "Defender", "Action Scheduler", "Relevanssi"]},
       "purpose": "Applies explicitly configured retention to supported third-party operational data."
