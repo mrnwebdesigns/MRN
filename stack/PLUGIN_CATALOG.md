@@ -61,7 +61,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 
 | Slug | Version | Responsibility |
 | --- | ---: | --- |
-| `mrn-mainwp-operations-api` | 0.3.0 | Scoped MainWP operations for backups, package installation, and font management. |
+| `mrn-mainwp-operations-api` | 0.3.0 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only, not installed in client-site plugins. |
 | `mrn-wp-control` | 1.1.1 | Restricted MainWP account provisioning through WP-CLI. |
 | `mrn-wp-control-table-exporter` | 1.4.4 | CSV export for supported WP Control/MainWP tables. |
 | `mrn-mainwp-mcp` | 0.1.0 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |

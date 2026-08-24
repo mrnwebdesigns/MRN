@@ -603,7 +603,7 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "dashboard-only",
-      "source": {"repository": "mrn-mainwp-operations-api", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api", "state": "confirmed"},
+      "source": {"repository": "mrn-mainwp-operations-api", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api", "state": "confirmed-independent-dashboard"},
       "dependencies": {"hard": ["MainWP Dashboard", "WordPress Abilities API"], "soft": ["UpdraftPlus", "MRN Google Fonts"], "release_group": "mainwp-operations"},
       "data": {"options": [], "tables": [], "cron": [], "routes": ["five mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
       "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages and font management."
