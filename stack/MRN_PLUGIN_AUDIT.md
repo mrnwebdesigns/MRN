@@ -55,7 +55,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-cookie-consent` | MRN Cookie Consent | 1.1.36 | <https://github.com/mrnwebdesigns/mrn-cookie-consent> | No hard stack requirement; MRN GTM Injector integration is optional. |
 | `mrn-editor-tools` | MRN Editor Enhancements | 1.8.24 | <https://github.com/mrnwebdesigns/mrn-editor-tools> | No stack requirement; Classic Editor/ACF editor context expected. |
 | `mrn-fontawesome-profile-manager` | MRN Font Awesome Profile Manager | 0.4.0 | <https://github.com/mrnwebdesigns/mrn-fontawesome-profile-manager> | Optional stack bridge for Site Configurations/Site Styles. |
-| `mrn-google-fonts` | MRN Google Fonts | 0.5.2 | <https://github.com/mrnwebdesigns/MRN> | Optional stack bridge for Site Styles; standalone mode supported. |
+| `mrn-google-fonts` | MRN Google Fonts | 0.5.2 | <https://github.com/mrnwebdesigns/mrn-google-fonts> | Optional stack bridge for Site Styles; standalone mode supported. |
 | `mrn-gtm-injector` | MRN GTM Injector | 1.0.13 | <https://github.com/mrnwebdesigns/mrn-gtm-injector> | No stack requirement. |
 | `mrn-media-bulk-tools` | MRN Media Tools | 0.8.0 | <https://github.com/mrnwebdesigns/MRN> | Optional HappyFiles folder display; legacy slug retained for update compatibility. |
 | `mrn-mega-menu` | MRN Mega Menu | 0.16.17 | <https://github.com/mrnwebdesigns/mrn-mega-menu> | Independent standard plugin; WooCommerce and shared stack integrations are optional and standalone-safe. |

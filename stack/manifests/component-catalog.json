@@ -421,7 +421,7 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-integration",
-      "source": {"repository": "MRN", "path": "plugins/mrn-google-fonts", "state": "confirmed"},
+      "source": {"repository": "mrn-google-fonts", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-google-fonts", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["MRN Site Styles", "MainWP Operations API"], "release_group": "design-assets-contract"},
       "data": {"options": ["mrn_google_fonts_settings", "local manifest", "build history", "migration status"], "tables": [], "cron": [], "routes": ["mrn-google-fonts WP-CLI command"], "external_services": ["Google Fonts catalog/CDN"]},
       "purpose": "Manages Google and locally hosted font assets and Site Styles integration."
