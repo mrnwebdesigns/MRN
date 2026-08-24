@@ -74,7 +74,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-dummy-content` | 0.3.0 | Catalog only | Development only | Development content fixtures. |
 | `mrn-comment-management` | 1.1.7 | Standard bootstrap | Maintenance only | Explicit comment audit and deletion. |
 | `mrn-database-retention` | 1.1.0 | Independent repository (`mrnwebdesigns/mrn-database-retention`) via MRN-plugins symlink | Maintenance only | Allowlisted third-party operational-data retention. |
-| `mrn-layout-import-export` | 0.1.2 | Standard bootstrap | Maintenance only | ACF builder layout migration. |
+| `mrn-layout-import-export` | 0.1.2 | Independent repository (`mrnwebdesigns/mrn-layout-import-export`) via MRN-plugins symlink | Maintenance only | ACF builder layout migration. |
 
 ## Review Queue
 

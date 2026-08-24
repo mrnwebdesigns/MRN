@@ -589,7 +589,7 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "maintenance-only",
-      "source": {"repository": "mrn-layout-import-export", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-layout-import-export", "state": "confirmed"},
+      "source": {"repository": "mrn-layout-import-export", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-layout-import-export", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["ACF builder layouts"], "soft": ["MRN base theme content model"], "release_group": null},
       "data": {"options": [], "tables": [], "cron": [], "routes": ["privileged export admin-post action", "privileged AJAX import"], "external_services": []},
       "purpose": "Exports, imports and remaps ACF builder layouts as an explicit migration operation."
