@@ -477,7 +477,7 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-integration",
-      "source": {"repository": "MRN", "path": "plugins/mrn-recaptcha-enterprise-manager", "state": "confirmed"},
+      "source": {"repository": "mrn-recaptcha-enterprise-manager", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["WPForms"], "release_group": null},
       "data": {"options": ["mrn_recaptcha_enterprise_manager_settings", "WPForms settings synchronization"], "tables": [], "cron": [], "routes": [], "external_services": ["Google reCAPTCHA Enterprise", "WPForms"]},
       "purpose": "Manages reCAPTCHA Enterprise configuration and WPForms synchronization."
