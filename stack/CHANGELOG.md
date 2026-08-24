@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.08.24-stack-promotion-reconcile
+- Updated `mrn-config-helper` to `0.1.57`, merging the Grid display-style defaults and GTM option synchronization fix onto the release path with synchronized runtime and baseline metadata.
+- Updated `mrn-stack-deployment-agent` to `0.1.3`, including checksum-verified rollback material and cross-device atomic MU promotion support from its merged default branch.
+- Added merged-source and required-standalone drift reporting so feature commits remain isolated while stale or unmerged release sources block stack promotion.
+- Made an explicit standalone checkout root authoritative during lock generation, preventing an older local catalog path from silently overriding CI or dedicated release-source checkouts.
+- Kept site deployment outside this reconciliation release; backup, authorization, canary, rollout, and runtime readback remain separate gates.
+
 ## 2026.08.23-mainwp-mu-fleet-r1
 - Updated `mrn-stack-deployment-agent` to `0.1.1` and `mrn-mainwp-operations-api` to `0.7.1` so the exact immutable `mu-plugins/mrn-stack-release.lock.json` file can travel with an MU release while arbitrary JSON payloads remain rejected.
 - Added a deterministic MainWP MU release builder that verifies the canonical lock against exact source commits, emits a checksum-locked plan and ZIP, and produces identical artifacts from identical inputs.

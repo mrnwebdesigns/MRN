@@ -14,6 +14,24 @@ SPEC.loader.exec_module(release_lock)
 
 
 class ReleaseLockTests(unittest.TestCase):
+    def initialize_repository(self, path, marker):
+        path.mkdir(parents=True)
+        subprocess.run(["git", "init", "-q", str(path)], check=True)
+        subprocess.run(
+            ["git", "-C", str(path), "config", "user.email", "qa@example.test"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(path), "config", "user.name", "MRN QA"],
+            check=True,
+        )
+        (path / "marker.txt").write_text(marker, encoding="utf-8")
+        subprocess.run(["git", "-C", str(path), "add", "marker.txt"], check=True)
+        subprocess.run(
+            ["git", "-C", str(path), "commit", "-q", "-m", "fixture"],
+            check=True,
+        )
+
     def test_tree_hash_is_stable_across_creation_order(self):
         with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
             first_path = Path(first)
@@ -139,6 +157,31 @@ class ReleaseLockTests(unittest.TestCase):
 
             self.assertFalse(themes[0]["active"])
             self.assertTrue(themes[1]["active"])
+
+    def test_explicit_standalone_root_takes_precedence_over_catalog_path(self):
+        with tempfile.TemporaryDirectory() as root:
+            root_path = Path(root)
+            catalog_repository = root_path / "catalog-source"
+            standalone_root = root_path / "standalone"
+            standalone_repository = standalone_root / "fixture-plugin"
+            self.initialize_repository(catalog_repository, "catalog\n")
+            self.initialize_repository(standalone_repository, "standalone\n")
+
+            source_path, source_root, portable_path = release_lock.resolve_component_source(
+                root_path,
+                {
+                    "slug": "fixture-plugin",
+                    "source": {
+                        "repository": "fixture-plugin",
+                        "path": str(catalog_repository),
+                    },
+                },
+                standalone_root,
+            )
+
+            self.assertEqual(standalone_repository.resolve(), source_path)
+            self.assertEqual(standalone_repository.resolve(), source_root)
+            self.assertEqual(".", portable_path)
 
 
 if __name__ == "__main__":

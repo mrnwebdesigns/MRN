@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.23-mainwp-mu-fleet-r1`
-- Release date: `2026-08-23`
+- Stack release: `2026.08.24-stack-promotion-reconcile`
+- Release date: `2026-08-24`
 - Status: `release candidate`
 
 ## Included MRN-Owned Components
@@ -22,11 +22,11 @@
 - Standard plugins:
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-announcements` `1.6.2`
-  - `mrn-config-helper` `0.1.56`
+  - `mrn-config-helper` `0.1.57`
   - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`
   - `mrn-mega-menu` `0.16.17`
-  - `mrn-stack-deployment-agent` `0.1.1`
+  - `mrn-stack-deployment-agent` `0.1.3`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-universal-sticky-bar` `1.1.8`
   - `searchwp-editor-performance` `1.0.7`
@@ -44,6 +44,6 @@
 - This file tracks the current stack baseline, not every historical package ever shipped.
 - Third-party packages in `manifests/plugins.txt` keep their own upstream versions and package filenames.
 - Current baseline keeps the canonical AME export payloads, importer/manifests, bootstrap helper, shared shim, and stack MU wrapper loaders tracked in the main repo so release/deploy flows can verify and sync them consistently.
-- This release adds the child-side MainWP deployment agent to new-site bootstrap and defines `mrnwebdesigns.com` as the required first production canary for the backup-gated MU fleet rollout. No development site may substitute for that canary.
+- This release reconciles required standalone source commits with their merged default branches and adds a cross-repository promotion-drift gate. It performs no site deployment.
 - The Dashboard-only `mrn-mainwp-operations-api` controller remains an independently released MainWP control-plane component and is not installed on child sites.
 - Use [`CHANGELOG.md`](/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md) for release notes.
