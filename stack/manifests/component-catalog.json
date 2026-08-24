@@ -645,7 +645,7 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "dashboard-only",
-      "source": {"repository": "mrn-wp-control", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-wp-control", "state": "confirmed"},
+      "source": {"repository": "mrn-wp-control", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-wp-control", "state": "confirmed-independent-dashboard"},
       "dependencies": {"hard": ["WP-CLI", "MainWP provisioning context"], "soft": [], "release_group": "mainwp-operations"},
       "data": {"options": ["mrn_wp_control_activation_result"], "tables": [], "cron": [], "routes": ["mrn-control WP-CLI command"], "external_services": ["MainWP"]},
       "purpose": "Provides restricted MainWP account provisioning through WP-CLI."
