@@ -533,7 +533,7 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-integration",
-      "source": {"repository": "MRN", "path": "plugins/mrn-hierarchical-menu-taxonomies", "state": "confirmed"},
+      "source": {"repository": "mrn-hierarchical-menu-taxonomies", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-hierarchical-menu-taxonomies", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress menus"], "soft": ["WooCommerce product categories", "MRN Mega Menu"], "release_group": "navigation-contract"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
       "purpose": "Expands the classic menu builder so hierarchical taxonomy panels render complete parent/child trees for supported terms."

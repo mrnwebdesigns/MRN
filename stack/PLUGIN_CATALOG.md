@@ -51,7 +51,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-cookie-consent` | 1.1.40 | Standard bootstrap | Optional integration | Silktide and Google Consent Mode. |
 | `mrn-fontawesome-profile-manager` | 0.5.0 | Standard bootstrap | Optional integration | Font Awesome profiles and local assets. |
 | `mrn-google-fonts` | 1.0.7 | Independent repository (`mrnwebdesigns/mrn-google-fonts`) via MRN-plugins symlink | Optional integration | Google/local fonts and Site Styles; existing site behavior is unchanged. |
-| `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Standard bootstrap | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories. |
+| `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Independent repository (`mrnwebdesigns/mrn-hierarchical-menu-taxonomies`) via MRN-plugins symlink | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories; existing menu behavior is unchanged. |
 | `mrn-gtm-injector` | 1.0.13 | Standard bootstrap | Optional integration | Google Tag Manager. |
 | `mrn-recaptcha-enterprise-manager` | 0.1.1 | Independent repository (`mrnwebdesigns/mrn-recaptcha-enterprise-manager`) via MRN-plugins symlink | Optional integration | reCAPTCHA Enterprise and WPForms; security and credential contracts retained. |
 | `mrn-seo-helper` | 0.4.0 | Standard bootstrap | Optional integration | ACF SEO fields and supported SEO providers. |
