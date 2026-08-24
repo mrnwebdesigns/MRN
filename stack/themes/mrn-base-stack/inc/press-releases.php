@@ -131,6 +131,32 @@ function mrn_base_stack_register_press_release_field_group() {
 					'aria-label' => '',
 					'type'       => 'email',
 				),
+			),
+			'location'              => array(
+				array(
+					array(
+						'param'    => 'post_type',
+						'operator' => '==',
+						'value'    => 'press_release',
+					),
+				),
+			),
+			'position'              => 'acf_after_title',
+			'style'                 => 'default',
+			'label_placement'       => 'top',
+			'instruction_placement' => 'label',
+			'active'                => true,
+			'description'           => 'Theme-owned press release metadata.',
+			'show_in_rest'          => 1,
+		)
+	);
+
+	acf_add_local_field_group(
+		array(
+			'key'                   => 'group_mrn_press_release_boilerplate',
+			'title'                 => 'About the Organization',
+			'menu_order'            => 20,
+			'fields'                => array(
 				array(
 					'key'          => 'field_mrn_press_release_boilerplate',
 					'label'        => 'About the Organization',
@@ -152,12 +178,12 @@ function mrn_base_stack_register_press_release_field_group() {
 					),
 				),
 			),
-			'position'              => 'acf_after_title',
+			'position'              => 'normal',
 			'style'                 => 'default',
 			'label_placement'       => 'top',
 			'instruction_placement' => 'label',
 			'active'                => true,
-			'description'           => 'Theme-owned press release metadata.',
+			'description'           => 'Optional boilerplate displayed below the press release body.',
 			'show_in_rest'          => 1,
 		)
 	);
