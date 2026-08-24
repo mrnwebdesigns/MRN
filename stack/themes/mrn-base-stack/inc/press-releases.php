@@ -166,7 +166,7 @@ function mrn_base_stack_register_press_release_field_group() {
 					'tabs'         => 'visual',
 					'toolbar'      => 'basic',
 					'media_upload' => 0,
-					'instructions' => 'Optional boilerplate shown after the release body, such as an About Trilliant section.',
+					'instructions' => 'Optional boilerplate shown after the release body, such as an About the Organization section.',
 				),
 			),
 			'location'              => array(
