@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.08.24-agent-marker-reconciliation
+- Updated `mrn-stack-deployment-agent` to `0.1.6`, adding exact-rollout inspection and guarded reconciliation for incomplete rollout markers.
+- Required an unchanged rollout ID, directory fingerprint, modification timestamp, empty entry count, and absence of recovery evidence before cleanup can proceed.
+- Counted nested empty directories, symlinks, rollback records, scan errors, and truncation as blocking evidence, and limited cleanup to `rmdir` on the exact physically empty marker directory without a recursive deletion path.
+- Recorded the independently released Dashboard controller `mrn-mainwp-operations-api` `0.7.4`, which exposes a read-only preview and a separately confirmed, fresh-backup-gated reconciliation ability.
+- Kept production unchanged; controller deployment, child-agent installation, exact marker preview, separate mutation approval, backup, reconciliation, and runtime readback remain independent gates.
+
 ## 2026.08.24-agent-recovery-evidence
 - Updated `mrn-stack-deployment-agent` to `0.1.5`, adding bounded, sanitized status evidence for incomplete rollout markers without returning storage paths or recovery-file contents.
 - Distinguished empty markers from rollout records containing recovery data, capped traversal and response size, and treated unreadable or truncated scans as recovery-sensitive so reconciliation fails closed.
