@@ -24,6 +24,7 @@ EXCLUDED_DIRECTORIES = {
 EXCLUDED_FILES = {".DS_Store"}
 MU_RUNTIME_TYPES = {"mu-loader", "mu-component"}
 IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$")
+SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 MU_PATH_PATTERN = re.compile(
     r"^mu-plugins/mrn-[a-z0-9-]+(?:\.php|(?:/[A-Za-z0-9._-]+)*)$"
 )
@@ -104,8 +105,93 @@ def read_lock(path: Path):
     return lock, lock_bytes
 
 
+def read_policy(path: Path | None, locked_mu_slugs: set[str]):
+    if path is None:
+        return {
+            "policy_id": "default",
+            "excluded_components": [],
+            "protected_paths": [],
+        }
+    try:
+        policy = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise BuildError(f"Could not read release policy {path}: {error}") from error
+    if not isinstance(policy, dict) or policy.get("schema_version") != 1:
+        raise BuildError("The release policy schema is invalid.")
+
+    policy_id = str(policy.get("policy_id", ""))
+    if not IDENTIFIER_PATTERN.fullmatch(policy_id):
+        raise BuildError("The release policy ID is invalid.")
+
+    protected_paths = []
+    protected_by_path = {}
+    for record in policy.get("protected_paths", []):
+        if not isinstance(record, dict):
+            raise BuildError("A protected-path policy record is invalid.")
+        protected_path = str(record.get("path", ""))
+        protected_hash = str(record.get("sha256", "")).lower()
+        required = record.get("required") is True
+        if (
+            not valid_protected_path(protected_path)
+            or protected_path == LOCK_TARGET
+            or (protected_hash and not SHA256_PATTERN.fullmatch(protected_hash))
+            or protected_path in protected_by_path
+        ):
+            raise BuildError(f"Protected path is invalid or duplicated: {protected_path}")
+        normalized = {
+            "path": protected_path,
+            "required": required,
+            "sha256": protected_hash,
+        }
+        protected_paths.append(normalized)
+        protected_by_path[protected_path] = normalized
+
+    exclusions = []
+    excluded_slugs = set()
+    for record in policy.get("excluded_components", []):
+        if not isinstance(record, dict):
+            raise BuildError("An excluded-component policy record is invalid.")
+        slug = str(record.get("slug", ""))
+        reason = str(record.get("reason", "")).strip()
+        replacement_path = str(record.get("replacement_protected_path", ""))
+        protected = protected_by_path.get(replacement_path)
+        if (
+            slug not in locked_mu_slugs
+            or slug == "mrn-loader"
+            or slug in excluded_slugs
+            or not reason
+            or protected is None
+            or protected["required"] is not True
+        ):
+            raise BuildError(
+                f"Excluded component is invalid or lacks a required protected replacement: {slug}"
+            )
+        exclusions.append(
+            {
+                "slug": slug,
+                "reason": reason,
+                "replacement_protected_path": replacement_path,
+            }
+        )
+        excluded_slugs.add(slug)
+
+    protected_paths.sort(key=lambda item: item["path"])
+    exclusions.sort(key=lambda item: item["slug"])
+    return {
+        "policy_id": policy_id,
+        "excluded_components": exclusions,
+        "protected_paths": protected_paths,
+    }
+
+
 def valid_mu_path(path: str) -> bool:
     return path == LOCK_TARGET or bool(MU_PATH_PATTERN.fullmatch(path))
+
+
+def valid_protected_path(path: str) -> bool:
+    return valid_mu_path(path) or bool(
+        re.fullmatch(r"mu-plugins/mrn[a-z0-9-]+-security-hardening\.php", path)
+    )
 
 
 def build_component(repo_root: Path, locked: dict):
@@ -173,15 +259,32 @@ def deterministic_zip(path: Path, entries: dict[str, bytes]):
             archive.writestr(info, entries[name])
 
 
-def build_release(repo_root: Path, lock_path: Path, output_dir: Path, rollout_id: str):
+def build_release(
+    repo_root: Path,
+    lock_path: Path,
+    output_dir: Path,
+    rollout_id: str,
+    policy_path: Path | None = None,
+):
     if not IDENTIFIER_PATTERN.fullmatch(rollout_id):
         raise BuildError("The rollout ID is invalid.")
     lock, lock_bytes = read_lock(lock_path)
     lock_hash = sha256_bytes(lock_bytes)
+    locked_mu_slugs = {
+        str(component.get("slug", ""))
+        for component in lock["components"]
+        if component.get("runtime_type") in MU_RUNTIME_TYPES
+    }
+    policy = read_policy(policy_path, locked_mu_slugs)
+    excluded_slugs = {
+        component["slug"] for component in policy["excluded_components"]
+    }
 
     components = []
     payload = {}
     for locked in sorted(lock["components"], key=lambda item: str(item.get("slug", ""))):
+        if str(locked.get("slug", "")) in excluded_slugs:
+            continue
         built = build_component(repo_root, locked)
         if built is None:
             continue
@@ -205,6 +308,21 @@ def build_release(repo_root: Path, lock_path: Path, output_dir: Path, rollout_id
     components.sort(key=lambda item: item["slug"])
     if not components or len(components) > MAX_COMPONENTS:
         raise BuildError("The MU component count is outside the deployment contract.")
+    mutation_paths = {
+        path
+        for component in components
+        for path in [component["target"], *component["legacy_paths"]]
+    }
+    protected_mutations = sorted(
+        record["path"]
+        for record in policy["protected_paths"]
+        if record["path"] in mutation_paths
+    )
+    if protected_mutations:
+        raise BuildError(
+            "Protected paths overlap release mutations: "
+            + ", ".join(protected_mutations)
+        )
 
     plan = {
         "schema_version": 1,
@@ -212,7 +330,9 @@ def build_release(repo_root: Path, lock_path: Path, output_dir: Path, rollout_id
         "release_id": lock["release_id"],
         "lock_sha256": lock_hash,
         "components": components,
-        "protected_paths": [],
+        "policy_id": policy["policy_id"],
+        "excluded_components": policy["excluded_components"],
+        "protected_paths": policy["protected_paths"],
     }
     plan_bytes = (
         json.dumps(plan, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
@@ -264,6 +384,11 @@ def parse_args(argv=None):
     )
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--rollout-id", required=True)
+    parser.add_argument(
+        "--policy",
+        type=Path,
+        help="optional site/cohort policy for guarded exclusions and protected paths",
+    )
     return parser.parse_args(argv)
 
 
@@ -279,6 +404,7 @@ def main(argv=None):
             lock_path.resolve(),
             args.output_dir.expanduser().resolve(),
             args.rollout_id,
+            args.policy.expanduser().resolve() if args.policy else None,
         )
     except BuildError as error:
         print(f"ERROR: {error}", file=sys.stderr)

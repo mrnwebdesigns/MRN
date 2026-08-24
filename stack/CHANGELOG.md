@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.08.24-mainwp-canary-protection
+- Updated `mrn-stack-deployment-agent` to `0.1.4`, allowing a named site hardening fork only as a protected release path while keeping deployment targets, legacy removals, and rollback mutations on the strict MRN allowlist.
+- Recorded the independently released Dashboard controller `mrn-mainwp-operations-api` `0.7.3`, which validates the same protection-only path contract without expanding its mutation allowlists.
+- Added policy-driven MU package exclusions that require an explicit reason and a required protected replacement path, with overlap checks and deterministic plan recording.
+- Documented the named canary policy flow and retained the exact-plan, checksum, backup, approval, and runtime readback gates.
+- Kept production unchanged; the immutable release lock, artifacts, controller deployment, child-agent update, and canary execution remain separate promotion and deployment steps.
+
 ## 2026.08.24-stack-promotion-reconcile
 - Updated `mrn-config-helper` to `0.1.57`, merging the Grid display-style defaults and GTM option synchronization fix onto the release path with synchronized runtime and baseline metadata.
 - Updated `mrn-stack-deployment-agent` to `0.1.3`, including checksum-verified rollback material and cross-device atomic MU promotion support from its merged default branch.

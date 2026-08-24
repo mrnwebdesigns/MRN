@@ -73,6 +73,9 @@
      lock commit differs from that repository's merged default branch
 10. Build a deterministic MainWP MU package from that exact lock when preparing an existing-site fleet rollout:
    - `python3 stack/scripts/build-mainwp-mu-release.py --rollout-id <unique-rollout-id> --output-dir releases/mainwp-mu/<unique-rollout-id>`
+   - use `--policy /absolute/path/to/reviewed-policy.json` only for a named
+     site/cohort exception; excluded MU components must be paired with required
+     protected replacement paths and are recorded inside the exact plan
    - use the generated `checksums.json`, exact `plan.json`, and ZIP as the preflight/apply identity; never hand-author the plan or package
 11. Deploy in stack-first order for stack-owned runtime changes, then rollout
     surfaces.

@@ -55,6 +55,11 @@ without this seeding step.
    <unique-rollout-id> --output-dir releases/mainwp-mu/<unique-rollout-id>`.
    The builder verifies source trees against the lock, derives exact MU targets,
    includes the runtime release lock, and emits deterministic plan/package bytes.
+   For a site or cohort with an approved component fork, pass `--policy` with a
+   reviewed JSON policy. Every excluded locked MU component must name a required,
+   allowlisted protected replacement path; the builder records both the exclusion
+   reason and protected path in the checksum-bound plan and refuses unsafe or
+   unpaired exclusions.
 4. Record the generated `checksums.json`, exact `plan.json`, and package filename
    in the rollout notes. Never hand-author or modify these artifacts.
 5. Validate the package independently on the Dashboard and child agent before

@@ -81,9 +81,8 @@ class MainwpMuBuilderTest(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
-    def run_builder(self):
-        return subprocess.run(
-            [
+    def run_builder(self, policy=None):
+        command = [
                 "python3",
                 str(SCRIPT),
                 "--repo-root",
@@ -94,7 +93,11 @@ class MainwpMuBuilderTest(unittest.TestCase):
                 str(self.output),
                 "--rollout-id",
                 "canary-2026-08-23-r1",
-            ],
+            ]
+        if policy is not None:
+            command.extend(["--policy", str(policy)])
+        return subprocess.run(
+            command,
             capture_output=True,
             text=True,
             check=False,
@@ -136,6 +139,138 @@ class MainwpMuBuilderTest(unittest.TestCase):
         result = self.run_builder()
         self.assertNotEqual(0, result.returncode)
         self.assertIn("does not match the release lock", result.stderr)
+
+    def test_policy_excludes_component_and_requires_protected_replacement(self):
+        policy = self.root / "policy.json"
+        policy.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "policy_id": "site-fork-policy",
+                    "excluded_components": [
+                        {
+                            "slug": "mrn-example",
+                            "reason": "Preserve the site-specific replacement.",
+                            "replacement_protected_path": "mu-plugins/mrnwebdesigns-security-hardening.php",
+                        }
+                    ],
+                    "protected_paths": [
+                        {
+                            "path": "mu-plugins/mrnwebdesigns-security-hardening.php",
+                            "required": True,
+                            "sha256": "a" * 64,
+                        }
+                    ],
+                },
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        result = self.run_builder(policy)
+        self.assertEqual(0, result.returncode, result.stderr)
+
+        plan = json.loads((self.output / "plan.json").read_text(encoding="utf-8"))
+        self.assertEqual("site-fork-policy", plan["policy_id"])
+        self.assertEqual(
+            ["mrn-loader", "mrn-stack-release-lock"],
+            [component["slug"] for component in plan["components"]],
+        )
+        self.assertEqual(
+            [
+                {
+                    "slug": "mrn-example",
+                    "reason": "Preserve the site-specific replacement.",
+                    "replacement_protected_path": "mu-plugins/mrnwebdesigns-security-hardening.php",
+                }
+            ],
+            plan["excluded_components"],
+        )
+        self.assertEqual(
+            [
+                {
+                    "path": "mu-plugins/mrnwebdesigns-security-hardening.php",
+                    "required": True,
+                    "sha256": "a" * 64,
+                }
+            ],
+            plan["protected_paths"],
+        )
+
+    def test_policy_exclusion_without_required_replacement_fails_closed(self):
+        policy = self.root / "policy.json"
+        policy.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "policy_id": "unsafe-policy",
+                    "excluded_components": [
+                        {
+                            "slug": "mrn-example",
+                            "reason": "Missing required replacement.",
+                            "replacement_protected_path": "mu-plugins/mrn-site-example.php",
+                        }
+                    ],
+                    "protected_paths": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+        result = self.run_builder(policy)
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("lacks a required protected replacement", result.stderr)
+
+    def test_policy_cannot_exclude_loader(self):
+        policy = self.root / "policy.json"
+        policy.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "policy_id": "unsafe-loader-policy",
+                    "excluded_components": [
+                        {
+                            "slug": "mrn-loader",
+                            "reason": "Unsafe test.",
+                            "replacement_protected_path": "mu-plugins/mrn-site-loader.php",
+                        }
+                    ],
+                    "protected_paths": [
+                        {
+                            "path": "mu-plugins/mrn-site-loader.php",
+                            "required": True,
+                            "sha256": "",
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        result = self.run_builder(policy)
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("Excluded component is invalid", result.stderr)
+
+    def test_policy_protected_path_cannot_overlap_release_mutation(self):
+        policy = self.root / "policy.json"
+        policy.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "policy_id": "overlap-policy",
+                    "excluded_components": [],
+                    "protected_paths": [
+                        {
+                            "path": "mu-plugins/mrn-example.php",
+                            "required": True,
+                            "sha256": "",
+                        }
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+        result = self.run_builder(policy)
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("Protected paths overlap release mutations", result.stderr)
 
 
 if __name__ == "__main__":
