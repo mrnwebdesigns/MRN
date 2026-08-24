@@ -24,7 +24,7 @@ EXCLUDED_DIRECTORIES = {
     "test-results",
     "zip",
 }
-EXCLUDED_FILES = {".DS_Store"}
+EXCLUDED_FILES = {".DS_Store", ".git"}
 
 
 class ReleaseLockError(RuntimeError):

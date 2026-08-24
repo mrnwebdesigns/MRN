@@ -51,6 +51,10 @@ class ReleaseLockTests(unittest.TestCase):
             root_path = Path(root)
             (root_path / "plugin.php").write_text("runtime\n", encoding="utf-8")
             baseline = release_lock.tree_sha256(root_path)
+            (root_path / ".git").write_text(
+                "gitdir: /tmp/example/worktrees/fixture\n",
+                encoding="utf-8",
+            )
             (root_path / ".DS_Store").write_text("noise", encoding="utf-8")
             (root_path / "node_modules").mkdir()
             (root_path / "node_modules" / "dependency.js").write_text(
