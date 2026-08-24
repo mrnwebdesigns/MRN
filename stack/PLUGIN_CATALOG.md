@@ -40,7 +40,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-media-bulk-tools` | 0.12.1 | Independent repository (`mrnwebdesigns/mrn-media-bulk-tools`) via MRN-plugins symlink | Optional shared | Media audit, usage indexing, and bulk maintenance; legacy slug and update contracts retained. |
 | `mrn-mega-menu` | 0.16.17 | Standard bootstrap | Optional shared | Accessible content-rich mega-menu administration and rendering. |
 | `mrn-reusable-block-library` | 0.1.28 | Independent repository (`mrnwebdesigns/mrn-reusable-block-library`) via MRN-plugins symlink | Optional shared | Shared reusable block content types and render helpers; existing site behavior is unchanged. |
-| `mrn-tokens` | 0.1.3 | Standard bootstrap | Optional shared | Reusable content-token registry, shortcode, and authenticated REST API. |
+| `mrn-tokens` | 0.1.3 | Independent repository (`mrnwebdesigns/mrn-tokens`) via MRN-plugins symlink | Optional shared | Reusable content-token registry, shortcode, and authenticated REST API. |
 
 ## Optional Integration Adapters
 

@@ -631,7 +631,7 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-shared",
-      "source": {"repository": "mrn-tokens", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-tokens", "state": "confirmed"},
+      "source": {"repository": "mrn-tokens", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-tokens", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": [], "release_group": null},
       "data": {"options": ["mrn_tokens_settings"], "tables": [], "cron": [], "routes": ["mrn-tokens/v1/tokens", "mrn-tokens/v1/tokens/(?P<name>...)", "manage_options permission"], "external_services": []},
       "purpose": "Provides a reusable site-content token registry, shortcode and authenticated REST interface."
