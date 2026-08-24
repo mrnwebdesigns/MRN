@@ -104,7 +104,7 @@ Classification does not authorize archive, deletion, packaging changes, deployme
 
 ## Current Governance Decisions
 
-- `mrn-mega-menu` is canonical in `MRN/plugins/mrn-mega-menu`; its version and release artifact follow the MRN stack repository.
+- `mrn-mega-menu` is canonical in the independent `mrnwebdesigns/mrn-mega-menu` repository; the stack consumes its release artifact and keeps only the local checkout symlink.
 - `searchwp-editor-performance` was archived on 2026-08-19 alongside the stack-wide removal of SearchWP in favor of Relevanssi. Relevanssi Free indexes synchronously on save with no persistent background indexer/cron, so the editor-save slowdown this plugin protected against does not recur in the same shape. Its source is retained at the independent `mrnwebdesigns/searchwp-editor-performance` repository, marked retired, and it is no longer referenced by `manifests/plugins.txt`.
 - `MRN-disable-core-auto-updates` was approved for sunset on 2026-08-14 and is excluded from the target product catalog. This does not authorize changes to existing sites.
 - `mrn-contextual-content-editor` was removed from `manifests/plugins.txt` on 2026-08-19 because it is not production ready. It stays `catalog-only` with lifecycle `review`; this does not change existing sites.

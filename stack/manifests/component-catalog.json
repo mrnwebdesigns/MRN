@@ -463,7 +463,7 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-shared",
-      "source": {"repository": "MRN", "path": "plugins/mrn-mega-menu", "state": "canonical-in-repo"},
+      "source": {"repository": "mrn-mega-menu", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mega-menu", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress menus"], "soft": ["WooCommerce", "MRN base theme", "mrn-hierarchical-menu-taxonomies"], "release_group": "navigation-contract"},
       "data": {"options": ["mega-menu assignments"], "tables": [], "cron": [], "routes": ["three privileged admin-post actions"], "external_services": [], "post_types": ["mrn_mega_menu"], "meta": ["post, term and menu-item metadata"]},
       "purpose": "Provides accessible content-rich mega-menu administration and rendering."

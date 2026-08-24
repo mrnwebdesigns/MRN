@@ -97,7 +97,7 @@ No disposition in this section authorizes a code move, manifest change, deletion
 
 ## Canonical Source Decisions
 
-- `mrn-mega-menu`: canonical in `MRN/plugins/mrn-mega-menu`; the unversioned, older `MRN-plugins` duplicate was retired without changing installed copies.
+- `mrn-mega-menu`: canonical in the independent `mrnwebdesigns/mrn-mega-menu` repository and symlinked into the stack through `MRN-plugins`; the former in-repo source was migrated with its history preserved.
 - `mrn-sendgrid-provisioning`: canonical in the independent `mrnwebdesigns/mrn-sendgrid-provisioning` repository, symlinked into the stack the same way as `mrn-config-helper`. SendGrid Subuser/domain-auth/site-key provisioning moved here from `mrn-config-helper` on 2026-08-19; `mrn-config-helper` keeps only a settings-page link and the public `mrn_config_helper_get_site_sender_name()`/`_email()` wrappers this plugin consumes.
 - `mrn-universal-sticky-bar`: canonical in its independent repository and required by the Stack profile. It remains a standard plugin because it is independently useful off-stack; the Stack manifest and rollout contract enforce installation and shared-helper compatibility.
 - `MRN-disable-core-auto-updates`: sunset approved on 2026-08-14. It is not part of the target MRN product catalog; no existing-site action is authorized by this decision.
