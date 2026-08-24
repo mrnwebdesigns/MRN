@@ -69,7 +69,8 @@
    - candidate mode auto-discovers the prior committed lock and fails when the
      candidate is not based on current merged `origin/main`, a required changed
      component is omitted, a changed hash has no version bump, release metadata
-     is stale, or source changed after lock generation
+     is stale, source changed after lock generation, or a required standalone
+     lock commit differs from that repository's merged default branch
 10. Build a deterministic MainWP MU package from that exact lock when preparing an existing-site fleet rollout:
    - `python3 stack/scripts/build-mainwp-mu-release.py --rollout-id <unique-rollout-id> --output-dir releases/mainwp-mu/<unique-rollout-id>`
    - use the generated `checksums.json`, exact `plan.json`, and ZIP as the preflight/apply identity; never hand-author the plan or package
@@ -120,4 +121,6 @@ deployment authorization, and live inventory readback remain distinct gates.
 The non-PR `Stack promotion drift` workflow runs this audit after every merge to
 `main` and once daily, preserving the report as a CI artifact. A red drift
 monitor creates a release task; it does not make unrelated feature PRs inherit
-full-stack promotion QA.
+full-stack promotion QA. The workflow uses the existing read-only MRN CI GitHub
+App to check out platform-required standalone repositories, so cross-repository
+drift is part of the same report rather than a separate manual checklist.

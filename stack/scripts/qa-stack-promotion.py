@@ -7,6 +7,7 @@ import argparse
 import datetime as dt
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -216,6 +217,56 @@ def classify_changes(paths, catalog, lock_payload):
     }
 
 
+def external_source_inventory(lock_payload, standalone_root):
+    root = Path(standalone_root).expanduser().resolve()
+    inventory = []
+    for entry in lock_payload.get("components") or []:
+        source = entry.get("source") or {}
+        repository = str(source.get("repository") or "")
+        if repository == "MRN":
+            continue
+        slug = str(entry.get("slug") or "")
+        repo_path = root / slug
+        record = {
+            "slug": slug,
+            "repository": repository,
+            "path": str(repo_path),
+            "locked_commit": source.get("git_commit"),
+            "default_ref": None,
+            "default_commit": None,
+            "status": "missing",
+        }
+        if run_git(repo_path, "rev-parse", "--git-dir", check=False).returncode != 0:
+            inventory.append(record)
+            continue
+
+        symbolic = run_git(
+            repo_path,
+            "symbolic-ref",
+            "--quiet",
+            "refs/remotes/origin/HEAD",
+            check=False,
+        )
+        candidates = []
+        if symbolic.returncode == 0 and symbolic.stdout.strip():
+            candidates.append(symbolic.stdout.strip())
+        candidates.extend(("refs/remotes/origin/main", "refs/remotes/origin/master"))
+        for reference in candidates:
+            resolved = run_git(repo_path, "rev-parse", "--verify", reference, check=False)
+            if resolved.returncode == 0:
+                record["default_ref"] = reference
+                record["default_commit"] = resolved.stdout.strip()
+                break
+        if not record["default_commit"]:
+            record["status"] = "default-ref-missing"
+        elif record["default_commit"] == record["locked_commit"]:
+            record["status"] = "match"
+        else:
+            record["status"] = "drift"
+        inventory.append(record)
+    return sorted(inventory, key=lambda item: item["slug"])
+
+
 def lock_change_summary(baseline, candidate):
     previous = lock_entries(baseline)
     proposed = lock_entries(candidate)
@@ -297,7 +348,7 @@ def is_ancestor(repo_root, ancestor, descendant):
     return result.returncode == 0
 
 
-def evaluate_audit(repo_root, lock_payload, catalog):
+def evaluate_audit(repo_root, lock_payload, catalog, standalone_root, check_external=True):
     state = repository_state(repo_root)
     baseline_commit = str((lock_payload.get("source") or {}).get("git_commit") or "")
     if not baseline_commit:
@@ -307,6 +358,11 @@ def evaluate_audit(repo_root, lock_payload, catalog):
 
     paths = changed_files(repo_root, baseline_commit, state["head"])
     inventory = classify_changes(paths, catalog, lock_payload)
+    inventory["external_required_sources"] = (
+        external_source_inventory(lock_payload, standalone_root)
+        if check_external
+        else []
+    )
     blockers = []
     warnings = []
     if not state["clean"]:
@@ -319,6 +375,16 @@ def evaluate_audit(repo_root, lock_payload, catalog):
         blockers.append("Merged main contains deployable paths missing from the component catalog or theme lock")
     if inventory["independent_release_units"]:
         warnings.append("Independent release units changed after the stack lock and require their own release decision")
+    external_drift = [
+        item for item in inventory["external_required_sources"] if item["status"] != "match"
+    ]
+    if external_drift:
+        blockers.append(
+            "Required standalone source differs from its locked commit or is unavailable: "
+            + ", ".join(item["slug"] for item in external_drift)
+        )
+    if not check_external:
+        warnings.append("Required standalone default branches were not checked")
 
     return {
         "schema_version": REPORT_SCHEMA_VERSION,
@@ -338,7 +404,9 @@ def evaluate_audit(repo_root, lock_payload, catalog):
     }
 
 
-def evaluate_candidate(repo_root, baseline, candidate, catalog):
+def evaluate_candidate(
+    repo_root, baseline, candidate, catalog, standalone_root, check_external=True
+):
     state = repository_state(repo_root)
     baseline_commit = str((baseline.get("source") or {}).get("git_commit") or "")
     candidate_commit = str((candidate.get("source") or {}).get("git_commit") or "")
@@ -351,6 +419,11 @@ def evaluate_candidate(repo_root, baseline, candidate, catalog):
 
     paths = changed_files(repo_root, baseline_commit, candidate_commit)
     inventory = classify_changes(paths, catalog, candidate)
+    inventory["external_required_sources"] = (
+        external_source_inventory(candidate, standalone_root)
+        if check_external
+        else []
+    )
     lock_changes = lock_change_summary(baseline, candidate)
     blockers = verify_candidate_versions(inventory, baseline, candidate)
     warnings = []
@@ -382,6 +455,16 @@ def evaluate_candidate(repo_root, baseline, candidate, catalog):
         blockers.append("Source changed after candidate lock generation: " + ", ".join(unsafe_after_candidate))
     if inventory["independent_release_units"]:
         warnings.append("Independent release units changed and need explicit component release decisions")
+    external_drift = [
+        item for item in inventory["external_required_sources"] if item["status"] != "match"
+    ]
+    if external_drift:
+        blockers.append(
+            "Candidate does not lock each required standalone default branch: "
+            + ", ".join(item["slug"] for item in external_drift)
+        )
+    if not check_external:
+        warnings.append("Required standalone default branches were not checked")
 
     return {
         "schema_version": REPORT_SCHEMA_VERSION,
@@ -419,6 +502,18 @@ def main(argv=None):
     parser.add_argument("--repo-root", type=Path, default=SCRIPT_DIR.parents[1])
     parser.add_argument("--lock", type=Path, default=LOCK_PATH)
     parser.add_argument("--catalog", type=Path, default=CATALOG_PATH)
+    parser.add_argument(
+        "--standalone-plugins-root",
+        type=Path,
+        default=Path(
+            os.environ.get("MRN_STANDALONE_PLUGINS_ROOT", "~/Development/MRN-plugins")
+        ).expanduser(),
+    )
+    parser.add_argument(
+        "--skip-external-heads",
+        action="store_true",
+        help="skip required standalone default-branch comparison and report a warning",
+    )
     parser.add_argument("--mode", choices=("audit", "candidate"), default="audit")
     parser.add_argument(
         "--baseline-ref",
@@ -439,9 +534,22 @@ def main(argv=None):
             baseline = release_lock.validate_lock(
                 read_json_at_ref(repo_root, baseline_ref, relative_lock)
             )
-            report = evaluate_candidate(repo_root, baseline, lock_payload, catalog)
+            report = evaluate_candidate(
+                repo_root,
+                baseline,
+                lock_payload,
+                catalog,
+                args.standalone_plugins_root,
+                not args.skip_external_heads,
+            )
         else:
-            report = evaluate_audit(repo_root, lock_payload, catalog)
+            report = evaluate_audit(
+                repo_root,
+                lock_payload,
+                catalog,
+                args.standalone_plugins_root,
+                not args.skip_external_heads,
+            )
         write_report(args.report, report)
     except (PromotionError, release_lock.ReleaseLockError, OSError, ValueError) as error:
         sys.stderr.write(f"error: {error}\n")

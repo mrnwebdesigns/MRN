@@ -63,7 +63,10 @@ monorepo findings.
 The separate `Stack promotion drift` workflow runs after merges to `main`, on a
 daily schedule, and on explicit dispatch. It is not a pull-request task gate.
 Its failure records visible release debt and preserves the machine-readable
-inventory while isolated feature work continues normally.
+inventory while isolated feature work continues normally. Platform-required
+standalone repositories are compared with their merged default branches through
+the existing read-only MRN CI GitHub App, so cross-repository drift cannot remain
+hidden behind an older locked commit.
 
 ## Component and Full QA
 
