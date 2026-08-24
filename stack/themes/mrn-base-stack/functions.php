@@ -144,6 +144,12 @@ function mrn_base_stack_seed_nav_menus() {
 		$assigned_menu_id = isset( $stack_locations[ $location ] ) ? (int) $stack_locations[ $location ] : 0;
 
 		if ( $assigned_menu_id > 0 && wp_get_nav_menu_object( $assigned_menu_id ) ) {
+			if ( 'menu-1' === $location && function_exists( 'mrn_base_stack_seed_primary_menu_items' ) ) {
+				$seed_result = mrn_base_stack_seed_primary_menu_items( $assigned_menu_id );
+				if ( 'failed' === $seed_result ) {
+					$all_seeded = false;
+				}
+			}
 			continue;
 		}
 
@@ -164,6 +170,13 @@ function mrn_base_stack_seed_nav_menus() {
 
 		$assigned_locations[ $location ] = $assigned_menu_id;
 		$needs_update                    = true;
+
+		if ( 'menu-1' === $location && function_exists( 'mrn_base_stack_seed_primary_menu_items' ) ) {
+			$seed_result = mrn_base_stack_seed_primary_menu_items( $assigned_menu_id );
+			if ( 'failed' === $seed_result ) {
+				$all_seeded = false;
+			}
+		}
 	}
 
 	if ( $needs_update ) {
@@ -2524,6 +2537,11 @@ require_once get_template_directory() . '/inc/not-found.php';
  * Load menu link attribute modules.
  */
 require_once get_template_directory() . '/inc/menu-link-attributes.php';
+
+/**
+ * Load primary menu starter content helpers.
+ */
+require_once get_template_directory() . '/inc/primary-menu.php';
 
 /**
  * Load singular sidebar modules.
