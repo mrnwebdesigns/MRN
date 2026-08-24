@@ -183,7 +183,7 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-shared",
-      "source": {"repository": "MRN", "path": "plugins/mrn-reusable-block-library", "state": "confirmed"},
+      "source": {"repository": "mrn-reusable-block-library", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-reusable-block-library", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["ACF", "MRN base theme", "mrn-editor-lockdown"], "release_group": "editor-content-contract"},
       "data": {"options": ["mrn_rbl_legacy_cleanup_complete", "starter signature"], "tables": [], "cron": [], "routes": [], "external_services": [], "post_types": ["mrn_reusable_* types"]},
       "purpose": "Optional stack-shared reusable content-model and rendering feature used when a stack-profile site needs reusable content workflows."

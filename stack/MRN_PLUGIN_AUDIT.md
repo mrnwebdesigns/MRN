@@ -78,7 +78,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-editor-lockdown` | MRN Editor Lockdown | 1.0.25 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned Classic Editor/AME lockdown layer. |
 | `mrn-editor-ui-css` | MRN Admin UI CSS Legacy | 1.0.8 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned legacy compatibility loader. |
 | `mrn-public-security-hardening` | MRN Public Security Hardening | 0.3.2 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned shared MU plugin; deployed from canonical `mu-plugins/` and loaded by MRN Loader. |
-| `mrn-reusable-block-library` | MRN Reusable Block Library | 0.1.17 | <https://github.com/mrnwebdesigns/MRN> | Optional stack styling; usable without the stack, but MRN stack/theme CSS gives the finished presentation. |
+| `mrn-reusable-block-library` | MRN Reusable Block Library | 0.1.17 | <https://github.com/mrnwebdesigns/mrn-reusable-block-library> | Optional stack styling; usable without the stack, but MRN stack/theme CSS gives the finished presentation. |
 | `mrn-schema-bridge` | MRN Schema Bridge | 0.4.1 | <https://github.com/mrnwebdesigns/MRN> | SmartCrawl is the preferred base graph; standalone supplemental schema remains available when it is absent. |
 | `mrn-shared-assets` | MRN Shared Assets | 0.1.3 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned shared asset provider. |
 | `mrn-site-colors` | MRN Site Styles | 0.1.15 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned design-token/configuration layer. |
