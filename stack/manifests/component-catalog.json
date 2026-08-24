@@ -505,7 +505,7 @@
       "lifecycle": "supported-development",
       "current_distribution": "standard-bootstrap",
       "target_tier": "development-only",
-      "source": {"repository": "MRN", "path": "plugins/mrn-template-inspector", "state": "confirmed"},
+      "source": {"repository": "mrn-template-inspector", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-template-inspector", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["MRN base theme"], "release_group": "development-tools"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
       "purpose": "Provides template and request-context diagnostics for development."

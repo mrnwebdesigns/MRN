@@ -70,7 +70,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 
 | Slug | Version | Current distribution | Target tier | Responsibility |
 | --- | ---: | --- | --- | --- |
-| `mrn-template-inspector` | 0.2.7 | Standard bootstrap | Development only | Template and request-context inspection. |
+| `mrn-template-inspector` | 0.2.7 | Independent repository (`mrnwebdesigns/mrn-template-inspector`) via MRN-plugins symlink | Development only | Template and request-context inspection; local-only opener scope retained. |
 | `mrn-dummy-content` | 0.3.0 | Catalog only | Development only | Development content fixtures. |
 | `mrn-comment-management` | 1.1.7 | Standard bootstrap | Maintenance only | Explicit comment audit and deletion. |
 | `mrn-database-retention` | 1.1.0 | Standard bootstrap | Maintenance only | Allowlisted third-party operational-data retention. |
