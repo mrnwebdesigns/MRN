@@ -614,13 +614,13 @@
       "version": "1.0.12",
       "runtime_type": "standard-plugin",
       "classification": "operations-policy",
-      "lifecycle": "supported-review",
-      "current_distribution": "catalog-only",
-      "target_tier": "optional-integration",
-      "source": {"repository": "mrn-pre-consent-update-backup", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-pre-consent-update-backup", "state": "confirmed-independent"},
+      "lifecycle": "archived",
+      "current_distribution": "archived",
+      "target_tier": "archived",
+      "source": {"repository": "mrn-pre-consent-update-backup", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-pre-consent-update-backup", "state": "archived-independent-source-retained"},
       "dependencies": {"hard": ["UpdraftPlus"], "soft": ["MainWP/update workflows"], "release_group": "backup-operations-contract"},
       "data": {"options": ["status", "version", "backup history linkage"], "tables": [], "cron": ["deferred backup processing"], "routes": ["privileged update interception", "one-time token-protected async action"], "external_services": ["UpdraftPlus", "configured remote backup storage"]},
-      "purpose": "Requires a protected Updraft backup before update consent; review future platform-policy ownership separately."
+      "purpose": "Archived by owner request on 2026-08-24. Independent repository and local checkout are retained as historical source; no active distribution or runtime wiring remains."
     },
     {
       "slug": "mrn-tokens",

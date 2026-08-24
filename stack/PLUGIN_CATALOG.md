@@ -55,7 +55,6 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-gtm-injector` | 1.0.13 | Standard bootstrap | Optional integration | Google Tag Manager. |
 | `mrn-recaptcha-enterprise-manager` | 0.1.1 | Independent repository (`mrnwebdesigns/mrn-recaptcha-enterprise-manager`) via MRN-plugins symlink | Optional integration | reCAPTCHA Enterprise and WPForms; security and credential contracts retained. |
 | `mrn-seo-helper` | 0.4.0 | Standard bootstrap | Optional integration | ACF SEO fields and supported SEO providers. |
-| `mrn-pre-consent-update-backup` | 1.0.12 | Independent repository (`mrnwebdesigns/mrn-pre-consent-update-backup`); catalog-only | Optional integration | UpdraftPlus/update-consent workflow. |
 
 ## Dashboard-Only Operations
 
@@ -79,6 +78,12 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 ## Review Queue
 
 No disposition in this section authorizes a code move, manifest change, deletion, or archive.
+
+## Archived Plugins
+
+| Slug | Version | Source | Archive state |
+| --- | ---: | --- | --- |
+| `mrn-pre-consent-update-backup` | 1.0.12 | Independent repository (`mrnwebdesigns/mrn-pre-consent-update-backup`) | Retained as historical source; not distributed or runtime-wired. |
 
 | Slug | Version | Current state | Decision needed |
 | --- | ---: | --- | --- |

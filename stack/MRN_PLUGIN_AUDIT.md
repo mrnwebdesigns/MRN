@@ -19,7 +19,7 @@ This audit tracks the active MRN WordPress plugin and MU-plugin sources, their P
 
 - In-repo plugins and MU plugins are owned by the main MRN repo: <https://github.com/mrnwebdesigns/MRN>.
 - Symlinked plugins under `plugins/` are owned by standalone repos under <https://github.com/mrnwebdesigns>.
-- `mrn-pre-consent-update-backup` now has a standalone private repo: <https://github.com/mrnwebdesigns/mrn-pre-consent-update-backup>.
+- `mrn-pre-consent-update-backup` has an independent retained repository: <https://github.com/mrnwebdesigns/mrn-pre-consent-update-backup>. It was archived on 2026-08-24 and is not an active distribution source.
 
 ## QA Engine Readiness
 
@@ -60,7 +60,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-gtm-injector` | MRN GTM Injector | 1.0.13 | <https://github.com/mrnwebdesigns/mrn-gtm-injector> | No stack requirement. |
 | `mrn-media-bulk-tools` | MRN Media Tools | 0.8.0 | <https://github.com/mrnwebdesigns/mrn-media-bulk-tools> | Optional HappyFiles folder display; legacy slug retained for update compatibility. |
 | `mrn-mega-menu` | MRN Mega Menu | 0.16.17 | <https://github.com/mrnwebdesigns/mrn-mega-menu> | Independent standard plugin; WooCommerce and shared stack integrations are optional and standalone-safe. |
-| `mrn-pre-consent-update-backup` | MRN Pre-Consent Update Backup | 1.0.12 | <https://github.com/mrnwebdesigns/mrn-pre-consent-update-backup> | No stack requirement; requires UpdraftPlus to perform backups. |
+| `mrn-pre-consent-update-backup` | MRN Pre-Consent Update Backup | 1.0.12 | <https://github.com/mrnwebdesigns/mrn-pre-consent-update-backup> | Archived 2026-08-24; retained as historical source and not an active distribution source. |
 | `mrn-recaptcha-enterprise-manager` | MRN reCAPTCHA Enterprise Manager | 0.1.1 | <https://github.com/mrnwebdesigns/mrn-recaptcha-enterprise-manager> | No stack requirement; WPForms sync is optional. |
 | `mrn-seo-helper` | MRN SEO Helper | 0.3.4 | <https://github.com/mrnwebdesigns/mrn-seo-helper> | No hard stack requirement; ACF/SmartCrawl integrations are optional feature paths and admin/data-only announcements are excluded. |
 | `mrn-template-inspector` | MRN Template Inspector | 0.2.7 | <https://github.com/mrnwebdesigns/mrn-template-inspector> | No stack requirement; local development tool. |
