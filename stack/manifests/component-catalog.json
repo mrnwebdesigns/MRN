@@ -611,7 +611,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.7.3",
+      "version": "0.7.4",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -619,13 +619,13 @@
       "target_tier": "dashboard-only",
       "source": {"repository": "mrn-mainwp-operations-api", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api", "state": "confirmed"},
       "dependencies": {"hard": ["MainWP Dashboard", "WordPress Abilities API"], "soft": ["UpdraftPlus", "MRN Google Fonts", "MRN Stack Deployment Agent"], "release_group": "mainwp-operations"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": ["ten mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
-      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, standard packages, font management, and plan-locked MU release orchestration."
+      "data": {"options": [], "tables": [], "cron": [], "routes": ["twelve mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
+      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, standard packages, font management, plan-locked MU release orchestration, and guarded incomplete-rollout reconciliation."
     },
     {
       "slug": "mrn-stack-deployment-agent",
       "name": "MRN Stack Deployment Agent",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "runtime_type": "standard-plugin",
       "classification": "operations-agent",
       "lifecycle": "supported",
@@ -634,7 +634,7 @@
       "source": {"repository": "mrn-stack-deployment-agent", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress", "MainWP Child authenticated connection"], "soft": ["MRN MainWP Operations API"], "release_group": "mainwp-operations"},
       "data": {"options": [], "tables": [], "cron": [], "routes": ["authenticated mainwp_child_extra_execution actions"], "external_services": ["MainWP"]},
-      "purpose": "Provides a zero-frontend, MU-only deployment target for checksum-verified preflight, atomic promotion, and rollback requests authenticated by MainWP Child."
+      "purpose": "Provides a zero-frontend, MU-only deployment target for checksum-verified preflight, atomic promotion, rollback, and fail-closed incomplete-marker reconciliation requests authenticated by MainWP Child."
     },
     {
       "slug": "mrn-pre-consent-update-backup",
