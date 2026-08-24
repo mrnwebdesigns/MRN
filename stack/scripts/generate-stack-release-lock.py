@@ -165,9 +165,9 @@ def resolve_component_source(repo_root, entry, standalone_plugins_root):
         source_root = repo_root
         portable_path = raw_path
     else:
-        path = Path(raw_path).expanduser()
-        if not path.exists():
-            path = standalone_plugins_root / str(entry.get("slug") or "")
+        catalog_path = Path(raw_path).expanduser()
+        standalone_path = standalone_plugins_root / str(entry.get("slug") or "")
+        path = standalone_path if standalone_path.exists() else catalog_path
         source_root = assert_clean_external_repository(path, repository)
         portable_path = Path(path).resolve().relative_to(source_root).as_posix() or "."
     if not path.exists():

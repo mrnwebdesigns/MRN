@@ -345,7 +345,7 @@
     {
       "slug": "mrn-config-helper",
       "name": "MRN Config Helper",
-      "version": "0.1.56",
+      "version": "0.1.57",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
       "lifecycle": "supported",
@@ -625,7 +625,7 @@
     {
       "slug": "mrn-stack-deployment-agent",
       "name": "MRN Stack Deployment Agent",
-      "version": "0.1.1",
+      "version": "0.1.3",
       "runtime_type": "standard-plugin",
       "classification": "operations-agent",
       "lifecycle": "supported",
