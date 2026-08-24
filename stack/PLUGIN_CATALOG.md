@@ -37,7 +37,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-ai-assist` | 2.0.13 | Standard bootstrap | Optional shared | Queued AI-assisted content, SEO, and media-alt workflows. |
 | `mrn-announcements` | 1.6.2 | Standard bootstrap | Optional shared | Scheduled and targeted announcement bars and modals. |
 | `mrn-editor-tools` | 1.8.25 | Standard bootstrap | Optional shared | Classic Editor, TinyMCE, and ACF WYSIWYG enhancements. |
-| `mrn-media-bulk-tools` | 0.12.1 | Standard bootstrap | Optional shared | Media audit, usage indexing, and bulk maintenance. |
+| `mrn-media-bulk-tools` | 0.12.1 | Independent repository (`mrnwebdesigns/mrn-media-bulk-tools`) via MRN-plugins symlink | Optional shared | Media audit, usage indexing, and bulk maintenance; legacy slug and update contracts retained. |
 | `mrn-mega-menu` | 0.16.17 | Standard bootstrap | Optional shared | Accessible content-rich mega-menu administration and rendering. |
 | `mrn-reusable-block-library` | 0.1.28 | Independent repository (`mrnwebdesigns/mrn-reusable-block-library`) via MRN-plugins symlink | Optional shared | Shared reusable block content types and render helpers; existing site behavior is unchanged. |
 | `mrn-tokens` | 0.1.3 | Standard bootstrap | Optional shared | Reusable content-token registry, shortcode, and authenticated REST API. |

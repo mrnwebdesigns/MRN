@@ -449,7 +449,7 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-shared",
-      "source": {"repository": "MRN", "path": "plugins/mrn-media-bulk-tools", "state": "confirmed"},
+      "source": {"repository": "mrn-media-bulk-tools", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-media-bulk-tools", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress media library"], "soft": ["HappyFiles", "MRN media policy integrations"], "release_group": "media-contract"},
       "data": {"options": ["database version", "scan state", "last scan"], "tables": ["mrn_media_usage"], "cron": ["daily scan", "scan processor"], "routes": ["five privileged AJAX actions"], "external_services": []},
       "purpose": "Provides media audit, usage indexing and bulk maintenance tools."
