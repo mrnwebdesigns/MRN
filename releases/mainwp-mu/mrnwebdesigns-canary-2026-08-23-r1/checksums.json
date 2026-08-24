@@ -1,0 +1,13 @@
+{
+  "archive_file_count": 133,
+  "component_count": 14,
+  "expanded_bytes": 8310949,
+  "lock_sha256": "ef306505e5d0bd2452098c9b504e07bb7381593b39556fd7d975a73018ed507a",
+  "package_bytes": 1429215,
+  "package_filename": "mrn-mu-release-mrnwebdesigns-canary-2026-08-23-r1.zip",
+  "package_sha256": "b46406600a8a279b195f8e55c457aa23b4a013bb55faa4607a1e091fdeca0845",
+  "plan_sha256": "1a0fcd6c88dc549ec1b2ecdf2e269a20e072b2219a1c363b0ed526b15a78978b",
+  "release_id": "2026.08.23-mainwp-mu-fleet-r1",
+  "rollout_id": "mrnwebdesigns-canary-2026-08-23-r1",
+  "schema_version": 1
+}
