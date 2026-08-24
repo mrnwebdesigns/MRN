@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.08.24-agent-recovery-evidence
+- Updated `mrn-stack-deployment-agent` to `0.1.5`, adding bounded, sanitized status evidence for incomplete rollout markers without returning storage paths or recovery-file contents.
+- Distinguished empty markers from rollout records containing recovery data, capped traversal and response size, and treated unreadable or truncated scans as recovery-sensitive so reconciliation fails closed.
+- Kept the change read-only; marker cleanup, recovery, package installation, MU promotion, and site deployment remain separately backed up, previewed, approved, and verified operations.
+
 ## 2026.08.24-mainwp-canary-protection
 - Updated `mrn-stack-deployment-agent` to `0.1.4`, allowing a named site hardening fork only as a protected release path while keeping deployment targets, legacy removals, and rollback mutations on the strict MRN allowlist.
 - Recorded the independently released Dashboard controller `mrn-mainwp-operations-api` `0.7.3`, which validates the same protection-only path contract without expanding its mutation allowlists.
