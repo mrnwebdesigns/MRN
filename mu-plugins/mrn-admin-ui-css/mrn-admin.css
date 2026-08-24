@@ -146,6 +146,16 @@ a[href*="/ditty/pricing/"][href*="campaign="] {
     display: none !important;
 }
 
+/* Relevanssi premium upsells and callouts */
+body.wp-admin #card-license-upsell,
+body.wp-admin #card-support-locked,
+body.wp-admin .relevanssi-upsell-callout,
+body.wp-admin .relevanssi-settings-sidebar .relevanssi-info-box:has(a[href*="buy-premium"]),
+body.wp-admin .relevanssi-card > div[style*="background: #f0f6fa"][style*="border: 1px dashed #005885"],
+body.wp-admin .relevanssi-settings-row:has(#card-license-upsell) {
+    display: none !important;
+}
+
 /* Example future entries:
 .plugin-name-upsell,
 .plugin-name-ad-banner {
