@@ -48,6 +48,11 @@ Check for drift before relying on a runtime QA row. A local site that has fallen
 
 ## Local Environment Pull/Deploy Rule
 
+Local runtime code updates are manual and site-specific. Do not automatically,
+mass-sync, or parity-sync stack themes, plugins, MU plugins, or shared runtime
+files into Local sites. A parity report is informational only. Deploy or refresh
+the named site only after the owner explicitly requests that update.
+
 Use the canonical Local environment helper when you want Local to act like an environment endpoint for a site:
 
 - `/Users/khofmeyer/Development/MRN/local/scripts/local-env-workflow.sh`
