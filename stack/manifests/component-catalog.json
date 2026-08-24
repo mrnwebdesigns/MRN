@@ -365,7 +365,7 @@
       "lifecycle": "review",
       "current_distribution": "catalog-only",
       "target_tier": "optional-shared",
-      "source": {"repository": "MRN", "path": "plugins/mrn-contextual-content-editor", "state": "confirmed"},
+      "source": {"repository": "mrn-contextual-content-editor", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-contextual-content-editor", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["Classic Editor", "ACF"], "release_group": "editor-content-contract"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
       "purpose": "Adds contextual logged-in links to the appropriate content editing surface; held out of the stack pending production readiness."

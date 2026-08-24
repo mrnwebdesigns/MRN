@@ -51,7 +51,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-announcements` | MRN Announcements | 1.6.1 | <https://github.com/mrnwebdesigns/mrn-announcements> | Standalone-capable; optional stack Business Information and USB integrations; admin/data-only CPT with no public URL or SEO surface. |
 | `mrn-comment-management` | MRN Comment Management | 1.1.7 | <https://github.com/mrnwebdesigns/mrn-comment-management> | No stack requirement. |
 | `mrn-config-helper` | MRN Config Helper | 0.1.43 | <https://github.com/mrnwebdesigns/mrn-config-helper> | Stack-aware admin utility; can run standalone, but stack sites use more of its integrations. |
-| `mrn-contextual-content-editor` | MRN Contextual Content Editor | 0.1.0 | <https://github.com/mrnwebdesigns/MRN> | No hard stack requirement; ACF matching is optional. |
+| `mrn-contextual-content-editor` | MRN Contextual Content Editor | 0.1.0 | <https://github.com/mrnwebdesigns/mrn-contextual-content-editor> | No hard stack requirement; ACF matching is optional. |
 | `mrn-cookie-consent` | MRN Cookie Consent | 1.1.36 | <https://github.com/mrnwebdesigns/mrn-cookie-consent> | No hard stack requirement; MRN GTM Injector integration is optional. |
 | `mrn-editor-tools` | MRN Editor Enhancements | 1.8.24 | <https://github.com/mrnwebdesigns/mrn-editor-tools> | No stack requirement; Classic Editor/ACF editor context expected. |
 | `mrn-fontawesome-profile-manager` | MRN Font Awesome Profile Manager | 0.4.0 | <https://github.com/mrnwebdesigns/mrn-fontawesome-profile-manager> | Optional stack bridge for Site Configurations/Site Styles. |
