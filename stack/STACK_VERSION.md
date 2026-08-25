@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.20-content-only-cpt-toggle`
-- Release date: `2026-08-20`
+- Stack release: `2026.08.25-navigation-contract`
+- Release date: `2026-08-25`
 - Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.2.111`
+  - `mrn-base-stack` `1.3.0`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-active-style-guide` `0.1.6`
@@ -25,7 +25,7 @@
   - `mrn-sendgrid-provisioning` `0.1.0`
   - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`
-  - `mrn-mega-menu` `0.16.17`
+  - `mrn-mega-menu` `0.17.0`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-universal-sticky-bar` `1.1.8`
 

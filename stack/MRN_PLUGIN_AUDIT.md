@@ -65,7 +65,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-hierarchical-menu-taxonomies` | MRN Hierarchical Menu Taxonomies | 0.1.0 | <https://github.com/mrnwebdesigns/mrn-hierarchical-menu-taxonomies> | Admin-only classic Menu Builder integration for complete hierarchical taxonomy panels. |
 | `mrn-gtm-injector` | MRN GTM Injector | 1.0.13 | <https://github.com/mrnwebdesigns/mrn-gtm-injector> | No stack requirement. |
 | `mrn-media-bulk-tools` | MRN Media Tools | 0.8.0 | <https://github.com/mrnwebdesigns/mrn-media-bulk-tools> | Optional HappyFiles folder display; legacy slug retained for update compatibility. |
-| `mrn-mega-menu` | MRN Mega Menu | 0.16.17 | <https://github.com/mrnwebdesigns/mrn-mega-menu> | Independent standard plugin; WooCommerce and shared stack integrations are optional and standalone-safe. |
+| `mrn-mega-menu` | MRN Mega Menu | 0.17.0 | <https://github.com/mrnwebdesigns/mrn-mega-menu> | Independent standard plugin; WooCommerce and shared stack integrations are optional and standalone-safe. |
 | `mrn-pre-consent-update-backup` | MRN Pre-Consent Update Backup | 1.0.12 | <https://github.com/mrnwebdesigns/mrn-pre-consent-update-backup> | Archived 2026-08-24; retained as historical source and not an active distribution source. |
 | `mrn-recaptcha-enterprise-manager` | MRN reCAPTCHA Enterprise Manager | 0.1.1 | <https://github.com/mrnwebdesigns/mrn-recaptcha-enterprise-manager> | No stack requirement; WPForms sync is optional. |
 | `mrn-seo-helper` | MRN SEO Helper | 0.3.4 | <https://github.com/mrnwebdesigns/mrn-seo-helper> | No hard stack requirement; ACF/SmartCrawl integrations are optional feature paths and admin/data-only announcements are excluded. |
