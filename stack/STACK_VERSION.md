@@ -26,7 +26,7 @@
   - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`
   - `mrn-mega-menu` `0.16.17`
-  - `mrn-stack-deployment-agent` `0.1.6`
+  - `mrn-stack-deployment-agent` `0.1.7`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-universal-sticky-bar` `1.1.8`
   - `searchwp-editor-performance` `1.0.7`
@@ -44,7 +44,7 @@
 - This file tracks the current stack baseline, not every historical package ever shipped.
 - Third-party packages in `manifests/plugins.txt` keep their own upstream versions and package filenames.
 - Current baseline keeps the canonical AME export payloads, importer/manifests, bootstrap helper, shared shim, and stack MU wrapper loaders tracked in the main repo so release/deploy flows can verify and sync them consistently.
-- This release adds fail-closed inspection and guarded reconciliation for exact, unchanged, physically empty incomplete rollout markers without introducing recursive deletion.
+- This release adds bounded recovery inventory and guarded reconciliation for exact, unchanged incomplete rollout markers that are physically empty or contain only recognized empty apply scaffolding, without introducing recursive deletion.
 - The Dashboard-only `mrn-mainwp-operations-api` `0.7.4` controller exposes the corresponding preview and backup-gated reconciliation abilities as an independently released MainWP control-plane component; it is not installed on child sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
 - Use [`CHANGELOG.md`](/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md) for release notes.
