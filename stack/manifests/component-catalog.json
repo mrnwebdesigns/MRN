@@ -561,7 +561,7 @@
       "lifecycle": "supported-development",
       "current_distribution": "catalog-only",
       "target_tier": "development-only",
-      "source": {"repository": "mrn-dummy-content", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-dummy-content", "state": "confirmed"},
+      "source": {"repository": "mrn-dummy-content", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-dummy-content", "state": "confirmed-independent-development"},
       "dependencies": {"hard": ["WordPress"], "soft": ["MRN content model"], "release_group": "development-tools"},
       "data": {"options": [], "tables": [], "cron": [], "routes": ["three privileged content seed/delete actions"], "external_services": []},
       "purpose": "Seeds and removes development fixture content."

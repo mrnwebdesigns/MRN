@@ -64,6 +64,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-recaptcha-enterprise-manager` | MRN reCAPTCHA Enterprise Manager | 0.1.1 | <https://github.com/mrnwebdesigns/mrn-recaptcha-enterprise-manager> | No stack requirement; WPForms sync is optional. |
 | `mrn-seo-helper` | MRN SEO Helper | 0.3.4 | <https://github.com/mrnwebdesigns/mrn-seo-helper> | No hard stack requirement; ACF/SmartCrawl integrations are optional feature paths and admin/data-only announcements are excluded. |
 | `mrn-template-inspector` | MRN Template Inspector | 0.2.7 | <https://github.com/mrnwebdesigns/mrn-template-inspector> | No stack requirement; local development tool. |
+| `mrn-dummy-content` | MRN Dummy Content | 0.3.0 | <https://github.com/mrnwebdesigns/mrn-dummy-content> | Development-only content fixtures; excluded from production bootstrap. |
 | `mrn-universal-sticky-bar` | MRN Universal Sticky Bar | 1.1.3 | <https://github.com/mrnwebdesigns/mrn-universal-sticky-bar> | No hard stack requirement; Classic Editor screens expected. |
 
 ## Dashboard-Only Plugins
