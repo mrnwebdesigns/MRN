@@ -19,6 +19,8 @@
   - `mrn-environment-runtime` `0.4.0`
   - `mrn-schema-bridge` `0.4.2`
   - `mrn-site-colors` / `Site Styles` `0.1.38`
+  - `mrn-updraft-backup-policy-loader` `0.5.0`
+  - `mrn-updraft-local-retention` `0.5.0`
 - Standard plugins:
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-announcements` `1.6.2`
@@ -45,6 +47,7 @@
 - Third-party packages in `manifests/plugins.txt` keep their own upstream versions and package filenames.
 - Current baseline keeps the canonical AME export payloads, importer/manifests, bootstrap helper, shared shim, and stack MU wrapper loaders tracked in the main repo so release/deploy flows can verify and sync them consistently.
 - Current baseline includes bounded recovery inventory and guarded reconciliation for exact, unchanged incomplete rollout markers that are physically empty or contain only recognized empty apply scaffolding, without introducing recursive deletion.
+- Current baseline also includes the Updraft backup-policy wrapper loader at `0.5.0` alongside the local-retention implementation at `0.5.0`, so wrapper and implementation inventories stay synchronized.
 - The Dashboard-only `mrn-mainwp-operations-api` `0.7.4` controller exposes the corresponding preview and backup-gated reconciliation abilities as an independently released MainWP control-plane component; it is not installed on child sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
 - Updated `mrn-config-helper` to `0.1.58`, aligning the stack baseline with the standalone `01cf6b1` release that fixes recursive builder settings normalization.

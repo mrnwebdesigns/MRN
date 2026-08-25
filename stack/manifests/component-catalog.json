@@ -175,6 +175,20 @@
       "purpose": "Owns persistent site design tokens, typography, spacing and CSS-variable output."
     },
     {
+      "slug": "mrn-updraft-backup-policy-loader",
+      "name": "MRN Updraft Backup Policy Loader",
+      "version": "0.5.0",
+      "runtime_type": "mu-loader",
+      "classification": "platform-policy",
+      "lifecycle": "supported",
+      "current_distribution": "mu-loader",
+      "target_tier": "platform-required",
+      "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-updraft-local-retention.php", "state": "confirmed"},
+      "dependencies": {"hard": ["WordPress"], "soft": ["mrn-updraft-local-retention"], "release_group": "mrn-platform"},
+      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "purpose": "Loads the MRN Updraft backup policy MU plugin from its subfolder."
+    },
+    {
       "slug": "mrn-updraft-local-retention",
       "name": "MRN Updraft Backup Policy",
       "version": "0.5.0",

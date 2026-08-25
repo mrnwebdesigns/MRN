@@ -22,7 +22,8 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-public-security-hardening` | 0.3.3 | MU loader | Platform required | Applies shared public REST and discovery hardening. |
 | `mrn-shared-assets` | 0.2.0 | MU loader | Platform required | Provides shared asset and icon interfaces. |
 | `mrn-site-colors` | 0.1.38 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
-| `mrn-updraft-local-retention` | 0.3.0 | MU loader | Platform required | Enforces shared backup schedule and retention policy. |
+| `mrn-updraft-backup-policy-loader` | 0.5.0 | MU loader | Platform required | Loads the MRN Updraft backup policy MU plugin from its subfolder. |
+| `mrn-updraft-local-retention` | 0.5.0 | MU loader | Platform required | Enforces shared backup schedule and retention policy. |
 | `mrn-schema-bridge` | 0.4.2 | MU loader | Platform required | SEOPress (preferred), legacy SmartCrawl, theme, and schema normalization. |
 | `mrn-active-style-guide` | 0.1.6 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
 | `mrn-config-helper` | 0.1.58 | Standard bootstrap | Platform required | Shared site configuration shell, breadcrumb runtime, and launch/admin integrations. |
