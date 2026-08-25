@@ -66,6 +66,12 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-template-inspector` | MRN Template Inspector | 0.2.7 | <https://github.com/mrnwebdesigns/mrn-template-inspector> | No stack requirement; local development tool. |
 | `mrn-universal-sticky-bar` | MRN Universal Sticky Bar | 1.1.3 | <https://github.com/mrnwebdesigns/mrn-universal-sticky-bar> | No hard stack requirement; Classic Editor screens expected. |
 
+## Dashboard-Only Plugins
+
+| Slug | Plugins-page name | Version | Source repo | Stack requirement |
+| --- | --- | ---: | --- | --- |
+| `mrn-wp-control-table-exporter` | WP Control Table Exporter | 1.4.4 | <https://github.com/mrnwebdesigns/mrn-wp-control-table-exporter> | Dashboard-only; not installed on client sites. |
+
 ## MU Plugins
 
 | Slug | Plugins-page name | Version | Source repo | Stack requirement |

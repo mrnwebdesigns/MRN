@@ -659,7 +659,7 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "dashboard-only",
-      "source": {"repository": "mrn-wp-control-table-exporter", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-wp-control-table-exporter", "state": "confirmed"},
+      "source": {"repository": "mrn-wp-control-table-exporter", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-wp-control-table-exporter", "state": "confirmed-independent-dashboard"},
       "dependencies": {"hard": ["supported WP Control/MainWP admin tables"], "soft": [], "release_group": "mainwp-operations"},
       "data": {"options": ["mrn_wpcte_settings"], "tables": [], "cron": [], "routes": [], "external_services": ["MainWP/WP Control admin UI"]},
       "purpose": "Adds client-side CSV export to supported management tables."
