@@ -1,7 +1,7 @@
 # Stack Changelog
 
-## 2026.08.25-navigation-contract
-- `mrn-base-stack` (`1.2.111` -> `1.3.0`): added the shared press-release module and safe content-list permalink handling for content-only post types and disabled team-member profiles.
+## 2026.08.25-navigation-contract-text-reveal
+- `mrn-base-stack` (`1.3.0`): restored the Subtle Text Reveal animation contract on top of the current navigation-contract baseline, including the saved `effect=text-reveal` ACF choice, contextual target handling, staged runtime bootstrap, one-shot reveal animation, reduced-motion fallback, and regression coverage. Preserved the current `resource` CPT and featured-image support from the navigation-contract baseline unchanged.
 - `mrn-mega-menu` (`0.16.17` -> `0.17.0`): added category search/status feedback in the admin picker, preserved mobile drawer stacking above the plugin breakpoint, and included the current additive mega-menu enhancements in the releasable component artifact.
 - Removed diagnostic console logging from the tabbed-layout Playwright reproduction fixture so the stack debug-artifact gate remains clean.
 

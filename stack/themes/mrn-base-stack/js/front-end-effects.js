@@ -169,6 +169,85 @@
 		} );
 	}
 
+	function finishTextReveal( targetElement ) {
+		targetElement.classList.remove( 'is-mrn-text-reveal-active' );
+		targetElement.classList.add( 'has-mrn-text-revealed' );
+	}
+
+	function prepareTextRevealEffects() {
+		var motionSections = document.querySelectorAll( '[data-mrn-motion-effect="text-reveal"]' );
+		var entries = [];
+
+		motionSections.forEach( function( sectionElement ) {
+			var targetElement = findMotionTarget( sectionElement );
+
+			targetElement.classList.add( 'is-mrn-text-reveal-target' );
+			sectionElement.classList.add( 'is-mrn-text-reveal-prepared' );
+			entries.push( {
+				section: sectionElement,
+				target: targetElement
+			} );
+		} );
+
+		return entries;
+	}
+
+	function initTextRevealEffects( inView, entries ) {
+		if ( ! entries.length ) {
+			return;
+		}
+
+		if ( userPrefersReducedMotion() || 'function' !== typeof inView ) {
+			entries.forEach( function( entry ) {
+				finishTextReveal( entry.target );
+			} );
+			return;
+		}
+
+		entries.forEach( function( entry ) {
+			var sectionElement = entry.section;
+			var targetElement = entry.target;
+			var marginValue = normalizeMargin( sectionElement.getAttribute( 'data-mrn-motion-margin' ) || '-35% 0px -35% 0px' );
+			var fallbackTimer;
+			var stopWatching = null;
+			var shouldStop = false;
+
+			function completeReveal() {
+				window.clearTimeout( fallbackTimer );
+				targetElement.removeEventListener( 'animationend', handleAnimationEnd );
+				finishTextReveal( targetElement );
+			}
+
+			function handleAnimationEnd( event ) {
+				if ( 'mrn-subtle-text-reveal' !== event.animationName ) {
+					return;
+				}
+
+				completeReveal();
+			}
+
+			stopWatching = inView( targetElement, function() {
+				if ( targetElement.classList.contains( 'has-mrn-text-revealed' ) || targetElement.classList.contains( 'is-mrn-text-reveal-active' ) ) {
+					return;
+				}
+
+				targetElement.addEventListener( 'animationend', handleAnimationEnd );
+				targetElement.classList.add( 'is-mrn-text-reveal-active' );
+				fallbackTimer = window.setTimeout( completeReveal, 850 );
+
+				if ( 'function' === typeof stopWatching ) {
+					stopWatching();
+				} else {
+					shouldStop = true;
+				}
+			}, { margin: marginValue } );
+
+			if ( shouldStop && 'function' === typeof stopWatching ) {
+				stopWatching();
+			}
+		} );
+	}
+
 	function mix( start, end, progress ) {
 		return start + ( end - start ) * progress;
 	}
@@ -664,16 +743,21 @@
 	}
 
 	function initEffects() {
+		var textRevealEntries = prepareTextRevealEffects();
+
 		initContentLinkButtons();
 		initFullItemOverlayLinks();
+		document.documentElement.classList.add( 'mrn-motion-effects-ready' );
 
 		if ( ! window.Motion || 'function' !== typeof window.Motion.inView ) {
+			initTextRevealEffects( null, textRevealEntries );
 			return;
 		}
 
 		initGlobalApi( window.Motion.inView );
 		initSurfaceSections( window.Motion.inView );
 		initActiveClassEffects( window.Motion.inView );
+		initTextRevealEffects( window.Motion.inView, textRevealEntries );
 		initStatValueAnimations( window.Motion.inView );
 		initDarkScrollCardEffects();
 		initStackedCardEffects();

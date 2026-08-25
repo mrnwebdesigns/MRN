@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.25-navigation-contract`
+- Stack release: `2026.08.25-navigation-contract-text-reveal`
 - Release date: `2026-08-25`
 - Status: `current baseline`
 

@@ -271,6 +271,53 @@ test.describe('MRN stack site smoke QA', () => {
 		await expect(navigation.locator('.mrn-mobile-navigation__drawer-header')).toBeHidden();
 	});
 
+	test('subtle text reveal is prepared before entry and runs only once', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 720 });
+		await page.goto('/', { waitUntil: 'networkidle' });
+
+		const section = page.locator('[data-mrn-motion-effect="text-reveal"]').first();
+		test.skip((await section.count()) === 0, 'Subtle Text Reveal is not configured in this runtime.');
+
+		await expect(section).toHaveClass(/is-mrn-text-reveal-prepared/);
+		await expect(page.locator('html')).toHaveClass(/mrn-motion-effects-ready/);
+
+		const targetType = await section.getAttribute('data-mrn-motion-target');
+		const targetSelectors = {
+			surface: '.mrn-layout-surface',
+			content: '.mrn-layout-content--text, .mrn-reusable-block__content, .mrn-hero__content, .mrn-reusable-block__inner, .mrn-ui__body',
+			media: '.mrn-ui__media, .mrn-reusable-block__media, .mrn-hero__media, .mrn-section-background-media',
+			header: '.mrn-ui__head, .mrn-card-row__head, .mrn-content-list-row__header, .mrn-hero__content',
+			items: '.mrn-ui__items, .mrn-card-row__grid, .mrn-content-list-row__items, .mrn-faq__items',
+			'left-column': '.mrn-two-column-split__column--left > .mrn-content-builder__row, .mrn-two-column-split__column--left .mrn-content-builder__row, .mrn-two-column-split__column--left',
+			'right-column': '.mrn-two-column-split__column--right > .mrn-content-builder__row, .mrn-two-column-split__column--right .mrn-content-builder__row, .mrn-two-column-split__column--right',
+		};
+		const targetSelector = targetSelectors[targetType] || '';
+		const targetMatchesSection = targetSelector
+			? await section.evaluate((element, selector) => element.matches(selector), targetSelector)
+			: false;
+		const target = ! targetSelector || targetMatchesSection
+			? section
+			: section.locator(targetSelector).first();
+
+		await expect(target).toHaveClass(/is-mrn-text-reveal-target/);
+		const initialBox = await target.boundingBox();
+		if (initialBox && initialBox.y > 720) {
+			await expect(target).toHaveCSS('opacity', '0');
+		}
+
+		await target.scrollIntoViewIfNeeded();
+		await expect(target).toHaveClass(/has-mrn-text-revealed/);
+		await expect(target).toHaveCSS('opacity', '1');
+		await expect(target).toHaveCSS('transform', 'none');
+
+		await page.evaluate(() => window.scrollTo(0, 0));
+		await page.waitForTimeout(150);
+		await target.scrollIntoViewIfNeeded();
+		await page.waitForTimeout(150);
+		await expect(target).not.toHaveClass(/is-mrn-text-reveal-active/);
+		await expect(target).toHaveClass(/has-mrn-text-revealed/);
+	});
+
 	for (const testCase of motionTargetCases) {
 		test(`motion target applies effect to configured target: ${testCase.label}`, async ({ page }) => {
 			await expectMotionTargetCase(page, testCase);
