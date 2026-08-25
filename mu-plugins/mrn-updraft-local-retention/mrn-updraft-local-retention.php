@@ -3,7 +3,7 @@
  * Plugin Name: MRN Updraft Backup Policy
  * Description: Enforces the MRN Updraft backup policy, limits local backup sets, and repairs missing scheduled events.
  * Author: MRN Web Designs
- * Version: 0.3.0
+ * Version: 0.5.0
  */
 
 defined('ABSPATH') || exit;
@@ -27,6 +27,46 @@ function mrn_updraft_backup_policy_get_hostname(): string {
 	$hostname = is_string($hostname) ? strtolower(rtrim($hostname, '.')) : '';
 
 	return preg_match('/^[a-z0-9.-]+$/', $hostname) ? $hostname : '';
+}
+
+/**
+ * Resolve the stable, environment-independent site slug used for the
+ * BACKUP_POLICY.md `sites/<slug>` S3 convention: the hostname's first label
+ * (dots/other separators sanitized to hyphens within that label only).
+ *
+ * This is deliberately NOT the full hostname. The same logical site moves
+ * across environments with different hosts (`trilliant.localhost` locally,
+ * `trilliant.mrndev.io` in review, a custom domain in production) and must
+ * keep one stable S3 prefix throughout rather than fragmenting per host.
+ */
+function mrn_updraft_backup_policy_get_sanitized_hostname(): string {
+	$hostname = mrn_updraft_backup_policy_get_hostname();
+	if ('' === $hostname) {
+		return '';
+	}
+
+	$labels = explode('.', $hostname);
+	$slug   = $labels[0];
+
+	$sanitized = preg_replace('/[^a-z0-9]+/', '-', $slug);
+
+	return is_string($sanitized) ? trim($sanitized, '-') : '';
+}
+
+/**
+ * Determine whether the current site is a development/review environment
+ * (for example `*.mrndev.io`) rather than staging or production.
+ *
+ * Reuses mrn-environment-runtime's conservative host classification instead
+ * of duplicating suffix-matching logic. Defaults to false (production-like)
+ * when that component is unavailable, matching its own conservative default.
+ */
+function mrn_updraft_backup_policy_is_dev_environment(): bool {
+	if (!function_exists('mrn_environment_runtime_host_signal')) {
+		return false;
+	}
+
+	return 'non_production' === mrn_environment_runtime_host_signal();
 }
 
 /**
