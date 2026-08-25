@@ -274,6 +274,11 @@ Never treat LOCAL, `mrndev.io` review, and production environments as interchang
 - Deployment scoping:
   - Deploy only approved site-owned paths unless explicitly requested otherwise.
   - Preserve existing live/site behavior and compatibility unless user explicitly requests a migration or behavior change.
+- Manual change path:
+  - If a site has both a local copy and a development/review copy, do not copy files or database state into dev by ad hoc sync, export/import, or direct mutation. Local-to-dev changes must go through committed git changes and the approved deployment or migration workflow.
+  - Prefer scripted database updates. A manual database push is allowed only with explicit owner approval and only after the applicable backup and verification gates pass.
+  - Manual code changes to a site or deployment target are allowed only with explicit owner approval. This includes plugin work.
+  - Plugin work follows the git-hygiene gate: do not install, update, or deploy a plugin from a dirty or uncommitted worktree.
 - Production confirmation boundaries:
   - Confirm target is production and explicit before executing production writes.
 - Operations hierarchy relationship:
@@ -350,6 +355,7 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
 
 - QA passing authorizes neither deployment nor production mutation.
 - The sequence remains: QA pass -> commit may proceed -> deployment remains separately gated by owner/production authorization, applicable backup policy, environment safety, MainWP/QA Engine routing, and deployment-specific validation.
+- This includes plugin work: it still requires explicit approval and a clean, committed worktree before any site deployment.
 
 ## 11) Git hygiene gate
 
