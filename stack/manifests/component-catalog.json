@@ -625,7 +625,7 @@
     {
       "slug": "mrn-stack-deployment-agent",
       "name": "MRN Stack Deployment Agent",
-      "version": "0.1.6",
+      "version": "0.1.7",
       "runtime_type": "standard-plugin",
       "classification": "operations-agent",
       "lifecycle": "supported",
@@ -634,7 +634,7 @@
       "source": {"repository": "mrn-stack-deployment-agent", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress", "MainWP Child authenticated connection"], "soft": ["MRN MainWP Operations API"], "release_group": "mainwp-operations"},
       "data": {"options": [], "tables": [], "cron": [], "routes": ["authenticated mainwp_child_extra_execution actions"], "external_services": ["MainWP"]},
-      "purpose": "Provides a zero-frontend, MU-only deployment target for checksum-verified preflight, atomic promotion, rollback, and fail-closed incomplete-marker reconciliation requests authenticated by MainWP Child."
+      "purpose": "Provides a zero-frontend, MU-only deployment target for checksum-verified preflight, atomic promotion, rollback, and recovery-payload-aware incomplete-marker reconciliation requests authenticated by MainWP Child."
     },
     {
       "slug": "mrn-pre-consent-update-backup",
