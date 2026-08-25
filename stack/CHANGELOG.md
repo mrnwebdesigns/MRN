@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.08.25-config-helper-0.1.58
+- Updated `mrn-config-helper` to `0.1.58`, carrying the standalone recursive builder settings normalization fix onto the stack release path.
+- Synced `STACK_VERSION.md`, `component-catalog.json`, `PLUGIN_CATALOG.md`, `plugin-docs/mrn-config-helper.md`, and the immutable release lock to the new release ID.
+- Kept the deployment agent, MainWP controller, and WordPress runtimes unchanged; no site mutation, backup, or deploy was performed.
+
 ## 2026.08.24-agent-marker-reconciliation
 - Updated `mrn-stack-deployment-agent` to `0.1.7`, adding bounded file, directory, empty-directory, symlink, and special-entry inventory for exact incomplete rollout markers without exposing server paths or contents.
 - Bound reconciliation to an unchanged rollout ID, scanned-directory fingerprint, modification timestamp, and absence of recovery payloads, unknown paths, scan errors, or truncation.

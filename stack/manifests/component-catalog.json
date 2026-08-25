@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-08-23",
+  "catalog_updated": "2026-08-25",
   "authority": "This file is the authoritative inventory and classification source for MRN-owned WordPress plugins and MU components. Inclusion does not imply installation.",
   "product_model": {
     "platform-required": "Installed on a production MRN stack because it provides mandatory platform behavior.",
@@ -345,7 +345,7 @@
     {
       "slug": "mrn-config-helper",
       "name": "MRN Config Helper",
-      "version": "0.1.57",
+      "version": "0.1.58",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
       "lifecycle": "supported",

@@ -1,6 +1,6 @@
 # MRN WordPress Component Catalog
 
-Last classified: 2026-08-23
+Last classified: 2026-08-25
 
 This is the human-readable index of MRN-owned WordPress components. The authoritative machine-readable source is [`manifests/component-catalog.json`](./manifests/component-catalog.json), and the rules governing it are in [`PLUGIN_GOVERNANCE.md`](./PLUGIN_GOVERNANCE.md).
 
@@ -25,7 +25,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-updraft-local-retention` | 0.3.0 | MU loader | Platform required | Enforces shared backup schedule and retention policy. |
 | `mrn-schema-bridge` | 0.4.2 | MU loader | Platform required | SEOPress (preferred), legacy SmartCrawl, theme, and schema normalization. |
 | `mrn-active-style-guide` | 0.1.6 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
-| `mrn-config-helper` | 0.1.57 | Standard bootstrap | Platform required | Shared site configuration shell, breadcrumb runtime, and launch/admin integrations. |
+| `mrn-config-helper` | 0.1.58 | Standard bootstrap | Platform required | Shared site configuration shell, breadcrumb runtime, and launch/admin integrations. |
 | `mrn-stack-deployment-agent` | 0.1.7 | Standard bootstrap | Platform required | Zero-frontend MainWP-authenticated agent for plan-locked MU preflight, atomic promotion, rollback, and recovery-payload-aware incomplete-marker reconciliation. |
 | `mrn-universal-sticky-bar` | 1.1.8 | Standard bootstrap | Platform required | Provides the shared settings/editor action bar; independently released for non-Stack use. |
 

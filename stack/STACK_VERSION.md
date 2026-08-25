@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.24-agent-marker-reconciliation`
-- Release date: `2026-08-24`
+- Stack release: `2026.08.25-config-helper-0.1.58`
+- Release date: `2026-08-25`
 - Status: `release candidate`
 
 ## Included MRN-Owned Components
@@ -22,7 +22,7 @@
 - Standard plugins:
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-announcements` `1.6.2`
-  - `mrn-config-helper` `0.1.57`
+  - `mrn-config-helper` `0.1.58`
   - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`
   - `mrn-mega-menu` `0.16.17`
@@ -44,7 +44,8 @@
 - This file tracks the current stack baseline, not every historical package ever shipped.
 - Third-party packages in `manifests/plugins.txt` keep their own upstream versions and package filenames.
 - Current baseline keeps the canonical AME export payloads, importer/manifests, bootstrap helper, shared shim, and stack MU wrapper loaders tracked in the main repo so release/deploy flows can verify and sync them consistently.
-- This release adds bounded recovery inventory and guarded reconciliation for exact, unchanged incomplete rollout markers that are physically empty or contain only recognized empty apply scaffolding, without introducing recursive deletion.
+- Current baseline includes bounded recovery inventory and guarded reconciliation for exact, unchanged incomplete rollout markers that are physically empty or contain only recognized empty apply scaffolding, without introducing recursive deletion.
 - The Dashboard-only `mrn-mainwp-operations-api` `0.7.4` controller exposes the corresponding preview and backup-gated reconciliation abilities as an independently released MainWP control-plane component; it is not installed on child sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
+- Updated `mrn-config-helper` to `0.1.58`, aligning the stack baseline with the standalone `01cf6b1` release that fixes recursive builder settings normalization.
 - Use [`CHANGELOG.md`](/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md) for release notes.
