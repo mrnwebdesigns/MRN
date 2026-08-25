@@ -575,7 +575,7 @@
       "lifecycle": "incubator",
       "current_distribution": "catalog-only",
       "target_tier": "review",
-      "source": {"repository": "mrn-google-reviews", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-google-reviews", "state": "incubator-unreleased"},
+      "source": {"repository": "mrn-google-reviews", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-google-reviews", "state": "incubator-independent-unreleased"},
       "dependencies": {"hard": ["Google Business Profile credentials"], "soft": ["secure external secret injection"], "release_group": null},
       "data": {"options": ["credentials", "settings", "last sync", "last error"], "tables": [], "cron": ["review synchronization"], "routes": ["four privileged admin-post actions"], "external_services": ["Google Business Profile OAuth/API"], "post_types": ["mrn_google_review"]},
       "purpose": "Synchronizes and stores Google Business Profile reviews; requires production-readiness review."

@@ -1,5 +1,11 @@
 # MRN Plugin Audit
 
+## Incubator Source Verification
+
+| Plugin | Independent repository | HEAD | Distribution | Result |
+| --- | --- | --- | --- | --- |
+| `mrn-google-reviews` | `https://github.com/mrnwebdesigns/mrn-google-reviews` | `9cea85e` | Catalog-only; not in production bootstrap | Independent source, static QA, and release archive verified. Remains unreleased pending secret-management and release-readiness review. |
+
 > Historical snapshot: this document is retained as prior audit evidence. Current inventory, versions, ownership classifications, and product tiers are authoritative in [`manifests/component-catalog.json`](./manifests/component-catalog.json) and summarized in [`PLUGIN_CATALOG.md`](./PLUGIN_CATALOG.md).
 
 > Superseded since this snapshot: SEOPress is the preferred SEO/schema provider for new stack sites and SmartCrawl is retained only for existing sites during migration. Rows below that describe SmartCrawl as the preferred base graph reflect the 2026-07-09 state and are evidence, not current guidance. See [`SCHEMA_DISCOVERY_BASELINE.md`](./SCHEMA_DISCOVERY_BASELINE.md) and [`THIRD_PARTY_PLUGIN_AUDIT.md`](./THIRD_PARTY_PLUGIN_AUDIT.md).
