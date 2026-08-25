@@ -6,14 +6,6 @@ const splideJsPath = '/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-sta
 const tabsJsPath = '/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/front-end-tabs.js';
 
 test('tabbed slide mode mounts slider and applies equal height', async ({ page }) => {
-	page.on('pageerror', (error) => {
-		console.log('pageerror', String(error));
-	});
-
-	page.on('console', (message) => {
-		console.log('browser-console', message.type(), message.text());
-	});
-
 	await page.setContent(`
 		<!doctype html>
 		<html lang="en">
@@ -110,8 +102,6 @@ test('tabbed slide mode mounts slider and applies equal height', async ({ page }
 		};
 	});
 
-	console.log('debugState', debugState);
-
 	await page.waitForFunction(() => {
 		const root = document.querySelector('[data-mrn-tabbed-layout]');
 		return !!(root && root.mrnTabSlider);
@@ -151,8 +141,6 @@ test('tabbed slide mode mounts slider and applies equal height', async ({ page }
 		};
 	});
 
-	console.log('initialState', initialState);
-
 	await page.getByRole('tab', { name: 'Tab Two' }).click();
 	await page.waitForTimeout(700);
 
@@ -191,8 +179,6 @@ test('tabbed slide mode mounts slider and applies equal height', async ({ page }
 			slides,
 		};
 	});
-
-	console.log('nextState', nextState);
 
 	expect(initialState.index).toBe(0);
 	expect(initialState.cssHeight).toBe('420px');
