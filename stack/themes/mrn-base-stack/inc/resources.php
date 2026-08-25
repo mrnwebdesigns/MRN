@@ -91,7 +91,7 @@ function mrn_base_stack_register_resource_post_type() {
 			),
 			'menu_position'       => 12,
 			'menu_icon'           => 'dashicons-media-document',
-			'supports'            => array( 'title', 'excerpt', 'revisions' ),
+			'supports'            => array( 'title', 'excerpt', 'thumbnail', 'revisions' ),
 			'taxonomies'          => array( 'category', 'post_tag' ),
 			'publicly_queryable'  => true,
 			'show_in_nav_menus'   => true,

@@ -28,6 +28,18 @@ function sanitize_key( $key ): string {
 	return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $key ) );
 }
 
+function get_option( $option, $default = array() ) {
+	unset( $option );
+
+	return $default;
+}
+
+function update_option( $option, $value ) {
+	unset( $option, $value );
+
+	return true;
+}
+
 function get_post_type( $post_id ): string {
 	unset( $post_id );
 	return $GLOBALS['mrn_test_type'];

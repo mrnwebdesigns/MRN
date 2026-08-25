@@ -171,6 +171,8 @@ function mrn_base_stack_seed_nav_menus() {
 	}
 
 	if ( $all_seeded ) {
+		// Keep this migration option non-autoloaded; PHPStan's stub treats the third parameter as optional.
+		/* @phpstan-ignore-next-line */
 		update_option( $option_key, $migration_version, false );
 	}
 }
