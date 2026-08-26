@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.3.1' );
+	define( '_S_VERSION', '1.3.2' );
 }
 
 /**
@@ -2605,6 +2605,11 @@ require get_template_directory() . '/inc/template-tags.php';
  * Reading-time helpers for singular content.
  */
 require get_template_directory() . '/inc/read-time.php';
+
+/**
+ * Content table-of-contents helpers.
+ */
+require get_template_directory() . '/inc/content-toc.php';
 
 /**
  * Functions which enhance the theme by hooking into WordPress.

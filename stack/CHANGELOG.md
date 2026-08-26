@@ -1,7 +1,7 @@
 # Stack Changelog
 
 ## Unreleased
-- `mrn-base-stack` (`1.3.0` -> `1.3.1`): added CPT-agnostic reading-time helpers with configurable words-per-minute and minute filters, plus regression coverage. Site templates can consume the shared API without duplicating word-count logic.
+- `mrn-base-stack` (`1.3.1` -> `1.3.2`): added CPT-agnostic reading-time and content table-of-contents helpers. The TOC API adds configurable heading anchors and returns processed HTML plus link data for child-theme placement, with regression coverage.
 
 ## 2026.08.25-navigation-contract-text-reveal
 - `mrn-base-stack` (`1.3.0`): restored the Subtle Text Reveal animation contract on top of the current navigation-contract baseline, including the saved `effect=text-reveal` ACF choice, contextual target handling, staged runtime bootstrap, one-shot reveal animation, reduced-motion fallback, and regression coverage. Preserved the current `resource` CPT and featured-image support from the navigation-contract baseline unchanged.
