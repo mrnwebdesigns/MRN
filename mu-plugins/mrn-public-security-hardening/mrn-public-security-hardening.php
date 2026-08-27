@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Public Security Hardening
  * Description: Shared public hardening for MRN brochure/client sites.
- * Version: 0.3.3
+ * Version: 0.4.0
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION' ) ) {
-	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.3.3' );
+	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.4.0' );
 }
 
 /**
@@ -779,6 +779,889 @@ function mrn_public_security_maybe_serve_security_txt() {
 add_action( 'parse_request', 'mrn_public_security_maybe_serve_security_txt', 0 );
 
 /**
+ * Get the option name used for the login slug setting.
+ *
+ * @return string
+ */
+function mrn_public_security_get_login_slug_option_name() {
+	return 'mrn_public_security_login_slug';
+}
+
+/**
+ * Get known plugins that take ownership of the WordPress login URL.
+ *
+ * @return array<string,string>
+ */
+function mrn_public_security_get_login_conflict_plugins() {
+	$plugins = array(
+		'wps-hide-login/wps-hide-login.php'                    => 'WPS Hide Login',
+		'change-wp-admin-login/change-wp-admin-login.php'      => 'Change WP Admin Login',
+		'rename-wp-login/rename-wp-login.php'                  => 'Rename wp-login.php',
+		'hide-my-wp/inc/core.php'                              => 'Hide My WP',
+		'wp-hide-security-enhancer/wp-hide.php'                => 'WP Hide & Security Enhancer',
+	);
+
+	$plugins = apply_filters( 'mrn_public_security_login_conflict_plugins', $plugins );
+
+	return is_array( $plugins ) ? $plugins : array();
+}
+
+/**
+ * Find an active plugin that already controls the login URL.
+ *
+ * This intentionally disables this feature instead of deactivating another
+ * plugin, because silent plugin deactivation can break site authentication.
+ *
+ * @return array<string,string>|null
+ */
+function mrn_public_security_get_active_login_conflict_plugin() {
+	$active_plugins = get_option( 'active_plugins', array() );
+
+	if ( function_exists( 'get_site_option' ) ) {
+		$network_plugins = get_site_option( 'active_sitewide_plugins', array() );
+
+		if ( is_array( $network_plugins ) ) {
+			$active_plugins = array_merge( is_array( $active_plugins ) ? $active_plugins : array(), array_keys( $network_plugins ) );
+		}
+	}
+
+	if ( ! is_array( $active_plugins ) ) {
+		return null;
+	}
+
+	$active_plugins = array_map( 'strval', $active_plugins );
+
+	foreach ( mrn_public_security_get_login_conflict_plugins() as $plugin_file => $plugin_name ) {
+		if ( ! is_string( $plugin_file ) || ! in_array( $plugin_file, $active_plugins, true ) ) {
+			continue;
+		}
+
+		return array(
+			'file' => $plugin_file,
+			'name' => is_scalar( $plugin_name ) ? (string) $plugin_name : $plugin_file,
+		);
+	}
+
+	return null;
+}
+
+/**
+ * Determine whether another active plugin owns login URL protection.
+ *
+ * @return bool
+ */
+function mrn_public_security_login_protection_is_conflicted() {
+	return null !== mrn_public_security_get_active_login_conflict_plugin();
+}
+
+/**
+ * Normalize a login slug candidate before validation or storage.
+ *
+ * @param mixed $slug Candidate slug.
+ * @return string
+ */
+function mrn_public_security_normalize_login_slug( $slug ) {
+	if ( ! is_scalar( $slug ) ) {
+		return '';
+	}
+
+	$slug = strtolower( trim( wp_unslash( (string) $slug ) ) );
+	$slug = rawurldecode( $slug );
+
+	return trim( $slug );
+}
+
+/**
+ * Check whether a login slug is structurally valid.
+ *
+ * @param mixed $slug Candidate slug.
+ * @return bool
+ */
+function mrn_public_security_is_structurally_valid_login_slug( $slug ) {
+	if ( ! is_string( $slug ) ) {
+		return false;
+	}
+
+	$slug = trim( $slug );
+
+	if ( '' === $slug || preg_match( '/[\/?#\s]/', $slug ) ) {
+		return false;
+	}
+
+	return 1 === preg_match( '/^[a-z0-9-]*[a-z0-9][a-z0-9-]*$/', $slug );
+}
+
+/**
+ * Get the default login slug for sites that do not store an override.
+ *
+ * @return string
+ */
+function mrn_public_security_get_default_login_slug() {
+	$slug = apply_filters( 'mrn_public_security_login_slug_default', 'site-login' );
+	$slug = mrn_public_security_normalize_login_slug( $slug );
+
+	if ( ! mrn_public_security_is_structurally_valid_login_slug( $slug ) ) {
+		return 'site-login';
+	}
+
+	return $slug;
+}
+
+/**
+ * Get the login slug currently stored in the database.
+ *
+ * @return string
+ */
+function mrn_public_security_get_login_slug_raw() {
+	$slug = get_option( mrn_public_security_get_login_slug_option_name(), '' );
+
+	if ( ! is_scalar( $slug ) ) {
+		return '';
+	}
+
+	return mrn_public_security_normalize_login_slug( $slug );
+}
+
+/**
+ * Get the active login slug for this site.
+ *
+ * Invalid stored values fall back to the default so administrators cannot
+ * permanently lock themselves out.
+ *
+ * @return string
+ */
+function mrn_public_security_get_login_slug() {
+	$slug = mrn_public_security_get_login_slug_raw();
+
+	if ( '' === $slug ) {
+		return mrn_public_security_get_default_login_slug();
+	}
+
+	if ( ! mrn_public_security_is_structurally_valid_login_slug( $slug ) ) {
+		return mrn_public_security_get_default_login_slug();
+	}
+
+	return $slug;
+}
+
+/**
+ * Get the state of the current login slug setting.
+ *
+ * @return array<string,mixed>
+ */
+function mrn_public_security_get_login_slug_state() {
+	$raw          = mrn_public_security_get_login_slug_raw();
+	$effective     = mrn_public_security_get_login_slug();
+	$stored_valid  = '' !== $raw && mrn_public_security_is_structurally_valid_login_slug( $raw );
+	$stored_exists = '' !== $raw;
+	$conflict      = $stored_valid ? mrn_public_security_login_slug_conflicts_with_existing_route( $raw ) : false;
+	$plugin        = mrn_public_security_get_active_login_conflict_plugin();
+
+	return array(
+		'raw'           => $raw,
+		'effective'     => $effective,
+		'display_value' => '' !== $raw ? $raw : $effective,
+		'stored_valid'  => $stored_valid,
+		'stored_exists' => $stored_exists,
+		'conflict'     => $conflict,
+		'plugin'       => $plugin,
+		'source'       => null !== $plugin ? 'plugin-conflict' : ( ! $stored_exists ? 'default' : ( $stored_valid ? ( $conflict ? 'conflict' : 'custom' ) : 'invalid' ) ),
+	);
+}
+
+/**
+ * Get the reserved login slugs.
+ *
+ * @return array
+ */
+function mrn_public_security_get_reserved_login_slugs() {
+	return array(
+		'admin',
+		'checkemail',
+		'confirmaction',
+		'confirm_admin_email',
+		'embed',
+		'feed',
+		'html',
+		'login',
+		'logout',
+		'lostpassword',
+		'postpass',
+		'register',
+		'resetpass',
+		'rp',
+		'search',
+		'trackback',
+		'wp-activate',
+		'wp-admin',
+		'wp-content',
+		'wp-includes',
+		'wp-json',
+		'wp-login',
+		'wp-cron',
+		'wp-sitemap',
+		'wp-signup',
+		'author',
+		'category',
+		'comments',
+		'atom',
+		'rss',
+		'xmlrpc',
+	);
+}
+
+/**
+ * Check whether the provided slug is reserved.
+ *
+ * @param mixed $slug Candidate slug.
+ * @return bool
+ */
+function mrn_public_security_is_reserved_login_slug( $slug ) {
+	if ( ! is_string( $slug ) || '' === $slug ) {
+		return false;
+	}
+
+	return in_array( $slug, mrn_public_security_get_reserved_login_slugs(), true );
+}
+
+/**
+ * Resolve the path to the WordPress login endpoint.
+ *
+ * @return string
+ */
+function mrn_public_security_get_wp_login_path() {
+	$site_url_path = mrn_public_security_get_site_url_path_root();
+
+	return '' !== $site_url_path ? $site_url_path . '/wp-login.php' : '/wp-login.php';
+}
+
+/**
+ * Get the path root for the current site URL.
+ *
+ * @return string
+ */
+function mrn_public_security_get_site_url_path_root() {
+	$site_url = get_option( 'siteurl' );
+
+	if ( ! is_string( $site_url ) || '' === trim( $site_url ) ) {
+		return '';
+	}
+
+	$path = mrn_public_security_parse_url( $site_url, PHP_URL_PATH );
+
+	if ( ! is_string( $path ) || '' === $path ) {
+		return '';
+	}
+
+	return untrailingslashit( rawurldecode( $path ) );
+}
+
+/**
+ * Get the custom login path for the configured slug.
+ *
+ * @param string|null $slug Optional slug override.
+ * @param bool        $include_site_root Whether to include the site URL path root.
+ * @return string
+ */
+function mrn_public_security_get_custom_login_path( $slug = null, $include_site_root = true ) {
+	if ( null === $slug ) {
+		$slug = mrn_public_security_get_login_slug();
+	} else {
+		$slug = mrn_public_security_normalize_login_slug( $slug );
+
+		if ( ! mrn_public_security_is_structurally_valid_login_slug( $slug ) ) {
+			$slug = mrn_public_security_get_default_login_slug();
+		}
+	}
+
+	$slug          = trim( (string) $slug, '/' );
+	$path          = '/' . $slug . '/';
+
+	if ( ! $include_site_root ) {
+		return $path;
+	}
+
+	$site_url_path = mrn_public_security_get_site_url_path_root();
+
+	return '' !== $site_url_path ? $site_url_path . $path : $path;
+}
+
+/**
+ * Get the custom login URL for the configured slug.
+ *
+ * @param string|null $slug Optional slug override.
+ * @param array       $args Optional query arguments.
+ * @return string
+ */
+function mrn_public_security_get_custom_login_url( $slug = null, $args = array() ) {
+	$url = site_url( trailingslashit( mrn_public_security_get_custom_login_path( $slug, false ) ), 'login' );
+
+	if ( is_array( $args ) && ! empty( $args ) ) {
+		$url = add_query_arg( $args, $url );
+	}
+
+	return $url;
+}
+
+/**
+ * Get the custom login URL for the active slug.
+ *
+ * @param array $args Optional query arguments.
+ * @return string
+ */
+function mrn_public_security_get_login_url( $args = array() ) {
+	return mrn_public_security_get_custom_login_url( null, $args );
+}
+
+/**
+ * Replace wp-login.php URLs with the configured custom login URL.
+ *
+ * @param mixed $url Candidate URL.
+ * @return mixed
+ */
+function mrn_public_security_replace_wp_login_path_in_url( $url ) {
+	if ( mrn_public_security_login_protection_is_conflicted() ) {
+		return $url;
+	}
+
+	if ( ! is_string( $url ) || '' === trim( $url ) ) {
+		return $url;
+	}
+
+	$parts = mrn_public_security_parse_url( $url );
+
+	if ( ! is_array( $parts ) || ! isset( $parts['path'] ) || ! is_string( $parts['path'] ) ) {
+		return $url;
+	}
+
+	$current_path = untrailingslashit( rawurldecode( $parts['path'] ) );
+	$login_path   = untrailingslashit( mrn_public_security_get_wp_login_path() );
+
+	if ( $current_path !== $login_path ) {
+		return $url;
+	}
+
+	$parts['path'] = mrn_public_security_get_custom_login_path();
+
+	return mrn_public_security_unparse_url( $parts );
+}
+
+/**
+ * Rebuild a URL from parsed parts.
+ *
+ * @param array $parts Parsed URL parts.
+ * @return string
+ */
+function mrn_public_security_unparse_url( $parts ) {
+	if ( ! is_array( $parts ) ) {
+		return '';
+	}
+
+	$scheme   = isset( $parts['scheme'] ) && '' !== $parts['scheme'] ? $parts['scheme'] . '://' : '';
+	$user     = isset( $parts['user'] ) ? $parts['user'] : '';
+	$pass     = isset( $parts['pass'] ) && '' !== $parts['pass'] ? ':' . $parts['pass'] : '';
+	$auth     = '' !== $user ? $user . $pass . '@' : '';
+	$host     = isset( $parts['host'] ) ? $parts['host'] : '';
+	$port     = isset( $parts['port'] ) ? ':' . $parts['port'] : '';
+	$path     = isset( $parts['path'] ) ? $parts['path'] : '';
+	$query    = isset( $parts['query'] ) && '' !== $parts['query'] ? '?' . $parts['query'] : '';
+	$fragment = isset( $parts['fragment'] ) && '' !== $parts['fragment'] ? '#' . $parts['fragment'] : '';
+
+	if ( '' === $scheme && '' === $host && '' !== $path && '/' !== substr( $path, 0, 1 ) ) {
+		$path = '/' . $path;
+	}
+
+	return $scheme . $auth . $host . $port . $path . $query . $fragment;
+}
+
+/**
+ * Replace wp-login.php URLs inside plain-text messages.
+ *
+ * @param mixed $text Candidate text.
+ * @return mixed
+ */
+function mrn_public_security_replace_wp_login_path_in_text( $text ) {
+	if ( mrn_public_security_login_protection_is_conflicted() ) {
+		return $text;
+	}
+
+	if ( ! is_string( $text ) || '' === trim( $text ) ) {
+		return $text;
+	}
+
+	return preg_replace_callback( '#https?://[^\s<>"\']+#', 'mrn_public_security_replace_wp_login_path_in_text_callback', $text );
+}
+
+/**
+ * Callback used when rewriting wp-login.php URLs in plain text.
+ *
+ * @param array $matches Regex matches.
+ * @return string
+ */
+function mrn_public_security_replace_wp_login_path_in_text_callback( $matches ) {
+	if ( ! is_array( $matches ) || ! isset( $matches[0] ) ) {
+		return '';
+	}
+
+	return mrn_public_security_replace_wp_login_path_in_url( $matches[0] );
+}
+
+/**
+ * Filter login-related URLs to use the configured slug.
+ *
+ * @param mixed $url Candidate URL.
+ * @return mixed
+ */
+function mrn_public_security_filter_login_related_url( $url, ...$unused ) {
+	unset( $unused );
+
+	return mrn_public_security_replace_wp_login_path_in_url( $url );
+}
+
+/**
+ * Filter password-reset email messages to point at the custom login URL.
+ *
+ * @param mixed  $message    Message body.
+ * @param string $key        Reset key.
+ * @param string $user_login User login.
+ * @param mixed  $user_data  User data.
+ * @return mixed
+ */
+function mrn_public_security_filter_retrieve_password_message( $message, $key, $user_login, $user_data ) {
+	unset( $key, $user_login, $user_data );
+
+	return mrn_public_security_replace_wp_login_path_in_text( $message );
+}
+
+/**
+ * Log login slug configuration changes without exposing the slug itself.
+ *
+ * @param string $event Event label.
+ */
+function mrn_public_security_log_login_slug_change( $event ) {
+	if ( ! is_string( $event ) || '' === trim( $event ) ) {
+		$event = 'updated';
+	}
+
+	$enabled = apply_filters( 'mrn_public_security_log_login_slug_changes', true, $event );
+
+	if ( ! $enabled ) {
+		return;
+	}
+
+	error_log( 'MRN Public Security Hardening: login slug configuration ' . sanitize_key( $event ) . '.' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Intentional audit trail for state-changing security settings.
+}
+
+/**
+ * Check whether the login slug conflicts with an existing route or content.
+ *
+ * @param string $slug Login slug candidate.
+ * @return bool
+ */
+function mrn_public_security_login_slug_conflicts_with_existing_route( $slug ) {
+	if ( ! is_string( $slug ) || '' === $slug ) {
+		return false;
+	}
+
+	if ( mrn_public_security_is_reserved_login_slug( $slug ) ) {
+		return true;
+	}
+
+	if ( function_exists( 'url_to_postid' ) ) {
+		$post_id = absint( url_to_postid( home_url( '/' . trim( $slug, '/' ) . '/' ) ) );
+
+		if ( 0 !== $post_id ) {
+			return true;
+		}
+	}
+
+	if ( function_exists( 'get_page_by_path' ) && function_exists( 'get_post_types' ) ) {
+		$post_types = get_post_types( array( 'public' => true ), 'names' );
+
+		if ( is_array( $post_types ) && ! empty( $post_types ) ) {
+			$page = get_page_by_path( trim( $slug, '/' ), OBJECT, $post_types );
+
+			if ( $page instanceof WP_Post ) {
+				return true;
+			}
+		}
+	}
+
+	$rules = get_option( 'rewrite_rules' );
+
+	if ( ! is_array( $rules ) ) {
+		return false;
+	}
+
+	$prefix = '^' . $slug;
+
+	foreach ( array_keys( $rules ) as $regex ) {
+		if ( ! is_string( $regex ) || '' === $regex ) {
+			continue;
+		}
+
+		if ( 0 !== strpos( $regex, $prefix ) ) {
+			continue;
+		}
+
+		$next_character = substr( $regex, strlen( $prefix ), 1 );
+
+		if ( '' === $next_character ) {
+			return true;
+		}
+
+		if ( in_array( $next_character, array( '/', '$', '(', '?', '[', '.' ), true ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Validate a login slug candidate.
+ *
+ * @param mixed $candidate Candidate value.
+ * @return string|WP_Error
+ */
+function mrn_public_security_validate_login_slug( $candidate ) {
+	$slug = mrn_public_security_normalize_login_slug( $candidate );
+
+	if ( '' === $slug ) {
+		return new WP_Error(
+			'mrn_public_security_login_slug_empty',
+			__( 'Enter a login URL slug made of lowercase letters, numbers, and hyphens.', 'mrn-public-security-hardening' )
+		);
+	}
+
+	if ( ! mrn_public_security_is_structurally_valid_login_slug( $slug ) ) {
+		return new WP_Error(
+			'mrn_public_security_login_slug_invalid',
+			__( 'Use one path segment with lowercase letters, numbers, and hyphens only. Do not include spaces, slashes, or query strings.', 'mrn-public-security-hardening' )
+		);
+	}
+
+	if ( mrn_public_security_is_reserved_login_slug( $slug ) ) {
+		return new WP_Error(
+			'mrn_public_security_login_slug_reserved',
+			__( 'That login slug is reserved by WordPress or this plugin and cannot be used.', 'mrn-public-security-hardening' )
+		);
+	}
+
+	if ( mrn_public_security_login_slug_conflicts_with_existing_route( $slug ) ) {
+		return new WP_Error(
+			'mrn_public_security_login_slug_conflict',
+			__( 'That login slug already matches an existing page, post, rewrite rule, or endpoint.', 'mrn-public-security-hardening' )
+		);
+	}
+
+	return $slug;
+}
+
+/**
+ * Save a validated login slug.
+ *
+ * @param mixed $candidate Candidate slug.
+ * @return array|WP_Error
+ */
+function mrn_public_security_process_login_slug_save( $candidate ) {
+	$validated = mrn_public_security_validate_login_slug( $candidate );
+
+	if ( is_wp_error( $validated ) ) {
+		return $validated;
+	}
+
+	$raw_current = mrn_public_security_get_login_slug_raw();
+	$changed     = $raw_current !== $validated;
+
+	if ( $changed ) {
+		update_option( mrn_public_security_get_login_slug_option_name(), $validated );
+		mrn_public_security_log_login_slug_change( 'updated' );
+	}
+
+	return array(
+		'changed' => $changed,
+		'slug'    => $validated,
+	);
+}
+
+/**
+ * Reset the login slug back to the default site-level behavior.
+ *
+ * @return array
+ */
+function mrn_public_security_reset_login_slug_option() {
+	delete_option( mrn_public_security_get_login_slug_option_name() );
+	mrn_public_security_log_login_slug_change( 'reset' );
+
+	return array(
+		'changed' => true,
+		'slug'    => mrn_public_security_get_default_login_slug(),
+	);
+}
+
+/**
+ * Determine the login request action.
+ *
+ * @param array|null $request Optional request data for testing.
+ * @return string
+ */
+function mrn_public_security_get_login_request_action( $request = null ) {
+	if ( ! is_array( $request ) ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only request inspection for login routing.
+		$request = $_REQUEST;
+	}
+
+	if ( ! isset( $request['action'] ) || ! is_scalar( $request['action'] ) ) {
+		return '';
+	}
+
+	return sanitize_key( wp_unslash( (string) $request['action'] ) );
+}
+
+/**
+ * Determine whether the request is using a legacy login-only action.
+ *
+ * @param array|null $request Optional request data for testing.
+ * @return bool
+ */
+function mrn_public_security_should_allow_legacy_login_request( $request = null ) {
+	if ( ! is_array( $request ) ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only request inspection for login routing.
+		$request = $_REQUEST;
+	}
+
+	$action  = mrn_public_security_get_login_request_action( $request );
+	$allowed = apply_filters(
+		'mrn_public_security_allowed_legacy_login_actions',
+		array(
+			'confirmaction',
+			'confirm_admin_email',
+			'logout',
+			'lostpassword',
+			'postpass',
+			'register',
+			'retrievepassword',
+			'resetpass',
+			'rp',
+		)
+	);
+
+	if ( is_string( $action ) && '' !== $action && is_array( $allowed ) && in_array( $action, $allowed, true ) ) {
+		return true;
+	}
+
+	if ( isset( $request['checkemail'] ) && is_scalar( $request['checkemail'] ) && '' !== trim( (string) $request['checkemail'] ) ) {
+		return true;
+	}
+
+	if ( isset( $request['loggedout'] ) && is_scalar( $request['loggedout'] ) && '' !== trim( (string) $request['loggedout'] ) ) {
+		return true;
+	}
+
+	if ( isset( $request['reauth'] ) && is_scalar( $request['reauth'] ) && '' !== trim( (string) $request['reauth'] ) ) {
+		return true;
+	}
+
+	if ( isset( $request['interim-login'] ) && is_scalar( $request['interim-login'] ) && '' !== trim( (string) $request['interim-login'] ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Check whether the current request path points to the custom login slug.
+ *
+ * @param string|null $request_path Optional path for testing.
+ * @return bool
+ */
+function mrn_public_security_is_custom_login_request( $request_path = null ) {
+	if ( mrn_public_security_login_protection_is_conflicted() ) {
+		return false;
+	}
+
+	if ( null === $request_path ) {
+		$request_path = mrn_public_security_get_request_path();
+	}
+
+	if ( ! is_string( $request_path ) || '' === $request_path ) {
+		return false;
+	}
+
+	return untrailingslashit( rawurldecode( $request_path ) ) === untrailingslashit( mrn_public_security_get_custom_login_path() );
+}
+
+/**
+ * Check whether the current request path points to wp-login.php.
+ *
+ * @param string|null $request_path Optional path for testing.
+ * @return bool
+ */
+function mrn_public_security_is_wp_login_request( $request_path = null ) {
+	if ( null === $request_path ) {
+		$request_path = mrn_public_security_get_request_path();
+	}
+
+	if ( ! is_string( $request_path ) || '' === $request_path ) {
+		return false;
+	}
+
+	return untrailingslashit( rawurldecode( $request_path ) ) === untrailingslashit( mrn_public_security_get_wp_login_path() );
+}
+
+/**
+ * Check whether a direct wp-login.php request should be blocked.
+ *
+ * @param string|null $request_path Optional path for testing.
+ * @param array|null  $request      Optional request data for testing.
+ * @return bool
+ */
+function mrn_public_security_should_block_default_login_request( $request_path = null, $request = null ) {
+	if ( mrn_public_security_login_protection_is_conflicted() ) {
+		return false;
+	}
+
+	if ( ! mrn_public_security_is_wp_login_request( $request_path ) ) {
+		return false;
+	}
+
+	if ( mrn_public_security_should_allow_legacy_login_request( $request ) ) {
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Block direct requests to wp-login.php before WordPress can redirect them.
+ *
+ * @param bool $return_only Optional test mode that returns the response data.
+ * @return array|null
+ */
+function mrn_public_security_block_default_login_request( $return_only = false ) {
+	if ( ! mrn_public_security_should_block_default_login_request() ) {
+		return null;
+	}
+
+	$response = array(
+		'status'  => 404,
+		'message' => __( 'Not found.', 'mrn-public-security-hardening' ),
+	);
+
+	if ( $return_only ) {
+		return $response;
+	}
+
+	nocache_headers();
+	status_header( 404 );
+	wp_die( esc_html( $response['message'] ), '', array( 'response' => absint( $response['status'] ) ) );
+}
+// The callback returns response data only in its explicit test mode.
+// @phpstan-ignore return.void
+add_action( 'init', 'mrn_public_security_block_default_login_request', 0 );
+
+/**
+ * Load the normal WordPress login screen for the custom slug.
+ *
+ * @param bool $exit Optional test mode that skips the final exit.
+ * @return bool
+ */
+function mrn_public_security_maybe_serve_custom_login_request( $exit = true ) {
+	if ( ! mrn_public_security_is_custom_login_request() ) {
+		return false;
+	}
+
+	require ABSPATH . 'wp-login.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant -- Core login screen handoff for the custom login slug.
+
+	if ( $exit ) {
+		exit;
+	}
+
+	return true;
+}
+// The callback returns a boolean only in its explicit test mode.
+// @phpstan-ignore return.void
+add_action( 'parse_request', 'mrn_public_security_maybe_serve_custom_login_request', 0 );
+
+/**
+ * Handle login slug save requests from the admin screen.
+ *
+ * @param bool $exit Optional test mode that skips the final exit.
+ * @return string|null
+ */
+function mrn_public_security_handle_login_slug_save( $exit = true ) {
+	if ( ! current_user_can( mrn_public_security_admin_capability() ) ) {
+		wp_die( esc_html__( 'Sorry, you are not allowed to access this page.', 'mrn-public-security-hardening' ) );
+	}
+
+	check_admin_referer( 'mrn_public_security_save_login_slug', 'mrn_public_security_login_slug_nonce' );
+
+	$submitted_slug = isset( $_POST['mrn_public_security_login_slug'] ) ? sanitize_text_field( wp_unslash( $_POST['mrn_public_security_login_slug'] ) ) : '';
+	$result         = mrn_public_security_process_login_slug_save( $submitted_slug );
+
+	if ( is_wp_error( $result ) ) {
+		add_settings_error(
+			mrn_public_security_get_login_slug_option_name(),
+			$result->get_error_code(),
+			$result->get_error_message(),
+			'error'
+		);
+	} else {
+		add_settings_error(
+			mrn_public_security_get_login_slug_option_name(),
+			'mrn_public_security_login_slug_updated',
+			$result['changed'] ? __( 'Login URL updated.', 'mrn-public-security-hardening' ) : __( 'Login URL already used that slug.', 'mrn-public-security-hardening' ),
+			'updated'
+		);
+	}
+
+	set_transient( 'settings_errors', get_settings_errors(), 30 );
+
+	$redirect_to = isset( $_POST['redirect_to'] ) ? esc_url_raw( wp_unslash( $_POST['redirect_to'] ) ) : '';
+	$fallback    = function_exists( 'menu_page_url' ) ? menu_page_url( 'mrn-public-security-hardening', false ) : '';
+
+	if ( ! is_string( $fallback ) || '' === trim( $fallback ) ) {
+		$fallback = admin_url( 'admin.php?page=mrn-public-security-hardening' );
+	}
+
+	$target = wp_validate_redirect( $redirect_to, $fallback );
+
+	wp_safe_redirect( $target );
+
+	if ( $exit ) {
+		exit;
+	}
+
+	return $target;
+}
+// The callback returns a redirect only in its explicit test mode.
+// @phpstan-ignore return.void
+add_action( 'admin_post_mrn_public_security_save_login_slug', 'mrn_public_security_handle_login_slug_save' );
+
+add_filter( 'site_url', 'mrn_public_security_filter_login_related_url', 10, 4 );
+add_filter( 'network_site_url', 'mrn_public_security_filter_login_related_url', 10, 4 );
+add_filter( 'login_url', 'mrn_public_security_filter_login_related_url', 10, 3 );
+add_filter( 'lostpassword_url', 'mrn_public_security_filter_login_related_url', 10, 2 );
+add_filter( 'register_url', 'mrn_public_security_filter_login_related_url', 10, 1 );
+add_filter( 'retrieve_password_message', 'mrn_public_security_filter_retrieve_password_message', 10, 4 );
+
+if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( 'WP_CLI' ) ) {
+	\WP_CLI::add_command( 'mrn public-security reset-login-slug', 'mrn_public_security_cli_reset_login_slug' );
+}
+
+/**
+ * Reset the login slug via WP-CLI.
+ */
+function mrn_public_security_cli_reset_login_slug() {
+	mrn_public_security_reset_login_slug_option();
+
+	if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( 'WP_CLI' ) ) {
+		\WP_CLI::success( 'Login URL reset to the default slug.' );
+	}
+}
+
+/**
  * Get the admin capability required to view the status page.
  *
  * @return string
@@ -951,8 +1834,8 @@ function mrn_public_security_enqueue_admin_assets( $hook_suffix ) {
 	wp_enqueue_style( 'mrn-public-security-admin' );
 	wp_add_inline_style(
 		'mrn-public-security-admin',
-		'.mrn-public-security-wrap{max-width:1120px}.mrn-public-security-intro{color:#50575e;max-width:760px}.mrn-public-security-panel{background:#fff;border:1px solid #c3c4c7;margin-top:18px}.mrn-public-security-panel__header{align-items:center;border-bottom:1px solid #dcdcde;display:flex;gap:12px;justify-content:space-between;padding:12px 14px}.mrn-public-security-panel__header h2{font-size:14px;line-height:1.4;margin:0}.mrn-public-security-table{border:0}.mrn-public-security-table th,.mrn-public-security-table td{padding:12px 14px;vertical-align:top}.mrn-public-security-table th{font-weight:600;width:210px}.mrn-public-security-table td:nth-child(2){width:190px}.mrn-public-security-table code{word-break:break-word}.mrn-public-security-status{border:1px solid transparent;border-radius:4px;display:inline-block;font-size:12px;font-weight:600;line-height:1.5;padding:1px 7px;white-space:nowrap}.mrn-public-security-status--good{background:#edfaef;border-color:#b8e6bf;color:#0a6b22}.mrn-public-security-status--warn{background:#fcf9e8;border-color:#e6d88a;color:#755100}.mrn-public-security-status--off{background:#f6f7f7;border-color:#dcdcde;color:#50575e}.mrn-public-security-status--info{background:#eef5fb;border-color:#b8d6ee;color:#0a4b78}.mrn-public-security-detail{color:#3c434a}.mrn-public-security-muted{color:#646970}.mrn-public-security-actions{align-items:center;display:flex;gap:10px;justify-content:flex-end}.mrn-public-security-copy-status{color:#2271b1;min-height:20px}.mrn-public-security-prompt-panel{padding:14px}.mrn-public-security-prompt-details{margin-top:12px}.mrn-public-security-prompt-details summary{cursor:pointer;font-weight:600}.mrn-public-security-prompt{font-family:Menlo,Consolas,monospace;font-size:12px;line-height:1.5;margin-top:10px;min-height:260px;width:100%}@media screen and (max-width:782px){.mrn-public-security-panel__header,.mrn-public-security-actions{align-items:flex-start;display:block}.mrn-public-security-actions .button{margin-bottom:8px}.mrn-public-security-table thead{display:none}.mrn-public-security-table tr{display:block}.mrn-public-security-table th,.mrn-public-security-table td{box-sizing:border-box;display:block;width:100%!important}.mrn-public-security-table td{padding-top:4px}.mrn-public-security-table th{padding-bottom:4px}}'
-	);
+			'.mrn-public-security-wrap{max-width:1120px}.mrn-public-security-intro{color:#50575e;max-width:760px}.mrn-public-security-panel{background:#fff;border:1px solid #c3c4c7;margin-top:18px}.mrn-public-security-panel__header{align-items:center;border-bottom:1px solid #dcdcde;display:flex;gap:12px;justify-content:space-between;padding:12px 14px}.mrn-public-security-panel__header h2{font-size:14px;line-height:1.4;margin:0}.mrn-public-security-table{border:0}.mrn-public-security-table th,.mrn-public-security-table td{padding:12px 14px;vertical-align:top}.mrn-public-security-table th{font-weight:600;width:210px}.mrn-public-security-table td:nth-child(2){width:190px}.mrn-public-security-table code{word-break:break-word}.mrn-public-security-status{border:1px solid transparent;border-radius:4px;display:inline-block;font-size:12px;font-weight:600;line-height:1.5;padding:1px 7px;white-space:nowrap}.mrn-public-security-status--good{background:#edfaef;border-color:#b8e6bf;color:#0a6b22}.mrn-public-security-status--warn{background:#fcf9e8;border-color:#e6d88a;color:#755100}.mrn-public-security-status--off{background:#f6f7f7;border-color:#dcdcde;color:#50575e}.mrn-public-security-status--info{background:#eef5fb;border-color:#b8d6ee;color:#0a4b78}.mrn-public-security-detail{color:#3c434a}.mrn-public-security-muted{color:#646970}.mrn-public-security-actions{align-items:center;display:flex;gap:10px;justify-content:flex-end}.mrn-public-security-copy-status{color:#2271b1;min-height:20px}.mrn-public-security-login-current{margin:0 0 14px}.mrn-public-security-login-current code{word-break:break-word}.mrn-public-security-prompt-panel{padding:14px}.mrn-public-security-prompt-details{margin-top:12px}.mrn-public-security-prompt-details summary{cursor:pointer;font-weight:600}.mrn-public-security-prompt{font-family:Menlo,Consolas,monospace;font-size:12px;line-height:1.5;margin-top:10px;min-height:260px;width:100%}@media screen and (max-width:782px){.mrn-public-security-panel__header,.mrn-public-security-actions{align-items:flex-start;display:block}.mrn-public-security-actions .button{margin-bottom:8px}.mrn-public-security-table thead{display:none}.mrn-public-security-table tr{display:block}.mrn-public-security-table th,.mrn-public-security-table td{box-sizing:border-box;display:block;width:100%!important}.mrn-public-security-table td{padding-top:4px}.mrn-public-security-table th{padding-bottom:4px}}'
+		);
 
 	wp_register_script( 'mrn-public-security-admin', '', array(), MRN_PUBLIC_SECURITY_HARDENING_VERSION, true );
 	wp_enqueue_script( 'mrn-public-security-admin' );
@@ -1113,9 +1996,19 @@ function mrn_public_security_render_admin_page() {
 	$oembed_enabled        = mrn_public_security_oembed_strip_author_enabled();
 	$rest_guard_enabled    = mrn_public_security_rest_guard_enabled();
 	$security_txt_enabled  = mrn_public_security_security_txt_enabled();
+	$login_state           = mrn_public_security_get_login_slug_state();
+	$login_slug            = $login_state['effective'];
+	$login_path            = mrn_public_security_get_custom_login_path( $login_slug );
+	$login_default_slug    = mrn_public_security_get_default_login_slug();
+	$login_input_value     = isset( $login_state['display_value'] ) && is_string( $login_state['display_value'] ) ? $login_state['display_value'] : $login_slug;
+	$login_page_url        = function_exists( 'menu_page_url' ) ? menu_page_url( 'mrn-public-security-hardening', false ) : '';
 
 	if ( ! is_string( $author_redirect_target ) || '' === $author_redirect_target ) {
 		$author_redirect_target = home_url( '/' );
+	}
+
+	if ( ! is_string( $login_page_url ) || '' === trim( $login_page_url ) ) {
+		$login_page_url = admin_url( 'admin.php?page=mrn-public-security-hardening' );
 	}
 
 	if ( $author_redirect ) {
@@ -1167,18 +2060,67 @@ function mrn_public_security_render_admin_page() {
 		'<code>' . esc_html( '' !== $expires ? $expires : __( 'Not set', 'mrn-public-security-hardening' ) ) . '</code>'
 	);
 
-	$health_detail = sprintf(
-		/* translators: 1: health check slug, 2: page state. */
-		esc_html__( 'Slug: %1$s', 'mrn-public-security-hardening' ) . '<br>' . esc_html__( 'Page: %2$s', 'mrn-public-security-hardening' ) . '<br><span class="mrn-public-security-muted">' . esc_html__( 'Robots handling: noindex, nofollow, noarchive; robots.txt disallow; sitemap exclusion.', 'mrn-public-security-hardening' ) . '</span>',
-		'<code>' . esc_html( $health_slug ) . '</code>',
-		'<code>' . esc_html( $health_page ? __( 'Found', 'mrn-public-security-hardening' ) : __( 'Not found', 'mrn-public-security-hardening' ) ) . '</code>'
+		$health_detail = sprintf(
+			/* translators: 1: health check slug, 2: page state. */
+			esc_html__( 'Slug: %1$s', 'mrn-public-security-hardening' ) . '<br>' . esc_html__( 'Page: %2$s', 'mrn-public-security-hardening' ) . '<br><span class="mrn-public-security-muted">' . esc_html__( 'Robots handling: noindex, nofollow, noarchive; robots.txt disallow; sitemap exclusion.', 'mrn-public-security-hardening' ) . '</span>',
+			'<code>' . esc_html( $health_slug ) . '</code>',
+			'<code>' . esc_html( $health_page ? __( 'Found', 'mrn-public-security-hardening' ) : __( 'Not found', 'mrn-public-security-hardening' ) ) . '</code>'
+		);
+
+	$login_status_label = __( 'Default', 'mrn-public-security-hardening' );
+	$login_status       = 'info';
+
+	switch ( $login_state['source'] ) {
+		case 'plugin-conflict':
+			$login_status_label = __( 'Disabled: competing plugin', 'mrn-public-security-hardening' );
+			$login_status       = 'warn';
+			break;
+		case 'custom':
+			$login_status_label = __( 'Saved', 'mrn-public-security-hardening' );
+			$login_status       = 'good';
+			break;
+		case 'conflict':
+			$login_status_label = __( 'Conflict', 'mrn-public-security-hardening' );
+			$login_status       = 'warn';
+			break;
+		case 'invalid':
+			$login_status_label = __( 'Fallback', 'mrn-public-security-hardening' );
+			$login_status       = 'warn';
+			break;
+	}
+
+	$login_detail = sprintf(
+		/* translators: 1: login path, 2: active slug source, 3: default login slug. */
+		esc_html__( 'Current path: %1$s', 'mrn-public-security-hardening' ) . '<br>' . esc_html__( 'Source: %2$s', 'mrn-public-security-hardening' ) . '<br>' . esc_html__( 'Default: %3$s', 'mrn-public-security-hardening' ),
+		'<code>' . esc_html( $login_path ) . '</code>',
+		'<code>' . esc_html( $login_status_label ) . '</code>',
+		'<code>' . esc_html( $login_default_slug ) . '</code>'
 	);
-	?>
-	<div class="wrap mrn-public-security-wrap">
-		<h1><?php echo esc_html( mrn_public_security_admin_page_title() ); ?></h1>
-		<p class="mrn-public-security-intro">
-			<?php esc_html_e( 'Read-only status for shared public hardening behavior. Configure site exceptions with filters, not stored options.', 'mrn-public-security-hardening' ); ?>
-		</p>
+
+	if ( ! empty( $login_state['conflict'] ) ) {
+		$login_detail .= '<br><span class="mrn-public-security-muted">' . esc_html__( 'This slug currently overlaps with existing content or a rewrite rule. Choose a different slug to avoid ambiguity.', 'mrn-public-security-hardening' ) . '</span>';
+	}
+
+	if ( ! empty( $login_state['plugin'] ) && is_array( $login_state['plugin'] ) ) {
+		$plugin_name = isset( $login_state['plugin']['name'] ) ? (string) $login_state['plugin']['name'] : '';
+		$plugin_file = isset( $login_state['plugin']['file'] ) ? (string) $login_state['plugin']['file'] : '';
+		$login_detail .= '<br><span class="mrn-public-security-muted">' . sprintf(
+			/* translators: 1: plugin name, 2: plugin file. */
+			esc_html__( 'Login URL protection is disabled while %1$s is active (%2$s). Deactivate the competing plugin before enabling this feature.', 'mrn-public-security-hardening' ),
+			'<strong>' . esc_html( $plugin_name ) . '</strong>',
+			'<code>' . esc_html( $plugin_file ) . '</code>'
+		) . '</span>';
+	}
+
+	if ( ! empty( $login_state['stored_exists'] ) && empty( $login_state['stored_valid'] ) ) {
+		$login_detail .= '<br><span class="mrn-public-security-muted">' . esc_html__( 'The stored value is invalid and the plugin is falling back to the default.', 'mrn-public-security-hardening' ) . '</span>';
+	}
+		?>
+		<div class="wrap mrn-public-security-wrap">
+			<h1><?php echo esc_html( mrn_public_security_admin_page_title() ); ?></h1>
+			<p class="mrn-public-security-intro">
+				<?php esc_html_e( 'Status for shared public hardening behavior and the site-specific login URL setting.', 'mrn-public-security-hardening' ); ?>
+			</p>
 
 		<div class="mrn-public-security-panel">
 			<div class="mrn-public-security-panel__header">
@@ -1238,34 +2180,85 @@ function mrn_public_security_render_admin_page() {
 						$health_detail
 					);
 					?>
-				</tbody>
-			</table>
-		</div>
+					</tbody>
+				</table>
+			</div>
 
-		<div class="mrn-public-security-panel">
-			<div class="mrn-public-security-panel__header">
-				<h2><?php esc_html_e( 'Per-site Rollout Prompt', 'mrn-public-security-hardening' ); ?></h2>
-				<div class="mrn-public-security-actions">
-					<button
-						type="button"
-						class="button button-primary"
-						data-mrn-public-security-copy="mrn-public-security-prompt"
-						data-success-message="<?php echo esc_attr__( 'Prompt copied.', 'mrn-public-security-hardening' ); ?>"
-					>
-						<?php esc_html_e( 'Copy prompt', 'mrn-public-security-hardening' ); ?>
-					</button>
-					<span id="mrn-public-security-copy-status" class="mrn-public-security-copy-status" aria-live="polite"></span>
+			<div class="mrn-public-security-panel">
+				<div class="mrn-public-security-panel__header">
+					<h2><?php esc_html_e( 'Login URL', 'mrn-public-security-hardening' ); ?></h2>
+					<?php mrn_public_security_render_admin_status_badge( $login_status, $login_status_label ); ?>
+				</div>
+				<div class="mrn-public-security-prompt-panel">
+					<?php settings_errors( mrn_public_security_get_login_slug_option_name() ); ?>
+					<p class="description"><?php esc_html_e( 'Set the custom login path slug for this site. WordPress-generated login, logout, lost password, registration, and reset links will use it.', 'mrn-public-security-hardening' ); ?></p>
+					<p class="mrn-public-security-login-current"><?php echo wp_kses_post( $login_detail ); ?></p>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<?php wp_nonce_field( 'mrn_public_security_save_login_slug', 'mrn_public_security_login_slug_nonce' ); ?>
+						<input type="hidden" name="action" value="mrn_public_security_save_login_slug" />
+						<input type="hidden" name="redirect_to" value="<?php echo esc_attr( $login_page_url ); ?>" />
+						<table class="form-table" role="presentation">
+							<tr>
+								<th scope="row">
+									<label for="mrn-public-security-login-slug"><?php esc_html_e( 'Path slug', 'mrn-public-security-hardening' ); ?></label>
+								</th>
+								<td>
+									<input
+										type="text"
+										class="regular-text code"
+										id="mrn-public-security-login-slug"
+										name="mrn_public_security_login_slug"
+										value="<?php echo esc_attr( $login_input_value ); ?>"
+										autocomplete="off"
+										autocapitalize="none"
+										spellcheck="false"
+										pattern="[a-z0-9-]+"
+										aria-describedby="mrn-public-security-login-slug-help"
+									/>
+									<p id="mrn-public-security-login-slug-help" class="description">
+										<?php esc_html_e( 'Use one lowercase path segment made of letters, numbers, and hyphens only. Do not use spaces, slashes, query strings, or reserved WordPress paths.', 'mrn-public-security-hardening' ); ?>
+									</p>
+									<p class="description">
+										<?php
+										printf(
+											/* translators: %s: WP-CLI command to reset the login slug. */
+											esc_html__( 'Recovery: run %s if you ever need to restore the default slug.', 'mrn-public-security-hardening' ),
+											'<code>wp mrn public-security reset-login-slug</code>'
+										);
+										?>
+									</p>
+								</td>
+							</tr>
+						</table>
+						<?php submit_button( __( 'Save Login URL', 'mrn-public-security-hardening' ) ); ?>
+					</form>
 				</div>
 			</div>
-			<div class="mrn-public-security-prompt-panel">
-				<p class="description"><?php esc_html_e( 'Use this to finish site-specific setup and runtime validation.', 'mrn-public-security-hardening' ); ?></p>
-				<details class="mrn-public-security-prompt-details">
-					<summary><?php esc_html_e( 'Preview prompt', 'mrn-public-security-hardening' ); ?></summary>
-					<label class="screen-reader-text" for="mrn-public-security-prompt"><?php esc_html_e( 'Per-site rollout prompt', 'mrn-public-security-hardening' ); ?></label>
-					<textarea id="mrn-public-security-prompt" class="large-text code mrn-public-security-prompt" readonly><?php echo esc_textarea( $prompt ); ?></textarea>
-				</details>
+
+				<div class="mrn-public-security-panel">
+					<div class="mrn-public-security-panel__header">
+						<h2><?php esc_html_e( 'Per-site Rollout Prompt', 'mrn-public-security-hardening' ); ?></h2>
+						<div class="mrn-public-security-actions">
+							<button
+								type="button"
+								class="button button-primary"
+								data-mrn-public-security-copy="mrn-public-security-prompt"
+								data-success-message="<?php echo esc_attr__( 'Prompt copied.', 'mrn-public-security-hardening' ); ?>"
+							>
+								<?php esc_html_e( 'Copy prompt', 'mrn-public-security-hardening' ); ?>
+							</button>
+							<span id="mrn-public-security-copy-status" class="mrn-public-security-copy-status" aria-live="polite"></span>
+						</div>
+					</div>
+					<div class="mrn-public-security-prompt-panel">
+					<p class="description"><?php esc_html_e( 'Use this to finish site-specific setup and runtime validation.', 'mrn-public-security-hardening' ); ?></p>
+					<details class="mrn-public-security-prompt-details">
+						<summary><?php esc_html_e( 'Preview prompt', 'mrn-public-security-hardening' ); ?></summary>
+						<label class="screen-reader-text" for="mrn-public-security-prompt"><?php esc_html_e( 'Per-site rollout prompt', 'mrn-public-security-hardening' ); ?></label>
+						<textarea id="mrn-public-security-prompt" class="large-text code mrn-public-security-prompt" readonly><?php echo esc_textarea( $prompt ); ?></textarea>
+					</details>
+				</div>
 			</div>
 		</div>
-	</div>
 	<?php
 }
