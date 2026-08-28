@@ -373,9 +373,34 @@ function mrn_base_stack_filter_resource_content_list_permalink( $permalink, $ite
 
 	$file = mrn_base_stack_get_resource_file( $item_post->ID );
 
-	return $file ? mrn_base_stack_get_resource_download_url( $item_post->ID ) : $permalink;
+	return $file ? mrn_base_stack_get_resource_file_url( $item_post->ID ) : $permalink;
 }
 add_filter( 'mrn_base_stack_content_list_item_permalink', 'mrn_base_stack_filter_resource_content_list_permalink', 10, 2 );
+
+/**
+ * Open PDF resource links in a new tab.
+ *
+ * @param array<string, string> $attributes Link attributes.
+ * @param WP_Post               $item_post Listed post.
+ * @return array<string, string>
+ */
+function mrn_base_stack_filter_resource_content_list_link_attributes( $attributes, $item_post ) {
+	if ( ! is_array( $attributes ) || ! ( $item_post instanceof WP_Post ) || 'resource' !== $item_post->post_type ) {
+		return $attributes;
+	}
+
+	$file = mrn_base_stack_get_resource_file( $item_post->ID );
+
+	if ( ! is_array( $file ) || 'application/pdf' !== strtolower( (string) ( $file['mime_type'] ?? '' ) ) ) {
+		return $attributes;
+	}
+
+	$attributes['target'] = '_blank';
+	$attributes['rel']    = 'noopener';
+
+	return $attributes;
+}
+add_filter( 'mrn_base_stack_content_list_item_link_attributes', 'mrn_base_stack_filter_resource_content_list_link_attributes', 10, 2 );
 
 /**
  * Prefix a resource's Reference Content list-item title with its file-type icon.

@@ -2606,6 +2606,34 @@ function mrn_base_stack_get_content_list_item_permalink( WP_Post $item_post, arr
 }
 
 /**
+ * Build safe attributes for Content-list item links.
+ *
+ * @param WP_Post              $item_post Post to link.
+ * @param array<string, mixed> $args      Render arguments.
+ * @return string
+ */
+function mrn_base_stack_get_content_list_item_link_attributes( WP_Post $item_post, array $args = array() ) {
+	$attributes = apply_filters( 'mrn_base_stack_content_list_item_link_attributes', array(), $item_post, $args );
+
+	if ( ! is_array( $attributes ) ) {
+		return '';
+	}
+
+	$allowed = array( 'target', 'rel' );
+	$markup  = array();
+
+	foreach ( $allowed as $attribute ) {
+		if ( empty( $attributes[ $attribute ] ) || ! is_scalar( $attributes[ $attribute ] ) ) {
+			continue;
+		}
+
+		$markup[] = sprintf( '%s="%s"', $attribute, esc_attr( (string) $attributes[ $attribute ] ) );
+	}
+
+	return implode( ' ', $markup );
+}
+
+/**
  * Prepare testimonial body HTML for Content row rendering.
  *
  * @param string $content Testimonial content.
@@ -2818,6 +2846,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 	$display_mode      = mrn_base_stack_normalize_content_list_display_mode( $args['display_mode'] ?? '' );
 	$mode_config       = '' !== $display_mode ? mrn_base_stack_get_content_list_display_mode_config( $display_mode ) : mrn_base_stack_get_content_list_legacy_mode_config( $args );
 	$permalink         = mrn_base_stack_get_content_list_item_permalink( $item_post, $args );
+	$link_attributes   = mrn_base_stack_get_content_list_item_link_attributes( $item_post, $args );
 	$item_title        = get_the_title( $item_post );
 	$title_icon_html   = (string) apply_filters( 'mrn_base_stack_content_list_item_title_icon_html', '', $item_post, $args );
 	$uses_row_settings = '' === $display_mode;
@@ -2856,7 +2885,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 							<span class="mrn-content-list-row__title-icon" aria-hidden="true"><?php echo $title_icon_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built internally from a trusted FA class allowlist. ?></span>
 						<?php endif; ?>
 						<?php if ( '' !== $permalink ) : ?>
-							<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
+							<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"<?php echo '' !== $link_attributes ? ' ' . $link_attributes : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by mrn_base_stack_get_content_list_item_link_attributes(). ?>><?php echo esc_html( $item_title ); ?></a>
 						<?php else : ?>
 							<?php echo esc_html( $item_title ); ?>
 						<?php endif; ?>
@@ -2882,7 +2911,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 								<?php $head_open = false; ?>
 							<?php endif; ?>
 							<?php if ( 'featured_image' === $field_key && $show_image && '' !== $permalink ) : ?>
-								<a class="mrn-content-list-row__media mrn-ui__media mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>">
+								<a class="mrn-content-list-row__media mrn-ui__media mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"<?php echo '' !== $link_attributes ? ' ' . $link_attributes : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by mrn_base_stack_get_content_list_item_link_attributes(). ?>>
 								<?php echo get_the_post_thumbnail( $item_post, 'medium_large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</a>
 						<?php elseif ( 'featured_image' === $field_key && $show_image ) : ?>
@@ -2897,7 +2926,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 										<span class="mrn-content-list-row__title-icon" aria-hidden="true"><?php echo $title_icon_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built internally from a trusted FA class allowlist. ?></span>
 									<?php endif; ?>
 									<?php if ( '' !== $permalink ) : ?>
-										<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
+										<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"<?php echo '' !== $link_attributes ? ' ' . $link_attributes : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by mrn_base_stack_get_content_list_item_link_attributes(). ?>><?php echo esc_html( $item_title ); ?></a>
 								<?php else : ?>
 									<?php echo esc_html( $item_title ); ?>
 								<?php endif; ?>
@@ -2906,7 +2935,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 								<p class="mrn-content-list-row__excerpt mrn-ui__text"><?php echo esc_html( $item_excerpt ); ?></p>
 							<?php elseif ( 'read_more' === $field_key && $show_read_more ) : ?>
 									<p class="mrn-content-list-row__link">
-										<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( '' !== $read_more_label ? $read_more_label : 'Read More' ); ?></a>
+										<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"<?php echo '' !== $link_attributes ? ' ' . $link_attributes : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by mrn_base_stack_get_content_list_item_link_attributes(). ?>><?php echo esc_html( '' !== $read_more_label ? $read_more_label : 'Read More' ); ?></a>
 							</p>
 						<?php endif; ?>
 					<?php endforeach; ?>
