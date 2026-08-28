@@ -2736,7 +2736,7 @@ function mrn_base_stack_render_content_list_testimonial_item( WP_Post $item_post
 	$content           = isset( $testimonial['content'] ) ? (string) $testimonial['content'] : '';
 	$quote_html        = mrn_base_stack_get_content_list_testimonial_body_html( $content );
 	$show_media        = ( ! $uses_row_settings || ! empty( $args['show_featured_image'] ) ) && ! empty( $mode_config['allows_image'] );
-	$show_date         = ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
+	$show_date         = 'resource' !== get_post_type( $item_post ) && ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
 	$show_quote        = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] ) && '' !== $quote_html;
 	$show_read_more    = ( ! $uses_row_settings || ! empty( $args['show_read_more'] ) ) && ! empty( $mode_config['allows_read_more'] ) && '' !== $permalink;
 	$read_more_label   = isset( $args['read_more_label'] ) ? trim( (string) $args['read_more_label'] ) : 'Read More';
@@ -2850,7 +2850,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 	$item_title        = get_the_title( $item_post );
 	$title_icon_html   = (string) apply_filters( 'mrn_base_stack_content_list_item_title_icon_html', '', $item_post, $args );
 	$uses_row_settings = '' === $display_mode;
-	$show_date         = ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
+	$show_date         = 'resource' !== get_post_type( $item_post ) && ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
 	$show_excerpt      = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] );
 	$show_read_more    = ( ! $uses_row_settings || ! empty( $args['show_read_more'] ) ) && ! empty( $mode_config['allows_read_more'] ) && '' !== $permalink;
 	$show_image        = ( ! $uses_row_settings || ! empty( $args['show_featured_image'] ) ) && ! empty( $mode_config['allows_image'] ) && has_post_thumbnail( $item_post );
