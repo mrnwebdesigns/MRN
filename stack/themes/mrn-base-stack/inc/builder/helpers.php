@@ -2819,8 +2819,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 
 	$display_mode      = mrn_base_stack_normalize_content_list_display_mode( $args['display_mode'] ?? '' );
 	$mode_config       = '' !== $display_mode ? mrn_base_stack_get_content_list_display_mode_config( $display_mode ) : mrn_base_stack_get_content_list_legacy_mode_config( $args );
-	$permalink         = get_permalink( $item_post );
-	$permalink         = (string) apply_filters( 'mrn_base_stack_content_list_item_permalink', $permalink, $item_post, $args );
+	$permalink         = mrn_base_stack_get_content_list_item_permalink( $item_post, $args );
 	$item_title        = get_the_title( $item_post );
 	$title_icon_html   = (string) apply_filters( 'mrn_base_stack_content_list_item_title_icon_html', '', $item_post, $args );
 	$uses_row_settings = '' === $display_mode;
