@@ -2589,10 +2589,6 @@ function mrn_base_stack_get_content_list_item_permalink( WP_Post $item_post, arr
 	}
 
 	$post_type_object = get_post_type_object( $item_post->post_type );
-	if ( $post_type_object instanceof WP_Post_Type && empty( $post_type_object->publicly_queryable ) ) {
-		return '';
-	}
-
 	if (
 		'team_member' === $item_post->post_type
 		&& function_exists( 'mrn_base_stack_team_member_has_public_profile' )
@@ -2601,7 +2597,9 @@ function mrn_base_stack_get_content_list_item_permalink( WP_Post $item_post, arr
 		return '';
 	}
 
-	$permalink = get_permalink( $item_post );
+	$permalink = $post_type_object instanceof WP_Post_Type && empty( $post_type_object->publicly_queryable )
+		? ''
+		: get_permalink( $item_post );
 	$permalink = (string) apply_filters( 'mrn_base_stack_content_list_item_permalink', $permalink, $item_post, $args );
 
 	return is_string( $permalink ) ? $permalink : '';
