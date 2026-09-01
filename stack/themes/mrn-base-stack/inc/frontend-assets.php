@@ -198,6 +198,45 @@ function mrn_base_stack_get_layout_style_keys_for_post( $post_id ) {
 }
 
 /**
+ * Collect icon-font needs from rendered social links.
+ *
+ * The caller must pass the slot visibility state that matches the current
+ * request. When the social menu is disabled, configured rows should not
+ * trigger unused icon-font requests.
+ *
+ * @param bool                    $should_render    Whether the social slot will render.
+ * @param mixed                   $social_links     Social link rows from Config Helper.
+ * @param bool                    $needs_fontawesome Whether Font Awesome is needed.
+ * @param bool                    $needs_dashicons   Whether Dashicons is needed.
+ * @return void
+ */
+function mrn_base_stack_collect_rendered_social_link_asset_needs( $should_render, $social_links, &$needs_fontawesome, &$needs_dashicons ) {
+	if ( ! $should_render || ! is_array( $social_links ) ) {
+		return;
+	}
+
+	foreach ( $social_links as $social_link ) {
+		if ( ! is_array( $social_link ) || ! isset( $social_link['icon_type'] ) ) {
+			continue;
+		}
+
+		$icon_type = sanitize_key( (string) $social_link['icon_type'] );
+
+		if ( 'fontawesome' === $icon_type && '' !== trim( isset( $social_link['fa_class'] ) ? (string) $social_link['fa_class'] : '' ) ) {
+			$needs_fontawesome = true;
+		}
+
+		if ( 'dashicons' === $icon_type && '' !== trim( isset( $social_link['dashicon'] ) ? (string) $social_link['dashicon'] : '' ) ) {
+			$needs_dashicons = true;
+		}
+
+		if ( $needs_fontawesome && $needs_dashicons ) {
+			return;
+		}
+	}
+}
+
+/**
  * Collect builder link-icon asset needs from raw post meta.
  *
  * ACF stores each link icon control under a shared meta-key prefix. Reading

@@ -863,11 +863,11 @@ function mrn_base_stack_scripts() {
 		mrn_base_stack_enqueue_layout_styles_for_post( get_queried_object_id() );
 	}
 
-	$header_options     = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
-	$needs_fontawesome  = false;
-	$needs_dashicons    = false;
-	$uses_icon_search   = ! empty( $header_options['header_show_search'] ) && isset( $header_options['header_search_style'] ) && 'icon_only' === $header_options['header_search_style'];
-	$search_icon_source = isset( $header_options['header_search_icon_source'] ) ? (string) $header_options['header_search_icon_source'] : 'dashicons';
+	$header_footer_options = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+	$needs_fontawesome     = false;
+	$needs_dashicons       = false;
+	$uses_icon_search      = ! empty( $header_footer_options['header_show_search'] ) && isset( $header_footer_options['header_search_style'] ) && 'icon_only' === $header_footer_options['header_search_style'];
+	$search_icon_source    = isset( $header_footer_options['header_search_icon_source'] ) ? (string) $header_footer_options['header_search_icon_source'] : 'dashicons';
 
 	if ( 'fontawesome' === $search_icon_source && $uses_icon_search ) {
 		$needs_fontawesome = true;
@@ -897,28 +897,13 @@ function mrn_base_stack_scripts() {
 		}
 	}
 
-	if ( function_exists( 'mrn_config_helper_get_social_links' ) ) {
-		$social_links = mrn_config_helper_get_social_links();
-
-		if ( is_array( $social_links ) ) {
-			foreach ( $social_links as $social_link ) {
-				if ( ! is_array( $social_link ) || ! isset( $social_link['icon_type'] ) ) {
-					continue;
-				}
-
-				if ( 'fontawesome' === $social_link['icon_type'] ) {
-					$needs_fontawesome = true;
-				}
-
-				if ( 'dashicons' === $social_link['icon_type'] ) {
-					$needs_dashicons = true;
-				}
-
-				if ( $needs_fontawesome && $needs_dashicons ) {
-					break;
-				}
-			}
-		}
+	if ( function_exists( 'mrn_base_stack_collect_rendered_social_link_asset_needs' ) && function_exists( 'mrn_config_helper_get_social_links' ) ) {
+		mrn_base_stack_collect_rendered_social_link_asset_needs(
+			! empty( $header_footer_options['footer_show_social_menu'] ),
+			mrn_config_helper_get_social_links(),
+			$needs_fontawesome,
+			$needs_dashicons
+		);
 	}
 
 	if ( function_exists( 'mrn_config_helper_get_breadcrumb_settings' ) ) {
