@@ -705,6 +705,20 @@
       "dependencies": {"hard": ["Node.js", "MainWP Dashboard"], "soft": ["mainwp_onboard.py", "WordPress Abilities API", "Production Hub"], "release_group": null},
       "data": {"options": [], "tables": [], "cron": [], "routes": ["MCP tool surface"], "external_services": ["MainWP Dashboard"]},
       "purpose": "Portable Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. It is agent tooling for the MainWP/management runtime and is never installed on a WordPress site."
+    },
+    {
+      "slug": "mrn-relevanssi-ai-search",
+      "name": "MRN Relevanssi AI Search",
+      "version": "0.1.0",
+      "runtime_type": "standard-plugin",
+      "classification": "integration-adapter",
+      "lifecycle": "review",
+      "current_distribution": "catalog-only",
+      "target_tier": "optional-integration",
+      "source": {"repository": "mrn-relevanssi-ai-search", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-relevanssi-ai-search", "state": "confirmed-independent"},
+      "dependencies": {"hard": ["WordPress", "Relevanssi"], "soft": ["OpenAI-compatible Responses API"], "release_group": null},
+      "data": {"options": ["mrn_relevanssi_ai_search_settings"], "tables": [], "cron": [], "routes": [], "external_services": ["configured AI provider"]},
+      "purpose": "Prototype admin configuration and budget policy for AI-assisted natural-language interpretation over a Relevanssi index."
     }
   ],
   "external_unknowns": [
