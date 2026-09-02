@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Environment Runtime
  * Description: Reports the deployment-managed environment and performance policy without adding frontend work.
- * Version: 0.5.0
+ * Version: 0.5.1
  * Author: MRN Web Designs
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_ENVIRONMENT_RUNTIME_VERSION' ) ) {
-	define( 'MRN_ENVIRONMENT_RUNTIME_VERSION', '0.5.0' );
+	define( 'MRN_ENVIRONMENT_RUNTIME_VERSION', '0.5.1' );
 }
 
 /**
@@ -466,7 +466,7 @@ function mrn_environment_runtime_debug_information( $information ) {
  * Warn administrators when PHP OPcache cannot cache additional scripts.
  */
 function mrn_environment_runtime_opcache_notice() {
-	if ( ! current_user_can( 'manage_options' ) ) {
+	if ( ! mrn_environment_runtime_can_view_notifications() ) {
 		return;
 	}
 
@@ -485,7 +485,7 @@ function mrn_environment_runtime_opcache_notice() {
  * Warn administrators when Relevanssi conflicts with environment policy.
  */
 function mrn_environment_runtime_relevanssi_notice() {
-	if ( ! current_user_can( 'manage_options' ) ) {
+	if ( ! mrn_environment_runtime_can_view_notifications() ) {
 		return;
 	}
 
@@ -513,7 +513,7 @@ function mrn_environment_runtime_relevanssi_notice() {
  * Warn administrators when SEO indexing conflicts with environment policy.
  */
 function mrn_environment_runtime_seo_indexing_notice() {
-	if ( ! current_user_can( 'manage_options' ) ) {
+	if ( ! mrn_environment_runtime_can_view_notifications() ) {
 		return;
 	}
 
@@ -533,7 +533,7 @@ function mrn_environment_runtime_seo_indexing_notice() {
  * Warn administrators when the declared environment disagrees with the live host.
  */
 function mrn_environment_runtime_environment_alignment_notice() {
-	if ( ! current_user_can( 'manage_options' ) ) {
+	if ( ! mrn_environment_runtime_can_view_notifications() ) {
 		return;
 	}
 
@@ -578,10 +578,154 @@ function mrn_environment_runtime_environment_alignment_notice() {
 	);
 }
 
+/**
+ * Check whether the current user can view MRN admin notifications.
+ *
+ * @return bool
+ */
+function mrn_environment_runtime_can_view_notifications() {
+	if ( function_exists( 'mrn_dashboard_support_notifications_capability' ) ) {
+		return current_user_can( mrn_dashboard_support_notifications_capability() );
+	}
+
+	return current_user_can( 'manage_options' );
+}
+
+/**
+ * Collect environment runtime notices for the Notifications Center.
+ *
+ * @param array<int, array<string, mixed>> $notifications Existing notifications.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_environment_runtime_dashboard_notifications( $notifications ) {
+	if ( ! mrn_environment_runtime_can_view_notifications() ) {
+		return is_array( $notifications ) ? $notifications : array();
+	}
+
+	if ( ! is_array( $notifications ) ) {
+		$notifications = array();
+	}
+
+	$contract = mrn_environment_runtime_contract();
+	$active   = mrn_environment_runtime_active_relevanssi_plugins();
+
+	if ( 'disabled' === $contract['relevanssi'] && ! empty( $active ) ) {
+		$notifications[] = array(
+			'id'       => 'mrn-environment-runtime-relevanssi-active',
+			'group'    => 'stack',
+			'type'     => 'warning',
+			'title'    => 'MRN environment policy disables Relevanssi here.',
+			'message'  => 'Relevanssi is active. Run the environment-policy reconciliation before performance testing.',
+			'source'   => 'MRN Environment Runtime',
+			'priority' => 40,
+		);
+	}
+
+	if ( 'configured' === $contract['relevanssi'] && ! mrn_environment_runtime_relevanssi_core_is_active() ) {
+		$notifications[] = array(
+			'id'       => 'mrn-environment-runtime-relevanssi-inactive',
+			'group'    => 'stack',
+			'type'     => 'error',
+			'title'    => 'MRN environment policy requires Relevanssi search.',
+			'message'  => 'Relevanssi is inactive. Activate Relevanssi or change the environment policy.',
+			'source'   => 'MRN Environment Runtime',
+			'priority' => 50,
+		);
+	}
+
+	$active_seo_plugins = mrn_environment_runtime_active_seo_indexing_plugins();
+	if ( 'disabled' === $contract['seo_indexing'] && ! empty( $active_seo_plugins ) ) {
+		$notifications[] = array(
+			'id'       => 'mrn-environment-runtime-seo-indexing-active',
+			'group'    => 'stack',
+			'type'     => 'warning',
+			'title'    => 'MRN environment policy disables SEO indexing here.',
+			'message'  => 'An SEO indexing plugin is active. Run the environment-policy reconciliation before performance testing.',
+			'source'   => 'MRN Environment Runtime',
+			'priority' => 60,
+		);
+	}
+
+	$alignment = mrn_environment_runtime_environment_alignment();
+	if ( in_array( $alignment['status'], array( 'live_without_production_policy', 'production_policy_on_non_production_host' ), true ) ) {
+		$detail = empty( $alignment['risks'] )
+			? array()
+			: array(
+				sprintf(
+					'Detected: %s.',
+					implode( '; ', $alignment['risks'] )
+				),
+			);
+
+		if ( 'live_without_production_policy' === $alignment['status'] ) {
+			$notifications[] = array(
+				'id'       => 'mrn-environment-runtime-live-policy-mismatch',
+				'group'    => 'stack',
+				'type'     => 'error',
+				'title'    => 'MRN: this site is live but still running a non-production policy.',
+				'message'  => sprintf(
+					'%1$s looks like a production domain, but the environment is declared as %2$s.',
+					$alignment['host'],
+					$alignment['declared']
+				),
+				'details'  => $detail,
+				'source'   => 'MRN Environment Runtime',
+				'priority' => 10,
+			);
+		} else {
+			$notifications[] = array(
+				'id'       => 'mrn-environment-runtime-production-policy-review-host',
+				'group'    => 'stack',
+				'type'     => 'warning',
+				'title'    => 'MRN: production policy is active on a review host.',
+				'message'  => sprintf(
+					'%s is not a production domain, but the environment is declared as production.',
+					$alignment['host']
+				),
+				'details'  => $detail,
+				'source'   => 'MRN Environment Runtime',
+				'priority' => 20,
+			);
+		}
+	}
+
+	$opcache = mrn_environment_runtime_opcache_information();
+	if ( 'yes' === $opcache['cache_full'] ) {
+		$notifications[] = array(
+			'id'       => 'mrn-environment-runtime-opcache-full',
+			'group'    => 'stack',
+			'type'     => 'error',
+			'title'    => 'PHP OPcache is full.',
+			'message'  => 'Increase server-level OPcache capacity and verify healthy free memory before performance testing or production rollout.',
+			'source'   => 'MRN Environment Runtime',
+			'priority' => 30,
+		);
+	}
+
+	return $notifications;
+}
+
 if ( function_exists( 'is_admin' ) && is_admin() ) {
 	add_filter( 'debug_information', 'mrn_environment_runtime_debug_information' );
+}
+
+/**
+ * Register dashboard notifications after all MU plugins have loaded.
+ */
+function mrn_environment_runtime_register_dashboard_notifications(): void {
+	if ( ! is_admin() ) {
+		return;
+	}
+
+	if ( function_exists( 'mrn_dashboard_support_collect_notifications' ) ) {
+		add_filter( 'mrn_dashboard_support_notifications', 'mrn_environment_runtime_dashboard_notifications' );
+		return;
+	}
+
 	add_action( 'admin_notices', 'mrn_environment_runtime_relevanssi_notice' );
 	add_action( 'admin_notices', 'mrn_environment_runtime_environment_alignment_notice' );
 	add_action( 'admin_notices', 'mrn_environment_runtime_seo_indexing_notice' );
 	add_action( 'admin_notices', 'mrn_environment_runtime_opcache_notice' );
 }
+
+add_action( 'plugins_loaded', 'mrn_environment_runtime_register_dashboard_notifications', 20 );

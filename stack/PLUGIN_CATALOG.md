@@ -15,14 +15,14 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-loader` | 1.4.0 | MU loader | Platform required | Loads explicitly approved MU component entrypoints. |
 | `mrn-admin-data-post-types` | 0.1.0 | MU loader | Platform required | Applies shared admin/data-only post-type policy. |
 | `mrn-admin-ui-css` | 3.2.3 | MU loader | Platform required | Provides shared WordPress admin presentation and usability rules. |
-| `mrn-dashboard-support` | 1.0.3 | MU loader | Platform required | Provides MRN support information and dashboard metadata. |
+| `mrn-dashboard-support` | 1.3.0 | MU loader | Platform required | Provides MRN support information, dashboard metadata, and the admin-only Notifications Center with unread/read views, per-admin read/remove controls, and centralized admin notices. |
 | `mrn-disable-comments` | 1.2.4 | MU loader | Platform required | Enforces the MRN no-comments policy. |
 | `mrn-editor-lockdown` | 1.0.32 | MU loader | Platform required | Applies shared editor, metabox, and capability policy. |
-| `mrn-environment-runtime` | 0.4.0 | MU loader | Platform required | Provides environment and runtime diagnostics. |
+| `mrn-environment-runtime` | 0.5.1 | MU loader | Platform required | Provides environment, runtime, and notification diagnostics. |
 | `mrn-public-security-hardening` | 0.3.3 | MU loader | Platform required | Applies shared public REST and discovery hardening. |
 | `mrn-shared-assets` | 0.2.0 | MU loader | Platform required | Provides shared asset and icon interfaces. |
 | `mrn-site-colors` | 0.1.38 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
-| `mrn-updraft-local-retention` | 0.3.0 | MU loader | Platform required | Enforces shared backup schedule and retention policy. |
+| `mrn-updraft-local-retention` | 0.4.1 | MU loader | Platform required | Enforces shared backup schedule and retention policy and routes remote-storage warnings to Notifications Center. |
 | `mrn-schema-bridge` | 0.4.2 | MU loader | Platform required | SEOPress (preferred), legacy SmartCrawl, theme, and schema normalization. |
 | `mrn-active-style-guide` | 0.1.6 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
 | `mrn-config-helper` | 0.1.55 | Standard bootstrap | Platform required | Shared site configuration shell, breadcrumb runtime, and launch/admin integrations. |

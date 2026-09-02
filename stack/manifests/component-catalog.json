@@ -65,7 +65,7 @@
     {
       "slug": "mrn-dashboard-support",
       "name": "MRN Dashboard Support",
-      "version": "1.0.3",
+      "version": "1.3.0",
       "runtime_type": "mu-component",
       "classification": "platform",
       "lifecycle": "supported",
@@ -74,7 +74,7 @@
       "source": {"repository": "MRN", "path": "mu-plugins/mrn-dashboard-support", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress admin"], "soft": [], "release_group": "mrn-platform"},
       "data": {"options": ["mrn_launch_date"], "tables": [], "cron": [], "routes": [], "external_services": []},
-      "purpose": "Provides MRN support information and dashboard metadata."
+      "purpose": "Provides MRN support information, dashboard metadata, and the admin-only Notifications Center."
     },
     {
       "slug": "mrn-disable-comments",
@@ -107,7 +107,7 @@
     {
       "slug": "mrn-environment-runtime",
       "name": "MRN Environment Runtime",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "runtime_type": "mu-component",
       "classification": "platform",
       "lifecycle": "supported",
@@ -116,7 +116,7 @@
       "source": {"repository": "MRN", "path": "mu-plugins/mrn-environment-runtime", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress"], "soft": [], "release_group": "mrn-platform"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
-      "purpose": "Provides environment and performance-runtime diagnostics."
+      "purpose": "Provides environment, runtime, and notification diagnostics."
     },
     {
       "slug": "mrn-public-security-hardening",
@@ -163,7 +163,7 @@
     {
       "slug": "mrn-updraft-local-retention",
       "name": "MRN Updraft Backup Policy",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "runtime_type": "mu-component",
       "classification": "platform-policy",
       "lifecycle": "supported",
@@ -172,7 +172,7 @@
       "source": {"repository": "MRN", "path": "mu-plugins/mrn-updraft-local-retention", "state": "confirmed"},
       "dependencies": {"hard": ["UpdraftPlus"], "soft": ["S3 remote storage", "mrn-environment-runtime"], "release_group": "mrn-platform"},
       "data": {"options": ["UpdraftPlus schedule and retention options"], "tables": [], "cron": ["UpdraftPlus schedules and repair checks"], "routes": [], "external_services": ["UpdraftPlus", "configured remote backup storage"]},
-      "purpose": "Enforces the shared backup schedule, retention and remote-storage policy."
+      "purpose": "Enforces the shared backup schedule, retention and remote-storage policy and reports backup warnings in the Notifications Center."
     },
     {
       "slug": "mrn-reusable-block-library",
