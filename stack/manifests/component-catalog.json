@@ -345,7 +345,7 @@
     {
       "slug": "mrn-sendgrid-provisioning",
       "name": "MRN SendGrid Provisioning",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
       "lifecycle": "supported",
@@ -717,8 +717,8 @@
       "target_tier": "optional-integration",
       "source": {"repository": "mrn-relevanssi-ai-search", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-relevanssi-ai-search", "state": "confirmed-independent"},
       "dependencies": {"hard": ["WordPress", "Relevanssi"], "soft": ["OpenAI-compatible Responses API"], "release_group": null},
-      "data": {"options": ["mrn_relevanssi_ai_search_settings"], "tables": [], "cron": [], "routes": [], "external_services": ["configured AI provider"]},
-      "purpose": "Prototype admin configuration and budget policy for AI-assisted natural-language interpretation over a Relevanssi index."
+      "data": {"options": ["mrn_relevanssi_ai_search_settings"], "tables": ["{prefix}mrn_relevanssi_ai_usage"], "cron": [], "routes": ["privileged mrn_relevanssi_ai_test_connection admin-post"], "external_services": ["configured AI provider"], "filters": ["relevanssi_modify_wp_query"]},
+      "purpose": "Provides guarded AI-assisted natural-language phrase interpretation over a Relevanssi index, with admin connection testing and usage budgets."
     }
   ],
   "external_unknowns": [
