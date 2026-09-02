@@ -162,10 +162,15 @@ function mrn_dashboard_support_capture_admin_notice( $html ) {
 }
 
 /**
- * Capture notice output so plugin/core warnings do not remain on the dashboard.
+ * Capture standard notice output so plugin/core warnings do not remain on the dashboard.
+ *
+ * The all_admin_notices channel is intentionally excluded. The shared Stack uses that
+ * channel for Universal Sticky Bar markup and styles, so buffering it would consume
+ * toolbar output before WordPress can render it.
  */
 function mrn_dashboard_support_begin_admin_notice_capture() {
 	if ( mrn_dashboard_support_can_view_notifications() ) {
+		$GLOBALS['mrn_dashboard_support_notice_buffer_level'] = ob_get_level();
 		ob_start();
 	}
 }
@@ -174,11 +179,16 @@ function mrn_dashboard_support_begin_admin_notice_capture() {
  * Finish capturing notice output and store it for the current administrator.
  */
 function mrn_dashboard_support_finish_admin_notice_capture() {
-	if ( ! mrn_dashboard_support_can_view_notifications() || 0 === ob_get_level() ) {
+	$buffer_level = isset( $GLOBALS['mrn_dashboard_support_notice_buffer_level'] )
+		? (int) $GLOBALS['mrn_dashboard_support_notice_buffer_level']
+		: -1;
+
+	if ( ! mrn_dashboard_support_can_view_notifications() || -1 === $buffer_level || ob_get_level() <= $buffer_level ) {
 		return;
 	}
 
 	$notice_html = ob_get_clean();
+	unset( $GLOBALS['mrn_dashboard_support_notice_buffer_level'] );
 	mrn_dashboard_support_capture_admin_notice( $notice_html );
 }
 
@@ -677,8 +687,6 @@ function mrn_dashboard_support_register_admin_notice_capture() {
 
 	add_action( 'admin_notices', 'mrn_dashboard_support_begin_admin_notice_capture', -10000 );
 	add_action( 'admin_notices', 'mrn_dashboard_support_finish_admin_notice_capture', PHP_INT_MAX );
-	add_action( 'all_admin_notices', 'mrn_dashboard_support_begin_admin_notice_capture', -10000 );
-	add_action( 'all_admin_notices', 'mrn_dashboard_support_finish_admin_notice_capture', PHP_INT_MAX );
 }
 add_action( 'plugins_loaded', 'mrn_dashboard_support_register_admin_notice_capture', 9999 );
 
