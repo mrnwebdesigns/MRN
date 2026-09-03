@@ -555,7 +555,7 @@
     {
       "slug": "mrn-dummy-content",
       "name": "MRN Dummy Content",
-      "version": "0.4.0",
+      "version": "0.3.0",
       "runtime_type": "standard-plugin",
       "classification": "development-tool",
       "lifecycle": "supported-development",
@@ -709,7 +709,7 @@
     {
       "slug": "mrn-relevanssi-ai-search",
       "name": "MRN Relevanssi AI Search",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "review",
