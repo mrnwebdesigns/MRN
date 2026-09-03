@@ -3,7 +3,7 @@
  * Plugin Name: MRN Updraft Backup Policy
  * Description: Enforces the MRN Updraft backup policy, limits local backup sets, and repairs missing scheduled events.
  * Author: MRN Web Designs
- * Version: 0.4.0
+ * Version: 0.4.1
  */
 
 defined('ABSPATH') || exit;
@@ -108,6 +108,19 @@ function mrn_updraft_backup_policy_update_option(string $name, $value): void {
 }
 
 /**
+ * Check whether the current user can view MRN admin notifications.
+ *
+ * @return bool
+ */
+function mrn_updraft_backup_policy_can_view_notifications(): bool {
+	if (function_exists('mrn_dashboard_support_notifications_capability')) {
+		return current_user_can(mrn_dashboard_support_notifications_capability());
+	}
+
+	return current_user_can('manage_options');
+}
+
+/**
  * Enforce the non-secret MRN backup policy on every stack runtime.
  *
  * Remote storage credentials and destinations are deliberately excluded. They
@@ -195,7 +208,7 @@ function mrn_updraft_backup_policy_get_remote_status(): array {
  * Warn administrators when remote backups are missing or share a bucket root.
  */
 function mrn_updraft_backup_policy_remote_notice(): void {
-	if (!current_user_can('manage_options')) {
+	if (!mrn_updraft_backup_policy_can_view_notifications()) {
 		return;
 	}
 
@@ -217,7 +230,60 @@ function mrn_updraft_backup_policy_remote_notice(): void {
 		esc_html($message)
 	);
 }
-add_action('admin_notices', 'mrn_updraft_backup_policy_remote_notice');
+
+/**
+ * Collect the Updraft remote-storage notification for the Notifications Center.
+ *
+ * @param array<int, array<string, mixed>> $notifications Existing notifications.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_updraft_backup_policy_dashboard_notifications($notifications): array {
+	if (!mrn_updraft_backup_policy_can_view_notifications()) {
+		return is_array($notifications) ? $notifications : array();
+	}
+
+	if (!is_array($notifications)) {
+		$notifications = array();
+	}
+
+	$status = mrn_updraft_backup_policy_get_remote_status();
+	if ($status['configured'] && $status['isolated']) {
+		return $notifications;
+	}
+
+	$message = !$status['configured']
+		? 'MRN backup policy: Amazon S3 remote storage is not configured.'
+		: sprintf(
+			'MRN backup policy: the S3 destination must use a unique path ending in %s. Remote retention is unsafe while sites share a bucket root.',
+			$status['expected_suffix']
+		);
+
+	$notifications[] = array(
+		'id'       => 'mrn-updraft-backup-policy-remote-storage',
+		'group'    => 'stack',
+		'type'     => 'error',
+		'title'    => 'MRN backup policy needs attention.',
+		'message'  => $message,
+		'source'   => 'MRN Updraft Backup Policy',
+		'priority' => 15,
+	);
+
+	return $notifications;
+}
+
+/**
+ * Register dashboard notifications after all MU plugins have loaded.
+ */
+function mrn_updraft_backup_policy_register_dashboard_notifications(): void {
+	if (function_exists('mrn_dashboard_support_collect_notifications')) {
+		add_filter('mrn_dashboard_support_notifications', 'mrn_updraft_backup_policy_dashboard_notifications');
+		return;
+	}
+
+	add_action('admin_notices', 'mrn_updraft_backup_policy_remote_notice');
+}
+
+add_action('plugins_loaded', 'mrn_updraft_backup_policy_register_dashboard_notifications', 20);
 
 /**
  * Resolve the next occurrence of a configured Updraft HH:MM start time.

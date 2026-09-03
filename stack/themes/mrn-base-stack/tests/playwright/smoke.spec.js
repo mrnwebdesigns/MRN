@@ -203,9 +203,22 @@ async function expectNoLeakedStyleText(page, contextLabel) {
 async function expectStickyToolbarLayout(page, toolbarSelector, contentSelector, contextLabel) {
 	const toolbar = page.locator(toolbarSelector).first();
 	const content = page.locator(contentSelector).first();
+	const toolbarStyles = await toolbar.evaluate((element) => {
+		const styles = window.getComputedStyle(element);
+
+		return {
+			display: styles.display,
+			position: styles.position,
+		};
+	});
 	const toolbarBox = await toolbar.boundingBox();
 	const contentBox = await content.boundingBox();
 
+	expect.soft(toolbarStyles.display, `${contextLabel} toolbar display`).not.toBe('none');
+	expect.soft(
+		[ 'fixed', 'sticky' ],
+		`${contextLabel} toolbar positioning`
+	).toContain(toolbarStyles.position);
 	expect.soft(toolbarBox, `${contextLabel} toolbar bounding box`).not.toBeNull();
 	expect.soft(contentBox, `${contextLabel} content bounding box`).not.toBeNull();
 
