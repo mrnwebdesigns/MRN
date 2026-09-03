@@ -132,23 +132,323 @@ function mrn_editor_lockdown_prepend_seo_helper_to_side_order( $side_order ) {
 }
 
 /**
- * Ensure the SEO Helper metabox is never hidden on locked classic editor screens.
+ * Ensure the SEO Helper and matching ACF metaboxes are never hidden on locked
+ * classic editor screens.
  *
- * @param mixed $hidden Existing hidden metabox IDs.
+ * @param mixed   $hidden         Existing hidden metabox IDs.
+ * @param string[] $acf_metabox_ids Matching ACF metabox IDs.
  * @return string[]
  */
-function mrn_editor_lockdown_get_visible_hidden_metaboxes( $hidden ) {
-	$metabox_id = mrn_editor_lockdown_get_seo_helper_metabox_id();
-	$hidden     = is_array( $hidden ) ? $hidden : array();
+function mrn_editor_lockdown_get_visible_hidden_metaboxes( $hidden, $acf_metabox_ids = array() ) {
+	$metabox_ids = array_merge(
+		array( mrn_editor_lockdown_get_seo_helper_metabox_id() ),
+		is_array( $acf_metabox_ids ) ? $acf_metabox_ids : array()
+	);
+	$metabox_ids = array_values( array_filter( array_map( 'sanitize_key', $metabox_ids ) ) );
+	$hidden      = is_array( $hidden ) ? $hidden : array();
 
 	return array_values(
 		array_filter(
 			array_map( 'sanitize_key', $hidden ),
-			static function ( $item ) use ( $metabox_id ) {
-				return $item !== $metabox_id;
+			static function ( $item ) use ( $metabox_ids ) {
+				return ! in_array( $item, $metabox_ids, true );
 			}
 		)
 	);
+}
+
+/**
+ * Get the matching ACF field-group metaboxes for a post type.
+ *
+ * The return value preserves ACF's own group order and allows callers to
+ * reorder or remove entries with the
+ * `mrn_editor_lockdown_acf_field_groups` filter.
+ *
+ * @param string $post_type Post type slug.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_editor_lockdown_get_acf_field_group_metaboxes( $post_type ) {
+	static $cache = array();
+
+	$post_type = sanitize_key( (string) $post_type );
+
+	if ( array_key_exists( $post_type, $cache ) ) {
+		return $cache[ $post_type ];
+	}
+
+	if ( '' === $post_type || ! function_exists( 'acf_get_field_groups' ) ) {
+		$cache[ $post_type ] = array();
+		return $cache[ $post_type ];
+	}
+
+	$field_groups = acf_get_field_groups(
+		array(
+			'post_type' => $post_type,
+		)
+	);
+
+	if ( ! is_array( $field_groups ) || empty( $field_groups ) ) {
+		$cache[ $post_type ] = array();
+		return $cache[ $post_type ];
+	}
+
+	$allowed_positions = array( 'normal', 'side', 'advanced', 'acf_after_title' );
+	$metaboxes         = array();
+
+	foreach ( $field_groups as $field_group ) {
+		if ( ! is_array( $field_group ) || empty( $field_group['key'] ) ) {
+			continue;
+		}
+
+		$metabox_id = 'acf-' . sanitize_key( (string) $field_group['key'] );
+		if ( '' === $metabox_id ) {
+			continue;
+		}
+
+		$position = isset( $field_group['position'] ) ? sanitize_key( (string) $field_group['position'] ) : 'normal';
+		if ( ! in_array( $position, $allowed_positions, true ) ) {
+			$position = 'normal';
+		}
+
+		$metaboxes[] = array(
+			'id'         => $metabox_id,
+			'key'        => sanitize_key( (string) $field_group['key'] ),
+			'position'   => $position,
+			'menu_order' => isset( $field_group['menu_order'] ) ? (int) $field_group['menu_order'] : 0,
+			'title'      => isset( $field_group['title'] ) ? sanitize_text_field( (string) $field_group['title'] ) : '',
+			'field_group' => $field_group,
+		);
+	}
+
+	/**
+	 * Filter the matching ACF field-group metabox definitions for a post type.
+	 *
+	 * Return a modified list to exclude a group or reposition it by changing
+	 * its `position` entry.
+	 *
+	 * @param array<int, array<string, mixed>> $metaboxes   Normalized metabox records.
+	 * @param string                           $post_type   Post type slug.
+	 * @param array<int, array<string, mixed>> $field_groups Raw ACF field groups.
+	 */
+	$metaboxes = apply_filters( 'mrn_editor_lockdown_acf_field_groups', $metaboxes, $post_type, $field_groups );
+
+	if ( ! is_array( $metaboxes ) ) {
+		$cache[ $post_type ] = array();
+		return $cache[ $post_type ];
+	}
+
+	$normalized_metaboxes = array();
+
+	foreach ( $metaboxes as $metabox ) {
+		if ( ! is_array( $metabox ) || empty( $metabox['id'] ) ) {
+			continue;
+		}
+
+		$metabox_id = sanitize_key( (string) $metabox['id'] );
+		if ( '' === $metabox_id ) {
+			continue;
+		}
+
+		$position = isset( $metabox['position'] ) ? sanitize_key( (string) $metabox['position'] ) : 'normal';
+		if ( ! in_array( $position, $allowed_positions, true ) ) {
+			$position = 'normal';
+		}
+
+		$normalized_metaboxes[ $metabox_id ] = array(
+			'id'          => $metabox_id,
+			'key'         => isset( $metabox['key'] ) ? sanitize_key( (string) $metabox['key'] ) : $metabox_id,
+			'position'    => $position,
+			'menu_order'  => isset( $metabox['menu_order'] ) ? (int) $metabox['menu_order'] : 0,
+			'title'       => isset( $metabox['title'] ) ? sanitize_text_field( (string) $metabox['title'] ) : '',
+			'field_group' => isset( $metabox['field_group'] ) && is_array( $metabox['field_group'] ) ? $metabox['field_group'] : array(),
+		);
+	}
+
+	$normalized_metaboxes = array_values( $normalized_metaboxes );
+
+	usort(
+		$normalized_metaboxes,
+		static function ( $left, $right ) {
+			if ( $left['position'] !== $right['position'] ) {
+				return strcmp( (string) $left['position'], (string) $right['position'] );
+			}
+
+			if ( $left['menu_order'] !== $right['menu_order'] ) {
+				return (int) $left['menu_order'] <=> (int) $right['menu_order'];
+			}
+
+			if ( $left['title'] !== $right['title'] ) {
+				return strcmp( (string) $left['title'], (string) $right['title'] );
+			}
+
+			return strcmp( (string) $left['id'], (string) $right['id'] );
+		}
+	);
+
+	$cache[ $post_type ] = $normalized_metaboxes;
+	return $cache[ $post_type ];
+}
+
+/**
+ * Get the matching ACF metabox IDs for a post type.
+ *
+ * @param string $post_type Post type slug.
+ * @return string[]
+ */
+function mrn_editor_lockdown_get_acf_field_group_metabox_ids( $post_type ) {
+	$metaboxes = mrn_editor_lockdown_get_acf_field_group_metaboxes( $post_type );
+
+	return array_values(
+		array_filter(
+			array_map(
+				static function ( $metabox ) {
+					return is_array( $metabox ) && ! empty( $metabox['id'] ) ? sanitize_key( (string) $metabox['id'] ) : '';
+				},
+				$metaboxes
+			)
+		)
+	);
+}
+
+/**
+ * Append metabox IDs to an order string without disturbing existing entries.
+ *
+ * @param string   $order      Existing comma-delimited metabox order.
+ * @param string[] $metabox_ids Metabox IDs to append.
+ * @return string
+ */
+function mrn_editor_lockdown_append_missing_metabox_ids_to_order( $order, $metabox_ids ) {
+	$order_items   = array_values( array_filter( array_map( 'trim', explode( ',', (string) $order ) ) ) );
+	$order_lookup  = array_fill_keys( $order_items, true );
+	$metabox_ids   = is_array( $metabox_ids ) ? $metabox_ids : array();
+	$metabox_ids   = array_values( array_filter( array_map( 'sanitize_key', $metabox_ids ) ) );
+	$missing_items  = array();
+
+	foreach ( $metabox_ids as $metabox_id ) {
+		if ( isset( $order_lookup[ $metabox_id ] ) ) {
+			continue;
+		}
+
+		$missing_items[] = $metabox_id;
+	}
+
+	if ( empty( $missing_items ) ) {
+		return implode( ',', array_values( array_unique( $order_items ) ) );
+	}
+
+	$order_items = array_merge( $order_items, $missing_items );
+
+	return implode( ',', array_values( array_unique( $order_items ) ) );
+}
+
+/**
+ * Insert metabox IDs before a specific anchor without disturbing existing ones.
+ *
+ * @param string   $order      Existing comma-delimited metabox order.
+ * @param string[] $metabox_ids Metabox IDs to insert.
+ * @param string   $anchor     Anchor metabox ID.
+ * @return string
+ */
+function mrn_editor_lockdown_insert_missing_metabox_ids_before_anchor( $order, $metabox_ids, $anchor ) {
+	$order_items  = array_values( array_filter( array_map( 'trim', explode( ',', (string) $order ) ) ) );
+	$order_lookup = array_fill_keys( $order_items, true );
+	$metabox_ids  = is_array( $metabox_ids ) ? $metabox_ids : array();
+	$metabox_ids  = array_values( array_filter( array_map( 'sanitize_key', $metabox_ids ) ) );
+	$missing_items = array();
+
+	foreach ( $metabox_ids as $metabox_id ) {
+		if ( isset( $order_lookup[ $metabox_id ] ) ) {
+			continue;
+		}
+
+		$missing_items[] = $metabox_id;
+	}
+
+	if ( empty( $missing_items ) ) {
+		return implode( ',', array_values( array_unique( $order_items ) ) );
+	}
+
+	$anchor     = sanitize_key( (string) $anchor );
+	$anchor_at  = false;
+
+	if ( '' !== $anchor ) {
+		$anchor_at = array_search( $anchor, $order_items, true );
+	}
+
+	if ( false === $anchor_at ) {
+		$anchor_at = count( $order_items );
+	}
+
+	array_splice( $order_items, (int) $anchor_at, 0, $missing_items );
+
+	return implode( ',', array_values( array_unique( $order_items ) ) );
+}
+
+/**
+ * Merge discovered ACF field-group metaboxes into a locked editor layout.
+ *
+ * @param array<string, mixed> $layout    Locked editor layout.
+ * @param string               $post_type Post type slug.
+ * @return array<string, mixed>
+ */
+function mrn_editor_lockdown_merge_acf_field_groups_into_layout( $layout, $post_type ) {
+	if ( ! is_array( $layout ) ) {
+		return $layout;
+	}
+
+	$metaboxes = mrn_editor_lockdown_get_acf_field_group_metaboxes( $post_type );
+	if ( empty( $metaboxes ) ) {
+		return $layout;
+	}
+
+	$grouped_metaboxes = array(
+		'normal'         => array(),
+		'side'           => array(),
+		'advanced'       => array(),
+		'acf_after_title' => array(),
+	);
+
+	foreach ( $metaboxes as $metabox ) {
+		if ( ! is_array( $metabox ) || empty( $metabox['id'] ) ) {
+			continue;
+		}
+
+		$position = isset( $metabox['position'] ) ? sanitize_key( (string) $metabox['position'] ) : 'normal';
+		if ( ! isset( $grouped_metaboxes[ $position ] ) ) {
+			$position = 'normal';
+		}
+
+		$grouped_metaboxes[ $position ][] = sanitize_key( (string) $metabox['id'] );
+	}
+
+	if ( ! isset( $layout['meta_box_order'] ) || ! is_array( $layout['meta_box_order'] ) ) {
+		$layout['meta_box_order'] = array();
+	}
+
+	foreach ( array( 'normal', 'advanced' ) as $context ) {
+		if ( empty( $grouped_metaboxes[ $context ] ) ) {
+			continue;
+		}
+
+		$layout['meta_box_order'][ $context ] = mrn_editor_lockdown_append_missing_metabox_ids_to_order(
+			isset( $layout['meta_box_order'][ $context ] ) ? $layout['meta_box_order'][ $context ] : '',
+			$grouped_metaboxes[ $context ]
+		);
+	}
+
+	if ( ! empty( $grouped_metaboxes['side'] ) ) {
+		$layout['meta_box_order']['side'] = mrn_editor_lockdown_insert_missing_metabox_ids_before_anchor(
+			isset( $layout['meta_box_order']['side'] ) ? $layout['meta_box_order']['side'] : '',
+			$grouped_metaboxes['side'],
+			'mrn-builder-layout-allowlist'
+		);
+	}
+
+	if ( ! empty( $grouped_metaboxes['acf_after_title'] ) ) {
+		$layout['acf_after_title'] = $grouped_metaboxes['acf_after_title'];
+	}
+
+	return $layout;
 }
 
 /**
@@ -394,24 +694,22 @@ function mrn_editor_lockdown_get_layout_for_post_type( $post_type ) {
 		return $cache[ $post_type ];
 	}
 
+	$layout = null;
 	$layouts = mrn_editor_lockdown_get_layouts();
 
 	if ( isset( $layouts[ $post_type ] ) ) {
-		$cache[ $post_type ] = $layouts[ $post_type ];
-		return $cache[ $post_type ];
+		$layout = $layouts[ $post_type ];
+	} elseif ( mrn_editor_lockdown_is_reusable_post_type( $post_type ) ) {
+		$layout = mrn_editor_lockdown_get_reusable_layout();
+	} elseif ( in_array( $post_type, mrn_editor_lockdown_get_dynamic_post_types(), true ) ) {
+		$layout = mrn_editor_lockdown_get_dynamic_layout( $post_type );
 	}
 
-	if ( mrn_editor_lockdown_is_reusable_post_type( $post_type ) ) {
-		$cache[ $post_type ] = mrn_editor_lockdown_get_reusable_layout();
-		return $cache[ $post_type ];
+	if ( is_array( $layout ) ) {
+		$layout = mrn_editor_lockdown_merge_acf_field_groups_into_layout( $layout, $post_type );
 	}
 
-	if ( in_array( $post_type, mrn_editor_lockdown_get_dynamic_post_types(), true ) ) {
-		$cache[ $post_type ] = mrn_editor_lockdown_get_dynamic_layout( $post_type );
-		return $cache[ $post_type ];
-	}
-
-	$cache[ $post_type ] = null;
+	$cache[ $post_type ] = is_array( $layout ) ? $layout : null;
 
 	return $cache[ $post_type ];
 }
@@ -624,7 +922,10 @@ function mrn_editor_lockdown_apply_layout( $screen ) {
 		update_user_meta( $user_id, $closed_postboxes_key, $settings['closed'] );
 	}
 
-	$visible_hidden_metaboxes = mrn_editor_lockdown_get_visible_hidden_metaboxes( $current_hidden_metaboxes );
+	$visible_hidden_metaboxes = mrn_editor_lockdown_get_visible_hidden_metaboxes(
+		$current_hidden_metaboxes,
+		mrn_editor_lockdown_get_acf_field_group_metabox_ids( $post_type )
+	);
 
 	if ( ! is_array( $current_hidden_metaboxes ) || $current_hidden_metaboxes !== $visible_hidden_metaboxes ) {
 		update_user_meta( $user_id, $hidden_metaboxes_key, $visible_hidden_metaboxes );
@@ -733,7 +1034,7 @@ function mrn_editor_lockdown_filter_closed_metaboxes( $hidden, $screen ) {
 }
 
 /**
- * Force the SEO Helper metabox to remain visible at runtime.
+ * Force the SEO Helper and matching ACF metaboxes to remain visible at runtime.
  *
  * @param mixed  $hidden Existing hidden metabox IDs.
  * @param string $option Current user option name.
@@ -748,7 +1049,10 @@ function mrn_editor_lockdown_filter_hidden_metaboxes( $hidden, $option, $user ) 
 		$layout    = mrn_editor_lockdown_get_layout_for_post_type( $post_type );
 
 		if ( null !== $layout ) {
-			return mrn_editor_lockdown_get_visible_hidden_metaboxes( $hidden );
+			return mrn_editor_lockdown_get_visible_hidden_metaboxes(
+				$hidden,
+				mrn_editor_lockdown_get_acf_field_group_metabox_ids( $post_type )
+			);
 		}
 	}
 
