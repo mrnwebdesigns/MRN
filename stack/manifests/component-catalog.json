@@ -555,7 +555,7 @@
     {
       "slug": "mrn-dummy-content",
       "name": "MRN Dummy Content",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "runtime_type": "standard-plugin",
       "classification": "development-tool",
       "lifecycle": "supported-development",
@@ -716,9 +716,9 @@
       "current_distribution": "catalog-only",
       "target_tier": "optional-integration",
       "source": {"repository": "mrn-relevanssi-ai-search", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-relevanssi-ai-search", "state": "confirmed-independent"},
-      "dependencies": {"hard": ["WordPress", "Relevanssi"], "soft": ["OpenAI-compatible Responses API"], "release_group": null},
-      "data": {"options": ["mrn_relevanssi_ai_search_settings"], "tables": ["{prefix}mrn_relevanssi_ai_usage"], "cron": [], "routes": ["privileged mrn_relevanssi_ai_test_connection admin-post", "privileged mrn_relevanssi_ai_test_interpretation admin-post"], "external_services": ["configured AI provider"], "filters": ["relevanssi_modify_wp_query", "relevanssi_search_params"]},
-      "purpose": "Provides guarded AI-assisted concept extraction and site-aware matching over a Relevanssi index, with admin testing and usage budgets."
+      "dependencies": {"hard": ["WordPress", "Relevanssi"], "soft": ["OpenAI-compatible Responses and Embeddings APIs"], "release_group": null},
+      "data": {"options": ["mrn_relevanssi_ai_search_settings", "mrn_relevanssi_ai_index_cursor"], "tables": ["{prefix}mrn_relevanssi_ai_usage", "{prefix}mrn_relevanssi_ai_vectors", "{prefix}mrn_relevanssi_ai_embedding_usage"], "cron": ["mrn_relevanssi_ai_scheduled_index", "mrn_relevanssi_ai_continue_index", "mrn_relevanssi_ai_index_saved_post"], "routes": ["privileged mrn_relevanssi_ai_test_connection admin-post", "privileged mrn_relevanssi_ai_test_interpretation admin-post", "privileged mrn_relevanssi_ai_index admin-post"], "external_services": ["configured AI provider"], "filters": ["relevanssi_modify_wp_query", "relevanssi_search_params", "relevanssi_hits_filter", "mrn_relevanssi_ai_embedding_text"]},
+      "purpose": "Provides guarded AI concept extraction and hybrid semantic matching over Relevanssi, with a local vector index, manual or scheduled refreshes, admin testing, and separate usage budgets."
     }
   ],
   "external_unknowns": [
