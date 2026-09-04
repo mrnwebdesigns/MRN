@@ -220,9 +220,56 @@ if [[ "${RUN_DB_BACKUP}" -eq 1 ]]; then
 	if [[ -z "${BACKUP_LABEL}" ]]; then
 		BACKUP_LABEL="predeploy-$(sanitize_label "${SITE_HOSTNAME}")-$(date +%Y%m%d%H%M%S)"
 	fi
+	BACKUP_LABEL="$(sanitize_label "${BACKUP_LABEL}")"
 
 	note "Starting database-only Updraft backup on ${SITE_HOSTNAME} as ${SITE_USER}."
-	BACKUP_OUTPUT="$(run_site_wp "updraftplus backup --include-files= --send-to-cloud --label='${BACKUP_LABEL}'" 2>&1)" || fail "Updraft backup command failed for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
+	BACKUP_OUTPUT=""
+	if ! BACKUP_OUTPUT="$(run_site_wp "updraftplus backup --include-files= --send-to-cloud --label='${BACKUP_LABEL}'" 2>&1)"; then
+		if ! printf '%s' "${BACKUP_OUTPUT}" | grep -Eiq "not a registered subcommand|unknown command|command .* not found"; then
+			fail "Updraft backup command failed for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
+		fi
+
+		note "UpdraftPlus CLI backup command is unavailable; using the installed plugin API fallback."
+		INTERNAL_BACKUP_OUTPUT="$(run_site_php "global \$updraftplus;
+if ( ! is_object( \$updraftplus ) || ! is_callable( array( \$updraftplus, 'backupnow_database' ) ) ) {
+	echo wp_json_encode( array( 'result' => false, 'error' => 'UpdraftPlus database backup API is unavailable.' ) );
+	exit( 1 );
+}
+
+	\$result = \$updraftplus->backupnow_database(
+		array(
+			'nocloud' => false,
+			'label'   => '${BACKUP_LABEL}',
+		)
+	);
+
+echo wp_json_encode(
+	array(
+			'result'      => \$result,
+			'job_id'      => \$updraftplus->nonce,
+			'last_backup' => get_option( 'updraft_last_backup', null ),
+	)
+);" 2>&1)" || fail "UpdraftPlus API backup fallback failed for ${SITE_HOSTNAME}: ${INTERNAL_BACKUP_OUTPUT}"
+
+		if ! printf '%s' "${INTERNAL_BACKUP_OUTPUT}" | grep -Eiq '"result":true'; then
+			fail "UpdraftPlus API backup fallback did not start successfully for ${SITE_HOSTNAME}: ${INTERNAL_BACKUP_OUTPUT}"
+		fi
+
+		if ! printf '%s' "${INTERNAL_BACKUP_OUTPUT}" | grep -Eiq '"success":1'; then
+			fail "UpdraftPlus API backup fallback did not verify a successful database backup for ${SITE_HOSTNAME}: ${INTERNAL_BACKUP_OUTPUT}"
+		fi
+
+		BACKUP_JOB_ID="$(printf '%s\n' "${INTERNAL_BACKUP_OUTPUT}" | grep -Eo '"job_id":"[0-9a-f]+"' | sed 's/.*"job_id":"//; s/"$//' | tail -n 1)"
+		[[ -n "${BACKUP_JOB_ID}" ]] || fail "UpdraftPlus API backup fallback did not return a job ID for ${SITE_HOSTNAME}: ${INTERNAL_BACKUP_OUTPUT}"
+		note "Updraft database backup completed cleanly via the plugin API for ${SITE_HOSTNAME} (${BACKUP_LABEL}, job ${BACKUP_JOB_ID})."
+		printf 'SITE_HOSTNAME=%s\n' "${SITE_HOSTNAME}"
+		printf 'SITE_USER=%s\n' "${SITE_USER}"
+		printf 'SITE_ROOT=%s\n' "${SITE_ROOT}"
+		printf 'SSH_ALIAS=%s\n' "${SSH_ALIAS}"
+		printf 'SSH_LOGIN=%s\n' "${SSH_LOGIN}"
+		printf 'BACKUP_LABEL=%s\n' "${BACKUP_LABEL}"
+		exit 0
+	fi
 
 	if has_backup_warning "${BACKUP_OUTPUT}"; then
 		fail "Updraft backup output still contains configuration warnings for ${SITE_HOSTNAME}: ${BACKUP_OUTPUT}"
