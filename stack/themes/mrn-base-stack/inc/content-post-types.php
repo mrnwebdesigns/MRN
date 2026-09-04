@@ -207,6 +207,56 @@ function mrn_base_stack_register_team_member_profile_field() {
 add_action( 'acf/init', 'mrn_base_stack_register_team_member_profile_field' );
 
 /**
+ * Register the Team Member's core identity fields.
+ *
+ * @return void
+ */
+function mrn_base_stack_register_team_member_field_group() {
+	if ( ! function_exists( 'acf_add_local_field_group' ) ) {
+		return;
+	}
+
+	acf_add_local_field_group(
+		array(
+			'key'                   => 'group_mrn_team_member_profile',
+			'title'                 => __( 'Team Member', 'mrn-base-stack' ),
+			'fields'                => array(
+				array(
+					'key'          => 'field_mrn_team_member_position',
+					'label'        => __( 'Job Title', 'mrn-base-stack' ),
+					'name'         => 'team_member_position',
+					'type'         => 'text',
+					'instructions' => __( 'Shown directly under the name.', 'mrn-base-stack' ),
+				),
+				array(
+					'key'           => 'field_mrn_team_member_bio',
+					'label'         => __( 'Bio', 'mrn-base-stack' ),
+					'name'          => 'team_member_bio',
+					'type'          => 'wysiwyg',
+					'tabs'          => 'all',
+					'toolbar'       => 'full',
+					'media_upload'  => 1,
+				),
+			),
+			'location'              => array(
+				array(
+					array(
+						'param'    => 'post_type',
+						'operator' => '==',
+						'value'    => 'team_member',
+					),
+				),
+			),
+			'position'              => 'acf_after_title',
+			'style'                 => 'default',
+			'label_placement'       => 'top',
+			'instruction_placement' => 'label',
+		)
+	);
+}
+add_action( 'acf/init', 'mrn_base_stack_register_team_member_field_group' );
+
+/**
  * Disable the per-member public-profile toggle when Team Member is forced
  * Content Only site-wide (Site Configurations -> Admin -> Content Types).
  *
