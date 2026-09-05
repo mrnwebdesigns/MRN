@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Schema Bridge
  * Description: Shared structured data normalization for MRN sites.
- * Version: 0.4.2
+ * Version: 0.4.3
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_VERSION' ) ) {
-	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.4.2' );
+	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.4.3' );
 }
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_SCHEMA_HEALTH_OPTION' ) ) {
@@ -552,6 +552,221 @@ function mrn_schema_bridge_value_references_removed_author( $value, $removed_ids
 
 	return false;
 }
+
+/**
+ * Normalize a schema URL and collapse duplicated leading schemes.
+ *
+ * @param mixed $value Candidate URL value.
+ * @return string
+ */
+function mrn_schema_bridge_normalize_schema_url( $value ) {
+	if ( ! is_scalar( $value ) ) {
+		return '';
+	}
+
+	$value = html_entity_decode( trim( (string) $value ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+
+	if ( '' === $value ) {
+		return '';
+	}
+
+	if ( preg_match( '#^((?:https?:\/\/){2,})(.+)$#i', $value, $matches ) ) {
+		$scheme = 'https';
+
+		if ( preg_match_all( '#https?://#i', $matches[1], $scheme_matches ) && ! empty( $scheme_matches[0] ) ) {
+			$matched_schemes = $scheme_matches[0];
+			$last_scheme     = end( $matched_schemes );
+
+			if ( is_string( $last_scheme ) && '' !== $last_scheme ) {
+				$scheme = strtolower( rtrim( $last_scheme, ':/') );
+			}
+		}
+
+		$value = $scheme . '://' . ltrim( $matches[2], '/' );
+	}
+
+	return is_string( $value ) ? esc_url_raw( $value ) : '';
+}
+
+/**
+ * Recursively normalize URL-like schema object properties.
+ *
+ * @param mixed $value Candidate schema value.
+ * @return mixed
+ */
+function mrn_schema_bridge_normalize_schema_object_urls( $value ) {
+	if ( ! is_array( $value ) ) {
+		return $value;
+	}
+
+	foreach ( array( 'url', '@id', 'contentUrl' ) as $property ) {
+		if ( isset( $value[ $property ] ) && is_scalar( $value[ $property ] ) ) {
+			$value[ $property ] = mrn_schema_bridge_normalize_schema_url( $value[ $property ] );
+		}
+	}
+
+	if ( isset( $value['sameAs'] ) && is_array( $value['sameAs'] ) ) {
+		$same_as = array();
+
+		foreach ( $value['sameAs'] as $same_as_value ) {
+			if ( is_scalar( $same_as_value ) ) {
+				$normalized = mrn_schema_bridge_normalize_schema_url( $same_as_value );
+
+				if ( '' !== $normalized ) {
+					$same_as[] = $normalized;
+				}
+			} elseif ( is_array( $same_as_value ) ) {
+				$same_as[] = mrn_schema_bridge_normalize_schema_object_urls( $same_as_value );
+			}
+		}
+
+		$value['sameAs'] = array_values( array_filter( $same_as ) );
+	}
+
+	foreach ( $value as $property => $property_value ) {
+		if ( is_array( $property_value ) ) {
+			$value[ $property ] = mrn_schema_bridge_normalize_schema_object_urls( $property_value );
+		}
+	}
+
+	return $value;
+}
+
+/**
+ * Check whether a schema node is one of SEOPress's automatic article variants.
+ *
+ * @param array<string, mixed> $item Schema node.
+ * @return bool
+ */
+function mrn_schema_bridge_is_article_schema_node( $item ) {
+	$article_types = array(
+		'Article',
+		'BlogPosting',
+		'NewsArticle',
+		'AnalysisNewsArticle',
+		'AskPublicNewsArticle',
+		'BackgroundNewsArticle',
+		'OpinionNewsArticle',
+		'ReportageNewsArticle',
+		'ReviewNewsArticle',
+		'LiveBlogPosting',
+	);
+
+	return is_array( $item ) && ! empty( array_intersect( $article_types, mrn_schema_bridge_get_item_types( $item ) ) );
+}
+
+/**
+ * Normalize an assembled SEOPress automatic article schema node.
+ *
+ * @param array<string, mixed> $schema Schema node.
+ * @return array<string, mixed>
+ */
+function mrn_schema_bridge_normalize_seopress_article_schema_node( $schema ) {
+	if ( ! is_array( $schema ) || ! mrn_schema_bridge_is_article_schema_node( $schema ) ) {
+		return $schema;
+	}
+
+	$organization_reference = mrn_schema_bridge_get_default_organization_reference();
+	$canonical_organization = mrn_schema_bridge_get_canonical_organization_properties();
+
+	if ( ! empty( $organization_reference['@id'] ) ) {
+		$canonical_organization['@id'] = $organization_reference['@id'];
+	}
+
+	if ( empty( $schema['author'] ) ) {
+		$schema['author'] = $organization_reference;
+	} elseif ( is_array( $schema['author'] ) ) {
+		if ( mrn_schema_bridge_is_author_person_node( $schema['author'] ) ) {
+			$schema['author'] = $organization_reference;
+		} else {
+			$schema['author'] = mrn_schema_bridge_normalize_schema_object_urls( $schema['author'] );
+		}
+	} elseif ( is_scalar( $schema['author'] ) ) {
+		$schema['author'] = mrn_schema_bridge_normalize_schema_url( $schema['author'] );
+	}
+
+	if ( empty( $schema['publisher'] ) ) {
+		$schema['publisher'] = $canonical_organization;
+	} elseif ( is_array( $schema['publisher'] ) ) {
+		$schema['publisher'] = array_merge( $schema['publisher'], $canonical_organization );
+	} else {
+		$schema['publisher'] = $canonical_organization;
+	}
+
+	if ( is_array( $schema['publisher'] ) ) {
+		$schema['publisher']['@id'] = $organization_reference['@id'];
+	}
+
+	$schema = mrn_schema_bridge_normalize_schema_object_urls( $schema );
+
+	return (array) apply_filters( 'mrn_schema_bridge_seopress_article_schema_node', $schema );
+}
+
+/**
+ * Normalize one assembled SEOPress schema value.
+ *
+ * @param mixed $schema Schema value.
+ * @return mixed
+ */
+function mrn_schema_bridge_normalize_seopress_schema_value( $schema ) {
+	if ( ! is_array( $schema ) ) {
+		return $schema;
+	}
+
+	if ( isset( $schema['@graph'] ) && is_array( $schema['@graph'] ) ) {
+		return mrn_schema_bridge_filter_provider_schema_graph( $schema, false );
+	}
+
+	$is_list = empty( $schema ) || array_keys( $schema ) === range( 0, count( $schema ) - 1 );
+	if ( $is_list ) {
+		return mrn_schema_bridge_filter_provider_schema_graph( $schema, false );
+	}
+
+	if ( mrn_schema_bridge_is_author_person_node( $schema ) ) {
+		return array();
+	}
+
+	if ( mrn_schema_bridge_is_article_schema_node( $schema ) ) {
+		return mrn_schema_bridge_normalize_seopress_article_schema_node( $schema );
+	}
+
+	if (
+		mrn_schema_bridge_item_has_type( $schema, 'Organization' )
+		|| mrn_schema_bridge_item_has_type( $schema, 'ProfessionalService' )
+		|| mrn_schema_bridge_item_has_type( $schema, 'LocalBusiness' )
+	) {
+		return mrn_schema_bridge_filter_provider_schema_graph( $schema, false );
+	}
+
+	return mrn_schema_bridge_normalize_schema_object_urls( $schema );
+}
+
+/**
+ * Normalize assembled SEOPress schema payloads after the generator finishes.
+ *
+ * @param array $data SEOPress generator output.
+ * @return array
+ */
+function mrn_schema_bridge_filter_seopress_json_schema_generator_get_jsons( $data ) {
+	if ( ! mrn_schema_bridge_enabled() || ! is_array( $data ) ) {
+		return $data;
+	}
+
+	foreach ( $data as $key => $schema ) {
+		$normalized = mrn_schema_bridge_normalize_seopress_schema_value( $schema );
+
+		if ( is_array( $normalized ) && empty( $normalized ) ) {
+			unset( $data[ $key ] );
+			continue;
+		}
+
+		$data[ $key ] = $normalized;
+	}
+
+	return $data;
+}
+
+add_filter( 'seopress_json_schema_generator_get_jsons', 'mrn_schema_bridge_filter_seopress_json_schema_generator_get_jsons', 99 );
 
 /**
  * Remove internal/non-public author Person nodes from a schema graph.

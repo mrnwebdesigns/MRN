@@ -8,7 +8,7 @@ MRN Schema Bridge keeps shared schema policy out of child themes and out of site
 
 ## Version
 
-Current version: `0.4.2`
+Current version: `0.4.3`
 
 ## Features
 
