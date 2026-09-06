@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-08-17",
+  "catalog_updated": "2026-09-06",
   "authority": "This file is the authoritative inventory and classification source for MRN-owned WordPress plugins and MU components. Inclusion does not imply installation.",
   "product_model": {
     "platform-required": "Installed on a production MRN stack because it provides mandatory platform behavior.",
@@ -299,6 +299,20 @@
       "dependencies": {"hard": ["WordPress"], "soft": ["MRN SEO Helper", "SmartCrawl", "ACF"], "release_group": "seo-provider-contract"},
       "data": {"options": ["mrn_ai_assist_settings", "database version"], "tables": ["mrn_ai_assist_jobs", "mrn_ai_assist_job_items", "mrn_ai_assist_usage", "mrn_ai_assist_changes"], "cron": ["mrn_ai_assist_alt_process_queue", "scheduler tick"], "routes": ["nine privileged admin-post actions"], "external_services": ["OpenAI"]},
       "purpose": "Provides queued AI-assisted content, SEO and media-alt workflows."
+    },
+    {
+      "slug": "mrn-ai-guardrails",
+      "name": "MRN AI Guardrails",
+      "version": "0.1.0",
+      "runtime_type": "standard-plugin",
+      "classification": "integration-adapter",
+      "lifecycle": "supported",
+      "current_distribution": "catalog-only",
+      "target_tier": "optional-integration",
+      "source": {"repository": "mrn-ai-guardrails", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-ai-guardrails", "state": "confirmed-symlinked"},
+      "dependencies": {"hard": ["WordPress", "SEOPress PRO AI"], "soft": ["SEOPress-supported AI provider"], "release_group": "seo-provider-contract"},
+      "data": {"options": ["mrn_ai_guardrails_settings"], "tables": [], "cron": [], "routes": ["privileged alt-text review admin-post action"], "external_services": [], "meta": ["attachment candidate, review status, policy findings, and bounded history"]},
+      "purpose": "Adds client policy enforcement and human approval before SEOPress AI-generated image alt text is published."
     },
     {
       "slug": "mrn-announcements",

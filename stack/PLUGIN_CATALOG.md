@@ -48,6 +48,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | --- | ---: | --- | --- | --- |
 | `mrn-acf-character-count` | 1.1.8 | Standard bootstrap | Optional integration | ACF editor character counts. |
 | `mrn-acf-focal-point` | 1.1.2 | Standard bootstrap | Optional integration | ACF image focal-point metadata and rendering. |
+| `mrn-ai-guardrails` | 0.1.0 | Independent repository (`mrnwebdesigns/mrn-ai-guardrails`) via MRN-plugins symlink; catalog-only | Optional integration | SEOPress AI policy enforcement and human approval for generated image alt text. |
 | `mrn-cookie-consent` | 1.1.40 | Standard bootstrap | Optional integration | Silktide and Google Consent Mode. |
 | `mrn-fontawesome-profile-manager` | 0.5.0 | Standard bootstrap | Optional integration | Font Awesome profiles and local assets. |
 | `mrn-google-fonts` | 1.0.7 | Independent repository (`mrnwebdesigns/mrn-google-fonts`) via MRN-plugins symlink | Optional integration | Google/local fonts and Site Styles; existing site behavior is unchanged. |
