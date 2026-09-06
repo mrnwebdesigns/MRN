@@ -412,6 +412,35 @@ mrn_assert(
 
 $GLOBALS['mrn_test_fields']['schema_author_policy'] = 'organization';
 
+$direct_article = $blog_posting;
+$direct_article['author'] = array(
+	'@type'  => 'Person',
+	'name'   => 'mrn-admin',
+	'url'    => 'https://https://example.com',
+	'sameAs' => array( 'https://https://example.com' ),
+);
+unset( $direct_article['publisher'] );
+
+$direct_article = apply_filters( 'seopress_schemas_auto_article_json', $direct_article );
+mrn_assert(
+	array( '@id' => 'https://example.com/#organization' ) === $direct_article['author'],
+	'SEOPress direct automatic Article output must replace Person authors under organization policy.'
+);
+mrn_assert(
+	'https://example.com/#organization' === $direct_article['publisher']['@id'],
+	'SEOPress direct automatic Article output must receive the canonical publisher ID.'
+);
+mrn_assert(
+	'Example Legal Entity LLC' === $direct_article['publisher']['legalName'],
+	'SEOPress direct automatic Article output must receive canonical Business Information.'
+);
+mrn_assert(
+	'Blog headline' === $direct_article['headline']
+	&& 'https://example.com/uploads/blog-image.jpg' === $direct_article['image']['url']
+	&& 'https://example.com/blog/sample-post/' === $direct_article['mainEntityOfPage']['@id'],
+	'SEOPress direct automatic Article normalization must preserve article content fields.'
+);
+
 $smartcrawl_graph = array(
 	'@context' => 'https://schema.org',
 	'@graph'   => array(

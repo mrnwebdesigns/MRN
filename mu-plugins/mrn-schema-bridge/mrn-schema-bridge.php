@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Schema Bridge
  * Description: Shared structured data normalization for MRN sites.
- * Version: 0.4.4
+ * Version: 0.4.5
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_VERSION' ) ) {
-	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.4.4' );
+	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.4.5' );
 }
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_SCHEMA_HEALTH_OPTION' ) ) {
@@ -676,7 +676,10 @@ function mrn_schema_bridge_normalize_seopress_article_schema_node( $schema ) {
 	if ( empty( $schema['author'] ) ) {
 		$schema['author'] = $organization_reference;
 	} elseif ( is_array( $schema['author'] ) ) {
-		if ( mrn_schema_bridge_is_author_person_node( $schema['author'] ) ) {
+		$replace_person_author = 'organization' === mrn_schema_bridge_get_author_policy()
+			&& mrn_schema_bridge_item_has_type( $schema['author'], 'Person' );
+
+		if ( $replace_person_author || mrn_schema_bridge_is_author_person_node( $schema['author'] ) ) {
 			$schema['author'] = $organization_reference;
 		} else {
 			$schema['author'] = mrn_schema_bridge_normalize_schema_object_urls( $schema['author'] );
@@ -767,6 +770,25 @@ function mrn_schema_bridge_filter_seopress_json_schema_generator_get_jsons( $dat
 }
 
 add_filter( 'seopress_json_schema_generator_get_jsons', 'mrn_schema_bridge_filter_seopress_json_schema_generator_get_jsons', 99 );
+
+/**
+ * Normalize automatic Article output from SEOPress's direct rendering path.
+ *
+ * SEOPress PRO versions that render automatic schemas procedurally do not pass
+ * through JsonSchemaGenerator, so they require the documented Article filter.
+ *
+ * @param array $schema Automatic Article schema node.
+ * @return array
+ */
+function mrn_schema_bridge_filter_seopress_automatic_article_schema( $schema ) {
+	if ( ! mrn_schema_bridge_enabled() || ! is_array( $schema ) ) {
+		return $schema;
+	}
+
+	return mrn_schema_bridge_normalize_seopress_article_schema_node( $schema );
+}
+
+add_filter( 'seopress_schemas_auto_article_json', 'mrn_schema_bridge_filter_seopress_automatic_article_schema', 99 );
 
 /**
  * Remove internal/non-public author Person nodes from a schema graph.
