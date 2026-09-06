@@ -72,4 +72,10 @@ MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run \
   --project-root /Users/khofmeyer/Development/MRN-plugins/mrn-schema-bridge
 ```
 
+New Stack sites provision filterable automatic BlogPosting (`post`) and NewsArticle (`press_release`) templates while SEOPress Free and PRO are active during bootstrap. Complete Business Information identity is synchronized into SEOPress on bootstrap and later ACF options-page saves; incomplete values never erase existing provider settings. Verify the bootstrap ordering contract with:
+
+```bash
+/Users/khofmeyer/Development/MRN/stack/scripts/qa-seopress-schema-bootstrap.sh
+```
+
 For a full stack rollout, also run the theme, security, runtime, accessibility, performance, parity, and rollout-contract checks in `ROLLOUT_CHECKLIST.md`.

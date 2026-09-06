@@ -16,7 +16,7 @@
   - `mrn-shared-assets` `0.1.3`
   - `mrn-editor-lockdown` `1.0.32`
   - `mrn-environment-runtime` `0.5.1`
-  - `mrn-schema-bridge` `0.4.6`
+  - `mrn-schema-bridge` `0.5.0`
   - `mrn-site-colors` / `Site Styles` `0.1.38`
 - Standard plugins:
   - `mrn-acf-focal-point` `1.1.2`

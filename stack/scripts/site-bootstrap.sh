@@ -1863,6 +1863,41 @@ run_importers() {
   done
 }
 
+provision_seopress_schema_defaults() {
+  local schema_output
+
+  if ! run_wp plugin is-active wp-seopress >/dev/null 2>&1 || ! run_wp plugin is-active wp-seopress-pro >/dev/null 2>&1; then
+    add_warning "Skipped SEOPress schema provisioning: SEOPress Free and PRO must both be active during bootstrap."
+    return 0
+  fi
+
+  if ! schema_output="$(run_wp eval '
+if (!function_exists("mrn_schema_bridge_provision_seopress_article_templates") || !function_exists("mrn_schema_bridge_sync_seopress_identity_from_business_information")) {
+    fwrite(STDERR, "MRN Schema Bridge provisioning APIs are unavailable.\n");
+    exit(1);
+}
+
+$identity = mrn_schema_bridge_sync_seopress_identity_from_business_information();
+$templates = mrn_schema_bridge_provision_seopress_article_templates();
+
+echo "SEOPress identity sync: " . ($identity["status"] ?? "unknown") . "\n";
+echo "SEOPress Article templates: " . ($templates["status"] ?? "unknown") . "\n";
+
+if (($templates["status"] ?? "error") === "error" || ($templates["status"] ?? "skipped") === "skipped") {
+    if (!empty($templates["errors"]) && is_array($templates["errors"])) {
+        fwrite(STDERR, implode("\n", $templates["errors"]) . "\n");
+    }
+    exit(1);
+}
+')"; then
+    printf '%s\n' "${schema_output}" >&2
+    add_warning "SEOPress automatic schema provisioning did not complete cleanly."
+    return 0
+  fi
+
+  printf '%s\n' "${schema_output}"
+}
+
 provision_external_services() {
   local sendgrid_code uptime_code uptime_interval uptime_output uptime_warning_detail
 
@@ -2021,6 +2056,7 @@ main() {
   apply_wp_defaults
   provision_uptime_robot_check_page
   run_importers
+  provision_seopress_schema_defaults
   provision_external_services
   reconcile_development_environment_policy
   ensure_updraft_local_retention_schedule

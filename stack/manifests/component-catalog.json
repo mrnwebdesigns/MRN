@@ -191,7 +191,7 @@
     {
       "slug": "mrn-schema-bridge",
       "name": "MRN Schema Bridge",
-      "version": "0.4.6",
+      "version": "0.5.0",
       "runtime_type": "mu-component",
       "classification": "integration-adapter",
       "lifecycle": "supported",

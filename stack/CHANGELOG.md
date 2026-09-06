@@ -1,6 +1,7 @@
 # Stack Changelog
 
 ## Unreleased
+- `mrn-schema-bridge` (`0.4.6` -> `0.5.0`): added idempotent, filterable SEOPress BlogPosting and NewsArticle template provisioning plus non-destructive Business Information identity synchronization. New-site bootstrap now provisions both contracts while SEOPress is active, before development policy deactivates SEO processing.
 - Added the canonical Cloudflare security policy, plan-aware development and production intent profiles, and a read-only profile QA contract; linked the baseline into Stack operations and rollout guidance without authorizing or automating live Cloudflare changes.
 - Moved `mrn-schema-bridge` source ownership to its private standalone repository while retaining Stack distribution through the existing MU-plugin loader.
 - `mrn-schema-bridge` (`0.4.5` -> `0.4.6`): made SEOPress's native Organization settings authoritative on standardized sites while preserving Business Information as the Stack's visible content/token source. The bridge now adds only the stable `#organization` identity link and MRN author/privacy policy to SEOPress Organization and Article output; Business Information organization enrichment remains limited to legacy SmartCrawl sites.
