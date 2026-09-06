@@ -191,7 +191,7 @@
     {
       "slug": "mrn-schema-bridge",
       "name": "MRN Schema Bridge",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "runtime_type": "mu-component",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -200,7 +200,7 @@
       "source": {"repository": "mrn-schema-bridge", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-schema-bridge", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["SmartCrawl", "SEOPress", "MRN base theme", "mrn-seo-helper"], "release_group": "seo-provider-contract"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": ["SmartCrawl", "SEOPress"]},
-      "purpose": "Normalizes provider and theme schema behavior."
+      "purpose": "Normalizes provider and theme schema behavior, including automatic Article and visible-content JobPosting contracts."
     },
     {
       "slug": "mrn-active-style-guide",

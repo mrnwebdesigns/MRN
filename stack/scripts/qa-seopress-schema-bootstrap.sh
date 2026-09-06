@@ -25,7 +25,9 @@ grep -Fq 'function mrn_schema_bridge_provision_seopress_article_templates()' "${
 	|| fail "Schema Bridge is missing automatic Article template provisioning"
 grep -Fq 'function mrn_schema_bridge_sync_seopress_identity_from_business_information()' "${BRIDGE_MAIN}" \
 	|| fail "Schema Bridge is missing Business Information identity synchronization"
-pass "Schema Bridge exposes the new-site SEOPress provisioning APIs"
+grep -Fq 'function mrn_schema_bridge_build_job_posting_schema_node(' "${BRIDGE_MAIN}" \
+	|| fail "Schema Bridge is missing the Stack JobPosting schema contract"
+pass "Schema Bridge exposes the new-site SEOPress and JobPosting APIs"
 
 provision_line="$(grep -n '^  provision_seopress_schema_defaults$' "${BOOTSTRAP}" | cut -d: -f1)"
 policy_line="$(grep -n '^  reconcile_development_environment_policy$' "${BOOTSTRAP}" | cut -d: -f1)"
