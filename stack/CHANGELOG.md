@@ -1,6 +1,7 @@
 # Stack Changelog
 
 ## Unreleased
+- `mrn-config-helper` (`0.1.58` -> `0.1.59`): made the MRN renderer the default owner of both visible breadcrumbs and `BreadcrumbList` schema, and changed `Auto` delegation so SEOPress suppresses MRN schema only when SEOPress JSON-LD breadcrumbs are explicitly enabled. New-site bootstrap normalizes imported settings to MRN ownership and disables conflicting SEOPress breadcrumb JSON-LD.
 - `mrn-schema-bridge` (`0.5.0` -> `0.6.0`): added conservative `JobPosting` schema from visible Stack careers fields, canonical hiring-organization identity, international location normalization, and Schema Health coverage. Incomplete locations are withheld rather than emitted as invalid rich-result markup.
 - Refreshed the pinned SEOPress PRO package from `10.1.1` to `10.2`, matching the automatic-schema release validated with `mrn-schema-bridge` `0.5.0`.
 - `mrn-schema-bridge` (`0.4.6` -> `0.5.0`): added idempotent, filterable SEOPress BlogPosting and NewsArticle template provisioning plus non-destructive Business Information identity synchronization. New-site bootstrap now provisions both contracts while SEOPress is active, before development policy deactivates SEO processing.

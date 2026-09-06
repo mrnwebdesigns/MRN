@@ -21,7 +21,7 @@
 - Standard plugins:
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-announcements` `1.6.2`
-  - `mrn-config-helper` `0.1.56`
+  - `mrn-config-helper` `0.1.59`
   - `mrn-sendgrid-provisioning` `0.1.0`
   - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`

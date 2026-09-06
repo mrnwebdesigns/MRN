@@ -1863,6 +1863,45 @@ run_importers() {
   done
 }
 
+configure_mrn_breadcrumb_schema_ownership() {
+  local breadcrumb_output
+
+  if ! breadcrumb_output="$(run_wp eval '
+$settings = get_option("mrn_helper_settings", array());
+if (!is_array($settings)) {
+    fwrite(STDERR, "MRN Config Helper settings are not an array.\n");
+    exit(1);
+}
+
+$breadcrumbs = isset($settings["breadcrumbs"]) && is_array($settings["breadcrumbs"])
+    ? $settings["breadcrumbs"]
+    : array();
+$changed = false;
+
+if (($breadcrumbs["schema_source"] ?? "") !== "stack") {
+    $breadcrumbs["schema_source"] = "stack";
+    $settings["breadcrumbs"] = $breadcrumbs;
+    update_option("mrn_helper_settings", $settings, false);
+    $changed = true;
+}
+
+$seopress = get_option("seopress_pro_option_name", array());
+if (is_array($seopress) && ($seopress["seopress_breadcrumbs_json_enable"] ?? "") === "1") {
+    $seopress["seopress_breadcrumbs_json_enable"] = "";
+    update_option("seopress_pro_option_name", $seopress, false);
+    $changed = true;
+}
+
+echo $changed ? "MRN breadcrumb schema ownership configured.\n" : "MRN breadcrumb schema ownership already configured.\n";
+')"; then
+    printf '%s\n' "${breadcrumb_output}" >&2
+    echo "Failed to configure MRN breadcrumb schema ownership." >&2
+    return 1
+  fi
+
+  printf '%s\n' "${breadcrumb_output}"
+}
+
 provision_seopress_schema_defaults() {
   local schema_output
 
@@ -2056,6 +2095,7 @@ main() {
   apply_wp_defaults
   provision_uptime_robot_check_page
   run_importers
+  configure_mrn_breadcrumb_schema_ownership
   provision_seopress_schema_defaults
   provision_external_services
   reconcile_development_environment_policy

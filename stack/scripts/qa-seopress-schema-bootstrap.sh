@@ -29,11 +29,17 @@ grep -Fq 'function mrn_schema_bridge_build_job_posting_schema_node(' "${BRIDGE_M
 	|| fail "Schema Bridge is missing the Stack JobPosting schema contract"
 pass "Schema Bridge exposes the new-site SEOPress and JobPosting APIs"
 
+breadcrumb_line="$(grep -n '^  configure_mrn_breadcrumb_schema_ownership$' "${BOOTSTRAP}" | cut -d: -f1)"
 provision_line="$(grep -n '^  provision_seopress_schema_defaults$' "${BOOTSTRAP}" | cut -d: -f1)"
 policy_line="$(grep -n '^  reconcile_development_environment_policy$' "${BOOTSTRAP}" | cut -d: -f1)"
 
+[[ -n "${breadcrumb_line}" ]] || fail "Bootstrap does not configure MRN breadcrumb schema ownership"
 [[ -n "${provision_line}" ]] || fail "Bootstrap does not invoke SEOPress schema provisioning"
 [[ -n "${policy_line}" ]] || fail "Bootstrap development policy invocation was not found"
+(( breadcrumb_line < provision_line )) || fail "Breadcrumb ownership must be normalized before SEOPress schema provisioning"
+grep -Fq 'seopress_breadcrumbs_json_enable' "${BOOTSTRAP}" \
+	|| fail "Bootstrap does not disable conflicting SEOPress breadcrumb JSON-LD"
+pass "Bootstrap keeps visible and schema breadcrumbs under MRN ownership"
 (( provision_line < policy_line )) || fail "SEOPress schema provisioning must run before development policy deactivates SEOPress"
 pass "Bootstrap provisions SEOPress schema before development deactivation"
 
