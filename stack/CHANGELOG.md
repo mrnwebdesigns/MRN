@@ -1,6 +1,7 @@
 # Stack Changelog
 
 ## Unreleased
+- Refreshed the pinned SEOPress PRO package from `10.1.1` to `10.2`, matching the automatic-schema release validated with `mrn-schema-bridge` `0.5.0`.
 - `mrn-schema-bridge` (`0.4.6` -> `0.5.0`): added idempotent, filterable SEOPress BlogPosting and NewsArticle template provisioning plus non-destructive Business Information identity synchronization. New-site bootstrap now provisions both contracts while SEOPress is active, before development policy deactivates SEO processing.
 - Added the canonical Cloudflare security policy, plan-aware development and production intent profiles, and a read-only profile QA contract; linked the baseline into Stack operations and rollout guidance without authorizing or automating live Cloudflare changes.
 - Moved `mrn-schema-bridge` source ownership to its private standalone repository while retaining Stack distribution through the existing MU-plugin loader.

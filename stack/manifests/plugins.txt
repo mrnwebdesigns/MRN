@@ -41,7 +41,7 @@ tinymce-advanced
 /home/mrndev-stack-manager/stack/packages/wp-toolbar-editor.zip
 /home/mrndev-stack-manager/stack/packages/wpforms.zip
 wp-seopress
-/home/mrndev-stack-manager/stack/packages/wp-seopress-pro-10-1-1.zip
+/home/mrndev-stack-manager/stack/packages/wp-seopress-pro-10-2.zip
 /home/mrndev-stack-manager/stack/packages/mrn-database-retention.zip
 /home/mrndev-stack-manager/stack/packages/mrn-hierarchical-menu-taxonomies.zip
 /home/mrndev-stack-manager/stack/packages/mrn-layout-import-export.zip
