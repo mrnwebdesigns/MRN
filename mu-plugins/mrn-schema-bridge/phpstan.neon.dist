@@ -2,6 +2,7 @@ parameters:
     level: 3
     paths:
         - mrn-schema-bridge.php
+        - includes
     tmpDir: .tmp/phpstan
     reportUnmatchedIgnoredErrors: false
     treatPhpDocTypesAsCertain: false

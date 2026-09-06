@@ -8,7 +8,7 @@ MRN Schema Bridge keeps shared schema policy out of child themes and out of site
 
 ## Version
 
-Current version: `0.4.3`
+Current version: `0.4.4`
 
 ## Features
 
@@ -24,7 +24,7 @@ Current version: `0.4.3`
 - Supports schema-only post descriptions through hidden post meta or a site option map.
 - Adds an SEO & Schema Classic Editor panel for page intent and description overrides.
 - Enriches active-provider organization identity from the canonical Business Information screen.
-- Applies non-destructive SmartCrawl schema, social, sitemap, and analysis defaults for legacy SmartCrawl sites.
+- Isolates SmartCrawl compatibility for legacy sites where SmartCrawl remains the selected provider.
 - Publishes separate robots.txt policies for AI search/retrieval and model-training crawlers.
 - Adds a Tools > Schema Health admin screen for same-site sitemap scans.
 - Keeps behavior filterable per site.
@@ -33,7 +33,7 @@ Current version: `0.4.3`
 ## Schema Ownership
 
 - Business Information owns public organization identity, address, phone, hours, logo, and schema policy.
-- The active SEO provider owns the base `WebSite`, `WebPage`, breadcrumb, article, sitemap, canonical, and social graph. SEOPress is the preferred new-stack provider; SmartCrawl remains supported for existing sites during migration.
+- SEOPress owns the base `WebSite`, `WebPage`, breadcrumb, article, sitemap, canonical, and social graph on standardized sites. SmartCrawl remains a migration-only fallback when it is still the selected provider.
 - MRN Schema Bridge enriches and normalizes that graph and owns stack-specific CPT/page mappings.
 - Theme components supply visible source data and do not print competing site-wide schema when a supported provider is active.
 
@@ -60,7 +60,7 @@ Project/case-study schema defaults to the base-stack `case_study` post type and 
 
 ## Provider Rollout Defaults
 
-On first load for each bridge release, existing SmartCrawl values are preserved and missing defaults are filled for legacy SmartCrawl sites:
+When SmartCrawl is the selected provider, existing values are preserved and missing defaults are filled once per bridge release:
 
 - sitemap, title/meta, social, instant indexing, SEO analysis, and readability modules
 - organization site representation and canonical Business Information name/logo
@@ -69,6 +69,8 @@ On first load for each bridge release, existing SmartCrawl values are preserved 
 - SmartCrawl XML sitemap ownership, automatic regeneration, and stylesheet
 
 MRN SEO Helper remains the owner of public post-type title and meta-description templates.
+
+When both providers are loaded and MRN SEO Helper does not select one explicitly, Schema Bridge prefers SEOPress. SmartCrawl graph normalization, option overlays, and defaults stop running as soon as SEOPress is authoritative. The legacy module remains packaged for migration rollback and SmartCrawl-only sites.
 
 ## AI Crawler Policy
 
@@ -120,6 +122,7 @@ The scan stores the last report in the `mrn_schema_bridge_schema_health_last_rep
 - `mrn_schema_bridge_schema_health_request_timeout`
 - `mrn_schema_bridge_supported_schema_provider_loaded`
 - `mrn_schema_bridge_suppress_legacy_business_schema_enabled`
+- `mrn_schema_bridge_legacy_smartcrawl_compatibility_enabled`
 - `mrn_schema_bridge_contact_page_ids`
 - `mrn_schema_bridge_contact_page_schema_node`
 - `mrn_schema_bridge_contact_points`

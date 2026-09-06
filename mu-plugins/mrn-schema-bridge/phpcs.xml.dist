@@ -8,6 +8,7 @@
 	<arg name="extensions" value="php"/>
 
 	<file>mrn-schema-bridge.php</file>
+	<file>includes</file>
 
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/node_modules/*</exclude-pattern>

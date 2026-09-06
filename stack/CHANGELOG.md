@@ -1,6 +1,7 @@
 # Stack Changelog
 
 ## Unreleased
+- `mrn-schema-bridge` (`0.4.3` -> `0.4.4`): isolated legacy SmartCrawl behavior and limited its graph, option, and default mutations to sites where SmartCrawl remains the selected provider; SEOPress now wins provider fallback detection during dual-provider migrations while explicit legacy rollback remains filterable.
 - `mrn-base-stack` (`1.3.1` -> `1.3.2`): added CPT-agnostic reading-time and content table-of-contents helpers. The TOC API adds configurable heading anchors and returns processed HTML plus link data for child-theme placement, with regression coverage.
 - `mrn-schema-bridge` (`0.4.2` -> `0.4.3`): added late assembled-schema integration for SEOPress automatic Article output, so the bridge can remove non-public author Person nodes, normalize malformed author URLs, and enrich the final publisher while preserving SmartCrawl and supplemental schema behavior.
 

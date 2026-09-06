@@ -8,6 +8,21 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * Check whether legacy SmartCrawl mutations should run for the active provider.
+ *
+ * SmartCrawl remains available as a migration fallback, but it must not alter
+ * provider state after SEOPress becomes authoritative.
+ *
+ * @return bool
+ */
+function mrn_schema_bridge_legacy_smartcrawl_compatibility_enabled() {
+	$enabled = mrn_schema_bridge_smartcrawl_provider_loaded()
+		&& 'smartcrawl' === mrn_schema_bridge_get_active_schema_provider();
+
+	return (bool) apply_filters( 'mrn_schema_bridge_legacy_smartcrawl_compatibility_enabled', $enabled );
+}
+
+/**
  * Get the canonical business logo attachment ID.
  *
  * @return int
@@ -29,6 +44,10 @@ function mrn_schema_bridge_get_business_logo_id() {
  * @return array<string,mixed>
  */
 function mrn_schema_bridge_filter_smartcrawl_social_options( $options ) {
+	if ( ! mrn_schema_bridge_legacy_smartcrawl_compatibility_enabled() ) {
+		return $options;
+	}
+
 	$options  = is_array( $options ) ? $options : array();
 	$logo_id  = mrn_schema_bridge_get_business_logo_id();
 	$logo_url = $logo_id ? wp_get_attachment_image_url( $logo_id, 'full' ) : '';
@@ -53,6 +72,10 @@ add_filter( 'option_wds_social_options', 'mrn_schema_bridge_filter_smartcrawl_so
  * @return array<string,mixed>
  */
 function mrn_schema_bridge_filter_smartcrawl_schema_options( $options ) {
+	if ( ! mrn_schema_bridge_legacy_smartcrawl_compatibility_enabled() ) {
+		return $options;
+	}
+
 	$options  = is_array( $options ) ? $options : array();
 	$identity = mrn_schema_bridge_get_canonical_organization_properties();
 	$logo_id  = mrn_schema_bridge_get_business_logo_id();
@@ -82,7 +105,7 @@ add_filter( 'option_wds_schema_options', 'mrn_schema_bridge_filter_smartcrawl_sc
  * @return void
  */
 function mrn_schema_bridge_apply_smartcrawl_defaults() {
-	if ( ! mrn_schema_bridge_smartcrawl_provider_loaded() ) {
+	if ( ! mrn_schema_bridge_legacy_smartcrawl_compatibility_enabled() ) {
 		return;
 	}
 

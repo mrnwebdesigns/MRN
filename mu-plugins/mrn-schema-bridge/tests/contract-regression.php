@@ -6,6 +6,8 @@
  */
 
 define( 'ABSPATH', __DIR__ . '/' );
+define( 'SMARTCRAWL_VERSION', '3.13.3' );
+define( 'SEOPRESS_VERSION', '10.2.0' );
 
 $GLOBALS['mrn_test_filters'] = array();
 $GLOBALS['mrn_test_fields']  = array();
@@ -26,7 +28,15 @@ function add_action( $hook, $callback ) {
 	add_filter( $hook, $callback );
 }
 
-function apply_filters( $hook, $value ) {
+function apply_filters( $hook, $value, ...$args ) {
+	if ( empty( $GLOBALS['mrn_test_filters'][ $hook ] ) ) {
+		return $value;
+	}
+
+	foreach ( $GLOBALS['mrn_test_filters'][ $hook ] as $callback ) {
+		$value = $callback( $value, ...$args );
+	}
+
 	return $value;
 }
 
@@ -140,6 +150,36 @@ function mrn_assert( $condition, $message ) {
 		exit( 1 );
 	}
 }
+
+mrn_assert(
+	'seopress' === mrn_schema_bridge_get_active_schema_provider(),
+	'SEOPress must be authoritative when SEOPress and SmartCrawl are both loaded during migration.'
+);
+mrn_assert(
+	! mrn_schema_bridge_legacy_smartcrawl_compatibility_enabled(),
+	'Legacy SmartCrawl mutations must be disabled after SEOPress becomes authoritative.'
+);
+
+$inactive_smartcrawl_options = array( 'existing' => 'preserved' );
+mrn_assert(
+	$inactive_smartcrawl_options === mrn_schema_bridge_filter_smartcrawl_social_options( $inactive_smartcrawl_options ),
+	'Inactive SmartCrawl social options must pass through without mutation.'
+);
+mrn_assert(
+	$inactive_smartcrawl_options === mrn_schema_bridge_filter_smartcrawl_schema_options( $inactive_smartcrawl_options ),
+	'Inactive SmartCrawl schema options must pass through without mutation.'
+);
+
+add_filter(
+	'mrn_schema_bridge_legacy_smartcrawl_compatibility_enabled',
+	static function () {
+		return true;
+	}
+);
+mrn_assert(
+	mrn_schema_bridge_legacy_smartcrawl_compatibility_enabled(),
+	'Legacy SmartCrawl compatibility must remain explicitly re-enableable for rollback.'
+);
 
 mrn_assert(
 	in_array( 'case_study', mrn_schema_bridge_get_project_post_types(), true ),

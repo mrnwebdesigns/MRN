@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Schema Bridge
  * Description: Shared structured data normalization for MRN sites.
- * Version: 0.4.3
+ * Version: 0.4.4
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_VERSION' ) ) {
-	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.4.3' );
+	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.4.4' );
 }
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_SCHEMA_HEALTH_OPTION' ) ) {
@@ -823,7 +823,11 @@ function mrn_schema_bridge_strip_author_person_nodes( $graph ) {
  * @return array
  */
 function mrn_schema_bridge_filter_schema_graph( $data ) {
-	if ( ! mrn_schema_bridge_enabled() || ! is_array( $data ) ) {
+	if (
+		! mrn_schema_bridge_enabled()
+		|| ! is_array( $data )
+		|| ! mrn_schema_bridge_legacy_smartcrawl_compatibility_enabled()
+	) {
 		return $data;
 	}
 
@@ -2152,7 +2156,7 @@ function mrn_schema_bridge_get_active_schema_provider() {
 		}
 	}
 
-	if ( mrn_schema_bridge_seopress_provider_loaded() && ! mrn_schema_bridge_smartcrawl_provider_loaded() ) {
+	if ( mrn_schema_bridge_seopress_provider_loaded() ) {
 		return 'seopress';
 	}
 
@@ -2902,7 +2906,7 @@ function mrn_schema_bridge_schema_health_scan_url( $url ) {
 			$row,
 			'missing_canonical',
 			__( 'No canonical link was detected.', 'mrn-schema-bridge' ),
-			__( 'Confirm SmartCrawl canonical output is enabled for this template.', 'mrn-schema-bridge' )
+			__( 'Confirm SEOPress canonical output is enabled for this template.', 'mrn-schema-bridge' )
 		);
 	}
 
