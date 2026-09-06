@@ -5,7 +5,7 @@
 - Plugin source path: `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-schema-bridge`
 - Intended integration target: MRN shared MU plugin loader and normal MRN brochure/client sites
 - Current release model: shared MU plugin release unit
-- Current plugin version: `0.4.5`
+- Current plugin version: `0.4.6`
 
 ## Why This File Exists
 This directory follows MRN QA Engine discovery standards so the schema plugin can be checked independently from unrelated stack work.

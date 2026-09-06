@@ -8,7 +8,7 @@ MRN Schema Bridge keeps shared schema policy out of child themes and out of site
 
 ## Version
 
-Current version: `0.4.5`
+Current version: `0.4.6`
 
 ## Features
 
@@ -23,7 +23,8 @@ Current version: `0.4.5`
 - Adds render-aware `Quotation` schema only for testimonials visibly output by the base theme.
 - Supports schema-only post descriptions through hidden post meta or a site option map.
 - Adds an SEO & Schema Classic Editor panel for page intent and description overrides.
-- Enriches active-provider organization identity from the canonical Business Information screen.
+- Adds a stable entity ID to SEOPress's native Organization and links organization-authored articles to it.
+- Uses Business Information organization enrichment only for legacy SmartCrawl sites.
 - Isolates SmartCrawl compatibility for legacy sites where SmartCrawl remains the selected provider.
 - Publishes separate robots.txt policies for AI search/retrieval and model-training crawlers.
 - Adds a Tools > Schema Health admin screen for same-site sitemap scans.
@@ -32,14 +33,14 @@ Current version: `0.4.5`
 
 ## Schema Ownership
 
-- Business Information owns public organization identity, address, phone, hours, logo, and schema policy.
-- SEOPress owns the base `WebSite`, `WebPage`, breadcrumb, article, sitemap, canonical, and social graph on standardized sites. SmartCrawl remains a migration-only fallback when it is still the selected provider.
-- MRN Schema Bridge enriches and normalizes that graph and owns stack-specific CPT/page mappings.
+- Business Information owns reusable theme tokens and visible operational content such as logo variants, profile, phone/text numbers, address, business hours, and holiday hours.
+- SEOPress owns public SEO identity and the base `Organization`, `WebSite`, `WebPage`, breadcrumb, article, sitemap, canonical, and social output on standardized sites. SmartCrawl remains a migration-only fallback when it is still the selected provider.
+- MRN Schema Bridge assigns stable entity references, applies MRN author/privacy policy, and owns stack-specific supplemental CPT/page mappings without overwriting SEOPress identity fields.
 - Theme components supply visible source data and do not print competing site-wide schema when a supported provider is active.
 
 Rendered testimonials are the exception to head-time graph merging: dynamic Content rows are not resolved until the page body renders, so the base theme reports visible testimonial quotes to the bridge and the bridge emits one deduplicated `Quotation` graph in the footer. It never converts testimonials into `Review`, `Rating`, or `AggregateRating` entities.
 
-The Business Information > Identity & Schema tab controls organization type, legal/alternate name, public email, area served, coordinates, author policy, and AI crawler policy.
+The existing Business Information > Identity & Schema fields remain available for author/crawler policy and legacy SmartCrawl rollback during migration. On SEOPress sites, configure public Organization and Local Business identity in SEOPress; the bridge does not copy the duplicated Business Information identity fields over SEOPress output.
 
 The post editor's SEO & Schema panel defaults to Auto. Use the page-intent override only for About, Collection, Contact, Profile, or Service pages. The None option disables bridge-owned supplemental schema without removing the active provider's safe base WebPage graph.
 
@@ -110,6 +111,7 @@ The scan stores the last report in the `mrn_schema_bridge_schema_health_last_rep
 - `mrn_schema_bridge_allowed_organization_types`
 - `mrn_schema_bridge_business_schema_setting`
 - `mrn_schema_bridge_canonical_organization_properties`
+- `mrn_schema_bridge_seopress_organization_properties`
 - `mrn_schema_bridge_supplemental_schema_enabled`
 - `mrn_schema_bridge_supplemental_schema_nodes`
 - `mrn_schema_bridge_schema_health_allowed_scan_url`

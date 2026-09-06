@@ -4,9 +4,9 @@ This is the canonical structured-data and crawler baseline for new MRN stack sit
 
 ## Ownership
 
-- **Business Information** is the canonical source for organization identity, contact details, service area, coordinates, author policy, and AI crawler policy.
-- **Active SEO provider** owns the base `WebSite`, `WebPage`, breadcrumb, article, canonical, social, and XML sitemap output. SEOPress is the preferred provider for new stack sites; SmartCrawl remains supported for existing sites during migration.
-- **MRN Schema Bridge** enriches and normalizes supported provider graphs and supplies stack-specific content mappings.
+- **Business Information** is the canonical source for reusable theme tokens and visible operational content, including logo variants, profile, phone/text numbers, address, business hours, and holiday hours.
+- **Active SEO provider** owns public organization identity and the base `Organization`, `WebSite`, `WebPage`, breadcrumb, article, canonical, social, and XML sitemap output. SEOPress is the preferred provider for new stack sites; SmartCrawl remains supported for existing sites during migration.
+- **MRN Schema Bridge** assigns stable entity references, applies MRN author/privacy policy, and supplies stack-specific content mappings without replacing SEOPress identity fields.
 - **MRN SEO Helper** owns public post-type title and meta-description templates.
 - Themes and content components should provide visible source data, not emit a competing site-wide schema graph.
 
@@ -14,7 +14,7 @@ This is the canonical structured-data and crawler baseline for new MRN stack sit
 
 MRN Schema Bridge fills missing SmartCrawl settings once per bridge release on legacy SmartCrawl sites. Existing site choices win.
 
-The baseline lets the active SEO provider own sitemap, title/meta, social/canonical, and base schema output. Stack-owned helpers configure provider-compatible metadata while Business Information remains the canonical organization source.
+The baseline lets SEOPress own sitemap, title/meta, social/canonical, and public organization/schema output. Business Information remains available to theme components and the token layer; its organization enrichment is used only by legacy SmartCrawl sites.
 
 Author, date, search, comment, audio, and video schema remain conservative until a site intentionally configures them.
 
@@ -51,10 +51,10 @@ The stack does not publish `llms.txt`. Revisit it only if major AI retrieval sys
 
 ## New-Site Checklist
 
-1. Complete **Business Information > Identity & Schema** before launch.
-2. Confirm the organization name, logo, URL, type, phone, address, area served, and coordinates are accurate.
-3. Choose the author policy and independently review AI retrieval and model-training preferences.
-4. Confirm the active SEO provider, sitemap, title/meta templates, and site representation were initialized without overwriting intentional settings.
+1. Complete the visible and operational fields in **Business Information** for theme and token consumers.
+2. Complete SEOPress Knowledge Graph and, where applicable, Local Business settings; confirm organization name, logo, URL, type, contact details, address, and coordinates are accurate.
+3. Choose the MRN author policy and independently review AI retrieval and model-training preferences.
+4. Confirm SEOPress, its sitemap, title/meta templates, and site representation were initialized without overwriting intentional settings.
 5. Assign explicit page intent only where Auto cannot infer it.
 6. Confirm every public CPT has an indexation decision, title/meta template, archive decision, sitemap inclusion decision, and schema mapping.
 7. Run **Tools > Schema Health** against the production sitemap after the site becomes public.

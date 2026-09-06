@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Schema Bridge
  * Description: Loads the MRN Schema Bridge MU plugin from its subfolder.
- * Version: 0.4.5
+ * Version: 0.4.6
  *
  * Bootstrap loader for the MRN Schema Bridge MU plugin.
  */

@@ -12,6 +12,7 @@ define( 'SEOPRESS_VERSION', '10.2.0' );
 $GLOBALS['mrn_test_filters'] = array();
 $GLOBALS['mrn_test_fields']  = array();
 $GLOBALS['mrn_test_meta']    = array();
+$GLOBALS['mrn_test_provider'] = 'seopress';
 
 class WP_Post {
 	public $ID = 0;
@@ -64,6 +65,10 @@ function esc_url_raw( $value ) {
 	return (string) $value;
 }
 
+function wp_parse_url( $value ) {
+	return parse_url( $value ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- WordPress stub.
+}
+
 function wp_strip_all_tags( $value ) {
 	return strip_tags( (string) $value ); // phpcs:ignore WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- WordPress stub.
 }
@@ -102,6 +107,10 @@ function get_post_meta( $post_id, $key ) {
 
 function get_option( $name, $default = false ) {
 	return 'blog_public' === $name ? '1' : $default;
+}
+
+function mrn_seo_helper_get_active_provider() {
+	return $GLOBALS['mrn_test_provider'];
 }
 
 function is_admin() {
@@ -257,6 +266,54 @@ $GLOBALS['mrn_test_fields']['schema_latitude']         = '35.7796';
 $GLOBALS['mrn_test_fields']['schema_longitude']        = '-78.6382';
 $GLOBALS['mrn_test_fields']['schema_author_policy']     = 'organization';
 
+add_filter(
+	'mrn_schema_bridge_seopress_organization_properties',
+	static function () {
+		return array(
+			'@context'      => 'https://schema.org',
+			'@type'         => 'Corporation',
+			'name'          => 'SEOPress Organization',
+			'legalName'     => 'SEOPress Legal Entity Inc.',
+			'alternateName' => 'SEOPress Brand',
+			'email'         => 'seo@example.com',
+			'address'       => array(
+				'@type'           => 'PostalAddress',
+				'addressLocality' => 'Durham',
+			),
+			'logo'          => array(
+				'@type' => 'ImageObject',
+				'url'   => 'https://example.com/uploads/native-logo.png',
+			),
+			'sameAs'        => array( 'http://', 'https://example.com/company/' ),
+		);
+	}
+);
+
+$native_organization = apply_filters(
+	'seopress_get_json_data_organization',
+	array(
+		'@context' => 'https://schema.org',
+		'@type'    => 'Corporation',
+		'name'     => 'Native Organization',
+	)
+);
+mrn_assert(
+	'https://example.com/#organization' === $native_organization['@id'],
+	'SEOPress Organization schema must receive the stable MRN entity ID.'
+);
+mrn_assert(
+	'Native Organization' === $native_organization['name'] && ! isset( $native_organization['legalName'] ),
+	'SEOPress Organization fields must remain authoritative instead of inheriting Business Information identity.'
+);
+mrn_assert(
+	'' === mrn_schema_bridge_normalize_schema_url( 'http://' ),
+	'Empty provider URL placeholders must be removed from schema output.'
+);
+mrn_assert(
+	! isset( mrn_schema_bridge_normalize_schema_object_urls( array( 'sameAs' => array( 'http://' ) ) )['sameAs'] ),
+	'Empty provider social URL lists must be removed from schema output.'
+);
+
 $blog_posting = array(
 	'@context'         => 'https://schema.org',
 	'@type'            => 'BlogPosting',
@@ -337,32 +394,33 @@ mrn_assert(
 	'BlogPosting publisher must receive the canonical organization ID.'
 );
 mrn_assert(
-	'Example Legal Entity LLC' === $normalized_payload['article']['publisher']['legalName'],
-	'BlogPosting publisher must inherit canonical legal name data.'
+	'SEOPress Legal Entity Inc.' === $normalized_payload['article']['publisher']['legalName'],
+	'BlogPosting publisher must inherit SEOPress legal name data.'
 );
 mrn_assert(
-	'Example Alt Name' === $normalized_payload['article']['publisher']['alternateName'],
-	'BlogPosting publisher must inherit canonical alternate name data.'
+	'SEOPress Brand' === $normalized_payload['article']['publisher']['alternateName'],
+	'BlogPosting publisher must inherit SEOPress alternate name data.'
 );
 mrn_assert(
-	'info@example.com' === $normalized_payload['article']['publisher']['email'],
-	'BlogPosting publisher must inherit canonical email data.'
+	'seo@example.com' === $normalized_payload['article']['publisher']['email'],
+	'BlogPosting publisher must inherit SEOPress email data.'
 );
 mrn_assert(
-	'North Carolina' === $normalized_payload['article']['publisher']['areaServed'],
-	'BlogPosting publisher must inherit canonical area served data.'
-);
-mrn_assert(
-	'Canonical business description' === $normalized_payload['article']['publisher']['description'],
-	'BlogPosting publisher must inherit canonical business description data.'
+	! isset( $normalized_payload['article']['publisher']['areaServed'] )
+	&& ! isset( $normalized_payload['article']['publisher']['description'] ),
+	'BlogPosting publisher must not inherit identity fields from Business Information.'
 );
 mrn_assert(
 	'https://example.com/uploads/blog-image.jpg' === $normalized_payload['article']['image']['url'],
 	'BlogPosting image URL must be preserved.'
 );
 mrn_assert(
-	'https://example.com/assets/logo.png' === $normalized_payload['article']['publisher']['logo']['url'],
-	'BlogPosting publisher logo must be taken from canonical Business Information data.'
+	'https://example.com/uploads/seopress-logo.png' === $normalized_payload['article']['publisher']['logo']['url'],
+	'BlogPosting publisher must preserve the logo assembled by SEOPress.'
+);
+mrn_assert(
+	array( 'https://example.com/company/' ) === $normalized_payload['article']['publisher']['sameAs'],
+	'BlogPosting publisher must remove empty provider social URL placeholders.'
 );
 mrn_assert(
 	'https://example.com/blog/sample-post/' === $normalized_payload['article']['mainEntityOfPage']['@id'],
@@ -431,8 +489,8 @@ mrn_assert(
 	'SEOPress direct automatic Article output must receive the canonical publisher ID.'
 );
 mrn_assert(
-	'Example Legal Entity LLC' === $direct_article['publisher']['legalName'],
-	'SEOPress direct automatic Article output must receive canonical Business Information.'
+	'SEOPress Legal Entity Inc.' === $direct_article['publisher']['legalName'],
+	'SEOPress direct automatic Article output must use SEOPress Organization settings.'
 );
 mrn_assert(
 	'Blog headline' === $direct_article['headline']
@@ -441,6 +499,7 @@ mrn_assert(
 	'SEOPress direct automatic Article normalization must preserve article content fields.'
 );
 
+$GLOBALS['mrn_test_provider'] = 'smartcrawl';
 $smartcrawl_graph = array(
 	'@context' => 'https://schema.org',
 	'@graph'   => array(

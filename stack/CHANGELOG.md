@@ -1,6 +1,7 @@
 # Stack Changelog
 
 ## Unreleased
+- `mrn-schema-bridge` (`0.4.5` -> `0.4.6`): made SEOPress's native Organization settings authoritative on standardized sites while preserving Business Information as the Stack's visible content/token source. The bridge now adds only the stable `#organization` identity link and MRN author/privacy policy to SEOPress Organization and Article output; Business Information organization enrichment remains limited to legacy SmartCrawl sites.
 - `mrn-schema-bridge` (`0.4.4` -> `0.4.5`): normalized SEOPress automatic Article output through both the assembled generator and direct-render Article hooks, ensuring organization author policy, canonical publisher enrichment, and malformed URL cleanup also apply to mixed Free/PRO release pipelines.
 - `mrn-schema-bridge` (`0.4.3` -> `0.4.4`): isolated legacy SmartCrawl behavior and limited its graph, option, and default mutations to sites where SmartCrawl remains the selected provider; SEOPress now wins provider fallback detection during dual-provider migrations while explicit legacy rollback remains filterable.
 - `mrn-base-stack` (`1.3.1` -> `1.3.2`): added CPT-agnostic reading-time and content table-of-contents helpers. The TOC API adds configurable heading anchors and returns processed HTML plus link data for child-theme placement, with regression coverage.

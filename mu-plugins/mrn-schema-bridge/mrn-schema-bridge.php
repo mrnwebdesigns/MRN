@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Schema Bridge
  * Description: Shared structured data normalization for MRN sites.
- * Version: 0.4.5
+ * Version: 0.4.6
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_VERSION' ) ) {
-	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.4.5' );
+	define( 'MRN_SCHEMA_BRIDGE_VERSION', '0.4.6' );
 }
 
 if ( ! defined( 'MRN_SCHEMA_BRIDGE_SCHEMA_HEALTH_OPTION' ) ) {
@@ -585,7 +585,22 @@ function mrn_schema_bridge_normalize_schema_url( $value ) {
 		$value = $scheme . '://' . ltrim( $matches[2], '/' );
 	}
 
-	return is_string( $value ) ? esc_url_raw( $value ) : '';
+	$normalized = is_string( $value ) ? esc_url_raw( $value ) : '';
+	$parts      = '' !== $normalized ? wp_parse_url( $normalized ) : false;
+
+	$is_http_url = 1 === preg_match( '#^https?://#i', $normalized );
+
+	if (
+		$is_http_url
+		&& (
+			false === $parts
+			|| ( is_array( $parts ) && empty( $parts['host'] ) )
+		)
+	) {
+		return '';
+	}
+
+	return $normalized;
 }
 
 /**
@@ -621,6 +636,10 @@ function mrn_schema_bridge_normalize_schema_object_urls( $value ) {
 		}
 
 		$value['sameAs'] = array_values( array_filter( $same_as ) );
+
+		if ( empty( $value['sameAs'] ) ) {
+			unset( $value['sameAs'] );
+		}
 	}
 
 	foreach ( $value as $property => $property_value ) {
@@ -656,6 +675,63 @@ function mrn_schema_bridge_is_article_schema_node( $item ) {
 }
 
 /**
+ * Add MRN's stable entity identifier to SEOPress's native Organization schema.
+ *
+ * @param array $schema SEOPress Organization schema.
+ * @return array
+ */
+function mrn_schema_bridge_filter_seopress_organization_schema( $schema ) {
+	if (
+		! mrn_schema_bridge_enabled()
+		|| 'seopress' !== mrn_schema_bridge_get_active_schema_provider()
+		|| ! is_array( $schema )
+	) {
+		return $schema;
+	}
+
+	$reference = mrn_schema_bridge_get_default_organization_reference();
+
+	if ( ! empty( $reference['@id'] ) ) {
+		$schema['@id'] = $reference['@id'];
+	}
+
+	return mrn_schema_bridge_normalize_schema_object_urls( $schema );
+}
+
+add_filter( 'seopress_get_json_data_organization', 'mrn_schema_bridge_filter_seopress_organization_schema', 99 );
+
+/**
+ * Get the canonical Organization generated from SEOPress's own settings.
+ *
+ * @return array<string,mixed>
+ */
+function mrn_schema_bridge_get_seopress_organization_properties() {
+	$properties = array();
+
+	if ( 'seopress' === mrn_schema_bridge_get_active_schema_provider() && function_exists( 'seopress_get_service' ) ) {
+		$generator = seopress_get_service( 'JsonSchemaGenerator' );
+		$context   = array();
+
+		$context_service = seopress_get_service( 'ContextPage' );
+		if ( is_object( $context_service ) && method_exists( $context_service, 'getContext' ) ) {
+			$context = $context_service->getContext();
+		}
+
+		if ( is_object( $generator ) && method_exists( $generator, 'getJsonFromSchema' ) ) {
+			$generated = $generator->getJsonFromSchema( 'organization', $context, array( 'remove_empty' => true ) );
+
+			if ( is_array( $generated ) ) {
+				$properties = $generated;
+			}
+		}
+	}
+
+	$properties = (array) apply_filters( 'mrn_schema_bridge_seopress_organization_properties', $properties );
+
+	return mrn_schema_bridge_normalize_schema_object_urls( $properties );
+}
+
+/**
  * Normalize an assembled SEOPress automatic article schema node.
  *
  * @param array<string, mixed> $schema Schema node.
@@ -667,11 +743,7 @@ function mrn_schema_bridge_normalize_seopress_article_schema_node( $schema ) {
 	}
 
 	$organization_reference = mrn_schema_bridge_get_default_organization_reference();
-	$canonical_organization = mrn_schema_bridge_get_canonical_organization_properties();
-
-	if ( ! empty( $organization_reference['@id'] ) ) {
-		$canonical_organization['@id'] = $organization_reference['@id'];
-	}
+	$provider_organization  = mrn_schema_bridge_get_seopress_organization_properties();
 
 	if ( empty( $schema['author'] ) ) {
 		$schema['author'] = $organization_reference;
@@ -688,15 +760,13 @@ function mrn_schema_bridge_normalize_seopress_article_schema_node( $schema ) {
 		$schema['author'] = mrn_schema_bridge_normalize_schema_url( $schema['author'] );
 	}
 
-	if ( empty( $schema['publisher'] ) ) {
-		$schema['publisher'] = $canonical_organization;
-	} elseif ( is_array( $schema['publisher'] ) ) {
-		$schema['publisher'] = array_merge( $schema['publisher'], $canonical_organization );
-	} else {
-		$schema['publisher'] = $canonical_organization;
+	if ( empty( $schema['publisher'] ) && ! empty( $provider_organization ) ) {
+		$schema['publisher'] = $provider_organization;
+	} elseif ( is_array( $schema['publisher'] ) && ! empty( $provider_organization ) ) {
+		$schema['publisher'] = array_merge( $provider_organization, $schema['publisher'] );
 	}
 
-	if ( is_array( $schema['publisher'] ) ) {
+	if ( ! empty( $schema['publisher'] ) && is_array( $schema['publisher'] ) && ! empty( $organization_reference['@id'] ) ) {
 		$schema['publisher']['@id'] = $organization_reference['@id'];
 	}
 
@@ -882,13 +952,23 @@ function mrn_schema_bridge_filter_provider_schema_graph( $data, $append_suppleme
 	}
 
 	$graph = mrn_schema_bridge_strip_author_person_nodes( $graph );
-	$graph = mrn_schema_bridge_enrich_organization_schema_graph( $graph );
+
+	if ( 'smartcrawl' === mrn_schema_bridge_get_active_schema_provider() && mrn_schema_bridge_legacy_smartcrawl_compatibility_enabled() ) {
+		$graph = mrn_schema_bridge_enrich_organization_schema_graph( $graph );
+	}
+
 	$graph = mrn_schema_bridge_apply_page_intent_to_schema_graph( $graph );
 	$graph = mrn_schema_bridge_enrich_contact_page_schema_graph( $graph );
 	$graph = mrn_schema_bridge_enrich_project_schema_graph( $graph );
 
 	if ( $append_supplemental ) {
 		$graph = mrn_schema_bridge_append_supplemental_nodes_to_graph( $graph );
+	}
+
+	foreach ( $graph as $index => $item ) {
+		if ( is_array( $item ) ) {
+			$graph[ $index ] = mrn_schema_bridge_normalize_schema_object_urls( $item );
+		}
 	}
 
 	if ( $is_full_graph ) {
