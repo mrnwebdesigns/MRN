@@ -125,6 +125,7 @@ key files on disk:
 
 ### Cloudflare
 
+- The canonical Stack security baseline is `stack/CLOUDFLARE_SECURITY_POLICY.md`, with validated development and production intent profiles under `stack/configs/cloudflare/`. Use it for new-zone setup, security review, and launch acceptance; it does not itself authorize a live change.
 - MRN agents may legitimately have access to multiple Cloudflare accounts. Every
   visible account is part of infrastructure MRN manages; broad visibility is
   intentional and is not a misconfiguration.

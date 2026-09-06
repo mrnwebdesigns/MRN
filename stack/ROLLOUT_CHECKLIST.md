@@ -65,6 +65,12 @@ Run these from the repo root unless noted otherwise.
 
 For schema-affecting releases, first review `SCHEMA_DISCOVERY_BASELINE.md` and run its schema bridge contract test. After launch, require a production sitemap scan from **Tools > Schema Health**.
 
+Validate the declarative Cloudflare security profiles whenever they or the launch/security contract change:
+
+```bash
+/Users/khofmeyer/Development/MRN/stack/scripts/qa-cloudflare-security-policy.sh
+```
+
 1. Theme QA
 
 ```bash
@@ -113,6 +119,8 @@ Interpret this one carefully:
 Do not roll out while any of the above is red unless you have an explicit exception and know why.
 
 ## Live Preflight
+
+If the rollout includes Cloudflare DNS, proxy, TLS, WAF, bot, rate-control, alerting, or DNSSEC changes, first review `CLOUDFLARE_SECURITY_POLICY.md`, select the matching environment profile, resolve the current account plan and zone, and record any exception. Profile validation is read-only and does not authorize a Cloudflare or registrar mutation; obtain the required approval immediately before the live change.
 
 Before any live-site write, run the canonical preflight helper for the target site:
 
@@ -348,6 +356,7 @@ Use this as the minimum practical bundle before calling a rollout "done":
 
 ```bash
 git -C /Users/khofmeyer/Development/MRN status --short
+/Users/khofmeyer/Development/MRN/stack/scripts/qa-cloudflare-security-policy.sh
 /Users/khofmeyer/Development/MRN/stack/scripts/qa-theme.sh
 /Users/khofmeyer/Development/MRN/stack/scripts/qa-security.sh
 /Users/khofmeyer/Development/MRN/stack/scripts/qa-local-stack-site.sh

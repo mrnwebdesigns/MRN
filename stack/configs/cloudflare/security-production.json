@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "profile": "production",
+  "purpose": "Default security baseline for MRN production sites.",
+  "enforcement": "policy_intent_not_api_payload",
+  "zone": {
+    "ssl": "full_strict",
+    "always_https": true,
+    "min_tls_version": "1.2",
+    "tls_1_3": true,
+    "security_level": "medium",
+    "browser_integrity_check": true,
+    "opportunistic_encryption": true,
+    "managed_waf": "enable_available_managed_rulesets_for_plan",
+    "bot_protection": "enable_plan_appropriate_mode_after_integration_verification",
+    "dnssec": "required_when_registrar_supports_it"
+  },
+  "dns": {
+    "public_web_records": "proxied_only_after_origin_https_verification",
+    "mail_and_vendor_records": "dns_only",
+    "preserve_existing_records": true,
+    "never_proxy_types": ["MX", "TXT", "CAA"],
+    "never_proxy_hostnames": ["autodiscover", "mail", "webmail", "cpanel", "ftp", "ssh"]
+  },
+  "rules": {
+    "wp_login_rate_limit": "challenge_after_burst",
+    "xmlrpc": "block_unless_site_requires_xmlrpc",
+    "wp_admin": "challenge_or_restrict_only_with_verified_admin_access_plan",
+    "wordpress_rest": "allow_normal_authenticated_and_public_reads",
+    "known_bad_ips_and_signatures": "managed_rules",
+    "sensitive_paths": "challenge_or_block_only_after_site_specific_verification"
+  },
+  "observability": {
+    "security_event_logging": true,
+    "alert_on_waf_spike": true,
+    "alert_on_origin_health_failure": true,
+    "alert_on_ssl_or_dns_failure": true,
+    "retention": "account_plan_default"
+  },
+  "launch_requirements": [
+    "Verify origin HTTPS and Full (strict) compatibility before proxying.",
+    "Verify the complete DNS, SPF, DKIM, DMARC, CAA, and vendor-record inventory.",
+    "Create and verify a labeled database-only Updraft backup before any WordPress write.",
+    "Run the applicable MRN release and browser smoke QA.",
+    "Test the site, forms, outbound mail, inbound mail, admin login, redirects, sitemap, and robots policy.",
+    "Record the zone ID, profile, date, operator, exceptions, and rollback nameservers."
+  ]
+}

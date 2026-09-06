@@ -34,11 +34,13 @@ The future hosting platform owns site and environment selection. Its canonical v
 - A canonical stack feature-deploy helper (`scripts/deploy-feature-stack-and-default-configs.sh`) that mirrors stack theme and MU changes to both the stack server and `default-configs.mrndev.io`.
 - A live-site preflight helper (`scripts/preflight-live-site-deploy.sh`) that resolves the site owner, verifies direct site-owner SSH, detects malformed Updraft placeholder settings, and requires a verified database-only remote backup before every real deployment.
 - A canonical backup policy (`BACKUP_POLICY.md`) with per-site S3 prefixes, staggered daily schedules, four-set retention, development-backup hygiene, and a backup gate for all non-dry-run shared-runtime writes.
+- A canonical Cloudflare security policy (`CLOUDFLARE_SECURITY_POLICY.md`) with validated, plan-aware development and production intent profiles under `configs/cloudflare/`.
 - A Local environment workflow helper (`../local/scripts/local-env-workflow.sh`) that pulls into Local and deploys with an explicit site-vs-stack scope prompt.
 - A repo shortcut command (`../scripts/mrn`) for `mrn pull-site` and `mrn deploy-site`.
 - A nightly Local sync helper (`../local/scripts/nightly-pull-mrndev-sites.sh`) for discovered `*.mrndev.io` sites.
 - A release build helper (`scripts/build-release-zips.sh`) that rebuilds ignored plugin, MU plugin, and stack theme zip artifacts into `../releases/`.
 - A rollout-contract QA script (`scripts/qa-rollout-contract.sh`) that verifies packaged theme parity, shared runtime presence, live active theme version parity, and rollout-owned CPT registration on `default-configs.mrndev.io`.
+- A Cloudflare policy QA script (`scripts/qa-cloudflare-security-policy.sh`) that validates both declarative profiles without contacting or changing Cloudflare.
 - A checklist for non-portable plugin configs (`configs/plugin-config-checklist.md`).
 - Export/import payload storage (`configs/exports/`) and importer mapping manifest (`manifests/importers.txt`).
 
