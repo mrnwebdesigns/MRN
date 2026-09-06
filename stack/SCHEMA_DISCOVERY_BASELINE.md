@@ -67,9 +67,9 @@ The stack does not publish `llms.txt`. Revisit it only if major AI retrieval sys
 Run the schema bridge contract test and scoped MRN QA:
 
 ```bash
-php /Users/khofmeyer/Development/MRN/mu-plugins/mrn-schema-bridge/tests/contract-regression.php
+php /Users/khofmeyer/Development/MRN-plugins/mrn-schema-bridge/tests/contract-regression.php
 MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run \
-  --project-root /Users/khofmeyer/Development/MRN/mu-plugins/mrn-schema-bridge
+  --project-root /Users/khofmeyer/Development/MRN-plugins/mrn-schema-bridge
 ```
 
 For a full stack rollout, also run the theme, security, runtime, accessibility, performance, parity, and rollout-contract checks in `ROLLOUT_CHECKLIST.md`.

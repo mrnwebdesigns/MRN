@@ -197,7 +197,7 @@
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-schema-bridge", "state": "confirmed"},
+      "source": {"repository": "mrn-schema-bridge", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-schema-bridge", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["SmartCrawl", "SEOPress", "MRN base theme", "mrn-seo-helper"], "release_group": "seo-provider-contract"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": ["SmartCrawl", "SEOPress"]},
       "purpose": "Normalizes provider and theme schema behavior."
