@@ -1,6 +1,7 @@
 # Stack Changelog
 
 ## Unreleased
+- `mrn-admin-data-post-types` (`0.2.0` -> `0.2.1`): filtered configured content-only CPTs out of SEOPress's shared post-type collection so titles, sitemap settings, setup wizard indexing choices, metabox registration, and diagnostic notices all stay aligned while public and admin-hidden-only CPTs remain available.
 - `mrn-config-helper` (`0.1.58` -> `0.1.59`): made the MRN renderer the default owner of both visible breadcrumbs and `BreadcrumbList` schema, and changed `Auto` delegation so SEOPress suppresses MRN schema only when SEOPress JSON-LD breadcrumbs are explicitly enabled. New-site bootstrap normalizes imported settings to MRN ownership and disables conflicting SEOPress breadcrumb JSON-LD.
 - `mrn-schema-bridge` (`0.5.0` -> `0.6.0`): added conservative `JobPosting` schema from visible Stack careers fields, canonical hiring-organization identity, international location normalization, and Schema Health coverage. Incomplete locations are withheld rather than emitted as invalid rich-result markup.
 - Refreshed the pinned SEOPress PRO package from `10.1.1` to `10.2`, matching the automatic-schema release validated with `mrn-schema-bridge` `0.5.0`.

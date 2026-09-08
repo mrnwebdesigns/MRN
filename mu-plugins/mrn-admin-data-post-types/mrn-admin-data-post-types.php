@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Admin Data Post Types
  * Description: Makes selected custom post types admin/data-only without blocking programmatic queries.
- * Version: 0.2.0
+ * Version: 0.2.1
  * Author: MRN
  */
 
@@ -328,6 +328,85 @@ function mrn_admin_data_post_types_filter_sitemap_post_types( $post_types ) {
 	return $post_types;
 }
 add_filter( 'wp_sitemaps_post_types', 'mrn_admin_data_post_types_filter_sitemap_post_types', 100 );
+
+/**
+ * Resolve a post type key from a SEOPress post-type collection entry.
+ *
+ * SEOPress may expose associative collections keyed by post type or numeric
+ * arrays of objects/arrays with a post-type field. We only read the actual
+ * post type identifier and leave unrelated structure untouched.
+ *
+ * @param mixed $key   Collection key.
+ * @param mixed $entry Collection entry.
+ * @return string
+ */
+function mrn_admin_data_post_types_resolve_collection_post_type( $key, $entry ) {
+	if ( is_string( $key ) ) {
+		$resolved = sanitize_key( $key );
+
+		if ( '' !== $resolved ) {
+			return $resolved;
+		}
+	}
+
+	if ( is_string( $entry ) || is_int( $entry ) ) {
+		return sanitize_key( (string) $entry );
+	}
+
+	$properties = array( 'post_type', 'value', 'slug', 'name', 'key' );
+
+	if ( is_object( $entry ) ) {
+		foreach ( $properties as $property ) {
+			if ( isset( $entry->{$property} ) ) {
+				return sanitize_key( (string) $entry->{$property} );
+			}
+		}
+	}
+
+	if ( is_array( $entry ) ) {
+		foreach ( $properties as $property ) {
+			if ( array_key_exists( $property, $entry ) ) {
+				return sanitize_key( (string) $entry[ $property ] );
+			}
+		}
+	}
+
+	return '';
+}
+
+/**
+ * Remove selected content-only CPTs from SEOPress's post-type registry.
+ *
+ * SEOPress consumes this shared collection through WordPressData::getPostTypes()
+ * for title settings, sitemap settings, setup wizard indexing, metabox
+ * registration, and diagnostic notices, so filtering it once here keeps every
+ * SEOPress surface aligned.
+ *
+ * @param array $post_types SEOPress post-type collection.
+ * @return array
+ */
+function mrn_admin_data_post_types_filter_seopress_post_types( $post_types ) {
+	if ( ! is_array( $post_types ) ) {
+		return $post_types;
+	}
+
+	$excluded = array_fill_keys( array_keys( mrn_admin_data_post_types_get_config() ), true );
+
+	if ( empty( $excluded ) ) {
+		return $post_types;
+	}
+
+	foreach ( $post_types as $key => $entry ) {
+		$post_type = mrn_admin_data_post_types_resolve_collection_post_type( $key, $entry );
+
+		if ( '' !== $post_type && isset( $excluded[ $post_type ] ) ) {
+			unset( $post_types[ $key ] );
+		}
+	}
+
+	return $post_types;
+}
+add_filter( 'seopress_post_types', 'mrn_admin_data_post_types_filter_seopress_post_types', 100 );
 
 /**
  * Exclude every admin/data-only CPT from the SEO Helper plugin's fields.
