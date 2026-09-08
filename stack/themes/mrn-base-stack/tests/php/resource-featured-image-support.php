@@ -52,8 +52,8 @@ function get_option( $option, $default = array() ) {
 	return $default;
 }
 
-function update_option( $option, $value ) {
-	unset( $option, $value );
+function update_option( $option, $value, $autoload = null ) {
+	unset( $option, $value, $autoload );
 
 	return true;
 }

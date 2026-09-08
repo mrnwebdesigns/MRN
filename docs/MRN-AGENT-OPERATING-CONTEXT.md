@@ -183,9 +183,15 @@ SSH access convention for CloudPanel `mrndev.io` sites:
 - GitHub Actions is the preferred deployment path for site-owned code wherever a site repository and deploy SSH exist. Examples: Morgan Development deploys by Actions plus rsync to SiteGround; Freedom House updates server-side deploy repositories by Actions.
 - Deploy only site-owned surfaces — a child or active theme, a site-owned standalone theme, or a site-specific plugin.
 - Never deploy WordPress core, uploads/media, Local Hub metadata, logs, dumps, backups, cache output, shared MRN plugins, or vendor/pro plugin runtime copies unless the owner asks for that exact target.
-- The backup gate in section 7 applies. For a WordPress runtime the concrete mechanism is a remote UpdraftPlus database-only backup, preferably by WP-CLI:
+- The backup gate in section 7 applies to shared development/review, staging,
+  and production WordPress runtimes. LOCAL runtimes follow the Local
+  Development Exception in `stack/BACKUP_POLICY.md` and do not require a
+  remote backup before code writes.
+- For covered WordPress runtimes, the concrete mechanism is a remote UpdraftPlus database-only backup, preferably by WP-CLI:
   `wp updraftplus backup --include-files= --send-to-cloud=true --label="<pre-deploy label>"`.
-- If WP-CLI, UpdraftPlus, or that backup command is unavailable, stop and report the blocker. Do not deploy without the database backup.
+- If WP-CLI, UpdraftPlus, or that backup command is unavailable for a covered
+  runtime, stop and report the blocker. Do not deploy without the database
+  backup.
 - Flush WordPress cache and transients after deploying, when WP-CLI is available.
 - Non-WordPress MRN services have their own documented release procedures and backup mechanisms; follow the runbook in the service's own repository.
 
@@ -256,9 +262,10 @@ Never treat LOCAL, `mrndev.io` review, and production environments as interchang
 ## 7) Deployment safety (global standards)
 
 - Backup-before-mutation:
-  - For MRN-managed WordPress sites, no mutation that can affect the site's WordPress runtime, database, code, files, configuration, plugins, themes, MU plugins, WordPress core, or customer-visible state should begin until the applicable MRN backup gate has successfully passed.
-  - This applies regardless of execution path: QA Engine, MainWP / MRN MainWP tooling, approved deployment tooling, provider tooling, or SSH.
-  - Using SSH or another lower-level access path does not bypass the backup requirement.
+  - For MRN-managed shared development/review, staging, and production WordPress sites, no mutation that can affect the site's WordPress runtime, database, code, files, configuration, plugins, themes, MU plugins, WordPress core, or customer-visible state should begin until the applicable MRN backup gate has successfully passed.
+  - LOCAL runtimes are explicitly exempt from the remote-backup gate. They use Git for code rollback and may use an explicitly requested, temporary local database snapshot for destructive data work.
+  - For covered runtimes, this applies regardless of execution path: QA Engine, MainWP / MRN MainWP tooling, approved deployment tooling, provider tooling, or SSH.
+  - For covered runtimes, using SSH or another lower-level access path does not bypass the backup requirement.
   - Read-only inspection does not require creating a new backup merely to inspect the system.
   - Before an actual mutation:
     1. Determine the applicable backup policy for that operation.
@@ -266,12 +273,12 @@ Never treat LOCAL, `mrndev.io` review, and production environments as interchang
     3. Do not merely start a backup and assume success.
     4. Verify successful completion according to the applicable policy before the first mutation.
   - Preserve the existing backup-scope distinctions in `stack/BACKUP_POLICY.md`:
-    - General Stack / deployment writes: follow `stack/BACKUP_POLICY.md` and the documented verified database-only remote Updraft backup immediately before the write.
+    - General shared-runtime deployment writes: follow `stack/BACKUP_POLICY.md` and the documented verified database-only remote Updraft backup immediately before the write. LOCAL writes follow the local exception in that policy.
     - QA Engine protected update / campaign workflows: follow the stricter QA Engine evidence requirements, including fresh provider-complete backup and applicable restore-readiness / restore-drill evidence.
     - Dry-run / read-only exceptions remain read-only.
   - Do not weaken a stricter workflow merely because the global minimum is less strict.
-  - If the required backup cannot be created or verified, stop and do not perform the mutation.
-  - Do not use SSH, direct database access, file manipulation, or provider tooling as a workaround for a failed backup gate.
+  - If the required backup cannot be created or verified for a covered runtime, stop and do not perform the mutation.
+  - Do not use SSH, direct database access, file manipulation, or provider tooling as a workaround for a failed backup gate on a covered runtime.
 - Deployment scoping:
   - Deploy only approved site-owned paths unless explicitly requested otherwise.
   - Preserve existing live/site behavior and compatibility unless user explicitly requests a migration or behavior change.
@@ -324,14 +331,30 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
 - Do not interpret `tests passed` or `git diff is clean` as equivalent to MRN QA when MRN QA is required.
 - Do not deploy merely because QA passes; deployment authorization and backup gates remain separate requirements.
 
+### Concurrent development boundary
+
+- MRN assumes concurrent work. Follow
+  `docs/MRN-CONCURRENT-DEVELOPMENT-POLICY.md`: one task, one branch, one dedicated
+  worktree.
+- Do not use a dirty canonical checkout as a shared feature workspace and do not
+  modify another task's worktree.
+- Task acceptance QA is scoped to the staged/changed task source plus applicable
+  task-specific runtime checks. Unrelated monorepo findings and another task's
+  unstaged files do not block that task's commit.
+- Explicit component, repository, release, parity, and fleet QA may be broader.
+  Failures block the broader operation requested, not unrelated task acceptance.
+- Merging source is not stack promotion. A release is current only after clean
+  merged `main` produces an immutable release lock and deterministic artifacts,
+  and deployed inventory is read back and verified against that lock.
+
 ### B. WordPress operations orchestration
 
 - For supported WordPress site maintenance/update operations, use this routing order when the verified workflow exists and is available: QA Engine first -> MainWP / MRN MainWP tooling -> approved lower-level tooling -> SSH last resort.
 - This is an operational-routing rule, not merely a code-QA rule.
 - Running QA itself is normally read-only and does not require creating a site backup.
-- A backup is required when the workflow is about to perform a covered site/runtime mutation.
+- A backup is required when the workflow is about to perform a covered shared-runtime mutation. LOCAL runtime mutations are not covered by the remote-backup gate.
 - Code QA does not itself trigger an Updraft backup.
-- Site mutation requires the applicable backup gate to pass first.
+- Covered site mutation requires the applicable backup gate to pass first; LOCAL mutation follows the local exception in `stack/BACKUP_POLICY.md`.
 - Protected update / campaign workflows use the stricter QA Engine backup + restore-evidence requirements.
 
 ## 10) MRN commit gate
@@ -342,6 +365,11 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
 - Do not commit first and plan to QA afterward unless the owner explicitly authorizes an emergency/checkpoint exception.
 - A clean `git diff`, syntax check, unit test, or ad-hoc local validation is not automatically equivalent to MRN QA when the repository requires MRN QA.
 - Use the smallest relevant QA scope rather than automatically running the largest possible suite.
+- The mechanical gate runs against the staged index snapshot with a fixed
+  changed-file static-analysis scope. It must not inherit settings that broaden
+  the proof to unrelated repository source or shared runtime routes.
+- The mechanical proof does not replace applicable task-scoped runtime,
+  accessibility, API, performance, or integration QA.
 - If MRN QA cannot run because of infrastructure/tooling failure, stop before committing and report the blocker unless the owner explicitly authorizes a checkpoint/exception.
 
 ### Checkpoint / recovery exception

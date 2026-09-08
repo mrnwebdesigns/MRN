@@ -23,7 +23,7 @@
     {
       "slug": "mrn-loader",
       "name": "MRN Loader",
-      "version": "1.4.0",
+      "version": "1.6.0",
       "runtime_type": "mu-loader",
       "classification": "platform",
       "lifecycle": "supported",
@@ -32,7 +32,21 @@
       "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-loader.php", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress"], "soft": [], "release_group": "mrn-platform"},
       "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
-      "purpose": "Loads the explicitly approved MRN MU component entrypoints."
+      "purpose": "Loads approved MRN MU component entrypoints and exposes a capability-protected runtime parity report."
+    },
+    {
+      "slug": "mrn-shared-runtime",
+      "name": "MRN Shared Runtime",
+      "version": "1.0.0",
+      "runtime_type": "shared-runtime",
+      "classification": "platform",
+      "lifecycle": "supported",
+      "current_distribution": "shared-runtime",
+      "target_tier": "platform-required",
+      "source": {"repository": "MRN", "path": "shared", "state": "confirmed"},
+      "dependencies": {"hard": ["WordPress"], "soft": ["MRN base theme", "MRN Site Styles"], "release_group": "mrn-platform"},
+      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "purpose": "Provides the versioned and checksummed wp-content/shared helper surface used by stack themes and MU components."
     },
     {
       "slug": "mrn-admin-data-post-types",
@@ -159,6 +173,20 @@
       "dependencies": {"hard": ["WordPress"], "soft": ["MRN base theme", "MRN Google Fonts", "editor integrations"], "release_group": "design-assets-contract"},
       "data": {"options": ["mrn_site_colors", "mrn_graphic_elements", "mrn_dark_scroll_presets", "mrn_row_spacing", "mrn_row_widths", "mrn_typography"], "tables": [], "cron": [], "routes": [], "external_services": []},
       "purpose": "Owns persistent site design tokens, typography, spacing and CSS-variable output."
+    },
+    {
+      "slug": "mrn-updraft-backup-policy-loader",
+      "name": "MRN Updraft Backup Policy Loader",
+      "version": "0.5.0",
+      "runtime_type": "mu-loader",
+      "classification": "platform-policy",
+      "lifecycle": "supported",
+      "current_distribution": "mu-loader",
+      "target_tier": "platform-required",
+      "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-updraft-local-retention.php", "state": "confirmed"},
+      "dependencies": {"hard": ["WordPress"], "soft": ["mrn-updraft-local-retention"], "release_group": "mrn-platform"},
+      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "purpose": "Loads the MRN Updraft backup policy MU plugin from its subfolder."
     },
     {
       "slug": "mrn-updraft-local-retention",
@@ -611,7 +639,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.3.0",
+      "version": "0.7.4",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -709,7 +737,7 @@
     {
       "slug": "mrn-mainwp-mcp",
       "name": "MRN MainWP MCP",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "runtime_type": "node-tooling",
       "classification": "operations-tooling",
       "lifecycle": "supported",

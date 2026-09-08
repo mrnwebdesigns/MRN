@@ -204,10 +204,10 @@ function mrn_base_stack_get_layout_style_keys_for_post( $post_id ) {
  * request. When the social menu is disabled, configured rows should not
  * trigger unused icon-font requests.
  *
- * @param bool                    $should_render    Whether the social slot will render.
- * @param mixed                   $social_links     Social link rows from Config Helper.
- * @param bool                    $needs_fontawesome Whether Font Awesome is needed.
- * @param bool                    $needs_dashicons   Whether Dashicons is needed.
+ * @param bool  $should_render     Whether the social slot will render.
+ * @param mixed $social_links      Social link rows from Config Helper.
+ * @param bool  $needs_fontawesome Whether Font Awesome is needed.
+ * @param bool  $needs_dashicons    Whether Dashicons is needed.
  * @return void
  */
 function mrn_base_stack_collect_rendered_social_link_asset_needs( $should_render, $social_links, &$needs_fontawesome, &$needs_dashicons ) {

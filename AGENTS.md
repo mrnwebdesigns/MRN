@@ -3,6 +3,12 @@ WORKING RULES
 Scope:
 - Work on one feature/task at a time
 - Do not modify unrelated systems
+- Assume other MRN tasks are active. Use one dedicated branch and worktree per
+  task; do not develop in a dirty canonical checkout or another task's worktree.
+- Follow `docs/MRN-CONCURRENT-DEVELOPMENT-POLICY.md`. Task acceptance and stack
+  promotion are separate gates: unrelated work must not block a feature commit,
+  and a merge must not be called released until clean `main` is locked, deployed,
+  and verified.
 
 Implementation:
 - Prefer existing helpers, APIs, and contracts
@@ -69,12 +75,22 @@ Git hygiene gate:
 
 Release baseline:
 - After changing a plugin, theme, MU-plugin, stack runtime code, or the QA engine, run the smallest relevant MRN QA suite before declaring the work complete. Use full release/signoff QA only when release readiness, deployment, or a user request requires it.
+- The commit gate proves only the staged task snapshot. Run applicable runtime,
+  accessibility, API, performance, and integration checks against the task's own
+  project/runtime. Full repository, parity, fleet, and release-lock checks belong
+  to an explicit promotion gate and do not attach unrelated baseline debt to
+  every feature commit.
 - Report QA rows that were intentionally skipped and why. Never describe a release as complete when a required runtime check is blocked or skipped.
 - QA may inspect and report automatically, but it must not commit, push, deploy, or modify production without the user's explicit authorization.
 - For "Run QA", "MRN QA", plugin QA, theme QA, file QA, or release QA, use the MRN QA Engine.
 - Preferred command: `mrn-qa run --project-root /Users/khofmeyer/Development/MRN`
 - For whole plugin/theme/directory QA, use `MRN_QA_CODE_ANALYSIS_SCOPE=all mrn-qa run --project-root /Users/khofmeyer/Development/MRN`
 - For release/signoff QA, use `mrn-qa run --project-root /Users/khofmeyer/Development/MRN --mode release --smoke-strict 1`
+- For a deliberate Stack promotion, also run
+  `python3 stack/scripts/qa-stack-promotion.py --mode audit` from clean current
+  merged `main`, then run candidate mode after committing the generated release
+  lock. This promotion reconciliation supplements MRN QA; it does not replace
+  release/runtime QA or deployment gates.
 - Let MRN QA auto gates decide when to run WordPress best practices, API surface/runtime, accessibility, performance, browser smoke, and security checks.
 - WordPress API QA is required coverage: REST routes, admin-ajax, admin-post, permission callbacks, nonces, capabilities/auth, sanitization, escaping, and `/wp-json/` runtime health when applicable.
 - Accessibility QA is required coverage: axe-core WCAG A/AA scans when runtime is available/applicable, semantic markup, headings, labels/control names, image alt text, keyboard/focus risk, visible text/link names, and WCAG 2.1 AA baseline where MRN controls output.
@@ -95,7 +111,7 @@ MRN Updraft backup policy:
 - Use **Always Keep** only for an explicitly named milestone before risky work, and remove that protection when the milestone is no longer useful.
 - Never scan a shared S3 bucket root. Updraft treats backups discovered by remote scan as imported and exempts them from automatic retention.
 - Never delete shared-root remote objects until ownership is proven. When correcting a legacy shared prefix, first isolate the site, then clear only stale local history or delete individually verified site-owned objects.
-- Before any non-dry-run write to a shared development, staging, or production WordPress runtime, the deployment workflow must create and verify a labeled, database-only Updraft backup sent to the configured remote destination. A Git push or QA pass does not satisfy this gate by itself.
+- Before any non-dry-run write to a shared development/review, staging, or production WordPress runtime, the deployment workflow must create and verify a labeled, database-only Updraft backup sent to the configured remote destination. Local Hub runtime writes are exempt. A Git push or QA pass does not satisfy this gate by itself.
 - QA remains read-only: it verifies backup-policy/deploy readiness and reports blockers. The deployment helper or deployment job performs the required backup immediately before the write.
 - If a push triggers automatic deployment, verify that the deployment job contains the backup-and-verification gate before allowing the push/deploy workflow to proceed.
 

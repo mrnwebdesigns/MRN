@@ -31,6 +31,18 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 THEME_DIR="${1:-${REPO_ROOT}/stack/themes/mrn-base-stack}"
 RISK_SCAN_SCRIPT="${SCRIPT_DIR}/qa-risk-scan.sh"
 STATUS=0
+FAILED_CHECKS=""
+
+mark_failure() {
+	local check_name="$1"
+
+	STATUS=1
+	if [[ -z "${FAILED_CHECKS}" ]]; then
+		FAILED_CHECKS="${check_name}"
+	else
+		FAILED_CHECKS="${FAILED_CHECKS}, ${check_name}"
+	fi
+}
 
 if [[ ! -d "${THEME_DIR}" ]]; then
 	echo "Theme directory not found: ${THEME_DIR}" >&2
@@ -48,13 +60,13 @@ done < <(find "${THEME_DIR}" -type f -name '*.php' ! -path '*/vendor/*' -print0 
 echo
 echo "2. Git diff whitespace"
 if ! git -C "${REPO_ROOT}" diff --check; then
-	STATUS=1
+	mark_failure "git diff --check"
 fi
 
 echo
 echo "3. Risk scan"
 if ! "${RISK_SCAN_SCRIPT}" "${THEME_DIR}"; then
-	STATUS=1
+	mark_failure "risk scan"
 fi
 
 echo
@@ -77,7 +89,7 @@ echo
 echo "6. Parallel lint"
 if [[ -x "${THEME_DIR}/vendor/bin/parallel-lint" ]]; then
 	if ! "${THEME_DIR}/vendor/bin/parallel-lint" --exclude "${THEME_DIR}/vendor" "${THEME_DIR}"; then
-		STATUS=1
+		mark_failure "parallel lint"
 	fi
 else
 	echo "Skipping parallel lint; install Composer dev tools first."
@@ -91,7 +103,7 @@ if [[ -x "${THEME_DIR}/vendor/bin/phpcs" && -f "${THEME_DIR}/phpcs.xml.dist" ]];
 		--parallel="${MRN_QA_PHPCS_PARALLEL:-1}" \
 		--standard="${THEME_DIR}/phpcs.xml.dist" \
 		"${THEME_DIR}"; then
-		STATUS=1
+		mark_failure "PHPCS"
 	fi
 else
 	echo "Skipping PHPCS; install Composer dev tools first."
@@ -105,7 +117,7 @@ if [[ -x "${REPO_ROOT}/vendor/bin/phpstan" && -f "${REPO_ROOT}/phpstan.neon.dist
 		--memory-limit=2G \
 		--no-progress \
 		"${THEME_DIR}"; then
-		STATUS=1
+		mark_failure "PHPStan"
 	fi
 else
 	echo "Skipping PHPStan; install root Composer dev tools first."
@@ -115,6 +127,7 @@ echo
 if [[ "${STATUS}" -eq 0 ]]; then
 	echo "Theme QA completed."
 else
+	echo "Failed checks: ${FAILED_CHECKS}" >&2
 	echo "Theme QA completed with findings." >&2
 fi
 

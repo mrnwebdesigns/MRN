@@ -20,6 +20,8 @@ test_db_connection.php
 .DS_Store
 */.DS_Store
 .playwright/
+__pycache__/
+*.py[cod]
 
 # Release artifacts
 releases/clone/
@@ -27,6 +29,7 @@ releases/mu-plugins/
 releases/plugins/
 releases/stack/
 releases/*.zip
+outputs/stack-promotion-*.json
 stack/configs/exports/*.bak-*
 
 # Stack secrets and generated theme output
@@ -53,6 +56,7 @@ stack/mu-plugins/mrn-svg-support
 plugins/background-video-popout-disabler
 plugins/mrn-acf-character-count
 plugins/mrn-acf-focal-point
+plugins/mrn-ai-assist
 plugins/mrn-announcements
 plugins/mrn-comment-management
 plugins/mrn-config-helper
@@ -61,6 +65,7 @@ plugins/mrn-dummy-content
 plugins/mrn-editor-tools
 plugins/mrn-fontawesome-profile-manager
 plugins/mrn-gtm-injector
+plugins/mrn-sendgrid-provisioning
 plugins/mrn-seo-helper
 plugins/mrn-universal-sticky-bar
 plugins/mrn-mega-menu

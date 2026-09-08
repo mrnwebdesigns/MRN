@@ -22,6 +22,7 @@ function mrn_base_stack_get_content_post_type_definitions() {
 			'menu_icon'      => 'dashicons-groups',
 			'menu_position'  => 10,
 			'side_metaboxes' => array( 'acf-group_mrn_team_member_settings' ),
+			'supports'       => array( 'title', 'thumbnail', 'page-attributes', 'revisions' ),
 		),
 		'location'    => array(
 			'singular'      => __( 'Location', 'mrn-base-stack' ),
@@ -151,7 +152,9 @@ function mrn_base_stack_register_content_post_types() {
 				),
 				'menu_position'       => $definition['menu_position'],
 				'menu_icon'           => $definition['menu_icon'],
-				'supports'            => array( 'title', 'thumbnail', 'revisions' ),
+				'supports'            => isset( $definition['supports'] ) && is_array( $definition['supports'] )
+					? $definition['supports']
+					: array( 'title', 'thumbnail', 'revisions' ),
 				'publicly_queryable'  => true,
 				'show_in_nav_menus'   => true,
 				'show_in_admin_bar'   => $show_ui,

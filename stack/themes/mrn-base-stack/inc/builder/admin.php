@@ -218,6 +218,8 @@ function mrn_base_stack_admin_enqueue_builder_assets( $hook_suffix ) {
 			'contentListTaxonomies'          => function_exists( 'mrn_base_stack_get_content_list_post_type_taxonomy_map' ) ? mrn_base_stack_get_content_list_post_type_taxonomy_map() : array(),
 			'contentListDisplayModes'        => function_exists( 'mrn_base_stack_get_content_list_display_mode_choice_map' ) ? mrn_base_stack_get_content_list_display_mode_choice_map() : array(),
 			'contentListDisplayStyles'       => function_exists( 'mrn_base_stack_get_content_list_display_style_choice_map' ) ? mrn_base_stack_get_content_list_display_style_choice_map() : array(),
+			'contentOnlyPostTypes'           => function_exists( 'mrn_base_stack_get_content_list_content_only_post_types' ) ? mrn_base_stack_get_content_list_content_only_post_types() : array(),
+			'contentOnlyLinksDisabledText'   => 'Content Only items do not have public profile URLs, so item links are disabled.',
 			'initialCollapseEnabled'         => $initial_flexible_collapse_enabled || $initial_repeater_collapse_enabled,
 			'initialFlexibleCollapseEnabled' => $initial_flexible_collapse_enabled,
 			'initialRepeaterCollapseEnabled' => $initial_repeater_collapse_enabled,
@@ -641,6 +643,15 @@ function mrn_base_stack_admin_builder_action_styles() {
 			.layout[data-layout="content_lists"] .acf-field.mrn-content-list-legacy-field-disabled .acf-label label::after {
 				content: " (Handled by Display Mode)";
 				font-weight: 400;
+				color: #646970;
+			}
+
+			.layout[data-layout="content_lists"] .mrn-content-list-links-disabled {
+				opacity: 0.5;
+			}
+
+			.layout[data-layout="content_lists"] .mrn-content-list-link-note {
+				margin: 8px 0 0;
 				color: #646970;
 			}
 

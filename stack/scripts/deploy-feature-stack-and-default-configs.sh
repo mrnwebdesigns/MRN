@@ -56,6 +56,7 @@ done
 STACK_ROOT_REMOTE="/home/mrndev-stack-manager/stack"
 LOCAL_THEME_DIR="${REPO_ROOT}/stack/themes/mrn-base-stack"
 LOCAL_STACK_MU_DIR="${REPO_ROOT}/stack/mu-plugins"
+LOCAL_STACK_RELEASE_LOCK="${REPO_ROOT}/stack/manifests/stack-release.lock.json"
 LOCAL_MU_SOURCE_ROOT="${REPO_ROOT}/mu-plugins"
 LOCAL_SHARED_DIR="${REPO_ROOT}/shared"
 
@@ -114,7 +115,7 @@ if [[ "${DRY_RUN}" -eq 1 ]]; then
 	RSYNC_FLAGS+=(--dry-run --itemize-changes)
 fi
 
-for required in rsync ssh; do
+for required in python3 rsync ssh; do
 	if ! command -v "${required}" >/dev/null 2>&1; then
 		echo "Required command not found: ${required}" >&2
 		exit 1
@@ -130,6 +131,14 @@ if [[ ! -d "${LOCAL_SHARED_DIR}" ]]; then
 	echo "Shared source directory not found: ${LOCAL_SHARED_DIR}" >&2
 	exit 1
 fi
+
+if [[ ! -f "${LOCAL_STACK_RELEASE_LOCK}" ]]; then
+	echo "Stack release lock not found: ${LOCAL_STACK_RELEASE_LOCK}" >&2
+	exit 1
+fi
+
+python3 "${REPO_ROOT}/stack/scripts/generate-stack-release-lock.py" \
+	--check "${LOCAL_STACK_RELEASE_LOCK}" >/dev/null
 
 for slug in "${MU_PLUGIN_DIRS[@]}"; do
 	if [[ ! -d "${LOCAL_MU_SOURCE_ROOT}/${slug}" ]]; then
@@ -213,6 +222,13 @@ for wrapper in "${LOCAL_STACK_MU_DIR}"/mrn-*.php; do
 		"${wrapper}" \
 		"${SSH_HOST}:${STACK_ROOT_REMOTE}/mu-plugins/$(basename "${wrapper}")"
 done
+
+run_rsync \
+	"${LOCAL_STACK_RELEASE_LOCK}" \
+	"${SSH_HOST}:${STACK_ROOT_REMOTE}/mu-plugins/mrn-stack-release.lock.json"
+run_rsync \
+	"${LOCAL_STACK_RELEASE_LOCK}" \
+	"${LIVE_SITE_SSH_LOGIN}:${LIVE_SITE_ROOT}/wp-content/mu-plugins/mrn-stack-release.lock.json"
 
 if [[ "${DRY_RUN}" -eq 0 ]]; then
 	normalize_remote_tree_permissions "${SSH_HOST}" "${STACK_ROOT_REMOTE}/themes/mrn-base-stack" "stack theme"

@@ -1691,7 +1691,6 @@ function mrn_base_stack_get_content_list_post_type_choices() {
 	try {
 		$post_types = get_post_types(
 			array(
-				'public'  => true,
 				'show_ui' => true,
 			),
 			'objects'
@@ -1716,6 +1715,14 @@ function mrn_base_stack_get_content_list_post_type_choices() {
 			}
 
 			if ( in_array( $post_type, $excluded, true ) ) {
+				continue;
+			}
+
+			$is_public       = ! empty( $post_type_object->public );
+			$is_content_only = function_exists( 'mrn_admin_data_post_types_get_post_type_config' )
+				&& null !== mrn_admin_data_post_types_get_post_type_config( $post_type );
+
+			if ( ! $is_public && ! $is_content_only ) {
 				continue;
 			}
 
@@ -1767,6 +1774,32 @@ function mrn_base_stack_get_content_list_post_type_choices() {
 	} finally {
 		$resolving = false;
 	}
+}
+
+/**
+ * Get post types that are configured as Content Only for the builder UI.
+ *
+ * @return array<int, string>
+ */
+function mrn_base_stack_get_content_list_content_only_post_types() {
+	if ( ! function_exists( 'mrn_admin_data_post_types_get_post_type_config' ) ) {
+		return array();
+	}
+
+	$post_types   = get_post_types( array( 'show_ui' => true ), 'objects' );
+	$content_only = array();
+
+	foreach ( $post_types as $post_type => $post_type_object ) {
+		if ( ! $post_type_object instanceof WP_Post_Type || ! empty( $post_type_object->public ) ) {
+			continue;
+		}
+
+		if ( null !== mrn_admin_data_post_types_get_post_type_config( $post_type ) ) {
+			$content_only[] = $post_type;
+		}
+	}
+
+	return array_values( array_unique( array_map( 'sanitize_key', $content_only ) ) );
 }
 
 /**
@@ -2730,8 +2763,7 @@ function mrn_base_stack_render_content_list_testimonial_item( WP_Post $item_post
 		? mrn_base_stack_normalize_display_style( $display_style, 'post_type', 'testimonial', 'story' )
 		: sanitize_key( '' !== $display_style ? $display_style : 'story' );
 	$display_style     = '' !== $display_style ? $display_style : 'story';
-	$permalink         = get_permalink( $item_post );
-	$permalink         = is_string( $permalink ) ? $permalink : '';
+	$permalink         = mrn_base_stack_get_content_list_item_permalink( $item_post, $args );
 	$item_title        = get_the_title( $item_post );
 	$content           = isset( $testimonial['content'] ) ? (string) $testimonial['content'] : '';
 	$quote_html        = mrn_base_stack_get_content_list_testimonial_body_html( $content );
@@ -2827,6 +2859,105 @@ function mrn_base_stack_render_content_list_testimonial_item( WP_Post $item_post
 }
 
 /**
+ * Render a Team Member Content-list item.
+ *
+ * @param WP_Post              $item_post Post to render.
+ * @param array<string, mixed> $args Render arguments.
+ * @return string
+ */
+function mrn_base_stack_render_content_list_team_member_item( WP_Post $item_post, array $args = array() ) {
+	$display_mode      = mrn_base_stack_normalize_content_list_display_mode( $args['display_mode'] ?? '' );
+	$mode_config       = '' !== $display_mode ? mrn_base_stack_get_content_list_display_mode_config( $display_mode ) : mrn_base_stack_get_content_list_legacy_mode_config( $args );
+	$uses_row_settings = '' === $display_mode;
+	$display_mode_slug = '' !== $display_mode ? $display_mode : 'row-settings';
+	$display_style     = function_exists( 'mrn_base_stack_normalize_content_list_display_style' )
+		? mrn_base_stack_normalize_content_list_display_style( $args['display_style'] ?? '', 'team_member' )
+		: '';
+	$is_grid_style     = 'grid' === $display_style;
+	$permalink         = mrn_base_stack_get_content_list_item_permalink( $item_post, $args );
+	$item_title        = get_the_title( $item_post );
+	$position          = function_exists( 'get_field' ) ? trim( (string) get_field( 'team_member_position', $item_post->ID ) ) : '';
+	$bio_raw           = function_exists( 'get_field' ) ? (string) get_field( 'team_member_bio', $item_post->ID ) : '';
+	$bio_html          = mrn_base_stack_get_content_list_testimonial_body_html( $bio_raw );
+	$show_image        = ( ! $uses_row_settings || ! empty( $args['show_featured_image'] ) ) && ! empty( $mode_config['allows_image'] ) && has_post_thumbnail( $item_post );
+	$show_bio          = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] ) && '' !== $bio_html;
+	$show_read_more    = ( ! $uses_row_settings || ! empty( $args['show_read_more'] ) ) && ! empty( $mode_config['allows_read_more'] ) && '' !== $permalink;
+	$read_more_label   = isset( $args['read_more_label'] ) ? trim( (string) $args['read_more_label'] ) : 'Read More';
+	$card_layout       = 'vertical';
+
+	$item_classes = array(
+		'mrn-content-list-row__item',
+		'mrn-content-list-row__item--team-member',
+		'mrn-content-list-row__item--display-' . $display_mode_slug,
+		'mrn-ui__item',
+	);
+
+	if ( '' !== $display_style ) {
+		$item_classes[] = 'mrn-content-list-row__item--display-style-' . $display_style;
+	}
+
+	if ( $show_image ) {
+		$item_classes[] = 'mrn-content-list-row__item--has-image';
+	}
+
+	$item_classes[] = 'mrn-content-list-row__item--card-layout-' . $card_layout;
+
+	ob_start();
+	?>
+	<li
+		class="<?php echo esc_attr( implode( ' ', array_map( 'sanitize_html_class', $item_classes ) ) ); ?>"
+		<?php if ( '' !== $display_style ) : ?>
+			data-display-style="<?php echo esc_attr( $display_style ); ?>"
+		<?php endif; ?>
+		data-card-layout="<?php echo esc_attr( $card_layout ); ?>"
+	>
+		<article class="mrn-content-list-row__card">
+			<?php if ( $show_image ) : ?>
+				<div class="mrn-content-list-row__media mrn-ui__media">
+					<?php echo get_the_post_thumbnail( $item_post, 'mrn-team-member' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</div>
+			<?php endif; ?>
+			<div class="mrn-content-list-row__body mrn-ui__body">
+				<?php if ( '' !== $item_title || '' !== $position ) : ?>
+					<div class="mrn-content-list-row__head mrn-ui__head">
+						<?php if ( '' !== $item_title ) : ?>
+							<h3 class="mrn-content-list-row__title mrn-ui__heading">
+								<?php if ( '' !== $permalink ) : ?>
+									<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
+								<?php else : ?>
+									<?php echo esc_html( $item_title ); ?>
+								<?php endif; ?>
+							</h3>
+						<?php endif; ?>
+						<?php if ( '' !== $position ) : ?>
+							<p class="mrn-content-list-row__meta mrn-content-list-row__position"><?php echo esc_html( $position ); ?></p>
+						<?php endif; ?>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( $show_bio && $is_grid_style ) : ?>
+					<details class="mrn-content-list-row__details">
+						<summary class="mrn-content-list-row__summary"><?php echo esc_html( $read_more_label ); ?></summary>
+						<div class="mrn-content-list-row__excerpt mrn-ui__text"><?php echo $bio_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized by mrn_base_stack_get_content_list_testimonial_body_html(). ?></div>
+					</details>
+				<?php elseif ( $show_bio ) : ?>
+					<div class="mrn-content-list-row__excerpt mrn-ui__text"><?php echo $bio_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized by mrn_base_stack_get_content_list_testimonial_body_html(). ?></div>
+				<?php endif; ?>
+
+				<?php if ( $show_read_more ) : ?>
+					<p class="mrn-content-list-row__link">
+						<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $read_more_label ); ?></a>
+					</p>
+				<?php endif; ?>
+			</div>
+		</article>
+	</li>
+	<?php
+
+	return (string) ob_get_clean();
+}
+
+/**
  * Render one query result item for the Content layout.
  *
  * @param WP_Post              $item_post Post to render.
@@ -2843,8 +2974,15 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 		return mrn_base_stack_render_content_list_testimonial_item( $item_post, $args );
 	}
 
+	if ( 'team_member' === get_post_type( $item_post ) && function_exists( 'mrn_base_stack_render_content_list_team_member_item' ) ) {
+		return mrn_base_stack_render_content_list_team_member_item( $item_post, $args );
+	}
+
 	$display_mode      = mrn_base_stack_normalize_content_list_display_mode( $args['display_mode'] ?? '' );
 	$mode_config       = '' !== $display_mode ? mrn_base_stack_get_content_list_display_mode_config( $display_mode ) : mrn_base_stack_get_content_list_legacy_mode_config( $args );
+	$display_style     = function_exists( 'mrn_base_stack_normalize_content_list_display_style' )
+		? mrn_base_stack_normalize_content_list_display_style( $args['display_style'] ?? '', get_post_type( $item_post ) )
+		: '';
 	$permalink         = mrn_base_stack_get_content_list_item_permalink( $item_post, $args );
 	$link_attributes   = mrn_base_stack_get_content_list_item_link_attributes( $item_post, $args );
 	$item_title        = get_the_title( $item_post );
@@ -2860,6 +2998,8 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 	$fields            = isset( $mode_config['fields'] ) && is_array( $mode_config['fields'] ) ? array_values( array_unique( array_map( 'sanitize_key', $mode_config['fields'] ) ) ) : array();
 	$variant           = array( 'title' ) === $fields ? 'title_only' : 'card';
 	$image_first       = ! empty( $fields ) && 'featured_image' === $fields[0];
+	$is_grid_style     = 'grid' === $display_style;
+	$card_layout       = 'vertical';
 	$item_classes      = array(
 		'mrn-content-list-row__item',
 		'mrn-ui__item',
@@ -2867,16 +3007,32 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 		'mrn-content-list-row__item--variant-' . $variant,
 	);
 
+	if ( '' !== $display_style ) {
+		$item_classes[] = 'mrn-content-list-row__item--display-style-' . $display_style;
+	}
+
 	if ( $show_image ) {
 		$item_classes[] = 'mrn-content-list-row__item--has-image';
 		if ( $image_first ) {
 			$item_classes[] = 'mrn-content-list-row__item--image-leading';
 		}
+
+		if ( ! $is_grid_style ) {
+			$card_layout = 'media-split';
+		}
 	}
+
+	$item_classes[] = 'mrn-content-list-row__item--card-layout-' . $card_layout;
 
 	ob_start();
 	?>
-	<li class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>">
+	<li
+		class="<?php echo esc_attr( implode( ' ', $item_classes ) ); ?>"
+		<?php if ( '' !== $display_style ) : ?>
+			data-display-style="<?php echo esc_attr( $display_style ); ?>"
+		<?php endif; ?>
+		data-card-layout="<?php echo esc_attr( $card_layout ); ?>"
+	>
 		<?php if ( 'title_only' === $variant ) : ?>
 			<div class="mrn-content-list-row__body mrn-ui__body">
 				<div class="mrn-content-list-row__head mrn-ui__head">
@@ -2931,7 +3087,12 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 									<?php echo esc_html( $item_title ); ?>
 								<?php endif; ?>
 							</h3>
-						<?php elseif ( 'excerpt' === $field_key && '' !== $item_excerpt ) : ?>
+						<?php elseif ( 'excerpt' === $field_key && '' !== $item_excerpt && $is_grid_style ) : ?>
+								<details class="mrn-content-list-row__details">
+									<summary class="mrn-content-list-row__summary"><?php echo esc_html( $read_more_label ); ?></summary>
+									<p class="mrn-content-list-row__excerpt mrn-ui__text"><?php echo esc_html( $item_excerpt ); ?></p>
+								</details>
+							<?php elseif ( 'excerpt' === $field_key && '' !== $item_excerpt ) : ?>
 								<p class="mrn-content-list-row__excerpt mrn-ui__text"><?php echo esc_html( $item_excerpt ); ?></p>
 							<?php elseif ( 'read_more' === $field_key && $show_read_more ) : ?>
 									<p class="mrn-content-list-row__link">
@@ -11692,6 +11853,15 @@ function mrn_base_stack_get_video_embed( $url, array $options = array() ) {
 		return array(
 			'provider'  => 'vimeo',
 			'embed_url' => sprintf( 'https://player.vimeo.com/video/%s?%s', rawurlencode( $video_id ), http_build_query( array_filter( $query, 'strlen' ), '', '&', PHP_QUERY_RFC3986 ) ),
+		);
+	}
+
+	if ( preg_match( '~drive\.google\.com/file/d/([A-Za-z0-9_-]+)~', $sanitized_url, $matches ) ) {
+		$file_id = $matches[1];
+
+		return array(
+			'provider'  => 'google_drive',
+			'embed_url' => sprintf( 'https://drive.google.com/file/d/%s/preview', rawurlencode( $file_id ) ),
 		);
 	}
 
