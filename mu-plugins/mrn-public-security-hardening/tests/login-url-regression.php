@@ -45,7 +45,9 @@ $GLOBALS['mrn_test_state'] = array(
 	'transients'         => array(),
 	'redirects'          => array(),
 	'nonce_checks'       => array(),
-	'current_user_can'   => array(),
+	'current_user_can'    => array(),
+	'admin_menu_pages'    => array(),
+	'admin_submenu_pages' => array(),
 	'login_screen_loaded' => false,
 );
 
@@ -176,6 +178,18 @@ function current_user_can( $capability ) {
 	return ! empty( $GLOBALS['mrn_test_state']['capabilities'][ $capability ] );
 }
 
+function add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $callback = '', $icon_url = '', $position = null ) {
+	$GLOBALS['mrn_test_state']['admin_menu_pages'][] = compact( 'page_title', 'menu_title', 'capability', 'menu_slug', 'callback', 'icon_url', 'position' );
+
+	return 'toplevel_page_' . $menu_slug;
+}
+
+function add_submenu_page( $parent_slug, $page_title, $menu_title, $capability, $menu_slug, $callback = '', $position = null ) {
+	$GLOBALS['mrn_test_state']['admin_submenu_pages'][] = compact( 'parent_slug', 'page_title', 'menu_title', 'capability', 'menu_slug', 'callback', 'position' );
+
+	return 'toplevel_page_' . $menu_slug;
+}
+
 function is_network_admin() {
 	return false;
 }
@@ -225,6 +239,10 @@ function sanitize_text_field( $text ) {
 	$text = preg_replace( '/[\r\n\t ]+/', ' ', $text );
 
 	return trim( $text );
+}
+
+function wp_strip_all_tags( $text ) {
+	return strip_tags( (string) $text );
 }
 
 function wp_unslash( $value ) {
@@ -519,6 +537,41 @@ mrn_test_assert( 'uptimerobot-check' === mrn_public_security_get_uptime_robot_ch
 mrn_test_assert( true === mrn_public_security_author_archive_redirect_enabled(), 'Author archive redirect should remain enabled by default.' );
 mrn_test_assert( true === mrn_public_security_rest_guard_enabled(), 'REST guard should remain enabled by default.' );
 mrn_test_assert( true === mrn_public_security_oembed_strip_author_enabled(), 'oEmbed author stripping should remain enabled by default.' );
+
+mrn_public_security_register_admin_page();
+$admin_menu_page    = $GLOBALS['mrn_test_state']['admin_menu_pages'][0] ?? array();
+$admin_submenu_page = $GLOBALS['mrn_test_state']['admin_submenu_pages'][0] ?? array();
+mrn_test_same( 'Advanced', $admin_menu_page['menu_title'] ?? '', 'The top-level admin menu should be Advanced.' );
+mrn_test_same( 'mrn-public-security-hardening', $admin_menu_page['menu_slug'] ?? '', 'The top-level admin menu should use the stable plugin page slug.' );
+mrn_test_same( 'mrn_public_security_render_admin_page', $admin_menu_page['callback'] ?? '', 'The top-level admin menu should register the page callback.' );
+mrn_test_same( 'mrn-public-security-hardening', $admin_submenu_page['parent_slug'] ?? '', 'The Public Security submenu should use the native top-level page as its parent.' );
+mrn_test_same( 'Public Security', $admin_submenu_page['menu_title'] ?? '', 'The native submenu label should be Public Security.' );
+mrn_test_same( 'mrn-public-security-hardening', $admin_submenu_page['menu_slug'] ?? '', 'The submenu should keep the existing page URL.' );
+mrn_test_same( '', $admin_submenu_page['callback'] ?? '', 'The submenu should reuse the top-level callback instead of rendering the page twice.' );
+mrn_test_same( array( 'toplevel_page_mrn-public-security-hardening' ), $GLOBALS['mrn_public_security_admin_page_hooks'], 'The registered page hook should be tracked once.' );
+
+$menu = array(
+	205 => array( 'Advanced', 'manage_options', '#legacy-advanced-placeholder' ),
+);
+$submenu = array(
+	'#legacy-advanced-placeholder' => array(
+		array( 'Stale item', 'manage_options', 'admin.php?page=stale-item' ),
+	),
+);
+$filtered_submenu_file = mrn_public_security_reassert_native_admin_menu( 'options-general.php' );
+$late_admin_menu_page    = end( $GLOBALS['mrn_test_state']['admin_menu_pages'] );
+$late_admin_submenu_page = end( $GLOBALS['mrn_test_state']['admin_submenu_pages'] );
+
+if ( ! is_array( $late_admin_menu_page ) || ! is_array( $late_admin_submenu_page ) ) {
+	fwrite( STDERR, "FAIL: late menu normalization did not register the native menu.\n" );
+	exit( 1 );
+}
+
+mrn_test_same( 'options-general.php', $filtered_submenu_file, 'Late menu normalization should preserve the submenu_file filter value.' );
+mrn_test_same( array(), $menu, 'Late menu normalization should remove a conflicting Advanced placeholder.' );
+mrn_test_assert( ! isset( $submenu['#legacy-advanced-placeholder'] ), 'Late menu normalization should remove the conflicting placeholder submenu.' );
+mrn_test_same( '', $late_admin_menu_page['callback'] ?? null, 'Late menu normalization should not register the page callback twice.' );
+mrn_test_same( 'mrn-public-security-hardening', $late_admin_submenu_page['parent_slug'] ?? '', 'Late menu normalization should restore the native Advanced parent.' );
 
 mrn_test_same( 'site-login', mrn_public_security_get_default_login_slug(), 'Default login slug should be site-login.' );
 mrn_test_same( '/blog/site-login/', mrn_public_security_get_custom_login_path(), 'Default custom login path should include the site path root.' );
