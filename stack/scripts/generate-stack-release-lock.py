@@ -22,6 +22,7 @@ EXCLUDED_DIRECTORIES = {
     "node_modules",
     "playwright-report",
     "test-results",
+    "vendor",
     "zip",
 }
 EXCLUDED_FILES = {".DS_Store", ".git"}

@@ -60,6 +60,10 @@ class ReleaseLockTests(unittest.TestCase):
             (root_path / "node_modules" / "dependency.js").write_text(
                 "noise", encoding="utf-8"
             )
+            (root_path / "vendor").mkdir()
+            (root_path / "vendor" / "development.php").write_text(
+                "noise", encoding="utf-8"
+            )
 
             self.assertEqual(baseline, release_lock.tree_sha256(root_path))
 
