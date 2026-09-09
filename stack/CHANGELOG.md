@@ -1,6 +1,14 @@
 # Stack Changelog
 
 ## Unreleased
+- None.
+
+## 2026.09.09-stack-reconciliation
+- Promoted the complete merged Stack reconciliation as one release candidate and synchronized `STACK_VERSION.md` with every MRN-owned package in the bootstrap manifest.
+- Added every tracked MU wrapper to the immutable component inventory and taught release generation to preserve each wrapper's real deployed filename. This corrects the prior Updraft loader destination and prevents release artifacts from omitting directly discoverable MU wrappers in addition to the consolidated loader.
+- Updated Stack promotion inventory so tracked links to standalone plugin sources are classified by their deployed path instead of being reported as uncataloged vendored source.
+- `mrn-active-style-guide` (`0.1.6` -> `0.1.7`), `mrn-admin-ui-css` (`3.2.3` -> `3.2.4`), `mrn-disable-comments` (`1.2.4` -> `1.2.5`), `mrn-editor-lockdown` (`1.0.32` -> `1.0.33`), and `mrn-site-colors` (`0.1.38` -> `0.1.39`): assigned distinct release versions and synchronized their component, wrapper, catalog, and local release metadata after merged source changes.
+- `mrn-stack-deployment-agent` (`0.1.7` -> `0.1.8`): published reconciled standalone release metadata as a distinct immutable Stack input.
 - Reconciled the Stack and all canonical standalone-plugin repositories against their actual source headers, readmes, release metadata, and distribution roles. Corrected stale or accidentally forward-versioned catalog entries, restored the missing `mrn-stack-deployment-agent` entry, and synchronized the human-readable catalog with the machine inventory.
 - `mrn-updraft-local-retention` (`0.4.1` and divergent `0.5.0` lineages -> `0.5.1`): combined development/review scheduling and Notifications Center support with the stable first-hostname-label S3 site-slug contract, repairing a reconciliation merge that had silently dropped the 0.5.0 behavior.
 - `mrn-public-security-hardening` (`0.3.3` -> `0.4.1`): moved the Public Security screen under a native WordPress `Advanced` top-level menu and removed its Admin Menu Editor dependency.

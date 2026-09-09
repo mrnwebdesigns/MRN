@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Site Styles
  * Description: Loads the MRN Site Styles MU plugin from its subfolder.
- * Version: 0.1.38
+ * Version: 0.1.39
  *
  * Bootstrap loader for the Site Colors MU plugin.
  */

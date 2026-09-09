@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Disable Comments
  * Description: Fully disables comments everywhere (UI + admin menu + admin bar + REST + XML-RPC + submission blocking).
- * Version: 1.2.4
+ * Version: 1.2.5
  */
 
 defined('ABSPATH') || exit;
