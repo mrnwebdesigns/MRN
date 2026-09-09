@@ -1,6 +1,6 @@
 # MRN WordPress Component Catalog
 
-Last classified: 2026-09-08
+Last classified: 2026-09-09
 
 This is the human-readable index of MRN-owned WordPress components. The authoritative machine-readable source is [`manifests/component-catalog.json`](./manifests/component-catalog.json), and the rules governing it are in [`PLUGIN_GOVERNANCE.md`](./PLUGIN_GOVERNANCE.md).
 
@@ -19,14 +19,15 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-disable-comments` | 1.2.4 | MU loader | Platform required | Enforces the MRN no-comments policy. |
 | `mrn-editor-lockdown` | 1.0.32 | MU loader | Platform required | Applies shared editor, metabox, and capability policy. |
 | `mrn-environment-runtime` | 0.5.1 | MU loader | Platform required | Provides environment, runtime, and notification diagnostics. |
-| `mrn-public-security-hardening` | 0.3.3 | MU loader | Platform required | Applies shared public REST and discovery hardening. |
+| `mrn-public-security-hardening` | 0.4.1 | MU loader | Platform required | Applies shared public REST and discovery hardening and owns the native Advanced admin menu. |
 | `mrn-shared-assets` | 0.2.0 | MU loader | Platform required | Provides shared asset and icon interfaces. |
 | `mrn-site-colors` | 0.1.38 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
-| `mrn-updraft-local-retention` | 0.4.1 | MU loader | Platform required | Enforces shared backup schedule and retention policy and routes remote-storage warnings to Notifications Center. |
+| `mrn-updraft-local-retention` | 0.5.1 | MU loader | Platform required | Enforces shared backup schedule and retention policy, uses a stable cross-environment S3 site slug, and routes remote-storage warnings to Notifications Center. |
 | `mrn-schema-bridge` | 0.6.0 | MU loader | Platform required | SEOPress identity synchronization, automatic Article template provisioning, JobPosting output, author policy, MRN supplemental schema, and migration-only SmartCrawl compatibility. |
 | `mrn-active-style-guide` | 0.1.6 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
 | `mrn-config-helper` | 0.1.59 | Standard bootstrap | Platform required | Shared site configuration shell, MRN-owned visible breadcrumb and BreadcrumbList runtime, and launch/admin integrations. |
 | `mrn-sendgrid-provisioning` | 0.1.0 | Standard bootstrap | Platform required | Provisions a per-site SendGrid Subuser, mail-only site API key, and domain authentication; split out of `mrn-config-helper`. |
+| `mrn-stack-deployment-agent` | 0.1.7 | Standard bootstrap | Platform required | Provides the MainWP-authenticated, checksum-verified Stack deployment target. |
 | `mrn-universal-sticky-bar` | 1.1.8 | Standard bootstrap | Platform required | Provides the shared settings/editor action bar; independently released for non-Stack use. |
 
 ## Optional Shared Features
@@ -34,11 +35,11 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | Slug | Version | Current distribution | Target tier | Responsibility |
 | --- | ---: | --- | --- | --- |
 | `background-video-popout-disabler` | 1.0.1 | Standard bootstrap | Optional shared | Front-end helper for stack-profile background-video markup; suppresses browser picture-in-picture/pop-out controls on likely background videos. |
-| `mrn-ai-assist` | 2.0.13 | Standard bootstrap | Optional shared | Queued AI-assisted content, SEO, and media-alt workflows. |
-| `mrn-announcements` | 1.6.2 | Standard bootstrap | Optional shared | Scheduled and targeted announcement bars and modals. |
+| `mrn-ai-assist` | 2.0.14 | Standard bootstrap | Optional shared | Queued AI-assisted content, SEO, and media-alt workflows. |
+| `mrn-announcements` | 1.8.1 | Standard bootstrap | Optional shared | Scheduled and targeted announcement bars and modals. |
 | `mrn-editor-tools` | 1.8.25 | Standard bootstrap | Optional shared | Classic Editor, TinyMCE, and ACF WYSIWYG enhancements. |
 | `mrn-media-bulk-tools` | 0.12.1 | Independent repository (`mrnwebdesigns/mrn-media-bulk-tools`) via MRN-plugins symlink | Optional shared | Media audit, usage indexing, and bulk maintenance; legacy slug and update contracts retained. |
-| `mrn-mega-menu` | 0.17.0 | Standard bootstrap | Optional shared | Accessible content-rich mega-menu administration and rendering. |
+| `mrn-mega-menu` | 0.17.2 | Standard bootstrap | Optional shared | Accessible content-rich mega-menu administration and rendering. |
 | `mrn-reusable-block-library` | 0.1.28 | Independent repository (`mrnwebdesigns/mrn-reusable-block-library`) via MRN-plugins symlink | Optional shared | Shared reusable block content types and render helpers; existing site behavior is unchanged. |
 | `mrn-tokens` | 0.1.3 | Independent repository (`mrnwebdesigns/mrn-tokens`) via MRN-plugins symlink | Optional shared | Reusable content-token registry, shortcode, and authenticated REST API. |
 
@@ -48,30 +49,31 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | --- | ---: | --- | --- | --- |
 | `mrn-acf-character-count` | 1.1.8 | Standard bootstrap | Optional integration | ACF editor character counts. |
 | `mrn-acf-focal-point` | 1.1.2 | Standard bootstrap | Optional integration | ACF image focal-point metadata and rendering. |
-| `mrn-ai-guardrails` | 0.1.0 | Independent repository (`mrnwebdesigns/mrn-ai-guardrails`) via MRN-plugins symlink; catalog-only | Optional integration | SEOPress AI policy enforcement and human approval for generated image alt text. |
-| `mrn-cookie-consent` | 1.1.40 | Standard bootstrap | Optional integration | Silktide and Google Consent Mode. |
+| `mrn-ai-guardrails` | 0.1.1 | Independent repository (`mrnwebdesigns/mrn-ai-guardrails`) via MRN-plugins symlink; catalog-only | Optional integration | SEOPress AI policy enforcement and human approval for generated image alt text. |
+| `mrn-cookie-consent` | 1.1.42 | Standard bootstrap | Optional integration | Silktide and Google Consent Mode. |
 | `mrn-fontawesome-profile-manager` | 0.5.0 | Standard bootstrap | Optional integration | Font Awesome profiles and local assets. |
 | `mrn-google-fonts` | 1.0.7 | Independent repository (`mrnwebdesigns/mrn-google-fonts`) via MRN-plugins symlink | Optional integration | Google/local fonts and Site Styles; existing site behavior is unchanged. |
 | `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Independent repository (`mrnwebdesigns/mrn-hierarchical-menu-taxonomies`) via MRN-plugins symlink | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories; existing menu behavior is unchanged. |
 | `mrn-gtm-injector` | 1.0.13 | Standard bootstrap | Optional integration | Google Tag Manager. |
 | `mrn-recaptcha-enterprise-manager` | 0.1.1 | Independent repository (`mrnwebdesigns/mrn-recaptcha-enterprise-manager`) via MRN-plugins symlink | Optional integration | reCAPTCHA Enterprise and WPForms; security and credential contracts retained. |
+| `mrn-relevanssi-ai-search` | 0.6.1 | Independent repository (`mrnwebdesigns/mrn-relevanssi-ai-search`); catalog-only | Optional integration | Guarded AI query interpretation and hybrid semantic matching for Relevanssi. |
 | `mrn-seo-helper` | 0.4.0 | Standard bootstrap | Optional integration | ACF SEO fields and supported SEO providers. |
 
 ## Dashboard-Only Operations
 
 | Slug | Version | Responsibility |
 | --- | ---: | --- |
-| `mrn-mainwp-operations-api` | 0.3.0 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only, not installed in client-site plugins. |
+| `mrn-mainwp-operations-api` | 0.7.10 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only, not installed in client-site plugins. |
 | `mrn-wp-control` | 1.1.1 | Independent repository (`mrnwebdesigns/mrn-wp-control`); dashboard-only, not installed in client-site plugins. |
 | `mrn-wp-control-table-exporter` | 1.4.4 | Independent repository (`mrnwebdesigns/mrn-wp-control-table-exporter`); dashboard-only, not installed in client-site plugins. |
-| `mrn-mainwp-mcp` | 0.1.0 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |
+| `mrn-mainwp-mcp` | 0.1.1 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |
 
 ## Development and Maintenance
 
 | Slug | Version | Current distribution | Target tier | Responsibility |
 | --- | ---: | --- | --- | --- |
 | `mrn-template-inspector` | 0.2.7 | Independent repository (`mrnwebdesigns/mrn-template-inspector`) via MRN-plugins symlink | Development only | Template and request-context inspection; local-only opener scope retained. |
-| `mrn-dummy-content` | 0.3.0 | Independent repository (`mrnwebdesigns/mrn-dummy-content`); catalog-only | Development only | Development content fixtures; excluded from production bootstrap. |
+| `mrn-dummy-content` | 0.3.1 | Independent repository (`mrnwebdesigns/mrn-dummy-content`); catalog-only | Development only | Development content fixtures; excluded from production bootstrap. |
 | `mrn-comment-management` | 1.1.7 | Standard bootstrap | Maintenance only | Explicit comment audit and deletion. |
 | `mrn-database-retention` | 1.1.0 | Independent repository (`mrnwebdesigns/mrn-database-retention`) via MRN-plugins symlink | Maintenance only | Allowlisted third-party operational-data retention. |
 | `mrn-layout-import-export` | 0.1.2 | Independent repository (`mrnwebdesigns/mrn-layout-import-export`) via MRN-plugins symlink | Maintenance only | ACF builder layout migration. |

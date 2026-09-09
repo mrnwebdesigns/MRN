@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-09-08",
+  "catalog_updated": "2026-09-09",
   "authority": "This file is the authoritative inventory and classification source for MRN-owned WordPress plugins and MU components. Inclusion does not imply installation.",
   "product_model": {
     "platform-required": "Installed on a production MRN stack because it provides mandatory platform behavior.",
@@ -135,7 +135,7 @@
     {
       "slug": "mrn-public-security-hardening",
       "name": "MRN Public Security Hardening",
-      "version": "0.3.3",
+      "version": "0.4.1",
       "runtime_type": "mu-component",
       "classification": "platform-policy",
       "lifecycle": "supported",
@@ -177,7 +177,7 @@
     {
       "slug": "mrn-updraft-backup-policy-loader",
       "name": "MRN Updraft Backup Policy Loader",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "runtime_type": "mu-loader",
       "classification": "platform-policy",
       "lifecycle": "supported",
@@ -191,7 +191,7 @@
     {
       "slug": "mrn-updraft-local-retention",
       "name": "MRN Updraft Backup Policy",
-      "version": "0.4.1",
+      "version": "0.5.1",
       "runtime_type": "mu-component",
       "classification": "platform-policy",
       "lifecycle": "supported",
@@ -317,7 +317,7 @@
     {
       "slug": "mrn-ai-assist",
       "name": "MRN AI Assist",
-      "version": "2.0.13",
+      "version": "2.0.14",
       "runtime_type": "standard-plugin",
       "classification": "shared-feature",
       "lifecycle": "supported",
@@ -345,7 +345,7 @@
     {
       "slug": "mrn-announcements",
       "name": "MRN Announcements",
-      "version": "1.6.2",
+      "version": "1.8.1",
       "runtime_type": "standard-plugin",
       "classification": "shared-feature",
       "lifecycle": "supported",
@@ -387,7 +387,7 @@
     {
       "slug": "mrn-sendgrid-provisioning",
       "name": "MRN SendGrid Provisioning",
-      "version": "0.2.0",
+      "version": "0.1.0",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
       "lifecycle": "supported",
@@ -397,6 +397,20 @@
       "dependencies": {"hard": ["WordPress"], "soft": ["mrn-config-helper", "Fluent SMTP"], "release_group": "config-helper-decomposition"},
       "data": {"options": ["mrn_sendgrid_provisioning_settings"], "tables": [], "cron": [], "routes": ["four privileged admin-post actions"], "external_services": ["SendGrid", "Fluent SMTP"], "meta": []},
       "purpose": "Provisions a per-site SendGrid Subuser, mail-only site API key, and domain authentication so each Stack site has isolated SendGrid sending identity, split out of mrn-config-helper."
+    },
+    {
+      "slug": "mrn-stack-deployment-agent",
+      "name": "MRN Stack Deployment Agent",
+      "version": "0.1.7",
+      "runtime_type": "standard-plugin",
+      "classification": "operations-agent",
+      "lifecycle": "supported",
+      "current_distribution": "standard-bootstrap",
+      "target_tier": "platform-required",
+      "source": {"repository": "mrn-stack-deployment-agent", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent", "state": "confirmed"},
+      "dependencies": {"hard": ["WordPress", "MainWP Child authenticated connection"], "soft": ["MRN MainWP Operations API"], "release_group": "mainwp-operations"},
+      "data": {"options": [], "tables": [], "cron": [], "routes": ["authenticated mainwp_child_extra_execution actions"], "external_services": ["MainWP"]},
+      "purpose": "Provides a zero-frontend, MU-only deployment target for checksum-verified preflight, atomic promotion, rollback, and recovery-payload-aware incomplete-marker reconciliation requests authenticated by MainWP Child."
     },
     {
       "slug": "mrn-contextual-content-editor",
@@ -415,7 +429,7 @@
     {
       "slug": "mrn-cookie-consent",
       "name": "MRN Cookie Consent",
-      "version": "1.1.40",
+      "version": "1.1.42",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -499,7 +513,7 @@
     {
       "slug": "mrn-mega-menu",
       "name": "MRN Mega Menu",
-      "version": "0.17.0",
+      "version": "0.17.2",
       "runtime_type": "standard-plugin",
       "classification": "shared-feature",
       "lifecycle": "supported",
@@ -569,7 +583,7 @@
     {
       "slug": "mrn-hierarchical-menu-taxonomies",
       "name": "MRN Hierarchical Menu Taxonomies",
-      "version": "0.2.1",
+      "version": "0.1.0",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -597,7 +611,7 @@
     {
       "slug": "mrn-dummy-content",
       "name": "MRN Dummy Content",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "runtime_type": "standard-plugin",
       "classification": "development-tool",
       "lifecycle": "supported-development",
@@ -639,7 +653,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.7.4",
+      "version": "0.7.10",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -751,7 +765,7 @@
     {
       "slug": "mrn-relevanssi-ai-search",
       "name": "MRN Relevanssi AI Search",
-      "version": "0.4.0",
+      "version": "0.6.1",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "review",

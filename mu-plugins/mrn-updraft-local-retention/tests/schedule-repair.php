@@ -16,6 +16,16 @@ $mrn_test_intervals = array(
 	'updraft_starttime_files'   => '04:17',
 	'updraft_starttime_db'      => '04:17',
 );
+$mrn_test_home_url = 'https://trilliant.mrndev.io/';
+
+function home_url(string $path = ''): string {
+	global $mrn_test_home_url;
+	return rtrim($mrn_test_home_url, '/') . '/' . ltrim($path, '/');
+}
+
+function wp_parse_url(string $url, int $component = -1) {
+	return parse_url($url, $component);
+}
 
 function add_action(string $hook, callable $callback, int $priority = 10): void {
 	global $mrn_test_actions;
@@ -57,6 +67,11 @@ final class MRN_Test_Updraftplus {
 }
 
 require dirname(__DIR__) . '/mrn-updraft-local-retention.php';
+
+if ('trilliant' !== mrn_updraft_backup_policy_get_sanitized_hostname()) {
+	fwrite(STDERR, "The S3 path did not use the stable first-label site slug.\n");
+	exit(1);
+}
 
 $updraftplus = new MRN_Test_Updraftplus();
 mrn_updraft_local_retention_repair_backup_schedules();

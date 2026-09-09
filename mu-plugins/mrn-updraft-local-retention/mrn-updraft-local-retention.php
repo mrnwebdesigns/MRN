@@ -3,7 +3,7 @@
  * Plugin Name: MRN Updraft Backup Policy
  * Description: Enforces the MRN Updraft backup policy, limits local backup sets, and repairs missing scheduled events.
  * Author: MRN Web Designs
- * Version: 0.4.1
+ * Version: 0.5.1
  */
 
 defined('ABSPATH') || exit;
@@ -30,9 +30,12 @@ function mrn_updraft_backup_policy_get_hostname(): string {
 }
 
 /**
- * Sanitize the resolved hostname into the S3-path-safe slug documented in
- * BACKUP_POLICY.md's `sites/<sanitized-hostname>` convention (dots and other
- * non-alphanumeric separators become hyphens).
+ * Resolve the stable, environment-independent site slug used for the
+ * BACKUP_POLICY.md `sites/<site-slug>` S3 convention.
+ *
+ * The hostname's first label is stable across the usual MRN environment
+ * suffixes, so a site keeps one backup history as it moves between local,
+ * review, staging, and production hosts.
  */
 function mrn_updraft_backup_policy_get_sanitized_hostname(): string {
 	$hostname = mrn_updraft_backup_policy_get_hostname();
@@ -40,7 +43,8 @@ function mrn_updraft_backup_policy_get_sanitized_hostname(): string {
 		return '';
 	}
 
-	$sanitized = preg_replace('/[^a-z0-9]+/', '-', $hostname);
+	$labels    = explode('.', $hostname);
+	$sanitized = preg_replace('/[^a-z0-9]+/', '-', $labels[0]);
 
 	return is_string($sanitized) ? trim($sanitized, '-') : '';
 }

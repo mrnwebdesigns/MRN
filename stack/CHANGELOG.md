@@ -1,6 +1,11 @@
 # Stack Changelog
 
 ## Unreleased
+- Reconciled the Stack and all canonical standalone-plugin repositories against their actual source headers, readmes, release metadata, and distribution roles. Corrected stale or accidentally forward-versioned catalog entries, restored the missing `mrn-stack-deployment-agent` entry, and synchronized the human-readable catalog with the machine inventory.
+- `mrn-updraft-local-retention` (`0.4.1` and divergent `0.5.0` lineages -> `0.5.1`): combined development/review scheduling and Notifications Center support with the stable first-hostname-label S3 site-slug contract, repairing a reconciliation merge that had silently dropped the 0.5.0 behavior.
+- `mrn-public-security-hardening` (`0.3.3` -> `0.4.1`): moved the Public Security screen under a native WordPress `Advanced` top-level menu and removed its Admin Menu Editor dependency.
+- Updated existing-site bootstrap reconciliation to refresh all five Stack-managed reCAPTCHA Enterprise constants before the completed-site early exit, while preserving the existing clean-site bootstrap path.
+- Changed Stack configuration imports to merge `mrn_helper_settings` with existing site-owned values instead of overwriting them with defaults.
 - `mrn-admin-data-post-types` (`0.2.0` -> `0.2.1`): filtered configured content-only CPTs out of SEOPress's shared post-type collection so titles, sitemap settings, setup wizard indexing choices, metabox registration, and diagnostic notices all stay aligned while public and admin-hidden-only CPTs remain available.
 - `mrn-config-helper` (`0.1.58` -> `0.1.59`): made the MRN renderer the default owner of both visible breadcrumbs and `BreadcrumbList` schema, and changed `Auto` delegation so SEOPress suppresses MRN schema only when SEOPress JSON-LD breadcrumbs are explicitly enabled. New-site bootstrap normalizes imported settings to MRN ownership and disables conflicting SEOPress breadcrumb JSON-LD.
 - `mrn-schema-bridge` (`0.5.0` -> `0.6.0`): added conservative `JobPosting` schema from visible Stack careers fields, canonical hiring-organization identity, international location normalization, and Schema Health coverage. Incomplete locations are withheld rather than emitted as invalid rich-result markup.

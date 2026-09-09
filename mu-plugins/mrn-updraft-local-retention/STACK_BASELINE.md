@@ -1,9 +1,9 @@
 # Stack Baseline - MRN Updraft Local Retention
 
 ## Baseline Snapshot
-- Date pinned: 2026-06-30
+- Date pinned: 2026-09-09
 - Plugin source path: `/Users/khofmeyer/Development/MRN/mu-plugins/mrn-updraft-local-retention`
-- Current plugin version: `0.2.0`
+- Current plugin version: `0.5.1`
 - Intended integration target: mrn-shared-mu-plugin-loader
 - Current release model: shared MU plugin release unit
 

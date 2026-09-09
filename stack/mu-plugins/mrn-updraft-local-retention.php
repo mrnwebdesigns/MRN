@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Updraft Backup Policy
  * Description: Loads the MRN Updraft backup policy MU plugin from its subfolder.
- * Version: 0.4.1
+ * Version: 0.5.1
  *
  * Bootstrap loader for the Updraft local retention MU plugin.
  */
