@@ -174,6 +174,39 @@ SSH access convention for CloudPanel `mrndev.io` sites:
 - MainWP-first does not override backup-before-write, QA, environment-separation, or production-authorization requirements.
 - Respect repo-level deployment scope and MRN deployment policies.
 
+#### Canonical agent access routes
+
+MainWP REST API v2 and the globally configured MainWP MCP are MRN's two primary routes for working with managed sites. Choose the narrowest route that exposes the required operation. Prefer an existing MRN API client, QA Engine workflow, or repository helper over constructing ad hoc HTTP requests. Do not substitute a browser, the generic `mainwpcontrol` CLI, or SSH merely because one primary route lacks the needed surface.
+
+##### MCP
+
+1. Use the globally configured MCP server named `mainwp`. Do not create a second MainWP MCP entry.
+2. MainWP tools can be deferred by the client. Discover the `mainwp` MCP resources or the available `mcp__mainwp__*` tools before deciding that the server is missing.
+3. Read the `mainwp://status` resource before site discovery or any operation. Require all of the following:
+   - `connected` is `true`;
+   - `dashboardHost` is exactly `wpcontrol.mrndev.io`;
+   - `abilitiesCount` is greater than zero.
+   A different Dashboard host is a cross-environment safety stop. Do not proceed until the intended Dashboard identity is restored.
+4. The Codex launch entry is `[mcp_servers.mainwp]` in `/Users/khofmeyer/.codex/config.toml`. The connection settings are stored owner-only in `/Users/khofmeyer/.config/mainwp-mcp/settings.json`. Inspect only file presence, permissions, non-secret keys, and connection status. Never print, copy into chat, or record the username or application password in a repository, task, log, or memory.
+5. If status is unavailable or disconnected, use the server's setup/status diagnostic when exposed. Do not overwrite working settings, paste credentials into chat, weaken TLS verification, or create a duplicate connection. Report the exact non-secret failure class. Credential repair must use the MRN/business 1Password boundary in section 3 and the approved local configuration path.
+
+##### REST API v2
+
+1. Use HTTPS on the same authoritative Dashboard origin: `https://wpcontrol.mrndev.io`. Official endpoints are under `/wp-json/mainwp/v2/`; normalize any saved admin-page URL to the origin before appending an API path.
+2. Resolve the enabled MainWP REST bearer key at runtime through Production Hub's `mainwp` provider, backed by the MRN/business 1Password item `Production Hub - MainWP`. The canonical alias is `MAINWP_REST_API_KEY` (`MAINWP_API_KEY` is an accepted alias). Require the secure lookup to report that the key was found, and never print the token or persist it in a command, source file, task, log, or memory. If the key is missing, use an already-approved client whose credential remains encrypted at rest, such as the configured QA Engine integration, or report the API route blocked. Do not extract that client's credential or repurpose another secret.
+3. Authenticate the REST v2 request with `Authorization: Bearer <token>`. Do not put the MCP/Abilities WordPress Application Password into the REST API key field; the API bearer key and Application Password authenticate different controllers.
+4. Begin with a read-only connection/identity check such as the v2 basic site inventory and verify the response is authenticated JSON from the expected host. For writes, also verify that the selected key is enabled and has the exact required permissions. Read inventory needs Read access; onboarding or management writes require Write & Delete access.
+5. Use the approved wrapper for the task when one exists. Examples include the QA Engine MainWP integration and `/Users/khofmeyer/Development/WPControl/mainwp_onboard.py` for API-first child-site onboarding. Preserve their validation, idempotency, and fail-closed behavior.
+
+##### Rules shared by both routes
+
+1. Resolve each requested child site from its current exact URL/domain with the selected MainWP route. Confirm the returned ID, URL, name, and connection state. Never reuse a site ID remembered from another task.
+2. Before treating MainWP inventory, update counts, plugin/theme state, or health as current, run a fresh sync scoped to the resolved site and read it back. An empty site array means all applicable sites, so never use an empty array for a single-site task.
+3. Start read-only and choose the narrowest API endpoint or MCP ability that matches the request. A successful connection is not authorization for a mutation. Apply all backup, environment, owner-authorization, QA, dry-run/confirmation, and post-write verification gates independently.
+4. If a primary route is unavailable, points at the wrong host, rejects authentication, or lacks the needed permission/ability, report the non-secret failure and evaluate the other primary route. Do not silently change credentials or drop to SSH.
+
+The SSH alias `mainwp-tailscale` connects to the MainWP Dashboard host for explicitly authorized host administration or break-glass diagnosis. It is not a primary MainWP site-management route and is not a route to a managed child site's filesystem. If both the API and MCP cannot perform an otherwise supported operation, report that blocker before considering a lower-level path.
+
 ### Shared deployment tooling
 - Use shared tooling and scripts defined in canonical MRN stack/repo workflows and deployment contracts.
 - Apply per-project/site-specific edits only to approved scopes.
