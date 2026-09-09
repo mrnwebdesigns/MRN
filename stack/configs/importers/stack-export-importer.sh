@@ -219,7 +219,16 @@ if (!is_string($json) || $json === "") { fwrite(STDERR, "JSON config file is emp
 $data = json_decode($json, true);
 if (!is_array($data)) { fwrite(STDERR, "Invalid JSON config payload.\n"); exit(1); }
 $name = '\'''"${escaped_name}"''\'';
-if ("'"${storage}"'" === "site_option_json") { update_site_option($name, $data); } else { update_option($name, $data); }
+if ("'"${storage}"'" === "site_option_json") {
+    update_site_option($name, $data);
+} elseif ($name === "mrn_helper_settings") {
+    // Stack supplies shared defaults and credentials; preserve site-specific settings.
+    $current = get_option($name, []);
+    if (!is_array($current)) { $current = []; }
+    update_option($name, array_replace_recursive($current, $data), false);
+} else {
+    update_option($name, $data);
+}
 echo "Imported JSON option: {$name}\n";'
   run_wp eval "${code}"
 }

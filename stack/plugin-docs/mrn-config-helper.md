@@ -251,6 +251,7 @@
 - Stack bootstrap now seeds the Config Helper option from a stack secret payload:
   - importer mapping: `option_json|secret:mrn-config-helper-settings.json|mrn_helper_settings`
   - server secret path: `/home/mrndev-stack-manager/stack/secrets/mrn-config-helper-settings.json`
+  - the importer merges this shared payload into the existing option so site-specific settings are preserved
   - keep the secret payload out of repo source and thread memory
 
 ## Dependencies / Integrations
