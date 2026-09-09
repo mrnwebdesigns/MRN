@@ -235,7 +235,7 @@ if ( '' === $mrn_apply_href && is_email( $mrn_application_email ) ) {
 
 			<?php if ( has_post_thumbnail() ) : ?>
 				<a class="post-thumbnail" href="<?php the_permalink(); ?>" aria-hidden="true" tabindex="-1">
-					<?php the_post_thumbnail( 'large' ); ?>
+					<?php echo mrn_base_stack_get_lazy_post_thumbnail( null, 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</a>
 			<?php endif; ?>
 

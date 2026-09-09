@@ -141,11 +141,13 @@ if ( ! function_exists( 'mrn_base_stack_post_thumbnail' ) ) :
 					the_post_thumbnail(
 						'post-thumbnail',
 						array(
-							'alt' => the_title_attribute(
+							'alt'      => the_title_attribute(
 								array(
 									'echo' => false,
 								)
 							),
+							'loading'  => 'lazy',
+							'decoding' => 'async',
 						)
 					);
 				?>

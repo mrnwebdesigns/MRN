@@ -40,6 +40,10 @@ function apply_filters( $hook, $value, ...$args ) {
 	return $value;
 }
 
+function add_filter( $hook_name, $callback, $priority = 10, $accepted_args = 1 ) {
+	return true;
+}
+
 require dirname( __DIR__, 2 ) . '/inc/frontend-assets.php';
 
 $keys = mrn_base_stack_get_layout_style_keys_for_post( 16 );

@@ -2914,7 +2914,7 @@ function mrn_base_stack_render_content_list_team_member_item( WP_Post $item_post
 		<article class="mrn-content-list-row__card">
 			<?php if ( $show_image ) : ?>
 				<div class="mrn-content-list-row__media mrn-ui__media">
-					<?php echo get_the_post_thumbnail( $item_post, 'mrn-team-member' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php echo mrn_base_stack_get_lazy_post_thumbnail( $item_post, 'mrn-team-member' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
 			<?php endif; ?>
 			<div class="mrn-content-list-row__body mrn-ui__body">
@@ -3068,11 +3068,11 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 							<?php endif; ?>
 							<?php if ( 'featured_image' === $field_key && $show_image && '' !== $permalink ) : ?>
 								<a class="mrn-content-list-row__media mrn-ui__media mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"<?php echo '' !== $link_attributes ? ' ' . $link_attributes : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by mrn_base_stack_get_content_list_item_link_attributes(). ?>>
-								<?php echo get_the_post_thumbnail( $item_post, 'medium_large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+									<?php echo mrn_base_stack_get_lazy_post_thumbnail( $item_post, 'medium_large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</a>
 						<?php elseif ( 'featured_image' === $field_key && $show_image ) : ?>
 								<div class="mrn-content-list-row__media mrn-ui__media">
-								<?php echo get_the_post_thumbnail( $item_post, 'medium_large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+									<?php echo mrn_base_stack_get_lazy_post_thumbnail( $item_post, 'medium_large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
 						<?php elseif ( 'publish_date' === $field_key && $show_date ) : ?>
 							<p class="mrn-content-list-row__meta"><?php echo esc_html( get_the_date( '', $item_post ) ); ?></p>

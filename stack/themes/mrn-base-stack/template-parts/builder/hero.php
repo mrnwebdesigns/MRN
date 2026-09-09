@@ -131,11 +131,14 @@ if ( '' !== $background_gradient_style ) {
 $background_image_markup = function_exists( 'mrn_base_stack_get_background_image_markup' )
 	? mrn_base_stack_get_background_image_markup(
 		$background_image,
-		array(
-			'class'         => 'mrn-row-background-media mrn-hero__background-image',
-			'loading'       => 'eager',
-			'fetchpriority' => 'high',
-		)
+		function_exists( 'mrn_base_stack_get_hero_image_attributes' )
+			? mrn_base_stack_get_hero_image_attributes( array( 'class' => 'mrn-row-background-media mrn-hero__background-image' ) )
+			: array(
+				'class'         => 'mrn-row-background-media mrn-hero__background-image',
+				'loading'       => 'eager',
+				'fetchpriority' => 'high',
+				'decoding'      => 'async',
+			)
 	)
 	: '';
 
@@ -286,10 +289,13 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 				echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image(
 					$image,
 					'mrn-hero',
-					array(
-						'loading'       => false,
-						'fetchpriority' => 'high',
-					)
+					function_exists( 'mrn_base_stack_get_hero_image_attributes' )
+						? mrn_base_stack_get_hero_image_attributes()
+						: array(
+							'loading'       => 'eager',
+							'fetchpriority' => 'high',
+							'decoding'      => 'async',
+						)
 				) : '';
 				?>
 			</div>
