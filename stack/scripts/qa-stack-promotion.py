@@ -440,8 +440,8 @@ def evaluate_candidate(
 
     if not state["clean"]:
         blockers.append("Candidate verification requires a clean worktree")
-    if state["origin_main"] and candidate_commit != state["origin_main"]:
-        blockers.append("Candidate lock must be generated from current merged origin/main")
+    if state["origin_main"] and state["head"] != state["origin_main"]:
+        blockers.append("Candidate verification must run at current origin/main")
     if inventory["untracked_deployables"]:
         blockers.append("Candidate contains deployable paths missing from the component catalog or theme lock")
     if (inventory["required_components"] or inventory["deployment_contracts"]) and (
