@@ -67,6 +67,13 @@ class ReleaseLockTests(unittest.TestCase):
 
             self.assertEqual(baseline, release_lock.tree_sha256(root_path))
 
+            (root_path / "assets/vendor").mkdir(parents=True)
+            (root_path / "assets/vendor/runtime.js").write_text(
+                "runtime", encoding="utf-8"
+            )
+
+            self.assertNotEqual(baseline, release_lock.tree_sha256(root_path))
+
     def test_tree_hash_rejects_symlinks(self):
         with tempfile.TemporaryDirectory() as root:
             root_path = Path(root)

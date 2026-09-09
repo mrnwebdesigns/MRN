@@ -22,9 +22,9 @@ EXCLUDED_DIRECTORIES = {
     "node_modules",
     "playwright-report",
     "test-results",
-    "vendor",
     "zip",
 }
+ROOT_EXCLUDED_DIRECTORIES = {"vendor"}
 EXCLUDED_FILES = {".DS_Store", ".git"}
 
 
@@ -81,12 +81,15 @@ def iter_digest_files(source):
         raise ReleaseLockError(f"Release source does not exist: {source}")
 
     for root, directories, files in os.walk(source, followlinks=False):
+        root_path = Path(root)
         directories[:] = sorted(
             directory
             for directory in directories
             if directory not in EXCLUDED_DIRECTORIES
+            and not (
+                root_path == source and directory in ROOT_EXCLUDED_DIRECTORIES
+            )
         )
-        root_path = Path(root)
         for filename in sorted(files):
             if filename in EXCLUDED_FILES:
                 continue
