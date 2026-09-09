@@ -4,6 +4,7 @@
 - None.
 
 ## 2026.09.09-stack-reconciliation
+- `mrn-base-stack` (`1.3.2` -> `1.3.3`): conditionally loads Motion, Splide, tabs, GLightbox, gallery, video-modal, deferred-media, and FAQ assets only for rendered Stack components; splits the prior combined slider/deferred-media/FAQ runtime without changing its behavior; preserves component dependency order and existing compatibility filters; keeps hero media eager/high-priority; explicitly lazy-loads ordinary Stack list/archive images; and adds an opt-in critical CSS image preload contract plus focused PHP and throttled-browser regression coverage. The parent stylesheet remains intact pending a source-backed cascade partition; no site or third-party integration was changed.
 - Promoted the complete merged Stack reconciliation as one release candidate and synchronized `STACK_VERSION.md` with every MRN-owned package in the bootstrap manifest.
 - Added every tracked MU wrapper to the immutable component inventory and taught release generation to preserve each wrapper's real deployed filename. This corrects the prior Updraft loader destination and prevents release artifacts from omitting directly discoverable MU wrappers in addition to the consolidated loader.
 - Updated Stack promotion inventory so tracked links to standalone plugin sources are classified by their deployed path instead of being reported as uncataloged vendored source.

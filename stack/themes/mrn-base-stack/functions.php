@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.3.2' );
+	define( '_S_VERSION', '1.3.3' );
 }
 
 /**
@@ -986,25 +986,29 @@ function mrn_base_stack_scripts() {
 		);
 	}
 
-	$should_enqueue_builder_runtime = $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() );
+	$component_needs = function_exists( 'mrn_base_stack_get_default_front_end_component_needs' ) ? mrn_base_stack_get_default_front_end_component_needs() : array();
 
-	if ( ! $should_enqueue_builder_runtime && is_singular( mrn_base_stack_get_singular_shell_post_types() ) ) {
-		$post_id = get_queried_object_id();
-
-		if ( $post_id && mrn_base_stack_post_requires_front_end_runtime( $post_id ) ) {
-			$should_enqueue_builder_runtime = true;
-		}
+	if ( is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'mrn_base_stack_get_front_end_component_needs_for_post' ) ) {
+		$component_needs = mrn_base_stack_get_front_end_component_needs_for_post( get_queried_object_id() );
 	}
 
-	if ( ! $should_enqueue_builder_runtime && is_singular( 'testimonial' ) && function_exists( 'mrn_base_stack_testimonial_requires_front_end_runtime' ) ) {
-		$should_enqueue_builder_runtime = mrn_base_stack_testimonial_requires_front_end_runtime( get_queried_object_id() );
+	if ( is_singular( 'testimonial' ) && function_exists( 'mrn_base_stack_testimonial_requires_front_end_runtime' ) && mrn_base_stack_testimonial_requires_front_end_runtime( get_queried_object_id() ) ) {
+		$component_needs['deferred_media'] = true;
 	}
+
+	if ( is_singular( 'gallery' ) ) {
+		$component_needs['gallery'] = true;
+	}
+
+	$should_enqueue_builder_runtime = ! empty( array_filter( $component_needs ) );
 
 	/**
 	 * Filter whether shared front-end runtime assets should load.
 	 *
-	 * This runtime powers stack features such as motion effects, tabs, sliders,
-	 * and reusable-block interactions even when the layout builder is disabled.
+	 * This compatibility filter now receives whether any discovered component
+	 * requires runtime assets. Returning false disables component assets;
+	 * returning true when no component was discovered loads the complete legacy
+	 * bundle for custom renderers that have not adopted the component filter.
 	 *
 	 * @param bool $should_enqueue_builder_runtime Whether runtime assets should enqueue.
 	 * @param bool $layout_builder_enabled         Whether layout builder is enabled.
@@ -1015,88 +1019,14 @@ function mrn_base_stack_scripts() {
 		$layout_builder_enabled
 	);
 
-	if ( $should_enqueue_builder_runtime ) {
-		mrn_base_stack_enqueue_motion_assets();
-
-		wp_enqueue_style(
-			'mrn-base-stack-splide',
-			get_template_directory_uri() . '/css/vendor/splide.min.css',
-			array(),
-			'4.1.4'
-		);
-
-		wp_enqueue_script(
-			'mrn-base-stack-splide',
-			get_template_directory_uri() . '/js/vendor/splide.min.js',
-			array(),
-			'4.1.4',
-			true
-		);
-
-		wp_enqueue_script(
-			'mrn-base-stack-front-end-slider',
-			get_template_directory_uri() . '/js/front-end-slider.js',
-			array( 'mrn-base-stack-splide' ),
-			_S_VERSION,
-			true
-		);
-
-		wp_enqueue_script(
-			'mrn-base-stack-front-end-tabs',
-			get_template_directory_uri() . '/js/front-end-tabs.js',
-			array( 'mrn-base-stack-splide' ),
-			_S_VERSION,
-			true
-		);
-
-		wp_enqueue_style(
-			'mrn-base-stack-glightbox',
-			get_template_directory_uri() . '/css/vendor/glightbox.min.css',
-			array(),
-			'3.3.1'
-		);
-
-		wp_enqueue_script(
-			'mrn-base-stack-glightbox',
-			get_template_directory_uri() . '/js/vendor/glightbox.min.js',
-			array(),
-			'3.3.1',
-			true
-		);
-
-		wp_enqueue_script(
-			'mrn-base-stack-front-end-video-modal',
-			get_template_directory_uri() . '/js/front-end-video-modal.js',
-			array( 'mrn-base-stack-glightbox' ),
-			_S_VERSION,
-			true
-		);
-
+	if ( ! $should_enqueue_builder_runtime ) {
+		$component_needs = array_fill_keys( array_keys( $component_needs ), false );
+	} elseif ( empty( array_filter( $component_needs ) ) ) {
+		$component_needs = function_exists( 'mrn_base_stack_get_legacy_front_end_component_needs' ) ? mrn_base_stack_get_legacy_front_end_component_needs() : array_fill_keys( array_keys( $component_needs ), true );
 	}
 
-	if ( is_singular( 'gallery' ) ) {
-		wp_enqueue_style(
-			'mrn-base-stack-glightbox',
-			get_template_directory_uri() . '/css/vendor/glightbox.min.css',
-			array(),
-			'3.3.1'
-		);
-
-		wp_enqueue_script(
-			'mrn-base-stack-glightbox',
-			get_template_directory_uri() . '/js/vendor/glightbox.min.js',
-			array(),
-			'3.3.1',
-			true
-		);
-
-		wp_enqueue_script(
-			'mrn-base-stack-front-end-gallery',
-			get_template_directory_uri() . '/js/front-end-gallery.js',
-			array( 'mrn-base-stack-glightbox' ),
-			_S_VERSION,
-			true
-		);
+	if ( $should_enqueue_builder_runtime && function_exists( 'mrn_base_stack_enqueue_front_end_component_assets' ) ) {
+		mrn_base_stack_enqueue_front_end_component_assets( $component_needs );
 	}
 }
 add_action( 'wp_enqueue_scripts', 'mrn_base_stack_scripts' );

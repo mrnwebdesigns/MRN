@@ -117,6 +117,47 @@ function mrn_base_stack_get_attachment_image( $image, $size = 'large', array $at
 }
 
 /**
+ * Get the shared priority attributes for explicitly critical hero images.
+ *
+ * @param array<string, mixed> $attr Additional or overriding attributes.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_hero_image_attributes( array $attr = array() ) {
+	return wp_parse_args(
+		$attr,
+		array(
+			'loading'       => 'eager',
+			'fetchpriority' => 'high',
+			'decoding'      => 'async',
+		)
+	);
+}
+
+/**
+ * Render an ordinary post thumbnail with explicit lazy-loading attributes.
+ *
+ * WordPress may omit `loading` from the first content images on a page. Stack
+ * renderers use this helper for non-critical thumbnails so those images cannot
+ * compete with explicitly prioritized hero media.
+ *
+ * @param int|object|null      $post Post ID or post object.
+ * @param string|int[]         $size Registered image size.
+ * @param array<string, mixed> $attr Image attributes.
+ * @return string
+ */
+function mrn_base_stack_get_lazy_post_thumbnail( $post = null, $size = 'post-thumbnail', array $attr = array() ) {
+	$attr = wp_parse_args(
+		$attr,
+		array(
+			'loading'  => 'lazy',
+			'decoding' => 'async',
+		)
+	);
+
+	return (string) get_the_post_thumbnail( $post, $size, $attr );
+}
+
+/**
  * Resolve a size-specific image URL for CSS background or JS poster use.
  *
  * @param mixed        $image ACF image value, attachment ID, or legacy local URL.
