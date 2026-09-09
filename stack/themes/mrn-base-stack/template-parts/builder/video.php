@@ -68,13 +68,11 @@ if ( ! in_array( $subheading_tag, $allowed_tags, true ) ) {
 	$subheading_tag = 'p';
 }
 
-$has_text_content    = '' !== $label || '' !== $heading || '' !== $subheading || '' !== trim( wp_strip_all_tags( $content ) );
-$has_video_media     = '' !== $resolved_video_url;
-$has_thumbnail       = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $thumbnail_image ) : ! empty( $thumbnail_image );
-$is_modal_mode       = 'modal' === $display_mode && $has_video_media && $has_thumbnail;
-$remote_provider     = isset( $remote_video_embed['provider'] ) ? (string) $remote_video_embed['provider'] : '';
-$modal_lightbox_type = 'google_drive' === $remote_provider ? 'iframe' : 'video';
-$modal_href          = 'local' === $resolved_video_kind ? $local_video_url : ( 'google_drive' === $remote_provider ? $remote_video_url : $remote_video );
+$has_text_content = '' !== $label || '' !== $heading || '' !== $subheading || '' !== trim( wp_strip_all_tags( $content ) );
+$has_video_media  = '' !== $resolved_video_url;
+$has_thumbnail    = function_exists( 'mrn_base_stack_image_has_content' ) ? mrn_base_stack_image_has_content( $thumbnail_image ) : ! empty( $thumbnail_image );
+$is_modal_mode    = 'modal' === $display_mode && $has_video_media && $has_thumbnail;
+$modal_href       = 'local' === $resolved_video_kind ? $local_video_url : $remote_video;
 
 if ( ! $has_text_content && ! $has_video_media ) {
 	return;
@@ -168,7 +166,7 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 					<a
 						class="mrn-video-row__trigger glightbox"
 						href="<?php echo esc_url( $modal_href ); ?>"
-						data-type="<?php echo esc_attr( $modal_lightbox_type ); ?>"
+						data-type="video"
 						aria-label="<?php echo esc_attr( sprintf( /* translators: %s: video heading. */ __( 'Play video: %s', 'mrn-base-stack' ), $video_title ) ); ?>"
 					>
 						<?php echo function_exists( 'mrn_base_stack_get_attachment_image' ) ? mrn_base_stack_get_attachment_image( $thumbnail_image, 'mrn-content-media', array( 'class' => 'mrn-video-row__thumbnail' ) ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

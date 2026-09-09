@@ -1,6 +1,6 @@
 # Third-Party Plugin Audit
 
-Checked: 2026-08-13 (premium packages refreshed 2026-08-19)
+Checked: 2026-09-06 (premium packages refreshed 2026-09-06)
 
 Scope: non-custom plugins and package zips referenced by `stack/manifests/plugins.txt`.
 
@@ -11,7 +11,7 @@ Scope: non-custom plugins and package zips referenced by `stack/manifests/plugin
   - SearchWP: `searchwp-4.5.7-1.zip` -> `searchwp-4.6.0.zip`
   - UpdraftPlus Premium: `updraftplus.2.26.1.zip` -> `updraftplus.2.26.5.zip`
   - Defender Pro: `1320813_defender-pro-5.9.zip` -> `1320813_defender-pro-5.11.zip`
-  - SEOPress Pro: added `wp-seopress-pro-10-1-1.zip` from `/Users/khofmeyer/Downloads/wp-seopress-pro-10-1-1.zip`
+  - SEOPress Pro: refreshed to `wp-seopress-pro-10-2.zip` from the licensed Trilliant review runtime.
   - WPMU DEV Dashboard: `1320813_wpmu-dev-dashboard-4.11.29.zip` -> `1320813_wpmu-dev-dashboard-5.0.0.zip`
 - Refreshed fixed-name package zips from `/Users/khofmeyer/Downloads`:
   - `admin-menu-editor-pro.zip`
@@ -35,10 +35,11 @@ Scope: non-custom plugins and package zips referenced by `stack/manifests/plugin
 | HappyFiles Pro | `happyfiles-pro.zip` | 1.9.1 | not confirmed; vendor changelog is dynamic/account-gated | Unchanged at 1.9.1. No license mapping exists and its licensing model is unconfirmed. |
 | Post Duplicator | `post-duplicator` slug | latest at install | 3.0.15 | Current via WordPress.org. |
 | Post Types Order | `post-types-order` slug | latest at install | 2.4.8 | Current via WordPress.org. |
-| SearchWP | `searchwp-4.6.1.zip` | 4.6.1 | 4.6.1 | Refreshed 2026-08-19. Manifest reference is version-pinned by filename. |
-| SearchWP Live Ajax Search | `searchwp-live-ajax-search` slug | latest at install | 1.8.7 | Current via WordPress.org. |
+| SearchWP | removed from stack manifest | 4.6.1 legacy package | 4.6.1 | Removed 2026-08-19; replaced stack-wide by Relevanssi. Package retained on the stack manager, unreferenced. |
+| SearchWP Live Ajax Search | removed from stack manifest | n/a | n/a | Removed 2026-08-19 with SearchWP core. |
+| Relevanssi | `relevanssi` slug | latest at install | not checked | Added 2026-08-19. Free edition; no license mapping needed. Replaces SearchWP stack-wide. |
 | SEOPress | `wp-seopress` slug | latest at install | not checked | New preferred stack SEO provider installed from WordPress.org. |
-| SEOPress Pro | `wp-seopress-pro-10-1-1.zip` | 10.1.1 | 10.1.1 | Added from Downloads. |
+| SEOPress Pro | `wp-seopress-pro-10-2.zip` | 10.2 | 10.2 | Refreshed 2026-09-06 from the licensed Trilliant review runtime and archive integrity verified. |
 | Advanced Editor Tools | `tinymce-advanced` slug | latest at install | 5.9.2 | Current via WordPress.org. |
 | UpdraftPlus Premium | `updraftplus.2.26.6.zip` | 2.26.6 | 2.26.6 | Refreshed 2026-08-19. Manifest reference is version-pinned by filename. |
 | Defender Pro | removed from stack manifest | 5.11.0 legacy package | 5.11.0 | Removed 2026-08-19 with all WPMU DEV plugins. Package retained on the stack manager, unreferenced. |
@@ -52,11 +53,11 @@ Scope: non-custom plugins and package zips referenced by `stack/manifests/plugin
 - Admin Menu Editor Pro changelog: https://adminmenueditor.com/documentation/changelog/
 - ACF changelog: https://www.advancedcustomfields.com/changelog/
 - SearchWP changelog: https://searchwp.com/documentation/changelog/
-- SEOPress Pro package header from `/Users/khofmeyer/Downloads/wp-seopress-pro-10-1-1.zip`.
+- SEOPress Pro package header from the licensed Trilliant review runtime.
 - UpdraftPlus changelog/security notes: https://teamupdraft.com/updraftplus/changelog/
 - WPMU DEV Dashboard changelog: https://wpmudev.com/project/wpmu-dev-dashboard/
 - HappyFiles changelog page: https://happyfiles.io/changelog/
 
 ## Package Gaps
 
-No known package gaps remain for the manifest package zips checked on 2026-08-13, assuming `wp-seopress-pro-10-1-1.zip` is present on the stack manager under `/home/mrndev-stack-manager/stack/packages/`.
+No known package gaps remain for the manifest package zips checked on 2026-09-06, assuming `wp-seopress-pro-10-2.zip` is synced to the stack manager under `/home/mrndev-stack-manager/stack/packages/`.

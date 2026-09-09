@@ -112,11 +112,22 @@ fi
 echo
 echo "8. PHPStan (shared MRN config)"
 if [[ -x "${REPO_ROOT}/vendor/bin/phpstan" && -f "${REPO_ROOT}/phpstan.neon.dist" ]]; then
-	if ! php "${REPO_ROOT}/vendor/bin/phpstan" analyse \
+	phpstan_paths=()
+	while IFS= read -r -d '' phpstan_file; do
+		phpstan_paths+=( "${phpstan_file}" )
+	done < <(find "${THEME_DIR}" -type f -name '*.php' \
+		! -path '*/node_modules/*' \
+		! -path '*/tests/*' \
+		! -path '*/vendor/*' \
+		-print0 | sort -z)
+
+	if [[ "${#phpstan_paths[@]}" -eq 0 ]]; then
+		echo "Skipping PHPStan; no runtime PHP files found."
+	elif ! php "${REPO_ROOT}/vendor/bin/phpstan" analyse \
 		--configuration="${REPO_ROOT}/phpstan.neon.dist" \
 		--memory-limit=2G \
 		--no-progress \
-		"${THEME_DIR}"; then
+		"${phpstan_paths[@]}"; then
 		mark_failure "PHPStan"
 	fi
 else

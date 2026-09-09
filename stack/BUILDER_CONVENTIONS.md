@@ -1339,7 +1339,7 @@ Current approved advanced pattern:
     - `Image - label|title|text with editor`
     - `External - widget/iFrame`
     - `WPForms`
-    - `SearchWP Form`
+    - `Search Form`
     - `Video - remote|upload`
     - `Reusable Block`
 

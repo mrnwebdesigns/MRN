@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.3.0
+Version: 1.3.2
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -646,30 +646,33 @@ table {
 
 /* Links
 --------------------------------------------- */
+/*
+ * Neutral, token-based defaults for sites that haven't configured Site
+ * Styles' `a` typography row yet. Every value here is expected to be
+ * overridden by Site Styles/child-theme CSS on a real site build — this is
+ * a baseline, not a brand choice. Replaces unmodified Underscores
+ * boilerplate (royalblue/purple/midnightblue) that had no relationship to
+ * any MRN brand and stripped the hover underline / used a legacy low-
+ * visibility focus outline.
+ */
 a {
-	color: #4169e1;
+	color: var(--mrn-shell-accent, #1c222b);
 	text-decoration: underline;
 	text-underline-offset: 0.15em;
 }
 
 a:visited {
-	color: #800080;
-}
-
-a:hover,
-a:focus,
-a:active {
-	color: #191970;
-	text-decoration: none;
-}
-
-a:focus {
-	outline: thin dotted;
+	color: var(--mrn-shell-accent, #1c222b);
 }
 
 a:hover,
 a:active {
-	outline: 0;
+	color: var(--mrn-shell-muted, #626d7a);
+}
+
+a:focus-visible {
+	outline: 2px solid var(--mrn-shell-accent, #1c222b);
+	outline-offset: 2px;
 }
 
 /* Forms
@@ -1307,8 +1310,7 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 	margin: 0;
 }
 
-.mrn-site-header__search .mrn-site-search--searchwp,
-.mrn-site-header__search .searchwp-form {
+.mrn-site-header__search .mrn-site-search--native {
 	width: 100%;
 	margin: 0;
 }
@@ -1331,7 +1333,7 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 	background: rgba(255, 255, 255, 0.92);
 }
 
-.mrn-site-search__field--searchwp {
+.mrn-site-search__field--native {
 	padding-left: 2.95rem;
 	padding-right: 2.65rem;
 }
@@ -1442,6 +1444,34 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 	z-index: 30;
 }
 
+/*
+ * Relevanssi Live Ajax Search sets its own inline position/top/left/width via
+ * JS, computed against the toggled input's layout. Inside the icon-only
+ * header search that math lands off to the side instead of under the field,
+ * so the panel needs a forced position; `!important` there overrides those
+ * inline styles, not a theme specificity conflict.
+ *
+ * The result links separately need `!important` on color: the header/footer
+ * link-color rule (`.site-header.mrn-theme-hf-layout-grid a:not(...)`, etc.)
+ * out-specifies a plain `.mrn-site-search__input-wrap ... a` selector, so
+ * without it the links keep the header's light link color on the plugin's
+ * white result panel and become unreadable.
+ */
+.mrn-site-search__input-wrap .relevanssi-live-search-results {
+	position: absolute !important;
+	top: 100% !important;
+	left: 0 !important;
+	right: 0 !important;
+	width: 100% !important;
+	margin-top: 0.5rem;
+	color: var(--mrn-shell-text, #1c222b);
+}
+
+.mrn-site-search__input-wrap .relevanssi-live-search-result a,
+.mrn-site-search__input-wrap .relevanssi-live-search-result-status p {
+	color: var(--mrn-shell-text, #1c222b) !important;
+}
+
 .mrn-site-search--icon-only.is-expanded .mrn-site-search__toggle {
 	right: auto;
 	left: 0.72rem;
@@ -1469,34 +1499,7 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 	color: inherit;
 }
 
-.mrn-site-search--icon-only .mrn-site-search__field--searchwp .searchwp-form,
-.mrn-site-search--icon-only .mrn-site-search__field--searchwp .swp-flex--col,
-.mrn-site-search--icon-only .mrn-site-search__field--searchwp .swp-flex--row,
-.mrn-site-search--icon-only .mrn-site-search__field--searchwp .searchwp-form-input-container {
-	width: 100%;
-	min-width: 0;
-}
-
-.mrn-site-search--icon-only .mrn-site-search__field--searchwp .swp-flex--row {
-	gap: 0;
-}
-
-.mrn-site-search--icon-only .mrn-site-search__field--searchwp .swp-input--search {
-	width: 100%;
-	min-width: 0;
-	border: 0;
-	padding: 0;
-	background: transparent;
-	box-shadow: none;
-	color: inherit;
-}
-
-.mrn-site-search--icon-only .mrn-site-search__field--searchwp .swp-input--search:focus {
-	outline: none;
-	box-shadow: none;
-}
-
-.mrn-site-search--icon-only .mrn-site-search__field--searchwp .search-submit {
+.mrn-site-search--icon-only .mrn-site-search__field--native .mrn-site-search__submit {
 	display: none;
 }
 
@@ -1550,16 +1553,6 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 	display: none;
 }
 
-.mrn-site-search--icon-only .searchwp-live-search-results,
-.mrn-site-search--icon-only [class*="searchwp-live-search"] {
-	position: absolute;
-	top: calc(100% + 0.5rem);
-	right: 0;
-	left: auto;
-	z-index: 31;
-	width: 100%;
-}
-
 .mrn-site-header__main {
 	gap: 1.5rem;
 }
@@ -1574,10 +1567,6 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 		max-width: min(18rem, calc(100vw - 2rem));
 	}
 
-	.mrn-site-search--icon-only .searchwp-live-search-results,
-	.mrn-site-search--icon-only [class*="searchwp-live-search"] {
-		width: min(18rem, calc(100vw - 2rem));
-	}
 }
 
 .mrn-shell-container,
@@ -1819,11 +1808,6 @@ body[data-mrn-surface="dark"] .main-navigation.mrn-site-primary-navigation a:foc
 }
 
 .mrn-not-found__search-form {
-	width: 100%;
-}
-
-.mrn-not-found__search-form .searchwp-form,
-.mrn-not-found__search-form .swp-flex--row {
 	width: 100%;
 }
 
@@ -6079,44 +6063,39 @@ a.mrn-social-links__link:focus-visible svg {
 	gap: var(--mrn-content-list-row-gap, 0);
 }
 
-.mrn-layout-section--searchwp-form.mrn-layout-surface,
-.mrn-layout-section--searchwp-form .mrn-layout-container.mrn-layout-surface {
-	background: var(--mrn-searchwp-form-row-bg, transparent);
+.mrn-layout-section--search-form.mrn-layout-surface,
+.mrn-layout-section--search-form .mrn-layout-container.mrn-layout-surface {
+	background: var(--mrn-search-form-row-bg, transparent);
 }
 
-.mrn-layout-section--searchwp-form .mrn-layout-grid--searchwp-form {
+.mrn-layout-section--search-form .mrn-layout-grid--search-form {
 	align-items: start;
 	display: grid;
 	gap: clamp(1.5rem, 4vw, 3rem);
 	grid-template-columns: minmax(0, 1fr);
 }
 
-.mrn-searchwp-form-row__content .mrn-ui__text > :last-child {
+.mrn-search-form-row__content .mrn-ui__text > :last-child {
 	margin-bottom: 0;
 }
 
-.mrn-searchwp-form-row__form,
-.mrn-searchwp-form-row__form .searchwp-form {
+.mrn-search-form-row__form {
 	width: 100%;
 }
 
-.mrn-searchwp-form-row__form .searchwp-form {
-	margin-block: 0;
-}
-
 @media (min-width: 768px) {
-	.mrn-content-builder__row--searchwp-form-layout-form-right .mrn-layout-section--searchwp-form .mrn-layout-grid--searchwp-form,
-	.mrn-content-builder__row--searchwp-form-layout-form-left .mrn-layout-section--searchwp-form .mrn-layout-grid--searchwp-form {
+	.mrn-content-builder__row--search-form-layout-form-right .mrn-layout-section--search-form .mrn-layout-grid--search-form,
+	.mrn-content-builder__row--search-form-layout-form-left .mrn-layout-section--search-form .mrn-layout-grid--search-form {
 		grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
 	}
 
-	.mrn-content-builder__row--searchwp-form-layout-form-left .mrn-layout-section--searchwp-form .mrn-searchwp-form-row__form {
+	.mrn-content-builder__row--search-form-layout-form-left .mrn-layout-section--search-form .mrn-search-form-row__form {
 		order: -1;
 	}
 }
 
 .mrn-reusable-block--search-form {
-	background: var(--mrn-searchwp-form-row-bg, transparent);
+	background: var(--mrn-search-form-row-bg, transparent);
 	padding: 0;
 }
 

@@ -1,5 +1,11 @@
 # MRN Plugin Audit
 
+## Incubator Source Verification
+
+| Plugin | Independent repository | HEAD | Distribution | Result |
+| --- | --- | --- | --- | --- |
+| `mrn-google-reviews` | `https://github.com/mrnwebdesigns/mrn-google-reviews` | `9cea85e` | Catalog-only; not in production bootstrap | Independent source, static QA, and release archive verified. Remains unreleased pending secret-management and release-readiness review. |
+
 > Historical snapshot: this document is retained as prior audit evidence. Current inventory, versions, ownership classifications, and product tiers are authoritative in [`manifests/component-catalog.json`](./manifests/component-catalog.json) and summarized in [`PLUGIN_CATALOG.md`](./PLUGIN_CATALOG.md).
 
 > Superseded since this snapshot: SEOPress is the preferred SEO/schema provider for new stack sites and SmartCrawl is retained only for existing sites during migration. Rows below that describe SmartCrawl as the preferred base graph reflect the 2026-07-09 state and are evidence, not current guidance. See [`SCHEMA_DISCOVERY_BASELINE.md`](./SCHEMA_DISCOVERY_BASELINE.md) and [`THIRD_PARTY_PLUGIN_AUDIT.md`](./THIRD_PARTY_PLUGIN_AUDIT.md).
@@ -19,7 +25,7 @@ This audit tracks the active MRN WordPress plugin and MU-plugin sources, their P
 
 - In-repo plugins and MU plugins are owned by the main MRN repo: <https://github.com/mrnwebdesigns/MRN>.
 - Symlinked plugins under `plugins/` are owned by standalone repos under <https://github.com/mrnwebdesigns>.
-- `mrn-pre-consent-update-backup` now has a standalone private repo: <https://github.com/mrnwebdesigns/mrn-pre-consent-update-backup>.
+- `mrn-pre-consent-update-backup` has an independent retained repository: <https://github.com/mrnwebdesigns/mrn-pre-consent-update-backup>. It was archived on 2026-08-24 and is not an active distribution source.
 
 ## QA Engine Readiness
 
@@ -51,20 +57,27 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-announcements` | MRN Announcements | 1.6.1 | <https://github.com/mrnwebdesigns/mrn-announcements> | Standalone-capable; optional stack Business Information and USB integrations; admin/data-only CPT with no public URL or SEO surface. |
 | `mrn-comment-management` | MRN Comment Management | 1.1.7 | <https://github.com/mrnwebdesigns/mrn-comment-management> | No stack requirement. |
 | `mrn-config-helper` | MRN Config Helper | 0.1.43 | <https://github.com/mrnwebdesigns/mrn-config-helper> | Stack-aware admin utility; can run standalone, but stack sites use more of its integrations. |
-| `mrn-contextual-content-editor` | MRN Contextual Content Editor | 0.1.0 | <https://github.com/mrnwebdesigns/MRN> | No hard stack requirement; ACF matching is optional. |
+| `mrn-contextual-content-editor` | MRN Contextual Content Editor | 0.1.0 | <https://github.com/mrnwebdesigns/mrn-contextual-content-editor> | No hard stack requirement; ACF matching is optional. |
 | `mrn-cookie-consent` | MRN Cookie Consent | 1.1.36 | <https://github.com/mrnwebdesigns/mrn-cookie-consent> | No hard stack requirement; MRN GTM Injector integration is optional. |
 | `mrn-editor-tools` | MRN Editor Enhancements | 1.8.24 | <https://github.com/mrnwebdesigns/mrn-editor-tools> | No stack requirement; Classic Editor/ACF editor context expected. |
 | `mrn-fontawesome-profile-manager` | MRN Font Awesome Profile Manager | 0.4.0 | <https://github.com/mrnwebdesigns/mrn-fontawesome-profile-manager> | Optional stack bridge for Site Configurations/Site Styles. |
-| `mrn-google-fonts` | MRN Google Fonts | 0.5.2 | <https://github.com/mrnwebdesigns/MRN> | Optional stack bridge for Site Styles; standalone mode supported. |
+| `mrn-google-fonts` | MRN Google Fonts | 0.5.2 | <https://github.com/mrnwebdesigns/mrn-google-fonts> | Optional stack bridge for Site Styles; standalone mode supported. |
+| `mrn-hierarchical-menu-taxonomies` | MRN Hierarchical Menu Taxonomies | 0.1.0 | <https://github.com/mrnwebdesigns/mrn-hierarchical-menu-taxonomies> | Admin-only classic Menu Builder integration for complete hierarchical taxonomy panels. |
 | `mrn-gtm-injector` | MRN GTM Injector | 1.0.13 | <https://github.com/mrnwebdesigns/mrn-gtm-injector> | No stack requirement. |
-| `mrn-media-bulk-tools` | MRN Media Tools | 0.8.0 | <https://github.com/mrnwebdesigns/MRN> | Optional HappyFiles folder display; legacy slug retained for update compatibility. |
-| `mrn-mega-menu` | MRN Mega Menu | 0.16.16 | <https://github.com/mrnwebdesigns/MRN> | Canonical in-repo standard plugin; WooCommerce and shared stack integrations are optional and standalone-safe. |
-| `mrn-pre-consent-update-backup` | MRN Pre-Consent Update Backup | 1.0.12 | <https://github.com/mrnwebdesigns/mrn-pre-consent-update-backup> | No stack requirement; requires UpdraftPlus to perform backups. |
-| `mrn-recaptcha-enterprise-manager` | MRN reCAPTCHA Enterprise Manager | 0.1.1 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; WPForms sync is optional. |
+| `mrn-media-bulk-tools` | MRN Media Tools | 0.8.0 | <https://github.com/mrnwebdesigns/mrn-media-bulk-tools> | Optional HappyFiles folder display; legacy slug retained for update compatibility. |
+| `mrn-mega-menu` | MRN Mega Menu | 0.17.0 | <https://github.com/mrnwebdesigns/mrn-mega-menu> | Independent standard plugin; WooCommerce and shared stack integrations are optional and standalone-safe. |
+| `mrn-pre-consent-update-backup` | MRN Pre-Consent Update Backup | 1.0.12 | <https://github.com/mrnwebdesigns/mrn-pre-consent-update-backup> | Archived 2026-08-24; retained as historical source and not an active distribution source. |
+| `mrn-recaptcha-enterprise-manager` | MRN reCAPTCHA Enterprise Manager | 0.1.1 | <https://github.com/mrnwebdesigns/mrn-recaptcha-enterprise-manager> | No stack requirement; WPForms sync is optional. |
 | `mrn-seo-helper` | MRN SEO Helper | 0.3.4 | <https://github.com/mrnwebdesigns/mrn-seo-helper> | No hard stack requirement; ACF/SmartCrawl integrations are optional feature paths and admin/data-only announcements are excluded. |
-| `mrn-template-inspector` | MRN Template Inspector | 0.2.7 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; local development tool. |
+| `mrn-template-inspector` | MRN Template Inspector | 0.2.7 | <https://github.com/mrnwebdesigns/mrn-template-inspector> | No stack requirement; local development tool. |
+| `mrn-dummy-content` | MRN Dummy Content | 0.3.0 | <https://github.com/mrnwebdesigns/mrn-dummy-content> | Development-only content fixtures; excluded from production bootstrap. |
 | `mrn-universal-sticky-bar` | MRN Universal Sticky Bar | 1.1.3 | <https://github.com/mrnwebdesigns/mrn-universal-sticky-bar> | No hard stack requirement; Classic Editor screens expected. |
-| `searchwp-editor-performance` | MRN SearchWP Editor Performance | 1.0.7 | <https://github.com/mrnwebdesigns/searchwp-editor-performance> | Canonical standalone development adapter; SearchWP is required for runtime effect. |
+
+## Dashboard-Only Plugins
+
+| Slug | Plugins-page name | Version | Source repo | Stack requirement |
+| --- | --- | ---: | --- | --- |
+| `mrn-wp-control-table-exporter` | WP Control Table Exporter | 1.4.4 | <https://github.com/mrnwebdesigns/mrn-wp-control-table-exporter> | Dashboard-only; not installed on client sites. |
 
 ## MU Plugins
 
@@ -73,21 +86,21 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-loader` | MRN Loader | 1.5.1 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned; required for stack MU subfolder loading and runtime reporting. |
 | `mrn-active-style-guide` | MRN Active Style Guide | 0.1.5 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned front-end reference tool. |
 | `mrn-admin-ui-css` | MRN Admin UI CSS | 3.2.3 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned admin UI layer. |
-| `mrn-dashboard-support` | MRN Dashboard Support | 1.0.3 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement. |
+| `mrn-dashboard-support` | MRN Dashboard Support | 1.3.0 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement. |
 | `mrn-disable-comments` | MRN Disable Comments | 1.2.3 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement. |
 | `mrn-duplicate-enhance` | MRN Post Duplicator Admin Bar Enhance | 1.1.1 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; depends on Post Duplicator behavior being available. |
 | `mrn-editor-lockdown` | MRN Editor Lockdown | 1.0.25 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned Classic Editor/AME lockdown layer. |
 | `mrn-editor-ui-css` | MRN Admin UI CSS Legacy | 1.0.8 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned legacy compatibility loader. |
 | `mrn-public-security-hardening` | MRN Public Security Hardening | 0.3.2 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned shared MU plugin; deployed from canonical `mu-plugins/` and loaded by MRN Loader. |
-| `mrn-reusable-block-library` | MRN Reusable Block Library | 0.1.17 | <https://github.com/mrnwebdesigns/MRN> | Optional stack styling; usable without the stack, but MRN stack/theme CSS gives the finished presentation. |
-| `mrn-schema-bridge` | MRN Schema Bridge | 0.4.1 | <https://github.com/mrnwebdesigns/MRN> | SmartCrawl is the preferred base graph; standalone supplemental schema remains available when it is absent. |
+| `mrn-reusable-block-library` | MRN Reusable Block Library | 0.1.17 | <https://github.com/mrnwebdesigns/mrn-reusable-block-library> | Optional stack styling; usable without the stack, but MRN stack/theme CSS gives the finished presentation. |
+| `mrn-schema-bridge` | MRN Schema Bridge | 0.6.0 | <https://github.com/mrnwebdesigns/mrn-schema-bridge> | SEOPress is the preferred base graph; the bridge synchronizes Business Information identity, provisions automatic Article templates, emits complete visible-content JobPosting schema, preserves author privacy, and retains legacy SmartCrawl compatibility. |
 | `mrn-shared-assets` | MRN Shared Assets | 0.1.3 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned shared asset provider. |
 | `mrn-site-colors` | MRN Site Styles | 0.1.15 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned design-token/configuration layer. |
-| `mrn-updraft-local-retention` | MRN Updraft Backup Policy | 0.3.0 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; requires UpdraftPlus. Enforces daily 4-set backup policy, deterministic scheduling, local cleanup, cron repair, and warns when S3 lacks a site-specific prefix. |
+| `mrn-updraft-local-retention` | MRN Updraft Backup Policy | 0.4.1 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; requires UpdraftPlus. Enforces daily 4-set backup policy, deterministic scheduling, local cleanup, cron repair, and warns when S3 lacks a site-specific prefix. |
 
 ## Stack MU Wrapper Notes
 
 - Existing root wrappers in `stack/mu-plugins/*.php` now carry matching `MRN ...` headers and synced versions for the wrappers they represent.
 - `stack/mu-plugins/mrn-editor-lockdown.php` is synced to `MRN Editor Lockdown 1.0.25`.
-- `stack/mu-plugins/mrn-schema-bridge.php` is synced to `MRN Schema Bridge 0.4.1`.
+- `stack/mu-plugins/mrn-schema-bridge.php` is synced to `MRN Schema Bridge 0.6.0`.
 - Missing root wrappers should not be added casually; load order is owned by `MRN Loader` so stack MU behavior stays explicit.

@@ -27,7 +27,7 @@
 			{
 				slug: 'search',
 				label: 'Search',
-				fields: ['header_show_search', 'header_searchwp_form_id', 'header_search_style', 'header_search_icon_source', 'header_search_standard_icon', 'header_search_fa_class', 'header_search_media_icon']
+				fields: ['header_show_search', 'header_search_style', 'header_search_icon_source', 'header_search_standard_icon', 'header_search_fa_class', 'header_search_media_icon']
 			}
 		],
 		footer: [

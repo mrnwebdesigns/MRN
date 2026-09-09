@@ -1734,6 +1734,29 @@ function mrn_base_stack_get_content_list_post_type_choices() {
 			$choices[ $post_type ] = $label;
 		}
 
+		$admin_data_post_types = function_exists( 'mrn_admin_data_post_types_get_config' ) ? mrn_admin_data_post_types_get_config() : array();
+
+		foreach ( array_keys( $admin_data_post_types ) as $admin_data_post_type ) {
+			$admin_data_post_type = sanitize_key( (string) $admin_data_post_type );
+
+			if ( '' === $admin_data_post_type || isset( $choices[ $admin_data_post_type ] ) || in_array( $admin_data_post_type, $excluded, true ) ) {
+				continue;
+			}
+
+			$post_type_object = get_post_type_object( $admin_data_post_type );
+
+			if ( ! $post_type_object instanceof WP_Post_Type ) {
+				continue;
+			}
+
+			$label = isset( $post_type_object->labels->name ) ? trim( (string) $post_type_object->labels->name ) : '';
+			if ( '' === $label ) {
+				$label = ucfirst( str_replace( array( '-', '_' ), ' ', $admin_data_post_type ) );
+			}
+
+			$choices[ $admin_data_post_type ] = $label;
+		}
+
 		if ( empty( $choices['post'] ) ) {
 			$choices = array_merge( array( 'post' => 'Posts' ), $choices );
 		}
@@ -2599,10 +2622,6 @@ function mrn_base_stack_get_content_list_item_permalink( WP_Post $item_post, arr
 	}
 
 	$post_type_object = get_post_type_object( $item_post->post_type );
-	if ( $post_type_object instanceof WP_Post_Type && empty( $post_type_object->publicly_queryable ) ) {
-		return '';
-	}
-
 	if (
 		'team_member' === $item_post->post_type
 		&& function_exists( 'mrn_base_stack_team_member_has_public_profile' )
@@ -2611,9 +2630,40 @@ function mrn_base_stack_get_content_list_item_permalink( WP_Post $item_post, arr
 		return '';
 	}
 
-	$permalink = get_permalink( $item_post );
+	$permalink = $post_type_object instanceof WP_Post_Type && empty( $post_type_object->publicly_queryable )
+		? ''
+		: get_permalink( $item_post );
+	$permalink = (string) apply_filters( 'mrn_base_stack_content_list_item_permalink', $permalink, $item_post, $args );
 
 	return is_string( $permalink ) ? $permalink : '';
+}
+
+/**
+ * Build safe attributes for Content-list item links.
+ *
+ * @param WP_Post              $item_post Post to link.
+ * @param array<string, mixed> $args      Render arguments.
+ * @return string
+ */
+function mrn_base_stack_get_content_list_item_link_attributes( WP_Post $item_post, array $args = array() ) {
+	$attributes = apply_filters( 'mrn_base_stack_content_list_item_link_attributes', array(), $item_post, $args );
+
+	if ( ! is_array( $attributes ) ) {
+		return '';
+	}
+
+	$allowed = array( 'target', 'rel' );
+	$markup  = array();
+
+	foreach ( $allowed as $attribute ) {
+		if ( empty( $attributes[ $attribute ] ) || ! is_scalar( $attributes[ $attribute ] ) ) {
+			continue;
+		}
+
+		$markup[] = sprintf( '%s="%s"', $attribute, esc_attr( (string) $attributes[ $attribute ] ) );
+	}
+
+	return implode( ' ', $markup );
 }
 
 /**
@@ -2718,7 +2768,7 @@ function mrn_base_stack_render_content_list_testimonial_item( WP_Post $item_post
 	$content           = isset( $testimonial['content'] ) ? (string) $testimonial['content'] : '';
 	$quote_html        = mrn_base_stack_get_content_list_testimonial_body_html( $content );
 	$show_media        = ( ! $uses_row_settings || ! empty( $args['show_featured_image'] ) ) && ! empty( $mode_config['allows_image'] );
-	$show_date         = ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
+	$show_date         = 'resource' !== get_post_type( $item_post ) && ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
 	$show_quote        = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] ) && '' !== $quote_html;
 	$show_read_more    = ( ! $uses_row_settings || ! empty( $args['show_read_more'] ) ) && ! empty( $mode_config['allows_read_more'] ) && '' !== $permalink;
 	$read_more_label   = isset( $args['read_more_label'] ) ? trim( (string) $args['read_more_label'] ) : 'Read More';
@@ -2934,9 +2984,11 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 		? mrn_base_stack_normalize_content_list_display_style( $args['display_style'] ?? '', get_post_type( $item_post ) )
 		: '';
 	$permalink         = mrn_base_stack_get_content_list_item_permalink( $item_post, $args );
+	$link_attributes   = mrn_base_stack_get_content_list_item_link_attributes( $item_post, $args );
 	$item_title        = get_the_title( $item_post );
+	$title_icon_html   = (string) apply_filters( 'mrn_base_stack_content_list_item_title_icon_html', '', $item_post, $args );
 	$uses_row_settings = '' === $display_mode;
-	$show_date         = ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
+	$show_date         = 'resource' !== get_post_type( $item_post ) && ( ! $uses_row_settings || ! empty( $args['show_publish_date'] ) ) && ! empty( $mode_config['allows_date'] );
 	$show_excerpt      = ( ! $uses_row_settings || ! empty( $args['show_excerpt'] ) ) && ! empty( $mode_config['allows_excerpt'] );
 	$show_read_more    = ( ! $uses_row_settings || ! empty( $args['show_read_more'] ) ) && ! empty( $mode_config['allows_read_more'] ) && '' !== $permalink;
 	$show_image        = ( ! $uses_row_settings || ! empty( $args['show_featured_image'] ) ) && ! empty( $mode_config['allows_image'] ) && has_post_thumbnail( $item_post );
@@ -2985,8 +3037,11 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 			<div class="mrn-content-list-row__body mrn-ui__body">
 				<div class="mrn-content-list-row__head mrn-ui__head">
 					<span class="mrn-content-list-row__title mrn-content-list-row__title--only mrn-ui__heading">
+						<?php if ( '' !== $title_icon_html ) : ?>
+							<span class="mrn-content-list-row__title-icon" aria-hidden="true"><?php echo $title_icon_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built internally from a trusted FA class allowlist. ?></span>
+						<?php endif; ?>
 						<?php if ( '' !== $permalink ) : ?>
-							<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
+							<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"<?php echo '' !== $link_attributes ? ' ' . $link_attributes : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by mrn_base_stack_get_content_list_item_link_attributes(). ?>><?php echo esc_html( $item_title ); ?></a>
 						<?php else : ?>
 							<?php echo esc_html( $item_title ); ?>
 						<?php endif; ?>
@@ -3012,7 +3067,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 								<?php $head_open = false; ?>
 							<?php endif; ?>
 							<?php if ( 'featured_image' === $field_key && $show_image && '' !== $permalink ) : ?>
-								<a class="mrn-content-list-row__media mrn-ui__media mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>">
+								<a class="mrn-content-list-row__media mrn-ui__media mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"<?php echo '' !== $link_attributes ? ' ' . $link_attributes : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by mrn_base_stack_get_content_list_item_link_attributes(). ?>>
 								<?php echo get_the_post_thumbnail( $item_post, 'medium_large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</a>
 						<?php elseif ( 'featured_image' === $field_key && $show_image ) : ?>
@@ -3023,8 +3078,11 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 							<p class="mrn-content-list-row__meta"><?php echo esc_html( get_the_date( '', $item_post ) ); ?></p>
 						<?php elseif ( 'title' === $field_key && '' !== $item_title ) : ?>
 								<h3 class="mrn-content-list-row__title mrn-ui__heading">
+									<?php if ( '' !== $title_icon_html ) : ?>
+										<span class="mrn-content-list-row__title-icon" aria-hidden="true"><?php echo $title_icon_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built internally from a trusted FA class allowlist. ?></span>
+									<?php endif; ?>
 									<?php if ( '' !== $permalink ) : ?>
-										<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( $item_title ); ?></a>
+										<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"<?php echo '' !== $link_attributes ? ' ' . $link_attributes : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by mrn_base_stack_get_content_list_item_link_attributes(). ?>><?php echo esc_html( $item_title ); ?></a>
 								<?php else : ?>
 									<?php echo esc_html( $item_title ); ?>
 								<?php endif; ?>
@@ -3038,7 +3096,7 @@ function mrn_base_stack_render_content_list_item( WP_Post $item_post, array $arg
 								<p class="mrn-content-list-row__excerpt mrn-ui__text"><?php echo esc_html( $item_excerpt ); ?></p>
 							<?php elseif ( 'read_more' === $field_key && $show_read_more ) : ?>
 									<p class="mrn-content-list-row__link">
-										<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"><?php echo esc_html( '' !== $read_more_label ? $read_more_label : 'Read More' ); ?></a>
+										<a class="mrn-ui__link" href="<?php echo esc_url( $permalink ); ?>"<?php echo '' !== $link_attributes ? ' ' . $link_attributes : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by mrn_base_stack_get_content_list_item_link_attributes(). ?>><?php echo esc_html( '' !== $read_more_label ? $read_more_label : 'Read More' ); ?></a>
 							</p>
 						<?php endif; ?>
 					<?php endforeach; ?>
@@ -4238,7 +4296,7 @@ function mrn_base_stack_get_motion_margin_for_trigger( $value ) {
 }
 
 /**
- * Convert a trigger position into the one-shot text reveal viewport margin.
+ * Convert a stored trigger position into the one-shot text reveal viewport margin.
  *
  * @param mixed $value Raw stored trigger value.
  * @return string
@@ -11470,6 +11528,10 @@ function mrn_base_stack_collect_builder_link_icon_asset_needs( $value, &$needs_f
 
 	if ( 'dashicons' === $icon_source ) {
 		$needs_dashicons = true;
+	}
+
+	if ( isset( $value['list_post_type'] ) && 'resource' === $value['list_post_type'] ) {
+		$needs_fontawesome = true;
 	}
 
 	foreach ( $value as $child ) {

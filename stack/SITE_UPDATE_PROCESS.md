@@ -10,6 +10,10 @@ Because MRN sites are built from coordinated plugins, MU plugins, shared runtime
 
 Do not assume a theme shape. Resolve it per site from `stylesheet` and `template`, because four shapes are in use:
 
+Site updates are always explicitly requested per site. Do not perform automatic,
+mass, or parity-driven updates. Fleet parity and bootstrap status are diagnostic
+information only; they do not authorize remediation or deployment.
+
 | Shape | `stylesheet` | `template` | Seen on |
 | --- | --- | --- | --- |
 | Newly bootstrapped | `mrn-base-stack-child` | `mrn-base-stack` | any site from either bootstrap |

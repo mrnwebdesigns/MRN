@@ -85,7 +85,7 @@ Current first-pass header baseline completed:
   - social URLs via Config Helper
 - header search is expected to render through the theme hook:
   - `mrn_base_stack_header_search`
-- the current default header search implementation is a SearchWP-friendly form, so the header toggle now renders usable search without waiting on a bespoke component
+- the current default header search implementation is a native WordPress form enhanced by Relevanssi when active, so the header toggle now renders usable search without waiting on a bespoke component
 
 Current first-pass footer baseline completed:
 

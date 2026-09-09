@@ -125,6 +125,7 @@ key files on disk:
 
 ### Cloudflare
 
+- The canonical Stack security baseline is `stack/CLOUDFLARE_SECURITY_POLICY.md`, with validated development and production intent profiles under `stack/configs/cloudflare/`. Use it for new-zone setup, security review, and launch acceptance; it does not itself authorize a live change.
 - MRN agents may legitimately have access to multiple Cloudflare accounts. Every
   visible account is part of infrastructure MRN manages; broad visibility is
   intentional and is not a misconfiguration.
@@ -281,6 +282,11 @@ Never treat LOCAL, `mrndev.io` review, and production environments as interchang
 - Deployment scoping:
   - Deploy only approved site-owned paths unless explicitly requested otherwise.
   - Preserve existing live/site behavior and compatibility unless user explicitly requests a migration or behavior change.
+- Manual change path:
+  - If a site has both a local copy and a development/review copy, do not copy files or database state into dev by ad hoc sync, export/import, or direct mutation. Local-to-dev changes must go through committed git changes and the approved deployment or migration workflow.
+  - Prefer scripted database updates. A manual database push is allowed only with explicit owner approval and only after the applicable backup and verification gates pass.
+  - Manual code changes to a site or deployment target are allowed only with explicit owner approval. This includes plugin work.
+  - Plugin work follows the git-hygiene gate: do not install, update, or deploy a plugin from a dirty or uncommitted worktree.
 - Production confirmation boundaries:
   - Confirm target is production and explicit before executing production writes.
 - Operations hierarchy relationship:
@@ -378,8 +384,21 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
 
 - QA passing authorizes neither deployment nor production mutation.
 - The sequence remains: QA pass -> commit may proceed -> deployment remains separately gated by owner/production authorization, applicable backup policy, environment safety, MainWP/QA Engine routing, and deployment-specific validation.
+- This includes plugin work: it still requires explicit approval and a clean, committed worktree before any site deployment.
 
-## 11) Vendor bootstrap portability
+## 11) Git hygiene gate
+
+- At the start of any MRN work in a plugin, theme, MU-plugin, stack, site, or other MRN repository, check the repository/component being touched for hanging branches and uncommitted work: `git -C <path> status --short` and `git -C <path> branch -a`.
+- A hanging branch is any local (or unmerged remote-tracking) branch other than the branch currently in use for this work, with no active task tied to it. Treat a branch as hanging if its purpose cannot be confirmed as current, intentional work in progress; do not assume it is safe to ignore.
+- Uncommitted work includes unstaged changes, staged-but-uncommitted changes, and untracked files relevant to the component.
+- This check is routine, not just a pre-release step: run it whenever starting work on any MRN-owned component, not only immediately before deployment or rollout.
+- If hanging branches or uncommitted work are found:
+  - Warn the owner immediately, naming the specific branch(es) and/or files, before doing anything else with that component.
+  - Treat this as a hard stop on adding that component to a rollout, deploy, release, stack manifest, or component catalog, the same weight as a failed QA or backup gate. Do not proceed with that inclusion until it is resolved.
+  - Resume only after the owner explicitly resolves it (merges/deletes the branch, or commits/stashes/discards the changes) or explicitly authorizes a documented exception.
+- Applies across all MRN repositories, not only the primary stack repo, including Local Hub, QA Engine, Production Hub, the RunCloud stack repo, and pulled `MRN-sites/{slug}` site repos.
+
+## 12) Vendor bootstrap portability
 
 - This file is vendor-neutral and repo-native. It is the canonical MRN operating context for every agent.
 - Each agent has a small vendor-specific bootstrap that points here and duplicates nothing:

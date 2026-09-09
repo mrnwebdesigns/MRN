@@ -116,6 +116,12 @@ add_action('admin_enqueue_scripts', function ($hook) {
     .mlo-pro-admin-notice.notice,
     #media_library_organizer_review_flag-notification.notice.notice-success.is-dismissible.themeisle-sdk-notice,
     .notice.notice-success.is-dismissible.themeisle-sdk-notice[data-notification-id="media_library_organizer_review_flag"],
+    body.wp-admin #card-license-upsell,
+    body.wp-admin #card-support-locked,
+    body.wp-admin .relevanssi-upsell-callout,
+    body.wp-admin .relevanssi-settings-sidebar .relevanssi-info-box:has(a[href*="buy-premium"]),
+    body.wp-admin .relevanssi-card > div[style*="background: #f0f6fa"][style*="border: 1px dashed #005885"],
+    body.wp-admin .relevanssi-settings-row:has(#card-license-upsell),
     .notice.notice-success.is-dismissible:has(a.button.button-primary[href$="/wp-admin/"]) {
       display: none !important;
     }

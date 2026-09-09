@@ -4,7 +4,8 @@ WordPress plugin release unit for `mrn-updraft-local-retention`.
 
 The MU plugin enforces the non-secret MRN Updraft policy on every stack runtime:
 
-- daily file and database backups;
+- daily file and database backups on staging and production;
+- no routine scheduled backups on development/review environments;
 - four file and database backup sets retained;
 - local archives deleted after successful remote transfer;
 - WordPress core excluded;
@@ -14,7 +15,7 @@ The MU plugin enforces the non-secret MRN Updraft policy on every stack runtime:
 It also recreates missing Updraft file and database cron events after a restore.
 Remote credentials are never created or changed. Administrators receive a
 visible warning unless Amazon S3 uses a unique path ending in
-`sites/<site-hostname>`.
+`sites/<site-slug>`, where the slug is the hostname's stable first label.
 
 ## Development backups
 

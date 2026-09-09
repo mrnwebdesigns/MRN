@@ -9,7 +9,7 @@
 
 if ( ! defined( '_S_VERSION' ) ) {
 	// Replace the version number of the theme on each release.
-	define( '_S_VERSION', '1.3.0' );
+	define( '_S_VERSION', '1.3.2' );
 }
 
 /**
@@ -171,6 +171,8 @@ function mrn_base_stack_seed_nav_menus() {
 	}
 
 	if ( $all_seeded ) {
+		// Keep this migration option non-autoloaded; PHPStan's stub treats the third parameter as optional.
+		/* @phpstan-ignore-next-line */
 		update_option( $option_key, $migration_version, false );
 	}
 }
@@ -861,12 +863,12 @@ function mrn_base_stack_scripts() {
 		mrn_base_stack_enqueue_layout_styles_for_post( get_queried_object_id() );
 	}
 
-	$header_options     = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
-	$uses_back_to_top   = ! empty( $header_options['footer_show_back_to_top'] );
-	$needs_fontawesome  = false;
-	$needs_dashicons    = false;
-	$uses_icon_search   = ! empty( $header_options['header_show_search'] ) && isset( $header_options['header_search_style'] ) && 'icon_only' === $header_options['header_search_style'];
-	$search_icon_source = isset( $header_options['header_search_icon_source'] ) ? (string) $header_options['header_search_icon_source'] : 'dashicons';
+	$header_footer_options = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
+	$uses_back_to_top      = ! empty( $header_footer_options['footer_show_back_to_top'] );
+	$needs_fontawesome     = false;
+	$needs_dashicons       = false;
+	$uses_icon_search      = ! empty( $header_footer_options['header_show_search'] ) && isset( $header_footer_options['header_search_style'] ) && 'icon_only' === $header_footer_options['header_search_style'];
+	$search_icon_source    = isset( $header_footer_options['header_search_icon_source'] ) ? (string) $header_footer_options['header_search_icon_source'] : 'dashicons';
 
 	if ( 'fontawesome' === $search_icon_source && $uses_icon_search ) {
 		$needs_fontawesome = true;
@@ -905,28 +907,13 @@ function mrn_base_stack_scripts() {
 		}
 	}
 
-	if ( function_exists( 'mrn_config_helper_get_social_links' ) ) {
-		$social_links = mrn_config_helper_get_social_links();
-
-		if ( is_array( $social_links ) ) {
-			foreach ( $social_links as $social_link ) {
-				if ( ! is_array( $social_link ) || ! isset( $social_link['icon_type'] ) ) {
-					continue;
-				}
-
-				if ( 'fontawesome' === $social_link['icon_type'] ) {
-					$needs_fontawesome = true;
-				}
-
-				if ( 'dashicons' === $social_link['icon_type'] ) {
-					$needs_dashicons = true;
-				}
-
-				if ( $needs_fontawesome && $needs_dashicons ) {
-					break;
-				}
-			}
-		}
+	if ( function_exists( 'mrn_base_stack_collect_rendered_social_link_asset_needs' ) && function_exists( 'mrn_config_helper_get_social_links' ) ) {
+		mrn_base_stack_collect_rendered_social_link_asset_needs(
+			! empty( $header_footer_options['footer_show_social_menu'] ),
+			mrn_config_helper_get_social_links(),
+			$needs_fontawesome,
+			$needs_dashicons
+		);
 	}
 
 	if ( function_exists( 'mrn_config_helper_get_breadcrumb_settings' ) ) {
@@ -949,6 +936,10 @@ function mrn_base_stack_scripts() {
 
 	if ( $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs_from_post_meta' ) ) {
 		mrn_base_stack_collect_builder_link_icon_asset_needs_from_post_meta( get_queried_object_id(), $needs_fontawesome, $needs_dashicons );
+	}
+
+	if ( $layout_builder_enabled && is_singular( mrn_base_stack_get_singular_shell_post_types() ) && function_exists( 'mrn_base_stack_resource_content_list_needs_fontawesome_from_post_meta' ) && mrn_base_stack_resource_content_list_needs_fontawesome_from_post_meta( get_queried_object_id() ) ) {
+		$needs_fontawesome = true;
 	}
 
 	if ( $layout_builder_enabled && function_exists( 'mrn_base_stack_collect_builder_link_icon_asset_needs' ) && function_exists( 'mrn_rbl_get_post_types' ) && is_singular( mrn_rbl_get_post_types() ) && function_exists( 'get_fields' ) ) {
@@ -1109,31 +1100,6 @@ function mrn_base_stack_scripts() {
 	}
 }
 add_action( 'wp_enqueue_scripts', 'mrn_base_stack_scripts' );
-
-/**
- * Enqueue SearchWP form assets when the stack header renders the SearchWP form.
- *
- * SearchWP registers these handles on `wp_enqueue_scripts`; this runs later so
- * the theme can enqueue them before the form shortcode renders.
- *
- * @return void
- */
-function mrn_base_stack_enqueue_header_searchwp_assets() {
-	$header_options = function_exists( 'mrn_base_stack_get_theme_header_footer_options' ) ? mrn_base_stack_get_theme_header_footer_options() : array();
-
-	if ( empty( $header_options['header_show_search'] ) || empty( $header_options['header_searchwp_form_id'] ) ) {
-		return;
-	}
-
-	if ( wp_style_is( 'searchwp-forms', 'registered' ) ) {
-		wp_enqueue_style( 'searchwp-forms' );
-	}
-
-	if ( wp_script_is( 'searchwp-forms', 'registered' ) ) {
-		wp_enqueue_script( 'searchwp-forms' );
-	}
-}
-add_action( 'wp_enqueue_scripts', 'mrn_base_stack_enqueue_header_searchwp_assets', 100 );
 
 /**
  * Load responsive image helpers.
@@ -2606,6 +2572,16 @@ require_once get_template_directory() . '/inc/careers.php';
 require_once get_template_directory() . '/inc/services.php';
 
 /**
+ * Load resource modules.
+ */
+require_once get_template_directory() . '/inc/resources.php';
+
+/**
+ * Load press release modules.
+ */
+require_once get_template_directory() . '/inc/press-releases.php';
+
+/**
  * Load field-ready content post type registrations.
  */
 require_once get_template_directory() . '/inc/content-post-types.php';
@@ -2619,6 +2595,16 @@ require get_template_directory() . '/inc/custom-header.php';
  * Custom template tags for this theme.
  */
 require get_template_directory() . '/inc/template-tags.php';
+
+/**
+ * Reading-time helpers for singular content.
+ */
+require get_template_directory() . '/inc/read-time.php';
+
+/**
+ * Content table-of-contents helpers.
+ */
+require get_template_directory() . '/inc/content-toc.php';
 
 /**
  * Functions which enhance the theme by hooking into WordPress.

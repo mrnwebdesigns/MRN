@@ -93,15 +93,28 @@ jobs:
             mrn-acf-character-count
             mrn-acf-focal-point
             mrn-ai-assist
+            mrn-ai-guardrails
             mrn-announcements
             mrn-comment-management
             mrn-config-helper
+            mrn-contextual-content-editor
             mrn-cookie-consent
+            mrn-database-retention
             mrn-editor-tools
             mrn-fontawesome-profile-manager
+            mrn-google-fonts
             mrn-gtm-injector
+            mrn-hierarchical-menu-taxonomies
+            mrn-layout-import-export
+            mrn-media-bulk-tools
+            mrn-mega-menu
+            mrn-recaptcha-enterprise-manager
+            mrn-reusable-block-library
+            mrn-schema-bridge
             mrn-sendgrid-provisioning
             mrn-seo-helper
+            mrn-template-inspector
+            mrn-tokens
             mrn-universal-sticky-bar
 
       # The app token is short-lived and limited to the standalone repositories.
@@ -111,18 +124,20 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$GITHUB_WORKSPACE/../MRN-plugins"
-          repos="background-video-popout-disabler mrn-acf-character-count mrn-acf-focal-point mrn-ai-assist mrn-announcements mrn-comment-management mrn-config-helper mrn-cookie-consent mrn-editor-tools mrn-fontawesome-profile-manager mrn-gtm-injector mrn-sendgrid-provisioning mrn-seo-helper mrn-universal-sticky-bar"
+          repos="background-video-popout-disabler mrn-acf-character-count mrn-acf-focal-point mrn-ai-assist mrn-ai-guardrails mrn-announcements mrn-comment-management mrn-config-helper mrn-contextual-content-editor mrn-cookie-consent mrn-database-retention mrn-editor-tools mrn-fontawesome-profile-manager mrn-google-fonts mrn-gtm-injector mrn-hierarchical-menu-taxonomies mrn-layout-import-export mrn-media-bulk-tools mrn-mega-menu mrn-recaptcha-enterprise-manager mrn-reusable-block-library mrn-schema-bridge mrn-sendgrid-provisioning mrn-seo-helper mrn-template-inspector mrn-tokens mrn-universal-sticky-bar"
           for slug in $repos; do
             gh repo clone "mrnwebdesigns/${slug}" "$GITHUB_WORKSPACE/../MRN-plugins/${slug}" -- --depth 1
           done
 
-          # plugins/<slug> itself is gitignored (untracked), so a fresh CI
-          # checkout has nothing there at all -- create the same relative
-          # symlinks a local dev machine has after checking out MRN and
-          # MRN-plugins as siblings.
+          # Replace tracked local-workspace links and create missing links with
+          # CI-relative targets after checking out MRN and MRN-plugins as siblings.
           cd "$GITHUB_WORKSPACE/plugins"
           for slug in $repos; do
-            [ -e "$slug" ] && continue
+            if [ -L "$slug" ]; then
+              rm "$slug"
+            elif [ -e "$slug" ]; then
+              continue
+            fi
             if [ "$slug" = "mrn-ai-assist" ]; then
               ln -s "../../MRN-plugins/mrn-ai-assist/wordpress-plugin" "$slug"
             else

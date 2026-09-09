@@ -1,9 +1,9 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.08.25-config-helper-0.1.58`
+- Stack release: `2026.08.25-navigation-contract-text-reveal`
 - Release date: `2026-08-25`
-- Status: `release candidate`
+- Status: `current baseline`
 
 ## Included MRN-Owned Components
 - Theme:
@@ -13,25 +13,25 @@
   - `mrn-loader` `1.6.0`
   - `mrn-shared-runtime` `1.0.0`
   - `mrn-active-style-guide` `0.1.6`
+  - `mrn-admin-data-post-types` `0.2.0`
   - `mrn-admin-ui-css` `3.2.3`
   - `mrn-shared-assets` `0.1.3`
   - `mrn-editor-lockdown` `1.0.32`
-  - `mrn-environment-runtime` `0.4.0`
-  - `mrn-schema-bridge` `0.4.2`
+  - `mrn-environment-runtime` `0.5.1`
+  - `mrn-schema-bridge` `0.6.0`
   - `mrn-site-colors` / `Site Styles` `0.1.38`
   - `mrn-updraft-backup-policy-loader` `0.5.0`
   - `mrn-updraft-local-retention` `0.5.0`
 - Standard plugins:
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-announcements` `1.6.2`
-  - `mrn-config-helper` `0.1.58`
+  - `mrn-config-helper` `0.1.59`
+  - `mrn-sendgrid-provisioning` `0.1.0`
   - `mrn-seo-helper` `0.4.0`
   - `mrn-editor-tools` `1.8.24`
-  - `mrn-mega-menu` `0.16.17`
-  - `mrn-stack-deployment-agent` `0.1.7`
+  - `mrn-mega-menu` `0.17.0`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-universal-sticky-bar` `1.1.8`
-  - `searchwp-editor-performance` `1.0.7`
 
 - Profile-gated standard plugins:
   - `mrn-reusable-block-library` `0.1.28` (`MRN_SITE_PROFILE=stack`)

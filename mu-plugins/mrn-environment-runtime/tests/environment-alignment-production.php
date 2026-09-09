@@ -8,7 +8,7 @@
 
 define( 'ABSPATH', __DIR__ );
 define( 'MRN_SITE_PROFILE', 'stack' );
-define( 'MRN_SEARCHWP_POLICY', 'configured' );
+define( 'MRN_RELEVANSSI_POLICY', 'configured' );
 define( 'MRN_SEO_INDEXING_POLICY', 'configured' );
 
 function wp_get_environment_type() {
@@ -21,7 +21,7 @@ function is_admin() {
 
 function get_option( $option, $default = false ) {
 	if ( 'active_plugins' === $option ) {
-		return array( 'searchwp/index.php' );
+		return array( 'relevanssi/relevanssi.php' );
 	}
 	if ( 'blog_public' === $option ) {
 		return '1';

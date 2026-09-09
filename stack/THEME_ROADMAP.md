@@ -177,7 +177,7 @@ Current first-pass header contract:
   - site title
 - stack search integration expected through the theme hook:
   - `mrn_base_stack_header_search`
-- current default implementation uses a SearchWP-friendly search form rather than the old starter-theme bare search pattern
+- current default implementation uses a native WordPress search form, progressively enhanced by Relevanssi when active, rather than the old starter-theme bare search pattern
 
 Current business logo variants available in `Business Information`:
 
@@ -190,10 +190,11 @@ Theme helper for variant-aware consumption:
 
 - `mrn_base_stack_get_business_logo( $context )`
 
-Current business-information schema contract:
+Current business-information fallback schema contract:
 
-- the theme prints a JSON-LD business schema block in `wp_head`
-- schema source is the canonical `Business Information` payload
+- the theme can print a JSON-LD business schema block in `wp_head` when no supported schema provider owns that output
+- MRN Schema Bridge suppresses this fallback when SEOPress or the selected legacy SmartCrawl provider is active
+- SEOPress is authoritative for public organization identity on standardized sites; the fallback schema source remains the `Business Information` payload
 - current schema enrichment can include:
   - business profile
   - logo
@@ -207,7 +208,7 @@ Current business-information schema contract:
 
 QA note:
 
-- the site may also have SEO-plugin-generated organization schema
+- verify the active SEO provider emits one public organization identity and that the fallback theme block remains suppressed
 - schema output should be checked for duplication/conflict during handoff QA
 
 Current first-pass footer contract:

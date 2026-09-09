@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "profile": "development",
+  "purpose": "Low-friction protection for MRN development and review sites.",
+  "enforcement": "policy_intent_not_api_payload",
+  "zone": {
+    "ssl": "full_strict",
+    "always_https": true,
+    "min_tls_version": "1.2",
+    "tls_1_3": true,
+    "security_level": "medium",
+    "browser_integrity_check": true,
+    "opportunistic_encryption": true,
+    "managed_waf": "enable_available_managed_rulesets_for_plan",
+    "bot_protection": "off_unless_available_and_non_disruptive",
+    "dnssec": "recommended_after_nameserver_cutover_when_registrar_supports_it"
+  },
+  "dns": {
+    "public_web_records": "proxied_after_origin_https_verification",
+    "mail_and_vendor_records": "dns_only",
+    "preserve_existing_records": true,
+    "never_proxy_types": ["MX", "TXT", "CAA"],
+    "never_proxy_hostnames": ["autodiscover", "mail", "webmail", "cpanel", "ftp", "ssh"]
+  },
+  "rules": {
+    "wp_login_rate_limit": "challenge_after_burst",
+    "xmlrpc": "block_if_site_does_not_require_xmlrpc",
+    "wp_admin": "do_not_block_without_verified_admin_access_plan",
+    "wordpress_rest": "allow_normal_authenticated_and_public_reads",
+    "known_bad_ips_and_signatures": "managed_rules"
+  },
+  "observability": {
+    "security_event_logging": true,
+    "alert_on_waf_spike": true,
+    "alert_on_origin_health_failure": true,
+    "retention": "account_plan_default"
+  },
+  "launch_requirements": [
+    "Verify origin HTTPS before enabling proxying.",
+    "Verify the full DNS inventory against the old authority.",
+    "Test the site, forms, outbound mail, inbound mail, and admin login.",
+    "Do not send development mail to real clients unless explicitly approved."
+  ]
+}

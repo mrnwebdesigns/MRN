@@ -97,6 +97,14 @@
 - The Add Row builder picker now discovers layouts from live registered builder metadata, keeps page-only conversion targets hidden automatically, and alphabetizes the visible list.
 
 ## Active Ops Caveats
+
+### Site update authorization
+
+- MRN sites must not receive automatic, mass, or parity-driven stack/plugin updates.
+- Fleet parity reports are informational unless the owner explicitly requests a rollout.
+- Update only the specifically named site and requested stack/plugin surfaces.
+- A site's bootstrap status or parity drift does not itself authorize remediation or deployment.
+
 - Run stack automation as `mrndev-stack-manager`; running as `kyle` can still produce runtime status-file warnings.
 - Default stack SSH target is `mrndev-stack-manager@167.99.54.77`.
 - Stack site/server credential details are stored locally at `/Users/khofmeyer/Development/MRN/.local/secrets/default-configs-server-info.txt`.

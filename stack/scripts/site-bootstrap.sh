@@ -318,8 +318,79 @@ if ! command -v wp >/dev/null 2>&1; then
   exit 1
 fi
 
+php_string_literal() {
+  local value
+  value="${1:-}"
+  php -r 'echo var_export($argv[1], true);' -- "${value}"
+}
+
+run_wp_config_set_quiet() {
+  local name="$1"
+  shift
+
+  if sudo -u "${SITE_USER}" wp --path="${WP_PATH}" config set "${name}" "$@" >/dev/null 2>&1; then
+    echo "Configured ${name} in wp-config.php"
+    return 0
+  fi
+
+  return 1
+}
+
+reconcile_recaptcha_enterprise_constants() {
+  local recaptcha_private_key_literal recaptcha_private_key_php_literal recaptcha_integration_type
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" ]]; then
+    if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" --type=constant; then
+      echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID in wp-config.php" >&2
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" ]]; then
+    if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" --type=constant; then
+      echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL in wp-config.php" >&2
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY}" ]]; then
+    recaptcha_private_key_literal="$(
+      printf '%s' "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY}" \
+        | tr -d '\r' \
+        | sed ':a;N;$!ba;s/\n/\\n/g'
+    )"
+    if [[ -n "${recaptcha_private_key_literal}" ]]; then
+      if ! recaptcha_private_key_php_literal="$(php_string_literal "${recaptcha_private_key_literal}")"; then
+        echo "Warning: failed to prepare MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY for wp-config.php" >&2
+      elif ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY "${recaptcha_private_key_php_literal}" --raw --type=constant; then
+        echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY in wp-config.php" >&2
+      fi
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" ]]; then
+    if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" --type=constant; then
+      echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS in wp-config.php" >&2
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE}" ]]; then
+    recaptcha_integration_type="$(
+      printf '%s' "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE}" \
+        | tr -d '\r\n' \
+        | tr '[:lower:]' '[:upper:]'
+    )"
+    if [[ "${recaptcha_integration_type}" == "SCORE" || "${recaptcha_integration_type}" == "CHECKBOX" ]]; then
+      if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE "${recaptcha_integration_type}" --type=constant; then
+        echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE in wp-config.php" >&2
+      fi
+    else
+      echo "Warning: skipped MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE: expected SCORE or CHECKBOX." >&2
+    fi
+  fi
+}
+
 if [[ -f "${SITE_PATH}/${MARKER_NAME}" ]]; then
   echo "Already bootstrapped: ${SITE_PATH}"
+  reconcile_recaptcha_enterprise_constants
   send_notification "MRN Bootstrap Skipped: $(basename "${SITE_PATH}")" "Bootstrap skipped because marker exists for ${SITE_PATH}"
   send_slack_notification "MRN Bootstrap Skipped: $(basename "${SITE_PATH}")" "Bootstrap skipped because marker exists for ${SITE_PATH}" "#8b949e"
   exit 0
@@ -336,26 +407,8 @@ run_wp() {
   sudo -u "${SITE_USER}" wp --path="${WP_PATH}" "${args[@]}"
 }
 
-php_string_literal() {
-  local value
-  value="${1:-}"
-  php -r 'echo var_export($argv[1], true);' -- "${value}"
-}
-
 last_nonempty_line() {
   sed '/^[[:space:]]*$/d' | tail -n 1
-}
-
-run_wp_config_set_quiet() {
-  local name="$1"
-  shift
-
-  if run_wp config set "${name}" "$@" >/dev/null 2>&1; then
-    echo "Configured ${name} in wp-config.php"
-    return 0
-  fi
-
-  return 1
 }
 
 load_site_owner_authorized_key() {
@@ -1001,94 +1054,6 @@ echo "Applied and verified WPForms license key.\n";
 '
   }
 
-  apply_searchwp_license_mapping() {
-    local raw_value="$1"
-    local value_mode="${2:-text}"
-    local payload_b64
-
-    payload_b64="$(printf '%s' "${raw_value}" | base64 | tr -d '\n')"
-    run_wp eval '
-$raw = base64_decode("'"${payload_b64}"'", true);
-if ($raw === false) {
-    fwrite(STDERR, "Invalid SearchWP license payload.\n");
-    exit(1);
-}
-
-$mode = "'"${value_mode}"'";
-$key = "";
-if ($mode === "json") {
-    $decoded = json_decode($raw, true);
-    if (!is_array($decoded)) {
-        fwrite(STDERR, "SearchWP license JSON payload is invalid.\n");
-        exit(1);
-    }
-    $candidate = $decoded["key"] ?? ($decoded["license_key"] ?? "");
-    if (is_string($candidate)) {
-        $key = trim($candidate);
-    }
-} else {
-    $key = trim($raw);
-}
-
-if ($key === "") {
-    fwrite(STDERR, "SearchWP license key is empty.\n");
-    exit(1);
-}
-
-if (!defined("SEARCHWP_PREFIX")) {
-    $bootstrap = WP_PLUGIN_DIR . "/searchwp/bootstrap.php";
-    if (is_file($bootstrap)) {
-        require_once $bootstrap;
-    }
-}
-if (!defined("SEARCHWP_PREFIX")) {
-    define("SEARCHWP_PREFIX", "searchwp_");
-}
-
-// Persist raw key to support SearchWP upgrader fallback.
-update_option(SEARCHWP_PREFIX . "license_key", $key);
-
-if (!class_exists("\\SearchWP\\Settings")) {
-    $settingsFile = WP_PLUGIN_DIR . "/searchwp/includes/Settings.php";
-    if (is_file($settingsFile)) {
-        require_once $settingsFile;
-    }
-}
-if (!class_exists("\\SearchWP\\License")) {
-    $licenseFile = WP_PLUGIN_DIR . "/searchwp/includes/License.php";
-    if (is_file($licenseFile)) {
-        require_once $licenseFile;
-    }
-}
-
-if (!class_exists("\\SearchWP\\License")) {
-    fwrite(STDERR, "SearchWP license class not available.\n");
-    exit(1);
-}
-
-$response = \SearchWP\License::activate($key);
-if (!is_array($response) || !($response["success"] ?? false)) {
-    // Keep a minimal payload so key is visible in settings even if activation endpoint fails.
-    update_option(SEARCHWP_PREFIX . "license", [
-        "key" => $key,
-        "status" => "invalid",
-    ]);
-    $msg = "SearchWP license activation failed.";
-    if (is_array($response) && isset($response["data"])) {
-        if (is_string($response["data"])) {
-            $msg .= " " . $response["data"];
-        } elseif (is_object($response["data"]) && isset($response["data"]->error)) {
-            $msg .= " " . (string) $response["data"]->error;
-        }
-    }
-    fwrite(STDERR, $msg . "\n");
-    exit(1);
-}
-
-echo "Applied and activated SearchWP license key.\n";
-	'
-  }
-
   apply_seopress_license_mapping() {
     local raw_value="$1"
     local value_mode="${2:-text}"
@@ -1433,20 +1398,6 @@ echo "Applied AME license payload for {$siteUrl}\n";
       fi
       if ! apply_updraft_premium_mapping "${value}" "${updraft_mode}" >/dev/null; then
         add_license_failure "Failed to apply/verify Updraft Premium mapping for ${plugin_basename}."
-        continue
-      fi
-      echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
-      continue
-    fi
-
-    if [[ ( "${plugin_basename}" == "searchwp/searchwp.php" || "${plugin_basename}" == "searchwp/index.php" ) && ( "${option_name}" == "searchwp_license_key" || "${option_name}" == "searchwp_license" ) ]]; then
-      local searchwp_mode
-      searchwp_mode="text"
-      if [[ "${value_ref}" == json:* || "${value_ref}" == filejson:* || "${value_ref}" == secretfilejson:* ]]; then
-        searchwp_mode="json"
-      fi
-      if ! apply_searchwp_license_mapping "${value}" "${searchwp_mode}" >/dev/null; then
-        add_license_failure "Failed to apply/activate SearchWP license mapping for ${plugin_basename}."
         continue
       fi
       echo "Applied license mapping: ${plugin_basename} -> ${option_name} (verified)"
@@ -1807,18 +1758,19 @@ apply_wp_defaults() {
 
 reconcile_development_environment_policy() {
   local plugin_slug hook
+  # fluent-smtp stays installed but inactive on every dev/review bootstrap so a
+  # new site can't send real mail before go-live, even though SendGrid
+  # subuser/domain-auth provisioning still runs to get DNS ready ahead of
+  # time. Reactivating it and delivering the site API key is handled by the
+  # separate MainWP-driven go-live delivery tooling, not by this script.
   local -a disabled_plugins=(
     wpmu-dev-seo
     smartcrawl-seo
     wp-seopress
     wp-seopress-pro
+    fluent-smtp
   )
   local -a disabled_cron_hooks=(
-    searchwp_indexer_cron
-    searchwp_index_controller_cron
-    searchwp_maintenance
-    searchwp_usage_tracking
-    searchwp_email_summaries_cron
     wds_sitemap_validity_check
     wds_cron_download_geodb
     wds_daily_moz_data_hook
@@ -1842,18 +1794,11 @@ reconcile_development_environment_policy() {
     seopress_site_audit_watchdog_cron
   )
 
-  # Keep SearchWP forms and frontend search active for stack development while
-  # pausing index maintenance and scheduled provider work.
-  if ! run_wp config set MRN_SEARCHWP_POLICY frontend_only --type=constant; then
-    add_warning "Failed to set MRN_SEARCHWP_POLICY=frontend_only in wp-config.php"
-  fi
-  if run_wp plugin is-active searchwp >/dev/null 2>&1; then
-    if ! run_wp option update searchwp_indexer_paused 1 >/dev/null; then
-      add_warning "Failed to pause SearchWP indexing for the development frontend-only policy."
-    fi
-    if ! run_wp option update searchwp_disable_email_summaries 1 >/dev/null; then
-      add_warning "Failed to disable SearchWP email summaries for the development frontend-only policy."
-    fi
+  # Relevanssi indexes synchronously on save with no persistent background
+  # indexer/cron, so stack development needs no indexer-pause step the way
+  # SearchWP did; the policy constant is a simple active/inactive contract.
+  if ! run_wp config set MRN_RELEVANSSI_POLICY configured --type=constant; then
+    add_warning "Failed to set MRN_RELEVANSSI_POLICY=configured in wp-config.php"
   fi
   if ! run_wp config set MRN_SEO_INDEXING_POLICY disabled --type=constant; then
     add_warning "Failed to set MRN_SEO_INDEXING_POLICY=disabled in wp-config.php"
@@ -1876,8 +1821,13 @@ reconcile_development_environment_policy() {
   done
 
   for hook in "${disabled_cron_hooks[@]}"; do
-    run_wp cron event delete "${hook}" >/dev/null 2>&1 || true
-    if run_wp eval "exit(wp_next_scheduled('${hook}') === false ? 0 : 1);" >/dev/null 2>&1; then
+    # Still-active plugins re-schedule their own cron hooks from
+    # init/constructor code on every normal WordPress bootstrap, so
+    # a delete followed by a plugin-loaded verification call can observe the
+    # hook already re-armed. Skip loading plugins/themes for both the delete
+    # and the verification so the cron option itself is the only thing touched.
+    run_wp cron event delete "${hook}" --skip-plugins --skip-themes >/dev/null 2>&1 || true
+    if run_wp eval "exit(wp_next_scheduled('${hook}') === false ? 0 : 1);" --skip-plugins --skip-themes >/dev/null 2>&1; then
       continue
     fi
     add_warning "Development-disabled cron hook remains scheduled: ${hook}"
@@ -1966,22 +1916,94 @@ run_importers() {
   done
 }
 
-provision_external_services() {
-  local sendgrid_code uptime_code uptime_interval uptime_output uptime_warning_detail
+configure_mrn_breadcrumb_schema_ownership() {
+  local breadcrumb_output
 
-  if ! run_wp plugin is-active mrn-config-helper >/dev/null 2>&1; then
-    add_warning "Skipped external service provisioning: MRN Config Helper is not active."
-    return 0
-  fi
-
-  if bootstrap_flag_enabled "${AUTO_PROVISION_SENDGRID}"; then
-    sendgrid_code="$(cat <<'PHP'
-if (!class_exists('MRN_Config_Helper') || !method_exists('MRN_Config_Helper', 'bootstrap_sendgrid_site_provisioning')) {
-    fwrite(STDERR, "MRN Config Helper does not support SendGrid bootstrap provisioning.\n");
+  if ! breadcrumb_output="$(run_wp eval '
+$settings = get_option("mrn_helper_settings", array());
+if (!is_array($settings)) {
+    fwrite(STDERR, "MRN Config Helper settings are not an array.\n");
     exit(1);
 }
 
-$result = MRN_Config_Helper::bootstrap_sendgrid_site_provisioning(home_url('/'));
+$breadcrumbs = isset($settings["breadcrumbs"]) && is_array($settings["breadcrumbs"])
+    ? $settings["breadcrumbs"]
+    : array();
+$changed = false;
+
+if (($breadcrumbs["schema_source"] ?? "") !== "stack") {
+    $breadcrumbs["schema_source"] = "stack";
+    $settings["breadcrumbs"] = $breadcrumbs;
+    update_option("mrn_helper_settings", $settings, false);
+    $changed = true;
+}
+
+$seopress = get_option("seopress_pro_option_name", array());
+if (is_array($seopress) && ($seopress["seopress_breadcrumbs_json_enable"] ?? "") === "1") {
+    $seopress["seopress_breadcrumbs_json_enable"] = "";
+    update_option("seopress_pro_option_name", $seopress, false);
+    $changed = true;
+}
+
+echo $changed ? "MRN breadcrumb schema ownership configured.\n" : "MRN breadcrumb schema ownership already configured.\n";
+')"; then
+    printf '%s\n' "${breadcrumb_output}" >&2
+    echo "Failed to configure MRN breadcrumb schema ownership." >&2
+    return 1
+  fi
+
+  printf '%s\n' "${breadcrumb_output}"
+}
+
+provision_seopress_schema_defaults() {
+  local schema_output
+
+  if ! run_wp plugin is-active wp-seopress >/dev/null 2>&1 || ! run_wp plugin is-active wp-seopress-pro >/dev/null 2>&1; then
+    add_warning "Skipped SEOPress schema provisioning: SEOPress Free and PRO must both be active during bootstrap."
+    return 0
+  fi
+
+  if ! schema_output="$(run_wp eval '
+if (!function_exists("mrn_schema_bridge_provision_seopress_article_templates") || !function_exists("mrn_schema_bridge_sync_seopress_identity_from_business_information")) {
+    fwrite(STDERR, "MRN Schema Bridge provisioning APIs are unavailable.\n");
+    exit(1);
+}
+
+$identity = mrn_schema_bridge_sync_seopress_identity_from_business_information();
+$templates = mrn_schema_bridge_provision_seopress_article_templates();
+
+echo "SEOPress identity sync: " . ($identity["status"] ?? "unknown") . "\n";
+echo "SEOPress Article templates: " . ($templates["status"] ?? "unknown") . "\n";
+
+if (($templates["status"] ?? "error") === "error" || ($templates["status"] ?? "skipped") === "skipped") {
+    if (!empty($templates["errors"]) && is_array($templates["errors"])) {
+        fwrite(STDERR, implode("\n", $templates["errors"]) . "\n");
+    }
+    exit(1);
+}
+')"; then
+    printf '%s\n' "${schema_output}" >&2
+    add_warning "SEOPress automatic schema provisioning did not complete cleanly."
+    return 0
+  fi
+
+  printf '%s\n' "${schema_output}"
+}
+
+provision_external_services() {
+  local sendgrid_code uptime_code uptime_interval uptime_output uptime_warning_detail
+
+  if bootstrap_flag_enabled "${AUTO_PROVISION_SENDGRID}"; then
+    if ! run_wp plugin is-active mrn-sendgrid-provisioning >/dev/null 2>&1; then
+      add_warning "Skipped SendGrid provisioning: MRN SendGrid Provisioning is not active."
+    else
+      sendgrid_code="$(cat <<'PHP'
+if (!class_exists('MRN_SendGrid_Provisioning') || !method_exists('MRN_SendGrid_Provisioning', 'bootstrap_site_provisioning')) {
+    fwrite(STDERR, "MRN SendGrid Provisioning does not support bootstrap provisioning.\n");
+    exit(1);
+}
+
+$result = MRN_SendGrid_Provisioning::bootstrap_site_provisioning(home_url('/'));
 $status = isset($result['status']) ? (string) $result['status'] : 'unknown';
 $message = isset($result['message']) ? (string) $result['message'] : 'No message returned.';
 
@@ -1992,11 +2014,17 @@ if (in_array($status, array('warning', 'skipped'), true)) {
 }
 PHP
 )"
-    if ! run_wp eval "${sendgrid_code}"; then
-      add_warning "SendGrid automatic provisioning did not complete cleanly."
+      if ! run_wp eval "${sendgrid_code}"; then
+        add_warning "SendGrid automatic provisioning did not complete cleanly."
+      fi
     fi
   else
     echo "SendGrid automatic provisioning disabled by STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION."
+  fi
+
+  if ! run_wp plugin is-active mrn-config-helper >/dev/null 2>&1; then
+    add_warning "Skipped UptimeRobot provisioning: MRN Config Helper is not active."
+    return 0
   fi
 
   if bootstrap_flag_enabled "${AUTO_PROVISION_UPTIME_ROBOT}"; then
@@ -2120,6 +2148,8 @@ main() {
   apply_wp_defaults
   provision_uptime_robot_check_page
   run_importers
+  configure_mrn_breadcrumb_schema_ownership
+  provision_seopress_schema_defaults
   provision_external_services
   reconcile_development_environment_policy
   ensure_updraft_local_retention_schedule

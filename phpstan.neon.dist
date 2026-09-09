@@ -11,6 +11,7 @@ parameters:
         - stack/themes/mrn-base-stack/functions.php
         - stack/themes/mrn-base-stack/inc/display-styles.php
         - stack/themes/mrn-base-stack/inc/row-spacing-meta.php
+        - mu-plugins/mrn-public-security-hardening/mrn-public-security-hardening.php
     parallel:
         maximumNumberOfProcesses: 4
     reportUnmatchedIgnoredErrors: false

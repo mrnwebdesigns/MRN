@@ -406,7 +406,7 @@ function mrn_active_style_guide_get_builder_layout_template_map(): array {
         'showcase'         => 'template-parts/builder/showcase.php',
         'external_widget'  => 'template-parts/builder/external-widget.php',
         'wpforms'          => 'template-parts/builder/wpforms.php',
-        'searchwp_form'    => 'template-parts/builder/searchwp-form.php',
+        'searchwp_form'    => 'template-parts/builder/search-form.php',
         'card'             => 'template-parts/builder/card.php',
         'two_column_split' => 'template-parts/builder/two-column-split.php',
         'reusable_block'   => 'template-parts/builder/reusable-block.php',

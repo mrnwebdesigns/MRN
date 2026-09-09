@@ -30,6 +30,22 @@ Content ownership:
 - Apply content changes as replayable scripts run with `wp eval-file` and commit them with the work, so the change is versioned and can be replayed to staging and production rather than re-entered by hand in each environment.
 - Never hardcode an environment URL in content or in a content script. Resolve destinations at run time with WordPress APIs (`get_permalink()`, `get_page_by_path()`, `home_url()`), so the same value is correct on local, staging, and production.
 
+WordPress site-building and QA content policy:
+- Treat client-requested content and media changes as site-building work, not as disposable local edits. This applies to every MRN WordPress site, site project, and follow-up thread.
+- Keep content and media separate from theme code. Do not make a direct edit inside `wp-content/uploads` the only record of an approved change, and do not treat a file in Downloads or another untracked folder as a deployable source of truth.
+- For every approved Client Review or equivalent QA content/media change, create a tracked migration bundle with:
+  - an idempotent `scripts/content/<change-id>-<slug>.php` script intended to run through `wp eval-file`;
+  - the approved source asset(s), or a tracked manifest/checksum and documented source location when the assets are too large for the repository;
+  - the exact target page, attachment, ACF field/repeater row, menu item, or other WordPress record;
+  - required alt text, captions, labels, and any environment-independent lookup values.
+- For ACF image fields and repeater rows, prefer importing the approved asset as a new attachment and updating the exact field reference. Preserve the old attachment until the replacement is verified; do not delete or orphan media as part of the first QA pass.
+- If an existing attachment must be preserved for stable references, the migration must update the original file through WordPress-aware tooling, refresh attachment metadata and generated sizes, and verify the resulting URLs. A raw filename overwrite is not an acceptable substitute.
+- Migration scripts must be safe to rerun: detect an already-applied change, refuse ambiguous matches, avoid hardcoded attachment IDs where a stable lookup exists, and report exactly what changed.
+- The standard handoff sequence is: apply locally -> provide the local preview URL, original comment URL, and change summary -> receive owner approval -> run the smallest applicable MRN QA -> commit the migration bundle -> apply to the approved remote environment through the authorized deployment/content workflow -> verify the remote URL -> reply to the original review comment with the commit hash and verification summary.
+- Local preview approval does not authorize a remote write. Before any staging, development, or production database/media mutation, pass the applicable backup gate, then run the same migration bundle and flush relevant caches/transients.
+- Do not commit generated uploads, cache output, database dumps, or environment-specific runtime files as a substitute for a migration. The committed migration bundle is the audit trail and replay mechanism; the WordPress media library remains the runtime content store.
+- For visual QA, use the supplied designer-approved asset rather than compensating for a mismatched asset with arbitrary CSS transforms, cropping, or per-item scaling. Verify the asset at the affected desktop, tablet, and mobile layouts when the component is responsive.
+
 Product quality:
 - Accessibility and frontend performance are required, not optional polish
 - Theme-owned frontend work should preserve or improve a WCAG 2.1 AA baseline where the stack controls markup, styles, and behavior
@@ -53,6 +69,9 @@ When fixing issues:
 2. Change only necessary code
 3. Avoid full rewrites unless required
 4. Explain impact and risks
+
+Git hygiene gate:
+- See the canonical Git hygiene gate in `docs/MRN-AGENT-OPERATING-CONTEXT.md` (section 11). It applies here as in every MRN repository: hanging branches or uncommitted work in a plugin/theme/MU-plugin/stack component are a hard stop on adding that component to a rollout, deploy, or `component-catalog.json` entry until resolved.
 
 Release baseline:
 - After changing a plugin, theme, MU-plugin, stack runtime code, or the QA engine, run the smallest relevant MRN QA suite before declaring the work complete. Use full release/signoff QA only when release readiness, deployment, or a user request requires it.
@@ -85,9 +104,10 @@ Release baseline:
 
 MRN Updraft backup policy:
 - Treat `stack/BACKUP_POLICY.md` as the canonical backup policy for all agent work in this repository.
-- Stack-managed shared development/review, staging, and production sites use daily Updraft file/database backups, `4/4` retention, local deletion after remote transfer, WordPress-core exclusion, deterministic 01:00-04:59 scheduling, and a unique S3 prefix ending in `sites/<site-slug>` (the site's stable slug, not its per-environment hostname). Local Hub sites are explicitly exempt from scheduled and remote backups.
+- Stack-managed staging and production sites use daily Updraft file/database backups, `4/4` retention, local deletion after remote transfer, WordPress-core exclusion, deterministic 01:00-04:59 scheduling, and a unique S3 prefix ending in `sites/<site-slug>` (the stable first hostname label, not the full environment-specific hostname).
+- Development/review environments (for example `*.mrndev.io`) do not run that routine daily schedule; `mrn-updraft-local-retention` enforces `updraft_interval`/`updraft_interval_database` as `manual` there instead. The pre-deploy backup gate further below still applies unconditionally on every environment, including development/review — it protects against the write itself, not time-based drift, so it never depends on the scheduled-backup cadence.
 - Development sites do not need to be added to MainWP. Use their dedicated site-owner SSH path when auditing or applying the policy manually.
-- Routine scheduled and manual shared-development backups stay inside the rolling four-set limit. Do not mark routine backups `always_keep`. Local sites do not create routine backups.
+- Routine scheduled backups on staging/production, and every manual or pre-deploy backup on any environment, stay inside the rolling four-set limit. Do not mark routine backups `always_keep`.
 - Use **Always Keep** only for an explicitly named milestone before risky work, and remove that protection when the milestone is no longer useful.
 - Never scan a shared S3 bucket root. Updraft treats backups discovered by remote scan as imported and exempts them from automatic retention.
 - Never delete shared-root remote objects until ownership is proven. When correcting a legacy shared prefix, first isolate the site, then clear only stale local history or delete individually verified site-owned objects.

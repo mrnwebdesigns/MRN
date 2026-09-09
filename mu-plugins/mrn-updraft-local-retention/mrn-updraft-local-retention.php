@@ -3,7 +3,7 @@
  * Plugin Name: MRN Updraft Backup Policy
  * Description: Enforces the MRN Updraft backup policy, limits local backup sets, and repairs missing scheduled events.
  * Author: MRN Web Designs
- * Version: 0.5.0
+ * Version: 0.5.1
  */
 
 defined('ABSPATH') || exit;
@@ -31,13 +31,11 @@ function mrn_updraft_backup_policy_get_hostname(): string {
 
 /**
  * Resolve the stable, environment-independent site slug used for the
- * BACKUP_POLICY.md `sites/<slug>` S3 convention: the hostname's first label
- * (dots/other separators sanitized to hyphens within that label only).
+ * BACKUP_POLICY.md `sites/<site-slug>` S3 convention.
  *
- * This is deliberately NOT the full hostname. The same logical site moves
- * across environments with different hosts (`trilliant.localhost` locally,
- * `trilliant.mrndev.io` in review, a custom domain in production) and must
- * keep one stable S3 prefix throughout rather than fragmenting per host.
+ * The hostname's first label is stable across the usual MRN environment
+ * suffixes, so a site keeps one backup history as it moves between local,
+ * review, staging, and production hosts.
  */
 function mrn_updraft_backup_policy_get_sanitized_hostname(): string {
 	$hostname = mrn_updraft_backup_policy_get_hostname();
@@ -45,10 +43,8 @@ function mrn_updraft_backup_policy_get_sanitized_hostname(): string {
 		return '';
 	}
 
-	$labels = explode('.', $hostname);
-	$slug   = $labels[0];
-
-	$sanitized = preg_replace('/[^a-z0-9]+/', '-', $slug);
+	$labels    = explode('.', $hostname);
+	$sanitized = preg_replace('/[^a-z0-9]+/', '-', $labels[0]);
 
 	return is_string($sanitized) ? trim($sanitized, '-') : '';
 }
@@ -116,16 +112,35 @@ function mrn_updraft_backup_policy_update_option(string $name, $value): void {
 }
 
 /**
+ * Check whether the current user can view MRN admin notifications.
+ *
+ * @return bool
+ */
+function mrn_updraft_backup_policy_can_view_notifications(): bool {
+	if (function_exists('mrn_dashboard_support_notifications_capability')) {
+		return current_user_can(mrn_dashboard_support_notifications_capability());
+	}
+
+	return current_user_can('manage_options');
+}
+
+/**
  * Enforce the non-secret MRN backup policy on every stack runtime.
  *
  * Remote storage credentials and destinations are deliberately excluded. They
  * must be provisioned separately and are validated below without being changed.
+ *
+ * Development/review environments skip the routine scheduled backup (interval
+ * enforced as `manual` instead of `daily`); the deploy-time backup gate is
+ * separate, always on-demand via `wp updraftplus backup`, and unaffected by
+ * this schedule setting on any environment.
  */
 function mrn_updraft_backup_policy_enforce_settings(): void {
 	$start_time = mrn_updraft_backup_policy_get_start_time();
+	$schedule_interval = mrn_updraft_backup_policy_is_dev_environment() ? 'manual' : 'daily';
 	$desired = array(
-		'updraft_interval'          => 'daily',
-		'updraft_interval_database' => 'daily',
+		'updraft_interval'          => $schedule_interval,
+		'updraft_interval_database' => $schedule_interval,
 		'updraft_retain'            => '4',
 		'updraft_retain_db'         => '4',
 		'updraft_delete_local'      => '1',
@@ -159,7 +174,7 @@ add_action('init', 'mrn_updraft_backup_policy_enforce_settings', 15);
  * @return array{configured:bool,isolated:bool,expected_suffix:string}
  */
 function mrn_updraft_backup_policy_get_remote_status(): array {
-	$hostname = mrn_updraft_backup_policy_get_hostname();
+	$hostname = mrn_updraft_backup_policy_get_sanitized_hostname();
 	$expected_suffix = '' !== $hostname ? 'sites/' . $hostname : '';
 	$services = array_values((array) mrn_updraft_backup_policy_get_option('updraft_service', array()));
 	$status = array(
@@ -197,7 +212,7 @@ function mrn_updraft_backup_policy_get_remote_status(): array {
  * Warn administrators when remote backups are missing or share a bucket root.
  */
 function mrn_updraft_backup_policy_remote_notice(): void {
-	if (!current_user_can('manage_options')) {
+	if (!mrn_updraft_backup_policy_can_view_notifications()) {
 		return;
 	}
 
@@ -219,7 +234,60 @@ function mrn_updraft_backup_policy_remote_notice(): void {
 		esc_html($message)
 	);
 }
-add_action('admin_notices', 'mrn_updraft_backup_policy_remote_notice');
+
+/**
+ * Collect the Updraft remote-storage notification for the Notifications Center.
+ *
+ * @param array<int, array<string, mixed>> $notifications Existing notifications.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_updraft_backup_policy_dashboard_notifications($notifications): array {
+	if (!mrn_updraft_backup_policy_can_view_notifications()) {
+		return is_array($notifications) ? $notifications : array();
+	}
+
+	if (!is_array($notifications)) {
+		$notifications = array();
+	}
+
+	$status = mrn_updraft_backup_policy_get_remote_status();
+	if ($status['configured'] && $status['isolated']) {
+		return $notifications;
+	}
+
+	$message = !$status['configured']
+		? 'MRN backup policy: Amazon S3 remote storage is not configured.'
+		: sprintf(
+			'MRN backup policy: the S3 destination must use a unique path ending in %s. Remote retention is unsafe while sites share a bucket root.',
+			$status['expected_suffix']
+		);
+
+	$notifications[] = array(
+		'id'       => 'mrn-updraft-backup-policy-remote-storage',
+		'group'    => 'stack',
+		'type'     => 'error',
+		'title'    => 'MRN backup policy needs attention.',
+		'message'  => $message,
+		'source'   => 'MRN Updraft Backup Policy',
+		'priority' => 15,
+	);
+
+	return $notifications;
+}
+
+/**
+ * Register dashboard notifications after all MU plugins have loaded.
+ */
+function mrn_updraft_backup_policy_register_dashboard_notifications(): void {
+	if (function_exists('mrn_dashboard_support_collect_notifications')) {
+		add_filter('mrn_dashboard_support_notifications', 'mrn_updraft_backup_policy_dashboard_notifications');
+		return;
+	}
+
+	add_action('admin_notices', 'mrn_updraft_backup_policy_remote_notice');
+}
+
+add_action('plugins_loaded', 'mrn_updraft_backup_policy_register_dashboard_notifications', 20);
 
 /**
  * Resolve the next occurrence of a configured Updraft HH:MM start time.

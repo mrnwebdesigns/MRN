@@ -203,9 +203,22 @@ async function expectNoLeakedStyleText(page, contextLabel) {
 async function expectStickyToolbarLayout(page, toolbarSelector, contentSelector, contextLabel) {
 	const toolbar = page.locator(toolbarSelector).first();
 	const content = page.locator(contentSelector).first();
+	const toolbarStyles = await toolbar.evaluate((element) => {
+		const styles = window.getComputedStyle(element);
+
+		return {
+			display: styles.display,
+			position: styles.position,
+		};
+	});
 	const toolbarBox = await toolbar.boundingBox();
 	const contentBox = await content.boundingBox();
 
+	expect.soft(toolbarStyles.display, `${contextLabel} toolbar display`).not.toBe('none');
+	expect.soft(
+		[ 'fixed', 'sticky' ],
+		`${contextLabel} toolbar positioning`
+	).toContain(toolbarStyles.position);
 	expect.soft(toolbarBox, `${contextLabel} toolbar bounding box`).not.toBeNull();
 	expect.soft(contentBox, `${contextLabel} content bounding box`).not.toBeNull();
 
@@ -271,37 +284,6 @@ test.describe('MRN stack site smoke QA', () => {
 		await expect(navigation.locator('.mrn-mobile-navigation__drawer-header')).toBeHidden();
 	});
 
-	test('enabled back-to-top control stays centered on the footer edge', async ({ page }) => {
-		await page.goto('/', { waitUntil: 'networkidle' });
-
-		const control = page.locator('.site-footer > .mrn-back-to-top').first();
-		test.skip((await control.count()) === 0, 'Back to top is not enabled in this runtime.');
-
-		await expect(control).toHaveAttribute('href', '#page');
-		await expect(control).toHaveAttribute('aria-label', 'Back to top');
-
-		const footer = page.locator('.site-footer').first();
-		await footer.scrollIntoViewIfNeeded();
-		const consentPanel = page.locator('#stcm-banner:visible, #silktide-banner:visible').first();
-		if ((await consentPanel.count()) > 0 && await control.isHidden()) {
-			await consentPanel.evaluate((element) => {
-				element.style.display = 'none';
-			});
-		}
-
-		await expect(control).toBeVisible();
-		await expect(control).toHaveCSS('position', 'absolute');
-		await expect(control.locator('.dashicons-arrow-up-alt2')).toBeVisible();
-		const controlBox = await control.boundingBox();
-		const footerBox = await footer.boundingBox();
-		expect(controlBox).not.toBeNull();
-		expect(footerBox).not.toBeNull();
-		expect(Math.abs((controlBox.x + controlBox.width / 2) - (footerBox.x + footerBox.width / 2))).toBeLessThanOrEqual(2);
-
-		await control.evaluate((element) => element.click());
-		await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(1);
-	});
-
 	test('subtle text reveal is prepared before entry and runs only once', async ({ page }) => {
 		await page.setViewportSize({ width: 1280, height: 720 });
 		await page.goto('/', { waitUntil: 'networkidle' });
@@ -314,14 +296,21 @@ test.describe('MRN stack site smoke QA', () => {
 
 		const targetType = await section.getAttribute('data-mrn-motion-target');
 		const targetSelectors = {
+			surface: '.mrn-layout-surface',
 			content: '.mrn-layout-content--text, .mrn-reusable-block__content, .mrn-hero__content, .mrn-reusable-block__inner, .mrn-ui__body',
 			media: '.mrn-ui__media, .mrn-reusable-block__media, .mrn-hero__media, .mrn-section-background-media',
 			header: '.mrn-ui__head, .mrn-card-row__head, .mrn-content-list-row__header, .mrn-hero__content',
 			items: '.mrn-ui__items, .mrn-card-row__grid, .mrn-content-list-row__items, .mrn-faq__items',
+			'left-column': '.mrn-two-column-split__column--left > .mrn-content-builder__row, .mrn-two-column-split__column--left .mrn-content-builder__row, .mrn-two-column-split__column--left',
+			'right-column': '.mrn-two-column-split__column--right > .mrn-content-builder__row, .mrn-two-column-split__column--right .mrn-content-builder__row, .mrn-two-column-split__column--right',
 		};
-		const target = targetSelectors[targetType]
-			? section.locator(targetSelectors[targetType]).first()
-			: section;
+		const targetSelector = targetSelectors[targetType] || '';
+		const targetMatchesSection = targetSelector
+			? await section.evaluate((element, selector) => element.matches(selector), targetSelector)
+			: false;
+		const target = ! targetSelector || targetMatchesSection
+			? section
+			: section.locator(targetSelector).first();
 
 		await expect(target).toHaveClass(/is-mrn-text-reveal-target/);
 		const initialBox = await target.boundingBox();

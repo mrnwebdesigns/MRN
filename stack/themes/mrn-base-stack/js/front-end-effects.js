@@ -169,10 +169,6 @@
 		} );
 	}
 
-	function prefersReducedMotion() {
-		return 'function' === typeof window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
-	}
-
 	function finishTextReveal( targetElement ) {
 		targetElement.classList.remove( 'is-mrn-text-reveal-active' );
 		targetElement.classList.add( 'has-mrn-text-revealed' );
@@ -201,7 +197,7 @@
 			return;
 		}
 
-		if ( prefersReducedMotion() || 'function' !== typeof inView ) {
+		if ( userPrefersReducedMotion() || 'function' !== typeof inView ) {
 			entries.forEach( function( entry ) {
 				finishTextReveal( entry.target );
 			} );
@@ -735,6 +731,18 @@
 				animateStatValue( valueElement );
 			}, { margin: '-20% 0px -20% 0px' } );
 		} );
+
+		window.setTimeout( function() {
+			var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+
+			statValues.forEach( function( valueElement ) {
+				var rect = valueElement.getBoundingClientRect();
+
+				if ( rect.top < viewportHeight && rect.bottom > 0 ) {
+					animateStatValue( valueElement );
+				}
+			} );
+		}, 650 );
 	}
 
 	function initGlobalApi( inView ) {
