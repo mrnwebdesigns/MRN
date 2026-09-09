@@ -11,7 +11,7 @@ Shared MU plugin for public-facing security hardening on normal MRN brochure and
 - Serves `/.well-known/security.txt` from WordPress/plugin logic.
 - Protects the stack-owned `/uptimerobot-check/` health page with `noindex`, `nofollow`, `noarchive`, an `X-Robots-Tag` response header, a `robots.txt` disallow rule in the first wildcard crawler block for Cloudflare compatibility, and core sitemap exclusion.
 - Adds configurable login URL protection with a site-specific slug that defaults to `site-login`.
-- Adds a read-only admin status page at `Advanced > Public Security` when the MRN Advanced admin menu is available.
+- Adds a native WordPress `Advanced > Public Security` admin menu and read-only status page.
 
 ## Admin Status Page
 
@@ -27,7 +27,7 @@ The status page shows the current filtered state for:
 
 It also includes a copy button for the per-site rollout prompt and a Login URL section that saves the site-specific login slug. Other site-specific changes should still be handled with filters or site-local configuration.
 
-The admin menu label intentionally omits `MRN`. By default, the page is placed under the Admin Menu Editor top-level item titled `Advanced`; sites without that parent fall back to WordPress Tools unless a filter supplies a different parent.
+The MU plugin owns the native WordPress `Advanced` top-level menu and its `Public Security` submenu. Both entries open the stable `admin.php?page=mrn-public-security-hardening` route, with no Admin Menu Editor configuration or generated menu slug required. A late WordPress `submenu_file` filter reasserts the native entry after any plugin that reorders or replaces the rendered admin menu.
 
 ## Login URL Protection
 
@@ -87,17 +87,14 @@ The committed `.mrn-qa.env`, `stack.lock`, `STACK_BASELINE.md`, `phpcs.xml.dist`
 ### Admin Page
 
 - `mrn_public_security_admin_capability`
-- `mrn_public_security_admin_parent_slug`
 - `mrn_public_security_admin_page_title`
+- `mrn_public_security_admin_top_level_menu_title`
 - `mrn_public_security_admin_menu_title`
 
 ```php
-add_filter(
-	'mrn_public_security_admin_parent_slug',
-	function () {
-		return '#ame-unclickable-menu-item-1';
-	}
-);
+add_filter( 'mrn_public_security_admin_top_level_menu_title', function () {
+	return 'Advanced';
+} );
 ```
 
 ### Author Archives

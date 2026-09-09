@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Public Security Hardening
  * Description: Shared public hardening for MRN brochure/client sites.
- * Version: 0.4.0
+ * Version: 0.4.1
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION' ) ) {
-	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.4.0' );
+	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.4.1' );
 }
 
 /**
@@ -1674,83 +1674,14 @@ function mrn_public_security_admin_capability() {
 }
 
 /**
- * Find an Admin Menu Editor top-level parent by menu title.
- *
- * @param string $title       Menu title to match.
- * @param string $config_area AME config area.
- * @return string
- */
-function mrn_public_security_find_ame_parent_slug_by_title( $title, $config_area ) {
-	$config = get_option( 'ws_menu_editor_pro' );
-
-	if ( ! is_array( $config ) || empty( $config[ $config_area ]['tree'] ) || ! is_array( $config[ $config_area ]['tree'] ) ) {
-		return '';
-	}
-
-	foreach ( $config[ $config_area ]['tree'] as $slug => $item ) {
-		if ( ! is_array( $item ) || ! is_string( $slug ) || '' === $slug ) {
-			continue;
-		}
-
-		$menu_title = isset( $item['menu_title'] ) && is_string( $item['menu_title'] )
-			? $item['menu_title']
-			: '';
-
-		if ( '' === $menu_title && isset( $item['defaults']['menu_title'] ) && is_string( $item['defaults']['menu_title'] ) ) {
-			$menu_title = $item['defaults']['menu_title'];
-		}
-
-		if ( strtolower( wp_strip_all_tags( $menu_title ) ) === strtolower( $title ) ) {
-			return $slug;
-		}
-	}
-
-	return '';
-}
-
-/**
- * Find a currently registered top-level admin parent by menu title.
- *
- * @param string $title Menu title to match.
- * @return string
- */
-function mrn_public_security_find_registered_parent_slug_by_title( $title ) {
-	global $menu;
-
-	if ( ! is_array( $menu ) ) {
-		return '';
-	}
-
-	foreach ( $menu as $item ) {
-		if ( ! is_array( $item ) || ! isset( $item[0], $item[2] ) || ! is_string( $item[2] ) ) {
-			continue;
-		}
-
-		if ( strtolower( wp_strip_all_tags( (string) $item[0] ) ) === strtolower( $title ) ) {
-			return $item[2];
-		}
-	}
-
-	return '';
-}
-
-/**
- * Get the parent admin menu slug for the status page.
+ * Get the native top-level admin menu title.
  *
  * @return string
  */
-function mrn_public_security_admin_parent_slug() {
-	$is_network = function_exists( 'is_network_admin' ) && is_network_admin();
-	$advanced   = mrn_public_security_find_ame_parent_slug_by_title( 'Advanced', $is_network ? 'custom_network_menu' : 'custom_menu' );
+function mrn_public_security_admin_top_level_menu_title() {
+	$title = apply_filters( 'mrn_public_security_admin_top_level_menu_title', __( 'Advanced', 'mrn-public-security-hardening' ) );
 
-	if ( '' === $advanced ) {
-		$advanced = mrn_public_security_find_registered_parent_slug_by_title( 'Advanced' );
-	}
-
-	$default    = '' !== $advanced ? $advanced : ( $is_network ? 'settings.php' : 'tools.php' );
-	$parent     = apply_filters( 'mrn_public_security_admin_parent_slug', $default, $advanced, $is_network );
-
-	return is_string( $parent ) && '' !== $parent ? $parent : $default;
+	return is_string( $title ) && '' !== $title ? $title : __( 'Advanced', 'mrn-public-security-hardening' );
 }
 
 /**
@@ -1776,17 +1707,43 @@ function mrn_public_security_admin_menu_title() {
 }
 
 /**
- * Register the site admin status page.
+ * Add the native Advanced admin menu and Public Security submenu.
+ *
+ * The submenu intentionally reuses the top-level slug without a callback. The
+ * top-level registration owns the page callback, which prevents duplicate
+ * page output while keeping the visible Advanced > Public Security structure.
+ *
+ * @param bool $register_callback Whether to register the page callback.
+ * @return string|false
  */
-function mrn_public_security_register_admin_page() {
-	$hook = add_submenu_page(
-		mrn_public_security_admin_parent_slug(),
+function mrn_public_security_add_native_admin_menu( $register_callback = true ) {
+	$page_slug = 'mrn-public-security-hardening';
+	$hook      = add_menu_page(
+		mrn_public_security_admin_page_title(),
+		mrn_public_security_admin_top_level_menu_title(),
+		mrn_public_security_admin_capability(),
+		$page_slug,
+		$register_callback ? 'mrn_public_security_render_admin_page' : '',
+		'dashicons-admin-tools',
+		81
+	);
+
+	add_submenu_page(
+		$page_slug,
 		mrn_public_security_admin_page_title(),
 		mrn_public_security_admin_menu_title(),
 		mrn_public_security_admin_capability(),
-		'mrn-public-security-hardening',
-		'mrn_public_security_render_admin_page'
+		$page_slug
 	);
+
+	return $hook;
+}
+
+/**
+ * Register the site admin status page.
+ */
+function mrn_public_security_register_admin_page() {
+	$hook = mrn_public_security_add_native_admin_menu();
 
 	if ( $hook ) {
 		$GLOBALS['mrn_public_security_admin_page_hooks'][] = $hook;
@@ -1798,14 +1755,7 @@ add_action( 'admin_menu', 'mrn_public_security_register_admin_page' );
  * Register the network admin status page.
  */
 function mrn_public_security_register_network_admin_page() {
-	$hook = add_submenu_page(
-		mrn_public_security_admin_parent_slug(),
-		mrn_public_security_admin_page_title(),
-		mrn_public_security_admin_menu_title(),
-		mrn_public_security_admin_capability(),
-		'mrn-public-security-hardening',
-		'mrn_public_security_render_admin_page'
-	);
+	$hook = mrn_public_security_add_native_admin_menu();
 
 	if ( $hook ) {
 		$GLOBALS['mrn_public_security_admin_page_hooks'][] = $hook;
@@ -1815,6 +1765,54 @@ function mrn_public_security_register_network_admin_page() {
 if ( function_exists( 'is_multisite' ) && is_multisite() ) {
 	add_action( 'network_admin_menu', 'mrn_public_security_register_network_admin_page' );
 }
+
+/**
+ * Reassert the native menu after plugins that reorder or replace admin menus.
+ *
+ * The page and its callback are registered during admin_menu. This late filter
+ * only normalizes the rendered global menu: it removes an obsolete or
+ * conflicting Advanced placeholder, then adds the native WordPress menu item.
+ * It does not read or depend on another menu plugin's settings.
+ *
+ * @param mixed $submenu_file Current submenu file.
+ * @return mixed
+ */
+function mrn_public_security_reassert_native_admin_menu( $submenu_file ) {
+	global $menu, $submenu;
+
+	if ( ! current_user_can( mrn_public_security_admin_capability() ) ) {
+		return $submenu_file;
+	}
+
+	$page_slug      = 'mrn-public-security-hardening';
+	$top_level_name = strtolower( wp_strip_all_tags( mrn_public_security_admin_top_level_menu_title() ) );
+
+	if ( is_array( $menu ) ) {
+		foreach ( $menu as $position => $item ) {
+			if ( ! is_array( $item ) || ! isset( $item[0], $item[2] ) ) {
+				continue;
+			}
+
+			$item_slug = is_string( $item[2] ) ? $item[2] : '';
+			$item_name = strtolower( wp_strip_all_tags( (string) $item[0] ) );
+
+			if ( $page_slug !== $item_slug && $top_level_name !== $item_name ) {
+				continue;
+			}
+
+			unset( $menu[ $position ] );
+
+			if ( is_array( $submenu ) && '' !== $item_slug ) {
+				unset( $submenu[ $item_slug ] );
+			}
+		}
+	}
+
+	mrn_public_security_add_native_admin_menu( false );
+
+	return $submenu_file;
+}
+add_filter( 'submenu_file', 'mrn_public_security_reassert_native_admin_menu', PHP_INT_MAX );
 
 /**
  * Enqueue assets for the status page.
