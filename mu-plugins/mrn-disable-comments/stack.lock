@@ -6,6 +6,6 @@
     "repo_path": "/Users/khofmeyer/Development/MRN/mu-plugins/mrn-disable-comments",
     "integration_target": "mrn-shared-mu-plugin-loader",
     "integration_mode": "shared-mu-plugin",
-    "plugin_version": "1.2.3"
+    "plugin_version": "1.2.5"
   }
 }

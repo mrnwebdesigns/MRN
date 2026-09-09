@@ -12,23 +12,25 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 
 | Slug | Version | Current distribution | Target tier | Responsibility |
 | --- | ---: | --- | --- | --- |
-| `mrn-loader` | 1.5.1 | MU loader | Platform required | Loads approved MU component entrypoints and exposes the signed runtime report transport. |
+| `mrn-loader` | 1.6.0 | MU loader | Platform required | Loads approved MU component entrypoints and exposes the signed runtime report transport. |
 | `mrn-admin-data-post-types` | 0.2.1 | MU loader | Platform required | Applies shared admin/data-only post-type policy and SEOPress post-type discovery exclusions. |
-| `mrn-admin-ui-css` | 3.2.3 | MU loader | Platform required | Provides shared WordPress admin presentation and usability rules. |
+| `mrn-admin-ui-css` | 3.2.4 | MU loader | Platform required | Provides shared WordPress admin presentation and usability rules. |
 | `mrn-dashboard-support` | 1.3.0 | MU loader | Platform required | Provides MRN support information, dashboard metadata, and the admin-only Notifications Center with unread/read views, per-admin read/remove controls, and centralized admin notices. |
-| `mrn-disable-comments` | 1.2.4 | MU loader | Platform required | Enforces the MRN no-comments policy. |
-| `mrn-editor-lockdown` | 1.0.32 | MU loader | Platform required | Applies shared editor, metabox, and capability policy. |
+| `mrn-disable-comments` | 1.2.5 | MU loader | Platform required | Enforces the MRN no-comments policy. |
+| `mrn-editor-lockdown` | 1.0.33 | MU loader | Platform required | Applies shared editor, metabox, and capability policy. |
 | `mrn-environment-runtime` | 0.5.1 | MU loader | Platform required | Provides environment, runtime, and notification diagnostics. |
 | `mrn-public-security-hardening` | 0.4.1 | MU loader | Platform required | Applies shared public REST and discovery hardening and owns the native Advanced admin menu. |
 | `mrn-shared-assets` | 0.2.0 | MU loader | Platform required | Provides shared asset and icon interfaces. |
-| `mrn-site-colors` | 0.1.38 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
+| `mrn-site-colors` | 0.1.39 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
 | `mrn-updraft-local-retention` | 0.5.1 | MU loader | Platform required | Enforces shared backup schedule and retention policy, uses a stable cross-environment S3 site slug, and routes remote-storage warnings to Notifications Center. |
 | `mrn-schema-bridge` | 0.6.0 | MU loader | Platform required | SEOPress identity synchronization, automatic Article template provisioning, JobPosting output, author policy, MRN supplemental schema, and migration-only SmartCrawl compatibility. |
-| `mrn-active-style-guide` | 0.1.6 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
+| `mrn-active-style-guide` | 0.1.7 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
 | `mrn-config-helper` | 0.1.59 | Standard bootstrap | Platform required | Shared site configuration shell, MRN-owned visible breadcrumb and BreadcrumbList runtime, and launch/admin integrations. |
 | `mrn-sendgrid-provisioning` | 0.1.0 | Standard bootstrap | Platform required | Provisions a per-site SendGrid Subuser, mail-only site API key, and domain authentication; split out of `mrn-config-helper`. |
-| `mrn-stack-deployment-agent` | 0.1.7 | Standard bootstrap | Platform required | Provides the MainWP-authenticated, checksum-verified Stack deployment target. |
+| `mrn-stack-deployment-agent` | 0.1.8 | Standard bootstrap | Platform required | Provides the MainWP-authenticated, checksum-verified Stack deployment target. |
 | `mrn-universal-sticky-bar` | 1.1.8 | Standard bootstrap | Platform required | Provides the shared settings/editor action bar; independently released for non-Stack use. |
+
+The machine catalog also records each tracked top-level MU wrapper as its own required loader artifact. Wrapper versions mirror the components they load, and `deployed_path` preserves the actual WordPress filename rather than deriving one from the catalog slug.
 
 ## Optional Shared Features
 

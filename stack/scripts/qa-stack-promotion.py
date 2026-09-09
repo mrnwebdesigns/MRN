@@ -133,14 +133,24 @@ def catalog_sources(catalog):
     sources = []
     for entry in catalog.get("components") or []:
         source = entry.get("source") or {}
-        if source.get("repository") != "MRN" or not source.get("path"):
+        source_path = None
+        if source.get("repository") == "MRN" and source.get("path"):
+            source_path = str(source["path"]).strip("/")
+        elif source.get("repository") != "MRN":
+            runtime_type = entry.get("runtime_type")
+            slug = str(entry.get("slug") or "").strip()
+            if runtime_type == "standard-plugin" and slug:
+                source_path = f"plugins/{slug}"
+            elif runtime_type == "mu-component" and slug:
+                source_path = f"mu-plugins/{slug}"
+        if not source_path:
             continue
         sources.append(
             {
                 "slug": entry.get("slug"),
                 "target_tier": entry.get("target_tier"),
                 "runtime_type": entry.get("runtime_type"),
-                "path": str(source["path"]).strip("/"),
+                "path": source_path,
             }
         )
     return sorted(sources, key=lambda item: len(item["path"]), reverse=True)

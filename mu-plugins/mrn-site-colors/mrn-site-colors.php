@@ -3,7 +3,7 @@
  * Plugin Name: MRN Site Styles
  * Description: Adds a Site Styles configuration page for shared colors, typography, graphic elements, and usage helpers.
  * Author: MRN Web Designs
- * Version: 0.1.38
+ * Version: 0.1.39
  */
 
 defined('ABSPATH') || exit;

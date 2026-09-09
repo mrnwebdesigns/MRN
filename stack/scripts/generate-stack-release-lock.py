@@ -187,6 +187,15 @@ def component_entry_file(source_path, entry):
 
 
 def deployed_component_path(entry):
+    configured = str(entry.get("deployed_path") or "").strip().strip("/")
+    if configured:
+        portable = Path(configured)
+        if portable.is_absolute() or ".." in portable.parts:
+            raise ReleaseLockError(
+                f"Unsafe deployed path for {entry.get('slug')}: {configured}"
+            )
+        return configured
+
     slug = entry["slug"]
     if entry["runtime_type"] == "mu-loader":
         return f"mu-plugins/{slug}.php"

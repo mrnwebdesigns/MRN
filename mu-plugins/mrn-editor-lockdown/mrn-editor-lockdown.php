@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Editor Lockdown
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.32
+ * Version: 1.0.33
  *
  * @package MRNEditorLockdown
  */

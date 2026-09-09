@@ -83,24 +83,22 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 
 | Slug | Plugins-page name | Version | Source repo | Stack requirement |
 | --- | --- | --- | --- | --- |
-| `mrn-loader` | MRN Loader | 1.5.1 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned; required for stack MU subfolder loading and runtime reporting. |
-| `mrn-active-style-guide` | MRN Active Style Guide | 0.1.5 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned front-end reference tool. |
-| `mrn-admin-ui-css` | MRN Admin UI CSS | 3.2.3 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned admin UI layer. |
-| `mrn-dashboard-support` | MRN Dashboard Support | 1.3.0 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement. |
-| `mrn-disable-comments` | MRN Disable Comments | 1.2.3 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement. |
-| `mrn-duplicate-enhance` | MRN Post Duplicator Admin Bar Enhance | 1.1.1 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; depends on Post Duplicator behavior being available. |
-| `mrn-editor-lockdown` | MRN Editor Lockdown | 1.0.25 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned Classic Editor/AME lockdown layer. |
-| `mrn-editor-ui-css` | MRN Admin UI CSS Legacy | 1.0.8 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned legacy compatibility loader. |
-| `mrn-public-security-hardening` | MRN Public Security Hardening | 0.3.2 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned shared MU plugin; deployed from canonical `mu-plugins/` and loaded by MRN Loader. |
-| `mrn-reusable-block-library` | MRN Reusable Block Library | 0.1.17 | <https://github.com/mrnwebdesigns/mrn-reusable-block-library> | Optional stack styling; usable without the stack, but MRN stack/theme CSS gives the finished presentation. |
+| `mrn-loader` | MRN Loader | 1.6.0 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned; required for stack MU subfolder loading and runtime reporting. |
+| `mrn-active-style-guide` | MRN Active Style Guide | 0.1.7 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned front-end reference tool. |
+| `mrn-admin-data-post-types` | MRN Admin Data Post Types | 0.2.1 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned admin/data-only post-type policy. |
+| `mrn-admin-ui-css` | MRN Admin UI CSS | 3.2.4 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned admin UI layer. |
+| `mrn-dashboard-support` | MRN Dashboard Support | 1.3.0 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned dashboard support and Notifications Center. |
+| `mrn-disable-comments` | MRN Disable Comments | 1.2.5 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned comments policy. |
+| `mrn-editor-lockdown` | MRN Editor Lockdown | 1.0.33 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned Classic Editor/AME lockdown layer. |
+| `mrn-environment-runtime` | MRN Environment Runtime | 0.5.1 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned environment and runtime diagnostics. |
+| `mrn-public-security-hardening` | MRN Public Security Hardening | 0.4.1 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned shared MU plugin; deployed from canonical `mu-plugins/` and loaded by MRN Loader. |
 | `mrn-schema-bridge` | MRN Schema Bridge | 0.6.0 | <https://github.com/mrnwebdesigns/mrn-schema-bridge> | SEOPress is the preferred base graph; the bridge synchronizes Business Information identity, provisions automatic Article templates, emits complete visible-content JobPosting schema, preserves author privacy, and retains legacy SmartCrawl compatibility. |
-| `mrn-shared-assets` | MRN Shared Assets | 0.1.3 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned shared asset provider. |
-| `mrn-site-colors` | MRN Site Styles | 0.1.15 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned design-token/configuration layer. |
-| `mrn-updraft-local-retention` | MRN Updraft Backup Policy | 0.4.1 | <https://github.com/mrnwebdesigns/MRN> | No stack requirement; requires UpdraftPlus. Enforces daily 4-set backup policy, deterministic scheduling, local cleanup, cron repair, and warns when S3 lacks a site-specific prefix. |
+| `mrn-shared-assets` | MRN Shared Assets | 0.2.0 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned shared asset provider. |
+| `mrn-site-colors` | MRN Site Styles | 0.1.39 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned design-token/configuration layer. |
+| `mrn-updraft-local-retention` | MRN Updraft Backup Policy | 0.5.1 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned Updraft policy; requires UpdraftPlus and enforces the environment-aware four-set backup contract. |
 
 ## Stack MU Wrapper Notes
 
-- Existing root wrappers in `stack/mu-plugins/*.php` now carry matching `MRN ...` headers and synced versions for the wrappers they represent.
-- `stack/mu-plugins/mrn-editor-lockdown.php` is synced to `MRN Editor Lockdown 1.0.25`.
-- `stack/mu-plugins/mrn-schema-bridge.php` is synced to `MRN Schema Bridge 0.6.0`.
+- Existing root wrappers in `stack/mu-plugins/*.php` carry matching `MRN ...` headers and synchronized versions for the components they represent.
+- Each tracked wrapper is cataloged as an explicit release-lock artifact with its real deployed filename; the Updraft wrapper correctly deploys as `mrn-updraft-local-retention.php`.
 - Missing root wrappers should not be added casually; load order is owned by `MRN Loader` so stack MU behavior stays explicit.
