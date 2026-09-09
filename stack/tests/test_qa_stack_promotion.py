@@ -203,6 +203,18 @@ class GitFixture:
         )
         run("git", "add", self.lock_path, cwd=self.root)
         run("git", "commit", "-m", "Lock candidate release", cwd=self.root)
+        run("git", "push", "origin", "main", cwd=self.root)
+
+    def revise_candidate_source(self):
+        contract = self.root / "stack/scripts/release-contract.py"
+        contract.parent.mkdir(parents=True, exist_ok=True)
+        contract.write_text("# Candidate verifier fix.\n", encoding="utf-8")
+        run("git", "add", contract, cwd=self.root)
+        run("git", "commit", "-m", "Fix candidate verifier", cwd=self.root)
+        self.candidate_source = run(
+            "git", "rev-parse", "HEAD", cwd=self.root
+        ).stdout.strip()
+        self.add_candidate_lock()
 
 
 class PromotionTests(unittest.TestCase):
@@ -357,6 +369,32 @@ class PromotionTests(unittest.TestCase):
 
             self.assertEqual(1, result.returncode)
             self.assertIn("no version bump", result.stderr)
+
+    def test_candidate_uses_previous_release_when_same_release_lock_is_revised(self):
+        with tempfile.TemporaryDirectory() as root:
+            fixture = GitFixture(root)
+            fixture.add_unreleased_change()
+            fixture.add_candidate_lock()
+            fixture.revise_candidate_source()
+            result = run(
+                "python3",
+                SCRIPT_PATH,
+                "--repo-root",
+                fixture.root,
+                "--lock",
+                fixture.lock_path,
+                "--catalog",
+                fixture.catalog_path,
+                "--mode",
+                "candidate",
+                cwd=fixture.root,
+                check=False,
+            )
+
+            self.assertEqual(0, result.returncode, result.stderr)
+            report = json.loads(result.stdout)
+            self.assertEqual("release-1", report["baseline"]["release_id"])
+            self.assertEqual("release-2", report["candidate"]["release_id"])
 
 
 if __name__ == "__main__":

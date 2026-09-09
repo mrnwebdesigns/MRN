@@ -105,11 +105,7 @@ def discover_baseline_ref(repo_root, lock_path, candidate):
     commits = git_output(repo_root, "log", "--format=%H", "--", relative).splitlines()
     for commit in commits:
         payload = read_json_at_ref(repo_root, commit, relative)
-        if (
-            payload.get("release_id") != candidate.get("release_id")
-            or (payload.get("source") or {}).get("git_commit")
-            != (candidate.get("source") or {}).get("git_commit")
-        ):
+        if payload.get("release_id") != candidate.get("release_id"):
             return commit
     raise PromotionError("Could not discover a previous immutable release lock")
 
