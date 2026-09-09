@@ -318,8 +318,79 @@ if ! command -v wp >/dev/null 2>&1; then
   exit 1
 fi
 
+php_string_literal() {
+  local value
+  value="${1:-}"
+  php -r 'echo var_export($argv[1], true);' -- "${value}"
+}
+
+run_wp_config_set_quiet() {
+  local name="$1"
+  shift
+
+  if sudo -u "${SITE_USER}" wp --path="${WP_PATH}" config set "${name}" "$@" >/dev/null 2>&1; then
+    echo "Configured ${name} in wp-config.php"
+    return 0
+  fi
+
+  return 1
+}
+
+reconcile_recaptcha_enterprise_constants() {
+  local recaptcha_private_key_literal recaptcha_private_key_php_literal recaptcha_integration_type
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" ]]; then
+    if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" --type=constant; then
+      echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID in wp-config.php" >&2
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" ]]; then
+    if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" --type=constant; then
+      echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL in wp-config.php" >&2
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY}" ]]; then
+    recaptcha_private_key_literal="$(
+      printf '%s' "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY}" \
+        | tr -d '\r' \
+        | sed ':a;N;$!ba;s/\n/\\n/g'
+    )"
+    if [[ -n "${recaptcha_private_key_literal}" ]]; then
+      if ! recaptcha_private_key_php_literal="$(php_string_literal "${recaptcha_private_key_literal}")"; then
+        echo "Warning: failed to prepare MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY for wp-config.php" >&2
+      elif ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY "${recaptcha_private_key_php_literal}" --raw --type=constant; then
+        echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY in wp-config.php" >&2
+      fi
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" ]]; then
+    if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" --type=constant; then
+      echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS in wp-config.php" >&2
+    fi
+  fi
+
+  if [[ -n "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE}" ]]; then
+    recaptcha_integration_type="$(
+      printf '%s' "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE}" \
+        | tr -d '\r\n' \
+        | tr '[:lower:]' '[:upper:]'
+    )"
+    if [[ "${recaptcha_integration_type}" == "SCORE" || "${recaptcha_integration_type}" == "CHECKBOX" ]]; then
+      if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE "${recaptcha_integration_type}" --type=constant; then
+        echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE in wp-config.php" >&2
+      fi
+    else
+      echo "Warning: skipped MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE: expected SCORE or CHECKBOX." >&2
+    fi
+  fi
+}
+
 if [[ -f "${SITE_PATH}/${MARKER_NAME}" ]]; then
   echo "Already bootstrapped: ${SITE_PATH}"
+  reconcile_recaptcha_enterprise_constants
   send_notification "MRN Bootstrap Skipped: $(basename "${SITE_PATH}")" "Bootstrap skipped because marker exists for ${SITE_PATH}"
   send_slack_notification "MRN Bootstrap Skipped: $(basename "${SITE_PATH}")" "Bootstrap skipped because marker exists for ${SITE_PATH}" "#8b949e"
   exit 0
@@ -336,26 +407,8 @@ run_wp() {
   sudo -u "${SITE_USER}" wp --path="${WP_PATH}" "${args[@]}"
 }
 
-php_string_literal() {
-  local value
-  value="${1:-}"
-  php -r 'echo var_export($argv[1], true);' -- "${value}"
-}
-
 last_nonempty_line() {
   sed '/^[[:space:]]*$/d' | tail -n 1
-}
-
-run_wp_config_set_quiet() {
-  local name="$1"
-  shift
-
-  if run_wp config set "${name}" "$@" >/dev/null 2>&1; then
-    echo "Configured ${name} in wp-config.php"
-    return 0
-  fi
-
-  return 1
 }
 
 load_site_owner_authorized_key() {
