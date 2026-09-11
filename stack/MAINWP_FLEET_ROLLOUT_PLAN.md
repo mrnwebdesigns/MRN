@@ -197,8 +197,12 @@ filesystem write. Require:
 
 Then verify the public site, WordPress admin, and release-specific behavior.
 HTTP 200 alone is not acceptance. Clear only the relevant caches before a final
-rendered check. Record the result as successful, failed, or skipped with the
-reason.
+rendered check. If the site repository provides `qa/layout-contracts.json`, run
+it with the repository-pinned MRN QA Engine and require every configured
+viewport to pass; generic smoke is not a substitute. Retain its screenshots and
+JSON result with the rollout evidence. Record the result as successful, failed,
+or skipped with the reason, and do not mark `User-visible verified` when a
+configured layout contract was skipped or failed.
 
 If the filesystem write succeeds but runtime verification fails, the operation
 is reported failed with `write_succeeded=true`, the backup receipt remains

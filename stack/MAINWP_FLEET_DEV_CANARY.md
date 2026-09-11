@@ -16,6 +16,7 @@ in that plan still applies.
 - Target release ID and lock SHA:
 - Deployment-agent version/tree SHA/file count:
 - Approved test pages and admin screens:
+- Site-owned layout contract and pinned QA Engine ref:
 - Rollback owner and test window:
 
 Do not populate an ID from memory. Resolve the exact URL through MainWP and run
@@ -36,7 +37,10 @@ registration.
 4. Run `mrn-mainwp/preflight-stack-release-v1` for a one-element site ID list.
    Require every target and prerequisite to match and `ready=true`.
 5. Capture baseline public pages, the selected admin screens, console/network
-   errors, accessibility results, and release-specific interactions.
+   errors, accessibility results, and release-specific interactions. When the
+   site repository provides `qa/layout-contracts.json`, run it with the pinned
+   MRN QA Engine and retain its viewport screenshots plus JSON result as the
+   known-good baseline.
 
 Stop on any missing evidence. Qualification and preflight are read-only; neither
 step may seed a plugin, assign the `Full Stack` tag, or reconcile a rollout marker.
@@ -52,7 +56,9 @@ step may seed a plugin, assign the `Full Stack` tag, or reconcile a rollout mark
    theme, and preserved child stylesheet.
 5. Clear only relevant caches and repeat the baseline public/admin checks. Run
    accessibility, interaction, API, and performance checks applicable to the
-   release; HTTP 200 alone is not acceptance.
+   release. Re-run the exact site-owned layout contract when one is configured
+   and require every viewport to pass. HTTP 200 or generic browser smoke alone
+   is not acceptance.
 
 If a filesystem write succeeded but runtime or rendered verification failed, do
 not reapply. Preserve the rollout evidence and move to the rollback decision.
@@ -67,7 +73,8 @@ For the first development canary, prove rollback before production:
 3. Require every target to restore successfully and the used rollback record to
    close normally.
 4. Re-run runtime, public, admin, accessibility, interaction, API, and performance
-   checks against the restored release.
+   checks against the restored release, including the same site-owned layout
+   contract when one is configured.
 
 Record the canary as passed only when both apply and rollback evidence are
 complete. A passed development canary does not authorize a production rollout.
