@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.09-stack-reconciliation`
-- Release date: `2026-09-09`
+- Stack release: `2026.09.11-mainwp-full-stack-fleet`
+- Release date: `2026-09-11`
 - Status: `release candidate; deployment verification pending`
 
 ## Included MRN-Owned Components
@@ -46,7 +46,7 @@
   - `mrn-recaptcha-enterprise-manager` `0.1.1`
   - `mrn-sendgrid-provisioning` `0.1.0`
   - `mrn-seo-helper` `0.4.0`
-  - `mrn-stack-deployment-agent` `0.1.8`
+  - `mrn-stack-deployment-agent` `0.2.0`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-tokens` `0.1.3`
   - `mrn-universal-sticky-bar` `1.1.8`
@@ -66,7 +66,7 @@
 - Current baseline keeps the canonical AME export payloads, importer/manifests, bootstrap helper, shared shim, and stack MU wrapper loaders tracked in the main repo so release/deploy flows can verify and sync them consistently.
 - Current baseline includes bounded recovery inventory and guarded reconciliation for exact, unchanged incomplete rollout markers that are physically empty or contain only recognized empty apply scaffolding, without introducing recursive deletion.
 - Current candidate explicitly locks every tracked MU wrapper at its real deployed filename, including the Updraft backup-policy wrapper at `mrn-updraft-local-retention.php`.
-- The Dashboard-only `mrn-mainwp-operations-api` `0.7.10` controller exposes the corresponding preview and backup-gated reconciliation abilities as an independently released MainWP control-plane component; it is not installed on child sites.
+- The Dashboard-only `mrn-mainwp-operations-api` `0.8.0` controller exposes schema-2 one-site qualification, preview, backup-gated full Stack rollout, rollback, recovery, and runtime-proof abilities as an independently released MainWP control-plane component; it is not installed on child sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
-- `mrn-config-helper` is locked to standalone `0.1.59`, and `mrn-stack-deployment-agent` is locked to standalone `0.1.8`.
+- `mrn-config-helper` is locked to standalone `0.1.59`, and `mrn-stack-deployment-agent` is locked to standalone `0.2.0`.
 - Use [`CHANGELOG.md`](/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md) for release notes.
