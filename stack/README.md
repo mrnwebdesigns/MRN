@@ -25,6 +25,7 @@ The future hosting platform owns site and environment selection. Its canonical v
 - A stack workflow/ops guide (`STACK_OPERATIONS.md`) for local symlink workflow, server ownership, and sync/deploy rules.
 - A Local environment pull/deploy guide (`../local/LOCAL_ENV_WORKFLOW.md`) for using Local like a site environment endpoint.
 - A canonical rollout checklist (`ROLLOUT_CHECKLIST.md`) for pre-flight QA, deploy-path decisions, post-deploy verification, and live parity checks.
+- A MainWP full Stack fleet plan (`MAINWP_FLEET_ROLLOUT_PLAN.md`), development-canary checklist (`MAINWP_FLEET_DEV_CANARY.md`), and deterministic schema-2 package builder (`scripts/build-mainwp-stack-release.py`) for exact, backup-gated, one-site-at-a-time updates that preserve the canonical child theme.
 - A schema and AI discovery baseline (`SCHEMA_DISCOVERY_BASELINE.md`) for active SEO provider ownership, CPT mappings, editor controls, crawler policy, and launch checks.
 - An authoritative machine-readable component inventory (`manifests/component-catalog.json`), human catalog (`PLUGIN_CATALOG.md`), governance rules (`PLUGIN_GOVERNANCE.md`), historical plugin audit (`MRN_PLUGIN_AUDIT.md`), and plugin doc template (`PLUGIN_DOC_TEMPLATE.md`). Catalog inclusion does not imply default installation.
 - First deep-dive plugin docs live in `plugin-docs/`.
@@ -54,7 +55,11 @@ The future hosting platform owns site and environment selection. Its canonical v
 For immutable platform updates to an existing site, use the assembled,
 backup-gated workflow in [`VERIFIED_RELEASE_DEPLOY.md`](VERIFIED_RELEASE_DEPLOY.md).
 It preserves each site's child stylesheet and verifies the live runtime against
-the selected release lock before reporting success.
+the selected release lock before reporting success. For a qualified site still
+using the canonical `mrn-base-stack` parent plus `mrn-base-stack-child`, the
+provider-independent MainWP path in
+[`MAINWP_FLEET_ROLLOUT_PLAN.md`](MAINWP_FLEET_ROLLOUT_PLAN.md) applies the same
+immutable release one named site at a time.
 5. A marker file is created so the same site is not bootstrapped again.
 
 ## First setup

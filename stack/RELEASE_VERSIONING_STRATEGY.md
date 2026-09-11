@@ -71,12 +71,18 @@
      component is omitted, a changed hash has no version bump, release metadata
      is stale, source changed after lock generation, or a required standalone
      lock commit differs from that repository's merged default branch
-10. Build a deterministic MainWP MU package from that exact lock when preparing an existing-site fleet rollout:
-   - `python3 stack/scripts/build-mainwp-mu-release.py --rollout-id <unique-rollout-id> --output-dir releases/mainwp-mu/<unique-rollout-id>`
-   - use `--policy /absolute/path/to/reviewed-policy.json` only for a named
-     site/cohort exception; excluded MU components must be paired with required
-     protected replacement paths and are recorded inside the exact plan
-   - use the generated `checksums.json`, exact `plan.json`, and ZIP as the preflight/apply identity; never hand-author the plan or package
+10. Build a deterministic MainWP full Stack package from the assembled exact
+    lock for a qualified canonical child-theme site:
+   - `python3 stack/scripts/assemble-stack-release.py --release-lock stack/manifests/stack-release.lock.json --output releases/assembled/<release-id>`
+   - `python3 stack/scripts/build-mainwp-stack-release.py --release-lock stack/manifests/stack-release.lock.json --artifact-root releases/assembled/<release-id> --rollout-id <unique-rollout-id> --output-dir releases/mainwp-stack/<unique-rollout-id>`
+   - the full package includes every locked platform component and exact parent,
+     excludes the deployment agent as a separately verified prerequisite, and
+     never contains the site-derived child theme
+   - retain `build-mainwp-mu-release.py` only for an approved MU-only legacy or
+     protected-fork rollout; use its reviewed `--policy` contract for named
+     exclusions
+   - use the generated `checksums.json`, exact `plan.json`, and ZIP as the
+     preflight/apply identity; never hand-author the plan or package
 11. Deploy in stack-first order for stack-owned runtime changes, then rollout
     surfaces.
 12. Read back target component versions/hashes and compare them with the release
@@ -101,6 +107,12 @@ Theme records declare their verification mode. The parent theme is `exact` and
 must match its release hash. The generic active child in the bootstrap manifest
 is `site-derived`: it is the source template for a site-owned, renamed child
 theme and must not be treated as an exact fleet runtime slug or hash.
+
+The initial schema-2 MainWP full Stack contract is intentionally narrower: it
+qualifies only a site still using the canonical `mrn-base-stack` parent and
+`mrn-base-stack-child` stylesheet, then preserves that child tree. Renamed
+parent/child sites continue through the per-site resolved deployment flow until
+an exact mapping contract is added.
 
 ## Enforcement Baseline
 - No release should be marked ready when:

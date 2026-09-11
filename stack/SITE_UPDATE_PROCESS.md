@@ -23,6 +23,12 @@ information only; they do not authorize remediation or deployment.
 
 Both bootstraps now activate `mrn-base-stack-child` directly, so a new site is in child-theme mode from birth rather than after a front-end handoff. Existing live sites are commonly in child mode too, on a renamed clone acting as the parent.
 
+A site that still has the exact newly bootstrapped shape can use the schema-2
+MainWP full Stack process in `MAINWP_FLEET_ROLLOUT_PLAN.md`. That path updates
+the immutable parent/platform release while refusing to package or target the
+child tree. Renamed parent/child and clone-style sites continue through the
+resolved per-site flow below.
+
 Resolve it with `wp option get stylesheet` and `wp option get template` before planning any theme deploy. Shared code updates should still preserve the live theme slug plus `Theme Name` and `Text Domain`, and keep stable theming hooks available.
 
 ## Snapshot Directories Left Active
