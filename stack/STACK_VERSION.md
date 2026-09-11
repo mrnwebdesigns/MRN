@@ -3,7 +3,7 @@
 ## Current Release
 - Stack release: `2026.09.11-mainwp-full-stack-fleet-canary-verified`
 - Release date: `2026-09-11`
-- Status: `release candidate; local apply and rollback verification pending`
+- Status: `release candidate; local canary verified, remote canary pending`
 
 ## Included MRN-Owned Components
 - Theme:
