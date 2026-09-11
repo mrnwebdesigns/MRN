@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.09.11-mainwp-full-stack-fleet-canary-fix
+- `mrn-stack-deployment-agent` (`0.2.0` -> `0.2.1`): aligned the
+  installed prerequisite tree hash with the immutable release generator's
+  deterministic directory-walk order after the first local Trilliant preflight
+  correctly stopped on the prior hash mismatch. No Stack component write
+  occurred before this correction.
+
 ## 2026.09.11-mainwp-full-stack-fleet
 - Added a deterministic MainWP schema-2 full Stack package builder that verifies
   an assembled release against the immutable lock, includes every locked MU,
