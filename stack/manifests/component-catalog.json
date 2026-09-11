@@ -522,7 +522,7 @@
     {
       "slug": "mrn-stack-deployment-agent",
       "name": "MRN Stack Deployment Agent",
-      "version": "0.1.8",
+      "version": "0.2.0",
       "runtime_type": "standard-plugin",
       "classification": "operations-agent",
       "lifecycle": "supported",
@@ -531,7 +531,7 @@
       "source": {"repository": "mrn-stack-deployment-agent", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent", "state": "confirmed"},
       "dependencies": {"hard": ["WordPress", "MainWP Child authenticated connection"], "soft": ["MRN MainWP Operations API"], "release_group": "mainwp-operations"},
       "data": {"options": [], "tables": [], "cron": [], "routes": ["authenticated mainwp_child_extra_execution actions"], "external_services": ["MainWP"]},
-      "purpose": "Provides a zero-frontend, MU-only deployment target for checksum-verified preflight, atomic promotion, rollback, and recovery-payload-aware incomplete-marker reconciliation requests authenticated by MainWP Child."
+      "purpose": "Provides a zero-frontend deployment target for checksum-verified MU and full Stack preflight, child-theme-preserving atomic promotion, rollback, and recovery-payload-aware incomplete-marker reconciliation requests authenticated by MainWP Child."
     },
     {
       "slug": "mrn-contextual-content-editor",
@@ -774,7 +774,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.7.10",
+      "version": "0.8.0",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -782,8 +782,8 @@
       "target_tier": "dashboard-only",
       "source": {"repository": "mrn-mainwp-operations-api", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api", "state": "confirmed-independent-dashboard"},
       "dependencies": {"hard": ["MainWP Dashboard", "WordPress Abilities API"], "soft": ["UpdraftPlus", "MRN Google Fonts"], "release_group": "mainwp-operations"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": ["five mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
-      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages and font management."
+      "data": {"options": [], "tables": [], "cron": [], "routes": ["sixteen mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
+      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages, font management, one-site Stack qualification, and backup-gated full Stack rollout and recovery."
     },
     {
       "slug": "mrn-pre-consent-update-backup",

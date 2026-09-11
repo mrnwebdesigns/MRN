@@ -1,6 +1,6 @@
 # Stack Changelog
 
-## Unreleased
+## 2026.09.11-mainwp-full-stack-fleet
 - Added a deterministic MainWP schema-2 full Stack package builder that verifies
   an assembled release against the immutable lock, includes every locked MU,
   required MRN plugin, shared-runtime, parent-theme, and release-lock target,
