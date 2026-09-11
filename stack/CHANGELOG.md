@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.09.11-mainwp-full-stack-fleet-canary-ready
+- `mrn-stack-deployment-agent` (`0.2.1` -> `0.2.2`): made read-only
+  preflight reject existing targets containing symlinks or special entries that
+  cannot be copied into durable rollback storage. The local Trilliant canary
+  exposed this with a development-only `node_modules` tree; the prior apply
+  failed closed and restored every target before this preflight guard was added.
+
 ## 2026.09.11-mainwp-full-stack-fleet-canary-fix
 - `mrn-stack-deployment-agent` (`0.2.0` -> `0.2.1`): aligned the
   installed prerequisite tree hash with the immutable release generator's
