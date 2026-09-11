@@ -12,7 +12,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 
 | Slug | Version | Current distribution | Target tier | Responsibility |
 | --- | ---: | --- | --- | --- |
-| `mrn-loader` | 1.6.0 | MU loader | Platform required | Loads approved MU component entrypoints and exposes the signed runtime report transport. |
+| `mrn-loader` | 1.6.1 | MU loader | Platform required | Loads approved MU component entrypoints and exposes the signed runtime report transport. |
 | `mrn-admin-data-post-types` | 0.2.1 | MU loader | Platform required | Applies shared admin/data-only post-type policy and SEOPress post-type discovery exclusions. |
 | `mrn-admin-ui-css` | 3.2.4 | MU loader | Platform required | Provides shared WordPress admin presentation and usability rules. |
 | `mrn-dashboard-support` | 1.3.0 | MU loader | Platform required | Provides MRN support information, dashboard metadata, and the admin-only Notifications Center with unread/read views, per-admin read/remove controls, and centralized admin notices. |

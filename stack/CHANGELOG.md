@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.09.11-mainwp-full-stack-fleet-canary-verified
+- `mrn-loader` (`1.6.0` -> `1.6.1`): aligned runtime-report tree hashing
+  with the immutable release generator, retained MU component load state across
+  WordPress include scope, and measured each locked root MU wrapper from its
+  own deployed file. The local Trilliant apply remained healthy, but these
+  report-only defects produced false missing and drift results until corrected.
+
 ## 2026.09.11-mainwp-full-stack-fleet-canary-ready
 - `mrn-stack-deployment-agent` (`0.2.1` -> `0.2.2`): made read-only
   preflight reject existing targets containing symlinks or special entries that
