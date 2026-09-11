@@ -6,6 +6,11 @@
   WordPress include scope, and measured each locked root MU wrapper from its
   own deployed file. The local Trilliant apply remained healthy, but these
   report-only defects produced false missing and drift results until corrected.
+- Trilliant local rollout `local-canary-trilliant-20260911-004` completed the
+  28-target apply and rollback cycle with a clean runtime report, preserved the
+  site-owned child theme, passed rendered-site QA, and restored all 29 tracked
+  paths exactly. MainWP transport and remote backup receipts remain for the
+  remote development-site canary.
 
 ## 2026.09.11-mainwp-full-stack-fleet-canary-ready
 - `mrn-stack-deployment-agent` (`0.2.1` -> `0.2.2`): made read-only
