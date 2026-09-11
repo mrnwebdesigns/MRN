@@ -85,9 +85,13 @@ $component = $content_root . '/mu-plugins/fixture';
 mkdir($component, 0777, true);
 file_put_contents($component . '/b.txt', "second\n");
 file_put_contents($component . '/a.txt', "first\n");
+mkdir($component . '/.github/workflows', 0777, true);
+file_put_contents($component . '/.github/workflows/ci.yml', "nested\n");
+mkdir($component . '/vendor/package', 0777, true);
+file_put_contents($component . '/vendor/package/ignored.php', "<?php\n");
 
 $records = array();
-foreach (array('a.txt', 'b.txt') as $relative) {
+foreach (array('a.txt', 'b.txt', '.github/workflows/ci.yml') as $relative) {
     $path = $component . '/' . $relative;
     $records[] = $relative . "\0" . hash_file('sha256', $path) . "\0" . filesize($path) . "\n";
 }
@@ -95,7 +99,27 @@ $expected_hash = hash('sha256', implode('', $records));
 $actual_hash = mrn_loader_tree_hash($component);
 mrn_test_assert(is_array($actual_hash), 'tree hash should be available');
 mrn_test_assert($actual_hash['sha256'] === $expected_hash, 'tree hash must match sha256-tree-v1');
-mrn_test_assert($actual_hash['file_count'] === 2, 'tree hash should count deployable files');
+mrn_test_assert($actual_hash['file_count'] === 3, 'tree hash should count deployable files');
+
+$loader_fixture = $content_root . '/mu-plugins/fixture-loader.php';
+file_put_contents($loader_fixture, "<?php\n/* Plugin Name: Fixture Loader\nVersion: 1.2.3\n*/\n");
+// nosemgrep: semgrep.php-dynamic-include -- exact test-owned path under the randomized temporary root.
+include_once $loader_fixture;
+mrn_test_assert(
+    mrn_loader_resolve_mu_loader_file(
+        'fixture-loader',
+        array('deployed_path' => 'mu-plugins/fixture-loader.php')
+    ) === $loader_fixture,
+    'locked MU loaders should resolve to their exact deployed file'
+);
+mrn_test_assert(
+    mrn_loader_runtime_file_was_included($loader_fixture),
+    'loaded MU wrappers should be detected from included files'
+);
+mrn_test_assert(
+    is_array($GLOBALS['mrn_loader_runtime_components'] ?? null),
+    'runtime component state should remain available through global scope'
+);
 
 $shared = $content_root . '/shared';
 mkdir($shared, 0777, true);

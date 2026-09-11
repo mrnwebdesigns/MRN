@@ -1,16 +1,16 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.11-mainwp-full-stack-fleet-canary-ready`
+- Stack release: `2026.09.11-mainwp-full-stack-fleet-canary-verified`
 - Release date: `2026-09-11`
-- Status: `release candidate; deployment verification pending`
+- Status: `release candidate; local apply and rollback verification pending`
 
 ## Included MRN-Owned Components
 - Theme:
   - `mrn-base-stack` `1.3.3`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
-  - `mrn-loader` `1.6.0`
+  - `mrn-loader` `1.6.1`
   - `mrn-shared-runtime` `1.0.0`
   - `mrn-active-style-guide` `0.1.7`
   - `mrn-admin-data-post-types` `0.2.1`
@@ -69,4 +69,5 @@
 - The Dashboard-only `mrn-mainwp-operations-api` `0.8.0` controller exposes schema-2 one-site qualification, preview, backup-gated full Stack rollout, rollback, recovery, and runtime-proof abilities as an independently released MainWP control-plane component; it is not installed on child sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
 - `mrn-config-helper` is locked to standalone `0.1.59`, and `mrn-stack-deployment-agent` is locked to standalone `0.2.2` with installed prerequisite hashing aligned to the release generator and rollback-copyability proven during preflight.
+- `mrn-loader` `1.6.1` aligns runtime-report hashing with that same release-generator walk order, retains loaded-component state in global scope, and reports each legacy MU wrapper from its exact locked path.
 - Use [`CHANGELOG.md`](/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md) for release notes.

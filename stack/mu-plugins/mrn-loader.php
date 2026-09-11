@@ -2,12 +2,12 @@
 /**
  * Plugin Name: MRN Loader
  * Description: Loads MRN MU plugins from known subfolders in /wp-content/mu-plugins.
- * Version: 1.6.0
+ * Version: 1.6.1
  */
 
 defined('ABSPATH') || exit;
 
-define('MRN_LOADER_VERSION', '1.6.0');
+define('MRN_LOADER_VERSION', '1.6.1');
 define('MRN_LOADER_RUNTIME_REPORT_SCHEMA_VERSION', 1);
 define('MRN_LOADER_HASH_ALGORITHM', 'sha256-tree-v1');
 
@@ -83,14 +83,14 @@ function mrn_loader_include_once_if_needed($file) {
  */
 $mrn_loader_entries = mrn_loader_known_entries();
 
-$mrn_loader_runtime_components = array();
+$GLOBALS['mrn_loader_runtime_components'] = array();
 
 foreach ($mrn_loader_entries as $component_slug => $entry_file) {
     if (!is_string($entry_file) || $entry_file === '') {
         continue;
     }
 
-    $mrn_loader_runtime_components[$component_slug] = array(
+    $GLOBALS['mrn_loader_runtime_components'][$component_slug] = array(
         'entry_file' => $entry_file,
         'loaded'     => mrn_loader_include_once_if_needed($entry_file),
     );
@@ -155,6 +155,8 @@ function mrn_loader_collect_digest_files($source, $relative, &$files) {
         return false;
     }
 
+    $child_files = array();
+    $child_directories = array();
     foreach ($entries as $entry) {
         if ($entry === '.' || $entry === '..' || $entry === '.DS_Store') {
             continue;
@@ -162,10 +164,34 @@ function mrn_loader_collect_digest_files($source, $relative, &$files) {
 
         $path = $source . DIRECTORY_SEPARATOR . $entry;
         $child_relative = $relative === '' ? $entry : $relative . '/' . $entry;
-        if (is_dir($path) && in_array($entry, $excluded_directories, true)) {
-            continue;
+        if (is_link($path)) {
+            return false;
         }
-        if (!mrn_loader_collect_digest_files($path, $child_relative, $files)) {
+        if (is_dir($path)) {
+            if (
+                in_array($entry, $excluded_directories, true) ||
+                ($relative === '' && $entry === 'vendor')
+            ) {
+                continue;
+            }
+            $child_directories[$entry] = array($path, $child_relative);
+        } elseif (is_file($path)) {
+            if ($entry === '.git') {
+                continue;
+            }
+            $child_files[$entry] = array($path, $child_relative);
+        } else {
+            return false;
+        }
+    }
+
+    ksort($child_files, SORT_STRING);
+    ksort($child_directories, SORT_STRING);
+    foreach ($child_files as $child) {
+        $files[$child[1]] = $child[0];
+    }
+    foreach ($child_directories as $child) {
+        if (!mrn_loader_collect_digest_files($child[0], $child[1], $files)) {
             return false;
         }
     }
@@ -185,7 +211,6 @@ function mrn_loader_tree_hash($source) {
         return null;
     }
 
-    ksort($files, SORT_STRING);
     $context = hash_init('sha256');
     foreach ($files as $relative => $path) {
         $file_hash = hash_file('sha256', $path);
@@ -201,6 +226,52 @@ function mrn_loader_tree_hash($source) {
         'sha256'     => hash_final($context),
         'file_count' => count($files),
     );
+}
+
+/**
+ * Determine whether WordPress included an exact runtime file.
+ *
+ * @param string $file Candidate runtime file.
+ * @return bool
+ */
+function mrn_loader_runtime_file_was_included($file) {
+    if (!is_string($file) || $file === '') {
+        return false;
+    }
+
+    $target_realpath = realpath($file);
+    if ($target_realpath === false) {
+        return false;
+    }
+
+    foreach (get_included_files() as $included_file) {
+        $included_realpath = realpath($included_file);
+        if ($included_realpath !== false && $included_realpath === $target_realpath) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Resolve one locked MU loader to its exact wp-content file.
+ *
+ * @param string $slug     Locked component slug.
+ * @param array  $expected Locked component record.
+ * @return string
+ */
+function mrn_loader_resolve_mu_loader_file($slug, $expected) {
+    $deployed_path = (string) ($expected['deployed_path'] ?? '');
+    if (preg_match('#^mu-plugins/[A-Za-z0-9._-]+\.php$#', $deployed_path)) {
+        return WP_CONTENT_DIR . '/' . $deployed_path;
+    }
+
+    if ($slug === 'mrn-loader') {
+        return __FILE__;
+    }
+
+    return WP_CONTENT_DIR . '/mu-plugins/' . sanitize_key($slug) . '.php';
 }
 
 /**
@@ -420,12 +491,13 @@ function mrn_loader_get_runtime_report() {
     foreach ($expected_components as $slug => $expected) {
         $runtime_type = (string) ($expected['runtime_type'] ?? 'unknown');
         if ($runtime_type === 'mu-loader') {
+            $loader_file = mrn_loader_resolve_mu_loader_file($slug, $expected);
             $components[] = mrn_loader_shape_runtime_component(
                 $slug,
                 $runtime_type,
-                __FILE__,
-                __FILE__,
-                true,
+                $loader_file,
+                $loader_file,
+                mrn_loader_runtime_file_was_included($loader_file),
                 $expected
             );
             continue;
