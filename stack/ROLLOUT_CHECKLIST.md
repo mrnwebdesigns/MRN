@@ -190,13 +190,18 @@ For an existing-site fleet rollout, use the plan-locked MainWP path documented i
 [`MAINWP_FLEET_ROLLOUT_PLAN.md`](./MAINWP_FLEET_ROLLOUT_PLAN.md) after the canonical
 stack source and release lock are ready. MainWP distribution does not replace the
 stack-source deploy above; it distributes that exact approved release to existing
-sites in backup-gated batches. The child deployment agent must be installed and
-verified first. Never substitute an arbitrary development site for the named
-production canary.
+sites through independently backup-gated transactions. Start with one exact,
+owner-approved canonical child-theme site. The child deployment agent must be
+installed and verified first; the schema-2 package then updates locked MU
+components, required MRN standard plugins, shared runtime, and the canonical
+parent theme without containing or modifying the child theme.
 
 ### Standard Plugins
 
-Standard plugins are not part of the feature deploy helper.
+Standard plugins are not part of the feature deploy helper. Required MRN
+standard plugins are included in the schema-2 full Stack fleet package after
+they are present and active; missing prerequisites must first use the normal
+plugin package/install flow.
 
 Examples:
 

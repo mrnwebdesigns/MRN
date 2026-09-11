@@ -1,7 +1,22 @@
 # Stack Changelog
 
 ## Unreleased
-- None.
+- Added a deterministic MainWP schema-2 full Stack package builder that verifies
+  an assembled release against the immutable lock, includes every locked MU,
+  required MRN plugin, shared-runtime, parent-theme, and release-lock target,
+  and excludes both the separately seeded deployment agent and site-derived
+  child theme.
+- Replaced the MU-only fleet rollout notes with an explicit one-site state
+  machine covering exact MainWP resolution/fresh sync, owner-approved `Full
+  Stack` membership, prerequisite seeding, read-only preflight, remote backup
+  receipts, atomic apply/rollback, fresh runtime proof, and user-visible checks.
+- Recorded the schema-2 boundary for canonical `mrn-base-stack` plus
+  `mrn-base-stack-child` sites while retaining the schema-1 MU-only and resolved
+  per-site paths for protected forks or renamed theme shapes. No Dashboard or
+  managed-site mutation was performed.
+- Added a cross-repository contract check that sends one deterministic builder
+  artifact through both the Dashboard and child validators, plus a development
+  canary checklist and read-only one-site qualification contract.
 
 ## 2026.09.09-stack-reconciliation
 - `mrn-base-stack` (`1.3.2` -> `1.3.3`): conditionally loads Motion, Splide, tabs, GLightbox, gallery, video-modal, deferred-media, and FAQ assets only for rendered Stack components; splits the prior combined slider/deferred-media/FAQ runtime without changing its behavior; preserves component dependency order and existing compatibility filters; keeps hero media eager/high-priority; explicitly lazy-loads ordinary Stack list/archive images; and adds an opt-in critical CSS image preload contract plus focused PHP and throttled-browser regression coverage. The parent stylesheet remains intact pending a source-backed cascade partition; no site or third-party integration was changed.
