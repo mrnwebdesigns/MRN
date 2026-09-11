@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.11-mainwp-full-stack-fleet-canary-fix`
+- Stack release: `2026.09.11-mainwp-full-stack-fleet-canary-ready`
 - Release date: `2026-09-11`
 - Status: `release candidate; deployment verification pending`
 
@@ -46,7 +46,7 @@
   - `mrn-recaptcha-enterprise-manager` `0.1.1`
   - `mrn-sendgrid-provisioning` `0.1.0`
   - `mrn-seo-helper` `0.4.0`
-  - `mrn-stack-deployment-agent` `0.2.1`
+  - `mrn-stack-deployment-agent` `0.2.2`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-tokens` `0.1.3`
   - `mrn-universal-sticky-bar` `1.1.8`
@@ -68,5 +68,5 @@
 - Current candidate explicitly locks every tracked MU wrapper at its real deployed filename, including the Updraft backup-policy wrapper at `mrn-updraft-local-retention.php`.
 - The Dashboard-only `mrn-mainwp-operations-api` `0.8.0` controller exposes schema-2 one-site qualification, preview, backup-gated full Stack rollout, rollback, recovery, and runtime-proof abilities as an independently released MainWP control-plane component; it is not installed on child sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
-- `mrn-config-helper` is locked to standalone `0.1.59`, and `mrn-stack-deployment-agent` is locked to standalone `0.2.1` with installed prerequisite hashing aligned to the release generator's deterministic directory-walk order.
+- `mrn-config-helper` is locked to standalone `0.1.59`, and `mrn-stack-deployment-agent` is locked to standalone `0.2.2` with installed prerequisite hashing aligned to the release generator and rollback-copyability proven during preflight.
 - Use [`CHANGELOG.md`](/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md) for release notes.

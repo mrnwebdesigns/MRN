@@ -522,7 +522,7 @@
     {
       "slug": "mrn-stack-deployment-agent",
       "name": "MRN Stack Deployment Agent",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "runtime_type": "standard-plugin",
       "classification": "operations-agent",
       "lifecycle": "supported",
