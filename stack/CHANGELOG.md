@@ -12,6 +12,20 @@
   whose merged source allowlists both exact plugin main files. Dashboard
   deployment and every child-site update remain separate authorization gates.
 
+## 2026.09.14-media-bulk-platform-required
+- Corrected `mrn-media-bulk-tools` from the stale catalog version `0.12.1` to
+  canonical standalone release `0.13.1`.
+- Promoted Media Bulk Tools from optional shared metadata to a
+  platform-required standard plugin. New full Stack release locks and Fleet
+  packages therefore include its exact source commit, version, tree hash, and
+  file count, while the site-owned child theme remains outside the package.
+- Added a product-policy regression check that keeps Media Bulk Tools in the
+  bootstrap manifest and full Stack tier, and prevents it from entering the
+  independent optional-plugin release registry.
+- This source change does not update any site. Immutable lock generation,
+  artifact construction, backup-gated rollout, and runtime readback remain
+  separate release gates.
+
 ## 2026.09.14-optional-plugin-fleet-ready
 - Cataloged the standalone `mrn-database-retention` `1.1.1` release and bound
   its merged source commit to the checksum-verified release artifact.

@@ -1,9 +1,9 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.14-optional-plugin-fleet-ready`
+- Stack release: `2026.09.14-media-bulk-platform-required`
 - Release date: `2026-09-14`
-- Status: `release candidate; source, lock, and local artifacts verified; Dashboard and site deployment pending`
+- Status: `source candidate; merge, immutable lock, artifacts, and site deployment pending`
 
 ## Included MRN-Owned Components
 - Theme:
@@ -40,7 +40,7 @@
   - `mrn-gtm-injector` `1.0.13`
   - `mrn-hierarchical-menu-taxonomies` `0.1.0`
   - `mrn-layout-import-export` `0.1.2`
-  - `mrn-media-bulk-tools` `0.12.1`
+  - `mrn-media-bulk-tools` `0.13.1`
   - `mrn-mega-menu` `0.17.2`
   - `mrn-recaptcha-enterprise-manager` `0.1.1`
   - `mrn-sendgrid-provisioning` `0.1.0`
@@ -65,6 +65,7 @@
 - Current baseline keeps the canonical AME export payloads, importer/manifests, bootstrap helper, shared shim, and stack MU wrapper loaders tracked in the main repo so release/deploy flows can verify and sync them consistently.
 - Current baseline includes bounded recovery inventory and guarded reconciliation for exact, unchanged incomplete rollout markers that are physically empty or contain only recognized empty apply scaffolding, without introducing recursive deletion.
 - `mrn-database-retention` is not part of the platform baseline. Its independently released `1.1.1` package is catalog-only and available solely through the one-site, upgrade-only optional-plugin plan.
+- This candidate promotes `mrn-media-bulk-tools` `0.13.1` to a platform-required standard plugin. The next immutable full Stack lock must bind its exact standalone `main` commit and tree hash; the classification change alone does not update a site.
 - Current candidate explicitly locks every tracked MU wrapper at its real deployed filename, including the Updraft backup-policy wrapper at `mrn-updraft-local-retention.php`.
 - The Dashboard-only `mrn-mainwp-operations-api` `0.8.1` controller adds exact-site, upgrade-only preflight, update, and rollback abilities for the allowlisted optional Database Retention release. It remains an independently released MainWP control-plane component and is not installed on child sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
