@@ -295,6 +295,28 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
         self.assertIn("nineteen mrn-mainwp WordPress Abilities", controller["data"]["routes"])
         self.assertNotIn("Defender (legacy compatibility only)", entry["dependencies"]["soft"])
 
+    def test_consent_integrations_stay_catalog_only_and_out_of_bootstrap(self):
+        stack = Path(__file__).parents[1]
+        catalog = json.loads(
+            (stack / "manifests/component-catalog.json").read_text(encoding="utf-8")
+        )
+        releases = json.loads(
+            (stack / "manifests/optional-plugin-releases.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        manifest = (stack / "manifests/plugins.txt").read_text(encoding="utf-8")
+        release_slugs = {item["slug"] for item in releases["releases"]}
+
+        for slug in ("mrn-cookie-consent", "mrn-gtm-injector"):
+            entry = next(
+                item for item in catalog["components"] if item["slug"] == slug
+            )
+            self.assertEqual("optional-integration", entry["target_tier"])
+            self.assertEqual("catalog-only", entry["current_distribution"])
+            self.assertNotIn(f"{slug}.zip", manifest)
+            self.assertNotIn(slug, release_slugs)
+
 
 if __name__ == "__main__":
     unittest.main()

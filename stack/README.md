@@ -12,6 +12,13 @@ The future hosting platform owns site and environment selection. Its canonical v
 
 Released optional and maintenance plugins use `manifests/optional-plugin-releases.json` and `scripts/build-mainwp-optional-plugin-plan.py`. The plan builder is deliberately one-site and upgrade-only: it rejects an absent plugin, stale inventory, an unverified package, or missing backup/rollback readiness. MainWP Operations API `0.8.1` provides the matching exact-site preflight, update, and rollback abilities without adding absent plugins. See [`MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md).
 
+Cookie Consent and GTM Injector are optional integrations and are not part of
+the universal bootstrap manifest. Their release records must be added only
+after the standalone release commits are merged to `origin/main` and the
+Dashboard controller exposes both main-file slugs. For paired updates, install
+GTM Injector first so an older active Cookie Consent integration is treated as
+ambiguous and fails closed throughout the transition.
+
 ## What this gives you
 
 - A plugin manifest (`manifests/plugins.txt`) for install/activate.

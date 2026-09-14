@@ -1,5 +1,15 @@
 # Stack Changelog
 
+## Unreleased
+
+- Removed `mrn-cookie-consent` and `mrn-gtm-injector` from the universal Stack
+  bootstrap input and classified both as catalog-only optional integrations.
+  Existing sites are unchanged.
+- Kept their proposed `1.1.43` and `1.0.14` checksum-locked optional release
+  records out of the authoritative registry until the standalone source commits
+  are merged to `origin/main` and the Dashboard controller allowlist supports
+  both plugin main files.
+
 ## 2026.09.14-optional-plugin-fleet-ready
 - Cataloged the standalone `mrn-database-retention` `1.1.1` release and bound
   its merged source commit to the checksum-verified release artifact.

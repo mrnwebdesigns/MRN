@@ -52,11 +52,11 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 | `mrn-acf-character-count` | 1.1.8 | Standard bootstrap | Optional integration | ACF editor character counts. |
 | `mrn-acf-focal-point` | 1.1.2 | Standard bootstrap | Optional integration | ACF image focal-point metadata and rendering. |
 | `mrn-ai-guardrails` | 0.1.1 | Independent repository (`mrnwebdesigns/mrn-ai-guardrails`) via MRN-plugins symlink; catalog-only | Optional integration | SEOPress AI policy enforcement and human approval for generated image alt text. |
-| `mrn-cookie-consent` | 1.1.42 | Standard bootstrap | Optional integration | Silktide and Google Consent Mode. |
+| `mrn-cookie-consent` | 1.1.42 | Independent repository (`mrnwebdesigns/mrn-cookie-consent`); catalog-only, pending a merged checksum-locked release entry | Optional integration | Silktide and Google Consent Mode. |
 | `mrn-fontawesome-profile-manager` | 0.5.0 | Standard bootstrap | Optional integration | Font Awesome profiles and local assets. |
 | `mrn-google-fonts` | 1.0.7 | Independent repository (`mrnwebdesigns/mrn-google-fonts`) via MRN-plugins symlink | Optional integration | Google/local fonts and Site Styles; existing site behavior is unchanged. |
 | `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Independent repository (`mrnwebdesigns/mrn-hierarchical-menu-taxonomies`) via MRN-plugins symlink | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories; existing menu behavior is unchanged. |
-| `mrn-gtm-injector` | 1.0.13 | Standard bootstrap | Optional integration | Google Tag Manager. |
+| `mrn-gtm-injector` | 1.0.13 | Independent repository (`mrnwebdesigns/mrn-gtm-injector`); catalog-only, pending a merged checksum-locked release entry | Optional integration | Google Tag Manager. |
 | `mrn-recaptcha-enterprise-manager` | 0.1.1 | Independent repository (`mrnwebdesigns/mrn-recaptcha-enterprise-manager`) via MRN-plugins symlink | Optional integration | reCAPTCHA Enterprise and WPForms; security and credential contracts retained. |
 | `mrn-relevanssi-ai-search` | 0.6.1 | Independent repository (`mrnwebdesigns/mrn-relevanssi-ai-search`); catalog-only | Optional integration | Guarded AI query interpretation and hybrid semantic matching for Relevanssi. |
 | `mrn-seo-helper` | 0.4.0 | Standard bootstrap | Optional integration | ACF SEO fields and supported SEO providers. |
@@ -114,4 +114,4 @@ No disposition in this section authorizes a code move, manifest change, deletion
 
 ## Current Bootstrap Warning
 
-The existing [`manifests/plugins.txt`](./manifests/plugins.txt) supports profile-scoped entries such as `|stack` and `|plain`, which keeps selected optional components out of the plain-profile bootstrap. MRN Database Retention is no longer a bootstrap default; its checksum-locked release is managed through the upgrade-only optional-plugin plan. Remaining optional and maintenance components still require feature-selection support in the hosting platform before they can be removed safely from the shared bundle input.
+The existing [`manifests/plugins.txt`](./manifests/plugins.txt) supports profile-scoped entries such as `|stack` and `|plain`, which keeps selected optional components out of the plain-profile bootstrap. MRN Database Retention is no longer a bootstrap default; its checksum-locked release is managed through the upgrade-only optional-plugin plan. Cookie Consent and GTM Injector are also excluded from the bootstrap input and remain unavailable to Fleet plans until their release branches are merged, catalog versions are advanced, checksum-locked entries are added to `optional-plugin-releases.json`, and the Dashboard controller allowlist is released. Remaining optional and maintenance components still require feature-selection support in the hosting platform before they can be removed safely from the shared bundle input.

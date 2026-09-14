@@ -18,10 +18,8 @@ fluent-smtp
 /home/mrndev-stack-manager/stack/packages/mrn-ai-assist.zip
 /home/mrndev-stack-manager/stack/packages/mrn-announcements.zip
 /home/mrndev-stack-manager/stack/packages/mrn-comment-management.zip
-/home/mrndev-stack-manager/stack/packages/mrn-cookie-consent.zip
 /home/mrndev-stack-manager/stack/packages/mrn-editor-tools.zip
 /home/mrndev-stack-manager/stack/packages/mrn-fontawesome-profile-manager.zip
-/home/mrndev-stack-manager/stack/packages/mrn-gtm-injector.zip
 /home/mrndev-stack-manager/stack/packages/mrn-google-fonts.zip
 /home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip
 /home/mrndev-stack-manager/stack/packages/mrn-sendgrid-provisioning.zip

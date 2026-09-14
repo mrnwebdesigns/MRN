@@ -12,6 +12,15 @@ builder refuses to create a plan when the plugin is absent. A new installation
 requires a separately owner-authorized seeding plan and must never be inferred
 from catalog membership, site tags, or a successful package preflight.
 
+Cookie Consent and GTM Injector are a paired optional integration, but they
+still receive separate one-plugin plans, preflights, backup receipts, applies,
+readbacks, and rollback artifacts. Update GTM Injector first: version 1.0.14
+fails closed when an active older Cookie Consent release cannot expose an
+explicit state. Then update Cookie Consent. This order prevents an immediate-GTM
+window between the two plugin updates. Do not add either release to the registry
+until its source commit is merged to `origin/main`; do not attempt the rollout
+until the Dashboard controller allowlist exposes both plugin main files.
+
 MRN Database Retention is maintenance-only and catalog-only. Defender support
 inside that plugin is conditional legacy compatibility; Defender is not a Stack
 requirement. The ongoing mail-provider transition does not change the
@@ -130,6 +139,9 @@ site operation, `0.8.1` must be separately deployed to the named MainWP
 Dashboard and the three abilities must be visible through the configured
 `mainwp` MCP allowlist. Missing controller deployment or ability visibility is
 a deployment blocker, not permission to use a browser, SSH, or direct mutation.
+The currently exposed `0.8.1` ability schema allowlists only Database Retention;
+Cookie Consent and GTM Injector therefore require a separately reviewed
+controller/allowlist release before any site rollout.
 
 ## Ability Payload Mapping
 
