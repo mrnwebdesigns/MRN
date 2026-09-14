@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Advanced `mrn-config-helper` from `0.1.59` to `0.1.60`. Static front pages
+  now return no shared breadcrumb items, so both visible breadcrumbs and
+  `BreadcrumbList` JSON-LD stay suppressed at the site's root while a separate
+  posts index keeps its normal breadcrumb trail.
 - Removed `mrn-cookie-consent` and `mrn-gtm-injector` from the universal Stack
   bootstrap input and classified both as catalog-only optional integrations.
   Existing sites are unchanged.

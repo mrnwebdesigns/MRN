@@ -70,5 +70,6 @@
 - The Dashboard-only `mrn-mainwp-operations-api` `0.8.1` controller adds exact-site, upgrade-only preflight, update, and rollback abilities for the allowlisted optional Database Retention release. It remains an independently released MainWP control-plane component and is not installed on child sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
 - `mrn-config-helper` is locked to standalone `0.1.59`, and `mrn-stack-deployment-agent` is locked to standalone `0.2.2` with installed prerequisite hashing aligned to the release generator and rollback-copyability proven during preflight.
+- The unreleased component catalog advances `mrn-config-helper` to standalone `0.1.60`; the current immutable release remains locked to `0.1.59` until the next deliberate Stack promotion.
 - `mrn-loader` `1.6.1` aligns runtime-report hashing with that same release-generator walk order, retains loaded-component state in global scope, and reports each legacy MU wrapper from its exact locked path.
 - Use [`CHANGELOG.md`](/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md) for release notes.

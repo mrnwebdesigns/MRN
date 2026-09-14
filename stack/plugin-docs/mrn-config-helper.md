@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.59`
+- Current version: `0.1.60`
 - Source path:
   - `/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper`
 
@@ -75,6 +75,7 @@
 - Exposes front-end-consumable site configuration and includes a stack-owned breadcrumb runtime.
 - Breadcrumb runtime output is semantic by default (`nav` + ordered list + `aria-current` on active item).
 - New Stack sites keep visible breadcrumbs and `BreadcrumbList` JSON-LD under the MRN renderer. Bootstrap disables conflicting SEOPress breadcrumb JSON-LD after settings imports.
+- Static front pages return no shared breadcrumb items, keeping visible output and `BreadcrumbList` JSON-LD suppressed at the site's root. A separate posts index retains its configured breadcrumb trail.
 - Current front-end-facing helper:
   - `mrn_config_helper_get_social_links()`
   - `mrn_config_helper_get_uptime_robot_settings()`
