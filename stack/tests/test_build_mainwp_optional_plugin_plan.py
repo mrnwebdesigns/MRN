@@ -175,6 +175,27 @@ class OptionalPluginPlanTests(unittest.TestCase):
         self.assertEqual(checksum(self.artifact), plan["preflight"]["package_sha256"])
         self.assertTrue(plan["preflight"]["backup_readiness"]["ready"])
         self.assertTrue(plan["preflight"]["rollback_readiness"]["ready"])
+        self.assertEqual(
+            self.rollback.name,
+            plan["preflight"]["rollback_readiness"]["package_filename"],
+        )
+        self.assertEqual(
+            "mrn-database-retention/mrn-database-retention.php",
+            plan["preflight"]["rollback_readiness"]["main_file"],
+        )
+        self.assertEqual(
+            "mrn-mainwp/preflight-optional-plugin-update-v1",
+            plan["execution_contract"]["preflight_ability"],
+        )
+        self.assertEqual("0.8.1", plan["execution_contract"]["minimum_controller_version"])
+        self.assertEqual(
+            "controller-preflight",
+            plan["execution_contract"]["precondition_hash_source"],
+        )
+        self.assertEqual(
+            "operator-supplied-checksum-locked-package",
+            plan["execution_contract"]["rollback_artifact_model"],
+        )
         self.assertFalse(plan["execution_contract"]["allow_new_install"])
 
     def test_refuses_missing_plugin_instead_of_creating_install_plan(self):
@@ -263,6 +284,16 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
         )
         self.assertRegex(release["source"]["git_commit"], r"^[a-f0-9]{40}$")
         self.assertRegex(release["package"]["sha256"], r"^[a-f0-9]{64}$")
+
+        controller = next(
+            item
+            for item in catalog["components"]
+            if item["slug"] == "mrn-mainwp-operations-api"
+        )
+        self.assertEqual("0.8.1", controller["version"])
+        self.assertEqual("dashboard-only", controller["target_tier"])
+        self.assertIn("nineteen mrn-mainwp WordPress Abilities", controller["data"]["routes"])
+        self.assertNotIn("Defender (legacy compatibility only)", entry["dependencies"]["soft"])
 
 
 if __name__ == "__main__":

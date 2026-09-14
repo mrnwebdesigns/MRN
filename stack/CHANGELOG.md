@@ -1,6 +1,6 @@
 # Stack Changelog
 
-## 2026.09.14-optional-database-retention-release
+## 2026.09.14-optional-plugin-fleet-ready
 - Cataloged the standalone `mrn-database-retention` `1.1.1` release and bound
   its merged source commit to the checksum-verified release artifact.
 - Removed Database Retention from the universal bootstrap manifest while
@@ -8,9 +8,17 @@
 - Added a one-site, upgrade-only optional-plugin plan schema and builder that
   rejects absent plugins, stale inventory, non-upgrades, package drift, and
   missing backup or rollback readiness.
-- Documented the default-deny MainWP controller extension required before any
-  optional-plugin site write. The existing generic package installer must not
-  be used for this rollout because it can install an absent plugin.
+- Released `mrn-mainwp-operations-api` `0.8.1` with default-deny, one-site
+  optional-plugin preflight, update, and rollback abilities. The controller
+  rechecks signed live inventory, requires exact ZIP versions and checksums,
+  verifies remote backup readiness, binds writes to a reviewed precondition
+  hash and fresh database-backup receipt, and preserves activation state.
+- Kept rollback evidence operator-held and checksum-locked: both the target and
+  prior-version packages are validated on preflight, update, and rollback, so
+  no new persistent Dashboard storage or customer data is introduced.
+- Removed Defender from Database Retention's Stack dependency metadata. Its
+  conditional handler remains legacy compatibility only; FluentSMTP retention
+  remains mail-transport agnostic while SendGrid is phased out.
 
 ## 2026.09.11-mainwp-full-stack-fleet-canary-verified
 - `mrn-loader` (`1.6.0` -> `1.6.1`): aligned runtime-report tree hashing

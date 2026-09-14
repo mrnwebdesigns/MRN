@@ -1,9 +1,9 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.11-mainwp-full-stack-fleet-canary-verified`
-- Release date: `2026-09-11`
-- Status: `release candidate; local canary verified, remote canary pending`
+- Stack release: `2026.09.14-optional-plugin-fleet-ready`
+- Release date: `2026-09-14`
+- Status: `release candidate; source, lock, and local artifacts verified; Dashboard and site deployment pending`
 
 ## Included MRN-Owned Components
 - Theme:
@@ -66,7 +66,7 @@
 - Current baseline includes bounded recovery inventory and guarded reconciliation for exact, unchanged incomplete rollout markers that are physically empty or contain only recognized empty apply scaffolding, without introducing recursive deletion.
 - `mrn-database-retention` is not part of the platform baseline. Its independently released `1.1.1` package is catalog-only and available solely through the one-site, upgrade-only optional-plugin plan.
 - Current candidate explicitly locks every tracked MU wrapper at its real deployed filename, including the Updraft backup-policy wrapper at `mrn-updraft-local-retention.php`.
-- The Dashboard-only `mrn-mainwp-operations-api` `0.8.0` controller exposes schema-2 one-site qualification, preview, backup-gated full Stack rollout, rollback, recovery, and runtime-proof abilities as an independently released MainWP control-plane component; it is not installed on child sites.
+- The Dashboard-only `mrn-mainwp-operations-api` `0.8.1` controller adds exact-site, upgrade-only preflight, update, and rollback abilities for the allowlisted optional Database Retention release. It remains an independently released MainWP control-plane component and is not installed on child sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
 - `mrn-config-helper` is locked to standalone `0.1.59`, and `mrn-stack-deployment-agent` is locked to standalone `0.2.2` with installed prerequisite hashing aligned to the release generator and rollback-copyability proven during preflight.
 - `mrn-loader` `1.6.1` aligns runtime-report hashing with that same release-generator walk order, retains loaded-component state in global scope, and reports each legacy MU wrapper from its exact locked path.

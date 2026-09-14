@@ -65,7 +65,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 
 | Slug | Version | Responsibility |
 | --- | ---: | --- |
-| `mrn-mainwp-operations-api` | 0.7.10 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only, not installed in client-site plugins. |
+| `mrn-mainwp-operations-api` | 0.8.1 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only controller for guarded Stack and optional-plugin Fleet operations, never installed in client-site plugins. |
 | `mrn-wp-control` | 1.1.1 | Independent repository (`mrnwebdesigns/mrn-wp-control`); dashboard-only, not installed in client-site plugins. |
 | `mrn-wp-control-table-exporter` | 1.4.4 | Independent repository (`mrnwebdesigns/mrn-wp-control-table-exporter`); dashboard-only, not installed in client-site plugins. |
 | `mrn-mainwp-mcp` | 0.1.1 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |
@@ -77,7 +77,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 | `mrn-template-inspector` | 0.2.7 | Independent repository (`mrnwebdesigns/mrn-template-inspector`) via MRN-plugins symlink | Development only | Template and request-context inspection; local-only opener scope retained. |
 | `mrn-dummy-content` | 0.3.1 | Independent repository (`mrnwebdesigns/mrn-dummy-content`); catalog-only | Development only | Development content fixtures; excluded from production bootstrap. |
 | `mrn-comment-management` | 1.1.7 | Standard bootstrap | Maintenance only | Explicit comment audit and deletion. |
-| `mrn-database-retention` | 1.1.1 | Independent repository (`mrnwebdesigns/mrn-database-retention`) via MRN-plugins symlink; catalog-only release registry | Maintenance only | Allowlisted third-party operational-data retention; existing installations may use the guarded optional-plugin upgrade plan. Defender support is legacy compatibility only. |
+| `mrn-database-retention` | 1.1.1 | Independent repository (`mrnwebdesigns/mrn-database-retention`) via MRN-plugins symlink; catalog-only release registry | Maintenance only | Allowlisted third-party operational-data retention; existing installations may use the guarded optional-plugin upgrade plan. Defender support remains code-level legacy compatibility and is not a Stack dependency. FluentSMTP policy is transport-provider agnostic during the SendGrid transition. |
 | `mrn-layout-import-export` | 0.1.2 | Independent repository (`mrnwebdesigns/mrn-layout-import-export`) via MRN-plugins symlink | Maintenance only | ACF builder layout migration. |
 
 ## Review Queue

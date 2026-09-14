@@ -232,6 +232,9 @@ def validate_readiness(
     normalized_rollback = {
         **rollback,
         "package_path": str(rollback_path),
+        "package_filename": rollback_path.name,
+        "main_file": rollback_main_file,
+        "size_bytes": rollback_path.stat().st_size,
         "package_sha256": rollback_checksum,
     }
     return backup, normalized_rollback
@@ -381,8 +384,12 @@ def build_plan(
             "blockers": [],
         },
         "execution_contract": {
+            "preflight_ability": "mrn-mainwp/preflight-optional-plugin-update-v1",
             "controller_ability": "mrn-mainwp/update-optional-plugin-v1",
             "rollback_ability": "mrn-mainwp/rollback-optional-plugin-v1",
+            "minimum_controller_version": "0.8.1",
+            "precondition_hash_source": "controller-preflight",
+            "rollback_artifact_model": "operator-supplied-checksum-locked-package",
             "allow_new_install": False,
             "preserve_active_state": True,
             "requires_fresh_inventory_recheck": True,
