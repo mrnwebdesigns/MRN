@@ -35,6 +35,8 @@ jobs:
           owner: mrnwebdesigns
           repositories: |
             mrn-config-helper
+            mrn-schema-bridge
+            mrn-sendgrid-provisioning
             mrn-stack-deployment-agent
             mrn-universal-sticky-bar
 
@@ -46,7 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "${MRN_STANDALONE_PLUGINS_ROOT}"
-          for slug in mrn-config-helper mrn-stack-deployment-agent mrn-universal-sticky-bar; do
+          for slug in mrn-config-helper mrn-schema-bridge mrn-sendgrid-provisioning mrn-stack-deployment-agent mrn-universal-sticky-bar; do
             gh repo clone "mrnwebdesigns/${slug}" \
               "${MRN_STANDALONE_PLUGINS_ROOT}/${slug}" -- --depth 1
           done
