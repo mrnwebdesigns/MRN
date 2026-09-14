@@ -199,5 +199,34 @@ class ReleaseLockTests(unittest.TestCase):
             self.assertEqual(".", portable_path)
 
 
+class PlatformComponentPolicyTests(unittest.TestCase):
+    def test_media_bulk_tools_is_locked_by_full_stack_releases(self):
+        stack = Path(__file__).parents[1]
+        catalog = json.loads(
+            (stack / "manifests/component-catalog.json").read_text(encoding="utf-8")
+        )
+        optional_releases = json.loads(
+            (stack / "manifests/optional-plugin-releases.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        manifest = (stack / "manifests/plugins.txt").read_text(encoding="utf-8")
+        entry = next(
+            item
+            for item in catalog["components"]
+            if item["slug"] == "mrn-media-bulk-tools"
+        )
+
+        self.assertEqual("0.13.1", entry["version"])
+        self.assertEqual("standard-plugin", entry["runtime_type"])
+        self.assertEqual("standard-bootstrap", entry["current_distribution"])
+        self.assertEqual("platform-required", entry["target_tier"])
+        self.assertIn("mrn-media-bulk-tools.zip", manifest)
+        self.assertNotIn(
+            "mrn-media-bulk-tools",
+            [release["slug"] for release in optional_releases["releases"]],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
