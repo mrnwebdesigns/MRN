@@ -79,11 +79,15 @@
         },
         "rollback_readiness": {
           "type": "object",
-          "required": ["ready", "version", "package_path", "package_sha256"],
+          "additionalProperties": false,
+          "required": ["ready", "version", "package_path", "package_filename", "main_file", "size_bytes", "package_sha256"],
           "properties": {
             "ready": {"const": true},
             "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
             "package_path": {"type": "string", "minLength": 1},
+            "package_filename": {"type": "string", "pattern": "^[A-Za-z0-9._-]+\\.zip$"},
+            "main_file": {"type": "string", "minLength": 1},
+            "size_bytes": {"type": "integer", "minimum": 1},
             "package_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
           }
         },
@@ -93,10 +97,14 @@
     "execution_contract": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["controller_ability", "rollback_ability", "allow_new_install", "preserve_active_state", "requires_fresh_inventory_recheck", "requires_confirm", "requires_fresh_database_backup_receipt", "requires_precondition_hash"],
+      "required": ["preflight_ability", "controller_ability", "rollback_ability", "minimum_controller_version", "precondition_hash_source", "rollback_artifact_model", "allow_new_install", "preserve_active_state", "requires_fresh_inventory_recheck", "requires_confirm", "requires_fresh_database_backup_receipt", "requires_precondition_hash"],
       "properties": {
+        "preflight_ability": {"const": "mrn-mainwp/preflight-optional-plugin-update-v1"},
         "controller_ability": {"const": "mrn-mainwp/update-optional-plugin-v1"},
         "rollback_ability": {"const": "mrn-mainwp/rollback-optional-plugin-v1"},
+        "minimum_controller_version": {"const": "0.8.1"},
+        "precondition_hash_source": {"const": "controller-preflight"},
+        "rollback_artifact_model": {"const": "operator-supplied-checksum-locked-package"},
         "allow_new_install": {"const": false},
         "preserve_active_state": {"const": true},
         "requires_fresh_inventory_recheck": {"const": true},

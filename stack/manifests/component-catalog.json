@@ -725,8 +725,8 @@
       "current_distribution": "catalog-only",
       "target_tier": "maintenance-only",
       "source": {"repository": "mrn-database-retention", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["MainWP", "FluentSMTP", "Action Scheduler", "Defender (legacy compatibility only)", "Relevanssi"], "release_group": null},
-      "data": {"options": ["retention report and lock state"], "tables": ["operates on allowlisted third-party tables; owns none"], "cron": ["four retention/maintenance hooks"], "routes": ["mrn-db-retention WP-CLI command"], "external_services": ["MainWP", "FluentSMTP", "Defender (legacy compatibility only)", "Action Scheduler", "Relevanssi"]},
+      "dependencies": {"hard": ["WordPress"], "soft": ["MainWP", "FluentSMTP", "Action Scheduler", "Relevanssi"], "release_group": null},
+      "data": {"options": ["retention report and lock state"], "tables": ["operates on allowlisted third-party tables; owns none"], "cron": ["four retention/maintenance hooks"], "routes": ["mrn-db-retention WP-CLI command"], "external_services": ["MainWP", "FluentSMTP", "Action Scheduler", "Relevanssi"]},
       "purpose": "Applies explicitly configured retention to supported third-party operational data when deliberately installed as a maintenance integration."
     },
     {
@@ -774,7 +774,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -782,8 +782,8 @@
       "target_tier": "dashboard-only",
       "source": {"repository": "mrn-mainwp-operations-api", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api", "state": "confirmed-independent-dashboard"},
       "dependencies": {"hard": ["MainWP Dashboard", "WordPress Abilities API"], "soft": ["UpdraftPlus", "MRN Google Fonts"], "release_group": "mainwp-operations"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": ["sixteen mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
-      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages, font management, one-site Stack qualification, and backup-gated full Stack rollout and recovery."
+      "data": {"options": [], "tables": [], "cron": [], "routes": ["nineteen mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
+      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages, font management, one-site Stack qualification, backup-gated full Stack rollout and recovery, and upgrade-only allowlisted optional-plugin updates."
     },
     {
       "slug": "mrn-pre-consent-update-backup",
