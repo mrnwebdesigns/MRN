@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "catalog_updated": "2026-09-14",
+  "authority": "Checksum-locked releases available to explicit per-site optional-plugin plans. Inclusion never authorizes installation or a site write.",
+  "releases": [
+    {
+      "slug": "mrn-database-retention",
+      "version": "1.1.1",
+      "target_tier": "maintenance-only",
+      "current_distribution": "catalog-only",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-database-retention",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention",
+        "git_commit": "aa92d64844c3d9a4f6009c58eda28ca9300eac8c"
+      },
+      "package": {
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention/dist/mrn-database-retention-1.1.1.zip",
+        "filename": "mrn-database-retention-1.1.1.zip",
+        "main_file": "mrn-database-retention/mrn-database-retention.php",
+        "size_bytes": 17751,
+        "sha256": "c65b540480afcee0cdd61034797fdf9453df35f187892dff7b7fa249a98829e3"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    }
+  ]
+}
