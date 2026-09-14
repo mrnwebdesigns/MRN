@@ -17,9 +17,10 @@ still receive separate one-plugin plans, preflights, backup receipts, applies,
 readbacks, and rollback artifacts. Update GTM Injector first: version 1.0.14
 fails closed when an active older Cookie Consent release cannot expose an
 explicit state. Then update Cookie Consent. This order prevents an immediate-GTM
-window between the two plugin updates. Do not add either release to the registry
-until its source commit is merged to `origin/main`; do not attempt the rollout
-until the Dashboard controller allowlist exposes both plugin main files.
+window between the two plugin updates. Release records may be added only after
+their source commits merge to `origin/main`. The registered `1.1.43` and
+`1.0.14` releases meet that source gate; do not attempt the rollout until the
+Dashboard runs controller `0.8.2` and exposes both plugin main files.
 
 MRN Database Retention is maintenance-only and catalog-only. Defender support
 inside that plugin is conditional legacy compatibility; Defender is not a Stack
@@ -108,7 +109,7 @@ updates because it:
 - does not bind execution to the inventory version/state reviewed in preflight;
 - does not require or report a checksum-verified plugin rollback artifact.
 
-`mrn-mainwp-operations-api` `0.8.1` releases the dedicated
+`mrn-mainwp-operations-api` `0.8.2` provides the dedicated
 `mrn-mainwp/preflight-optional-plugin-update-v1`,
 `mrn-mainwp/update-optional-plugin-v1`, and
 `mrn-mainwp/rollback-optional-plugin-v1` abilities. Preflight uses POST transport
@@ -135,13 +136,13 @@ safe contract is:
 8. Delete temporary Dashboard upload material after success or failure.
 
 Do not use the generic package installer for optional-plugin updates. Before a
-site operation, `0.8.1` must be separately deployed to the named MainWP
+site operation, `0.8.2` must be separately deployed to the named MainWP
 Dashboard and the three abilities must be visible through the configured
 `mainwp` MCP allowlist. Missing controller deployment or ability visibility is
 a deployment blocker, not permission to use a browser, SSH, or direct mutation.
-The currently exposed `0.8.1` ability schema allowlists only Database Retention;
-Cookie Consent and GTM Injector therefore require a separately reviewed
-controller/allowlist release before any site rollout.
+The merged `0.8.2` source allowlists Database Retention, Cookie Consent, and GTM
+Injector. The connected Dashboard must report that version and expose the same
+three exact main-file choices before any site rollout.
 
 ## Ability Payload Mapping
 

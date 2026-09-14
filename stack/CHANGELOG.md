@@ -5,10 +5,12 @@
 - Removed `mrn-cookie-consent` and `mrn-gtm-injector` from the universal Stack
   bootstrap input and classified both as catalog-only optional integrations.
   Existing sites are unchanged.
-- Kept their proposed `1.1.43` and `1.0.14` checksum-locked optional release
-  records out of the authoritative registry until the standalone source commits
-  are merged to `origin/main` and the Dashboard controller allowlist supports
-  both plugin main files.
+- Added checksum-locked optional release records for Cookie Consent `1.1.43`
+  and GTM Injector `1.0.14` after both standalone source releases merged to
+  `origin/main`.
+- Advanced the optional-plugin plan contract to MainWP Operations API `0.8.2`,
+  whose merged source allowlists both exact plugin main files. Dashboard
+  deployment and every child-site update remain separate authorization gates.
 
 ## 2026.09.14-optional-plugin-fleet-ready
 - Cataloged the standalone `mrn-database-retention` `1.1.1` release and bound

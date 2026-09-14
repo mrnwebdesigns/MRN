@@ -2,10 +2,11 @@
 
 ## Status and scope
 
-This package records reviewed **local release candidates only** for MRN Cookie
-Consent `1.1.43` and MRN GTM Injector `1.0.14`. No source branch was pushed or
-merged, no package was published, no MainWP configuration was changed, no site
-setting was changed, and no development or production site was deployed.
+This package records reviewed release candidates for MRN Cookie Consent
+`1.1.43` and MRN GTM Injector `1.0.14`. Their source PRs are merged and their
+checksum-locked packages are registered on the Fleet review branch. No package
+was published through MainWP, no MainWP configuration or child-site setting was
+changed, and no development or production child site was deployed.
 
 These plugins are optional integrations. They are removed from the universal
 Stack bootstrap input and remain outside the schema-2 full Stack release.
@@ -138,32 +139,60 @@ reported eight fleet parity/readiness warnings outside these two catalog-only
 plugin changes; no full Stack promotion or parity claim is part of this phase.
 No required candidate runtime check was blocked.
 
+MainWP Operations API `0.8.2` passed all four focused controller regressions,
+PHP `7.4` and `8.3` GitHub CI, the staged MRN commit gate, and merged-source
+all-file MRN QA at 100%. Runtime/browser rows were not applicable because this
+Dashboard-only controller has not been deployed under the current no-site-write
+instruction.
+
 Complete reports:
 
 - [`release-evidence/2026-09-14-cookie-gtm/cookie-consent-1.1.43-standard-qa.md`](release-evidence/2026-09-14-cookie-gtm/cookie-consent-1.1.43-standard-qa.md)
 - [`release-evidence/2026-09-14-cookie-gtm/cookie-consent-1.1.43-release-qa.md`](release-evidence/2026-09-14-cookie-gtm/cookie-consent-1.1.43-release-qa.md)
 - [`release-evidence/2026-09-14-cookie-gtm/gtm-injector-1.0.14-standard-qa.md`](release-evidence/2026-09-14-cookie-gtm/gtm-injector-1.0.14-standard-qa.md)
 - [`release-evidence/2026-09-14-cookie-gtm/gtm-injector-1.0.14-release-qa.md`](release-evidence/2026-09-14-cookie-gtm/gtm-injector-1.0.14-release-qa.md)
+- [`release-evidence/2026-09-14-cookie-gtm/mainwp-operations-api-0.8.2-merged-qa.md`](release-evidence/2026-09-14-cookie-gtm/mainwp-operations-api-0.8.2-merged-qa.md)
 
-## Immutable local ZIP candidates
+## Immutable ZIP candidates
 
 | Candidate | Source commit | Local path | Size | SHA-256 |
 | --- | --- | --- | ---: | --- |
-| Cookie Consent `1.1.43` | `7c6b6dadcf434d85ba7f31f4530acb0265b03dd3` | `/Users/khofmeyer/Development/MRN-task-worktrees/mrn-cookie-consent/zip/mrn-cookie-consent.zip` | 74,037 bytes | `98a6703e6e2053ab60bdadc0506e174a72b60371a0b6736a01bf2ea13d731419` |
-| GTM Injector `1.0.14` | `47b33964a9dab06f42ff116e8f01e049e9e0b805` | `/Users/khofmeyer/Development/MRN-task-worktrees/mrn-gtm-injector/zip/mrn-gtm-injector-1.0.14.zip` | 27,750 bytes | `e227b8a33ad8dffc1904cacbfba1c48a068e6182f204ee6f13e4a804746ce6c1` |
+| Cookie Consent `1.1.43` | `1e14bd239e2e9651033be31fe36b694fa19856de` | `/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent/zip/mrn-cookie-consent.zip` | 74,037 bytes | `98a6703e6e2053ab60bdadc0506e174a72b60371a0b6736a01bf2ea13d731419` |
+| GTM Injector `1.0.14` | `1c8908013fa0b35581409c13502f9a98894a96a0` | `/Users/khofmeyer/Development/MRN-plugins/mrn-gtm-injector/zip/mrn-gtm-injector-1.0.14.zip` | 27,750 bytes | `e227b8a33ad8dffc1904cacbfba1c48a068e6182f204ee6f13e4a804746ce6c1` |
+| MainWP Operations API `0.8.2` | `ef86b25f79cf8aafb81200eec85590699869ec35` | `/Users/khofmeyer/Development/MRN-task-worktrees/fleet-cookie-gtm/releases/plugins/mrn-mainwp-operations-api-0.8.2.zip` | 59,288 bytes | `cc130c5178129ab984e31282d4ac1314fb92625ec5e5c837444fd4da3670e9cf` |
 
 Each ZIP has exactly one slug-matching top-level directory, contains the stated
 main file and embedded version, is readable, and contains no Git metadata or
 unsafe path. These are candidates, not published releases.
 
-## Proposed optional release entries
+## Operator-held rollback artifacts
 
-The following are the exact objects proposed for
-`manifests/optional-plugin-releases.json` after both source commits are merged
-to their `origin/main` branches, the catalog versions are advanced, the exact
-artifacts are present at the registered canonical paths and rechecked, and the
-Dashboard controller allowlist release is available. They are deliberately not
-inserted into the authoritative registry in this branch.
+The following rollback ZIPs are local, checksum-locked operator artifacts. They
+are not release-registry entries and are not published packages. They exist so
+an individually approved site update can prove recovery to that site's exact
+starting version before any write occurs.
+
+| Site/version use | Source commit | Local path | Size | SHA-256 |
+| --- | --- | --- | ---: | --- |
+| Gloves local: Cookie Consent `1.1.29` | `b9f68abd75ebad2e4f87d5843c5ef1299ee81cdd` | `/Users/khofmeyer/Development/MRN-task-worktrees/fleet-cookie-gtm/releases/plugins/mrn-cookie-consent-1.1.29-rollback.zip` | 46,228 bytes | `68334c05e271e26ab359b4b49516641613e0aa10f039f3510d03237860889990` |
+| MRN Web Designs: Cookie Consent `1.1.37` | `97f5fcf0385a124988b2ebc6cbcc8c3dcb7c03d2` | `/Users/khofmeyer/Development/MRN-task-worktrees/fleet-cookie-gtm/releases/plugins/mrn-cookie-consent-1.1.37-rollback.zip` | 67,011 bytes | `ef018e099e665664ae9f67fc134b1d930eb8f4161d520e57f74bc1ab07d300d5` |
+| Trilliant: Cookie Consent `1.1.42` | `e633a797bcef802725d04e1a1e72ea709f7b5b5c` | `/Users/khofmeyer/Development/MRN-task-worktrees/fleet-cookie-gtm/releases/plugins/mrn-cookie-consent-1.1.42-rollback.zip` | 70,654 bytes | `365e427f68caa01dc82cd1ca9bc933073ff187ac0b22d67ea6e0527bb359cdb1` |
+| MRN Web Designs: GTM Injector `1.0.9` | `c446175fc2a5a9a8580aa99c17e053dd0a36e413` | `/Users/khofmeyer/Development/MRN-task-worktrees/fleet-cookie-gtm/releases/plugins/mrn-gtm-injector-1.0.9-rollback.zip` | 7,000 bytes | `9af1bdfd49aa0dedd50d8c8a1029ab71580b4abca4843faedfad0321d70e3d28` |
+| Gloves local: GTM Injector `1.0.11` | `86e152e4eb02669b7549b3093b2d59c5ce36b163` | `/Users/khofmeyer/Development/MRN-task-worktrees/fleet-cookie-gtm/releases/plugins/mrn-gtm-injector-1.0.11-rollback.zip` | 8,899 bytes | `f6050670e0d89656823d6765536bd85e7c301ec7df411ebe1bf40fc2a3221ce9` |
+| Trilliant: GTM Injector `1.0.13` | `106035f8c7d263e9f90ec30f49431addbe99f4d2` | `/Users/khofmeyer/Development/MRN-task-worktrees/fleet-cookie-gtm/releases/plugins/mrn-gtm-injector-1.0.13-rollback.zip` | 19,944 bytes | `5a0e66e0d0c37a6814e248527bf45c9426f8df72097c7469a3537d43fc64fc8c` |
+
+MRN Web Designs and Trilliant therefore have local rollback pairs matching the
+versions observed during discovery. Gloves has a pair matching the local
+runtime only; its Dev inventory and management route remain unresolved, so
+those local artifacts do not make Gloves Dev ready.
+
+## Registered optional release entries
+
+The following are the exact objects in
+`manifests/optional-plugin-releases.json`. Both source commits are merged to
+their `origin/main` branches, the catalog versions are advanced, and the exact
+artifacts are present at the registered canonical paths. Inclusion makes them
+available to a reviewed plan; it does not authorize a site write.
 
 ```json
 {
@@ -174,7 +203,7 @@ inserted into the authoritative registry in this branch.
   "source": {
     "repository": "mrnwebdesigns/mrn-cookie-consent",
     "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent",
-    "git_commit": "7c6b6dadcf434d85ba7f31f4530acb0265b03dd3"
+    "git_commit": "1e14bd239e2e9651033be31fe36b694fa19856de"
   },
   "package": {
     "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent/zip/mrn-cookie-consent.zip",
@@ -200,7 +229,7 @@ inserted into the authoritative registry in this branch.
   "source": {
     "repository": "mrnwebdesigns/mrn-gtm-injector",
     "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-gtm-injector",
-    "git_commit": "47b33964a9dab06f42ff116e8f01e049e9e0b805"
+    "git_commit": "1c8908013fa0b35581409c13502f9a98894a96a0"
   },
   "package": {
     "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-gtm-injector/zip/mrn-gtm-injector-1.0.14.zip",
@@ -217,10 +246,11 @@ inserted into the authoritative registry in this branch.
 }
 ```
 
-The current optional-plugin controller ability schema allowlists only
-`mrn-database-retention/mrn-database-retention.php`. A separate reviewed
-controller/allowlist release for both candidate main files is a hard rollout
-blocker. No controller source is changed by this package.
+MainWP Operations API `0.8.2` source is merged at
+`ef86b25f79cf8aafb81200eec85590699869ec35` and allowlists the exact Cookie
+Consent, Database Retention, and GTM Injector main files. A site rollout remains
+blocked until that controller package is deployed to the Dashboard and the
+connected MCP schema is read back with both new choices.
 
 ## One-site rollout matrix
 

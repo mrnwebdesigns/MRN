@@ -10,12 +10,12 @@ The future hosting platform owns site and environment selection. Its canonical v
 
 `scripts/site-bootstrap.sh` honors `--site-profile` and `MRN_SITE_PROFILE` (`stack` or `plain`) and supports profile-scoped manifest entries that end in `|stack` or `|plain` so optional shared plugins can stay out of the plain-profile bootstrap.
 
-Released optional and maintenance plugins use `manifests/optional-plugin-releases.json` and `scripts/build-mainwp-optional-plugin-plan.py`. The plan builder is deliberately one-site and upgrade-only: it rejects an absent plugin, stale inventory, an unverified package, or missing backup/rollback readiness. MainWP Operations API `0.8.1` provides the matching exact-site preflight, update, and rollback abilities without adding absent plugins. See [`MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md).
+Released optional and maintenance plugins use `manifests/optional-plugin-releases.json` and `scripts/build-mainwp-optional-plugin-plan.py`. The plan builder is deliberately one-site and upgrade-only: it rejects an absent plugin, stale inventory, an unverified package, or missing backup/rollback readiness. MainWP Operations API `0.8.2` provides the matching exact-site preflight, update, and rollback abilities without adding absent plugins. See [`MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md).
 
 Cookie Consent and GTM Injector are optional integrations and are not part of
-the universal bootstrap manifest. Their release records must be added only
-after the standalone release commits are merged to `origin/main` and the
-Dashboard controller exposes both main-file slugs. For paired updates, install
+the universal bootstrap manifest. Their checksum-locked release records bind
+merged standalone source, while rollout still requires the Dashboard to run
+controller `0.8.2` and expose both main-file slugs. For paired updates, install
 GTM Injector first so an older active Cookie Consent integration is treated as
 ambiguous and fails closed throughout the transition.
 

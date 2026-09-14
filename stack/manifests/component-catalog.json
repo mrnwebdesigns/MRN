@@ -550,7 +550,7 @@
     {
       "slug": "mrn-cookie-consent",
       "name": "MRN Cookie Consent",
-      "version": "1.1.42",
+      "version": "1.1.43",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -606,7 +606,7 @@
     {
       "slug": "mrn-gtm-injector",
       "name": "MRN GTM Injector",
-      "version": "1.0.13",
+      "version": "1.0.14",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -774,7 +774,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.8.1",
+      "version": "0.8.2",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",

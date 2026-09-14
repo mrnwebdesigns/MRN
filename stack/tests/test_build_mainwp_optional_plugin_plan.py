@@ -187,7 +187,7 @@ class OptionalPluginPlanTests(unittest.TestCase):
             "mrn-mainwp/preflight-optional-plugin-update-v1",
             plan["execution_contract"]["preflight_ability"],
         )
-        self.assertEqual("0.8.1", plan["execution_contract"]["minimum_controller_version"])
+        self.assertEqual("0.8.2", plan["execution_contract"]["minimum_controller_version"])
         self.assertEqual(
             "controller-preflight",
             plan["execution_contract"]["precondition_hash_source"],
@@ -290,12 +290,12 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             for item in catalog["components"]
             if item["slug"] == "mrn-mainwp-operations-api"
         )
-        self.assertEqual("0.8.1", controller["version"])
+        self.assertEqual("0.8.2", controller["version"])
         self.assertEqual("dashboard-only", controller["target_tier"])
         self.assertIn("nineteen mrn-mainwp WordPress Abilities", controller["data"]["routes"])
         self.assertNotIn("Defender (legacy compatibility only)", entry["dependencies"]["soft"])
 
-    def test_consent_integrations_stay_catalog_only_and_out_of_bootstrap(self):
+    def test_consent_integrations_are_registered_but_stay_out_of_bootstrap(self):
         stack = Path(__file__).parents[1]
         catalog = json.loads(
             (stack / "manifests/component-catalog.json").read_text(encoding="utf-8")
@@ -306,7 +306,19 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             )
         )
         manifest = (stack / "manifests/plugins.txt").read_text(encoding="utf-8")
-        release_slugs = {item["slug"] for item in releases["releases"]}
+        release_by_slug = {item["slug"]: item for item in releases["releases"]}
+        expected = {
+            "mrn-cookie-consent": {
+                "version": "1.1.43",
+                "commit": "1e14bd239e2e9651033be31fe36b694fa19856de",
+                "main_file": "mrn-cookie-consent/mrn-cookie-consent.php",
+            },
+            "mrn-gtm-injector": {
+                "version": "1.0.14",
+                "commit": "1c8908013fa0b35581409c13502f9a98894a96a0",
+                "main_file": "mrn-gtm-injector/mrn-gtm-injector.php",
+            },
+        }
 
         for slug in ("mrn-cookie-consent", "mrn-gtm-injector"):
             entry = next(
@@ -314,8 +326,12 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             )
             self.assertEqual("optional-integration", entry["target_tier"])
             self.assertEqual("catalog-only", entry["current_distribution"])
+            self.assertEqual(expected[slug]["version"], entry["version"])
             self.assertNotIn(f"{slug}.zip", manifest)
-            self.assertNotIn(slug, release_slugs)
+            release = release_by_slug[slug]
+            self.assertEqual(expected[slug]["version"], release["version"])
+            self.assertEqual(expected[slug]["commit"], release["source"]["git_commit"])
+            self.assertEqual(expected[slug]["main_file"], release["package"]["main_file"])
 
 
 if __name__ == "__main__":

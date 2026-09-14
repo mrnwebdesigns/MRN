@@ -4,6 +4,29 @@
   "authority": "Checksum-locked releases available to explicit per-site optional-plugin plans. Inclusion never authorizes installation or a site write.",
   "releases": [
     {
+      "slug": "mrn-cookie-consent",
+      "version": "1.1.43",
+      "target_tier": "optional-integration",
+      "current_distribution": "catalog-only",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-cookie-consent",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent",
+        "git_commit": "1e14bd239e2e9651033be31fe36b694fa19856de"
+      },
+      "package": {
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent/zip/mrn-cookie-consent.zip",
+        "filename": "mrn-cookie-consent.zip",
+        "main_file": "mrn-cookie-consent/mrn-cookie-consent.php",
+        "size_bytes": 74037,
+        "sha256": "98a6703e6e2053ab60bdadc0506e174a72b60371a0b6736a01bf2ea13d731419"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
       "slug": "mrn-database-retention",
       "version": "1.1.1",
       "target_tier": "maintenance-only",
@@ -19,6 +42,29 @@
         "main_file": "mrn-database-retention/mrn-database-retention.php",
         "size_bytes": 17751,
         "sha256": "c65b540480afcee0cdd61034797fdf9453df35f187892dff7b7fa249a98829e3"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
+      "slug": "mrn-gtm-injector",
+      "version": "1.0.14",
+      "target_tier": "optional-integration",
+      "current_distribution": "catalog-only",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-gtm-injector",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-gtm-injector",
+        "git_commit": "1c8908013fa0b35581409c13502f9a98894a96a0"
+      },
+      "package": {
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-gtm-injector/zip/mrn-gtm-injector-1.0.14.zip",
+        "filename": "mrn-gtm-injector-1.0.14.zip",
+        "main_file": "mrn-gtm-injector/mrn-gtm-injector.php",
+        "size_bytes": 27750,
+        "sha256": "e227b8a33ad8dffc1904cacbfba1c48a068e6182f204ee6f13e4a804746ce6c1"
       },
       "update_policy": {
         "mode": "upgrade-only",
