@@ -25,6 +25,8 @@ __pycache__/
 
 # Release artifacts
 releases/clone/
+releases/assembled/
+releases/mainwp-stack/
 releases/mu-plugins/
 releases/plugins/
 releases/stack/
