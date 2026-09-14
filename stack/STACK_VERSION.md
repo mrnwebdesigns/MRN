@@ -3,7 +3,7 @@
 ## Current Release
 - Stack release: `2026.09.14-media-bulk-platform-required`
 - Release date: `2026-09-14`
-- Status: `source candidate; merge, immutable lock, artifacts, and site deployment pending`
+- Status: `release candidate; site deployment and runtime verification pending`
 
 ## Included MRN-Owned Components
 - Theme:
