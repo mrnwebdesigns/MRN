@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-09-09",
+  "catalog_updated": "2026-09-14",
   "authority": "This file is the authoritative inventory and classification source for MRN-owned WordPress plugins and MU components. Inclusion does not imply installation.",
   "product_model": {
     "platform-required": "Installed on a production MRN stack because it provides mandatory platform behavior.",
@@ -718,16 +718,16 @@
     {
       "slug": "mrn-database-retention",
       "name": "MRN Database Retention",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "runtime_type": "standard-plugin",
       "classification": "maintenance-integration",
       "lifecycle": "supported-review",
-      "current_distribution": "standard-bootstrap",
+      "current_distribution": "catalog-only",
       "target_tier": "maintenance-only",
       "source": {"repository": "mrn-database-retention", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["MainWP", "Action Scheduler", "Defender", "Relevanssi"], "release_group": null},
-      "data": {"options": ["retention report and lock state"], "tables": ["operates on allowlisted third-party tables; owns none"], "cron": ["four retention/maintenance hooks"], "routes": ["mrn-db-retention WP-CLI command"], "external_services": ["MainWP", "Defender", "Action Scheduler", "Relevanssi"]},
-      "purpose": "Applies explicitly configured retention to supported third-party operational data."
+      "dependencies": {"hard": ["WordPress"], "soft": ["MainWP", "FluentSMTP", "Action Scheduler", "Defender (legacy compatibility only)", "Relevanssi"], "release_group": null},
+      "data": {"options": ["retention report and lock state"], "tables": ["operates on allowlisted third-party tables; owns none"], "cron": ["four retention/maintenance hooks"], "routes": ["mrn-db-retention WP-CLI command"], "external_services": ["MainWP", "FluentSMTP", "Defender (legacy compatibility only)", "Action Scheduler", "Relevanssi"]},
+      "purpose": "Applies explicitly configured retention to supported third-party operational data when deliberately installed as a maintenance integration."
     },
     {
       "slug": "mrn-dummy-content",

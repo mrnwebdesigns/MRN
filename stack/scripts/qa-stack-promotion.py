@@ -40,6 +40,8 @@ RELEASE_METADATA_PATHS = {
     "stack/CHANGELOG.md",
     "stack/STACK_VERSION.md",
     "stack/manifests/component-catalog.json",
+    "stack/manifests/optional-plugin-releases.json",
+    "stack/manifests/optional-plugin-update-plan.schema.json",
     "stack/manifests/plugins.txt",
     "stack/manifests/stack-release.lock.json",
     "stack/manifests/stack-release.lock.schema.json",

@@ -34,7 +34,6 @@
   - `mrn-comment-management` `1.1.7`
   - `mrn-config-helper` `0.1.59`
   - `mrn-cookie-consent` `1.1.42`
-  - `mrn-database-retention` `1.1.0`
   - `mrn-editor-tools` `1.8.25`
   - `mrn-fontawesome-profile-manager` `0.5.0`
   - `mrn-google-fonts` `1.0.7`
@@ -65,6 +64,7 @@
 - Third-party packages in `manifests/plugins.txt` keep their own upstream versions and package filenames.
 - Current baseline keeps the canonical AME export payloads, importer/manifests, bootstrap helper, shared shim, and stack MU wrapper loaders tracked in the main repo so release/deploy flows can verify and sync them consistently.
 - Current baseline includes bounded recovery inventory and guarded reconciliation for exact, unchanged incomplete rollout markers that are physically empty or contain only recognized empty apply scaffolding, without introducing recursive deletion.
+- `mrn-database-retention` is not part of the platform baseline. Its independently released `1.1.1` package is catalog-only and available solely through the one-site, upgrade-only optional-plugin plan.
 - Current candidate explicitly locks every tracked MU wrapper at its real deployed filename, including the Updraft backup-policy wrapper at `mrn-updraft-local-retention.php`.
 - The Dashboard-only `mrn-mainwp-operations-api` `0.8.0` controller exposes schema-2 one-site qualification, preview, backup-gated full Stack rollout, rollback, recovery, and runtime-proof abilities as an independently released MainWP control-plane component; it is not installed on child sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.

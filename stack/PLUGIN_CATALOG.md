@@ -1,6 +1,6 @@
 # MRN WordPress Component Catalog
 
-Last classified: 2026-09-09
+Last classified: 2026-09-14
 
 This is the human-readable index of MRN-owned WordPress components. The authoritative machine-readable source is [`manifests/component-catalog.json`](./manifests/component-catalog.json), and the rules governing it are in [`PLUGIN_GOVERNANCE.md`](./PLUGIN_GOVERNANCE.md).
 
@@ -77,7 +77,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 | `mrn-template-inspector` | 0.2.7 | Independent repository (`mrnwebdesigns/mrn-template-inspector`) via MRN-plugins symlink | Development only | Template and request-context inspection; local-only opener scope retained. |
 | `mrn-dummy-content` | 0.3.1 | Independent repository (`mrnwebdesigns/mrn-dummy-content`); catalog-only | Development only | Development content fixtures; excluded from production bootstrap. |
 | `mrn-comment-management` | 1.1.7 | Standard bootstrap | Maintenance only | Explicit comment audit and deletion. |
-| `mrn-database-retention` | 1.1.0 | Independent repository (`mrnwebdesigns/mrn-database-retention`) via MRN-plugins symlink | Maintenance only | Allowlisted third-party operational-data retention. |
+| `mrn-database-retention` | 1.1.1 | Independent repository (`mrnwebdesigns/mrn-database-retention`) via MRN-plugins symlink; catalog-only release registry | Maintenance only | Allowlisted third-party operational-data retention; existing installations may use the guarded optional-plugin upgrade plan. Defender support is legacy compatibility only. |
 | `mrn-layout-import-export` | 0.1.2 | Independent repository (`mrnwebdesigns/mrn-layout-import-export`) via MRN-plugins symlink | Maintenance only | ACF builder layout migration. |
 
 ## Review Queue
@@ -114,4 +114,4 @@ No disposition in this section authorizes a code move, manifest change, deletion
 
 ## Current Bootstrap Warning
 
-The existing [`manifests/plugins.txt`](./manifests/plugins.txt) now supports profile-scoped entries such as `|stack` and `|plain`, which keeps selected optional components out of the plain-profile bootstrap. Remaining optional and maintenance components still require feature-selection support in the hosting platform before they can be removed safely from the shared bundle input.
+The existing [`manifests/plugins.txt`](./manifests/plugins.txt) supports profile-scoped entries such as `|stack` and `|plain`, which keeps selected optional components out of the plain-profile bootstrap. MRN Database Retention is no longer a bootstrap default; its checksum-locked release is managed through the upgrade-only optional-plugin plan. Remaining optional and maintenance components still require feature-selection support in the hosting platform before they can be removed safely from the shared bundle input.

@@ -1,5 +1,17 @@
 # Stack Changelog
 
+## 2026.09.14-optional-database-retention-release
+- Cataloged the standalone `mrn-database-retention` `1.1.1` release and bound
+  its merged source commit to the checksum-verified release artifact.
+- Removed Database Retention from the universal bootstrap manifest while
+  preserving its maintenance-only classification; no existing site is changed.
+- Added a one-site, upgrade-only optional-plugin plan schema and builder that
+  rejects absent plugins, stale inventory, non-upgrades, package drift, and
+  missing backup or rollback readiness.
+- Documented the default-deny MainWP controller extension required before any
+  optional-plugin site write. The existing generic package installer must not
+  be used for this rollout because it can install an absent plugin.
+
 ## 2026.09.11-mainwp-full-stack-fleet-canary-verified
 - `mrn-loader` (`1.6.0` -> `1.6.1`): aligned runtime-report tree hashing
   with the immutable release generator, retained MU component load state across

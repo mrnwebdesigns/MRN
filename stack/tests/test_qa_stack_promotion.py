@@ -241,6 +241,7 @@ class PromotionTests(unittest.TestCase):
                 "plugins/optional/main.php",
                 "plugins/unknown/main.php",
                 "stack/scripts/deploy-stack-release-to-site.py",
+                "stack/manifests/optional-plugin-releases.json",
                 "docs/notes.md",
             ],
             catalog,
@@ -256,6 +257,10 @@ class PromotionTests(unittest.TestCase):
         self.assertEqual(
             ["stack/scripts/deploy-stack-release-to-site.py"],
             inventory["deployment_contracts"],
+        )
+        self.assertEqual(
+            ["stack/manifests/optional-plugin-releases.json"],
+            inventory["release_metadata"],
         )
 
     def test_external_inventory_detects_default_branch_drift(self):

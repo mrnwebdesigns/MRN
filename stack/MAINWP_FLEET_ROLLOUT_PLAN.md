@@ -17,6 +17,10 @@ package and must be installed and verified separately before preflight.
 Schema-1 MU-only packages remain supported for approved site forks and legacy
 rollouts. Schema 2 is the full Stack contract described here.
 
+Optional and maintenance-only plugins are never schema-2 package targets. Their
+separate, one-site, upgrade-only contract is documented in
+[`MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md).
+
 ## Qualification And Fleet Membership
 
 `Full Stack` is an owner-approved MainWP cohort, not a guess derived from a
