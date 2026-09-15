@@ -242,6 +242,7 @@ def approved_selective_source_heads(catalog, releases):
         slug = str(release.get("slug") or "")
         catalog_entry = catalog_by_slug.get(slug) or {}
         source = release.get("source") or {}
+        catalog_source = catalog_entry.get("source") or {}
         policy = release.get("update_policy") or {}
         commit = str(source.get("git_commit") or "")
         if (
@@ -251,7 +252,8 @@ def approved_selective_source_heads(catalog, releases):
             or release.get("current_distribution") != "standard-bootstrap"
             or catalog_entry.get("runtime_type") != "standard-plugin"
             or catalog_entry.get("target_tier") != "platform-required"
-            or source.get("repository") != (catalog_entry.get("source") or {}).get("repository")
+            or str(source.get("repository") or "").rsplit("/", 1)[-1]
+            != str(catalog_source.get("repository") or "").rsplit("/", 1)[-1]
             or policy.get("mode") != "upgrade-only"
             or len(commit) != 40
             or any(character not in "0123456789abcdef" for character in commit)

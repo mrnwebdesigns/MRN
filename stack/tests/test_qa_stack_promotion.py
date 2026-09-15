@@ -340,6 +340,42 @@ class PromotionTests(unittest.TestCase):
             self.assertEqual("approved-selective-drift", inventory[0]["status"])
             self.assertEqual("1.1.0", inventory[0]["approved_selective_version"])
 
+    def test_selective_head_accepts_owner_qualified_repository_name(self):
+        heads = promotion.approved_selective_source_heads(
+            {
+                "components": [
+                    {
+                        "slug": "required-external",
+                        "version": "1.1.0",
+                        "runtime_type": "standard-plugin",
+                        "target_tier": "platform-required",
+                        "source": {"repository": "required-external"},
+                    }
+                ]
+            },
+            {
+                "releases": [
+                    {
+                        "slug": "required-external",
+                        "version": "1.1.0",
+                        "runtime_type": "standard-plugin",
+                        "target_tier": "platform-required",
+                        "current_distribution": "standard-bootstrap",
+                        "source": {
+                            "repository": "mrnwebdesigns/required-external",
+                            "git_commit": "a" * 40,
+                        },
+                        "update_policy": {"mode": "upgrade-only"},
+                    }
+                ]
+            },
+        )
+
+        self.assertEqual(
+            {"git_commit": "a" * 40, "version": "1.1.0"},
+            heads["required-external"],
+        )
+
     def test_audit_blocks_required_changes_after_current_lock(self):
         with tempfile.TemporaryDirectory() as root:
             fixture = GitFixture(root)
