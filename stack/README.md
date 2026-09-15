@@ -12,6 +12,15 @@ The future hosting platform owns site and environment selection. Its canonical v
 
 Released optional and maintenance plugins use `manifests/optional-plugin-releases.json` and `scripts/build-mainwp-optional-plugin-plan.py`. The plan builder is deliberately one-site and upgrade-only: it rejects an absent plugin, stale inventory, an unverified package, or missing backup/rollback readiness. MainWP Operations API `0.8.2` provides the matching exact-site preflight, update, and rollback abilities without adding absent plugins. See [`MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md).
 
+Platform-required standard plugins can also move one at a time without
+replacing the full Stack. The selective contract keeps the immutable release as
+the site's baseline and records one exact component overlay with independently
+verified target and rollback trees. Use
+`manifests/stack-plugin-releases.json`,
+`scripts/build-mainwp-stack-plugin-plan.py`, and MainWP Operations API `0.9.0`.
+MU components, shared runtime, and themes remain full-release targets. See
+[`MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md).
+
 Cookie Consent and GTM Injector are optional integrations and are not part of
 the universal bootstrap manifest. Their checksum-locked release records bind
 merged standalone source, while rollout still requires the Dashboard to run
@@ -34,7 +43,7 @@ ambiguous and fails closed throughout the transition.
 - A stack workflow/ops guide (`STACK_OPERATIONS.md`) for local symlink workflow, server ownership, and sync/deploy rules.
 - A Local environment pull/deploy guide (`../local/LOCAL_ENV_WORKFLOW.md`) for using Local like a site environment endpoint.
 - A canonical rollout checklist (`ROLLOUT_CHECKLIST.md`) for pre-flight QA, deploy-path decisions, post-deploy verification, and live parity checks.
-- A MainWP full Stack fleet plan (`MAINWP_FLEET_ROLLOUT_PLAN.md`), development-canary checklist (`MAINWP_FLEET_DEV_CANARY.md`), and deterministic schema-2 package builder (`scripts/build-mainwp-stack-release.py`) for exact, backup-gated, one-site-at-a-time updates that preserve the canonical child theme.
+- A MainWP full Stack fleet plan (`MAINWP_FLEET_ROLLOUT_PLAN.md`), selective standard-plugin plan (`MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md`), development-canary checklist (`MAINWP_FLEET_DEV_CANARY.md`), and deterministic builders for exact, backup-gated, one-site-at-a-time updates that preserve the canonical child theme.
 - A schema and AI discovery baseline (`SCHEMA_DISCOVERY_BASELINE.md`) for active SEO provider ownership, CPT mappings, editor controls, crawler policy, and launch checks.
 - An authoritative machine-readable component inventory (`manifests/component-catalog.json`), human catalog (`PLUGIN_CATALOG.md`), governance rules (`PLUGIN_GOVERNANCE.md`), historical plugin audit (`MRN_PLUGIN_AUDIT.md`), and plugin doc template (`PLUGIN_DOC_TEMPLATE.md`). Catalog inclusion does not imply default installation.
 - First deep-dive plugin docs live in `plugin-docs/`.

@@ -67,9 +67,17 @@
 - `mrn-database-retention` is not part of the platform baseline. Its independently released `1.1.1` package is catalog-only and available solely through the one-site, upgrade-only optional-plugin plan.
 - This candidate promotes `mrn-media-bulk-tools` `0.13.1` to a platform-required standard plugin. The next immutable full Stack lock must bind its exact standalone `main` commit and tree hash; the classification change alone does not update a site.
 - Current candidate explicitly locks every tracked MU wrapper at its real deployed filename, including the Updraft backup-policy wrapper at `mrn-updraft-local-retention.php`.
-- The Dashboard-only `mrn-mainwp-operations-api` `0.8.1` controller adds exact-site, upgrade-only preflight, update, and rollback abilities for the allowlisted optional Database Retention release. It remains an independently released MainWP control-plane component and is not installed on child sites.
+- The Dashboard-only `mrn-mainwp-operations-api` candidate advances to `0.9.0`.
+  It retains the exact-site optional-plugin contract and adds baseline-bound
+  selective preflight, update, and rollback for platform-required standard
+  plugins. It remains an independently released MainWP control-plane component
+  and is never installed on child sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
 - `mrn-config-helper` is locked to standalone `0.1.59`, and `mrn-stack-deployment-agent` is locked to standalone `0.2.2` with installed prerequisite hashing aligned to the release generator and rollback-copyability proven during preflight.
-- The unreleased component catalog advances `mrn-config-helper` to standalone `0.1.60`; the current immutable release remains locked to `0.1.59` until the next deliberate Stack promotion.
+- The unreleased component catalog advances `mrn-config-helper` to standalone
+  `0.1.61`; the current immutable release remains locked to `0.1.59`. The
+  selective Stack-plugin registry retains exact `0.1.59` and `0.1.60` rollback
+  packages so one site can update Config Helper without replacing unrelated
+  Stack files and can restore its precise prior tree if rollback is authorized.
 - `mrn-loader` `1.6.1` aligns runtime-report hashing with that same release-generator walk order, retains loaded-component state in global scope, and reports each legacy MU wrapper from its exact locked path.
 - Use [`CHANGELOG.md`](/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md) for release notes.

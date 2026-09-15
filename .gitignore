@@ -29,6 +29,7 @@ releases/assembled/
 releases/mainwp-stack/
 releases/mu-plugins/
 releases/plugins/
+releases/stack-plugins/
 releases/stack/
 releases/*.zip
 outputs/stack-promotion-*.json

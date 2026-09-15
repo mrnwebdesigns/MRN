@@ -21,6 +21,12 @@ Optional and maintenance-only plugins are never schema-2 package targets. Their
 separate, one-site, upgrade-only contract is documented in
 [`MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md).
 
+Platform-required standard plugins may now advance one at a time as an explicit
+overlay on the unchanged immutable release. That narrower contract is
+documented in
+[`MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md).
+MU components, shared runtime, and themes remain atomic schema-2 targets.
+
 ## Qualification And Fleet Membership
 
 `Full Stack` is an owner-approved MainWP cohort, not a guess derived from a

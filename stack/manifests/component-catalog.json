@@ -494,7 +494,7 @@
     {
       "slug": "mrn-config-helper",
       "name": "MRN Config Helper",
-      "version": "0.1.60",
+      "version": "0.1.61",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
       "lifecycle": "supported",
@@ -774,7 +774,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.8.2",
+      "version": "0.9.0",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -782,8 +782,8 @@
       "target_tier": "dashboard-only",
       "source": {"repository": "mrn-mainwp-operations-api", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api", "state": "confirmed-independent-dashboard"},
       "dependencies": {"hard": ["MainWP Dashboard", "WordPress Abilities API"], "soft": ["UpdraftPlus", "MRN Google Fonts"], "release_group": "mainwp-operations"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": ["nineteen mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
-      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages, font management, one-site Stack qualification, backup-gated full Stack rollout and recovery, and upgrade-only allowlisted optional-plugin updates."
+      "data": {"options": [], "tables": [], "cron": [], "routes": ["twenty-two mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
+      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages, font management, one-site Stack qualification, backup-gated full Stack rollout and recovery, upgrade-only allowlisted optional-plugin updates, and exact one-component updates for platform-required standard plugins."
     },
     {
       "slug": "mrn-pre-consent-update-backup",

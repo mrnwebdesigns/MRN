@@ -16,6 +16,7 @@ from pathlib import Path
 EXCLUDED_DIRECTORIES = {
     ".git",
     ".tmp",
+    "ai-data",
     "node_modules",
     "playwright-report",
     "test-results",

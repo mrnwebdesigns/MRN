@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mrnwebdesigns.com/schemas/stack-plugin-update-plan.schema.json",
+  "title": "MRN Selective Stack Plugin Update Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "plan_type",
+    "plan_id",
+    "generated_at",
+    "baseline",
+    "plugin",
+    "site",
+    "operation",
+    "preflight",
+    "execution_contract"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "plan_type": {"const": "stack-plugin-update"},
+    "plan_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "baseline": {"$ref": "#/$defs/baseline"},
+    "plugin": {"$ref": "#/$defs/plugin"},
+    "site": {"$ref": "#/$defs/site"},
+    "operation": {"const": "upgrade-only"},
+    "preflight": {"$ref": "#/$defs/preflight"},
+    "execution_contract": {"$ref": "#/$defs/executionContract"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["release_id", "lock_sha256", "hash_algorithm"],
+      "properties": {
+        "release_id": {"type": "string", "minLength": 1},
+        "lock_sha256": {"$ref": "#/$defs/sha256"},
+        "hash_algorithm": {"const": "sha256-tree-v1"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "path", "git_commit"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "path": {"type": "string", "minLength": 1},
+        "git_commit": {"type": "string", "pattern": "^[a-f0-9]{40}$"}
+      }
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "filename", "main_file", "size_bytes", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "filename": {"type": "string", "pattern": "^[A-Za-z0-9._-]+\\.zip$"},
+        "main_file": {"type": "string", "pattern": "^mrn-[a-z0-9-]+/mrn-[a-z0-9-]+\\.php$"},
+        "size_bytes": {"type": "integer", "minimum": 1, "maximum": 26214400},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "tree": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hash_algorithm", "sha256", "file_count"],
+      "properties": {
+        "hash_algorithm": {"const": "sha256-tree-v1"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "file_count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "source", "package", "tree"],
+      "properties": {
+        "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "source": {"$ref": "#/$defs/source"},
+        "package": {"$ref": "#/$defs/package"},
+        "tree": {"$ref": "#/$defs/tree"},
+        "legacy_supplements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "size_bytes", "sha256"],
+            "properties": {
+              "path": {"type": "string", "pattern": "^ai-data/[A-Za-z0-9._/-]+$"},
+              "size_bytes": {"type": "integer", "minimum": 1},
+              "sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        }
+      }
+    },
+    "plugin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slug", "main_file", "runtime_type", "target_tier", "current_distribution", "target", "rollback"],
+      "properties": {
+        "slug": {"type": "string", "pattern": "^mrn-[a-z0-9-]+$"},
+        "main_file": {"type": "string", "pattern": "^mrn-[a-z0-9-]+/mrn-[a-z0-9-]+\\.php$"},
+        "runtime_type": {"const": "standard-plugin"},
+        "target_tier": {"const": "platform-required"},
+        "current_distribution": {"const": "standard-bootstrap"},
+        "target": {"$ref": "#/$defs/artifact"},
+        "rollback": {"$ref": "#/$defs/artifact"}
+      }
+    },
+    "site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["site_id", "site_url", "inventory_synced_at", "inventory_age_seconds", "installed", "active", "loaded", "current_version", "current_tree_sha256", "current_file_count", "target_version"],
+      "properties": {
+        "site_id": {"type": "integer", "minimum": 1},
+        "site_url": {"type": "string", "format": "uri"},
+        "inventory_synced_at": {"type": "string", "format": "date-time"},
+        "inventory_age_seconds": {"type": "integer", "minimum": 0},
+        "installed": {"const": true},
+        "active": {"type": "boolean"},
+        "loaded": {"const": true},
+        "current_version": {"type": "string"},
+        "current_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "current_file_count": {"type": "integer", "minimum": 1},
+        "target_version": {"type": "string"}
+      }
+    },
+    "preflight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ready", "package_sha256", "tree_sha256", "backup_readiness", "rollback_readiness", "blockers"],
+      "properties": {
+        "ready": {"const": true},
+        "package_sha256": {"$ref": "#/$defs/sha256"},
+        "tree_sha256": {"$ref": "#/$defs/sha256"},
+        "backup_readiness": {"type": "object"},
+        "rollback_readiness": {"type": "object"},
+        "blockers": {"type": "array", "maxItems": 0}
+      }
+    },
+    "executionContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preflight_ability", "controller_ability", "rollback_ability", "minimum_controller_version", "precondition_hash_source", "release_identity_model", "allow_new_install", "preserve_active_state", "requires_fresh_inventory_recheck", "requires_runtime_tree_readback", "requires_confirm", "requires_fresh_database_backup_receipt", "requires_precondition_hash"],
+      "properties": {
+        "preflight_ability": {"const": "mrn-mainwp/preflight-stack-plugin-update-v1"},
+        "controller_ability": {"const": "mrn-mainwp/update-stack-plugin-v1"},
+        "rollback_ability": {"const": "mrn-mainwp/rollback-stack-plugin-v1"},
+        "minimum_controller_version": {"type": "string"},
+        "precondition_hash_source": {"const": "controller-preflight"},
+        "release_identity_model": {"const": "immutable-baseline-plus-component-overlay"},
+        "allow_new_install": {"const": false},
+        "preserve_active_state": {"const": true},
+        "requires_fresh_inventory_recheck": {"const": true},
+        "requires_runtime_tree_readback": {"const": true},
+        "requires_confirm": {"const": true},
+        "requires_fresh_database_backup_receipt": {"const": true},
+        "requires_precondition_hash": {"const": true}
+      }
+    }
+  }
+}

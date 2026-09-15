@@ -60,6 +60,10 @@ class ReleaseLockTests(unittest.TestCase):
             (root_path / "node_modules" / "dependency.js").write_text(
                 "noise", encoding="utf-8"
             )
+            (root_path / "ai-data").mkdir()
+            (root_path / "ai-data" / "internal-notes.md").write_text(
+                "not deployable", encoding="utf-8"
+            )
             (root_path / "vendor").mkdir()
             (root_path / "vendor" / "development.php").write_text(
                 "noise", encoding="utf-8"

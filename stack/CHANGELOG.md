@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- Added a first-class one-site selective Fleet path for platform-required
+  standard plugins, so Config Helper releases no longer require replacing the
+  entire Stack. The new registry, plan schema, and builder bind the immutable
+  baseline, exact target and rollback Git commits, ZIP checksums, deployable
+  trees, live inventory, and backup readiness.
+- Advanced the Dashboard-only MainWP Operations API contract to `0.9.0` with
+  selective Stack-plugin preflight, update, and rollback abilities. Each write
+  preserves active state and the child theme, requires explicit confirmation
+  and a fresh database-backup receipt, and verifies both MainWP inventory and
+  the signed runtime tree afterward. No Dashboard or site deployment was
+  performed by this source change.
+- Advanced Config Helper to `0.1.61` as a clean, commit-reproducible selective
+  target and registered exact `0.1.59` and `0.1.60` rollback artifacts. Their
+  two historical ignored `ai-data` files are individually checksum-bound and
+  can never be selected as a forward target. Future Stack release generation
+  excludes `ai-data` from deployable trees.
 - Advanced `mrn-config-helper` from `0.1.59` to `0.1.60`. Static front pages
   now return no shared breadcrumb items, so both visible breadcrumbs and
   `BreadcrumbList` JSON-LD stay suppressed at the site's root while a separate

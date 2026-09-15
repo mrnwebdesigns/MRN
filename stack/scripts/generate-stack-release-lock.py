@@ -19,6 +19,7 @@ REPORT_SCHEMA_VERSION = 1
 EXCLUDED_DIRECTORIES = {
     ".git",
     ".tmp",
+    "ai-data",
     "node_modules",
     "playwright-report",
     "test-results",

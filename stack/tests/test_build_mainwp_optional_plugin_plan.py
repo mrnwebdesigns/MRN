@@ -290,9 +290,9 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             for item in catalog["components"]
             if item["slug"] == "mrn-mainwp-operations-api"
         )
-        self.assertEqual("0.8.2", controller["version"])
+        self.assertEqual("0.9.0", controller["version"])
         self.assertEqual("dashboard-only", controller["target_tier"])
-        self.assertIn("nineteen mrn-mainwp WordPress Abilities", controller["data"]["routes"])
+        self.assertIn("twenty-two mrn-mainwp WordPress Abilities", controller["data"]["routes"])
         self.assertNotIn("Defender (legacy compatibility only)", entry["dependencies"]["soft"])
 
     def test_consent_integrations_are_registered_but_stay_out_of_bootstrap(self):

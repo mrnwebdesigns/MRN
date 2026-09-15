@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "catalog_updated": "2026-09-15",
+  "authority": "Checksum- and tree-locked standard-plugin releases available to explicit one-site Stack component plans. Registration never authorizes a site write or changes the immutable Stack release identity.",
+  "releases": [
+    {
+      "slug": "mrn-config-helper",
+      "version": "0.1.59",
+      "runtime_type": "standard-plugin",
+      "target_tier": "platform-required",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-config-helper",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "git_commit": "dea6af834369b343666c296bedaf72463a9ecdde"
+      },
+      "package": {
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.59.zip",
+        "filename": "mrn-config-helper-0.1.59.zip",
+        "main_file": "mrn-config-helper/mrn-config-helper.php",
+        "size_bytes": 119439,
+        "sha256": "d52fa9eb607c39c3ee24ed89629a8cdbf4f77e89f2d98c8f8c45c8ce881c96ed"
+      },
+      "tree": {
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "10ac5a405fc6c9ed6ab9536d3e6a184caff512f7720137d6129ebfd9c4d41b63",
+        "file_count": 19
+      },
+      "legacy_supplements": [
+        {
+          "path": "ai-data/stack-plugin-docs/mrn-config-helper.md",
+          "size_bytes": 11149,
+          "sha256": "5fc8cee9b5083d31de81007cf855b00de9eeb6a0e779ba51239a42c422721463"
+        },
+        {
+          "path": "ai-data/thread-and-ai-references.md",
+          "size_bytes": 45748,
+          "sha256": "1cac0fe8f9f87be71b9210d8bb5f001cf5489557eddd0c7fa966992e8e6a4f9a"
+        }
+      ],
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
+      "slug": "mrn-config-helper",
+      "version": "0.1.60",
+      "runtime_type": "standard-plugin",
+      "target_tier": "platform-required",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-config-helper",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "git_commit": "c1368c309735eab0fd59e26ee6b1c00fa28ce6e8"
+      },
+      "package": {
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.60.zip",
+        "filename": "mrn-config-helper-0.1.60.zip",
+        "main_file": "mrn-config-helper/mrn-config-helper.php",
+        "size_bytes": 119789,
+        "sha256": "dffbe596d94a9edb009a5bd24801d33166e5374c2f12e3cf8402fb3458cf6c85"
+      },
+      "tree": {
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "f42baacb71fb6bae7244847eb0d2fce6beb6606ac7154f756dc20888556d4563",
+        "file_count": 19
+      },
+      "legacy_supplements": [
+        {
+          "path": "ai-data/stack-plugin-docs/mrn-config-helper.md",
+          "size_bytes": 11149,
+          "sha256": "5fc8cee9b5083d31de81007cf855b00de9eeb6a0e779ba51239a42c422721463"
+        },
+        {
+          "path": "ai-data/thread-and-ai-references.md",
+          "size_bytes": 45748,
+          "sha256": "1cac0fe8f9f87be71b9210d8bb5f001cf5489557eddd0c7fa966992e8e6a4f9a"
+        }
+      ],
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
+      "slug": "mrn-config-helper",
+      "version": "0.1.61",
+      "runtime_type": "standard-plugin",
+      "target_tier": "platform-required",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-config-helper",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "git_commit": "a7581b7ca72b17e87eeb9d688be6dff8afc454e6"
+      },
+      "package": {
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.61.zip",
+        "filename": "mrn-config-helper-0.1.61.zip",
+        "main_file": "mrn-config-helper/mrn-config-helper.php",
+        "size_bytes": 100732,
+        "sha256": "af347a7ab8677be8ead399566a4df2a6d7a0424c70dee31c00ce7d056ec1190d"
+      },
+      "tree": {
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "daaea660ab86ef22a35dd6981cb4521c80499800d32da341cb6f8589186c11f9",
+        "file_count": 17
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    }
+  ]
+}

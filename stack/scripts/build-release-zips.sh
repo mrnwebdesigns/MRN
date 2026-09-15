@@ -51,6 +51,8 @@ zip_directory() {
 			-x "$slug/**/.DS_Store" \
 			-x "$slug/.tmp/*" \
 			-x "$slug/.tmp/**/*" \
+			-x "$slug/ai-data/*" \
+			-x "$slug/ai-data/**/*" \
 			-x "$slug/node_modules/*" \
 			-x "$slug/node_modules/**/*" \
 			-x "$slug/playwright-report/*" \
