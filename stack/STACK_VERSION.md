@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.14-media-bulk-platform-required`
-- Release date: `2026-09-14`
+- Stack release: `2026.09.15-selective-stack-plugin-fleet`
+- Release date: `2026-09-15`
 - Status: `release candidate; site deployment and runtime verification pending`
 
 ## Included MRN-Owned Components
@@ -32,12 +32,10 @@
   - `mrn-ai-assist` `2.0.14`
   - `mrn-announcements` `1.8.1`
   - `mrn-comment-management` `1.1.7`
-  - `mrn-config-helper` `0.1.59`
-  - `mrn-cookie-consent` `1.1.42`
+  - `mrn-config-helper` `0.1.61`
   - `mrn-editor-tools` `1.8.25`
   - `mrn-fontawesome-profile-manager` `0.5.0`
   - `mrn-google-fonts` `1.0.7`
-  - `mrn-gtm-injector` `1.0.13`
   - `mrn-hierarchical-menu-taxonomies` `0.1.0`
   - `mrn-layout-import-export` `0.1.2`
   - `mrn-media-bulk-tools` `0.13.1`
@@ -65,19 +63,24 @@
 - Current baseline keeps the canonical AME export payloads, importer/manifests, bootstrap helper, shared shim, and stack MU wrapper loaders tracked in the main repo so release/deploy flows can verify and sync them consistently.
 - Current baseline includes bounded recovery inventory and guarded reconciliation for exact, unchanged incomplete rollout markers that are physically empty or contain only recognized empty apply scaffolding, without introducing recursive deletion.
 - `mrn-database-retention` is not part of the platform baseline. Its independently released `1.1.1` package is catalog-only and available solely through the one-site, upgrade-only optional-plugin plan.
-- This candidate promotes `mrn-media-bulk-tools` `0.13.1` to a platform-required standard plugin. The next immutable full Stack lock must bind its exact standalone `main` commit and tree hash; the classification change alone does not update a site.
+- This baseline includes `mrn-media-bulk-tools` `0.13.1` as a platform-required standard plugin and binds its exact standalone `main` commit and tree hash.
 - Current candidate explicitly locks every tracked MU wrapper at its real deployed filename, including the Updraft backup-policy wrapper at `mrn-updraft-local-retention.php`.
-- The Dashboard-only `mrn-mainwp-operations-api` candidate advances to `0.9.0`.
+- The Dashboard-only `mrn-mainwp-operations-api` release advances to `0.9.0`.
   It retains the exact-site optional-plugin contract and adds baseline-bound
   selective preflight, update, and rollback for platform-required standard
   plugins. It remains an independently released MainWP control-plane component
   and is never installed on child sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
-- `mrn-config-helper` is locked to standalone `0.1.59`, and `mrn-stack-deployment-agent` is locked to standalone `0.2.2` with installed prerequisite hashing aligned to the release generator and rollback-copyability proven during preflight.
-- The unreleased component catalog advances `mrn-config-helper` to standalone
-  `0.1.61`; the current immutable release remains locked to `0.1.59`. The
-  selective Stack-plugin registry retains exact `0.1.59` and `0.1.60` rollback
-  packages so one site can update Config Helper without replacing unrelated
-  Stack files and can restore its precise prior tree if rollback is authorized.
+- `mrn-config-helper` is locked to standalone `0.1.61`, and
+  `mrn-stack-deployment-agent` is locked to standalone `0.2.2` with installed
+  prerequisite hashing aligned to the release generator and rollback-copyability
+  proven during preflight.
+- The selective Stack-plugin registry retains exact Config Helper `0.1.59` and
+  `0.1.60` rollback packages so an eligible site on a prior reviewed baseline
+  can update only Config Helper and restore its precise prior tree if rollback
+  is authorized.
+- Cookie Consent and GTM Injector are catalog-only optional integrations rather
+  than required baseline components. Existing installations are unchanged and
+  may move only through their checksum-locked optional-plugin plans.
 - `mrn-loader` `1.6.1` aligns runtime-report hashing with that same release-generator walk order, retains loaded-component state in global scope, and reports each legacy MU wrapper from its exact locked path.
 - Use [`CHANGELOG.md`](/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md) for release notes.

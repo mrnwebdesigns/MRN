@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2026.09.15-selective-stack-plugin-fleet
+
 - Added a first-class one-site selective Fleet path for platform-required
   standard plugins, so Config Helper releases no longer require replacing the
   entire Stack. The new registry, plan schema, and builder bind the immutable
@@ -28,9 +30,11 @@
 - Added checksum-locked optional release records for Cookie Consent `1.1.43`
   and GTM Injector `1.0.14` after both standalone source releases merged to
   `origin/main`.
-- Advanced the optional-plugin plan contract to MainWP Operations API `0.8.2`,
-  whose merged source allowlists both exact plugin main files. Dashboard
-  deployment and every child-site update remain separate authorization gates.
+- Updated the Stack promotion drift monitor so the exact current commit of an
+  approved, upgrade-only selective plugin release is disclosed as an overlay
+  warning instead of forcing a new full-Stack promotion. Unregistered external
+  source drift remains blocking, and Media Bulk Tools is now included in the
+  workflow's required-source checkout.
 
 ## 2026.09.14-media-bulk-platform-required
 - Corrected `mrn-media-bulk-tools` from the stale catalog version `0.12.1` to
