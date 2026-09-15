@@ -10,21 +10,21 @@ The future hosting platform owns site and environment selection. Its canonical v
 
 `scripts/site-bootstrap.sh` honors `--site-profile` and `MRN_SITE_PROFILE` (`stack` or `plain`) and supports profile-scoped manifest entries that end in `|stack` or `|plain` so optional shared plugins can stay out of the plain-profile bootstrap.
 
-Released optional and maintenance plugins use `manifests/optional-plugin-releases.json` and `scripts/build-mainwp-optional-plugin-plan.py`. The plan builder is deliberately one-site and upgrade-only: it rejects an absent plugin, stale inventory, an unverified package, or missing backup/rollback readiness. MainWP Operations API `0.9.0` provides the matching exact-site preflight, update, and rollback abilities without adding absent plugins. See [`MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md).
+Independently released non-platform plugins use `manifests/optional-plugin-releases.json` and `scripts/build-mainwp-optional-plugin-plan.py`, whether they are catalog-only or remain standard bootstrap defaults. The plan builder is deliberately one-site and upgrade-only: it rejects an absent plugin, stale inventory, an unverified package, or missing backup/rollback readiness. MainWP Operations API `0.9.1` provides the matching exact-site preflight, update, and rollback abilities without adding absent plugins. See [`MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md).
 
 Platform-required standard plugins can also move one at a time without
 replacing the full Stack. The selective contract keeps the immutable release as
 the site's baseline and records one exact component overlay with independently
 verified target and rollback trees. Use
 `manifests/stack-plugin-releases.json`,
-`scripts/build-mainwp-stack-plugin-plan.py`, and MainWP Operations API `0.9.0`.
+`scripts/build-mainwp-stack-plugin-plan.py`, and MainWP Operations API `0.9.1`.
 MU components, shared runtime, and themes remain full-release targets. See
 [`MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md).
 
 Cookie Consent and GTM Injector are optional integrations and are not part of
 the universal bootstrap manifest. Their checksum-locked release records bind
 merged standalone source, while rollout still requires the Dashboard to run
-controller `0.9.0` and expose both main-file slugs. For paired updates, install
+controller `0.9.1` and expose both main-file slugs. For paired updates, install
 GTM Injector first so an older active Cookie Consent integration is treated as
 ambiguous and fails closed throughout the transition.
 

@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+## 2026.09.15-independent-plugin-fleet
+
+- Added checksum-locked, one-site upgrade records for Background Video Pop-Out
+  Disabler `1.0.2`, Announcements `1.8.2`, Font Awesome Profile Manager `0.5.1`,
+  and SEO Helper `0.4.1`. Each package is generated from its exact merged
+  standalone commit and contains runtime files plus WordPress release metadata,
+  without internal notes or repository-only files.
+- Extended the independently released plugin plan to support non-platform
+  plugins that remain standard bootstrap defaults. This does not remove them
+  from new-site bootstrap, authorize installation on an absent site, or change
+  the one-site, upgrade-only, backup-gated execution contract.
+- Advanced the Dashboard-only MainWP Operations API reference to `0.9.1`, which
+  fixes active-plugin inventory reads and allowlists the four new exact plugin
+  main files for guarded preflight, update, and rollback.
+- Recorded the matching component versions in the Stack catalog and baseline.
+  Existing sites remain unchanged until their exact per-plugin plan is
+  authorized and executed.
+
 ## 2026.09.15-selective-stack-plugin-fleet
 
 - Added a first-class one-site selective Fleet path for platform-required

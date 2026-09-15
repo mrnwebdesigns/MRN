@@ -187,7 +187,7 @@ class OptionalPluginPlanTests(unittest.TestCase):
             "mrn-mainwp/preflight-optional-plugin-update-v1",
             plan["execution_contract"]["preflight_ability"],
         )
-        self.assertEqual("0.8.2", plan["execution_contract"]["minimum_controller_version"])
+        self.assertEqual("0.9.1", plan["execution_contract"]["minimum_controller_version"])
         self.assertEqual(
             "controller-preflight",
             plan["execution_contract"]["precondition_hash_source"],
@@ -216,6 +216,22 @@ class OptionalPluginPlanTests(unittest.TestCase):
 
         with self.assertRaisesRegex(planner.PlanError, "schema-2"):
             self.build()
+
+    def test_accepts_non_platform_standard_bootstrap_distribution(self):
+        self.catalog["components"][0]["current_distribution"] = "standard-bootstrap"
+        self.releases["releases"][0]["current_distribution"] = "standard-bootstrap"
+
+        plan = self.build()
+
+        self.assertEqual(
+            "standard-bootstrap", plan["plugin"]["current_distribution"]
+        )
+
+    def test_accepts_allowlisted_non_mrn_slug(self):
+        self.assertIsNotNone(
+            planner.SLUG_PATTERN.fullmatch("background-video-popout-disabler")
+        )
+        self.assertIsNone(planner.SLUG_PATTERN.fullmatch("unapproved-plugin"))
 
     def test_refuses_missing_backup_readiness(self):
         self.inventory["site"]["backup_readiness"]["ready"] = False
@@ -290,7 +306,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             for item in catalog["components"]
             if item["slug"] == "mrn-mainwp-operations-api"
         )
-        self.assertEqual("0.9.0", controller["version"])
+        self.assertEqual("0.9.1", controller["version"])
         self.assertEqual("dashboard-only", controller["target_tier"])
         self.assertIn("twenty-two mrn-mainwp WordPress Abilities", controller["data"]["routes"])
         self.assertNotIn("Defender (legacy compatibility only)", entry["dependencies"]["soft"])
@@ -332,6 +348,40 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             self.assertEqual(expected[slug]["version"], release["version"])
             self.assertEqual(expected[slug]["commit"], release["source"]["git_commit"])
             self.assertEqual(expected[slug]["main_file"], release["package"]["main_file"])
+
+    def test_non_platform_bootstrap_plugins_have_independent_upgrade_releases(self):
+        stack = Path(__file__).parents[1]
+        catalog = json.loads(
+            (stack / "manifests/component-catalog.json").read_text(encoding="utf-8")
+        )
+        releases = json.loads(
+            (stack / "manifests/optional-plugin-releases.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        manifest = (stack / "manifests/plugins.txt").read_text(encoding="utf-8")
+        catalog_by_slug = {item["slug"]: item for item in catalog["components"]}
+        release_by_slug = {item["slug"]: item for item in releases["releases"]}
+        expected = {
+            "background-video-popout-disabler": "1.0.2",
+            "mrn-announcements": "1.8.2",
+            "mrn-fontawesome-profile-manager": "0.5.1",
+            "mrn-seo-helper": "0.4.1",
+        }
+
+        for slug, version in expected.items():
+            entry = catalog_by_slug[slug]
+            release = release_by_slug[slug]
+            self.assertEqual(version, entry["version"])
+            self.assertEqual(version, release["version"])
+            self.assertEqual("standard-bootstrap", entry["current_distribution"])
+            self.assertEqual("standard-bootstrap", release["current_distribution"])
+            self.assertNotEqual("platform-required", entry["target_tier"])
+            self.assertEqual(entry["target_tier"], release["target_tier"])
+            self.assertEqual("upgrade-only", release["update_policy"]["mode"])
+            self.assertIn(f"{slug}.zip", manifest)
+            self.assertRegex(release["source"]["git_commit"], r"^[a-f0-9]{40}$")
+            self.assertRegex(release["package"]["sha256"], r"^[a-f0-9]{64}$")
 
 
 if __name__ == "__main__":

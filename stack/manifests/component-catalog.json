@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-09-14",
+  "catalog_updated": "2026-09-15",
   "authority": "This file is the authoritative inventory and classification source for MRN-owned WordPress plugins and MU components. Inclusion does not imply installation.",
   "product_model": {
     "platform-required": "Installed on a production MRN stack because it provides mandatory platform behavior.",
@@ -396,7 +396,7 @@
     {
       "slug": "background-video-popout-disabler",
       "name": "MRN Background Video Pop-Out Disabler",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "runtime_type": "standard-plugin",
       "classification": "presentation-feature",
       "lifecycle": "supported",
@@ -466,7 +466,7 @@
     {
       "slug": "mrn-announcements",
       "name": "MRN Announcements",
-      "version": "1.8.1",
+      "version": "1.8.2",
       "runtime_type": "standard-plugin",
       "classification": "shared-feature",
       "lifecycle": "supported",
@@ -578,7 +578,7 @@
     {
       "slug": "mrn-fontawesome-profile-manager",
       "name": "MRN Font Awesome Profile Manager",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -662,7 +662,7 @@
     {
       "slug": "mrn-seo-helper",
       "name": "MRN SEO Helper",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -774,7 +774,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.9.0",
+      "version": "0.9.1",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
