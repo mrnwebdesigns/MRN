@@ -46,7 +46,7 @@
   - `mrn-stack-deployment-agent` `0.2.2`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-tokens` `0.1.3`
-  - `mrn-universal-sticky-bar` `1.1.8`
+  - `mrn-universal-sticky-bar` `1.1.9`
 
 - Profile-gated standard plugins:
   - `mrn-reusable-block-library` `0.1.28` (`MRN_SITE_PROFILE=stack`)
@@ -79,6 +79,9 @@
   `0.1.60` rollback packages so an eligible site on a prior reviewed baseline
   can update only Config Helper and restore its precise prior tree if rollback
   is authorized.
+- Universal Sticky Bar `1.1.9` removes its previously tracked internal
+  `ai-data` note from deployable source. Its exact `1.1.8` tree is retained only
+  as checksum-bound rollback material for eligible sites.
 - Cookie Consent and GTM Injector are catalog-only optional integrations rather
   than required baseline components. Existing installations are unchanged and
   may move only through their checksum-locked optional-plugin plans.

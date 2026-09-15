@@ -7,8 +7,8 @@ forward on one fully bootstrapped Stack site without deploying every Stack
 component. It fills the gap between the immutable full Stack release and the
 separate optional-plugin release process.
 
-The first supported example is `mrn-config-helper` `0.1.59` or `0.1.60` to
-`0.1.61`.
+The first supported examples are `mrn-config-helper` `0.1.59` or `0.1.60` to
+`0.1.61`, and `mrn-universal-sticky-bar` `1.1.8` to `1.1.9`.
 Eligibility is not hardcoded to Config Helper: a fresh signed runtime report
 must prove the requested plugin is exactly one `standard-plugin` component in
 the site's reviewed immutable Stack release.
@@ -78,6 +78,11 @@ and the registry binds each supplemental path, size, and checksum explicitly.
 They can never be selected as a new target. Version `0.1.61` establishes the
 clean, commit-reproducible target, and the shared release generator now excludes
 `ai-data` from every future deployable tree.
+
+Universal Sticky Bar `1.1.8` likewise contained one tracked internal `ai-data`
+note. Its exact package is registered only as legacy rollback material;
+`1.1.9` removes that file from tracked release source and is the clean forward
+target.
 
 Generated ZIPs remain ignored build artifacts. Retain exact registered files
 with the rollout evidence; rebuilding is allowed only when the resulting size

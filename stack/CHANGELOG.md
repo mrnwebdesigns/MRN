@@ -20,6 +20,9 @@
   two historical ignored `ai-data` files are individually checksum-bound and
   can never be selected as a forward target. Future Stack release generation
   excludes `ai-data` from deployable trees.
+- Advanced Universal Sticky Bar to `1.1.9` with no runtime behavior change,
+  removed its tracked internal `ai-data` note from release source, and
+  registered exact clean-forward and legacy rollback artifacts.
 - Advanced `mrn-config-helper` from `0.1.59` to `0.1.60`. Static front pages
   now return no shared breadcrumb items, so both visible breadcrumbs and
   `BreadcrumbList` JSON-LD stay suppressed at the site's root while a separate

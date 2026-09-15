@@ -358,6 +358,27 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
         self.assertEqual(2, len(versions["0.1.59"]["legacy_supplements"]))
         self.assertEqual(2, len(versions["0.1.60"]["legacy_supplements"]))
 
+    def test_sticky_bar_has_clean_forward_and_exact_legacy_rollback(self):
+        catalog = json.loads(
+            (STACK_DIR / "manifests" / "component-catalog.json").read_text(encoding="utf-8")
+        )
+        registry = json.loads(
+            (STACK_DIR / "manifests" / "stack-plugin-releases.json").read_text(encoding="utf-8")
+        )
+        entry = next(
+            item for item in catalog["components"] if item["slug"] == "mrn-universal-sticky-bar"
+        )
+        versions = {
+            item["version"]: item
+            for item in registry["releases"]
+            if item["slug"] == "mrn-universal-sticky-bar"
+        }
+
+        self.assertEqual("1.1.9", entry["version"])
+        self.assertEqual({"1.1.8", "1.1.9"}, set(versions))
+        self.assertEqual(1, len(versions["1.1.8"]["legacy_supplements"]))
+        self.assertNotIn("legacy_supplements", versions["1.1.9"])
+
 
 if __name__ == "__main__":
     unittest.main()
