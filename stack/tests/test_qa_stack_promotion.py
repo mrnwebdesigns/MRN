@@ -242,6 +242,7 @@ class PromotionTests(unittest.TestCase):
                 "plugins/unknown/main.php",
                 "stack/scripts/deploy-stack-release-to-site.py",
                 "stack/manifests/optional-plugin-releases.json",
+                "stack/manifests/stack-plugin-releases.json",
                 "docs/notes.md",
             ],
             catalog,
@@ -259,7 +260,10 @@ class PromotionTests(unittest.TestCase):
             inventory["deployment_contracts"],
         )
         self.assertEqual(
-            ["stack/manifests/optional-plugin-releases.json"],
+            [
+                "stack/manifests/optional-plugin-releases.json",
+                "stack/manifests/stack-plugin-releases.json",
+            ],
             inventory["release_metadata"],
         )
 
@@ -299,6 +303,42 @@ class PromotionTests(unittest.TestCase):
                 run("git", "rev-parse", "HEAD", cwd=repository).stdout.strip(),
                 inventory[0]["default_commit"],
             )
+
+    def test_external_inventory_accepts_exact_approved_selective_head(self):
+        with tempfile.TemporaryDirectory() as root:
+            standalone = Path(root) / "standalone"
+            repository = standalone / "required-external"
+            origin = Path(root) / "required-external.git"
+            repository.mkdir(parents=True)
+            run("git", "init", "--initial-branch=main", cwd=repository)
+            run("git", "config", "user.email", "qa@example.com", cwd=repository)
+            run("git", "config", "user.name", "QA Fixture", cwd=repository)
+            (repository / "plugin.php").write_text("<?php\n", encoding="utf-8")
+            run("git", "add", ".", cwd=repository)
+            run("git", "commit", "-m", "Selective release", cwd=repository)
+            run("git", "init", "--bare", origin, cwd=repository)
+            run("git", "remote", "add", "origin", origin, cwd=repository)
+            run("git", "push", "-u", "origin", "main", cwd=repository)
+            head = run("git", "rev-parse", "HEAD", cwd=repository).stdout.strip()
+
+            inventory = promotion.external_source_inventory(
+                {
+                    "components": [
+                        {
+                            "slug": "required-external",
+                            "source": {
+                                "repository": "required-external",
+                                "git_commit": "0" * 40,
+                            },
+                        }
+                    ]
+                },
+                standalone,
+                {"required-external": {"git_commit": head, "version": "1.1.0"}},
+            )
+
+            self.assertEqual("approved-selective-drift", inventory[0]["status"])
+            self.assertEqual("1.1.0", inventory[0]["approved_selective_version"])
 
     def test_audit_blocks_required_changes_after_current_lock(self):
         with tempfile.TemporaryDirectory() as root:

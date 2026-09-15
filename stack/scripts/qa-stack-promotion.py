@@ -16,6 +16,7 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 LOCK_PATH = SCRIPT_DIR.parent / "manifests" / "stack-release.lock.json"
 CATALOG_PATH = SCRIPT_DIR.parent / "manifests" / "component-catalog.json"
+STACK_PLUGIN_RELEASES_PATH = SCRIPT_DIR.parent / "manifests" / "stack-plugin-releases.json"
 LOCK_SCRIPT = SCRIPT_DIR / "generate-stack-release-lock.py"
 LOCK_SPEC = importlib.util.spec_from_file_location(
     "generate_stack_release_lock", LOCK_SCRIPT
@@ -43,6 +44,8 @@ RELEASE_METADATA_PATHS = {
     "stack/manifests/optional-plugin-releases.json",
     "stack/manifests/optional-plugin-update-plan.schema.json",
     "stack/manifests/plugins.txt",
+    "stack/manifests/stack-plugin-releases.json",
+    "stack/manifests/stack-plugin-update-plan.schema.json",
     "stack/manifests/stack-release.lock.json",
     "stack/manifests/stack-release.lock.schema.json",
     "stack/manifests/themes.txt",
@@ -225,8 +228,48 @@ def classify_changes(paths, catalog, lock_payload):
     }
 
 
-def external_source_inventory(lock_payload, standalone_root):
+def approved_selective_source_heads(catalog, releases):
+    """Return exact current platform-plugin heads approved for selective rollout."""
+    catalog_by_slug = {
+        str(entry.get("slug") or ""): entry
+        for entry in catalog.get("components") or []
+        if isinstance(entry, dict)
+    }
+    candidates = {}
+    for release in releases.get("releases") or []:
+        if not isinstance(release, dict):
+            continue
+        slug = str(release.get("slug") or "")
+        catalog_entry = catalog_by_slug.get(slug) or {}
+        source = release.get("source") or {}
+        policy = release.get("update_policy") or {}
+        commit = str(source.get("git_commit") or "")
+        if (
+            release.get("version") != catalog_entry.get("version")
+            or release.get("runtime_type") != "standard-plugin"
+            or release.get("target_tier") != "platform-required"
+            or release.get("current_distribution") != "standard-bootstrap"
+            or catalog_entry.get("runtime_type") != "standard-plugin"
+            or catalog_entry.get("target_tier") != "platform-required"
+            or source.get("repository") != (catalog_entry.get("source") or {}).get("repository")
+            or policy.get("mode") != "upgrade-only"
+            or len(commit) != 40
+            or any(character not in "0123456789abcdef" for character in commit)
+        ):
+            continue
+        candidates.setdefault(slug, []).append(
+            {"git_commit": commit, "version": release.get("version")}
+        )
+    return {
+        slug: records[0]
+        for slug, records in candidates.items()
+        if len(records) == 1
+    }
+
+
+def external_source_inventory(lock_payload, standalone_root, selective_heads=None):
     root = Path(standalone_root).expanduser().resolve()
+    selective_heads = selective_heads or {}
     inventory = []
     for entry in lock_payload.get("components") or []:
         source = entry.get("source") or {}
@@ -242,6 +285,7 @@ def external_source_inventory(lock_payload, standalone_root):
             "locked_commit": source.get("git_commit"),
             "default_ref": None,
             "default_commit": None,
+            "approved_selective_version": None,
             "status": "missing",
         }
         if run_git(repo_path, "rev-parse", "--git-dir", check=False).returncode != 0:
@@ -269,6 +313,9 @@ def external_source_inventory(lock_payload, standalone_root):
             record["status"] = "default-ref-missing"
         elif record["default_commit"] == record["locked_commit"]:
             record["status"] = "match"
+        elif record["default_commit"] == (selective_heads.get(slug) or {}).get("git_commit"):
+            record["status"] = "approved-selective-drift"
+            record["approved_selective_version"] = selective_heads[slug]["version"]
         else:
             record["status"] = "drift"
         inventory.append(record)
@@ -356,7 +403,14 @@ def is_ancestor(repo_root, ancestor, descendant):
     return result.returncode == 0
 
 
-def evaluate_audit(repo_root, lock_payload, catalog, standalone_root, check_external=True):
+def evaluate_audit(
+    repo_root,
+    lock_payload,
+    catalog,
+    standalone_root,
+    check_external=True,
+    selective_heads=None,
+):
     state = repository_state(repo_root)
     baseline_commit = str((lock_payload.get("source") or {}).get("git_commit") or "")
     if not baseline_commit:
@@ -367,7 +421,7 @@ def evaluate_audit(repo_root, lock_payload, catalog, standalone_root, check_exte
     paths = changed_files(repo_root, baseline_commit, state["head"])
     inventory = classify_changes(paths, catalog, lock_payload)
     inventory["external_required_sources"] = (
-        external_source_inventory(lock_payload, standalone_root)
+        external_source_inventory(lock_payload, standalone_root, selective_heads)
         if check_external
         else []
     )
@@ -383,8 +437,20 @@ def evaluate_audit(repo_root, lock_payload, catalog, standalone_root, check_exte
         blockers.append("Merged main contains deployable paths missing from the component catalog or theme lock")
     if inventory["independent_release_units"]:
         warnings.append("Independent release units changed after the stack lock and require their own release decision")
+    approved_selective = [
+        item
+        for item in inventory["external_required_sources"]
+        if item["status"] == "approved-selective-drift"
+    ]
+    if approved_selective:
+        warnings.append(
+            "Required standalone source is ahead of the immutable baseline through an approved selective release: "
+            + ", ".join(item["slug"] for item in approved_selective)
+        )
     external_drift = [
-        item for item in inventory["external_required_sources"] if item["status"] != "match"
+        item
+        for item in inventory["external_required_sources"]
+        if item["status"] not in ("match", "approved-selective-drift")
     ]
     if external_drift:
         blockers.append(
@@ -511,6 +577,11 @@ def main(argv=None):
     parser.add_argument("--lock", type=Path, default=LOCK_PATH)
     parser.add_argument("--catalog", type=Path, default=CATALOG_PATH)
     parser.add_argument(
+        "--stack-plugin-releases",
+        type=Path,
+        default=STACK_PLUGIN_RELEASES_PATH,
+    )
+    parser.add_argument(
         "--standalone-plugins-root",
         type=Path,
         default=Path(
@@ -534,6 +605,12 @@ def main(argv=None):
         repo_root = Path(args.repo_root).resolve()
         lock_payload = release_lock.validate_lock(read_json(args.lock))
         catalog = read_json(args.catalog)
+        selective_releases = (
+            read_json(args.stack_plugin_releases)
+            if args.stack_plugin_releases.exists()
+            else {"releases": []}
+        )
+        selective_heads = approved_selective_source_heads(catalog, selective_releases)
         if args.mode == "candidate":
             relative_lock = Path(args.lock).resolve().relative_to(repo_root).as_posix()
             baseline_ref = args.baseline_ref or discover_baseline_ref(
@@ -557,6 +634,7 @@ def main(argv=None):
                 catalog,
                 args.standalone_plugins_root,
                 not args.skip_external_heads,
+                selective_heads,
             )
         write_report(args.report, report)
     except (PromotionError, release_lock.ReleaseLockError, OSError, ValueError) as error:
