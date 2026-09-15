@@ -20,7 +20,7 @@ STACK_DIR = SCRIPT_DIR.parent
 DEFAULT_CATALOG = STACK_DIR / "manifests" / "component-catalog.json"
 DEFAULT_RELEASES = STACK_DIR / "manifests" / "optional-plugin-releases.json"
 PLAN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$")
-SLUG_PATTERN = re.compile(r"^mrn-[a-z0-9-]+$")
+SLUG_PATTERN = re.compile(r"^(?:mrn-[a-z0-9-]+|background-video-popout-disabler)$")
 VERSION_PATTERN = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 
@@ -334,14 +334,17 @@ def build_plan(
 
     if catalog_entry.get("target_tier") == "platform-required":
         raise PlanError("Platform-required components belong to the schema-2 release")
-    if catalog_entry.get("current_distribution") != "catalog-only":
-        raise PlanError("Optional plan targets must be catalog-only")
+    current_distribution = catalog_entry.get("current_distribution")
+    if current_distribution not in {"catalog-only", "standard-bootstrap"}:
+        raise PlanError(
+            "Optional plan targets must be catalog-only or standard-bootstrap"
+        )
     if catalog_entry.get("version") != target_version:
         raise PlanError("Catalog and release registry versions differ")
     if release.get("target_tier") != catalog_entry.get("target_tier"):
         raise PlanError("Catalog and release registry target tiers differ")
-    if release.get("current_distribution") != "catalog-only":
-        raise PlanError("Release registry distribution must be catalog-only")
+    if release.get("current_distribution") != current_distribution:
+        raise PlanError("Catalog and release registry distributions differ")
     if (release.get("update_policy") or {}).get("mode") != "upgrade-only":
         raise PlanError("Release registry must require upgrade-only execution")
 
@@ -387,7 +390,7 @@ def build_plan(
             "preflight_ability": "mrn-mainwp/preflight-optional-plugin-update-v1",
             "controller_ability": "mrn-mainwp/update-optional-plugin-v1",
             "rollback_ability": "mrn-mainwp/rollback-optional-plugin-v1",
-            "minimum_controller_version": "0.8.2",
+            "minimum_controller_version": "0.9.1",
             "precondition_hash_source": "controller-preflight",
             "rollback_artifact_model": "operator-supplied-checksum-locked-package",
             "allow_new_install": False,

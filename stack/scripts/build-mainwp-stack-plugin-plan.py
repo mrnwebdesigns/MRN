@@ -619,7 +619,7 @@ def build_plan(
             "preflight_ability": "mrn-mainwp/preflight-stack-plugin-update-v1",
             "controller_ability": "mrn-mainwp/update-stack-plugin-v1",
             "rollback_ability": "mrn-mainwp/rollback-stack-plugin-v1",
-            "minimum_controller_version": "0.9.0",
+            "minimum_controller_version": "0.9.1",
             "precondition_hash_source": "controller-preflight",
             "release_identity_model": "immutable-baseline-plus-component-overlay",
             "allow_new_install": False,

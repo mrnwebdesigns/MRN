@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.15-selective-stack-plugin-fleet`
+- Stack release: `2026.09.15-independent-plugin-fleet`
 - Release date: `2026-09-15`
 - Status: `release candidate; site deployment and runtime verification pending`
 
@@ -26,15 +26,15 @@
   - `mrn-updraft-backup-policy-loader` `0.5.1`
   - `mrn-updraft-local-retention` `0.5.1`
 - Standard plugins:
-  - `background-video-popout-disabler` `1.0.1`
+  - `background-video-popout-disabler` `1.0.2`
   - `mrn-acf-character-count` `1.1.8`
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-ai-assist` `2.0.14`
-  - `mrn-announcements` `1.8.1`
+  - `mrn-announcements` `1.8.2`
   - `mrn-comment-management` `1.1.7`
   - `mrn-config-helper` `0.1.61`
   - `mrn-editor-tools` `1.8.25`
-  - `mrn-fontawesome-profile-manager` `0.5.0`
+  - `mrn-fontawesome-profile-manager` `0.5.1`
   - `mrn-google-fonts` `1.0.7`
   - `mrn-hierarchical-menu-taxonomies` `0.1.0`
   - `mrn-layout-import-export` `0.1.2`
@@ -42,7 +42,7 @@
   - `mrn-mega-menu` `0.17.2`
   - `mrn-recaptcha-enterprise-manager` `0.1.1`
   - `mrn-sendgrid-provisioning` `0.1.0`
-  - `mrn-seo-helper` `0.4.0`
+  - `mrn-seo-helper` `0.4.1`
   - `mrn-stack-deployment-agent` `0.2.2`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-tokens` `0.1.3`
@@ -65,11 +65,11 @@
 - `mrn-database-retention` is not part of the platform baseline. Its independently released `1.1.1` package is catalog-only and available solely through the one-site, upgrade-only optional-plugin plan.
 - This baseline includes `mrn-media-bulk-tools` `0.13.1` as a platform-required standard plugin and binds its exact standalone `main` commit and tree hash.
 - Current candidate explicitly locks every tracked MU wrapper at its real deployed filename, including the Updraft backup-policy wrapper at `mrn-updraft-local-retention.php`.
-- The Dashboard-only `mrn-mainwp-operations-api` release advances to `0.9.0`.
-  It retains the exact-site optional-plugin contract and adds baseline-bound
-  selective preflight, update, and rollback for platform-required standard
-  plugins. It remains an independently released MainWP control-plane component
-  and is never installed on child sites.
+- The Dashboard-only `mrn-mainwp-operations-api` release advances to `0.9.1`.
+  It fixes active-plugin inventory reads, retains baseline-bound selective
+  updates, and expands exact-site independently released plugin updates to the
+  four newly registered bootstrap components. It remains a MainWP control-plane
+  component and is never installed on child sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
 - `mrn-config-helper` is locked to standalone `0.1.61`, and
   `mrn-stack-deployment-agent` is locked to standalone `0.2.2` with installed

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-09-14",
-  "authority": "Checksum-locked releases available to explicit per-site optional-plugin plans. Inclusion never authorizes installation or a site write.",
+  "catalog_updated": "2026-09-15",
+  "authority": "Checksum-locked independently released plugins available to explicit one-site upgrade plans. A release may remain a standard bootstrap default; registration never authorizes installation or a site write.",
   "releases": [
     {
       "slug": "mrn-cookie-consent",
@@ -65,6 +65,98 @@
         "main_file": "mrn-gtm-injector/mrn-gtm-injector.php",
         "size_bytes": 27750,
         "sha256": "e227b8a33ad8dffc1904cacbfba1c48a068e6182f204ee6f13e4a804746ce6c1"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
+      "slug": "background-video-popout-disabler",
+      "version": "1.0.2",
+      "target_tier": "optional-shared",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/background-video-popout-disabler",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/background-video-popout-disabler",
+        "git_commit": "d0fef00d2e03316cf3ad4b6bb0b24a964aa97849"
+      },
+      "package": {
+        "path": "/Users/khofmeyer/Development/MRN-plugins/background-video-popout-disabler/zip/background-video-popout-disabler-1.0.2.zip",
+        "filename": "background-video-popout-disabler-1.0.2.zip",
+        "main_file": "background-video-popout-disabler/background-video-popout-disabler.php",
+        "size_bytes": 3308,
+        "sha256": "734729096992ac391a1ae74dd5085dd3408ca386e62d7704b885545975ac9362"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
+      "slug": "mrn-announcements",
+      "version": "1.8.2",
+      "target_tier": "optional-shared",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-announcements",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-announcements",
+        "git_commit": "284b1ae8a171daad55781c161cfb263fff289433"
+      },
+      "package": {
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-announcements/zip/mrn-announcements-1.8.2.zip",
+        "filename": "mrn-announcements-1.8.2.zip",
+        "main_file": "mrn-announcements/mrn-announcements.php",
+        "size_bytes": 34133,
+        "sha256": "4e184f5cc8724631cfa112cc6a98b0144e5c2c7faaca2a55192b93394d02f349"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
+      "slug": "mrn-fontawesome-profile-manager",
+      "version": "0.5.1",
+      "target_tier": "optional-integration",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-fontawesome-profile-manager",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-fontawesome-profile-manager",
+        "git_commit": "ab46ed996cd6d7c02d7bc5ba93badda2587dbeb5"
+      },
+      "package": {
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-fontawesome-profile-manager/zip/mrn-fontawesome-profile-manager-0.5.1.zip",
+        "filename": "mrn-fontawesome-profile-manager-0.5.1.zip",
+        "main_file": "mrn-fontawesome-profile-manager/mrn-fontawesome-profile-manager.php",
+        "size_bytes": 27401,
+        "sha256": "d99439fec3c77fcd87f54215f134231e1367a1cf8ab85adee4edd09eb9b59d6a"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
+      "slug": "mrn-seo-helper",
+      "version": "0.4.1",
+      "target_tier": "optional-integration",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-seo-helper",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-seo-helper",
+        "git_commit": "4d04dd76798578e471010d64264d0efba71a7c12"
+      },
+      "package": {
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-seo-helper/zip/mrn-seo-helper-0.4.1.zip",
+        "filename": "mrn-seo-helper-0.4.1.zip",
+        "main_file": "mrn-seo-helper/mrn-seo-helper.php",
+        "size_bytes": 12260,
+        "sha256": "6153eafac3e459b5c25823a9d5b76ea9dfff59291d71dac73b5e743fc195e382"
       },
       "update_policy": {
         "mode": "upgrade-only",

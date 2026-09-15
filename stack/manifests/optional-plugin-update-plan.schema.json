@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://mrnwebdesigns.com/schemas/optional-plugin-update-plan.schema.json",
-  "title": "MRN One-Site Optional Plugin Update Plan",
+  "title": "MRN One-Site Independently Released Plugin Update Plan",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "plan_type", "plan_id", "generated_at", "plugin", "site", "operation", "preflight", "execution_contract"],
@@ -15,10 +15,10 @@
       "additionalProperties": false,
       "required": ["slug", "target_version", "target_tier", "current_distribution", "source", "package"],
       "properties": {
-        "slug": {"type": "string", "pattern": "^mrn-[a-z0-9-]+$"},
+        "slug": {"type": "string", "pattern": "^(mrn-[a-z0-9-]+|background-video-popout-disabler)$"},
         "target_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
         "target_tier": {"type": "string", "not": {"const": "platform-required"}},
-        "current_distribution": {"const": "catalog-only"},
+        "current_distribution": {"enum": ["catalog-only", "standard-bootstrap"]},
         "source": {
           "type": "object",
           "additionalProperties": false,
@@ -102,7 +102,7 @@
         "preflight_ability": {"const": "mrn-mainwp/preflight-optional-plugin-update-v1"},
         "controller_ability": {"const": "mrn-mainwp/update-optional-plugin-v1"},
         "rollback_ability": {"const": "mrn-mainwp/rollback-optional-plugin-v1"},
-        "minimum_controller_version": {"const": "0.8.2"},
+        "minimum_controller_version": {"const": "0.9.1"},
         "precondition_hash_source": {"const": "controller-preflight"},
         "rollback_artifact_model": {"const": "operator-supplied-checksum-locked-package"},
         "allow_new_install": {"const": false},

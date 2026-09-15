@@ -230,7 +230,7 @@ class StackPluginPlanTests(unittest.TestCase):
         self.assertEqual("0.1.60", plan["plugin"]["target"]["version"])
         self.assertEqual(self.rollback_tree[0], plan["site"]["current_tree_sha256"])
         self.assertEqual("immutable-baseline-plus-component-overlay", plan["execution_contract"]["release_identity_model"])
-        self.assertEqual("0.9.0", plan["execution_contract"]["minimum_controller_version"])
+        self.assertEqual("0.9.1", plan["execution_contract"]["minimum_controller_version"])
         self.assertFalse(plan["execution_contract"]["allow_new_install"])
         schema = json.loads(
             (STACK_DIR / "manifests" / "stack-plugin-update-plan.schema.json").read_text(encoding="utf-8")
