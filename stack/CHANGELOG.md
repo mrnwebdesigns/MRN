@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- `mrn-seo-helper` (`0.4.1` -> `0.4.2`): excluded WooCommerce orders,
+  refunds, placeholders, and extension-defined order types from the shared ACF
+  SEO fields and metadata synchronization. The final supported-post-type guard
+  prevents later filters from accidentally restoring order screens.
+
 ## 2026.09.15-independent-plugin-fleet
 
 - Added checksum-locked, one-site upgrade records for Background Video Pop-Out

@@ -42,7 +42,7 @@
   - `mrn-mega-menu` `0.17.2`
   - `mrn-recaptcha-enterprise-manager` `0.1.1`
   - `mrn-sendgrid-provisioning` `0.1.0`
-  - `mrn-seo-helper` `0.4.1`
+  - `mrn-seo-helper` `0.4.2`
   - `mrn-stack-deployment-agent` `0.2.2`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-tokens` `0.1.3`

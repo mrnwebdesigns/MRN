@@ -366,7 +366,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             "background-video-popout-disabler": "1.0.2",
             "mrn-announcements": "1.8.2",
             "mrn-fontawesome-profile-manager": "0.5.1",
-            "mrn-seo-helper": "0.4.1",
+            "mrn-seo-helper": "0.4.2",
         }
 
         for slug, version in expected.items():
