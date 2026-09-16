@@ -7,8 +7,8 @@ forward on one fully bootstrapped Stack site without deploying every Stack
 component. It fills the gap between the immutable full Stack release and the
 separate optional-plugin release process.
 
-The first supported examples are `mrn-config-helper` `0.1.59` through `0.1.61`
-to `0.1.62`, `mrn-stack-deployment-agent` `0.2.2` to `0.2.3`, and
+The first supported examples are `mrn-config-helper` `0.1.59` through `0.1.62`
+to `0.1.63`, `mrn-stack-deployment-agent` `0.2.2` to `0.2.3`, and
 `mrn-universal-sticky-bar` `1.1.8` or `1.1.9` to `1.1.10`.
 Eligibility is not hardcoded to Config Helper: a fresh signed runtime report
 must prove the requested plugin is exactly one `standard-plugin` component in
@@ -59,8 +59,8 @@ mkdir -p releases/stack-plugins
 git -C /Users/khofmeyer/Development/MRN-plugins/mrn-config-helper archive \
   --format=zip \
   --prefix=mrn-config-helper/ \
-  a7581b7ca72b17e87eeb9d688be6dff8afc454e6 \
-  -o releases/stack-plugins/mrn-config-helper-0.1.62.zip
+  124dcfd22ce867900b878f5b82c5854f5f93a029 \
+  -o releases/stack-plugins/mrn-config-helper-0.1.63.zip
 ```
 
 The release registry records each ZIP's exact byte checksum and size plus the
@@ -76,9 +76,9 @@ proves that:
 Config Helper `0.1.59` and `0.1.60` were previously packaged with two ignored
 `ai-data` files. Those packages are retained solely as exact rollback material,
 and the registry binds each supplemental path, size, and checksum explicitly.
-They can never be selected as a new target. Version `0.1.62` establishes the
-clean, commit-reproducible target, and the shared release generator now excludes
-`ai-data` from every future deployable tree.
+They can never be selected as a new target. Versions `0.1.61` and later use the
+clean, commit-reproducible package boundary, and the shared release generator
+excludes `ai-data` from every future deployable tree.
 
 Universal Sticky Bar `1.1.8` likewise contained one tracked internal `ai-data`
 note. Its exact package is registered only as legacy rollback material;
@@ -122,8 +122,8 @@ name one reviewed lock explicitly; it never weakens the identity check.
 python3 stack/scripts/build-mainwp-stack-plugin-plan.py \
   --inventory /absolute/path/to/fresh-site-inventory.json \
   --plugin-slug mrn-config-helper \
-  --plan-id config-helper-0.1.62-site-115 \
-  --output releases/stack-plugins/config-helper-0.1.62-site-115.plan.json
+  --plan-id config-helper-0.1.63-site-115 \
+  --output releases/stack-plugins/config-helper-0.1.63-site-115.plan.json
 ```
 
 The current catalog version is the default and only legal target. Optional

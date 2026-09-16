@@ -422,8 +422,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             if item["slug"] == "mrn-config-helper"
         }
 
-        self.assertEqual("0.1.62", entry["version"])
-        self.assertEqual({"0.1.59", "0.1.60", "0.1.61", "0.1.62"}, set(versions))
+        self.assertEqual("0.1.63", entry["version"])
+        self.assertEqual({"0.1.59", "0.1.60", "0.1.61", "0.1.62", "0.1.63"}, set(versions))
         self.assertEqual(
             entry["version"],
             max(versions, key=lambda value: planner.version_tuple(value, "version")),
@@ -438,6 +438,7 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             self.assertRegex(release["tree"]["sha256"], r"^[a-f0-9]{64}$")
         self.assertNotIn("legacy_supplements", versions["0.1.61"])
         self.assertNotIn("legacy_supplements", versions["0.1.62"])
+        self.assertNotIn("legacy_supplements", versions["0.1.63"])
         self.assertEqual(2, len(versions["0.1.59"]["legacy_supplements"]))
         self.assertEqual(2, len(versions["0.1.60"]["legacy_supplements"]))
 

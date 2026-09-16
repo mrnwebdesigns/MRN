@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## 2026.09.16-events-acf-ajax-fleet
+
+- `mrn-base-stack` (`1.3.3` -> `1.3.4`): added the shared Events content type
+  contract and fixed isolated ACF AJAX lookups for dynamically cloned builder
+  selectors. Derived field keys are registered without changing field names,
+  saved values, flexible-content structures, or frontend rendering; reusable
+  block pickers continue to return published blocks only.
+- `mrn-config-helper` (`0.1.62` -> `0.1.63`): added the capability- and
+  nonce-gated Content Types settings extension hook required by shared Stack
+  integrations.
+- Prepared the complete merged-source candidate for deterministic Fleet
+  packaging. No Dashboard, child-site, or Trilliant deployment is part of this
+  promotion.
+
 ## 2026.09.16-stack-repair-fleet
 
 - `mrn-config-helper` (`0.1.61` -> `0.1.62`): preserved the existing
