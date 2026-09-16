@@ -96,12 +96,12 @@ function mrn_base_stack_register_cloned_acf_ajax_fields() {
 	}
 
 	$clone_factories = array(
-		'after_content_'          => 'mrn_base_stack_get_after_content_builder_layouts',
-		'field_mrn_hero_'         => 'mrn_base_stack_get_hero_builder_layouts',
-		'field_mrn_tabbed_panel_' => 'mrn_base_stack_get_tabbed_layout_nested_layouts',
+		'after_content_'           => 'mrn_base_stack_get_after_content_builder_layouts',
+		'field_mrn_hero_'          => 'mrn_base_stack_get_hero_builder_layouts',
+		'field_mrn_tabbed_panel_'  => 'mrn_base_stack_get_tabbed_layout_nested_layouts',
 		'field_mrn_card_item_row_' => 'mrn_base_stack_get_card_nested_layouts',
-		'sidebar_'                => 'mrn_base_stack_get_sidebar_builder_layouts',
-		'not_found_'              => 'mrn_base_stack_get_not_found_builder_layouts',
+		'sidebar_'                 => 'mrn_base_stack_get_sidebar_builder_layouts',
+		'not_found_'               => 'mrn_base_stack_get_not_found_builder_layouts',
 	);
 
 	foreach ( $clone_factories as $prefix => $factory ) {
