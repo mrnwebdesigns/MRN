@@ -470,12 +470,41 @@ echo "Verified managed credential delivery.\n";
 '
 }
 
+bootstrap_wpforms_recaptcha() {
+  run_wp eval '
+if (!class_exists("MRN_Recaptcha_Enterprise_Manager") || !method_exists("MRN_Recaptcha_Enterprise_Manager", "bootstrap_wpforms_recaptcha")) {
+    fwrite(STDERR, "reCAPTCHA Enterprise Manager does not support WPForms bootstrap.\n");
+    exit(1);
+}
+
+$result = MRN_Recaptcha_Enterprise_Manager::bootstrap_wpforms_recaptcha();
+if (is_wp_error($result)) {
+    fwrite(STDERR, "WPForms reCAPTCHA bootstrap failed: " . $result->get_error_message() . "\n");
+    exit(1);
+}
+if (!is_array($result)) {
+    fwrite(STDERR, "WPForms reCAPTCHA bootstrap returned an invalid result.\n");
+    exit(1);
+}
+
+$status = sanitize_key((string) ($result["status"] ?? ""));
+$message = sanitize_text_field((string) ($result["message"] ?? ""));
+if (!in_array($status, array("unchanged", "reused", "created"), true)) {
+    fwrite(STDERR, "WPForms reCAPTCHA bootstrap returned an unsupported status.\n");
+    exit(1);
+}
+
+echo "WPForms reCAPTCHA bootstrap {$status}: {$message}\n";
+'
+}
+
 reconcile_managed_credentials() {
   [[ "${SITE_PROFILE}" == "stack" ]] || return 0
   validate_managed_credential_sources
   reconcile_recaptcha_enterprise_constants
   reconcile_uptime_robot_constant
   verify_managed_credential_delivery
+  bootstrap_wpforms_recaptcha
 }
 
 if [[ -f "${SITE_PATH}/${MARKER_NAME}" ]]; then
