@@ -187,7 +187,7 @@ class OptionalPluginPlanTests(unittest.TestCase):
             "mrn-mainwp/preflight-optional-plugin-update-v1",
             plan["execution_contract"]["preflight_ability"],
         )
-        self.assertEqual("0.9.3", plan["execution_contract"]["minimum_controller_version"])
+        self.assertEqual("0.9.4", plan["execution_contract"]["minimum_controller_version"])
         self.assertEqual(
             "controller-preflight",
             plan["execution_contract"]["precondition_hash_source"],
@@ -318,7 +318,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             for item in catalog["components"]
             if item["slug"] == "mrn-mainwp-operations-api"
         )
-        self.assertEqual("0.9.3", controller["version"])
+        self.assertEqual("0.9.4", controller["version"])
         self.assertEqual("dashboard-only", controller["target_tier"])
         self.assertIn("twenty-two mrn-mainwp WordPress Abilities", controller["data"]["routes"])
         self.assertNotIn("Defender (legacy compatibility only)", entry["dependencies"]["soft"])
@@ -379,6 +379,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             "mrn-announcements": "1.8.2",
             "mrn-fontawesome-profile-manager": "0.5.1",
             "mrn-recaptcha-enterprise-manager": "0.1.2",
+            "mrn-reusable-block-library": "0.2.0",
             "mrn-seo-helper": "0.5.0",
         }
 
@@ -395,6 +396,17 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             self.assertIn(f"{slug}.zip", manifest)
             self.assertRegex(release["source"]["git_commit"], r"^[a-f0-9]{40}$")
             self.assertRegex(release["package"]["sha256"], r"^[a-f0-9]{64}$")
+
+        reusable_release = release_by_slug["mrn-reusable-block-library"]
+        self.assertEqual(
+            "ef45cee815dbcc88b9d87050812f0951e1e51281",
+            reusable_release["source"]["git_commit"],
+        )
+        self.assertEqual(55274, reusable_release["package"]["size_bytes"])
+        self.assertEqual(
+            "6fab9fbe8fddf19f6a70f88c183451a3805181659b39a488003f1a04b18b1faa",
+            reusable_release["package"]["sha256"],
+        )
 
 
 if __name__ == "__main__":

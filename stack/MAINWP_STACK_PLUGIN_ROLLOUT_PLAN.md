@@ -43,7 +43,7 @@ remove the overlay condition.
 - `scripts/build-mainwp-stack-plugin-plan.py` validates one fresh site
   inventory, immutable release identity, exact committed sources, target and
   rollback packages, runtime tree, and backup readiness.
-- `mrn-mainwp-operations-api` `0.9.3` provides the matching Dashboard abilities:
+- `mrn-mainwp-operations-api` `0.9.4` provides the matching Dashboard abilities:
   - `mrn-mainwp/preflight-stack-plugin-update-v1`
   - `mrn-mainwp/update-stack-plugin-v1`
   - `mrn-mainwp/rollback-stack-plugin-v1`
@@ -190,7 +190,7 @@ Rollback is explicit and independently backup-gated:
 ## Control-Plane Gate
 
 Source readiness is not Dashboard deployment. Before the first selective site
-operation, package and deploy `mrn-mainwp-operations-api` `0.9.3` to
+operation, package and deploy `mrn-mainwp-operations-api` `0.9.4` to
 `wpcontrol.mrndev.io` through its separately authorized, backup-gated Dashboard
 workflow. Reconnect the configured `mainwp` MCP adapter and require the exact
 Dashboard host plus all three selective abilities. Do not substitute SSH,
