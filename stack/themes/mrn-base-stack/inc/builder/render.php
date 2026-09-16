@@ -1027,15 +1027,15 @@ add_action( 'wp_ajax_mrn_base_stack_prepare_page_specific_block', 'mrn_base_stac
  * @return array<string, mixed>
  */
 function mrn_base_stack_filter_reusable_block_picker_query( $args, $field ) {
-	$field_key = is_array( $field ) && isset( $field['key'] ) ? (string) $field['key'] : '';
-	$base_keys = array(
+	$field_key                = is_array( $field ) && isset( $field['key'] ) ? (string) $field['key'] : '';
+	$base_keys                = array(
 		'field_mrn_reusable_block_post',
 		'field_mrn_nested_reusable_block_post',
 	);
 	$is_reusable_block_picker = false;
 
 	foreach ( $base_keys as $base_key ) {
-		if ( strlen( $field_key ) >= strlen( $base_key ) && $base_key === substr( $field_key, -strlen( $base_key ) ) ) {
+		if ( strlen( $field_key ) >= strlen( $base_key ) && substr( $field_key, -strlen( $base_key ) ) === $base_key ) {
 			$is_reusable_block_picker = true;
 			break;
 		}

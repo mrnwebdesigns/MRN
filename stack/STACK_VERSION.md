@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.16-events-acf-ajax-fleet`
+- Stack release: `2026.09.16-acf-ajax-seo-fleet`
 - Release date: `2026-09-16`
 - Status: `release candidate; site deployment and runtime verification pending`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.3.4`
+  - `mrn-base-stack` `1.3.5`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -96,10 +96,11 @@
   first saved. WooCommerce internal order and coupon types remain
   hard-excluded. Its Fleet record remains upgrade-only and never installs the
   plugin when it is absent.
-- Parent theme `1.3.4` adds the shared Events content type contract and registers
+- Parent theme `1.3.5` adds the shared Events content type contract and registers
   dynamically cloned ACF builder fields so isolated AJAX selectors resolve their
   derived keys while preserving stored values and published-only reusable-block
-  results.
+  results. The `1.3.5` increment contains coding-standard cleanup only after the
+  functional `1.3.4` acceptance.
 - Selective Stack planning retains the exact signed locks reported by currently
   qualified Fleet sites, plus the subsequent reviewed baselines, and
   automatically selects the matching immutable lock by release ID and byte
