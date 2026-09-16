@@ -21,12 +21,17 @@ explicit state. Then update Cookie Consent. This order prevents an immediate-GTM
 window between the two plugin updates. Release records may be added only after
 their source commits merge to `origin/main`. The registered `1.1.43` and
 `1.0.14` releases meet that source gate; do not attempt the rollout until the
-Dashboard runs controller `0.9.3` and exposes both plugin main files.
+Dashboard runs controller `0.9.4` and exposes both plugin main files.
 
 MRN Database Retention is maintenance-only and catalog-only. Defender support
 inside that plugin is conditional legacy compatibility; Defender is not a Stack
 requirement. The ongoing mail-provider transition does not change the
 provider-agnostic FluentSMTP retention contract.
+
+MRN Reusable Block Library remains a Stack-profile bootstrap component and is
+also available as an exact one-site upgrade for sites where fresh inventory
+proves it is already installed. Registry membership never authorizes installing
+it on a plain-profile or otherwise absent site.
 
 ## Release Inputs
 
@@ -111,7 +116,7 @@ updates because it:
 - does not bind execution to the inventory version/state reviewed in preflight;
 - does not require or report a checksum-verified plugin rollback artifact.
 
-`mrn-mainwp-operations-api` `0.9.3` provides the dedicated
+`mrn-mainwp-operations-api` `0.9.4` provides the dedicated
 `mrn-mainwp/preflight-optional-plugin-update-v1`,
 `mrn-mainwp/update-optional-plugin-v1`, and
 `mrn-mainwp/rollback-optional-plugin-v1` abilities. Preflight uses POST transport
@@ -138,13 +143,14 @@ safe contract is:
 8. Delete temporary Dashboard upload material after success or failure.
 
 Do not use the generic package installer for optional-plugin updates. Before a
-site operation, `0.9.3` must be separately deployed to the named MainWP
+site operation, `0.9.4` must be separately deployed to the named MainWP
 Dashboard and the three abilities must be visible through the configured
 `mainwp` MCP allowlist. Missing controller deployment or ability visibility is
 a deployment blocker, not permission to use a browser, SSH, or direct mutation.
-The merged `0.9.3` source allowlists Database Retention, Cookie Consent, GTM
+The merged `0.9.4` source allowlists Database Retention, Cookie Consent, GTM
 Injector, Background Video Pop-Out Disabler, Announcements, Font Awesome Profile
-Manager, SEO Helper, and reCAPTCHA Enterprise Manager. The connected Dashboard
+Manager, SEO Helper, reCAPTCHA Enterprise Manager, and Reusable Block Library.
+The connected Dashboard
 must report that version and expose the exact requested main-file choice before
 any site rollout.
 

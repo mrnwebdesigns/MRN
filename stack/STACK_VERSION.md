@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.16-acf-ajax-seo-fleet`
+- Stack release: `2026.09.16-layout-classes-fleet`
 - Release date: `2026-09-16`
 - Status: `release candidate; site deployment and runtime verification pending`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.3.5`
+  - `mrn-base-stack` `1.4.0`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -49,7 +49,7 @@
   - `mrn-universal-sticky-bar` `1.1.10`
 
 - Profile-gated standard plugins:
-  - `mrn-reusable-block-library` `0.1.28` (`MRN_SITE_PROFILE=stack`)
+  - `mrn-reusable-block-library` `0.2.0` (`MRN_SITE_PROFILE=stack`)
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)
@@ -65,10 +65,11 @@
 - `mrn-database-retention` is not part of the platform baseline. Its independently released `1.1.1` package is catalog-only and available solely through the one-site, upgrade-only optional-plugin plan.
 - This baseline includes `mrn-media-bulk-tools` `0.13.1` as a platform-required standard plugin and binds its exact standalone `main` commit and tree hash.
 - Current candidate explicitly locks every tracked MU wrapper at its real deployed filename, including the Updraft backup-policy wrapper at `mrn-updraft-local-retention.php`.
-- The Dashboard-only `mrn-mainwp-operations-api` release advances to `0.9.3`.
+- The Dashboard-only `mrn-mainwp-operations-api` release advances to `0.9.4`.
   It requires the deployment agent's secret-free managed-credential readiness
-  report before a full Stack preflight can be considered ready and adds the
-  exact reCAPTCHA Manager main file to the optional-plugin upgrade allowlist.
+  report before a full Stack preflight can be considered ready and includes the
+  exact Reusable Block Library main file in the optional-plugin upgrade
+  allowlist.
   It remains a MainWP control-plane component and is never installed on child
   sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
@@ -96,11 +97,12 @@
   first saved. WooCommerce internal order and coupon types remain
   hard-excluded. Its Fleet record remains upgrade-only and never installs the
   plugin when it is absent.
-- Parent theme `1.3.5` adds the shared Events content type contract and registers
-  dynamically cloned ACF builder fields so isolated AJAX selectors resolve their
-  derived keys while preserving stored values and published-only reusable-block
-  results. The `1.3.5` increment contains coding-standard cleanup only after the
-  functional `1.3.4` acceptance.
+- Reusable Block Library `0.2.0` is retained as a Stack-profile bootstrap
+  component and is also registered as an exact one-site, upgrade-only Fleet
+  release. Missing installations remain a hard stop rather than an implicit
+  install request.
+- Parent theme `1.4.0` adds the shared Layout Class field and outer-element
+  rendering contract on top of the Events and cloned-ACF-AJAX baseline.
 - Selective Stack planning retains the exact signed locks reported by currently
   qualified Fleet sites, plus the subsequent reviewed baselines, and
   automatically selects the matching immutable lock by release ID and byte

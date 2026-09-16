@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+## 2026.09.16-layout-classes-fleet
+
+- `mrn-base-stack` (`1.3.5` -> `1.4.0`) and
+  `mrn-reusable-block-library` (`0.1.28` -> `0.2.0`): added a shared Layout
+  Class control immediately after Anchor ID in builder layout Configs.
+  Comma-separated class names accept optional leading periods and render as
+  sanitized classes on each layout's outermost element, including nested and
+  reusable placements.
+- Registered the exact merged Reusable Block Library `0.2.0` artifact for
+  one-site, upgrade-only Fleet updates while retaining its Stack-profile
+  bootstrap classification. An absent plugin is never installed implicitly.
+- Advanced the Dashboard-only MainWP Operations API contract to `0.9.4` so the
+  exact Reusable Block Library main file is available to the existing
+  checksum-locked, backup-gated optional-plugin abilities.
+- Prepared the merged parent-theme source, optional-plugin registry, and
+  controller contract as one Fleet candidate. No Dashboard or child-site
+  deployment is part of this promotion.
+
 ## 2026.09.16-acf-ajax-seo-fleet
 
 - `mrn-base-stack` (`1.3.4` -> `1.3.5`): completed coding-standard cleanup for
@@ -16,13 +34,6 @@
 - Consolidated the completed Events, cloned ACF AJAX, Config Helper, and SEO
   Helper work into one clean Fleet-ready Stack candidate. No site deployment is
   part of this promotion.
-
-- `mrn-base-stack` (`1.3.5` -> `1.4.0`) and
-  `mrn-reusable-block-library` (`0.1.28` -> `0.2.0`): added a shared Layout
-  Class control immediately after Anchor ID in builder layout Configs.
-  Comma-separated class names accept optional leading periods and render as
-  sanitized classes on each layout's outermost element, including nested and
-  reusable placements.
 
 ## 2026.09.16-events-acf-ajax-fleet
 

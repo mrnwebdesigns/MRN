@@ -42,7 +42,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 | `mrn-announcements` | 1.8.2 | Standard bootstrap; checksum-locked one-site release | Optional shared | Scheduled and targeted announcement bars and modals. |
 | `mrn-editor-tools` | 1.8.25 | Standard bootstrap | Optional shared | Classic Editor, TinyMCE, and ACF WYSIWYG enhancements. |
 | `mrn-mega-menu` | 0.17.2 | Standard bootstrap | Optional shared | Accessible content-rich mega-menu administration and rendering. |
-| `mrn-reusable-block-library` | 0.1.28 | Independent repository (`mrnwebdesigns/mrn-reusable-block-library`) via MRN-plugins symlink | Optional shared | Shared reusable block content types and render helpers; existing site behavior is unchanged. |
+| `mrn-reusable-block-library` | 0.2.0 | Independent repository (`mrnwebdesigns/mrn-reusable-block-library`) via MRN-plugins symlink; Stack-profile bootstrap plus checksum-locked one-site release | Optional shared | Shared reusable block content types and render helpers, including sanitized outer-layout classes. |
 | `mrn-tokens` | 0.1.3 | Independent repository (`mrnwebdesigns/mrn-tokens`) via MRN-plugins symlink | Optional shared | Reusable content-token registry, shortcode, and authenticated REST API. |
 
 ## Optional Integration Adapters
@@ -65,7 +65,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 
 | Slug | Version | Responsibility |
 | --- | ---: | --- |
-| `mrn-mainwp-operations-api` | 0.9.3 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only controller that gates full-Stack readiness on secret-free managed-credential reporting and allowlists reCAPTCHA Manager upgrades, never installed on child sites. |
+| `mrn-mainwp-operations-api` | 0.9.4 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only controller that gates full-Stack readiness on secret-free managed-credential reporting and allowlists Reusable Block Library upgrades, never installed on child sites. |
 | `mrn-wp-control` | 1.1.1 | Independent repository (`mrnwebdesigns/mrn-wp-control`); dashboard-only, not installed in client-site plugins. |
 | `mrn-wp-control-table-exporter` | 1.4.4 | Independent repository (`mrnwebdesigns/mrn-wp-control-table-exporter`); dashboard-only, not installed in client-site plugins. |
 | `mrn-mainwp-mcp` | 0.1.1 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |

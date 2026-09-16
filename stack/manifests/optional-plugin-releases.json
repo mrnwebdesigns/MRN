@@ -186,6 +186,29 @@
         "preserve_active_state": true,
         "new_install": "requires-separate-owner-authorization-and-plan"
       }
+    },
+    {
+      "slug": "mrn-reusable-block-library",
+      "version": "0.2.0",
+      "target_tier": "optional-shared",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-reusable-block-library",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-reusable-block-library",
+        "git_commit": "ef45cee815dbcc88b9d87050812f0951e1e51281"
+      },
+      "package": {
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-reusable-block-library/dist/mrn-reusable-block-library-0.2.0.zip",
+        "filename": "mrn-reusable-block-library-0.2.0.zip",
+        "main_file": "mrn-reusable-block-library/mrn-reusable-block-library.php",
+        "size_bytes": 55274,
+        "sha256": "6fab9fbe8fddf19f6a70f88c183451a3805181659b39a488003f1a04b18b1faa"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
     }
   ]
 }

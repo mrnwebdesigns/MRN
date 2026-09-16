@@ -102,7 +102,7 @@
         "preflight_ability": {"const": "mrn-mainwp/preflight-optional-plugin-update-v1"},
         "controller_ability": {"const": "mrn-mainwp/update-optional-plugin-v1"},
         "rollback_ability": {"const": "mrn-mainwp/rollback-optional-plugin-v1"},
-        "minimum_controller_version": {"const": "0.9.3"},
+        "minimum_controller_version": {"const": "0.9.4"},
         "precondition_hash_source": {"const": "controller-preflight"},
         "rollback_artifact_model": {"const": "operator-supplied-checksum-locked-package"},
         "allow_new_install": {"const": false},

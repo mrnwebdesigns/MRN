@@ -5,7 +5,7 @@
 - Name: `Reusable Block Library`
 - Slug: `mrn-reusable-block-library`
 - Type: standard plugin
-- Current version: `0.1.28`
+- Current version: `0.2.0`
 - Source path:
   - `/Users/khofmeyer/Development/MRN/plugins/mrn-reusable-block-library`
 
@@ -121,6 +121,14 @@ Key functions:
 - `mrn_rbl_render_fields_as_block()`
 - `mrn_rbl_shortcode()`
 
+## Layout Class Contract
+
+Each reusable layout exposes `Layout Class` in Configs under Basic Setting,
+immediately after Anchor ID. Values are comma-separated, leading periods are
+optional, and the normalized classes are appended to the layout's outermost
+element. Theme template overrides should use
+`mrn_rbl_merge_layout_classes()` to preserve that output contract.
+
 ## Template Override Contract
 
 Theme override path:
@@ -194,7 +202,10 @@ It also manages starter-block provisioning and admin presentation data indirectl
 - This plugin is selected by the Stack profile through the `manifests/plugins.txt` entry tagged `|stack`, and plain-profile bootstraps skip that line.
 - It is not loaded by the MU loader.
 - It is part of the stack baseline.
-- Current packaged baseline in memory: `0.1.28`
+- Current packaged baseline: `0.2.0`
+- The exact merged `0.2.0` artifact is registered for one-site, upgrade-only
+  Fleet updates. Registry membership does not authorize installation or a site
+  write.
 
 ## Risks / Gotchas
 
