@@ -399,6 +399,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
                 "bf4f6818c05bf592b914cf48e2e7afb7940c705d7df704e19c5c0f1f0001dbb3",
             "2026.09.15-independent-plugin-fleet.json":
                 "bdfe4e64cab57f03788ad1457236c6eeed074f6c36a91ce14ec0a04df31de58e",
+            "2026.09.16-stack-repair-fleet.json":
+                "791aceec002a230a02819e6456b45781e0aaa691b539b1918f95d4bac01446bf",
         }
 
         self.assertEqual(set(expected), {path.name for path in archive.glob("*.json")})
