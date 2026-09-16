@@ -115,7 +115,10 @@ function mrn_base_stack_get_not_found_builder_layouts() {
 		$layouts[ $layout_key ] = $layout;
 	}
 
-	$layouts_cache = mrn_base_stack_clone_acf_keys_with_prefix( $layouts, 'not_found_' );
+	$cloned_layouts = mrn_base_stack_clone_acf_keys_with_prefix( $layouts, 'not_found_' );
+	$layouts_cache  = function_exists( 'mrn_base_stack_maybe_finalize_cloned_acf_layouts' )
+		? mrn_base_stack_maybe_finalize_cloned_acf_layouts( $cloned_layouts, 'field_mrn_404_content_rows' )
+		: $cloned_layouts;
 
 	return $layouts_cache;
 }

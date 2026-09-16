@@ -52,17 +52,68 @@ function mrn_base_stack_clone_acf_keys_with_prefix( array $value, $prefix ) {
  * Finalize cloned ACF layouts when the runtime finalizer has loaded.
  *
  * @param array<string|int, mixed> $layouts Cloned ACF layout definitions.
+ * @param string                   $parent_field_key Optional flexible-content parent key.
  * @return array<string|int, mixed>
  */
-function mrn_base_stack_maybe_finalize_cloned_acf_layouts( array $layouts ) {
+function mrn_base_stack_maybe_finalize_cloned_acf_layouts( array $layouts, $parent_field_key = '' ) {
 	$finalize_cloned_layouts = 'mrn_base_stack_finalize_cloned_acf_layouts';
+	$register_cloned_fields  = 'mrn_base_stack_register_cloned_acf_layout_fields';
 
-	if ( ! function_exists( $finalize_cloned_layouts ) ) {
-		return $layouts;
+	if ( function_exists( $finalize_cloned_layouts ) ) {
+		$layouts = call_user_func( $finalize_cloned_layouts, $layouts );
 	}
 
-	return call_user_func( $finalize_cloned_layouts, $layouts );
+	if ( '' !== $parent_field_key && function_exists( $register_cloned_fields ) ) {
+		call_user_func( $register_cloned_fields, $layouts, $parent_field_key );
+	}
+
+	return $layouts;
 }
+
+/**
+ * Register the cloned field tree needed by an isolated ACF AJAX query.
+ *
+ * Normal editor rendering loads a clone's parent flexible-content field first.
+ * ACF field-query requests are isolated admin-ajax.php requests and submit only
+ * the derived sub-field key, so load just the matching clone factory before ACF
+ * attempts to resolve that key.
+ *
+ * @return void
+ */
+function mrn_base_stack_register_cloned_acf_ajax_fields() {
+	if ( ! function_exists( 'wp_doing_ajax' ) || ! wp_doing_ajax() ) {
+		return;
+	}
+
+	$action = isset( $_REQUEST['action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	if ( 1 !== preg_match( '#^acf/fields/[a-z0-9_-]+/query$#', $action ) ) {
+		return;
+	}
+
+	$field_key = isset( $_REQUEST['field_key'] ) ? sanitize_key( wp_unslash( $_REQUEST['field_key'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	if ( '' === $field_key ) {
+		return;
+	}
+
+	$clone_factories = array(
+		'after_content_'          => 'mrn_base_stack_get_after_content_builder_layouts',
+		'field_mrn_hero_'         => 'mrn_base_stack_get_hero_builder_layouts',
+		'field_mrn_tabbed_panel_' => 'mrn_base_stack_get_tabbed_layout_nested_layouts',
+		'field_mrn_card_item_row_' => 'mrn_base_stack_get_card_nested_layouts',
+		'sidebar_'                => 'mrn_base_stack_get_sidebar_builder_layouts',
+		'not_found_'              => 'mrn_base_stack_get_not_found_builder_layouts',
+	);
+
+	foreach ( $clone_factories as $prefix => $factory ) {
+		if ( 0 !== strpos( $field_key, $prefix ) || ! function_exists( $factory ) ) {
+			continue;
+		}
+
+		call_user_func( $factory );
+		break;
+	}
+}
+add_action( 'acf/init', 'mrn_base_stack_register_cloned_acf_ajax_fields', 30 );
 
 /**
  * Hydrate shallow ACF local flexible-content layouts with their local subfields.
@@ -266,7 +317,7 @@ function mrn_base_stack_get_after_content_builder_layouts( $post_id = 0 ) {
 	}
 
 	$cloned_layouts              = ! empty( $after_layouts ) ? mrn_base_stack_clone_acf_keys_with_prefix( $after_layouts, 'after_content_' ) : array();
-	$layouts_cache[ $cache_key ] = mrn_base_stack_maybe_finalize_cloned_acf_layouts( $cloned_layouts );
+	$layouts_cache[ $cache_key ] = mrn_base_stack_maybe_finalize_cloned_acf_layouts( $cloned_layouts, 'field_mrn_page_after_content_rows' );
 
 	return $layouts_cache[ $cache_key ];
 }
@@ -1374,7 +1425,7 @@ function mrn_base_stack_get_hero_builder_layouts() {
 		$layouts[ $cloned_key ] = $cloned_layout;
 	}
 
-	$layouts_cache = mrn_base_stack_maybe_finalize_cloned_acf_layouts( $layouts );
+	$layouts_cache = mrn_base_stack_maybe_finalize_cloned_acf_layouts( $layouts, 'field_mrn_page_hero_rows' );
 
 	return $layouts_cache;
 }
@@ -1506,7 +1557,7 @@ function mrn_base_stack_get_tabbed_layout_nested_layouts() {
 		$layouts[ $cloned_key ] = $cloned_layout;
 	}
 
-	$layouts_cache[ $cache_key ] = mrn_base_stack_maybe_finalize_cloned_acf_layouts( $layouts );
+	$layouts_cache[ $cache_key ] = mrn_base_stack_maybe_finalize_cloned_acf_layouts( $layouts, 'field_mrn_tabbed_layout_panel_rows' );
 
 	return $layouts_cache[ $cache_key ];
 }
@@ -1633,7 +1684,7 @@ function mrn_base_stack_get_card_nested_layouts() {
 		$layouts[ $cloned_key ] = $cloned_layout;
 	}
 
-	$layouts_cache[ $cache_key ] = mrn_base_stack_maybe_finalize_cloned_acf_layouts( $layouts );
+	$layouts_cache[ $cache_key ] = mrn_base_stack_maybe_finalize_cloned_acf_layouts( $layouts, 'field_mrn_card_item_rows' );
 
 	return $layouts_cache[ $cache_key ];
 }

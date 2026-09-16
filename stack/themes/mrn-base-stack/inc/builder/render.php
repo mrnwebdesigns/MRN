@@ -1022,16 +1022,34 @@ add_action( 'wp_ajax_mrn_base_stack_prepare_page_specific_block', 'mrn_base_stac
 /**
  * Keep draft reusable blocks out of the page/post builder picker.
  *
- * @param array<string, mixed> $args WP_Query args for the post object field.
+ * @param array<string, mixed> $args  WP_Query args for the post object field.
+ * @param array<string, mixed> $field ACF post-object field definition.
  * @return array<string, mixed>
  */
-function mrn_base_stack_filter_reusable_block_picker_query( $args ) {
+function mrn_base_stack_filter_reusable_block_picker_query( $args, $field ) {
+	$field_key = is_array( $field ) && isset( $field['key'] ) ? (string) $field['key'] : '';
+	$base_keys = array(
+		'field_mrn_reusable_block_post',
+		'field_mrn_nested_reusable_block_post',
+	);
+	$is_reusable_block_picker = false;
+
+	foreach ( $base_keys as $base_key ) {
+		if ( strlen( $field_key ) >= strlen( $base_key ) && $base_key === substr( $field_key, -strlen( $base_key ) ) ) {
+			$is_reusable_block_picker = true;
+			break;
+		}
+	}
+
+	if ( ! $is_reusable_block_picker ) {
+		return $args;
+	}
+
 	$args['post_status'] = array( 'publish' );
 
 	return $args;
 }
-add_filter( 'acf/fields/post_object/query/key=field_mrn_reusable_block_post', 'mrn_base_stack_filter_reusable_block_picker_query' );
-add_filter( 'acf/fields/post_object/query/key=field_mrn_nested_reusable_block_post', 'mrn_base_stack_filter_reusable_block_picker_query' );
+add_filter( 'acf/fields/post_object/query', 'mrn_base_stack_filter_reusable_block_picker_query', 10, 2 );
 
 /**
  * Read a builder sub-field value with legacy fallback names.

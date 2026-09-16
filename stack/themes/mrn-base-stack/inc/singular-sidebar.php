@@ -371,7 +371,9 @@ function mrn_base_stack_get_sidebar_builder_layouts( $post_id = 0 ) {
 		$sidebar_layouts[ $layout_key ] = $layout;
 	}
 
-	return ! empty( $sidebar_layouts ) ? mrn_base_stack_clone_acf_keys_with_prefix( $sidebar_layouts, 'sidebar_' ) : array();
+	$cloned_layouts = ! empty( $sidebar_layouts ) ? mrn_base_stack_clone_acf_keys_with_prefix( $sidebar_layouts, 'sidebar_' ) : array();
+
+	return mrn_base_stack_maybe_finalize_cloned_acf_layouts( $cloned_layouts, 'field_mrn_sidebar_rows' );
 }
 
 /**
