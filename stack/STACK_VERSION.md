@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.16-stack-repair-fleet`
+- Stack release: `2026.09.16-events-acf-ajax-fleet`
 - Release date: `2026-09-16`
 - Status: `release candidate; site deployment and runtime verification pending`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.3.3`
+  - `mrn-base-stack` `1.3.4`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -32,7 +32,7 @@
   - `mrn-ai-assist` `2.0.14`
   - `mrn-announcements` `1.8.2`
   - `mrn-comment-management` `1.1.7`
-  - `mrn-config-helper` `0.1.62`
+  - `mrn-config-helper` `0.1.63`
   - `mrn-editor-tools` `1.8.25`
   - `mrn-fontawesome-profile-manager` `0.5.1`
   - `mrn-google-fonts` `1.0.7`
@@ -72,8 +72,10 @@
   It remains a MainWP control-plane component and is never installed on child
   sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
-- `mrn-config-helper` is locked to standalone `0.1.62` and preserves an existing
-  UptimeRobot credential when its field is absent from a settings submission.
+- `mrn-config-helper` is locked to standalone `0.1.63`, preserves an existing
+  UptimeRobot credential when its field is absent from a settings submission,
+  and exposes the capability- and nonce-gated Content Types extension hook used
+  by Stack-owned admin integrations.
 - `mrn-stack-deployment-agent` is locked to standalone `0.2.3`; its authenticated
   status reports only presence/readiness booleans for managed credentials and
   never exposes their values.
@@ -92,6 +94,10 @@
 - SEO Helper `0.4.3` retains the `0.4.2` WooCommerce internal-order exclusion
   and also excludes coupons from required SEO fields. Its Fleet record remains
   upgrade-only and never installs the plugin when it is absent.
+- Parent theme `1.3.4` adds the shared Events content type contract and registers
+  dynamically cloned ACF builder fields so isolated AJAX selectors resolve their
+  derived keys while preserving stored values and published-only reusable-block
+  results.
 - Selective Stack planning retains the exact signed locks reported by currently
   qualified Fleet sites, plus the subsequent reviewed baselines, and
   automatically selects the matching immutable lock by release ID and byte

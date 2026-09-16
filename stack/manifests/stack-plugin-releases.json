@@ -144,6 +144,35 @@
       }
     },
     {
+      "slug": "mrn-config-helper",
+      "version": "0.1.63",
+      "runtime_type": "standard-plugin",
+      "target_tier": "platform-required",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-config-helper",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "git_commit": "124dcfd22ce867900b878f5b82c5854f5f93a029"
+      },
+      "package": {
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.63.zip",
+        "filename": "mrn-config-helper-0.1.63.zip",
+        "main_file": "mrn-config-helper/mrn-config-helper.php",
+        "size_bytes": 101595,
+        "sha256": "e598b01b4efd514a30487694ac1e82540ac712a3a56fc6a58e5d656e076b21df"
+      },
+      "tree": {
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "d9cddb1edbebef50804e991395a2b8c4ea13251637e217796411e8d25bb51035",
+        "file_count": 17
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
       "slug": "mrn-stack-deployment-agent",
       "version": "0.2.2",
       "runtime_type": "standard-plugin",
