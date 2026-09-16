@@ -177,13 +177,13 @@ def deployment_operations(payload, artifact_root, template_slug):
     root = Path(artifact_root).expanduser().resolve()
     operations = []
     standard_plugins = []
-    loader_operation = None
+    loader_operations = []
 
     for entry in payload["components"]:
         runtime_type = entry["runtime_type"]
         source = root / entry["deployed_path"]
         if runtime_type == "mu-loader":
-            target = "wp-content/mu-plugins/mrn-loader.php"
+            target = f"wp-content/{str(entry['deployed_path']).strip('/')}"
         elif runtime_type == "mu-component":
             target = f"wp-content/mu-plugins/{entry['slug']}"
         elif runtime_type == "standard-plugin":
@@ -202,7 +202,7 @@ def deployment_operations(payload, artifact_root, template_slug):
             "kind": "file" if source.is_file() else "directory",
         }
         if runtime_type == "mu-loader":
-            loader_operation = operation
+            loader_operations.append(operation)
         else:
             operations.append(operation)
 
@@ -223,8 +223,7 @@ def deployment_operations(payload, artifact_root, template_slug):
             "kind": "directory",
         }
     )
-    if loader_operation:
-        operations.append(loader_operation)
+    operations.extend(loader_operations)
     operations.append(
         {
             "slug": "mrn-stack-release-lock",

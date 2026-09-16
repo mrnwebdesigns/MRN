@@ -12,6 +12,7 @@ Default checks:
   - local theme version matches packaged zip version
   - stack MU wrapper versions match the components they load
   - stack shared runtime exists on the server
+  - stack bootstrap script, importer, and importer manifest match local source
   - live site shared runtime exists when a live rollout target is configured or discoverable
   - stack/live Updraft local retention MU plugin files exist when a live rollout target is configured or discoverable
   - live site schedules the Updraft local retention cron hook when a live rollout target is configured or discoverable
@@ -71,6 +72,12 @@ LOCAL_STICKY_HELPER="${REPO_ROOT}/shared/mrn-sticky-settings-toolbar.php"
 LOCAL_STICKY_FALLBACK="${REPO_ROOT}/plugins/mrn-universal-sticky-bar/includes/mrn-sticky-settings-toolbar.php"
 
 REMOTE_SHARED_DIR="${STACK_ROOT_REMOTE}/shared"
+LOCAL_SITE_BOOTSTRAP="${REPO_ROOT}/stack/scripts/site-bootstrap.sh"
+LOCAL_STACK_EXPORT_IMPORTER="${REPO_ROOT}/stack/configs/importers/stack-export-importer.sh"
+LOCAL_IMPORTERS_MANIFEST="${REPO_ROOT}/stack/manifests/importers.txt"
+REMOTE_SITE_BOOTSTRAP="${STACK_ROOT_REMOTE}/scripts/site-bootstrap.sh"
+REMOTE_STACK_EXPORT_IMPORTER="${STACK_ROOT_REMOTE}/configs/importers/stack-export-importer.sh"
+REMOTE_IMPORTERS_MANIFEST="${STACK_ROOT_REMOTE}/manifests/importers.txt"
 REMOTE_STACK_RETENTION_WRAPPER="${STACK_ROOT_REMOTE}/mu-plugins/mrn-updraft-local-retention.php"
 REMOTE_STACK_RETENTION_MAIN="${STACK_ROOT_REMOTE}/mu-plugins/mrn-updraft-local-retention/mrn-updraft-local-retention.php"
 REMOTE_ACTIVE_THEME_SLUG=""
@@ -105,8 +112,23 @@ remote_dir_exists() {
 	ssh "${SSH_HOST}" "test -d '${dir_path}'"
 }
 
+verify_remote_file_sha256() {
+	local local_file="$1"
+	local remote_file="$2"
+	local label="$3"
+	local local_sha remote_sha
+
+	[[ -f "${local_file}" ]] || fail "Local ${label} missing: ${local_file}"
+	remote_file_exists "${remote_file}" || fail "Remote ${label} missing: ${remote_file}"
+	local_sha="$(python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "${local_file}")"
+	remote_sha="$(ssh "${SSH_HOST}" "sha256sum '${remote_file}' | cut -d ' ' -f1" | tr -d '\r\n')"
+	[[ "${local_sha}" == "${remote_sha}" ]] || fail "Remote ${label} differs from local source"
+	pass "Remote ${label} matches local source"
+}
+
 require_command ssh
 require_command unzip
+require_command python3
 
 [[ -f "${LOCAL_PLUGINS_MANIFEST}" ]] || fail "Local plugin manifest not found: ${LOCAL_PLUGINS_MANIFEST}"
 grep -Fxq '/home/mrndev-stack-manager/stack/packages/mrn-universal-sticky-bar.zip' "${LOCAL_PLUGINS_MANIFEST}" || fail "Required Stack plugin missing from manifest: mrn-universal-sticky-bar"
@@ -159,6 +181,10 @@ remote_dir_exists "${REMOTE_SHARED_DIR}" || fail "Remote stack shared runtime mi
 remote_file_exists "${REMOTE_SHARED_DIR}/mrn-sticky-settings-toolbar.php" || fail "Remote stack shared runtime missing mrn-sticky-settings-toolbar.php"
 remote_file_exists "${REMOTE_SHARED_DIR}/mrn-universal-sticky-bar-assets.php" || fail "Remote stack shared runtime missing mrn-universal-sticky-bar-assets.php"
 pass "Remote stack shared runtime exists"
+
+verify_remote_file_sha256 "${LOCAL_SITE_BOOTSTRAP}" "${REMOTE_SITE_BOOTSTRAP}" "site bootstrap"
+verify_remote_file_sha256 "${LOCAL_STACK_EXPORT_IMPORTER}" "${REMOTE_STACK_EXPORT_IMPORTER}" "Stack export importer"
+verify_remote_file_sha256 "${LOCAL_IMPORTERS_MANIFEST}" "${REMOTE_IMPORTERS_MANIFEST}" "importer manifest"
 
 remote_file_exists "${REMOTE_STACK_RETENTION_WRAPPER}" || fail "Remote stack MU wrapper missing: ${REMOTE_STACK_RETENTION_WRAPPER}"
 remote_file_exists "${REMOTE_STACK_RETENTION_MAIN}" || fail "Remote stack MU plugin missing: ${REMOTE_STACK_RETENTION_MAIN}"
