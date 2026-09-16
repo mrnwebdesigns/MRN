@@ -30,6 +30,8 @@ class SiteBootstrapContractTests(unittest.TestCase):
         self.assertIn("validate_managed_credential_sources", self.bootstrap)
         self.assertIn("MRN_UPTIME_ROBOT_API_KEY", self.bootstrap)
         self.assertIn("verify_managed_credential_delivery", self.bootstrap)
+        self.assertIn("bootstrap_wpforms_recaptcha", self.bootstrap)
+        self.assertIn('array("unchanged", "reused", "created")', self.bootstrap)
 
     def test_bootstrap_invokes_importer_in_strict_mode(self):
         self.assertIn("STACK_IMPORTER_STRICT=1", self.bootstrap)
