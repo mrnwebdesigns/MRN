@@ -17,6 +17,13 @@
   Helper work into one clean Fleet-ready Stack candidate. No site deployment is
   part of this promotion.
 
+- `mrn-base-stack` (`1.3.5` -> `1.4.0`) and
+  `mrn-reusable-block-library` (`0.1.28` -> `0.2.0`): added a shared Layout
+  Class control immediately after Anchor ID in builder layout Configs.
+  Comma-separated class names accept optional leading periods and render as
+  sanitized classes on each layout's outermost element, including nested and
+  reusable placements.
+
 ## 2026.09.16-events-acf-ajax-fleet
 
 - `mrn-base-stack` (`1.3.3` -> `1.3.4`): added the shared Events content type

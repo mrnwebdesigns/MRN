@@ -617,6 +617,7 @@ function mrn_base_stack_get_reusable_block_builder_row( WP_Post $block, array $h
 
 	$placement_override_fields = array(
 		'anchor',
+		'layout_class',
 		'internal_name',
 		'include_in_faq_jump_nav',
 		'faq_jump_nav_label',

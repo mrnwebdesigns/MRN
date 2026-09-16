@@ -3675,6 +3675,92 @@ function mrn_base_stack_get_anchor_field( $key, $name = 'anchor', $label = 'Anch
 }
 
 /**
+ * Build the standard custom layout-class field definition for builder rows.
+ *
+ * @param string $key Unique ACF field key.
+ * @return array<string, mixed>
+ */
+function mrn_base_stack_get_layout_class_field( $key ) {
+	return array(
+		'key'          => sanitize_key( (string) $key ),
+		'label'        => 'Layout Class',
+		'name'         => 'layout_class',
+		'aria-label'   => '',
+		'type'         => 'text',
+		'instructions' => 'Optional CSS classes for the outermost layout element. Separate multiple classes with commas; leading periods are optional.',
+		'wrapper'      => array(
+			'width' => '50',
+		),
+	);
+}
+
+/**
+ * Ensure the layout-class field appears immediately after the row anchor.
+ *
+ * @param array<int, mixed> $fields Layout field definitions.
+ * @param string            $key_seed Optional generated-key seed.
+ * @return array<int, mixed>
+ */
+function mrn_base_stack_ensure_layout_class_field( array $fields, $key_seed = '' ) {
+	$normalized_fields = array();
+	$existing_field    = null;
+	$anchor_index      = null;
+	$anchor_key        = '';
+
+	foreach ( $fields as $field ) {
+		if ( ! is_array( $field ) ) {
+			$normalized_fields[] = $field;
+			continue;
+		}
+
+		$field_name = isset( $field['name'] ) ? sanitize_key( (string) $field['name'] ) : '';
+		if ( 'layout_class' === $field_name ) {
+			if ( null === $existing_field ) {
+				$existing_field = $field;
+			}
+			continue;
+		}
+
+		$normalized_fields[] = $field;
+		if ( null !== $anchor_index || ! in_array( $field_name, array( 'anchor', 'anchor_id' ), true ) ) {
+			continue;
+		}
+
+		$anchor_index = count( $normalized_fields ) - 1;
+		$anchor_key   = isset( $field['key'] ) && is_string( $field['key'] ) ? sanitize_key( $field['key'] ) : '';
+	}
+
+	if ( null === $anchor_index ) {
+		return $fields;
+	}
+
+	$field_key = isset( $existing_field['key'] ) && is_string( $existing_field['key'] )
+		? sanitize_key( $existing_field['key'] )
+		: '';
+	if ( '' === $field_key ) {
+		$field_key = '' !== $anchor_key
+			? $anchor_key . '_layout_class'
+			: sanitize_key( (string) $key_seed ) . '_layout_class';
+	}
+	if ( '' === $field_key || '_layout_class' === $field_key ) {
+		$field_key = 'field_mrn_layout_class';
+	}
+
+	$layout_class_field = mrn_base_stack_get_layout_class_field( $field_key );
+	if ( is_array( $existing_field ) ) {
+		foreach ( array( 'key', '_name', 'parent', 'parent_layout', 'default_value', 'conditional_logic' ) as $preserved_key ) {
+			if ( array_key_exists( $preserved_key, $existing_field ) ) {
+				$layout_class_field[ $preserved_key ] = $existing_field[ $preserved_key ];
+			}
+		}
+	}
+
+	array_splice( $normalized_fields, $anchor_index + 1, 0, array( $layout_class_field ) );
+
+	return array_values( $normalized_fields );
+}
+
+/**
  * Build shared image caption controls for builder rows.
  *
  * @param string $key_prefix Unique ACF field key prefix.
@@ -5669,7 +5755,7 @@ function mrn_base_stack_get_main_config_field_group_key( array $field ) {
 		return 'appearance';
 	}
 
-	if ( in_array( $field_name, array( 'anchor', 'anchor_id', 'include_in_faq_jump_nav', 'faq_jump_nav_label' ), true ) ) {
+	if ( in_array( $field_name, array( 'anchor', 'anchor_id', 'layout_class', 'include_in_faq_jump_nav', 'faq_jump_nav_label' ), true ) ) {
 		return 'layout';
 	}
 
@@ -9008,6 +9094,7 @@ function mrn_base_stack_apply_primary_layout_field_contract( array $fields, $inj
 	$normalized_fields = mrn_base_stack_remove_parent_motion_settings_for_full_contract_clone( $normalized_fields );
 	$normalized_fields = mrn_base_stack_apply_tag_field_column_layout( $normalized_fields );
 	if ( $inject_internal_name ) {
+		$normalized_fields = mrn_base_stack_ensure_layout_class_field( $normalized_fields, '' !== $layout_name ? 'field_mrn_' . $layout_name : '' );
 		if ( ! mrn_base_stack_field_list_has_full_contract_reusable_group_clone( $normalized_fields ) ) {
 			$normalized_fields = mrn_base_stack_ensure_sub_content_width_field( $normalized_fields, $layout_name );
 			$normalized_fields = mrn_base_stack_group_main_config_fields_by_functionality( $normalized_fields );
@@ -9143,6 +9230,7 @@ function mrn_base_stack_flexible_field_has_primary_layout_contract( array $field
 		$has_internal_name      = false;
 		$has_display_styles_tab = false;
 		$has_layout_tab         = false;
+		$has_layout_class       = false;
 		$effects_tab_count      = 0;
 
 		foreach ( $layout['sub_fields'] as $sub_field ) {
@@ -9158,6 +9246,10 @@ function mrn_base_stack_flexible_field_has_primary_layout_contract( array $field
 				$has_internal_name = true;
 			}
 
+			if ( 'layout_class' === $field_name ) {
+				$has_layout_class = true;
+			}
+
 			if ( 'tab' === $field_type && 'display-styles' === $field_label ) {
 				$has_display_styles_tab = true;
 			}
@@ -9171,7 +9263,7 @@ function mrn_base_stack_flexible_field_has_primary_layout_contract( array $field
 			}
 		}
 
-		if ( ! $has_internal_name || ! $has_display_styles_tab || ! $has_layout_tab || $effects_tab_count > 1 ) {
+		if ( ! $has_internal_name || ! $has_display_styles_tab || ! $has_layout_tab || ! $has_layout_class || $effects_tab_count > 1 ) {
 			return false;
 		}
 	}
@@ -9742,6 +9834,46 @@ function mrn_base_stack_normalize_anchor_id( $value ) {
 	$value = ltrim( $value, "# \t\n\r\0\x0B" );
 
 	return sanitize_title( $value );
+}
+
+/**
+ * Normalize a comma-separated layout-class value for safe front-end output.
+ *
+ * @param mixed $value Raw stored layout-class value.
+ * @return array<int, string>
+ */
+function mrn_base_stack_normalize_layout_classes( $value ) {
+	if ( ! is_string( $value ) ) {
+		return array();
+	}
+
+	$classes = array();
+	foreach ( explode( ',', $value ) as $class_name ) {
+		$class_name = ltrim( trim( $class_name ), ". \t\n\r\0\x0B" );
+		if ( '' === $class_name ) {
+			continue;
+		}
+
+		$class_name = sanitize_html_class( $class_name );
+		if ( '' !== $class_name ) {
+			$classes[ $class_name ] = $class_name;
+		}
+	}
+
+	return array_values( $classes );
+}
+
+/**
+ * Build the custom layout-class contract for a builder row.
+ *
+ * @param array<string, mixed> $row Builder row data.
+ * @return array{classes:array<int,string>,attributes:array<string,string>}
+ */
+function mrn_base_stack_get_builder_layout_class_contract( array $row ) {
+	return array(
+		'classes'    => mrn_base_stack_normalize_layout_classes( $row['layout_class'] ?? '' ),
+		'attributes' => array(),
+	);
 }
 
 /**

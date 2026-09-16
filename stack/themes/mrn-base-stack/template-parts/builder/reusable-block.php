@@ -55,6 +55,10 @@ if ( function_exists( 'get_field' ) ) {
 	$fallback_anchor = (string) get_field( 'anchor', $block->ID );
 }
 
+$layout_classes = function_exists( 'mrn_base_stack_normalize_layout_classes' )
+	? mrn_base_stack_normalize_layout_classes( $row['layout_class'] ?? '' )
+	: array();
+
 if ( array_key_exists( 'section_width', $row ) && function_exists( 'mrn_base_stack_wrap_reusable_builder_markup' ) ) {
 	$wrapped_row    = $row;
 	$default_anchor = function_exists( 'mrn_base_stack_get_builder_row_default_anchor' ) ? mrn_base_stack_get_builder_row_default_anchor( $wrapped_row ) : '';
@@ -67,6 +71,6 @@ if ( array_key_exists( 'section_width', $row ) && function_exists( 'mrn_base_sta
 }
 ?>
 <?php echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_stack_get_builder_anchor_markup( $row, $fallback_anchor ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Anchor markup is escaped in the helper. ?>
-<section class="mrn-content-builder__row mrn-content-builder__row--reusable-block">
+<section class="<?php echo esc_attr( trim( 'mrn-content-builder__row mrn-content-builder__row--reusable-block ' . implode( ' ', $layout_classes ) ) ); ?>">
 	<?php echo $markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 </section>
