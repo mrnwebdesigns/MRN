@@ -97,6 +97,10 @@ class ReleaseLockTests(unittest.TestCase):
                 encoding="utf-8",
             )
             (repository / "repo-only.txt").write_text("not deployed\n", encoding="utf-8")
+            (repository / "includes").mkdir()
+            (repository / "includes" / "runtime.php").write_text(
+                "<?php // runtime\n", encoding="utf-8"
+            )
             subprocess.run(["git", "-C", str(repository), "add", "."], check=True)
             subprocess.run(
                 ["git", "-C", str(repository), "commit", "-qm", "release rules"],
@@ -111,9 +115,20 @@ class ReleaseLockTests(unittest.TestCase):
 
             files = release_lock.git_archive_files(repository, commit)
 
-            self.assertEqual([("marker.txt", b"runtime\n")], files)
             self.assertEqual(
-                release_lock.tree_sha256(repository / "marker.txt"),
+                [
+                    ("includes/runtime.php", b"<?php // runtime\n"),
+                    ("marker.txt", b"runtime\n"),
+                ],
+                files,
+            )
+            exported = Path(root) / "exported"
+            for relative, data in files:
+                target = exported / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(data)
+            self.assertEqual(
+                release_lock.tree_sha256(exported),
                 release_lock.bytes_tree_sha256(files),
             )
 

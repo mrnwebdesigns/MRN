@@ -167,9 +167,32 @@ def git_archive_files(repo_root, commit, source_path="."):
 
 def bytes_tree_sha256(files):
     """Hash sorted path, content hash, and size records for in-memory files."""
+    by_path = {relative: data for relative, data in files}
+
+    def tree_order(paths, prefix=""):
+        direct_files = []
+        child_directories = set()
+        for relative in paths:
+            remainder = relative[len(prefix) :] if prefix else relative
+            if "/" in remainder:
+                child_directories.add(remainder.split("/", 1)[0])
+            else:
+                direct_files.append(relative)
+        ordered = sorted(direct_files)
+        for directory in sorted(child_directories):
+            child_prefix = f"{prefix}{directory}/"
+            ordered.extend(
+                tree_order(
+                    [path for path in paths if path.startswith(child_prefix)],
+                    child_prefix,
+                )
+            )
+        return ordered
+
     digest = hashlib.sha256()
     count = 0
-    for relative, data in sorted(files, key=lambda item: item[0]):
+    for relative in tree_order(list(by_path)):
+        data = by_path[relative]
         content_hash = hashlib.sha256(data).hexdigest()
         record = f"{relative}\0{content_hash}\0{len(data)}\n".encode("utf-8")
         digest.update(record)
