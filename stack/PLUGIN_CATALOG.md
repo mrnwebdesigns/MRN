@@ -59,7 +59,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 | `mrn-gtm-injector` | 1.0.14 | Independent repository (`mrnwebdesigns/mrn-gtm-injector`); catalog-only with a merged checksum-locked release entry | Optional integration | Google Tag Manager. |
 | `mrn-recaptcha-enterprise-manager` | 0.1.2 | Standard bootstrap; checksum-locked one-site release | Optional integration | reCAPTCHA Enterprise and idempotent WPForms provisioning; security and credential contracts retained. |
 | `mrn-relevanssi-ai-search` | 0.6.1 | Independent repository (`mrnwebdesigns/mrn-relevanssi-ai-search`); catalog-only | Optional integration | Guarded AI query interpretation and hybrid semantic matching for Relevanssi. |
-| `mrn-seo-helper` | 0.4.3 | Standard bootstrap; checksum-locked one-site release | Optional integration | ACF SEO fields and supported SEO providers; WooCommerce orders, refunds, placeholders, extension-defined order types, and coupons are excluded. |
+| `mrn-seo-helper` | 0.5.0 | Standard bootstrap; checksum-locked one-site release | Optional integration | ACF SEO fields and supported SEO providers; administrator-managed post-type allow-list with WooCommerce internal order and coupon types hard-excluded. |
 
 ## Dashboard-Only Operations
 

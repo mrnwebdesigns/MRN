@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- `mrn-seo-helper` (`0.4.3` -> `0.5.0`): added an administrator-managed
+  post-type allow-list under Site Configurations while preserving the legacy
+  default until the setting is first saved. Deselected types are excluded from
+  ACF locations, editor synchronization, bulk work, and metadata save hooks;
+  WooCommerce internal order and coupon types remain hard-excluded. Registered
+  the exact merged package for one-site, upgrade-only Fleet distribution.
+
 ## 2026.09.16-events-acf-ajax-fleet
 
 - `mrn-base-stack` (`1.3.3` -> `1.3.4`): added the shared Events content type
