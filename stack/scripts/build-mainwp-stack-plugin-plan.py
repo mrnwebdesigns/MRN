@@ -7,10 +7,12 @@ import argparse
 import datetime as dt
 import hashlib
 import importlib.util
+import io
 import json
 import re
 import subprocess
 import sys
+import tarfile
 import zipfile
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -22,6 +24,7 @@ REPOSITORY_ROOT = STACK_DIR.parent
 DEFAULT_CATALOG = STACK_DIR / "manifests" / "component-catalog.json"
 DEFAULT_RELEASES = STACK_DIR / "manifests" / "stack-plugin-releases.json"
 DEFAULT_LOCK = STACK_DIR / "manifests" / "stack-release.lock.json"
+DEFAULT_LOCK_ARCHIVE = STACK_DIR / "manifests" / "release-locks"
 COMMON_BUILDER = SCRIPT_DIR / "build-mainwp-optional-plugin-plan.py"
 PLAN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$")
 SLUG_PATTERN = re.compile(r"^mrn-[a-z0-9-]+$")
@@ -43,6 +46,47 @@ version_tuple = _COMMON.version_tuple
 run_git = _COMMON.run_git
 validate_zip_entries = _COMMON.validate_zip_entries
 zip_file_version = _COMMON.zip_file_version
+
+
+def resolve_release_lock_path(
+    inventory_path: Path,
+    *,
+    explicit_lock: Path | None,
+    archive_dir: Path = DEFAULT_LOCK_ARCHIVE,
+    current_lock: Path = DEFAULT_LOCK,
+) -> Path:
+    """Select the exact immutable lock signed by the site's runtime report."""
+    if explicit_lock is not None:
+        return explicit_lock.expanduser().resolve()
+
+    inventory = read_json(inventory_path)
+    site = inventory.get("site")
+    release = site.get("release") if isinstance(site, dict) else None
+    if not isinstance(release, dict):
+        raise PlanError("Site inventory must include the signed Stack release identity")
+    release_id = str(release.get("release_id") or "")
+    lock_sha = str(release.get("lock_sha256") or "")
+    if not PLAN_ID_PATTERN.fullmatch(release_id) or not SHA256_PATTERN.fullmatch(lock_sha):
+        raise PlanError("Site inventory contains an invalid Stack release identity")
+
+    current_lock = current_lock.expanduser().resolve()
+    archived_lock = (archive_dir.expanduser().resolve() / f"{release_id}.json").resolve()
+    if archived_lock.parent != archive_dir.expanduser().resolve():
+        raise PlanError("Site Stack release identity does not map to a safe lock path")
+
+    for candidate in (current_lock, archived_lock):
+        if not candidate.is_file() or candidate.is_symlink():
+            continue
+        lock = read_json(candidate)
+        if lock.get("release_id") == release_id and file_sha256(candidate) == lock_sha:
+            return candidate
+
+    if archived_lock.is_file():
+        raise PlanError("Archived release lock does not match the signed site identity")
+    raise PlanError(
+        "No immutable release lock is retained for the signed site identity; "
+        "archive the exact reviewed lock before planning this update"
+    )
 
 
 def resolve_artifact_path(value: object) -> Path:
@@ -141,33 +185,33 @@ def is_deployable_path(relative: str) -> bool:
 
 
 def git_tree_hash(repo: Path, commit: str) -> tuple[str, int]:
-    """Hash the exact committed deployable source without changing checkout state."""
-    listing = subprocess.run(
-        ["git", "-C", str(repo), "ls-tree", "-r", "-z", commit],
+    """Hash the exact committed Git export without changing checkout state."""
+    exported = subprocess.run(
+        ["git", "-C", str(repo), "archive", "--format=tar", commit],
         capture_output=True,
         check=False,
     )
-    if listing.returncode != 0:
-        raise PlanError("Could not enumerate the registered release source tree")
+    if exported.returncode != 0:
+        raise PlanError("Could not export the registered release source tree")
     files: dict[str, bytes] = {}
-    for record in listing.stdout.split(b"\0"):
-        if not record:
-            continue
-        metadata, raw_path = record.split(b"\t", 1)
-        mode = metadata.split(b" ", 1)[0]
-        relative = raw_path.decode("utf-8")
-        if not is_deployable_path(relative):
-            continue
-        if mode == b"120000":
-            raise PlanError("Registered release source contains a symlink")
-        blob = subprocess.run(
-            ["git", "-C", str(repo), "show", f"{commit}:{relative}"],
-            capture_output=True,
-            check=False,
-        )
-        if blob.returncode != 0:
-            raise PlanError(f"Could not read registered source file: {relative}")
-        files[relative] = blob.stdout
+    try:
+        with tarfile.open(fileobj=io.BytesIO(exported.stdout), mode="r:") as archive:
+            for member in archive.getmembers():
+                relative = member.name.rstrip("/")
+                if member.isdir() or not is_deployable_path(relative):
+                    continue
+                if member.issym() or member.islnk():
+                    raise PlanError("Registered release source contains a symlink")
+                if not member.isfile():
+                    raise PlanError(
+                        f"Registered release source contains an unsupported entry: {relative}"
+                    )
+                handle = archive.extractfile(member)
+                if handle is None:
+                    raise PlanError(f"Could not read registered source file: {relative}")
+                files[relative] = handle.read()
+    except tarfile.TarError as error:
+        raise PlanError("Registered release source is not a valid Git archive") from error
     if not files:
         raise PlanError("Registered release source contains no deployable files")
     digest = hashlib.sha256()
@@ -619,7 +663,7 @@ def build_plan(
             "preflight_ability": "mrn-mainwp/preflight-stack-plugin-update-v1",
             "controller_ability": "mrn-mainwp/update-stack-plugin-v1",
             "rollback_ability": "mrn-mainwp/rollback-stack-plugin-v1",
-            "minimum_controller_version": "0.9.1",
+            "minimum_controller_version": "0.9.3",
             "precondition_hash_source": "controller-preflight",
             "release_identity_model": "immutable-baseline-plus-component-overlay",
             "allow_new_install": False,
@@ -637,7 +681,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
     parser.add_argument("--release-registry", type=Path, default=DEFAULT_RELEASES)
-    parser.add_argument("--release-lock", type=Path, default=DEFAULT_LOCK)
+    parser.add_argument(
+        "--release-lock",
+        type=Path,
+        help="Explicit immutable baseline lock; otherwise select by signed site identity",
+    )
+    parser.add_argument("--release-lock-dir", type=Path, default=DEFAULT_LOCK_ARCHIVE)
     parser.add_argument("--inventory", type=Path, required=True)
     parser.add_argument("--target-artifact", type=Path)
     parser.add_argument("--rollback-artifact", type=Path)
@@ -658,10 +707,15 @@ def main() -> int:
         else dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
     )
     try:
+        release_lock_path = resolve_release_lock_path(
+            args.inventory,
+            explicit_lock=args.release_lock,
+            archive_dir=args.release_lock_dir,
+        )
         plan = build_plan(
             catalog_path=args.catalog,
             releases_path=args.release_registry,
-            release_lock_path=args.release_lock,
+            release_lock_path=release_lock_path,
             inventory_path=args.inventory,
             target_artifact_path=args.target_artifact,
             rollback_artifact_path=args.rollback_artifact,

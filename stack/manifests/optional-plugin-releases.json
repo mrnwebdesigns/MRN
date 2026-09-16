@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-09-15",
+  "catalog_updated": "2026-09-16",
   "authority": "Checksum-locked independently released plugins available to explicit one-site upgrade plans. A release may remain a standard bootstrap default; registration never authorizes installation or a site write.",
   "releases": [
     {
@@ -142,21 +142,44 @@
       }
     },
     {
+      "slug": "mrn-recaptcha-enterprise-manager",
+      "version": "0.1.2",
+      "target_tier": "optional-integration",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-recaptcha-enterprise-manager",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager",
+        "git_commit": "509a4994693ce1088e27ffbc02f1dea3844f07d4"
+      },
+      "package": {
+        "path": "releases/plugins/mrn-recaptcha-enterprise-manager-0.1.2.zip",
+        "filename": "mrn-recaptcha-enterprise-manager-0.1.2.zip",
+        "main_file": "mrn-recaptcha-enterprise-manager/mrn-recaptcha-enterprise-manager.php",
+        "size_bytes": 24777,
+        "sha256": "ec468d55a9987f7a95704d9580513fc8510b179bb2dda3871acf8c4186a89f95"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
       "slug": "mrn-seo-helper",
-      "version": "0.4.2",
+      "version": "0.4.3",
       "target_tier": "optional-integration",
       "current_distribution": "standard-bootstrap",
       "source": {
         "repository": "mrnwebdesigns/mrn-seo-helper",
         "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-seo-helper",
-        "git_commit": "508ace9081e33560e0826cf0c167eea372af6cbe"
+        "git_commit": "1a450462524568290af2a3f54007ab9c93116851"
       },
       "package": {
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-seo-helper/zip/mrn-seo-helper-0.4.2.zip",
-        "filename": "mrn-seo-helper-0.4.2.zip",
+        "path": "releases/plugins/mrn-seo-helper-0.4.3.zip",
+        "filename": "mrn-seo-helper-0.4.3.zip",
         "main_file": "mrn-seo-helper/mrn-seo-helper.php",
-        "size_bytes": 12455,
-        "sha256": "1ee7569192f8d0ad358cb7e24faed0b792fc0299bb17860281d01d597e245774"
+        "size_bytes": 12508,
+        "sha256": "61370e754c97943b72ca45bbec27247c7cb9babf93f17be6b1bf7f22a132f822"
       },
       "update_policy": {
         "mode": "upgrade-only",

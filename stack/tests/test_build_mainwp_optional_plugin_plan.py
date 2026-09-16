@@ -187,7 +187,7 @@ class OptionalPluginPlanTests(unittest.TestCase):
             "mrn-mainwp/preflight-optional-plugin-update-v1",
             plan["execution_contract"]["preflight_ability"],
         )
-        self.assertEqual("0.9.1", plan["execution_contract"]["minimum_controller_version"])
+        self.assertEqual("0.9.3", plan["execution_contract"]["minimum_controller_version"])
         self.assertEqual(
             "controller-preflight",
             plan["execution_contract"]["precondition_hash_source"],
@@ -197,6 +197,18 @@ class OptionalPluginPlanTests(unittest.TestCase):
             plan["execution_contract"]["rollback_artifact_model"],
         )
         self.assertFalse(plan["execution_contract"]["allow_new_install"])
+
+    def test_registry_artifact_paths_are_repository_relative(self):
+        expected = Path(__file__).parents[2] / "releases" / "plugins" / "example.zip"
+
+        self.assertEqual(
+            expected.resolve(),
+            planner.resolve_artifact_path("releases/plugins/example.zip"),
+        )
+        self.assertEqual(
+            self.artifact.resolve(),
+            planner.resolve_artifact_path(self.artifact),
+        )
 
     def test_refuses_missing_plugin_instead_of_creating_install_plan(self):
         self.inventory["site"]["plugin"]["installed"] = False
@@ -306,7 +318,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             for item in catalog["components"]
             if item["slug"] == "mrn-mainwp-operations-api"
         )
-        self.assertEqual("0.9.1", controller["version"])
+        self.assertEqual("0.9.3", controller["version"])
         self.assertEqual("dashboard-only", controller["target_tier"])
         self.assertIn("twenty-two mrn-mainwp WordPress Abilities", controller["data"]["routes"])
         self.assertNotIn("Defender (legacy compatibility only)", entry["dependencies"]["soft"])
@@ -366,7 +378,8 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             "background-video-popout-disabler": "1.0.2",
             "mrn-announcements": "1.8.2",
             "mrn-fontawesome-profile-manager": "0.5.1",
-            "mrn-seo-helper": "0.4.2",
+            "mrn-recaptcha-enterprise-manager": "0.1.2",
+            "mrn-seo-helper": "0.4.3",
         }
 
         for slug, version in expected.items():

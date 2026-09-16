@@ -7,8 +7,9 @@ forward on one fully bootstrapped Stack site without deploying every Stack
 component. It fills the gap between the immutable full Stack release and the
 separate optional-plugin release process.
 
-The first supported examples are `mrn-config-helper` `0.1.59` or `0.1.60` to
-`0.1.61`, and `mrn-universal-sticky-bar` `1.1.8` to `1.1.9`.
+The first supported examples are `mrn-config-helper` `0.1.59` through `0.1.61`
+to `0.1.62`, `mrn-stack-deployment-agent` `0.2.2` to `0.2.3`, and
+`mrn-universal-sticky-bar` `1.1.8` or `1.1.9` to `1.1.10`.
 Eligibility is not hardcoded to Config Helper: a fresh signed runtime report
 must prove the requested plugin is exactly one `standard-plugin` component in
 the site's reviewed immutable Stack release.
@@ -42,7 +43,7 @@ remove the overlay condition.
 - `scripts/build-mainwp-stack-plugin-plan.py` validates one fresh site
   inventory, immutable release identity, exact committed sources, target and
   rollback packages, runtime tree, and backup readiness.
-- `mrn-mainwp-operations-api` `0.9.1` provides the matching Dashboard abilities:
+- `mrn-mainwp-operations-api` `0.9.3` provides the matching Dashboard abilities:
   - `mrn-mainwp/preflight-stack-plugin-update-v1`
   - `mrn-mainwp/update-stack-plugin-v1`
   - `mrn-mainwp/rollback-stack-plugin-v1`
@@ -59,7 +60,7 @@ git -C /Users/khofmeyer/Development/MRN-plugins/mrn-config-helper archive \
   --format=zip \
   --prefix=mrn-config-helper/ \
   a7581b7ca72b17e87eeb9d688be6dff8afc454e6 \
-  -o releases/stack-plugins/mrn-config-helper-0.1.61.zip
+  -o releases/stack-plugins/mrn-config-helper-0.1.62.zip
 ```
 
 The release registry records each ZIP's exact byte checksum and size plus the
@@ -75,7 +76,7 @@ proves that:
 Config Helper `0.1.59` and `0.1.60` were previously packaged with two ignored
 `ai-data` files. Those packages are retained solely as exact rollback material,
 and the registry binds each supplemental path, size, and checksum explicitly.
-They can never be selected as a new target. Version `0.1.61` establishes the
+They can never be selected as a new target. Version `0.1.62` establishes the
 clean, commit-reproducible target, and the shared release generator now excludes
 `ai-data` from every future deployable tree.
 
@@ -108,14 +109,21 @@ release-lock mismatch, a component outside the immutable baseline, a no-op or
 downgrade, unregistered current code, missing rollback bytes, or unavailable
 remote backup execution.
 
+The current lock and every superseded lock used by an eligible site are retained
+under `manifests/release-locks/<release-id>.json`. By default the builder selects
+the exact current or archived lock whose release ID and byte checksum match the
+site's signed runtime report. It fails closed when the exact historical lock is
+missing or altered. `--release-lock` remains available when an operator needs to
+name one reviewed lock explicitly; it never weakens the identity check.
+
 ## Build The Plan
 
 ```bash
 python3 stack/scripts/build-mainwp-stack-plugin-plan.py \
   --inventory /absolute/path/to/fresh-site-inventory.json \
   --plugin-slug mrn-config-helper \
-  --plan-id config-helper-0.1.61-site-115 \
-  --output releases/stack-plugins/config-helper-0.1.61-site-115.plan.json
+  --plan-id config-helper-0.1.62-site-115 \
+  --output releases/stack-plugins/config-helper-0.1.62-site-115.plan.json
 ```
 
 The current catalog version is the default and only legal target. Optional
@@ -182,7 +190,7 @@ Rollback is explicit and independently backup-gated:
 ## Control-Plane Gate
 
 Source readiness is not Dashboard deployment. Before the first selective site
-operation, package and deploy `mrn-mainwp-operations-api` `0.9.1` to
+operation, package and deploy `mrn-mainwp-operations-api` `0.9.3` to
 `wpcontrol.mrndev.io` through its separately authorized, backup-gated Dashboard
 workflow. Reconnect the configured `mainwp` MCP adapter and require the exact
 Dashboard host plus all three selective abilities. Do not substitute SSH,

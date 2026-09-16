@@ -62,6 +62,9 @@
    - `stack/CHANGELOG.md`
    - `stack/STACK_VERSION.md`
 9. Generate the immutable release lock after all runtime source commits are final:
+   - before replacing the current lock, retain its exact bytes as
+     `stack/manifests/release-locks/<release-id>.json`; never reconstruct or
+     normalize a historical lock because Fleet compares its byte checksum
    - `python3 stack/scripts/generate-stack-release-lock.py --output stack/manifests/stack-release.lock.json`
    - commit the generated lock separately so its recorded source commits remain exact
    - from the clean lock commit, verify the complete candidate against the prior
@@ -102,6 +105,12 @@ outside the declared release source.
 The generator fails closed on missing components, duplicate slugs, dirty
 external component repositories, missing version headers, or catalog/header
 version drift. Do not hand-edit the generated lock.
+
+Superseded locks remain immutable under `stack/manifests/release-locks/` so a
+site on an older reviewed baseline can receive a checksum-locked selective
+plugin overlay without pretending it already has the newest full Stack release.
+Selective planning still requires an exact signed release ID and lock SHA, an
+exact registered current component tree, and an exact rollback artifact.
 
 Theme records declare their verification mode. The parent theme is `exact` and
 must match its release hash. The generic active child in the bootstrap manifest

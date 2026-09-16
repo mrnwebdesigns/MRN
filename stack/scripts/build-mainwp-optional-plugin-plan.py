@@ -17,6 +17,7 @@ from urllib.parse import urlsplit
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 STACK_DIR = SCRIPT_DIR.parent
+REPOSITORY_ROOT = STACK_DIR.parent
 DEFAULT_CATALOG = STACK_DIR / "manifests" / "component-catalog.json"
 DEFAULT_RELEASES = STACK_DIR / "manifests" / "optional-plugin-releases.json"
 PLAN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$")
@@ -27,6 +28,12 @@ SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 
 class PlanError(RuntimeError):
     """The supplied release or site cannot produce a safe optional plan."""
+
+
+def resolve_artifact_path(value: object) -> Path:
+    """Resolve registry artifacts from the MRN repository, not the caller CWD."""
+    path = Path(str(value or "")).expanduser()
+    return (path if path.is_absolute() else REPOSITORY_ROOT / path).resolve()
 
 
 def read_json(path: Path) -> dict:
@@ -349,7 +356,9 @@ def build_plan(
         raise PlanError("Release registry must require upgrade-only execution")
 
     source = validate_source(release.get("source") or {})
-    registered_path = Path(str((release.get("package") or {}).get("path") or ""))
+    registered_path = resolve_artifact_path(
+        (release.get("package") or {}).get("path")
+    )
     package = validate_package(
         artifact_path or registered_path,
         release,
@@ -390,7 +399,7 @@ def build_plan(
             "preflight_ability": "mrn-mainwp/preflight-optional-plugin-update-v1",
             "controller_ability": "mrn-mainwp/update-optional-plugin-v1",
             "rollback_ability": "mrn-mainwp/rollback-optional-plugin-v1",
-            "minimum_controller_version": "0.9.1",
+            "minimum_controller_version": "0.9.3",
             "precondition_hash_source": "controller-preflight",
             "rollback_artifact_model": "operator-supplied-checksum-locked-package",
             "allow_new_install": False,
