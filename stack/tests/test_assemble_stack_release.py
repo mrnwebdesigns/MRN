@@ -177,6 +177,65 @@ class AssembleStackReleaseTests(unittest.TestCase):
         self.assertEqual(0, result)
         self.assertEqual(expected, assemble.call_args.args[2])
 
+    def test_external_plugin_assembly_honors_export_ignore(self):
+        plugins_root = self.root / "plugins"
+        plugin = plugins_root / "mrn-fixture-plugin"
+        plugin.mkdir(parents=True)
+        subprocess.run(["git", "init", "-q", str(plugin)], check=True)
+        subprocess.run(
+            ["git", "-C", str(plugin), "config", "user.email", "test@example.com"],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(plugin), "config", "user.name", "Test"], check=True
+        )
+        (plugin / "mrn-fixture-plugin.php").write_text(
+            "<?php /* Version: 1.0.0 */\n", encoding="utf-8"
+        )
+        (plugin / "repo-only.txt").write_text("not deployed\n", encoding="utf-8")
+        (plugin / ".gitattributes").write_text(
+            ".gitattributes export-ignore\nrepo-only.txt export-ignore\n",
+            encoding="utf-8",
+        )
+        subprocess.run(["git", "-C", str(plugin), "add", "."], check=True)
+        subprocess.run(
+            ["git", "-C", str(plugin), "commit", "-qm", "fixture plugin"], check=True
+        )
+        commit = subprocess.run(
+            ["git", "-C", str(plugin), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        archive_files = assembler.release_lock.git_archive_files(plugin, commit)
+        plugin_hash, plugin_count = assembler.release_lock.bytes_tree_sha256(archive_files)
+        self.lock["components"].append(
+            {
+                "slug": "mrn-fixture-plugin",
+                "name": "Fixture Plugin",
+                "version": "1.0.0",
+                "runtime_type": "standard-plugin",
+                "required": True,
+                "deployed_path": "plugins/mrn-fixture-plugin",
+                "source": {
+                    "repository": "mrn-fixture-plugin",
+                    "git_commit": commit,
+                    "path": ".",
+                },
+                "sha256": plugin_hash,
+                "file_count": plugin_count,
+            }
+        )
+        self.lock_path.write_text(json.dumps(self.lock) + "\n", encoding="utf-8")
+        output = self.root / "release-with-plugin"
+
+        assembler.assemble(self.lock_path, self.repo, plugins_root, output)
+
+        deployed = output / "plugins/mrn-fixture-plugin"
+        self.assertTrue((deployed / "mrn-fixture-plugin.php").is_file())
+        self.assertFalse((deployed / "repo-only.txt").exists())
+        self.assertFalse((deployed / ".gitattributes").exists())
+
 
 if __name__ == "__main__":
     unittest.main()
