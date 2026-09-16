@@ -67,7 +67,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-media-bulk-tools` | MRN Media Tools | 0.8.0 | <https://github.com/mrnwebdesigns/mrn-media-bulk-tools> | Optional HappyFiles folder display; legacy slug retained for update compatibility. |
 | `mrn-mega-menu` | MRN Mega Menu | 0.17.0 | <https://github.com/mrnwebdesigns/mrn-mega-menu> | Independent standard plugin; WooCommerce and shared stack integrations are optional and standalone-safe. |
 | `mrn-pre-consent-update-backup` | MRN Pre-Consent Update Backup | 1.0.12 | <https://github.com/mrnwebdesigns/mrn-pre-consent-update-backup> | Archived 2026-08-24; retained as historical source and not an active distribution source. |
-| `mrn-recaptcha-enterprise-manager` | MRN reCAPTCHA Enterprise Manager | 0.1.1 | <https://github.com/mrnwebdesigns/mrn-recaptcha-enterprise-manager> | No stack requirement; WPForms sync is optional. |
+| `mrn-recaptcha-enterprise-manager` | MRN reCAPTCHA Enterprise Manager | 0.1.2 | <https://github.com/mrnwebdesigns/mrn-recaptcha-enterprise-manager> | Standard-bootstrap integration with guarded, idempotent WPForms provisioning. |
 | `mrn-seo-helper` | MRN SEO Helper | 0.3.4 | <https://github.com/mrnwebdesigns/mrn-seo-helper> | No hard stack requirement; ACF/SmartCrawl integrations are optional feature paths and admin/data-only announcements are excluded. |
 | `mrn-template-inspector` | MRN Template Inspector | 0.2.7 | <https://github.com/mrnwebdesigns/mrn-template-inspector> | No stack requirement; local development tool. |
 | `mrn-dummy-content` | MRN Dummy Content | 0.3.0 | <https://github.com/mrnwebdesigns/mrn-dummy-content> | Development-only content fixtures; excluded from production bootstrap. |

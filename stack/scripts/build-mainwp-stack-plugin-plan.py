@@ -7,10 +7,12 @@ import argparse
 import datetime as dt
 import hashlib
 import importlib.util
+import io
 import json
 import re
 import subprocess
 import sys
+import tarfile
 import zipfile
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -183,33 +185,33 @@ def is_deployable_path(relative: str) -> bool:
 
 
 def git_tree_hash(repo: Path, commit: str) -> tuple[str, int]:
-    """Hash the exact committed deployable source without changing checkout state."""
-    listing = subprocess.run(
-        ["git", "-C", str(repo), "ls-tree", "-r", "-z", commit],
+    """Hash the exact committed Git export without changing checkout state."""
+    exported = subprocess.run(
+        ["git", "-C", str(repo), "archive", "--format=tar", commit],
         capture_output=True,
         check=False,
     )
-    if listing.returncode != 0:
-        raise PlanError("Could not enumerate the registered release source tree")
+    if exported.returncode != 0:
+        raise PlanError("Could not export the registered release source tree")
     files: dict[str, bytes] = {}
-    for record in listing.stdout.split(b"\0"):
-        if not record:
-            continue
-        metadata, raw_path = record.split(b"\t", 1)
-        mode = metadata.split(b" ", 1)[0]
-        relative = raw_path.decode("utf-8")
-        if not is_deployable_path(relative):
-            continue
-        if mode == b"120000":
-            raise PlanError("Registered release source contains a symlink")
-        blob = subprocess.run(
-            ["git", "-C", str(repo), "show", f"{commit}:{relative}"],
-            capture_output=True,
-            check=False,
-        )
-        if blob.returncode != 0:
-            raise PlanError(f"Could not read registered source file: {relative}")
-        files[relative] = blob.stdout
+    try:
+        with tarfile.open(fileobj=io.BytesIO(exported.stdout), mode="r:") as archive:
+            for member in archive.getmembers():
+                relative = member.name.rstrip("/")
+                if member.isdir() or not is_deployable_path(relative):
+                    continue
+                if member.issym() or member.islnk():
+                    raise PlanError("Registered release source contains a symlink")
+                if not member.isfile():
+                    raise PlanError(
+                        f"Registered release source contains an unsupported entry: {relative}"
+                    )
+                handle = archive.extractfile(member)
+                if handle is None:
+                    raise PlanError(f"Could not read registered source file: {relative}")
+                files[relative] = handle.read()
+    except tarfile.TarError as error:
+        raise PlanError("Registered release source is not a valid Git archive") from error
     if not files:
         raise PlanError("Registered release source contains no deployable files")
     digest = hashlib.sha256()
@@ -661,7 +663,7 @@ def build_plan(
             "preflight_ability": "mrn-mainwp/preflight-stack-plugin-update-v1",
             "controller_ability": "mrn-mainwp/update-stack-plugin-v1",
             "rollback_ability": "mrn-mainwp/rollback-stack-plugin-v1",
-            "minimum_controller_version": "0.9.1",
+            "minimum_controller_version": "0.9.3",
             "precondition_hash_source": "controller-preflight",
             "release_identity_model": "immutable-baseline-plus-component-overlay",
             "allow_new_install": False,

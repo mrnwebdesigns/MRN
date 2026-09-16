@@ -25,10 +25,10 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-updraft-local-retention` | 0.5.1 | MU loader | Platform required | Enforces shared backup schedule and retention policy, uses a stable cross-environment S3 site slug, and routes remote-storage warnings to Notifications Center. |
 | `mrn-schema-bridge` | 0.6.0 | MU loader | Platform required | SEOPress identity synchronization, automatic Article template provisioning, JobPosting output, author policy, MRN supplemental schema, and migration-only SmartCrawl compatibility. |
 | `mrn-active-style-guide` | 0.1.7 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
-| `mrn-config-helper` | 0.1.61 | Standard bootstrap | Platform required | Shared site configuration shell, MRN-owned visible breadcrumb and BreadcrumbList runtime, launch/admin integrations, and a commit-reproducible selective Fleet package. |
+| `mrn-config-helper` | 0.1.62 | Standard bootstrap | Platform required | Shared site configuration shell, MRN-owned visible breadcrumb and BreadcrumbList runtime, launch/admin integrations, managed-credential preservation, and a commit-reproducible selective Fleet package. |
 | `mrn-media-bulk-tools` | 0.13.1 | Standard bootstrap | Platform required | Media audit, usage indexing, and bulk maintenance; exact version and tree are enforced by the full Stack release lock. |
 | `mrn-sendgrid-provisioning` | 0.1.0 | Standard bootstrap | Platform required | Provisions a per-site SendGrid Subuser, mail-only site API key, and domain authentication; split out of `mrn-config-helper`. |
-| `mrn-stack-deployment-agent` | 0.2.2 | Standard bootstrap | Platform required | Provides the MainWP-authenticated, checksum-verified Stack deployment target. |
+| `mrn-stack-deployment-agent` | 0.2.3 | Standard bootstrap | Platform required | Provides the MainWP-authenticated, checksum-verified Stack deployment target and secret-free managed-credential readiness. |
 | `mrn-universal-sticky-bar` | 1.1.10 | Standard bootstrap | Platform required | Provides the shared settings/editor action bar; independently released for non-Stack use. |
 
 The machine catalog also records each tracked top-level MU wrapper as its own required loader artifact. Wrapper versions mirror the components they load, and `deployed_path` preserves the actual WordPress filename rather than deriving one from the catalog slug.
@@ -57,7 +57,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 | `mrn-google-fonts` | 1.0.7 | Independent repository (`mrnwebdesigns/mrn-google-fonts`) via MRN-plugins symlink | Optional integration | Google/local fonts and Site Styles; existing site behavior is unchanged. |
 | `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Independent repository (`mrnwebdesigns/mrn-hierarchical-menu-taxonomies`) via MRN-plugins symlink | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories; existing menu behavior is unchanged. |
 | `mrn-gtm-injector` | 1.0.14 | Independent repository (`mrnwebdesigns/mrn-gtm-injector`); catalog-only with a merged checksum-locked release entry | Optional integration | Google Tag Manager. |
-| `mrn-recaptcha-enterprise-manager` | 0.1.1 | Independent repository (`mrnwebdesigns/mrn-recaptcha-enterprise-manager`) via MRN-plugins symlink | Optional integration | reCAPTCHA Enterprise and WPForms; security and credential contracts retained. |
+| `mrn-recaptcha-enterprise-manager` | 0.1.2 | Standard bootstrap; checksum-locked one-site release | Optional integration | reCAPTCHA Enterprise and idempotent WPForms provisioning; security and credential contracts retained. |
 | `mrn-relevanssi-ai-search` | 0.6.1 | Independent repository (`mrnwebdesigns/mrn-relevanssi-ai-search`); catalog-only | Optional integration | Guarded AI query interpretation and hybrid semantic matching for Relevanssi. |
 | `mrn-seo-helper` | 0.4.3 | Standard bootstrap; checksum-locked one-site release | Optional integration | ACF SEO fields and supported SEO providers; WooCommerce orders, refunds, placeholders, extension-defined order types, and coupons are excluded. |
 
@@ -65,7 +65,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 
 | Slug | Version | Responsibility |
 | --- | ---: | --- |
-| `mrn-mainwp-operations-api` | 0.9.1 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only controller for guarded full-Stack, selective Stack-plugin, and independently released plugin Fleet operations, never installed in client-site plugins. |
+| `mrn-mainwp-operations-api` | 0.9.3 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only controller that gates full-Stack readiness on secret-free managed-credential reporting and allowlists reCAPTCHA Manager upgrades, never installed on child sites. |
 | `mrn-wp-control` | 1.1.1 | Independent repository (`mrnwebdesigns/mrn-wp-control`); dashboard-only, not installed in client-site plugins. |
 | `mrn-wp-control-table-exporter` | 1.4.4 | Independent repository (`mrnwebdesigns/mrn-wp-control-table-exporter`); dashboard-only, not installed in client-site plugins. |
 | `mrn-mainwp-mcp` | 0.1.1 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |

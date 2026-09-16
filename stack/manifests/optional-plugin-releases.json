@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-09-15",
+  "catalog_updated": "2026-09-16",
   "authority": "Checksum-locked independently released plugins available to explicit one-site upgrade plans. A release may remain a standard bootstrap default; registration never authorizes installation or a site write.",
   "releases": [
     {
@@ -134,6 +134,29 @@
         "main_file": "mrn-fontawesome-profile-manager/mrn-fontawesome-profile-manager.php",
         "size_bytes": 27401,
         "sha256": "d99439fec3c77fcd87f54215f134231e1367a1cf8ab85adee4edd09eb9b59d6a"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
+      "slug": "mrn-recaptcha-enterprise-manager",
+      "version": "0.1.2",
+      "target_tier": "optional-integration",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-recaptcha-enterprise-manager",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager",
+        "git_commit": "509a4994693ce1088e27ffbc02f1dea3844f07d4"
+      },
+      "package": {
+        "path": "releases/plugins/mrn-recaptcha-enterprise-manager-0.1.2.zip",
+        "filename": "mrn-recaptcha-enterprise-manager-0.1.2.zip",
+        "main_file": "mrn-recaptcha-enterprise-manager/mrn-recaptcha-enterprise-manager.php",
+        "size_bytes": 24777,
+        "sha256": "ec468d55a9987f7a95704d9580513fc8510b179bb2dda3871acf8c4186a89f95"
       },
       "update_policy": {
         "mode": "upgrade-only",

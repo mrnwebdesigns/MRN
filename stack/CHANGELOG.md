@@ -4,6 +4,22 @@
 
 ## 2026.09.16-stack-repair-fleet
 
+- `mrn-config-helper` (`0.1.61` -> `0.1.62`): preserved the existing
+  UptimeRobot API credential when an unrelated settings submission omits that
+  field. Registered exact forward and rollback packages for one-site selective
+  Stack updates.
+- `mrn-stack-deployment-agent` (`0.2.2` -> `0.2.3`): added authenticated,
+  secret-free readiness reporting for the Stack-managed UptimeRobot and
+  reCAPTCHA credentials. Registered both versions as exact selective update and
+  rollback artifacts.
+- `mrn-recaptcha-enterprise-manager` (`0.1.1` -> `0.1.2`): added idempotent,
+  fail-closed WPForms reCAPTCHA provisioning used by Stack bootstrap. The
+  checksum-locked Fleet target remains upgrade-only and cannot install an
+  absent plugin.
+- Advanced the Dashboard-only MainWP Operations API through `0.9.3`, requiring
+  the deployment agent's secret-free managed-credential report before full
+  Stack preflight can be ready and allowlisting the exact reCAPTCHA Manager
+  main file for guarded optional-plugin update and rollback.
 - `mrn-seo-helper` (`0.4.1` -> `0.4.2`): excluded WooCommerce orders,
   refunds, placeholders, and extension-defined order types from the shared ACF
   SEO fields and metadata synchronization. The final supported-post-type guard
@@ -16,10 +32,11 @@
   `readme.txt` release contract and deterministic export exclusions without a
   runtime behavior change. Registered the exact package and deployable tree for
   selective Stack updates while retaining the prior rollback releases.
-- Retained the exact byte-for-byte locks for the selective and independent
-  plugin Fleet baselines, and taught selective Stack planning to resolve the
-  current or archived lock from the site's signed release ID and checksum.
-  Unknown or altered baseline locks remain a hard failure.
+- Retained the exact byte-for-byte locks for every signed baseline reported by
+  the currently qualified MainWP Stack sites, plus the selective and independent
+  plugin Fleet baselines. Selective Stack planning now resolves the current or
+  archived lock from the site's signed release ID and checksum. Unknown or
+  altered baseline locks remain a hard failure.
 
 ## 2026.09.15-independent-plugin-fleet
 

@@ -232,7 +232,7 @@ class StackPluginPlanTests(unittest.TestCase):
         self.assertEqual("0.1.60", plan["plugin"]["target"]["version"])
         self.assertEqual(self.rollback_tree[0], plan["site"]["current_tree_sha256"])
         self.assertEqual("immutable-baseline-plus-component-overlay", plan["execution_contract"]["release_identity_model"])
-        self.assertEqual("0.9.1", plan["execution_contract"]["minimum_controller_version"])
+        self.assertEqual("0.9.3", plan["execution_contract"]["minimum_controller_version"])
         self.assertFalse(plan["execution_contract"]["allow_new_install"])
         schema = json.loads(
             (STACK_DIR / "manifests" / "stack-plugin-update-plan.schema.json").read_text(encoding="utf-8")
@@ -329,6 +329,23 @@ class StackPluginPlanTests(unittest.TestCase):
         with self.assertRaisesRegex(planner.PlanError, "exact source commit"):
             self.build()
 
+    def test_source_tree_honors_git_export_ignore(self):
+        (self.source / ".gitattributes").write_text(
+            ".gitattributes export-ignore\nrepo-only.txt export-ignore\n",
+            encoding="utf-8",
+        )
+        (self.source / "repo-only.txt").write_text("not deployable\n", encoding="utf-8")
+        run("git", "add", ".", cwd=self.source)
+        run("git", "commit", "-m", "Define package exports", cwd=self.source)
+        commit = run("git", "rev-parse", "HEAD", cwd=self.source)
+        package = self.root / "exported.zip"
+        self.archive(commit, package)
+
+        self.assertEqual(
+            self.package_tree(package),
+            planner.git_tree_hash(self.source, commit),
+        )
+
     def test_accepts_exact_legacy_supplement_for_rollback_only(self):
         contents = b"legacy internal note\n"
         relative = "ai-data/internal-notes.md"
@@ -374,6 +391,10 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
     def test_retained_release_locks_match_their_immutable_byte_checksums(self):
         archive = STACK_DIR / "manifests" / "release-locks"
         expected = {
+            "2026.09.11-mainwp-full-stack-fleet-canary-verified.json":
+                "99c8aa1b7b9f893ec61d20448487d5c3788c620d4b339250a485d6d547a3f4f4",
+            "2026.09.14-media-bulk-platform-required.json":
+                "d6ccf2dfe873adc7cff8446958be2331a120a4a87bf5766a5863f66f10a8e887",
             "2026.09.15-selective-stack-plugin-fleet.json":
                 "bf4f6818c05bf592b914cf48e2e7afb7940c705d7df704e19c5c0f1f0001dbb3",
             "2026.09.15-independent-plugin-fleet.json":
@@ -401,8 +422,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             if item["slug"] == "mrn-config-helper"
         }
 
-        self.assertEqual("0.1.61", entry["version"])
-        self.assertEqual({"0.1.59", "0.1.60", "0.1.61"}, set(versions))
+        self.assertEqual("0.1.62", entry["version"])
+        self.assertEqual({"0.1.59", "0.1.60", "0.1.61", "0.1.62"}, set(versions))
         self.assertEqual(
             entry["version"],
             max(versions, key=lambda value: planner.version_tuple(value, "version")),
@@ -416,8 +437,34 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             self.assertRegex(release["package"]["sha256"], r"^[a-f0-9]{64}$")
             self.assertRegex(release["tree"]["sha256"], r"^[a-f0-9]{64}$")
         self.assertNotIn("legacy_supplements", versions["0.1.61"])
+        self.assertNotIn("legacy_supplements", versions["0.1.62"])
         self.assertEqual(2, len(versions["0.1.59"]["legacy_supplements"]))
         self.assertEqual(2, len(versions["0.1.60"]["legacy_supplements"]))
+
+    def test_deployment_agent_has_exact_forward_and_rollback_releases(self):
+        catalog = json.loads(
+            (STACK_DIR / "manifests" / "component-catalog.json").read_text(encoding="utf-8")
+        )
+        registry = json.loads(
+            (STACK_DIR / "manifests" / "stack-plugin-releases.json").read_text(encoding="utf-8")
+        )
+        entry = next(
+            item for item in catalog["components"] if item["slug"] == "mrn-stack-deployment-agent"
+        )
+        versions = {
+            item["version"]: item
+            for item in registry["releases"]
+            if item["slug"] == "mrn-stack-deployment-agent"
+        }
+
+        self.assertEqual("0.2.3", entry["version"])
+        self.assertEqual({"0.2.2", "0.2.3"}, set(versions))
+        for release in versions.values():
+            self.assertEqual("standard-plugin", release["runtime_type"])
+            self.assertEqual("platform-required", release["target_tier"])
+            self.assertEqual("standard-bootstrap", release["current_distribution"])
+            self.assertEqual("sha256-tree-v1", release["tree"]["hash_algorithm"])
+            self.assertNotIn("legacy_supplements", release)
 
     def test_sticky_bar_has_clean_forward_and_exact_legacy_rollback(self):
         catalog = json.loads(
