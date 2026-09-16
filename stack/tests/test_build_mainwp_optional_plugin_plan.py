@@ -198,6 +198,18 @@ class OptionalPluginPlanTests(unittest.TestCase):
         )
         self.assertFalse(plan["execution_contract"]["allow_new_install"])
 
+    def test_registry_artifact_paths_are_repository_relative(self):
+        expected = Path(__file__).parents[2] / "releases" / "plugins" / "example.zip"
+
+        self.assertEqual(
+            expected.resolve(),
+            planner.resolve_artifact_path("releases/plugins/example.zip"),
+        )
+        self.assertEqual(
+            self.artifact.resolve(),
+            planner.resolve_artifact_path(self.artifact),
+        )
+
     def test_refuses_missing_plugin_instead_of_creating_install_plan(self):
         self.inventory["site"]["plugin"]["installed"] = False
 
