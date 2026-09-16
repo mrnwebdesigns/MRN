@@ -42,7 +42,7 @@
   - `mrn-mega-menu` `0.17.2`
   - `mrn-recaptcha-enterprise-manager` `0.1.2`
   - `mrn-sendgrid-provisioning` `0.1.0`
-  - `mrn-seo-helper` `0.4.3`
+  - `mrn-seo-helper` `0.5.0`
   - `mrn-stack-deployment-agent` `0.2.3`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-tokens` `0.1.3`
@@ -91,9 +91,11 @@
   deterministic package exclusions without changing runtime behavior. Its exact
   `1.1.8` and `1.1.9` trees remain checksum-bound rollback material for eligible
   sites.
-- SEO Helper `0.4.3` retains the `0.4.2` WooCommerce internal-order exclusion
-  and also excludes coupons from required SEO fields. Its Fleet record remains
-  upgrade-only and never installs the plugin when it is absent.
+- SEO Helper `0.5.0` adds an administrator-managed post-type allow-list under
+  Site Configurations while preserving existing behavior until the setting is
+  first saved. WooCommerce internal order and coupon types remain
+  hard-excluded. Its Fleet record remains upgrade-only and never installs the
+  plugin when it is absent.
 - Parent theme `1.3.4` adds the shared Events content type contract and registers
   dynamically cloned ACF builder fields so isolated AJAX selectors resolve their
   derived keys while preserving stored values and published-only reusable-block

@@ -379,7 +379,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             "mrn-announcements": "1.8.2",
             "mrn-fontawesome-profile-manager": "0.5.1",
             "mrn-recaptcha-enterprise-manager": "0.1.2",
-            "mrn-seo-helper": "0.4.3",
+            "mrn-seo-helper": "0.5.0",
         }
 
         for slug, version in expected.items():

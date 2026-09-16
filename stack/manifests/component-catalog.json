@@ -662,7 +662,7 @@
     {
       "slug": "mrn-seo-helper",
       "name": "MRN SEO Helper",
-      "version": "0.4.3",
+      "version": "0.5.0",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -670,7 +670,7 @@
       "target_tier": "optional-integration",
       "source": {"repository": "mrn-seo-helper", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-seo-helper", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["ACF", "SmartCrawl", "SEOPress", "MRN Schema Bridge", "MRN AI Assist"], "release_group": "seo-provider-contract"},
-      "data": {"options": ["seed version", "provider", "force-fields settings"], "tables": [], "cron": [], "routes": [], "external_services": ["SmartCrawl", "SEOPress"], "meta": ["MRN and provider SEO post metadata"]},
+      "data": {"options": ["seed version", "provider", "force-fields settings", "post-type allow-list"], "tables": [], "cron": [], "routes": [], "external_services": ["SmartCrawl", "SEOPress"], "meta": ["MRN and provider SEO post metadata"]},
       "purpose": "Owns shared SEO editing fields and synchronization with supported SEO providers."
     },
     {
