@@ -144,7 +144,9 @@ if ( '' !== $background_color && function_exists( 'mrn_site_colors_get_css_var' 
 }
 
 $display_contract = array(
-	'classes'    => array(),
+	'classes'    => function_exists( 'mrn_base_stack_get_builder_layout_class_contract' )
+		? mrn_base_stack_get_builder_layout_class_contract( $row )['classes']
+		: array(),
 	'attributes' => array(
 		'data-display-mode' => '' !== $display_mode ? $display_mode : 'row-settings',
 	),

@@ -419,10 +419,17 @@ function mrn_base_stack_get_builder_display_contract( array $row, $layout_name )
 		$attributes['data-display-style'] = $display_style;
 	}
 
+	if ( function_exists( 'mrn_base_stack_get_builder_layout_class_contract' ) ) {
+		$layout_class_contract = mrn_base_stack_get_builder_layout_class_contract( $row );
+		if ( ! empty( $layout_class_contract['classes'] ) && is_array( $layout_class_contract['classes'] ) ) {
+			$classes = array_merge( $classes, $layout_class_contract['classes'] );
+		}
+	}
+
 	$contract = array(
 		'display_mode'  => $display_mode,
 		'display_style' => $display_style,
-		'classes'       => $classes,
+		'classes'       => array_values( array_unique( $classes ) ),
 		'attributes'    => $attributes,
 	);
 
