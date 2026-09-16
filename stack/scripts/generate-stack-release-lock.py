@@ -10,6 +10,8 @@ import os
 import re
 import subprocess
 import sys
+import tarfile
+from io import BytesIO
 from pathlib import Path
 
 
@@ -112,6 +114,68 @@ def tree_sha256(source):
         count += 1
     if count == 0:
         raise ReleaseLockError(f"Release source contains no deployable files: {source}")
+    return digest.hexdigest(), count
+
+
+def git_archive_files(repo_root, commit, source_path="."):
+    """Return deployable regular files from Git, honoring export-ignore rules."""
+    repository = Path(repo_root).resolve()
+    portable = str(source_path or ".").strip().strip("/") or "."
+    result = subprocess.run(
+        ["git", "-C", str(repository), "archive", "--format=tar", commit, "--", portable],
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        detail = result.stderr.decode("utf-8", errors="replace").strip()
+        raise ReleaseLockError(detail or f"Could not archive {portable} at {commit}")
+
+    prefix = "" if portable == "." else portable.rstrip("/") + "/"
+    files = []
+    try:
+        with tarfile.open(fileobj=BytesIO(result.stdout), mode="r:") as archive:
+            for member in archive.getmembers():
+                name = member.name.rstrip("/")
+                if member.isdir():
+                    continue
+                if not member.isfile():
+                    raise ReleaseLockError(
+                        f"Release sources may not contain links or special files: {name}"
+                    )
+                if prefix:
+                    if not name.startswith(prefix):
+                        raise ReleaseLockError(f"Archived file escaped source path: {name}")
+                    relative = name[len(prefix) :]
+                else:
+                    relative = name
+                if not relative or relative.startswith("/") or ".." in Path(relative).parts:
+                    raise ReleaseLockError(f"Unsafe archived release path: {name}")
+                extracted = archive.extractfile(member)
+                if extracted is None:
+                    raise ReleaseLockError(f"Could not read archived release file: {name}")
+                files.append((relative, extracted.read()))
+    except (tarfile.TarError, OSError) as error:
+        raise ReleaseLockError(f"Could not inspect Git archive for {portable}: {error}") from error
+
+    files.sort(key=lambda item: item[0])
+    if not files:
+        raise ReleaseLockError(f"Git archive contains no deployable files: {portable}")
+    if len({relative for relative, _data in files}) != len(files):
+        raise ReleaseLockError(f"Git archive contains duplicate paths: {portable}")
+    return files
+
+
+def bytes_tree_sha256(files):
+    """Hash sorted path, content hash, and size records for in-memory files."""
+    digest = hashlib.sha256()
+    count = 0
+    for relative, data in sorted(files, key=lambda item: item[0]):
+        content_hash = hashlib.sha256(data).hexdigest()
+        record = f"{relative}\0{content_hash}\0{len(data)}\n".encode("utf-8")
+        digest.update(record)
+        count += 1
+    if count == 0:
+        raise ReleaseLockError("Release source contains no deployable files")
     return digest.hexdigest(), count
 
 
@@ -246,9 +310,14 @@ def build_lock(repo_root, catalog_path, stack_version_path, theme_manifest_path,
                 f"Version drift for {entry['slug']}: catalog={expected_version or 'missing'} "
                 f"source={actual_version or 'missing'}"
             )
-        digest, file_count = tree_sha256(source_path)
         source_repository = str((entry.get("source") or {}).get("repository"))
         source_commit = mrn_commit if source_repository == "MRN" else repository_commit(source_root)
+        if source_repository == "MRN":
+            digest, file_count = tree_sha256(source_path)
+        else:
+            digest, file_count = bytes_tree_sha256(
+                git_archive_files(source_root, source_commit, portable_path)
+            )
         locked_components.append(
             {
                 "slug": entry["slug"],
