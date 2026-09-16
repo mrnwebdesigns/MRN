@@ -178,6 +178,35 @@
         "preserve_active_state": true,
         "new_install": "requires-separate-owner-authorization-and-plan"
       }
+    },
+    {
+      "slug": "mrn-universal-sticky-bar",
+      "version": "1.1.10",
+      "runtime_type": "standard-plugin",
+      "target_tier": "platform-required",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-universal-sticky-bar",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar",
+        "git_commit": "696e261cccc76cacad9c7fe54eac6c48758a70ff"
+      },
+      "package": {
+        "path": "releases/stack-plugins/mrn-universal-sticky-bar-1.1.10.zip",
+        "filename": "mrn-universal-sticky-bar-1.1.10.zip",
+        "main_file": "mrn-universal-sticky-bar/mrn-universal-sticky-bar.php",
+        "size_bytes": 11165,
+        "sha256": "8268d337d2d18c2ea21f52467c166f660e103c6d8eb311abe2db7a7decab5b1b"
+      },
+      "tree": {
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "7c653d7b34d9c4701e1092a36a3cdda3ce7a702a87996dbcc8634e9dd24a1f19",
+        "file_count": 3
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
     }
   ]
 }

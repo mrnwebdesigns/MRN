@@ -72,6 +72,8 @@ class StackPluginPlanTests(unittest.TestCase):
         self.catalog_path = self.root / "component-catalog.json"
         self.releases_path = self.root / "stack-plugin-releases.json"
         self.lock_path = self.root / "stack-release.lock.json"
+        self.lock_archive = self.root / "release-locks"
+        self.lock_archive.mkdir()
         self.inventory_path = self.root / "inventory.json"
         self.generated_at = dt.datetime(2026, 9, 15, 12, 10, tzinfo=dt.timezone.utc)
 
@@ -237,6 +239,49 @@ class StackPluginPlanTests(unittest.TestCase):
         )
         self.assertEqual("stack-plugin-update", schema["properties"]["plan_type"]["const"])
 
+    def test_automatically_selects_current_signed_release_lock(self):
+        selected = planner.resolve_release_lock_path(
+            self.inventory_path,
+            explicit_lock=None,
+            archive_dir=self.lock_archive,
+            current_lock=self.lock_path,
+        )
+
+        self.assertEqual(self.lock_path.resolve(), selected)
+
+    def test_automatically_selects_archived_signed_release_lock(self):
+        archived = self.lock_archive / f"{self.lock['release_id']}.json"
+        write_json(archived, self.lock)
+        replacement = dict(self.lock)
+        replacement["release_id"] = "2026.09.16-new-stack-release"
+        write_json(self.lock_path, replacement)
+
+        selected = planner.resolve_release_lock_path(
+            self.inventory_path,
+            explicit_lock=None,
+            archive_dir=self.lock_archive,
+            current_lock=self.lock_path,
+        )
+
+        self.assertEqual(archived.resolve(), selected)
+
+    def test_refuses_archived_lock_with_wrong_checksum(self):
+        archived = self.lock_archive / f"{self.lock['release_id']}.json"
+        changed = dict(self.lock)
+        changed["themes"] = [{"slug": "unexpected"}]
+        write_json(archived, changed)
+        replacement = dict(self.lock)
+        replacement["release_id"] = "2026.09.16-new-stack-release"
+        write_json(self.lock_path, replacement)
+
+        with self.assertRaisesRegex(planner.PlanError, "does not match"):
+            planner.resolve_release_lock_path(
+                self.inventory_path,
+                explicit_lock=None,
+                archive_dir=self.lock_archive,
+                current_lock=self.lock_path,
+            )
+
     def test_refuses_plugin_absent_from_immutable_baseline(self):
         self.lock["components"] = []
         write_json(self.lock_path, self.lock)
@@ -326,6 +371,22 @@ class StackPluginPlanTests(unittest.TestCase):
 
 
 class StackPluginReleaseRegistryTests(unittest.TestCase):
+    def test_retained_release_locks_match_their_immutable_byte_checksums(self):
+        archive = STACK_DIR / "manifests" / "release-locks"
+        expected = {
+            "2026.09.15-selective-stack-plugin-fleet.json":
+                "bf4f6818c05bf592b914cf48e2e7afb7940c705d7df704e19c5c0f1f0001dbb3",
+            "2026.09.15-independent-plugin-fleet.json":
+                "bdfe4e64cab57f03788ad1457236c6eeed074f6c36a91ce14ec0a04df31de58e",
+        }
+
+        self.assertEqual(set(expected), {path.name for path in archive.glob("*.json")})
+        for filename, expected_sha in expected.items():
+            path = archive / filename
+            lock = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(path.stem, lock["release_id"])
+            self.assertEqual(expected_sha, checksum(path))
+
     def test_config_helper_has_exact_forward_and_rollback_releases(self):
         catalog = json.loads(
             (STACK_DIR / "manifests" / "component-catalog.json").read_text(encoding="utf-8")
@@ -374,10 +435,11 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             if item["slug"] == "mrn-universal-sticky-bar"
         }
 
-        self.assertEqual("1.1.9", entry["version"])
-        self.assertEqual({"1.1.8", "1.1.9"}, set(versions))
+        self.assertEqual("1.1.10", entry["version"])
+        self.assertEqual({"1.1.8", "1.1.9", "1.1.10"}, set(versions))
         self.assertEqual(1, len(versions["1.1.8"]["legacy_supplements"]))
         self.assertNotIn("legacy_supplements", versions["1.1.9"])
+        self.assertNotIn("legacy_supplements", versions["1.1.10"])
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.15-independent-plugin-fleet`
-- Release date: `2026-09-15`
+- Stack release: `2026.09.16-stack-repair-fleet`
+- Release date: `2026-09-16`
 - Status: `release candidate; site deployment and runtime verification pending`
 
 ## Included MRN-Owned Components
@@ -42,11 +42,11 @@
   - `mrn-mega-menu` `0.17.2`
   - `mrn-recaptcha-enterprise-manager` `0.1.1`
   - `mrn-sendgrid-provisioning` `0.1.0`
-  - `mrn-seo-helper` `0.4.2`
+  - `mrn-seo-helper` `0.4.3`
   - `mrn-stack-deployment-agent` `0.2.2`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-tokens` `0.1.3`
-  - `mrn-universal-sticky-bar` `1.1.9`
+  - `mrn-universal-sticky-bar` `1.1.10`
 
 - Profile-gated standard plugins:
   - `mrn-reusable-block-library` `0.1.28` (`MRN_SITE_PROFILE=stack`)
@@ -79,9 +79,16 @@
   `0.1.60` rollback packages so an eligible site on a prior reviewed baseline
   can update only Config Helper and restore its precise prior tree if rollback
   is authorized.
-- Universal Sticky Bar `1.1.9` removes its previously tracked internal
-  `ai-data` note from deployable source. Its exact `1.1.8` tree is retained only
-  as checksum-bound rollback material for eligible sites.
+- Universal Sticky Bar `1.1.10` adds complete WordPress release metadata and
+  deterministic package exclusions without changing runtime behavior. Its exact
+  `1.1.8` and `1.1.9` trees remain checksum-bound rollback material for eligible
+  sites.
+- SEO Helper `0.4.3` retains the `0.4.2` WooCommerce internal-order exclusion
+  and also excludes coupons from required SEO fields. Its Fleet record remains
+  upgrade-only and never installs the plugin when it is absent.
+- Selective Stack planning retains the exact signed locks for prior reviewed
+  baselines and automatically selects the matching immutable lock by release ID
+  and byte checksum. Missing or altered historical locks fail closed.
 - Cookie Consent and GTM Injector are catalog-only optional integrations rather
   than required baseline components. Existing installations are unchanged and
   may move only through their checksum-locked optional-plugin plans.

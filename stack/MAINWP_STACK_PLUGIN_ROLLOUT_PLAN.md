@@ -8,7 +8,7 @@ component. It fills the gap between the immutable full Stack release and the
 separate optional-plugin release process.
 
 The first supported examples are `mrn-config-helper` `0.1.59` or `0.1.60` to
-`0.1.61`, and `mrn-universal-sticky-bar` `1.1.8` to `1.1.9`.
+`0.1.61`, and `mrn-universal-sticky-bar` `1.1.8` or `1.1.9` to `1.1.10`.
 Eligibility is not hardcoded to Config Helper: a fresh signed runtime report
 must prove the requested plugin is exactly one `standard-plugin` component in
 the site's reviewed immutable Stack release.
@@ -107,6 +107,13 @@ The builder rejects stale inventory, an absent/inactive/unloaded plugin, a
 release-lock mismatch, a component outside the immutable baseline, a no-op or
 downgrade, unregistered current code, missing rollback bytes, or unavailable
 remote backup execution.
+
+The current lock and every superseded lock used by an eligible site are retained
+under `manifests/release-locks/<release-id>.json`. By default the builder selects
+the exact current or archived lock whose release ID and byte checksum match the
+site's signed runtime report. It fails closed when the exact historical lock is
+missing or altered. `--release-lock` remains available when an operator needs to
+name one reviewed lock explicitly; it never weakens the identity check.
 
 ## Build The Plan
 

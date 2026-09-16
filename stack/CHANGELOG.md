@@ -2,10 +2,24 @@
 
 ## Unreleased
 
+## 2026.09.16-stack-repair-fleet
+
 - `mrn-seo-helper` (`0.4.1` -> `0.4.2`): excluded WooCommerce orders,
   refunds, placeholders, and extension-defined order types from the shared ACF
   SEO fields and metadata synchronization. The final supported-post-type guard
   prevents later filters from accidentally restoring order screens.
+- `mrn-seo-helper` (`0.4.2` -> `0.4.3`): excluded WooCommerce coupons from
+  required SEO fields while preserving the order-type guard. The verified
+  package remains a one-site, upgrade-only Fleet release and never installs the
+  plugin where it is absent.
+- `mrn-universal-sticky-bar` (`1.1.9` -> `1.1.10`): added the WordPress
+  `readme.txt` release contract and deterministic export exclusions without a
+  runtime behavior change. Registered the exact package and deployable tree for
+  selective Stack updates while retaining the prior rollback releases.
+- Retained the exact byte-for-byte locks for the selective and independent
+  plugin Fleet baselines, and taught selective Stack planning to resolve the
+  current or archived lock from the site's signed release ID and checksum.
+  Unknown or altered baseline locks remain a hard failure.
 
 ## 2026.09.15-independent-plugin-fleet
 

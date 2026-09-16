@@ -662,7 +662,7 @@
     {
       "slug": "mrn-seo-helper",
       "name": "MRN SEO Helper",
-      "version": "0.4.2",
+      "version": "0.4.3",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -690,7 +690,7 @@
     {
       "slug": "mrn-universal-sticky-bar",
       "name": "MRN Universal Sticky Bar",
-      "version": "1.1.9",
+      "version": "1.1.10",
       "runtime_type": "standard-plugin",
       "classification": "platform-ui",
       "lifecycle": "supported",

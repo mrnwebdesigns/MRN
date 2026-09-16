@@ -143,20 +143,20 @@
     },
     {
       "slug": "mrn-seo-helper",
-      "version": "0.4.2",
+      "version": "0.4.3",
       "target_tier": "optional-integration",
       "current_distribution": "standard-bootstrap",
       "source": {
         "repository": "mrnwebdesigns/mrn-seo-helper",
         "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-seo-helper",
-        "git_commit": "508ace9081e33560e0826cf0c167eea372af6cbe"
+        "git_commit": "1a450462524568290af2a3f54007ab9c93116851"
       },
       "package": {
-        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-seo-helper/zip/mrn-seo-helper-0.4.2.zip",
-        "filename": "mrn-seo-helper-0.4.2.zip",
+        "path": "releases/plugins/mrn-seo-helper-0.4.3.zip",
+        "filename": "mrn-seo-helper-0.4.3.zip",
         "main_file": "mrn-seo-helper/mrn-seo-helper.php",
-        "size_bytes": 12455,
-        "sha256": "1ee7569192f8d0ad358cb7e24faed0b792fc0299bb17860281d01d597e245774"
+        "size_bytes": 12508,
+        "sha256": "61370e754c97943b72ca45bbec27247c7cb9babf93f17be6b1bf7f22a132f822"
       },
       "update_policy": {
         "mode": "upgrade-only",

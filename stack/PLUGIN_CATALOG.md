@@ -29,7 +29,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-media-bulk-tools` | 0.13.1 | Standard bootstrap | Platform required | Media audit, usage indexing, and bulk maintenance; exact version and tree are enforced by the full Stack release lock. |
 | `mrn-sendgrid-provisioning` | 0.1.0 | Standard bootstrap | Platform required | Provisions a per-site SendGrid Subuser, mail-only site API key, and domain authentication; split out of `mrn-config-helper`. |
 | `mrn-stack-deployment-agent` | 0.2.2 | Standard bootstrap | Platform required | Provides the MainWP-authenticated, checksum-verified Stack deployment target. |
-| `mrn-universal-sticky-bar` | 1.1.9 | Standard bootstrap | Platform required | Provides the shared settings/editor action bar; independently released for non-Stack use. |
+| `mrn-universal-sticky-bar` | 1.1.10 | Standard bootstrap | Platform required | Provides the shared settings/editor action bar; independently released for non-Stack use. |
 
 The machine catalog also records each tracked top-level MU wrapper as its own required loader artifact. Wrapper versions mirror the components they load, and `deployed_path` preserves the actual WordPress filename rather than deriving one from the catalog slug.
 
@@ -59,7 +59,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 | `mrn-gtm-injector` | 1.0.14 | Independent repository (`mrnwebdesigns/mrn-gtm-injector`); catalog-only with a merged checksum-locked release entry | Optional integration | Google Tag Manager. |
 | `mrn-recaptcha-enterprise-manager` | 0.1.1 | Independent repository (`mrnwebdesigns/mrn-recaptcha-enterprise-manager`) via MRN-plugins symlink | Optional integration | reCAPTCHA Enterprise and WPForms; security and credential contracts retained. |
 | `mrn-relevanssi-ai-search` | 0.6.1 | Independent repository (`mrnwebdesigns/mrn-relevanssi-ai-search`); catalog-only | Optional integration | Guarded AI query interpretation and hybrid semantic matching for Relevanssi. |
-| `mrn-seo-helper` | 0.4.2 | Standard bootstrap; checksum-locked one-site release | Optional integration | ACF SEO fields and supported SEO providers; WooCommerce order types are excluded. |
+| `mrn-seo-helper` | 0.4.3 | Standard bootstrap; checksum-locked one-site release | Optional integration | ACF SEO fields and supported SEO providers; WooCommerce orders, refunds, placeholders, extension-defined order types, and coupons are excluded. |
 
 ## Dashboard-Only Operations
 
