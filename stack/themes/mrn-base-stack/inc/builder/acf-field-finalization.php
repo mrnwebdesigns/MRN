@@ -127,6 +127,47 @@ function mrn_base_stack_finalize_cloned_acf_layouts( array $layouts ) {
 	return $layouts;
 }
 
+/**
+ * Register cloned layout sub-fields in ACF's local field store.
+ *
+ * ACF's AJAX-backed field handlers receive only a field key. Runtime-cloned
+ * layouts are available to the editor as nested arrays, but their derived
+ * sub-field keys are not otherwise present in ACF's local store. Mirroring
+ * ACF's flexible-content import preparation here makes those keys resolvable
+ * without changing field names, stored values, or the returned layout tree.
+ *
+ * @param array<string|int, mixed> $layouts Cloned ACF layout definitions.
+ * @param string                   $parent_field_key Flexible-content parent key.
+ * @return void
+ */
+function mrn_base_stack_register_cloned_acf_layout_fields( array $layouts, $parent_field_key ) {
+	$parent_field_key = is_string( $parent_field_key ) ? trim( $parent_field_key ) : '';
+	if ( '' === $parent_field_key || ! function_exists( 'acf_add_local_field' ) ) {
+		return;
+	}
+
+	foreach ( $layouts as $layout ) {
+		if ( ! is_array( $layout ) || empty( $layout['key'] ) || empty( $layout['sub_fields'] ) || ! is_array( $layout['sub_fields'] ) ) {
+			continue;
+		}
+
+		$layout_key = (string) $layout['key'];
+
+		foreach ( $layout['sub_fields'] as $menu_order => $sub_field ) {
+			if ( ! is_array( $sub_field ) || empty( $sub_field['key'] ) ) {
+				continue;
+			}
+
+			$sub_field['parent']        = $parent_field_key;
+			$sub_field['parent_layout'] = $layout_key;
+			$sub_field['menu_order']    = (int) $menu_order;
+
+			// ACF recursively extracts repeater, group, and flexible sub-fields.
+			acf_add_local_field( $sub_field );
+		}
+	}
+}
+
 // Contract mutations run through priority 200; finalize only completed builder trees.
 add_filter( 'acf/load_field/type=flexible_content', 'mrn_base_stack_finalize_acf_builder_field_tree', 999 );
 add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_finalize_acf_builder_field_tree', 999 );
