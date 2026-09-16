@@ -2512,6 +2512,11 @@ require_once get_template_directory() . '/inc/resources.php';
 require_once get_template_directory() . '/inc/press-releases.php';
 
 /**
+ * Load events modules.
+ */
+require_once get_template_directory() . '/inc/events.php';
+
+/**
  * Load field-ready content post type registrations.
  */
 require_once get_template_directory() . '/inc/content-post-types.php';
