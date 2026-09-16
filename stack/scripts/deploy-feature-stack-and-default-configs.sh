@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
 	cat <<'EOF'
 Usage:
-  deploy-feature-stack-and-default-configs.sh [--ssh-host <ssh-host>] [--dry-run]
+  deploy-feature-stack-and-default-configs.sh [--ssh-host <ssh-host>] [--bootstrap-contract-only] [--dry-run]
 
 Description:
   Sync the canonical stack theme, stack MU plugin source, and stack MU loader
@@ -17,6 +17,8 @@ Description:
 Notes:
   - This is the canonical feature-deploy helper for stack theme and stack MU work.
   - Standard plugins still follow their own plugin release flow.
+  - --bootstrap-contract-only publishes only site-bootstrap.sh, its importer,
+    and the importer manifest. It does not touch release-managed runtime code.
   - The default target host is mrndev-stack-manager@167.99.54.77.
   - This script no longer syncs a live reference site. It previously also
     synced to default-configs.mrndev.io, but that site no longer exists on
@@ -28,6 +30,7 @@ EOF
 
 SSH_HOST="mrndev-stack-manager@167.99.54.77"
 DRY_RUN=0
+BOOTSTRAP_CONTRACT_ONLY=0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
@@ -39,6 +42,10 @@ while [[ $# -gt 0 ]]; do
 			;;
 		--dry-run)
 			DRY_RUN=1
+			shift
+			;;
+		--bootstrap-contract-only)
+			BOOTSTRAP_CONTRACT_ONLY=1
 			shift
 			;;
 		-h|--help)
@@ -57,6 +64,9 @@ STACK_ROOT_REMOTE="/home/mrndev-stack-manager/stack"
 LOCAL_THEME_DIR="${REPO_ROOT}/stack/themes/mrn-base-stack"
 LOCAL_STACK_MU_DIR="${REPO_ROOT}/stack/mu-plugins"
 LOCAL_STACK_RELEASE_LOCK="${REPO_ROOT}/stack/manifests/stack-release.lock.json"
+LOCAL_SITE_BOOTSTRAP="${REPO_ROOT}/stack/scripts/site-bootstrap.sh"
+LOCAL_STACK_EXPORT_IMPORTER="${REPO_ROOT}/stack/configs/importers/stack-export-importer.sh"
+LOCAL_IMPORTERS_MANIFEST="${REPO_ROOT}/stack/manifests/importers.txt"
 LOCAL_MU_SOURCE_ROOT="${REPO_ROOT}/mu-plugins"
 LOCAL_SHARED_DIR="${REPO_ROOT}/shared"
 
@@ -137,6 +147,13 @@ if [[ ! -f "${LOCAL_STACK_RELEASE_LOCK}" ]]; then
 	exit 1
 fi
 
+for required_file in "${LOCAL_SITE_BOOTSTRAP}" "${LOCAL_STACK_EXPORT_IMPORTER}" "${LOCAL_IMPORTERS_MANIFEST}"; do
+	if [[ ! -f "${required_file}" ]]; then
+		echo "Required bootstrap source not found: ${required_file}" >&2
+		exit 1
+	fi
+done
+
 python3 "${REPO_ROOT}/stack/scripts/generate-stack-release-lock.py" \
 	--check "${LOCAL_STACK_RELEASE_LOCK}" >/dev/null
 
@@ -159,6 +176,20 @@ run_remote() {
 	local remote_host="$1"
 	local command="$2"
 	ssh "${remote_host}" "${command}"
+}
+
+verify_remote_file_sha256() {
+	local local_file="$1"
+	local remote_file="$2"
+	local local_sha remote_sha
+
+	local_sha="$(python3 -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1], "rb").read()).hexdigest())' "${local_file}")"
+	remote_sha="$(run_remote "${SSH_HOST}" "sha256sum '${remote_file}' | cut -d ' ' -f1" | tr -d '\r\n')"
+	if [[ "${local_sha}" != "${remote_sha}" ]]; then
+		echo "ERROR: Remote source hash mismatch: ${remote_file}" >&2
+		return 1
+	fi
+	echo "Verified source parity: ${remote_file}"
 }
 
 normalize_remote_tree_permissions() {
@@ -199,45 +230,60 @@ verify_remote_tree_file_modes() {
 
 echo "Deploying stack feature surfaces to ${SSH_HOST}..."
 
-run_rsync \
-	"${LOCAL_THEME_DIR}/" \
-	"${SSH_HOST}:${STACK_ROOT_REMOTE}/themes/mrn-base-stack/" \
-	"${THEME_EXCLUDES[@]}"
-
-run_rsync \
-	"${LOCAL_SHARED_DIR}/" \
-	"${SSH_HOST}:${STACK_ROOT_REMOTE}/shared/" \
-	"${COMMON_DIR_EXCLUDES[@]}"
-
-for slug in "${MU_PLUGIN_DIRS[@]}"; do
+if [[ "${BOOTSTRAP_CONTRACT_ONLY}" -eq 0 ]]; then
 	run_rsync \
-	"${LOCAL_MU_SOURCE_ROOT}/${slug}/" \
-	"${SSH_HOST}:${STACK_ROOT_REMOTE}/mu-plugins/${slug}/" \
-	"${COMMON_DIR_EXCLUDES[@]}"
-done
+		"${LOCAL_THEME_DIR}/" \
+		"${SSH_HOST}:${STACK_ROOT_REMOTE}/themes/mrn-base-stack/" \
+		"${THEME_EXCLUDES[@]}"
 
-for wrapper in "${LOCAL_STACK_MU_DIR}"/mrn-*.php; do
-	[[ -f "${wrapper}" ]] || continue
 	run_rsync \
-		"${wrapper}" \
-		"${SSH_HOST}:${STACK_ROOT_REMOTE}/mu-plugins/$(basename "${wrapper}")"
-done
+		"${LOCAL_SHARED_DIR}/" \
+		"${SSH_HOST}:${STACK_ROOT_REMOTE}/shared/" \
+		"${COMMON_DIR_EXCLUDES[@]}"
+
+	for slug in "${MU_PLUGIN_DIRS[@]}"; do
+		run_rsync \
+			"${LOCAL_MU_SOURCE_ROOT}/${slug}/" \
+			"${SSH_HOST}:${STACK_ROOT_REMOTE}/mu-plugins/${slug}/" \
+			"${COMMON_DIR_EXCLUDES[@]}"
+	done
+
+	for wrapper in "${LOCAL_STACK_MU_DIR}"/mrn-*.php; do
+		[[ -f "${wrapper}" ]] || continue
+		run_rsync \
+			"${wrapper}" \
+			"${SSH_HOST}:${STACK_ROOT_REMOTE}/mu-plugins/$(basename "${wrapper}")"
+	done
+
+	run_rsync \
+		"${LOCAL_STACK_RELEASE_LOCK}" \
+		"${SSH_HOST}:${STACK_ROOT_REMOTE}/mu-plugins/mrn-stack-release.lock.json"
+fi
 
 run_rsync \
-	"${LOCAL_STACK_RELEASE_LOCK}" \
-	"${SSH_HOST}:${STACK_ROOT_REMOTE}/mu-plugins/mrn-stack-release.lock.json"
+	"${LOCAL_SITE_BOOTSTRAP}" \
+	"${SSH_HOST}:${STACK_ROOT_REMOTE}/scripts/site-bootstrap.sh"
 run_rsync \
-	"${LOCAL_STACK_RELEASE_LOCK}" \
-	"${LIVE_SITE_SSH_LOGIN}:${LIVE_SITE_ROOT}/wp-content/mu-plugins/mrn-stack-release.lock.json"
+	"${LOCAL_STACK_EXPORT_IMPORTER}" \
+	"${SSH_HOST}:${STACK_ROOT_REMOTE}/configs/importers/stack-export-importer.sh"
+run_rsync \
+	"${LOCAL_IMPORTERS_MANIFEST}" \
+	"${SSH_HOST}:${STACK_ROOT_REMOTE}/manifests/importers.txt"
 
 if [[ "${DRY_RUN}" -eq 0 ]]; then
-	normalize_remote_tree_permissions "${SSH_HOST}" "${STACK_ROOT_REMOTE}/themes/mrn-base-stack" "stack theme"
-	normalize_remote_tree_permissions "${SSH_HOST}" "${STACK_ROOT_REMOTE}/shared" "stack shared runtime"
-	normalize_remote_tree_permissions "${SSH_HOST}" "${STACK_ROOT_REMOTE}/mu-plugins" "stack mu-plugins"
+	run_remote "${SSH_HOST}" "chmod 750 '${STACK_ROOT_REMOTE}/scripts/site-bootstrap.sh' '${STACK_ROOT_REMOTE}/configs/importers/stack-export-importer.sh' && chmod 640 '${STACK_ROOT_REMOTE}/manifests/importers.txt'"
+	verify_remote_file_sha256 "${LOCAL_SITE_BOOTSTRAP}" "${STACK_ROOT_REMOTE}/scripts/site-bootstrap.sh"
+	verify_remote_file_sha256 "${LOCAL_STACK_EXPORT_IMPORTER}" "${STACK_ROOT_REMOTE}/configs/importers/stack-export-importer.sh"
+	verify_remote_file_sha256 "${LOCAL_IMPORTERS_MANIFEST}" "${STACK_ROOT_REMOTE}/manifests/importers.txt"
+	if [[ "${BOOTSTRAP_CONTRACT_ONLY}" -eq 0 ]]; then
+		normalize_remote_tree_permissions "${SSH_HOST}" "${STACK_ROOT_REMOTE}/themes/mrn-base-stack" "stack theme"
+		normalize_remote_tree_permissions "${SSH_HOST}" "${STACK_ROOT_REMOTE}/shared" "stack shared runtime"
+		normalize_remote_tree_permissions "${SSH_HOST}" "${STACK_ROOT_REMOTE}/mu-plugins" "stack mu-plugins"
 
-	verify_remote_tree_file_modes "${SSH_HOST}" "${STACK_ROOT_REMOTE}/themes/mrn-base-stack" "stack theme"
-	verify_remote_tree_file_modes "${SSH_HOST}" "${STACK_ROOT_REMOTE}/shared" "stack shared runtime"
-	verify_remote_tree_file_modes "${SSH_HOST}" "${STACK_ROOT_REMOTE}/mu-plugins" "stack mu-plugins"
+		verify_remote_tree_file_modes "${SSH_HOST}" "${STACK_ROOT_REMOTE}/themes/mrn-base-stack" "stack theme"
+		verify_remote_tree_file_modes "${SSH_HOST}" "${STACK_ROOT_REMOTE}/shared" "stack shared runtime"
+		verify_remote_tree_file_modes "${SSH_HOST}" "${STACK_ROOT_REMOTE}/mu-plugins" "stack mu-plugins"
+	fi
 fi
 
 echo "Stack source-of-truth sync completed."

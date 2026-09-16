@@ -23,6 +23,7 @@ class DeployStackReleaseTests(unittest.TestCase):
         self.artifacts = self.root / "artifacts"
         sources = {
             "mu-plugins/mrn-loader.php": "<?php /* Version: 1.0.0 */\n",
+            "mu-plugins/mrn-security-loader.php": "<?php /* Version: 1.0.0 */\n",
             "plugins/mrn-required/mrn-required.php": "<?php /* Version: 1.0.0 */\n",
             "shared/mrn-shared-runtime.php": "<?php /* Version: 1.0.0 */\n",
             "themes/mrn-base-stack/style.css": "/* Version: 1.0.0 */\n",
@@ -84,6 +85,11 @@ class DeployStackReleaseTests(unittest.TestCase):
             },
             "components": [
                 locked_entry("mrn-loader", "mu-loader", "mu-plugins/mrn-loader.php"),
+                locked_entry(
+                    "mrn-security-loader",
+                    "mu-loader",
+                    "mu-plugins/mrn-security-loader.php",
+                ),
                 locked_entry("mrn-required", "standard-plugin", "plugins/mrn-required"),
                 locked_entry("mrn-shared-runtime", "shared-runtime", "shared"),
             ],
@@ -144,6 +150,16 @@ class DeployStackReleaseTests(unittest.TestCase):
         self.assertIn("wp-content/themes/customer-parent", targets)
         self.assertNotIn("wp-content/themes/customer-child", targets)
         self.assertIn("wp-content/shared", targets)
+        self.assertIn("wp-content/mu-plugins/mrn-loader.php", targets)
+        self.assertIn("wp-content/mu-plugins/mrn-security-loader.php", targets)
+        self.assertEqual(
+            2,
+            sum(
+                "mu-plugins" in target and target.endswith(".php")
+                for target in targets
+                if "release.lock" not in target
+            ),
+        )
         self.assertEqual(["mrn-required"], plugins)
         self.assertEqual("mrn-stack-release-lock", operations[-1]["slug"])
 

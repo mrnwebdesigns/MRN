@@ -58,6 +58,8 @@ SENDGRID_MANAGEMENT_API_KEY_FILE="${STACK_SENDGRID_MANAGEMENT_API_KEY_FILE:-${ST
 AUTO_PROVISION_SENDGRID="${STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION:-1}"
 AUTO_PROVISION_UPTIME_ROBOT="${STACK_BOOTSTRAP_UPTIME_ROBOT_AUTO_PROVISION:-0}"
 UPTIME_ROBOT_MONITOR_INTERVAL="${STACK_BOOTSTRAP_UPTIME_ROBOT_INTERVAL:-${STACK_UPTIME_ROBOT_MONITOR_INTERVAL:-300}}"
+UPTIME_ROBOT_API_KEY="${MRN_UPTIME_ROBOT_API_KEY:-${STACK_UPTIME_ROBOT_API_KEY:-${UPTIME_ROBOT_API_KEY:-}}}"
+UPTIME_ROBOT_SETTINGS_FILE="${STACK_UPTIME_ROBOT_SETTINGS_FILE:-${STACK_ROOT}/secrets/mrn-config-helper-settings.json}"
 RECAPTCHA_ENTERPRISE_PROJECT_ID="${MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID:-${STACK_RECAPTCHA_ENTERPRISE_PROJECT_ID:-}}"
 RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE="${STACK_RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE:-${STACK_ROOT}/secrets/recaptcha-enterprise-project-id.txt}"
 RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL="${MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL:-${STACK_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL:-}}"
@@ -95,6 +97,16 @@ fi
 
 if [[ -z "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE}" && -f "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE_FILE}" ]]; then
   RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE="$(tr -d '\r\n' < "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE_FILE}")"
+fi
+
+if [[ -z "${UPTIME_ROBOT_API_KEY}" && -f "${UPTIME_ROBOT_SETTINGS_FILE}" ]]; then
+  UPTIME_ROBOT_API_KEY="$(
+    php -r '
+$payload = json_decode((string) file_get_contents($argv[1]), true);
+if (!is_array($payload)) { exit(1); }
+echo trim((string) ($payload["uptime_robot_api_key"] ?? ""));
+' -- "${UPTIME_ROBOT_SETTINGS_FILE}"
+  )"
 fi
 
 while [[ $# -gt 0 ]]; do
@@ -336,18 +348,55 @@ run_wp_config_set_quiet() {
   return 1
 }
 
+run_wp() {
+  local -a args
+  args=("$@")
+  sudo -u "${SITE_USER}" wp --path="${WP_PATH}" "${args[@]}"
+}
+
+validate_managed_credential_sources() {
+  local integration_type
+
+  [[ "${SITE_PROFILE}" == "stack" ]] || return 0
+
+  if [[ -z "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" ]]; then
+    echo "Missing required managed credential: reCAPTCHA Enterprise project ID." >&2
+    return 1
+  fi
+  if [[ ! "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" =~ ^[^[:space:]@]+@[^[:space:]@]+$ ]]; then
+    echo "Missing or invalid required managed credential: reCAPTCHA Enterprise service-account email." >&2
+    return 1
+  fi
+  if [[ -z "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY}" ]] || ! printf '%s\n' "${RECAPTCHA_ENTERPRISE_PRIVATE_KEY}" | openssl pkey -check -noout >/dev/null 2>&1; then
+    echo "Missing or invalid required managed credential: reCAPTCHA Enterprise private key." >&2
+    return 1
+  fi
+  integration_type="$(printf '%s' "${RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE}" | tr -d '\r\n' | tr '[:lower:]' '[:upper:]')"
+  if [[ "${integration_type}" != "SCORE" && "${integration_type}" != "CHECKBOX" ]]; then
+    echo "Missing or invalid required managed credential: reCAPTCHA Enterprise integration type." >&2
+    return 1
+  fi
+  if [[ ${#UPTIME_ROBOT_API_KEY} -lt 10 ]]; then
+    echo "Missing or invalid required managed credential: UptimeRobot API key." >&2
+    return 1
+  fi
+}
+
 reconcile_recaptcha_enterprise_constants() {
+  local failed=0
   local recaptcha_private_key_literal recaptcha_private_key_php_literal recaptcha_integration_type
 
   if [[ -n "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" ]]; then
     if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" --type=constant; then
       echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID in wp-config.php" >&2
+      failed=1
     fi
   fi
 
   if [[ -n "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" ]]; then
     if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL "${RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL}" --type=constant; then
       echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL in wp-config.php" >&2
+      failed=1
     fi
   fi
 
@@ -360,8 +409,10 @@ reconcile_recaptcha_enterprise_constants() {
     if [[ -n "${recaptcha_private_key_literal}" ]]; then
       if ! recaptcha_private_key_php_literal="$(php_string_literal "${recaptcha_private_key_literal}")"; then
         echo "Warning: failed to prepare MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY for wp-config.php" >&2
+        failed=1
       elif ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY "${recaptcha_private_key_php_literal}" --raw --type=constant; then
         echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY in wp-config.php" >&2
+        failed=1
       fi
     fi
   fi
@@ -369,6 +420,7 @@ reconcile_recaptcha_enterprise_constants() {
   if [[ -n "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" ]]; then
     if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS "${RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS}" --type=constant; then
       echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS in wp-config.php" >&2
+      failed=1
     fi
   fi
 
@@ -381,18 +433,56 @@ reconcile_recaptcha_enterprise_constants() {
     if [[ "${recaptcha_integration_type}" == "SCORE" || "${recaptcha_integration_type}" == "CHECKBOX" ]]; then
       if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE "${recaptcha_integration_type}" --type=constant; then
         echo "Warning: failed to set MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE in wp-config.php" >&2
+        failed=1
       fi
     else
       echo "Warning: skipped MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE: expected SCORE or CHECKBOX." >&2
+      failed=1
     fi
   fi
+
+  return "${failed}"
+}
+
+reconcile_uptime_robot_constant() {
+  if ! run_wp_config_set_quiet MRN_UPTIME_ROBOT_API_KEY "${UPTIME_ROBOT_API_KEY}" --type=constant; then
+    echo "Warning: failed to set MRN_UPTIME_ROBOT_API_KEY in wp-config.php" >&2
+    return 1
+  fi
+}
+
+verify_managed_credential_delivery() {
+  run_wp eval '
+$required = array(
+    "MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID",
+    "MRN_RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL",
+    "MRN_RECAPTCHA_ENTERPRISE_PRIVATE_KEY",
+    "MRN_RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE",
+    "MRN_UPTIME_ROBOT_API_KEY",
+);
+foreach ($required as $constant) {
+    if (!defined($constant) || "" === trim((string) constant($constant))) {
+        fwrite(STDERR, "Missing managed credential constant: {$constant}\n");
+        exit(1);
+    }
+}
+echo "Verified managed credential delivery.\n";
+'
+}
+
+reconcile_managed_credentials() {
+  [[ "${SITE_PROFILE}" == "stack" ]] || return 0
+  validate_managed_credential_sources
+  reconcile_recaptcha_enterprise_constants
+  reconcile_uptime_robot_constant
+  verify_managed_credential_delivery
 }
 
 if [[ -f "${SITE_PATH}/${MARKER_NAME}" ]]; then
   echo "Already bootstrapped: ${SITE_PATH}"
-  reconcile_recaptcha_enterprise_constants
-  send_notification "MRN Bootstrap Skipped: $(basename "${SITE_PATH}")" "Bootstrap skipped because marker exists for ${SITE_PATH}"
-  send_slack_notification "MRN Bootstrap Skipped: $(basename "${SITE_PATH}")" "Bootstrap skipped because marker exists for ${SITE_PATH}" "#8b949e"
+  reconcile_managed_credentials
+  send_notification "MRN Bootstrap Reconciled: $(basename "${SITE_PATH}")" "Bootstrap marker exists; managed credentials were reconciled for ${SITE_PATH}"
+  send_slack_notification "MRN Bootstrap Reconciled: $(basename "${SITE_PATH}")" "Bootstrap marker exists; managed credentials were reconciled for ${SITE_PATH}" "#1f883d"
   exit 0
 fi
 
@@ -400,12 +490,6 @@ send_slack_notification \
   "MRN Bootstrap Started: $(basename "${SITE_PATH}")" \
   "Bootstrap started for ${SITE_PATH}\nWordPress path: ${WP_PATH}\nSite user: ${SITE_USER}\nSite profile: ${SITE_PROFILE}" \
   "#1f6feb"
-
-run_wp() {
-  local -a args
-  args=("$@")
-  sudo -u "${SITE_USER}" wp --path="${WP_PATH}" "${args[@]}"
-}
 
 last_nonempty_line() {
   sed '/^[[:space:]]*$/d' | tail -n 1
@@ -1911,7 +1995,7 @@ run_importers() {
   for importer in "${IMPORTERS_DIR}"/*.sh; do
     if [[ -x "${importer}" ]]; then
       echo "Running importer: ${importer}"
-      STACK_ROOT="${STACK_ROOT}" SITE_PATH="${SITE_PATH}" SITE_USER="${SITE_USER}" WP_PATH="${WP_PATH}" "${importer}"
+      STACK_IMPORTER_STRICT=1 STACK_ROOT="${STACK_ROOT}" SITE_PATH="${SITE_PATH}" SITE_USER="${SITE_USER}" WP_PATH="${WP_PATH}" "${importer}"
     fi
   done
 }
@@ -2148,6 +2232,7 @@ main() {
   apply_wp_defaults
   provision_uptime_robot_check_page
   run_importers
+  reconcile_managed_credentials
   configure_mrn_breadcrumb_schema_ownership
   provision_seopress_schema_defaults
   provision_external_services

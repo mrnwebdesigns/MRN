@@ -8,6 +8,7 @@ WP_PATH="${WP_PATH:-}"
 IMPORT_MANIFEST="${STACK_ROOT}/manifests/importers.txt"
 EXPORTS_DIR="${STACK_ROOT}/configs/exports"
 WP_SKIP_PLUGINS="${STACK_IMPORTER_SKIP_PLUGINS:-}"
+IMPORT_STRICT="${STACK_IMPORTER_STRICT:-0}"
 MRN_BRANDING_ASSETS_READY=0
 MRN_BRANDING_TOOLBAR_URL=""
 MRN_BRANDING_LOGIN_URL=""
@@ -1088,6 +1089,9 @@ fi
 
 if [[ "${errors}" -gt 0 ]]; then
   echo "Importer completed with ${errors} warning(s)."
+  if [[ "${IMPORT_STRICT}" == "1" ]]; then
+    exit 1
+  fi
 else
   echo "Importer completed with no warnings."
 fi
