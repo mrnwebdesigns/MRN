@@ -19,7 +19,8 @@ Notes:
   - Standard plugins still follow their own plugin release flow.
   - --bootstrap-contract-only publishes only site-bootstrap.sh, its importer,
     and the importer manifest. It does not touch release-managed runtime code.
-  - The default target host is mrndev-stack-manager@167.99.54.77.
+  - The default target is the configured mrndev-stack-manager SSH alias, which
+    pins the manager identity and prevents SSH agent identity exhaustion.
   - This script no longer syncs a live reference site. It previously also
     synced to default-configs.mrndev.io, but that site no longer exists on
     this host (confirmed 2026-08-20: absent from the full /home account
@@ -28,7 +29,7 @@ Notes:
 EOF
 }
 
-SSH_HOST="mrndev-stack-manager@167.99.54.77"
+SSH_HOST="mrndev-stack-manager"
 DRY_RUN=0
 BOOTSTRAP_CONTRACT_ONLY=0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -132,21 +133,6 @@ for required in python3 rsync ssh; do
 	fi
 done
 
-if [[ ! -d "${LOCAL_THEME_DIR}" ]]; then
-	echo "Theme source directory not found: ${LOCAL_THEME_DIR}" >&2
-	exit 1
-fi
-
-if [[ ! -d "${LOCAL_SHARED_DIR}" ]]; then
-	echo "Shared source directory not found: ${LOCAL_SHARED_DIR}" >&2
-	exit 1
-fi
-
-if [[ ! -f "${LOCAL_STACK_RELEASE_LOCK}" ]]; then
-	echo "Stack release lock not found: ${LOCAL_STACK_RELEASE_LOCK}" >&2
-	exit 1
-fi
-
 for required_file in "${LOCAL_SITE_BOOTSTRAP}" "${LOCAL_STACK_EXPORT_IMPORTER}" "${LOCAL_IMPORTERS_MANIFEST}"; do
 	if [[ ! -f "${required_file}" ]]; then
 		echo "Required bootstrap source not found: ${required_file}" >&2
@@ -154,15 +140,32 @@ for required_file in "${LOCAL_SITE_BOOTSTRAP}" "${LOCAL_STACK_EXPORT_IMPORTER}" 
 	fi
 done
 
-python3 "${REPO_ROOT}/stack/scripts/generate-stack-release-lock.py" \
-	--check "${LOCAL_STACK_RELEASE_LOCK}" >/dev/null
-
-for slug in "${MU_PLUGIN_DIRS[@]}"; do
-	if [[ ! -d "${LOCAL_MU_SOURCE_ROOT}/${slug}" ]]; then
-		echo "MU plugin source directory not found: ${LOCAL_MU_SOURCE_ROOT}/${slug}" >&2
+if [[ "${BOOTSTRAP_CONTRACT_ONLY}" -eq 0 ]]; then
+	if [[ ! -d "${LOCAL_THEME_DIR}" ]]; then
+		echo "Theme source directory not found: ${LOCAL_THEME_DIR}" >&2
 		exit 1
 	fi
-done
+
+	if [[ ! -d "${LOCAL_SHARED_DIR}" ]]; then
+		echo "Shared source directory not found: ${LOCAL_SHARED_DIR}" >&2
+		exit 1
+	fi
+
+	if [[ ! -f "${LOCAL_STACK_RELEASE_LOCK}" ]]; then
+		echo "Stack release lock not found: ${LOCAL_STACK_RELEASE_LOCK}" >&2
+		exit 1
+	fi
+
+	python3 "${REPO_ROOT}/stack/scripts/generate-stack-release-lock.py" \
+		--check "${LOCAL_STACK_RELEASE_LOCK}" >/dev/null
+
+	for slug in "${MU_PLUGIN_DIRS[@]}"; do
+		if [[ ! -d "${LOCAL_MU_SOURCE_ROOT}/${slug}" ]]; then
+			echo "MU plugin source directory not found: ${LOCAL_MU_SOURCE_ROOT}/${slug}" >&2
+			exit 1
+		fi
+	done
+fi
 
 run_rsync() {
 	local source="$1"
