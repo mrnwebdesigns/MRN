@@ -97,18 +97,22 @@ def resolve_source(repo_root, standalone_root, entry):
         assert_source_provenance(
             source_repo, expected_commit, raw_path, exact_head=False
         )
+        archive_files = None
     else:
         source_repo = Path(standalone_root).resolve() / str(entry.get("slug") or "")
         source_path = source_repo / raw_path
         assert_source_provenance(
             source_repo, expected_commit, raw_path, exact_head=True
         )
+        archive_files = release_lock.git_archive_files(
+            source_repo, expected_commit, raw_path
+        )
     if not source_path.exists():
         raise AssemblyError(f"Release source is missing: {source_path}")
-    return source_path.resolve()
+    return source_path.resolve(), archive_files
 
 
-def copy_deployable_tree(source, destination):
+def copy_deployable_tree(source, destination, archive_files=None):
     source = Path(source)
     destination = Path(destination)
     if source.is_file():
@@ -117,6 +121,12 @@ def copy_deployable_tree(source, destination):
         return
 
     destination.mkdir(parents=True, exist_ok=True)
+    if archive_files is not None:
+        for relative, data in archive_files:
+            target = destination / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(data)
+        return
     for relative, path in release_lock.iter_digest_files(source):
         target = destination / relative
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -146,8 +156,11 @@ def assemble(lock_path, repo_root, standalone_root, output, *, force=False):
                     f"Unsafe or duplicate deployed path for {entry.get('slug')}"
                 )
             seen_paths.add(deployed_path)
-            source = resolve_source(repo_root, standalone_root, entry)
-            source_hash, source_count = release_lock.tree_sha256(source)
+            source, archive_files = resolve_source(repo_root, standalone_root, entry)
+            if archive_files is None:
+                source_hash, source_count = release_lock.tree_sha256(source)
+            else:
+                source_hash, source_count = release_lock.bytes_tree_sha256(archive_files)
             if (
                 source_hash != entry.get("sha256")
                 or source_count != entry.get("file_count")
@@ -157,7 +170,7 @@ def assemble(lock_path, repo_root, standalone_root, output, *, force=False):
                 )
 
             destination = staging / portable
-            copy_deployable_tree(source, destination)
+            copy_deployable_tree(source, destination, archive_files)
             assembled_hash, assembled_count = release_lock.tree_sha256(destination)
             if assembled_hash != source_hash or assembled_count != source_count:
                 raise AssemblyError(

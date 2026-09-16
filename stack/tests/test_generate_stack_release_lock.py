@@ -88,6 +88,35 @@ class ReleaseLockTests(unittest.TestCase):
             with self.assertRaisesRegex(release_lock.ReleaseLockError, "symlinks"):
                 release_lock.tree_sha256(root_path)
 
+    def test_git_archive_tree_honors_export_ignore(self):
+        with tempfile.TemporaryDirectory() as root:
+            repository = Path(root) / "plugin"
+            self.initialize_repository(repository, "runtime\n")
+            (repository / ".gitattributes").write_text(
+                ".gitattributes export-ignore\nrepo-only.txt export-ignore\n",
+                encoding="utf-8",
+            )
+            (repository / "repo-only.txt").write_text("not deployed\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(repository), "add", "."], check=True)
+            subprocess.run(
+                ["git", "-C", str(repository), "commit", "-qm", "release rules"],
+                check=True,
+            )
+            commit = subprocess.run(
+                ["git", "-C", str(repository), "rev-parse", "HEAD"],
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+
+            files = release_lock.git_archive_files(repository, commit)
+
+            self.assertEqual([("marker.txt", b"runtime\n")], files)
+            self.assertEqual(
+                release_lock.tree_sha256(repository / "marker.txt"),
+                release_lock.bytes_tree_sha256(files),
+            )
+
     def test_validate_lock_rejects_duplicate_components(self):
         source = {"repository": "MRN", "git_commit": "a" * 40, "path": "."}
         component = {
