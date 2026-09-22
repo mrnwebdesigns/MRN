@@ -11,9 +11,20 @@
   `daily`. This only turns off the time-based cron; it does not change the
   Deployments gate below, which still runs unconditionally on every
   environment, including development/review.
-- Retain four scheduled backup sets locally and remotely.
+- Retain remote recovery points as seven daily, four weekly, and twelve
+  30-day sets. UpdraftPlus keeps every backup for the first seven days, no
+  more than one per seven-day period from day 8 through day 35, and no more
+  than one per 30-day period from day 36 through day 395.
+- Require UpdraftPlus Premium advanced retention. A site without the advanced
+  retention engine is noncompliant and must not enter the rollout until that
+  prerequisite is remediated.
+- Use numerical safety caps of 23 file sets and 100 database sets. The larger
+  database cap accommodates labeled pre-deploy database-only backups without
+  displacing the scheduled recovery points before the time-bucket rules run.
 - Exclude WordPress core because it is reproducible.
 - Delete local archives after successful remote transfer.
+- Cap stranded local archives at four complete sets. This is a local disk
+  safety limit, not the remote recovery-point policy.
 - Assign each site a deterministic time between 01:00 and 04:59 so shared
   servers do not start every backup at midnight.
 - Store each site in its own S3 prefix: `bucket/sites/<site-slug>`, where
@@ -59,7 +70,8 @@
 
 ## Development Workflow
 
-- Routine scheduled and manual backups share the rolling four-set retention.
+- Routine scheduled, manual, and pre-deploy backups share the time-bucketed
+  retention policy. They must not be exempted from pruning.
 - Use **Always Keep** only for a named milestone before risky work.
 - Remove Always Keep protection when that milestone is no longer useful.
 - Never scan a shared bucket root; remotely scanned imports are exempt from

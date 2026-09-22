@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- `mrn-updraft-local-retention` (`0.5.1` -> `0.6.0`): replaced the four-set
+  remote policy with seven daily, four weekly, and twelve 30-day recovery
+  points, retained the four-set stranded-local disk guard, and added explicit
+  noncompliance warnings when UpdraftPlus advanced retention is unavailable.
+- Added secret-free `backup_policy` evidence to the existing Stack runtime
+  report so MainWP can qualify and verify each site without exposing remote
+  storage credentials. This source change is not a Stack promotion or site
+  deployment.
+
 ## 2026.09.16-layout-classes-fleet
 
 - `mrn-base-stack` (`1.3.5` -> `1.4.0`) and

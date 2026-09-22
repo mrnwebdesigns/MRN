@@ -6,7 +6,10 @@ The MU plugin enforces the non-secret MRN Updraft policy on every stack runtime:
 
 - daily file and database backups on staging and production;
 - no routine scheduled backups on development/review environments;
-- four file and database backup sets retained;
+- seven daily, four weekly, and twelve 30-day remote recovery points retained;
+- file/database numerical safety caps of 23/100;
+- explicit noncompliance reporting when UpdraftPlus Premium advanced retention
+  is unavailable;
 - local archives deleted after successful remote transfer;
 - WordPress core excluded;
 - a deterministic daily start time between 01:00 and 04:59; and
@@ -19,7 +22,8 @@ visible warning unless Amazon S3 uses a unique path ending in
 
 ## Development backups
 
-Routine scheduled and manual backups share the same rolling four-set retention.
+Routine scheduled, manual, and pre-deploy backups share the same time-bucketed
+retention policy.
 Before risky development work, use Updraft's **Always Keep** option only for a
 deliberate milestone. Ordinary manual backups remain disposable and are pruned
 by Updraft after newer backups complete.

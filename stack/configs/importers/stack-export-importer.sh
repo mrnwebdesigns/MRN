@@ -887,8 +887,26 @@ $settings["updraft_interval"] = "daily";
 $settings["updraft_interval_database"] = "daily";
 $settings["updraft_starttime_files"] = $schedule_time;
 $settings["updraft_starttime_db"] = $schedule_time;
-$settings["updraft_retain"] = "4";
-$settings["updraft_retain_db"] = "4";
+$settings["updraft_retain"] = "23";
+$settings["updraft_retain_db"] = "100";
+$retention_rules = [
+    [
+        "after-howmany" => "7",
+        "after-period" => "86400",
+        "every-howmany" => "1",
+        "every-period" => "604800",
+    ],
+    [
+        "after-howmany" => "35",
+        "after-period" => "86400",
+        "every-howmany" => "30",
+        "every-period" => "86400",
+    ],
+];
+$settings["updraft_retain_extrarules"] = [
+    "db" => $retention_rules,
+    "files" => $retention_rules,
+];
 $settings["updraft_delete_local"] = "1";
 $settings["updraft_include_wpcore"] = "0";
 
@@ -922,7 +940,7 @@ foreach ($settings as $key => $value) {
 // as individual options because Updraft reads them that way.
 update_option($option_name, $settings);
 echo "Imported Updraft settings into {$imported} individual options and {$option_name}\n";
-echo "Applied Updraft policy for {$site_namespace}: daily at {$schedule_time}, retain 4\n";
+echo "Applied Updraft policy for {$site_namespace}: daily at {$schedule_time}, retain 7 daily / 4 weekly / 12 thirty-day sets\n";
 
 // Direct option imports do not invoke the settings API callbacks that normally
 // create the Updraft WP-Cron rows. Schedule them explicitly after import.

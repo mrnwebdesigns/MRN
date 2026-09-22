@@ -95,7 +95,7 @@ The committed `.mrn-qa.env` files default browser, accessibility, and performanc
 | `mrn-schema-bridge` | MRN Schema Bridge | 0.6.0 | <https://github.com/mrnwebdesigns/mrn-schema-bridge> | SEOPress is the preferred base graph; the bridge synchronizes Business Information identity, provisions automatic Article templates, emits complete visible-content JobPosting schema, preserves author privacy, and retains legacy SmartCrawl compatibility. |
 | `mrn-shared-assets` | MRN Shared Assets | 0.2.0 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned shared asset provider. |
 | `mrn-site-colors` | MRN Site Styles | 0.1.39 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned design-token/configuration layer. |
-| `mrn-updraft-local-retention` | MRN Updraft Backup Policy | 0.5.1 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned Updraft policy; requires UpdraftPlus and enforces the environment-aware four-set backup contract. |
+| `mrn-updraft-local-retention` | MRN Updraft Backup Policy | 0.6.0 | <https://github.com/mrnwebdesigns/MRN> | Stack-owned Updraft policy; requires UpdraftPlus Premium advanced retention and enforces the environment-aware seven-daily, four-weekly, twelve-30-day contract. |
 
 ## Stack MU Wrapper Notes
 
