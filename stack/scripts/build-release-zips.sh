@@ -3,7 +3,14 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-STANDALONE_PLUGINS_ROOT="${MRN_STANDALONE_PLUGINS_ROOT:-$(cd "${ROOT_DIR}/.." && pwd)/MRN-plugins}"
+GIT_COMMON_DIR="$(git -C "${ROOT_DIR}" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
+CANONICAL_ROOT="${ROOT_DIR}"
+
+if [[ -n "${GIT_COMMON_DIR}" && "$(basename "${GIT_COMMON_DIR}")" == ".git" ]]; then
+	CANONICAL_ROOT="$(dirname "${GIT_COMMON_DIR}")"
+fi
+
+STANDALONE_PLUGINS_ROOT="${MRN_STANDALONE_PLUGINS_ROOT:-$(cd "${CANONICAL_ROOT}/.." && pwd)/MRN-plugins}"
 
 usage() {
 	cat <<'EOF'
@@ -71,6 +78,14 @@ resolve_plugin_source_root() {
 
 	if [[ -d "${ROOT_DIR}/plugins/${slug}" ]]; then
 		printf '%s\n' "${ROOT_DIR}/plugins"
+		return 0
+	fi
+
+	# Relative plugin symlinks resolve from the canonical checkout and can be
+	# broken inside a sibling Git worktree. Reuse the canonical source path so
+	# task worktrees package the same committed plugin tree as main.
+	if [[ -d "${CANONICAL_ROOT}/plugins/${slug}" ]]; then
+		printf '%s\n' "${CANONICAL_ROOT}/plugins"
 		return 0
 	fi
 
