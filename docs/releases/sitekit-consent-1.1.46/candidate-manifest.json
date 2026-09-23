@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "status": "local-review-candidate-not-promoted",
+  "slug": "mrn-cookie-consent/mrn-cookie-consent.php",
+  "version": "1.1.46",
+  "source_commit": "d8f8c7e55000a2baf5331370cf0afa7e37ad2a20",
+  "source_tree": "d1c9e9a6dac91a42b75c97b5f14df99cdb69160b",
+  "package": {
+    "filename": "mrn-cookie-consent-1.1.46.zip",
+    "sha256": "238b071465b527b7120813e8afd8f8b2aef7e8a41693d571f6bef68de74c3788",
+    "size_bytes": 67363
+  },
+  "files_sha256": {
+    "README.md": "3681e7bf531037bdffd96c2ceb567bfa8a4dba91f71dfdd753fa5e17192d3ac6",
+    "assets/mrn-cookie-consent.js": "49c318d1207553680400b18efb9803c98cf7b76a168c88baafbeaf2647fbd98b",
+    "assets/mrn-sitekit-consent.js": "896a65a712f4868e42761c04737d58d3d776ff10718707cf3c368e6cf7ea0e89",
+    "assets/vendor/silktide-consent-manager.css": "c81cec990851f271d7329cf2adcd0a33bfdfb8d43f4bfa2b61e62c13fc49ae2e",
+    "assets/vendor/silktide-consent-manager.js": "392dfe97d56bec41f180b079d1821334b46b1daa1f4fcff887747ece05b2fb69",
+    "includes/class-mrn-sitekit-consent.php": "cd3e2e9de73259bfcaf0605c59e513bf788479c2b21b67307bfe2ccfafaea3d8",
+    "includes/mrn-sticky-settings-toolbar.php": "1e6a9558e824e9658b18e9afb56bdf8da8854b76315457526d7f78e61f03a435",
+    "mrn-cookie-consent.php": "edd1c7a1a5ea826e3bfb312989e029e2fade9969b30510a69d79f07f5fa304bb",
+    "readme.txt": "3d8b3e1059910e1b0ecfbcf4d8bdc075ff41e153a72df864874730ab6a4489e9"
+  },
+  "update_policy": {
+    "mode": "upgrade-only",
+    "preserve_active_state": true,
+    "new_install": false
+  },
+  "authorization": {
+    "push": false,
+    "merge": false,
+    "publish": false,
+    "deploy": false
+  }
+}
