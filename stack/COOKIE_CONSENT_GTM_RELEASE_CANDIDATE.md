@@ -157,7 +157,7 @@ Complete reports:
 
 | Candidate | Source commit | Local path | Size | SHA-256 |
 | --- | --- | --- | ---: | --- |
-| Cookie Consent `1.1.43` | `1e14bd239e2e9651033be31fe36b694fa19856de` | `/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent/zip/mrn-cookie-consent.zip` | 74,037 bytes | `98a6703e6e2053ab60bdadc0506e174a72b60371a0b6736a01bf2ea13d731419` |
+| Cookie Consent `1.1.43` | `1e14bd239e2e9651033be31fe36b694fa19856de` | `/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent/zip/mrn-cookie-consent-1.1.43.zip` | 74,037 bytes | `98a6703e6e2053ab60bdadc0506e174a72b60371a0b6736a01bf2ea13d731419` |
 | GTM Injector `1.0.14` | `1c8908013fa0b35581409c13502f9a98894a96a0` | `/Users/khofmeyer/Development/MRN-plugins/mrn-gtm-injector/zip/mrn-gtm-injector-1.0.14.zip` | 27,750 bytes | `e227b8a33ad8dffc1904cacbfba1c48a068e6182f204ee6f13e4a804746ce6c1` |
 | MainWP Operations API `0.8.2` | `ef86b25f79cf8aafb81200eec85590699869ec35` | `/Users/khofmeyer/Development/MRN-task-worktrees/fleet-cookie-gtm/releases/plugins/mrn-mainwp-operations-api-0.8.2.zip` | 59,288 bytes | `cc130c5178129ab984e31282d4ac1314fb92625ec5e5c837444fd4da3670e9cf` |
 
@@ -206,7 +206,7 @@ available to a reviewed plan; it does not authorize a site write.
     "git_commit": "1e14bd239e2e9651033be31fe36b694fa19856de"
   },
   "package": {
-    "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent/zip/mrn-cookie-consent.zip",
+    "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent/zip/mrn-cookie-consent-1.1.43.zip",
     "filename": "mrn-cookie-consent.zip",
     "main_file": "mrn-cookie-consent/mrn-cookie-consent.php",
     "size_bytes": 74037,
