@@ -116,6 +116,9 @@ def run_case(args, db, subdir, slug, split_home=False):
             raise RuntimeError("Disposable WordPress install failed; output suppressed")
         installed = True
         wp("eval-file", str(setup))
+        if not args.expect_bug:
+            wp("eval-file", str(Path(__file__).resolve().with_name("login-landmark-regression.php")))
+            print("PASS: WordPress HTML processor preserves existing landmarks, roles and form data", flush=True)
         mail_file.write_text("")
         mail_file.chmod(0o600)
         server = subprocess.Popen(["php", "-d", "display_errors=0", "-S", f"127.0.0.1:{port}", "-t", str(public), str(router)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -126,7 +129,10 @@ def run_case(args, db, subdir, slug, split_home=False):
             except OSError:
                 time.sleep(.05)
         opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()), NoRedirect())
-        check(request(opener, canonical)[0] == 200, "custom login GET " + (subdir or "root") + (" split home" if split_home else ""))
+        status, _, body = request(opener, canonical)
+        if not args.expect_bug:
+            check(re.search(r'<div\b[^>]*role="main"[^>]*id="login"|<div\b[^>]*id="login"[^>]*role="main"', body) is not None, "custom login exposes its existing container as the main landmark")
+        check(status == 200, "custom login GET " + (subdir or "root") + (" split home" if split_home else ""))
         check(request(opener, base + "/wp-login.php")[0] == 404, "bare default endpoint remains protected")
         status, headers, body = request(opener, canonical + "?action=lostpassword", {"user_login": "mrn_login_test", "wp-submit": "Get New Password", "redirect_to": ""})
         location = headers.get("Location", "")
@@ -139,6 +145,7 @@ def run_case(args, db, subdir, slug, split_home=False):
         check(location == canonical + "?checkemail=confirm", "lost-password Location is canonical and absolute")
         status, _, body = request(opener, location)
         check(status == 200 and "Check your email" in body, "confirmation page renders HTTP 200")
+        check(body.count('role="main"') == 1, "confirmation page retains a single main landmark")
         reset_links = re.findall(r"http://[^\s<>]+", messages[0]["message"])
         reset_link = next(link for link in reset_links if "action=rp" in link)
         check(reset_link.startswith(canonical + "?"), "reset email uses configured origin and login slug")
@@ -198,7 +205,7 @@ def main():
     parser.add_argument("--qa-mode", choices=("standard", "release"), default="standard")
     args = parser.parse_args()
     db = json.loads(args.database_config.read_text())
-    if not db.get("DB_NAME", "").startswith("mrn_login_test_") or not db.get("DB_HOST", "").startswith("127.0.0.1"):
+    if not db.get("DB_NAME", "").startswith("mrn_login_test_") or not re.fullmatch(r"127\.0\.0\.1(?::[0-9]+)?", db.get("DB_HOST", "")):
         raise SystemExit("Refusing non-disposable database: require mrn_login_test_* and loopback DB_HOST")
     results = [run_case(args, db, subdir, slug, split) for subdir, slug, split in [("", "site-login", False), ("blog", "team-access", False), ("cms", "staff-signin", True)]]
     if not all(results):

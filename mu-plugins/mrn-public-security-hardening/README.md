@@ -64,6 +64,7 @@ That command restores the default `site-login` slug safely. The UI also falls ba
 - Multisite signup and other unrelated core endpoints are left alone unless the core flow generates a login URL that needs rewriting.
 - The custom login route loads the normal WordPress login screen; it does not replace core authentication.
 - Since `0.4.2`, core's relative login redirects are normalized to the absolute custom login URL, including paths expanded by `wp_safe_redirect()`. This fixes lost-password and registration confirmations for root and subdirectory installs. Encoded query arguments and fragments are preserved. Repair is limited to local login paths during custom-route requests; unrelated destinations and competing login plugins retain their behavior.
+- The custom route adds a main landmark to the existing core login container when WordPress HTML processing is available. Existing landmarks and explicit container roles are preserved; markup structure, styling and form data are unchanged. Integrations may disable this with `mrn_public_security_login_landmark_enabled`.
 - Supported conflict detections include WPS Hide Login, Change WP Admin Login, Rename wp-login.php, Hide My WP, and WP Hide & Security Enhancer. Sites using another login URL plugin should add its plugin file and label through `mrn_public_security_login_conflict_plugins`.
 
 ## Default REST Guarded Routes
@@ -99,7 +100,7 @@ The HTTP suite exercises root, subdirectory, and split `home`/`siteurl` installs
 with different login slugs. It covers lost-password POST and confirmation,
 captured reset email and link, `rp` and `resetpass`, login, logout, registration,
 administrative reauthentication, explicit return destinations and the blocked
-default endpoint. Mail transport is intercepted; no external message is sent.
+default endpoint. It also runs `tests/login-landmark-regression.php` through real WordPress and checks the rendered login and confirmation landmarks. Mail transport is intercepted; no external message is sent.
 `--expect-bug` proves the original complete reset-to-404 chain on an old source
 checkout (or use `--plugin-source <baseline.php>`). `--mrn-qa-report <report.md>` runs full component MRN QA with browser,
 API, accessibility and performance checks against the disposable root runtime.
@@ -167,6 +168,7 @@ add_filter( 'mrn_public_security_oembed_strip_author_enabled', '__return_false' 
 ### Login URL
 
 - `mrn_public_security_login_slug_default`
+- `mrn_public_security_login_landmark_enabled`
 - `mrn_public_security_allowed_legacy_login_actions`
 - `mrn_public_security_log_login_slug_changes`
 

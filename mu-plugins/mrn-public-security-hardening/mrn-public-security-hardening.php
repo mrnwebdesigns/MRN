@@ -1609,6 +1609,40 @@ function mrn_public_security_block_default_login_request( $return_only = false )
 add_action( 'init', 'mrn_public_security_block_default_login_request', 0 );
 
 /**
+ * Give the core login container a main landmark without changing its structure.
+ *
+ * Used only as the output handler for MRN's custom login route. Preserve an
+ * existing landmark or explicit container role supplied by core or integrations.
+ *
+ * @param string $html Core login response HTML.
+ * @return string
+ */
+function mrn_public_security_add_login_landmark( $html ) {
+	if ( ! class_exists( 'WP_HTML_Tag_Processor' ) ) {
+		return $html;
+	}
+
+	$tags = new WP_HTML_Tag_Processor( $html );
+	while ( $tags->next_tag() ) {
+		if ( 'MAIN' === $tags->get_tag() || 'main' === $tags->get_attribute( 'role' ) ) {
+			return $html;
+		}
+	}
+
+	$tags = new WP_HTML_Tag_Processor( $html );
+	while ( $tags->next_tag( 'DIV' ) ) {
+		if ( 'login' === $tags->get_attribute( 'id' ) ) {
+			if ( null === $tags->get_attribute( 'role' ) ) {
+				$tags->set_attribute( 'role', 'main' );
+			}
+			return $tags->get_updated_html();
+		}
+	}
+
+	return $html;
+}
+
+/**
  * Load the normal WordPress login screen for the custom slug.
  *
  * @param bool $exit Optional test mode that skips the final exit.
@@ -1619,7 +1653,18 @@ function mrn_public_security_maybe_serve_custom_login_request( $exit = true ) {
 		return false;
 	}
 
+	$buffer_level = ob_get_level();
+	$buffering    = class_exists( 'WP_HTML_Tag_Processor' )
+		&& apply_filters( 'mrn_public_security_login_landmark_enabled', true )
+		&& ob_start( 'mrn_public_security_add_login_landmark' );
+
 	require ABSPATH . 'wp-login.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant -- Core login screen handoff for the custom login slug.
+
+	// Core redirects can exit earlier; PHP then flushes the handler at shutdown.
+	// Leave any integration-owned nested buffers to their normal shutdown order.
+	if ( $buffering && ob_get_level() === $buffer_level + 1 ) {
+		ob_end_flush();
+	}
 
 	if ( $exit ) {
 		exit;

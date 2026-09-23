@@ -11,14 +11,14 @@ The new scoped `wp_redirect` filter recognizes the raw core relative target, its
 ## Validation
 
 - Existing full PHP regression suite: PASS, including the new redirect query/fragment, scope, authority and conflict cases.
-- Real WordPress HTTP regression suite: 60 PASS assertions across root/default-slug, `/blog/team-access/`, and `/cms/staff-signin/` with split home/siteurl. Uses disposable accounts/database and intercepts mail before transport. The core source reports WordPress 7.1; PHP 8.5.6 and MariaDB 10.11.14.
+- Real WordPress HTTP regression suite: 69 PASS assertions across root/default-slug, `/blog/team-access/`, and `/cms/staff-signin/` with split home/siteurl. Uses disposable accounts/database and intercepts mail before transport. The core source reports WordPress 7.1; PHP 8.5.6 and MariaDB 10.11.14.
 - Baseline source 0.4.1: 15 PASS assertions reproduce successful reset mail generation followed by the nested redirect and HTTP 404 in all three configurations.
 - Covers login, authenticated `/wp-admin/`, nonce-protected logout, lost-password POST, confirmation HTTP 200, reset email URL, reset-cookie/key handling, `rp`, `resetpass`, enabled registration, administrative reauthentication, explicit redirect_to and bare default endpoint HTTP 404.
 - Full component MRN QA static run: PASS. PHP lint, security/WPCS, PHP compatibility, PHPStan, Semgrep, secrets, debug artifacts, API surface and diff checks passed. Runtime rows in this static run were skipped by the component configuration and covered separately below.
-- Runtime MRN QA: API `/wp-json/` HTTP 200, browser smoke, page timing and measured Core Web Vitals passed. Accessibility FAILED because the unchanged core login screen has no main landmark. Axe WCAG A/AA found no violations on the login screen; the additional MRN semantic assertion failed before keyboard/dynamic checks could complete. INP was not measured. The report is a failed runtime gate, not release signoff.
-- An earlier broad runtime probe also found invalid nested list markup in the disposable default theme's homepage navigation. The dedicated login fixture now routes its homepage probe to the actual login screen; no production theme or core markup was changed and no accessibility rules were disabled.
-- Clean-commit release-mode QA reproduced the semantic accessibility failure and also identified the previously absent readme.txt Stable tag; the missing release metadata was added in this branch.
-- Full Stack promotion baseline audit at clean merged ba91208 passed before this feature. No new immutable release lock was generated while required runtime QA is failing.
+- Full runtime component MRN QA: PASS, including API `/wp-json/` HTTP 200, browser smoke, accessibility (axe, semantics and keyboard interaction), page timing and measured Core Web Vitals. INP was not measured. The fixture homepage redirects to the actual login screen so the runtime checks cover the changed component.
+- Release QA previously identified a missing main landmark in the core login output. The shared custom route now uses WordPress's HTML processor to add `role="main"` to the existing login container, preserving existing landmarks/roles, markup structure, styling and form data. Eight real-processor preservation cases run in each installation layout, plus HTTP checks on login and confirmation responses. No core file or accessibility rule was changed.
+- Readme Stable tag, header, runtime version, wrapper, baseline and catalog agree at 0.4.2. Clean-commit release QA and Stack candidate reconciliation are required before packaging.
+- Full Stack promotion baseline audit at clean merged ba91208 passed before this feature.
 
 ## Production and deployment blockers
 
@@ -37,6 +37,6 @@ All Stack sites using the affected custom-login handler share this code defect, 
 
 ## Remaining work
 
-Resolve or explicitly disposition the core-login semantic accessibility blocker through the proper QA/release workflow. Restore an exact, verified Gloves Online deployment route and provide the controlled test mailbox. Then merge accepted source, promote from clean current merged main, reconcile versions/notes/immutable lock, build deterministic artifacts and record checksums, qualify the target, take the fresh remote backup, deploy through approved Stack tooling and read back installed hashes. Finally submit the controlled reset, verify canonical HTTP 200, validate the secret-free reset-link origin/path and confirm the corresponding Postmark success record.
+The component accessibility blocker is resolved. Restore an exact, verified Gloves Online deployment route and provide the controlled test mailbox. Then merge accepted source, promote from clean current merged main, reconcile versions/notes/immutable lock, build deterministic artifacts and record checksums, qualify the target, take the fresh remote backup, deploy through approved Stack tooling and read back installed hashes. Finally submit the controlled reset, verify canonical HTTP 200, validate the secret-free reset-link origin/path and confirm the corresponding Postmark success record.
 
 The separate `codex/updraft-retention-policy` task worktree was left unchanged. No other repository was modified or committed by this task.

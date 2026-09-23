@@ -16,3 +16,4 @@ compatibility, regression tests and the component QA workflow.
 * Resolve relative WordPress login redirects to the configured custom login URL.
 * Preserve query arguments and default endpoint protection for root and subdirectory installs.
 * Add actual WordPress HTTP coverage for reset, login, logout, registration and reauthentication.
+* Add a main landmark to the custom login screen while preserving existing markup and roles.
