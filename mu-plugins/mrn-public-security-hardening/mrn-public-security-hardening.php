@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Public Security Hardening
  * Description: Shared public hardening for MRN brochure/client sites.
- * Version: 0.4.1
+ * Version: 0.4.2
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION' ) ) {
-	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.4.1' );
+	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.4.2' );
 }
 
 /**
@@ -1217,6 +1217,53 @@ function mrn_public_security_filter_login_related_url( $url, ...$unused ) {
 
 	return mrn_public_security_replace_wp_login_path_in_url( $url );
 }
+
+/**
+ * Resolve core's relative login redirects while serving the custom route.
+ *
+ * wp_safe_redirect() expands relative paths against REQUEST_URI before the
+ * wp_redirect filter runs. Account for both that path and wp_redirect()'s raw
+ * relative target without changing external or unrelated redirect destinations.
+ *
+ * @param mixed $location Redirect destination.
+ * @return mixed
+ */
+function mrn_public_security_filter_custom_login_redirect( $location ) {
+	if ( ! is_string( $location ) || ! mrn_public_security_is_custom_login_request() ) {
+		return $location;
+	}
+
+	$parts = mrn_public_security_parse_url( $location );
+	if ( ! is_array( $parts ) || ! isset( $parts['path'] ) ) {
+		return $location;
+	}
+
+	// Only local path references need repair; keep redirect host validation intact.
+	foreach ( array( 'scheme', 'host', 'port', 'user', 'pass' ) as $authority_part ) {
+		if ( isset( $parts[ $authority_part ] ) ) {
+			return $location;
+		}
+	}
+
+	$custom_path = mrn_public_security_get_custom_login_path();
+	$login_paths = array(
+		'wp-login.php',
+		'./wp-login.php',
+		mrn_public_security_get_wp_login_path(),
+		$custom_path . 'wp-login.php',
+		$custom_path . './wp-login.php',
+	);
+	if ( ! in_array( $parts['path'], $login_paths, true ) ) {
+		return $location;
+	}
+
+	// Preserve the original encoded query and fragment, including redirect_to.
+	$query    = isset( $parts['query'] ) ? '?' . $parts['query'] : '';
+	$fragment = isset( $parts['fragment'] ) ? '#' . $parts['fragment'] : '';
+
+	return mrn_public_security_get_custom_login_url() . $query . $fragment;
+}
+add_filter( 'wp_redirect', 'mrn_public_security_filter_custom_login_redirect' );
 
 /**
  * Filter password-reset email messages to point at the custom login URL.

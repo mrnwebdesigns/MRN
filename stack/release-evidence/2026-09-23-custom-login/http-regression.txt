@@ -1,0 +1,60 @@
+PASS: custom login GET root
+PASS: bare default endpoint remains protected
+PASS: valid lost-password POST generates one captured email then redirects
+PASS: lost-password Location is canonical and absolute
+PASS: confirmation page renders HTTP 200
+PASS: reset email uses configured origin and login slug
+PASS: reset link sets cookie and removes key from URL
+PASS: action=rp renders password form
+PASS: reset form contains key for controlled account
+PASS: action=resetpass completes password change
+PASS: login preserves administrative redirect_to
+PASS: authenticated administrator reaches dashboard
+PASS: dashboard provides nonce-protected logout link
+PASS: logout preserves loggedout and canonical route
+PASS: logged-out confirmation renders
+PASS: administrative reauthentication form renders
+PASS: administrative reauthentication returns to requested admin page
+PASS: enabled registration redirects to canonical confirmation
+PASS: registration confirmation returns HTTP 200
+PASS: explicit non-login reset destination remains unchanged
+PASS: custom login GET blog
+PASS: bare default endpoint remains protected
+PASS: valid lost-password POST generates one captured email then redirects
+PASS: lost-password Location is canonical and absolute
+PASS: confirmation page renders HTTP 200
+PASS: reset email uses configured origin and login slug
+PASS: reset link sets cookie and removes key from URL
+PASS: action=rp renders password form
+PASS: reset form contains key for controlled account
+PASS: action=resetpass completes password change
+PASS: login preserves administrative redirect_to
+PASS: authenticated administrator reaches dashboard
+PASS: dashboard provides nonce-protected logout link
+PASS: logout preserves loggedout and canonical route
+PASS: logged-out confirmation renders
+PASS: administrative reauthentication form renders
+PASS: administrative reauthentication returns to requested admin page
+PASS: enabled registration redirects to canonical confirmation
+PASS: registration confirmation returns HTTP 200
+PASS: explicit non-login reset destination remains unchanged
+PASS: custom login GET cms split home
+PASS: bare default endpoint remains protected
+PASS: valid lost-password POST generates one captured email then redirects
+PASS: lost-password Location is canonical and absolute
+PASS: confirmation page renders HTTP 200
+PASS: reset email uses configured origin and login slug
+PASS: reset link sets cookie and removes key from URL
+PASS: action=rp renders password form
+PASS: reset form contains key for controlled account
+PASS: action=resetpass completes password change
+PASS: login preserves administrative redirect_to
+PASS: authenticated administrator reaches dashboard
+PASS: dashboard provides nonce-protected logout link
+PASS: logout preserves loggedout and canonical route
+PASS: logged-out confirmation renders
+PASS: administrative reauthentication form renders
+PASS: administrative reauthentication returns to requested admin page
+PASS: enabled registration redirects to canonical confirmation
+PASS: registration confirmation returns HTTP 200
+PASS: explicit non-login reset destination remains unchanged

@@ -63,6 +63,7 @@ That command restores the default `site-login` slug safely. The UI also falls ba
 - The plugin preserves WordPress login confirmations, password reset flows, and supported admin reauth flows.
 - Multisite signup and other unrelated core endpoints are left alone unless the core flow generates a login URL that needs rewriting.
 - The custom login route loads the normal WordPress login screen; it does not replace core authentication.
+- Since `0.4.2`, core's relative login redirects are normalized to the absolute custom login URL, including paths expanded by `wp_safe_redirect()`. This fixes lost-password and registration confirmations for root and subdirectory installs. Encoded query arguments and fragments are preserved. Repair is limited to local login paths during custom-route requests; unrelated destinations and competing login plugins retain their behavior.
 - Supported conflict detections include WPS Hide Login, Change WP Admin Login, Rename wp-login.php, Hide My WP, and WP Hide & Security Enhancer. Sites using another login URL plugin should add its plugin file and label through `mrn_public_security_login_conflict_plugins`.
 
 ## Default REST Guarded Routes
@@ -81,6 +82,28 @@ mrn-qa run --project-root /Users/khofmeyer/Development/MRN/mu-plugins/mrn-public
 ```
 
 The committed `.mrn-qa.env`, `stack.lock`, `STACK_BASELINE.md`, `phpcs.xml.dist`, `phpstan.neon.dist`, and Semgrep config make this shared MU plugin scannable as a standalone security plugin while keeping browser/runtime checks tied to explicit site QA.
+
+### Complete regression suite
+
+Run `php tests/login-url-regression.php` for the existing URL, route protection,
+configuration, conflict and admin-menu checks, plus redirect query preservation.
+
+Run `python3 tests/login-http-regression.py --wp-source <clean-wordpress-core>
+--database-config <private-test-database.json>` for actual WordPress HTTP flows.
+The core source must include the `twentytwentyfive` theme. The private JSON file
+supplies `DB_NAME`, `DB_USER`, `DB_PASSWORD`, and `DB_HOST`; use a dedicated,
+disposable database named `mrn_login_test_*` on `127.0.0.1`. Never supply a client
+database. Each case removes its database tables and temporary files afterward.
+
+The HTTP suite exercises root, subdirectory, and split `home`/`siteurl` installs
+with different login slugs. It covers lost-password POST and confirmation,
+captured reset email and link, `rp` and `resetpass`, login, logout, registration,
+administrative reauthentication, explicit return destinations and the blocked
+default endpoint. Mail transport is intercepted; no external message is sent.
+`--expect-bug` proves the original complete reset-to-404 chain on an old source
+checkout (or use `--plugin-source <baseline.php>`). `--mrn-qa-report <report.md>` runs full component MRN QA with browser,
+API, accessibility and performance checks against the disposable root runtime.
+Add `--qa-mode release` after committing the source for the clean release gate.
 
 ## Filters
 

@@ -714,6 +714,38 @@ $_SERVER['REQUEST_URI'] = $request_uri;
 
 mrn_test_assert( true === mrn_public_security_is_custom_login_request(), 'Custom login request was not detected.' );
 
+$redirect_suffixes = array(
+	'?checkemail=confirm',
+	'?checkemail=registered',
+	'?action=lostpassword',
+	'?action=rp&key=test-only&login=test-user',
+	'?action=resetpass',
+	'?loggedout=true',
+	'?reauth=1&redirect_to=https%3A%2F%2Fexample.test%2Fblog%2Fwp-admin%2F%3Fx%3D1%26y%3D2#form',
+);
+foreach ( array( 'wp-login.php', './wp-login.php', '/blog/wp-login.php', '/blog/team-login/wp-login.php', '/blog/team-login/./wp-login.php' ) as $redirect_path ) {
+	foreach ( $redirect_suffixes as $suffix ) {
+		mrn_test_same(
+			'https://example.test/blog/team-login/' . $suffix,
+			apply_filters( 'wp_redirect', $redirect_path . $suffix ),
+			'Custom-route redirect must preserve the original query and fragment.'
+		);
+	}
+}
+
+foreach ( array( false, '', '?action=rp', '/blog/wp-admin/', '/wp-login.php', '/blog/other/wp-login.php', '../other/wp-login.php', 'https://external.test/blog/team-login/wp-login.php?checkemail=confirm', '//external.test/blog/wp-login.php', 'https:wp-login.php' ) as $unrelated_redirect ) {
+	mrn_test_same( $unrelated_redirect, apply_filters( 'wp_redirect', $unrelated_redirect ), 'Unrelated, external, or cancelled redirect must remain unchanged.' );
+}
+
+$_SERVER['REQUEST_URI'] = '/blog/team-login';
+mrn_test_same( 'https://example.test/blog/team-login/?checkemail=confirm', apply_filters( 'wp_redirect', '/blog/wp-login.php?checkemail=confirm' ), 'Slashless custom request must use the canonical trailing slash.' );
+$_SERVER['REQUEST_URI'] = '/blog/ordinary-page/';
+mrn_test_same( 'wp-login.php?checkemail=confirm', apply_filters( 'wp_redirect', 'wp-login.php?checkemail=confirm' ), 'Redirect repair must stay scoped to custom login requests.' );
+$_SERVER['REQUEST_URI'] = $request_uri;
+$GLOBALS['mrn_test_state']['options']['active_plugins'] = array( 'wps-hide-login/wps-hide-login.php' );
+mrn_test_same( 'wp-login.php?checkemail=confirm', apply_filters( 'wp_redirect', 'wp-login.php?checkemail=confirm' ), 'Redirect repair must defer to competing login plugins.' );
+$GLOBALS['mrn_test_state']['options']['active_plugins'] = array();
+
 $GLOBALS['mrn_test_login_screen_loaded'] = false;
 $served = mrn_public_security_maybe_serve_custom_login_request( false );
 mrn_test_assert( true === $served, 'Custom login route did not load the login screen.' );
