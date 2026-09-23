@@ -1,9 +1,9 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.23-tokens-required-fleet`
+- Stack release: `2026.09.23-fleet-readiness`
 - Release date: `2026-09-23`
-- Status: `qualification pending; rollout withheld; no remote deployment`
+- Status: `production-ready for guarded per-site Fleet rollout; no child deployment performed`
 
 ## Included MRN-Owned Components
 - Theme:
@@ -36,7 +36,7 @@
   - `mrn-editor-tools` `1.8.25`
   - `mrn-fontawesome-profile-manager` `0.5.1`
   - `mrn-google-fonts` `1.0.7`
-  - `mrn-hierarchical-menu-taxonomies` `0.1.0`
+  - `mrn-hierarchical-menu-taxonomies` `0.1.1`
   - `mrn-layout-import-export` `0.1.2`
   - `mrn-media-bulk-tools` `0.13.1`
   - `mrn-mega-menu` `0.17.2`

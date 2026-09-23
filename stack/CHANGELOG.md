@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 2026.09.23-fleet-readiness
+
+- `mrn-hierarchical-menu-taxonomies` (`0.1.0` -> `0.1.1`): restored the
+  historical WordPress main-file path as a compatibility bootstrap so package
+  replacements preserve existing activation records.
+- Made release ZIP source discovery work from dedicated Git worktrees by
+  resolving standalone plugin symlinks through the canonical checkout.
+
 ## 2026.09.23-tokens-required-fleet
 
 - Make MRN Tokens platform-required so full Fleet locks and packages include
