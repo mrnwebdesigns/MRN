@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2026.09.23-reference-content-fleet
+
 - Parent theme `1.4.1` restores registered, source-specific Reference Content
   taxonomies, including Content Only Resources. Valid saved taxonomies, term
   slugs, matching modes and cloned ACF field keys are preserved.
@@ -9,6 +11,12 @@
   renderer. Resources can link to their existing file destinations without
   exposing public profiles or archives; disabled links and missing files remain
   unlinked. Unsupported Content Only sources retain their restrictions.
+
+- Preserve the prior immutable custom-login Fleet lock byte-for-byte and retain
+  its complete platform baseline. The merged-source audit identifies no further
+  required standalone deltas; optional-plugin records remain upgrade-only.
+- This release is awaiting required local/runtime qualification and a separately
+  authorized, backup-gated canary. No remote site is updated by preparation.
 
 ## 2026.09.23-custom-login-fleet
 
