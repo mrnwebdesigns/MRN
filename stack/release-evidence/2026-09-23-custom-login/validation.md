@@ -1,6 +1,6 @@
 # Custom-login password-reset redirect correction
 
-Status: source correction prepared as Public Security Hardening 0.4.2. Not deployed. No production password-reset request or account mutation was made.
+Status: Public Security Hardening 0.4.2 merged through PR #87 at `e76b140acf80b91c1dc61a0a4c0316c8cc9ded2c`. Fleet candidate `2026.09.23-custom-login-fleet` is being packaged separately. Not deployed. No production password-reset request or account mutation was made.
 
 ## Root cause and correction
 
@@ -22,12 +22,12 @@ The new scoped `wp_redirect` filter recognizes the raw core relative target, its
 
 ## Production and deployment blockers
 
-- MainWP MCP status verified `connected=true`, Dashboard `wpcontrol.mrndev.io`, 84 abilities. Exact lookup of `https://gloves-online.com/` returned `mainwp_site_not_found`; a current 105-site inventory contains neither Gloves Online nor its formerly recorded temporary-host entry. No remembered site ID was used for a write.
-- The approved alternate REST API credential lookup through Production Hub timed out awaiting the MRN 1Password connection. No replacement credential or direct production file edit was attempted.
+- MainWP MCP connection reverified: `connected=true`, Dashboard `wpcontrol.mrndev.io`, 84 abilities. Gloves Online now resolves at its exact live URL as connected site 117. Targeted sync transport timed out, but readback confirmed a fresh `last_sync` of `2026-09-23T12:32:39+00:00`; the timed-out request was not retried.
+- Read-only qualification confirms supported `template=mrn-base-stack`, `stylesheet=mrn-base-stack-child`, child preservation and schema-2 eligibility. Release preflight is blocked on Deployment Agent `0.2.2` (requires `0.2.3`). Managed UptimeRobot/reCAPTCHA readiness is also false and must be verified after the agent prerequisite is resolved. The runtime reports baseline `2026.09.14-media-bulk-platform-required` with Config Helper and Universal Sticky Bar drift, no missing required components, no legacy collisions and no incomplete rollouts. This is current target qualification, not deployment acceptance.
 - Production browser readback confirmed the nested URL displays the site's 404 page, while both canonical and legacy confirmation URLs display the WordPress email-confirmation page. Initial urllib probes were rejected with HTTP 403. Follow-up curl checks using a normal browser User-Agent verified the nested URL is HTTP 404, canonical and legacy confirmation URLs are HTTP 200, and bare `/wp-login.php` remains HTTP 404. These are pre-deployment checks only.
 - A controlled production test mailbox/account is still needed. No real administrator or customer was reset. No live reset email, reset key or Postmark message was generated or inspected for this change.
-- Backup receipt/checksum: NONE. No deployment was attempted; create and verify the required labeled, remote Updraft database backup immediately before the first approved remote mutation after readiness is restored. Prior unrelated backup receipts are not reusable.
-- Deployment status: NOT DEPLOYED. No Stack release identifier, immutable release-lock checksum, deployed package or production success claim exists for this correction yet.
+- Backup receipt/checksum: NONE. No deployment was attempted; create and verify the required labeled, remote Updraft database backup immediately before the first approved remote mutation after target readiness is established. Prior unrelated backup receipts are not reusable.
+- Deployment status: NOT DEPLOYED. The correction is being promoted as `2026.09.23-custom-login-fleet`; exact lock/package checksums will be recorded in the generated build receipt. No deployed package or production success is claimed.
 
 ## Fleet impact
 
@@ -37,6 +37,9 @@ All Stack sites using the affected custom-login handler share this code defect, 
 
 ## Remaining work
 
-The component accessibility blocker is resolved. Restore an exact, verified Gloves Online deployment route and provide the controlled test mailbox. Then merge accepted source, promote from clean current merged main, reconcile versions/notes/immutable lock, build deterministic artifacts and record checksums, qualify the target, take the fresh remote backup, deploy through approved Stack tooling and read back installed hashes. Finally submit the controlled reset, verify canonical HTTP 200, validate the secret-free reset-link origin/path and confirm the corresponding Postmark success record.
+The component accessibility and MainWP lookup blockers are resolved. Complete the immutable candidate reconciliation and deterministic build. Before a Gloves apply, resolve the agent prerequisite and managed-credential readiness through approved, backup-gated tooling; run exact-plan preflight; provide a controlled test mailbox; take the fresh remote backup; deploy through approved Stack tooling and read back installed hashes. Finally submit the controlled reset, verify canonical HTTP 200, validate the secret-free reset-link origin/path and confirm the corresponding Postmark success record. No real administrator or customer account is authorized for this test.
+
+Full source/package contract tests: 27 release-tool tests passed, initially with one optional cross-repository test skipped for absent environment arguments. The builder suite was then rerun with both actual controller and child-agent validator roots: all 5 passed, including that integration. All 8 promotion tests passed. No deployment tooling or Config Helper behavior changed. The component QA engine correctly skips remote fleet parity, unrelated theme/licensing gates and absent npm/Composer/PHPUnit suites; these skips do not waive per-site preflight or runtime acceptance. INP was not measured. The six required standalone repositories were fetched and verified clean, at merged main, with no unmerged branches and no baseline drift.
+
 
 The separate `codex/updraft-retention-policy` task worktree was left unchanged. No other repository was modified or committed by this task.

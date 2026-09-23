@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+## 2026.09.23-custom-login-fleet
+
+- Public Security Hardening and its MU wrapper (`0.4.1` -> `0.4.2`): normalize
+  core's relative password-reset and registration confirmation redirects to the
+  absolute configured login URL. Preserve query arguments, reset links, default
+  endpoint protection, competing-plugin behavior and subdirectory installations.
+- Add a main landmark to the existing custom-route login container with the
+  WordPress HTML processor, preserving existing landmarks, roles and form data.
+- Add complete real WordPress HTTP regression coverage across three installation
+  layouts: login, logout, reset request and completion, registration and admin
+  reauthentication. Full component and clean release MRN QA pass.
+- Retain the remaining complete Fleet baseline and archive the prior immutable
+  lock byte-for-byte before generating the new lock. This is release preparation;
+  no Dashboard or child-site deployment is included.
+
 ## 2026.09.16-layout-classes-fleet
 
 - `mrn-base-stack` (`1.3.5` -> `1.4.0`) and

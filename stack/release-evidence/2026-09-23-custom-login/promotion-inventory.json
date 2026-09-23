@@ -1,0 +1,127 @@
+{
+  "baseline": {
+    "release_id": "2026.09.16-layout-classes-fleet",
+    "source_commit": "e89452f4869bcd86ba7385ed3790cf8b932f274f"
+  },
+  "blockers": [
+    "Merged main contains stack changes not represented by the current release lock"
+  ],
+  "candidate": null,
+  "generated_at": "2026-09-23T12:34:22Z",
+  "inventory": {
+    "deployment_contracts": [],
+    "external_required_sources": [
+      {
+        "approved_selective_version": null,
+        "default_commit": "124dcfd22ce867900b878f5b82c5854f5f93a029",
+        "default_ref": "refs/remotes/origin/main",
+        "locked_commit": "124dcfd22ce867900b878f5b82c5854f5f93a029",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrn-config-helper",
+        "slug": "mrn-config-helper",
+        "status": "match"
+      },
+      {
+        "approved_selective_version": null,
+        "default_commit": "7c303fb50b35d798ad1e00d3e98682af2158353a",
+        "default_ref": "refs/remotes/origin/main",
+        "locked_commit": "7c303fb50b35d798ad1e00d3e98682af2158353a",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-media-bulk-tools",
+        "repository": "mrn-media-bulk-tools",
+        "slug": "mrn-media-bulk-tools",
+        "status": "match"
+      },
+      {
+        "approved_selective_version": null,
+        "default_commit": "89d1999381c2b94cad005835f133651a46f8eda2",
+        "default_ref": "refs/remotes/origin/main",
+        "locked_commit": "89d1999381c2b94cad005835f133651a46f8eda2",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-schema-bridge",
+        "repository": "mrn-schema-bridge",
+        "slug": "mrn-schema-bridge",
+        "status": "match"
+      },
+      {
+        "approved_selective_version": null,
+        "default_commit": "7465010230c23c1d901ba382b88be36e93dc0022",
+        "default_ref": "refs/remotes/origin/main",
+        "locked_commit": "7465010230c23c1d901ba382b88be36e93dc0022",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-sendgrid-provisioning",
+        "repository": "mrn-sendgrid-provisioning",
+        "slug": "mrn-sendgrid-provisioning",
+        "status": "match"
+      },
+      {
+        "approved_selective_version": null,
+        "default_commit": "c9898688a64df53858cbc485b01386cc0246be1c",
+        "default_ref": "refs/remotes/origin/main",
+        "locked_commit": "c9898688a64df53858cbc485b01386cc0246be1c",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
+        "repository": "mrn-stack-deployment-agent",
+        "slug": "mrn-stack-deployment-agent",
+        "status": "match"
+      },
+      {
+        "approved_selective_version": null,
+        "default_commit": "696e261cccc76cacad9c7fe54eac6c48758a70ff",
+        "default_ref": "refs/remotes/origin/main",
+        "locked_commit": "696e261cccc76cacad9c7fe54eac6c48758a70ff",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar",
+        "repository": "mrn-universal-sticky-bar",
+        "slug": "mrn-universal-sticky-bar",
+        "status": "match"
+      }
+    ],
+    "independent_release_units": [],
+    "other_changes": [
+      "stack/release-evidence/2026-09-23-custom-login/baseline-http-regression.txt",
+      "stack/release-evidence/2026-09-23-custom-login/component-qa.md",
+      "stack/release-evidence/2026-09-23-custom-login/http-regression.txt",
+      "stack/release-evidence/2026-09-23-custom-login/release-qa.md",
+      "stack/release-evidence/2026-09-23-custom-login/runtime-qa.md",
+      "stack/release-evidence/2026-09-23-custom-login/validation.md"
+    ],
+    "release_metadata": [
+      "stack/manifests/component-catalog.json",
+      "stack/manifests/stack-release.lock.json"
+    ],
+    "required_components": [
+      {
+        "changed_files": [
+          "mu-plugins/mrn-public-security-hardening/README.md",
+          "mu-plugins/mrn-public-security-hardening/mrn-public-security-hardening.php",
+          "mu-plugins/mrn-public-security-hardening/readme.txt",
+          "mu-plugins/mrn-public-security-hardening/stack.lock",
+          "mu-plugins/mrn-public-security-hardening/tests/login-http-regression.py",
+          "mu-plugins/mrn-public-security-hardening/tests/login-landmark-regression.php",
+          "mu-plugins/mrn-public-security-hardening/tests/login-url-regression.php"
+        ],
+        "runtime_type": "mu-component",
+        "slug": "mrn-public-security-hardening",
+        "source_path": "mu-plugins/mrn-public-security-hardening",
+        "target_tier": "platform-required"
+      },
+      {
+        "changed_files": [
+          "stack/mu-plugins/mrn-public-security-hardening.php"
+        ],
+        "runtime_type": "mu-loader",
+        "slug": "mrn-public-security-hardening-loader",
+        "source_path": "stack/mu-plugins/mrn-public-security-hardening.php",
+        "target_tier": "platform-required"
+      }
+    ],
+    "untracked_deployables": []
+  },
+  "lock_changes": [],
+  "mode": "audit",
+  "repository": {
+    "branch": "codex/custom-login-fleet-release",
+    "clean": true,
+    "head": "e76b140acf80b91c1dc61a0a4c0316c8cc9ded2c",
+    "origin_main": "e76b140acf80b91c1dc61a0a4c0316c8cc9ded2c"
+  },
+  "schema_version": 1,
+  "status": "blocked",
+  "warnings": []
+}
