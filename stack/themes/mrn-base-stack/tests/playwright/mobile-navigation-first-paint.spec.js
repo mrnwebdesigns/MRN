@@ -85,6 +85,7 @@ test('drawer, nested links, keyboard focus, and resize still work', async ({ pag
 	await expect(page.locator('body')).not.toHaveClass(/mrn-mobile-navigation-locked/);
 	await page.setViewportSize({ width: 390, height: 844 });
 	await expect(nav).toHaveAttribute('data-mrn-mobile-active', 'true');
+	await expect(nav.locator('.mrn-mobile-navigation__panel')).toBeHidden();
 	const closed = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
 	expect(closed.violations).toEqual([]);
 	await toggle.click();
