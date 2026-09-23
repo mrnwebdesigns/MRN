@@ -5,20 +5,20 @@
   "releases": [
     {
       "slug": "mrn-cookie-consent",
-      "version": "1.1.44",
+      "version": "1.1.45",
       "target_tier": "optional-integration",
       "current_distribution": "catalog-only",
       "source": {
         "repository": "mrnwebdesigns/mrn-cookie-consent",
         "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent",
-        "git_commit": "6e998890c18c0567196613b970fea8d8e91786b4"
+        "git_commit": "f939c903ab6f44ad2c1373761242205fd2d067c5"
       },
       "package": {
         "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent/zip/mrn-cookie-consent.zip",
         "filename": "mrn-cookie-consent.zip",
         "main_file": "mrn-cookie-consent/mrn-cookie-consent.php",
-        "size_bytes": 62055,
-        "sha256": "fe28ba9acc6702714889b49911a77413d8bab89d58bddfcc6c9e6765a2ca2cb2"
+        "size_bytes": 62161,
+        "sha256": "59aa760ea99d34d9b5eb084247ce1c2ec650fb9ff6cc001a7bf1972c8fa498a5"
       },
       "update_policy": {
         "mode": "upgrade-only",
