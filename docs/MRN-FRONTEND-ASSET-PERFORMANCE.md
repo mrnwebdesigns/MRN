@@ -41,6 +41,30 @@ plugin's styles on the strength of one homepage audit.
   rolling period and will not immediately reflect a deployment.
 - Do not postpone spam protection, wishlist state, consent, or other required
   behavior just to improve an initial-load score.
+- A replay must preserve compressed transfer size. Fulfilling an intercepted
+  HTML request with decoded text makes Lighthouse model an uncompressed
+  document; this can invalidate comparisons that inline CSS into the HTML.
+- Include actual network throttling in rendering checks. Lighthouse's default
+  simulated network model can miss races that only occur when stylesheet
+  delivery is genuinely delayed. Keep local and Google scores separate.
+
+## Consent UI must have its styles before it renders
+
+Do not make an overlay's structural stylesheet asynchronous unless its runtime
+waits for that stylesheet or sufficient critical styles preserve its geometry.
+The consent defaults and tracking gates must remain active during any UI delay.
+
+Gloves Online had a live-only child filter that changed the consent stylesheet
+to `media="print"` with an `onload` switch. On an actually throttled connection,
+the scripts inserted an unstyled banner into document flow before CSS made it
+fixed. Two baseline tests produced CLS 0.650; restoring the ordinary stylesheet
+link produced CLS 0.0004 in both comparisons. The canonical child source already
+used ordinary loading, so the repair removes only the divergent runtime filter.
+This is a layout-stability result, not proof of a Google score increase.
+
+Test fresh and returning visitors, persisted rejection, consent defaults, menu
+keyboard behavior, and mobile/desktop layouts. Do not resolve this race by
+removing the banner or disabling consent enforcement.
 
 ## Gloves Online example, September 2026
 
