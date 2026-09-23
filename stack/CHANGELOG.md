@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2026.09.23-fleet-readiness
+
 - `mrn-hierarchical-menu-taxonomies` (`0.1.0` -> `0.1.1`): restored the
   historical WordPress main-file path as a compatibility bootstrap so package
   replacements preserve existing activation records.
