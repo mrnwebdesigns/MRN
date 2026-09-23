@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Public Security Hardening
  * Description: Shared public hardening for MRN brochure/client sites.
- * Version: 0.4.1
+ * Version: 0.4.2
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION' ) ) {
-	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.4.1' );
+	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.4.2' );
 }
 
 /**
@@ -1219,6 +1219,53 @@ function mrn_public_security_filter_login_related_url( $url, ...$unused ) {
 }
 
 /**
+ * Resolve core's relative login redirects while serving the custom route.
+ *
+ * wp_safe_redirect() expands relative paths against REQUEST_URI before the
+ * wp_redirect filter runs. Account for both that path and wp_redirect()'s raw
+ * relative target without changing external or unrelated redirect destinations.
+ *
+ * @param mixed $location Redirect destination.
+ * @return mixed
+ */
+function mrn_public_security_filter_custom_login_redirect( $location ) {
+	if ( ! is_string( $location ) || ! mrn_public_security_is_custom_login_request() ) {
+		return $location;
+	}
+
+	$parts = mrn_public_security_parse_url( $location );
+	if ( ! is_array( $parts ) || ! isset( $parts['path'] ) ) {
+		return $location;
+	}
+
+	// Only local path references need repair; keep redirect host validation intact.
+	foreach ( array( 'scheme', 'host', 'port', 'user', 'pass' ) as $authority_part ) {
+		if ( isset( $parts[ $authority_part ] ) ) {
+			return $location;
+		}
+	}
+
+	$custom_path = mrn_public_security_get_custom_login_path();
+	$login_paths = array(
+		'wp-login.php',
+		'./wp-login.php',
+		mrn_public_security_get_wp_login_path(),
+		$custom_path . 'wp-login.php',
+		$custom_path . './wp-login.php',
+	);
+	if ( ! in_array( $parts['path'], $login_paths, true ) ) {
+		return $location;
+	}
+
+	// Preserve the original encoded query and fragment, including redirect_to.
+	$query    = isset( $parts['query'] ) ? '?' . $parts['query'] : '';
+	$fragment = isset( $parts['fragment'] ) ? '#' . $parts['fragment'] : '';
+
+	return mrn_public_security_get_custom_login_url() . $query . $fragment;
+}
+add_filter( 'wp_redirect', 'mrn_public_security_filter_custom_login_redirect' );
+
+/**
  * Filter password-reset email messages to point at the custom login URL.
  *
  * @param mixed  $message    Message body.
@@ -1562,6 +1609,40 @@ function mrn_public_security_block_default_login_request( $return_only = false )
 add_action( 'init', 'mrn_public_security_block_default_login_request', 0 );
 
 /**
+ * Give the core login container a main landmark without changing its structure.
+ *
+ * Used only as the output handler for MRN's custom login route. Preserve an
+ * existing landmark or explicit container role supplied by core or integrations.
+ *
+ * @param string $html Core login response HTML.
+ * @return string
+ */
+function mrn_public_security_add_login_landmark( $html ) {
+	if ( ! class_exists( 'WP_HTML_Tag_Processor' ) ) {
+		return $html;
+	}
+
+	$tags = new WP_HTML_Tag_Processor( $html );
+	while ( $tags->next_tag() ) {
+		if ( 'MAIN' === $tags->get_tag() || 'main' === $tags->get_attribute( 'role' ) ) {
+			return $html;
+		}
+	}
+
+	$tags = new WP_HTML_Tag_Processor( $html );
+	while ( $tags->next_tag( 'DIV' ) ) {
+		if ( 'login' === $tags->get_attribute( 'id' ) ) {
+			if ( null === $tags->get_attribute( 'role' ) ) {
+				$tags->set_attribute( 'role', 'main' );
+			}
+			return $tags->get_updated_html();
+		}
+	}
+
+	return $html;
+}
+
+/**
  * Load the normal WordPress login screen for the custom slug.
  *
  * @param bool $exit Optional test mode that skips the final exit.
@@ -1572,7 +1653,18 @@ function mrn_public_security_maybe_serve_custom_login_request( $exit = true ) {
 		return false;
 	}
 
+	$buffer_level = ob_get_level();
+	$buffering    = class_exists( 'WP_HTML_Tag_Processor' )
+		&& apply_filters( 'mrn_public_security_login_landmark_enabled', true )
+		&& ob_start( 'mrn_public_security_add_login_landmark' );
+
 	require ABSPATH . 'wp-login.php'; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingCustomConstant -- Core login screen handoff for the custom login slug.
+
+	// Core redirects can exit earlier; PHP then flushes the handler at shutdown.
+	// Leave any integration-owned nested buffers to their normal shutdown order.
+	if ( $buffering && ob_get_level() === $buffer_level + 1 ) {
+		ob_end_flush();
+	}
 
 	if ( $exit ) {
 		exit;

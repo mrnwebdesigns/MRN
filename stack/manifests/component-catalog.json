@@ -135,7 +135,7 @@
     {
       "slug": "mrn-public-security-hardening",
       "name": "MRN Public Security Hardening",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "runtime_type": "mu-component",
       "classification": "platform-policy",
       "lifecycle": "supported",
@@ -237,7 +237,7 @@
     {
       "slug": "mrn-public-security-hardening-loader",
       "name": "MRN Public Security Hardening Loader",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "runtime_type": "mu-loader",
       "classification": "platform-loader",
       "lifecycle": "supported",

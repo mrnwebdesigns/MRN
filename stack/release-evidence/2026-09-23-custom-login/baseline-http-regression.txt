@@ -1,0 +1,15 @@
+PASS: custom login GET root
+PASS: bare default endpoint remains protected
+PASS: valid lost-password POST generates one captured email then redirects
+PASS: baseline reproduces nested core redirect
+PASS: baseline complete redirect chain ends at 404
+PASS: custom login GET blog
+PASS: bare default endpoint remains protected
+PASS: valid lost-password POST generates one captured email then redirects
+PASS: baseline reproduces nested core redirect
+PASS: baseline complete redirect chain ends at 404
+PASS: custom login GET cms split home
+PASS: bare default endpoint remains protected
+PASS: valid lost-password POST generates one captured email then redirects
+PASS: baseline reproduces nested core redirect
+PASS: baseline complete redirect chain ends at 404
