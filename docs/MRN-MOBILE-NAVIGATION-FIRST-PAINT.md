@@ -14,7 +14,9 @@ configured mode before first paint. It waits for `DOMContentLoaded` before
 enhancing the complete menu and its submenus. No child header hook is required.
 
 This trades a small amount of inline HTML for eliminating a separate controller
-request and the race between first paint and footer initialization. It does not
+request and the race between first paint and footer initialization. The drawer
+transition is enabled on the first deliberate opening so enhancement itself
+does not animate the expanded fallback into its hidden position. It does not
 change page content, design, or the configured mobile breakpoint.
 
 ## Contracts to preserve
@@ -36,9 +38,10 @@ change page content, design, or the configured mobile breakpoint.
 `stack/themes/mrn-base-stack/tests/playwright/mobile-navigation-first-paint.spec.js`
 streams a real controller/style fixture and delays the document tail. This
 makes the initial layout observable before `DOMContentLoaded` rather than
-testing only the final rendered state. Eight tests cover widths below, at, and
+testing only the final rendered state. Nine tests cover widths below, at, and
 above a custom breakpoint, desktop, menu interaction, axe WCAG A/AA checks,
-JavaScript-disabled navigation, legacy placement, and incomplete markup.
+JavaScript-disabled navigation, legacy placement, initial transition suppression,
+and incomplete markup.
 
 From the theme directory, with the existing Playwright and axe dependencies:
 
@@ -72,15 +75,18 @@ assets remain and must be evaluated separately.
 
 These are local comparisons, not post-deployment PageSpeed Insights results.
 The snapshot bypasses the production document response and its TTFB, and the
-local Lighthouse version differs from Google's. Eight browser regression tests
-and changed-file MRN static QA passed. Local WordPress database connectivity and
-production SSH authentication blocked full runtime/deployment verification.
+local Lighthouse version differs from Google's. The initial eight browser regression tests and changed-file MRN static QA
+passed. A ninth test subsequently covered initial transition suppression while
+preserving user-triggered opening/closing animation.
 
 ## Release scope
 
-This is an isolated shared-parent source fix, not a Stack promotion or a
-verified production deployment. Gloves currently reports parent 1.3.3 while
-the source theme is 1.4.0; do not deploy the entire newer theme to test this
+This is an isolated shared-parent source fix, not a Stack promotion. The first
+two-file canary was deployed to Gloves on 23 September after a remote database
+backup and checksum validation. Live navigation and accessibility checks passed,
+but fast-load observation identified an initial drawer transition that is now
+covered by the additional guard and regression test. Gloves reports parent 1.3.3
+while the source theme is 1.4.0; do not deploy the entire newer theme to test this
 change. Verify the exact production source, prepare the narrow reviewed patch
 and rollback files, pass the labeled remote Updraft backup gate, and verify
 emitted HTML, navigation, and repeated mobile/desktop PSI after deployment.

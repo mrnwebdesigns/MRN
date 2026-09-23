@@ -152,6 +152,7 @@
 	}
 
 	function openDrawer() {
+		navigation.dataset.mrnMobileInteracted = 'true';
 		updateOffset();
 		restoreFocus = document.activeElement;
 		scrollY = window.scrollY || 0;

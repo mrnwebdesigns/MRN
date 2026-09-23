@@ -112,6 +112,26 @@ test('older footer placement remains functional', async ({ page }) => {
 	await expect(page.locator('nav > .menu-toggle')).toHaveAttribute('aria-expanded', 'true');
 });
 
+test('initial enhancement stays still and user-triggered drawer motion remains available', async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.addInitScript(() => {
+		window.initialDrawerTransitions = [];
+		document.addEventListener('transitionrun', event => {
+			if (event.target.classList.contains('mrn-mobile-navigation__panel')) window.initialDrawerTransitions.push(event.propertyName);
+		});
+	});
+	await page.goto(`${origin}/?late=1`);
+	const panel = page.locator('.mrn-mobile-navigation__panel');
+	expect(await panel.evaluate(element => getComputedStyle(element).visibility)).toBe('hidden');
+	expect(await panel.evaluate(element => getComputedStyle(element).transitionDuration)).toBe('0s');
+	expect(await page.evaluate(() => window.initialDrawerTransitions)).toEqual([]);
+	await page.getByRole('button', { name: 'Open navigation', exact: true }).click();
+	expect(await panel.evaluate(element => getComputedStyle(element).transitionDuration)).not.toBe('0s');
+	await expect(panel).toBeVisible();
+	await page.keyboard.press('Escape');
+	await expect(panel).toBeHidden();
+});
+
 test('incomplete navigation falls back to its unenhanced state', async ({ page }) => {
 	await page.goto(`${origin}/?missing=1`);
 	await expect(page.locator('nav')).not.toHaveAttribute('data-mrn-mobile-active');
