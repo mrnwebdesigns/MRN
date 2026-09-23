@@ -81,15 +81,27 @@ preserving user-triggered opening/closing animation.
 
 ## Release scope
 
-This is an isolated shared-parent source fix, not a Stack promotion. The first
-two-file canary was deployed to Gloves on 23 September after a remote database
-backup and checksum validation. Live navigation and accessibility checks passed,
-but fast-load observation identified an initial drawer transition that is now
-covered by the additional guard and regression test. Gloves reports parent 1.3.3
-while the source theme is 1.4.0; do not deploy the entire newer theme to test this
-change. Verify the exact production source, prepare the narrow reviewed patch
-and rollback files, pass the labeled remote Updraft backup gate, and verify
-emitted HTML, navigation, and repeated mobile/desktop PSI after deployment.
+This is an isolated shared-parent source fix, not a Stack promotion. The complete
+three-file canary was deployed to Gloves on 23 September after verified remote
+database backups and exact pre/post checksums. Live navigation and accessibility
+checks passed on the homepage, category, and product at 412px and 1366px. The
+homepage recorded no navigation-related shift; unrelated filter/gallery shifts
+remain on commerce pages. Final public HTML contains one head controller, and
+the public CSS checksum matches the reviewed file.
+
+Live Google PSI immediately before deployment scored mobile 55 / desktop 99;
+the final 09:48 EDT report scored mobile 57 / desktop 94, with mobile FCP 8.3 s,
+LCP 11.7 s, and CLS 0. Both devices scored 100 accessibility, 96 best practices,
+and 100 SEO. A repeat request returned the same capture and is not an independent
+sample. This repair fixes layout stability, but no large live score improvement
+is established: the remaining mobile initial-render delay needs separate work.
+
+[Final PSI report](https://pagespeed.web.dev/analysis/https-gloves-online-com/r05nqwzaby?form_factor=mobile).
+
+Gloves retains parent 1.3.3 with a narrow backport; shared source is 1.4.0. Future
+canaries must verify exact production source, preserve unrelated differences,
+prepare rollback files, pass the remote Updraft backup gate, and verify emitted
+HTML, navigation, and PSI. Do not deploy an entire newer theme to measure one fix.
 
 Carry the change through the normal merged-source Stack promotion and immutable
 release process before claiming it has reached the fleet. Keep subsequent
