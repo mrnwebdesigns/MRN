@@ -271,7 +271,8 @@
 			var $postTypeField = getContentListField( $row, 'list_post_type' );
 			var $linkField = getContentListField( $row, 'link_items' );
 			var postType = String( getContentListSelect( $postTypeField ).val() || '' );
-			var isContentOnly = contentOnlyPostTypes.indexOf( postType ) !== -1;
+			var linkSupport = config.contentListLinkSupport || {};
+			var linksDisabled = Object.prototype.hasOwnProperty.call( linkSupport, postType ) ? ! linkSupport[ postType ] : contentOnlyPostTypes.indexOf( postType ) !== -1;
 			var $checkbox = $linkField.find( 'input[type="checkbox"]' ).first();
 			var $note = $linkField.find( '.mrn-content-list-link-note' ).first();
 
@@ -280,11 +281,11 @@
 			}
 
 			$linkField
-				.toggleClass( 'mrn-content-list-links-disabled', isContentOnly )
-				.attr( 'aria-disabled', isContentOnly ? 'true' : 'false' );
-			$checkbox.prop( 'disabled', isContentOnly );
+				.toggleClass( 'mrn-content-list-links-disabled', linksDisabled )
+				.attr( 'aria-disabled', linksDisabled ? 'true' : 'false' );
+			$checkbox.prop( 'disabled', linksDisabled );
 
-			if ( isContentOnly ) {
+			if ( linksDisabled ) {
 				if ( ! $note.length ) {
 					$note = $( '<p />' )
 						.addClass( 'description mrn-content-list-link-note' )
@@ -292,7 +293,7 @@
 						.appendTo( $linkField.find( '> .acf-input' ).first() );
 				}
 
-				$note.text( config.contentOnlyLinksDisabledText || 'Content Only items do not have public profile URLs, so item links are disabled.' );
+				$note.text( config.contentOnlyLinksDisabledText || 'This content source has no supported item destinations, so item links are disabled.' );
 				return;
 			}
 
@@ -556,6 +557,18 @@
 			}
 
 			if ( $taxonomySelect.length ) {
+				var hasTaxonomies = Object.keys( allowedTaxonomies ).length > 0;
+				var $taxonomyNote = $taxonomyField.find( '.mrn-content-list-taxonomy-note' ).first();
+
+				if ( ! hasTaxonomies && ! $taxonomyNote.length ) {
+					$taxonomyNote = $( '<p />' ).addClass( 'description mrn-content-list-taxonomy-note' ).attr( 'role', 'note' ).appendTo( $taxonomyField.find( '> .acf-input' ).first() );
+				}
+				if ( hasTaxonomies ) {
+					$taxonomyNote.remove();
+				} else {
+					$taxonomyNote.text( config.contentListNoTaxonomiesText || 'This content source has no eligible filter taxonomies. Choose No Filter or specific content.' );
+				}
+
 				if ( taxonomy && ! Object.prototype.hasOwnProperty.call( allowedTaxonomies, taxonomy ) ) {
 					taxonomy = '';
 				}
@@ -569,7 +582,7 @@
 
 				taxonomyUiChanged = rebuildSelectOptions( $taxonomySelect, allowedTaxonomies, taxonomy, {
 					allowBlank: true,
-					blankLabel: 'Select'
+					blankLabel: hasTaxonomies ? 'Select' : 'No filter taxonomies'
 				} );
 
 				if ( taxonomyUiChanged ) {

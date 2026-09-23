@@ -2,6 +2,43 @@
 
 ## Unreleased
 
+## 2026.09.23-fleet-readiness
+
+- `mrn-hierarchical-menu-taxonomies` (`0.1.0` -> `0.1.1`): restored the
+  historical WordPress main-file path as a compatibility bootstrap so package
+  replacements preserve existing activation records.
+- Made release ZIP source discovery work from dedicated Git worktrees by
+  resolving standalone plugin symlinks through the canonical checkout.
+
+## 2026.09.23-tokens-required-fleet
+
+- Make MRN Tokens platform-required so full Fleet locks and packages include
+  the plugin already required by bootstrap. The Tokens admin area, custom
+  values, shortcode, providers and authenticated REST registry are retained.
+- MRN Tokens `0.1.4` adds WordPress release metadata and deterministic package
+  exclusions. No token option migration or frontend behavior change is needed.
+- Document and package the existing guarded install-and-activate prerequisite
+  for sites missing Tokens, including Gloves Online. Full preflight continues
+  to require active standard plugins; no readiness check is bypassed.
+- Preserve the complete Reference Content Fleet baseline and its unresolved
+  qualification gates. This release preparation performs no remote deployment.
+
+## 2026.09.23-reference-content-fleet
+
+- Parent theme `1.4.1` restores registered, source-specific Reference Content
+  taxonomies, including Content Only Resources. Valid saved taxonomies, term
+  slugs, matching modes and cloned ACF field keys are preserved.
+- Reference Content shares a destination capability between the editor and
+  renderer. Resources can link to their existing file destinations without
+  exposing public profiles or archives; disabled links and missing files remain
+  unlinked. Unsupported Content Only sources retain their restrictions.
+
+- Preserve the prior immutable custom-login Fleet lock byte-for-byte and retain
+  its complete platform baseline. The merged-source audit identifies no further
+  required standalone deltas; optional-plugin records remain upgrade-only.
+- This release is awaiting required local/runtime qualification and a separately
+  authorized, backup-gated canary. No remote site is updated by preparation.
+
 ## 2026.09.23-custom-login-fleet
 
 - Public Security Hardening and its MU wrapper (`0.4.1` -> `0.4.2`): normalize

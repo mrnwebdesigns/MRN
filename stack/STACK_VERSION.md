@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.23-custom-login-fleet`
+- Stack release: `2026.09.23-fleet-readiness`
 - Release date: `2026-09-23`
-- Status: `release candidate; site deployment and runtime verification pending`
+- Status: `production-ready for guarded per-site Fleet rollout; no child deployment performed`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.4.0`
+  - `mrn-base-stack` `1.4.1`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -36,7 +36,7 @@
   - `mrn-editor-tools` `1.8.25`
   - `mrn-fontawesome-profile-manager` `0.5.1`
   - `mrn-google-fonts` `1.0.7`
-  - `mrn-hierarchical-menu-taxonomies` `0.1.0`
+  - `mrn-hierarchical-menu-taxonomies` `0.1.1`
   - `mrn-layout-import-export` `0.1.2`
   - `mrn-media-bulk-tools` `0.13.1`
   - `mrn-mega-menu` `0.17.2`
@@ -45,7 +45,7 @@
   - `mrn-seo-helper` `0.5.0`
   - `mrn-stack-deployment-agent` `0.2.3`
   - `mrn-template-inspector` `0.2.7`
-  - `mrn-tokens` `0.1.3`
+  - `mrn-tokens` `0.1.4` (platform-required)
   - `mrn-universal-sticky-bar` `1.1.10`
 
 - Profile-gated standard plugins:
@@ -58,12 +58,25 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- MRN Tokens `0.1.4` is a required Stack component. The immutable lock and full
+  Fleet payload include its exact standalone source. The release adds metadata
+  and package exclusions without changing token behavior or saved settings.
+  Missing sites require the approved install-and-activate prerequisite before
+  full preflight; see `docs/releases/2026.09.23-tokens-required-fleet.md`.
+- Parent theme `1.4.1` restores the registered Reference Content taxonomy map and
+  shared editor/renderer destination support. Resources retain Content Only
+  behavior and link to valid files only when item links are enabled; missing
+  files remain unlinked. Existing ACF keys, clones and styling hooks are retained.
+- Source/task checks pass. Required exact-candidate release QA and canary
+  qualification are separate gates; local full-site contrast/timing findings and
+  MainWP sync timeouts observed during task QA require resolution or verified
+  requalification before rollout. See `docs/releases/2026.09.23-reference-content-fleet.md`.
 - Public Security Hardening `0.4.2` canonicalizes relative WordPress redirects
   while serving the configured custom login route, including subdirectory and
   split home/siteurl installs. Default endpoint protection and encoded query
   arguments are preserved. The existing login container gains a main landmark
   without altering its structure. Component release QA and real HTTP flows pass.
-- This candidate retains all other component versions and exact source trees
+- Apart from MRN Tokens, this candidate retains all other component versions and exact source trees
   from the prior complete Fleet release. Site qualification, prerequisites,
   fresh remote backup and post-deployment verification remain required.
 - This file tracks the current stack baseline, not every historical package ever shipped.
@@ -109,7 +122,7 @@
   component and is also registered as an exact one-site, upgrade-only Fleet
   release. Missing installations remain a hard stop rather than an implicit
   install request.
-- Parent theme `1.4.0` adds the shared Layout Class field and outer-element
+- Parent theme `1.4.1` retains the shared Layout Class field and outer-element
   rendering contract on top of the Events and cloned-ACF-AJAX baseline.
 - Selective Stack planning retains the exact signed locks reported by currently
   qualified Fleet sites, plus the subsequent reviewed baselines, and

@@ -43,7 +43,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 | `mrn-editor-tools` | 1.8.25 | Standard bootstrap | Optional shared | Classic Editor, TinyMCE, and ACF WYSIWYG enhancements. |
 | `mrn-mega-menu` | 0.17.2 | Standard bootstrap | Optional shared | Accessible content-rich mega-menu administration and rendering. |
 | `mrn-reusable-block-library` | 0.2.0 | Independent repository (`mrnwebdesigns/mrn-reusable-block-library`) via MRN-plugins symlink; Stack-profile bootstrap plus checksum-locked one-site release | Optional shared | Shared reusable block content types and render helpers, including sanitized outer-layout classes. |
-| `mrn-tokens` | 0.1.3 | Independent repository (`mrnwebdesigns/mrn-tokens`) via MRN-plugins symlink | Optional shared | Reusable content-token registry, shortcode, and authenticated REST API. |
+| `mrn-tokens` | 0.1.4 | Independent repository (`mrnwebdesigns/mrn-tokens`) via MRN-plugins symlink | Platform required | Reusable content-token registry, shortcode, and authenticated REST API; required in bootstrap and full Fleet releases. |
 
 ## Optional Integration Adapters
 
@@ -55,7 +55,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 | `mrn-cookie-consent` | 1.1.43 | Independent repository (`mrnwebdesigns/mrn-cookie-consent`); catalog-only with a merged checksum-locked release entry | Optional integration | Silktide and Google Consent Mode. |
 | `mrn-fontawesome-profile-manager` | 0.5.1 | Standard bootstrap; checksum-locked one-site release | Optional integration | Font Awesome profiles and local assets. |
 | `mrn-google-fonts` | 1.0.7 | Independent repository (`mrnwebdesigns/mrn-google-fonts`) via MRN-plugins symlink | Optional integration | Google/local fonts and Site Styles; existing site behavior is unchanged. |
-| `mrn-hierarchical-menu-taxonomies` | 0.1.0 | Independent repository (`mrnwebdesigns/mrn-hierarchical-menu-taxonomies`) via MRN-plugins symlink | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories; existing menu behavior is unchanged. |
+| `mrn-hierarchical-menu-taxonomies` | 0.1.1 | Independent repository (`mrnwebdesigns/mrn-hierarchical-menu-taxonomies`) via MRN-plugins symlink | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories; existing menu behavior is unchanged. The stable main-file path preserves activation during package replacement. |
 | `mrn-gtm-injector` | 1.0.14 | Independent repository (`mrnwebdesigns/mrn-gtm-injector`); catalog-only with a merged checksum-locked release entry | Optional integration | Google Tag Manager. |
 | `mrn-recaptcha-enterprise-manager` | 0.1.2 | Standard bootstrap; checksum-locked one-site release | Optional integration | reCAPTCHA Enterprise and idempotent WPForms provisioning; security and credential contracts retained. |
 | `mrn-relevanssi-ai-search` | 0.6.1 | Independent repository (`mrnwebdesigns/mrn-relevanssi-ai-search`); catalog-only | Optional integration | Guarded AI query interpretation and hybrid semantic matching for Relevanssi. |

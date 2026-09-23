@@ -91,7 +91,7 @@ function mrn_base_stack_register_resource_post_type() {
 			),
 			'menu_position'       => 12,
 			'menu_icon'           => 'dashicons-media-document',
-			'supports'            => array( 'title', 'excerpt', 'thumbnail', 'revisions' ),
+			'supports'            => array( 'title', 'excerpt', 'thumbnail', 'revisions', 'mrn-content-list-links' ),
 			'taxonomies'          => array( 'category', 'post_tag' ),
 			'publicly_queryable'  => true,
 			'show_in_nav_menus'   => true,
@@ -373,7 +373,7 @@ function mrn_base_stack_filter_resource_content_list_permalink( $permalink, $ite
 
 	$file = mrn_base_stack_get_resource_file( $item_post->ID );
 
-	return $file ? mrn_base_stack_get_resource_file_url( $item_post->ID ) : $permalink;
+	return $file ? mrn_base_stack_get_resource_file_url( $item_post->ID ) : '';
 }
 add_filter( 'mrn_base_stack_content_list_item_permalink', 'mrn_base_stack_filter_resource_content_list_permalink', 10, 2 );
 

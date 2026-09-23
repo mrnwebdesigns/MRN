@@ -248,6 +248,17 @@ class ReleaseLockTests(unittest.TestCase):
 
 
 class PlatformComponentPolicyTests(unittest.TestCase):
+    def test_tokens_cannot_fall_out_of_the_full_stack_release(self):
+        stack = Path(__file__).parents[1]
+        catalog = json.loads((stack / "manifests/component-catalog.json").read_text())
+        optional = json.loads((stack / "manifests/optional-plugin-releases.json").read_text())
+        entry = next(item for item in catalog["components"] if item["slug"] == "mrn-tokens")
+        self.assertEqual("platform-required", entry["target_tier"])
+        self.assertEqual("standard-plugin", entry["runtime_type"])
+        self.assertEqual("plugins/mrn-tokens", release_lock.deployed_component_path(entry))
+        self.assertIn("mrn-tokens.zip", (stack / "manifests/plugins.txt").read_text())
+        self.assertNotIn("mrn-tokens", [item["slug"] for item in optional["releases"]])
+
     def test_media_bulk_tools_is_locked_by_full_stack_releases(self):
         stack = Path(__file__).parents[1]
         catalog = json.loads(

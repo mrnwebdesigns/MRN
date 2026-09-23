@@ -464,7 +464,7 @@ function mrn_base_stack_register_acf_field_groups() {
 										'default_value' => 1,
 										'ui_on_text'    => 'On',
 										'ui_off_text'   => 'Off',
-										'instructions'  => 'When enabled, item titles and read-more links use the item profile URL when that destination is public.',
+										'instructions'  => 'When enabled, items link to their public profile or supported file destination. Resources without files remain unlinked.',
 										'wrapper'       => array(
 											'width' => '25',
 										),

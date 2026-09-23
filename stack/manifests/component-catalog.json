@@ -704,7 +704,7 @@
     {
       "slug": "mrn-hierarchical-menu-taxonomies",
       "name": "MRN Hierarchical Menu Taxonomies",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -802,12 +802,12 @@
     {
       "slug": "mrn-tokens",
       "name": "MRN Tokens",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "runtime_type": "standard-plugin",
       "classification": "shared-feature",
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
-      "target_tier": "optional-shared",
+      "target_tier": "platform-required",
       "source": {"repository": "mrn-tokens", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-tokens", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": [], "release_group": null},
       "data": {"options": ["mrn_tokens_settings"], "tables": [], "cron": [], "routes": ["mrn-tokens/v1/tokens", "mrn-tokens/v1/tokens/(?P<name>...)", "manage_options permission"], "external_services": []},

@@ -162,6 +162,16 @@ MRN standard plugin that is missing. Re-read inventory and require it to be
 active before full Stack preflight. Each successful mutation consumes its
 receipt, so obtain a new receipt before the next write.
 
+MRN Tokens (`mrn-tokens/mrn-tokens.php`) is one of these required plugins. Its
+presence in the bootstrap manifest alone is insufficient: the immutable lock
+and full Fleet package must also contain it. For a site that lacks Tokens, use
+the separately packaged, checksum-verified version from the same exact locked
+source with `activate=true` and `overwrite=false`. Resolve and sync the exact
+site again, then require that main file to be active at the locked version
+before full preflight. Do not route a missing Tokens installation through the
+upgrade-only optional-plugin plan. Verify the administrator's Tokens menu,
+custom-token save/reload and shortcode rendering after the approved rollout.
+
 ### 2. Preflight
 
 Call `mrn-mainwp/preflight-stack-release-v1` with the exact one-element site ID
