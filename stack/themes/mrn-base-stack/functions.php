@@ -971,7 +971,15 @@ function mrn_base_stack_scripts() {
 		$mobile_navigation_script_ver  = file_exists( $mobile_navigation_script_path ) ? _S_VERSION . '-' . (string) filemtime( $mobile_navigation_script_path ) : _S_VERSION;
 
 		wp_enqueue_style( 'mrn-base-stack-mobile-navigation', get_template_directory_uri() . '/css/mobile-navigation.css', array( 'mrn-base-stack-style' ), $mobile_navigation_style_ver );
-		wp_enqueue_script( 'mrn-base-stack-mobile-navigation', get_template_directory_uri() . '/js/mobile-navigation.js', array(), $mobile_navigation_script_ver, true );
+		// The drawer mode must be selected while the header is parsed, before its
+		// expanded no-JavaScript fallback can paint and move the page content.
+		// Inline this small critical controller to avoid another blocking request.
+		$mobile_navigation_script = is_readable( $mobile_navigation_script_path ) ? file_get_contents( $mobile_navigation_script_path ) : false;
+		if ( false !== $mobile_navigation_script ) {
+			wp_register_script( 'mrn-base-stack-mobile-navigation', false, array(), $mobile_navigation_script_ver, false );
+			wp_enqueue_script( 'mrn-base-stack-mobile-navigation' );
+			wp_add_inline_script( 'mrn-base-stack-mobile-navigation', $mobile_navigation_script );
+		}
 	} else {
 		wp_enqueue_script( 'mrn-base-stack-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
 	}

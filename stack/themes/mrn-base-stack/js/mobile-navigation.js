@@ -1,19 +1,55 @@
 /**
  * Standard mobile drawer and accessible submenu controls.
  */
-( function() {
-	const navigation = document.querySelector( '[data-mrn-mobile-navigation]' );
+( function( initialize ) {
+	let navigation = null;
+	let mobileQuery = null;
 
-	if ( ! navigation ) {
-		return;
+	function prepareNavigation() {
+		if ( navigation ) {
+			return;
+		}
+
+		navigation = document.querySelector( '[data-mrn-mobile-navigation]' );
+		if ( ! navigation ) {
+			return;
+		}
+
+		const configuredBreakpoint = parseInt( window.getComputedStyle( navigation ).getPropertyValue( '--mrn-mobile-menu-breakpoint' ), 10 );
+		const mobileBreakpoint = Number.isFinite( configuredBreakpoint ) && configuredBreakpoint >= 320 && configuredBreakpoint <= 1600 ? configuredBreakpoint : 1199;
+		mobileQuery = window.matchMedia( '(max-width: ' + mobileBreakpoint + 'px)' );
+		navigation.dataset.mrnMobileActive = mobileQuery.matches ? 'true' : 'false';
 	}
 
+	function initializeNavigation() {
+		prepareNavigation();
+		if ( navigation ) {
+			initialize( navigation, mobileQuery );
+		}
+	}
+
+	if ( document.readyState === 'loading' ) {
+		// Child themes may own the header markup. Observe the shared navigation
+		// contract as it is parsed instead of requiring a new child-template hook.
+		const observer = new MutationObserver( function() {
+			prepareNavigation();
+			if ( navigation ) {
+				observer.disconnect();
+			}
+		} );
+		observer.observe( document.documentElement, { childList: true, subtree: true } );
+		prepareNavigation();
+		document.addEventListener( 'DOMContentLoaded', function() {
+			observer.disconnect();
+			initializeNavigation();
+		}, { once: true } );
+	} else {
+		initializeNavigation();
+	}
+}( function( navigation, mobileQuery ) {
 	const button = navigation.querySelector( ':scope > .menu-toggle' );
 	const panel = navigation.querySelector( ':scope > .mrn-mobile-navigation__panel' );
 	const menu = panel ? panel.querySelector( ':scope > .menu' ) : null;
-	const configuredBreakpoint = parseInt( window.getComputedStyle( navigation ).getPropertyValue( '--mrn-mobile-menu-breakpoint' ), 10 );
-	const mobileBreakpoint = Number.isFinite( configuredBreakpoint ) && configuredBreakpoint >= 320 && configuredBreakpoint <= 1600 ? configuredBreakpoint : 1199;
-	const mobileQuery = window.matchMedia( '(max-width: ' + mobileBreakpoint + 'px)' );
 	const submenuOpenLabel = navigation.dataset.submenuOpenLabel || 'Open %s submenu';
 	const submenuCloseLabel = navigation.dataset.submenuCloseLabel || 'Close %s submenu';
 	let restoreFocus = null;
@@ -22,6 +58,7 @@
 	let documentStyle = null;
 
 	if ( ! button || ! panel || ! menu ) {
+		navigation.removeAttribute( 'data-mrn-mobile-active' );
 		return;
 	}
 
@@ -232,4 +269,4 @@
 
 	window.addEventListener( 'resize', updateOffset );
 	window.addEventListener( 'orientationchange', updateOffset );
-}() );
+} ) );
