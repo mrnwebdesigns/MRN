@@ -1,6 +1,6 @@
 # Tharrington Smith: Site Kit consent integration candidate
 
-Prepared September 23, 2026. **Local implementation and package qualification are complete; production is unchanged.** MainWP's saved safe mode remains enabled. The one-site update requires an explicit exception, its confirmation flow, and a fresh verified labeled remote database backup. The existing live pre-consent tracking defect remains until that deployment is completed.
+Prepared September 23, 2026. **Implementation is merged and immutable packages are retained; production is unchanged.** MainWP's saved safe mode remains enabled. The one-site update requires an explicit exception, its confirmation flow, and a fresh verified labeled remote database backup. The existing live pre-consent tracking defect remains until that deployment is completed.
 
 ## Root cause and tag ownership
 
@@ -25,7 +25,7 @@ References: [Site Kit code placement](https://sitekit.withgoogle.com/documentati
 
 ## Reviewable implementation
 
-- Cookie Consent source: `/Users/khofmeyer/Development/MRN-task-worktrees/cookie-sitekit-integration`, branch `codex/sitekit-consent-integration-20260923`, commit `d8f8c7e55000a2baf5331370cf0afa7e37ad2a20`.
+- Cookie Consent release source: `/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent`, commit `9d9af85d05bce7aabd35112ee9d9dd99af435219`; merged to plugin `main` by PR #4 as `e3e1737f1db325f3076025c341af55a1cd7318bc`.
 - MRN migration and regression tests: commit `1ccd3ab59ab25738d8bbff43eaed0d3bf6406fb7` on the same named branch in this worktree.
 - Plugin diff: [artifacts/plugin-reviewed.patch](/Users/khofmeyer/Development/MRN-task-artifacts/sitekit-consent-integration-20260923T181426Z/preserved-worktree/artifacts/plugin-reviewed.patch). Migration diff: [artifacts/migration-reviewed.patch](/Users/khofmeyer/Development/MRN-task-artifacts/sitekit-consent-integration-20260923T181426Z/preserved-worktree/artifacts/migration-reviewed.patch).
 - Migration: [scripts/integrations/20260923-tharringtonsmith-sitekit-consent.php](scripts/integrations/20260923-tharringtonsmith-sitekit-consent.php).
@@ -48,10 +48,10 @@ Site Kit settings remain unchanged on apply, including `useSnippet=true`. The re
 
 | Artifact | SHA-256 |
 | --- | --- |
-| `artifacts/mrn-cookie-consent-1.1.46.zip` (67,363 bytes) | `238b071465b527b7120813e8afd8f8b2aef7e8a41693d571f6bef68de74c3788` |
+| `zip/mrn-cookie-consent-1.1.46.zip` (67,706 bytes) | `1f7604ab913ef4468813270e7a4701845169725f754a4cdf7d946c3959c50275` |
 | `artifacts/rollback-mrn-cookie-consent-1.1.45.zip` | `59aa760ea99d34d9b5eb084247ce1c2ec650fb9ff6cc001a7bf1972c8fa498a5` |
 
-The candidate is built from the clean committed plugin tree. All nine packaged files and both served MRN JavaScript assets matched the manifest in the disposable WordPress runtime. [Candidate manifest](/Users/khofmeyer/Development/MRN-task-artifacts/sitekit-consent-integration-20260923T181426Z/preserved-worktree/artifacts/candidate-manifest.json); [runtime checksum evidence](/Users/khofmeyer/Development/MRN-task-artifacts/sitekit-consent-integration-20260923T181426Z/preserved-worktree/evidence/artifact-runtime.json).
+The final package is built deterministically from the clean release-source commit. The prior exact-runtime candidate and the final package have identical runtime PHP, JavaScript, CSS and readme files; only the packaged `README.md` gained immutable-artifact documentation. The original disposable WordPress runtime evidence therefore still covers every executable byte. [Final candidate manifest](docs/releases/sitekit-consent-1.1.46/candidate-manifest.json); [runtime checksum evidence](/Users/khofmeyer/Development/MRN-task-artifacts/sitekit-consent-integration-20260923T181426Z/preserved-worktree/evidence/artifact-runtime.json).
 
 ## Verification and limits
 
@@ -66,7 +66,7 @@ The candidate is built from the clean committed plugin tree. All nine packaged f
 | Roles / diagnostics | Anonymous, administrator, editor and subscriber tested; Site Kit logged-in exclusions preserved; only administrators receive diagnostic endpoint/nonce; [roles](/Users/khofmeyer/Development/MRN-task-artifacts/sitekit-consent-integration-20260923T181426Z/preserved-worktree/evidence/sitekit-roles.json), [WordPress regression](/Users/khofmeyer/Development/MRN-task-artifacts/sitekit-consent-integration-20260923T181426Z/preserved-worktree/evidence/wordpress-regression.json) |
 | Consent controls | Desktop/mobile modal names, keyboard operation, saved choices and scoped Axe passed; earlier branding/runtime regressions passed |
 | Migration | 12 cases passed, including no-op rerun, wrong site/version, settings/destination drift, absent/stale/failed backup, safe rollback and explicit prior-state acknowledgement; [log](/Users/khofmeyer/Development/MRN-task-artifacts/sitekit-consent-integration-20260923T181426Z/preserved-worktree/evidence/migration-tests.log) |
-| MRN QA | Source QA and exact-package release QA report **100% SUCCESS**; runtime smoke, accessibility, API and performance rows ran; [release report](/Users/khofmeyer/Development/MRN-task-artifacts/sitekit-consent-integration-20260923T181426Z/preserved-worktree/evidence/artifact-release-qa.md) |
+| MRN QA | Original executable candidate source and exact-package release QA report **100% SUCCESS**; runtime smoke, accessibility, API and performance rows ran. Final merged-source static/security QA passes; its strict standalone rerun correctly reports the missing disposable runtime URL rather than treating static checks as runtime proof. [Release report](/Users/khofmeyer/Development/MRN-task-artifacts/sitekit-consent-integration-20260923T181426Z/preserved-worktree/evidence/artifact-release-qa.md) |
 
 Synthetic analytics collection was intercepted and fulfilled locally; real Google tag JavaScript ran, but test events were not delivered to the production analytics property. No live contact form was submitted.
 
@@ -105,8 +105,8 @@ An exact restoration of the original `useSnippet=true` state with 1.1.45 would r
 
 ## Fleet and Git disposition
 
-The Stack task's versioned-artifact repair is a required input to any later rebase: retain the exact 1.1.43 package added by plugin PR #5, preserve MRN PR #102's durable registry/documentation path, and give PR #96's 1.1.45 release its own `zip/mrn-cookie-consent-1.1.45.zip` path. See [ARTIFACT-HANDOFF.md](docs/releases/sitekit-consent-1.1.46/ARTIFACT-HANDOFF.md) for verified checksums and rebase acceptance criteria. The 24-hour and Site Kit canary gates remain unchanged.
+The versioned-artifact repair is complete: plugin `main` retains exact 1.1.43, 1.1.45 and 1.1.46 ZIPs, and the unversioned ZIP is byte-identical to 1.1.46. See [ARTIFACT-HANDOFF.md](docs/releases/sitekit-consent-1.1.46/ARTIFACT-HANDOFF.md) for checksums. The Tharrington Smith 1.1.46 canary and explicit deployment gates remain unchanged.
 
 No fleet-readiness claim is made. Each future site needs exact inventory/destination ownership, compatible Site Kit and WordPress versions, role exclusions, conversion behavior, advertising/linked-destination review, CSP, cache/optimizer and cold/warm public verification. GTM, Ads/AdSense, AMP, tag gateway/server-side transport, custom consent configurations and other snippet owners remain separate qualification gates. Complete this canary's immediate, 15-minute and 24-hour evidence first; then review the reusable optional-plugin release and authorize the next named canary/cohort. No full Stack rollout is implied.
 
-The Stack task has explicitly requested a source-control handoff: preserve the candidate and evidence, clean both task worktrees, push these branches and open draft PRs without merging or deploying. Canonical MRN, Cookie Consent, GTM Injector and QA Engine checkouts remain outside this handoff's mutation scope. The full review material was copied to the verified local archive recorded in [source-handoff.json](docs/releases/sitekit-consent-1.1.46/source-handoff.json); every regular file and symlink was checked before removing its untracked worktree copy. Raw site inventory, browser traces, screenshots, operational helpers and the isolated QA runtime remain local because MRN is a public repository. The candidate and rollback ZIP checksums are unchanged. No stable repository ZIP, Stack release lock, component catalog or GitHub release is promoted. The new branches are intended to remain open as draft reviews; final remote commit and PR state is reported with the handoff. MRN PR #96 and the Cookie Consent 1.1.45 draft release are not modified. The canary authorization gate remains pending.
+Plugin PR #4 is merged, the canonical plugin checkout is clean on `main`, and immutable artifacts are committed. The full review material remains in the verified local archive recorded in [source-handoff.json](docs/releases/sitekit-consent-1.1.46/source-handoff.json); raw site inventory, browser traces, screenshots, operational helpers and the isolated QA runtime stay local because MRN is public. No Stack release lock, component catalog, MainWP package or child site is promoted by this source merge. MRN PR #96 is superseded by the 1.1.46 path and must not be merged as the current Fleet release. The canary authorization gate remains pending.
