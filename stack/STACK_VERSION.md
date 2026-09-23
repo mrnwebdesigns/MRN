@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.23-reference-content-fleet`
+- Stack release: `2026.09.23-tokens-required-fleet`
 - Release date: `2026-09-23`
 - Status: `qualification pending; rollout withheld; no remote deployment`
 
@@ -45,7 +45,7 @@
   - `mrn-seo-helper` `0.5.0`
   - `mrn-stack-deployment-agent` `0.2.3`
   - `mrn-template-inspector` `0.2.7`
-  - `mrn-tokens` `0.1.3`
+  - `mrn-tokens` `0.1.4` (platform-required)
   - `mrn-universal-sticky-bar` `1.1.10`
 
 - Profile-gated standard plugins:
@@ -58,6 +58,11 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- MRN Tokens `0.1.4` is a required Stack component. The immutable lock and full
+  Fleet payload include its exact standalone source. The release adds metadata
+  and package exclusions without changing token behavior or saved settings.
+  Missing sites require the approved install-and-activate prerequisite before
+  full preflight; see `docs/releases/2026.09.23-tokens-required-fleet.md`.
 - Parent theme `1.4.1` restores the registered Reference Content taxonomy map and
   shared editor/renderer destination support. Resources retain Content Only
   behavior and link to valid files only when item links are enabled; missing
@@ -71,7 +76,7 @@
   split home/siteurl installs. Default endpoint protection and encoded query
   arguments are preserved. The existing login container gains a main landmark
   without altering its structure. Component release QA and real HTTP flows pass.
-- This candidate retains all other component versions and exact source trees
+- Apart from MRN Tokens, this candidate retains all other component versions and exact source trees
   from the prior complete Fleet release. Site qualification, prerequisites,
   fresh remote backup and post-deployment verification remain required.
 - This file tracks the current stack baseline, not every historical package ever shipped.

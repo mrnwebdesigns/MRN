@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 2026.09.23-tokens-required-fleet
+
+- Make MRN Tokens platform-required so full Fleet locks and packages include
+  the plugin already required by bootstrap. The Tokens admin area, custom
+  values, shortcode, providers and authenticated REST registry are retained.
+- MRN Tokens `0.1.4` adds WordPress release metadata and deterministic package
+  exclusions. No token option migration or frontend behavior change is needed.
+- Document and package the existing guarded install-and-activate prerequisite
+  for sites missing Tokens, including Gloves Online. Full preflight continues
+  to require active standard plugins; no readiness check is bypassed.
+- Preserve the complete Reference Content Fleet baseline and its unresolved
+  qualification gates. This release preparation performs no remote deployment.
+
 ## 2026.09.23-reference-content-fleet
 
 - Parent theme `1.4.1` restores registered, source-specific Reference Content

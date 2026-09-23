@@ -401,6 +401,14 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
                 "bdfe4e64cab57f03788ad1457236c6eeed074f6c36a91ce14ec0a04df31de58e",
             "2026.09.16-stack-repair-fleet.json":
                 "791aceec002a230a02819e6456b45781e0aaa691b539b1918f95d4bac01446bf",
+            "2026.09.16-acf-ajax-seo-fleet.json":
+                "6bdb16ce1f993f879596730cc170700f7309c78396527fd4014adc216fab1437",
+            "2026.09.16-layout-classes-fleet.json":
+                "a5caacf18a506f1bdf1ee745710b2d7152918bfb6a4f8018c7801af02f8a0ea1",
+            "2026.09.23-custom-login-fleet.json":
+                "d819d47e385d01d699d727bae33f9ba23416de73ee2dcef1f8856f29cce07bcf",
+            "2026.09.23-reference-content-fleet.json":
+                "de94ff8f6ce49440fb71008b169597f542679eab78ced32d4b77d51500c299f2",
         }
 
         self.assertEqual(set(expected), {path.name for path in archive.glob("*.json")})
