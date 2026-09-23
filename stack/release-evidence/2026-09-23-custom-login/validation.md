@@ -6,7 +6,7 @@ Status: source correction prepared as Public Security Hardening 0.4.2. Not deplo
 
 The shared authoritative source is `mu-plugins/mrn-public-security-hardening/mrn-public-security-hardening.php` in MRN. The custom route requires core `wp-login.php`, whose successful lost-password and registration handlers send relative `wp-login.php?checkemail=...` redirects. Core `wp_validate_redirect()` expands these relative to the current custom route before `wp_redirect` runs. Existing URL-generation filters never see that destination, leaving a nested path that returns 404.
 
-The new scoped `wp_redirect` filter recognizes the raw core relative target, its validated custom-path form, and the installation's normal local core path. It produces the absolute custom URL from the existing siteurl-aware helper while retaining the encoded query and fragment. It leaves external URLs, unrelated destinations, cancelled redirects, requests outside the custom route and competing login plugins alone. Default endpoint blocking and its existing compatibility exceptions are unchanged. Component header, runtime constant, wrapper version and catalog entries are 0.4.2; wrapper behavior is unchanged.
+The new scoped `wp_redirect` filter recognizes the raw core relative target, its validated custom-path form, and the installation's normal local core path. It produces the absolute custom URL from the existing siteurl-aware helper while retaining the encoded query and fragment. It leaves external URLs, unrelated destinations, cancelled redirects, requests outside the custom route and competing login plugins alone. Default endpoint blocking and its existing compatibility exceptions are unchanged. Component header, runtime constant, wrapper version, component baseline and catalog entries are 0.4.2; wrapper behavior is unchanged. A standard readme.txt records the matching Stable tag required by release QA.
 
 ## Validation
 
@@ -17,6 +17,7 @@ The new scoped `wp_redirect` filter recognizes the raw core relative target, its
 - Full component MRN QA static run: PASS. PHP lint, security/WPCS, PHP compatibility, PHPStan, Semgrep, secrets, debug artifacts, API surface and diff checks passed. Runtime rows in this static run were skipped by the component configuration and covered separately below.
 - Runtime MRN QA: API `/wp-json/` HTTP 200, browser smoke, page timing and measured Core Web Vitals passed. Accessibility FAILED because the unchanged core login screen has no main landmark. Axe WCAG A/AA found no violations on the login screen; the additional MRN semantic assertion failed before keyboard/dynamic checks could complete. INP was not measured. The report is a failed runtime gate, not release signoff.
 - An earlier broad runtime probe also found invalid nested list markup in the disposable default theme's homepage navigation. The dedicated login fixture now routes its homepage probe to the actual login screen; no production theme or core markup was changed and no accessibility rules were disabled.
+- Clean-commit release-mode QA reproduced the semantic accessibility failure and also identified the previously absent readme.txt Stable tag; the missing release metadata was added in this branch.
 - Full Stack promotion baseline audit at clean merged ba91208 passed before this feature. No new immutable release lock was generated while required runtime QA is failing.
 
 ## Production and deployment blockers
@@ -30,7 +31,7 @@ The new scoped `wp_redirect` filter recognizes the raw core relative target, its
 
 ## Fleet impact
 
-A fresh targeted sync and MainWP runtime report on `trilliant.mrndev.io` at 2026-09-23T12:00:53Z confirmed loaded Public Security Hardening 0.4.1, matching the immutable `2026.09.16-layout-classes-fleet` baseline. It needs the correction when this custom-login handler is active. The report for freshly synced Doster and Brown was unavailable, so its live version is unverified.
+A fresh targeted sync and MainWP runtime report on `trilliant.mrndev.io` at 2026-09-23T12:00:53Z confirmed loaded Public Security Hardening 0.4.1, matching the immutable `2026.09.16-layout-classes-fleet` baseline. Its configured custom login is active. Public GET checks returned HTTP 200 and the correct confirmation page for both its canonical and nested confirmation URLs, so its host tolerates the malformed redirect; the observed 404 consequence is hosting-dependent. The shared correction still ensures a canonical URL. The report for freshly synced Doster and Brown was unavailable, so its live version is unverified.
 
 All Stack sites using the affected custom-login handler share this code defect, regardless of hostname or slug. Active competing login plugins disable MRN routing and are outside this path. Local snapshots additionally contain this component on Gloves, Platform, Trilliant, Doster and Brown, and Freedom House, but snapshots are not current live fleet evidence and older versions require handler inspection. No fleet sites were changed.
 
