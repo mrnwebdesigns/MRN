@@ -43,7 +43,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 | `mrn-editor-tools` | 1.8.25 | Standard bootstrap | Optional shared | Classic Editor, TinyMCE, and ACF WYSIWYG enhancements. |
 | `mrn-mega-menu` | 0.17.2 | Standard bootstrap | Optional shared | Accessible content-rich mega-menu administration and rendering. |
 | `mrn-reusable-block-library` | 0.2.0 | Independent repository (`mrnwebdesigns/mrn-reusable-block-library`) via MRN-plugins symlink; Stack-profile bootstrap plus checksum-locked one-site release | Optional shared | Shared reusable block content types and render helpers, including sanitized outer-layout classes. |
-| `mrn-tokens` | 0.1.3 | Independent repository (`mrnwebdesigns/mrn-tokens`) via MRN-plugins symlink | Optional shared | Reusable content-token registry, shortcode, and authenticated REST API. |
+| `mrn-tokens` | 0.1.4 | Independent repository (`mrnwebdesigns/mrn-tokens`) via MRN-plugins symlink | Platform required | Reusable content-token registry, shortcode, and authenticated REST API; required in bootstrap and full Fleet releases. |
 
 ## Optional Integration Adapters
 
