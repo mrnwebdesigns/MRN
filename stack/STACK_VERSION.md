@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.16-layout-classes-fleet`
-- Release date: `2026-09-16`
+- Stack release: `2026.09.23-custom-login-fleet`
+- Release date: `2026-09-23`
 - Status: `release candidate; site deployment and runtime verification pending`
 
 ## Included MRN-Owned Components
@@ -20,7 +20,7 @@
   - `mrn-shared-assets` `0.2.0`
   - `mrn-editor-lockdown` `1.0.33`
   - `mrn-environment-runtime` `0.5.1`
-  - `mrn-public-security-hardening` `0.4.1`
+  - `mrn-public-security-hardening` `0.4.2`
   - `mrn-schema-bridge` `0.6.0`
   - `mrn-site-colors` / `Site Styles` `0.1.39`
   - `mrn-updraft-backup-policy-loader` `0.5.1`
@@ -58,6 +58,14 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- Public Security Hardening `0.4.2` canonicalizes relative WordPress redirects
+  while serving the configured custom login route, including subdirectory and
+  split home/siteurl installs. Default endpoint protection and encoded query
+  arguments are preserved. The existing login container gains a main landmark
+  without altering its structure. Component release QA and real HTTP flows pass.
+- This candidate retains all other component versions and exact source trees
+  from the prior complete Fleet release. Site qualification, prerequisites,
+  fresh remote backup and post-deployment verification remain required.
 - This file tracks the current stack baseline, not every historical package ever shipped.
 - Third-party packages in `manifests/plugins.txt` keep their own upstream versions and package filenames.
 - Current baseline keeps the canonical AME export payloads, importer/manifests, bootstrap helper, shared shim, and stack MU wrapper loaders tracked in the main repo so release/deploy flows can verify and sync them consistently.

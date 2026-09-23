@@ -1,0 +1,50 @@
+[
+  {
+    "slug": "mrn-config-helper",
+    "fetch_ok": true,
+    "head": "124dcfd22ce867900b878f5b82c5854f5f93a029",
+    "origin_main": "124dcfd22ce867900b878f5b82c5854f5f93a029",
+    "dirty": false,
+    "unmerged_branches": []
+  },
+  {
+    "slug": "mrn-media-bulk-tools",
+    "fetch_ok": true,
+    "head": "7c303fb50b35d798ad1e00d3e98682af2158353a",
+    "origin_main": "7c303fb50b35d798ad1e00d3e98682af2158353a",
+    "dirty": false,
+    "unmerged_branches": []
+  },
+  {
+    "slug": "mrn-schema-bridge",
+    "fetch_ok": true,
+    "head": "89d1999381c2b94cad005835f133651a46f8eda2",
+    "origin_main": "89d1999381c2b94cad005835f133651a46f8eda2",
+    "dirty": false,
+    "unmerged_branches": []
+  },
+  {
+    "slug": "mrn-sendgrid-provisioning",
+    "fetch_ok": true,
+    "head": "7465010230c23c1d901ba382b88be36e93dc0022",
+    "origin_main": "7465010230c23c1d901ba382b88be36e93dc0022",
+    "dirty": false,
+    "unmerged_branches": []
+  },
+  {
+    "slug": "mrn-stack-deployment-agent",
+    "fetch_ok": true,
+    "head": "c9898688a64df53858cbc485b01386cc0246be1c",
+    "origin_main": "c9898688a64df53858cbc485b01386cc0246be1c",
+    "dirty": false,
+    "unmerged_branches": []
+  },
+  {
+    "slug": "mrn-universal-sticky-bar",
+    "fetch_ok": true,
+    "head": "696e261cccc76cacad9c7fe54eac6c48758a70ff",
+    "origin_main": "696e261cccc76cacad9c7fe54eac6c48758a70ff",
+    "dirty": false,
+    "unmerged_branches": []
+  }
+]
