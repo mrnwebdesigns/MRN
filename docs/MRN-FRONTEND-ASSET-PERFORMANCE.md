@@ -47,6 +47,19 @@ plugin's styles on the strength of one homepage audit.
 - Include actual network throttling in rendering checks. Lighthouse's default
   simulated network model can miss races that only occur when stylesheet
   delivery is genuinely delayed. Keep local and Google scores separate.
+- When paint metrics dominate despite low blocking time, inspect the saved
+  first-paint dependency graph. An iframe stylesheet can pull its third-party
+  script and iframe creation chain into the simulated paint calculation. Check
+  whether that branch is present in both slow and fast unchanged baselines.
+  A same-trace counterfactual isolates modeled cost; it is not a shipping fix.
+- Record observed FCP/LCP and the load event alongside simulated metrics. If
+  load precedes FCP and FCP equals LCP, investigate frame-production delay as
+  well as site assets. An [open Lighthouse report](https://github.com/GoogleChrome/lighthouse/issues/17148)
+  describes this symptom, but matching it alone does not prove a browser bug.
+- Qualify third-party asynchronous loading against its readiness contract.
+  reCAPTCHA's following inline `grecaptcha.ready()` call needs the supported
+  queue when its loader is asynchronous. Preserve spam protection and verify
+  form tokens and submission; do not defer required behavior for an audit score.
 
 ## Consent UI must have its styles before it renders
 
