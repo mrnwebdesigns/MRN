@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.23-custom-login-fleet`
+- Stack release: `2026.09.23-reference-content-fleet`
 - Release date: `2026-09-23`
-- Status: `release candidate; site deployment and runtime verification pending`
+- Status: `qualification pending; rollout withheld; no remote deployment`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.4.0`
+  - `mrn-base-stack` `1.4.1`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -58,6 +58,14 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- Parent theme `1.4.1` restores the registered Reference Content taxonomy map and
+  shared editor/renderer destination support. Resources retain Content Only
+  behavior and link to valid files only when item links are enabled; missing
+  files remain unlinked. Existing ACF keys, clones and styling hooks are retained.
+- Source/task checks pass. Required exact-candidate release QA and canary
+  qualification are separate gates; local full-site contrast/timing findings and
+  MainWP sync timeouts observed during task QA require resolution or verified
+  requalification before rollout. See `docs/releases/2026.09.23-reference-content-fleet.md`.
 - Public Security Hardening `0.4.2` canonicalizes relative WordPress redirects
   while serving the configured custom login route, including subdirectory and
   split home/siteurl installs. Default endpoint protection and encoded query
@@ -109,7 +117,7 @@
   component and is also registered as an exact one-site, upgrade-only Fleet
   release. Missing installations remain a hard stop rather than an implicit
   install request.
-- Parent theme `1.4.0` adds the shared Layout Class field and outer-element
+- Parent theme `1.4.1` retains the shared Layout Class field and outer-element
   rendering contract on top of the Events and cloned-ACF-AJAX baseline.
 - Selective Stack planning retains the exact signed locks reported by currently
   qualified Fleet sites, plus the subsequent reviewed baselines, and
