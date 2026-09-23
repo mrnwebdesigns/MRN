@@ -1854,6 +1854,40 @@ function mrn_base_stack_get_content_list_content_only_post_types() {
 }
 
 /**
+ * Whether a Reference Content source has a supported item destination.
+ *
+ * Non-public sources opt in with mrn-content-list-links post-type support and
+ * resolve their destinations through mrn_base_stack_content_list_item_permalink.
+ * Individual items can still have no destination, such as a missing file.
+ *
+ * @param string $post_type Registered post type.
+ * @return bool
+ */
+function mrn_base_stack_content_list_post_type_supports_links( $post_type ) {
+	$post_type_object = get_post_type_object( $post_type );
+
+	return $post_type_object instanceof WP_Post_Type && (
+		! empty( $post_type_object->publicly_queryable )
+		|| post_type_supports( $post_type, 'mrn-content-list-links' )
+	);
+}
+
+/**
+ * Localize the same destination eligibility used by the item renderer.
+ *
+ * @return array<string, bool>
+ */
+function mrn_base_stack_get_content_list_link_support_map() {
+	$map = array();
+
+	foreach ( array_keys( mrn_base_stack_get_content_list_post_type_choices() ) as $post_type ) {
+		$map[ $post_type ] = mrn_base_stack_content_list_post_type_supports_links( $post_type );
+	}
+
+	return $map;
+}
+
+/**
  * Load live post-type choices into the Content builder field.
  *
  * This keeps the row selector aligned with the currently registered public
@@ -2672,6 +2706,10 @@ function mrn_base_stack_get_content_list_item_permalink( WP_Post $item_post, arr
 		return '';
 	}
 
+	if ( ! mrn_base_stack_content_list_post_type_supports_links( $item_post->post_type ) ) {
+		return '';
+	}
+
 	$post_type_object = get_post_type_object( $item_post->post_type );
 	if (
 		'team_member' === $item_post->post_type
@@ -3223,6 +3261,28 @@ function mrn_base_stack_get_content_list_taxonomy_choices() {
 	}
 
 	return $choices;
+}
+
+/**
+ * Map each Reference Content source to its registered editor taxonomies.
+ *
+ * Reuse the shared visibility/exclusion rules, including Content Only sources
+ * admitted by the source selector. Resolve at use time after registration.
+ *
+ * @return array<string, array<string, string>>
+ */
+function mrn_base_stack_get_content_list_post_type_taxonomy_map() {
+	$choices = mrn_base_stack_get_content_list_taxonomy_choices();
+	$map     = array();
+
+	foreach ( array_keys( mrn_base_stack_get_content_list_post_type_choices() ) as $post_type ) {
+		$map[ $post_type ] = array_intersect_key(
+			$choices,
+			array_fill_keys( get_object_taxonomies( $post_type ), true )
+		);
+	}
+
+	return $map;
 }
 
 /**

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Parent theme `1.4.1` restores registered, source-specific Reference Content
+  taxonomies, including Content Only Resources. Valid saved taxonomies, term
+  slugs, matching modes and cloned ACF field keys are preserved.
+- Reference Content shares a destination capability between the editor and
+  renderer. Resources can link to their existing file destinations without
+  exposing public profiles or archives; disabled links and missing files remain
+  unlinked. Unsupported Content Only sources retain their restrictions.
+
 ## 2026.09.23-custom-login-fleet
 
 - Public Security Hardening and its MU wrapper (`0.4.1` -> `0.4.2`): normalize
