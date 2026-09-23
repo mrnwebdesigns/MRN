@@ -17,7 +17,7 @@ The new scoped `wp_redirect` filter recognizes the raw core relative target, its
 - Full component MRN QA static run: PASS. PHP lint, security/WPCS, PHP compatibility, PHPStan, Semgrep, secrets, debug artifacts, API surface and diff checks passed. Runtime rows in this static run were skipped by the component configuration and covered separately below.
 - Full runtime component MRN QA: PASS, including API `/wp-json/` HTTP 200, browser smoke, accessibility (axe, semantics and keyboard interaction), page timing and measured Core Web Vitals. INP was not measured. The fixture homepage redirects to the actual login screen so the runtime checks cover the changed component.
 - Release QA previously identified a missing main landmark in the core login output. The shared custom route now uses WordPress's HTML processor to add `role="main"` to the existing login container, preserving existing landmarks/roles, markup structure, styling and form data. Eight real-processor preservation cases run in each installation layout, plus HTTP checks on login and confirmation responses. No core file or accessibility rule was changed.
-- Readme Stable tag, header, runtime version, wrapper, baseline and catalog agree at 0.4.2. Clean-commit release QA and Stack candidate reconciliation are required before packaging.
+- Readme Stable tag, header, runtime version, wrapper, baseline and catalog agree at 0.4.2. Clean-commit release-mode MRN QA passed at `12ccf831f00c556a66f048e435697ed3b54de054` with strict smoke and full component analysis. See `release-qa.md`. Stack candidate reconciliation remains the separate packaging gate.
 - Full Stack promotion baseline audit at clean merged ba91208 passed before this feature.
 
 ## Production and deployment blockers
