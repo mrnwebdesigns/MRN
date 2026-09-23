@@ -1,24 +1,24 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-09-16",
+  "catalog_updated": "2026-09-23",
   "authority": "Checksum-locked independently released plugins available to explicit one-site upgrade plans. A release may remain a standard bootstrap default; registration never authorizes installation or a site write.",
   "releases": [
     {
       "slug": "mrn-cookie-consent",
-      "version": "1.1.43",
+      "version": "1.1.44",
       "target_tier": "optional-integration",
       "current_distribution": "catalog-only",
       "source": {
         "repository": "mrnwebdesigns/mrn-cookie-consent",
         "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent",
-        "git_commit": "1e14bd239e2e9651033be31fe36b694fa19856de"
+        "git_commit": "6e998890c18c0567196613b970fea8d8e91786b4"
       },
       "package": {
         "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent/zip/mrn-cookie-consent.zip",
         "filename": "mrn-cookie-consent.zip",
         "main_file": "mrn-cookie-consent/mrn-cookie-consent.php",
-        "size_bytes": 74037,
-        "sha256": "98a6703e6e2053ab60bdadc0506e174a72b60371a0b6736a01bf2ea13d731419"
+        "size_bytes": 62055,
+        "sha256": "fe28ba9acc6702714889b49911a77413d8bab89d58bddfcc6c9e6765a2ca2cb2"
       },
       "update_policy": {
         "mode": "upgrade-only",
