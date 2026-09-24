@@ -8,6 +8,8 @@
 
 defined('ABSPATH') || exit;
 
+require_once __DIR__ . '/includes/acf-admin-assets.php';
+
 /**
  * Get the shared admin layout builder version.
  */
