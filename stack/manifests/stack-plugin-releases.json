@@ -260,6 +260,35 @@
       }
     },
     {
+      "slug": "mrn-stack-deployment-agent",
+      "version": "0.2.5",
+      "runtime_type": "standard-plugin",
+      "target_tier": "platform-required",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-stack-deployment-agent",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
+        "git_commit": "8bc985f2430756857dfecd41f7a435deddbafb49"
+      },
+      "package": {
+        "path": "releases/stack-plugins/mrn-stack-deployment-agent-0.2.5.zip",
+        "filename": "mrn-stack-deployment-agent-0.2.5.zip",
+        "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
+        "size_bytes": 33699,
+        "sha256": "7eef5538264634e20c44c4f650852cafc6a44eae591108c9f0e2d08fced9b3b2"
+      },
+      "tree": {
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "45d42a9b603703123afa06ed661f40b5d6b271e06cc74cc7564f22a6b4640769",
+        "file_count": 9
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
       "slug": "mrn-universal-sticky-bar",
       "version": "1.1.8",
       "runtime_type": "standard-plugin",
