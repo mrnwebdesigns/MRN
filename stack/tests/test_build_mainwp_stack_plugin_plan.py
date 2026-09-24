@@ -477,8 +477,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             if item["slug"] == "mrn-stack-deployment-agent"
         }
 
-        self.assertEqual("0.2.4", entry["version"])
-        self.assertEqual({"0.2.2", "0.2.3", "0.2.4"}, set(versions))
+        self.assertEqual("0.2.5", entry["version"])
+        self.assertEqual({"0.2.2", "0.2.3", "0.2.4", "0.2.5"}, set(versions))
         self.assertEqual(
             entry["version"],
             max(versions, key=lambda value: planner.version_tuple(value, "version")),

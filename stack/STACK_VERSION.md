@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.24-admin-field-assets-fleet`
+- Stack release: `2026.09.24-dev-credential-readiness-fleet`
 - Release date: `2026-09-24`
 - Status: `production-ready for guarded per-site Fleet rollout; no child deployment performed`
 
@@ -43,7 +43,7 @@
   - `mrn-recaptcha-enterprise-manager` `0.1.2`
   - `mrn-sendgrid-provisioning` `0.1.0`
   - `mrn-seo-helper` `0.5.0`
-  - `mrn-stack-deployment-agent` `0.2.4`
+  - `mrn-stack-deployment-agent` `0.2.5`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-tokens` `0.1.4` (platform-required)
   - `mrn-universal-sticky-bar` `1.1.10`
@@ -58,6 +58,12 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- Deployment Agent `0.2.5` keeps production managed-credential readiness
+  fail-closed while exempting recognized non-production WordPress environments
+  and canonical `*.mrndev.io` development hosts from that production-only
+  requirement. The readiness response still distinguishes policy requirement
+  from actual configuration. See
+  `docs/releases/2026.09.24-dev-credential-readiness-fleet.md`.
 - Parent theme `1.4.3`, Shared Assets `0.2.1`, Config Helper `0.1.64`, and
   Character Count `1.1.9` scope ACF-related admin assets to screens and fields
   that can consume them. Dynamic ACF rows, layout selection, icon selection,
@@ -127,10 +133,13 @@
   exposes the capability- and nonce-gated Content Types extension hook used by
   Stack-owned admin integrations, and avoids loading its layout-picker assets
   on unrelated admin screens.
-- `mrn-stack-deployment-agent` is locked to standalone `0.2.4`; its authenticated
+- `mrn-stack-deployment-agent` is locked to standalone `0.2.5`; its authenticated
   status reports only presence/readiness booleans for managed credentials and
-  never exposes their values. It also distinguishes the stock canonical child
-  from an exact derived child that remains safe for full Stack Fleet plans.
+  never exposes their values. Production requires complete managed credentials;
+  recognized development/staging environments report configuration honestly
+  without failing that production-only gate. It also distinguishes the stock
+  canonical child from an exact derived child that remains safe for full Stack
+  Fleet plans.
 - `mrn-recaptcha-enterprise-manager` `0.1.2` provides idempotent, fail-closed
   WPForms reCAPTCHA provisioning for Stack bootstrap and is available only as
   an upgrade of an existing installation through its checksum-locked Fleet

@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## 2026.09.24-dev-credential-readiness-fleet
+
+- `mrn-stack-deployment-agent` (`0.2.4` -> `0.2.5`) keeps full managed-service
+  credential readiness mandatory on production while allowing recognized
+  WordPress development/staging environments and canonical `*.mrndev.io`
+  development hosts to pass that production-only Fleet gate.
+- Credential status remains truthful on exempt environments: the agent reports
+  whether credentials are configured independently from whether policy requires
+  them for that site. Exact child-theme, checksum, active-plugin, backup, and
+  runtime verification gates are unchanged.
+- Registered the exact `0.2.5` deployment-agent package for upgrade-only Fleet
+  use. Installing it where absent still requires separate authorization and a
+  dedicated backup-gated prerequisite plan.
+
 ## 2026.09.24-admin-field-assets-fleet
 
 - `mrn-base-stack` (`1.4.2` -> `1.4.3`) and `mrn-shared-assets` (`0.2.0` ->
