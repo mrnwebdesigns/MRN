@@ -190,6 +190,17 @@ class BuildMainWPStackReleaseTests(unittest.TestCase):
             self.artifacts,
             output,
             "rollout-contract-001",
+            "site-specific-child",
+        )
+        contract_plan = json.loads((output / "plan.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            "site-specific-child", contract_plan["site_contract"]["stylesheet"]
+        )
+        self.assertFalse(
+            any(
+                component["target"] == "themes/site-specific-child"
+                for component in contract_plan["components"]
+            )
         )
         environment = os.environ.copy()
         environment["MRN_STACK_CONTRACT_DIR"] = str(output)
@@ -223,6 +234,18 @@ class BuildMainWPStackReleaseTests(unittest.TestCase):
                 self.root / "output",
                 "rollout-fixture-002",
             )
+
+    def test_refuses_unsafe_or_parent_site_stylesheet(self):
+        for stylesheet in ("../site-child", "mrn-base-stack", "Site Child"):
+            with self.subTest(stylesheet=stylesheet):
+                with self.assertRaisesRegex(builder.BuildError, "site stylesheet"):
+                    builder.build_release(
+                        self.lock_path,
+                        self.artifacts,
+                        self.root / f"invalid-{len(stylesheet)}",
+                        "rollout-invalid-child",
+                        stylesheet,
+                    )
 
     def test_refuses_optional_component_in_full_stack_projection(self):
         self.lock["components"][0]["required"] = False

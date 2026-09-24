@@ -191,10 +191,12 @@ For an existing-site fleet rollout, use the plan-locked MainWP path documented i
 stack source and release lock are ready. MainWP distribution does not replace the
 stack-source deploy above; it distributes that exact approved release to existing
 sites through independently backup-gated transactions. Start with one exact,
-owner-approved canonical child-theme site. The child deployment agent must be
+owner-approved site whose active template is the canonical parent and whose
+exact child stylesheet is supported by the deployment agent. The agent must be
 installed and verified first; the schema-2 package then updates locked MU
 components, required MRN standard plugins, shared runtime, and the canonical
-parent theme without containing or modifying the child theme.
+parent theme without containing or modifying the child theme. Generate the
+plan with `--site-stylesheet` set to the fresh active-stylesheet readback.
 
 ### Standard Plugins
 

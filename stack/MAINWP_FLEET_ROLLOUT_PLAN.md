@@ -11,7 +11,7 @@ an automatic write.
 The canonical full-platform package contains every locked MRN MU component,
 required MRN standard plugin, `wp-content/shared`, the `mrn-base-stack` parent
 theme, and the runtime release lock. It never contains or changes the active
-`mrn-base-stack-child` theme. The deployment agent is also excluded from its own
+child theme. The deployment agent is also excluded from its own
 package and must be installed and verified separately before preflight.
 
 Schema-1 MU-only packages remain supported for approved site forks and legacy
@@ -43,24 +43,25 @@ For each proposed member:
    remembered site ID and never pass an empty site list.
 2. Run a fresh targeted MainWP sync.
 3. Call `mrn-mainwp/qualify-stack-site-v1` to read the Stack deployment-agent
-   status, canonical theme shape, storage readiness, incomplete-rollout state,
+   status, exact theme shape, storage readiness, incomplete-rollout state,
    and Stack runtime report as one sanitized classification.
-4. Require a connected child site and the canonical theme shape:
-   `template=mrn-base-stack` and `stylesheet=mrn-base-stack-child`.
+4. Require a connected child site, `template=mrn-base-stack`, and a preserved
+   child stylesheet. The stock `mrn-base-stack-child` is canonical; an exact
+   site-specific child is supported only when the upgraded agent attests it.
 5. Confirm that the child stylesheet differs from the parent template and is
    outside every package target.
 6. Record missing prerequisites separately from runtime drift. A missing
    deployment agent or required MRN standard plugin is a seeding task; a renamed
-   parent, renamed child, clone-style site, protected fork, or ambiguous runtime
-   shape does not qualify for schema 2.
+   parent, clone-style site, protected fork, unsafe child slug, or ambiguous
+   runtime shape does not qualify for schema 2.
 7. Add the `Full Stack` tag only after the owner approves the exact qualified
    site. The deployed `release_id` and lock SHA, not the tag, prove which release
    the site is running.
 
-Sites with a site-specific child on a renamed parent remain supported by the
-site-resolved direct deployment process in `SITE_UPDATE_PROCESS.md`. Extending
-the fleet package to those shapes requires a separately designed, exact target
-mapping; do not weaken the canonical schema-2 checks to make one pass.
+Sites with a site-specific child on the canonical parent receive an exact
+one-site plan that names that active stylesheet. Sites with a renamed parent
+remain supported by the site-resolved direct deployment process in
+`SITE_UPDATE_PROCESS.md`; do not weaken the canonical-parent schema-2 check.
 
 ## Release Units
 
@@ -125,13 +126,17 @@ python3 stack/scripts/build-mainwp-stack-release.py \
   --release-lock stack/manifests/stack-release.lock.json \
   --artifact-root releases/assembled/<release-id> \
   --rollout-id <unique-rollout-id> \
+  --site-stylesheet <exact-active-stylesheet> \
   --output-dir releases/mainwp-stack/<unique-rollout-id>
 ```
 
-The builder fails if an assembled component differs from the lock, the canonical
-parent/site-derived child contract is missing, the deployment agent is not an
-exact prerequisite, a target leaves the fixed allowlist, or an artifact would
-exceed the child agent's archive limits. Record and retain the exact
+Generate a separate plan and rollout ID for each distinct active stylesheet.
+The builder defaults to `mrn-base-stack-child`, but the explicit readback value
+is preferred for rollout evidence. It fails if an assembled component differs
+from the lock, the canonical parent/site-derived child contract is missing, the
+exact site stylesheet is unsafe, the deployment agent is not an exact
+prerequisite, a target leaves the fixed allowlist, or an artifact would exceed
+the child agent's archive limits. Record and retain the exact
 `checksums.json`, `plan.json`, and ZIP. Never hand-edit them.
 
 ## One-Site Rollout State Machine
@@ -140,7 +145,7 @@ Every site advances independently. A failure leaves later sites untouched.
 
 | State | Required evidence before advancing |
 | --- | --- |
-| Qualified | Exact URL resolution, fresh sync, canonical parent/child shape, owner-approved membership |
+| Qualified | Exact URL resolution, fresh sync, canonical parent plus exact supported child shape, owner-approved membership |
 | Seeded | Exact deployment-agent version/tree hash and every locked MRN standard plugin installed and active |
 | Preflighted | Schema-2 plan accepted; all targets writable and same-device promotable; no incomplete rollout marker; child protected |
 | Backed up | Fresh successful remote database-only Updraft receipt for this site and this write |
@@ -210,8 +215,8 @@ filesystem write. Require:
 - exact `release_id` and lock SHA;
 - no missing or drifted required component;
 - no legacy flat-file collision;
-- exact `template=mrn-base-stack` and
-  `stylesheet=mrn-base-stack-child` readback;
+- exact `template=mrn-base-stack` and the same `stylesheet` embedded in this
+  site's plan;
 - exact parent-theme match;
 - successful child result and `rollback_ready=true`.
 
