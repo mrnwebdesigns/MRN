@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.23-mobile-navigation-fleet`
-- Release date: `2026-09-23`
+- Stack release: `2026.09.24-derived-child-fleet`
+- Release date: `2026-09-24`
 - Status: `production-ready for guarded per-site Fleet rollout; no child deployment performed`
 
 ## Included MRN-Owned Components
@@ -43,7 +43,7 @@
   - `mrn-recaptcha-enterprise-manager` `0.1.2`
   - `mrn-sendgrid-provisioning` `0.1.0`
   - `mrn-seo-helper` `0.5.0`
-  - `mrn-stack-deployment-agent` `0.2.3`
+  - `mrn-stack-deployment-agent` `0.2.4`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-tokens` `0.1.4` (platform-required)
   - `mrn-universal-sticky-bar` `1.1.10`
@@ -58,6 +58,12 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- Fleet plans now bind one exact active child stylesheet over the canonical
+  `mrn-base-stack` parent. The stock child remains the default; an upgraded
+  agent may attest a site-specific child such as Doster's. The selected child
+  must match preflight and runtime readback and is never packaged or mutated.
+  Renamed-parent and clone-style sites remain outside this contract. See
+  `docs/releases/2026.09.24-derived-child-fleet.md`.
 - Parent theme `1.4.2` selects the configured mobile-navigation mode while the
   header is parsed, preventing the expanded no-JavaScript fallback from moving
   page content before the drawer controller initializes. The small controller
@@ -100,7 +106,7 @@
 - `mrn-database-retention` is not part of the platform baseline. Its independently released `1.1.1` package is catalog-only and available solely through the one-site, upgrade-only optional-plugin plan.
 - This baseline includes `mrn-media-bulk-tools` `0.13.1` as a platform-required standard plugin and binds its exact standalone `main` commit and tree hash.
 - Current candidate explicitly locks every tracked MU wrapper at its real deployed filename, including the Updraft backup-policy wrapper at `mrn-updraft-local-retention.php`.
-- The Dashboard-only `mrn-mainwp-operations-api` release advances to `0.9.4`.
+- The Dashboard-only `mrn-mainwp-operations-api` release advances to `0.9.5`.
   It requires the deployment agent's secret-free managed-credential readiness
   report before a full Stack preflight can be considered ready and includes the
   exact Reusable Block Library main file in the optional-plugin upgrade
@@ -112,9 +118,10 @@
   UptimeRobot credential when its field is absent from a settings submission,
   and exposes the capability- and nonce-gated Content Types extension hook used
   by Stack-owned admin integrations.
-- `mrn-stack-deployment-agent` is locked to standalone `0.2.3`; its authenticated
+- `mrn-stack-deployment-agent` is locked to standalone `0.2.4`; its authenticated
   status reports only presence/readiness booleans for managed credentials and
-  never exposes their values.
+  never exposes their values. It also distinguishes the stock canonical child
+  from an exact derived child that remains safe for full Stack Fleet plans.
 - `mrn-recaptcha-enterprise-manager` `0.1.2` provides idempotent, fail-closed
   WPForms reCAPTCHA provisioning for Stack bootstrap and is available only as
   an upgrade of an existing installation through its checksum-locked Fleet
