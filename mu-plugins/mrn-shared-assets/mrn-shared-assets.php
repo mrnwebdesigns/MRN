@@ -3,7 +3,7 @@
  * Plugin Name: MRN Shared Assets
  * Description: Provides shared runtime assets and metadata for stack-wide consumers.
  * Author: MRN Web Designs
- * Version: 0.2.0
+ * Version: 0.2.1
  */
 
 defined('ABSPATH') || exit;

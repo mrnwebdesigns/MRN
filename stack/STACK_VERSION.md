@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.24-derived-child-fleet`
+- Stack release: `2026.09.24-admin-field-assets-fleet`
 - Release date: `2026-09-24`
 - Status: `production-ready for guarded per-site Fleet rollout; no child deployment performed`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.4.2`
+  - `mrn-base-stack` `1.4.3`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -17,7 +17,7 @@
   - `mrn-admin-ui-css` `3.2.4`
   - `mrn-dashboard-support` `1.3.0`
   - `mrn-disable-comments` `1.2.5`
-  - `mrn-shared-assets` `0.2.0`
+  - `mrn-shared-assets` `0.2.1`
   - `mrn-editor-lockdown` `1.0.33`
   - `mrn-environment-runtime` `0.5.1`
   - `mrn-public-security-hardening` `0.4.2`
@@ -27,12 +27,12 @@
   - `mrn-updraft-local-retention` `0.5.1`
 - Standard plugins:
   - `background-video-popout-disabler` `1.0.2`
-  - `mrn-acf-character-count` `1.1.8`
+  - `mrn-acf-character-count` `1.1.9`
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-ai-assist` `2.0.14`
   - `mrn-announcements` `1.8.2`
   - `mrn-comment-management` `1.1.7`
-  - `mrn-config-helper` `0.1.63`
+  - `mrn-config-helper` `0.1.64`
   - `mrn-editor-tools` `1.8.25`
   - `mrn-fontawesome-profile-manager` `0.5.1`
   - `mrn-google-fonts` `1.0.7`
@@ -58,15 +58,23 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- Parent theme `1.4.3`, Shared Assets `0.2.1`, Config Helper `0.1.64`, and
+  Character Count `1.1.9` scope ACF-related admin assets to screens and fields
+  that can consume them. Dynamic ACF rows, layout selection, icon selection,
+  configured counters, and save/reload behavior remain intact. The exact
+  Config Helper and Character Count artifacts are registered for guarded
+  one-site Fleet use; Character Count remains upgrade-only and is never
+  installed implicitly. See `docs/releases/2026.09.24-admin-field-assets-fleet.md`.
 - Fleet plans now bind one exact active child stylesheet over the canonical
   `mrn-base-stack` parent. The stock child remains the default; an upgraded
   agent may attest a site-specific child such as Doster's. The selected child
   must match preflight and runtime readback and is never packaged or mutated.
   Renamed-parent and clone-style sites remain outside this contract. See
   `docs/releases/2026.09.24-derived-child-fleet.md`.
-- Parent theme `1.4.2` selects the configured mobile-navigation mode while the
-  header is parsed, preventing the expanded no-JavaScript fallback from moving
-  page content before the drawer controller initializes. The small controller
+- Parent theme `1.4.3` retains the `1.4.2` configured mobile-navigation mode
+  selection while the header is parsed, preventing the expanded no-JavaScript
+  fallback from moving page content before the drawer controller initializes.
+  The small controller
   is attached to its existing WordPress handle as inline critical JavaScript,
   drawer transitions begin only after the visitor first interacts, and the
   no-JavaScript, breakpoint, submenu, keyboard/focus and resize contracts are
@@ -106,18 +114,19 @@
 - `mrn-database-retention` is not part of the platform baseline. Its independently released `1.1.1` package is catalog-only and available solely through the one-site, upgrade-only optional-plugin plan.
 - This baseline includes `mrn-media-bulk-tools` `0.13.1` as a platform-required standard plugin and binds its exact standalone `main` commit and tree hash.
 - Current candidate explicitly locks every tracked MU wrapper at its real deployed filename, including the Updraft backup-policy wrapper at `mrn-updraft-local-retention.php`.
-- The Dashboard-only `mrn-mainwp-operations-api` release advances to `0.9.5`.
+- The Dashboard-only `mrn-mainwp-operations-api` release advances to `0.9.6`.
   It requires the deployment agent's secret-free managed-credential readiness
   report before a full Stack preflight can be considered ready and includes the
-  exact Reusable Block Library main file in the optional-plugin upgrade
-  allowlist.
+  exact Reusable Block Library and ACF Character Count main files in the
+  optional-plugin upgrade allowlist.
   It remains a MainWP control-plane component and is never installed on child
   sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
-- `mrn-config-helper` is locked to standalone `0.1.63`, preserves an existing
+- `mrn-config-helper` is locked to standalone `0.1.64`, preserves an existing
   UptimeRobot credential when its field is absent from a settings submission,
-  and exposes the capability- and nonce-gated Content Types extension hook used
-  by Stack-owned admin integrations.
+  exposes the capability- and nonce-gated Content Types extension hook used by
+  Stack-owned admin integrations, and avoids loading its layout-picker assets
+  on unrelated admin screens.
 - `mrn-stack-deployment-agent` is locked to standalone `0.2.4`; its authenticated
   status reports only presence/readiness booleans for managed credentials and
   never exposes their values. It also distinguishes the stock canonical child

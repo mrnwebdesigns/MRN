@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+## 2026.09.24-admin-field-assets-fleet
+
+- `mrn-base-stack` (`1.4.2` -> `1.4.3`) and `mrn-shared-assets` (`0.2.0` ->
+  `0.2.1`) centralize consumer-aware ACF admin asset detection. Builder layout
+  and icon assets now load only where their configured fields can use them,
+  while dynamic ACF rows and saved editor behavior remain unchanged.
+- `mrn-config-helper` (`0.1.63` -> `0.1.64`) limits the layout-picker payload to
+  flexible-content editor screens and registers the exact merged package for
+  selective, checksum-locked Fleet updates.
+- `mrn-acf-character-count` (`1.1.8` -> `1.1.9`) loads its editor assets only
+  when a configured ACF field is present, including dynamically added fields.
+  Its exact package is registered as an upgrade-only optional Fleet release;
+  absent installations remain blocked.
+- MainWP Operations API `0.9.6` allowlists the exact ACF Character Count main
+  file under the existing one-site, backup-gated, rollback-ready optional-plugin
+  contract. No Dashboard or child-site deployment is performed by this release.
+
 ## 2026.09.24-derived-child-fleet
 
 - `mrn-stack-deployment-agent` (`0.2.3` -> `0.2.4`) now accepts one exact,

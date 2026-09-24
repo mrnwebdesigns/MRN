@@ -399,7 +399,7 @@ def build_plan(
             "preflight_ability": "mrn-mainwp/preflight-optional-plugin-update-v1",
             "controller_ability": "mrn-mainwp/update-optional-plugin-v1",
             "rollback_ability": "mrn-mainwp/rollback-optional-plugin-v1",
-            "minimum_controller_version": "0.9.4",
+            "minimum_controller_version": "0.9.6",
             "precondition_hash_source": "controller-preflight",
             "rollback_artifact_model": "operator-supplied-checksum-locked-package",
             "allow_new_install": False,

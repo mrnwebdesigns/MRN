@@ -187,7 +187,7 @@ class OptionalPluginPlanTests(unittest.TestCase):
             "mrn-mainwp/preflight-optional-plugin-update-v1",
             plan["execution_contract"]["preflight_ability"],
         )
-        self.assertEqual("0.9.4", plan["execution_contract"]["minimum_controller_version"])
+        self.assertEqual("0.9.6", plan["execution_contract"]["minimum_controller_version"])
         self.assertEqual(
             "controller-preflight",
             plan["execution_contract"]["precondition_hash_source"],
@@ -318,7 +318,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             for item in catalog["components"]
             if item["slug"] == "mrn-mainwp-operations-api"
         )
-        self.assertEqual("0.9.4", controller["version"])
+        self.assertEqual("0.9.6", controller["version"])
         self.assertEqual("dashboard-only", controller["target_tier"])
         self.assertIn("twenty-two mrn-mainwp WordPress Abilities", controller["data"]["routes"])
         self.assertNotIn("Defender (legacy compatibility only)", entry["dependencies"]["soft"])
@@ -376,6 +376,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
         release_by_slug = {item["slug"]: item for item in releases["releases"]}
         expected = {
             "background-video-popout-disabler": "1.0.2",
+            "mrn-acf-character-count": "1.1.9",
             "mrn-announcements": "1.8.2",
             "mrn-fontawesome-profile-manager": "0.5.1",
             "mrn-recaptcha-enterprise-manager": "0.1.2",

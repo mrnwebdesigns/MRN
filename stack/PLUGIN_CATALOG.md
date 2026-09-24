@@ -1,6 +1,6 @@
 # MRN WordPress Component Catalog
 
-Last classified: 2026-09-15
+Last classified: 2026-09-24
 
 This is the human-readable index of MRN-owned WordPress components. The authoritative machine-readable source is [`manifests/component-catalog.json`](./manifests/component-catalog.json), and the rules governing it are in [`PLUGIN_GOVERNANCE.md`](./PLUGIN_GOVERNANCE.md).
 
@@ -20,12 +20,12 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-editor-lockdown` | 1.0.33 | MU loader | Platform required | Applies shared editor, metabox, and capability policy. |
 | `mrn-environment-runtime` | 0.5.1 | MU loader | Platform required | Provides environment, runtime, and notification diagnostics. |
 | `mrn-public-security-hardening` | 0.4.1 | MU loader | Platform required | Applies shared public REST and discovery hardening and owns the native Advanced admin menu. |
-| `mrn-shared-assets` | 0.2.0 | MU loader | Platform required | Provides shared asset and icon interfaces. |
+| `mrn-shared-assets` | 0.2.1 | MU loader | Platform required | Provides shared asset and icon interfaces, including consumer-aware ACF admin asset detection. |
 | `mrn-site-colors` | 0.1.39 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
 | `mrn-updraft-local-retention` | 0.5.1 | MU loader | Platform required | Enforces shared backup schedule and retention policy, uses a stable cross-environment S3 site slug, and routes remote-storage warnings to Notifications Center. |
 | `mrn-schema-bridge` | 0.6.0 | MU loader | Platform required | SEOPress identity synchronization, automatic Article template provisioning, JobPosting output, author policy, MRN supplemental schema, and migration-only SmartCrawl compatibility. |
 | `mrn-active-style-guide` | 0.1.7 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
-| `mrn-config-helper` | 0.1.63 | Standard bootstrap | Platform required | Shared site configuration shell, MRN-owned visible breadcrumb and BreadcrumbList runtime, launch/admin integrations, managed-credential preservation, and a commit-reproducible selective Fleet package. |
+| `mrn-config-helper` | 0.1.64 | Standard bootstrap | Platform required | Shared site configuration shell, MRN-owned visible breadcrumb and BreadcrumbList runtime, launch/admin integrations, managed-credential preservation, scoped layout-picker assets, and a commit-reproducible selective Fleet package. |
 | `mrn-media-bulk-tools` | 0.13.1 | Standard bootstrap | Platform required | Media audit, usage indexing, and bulk maintenance; exact version and tree are enforced by the full Stack release lock. |
 | `mrn-sendgrid-provisioning` | 0.1.0 | Standard bootstrap | Platform required | Provisions a per-site SendGrid Subuser, mail-only site API key, and domain authentication; split out of `mrn-config-helper`. |
 | `mrn-stack-deployment-agent` | 0.2.4 | Standard bootstrap | Platform required | Provides the MainWP-authenticated, checksum-verified Stack deployment target, exact child-theme preservation, and secret-free managed-credential readiness. |
@@ -49,7 +49,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 
 | Slug | Version | Current distribution | Target tier | Integration |
 | --- | ---: | --- | --- | --- |
-| `mrn-acf-character-count` | 1.1.8 | Standard bootstrap | Optional integration | ACF editor character counts. |
+| `mrn-acf-character-count` | 1.1.9 | Standard bootstrap; checksum-locked one-site release | Optional integration | ACF editor character counts with field-aware asset loading. |
 | `mrn-acf-focal-point` | 1.1.2 | Standard bootstrap | Optional integration | ACF image focal-point metadata and rendering. |
 | `mrn-ai-guardrails` | 0.1.1 | Independent repository (`mrnwebdesigns/mrn-ai-guardrails`) via MRN-plugins symlink; catalog-only | Optional integration | SEOPress AI policy enforcement and human approval for generated image alt text. |
 | `mrn-cookie-consent` | 1.1.43 | Independent repository (`mrnwebdesigns/mrn-cookie-consent`); catalog-only with a merged checksum-locked release entry | Optional integration | Silktide and Google Consent Mode. |
@@ -65,7 +65,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 
 | Slug | Version | Responsibility |
 | --- | ---: | --- |
-| `mrn-mainwp-operations-api` | 0.9.4 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only controller that gates full-Stack readiness on secret-free managed-credential reporting and allowlists Reusable Block Library upgrades, never installed on child sites. |
+| `mrn-mainwp-operations-api` | 0.9.6 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only controller that gates full-Stack readiness on secret-free managed-credential reporting and allowlists Reusable Block Library and ACF Character Count upgrades, never installed on child sites. |
 | `mrn-wp-control` | 1.1.1 | Independent repository (`mrnwebdesigns/mrn-wp-control`); dashboard-only, not installed in client-site plugins. |
 | `mrn-wp-control-table-exporter` | 1.4.4 | Independent repository (`mrnwebdesigns/mrn-wp-control-table-exporter`); dashboard-only, not installed in client-site plugins. |
 | `mrn-mainwp-mcp` | 0.1.1 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |
