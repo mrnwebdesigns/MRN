@@ -15,6 +15,12 @@
 - Registered the exact `0.2.5` deployment-agent package for upgrade-only Fleet
   use. Installing it where absent still requires separate authorization and a
   dedicated backup-gated prerequisite plan.
+- MainWP Operations API `0.9.7` mirrors the agent's explicit credential-policy
+  requirement in release-independent qualification: production remains
+  fail-closed, recognized development sites may qualify with credentials not
+  configured, and agents that omit the requirement remain fail-closed. The
+  Dashboard package was deployed only after a verified remote database backup;
+  its active version and exact eight-file artifact tree were read back.
 
 ## 2026.09.24-admin-field-assets-fleet
 
