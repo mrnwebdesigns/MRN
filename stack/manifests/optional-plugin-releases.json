@@ -209,6 +209,29 @@
         "preserve_active_state": true,
         "new_install": "requires-separate-owner-authorization-and-plan"
       }
+    },
+    {
+      "slug": "mrn-acf-character-count",
+      "version": "1.1.9",
+      "target_tier": "optional-integration",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-acf-character-count",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-acf-character-count",
+        "git_commit": "0e9c4bb9a0a81d882b7f3b8e787d8bbd524b1a33"
+      },
+      "package": {
+        "path": "releases/plugins/mrn-acf-character-count-1.1.9.zip",
+        "filename": "mrn-acf-character-count-1.1.9.zip",
+        "main_file": "mrn-acf-character-count/mrn-acf-character-count.php",
+        "size_bytes": 16393,
+        "sha256": "1984717bee9b3d7236cc323d39a9dfbb374f63b42879b514aff184c0635745a4"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
     }
   ]
 }

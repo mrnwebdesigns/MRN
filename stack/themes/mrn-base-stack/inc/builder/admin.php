@@ -481,9 +481,10 @@ function mrn_base_stack_enqueue_acf_layout_picker_assets( $field = null ) {
 		return;
 	}
 
-	if ( wp_script_is( 'mrn-base-stack-acf-layout-picker', 'enqueued' ) || ! mrn_base_stack_admin_acf_field_needs_assets( $field, static function ( $candidate ) {
+	$field_matcher = static function ( $candidate ) {
 		return 'flexible_content' === ( $candidate['type'] ?? '' );
-	} ) ) {
+	};
+	if ( wp_script_is( 'mrn-base-stack-acf-layout-picker', 'enqueued' ) || ! mrn_base_stack_admin_acf_field_needs_assets( $field, $field_matcher ) ) {
 		return;
 	}
 

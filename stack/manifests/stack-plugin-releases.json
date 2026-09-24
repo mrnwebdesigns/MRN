@@ -352,6 +352,35 @@
         "preserve_active_state": true,
         "new_install": "requires-separate-owner-authorization-and-plan"
       }
+    },
+    {
+      "slug": "mrn-config-helper",
+      "version": "0.1.64",
+      "runtime_type": "standard-plugin",
+      "target_tier": "platform-required",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-config-helper",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "git_commit": "12fa0498d67e6e7a649645bdeddd4846558228db"
+      },
+      "package": {
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.64.zip",
+        "filename": "mrn-config-helper-0.1.64.zip",
+        "main_file": "mrn-config-helper/mrn-config-helper.php",
+        "size_bytes": 101926,
+        "sha256": "af39fb356c7f99f9da2c5ed2ecd9e1e90c020268ce3c9f2b2edbcdee126579ff"
+      },
+      "tree": {
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "0cd8b1aa6a30a3bb2543f2ac13fddeae54176dfe7ecf39a3fd9a666f50b0b39c",
+        "file_count": 17
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
     }
   ]
 }

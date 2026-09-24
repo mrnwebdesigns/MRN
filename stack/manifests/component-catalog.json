@@ -149,7 +149,7 @@
     {
       "slug": "mrn-shared-assets",
       "name": "MRN Shared Assets",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "runtime_type": "mu-component",
       "classification": "platform",
       "lifecycle": "supported",
@@ -267,7 +267,7 @@
     {
       "slug": "mrn-shared-assets-loader",
       "name": "MRN Shared Assets Loader",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "runtime_type": "mu-loader",
       "classification": "platform-loader",
       "lifecycle": "supported",
@@ -410,7 +410,7 @@
     {
       "slug": "mrn-acf-character-count",
       "name": "MRN ACF Character Count",
-      "version": "1.1.8",
+      "version": "1.1.9",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -494,7 +494,7 @@
     {
       "slug": "mrn-config-helper",
       "name": "MRN Config Helper",
-      "version": "0.1.63",
+      "version": "0.1.64",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
       "lifecycle": "supported",
@@ -774,7 +774,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.9.4",
+      "version": "0.9.6",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -783,7 +783,7 @@
       "source": {"repository": "mrn-mainwp-operations-api", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api", "state": "confirmed-independent-dashboard"},
       "dependencies": {"hard": ["MainWP Dashboard", "WordPress Abilities API"], "soft": ["UpdraftPlus", "MRN Google Fonts"], "release_group": "mainwp-operations"},
       "data": {"options": [], "tables": [], "cron": [], "routes": ["twenty-two mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
-      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages, font management, one-site Stack qualification, backup-gated full Stack rollout and recovery, upgrade-only allowlisted optional-plugin updates including Reusable Block Library, and exact one-component updates for platform-required standard plugins."
+      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages, font management, one-site Stack qualification, backup-gated full Stack rollout and recovery, upgrade-only allowlisted optional-plugin updates including Reusable Block Library and ACF Character Count, and exact one-component updates for platform-required standard plugins."
     },
     {
       "slug": "mrn-pre-consent-update-backup",
