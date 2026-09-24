@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 2026.09.23-mobile-navigation-fleet
+
+- `mrn-base-stack` (`1.4.1` -> `1.4.2`): select the configured mobile drawer
+  mode during header parsing so the expanded fallback cannot shift page content
+  before the footer controller runs. Keep the existing WordPress handle,
+  inline the small critical controller without a new request, and suppress
+  drawer transitions until the visitor first interacts.
+- Preserve JavaScript-disabled navigation, configured breakpoint boundaries,
+  nested menus, keyboard/focus behavior, resize handling and child-owned header
+  markup. Nine focused Playwright cases, including WCAG A/AA checks, pass.
+- Reconcile completed Cookie Consent 1.1.46 source and immutable artifacts
+  without adding the optional plugin to the full Stack payload or bypassing its
+  separate production canary. Retire the failed reCAPTCHA async experiment and
+  the superseded Cookie Consent 1.1.45 metadata branch instead of promoting
+  inconclusive or stale candidates.
+
 ## 2026.09.23-fleet-readiness
 
 - `mrn-hierarchical-menu-taxonomies` (`0.1.0` -> `0.1.1`): restored the

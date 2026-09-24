@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.23-fleet-readiness`
+- Stack release: `2026.09.23-mobile-navigation-fleet`
 - Release date: `2026-09-23`
 - Status: `production-ready for guarded per-site Fleet rollout; no child deployment performed`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.4.1`
+  - `mrn-base-stack` `1.4.2`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -58,6 +58,20 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- Parent theme `1.4.2` selects the configured mobile-navigation mode while the
+  header is parsed, preventing the expanded no-JavaScript fallback from moving
+  page content before the drawer controller initializes. The small controller
+  is attached to its existing WordPress handle as inline critical JavaScript,
+  drawer transitions begin only after the visitor first interacts, and the
+  no-JavaScript, breakpoint, submenu, keyboard/focus and resize contracts are
+  preserved. Focused Playwright coverage passes at phone, tablet and desktop
+  boundaries. See `docs/MRN-MOBILE-NAVIGATION-FIRST-PAINT.md`.
+- Cookie Consent `1.1.46` source and immutable 1.1.43/1.1.45/1.1.46 artifacts
+  are reconciled on the standalone plugin's `main`. It remains an independent,
+  upgrade-only optional release and is not added to this full-Stack payload or
+  promoted to Fleet until the separately confirmed Tharrington Smith canary
+  passes. The superseded 1.1.45 metadata branch was closed without changing the
+  current 1.1.43 optional Fleet record.
 - MRN Tokens `0.1.4` is a required Stack component. The immutable lock and full
   Fleet payload include its exact standalone source. The release adds metadata
   and package exclusions without changing token behavior or saved settings.
