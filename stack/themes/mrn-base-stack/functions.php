@@ -974,6 +974,7 @@ function mrn_base_stack_scripts() {
 		// The drawer mode must be selected while the header is parsed, before its
 		// expanded no-JavaScript fallback can paint and move the page content.
 		// Inline this small critical controller to avoid another blocking request.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reads a trusted local theme asset, never a remote URL.
 		$mobile_navigation_script = is_readable( $mobile_navigation_script_path ) ? file_get_contents( $mobile_navigation_script_path ) : false;
 		if ( false !== $mobile_navigation_script ) {
 			wp_register_script( 'mrn-base-stack-mobile-navigation', false, array(), $mobile_navigation_script_ver, false );
