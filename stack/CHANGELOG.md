@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 2026.09.24-sendgrid-optional-fleet
+
+- Reclassified `mrn-sendgrid-provisioning` from platform-required bootstrap to
+  a catalog-only optional integration and removed it from the universal Stack
+  manifest, full Fleet payload, and required standalone-source drift audit.
+- Changed automatic SendGrid provisioning and management-key delivery to an
+  explicit `STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION=1` opt-in.
+- Existing SendGrid installations and configuration are not removed,
+  deactivated, overwritten, or otherwise changed by this release.
+
 ## 2026.09.24-control-plane-qualification-fleet
 
 - MainWP Operations API `0.9.7` mirrors the agent's explicit credential-policy

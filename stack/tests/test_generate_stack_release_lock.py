@@ -248,6 +248,23 @@ class ReleaseLockTests(unittest.TestCase):
 
 
 class PlatformComponentPolicyTests(unittest.TestCase):
+    def test_sendgrid_is_catalog_only_and_omitted_from_bootstrap(self):
+        stack = Path(__file__).parents[1]
+        catalog = json.loads(
+            (stack / "manifests/component-catalog.json").read_text(encoding="utf-8")
+        )
+        manifest = (stack / "manifests/plugins.txt").read_text(encoding="utf-8")
+        entry = next(
+            item
+            for item in catalog["components"]
+            if item["slug"] == "mrn-sendgrid-provisioning"
+        )
+
+        self.assertEqual("integration-adapter", entry["classification"])
+        self.assertEqual("catalog-only", entry["current_distribution"])
+        self.assertEqual("optional-integration", entry["target_tier"])
+        self.assertNotIn("mrn-sendgrid-provisioning.zip", manifest)
+
     def test_tokens_cannot_fall_out_of_the_full_stack_release(self):
         stack = Path(__file__).parents[1]
         catalog = json.loads((stack / "manifests/component-catalog.json").read_text())

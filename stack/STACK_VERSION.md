@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.24-control-plane-qualification-fleet`
+- Stack release: `2026.09.24-sendgrid-optional-fleet`
 - Release date: `2026-09-24`
 - Status: `production-ready for guarded per-site Fleet rollout; no child deployment performed`
 
@@ -41,7 +41,6 @@
   - `mrn-media-bulk-tools` `0.13.1`
   - `mrn-mega-menu` `0.17.2`
   - `mrn-recaptcha-enterprise-manager` `0.1.2`
-  - `mrn-sendgrid-provisioning` `0.1.0`
   - `mrn-seo-helper` `0.5.0`
   - `mrn-stack-deployment-agent` `0.2.5`
   - `mrn-template-inspector` `0.2.7`
@@ -58,6 +57,12 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- SendGrid Provisioning `0.1.0` remains supported as a catalog-only optional
+  integration, but is no longer a platform requirement or bootstrap/Fleet
+  payload component. Bootstrap no longer reads or delivers its management key
+  or provisions SendGrid unless explicitly opted in. Existing installations
+  remain untouched, and absent sites are not changed. See
+  `docs/releases/2026.09.24-sendgrid-optional-fleet.md`.
 - Deployment Agent `0.2.5` keeps production managed-credential readiness
   fail-closed while exempting recognized non-production WordPress environments
   and canonical `*.mrndev.io` development hosts from that production-only

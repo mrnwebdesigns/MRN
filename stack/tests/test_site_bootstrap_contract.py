@@ -33,6 +33,19 @@ class SiteBootstrapContractTests(unittest.TestCase):
         self.assertIn("bootstrap_wpforms_recaptcha", self.bootstrap)
         self.assertIn('array("unchanged", "reused", "created")', self.bootstrap)
 
+    def test_sendgrid_installation_and_provisioning_are_opt_in(self):
+        manifest = (ROOT / "manifests/plugins.txt").read_text(encoding="utf-8")
+
+        self.assertNotIn("mrn-sendgrid-provisioning.zip", manifest)
+        self.assertIn(
+            'AUTO_PROVISION_SENDGRID="${STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION:-0}"',
+            self.bootstrap,
+        )
+        self.assertIn(
+            'bootstrap_flag_enabled "${AUTO_PROVISION_SENDGRID}" && [[ -n "${SENDGRID_MANAGEMENT_API_KEY}" ]]',
+            self.bootstrap,
+        )
+
     def test_bootstrap_invokes_importer_in_strict_mode(self):
         self.assertIn("STACK_IMPORTER_STRICT=1", self.bootstrap)
         self.assertIn('if [[ "${IMPORT_STRICT}" == "1" ]]', self.importer)
