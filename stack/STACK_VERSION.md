@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.24-dev-credential-readiness-fleet`
+- Stack release: `2026.09.24-control-plane-qualification-fleet`
 - Release date: `2026-09-24`
 - Status: `production-ready for guarded per-site Fleet rollout; no child deployment performed`
 
