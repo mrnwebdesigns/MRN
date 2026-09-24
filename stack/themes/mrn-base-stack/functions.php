@@ -602,61 +602,7 @@ function mrn_base_stack_add_editorial_cpts_to_universal_sticky_bar( $post_types 
 }
 add_filter( 'mrn_universal_sticky_bar_post_types', 'mrn_base_stack_add_editorial_cpts_to_universal_sticky_bar' );
 
-/**
- * Enqueue shared ACF repeater admin controls anywhere repeaters render.
- *
- * @return void
- */
-function mrn_base_stack_enqueue_shared_repeater_admin_assets() {
-	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-	if ( function_exists( 'mrn_base_stack_admin_is_safe_acf_editor_helper_screen' ) && ! mrn_base_stack_admin_is_safe_acf_editor_helper_screen( $screen ) ) {
-		return;
-	}
-
-	$repeater_controls_path    = get_template_directory() . '/js/admin-repeater-controls.js';
-	$repeater_controls_ver     = file_exists( $repeater_controls_path ) ? (string) filemtime( $repeater_controls_path ) : _S_VERSION;
-	$repeater_styles_path      = get_template_directory() . '/css/admin-repeater-controls.css';
-	$repeater_styles_ver       = file_exists( $repeater_styles_path ) ? (string) filemtime( $repeater_styles_path ) : _S_VERSION;
-	$icon_choosers_script_path = get_template_directory() . '/js/admin-icon-choosers.js';
-	$icon_choosers_script_ver  = file_exists( $icon_choosers_script_path ) ? (string) filemtime( $icon_choosers_script_path ) : _S_VERSION;
-	$icon_choosers_style_path  = get_template_directory() . '/css/admin-icon-choosers.css';
-	$icon_choosers_style_ver   = file_exists( $icon_choosers_style_path ) ? (string) filemtime( $icon_choosers_style_path ) : _S_VERSION;
-
-	wp_enqueue_style(
-		'mrn-base-stack-admin-repeater-controls',
-		get_template_directory_uri() . '/css/admin-repeater-controls.css',
-		array(),
-		$repeater_styles_ver
-	);
-
-	wp_enqueue_script(
-		'mrn-base-stack-admin-repeater-controls',
-		get_template_directory_uri() . '/js/admin-repeater-controls.js',
-		array( 'jquery', 'acf-input' ),
-		$repeater_controls_ver,
-		true
-	);
-
-	if ( function_exists( 'mrn_shared_assets_enqueue_admin_icon_chooser' ) ) {
-		mrn_shared_assets_enqueue_admin_icon_chooser( 'mrn-shared-icon-chooser', 'mrn-shared-icon-chooser' );
-	}
-
-	wp_enqueue_script(
-		'mrn-base-stack-admin-icon-choosers',
-		get_template_directory_uri() . '/js/admin-icon-choosers.js',
-		array( 'jquery', 'acf-input', 'mrn-shared-icon-chooser' ),
-		$icon_choosers_script_ver,
-		true
-	);
-
-	wp_enqueue_style(
-		'mrn-base-stack-admin-icon-choosers',
-		get_template_directory_uri() . '/css/admin-icon-choosers.css',
-		array( 'mrn-shared-icon-chooser' ),
-		$icon_choosers_style_ver
-	);
-}
-add_action( 'acf/input/admin_enqueue_scripts', 'mrn_base_stack_enqueue_shared_repeater_admin_assets' );
+require_once get_template_directory() . '/inc/admin-acf-assets.php';
 
 /**
  * Enqueue gallery-specific editor behavior on gallery edit screens.

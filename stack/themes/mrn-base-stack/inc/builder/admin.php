@@ -459,9 +459,10 @@ function mrn_base_stack_get_acf_layout_picker_metadata_map() {
 /**
  * Enqueue the stack ACF flexible-content layout picker.
  *
+ * @param array|null $field Rendered field, or null during early enqueue.
  * @return void
  */
-function mrn_base_stack_enqueue_acf_layout_picker_assets() {
+function mrn_base_stack_enqueue_acf_layout_picker_assets( $field = null ) {
 	if ( ! is_admin() ) {
 		return;
 	}
@@ -477,6 +478,12 @@ function mrn_base_stack_enqueue_acf_layout_picker_assets() {
 
 	$post_type = sanitize_key( (string) $screen->post_type );
 	if ( '' === $post_type || ! in_array( $post_type, mrn_base_stack_get_singular_shell_post_types(), true ) ) {
+		return;
+	}
+
+	if ( wp_script_is( 'mrn-base-stack-acf-layout-picker', 'enqueued' ) || ! mrn_base_stack_admin_acf_field_needs_assets( $field, static function ( $candidate ) {
+		return 'flexible_content' === ( $candidate['type'] ?? '' );
+	} ) ) {
 		return;
 	}
 
@@ -515,6 +522,7 @@ function mrn_base_stack_enqueue_acf_layout_picker_assets() {
 	}
 }
 add_action( 'acf/input/admin_enqueue_scripts', 'mrn_base_stack_enqueue_acf_layout_picker_assets' );
+add_action( 'acf/render_field/type=flexible_content', 'mrn_base_stack_enqueue_acf_layout_picker_assets' );
 
 /**
  * Add lightweight admin CSS for custom content-builder row actions.
