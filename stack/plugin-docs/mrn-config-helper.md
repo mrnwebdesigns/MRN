@@ -173,7 +173,7 @@
 
 - `mrn-base-stack` and its theme helpers consume Config Helper through the public wrapper APIs for social links, hidden CPTs, display modes and styles, builder allowlists, breadcrumb settings, and ACF layout-picker metadata.
 - `mrn-disable-comments`, `mrn-editor-lockdown`, `mrn-reusable-block-library`, and `mrn-fontawesome-profile-manager` are supported downstream integrations that should keep using the public wrappers, hooks, and contracts instead of private implementation details.
-- `stack/scripts/site-bootstrap.sh` is a required launch-time consumer of `MRN_Config_Helper::bootstrap_uptime_robot_monitor()` and, separately, `MRN_SendGrid_Provisioning::bootstrap_site_provisioning()` in the `mrn-sendgrid-provisioning` plugin.
+- `stack/scripts/site-bootstrap.sh` is a required launch-time consumer of `MRN_Config_Helper::bootstrap_uptime_robot_monitor()`. It calls `MRN_SendGrid_Provisioning::bootstrap_site_provisioning()` only when the optional `mrn-sendgrid-provisioning` plugin has been separately installed and automatic SendGrid provisioning is explicitly enabled.
 - Direct writes to `mrn_helper_settings` belong inside Config Helper. External consumers should prefer the public contract wherever possible.
 - `mrn-config-helper` is foundational MRN platform infrastructure, not a disposable utility plugin. Removing, deactivating, or omitting it from an MRN Stack site is unsupported and can break shared configuration, runtime behavior, and Stack provisioning.
 

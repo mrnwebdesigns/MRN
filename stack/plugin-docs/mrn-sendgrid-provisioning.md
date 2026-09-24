@@ -12,9 +12,10 @@
 
 ## Purpose
 
-- Provisions per-site SendGrid identity so every Stack site sends through its own SendGrid Subuser instead of the shared parent account.
+- Optionally provisions per-site SendGrid identity for sites that are separately approved to use a dedicated SendGrid Subuser.
 - Split out of `mrn-config-helper` on 2026-08-19 (`release_group: config-helper-decomposition` in `stack/manifests/component-catalog.json`) to isolate SendGrid credentials and the parent management key from general site configuration.
-- Deliberately does not activate or configure FluentSMTP itself. Bootstrap prepares the subuser, site key, and domain authentication ahead of launch; delivering the finished key into a live site's FluentSMTP connection is a separate, ops-owned go-live step outside this plugin.
+- It is catalog-only: full Stack bootstrap and Fleet releases neither install it on absent sites nor remove or deactivate an existing installation.
+- Deliberately does not activate or configure FluentSMTP itself. An explicitly opted-in bootstrap can prepare the subuser, site key, and domain authentication ahead of launch; delivering the finished key into a live site's FluentSMTP connection is a separate, ops-owned go-live step outside this plugin.
 
 ## Admin Surface Area
 
@@ -32,7 +33,8 @@
 
 ## Bootstrap Contract
 
-- `stack/scripts/site-bootstrap.sh`'s `provision_external_services()` calls `MRN_SendGrid_Provisioning::bootstrap_site_provisioning( home_url( '/' ) )` when this plugin is active, gated by `STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION` (default on).
+- `stack/scripts/site-bootstrap.sh` does not install this plugin and does not read or deliver its management key by default.
+- When the plugin has been separately installed and `STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION=1` is explicitly set, `provision_external_services()` calls `MRN_SendGrid_Provisioning::bootstrap_site_provisioning( home_url( '/' ) )`.
 - Idempotent: re-running bootstrap reuses an existing subuser/site key/domain-auth rather than recreating them.
 
 ## Data / Storage

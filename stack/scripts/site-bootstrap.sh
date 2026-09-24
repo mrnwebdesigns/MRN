@@ -55,7 +55,7 @@ SLACK_USERNAME="${STACK_SLACK_USERNAME:-MRN Bootstrap}"
 SLACK_ICON_EMOJI="${STACK_SLACK_ICON_EMOJI:-:rocket:}"
 SENDGRID_MANAGEMENT_API_KEY="${MRN_SENDGRID_MANAGEMENT_API_KEY:-${STACK_SENDGRID_MANAGEMENT_API_KEY:-}}"
 SENDGRID_MANAGEMENT_API_KEY_FILE="${STACK_SENDGRID_MANAGEMENT_API_KEY_FILE:-${STACK_ROOT}/secrets/sendgrid-management-api-key.txt}"
-AUTO_PROVISION_SENDGRID="${STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION:-1}"
+AUTO_PROVISION_SENDGRID="${STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION:-0}"
 AUTO_PROVISION_UPTIME_ROBOT="${STACK_BOOTSTRAP_UPTIME_ROBOT_AUTO_PROVISION:-0}"
 UPTIME_ROBOT_MONITOR_INTERVAL="${STACK_BOOTSTRAP_UPTIME_ROBOT_INTERVAL:-${STACK_UPTIME_ROBOT_MONITOR_INTERVAL:-300}}"
 UPTIME_ROBOT_API_KEY="${MRN_UPTIME_ROBOT_API_KEY:-${STACK_UPTIME_ROBOT_API_KEY:-${UPTIME_ROBOT_API_KEY:-}}}"
@@ -75,9 +75,15 @@ if [[ -z "${SLACK_WEBHOOK_URL}" && -f "${SLACK_WEBHOOK_URL_FILE}" ]]; then
   SLACK_WEBHOOK_URL="$(tr -d '\r\n' < "${SLACK_WEBHOOK_URL_FILE}")"
 fi
 
-if [[ -z "${SENDGRID_MANAGEMENT_API_KEY}" && -f "${SENDGRID_MANAGEMENT_API_KEY_FILE}" ]]; then
-  SENDGRID_MANAGEMENT_API_KEY="$(tr -d '\r\n' < "${SENDGRID_MANAGEMENT_API_KEY_FILE}")"
-fi
+case "${AUTO_PROVISION_SENDGRID}" in
+  0|false|False|FALSE|no|No|NO|off|Off|OFF)
+    ;;
+  *)
+    if [[ -z "${SENDGRID_MANAGEMENT_API_KEY}" && -f "${SENDGRID_MANAGEMENT_API_KEY_FILE}" ]]; then
+      SENDGRID_MANAGEMENT_API_KEY="$(tr -d '\r\n' < "${SENDGRID_MANAGEMENT_API_KEY_FILE}")"
+    fi
+    ;;
+esac
 
 if [[ -z "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" && -f "${RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE}" ]]; then
   RECAPTCHA_ENTERPRISE_PROJECT_ID="$(tr -d '\r\n' < "${RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE}")"
@@ -1813,8 +1819,9 @@ apply_wp_defaults() {
   if ! run_wp config set WP_AUTO_UPDATE_CORE false --raw --type=constant; then
     add_warning "Failed to set WP_AUTO_UPDATE_CORE=false in wp-config.php"
   fi
-  # Expose the stack-managed SendGrid management key to WordPress when available.
-  if [[ -n "${SENDGRID_MANAGEMENT_API_KEY}" ]]; then
+  # SendGrid is catalog-only. Deliver its management key only for an explicitly
+  # opted-in bootstrap; existing constants and installations remain untouched.
+  if bootstrap_flag_enabled "${AUTO_PROVISION_SENDGRID}" && [[ -n "${SENDGRID_MANAGEMENT_API_KEY}" ]]; then
     if ! run_wp_config_set_quiet MRN_SENDGRID_MANAGEMENT_API_KEY "${SENDGRID_MANAGEMENT_API_KEY}" --type=constant; then
       add_warning "Failed to set MRN_SENDGRID_MANAGEMENT_API_KEY in wp-config.php"
     fi
@@ -1872,10 +1879,9 @@ apply_wp_defaults() {
 reconcile_development_environment_policy() {
   local plugin_slug hook
   # fluent-smtp stays installed but inactive on every dev/review bootstrap so a
-  # new site can't send real mail before go-live, even though SendGrid
-  # subuser/domain-auth provisioning still runs to get DNS ready ahead of
-  # time. Reactivating it and delivering the site API key is handled by the
-  # separate MainWP-driven go-live delivery tooling, not by this script.
+  # new site can't send real mail before go-live. Optional SendGrid provisioning
+  # runs only after an explicit opt-in; reactivation and site-key delivery remain
+  # separate, ops-owned go-live work.
   local -a disabled_plugins=(
     wpmu-dev-seo
     smartcrawl-seo
@@ -2132,7 +2138,7 @@ PHP
       fi
     fi
   else
-    echo "SendGrid automatic provisioning disabled by STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION."
+    echo "SendGrid automatic provisioning is opt-in; set STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION=1 to enable it."
   fi
 
   if ! run_wp plugin is-active mrn-config-helper >/dev/null 2>&1; then

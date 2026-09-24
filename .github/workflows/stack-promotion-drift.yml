@@ -37,7 +37,6 @@ jobs:
             mrn-config-helper
             mrn-media-bulk-tools
             mrn-schema-bridge
-            mrn-sendgrid-provisioning
             mrn-stack-deployment-agent
             mrn-tokens
             mrn-universal-sticky-bar
@@ -50,7 +49,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "${MRN_STANDALONE_PLUGINS_ROOT}"
-          for slug in mrn-config-helper mrn-media-bulk-tools mrn-schema-bridge mrn-sendgrid-provisioning mrn-stack-deployment-agent mrn-tokens mrn-universal-sticky-bar; do
+          for slug in mrn-config-helper mrn-media-bulk-tools mrn-schema-bridge mrn-stack-deployment-agent mrn-tokens mrn-universal-sticky-bar; do
             gh repo clone "mrnwebdesigns/${slug}" \
               "${MRN_STANDALONE_PLUGINS_ROOT}/${slug}" -- --depth 1
           done
