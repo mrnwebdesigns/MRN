@@ -774,7 +774,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.9.6",
+      "version": "0.9.7",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -783,7 +783,7 @@
       "source": {"repository": "mrn-mainwp-operations-api", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api", "state": "confirmed-independent-dashboard"},
       "dependencies": {"hard": ["MainWP Dashboard", "WordPress Abilities API"], "soft": ["UpdraftPlus", "MRN Google Fonts"], "release_group": "mainwp-operations"},
       "data": {"options": [], "tables": [], "cron": [], "routes": ["twenty-two mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
-      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages, font management, one-site Stack qualification, backup-gated full Stack rollout and recovery, upgrade-only allowlisted optional-plugin updates including Reusable Block Library and ACF Character Count, and exact one-component updates for platform-required standard plugins."
+      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages, font management, one-site Stack qualification with fail-closed production credential policy, backup-gated full Stack rollout and recovery, upgrade-only allowlisted optional-plugin updates including Reusable Block Library and ACF Character Count, and exact one-component updates for platform-required standard plugins."
     },
     {
       "slug": "mrn-pre-consent-update-backup",
