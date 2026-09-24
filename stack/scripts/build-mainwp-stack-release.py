@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a deterministic MainWP package for one canonical MRN Stack release."""
+"""Build a deterministic MainWP package for one exact-site MRN Stack release."""
 
 from __future__ import annotations
 
@@ -31,6 +31,7 @@ LOCK_TARGET = "mu-plugins/mrn-stack-release.lock.json"
 AGENT_SLUG = "mrn-stack-deployment-agent"
 PARENT_THEME_SLUG = "mrn-base-stack"
 CHILD_THEME_SLUG = "mrn-base-stack-child"
+SITE_STYLESHEET_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_-]{0,127}$")
 MAX_COMPONENTS = 40
 MAX_ARCHIVE_ENTRIES = 5000
 MAX_EXPANDED_BYTES = 100 * 1024 * 1024
@@ -59,6 +60,16 @@ def version_tuple(value: object) -> tuple[int, int, int]:
     if not match:
         raise BuildError(f"Invalid deployment-agent version: {value}")
     return tuple(int(part) for part in match.groups())
+
+
+def validate_site_stylesheet(value: object) -> str:
+    stylesheet = str(value or "")
+    if (
+        not SITE_STYLESHEET_PATTERN.fullmatch(stylesheet)
+        or stylesheet == PARENT_THEME_SLUG
+    ):
+        raise BuildError("The site stylesheet must be one exact safe child-theme slug")
+    return stylesheet
 
 
 def deterministic_zip(path: Path, entries: dict[str, bytes]) -> None:
@@ -155,11 +166,13 @@ def build_release(
     artifact_root: Path,
     output_dir: Path,
     rollout_id: str,
+    site_stylesheet: str = CHILD_THEME_SLUG,
 ) -> dict:
     if not IDENTIFIER_PATTERN.fullmatch(rollout_id):
         raise BuildError("The rollout ID is invalid")
     lock_path = Path(lock_path).resolve()
     artifact_root = Path(artifact_root).resolve()
+    site_stylesheet = validate_site_stylesheet(site_stylesheet)
     lock_bytes = lock_path.read_bytes()
     lock = release_lock.validate_lock(json.loads(lock_bytes))
     lock_hash = sha256_bytes(lock_bytes)
@@ -254,7 +267,7 @@ def build_release(
         "lock_sha256": lock_hash,
         "site_contract": {
             "template": PARENT_THEME_SLUG,
-            "stylesheet": CHILD_THEME_SLUG,
+            "stylesheet": site_stylesheet,
             "preserve_stylesheet": True,
         },
         "prerequisites": prerequisites,
@@ -289,6 +302,7 @@ def build_release(
         "schema_version": PLAN_SCHEMA,
         "release_id": lock["release_id"],
         "rollout_id": rollout_id,
+        "site_stylesheet": site_stylesheet,
         "lock_sha256": lock_hash,
         "plan_sha256": plan_hash,
         "package_sha256": file_sha256(package_path),
@@ -316,6 +330,11 @@ def main(argv=None) -> int:
     parser.add_argument("--artifact-root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--rollout-id", required=True)
+    parser.add_argument(
+        "--site-stylesheet",
+        default=CHILD_THEME_SLUG,
+        help="Exact active child-theme stylesheet slug for this one-site plan",
+    )
     args = parser.parse_args(argv)
     try:
         receipt = build_release(
@@ -323,6 +342,7 @@ def main(argv=None) -> int:
             args.artifact_root.expanduser().resolve(),
             args.output_dir.expanduser().resolve(),
             args.rollout_id,
+            args.site_stylesheet,
         )
     except (BuildError, release_lock.ReleaseLockError, OSError, ValueError) as error:
         print(f"ERROR: {error}", file=sys.stderr)

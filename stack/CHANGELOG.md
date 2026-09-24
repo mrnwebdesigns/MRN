@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 2026.09.24-derived-child-fleet
+
+- `mrn-stack-deployment-agent` (`0.2.3` -> `0.2.4`) now accepts one exact,
+  safe, site-specific child stylesheet over the canonical `mrn-base-stack`
+  parent while keeping the child tree outside every package and write target.
+- MainWP Operations API `0.9.5` distinguishes canonical from supported Stack
+  shapes and requires an upgraded agent's support attestation before a derived
+  child can pass full-release qualification.
+- The schema-2 builder now creates a deterministic one-site plan with
+  `--site-stylesheet`; runtime verification must read back that exact child.
+  Stock-child plans remain the default, and renamed-parent or clone-style sites
+  remain outside the Fleet contract.
+- Registered the exact `0.2.4` deployment-agent package for upgrade-only Fleet
+  use. Installing it on a site where it is absent still requires a separate,
+  explicitly authorized prerequisite-seeding plan and backup.
+
 ## 2026.09.23-mobile-navigation-fleet
 
 - `mrn-base-stack` (`1.4.1` -> `1.4.2`): select the configured mobile drawer

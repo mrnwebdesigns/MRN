@@ -75,9 +75,9 @@
      is stale, source changed after lock generation, or a required standalone
      lock commit differs from that repository's merged default branch
 10. Build a deterministic MainWP full Stack package from the assembled exact
-    lock for a qualified canonical child-theme site:
+    lock for one qualified site on the canonical parent:
    - `python3 stack/scripts/assemble-stack-release.py --release-lock stack/manifests/stack-release.lock.json --output releases/assembled/<release-id>`
-   - `python3 stack/scripts/build-mainwp-stack-release.py --release-lock stack/manifests/stack-release.lock.json --artifact-root releases/assembled/<release-id> --rollout-id <unique-rollout-id> --output-dir releases/mainwp-stack/<unique-rollout-id>`
+   - `python3 stack/scripts/build-mainwp-stack-release.py --release-lock stack/manifests/stack-release.lock.json --artifact-root releases/assembled/<release-id> --rollout-id <unique-rollout-id> --site-stylesheet <exact-active-stylesheet> --output-dir releases/mainwp-stack/<unique-rollout-id>`
    - the full package includes every locked platform component and exact parent,
      excludes the deployment agent as a separately verified prerequisite, and
      never contains the site-derived child theme
@@ -117,11 +117,12 @@ must match its release hash. The generic active child in the bootstrap manifest
 is `site-derived`: it is the source template for a site-owned, renamed child
 theme and must not be treated as an exact fleet runtime slug or hash.
 
-The initial schema-2 MainWP full Stack contract is intentionally narrower: it
-qualifies only a site still using the canonical `mrn-base-stack` parent and
-`mrn-base-stack-child` stylesheet, then preserves that child tree. Renamed
-parent/child sites continue through the per-site resolved deployment flow until
-an exact mapping contract is added.
+The schema-2 MainWP full Stack contract requires the canonical
+`mrn-base-stack` parent and an exact preserved child stylesheet. The stock
+`mrn-base-stack-child` remains the default. An upgraded deployment agent may
+attest a site-specific child, and the builder then embeds that exact slug in a
+one-site plan while keeping the child tree outside every target. Renamed-parent
+and clone-style sites continue through the per-site resolved deployment flow.
 
 ## Enforcement Baseline
 - No release should be marked ready when:

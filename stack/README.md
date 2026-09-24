@@ -10,21 +10,21 @@ The future hosting platform owns site and environment selection. Its canonical v
 
 `scripts/site-bootstrap.sh` honors `--site-profile` and `MRN_SITE_PROFILE` (`stack` or `plain`) and supports profile-scoped manifest entries that end in `|stack` or `|plain` so optional shared plugins can stay out of the plain-profile bootstrap.
 
-Independently released non-platform plugins use `manifests/optional-plugin-releases.json` and `scripts/build-mainwp-optional-plugin-plan.py`, whether they are catalog-only or remain standard bootstrap defaults. The plan builder is deliberately one-site and upgrade-only: it rejects an absent plugin, stale inventory, an unverified package, or missing backup/rollback readiness. MainWP Operations API `0.9.4` provides the matching exact-site preflight, update, and rollback abilities without adding absent plugins. See [`MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md).
+Independently released non-platform plugins use `manifests/optional-plugin-releases.json` and `scripts/build-mainwp-optional-plugin-plan.py`, whether they are catalog-only or remain standard bootstrap defaults. The plan builder is deliberately one-site and upgrade-only: it rejects an absent plugin, stale inventory, an unverified package, or missing backup/rollback readiness. MainWP Operations API `0.9.5` provides the matching exact-site preflight, update, and rollback abilities without adding absent plugins. See [`MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_OPTIONAL_PLUGIN_ROLLOUT_PLAN.md).
 
 Platform-required standard plugins can also move one at a time without
 replacing the full Stack. The selective contract keeps the immutable release as
 the site's baseline and records one exact component overlay with independently
 verified target and rollback trees. Use
 `manifests/stack-plugin-releases.json`,
-`scripts/build-mainwp-stack-plugin-plan.py`, and MainWP Operations API `0.9.4`.
+`scripts/build-mainwp-stack-plugin-plan.py`, and MainWP Operations API `0.9.5`.
 MU components, shared runtime, and themes remain full-release targets. See
 [`MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md).
 
 Cookie Consent and GTM Injector are optional integrations and are not part of
 the universal bootstrap manifest. Their checksum-locked release records bind
 merged standalone source, while rollout still requires the Dashboard to run
-controller `0.9.4` and expose both main-file slugs. For paired updates, install
+controller `0.9.5` and expose both main-file slugs. For paired updates, install
 GTM Injector first so an older active Cookie Consent integration is treated as
 ambiguous and fails closed throughout the transition.
 
@@ -43,7 +43,7 @@ ambiguous and fails closed throughout the transition.
 - A stack workflow/ops guide (`STACK_OPERATIONS.md`) for local symlink workflow, server ownership, and sync/deploy rules.
 - A Local environment pull/deploy guide (`../local/LOCAL_ENV_WORKFLOW.md`) for using Local like a site environment endpoint.
 - A canonical rollout checklist (`ROLLOUT_CHECKLIST.md`) for pre-flight QA, deploy-path decisions, post-deploy verification, and live parity checks.
-- A MainWP full Stack fleet plan (`MAINWP_FLEET_ROLLOUT_PLAN.md`), selective standard-plugin plan (`MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md`), development-canary checklist (`MAINWP_FLEET_DEV_CANARY.md`), and deterministic builders for exact, backup-gated, one-site-at-a-time updates that preserve the canonical child theme.
+- A MainWP full Stack fleet plan (`MAINWP_FLEET_ROLLOUT_PLAN.md`), selective standard-plugin plan (`MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md`), development-canary checklist (`MAINWP_FLEET_DEV_CANARY.md`), and deterministic builders for exact, backup-gated, one-site-at-a-time updates that preserve the active child theme.
 - A schema and AI discovery baseline (`SCHEMA_DISCOVERY_BASELINE.md`) for active SEO provider ownership, CPT mappings, editor controls, crawler policy, and launch checks.
 - An authoritative machine-readable component inventory (`manifests/component-catalog.json`), human catalog (`PLUGIN_CATALOG.md`), governance rules (`PLUGIN_GOVERNANCE.md`), historical plugin audit (`MRN_PLUGIN_AUDIT.md`), and plugin doc template (`PLUGIN_DOC_TEMPLATE.md`). Catalog inclusion does not imply default installation.
 - First deep-dive plugin docs live in `plugin-docs/`.
@@ -73,9 +73,9 @@ ambiguous and fails closed throughout the transition.
 For immutable platform updates to an existing site, use the assembled,
 backup-gated workflow in [`VERIFIED_RELEASE_DEPLOY.md`](VERIFIED_RELEASE_DEPLOY.md).
 It preserves each site's child stylesheet and verifies the live runtime against
-the selected release lock before reporting success. For a qualified site still
-using the canonical `mrn-base-stack` parent plus `mrn-base-stack-child`, the
-provider-independent MainWP path in
+the selected release lock before reporting success. For a qualified site using
+the canonical `mrn-base-stack` parent plus either the stock or an agent-attested
+site-specific child, the provider-independent MainWP path in
 [`MAINWP_FLEET_ROLLOUT_PLAN.md`](MAINWP_FLEET_ROLLOUT_PLAN.md) applies the same
 immutable release one named site at a time.
 5. A marker file is created so the same site is not bootstrapped again.
