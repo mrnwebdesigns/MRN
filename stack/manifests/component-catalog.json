@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-09-16",
+  "catalog_updated": "2026-09-25",
   "authority": "This file is the authoritative inventory and classification source for MRN-owned WordPress plugins and MU components. Inclusion does not imply installation.",
   "product_model": {
     "platform-required": "Installed on a production MRN stack because it provides mandatory platform behavior.",
@@ -774,7 +774,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.9.7",
+      "version": "0.9.8",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -782,8 +782,8 @@
       "target_tier": "dashboard-only",
       "source": {"repository": "mrn-mainwp-operations-api", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api", "state": "confirmed-independent-dashboard"},
       "dependencies": {"hard": ["MainWP Dashboard", "WordPress Abilities API"], "soft": ["UpdraftPlus", "MRN Google Fonts"], "release_group": "mainwp-operations"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": ["twenty-two mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
-      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages, font management, one-site Stack qualification with fail-closed production credential policy, backup-gated full Stack rollout and recovery, upgrade-only allowlisted optional-plugin updates including Reusable Block Library and ACF Character Count, and exact one-component updates for platform-required standard plugins."
+      "data": {"options": ["site-scoped approved Stack-plugin overlay ledgers"], "tables": [], "cron": [], "routes": ["twenty-two mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
+      "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages, font management, one-site Stack qualification with fail-closed production credential policy, backup-gated full Stack rollout and recovery, upgrade-only allowlisted optional-plugin updates, and exact one-component updates that persist and reconcile checksum-verified approved overlays without hiding unknown drift."
     },
     {
       "slug": "mrn-pre-consent-update-backup",

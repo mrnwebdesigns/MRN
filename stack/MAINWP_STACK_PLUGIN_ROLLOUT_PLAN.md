@@ -29,11 +29,14 @@ the entire site is on a new Stack release. The effective site state is:
    selective plan and fresh post-write runtime report.
 
 The Stack runtime report will normally show `matches_release=false` for that
-one updated plugin. That is expected and disclosed, not hidden. The selective
-plan proves the intentional target version, `sha256-tree-v1` digest, file count,
-source commit, ZIP checksum, site, and rollback artifact. A later full Stack
-promotion should absorb the new plugin version into a new immutable release and
-remove the overlay condition.
+one updated plugin. That is expected and disclosed, not hidden. After exact
+post-write verification, MainWP records the site, baseline, component, version,
+package checksum, tree checksum, file count, plan, operation, and timestamp in
+its Dashboard-side approval ledger. Fresh reports compare that record with the
+raw loader evidence and report `current_with_approved_overlays`; changed,
+unrecorded, or baseline-stale artifacts remain `drifted`. A later full Stack
+promotion absorbs the plugin into a new immutable release and clears the
+superseded ledger only after exact runtime verification.
 
 ## Release Units
 
@@ -43,7 +46,8 @@ remove the overlay condition.
 - `scripts/build-mainwp-stack-plugin-plan.py` validates one fresh site
   inventory, immutable release identity, exact committed sources, target and
   rollback packages, runtime tree, and backup readiness.
-- `mrn-mainwp-operations-api` `0.9.4` provides the matching Dashboard abilities:
+- `mrn-mainwp-operations-api` `0.9.8` provides the matching Dashboard abilities
+  and approved-overlay reconciliation:
   - `mrn-mainwp/preflight-stack-plugin-update-v1`
   - `mrn-mainwp/update-stack-plugin-v1`
   - `mrn-mainwp/rollback-stack-plugin-v1`
@@ -204,7 +208,8 @@ workflow with a direct upload merely because it has SSH access.
 | Preflighted | Dashboard repeats live inventory/runtime/package checks and returns `ready=true` plus the precondition hash |
 | Backed up | A new remote database-only Updraft backup produces a valid one-use receipt for this exact site/write |
 | Applied | Explicitly confirmed update uses the exact reviewed package and preserves active state |
-| Verified | Fresh MainWP inventory and signed runtime report match target version/tree/file count and every unrelated target stayed outside the operation |
+| Overlay recorded | MainWP persists the exact site, immutable baseline, component, package, tree, file count, plan, and operation only after successful readback |
+| Verified | Fresh MainWP inventory and signed runtime report match the target and its approved overlay; raw drift stays visible and unknown drift remains hard drift |
 
 Every site advances independently. A failure on one site does not authorize or
 attempt another site.
@@ -231,9 +236,11 @@ hash, and that site's one-use backup receipt.
 The Dashboard re-runs preflight before writing. It installs through MainWP
 Child's authenticated package path, consumes the receipt after the mutation,
 then verifies both fresh plugin inventory and the signed runtime component
-version, tree digest, file count, loaded state, and preserved active state. A
-successful ZIP installation with failed readback is reported as a failed
-verification after a completed write; do not retry blindly.
+version, tree digest, file count, loaded state, and preserved active state. It
+persists the approved overlay only after those checks, then requires exact
+ledger readback. A successful ZIP installation with failed runtime or ledger
+readback is reported as a failed verification after a completed write; do not
+retry blindly.
 
 ## Rollback
 
@@ -247,12 +254,14 @@ Rollback is explicit and independently backup-gated:
 5. Call `mrn-mainwp/rollback-stack-plugin-v1` with `confirm=true`, the new
    precondition hash, and the new receipt.
 6. Require exact inventory and runtime-tree readback of the registered prior
-   version.
+   version. Restoring the immutable baseline removes the component overlay;
+   rolling back to another non-baseline registered version replaces it with the
+   exact verified rollback record.
 
 ## Control-Plane Gate
 
 Source readiness is not Dashboard deployment. Before the first selective site
-operation, package and deploy `mrn-mainwp-operations-api` `0.9.4` to
+operation, package and deploy `mrn-mainwp-operations-api` `0.9.8` to
 `wpcontrol.mrndev.io` through its separately authorized, backup-gated Dashboard
 workflow. Reconnect the configured `mainwp` MCP adapter and require the exact
 Dashboard host plus all three selective abilities. Do not substitute SSH,
@@ -270,4 +279,5 @@ browser automation, another Dashboard, or the generic package installer.
 - read-only preflight, explicit confirmation, and fresh backup receipt for
   every mutation;
 - receipt consumption after any successful child write; and
-- exact post-write inventory and signed runtime verification.
+- exact post-write inventory, signed runtime, and approved-overlay ledger
+  verification.

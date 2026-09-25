@@ -408,15 +408,35 @@ export function selectReleaseContext({ catalog, registry, runtimeReport, compone
   const targetVersion = String(catalogEntry.version || "");
   const currentVersion = String(runtimeComponent.version || "");
   const comparison = compareVersions(currentVersion, targetVersion);
+  const releases = Array.isArray(registry?.releases) ? registry.releases : [];
   if (comparison === 0) {
-    return { noChange: true, catalogEntry, runtimeComponent, currentVersion, targetVersion };
+    if (runtimeComponent.matches_release === true) {
+      return { noChange: true, catalogEntry, runtimeComponent, currentVersion, targetVersion };
+    }
+    if (runtimeComponent.matches_release !== false) {
+      throw new FleetUpdateError(`${component} does not report whether it matches the immutable Stack baseline.`);
+    }
+    const targetRelease = uniqueMatch(
+      releases,
+      (entry) => entry.slug === component && entry.version === targetVersion,
+      `No unique selective target release is registered for ${component} ${targetVersion}.`,
+    );
+    const target = verifyRegisteredArtifact(targetRelease, artifactRoots);
+    return {
+      noChange: true,
+      catalogEntry,
+      runtimeComponent,
+      currentVersion,
+      targetVersion,
+      targetRelease,
+      target,
+    };
   }
   if (comparison > 0) {
     throw new FleetUpdateError(
       `The site has ${component} ${currentVersion}, which is newer than catalog target ${targetVersion}; selective updates never downgrade.`,
     );
   }
-  const releases = Array.isArray(registry?.releases) ? registry.releases : [];
   const targetRelease = uniqueMatch(
     releases,
     (entry) => entry.slug === component && entry.version === targetVersion,
@@ -710,6 +730,15 @@ async function readRuntimeReport(client, site) {
   ) {
     throw new FleetUpdateError("The child site does not report a valid signed Stack release baseline.");
   }
+  if (
+    !["current", "current_with_approved_overlays", "drifted"].includes(report?.fleet_state) ||
+    !Array.isArray(report?.approved_overlays) ||
+    !Array.isArray(report?.drifted_required) ||
+    !Array.isArray(report?.unknown_drifted_required) ||
+    !Array.isArray(report?.stale_approved_overlays)
+  ) {
+    throw new FleetUpdateError("MainWP Operations API 0.9.8 or newer is required for approved-overlay Fleet state.");
+  }
   return report;
 }
 
@@ -837,8 +866,10 @@ export function verifyDeploymentResult(deployment, input, currentVersion, target
     deployment?.tree_sha256 !== target.tree_sha256 ||
     deployment?.file_count !== target.file_count ||
     baselineMatches !== true ||
-    typeof deployment?.baseline_component_match !== "boolean" ||
+    deployment?.baseline_component_match !== false ||
     deployment?.matches_component_plan !== true ||
+    deployment?.approved_overlay_recorded !== true ||
+    !["current_with_approved_overlays", "drifted"].includes(deployment?.fleet_state) ||
     deployment?.receipt_consumed !== true
   ) {
     throw new FleetUpdateError("The child write returned success, but its exact deployment evidence did not match the approved plan.");
@@ -846,19 +877,36 @@ export function verifyDeploymentResult(deployment, input, currentVersion, target
   return deployment;
 }
 
-export function verifyPostUpdateRuntime(report, component, target) {
+export function verifyPostUpdateRuntime(report, component, target, baseline) {
   const runtime = uniqueMatch(
     Array.isArray(report?.components) ? report.components : [],
     (entry) => entry.slug === component,
     `Fresh runtime report must contain exactly one ${component} component.`,
   );
+  const approvedOverlay = uniqueMatch(
+    Array.isArray(report?.approved_overlays) ? report.approved_overlays : [],
+    (entry) => entry.component_slug === component,
+    `Fresh runtime report must contain exactly one approved ${component} overlay.`,
+  );
   if (
     runtime.loaded !== true ||
     runtime.version !== target.version ||
     runtime.sha256 !== target.tree_sha256 ||
-    runtime.file_count !== target.file_count
+    runtime.file_count !== target.file_count ||
+    runtime.matches_release !== false ||
+    !Array.isArray(report?.drifted_required) ||
+    !report.drifted_required.includes(component) ||
+    !Array.isArray(report?.unknown_drifted_required) ||
+    report.unknown_drifted_required.includes(component) ||
+    !["current_with_approved_overlays", "drifted"].includes(report?.fleet_state) ||
+    approvedOverlay?.baseline?.release_id !== baseline.release_id ||
+    approvedOverlay?.baseline?.lock_sha256 !== baseline.lock_sha256 ||
+    approvedOverlay?.version !== target.version ||
+    approvedOverlay?.package_sha256 !== target.package_sha256 ||
+    approvedOverlay?.tree_sha256 !== target.tree_sha256 ||
+    approvedOverlay?.file_count !== target.file_count
   ) {
-    throw new FleetUpdateError("The write completed, but the fresh runtime report does not match the exact target component.");
+    throw new FleetUpdateError("The write completed, but the fresh runtime report does not match the exact target and approved-overlay record.");
   }
   return runtime;
 }
@@ -898,7 +946,7 @@ function displaySummary(summary, jsonOnly) {
   }
   if (summary.status === "no_change") {
     process.stdout.write(
-      `NO CHANGE\nSite: ${summary.site_url} (MainWP ${summary.site_id})\nComponent: ${summary.component} ${summary.current_version}\nThe site already matches the registered selective target.\n`,
+      `NO CHANGE\nSite: ${summary.site_url} (MainWP ${summary.site_id})\nComponent: ${summary.component} ${summary.current_version}\nFleet state: ${summary.fleet_state}\nThe site already matches the registered selective target.\n`,
     );
     return;
   }
@@ -909,7 +957,7 @@ function displaySummary(summary, jsonOnly) {
     return;
   }
   process.stdout.write(
-    `UPDATE VERIFIED\nSite: ${summary.site_url} (MainWP ${summary.site_id})\nComponent: ${summary.component} ${summary.from_version} -> ${summary.to_version}\nBackup: verified and receipt consumed\nRuntime: exact target version/tree/file count loaded\nEvidence: ${summary.evidence_dir}\n`,
+    `UPDATE VERIFIED\nSite: ${summary.site_url} (MainWP ${summary.site_id})\nComponent: ${summary.component} ${summary.from_version} -> ${summary.to_version}\nFleet state: ${summary.fleet_state}\nBackup: verified and receipt consumed\nRuntime: exact target version/tree/file count loaded with an approved overlay\nEvidence: ${summary.evidence_dir}\n`,
   );
 }
 
@@ -943,6 +991,26 @@ export async function runFleetUpdate(args, dependencies = {}) {
       artifactRoots,
     });
     if (context.noChange) {
+      const selectedUnknownDrift = runtimeReport.unknown_drifted_required.includes(args.component);
+      const selectedStaleOverlay = runtimeReport.stale_approved_overlays.some(
+        (entry) => entry?.component_slug === args.component,
+      );
+      if (selectedUnknownDrift || selectedStaleOverlay) {
+        throw new FleetUpdateError(
+          `${args.component} is already at the catalog version, but its Fleet state is unknown or stale; reconcile it before reporting no change.`,
+        );
+      }
+      if (context.runtimeComponent.matches_release === false) {
+        verifyPostUpdateRuntime(
+          runtimeReport,
+          args.component,
+          context.target,
+          {
+            release_id: runtimeReport.release_lock.release_id,
+            lock_sha256: runtimeReport.release_lock.sha256,
+          },
+        );
+      }
       return {
         status: "no_change",
         dashboard_host: status.dashboardHost,
@@ -951,6 +1019,8 @@ export async function runFleetUpdate(args, dependencies = {}) {
         component: args.component,
         current_version: context.currentVersion,
         target_version: context.targetVersion,
+        fleet_state: runtimeReport.fleet_state,
+        approved_overlays: runtimeReport.approved_overlays,
       };
     }
 
@@ -1001,6 +1071,7 @@ export async function runFleetUpdate(args, dependencies = {}) {
       target_version: context.targetVersion,
       baseline_release_id: plan.baseline.release_id,
       precondition_hash: preflight.precondition_hash,
+      fleet_state_before: runtimeReport.fleet_state,
       evidence_dir: evidenceDir,
     };
     if (!args.execute) {
@@ -1033,7 +1104,7 @@ export async function runFleetUpdate(args, dependencies = {}) {
     const postSyncStarted = new Date();
     const postSite = await freshSync(client, refreshed, postSyncStarted);
     const postRuntime = await readRuntimeReport(client, postSite);
-    verifyPostUpdateRuntime(postRuntime, args.component, context.target);
+    verifyPostUpdateRuntime(postRuntime, args.component, context.target, verifiedInput.baseline);
     writeJson(path.join(evidenceDir, "post-runtime.json"), postRuntime);
     const smoke = await (dependencies.smokeCheck || smokeCheck)(refreshed.url, args.smokePaths);
     writeJson(path.join(evidenceDir, "smoke.json"), smoke);
@@ -1044,6 +1115,8 @@ export async function runFleetUpdate(args, dependencies = {}) {
       to_version: deployment.to_version,
       backup_verified: true,
       receipt_consumed: deployment.receipt_consumed === true,
+      approved_overlay_recorded: deployment.approved_overlay_recorded === true,
+      fleet_state: postRuntime.fleet_state,
       runtime_verified: true,
       smoke_verified: true,
     };

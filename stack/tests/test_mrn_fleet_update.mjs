@@ -164,6 +164,7 @@ test("selective release selection refuses nonstandard components and recognizes 
       hash_algorithm: "sha256-tree-v1",
       sha256: SHA_A,
       file_count: 2,
+      matches_release: true,
     }],
   };
   const selected = selectReleaseContext({
@@ -174,6 +175,20 @@ test("selective release selection refuses nonstandard components and recognizes 
     artifactRoots: [],
   });
   assert.equal(selected.noChange, true);
+
+  delete runtimeReport.components[0].matches_release;
+  assert.throws(
+    () => selectReleaseContext({ catalog, registry: { releases: [] }, runtimeReport, component: "mrn-test", artifactRoots: [] }),
+    /does not report whether it matches/,
+  );
+
+  runtimeReport.components[0].matches_release = false;
+  assert.throws(
+    () => selectReleaseContext({ catalog, registry: { releases: [] }, runtimeReport, component: "mrn-test", artifactRoots: [] }),
+    /No unique selective target release/,
+  );
+
+  runtimeReport.components[0].matches_release = true;
 
   catalog.components[0].runtime_type = "mu-component";
   assert.throws(
@@ -228,13 +243,31 @@ test("inventory and ability inputs preserve the exact site, baseline, and artifa
 });
 
 test("fresh runtime verification requires exact target identity", () => {
-  const target = { version: "1.1.0", tree_sha256: SHA_A, file_count: 4 };
+  const target = { version: "1.1.0", package_sha256: SHA_B, tree_sha256: SHA_A, file_count: 4 };
+  const baseline = { release_id: "release-1", lock_sha256: SHA_C };
   const report = {
-    components: [{ slug: "mrn-test", loaded: true, version: "1.1.0", sha256: SHA_A, file_count: 4 }],
+    fleet_state: "current_with_approved_overlays",
+    drifted_required: ["mrn-test"],
+    unknown_drifted_required: [],
+    components: [{ slug: "mrn-test", loaded: true, version: "1.1.0", sha256: SHA_A, file_count: 4, matches_release: false }],
+    approved_overlays: [{
+      component_slug: "mrn-test",
+      baseline: { ...baseline },
+      version: "1.1.0",
+      package_sha256: SHA_B,
+      tree_sha256: SHA_A,
+      file_count: 4,
+    }],
   };
-  assert.equal(verifyPostUpdateRuntime(report, "mrn-test", target).version, "1.1.0");
+  assert.equal(verifyPostUpdateRuntime(report, "mrn-test", target, baseline).version, "1.1.0");
   report.components[0].sha256 = SHA_B;
-  assert.throws(() => verifyPostUpdateRuntime(report, "mrn-test", target), /does not match/);
+  assert.throws(() => verifyPostUpdateRuntime(report, "mrn-test", target, baseline), /does not match/);
+  report.components[0].sha256 = SHA_A;
+  report.unknown_drifted_required.push("mrn-test");
+  assert.throws(() => verifyPostUpdateRuntime(report, "mrn-test", target, baseline), /does not match/);
+  report.unknown_drifted_required = [];
+  report.approved_overlays[0].baseline.lock_sha256 = SHA_A;
+  assert.throws(() => verifyPostUpdateRuntime(report, "mrn-test", target, baseline), /does not match/);
 });
 
 test("safe mode is detected before a backup or update can start", async () => {
@@ -290,6 +323,11 @@ test("top-level no-change flow exact-resolves, syncs, and reads the signed runti
           report: {
             schema_version: 1,
             release_lock: { present: true, valid: true, release_id: "release-1", sha256: SHA_A },
+            fleet_state: "current",
+            drifted_required: [],
+            approved_overlays: [],
+            unknown_drifted_required: [],
+            stale_approved_overlays: [],
             components: [{
               slug: "mrn-config-helper",
               runtime_type: "standard-plugin",
@@ -299,6 +337,7 @@ test("top-level no-change flow exact-resolves, syncs, and reads the signed runti
               hash_algorithm: "sha256-tree-v1",
               sha256: SHA_B,
               file_count: 17,
+              matches_release: true,
             }],
           },
         };
@@ -373,6 +412,11 @@ test("a MainWP sync timeout is accepted only after fresh exact-site readback", a
             report: {
               schema_version: 1,
               release_lock: { present: true, valid: true, release_id: "release-1", sha256: SHA_A },
+              fleet_state: "current",
+              drifted_required: [],
+              approved_overlays: [],
+              unknown_drifted_required: [],
+              stale_approved_overlays: [],
               components: [{
                 slug: "mrn-config-helper",
                 runtime_type: "standard-plugin",
@@ -382,6 +426,7 @@ test("a MainWP sync timeout is accepted only after fresh exact-site readback", a
                 hash_algorithm: "sha256-tree-v1",
                 sha256: SHA_B,
                 file_count: 17,
+                matches_release: true,
               }],
             },
           }) }],
@@ -481,6 +526,23 @@ test("execution rechecks, probes safe mode, backs up, confirms, and verifies in 
             report: {
               schema_version: 1,
               release_lock: { present: true, valid: true, release_id: "release-1", sha256: SHA_A },
+              fleet_state: updated ? "current_with_approved_overlays" : "current",
+              drifted_required: updated ? ["mrn-test"] : [],
+              approved_overlays: updated ? [{
+                schema_version: 1,
+                component_slug: "mrn-test",
+                plugin_slug: "mrn-test/mrn-test.php",
+                baseline: { release_id: "release-1", lock_sha256: SHA_A },
+                version: "1.1.0",
+                package_sha256: targetPackage.sha256,
+                tree_sha256: SHA_C,
+                file_count: 4,
+                plan_id: "mrn-test-1.1.0-site-117",
+                operation: "update",
+                recorded_at: "2026-09-25T12:00:00Z",
+              }] : [],
+              unknown_drifted_required: [],
+              stale_approved_overlays: [],
               components: [{
                 slug: "mrn-test",
                 runtime_type: "standard-plugin",
@@ -490,6 +552,7 @@ test("execution rechecks, probes safe mode, backs up, confirms, and verifies in 
                 hash_algorithm: "sha256-tree-v1",
                 sha256: updated ? SHA_C : SHA_B,
                 file_count: updated ? 4 : 3,
+                matches_release: !updated,
               }],
             },
           });
@@ -550,6 +613,8 @@ test("execution rechecks, probes safe mode, backs up, confirms, and verifies in 
               // unchanged immutable baseline, so this is expected to be false.
               baseline_component_match: false,
               matches_component_plan: true,
+              approved_overlay_recorded: true,
+              fleet_state: "current_with_approved_overlays",
               receipt_consumed: true,
             });
           }
@@ -596,6 +661,8 @@ test("execution rechecks, probes safe mode, backs up, confirms, and verifies in 
     assert.equal(summary.status, "verified");
     assert.equal(summary.from_version, "1.0.0");
     assert.equal(summary.to_version, "1.1.0");
+    assert.equal(summary.fleet_state, "current_with_approved_overlays");
+    assert.equal(summary.approved_overlay_recorded, true);
     const writeIndexes = calls
       .map((call, index) => (call.name === "mrn_mainwp__update_stack_plugin_v1" ? index : -1))
       .filter((index) => index >= 0);

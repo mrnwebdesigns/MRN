@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 2026.09.25-approved-overlay-fleet
+
+- MainWP Operations API `0.9.8` persists an exact, site-scoped approval ledger
+  only after a backup-gated selective Stack-plugin write passes version, tree,
+  file-count, loaded-state, and active-state readback.
+- Runtime and qualification responses preserve raw loader drift while labeling
+  exact registered overlays `current_with_approved_overlays`. Changed,
+  unrecorded, or baseline-stale artifacts remain hard drift.
+- The `mrn fleet update` command now requires the `0.9.8` annotation contract,
+  verifies the persisted overlay against the exact package and immutable
+  baseline, reports Fleet state on no-op and successful runs, and fails closed
+  against an older controller.
+- Baseline-restoring selective rollback removes its component record. Exact
+  full-Stack verification clears all superseded overlay records for that site.
+  This control-plane release does not change any child-site package or lock.
+
 ## 2026.09.25-config-helper-startup-fleet-r2
 
 - Seal the startup candidate after its qualification reports are committed.

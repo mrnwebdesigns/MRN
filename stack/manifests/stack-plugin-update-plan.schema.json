@@ -149,7 +149,7 @@
         "preflight_ability": {"const": "mrn-mainwp/preflight-stack-plugin-update-v1"},
         "controller_ability": {"const": "mrn-mainwp/update-stack-plugin-v1"},
         "rollback_ability": {"const": "mrn-mainwp/rollback-stack-plugin-v1"},
-        "minimum_controller_version": {"type": "string"},
+        "minimum_controller_version": {"const": "0.9.8"},
         "precondition_hash_source": {"const": "controller-preflight"},
         "release_identity_model": {"const": "immutable-baseline-plus-component-overlay"},
         "allow_new_install": {"const": false},
