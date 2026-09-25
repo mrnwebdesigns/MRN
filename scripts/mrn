@@ -10,6 +10,7 @@ Commands:
   pull-site      Pull a live site into Local (uploads/database).
   deploy-site    Deploy from Local with site-vs-stack scope.
   nightly-pull   Pull all discovered .mrndev.io sites into Local.
+  fleet          Run guarded Fleet operations (currently: selective update).
   local-hub      Start the MRN Local Hub browser UI.
   completion     Print shell completion script (zsh|bash).
   install-completion
@@ -29,6 +30,7 @@ Examples:
     --local-site-path "/Users/khofmeyer/Local Sites/example/app/public"
 
   mrn nightly-pull --dry-run
+  mrn fleet update --site https://example.com --component mrn-config-helper
   mrn local-hub
   mrn install-completion zsh
 
@@ -46,6 +48,8 @@ Notes:
   - You can disable runtime sync with `--no-sync-runtime`.
   - For artifact-only pulls without a Local site, use:
     mrn pull-site <site-hostname> --snapshot-if-missing
+  - `fleet update` is preflight-only unless --execute, --approve, and
+    --confirm-site are all supplied. It never disables MainWP safe mode.
 EOF
 }
 
@@ -65,6 +69,7 @@ LOCAL_HUB_HOME="${MRN_LOCAL_HUB_HOME:-${DEFAULT_LOCAL_HUB_HOME}}"
 LOCAL_HUB_SERVER="${MRN_LOCAL_HUB_SERVER:-${LOCAL_HUB_HOME}/server.js}"
 ZSH_COMPLETION_SRC="${REPO_ROOT}/scripts/completions/_mrn"
 BASH_COMPLETION_SRC="${REPO_ROOT}/scripts/completions/mrn.bash"
+FLEET_UPDATE_SCRIPT="${REPO_ROOT}/stack/scripts/mrn-fleet-update.mjs"
 COMMAND="${1:-help}"
 
 [[ -x "${LOCAL_WORKFLOW}" ]] || {
@@ -225,6 +230,14 @@ case "${COMMAND}" in
 	nightly-pull)
 		shift
 		exec "${NIGHTLY_PULL_WORKFLOW}" "$@"
+		;;
+	fleet)
+		shift
+		[[ -f "${FLEET_UPDATE_SCRIPT}" ]] || {
+			echo "FAIL: Missing Fleet workflow helper: ${FLEET_UPDATE_SCRIPT}" >&2
+			exit 1
+		}
+		exec node "${FLEET_UPDATE_SCRIPT}" "$@"
 		;;
 	local-hub)
 		shift

@@ -210,6 +210,16 @@ The SSH alias `mainwp-tailscale` connects to the MainWP Dashboard host for expli
 ### Shared deployment tooling
 - Use shared tooling and scripts defined in canonical MRN stack/repo workflows and deployment contracts.
 - Apply per-project/site-specific edits only to approved scopes.
+- For an already released platform-required standard plugin, use
+  `mrn fleet update --site <exact-https-url> --component <slug>` as the normal
+  one-site Fleet entry point. Its first pass is planning only. Do not execute
+  until the exact site, versions, baseline, and precondition hash have been
+  reviewed and the owner has explicitly authorized that write; the execution
+  pass requires `--execute`, `--approve <precondition-sha256>`, and
+  `--confirm-site <exact-url>`. The command does not authorize or perform
+  shared Stack development, disable MainWP safe mode, install absent plugins,
+  or replace the full-release path for themes, MU components, and shared
+  runtime.
 
 ### Site deployment standard
 

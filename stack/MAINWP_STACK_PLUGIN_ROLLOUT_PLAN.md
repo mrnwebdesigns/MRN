@@ -131,6 +131,68 @@ The current catalog version is the default and only legal target. Optional
 copies, but their names, sizes, byte checksums, versions, and tree checksums
 must still match the registry.
 
+## Operator Command
+
+Use the repository command for normal one-site operation instead of manually
+assembling inventory, ability inputs, backup polling, and readback calls:
+
+```bash
+mrn fleet update \
+  --site https://example.com \
+  --component mrn-config-helper
+```
+
+Planning is the default and performs no child-site plugin, file, database, or
+backup mutation; its targeted MainWP sync does refresh operational inventory.
+It requires the configured `mainwp` MCP server to be connected to
+`wpcontrol.mrndev.io`, exact resolves and freshly syncs the named child, reads
+its signed Stack runtime, verifies the registered target and rollback bytes,
+invokes the canonical plan builder, and repeats controller preflight with that
+generated plan. Evidence is written beneath a timestamped
+`.tmp/fleet/<plan-id>-<run>/` directory unless `--output-dir` is supplied, so a
+new preflight cannot overwrite the evidence that produced an earlier approval.
+
+The planning summary prints the only accepted approval identity: the fresh
+controller `precondition_hash`. After the owner has reviewed the exact site,
+component, versions, baseline, and hash, execute the printed second command:
+
+```bash
+mrn fleet update \
+  --site https://example.com \
+  --component mrn-config-helper \
+  --execute \
+  --approve <precondition-sha256> \
+  --confirm-site https://example.com
+```
+
+The execution pass starts from zero: it exact-resolves and syncs again,
+rebuilds and re-preflights the plan, and refuses a changed approval hash. Before
+starting the backup it probes the MainWP two-step confirmation gate; safe mode
+or missing confirmation support stops the run. It then creates and verifies a
+fresh remote database-only backup, executes with the MCP-issued confirmation
+token, freshly syncs MainWP again, reads the signed runtime component version,
+tree and file count, and checks the public homepage. Add one or more
+`--smoke-path /affected-route/` arguments when the bug fix has a specific
+public route.
+
+The command deliberately does not support themes, MU components, shared
+runtime, optional plugins, new installations, downgrades, or arbitrary ZIPs.
+It reports the required workflow for an ineligible component rather than
+silently choosing a broader operation.
+
+### Use From Any Task
+
+Any MRN task may operate this command for an already merged, QA-approved, and
+registered selective release when the owner names the exact component and site.
+That does not move shared Stack development into a site task: unmerged source,
+versioning, release registration, or artifact preparation still belongs in a
+dedicated Stack task and must finish before deployment planning.
+
+Unless the owner's request explicitly authorizes proceeding through the exact
+Fleet confirmation after preflight, the task stops after the first command,
+shows the planning summary, and waits for approval. No task may replace this
+workflow with a direct upload merely because it has SSH access.
+
 ## One-Site State Machine
 
 | State | Evidence required before advancing |

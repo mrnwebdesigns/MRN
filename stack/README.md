@@ -21,6 +21,25 @@ verified target and rollback trees. Use
 MU components, shared runtime, and themes remain full-release targets. See
 [`MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md).
 
+The normal operator entry point is now the repository-level command:
+
+```bash
+mrn fleet update \
+  --site https://example.com \
+  --component mrn-config-helper
+```
+
+This first pass cannot update the site. It exact-resolves and freshly syncs one
+MainWP child, validates the signed baseline plus registered forward/rollback
+artifacts, runs controller preflight, and prints the exact precondition hash.
+After that scope has been reviewed and explicitly authorized, repeat the
+printed command with `--execute`, `--approve <precondition-sha256>`, and
+`--confirm-site <exact-url>`. Execution re-runs every check, fails while MCP
+safe mode is on, creates and verifies the required remote database backup,
+uses MainWP's two-step confirmation, and performs exact runtime plus public
+HTTP readback. The command never disables safe mode or installs an absent
+plugin.
+
 Cookie Consent and GTM Injector are optional integrations and are not part of
 the universal bootstrap manifest. Their checksum-locked release records bind
 merged standalone source, while rollout still requires the Dashboard to run
@@ -44,6 +63,9 @@ ambiguous and fails closed throughout the transition.
 - A Local environment pull/deploy guide (`../local/LOCAL_ENV_WORKFLOW.md`) for using Local like a site environment endpoint.
 - A canonical rollout checklist (`ROLLOUT_CHECKLIST.md`) for pre-flight QA, deploy-path decisions, post-deploy verification, and live parity checks.
 - A MainWP full Stack fleet plan (`MAINWP_FLEET_ROLLOUT_PLAN.md`), selective standard-plugin plan (`MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md`), development-canary checklist (`MAINWP_FLEET_DEV_CANARY.md`), and deterministic builders for exact, backup-gated, one-site-at-a-time updates that preserve the active child theme.
+- A guarded `mrn fleet update` operator workflow that turns the selective
+  standard-plugin contract into a two-pass plan/approve/apply command without
+  exposing MainWP credentials or bypassing safe mode.
 - A schema and AI discovery baseline (`SCHEMA_DISCOVERY_BASELINE.md`) for active SEO provider ownership, CPT mappings, editor controls, crawler policy, and launch checks.
 - An authoritative machine-readable component inventory (`manifests/component-catalog.json`), human catalog (`PLUGIN_CATALOG.md`), governance rules (`PLUGIN_GOVERNANCE.md`), historical plugin audit (`MRN_PLUGIN_AUDIT.md`), and plugin doc template (`PLUGIN_DOC_TEMPLATE.md`). Catalog inclusion does not imply default installation.
 - First deep-dive plugin docs live in `plugin-docs/`.

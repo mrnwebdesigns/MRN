@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Added `mrn fleet update` as the guarded one-site operator path for an already
+  released platform-required standard plugin. Planning exact-resolves and
+  freshly syncs one MainWP child, verifies signed runtime and immutable
+  forward/rollback artifacts, and emits a controller precondition hash.
+- Execution requires that exact hash plus a repeated exact-site confirmation,
+  fails closed while MCP safe mode is on, verifies a fresh remote database
+  backup, uses MainWP's two-step confirmation, and requires exact runtime and
+  public HTTP readback. The command cannot install, downgrade, or select an
+  arbitrary artifact and does not replace full Stack release workflows.
+
 ## 2026.09.24-sendgrid-optional-fleet
 
 - Reclassified `mrn-sendgrid-provisioning` from platform-required bootstrap to

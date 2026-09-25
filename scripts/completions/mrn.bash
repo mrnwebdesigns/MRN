@@ -32,7 +32,7 @@ _mrn() {
 	fi
 
 	if [[ ${COMP_CWORD} -eq 1 ]]; then
-		COMPREPLY=( $(compgen -W "pull-site deploy-site nightly-pull local-hub completion install-completion help" -- "${cur}") )
+		COMPREPLY=( $(compgen -W "pull-site deploy-site nightly-pull fleet local-hub completion install-completion help" -- "${cur}") )
 		return 0
 	fi
 
@@ -123,6 +123,23 @@ _mrn() {
 					;;
 			esac
 			COMPREPLY=( $(compgen -W "--discovery-ssh-host --local-sites-root --map-file --snapshot-root --skip-db --with-uploads --dry-run" -- "${cur}") )
+			;;
+		fleet)
+			if [[ ${COMP_CWORD} -eq 2 ]]; then
+				COMPREPLY=( $(compgen -W "update" -- "${cur}") )
+				return 0
+			fi
+			case "${prev}" in
+				--output-dir)
+					COMPREPLY=( $(compgen -d -- "${cur}") )
+					return 0
+					;;
+				--config)
+					COMPREPLY=( $(compgen -f -- "${cur}") )
+					return 0
+					;;
+			esac
+			COMPREPLY=( $(compgen -W "--site --component --execute --approve --confirm-site --smoke-path --output-dir --config --backup-timeout --json" -- "${cur}") )
 			;;
 		completion|install-completion)
 			COMPREPLY=( $(compgen -W "zsh bash" -- "${cur}") )

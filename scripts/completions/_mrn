@@ -64,6 +64,7 @@ _mrn() {
 		'pull-site:Pull a live site into Local'
 		'deploy-site:Deploy local updates to a live site'
 		'nightly-pull:Pull all discovered .mrndev.io sites'
+		'fleet:Run guarded one-site Fleet operations'
 		'local-hub:Start the MRN Local Hub browser UI'
 		'completion:Print shell completion script'
 		'install-completion:Install shell completion'
@@ -212,6 +213,54 @@ _mrn() {
 				'--dry-run[Preview rsync without writes]'
 			)
 			_describe -t options 'nightly-pull option' opts
+			return
+			;;
+		fleet)
+			if (( CURRENT == 3 )); then
+				_describe -t operation 'fleet operation' '(update)'
+				return
+			fi
+
+			case "${prev}" in
+				--site|--confirm-site)
+					_message 'exact HTTPS site URL'
+					return
+					;;
+				--component)
+					_message 'MRN standard-plugin slug'
+					return
+					;;
+				--approve)
+					_message 'precondition SHA-256'
+					return
+					;;
+				--smoke-path)
+					_message 'public path beginning with /'
+					return
+					;;
+				--output-dir)
+					_files -/
+					return
+					;;
+				--config)
+					_files
+					return
+					;;
+			esac
+
+			opts=(
+				'--site[Exact HTTPS MainWP child-site URL]'
+				'--component[Platform-required standard-plugin slug]'
+				'--execute[Apply an independently approved preflight]'
+				'--approve[Exact controller precondition SHA-256]'
+				'--confirm-site[Repeat the exact reviewed site URL]'
+				'--smoke-path[Additional public path to check after update]'
+				'--output-dir[Evidence output directory]'
+				'--config[Codex config containing MainWP MCP entry]'
+				'--backup-timeout[Backup wait limit in seconds]'
+				'--json[Print only the final JSON summary]'
+			)
+			_describe -t options 'fleet update option' opts
 			return
 			;;
 		completion|install-completion)
