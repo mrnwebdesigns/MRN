@@ -1,0 +1,59 @@
+{
+  "orders_rendered": 20,
+  "customer_report_rendered": true,
+  "api": [
+    {
+      "url": "http://startup-woo.localhost:8192/index.php?rest_route=%2Fwc-analytics%2Forders&page=1&per_page=1&status%5B0%5D=processing&status%5B1%5D=on-hold&_fields%5B0%5D=id&_locale=user",
+      "status": 200
+    },
+    {
+      "url": "http://startup-woo.localhost:8192/index.php?rest_route=%2Fwc-analytics%2Fproducts%2Freviews&page=1&per_page=1&status=hold&_embed=1&_fields%5B0%5D=id&_locale=user",
+      "status": 200
+    },
+    {
+      "url": "http://startup-woo.localhost:8192/index.php?rest_route=%2Fwc-analytics%2Fproducts%2Fcount-low-in-stock&status=publish&page=1&per_page=1&_locale=user",
+      "status": 200
+    },
+    {
+      "url": "http://startup-woo.localhost:8192/index.php?rest_route=%2Fwc-analytics%2Fadmin%2Fnotes&page=1&per_page=25&type=error%2Cupdate&status=unactioned&_locale=user",
+      "status": 200
+    },
+    {
+      "url": "http://startup-woo.localhost:8192/index.php?rest_route=%2Fwc-analytics%2Forders&page=1&per_page=1&status%5B0%5D=processing&status%5B1%5D=on-hold&_fields%5B0%5D=id&_locale=user",
+      "status": 200
+    },
+    {
+      "url": "http://startup-woo.localhost:8192/index.php?rest_route=%2Fwc-analytics%2Fproducts%2Freviews&page=1&per_page=1&status=hold&_embed=1&_fields%5B0%5D=id&_locale=user",
+      "status": 200
+    },
+    {
+      "url": "http://startup-woo.localhost:8192/index.php?rest_route=%2Fwc-analytics%2Fproducts%2Fcount-low-in-stock&status=publish&page=1&per_page=1&_locale=user",
+      "status": 200
+    },
+    {
+      "url": "http://startup-woo.localhost:8192/index.php?rest_route=%2Fwc-analytics%2Fadmin%2Fnotes&page=1&per_page=25&type=error%2Cupdate&status=unactioned&_locale=user",
+      "status": 200
+    },
+    {
+      "url": "http://startup-woo.localhost:8192/index.php?rest_route=%2Fwc-analytics%2Fdata%2Fcountries&_locale=user",
+      "status": 200
+    },
+    {
+      "url": "http://startup-woo.localhost:8192/index.php?rest_route=%2Fwc-analytics%2Fimports%2Fstatus&_locale=user",
+      "status": 200
+    },
+    {
+      "url": "http://startup-woo.localhost:8192/index.php?rest_route=%2Fwc-analytics%2Freports%2Fcustomers%2Fstats&fields%5B0%5D=customers_count&fields%5B1%5D=avg_orders_count&fields%5B2%5D=avg_total_spend&fields%5B3%5D=avg_avg_order_value&_locale=user",
+      "status": 200
+    },
+    {
+      "url": "http://startup-woo.localhost:8192/index.php?rest_route=%2Fwc-analytics%2Freports%2Fcustomers&orderby=date_last_active&order=desc&page=1&per_page=25&_locale=user",
+      "status": 200
+    },
+    {
+      "url": "http://startup-woo.localhost:8192/index.php?rest_route=%2Fwc-analytics%2Fimports%2Fstatus&_locale=user",
+      "status": 200
+    }
+  ],
+  "errors": []
+}
