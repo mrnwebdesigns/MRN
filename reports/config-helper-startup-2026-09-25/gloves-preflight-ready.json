@@ -1,0 +1,49 @@
+{
+  "ready": true,
+  "operation": "update",
+  "operation_type": "selective-stack-plugin",
+  "plan_id": "mrn-config-helper-0.1.66-site-117",
+  "site_id": 117,
+  "site_url": "https://gloves-online.com",
+  "inventory_checked": "2026-09-25T15:14:40+00:00",
+  "plugin_slug": "mrn-config-helper/mrn-config-helper.php",
+  "baseline": {
+    "release_id": "2026.09.24-sendgrid-optional-fleet",
+    "lock_sha256": "3b8467ad43c02c8e4aca978e0c93d0063d5c38ca477dc1137db8537e61f9a6be"
+  },
+  "baseline_component_match": true,
+  "installed": {
+    "installed": true,
+    "active": true,
+    "version": "0.1.64",
+    "tree_sha256": "0cd8b1aa6a30a3bb2543f2ac13fddeae54176dfe7ecf39a3fd9a666f50b0b39c",
+    "file_count": 17
+  },
+  "target": {
+    "version": "0.1.66",
+    "package_sha256": "7073f358b13d2a83e8350e586e532d3370d3914149f17059029c4cefa85c93df",
+    "tree_sha256": "1c5882823dfddcbe24b3a018ca95c726602e557ab15f79d136e276071dc74dd8",
+    "file_count": 19
+  },
+  "backup_readiness": {
+    "provider": "UpdraftPlus",
+    "plugin_installed": true,
+    "plugin_active": true,
+    "backup_api_available": true,
+    "remote_destination_configured": true,
+    "remote_storage_methods": [
+      "s3"
+    ],
+    "ready": true,
+    "checked_at": "2026-09-25T15:14:40+00:00"
+  },
+  "rollback_readiness": {
+    "ready": true,
+    "version": "0.1.64",
+    "package_sha256": "af39fb356c7f99f9da2c5ed2ecd9e1e90c020268ce3c9f2b2edbcdee126579ff",
+    "tree_sha256": "0cd8b1aa6a30a3bb2543f2ac13fddeae54176dfe7ecf39a3fd9a666f50b0b39c",
+    "file_count": 17
+  },
+  "precondition_hash": "fb633de299ad689f76ce8c726ff17098b165163d727829990db0b07fd9b764eb",
+  "blockers": []
+}

@@ -1,0 +1,114 @@
+{
+  "baseline": {
+    "hash_algorithm": "sha256-tree-v1",
+    "lock_sha256": "3b8467ad43c02c8e4aca978e0c93d0063d5c38ca477dc1137db8537e61f9a6be",
+    "release_id": "2026.09.24-sendgrid-optional-fleet"
+  },
+  "execution_contract": {
+    "allow_new_install": false,
+    "controller_ability": "mrn-mainwp/update-stack-plugin-v1",
+    "minimum_controller_version": "0.9.4",
+    "precondition_hash_source": "controller-preflight",
+    "preflight_ability": "mrn-mainwp/preflight-stack-plugin-update-v1",
+    "preserve_active_state": true,
+    "release_identity_model": "immutable-baseline-plus-component-overlay",
+    "requires_confirm": true,
+    "requires_fresh_database_backup_receipt": true,
+    "requires_fresh_inventory_recheck": true,
+    "requires_precondition_hash": true,
+    "requires_runtime_tree_readback": true,
+    "rollback_ability": "mrn-mainwp/rollback-stack-plugin-v1"
+  },
+  "generated_at": "2026-09-25T15:13:32Z",
+  "operation": "upgrade-only",
+  "plan_id": "mrn-config-helper-0.1.66-site-117",
+  "plan_type": "stack-plugin-update",
+  "plugin": {
+    "current_distribution": "standard-bootstrap",
+    "main_file": "mrn-config-helper/mrn-config-helper.php",
+    "rollback": {
+      "package": {
+        "filename": "mrn-config-helper-0.1.64.zip",
+        "main_file": "mrn-config-helper/mrn-config-helper.php",
+        "path": "/Users/khofmeyer/Development/MRN/releases/stack-plugins/mrn-config-helper-0.1.64.zip",
+        "sha256": "af39fb356c7f99f9da2c5ed2ecd9e1e90c020268ce3c9f2b2edbcdee126579ff",
+        "size_bytes": 101926
+      },
+      "source": {
+        "git_commit": "12fa0498d67e6e7a649645bdeddd4846558228db",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "tree": {
+        "file_count": 17,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "0cd8b1aa6a30a3bb2543f2ac13fddeae54176dfe7ecf39a3fd9a666f50b0b39c"
+      },
+      "version": "0.1.64"
+    },
+    "runtime_type": "standard-plugin",
+    "slug": "mrn-config-helper",
+    "target": {
+      "package": {
+        "filename": "mrn-config-helper-0.1.66.zip",
+        "main_file": "mrn-config-helper/mrn-config-helper.php",
+        "path": "/Users/khofmeyer/Development/MRN/releases/stack-plugins/mrn-config-helper-0.1.66.zip",
+        "sha256": "7073f358b13d2a83e8350e586e532d3370d3914149f17059029c4cefa85c93df",
+        "size_bytes": 108826
+      },
+      "source": {
+        "git_commit": "1a326a5e9977dc2a45da5ed7444a58897fecd955",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrnwebdesigns/mrn-config-helper"
+      },
+      "tree": {
+        "file_count": 19,
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "1c5882823dfddcbe24b3a018ca95c726602e557ab15f79d136e276071dc74dd8"
+      },
+      "version": "0.1.66"
+    },
+    "target_tier": "platform-required"
+  },
+  "preflight": {
+    "backup_readiness": {
+      "backup_api_available": true,
+      "checked_at": "2026-09-25T15:12:57+00:00",
+      "plugin_active": true,
+      "plugin_installed": true,
+      "provider": "UpdraftPlus",
+      "ready": true,
+      "remote_destination_configured": true,
+      "remote_storage_methods": [
+        "s3"
+      ]
+    },
+    "blockers": [],
+    "package_sha256": "7073f358b13d2a83e8350e586e532d3370d3914149f17059029c4cefa85c93df",
+    "ready": true,
+    "rollback_readiness": {
+      "file_count": 17,
+      "package_filename": "mrn-config-helper-0.1.64.zip",
+      "package_path": "/Users/khofmeyer/Development/MRN/releases/stack-plugins/mrn-config-helper-0.1.64.zip",
+      "package_sha256": "af39fb356c7f99f9da2c5ed2ecd9e1e90c020268ce3c9f2b2edbcdee126579ff",
+      "ready": true,
+      "tree_sha256": "0cd8b1aa6a30a3bb2543f2ac13fddeae54176dfe7ecf39a3fd9a666f50b0b39c",
+      "version": "0.1.64"
+    },
+    "tree_sha256": "1c5882823dfddcbe24b3a018ca95c726602e557ab15f79d136e276071dc74dd8"
+  },
+  "schema_version": 1,
+  "site": {
+    "active": true,
+    "current_file_count": 17,
+    "current_tree_sha256": "0cd8b1aa6a30a3bb2543f2ac13fddeae54176dfe7ecf39a3fd9a666f50b0b39c",
+    "current_version": "0.1.64",
+    "installed": true,
+    "inventory_age_seconds": 106,
+    "inventory_synced_at": "2026-09-25T15:11:46Z",
+    "loaded": true,
+    "site_id": 117,
+    "site_url": "https://gloves-online.com",
+    "target_version": "0.1.66"
+  }
+}

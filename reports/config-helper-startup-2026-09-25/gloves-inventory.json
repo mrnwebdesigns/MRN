@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "site": {
+    "site_id": 117,
+    "site_url": "https://gloves-online.com",
+    "inventory_synced_at": "2026-09-25T15:11:46+00:00",
+    "release": {
+      "present": true,
+      "valid": true,
+      "release_id": "2026.09.24-sendgrid-optional-fleet",
+      "lock_sha256": "3b8467ad43c02c8e4aca978e0c93d0063d5c38ca477dc1137db8537e61f9a6be"
+    },
+    "plugin": {
+      "slug": "mrn-config-helper",
+      "main_file": "mrn-config-helper/mrn-config-helper.php",
+      "installed": true,
+      "active": true,
+      "loaded": true,
+      "version": "0.1.64",
+      "runtime_type": "standard-plugin",
+      "path": "plugins/mrn-config-helper",
+      "hash_algorithm": "sha256-tree-v1",
+      "tree_sha256": "0cd8b1aa6a30a3bb2543f2ac13fddeae54176dfe7ecf39a3fd9a666f50b0b39c",
+      "file_count": 17
+    },
+    "backup_readiness": {
+      "provider": "UpdraftPlus",
+      "plugin_installed": true,
+      "plugin_active": true,
+      "backup_api_available": true,
+      "remote_destination_configured": true,
+      "remote_storage_methods": [
+        "s3"
+      ],
+      "ready": true,
+      "checked_at": "2026-09-25T15:12:57+00:00"
+    }
+  }
+}

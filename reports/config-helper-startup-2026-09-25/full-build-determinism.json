@@ -1,0 +1,17 @@
+[
+  {
+    "filename": "checksums.json",
+    "bytes": 654,
+    "sha256": "0716a372b6f6e2edcb298547facad7b137336b79eed4a59c964f09aca62cf05f"
+  },
+  {
+    "filename": "mrn-stack-release-config-helper-startup-20260925.zip",
+    "bytes": 2468761,
+    "sha256": "35c9e69bb69774839d07f99e6936ad4f3d4336bad780d12fa2a63bea03080c6b"
+  },
+  {
+    "filename": "plan.json",
+    "bytes": 59459,
+    "sha256": "cf3f81340c1e183ed6abb3a043db0e0e9c5e48dca50742f7c384a3f9eefa1a99"
+  }
+]
