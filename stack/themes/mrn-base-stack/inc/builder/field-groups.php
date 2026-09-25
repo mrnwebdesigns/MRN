@@ -307,7 +307,7 @@ function mrn_base_stack_register_acf_field_groups() {
 									),
 									array(
 										'key'           => 'field_mrn_content_lists_filter_taxonomy',
-										'label'         => 'Filter Taxonomy',
+										'label'         => 'Filter Type (Tags / Categories)',
 										'name'          => 'filter_taxonomy',
 										'aria-label'    => '',
 										'type'          => 'select',
@@ -375,6 +375,60 @@ function mrn_base_stack_register_acf_field_groups() {
 										'wrapper'       => array(
 											'width' => '100',
 										),
+									),
+									array(
+										'key'           => 'field_mrn_content_lists_category_filter_source',
+										'label'         => 'Category Filter',
+										'name'          => 'category_filter_source',
+										'type'          => 'select',
+										'choices'       => array(
+											'none'               => 'No Category Filter',
+											'current_post_terms' => 'Use Current Page/Post Categories',
+											'manual_terms'       => 'Use Specific Categories',
+										),
+										'default_value' => 'none',
+										'ui'            => 1,
+										'instructions'  => 'Limit this list by category. When another filter is set above, items must match both filters.',
+										'wrapper'       => array( 'width' => '50' ),
+									),
+									array(
+										'key'           => 'field_mrn_content_lists_category_filter_match',
+										'label'         => 'Category Matching',
+										'name'          => 'category_filter_match',
+										'type'          => 'select',
+										'choices'       => array(
+											'any' => 'Match Any Selected Category',
+											'all' => 'Match All Selected Categories',
+										),
+										'default_value' => 'any',
+										'ui'            => 1,
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_content_lists_category_filter_source',
+													'operator' => '!=',
+													'value'    => 'none',
+												),
+											),
+										),
+										'wrapper'       => array( 'width' => '50' ),
+									),
+									array(
+										'key'          => 'field_mrn_content_lists_category_filter_term_slugs',
+										'label'        => 'Specific Categories',
+										'name'         => 'category_filter_term_slugs',
+										'type'         => 'text',
+										'instructions' => 'Enter category slugs separated by commas, like news, company-updates. Subcategories are included.',
+										'conditional_logic' => array(
+											array(
+												array(
+													'field'    => 'field_mrn_content_lists_category_filter_source',
+													'operator' => '==',
+													'value'    => 'manual_terms',
+												),
+											),
+										),
+										'wrapper'      => array( 'width' => '100' ),
 									),
 									array(
 										'key'           => 'field_mrn_content_lists_pagination',
