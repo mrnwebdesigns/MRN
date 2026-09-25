@@ -425,6 +425,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
                 "5b4eb7d14a13f5681996eb545cacca367d3f580944060b3396d8d1a64c9de6aa",
             "2026.09.24-sendgrid-optional-fleet.json":
                 "3b8467ad43c02c8e4aca978e0c93d0063d5c38ca477dc1137db8537e61f9a6be",
+            "2026.09.25-content-filters-fleet.json":
+                "57e09890e71a4b6d703295ed6d3f54f07107f097a451b8f5e745e96dd219d188",
         }
 
         self.assertEqual(set(expected), {path.name for path in archive.glob("*.json")})
