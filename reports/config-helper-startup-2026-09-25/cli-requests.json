@@ -1,0 +1,122 @@
+[
+  {
+    "site": "standard",
+    "variant": "before",
+    "sample": 0,
+    "wall_ms": 773.7683329905849
+  },
+  {
+    "site": "standard",
+    "variant": "before",
+    "sample": 1,
+    "wall_ms": 571.0095829999773
+  },
+  {
+    "site": "standard",
+    "variant": "before",
+    "sample": 2,
+    "wall_ms": 588.6724169977242
+  },
+  {
+    "site": "standard",
+    "variant": "before",
+    "sample": 3,
+    "wall_ms": 786.5992920123972
+  },
+  {
+    "site": "standard",
+    "variant": "before",
+    "sample": 4,
+    "wall_ms": 664.7670000093058
+  },
+  {
+    "site": "standard",
+    "variant": "after",
+    "sample": 0,
+    "wall_ms": 426.8879589944845
+  },
+  {
+    "site": "standard",
+    "variant": "after",
+    "sample": 1,
+    "wall_ms": 487.6593749941094
+  },
+  {
+    "site": "standard",
+    "variant": "after",
+    "sample": 2,
+    "wall_ms": 483.8065829972038
+  },
+  {
+    "site": "standard",
+    "variant": "after",
+    "sample": 3,
+    "wall_ms": 500.5621249874821
+  },
+  {
+    "site": "standard",
+    "variant": "after",
+    "sample": 4,
+    "wall_ms": 547.7934169903165
+  },
+  {
+    "site": "woo",
+    "variant": "before",
+    "sample": 0,
+    "wall_ms": 1232.1612499945331
+  },
+  {
+    "site": "woo",
+    "variant": "before",
+    "sample": 1,
+    "wall_ms": 930.5885420035338
+  },
+  {
+    "site": "woo",
+    "variant": "before",
+    "sample": 2,
+    "wall_ms": 941.9232919899514
+  },
+  {
+    "site": "woo",
+    "variant": "before",
+    "sample": 3,
+    "wall_ms": 775.4233750019921
+  },
+  {
+    "site": "woo",
+    "variant": "before",
+    "sample": 4,
+    "wall_ms": 820.0352499989094
+  },
+  {
+    "site": "woo",
+    "variant": "after",
+    "sample": 0,
+    "wall_ms": 652.1137499948964
+  },
+  {
+    "site": "woo",
+    "variant": "after",
+    "sample": 1,
+    "wall_ms": 761.5179999993416
+  },
+  {
+    "site": "woo",
+    "variant": "after",
+    "sample": 2,
+    "wall_ms": 638.6757910076994
+  },
+  {
+    "site": "woo",
+    "variant": "after",
+    "sample": 3,
+    "wall_ms": 685.9518330020364
+  },
+  {
+    "site": "woo",
+    "variant": "after",
+    "sample": 4,
+    "wall_ms": 665.6408330018166
+  }
+]

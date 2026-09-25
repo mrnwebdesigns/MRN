@@ -1,0 +1,48 @@
+[
+  {
+    "site": "standard",
+    "checks": [
+      "editor HTTP 200",
+      "stored ACF body-text layout present",
+      "saved ACF heading rendered in editor",
+      "Classic Editor save/reload retains ACF change",
+      "frontend renders saved ACF field",
+      "frontend has no horizontal overflow at 1440",
+      "frontend has no horizontal overflow at 768",
+      "frontend has no horizontal overflow at 390",
+      "fixture heading restored via browser save",
+      "authenticated AJAX heartbeat responds",
+      "Site Configurations HTTP 200",
+      "default builder allow-list visible and selected",
+      "event visibility control present",
+      "settings visibility save/reload round trip",
+      "fixture visibility restored through settings save",
+      "REST page remains accessible after saves"
+    ],
+    "errors": []
+  },
+  {
+    "site": "woo",
+    "checks": [
+      "editor HTTP 200",
+      "stored ACF body-text layout present",
+      "saved ACF heading rendered in editor",
+      "Classic Editor save/reload retains ACF change",
+      "frontend renders saved ACF field",
+      "frontend has no horizontal overflow at 1440",
+      "frontend has no horizontal overflow at 768",
+      "frontend has no horizontal overflow at 390",
+      "fixture heading restored via browser save",
+      "authenticated AJAX heartbeat responds",
+      "Site Configurations HTTP 200",
+      "default builder allow-list visible and selected",
+      "event visibility control present",
+      "settings visibility save/reload round trip",
+      "fixture visibility restored through settings save",
+      "REST page remains accessible after saves",
+      "Orders document HTTP 200",
+      "Customers document HTTP 200"
+    ],
+    "errors": []
+  }
+]

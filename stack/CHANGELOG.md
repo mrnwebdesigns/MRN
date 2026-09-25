@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 2026.09.25-config-helper-startup-fleet
+
+- Config Helper `0.1.66` keeps scalar and content-type visibility settings reads
+  independent of page-builder layout discovery. Builder allow-lists, settings
+  rendering and saves retain explicit normalization and initialization guards.
+- Defaults, stored settings, legacy disabled-layout migrations and public method
+  contracts remain compatible. No site-specific checks or ACF registration
+  changes are included. Character Count asset scoping remains separate.
+- Registered deterministic forward and rollback packages for guarded selective
+  Fleet use. Local qualification is not a deployed or fleet-wide speed claim.
+
 ## 2026.09.25-content-filters-fleet
 
 - Parent theme `1.5.0` adds an optional category filter that combines with

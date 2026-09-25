@@ -1,0 +1,62 @@
+[
+  {
+    "version": "0.1.64",
+    "source": {
+      "repository": "mrnwebdesigns/mrn-config-helper",
+      "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+      "git_commit": "12fa0498d67e6e7a649645bdeddd4846558228db"
+    },
+    "package": {
+      "path": "/Users/khofmeyer/Development/MRN-task-worktrees/stack-startup-20260925/releases/stack-plugins/mrn-config-helper-0.1.64.zip",
+      "filename": "mrn-config-helper-0.1.64.zip",
+      "main_file": "mrn-config-helper/mrn-config-helper.php",
+      "size_bytes": 101926,
+      "sha256": "af39fb356c7f99f9da2c5ed2ecd9e1e90c020268ce3c9f2b2edbcdee126579ff"
+    },
+    "tree": {
+      "hash_algorithm": "sha256-tree-v1",
+      "sha256": "0cd8b1aa6a30a3bb2543f2ac13fddeae54176dfe7ecf39a3fd9a666f50b0b39c",
+      "file_count": 17
+    }
+  },
+  {
+    "version": "0.1.65",
+    "source": {
+      "repository": "mrnwebdesigns/mrn-config-helper",
+      "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+      "git_commit": "13d31380561e1e907ef091e8e1573ace83365bb5"
+    },
+    "package": {
+      "path": "/Users/khofmeyer/Development/MRN-task-worktrees/stack-startup-20260925/releases/stack-plugins/mrn-config-helper-0.1.65.zip",
+      "filename": "mrn-config-helper-0.1.65.zip",
+      "main_file": "mrn-config-helper/mrn-config-helper.php",
+      "size_bytes": 102289,
+      "sha256": "e96be0eef4da46221314d813d06ef5c2f480df56a90d94b2d359bf53ca2c608f"
+    },
+    "tree": {
+      "hash_algorithm": "sha256-tree-v1",
+      "sha256": "05f4b605589dbf28663edce099440d2665c8f7d53b7f2074d213c5ac9035d5bd",
+      "file_count": 17
+    }
+  },
+  {
+    "version": "0.1.66",
+    "source": {
+      "repository": "mrnwebdesigns/mrn-config-helper",
+      "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+      "git_commit": "1a326a5e9977dc2a45da5ed7444a58897fecd955"
+    },
+    "package": {
+      "path": "/Users/khofmeyer/Development/MRN-task-worktrees/stack-startup-20260925/releases/stack-plugins/mrn-config-helper-0.1.66.zip",
+      "filename": "mrn-config-helper-0.1.66.zip",
+      "main_file": "mrn-config-helper/mrn-config-helper.php",
+      "size_bytes": 108826,
+      "sha256": "7073f358b13d2a83e8350e586e532d3370d3914149f17059029c4cefa85c93df"
+    },
+    "tree": {
+      "hash_algorithm": "sha256-tree-v1",
+      "sha256": "1c5882823dfddcbe24b3a018ca95c726602e557ab15f79d136e276071dc74dd8",
+      "file_count": 19
+    }
+  }
+]

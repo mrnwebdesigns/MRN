@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.25-content-filters-fleet`
+- Stack release: `2026.09.25-config-helper-startup-fleet`
 - Release date: `2026-09-25`
 - Status: `release candidate for guarded per-site Fleet rollout; no site deployment performed`
 
@@ -32,7 +32,7 @@
   - `mrn-ai-assist` `2.0.14`
   - `mrn-announcements` `1.8.2`
   - `mrn-comment-management` `1.1.7`
-  - `mrn-config-helper` `0.1.65`
+  - `mrn-config-helper` `0.1.66`
   - `mrn-editor-tools` `1.8.25`
   - `mrn-fontawesome-profile-manager` `0.5.1`
   - `mrn-google-fonts` `1.0.7`
@@ -57,6 +57,11 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- Config Helper `0.1.66` separates inexpensive settings reads from builder layout
+  normalization. Content-type visibility no longer discovers builder layouts;
+  actual builder/settings consumers preserve their defaults, migrations and saved
+  values. This is the only component change from the preceding candidate. See
+  `docs/releases/2026.09.25-config-helper-startup-fleet.md`.
 - Parent theme `1.5.0` adds category constraints alongside existing tag filters,
   renders registered MRN tokens in heading fields, and explains Content Only
   sources and per-row item links. Config Helper `0.1.65` adds matching accessible
@@ -140,7 +145,7 @@
   It remains a MainWP control-plane component and is never installed on child
   sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.
-- `mrn-config-helper` is locked to standalone `0.1.64`, preserves an existing
+- `mrn-config-helper` is locked to standalone `0.1.66`, preserves an existing
   UptimeRobot credential when its field is absent from a settings submission,
   exposes the capability- and nonce-gated Content Types extension hook used by
   Stack-owned admin integrations, and avoids loading its layout-picker assets
