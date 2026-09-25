@@ -135,13 +135,11 @@
 - `mrn-database-retention` is not part of the platform baseline. Its independently released `1.1.1` package is catalog-only and available solely through the one-site, upgrade-only optional-plugin plan.
 - This baseline includes `mrn-media-bulk-tools` `0.13.1` as a platform-required standard plugin and binds its exact standalone `main` commit and tree hash.
 - Current candidate explicitly locks every tracked MU wrapper at its real deployed filename, including the Updraft backup-policy wrapper at `mrn-updraft-local-retention.php`.
-- The Dashboard-only `mrn-mainwp-operations-api` release advances to `0.9.7`.
-  It honors the deployment agent's explicit production-only managed-credential
-  requirement, preserves truthful configured-state reporting on exempt
-  development sites, fails closed when an older agent omits the requirement,
-  and includes the
-  exact Reusable Block Library and ACF Character Count main files in the
-  optional-plugin upgrade allowlist.
+- The Dashboard-only `mrn-mainwp-operations-api` release advances to `0.9.8`.
+  It retains the production credential and optional-plugin contracts, records
+  exact site-scoped overlays after verified selective Stack-plugin writes,
+  distinguishes approved overlays from unknown drift, and clears superseded
+  records only after a baseline-restoring rollback or verified full release.
   It remains a MainWP control-plane component and is never installed on child
   sites.
 - No site deployment is performed by this release preparation; backup, approval, canary, and runtime readback remain separate gates.

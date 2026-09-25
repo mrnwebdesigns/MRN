@@ -65,7 +65,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 
 | Slug | Version | Responsibility |
 | --- | ---: | --- |
-| `mrn-mainwp-operations-api` | 0.9.7 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only controller that gates full-Stack readiness on secret-free managed-credential reporting, honors the agent's production-only credential requirement while failing closed for older agents, and allowlists Reusable Block Library and ACF Character Count upgrades; never installed on child sites. |
+| `mrn-mainwp-operations-api` | 0.9.8 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only controller that records exact post-write Stack-plugin overlays, labels matching sites `current_with_approved_overlays`, preserves raw drift evidence, and fails changed or unrecorded artifacts back to hard drift; never installed on child sites. |
 | `mrn-wp-control` | 1.1.1 | Independent repository (`mrnwebdesigns/mrn-wp-control`); dashboard-only, not installed in client-site plugins. |
 | `mrn-wp-control-table-exporter` | 1.4.4 | Independent repository (`mrnwebdesigns/mrn-wp-control-table-exporter`); dashboard-only, not installed in client-site plugins. |
 | `mrn-mainwp-mcp` | 0.1.1 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |

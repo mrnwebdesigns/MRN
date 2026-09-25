@@ -318,7 +318,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             for item in catalog["components"]
             if item["slug"] == "mrn-mainwp-operations-api"
         )
-        self.assertEqual("0.9.7", controller["version"])
+        self.assertEqual("0.9.8", controller["version"])
         self.assertEqual("dashboard-only", controller["target_tier"])
         self.assertIn("twenty-two mrn-mainwp WordPress Abilities", controller["data"]["routes"])
         self.assertNotIn("Defender (legacy compatibility only)", entry["dependencies"]["soft"])
