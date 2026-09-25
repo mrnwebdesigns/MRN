@@ -5,10 +5,9 @@
  * A Resource is a downloadable file (any type) with basic metadata, organized
  * with the shared category/tag taxonomies. It has no public single URL or
  * archive (see mrn-admin-data-post-types) and is meant to be listed on a page
- * via the Reference Content builder row. Downloads are served through
- * mrn_base_stack_handle_resource_download() rather than linking the raw
- * upload URL, so the response can carry X-Robots-Tag: noindex (keep search
- * engines from indexing the raw file directly) and force a real download.
+ * via the Reference Content builder row. Item links point to the uploaded
+ * file; PDFs open in a new tab. The separate legacy download endpoint remains
+ * available for existing links and sends a noindex, forced-download response.
  *
  * @package mrn-base-stack
  */
@@ -130,7 +129,7 @@ function mrn_base_stack_register_resource_field_group() {
 					'library'       => 'all',
 					'mime_types'    => 'pdf,doc,docx,xls,xlsx,ppt,pptx,csv,txt,rtf,odt,ods,odp,jpg,jpeg,png,gif,webp,mp4,mov,webm,mp3,wav,zip',
 					'required'      => 1,
-					'instructions'  => 'Upload the downloadable file. Only safe file types are accepted: documents (PDF, Word, Excel, PowerPoint, RTF, OpenDocument), images (JPG, PNG, GIF, WebP), video (MP4, MOV, WebM), audio (MP3, WAV), and ZIP archives.',
+					'instructions'  => 'This resource is Content Only: it has no standalone page or archive. Add it to a Reference Content (Content List) row and turn Enable Item Links on to link to this file. PDFs open in a new tab. Turning links off affects that row only. Accepted files: documents (PDF, Word, Excel, PowerPoint, RTF, OpenDocument), images (JPG, PNG, GIF, WebP), video (MP4, MOV, WebM), audio (MP3, WAV), and ZIP archives.',
 				),
 			),
 			'location'              => array(

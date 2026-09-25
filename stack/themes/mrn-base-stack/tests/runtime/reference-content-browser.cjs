@@ -28,22 +28,30 @@ assert(evidence, 'Set MRN_REFERENCE_EVIDENCE');
 		const field = (row, name) => row.locator('.acf-field[data-name="' + name + '"]').first();
 		const select = (row, name) => field(row, name).locator('select').first();
 		const toggle = row => field(row, 'link_items').locator('input[type="checkbox"]').first();
-		async function loadEditor() {
-			await page.goto(fixture.edit_url, { waitUntil: 'domcontentloaded' });
+		async function loadEditor(navigate = true) {
+			if (navigate) await page.goto(fixture.edit_url, { waitUntil: 'domcontentloaded' });
 			await expect(page.locator('#wpadminbar')).toBeVisible();
 			await expect(page.locator('html')).not.toHaveClass(/mrn-editor-loading-indicator-live/, { timeout: 120000 });
+			// Start a real editor interaction before manipulating the flexible rows.
+			// This cancels the existing idle-collapse timer, including after a save.
+			await page.locator('input[name="post_title"]').click();
 			await expect(select(mainRow(), 'filter_taxonomy')).toHaveValue('category');
 		}
 		async function openRow(row) {
 			const handle = row.locator('.acf-fc-layout-handle').first();
 			const configTab = row.locator('> .acf-fields > .acf-tab-wrap .acf-tab-button').filter({ hasText: 'Configs' }).first();
 			if (!(await configTab.isVisible())) await handle.click();
-			if (await configTab.count()) await configTab.click();
+			if (await configTab.count()) {
+				await expect(configTab).toBeVisible();
+				await configTab.click();
+			}
 		}
 		async function save() {
-			await page.locator('#publish').click({ force: true });
-			await page.waitForURL(url => url.searchParams.get('message') === '1', { timeout: 120000 });
-			await loadEditor();
+			await Promise.all([
+				page.waitForNavigation({ timeout: 120000, waitUntil: 'domcontentloaded' }),
+				page.locator('#publish').click({ force: true }),
+			]);
+			await loadEditor(false);
 		}
 		async function showLinks(row) {
 			await openRow(row);
@@ -53,12 +61,21 @@ assert(evidence, 'Set MRN_REFERENCE_EVIDENCE');
 				await accordion.locator('> .acf-accordion-title').click();
 			}
 			await expect(target).toBeVisible();
+			await expect(target.locator('.mrn-content-list-link-note')).toBeVisible();
+			// Wait for ACF's accordion animation before capturing the explanation.
+			await expect.poll(() => target.evaluate(element => {
+				const note = element.querySelector('.mrn-content-list-link-note').getBoundingClientRect();
+				const panel = element.closest('.acf-accordion-content').getBoundingClientRect();
+				return note.bottom <= panel.bottom;
+			})).toBe(true);
 		}
 		await loadEditor();
 		await openRow(mainRow());
 		const taxonomy = field(mainRow(), 'filter_taxonomy');
 		await expect(toggle(mainRow())).toBeEnabled();
 		await expect(toggle(mainRow())).toBeChecked();
+		await expect(field(mainRow(), 'list_post_type').locator('.mrn-content-list-source-note')).toContainText('Content Only:');
+		await expect(field(mainRow(), 'link_items').locator('.mrn-content-list-link-note')).toContainText('On: items link to their supported file');
 		assert.deepEqual(await select(mainRow(), 'filter_taxonomy').locator('option').evaluateAll(options => options.map(o => o.value)), ['', 'category', 'post_tag']);
 		// Select through the enhanced UI when present, proving Categories is clickable.
 		const enhanced = taxonomy.locator('.select2-selection');
@@ -76,8 +93,10 @@ assert(evidence, 'Set MRN_REFERENCE_EVIDENCE');
 		await select(mainRow(), 'list_post_type').selectOption('post', { force: true });
 		await expect(select(mainRow(), 'filter_taxonomy')).toHaveValue('post_tag');
 		await expect(toggle(mainRow())).toBeEnabled();
+		await expect(field(mainRow(), 'list_post_type').locator('.mrn-content-list-source-note')).toContainText('Public content:');
 		await select(mainRow(), 'list_post_type').selectOption('location', { force: true });
 		await expect(toggle(mainRow())).toBeDisabled();
+		await expect(field(mainRow(), 'link_items').locator('.mrn-content-list-link-note')).toContainText('Unavailable:');
 		await expect(select(mainRow(), 'filter_taxonomy')).toHaveValue('');
 		await expect(field(mainRow(), 'filter_taxonomy').locator('.mrn-content-list-taxonomy-note')).toContainText('no eligible filter taxonomies');
 		await select(mainRow(), 'list_post_type').selectOption('resource', { force: true });
@@ -93,6 +112,9 @@ assert(evidence, 'Set MRN_REFERENCE_EVIDENCE');
 			await expect(select(row, 'filter_taxonomy')).toHaveValue('category');
 			await expect(toggle(row)).toBeEnabled();
 			await expect(toggle(row)).not.toBeChecked();
+			await expect(field(row, 'link_items').locator('.mrn-content-list-link-note')).toContainText('Off:');
+			const descriptionId = await field(row, 'link_items').locator('.mrn-content-list-link-note').getAttribute('id');
+			assert((await toggle(row).getAttribute('aria-describedby')).split(/\s+/).includes(descriptionId), name + ' toggle describes its own state');
 			results.push(name + ' cloned keys load retained Resource settings with links off');
 		}
 		await showLinks(mainRow());
@@ -100,8 +122,10 @@ assert(evidence, 'Set MRN_REFERENCE_EVIDENCE');
 		await page.screenshot({ path: path.join(evidence, 'editor-resource-links-on.png') });
 		await field(mainRow(), 'link_items').locator('.acf-switch').click();
 		await expect(toggle(mainRow())).not.toBeChecked();
+		await expect(field(mainRow(), 'link_items').locator('.mrn-content-list-link-note')).toContainText('Off:');
 		await save();
 		await expect(toggle(mainRow())).not.toBeChecked();
+		await expect(field(mainRow(), 'link_items').locator('.mrn-content-list-link-note')).toContainText('Off:');
 		await expect(toggle(afterRow())).not.toBeChecked();
 		await expect(toggle(nestedRow())).not.toBeChecked();
 		await showLinks(mainRow());
