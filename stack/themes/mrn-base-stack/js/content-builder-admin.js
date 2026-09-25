@@ -518,6 +518,11 @@
 
 			$row.data( 'mrnSuppressContentListSync', true );
 
+			// Keep saved categories intact when temporarily switching to an unsupported source.
+			$.each( [ 'category_filter_source', 'category_filter_match', 'category_filter_term_slugs' ], function( index, fieldName ) {
+				getContentListField( $row, fieldName ).toggle( Object.prototype.hasOwnProperty.call( allowedTaxonomies, 'category' ) );
+			} );
+
 			if ( $displayModeSelect.length ) {
 				var displayMode = $displayModeSelect.val() || '';
 

@@ -11874,9 +11874,54 @@ function mrn_base_stack_get_content_list_excerpt( WP_Post $post, $word_count = 2
  * @param array<string, mixed> $row Content-list row settings.
  * @param int                  $context_post_id Current page/post ID.
  * @param string               $target_post_type Queried post type.
- * @return array<int, array<string, mixed>>
+ * @return array<int|string, mixed>
  */
 function mrn_base_stack_get_content_list_tax_query( array $row, $context_post_id, $target_post_type ) {
+	$tax_query      = mrn_base_stack_get_content_list_term_filter_query( $row, $context_post_id, $target_post_type );
+	$category_query = mrn_base_stack_get_content_list_term_filter_query(
+		array(
+			'filter_source'     => $row['category_filter_source'] ?? 'none',
+			'filter_taxonomy'   => 'category',
+			'filter_match'      => $row['category_filter_match'] ?? 'any',
+			'filter_term_slugs' => $row['category_filter_term_slugs'] ?? '',
+		),
+		$context_post_id,
+		$target_post_type
+	);
+
+	if ( empty( $category_query ) ) {
+		return $tax_query;
+	}
+
+	// Match each selected category's subtree independently. A single AND clause
+	// would require every descendant term, not just each selected category.
+	if ( 'AND' === $category_query[0]['operator'] ) {
+		$category_group = array( 'relation' => 'AND' );
+		foreach ( $category_query[0]['terms'] as $term ) {
+			$clause             = $category_query[0];
+			$clause['terms']    = array( $term );
+			$clause['operator'] = 'IN';
+			$category_group[]   = $clause;
+		}
+		$category_query = array( $category_group );
+	}
+
+	if ( empty( $tax_query ) ) {
+		return $category_query;
+	}
+
+	return array_merge( array( 'relation' => 'AND' ), $tax_query, $category_query );
+}
+
+/**
+ * Build one taxonomy constraint, shared by the existing and category filters.
+ *
+ * @param array<string, mixed> $row Term filter settings.
+ * @param int                  $context_post_id Current page/post ID.
+ * @param string               $target_post_type Queried post type.
+ * @return array<int, array<string, mixed>>
+ */
+function mrn_base_stack_get_content_list_term_filter_query( array $row, $context_post_id, $target_post_type ) {
 	$filter_source = isset( $row['filter_source'] ) ? sanitize_key( (string) $row['filter_source'] ) : 'none';
 	$taxonomy      = isset( $row['filter_taxonomy'] ) ? sanitize_key( (string) $row['filter_taxonomy'] ) : '';
 	$match_mode    = isset( $row['filter_match'] ) ? sanitize_key( (string) $row['filter_match'] ) : 'any';
