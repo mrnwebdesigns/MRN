@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+## 2026.09.25-content-filters-fleet
+
+- Parent theme `1.5.0` adds an optional category filter that combines with
+  existing tag or taxonomy filters, including any/all category matching,
+  descendants, current-page categories, and selected-content constraints.
+  Existing saved rows retain their behavior.
+- Shared heading fields render registered MRN content tokens through the
+  existing inline sanitization contract.
+- Reference Content explains Content Only sources and On, Off, or Unavailable
+  item links. Config Helper `0.1.65` adds matching accessible settings guidance;
+  existing downloads, public-profile restrictions, and saved values are kept.
+- Registered the exact merged Config Helper `0.1.65` package for guarded
+  selective plugin updates. The parent-theme changes require a full Stack
+  release plan. No site is deployed by publishing this candidate.
+
 - Added `mrn fleet update` as the guarded one-site operator path for an already
   released platform-required standard plugin. Planning exact-resolves and
   freshly syncs one MainWP child, verifies signed runtime and immutable

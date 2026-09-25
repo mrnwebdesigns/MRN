@@ -494,7 +494,7 @@
     {
       "slug": "mrn-config-helper",
       "name": "MRN Config Helper",
-      "version": "0.1.64",
+      "version": "0.1.65",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
       "lifecycle": "supported",
