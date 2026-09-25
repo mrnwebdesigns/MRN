@@ -423,6 +423,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
                 "47b83e548084b1329877b932721c14609e8053255c466b624ef72b241a576328",
             "2026.09.24-control-plane-qualification-fleet.json":
                 "5b4eb7d14a13f5681996eb545cacca367d3f580944060b3396d8d1a64c9de6aa",
+            "2026.09.24-sendgrid-optional-fleet.json":
+                "3b8467ad43c02c8e4aca978e0c93d0063d5c38ca477dc1137db8537e61f9a6be",
         }
 
         self.assertEqual(set(expected), {path.name for path in archive.glob("*.json")})
@@ -446,8 +448,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             if item["slug"] == "mrn-config-helper"
         }
 
-        self.assertEqual("0.1.64", entry["version"])
-        self.assertEqual({"0.1.59", "0.1.60", "0.1.61", "0.1.62", "0.1.63", "0.1.64"}, set(versions))
+        self.assertEqual("0.1.65", entry["version"])
+        self.assertEqual({"0.1.59", "0.1.60", "0.1.61", "0.1.62", "0.1.63", "0.1.64", "0.1.65"}, set(versions))
         self.assertEqual(
             entry["version"],
             max(versions, key=lambda value: planner.version_tuple(value, "version")),
@@ -464,6 +466,7 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
         self.assertNotIn("legacy_supplements", versions["0.1.62"])
         self.assertNotIn("legacy_supplements", versions["0.1.63"])
         self.assertNotIn("legacy_supplements", versions["0.1.64"])
+        self.assertNotIn("legacy_supplements", versions["0.1.65"])
         self.assertEqual(2, len(versions["0.1.59"]["legacy_supplements"]))
         self.assertEqual(2, len(versions["0.1.60"]["legacy_supplements"]))
 

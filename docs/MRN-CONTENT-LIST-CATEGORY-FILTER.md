@@ -59,11 +59,12 @@ fixture or its credentials on shared remote runtimes.
 
 Task branch: `codex/content-list-category-filter-20260925`.
 
-This is a shared parent-theme feature, pending integration and Stack promotion.
-No component catalog, version, release lock, or remote runtime is changed. The
-concurrent resource-download editor task touches the same editor files and must
-be reconciled during integration. Run scoped MRN QA plus the runtime checks
-above; a source QA pass does not represent a deployment or Fleet release.
+The feature merged in PR #123 as its own commit. The separate Content Only
+editor guidance merged in PR #125, preserving both changes in the shared editor
+files. Parent theme `1.5.0` includes these changes in the
+`2026.09.25-content-filters-fleet` release candidate. See
+`docs/releases/2026.09.25-content-filters-fleet.md` for qualification and rollout
+boundaries. Source QA and candidate packaging do not represent a site deployment.
 
 ## Validation on 2026-09-25
 

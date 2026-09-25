@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.24-sendgrid-optional-fleet`
-- Release date: `2026-09-24`
-- Status: `production-ready for guarded per-site Fleet rollout; no child deployment performed`
+- Stack release: `2026.09.25-content-filters-fleet`
+- Release date: `2026-09-25`
+- Status: `release candidate for guarded per-site Fleet rollout; no site deployment performed`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.4.3`
+  - `mrn-base-stack` `1.5.0`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -32,7 +32,7 @@
   - `mrn-ai-assist` `2.0.14`
   - `mrn-announcements` `1.8.2`
   - `mrn-comment-management` `1.1.7`
-  - `mrn-config-helper` `0.1.64`
+  - `mrn-config-helper` `0.1.65`
   - `mrn-editor-tools` `1.8.25`
   - `mrn-fontawesome-profile-manager` `0.5.1`
   - `mrn-google-fonts` `1.0.7`
@@ -57,6 +57,11 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- Parent theme `1.5.0` adds category constraints alongside existing tag filters,
+  renders registered MRN tokens in heading fields, and explains Content Only
+  sources and per-row item links. Config Helper `0.1.65` adds matching accessible
+  guidance. The guarded one-site Fleet plugin command is included in this
+  release's operator tooling. See `docs/releases/2026.09.25-content-filters-fleet.md`.
 - SendGrid Provisioning `0.1.0` remains supported as a catalog-only optional
   integration, but is no longer a platform requirement or bootstrap/Fleet
   payload component. Bootstrap no longer reads or delivers its management key
