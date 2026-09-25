@@ -1,0 +1,49 @@
+{
+  "ready": false,
+  "operation": "update",
+  "operation_type": "selective-stack-plugin",
+  "plan_id": "mrn-config-helper-0.1.66-site-109",
+  "site_id": 109,
+  "site_url": "https://trilliant.mrndev.io",
+  "inventory_checked": "2026-09-25T15:11:15+00:00",
+  "plugin_slug": "mrn-config-helper/mrn-config-helper.php",
+  "baseline": {
+    "release_id": "2026.09.25-content-filters-fleet",
+    "lock_sha256": "57e09890e71a4b6d703295ed6d3f54f07107f097a451b8f5e745e96dd219d188"
+  },
+  "baseline_component_match": true,
+  "installed": {
+    "installed": true,
+    "active": true,
+    "version": "0.1.65",
+    "tree_sha256": "05f4b605589dbf28663edce099440d2665c8f7d53b7f2074d213c5ac9035d5bd",
+    "file_count": 17
+  },
+  "target": {
+    "version": "0.1.66",
+    "package_sha256": "7073f358b13d2a83e8350e586e532d3370d3914149f17059029c4cefa85c93df",
+    "tree_sha256": "1c5882823dfddcbe24b3a018ca95c726602e557ab15f79d136e276071dc74dd8",
+    "file_count": 19
+  },
+  "backup_readiness": {
+    "provider": "UpdraftPlus",
+    "plugin_installed": true,
+    "plugin_active": true,
+    "backup_api_available": false,
+    "remote_destination_configured": false,
+    "remote_storage_methods": [],
+    "ready": false,
+    "checked_at": "2026-09-25T15:11:15+00:00"
+  },
+  "rollback_readiness": {
+    "ready": true,
+    "version": "0.1.65",
+    "package_sha256": "e96be0eef4da46221314d813d06ef5c2f480df56a90d94b2d359bf53ca2c608f",
+    "tree_sha256": "05f4b605589dbf28663edce099440d2665c8f7d53b7f2074d213c5ac9035d5bd",
+    "file_count": 17
+  },
+  "precondition_hash": "b7cf3ca7b1b3a645c22ef72fae1ac94e26a1fa73e8926e12dfb1735e0bf0733a",
+  "blockers": [
+    "backup_not_ready"
+  ]
+}

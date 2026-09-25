@@ -1,0 +1,115 @@
+{
+  "baseline": {
+    "release_id": "2026.09.25-content-filters-fleet",
+    "source_commit": "47ec14288e5f149f7095f22fa7c3ac566031ada2"
+  },
+  "blockers": [],
+  "candidate": null,
+  "generated_at": "2026-09-25T15:04:53Z",
+  "inventory": {
+    "deployment_contracts": [],
+    "external_required_sources": [
+      {
+        "approved_selective_version": "0.1.66",
+        "default_commit": "1a326a5e9977dc2a45da5ed7444a58897fecd955",
+        "default_ref": "refs/remotes/origin/main",
+        "locked_commit": "13d31380561e1e907ef091e8e1573ace83365bb5",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "repository": "mrn-config-helper",
+        "slug": "mrn-config-helper",
+        "status": "approved-selective-drift"
+      },
+      {
+        "approved_selective_version": null,
+        "default_commit": "7c303fb50b35d798ad1e00d3e98682af2158353a",
+        "default_ref": "refs/remotes/origin/main",
+        "locked_commit": "7c303fb50b35d798ad1e00d3e98682af2158353a",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-media-bulk-tools",
+        "repository": "mrn-media-bulk-tools",
+        "slug": "mrn-media-bulk-tools",
+        "status": "match"
+      },
+      {
+        "approved_selective_version": null,
+        "default_commit": "89d1999381c2b94cad005835f133651a46f8eda2",
+        "default_ref": "refs/remotes/origin/main",
+        "locked_commit": "89d1999381c2b94cad005835f133651a46f8eda2",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-schema-bridge",
+        "repository": "mrn-schema-bridge",
+        "slug": "mrn-schema-bridge",
+        "status": "match"
+      },
+      {
+        "approved_selective_version": null,
+        "default_commit": "8bc985f2430756857dfecd41f7a435deddbafb49",
+        "default_ref": "refs/remotes/origin/main",
+        "locked_commit": "8bc985f2430756857dfecd41f7a435deddbafb49",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
+        "repository": "mrn-stack-deployment-agent",
+        "slug": "mrn-stack-deployment-agent",
+        "status": "match"
+      },
+      {
+        "approved_selective_version": null,
+        "default_commit": "f257964af13d2b5f1e428c65ca2311c8f008f9e1",
+        "default_ref": "refs/remotes/origin/main",
+        "locked_commit": "f257964af13d2b5f1e428c65ca2311c8f008f9e1",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-tokens",
+        "repository": "mrn-tokens",
+        "slug": "mrn-tokens",
+        "status": "match"
+      },
+      {
+        "approved_selective_version": null,
+        "default_commit": "696e261cccc76cacad9c7fe54eac6c48758a70ff",
+        "default_ref": "refs/remotes/origin/main",
+        "locked_commit": "696e261cccc76cacad9c7fe54eac6c48758a70ff",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar",
+        "repository": "mrn-universal-sticky-bar",
+        "slug": "mrn-universal-sticky-bar",
+        "status": "match"
+      }
+    ],
+    "independent_release_units": [],
+    "other_changes": [
+      "docs/MRN-CONFIG-HELPER-STARTUP.md",
+      "docs/releases/2026.09.25-config-helper-startup-fleet.md",
+      "reports/config-helper-startup-2026-09-25/RESULTS.md",
+      "reports/config-helper-startup-2026-09-25/artifact-validation.json",
+      "reports/config-helper-startup-2026-09-25/browser-results.json",
+      "reports/config-helper-startup-2026-09-25/cli-requests.json",
+      "reports/config-helper-startup-2026-09-25/config-helper-release-qa.md",
+      "reports/config-helper-startup-2026-09-25/diagnostic-requests.json",
+      "reports/config-helper-startup-2026-09-25/exploratory-http-requests.json",
+      "reports/config-helper-startup-2026-09-25/http-requests.json",
+      "reports/config-helper-startup-2026-09-25/package.json",
+      "reports/config-helper-startup-2026-09-25/probe.jsonl",
+      "reports/config-helper-startup-2026-09-25/woo-release-qa.md",
+      "reports/config-helper-startup-2026-09-25/woo-settled.json",
+      "stack/manifests/release-locks/2026.09.25-content-filters-fleet.json",
+      "stack/tests/test_build_mainwp_stack_plugin_plan.py"
+    ],
+    "release_metadata": [
+      "stack/CHANGELOG.md",
+      "stack/STACK_VERSION.md",
+      "stack/manifests/component-catalog.json",
+      "stack/manifests/stack-plugin-releases.json",
+      "stack/manifests/stack-release.lock.json"
+    ],
+    "required_components": [],
+    "untracked_deployables": []
+  },
+  "lock_changes": [],
+  "mode": "audit",
+  "repository": {
+    "branch": "main",
+    "clean": true,
+    "head": "372de5597d8ac5197aa257badf86f0133ea5518c",
+    "origin_main": "372de5597d8ac5197aa257badf86f0133ea5518c"
+  },
+  "schema_version": 1,
+  "status": "pass",
+  "warnings": [
+    "Required standalone source is ahead of the immutable baseline through an approved selective release: mrn-config-helper"
+  ]
+}

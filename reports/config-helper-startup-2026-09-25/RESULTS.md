@@ -1,6 +1,6 @@
 # Config Helper startup performance and compatibility
 
-Status: source merged at `1a326a5e9977dc2a45da5ed7444a58897fecd955` (0.1.66); release preparation and remote canary verification are separate gates. No remote deployment has been performed.
+Status: source merged at `1a326a5e9977dc2a45da5ed7444a58897fecd955` (0.1.66); Stack metadata and lock are merged (MRN PRs #129 and #130); clean-main candidate reconciliation and deterministic Fleet builds pass. This task has performed no remote deployment.
 
 ## Method
 
@@ -84,6 +84,6 @@ Editor and Site Configurations discovery remains because those consumers need la
 
 Proposed sequence: Trilliant development, then Gloves production, each using a fresh exact selective Fleet plan for Config Helper only, verified remote database backup, owner-approved precondition hash, and signed post-write version/tree/active-state verification. Baseline remains the site’s signed release plus an explicit Config Helper overlay. Retain exact 0.1.64 and 0.1.65 packages; any rollback requires a fresh backup and its own confirmation.
 
-Remote canary deployment, comparable authenticated production before/after measurements, deployed-runtime editor/save qualification and cohort rollout remain pending. Do not mark the fleet current from this local report.
+Remote canary deployment, comparable authenticated production before/after measurements, deployed-runtime editor/save qualification and cohort rollout remain pending. Trilliant development is blocked by Updraft backup API readiness. Gloves has an exact ready selective plan, pending production confirmation and a fresh verified backup. See RELEASE-STATUS.md for current evidence. Do not mark the fleet current from this local report.
 
 See ../../docs/MRN-CONFIG-HELPER-STARTUP.md for caller trace and responsibilities. Raw JSON and QA reports adjacent to this file provide the measured evidence.

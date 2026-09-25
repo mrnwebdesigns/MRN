@@ -1,0 +1,21 @@
+✔ planning is the default and execution requires two exact confirmations (1.035166ms)
+✔ site URLs normalize to one credential-free HTTPS identity (0.330375ms)
+✔ version comparison is numeric and downgrade-safe (0.166459ms)
+✔ Codex config parser reads only the named MainWP server command (0.807583ms)
+✔ MCP response parsers preserve JSON and fail closed on errors (0.146083ms)
+✔ registered artifact bytes must match size and SHA-256 (1.513208ms)
+✔ selective release selection refuses nonstandard components and recognizes no-change (0.176166ms)
+✔ inventory and ability inputs preserve the exact site, baseline, and artifacts (0.173209ms)
+✔ fresh runtime verification requires exact target identity (0.131291ms)
+✔ safe mode is detected before a backup or update can start (0.317042ms)
+✔ top-level no-change flow exact-resolves, syncs, and reads the signed runtime (11.461708ms)
+✔ a MainWP sync timeout is accepted only after fresh exact-site readback (9.658084ms)
+✔ execution rechecks, probes safe mode, backs up, confirms, and verifies in order (2.814708ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117.522959

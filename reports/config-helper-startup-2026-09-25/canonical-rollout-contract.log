@@ -1,0 +1,12 @@
+PASS: Required Stack plugin manifest includes mrn-universal-sticky-bar
+PASS: Standalone sticky-toolbar fallback matches the canonical shared source
+PASS: Local theme version is 1.5.0
+PASS: Packaged theme zip version matches local source
+PASS: Stack MU wrapper versions match their components
+PASS: Remote stack shared runtime exists
+PASS: Remote site bootstrap matches local source
+PASS: Remote Stack export importer matches local source
+PASS: Remote importer manifest matches local source
+PASS: Remote stack Updraft local retention MU plugin exists
+PASS: No default-configs live site found; live rollout checks skipped
+Rollout contract verified for stack runtime (no default-configs live target installed)
