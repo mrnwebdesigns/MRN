@@ -4,9 +4,9 @@
 
 - Config Helper **0.1.66**, merged plugin PR #8 at `1a326a5e9977dc2a45da5ed7444a58897fecd955`.
 - Stack metadata/report PR #129 and immutable lock PR #130 are merged; current lock merge is `fac8a1a`.
-- Release `2026.09.25-config-helper-startup-fleet`, lock SHA-256 `bb23ce499f18a21387c20761fb5dfdec95126c2e65e53da21425957f247f5792`.
-- Clean-main audit and candidate reconciliation pass. Config Helper is the only changed component version/tree/file count from the predecessor; theme and Character Count remain unchanged.
-- Two complete Fleet builds match byte-for-byte: package SHA-256 `35c9e69bb69774839d07f99e6936ad4f3d4336bad780d12fa2a63bea03080c6b`, 2,468,761 bytes. This cumulative package is prepared; the proposed startup canaries use the narrower selective plugin plan.
+- The initial immutable candidate `2026.09.25-config-helper-startup-fleet` has lock SHA-256 `bb23ce499f18a21387c20761fb5dfdec95126c2e65e53da21425957f247f5792` and is archived unchanged. Final publication seal `2026.09.25-config-helper-startup-fleet-r2` includes the completed qualification documentation; the authoritative identity is `stack/manifests/stack-release.lock.json`. No deployable component changes between these seals.
+- Clean-main audit and candidate reconciliation pass for the initial seal. Final reconciliation and artifact checks run after the `r2` lock is merged; their generated receipts remain beside the release artifacts. Config Helper is the only changed component version/tree/file count from the predecessor; theme and Character Count remain unchanged.
+- Two complete initial-seal Fleet builds match byte-for-byte: package SHA-256 `35c9e69bb69774839d07f99e6936ad4f3d4336bad780d12fa2a63bea03080c6b`, 2,468,761 bytes. The final seal is rebuilt and compared independently because lock bytes are part of the cumulative package; the proposed startup canaries use the unchanged narrower selective plugin artifact and plan.
 - Selective Config Helper ZIP: SHA-256 `7073f358b13d2a83e8350e586e532d3370d3914149f17059029c4cefa85c93df`, 108,826 bytes. Deployable tree `1c5882823dfddcbe24b3a018ca95c726602e557ab15f79d136e276071dc74dd8`, 19 files. Exact 0.1.64 and 0.1.65 rollback bytes verified.
 
 ## Qualification
@@ -48,3 +48,7 @@ Plan SHA-256: `74fe501f892177e5e54f96217e71d011efcbb1f1fd8eaacc21dc89264ebe93d8`
 5. On any regression, stop the cohort; use a fresh backup and separately confirmed exact prior package, then verify restored runtime and behavior. Expand only after the established canary/cohort approval gates.
 
 No site received 0.1.66 in this task. No fleet-wide performance or deployment-completion claim is made. Character Count asset scoping and further ACF/Woo startup work remain separate.
+
+## Publication evidence ordering
+
+The promotion gate treats all post-lock documentation as source drift. Qualification receipts above refer to the initial immutable seal and are retained without modification. The final `r2` lock is generated only after this report is committed, and its CI/promotion/build receipts are generated outside the source tree to avoid another post-lock source change. The final assistant handoff reports their results and checksums.

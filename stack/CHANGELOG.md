@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 2026.09.25-config-helper-startup-fleet-r2
+
+- Seal the startup candidate after its qualification reports are committed.
+  Preserve the first candidate lock and measurements as immutable evidence.
+  No component version or deployable tree changes from the first candidate.
+
 ## 2026.09.25-config-helper-startup-fleet
 
 - Config Helper `0.1.66` keeps scalar and content-type visibility settings reads

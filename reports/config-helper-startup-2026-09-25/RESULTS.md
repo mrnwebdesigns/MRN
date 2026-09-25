@@ -1,6 +1,6 @@
 # Config Helper startup performance and compatibility
 
-Status: source merged at `1a326a5e9977dc2a45da5ed7444a58897fecd955` (0.1.66); Stack metadata and lock are merged (MRN PRs #129 and #130); clean-main candidate reconciliation and deterministic Fleet builds pass. This task has performed no remote deployment.
+Status: source merged at `1a326a5e9977dc2a45da5ed7444a58897fecd955` (0.1.66); Initial Stack metadata and lock are merged (MRN PRs #129 and #130); the initial clean-main reconciliation and deterministic builds pass. A final `r2` publication seal follows the completed documentation without changing component trees; see RELEASE-STATUS.md. This task has performed no remote deployment.
 
 ## Method
 
