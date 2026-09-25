@@ -30,3 +30,16 @@ MU component. Resources and Locations must be registered. Remote URLs are refuse
 The clone fixtures represent retained Reference Content rows. They do not change
 the site's allowed-layout settings or offer new layouts in restricted contexts.
 The scripts preserve field names and derive destinations with WordPress APIs.
+
+## Heading and label content tokens
+
+With the candidate parent theme, MRN Tokens and Reusable Block Library active on
+an explicitly resolved `.localhost` runtime, run:
+
+`wp --path=<local-public> eval-file <theme>/tests/runtime/heading-content-tokens.php`
+
+These checks use real WordPress shortcode parsing and both the builder and
+reusable Basic Block templates. They cover escaped token values, limited inline
+HTML, multiple and missing tokens, literal shortcode examples, unrelated and
+nested shortcode safety, and the unavailable-plugin fallback. Registrations are
+temporary within the test process; the script does not change saved content.

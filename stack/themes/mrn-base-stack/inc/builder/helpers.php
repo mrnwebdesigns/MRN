@@ -11789,12 +11789,23 @@ function mrn_base_stack_collect_builder_link_icon_asset_needs( $value, &$needs_f
 }
 
 /**
- * Allow a small, intentional inline HTML subset for heading-style fields.
+ * Resolve content tokens and allow limited inline HTML in heading-style fields.
  *
  * @param string $value Raw heading text value.
  * @return string
  */
 function mrn_base_stack_format_heading_inline_html( $value ) {
+	$value = (string) $value;
+
+	// Only content tokens belong in labels/headings; other shortcodes may have side effects.
+	if ( false !== strpos( $value, '[mrn_token' ) && shortcode_exists( 'mrn_token' ) ) {
+		$value = preg_replace_callback(
+			'/' . get_shortcode_regex( array( 'mrn_token' ) ) . '/',
+			'do_shortcode_tag',
+			$value
+		);
+	}
+
 	$allowed_tags = array(
 		'span'   => array(
 			'class' => true,
