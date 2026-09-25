@@ -11,6 +11,10 @@
   backup, uses MainWP's two-step confirmation, and requires exact runtime and
   public HTTP readback. The command cannot install, downgrade, or select an
   arbitrary artifact and does not replace full Stack release workflows.
+- Corrected post-write verification to accept the controller's explicit
+  `baseline_component_match=false` result for a successfully verified selective
+  overlay. The component must still match the approved target plan exactly;
+  an absent or malformed baseline-match result remains a hard failure.
 
 ## 2026.09.24-sendgrid-optional-fleet
 

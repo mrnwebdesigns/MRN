@@ -546,7 +546,9 @@ test("execution rechecks, probes safe mode, backs up, confirms, and verifies in 
               tree_sha256: input.target.tree_sha256,
               file_count: input.target.file_count,
               baseline: input.baseline,
-              baseline_component_match: true,
+              // A selective target is normally an approved overlay on the
+              // unchanged immutable baseline, so this is expected to be false.
+              baseline_component_match: false,
               matches_component_plan: true,
               receipt_consumed: true,
             });

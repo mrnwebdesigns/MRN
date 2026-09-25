@@ -819,7 +819,7 @@ async function executeConfirmedUpdate(client, writeInput) {
   return confirmed.payload;
 }
 
-function verifyDeploymentResult(deployment, input, currentVersion, target, active) {
+export function verifyDeploymentResult(deployment, input, currentVersion, target, active) {
   const baselineMatches =
     deployment?.baseline?.release_id === input.baseline.release_id &&
     deployment?.baseline?.lock_sha256 === input.baseline.lock_sha256;
@@ -837,7 +837,7 @@ function verifyDeploymentResult(deployment, input, currentVersion, target, activ
     deployment?.tree_sha256 !== target.tree_sha256 ||
     deployment?.file_count !== target.file_count ||
     baselineMatches !== true ||
-    deployment?.baseline_component_match !== true ||
+    typeof deployment?.baseline_component_match !== "boolean" ||
     deployment?.matches_component_plan !== true ||
     deployment?.receipt_consumed !== true
   ) {
