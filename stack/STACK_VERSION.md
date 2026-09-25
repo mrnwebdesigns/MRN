@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.25-config-helper-startup-fleet`
+- Stack release: `2026.09.25-config-helper-startup-fleet-r2`
 - Release date: `2026-09-25`
 - Status: `release candidate for guarded per-site Fleet rollout; no site deployment performed`
 
