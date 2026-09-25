@@ -518,9 +518,9 @@ function mrn_base_stack_register_acf_field_groups() {
 										'default_value' => 1,
 										'ui_on_text'    => 'On',
 										'ui_off_text'   => 'Off',
-										'instructions'  => 'When enabled, items link to their public profile or supported file destination. Resources without files remain unlinked.',
+										'instructions'  => 'On makes items clickable; Off displays content without links in this row. Resources link to their files, even in Content Only mode. Resources without files remain unlinked.',
 										'wrapper'       => array(
-											'width' => '25',
+											'width' => '100',
 										),
 									),
 									array(

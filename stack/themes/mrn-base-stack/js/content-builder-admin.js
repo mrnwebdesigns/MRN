@@ -272,9 +272,13 @@
 			var $linkField = getContentListField( $row, 'link_items' );
 			var postType = String( getContentListSelect( $postTypeField ).val() || '' );
 			var linkSupport = config.contentListLinkSupport || {};
+			var isContentOnly = contentOnlyPostTypes.indexOf( postType ) !== -1;
 			var linksDisabled = Object.prototype.hasOwnProperty.call( linkSupport, postType ) ? ! linkSupport[ postType ] : contentOnlyPostTypes.indexOf( postType ) !== -1;
 			var $checkbox = $linkField.find( 'input[type="checkbox"]' ).first();
-			var $note = $linkField.find( '.mrn-content-list-link-note' ).first();
+			var sourceText = isContentOnly ? config.contentOnlySourceText : config.publicContentSourceText;
+			var linkText = config.contentListLinksOffText;
+
+			setContentListBehaviorNote( $postTypeField, getContentListSelect( $postTypeField ), 'mrn-content-list-source-note', sourceText );
 
 			if ( ! $linkField.length || ! $checkbox.length ) {
 				return;
@@ -286,19 +290,39 @@
 			$checkbox.prop( 'disabled', linksDisabled );
 
 			if ( linksDisabled ) {
-				if ( ! $note.length ) {
-					$note = $( '<p />' )
-						.addClass( 'description mrn-content-list-link-note' )
-						.attr( 'role', 'note' )
-						.appendTo( $linkField.find( '> .acf-input' ).first() );
-				}
-
-				$note.text( config.contentOnlyLinksDisabledText || 'This content source has no supported item destinations, so item links are disabled.' );
-				return;
+				linkText = config.contentOnlyLinksDisabledText;
+			} else if ( $checkbox.prop( 'checked' ) ) {
+				linkText = isContentOnly ? config.contentOnlyLinksOnText : config.publicContentLinksOnText;
 			}
 
-			$note.remove();
+			setContentListBehaviorNote( $linkField, $checkbox, 'mrn-content-list-link-note', linkText );
 		} );
+	}
+
+	function setContentListBehaviorNote( $field, $control, className, text ) {
+		if ( ! $field.length || ! $control.length || ! text ) {
+			return;
+		}
+
+		var $note = $field.find( '.' + className ).first();
+		if ( ! $note.length ) {
+			$note = $( '<p />' ).addClass( 'description ' + className ).attr( 'role', 'note' ).appendTo( $field.find( '> .acf-input' ).first() );
+		}
+		$note.text( text );
+
+		// ACF gives each original, cloned, and newly appended control its own ID.
+		var controlId = $control.attr( 'id' );
+		if ( controlId ) {
+			var noteId = controlId + '-' + className;
+			var descriptions = ( $control.attr( 'aria-describedby' ) || '' ).split( /\s+/ ).filter( function( id ) {
+				return id && id.slice( -className.length ) !== className;
+			} );
+			$note.attr( 'id', noteId );
+			if ( descriptions.indexOf( noteId ) === -1 ) {
+				descriptions.push( noteId );
+			}
+			$control.attr( 'aria-describedby', descriptions.join( ' ' ) );
+		}
 	}
 
 	function getObjectKeys( object ) {
@@ -1128,6 +1152,10 @@
 
 	$( document ).on( 'change', '.layout[data-layout="content_lists"] .acf-field[data-name="display_mode"] select', function() {
 		refreshContentListLegacyPresentationState( $( this ).closest( '.layout[data-layout="content_lists"]' ) );
+	} );
+
+	$( document ).on( 'change', '.layout[data-layout="content_lists"] .acf-field[data-name="link_items"] input[type="checkbox"]', function() {
+		syncContentListLinkToggle( $( this ).closest( '.layout[data-layout="content_lists"]' ) );
 	} );
 
 	$( document ).on( 'click', '.mrn-convert-reusable-block, .mrn-convert-reusable-block-action', function( event ) {
