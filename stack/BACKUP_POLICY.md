@@ -4,24 +4,38 @@
 
 - Run one combined Updraft file and database backup per day on staging and
   production.
-- Development/review environments (any host `mrn-environment-runtime`
+- An explicitly configured WordPress `staging` environment remains daily,
+  including hosting-provider preview domains. Local/development environments
+  remain manual. Other development/review environments (any host `mrn-environment-runtime`
   classifies as `non_production`, for example `*.mrndev.io`) skip this routine
   daily schedule instead of running it: `mrn-updraft-local-retention` enforces
   `updraft_interval`/`updraft_interval_database` as `manual` there rather than
   `daily`. This only turns off the time-based cron; it does not change the
   Deployments gate below, which still runs unconditionally on every
   environment, including development/review.
-- Retain four scheduled backup sets locally and remotely.
+- Retain remote recovery points as seven daily, four weekly, and twelve
+  30-day sets. UpdraftPlus keeps every backup for the first seven days, no
+  more than one per seven-day period from day 8 through day 35, and no more
+  than one per 30-day period from day 36 through day 395.
+- Require UpdraftPlus Premium advanced retention. A site without the advanced
+  retention engine is noncompliant and must not enter the rollout until that
+  prerequisite is remediated.
+- Use numerical safety caps of 23 file sets and 100 database sets. The larger
+  database cap accommodates labeled pre-deploy database-only backups without
+  displacing the scheduled recovery points before the time-bucket rules run.
 - Exclude WordPress core because it is reproducible.
 - Delete local archives after successful remote transfer.
+- Cap stranded local archives at four complete sets. This is a local disk
+  safety limit, not the remote recovery-point policy.
 - Assign each site a deterministic time between 01:00 and 04:59 so shared
   servers do not start every backup at midnight.
-- Store each site in its own S3 prefix: `bucket/sites/<site-slug>`, where
-  `<site-slug>` is the sanitized first label of the hostname (for example
-  `trilliant` for `trilliant.mrndev.io`), not the full hostname. This keeps one
-  stable prefix for a site's backup history as it moves between environments
-  (`trilliant.localhost` locally, `trilliant.mrndev.io` in review, an eventual
-  production domain) instead of fragmenting per environment/TLD.
+- Store each site in its own S3 prefix: `bucket/sites/<sanitized-hostname>`, using
+  the full hostname with punctuation replaced by hyphens (for example,
+  `example-com` for `example.com`). During an approved domain transition, the
+  non-secret `MRN_UPDRAFT_BACKUP_HOSTNAME` constant can bind validation and
+  scheduling to the final hostname. This does not move archives or modify
+  credentials. Disabled instances are excluded from validation; every active
+  S3 destination must match the site's isolated prefix.
 
 ## Local Development Exception
 
@@ -59,14 +73,14 @@
 
 ## Development Workflow
 
-- Routine scheduled and manual backups share the rolling four-set retention.
+- Routine scheduled, manual, and pre-deploy backups share the time-bucketed
+  retention policy. They must not be exempted from pruning.
 - Use **Always Keep** only for a named milestone before risky work.
 - Remove Always Keep protection when that milestone is no longer useful.
 - Never scan a shared bucket root; remotely scanned imports are exempt from
   Updraft's normal retention.
 - Provision every development site with a unique S3 prefix ending in
-  `sites/<site-slug>` (the site's stable slug, not its per-environment
-  hostname). Development sites do not have to be enrolled in MainWP; use the
+  `sites/<sanitized-hostname>`. Development sites do not have to be enrolled in MainWP; use the
   dedicated site-owner SSH path when they are managed directly.
 
 ## Restores and Cleanup

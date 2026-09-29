@@ -22,7 +22,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-public-security-hardening` | 0.4.1 | MU loader | Platform required | Applies shared public REST and discovery hardening and owns the native Advanced admin menu. |
 | `mrn-shared-assets` | 0.2.1 | MU loader | Platform required | Provides shared asset and icon interfaces, including consumer-aware ACF admin asset detection. |
 | `mrn-site-colors` | 0.1.39 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
-| `mrn-updraft-local-retention` | 0.5.1 | MU loader | Platform required | Enforces shared backup schedule and retention policy, uses a stable cross-environment S3 site slug, and routes remote-storage warnings to Notifications Center. |
+| `mrn-updraft-local-retention` | 0.6.0 | MU loader | Platform required | Enforces seven daily, four weekly, and twelve 30-day remote recovery points, uses a stable cross-environment S3 site slug, exposes MainWP compliance evidence, and routes backup-policy warnings to Notifications Center. |
 | `mrn-schema-bridge` | 0.6.0 | MU loader | Platform required | SEOPress identity synchronization, automatic Article template provisioning, JobPosting output, author policy, MRN supplemental schema, and migration-only SmartCrawl compatibility. |
 | `mrn-active-style-guide` | 0.1.7 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
 | `mrn-config-helper` | 0.1.64 | Standard bootstrap | Platform required | Shared site configuration shell, MRN-owned visible breadcrumb and BreadcrumbList runtime, launch/admin integrations, managed-credential preservation, scoped layout-picker assets, and a commit-reproducible selective Fleet package. |
