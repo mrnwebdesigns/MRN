@@ -1,6 +1,19 @@
 # Stack Changelog
 
-## Unreleased
+## 2026.09.29-updraft-retention
+
+- Backup policy now validates full-hostname S3 prefixes against every active
+  instance, preserves explicit staging schedules, includes all required content
+  entities, and supports a validated hostname override during domain cutover.
+
+- `mrn-updraft-local-retention` (`0.5.1` -> `0.6.0`): replaced the four-set
+  remote policy with seven daily, four weekly, and twelve 30-day recovery
+  points, retained the four-set stranded-local disk guard, and added explicit
+  noncompliance warnings when UpdraftPlus advanced retention is unavailable.
+- Added secret-free `backup_policy` evidence to the existing Stack runtime
+  report so MainWP can qualify and verify each site without exposing remote
+  storage credentials. This source change is not a Stack promotion or site
+  deployment.
 
 ## 2026.09.25-approved-overlay-fleet
 

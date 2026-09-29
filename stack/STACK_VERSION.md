@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.25-approved-overlay-fleet`
-- Release date: `2026-09-25`
+- Stack release: `2026.09.29-updraft-retention`
+- Release date: `2026-09-29`
 - Status: `release candidate for guarded per-site Fleet rollout; no site deployment performed`
 
 ## Included MRN-Owned Components
@@ -23,8 +23,8 @@
   - `mrn-public-security-hardening` `0.4.2`
   - `mrn-schema-bridge` `0.6.0`
   - `mrn-site-colors` / `Site Styles` `0.1.39`
-  - `mrn-updraft-backup-policy-loader` `0.5.1`
-  - `mrn-updraft-local-retention` `0.5.1`
+  - `mrn-updraft-backup-policy-loader` `0.6.0`
+  - `mrn-updraft-local-retention` `0.6.0`
 - Standard plugins:
   - `background-video-popout-disabler` `1.0.2`
   - `mrn-acf-character-count` `1.1.9`
@@ -187,3 +187,9 @@
   may move only through their checksum-locked optional-plugin plans.
 - `mrn-loader` `1.6.1` aligns runtime-report hashing with that same release-generator walk order, retains loaded-component state in global scope, and reports each legacy MU wrapper from its exact locked path.
 - Use [`CHANGELOG.md`](/Users/khofmeyer/Development/MRN/stack/CHANGELOG.md) for release notes.
+
+- Backup Policy `0.6.0` implements 7 daily / 4 weekly / 12 thirty-day retention,
+  a 395-day routine expiry guard, 23/100 numerical caps, full-hostname active
+  S3 isolation, explicit staging cadence, and stable cutover identity. This
+  candidate preserves every other locked component. SWCCP receives only the
+  qualified backup MU implementation and bootstrap through its owner SSH route.

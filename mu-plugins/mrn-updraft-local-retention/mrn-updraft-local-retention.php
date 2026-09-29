@@ -3,7 +3,7 @@
  * Plugin Name: MRN Updraft Backup Policy
  * Description: Enforces the MRN Updraft backup policy, limits local backup sets, and repairs missing scheduled events.
  * Author: MRN Web Designs
- * Version: 0.5.1
+ * Version: 0.6.0
  */
 
 defined('ABSPATH') || exit;
@@ -19,23 +19,36 @@ const MRN_UPDRAFT_LOCAL_RETENTION_CRON_HOOK = 'mrn_updraft_local_retention_clean
 const MRN_UPDRAFT_LOCAL_RETENTION_MAX_SETS = 4;
 
 /**
+ * Numerical guardrails used alongside UpdraftPlus Premium retention rules.
+ *
+ * Twenty-three file sets cover seven daily, four weekly, and twelve 30-day
+ * recovery points. Database history gets a larger ceiling because labeled
+ * pre-deploy database-only backups share the same Updraft history.
+ */
+const MRN_UPDRAFT_REMOTE_FILE_RETENTION_MAX_SETS = 23;
+const MRN_UPDRAFT_REMOTE_DATABASE_RETENTION_MAX_SETS = 100;
+
+/**
+ * Maximum age for routine backups under the twelve-period monthly policy.
+ */
+const MRN_UPDRAFT_ROUTINE_RETENTION_MAX_DAYS = 395;
+
+/**
  * Resolve the canonical site hostname used for deterministic scheduling and
  * remote-prefix validation.
  */
 function mrn_updraft_backup_policy_get_hostname(): string {
-	$hostname = wp_parse_url(home_url('/'), PHP_URL_HOST);
+	$hostname = defined('MRN_UPDRAFT_BACKUP_HOSTNAME')
+		? MRN_UPDRAFT_BACKUP_HOSTNAME
+		: wp_parse_url(home_url('/'), PHP_URL_HOST);
 	$hostname = is_string($hostname) ? strtolower(rtrim($hostname, '.')) : '';
 
-	return preg_match('/^[a-z0-9.-]+$/', $hostname) ? $hostname : '';
+	return filter_var($hostname, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) ? $hostname : '';
 }
 
 /**
- * Resolve the stable, environment-independent site slug used for the
- * BACKUP_POLICY.md `sites/<site-slug>` S3 convention.
- *
- * The hostname's first label is stable across the usual MRN environment
- * suffixes, so a site keeps one backup history as it moves between local,
- * review, staging, and production hosts.
+ * Resolve the full sanitized hostname for the policy's isolated S3 prefix.
+ * An explicitly configured backup hostname preserves identity during cutover.
  */
 function mrn_updraft_backup_policy_get_sanitized_hostname(): string {
 	$hostname = mrn_updraft_backup_policy_get_hostname();
@@ -43,8 +56,7 @@ function mrn_updraft_backup_policy_get_sanitized_hostname(): string {
 		return '';
 	}
 
-	$labels    = explode('.', $hostname);
-	$sanitized = preg_replace('/[^a-z0-9]+/', '-', $labels[0]);
+	$sanitized = preg_replace('/[^a-z0-9]+/', '-', $hostname);
 
 	return is_string($sanitized) ? trim($sanitized, '-') : '';
 }
@@ -58,6 +70,14 @@ function mrn_updraft_backup_policy_get_sanitized_hostname(): string {
  * when that component is unavailable, matching its own conservative default.
  */
 function mrn_updraft_backup_policy_is_dev_environment(): bool {
+	$environment = function_exists('wp_get_environment_type') ? wp_get_environment_type() : '';
+	if (in_array($environment, array('local', 'development'), true)) {
+		return true;
+	}
+	if ('staging' === $environment) {
+		return false;
+	}
+
 	if (!function_exists('mrn_environment_runtime_host_signal')) {
 		return false;
 	}
@@ -112,6 +132,56 @@ function mrn_updraft_backup_policy_update_option(string $name, $value): void {
 }
 
 /**
+ * Return the UpdraftPlus Premium advanced-retention rules for both backup
+ * types: seven daily points, then four weekly points, then twelve 30-day
+ * points. The final age boundary is enforced separately below.
+ *
+ * @return array{db:array<int,array<string,string>>,files:array<int,array<string,string>>}
+ */
+function mrn_updraft_backup_policy_get_retention_rules(): array {
+	$rules = array(
+		array(
+			'after-howmany' => '7',
+			'after-period'  => '86400',
+			'every-howmany' => '1',
+			'every-period'  => '604800',
+		),
+		array(
+			'after-howmany' => '35',
+			'after-period'  => '86400',
+			'every-howmany' => '30',
+			'every-period'  => '86400',
+		),
+	);
+
+	return array(
+		'db'    => $rules,
+		'files' => $rules,
+	);
+}
+
+/**
+ * Compare scalar and structured Updraft settings without flattening arrays.
+ *
+ * @param mixed $current Current option value.
+ * @param mixed $desired Desired policy value.
+ */
+function mrn_updraft_backup_policy_setting_matches($current, $desired): bool {
+	if (is_array($desired)) {
+		return is_array($current) && $current === $desired;
+	}
+
+	return (string) $current === (string) $desired;
+}
+
+/**
+ * Determine whether UpdraftPlus Premium's advanced-retention engine is active.
+ */
+function mrn_updraft_backup_policy_has_advanced_retention(): bool {
+	return false !== has_filter('updraftplus_group_backups_for_pruning');
+}
+
+/**
  * Check whether the current user can view MRN admin notifications.
  *
  * @return bool
@@ -141,17 +211,23 @@ function mrn_updraft_backup_policy_enforce_settings(): void {
 	$desired = array(
 		'updraft_interval'          => $schedule_interval,
 		'updraft_interval_database' => $schedule_interval,
-		'updraft_retain'            => '4',
-		'updraft_retain_db'         => '4',
+		'updraft_retain'            => (string) MRN_UPDRAFT_REMOTE_FILE_RETENTION_MAX_SETS,
+		'updraft_retain_db'         => (string) MRN_UPDRAFT_REMOTE_DATABASE_RETENTION_MAX_SETS,
+		'updraft_retain_extrarules' => mrn_updraft_backup_policy_get_retention_rules(),
 		'updraft_delete_local'      => '1',
 		'updraft_include_wpcore'    => '0',
+		'updraft_include_plugins'   => '1',
+		'updraft_include_themes'    => '1',
+		'updraft_include_uploads'   => '1',
+		'updraft_include_others'    => '1',
+		'updraft_include_mu-plugins' => '1',
 		'updraft_starttime_files'   => $start_time,
 		'updraft_starttime_db'      => $start_time,
 	);
 	$schedule_changed = false;
 
 	foreach ($desired as $name => $value) {
-		if ((string) mrn_updraft_backup_policy_get_option($name, '') === (string) $value) {
+		if (mrn_updraft_backup_policy_setting_matches(mrn_updraft_backup_policy_get_option($name, ''), $value)) {
 			continue;
 		}
 
@@ -167,6 +243,31 @@ function mrn_updraft_backup_policy_enforce_settings(): void {
 	}
 }
 add_action('init', 'mrn_updraft_backup_policy_enforce_settings', 15);
+
+/**
+ * Prune routine recovery points after the twelve 30-day periods end.
+ * UpdraftPlus excludes imported and Always Keep backups before this filter.
+ *
+ * @param bool  $prune_it        Existing Updraft pruning decision.
+ * @param mixed $type            Backup type (unused; required by filter).
+ * @param mixed $backup_datestamp Backup timestamp.
+ * @param mixed $entity          Backup entity (unused; required by filter).
+ * @param mixed $entity_how_many Entity count (unused; required by filter).
+ * @param mixed $rule            Active advanced rule (unused; required by filter).
+ * @param mixed $group_id        Advanced-rule group (unused; required by filter).
+ */
+function mrn_updraft_backup_policy_prune_expired_routine_backup($prune_it, $type, $backup_datestamp, $entity, $entity_how_many, $rule, $group_id): bool {
+	unset($type, $entity, $entity_how_many, $rule, $group_id);
+
+	if (!is_numeric($backup_datestamp)) {
+		return (bool) $prune_it;
+	}
+
+	$cutoff = time() - (MRN_UPDRAFT_ROUTINE_RETENTION_MAX_DAYS * 86400);
+
+	return (int) $backup_datestamp < $cutoff ? true : (bool) $prune_it;
+}
+add_filter('updraftplus_prune_or_not', 'mrn_updraft_backup_policy_prune_expired_routine_backup', 999, 7);
 
 /**
  * Inspect S3 configuration without returning or changing credential values.
@@ -192,21 +293,90 @@ function mrn_updraft_backup_policy_get_remote_status(): array {
 		? $s3['settings']
 		: array($s3);
 
+	$active_count = 0;
+	$all_isolated = true;
 	foreach ($settings_list as $settings) {
-		if (!is_array($settings) || empty($settings['path']) || !is_string($settings['path'])) {
+		if (!is_array($settings) || (isset($settings['instance_enabled']) && '1' !== (string) $settings['instance_enabled'])) {
 			continue;
 		}
-
-		$path = trim($settings['path'], '/');
+		++$active_count;
+		$path = isset($settings['path']) && is_string($settings['path']) ? trim($settings['path'], '/') : '';
 		$suffix_with_separator = '/' . $expected_suffix;
-		if ($path === $expected_suffix || substr($path, -strlen($suffix_with_separator)) === $suffix_with_separator) {
-			$status['isolated'] = true;
-			break;
+		if (substr($path, -strlen($suffix_with_separator)) !== $suffix_with_separator) {
+			$all_isolated = false;
 		}
 	}
+	$status['configured'] = $active_count > 0;
+	$status['isolated'] = $active_count > 0 && $all_isolated;
 
 	return $status;
 }
+
+/**
+ * Build a secret-free, machine-readable backup-policy report for MainWP.
+ *
+ * @return array<string,mixed>
+ */
+function mrn_updraft_backup_policy_get_retention_status(): array {
+	$expected_schedule = mrn_updraft_backup_policy_is_dev_environment() ? 'manual' : 'daily';
+	$expected_rules = mrn_updraft_backup_policy_get_retention_rules();
+	$current_rules = mrn_updraft_backup_policy_get_option('updraft_retain_extrarules', array());
+	$remote = mrn_updraft_backup_policy_get_remote_status();
+	$start_time = mrn_updraft_backup_policy_get_start_time();
+	$checks = array(
+		'schedule_files'            => $expected_schedule === (string) mrn_updraft_backup_policy_get_option('updraft_interval', ''),
+		'schedule_database'         => $expected_schedule === (string) mrn_updraft_backup_policy_get_option('updraft_interval_database', ''),
+		'file_retention_cap'        => (string) MRN_UPDRAFT_REMOTE_FILE_RETENTION_MAX_SETS === (string) mrn_updraft_backup_policy_get_option('updraft_retain', ''),
+		'database_retention_cap'    => (string) MRN_UPDRAFT_REMOTE_DATABASE_RETENTION_MAX_SETS === (string) mrn_updraft_backup_policy_get_option('updraft_retain_db', ''),
+		'advanced_rules_configured' => mrn_updraft_backup_policy_setting_matches($current_rules, $expected_rules),
+		'advanced_rules_active'     => mrn_updraft_backup_policy_has_advanced_retention(),
+		'delete_local'              => '1' === (string) mrn_updraft_backup_policy_get_option('updraft_delete_local', ''),
+		'wordpress_core_excluded'   => '0' === (string) mrn_updraft_backup_policy_get_option('updraft_include_wpcore', ''),
+		'plugins_included'          => '1' === (string) mrn_updraft_backup_policy_get_option('updraft_include_plugins', ''),
+		'themes_included'           => '1' === (string) mrn_updraft_backup_policy_get_option('updraft_include_themes', ''),
+		'uploads_included'          => '1' === (string) mrn_updraft_backup_policy_get_option('updraft_include_uploads', ''),
+		'other_content_included'    => '1' === (string) mrn_updraft_backup_policy_get_option('updraft_include_others', ''),
+		'mu_plugins_included'       => '1' === (string) mrn_updraft_backup_policy_get_option('updraft_include_mu-plugins', ''),
+		'files_start_time'          => $start_time === (string) mrn_updraft_backup_policy_get_option('updraft_starttime_files', ''),
+		'database_start_time'       => $start_time === (string) mrn_updraft_backup_policy_get_option('updraft_starttime_db', ''),
+		'remote_configured'         => $remote['configured'],
+		'remote_isolated'           => $remote['isolated'],
+	);
+
+	return array(
+		'policy_version'        => '2026.09',
+		'plugin_version'        => '0.6.0',
+		'expected_schedule'     => $expected_schedule,
+		'file_retention_cap'    => MRN_UPDRAFT_REMOTE_FILE_RETENTION_MAX_SETS,
+		'database_retention_cap' => MRN_UPDRAFT_REMOTE_DATABASE_RETENTION_MAX_SETS,
+		'retention_profile'     => array(
+			'daily'           => 7,
+			'weekly'          => 4,
+			'thirty_day'      => 12,
+			'max_routine_days' => MRN_UPDRAFT_ROUTINE_RETENTION_MAX_DAYS,
+		),
+		'expected_rules'       => $expected_rules,
+		'checks'               => $checks,
+		'compliant'            => !in_array(false, $checks, true),
+	);
+}
+
+/**
+ * Add backup-policy evidence to the existing Stack runtime report.
+ *
+ * @param mixed $report Existing runtime report.
+ * @return array<string,mixed>
+ */
+function mrn_updraft_backup_policy_add_runtime_report($report): array {
+	if (!is_array($report)) {
+		$report = array();
+	}
+
+	$report['backup_policy'] = mrn_updraft_backup_policy_get_retention_status();
+
+	return $report;
+}
+add_filter('mrn_loader_runtime_report', 'mrn_updraft_backup_policy_add_runtime_report', 20);
 
 /**
  * Warn administrators when remote backups are missing or share a bucket root.
@@ -236,6 +406,20 @@ function mrn_updraft_backup_policy_remote_notice(): void {
 }
 
 /**
+ * Warn when the Premium advanced-retention engine is unavailable.
+ */
+function mrn_updraft_backup_policy_advanced_retention_notice(): void {
+	if (!mrn_updraft_backup_policy_can_view_notifications() || mrn_updraft_backup_policy_has_advanced_retention()) {
+		return;
+	}
+
+	printf(
+		'<div class="notice notice-error"><p>%s</p></div>',
+		esc_html__('MRN backup policy: UpdraftPlus advanced retention is unavailable. The seven-daily, four-weekly, twelve-30-day policy cannot be guaranteed.', 'mrn-updraft-local-retention')
+	);
+}
+
+/**
  * Collect the Updraft remote-storage notification for the Notifications Center.
  *
  * @param array<int, array<string, mixed>> $notifications Existing notifications.
@@ -251,26 +435,36 @@ function mrn_updraft_backup_policy_dashboard_notifications($notifications): arra
 	}
 
 	$status = mrn_updraft_backup_policy_get_remote_status();
-	if ($status['configured'] && $status['isolated']) {
-		return $notifications;
+	if (!$status['configured'] || !$status['isolated']) {
+		$message = !$status['configured']
+			? 'MRN backup policy: Amazon S3 remote storage is not configured.'
+			: sprintf(
+				'MRN backup policy: the S3 destination must use a unique path ending in %s. Remote retention is unsafe while sites share a bucket root.',
+				$status['expected_suffix']
+			);
+
+		$notifications[] = array(
+			'id'       => 'mrn-updraft-backup-policy-remote-storage',
+			'group'    => 'stack',
+			'type'     => 'error',
+			'title'    => 'MRN backup policy needs attention.',
+			'message'  => $message,
+			'source'   => 'MRN Updraft Backup Policy',
+			'priority' => 15,
+		);
 	}
 
-	$message = !$status['configured']
-		? 'MRN backup policy: Amazon S3 remote storage is not configured.'
-		: sprintf(
-			'MRN backup policy: the S3 destination must use a unique path ending in %s. Remote retention is unsafe while sites share a bucket root.',
-			$status['expected_suffix']
+	if (!mrn_updraft_backup_policy_has_advanced_retention()) {
+		$notifications[] = array(
+			'id'       => 'mrn-updraft-backup-policy-advanced-retention',
+			'group'    => 'stack',
+			'type'     => 'error',
+			'title'    => 'MRN backup policy needs attention.',
+			'message'  => 'UpdraftPlus advanced retention is unavailable. The seven-daily, four-weekly, twelve-30-day policy cannot be guaranteed.',
+			'source'   => 'MRN Updraft Backup Policy',
+			'priority' => 15,
 		);
-
-	$notifications[] = array(
-		'id'       => 'mrn-updraft-backup-policy-remote-storage',
-		'group'    => 'stack',
-		'type'     => 'error',
-		'title'    => 'MRN backup policy needs attention.',
-		'message'  => $message,
-		'source'   => 'MRN Updraft Backup Policy',
-		'priority' => 15,
-	);
+	}
 
 	return $notifications;
 }
@@ -285,6 +479,7 @@ function mrn_updraft_backup_policy_register_dashboard_notifications(): void {
 	}
 
 	add_action('admin_notices', 'mrn_updraft_backup_policy_remote_notice');
+	add_action('admin_notices', 'mrn_updraft_backup_policy_advanced_retention_notice');
 }
 
 add_action('plugins_loaded', 'mrn_updraft_backup_policy_register_dashboard_notifications', 20);

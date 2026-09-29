@@ -875,22 +875,44 @@ foreach ($placeholder_array_keys as $key) {
 
 // Apply the shared backup policy to every imported site. Use a deterministic
 // overnight slot so CloudPanel sites do not all start large jobs at midnight.
-$site_host = (string) wp_parse_url(home_url("/"), PHP_URL_HOST);
+$site_host = function_exists("mrn_updraft_backup_policy_get_hostname") ? mrn_updraft_backup_policy_get_hostname() : (string) wp_parse_url(home_url("/"), PHP_URL_HOST);
 $site_namespace = sanitize_title($site_host);
 if ("" === $site_namespace) {
     $site_namespace = "wordpress-site";
 }
-$schedule_slot = abs((int) crc32($site_host)) % 240;
+$schedule_slot = (int) ((int) sprintf("%u", crc32($site_host)) % 240);
 $schedule_time = sprintf("%02d:%02d", 1 + intdiv($schedule_slot, 60), $schedule_slot % 60);
 
-$settings["updraft_interval"] = "daily";
-$settings["updraft_interval_database"] = "daily";
+$interval = function_exists("mrn_updraft_backup_policy_is_dev_environment") && mrn_updraft_backup_policy_is_dev_environment() ? "manual" : "daily";
+$settings["updraft_interval"] = $interval;
+$settings["updraft_interval_database"] = $interval;
 $settings["updraft_starttime_files"] = $schedule_time;
 $settings["updraft_starttime_db"] = $schedule_time;
-$settings["updraft_retain"] = "4";
-$settings["updraft_retain_db"] = "4";
+$settings["updraft_retain"] = "23";
+$settings["updraft_retain_db"] = "100";
+$retention_rules = [
+    [
+        "after-howmany" => "7",
+        "after-period" => "86400",
+        "every-howmany" => "1",
+        "every-period" => "604800",
+    ],
+    [
+        "after-howmany" => "35",
+        "after-period" => "86400",
+        "every-howmany" => "30",
+        "every-period" => "86400",
+    ],
+];
+$settings["updraft_retain_extrarules"] = [
+    "db" => $retention_rules,
+    "files" => $retention_rules,
+];
 $settings["updraft_delete_local"] = "1";
 $settings["updraft_include_wpcore"] = "0";
+foreach (["plugins", "themes", "uploads", "others", "mu-plugins"] as $entity) {
+    $settings["updraft_include_" . $entity] = "1";
+}
 
 // The Updraft S3 path is "bucket/optional-prefix". Give each site its own
 // prefix so a restore or remote rescan cannot import another site history.
@@ -922,7 +944,7 @@ foreach ($settings as $key => $value) {
 // as individual options because Updraft reads them that way.
 update_option($option_name, $settings);
 echo "Imported Updraft settings into {$imported} individual options and {$option_name}\n";
-echo "Applied Updraft policy for {$site_namespace}: daily at {$schedule_time}, retain 4\n";
+echo "Applied Updraft policy for {$site_namespace}: daily at {$schedule_time}, retain 7 daily / 4 weekly / 12 thirty-day sets\n";
 
 // Direct option imports do not invoke the settings API callbacks that normally
 // create the Updraft WP-Cron rows. Schedule them explicitly after import.
