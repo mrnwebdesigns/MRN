@@ -876,10 +876,11 @@ foreach ($placeholder_array_keys as $key) {
 // Apply the shared backup policy to every imported site. Use a deterministic
 // overnight slot so CloudPanel sites do not all start large jobs at midnight.
 $site_host = function_exists("mrn_updraft_backup_policy_get_hostname") ? mrn_updraft_backup_policy_get_hostname() : (string) wp_parse_url(home_url("/"), PHP_URL_HOST);
-$site_namespace = sanitize_title($site_host);
-if ("" === $site_namespace) {
-    $site_namespace = "wordpress-site";
+if (!filter_var($site_host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME)) {
+    fwrite(STDERR, "Backup settings import stopped: invalid backup hostname.\n");
+    exit(1);
 }
+$site_namespace = sanitize_title($site_host);
 $schedule_slot = (int) ((int) sprintf("%u", crc32($site_host)) % 240);
 $schedule_time = sprintf("%02d:%02d", 1 + intdiv($schedule_slot, 60), $schedule_slot % 60);
 
