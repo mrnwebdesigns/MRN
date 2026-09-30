@@ -41,6 +41,13 @@ def run(args, **kwargs):
     return result.stdout
 
 
+def wpengine_private(c):
+    """Recognize only WP Engine's documented persistent, HTTP-blocked storage."""
+    return (c['host'] == c.get('user', '') + '.ssh.wpengine.net'
+            and c['root'] == '/sites/' + c.get('user', '')
+            and c['state_dir'].startswith(c['root'] + '/_wpeprivate/mrn-site-deploy/'))
+
+
 def config(environ):
     names = ['HOST', 'PORT', 'USER', 'ROOT', 'URL', 'TEMPLATE', 'STATE_DIR', 'TRANSPORT', 'KEY_FILE', 'KNOWN_HOSTS_FILE']
     c = {k.lower(): environ.get('DEPLOY_' + k, '') for k in names}
@@ -56,7 +63,7 @@ def config(environ):
         check(c[k], r'/[A-Za-z0-9_./-]+', k)
         if '..' in PurePosixPath(c[k]).parts or c[k] == '/' or c[k].endswith('/'):
             raise ValueError('Unsafe remote path')
-    if c['state_dir'] == c['root'] or c['state_dir'].startswith(c['root'] + '/'):
+    if (c['state_dir'] == c['root'] or c['state_dir'].startswith(c['root'] + '/')) and not wpengine_private(c):
         raise ValueError('Rollback directory must be outside the WordPress root')
     check(c['url'], r'https://[A-Za-z0-9.-]+(?:/[A-Za-z0-9_/-]*)?', 'URL')
     c['url'] = c['url'].rstrip('/')
@@ -87,7 +94,8 @@ class Target:
         return json.loads(markers[0])
 
     def inspect(self, slug):
-        settings = json.dumps({'slug': slug, 'exclude': sorted(EXCLUDED), 'state': self.c['state_dir']})
+        settings = json.dumps({'slug': slug, 'exclude': sorted(EXCLUDED), 'state': self.c['state_dir'],
+                               'wpengine_private': wpengine_private(self.c)})
         # Pass JSON as a PHP string literal using base64 to avoid PHP interpolation.
         import base64
         encoded = base64.b64encode(settings.encode()).decode()
@@ -108,14 +116,16 @@ $state = is_file($c['state'] . '/current.json') ? json_decode(file_get_contents(
 $state_path = realpath($c['state']);
 $root_path = realpath(ABSPATH);
 $private = $state_path && $root_path && $state_path !== $root_path && strpos($state_path . '/', $root_path . '/') !== 0;
+$wpe_private = $c['wpengine_private'] && $state_path && $root_path && strpos($state_path . '/', $root_path . '/_wpeprivate/mrn-site-deploy/') === 0;
 $services = array_values(array_filter((array) get_option('updraft_service', array())));
 global $updraftplus;
 echo 'MRN_RESULT=' . wp_json_encode(array(
     'home' => untrailingslashit(get_option('home')), 'stylesheet' => get_stylesheet(), 'template' => get_template(),
     'wp_root' => $root_path,
-    'theme_url' => get_stylesheet_directory_uri(),
+    'theme_url' => set_url_scheme(get_stylesheet_directory_uri(), 'https'),
     'theme' => realpath($theme), 'files' => $files, 'state' => $state,
-    'state_ready' => $private && is_writable($c['state']) && (fileperms($c['state']) & 0077) === 0,
+    'state_ready' => ($private || $wpe_private) && is_writable($c['state']) && (fileperms($c['state']) & 0077) === 0,
+    'state_protection_probe_exists' => is_file(ABSPATH . '_wpeprivate/config.json'),
     'writable' => is_writable($theme),
     'backup_ready' => is_object($updraftplus) && is_callable(array($updraftplus, 'backupnow_database')) && !empty($services) && !in_array('none', $services, true),
     'git' => file_exists($theme . '/.git')
@@ -195,6 +205,26 @@ def git_destination(c, before, source):
     return shlex.quote(root)
 
 
+def require_http_denied(url):
+    # Never read response bodies, particularly for provider/Git private files.
+    try:
+        with urllib.request.urlopen(url, timeout=30):
+            pass
+    except urllib.error.HTTPError as error:
+        denied = error.code in [403, 404] and error.geturl() == url
+        error.close()
+        if denied:
+            return
+    raise ValueError('Private storage HTTP protection is not verified; no deployment allowed')
+
+
+def verify_state_privacy(c, before):
+    if wpengine_private(c):
+        if not before.get('state_protection_probe_exists'):
+            raise ValueError('Cannot verify protection of an existing WP Engine private file')
+        require_http_denied(c['url'] + '/_wpeprivate/config.json')
+
+
 def verify_git_privacy(c, before):
     root = before['git_root']
     wp_root = before.get('wp_root', c['root'])
@@ -204,14 +234,7 @@ def verify_git_privacy(c, before):
     if not theme_url.startswith(c['url'] + '/'):
         raise ValueError('Cannot establish canonical public URL for Git privacy check')
     for name in ['HEAD', 'config']:
-        url = theme_url + '/.git/' + name
-        try:
-            with urllib.request.urlopen(url, timeout=30):
-                pass
-        except urllib.error.HTTPError as error:
-            if error.code in [403, 404] and error.geturl() == url:
-                continue
-        raise ValueError('Git metadata protection is not verified; no deployment allowed')
+        require_http_denied(theme_url + '/.git/' + name)
 
 
 def http_check(url, rest=False):
@@ -236,6 +259,7 @@ def deploy(args, c):
         files = export_payload(args.sha, args.source, payload)
         before = target.inspect(args.slug)
         verify_identity(c, before, args.slug)
+        verify_state_privacy(c, before)
         if c['transport'] == 'git':
             git_destination(c, before, args.source)
             verify_git_privacy(c, before)
@@ -263,6 +287,7 @@ def deploy(args, c):
         # Recheck drift after the backup, immediately before preserving/writing code.
         fresh = target.inspect(args.slug)
         verify_identity(c, fresh, args.slug)
+        verify_state_privacy(c, fresh)
         require_baseline(c, fresh, repository, args.environment)
         if digest(fresh['files']) != receipt['previous_tree']:
             raise ValueError('Theme changed during backup; refusing deployment')

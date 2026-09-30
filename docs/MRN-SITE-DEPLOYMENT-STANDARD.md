@@ -53,7 +53,7 @@ Required environment variables:
 | `DEPLOY_ROOT` | Absolute WordPress document root on that server |
 | `DEPLOY_URL` | Exact WordPress home URL, including canonical host |
 | `DEPLOY_TEMPLATE` | Expected active parent template slug |
-| `DEPLOY_STATE_DIR` | Existing private writable directory outside the web root for receipts and code rollback archives |
+| `DEPLOY_STATE_DIR` | Existing private writable directory outside the web root for receipts and code rollback archives; WP Engine uses its protected persistent path below |
 | `DEPLOY_TRANSPORT` | `rsync`, or `git` for an existing clean deployment repository whose source subtree resolves to the active child theme |
 | `DEPLOY_BASELINE_TREE` | Reviewed remote tree digest from preflight for first adoption |
 | `DEPLOY_READY` | Set to `1` only after qualification and owner authorization |
@@ -107,6 +107,17 @@ public `.git/HEAD` and `.git/config` requests return 403/404 without redirects.
 The helper verifies that protection before backup or deployment; it never reads
 or displays those files' contents. A whole WordPress checkout is not a valid
 site-code deployment target.
+
+WP Engine's SSH Gateway discards files outside `/sites/<environment>` when a
+session ends. For that provider only, use
+`/sites/<environment>/_wpeprivate/mrn-site-deploy/<target>` for persistent private
+rollback storage. The helper requires the matching WP Engine SSH host/account,
+the physical protected path, private filesystem permissions, and a 403/404
+without redirect for an existing provider-private file before a deployment.
+It never reads that file's contents. This is the provider's documented
+HTTP-blocked storage, not an arbitrary exception for folders under WordPress.
+See [WP Engine SSH storage](https://wpengine.com/support/ssh-gateway/) and
+[protected directories](https://wpengine.com/support/wp-engines-security-environment/).
 
 ## First setup and server changes
 
