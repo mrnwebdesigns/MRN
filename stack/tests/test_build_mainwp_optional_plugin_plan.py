@@ -187,7 +187,7 @@ class OptionalPluginPlanTests(unittest.TestCase):
             "mrn-mainwp/preflight-optional-plugin-update-v1",
             plan["execution_contract"]["preflight_ability"],
         )
-        self.assertEqual("0.9.7", plan["execution_contract"]["minimum_controller_version"])
+        self.assertEqual("0.9.9", plan["execution_contract"]["minimum_controller_version"])
         self.assertEqual(
             "controller-preflight",
             plan["execution_contract"]["precondition_hash_source"],
