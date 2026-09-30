@@ -20,8 +20,8 @@ function mrn_site_release_asset_url( $src ) {
 	if ( null === $manifest ) {
 		$manifest = json_decode( file_get_contents( __DIR__ . '/mrn-assets.json' ), true ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local build artifact, read once per request.
 	}
-	if ( ! is_array( $manifest ) || 1 !== (int) ( $manifest['schema'] ?? 0 ) ) {
-		return $src;
+	if ( ! is_array( $manifest ) || 1 !== (int) ( $manifest['schema'] ?? 0 ) || empty( $manifest['assets'] ) || empty( $manifest['public_path'] ) ) {
+		throw new RuntimeException( 'The release asset manifest is unavailable.' );
 	}
 	$source_path = wp_parse_url( $src, PHP_URL_PATH );
 	$theme_path  = wp_parse_url( get_stylesheet_directory_uri(), PHP_URL_PATH );
@@ -37,7 +37,7 @@ function mrn_site_release_asset_url( $src ) {
 	$name  = rawurldecode( substr( $source_path, strlen( $prefix ) ) );
 	$asset = $manifest['assets'][ $name ] ?? null;
 	if ( ! is_array( $asset ) || empty( $asset['file'] ) ) {
-		return $src;
+		throw new RuntimeException( 'An enqueued child asset is absent from the release manifest.' );
 	}
 	return content_url( '/' . $manifest['public_path'] . '/' . $asset['file'] );
 }

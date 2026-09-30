@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+"""Transfer trusted release tooling after backup, then run the Dev controller."""
+import argparse
+import base64
+import hashlib
+import json
+import os
+from pathlib import Path
+import shlex
+import subprocess
+import time
+
+from deploy import Target, check, config, digest, verify_identity
+from verify_release import verify
+
+TOOLS = Path(__file__).resolve().parent
+HOST_FILES = ('host_controller.py', 'atomic_store.py', 'cache_policy.py', 'deploy.py',
+              'verify_release.py', 'verify_public_assets.py', 'backup.php', 'release-bootstrap.php')
+
+
+def transfer_backup(target):
+    label = 'mrn-tool-transfer-' + str(int(time.time()))
+    code = (TOOLS / 'backup.php').read_text().removeprefix('<?php')
+    # Target.php normally loads the active theme. This pre-transfer backup must
+    # remain available for rollback after a theme bootstrap failure.
+    command = shlex.join(['env', 'MRN_BACKUP_LABEL=' + label, 'wp', '--path=' + target.c['root'],
+                          '--skip-themes', 'eval', code])
+    output = target.shell(command + '\n')
+    receipts = [json.loads(line[11:]) for line in output.splitlines() if line.startswith('MRN_RESULT=')]
+    if len(receipts) != 1 or receipts[0].get('valid') is not True or receipts[0].get('label') != label:
+        raise ValueError('Tool transfer requires a fresh verified remote backup')
+    return receipts[0]
+
+
+def run(plan, c):
+    # An explicit qualification run can adopt Dev. Normal deployments require
+    # the environment readiness switch; neither route can write to Live.
+    if plan['environment'] != 'dev' or c['backup_provider'] != 'updraft':
+        raise ValueError('Live activation is disabled; only the Dev adapter is implemented')
+    if not c['url'].endswith('.mrndev.io'):
+        raise ValueError('Unqualified Dev host')
+    if not plan.get('adopt') and not c.get('ready'):
+        raise ValueError('DEPLOY_READY must be enabled after qualification')
+    if not plan.get('rollback_to'):
+        verify(plan['archive'], plan['artifact_sha256'], plan['source_sha'], plan['source_path'], plan['slug'])
+    target = Target(c)
+    before = target.inspect(plan['slug'])
+    verify_identity(c, before, plan['slug'])
+    if before['state'] != plan.get('expected_current'):
+        raise ValueError('Target changed before backup and transfer')
+    if plan.get('adopt') and digest(before['files']) != plan['baseline']:
+        raise ValueError('Target differs from reviewed adoption baseline')
+    backup = transfer_backup(target)
+    job = c['state_dir'] + '/jobs/' + str(time.time_ns())
+    check(job, r'/[A-Za-z0-9_./-]+', 'private job path')
+    target.shell('umask 077\nmkdir -p ' + shlex.quote(job) + '\n')
+    for name in HOST_FILES:
+        data = (TOOLS / name).read_bytes()
+        encoded = base64.b64encode(data).decode()
+        path = job + '/' + name
+        script = "import base64,hashlib,pathlib; b=base64.b64decode(" + repr(encoded) + "); "
+        script += "assert hashlib.sha256(b).hexdigest()==" + repr(hashlib.sha256(data).hexdigest()) + "; "
+        script += "p=pathlib.Path(" + repr(path) + "); p.open('xb').write(b)"
+        target.shell('python3 -c ' + shlex.quote(script) + '\n')
+    remote_plan = {**plan, **{k: c[k] for k in ('url', 'root', 'template', 'state_dir', 'backup_provider')}}
+    if not plan.get('rollback_to'):
+        # No shell interpolation of payload or credentials. Host key checking is
+        # inherited from the verified site-owner Target connection.
+        remote_archive = job + '/release.tar'
+        with open(plan['archive'], 'rb') as archive:
+            proc = subprocess.run(['ssh', *target.options, target.login,
+                                   'umask 077; cat > ' + shlex.quote(remote_archive)], stdin=archive,
+                                  capture_output=True)
+        if proc.returncode:
+            raise RuntimeError('Private artifact transfer failed')
+        remote_plan['archive'] = remote_archive
+    encoded = base64.b64encode(json.dumps(remote_plan).encode()).decode()
+    launch = 'import base64,subprocess; p=base64.b64decode(' + repr(encoded) + '); '
+    launch += 'r=subprocess.run(["python3",' + repr(job + '/host_controller.py') + '],input=p); raise SystemExit(r.returncode)'
+    process = subprocess.run(['ssh', *target.options, target.login, 'python3 -c ' + shlex.quote(launch)],
+                             capture_output=True, text=True)
+    receipts = [json.loads(line[11:]) for line in process.stdout.splitlines() if line.startswith('MRN_RESULT=')]
+    if len(receipts) != 1:
+        raise RuntimeError('Host controller failed without a receipt; inspect the retained private job ' + job)
+    receipt = {**receipts[0], 'transfer_backup': backup, 'private_job': job}
+    return receipt
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--plan', required=True)
+    parser.add_argument('--receipt', required=True)
+    args = parser.parse_args()
+    receipt = run(json.loads(Path(args.plan).read_text()), config(os.environ))
+    Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
+    print(json.dumps({key: receipt.get(key) for key in ('status', 'current', 'previous', 'error', 'recovery')}))
+    raise SystemExit(0 if receipt['status'] == 'public-verified' else 1)
