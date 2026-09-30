@@ -228,6 +228,11 @@ The SSH alias `mainwp-tailscale` connects to the MainWP Dashboard host for expli
   Use one reviewed source commit with explicit Dev, Live, or Both selection;
   configure and qualify a new Live destination as part of launch/cutover.
   Existing sites adopt the workflow only after their recorded readiness gates.
+- Shared Stack and child-theme CSS/JS releases must satisfy
+  [`MRN-ASSET-RELEASE-STANDARD.md`](MRN-ASSET-RELEASE-STANDARD.md): automatic
+  content-hashed build outputs, synchronized minified assets, immutable URLs,
+  atomic activation, verified backups/rollback, and public URL/checksum proof.
+  Its Gloves stale-CSS regression is required adapter qualification.
 
 - GitHub Actions is the preferred deployment path for site-owned code wherever a site repository and deploy SSH exist. Examples: Morgan Development deploys by Actions plus rsync to SiteGround; Freedom House updates server-side deploy repositories by Actions.
 - Deploy only site-owned surfaces — a child or active theme, a site-owned standalone theme, or a site-specific plugin.
@@ -241,7 +246,11 @@ The SSH alias `mainwp-tailscale` connects to the MainWP Dashboard host for expli
 - If WP-CLI, UpdraftPlus, or that backup command is unavailable for a covered
   runtime, stop and report the blocker. Do not deploy without the database
   backup.
-- Flush WordPress cache and transients after deploying, when WP-CLI is available.
+- Refresh only cached HTML affected by the release, using exact URLs/tags and
+  applicable cache variants. Preserve unrelated page, object/Redis, transient,
+  media, and static-asset caches. Blanket WordPress/transient/CDN flushing is
+  not the deployment default; an adapter without scoped refresh support is
+  blocked for asset release until that support is qualified.
 - Non-WordPress MRN services have their own documented release procedures and backup mechanisms; follow the runbook in the service's own repository.
 
 ## 5) MRN WordPress Stack model

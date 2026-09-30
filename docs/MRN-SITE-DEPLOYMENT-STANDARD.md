@@ -1,6 +1,9 @@
 # Site Git, deployment, and server transitions
 
 Status: implementation candidate; site activation requires the onboarding evidence below.
+Use the current helper for preflight only until it satisfies the
+[CSS/JS release contract](MRN-ASSET-RELEASE-STANDARD.md), including atomic
+activation, scoped HTML refresh, and public manifest/checksum verification.
 
 ## Daily workflow
 
@@ -29,6 +32,12 @@ uploads, database content, provider configuration, parent themes, vendor
 plugins, and shared MRN components remain outside that payload. Full and
 partial Stack sites use the same site-code deployment method. Shared Stack
 updates retain their release-lock/MainWP/Fleet process.
+
+Both shared Stack assets and child-theme assets follow the
+[CSS/JS release standard](MRN-ASSET-RELEASE-STANDARD.md): automatic versions
+from final build output, synchronized source/minified files, and immutable URLs
+that are never reused for changed content. Build once and deploy that exact
+artifact; do not rely on manual version bumps or cache purges for correctness.
 
 Content/media changes use tracked idempotent `wp eval-file` migration bundles
 and the existing approval/backup gates. A code deployment must never copy the
@@ -89,12 +98,16 @@ in the site PR. Do not let dispatch inputs choose arbitrary filesystem paths.
    accept merely queued/running output. Kinsta and other provider-specific
    exceptions require their separately approved adapter; this initial adapter
    fails closed when Updraft cannot satisfy the policy.
-6. Preserve the current theme in private rollback storage, deploy only the
-   immutable payload, flush WordPress caches/transients, and verify every
-   payload file/hash plus exact public home and REST responses. Do not count
-   a redirected login, protection page, or 401/403 as success.
+6. Preserve the current code/manifest and rollback pointer in private storage,
+   stage and verify the immutable payload, then activate it atomically under
+   the asset release contract. Refresh only affected cached HTML; preserve
+   unrelated page/object/transient/static-asset caches. Verify installed hashes,
+   exact public home/REST responses, and the normal public pages' released asset
+   URLs and decoded file checksums. A redirect, challenge, or 401/403 is not
+   success. Origin-only verification does not prove a public asset release.
 7. Retain a receipt containing repository/commit, environment, target identity,
-   backup nonce, old/new tree digests, rollback location, and verification.
+   backup nonce, old/new tree and manifest digests, rollback location, affected
+   HTML/invalidation evidence, and public asset URL/checksum verification.
    Report partial/failing runs; never label transport alone as verified.
 
 GitHub serializes each site's deployments with cancellation disabled. Disable
@@ -148,9 +161,11 @@ When a site changes servers:
    only the agreed backup/code recovery evidence under the retention policy.
 
 Routine rollback deploys a reviewed previous immutable commit through the same
-backup gates. If a failed partial transfer left drift, use the recorded private
-code archive under an explicit recovery operation and verify hashes. Do not
-restore a live commerce database merely to undo code.
+backup gates. Restore its matching manifest and code atomically, retain both
+asset generations, refresh only affected HTML, and verify public URLs/hashes
+again. If a legacy partial transfer left drift, use the recorded private code
+archive under an explicit recovery operation and verify hashes. Do not restore
+a live commerce database merely to undo code.
 
 ## Activation record
 

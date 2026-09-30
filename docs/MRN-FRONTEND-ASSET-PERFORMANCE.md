@@ -6,6 +6,13 @@ Keep these decisions in the owner of the markup: Stack components in the parent
 theme, custom site components in the child theme. Do not globally remove a
 plugin's styles on the strength of one homepage audit.
 
+All shared Stack and child-theme CSS/JS changes also follow the
+[asset release standard](MRN-ASSET-RELEASE-STANDARD.md): generate content hashes
+from the final build, keep minified variants synchronized, and never reuse a
+released URL for changed bytes. Atomically activate the verified code/manifest,
+refresh only affected HTML, and prove the exact public asset checksums. The
+Gloves stale-CSS incident is its required warm-cache regression case.
+
 ## Qualifying a conditional removal
 
 1. Capture the actual public HTML, asset URLs and versions, mobile and desktop
@@ -22,8 +29,9 @@ plugin's styles on the strength of one homepage audit.
 4. Keep the allow-list narrow and conditional. Verify native shop, category,
    product, cart, checkout, and account routes retain their dependencies.
 5. Run the scoped MRN QA checks and accessibility checks. Deploy the exact small
-   patch after a verified remote database backup, retain a file rollback, clear
-   the page cache, and read back both file hashes and public HTML.
+   patch after a verified remote database backup, retain a complete code/manifest
+   rollback, refresh only affected page-cache entries, and verify public HTML's
+   released asset URLs against their served checksums. Preserve unrelated caches.
 6. Compare fresh Google PSI reports and repeat when timing variance obscures the
    result. Record bytes and request counts separately from score changes. A
    smaller payload is not proof of a particular LCP or score improvement.
