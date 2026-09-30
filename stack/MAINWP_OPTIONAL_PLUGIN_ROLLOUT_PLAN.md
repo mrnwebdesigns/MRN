@@ -97,6 +97,13 @@ that the site can create the required backup; it is not a backup receipt.
 Rollback readiness requires the exact current-version package to be available
 and checksum-valid before the update is authorized.
 
+For MainWP transport, copy `backup_readiness` from the dedicated controller
+preflight. Its `backup_api_available`, `plugin_installed`, and `plugin_active`
+must all be true, with provider `UpdraftPlus` and a configured remote destination.
+That authenticated API readiness is accepted instead of the two WP-CLI fields;
+never invent SSH/WP-CLI availability from an API response. Both transports still
+require a fresh verified remote database backup receipt before the write.
+
 ## Build A One-Site Plan
 
 ```bash
