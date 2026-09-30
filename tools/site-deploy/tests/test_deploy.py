@@ -119,6 +119,15 @@ class DeploymentSafety(unittest.TestCase):
             with self.subTest(field=field), self.assertRaises(ValueError):
                 deploy.config({'DEPLOY_' + k: v for k, v in {**values, field: value}.items()})
 
+    def test_git_transport_accepts_only_matching_private_source_layout(self):
+        source = 'public/wp-content/themes/child'
+        state = {**self.before, 'git_root': '/home/site/deploy-repo', 'theme': '/home/site/deploy-repo/' + source}
+        self.assertEqual('/home/site/deploy-repo', deploy.git_destination(self.config, state, source))
+        with self.assertRaises(ValueError):
+            deploy.git_destination(self.config, state, '.')
+        with self.assertRaises(ValueError):
+            deploy.git_destination(self.config, {**state, 'git_root': self.config['root'], 'theme': self.config['root']}, '.')
+
 
 if __name__ == '__main__':
     unittest.main()

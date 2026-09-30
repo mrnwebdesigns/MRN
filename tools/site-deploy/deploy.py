@@ -90,7 +90,7 @@ class Target:
         # Pass JSON as a PHP string literal using base64 to avoid PHP interpolation.
         import base64
         encoded = base64.b64encode(settings.encode()).decode()
-        return self.php('''
+        result = self.php('''
 $c = json_decode(base64_decode('%s'), true);
 $theme = get_stylesheet_directory();
 $files = array();
@@ -118,6 +118,13 @@ echo 'MRN_RESULT=' . wp_json_encode(array(
     'git' => file_exists($theme . '/.git')
 ));
 ''' % encoded)
+        check(result['theme'], r'/[A-Za-z0-9_./-]+', 'physical theme path')
+        result['git_root'] = self.shell(
+            'if git -C ' + shlex.quote(result['theme']) +
+            ' rev-parse --show-toplevel 2>/dev/null; then :; fi\n'
+        ).strip()
+        result['git'] = bool(result['git_root'])
+        return result
 
 
 def verify_identity(c, state, slug):
@@ -174,6 +181,16 @@ def require_baseline(c, before, repository, environment):
         raise ValueError('Remote tree differs from reviewed baseline/last receipt; reconcile before deployment')
 
 
+def git_destination(c, before, source):
+    root = check(before['git_root'], r'/[A-Za-z0-9_./-]+', 'remote Git root')
+    expected_theme = root if source == '.' else root + '/' + source
+    if expected_theme != before['theme']:
+        raise ValueError('Remote Git source layout does not match the reviewed theme source')
+    if root == c['root'] or root.startswith(c['root'] + '/'):
+        raise ValueError('Deploy repository must be private, outside the WordPress document root')
+    return shlex.quote(root)
+
+
 def http_check(url, rest=False):
     request = urllib.request.Request(url, headers={'User-Agent': 'MRN-Deployment-Verification/1.0'})
     with urllib.request.urlopen(request, timeout=30) as response:
@@ -209,9 +226,8 @@ def deploy(args, c):
         require_baseline(c, before, repository, args.environment)
         theme = shlex.quote(before['theme'])
         if c['transport'] == 'git':
-            if args.source != '.':
-                raise ValueError('Git transport requires a theme-root repository')
-            target.shell(f'cd {theme}\ntest "$(git rev-parse --show-toplevel)" = "$PWD"\ntest -z "$(git status --porcelain)"\ngit fetch origin {args.sha}\n')
+            git_root = git_destination(c, before, args.source)
+            target.shell(f'cd {git_root}\ntest "$(git rev-parse --show-toplevel)" = "$PWD"\ntest -z "$(git status --porcelain)"\ngit fetch origin {args.sha}\n')
         stamp = str(time.time_ns())
         label = f'pre-{args.environment}-{args.sha[:10]}-{stamp[-12:]}'
         backup_code = Path(__file__).with_name('backup.php').read_text().removeprefix('<?php')
@@ -229,7 +245,9 @@ def deploy(args, c):
         Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
         target.shell(f'umask 077\ntar --exclude=.git -czf {shlex.quote(archive)} -C {theme} .\ntar -tzf {shlex.quote(archive)} >/dev/null\n')
         if c['transport'] == 'git':
-            target.shell(f'cd {theme}\ntest -z "$(git status --porcelain)"\ngit checkout --detach {args.sha}\n')
+            if git_destination(c, fresh, args.source) != git_root:
+                raise ValueError('Remote Git root changed during backup')
+            target.shell(f'cd {git_root}\ntest -z "$(git status --porcelain)"\ngit checkout --detach {args.sha}\n')
         else:
             excludes = ['--exclude=.*'] + ['--exclude=/' + n for n in sorted(EXCLUDED)]
             run(['rsync', '-az', '--checksum', '--delete', '--delay-updates', *excludes,

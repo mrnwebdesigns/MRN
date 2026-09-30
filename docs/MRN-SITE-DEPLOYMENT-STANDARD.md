@@ -54,7 +54,7 @@ Required environment variables:
 | `DEPLOY_URL` | Exact WordPress home URL, including canonical host |
 | `DEPLOY_TEMPLATE` | Expected active parent template slug |
 | `DEPLOY_STATE_DIR` | Existing private writable directory outside the web root for receipts and code rollback archives |
-| `DEPLOY_TRANSPORT` | `rsync`, or `git` for an existing clean theme-root deployment repository |
+| `DEPLOY_TRANSPORT` | `rsync`, or `git` for an existing clean private deployment repository whose source subtree resolves to the active child theme |
 | `DEPLOY_BASELINE_TREE` | Reviewed remote tree digest from preflight for first adoption |
 | `DEPLOY_READY` | Set to `1` only after qualification and owner authorization |
 
