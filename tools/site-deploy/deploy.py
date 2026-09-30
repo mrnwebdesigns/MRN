@@ -106,15 +106,16 @@ class Target:
                        text=True, env=dict(os.environ, SSHPASS=self.password))
         return run(['ssh', *self.options, self.login, 'bash -se'], input=script, text=True)
 
-    def php(self, code):
-        command = shlex.join(['wp', '--path=' + self.c['root'], 'eval', code])
+    def php(self, code, skip_themes=False):
+        options = ['--skip-themes'] if skip_themes else []
+        command = shlex.join(['wp', '--path=' + self.c['root'], *options, 'eval', code])
         output = self.shell(command + '\n')
         markers = [line[11:] for line in output.splitlines() if line.startswith('MRN_RESULT=')]
         if len(markers) != 1:
             raise RuntimeError('Missing or ambiguous remote receipt')
         return json.loads(markers[0])
 
-    def inspect(self, slug):
+    def inspect(self, slug, skip_themes=False):
         settings = json.dumps({'slug': slug, 'exclude': sorted(EXCLUDED), 'state': self.c['state_dir'],
                                'wpengine_private': wpengine_private(self.c)})
         # Pass JSON as a PHP string literal using base64 to avoid PHP interpolation.
@@ -151,7 +152,7 @@ echo 'MRN_RESULT=' . wp_json_encode(array(
     'backup_ready' => is_object($updraftplus) && is_callable(array($updraftplus, 'backupnow_database')) && !empty($services) && !in_array('none', $services, true),
     'git' => file_exists($theme . '/.git')
 ));
-''' % encoded)
+''' % encoded, skip_themes=skip_themes)
         check(result['theme'], r'/[A-Za-z0-9_./-]+', 'physical theme path')
         result['git_root'] = self.shell(
             'if git -C ' + shlex.quote(result['theme']) +

@@ -44,7 +44,9 @@ def run(plan, c):
     if not plan.get('rollback_to'):
         verify(plan['archive'], plan['artifact_sha256'], plan['source_sha'], plan['source_path'], plan['slug'])
     target = Target(c)
-    before = target.inspect(plan['slug'])
+    # Recovery must not execute a potentially broken active child theme. The
+    # pointer and raw public identity remain readable with theme loading skipped.
+    before = target.inspect(plan['slug'], skip_themes=True)
     verify_identity(c, before, plan['slug'])
     if before['state'] != plan.get('expected_current'):
         raise ValueError('Target changed before backup and transfer')
