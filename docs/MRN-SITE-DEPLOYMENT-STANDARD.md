@@ -12,7 +12,18 @@ reviewed `main`. Run task-scoped MRN QA before committing. Feature branches may
 deploy to Dev for testing before merge. Live and Both require reviewed `main`.
 After merging, qualify the exact merged artifact on Dev before promoting that
 same artifact to Live. A feature preview cannot qualify a different merge commit.
-Do not maintain separate long-lived Dev and Live source branches.
+Keep `main` as the approved production line. A named, temporary phase/release
+branch may collect a multi-week next phase and deploy to Dev while Live remains
+on the previous phase. Merge task PRs into that phase branch until its launch is
+approved; incorporate production fixes into it before final integration. Do not
+maintain permanently divergent Dev and Live source branches.
+
+Installing deployment tooling does not authorize a next-phase launch. When
+unreleased work has already reached `main`, preserve the complete work and
+reconcile the production baseline through a reviewed Git change before enabling
+Live. Inspect existing push triggers first: restoring a production baseline
+must not automatically replace the phase being tested on Dev. Preserve history
+and verify the later phase can still merge completely after the correction.
 
 In GitHub Actions choose **Deploy site**, select **dev**, **live**, or **both**,
 and choose **preflight** (the default) or **deploy**. Run the trusted workflow
