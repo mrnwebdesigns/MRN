@@ -190,15 +190,27 @@ jobs:
       - name: Configure pinned SSH identity
         shell: bash
         env:
-          SSH_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY || (inputs.target == 'dev' && secrets.DEV_SSH_PRIVATE_KEY) }}
-          KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS || (inputs.target == 'dev' && secrets.DEV_SSH_KNOWN_HOSTS) }}
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY || (inputs.target == 'dev' && secrets.DEV_SSH_PRIVATE_KEY) || '' }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS || (inputs.target == 'dev' && secrets.DEV_SSH_KNOWN_HOSTS) || '' }}
         run: |
           set -euo pipefail
-          if [[ "$DEPLOY_BACKUP_PROVIDER" != kinsta ]]; then test -n "$SSH_KEY"; fi
-          test -n "$KNOWN_HOSTS"
+          if [[ "$DEPLOY_BACKUP_PROVIDER" != kinsta && -z "$SSH_KEY" ]]; then
+            echo '::error::Missing deployment SSH private-key secret for this environment.'
+            exit 1
+          fi
+          if [[ -z "$KNOWN_HOSTS" ]]; then
+            echo '::error::Missing pinned SSH known-hosts secret for this environment.'
+            exit 1
+          fi
           umask 077
           printf '%s\n' "$SSH_KEY" > "$RUNNER_TEMP/site-deploy.key"
           printf '%s\n' "$KNOWN_HOSTS" > "$RUNNER_TEMP/site-deploy.known_hosts"
+          if [[ "$DEPLOY_BACKUP_PROVIDER" != kinsta ]]; then
+            if ! ssh-keygen -y -P '' -f "$RUNNER_TEMP/site-deploy.key" >/dev/null 2>&1; then
+              echo '::error::Deployment SSH secret is not a valid noninteractive private key.'
+              exit 1
+            fi
+          fi
       - name: Install native Kinsta SSH transport
         if: vars.DEPLOY_BACKUP_PROVIDER == 'kinsta'
         run: sudo apt-get update && sudo apt-get install -y sshpass
