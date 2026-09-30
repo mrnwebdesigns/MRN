@@ -203,16 +203,23 @@ def validate_readiness(
         "ready",
         "provider",
         "remote_destination_configured",
-        "wp_cli_available",
-        "backup_command_available",
     )
     if any(key not in backup for key in required_backup):
         raise PlanError("backup_readiness is incomplete")
+    cli_ready = (
+        backup.get("wp_cli_available") is True
+        and backup.get("backup_command_available") is True
+    )
+    api_ready = (
+        backup.get("provider") == "UpdraftPlus"
+        and backup.get("backup_api_available") is True
+        and backup.get("plugin_installed") is True
+        and backup.get("plugin_active") is True
+    )
     if (
         backup.get("ready") is not True
         or backup.get("remote_destination_configured") is not True
-        or backup.get("wp_cli_available") is not True
-        or backup.get("backup_command_available") is not True
+        or not (cli_ready or api_ready)
     ):
         raise PlanError("Site is not ready for the required remote database backup")
 

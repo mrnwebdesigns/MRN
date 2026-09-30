@@ -68,13 +68,31 @@
         "package_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
         "backup_readiness": {
           "type": "object",
-          "required": ["ready", "provider", "remote_destination_configured", "wp_cli_available", "backup_command_available"],
+          "required": ["ready", "provider", "remote_destination_configured"],
+          "anyOf": [
+            {
+              "required": ["wp_cli_available", "backup_command_available"],
+              "properties": {"wp_cli_available": {"const": true}, "backup_command_available": {"const": true}}
+            },
+            {
+              "required": ["backup_api_available", "plugin_installed", "plugin_active"],
+              "properties": {
+                "provider": {"const": "UpdraftPlus"},
+                "backup_api_available": {"const": true},
+                "plugin_installed": {"const": true},
+                "plugin_active": {"const": true}
+              }
+            }
+          ],
           "properties": {
             "ready": {"const": true},
             "provider": {"type": "string", "minLength": 1},
             "remote_destination_configured": {"const": true},
-            "wp_cli_available": {"const": true},
-            "backup_command_available": {"const": true}
+            "wp_cli_available": {"type": "boolean"},
+            "backup_command_available": {"type": "boolean"},
+            "backup_api_available": {"type": "boolean"},
+            "plugin_installed": {"type": "boolean"},
+            "plugin_active": {"type": "boolean"}
           }
         },
         "rollback_readiness": {

@@ -245,6 +245,30 @@ class OptionalPluginPlanTests(unittest.TestCase):
         )
         self.assertIsNone(planner.SLUG_PATTERN.fullmatch("unapproved-plugin"))
 
+    def test_accepts_authenticated_mainwp_backup_api_readiness(self):
+        self.inventory["site"]["backup_readiness"] = {
+            "ready": True,
+            "provider": "UpdraftPlus",
+            "remote_destination_configured": True,
+            "backup_api_available": True,
+            "plugin_installed": True,
+            "plugin_active": True,
+        }
+        plan = self.build()
+        self.assertTrue(plan["preflight"]["backup_readiness"]["backup_api_available"])
+        self.assertTrue(plan["execution_contract"]["requires_fresh_database_backup_receipt"])
+        for key in ("backup_api_available", "plugin_installed", "plugin_active", "remote_destination_configured"):
+            with self.subTest(key=key):
+                self.inventory["site"]["backup_readiness"][key] = False
+                with self.assertRaisesRegex(planner.PlanError, "remote database backup"):
+                    self.build()
+                self.inventory["site"]["backup_readiness"][key] = True
+
+    def test_refuses_unproven_backup_transport(self):
+        self.inventory["site"]["backup_readiness"].pop("wp_cli_available")
+        with self.assertRaisesRegex(planner.PlanError, "remote database backup"):
+            self.build()
+
     def test_refuses_missing_backup_readiness(self):
         self.inventory["site"]["backup_readiness"]["ready"] = False
 
@@ -318,7 +342,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             for item in catalog["components"]
             if item["slug"] == "mrn-mainwp-operations-api"
         )
-        self.assertEqual("0.9.8", controller["version"])
+        self.assertEqual("0.9.9", controller["version"])
         self.assertEqual("dashboard-only", controller["target_tier"])
         self.assertIn("twenty-two mrn-mainwp WordPress Abilities", controller["data"]["routes"])
         self.assertNotIn("Defender (legacy compatibility only)", entry["dependencies"]["soft"])
