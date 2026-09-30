@@ -21,7 +21,7 @@ explicit state. Then update Cookie Consent. This order prevents an immediate-GTM
 window between the two plugin updates. Release records may be added only after
 their source commits merge to `origin/main`. The registered `1.1.43` and
 `1.0.14` releases meet that source gate; do not attempt the rollout until the
-Dashboard runs controller `0.9.8` and exposes both plugin main files.
+Dashboard runs controller `0.9.9` and exposes both plugin main files.
 
 MRN Database Retention is maintenance-only and catalog-only. Defender support
 inside that plugin is conditional legacy compatibility; Defender is not a Stack
@@ -37,6 +37,11 @@ MRN ACF Character Count remains a standard-bootstrap optional integration and
 is available as an exact one-site upgrade only where fresh inventory proves it
 is already installed. Version `1.1.9` narrows its admin asset loading without
 changing saved field configuration or permitting an implicit installation.
+
+MRN Comment Management remains a maintenance-only standard-bootstrap plugin.
+Version `1.2.0` adds administrator-selected role access. Its exact-site update
+requires controller `0.9.9` and a current-version rollback package; deployment
+does not select roles or change the site comments policy.
 
 ## Release Inputs
 
@@ -92,6 +97,13 @@ that the site can create the required backup; it is not a backup receipt.
 Rollback readiness requires the exact current-version package to be available
 and checksum-valid before the update is authorized.
 
+For MainWP transport, copy `backup_readiness` from the dedicated controller
+preflight. Its `backup_api_available`, `plugin_installed`, and `plugin_active`
+must all be true, with provider `UpdraftPlus` and a configured remote destination.
+That authenticated API readiness is accepted instead of the two WP-CLI fields;
+never invent SSH/WP-CLI availability from an API response. Both transports still
+require a fresh verified remote database backup receipt before the write.
+
 ## Build A One-Site Plan
 
 ```bash
@@ -121,7 +133,7 @@ updates because it:
 - does not bind execution to the inventory version/state reviewed in preflight;
 - does not require or report a checksum-verified plugin rollback artifact.
 
-`mrn-mainwp-operations-api` `0.9.8` provides the dedicated
+`mrn-mainwp-operations-api` `0.9.9` provides the dedicated
 `mrn-mainwp/preflight-optional-plugin-update-v1`,
 `mrn-mainwp/update-optional-plugin-v1`, and
 `mrn-mainwp/rollback-optional-plugin-v1` abilities. Preflight uses POST transport
@@ -148,14 +160,14 @@ safe contract is:
 8. Delete temporary Dashboard upload material after success or failure.
 
 Do not use the generic package installer for optional-plugin updates. Before a
-site operation, `0.9.8` must be separately deployed to the named MainWP
+site operation, `0.9.9` must be separately deployed to the named MainWP
 Dashboard and the three abilities must be visible through the configured
 `mainwp` MCP allowlist. Missing controller deployment or ability visibility is
 a deployment blocker, not permission to use a browser, SSH, or direct mutation.
-The merged `0.9.8` source allowlists Database Retention, Cookie Consent, GTM
+The merged `0.9.9` source allowlists Database Retention, Cookie Consent, GTM
 Injector, Background Video Pop-Out Disabler, Announcements, Font Awesome Profile
 Manager, SEO Helper, reCAPTCHA Enterprise Manager, Reusable Block Library, and
-ACF Character Count.
+ACF Character Count, and Comment Management.
 The connected Dashboard
 must report that version and expose the exact requested main-file choice before
 any site rollout.

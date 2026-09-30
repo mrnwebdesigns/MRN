@@ -203,16 +203,23 @@ def validate_readiness(
         "ready",
         "provider",
         "remote_destination_configured",
-        "wp_cli_available",
-        "backup_command_available",
     )
     if any(key not in backup for key in required_backup):
         raise PlanError("backup_readiness is incomplete")
+    cli_ready = (
+        backup.get("wp_cli_available") is True
+        and backup.get("backup_command_available") is True
+    )
+    api_ready = (
+        backup.get("provider") == "UpdraftPlus"
+        and backup.get("backup_api_available") is True
+        and backup.get("plugin_installed") is True
+        and backup.get("plugin_active") is True
+    )
     if (
         backup.get("ready") is not True
         or backup.get("remote_destination_configured") is not True
-        or backup.get("wp_cli_available") is not True
-        or backup.get("backup_command_available") is not True
+        or not (cli_ready or api_ready)
     ):
         raise PlanError("Site is not ready for the required remote database backup")
 
@@ -399,7 +406,7 @@ def build_plan(
             "preflight_ability": "mrn-mainwp/preflight-optional-plugin-update-v1",
             "controller_ability": "mrn-mainwp/update-optional-plugin-v1",
             "rollback_ability": "mrn-mainwp/rollback-optional-plugin-v1",
-            "minimum_controller_version": "0.9.7",
+            "minimum_controller_version": "0.9.9",
             "precondition_hash_source": "controller-preflight",
             "rollback_artifact_model": "operator-supplied-checksum-locked-package",
             "allow_new_install": False,
