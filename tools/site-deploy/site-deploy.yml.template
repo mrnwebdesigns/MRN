@@ -1,0 +1,62 @@
+name: Deploy site
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Destination
+        type: choice
+        options: [dev, live, both]
+        default: dev
+        required: true
+      mode:
+        description: Read-only preflight or authorized deployment
+        type: choice
+        options: [preflight, deploy]
+        default: preflight
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-deploy-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require reviewed main
+        env:
+          TARGET: ${{ inputs.target }}
+          MODE: ${{ inputs.mode }}
+        run: |
+          test "$GITHUB_REF" = refs/heads/main
+          case "$TARGET" in dev|live|both) ;; *) exit 1 ;; esac
+          case "$MODE" in preflight|deploy) ;; *) exit 1 ;; esac
+  dev:
+    needs: validate
+    if: inputs.target == 'dev' || inputs.target == 'both'
+    uses: mrnwebdesigns/MRN/.github/workflows/site-deploy-target.yml@TOOLING_SHA
+    with:
+      target: dev
+      mode: ${{ inputs.mode }}
+      source_path: SOURCE_PATH
+      stylesheet: THEME_SLUG
+      tooling_ref: TOOLING_SHA
+    secrets: inherit
+  live:
+    needs: [validate, dev]
+    if: >-
+      always() && !cancelled() && needs.validate.result == 'success' &&
+      ((inputs.target == 'live' && needs.dev.result == 'skipped') ||
+       (inputs.target == 'both' && needs.dev.result == 'success'))
+    uses: mrnwebdesigns/MRN/.github/workflows/site-deploy-target.yml@TOOLING_SHA
+    with:
+      target: live
+      mode: ${{ inputs.mode }}
+      source_path: SOURCE_PATH
+      stylesheet: THEME_SLUG
+      tooling_ref: TOOLING_SHA
+    secrets: inherit

@@ -223,6 +223,12 @@ The SSH alias `mainwp-tailscale` connects to the MainWP Dashboard host for expli
 
 ### Site deployment standard
 
+- The Git/environment/server-transition contract is
+  [`MRN-SITE-DEPLOYMENT-STANDARD.md`](MRN-SITE-DEPLOYMENT-STANDARD.md).
+  Use one reviewed source commit with explicit Dev, Live, or Both selection;
+  configure and qualify a new Live destination as part of launch/cutover.
+  Existing sites adopt the workflow only after their recorded readiness gates.
+
 - GitHub Actions is the preferred deployment path for site-owned code wherever a site repository and deploy SSH exist. Examples: Morgan Development deploys by Actions plus rsync to SiteGround; Freedom House updates server-side deploy repositories by Actions.
 - Deploy only site-owned surfaces — a child or active theme, a site-owned standalone theme, or a site-specific plugin.
 - Never deploy WordPress core, uploads/media, Local Hub metadata, logs, dumps, backups, cache output, shared MRN plugins, or vendor/pro plugin runtime copies unless the owner asks for that exact target.
