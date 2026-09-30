@@ -25,7 +25,7 @@ class Assets(HTMLParser):
 
 
 def fetch(url, content_types):
-    request = urllib.request.Request(url, headers={'User-Agent': 'MRN-Asset-Verification/1.0', 'Accept-Encoding': 'gzip'})
+    request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (compatible; MRN-Deployment/1.0)', 'Accept-Encoding': 'gzip'})
     with urllib.request.urlopen(request, timeout=30) as response:
         if response.status != 200 or response.url != url:
             raise ValueError('Unexpected status or redirect at ' + url)

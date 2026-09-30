@@ -129,7 +129,7 @@ echo json_encode(array('selected' => $selected, 'after' => get_stylesheet_direct
             (self.state / 'test-next.json').write_text(json.dumps(next_pointer))
         harness = self.root / 'request.php'
         harness.write_text('''<?php
-define('ABSPATH', __DIR__);
+define('ABSPATH', __DIR__ . '/public/');
 $GLOBALS['filters'] = array();
 function get_stylesheet() { return 'child'; }
 function add_filter($name, $callback, $priority, $count) { $GLOBALS['filters'][$name][] = $callback; }
@@ -155,7 +155,7 @@ require %s;
             self.store.select(new['release_id'], old)
         harness = self.root / 'new-request.php'
         harness.write_text('''<?php
-define('ABSPATH', __DIR__);
+define('ABSPATH', __DIR__ . '/public/');
 $GLOBALS['filters'] = array();
 function get_stylesheet() { return 'child'; }
 function add_filter($name, $callback, $priority, $count = 1) { $GLOBALS['filters'][$name][] = $callback; }

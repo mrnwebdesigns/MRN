@@ -51,7 +51,7 @@ def durable_replace(path, body, mode=0o600):
 
 
 class Store:
-    def __init__(self, state, public_theme, content_root, slug):
+    def __init__(self, state, public_theme, content_root, slug, protected_state_root=None):
         self.state = Path(state)
         self.public_theme = Path(public_theme)
         self.content_root = Path(content_root)
@@ -63,7 +63,10 @@ class Store:
         for path in (self.state, self.public_theme, self.content_root):
             if not path.is_absolute() or path.resolve() != path or not path.is_dir():
                 raise ValueError('Release paths must be existing physical directories')
-        if (self.state == self.content_root.parent or self.content_root.parent in self.state.parents
+        provider_private = (protected_state_root is not None
+                            and Path(protected_state_root) == self.content_root.parent / '_wpeprivate'
+                            and Path(protected_state_root) in self.state.parents)
+        if ((self.state == self.content_root.parent or self.content_root.parent in self.state.parents) and not provider_private
                 or self.state.stat().st_mode & 0o077 or self.state.stat().st_uid != os.geteuid()):
             raise ValueError('Release state must be private and outside public content')
         if self.public_theme != self.content_root / 'themes' / slug:
@@ -133,9 +136,11 @@ class Store:
             raise ValueError('Public theme differs from the reviewed adoption tree')
         state_path = check(str(self.state), r'/[A-Za-z0-9_./-]+', 'private state path')
         template = Path(bootstrap_template).read_text()
-        if template.count('__MRN_STATE_PATH__') != 1:
+        if template.count('__MRN_STATE_RELATIVE__') != 1:
             raise ValueError('Unexpected bootstrap template')
-        bootstrap = template.replace('__MRN_STATE_PATH__', state_path).encode()
+        relative_state = os.path.relpath(state_path, str(self.content_root.parent))
+        check(relative_state, r'[A-Za-z0-9_./-]+', 'private relative state path')
+        bootstrap = template.replace('__MRN_STATE_RELATIVE__', relative_state).encode()
         self.releases.mkdir(mode=0o700, exist_ok=True)
         if self.releases.resolve() != self.releases:
             raise ValueError('Private releases directory is aliased')

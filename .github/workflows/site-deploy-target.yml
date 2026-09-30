@@ -60,6 +60,7 @@ jobs:
       cancel-in-progress: false
     env:
       DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+      DEPLOY_HOST_PROVIDER: ${{ vars.DEPLOY_HOST_PROVIDER }}
       DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
       DEPLOY_USER: ${{ vars.DEPLOY_USER }}
       DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT }}
@@ -242,24 +243,32 @@ jobs:
         run: |
           python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
             --rollback-receipt "$RUNNER_TEMP/site-deployment.json" --receipt "$RUNNER_TEMP/site-rollback.json"
-      - name: Report full runtime QA for Dev testing
+      - name: Run runtime QA
         id: runtime
         if: success() && inputs.mode == 'deploy'
-        continue-on-error: true
+        continue-on-error: ${{ inputs.target == 'dev' }}
         run: |
           "$RUNNER_TEMP/mrn-qa-engine/bin/mrn-qa" run \
             --project-root "$GITHUB_WORKSPACE" --site-url "$DEPLOY_URL" --scope site-only \
             --run-api always --run-smoke always --run-accessibility always --run-performance always \
             --run-phpcbf never --output-file "$RUNNER_TEMP/site-runtime-qa.md"
-      - name: Distinguish Dev testing from release approval
+      - name: Restore the prior release if Live runtime acceptance fails
+        if: failure() && inputs.target == 'live' && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.runtime.outcome == 'failure'
+        env:
+          DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
+          DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
+        run: |
+          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
+            --rollback-receipt "$RUNNER_TEMP/site-deployment.json" --receipt "$RUNNER_TEMP/site-rollback.json"
+      - name: Report deployment and runtime acceptance
         if: always() && inputs.mode == 'deploy' && steps.activation.outcome == 'success'
         env:
           QA_RESULT: ${{ steps.runtime.outcome }}
         run: |
-          echo 'Dev testing deployment only. Live remains disabled in the deployment controller.' >> "$GITHUB_STEP_SUMMARY"
+          echo "Deployment target: $TARGET." >> "$GITHUB_STEP_SUMMARY"
           echo "Full runtime QA: $QA_RESULT. Review the retained report before approving any release." >> "$GITHUB_STEP_SUMMARY"
           if [[ "$QA_RESULT" != success ]]; then
-            echo '::warning::Dev runtime QA has findings or did not complete. This is not release approval.'
+            echo '::warning::Runtime QA has findings or did not complete. This is not release approval.'
           fi
       - name: Preserve deployment evidence
         if: always()
