@@ -1,0 +1,5 @@
+# Proposed hostname; owner must select and provision it before use.
+operations.mrnwebdesigns.com {
+    reverse_proxy 127.0.0.1:8812
+    # Do not enable request/header/body logging containing bearer credentials.
+}
