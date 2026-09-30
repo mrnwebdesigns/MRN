@@ -188,6 +188,11 @@ class OptionalPluginPlanTests(unittest.TestCase):
             plan["execution_contract"]["preflight_ability"],
         )
         self.assertEqual("0.9.9", plan["execution_contract"]["minimum_controller_version"])
+        schema = json.loads((Path(__file__).parents[1] / "manifests" / "optional-plugin-update-plan.schema.json").read_text())
+        self.assertEqual(
+            schema["properties"]["execution_contract"]["properties"]["minimum_controller_version"]["const"],
+            plan["execution_contract"]["minimum_controller_version"],
+        )
         self.assertEqual(
             "controller-preflight",
             plan["execution_contract"]["precondition_hash_source"],
