@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-09-25",
+  "catalog_updated": "2026-09-30",
   "authority": "This file is the authoritative inventory and classification source for MRN-owned WordPress plugins and MU components. Inclusion does not imply installation.",
   "product_model": {
     "platform-required": "Installed on a production MRN stack because it provides mandatory platform behavior.",
@@ -480,7 +480,7 @@
     {
       "slug": "mrn-comment-management",
       "name": "MRN Comment Management",
-      "version": "1.1.7",
+      "version": "1.2.0",
       "runtime_type": "standard-plugin",
       "classification": "maintenance-tool",
       "lifecycle": "supported",
@@ -488,8 +488,8 @@
       "target_tier": "maintenance-only",
       "source": {"repository": "mrn-comment-management", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-comment-management", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress comments"], "soft": ["mrn-disable-comments policy"], "release_group": null},
-      "data": {"options": [], "tables": [], "cron": [], "routes": ["privileged comment audit/delete actions"], "external_services": []},
-      "purpose": "Audits and safely removes comments as an explicit maintenance operation."
+      "data": {"options": ["mrn_cm_management_roles"], "tables": [], "cron": [], "routes": ["privileged comment audit/delete actions", "administrator-only role selection"], "external_services": []},
+      "purpose": "Audits and manages comments with administrator-selected role access and confirmed maintenance cleanup."
     },
     {
       "slug": "mrn-config-helper",
@@ -774,7 +774,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.9.8",
+      "version": "0.9.9",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",

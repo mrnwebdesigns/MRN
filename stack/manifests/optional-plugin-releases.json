@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-09-16",
+  "catalog_updated": "2026-09-30",
   "authority": "Checksum-locked independently released plugins available to explicit one-site upgrade plans. A release may remain a standard bootstrap default; registration never authorizes installation or a site write.",
   "releases": [
     {
@@ -226,6 +226,29 @@
         "main_file": "mrn-acf-character-count/mrn-acf-character-count.php",
         "size_bytes": 16393,
         "sha256": "1984717bee9b3d7236cc323d39a9dfbb374f63b42879b514aff184c0635745a4"
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
+      "slug": "mrn-comment-management",
+      "version": "1.2.0",
+      "target_tier": "maintenance-only",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-comment-management",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-comment-management",
+        "git_commit": "434ea85015434720d79dc135bddf61103d0bc609"
+      },
+      "package": {
+        "path": "releases/plugins/mrn-comment-management-1.2.0.zip",
+        "filename": "mrn-comment-management-1.2.0.zip",
+        "main_file": "mrn-comment-management/mrn-comment-management.php",
+        "size_bytes": 21501,
+        "sha256": "891591a59582e10ffdad4ab36ffda99a78f1ac3b37213b98fbea68f60f11a744"
       },
       "update_policy": {
         "mode": "upgrade-only",
