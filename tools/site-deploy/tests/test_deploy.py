@@ -127,12 +127,20 @@ class DeploymentSafety(unittest.TestCase):
             deploy.git_destination(self.config, state, '.')
         with self.assertRaises(ValueError):
             deploy.git_destination(self.config, {**state, 'git_root': self.config['root'], 'theme': self.config['root']}, '.')
-        with self.assertRaises(ValueError):
-            deploy.git_destination(self.config, {
-                **state, 'wp_root': '/chroot/home/site/public',
-                'git_root': '/chroot/home/site/public/wp-content/themes/child',
-                'theme': '/chroot/home/site/public/wp-content/themes/child',
-            }, '.')
+        aliased = {
+            **state, 'wp_root': '/chroot/home/site/public',
+            'git_root': '/chroot/home/site/public/wp-content/themes/child',
+            'theme': '/chroot/home/site/public/wp-content/themes/child',
+            'theme_url': 'https://example.org/wp-content/themes/child',
+        }
+        self.assertEqual(aliased['git_root'], deploy.git_destination(self.config, aliased, '.'))
+        def denied(url, **kwargs):
+            raise deploy.urllib.error.HTTPError(url, 403, 'Forbidden', {}, None)
+        with patch.object(deploy.urllib.request, 'urlopen', side_effect=denied) as request:
+            deploy.verify_git_privacy(self.config, aliased)
+            self.assertEqual(2, request.call_count)
+        with patch.object(deploy.urllib.request, 'urlopen'), self.assertRaises(ValueError):
+            deploy.verify_git_privacy(self.config, aliased)
 
 
 if __name__ == '__main__':

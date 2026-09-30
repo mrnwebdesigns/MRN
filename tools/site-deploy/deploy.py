@@ -12,6 +12,7 @@ import sys
 import tempfile
 import time
 import urllib.request
+import urllib.error
 
 EXCLUDED = {"tests", "docs", "scripts", "qa", "node_modules", "vendor", "AGENTS.md", "README.md",
             "composer.json", "composer.lock", "package.json", "package-lock.json", "phpunit.xml.dist"}
@@ -112,6 +113,7 @@ global $updraftplus;
 echo 'MRN_RESULT=' . wp_json_encode(array(
     'home' => untrailingslashit(get_option('home')), 'stylesheet' => get_stylesheet(), 'template' => get_template(),
     'wp_root' => $root_path,
+    'theme_url' => get_stylesheet_directory_uri(),
     'theme' => realpath($theme), 'files' => $files, 'state' => $state,
     'state_ready' => $private && is_writable($c['state']) && (fileperms($c['state']) & 0077) === 0,
     'writable' => is_writable($theme),
@@ -188,9 +190,28 @@ def git_destination(c, before, source):
     if expected_theme != before['theme']:
         raise ValueError('Remote Git source layout does not match the reviewed theme source')
     wp_root = before.get('wp_root', c['root'])
-    if root == wp_root or root.startswith(wp_root + '/'):
-        raise ValueError('Deploy repository must be private, outside the WordPress document root')
+    if (root == wp_root or root.startswith(wp_root + '/')) and (source != '.' or root != before['theme'] or root == wp_root):
+        raise ValueError('A Git repository inside WordPress must own only this child-theme root')
     return shlex.quote(root)
+
+
+def verify_git_privacy(c, before):
+    root = before['git_root']
+    wp_root = before.get('wp_root', c['root'])
+    if root != wp_root and not root.startswith(wp_root + '/'):
+        return
+    theme_url = before['theme_url'].rstrip('/')
+    if not theme_url.startswith(c['url'] + '/'):
+        raise ValueError('Cannot establish canonical public URL for Git privacy check')
+    for name in ['HEAD', 'config']:
+        url = theme_url + '/.git/' + name
+        try:
+            with urllib.request.urlopen(url, timeout=30):
+                pass
+        except urllib.error.HTTPError as error:
+            if error.code in [403, 404] and error.geturl() == url:
+                continue
+        raise ValueError('Git metadata protection is not verified; no deployment allowed')
 
 
 def http_check(url, rest=False):
@@ -217,6 +238,7 @@ def deploy(args, c):
         verify_identity(c, before, args.slug)
         if c['transport'] == 'git':
             git_destination(c, before, args.source)
+            verify_git_privacy(c, before)
         receipt = {'repository': repository, 'environment': args.environment, 'url': c['url'], 'sha': args.sha,
                    'host': c['host'], 'root': c['root'], 'template': c['template'],
                    'tree': digest(files), 'previous_tree': digest(before['files']), 'status': 'preflight',

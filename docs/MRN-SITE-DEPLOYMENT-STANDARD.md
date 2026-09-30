@@ -54,7 +54,7 @@ Required environment variables:
 | `DEPLOY_URL` | Exact WordPress home URL, including canonical host |
 | `DEPLOY_TEMPLATE` | Expected active parent template slug |
 | `DEPLOY_STATE_DIR` | Existing private writable directory outside the web root for receipts and code rollback archives |
-| `DEPLOY_TRANSPORT` | `rsync`, or `git` for an existing clean private deployment repository whose source subtree resolves to the active child theme |
+| `DEPLOY_TRANSPORT` | `rsync`, or `git` for an existing clean deployment repository whose source subtree resolves to the active child theme |
 | `DEPLOY_BASELINE_TREE` | Reviewed remote tree digest from preflight for first adoption |
 | `DEPLOY_READY` | Set to `1` only after qualification and owner authorization |
 
@@ -100,6 +100,13 @@ in the site PR. Do not let dispatch inputs choose arbitrary filesystem paths.
 GitHub serializes each site's deployments with cancellation disabled. Disable
 the old deployment workflow when adopting the new one so two paths cannot
 write the same destination. Preserve old workflow code in Git history.
+
+Prefer Git metadata outside the public document root. An existing theme-root
+Git checkout may remain in place when it owns only the child theme and exact
+public `.git/HEAD` and `.git/config` requests return 403/404 without redirects.
+The helper verifies that protection before backup or deployment; it never reads
+or displays those files' contents. A whole WordPress checkout is not a valid
+site-code deployment target.
 
 ## First setup and server changes
 
