@@ -210,11 +210,10 @@ is filed in the MRN Policies folder. Trilliant is the first pilot; do not change
 Gloves deployment configuration while its separate work continues.
 
 The builder, asset URL adapter, and public HTTP checksum verifier are candidate
-components. The legacy uploader now rejects every runtime write in code, even
-if `DEPLOY_READY` is accidentally enabled. Kinsta preflight uses its native API
-to verify environment identity and backup access; production never falls back
-to Updraft. Atomic host adoption, scoped cache adapters, browser dependency
-checks, and rollback qualification must be integrated before activation.
+components. The CloudPanel Dev controller can activate only a previously
+adopted, explicitly enabled child theme. Live writes remain blocked in code.
+Kinsta preflight uses its native API to verify environment identity and backup
+access; production never falls back to Updraft.
 
 The candidate caller now requires a successful build before either target job.
 The build returns its immutable GitHub artifact ID and tar SHA-256; both target
@@ -228,16 +227,32 @@ Read-only target preflight records this verified artifact and compares its built
 theme inventory with the target; it does not rebuild source. Source-only CLI
 preflight remains available for initial adoption inventory and cannot deploy.
 
-This proves artifact handoff for preflight, not Dev acceptance or Live promotion.
-Cross-run reuse of a Dev-qualified artifact, atomic runtime adoption, scoped HTML
-refresh, browser/runtime acceptance, and rollback still need integration and host
-qualification. All runtime writes remain disabled. Existing site workflow pins
-are unchanged; update a site wrapper from the complete reviewed template rather
-than only changing its tooling SHA, because artifact inputs are now required.
+The Dev adapter snapshots the original child theme and changes only its public
+`functions.php` to a stable loader. Original public assets remain byte-for-byte
+unchanged. New code is stored privately; new static assets use immutable public
+generation paths. Each PHP request captures one physical code directory and
+matching asset manifest. Atomic `current.json` replacement selects the next
+release; rollback selects the retained prior release through the same verified
+backup gate. First-adoption compatibility failures restore the original public
+bootstrap. No database restoration is part of code rollback.
 
-Trilliant's current Git branch arrangement, active Dev uploader, and runtime
-themes are intentionally preserved while Phase 2 development continues. Do not
-restructure its branches or publish its current main as part of tooling work.
+The current cache adapter requires fresh proof that WordPress and CloudPanel
+page caching are off and canonical first/warm Cloudflare responses are DYNAMIC
+or BYPASS. In that configuration HTML needs no purge. Enabled/unknown HTML
+caching blocks activation until a scoped provider adapter is qualified. Object
+caches, transients, unrelated HTML, and old static generations are preserved.
+
+The GitHub target checks browser-loaded dependency checksums at three viewport
+sizes and runs site layout contracts. A failed browser/layout acceptance rolls
+back with a new verified backup. Full MRN runtime QA is retained as feedback for
+Dev testing; unresolved findings prevent release approval, even when the Dev
+testing deployment itself succeeds. Live remains disabled. Cross-run reuse of
+a Dev-qualified artifact and provider-specific Live activation are still pending.
+
+Update site wrappers from the complete reviewed template, not only the tooling
+SHA. Trilliant's legacy uploader must remain disabled after first adoption,
+because its rsync overwrite would destroy the stable loader. Preserve its
+current Phase 2 branches and do not publish current main to Live.
 
 Artifact transfer follows GitHub's documented
 [reusable workflow outputs](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#using-outputs-from-a-reusable-workflow)

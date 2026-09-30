@@ -88,10 +88,21 @@ def run(plan, c):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--plan', required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument('--plan')
+    source.add_argument('--rollback-receipt')
     parser.add_argument('--receipt', required=True)
     args = parser.parse_args()
-    receipt = run(json.loads(Path(args.plan).read_text()), config(os.environ))
+    if args.rollback_receipt:
+        previous = json.loads(Path(args.rollback_receipt).read_text())
+        if previous.get('status') != 'public-verified' or not previous.get('previous'):
+            raise ValueError('No verified previous release is available for rollback')
+        pages = list(dict.fromkeys(row['url'] for row in previous['activation']['cache']['pages']))
+        plan = {key: previous[key] for key in ('repository', 'environment', 'slug')}
+        plan.update(expected_current=previous['current'], rollback_to=previous['previous']['release_id'], pages=pages)
+    else:
+        plan = json.loads(Path(args.plan).read_text())
+    receipt = run(plan, config(os.environ))
     Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
     print(json.dumps({key: receipt.get(key) for key in ('status', 'current', 'previous', 'error', 'recovery')}))
     raise SystemExit(0 if receipt['status'] == 'public-verified' else 1)

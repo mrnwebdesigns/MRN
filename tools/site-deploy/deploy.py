@@ -313,9 +313,23 @@ def deploy(args, c):
             return
         if not c['ready']:
             raise ValueError('DEPLOY_READY is not enabled after target qualification')
-        # The legacy transport cannot meet the immutable asset/atomic activation contract.
-        # Keep the read-only adoption path usable, even if a variable is enabled by mistake.
-        raise ValueError('Runtime writes disabled: atomic activation, scoped HTML refresh, and public asset qualification are not yet integrated')
+        if args.environment != 'dev' or c.get('backup_provider') != 'updraft':
+            raise ValueError('Runtime writes disabled for Live: its provider adapter is not qualified')
+        if not before['state'] or before['state'].get('schema') != 1:
+            raise ValueError('Runtime writes disabled: first adoption requires separate host qualification')
+        from atomic_runner import run as activate
+        from cache_policy import canonical_pages
+        pages = canonical_pages(c['url'], json.loads(os.environ.get('DEPLOY_VERIFY_PAGES', '[]')))
+        plan = {'repository': repository, 'environment': args.environment, 'slug': args.slug,
+                'archive': str(Path(artifact_path).resolve()), 'artifact_sha256': artifact_sha256,
+                'source_sha': args.sha, 'source_path': args.source, 'pages': pages,
+                'expected_current': before['state'], 'adopt': False}
+        result = activate(plan, c)
+        Path(args.receipt).write_text(json.dumps(result, indent=2) + '\n')
+        if result['status'] != 'public-verified':
+            raise RuntimeError('Activation failed; inspect the deployment and recovery receipt')
+        print(json.dumps({'status': result['status'], 'current': result['current'],
+                          'runtime_qa_required': True}))
 
 
 def main():

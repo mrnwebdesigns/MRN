@@ -37,3 +37,16 @@ class PublicAssetEvidence(unittest.TestCase):
         self.assertEqual([self.page, self.url, self.page, self.url], calls)
         self.assertEqual(['first', 'warm'], [r['phase'] for r in result['pages']])
         with self.assertRaises(ValueError): public.verify(self.manifest, [self.page + '?bypass=1'], fetch)
+
+    def test_content_addressed_image_preload_can_keep_an_existing_query(self):
+        image = b'fixture image'
+        self.manifest['static_files']['logo.png'] = {'sha256': hashlib.sha256(image).hexdigest(), 'bytes': len(image)}
+        logo = self.url.replace('style.min.css', 'logo.png?v=2')
+        def fetch(url, types):
+            if url == self.page:
+                return ('<link rel="stylesheet" href="' + self.url + '"><link rel="preload" href="' + logo + '">').encode()
+            return image if url == logo else self.body
+        result = public.verify(self.manifest, [self.page], fetch)
+        self.assertIn(logo, result['pages'][0]['assets'])
+        with self.assertRaisesRegex(ValueError, 'different asset generation'):
+            public.verify(self.manifest, [self.page], lambda url, types: ('<link rel="stylesheet" href="' + self.url + '?ver=old">').encode())

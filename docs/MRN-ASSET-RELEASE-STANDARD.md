@@ -6,13 +6,13 @@ Shared components retain the Stack release-lock process; child themes retain
 their site release process. Each owner packages its own assets and manifest.
 A child-theme deployment does not replace the parent or shared plugins.
 
-**Adoption status:** these are release requirements, not a claim that current
-helpers implement them. The candidate `tools/site-deploy/deploy.py` still uses
-in-place Git/rsync writes, blanket cache/transient flushing, and file/home/REST
-checks without public asset-manifest verification. Keep it in preflight mode
-and `DEPLOY_READY=0` until those gaps are implemented and qualified. Existing
-Stack adapters must also demonstrate this contract before asset promotion;
-assembling a complete artifact alone does not make runtime activation atomic.
+**Adoption status:** the child-theme candidate now includes a backup-gated
+CloudPanel Dev adapter, immutable private code, a request-pinned loader, atomic
+release selection, retained public assets, public checksum verification, and
+rollback. First adoption remains an explicit host qualification operation;
+`DEPLOY_READY=0` is required until that target passes. Live activation remains
+disabled in code. Existing Stack and other host adapters must independently
+demonstrate this contract before asset promotion.
 
 ## Automatic versions and synchronized builds
 

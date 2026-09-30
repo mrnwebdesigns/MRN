@@ -62,7 +62,10 @@ def verify(manifest, pages, fetcher=fetch):
                     raise ValueError('Public HTML still references a mutable child asset: ' + url)
                 if not parsed.path.startswith(owned):
                     continue
-                if not parsed.path.startswith(prefix) or parsed.query:
+                executable = bool(re.search(r'\.(css|m?js)$', parsed.path))
+                # Existing image/font preload query strings do not defeat a
+                # content-addressed path. Enqueued CSS/JS must use exact URLs.
+                if not parsed.path.startswith(prefix) or (executable and parsed.query):
                     raise ValueError('Public HTML references a different asset generation: ' + url)
                 name = urllib.parse.unquote(parsed.path[len(prefix):])
                 expected = manifest['static_files'].get(name)
@@ -71,7 +74,7 @@ def verify(manifest, pages, fetcher=fetch):
                 types = {'text/css'} if name.endswith('.css') else {'application/javascript', 'text/javascript'}
                 if not name.endswith(('.css', '.js', '.mjs')):
                     # Font/image preloads are checked separately from executable assets.
-                    types = {'font/woff2', 'font/woff', 'font/ttf', 'font/otf', 'application/font-woff', 'application/octet-stream', 'image/svg+xml', 'image/png', 'image/webp', 'image/jpeg', 'image/avif'}
+                    types = {'font/woff2', 'font/woff', 'font/ttf', 'font/otf', 'application/font-woff', 'application/octet-stream', 'image/svg+xml', 'image/png', 'image/webp', 'image/jpeg', 'image/avif', 'image/gif', 'image/x-icon'}
                 body = fetcher(url, types)
                 actual = hashlib.sha256(body).hexdigest()
                 if actual != expected['sha256'] or len(body) != expected['bytes']:

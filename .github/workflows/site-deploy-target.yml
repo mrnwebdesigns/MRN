@@ -72,6 +72,7 @@ jobs:
       DEPLOY_TRANSPORT: ${{ vars.DEPLOY_TRANSPORT }}
       DEPLOY_BASELINE_TREE: ${{ vars.DEPLOY_BASELINE_TREE }}
       DEPLOY_READY: ${{ vars.DEPLOY_READY }}
+      DEPLOY_VERIFY_PAGES: ${{ vars.DEPLOY_VERIFY_PAGES }}
       MODE: ${{ inputs.mode }}
       TARGET: ${{ inputs.target }}
       SOURCE_PATH: ${{ inputs.source_path }}
@@ -141,6 +142,15 @@ jobs:
       - name: Move QA engine outside site source
         if: inputs.mode == 'deploy'
         run: mv .mrn-qa-engine "$RUNNER_TEMP/mrn-qa-engine"
+      - uses: actions/setup-node@v4
+        if: inputs.mode == 'deploy'
+        with:
+          node-version: '22'
+      - name: Install browser QA dependencies
+        if: inputs.mode == 'deploy'
+        run: |
+          npm ci --prefix "$RUNNER_TEMP/mrn-qa-engine"
+          "$RUNNER_TEMP/mrn-qa-engine/node_modules/.bin/playwright" install --with-deps chromium
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -190,6 +200,7 @@ jobs:
         if: vars.DEPLOY_BACKUP_PROVIDER == 'kinsta'
         run: sudo apt-get update && sudo apt-get install -y sshpass
       - name: Preflight or deploy exact child-theme payload
+        id: activation
         shell: bash
         env:
           DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
@@ -202,6 +213,52 @@ jobs:
             --source "$SOURCE_PATH" --slug "$STYLESHEET" \
             --artifact "$RUNNER_TEMP/site-release/site-release.tar" --artifact-sha256 "$ARTIFACT_SHA256" \
             --receipt "$RUNNER_TEMP/site-deployment.json"
+      - name: Verify browser-loaded assets and responsive layout contracts
+        id: browser
+        if: inputs.mode == 'deploy'
+        env:
+          MRN_QA_ENGINE_ROOT: ${{ runner.temp }}/mrn-qa-engine
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, pathlib, tarfile
+          root = pathlib.Path(os.environ['RUNNER_TEMP'])
+          with tarfile.open(root / 'site-release/site-release.tar') as archive:
+              (root / 'site-assets.json').write_bytes(archive.extractfile('theme/mrn-assets.json').read())
+          PY
+          node "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/verify_browser_assets.mjs" \
+            "$RUNNER_TEMP/site-assets.json" "$RUNNER_TEMP/site-deployment.json" "$RUNNER_TEMP/site-browser"
+          if [[ -f qa/layout-contracts.json ]]; then
+            "$RUNNER_TEMP/mrn-qa-engine/tools/run-layout-contracts.sh" \
+              --base-url "$DEPLOY_URL" --contract qa/layout-contracts.json --output-dir "$RUNNER_TEMP/site-layout"
+          fi
+      - name: Restore the prior release if browser acceptance fails
+        if: failure() && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.browser.outcome == 'failure'
+        env:
+          DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
+          DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
+        run: |
+          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
+            --rollback-receipt "$RUNNER_TEMP/site-deployment.json" --receipt "$RUNNER_TEMP/site-rollback.json"
+      - name: Report full runtime QA for Dev testing
+        id: runtime
+        if: success() && inputs.mode == 'deploy'
+        continue-on-error: true
+        run: |
+          "$RUNNER_TEMP/mrn-qa-engine/bin/mrn-qa" run \
+            --project-root "$GITHUB_WORKSPACE" --site-url "$DEPLOY_URL" --scope site-only \
+            --run-api always --run-smoke always --run-accessibility always --run-performance always \
+            --run-phpcbf never --output-file "$RUNNER_TEMP/site-runtime-qa.md"
+      - name: Distinguish Dev testing from release approval
+        if: always() && inputs.mode == 'deploy' && steps.activation.outcome == 'success'
+        env:
+          QA_RESULT: ${{ steps.runtime.outcome }}
+        run: |
+          echo 'Dev testing deployment only. Live remains disabled in the deployment controller.' >> "$GITHUB_STEP_SUMMARY"
+          echo "Full runtime QA: $QA_RESULT. Review the retained report before approving any release." >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$QA_RESULT" != success ]]; then
+            echo '::warning::Dev runtime QA has findings or did not complete. This is not release approval.'
+          fi
       - name: Preserve deployment evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -211,6 +268,10 @@ jobs:
             ${{ runner.temp }}/site-deployment.json
             ${{ runner.temp }}/site-source-qa.md
             ${{ runner.temp }}/site-artifact-verification.json
+            ${{ runner.temp }}/site-rollback.json
+            ${{ runner.temp }}/site-runtime-qa.md
+            ${{ runner.temp }}/site-browser
+            ${{ runner.temp }}/site-layout
           if-no-files-found: warn
           retention-days: 30
       - name: Remove runner credentials
