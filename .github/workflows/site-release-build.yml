@@ -1,0 +1,84 @@
+name: Build immutable site release candidate
+on:
+  workflow_call:
+    inputs:
+      source_sha:
+        type: string
+        required: true
+      source_path:
+        type: string
+        required: true
+      stylesheet:
+        type: string
+        required: true
+      tooling_ref:
+        type: string
+        required: true
+    outputs:
+      artifact_id:
+        description: Immutable GitHub artifact ID from this build
+        value: ${{ jobs.build.outputs.artifact_id }}
+      artifact_sha256:
+        description: SHA-256 of the release tar, independent of the uploaded sidecar
+        value: ${{ jobs.build.outputs.artifact_sha256 }}
+permissions:
+  contents: read
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
+      artifact_sha256: ${{ steps.identity.outputs.artifact_sha256 }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_sha }}
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/MRN
+          ref: ${{ inputs.tooling_ref }}
+          path: .mrn-deploy-tools
+          persist-credentials: false
+      - name: Move trusted tooling outside source
+        run: mv .mrn-deploy-tools "$RUNNER_TEMP/mrn-deploy-tools"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build once from the selected immutable commit
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          SOURCE_PATH: ${{ inputs.source_path }}
+          SLUG: ${{ inputs.stylesheet }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          npm ci --ignore-scripts --prefix "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy"
+          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/build_release.py" \
+            --sha "$SOURCE_SHA" --source "$SOURCE_PATH" --slug "$SLUG" \
+            --output "$RUNNER_TEMP/site-release.tar"
+      - name: Verify build and publish its checksum
+        id: identity
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          SOURCE_PATH: ${{ inputs.source_path }}
+          SLUG: ${{ inputs.stylesheet }}
+        run: |
+          set -euo pipefail
+          artifact_sha256="$(sha256sum "$RUNNER_TEMP/site-release.tar" | cut -d ' ' -f 1)"
+          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/verify_release.py" \
+            --archive "$RUNNER_TEMP/site-release.tar" --sha256 "$artifact_sha256" \
+            --source-sha "$SOURCE_SHA" --source-path "$SOURCE_PATH" --slug "$SLUG" \
+            --receipt "$RUNNER_TEMP/site-artifact-verification.json"
+          printf 'artifact_sha256=%s\n' "$artifact_sha256" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        id: upload
+        with:
+          name: site-release-${{ inputs.source_sha }}
+          path: |
+            ${{ runner.temp }}/site-release.tar
+            ${{ runner.temp }}/site-release.json
+            ${{ runner.temp }}/site-artifact-verification.json
+          if-no-files-found: error
+          retention-days: 90

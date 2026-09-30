@@ -1,0 +1,279 @@
+name: MRN site deployment target
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        type: string
+        required: true
+      mode:
+        type: string
+        default: preflight
+      source_path:
+        type: string
+        required: true
+      stylesheet:
+        type: string
+        required: true
+      tooling_ref:
+        type: string
+        required: true
+      source_sha:
+        type: string
+        default: ''
+      source_branch:
+        type: string
+        default: main
+      artifact_id:
+        type: string
+        required: true
+      artifact_sha256:
+        type: string
+        required: true
+    secrets:
+      MRN_QA_ENGINE_TOKEN:
+        required: false
+      DEPLOY_SSH_PRIVATE_KEY:
+        required: false
+      DEPLOY_SSH_KNOWN_HOSTS:
+        required: false
+      DEV_SSH_PRIVATE_KEY:
+        required: false
+      DEV_SSH_KNOWN_HOSTS:
+        required: false
+      DEPLOY_KINSTA_API_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment:
+      name: ${{ inputs.target }}
+      deployment: ${{ inputs.mode == 'deploy' }}
+    concurrency:
+      group: site-code-${{ github.repository }}-${{ inputs.target }}
+      cancel-in-progress: false
+    env:
+      DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+      DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
+      DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+      DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT }}
+      DEPLOY_URL: ${{ vars.DEPLOY_URL }}
+      DEPLOY_TEMPLATE: ${{ vars.DEPLOY_TEMPLATE }}
+      DEPLOY_STATE_DIR: ${{ vars.DEPLOY_STATE_DIR }}
+      DEPLOY_BACKUP_PROVIDER: ${{ vars.DEPLOY_BACKUP_PROVIDER }}
+      DEPLOY_KINSTA_SITE_ID: ${{ vars.DEPLOY_KINSTA_SITE_ID }}
+      DEPLOY_KINSTA_ENVIRONMENT_ID: ${{ vars.DEPLOY_KINSTA_ENVIRONMENT_ID }}
+      DEPLOY_TRANSPORT: ${{ vars.DEPLOY_TRANSPORT }}
+      DEPLOY_BASELINE_TREE: ${{ vars.DEPLOY_BASELINE_TREE }}
+      DEPLOY_READY: ${{ vars.DEPLOY_READY }}
+      DEPLOY_VERIFY_PAGES: ${{ vars.DEPLOY_VERIFY_PAGES }}
+      MODE: ${{ inputs.mode }}
+      TARGET: ${{ inputs.target }}
+      SOURCE_PATH: ${{ inputs.source_path }}
+      STYLESHEET: ${{ inputs.stylesheet }}
+      TOOLING_REF: ${{ inputs.tooling_ref }}
+      SOURCE_SHA: ${{ inputs.source_sha || github.sha }}
+      SOURCE_BRANCH: ${{ inputs.source_branch }}
+      ARTIFACT_ID: ${{ inputs.artifact_id }}
+      ARTIFACT_SHA256: ${{ inputs.artifact_sha256 }}
+    steps:
+      - name: Validate request
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$MODE" == preflight || "$MODE" == deploy ]]
+          [[ "$TARGET" == dev || "$TARGET" == live ]]
+          [[ "$TOOLING_REF" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$ARTIFACT_ID" =~ ^[0-9]+$ ]]
+          [[ "$ARTIFACT_SHA256" =~ ^[0-9a-f]{64}$ ]]
+          [[ "$TARGET" == dev || "$SOURCE_BRANCH" == main ]]
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify immutable source and Live eligibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          if [[ "$TARGET" == live ]]; then
+            test "$SOURCE_BRANCH" = main
+            git merge-base --is-ancestor "$SOURCE_SHA" origin/main
+          fi
+      - name: Check out pinned deployment tooling
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/MRN
+          ref: ${{ inputs.tooling_ref }}
+          path: .mrn-deploy-tools
+          persist-credentials: false
+      - name: Move tooling outside site source
+        run: mv .mrn-deploy-tools "$RUNNER_TEMP/mrn-deploy-tools"
+      - name: Download the exact artifact from this run
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ inputs.artifact_id }}
+          path: ${{ runner.temp }}/site-release
+          merge-multiple: true
+      - name: Verify artifact before configuring site access
+        run: |
+          set -euo pipefail
+          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/verify_release.py" \
+            --archive "$RUNNER_TEMP/site-release/site-release.tar" --sha256 "$ARTIFACT_SHA256" \
+            --source-sha "$SOURCE_SHA" --source-path "$SOURCE_PATH" --slug "$STYLESHEET" \
+            --receipt "$RUNNER_TEMP/site-artifact-verification.json"
+      - name: Check out pinned QA engine
+        if: inputs.mode == 'deploy'
+        uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/MRN-qa-engine
+          ref: 80b652be31149cc2ecdb47e634c4c085f859baa3
+          path: .mrn-qa-engine
+          token: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
+          persist-credentials: false
+      - name: Move QA engine outside site source
+        if: inputs.mode == 'deploy'
+        run: mv .mrn-qa-engine "$RUNNER_TEMP/mrn-qa-engine"
+      - uses: actions/setup-node@v4
+        if: inputs.mode == 'deploy'
+        with:
+          node-version: '22'
+      - name: Install browser QA dependencies
+        if: inputs.mode == 'deploy'
+        run: |
+          npm ci --prefix "$RUNNER_TEMP/mrn-qa-engine"
+          "$RUNNER_TEMP/mrn-qa-engine/node_modules/.bin/playwright" install --with-deps chromium
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+      - name: Install source QA dependencies
+        if: inputs.mode == 'deploy'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y ripgrep
+          python3 -m pip install semgrep
+          composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer global require --no-interaction --no-progress squizlabs/php_codesniffer:^3.13 wp-coding-standards/wpcs:^3.0 dealerdirect/phpcodesniffer-composer-installer:^1.1
+          echo "$(composer global config bin-dir --absolute)" >> "$GITHUB_PATH"
+      - name: MRN source acceptance
+        if: inputs.mode == 'deploy'
+        shell: bash
+        env:
+          MRN_QA_CODE_ANALYSIS_SCOPE: all
+          MRN_QA_RUN_API: static
+          MRN_QA_RUN_SMOKE: never
+          MRN_QA_RUN_ACCESSIBILITY: never
+          MRN_QA_RUN_PERFORMANCE: never
+          MRN_QA_RUN_CWV: never
+          MRN_QA_RUN_PHPCBF: never
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/mrn-qa-engine/bin/mrn-qa" run \
+            --project-root "$GITHUB_WORKSPACE" \
+            --run-api static --run-smoke never --run-accessibility never \
+            --run-performance never --run-cwv never --run-phpcbf never \
+            --output-file "$RUNNER_TEMP/site-source-qa.md"
+      - name: Configure pinned SSH identity
+        shell: bash
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY || (inputs.target == 'dev' && secrets.DEV_SSH_PRIVATE_KEY) }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS || (inputs.target == 'dev' && secrets.DEV_SSH_KNOWN_HOSTS) }}
+        run: |
+          set -euo pipefail
+          if [[ "$DEPLOY_BACKUP_PROVIDER" != kinsta ]]; then test -n "$SSH_KEY"; fi
+          test -n "$KNOWN_HOSTS"
+          umask 077
+          printf '%s\n' "$SSH_KEY" > "$RUNNER_TEMP/site-deploy.key"
+          printf '%s\n' "$KNOWN_HOSTS" > "$RUNNER_TEMP/site-deploy.known_hosts"
+      - name: Install native Kinsta SSH transport
+        if: vars.DEPLOY_BACKUP_PROVIDER == 'kinsta'
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+      - name: Preflight or deploy exact child-theme payload
+        id: activation
+        shell: bash
+        env:
+          DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
+          DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
+          DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/deploy.py" \
+            --mode "$MODE" --environment "$TARGET" --sha "$SOURCE_SHA" \
+            --source "$SOURCE_PATH" --slug "$STYLESHEET" \
+            --artifact "$RUNNER_TEMP/site-release/site-release.tar" --artifact-sha256 "$ARTIFACT_SHA256" \
+            --receipt "$RUNNER_TEMP/site-deployment.json"
+      - name: Verify browser-loaded assets and responsive layout contracts
+        id: browser
+        if: inputs.mode == 'deploy'
+        env:
+          MRN_QA_ENGINE_ROOT: ${{ runner.temp }}/mrn-qa-engine
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, pathlib, tarfile
+          root = pathlib.Path(os.environ['RUNNER_TEMP'])
+          with tarfile.open(root / 'site-release/site-release.tar') as archive:
+              (root / 'site-assets.json').write_bytes(archive.extractfile('theme/mrn-assets.json').read())
+          PY
+          node "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/verify_browser_assets.mjs" \
+            "$RUNNER_TEMP/site-assets.json" "$RUNNER_TEMP/site-deployment.json" "$RUNNER_TEMP/site-browser"
+          if [[ -f qa/layout-contracts.json ]]; then
+            "$RUNNER_TEMP/mrn-qa-engine/tools/run-layout-contracts.sh" \
+              --base-url "$DEPLOY_URL" --contract qa/layout-contracts.json --output-dir "$RUNNER_TEMP/site-layout"
+          fi
+      - name: Restore the prior release if browser acceptance fails
+        if: failure() && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.browser.outcome == 'failure'
+        env:
+          DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
+          DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
+        run: |
+          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/atomic_runner.py" \
+            --rollback-receipt "$RUNNER_TEMP/site-deployment.json" --receipt "$RUNNER_TEMP/site-rollback.json"
+      - name: Report full runtime QA for Dev testing
+        id: runtime
+        if: success() && inputs.mode == 'deploy'
+        continue-on-error: true
+        run: |
+          "$RUNNER_TEMP/mrn-qa-engine/bin/mrn-qa" run \
+            --project-root "$GITHUB_WORKSPACE" --site-url "$DEPLOY_URL" --scope site-only \
+            --run-api always --run-smoke always --run-accessibility always --run-performance always \
+            --run-phpcbf never --output-file "$RUNNER_TEMP/site-runtime-qa.md"
+      - name: Distinguish Dev testing from release approval
+        if: always() && inputs.mode == 'deploy' && steps.activation.outcome == 'success'
+        env:
+          QA_RESULT: ${{ steps.runtime.outcome }}
+        run: |
+          echo 'Dev testing deployment only. Live remains disabled in the deployment controller.' >> "$GITHUB_STEP_SUMMARY"
+          echo "Full runtime QA: $QA_RESULT. Review the retained report before approving any release." >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$QA_RESULT" != success ]]; then
+            echo '::warning::Dev runtime QA has findings or did not complete. This is not release approval.'
+          fi
+      - name: Preserve deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-deployment-${{ inputs.target }}-${{ inputs.source_sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/site-deployment.json
+            ${{ runner.temp }}/site-source-qa.md
+            ${{ runner.temp }}/site-artifact-verification.json
+            ${{ runner.temp }}/site-rollback.json
+            ${{ runner.temp }}/site-runtime-qa.md
+            ${{ runner.temp }}/site-browser
+            ${{ runner.temp }}/site-layout
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Remove runner credentials
+        if: always()
+        run: rm -f "$RUNNER_TEMP/site-deploy.key" "$RUNNER_TEMP/site-deploy.known_hosts"

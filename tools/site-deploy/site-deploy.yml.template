@@ -1,0 +1,99 @@
+name: Deploy site
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Destination
+        type: choice
+        options: [dev, live, both]
+        default: dev
+        required: true
+      mode:
+        description: Read-only preflight or authorized deployment
+        type: choice
+        options: [preflight, deploy]
+        default: preflight
+        required: true
+      source_branch:
+        description: Same-repository branch (Dev only); Live/Both require main
+        type: string
+        default: main
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-deploy-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      source_sha: ${{ steps.source.outputs.source_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/MRN
+          ref: TOOLING_SHA
+          path: .mrn-deploy-tools
+          persist-credentials: false
+      - name: Resolve source using trusted tooling
+        id: source
+        env:
+          TARGET: ${{ inputs.target }}
+          MODE: ${{ inputs.mode }}
+          SOURCE_BRANCH: ${{ inputs.source_branch }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/main
+          case "$MODE" in preflight|deploy) ;; *) exit 1 ;; esac
+          python3 .mrn-deploy-tools/tools/site-deploy/resolve_source.py \
+            --target "$TARGET" --branch "$SOURCE_BRANCH"
+  build:
+    needs: validate
+    uses: mrnwebdesigns/MRN/.github/workflows/site-release-build.yml@TOOLING_SHA
+    with:
+      source_sha: ${{ needs.validate.outputs.source_sha }}
+      source_path: SOURCE_PATH
+      stylesheet: THEME_SLUG
+      tooling_ref: TOOLING_SHA
+  dev:
+    needs: [validate, build]
+    if: inputs.target == 'dev' || inputs.target == 'both'
+    uses: mrnwebdesigns/MRN/.github/workflows/site-deploy-target.yml@TOOLING_SHA
+    with:
+      target: dev
+      mode: ${{ inputs.mode }}
+      source_sha: ${{ needs.validate.outputs.source_sha }}
+      source_branch: ${{ inputs.source_branch }}
+      artifact_id: ${{ needs.build.outputs.artifact_id }}
+      artifact_sha256: ${{ needs.build.outputs.artifact_sha256 }}
+      source_path: SOURCE_PATH
+      stylesheet: THEME_SLUG
+      tooling_ref: TOOLING_SHA
+    secrets: inherit
+  live:
+    needs: [validate, build, dev]
+    if: >-
+      always() && !cancelled() && needs.validate.result == 'success' && needs.build.result == 'success' &&
+      ((inputs.target == 'live' && needs.dev.result == 'skipped') ||
+       (inputs.target == 'both' && needs.dev.result == 'success'))
+    uses: mrnwebdesigns/MRN/.github/workflows/site-deploy-target.yml@TOOLING_SHA
+    with:
+      target: live
+      mode: ${{ inputs.mode }}
+      source_sha: ${{ needs.validate.outputs.source_sha }}
+      source_branch: ${{ inputs.source_branch }}
+      artifact_id: ${{ needs.build.outputs.artifact_id }}
+      artifact_sha256: ${{ needs.build.outputs.artifact_sha256 }}
+      source_path: SOURCE_PATH
+      stylesheet: THEME_SLUG
+      tooling_ref: TOOLING_SHA
+    secrets: inherit
