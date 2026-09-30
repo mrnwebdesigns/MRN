@@ -193,6 +193,13 @@ class DeploymentSafety(unittest.TestCase):
         with patch.object(deploy, 'http_check'), patch.object(deploy.urllib.request, 'urlopen'), self.assertRaises(ValueError):
             deploy.verify_state_privacy(c, {'state_protection_probe_exists': True})
 
+    def test_ssh_diagnostics_never_echo_sensitive_stderr(self):
+        from types import SimpleNamespace
+        error = SimpleNamespace(returncode=255, stdout=b'', stderr=b'Load key: invalid format. PRIVATE-DIAGNOSTIC')
+        with patch.object(deploy.subprocess, 'run', return_value=error):
+            with self.assertRaisesRegex(RuntimeError, '^SSH preflight failed: deployment private key has an invalid format$'):
+                deploy.run(['ssh', 'sensitive-argument'])
+
     def test_blocked_homepage_cannot_prove_private_path_protection(self):
         c = {**self.config, 'host': 'site.ssh.wpengine.net', 'user': 'site',
              'root': '/sites/site', 'state_dir': '/sites/site/_wpeprivate/mrn-site-deploy/live'}

@@ -37,6 +37,24 @@ def run(args, **kwargs):
     result = subprocess.run(args, capture_output=True, **kwargs)
     if result.returncode:
         # Remote output can contain plugin diagnostics or connection details.
+        # Report only recognized transport categories, never raw stderr or argv.
+        if args[0] == 'ssh':
+            error = result.stderr
+            if isinstance(error, bytes):
+                error = error.decode('utf-8', errors='replace')
+            categories = (
+                ('Host key verification failed', 'pinned host key was rejected'),
+                ('REMOTE HOST IDENTIFICATION HAS CHANGED', 'pinned host key changed'),
+                ('error in libcrypto', 'deployment private key could not be parsed'),
+                ('invalid format', 'deployment private key has an invalid format'),
+                ('Permission denied', 'site-owner authentication was refused'),
+                ('Connection timed out', 'connection timed out'),
+                ('Connection refused', 'connection was refused'),
+                ('Connection closed', 'connection was closed by the remote endpoint'),
+            )
+            for marker, explanation in categories:
+                if marker in error:
+                    raise RuntimeError('SSH preflight failed: ' + explanation)
         raise RuntimeError(f"Command failed: {args[0]} (exit {result.returncode}); inspect privately")
     return result.stdout
 
