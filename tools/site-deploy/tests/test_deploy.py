@@ -96,17 +96,12 @@ class DeploymentSafety(unittest.TestCase):
             self.assertNotIn('write', operations)
             self.assertNotIn('transfer', operations)
 
-    def test_drift_during_backup_stops_transfer(self):
-        operations, error, _ = self.exercise('deploy', after={**self.before, 'files': {'style.css': 'c' * 64}})
+    def test_unqualified_transport_cannot_write_even_when_ready_is_enabled(self):
+        operations, error, receipt = self.exercise('deploy', ready=True)
         self.assertIsNotNone(error)
-        self.assertIn('backup', operations)
-        self.assertNotIn('write', operations)
-
-    def test_success_preserves_backup_write_and_verification_order(self):
-        operations, error, receipt = self.exercise('deploy')
-        self.assertIsNone(error)
-        self.assertEqual(['inspect', 'backup', 'inspect', 'write', 'transfer', 'write', 'inspect', 'http', 'http', 'write'], operations)
-        self.assertEqual('verified', receipt['status'])
+        self.assertIn('Runtime writes disabled', str(error))
+        self.assertEqual(['inspect'], operations)
+        self.assertEqual('preflight', receipt['status'])
 
     def test_unsafe_configuration_is_rejected(self):
         values = {

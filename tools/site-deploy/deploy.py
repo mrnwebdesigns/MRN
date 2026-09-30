@@ -51,6 +51,12 @@ def wpengine_private(c):
 def config(environ):
     names = ['HOST', 'PORT', 'USER', 'ROOT', 'URL', 'TEMPLATE', 'STATE_DIR', 'TRANSPORT', 'KEY_FILE', 'KNOWN_HOSTS_FILE']
     c = {k.lower(): environ.get('DEPLOY_' + k, '') for k in names}
+    c['backup_provider'] = environ.get('DEPLOY_BACKUP_PROVIDER', 'updraft') or 'updraft'
+    if c['backup_provider'] not in ['updraft', 'kinsta']:
+        raise ValueError('Unsupported backup provider')
+    if c['backup_provider'] == 'kinsta':
+        # The Kinsta adapter resolves a password in memory after API identity checks.
+        c['key_file'] = c['key_file'] or 'native-kinsta'
     if any(not v for v in c.values()):
         raise ValueError('Missing DEPLOY_ configuration: ' + ', '.join(k for k, v in c.items() if not v))
     check(c['host'], r'[A-Za-z0-9][A-Za-z0-9.-]*', 'host')
@@ -77,12 +83,27 @@ def config(environ):
 class Target:
     def __init__(self, c):
         self.c = c
+        self.native_backup = None
+        self.password = None
+        if c.get('backup_provider') == 'kinsta':
+            from kinsta import Kinsta
+            self.native_backup = Kinsta(os.environ.get('DEPLOY_KINSTA_API_TOKEN', ''),
+                                        os.environ.get('DEPLOY_KINSTA_SITE_ID', ''),
+                                        os.environ.get('DEPLOY_KINSTA_ENVIRONMENT_ID', ''))
+            self.password = self.native_backup.connect(c)
         self.options = ['-i', c['key_file'], '-p', c['port'], '-o', 'IdentitiesOnly=yes',
                         '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes',
                         '-o', 'UserKnownHostsFile=' + c['known_hosts_file'], '-o', 'ConnectTimeout=20']
         self.login = c['user'] + '@' + c['host']
+        if self.password:
+            self.options = ['-p', c['port'], '-o', 'PreferredAuthentications=password',
+                            '-o', 'PubkeyAuthentication=no', '-o', 'StrictHostKeyChecking=yes',
+                            '-o', 'UserKnownHostsFile=' + c['known_hosts_file'], '-o', 'ConnectTimeout=20']
 
     def shell(self, script):
+        if self.password:
+            return run(['sshpass', '-e', 'ssh', *self.options, self.login, 'bash -se'], input=script,
+                       text=True, env=dict(os.environ, SSHPASS=self.password))
         return run(['ssh', *self.options, self.login, 'bash -se'], input=script, text=True)
 
     def php(self, code):
@@ -137,16 +158,19 @@ echo 'MRN_RESULT=' . wp_json_encode(array(
             ' rev-parse --show-toplevel 2>/dev/null; then :; fi\n'
         ).strip()
         result['git'] = bool(result['git_root'])
+        if self.native_backup:
+            result['backup_ready'] = True
+            result['backup_provider'] = 'kinsta'
         return result
 
 
-def verify_identity(c, state, slug):
+def verify_identity(c, state, slug, require_ready=True):
     if (state['home'], state['stylesheet'], state['template']) != (c['url'], slug, c['template']):
         raise ValueError('WordPress home/stylesheet/template does not match configured target')
     if slug == c['template']:
         raise ValueError('This adapter deploys child themes only')
     check(state['theme'], r'/[A-Za-z0-9_./-]+', 'physical theme path')
-    if not state['writable'] or not state['state_ready'] or not state['backup_ready']:
+    if require_ready and (not state['writable'] or not state['state_ready'] or not state['backup_ready']):
         raise ValueError('Target requires writable theme/private rollback directory and remote Updraft backup readiness')
     if state['git'] != (c['transport'] == 'git'):
         raise ValueError('Transport does not match the existing theme directory; reconcile server layout first')
@@ -258,7 +282,7 @@ def deploy(args, c):
         payload = Path(temp)
         files = export_payload(args.sha, args.source, payload)
         before = target.inspect(args.slug)
-        verify_identity(c, before, args.slug)
+        verify_identity(c, before, args.slug, require_ready=args.mode != 'preflight')
         verify_state_privacy(c, before)
         if c['transport'] == 'git':
             git_destination(c, before, args.source)
@@ -266,6 +290,8 @@ def deploy(args, c):
         receipt = {'repository': repository, 'environment': args.environment, 'url': c['url'], 'sha': args.sha,
                    'host': c['host'], 'root': c['root'], 'template': c['template'],
                    'tree': digest(files), 'previous_tree': digest(before['files']), 'status': 'preflight',
+                   'backup_provider': c.get('backup_provider', 'updraft'),
+                   'readiness': {k: before[k] for k in ['writable', 'state_ready', 'backup_ready']},
                    'changed': sorted(n for n in set(files) | set(before['files']) if files.get(n) != before['files'].get(n))}
         Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
         if args.mode == 'preflight':
@@ -273,52 +299,9 @@ def deploy(args, c):
             return
         if not c['ready']:
             raise ValueError('DEPLOY_READY is not enabled after target qualification')
-        require_baseline(c, before, repository, args.environment)
-        theme = shlex.quote(before['theme'])
-        if c['transport'] == 'git':
-            git_root = git_destination(c, before, args.source)
-            target.shell(f'cd {git_root}\ntest "$(git rev-parse --show-toplevel)" = "$PWD"\ntest -z "$(git status --porcelain)"\ngit fetch origin {args.sha}\n')
-        stamp = str(time.time_ns())
-        label = f'pre-{args.environment}-{args.sha[:10]}-{stamp[-12:]}'
-        backup_code = Path(__file__).with_name('backup.php').read_text().removeprefix('<?php')
-        backup = target.php("putenv('MRN_BACKUP_LABEL=" + label + "');\n" + backup_code)
-        if backup.get('valid') is not True or backup.get('label') != label:
-            raise RuntimeError('Backup verification failed; no theme write performed')
-        # Recheck drift after the backup, immediately before preserving/writing code.
-        fresh = target.inspect(args.slug)
-        verify_identity(c, fresh, args.slug)
-        verify_state_privacy(c, fresh)
-        require_baseline(c, fresh, repository, args.environment)
-        if digest(fresh['files']) != receipt['previous_tree']:
-            raise ValueError('Theme changed during backup; refusing deployment')
-        archive = c['state_dir'] + '/' + args.sha[:12] + '-' + stamp + '.tar.gz'
-        receipt.update(backup=backup, rollback_archive=archive, status='write-started')
-        Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
-        target.shell(f'umask 077\ntar --exclude=.git -czf {shlex.quote(archive)} -C {theme} .\ntar -tzf {shlex.quote(archive)} >/dev/null\n')
-        if c['transport'] == 'git':
-            if git_destination(c, fresh, args.source) != git_root:
-                raise ValueError('Remote Git root changed during backup')
-            target.shell(f'cd {git_root}\ntest -z "$(git status --porcelain)"\ngit checkout --detach {args.sha}\n')
-        else:
-            excludes = ['--exclude=.*'] + ['--exclude=/' + n for n in sorted(EXCLUDED)]
-            run(['rsync', '-az', '--checksum', '--delete', '--delay-updates', *excludes,
-                 '-e', shlex.join(['ssh', *target.options]), str(payload) + '/',
-                 target.login + ':' + before['theme'] + '/'])
-        root = shlex.quote(c['root'])
-        target.shell(f'wp --path={root} cache flush\nwp --path={root} transient delete --all\n')
-        after = target.inspect(args.slug)
-        verify_identity(c, after, args.slug)
-        if after['files'] != files:
-            raise RuntimeError('Installed file/hash inventory does not match the immutable payload')
-        http_check(c['url'] + '/')
-        http_check(c['url'] + '/wp-json/', rest=True)
-        receipt['status'] = 'verified'
-        receipt['verified_at'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-        body = json.dumps(receipt, indent=2) + '\n'
-        state_path = shlex.quote(c['state_dir'] + '/current.json')
-        target.shell('umask 077\nprintf %s ' + shlex.quote(body) + ' > ' + state_path + '.tmp\nmv ' + state_path + '.tmp ' + state_path + '\n')
-        Path(args.receipt).write_text(body)
-        print(body)
+        # The legacy transport cannot meet the immutable asset/atomic activation contract.
+        # Keep the read-only adoption path usable, even if a variable is enabled by mistake.
+        raise ValueError('Runtime writes disabled: atomic activation, scoped HTML refresh, and public asset qualification are not yet integrated')
 
 
 def main():

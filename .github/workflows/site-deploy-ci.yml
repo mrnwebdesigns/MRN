@@ -5,6 +5,7 @@ on:
       - tools/site-deploy/**
       - .github/workflows/site-deploy-target.yml
       - .github/workflows/site-deploy-ci.yml
+      - .github/workflows/site-release-build.yml
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,6 +20,12 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.24'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Immutable asset regression tests
+        working-directory: tools/site-deploy
+        run: npm ci --ignore-scripts && npm test
       - name: Deployment failure-path tests
         run: python3 -m unittest discover -s tools/site-deploy/tests -v
       - name: Validate shared and caller workflows
@@ -29,4 +36,5 @@ jobs:
             tools/site-deploy/site-deploy.yml.template > "$RUNNER_TEMP/site-deploy.yml"
           go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 -shellcheck= \
             .github/workflows/site-deploy-target.yml .github/workflows/site-deploy-ci.yml \
+            .github/workflows/site-release-build.yml \
             "$RUNNER_TEMP/site-deploy.yml"

@@ -15,6 +15,11 @@ on:
         options: [preflight, deploy]
         default: preflight
         required: true
+      source_branch:
+        description: Same-repository branch (Dev only); Live/Both require main
+        type: string
+        default: main
+        required: true
 
 permissions:
   contents: read
@@ -26,15 +31,31 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    outputs:
+      source_sha: ${{ steps.source.outputs.source_sha }}
     steps:
-      - name: Require reviewed main
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/MRN
+          ref: TOOLING_SHA
+          path: .mrn-deploy-tools
+          persist-credentials: false
+      - name: Resolve source using trusted tooling
+        id: source
         env:
           TARGET: ${{ inputs.target }}
           MODE: ${{ inputs.mode }}
+          SOURCE_BRANCH: ${{ inputs.source_branch }}
         run: |
+          set -euo pipefail
           test "$GITHUB_REF" = refs/heads/main
-          case "$TARGET" in dev|live|both) ;; *) exit 1 ;; esac
           case "$MODE" in preflight|deploy) ;; *) exit 1 ;; esac
+          python3 .mrn-deploy-tools/tools/site-deploy/resolve_source.py \
+            --target "$TARGET" --branch "$SOURCE_BRANCH"
   dev:
     needs: validate
     if: inputs.target == 'dev' || inputs.target == 'both'
@@ -42,6 +63,8 @@ jobs:
     with:
       target: dev
       mode: ${{ inputs.mode }}
+      source_sha: ${{ needs.validate.outputs.source_sha }}
+      source_branch: ${{ inputs.source_branch }}
       source_path: SOURCE_PATH
       stylesheet: THEME_SLUG
       tooling_ref: TOOLING_SHA
@@ -56,6 +79,8 @@ jobs:
     with:
       target: live
       mode: ${{ inputs.mode }}
+      source_sha: ${{ needs.validate.outputs.source_sha }}
+      source_branch: ${{ inputs.source_branch }}
       source_path: SOURCE_PATH
       stylesheet: THEME_SLUG
       tooling_ref: TOOLING_SHA

@@ -1,0 +1,58 @@
+name: Build immutable site release candidate
+on:
+  workflow_call:
+    inputs:
+      source_sha:
+        type: string
+        required: true
+      source_path:
+        type: string
+        required: true
+      stylesheet:
+        type: string
+        required: true
+      tooling_ref:
+        type: string
+        required: true
+permissions:
+  contents: read
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_sha }}
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/MRN
+          ref: ${{ inputs.tooling_ref }}
+          path: .mrn-deploy-tools
+          persist-credentials: false
+      - name: Move trusted tooling outside source
+        run: mv .mrn-deploy-tools "$RUNNER_TEMP/mrn-deploy-tools"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build once from the selected immutable commit
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          SOURCE_PATH: ${{ inputs.source_path }}
+          SLUG: ${{ inputs.stylesheet }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          npm ci --ignore-scripts --prefix "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy"
+          python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/build_release.py" \
+            --sha "$SOURCE_SHA" --source "$SOURCE_PATH" --slug "$SLUG" \
+            --output "$RUNNER_TEMP/site-release.tar"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site-release-${{ inputs.source_sha }}
+          path: |
+            ${{ runner.temp }}/site-release.tar
+            ${{ runner.temp }}/site-release.json
+          if-no-files-found: error
+          retention-days: 90

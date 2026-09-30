@@ -8,16 +8,26 @@ activation, scoped HTML refresh, and public manifest/checksum verification.
 ## Daily workflow
 
 Use one source repository per site, one task branch/worktree per change, and a
-reviewed `main`. Run task-scoped MRN QA before committing. Merge reviewed work
-before deployment; a merge is not a deployment. Do not maintain separate Dev
-and Live source branches. Both environments receive an exact immutable commit.
+reviewed `main`. Run task-scoped MRN QA before committing. Feature branches may
+deploy to Dev for testing before merge. Live and Both require reviewed `main`.
+After merging, qualify the exact merged artifact on Dev before promoting that
+same artifact to Live. A feature preview cannot qualify a different merge commit.
+Do not maintain separate long-lived Dev and Live source branches.
 
 In GitHub Actions choose **Deploy site**, select **dev**, **live**, or **both**,
-and choose **preflight** (the default) or **deploy**. Run it from `main`.
+and choose **preflight** (the default) or **deploy**. Run the trusted workflow
+from `main`; the separate **Source branch** input may select a same-repository
+feature branch for Dev. Live and Both reject every source branch except `main`.
+The source is resolved once to an immutable SHA before the target jobs run.
 `both` runs Dev first and starts Live only after Dev succeeds. Each target has
 its own backup, credentials, identity checks, verification, and deployment
 record. Failure in Live leaves Dev on the new commit; it is not an atomic
 two-server transaction. Inspect the receipts before retrying.
+
+Coordinate the shared Dev site with its current developer before replacing a
+preview. Record its owner, branch, SHA, and agreed restore baseline. Serialization
+prevents overlapping writes; it does not reserve a testing window. Use separate
+preview environments for simultaneous testing.
 
 The first implementation intentionally has no push-triggered deployment.
 PR/push QA continues independently. Manual selection is the production intent
@@ -47,7 +57,9 @@ customers, form entries, and other records created after launch.
 ## Environment configuration
 
 Create GitHub environments named `dev` and `live` in each site repository.
-Restrict deployment branches to `main`. Keep credentials scoped to the target
+Restrict the workflow execution ref to `main`; Dev feature code is selected
+through the separate source input, not by running an unreviewed workflow.
+Keep credentials scoped to the target
 environment, with distinct deployment identities wherever hosting supports it.
 Store the canonical deploy credential in the MRN business 1Password account;
 provision GitHub secrets through the approved secret path without displaying or
@@ -179,3 +191,16 @@ References: [GitHub deployments](https://docs.github.com/en/actions/how-tos/depl
 [environment protection availability](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments),
 [MRN concurrent development](MRN-CONCURRENT-DEVELOPMENT-POLICY.md),
 [backup policy](../stack/BACKUP_POLICY.md).
+
+## Formal MRN policy and pilot
+
+The [MRN Git, Environment Deployment, and Asset Release Policy](https://docs.google.com/document/d/1xAnhiuhPxNvMItxaARB_sZxi1phByUBPS4rvKDumH0Q/edit)
+is filed in the MRN Policies folder. Trilliant is the first pilot; do not change
+Gloves deployment configuration while its separate work continues.
+
+The builder, asset URL adapter, and public HTTP checksum verifier are candidate
+components. The legacy uploader now rejects every runtime write in code, even
+if `DEPLOY_READY` is accidentally enabled. Kinsta preflight uses its native API
+to verify environment identity and backup access; production never falls back
+to Updraft. Atomic host adoption, scoped cache adapters, browser dependency
+checks, and rollback qualification must be integrated before activation.

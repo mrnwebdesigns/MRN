@@ -1,0 +1,8 @@
+{
+  "name": "mrn-site-release-assets",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {"test": "node --test tests/assets.test.mjs"},
+  "dependencies": {"esbuild": "0.25.10"}
+}
