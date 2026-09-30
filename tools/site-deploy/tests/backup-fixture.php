@@ -10,6 +10,7 @@ class WP_CLI {
 	}
 
 	public static function line( $message ) {
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CLI fixture emits a machine-readable receipt, not HTML.
 		echo $message . "\n";
 	}
 }
