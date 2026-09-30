@@ -116,7 +116,9 @@ jobs:
           path: .mrn-deploy-tools
           persist-credentials: false
       - name: Move tooling outside site source
-        run: mv .mrn-deploy-tools "$RUNNER_TEMP/mrn-deploy-tools"
+        run: |
+          mv .mrn-deploy-tools "$RUNNER_TEMP/mrn-deploy-tools"
+          echo "MRN_QA_STACK_ROOT=$RUNNER_TEMP/mrn-deploy-tools" >> "$GITHUB_ENV"
       - name: Download the exact artifact from this run
         uses: actions/download-artifact@v4
         with:
