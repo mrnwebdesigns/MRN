@@ -248,7 +248,10 @@ jobs:
         if: success() && inputs.mode == 'deploy'
         continue-on-error: ${{ inputs.target == 'dev' }}
         run: |
-          "$RUNNER_TEMP/mrn-qa-engine/bin/mrn-qa" run \
+          set -euo pipefail
+          acceptance=()
+          if [[ "$TARGET" == live ]]; then acceptance=(--mode release --smoke-strict 1); fi
+          "$RUNNER_TEMP/mrn-qa-engine/bin/mrn-qa" run "${acceptance[@]}" \
             --project-root "$GITHUB_WORKSPACE" --site-url "$DEPLOY_URL" --scope site-only \
             --run-api always --run-smoke always --run-accessibility always --run-performance always \
             --run-phpcbf never --output-file "$RUNNER_TEMP/site-runtime-qa.md"
