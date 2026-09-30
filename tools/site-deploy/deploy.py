@@ -111,6 +111,7 @@ $services = array_values(array_filter((array) get_option('updraft_service', arra
 global $updraftplus;
 echo 'MRN_RESULT=' . wp_json_encode(array(
     'home' => untrailingslashit(get_option('home')), 'stylesheet' => get_stylesheet(), 'template' => get_template(),
+    'wp_root' => $root_path,
     'theme' => realpath($theme), 'files' => $files, 'state' => $state,
     'state_ready' => $private && is_writable($c['state']) && (fileperms($c['state']) & 0077) === 0,
     'writable' => is_writable($theme),
@@ -186,7 +187,8 @@ def git_destination(c, before, source):
     expected_theme = root if source == '.' else root + '/' + source
     if expected_theme != before['theme']:
         raise ValueError('Remote Git source layout does not match the reviewed theme source')
-    if root == c['root'] or root.startswith(c['root'] + '/'):
+    wp_root = before.get('wp_root', c['root'])
+    if root == wp_root or root.startswith(wp_root + '/'):
         raise ValueError('Deploy repository must be private, outside the WordPress document root')
     return shlex.quote(root)
 
@@ -213,6 +215,8 @@ def deploy(args, c):
         files = export_payload(args.sha, args.source, payload)
         before = target.inspect(args.slug)
         verify_identity(c, before, args.slug)
+        if c['transport'] == 'git':
+            git_destination(c, before, args.source)
         receipt = {'repository': repository, 'environment': args.environment, 'url': c['url'], 'sha': args.sha,
                    'host': c['host'], 'root': c['root'], 'template': c['template'],
                    'tree': digest(files), 'previous_tree': digest(before['files']), 'status': 'preflight',

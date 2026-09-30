@@ -127,6 +127,12 @@ class DeploymentSafety(unittest.TestCase):
             deploy.git_destination(self.config, state, '.')
         with self.assertRaises(ValueError):
             deploy.git_destination(self.config, {**state, 'git_root': self.config['root'], 'theme': self.config['root']}, '.')
+        with self.assertRaises(ValueError):
+            deploy.git_destination(self.config, {
+                **state, 'wp_root': '/chroot/home/site/public',
+                'git_root': '/chroot/home/site/public/wp-content/themes/child',
+                'theme': '/chroot/home/site/public/wp-content/themes/child',
+            }, '.')
 
 
 if __name__ == '__main__':
