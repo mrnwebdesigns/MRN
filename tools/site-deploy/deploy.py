@@ -77,6 +77,9 @@ def config(environ):
         raise ValueError('Unsupported transport')
     c['baseline'] = environ.get('DEPLOY_BASELINE_TREE', '')
     c['ready'] = environ.get('DEPLOY_READY') == '1'
+    c['host_provider'] = environ.get('DEPLOY_HOST_PROVIDER', 'cloudpanel') or 'cloudpanel'
+    if c['host_provider'] not in ('cloudpanel', 'nexcess', 'siteground', 'wpengine'):
+        raise ValueError('Unknown host provider')
     return c
 
 
@@ -108,7 +111,7 @@ class Target:
 
     def php(self, code, skip_themes=False):
         options = ['--skip-themes'] if skip_themes else []
-        command = shlex.join(['wp', '--path=' + self.c['root'], *options, 'eval', code])
+        command = shlex.join(['env', 'WP_CLI_PHP_ARGS=-d memory_limit=512M', 'wp', '--path=' + self.c['root'], *options, 'eval', code])
         output = self.shell(command + '\n')
         markers = [line[11:] for line in output.splitlines() if line.startswith('MRN_RESULT=')]
         if len(markers) != 1:
@@ -233,7 +236,8 @@ def git_destination(c, before, source):
 def require_http_denied(url):
     # Never read response bodies, particularly for provider/Git private files.
     try:
-        with urllib.request.urlopen(url, timeout=30):
+        request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (compatible; MRN-Deployment/1.0)'})
+        with urllib.request.urlopen(request, timeout=30):
             pass
     except urllib.error.HTTPError as error:
         denied = error.code in [403, 404] and error.geturl() == url
@@ -247,6 +251,7 @@ def verify_state_privacy(c, before):
     if wpengine_private(c):
         if not before.get('state_protection_probe_exists'):
             raise ValueError('Cannot verify protection of an existing WP Engine private file')
+        http_check(c['url'] + '/')
         require_http_denied(c['url'] + '/_wpeprivate/config.json')
 
 
@@ -258,12 +263,13 @@ def verify_git_privacy(c, before):
     theme_url = before['theme_url'].rstrip('/')
     if not theme_url.startswith(c['url'] + '/'):
         raise ValueError('Cannot establish canonical public URL for Git privacy check')
+    http_check(c['url'] + '/')
     for name in ['HEAD', 'config']:
         require_http_denied(theme_url + '/.git/' + name)
 
 
 def http_check(url, rest=False):
-    request = urllib.request.Request(url, headers={'User-Agent': 'MRN-Deployment-Verification/1.0'})
+    request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (compatible; MRN-Deployment/1.0)'})
     with urllib.request.urlopen(request, timeout=30) as response:
         if response.status != 200 or response.url.rstrip('/') != url.rstrip('/'):
             raise RuntimeError('Public URL failed exact-target HTTP verification')
@@ -293,7 +299,7 @@ def deploy(args, c):
         payload = Path(temp)
         files = artifact['theme_files'] if artifact else export_payload(args.sha, args.source, payload)
         target = Target(c)
-        before = target.inspect(args.slug)
+        before = target.inspect(args.slug, skip_themes=True)
         verify_identity(c, before, args.slug, require_ready=args.mode != 'preflight')
         verify_state_privacy(c, before)
         if c['transport'] == 'git':
@@ -314,7 +320,7 @@ def deploy(args, c):
             return
         if not c['ready']:
             raise ValueError('DEPLOY_READY is not enabled after target qualification')
-        if args.environment != 'dev' or c.get('backup_provider') != 'updraft':
+        if c.get('backup_provider') != 'updraft' or (args.environment == 'live' and c.get('host_provider', 'cloudpanel') == 'cloudpanel'):
             raise ValueError('Runtime writes disabled for Live: its provider adapter is not qualified')
         if not before['state'] or before['state'].get('schema') != 1:
             raise ValueError('Runtime writes disabled: first adoption requires separate host qualification')

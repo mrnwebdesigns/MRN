@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Transfer trusted release tooling after backup, then run the Dev controller."""
+"""Transfer trusted release tooling after backup, then run the qualified host controller."""
 import argparse
 import base64
 import hashlib
@@ -10,12 +10,13 @@ import shlex
 import subprocess
 import time
 
-from deploy import Target, check, config, digest, verify_identity
+from deploy import Target, check, config, digest, verify_identity, verify_state_privacy, verify_git_privacy
 from verify_release import verify
 
 TOOLS = Path(__file__).resolve().parent
 HOST_FILES = ('host_controller.py', 'atomic_store.py', 'cache_policy.py', 'deploy.py',
-              'verify_release.py', 'verify_public_assets.py', 'backup.php', 'release-bootstrap.php')
+              'verify_release.py', 'verify_public_assets.py', 'backup.php', 'release-bootstrap.php',
+              'host_paths.py', 'html_cache.php')
 
 
 def transfer_backup(target):
@@ -23,7 +24,7 @@ def transfer_backup(target):
     code = (TOOLS / 'backup.php').read_text().removeprefix('<?php')
     # Target.php normally loads the active theme. This pre-transfer backup must
     # remain available for rollback after a theme bootstrap failure.
-    command = shlex.join(['env', 'MRN_BACKUP_LABEL=' + label, 'wp', '--path=' + target.c['root'],
+    command = shlex.join(['env', 'WP_CLI_PHP_ARGS=-d memory_limit=512M', 'MRN_BACKUP_LABEL=' + label, 'wp', '--path=' + target.c['root'],
                           '--skip-themes', 'eval', code])
     output = target.shell(command + '\n')
     receipts = [json.loads(line[11:]) for line in output.splitlines() if line.startswith('MRN_RESULT=')]
@@ -33,12 +34,12 @@ def transfer_backup(target):
 
 
 def run(plan, c):
-    # An explicit qualification run can adopt Dev. Normal deployments require
-    # the environment readiness switch; neither route can write to Live.
-    if plan['environment'] != 'dev' or c['backup_provider'] != 'updraft':
-        raise ValueError('Live activation is disabled; only the Dev adapter is implemented')
-    if not c['url'].endswith('.mrndev.io'):
-        raise ValueError('Unqualified Dev host')
+    # First adoption is an explicit qualification operation. Routine deployments
+    # require the readiness switch plus the exact existing release pointer.
+    if c['backup_provider'] != 'updraft' or plan['environment'] not in ('dev', 'live'):
+        raise ValueError('No qualified activation adapter for this backup provider')
+    if c.get('host_provider', 'cloudpanel') == 'cloudpanel' and (plan['environment'] != 'dev' or not c['url'].endswith('.mrndev.io')):
+        raise ValueError('Live activation remains disabled for the CloudPanel Dev adapter')
     if not plan.get('adopt') and not c.get('ready'):
         raise ValueError('DEPLOY_READY must be enabled after qualification')
     if not plan.get('rollback_to'):
@@ -48,6 +49,9 @@ def run(plan, c):
     # pointer and raw public identity remain readable with theme loading skipped.
     before = target.inspect(plan['slug'], skip_themes=True)
     verify_identity(c, before, plan['slug'])
+    verify_state_privacy(c, before)
+    if before['git']:
+        verify_git_privacy(c, before)
     if before['state'] != plan.get('expected_current'):
         raise ValueError('Target changed before backup and transfer')
     if plan.get('adopt') and digest(before['files']) != plan['baseline']:
@@ -56,6 +60,7 @@ def run(plan, c):
     job = c['state_dir'] + '/jobs/' + str(time.time_ns())
     check(job, r'/[A-Za-z0-9_./-]+', 'private job path')
     target.shell('umask 077\nmkdir -p ' + shlex.quote(job) + '\n')
+    transfers = []
     for name in HOST_FILES:
         data = (TOOLS / name).read_bytes()
         encoded = base64.b64encode(data).decode()
@@ -63,24 +68,23 @@ def run(plan, c):
         script = "import base64,hashlib,pathlib; b=base64.b64decode(" + repr(encoded) + "); "
         script += "assert hashlib.sha256(b).hexdigest()==" + repr(hashlib.sha256(data).hexdigest()) + "; "
         script += "p=pathlib.Path(" + repr(path) + "); p.open('xb').write(b)"
-        target.shell('python3 -c ' + shlex.quote(script) + '\n')
-    remote_plan = {**plan, **{k: c[k] for k in ('url', 'root', 'template', 'state_dir', 'backup_provider')}}
+        transfers.append('python3 -c ' + shlex.quote(script))
+    target.shell('umask 077\n' + '\n'.join(transfers) + '\n')
+    remote_plan = {**plan, **{k: c[k] for k in ('url', 'root', 'template', 'state_dir', 'backup_provider')},
+                   'host_provider': c.get('host_provider', 'cloudpanel'), 'ssh_host': c['host'], 'ssh_user': c['user']}
     if not plan.get('rollback_to'):
         # No shell interpolation of payload or credentials. Host key checking is
         # inherited from the verified site-owner Target connection.
         remote_archive = job + '/release.tar'
-        with open(plan['archive'], 'rb') as archive:
-            proc = subprocess.run(['ssh', *target.options, target.login,
-                                   'umask 077; cat > ' + shlex.quote(remote_archive)], stdin=archive,
-                                  capture_output=True)
-        if proc.returncode:
-            raise RuntimeError('Private artifact transfer failed')
+        encoded_archive = base64.b64encode(Path(plan['archive']).read_bytes()).decode()
+        target.shell('umask 077\nbase64 -d > ' + shlex.quote(remote_archive) +
+                     " <<'MRN_RELEASE_PAYLOAD'\n" + encoded_archive + '\nMRN_RELEASE_PAYLOAD\n')
         remote_plan['archive'] = remote_archive
     encoded = base64.b64encode(json.dumps(remote_plan).encode()).decode()
     launch = 'import base64,subprocess; p=base64.b64decode(' + repr(encoded) + '); '
     launch += 'r=subprocess.run(["python3",' + repr(job + '/host_controller.py') + '],input=p); raise SystemExit(r.returncode)'
-    process = subprocess.run(['ssh', *target.options, target.login, 'python3 -c ' + shlex.quote(launch)],
-                             capture_output=True, text=True)
+    process = subprocess.run(['ssh', *target.options, target.login, 'bash -se'],
+                             input='python3 -c ' + shlex.quote(launch) + '\n', capture_output=True, text=True)
     receipts = [json.loads(line[11:]) for line in process.stdout.splitlines() if line.startswith('MRN_RESULT=')]
     if len(receipts) != 1:
         raise RuntimeError('Host controller failed without a receipt; inspect the retained private job ' + job)

@@ -40,7 +40,9 @@ try {
         })().catch(error => errors.push(error.message)));
       });
       const response = await page.goto(url, { waitUntil: 'load', timeout: 60000 });
-      if (response.status() !== 200 || response.headers()['x-mrn-site-release'] !== receipt.current.release_id) errors.push('Browser selected a different release');
+      const releaseHeader = response.headers()['x-mrn-site-release'];
+      const requiresHeader = !receipt.host_provider || receipt.host_provider === 'cloudpanel';
+      if (response.status() !== 200 || ((requiresHeader || releaseHeader) && releaseHeader !== receipt.current.release_id)) errors.push('Browser selected a different release');
       await page.evaluate(() => document.fonts.ready);
       // Trigger ordinary lazy-loaded dependencies without clicks or data writes.
       await page.evaluate(async () => {

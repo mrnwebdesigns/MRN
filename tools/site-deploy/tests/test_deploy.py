@@ -58,7 +58,7 @@ class DeploymentSafety(unittest.TestCase):
                 self.login = 'site@host'
                 self.options = []
 
-            def inspect(self, slug):
+            def inspect(self, slug, skip_themes=False):
                 operations.append('inspect')
                 self.count += 1
                 return after if after is not None and self.count >= 2 else before
@@ -162,11 +162,11 @@ class DeploymentSafety(unittest.TestCase):
         }
         self.assertEqual(aliased['git_root'], deploy.git_destination(self.config, aliased, '.'))
         def denied(url, **kwargs):
-            raise deploy.urllib.error.HTTPError(url, 403, 'Forbidden', {}, None)
-        with patch.object(deploy.urllib.request, 'urlopen', side_effect=denied) as request:
+            raise deploy.urllib.error.HTTPError(url.full_url, 403, 'Forbidden', {}, None)
+        with patch.object(deploy, 'http_check'), patch.object(deploy.urllib.request, 'urlopen', side_effect=denied) as request:
             deploy.verify_git_privacy(self.config, aliased)
             self.assertEqual(2, request.call_count)
-        with patch.object(deploy.urllib.request, 'urlopen'), self.assertRaises(ValueError):
+        with patch.object(deploy, 'http_check'), patch.object(deploy.urllib.request, 'urlopen'), self.assertRaises(ValueError):
             deploy.verify_git_privacy(self.config, aliased)
 
     def test_wpengine_private_storage_requires_provider_identity_and_blocked_existing_file(self):
@@ -185,12 +185,21 @@ class DeploymentSafety(unittest.TestCase):
         with self.assertRaises(ValueError):
             deploy.verify_state_privacy(c, {'state_protection_probe_exists': False})
         def denied(url, **kwargs):
-            raise deploy.urllib.error.HTTPError(url, 403, 'Forbidden', {}, None)
-        with patch.object(deploy.urllib.request, 'urlopen', side_effect=denied) as request:
+            raise deploy.urllib.error.HTTPError(url.full_url, 403, 'Forbidden', {}, None)
+        with patch.object(deploy, 'http_check'), patch.object(deploy.urllib.request, 'urlopen', side_effect=denied) as request:
             deploy.verify_state_privacy(c, {'state_protection_probe_exists': True})
-            request.assert_called_once_with('https://example.org/_wpeprivate/config.json', timeout=30)
-        with patch.object(deploy.urllib.request, 'urlopen'), self.assertRaises(ValueError):
+            request.assert_called_once()
+            self.assertEqual('https://example.org/_wpeprivate/config.json', request.call_args.args[0].full_url)
+        with patch.object(deploy, 'http_check'), patch.object(deploy.urllib.request, 'urlopen'), self.assertRaises(ValueError):
             deploy.verify_state_privacy(c, {'state_protection_probe_exists': True})
+
+    def test_blocked_homepage_cannot_prove_private_path_protection(self):
+        c = {**self.config, 'host': 'site.ssh.wpengine.net', 'user': 'site',
+             'root': '/sites/site', 'state_dir': '/sites/site/_wpeprivate/mrn-site-deploy/live'}
+        with patch.object(deploy, 'http_check', side_effect=RuntimeError('challenge')), patch.object(deploy, 'require_http_denied') as denied:
+            with self.assertRaisesRegex(RuntimeError, 'challenge'):
+                deploy.verify_state_privacy(c, {'state_protection_probe_exists': True})
+            denied.assert_not_called()
 
 
 if __name__ == '__main__':

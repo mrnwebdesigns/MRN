@@ -206,12 +206,15 @@ References: [GitHub deployments](https://docs.github.com/en/actions/how-tos/depl
 ## Formal MRN policy and pilot
 
 The [MRN Git, Environment Deployment, and Asset Release Policy](https://docs.google.com/document/d/1xAnhiuhPxNvMItxaARB_sZxi1phByUBPS4rvKDumH0Q/edit)
-is filed in the MRN Policies folder. Trilliant is the first pilot; do not change
-Gloves deployment configuration while its separate work continues.
+is filed in the MRN Policies folder. Trilliant was the first Dev pilot. Its
+Live environment remains disabled; Phase 2 must not be published by deployment
+infrastructure work. The next authorized v1 targets are Gloves, Freedom House,
+and SWC Care Partners, preserving their launched child-theme code.
 
 The builder, asset URL adapter, and public HTTP checksum verifier are candidate
 components. The CloudPanel Dev controller can activate only a previously
-adopted, explicitly enabled child theme. Live writes remain blocked in code.
+adopted, explicitly enabled child theme. Live writes require an explicit qualified provider adapter and an enabled
+environment readiness switch.
 Kinsta preflight uses its native API to verify environment identity and backup
 access; production never falls back to Updraft.
 
@@ -246,8 +249,9 @@ The GitHub target checks browser-loaded dependency checksums at three viewport
 sizes and runs site layout contracts. A failed browser/layout acceptance rolls
 back with a new verified backup. Full MRN runtime QA is retained as feedback for
 Dev testing; unresolved findings prevent release approval, even when the Dev
-testing deployment itself succeeds. Live remains disabled. Cross-run reuse of
-a Dev-qualified artifact and provider-specific Live activation are still pending.
+testing deployment itself succeeds. Live runtime QA is blocking, with automatic
+code rollback on failure. Cross-run reuse of a Dev-qualified artifact remains
+future work; v1 builds once per dispatch and Both uses the same artifact.
 
 Update site wrappers from the complete reviewed template, not only the tooling
 SHA. Trilliant's legacy uploader must remain disabled after first adoption,
@@ -257,3 +261,38 @@ current Phase 2 branches and do not publish current main to Live.
 Artifact transfer follows GitHub's documented
 [reusable workflow outputs](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#using-outputs-from-a-reusable-workflow)
 and [download by artifact ID](https://github.com/actions/download-artifact/tree/v4#download-artifacts-by-id).
+
+## Live host adapters (v1)
+
+`DEPLOY_HOST_PROVIDER` selects `nexcess`, `wpengine`, or `siteground` explicitly.
+The default `cloudpanel` adapter remains restricted to Dev. Unknown providers,
+identity mismatches, unverified storage, missing backups, or unqualified cache
+configuration stop activation. `DEPLOY_READY=1` is set only after adoption,
+public asset checks, a rollback exercise, and required runtime QA pass.
+
+Private release paths are resolved on the destination. The stable bootstrap
+resolves storage relative to WordPress so SSH/FPM chroot aliases do not select
+different releases. WP Engine uses its account-bound `_wpeprivate` storage and
+requires a public HTTP denial probe; other adapters keep storage outside the
+WordPress root. State must belong to the site owner, have mode 0700, and share
+the theme filesystem. Existing public asset files are never overwritten.
+
+Globally loaded child assets affect the site's public HTML routes. The controller
+records public WordPress permalinks, archives, taxonomy URLs, explicitly verified
+pages, and (on Nexcess) existing cached pagination routes before activation.
+Nexcess uses Cache Enabler's exact-page operation; WP Engine uses anchored host
+and path Varnish purges; SiteGround uses its dynamic-cache URL API with child-path
+purging disabled. SiteGround file caching requires separate qualification and
+blocks this v1 adapter. No object-cache flush, transient deletion, static-asset
+purge, or cache operation against another hostname is permitted.
+
+An edge that retains affected HTML must serve the released asset references
+within the bounded public verification window. The controller retries ordinary
+public requests for up to 120 seconds; it never treats cache-busting queries or a
+CAPTCHA/challenge response as release proof. A failed verification restores the
+previous code selection and refreshes the same HTML scope. Prior immutable asset
+generations stay available for cached pages and rollback.
+
+This file describes the implementation contract, not a completed site rollout.
+Record each environment's evidence separately. Unsupported cached routes or
+additional HTML cache layers must be qualified before enabling that environment.
