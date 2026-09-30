@@ -215,3 +215,30 @@ if `DEPLOY_READY` is accidentally enabled. Kinsta preflight uses its native API
 to verify environment identity and backup access; production never falls back
 to Updraft. Atomic host adoption, scoped cache adapters, browser dependency
 checks, and rollback qualification must be integrated before activation.
+
+The candidate caller now requires a successful build before either target job.
+The build returns its immutable GitHub artifact ID and tar SHA-256; both target
+jobs download that same artifact from the same run and independently verify it
+before configuring site access. The expected digest comes from the build output,
+not a sidecar downloaded beside the tar. Verification covers the source identity,
+complete file inventory, asset manifest, content-addressed generation, URL maps,
+and synchronized theme/static bytes. Unsafe paths, links, duplicate archive/JSON
+entries, missing files, and checksum mismatches stop the run without extraction.
+Read-only target preflight records this verified artifact and compares its built
+theme inventory with the target; it does not rebuild source. Source-only CLI
+preflight remains available for initial adoption inventory and cannot deploy.
+
+This proves artifact handoff for preflight, not Dev acceptance or Live promotion.
+Cross-run reuse of a Dev-qualified artifact, atomic runtime adoption, scoped HTML
+refresh, browser/runtime acceptance, and rollback still need integration and host
+qualification. All runtime writes remain disabled. Existing site workflow pins
+are unchanged; update a site wrapper from the complete reviewed template rather
+than only changing its tooling SHA, because artifact inputs are now required.
+
+Trilliant's current Git branch arrangement, active Dev uploader, and runtime
+themes are intentionally preserved while Phase 2 development continues. Do not
+restructure its branches or publish its current main as part of tooling work.
+
+Artifact transfer follows GitHub's documented
+[reusable workflow outputs](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#using-outputs-from-a-reusable-workflow)
+and [download by artifact ID](https://github.com/actions/download-artifact/tree/v4#download-artifacts-by-id).

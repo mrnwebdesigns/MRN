@@ -3,9 +3,12 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+
+sys.path.insert(0, str(Path(__file__).parents[1]))
 
 SPEC = importlib.util.spec_from_file_location('site_deploy', Path(__file__).parents[1] / 'deploy.py')
 deploy = importlib.util.module_from_spec(SPEC)
@@ -44,7 +47,7 @@ class DeploymentSafety(unittest.TestCase):
         with self.assertRaises(ValueError):
             deploy.require_baseline(self.config, {**self.before, 'state': {'tree': self.config['baseline']}}, 'org/site', 'live')
 
-    def exercise(self, mode, backup=None, ready=True, after=None):
+    def exercise(self, mode, backup=None, ready=True, after=None, artifact=True, artifact_error=None):
         operations = []
         before = self.before
         config = {**self.config, 'ready': ready}
@@ -72,15 +75,23 @@ class DeploymentSafety(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as temp:
             args = argparse.Namespace(mode=mode, sha='a' * 40, source='.', slug='child', environment='live', receipt=temp + '/receipt.json')
+            args.artifact = temp + '/release.tar' if artifact else None
+            args.artifact_sha256 = 'b' * 64 if artifact else None
             with patch.dict(os.environ, {'GITHUB_REPOSITORY': 'org/site'}), \
+                 patch('verify_release.verify', return_value={'theme_files': self.files, 'artifact_sha256': 'b' * 64,
+                       'runtime_qualified': False}, side_effect=artifact_error), \
                  patch.object(deploy, 'Target', FakeTarget), \
-                 patch.object(deploy, 'export_payload', return_value=self.files), \
+                 patch.object(deploy, 'export_payload', return_value=self.files) as exporter, \
                  patch.object(deploy, 'run', side_effect=lambda *a, **kw: operations.append('transfer')), \
                  patch.object(deploy, 'http_check', side_effect=lambda *a, **kw: operations.append('http')):
                 try:
                     deploy.deploy(args, config)
                 except (ValueError, RuntimeError) as error:
-                    return operations, error, json.loads(Path(args.receipt).read_text())
+                    receipt = json.loads(Path(args.receipt).read_text()) if Path(args.receipt).exists() else None
+                    return operations, error, receipt
+                finally:
+                    if artifact:
+                        exporter.assert_not_called()
                 return operations, None, json.loads(Path(args.receipt).read_text())
 
     def test_preflight_never_starts_backup_or_writes(self):
@@ -88,6 +99,27 @@ class DeploymentSafety(unittest.TestCase):
         self.assertIsNone(error)
         self.assertEqual(['inspect'], operations)
         self.assertEqual('preflight', receipt['status'])
+        self.assertEqual('verified-build-artifact', receipt['payload_kind'])
+        self.assertFalse(receipt['artifact']['runtime_qualified'])
+
+    def test_bad_artifact_is_rejected_before_site_access(self):
+        operations, error, receipt = self.exercise('preflight', artifact_error=ValueError('wrong archive'))
+        self.assertEqual([], operations)
+        self.assertIn('wrong archive', str(error))
+        self.assertIsNone(receipt)
+
+    def test_source_only_adoption_is_read_only_and_cannot_be_deployed(self):
+        operations, error, receipt = self.exercise('preflight', artifact=False)
+        self.assertIsNone(error)
+        self.assertEqual('source-adoption-inventory', receipt['payload_kind'])
+        operations, error, receipt = self.exercise('deploy', artifact=False)
+        self.assertEqual([], operations)
+        self.assertIn('verified build artifact', str(error))
+
+    def test_artifact_preflight_does_not_export_or_rebuild_source(self):
+        operations, error, receipt = self.exercise('preflight')
+        self.assertIsNone(error)
+        self.assertEqual('b' * 64, receipt['artifact']['artifact_sha256'])
 
     def test_disabled_or_failed_backup_never_writes(self):
         for values in [{'ready': False}, {'backup': False}]:

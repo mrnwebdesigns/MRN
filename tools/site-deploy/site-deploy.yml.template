@@ -56,8 +56,16 @@ jobs:
           case "$MODE" in preflight|deploy) ;; *) exit 1 ;; esac
           python3 .mrn-deploy-tools/tools/site-deploy/resolve_source.py \
             --target "$TARGET" --branch "$SOURCE_BRANCH"
-  dev:
+  build:
     needs: validate
+    uses: mrnwebdesigns/MRN/.github/workflows/site-release-build.yml@TOOLING_SHA
+    with:
+      source_sha: ${{ needs.validate.outputs.source_sha }}
+      source_path: SOURCE_PATH
+      stylesheet: THEME_SLUG
+      tooling_ref: TOOLING_SHA
+  dev:
+    needs: [validate, build]
     if: inputs.target == 'dev' || inputs.target == 'both'
     uses: mrnwebdesigns/MRN/.github/workflows/site-deploy-target.yml@TOOLING_SHA
     with:
@@ -65,14 +73,16 @@ jobs:
       mode: ${{ inputs.mode }}
       source_sha: ${{ needs.validate.outputs.source_sha }}
       source_branch: ${{ inputs.source_branch }}
+      artifact_id: ${{ needs.build.outputs.artifact_id }}
+      artifact_sha256: ${{ needs.build.outputs.artifact_sha256 }}
       source_path: SOURCE_PATH
       stylesheet: THEME_SLUG
       tooling_ref: TOOLING_SHA
     secrets: inherit
   live:
-    needs: [validate, dev]
+    needs: [validate, build, dev]
     if: >-
-      always() && !cancelled() && needs.validate.result == 'success' &&
+      always() && !cancelled() && needs.validate.result == 'success' && needs.build.result == 'success' &&
       ((inputs.target == 'live' && needs.dev.result == 'skipped') ||
        (inputs.target == 'both' && needs.dev.result == 'success'))
     uses: mrnwebdesigns/MRN/.github/workflows/site-deploy-target.yml@TOOLING_SHA
@@ -81,6 +91,8 @@ jobs:
       mode: ${{ inputs.mode }}
       source_sha: ${{ needs.validate.outputs.source_sha }}
       source_branch: ${{ inputs.source_branch }}
+      artifact_id: ${{ needs.build.outputs.artifact_id }}
+      artifact_sha256: ${{ needs.build.outputs.artifact_sha256 }}
       source_path: SOURCE_PATH
       stylesheet: THEME_SLUG
       tooling_ref: TOOLING_SHA

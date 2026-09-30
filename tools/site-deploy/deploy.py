@@ -276,11 +276,22 @@ def http_check(url, rest=False):
 
 
 def deploy(args, c):
-    target = Target(c)
     repository = check(os.environ['GITHUB_REPOSITORY'], r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', 'repository')
+    artifact_path = getattr(args, 'artifact', None)
+    artifact_sha256 = getattr(args, 'artifact_sha256', None)
+    artifact = None
+    if bool(artifact_path) != bool(artifact_sha256):
+        raise ValueError('Artifact path and trusted build checksum are required together')
+    if artifact_path:
+        from verify_release import verify
+        # Reject a wrong build before opening a site connection. Never rebuild here.
+        artifact = verify(artifact_path, artifact_sha256, args.sha, args.source, args.slug)
+    if args.mode == 'deploy' and not artifact:
+        raise ValueError('Runtime writes disabled: a verified build artifact is required')
     with tempfile.TemporaryDirectory(prefix='mrn-site-payload-') as temp:
         payload = Path(temp)
-        files = export_payload(args.sha, args.source, payload)
+        files = artifact['theme_files'] if artifact else export_payload(args.sha, args.source, payload)
+        target = Target(c)
         before = target.inspect(args.slug)
         verify_identity(c, before, args.slug, require_ready=args.mode != 'preflight')
         verify_state_privacy(c, before)
@@ -293,6 +304,9 @@ def deploy(args, c):
                    'backup_provider': c.get('backup_provider', 'updraft'),
                    'readiness': {k: before[k] for k in ['writable', 'state_ready', 'backup_ready']},
                    'changed': sorted(n for n in set(files) | set(before['files']) if files.get(n) != before['files'].get(n))}
+        receipt['payload_kind'] = 'verified-build-artifact' if artifact else 'source-adoption-inventory'
+        if artifact:
+            receipt['artifact'] = {key: value for key, value in artifact.items() if key != 'theme_files'}
         Path(args.receipt).write_text(json.dumps(receipt, indent=2) + '\n')
         if args.mode == 'preflight':
             print(json.dumps(receipt, indent=2))
@@ -312,6 +326,8 @@ def main():
     p.add_argument('--source', required=True)
     p.add_argument('--slug', required=True)
     p.add_argument('--receipt', required=True)
+    p.add_argument('--artifact', help='Immutable tar from the trusted build job; no target-side rebuild')
+    p.add_argument('--artifact-sha256', help='Expected SHA-256 supplied independently by the build job')
     args = p.parse_args()
     check(args.slug, r'[A-Za-z0-9_-]+', 'stylesheet')
     deploy(args, config(os.environ))
