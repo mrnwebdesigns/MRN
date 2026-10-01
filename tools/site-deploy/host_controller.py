@@ -25,10 +25,10 @@ from verify_public_assets import Assets, fetch, verify as verify_public
 TOOLS = Path(__file__).resolve().parent
 
 
-def wp(root, code, extra_env=None, skip_themes=True):
+def wp(root, code, extra_env=None, skip_themes=True, stdin=None):
     # Recovery backups must also work if the selected theme cannot bootstrap.
     result = subprocess.run(['wp', '--path=' + root] + (['--skip-themes'] if skip_themes else []) + ['eval', code],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True,
+                            input=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True,
                             env={**os.environ, 'WP_CLI_PHP_ARGS': '-d memory_limit=512M', **(extra_env or {})})
     lines = [line[11:] for line in result.stdout.splitlines() if line.startswith('MRN_RESULT=')]
     if result.returncode or len(lines) != 1:
@@ -82,8 +82,10 @@ echo 'MRN_RESULT=' . wp_json_encode(array(
 def html_cache(plan, action):
     request = {'url': plan['url'], 'provider': plan.get('host_provider', 'cloudpanel'),
                'action': action, 'urls': plan.get('_html_scope', plan['pages'])}
+    # A large site's exact URL scope can exceed Linux's per-environment-string
+    # limit (128 KiB). Keep the bounded request on stdin, not in argv or env.
     return wp(plan['root'], (TOOLS / 'html_cache.php').read_text()[5:],
-              {'MRN_HTML_CACHE_REQUEST': json.dumps(request)}, skip_themes=action != 'inspect')
+              {'MRN_HTML_CACHE_STDIN': '1'}, skip_themes=action != 'inspect', stdin=json.dumps(request))
 
 
 def verify_cached_public(plan):
