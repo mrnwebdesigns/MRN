@@ -353,7 +353,8 @@ def deploy(args, c):
             return
         if not c['ready']:
             raise ValueError('DEPLOY_READY is not enabled after target qualification')
-        if c.get('backup_provider') != 'updraft' or (args.environment == 'live' and c.get('host_provider', 'cloudpanel') == 'cloudpanel'):
+        native = c.get('host_provider') == 'kinsta' and c.get('backup_provider') == 'kinsta'
+        if (c.get('backup_provider') != 'updraft' and not native) or (args.environment == 'live' and c.get('host_provider', 'cloudpanel') == 'cloudpanel'):
             raise ValueError('Runtime writes disabled for Live: its provider adapter is not qualified')
         if not before['state'] or before['state'].get('schema') != 1:
             raise ValueError('Runtime writes disabled: first adoption requires separate host qualification')

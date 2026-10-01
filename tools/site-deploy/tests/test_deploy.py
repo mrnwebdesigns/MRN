@@ -102,6 +102,20 @@ class DeploymentSafety(unittest.TestCase):
         self.assertEqual('verified-build-artifact', receipt['payload_kind'])
         self.assertFalse(receipt['artifact']['runtime_qualified'])
 
+    def test_qualified_native_routine_deploy_reaches_guarded_atomic_controller(self):
+        self.config.update(host_provider='kinsta', backup_provider='kinsta', native_transaction_backup_approved=True)
+        self.before['state'] = {'schema':1, 'release_id':'c'*64, 'public_path':'mrn-assets/child/'+'d'*64}
+        result = {'status':'public-verified','current':self.before['state'],'runtime_qa_required':True}
+        with patch.dict(os.environ, {'DEPLOY_VERIFY_PAGES':'["https://example.org/"]'}), \
+             patch('atomic_runner.run', return_value=result) as activate:
+            operations, error, receipt = self.exercise('deploy')
+        self.assertIsNone(error)
+        self.assertEqual('public-verified', receipt['status'])
+        plan, config = activate.call_args.args
+        self.assertEqual(self.before['state'], plan['expected_current'])
+        self.assertEqual('kinsta', config['backup_provider'])
+        self.assertTrue(config['native_transaction_backup_approved'])
+
     def test_bad_artifact_is_rejected_before_site_access(self):
         operations, error, receipt = self.exercise('preflight', artifact_error=ValueError('wrong archive'))
         self.assertEqual([], operations)
