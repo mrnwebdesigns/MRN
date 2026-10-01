@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.29-updraft-retention`
-- Release date: `2026-09-29`
+- Stack release: `2026.10.01-event-content-links`
+- Release date: `2026-10-01`
 - Status: `release candidate for guarded per-site Fleet rollout; no site deployment performed`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.5.0`
+  - `mrn-base-stack` `1.5.1`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -32,7 +32,7 @@
   - `mrn-ai-assist` `2.0.14`
   - `mrn-announcements` `1.8.2`
   - `mrn-comment-management` `1.1.7`
-  - `mrn-config-helper` `0.1.66`
+  - `mrn-config-helper` `0.1.68`
   - `mrn-editor-tools` `1.8.25`
   - `mrn-fontawesome-profile-manager` `0.5.1`
   - `mrn-google-fonts` `1.0.7`
@@ -57,6 +57,12 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- Parent theme `1.5.1` restores saved Event Image Links in Content Only
+  Reference Content rows, retaining per-row on/off and new-tab preferences.
+  This cumulative candidate also seals the previously merged Config Helper
+  `0.1.68` provider release and the existing Updraft `0.6.0` baseline.
+  Optional plugins remain separate; no child theme is included. See
+  `docs/releases/2026.10.01-event-content-links.md`.
 - Config Helper `0.1.66` separates inexpensive settings reads from builder layout
   normalization. Content-type visibility no longer discovers builder layouts;
   actual builder/settings consumers preserve their defaults, migrations and saved

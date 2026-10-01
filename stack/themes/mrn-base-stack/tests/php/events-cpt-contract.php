@@ -17,6 +17,10 @@ function add_action( $hook_name, $callback, $priority = 10, $accepted_args = 1 )
 	return true;
 }
 
+function add_filter( $hook_name, $callback, $priority = 10, $accepted_args = 1 ) {
+	return add_action( $hook_name, $callback, $priority, $accepted_args );
+}
+
 function __( $text, $domain = 'default' ) {
 	unset( $domain );
 
@@ -74,6 +78,7 @@ $supports = $event_args['supports'] ?? array();
 mrn_events_test_assert( in_array( 'title', $supports, true ), 'Event CPT must use the standard title field.' );
 mrn_events_test_assert( in_array( 'editor', $supports, true ), 'Event CPT must use the standard body editor.' );
 mrn_events_test_assert( in_array( 'revisions', $supports, true ), 'Event CPT must support revisions.' );
+mrn_events_test_assert( in_array( 'mrn-content-list-links', $supports, true ), 'Event destinations must remain eligible in Content Only mode.' );
 
 $field_group_raw = $GLOBALS['mrn_events_test_field_groups']['group_mrn_event'] ?? null;
 mrn_events_test_assert( is_array( $field_group_raw ), 'Event Details ACF field group must register.' );

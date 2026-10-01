@@ -1,5 +1,16 @@
 # Stack Changelog
 
+## 2026.10.01-event-content-links
+
+- Parent theme `1.5.1` makes Event Reference Content images, titles and
+  read-more links use the saved Image Link in Content Only mode. The row
+  off-switch and blank/invalid destination behavior remain intact.
+- Reconciles the previously merged Config Helper `0.1.68` selective release
+  and deployment-contract changes into the cumulative immutable baseline.
+- Retains Updraft policy `0.6.0` from the prior baseline. Optional plugin
+  releases remain independent. Trilliant Dev is the only requested target;
+  package preparation is not deployment evidence.
+
 ## 2026.09.29-updraft-retention
 
 - Backup policy now validates full-hostname S3 prefixes against every active
