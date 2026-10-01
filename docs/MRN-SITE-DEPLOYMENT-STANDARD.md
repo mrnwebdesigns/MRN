@@ -1,9 +1,13 @@
 # Site Git, deployment, and server transitions
 
-Status: implementation candidate; site activation requires the onboarding evidence below.
-Use the current helper for preflight only until it satisfies the
+Status: v1 workflow available for individually qualified environments.
+Use `preflight` until the target has passed the onboarding evidence below and
+`DEPLOY_READY=1` has been recorded. A provider connection or an installed workflow
+does not qualify a target. Deployment must satisfy the
 [CSS/JS release contract](MRN-ASSET-RELEASE-STANDARD.md), including atomic
 activation, scoped HTML refresh, and public manifest/checksum verification.
+Keep target-specific source, backup, rollback, browser and runtime receipts in
+the site repository and operational record; incomplete adapters stay disabled.
 
 ## Daily workflow
 
