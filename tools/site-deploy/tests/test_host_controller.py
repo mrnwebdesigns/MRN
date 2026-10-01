@@ -3,6 +3,9 @@ from pathlib import Path
 import sys
 import unittest
 from unittest.mock import patch, Mock
+import os
+import subprocess
+import tempfile
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 import host_controller as host
@@ -129,6 +132,25 @@ class HostControllerContract(unittest.TestCase):
         self.assertEqual('/private/site/current.json', receipt['diagnostics'][1]['path'])
         self.assertNotIn('private-token', json.dumps(receipt))
         self.assertTrue(receipt['diagnostics'][0]['frames'])
+
+
+class CacheInputTransport(unittest.TestCase):
+    def test_large_scope_reaches_cli_without_large_environment_or_argument(self):
+        urls = ['https://example.org/' + 'a' * 80 + str(n) + '/' for n in range(2180)]
+        plan = {'root':'/site','url':'https://example.org','host_provider':'nexcess','pages':urls}
+        # Run an actual child process; a mocked subprocess misses Linux's
+        # per-string exec limit, which broke Gloves before its first activation.
+        with tempfile.TemporaryDirectory() as directory:
+            cli = Path(directory) / 'wp'
+            cli.write_text('#!' + sys.executable + '\nimport sys,json,os\n'
+                           'assert "MRN_HTML_CACHE_REQUEST" not in os.environ\n'
+                           'assert max(map(len,sys.argv)) < 32768\n'
+                           'request=json.load(sys.stdin)\n'
+                           'print("MRN_RESULT="+json.dumps({"urls":request["urls"]}))\n')
+            cli.chmod(0o700)
+            with patch.dict(os.environ, {'PATH':directory + os.pathsep + os.environ['PATH']}):
+                receipt = host.html_cache(plan, 'refresh')
+        self.assertEqual(urls, receipt['urls'])
 
 
 if __name__ == '__main__':

@@ -10,7 +10,13 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	exit( 1 );
 }
 
-$mrn_cache_request = json_decode( getenv( 'MRN_HTML_CACHE_REQUEST' ), true );
+$mrn_cache_raw = '1' === getenv( 'MRN_HTML_CACHE_STDIN' )
+	? file_get_contents( 'php://stdin', false, null, 0, 4 * 1024 * 1024 + 1 )
+	: getenv( 'MRN_HTML_CACHE_REQUEST' );
+if ( false === $mrn_cache_raw || strlen( $mrn_cache_raw ) > 4 * 1024 * 1024 ) {
+	WP_CLI::error( 'HTML cache request exceeds the reviewed byte limit.' );
+}
+$mrn_cache_request = json_decode( $mrn_cache_raw, true );
 if ( ! is_array( $mrn_cache_request ) || untrailingslashit( home_url() ) !== ( $mrn_cache_request['url'] ?? '' ) ) {
 	WP_CLI::error( 'HTML cache request does not match WordPress home.' );
 }
