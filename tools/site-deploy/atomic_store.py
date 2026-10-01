@@ -153,7 +153,9 @@ class Store:
             if existing.get('theme_files') != files or existing.get('legacy') is not True:
                 raise ValueError('Existing legacy snapshot differs from adoption source')
         with tempfile.TemporaryDirectory(prefix='.stage-', dir=self.state) as temporary:
-            staged = Path(temporary)
+            # Keep the managed root present for Python 3.6 context cleanup.
+            staged = Path(temporary) / 'release'
+            staged.mkdir(mode=0o700)
             (staged / 'theme').mkdir()
             for name in files:
                 target = staged / 'theme' / name
@@ -194,7 +196,9 @@ class Store:
                 raise ValueError('Release ID already belongs to another artifact')
             return existing
         with tempfile.TemporaryDirectory(prefix='.stage-', dir=self.state) as temporary:
-            staged = Path(temporary)
+            # Rename the release, not the root owned by TemporaryDirectory.
+            staged = Path(temporary) / 'release'
+            staged.mkdir(mode=0o700)
             # The verifier has rejected links, traversal, duplicate members and
             # unsupported roots. Still create each file exclusively, without
             # tarfile.extract's ownership, permission or special-file handling.
