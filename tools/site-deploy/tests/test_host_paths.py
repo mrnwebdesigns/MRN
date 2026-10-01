@@ -31,3 +31,15 @@ class ProviderIdentity(unittest.TestCase):
     def test_unknown_provider_and_cloudpanel_live_remain_blocked(self):
         for provider in ['unknown','cloudpanel']:
             with self.assertRaises(ValueError): self.check(provider,'/tmp/site','/tmp/state')
+
+    def test_kinsta_requires_native_backup_and_exact_private_sibling(self):
+        plan = dict(environment='live', host_provider='kinsta', backup_provider='kinsta',
+                    url='https://example.org', root='/www/example_123/public',
+                    state_dir='/www/example_123/private-backups/mrn-site-deploy/live')
+        wordpress = dict(root=plan['root'], content=plan['root']+'/wp-content')
+        with patch.object(Path, 'resolve', lambda path: path):
+            self.assertEqual('kinsta', qualify_provider(plan, wordpress)['provider'])
+            for change in [dict(backup_provider='updraft'), dict(state_dir='/www/other/private-backups/mrn-site-deploy/live'),
+                           dict(state_dir='/www/example_123/private-backups/mrn-site-deploy/dev')]:
+                with self.assertRaises(ValueError):
+                    qualify_provider(dict(plan, **change), wordpress)

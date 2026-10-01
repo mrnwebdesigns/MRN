@@ -81,7 +81,8 @@ echo 'MRN_RESULT=' . wp_json_encode(array(
 def html_cache(plan, action):
     request = {'url': plan['url'], 'provider': plan.get('host_provider', 'cloudpanel'),
                'action': action, 'urls': plan.get('_html_scope', plan['pages'])}
-    return wp(plan['root'], (TOOLS / 'html_cache.php').read_text()[5:],
+    code = (TOOLS / 'kinsta_html_cache.php').read_text()[5:] + '\n' + (TOOLS / 'html_cache.php').read_text()[5:]
+    return wp(plan['root'], code,
               {'MRN_HTML_CACHE_REQUEST': json.dumps(request)}, skip_themes=action != 'inspect')
 
 
@@ -156,7 +157,18 @@ def public_check(plan, store, pointer):
     return receipt
 
 
-def execute(plan):
+def execute(plan, native_backup=None):
+    if plan.get('host_provider') == 'kinsta':
+        if native_backup is None:
+            raise ValueError('Native Kinsta backup identity is required')
+        native_backup.identity({'url': plan['url'], 'root': plan['root'], 'host': plan['ssh_host'],
+                                'port': plan['ssh_port'], 'user': plan['ssh_user']})
+
+    def guard(operation):
+        if plan.get('host_provider') == 'kinsta':
+            return native_backup.verify_transaction_backup(plan.get('native_backup_receipt', {}), operation)
+        return backup(plan['root'], operation)
+
     result, binding, origin = identity(plan)
     store = Store(plan['state_dir'], Path(result['content']) / 'themes' / plan['slug'], result['content'], plan['slug'],
                   protected_state_root=plan.get('_protected_state_root'))
@@ -176,7 +188,7 @@ def execute(plan):
             if before is None:
                 if not plan.get('adopt') or digest(inventory(store.public_theme)) != plan['baseline']:
                     raise ValueError('First adoption requires the exact reviewed legacy tree')
-                receipt['steps'].append({'operation': 'adopt', 'backup': backup(plan['root'], 'adopt')})
+                receipt['steps'].append({'operation': 'adopt', 'backup': guard('adopt')})
                 durable_replace(binding_path, (json.dumps(binding, sort_keys=True) + '\n').encode())
                 adopted = True
                 before = store.adopt(plan['baseline'], TOOLS / 'release-bootstrap.php')
@@ -187,19 +199,19 @@ def execute(plan):
             if plan.get('rollback_to'):
                 selected_id = check(plan['rollback_to'], r'[a-f0-9]{64}', 'rollback release')
             else:
-                receipt['steps'].append({'operation': 'stage', 'backup': backup(plan['root'], 'stage')})
+                receipt['steps'].append({'operation': 'stage', 'backup': guard('stage')})
                 installed = store.stage(plan['archive'], plan['artifact_sha256'], plan['source_sha'], plan['source_path'])
                 selected_id = installed['release_id']
-            receipt['steps'].append({'operation': 'activate', 'backup': backup(plan['root'], 'activate')})
+            receipt['steps'].append({'operation': 'activate', 'backup': guard('activate')})
             selected = store.select(selected_id, before)
             receipt['activation'] = public_check(plan, store, selected)
             verify_legacy_assets(old_assets)
             if plan.get('exercise_rollback'):
-                receipt['steps'].append({'operation': 'rollback-test', 'backup': backup(plan['root'], 'rollback')})
+                receipt['steps'].append({'operation': 'rollback-test', 'backup': guard('rollback')})
                 restored = store.select(before['release_id'], selected)
                 receipt['rollback'] = public_check(plan, store, restored)
                 verify_legacy_assets(old_assets)
-                receipt['steps'].append({'operation': 'reactivate', 'backup': backup(plan['root'], 'reactivate')})
+                receipt['steps'].append({'operation': 'reactivate', 'backup': guard('reactivate')})
                 selected = store.select(selected_id, restored)
                 receipt['reactivation'] = public_check(plan, store, selected)
                 verify_legacy_assets(old_assets)
@@ -211,7 +223,7 @@ def execute(plan):
                 before = store.pointer()
             if before is not None:
                 try:
-                    receipt['steps'].append({'operation': 'recover', 'backup': backup(plan['root'], 'recover')})
+                    receipt['steps'].append({'operation': 'recover', 'backup': guard('recover')})
                     current = store.pointer()
                     if current != before:
                         store.select(before['release_id'], current)
@@ -221,7 +233,7 @@ def execute(plan):
                     if adopted:
                         # First-adoption compatibility failure: restore the exact
                         # original public functions.php, without touching assets.
-                        receipt['steps'].append({'operation': 'unadopt', 'backup': backup(plan['root'], 'unadopt')})
+                        receipt['steps'].append({'operation': 'unadopt', 'backup': guard('unadopt')})
                         original = store.releases / before['release_id'] / 'theme/functions.php'
                         durable_replace(store.public_theme / 'functions.php', original.read_bytes(), 0o644)
                         stamp = str(int(time.time() * 1000000000))
@@ -243,6 +255,13 @@ def execute(plan):
 
 
 if __name__ == '__main__':
-    response = execute(json.load(sys.stdin))
+    request = json.load(sys.stdin)
+    native = request.pop('native', None)
+    adapter = None
+    if native:
+        from kinsta import Kinsta
+        adapter = Kinsta(native['token'], native['site_id'], native['environment_id'])
+        del native
+    response = execute(request['plan'], adapter)
     print('MRN_RESULT=' + json.dumps(response), flush=True)
     sys.exit(0 if response['status'] == 'public-verified' else 1)

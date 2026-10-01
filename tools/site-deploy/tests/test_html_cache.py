@@ -59,3 +59,17 @@ class ScopedHTMLCache(unittest.TestCase):
                     'https://example.org/wp-json/', 'https://example.org/feed.xml']:
             with self.subTest(url=url):
                 self.assertNotEqual(0, self.invoke('nexcess', urls=[url]).returncode)
+
+    def test_kinsta_uses_exact_local_html_protocol_without_global_purge(self):
+        response = self.invoke('kinsta')
+        self.assertEqual(0, response.returncode, response.stderr)
+        calls = json.loads(response.stdout.split('CALLS=')[1])
+        self.assertEqual(1, len(calls))
+        endpoint, args = calls[0]
+        self.assertEqual('https://localhost/kinsta-clear-cache/v2/immediate', endpoint)
+        self.assertEqual({'single|0': 'example.org/', 'single|1': 'example.org/page-1/'}, args['body'])
+        self.assertEqual(0, args['redirection'])
+        self.assertNotEqual(0, self.invoke('kinsta', FAIL_PURGE='1').returncode)
+        self.assertNotEqual(0, self.invoke('kinsta', urls=['https://other.org/']).returncode)
+        inspected = self.invoke('kinsta', 'inspect')
+        self.assertEqual([], json.loads(inspected.stdout.split('CALLS=')[1]))

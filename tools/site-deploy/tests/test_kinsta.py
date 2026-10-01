@@ -1,6 +1,7 @@
 import importlib.util
 from pathlib import Path
 import unittest
+import time
 from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location('kinsta', Path(__file__).parents[1] / 'kinsta.py')
@@ -28,3 +29,20 @@ class NativeBackupIdentity(unittest.TestCase):
             receipt = adapter.backup('pre-release')
             self.assertTrue(receipt['valid'])
             self.assertEqual(42, receipt['backup_id'])
+
+    def test_each_native_step_rechecks_transaction_snapshot_and_rejects_stale_or_missing(self):
+        adapter = kinsta.Kinsta('test-token', 'a'*36, 'b'*36)
+        receipt = dict(valid=True, provider='kinsta', environment_id='b'*36,
+                       scope='deployment-transaction', created_at=int(time.time()), backup_id=42, label='deployment')
+        data = {'environment': {'backups': [{'id':42,'type':'manual','note':'deployment'}]}}
+        with patch.object(adapter, 'api', return_value=data) as api:
+            self.assertEqual('activate', adapter.verify_transaction_backup(receipt, 'activate')['operation'])
+            adapter.verify_transaction_backup(receipt, 'rollback')
+            self.assertEqual(2, api.call_count)
+            with self.assertRaises(ValueError):
+                adapter.verify_transaction_backup(dict(receipt, created_at=0), 'activate')
+            with self.assertRaises(ValueError):
+                adapter.verify_transaction_backup(dict(receipt, environment_id='c'*36), 'activate')
+        with patch.object(adapter, 'api', return_value={'environment':{'backups':[]}}):
+            with self.assertRaises(RuntimeError):
+                adapter.verify_transaction_backup(receipt, 'activate')

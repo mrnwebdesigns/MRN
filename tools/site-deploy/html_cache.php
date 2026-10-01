@@ -35,6 +35,10 @@ if ( 'nexcess' === $mrn_cache_provider ) {
 	if ( ! is_callable( array( 'WpeCommon', 'http_to_varnish' ) ) ) {
 		WP_CLI::error( 'WP Engine scoped Varnish API is missing.' );
 	}
+} elseif ( 'kinsta' === $mrn_cache_provider ) {
+	if ( ! is_callable( 'mrn_deploy_kinsta_html' ) ) {
+		WP_CLI::error( 'Qualified Kinsta HTML adapter is missing.' );
+	}
 } else {
 	WP_CLI::error( 'Unsupported HTML cache provider.' );
 }
@@ -124,7 +128,10 @@ foreach ( $mrn_cache_urls as $mrn_cache_url ) {
 
 $mrn_cache_refreshed = array();
 if ( 'refresh' === $mrn_cache_action ) {
-	if ( 'wpengine' === $mrn_cache_provider ) {
+	if ( 'kinsta' === $mrn_cache_provider ) {
+		mrn_deploy_kinsta_html( $mrn_cache_urls );
+		$mrn_cache_refreshed = $mrn_cache_urls;
+	} elseif ( 'wpengine' === $mrn_cache_provider ) {
 		foreach ( array_chunk( $mrn_cache_urls, 40 ) as $mrn_cache_chunk ) {
 			$mrn_cache_paths = array_map(
 				static function ( $url ) { return preg_quote( wp_parse_url( $url, PHP_URL_PATH ), '~' ); },
