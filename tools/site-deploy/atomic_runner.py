@@ -16,11 +16,13 @@ from verify_release import verify
 TOOLS = Path(__file__).resolve().parent
 HOST_FILES = ('host_controller.py', 'atomic_store.py', 'cache_policy.py', 'deploy.py',
               'verify_release.py', 'verify_public_assets.py', 'backup.php', 'release-bootstrap.php',
-              'host_paths.py', 'html_cache.php')
+              'host_paths.py', 'html_cache.php', 'kinsta.py', 'kinsta_html_cache.php')
 
 
 def transfer_backup(target):
     label = 'mrn-tool-transfer-' + str(int(time.time()))
+    if target.native_backup:
+        return target.native_backup.backup(label)
     code = (TOOLS / 'backup.php').read_text().removeprefix('<?php')
     # Target.php normally loads the active theme. This pre-transfer backup must
     # remain available for rollback after a theme bootstrap failure.
@@ -36,7 +38,10 @@ def transfer_backup(target):
 def run(plan, c):
     # First adoption is an explicit qualification operation. Routine deployments
     # require the readiness switch plus the exact existing release pointer.
-    if c['backup_provider'] != 'updraft' or plan['environment'] not in ('dev', 'live'):
+    native = c.get('host_provider') == 'kinsta' and c['backup_provider'] == 'kinsta'
+    if native and not c.get('native_transaction_backup_approved'):
+        raise ValueError('Native transaction backup policy requires explicit owner approval')
+    if (c['backup_provider'] != 'updraft' and not native) or plan['environment'] not in ('dev', 'live'):
         raise ValueError('No qualified activation adapter for this backup provider')
     if c.get('host_provider', 'cloudpanel') == 'cloudpanel' and (plan['environment'] != 'dev' or not c['url'].endswith('.mrndev.io')):
         raise ValueError('Live activation remains disabled for the CloudPanel Dev adapter')
@@ -71,7 +76,7 @@ def run(plan, c):
         transfers.append('python3 -c ' + shlex.quote(script))
     target.shell('umask 077\n' + '\n'.join(transfers) + '\n')
     remote_plan = {**plan, **{k: c[k] for k in ('url', 'root', 'template', 'state_dir', 'backup_provider')},
-                   'host_provider': c.get('host_provider', 'cloudpanel'), 'ssh_host': c['host'], 'ssh_user': c['user']}
+                   'host_provider': c.get('host_provider', 'cloudpanel'), 'ssh_host': c['host'], 'ssh_user': c['user'], 'ssh_port': c['port']}
     if not plan.get('rollback_to'):
         # No shell interpolation of payload or credentials. Host key checking is
         # inherited from the verified site-owner Target connection.
@@ -80,11 +85,12 @@ def run(plan, c):
         target.shell('umask 077\nbase64 -d > ' + shlex.quote(remote_archive) +
                      " <<'MRN_RELEASE_PAYLOAD'\n" + encoded_archive + '\nMRN_RELEASE_PAYLOAD\n')
         remote_plan['archive'] = remote_archive
-    encoded = base64.b64encode(json.dumps(remote_plan).encode()).decode()
-    launch = 'import base64,subprocess; p=base64.b64decode(' + repr(encoded) + '); '
-    launch += 'r=subprocess.run(["python3",' + repr(job + '/host_controller.py') + '],input=p); raise SystemExit(r.returncode)'
-    process = subprocess.run(['ssh', *target.options, target.login, 'bash -se'],
-                             input='python3 -c ' + shlex.quote(launch) + '\n', capture_output=True, text=True)
+    envelope = {'plan': remote_plan}
+    if native:
+        remote_plan['native_backup_receipt'] = backup
+        envelope['native'] = {'token': target.native_backup.token, 'site_id': target.native_backup.site_id,
+                              'environment_id': target.native_backup.environment_id}
+    process = target.controller(job + '/host_controller.py', envelope)
     receipts = [json.loads(line[11:]) for line in process.stdout.splitlines() if line.startswith('MRN_RESULT=')]
     if len(receipts) != 1:
         raise RuntimeError('Host controller failed without a receipt; inspect the retained private job ' + job)

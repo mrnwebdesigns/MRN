@@ -14,7 +14,8 @@ def qualify_provider(plan, wordpress):
     root = Path(plan['root']).resolve()
     content = Path(wordpress['content']).resolve()
     state = Path(plan['state_dir']).resolve()
-    if environment not in ('dev', 'live') or plan.get('backup_provider') != 'updraft':
+    expected_backup = 'kinsta' if provider == 'kinsta' else 'updraft'
+    if environment not in ('dev', 'live') or plan.get('backup_provider') != expected_backup:
         raise ValueError('No qualified activation adapter for this environment/backup provider')
     if provider == 'cloudpanel':
         if environment != 'dev' or not host.endswith('.mrndev.io'):
@@ -32,6 +33,12 @@ def qualify_provider(plan, wordpress):
     elif provider == 'nexcess':
         if not plan.get('ssh_host', '').endswith('.nxcli.io'):
             raise ValueError('Nexcess adapter requires its verified SSH endpoint')
+    elif provider == 'kinsta':
+        # The native API additionally verifies exact site/environment/root/SSH
+        # identity. Only its private sibling of the public web root is allowed.
+        if (root.parent.parent != Path('/www') or root.name != 'public'
+                or state != root.parent / 'private-backups/mrn-site-deploy' / environment):
+            raise ValueError('Kinsta public/private storage identity does not match')
     else:
         raise ValueError('Unknown host activation adapter')
     if str(root) != wordpress['root'] or content != root / 'wp-content':

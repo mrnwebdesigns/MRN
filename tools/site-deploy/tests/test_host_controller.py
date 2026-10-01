@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import sys
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import os
 import subprocess
 import tempfile
@@ -94,6 +94,29 @@ class HostControllerContract(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Live remains disabled'):
                 host.identity({**self.plan, 'environment': 'live'})
             wp.assert_not_called()
+
+    def test_native_snapshot_is_reverified_before_every_step_without_updraft(self):
+        adapter = Mock()
+        adapter.verify_transaction_backup.return_value = {'valid':True, 'provider':'kinsta'}
+        plan = dict(self.plan, host_provider='kinsta', backup_provider='kinsta',
+                    ssh_host='host', ssh_user='owner', ssh_port='22', native_backup_receipt={'backup_id':42})
+        with patch.object(host, 'backup') as updraft, patch.object(host, 'public_check', return_value={}):
+            receipt = host.execute(plan, adapter)
+        self.assertEqual('public-verified', receipt['status'])
+        self.assertEqual(['adopt','stage','activate','rollback','reactivate'],
+                         [call.args[1] for call in adapter.verify_transaction_backup.call_args_list])
+        updraft.assert_not_called()
+        self.assertNotIn('token', json.dumps(receipt))
+
+    def test_missing_native_backup_blocks_adoption(self):
+        adapter = Mock()
+        adapter.verify_transaction_backup.side_effect = ValueError('snapshot missing')
+        plan = dict(self.plan, host_provider='kinsta', backup_provider='kinsta',
+                    ssh_host='host', ssh_user='owner', ssh_port='22')
+        receipt = host.execute(plan, adapter)
+        self.assertEqual('failed', receipt['status'])
+        self.assertIsNone(self.fixture.store.pointer())
+        self.assertEqual(self.fixture.before, fixture.inventory(self.fixture.theme))
 
     def test_recovery_failure_receipt_preserves_location_without_secret_text(self):
         try:

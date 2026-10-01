@@ -70,6 +70,7 @@ jobs:
       DEPLOY_BACKUP_PROVIDER: ${{ vars.DEPLOY_BACKUP_PROVIDER }}
       DEPLOY_KINSTA_SITE_ID: ${{ vars.DEPLOY_KINSTA_SITE_ID }}
       DEPLOY_KINSTA_ENVIRONMENT_ID: ${{ vars.DEPLOY_KINSTA_ENVIRONMENT_ID }}
+      DEPLOY_KINSTA_TRANSACTION_BACKUP_APPROVED: ${{ vars.DEPLOY_KINSTA_TRANSACTION_BACKUP_APPROVED }}
       DEPLOY_TRANSPORT: ${{ vars.DEPLOY_TRANSPORT }}
       DEPLOY_BASELINE_TREE: ${{ vars.DEPLOY_BASELINE_TREE }}
       DEPLOY_READY: ${{ vars.DEPLOY_READY }}
@@ -250,6 +251,7 @@ jobs:
       - name: Restore the prior release if browser acceptance fails
         if: failure() && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.browser.outcome == 'failure'
         env:
+          DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
           DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
           DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
         run: |
@@ -270,6 +272,7 @@ jobs:
       - name: Restore the prior release if Live runtime acceptance fails
         if: failure() && inputs.target == 'live' && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.runtime.outcome == 'failure'
         env:
+          DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
           DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
           DEPLOY_KNOWN_HOSTS_FILE: ${{ runner.temp }}/site-deploy.known_hosts
         run: |

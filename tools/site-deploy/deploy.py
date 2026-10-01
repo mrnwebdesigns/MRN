@@ -96,8 +96,11 @@ def config(environ):
     c['baseline'] = environ.get('DEPLOY_BASELINE_TREE', '')
     c['ready'] = environ.get('DEPLOY_READY') == '1'
     c['host_provider'] = environ.get('DEPLOY_HOST_PROVIDER', 'cloudpanel') or 'cloudpanel'
-    if c['host_provider'] not in ('cloudpanel', 'nexcess', 'siteground', 'wpengine'):
+    if c['host_provider'] not in ('cloudpanel', 'nexcess', 'siteground', 'wpengine', 'kinsta'):
         raise ValueError('Unknown host provider')
+    if c['host_provider'] == 'kinsta' and c['backup_provider'] != 'kinsta':
+        raise ValueError('Kinsta activation requires its native backup provider')
+    c['native_transaction_backup_approved'] = environ.get('DEPLOY_KINSTA_TRANSACTION_BACKUP_APPROVED') == '1'
     return c
 
 
@@ -126,6 +129,18 @@ class Target:
             return run(['sshpass', '-e', 'ssh', *self.options, self.login, 'bash -se'], input=script,
                        text=True, env=dict(os.environ, SSHPASS=self.password))
         return run(['ssh', *self.options, self.login, 'bash -se'], input=script, text=True)
+
+    def controller(self, path, payload):
+        """Send a private controller request on stdin, never in argv or files."""
+        check(path, r'/[A-Za-z0-9_./-]+', 'controller path')
+        args = ['ssh', *self.options, self.login, 'python3 ' + shlex.quote(path)]
+        env = dict(os.environ)
+        if self.password:
+            args = ['sshpass', '-e', *args]
+            env['SSHPASS'] = self.password
+        # A failed controller may still return a recovery receipt. The caller
+        # validates that receipt before interpreting the process exit status.
+        return subprocess.run(args, input=json.dumps(payload), capture_output=True, text=True, env=env)
 
     def php(self, code, skip_themes=False):
         options = ['--skip-themes'] if skip_themes else []
@@ -338,7 +353,8 @@ def deploy(args, c):
             return
         if not c['ready']:
             raise ValueError('DEPLOY_READY is not enabled after target qualification')
-        if c.get('backup_provider') != 'updraft' or (args.environment == 'live' and c.get('host_provider', 'cloudpanel') == 'cloudpanel'):
+        native = c.get('host_provider') == 'kinsta' and c.get('backup_provider') == 'kinsta'
+        if (c.get('backup_provider') != 'updraft' and not native) or (args.environment == 'live' and c.get('host_provider', 'cloudpanel') == 'cloudpanel'):
             raise ValueError('Runtime writes disabled for Live: its provider adapter is not qualified')
         if not before['state'] or before['state'].get('schema') != 1:
             raise ValueError('Runtime writes disabled: first adoption requires separate host qualification')

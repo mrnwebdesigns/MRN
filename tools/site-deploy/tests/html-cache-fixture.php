@@ -18,6 +18,8 @@ namespace {
  function wp_parse_url($u,$part=-1) { return parse_url($u,$part); }
  function wp_json_encode($v) { return json_encode($v); }
  function is_wp_error($v) { return false; }
+ function wp_remote_post($url,$args) { $GLOBALS['calls'][]=[$url,$args]; return ['code'=>getenv('FAIL_PURGE') === '1' ? 503 : 200]; }
+ function wp_remote_retrieve_response_code($response) { return $response['code']; }
  function get_option($key) { return $key === 'siteground_optimizer_enable_cache' ? '1' : getenv('FILE_CACHE') === '1'; }
  function get_post_types($a,$b) { return ['page'=>'page','post'=>'post','attachment'=>'attachment']; }
  function get_posts($a) { return [1,2]; }
@@ -26,6 +28,7 @@ namespace {
  function get_taxonomies($a) { return ['category']; }
  function get_terms($a) { return ['topic']; }
  function get_term_link($t) { return home_url('/category/'.$t.'/'); }
+ require dirname(__DIR__).'/kinsta_html_cache.php';
  require dirname(__DIR__).'/html_cache.php';
  echo 'CALLS='.json_encode($GLOBALS['calls'])."\n";
 }
