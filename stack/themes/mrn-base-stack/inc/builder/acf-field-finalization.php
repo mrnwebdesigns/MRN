@@ -11,7 +11,7 @@
  * @param mixed $field Field or layout field definition.
  * @return mixed
  */
-function mrn_base_stack_normalize_select_defaults_in_field_tree( $field ) {
+function mrn_base_stack_normalize_acf_defaults_in_field_tree( $field ) {
 	if ( ! is_array( $field ) ) {
 		return $field;
 	}
@@ -27,6 +27,25 @@ function mrn_base_stack_normalize_select_defaults_in_field_tree( $field ) {
 	}
 
 	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	$type_defaults = array(
+		'text'   => array(
+			'maxlength' => '',
+		),
+		'number' => array(
+			'min' => '',
+			'max' => '',
+		),
+	);
+
+	if ( isset( $type_defaults[ $field_type ] ) ) {
+		foreach ( $type_defaults[ $field_type ] as $key => $default ) {
+			// Explicit limits, including zero, are authored behavior and must win.
+			if ( ! array_key_exists( $key, $field ) ) {
+				$field[ $key ] = $default;
+			}
+		}
+	}
+
 	if ( 'select' === $field_type ) {
 		if ( ! array_key_exists( 'multiple', $field ) ) {
 			$field['multiple'] = 0;
@@ -40,13 +59,13 @@ function mrn_base_stack_normalize_select_defaults_in_field_tree( $field ) {
 
 	if ( isset( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) ) {
 		foreach ( $field['sub_fields'] as $index => $sub_field ) {
-			$field['sub_fields'][ $index ] = mrn_base_stack_normalize_select_defaults_in_field_tree( $sub_field );
+			$field['sub_fields'][ $index ] = mrn_base_stack_normalize_acf_defaults_in_field_tree( $sub_field );
 		}
 	}
 
 	if ( isset( $field['fields'] ) && is_array( $field['fields'] ) ) {
 		foreach ( $field['fields'] as $index => $child_field ) {
-			$field['fields'][ $index ] = mrn_base_stack_normalize_select_defaults_in_field_tree( $child_field );
+			$field['fields'][ $index ] = mrn_base_stack_normalize_acf_defaults_in_field_tree( $child_field );
 		}
 	}
 
@@ -58,7 +77,7 @@ function mrn_base_stack_normalize_select_defaults_in_field_tree( $field ) {
 
 			if ( isset( $layout['sub_fields'] ) && is_array( $layout['sub_fields'] ) ) {
 				foreach ( $layout['sub_fields'] as $sub_index => $sub_field ) {
-					$layout['sub_fields'][ $sub_index ] = mrn_base_stack_normalize_select_defaults_in_field_tree( $sub_field );
+					$layout['sub_fields'][ $sub_index ] = mrn_base_stack_normalize_acf_defaults_in_field_tree( $sub_field );
 				}
 			}
 
@@ -68,7 +87,17 @@ function mrn_base_stack_normalize_select_defaults_in_field_tree( $field ) {
 
 	return $field;
 }
-add_filter( 'acf/validate_field', 'mrn_base_stack_normalize_select_defaults_in_field_tree', 20 );
+add_filter( 'acf/validate_field', 'mrn_base_stack_normalize_acf_defaults_in_field_tree', 20 );
+
+/**
+ * Preserve the original select-default helper as a callable compatibility shim.
+ *
+ * @param mixed $field Field or layout field definition.
+ * @return mixed
+ */
+function mrn_base_stack_normalize_select_defaults_in_field_tree( $field ) {
+	return mrn_base_stack_normalize_acf_defaults_in_field_tree( $field );
+}
 
 /**
  * Ensure an individual select field includes the ACF runtime defaults.
@@ -81,7 +110,7 @@ function mrn_base_stack_normalize_select_field_defaults( $field ) {
 		return $field;
 	}
 
-	return mrn_base_stack_normalize_select_defaults_in_field_tree( $field );
+	return mrn_base_stack_normalize_acf_defaults_in_field_tree( $field );
 }
 add_filter( 'acf/validate_field/type=select', 'mrn_base_stack_normalize_select_field_defaults', 20 );
 add_filter( 'acf/load_field/type=select', 'mrn_base_stack_normalize_select_field_defaults', 20 );
@@ -102,7 +131,7 @@ function mrn_base_stack_finalize_acf_builder_field_tree( $field ) {
 		return $field;
 	}
 
-	return mrn_base_stack_normalize_select_defaults_in_field_tree( $field );
+	return mrn_base_stack_normalize_acf_defaults_in_field_tree( $field );
 }
 
 /**
@@ -121,7 +150,7 @@ function mrn_base_stack_finalize_cloned_acf_layouts( array $layouts ) {
 			continue;
 		}
 
-		$layouts[ $layout_key ] = mrn_base_stack_normalize_select_defaults_in_field_tree( $layout );
+		$layouts[ $layout_key ] = mrn_base_stack_normalize_acf_defaults_in_field_tree( $layout );
 	}
 
 	return $layouts;

@@ -1,5 +1,16 @@
 # Stack Changelog
 
+## 2026.10.01-acf-field-defaults
+
+- Parent theme `1.5.2` completes late-injected nested ACF text and number
+  definitions with the validator defaults ACF normally supplies during field
+  initialization. Explicit limits, including zero, remain unchanged.
+- Adds a read-only runtime regression against the actual nested Hero and Grid
+  fields that produced the Gloves editor warnings; the test invokes ACF's real
+  text and number validators without saving content.
+- This source change is not deployment evidence. Gloves Dev and production
+  remain separately gated by qualification, backup, rollout, and readback.
+
 ## 2026.10.01-event-content-links
 
 - Parent theme `1.5.1` makes Event Reference Content images, titles and
