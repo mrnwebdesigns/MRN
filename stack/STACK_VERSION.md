@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.10.01-event-content-links`
+- Stack release: `2026.10.01-acf-field-defaults`
 - Release date: `2026-10-01`
-- Status: `release candidate for guarded per-site Fleet rollout; no site deployment performed`
+- Status: `release candidate; exact parent-theme rollout authorized for Gloves Dev and production only`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.5.1`
+  - `mrn-base-stack` `1.5.2`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -57,6 +57,13 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- Parent theme `1.5.2` supplies ACF's normal blank validator defaults to
+  late-injected nested text and number fields without replacing explicit
+  limits, including zero. The release adds a read-only runtime regression for
+  the actual Gloves Hero and Grid field contracts. The authorized Gloves
+  rollout is parent-theme-only; unrelated plugins, MU components, content and
+  the active child theme are excluded. See
+  `docs/releases/2026.10.01-acf-field-defaults.md`.
 - Parent theme `1.5.1` restores saved Event Image Links in Content Only
   Reference Content rows, retaining per-row on/off and new-tab preferences.
   This cumulative candidate also seals the previously merged Config Helper
