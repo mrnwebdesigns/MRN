@@ -63,7 +63,7 @@ function mrn_base_stack_register_event_post_type() {
 			),
 			'menu_position'       => 11,
 			'menu_icon'           => 'dashicons-calendar-alt',
-			'supports'            => array( 'title', 'editor', 'excerpt', 'revisions' ),
+			'supports'            => array( 'title', 'editor', 'excerpt', 'revisions', 'mrn-content-list-links' ),
 			'taxonomies'          => array( 'category', 'post_tag' ),
 			'publicly_queryable'  => true,
 			'show_in_nav_menus'   => true,
@@ -75,6 +75,70 @@ function mrn_base_stack_register_event_post_type() {
 	);
 }
 add_action( 'init', 'mrn_base_stack_register_event_post_type' );
+
+/**
+ * Resolve the saved destination used by Event Reference Content links.
+ *
+ * @param int $post_id Event ID.
+ * @return array<string, string>
+ */
+function mrn_base_stack_get_event_content_list_link( $post_id ) {
+	$link = function_exists( 'get_field' ) ? get_field( 'event_image_link', $post_id, false ) : get_post_meta( $post_id, 'event_image_link', true );
+
+	if ( ! is_array( $link ) || ! isset( $link['url'] ) || ! is_string( $link['url'] ) ) {
+		return array();
+	}
+
+	$url = esc_url_raw( trim( $link['url'] ) );
+	if ( '' === $url ) {
+		return array();
+	}
+
+	return array(
+		'url'    => $url,
+		'target' => '_blank' === ( $link['target'] ?? '' ) ? '_blank' : '',
+	);
+}
+
+/**
+ * Use an Event's saved link without requiring a public event page.
+ *
+ * @param string  $permalink Resolved public permalink, or empty for Content Only.
+ * @param WP_Post $item_post Listed post.
+ * @return string
+ */
+function mrn_base_stack_filter_event_content_list_permalink( $permalink, $item_post ) {
+	if ( ! ( $item_post instanceof WP_Post ) || 'event' !== $item_post->post_type ) {
+		return $permalink;
+	}
+
+	$link = mrn_base_stack_get_event_content_list_link( $item_post->ID );
+
+	return $link['url'] ?? $permalink;
+}
+add_filter( 'mrn_base_stack_content_list_item_permalink', 'mrn_base_stack_filter_event_content_list_permalink', 10, 2 );
+
+/**
+ * Preserve the Event link's new-tab preference safely.
+ *
+ * @param array<string, string> $attributes Link attributes.
+ * @param WP_Post              $item_post Listed post.
+ * @return array<string, string>
+ */
+function mrn_base_stack_filter_event_content_list_link_attributes( $attributes, $item_post ) {
+	if ( ! is_array( $attributes ) || ! ( $item_post instanceof WP_Post ) || 'event' !== $item_post->post_type ) {
+		return $attributes;
+	}
+
+	$link = mrn_base_stack_get_event_content_list_link( $item_post->ID );
+	if ( '_blank' === ( $link['target'] ?? '' ) ) {
+		$attributes['target'] = '_blank';
+		$attributes['rel']    = trim( ( $attributes['rel'] ?? '' ) . ' noopener' );
+	}
+
+	return $attributes;
+}
+add_filter( 'mrn_base_stack_content_list_item_link_attributes', 'mrn_base_stack_filter_event_content_list_link_attributes', 10, 2 );
 
 /**
  * Register event-specific ACF fields.
@@ -143,7 +207,7 @@ function mrn_base_stack_register_event_field_group() {
 					'aria-label'    => '',
 					'type'          => 'link',
 					'return_format' => 'array',
-					'instructions'  => 'Optional destination used when the event image or banner should be clickable.',
+					'instructions'  => 'Optional destination for event images and titles in Reference Content rows with Enable Item Links on. Works in Content Only mode; without a link, Content Only events remain unlinked.',
 					'wrapper'       => array(
 						'width' => '50',
 					),

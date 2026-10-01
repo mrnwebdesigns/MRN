@@ -1,0 +1,45 @@
+PASS: Fixture belongs to this local runtime
+PASS: Recognized fixture action
+PASS: Resources and public posts expose registered Categories and Tags
+PASS: job_posting taxonomy is eligible: category
+PASS: job_posting taxonomy is eligible: post_tag
+PASS: case_study taxonomy is eligible: category
+PASS: case_study taxonomy is eligible: post_tag
+PASS: event taxonomy is eligible: category
+PASS: event taxonomy is eligible: post_tag
+PASS: gallery taxonomy is eligible: gallery_category
+PASS: gallery taxonomy is eligible: gallery_tag
+PASS: post taxonomy is eligible: category
+PASS: post taxonomy is eligible: post_tag
+PASS: press_release taxonomy is eligible: category
+PASS: press_release taxonomy is eligible: post_tag
+PASS: resource taxonomy is eligible: category
+PASS: resource taxonomy is eligible: post_tag
+PASS: service taxonomy is eligible: category
+PASS: service taxonomy is eligible: post_tag
+PASS: No-taxonomy and hidden-taxonomy sources follow editor visibility rules
+PASS: Editor and renderer share Resource/public/Content Only destination eligibility
+PASS: Resources retain Content Only registration and no public profiles/archives
+PASS: Saved field names, term slugs and matching mode survive ACF reload
+PASS: Cloned link field key remains stable: after_content_
+PASS: Cloned saved link-off and taxonomy survive reload: after_content_
+PASS: Cloned link field key remains stable: field_mrn_tabbed_panel_
+PASS: Cloned saved link-off and taxonomy survive reload: field_mrn_tabbed_panel_
+PASS: Actual filtered WP_Query matches only expected resources for any
+PASS: Actual filtered WP_Query matches only expected resources for all
+PASS: Enabled Resource uses existing PDF destination
+PASS: Explicit false/zero link preference produces no link
+PASS: Explicit false/zero link preference produces no link
+PASS: Explicit false/zero link preference produces no link
+PASS: Missing Resource file produces no profile fallback
+PASS: Resource provider never returns a missing-file profile fallback
+PASS: Content Only location remains unlinked
+PASS: Public post retains its permalink
+PASS: Per-item disabled Team Member profile stays unlinked even for a public source
+PASS: PDF new-tab attributes are preserved
+PASS: Non-PDF Resource retains existing same-tab behavior
+PASS: Real row renderer excludes nonmatching content
+PASS: Real row renderer respects links on
+PASS: Real row renderer excludes nonmatching content
+PASS: Real row renderer respects links off
+Reference Content runtime regression checks passed.
