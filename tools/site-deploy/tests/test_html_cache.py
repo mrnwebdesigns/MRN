@@ -8,7 +8,7 @@ import unittest
 FIXTURE = Path(__file__).with_name('html-cache-fixture.php')
 
 class ScopedHTMLCache(unittest.TestCase):
-    def invoke(self, provider, action='refresh', urls=None, **extra):
+    def invoke(self, provider, action='refresh', urls=None, stdin=False, **extra):
         with tempfile.TemporaryDirectory() as directory:
             for host in ('example.org', 'other.org'):
                 cached = Path(directory) / 'cache/cache-enabler' / host / 'news/page/2/index.html'
@@ -16,8 +16,11 @@ class ScopedHTMLCache(unittest.TestCase):
                 cached.write_text('<html>old theme</html>')
             request = dict(url='https://example.org', provider=provider, action=action,
                            urls=urls if urls is not None else ['https://example.org/', 'https://example.org/page-1/'])
+            encoded = json.dumps(request)
+            transport = {'MRN_HTML_CACHE_STDIN':'1'} if stdin else {'MRN_HTML_CACHE_REQUEST':encoded}
             response = subprocess.run(['php', str(FIXTURE)], capture_output=True, text=True,
-                env=dict(os.environ, FIXTURE_DIR=directory, MRN_HTML_CACHE_REQUEST=json.dumps(request), **extra))
+                input=encoded if stdin else None,
+                env=dict(os.environ, FIXTURE_DIR=directory, **transport, **extra))
             return response
 
     def test_nexcess_uses_only_exact_page_api(self):
@@ -25,6 +28,14 @@ class ScopedHTMLCache(unittest.TestCase):
         self.assertEqual(0, response.returncode, response.stderr)
         calls = json.loads(response.stdout.split('CALLS=')[1])
         self.assertEqual([['https://example.org/', 'page'], ['https://example.org/page-1/', 'page']], calls)
+
+    def test_large_gloves_scope_uses_stdin_and_preserves_every_exact_url(self):
+        urls = ['https://example.org/product/' + ('large-glove-name-' * 4) + str(n) + '/' for n in range(2180)]
+        self.assertGreater(len(json.dumps(urls)), 131072)
+        response = self.invoke('nexcess', urls=urls, stdin=True)
+        self.assertEqual(0, response.returncode, response.stderr)
+        calls = json.loads(response.stdout.split('CALLS=')[1])
+        self.assertEqual([[url, 'page'] for url in urls], calls)
 
     def test_inventory_includes_cached_pagination_only_for_selected_host(self):
         response = self.invoke('nexcess', 'inspect')
