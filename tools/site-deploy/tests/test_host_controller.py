@@ -92,6 +92,21 @@ class HostControllerContract(unittest.TestCase):
                 host.identity({**self.plan, 'environment': 'live'})
             wp.assert_not_called()
 
+    def test_recovery_failure_receipt_preserves_location_without_secret_text(self):
+        try:
+            try:
+                raise PermissionError(13, 'private-token-do-not-log', '/private/site/current.json')
+            except PermissionError:
+                raise RuntimeError('another-private-token')
+        except RuntimeError as error:
+            receipt = host.failure_receipt(error)
+        self.assertEqual('requires-inspection', receipt['status'])
+        self.assertEqual(['RuntimeError','PermissionError'], [row['type'] for row in receipt['diagnostics']])
+        self.assertEqual(13, receipt['diagnostics'][1]['errno'])
+        self.assertEqual('/private/site/current.json', receipt['diagnostics'][1]['path'])
+        self.assertNotIn('private-token', json.dumps(receipt))
+        self.assertTrue(receipt['diagnostics'][0]['frames'])
+
 
 if __name__ == '__main__':
     unittest.main()
