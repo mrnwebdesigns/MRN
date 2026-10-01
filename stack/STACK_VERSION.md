@@ -3,7 +3,7 @@
 ## Current Release
 - Stack release: `2026.10.01-acf-field-defaults`
 - Release date: `2026-10-01`
-- Status: `release candidate; exact parent-theme rollout authorized for Gloves Dev and production only`
+- Status: `released to Gloves Dev and production as an exact parent-theme-only overlay; ACF runtime repair verified, full-site Stack lock unchanged`
 
 ## Included MRN-Owned Components
 - Theme:
@@ -60,9 +60,13 @@
 - Parent theme `1.5.2` supplies ACF's normal blank validator defaults to
   late-injected nested text and number fields without replacing explicit
   limits, including zero. The release adds a read-only runtime regression for
-  the actual Gloves Hero and Grid field contracts. The authorized Gloves
-  rollout is parent-theme-only; unrelated plugins, MU components, content and
-  the active child theme are excluded. See
+  the actual Gloves Hero and Grid field contracts. The exact parent was
+  deployed and verified on Gloves Dev and production after separate remote
+  database backups. The authorized Gloves rollout is parent-theme-only;
+  unrelated plugins, MU components, content and the active child theme are
+  excluded. The sites' full-Stack locks were not advanced, so Fleet correctly
+  continues to report this bounded parent overlay until a later full release
+  reconciles it. See
   `docs/releases/2026.10.01-acf-field-defaults.md`.
 - Parent theme `1.5.1` restores saved Event Image Links in Content Only
   Reference Content rows, retaining per-row on/off and new-tab preferences.
