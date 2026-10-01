@@ -13,6 +13,7 @@ import re
 import subprocess
 import sys
 import time
+import traceback
 from urllib.parse import urlsplit, urljoin
 
 from atomic_store import Store, durable_replace, inventory
@@ -254,14 +255,40 @@ def execute(plan, native_backup=None):
     return receipt
 
 
+def failure_receipt(error):
+    """Keep diagnostic evidence when recovery itself fails; never echo a plan.
+
+    Exception messages, source lines and locals can contain credentials. Retain
+    only exception classes, errno, source locations and safe filesystem paths.
+    The unknown outcome still requires inspection; it never permits a retry.
+    """
+    failures, seen = [], set()
+    while error is not None and id(error) not in seen and len(failures) < 8:
+        seen.add(id(error))
+        row = {'type': type(error).__name__, 'frames': [
+            {'file': Path(frame.filename).name, 'line': frame.lineno, 'function': frame.name}
+            for frame in traceback.extract_tb(error.__traceback__)]}
+        if isinstance(error, OSError):
+            row['errno'] = error.errno
+            filename = getattr(error, 'filename', None)
+            if isinstance(filename, str) and re.fullmatch(r'/[A-Za-z0-9_./-]+', filename):
+                row['path'] = filename
+        failures.append(row)
+        error = error.__cause__ or error.__context__
+    return {'schema': 1, 'status': 'requires-inspection', 'diagnostics': failures}
+
+
 if __name__ == '__main__':
-    request = json.load(sys.stdin)
-    native = request.pop('native', None)
-    adapter = None
-    if native:
-        from kinsta import Kinsta
-        adapter = Kinsta(native['token'], native['site_id'], native['environment_id'])
-        del native
-    response = execute(request['plan'], adapter)
+    try:
+        request = json.load(sys.stdin)
+        native = request.pop('native', None)
+        adapter = None
+        if native:
+            from kinsta import Kinsta
+            adapter = Kinsta(native['token'], native['site_id'], native['environment_id'])
+            del native
+        response = execute(request['plan'], adapter)
+    except Exception as error:
+        response = failure_receipt(error)
     print('MRN_RESULT=' + json.dumps(response), flush=True)
     sys.exit(0 if response['status'] == 'public-verified' else 1)
