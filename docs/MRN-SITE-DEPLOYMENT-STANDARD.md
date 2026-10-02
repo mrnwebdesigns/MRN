@@ -44,15 +44,22 @@ preview. Record its owner, branch, SHA, and agreed restore baseline. Serializati
 prevents overlapping writes; it does not reserve a testing window. Use separate
 preview environments for simultaneous testing.
 
-Participating repositories use `push: branches: [main]` and `workflow_dispatch`
-in a thin wrapper calling the shared `site-deploy.yml`. A main push selects
-`github.sha` without resolving a newer branch tip: blocking source QA of that
-commit -> immutable build -> verified artifact/preflight -> provider-appropriate
-backup -> atomic Dev activation -> public/browser/REST verification. Failed,
-skipped or cancelled source QA cannot reach the build or deployment.
+Participating repositories install two thin workflows. `site-push.yml` emits a
+credential-free **MRN source push** signal for the configured Dev branch (`main`
+by default). `site-deploy.yml` listens for completion through `workflow_run` and
+always executes the trusted wrapper on default `main`. The shared controller
+validates the GitHub event, same repository, signal workflow identity, configured
+branch and activation cutoff. It uses the signal's immutable `head_sha`, never
+the downstream workflow's `github.sha`. Signal artifacts are never consumed.
+
+Blocking source QA of that exact commit -> immutable build -> verified
+artifact/preflight -> provider-appropriate backup -> atomic Dev activation ->
+public/browser/REST verification. Failed, skipped or cancelled source QA cannot
+reach the build or deployment. The signal is notification, not QA acceptance.
 PRs and arbitrary branch pushes never deploy. Live and Both remain manual.
 Manual Dev still resolves a selected same-repository `source_branch` once and
 uses that exact commit throughout the run. Read-only preflight remains available.
+Existing direct-main-push consumers retain their supported contract until migrated.
 
 Manual selection is the production intent gate; configure additional GitHub
 environment reviewers where the account plan supports them. Never assume a
@@ -122,27 +129,47 @@ older commits. Migrate each approved site separately:
 1. Confirm its current Git source, active Dev preview, qualified target, backup
    route and `DEPLOY_READY=1`. Reconcile server-only changes first. Check pending
    runs and retain all previous receipts, private releases and asset generations.
-2. Select a reviewed shared MRN commit containing `site-deploy.yml`,
-   `site-source-qa.yml` and the ordering-aware controller. Render
-   `tools/site-deploy/site-deploy.yml.template` using that same 40-character SHA
-   for both `uses` and `tooling_ref`, plus the site's existing source path/slug.
-3. Replace the existing wrapper at its existing workflow path. Keep provider
-   configuration and credential identities in their existing `dev`/`live`
-   environments. Preserve any explicit secret-name mappings. The repository QA
-   Engine token must be readable by the source QA job, before environment access.
-   Keep PR source checks as applicable; they do not trigger deployment. Retire
-   duplicate deployment triggers; never reinstate the old rsync uploader.
-4. For a protected Phase 2 Dev preview, set `dev_main_enabled: false` in the
-   shared workflow call. Main pushes become a no-op, manual Dev-from-main and
-   Both are blocked, and manual feature-branch Dev/approved main Live remain
-   available. Remove this protection only at its separately approved launch.
-5. Review and test the wrapper PR. Its merge/push to main is the first automatic
-   Dev deployment and requires explicit pilot/adoption authorization plus the
-   verified backup gate. It does not enable Live or configure a missing target.
-6. Verify that a push alone passes source QA and build, preserves the same source
-   SHA/artifact checksum in the activation receipt, verifies backups, serves the
-   released CSS/JS URLs and matching bytes, renders correctly, and passes REST
-   health. Record broader runtime findings separately under the existing Dev policy.
+2. Temporarily remove the repository variable `MRN_AUTO_DEV_AFTER`. New signal
+   consumers are unarmed when it is absent. Do not change `DEPLOY_READY`, secrets,
+   provider identities or the installed site's ordering record.
+3. Select a reviewed shared MRN commit containing this signal integration. Render
+   `tools/site-deploy/site-deploy.yml.template` with that same 40-character SHA
+   for both `uses` and `tooling_ref`, plus the existing source path/stylesheet.
+   Install it at the **existing** `site-deploy.yml` path. Add
+   `tools/site-deploy/site-push.yml.template` as `.github/workflows/site-push.yml`.
+   Preserve explicit secret-name mappings and separate PR source checks. Remove
+   duplicate deployment triggers; never reinstate the retired rsync uploader.
+4. For an active Phase 2 preview, put its exact branch in the signal's `branches`
+   list and the trusted wrapper's `auto_dev_branch`; set `dev_main_enabled: false`.
+   Install the signal file on that branch too. Main pushes will not replace Dev;
+   manual Dev-from-main and Both remain blocked. Manual feature Dev and approved
+   main Live remain available. Do not merge or publish the phase as part of setup.
+5. Review/test/merge the configuration changes while unarmed. Verify every setup
+   run skipped source QA, build and deployment. After setup is merged on every
+   applicable branch, set `MRN_AUTO_DEV_AFTER` to the current UTC timestamp in
+   `YYYY-MM-DDTHH:MM:SSZ` format. Only signals originally created **after** that
+   time qualify. Delayed setup callbacks and reruns keep their original creation
+   time and cannot release the installation snapshot. Removing the variable
+   pauses future automatic requests; it does not cancel an already-started job.
+   Coordinate pending jobs before maintenance. Set this only for qualified Dev.
+6. A future source push is the first automatic deployment. When authorized,
+   verify exact QA/source/artifact identity, verified backup, public CSS/JS URLs
+   and checksums, browser rendering and REST health. Setup-only work must report
+   that runtime verification is deferred; never claim installation is a new
+   end-to-end deployment test. Unqualified sites may have wrappers prepared with
+   the variable unset and `DEPLOY_READY=0`; they still need onboarding.
+
+The repository default branch must remain `main`. Both workflows retain fixed
+names/paths. A Phase 2 branch supplies code, not privileged deployment logic.
+Use ordinary Git pushes for Dev and the standard GitHub CLI `gh workflow run`
+for explicit Dev/Live/Both requests; see the short guide. The CLI needs an
+authorized GitHub account with repository write/workflow access. A push-only SSH
+deploy key is not an API login. Do not distribute shared administrator tokens.
+
+Production fixes belong on reviewed main and must also be merged/cherry-picked
+into an active phase branch. Automation does not resolve those source conflicts
+or copy a database between environments. Both is blocked during a protected
+phase preview so a Phase 1 release cannot overwrite Phase 2 Dev.
 
 Dev and Live use independent `DEPLOY_URL`, host/root, site-owner credentials,
 backup adapter and readiness settings. WordPress generates URLs for the target
@@ -151,7 +178,7 @@ environment; this workflow does not copy a database or replace Dev URLs in data.
 ### Ordering and recovery
 
 Target jobs serialize on `site-code-<repository>-<environment>` without cancelling
-an active write. Automatic runs recheck current main before backup/transfer and
+an active write. Automatic runs recheck the configured source branch before backup/transfer and
 before invoking the host controller. An obsolete push cannot silently substitute
 a newer commit or deploy its older artifact.
 

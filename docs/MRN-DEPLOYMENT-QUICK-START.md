@@ -1,36 +1,64 @@
 # Deploy a website
 
-This guide applies after a site's workflow and destination have been qualified.
-Dev and Live are separate websites, with separate URLs, credentials and backups.
+Dev and Live have different URLs. Code goes to the chosen environment; database
+content, orders, forms and uploads are not copied by this workflow.
 
-| What you want | What to do |
-| --- | --- |
-| Update Dev with reviewed work | Merge or push the change to `main`. Dev deploys automatically after source QA passes. |
-| Test a feature on Dev before merging | Push your feature branch. In GitHub, open **Actions → Deploy site → Run workflow**. Keep the workflow on `main`, choose **dev**, enter your branch in **source_branch**, and choose **preflight**. After it passes, repeat with **deploy**. |
-| Update Live only | Run the same workflow from `main`; choose **live**, **source_branch=main**, and **preflight**, then **deploy**. |
-| Update Dev, then Live | Run it manually with **both**, **source_branch=main**, and **preflight**, then **deploy**. The same built artifact goes to Dev first. Live starts only if Dev succeeds. |
+## Everyday Dev updates
 
-A feature-branch push or pull request does not deploy. A push to `main` never
-deploys Live. If a site is previewing a separate Phase 2 branch, its maintainer
-can protect that preview with `dev_main_enabled: false`; use manual feature-branch
-Dev deployment until the approved launch.
+Commit your work and push the site's configured Dev branch:
 
-The workflow checks the exact code, builds versioned CSS/JS, verifies the correct
-backup for that server, switches releases atomically and checks the public pages,
-asset checksums, browser rendering and REST API. Old assets and rollback releases
-are retained. It deploys child-theme code, not database content or uploads.
+```bash
+git push origin main
+```
 
-Look for the **Deploy site** run in Actions. Open its source QA, deployment,
-browser and runtime reports. A failed source QA run cannot deploy. Dev's broader
-quality findings remain visible testing feedback; they are not Live approval.
-Live runtime acceptance is blocking. If a run says it was superseded, use the
-newest run; do not rerun an old workflow to replace a newer release.
+Source QA must pass. The system then builds versioned CSS/JS, verifies a backup,
+deploys atomically and checks public pages, asset checksums, browser rendering
+and REST health. If QA fails, nothing is deployed. Look for **MRN source push**
+followed by **Deploy site**. Old assets and rollback releases are retained.
 
-Coordinate use of shared Dev before replacing another developer's preview.
-**Both** is sequential: if Live fails, inspect both receipts before retrying.
-Do not copy files manually, flush all caches or restore a database to roll back
-a code change. Ask the deployment owner to use the retained rollback receipt.
+For a Phase 2 site, push the named phase branch instead of main. The site's
+`DEPLOYMENT.md` lists its branch and URLs. Other feature branches and pull
+requests do not deploy automatically. A normal push never publishes Live.
 
-Older sites need an explicit workflow migration. Installing a newer template
-does not update workflows already pinned in site repositories. Maintainers:
-follow [migration and setup](MRN-SITE-DEPLOYMENT-STANDARD.md#automatic-dev-adoption).
+## Choose Dev, Live or Both from the command line
+
+Install GitHub CLI and sign in once with your authorized team GitHub account:
+`gh auth login`. Run these commands from the site's Git repository.
+
+First check the destination without writing to it:
+
+```bash
+gh workflow run site-deploy.yml --ref main -f target=live -f mode=preflight -f source_branch=main
+```
+
+After preflight succeeds, request the release:
+
+```bash
+gh workflow run site-deploy.yml --ref main -f target=live -f mode=deploy -f source_branch=main
+```
+
+- `target=dev`: Dev only. `source_branch` can be a same-repository feature branch.
+- `target=live`: Live only, from reviewed main.
+- `target=both`: Dev first, then Live, using one built artifact. Main only.
+
+Keep `--ref main`: it selects the trusted workflow, not the source to deploy.
+To see results without the GitHub website, use `gh run list --workflow site-deploy.yml`
+and `gh run view RUN_ID`. `gh run watch RUN_ID --exit-status` waits for completion.
+A dispatch acknowledgment means queued, not deployed.
+
+Live fixes must be in main. If a separate Phase 2 branch is active, incorporate
+those fixes there too. Both and Dev-from-main are blocked while that preview is
+protected. Unqualified destinations remain blocked until the deployment owner
+completes their backup, activation and rollback setup.
+
+A Git push-only SSH key cannot run CLI release requests; an authorized account
+with repository write/workflow access is required. No shared admin token is needed.
+
+Coordinate shared Dev previews with the team. Do not upload files manually,
+flush all caches or restore a database to undo a code release. Use the retained
+rollback receipt. Live verification is blocking; broader Dev QA findings remain
+visible testing feedback and are not production approval.
+
+Maintainers: install both thin workflow files and arm only future pushes using
+[the migration instructions](MRN-SITE-DEPLOYMENT-STANDARD.md#automatic-dev-adoption).
+Updating the shared template does not update already-pinned site workflows.

@@ -1,0 +1,15 @@
+name: MRN source push
+
+on:
+  push:
+    branches: [main]
+
+# A signal only. No checkout, credentials, source execution or deployment here.
+# The trusted main workflow selects the exact commit and runs blocking QA.
+permissions: {}
+
+jobs:
+  signal:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Source push received; the shared deployment workflow will validate it.'

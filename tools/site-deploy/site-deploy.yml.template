@@ -1,8 +1,9 @@
 name: Deploy site
 
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    workflows: [MRN source push]
+    types: [completed]
   workflow_dispatch:
     inputs:
       target:
@@ -36,4 +37,6 @@ jobs:
       target: ${{ inputs.target || 'dev' }}
       mode: ${{ inputs.mode || 'deploy' }}
       source_branch: ${{ inputs.source_branch || 'main' }}
+      auto_dev_branch: main
+      auto_dev_after: ${{ vars.MRN_AUTO_DEV_AFTER }}
     secrets: inherit

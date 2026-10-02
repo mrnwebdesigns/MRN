@@ -6,8 +6,52 @@ import json
 import os
 import re
 import urllib.request
+import urllib.parse
+from datetime import datetime, timezone
 
 from resolve_source import resolve
+
+
+def source_push(environ, payload=None):
+    """Authenticate the no-secret signal; never consume its code or artifacts.
+
+    The downstream workflow and its configuration must come from main. GitHub's
+    event envelope supplies the immutable source identity; trusted QA runs anew.
+    A cutoff prevents installation pushes and delayed reruns from deploying.
+    """
+    if environ.get('GITHUB_EVENT_NAME') != 'workflow_run' or environ.get('GITHUB_REF') != 'refs/heads/main':
+        raise ValueError('Source-push requests require the trusted main workflow')
+    if payload is None:
+        with open(environ['GITHUB_EVENT_PATH']) as handle:
+            payload = json.load(handle)
+    run = payload.get('workflow_run', {})
+    repository = environ.get('GITHUB_REPOSITORY')
+    if (payload.get('action') != 'completed' or run.get('status') != 'completed'
+            or run.get('event') != 'push' or run.get('path') != '.github/workflows/site-push.yml'
+            or run.get('name') != 'MRN source push'
+            or payload.get('repository', {}).get('full_name') != repository
+            or run.get('repository', {}).get('full_name') != repository
+            or run.get('head_repository', {}).get('full_name') != repository):
+        raise ValueError('Untrusted source-push signal')
+    branch = environ.get('AUTO_DEV_BRANCH', 'main')
+    if (not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_./-]*', branch)
+            or '..' in branch or branch.startswith('refs/')):
+        raise ValueError('Invalid automatic Dev branch')
+    sha = run.get('head_sha', '')
+    if not re.fullmatch('[0-9a-f]{40}', sha) or sha == '0' * 40:
+        raise ValueError('Invalid source-push commit')
+    if run.get('conclusion') != 'success' or run.get('head_branch') != branch:
+        return None
+    cutoff = environ.get('AUTO_DEV_AFTER', '')
+    if not cutoff:
+        return None
+    def utc_time(value):
+        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z', value):
+            raise ValueError('Automatic Dev cutoff and signal time must be UTC timestamps')
+        return datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+    if utc_time(run.get('created_at', '')) <= utc_time(cutoff):
+        return None
+    return sha
 
 
 def selection(event, ref, sha, target, mode, branch, dev_main_enabled=True):
@@ -33,8 +77,12 @@ def github_order(environ, source_sha, target, mode):
     if environ.get('GITHUB_ACTIONS') != 'true':
         return None  # Explicit local qualification/operator tooling remains supported.
     event = environ.get('GITHUB_EVENT_NAME')
-    if environ.get('GITHUB_REF') != 'refs/heads/main' or event not in ('push', 'workflow_dispatch'):
+    if environ.get('GITHUB_REF') != 'refs/heads/main' or event not in ('push', 'workflow_run', 'workflow_dispatch'):
         raise ValueError('Untrusted deployment trigger')
+    if event == 'workflow_run' and (target != 'dev' or mode != 'deploy'
+            or source_sha != source_push(environ) or source_sha != environ.get('MRN_SOURCE_QA_SHA')
+            or environ.get('SOURCE_BRANCH') != environ.get('AUTO_DEV_BRANCH', 'main')):
+        raise ValueError('Automatic Dev requires source QA for the exact approved branch push')
     if event == 'push' and (target != 'dev' or mode != 'deploy'
                            or source_sha != environ.get('GITHUB_SHA')
                            or source_sha != environ.get('MRN_SOURCE_QA_SHA')):
@@ -47,6 +95,8 @@ def github_order(environ, source_sha, target, mode):
     workflow = workflow_ref.split('@', 1)[0]
     order = {'repository': repository, 'workflow': workflow, 'source_sha': source_sha,
              'event': event, 'run_id': environ.get('GITHUB_RUN_ID', '')}
+    if event == 'workflow_run':
+        order['source_branch'] = environ.get('AUTO_DEV_BRANCH', 'main')
     for name in ('run_number', 'run_attempt'):
         raw = environ.get('GITHUB_' + name.upper(), '')
         if not re.fullmatch('[1-9][0-9]*', raw):
@@ -62,9 +112,14 @@ def validate_order(order):
             or not re.fullmatch(re.escape(order['repository']) + r'/\.github/workflows/[A-Za-z0-9_.-]+\.ya?ml', order.get('workflow', ''))
             or not re.fullmatch('[0-9a-f]{40}', order.get('source_sha', ''))
             or not re.fullmatch('[1-9][0-9]*', order.get('run_id', ''))
-            or order.get('event') not in ('push', 'workflow_dispatch')
+            or order.get('event') not in ('push', 'workflow_run', 'workflow_dispatch')
             or any(type(order.get(k)) is not int or order[k] < 1 for k in ('run_number', 'run_attempt'))):
         raise ValueError('Invalid deployment order receipt')
+    if order['event'] == 'workflow_run':
+        branch = order.get('source_branch', '')
+        if (not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_./-]*', branch)
+                or '..' in branch or branch.startswith('refs/')):
+            raise ValueError('Invalid ordered source branch')
 
 
 def check_order(incoming, previous, rollback=False):
@@ -89,25 +144,45 @@ def check_order(incoming, previous, rollback=False):
 
 
 def require_current_push(order, environ):
-    if not order or order['event'] != 'push':
+    if not order or order['event'] not in ('push', 'workflow_run'):
         return
+    validate_order(order)
+    branch = order.get('source_branch', 'main')
     token = environ.get('GH_TOKEN') or environ.get('GITHUB_TOKEN')
     if not token:
-        raise ValueError('Current main verification requires the read-only GitHub token')
+        raise ValueError('Current branch verification requires the read-only GitHub token')
     request = urllib.request.Request(
-        'https://api.github.com/repos/' + order['repository'] + '/git/ref/heads/main',
+        'https://api.github.com/repos/' + order['repository'] + '/git/ref/heads/' + urllib.parse.quote(branch, safe='/'),
         headers={'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json'})
     with urllib.request.urlopen(request, timeout=30) as response:
         current = json.load(response)['object']['sha']
     if current != order['source_sha']:
-        raise ValueError('Push was superseded by a newer main commit; no deployment allowed')
+        raise ValueError('Push was superseded by a newer branch commit; no deployment allowed')
+
+
+def select_request(environ):
+    branch = environ['SOURCE_BRANCH']
+    if environ['GITHUB_EVENT_NAME'] == 'workflow_run':
+        if (environ['TARGET'], environ['MODE']) != ('dev', 'deploy'):
+            raise ValueError('Source pushes may deploy only Dev')
+        branch = environ.get('AUTO_DEV_BRANCH', 'main')
+        sha = source_push(environ)
+        if branch == 'main' and environ.get('DEV_MAIN_ENABLED', 'true') != 'true':
+            sha = None
+        if sha and resolve('dev', branch, environ['GITHUB_REF']) != sha:
+            print('Source push has been superseded; skipping deployment')
+            sha = None
+    else:
+        sha = selection(environ['GITHUB_EVENT_NAME'], environ['GITHUB_REF'], environ['GITHUB_SHA'],
+                        environ['TARGET'], environ['MODE'], branch,
+                        environ.get('DEV_MAIN_ENABLED', 'true') == 'true')
+    return sha, branch
 
 
 if __name__ == '__main__':
-    sha = selection(os.environ['GITHUB_EVENT_NAME'], os.environ['GITHUB_REF'], os.environ['GITHUB_SHA'],
-                    os.environ['TARGET'], os.environ['MODE'], os.environ['SOURCE_BRANCH'],
-                    os.environ.get('DEV_MAIN_ENABLED', 'true') == 'true')
+    sha, branch = select_request(os.environ)
     with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
         output.write('enabled=' + ('true' if sha else 'false') + '\n')
         output.write('source_sha=' + (sha or '') + '\n')
-    print('Selected commit: ' + sha if sha else 'Automatic Dev is disabled for this site preview')
+        output.write('source_branch=' + (branch if sha else '') + '\n')
+    print('Selected commit: ' + sha if sha else 'No eligible new source push; no deployment requested')

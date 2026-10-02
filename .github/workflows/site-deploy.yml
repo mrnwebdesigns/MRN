@@ -24,6 +24,12 @@ on:
         description: False protects a separate Phase 2 Dev preview from main and Both
         type: boolean
         default: true
+      auto_dev_branch:
+        type: string
+        default: main
+      auto_dev_after:
+        type: string
+        default: ''
     secrets:
       MRN_QA_ENGINE_TOKEN:
         required: false
@@ -45,6 +51,7 @@ jobs:
     outputs:
       source_sha: ${{ steps.source.outputs.source_sha }}
       enabled: ${{ steps.source.outputs.enabled }}
+      source_branch: ${{ steps.source.outputs.source_branch }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,6 +69,8 @@ jobs:
           MODE: ${{ inputs.mode }}
           SOURCE_BRANCH: ${{ inputs.source_branch }}
           DEV_MAIN_ENABLED: ${{ inputs.dev_main_enabled }}
+          AUTO_DEV_BRANCH: ${{ inputs.auto_dev_branch }}
+          AUTO_DEV_AFTER: ${{ inputs.auto_dev_after }}
         run: python3 .mrn-deploy-tools/tools/site-deploy/deployment_request.py
   source-qa:
     needs: request
@@ -96,7 +105,9 @@ jobs:
       mode: ${{ inputs.mode }}
       source_sha: ${{ needs.request.outputs.source_sha }}
       qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}
-      source_branch: ${{ inputs.source_branch }}
+      source_branch: ${{ needs.request.outputs.source_branch }}
+      auto_dev_branch: ${{ inputs.auto_dev_branch }}
+      auto_dev_after: ${{ inputs.auto_dev_after }}
       artifact_id: ${{ needs.build.outputs.artifact_id }}
       artifact_sha256: ${{ needs.build.outputs.artifact_sha256 }}
       source_path: ${{ inputs.source_path }}
@@ -116,7 +127,7 @@ jobs:
       mode: ${{ inputs.mode }}
       source_sha: ${{ needs.request.outputs.source_sha }}
       qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}
-      source_branch: ${{ inputs.source_branch }}
+      source_branch: ${{ needs.request.outputs.source_branch }}
       artifact_id: ${{ needs.build.outputs.artifact_id }}
       artifact_sha256: ${{ needs.build.outputs.artifact_sha256 }}
       source_path: ${{ inputs.source_path }}

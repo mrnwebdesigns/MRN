@@ -103,8 +103,9 @@ class WorkflowGraph(unittest.TestCase):
         self.assertIn('source-qa', self.workflow['jobs']['build']['needs'])
 
     def test_live_is_manual_and_both_waits_for_dev(self):
-        for target in ('live', 'both'):
-            self.assertFalse(self.enabled('live', target=target))
+        for event in ('push', 'workflow_run', 'pull_request'):
+            for target in ('live', 'both'):
+                self.assertFalse(self.enabled('live', event=event, target=target))
         self.assertTrue(self.enabled('live', event='workflow_dispatch', target='live', dev='skipped'))
         self.assertTrue(self.enabled('live', event='workflow_dispatch', target='both'))
         for outcome in ('failure', 'cancelled', 'skipped'):
@@ -121,8 +122,15 @@ class WorkflowGraph(unittest.TestCase):
 
     def test_thin_wrapper_and_per_environment_serialization(self):
         wrapper = yaml.load((self.root / 'tools/site-deploy/site-deploy.yml.template').read_text(), Loader=yaml.BaseLoader)
-        self.assertEqual({'push', 'workflow_dispatch'}, set(wrapper['on']))
-        self.assertEqual(['main'], wrapper['on']['push']['branches'])
+        self.assertEqual({'workflow_run', 'workflow_dispatch'}, set(wrapper['on']))
+        self.assertEqual(['MRN source push'], wrapper['on']['workflow_run']['workflows'])
+        self.assertEqual('${{ vars.MRN_AUTO_DEV_AFTER }}', wrapper['jobs']['deploy']['with']['auto_dev_after'])
+        signal = yaml.load((self.root / 'tools/site-deploy/site-push.yml.template').read_text(), Loader=yaml.BaseLoader)
+        self.assertEqual({'push'}, set(signal['on']))
+        self.assertEqual(['main'], signal['on']['push']['branches'])
+        self.assertEqual({}, signal['permissions'])
+        self.assertEqual(1, len(signal['jobs']['signal']['steps']))
+        self.assertNotIn('uses', signal['jobs']['signal']['steps'][0])
         self.assertEqual(['deploy'], list(wrapper['jobs']))
         self.assertNotIn('steps', wrapper['jobs']['deploy'])
         target = yaml.load((self.root / '.github/workflows/site-deploy-target.yml').read_text(), Loader=yaml.BaseLoader)['jobs']['deploy']
