@@ -648,7 +648,7 @@
     {
       "slug": "mrn-recaptcha-enterprise-manager",
       "name": "MRN reCAPTCHA Enterprise Manager",
-      "version": "0.1.2",
+      "version": "0.1.4",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",

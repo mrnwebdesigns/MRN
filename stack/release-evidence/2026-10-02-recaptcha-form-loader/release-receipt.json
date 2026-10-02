@@ -1,0 +1,36 @@
+{
+  "status": "local-candidate-not-published-or-deployed",
+  "version": "0.1.4",
+  "source_repository": "mrnwebdesigns/mrn-recaptcha-enterprise-manager",
+  "source_commit": "e2fc5e3a580aba197e714f5b530a5da49224d293",
+  "archive": "mrn-recaptcha-enterprise-manager-0.1.4.zip",
+  "sha256": "858ff4f801b98c994c41caf056cdb54174861e54a2b86a78dd33d4bb3a066734",
+  "size_bytes": 27599,
+  "asset_manifest_sha256": "6c9e6be21caf6e7e041cd95e3835ae6971a6063e3c20ba4ffd69967454eeb5e9",
+  "asset_build": {
+    "node": "26.0.0",
+    "esbuild": "0.25.10",
+    "lock_sha256": "3ad16228510f5eb180d1c3923a07d70a0268c1da57e9be3c24cbb1aa9ff0d5d6"
+  },
+  "deployment_adapter_qualification": "required-before-promotion",
+  "files": {
+    "README.md": "eb16a08580b120db0e60aee3e7cecd56a7ba3beedf672653861b08ed8bdccd8f",
+    "assets/generated/wpforms-form-loader.7874cfd2b86433d9473635fe41ecad4897a6c974ad5b627468e66ede4acff5a3.min.js": "7874cfd2b86433d9473635fe41ecad4897a6c974ad5b627468e66ede4acff5a3",
+    "assets/generated/wpforms-form-loader.f8cb36e601e4ede209f8a0272e0fa63e22602a0782e549bf8d5482a6c5ebd243.js": "f8cb36e601e4ede209f8a0272e0fa63e22602a0782e549bf8d5482a6c5ebd243",
+    "assets/manifest.json": "6c9e6be21caf6e7e041cd95e3835ae6971a6063e3c20ba4ffd69967454eeb5e9",
+    "assets/wpforms-form-loader.js": "f8cb36e601e4ede209f8a0272e0fa63e22602a0782e549bf8d5482a6c5ebd243",
+    "docs/FORM-AWARE-LOADER.md": "ce1628a1bac2f4df7d9f5c852cd198c639b6e887806f094a26417af7ea9f81a7",
+    "includes/class-mrn-recaptcha-enterprise-manager.php": "ee7b5e7018a456baf48fb7478171d157b5db7f0b5796f99353f866787736e466",
+    "includes/class-mrn-recaptcha-form-loader.php": "02a0863beb464fa31912bfc93b66225e42e7dd0cb92cf66a4ffa65720d017a0d",
+    "includes/mrn-sticky-settings-toolbar.php": "82dce7990c0342bebe111f5f76952172924ea5b60ecd9cc17133f144682a2c20",
+    "mrn-recaptcha-enterprise-manager.php": "fb4a105b88143888a194b194aa9622dc2b25b0f949bd4d10d663b215ae89f6c0",
+    "readme.txt": "24fede5d7b1b981b2b75c34e54afe603158613ae783a28601c1d0231d0a10d57"
+  },
+  "excluded": [
+    "tests",
+    "tools",
+    "credentials",
+    "runtime database",
+    "git metadata"
+  ]
+}
