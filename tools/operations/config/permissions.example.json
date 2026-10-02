@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "members": [
+    {
+      "subject": "replace-with-immutable-identity-provider-subject",
+      "enabled": true,
+      "grants": [{"website": "example-client", "environments": ["development"], "actions": ["read"]}]
+    }
+  ]
+}

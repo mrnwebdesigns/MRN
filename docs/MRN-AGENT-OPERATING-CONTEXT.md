@@ -465,3 +465,17 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
 - A vendor bootstrap may contain only detection rules, read order, fail-closed behavior, and vendor-specific mechanics. Policy belongs here or in the applicable `AGENTS.md`.
 - Claude Code does not discover `AGENTS.md` automatically; its bootstrap must state the discovery step explicitly. Codex discovers `AGENTS.md` natively.
 - Keep project and tool-specific behavior where it is authored.
+
+## 13) Shared Website Operations service
+
+- The shared conversational operations service is implemented under
+  `tools/operations`; its operating policy is
+  [MRN-WEBSITE-OPERATIONS.md](MRN-WEBSITE-OPERATIONS.md).
+- It reuses the approved MainWP MCP, Fleet and QA workflows. Service credentials
+  do not replace individual site/environment/operation permissions.
+- Service enrollment, hosted identity acceptance and coordinated site-writer
+  locks are separate gates. The initial implementation is not an activated or
+  team-ready deployment. No existing production route is implicitly enrolled.
+- Recorded findings, exact source/artifact plans, verified backups and public
+  runtime evidence remain required. Unknown mutation outcomes retain their lock
+  and must not be retried automatically.

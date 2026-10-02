@@ -1,0 +1,4 @@
+node_modules/
+state/
+config/local*.json
+*.sqlite*
