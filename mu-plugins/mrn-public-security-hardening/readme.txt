@@ -1,6 +1,6 @@
 === MRN Public Security Hardening ===
 Contributors: mrnwebdesigns
-Stable tag: 0.4.2
+Stable tag: 0.4.3
 Tested up to: 7.1
 
 Shared MRN must-use plugin for public security policy and configurable login routing.
@@ -11,6 +11,10 @@ Distributed through the shared MRN Stack loader. See README.md for configuration
 compatibility, regression tests and the component QA workflow.
 
 == Changelog ==
+
+= 0.4.3 =
+* Respect Admin Menu Editor's finalized visibility, access, labels, and placement for Advanced and Public Security.
+* Prevent hidden menus from reappearing while preserving native menus when AME is not managing them.
 
 = 0.4.2 =
 * Resolve relative WordPress login redirects to the configured custom login URL.

@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Public Security Hardening
  * Description: Shared public hardening for MRN brochure/client sites.
- * Version: 0.4.2
+ * Version: 0.4.3
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION' ) ) {
-	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.4.2' );
+	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.4.3' );
 }
 
 /**
@@ -1864,13 +1864,18 @@ if ( function_exists( 'is_multisite' ) && is_multisite() ) {
  * The page and its callback are registered during admin_menu. This late filter
  * only normalizes the rendered global menu: it removes an obsolete or
  * conflicting Advanced placeholder, then adds the native WordPress menu item.
- * It does not read or depend on another menu plugin's settings.
+ * Admin Menu Editor's completed replacement owns its visibility, access, and
+ * placement decisions. Do not recreate menus that it intentionally removed.
  *
  * @param mixed $submenu_file Current submenu file.
  * @return mixed
  */
 function mrn_public_security_reassert_native_admin_menu( $submenu_file ) {
 	global $menu, $submenu;
+
+	if ( did_action( 'admin_menu_editor-menu_replaced' ) ) {
+		return $submenu_file;
+	}
 
 	if ( ! current_user_can( mrn_public_security_admin_capability() ) ) {
 		return $submenu_file;

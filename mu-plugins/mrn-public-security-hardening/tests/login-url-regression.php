@@ -35,6 +35,7 @@ $GLOBALS['mrn_test_state'] = array(
 			'rewrite_rules' => array(),
 	),
 	'filters'            => array(),
+	'actions_run'        => array(),
 	'capabilities'       => array(
 		'manage_options'         => true,
 		'manage_network_options' => true,
@@ -147,6 +148,10 @@ function add_filter( $hook, $callback, $priority = 10, $accepted_args = 1 ) {
 
 function add_action( $hook, $callback, $priority = 10, $accepted_args = 1 ) {
 	return add_filter( $hook, $callback, $priority, $accepted_args );
+}
+
+function did_action( $hook ) {
+	return $GLOBALS['mrn_test_state']['actions_run'][ $hook ] ?? 0;
 }
 
 function apply_filters( $hook, $value ) {
@@ -572,6 +577,49 @@ mrn_test_same( array(), $menu, 'Late menu normalization should remove a conflict
 mrn_test_assert( ! isset( $submenu['#legacy-advanced-placeholder'] ), 'Late menu normalization should remove the conflicting placeholder submenu.' );
 mrn_test_same( '', $late_admin_menu_page['callback'] ?? null, 'Late menu normalization should not register the page callback twice.' );
 mrn_test_same( 'mrn-public-security-hardening', $late_admin_submenu_page['parent_slug'] ?? '', 'Late menu normalization should restore the native Advanced parent.' );
+
+// A menu editor owns the finalized menu even when another granted capability
+// lets this user pass the plugin's default manage_options check.
+$GLOBALS['mrn_test_state']['actions_run']['admin_menu_editor-menu_replaced'] = 1;
+$menu = array(
+	81 => array( 'Broken links', 'edit_broken_links', 'seopress-broken-links' ),
+);
+$submenu = array();
+$menu_registrations = count( $GLOBALS['mrn_test_state']['admin_menu_pages'] );
+$submenu_registrations = count( $GLOBALS['mrn_test_state']['admin_submenu_pages'] );
+$expected_menu = $menu;
+mrn_test_same( 'seopress-broken-links', mrn_public_security_reassert_native_admin_menu( 'seopress-broken-links' ), 'AME handling should preserve the active screen.' );
+mrn_test_same( $expected_menu, $menu, 'The hidden Advanced menu must stay absent while Broken Links remains intact.' );
+mrn_test_same( array(), $submenu, 'The hidden Public Security submenu must stay absent.' );
+mrn_test_same( $menu_registrations, count( $GLOBALS['mrn_test_state']['admin_menu_pages'] ), 'AME-hidden menus must not be registered again.' );
+mrn_test_same( $submenu_registrations, count( $GLOBALS['mrn_test_state']['admin_submenu_pages'] ), 'AME-hidden submenus must not be registered again.' );
+
+// Preserve visible administrator customizations, including an unrelated menu
+// with the same label and any other pages grouped underneath it.
+$menu = array(
+	42 => array( 'Security controls', 'manage_options', 'mrn-public-security-hardening' ),
+	81 => array( 'Advanced', 'manage_options', '#ame-unclickable-menu-item-1' ),
+);
+$submenu = array(
+	'mrn-public-security-hardening' => array(
+		array( 'Security status', 'manage_options', 'mrn-public-security-hardening' ),
+	),
+	'#ame-unclickable-menu-item-1' => array(
+		array( 'SEO', 'seopress_manage_bot', 'seopress-bot-batch' ),
+	),
+);
+$expected_menu = $menu;
+$expected_submenu = $submenu;
+mrn_public_security_reassert_native_admin_menu( 'mrn-public-security-hardening' );
+mrn_test_same( $expected_menu, $menu, 'AME administrator labels, ordering, and other Advanced groups must be preserved.' );
+mrn_test_same( $expected_submenu, $submenu, 'AME administrator submenu labels and grouped pages must be preserved.' );
+mrn_test_same( $menu_registrations, count( $GLOBALS['mrn_test_state']['admin_menu_pages'] ), 'Visible AME menus must not be registered twice.' );
+unset( $GLOBALS['mrn_test_state']['actions_run']['admin_menu_editor-menu_replaced'] );
+
+$GLOBALS['mrn_test_state']['capabilities']['manage_options'] = false;
+mrn_public_security_reassert_native_admin_menu( '' );
+mrn_test_same( $menu_registrations, count( $GLOBALS['mrn_test_state']['admin_menu_pages'] ), 'Users without the required capability must not receive a restored menu.' );
+$GLOBALS['mrn_test_state']['capabilities']['manage_options'] = true;
 
 mrn_test_same( 'site-login', mrn_public_security_get_default_login_slug(), 'Default login slug should be site-login.' );
 mrn_test_same( '/blog/site-login/', mrn_public_security_get_custom_login_path(), 'Default custom login path should include the site path root.' );
