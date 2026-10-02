@@ -1,9 +1,9 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.10.01-acf-field-defaults`
-- Release date: `2026-10-01`
-- Status: `released to Gloves Dev and production as an exact parent-theme-only overlay; ACF runtime repair verified, full-site Stack lock unchanged`
+- Stack release: `2026.10.02-ame-menu-visibility`
+- Release date: `2026-10-02`
+- Status: `release candidate; Gloves production deployment and browser verification pending`
 
 ## Included MRN-Owned Components
 - Theme:
@@ -20,7 +20,7 @@
   - `mrn-shared-assets` `0.2.1`
   - `mrn-editor-lockdown` `1.0.33`
   - `mrn-environment-runtime` `0.5.1`
-  - `mrn-public-security-hardening` `0.4.2`
+  - `mrn-public-security-hardening` `0.4.3`
   - `mrn-schema-bridge` `0.6.0`
   - `mrn-site-colors` / `Site Styles` `0.1.39`
   - `mrn-updraft-backup-policy-loader` `0.6.0`
@@ -57,6 +57,12 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- Public Security Hardening `0.4.3` respects Admin Menu Editor's finalized
+  visibility, permissions, labels and placement. It no longer restores a
+  hidden Advanced/Public Security menu after AME has applied role rules.
+  The existing native fallback remains available without AME. Gloves is the
+  only authorized target, with its active child theme preserved. See
+  `docs/releases/2026.10.02-ame-menu-visibility.md`.
 - Parent theme `1.5.2` supplies ACF's normal blank validator defaults to
   late-injected nested text and number fields without replacing explicit
   limits, including zero. The release adds a read-only runtime regression for
