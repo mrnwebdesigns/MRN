@@ -185,7 +185,7 @@ def execute(plan, native_backup=None):
         previous_order = json.loads(order_path.read_text()) if order_path.exists() else None
         order = plan.get('deployment_order')
         check_order(order, previous_order, rollback=bool(plan.get('rollback_to')))
-        if order and order['event'] == 'push' and plan['environment'] != 'dev':
+        if order and order['event'] in ('push', 'workflow_run') and plan['environment'] != 'dev':
             raise ValueError('Automatic deployment is Dev-only')
         if order and (order['repository'] != plan['repository'] or (not plan.get('rollback_to') and order['source_sha'] != plan['source_sha'])):
             raise ValueError('Deployment sequence does not match this source/target')

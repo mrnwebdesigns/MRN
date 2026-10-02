@@ -62,6 +62,9 @@ jobs:
           if [[ "$GITHUB_EVENT_NAME" == push ]]; then
             [[ "$SOURCE_SHA" == "$GITHUB_SHA" && "$QA_SOURCE_SHA" == "$SOURCE_SHA" ]]
           fi
+          if [[ "$GITHUB_EVENT_NAME" == workflow_run ]]; then
+            [[ "$QA_SOURCE_SHA" == "$SOURCE_SHA" ]]
+          fi
           npm ci --ignore-scripts --prefix "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy"
           python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/build_release.py" \
             --sha "$SOURCE_SHA" --source "$SOURCE_PATH" --slug "$SLUG" \

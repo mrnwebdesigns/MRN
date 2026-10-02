@@ -42,4 +42,4 @@ jobs:
             .github/workflows/site-deploy-target.yml .github/workflows/site-deploy-ci.yml \
             .github/workflows/site-release-build.yml .github/workflows/site-deploy.yml \
             .github/workflows/site-source-qa.yml \
-            "$RUNNER_TEMP/site-deploy.yml"
+            "$RUNNER_TEMP/site-deploy.yml" tools/site-deploy/site-push.yml.template

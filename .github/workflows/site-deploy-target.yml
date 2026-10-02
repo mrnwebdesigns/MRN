@@ -27,6 +27,12 @@ on:
       source_branch:
         type: string
         default: main
+      auto_dev_branch:
+        type: string
+        default: main
+      auto_dev_after:
+        type: string
+        default: ''
       artifact_id:
         type: string
         required: true
@@ -85,6 +91,8 @@ jobs:
       TOOLING_REF: ${{ inputs.tooling_ref }}
       SOURCE_SHA: ${{ inputs.source_sha || github.sha }}
       SOURCE_BRANCH: ${{ inputs.source_branch }}
+      AUTO_DEV_BRANCH: ${{ inputs.auto_dev_branch }}
+      AUTO_DEV_AFTER: ${{ inputs.auto_dev_after }}
       MRN_SOURCE_QA_SHA: ${{ inputs.qa_source_sha }}
       GH_TOKEN: ${{ github.token }}
       ARTIFACT_ID: ${{ inputs.artifact_id }}
@@ -94,7 +102,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          [[ "$GITHUB_EVENT_NAME" == push || "$GITHUB_EVENT_NAME" == workflow_dispatch ]]
+          [[ "$GITHUB_EVENT_NAME" == push || "$GITHUB_EVENT_NAME" == workflow_run || "$GITHUB_EVENT_NAME" == workflow_dispatch ]]
           [[ "$MODE" == preflight || "$MODE" == deploy ]]
           [[ "$TARGET" == dev || "$TARGET" == live ]]
           [[ "$TOOLING_REF" =~ ^[0-9a-f]{40}$ ]]
@@ -105,6 +113,10 @@ jobs:
           if [[ "$GITHUB_EVENT_NAME" == push ]]; then
             [[ "$TARGET" == dev && "$MODE" == deploy && "$SOURCE_BRANCH" == main ]]
             [[ "$SOURCE_SHA" == "$GITHUB_SHA" && "$MRN_SOURCE_QA_SHA" == "$SOURCE_SHA" ]]
+          fi
+          if [[ "$GITHUB_EVENT_NAME" == workflow_run ]]; then
+            [[ "$TARGET" == dev && "$MODE" == deploy && "$SOURCE_BRANCH" == "$AUTO_DEV_BRANCH" ]]
+            [[ "$MRN_SOURCE_QA_SHA" == "$SOURCE_SHA" ]]
           fi
           [[ -z "$MRN_SOURCE_QA_SHA" || "$MRN_SOURCE_QA_SHA" == "$SOURCE_SHA" ]]
       - uses: actions/checkout@v4
