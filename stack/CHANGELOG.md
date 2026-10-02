@@ -1,5 +1,15 @@
 # Stack Changelog
 
+## 2026.10.02-ame-menu-visibility
+
+- Public Security Hardening `0.4.3` stops reasserting Advanced/Public Security
+  after Admin Menu Editor finalizes the menu. Hidden or denied items remain
+  hidden, and administrator labels, placement and unrelated Advanced groups
+  remain under AME's control. Native behavior without AME is unchanged.
+- Regression coverage preserves standalone Broken Links access and the
+  existing capability checks. The only authorized rollout is Gloves
+  production; its active child theme is excluded from the package.
+
 ## 2026.10.01-acf-field-defaults
 
 - Parent theme `1.5.2` completes late-injected nested ACF text and number
