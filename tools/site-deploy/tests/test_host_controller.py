@@ -133,6 +133,59 @@ class HostControllerContract(unittest.TestCase):
         self.assertNotIn('private-token', json.dumps(receipt))
         self.assertTrue(receipt['diagnostics'][0]['frames'])
 
+    def test_newer_run_blocks_old_queued_run_before_backup_or_activation(self):
+        from test_automatic_dev import order
+        newer = dict(self.plan, deployment_order={**order(3), 'source_sha':self.plan['source_sha']})
+        with patch.object(host, 'backup', return_value={'valid':True}), patch.object(host, 'public_check', return_value={}):
+            self.assertEqual('public-verified', host.execute(newer)['status'])
+        pointer = self.fixture.store.pointer()
+        older = dict(self.plan, adopt=False, expected_current=pointer,
+                     deployment_order={**order(2), 'source_sha':self.plan['source_sha']})
+        with patch.object(host, 'backup') as backup:
+            with self.assertRaisesRegex(ValueError, 'Stale'):
+                host.execute(older)
+            backup.assert_not_called()
+        self.assertEqual(pointer, self.fixture.store.pointer())
+
+    def test_order_receipt_is_backed_up_and_does_not_disappear_on_rollback(self):
+        from test_automatic_dev import order
+        sequence = {**order(3), 'source_sha':self.plan['source_sha']}
+        path = self.fixture.state / 'deployment-order.json'
+        observations = []
+        def backup(root, operation):
+            observations.append((operation, path.exists()))
+            return {'valid':True}
+        with patch.object(host, 'backup', side_effect=backup), patch.object(host, 'public_check', return_value={}):
+            receipt = host.execute(dict(self.plan, deployment_order=sequence))
+        self.assertEqual(('stage', False), observations[1])
+        self.assertEqual(('activate', True), observations[2])
+        self.assertEqual(sequence, json.loads(path.read_text()))
+        self.assertEqual(sequence, receipt['deployment_order'])
+        self.assertEqual(self.plan['source_sha'], receipt['source_sha'])
+
+    def test_automatic_live_plan_is_rejected_under_host_lock(self):
+        from test_automatic_dev import order
+        with patch.object(host, 'backup') as backup:
+            with self.assertRaisesRegex(ValueError, 'Dev-only'):
+                host.execute(dict(self.plan, environment='live', deployment_order=order()))
+            backup.assert_not_called()
+
+    def test_failed_newer_activation_retains_order_after_recovery(self):
+        from test_automatic_dev import order
+        sequence = {**order(3), 'source_sha':self.plan['source_sha']}
+        with patch.object(host, 'backup', return_value={'valid':True}), patch.object(
+                host, 'public_check', side_effect=[{}, ValueError('bad new asset'), {}]):
+            receipt = host.execute(dict(self.plan, deployment_order=sequence))
+        self.assertEqual('failed', receipt['status'])
+        self.assertIn('recovery', receipt)
+        pointer = self.fixture.store.pointer()
+        self.assertIsNone(pointer['public_path'])
+        with patch.object(host, 'backup') as backup:
+            with self.assertRaisesRegex(ValueError, 'Stale'):
+                host.execute(dict(self.plan, adopt=False, expected_current=pointer,
+                                  deployment_order={**sequence, 'run_number':2, 'run_id':'102'}))
+            backup.assert_not_called()
+
 
 class CacheInputTransport(unittest.TestCase):
     def test_large_scope_reaches_cli_without_large_environment_or_argument(self):

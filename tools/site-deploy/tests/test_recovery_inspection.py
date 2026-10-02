@@ -52,3 +52,18 @@ class RecoveryInspection(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'explicit owner approval'):
                 atomic_runner.run({'environment':'live'}, {'host_provider':'kinsta','backup_provider':'kinsta'})
             target.assert_not_called()
+
+    def test_old_run_is_rejected_before_tool_transfer_backup(self):
+        from test_automatic_dev import order
+        plan = {'environment':'dev', 'slug':'child', 'expected_current':{'release_id':'current'},
+                'archive':'/release.tar', 'artifact_sha256':'a'*64, 'source_sha':'a'*40,
+                'source_path':'.', 'deployment_order':order(2)}
+        config = {'backup_provider':'updraft', 'url':'https://site.mrndev.io', 'ready':True}
+        with patch.object(atomic_runner, 'Target') as target, patch.object(atomic_runner, 'verify'), \
+                patch.object(atomic_runner, 'verify_identity'), patch.object(atomic_runner, 'verify_state_privacy'), \
+                patch.object(atomic_runner, 'transfer_backup') as backup:
+            target.return_value.inspect.return_value = {'state':plan['expected_current'], 'git':False,
+                                                       'deployment_order':order(3)}
+            with self.assertRaisesRegex(ValueError, 'Stale'):
+                atomic_runner.run(plan, config)
+            backup.assert_not_called()

@@ -1,0 +1,100 @@
+name: MRN site source acceptance
+on:
+  workflow_call:
+    inputs:
+      source_sha:
+        type: string
+        required: true
+      tooling_ref:
+        type: string
+        required: true
+    secrets:
+      MRN_QA_ENGINE_TOKEN:
+        required: true
+    outputs:
+      source_sha:
+        description: Exact source commit that passed the blocking QA job
+        value: ${{ jobs.qa.outputs.source_sha }}
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      source_sha: ${{ steps.accepted.outputs.source_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_sha }}
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/MRN
+          ref: ${{ inputs.tooling_ref }}
+          path: .mrn-deploy-tools
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/MRN-qa-engine
+          ref: 80b652be31149cc2ecdb47e634c4c085f859baa3
+          path: .mrn-qa-engine
+          token: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
+          persist-credentials: false
+      - name: Isolate tooling from the exact site source
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          mv .mrn-qa-engine "$RUNNER_TEMP/mrn-qa-engine"
+          mv .mrn-deploy-tools "$RUNNER_TEMP/mrn-deploy-tools"
+          echo "MRN_QA_STACK_ROOT=$RUNNER_TEMP/mrn-deploy-tools" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+      - name: Install source QA dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y ripgrep
+          python3 -m pip install semgrep
+          composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer global require --no-interaction --no-progress squizlabs/php_codesniffer:^3.13 wp-coding-standards/wpcs:^3.0 dealerdirect/phpcodesniffer-composer-installer:^1.1
+          echo "$(composer global config bin-dir --absolute)" >> "$GITHUB_PATH"
+      - name: MRN source acceptance
+        shell: bash
+        env:
+          MRN_QA_CODE_ANALYSIS_SCOPE: all
+          MRN_QA_RUN_API: static
+          MRN_QA_RUN_SMOKE: never
+          MRN_QA_RUN_ACCESSIBILITY: never
+          MRN_QA_RUN_PERFORMANCE: never
+          MRN_QA_RUN_CWV: never
+          MRN_QA_RUN_PHPCBF: never
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/mrn-qa-engine/bin/mrn-qa" run \
+            --project-root "$GITHUB_WORKSPACE" \
+            --run-api static --run-smoke never --run-accessibility never \
+            --run-performance never --run-cwv never --run-phpcbf never \
+            --output-file "$RUNNER_TEMP/site-source-qa.md"
+      - name: Bind successful QA to this commit
+        id: accepted
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+      - name: Retain source acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-source-qa-${{ inputs.source_sha }}
+          path: ${{ runner.temp }}/site-source-qa.md
+          if-no-files-found: warn

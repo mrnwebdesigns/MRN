@@ -47,7 +47,7 @@ class DeploymentSafety(unittest.TestCase):
         with self.assertRaises(ValueError):
             deploy.require_baseline(self.config, {**self.before, 'state': {'tree': self.config['baseline']}}, 'org/site', 'live')
 
-    def exercise(self, mode, backup=None, ready=True, after=None, artifact=True, artifact_error=None):
+    def exercise(self, mode, backup=None, ready=True, after=None, artifact=True, artifact_error=None, github_env=None):
         operations = []
         before = self.before
         config = {**self.config, 'ready': ready}
@@ -77,7 +77,9 @@ class DeploymentSafety(unittest.TestCase):
             args = argparse.Namespace(mode=mode, sha='a' * 40, source='.', slug='child', environment='live', receipt=temp + '/receipt.json')
             args.artifact = temp + '/release.tar' if artifact else None
             args.artifact_sha256 = 'b' * 64 if artifact else None
-            with patch.dict(os.environ, {'GITHUB_REPOSITORY': 'org/site'}), \
+            # These fixtures exercise explicit local/operator calls. Never inherit
+            # the CI runner's PR trigger; trigger cases opt into their own context.
+            with patch.dict(os.environ, {'GITHUB_REPOSITORY': 'org/site', 'GITHUB_ACTIONS': 'false', **(github_env or {})}), \
                  patch('verify_release.verify', return_value={'theme_files': self.files, 'artifact_sha256': 'b' * 64,
                        'runtime_qualified': False}, side_effect=artifact_error), \
                  patch.object(deploy, 'Target', FakeTarget), \
@@ -93,6 +95,14 @@ class DeploymentSafety(unittest.TestCase):
                     if artifact:
                         exporter.assert_not_called()
                 return operations, None, json.loads(Path(args.receipt).read_text())
+
+    def test_pull_request_context_is_rejected_before_site_access(self):
+        operations, error, receipt = self.exercise('deploy', github_env={
+            'GITHUB_ACTIONS': 'true', 'GITHUB_EVENT_NAME': 'pull_request',
+            'GITHUB_REF': 'refs/pull/123/merge'})
+        self.assertEqual([], operations)
+        self.assertIn('Untrusted deployment trigger', str(error))
+        self.assertIsNone(receipt)
 
     def test_preflight_never_starts_backup_or_writes(self):
         operations, error, receipt = self.exercise('preflight')

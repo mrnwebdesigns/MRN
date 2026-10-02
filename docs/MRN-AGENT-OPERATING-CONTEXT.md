@@ -225,7 +225,10 @@ The SSH alias `mainwp-tailscale` connects to the MainWP Dashboard host for expli
 
 - The Git/environment/server-transition contract is
   [`MRN-SITE-DEPLOYMENT-STANDARD.md`](MRN-SITE-DEPLOYMENT-STANDARD.md).
-  Use one reviewed source commit with explicit Dev, Live, or Both selection;
+  Participating sites automatically deploy an exact main push to Dev after
+  source QA; manual Dev, Live, or Both selection remains available. Live and
+  Both are always manual. See `MRN-DEPLOYMENT-QUICK-START.md` for daily use.
+  Use one reviewed source commit and environment-specific configuration;
   configure and qualify a new Live destination as part of launch/cutover.
   Existing sites adopt the workflow only after their recorded readiness gates.
 - Shared Stack and child-theme CSS/JS releases must satisfy

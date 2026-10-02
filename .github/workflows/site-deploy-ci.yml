@@ -4,6 +4,8 @@ on:
     paths:
       - tools/site-deploy/**
       - .github/workflows/site-deploy-target.yml
+      - .github/workflows/site-deploy.yml
+      - .github/workflows/site-source-qa.yml
       - .github/workflows/site-deploy-ci.yml
       - .github/workflows/site-release-build.yml
   workflow_dispatch:
@@ -27,7 +29,9 @@ jobs:
         working-directory: tools/site-deploy
         run: npm ci --ignore-scripts && npm test
       - name: Deployment failure-path tests
-        run: python3 -m unittest discover -s tools/site-deploy/tests -v
+        run: |
+          python3 -m pip install -r tools/site-deploy/requirements-test.txt
+          python3 -m unittest discover -s tools/site-deploy/tests -v
       - name: Validate shared and caller workflows
         run: |
           sed -e 's/TOOLING_SHA/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/g' \
@@ -36,5 +40,6 @@ jobs:
             tools/site-deploy/site-deploy.yml.template > "$RUNNER_TEMP/site-deploy.yml"
           go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 -shellcheck= \
             .github/workflows/site-deploy-target.yml .github/workflows/site-deploy-ci.yml \
-            .github/workflows/site-release-build.yml \
+            .github/workflows/site-release-build.yml .github/workflows/site-deploy.yml \
+            .github/workflows/site-source-qa.yml \
             "$RUNNER_TEMP/site-deploy.yml"

@@ -20,6 +20,7 @@ from atomic_store import Store, durable_replace, inventory
 from host_paths import qualify_provider
 from cache_policy import canonical_pages, head, verify_cloudpanel_origin, verify_uncached_html
 from deploy import check, digest, http_check
+from deployment_request import check_order
 from verify_public_assets import Assets, fetch, verify as verify_public
 
 TOOLS = Path(__file__).resolve().parent
@@ -180,6 +181,16 @@ def execute(plan, native_backup=None):
         binding_path = store.state / 'site.json'
         if binding_path.exists() and json.loads(binding_path.read_text()) != binding:
             raise ValueError('Private release storage belongs to a different target')
+        order_path = store.state / 'deployment-order.json'
+        previous_order = json.loads(order_path.read_text()) if order_path.exists() else None
+        order = plan.get('deployment_order')
+        check_order(order, previous_order, rollback=bool(plan.get('rollback_to')))
+        if order and order['event'] == 'push' and plan['environment'] != 'dev':
+            raise ValueError('Automatic deployment is Dev-only')
+        if order and (order['repository'] != plan['repository'] or (not plan.get('rollback_to') and order['source_sha'] != plan['source_sha'])):
+            raise ValueError('Deployment sequence does not match this source/target')
+        receipt.update(deployment_order=order, source_sha=plan.get('source_sha'),
+                       artifact_sha256=plan.get('artifact_sha256'))
         before = store.pointer()
         if before != plan.get('expected_current'):
             raise ValueError('Active release differs from the reviewed plan')
@@ -203,6 +214,10 @@ def execute(plan, native_backup=None):
                 selected_id = check(plan['rollback_to'], r'[a-f0-9]{64}', 'rollback release')
             else:
                 receipt['steps'].append({'operation': 'stage', 'backup': guard('stage')})
+                if order:
+                    # Persist after verified backup, before staging/activation.
+                    # Even a failed newer run prevents an older queued run from winning.
+                    durable_replace(order_path, (json.dumps(order, sort_keys=True) + '\n').encode())
                 installed = store.stage(plan['archive'], plan['artifact_sha256'], plan['source_sha'], plan['source_path'])
                 selected_id = installed['release_id']
             receipt['steps'].append({'operation': 'activate', 'backup': guard('activate')})
