@@ -50,3 +50,30 @@ class PublicAssetEvidence(unittest.TestCase):
         self.assertIn(logo, result['pages'][0]['assets'])
         with self.assertRaisesRegex(ValueError, 'different asset generation'):
             public.verify(self.manifest, [self.page], lambda url, types: ('<link rel="stylesheet" href="' + self.url + '?ver=old">').encode())
+
+    def test_homepage_variant_is_scoped_and_still_checksum_checked(self):
+        self.manifest['assets']['style-home.css'] = {'file': 'style-home.min.css'}
+        self.manifest['static_files']['style-home.min.css'] = self.manifest['static_files']['style.min.css']
+        self.manifest['stylesheet_routes'] = {'/': ['style-home.css', 'style.css']}
+        variant = self.url.replace('style.min.css', 'style-home.min.css')
+        def fetch(url, types):
+            return ('<link rel="stylesheet" href="' + variant + '">').encode() if url.startswith(self.page) and '/wp-content/' not in url else self.body
+        result = public.verify(self.manifest, [self.page], fetch)
+        self.assertIn(variant, result['pages'][0]['assets'])
+        with self.assertRaisesRegex(ValueError, 'did not reference'):
+            public.verify(self.manifest, [self.page + 'shop/'], fetch)
+        with self.assertRaisesRegex(ValueError, 'checksum differs'):
+            public.verify(self.manifest, [self.page], lambda url, types: fetch(url, types) if url == self.page else b'stale CSS')
+
+    def test_preload_alone_does_not_satisfy_stylesheet_contract(self):
+        def fetch(url, types):
+            return ('<link rel="preload" as="style" href="' + self.url + '">').encode() if url == self.page else self.body
+        with self.assertRaisesRegex(ValueError, 'did not reference'):
+            public.verify(self.manifest, [self.page], fetch)
+
+    def test_invalid_route_declarations_fail_closed(self):
+        for routes in [[], {'/': []}, {'/': ['missing.css']}, {'//other.test/': ['style.css']},
+                       {'/shop/../': ['style.css']}, {'/?x=1': ['style.css']}, {'/%2f': ['style.css']}]:
+            self.manifest['stylesheet_routes'] = routes
+            with self.subTest(routes=routes), self.assertRaisesRegex(ValueError, 'Invalid stylesheet route'):
+                public.verify(self.manifest, [self.page], lambda url, types: b'')

@@ -9,6 +9,7 @@ import sys
 import tarfile
 
 from deploy import check, digest
+from verify_public_assets import stylesheet_routes
 
 MAX_ARCHIVE_BYTES = 512 * 1024 * 1024
 MAX_FILE_BYTES = 128 * 1024 * 1024
@@ -147,6 +148,7 @@ def verify(archive_path, expected_sha256, source_sha, source_path, slug):
                 or {key: entry[key] for key in ('sha256', 'bytes')} != static[destination]):
             raise ValueError('Asset mapping does not match static payload')
     required = {'theme/style.css', 'theme/functions.php', 'theme/mrn-assets.json', 'theme/mrn-release-assets.php'}
+    stylesheet_routes(manifest)
     if not required.issubset(files):
         raise ValueError('Missing child-theme release integration')
     return {'status': 'artifact-verified', **identity, 'artifact_sha256': expected_sha256,
