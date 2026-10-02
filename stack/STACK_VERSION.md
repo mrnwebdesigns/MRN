@@ -3,7 +3,7 @@
 ## Current Release
 - Stack release: `2026.10.02-ame-menu-visibility`
 - Release date: `2026-10-02`
-- Status: `release candidate; Gloves production deployment and browser verification pending`
+- Status: `deployed to Gloves production; exact runtime and Shop Manager/administrator browser verification passed`
 
 ## Included MRN-Owned Components
 - Theme:
