@@ -15,6 +15,7 @@ class Assets(HTMLParser):
     def __init__(self):
         super().__init__()
         self.urls = []
+        self.stylesheets = []
 
     def handle_starttag(self, tag, attributes):
         attrs = dict(attributes)
@@ -22,6 +23,23 @@ class Assets(HTMLParser):
             self.urls.append(attrs['src'])
         if tag == 'link' and attrs.get('href') and attrs.get('rel') in ('stylesheet', 'preload', 'modulepreload'):
             self.urls.append(attrs['href'])
+            if attrs.get('rel') == 'stylesheet':
+                self.stylesheets.append(attrs['href'])
+
+
+def stylesheet_routes(manifest):
+    routes = manifest.get('stylesheet_routes', {})
+    if not isinstance(routes, dict):
+        raise ValueError('Invalid stylesheet routes')
+    for route, sources in routes.items():
+        if (not isinstance(route, str) or not route.startswith('/') or route.startswith('//')
+                or re.search(r'[%\\\s?#]', route) or any(part in ('.', '..') for part in route.split('/'))
+                or not isinstance(sources, list) or not sources
+                or any(not isinstance(source, str) or not source.endswith('.css')
+                       or source not in manifest['assets'] for source in sources)
+                or len(set(sources)) != len(sources)):
+            raise ValueError('Invalid stylesheet route')
+    return routes
 
 
 def fetch(url, content_types):
@@ -45,6 +63,7 @@ def fetch(url, content_types):
 
 def verify(manifest, pages, fetcher=fetch):
     results = []
+    routes = stylesheet_routes(manifest)
     legacy = '/wp-content/themes/' + manifest['slug'] + '/'
     owned = '/wp-content/mrn-assets/' + manifest['slug'] + '/'
     prefix = '/wp-content/' + manifest['public_path'] + '/'
@@ -80,8 +99,10 @@ def verify(manifest, pages, fetcher=fetch):
                 if actual != expected['sha256'] or len(body) != expected['bytes']:
                     raise ValueError('Public asset checksum differs from the release: ' + url)
                 verified[url] = actual
-            stylesheet = prefix + manifest['assets']['style.css']['file']
-            if not any(urllib.parse.urlsplit(url).path == stylesheet for url in verified):
+            sources = routes.get(urllib.parse.urlsplit(page).path, ['style.css'])
+            stylesheets = {prefix + manifest['assets'][source]['file'] for source in sources}
+            linked = {urllib.parse.urljoin(page, raw) for raw in parser.stylesheets}
+            if not any(url in linked and urllib.parse.urlsplit(url).path in stylesheets for url in verified):
                 raise ValueError('Page did not reference the released child stylesheet: ' + page)
             results.append({'page': page, 'phase': phase, 'assets': verified})
     return {'status': 'public-html-assets-verified', 'generation': manifest['generation'], 'pages': results,

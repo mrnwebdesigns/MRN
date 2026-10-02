@@ -5,6 +5,7 @@ import {readdir, readFile, mkdir, writeFile, copyFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {build, transform, version as esbuildVersion} from 'esbuild';
+import {validateStylesheetRoutes} from './stylesheet-routes.mjs';
 
 const hash = data => createHash('sha256').update(data).digest('hex');
 const staticExtensions = new Set(['.css', '.js', '.mjs', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.avif', '.ico', '.woff', '.woff2', '.ttf', '.otf', '.eot']);
@@ -60,6 +61,14 @@ export async function buildAssets({theme, output, slug, sourceSha}) {
         }}]});
     }
   }
+  let stylesheetRoutes;
+  try {
+    const declaration = JSON.parse(await readFile(path.join(theme, 'mrn-asset-routes.json'), 'utf8'));
+    if (declaration.schema !== 1) throw new Error('Invalid asset route schema');
+    stylesheetRoutes = validateStylesheetRoutes(declaration.stylesheet_routes, entries);
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
   const staticFiles = Object.fromEntries([...bodies].sort(([a],[b]) => a < b ? -1 : 1).map(([file, bytes]) => [file, {sha256: hash(bytes), bytes: bytes.length}]));
   const generation = hash(JSON.stringify(staticFiles));
   const publicPath = `mrn-assets/${slug}/${generation}`;
@@ -71,7 +80,8 @@ export async function buildAssets({theme, output, slug, sourceSha}) {
   }
   const manifest = {schema: 1, scope: 'child-theme', slug, source_sha: sourceSha,
     toolchain: {esbuild: esbuildVersion}, generation, public_path: publicPath,
-    assets: Object.fromEntries(Object.entries(entries).sort(([a],[b]) => a < b ? -1 : 1)), static_files: staticFiles};
+    assets: Object.fromEntries(Object.entries(entries).sort(([a],[b]) => a < b ? -1 : 1)), static_files: staticFiles,
+    ...(stylesheetRoutes ? {stylesheet_routes: stylesheetRoutes} : {})};
   await mkdir(path.join(output, 'theme'), {recursive: true});
   // Minified siblings shipped in the theme are generated from this same build.
   for (const [file, bytes] of bodies) {

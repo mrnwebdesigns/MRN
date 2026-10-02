@@ -264,10 +264,13 @@ jobs:
         run: |
           set -euo pipefail
           acceptance=()
+          performance=never
+          cwv=never
           if [[ "$TARGET" == live ]]; then acceptance=(--mode release --smoke-strict 1); fi
+          if [[ "$TARGET" == live ]]; then performance=always; cwv=auto; fi
           "$RUNNER_TEMP/mrn-qa-engine/bin/mrn-qa" run "${acceptance[@]}" \
             --project-root "$GITHUB_WORKSPACE" --site-url "$DEPLOY_URL" --scope site-only \
-            --run-api always --run-smoke always --run-accessibility always --run-performance always \
+            --run-api always --run-smoke always --run-accessibility always --run-performance "$performance" --run-cwv "$cwv" \
             --run-phpcbf never --output-file "$RUNNER_TEMP/site-runtime-qa.md"
       - name: Restore the prior release if Live runtime acceptance fails
         if: failure() && inputs.target == 'live' && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.runtime.outcome == 'failure'
