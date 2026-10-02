@@ -300,6 +300,13 @@ Read-only target preflight records this verified artifact and compares its built
 theme inventory with the target; it does not rebuild source. Source-only CLI
 preflight remains available for initial adoption inventory and cannot deploy.
 
+A theme can declare exact-path stylesheet alternatives in `mrn-asset-routes.json`:
+`{"schema":1,"stylesheet_routes":{"/":["style-home.css","style.css"]}}`.
+The builder validates CSS sources and copies the declaration into the immutable
+asset manifest. Undeclared paths still require `style.css`. HTML and browser
+checks require an applied stylesheet from the declared alternatives and verify
+its normal public URL and exact bytes; a preload alone does not qualify.
+
 The Dev adapter snapshots the original child theme and changes only its public
 `functions.php` to a stable loader. Original public assets remain byte-for-byte
 unchanged. New code is stored privately; new static assets use immutable public
@@ -317,9 +324,10 @@ caches, transients, unrelated HTML, and old static generations are preserved.
 
 The GitHub target checks browser-loaded dependency checksums at three viewport
 sizes and runs site layout contracts. A failed browser/layout acceptance rolls
-back with a new verified backup. Full MRN runtime QA is retained as feedback for
-Dev testing; unresolved findings prevent release approval, even when the Dev
-testing deployment itself succeeds. Live runtime QA is blocking, with automatic
+back with a new verified backup. Dev runs API, functional browser and accessibility
+checks, with performance and Core Web Vitals probes explicitly disabled. Speed
+testing runs only on Live. Unresolved Dev functional findings prevent release
+approval, even when the Dev testing deployment itself succeeds. Live runtime QA is blocking, with automatic
 code rollback on failure. Cross-run reuse of a Dev-qualified artifact remains
 future work; v1 builds once per dispatch and Both uses the same artifact.
 
