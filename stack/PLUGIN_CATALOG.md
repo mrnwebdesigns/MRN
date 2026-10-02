@@ -19,7 +19,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-disable-comments` | 1.2.5 | MU loader | Platform required | Enforces the MRN no-comments policy. |
 | `mrn-editor-lockdown` | 1.0.33 | MU loader | Platform required | Applies shared editor, metabox, and capability policy. |
 | `mrn-environment-runtime` | 0.5.1 | MU loader | Platform required | Provides environment, runtime, and notification diagnostics. |
-| `mrn-public-security-hardening` | 0.4.1 | MU loader | Platform required | Applies shared public REST and discovery hardening and owns the native Advanced admin menu. |
+| `mrn-public-security-hardening` | 0.4.3 | MU loader | Platform required | Applies shared public REST and discovery hardening and preserves AME decisions for the native Advanced admin menu. |
 | `mrn-shared-assets` | 0.2.1 | MU loader | Platform required | Provides shared asset and icon interfaces, including consumer-aware ACF admin asset detection. |
 | `mrn-site-colors` | 0.1.39 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
 | `mrn-updraft-local-retention` | 0.6.0 | MU loader | Platform required | Enforces seven daily, four weekly, and twelve 30-day remote recovery points, uses a stable cross-environment S3 site slug, exposes MainWP compliance evidence, and routes backup-policy warnings to Notifications Center. |

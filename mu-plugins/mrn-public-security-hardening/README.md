@@ -27,7 +27,7 @@ The status page shows the current filtered state for:
 
 It also includes a copy button for the per-site rollout prompt and a Login URL section that saves the site-specific login slug. Other site-specific changes should still be handled with filters or site-local configuration.
 
-The MU plugin owns the native WordPress `Advanced` top-level menu and its `Public Security` submenu. Both entries open the stable `admin.php?page=mrn-public-security-hardening` route, with no Admin Menu Editor configuration or generated menu slug required. A late WordPress `submenu_file` filter reasserts the native entry after any plugin that reorders or replaces the rendered admin menu.
+The MU plugin registers the native WordPress `Advanced` top-level menu and its `Public Security` submenu. Both entries open the stable `admin.php?page=mrn-public-security-hardening` route, with no generated menu slug required. Once Admin Menu Editor has finalized the menu, the plugin preserves its visibility, access, labels, and placement decisions instead of recreating hidden entries. Without AME's completed replacement, the late `submenu_file` filter retains the native-menu compatibility behavior. Page and save-handler capability checks remain in place; cosmetic hiding does not change authorization.
 
 ## Login URL Protection
 
