@@ -182,6 +182,7 @@ echo 'MRN_RESULT=' . wp_json_encode(array(
     'wp_root' => $root_path,
     'theme_url' => set_url_scheme(get_stylesheet_directory_uri(), 'https'),
     'theme' => realpath($theme), 'files' => $files, 'state' => $state,
+    'deployment_order' => is_file($c['state'] . '/deployment-order.json') ? json_decode(file_get_contents($c['state'] . '/deployment-order.json'), true) : null,
     'state_ready' => ($private || $wpe_private) && is_writable($c['state']) && (fileperms($c['state']) & 0077) === 0,
     'state_protection_probe_exists' => is_file(ABSPATH . '_wpeprivate/config.json'),
     'writable' => is_writable($theme),
@@ -316,6 +317,8 @@ def http_check(url, rest=False):
 
 
 def deploy(args, c):
+    from deployment_request import github_order
+    order = github_order(os.environ, args.sha, args.environment, args.mode)
     repository = check(os.environ['GITHUB_REPOSITORY'], r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', 'repository')
     artifact_path = getattr(args, 'artifact', None)
     artifact_sha256 = getattr(args, 'artifact_sha256', None)
@@ -364,7 +367,7 @@ def deploy(args, c):
         plan = {'repository': repository, 'environment': args.environment, 'slug': args.slug,
                 'archive': str(Path(artifact_path).resolve()), 'artifact_sha256': artifact_sha256,
                 'source_sha': args.sha, 'source_path': args.source, 'pages': pages,
-                'expected_current': before['state'], 'adopt': False}
+                'expected_current': before['state'], 'adopt': False, 'deployment_order': order}
         result = activate(plan, c)
         Path(args.receipt).write_text(json.dumps(result, indent=2) + '\n')
         if result['status'] != 'public-verified':

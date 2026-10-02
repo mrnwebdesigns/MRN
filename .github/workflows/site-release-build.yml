@@ -5,6 +5,9 @@ on:
       source_sha:
         type: string
         required: true
+      qa_source_sha:
+        type: string
+        default: ''
       source_path:
         type: string
         required: true
@@ -51,9 +54,14 @@ jobs:
           SOURCE_SHA: ${{ inputs.source_sha }}
           SOURCE_PATH: ${{ inputs.source_path }}
           SLUG: ${{ inputs.stylesheet }}
+          QA_SOURCE_SHA: ${{ inputs.qa_source_sha }}
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          [[ -z "$QA_SOURCE_SHA" || "$QA_SOURCE_SHA" == "$SOURCE_SHA" ]]
+          if [[ "$GITHUB_EVENT_NAME" == push ]]; then
+            [[ "$SOURCE_SHA" == "$GITHUB_SHA" && "$QA_SOURCE_SHA" == "$SOURCE_SHA" ]]
+          fi
           npm ci --ignore-scripts --prefix "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy"
           python3 "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/build_release.py" \
             --sha "$SOURCE_SHA" --source "$SOURCE_PATH" --slug "$SLUG" \

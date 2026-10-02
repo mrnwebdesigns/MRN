@@ -1,6 +1,6 @@
 # Site Git, deployment, and server transitions
 
-Status: v1 workflow available for individually qualified environments.
+Status: shared automatic Dev workflow available for individually qualified environments.
 Use `preflight` until the target has passed the onboarding evidence below and
 `DEPLOY_READY=1` has been recorded. A provider connection or an installed workflow
 does not qualify a target. Deployment must satisfy the
@@ -44,11 +44,21 @@ preview. Record its owner, branch, SHA, and agreed restore baseline. Serializati
 prevents overlapping writes; it does not reserve a testing window. Use separate
 preview environments for simultaneous testing.
 
-The first implementation intentionally has no push-triggered deployment.
-PR/push QA continues independently. Manual selection is the production intent
-gate; configure additional GitHub environment reviewers where the account plan
-supports them. Never assume a private repository has reviewer protection just
-because its environment exists.
+Participating repositories use `push: branches: [main]` and `workflow_dispatch`
+in a thin wrapper calling the shared `site-deploy.yml`. A main push selects
+`github.sha` without resolving a newer branch tip: blocking source QA of that
+commit -> immutable build -> verified artifact/preflight -> provider-appropriate
+backup -> atomic Dev activation -> public/browser/REST verification. Failed,
+skipped or cancelled source QA cannot reach the build or deployment.
+PRs and arbitrary branch pushes never deploy. Live and Both remain manual.
+Manual Dev still resolves a selected same-repository `source_branch` once and
+uses that exact commit throughout the run. Read-only preflight remains available.
+
+Manual selection is the production intent gate; configure additional GitHub
+environment reviewers where the account plan supports them. Never assume a
+private repository has reviewer protection just because its environment exists.
+
+See the [short developer guide](MRN-DEPLOYMENT-QUICK-START.md) for daily steps.
 
 ## Ownership
 
@@ -103,6 +113,62 @@ private QA Engine. Host values are configuration, not workflow source.
 The site wrapper pins the shared workflow and tooling to the same reviewed
 40-character MRN commit. Its fixed source path and stylesheet slug are reviewed
 in the site PR. Do not let dispatch inputs choose arbitrary filesystem paths.
+
+## Automatic Dev adoption
+
+Updating this repository or its template does **not** update consumers pinned to
+older commits. Migrate each approved site separately:
+
+1. Confirm its current Git source, active Dev preview, qualified target, backup
+   route and `DEPLOY_READY=1`. Reconcile server-only changes first. Check pending
+   runs and retain all previous receipts, private releases and asset generations.
+2. Select a reviewed shared MRN commit containing `site-deploy.yml`,
+   `site-source-qa.yml` and the ordering-aware controller. Render
+   `tools/site-deploy/site-deploy.yml.template` using that same 40-character SHA
+   for both `uses` and `tooling_ref`, plus the site's existing source path/slug.
+3. Replace the existing wrapper at its existing workflow path. Keep provider
+   configuration and credential identities in their existing `dev`/`live`
+   environments. Preserve any explicit secret-name mappings. The repository QA
+   Engine token must be readable by the source QA job, before environment access.
+   Keep PR source checks as applicable; they do not trigger deployment. Retire
+   duplicate deployment triggers; never reinstate the old rsync uploader.
+4. For a protected Phase 2 Dev preview, set `dev_main_enabled: false` in the
+   shared workflow call. Main pushes become a no-op, manual Dev-from-main and
+   Both are blocked, and manual feature-branch Dev/approved main Live remain
+   available. Remove this protection only at its separately approved launch.
+5. Review and test the wrapper PR. Its merge/push to main is the first automatic
+   Dev deployment and requires explicit pilot/adoption authorization plus the
+   verified backup gate. It does not enable Live or configure a missing target.
+6. Verify that a push alone passes source QA and build, preserves the same source
+   SHA/artifact checksum in the activation receipt, verifies backups, serves the
+   released CSS/JS URLs and matching bytes, renders correctly, and passes REST
+   health. Record broader runtime findings separately under the existing Dev policy.
+
+Dev and Live use independent `DEPLOY_URL`, host/root, site-owner credentials,
+backup adapter and readiness settings. WordPress generates URLs for the target
+environment; this workflow does not copy a database or replace Dev URLs in data.
+
+### Ordering and recovery
+
+Target jobs serialize on `site-code-<repository>-<environment>` without cancelling
+an active write. Automatic runs recheck current main before backup/transfer and
+before invoking the host controller. An obsolete push cannot silently substitute
+a newer commit or deploy its older artifact.
+
+Under the private host lock, `deployment-order.json` records the trusted caller
+workflow, GitHub run number/attempt, run ID and source SHA. It is written only
+after verified backup, before staging or activation. An older queued run or old
+rerun cannot replace a newer attempted release, even after that newer run failed
+and recovered. A retry of the same run must retain its SHA/run ID and increase
+the attempt. An intentional new manual dispatch may select an older feature
+branch on Dev; it is a new operator request, not an old queued run.
+
+Automatic recovery uses its original run identity and exact current pointer.
+Explicit local receipt-bound rollback remains available and preserves the
+ordering record. Do not delete the record to unblock a stale run. Keep the caller
+workflow path stable; changing its name/path or resetting its run sequence
+requires explicit reconciliation of the stored workflow identity. Never rerun
+pre-migration workflows: their old pins do not contain the new ordering guards.
 
 ## Gates and evidence
 

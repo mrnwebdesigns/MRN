@@ -11,12 +11,14 @@ import subprocess
 import time
 
 from deploy import Target, check, config, digest, verify_identity, verify_state_privacy, verify_git_privacy
+from deployment_request import check_order, github_order, require_current_push
 from verify_release import verify
 
 TOOLS = Path(__file__).resolve().parent
 HOST_FILES = ('host_controller.py', 'atomic_store.py', 'cache_policy.py', 'deploy.py',
               'verify_release.py', 'verify_public_assets.py', 'backup.php', 'release-bootstrap.php',
-              'host_paths.py', 'html_cache.php', 'kinsta.py', 'kinsta_html_cache.php')
+              'host_paths.py', 'html_cache.php', 'kinsta.py', 'kinsta_html_cache.php',
+              'deployment_request.py', 'resolve_source.py')
 
 
 def transfer_backup(target):
@@ -61,6 +63,10 @@ def run(plan, c):
         raise ValueError('Target changed before backup and transfer')
     if plan.get('adopt') and digest(before['files']) != plan['baseline']:
         raise ValueError('Target differs from reviewed adoption baseline')
+    order = plan.get('deployment_order')
+    check_order(order, before.get('deployment_order'), rollback=bool(plan.get('rollback_to')))
+    if not plan.get('rollback_to'):
+        require_current_push(order, os.environ)
     backup = transfer_backup(target)
     job = c['state_dir'] + '/jobs/' + str(time.time_ns())
     check(job, r'/[A-Za-z0-9_./-]+', 'private job path')
@@ -90,6 +96,8 @@ def run(plan, c):
         remote_plan['native_backup_receipt'] = backup
         envelope['native'] = {'token': target.native_backup.token, 'site_id': target.native_backup.site_id,
                               'environment_id': target.native_backup.environment_id}
+    if not plan.get('rollback_to'):
+        require_current_push(order, os.environ)
     process = target.controller(job + '/host_controller.py', envelope)
     receipts = [json.loads(line[11:]) for line in process.stdout.splitlines() if line.startswith('MRN_RESULT=')]
     if len(receipts) != 1:
@@ -111,7 +119,12 @@ if __name__ == '__main__':
             raise ValueError('No verified previous release is available for rollback')
         pages = list(dict.fromkeys(row['url'] for row in previous['activation']['cache']['pages']))
         plan = {key: previous[key] for key in ('repository', 'environment', 'slug')}
-        plan.update(expected_current=previous['current'], rollback_to=previous['previous']['release_id'], pages=pages)
+        plan.update(expected_current=previous['current'], rollback_to=previous['previous']['release_id'], pages=pages,
+                    deployment_order=previous.get('deployment_order') if os.environ.get('GITHUB_ACTIONS') == 'true' else None)
+        if os.environ.get('GITHUB_ACTIONS') == 'true':
+            order = github_order(os.environ, previous['source_sha'], previous['environment'], 'deploy')
+            if order != plan['deployment_order']:
+                raise ValueError('Automatic rollback must belong to the original deployment job')
     else:
         plan = json.loads(Path(args.plan).read_text())
     receipt = run(plan, config(os.environ))
