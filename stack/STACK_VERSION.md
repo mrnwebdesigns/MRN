@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.04-stack-simplification`
+- Stack release: `2026.10.04-stack-simplification-r2`
 - Release date: `2026-10-04`
 - Status: `locked release candidate; production promotion and optional integration qualification remain gated`
 
@@ -23,8 +23,8 @@
   - `mrn-public-security-hardening` `0.4.3`
   - `mrn-schema-bridge` `0.7.0`
   - `mrn-site-colors` / `Site Styles` `0.1.39`
-  - `mrn-updraft-backup-policy-loader` `0.6.0`
-  - `mrn-updraft-local-retention` `0.6.0`
+  - `mrn-updraft-backup-policy-loader` `0.6.1`
+  - `mrn-updraft-local-retention` `0.6.1`
 - Standard plugins:
   - `background-video-popout-disabler` `1.0.2`
   - `mrn-acf-focal-point` `1.1.2`
@@ -52,12 +52,18 @@
 - License manifest: [`manifests/licenses.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/licenses.txt)
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
-## Notes
+## Candidate scope
 - October 4 reconciles native SEOPress 10.3, Post SMTP, retired duplicate editors,
   metadata-preserving migration and development SEO controls. The prior verified
   release remains `2026.10.02-ame-menu-visibility` on its recorded target.
   The candidate does not authorize a site migration. See
   `docs/STACK-SIMPLIFICATION-2026-10.md` and the October 4 release evidence.
+
+## Historical release notes
+
+The entries below describe their dated releases and original target authorizations;
+they do not establish deployment or qualification of the October 4 candidate.
+
 - Public Security Hardening `0.4.3` respects Admin Menu Editor's finalized
   visibility, permissions, labels and placement. It no longer restores a
   hidden Advanced/Public Security menu after AME has applied role rules.
@@ -149,10 +155,7 @@
   split home/siteurl installs. Default endpoint protection and encoded query
   arguments are preserved. The existing login container gains a main landmark
   without altering its structure. Component release QA and real HTTP flows pass.
-- Apart from MRN Tokens, this candidate retains all other component versions and exact source trees
-  from the prior complete Fleet release. Site qualification, prerequisites,
-  fresh remote backup and post-deployment verification remain required.
-- This file tracks the current stack baseline, not every historical package ever shipped.
+- Site qualification, prerequisites, fresh remote backup and post-deployment verification remain required.
 - Third-party packages in `manifests/plugins.txt` keep their own upstream versions and package filenames.
 - Current baseline keeps the canonical AME export payloads, importer/manifests, bootstrap helper, shared shim, and stack MU wrapper loaders tracked in the main repo so release/deploy flows can verify and sync them consistently.
 - Current baseline includes bounded recovery inventory and guarded reconciliation for exact, unchanged incomplete rollout markers that are physically empty or contain only recognized empty apply scaffolding, without introducing recursive deletion.

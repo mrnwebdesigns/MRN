@@ -59,7 +59,11 @@ Source reconciliation is merged. The immutable candidate is being qualified; it 
 
 The canonical Stack release and its optional integrations have different qualification boundaries. The default CAPTCHA package remains the registered 0.1.4 until the 0.2.0 deployment adapter and genuine-token qualification pass. Its merged 0.2.0 source and deterministic artifact are preserved as a candidate, not silently promoted.
 
-Existing site deployment receipts are historical evidence, not proof of this candidate. Remaining gates include full release QA, hosted package parity, exact target preflight/verification, and the shared asset adapter described below.
+The full release-mode QA run passed source, security, API, browser, accessibility, performance and CWV checks on the isolated Local Hub fixture. Its advisory parity and rollout rows are not release acceptance: seven older development copies differ from the hosted package, and the feature worktree cannot resolve the standalone sticky-toolbar source at the legacy relative path. The report's generated “100% SUCCESS” label must not be read as fleet readiness. See `stack/release-evidence/2026-10-04-simplification/full-release-qa.md` and its README.
+
+The first locked candidate was assembled twice with identical package bytes, installed on the local fixture and read back with no missing components, drift or legacy collisions. Fresh MainWP inventory for `https://gloves-online.com/` then passed the exact 29-component package preflight, preserving its active child theme. This was read-only: production was not deployed or migrated. Revision r2 corrects the Updraft fixture tree's version and seals source before the separate lock commit; it must receive its own package/readback/preflight receipts.
+
+Existing site deployment receipts are historical evidence, not proof of this candidate. Hosted package parity, actual named-target deployment/verification and the shared asset adapter below remain required before release promotion.
 
 ## Preservation
 

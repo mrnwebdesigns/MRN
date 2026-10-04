@@ -297,7 +297,7 @@
     {
       "slug": "mrn-updraft-backup-policy-loader",
       "name": "MRN Updraft Backup Policy Loader",
-      "version": "0.6.0",
+      "version": "0.6.1",
       "runtime_type": "mu-loader",
       "classification": "platform-policy",
       "lifecycle": "supported",
@@ -312,7 +312,7 @@
     {
       "slug": "mrn-updraft-local-retention",
       "name": "MRN Updraft Backup Policy",
-      "version": "0.6.0",
+      "version": "0.6.1",
       "runtime_type": "mu-component",
       "classification": "platform-policy",
       "lifecycle": "supported",

@@ -1,0 +1,14 @@
+{
+  "operation": "preflight",
+  "rollout_id": "gloves-stack-simplification-20261004",
+  "release_id": "2026.10.04-stack-simplification",
+  "checksum": "82c154782c387734adb3b5a3dd0926326bf1f83d5bfad9a4d8af578065776340",
+  "target_site_ids": [
+    117
+  ],
+  "ready": true,
+  "scope": "Read-only preflight only; no backup, apply, production mutation or asset-adapter qualification.",
+  "site_url": "https://gloves-online.com/",
+  "components": 29,
+  "active_child_preserved": true
+}
