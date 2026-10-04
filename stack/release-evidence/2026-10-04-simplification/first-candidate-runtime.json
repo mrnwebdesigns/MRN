@@ -1,0 +1,18 @@
+{
+  "release": {
+    "present": true,
+    "valid": true,
+    "release_id": "2026.10.04-stack-simplification",
+    "schema_version": 1,
+    "sha256": "a7ec3ea303d6e86b190a74ab23db2dece5c3331b52c4a55ae07dee67fa232f9a"
+  },
+  "site": {
+    "host": "mrn-stack-qa-20261004.localhost",
+    "environment_type": "local",
+    "template": "mrn-base-stack",
+    "stylesheet": "mrn-base-stack-child"
+  },
+  "missing_required": [],
+  "drifted_required": [],
+  "legacy_flat_collisions": []
+}

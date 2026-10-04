@@ -1,6 +1,8 @@
 {
   "url": "https://mrn-stack-qa-20261004.localhost/wp-admin/options-general.php?page=mrn-config-helper&tab=admin",
   "editor_save_passed": true,
+  "native_fields_loaded": true,
+  "loading_overlay_absent": true,
   "retired_content_type_sections": 0,
   "retired_schema_panel_count": 0,
   "native_seopress_boxes": 1,
