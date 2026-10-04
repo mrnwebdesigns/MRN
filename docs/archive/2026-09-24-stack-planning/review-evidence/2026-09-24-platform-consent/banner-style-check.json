@@ -1,0 +1,95 @@
+{
+  "styles": [
+    {
+      "selector": ".seopress-user-message",
+      "text": "This site uses cookies for analytics and to improve your experience. By clicking Accept, you consent to our use of cookies. Learn more in our privacy policy.\n\nAccept\nDecline",
+      "color": "rgb(28, 34, 43)",
+      "background": "rgb(255, 255, 255)",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "rect": {
+        "x": 0,
+        "y": 592,
+        "width": 390,
+        "height": 252
+      }
+    },
+    {
+      "selector": ".seopress-user-message > p:first-child",
+      "text": "This site uses cookies for analytics and to improve your experience. By clicking Accept, you consent to our use of cookies. Learn more in our privacy policy.",
+      "color": "rgb(44, 62, 80)",
+      "background": "rgba(0, 0, 0, 0)",
+      "fontSize": "15px",
+      "fontWeight": "400",
+      "rect": {
+        "x": 16,
+        "y": 608,
+        "width": 358,
+        "height": 96
+      }
+    },
+    {
+      "selector": ".seopress-user-message a",
+      "text": "privacy policy",
+      "color": "rgb(26, 26, 26)",
+      "background": "rgba(0, 0, 0, 0)",
+      "fontSize": "15px",
+      "fontWeight": "500",
+      "rect": {
+        "x": 171.984375,
+        "y": 659,
+        "width": 177.46875,
+        "height": 42
+      }
+    },
+    {
+      "selector": "#seopress-user-consent-accept",
+      "text": "Accept",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(26, 26, 26)",
+      "fontSize": "15px",
+      "fontWeight": "600",
+      "rect": {
+        "x": 16,
+        "y": 728,
+        "width": 358,
+        "height": 42
+      }
+    },
+    {
+      "selector": "#seopress-user-consent-close",
+      "text": "Decline",
+      "color": "rgb(55, 65, 81)",
+      "background": "rgb(255, 255, 255)",
+      "fontSize": "15px",
+      "fontWeight": "600",
+      "rect": {
+        "x": 16,
+        "y": 782,
+        "width": 358,
+        "height": 46
+      }
+    },
+    {
+      "selector": "#seopress-user-consent-edit",
+      "text": "Nom Nom",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(26, 26, 26)",
+      "fontSize": "15px",
+      "fontWeight": "600",
+      "rect": {
+        "x": 20,
+        "y": 782,
+        "width": 118.78125,
+        "height": 42
+      }
+    }
+  ],
+  "focus": {
+    "id": "seopress-user-consent-close",
+    "focusVisible": true,
+    "outline": "rgb(55, 65, 81) auto 3px",
+    "outlineOffset": "0px",
+    "boxShadow": "none"
+  }
+}

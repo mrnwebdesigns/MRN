@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Environment Runtime
  * Description: Reports the deployment-managed environment and performance policy without adding frontend work.
- * Version: 0.5.1
+ * Version: 0.6.0
  * Author: MRN Web Designs
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_ENVIRONMENT_RUNTIME_VERSION' ) ) {
-	define( 'MRN_ENVIRONMENT_RUNTIME_VERSION', '0.5.1' );
+	define( 'MRN_ENVIRONMENT_RUNTIME_VERSION', '0.6.0' );
 }
 
 /**
@@ -729,3 +729,61 @@ function mrn_environment_runtime_register_dashboard_notifications(): void {
 }
 
 add_action( 'plugins_loaded', 'mrn_environment_runtime_register_dashboard_notifications', 20 );
+
+/**
+ * Keep native SEO editing available on development without publishing tracking.
+ * Stored options are untouched; admin and CLI reads retain the launch settings.
+ *
+ * @param mixed $pre Short-circuit value supplied by earlier filters.
+ * @return mixed
+ */
+function mrn_environment_runtime_seopress_tracking( $pre ) {
+	if ( is_admin() || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
+		return $pre;
+	}
+	return array();
+}
+
+/**
+ * Suppress indexing on public requests while retaining the stored launch value.
+ *
+ * @param mixed $pre Short-circuit value supplied by earlier filters.
+ * @return mixed
+ */
+function mrn_environment_runtime_blog_public( $pre ) {
+	if ( is_admin() || ( defined( 'WP_CLI' ) && WP_CLI ) ) {
+		return $pre;
+	}
+	return '0';
+}
+
+/**
+ * Prevent disabled SEOPress external jobs from rearming during native editing.
+ * Bootstrap clears existing events before exposing a new development site.
+ *
+ * @param mixed  $pre   Short-circuit value.
+ * @param object $event Proposed cron event.
+ * @return mixed
+ */
+function mrn_environment_runtime_seopress_schedule( $pre, $event ) {
+	$hooks = array(
+		'seopress_404_email_alerts_cron', 'seopress_404_send_alert_cron',
+		'seopress_alerts_cron', 'seopress_broken_links_run_task_cron',
+		'seopress_broken_links_watchdog_cron', 'seopress_get_insights_gsc_cron',
+		'seopress_google_analytics_cron', 'seopress_insights_gsc_cron',
+		'seopress_license_validation_cron', 'seopress_matomo_analytics_cron',
+		'seopress_page_speed_insights_cron', 'seopress_request_google_analytics_cron',
+		'seopress_request_matomo_analytics_cron', 'seopress_request_page_speed_insights_cron',
+		'seopress_schedule_license_validation_cron', 'seopress_send_alerts_cron',
+		'seopress_site_audit_run_task_cron', 'seopress_site_audit_watchdog_cron',
+	);
+	return isset( $event->hook ) && in_array( $event->hook, $hooks, true ) ? false : $pre;
+}
+
+if ( 'production' !== mrn_environment_runtime_environment_type()
+	&& 'disabled' === mrn_environment_runtime_constant( 'MRN_SEO_INDEXING_POLICY', array( 'disabled', 'configured' ), 'disabled' ) ) {
+	add_filter( 'pre_option_seopress_google_analytics_option_name', 'mrn_environment_runtime_seopress_tracking' );
+	add_filter( 'pre_option_blog_public', 'mrn_environment_runtime_blog_public' );
+	add_filter( 'pre_schedule_event', 'mrn_environment_runtime_seopress_schedule', 10, 2 );
+	add_filter( 'pre_reschedule_event', 'mrn_environment_runtime_seopress_schedule', 10, 2 );
+}

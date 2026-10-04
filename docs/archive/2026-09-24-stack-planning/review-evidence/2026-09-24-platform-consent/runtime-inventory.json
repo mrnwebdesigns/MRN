@@ -1,0 +1,44 @@
+{
+  "target": "https://platform.localhost",
+  "date": "2026-09-24",
+  "source": "Local runtime WP-CLI readback; no configuration changes requested",
+  "stylesheet": "mrn-base-stack-child",
+  "template": "mrn-base-stack",
+  "plugins": [
+    {
+      "slug": "wp-seopress",
+      "version": "10.1",
+      "active": true
+    },
+    {
+      "slug": "wp-seopress-pro",
+      "version": "10.1.1",
+      "active": true
+    },
+    {
+      "slug": "mrn-cookie-consent",
+      "version": "1.1.40",
+      "active": false
+    },
+    {
+      "slug": "mrn-gtm-injector",
+      "version": "1.0.13",
+      "active": false
+    },
+    {
+      "slug": "google-site-kit",
+      "installed": false,
+      "active": false
+    }
+  ],
+  "configured_ga4_id": "G-RTZD6VL2FD",
+  "gtm_container_observed": false,
+  "consent_expiration_days": 30,
+  "edit_choice_label": "Nom Nom",
+  "free_plugin_checksum_check": {
+    "command": "wp --path=/srv/mrn-sites/platform/public --allow-root --skip-plugins --skip-themes plugin verify-checksums wp-seopress --version=10.1 --strict",
+    "result": "Success: Verified 1 of 1 plugins.",
+    "exit_code": 0
+  },
+  "pro_plugin_checksum_check": "not performed; premium plugin"
+}

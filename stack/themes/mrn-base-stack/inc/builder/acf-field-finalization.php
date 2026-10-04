@@ -26,7 +26,7 @@ function mrn_base_stack_normalize_acf_defaults_in_field_tree( $field ) {
 		$field['_name'] = $field['name'];
 	}
 
-	$field_type = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
+	$field_type    = isset( $field['type'] ) ? sanitize_key( (string) $field['type'] ) : '';
 	$type_defaults = array(
 		'text'   => array(
 			'maxlength' => '',
