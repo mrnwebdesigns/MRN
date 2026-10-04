@@ -1,0 +1,25 @@
+PASS: Content Only Events are eligible in the editor and renderer
+PASS: Content Only Event without a destination stays unlinked
+PASS: The existing ACF field saves and reloads the destination
+PASS: Content Only Event resolves its saved external destination
+PASS: New-tab preference includes noopener
+PASS: Row link-off preference takes precedence
+PASS: Row link-off preference takes precedence
+PASS: Row link-off preference takes precedence
+PASS: Real title/read-more markup respects link setting 1
+PASS: Renderer never creates empty links
+PASS: Real title/read-more markup respects link setting 0
+PASS: Renderer never creates empty links
+PASS: Same-tab preference is preserved
+PASS: Invalid target attributes are rejected
+PASS: Unsafe, missing, or malformed Content Only destinations remain unlinked
+PASS: Unsafe, missing, or malformed Content Only destinations remain unlinked
+PASS: Unsafe, missing, or malformed Content Only destinations remain unlinked
+PASS: Unsafe, missing, or malformed Content Only destinations remain unlinked
+PASS: Unsafe, missing, or malformed Content Only destinations remain unlinked
+PASS: Public Event without a saved link retains its normal permalink
+PASS: A saved Event destination also works for public Events
+PASS: Other post types keep their own destination
+PASS: Other post types keep their link attributes
+PASS: Existing relationship attributes survive the Event new-tab preference
+Event Reference Content runtime regression checks passed.

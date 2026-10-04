@@ -1,9 +1,13 @@
 # Site Git, deployment, and server transitions
 
-Status: implementation candidate; site activation requires the onboarding evidence below.
-Use the current helper for preflight only until it satisfies the
+Status: shared automatic Dev workflow available for individually qualified environments.
+Use `preflight` until the target has passed the onboarding evidence below and
+`DEPLOY_READY=1` has been recorded. A provider connection or an installed workflow
+does not qualify a target. Deployment must satisfy the
 [CSS/JS release contract](MRN-ASSET-RELEASE-STANDARD.md), including atomic
 activation, scoped HTML refresh, and public manifest/checksum verification.
+Keep target-specific source, backup, rollback, browser and runtime receipts in
+the site repository and operational record; incomplete adapters stay disabled.
 
 ## Daily workflow
 
@@ -40,11 +44,28 @@ preview. Record its owner, branch, SHA, and agreed restore baseline. Serializati
 prevents overlapping writes; it does not reserve a testing window. Use separate
 preview environments for simultaneous testing.
 
-The first implementation intentionally has no push-triggered deployment.
-PR/push QA continues independently. Manual selection is the production intent
-gate; configure additional GitHub environment reviewers where the account plan
-supports them. Never assume a private repository has reviewer protection just
-because its environment exists.
+Participating repositories install two thin workflows. `site-push.yml` emits a
+credential-free **MRN source push** signal for the configured Dev branch (`main`
+by default). `site-deploy.yml` listens for completion through `workflow_run` and
+always executes the trusted wrapper on default `main`. The shared controller
+validates the GitHub event, same repository, signal workflow identity, configured
+branch and activation cutoff. It uses the signal's immutable `head_sha`, never
+the downstream workflow's `github.sha`. Signal artifacts are never consumed.
+
+Blocking source QA of that exact commit -> immutable build -> verified
+artifact/preflight -> provider-appropriate backup -> atomic Dev activation ->
+public/browser/REST verification. Failed, skipped or cancelled source QA cannot
+reach the build or deployment. The signal is notification, not QA acceptance.
+PRs and arbitrary branch pushes never deploy. Live and Both remain manual.
+Manual Dev still resolves a selected same-repository `source_branch` once and
+uses that exact commit throughout the run. Read-only preflight remains available.
+Existing direct-main-push consumers retain their supported contract until migrated.
+
+Manual selection is the production intent gate; configure additional GitHub
+environment reviewers where the account plan supports them. Never assume a
+private repository has reviewer protection just because its environment exists.
+
+See the [short developer guide](MRN-DEPLOYMENT-QUICK-START.md) for daily steps.
 
 ## Ownership
 
@@ -99,6 +120,82 @@ private QA Engine. Host values are configuration, not workflow source.
 The site wrapper pins the shared workflow and tooling to the same reviewed
 40-character MRN commit. Its fixed source path and stylesheet slug are reviewed
 in the site PR. Do not let dispatch inputs choose arbitrary filesystem paths.
+
+## Automatic Dev adoption
+
+Updating this repository or its template does **not** update consumers pinned to
+older commits. Migrate each approved site separately:
+
+1. Confirm its current Git source, active Dev preview, qualified target, backup
+   route and `DEPLOY_READY=1`. Reconcile server-only changes first. Check pending
+   runs and retain all previous receipts, private releases and asset generations.
+2. Temporarily remove the repository variable `MRN_AUTO_DEV_AFTER`. New signal
+   consumers are unarmed when it is absent. Do not change `DEPLOY_READY`, secrets,
+   provider identities or the installed site's ordering record.
+3. Select a reviewed shared MRN commit containing this signal integration. Render
+   `tools/site-deploy/site-deploy.yml.template` with that same 40-character SHA
+   for both `uses` and `tooling_ref`, plus the existing source path/stylesheet.
+   Install it at the **existing** `site-deploy.yml` path. Add
+   `tools/site-deploy/site-push.yml.template` as `.github/workflows/site-push.yml`.
+   Preserve explicit secret-name mappings and separate PR source checks. Remove
+   duplicate deployment triggers; never reinstate the retired rsync uploader.
+4. For an active Phase 2 preview, put its exact branch in the signal's `branches`
+   list and the trusted wrapper's `auto_dev_branch`; set `dev_main_enabled: false`.
+   Install the signal file on that branch too. Main pushes will not replace Dev;
+   manual Dev-from-main and Both remain blocked. Manual feature Dev and approved
+   main Live remain available. Do not merge or publish the phase as part of setup.
+5. Review/test/merge the configuration changes while unarmed. Verify every setup
+   run skipped source QA, build and deployment. After setup is merged on every
+   applicable branch, set `MRN_AUTO_DEV_AFTER` to the current UTC timestamp in
+   `YYYY-MM-DDTHH:MM:SSZ` format. Only signals originally created **after** that
+   time qualify. Delayed setup callbacks and reruns keep their original creation
+   time and cannot release the installation snapshot. Removing the variable
+   pauses future automatic requests; it does not cancel an already-started job.
+   Coordinate pending jobs before maintenance. Set this only for qualified Dev.
+6. A future source push is the first automatic deployment. When authorized,
+   verify exact QA/source/artifact identity, verified backup, public CSS/JS URLs
+   and checksums, browser rendering and REST health. Setup-only work must report
+   that runtime verification is deferred; never claim installation is a new
+   end-to-end deployment test. Unqualified sites may have wrappers prepared with
+   the variable unset and `DEPLOY_READY=0`; they still need onboarding.
+
+The repository default branch must remain `main`. Both workflows retain fixed
+names/paths. A Phase 2 branch supplies code, not privileged deployment logic.
+Use ordinary Git pushes for Dev and the standard GitHub CLI `gh workflow run`
+for explicit Dev/Live/Both requests; see the short guide. The CLI needs an
+authorized GitHub account with repository write/workflow access. A push-only SSH
+deploy key is not an API login. Do not distribute shared administrator tokens.
+
+Production fixes belong on reviewed main and must also be merged/cherry-picked
+into an active phase branch. Automation does not resolve those source conflicts
+or copy a database between environments. Both is blocked during a protected
+phase preview so a Phase 1 release cannot overwrite Phase 2 Dev.
+
+Dev and Live use independent `DEPLOY_URL`, host/root, site-owner credentials,
+backup adapter and readiness settings. WordPress generates URLs for the target
+environment; this workflow does not copy a database or replace Dev URLs in data.
+
+### Ordering and recovery
+
+Target jobs serialize on `site-code-<repository>-<environment>` without cancelling
+an active write. Automatic runs recheck the configured source branch before backup/transfer and
+before invoking the host controller. An obsolete push cannot silently substitute
+a newer commit or deploy its older artifact.
+
+Under the private host lock, `deployment-order.json` records the trusted caller
+workflow, GitHub run number/attempt, run ID and source SHA. It is written only
+after verified backup, before staging or activation. An older queued run or old
+rerun cannot replace a newer attempted release, even after that newer run failed
+and recovered. A retry of the same run must retain its SHA/run ID and increase
+the attempt. An intentional new manual dispatch may select an older feature
+branch on Dev; it is a new operator request, not an old queued run.
+
+Automatic recovery uses its original run identity and exact current pointer.
+Explicit local receipt-bound rollback remains available and preserves the
+ordering record. Do not delete the record to unblock a stale run. Keep the caller
+workflow path stable; changing its name/path or resetting its run sequence
+requires explicit reconciliation of the stored workflow identity. Never rerun
+pre-migration workflows: their old pins do not contain the new ordering guards.
 
 ## Gates and evidence
 
@@ -206,12 +303,15 @@ References: [GitHub deployments](https://docs.github.com/en/actions/how-tos/depl
 ## Formal MRN policy and pilot
 
 The [MRN Git, Environment Deployment, and Asset Release Policy](https://docs.google.com/document/d/1xAnhiuhPxNvMItxaARB_sZxi1phByUBPS4rvKDumH0Q/edit)
-is filed in the MRN Policies folder. Trilliant is the first pilot; do not change
-Gloves deployment configuration while its separate work continues.
+is filed in the MRN Policies folder. Trilliant was the first Dev pilot. Its
+Live environment remains disabled; Phase 2 must not be published by deployment
+infrastructure work. The next authorized v1 targets are Gloves, Freedom House,
+and SWC Care Partners, preserving their launched child-theme code.
 
 The builder, asset URL adapter, and public HTTP checksum verifier are candidate
 components. The CloudPanel Dev controller can activate only a previously
-adopted, explicitly enabled child theme. Live writes remain blocked in code.
+adopted, explicitly enabled child theme. Live writes require an explicit qualified provider adapter and an enabled
+environment readiness switch.
 Kinsta preflight uses its native API to verify environment identity and backup
 access; production never falls back to Updraft.
 
@@ -226,6 +326,13 @@ entries, missing files, and checksum mismatches stop the run without extraction.
 Read-only target preflight records this verified artifact and compares its built
 theme inventory with the target; it does not rebuild source. Source-only CLI
 preflight remains available for initial adoption inventory and cannot deploy.
+
+A theme can declare exact-path stylesheet alternatives in `mrn-asset-routes.json`:
+`{"schema":1,"stylesheet_routes":{"/":["style-home.css","style.css"]}}`.
+The builder validates CSS sources and copies the declaration into the immutable
+asset manifest. Undeclared paths still require `style.css`. HTML and browser
+checks require an applied stylesheet from the declared alternatives and verify
+its normal public URL and exact bytes; a preload alone does not qualify.
 
 The Dev adapter snapshots the original child theme and changes only its public
 `functions.php` to a stable loader. Original public assets remain byte-for-byte
@@ -244,10 +351,12 @@ caches, transients, unrelated HTML, and old static generations are preserved.
 
 The GitHub target checks browser-loaded dependency checksums at three viewport
 sizes and runs site layout contracts. A failed browser/layout acceptance rolls
-back with a new verified backup. Full MRN runtime QA is retained as feedback for
-Dev testing; unresolved findings prevent release approval, even when the Dev
-testing deployment itself succeeds. Live remains disabled. Cross-run reuse of
-a Dev-qualified artifact and provider-specific Live activation are still pending.
+back with a new verified backup. Dev runs API, functional browser and accessibility
+checks, with performance and Core Web Vitals probes explicitly disabled. Speed
+testing runs only on Live. Unresolved Dev functional findings prevent release
+approval, even when the Dev testing deployment itself succeeds. Live runtime QA is blocking, with automatic
+code rollback on failure. Cross-run reuse of a Dev-qualified artifact remains
+future work; v1 builds once per dispatch and Both uses the same artifact.
 
 Update site wrappers from the complete reviewed template, not only the tooling
 SHA. Trilliant's legacy uploader must remain disabled after first adoption,
@@ -257,3 +366,38 @@ current Phase 2 branches and do not publish current main to Live.
 Artifact transfer follows GitHub's documented
 [reusable workflow outputs](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows#using-outputs-from-a-reusable-workflow)
 and [download by artifact ID](https://github.com/actions/download-artifact/tree/v4#download-artifacts-by-id).
+
+## Live host adapters (v1)
+
+`DEPLOY_HOST_PROVIDER` selects `nexcess`, `wpengine`, or `siteground` explicitly.
+The default `cloudpanel` adapter remains restricted to Dev. Unknown providers,
+identity mismatches, unverified storage, missing backups, or unqualified cache
+configuration stop activation. `DEPLOY_READY=1` is set only after adoption,
+public asset checks, a rollback exercise, and required runtime QA pass.
+
+Private release paths are resolved on the destination. The stable bootstrap
+resolves storage relative to WordPress so SSH/FPM chroot aliases do not select
+different releases. WP Engine uses its account-bound `_wpeprivate` storage and
+requires a public HTTP denial probe; other adapters keep storage outside the
+WordPress root. State must belong to the site owner, have mode 0700, and share
+the theme filesystem. Existing public asset files are never overwritten.
+
+Globally loaded child assets affect the site's public HTML routes. The controller
+records public WordPress permalinks, archives, taxonomy URLs, explicitly verified
+pages, and (on Nexcess) existing cached pagination routes before activation.
+Nexcess uses Cache Enabler's exact-page operation; WP Engine uses anchored host
+and path Varnish purges; SiteGround uses its dynamic-cache URL API with child-path
+purging disabled. SiteGround file caching requires separate qualification and
+blocks this v1 adapter. No object-cache flush, transient deletion, static-asset
+purge, or cache operation against another hostname is permitted.
+
+An edge that retains affected HTML must serve the released asset references
+within the bounded public verification window. The controller retries ordinary
+public requests for up to 120 seconds; it never treats cache-busting queries or a
+CAPTCHA/challenge response as release proof. A failed verification restores the
+previous code selection and refreshes the same HTML scope. Prior immutable asset
+generations stay available for cached pages and rollback.
+
+This file describes the implementation contract, not a completed site rollout.
+Record each environment's evidence separately. Unsupported cached routes or
+additional HTML cache layers must be qualified before enabling that environment.

@@ -1,5 +1,37 @@
 # Stack Changelog
 
+## 2026.10.02-ame-menu-visibility
+
+- Public Security Hardening `0.4.3` stops reasserting Advanced/Public Security
+  after Admin Menu Editor finalizes the menu. Hidden or denied items remain
+  hidden, and administrator labels, placement and unrelated Advanced groups
+  remain under AME's control. Native behavior without AME is unchanged.
+- Regression coverage preserves standalone Broken Links access and the
+  existing capability checks. The only authorized rollout is Gloves
+  production; its active child theme is excluded from the package.
+
+## 2026.10.01-acf-field-defaults
+
+- Parent theme `1.5.2` completes late-injected nested ACF text and number
+  definitions with the validator defaults ACF normally supplies during field
+  initialization. Explicit limits, including zero, remain unchanged.
+- Adds a read-only runtime regression against the actual nested Hero and Grid
+  fields that produced the Gloves editor warnings; the test invokes ACF's real
+  text and number validators without saving content.
+- This source change is not deployment evidence. Gloves Dev and production
+  remain separately gated by qualification, backup, rollout, and readback.
+
+## 2026.10.01-event-content-links
+
+- Parent theme `1.5.1` makes Event Reference Content images, titles and
+  read-more links use the saved Image Link in Content Only mode. The row
+  off-switch and blank/invalid destination behavior remain intact.
+- Reconciles the previously merged Config Helper `0.1.68` selective release
+  and deployment-contract changes into the cumulative immutable baseline.
+- Retains Updraft policy `0.6.0` from the prior baseline. Optional plugin
+  releases remain independent. Trilliant Dev is the only requested target;
+  package preparation is not deployment evidence.
+
 ## 2026.09.29-updraft-retention
 
 - Backup policy now validates full-hostname S3 prefixes against every active

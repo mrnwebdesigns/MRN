@@ -10,7 +10,10 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$mrn_release_state_root = '__MRN_STATE_PATH__';
+$mrn_release_state_root = realpath( ABSPATH . '__MRN_STATE_RELATIVE__' );
+if ( false === $mrn_release_state_root ) {
+	throw new RuntimeException( 'MRN private release storage is unavailable.' );
+}
 $mrn_release_pointer    = $mrn_release_state_root . '/current.json';
 // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Private atomic deployment pointer.
 $mrn_release_selection = json_decode( file_get_contents( $mrn_release_pointer ), true );

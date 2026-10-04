@@ -38,11 +38,13 @@ def verify_cloudpanel_origin(settings_path, wordpress):
 
 
 def head(url):
-    request = urllib.request.Request(url, method='HEAD', headers={'User-Agent': 'MRN-Deployment-Cache-Qualification/1.0'})
+    request = urllib.request.Request(url, method='GET', headers={'User-Agent': 'Mozilla/5.0 (compatible; MRN-Deployment/1.0)'})
     with urllib.request.urlopen(request, timeout=30) as response:
         if response.status != 200 or response.url != url:
             raise ValueError('Canonical HTML cache check returned a redirect or error')
-        return {name.lower(): value for name, value in response.headers.items()}
+        retained = {'content-type', 'cache-control', 'cf-cache-status', 'age', 'x-cache',
+                    'x-cache-age', 'x-cache-nxaccel', 'x-mrn-site-release'}
+        return {name.lower(): value for name, value in response.headers.items() if name.lower() in retained}
 
 
 def verify_uncached_html(site_url, pages, fetch_headers=head):

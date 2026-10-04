@@ -47,7 +47,7 @@ class DeploymentSafety(unittest.TestCase):
         with self.assertRaises(ValueError):
             deploy.require_baseline(self.config, {**self.before, 'state': {'tree': self.config['baseline']}}, 'org/site', 'live')
 
-    def exercise(self, mode, backup=None, ready=True, after=None, artifact=True, artifact_error=None):
+    def exercise(self, mode, backup=None, ready=True, after=None, artifact=True, artifact_error=None, github_env=None):
         operations = []
         before = self.before
         config = {**self.config, 'ready': ready}
@@ -58,7 +58,7 @@ class DeploymentSafety(unittest.TestCase):
                 self.login = 'site@host'
                 self.options = []
 
-            def inspect(self, slug):
+            def inspect(self, slug, skip_themes=False):
                 operations.append('inspect')
                 self.count += 1
                 return after if after is not None and self.count >= 2 else before
@@ -77,7 +77,9 @@ class DeploymentSafety(unittest.TestCase):
             args = argparse.Namespace(mode=mode, sha='a' * 40, source='.', slug='child', environment='live', receipt=temp + '/receipt.json')
             args.artifact = temp + '/release.tar' if artifact else None
             args.artifact_sha256 = 'b' * 64 if artifact else None
-            with patch.dict(os.environ, {'GITHUB_REPOSITORY': 'org/site'}), \
+            # These fixtures exercise explicit local/operator calls. Never inherit
+            # the CI runner's PR trigger; trigger cases opt into their own context.
+            with patch.dict(os.environ, {'GITHUB_REPOSITORY': 'org/site', 'GITHUB_ACTIONS': 'false', **(github_env or {})}), \
                  patch('verify_release.verify', return_value={'theme_files': self.files, 'artifact_sha256': 'b' * 64,
                        'runtime_qualified': False}, side_effect=artifact_error), \
                  patch.object(deploy, 'Target', FakeTarget), \
@@ -94,6 +96,14 @@ class DeploymentSafety(unittest.TestCase):
                         exporter.assert_not_called()
                 return operations, None, json.loads(Path(args.receipt).read_text())
 
+    def test_pull_request_context_is_rejected_before_site_access(self):
+        operations, error, receipt = self.exercise('deploy', github_env={
+            'GITHUB_ACTIONS': 'true', 'GITHUB_EVENT_NAME': 'pull_request',
+            'GITHUB_REF': 'refs/pull/123/merge'})
+        self.assertEqual([], operations)
+        self.assertIn('Untrusted deployment trigger', str(error))
+        self.assertIsNone(receipt)
+
     def test_preflight_never_starts_backup_or_writes(self):
         operations, error, receipt = self.exercise('preflight')
         self.assertIsNone(error)
@@ -101,6 +111,20 @@ class DeploymentSafety(unittest.TestCase):
         self.assertEqual('preflight', receipt['status'])
         self.assertEqual('verified-build-artifact', receipt['payload_kind'])
         self.assertFalse(receipt['artifact']['runtime_qualified'])
+
+    def test_qualified_native_routine_deploy_reaches_guarded_atomic_controller(self):
+        self.config.update(host_provider='kinsta', backup_provider='kinsta', native_transaction_backup_approved=True)
+        self.before['state'] = {'schema':1, 'release_id':'c'*64, 'public_path':'mrn-assets/child/'+'d'*64}
+        result = {'status':'public-verified','current':self.before['state'],'runtime_qa_required':True}
+        with patch.dict(os.environ, {'DEPLOY_VERIFY_PAGES':'["https://example.org/"]'}), \
+             patch('atomic_runner.run', return_value=result) as activate:
+            operations, error, receipt = self.exercise('deploy')
+        self.assertIsNone(error)
+        self.assertEqual('public-verified', receipt['status'])
+        plan, config = activate.call_args.args
+        self.assertEqual(self.before['state'], plan['expected_current'])
+        self.assertEqual('kinsta', config['backup_provider'])
+        self.assertTrue(config['native_transaction_backup_approved'])
 
     def test_bad_artifact_is_rejected_before_site_access(self):
         operations, error, receipt = self.exercise('preflight', artifact_error=ValueError('wrong archive'))
@@ -162,11 +186,11 @@ class DeploymentSafety(unittest.TestCase):
         }
         self.assertEqual(aliased['git_root'], deploy.git_destination(self.config, aliased, '.'))
         def denied(url, **kwargs):
-            raise deploy.urllib.error.HTTPError(url, 403, 'Forbidden', {}, None)
-        with patch.object(deploy.urllib.request, 'urlopen', side_effect=denied) as request:
+            raise deploy.urllib.error.HTTPError(url.full_url, 403, 'Forbidden', {}, None)
+        with patch.object(deploy, 'http_check'), patch.object(deploy.urllib.request, 'urlopen', side_effect=denied) as request:
             deploy.verify_git_privacy(self.config, aliased)
             self.assertEqual(2, request.call_count)
-        with patch.object(deploy.urllib.request, 'urlopen'), self.assertRaises(ValueError):
+        with patch.object(deploy, 'http_check'), patch.object(deploy.urllib.request, 'urlopen'), self.assertRaises(ValueError):
             deploy.verify_git_privacy(self.config, aliased)
 
     def test_wpengine_private_storage_requires_provider_identity_and_blocked_existing_file(self):
@@ -185,12 +209,28 @@ class DeploymentSafety(unittest.TestCase):
         with self.assertRaises(ValueError):
             deploy.verify_state_privacy(c, {'state_protection_probe_exists': False})
         def denied(url, **kwargs):
-            raise deploy.urllib.error.HTTPError(url, 403, 'Forbidden', {}, None)
-        with patch.object(deploy.urllib.request, 'urlopen', side_effect=denied) as request:
+            raise deploy.urllib.error.HTTPError(url.full_url, 403, 'Forbidden', {}, None)
+        with patch.object(deploy, 'http_check'), patch.object(deploy.urllib.request, 'urlopen', side_effect=denied) as request:
             deploy.verify_state_privacy(c, {'state_protection_probe_exists': True})
-            request.assert_called_once_with('https://example.org/_wpeprivate/config.json', timeout=30)
-        with patch.object(deploy.urllib.request, 'urlopen'), self.assertRaises(ValueError):
+            request.assert_called_once()
+            self.assertEqual('https://example.org/_wpeprivate/config.json', request.call_args.args[0].full_url)
+        with patch.object(deploy, 'http_check'), patch.object(deploy.urllib.request, 'urlopen'), self.assertRaises(ValueError):
             deploy.verify_state_privacy(c, {'state_protection_probe_exists': True})
+
+    def test_ssh_diagnostics_never_echo_sensitive_stderr(self):
+        from types import SimpleNamespace
+        error = SimpleNamespace(returncode=255, stdout=b'', stderr=b'Load key: invalid format. PRIVATE-DIAGNOSTIC')
+        with patch.object(deploy.subprocess, 'run', return_value=error):
+            with self.assertRaisesRegex(RuntimeError, '^SSH preflight failed: deployment private key has an invalid format$'):
+                deploy.run(['ssh', 'sensitive-argument'])
+
+    def test_blocked_homepage_cannot_prove_private_path_protection(self):
+        c = {**self.config, 'host': 'site.ssh.wpengine.net', 'user': 'site',
+             'root': '/sites/site', 'state_dir': '/sites/site/_wpeprivate/mrn-site-deploy/live'}
+        with patch.object(deploy, 'http_check', side_effect=RuntimeError('challenge')), patch.object(deploy, 'require_http_denied') as denied:
+            with self.assertRaisesRegex(RuntimeError, 'challenge'):
+                deploy.verify_state_privacy(c, {'state_protection_probe_exists': True})
+            denied.assert_not_called()
 
 
 if __name__ == '__main__':

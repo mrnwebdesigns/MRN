@@ -1,17 +1,27 @@
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).parents[1]))
 from atomic_store import Store, inventory
 from deploy import digest
 import test_release as release_fixture
 TOOLS = release_fixture.TOOLS
+
+
+class LegacyTemporaryDirectory(tempfile.TemporaryDirectory):
+    """Python 3.6 cleanup fails if the context's directory was renamed."""
+
+    def cleanup(self):
+        if self._finalizer.detach():
+            shutil.rmtree(self.name)
 
 
 class AtomicStoreContract(unittest.TestCase):
@@ -65,6 +75,55 @@ class AtomicStoreContract(unittest.TestCase):
             self.assertTrue((self.content / new['public_path'] / 'style.min.css').is_file())
             self.assertEqual(self.before['style.min.css'], inventory(self.theme)['style.min.css'])
             self.assertEqual(0o755, (self.content / new['public_path']).stat().st_mode & 0o777)
+
+    def test_adoption_preserves_temporary_root_for_legacy_cleanup(self):
+        with self.store.locked_store():
+            with patch('atomic_store.tempfile.TemporaryDirectory', LegacyTemporaryDirectory):
+                old = self.adopt()
+            self.assertEqual(old, self.store.pointer())
+            self.store.verify_public_snapshot()
+            self.assertEqual([], list(self.state.glob('.stage-*')))
+
+    def test_staging_preserves_temporary_root_for_legacy_cleanup(self):
+        with self.store.locked_store():
+            old = self.adopt()
+            with patch('atomic_store.tempfile.TemporaryDirectory', LegacyTemporaryDirectory):
+                staged = self.stage()
+            self.assertEqual(old, self.store.pointer())
+            self.assertEqual([], list(self.state.glob('.stage-*')))
+            self.assertEqual(0o700, (self.store.releases / staged['release_id']).stat().st_mode & 0o777)
+            new = self.store.select(staged['release_id'], old)
+            self.assertEqual(old, self.store.select(old['release_id'], new))
+            self.assertTrue((self.content / new['public_path'] / 'style.min.css').is_file())
+
+    def test_interrupted_legacy_snapshot_is_verified_before_adoption_retry(self):
+        rename = os.rename
+
+        def interrupted_rename(source, destination):
+            rename(source, destination)
+            raise OSError('Interrupted after snapshot rename')
+
+        with self.store.locked_store():
+            with patch('atomic_store.os.rename', side_effect=interrupted_rename):
+                with self.assertRaisesRegex(OSError, 'Interrupted after snapshot rename'):
+                    self.adopt()
+            self.assertIsNone(self.store.pointer())
+            self.assertFalse((self.state / 'adoption.json').exists())
+            self.assertEqual(self.before, inventory(self.theme))
+            retained = list(self.store.releases.iterdir())
+            self.assertEqual(1, len(retained))
+            saved = retained[0] / 'theme/style.css'
+            original = saved.read_bytes()
+            saved.write_text('unexpected retained snapshot drift')
+            with self.assertRaisesRegex(ValueError, 'Stored release drift'):
+                self.adopt()
+            self.assertIsNone(self.store.pointer())
+            saved.write_bytes(original)
+            with patch('atomic_store.tempfile.TemporaryDirectory', LegacyTemporaryDirectory):
+                old = self.adopt()
+            self.assertEqual(retained[0].name, old['release_id'])
+            self.store.verify_public_snapshot()
+            self.assertEqual([], list(self.state.glob('.stage-*')))
 
     def test_changed_baseline_missing_lock_and_concurrent_deployments_fail(self):
         with self.assertRaisesRegex(ValueError, 'lock'):
@@ -129,7 +188,7 @@ echo json_encode(array('selected' => $selected, 'after' => get_stylesheet_direct
             (self.state / 'test-next.json').write_text(json.dumps(next_pointer))
         harness = self.root / 'request.php'
         harness.write_text('''<?php
-define('ABSPATH', __DIR__);
+define('ABSPATH', __DIR__ . '/public/');
 $GLOBALS['filters'] = array();
 function get_stylesheet() { return 'child'; }
 function add_filter($name, $callback, $priority, $count) { $GLOBALS['filters'][$name][] = $callback; }
@@ -155,7 +214,7 @@ require %s;
             self.store.select(new['release_id'], old)
         harness = self.root / 'new-request.php'
         harness.write_text('''<?php
-define('ABSPATH', __DIR__);
+define('ABSPATH', __DIR__ . '/public/');
 $GLOBALS['filters'] = array();
 function get_stylesheet() { return 'child'; }
 function add_filter($name, $callback, $priority, $count = 1) { $GLOBALS['filters'][$name][] = $callback; }

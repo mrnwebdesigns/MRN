@@ -37,6 +37,24 @@ def run(args, **kwargs):
     result = subprocess.run(args, capture_output=True, **kwargs)
     if result.returncode:
         # Remote output can contain plugin diagnostics or connection details.
+        # Report only recognized transport categories, never raw stderr or argv.
+        if args[0] == 'ssh':
+            error = result.stderr
+            if isinstance(error, bytes):
+                error = error.decode('utf-8', errors='replace')
+            categories = (
+                ('Host key verification failed', 'pinned host key was rejected'),
+                ('REMOTE HOST IDENTIFICATION HAS CHANGED', 'pinned host key changed'),
+                ('error in libcrypto', 'deployment private key could not be parsed'),
+                ('invalid format', 'deployment private key has an invalid format'),
+                ('Permission denied', 'site-owner authentication was refused'),
+                ('Connection timed out', 'connection timed out'),
+                ('Connection refused', 'connection was refused'),
+                ('Connection closed', 'connection was closed by the remote endpoint'),
+            )
+            for marker, explanation in categories:
+                if marker in error:
+                    raise RuntimeError('SSH preflight failed: ' + explanation)
         raise RuntimeError(f"Command failed: {args[0]} (exit {result.returncode}); inspect privately")
     return result.stdout
 
@@ -77,6 +95,12 @@ def config(environ):
         raise ValueError('Unsupported transport')
     c['baseline'] = environ.get('DEPLOY_BASELINE_TREE', '')
     c['ready'] = environ.get('DEPLOY_READY') == '1'
+    c['host_provider'] = environ.get('DEPLOY_HOST_PROVIDER', 'cloudpanel') or 'cloudpanel'
+    if c['host_provider'] not in ('cloudpanel', 'nexcess', 'siteground', 'wpengine', 'kinsta'):
+        raise ValueError('Unknown host provider')
+    if c['host_provider'] == 'kinsta' and c['backup_provider'] != 'kinsta':
+        raise ValueError('Kinsta activation requires its native backup provider')
+    c['native_transaction_backup_approved'] = environ.get('DEPLOY_KINSTA_TRANSACTION_BACKUP_APPROVED') == '1'
     return c
 
 
@@ -106,9 +130,21 @@ class Target:
                        text=True, env=dict(os.environ, SSHPASS=self.password))
         return run(['ssh', *self.options, self.login, 'bash -se'], input=script, text=True)
 
+    def controller(self, path, payload):
+        """Send a private controller request on stdin, never in argv or files."""
+        check(path, r'/[A-Za-z0-9_./-]+', 'controller path')
+        args = ['ssh', *self.options, self.login, 'python3 ' + shlex.quote(path)]
+        env = dict(os.environ)
+        if self.password:
+            args = ['sshpass', '-e', *args]
+            env['SSHPASS'] = self.password
+        # A failed controller may still return a recovery receipt. The caller
+        # validates that receipt before interpreting the process exit status.
+        return subprocess.run(args, input=json.dumps(payload), capture_output=True, text=True, env=env)
+
     def php(self, code, skip_themes=False):
         options = ['--skip-themes'] if skip_themes else []
-        command = shlex.join(['wp', '--path=' + self.c['root'], *options, 'eval', code])
+        command = shlex.join(['env', 'WP_CLI_PHP_ARGS=-d memory_limit=512M', 'wp', '--path=' + self.c['root'], *options, 'eval', code])
         output = self.shell(command + '\n')
         markers = [line[11:] for line in output.splitlines() if line.startswith('MRN_RESULT=')]
         if len(markers) != 1:
@@ -146,6 +182,7 @@ echo 'MRN_RESULT=' . wp_json_encode(array(
     'wp_root' => $root_path,
     'theme_url' => set_url_scheme(get_stylesheet_directory_uri(), 'https'),
     'theme' => realpath($theme), 'files' => $files, 'state' => $state,
+    'deployment_order' => is_file($c['state'] . '/deployment-order.json') ? json_decode(file_get_contents($c['state'] . '/deployment-order.json'), true) : null,
     'state_ready' => ($private || $wpe_private) && is_writable($c['state']) && (fileperms($c['state']) & 0077) === 0,
     'state_protection_probe_exists' => is_file(ABSPATH . '_wpeprivate/config.json'),
     'writable' => is_writable($theme),
@@ -233,7 +270,8 @@ def git_destination(c, before, source):
 def require_http_denied(url):
     # Never read response bodies, particularly for provider/Git private files.
     try:
-        with urllib.request.urlopen(url, timeout=30):
+        request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (compatible; MRN-Deployment/1.0)'})
+        with urllib.request.urlopen(request, timeout=30):
             pass
     except urllib.error.HTTPError as error:
         denied = error.code in [403, 404] and error.geturl() == url
@@ -247,6 +285,7 @@ def verify_state_privacy(c, before):
     if wpengine_private(c):
         if not before.get('state_protection_probe_exists'):
             raise ValueError('Cannot verify protection of an existing WP Engine private file')
+        http_check(c['url'] + '/')
         require_http_denied(c['url'] + '/_wpeprivate/config.json')
 
 
@@ -258,12 +297,13 @@ def verify_git_privacy(c, before):
     theme_url = before['theme_url'].rstrip('/')
     if not theme_url.startswith(c['url'] + '/'):
         raise ValueError('Cannot establish canonical public URL for Git privacy check')
+    http_check(c['url'] + '/')
     for name in ['HEAD', 'config']:
         require_http_denied(theme_url + '/.git/' + name)
 
 
 def http_check(url, rest=False):
-    request = urllib.request.Request(url, headers={'User-Agent': 'MRN-Deployment-Verification/1.0'})
+    request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (compatible; MRN-Deployment/1.0)'})
     with urllib.request.urlopen(request, timeout=30) as response:
         if response.status != 200 or response.url.rstrip('/') != url.rstrip('/'):
             raise RuntimeError('Public URL failed exact-target HTTP verification')
@@ -277,6 +317,8 @@ def http_check(url, rest=False):
 
 
 def deploy(args, c):
+    from deployment_request import github_order
+    order = github_order(os.environ, args.sha, args.environment, args.mode)
     repository = check(os.environ['GITHUB_REPOSITORY'], r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', 'repository')
     artifact_path = getattr(args, 'artifact', None)
     artifact_sha256 = getattr(args, 'artifact_sha256', None)
@@ -293,7 +335,7 @@ def deploy(args, c):
         payload = Path(temp)
         files = artifact['theme_files'] if artifact else export_payload(args.sha, args.source, payload)
         target = Target(c)
-        before = target.inspect(args.slug)
+        before = target.inspect(args.slug, skip_themes=True)
         verify_identity(c, before, args.slug, require_ready=args.mode != 'preflight')
         verify_state_privacy(c, before)
         if c['transport'] == 'git':
@@ -314,7 +356,8 @@ def deploy(args, c):
             return
         if not c['ready']:
             raise ValueError('DEPLOY_READY is not enabled after target qualification')
-        if args.environment != 'dev' or c.get('backup_provider') != 'updraft':
+        native = c.get('host_provider') == 'kinsta' and c.get('backup_provider') == 'kinsta'
+        if (c.get('backup_provider') != 'updraft' and not native) or (args.environment == 'live' and c.get('host_provider', 'cloudpanel') == 'cloudpanel'):
             raise ValueError('Runtime writes disabled for Live: its provider adapter is not qualified')
         if not before['state'] or before['state'].get('schema') != 1:
             raise ValueError('Runtime writes disabled: first adoption requires separate host qualification')
@@ -324,7 +367,7 @@ def deploy(args, c):
         plan = {'repository': repository, 'environment': args.environment, 'slug': args.slug,
                 'archive': str(Path(artifact_path).resolve()), 'artifact_sha256': artifact_sha256,
                 'source_sha': args.sha, 'source_path': args.source, 'pages': pages,
-                'expected_current': before['state'], 'adopt': False}
+                'expected_current': before['state'], 'adopt': False, 'deployment_order': order}
         result = activate(plan, c)
         Path(args.receipt).write_text(json.dumps(result, indent=2) + '\n')
         if result['status'] != 'public-verified':

@@ -135,7 +135,7 @@
     {
       "slug": "mrn-public-security-hardening",
       "name": "MRN Public Security Hardening",
-      "version": "0.4.2",
+      "version": "0.4.3",
       "runtime_type": "mu-component",
       "classification": "platform-policy",
       "lifecycle": "supported",
@@ -480,7 +480,7 @@
     {
       "slug": "mrn-comment-management",
       "name": "MRN Comment Management",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "runtime_type": "standard-plugin",
       "classification": "maintenance-tool",
       "lifecycle": "supported",
@@ -488,13 +488,13 @@
       "target_tier": "maintenance-only",
       "source": {"repository": "mrn-comment-management", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-comment-management", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress comments"], "soft": ["mrn-disable-comments policy"], "release_group": null},
-      "data": {"options": ["mrn_cm_management_roles"], "tables": [], "cron": [], "routes": ["privileged comment audit/delete actions", "administrator-only role selection"], "external_services": []},
-      "purpose": "Audits and manages comments with administrator-selected role access and confirmed maintenance cleanup."
+      "data": {"options": ["mrn_cm_management_roles", "mrn_cm_notification_recipients"], "tables": [], "cron": [], "routes": ["privileged comment audit/delete actions", "administrator-only role selection", "administrator-only notification recipients"], "external_services": []},
+      "purpose": "Audits and manages comments with administrator-selected role access, additional native email recipients, and confirmed maintenance cleanup."
     },
     {
       "slug": "mrn-config-helper",
       "name": "MRN Config Helper",
-      "version": "0.1.66",
+      "version": "0.1.68",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
       "lifecycle": "supported",
@@ -648,7 +648,7 @@
     {
       "slug": "mrn-recaptcha-enterprise-manager",
       "name": "MRN reCAPTCHA Enterprise Manager",
-      "version": "0.1.2",
+      "version": "0.1.4",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",

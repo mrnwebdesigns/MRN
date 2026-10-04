@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-09-30",
+  "catalog_updated": "2026-10-02",
   "authority": "Checksum-locked independently released plugins available to explicit one-site upgrade plans. A release may remain a standard bootstrap default; registration never authorizes installation or a site write.",
   "releases": [
     {
@@ -143,20 +143,20 @@
     },
     {
       "slug": "mrn-recaptcha-enterprise-manager",
-      "version": "0.1.2",
+      "version": "0.1.4",
       "target_tier": "optional-integration",
       "current_distribution": "standard-bootstrap",
       "source": {
         "repository": "mrnwebdesigns/mrn-recaptcha-enterprise-manager",
         "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager",
-        "git_commit": "509a4994693ce1088e27ffbc02f1dea3844f07d4"
+        "git_commit": "e2fc5e3a580aba197e714f5b530a5da49224d293"
       },
       "package": {
-        "path": "releases/plugins/mrn-recaptcha-enterprise-manager-0.1.2.zip",
-        "filename": "mrn-recaptcha-enterprise-manager-0.1.2.zip",
+        "path": "releases/plugins/mrn-recaptcha-enterprise-manager-0.1.4.zip",
+        "filename": "mrn-recaptcha-enterprise-manager-0.1.4.zip",
         "main_file": "mrn-recaptcha-enterprise-manager/mrn-recaptcha-enterprise-manager.php",
-        "size_bytes": 24777,
-        "sha256": "ec468d55a9987f7a95704d9580513fc8510b179bb2dda3871acf8c4186a89f95"
+        "size_bytes": 27599,
+        "sha256": "858ff4f801b98c994c41caf056cdb54174861e54a2b86a78dd33d4bb3a066734"
       },
       "update_policy": {
         "mode": "upgrade-only",
@@ -235,20 +235,20 @@
     },
     {
       "slug": "mrn-comment-management",
-      "version": "1.2.0",
+      "version": "1.3.0",
       "target_tier": "maintenance-only",
       "current_distribution": "standard-bootstrap",
       "source": {
         "repository": "mrnwebdesigns/mrn-comment-management",
         "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-comment-management",
-        "git_commit": "434ea85015434720d79dc135bddf61103d0bc609"
+        "git_commit": "582188ccc22cbae6b05807c8ce990efad66cba3e"
       },
       "package": {
-        "path": "releases/plugins/mrn-comment-management-1.2.0.zip",
-        "filename": "mrn-comment-management-1.2.0.zip",
+        "path": "releases/plugins/mrn-comment-management-1.3.0.zip",
+        "filename": "mrn-comment-management-1.3.0.zip",
         "main_file": "mrn-comment-management/mrn-comment-management.php",
-        "size_bytes": 21501,
-        "sha256": "891591a59582e10ffdad4ab36ffda99a78f1ac3b37213b98fbea68f60f11a744"
+        "size_bytes": 28627,
+        "sha256": "a87742769c154f8054128366a92e26dd3e72faca707231afedd2673a63789904"
       },
       "update_policy": {
         "mode": "upgrade-only",

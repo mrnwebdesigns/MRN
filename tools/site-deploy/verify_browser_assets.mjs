@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+import { stylesheetFiles } from './stylesheet-routes.mjs';
 
 const require = createRequire(path.resolve(process.env.MRN_QA_ENGINE_ROOT, 'package.json'));
 const { chromium } = require('@playwright/test');
@@ -40,7 +41,9 @@ try {
         })().catch(error => errors.push(error.message)));
       });
       const response = await page.goto(url, { waitUntil: 'load', timeout: 60000 });
-      if (response.status() !== 200 || response.headers()['x-mrn-site-release'] !== receipt.current.release_id) errors.push('Browser selected a different release');
+      const releaseHeader = response.headers()['x-mrn-site-release'];
+      const requiresHeader = !receipt.host_provider || receipt.host_provider === 'cloudpanel';
+      if (response.status() !== 200 || ((requiresHeader || releaseHeader) && releaseHeader !== receipt.current.release_id)) errors.push('Browser selected a different release');
       await page.evaluate(() => document.fonts.ready);
       // Trigger ordinary lazy-loaded dependencies without clicks or data writes.
       await page.evaluate(async () => {
@@ -52,7 +55,9 @@ try {
       await page.waitForTimeout(1000);
       await page.screenshot({ path: path.join(outputDirectory, `${viewportName}-${index}.png`), fullPage: true });
       await Promise.all(pending);
-      if (!assets.some(asset => new URL(asset.url).pathname === prefix + manifest.assets['style.css'].file)) errors.push('Released child stylesheet was not loaded');
+      const expectedStylesheets = stylesheetFiles(manifest, url).map(file => prefix + file);
+      const appliedStylesheets = await page.evaluate(() => Array.from(document.styleSheets, sheet => sheet.href));
+      if (!assets.some(asset => appliedStylesheets.includes(asset.url) && expectedStylesheets.includes(new URL(asset.url).pathname))) errors.push('Released child stylesheet was not loaded');
       results.push({ url, viewport: viewportName, assets, errors });
       await page.close();
     }

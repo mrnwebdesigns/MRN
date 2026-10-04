@@ -1,0 +1,136 @@
+name: MRN site deployment
+on:
+  workflow_call:
+    inputs:
+      target:
+        type: string
+        default: dev
+      mode:
+        type: string
+        default: deploy
+      source_branch:
+        type: string
+        default: main
+      source_path:
+        type: string
+        required: true
+      stylesheet:
+        type: string
+        required: true
+      tooling_ref:
+        type: string
+        required: true
+      dev_main_enabled:
+        description: False protects a separate Phase 2 Dev preview from main and Both
+        type: boolean
+        default: true
+      auto_dev_branch:
+        type: string
+        default: main
+      auto_dev_after:
+        type: string
+        default: ''
+    secrets:
+      MRN_QA_ENGINE_TOKEN:
+        required: false
+      DEPLOY_SSH_PRIVATE_KEY:
+        required: false
+      DEPLOY_SSH_KNOWN_HOSTS:
+        required: false
+      DEV_SSH_PRIVATE_KEY:
+        required: false
+      DEV_SSH_KNOWN_HOSTS:
+        required: false
+      DEPLOY_KINSTA_API_TOKEN:
+        required: false
+permissions:
+  contents: read
+jobs:
+  request:
+    runs-on: ubuntu-latest
+    outputs:
+      source_sha: ${{ steps.source.outputs.source_sha }}
+      enabled: ${{ steps.source.outputs.enabled }}
+      source_branch: ${{ steps.source.outputs.source_branch }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          repository: mrnwebdesigns/MRN
+          ref: ${{ inputs.tooling_ref }}
+          path: .mrn-deploy-tools
+          persist-credentials: false
+      - name: Validate trigger and select the exact source commit
+        id: source
+        env:
+          TARGET: ${{ inputs.target }}
+          MODE: ${{ inputs.mode }}
+          SOURCE_BRANCH: ${{ inputs.source_branch }}
+          DEV_MAIN_ENABLED: ${{ inputs.dev_main_enabled }}
+          AUTO_DEV_BRANCH: ${{ inputs.auto_dev_branch }}
+          AUTO_DEV_AFTER: ${{ inputs.auto_dev_after }}
+        run: python3 .mrn-deploy-tools/tools/site-deploy/deployment_request.py
+  source-qa:
+    needs: request
+    if: needs.request.outputs.enabled == 'true' && inputs.mode == 'deploy'
+    uses: ./.github/workflows/site-source-qa.yml
+    with:
+      source_sha: ${{ needs.request.outputs.source_sha }}
+      tooling_ref: ${{ inputs.tooling_ref }}
+    secrets: inherit
+  build:
+    needs: [request, source-qa]
+    if: >-
+      always() && !cancelled() && needs.request.result == 'success' &&
+      needs.request.outputs.enabled == 'true' &&
+      ((inputs.mode == 'preflight' && needs.source-qa.result == 'skipped') ||
+       (inputs.mode == 'deploy' && needs.source-qa.result == 'success'))
+    uses: ./.github/workflows/site-release-build.yml
+    with:
+      source_sha: ${{ needs.request.outputs.source_sha }}
+      qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}
+      source_path: ${{ inputs.source_path }}
+      stylesheet: ${{ inputs.stylesheet }}
+      tooling_ref: ${{ inputs.tooling_ref }}
+  dev:
+    needs: [request, source-qa, build]
+    if: >-
+      always() && !cancelled() && needs.build.result == 'success' &&
+      (inputs.target == 'dev' || inputs.target == 'both')
+    uses: ./.github/workflows/site-deploy-target.yml
+    with:
+      target: dev
+      mode: ${{ inputs.mode }}
+      source_sha: ${{ needs.request.outputs.source_sha }}
+      qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}
+      source_branch: ${{ needs.request.outputs.source_branch }}
+      auto_dev_branch: ${{ inputs.auto_dev_branch }}
+      auto_dev_after: ${{ inputs.auto_dev_after }}
+      artifact_id: ${{ needs.build.outputs.artifact_id }}
+      artifact_sha256: ${{ needs.build.outputs.artifact_sha256 }}
+      source_path: ${{ inputs.source_path }}
+      stylesheet: ${{ inputs.stylesheet }}
+      tooling_ref: ${{ inputs.tooling_ref }}
+    secrets: inherit
+  live:
+    needs: [request, source-qa, build, dev]
+    if: >-
+      always() && !cancelled() && github.event_name == 'workflow_dispatch' &&
+      needs.build.result == 'success' &&
+      ((inputs.target == 'live' && needs.dev.result == 'skipped') ||
+       (inputs.target == 'both' && needs.dev.result == 'success'))
+    uses: ./.github/workflows/site-deploy-target.yml
+    with:
+      target: live
+      mode: ${{ inputs.mode }}
+      source_sha: ${{ needs.request.outputs.source_sha }}
+      qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}
+      source_branch: ${{ needs.request.outputs.source_branch }}
+      artifact_id: ${{ needs.build.outputs.artifact_id }}
+      artifact_sha256: ${{ needs.build.outputs.artifact_sha256 }}
+      source_path: ${{ inputs.source_path }}
+      stylesheet: ${{ inputs.stylesheet }}
+      tooling_ref: ${{ inputs.tooling_ref }}
+    secrets: inherit

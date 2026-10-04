@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Current Release
-- Stack release: `2026.09.29-updraft-retention`
-- Release date: `2026-09-29`
-- Status: `release candidate for guarded per-site Fleet rollout; no site deployment performed`
+- Stack release: `2026.10.02-ame-menu-visibility`
+- Release date: `2026-10-02`
+- Status: `deployed to Gloves production; exact runtime and Shop Manager/administrator browser verification passed`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.5.0`
+  - `mrn-base-stack` `1.5.2`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -20,7 +20,7 @@
   - `mrn-shared-assets` `0.2.1`
   - `mrn-editor-lockdown` `1.0.33`
   - `mrn-environment-runtime` `0.5.1`
-  - `mrn-public-security-hardening` `0.4.2`
+  - `mrn-public-security-hardening` `0.4.3`
   - `mrn-schema-bridge` `0.6.0`
   - `mrn-site-colors` / `Site Styles` `0.1.39`
   - `mrn-updraft-backup-policy-loader` `0.6.0`
@@ -32,7 +32,7 @@
   - `mrn-ai-assist` `2.0.14`
   - `mrn-announcements` `1.8.2`
   - `mrn-comment-management` `1.1.7`
-  - `mrn-config-helper` `0.1.66`
+  - `mrn-config-helper` `0.1.68`
   - `mrn-editor-tools` `1.8.25`
   - `mrn-fontawesome-profile-manager` `0.5.1`
   - `mrn-google-fonts` `1.0.7`
@@ -57,6 +57,29 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- Public Security Hardening `0.4.3` respects Admin Menu Editor's finalized
+  visibility, permissions, labels and placement. It no longer restores a
+  hidden Advanced/Public Security menu after AME has applied role rules.
+  The existing native fallback remains available without AME. Gloves is the
+  only authorized target, with its active child theme preserved. See
+  `docs/releases/2026.10.02-ame-menu-visibility.md`.
+- Parent theme `1.5.2` supplies ACF's normal blank validator defaults to
+  late-injected nested text and number fields without replacing explicit
+  limits, including zero. The release adds a read-only runtime regression for
+  the actual Gloves Hero and Grid field contracts. The exact parent was
+  deployed and verified on Gloves Dev and production after separate remote
+  database backups. The authorized Gloves rollout is parent-theme-only;
+  unrelated plugins, MU components, content and the active child theme are
+  excluded. The sites' full-Stack locks were not advanced, so Fleet correctly
+  continues to report this bounded parent overlay until a later full release
+  reconciles it. See
+  `docs/releases/2026.10.01-acf-field-defaults.md`.
+- Parent theme `1.5.1` restores saved Event Image Links in Content Only
+  Reference Content rows, retaining per-row on/off and new-tab preferences.
+  This cumulative candidate also seals the previously merged Config Helper
+  `0.1.68` provider release and the existing Updraft `0.6.0` baseline.
+  Optional plugins remain separate; no child theme is included. See
+  `docs/releases/2026.10.01-event-content-links.md`.
 - Config Helper `0.1.66` separates inexpensive settings reads from builder layout
   normalization. Content-type visibility no longer discovers builder layouts;
   actual builder/settings consumers preserve their defaults, migrations and saved

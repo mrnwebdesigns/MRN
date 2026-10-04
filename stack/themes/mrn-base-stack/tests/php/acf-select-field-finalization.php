@@ -1,7 +1,7 @@
 <?php
 // phpcs:ignoreFile -- Standalone WordPress/ACF stub harness for builder field-tree regression.
 /**
- * Focused runtime check for late ACF select-field finalization.
+ * Focused runtime check for late ACF field finalization.
  *
  * Run with:
  * php stack/themes/mrn-base-stack/tests/php/acf-select-field-finalization.php
@@ -48,6 +48,15 @@ function mrn_acf_finalization_test_assert_selects_complete( $field, $path = 'roo
 		mrn_acf_finalization_test_assert( array_key_exists( 'return_format', $field ), "{$path} includes return_format" );
 	}
 
+	if ( 'text' === ( $field['type'] ?? '' ) ) {
+		mrn_acf_finalization_test_assert( array_key_exists( 'maxlength', $field ), "{$path} includes maxlength" );
+	}
+
+	if ( 'number' === ( $field['type'] ?? '' ) ) {
+		mrn_acf_finalization_test_assert( array_key_exists( 'min', $field ), "{$path} includes min" );
+		mrn_acf_finalization_test_assert( array_key_exists( 'max', $field ), "{$path} includes max" );
+	}
+
 	if ( ! empty( $field['name'] ) ) {
 		mrn_acf_finalization_test_assert( isset( $field['_name'] ), "{$path} includes _name" );
 		mrn_acf_finalization_test_assert( $field['name'] === $field['_name'], "{$path} preserves its original name" );
@@ -82,6 +91,24 @@ $builder_tree = array(
 					'choices' => array( 'large' => 'Large' ),
 				),
 				array(
+					'key'  => 'field_mrn_hero_two_column_split_min_height',
+					'name' => 'hero_min_height',
+					'type' => 'text',
+				),
+				array(
+					'key' => 'field_mrn_content_grid_items_links_icon_gap',
+					'name' => 'link_icon_gap',
+					'type' => 'number',
+					'min'  => 0,
+				),
+				array(
+					'key'       => 'field_test_explicit_zero_limits',
+					'name'      => 'explicit_zero_limits',
+					'type'      => 'number',
+					'min'       => 0,
+					'max'       => 0,
+				),
+				array(
 					'key'        => 'field_test_items',
 					'name'       => 'items',
 					'type'       => 'repeater',
@@ -113,11 +140,22 @@ $spacing_field = $finalized['layouts']['layout_test']['sub_fields'][0];
 mrn_acf_finalization_test_assert( 0 === $spacing_field['multiple'], 'missing multiple defaults to zero' );
 mrn_acf_finalization_test_assert( 'value' === $spacing_field['return_format'], 'missing return_format defaults to value' );
 
-$icon_field = $finalized['layouts']['layout_test']['sub_fields'][1]['sub_fields'][0];
+$text_field = $finalized['layouts']['layout_test']['sub_fields'][1];
+mrn_acf_finalization_test_assert( '' === $text_field['maxlength'], 'missing text maxlength defaults to blank' );
+
+$number_field = $finalized['layouts']['layout_test']['sub_fields'][2];
+mrn_acf_finalization_test_assert( 0 === $number_field['min'], 'explicit number minimum zero is preserved' );
+mrn_acf_finalization_test_assert( '' === $number_field['max'], 'missing number maximum defaults to blank' );
+
+$zero_limits = $finalized['layouts']['layout_test']['sub_fields'][3];
+mrn_acf_finalization_test_assert( 0 === $zero_limits['min'], 'explicit number minimum zero remains zero' );
+mrn_acf_finalization_test_assert( 0 === $zero_limits['max'], 'explicit number maximum zero remains zero' );
+
+$icon_field = $finalized['layouts']['layout_test']['sub_fields'][4]['sub_fields'][0];
 mrn_acf_finalization_test_assert( 1 === $icon_field['multiple'], 'valid multiple configuration is preserved' );
 mrn_acf_finalization_test_assert( 'label' === $icon_field['return_format'], 'valid return_format is preserved' );
 
-$invalid_field = $finalized['layouts']['layout_test']['sub_fields'][1]['sub_fields'][1];
+$invalid_field = $finalized['layouts']['layout_test']['sub_fields'][4]['sub_fields'][1];
 mrn_acf_finalization_test_assert( 'value' === $invalid_field['return_format'], 'invalid return_format is normalized' );
 
 $cloned_layouts = mrn_base_stack_finalize_cloned_acf_layouts(
@@ -157,4 +195,4 @@ foreach ( $late_hooks as $hook ) {
 	);
 }
 
-echo "PASS: ACF builder select-field finalization regression.\n";
+echo "PASS: ACF builder field finalization regression.\n";
