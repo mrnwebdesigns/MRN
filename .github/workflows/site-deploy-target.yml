@@ -33,6 +33,18 @@ on:
       auto_dev_after:
         type: string
         default: ''
+      release_intent:
+        type: string
+        default: '{}'
+      release_requests_after:
+        type: string
+        default: ''
+      live_enabled:
+        type: boolean
+        default: true
+      dev_main_enabled:
+        type: boolean
+        default: true
       artifact_id:
         type: string
         required: true
@@ -91,6 +103,10 @@ jobs:
       TOOLING_REF: ${{ inputs.tooling_ref }}
       SOURCE_SHA: ${{ inputs.source_sha || github.sha }}
       SOURCE_BRANCH: ${{ inputs.source_branch }}
+      RELEASE_INTENT: ${{ inputs.release_intent }}
+      RELEASE_REQUESTS_AFTER: ${{ inputs.release_requests_after }}
+      LIVE_ENABLED: ${{ inputs.live_enabled }}
+      DEV_MAIN_ENABLED: ${{ inputs.dev_main_enabled }}
       AUTO_DEV_BRANCH: ${{ inputs.auto_dev_branch }}
       AUTO_DEV_AFTER: ${{ inputs.auto_dev_after }}
       MRN_SOURCE_QA_SHA: ${{ inputs.qa_source_sha }}
@@ -115,7 +131,10 @@ jobs:
             [[ "$SOURCE_SHA" == "$GITHUB_SHA" && "$MRN_SOURCE_QA_SHA" == "$SOURCE_SHA" ]]
           fi
           if [[ "$GITHUB_EVENT_NAME" == workflow_run ]]; then
-            [[ "$TARGET" == dev && "$MODE" == deploy && "$SOURCE_BRANCH" == "$AUTO_DEV_BRANCH" ]]
+            [[ "$MODE" == deploy ]]
+            if [[ "$RELEASE_INTENT" == '{}' ]]; then
+              [[ "$TARGET" == dev && "$SOURCE_BRANCH" == "$AUTO_DEV_BRANCH" ]]
+            fi
             [[ "$MRN_SOURCE_QA_SHA" == "$SOURCE_SHA" ]]
           fi
           [[ -z "$MRN_SOURCE_QA_SHA" || "$MRN_SOURCE_QA_SHA" == "$SOURCE_SHA" ]]
