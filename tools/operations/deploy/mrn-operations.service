@@ -1,0 +1,28 @@
+[Unit]
+Description=MRN Website Operations MCP
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mrn-operations
+Group=mrn-operations
+WorkingDirectory=/opt/mrn-operations/MRN/tools/operations
+ExecStart=/usr/bin/node src/main.mjs
+Environment=MRN_OPERATIONS_CONFIG=/etc/mrn-operations/service.json
+# Provision through the approved MRN business secret service. Never commit values.
+EnvironmentFile=/etc/mrn-operations/service.env
+StateDirectory=mrn-operations
+UMask=0077
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=720
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/mrn-operations
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

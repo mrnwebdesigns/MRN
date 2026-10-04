@@ -1,0 +1,30 @@
+name: MRN Operations service tests
+on:
+  pull_request:
+    paths:
+      - tools/operations/**
+      - stack/scripts/mrn-fleet-update.mjs
+      - stack/scripts/build-mainwp-stack-plugin-plan.py
+      - .github/workflows/operations-ci.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  controlled-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tools/operations/package-lock.json
+      - name: Install exact service dependencies
+        run: npm ci --ignore-scripts --prefix tools/operations
+      - name: Operations authorization, protocol and failure contracts
+        run: npm run lint --prefix tools/operations && npm test --prefix tools/operations
+      - name: Existing Fleet contract regression
+        run: node --test stack/tests/test_mrn_fleet_update.mjs
+      - name: Dependency security audit
+        run: npm audit --omit=dev --audit-level=high --prefix tools/operations
