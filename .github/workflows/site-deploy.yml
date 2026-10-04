@@ -30,6 +30,12 @@ on:
       auto_dev_after:
         type: string
         default: ''
+      release_requests_after:
+        type: string
+        default: ''
+      live_enabled:
+        type: boolean
+        default: true
     secrets:
       MRN_QA_ENGINE_TOKEN:
         required: false
@@ -49,6 +55,8 @@ jobs:
   request:
     runs-on: ubuntu-latest
     outputs:
+      target: ${{ steps.source.outputs.target }}
+      release_intent: ${{ steps.source.outputs.release_intent }}
       source_sha: ${{ steps.source.outputs.source_sha }}
       enabled: ${{ steps.source.outputs.enabled }}
       source_branch: ${{ steps.source.outputs.source_branch }}
@@ -65,6 +73,9 @@ jobs:
       - name: Validate trigger and select the exact source commit
         id: source
         env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_REQUESTS_AFTER: ${{ inputs.release_requests_after }}
+          LIVE_ENABLED: ${{ inputs.live_enabled }}
           TARGET: ${{ inputs.target }}
           MODE: ${{ inputs.mode }}
           SOURCE_BRANCH: ${{ inputs.source_branch }}
@@ -98,7 +109,7 @@ jobs:
     needs: [request, source-qa, build]
     if: >-
       always() && !cancelled() && needs.build.result == 'success' &&
-      (inputs.target == 'dev' || inputs.target == 'both')
+      (needs.request.outputs.target == 'dev' || needs.request.outputs.target == 'both')
     uses: ./.github/workflows/site-deploy-target.yml
     with:
       target: dev
@@ -106,6 +117,10 @@ jobs:
       source_sha: ${{ needs.request.outputs.source_sha }}
       qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}
       source_branch: ${{ needs.request.outputs.source_branch }}
+      release_intent: ${{ needs.request.outputs.release_intent }}
+      release_requests_after: ${{ inputs.release_requests_after }}
+      live_enabled: ${{ inputs.live_enabled }}
+      dev_main_enabled: ${{ inputs.dev_main_enabled }}
       auto_dev_branch: ${{ inputs.auto_dev_branch }}
       auto_dev_after: ${{ inputs.auto_dev_after }}
       artifact_id: ${{ needs.build.outputs.artifact_id }}
@@ -117,10 +132,11 @@ jobs:
   live:
     needs: [request, source-qa, build, dev]
     if: >-
-      always() && !cancelled() && github.event_name == 'workflow_dispatch' &&
+      always() && !cancelled() &&
+      (github.event_name == 'workflow_dispatch' || needs.request.outputs.release_intent != '{}') &&
       needs.build.result == 'success' &&
-      ((inputs.target == 'live' && needs.dev.result == 'skipped') ||
-       (inputs.target == 'both' && needs.dev.result == 'success'))
+      ((needs.request.outputs.target == 'live' && needs.dev.result == 'skipped') ||
+       (needs.request.outputs.target == 'both' && needs.dev.result == 'success'))
     uses: ./.github/workflows/site-deploy-target.yml
     with:
       target: live
@@ -128,6 +144,12 @@ jobs:
       source_sha: ${{ needs.request.outputs.source_sha }}
       qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}
       source_branch: ${{ needs.request.outputs.source_branch }}
+      release_intent: ${{ needs.request.outputs.release_intent }}
+      release_requests_after: ${{ inputs.release_requests_after }}
+      live_enabled: ${{ inputs.live_enabled }}
+      dev_main_enabled: ${{ inputs.dev_main_enabled }}
+      auto_dev_branch: ${{ inputs.auto_dev_branch }}
+      auto_dev_after: ${{ inputs.auto_dev_after }}
       artifact_id: ${{ needs.build.outputs.artifact_id }}
       artifact_sha256: ${{ needs.build.outputs.artifact_sha256 }}
       source_path: ${{ inputs.source_path }}

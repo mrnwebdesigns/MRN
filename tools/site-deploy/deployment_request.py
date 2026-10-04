@@ -10,9 +10,10 @@ import urllib.parse
 from datetime import datetime, timezone
 
 from resolve_source import resolve
+import release_request
 
 
-def source_push(environ, payload=None):
+def source_request(environ, payload=None):
     """Authenticate the no-secret signal; never consume its code or artifacts.
 
     The downstream workflow and its configuration must come from main. GitHub's
@@ -40,7 +41,15 @@ def source_push(environ, payload=None):
     sha = run.get('head_sha', '')
     if not re.fullmatch('[0-9a-f]{40}', sha) or sha == '0' * 40:
         raise ValueError('Invalid source-push commit')
-    if run.get('conclusion') != 'success' or run.get('head_branch') != branch:
+    if run.get('conclusion') != 'success':
+        return None
+    request = release_request.signal(environ, run)
+    if request and request['kind'] in ('tag', 'disabled'):
+        if request['kind'] == 'disabled':
+            return None
+        request['source_run_number'] = run['run_number']
+        return request
+    if not request and run.get('head_branch') != branch:
         return None
     cutoff = environ.get('AUTO_DEV_AFTER', '')
     if not cutoff:
@@ -51,7 +60,15 @@ def source_push(environ, payload=None):
         return datetime.strptime(value, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
     if utc_time(run.get('created_at', '')) <= utc_time(cutoff):
         return None
-    return sha
+    request = request or {'kind':'branch', 'source_sha':sha, 'source_branch':branch, 'target':'dev'}
+    if 'run_number' in run:
+        request['source_run_number'] = run['run_number']
+    return request
+
+
+def source_push(environ, payload=None):
+    request = source_request(environ, payload)
+    return request['source_sha'] if request and request['kind'] == 'branch' else None
 
 
 def selection(event, ref, sha, target, mode, branch, dev_main_enabled=True):
@@ -79,10 +96,19 @@ def github_order(environ, source_sha, target, mode):
     event = environ.get('GITHUB_EVENT_NAME')
     if environ.get('GITHUB_REF') != 'refs/heads/main' or event not in ('push', 'workflow_run', 'workflow_dispatch'):
         raise ValueError('Untrusted deployment trigger')
-    if event == 'workflow_run' and (target != 'dev' or mode != 'deploy'
-            or source_sha != source_push(environ) or source_sha != environ.get('MRN_SOURCE_QA_SHA')
-            or environ.get('SOURCE_BRANCH') != environ.get('AUTO_DEV_BRANCH', 'main')):
-        raise ValueError('Automatic Dev requires source QA for the exact approved branch push')
+    intent = None
+    signal = None
+    if event == 'workflow_run':
+        signal = source_request(environ)
+        if (not signal or mode != 'deploy' or source_sha != signal['source_sha']
+                or source_sha != environ.get('MRN_SOURCE_QA_SHA')
+                or environ.get('SOURCE_BRANCH') != signal['source_branch']
+                or target not in (('dev', 'live') if signal['target'] == 'both' else (signal['target'],))):
+            raise ValueError('Deployment requires source QA for the exact approved push request')
+        if signal['kind'] == 'tag':
+            intent = {k: signal[k] for k in ('kind', 'tag', 'tag_object', 'source_sha', 'target')}
+            if json.loads(environ.get('RELEASE_INTENT', '{}')) != intent:
+                raise ValueError('Release intent changed after source selection')
     if event == 'push' and (target != 'dev' or mode != 'deploy'
                            or source_sha != environ.get('GITHUB_SHA')
                            or source_sha != environ.get('MRN_SOURCE_QA_SHA')):
@@ -96,7 +122,11 @@ def github_order(environ, source_sha, target, mode):
     order = {'repository': repository, 'workflow': workflow, 'source_sha': source_sha,
              'event': event, 'run_id': environ.get('GITHUB_RUN_ID', '')}
     if event == 'workflow_run':
-        order['source_branch'] = environ.get('AUTO_DEV_BRANCH', 'main')
+        order['source_branch'] = signal['source_branch']
+        if 'source_run_number' in signal:
+            order['source_run_number'] = signal['source_run_number']
+        if intent:
+            order['release_intent'] = intent
     for name in ('run_number', 'run_attempt'):
         raw = environ.get('GITHUB_' + name.upper(), '')
         if not re.fullmatch('[1-9][0-9]*', raw):
@@ -122,6 +152,14 @@ def validate_order(order):
             raise ValueError('Invalid ordered source branch')
 
 
+    if 'release_intent' in order:
+        if order['event'] != 'workflow_run':
+            raise ValueError('Release tags require the trusted workflow-run receiver')
+        release_request.validate_intent(order['release_intent'], order['source_sha'])
+    if 'source_run_number' in order and (type(order['source_run_number']) is not int or order['source_run_number'] < 1):
+        raise ValueError('Invalid source signal sequence')
+
+
 def check_order(incoming, previous, rollback=False):
     if incoming is not None:
         validate_order(incoming)
@@ -137,8 +175,12 @@ def check_order(incoming, previous, rollback=False):
     if rollback and incoming == previous:
         return  # Recovery in this same serialized deployment job.
     if incoming['run_number'] == previous['run_number'] and (
-            incoming['run_id'] != previous['run_id'] or incoming['source_sha'] != previous['source_sha']):
+            incoming['run_id'] != previous['run_id'] or incoming['source_sha'] != previous['source_sha']
+            or incoming.get('release_intent') != previous.get('release_intent')):
         raise ValueError('A rerun must retain its original run and source identity')
+    if (incoming.get('source_run_number') and previous.get('source_run_number')
+            and incoming['source_run_number'] < previous['source_run_number']):
+        raise ValueError('Stale source request cannot replace a newer release')
     if (incoming['run_number'], incoming['run_attempt']) <= (previous['run_number'], previous['run_attempt']):
         raise ValueError('Stale or already-attempted deployment run')
 
@@ -147,6 +189,9 @@ def require_current_push(order, environ):
     if not order or order['event'] not in ('push', 'workflow_run'):
         return
     validate_order(order)
+    if order.get('release_intent'):
+        release_request.current(environ, order['release_intent'])
+        return
     branch = order.get('source_branch', 'main')
     token = environ.get('GH_TOKEN') or environ.get('GITHUB_TOKEN')
     if not token:
@@ -179,10 +224,27 @@ def select_request(environ):
     return sha, branch
 
 
+def deployment_selection(environ):
+    if environ['GITHUB_EVENT_NAME'] == 'workflow_run':
+        request = source_request(environ)
+        if request and request['kind'] == 'tag':
+            return request
+    sha, branch = select_request(environ)
+    target = environ['TARGET']
+    if target != 'dev' and environ.get('LIVE_ENABLED', 'true') != 'true':
+        raise ValueError('This site is Dev-only; Live/Both are unavailable')
+    return {'source_sha':sha, 'source_branch':branch, 'target':target, 'kind':'branch'}
+
+
 if __name__ == '__main__':
-    sha, branch = select_request(os.environ)
+    request = deployment_selection(os.environ)
+    sha = request['source_sha']
+    intent = ({k:request[k] for k in ('kind', 'tag', 'tag_object', 'source_sha', 'target')}
+              if request['kind'] == 'tag' else {})
     with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
         output.write('enabled=' + ('true' if sha else 'false') + '\n')
         output.write('source_sha=' + (sha or '') + '\n')
-        output.write('source_branch=' + (branch if sha else '') + '\n')
+        output.write('source_branch=' + (request['source_branch'] if sha else '') + '\n')
+        output.write('target=' + request['target'] + '\n')
+        output.write('release_intent=' + json.dumps(intent, separators=(',', ':')) + '\n')
     print('Selected commit: ' + sha if sha else 'No eligible new source push; no deployment requested')

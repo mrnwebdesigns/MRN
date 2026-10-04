@@ -77,7 +77,7 @@ class SourcePushContract(unittest.TestCase):
             with self.payload_file(), self.assertRaises(ValueError):
                 request.github_order({**self.env, **change}, SHA, 'dev', 'deploy')
         for target, mode in (('live','deploy'), ('both','deploy'), ('dev','preflight')):
-            with self.assertRaises(ValueError): request.github_order(self.env, SHA, target, mode)
+            with self.payload_file(), self.assertRaises(ValueError): request.github_order(self.env, SHA, target, mode)
             with self.assertRaises(ValueError): request.select_request({**self.env, 'TARGET':target, 'MODE':mode})
 
     def test_stale_branch_validation_and_legacy_watermark_compatibility(self):
