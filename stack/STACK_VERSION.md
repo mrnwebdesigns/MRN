@@ -3,7 +3,7 @@
 ## Candidate Release
 - Stack release: `2026.10.04-stack-simplification`
 - Release date: `2026-10-04`
-- Status: `source reconciliation in progress; not released or fleet-qualified`
+- Status: `locked release candidate; production promotion and optional integration qualification remain gated`
 
 ## Included MRN-Owned Components
 - Theme:
@@ -29,7 +29,7 @@
   - `background-video-popout-disabler` `1.0.2`
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-announcements` `1.8.2`
-  - `mrn-comment-management` `1.1.7`
+  - `mrn-comment-management` `1.3.0`
   - `mrn-config-helper` `0.1.70`
   - `mrn-fontawesome-profile-manager` `0.5.1`
   - `mrn-google-fonts` `1.0.7`

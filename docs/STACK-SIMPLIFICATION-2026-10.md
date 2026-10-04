@@ -47,7 +47,7 @@ Owner approved implementation, commits, pushes, Git reconciliation and release q
 
 ## Current execution status
 
-In progress; this is not yet a released candidate.
+Source reconciliation is merged. The immutable candidate is being qualified; it is not a deployed fleet release.
 
 - Schema Bridge 0.7.0 removes the requested panel/save handler and retains historical output values. Full component and named local runtime MRN QA passed, including strict source analysis after isolating standalone fixture stubs.
 - Config Helper 0.1.70 hides legacy breadcrumb fields on migrated sites while retaining saved values. Native provider regression tests and component/runtime MRN QA passed; strict source analysis passed. The per-post Breadcrumb Trail box and its save handler are also disabled when SEOPress is selected, preserving historical metadata.
@@ -59,8 +59,17 @@ In progress; this is not yet a released candidate.
 
 The canonical Stack release and its optional integrations have different qualification boundaries. The default CAPTCHA package remains the registered 0.1.4 until the 0.2.0 deployment adapter and genuine-token qualification pass. Its merged 0.2.0 source and deterministic artifact are preserved as a candidate, not silently promoted.
 
-Existing site deployment receipts are historical evidence, not proof of this candidate. Remaining gates include final source merges, package/lock reconciliation, full release QA, hosted package parity, and exact target preflight/verification.
+Existing site deployment receipts are historical evidence, not proof of this candidate. Remaining gates include full release QA, hosted package parity, exact target preflight/verification, and the shared asset adapter described below.
 
 ## Preservation
 
 A verified pre-change Git bundle and exact copies of the September planning files are retained outside source in `MRN-release-artifacts/2026-10-04-stack-simplification`. Original source repositories and historical release locks remain available. No client database or secret values are included in this document.
+
+## Remaining release boundaries
+
+- **Shared asset deployment:** the parent still serves mutable `style.css` and script paths with version/mtime query strings. The MainWP optional-plugin installer overwrites directories. Neither satisfies the accepted immutable asset/atomic request contract merely because child-theme deployment now does. Shared parent/plugin asset promotion requires its own adapter implementation and named runtime qualification. This is unresolved engineering work, not a missing owner approval of Stack simplification.
+- **CAPTCHA 0.2.0:** source is merged and its deterministic candidate is built, with 121 integration, 24 browser and 10 asset/loader assertions passing locally. Real Google assessment permission and synthetic remote staging submissions require the narrow approvals in the plugin's readiness plan. Existing protection stays active until cutover is qualified.
+- **Operations service:** merged and tested source still needs the real team identity/hosting/enrollment and exclusive writer contract. A locally passing service is not a deployed team tool.
+- **Existing sites:** per-site metadata, tracking/consent, mail delivery, backups and rollback qualification remain required. A full Stack code package does not run the editor-retirement migration or convert SmartCrawl automatically.
+
+The source and package work must not be called 100% fleet ready while these required boundaries remain open.

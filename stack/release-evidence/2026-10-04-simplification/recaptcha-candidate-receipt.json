@@ -1,0 +1,43 @@
+{
+  "status": "local-candidate-not-published-or-deployed",
+  "version": "0.2.0",
+  "source_repository": "mrnwebdesigns/mrn-recaptcha-enterprise-manager",
+  "source_commit": "af2705c3c78a6d6a164c2d816a6886c6f3f618c5",
+  "archive": "mrn-recaptcha-enterprise-manager-0.2.0.zip",
+  "sha256": "6840c779c75a38b0bb174d8ae62034197f40e2ff8fd40bba1c618765c7abbbd3",
+  "size_bytes": 57626,
+  "asset_manifest_sha256": "b069f55b44e1fb85c3804f3ed8fbc121c54ed47a5ba6c984c2a1bfe427c40318",
+  "asset_build": {
+    "node": "26.0.0",
+    "esbuild": "0.25.10",
+    "lock_sha256": "122148405d05bd818d4526d2ae044bb0eba1df71e51a1d0fcf94f552d9a9bdae"
+  },
+  "deployment_adapter_qualification": "required-before-promotion",
+  "files": {
+    "README.md": "7519325acfe897a6443b727292704162f8e57ead53d468fb2a3de8e39e6b9732",
+    "assets/comment-protection.js": "8ace81804c95b4fcb1d41eb868319441552b10afb4cd46a531b9f6962452c9a0",
+    "assets/generated/comment-protection.8ace81804c95b4fcb1d41eb868319441552b10afb4cd46a531b9f6962452c9a0.js": "8ace81804c95b4fcb1d41eb868319441552b10afb4cd46a531b9f6962452c9a0",
+    "assets/generated/comment-protection.8c5892d1b6c3c622ae77fd45f7ad59047f556e5c90e821f1dd2565650b88ef62.min.js": "8c5892d1b6c3c622ae77fd45f7ad59047f556e5c90e821f1dd2565650b88ef62",
+    "assets/generated/wpforms-form-loader.7874cfd2b86433d9473635fe41ecad4897a6c974ad5b627468e66ede4acff5a3.min.js": "7874cfd2b86433d9473635fe41ecad4897a6c974ad5b627468e66ede4acff5a3",
+    "assets/generated/wpforms-form-loader.f8cb36e601e4ede209f8a0272e0fa63e22602a0782e549bf8d5482a6c5ebd243.js": "f8cb36e601e4ede209f8a0272e0fa63e22602a0782e549bf8d5482a6c5ebd243",
+    "assets/manifest.json": "b069f55b44e1fb85c3804f3ed8fbc121c54ed47a5ba6c984c2a1bfe427c40318",
+    "assets/wpforms-form-loader.js": "f8cb36e601e4ede209f8a0272e0fa63e22602a0782e549bf8d5482a6c5ebd243",
+    "docs/COMMENT-PROTECTION.md": "1069a04a9858e532871f78cefada261558848e175692a34effadb569cf4bc9c8",
+    "docs/FORM-AWARE-LOADER.md": "ce1628a1bac2f4df7d9f5c852cd198c639b6e887806f094a26417af7ea9f81a7",
+    "docs/GLOVES-MIGRATION.md": "728cd76d9786e04d7ea80ce58b6ee77e40a2c136656b318bd453524450c4bba5",
+    "docs/GLOVES-READINESS.md": "52e0d7c8ff6b79a6c150c5c755186649c4170f6f9721b154e135e852c5af0980",
+    "includes/class-mrn-recaptcha-comments.php": "0846a7c51a9f25f8f753dffd020af2e5dac31a0e615e71fbbc445377306b0ab9",
+    "includes/class-mrn-recaptcha-enterprise-manager.php": "49cd0c5afad1297a2d12a1789bc22459fb6bf616f2b551b20c8b2f1451eef191",
+    "includes/class-mrn-recaptcha-form-loader.php": "02a0863beb464fa31912bfc93b66225e42e7dd0cb92cf66a4ffa65720d017a0d",
+    "includes/mrn-sticky-settings-toolbar.php": "82dce7990c0342bebe111f5f76952172924ea5b60ecd9cc17133f144682a2c20",
+    "mrn-recaptcha-enterprise-manager.php": "2105833bdb897290e09db3e27ce1505162d21400ec75c8b8d94bd9e78d472b06",
+    "readme.txt": "7f42502205bdd8b8b5f564ca73d2cacf9874eac457e9dbf8695702df8cf22c82"
+  },
+  "excluded": [
+    "tests",
+    "tools",
+    "credentials",
+    "runtime database",
+    "git metadata"
+  ]
+}
