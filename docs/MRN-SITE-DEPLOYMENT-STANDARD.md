@@ -146,7 +146,8 @@ older commits. Migrate each approved site separately:
    main Live remain available. Do not merge or publish the phase as part of setup.
 5. Review/test/merge the configuration changes while unarmed. Verify every setup
    run skipped source QA, build and deployment. After setup is merged on every
-   applicable branch, set `MRN_AUTO_DEV_AFTER` to the current UTC timestamp in
+   applicable branch and the installation source signal is registered, set
+   `MRN_AUTO_DEV_AFTER` to a later current UTC timestamp in
    `YYYY-MM-DDTHH:MM:SSZ` format. Only signals originally created **after** that
    time qualify. Delayed setup callbacks and reruns keep their original creation
    time and cannot release the installation snapshot. Removing the variable
@@ -161,10 +162,11 @@ older commits. Migrate each approved site separately:
 
 The repository default branch must remain `main`. Both workflows retain fixed
 names/paths. A Phase 2 branch supplies code, not privileged deployment logic.
-Use ordinary Git pushes for Dev and the standard GitHub CLI `gh workflow run`
-for explicit Dev/Live/Both requests; see the short guide. The CLI needs an
-authorized GitHub account with repository write/workflow access. A push-only SSH
-deploy key is not an API login. Do not distribute shared administrator tokens.
+Use ordinary Git pushes for Dev and explicit release tags for Dev/Live/Both;
+see the short guide and release-tag adoption below. Developers can use their
+existing Git GUI and push credentials. GitHub CLI and Actions dispatch access
+are not required. Operator dispatch remains available as a fallback. Do not
+distribute shared administrator tokens.
 
 Production fixes belong on reviewed main and must also be merged/cherry-picked
 into an active phase branch. Automation does not resolve those source conflicts
