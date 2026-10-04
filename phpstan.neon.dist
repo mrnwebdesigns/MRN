@@ -8,6 +8,7 @@ parameters:
     bootstrapFiles:
         - phpstan-bootstrap.php
     scanFiles:
+        - vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php
         - stack/themes/mrn-base-stack/functions.php
         - stack/themes/mrn-base-stack/inc/display-styles.php
         - stack/themes/mrn-base-stack/inc/row-spacing-meta.php
@@ -17,6 +18,9 @@ parameters:
     reportUnmatchedIgnoredErrors: false
     treatPhpDocTypesAsCertain: false
     excludePaths:
+        # Test fixtures redefine WordPress globals and execute in separate processes.
+        analyseAndScan:
+            - */tests/*
         analyse:
             - */vendor/*
             - */node_modules/*

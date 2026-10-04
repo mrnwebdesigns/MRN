@@ -1,0 +1,365 @@
+{
+  "title": "MRN Stack: decisions and their consequences",
+  "date": "2026-10-04",
+  "basis": "Direct owner messages from September 23 through October 4, the current clarification, canonical policy, and recorded implementation evidence. An accepted product direction is distinct from permission to deploy a particular target.",
+  "decisions": [
+    {
+      "id": "D01",
+      "decision": "Replace SmartCrawl Pro with SEOPress Free + PRO as the Stack SEO platform.",
+      "consequences": "SEOPress becomes the native SEO editor and the primary provider for metadata, sitemaps, redirects and supported schema. The change also enables consolidation of consent, tracking and breadcrumbs. Preserve existing SEO values and custom schema during migration.",
+      "implementation": "The Stack manifest already selects SEOPress Free and PRO, and no longer selects SmartCrawl. MRN Web Designs completed the SmartCrawl migration; Gloves uses SEOPress. The platform choice is settled, while the surrounding Stack cleanup is incomplete.",
+      "stack_follow_through": "Finish the dependent changes below; select and qualify the exact vendor pair, preserve wp-config license injection, and provide the migration path for existing SmartCrawl sites. Remove obsolete assumptions only after their consumers are replaced.",
+      "evidence": [
+        "E01",
+        "E08",
+        "E11"
+      ],
+      "workstreams": [
+        "SEO-01",
+        "SEO-05",
+        "SEO-07"
+      ],
+      "group": "Product architecture"
+    },
+    {
+      "id": "D02",
+      "decision": "Strip SEO Helper down to indispensable integrations; remove it entirely if none remain.",
+      "consequences": "Retire its duplicate SEO fields, SEO metadata synchronization, provider UI and setup work that SEOPress now supplies. Trace API consumers before removal; move any truly needed integration into its proper remaining component. Business Information/schema must survive.",
+      "implementation": "SEO Helper is absent from the fresh Gloves inventory and inactive on MRN Web Designs. It remains a standard Stack bootstrap input.",
+      "stack_follow_through": "Gut the obsolete responsibilities and resolve consumers in AI Assist, Config Helper, Schema Bridge, editor restrictions, bootstrap and site code. Migrate values before stopping synchronization; remove the default without discarding saved data.",
+      "evidence": [
+        "E01",
+        "E02",
+        "E06"
+      ],
+      "workstreams": [
+        "SEO-01",
+        "EDITOR-01"
+      ],
+      "group": "Product architecture"
+    },
+    {
+      "id": "D03",
+      "decision": "Remove MRN ACF Character Count from the default Stack.",
+      "consequences": "Native SEOPress fields replace the duplicate SEO-field interface and its counters. Existing non-SEO counter use still needs a compatibility check; ACF itself remains.",
+      "implementation": "Gloves retired the plugin. It remains selected by Stack bootstrap and active on MRN Web Designs.",
+      "stack_follow_through": "Remove its default selection and stale field dependencies after checking non-SEO uses; retain existing content and the plugin source.",
+      "evidence": [
+        "E02",
+        "E06"
+      ],
+      "workstreams": [
+        "SEO-01",
+        "EDITOR-01"
+      ],
+      "group": "Product architecture"
+    },
+    {
+      "id": "D04",
+      "decision": "Remove MRN AI Assist from the default Stack.",
+      "consequences": "Retire its custom content/SEO assistance interface and background entry points. Preserve approved content, alt text, metadata and review history. This decision does not automatically enable SEOPress AI or claim identical queue/budget functionality.",
+      "implementation": "Gloves has no installed AI Assist in the fresh inventory. Stack bootstrap still selects it; MRN Web Designs still runs it.",
+      "stack_follow_through": "Retire its SEO Helper callers and active jobs safely, preserve history, remove default installation and document any intentionally retained optional capability.",
+      "evidence": [
+        "E02"
+      ],
+      "workstreams": [
+        "EDITOR-01"
+      ],
+      "group": "Product architecture"
+    },
+    {
+      "id": "D05",
+      "decision": "Remove MRN Editor Enhancements from the default Stack.",
+      "consequences": "The September plan maps Enhanced Editor to mrn-editor-tools. Retire custom toolbar/snippet enhancements while preserving content HTML/classes. Classic Editor, Advanced Editor Tools and ACF remain outside the removal list.",
+      "implementation": "Gloves no longer lists it; Stack bootstrap still selects it, and MRN Web Designs still runs it.",
+      "stack_follow_through": "Remove default installation and dead controls, audit saved snippets/classes and verify ordinary Classic Editor/ACF editing. Do not conflate this with removing the editor itself.",
+      "evidence": [
+        "E02"
+      ],
+      "workstreams": [
+        "EDITOR-01"
+      ],
+      "group": "Product architecture"
+    },
+    {
+      "id": "D06",
+      "decision": "Use SEOPress for native GA4 and GTM insertion; retire MRN GTM Injector.",
+      "consequences": "GA4 loads directly through SEOPress. SEOPress also loads the GTM container, whose duplicate GA4 base tag must be paused. GTM remains available for additional tags and events; the decision removes the custom injector, not Google Tag Manager.",
+      "implementation": "Implemented on Gloves and MRN Web Designs. GTM Injector is already catalog-only in the Stack; default settings and repeatable migration still need reconciliation.",
+      "stack_follow_through": "Standardize the settings, ownership and migration of existing GTM tags. Check consent-sensitive caching, role exclusions and one base pageview per accepted page load.",
+      "evidence": [
+        "E05",
+        "E06",
+        "E10"
+      ],
+      "workstreams": [
+        "SEO-03",
+        "SEO-04"
+      ],
+      "group": "Product architecture"
+    },
+    {
+      "id": "D07",
+      "decision": "Replace MRN Cookie Consent with the SEOPress consent banner.",
+      "consequences": "SEOPress owns the banner and the gating of its analytics/GTM loaders. Preserve accurate site-specific wording, privacy links, preferences, accessible controls and responsive behavior; assess additional tags separately.",
+      "implementation": "Adopted on Gloves and MRN Web Designs. MRN Cookie Consent is catalog-only; the two sites have different compatibility code and settings that are not yet a general Stack migration.",
+      "stack_follow_through": "Make the native configuration reproducible and qualify the minimal shared integration needed. The old absolute zero-network-after-withdrawal rule was assistant-invented and is not an owner decision.",
+      "evidence": [
+        "E02",
+        "E06",
+        "E09"
+      ],
+      "workstreams": [
+        "SEO-03",
+        "SEO-04"
+      ],
+      "group": "Product architecture"
+    },
+    {
+      "id": "D08",
+      "decision": "Replace the custom breadcrumb engine with SEOPress PRO breadcrumbs, retaining needed MRN context.",
+      "consequences": "Keep mega menus and the necessary WooCommerce category/navigation context. Retire unused full-trail controls and duplicated rendering/schema after caller migration. The old implementation lives in Config Helper/base theme, not a separate breadcrumb plugin.",
+      "implementation": "Config Helper 0.1.68 has the shared SEOPress provider; Gloves adopted it and retired its child pilot. The legacy provider still exists for other sites/fallback.",
+      "stack_follow_through": "Correct bootstrap, which still forces Stack schema ownership and disables SEOPress breadcrumb JSON. Adopt the native provider explicitly, preserve trail/placement parity, and remove obsolete settings only after other consumers migrate.",
+      "evidence": [
+        "E03",
+        "E07"
+      ],
+      "workstreams": [
+        "SEO-02"
+      ],
+      "group": "Product architecture"
+    },
+    {
+      "id": "D09",
+      "decision": "Preserve Business Information and Schema Bridge while changing SEO providers.",
+      "consequences": "Removing SEO Helper must not remove business identity or supported schema relationships. Use SEOPress as the provider and retain the MRN bridge where needed; preserve WooCommerce or site-owned schema until a verified replacement exists.",
+      "implementation": "The Gloves migration kept Schema Bridge. MRN Web Designs restored missing archive/About relationships and retained service/contact schema after comparing SmartCrawl output.",
+      "stack_follow_through": "Document one owner per schema type, generalize the parity checks, and preserve IDs, publisher/logo and organization relationships. Keep site policies and page IDs out of generic Stack defaults.",
+      "evidence": [
+        "E06",
+        "E11"
+      ],
+      "workstreams": [
+        "SEO-05"
+      ],
+      "group": "Product architecture"
+    },
+    {
+      "id": "D10",
+      "decision": "Use SEOPress ecommerce tracking, with only the compatibility work demonstrated necessary.",
+      "consequences": "Make native product/purchase tracking usable without false cart events or malformed purchase values. Tracking configuration is separate from whether the shop or checkout operates.",
+      "implementation": "Gloves has the approved child repair. Product views and purchases are enabled; add/remove events remain disabled. Later October 2 evidence confirms two real purchase receipts, correcting the earlier unverified-receipt checkpoint.",
+      "stack_follow_through": "Reproduce against the selected clean vendor build before extracting shared code. Resolve the one-cent rounding discrepancy and verify payload, variations, shipping/tax and reload behavior; investigate coverage without assuming missing consent or backfilling events.",
+      "evidence": [
+        "E06",
+        "E24"
+      ],
+      "workstreams": [
+        "SEO-06"
+      ],
+      "group": "Product architecture"
+    },
+    {
+      "id": "D11",
+      "decision": "Replace FluentSMTP with Post SMTP in the default Stack.",
+      "consequences": "Post SMTP becomes the mail transport. Update setup, sender identity, diagnostics, logging and development mail suppression together. The mail plugin and the sending provider are separate choices.",
+      "implementation": "Post SMTP is active on Gloves and MRN Web Designs. The shared plugins manifest still installs FluentSMTP.",
+      "stack_follow_through": "Change the default and related bootstrap/QA expectations; migrate each existing site with one active mail handler and verified delivery. Postmark is established on some sites, but universal provider conversion is not established by these decisions.",
+      "evidence": [
+        "E02"
+      ],
+      "workstreams": [
+        "MAIL-01"
+      ],
+      "group": "Product architecture"
+    },
+    {
+      "id": "D12",
+      "decision": "Remove SendGrid as a default Stack dependency and provisioning assumption.",
+      "consequences": "New sites must not require automatic SendGrid setup. Preserve existing site provider accounts and delivery configurations until individually migrated.",
+      "implementation": "Already implemented in shared source: SendGrid Provisioning is catalog-only and automatic provisioning is opt-in (PRs 120/121).",
+      "stack_follow_through": "Preserve the completed change; check residual assumptions in the Post SMTP migration. Do not delete provider accounts, DNS or credentials as part of plugin-default cleanup.",
+      "evidence": [
+        "E02"
+      ],
+      "workstreams": [
+        "MAIL-02"
+      ],
+      "group": "Product architecture"
+    },
+    {
+      "id": "D13",
+      "decision": "Preserve custom components for reuse while removing them from the standard installation.",
+      "consequences": "Simplification means a smaller supported default, with recoverable repositories, history, source and releases. It does not mean discarding prior engineering or client data.",
+      "implementation": "The original plan expressly preserves custom work. Much of the retired functionality remains catalog-only; the September planning files themselves are still uncommitted.",
+      "stack_follow_through": "Commit/reconcile the plan, archive recoverable refs and artifacts, document optional capabilities, and settle unique branches before cleanup. Preserve saved content/settings until a separate cleanup decision.",
+      "evidence": [
+        "E04"
+      ],
+      "workstreams": [
+        "EDITOR-01",
+        "OPS-01"
+      ],
+      "group": "Product architecture"
+    },
+    {
+      "id": "D14",
+      "decision": "Let selected non-administrator roles view WordPress comments and WooCommerce reviews.",
+      "consequences": "Extend MRN Comment Management so comment/review access can be assigned without making users administrators. Preserve WordPress/WooCommerce capabilities and moderation boundaries.",
+      "implementation": "Shared role work is implemented; Gloves has Comment Management 1.2.0 in the fresh inventory.",
+      "stack_follow_through": "Keep role/menu/browser regression coverage during Stack simplification and verify each intended role rather than inferring access from plugin activation.",
+      "evidence": [
+        "E12"
+      ],
+      "workstreams": [
+        "COMMENTS-01",
+        "UI-01"
+      ],
+      "group": "Other confirmed Stack work"
+    },
+    {
+      "id": "D15",
+      "decision": "Add per-site comment/review notification recipients to MRN Comment Management.",
+      "consequences": "Administrators select existing users, including Shop Managers, independently for published and awaiting-moderation notifications. Preserve existing recipients, deduplicate addresses and grant no extra permissions.",
+      "implementation": "Shared 1.3.0 source/package exists. Gloves still reports 1.2.0, so its requested adoption is not complete.",
+      "stack_follow_through": "Align human version records, deploy the qualified release through the approved route, configure the already-selected Gloves recipient and perform the agreed controlled delivery verification.",
+      "evidence": [
+        "E13"
+      ],
+      "workstreams": [
+        "COMMENTS-01"
+      ],
+      "group": "Other confirmed Stack work"
+    },
+    {
+      "id": "D16",
+      "decision": "Extend MRN reCAPTCHA Enterprise Manager to blog comments and WooCommerce reviews.",
+      "consequences": "Consolidate protection into the shared manager, with independent controls, frontend tokens and server validation. Preserve WPForms, verified-purchaser rules, moderation and notifications; retire Advanced Google reCAPTCHA only after replacement coverage passes.",
+      "implementation": "The 0.2.0 draft exists and has local tests, but PR 3 conflicts with the later 0.1.4 loader work. Genuine Google/staging and deployment qualification remain unfinished.",
+      "stack_follow_through": "Reconcile both branches, complete assessment permission and deployment prerequisites, then qualify real staged submissions before migration. Login, checkout, registration and password reset were excluded from this change.",
+      "evidence": [
+        "E21"
+      ],
+      "workstreams": [
+        "CAPTCHA-01",
+        "CAPTCHA-02"
+      ],
+      "group": "Other confirmed Stack work"
+    },
+    {
+      "id": "D17",
+      "decision": "Stop shared Stack assets and expensive discovery work from running where they are unused.",
+      "consequences": "Apply the Gloves performance lessons to shared components: scoped ACF/admin assets, cheaper settings lookups and appropriate frontend loading. Preserve builder behavior, accessibility and supported integrations.",
+      "implementation": "Admin asset scoping, Config Helper startup work and shared mobile first-paint fixes are merged. The form-aware reCAPTCHA loader is released as 0.1.4; some homepage/carousel work remains correctly site-owned.",
+      "stack_follow_through": "Keep regression coverage and generalize only reusable fixes. The goal remains strong mobile/desktop performance; copying Gloves layout code or blanket script delays is not the agreed implementation.",
+      "evidence": [
+        "E14",
+        "E15"
+      ],
+      "workstreams": [
+        "PERF-01",
+        "PERF-02",
+        "CAPTCHA-01",
+        "CACHE-01"
+      ],
+      "group": "Other confirmed Stack work"
+    },
+    {
+      "id": "D18",
+      "decision": "Standardize Git-based site deployment with QA and explicit Dev/Live destinations.",
+      "consequences": "The explicit October 2 shared-system request sets push to main \u2192 exact-commit source QA \u2192 immutable build \u2192 verified backup \u2192 atomic Dev deployment \u2192 runtime verification. Live/Both remain manual in that written contract; manual Dev may use a selected branch.",
+      "implementation": "Shared workflows/controller/templates are merged. Gloves and Doster have successful deployment evidence; other destinations have distinct prerequisites. Later discussion also asks for a simple developer-facing release path without requiring GitHub UI access.",
+      "stack_follow_through": "Complete per-site adoption and developer instructions, preserve environment URLs and active phase branches, and reconcile remote edits before deployment. Keep site deployment separate from shared Fleet updates; do not infer automatic Live permission from a push.",
+      "evidence": [
+        "E17"
+      ],
+      "workstreams": [
+        "DEPLOY-01",
+        "FLEET-01"
+      ],
+      "group": "Other confirmed Stack work"
+    },
+    {
+      "id": "D19",
+      "decision": "Make CSS/JS URLs immutable and deployment/cache behavior predictable.",
+      "consequences": "Build content hashes, synchronize minified files, never serve changed content at an old asset URL, retain assets for cached pages/rollback, atomically activate releases and invalidate only affected HTML.",
+      "implementation": "Implemented in the shared deployment work; the Gloves stale-CSS incident is the regression case. Adapter implementation does not qualify every host or plugin route.",
+      "stack_follow_through": "Verify each supported adapter and public asset checksum, including optional-plugin installation, rollback and retained asset URLs. Replace stale published packages through the same artifact contract.",
+      "evidence": [
+        "E16"
+      ],
+      "workstreams": [
+        "DEPLOY-01",
+        "QA-01"
+      ],
+      "group": "Other confirmed Stack work"
+    },
+    {
+      "id": "D20",
+      "decision": "Use the shared Updraft retention, isolation and pre-write backup policy.",
+      "consequences": "Daily staging/production backups retain 7 daily, 4 weekly and 12 thirty-day recovery points through Premium retention; use isolated S3 prefixes and local cleanup. Development scheduling is manual, but remote writes still require a verified labeled database backup; Local Hub is exempt.",
+      "implementation": "Shared policy/runtime 0.6.0 is released and Gloves adoption is verified. This is a canonical policy requirement, not a new decision inferred from this audit.",
+      "stack_follow_through": "Qualify the intended destinations, remote recovery and restore procedure. Reconcile legacy protected/imported backups deliberately rather than deleting them during rollout.",
+      "evidence": [
+        "E22"
+      ],
+      "workstreams": [
+        "BACKUP-01"
+      ],
+      "group": "Other confirmed Stack work"
+    },
+    {
+      "id": "D21",
+      "decision": "Keep content-only CPTs useful: category/tag filtering, downloads, links and tokens must work.",
+      "consequences": "Content List needs category as well as tag filtering. Resource downloads and event destinations must remain clickable when an item is content-only; editor controls must explain the behavior. Shared token rendering must work in builder output.",
+      "implementation": "The shared category, reference/link, token and related ACF fixes are included in the cumulative parent 1.5.2 work reviewed in the audit.",
+      "stack_follow_through": "Preserve those fixes and their regression cases in the simplified candidate. Site-specific URLs and content belong in WordPress/migrations rather than copied theme values.",
+      "evidence": [
+        "E18",
+        "E19"
+      ],
+      "workstreams": [
+        "CONTENT-01"
+      ],
+      "group": "Other confirmed Stack work"
+    },
+    {
+      "id": "D22",
+      "decision": "Build one conversational MRN operations tool around WordPress, the Stack and MainWP.",
+      "consequences": "The team should request inspections, forms, fixes, updates and rollback in plain language. Reuse MainWP MCP and established QA/Fleet/deployment services, enforce team permissions, and coordinate writes with durable operation records.",
+      "implementation": "Draft MRN PR 147 contains the initial service work. Operational identity, recovery and workflow qualification are not complete.",
+      "stack_follow_through": "Keep this as an explicit product commitment with its own acceptance work. Resolve its draft disposition for Git hygiene; do not merge an unfinished service solely to eliminate an unmerged branch.",
+      "evidence": [
+        "E20",
+        "E23"
+      ],
+      "workstreams": [
+        "OPS-01"
+      ],
+      "group": "Other confirmed Stack work"
+    }
+  ],
+  "site_specific": [
+    {
+      "decision": "Retire Apollo and add Clarity on MRN Web Designs; count only eligible successful prospect inquiries.",
+      "scope": "Confirmed for MRN Web Designs. Preserve the lessons about consent and event ownership; do not install Clarity or copy form IDs, tag IDs or lead categories across the fleet."
+    },
+    {
+      "decision": "Use the approved Gloves shipping/returns policy, links and ecommerce content.",
+      "scope": "Confirmed site content. Preserve schema accuracy and migration practices; do not make Gloves policy text a Stack default."
+    },
+    {
+      "decision": "Preserve Trilliant Live Phase 1 while Phase 2 remains in Dev; Doster is Dev-only.",
+      "scope": "Confirmed deployment configuration for those sites. Neither is a universal branch or environment policy."
+    }
+  ],
+  "not_established": [
+    "Universal conversion of every sending provider to Postmark.",
+    "Replacing every MRN integration with a commercial plugin regardless of functionality.",
+    "A requirement for absolutely zero network requests after consent withdrawal; the older assistant attribution was corrected.",
+    "Automatic Live deployment from every push, or universal Clarity/Apollo/lead-form settings."
+  ],
+  "correction": "The previous audit repeated an early ecommerce checkpoint. Later October 2 evidence already demonstrates two real GA4 purchases; payload fidelity, coverage, rounding and reload qualification remain incomplete."
+}

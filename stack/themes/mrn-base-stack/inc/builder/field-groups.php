@@ -382,9 +382,9 @@ function mrn_base_stack_register_acf_field_groups() {
 										'name'          => 'category_filter_source',
 										'type'          => 'select',
 										'choices'       => array(
-											'none'               => 'No Category Filter',
+											'none'         => 'No Category Filter',
 											'current_post_terms' => 'Use Current Page/Post Categories',
-											'manual_terms'       => 'Use Specific Categories',
+											'manual_terms' => 'Use Specific Categories',
 										),
 										'default_value' => 'none',
 										'ui'            => 1,

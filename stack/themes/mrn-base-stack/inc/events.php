@@ -122,7 +122,7 @@ add_filter( 'mrn_base_stack_content_list_item_permalink', 'mrn_base_stack_filter
  * Preserve the Event link's new-tab preference safely.
  *
  * @param array<string, string> $attributes Link attributes.
- * @param WP_Post              $item_post Listed post.
+ * @param WP_Post               $item_post Listed post.
  * @return array<string, string>
  */
 function mrn_base_stack_filter_event_content_list_link_attributes( $attributes, $item_post ) {

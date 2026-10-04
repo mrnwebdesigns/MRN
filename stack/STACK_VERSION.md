@@ -1,13 +1,13 @@
 # Stack Version
 
-## Current Release
-- Stack release: `2026.10.02-ame-menu-visibility`
-- Release date: `2026-10-02`
-- Status: `deployed to Gloves production; exact runtime and Shop Manager/administrator browser verification passed`
+## Candidate Release
+- Stack release: `2026.10.04-stack-simplification`
+- Release date: `2026-10-04`
+- Status: `source reconciliation in progress; not released or fleet-qualified`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.5.2`
+  - `mrn-base-stack` `1.5.3`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -19,29 +19,25 @@
   - `mrn-disable-comments` `1.2.5`
   - `mrn-shared-assets` `0.2.1`
   - `mrn-editor-lockdown` `1.0.33`
-  - `mrn-environment-runtime` `0.5.1`
+  - `mrn-environment-runtime` `0.6.0`
   - `mrn-public-security-hardening` `0.4.3`
-  - `mrn-schema-bridge` `0.6.0`
+  - `mrn-schema-bridge` `0.7.0`
   - `mrn-site-colors` / `Site Styles` `0.1.39`
   - `mrn-updraft-backup-policy-loader` `0.6.0`
   - `mrn-updraft-local-retention` `0.6.0`
 - Standard plugins:
   - `background-video-popout-disabler` `1.0.2`
-  - `mrn-acf-character-count` `1.1.9`
   - `mrn-acf-focal-point` `1.1.2`
-  - `mrn-ai-assist` `2.0.14`
   - `mrn-announcements` `1.8.2`
   - `mrn-comment-management` `1.1.7`
-  - `mrn-config-helper` `0.1.68`
-  - `mrn-editor-tools` `1.8.25`
+  - `mrn-config-helper` `0.1.70`
   - `mrn-fontawesome-profile-manager` `0.5.1`
   - `mrn-google-fonts` `1.0.7`
   - `mrn-hierarchical-menu-taxonomies` `0.1.1`
   - `mrn-layout-import-export` `0.1.2`
   - `mrn-media-bulk-tools` `0.13.1`
   - `mrn-mega-menu` `0.17.2`
-  - `mrn-recaptcha-enterprise-manager` `0.1.2`
-  - `mrn-seo-helper` `0.5.0`
+  - `mrn-recaptcha-enterprise-manager` `0.1.4` (qualified package retained; 0.2.0 source awaits operational qualification)
   - `mrn-stack-deployment-agent` `0.2.5`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-tokens` `0.1.4` (platform-required)
@@ -57,6 +53,11 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Notes
+- October 4 reconciles native SEOPress 10.3, Post SMTP, retired duplicate editors,
+  metadata-preserving migration and development SEO controls. The prior verified
+  release remains `2026.10.02-ame-menu-visibility` on its recorded target.
+  The candidate does not authorize a site migration. See
+  `docs/STACK-SIMPLIFICATION-2026-10.md` and the October 4 release evidence.
 - Public Security Hardening `0.4.3` respects Admin Menu Editor's finalized
   visibility, permissions, labels and placement. It no longer restores a
   hidden Advanced/Public Security menu after AME has applied role rules.
@@ -178,7 +179,7 @@
   without failing that production-only gate. It also distinguishes the stock
   canonical child from an exact derived child that remains safe for full Stack
   Fleet plans.
-- `mrn-recaptcha-enterprise-manager` `0.1.2` provides idempotent, fail-closed
+- `mrn-recaptcha-enterprise-manager` `0.1.4` (qualified package retained; 0.2.0 source awaits operational qualification) provides idempotent, fail-closed
   WPForms reCAPTCHA provisioning for Stack bootstrap and is available only as
   an upgrade of an existing installation through its checksum-locked Fleet
   record.

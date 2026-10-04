@@ -71,7 +71,7 @@ function wp_clear_scheduled_hook(string $hook): void {
 	unset($mrn_test_events[$hook]);
 }
 
-function mrn_environment_runtime_host_signal(): string {
+function mrn_environment_runtime_host_signal($host = null): string {
 	global $mrn_test_host_signal;
 	return $mrn_test_host_signal;
 }

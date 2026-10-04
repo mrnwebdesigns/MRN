@@ -1878,16 +1878,16 @@ apply_wp_defaults() {
 
 reconcile_development_environment_policy() {
   local plugin_slug hook
-  # fluent-smtp stays installed but inactive on every dev/review bootstrap so a
-  # new site can't send real mail before go-live. Optional SendGrid provisioning
+  # Mail transport stays inactive on dev/review bootstraps. Native SEOPress
+  # editing remains active; MRN Environment Runtime suppresses its tracking
+  # and indexing output under the development policy. Optional SendGrid provisioning
   # runs only after an explicit opt-in; reactivation and site-key delivery remain
   # separate, ops-owned go-live work.
   local -a disabled_plugins=(
     wpmu-dev-seo
     smartcrawl-seo
-    wp-seopress
-    wp-seopress-pro
     fluent-smtp
+    post-smtp
   )
   local -a disabled_cron_hooks=(
     wds_sitemap_validity_check
@@ -2050,17 +2050,34 @@ $breadcrumbs = isset($settings["breadcrumbs"]) && is_array($settings["breadcrumb
     : array();
 $changed = false;
 
-if (($breadcrumbs["schema_source"] ?? "") !== "stack") {
-    $breadcrumbs["schema_source"] = "stack";
+if (($breadcrumbs["provider"] ?? "") !== "seopress" || ($breadcrumbs["schema_source"] ?? "") !== "seo_provider") {
+    $breadcrumbs["provider"] = "seopress";
+    $breadcrumbs["schema_source"] = "seo_provider";
     $settings["breadcrumbs"] = $breadcrumbs;
     update_option("mrn_helper_settings", $settings, false);
     $changed = true;
 }
 
 $seopress = get_option("seopress_pro_option_name", array());
-if (is_array($seopress) && ($seopress["seopress_breadcrumbs_json_enable"] ?? "") === "1") {
-    $seopress["seopress_breadcrumbs_json_enable"] = "";
+if (!is_array($seopress)) {
+    fwrite(STDERR, "SEOPress PRO settings are not an array.\n");
+    exit(1);
+}
+if (($seopress["seopress_breadcrumbs_enable"] ?? "") !== "1" || ($seopress["seopress_breadcrumbs_json_enable"] ?? "") !== "1") {
+    $seopress["seopress_breadcrumbs_enable"] = "1";
+    $seopress["seopress_breadcrumbs_json_enable"] = "1";
     update_option("seopress_pro_option_name", $seopress, false);
+    $changed = true;
+}
+
+$toggles = get_option("seopress_toggle_option_name", array());
+if (!is_array($toggles)) {
+    fwrite(STDERR, "SEOPress module settings are not an array.\n");
+    exit(1);
+}
+if (($toggles["toggle-breadcrumbs"] ?? "") !== "1") {
+    $toggles["toggle-breadcrumbs"] = "1";
+    update_option("seopress_toggle_option_name", $toggles, false);
     $changed = true;
 }
 

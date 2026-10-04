@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-09-30",
+  "catalog_updated": "2026-10-04",
   "authority": "This file is the authoritative inventory and classification source for MRN-owned WordPress plugins and MU components. Inclusion does not imply installation.",
   "product_model": {
     "platform-required": "Installed on a production MRN stack because it provides mandatory platform behavior.",
@@ -121,7 +121,7 @@
     {
       "slug": "mrn-environment-runtime",
       "name": "MRN Environment Runtime",
-      "version": "0.5.1",
+      "version": "0.6.0",
       "runtime_type": "mu-component",
       "classification": "platform",
       "lifecycle": "supported",
@@ -222,7 +222,7 @@
     {
       "slug": "mrn-environment-runtime-loader",
       "name": "MRN Environment Runtime Loader",
-      "version": "0.5.1",
+      "version": "0.6.0",
       "runtime_type": "mu-loader",
       "classification": "platform-loader",
       "lifecycle": "supported",
@@ -252,7 +252,7 @@
     {
       "slug": "mrn-schema-bridge-loader",
       "name": "MRN Schema Bridge Loader",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "runtime_type": "mu-loader",
       "classification": "platform-loader",
       "lifecycle": "supported",
@@ -340,7 +340,7 @@
     {
       "slug": "mrn-schema-bridge",
       "name": "MRN Schema Bridge",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "runtime_type": "mu-component",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -414,12 +414,12 @@
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
-      "current_distribution": "standard-bootstrap",
+      "current_distribution": "catalog-only",
       "target_tier": "optional-integration",
       "source": {"repository": "mrn-acf-character-count", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-acf-character-count", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["ACF"], "soft": [], "release_group": null},
       "data": {"options": ["mrn_acf_char_count_fields"], "tables": [], "cron": [], "routes": [], "external_services": []},
-      "purpose": "Adds configurable character-count feedback to selected ACF fields."
+      "purpose": "Adds configurable character-count feedback to selected ACF fields. Removed from the default Stack in October 2026; source and site data remain available for optional reuse."
     },
     {
       "slug": "mrn-acf-focal-point",
@@ -442,12 +442,12 @@
       "runtime_type": "standard-plugin",
       "classification": "shared-feature",
       "lifecycle": "supported",
-      "current_distribution": "standard-bootstrap",
+      "current_distribution": "catalog-only",
       "target_tier": "optional-shared",
       "source": {"repository": "mrn-ai-assist", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-ai-assist/wordpress-plugin", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["MRN SEO Helper", "SmartCrawl", "ACF"], "release_group": "seo-provider-contract"},
       "data": {"options": ["mrn_ai_assist_settings", "database version"], "tables": ["mrn_ai_assist_jobs", "mrn_ai_assist_job_items", "mrn_ai_assist_usage", "mrn_ai_assist_changes"], "cron": ["mrn_ai_assist_alt_process_queue", "scheduler tick"], "routes": ["nine privileged admin-post actions"], "external_services": ["OpenAI"]},
-      "purpose": "Provides queued AI-assisted content, SEO and media-alt workflows."
+      "purpose": "Provides queued AI-assisted content, SEO and media-alt workflows. Removed from the default Stack in October 2026; source and site data remain available for optional reuse."
     },
     {
       "slug": "mrn-ai-guardrails",
@@ -494,7 +494,7 @@
     {
       "slug": "mrn-config-helper",
       "name": "MRN Config Helper",
-      "version": "0.1.68",
+      "version": "0.1.70",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
       "lifecycle": "supported",
@@ -568,12 +568,12 @@
       "runtime_type": "standard-plugin",
       "classification": "shared-feature",
       "lifecycle": "supported",
-      "current_distribution": "standard-bootstrap",
+      "current_distribution": "catalog-only",
       "target_tier": "optional-shared",
       "source": {"repository": "mrn-editor-tools", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-editor-tools", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress Classic Editor workflow"], "soft": ["ACF", "MRN Shared Assets", "MRN Universal Sticky Bar"], "release_group": "editor-content-contract"},
       "data": {"options": ["mrn_editor_tools_settings", "legacy Advanced Editor Tools compatibility"], "tables": [], "cron": [], "routes": ["one AJAX and two admin-post actions"], "external_services": ["bundled/shared Font Awesome assets"]},
-      "purpose": "Provides Classic Editor, TinyMCE and ACF WYSIWYG enhancements."
+      "purpose": "Provides Classic Editor, TinyMCE and ACF WYSIWYG enhancements. Removed from the default Stack in October 2026; source and site data remain available for optional reuse."
     },
     {
       "slug": "mrn-fontawesome-profile-manager",
@@ -648,7 +648,7 @@
     {
       "slug": "mrn-recaptcha-enterprise-manager",
       "name": "MRN reCAPTCHA Enterprise Manager",
-      "version": "0.1.4",
+      "version": "0.2.0",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -666,12 +666,12 @@
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
-      "current_distribution": "standard-bootstrap",
+      "current_distribution": "catalog-only",
       "target_tier": "optional-integration",
       "source": {"repository": "mrn-seo-helper", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-seo-helper", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["ACF", "SmartCrawl", "SEOPress", "MRN Schema Bridge", "MRN AI Assist"], "release_group": "seo-provider-contract"},
       "data": {"options": ["seed version", "provider", "force-fields settings", "post-type allow-list"], "tables": [], "cron": [], "routes": [], "external_services": ["SmartCrawl", "SEOPress"], "meta": ["MRN and provider SEO post metadata"]},
-      "purpose": "Owns shared SEO editing fields and synchronization with supported SEO providers."
+      "purpose": "Owns shared SEO editing fields and synchronization with supported SEO providers. Removed from the default Stack in October 2026; source and site data remain available for optional reuse."
     },
     {
       "slug": "mrn-template-inspector",

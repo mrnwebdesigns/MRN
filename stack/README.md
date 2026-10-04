@@ -128,3 +128,7 @@ immutable release one named site at a time.
 ```
 
 Adjust `/opt/mrnplugins` to wherever you deploy this folder on the server.
+
+## October 2026 simplification
+
+The accepted decisions and release gates are tracked in [`docs/STACK-SIMPLIFICATION-2026-10.md`](../docs/STACK-SIMPLIFICATION-2026-10.md). Fresh installs use SEOPress Free/PRO 10.3, native breadcrumbs and Post SMTP. Duplicate MRN editor plugins are catalog-only; existing sites use the [guarded migration runbook](scripts/migrations/README.md). Source changes are not a completed Fleet rollout until exact packages, backup/preflight, runtime QA and deployment verification pass.
