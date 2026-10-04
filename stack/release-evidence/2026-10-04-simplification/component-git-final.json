@@ -1,0 +1,29 @@
+[
+  {
+    "repository": "mrn-schema-bridge",
+    "head": "e3998df38bdb230184ff793c9f6a13bb521dce0d",
+    "status": "",
+    "branches": [
+      "main"
+    ],
+    "unmerged_remote": []
+  },
+  {
+    "repository": "mrn-config-helper",
+    "head": "f16bedf0f87b5aeb7516f286e38fc4b70f569bef",
+    "status": "",
+    "branches": [
+      "main"
+    ],
+    "unmerged_remote": []
+  },
+  {
+    "repository": "mrn-recaptcha-enterprise-manager",
+    "head": "af2705c3c78a6d6a164c2d816a6886c6f3f618c5",
+    "status": "",
+    "branches": [
+      "main"
+    ],
+    "unmerged_remote": []
+  }
+]
