@@ -1,0 +1,14 @@
+{
+  "target": "https://mrn-stack-qa-20261004.localhost",
+  "post_id": 14,
+  "checks": [
+    "plan is read-only",
+    "changed/conflicting native metadata blocks apply",
+    "copy preserves native parity, legacy data and schema overrides",
+    "second application is a no-op",
+    "rollback restores original metadata and active plugins",
+    "second rollback is a no-op",
+    "candidate re-applied after rollback verification"
+  ],
+  "status": "pass"
+}

@@ -1,0 +1,27 @@
+[
+  {
+    "file": "mrn-comment-management.zip",
+    "size_bytes": 28627,
+    "sha256": "a87742769c154f8054128366a92e26dd3e72faca707231afedd2673a63789904"
+  },
+  {
+    "file": "mrn-config-helper.zip",
+    "size_bytes": 122343,
+    "sha256": "668c6f35dceb304d83f116308776202d023e098e89b875a559a0b606b2b0b052"
+  },
+  {
+    "file": "mrn-recaptcha-enterprise-manager.zip",
+    "size_bytes": 27599,
+    "sha256": "858ff4f801b98c994c41caf056cdb54174861e54a2b86a78dd33d4bb3a066734"
+  },
+  {
+    "file": "mrn-stack-deployment-agent.zip",
+    "size_bytes": 33699,
+    "sha256": "7eef5538264634e20c44c4f650852cafc6a44eae591108c9f0e2d08fced9b3b2"
+  },
+  {
+    "file": "wp-seopress-pro-10-3.zip",
+    "size_bytes": 4706682,
+    "sha256": "809e10586aa13de117bdc049fb8e0c7beabe66caab13c69c766b644f3db239e3"
+  }
+]
