@@ -6,6 +6,7 @@
 - Schema Bridge 0.7.0 removes the duplicate SEO & Schema editor and save callback while retaining historical schema output. Config Helper 0.1.70 retires redundant breadcrumb controls on native-provider sites.
 - A guarded WP-CLI migration reconciles legacy metadata, refuses conflicts, deactivates duplicate editors and retains rollback journals and source data.
 - Updraft policy component 0.6.1 accounts for the corrected test-fixture signature in its immutable source tree; retention behavior and settings are unchanged.
+- Public Security Hardening loader now reports 0.4.3 to match the already released component.
 - Parent theme 1.5.3 corrects inherited QA formatting and fixture annotations without changing rendering.
 - Environment Runtime 0.6.0 allows native SEO editing on development while suppressing frontend indexing/tracking and disabled external jobs.
 - Preserve September planning evidence and the recovered 22-decision register. Operations service and comment/review CAPTCHA source are merged; external operational qualification remains separately gated.

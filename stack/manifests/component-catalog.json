@@ -29,9 +29,25 @@
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-loader.php", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress"], "soft": [], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "stack/mu-plugins/mrn-loader.php",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Loads approved MRN MU component entrypoints and exposes a capability-protected runtime parity report."
     },
     {
@@ -43,9 +59,28 @@
       "lifecycle": "supported",
       "current_distribution": "shared-runtime",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "shared", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["MRN base theme", "MRN Site Styles"], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "shared",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "MRN base theme",
+          "MRN Site Styles"
+        ],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Provides the versioned and checksummed wp-content/shared helper surface used by stack themes and MU components."
     },
     {
@@ -57,9 +92,31 @@
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-admin-data-post-types", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["mrn-config-helper", "mrn-seo-helper"], "release_group": "mrn-platform"},
-      "data": {"options": ["mrn_admin_data_post_types_manual", "mrn_admin_data_post_types_search_destinations"], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "mu-plugins/mrn-admin-data-post-types",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "mrn-config-helper",
+          "mrn-seo-helper"
+        ],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [
+          "mrn_admin_data_post_types_manual",
+          "mrn_admin_data_post_types_search_destinations"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Applies shared admin/data-only policy to selected post types and excludes them from SEOPress post-type discovery."
     },
     {
@@ -71,9 +128,27 @@
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-admin-ui-css", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress admin"], "soft": ["supported third-party admin screens"], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "mu-plugins/mrn-admin-ui-css",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress admin"
+        ],
+        "soft": [
+          "supported third-party admin screens"
+        ],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Provides shared WordPress admin presentation and usability rules."
     },
     {
@@ -85,9 +160,27 @@
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-dashboard-support", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress admin"], "soft": [], "release_group": "mrn-platform"},
-      "data": {"options": ["mrn_launch_date"], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "mu-plugins/mrn-dashboard-support",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress admin"
+        ],
+        "soft": [],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [
+          "mrn_launch_date"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Provides MRN support information, dashboard metadata, and the admin-only Notifications Center."
     },
     {
@@ -99,9 +192,29 @@
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-disable-comments", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["mrn-config-helper settings compatibility"], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": ["WordPress comment REST policy"], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "mu-plugins/mrn-disable-comments",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "mrn-config-helper settings compatibility"
+        ],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "WordPress comment REST policy"
+        ],
+        "external_services": []
+      },
       "purpose": "Enforces the MRN no-comments policy across admin, REST and XML-RPC surfaces."
     },
     {
@@ -113,9 +226,30 @@
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-editor-lockdown", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress Classic Editor workflow"], "soft": ["ACF", "Admin Menu Editor", "MRN base theme", "mrn-reusable-block-library"], "release_group": "editor-content-contract"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "mu-plugins/mrn-editor-lockdown",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress Classic Editor workflow"
+        ],
+        "soft": [
+          "ACF",
+          "Admin Menu Editor",
+          "MRN base theme",
+          "mrn-reusable-block-library"
+        ],
+        "release_group": "editor-content-contract"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Applies the shared editor, metabox and capability policy."
     },
     {
@@ -127,9 +261,25 @@
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-environment-runtime", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress"], "soft": [], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "mu-plugins/mrn-environment-runtime",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Provides environment, runtime, and notification diagnostics."
     },
     {
@@ -141,9 +291,30 @@
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-public-security-hardening", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["third-party REST routes"], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": ["WordPress REST access policy", "security.txt"], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "mu-plugins/mrn-public-security-hardening",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "third-party REST routes"
+        ],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "WordPress REST access policy",
+          "security.txt"
+        ],
+        "external_services": []
+      },
       "purpose": "Applies shared public REST, author, oEmbed and security disclosure hardening."
     },
     {
@@ -155,9 +326,31 @@
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-shared-assets", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["Font Awesome Profile Manager", "Editor Tools", "Config Helper"], "release_group": "design-assets-contract"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": ["Font Awesome assets"]},
+      "source": {
+        "repository": "MRN",
+        "path": "mu-plugins/mrn-shared-assets",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "Font Awesome Profile Manager",
+          "Editor Tools",
+          "Config Helper"
+        ],
+        "release_group": "design-assets-contract"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": [
+          "Font Awesome assets"
+        ]
+      },
       "purpose": "Provides stable shared asset and icon-chooser interfaces."
     },
     {
@@ -169,9 +362,36 @@
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-site-colors", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["MRN base theme", "MRN Google Fonts", "editor integrations"], "release_group": "design-assets-contract"},
-      "data": {"options": ["mrn_site_colors", "mrn_graphic_elements", "mrn_dark_scroll_presets", "mrn_row_spacing", "mrn_row_widths", "mrn_typography"], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "mu-plugins/mrn-site-colors",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "MRN base theme",
+          "MRN Google Fonts",
+          "editor integrations"
+        ],
+        "release_group": "design-assets-contract"
+      },
+      "data": {
+        "options": [
+          "mrn_site_colors",
+          "mrn_graphic_elements",
+          "mrn_dark_scroll_presets",
+          "mrn_row_spacing",
+          "mrn_row_widths",
+          "mrn_typography"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Owns persistent site design tokens, typography, spacing and CSS-variable output."
     },
     {
@@ -184,9 +404,25 @@
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
       "deployed_path": "mu-plugins/mrn-active-style-guide.php",
-      "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-active-style-guide.php", "state": "confirmed"},
-      "dependencies": {"hard": ["mrn-active-style-guide"], "soft": [], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "stack/mu-plugins/mrn-active-style-guide.php",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "mrn-active-style-guide"
+        ],
+        "soft": [],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Preserves the directly discoverable MU loader wrapper for the Active Style Guide component."
     },
     {
@@ -199,9 +435,25 @@
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
       "deployed_path": "mu-plugins/mrn-admin-data-post-types.php",
-      "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-admin-data-post-types.php", "state": "confirmed"},
-      "dependencies": {"hard": ["mrn-admin-data-post-types"], "soft": [], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "stack/mu-plugins/mrn-admin-data-post-types.php",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "mrn-admin-data-post-types"
+        ],
+        "soft": [],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Preserves the directly discoverable MU loader wrapper for the Admin Data Post Types component."
     },
     {
@@ -214,9 +466,25 @@
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
       "deployed_path": "mu-plugins/mrn-editor-lockdown.php",
-      "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-editor-lockdown.php", "state": "confirmed"},
-      "dependencies": {"hard": ["mrn-editor-lockdown"], "soft": [], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "stack/mu-plugins/mrn-editor-lockdown.php",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "mrn-editor-lockdown"
+        ],
+        "soft": [],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Preserves the directly discoverable MU loader wrapper for the Editor Lockdown component."
     },
     {
@@ -229,24 +497,56 @@
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
       "deployed_path": "mu-plugins/mrn-environment-runtime.php",
-      "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-environment-runtime.php", "state": "confirmed"},
-      "dependencies": {"hard": ["mrn-environment-runtime"], "soft": [], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "stack/mu-plugins/mrn-environment-runtime.php",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "mrn-environment-runtime"
+        ],
+        "soft": [],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Preserves the directly discoverable MU loader wrapper for the Environment Runtime component."
     },
     {
       "slug": "mrn-public-security-hardening-loader",
       "name": "MRN Public Security Hardening Loader",
-      "version": "0.4.2",
+      "version": "0.4.3",
       "runtime_type": "mu-loader",
       "classification": "platform-loader",
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
       "deployed_path": "mu-plugins/mrn-public-security-hardening.php",
-      "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-public-security-hardening.php", "state": "confirmed"},
-      "dependencies": {"hard": ["mrn-public-security-hardening"], "soft": [], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "stack/mu-plugins/mrn-public-security-hardening.php",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "mrn-public-security-hardening"
+        ],
+        "soft": [],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Preserves the directly discoverable MU loader wrapper for the Public Security Hardening component."
     },
     {
@@ -259,9 +559,25 @@
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
       "deployed_path": "mu-plugins/mrn-schema-bridge.php",
-      "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-schema-bridge.php", "state": "confirmed"},
-      "dependencies": {"hard": ["mrn-schema-bridge"], "soft": [], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "stack/mu-plugins/mrn-schema-bridge.php",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "mrn-schema-bridge"
+        ],
+        "soft": [],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Preserves the directly discoverable MU loader wrapper for the Schema Bridge component."
     },
     {
@@ -274,9 +590,25 @@
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
       "deployed_path": "mu-plugins/mrn-shared-assets.php",
-      "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-shared-assets.php", "state": "confirmed"},
-      "dependencies": {"hard": ["mrn-shared-assets"], "soft": [], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "stack/mu-plugins/mrn-shared-assets.php",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "mrn-shared-assets"
+        ],
+        "soft": [],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Preserves the directly discoverable MU loader wrapper for the Shared Assets component."
     },
     {
@@ -289,9 +621,25 @@
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
       "deployed_path": "mu-plugins/mrn-site-colors.php",
-      "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-site-colors.php", "state": "confirmed"},
-      "dependencies": {"hard": ["mrn-site-colors"], "soft": [], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "stack/mu-plugins/mrn-site-colors.php",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "mrn-site-colors"
+        ],
+        "soft": [],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Preserves the directly discoverable MU loader wrapper for the Site Styles component."
     },
     {
@@ -304,9 +652,27 @@
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
       "deployed_path": "mu-plugins/mrn-updraft-local-retention.php",
-      "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-updraft-local-retention.php", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["mrn-updraft-local-retention"], "release_group": "mrn-platform"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "stack/mu-plugins/mrn-updraft-local-retention.php",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "mrn-updraft-local-retention"
+        ],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Loads the MRN Updraft backup policy MU plugin from its subfolder."
     },
     {
@@ -318,9 +684,35 @@
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-updraft-local-retention", "state": "confirmed"},
-      "dependencies": {"hard": ["UpdraftPlus Premium advanced retention"], "soft": ["S3 remote storage", "mrn-environment-runtime"], "release_group": "mrn-platform"},
-      "data": {"options": ["UpdraftPlus schedule and retention options"], "tables": [], "cron": ["UpdraftPlus schedules and repair checks"], "routes": [], "external_services": ["UpdraftPlus", "configured remote backup storage"]},
+      "source": {
+        "repository": "MRN",
+        "path": "mu-plugins/mrn-updraft-local-retention",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "UpdraftPlus Premium advanced retention"
+        ],
+        "soft": [
+          "S3 remote storage",
+          "mrn-environment-runtime"
+        ],
+        "release_group": "mrn-platform"
+      },
+      "data": {
+        "options": [
+          "UpdraftPlus schedule and retention options"
+        ],
+        "tables": [],
+        "cron": [
+          "UpdraftPlus schedules and repair checks"
+        ],
+        "routes": [],
+        "external_services": [
+          "UpdraftPlus",
+          "configured remote backup storage"
+        ]
+      },
       "purpose": "Enforces the shared backup schedule, retention and remote-storage policy and reports backup warnings in the Notifications Center."
     },
     {
@@ -332,9 +724,35 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-shared",
-      "source": {"repository": "mrn-reusable-block-library", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-reusable-block-library", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["ACF", "MRN base theme", "mrn-editor-lockdown"], "release_group": "editor-content-contract"},
-      "data": {"options": ["mrn_rbl_legacy_cleanup_complete", "starter signature"], "tables": [], "cron": [], "routes": [], "external_services": [], "post_types": ["mrn_reusable_* types"]},
+      "source": {
+        "repository": "mrn-reusable-block-library",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-reusable-block-library",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "ACF",
+          "MRN base theme",
+          "mrn-editor-lockdown"
+        ],
+        "release_group": "editor-content-contract"
+      },
+      "data": {
+        "options": [
+          "mrn_rbl_legacy_cleanup_complete",
+          "starter signature"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": [],
+        "post_types": [
+          "mrn_reusable_* types"
+        ]
+      },
       "purpose": "Optional stack-shared reusable content-model and rendering feature used when a stack-profile site needs reusable content workflows."
     },
     {
@@ -346,9 +764,33 @@
       "lifecycle": "supported",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "mrn-schema-bridge", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-schema-bridge", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["SmartCrawl", "SEOPress", "MRN base theme", "mrn-seo-helper"], "release_group": "seo-provider-contract"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": ["SmartCrawl", "SEOPress"]},
+      "source": {
+        "repository": "mrn-schema-bridge",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-schema-bridge",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "SmartCrawl",
+          "SEOPress",
+          "MRN base theme",
+          "mrn-seo-helper"
+        ],
+        "release_group": "seo-provider-contract"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": [
+          "SmartCrawl",
+          "SEOPress"
+        ]
+      },
       "purpose": "Normalizes provider and theme schema behavior, including automatic Article and visible-content JobPosting contracts."
     },
     {
@@ -360,9 +802,28 @@
       "lifecycle": "supported-development",
       "current_distribution": "mu-loader",
       "target_tier": "platform-required",
-      "source": {"repository": "MRN", "path": "mu-plugins/mrn-active-style-guide", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["MRN Site Styles", "MRN base theme"], "release_group": "development-tools"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "mu-plugins/mrn-active-style-guide",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "MRN Site Styles",
+          "MRN base theme"
+        ],
+        "release_group": "development-tools"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Provides a logged-in design-system reference and diagnostic view."
     },
     {
@@ -374,9 +835,27 @@
       "lifecycle": "archived",
       "current_distribution": "archived",
       "target_tier": "archived",
-      "source": {"repository": "MRN", "path": "plugins/mrn-duplicate-enhance", "state": "archived-source-retained"},
-      "dependencies": {"hard": ["Post Duplicator"], "soft": ["WordPress admin bar"], "release_group": null},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "plugins/mrn-duplicate-enhance",
+        "state": "archived-source-retained"
+      },
+      "dependencies": {
+        "hard": [
+          "Post Duplicator"
+        ],
+        "soft": [
+          "WordPress admin bar"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Archived on 2026-08-19. Added an optional front-end admin-bar shortcut to the Post Duplicator editor workflow. Source is retained at plugins/mrn-duplicate-enhance."
     },
     {
@@ -388,9 +867,27 @@
       "lifecycle": "archived",
       "current_distribution": "archived",
       "target_tier": "archived",
-      "source": {"repository": "MRN", "path": "archive/mu-plugins/mrn-editor-ui-css", "state": "archived"},
-      "dependencies": {"hard": ["WordPress admin"], "soft": ["mrn-admin-ui-css"], "release_group": null},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "MRN",
+        "path": "archive/mu-plugins/mrn-editor-ui-css",
+        "state": "archived"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress admin"
+        ],
+        "soft": [
+          "mrn-admin-ui-css"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Archived legacy admin CSS compatibility loader superseded by MRN Admin UI CSS."
     },
     {
@@ -402,9 +899,27 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-shared",
-      "source": {"repository": "background-video-popout-disabler", "path": "/Users/khofmeyer/Development/MRN-plugins/background-video-popout-disabler", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress frontend"], "soft": ["MRN base theme background-video markup"], "release_group": null},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "background-video-popout-disabler",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/background-video-popout-disabler",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress frontend"
+        ],
+        "soft": [
+          "MRN base theme background-video markup"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Disables browser picture-in-picture behavior for stack-profile background videos and builder background-video markup; optional shared presentation helper."
     },
     {
@@ -416,9 +931,27 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "optional-integration",
-      "source": {"repository": "mrn-acf-character-count", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-acf-character-count", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["ACF"], "soft": [], "release_group": null},
-      "data": {"options": ["mrn_acf_char_count_fields"], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "mrn-acf-character-count",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-acf-character-count",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "ACF"
+        ],
+        "soft": [],
+        "release_group": null
+      },
+      "data": {
+        "options": [
+          "mrn_acf_char_count_fields"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Adds configurable character-count feedback to selected ACF fields. Removed from the default Stack in October 2026; source and site data remain available for optional reuse."
     },
     {
@@ -430,9 +963,30 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-integration",
-      "source": {"repository": "mrn-acf-focal-point", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-acf-focal-point", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["ACF image fields"], "soft": ["WordPress attachment rendering"], "release_group": null},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": [], "meta": ["attachment focal coordinates"]},
+      "source": {
+        "repository": "mrn-acf-focal-point",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-acf-focal-point",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "ACF image fields"
+        ],
+        "soft": [
+          "WordPress attachment rendering"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": [],
+        "meta": [
+          "attachment focal coordinates"
+        ]
+      },
       "purpose": "Stores and applies editor-selected focal points for ACF images."
     },
     {
@@ -444,9 +998,44 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "optional-shared",
-      "source": {"repository": "mrn-ai-assist", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-ai-assist/wordpress-plugin", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["MRN SEO Helper", "SmartCrawl", "ACF"], "release_group": "seo-provider-contract"},
-      "data": {"options": ["mrn_ai_assist_settings", "database version"], "tables": ["mrn_ai_assist_jobs", "mrn_ai_assist_job_items", "mrn_ai_assist_usage", "mrn_ai_assist_changes"], "cron": ["mrn_ai_assist_alt_process_queue", "scheduler tick"], "routes": ["nine privileged admin-post actions"], "external_services": ["OpenAI"]},
+      "source": {
+        "repository": "mrn-ai-assist",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-ai-assist/wordpress-plugin",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "MRN SEO Helper",
+          "SmartCrawl",
+          "ACF"
+        ],
+        "release_group": "seo-provider-contract"
+      },
+      "data": {
+        "options": [
+          "mrn_ai_assist_settings",
+          "database version"
+        ],
+        "tables": [
+          "mrn_ai_assist_jobs",
+          "mrn_ai_assist_job_items",
+          "mrn_ai_assist_usage",
+          "mrn_ai_assist_changes"
+        ],
+        "cron": [
+          "mrn_ai_assist_alt_process_queue",
+          "scheduler tick"
+        ],
+        "routes": [
+          "nine privileged admin-post actions"
+        ],
+        "external_services": [
+          "OpenAI"
+        ]
+      },
       "purpose": "Provides queued AI-assisted content, SEO and media-alt workflows. Removed from the default Stack in October 2026; source and site data remain available for optional reuse."
     },
     {
@@ -458,9 +1047,35 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "optional-integration",
-      "source": {"repository": "mrn-ai-guardrails", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-ai-guardrails", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress", "SEOPress PRO AI"], "soft": ["SEOPress-supported AI provider"], "release_group": "seo-provider-contract"},
-      "data": {"options": ["mrn_ai_guardrails_settings"], "tables": [], "cron": [], "routes": ["privileged alt-text review admin-post action"], "external_services": [], "meta": ["attachment candidate, review status, policy findings, and bounded history"]},
+      "source": {
+        "repository": "mrn-ai-guardrails",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-ai-guardrails",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress",
+          "SEOPress PRO AI"
+        ],
+        "soft": [
+          "SEOPress-supported AI provider"
+        ],
+        "release_group": "seo-provider-contract"
+      },
+      "data": {
+        "options": [
+          "mrn_ai_guardrails_settings"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "privileged alt-text review admin-post action"
+        ],
+        "external_services": [],
+        "meta": [
+          "attachment candidate, review status, policy findings, and bounded history"
+        ]
+      },
       "purpose": "Adds client policy enforcement and human approval before SEOPress AI-generated image alt text is published."
     },
     {
@@ -472,9 +1087,36 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-shared",
-      "source": {"repository": "mrn-announcements", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-announcements", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["MRN Universal Sticky Bar", "MRN business-information contract"], "release_group": null},
-      "data": {"options": ["announcement settings"], "tables": [], "cron": [], "routes": [], "external_services": [], "post_types": ["mrn_announcement"], "meta": ["_mrn_announcement_* fields"]},
+      "source": {
+        "repository": "mrn-announcements",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-announcements",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "MRN Universal Sticky Bar",
+          "MRN business-information contract"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [
+          "announcement settings"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": [],
+        "post_types": [
+          "mrn_announcement"
+        ],
+        "meta": [
+          "_mrn_announcement_* fields"
+        ]
+      },
       "purpose": "Provides scheduled and targeted announcement bars and modals."
     },
     {
@@ -486,9 +1128,34 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "maintenance-only",
-      "source": {"repository": "mrn-comment-management", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-comment-management", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress comments"], "soft": ["mrn-disable-comments policy"], "release_group": null},
-      "data": {"options": ["mrn_cm_management_roles", "mrn_cm_notification_recipients"], "tables": [], "cron": [], "routes": ["privileged comment audit/delete actions", "administrator-only role selection", "administrator-only notification recipients"], "external_services": []},
+      "source": {
+        "repository": "mrn-comment-management",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-comment-management",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress comments"
+        ],
+        "soft": [
+          "mrn-disable-comments policy"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [
+          "mrn_cm_management_roles",
+          "mrn_cm_notification_recipients"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "privileged comment audit/delete actions",
+          "administrator-only role selection",
+          "administrator-only notification recipients"
+        ],
+        "external_services": []
+      },
       "purpose": "Audits and manages comments with administrator-selected role access, additional native email recipients, and confirmed maintenance cleanup."
     },
     {
@@ -500,9 +1167,46 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "platform-required",
-      "source": {"repository": "mrn-config-helper", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["ACF", "WPForms", "WooCommerce", "SmartCrawl", "SEOPress", "MRN Shared Assets"], "release_group": "config-helper-decomposition"},
-      "data": {"options": ["mrn_helper_settings", "selected third-party settings"], "tables": [], "cron": [], "routes": ["four privileged admin-post actions", "three media AJAX integrations"], "external_services": ["UptimeRobot", "WPForms", "WooCommerce", "SEO providers"], "meta": ["breadcrumb and media-related metadata"]},
+      "source": {
+        "repository": "mrn-config-helper",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "ACF",
+          "WPForms",
+          "WooCommerce",
+          "SmartCrawl",
+          "SEOPress",
+          "MRN Shared Assets"
+        ],
+        "release_group": "config-helper-decomposition"
+      },
+      "data": {
+        "options": [
+          "mrn_helper_settings",
+          "selected third-party settings"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "four privileged admin-post actions",
+          "three media AJAX integrations"
+        ],
+        "external_services": [
+          "UptimeRobot",
+          "WPForms",
+          "WooCommerce",
+          "SEO providers"
+        ],
+        "meta": [
+          "breadcrumb and media-related metadata"
+        ]
+      },
       "purpose": "Provides the shared site configuration shell, breadcrumb runtime, and launch/admin integrations required by Stack sites."
     },
     {
@@ -514,9 +1218,36 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "optional-integration",
-      "source": {"repository": "mrn-sendgrid-provisioning", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-sendgrid-provisioning", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["mrn-config-helper", "Fluent SMTP"], "release_group": "config-helper-decomposition"},
-      "data": {"options": ["mrn_sendgrid_provisioning_settings"], "tables": [], "cron": [], "routes": ["four privileged admin-post actions"], "external_services": ["SendGrid", "Fluent SMTP"], "meta": []},
+      "source": {
+        "repository": "mrn-sendgrid-provisioning",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-sendgrid-provisioning",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "mrn-config-helper",
+          "Fluent SMTP"
+        ],
+        "release_group": "config-helper-decomposition"
+      },
+      "data": {
+        "options": [
+          "mrn_sendgrid_provisioning_settings"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "four privileged admin-post actions"
+        ],
+        "external_services": [
+          "SendGrid",
+          "Fluent SMTP"
+        ],
+        "meta": []
+      },
       "purpose": "Optionally provisions a per-site SendGrid Subuser, mail-only site API key, and domain authentication when separately installed and authorized; it is not part of the universal Stack baseline."
     },
     {
@@ -528,9 +1259,32 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "platform-required",
-      "source": {"repository": "mrn-stack-deployment-agent", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent", "state": "confirmed"},
-      "dependencies": {"hard": ["WordPress", "MainWP Child authenticated connection"], "soft": ["MRN MainWP Operations API"], "release_group": "mainwp-operations"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": ["authenticated mainwp_child_extra_execution actions"], "external_services": ["MainWP"]},
+      "source": {
+        "repository": "mrn-stack-deployment-agent",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-stack-deployment-agent",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress",
+          "MainWP Child authenticated connection"
+        ],
+        "soft": [
+          "MRN MainWP Operations API"
+        ],
+        "release_group": "mainwp-operations"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "authenticated mainwp_child_extra_execution actions"
+        ],
+        "external_services": [
+          "MainWP"
+        ]
+      },
       "purpose": "Provides a zero-frontend deployment target for checksum-verified MU and full Stack preflight, child-theme-preserving atomic promotion, rollback, and recovery-payload-aware incomplete-marker reconciliation requests authenticated by MainWP Child."
     },
     {
@@ -542,9 +1296,28 @@
       "lifecycle": "review",
       "current_distribution": "catalog-only",
       "target_tier": "optional-shared",
-      "source": {"repository": "mrn-contextual-content-editor", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-contextual-content-editor", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["Classic Editor", "ACF"], "release_group": "editor-content-contract"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "mrn-contextual-content-editor",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-contextual-content-editor",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "Classic Editor",
+          "ACF"
+        ],
+        "release_group": "editor-content-contract"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Adds contextual logged-in links to the appropriate content editing surface; held out of the stack pending production readiness."
     },
     {
@@ -556,9 +1329,35 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "optional-integration",
-      "source": {"repository": "mrn-cookie-consent", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress frontend"], "soft": ["MRN GTM Injector"], "release_group": "consent-analytics-contract"},
-      "data": {"options": ["mrn_silktide_consent_settings", "runtime status"], "tables": [], "cron": [], "routes": ["privileged settings handlers"], "external_services": ["Silktide Consent Manager", "Google Consent Mode"]},
+      "source": {
+        "repository": "mrn-cookie-consent",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-cookie-consent",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress frontend"
+        ],
+        "soft": [
+          "MRN GTM Injector"
+        ],
+        "release_group": "consent-analytics-contract"
+      },
+      "data": {
+        "options": [
+          "mrn_silktide_consent_settings",
+          "runtime status"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "privileged settings handlers"
+        ],
+        "external_services": [
+          "Silktide Consent Manager",
+          "Google Consent Mode"
+        ]
+      },
       "purpose": "Provides consent UI and Google Consent Mode behavior."
     },
     {
@@ -570,9 +1369,36 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "optional-shared",
-      "source": {"repository": "mrn-editor-tools", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-editor-tools", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress Classic Editor workflow"], "soft": ["ACF", "MRN Shared Assets", "MRN Universal Sticky Bar"], "release_group": "editor-content-contract"},
-      "data": {"options": ["mrn_editor_tools_settings", "legacy Advanced Editor Tools compatibility"], "tables": [], "cron": [], "routes": ["one AJAX and two admin-post actions"], "external_services": ["bundled/shared Font Awesome assets"]},
+      "source": {
+        "repository": "mrn-editor-tools",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-editor-tools",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress Classic Editor workflow"
+        ],
+        "soft": [
+          "ACF",
+          "MRN Shared Assets",
+          "MRN Universal Sticky Bar"
+        ],
+        "release_group": "editor-content-contract"
+      },
+      "data": {
+        "options": [
+          "mrn_editor_tools_settings",
+          "legacy Advanced Editor Tools compatibility"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "one AJAX and two admin-post actions"
+        ],
+        "external_services": [
+          "bundled/shared Font Awesome assets"
+        ]
+      },
       "purpose": "Provides Classic Editor, TinyMCE and ACF WYSIWYG enhancements. Removed from the default Stack in October 2026; source and site data remain available for optional reuse."
     },
     {
@@ -584,9 +1410,34 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-integration",
-      "source": {"repository": "mrn-fontawesome-profile-manager", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-fontawesome-profile-manager", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["MRN Shared Assets", "MRN Site Styles", "MRN Config Helper"], "release_group": "design-assets-contract"},
-      "data": {"options": ["mrn_fapm_settings", "local/source manifests"], "tables": [], "cron": [], "routes": [], "external_services": ["Font Awesome"]},
+      "source": {
+        "repository": "mrn-fontawesome-profile-manager",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-fontawesome-profile-manager",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "MRN Shared Assets",
+          "MRN Site Styles",
+          "MRN Config Helper"
+        ],
+        "release_group": "design-assets-contract"
+      },
+      "data": {
+        "options": [
+          "mrn_fapm_settings",
+          "local/source manifests"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": [
+          "Font Awesome"
+        ]
+      },
       "purpose": "Manages Font Awesome source profiles and local asset provisioning."
     },
     {
@@ -598,9 +1449,37 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-integration",
-      "source": {"repository": "mrn-google-fonts", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-google-fonts", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["MRN Site Styles", "MainWP Operations API"], "release_group": "design-assets-contract"},
-      "data": {"options": ["mrn_google_fonts_settings", "local manifest", "build history", "migration status"], "tables": [], "cron": [], "routes": ["mrn-google-fonts WP-CLI command"], "external_services": ["Google Fonts catalog/CDN"]},
+      "source": {
+        "repository": "mrn-google-fonts",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-google-fonts",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "MRN Site Styles",
+          "MainWP Operations API"
+        ],
+        "release_group": "design-assets-contract"
+      },
+      "data": {
+        "options": [
+          "mrn_google_fonts_settings",
+          "local manifest",
+          "build history",
+          "migration status"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "mrn-google-fonts WP-CLI command"
+        ],
+        "external_services": [
+          "Google Fonts catalog/CDN"
+        ]
+      },
       "purpose": "Manages Google and locally hosted font assets and Site Styles integration."
     },
     {
@@ -612,9 +1491,32 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "optional-integration",
-      "source": {"repository": "mrn-gtm-injector", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-gtm-injector", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress frontend"], "soft": ["MRN Cookie Consent"], "release_group": "consent-analytics-contract"},
-      "data": {"options": ["mrn_gtm_settings", "mrn_gtm_container_id"], "tables": [], "cron": [], "routes": [], "external_services": ["Google Tag Manager"]},
+      "source": {
+        "repository": "mrn-gtm-injector",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-gtm-injector",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress frontend"
+        ],
+        "soft": [
+          "MRN Cookie Consent"
+        ],
+        "release_group": "consent-analytics-contract"
+      },
+      "data": {
+        "options": [
+          "mrn_gtm_settings",
+          "mrn_gtm_container_id"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": [
+          "Google Tag Manager"
+        ]
+      },
       "purpose": "Injects a configured Google Tag Manager container at supported document locations."
     },
     {
@@ -626,9 +1528,39 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "platform-required",
-      "source": {"repository": "mrn-media-bulk-tools", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-media-bulk-tools", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress media library"], "soft": ["HappyFiles", "MRN media policy integrations"], "release_group": "media-contract"},
-      "data": {"options": ["database version", "scan state", "last scan"], "tables": ["mrn_media_usage"], "cron": ["daily scan", "scan processor"], "routes": ["five privileged AJAX actions"], "external_services": []},
+      "source": {
+        "repository": "mrn-media-bulk-tools",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-media-bulk-tools",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress media library"
+        ],
+        "soft": [
+          "HappyFiles",
+          "MRN media policy integrations"
+        ],
+        "release_group": "media-contract"
+      },
+      "data": {
+        "options": [
+          "database version",
+          "scan state",
+          "last scan"
+        ],
+        "tables": [
+          "mrn_media_usage"
+        ],
+        "cron": [
+          "daily scan",
+          "scan processor"
+        ],
+        "routes": [
+          "five privileged AJAX actions"
+        ],
+        "external_services": []
+      },
       "purpose": "Provides media audit, usage indexing and bulk maintenance tools."
     },
     {
@@ -640,9 +1572,39 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-shared",
-      "source": {"repository": "mrn-mega-menu", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mega-menu", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress menus"], "soft": ["WooCommerce", "MRN base theme", "mrn-hierarchical-menu-taxonomies"], "release_group": "navigation-contract"},
-      "data": {"options": ["mega-menu assignments"], "tables": [], "cron": [], "routes": ["three privileged admin-post actions"], "external_services": [], "post_types": ["mrn_mega_menu"], "meta": ["post, term and menu-item metadata"]},
+      "source": {
+        "repository": "mrn-mega-menu",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mega-menu",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress menus"
+        ],
+        "soft": [
+          "WooCommerce",
+          "MRN base theme",
+          "mrn-hierarchical-menu-taxonomies"
+        ],
+        "release_group": "navigation-contract"
+      },
+      "data": {
+        "options": [
+          "mega-menu assignments"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "three privileged admin-post actions"
+        ],
+        "external_services": [],
+        "post_types": [
+          "mrn_mega_menu"
+        ],
+        "meta": [
+          "post, term and menu-item metadata"
+        ]
+      },
       "purpose": "Provides accessible content-rich mega-menu administration and rendering."
     },
     {
@@ -654,9 +1616,33 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-integration",
-      "source": {"repository": "mrn-recaptcha-enterprise-manager", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["WPForms"], "release_group": null},
-      "data": {"options": ["mrn_recaptcha_enterprise_manager_settings", "WPForms settings synchronization"], "tables": [], "cron": [], "routes": [], "external_services": ["Google reCAPTCHA Enterprise", "WPForms"]},
+      "source": {
+        "repository": "mrn-recaptcha-enterprise-manager",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-recaptcha-enterprise-manager",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "WPForms"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [
+          "mrn_recaptcha_enterprise_manager_settings",
+          "WPForms settings synchronization"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": [
+          "Google reCAPTCHA Enterprise",
+          "WPForms"
+        ]
+      },
       "purpose": "Manages reCAPTCHA Enterprise configuration and WPForms synchronization."
     },
     {
@@ -668,9 +1654,42 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "optional-integration",
-      "source": {"repository": "mrn-seo-helper", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-seo-helper", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["ACF", "SmartCrawl", "SEOPress", "MRN Schema Bridge", "MRN AI Assist"], "release_group": "seo-provider-contract"},
-      "data": {"options": ["seed version", "provider", "force-fields settings", "post-type allow-list"], "tables": [], "cron": [], "routes": [], "external_services": ["SmartCrawl", "SEOPress"], "meta": ["MRN and provider SEO post metadata"]},
+      "source": {
+        "repository": "mrn-seo-helper",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-seo-helper",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "ACF",
+          "SmartCrawl",
+          "SEOPress",
+          "MRN Schema Bridge",
+          "MRN AI Assist"
+        ],
+        "release_group": "seo-provider-contract"
+      },
+      "data": {
+        "options": [
+          "seed version",
+          "provider",
+          "force-fields settings",
+          "post-type allow-list"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": [
+          "SmartCrawl",
+          "SEOPress"
+        ],
+        "meta": [
+          "MRN and provider SEO post metadata"
+        ]
+      },
       "purpose": "Owns shared SEO editing fields and synchronization with supported SEO providers. Removed from the default Stack in October 2026; source and site data remain available for optional reuse."
     },
     {
@@ -682,9 +1701,27 @@
       "lifecycle": "supported-development",
       "current_distribution": "standard-bootstrap",
       "target_tier": "development-only",
-      "source": {"repository": "mrn-template-inspector", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-template-inspector", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["MRN base theme"], "release_group": "development-tools"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "mrn-template-inspector",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-template-inspector",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "MRN base theme"
+        ],
+        "release_group": "development-tools"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Provides template and request-context diagnostics for development."
     },
     {
@@ -696,9 +1733,29 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "platform-required",
-      "source": {"repository": "mrn-universal-sticky-bar", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress", "MRN shared toolbar runtime on Stack sites"], "soft": ["WordPress Classic Editor workflow", "MRN plugins with settings screens"], "release_group": "shared-admin-ui-contract"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "mrn-universal-sticky-bar",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-universal-sticky-bar",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress",
+          "MRN shared toolbar runtime on Stack sites"
+        ],
+        "soft": [
+          "WordPress Classic Editor workflow",
+          "MRN plugins with settings screens"
+        ],
+        "release_group": "shared-admin-ui-contract"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Provides the required Stack settings/editor action-bar implementation and compatibility API while retaining an independently deployable standalone fallback."
     },
     {
@@ -710,9 +1767,28 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "optional-integration",
-      "source": {"repository": "mrn-hierarchical-menu-taxonomies", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-hierarchical-menu-taxonomies", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress menus"], "soft": ["WooCommerce product categories", "MRN Mega Menu"], "release_group": "navigation-contract"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": [], "external_services": []},
+      "source": {
+        "repository": "mrn-hierarchical-menu-taxonomies",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-hierarchical-menu-taxonomies",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress menus"
+        ],
+        "soft": [
+          "WooCommerce product categories",
+          "MRN Mega Menu"
+        ],
+        "release_group": "navigation-contract"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
       "purpose": "Expands the classic menu builder so hierarchical taxonomy panels render complete parent/child trees for supported terms."
     },
     {
@@ -724,9 +1800,43 @@
       "lifecycle": "supported-review",
       "current_distribution": "catalog-only",
       "target_tier": "maintenance-only",
-      "source": {"repository": "mrn-database-retention", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["MainWP", "FluentSMTP", "Action Scheduler", "Relevanssi"], "release_group": null},
-      "data": {"options": ["retention report and lock state"], "tables": ["operates on allowlisted third-party tables; owns none"], "cron": ["four retention/maintenance hooks"], "routes": ["mrn-db-retention WP-CLI command"], "external_services": ["MainWP", "FluentSMTP", "Action Scheduler", "Relevanssi"]},
+      "source": {
+        "repository": "mrn-database-retention",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-database-retention",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "MainWP",
+          "FluentSMTP",
+          "Action Scheduler",
+          "Relevanssi"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [
+          "retention report and lock state"
+        ],
+        "tables": [
+          "operates on allowlisted third-party tables; owns none"
+        ],
+        "cron": [
+          "four retention/maintenance hooks"
+        ],
+        "routes": [
+          "mrn-db-retention WP-CLI command"
+        ],
+        "external_services": [
+          "MainWP",
+          "FluentSMTP",
+          "Action Scheduler",
+          "Relevanssi"
+        ]
+      },
       "purpose": "Applies explicitly configured retention to supported third-party operational data when deliberately installed as a maintenance integration."
     },
     {
@@ -738,9 +1848,29 @@
       "lifecycle": "supported-development",
       "current_distribution": "catalog-only",
       "target_tier": "development-only",
-      "source": {"repository": "mrn-dummy-content", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-dummy-content", "state": "confirmed-independent-development"},
-      "dependencies": {"hard": ["WordPress"], "soft": ["MRN content model"], "release_group": "development-tools"},
-      "data": {"options": [], "tables": [], "cron": [], "routes": ["three privileged content seed/delete actions"], "external_services": []},
+      "source": {
+        "repository": "mrn-dummy-content",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-dummy-content",
+        "state": "confirmed-independent-development"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "MRN content model"
+        ],
+        "release_group": "development-tools"
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "three privileged content seed/delete actions"
+        ],
+        "external_services": []
+      },
       "purpose": "Seeds and removes development fixture content."
     },
     {
@@ -752,9 +1882,41 @@
       "lifecycle": "incubator",
       "current_distribution": "catalog-only",
       "target_tier": "review",
-      "source": {"repository": "mrn-google-reviews", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-google-reviews", "state": "incubator-independent-unreleased"},
-      "dependencies": {"hard": ["Google Business Profile credentials"], "soft": ["secure external secret injection"], "release_group": null},
-      "data": {"options": ["credentials", "settings", "last sync", "last error"], "tables": [], "cron": ["review synchronization"], "routes": ["four privileged admin-post actions"], "external_services": ["Google Business Profile OAuth/API"], "post_types": ["mrn_google_review"]},
+      "source": {
+        "repository": "mrn-google-reviews",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-google-reviews",
+        "state": "incubator-independent-unreleased"
+      },
+      "dependencies": {
+        "hard": [
+          "Google Business Profile credentials"
+        ],
+        "soft": [
+          "secure external secret injection"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [
+          "credentials",
+          "settings",
+          "last sync",
+          "last error"
+        ],
+        "tables": [],
+        "cron": [
+          "review synchronization"
+        ],
+        "routes": [
+          "four privileged admin-post actions"
+        ],
+        "external_services": [
+          "Google Business Profile OAuth/API"
+        ],
+        "post_types": [
+          "mrn_google_review"
+        ]
+      },
       "purpose": "Synchronizes and stores Google Business Profile reviews; requires production-readiness review."
     },
     {
@@ -766,9 +1928,30 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "maintenance-only",
-      "source": {"repository": "mrn-layout-import-export", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-layout-import-export", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["ACF builder layouts"], "soft": ["MRN base theme content model"], "release_group": null},
-      "data": {"options": [], "tables": [], "cron": [], "routes": ["privileged export admin-post action", "privileged AJAX import"], "external_services": []},
+      "source": {
+        "repository": "mrn-layout-import-export",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-layout-import-export",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "ACF builder layouts"
+        ],
+        "soft": [
+          "MRN base theme content model"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "privileged export admin-post action",
+          "privileged AJAX import"
+        ],
+        "external_services": []
+      },
       "purpose": "Exports, imports and remaps ACF builder layouts as an explicit migration operation."
     },
     {
@@ -780,9 +1963,37 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "dashboard-only",
-      "source": {"repository": "mrn-mainwp-operations-api", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api", "state": "confirmed-independent-dashboard"},
-      "dependencies": {"hard": ["MainWP Dashboard", "WordPress Abilities API"], "soft": ["UpdraftPlus", "MRN Google Fonts"], "release_group": "mainwp-operations"},
-      "data": {"options": ["site-scoped approved Stack-plugin overlay ledgers"], "tables": [], "cron": [], "routes": ["twenty-two mrn-mainwp WordPress Abilities"], "external_services": ["MainWP", "UpdraftPlus", "MRN Google Fonts"]},
+      "source": {
+        "repository": "mrn-mainwp-operations-api",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api",
+        "state": "confirmed-independent-dashboard"
+      },
+      "dependencies": {
+        "hard": [
+          "MainWP Dashboard",
+          "WordPress Abilities API"
+        ],
+        "soft": [
+          "UpdraftPlus",
+          "MRN Google Fonts"
+        ],
+        "release_group": "mainwp-operations"
+      },
+      "data": {
+        "options": [
+          "site-scoped approved Stack-plugin overlay ledgers"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "twenty-two mrn-mainwp WordPress Abilities"
+        ],
+        "external_services": [
+          "MainWP",
+          "UpdraftPlus",
+          "MRN Google Fonts"
+        ]
+      },
       "purpose": "Exposes tightly scoped MainWP Dashboard operations for backups, packages, font management, one-site Stack qualification with fail-closed production credential policy, backup-gated full Stack rollout and recovery, upgrade-only allowlisted optional-plugin updates, and exact one-component updates that persist and reconcile checksum-verified approved overlays without hiding unknown drift."
     },
     {
@@ -794,9 +2005,39 @@
       "lifecycle": "archived",
       "current_distribution": "archived",
       "target_tier": "archived",
-      "source": {"repository": "mrn-pre-consent-update-backup", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-pre-consent-update-backup", "state": "archived-independent-source-retained"},
-      "dependencies": {"hard": ["UpdraftPlus"], "soft": ["MainWP/update workflows"], "release_group": "backup-operations-contract"},
-      "data": {"options": ["status", "version", "backup history linkage"], "tables": [], "cron": ["deferred backup processing"], "routes": ["privileged update interception", "one-time token-protected async action"], "external_services": ["UpdraftPlus", "configured remote backup storage"]},
+      "source": {
+        "repository": "mrn-pre-consent-update-backup",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-pre-consent-update-backup",
+        "state": "archived-independent-source-retained"
+      },
+      "dependencies": {
+        "hard": [
+          "UpdraftPlus"
+        ],
+        "soft": [
+          "MainWP/update workflows"
+        ],
+        "release_group": "backup-operations-contract"
+      },
+      "data": {
+        "options": [
+          "status",
+          "version",
+          "backup history linkage"
+        ],
+        "tables": [],
+        "cron": [
+          "deferred backup processing"
+        ],
+        "routes": [
+          "privileged update interception",
+          "one-time token-protected async action"
+        ],
+        "external_services": [
+          "UpdraftPlus",
+          "configured remote backup storage"
+        ]
+      },
       "purpose": "Archived by owner request on 2026-08-24. Independent repository and local checkout are retained as historical source; no active distribution or runtime wiring remains."
     },
     {
@@ -808,9 +2049,31 @@
       "lifecycle": "supported",
       "current_distribution": "standard-bootstrap",
       "target_tier": "platform-required",
-      "source": {"repository": "mrn-tokens", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-tokens", "state": "confirmed-symlinked"},
-      "dependencies": {"hard": ["WordPress"], "soft": [], "release_group": null},
-      "data": {"options": ["mrn_tokens_settings"], "tables": [], "cron": [], "routes": ["mrn-tokens/v1/tokens", "mrn-tokens/v1/tokens/(?P<name>...)", "manage_options permission"], "external_services": []},
+      "source": {
+        "repository": "mrn-tokens",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-tokens",
+        "state": "confirmed-symlinked"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [],
+        "release_group": null
+      },
+      "data": {
+        "options": [
+          "mrn_tokens_settings"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "mrn-tokens/v1/tokens",
+          "mrn-tokens/v1/tokens/(?P<name>...)",
+          "manage_options permission"
+        ],
+        "external_services": []
+      },
       "purpose": "Provides a reusable site-content token registry, shortcode and authenticated REST interface."
     },
     {
@@ -822,9 +2085,32 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "dashboard-only",
-      "source": {"repository": "mrn-wp-control", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-wp-control", "state": "confirmed-independent-dashboard"},
-      "dependencies": {"hard": ["WP-CLI", "MainWP provisioning context"], "soft": [], "release_group": "mainwp-operations"},
-      "data": {"options": ["mrn_wp_control_activation_result"], "tables": [], "cron": [], "routes": ["mrn-control WP-CLI command"], "external_services": ["MainWP"]},
+      "source": {
+        "repository": "mrn-wp-control",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-wp-control",
+        "state": "confirmed-independent-dashboard"
+      },
+      "dependencies": {
+        "hard": [
+          "WP-CLI",
+          "MainWP provisioning context"
+        ],
+        "soft": [],
+        "release_group": "mainwp-operations"
+      },
+      "data": {
+        "options": [
+          "mrn_wp_control_activation_result"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "mrn-control WP-CLI command"
+        ],
+        "external_services": [
+          "MainWP"
+        ]
+      },
       "purpose": "Provides restricted MainWP account provisioning through WP-CLI."
     },
     {
@@ -836,9 +2122,29 @@
       "lifecycle": "supported",
       "current_distribution": "catalog-only",
       "target_tier": "dashboard-only",
-      "source": {"repository": "mrn-wp-control-table-exporter", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-wp-control-table-exporter", "state": "confirmed-independent-dashboard"},
-      "dependencies": {"hard": ["supported WP Control/MainWP admin tables"], "soft": [], "release_group": "mainwp-operations"},
-      "data": {"options": ["mrn_wpcte_settings"], "tables": [], "cron": [], "routes": [], "external_services": ["MainWP/WP Control admin UI"]},
+      "source": {
+        "repository": "mrn-wp-control-table-exporter",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-wp-control-table-exporter",
+        "state": "confirmed-independent-dashboard"
+      },
+      "dependencies": {
+        "hard": [
+          "supported WP Control/MainWP admin tables"
+        ],
+        "soft": [],
+        "release_group": "mainwp-operations"
+      },
+      "data": {
+        "options": [
+          "mrn_wpcte_settings"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": [
+          "MainWP/WP Control admin UI"
+        ]
+      },
       "purpose": "Adds client-side CSV export to supported management tables."
     },
     {
@@ -850,9 +2156,31 @@
       "lifecycle": "archived",
       "current_distribution": "archived",
       "target_tier": "archived",
-      "source": {"repository": null, "path": null, "state": "archived-no-source"},
-      "dependencies": {"hard": ["WordPress admin"], "soft": ["licensed third-party plugins"], "release_group": null},
-      "data": {"options": ["vaulted license keys"], "tables": [], "cron": [], "routes": ["privileged license scan/populate/strip actions"], "external_services": []},
+      "source": {
+        "repository": null,
+        "path": null,
+        "state": "archived-no-source"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress admin"
+        ],
+        "soft": [
+          "licensed third-party plugins"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [
+          "vaulted license keys"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "privileged license scan/populate/strip actions"
+        ],
+        "external_services": []
+      },
       "purpose": "Archived on 2026-08-19. Scanned, vaulted, populated and stripped plugin license keys from one admin UI. No canonical source exists; the only artifact is the packaged zip retained on the stack manager."
     },
     {
@@ -864,9 +2192,30 @@
       "lifecycle": "archived",
       "current_distribution": "archived",
       "target_tier": "archived",
-      "source": {"repository": null, "path": null, "state": "archived-no-source"},
-      "dependencies": {"hard": ["WordPress admin"], "soft": ["mrn-editor-tools", "Admin Menu Editor Pro"], "release_group": null},
-      "data": {"options": [], "tables": [], "cron": [], "routes": ["privileged export actions"], "external_services": []},
+      "source": {
+        "repository": null,
+        "path": null,
+        "state": "archived-no-source"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress admin"
+        ],
+        "soft": [
+          "mrn-editor-tools",
+          "Admin Menu Editor Pro"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "privileged export actions"
+        ],
+        "external_services": []
+      },
       "purpose": "Archived on 2026-08-19. Exported Editor Enhancements and Admin Menu Editor Pro settings in one run. No canonical source exists; the only artifact is the packaged zip retained on the stack manager."
     },
     {
@@ -878,9 +2227,34 @@
       "lifecycle": "supported",
       "current_distribution": "tooling-only",
       "target_tier": "dashboard-only",
-      "source": {"repository": "mrn-mainwp-mcp", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-mcp", "state": "confirmed"},
-      "dependencies": {"hard": ["Node.js", "MainWP Dashboard"], "soft": ["mainwp_onboard.py", "WordPress Abilities API", "Production Hub"], "release_group": null},
-      "data": {"options": [], "tables": [], "cron": [], "routes": ["MCP tool surface"], "external_services": ["MainWP Dashboard"]},
+      "source": {
+        "repository": "mrn-mainwp-mcp",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-mcp",
+        "state": "confirmed"
+      },
+      "dependencies": {
+        "hard": [
+          "Node.js",
+          "MainWP Dashboard"
+        ],
+        "soft": [
+          "mainwp_onboard.py",
+          "WordPress Abilities API",
+          "Production Hub"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "MCP tool surface"
+        ],
+        "external_services": [
+          "MainWP Dashboard"
+        ]
+      },
       "purpose": "Portable Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. It is agent tooling for the MainWP/management runtime and is never installed on a WordPress site."
     },
     {
@@ -892,9 +2266,51 @@
       "lifecycle": "review",
       "current_distribution": "catalog-only",
       "target_tier": "optional-integration",
-      "source": {"repository": "mrn-relevanssi-ai-search", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-relevanssi-ai-search", "state": "confirmed-independent"},
-      "dependencies": {"hard": ["WordPress", "Relevanssi"], "soft": ["OpenAI-compatible Responses and Embeddings APIs"], "release_group": null},
-      "data": {"options": ["mrn_relevanssi_ai_search_settings", "mrn_relevanssi_ai_index_cursor"], "tables": ["{prefix}mrn_relevanssi_ai_usage", "{prefix}mrn_relevanssi_ai_vectors", "{prefix}mrn_relevanssi_ai_embedding_usage"], "cron": ["mrn_relevanssi_ai_scheduled_index", "mrn_relevanssi_ai_continue_index", "mrn_relevanssi_ai_index_saved_post"], "routes": ["privileged mrn_relevanssi_ai_test_connection admin-post", "privileged mrn_relevanssi_ai_test_interpretation admin-post", "privileged mrn_relevanssi_ai_index admin-post"], "external_services": ["configured AI provider"], "filters": ["relevanssi_modify_wp_query", "relevanssi_search_params", "relevanssi_hits_filter", "mrn_relevanssi_ai_embedding_text"]},
+      "source": {
+        "repository": "mrn-relevanssi-ai-search",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-relevanssi-ai-search",
+        "state": "confirmed-independent"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress",
+          "Relevanssi"
+        ],
+        "soft": [
+          "OpenAI-compatible Responses and Embeddings APIs"
+        ],
+        "release_group": null
+      },
+      "data": {
+        "options": [
+          "mrn_relevanssi_ai_search_settings",
+          "mrn_relevanssi_ai_index_cursor"
+        ],
+        "tables": [
+          "{prefix}mrn_relevanssi_ai_usage",
+          "{prefix}mrn_relevanssi_ai_vectors",
+          "{prefix}mrn_relevanssi_ai_embedding_usage"
+        ],
+        "cron": [
+          "mrn_relevanssi_ai_scheduled_index",
+          "mrn_relevanssi_ai_continue_index",
+          "mrn_relevanssi_ai_index_saved_post"
+        ],
+        "routes": [
+          "privileged mrn_relevanssi_ai_test_connection admin-post",
+          "privileged mrn_relevanssi_ai_test_interpretation admin-post",
+          "privileged mrn_relevanssi_ai_index admin-post"
+        ],
+        "external_services": [
+          "configured AI provider"
+        ],
+        "filters": [
+          "relevanssi_modify_wp_query",
+          "relevanssi_search_params",
+          "relevanssi_hits_filter",
+          "mrn_relevanssi_ai_embedding_text"
+        ]
+      },
       "purpose": "Provides guarded AI concept extraction and hybrid semantic matching over Relevanssi, with a local vector index, manual or scheduled refreshes, admin testing, and separate usage budgets."
     }
   ],
