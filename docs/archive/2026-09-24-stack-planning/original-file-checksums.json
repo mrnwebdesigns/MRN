@@ -1,0 +1,58 @@
+[
+  {
+    "path": "stack/README.md",
+    "sha256": "57d16b1f817d5b20f93ced80493eb3a632ccd907c5f96821994b9371fc7d4790"
+  },
+  {
+    "path": "stack/STACK_SIMPLIFICATION_PLAN.md",
+    "sha256": "2ee89d18074abdd7a10fbb8f5d19550ff20b7e45d62e89c723bff264e18cd85b"
+  },
+  {
+    "path": "stack/review-evidence/2026-09-24-platform-consent/tablet-announcement-overlap.png",
+    "sha256": "cf90565a070fca73c0da907128778501adbed386603ed6bd515780f262b486df"
+  },
+  {
+    "path": "stack/review-evidence/2026-09-24-platform-consent/fresh-accept-cdp.json",
+    "sha256": "f82cf2d8f0ddcbac780a526f5ba45add2c1a53d319cae464627503219fd59bd6"
+  },
+  {
+    "path": "stack/review-evidence/2026-09-24-platform-consent/runtime-inventory.json",
+    "sha256": "a942ae5b62529e8a9b7b5e659144f21eb52dacf06d950d9ef52a6332bd9a7506"
+  },
+  {
+    "path": "stack/review-evidence/2026-09-24-platform-consent/desktop-fresh.png",
+    "sha256": "bb08af5b9e5caa6f5724bf4fef5f2d419083f8f293496f4c0ca628bb412a424e"
+  },
+  {
+    "path": "stack/review-evidence/2026-09-24-platform-consent/desktop-announcement-overlap.png",
+    "sha256": "7b502571e7acbcad5b45ce3648025fabb0f7e881fc5cc15c6f22968f7623aab1"
+  },
+  {
+    "path": "stack/review-evidence/2026-09-24-platform-consent/mobile-fresh.png",
+    "sha256": "4f4497c71b356ffca5c9af98fbfd22634409b7910f4d0a350d86462fce223f15"
+  },
+  {
+    "path": "stack/review-evidence/2026-09-24-platform-consent/mrn-qa.md",
+    "sha256": "6340519f5f247f2fe145f212afcf4ed4aa62b7c87690f8c7e6813262eee034f3"
+  },
+  {
+    "path": "stack/review-evidence/2026-09-24-platform-consent/tablet-fresh.png",
+    "sha256": "0ffe8b86ae6ed49ade7d19999d4fc6e073d4d909c4722927c703ba36bb79d56e"
+  },
+  {
+    "path": "stack/review-evidence/2026-09-24-platform-consent/README.md",
+    "sha256": "87eaa4c0701896016ecdefcbd097150522ff52a3ab9e2e538363429abb6ddd19"
+  },
+  {
+    "path": "stack/review-evidence/2026-09-24-platform-consent/network-results.json",
+    "sha256": "c6f9280bbfbc02e6ab910755a8681a6f97074b472c769ac9db29b3aaa687add9"
+  },
+  {
+    "path": "stack/review-evidence/2026-09-24-platform-consent/banner-style-check.json",
+    "sha256": "a5ee59b677a5d4713922714f49f615c5718e629cb875c8af934042b4cc6cef29"
+  },
+  {
+    "path": "stack/review-evidence/2026-09-24-platform-consent/mobile-announcement-overlap.png",
+    "sha256": "f0b6ed01ce56ba9521da9afe22fef43c9bf8af054af8ca04ea462b7335a487da"
+  }
+]

@@ -37,3 +37,7 @@ This remains detection only. It reports and warns; it does not flip constants, e
 Site Health also reports PHP-FPM OPcache capacity, free memory, fullness, cached script count, and hit rate. An administrator notice appears when the shared cache is full. These checks run only in `wp-admin`; the public frontend still receives no database reads, remote requests, or assets from this runtime.
 
 The plugin does not activate/deactivate plugins, change PHP configuration, clear provider caches, or perform deployments. Infrastructure remains responsible for capacity changes and reconciliation.
+
+## Native SEO editing on development
+
+From 0.6.0, non-production environments with disabled SEO indexing keep SEOPress active. Public requests receive `blog_public=0` and an empty SEOPress analytics configuration through read filters, preventing native analytics/custom-tag output without changing saved settings. Admin and WP-CLI retain unfiltered settings for editing and migration. Production installs register none of these filters. Known external SEOPress cron jobs cannot rearm; bootstrap removes previously scheduled jobs. This policy adds no frontend database query or asset. Post SMTP remains installed but inactive until site-specific mail setup and delivery verification.

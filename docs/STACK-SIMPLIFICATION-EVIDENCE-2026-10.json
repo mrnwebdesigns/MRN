@@ -1,0 +1,233 @@
+[
+  {
+    "id": "E01",
+    "kind": "Current owner clarification",
+    "date": "2026-10-04",
+    "quote": "Replace SmartCrawl in the stack with SEO Press Pro. This has a lot of consequences on custom plugins like SEO Helper which pretty much gets gutted.",
+    "source": "Current task: Reconcile Stack changes for fleet"
+  },
+  {
+    "id": "E02",
+    "kind": "Direct owner message",
+    "date": "2026-09-24T17:46:22.001Z",
+    "task": "Stack v2.0",
+    "task_id": "01a0d47b-04f3-7422-842b-2bf06f69f05b",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/24/rollout-2026-09-24T13-33-47-01a0d47b-04f3-7422-842b-2bf06f69f05b.jsonl",
+    "source_line": 47,
+    "quote": "Looking to also strip out the following as well. I know our SEO helper does more than provide those two fileds so that one may need to be more srugical:\n\nTake Fluent out of the stack, replace with post smtp\nTake Sendgrid out of the stack\nStrip out SEO Helper and ACF Count\nCookie Consent\nGTM Injector\nEnhanced Editor\nMRN AI Assist\n"
+  },
+  {
+    "id": "E03",
+    "kind": "Direct owner message",
+    "date": "2026-09-24T17:56:37.462Z",
+    "task": "Stack v2.0",
+    "task_id": "01a0d47b-04f3-7422-842b-2bf06f69f05b",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/24/rollout-2026-09-24T13-33-47-01a0d47b-04f3-7422-842b-2bf06f69f05b.jsonl",
+    "source_line": 163,
+    "quote": "So far, not using the full-trail editor anywhere. Mega menu yes, so do we just build that with the proper SEO Press methods?\n"
+  },
+  {
+    "id": "E04",
+    "kind": "Direct owner message",
+    "date": "2026-09-24T18:00:39.956Z",
+    "task": "Stack v2.0",
+    "task_id": "01a0d47b-04f3-7422-842b-2bf06f69f05b",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/24/rollout-2026-09-24T13-33-47-01a0d47b-04f3-7422-842b-2bf06f69f05b.jsonl",
+    "source_line": 183,
+    "quote": "I think we are getting a good foundation in with the stack with this approach. I don't want to loose any of this work if I decide to use any of what we have done, for now let's start the plan here to cleanup the stack\n"
+  },
+  {
+    "id": "E05",
+    "kind": "Direct owner message",
+    "date": "2026-09-30T15:46:07.616Z",
+    "task": "Review Gloves Online traffic",
+    "task_id": "01a0f2ae-49f0-70d0-8630-ddf8e6e3754a",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/30/rollout-2026-09-30T10-18-23-01a0f2ae-49f0-70d0-8630-ddf8e6e3754a.jsonl",
+    "source_line": 790,
+    "quote": "Can SEO press not use both? It has the ability to? but they want ga4 and gtm codes so no loading ga4 in gtm. I will also move to their cookie consent banner as well to handle that. Just seems cleaner, would have started that way had I known about SEO press to start\n"
+  },
+  {
+    "id": "E06",
+    "kind": "Direct owner message",
+    "date": "2026-09-30T15:54:51.968Z",
+    "task": "Review Gloves Online traffic",
+    "task_id": "01a0f2ae-49f0-70d0-8630-ddf8e6e3754a",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/30/rollout-2026-09-30T10-18-23-01a0f2ae-49f0-70d0-8630-ddf8e6e3754a.jsonl",
+    "source_line": 823,
+    "quote": "Lets begin this work, we are on a live site so need to be cautious. Document this process as we will do this to the stack as well. Goals:\n\nStrip SEO Helper do only that which is needed (schema bridge we may still want to connect to business information)\nStrip down or remove all of GTM injector\nRemove SEO Helper fields and MRN ACF Field Count plugin\nRemove MRN Coookie consent, use SEO Press\nUse SEO Press for the following (Tracking, code insertion, cookie consent, product tracking, schema, ect.)\n\nLet's do this like a surgeon step by step\n"
+  },
+  {
+    "id": "E07",
+    "kind": "Direct owner message",
+    "date": "2026-09-30T18:57:37.166Z",
+    "task": "Review Gloves Online traffic",
+    "task_id": "01a0f2ae-49f0-70d0-8630-ddf8e6e3754a",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/30/rollout-2026-09-30T10-18-23-01a0f2ae-49f0-70d0-8630-ddf8e6e3754a.jsonl",
+    "source_line": 3839,
+    "quote": "As part of this stack restructure, we decided to replace our custom breadcrumbs plugin with SEO Press as well. We had some functionality it didn't but it never got used. We did need a helper though because of some woocommerce settings, don't remember though?\n"
+  },
+  {
+    "id": "E08",
+    "kind": "Direct owner message",
+    "date": "2026-10-02T16:57:30.905Z",
+    "task": "Replace SmartCrawl with SEOPress",
+    "task_id": "01a0fd8b-4370-7990-a725-8f9ff5bc143a",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/10/02/rollout-2026-10-02T12-55-57-01a0fd8b-4370-7990-a725-8f9ff5bc143a.jsonl",
+    "source_line": 9,
+    "quote": "Let's replace smartcrawl pro with seopress pro on mrn webdesigns. For now we can do this in a non stack way since the site is not a full stack site. But we need to keep in mind the modifications made to the stack in relation to SEO helper and other sunset plugins. We will do SEO Press first, then work on other updates. SEO Press Pro has a migrate feature so this should be seamless, just need to deal with our custom code.\n"
+  },
+  {
+    "id": "E09",
+    "kind": "Direct owner message",
+    "date": "2026-10-02T19:07:21.182Z",
+    "task": "Replace SmartCrawl with SEOPress",
+    "task_id": "01a0fd8b-4370-7990-a725-8f9ff5bc143a",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/10/02/rollout-2026-10-02T12-55-57-01a0fd8b-4370-7990-a725-8f9ff5bc143a.jsonl",
+    "source_line": 2757,
+    "quote": "<send_user_message_question_reply>\n[{\"questionItemId\":\"[\\\"request_user_input_async\\\",\\\"call_zetzoduZrJTkOg325PWvH5FX\\\",0]\",\"question\":\"For this step, should SEOPress also replace the Cookie Consent banner, or should we keep the current banner while SEOPress takes over GTM/GA4 loading?\",\"answer\":\"Replace the banner with SEOPress too\"}]\n</send_user_message_question_reply>"
+  },
+  {
+    "id": "E10",
+    "kind": "Direct owner message",
+    "date": "2026-10-02T20:09:24.377Z",
+    "task": "Replace SmartCrawl with SEOPress",
+    "task_id": "01a0fd8b-4370-7990-a725-8f9ff5bc143a",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/10/02/rollout-2026-10-02T12-55-57-01a0fd8b-4370-7990-a725-8f9ff5bc143a.jsonl",
+    "source_line": 3917,
+    "quote": "We modifed GTM, had GA4 load from SEO press. You did lots of work in GA4 and GTM so the account was all setup correct as well\n"
+  },
+  {
+    "id": "E11",
+    "kind": "Direct owner message",
+    "date": "2026-10-02T22:30:58.618Z",
+    "task": "Replace SmartCrawl with SEOPress",
+    "task_id": "01a0fd8b-4370-7990-a725-8f9ff5bc143a",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/10/02/rollout-2026-10-02T12-55-57-01a0fd8b-4370-7990-a725-8f9ff5bc143a.jsonl",
+    "source_line": 6021,
+    "quote": "Did migrate Smartcrawl so we have all the schema work and everything else in place still?\n"
+  },
+  {
+    "id": "E12",
+    "kind": "Direct owner message",
+    "date": "2026-09-30T15:10:27.305Z",
+    "task": "Add comment viewing roles",
+    "task_id": "01a0f2dd-8d16-7160-bd23-ae5474380808",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/30/rollout-2026-09-30T11-10-01-01a0f2dd-8d16-7160-bd23-ae5474380808.jsonl",
+    "source_line": 9,
+    "quote": "Enhance our comment management plugin to add roles that can view comments. Normal wordpress require admin but that is not what I want.\n"
+  },
+  {
+    "id": "E13",
+    "kind": "Direct owner message",
+    "date": "2026-09-30T21:02:26.996Z",
+    "task": "Add comment email recipients",
+    "task_id": "01a0f420-29c7-70b2-a88e-5f694538f19e",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/30/rollout-2026-09-30T17-02-23-01a0f420-29c7-70b2-a88e-5f694538f19e.jsonl",
+    "source_line": 9,
+    "quote": "Update the shared MRN Comment Management plugin and deploy the verified release to [https://gloves-online.com/](https://gloves-online.com/).\n\nSource: /Users/khofmeyer/Development/MRN-plugins/mrn-comment-management\n\nAdd per-site email notification settings for WordPress comments and WooCommerce product reviews:\n\n- Select existing users, including Shop Managers, as additional recipients.\n- Allow separate choices for published comments/reviews and submissions awaiting moderation.\n- Preserve existing recipients, deduplicate addresses, and respect existing notification and comment settings.\n- Use native WordPress notification hooks, accounting for WooCommerce\u2019s recipient overrides.\n- Keep recipient configuration administrator-controlled without granting recipients additional permissions.\n\nInspect existing implementation and repository instructions first. This belongs in the shared plugin, with no Gloves-specific code or child-theme workaround.\n\nRun scoped MRN QA and regression tests covering recipient routing, moderation versus approval, duplicate prevention, permissions, and operation without WooCommerce. Version and release through the established Stack workflow.\n\nThen deploy only this plugin update to Gloves on Liquid Web. Resolve the exact site through MainWP and fresh-sync it, obtain a verified backup, retain rollback, and verify the installed version and notification behavior. Preserve unrelated production changes.\n\nInspect Gloves\u2019 current moderation configuration and Shop Manager accounts. If the intended recipients are ambiguous, ask me which users to enable while continuing independent development and QA. Do not email clients or create public test reviews without an agreed test recipient and controlled verification plan.\n\nDeployment to gloves-online.com is authorized. Report source/release details, live deployment evidence, configured recipients, verification results, and anything still pending.\n"
+  },
+  {
+    "id": "E14",
+    "kind": "Direct owner message",
+    "date": "2026-09-23T13:06:38.232Z",
+    "task": "Improve Gloves Online PageSpeed",
+    "task_id": "01a0ce4f-70a9-7ba1-9538-83bbacb8e717",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/23/rollout-2026-09-23T08-48-27-01a0ce4f-70a9-7ba1-9538-83bbacb8e717.jsonl",
+    "source_line": 308,
+    "quote": "Let's repair one by one to see what the biggest difference. We need to apply anything we learn to the stack\n"
+  },
+  {
+    "id": "E15",
+    "kind": "Direct owner message",
+    "date": "2026-09-24T12:55:32.816Z",
+    "task": "Investigate WooCommerce admin speed",
+    "task_id": "01a0d35f-ae0c-7c42-9560-17a80c37e5b7",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/24/rollout-2026-09-24T08-24-18-01a0d35f-ae0c-7c42-9560-17a80c37e5b7.jsonl",
+    "source_line": 294,
+    "quote": "I disabled some plugins, but we need to stop stack functionality from loading on pages that don't use it. Let'w work through this list.\n"
+  },
+  {
+    "id": "E16",
+    "kind": "Direct owner message",
+    "date": "2026-09-30T15:42:59.560Z",
+    "task": "Standardize site deployments",
+    "task_id": "01a0f2c1-a430-7f60-984c-23ad654dde65",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/30/rollout-2026-09-30T10-39-31-01a0f2c1-a430-7f60-984c-23ad654dde65.jsonl",
+    "source_line": 1024,
+    "quote": "Add automatic CSS/JS versioning to MRN deployment best practices for the shared Stack and child themes. Prefer build-generated content hashes, keep minified assets synchronized, and never reuse an asset URL for changed content. Include atomic deployment, verified backups, and rollback. Refresh only affected cached HTML, preserve unrelated caches, and verify that public pages reference the released asset URLs and serve matching file checksums. Use Gloves\u2019 stale CSS incident as a regression case.\n"
+  },
+  {
+    "id": "E17",
+    "kind": "Direct owner message",
+    "date": "2026-10-02T17:41:36.351Z",
+    "task": "Standardize site deployments",
+    "task_id": "01a0f2c1-a430-7f60-984c-23ad654dde65",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/30/rollout-2026-09-30T10-39-31-01a0f2c1-a430-7f60-984c-23ad654dde65.jsonl",
+    "source_line": 10435,
+    "quote": "Make automatic Dev deployment a standard capability of the shared MRN deployment system.\n\nWork in the authoritative shared repository:\n/Users/khofmeyer/Development/MRN\n\nDesired default behavior for participating site repositories:\nPush to main \u2192 source QA passes \u2192 build versioned release \u2192 verified backup \u2192 atomic Dev deployment \u2192 runtime verification.\n\nLive and Both deployments must remain manual.\n\nThe existing MRN deployment system already provides content-hashed CSS/JS URLs, generated minified assets, immutable artifacts, backup verification, atomic activation, and rollback retention. Reuse those capabilities. The missing integration is automatic Dev deployment after a successful source push.\n\nImplement this centrally in the shared workflows, controller, and site-workflow template. Site repositories should provide configuration and a thin workflow wrapper, without duplicating deployment logic.\n\nRequirements:\n\n- Deploy only after source QA passes for the exact source commit.\n- Build and deploy that same immutable commit and artifact.\n- Preserve preflight, verified provider-appropriate backups, artifact checks, versioned assets, retained asset URLs, rollback, and runtime verification.\n- Preserve manual Dev deployment from a selected same-repository source\\_branch.\n- Keep Live/Both manual and preserve existing environment-readiness gates.\n- Do not automatically deploy pull requests or arbitrary feature branches.\n- Serialize deployments per site/environment and prevent stale runs from replacing newer releases.\n- Preserve provider-specific configuration and existing deployment identities.\n- Never restore the retired rsync uploader or broad cache flushing.\n\nInspect current implementation, tests, repository instructions, and existing site consumers first. Explain the gap before editing. Preserve unrelated changes, stashes, and recovery evidence.\n\nAdd meaningful shared regression coverage for triggers, QA failure blocking, exact-commit selection, deployment ordering, and manual-only Live behavior. Run required MRN QA and commit gates.\n\nUpdate the shared documentation and migration instructions. Explain how existing sites pinned to older workflow revisions adopt the change; updating the template alone does not update existing consumers.\n\nCommit and push the shared implementation. Validate end to end with one already-qualified Dev pilot using a thin site wrapper. This authorizes that pilot\u2019s Dev deployment, but not fleet-wide adoption, Live deployment, or database/content migration.\n\nVerify that a push alone completes Dev deployment, including backup verification, deployed SHA, versioned CSS/JS delivery, browser rendering, and REST health.\n\nReport:\n\n- Shared release/commit and workflow changes.\n- Pilot evidence and deployed SHA.\n- Which site consumers were updated.\n- Remaining adoption work.\n- Final Git state for every repository touched.\n"
+  },
+  {
+    "id": "E18",
+    "kind": "Direct owner message",
+    "date": "2026-09-25T12:44:36.778Z",
+    "task": "Add category filtering",
+    "task_id": "01a0d898-1e81-7802-8655-1a222b01c6c3",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/25/rollout-2026-09-25T08-44-03-01a0d898-1e81-7802-8655-1a222b01c6c3.jsonl",
+    "source_line": 9,
+    "quote": "Stack update: content list confirm filter on taxonomy (which should be tags) works. We need to add category filtering as well.\n"
+  },
+  {
+    "id": "E19",
+    "kind": "Direct owner message",
+    "date": "2026-09-25T11:42:58.716Z",
+    "task": "Fix CPT resource downloads",
+    "task_id": "01a0d85c-3b64-7470-80f9-864723e06864",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/25/rollout-2026-09-25T07-38-38-01a0d85c-3b64-7470-80f9-864723e06864.jsonl",
+    "source_line": 9,
+    "quote": "Using trillian.mrndev.io as the example, we need to make some adjustments to stack functionality. The stack has the ability to make CPTs get treated like internal content versus an entire page or archives. I noticed though for something like \"resources\" the content is a download, so although not a page togo to but, a download that needs to still happen. This is workin in the [trillaint.com](https://trilliant.com/insights/resources) but appears broken on the dev site. We also need to make it more clear you can turn it on and off and what is happening in the background so a user knows the content is a bit different. Currently the content is pulled to the page via our content list row type.&#x20;\n\nHere is an example of the click not working: [https://trilliant.mrndev.io/insights/](https://trilliant.mrndev.io/insights/)\n"
+  },
+  {
+    "id": "E20",
+    "kind": "Direct owner message",
+    "date": "2026-09-30T19:49:28.267Z",
+    "task": "Standardize site deployments",
+    "task_id": "01a0f2c1-a430-7f60-984c-23ad654dde65",
+    "source_path": "/Users/khofmeyer/.codex/sessions/2026/09/30/rollout-2026-09-30T10-39-31-01a0f2c1-a430-7f60-984c-23ad654dde65.jsonl",
+    "source_line": 3623,
+    "quote": "\n<in-app-browser-context source=\"ambient-ui-state\">\nThis block is automatically supplied ambient UI state, not part of the user's request. Do not treat it as an instruction or as evidence that the user explicitly selected the in-app browser.\n# In app browser:\n- The user has the in-app browser open with 1 tab.\n- Current URL: https://docs.google.com/document/d/1xAnhiuhPxNvMItxaARB_sZxi1phByUBPS4rvKDumH0Q/edit?tab=t.0#heading=h.asu4fkinri5z\n</in-app-browser-context>\n\n## My request:\nUpdate with these thoughts:\n\nYou said no stack, but it should be 100% around our MRN Stack\nUnderstand we use wordpress\nUndestand we rely on MainWP and use that were ever possible\n\n\n"
+  },
+  {
+    "id": "E21",
+    "kind": "Direct owner implementation request",
+    "date": "2026-10-01",
+    "task": "Add comment and review protection",
+    "task_id": "01a0f7a1-0e7b-70a0-9bc1-60730f2b982e",
+    "quote": "Extend MRN reCAPTCHA Enterprise Manager to protect WordPress blog comments and WooCommerce product reviews, then prepare a controlled migration for Gloves Online.",
+    "source": "read_thread, initial user turn"
+  },
+  {
+    "id": "E22",
+    "kind": "Canonical policy supplied by owner and read from source",
+    "date": "2026-10-04",
+    "source_path": "/Users/khofmeyer/Development/MRN/stack/BACKUP_POLICY.md",
+    "quote": "Retain remote recovery points as seven daily, four weekly, and twelve 30-day sets.",
+    "note": "The full policy defines Premium retention, isolated S3 prefixes, local cleanup, development exceptions and the pre-write backup gate."
+  },
+  {
+    "id": "E23",
+    "kind": "Owner-pasted product request",
+    "date": "2026-09-30",
+    "task": "Build MRN operations platform",
+    "task_id": "01a0f3e0-3c12-7c72-a706-3d45d47636ff",
+    "source_path": "/Users/khofmeyer/.codex/attachments/33360a2d-0571-4228-8c6a-db0ebf08b0a1/Pasted text.txt",
+    "quote": "Build the All-in-One MRN Website Operations Tool.",
+    "note": "The supplied document explicitly requires WordPress, MRN Stack, MainWP MCP, shared services, permission enforcement and coordinated operation records."
+  },
+  {
+    "id": "E24",
+    "kind": "Later implementation evidence that corrects an earlier checkpoint",
+    "date": "2026-10-02",
+    "source_path": "/Users/khofmeyer/Development/MRN-sites/gloves/reports/analytics-incident-2026-10-02/verification.json",
+    "note": "Two real purchases reached GA4. Four other paid orders had no SEOPress generation marker. Consent history is unavailable; one received transaction has a one-cent rounding difference. Full payload/coverage/reload qualification remains incomplete."
+  }
+]

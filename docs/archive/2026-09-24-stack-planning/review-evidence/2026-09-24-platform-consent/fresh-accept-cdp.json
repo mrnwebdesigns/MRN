@@ -1,0 +1,66 @@
+{
+  "timestamp": "2026-09-24T18:27:21.107Z",
+  "requests": [
+    {
+      "stage": "fresh-accept",
+      "url": "https://www.googletagmanager.com/gtag/js",
+      "params": {
+        "id": "G-RTZD6VL2FD"
+      },
+      "initiator": "script",
+      "documentURL": "https://platform.localhost/about/"
+    },
+    {
+      "stage": "fresh-accept",
+      "url": "https://analytics.google.com/g/collect",
+      "params": {
+        "tid": "G-RTZD6VL2FD",
+        "en": "page_view",
+        "gcs": "G111",
+        "gcd": "13r3r3r3r5l1"
+      },
+      "initiator": "script",
+      "documentURL": "https://platform.localhost/about/"
+    },
+    {
+      "stage": "fresh-accept",
+      "url": "https://stats.g.doubleclick.net/g/collect",
+      "params": {
+        "tid": "G-RTZD6VL2FD",
+        "gcs": "G111",
+        "gcd": "13r3r3r3r5l1"
+      },
+      "initiator": "script",
+      "documentURL": "https://platform.localhost/about/"
+    },
+    {
+      "stage": "fresh-accept",
+      "url": "https://googleads.g.doubleclick.net/pagead/viewthroughconversion/1072378277/",
+      "params": {
+        "en": "gtag.config",
+        "gcd": "13r3r3r3r5l1"
+      },
+      "initiator": "script",
+      "documentURL": "https://platform.localhost/about/"
+    },
+    {
+      "stage": "fresh-accept",
+      "url": "https://ad.doubleclick.net/ccm/s/collect",
+      "params": {},
+      "initiator": "script",
+      "documentURL": "https://platform.localhost/about/"
+    },
+    {
+      "stage": "navigate-after-withdraw",
+      "url": "https://www.google-analytics.com/g/collect",
+      "params": {
+        "tid": "G-RTZD6VL2FD",
+        "en": "user_engagement",
+        "gcs": "G100",
+        "gcd": "13q3q3q3q5l1"
+      },
+      "initiator": "script",
+      "documentURL": "https://platform.localhost/about/"
+    }
+  ]
+}

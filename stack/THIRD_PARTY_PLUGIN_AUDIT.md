@@ -31,7 +31,7 @@ Scope: non-custom plugins and package zips referenced by `stack/manifests/plugin
 | AME Toolbar Editor | `wp-toolbar-editor.zip` | 1.5.2 | not publicly confirmed separately | Refreshed 2026-08-19. No license mapping exists; assumed to inherit the Admin Menu Editor Pro license (unconfirmed). |
 | Classic Editor | `classic-editor` slug | latest at install | 1.7.0 | Current via WordPress.org. |
 | Enable Media Replace | `enable-media-replace` slug | latest at install | 4.2.2 | Current via WordPress.org. |
-| FluentSMTP | `fluent-smtp` slug | latest at install | 2.2.95 | Current via WordPress.org. |
+| Post SMTP | `post-smtp` slug | latest at install | 4.0.2 (site evidence) | Replaces FluentSMTP; provider credentials and a delivery test remain site-specific go-live gates. |
 | HappyFiles Pro | `happyfiles-pro.zip` | 1.9.1 | not confirmed; vendor changelog is dynamic/account-gated | Unchanged at 1.9.1. No license mapping exists and its licensing model is unconfirmed. |
 | Post Duplicator | `post-duplicator` slug | latest at install | 3.0.15 | Current via WordPress.org. |
 | Post Types Order | `post-types-order` slug | latest at install | 2.4.8 | Current via WordPress.org. |

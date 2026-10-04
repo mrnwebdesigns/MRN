@@ -87,7 +87,7 @@ foreach ( $runtime_cases as $case ) {
 
 	$field = mrn_acf_field_defaults_runtime_find( $root, $case['field_key'] );
 	mrn_acf_field_defaults_runtime_assert( is_array( $field ), $case['field_key'] . ' resolves in the completed nested field tree' );
-	mrn_acf_field_defaults_runtime_assert( $case['type'] === ( $field['type'] ?? '' ), $case['field_key'] . ' keeps its field type' );
+	mrn_acf_field_defaults_runtime_assert( ( $field['type'] ?? '' ) === $case['type'], $case['field_key'] . ' keeps its field type' ); // phpcs:ignore WordPress.PHP.YodaConditions.NotYoda -- Both operands are dynamic field values.
 	mrn_acf_field_defaults_runtime_assert( array_key_exists( $case['default_key'], $field ), $case['field_key'] . ' includes ' . $case['default_key'] );
 
 	$warnings = array();
@@ -112,9 +112,9 @@ foreach ( $runtime_cases as $case ) {
 	mrn_acf_field_defaults_runtime_assert( true === $valid, $case['field_key'] . ' accepts its representative value' );
 	mrn_acf_field_defaults_runtime_assert( array() === $warnings, $case['field_key'] . ' validates without PHP warnings' );
 
-	$zero_limited                  = $field;
+	$zero_limited                         = $field;
 	$zero_limited[ $case['default_key'] ] = 0;
-	$zero_finalized                = mrn_base_stack_finalize_acf_builder_field_tree( $zero_limited );
+	$zero_finalized                       = mrn_base_stack_finalize_acf_builder_field_tree( $zero_limited );
 	mrn_acf_field_defaults_runtime_assert( 0 === $zero_finalized[ $case['default_key'] ], $case['field_key'] . ' preserves an explicit zero limit' );
 }
 

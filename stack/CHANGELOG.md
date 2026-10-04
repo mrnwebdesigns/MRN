@@ -1,5 +1,14 @@
 # Stack Changelog
 
+## 2026.10.04-stack-simplification (candidate)
+
+- Default installation uses SEOPress Free/PRO 10.3 and Post SMTP; SEO Helper, ACF Character Count, AI Assist and Editor Enhancements remain catalog-only.
+- Schema Bridge 0.7.0 removes the duplicate SEO & Schema editor and save callback while retaining historical schema output. Config Helper 0.1.70 retires redundant breadcrumb controls on native-provider sites.
+- A guarded WP-CLI migration reconciles legacy metadata, refuses conflicts, deactivates duplicate editors and retains rollback journals and source data.
+- Parent theme 1.5.3 corrects inherited QA formatting and fixture annotations without changing rendering.
+- Environment Runtime 0.6.0 allows native SEO editing on development while suppressing frontend indexing/tracking and disabled external jobs.
+- Preserve September planning evidence and the recovered 22-decision register. Operations service and comment/review CAPTCHA source are merged; external operational qualification remains separately gated.
+
 ## 2026.10.02-ame-menu-visibility
 
 - Public Security Hardening `0.4.3` stops reasserting Advanced/Public Security

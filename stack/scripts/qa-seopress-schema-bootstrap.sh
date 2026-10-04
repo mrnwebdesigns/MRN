@@ -38,11 +38,12 @@ policy_line="$(grep -n '^  reconcile_development_environment_policy$' "${BOOTSTR
 [[ -n "${policy_line}" ]] || fail "Bootstrap development policy invocation was not found"
 (( breadcrumb_line < provision_line )) || fail "Breadcrumb ownership must be normalized before SEOPress schema provisioning"
 grep -Fq 'seopress_breadcrumbs_json_enable' "${BOOTSTRAP}" \
-	|| fail "Bootstrap does not disable conflicting SEOPress breadcrumb JSON-LD"
-pass "Bootstrap keeps visible and schema breadcrumbs under MRN ownership"
-(( provision_line < policy_line )) || fail "SEOPress schema provisioning must run before development policy deactivates SEOPress"
-pass "Bootstrap provisions SEOPress schema before development deactivation"
+	|| fail "Bootstrap does not configure SEOPress breadcrumb JSON-LD"
+pass "Bootstrap configures native SEOPress breadcrumbs and MRN placement"
+(( provision_line < policy_line )) || fail "SEOPress schema provisioning must run before development policy is reconciled"
+pass "Bootstrap provisions SEOPress schema before development reconciliation"
 
+php "${SCRIPT_DIR}/tests/seopress-bootstrap.php"
 php "${BRIDGE_TEST}"
 pass "Schema Bridge provider and provisioning contracts"
 
