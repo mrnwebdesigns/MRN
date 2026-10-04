@@ -56,6 +56,13 @@ class ReleaseRequests(unittest.TestCase):
             with self.event_file():
                 self.assertEqual(result, request.deployment_selection(self.env))
 
+    def test_github_run_name_is_display_title_when_run_name_is_configured(self):
+        # Observed in real annotated-tag signal 37232112105, not a guessed envelope.
+        self.run['name'] = self.run['display_title']
+        self.assertEqual('both', request.source_request(self.env, self.payload)['target'])
+        self.run['name'] = 'unrelated workflow'
+        with self.assertRaises(ValueError): request.source_request(self.env, self.payload)
+
     def test_lightweight_and_nested_annotated_tag_and_noncommit_rejection(self):
         with patch.object(release, 'api', return_value={'object':{'type':'commit','sha':SHA}}):
             self.assertEqual((SHA, SHA), release.tag_identity(self.env, 'deploy-dev-test'))

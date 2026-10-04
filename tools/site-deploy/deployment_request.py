@@ -29,7 +29,9 @@ def source_request(environ, payload=None):
     repository = environ.get('GITHUB_REPOSITORY')
     if (payload.get('action') != 'completed' or run.get('status') != 'completed'
             or run.get('event') != 'push' or run.get('path') != '.github/workflows/site-push.yml'
-            or run.get('name') != 'MRN source push'
+            or not (run.get('name') == 'MRN source push'
+                    or (run.get('name') == run.get('display_title')
+                        and run.get('display_title', '').startswith(release_request.PREFIX)))
             or payload.get('repository', {}).get('full_name') != repository
             or run.get('repository', {}).get('full_name') != repository
             or run.get('head_repository', {}).get('full_name') != repository):
