@@ -401,3 +401,67 @@ generations stay available for cached pages and rollback.
 This file describes the implementation contract, not a completed site rollout.
 Record each environment's evidence separately. Unsupported cached routes or
 additional HTML cache layers must be qualified before enabling that environment.
+
+## Release-tag adoption
+
+The standard team interface is ordinary Git, including a Git GUI. Do not require
+GitHub CLI installation or access to the Actions dispatch screen. Routine pushes
+to the configured branch remain automatic Dev only. A newly created and pushed
+`deploy-dev-<unique-id>`, `deploy-live-<unique-id>` or `deploy-both-<unique-id>` tag
+is an explicit release request. Live/Both never follow an ordinary branch push.
+The suffix contains 1–64 ASCII letters, digits, dots, underscores or hyphens,
+starting with a letter/digit. Push one release tag at a time. GitHub does not
+emit tag push events for bulk pushes of more than three tags.
+
+The no-secret `site-push.yml` signal now declares a GitHub-generated run name
+containing the full ref, source SHA and push creation/deletion flags. The trusted
+receiver on `main` verifies the source signal file byte-for-byte against its
+pinned shared template before trusting this metadata. It never executes source
+code or consumes an upstream artifact to choose a destination. Commit-message
+commands and modified signal workflows cannot authorize a release.
+
+The receiver resolves annotated or lightweight tags and binds the original tag
+object, source commit and requested destinations. Live/Both require current
+`main`. Dev tags may select feature work only when it includes current main.
+Tags are rechecked before backup/transfer and activation; moved tags and stale
+main releases fail closed. Per-environment serialization and durable deployment
+ordering remain in place, with the source signal sequence also recorded so an
+older signal completing late cannot replace a newer release. Both uses one
+artifact, Dev before Live. Existing backup, readiness, retained asset, scoped
+HTML cache, atomic activation, runtime verification and rollback gates remain.
+
+Upgrade each consumer explicitly:
+
+1. Record current repository SHA, wrappers, auto-Dev cutoff, environment values,
+   secret names and successful deployment receipts. Preserve work in progress.
+2. Unset `MRN_AUTO_DEV_AFTER` during installation; leave
+   `MRN_RELEASE_REQUESTS_AFTER` unset. This prevents installation pushes from
+   releasing pending site work. Existing runtime code remains in place.
+3. Install the exact `tools/site-deploy/site-push.yml.template` at
+   `.github/workflows/site-push.yml`. Only substitute the configured automatic
+   Dev branch in `branches: [main]`; do not customize steps or run-name. Sites
+   with a phase branch need the matching signal on that source branch too.
+4. Update the existing thin `.github/workflows/site-deploy.yml` wrapper to the
+   reviewed immutable shared SHA in **both** `uses` and `tooling_ref`. Add
+   `release_requests_after: ${{ vars.MRN_RELEASE_REQUESTS_AFTER }}` and set
+   `live_enabled: false` for Dev-only sites. Preserve identities, provider
+   configuration, source paths, secret mappings and preview protection.
+5. Run source acceptance and read-only preflight for each intended environment.
+   A missing `DEPLOY_STATE_DIR`, QA engine credential, verified remote backup,
+   or qualified atomic baseline is a blocker. Qualification must reconcile
+   server-only source first, then verify backup/activation/rollback behavior.
+6. After merging, set both cutoffs to the current UTC timestamp
+   (`YYYY-MM-DDTHH:MM:SSZ`). Selection uses the original signal creation time,
+   so delayed installation callbacks and reruns remain ineligible.
+7. Prove a future ordinary push reaches Dev and a deliberate tag request chooses
+   its intended destination. Check exact deployed SHA, verified backup, public
+   hashed CSS/JS checksums, browser rendering and REST health. A green signal
+   alone is not deployment evidence. Enable only destinations actually qualified.
+8. Update the site's `DEPLOYMENT.md` with URLs, branch, available targets, shared
+   pin, simple GUI steps and evidence links. Existing older workflow pins retain
+   their old behavior until updated; no fleet adoption is implied.
+
+GitHub dispatch remains available for operators and manual same-repository
+`source_branch` selection on Dev. The tag interface does not bypass environment
+protection rules or make a Dev-only site Live-ready. No database/content migration
+is part of a code release. See the [team quick start](MRN-DEPLOYMENT-QUICK-START.md).

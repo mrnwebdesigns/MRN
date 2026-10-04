@@ -1,8 +1,10 @@
 name: MRN source push
+run-name: "MRN request ${{ github.ref }} ${{ github.sha }} ${{ github.event.created }} ${{ github.event.deleted }}"
 
 on:
   push:
     branches: [main]
+    tags: [deploy-dev-*, deploy-live-*, deploy-both-*]
 
 # A signal only. No checkout, credentials, source execution or deployment here.
 # The trusted main workflow selects the exact commit and runs blocking QA.

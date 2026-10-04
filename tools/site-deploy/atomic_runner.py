@@ -18,7 +18,7 @@ TOOLS = Path(__file__).resolve().parent
 HOST_FILES = ('host_controller.py', 'atomic_store.py', 'cache_policy.py', 'deploy.py',
               'verify_release.py', 'verify_public_assets.py', 'backup.php', 'release-bootstrap.php',
               'host_paths.py', 'html_cache.php', 'kinsta.py', 'kinsta_html_cache.php',
-              'deployment_request.py', 'resolve_source.py')
+              'deployment_request.py', 'release_request.py', 'resolve_source.py')
 
 
 def transfer_backup(target):

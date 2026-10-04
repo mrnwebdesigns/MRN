@@ -87,8 +87,8 @@ class WorkflowGraph(unittest.TestCase):
         cls.root = Path(__file__).resolve().parents[3]
         cls.workflow = yaml.load((cls.root / '.github/workflows/site-deploy.yml').read_text(), Loader=yaml.BaseLoader)
 
-    def enabled(self, job, event='push', target='dev', mode='deploy', qa='success', dev='success'):
-        needs = NS(request=NS(result='success', outputs=NS(enabled='true')),
+    def enabled(self, job, event='push', target='dev', mode='deploy', qa='success', dev='success', intent='{}'):
+        needs = NS(request=NS(result='success', outputs=NS(enabled='true', target=target, release_intent=intent)),
                    source_qa=NS(result=qa), build=NS(result='success'), dev=NS(result=dev))
         expression = self.workflow['jobs'][job]['if'].replace('needs.source-qa', 'needs.source_qa')
         expression = expression.replace('&&', ' and ').replace('||', ' or ').replace('!cancelled()', 'not cancelled()')
@@ -111,6 +111,14 @@ class WorkflowGraph(unittest.TestCase):
         for outcome in ('failure', 'cancelled', 'skipped'):
             self.assertFalse(self.enabled('live', event='workflow_dispatch', target='both', dev=outcome))
 
+    def test_explicit_tag_live_and_both_waits_for_dev(self):
+        self.assertTrue(self.enabled('live', event='workflow_run', target='live', dev='skipped', intent='validated'))
+        self.assertTrue(self.enabled('live', event='workflow_run', target='both', intent='validated'))
+        for outcome in ('failure', 'cancelled', 'skipped'):
+            self.assertFalse(self.enabled('live', event='workflow_run', target='both', dev=outcome, intent='validated'))
+        self.assertFalse(self.enabled('dev', event='workflow_run', target='live', intent='validated'))
+        self.assertTrue(self.enabled('dev', event='workflow_run', target='both', intent='validated'))
+
     def test_one_artifact_and_one_commit_flow_to_both_environments(self):
         jobs = self.workflow['jobs']
         for name in ('source-qa', 'build', 'dev', 'live'):
@@ -128,6 +136,8 @@ class WorkflowGraph(unittest.TestCase):
         signal = yaml.load((self.root / 'tools/site-deploy/site-push.yml.template').read_text(), Loader=yaml.BaseLoader)
         self.assertEqual({'push'}, set(signal['on']))
         self.assertEqual(['main'], signal['on']['push']['branches'])
+        self.assertEqual(['deploy-dev-*', 'deploy-live-*', 'deploy-both-*'], signal['on']['push']['tags'])
+        self.assertIn('github.event.deleted', signal['run-name'])
         self.assertEqual({}, signal['permissions'])
         self.assertEqual(1, len(signal['jobs']['signal']['steps']))
         self.assertNotIn('uses', signal['jobs']['signal']['steps'][0])

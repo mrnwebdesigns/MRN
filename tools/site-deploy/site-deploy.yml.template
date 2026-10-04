@@ -37,6 +37,8 @@ jobs:
       target: ${{ inputs.target || 'dev' }}
       mode: ${{ inputs.mode || 'deploy' }}
       source_branch: ${{ inputs.source_branch || 'main' }}
+      release_requests_after: ${{ vars.MRN_RELEASE_REQUESTS_AFTER }}
+      live_enabled: true
       auto_dev_branch: main
       auto_dev_after: ${{ vars.MRN_AUTO_DEV_AFTER }}
     secrets: inherit

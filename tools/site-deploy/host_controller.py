@@ -185,8 +185,10 @@ def execute(plan, native_backup=None):
         previous_order = json.loads(order_path.read_text()) if order_path.exists() else None
         order = plan.get('deployment_order')
         check_order(order, previous_order, rollback=bool(plan.get('rollback_to')))
-        if order and order['event'] in ('push', 'workflow_run') and plan['environment'] != 'dev':
+        if order and order['event'] in ('push', 'workflow_run') and plan['environment'] != 'dev' and not order.get('release_intent'):
             raise ValueError('Automatic deployment is Dev-only')
+        if order and order.get('release_intent') and plan['environment'] not in (('dev', 'live') if order['release_intent']['target'] == 'both' else (order['release_intent']['target'],)):
+            raise ValueError('Release intent does not authorize this environment')
         if order and (order['repository'] != plan['repository'] or (not plan.get('rollback_to') and order['source_sha'] != plan['source_sha'])):
             raise ValueError('Deployment sequence does not match this source/target')
         receipt.update(deployment_order=order, source_sha=plan.get('source_sha'),

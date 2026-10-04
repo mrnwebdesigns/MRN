@@ -1,64 +1,74 @@
-# Deploy a website
+# Deploy a website from your Git app
 
-Dev and Live have different URLs. Code goes to the chosen environment; database
-content, orders, forms and uploads are not copied by this workflow.
+Use the Git app you already have. No GitHub CLI installation, terminal command,
+or manual GitHub Actions run is required. You need your existing permission to
+push commits and tags to the site repository.
+
+Dev and Live have separate URLs and configuration. This releases child-theme
+code; it does not copy databases, orders, forms, page content or uploaded media.
 
 ## Everyday Dev updates
 
-Commit your work and push the site's configured Dev branch:
+Commit your work and push `main`. QA runs first. When it passes, the system builds
+a versioned release, verifies a backup, deploys to Dev and checks the result.
+A normal branch push never publishes Live. If QA fails, nothing is deployed.
 
-```bash
-git push origin main
-```
+A site with a protected Phase 2 preview may use a named phase branch instead.
+Use the branch and URLs listed in that site's `DEPLOYMENT.md`. Ordinary feature
+branches and pull requests do not deploy automatically.
 
-Source QA must pass. The system then builds versioned CSS/JS, verifies a backup,
-deploys atomically and checks public pages, asset checksums, browser rendering
-and REST health. If QA fails, nothing is deployed. Look for **MRN source push**
-followed by **Deploy site**. Old assets and rollback releases are retained.
+## Choose a destination
 
-For a Phase 2 site, push the named phase branch instead of main. The site's
-`DEPLOYMENT.md` lists its branch and URLs. Other feature branches and pull
-requests do not deploy automatically. A normal push never publishes Live.
+A **tag** is a named marker on one commit. In your Git app's history, select the
+commit, use **Create tag** (the label varies by app), and push that tag.
+Use a new name each time:
 
-## Choose Dev, Live or Both from the command line
+| What you want | Tag name example | Source |
+| --- | --- | --- |
+| Dev only | `deploy-dev-20261004-01` | Current main, or a same-repository feature commit that includes current main |
+| Live only | `deploy-live-20261004-01` | Current main |
+| Dev and then Live | `deploy-both-20261004-01` | Current main |
 
-Install GitHub CLI and sign in once with your authorized team GitHub account:
-`gh auth login`. Run these commands from the site's Git repository.
+Change the date/number for your release. Push **one release tag at a time**.
+Both lightweight and annotated tags work. Do not rename, reuse, move or delete
+a release tag. An old commit is not a rollback request.
 
-First check the destination without writing to it:
+1. Pull the latest work, resolve conflicts, commit and push your code.
+2. For a release to Live, first get the change into `main` through the site's
+   normal review process. For a feature test, merge current `main` into your
+   feature branch so existing fixes stay included.
+3. Select that pushed commit in history, create the appropriate tag and push it.
+4. Wait for **Deploy site** to finish successfully. **MRN source push** only
+   acknowledges receipt; its green check does not mean the site deployed.
+5. Open the site's Dev/Live URL and check your change. The release evidence
+   records the exact source SHA, backup, asset checks and runtime result.
 
-```bash
-gh workflow run site-deploy.yml --ref main -f target=live -f mode=preflight -f source_branch=main
-```
+GitHub Desktop, Sourcetree and GitKraken expose Git tags, though menu names vary.
+[GitHub Desktop's tag guide](https://docs.github.com/en/desktop/managing-commits/managing-tags-in-github-desktop)
+is one example. The release protocol is ordinary Git and is independent of the app.
 
-After preflight succeeds, request the release:
+## Keep environments consistent
 
-```bash
-gh workflow run site-deploy.yml --ref main -f target=live -f mode=deploy -f source_branch=main
-```
+Live fixes belong in `main`, which also triggers Dev. **Both** is the usual
+choice when the same reviewed update should reach both environments: it builds
+once and waits for Dev verification before releasing that identical artifact
+to Live. A Live-only tag itself writes only Live; the preceding main push still
+follows the site's normal automatic Dev policy.
 
-- `target=dev`: Dev only. `source_branch` can be a same-repository feature branch.
-- `target=live`: Live only, from reviewed main.
-- `target=both`: Dev first, then Live, using one built artifact. Main only.
+When Dev contains a later phase, keep the protected phase branch and incorporate
+Live fixes into it. Do not use Both to replace that preview. Doster is Dev-only
+until launch; Live/Both requests are blocked.
 
-Keep `--ref main`: it selects the trusted workflow, not the source to deploy.
-To see results without the GitHub website, use `gh run list --workflow site-deploy.yml`
-and `gh run view RUN_ID`. `gh run watch RUN_ID --exit-status` waits for completion.
-A dispatch acknowledgment means queued, not deployed.
+If a release fails, read the failed **Deploy site** check or ask the deployment
+owner. Source QA failures happen before a deployment. Runtime verification can
+trigger rollback; use the recorded outcome rather than assuming success.
+Do not upload files manually or flush all caches. Operators use the retained
+release/rollback receipts for recovery.
 
-Live fixes must be in main. If a separate Phase 2 branch is active, incorporate
-those fixes there too. Both and Dev-from-main are blocked while that preview is
-protected. Unqualified destinations remain blocked until the deployment owner
-completes their backup, activation and rollback setup.
+The GitHub manual Dev/Live/Both workflow remains an optional operator fallback.
+It runs from trusted `main`; manual Dev may select a same-repository
+`source_branch`. The team does not need GitHub CLI to use the standard process.
 
-A Git push-only SSH key cannot run CLI release requests; an authorized account
-with repository write/workflow access is required. No shared admin token is needed.
-
-Coordinate shared Dev previews with the team. Do not upload files manually,
-flush all caches or restore a database to undo a code release. Use the retained
-rollback receipt. Live verification is blocking; broader Dev QA findings remain
-visible testing feedback and are not production approval.
-
-Maintainers: install both thin workflow files and arm only future pushes using
-[the migration instructions](MRN-SITE-DEPLOYMENT-STANDARD.md#automatic-dev-adoption).
-Updating the shared template does not update already-pinned site workflows.
+Maintainers: existing sites must adopt both wrappers and the new immutable
+shared revision. See [release-tag adoption](MRN-SITE-DEPLOYMENT-STANDARD.md#release-tag-adoption).
+Updating a template alone does not update existing sites.
