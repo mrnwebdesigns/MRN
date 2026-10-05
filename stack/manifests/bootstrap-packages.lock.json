@@ -1,0 +1,520 @@
+{
+  "schema_version": 1,
+  "release_id": "2026.10.05-stack-bootstrap-r1",
+  "scope": "new-site-bootstrap-inputs",
+  "stack_plugin_count": 33,
+  "plain_plugin_count": 32,
+  "plugins": [
+    {
+      "slug": "admin-menu-editor-pro",
+      "name": "Admin Menu Editor Pro",
+      "version": "2.34",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/admin-menu-editor-pro.zip",
+      "package": "admin-menu-editor-pro.zip",
+      "main_file": "admin-menu-editor-pro/menu-editor.php",
+      "sha256": "acb46c1b0129473fadb5983b7bef7228c2245493b8f171c28e05e172b89af2cb",
+      "size_bytes": 4250988,
+      "source": {
+        "type": "licensed-vendor",
+        "input": "existing-qualified-vendor-package"
+      }
+    },
+    {
+      "slug": "advanced-custom-fields-pro",
+      "name": "Advanced Custom Fields PRO",
+      "version": "6.8.7",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/advanced-custom-fields-pro.zip",
+      "package": "advanced-custom-fields-pro.zip",
+      "main_file": "advanced-custom-fields-pro/acf.php",
+      "sha256": "5eeb3d73df64c12e2929782906e5c33aaf584899619ee93227319be070d9e315",
+      "size_bytes": 9699419,
+      "source": {
+        "type": "licensed-vendor",
+        "input": "existing-qualified-vendor-package"
+      }
+    },
+    {
+      "slug": "ame-branding-add-on",
+      "name": "AME Branding Add-on",
+      "version": "1.3.13",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/ame-branding-add-on.zip",
+      "package": "ame-branding-add-on.zip",
+      "main_file": "ame-branding-add-on/ame-branding-add-on.php",
+      "sha256": "5b228037a22df0152a8f630b0a4933d1ba8b8ae01ccf30aa5912e5af94ad8a55",
+      "size_bytes": 409559,
+      "source": {
+        "type": "licensed-vendor",
+        "input": "existing-qualified-vendor-package"
+      }
+    },
+    {
+      "slug": "classic-editor",
+      "name": "Classic Editor",
+      "version": "1.7.0",
+      "profile": "all",
+      "manifest_source": "classic-editor",
+      "package": "classic-editor.1.7.0.zip",
+      "main_file": "classic-editor/classic-editor.php",
+      "sha256": "7cc7799b0b7d820fbb7528dbff8027c736e52513992416cb37279f44d3d9dd77",
+      "size_bytes": 38882,
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/classic-editor.1.7.0.zip"
+      }
+    },
+    {
+      "slug": "enable-media-replace",
+      "name": "Enable Media Replace",
+      "version": "4.2.2",
+      "profile": "all",
+      "manifest_source": "enable-media-replace",
+      "package": "enable-media-replace.4.2.2.zip",
+      "main_file": "enable-media-replace/enable-media-replace.php",
+      "sha256": "e335322b96c71c79c09da76267d054da66fc562d524468aaf5222bec0e677571",
+      "size_bytes": 372368,
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/enable-media-replace.4.2.2.zip"
+      }
+    },
+    {
+      "slug": "post-smtp",
+      "name": "Post SMTP",
+      "version": "4.0.2",
+      "profile": "all",
+      "manifest_source": "post-smtp",
+      "package": "post-smtp.4.0.2.zip",
+      "main_file": "post-smtp/postman-smtp.php",
+      "sha256": "7aec4c927e063416ee580558882cd3b6b712d09794f817c196b7d24ce87a685e",
+      "size_bytes": 21177304,
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/post-smtp.4.0.2.zip"
+      }
+    },
+    {
+      "slug": "happyfiles-pro",
+      "name": "HappyFiles Pro",
+      "version": "1.9.1",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/happyfiles-pro.zip",
+      "package": "happyfiles-pro.zip",
+      "main_file": "happyfiles-pro/happyfiles-pro.php",
+      "sha256": "c22fc0e4f683c521290f50fbbd37407ed8420cc11f6d52a3d7dd74806de7a2d3",
+      "size_bytes": 696800,
+      "source": {
+        "type": "licensed-vendor",
+        "input": "existing-qualified-vendor-package"
+      }
+    },
+    {
+      "slug": "mrn-acf-focal-point",
+      "name": "MRN ACF Focal Point",
+      "version": "1.1.2",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-acf-focal-point.zip",
+      "package": "mrn-acf-focal-point.zip",
+      "main_file": "mrn-acf-focal-point/mrn-acf-focal-point.php",
+      "sha256": "51b961093a5d9fc3db12e15bd4771b275bcfe60048f0d4ac962570bbc1e723b6",
+      "size_bytes": 12696,
+      "source": {
+        "type": "git",
+        "repository": "mrn-acf-focal-point",
+        "commit": "5f1600f97ae062f1ccc1a29e2b34b1d634fc8b18"
+      }
+    },
+    {
+      "slug": "mrn-announcements",
+      "name": "MRN Announcements",
+      "version": "1.8.2",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-announcements.zip",
+      "package": "mrn-announcements.zip",
+      "main_file": "mrn-announcements/mrn-announcements.php",
+      "sha256": "943404df9c4649d04e71e654d3ffe4e4b06c669b5596a9ed93937a232152a185",
+      "size_bytes": 33109,
+      "source": {
+        "type": "git",
+        "repository": "mrn-announcements",
+        "commit": "284b1ae8a171daad55781c161cfb263fff289433"
+      }
+    },
+    {
+      "slug": "mrn-comment-management",
+      "name": "MRN Comment Management",
+      "version": "1.3.0",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-comment-management.zip",
+      "package": "mrn-comment-management.zip",
+      "main_file": "mrn-comment-management/mrn-comment-management.php",
+      "sha256": "ef576dc663e019716c6145f4e73893063f010aa305ec6f9c8c028d5daa316481",
+      "size_bytes": 27470,
+      "source": {
+        "type": "git",
+        "repository": "mrn-comment-management",
+        "commit": "582188ccc22cbae6b05807c8ce990efad66cba3e"
+      }
+    },
+    {
+      "slug": "mrn-fontawesome-profile-manager",
+      "name": "MRN Font Awesome Profile Manager",
+      "version": "0.5.1",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-fontawesome-profile-manager.zip",
+      "package": "mrn-fontawesome-profile-manager.zip",
+      "main_file": "mrn-fontawesome-profile-manager/mrn-fontawesome-profile-manager.php",
+      "sha256": "93752bf6a2b34d8413c56187c8cf17b2c2cb09a30a3d917ea9829185841f079a",
+      "size_bytes": 26858,
+      "source": {
+        "type": "git",
+        "repository": "mrn-fontawesome-profile-manager",
+        "commit": "ab46ed996cd6d7c02d7bc5ba93badda2587dbeb5"
+      }
+    },
+    {
+      "slug": "mrn-google-fonts",
+      "name": "MRN Google Fonts",
+      "version": "1.0.7",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-google-fonts.zip",
+      "package": "mrn-google-fonts.zip",
+      "main_file": "mrn-google-fonts/mrn-google-fonts.php",
+      "sha256": "dde36dcfb560d151eed6fe1cce0266f13f10b38e1499bd067e1cf7caadc11fba",
+      "size_bytes": 54599,
+      "source": {
+        "type": "git",
+        "repository": "mrn-google-fonts",
+        "commit": "b48ddeb6448d970c70f8410d99218dc4170b9320"
+      }
+    },
+    {
+      "slug": "mrn-config-helper",
+      "name": "MRN Config Helper",
+      "version": "0.1.71",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-config-helper.zip",
+      "package": "mrn-config-helper.zip",
+      "main_file": "mrn-config-helper/mrn-config-helper.php",
+      "sha256": "c8919df1b532cdec38bb2d87ce5ed12a83aeda0169fc08e8a234ab95e65e77a4",
+      "size_bytes": 123513,
+      "source": {
+        "type": "git",
+        "repository": "mrn-config-helper",
+        "commit": "5f22f06acda7ea445b32f03d79fe8cf5061c03cc"
+      }
+    },
+    {
+      "slug": "mrn-media-bulk-tools",
+      "name": "MRN Media Tools",
+      "version": "0.13.1",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-media-bulk-tools.zip",
+      "package": "mrn-media-bulk-tools.zip",
+      "main_file": "mrn-media-bulk-tools/mrn-media-bulk-tools.php",
+      "sha256": "90efadf55ba0f8ca0a6f35326e5bda3bb8e1fc2749d14b89cdd400b15e020ec6",
+      "size_bytes": 51260,
+      "source": {
+        "type": "git",
+        "repository": "mrn-media-bulk-tools",
+        "commit": "7c303fb50b35d798ad1e00d3e98682af2158353a"
+      }
+    },
+    {
+      "slug": "mrn-mega-menu",
+      "name": "MRN Mega Menu",
+      "version": "0.17.2",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-mega-menu.zip",
+      "package": "mrn-mega-menu.zip",
+      "main_file": "mrn-mega-menu/mrn-mega-menu.php",
+      "sha256": "090c1d19154fb0400124c2a1bb77ce30fc64f788b72a950744feadba7d796508",
+      "size_bytes": 63641,
+      "source": {
+        "type": "git",
+        "repository": "mrn-mega-menu",
+        "commit": "de68c999edade4a4f8c9481c8d2f280d045db6f3"
+      }
+    },
+    {
+      "slug": "mrn-recaptcha-enterprise-manager",
+      "name": "MRN reCAPTCHA Enterprise Manager",
+      "version": "0.1.4",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-recaptcha-enterprise-manager.zip",
+      "package": "mrn-recaptcha-enterprise-manager.zip",
+      "main_file": "mrn-recaptcha-enterprise-manager/mrn-recaptcha-enterprise-manager.php",
+      "sha256": "858ff4f801b98c994c41caf056cdb54174861e54a2b86a78dd33d4bb3a066734",
+      "size_bytes": 27599,
+      "source": {
+        "type": "git",
+        "repository": "mrn-recaptcha-enterprise-manager",
+        "commit": "e2fc5e3a580aba197e714f5b530a5da49224d293"
+      }
+    },
+    {
+      "slug": "mrn-stack-deployment-agent",
+      "name": "MRN Stack Deployment Agent",
+      "version": "0.2.6",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-stack-deployment-agent.zip",
+      "package": "mrn-stack-deployment-agent.zip",
+      "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
+      "sha256": "3a5d00be54eba8537341b61dc70cfb76b4ca7e8831d96a9219d5801c627127f2",
+      "size_bytes": 43217,
+      "source": {
+        "type": "git",
+        "repository": "mrn-stack-deployment-agent",
+        "commit": "6e07902c9b4397c86775de9c82156e6911381a9d"
+      }
+    },
+    {
+      "slug": "mrn-template-inspector",
+      "name": "MRN Template Inspector",
+      "version": "0.2.7",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-template-inspector.zip",
+      "package": "mrn-template-inspector.zip",
+      "main_file": "mrn-template-inspector/mrn-template-inspector.php",
+      "sha256": "142fda514d0b368fb11c9c74721c19528775cc3a99d0709fa930dec839d8327e",
+      "size_bytes": 16228,
+      "source": {
+        "type": "git",
+        "repository": "mrn-template-inspector",
+        "commit": "336c4fed9f98fd23ed9b4cdea681e979c3c544d8"
+      }
+    },
+    {
+      "slug": "mrn-reusable-block-library",
+      "name": "MRN Reusable Block Library",
+      "version": "0.2.0",
+      "profile": "stack",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-reusable-block-library.zip",
+      "package": "mrn-reusable-block-library.zip",
+      "main_file": "mrn-reusable-block-library/mrn-reusable-block-library.php",
+      "sha256": "692819a575f3514f6d7d86bde0659c93d1770ab2d9d6fbc7162317606c44e7bf",
+      "size_bytes": 59667,
+      "source": {
+        "type": "git",
+        "repository": "mrn-reusable-block-library",
+        "commit": "ef45cee815dbcc88b9d87050812f0951e1e51281"
+      }
+    },
+    {
+      "slug": "mrn-universal-sticky-bar",
+      "name": "MRN Universal Sticky Bar",
+      "version": "1.1.10",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-universal-sticky-bar.zip",
+      "package": "mrn-universal-sticky-bar.zip",
+      "main_file": "mrn-universal-sticky-bar/mrn-universal-sticky-bar.php",
+      "sha256": "3a0adcd4e50890d515d90bd8259c055ad299ed28a2806730399c1c785b50aaea",
+      "size_bytes": 10758,
+      "source": {
+        "type": "git",
+        "repository": "mrn-universal-sticky-bar",
+        "commit": "696e261cccc76cacad9c7fe54eac6c48758a70ff"
+      }
+    },
+    {
+      "slug": "post-duplicator",
+      "name": "Post Duplicator",
+      "version": "3.0.16",
+      "profile": "all",
+      "manifest_source": "post-duplicator",
+      "package": "post-duplicator.3.0.16.zip",
+      "main_file": "post-duplicator/m4c-postduplicator.php",
+      "sha256": "9ded21dc0f0fd0f0266883855c6249d771e8bdfac41f5101137ec2978c40115f",
+      "size_bytes": 631014,
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/post-duplicator.3.0.16.zip"
+      }
+    },
+    {
+      "slug": "post-types-order",
+      "name": "Post Types Order",
+      "version": "2.5.6",
+      "profile": "all",
+      "manifest_source": "post-types-order",
+      "package": "post-types-order.2.5.6.zip",
+      "main_file": "post-types-order/post-types-order.php",
+      "sha256": "aba458925fa03f5f3edf01933a16d47ad380c635d186c56fc4a5256229378087",
+      "size_bytes": 241134,
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/post-types-order.2.5.6.zip"
+      }
+    },
+    {
+      "slug": "relevanssi",
+      "name": "Relevanssi",
+      "version": "4.28.4",
+      "profile": "all",
+      "manifest_source": "relevanssi",
+      "package": "relevanssi.4.28.4.zip",
+      "main_file": "relevanssi/relevanssi.php",
+      "sha256": "44a042ee2c255fc5a1eb2a9793643147e528b4400e0b0949a58ef772f2eddff5",
+      "size_bytes": 436969,
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/relevanssi.4.28.4.zip"
+      }
+    },
+    {
+      "slug": "relevanssi-live-ajax-search",
+      "name": "Relevanssi Live Ajax Search",
+      "version": "2.6",
+      "profile": "all",
+      "manifest_source": "relevanssi-live-ajax-search",
+      "package": "relevanssi-live-ajax-search.2.6.zip",
+      "main_file": "relevanssi-live-ajax-search/relevanssi-live-ajax-search.php",
+      "sha256": "a8443b85fd471fa54f8088f378482db5b87b0f53cd6fd868eb4deffe7edded3d",
+      "size_bytes": 36642,
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/relevanssi-live-ajax-search.2.6.zip"
+      }
+    },
+    {
+      "slug": "tinymce-advanced",
+      "name": "Advanced Editor Tools",
+      "version": "5.10.1",
+      "profile": "all",
+      "manifest_source": "tinymce-advanced",
+      "package": "tinymce-advanced.5.10.1.zip",
+      "main_file": "tinymce-advanced/tinymce-advanced.php",
+      "sha256": "d82aed60e1898756d9b0d5cc74d7ed05d2414d3e733f140c6d0a6ebdf0e74181",
+      "size_bytes": 188362,
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/tinymce-advanced.5.10.1.zip"
+      }
+    },
+    {
+      "slug": "updraftplus",
+      "name": "UpdraftPlus - Backup/Restore",
+      "version": "2.26.6",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/updraftplus.2.26.6.zip",
+      "package": "updraftplus.2.26.6.zip",
+      "main_file": "updraftplus/updraftplus.php",
+      "sha256": "0d4ca57a098eb598a9d8a1f2ed931bbff9b838022bb9ab1d24525629d61201a4",
+      "size_bytes": 5712540,
+      "source": {
+        "type": "licensed-vendor",
+        "input": "existing-qualified-vendor-package"
+      }
+    },
+    {
+      "slug": "wp-toolbar-editor",
+      "name": "AME Toolbar Editor",
+      "version": "1.5.2",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/wp-toolbar-editor.zip",
+      "package": "wp-toolbar-editor.zip",
+      "main_file": "wp-toolbar-editor/load.php",
+      "sha256": "050f94069a2c239c3d8f8e2aa56a8974bd23757752f2e5c6f5dfb7fca0d4e5cd",
+      "size_bytes": 572125,
+      "source": {
+        "type": "licensed-vendor",
+        "input": "existing-qualified-vendor-package"
+      }
+    },
+    {
+      "slug": "wpforms",
+      "name": "WPForms",
+      "version": "1.10.2.1",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/wpforms.zip",
+      "package": "wpforms.zip",
+      "main_file": "wpforms/wpforms.php",
+      "sha256": "6430aa7507de9d352391bf89581d7368770419e1874a4a6cf5abb07c69ac659e",
+      "size_bytes": 13393011,
+      "source": {
+        "type": "licensed-vendor",
+        "input": "existing-qualified-vendor-package"
+      }
+    },
+    {
+      "slug": "wp-seopress",
+      "name": "SEOPress",
+      "version": "10.3",
+      "profile": "all",
+      "manifest_source": "wp-seopress",
+      "package": "wp-seopress.10.3.zip",
+      "main_file": "wp-seopress/seopress.php",
+      "sha256": "6000bd2e1f1c6092414b2b1d6045c425a9b5fd0ec05c558c8b876e6b2e4d03c8",
+      "size_bytes": 2896155,
+      "source": {
+        "type": "wordpress.org",
+        "url": "https://downloads.wordpress.org/plugin/wp-seopress.10.3.zip"
+      }
+    },
+    {
+      "slug": "wp-seopress-pro",
+      "name": "SEOPress PRO",
+      "version": "10.3",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/wp-seopress-pro-10-3.zip",
+      "package": "wp-seopress-pro-10-3.zip",
+      "main_file": "wp-seopress-pro/seopress-pro.php",
+      "sha256": "809e10586aa13de117bdc049fb8e0c7beabe66caab13c69c766b644f3db239e3",
+      "size_bytes": 4706682,
+      "source": {
+        "type": "licensed-vendor",
+        "input": "existing-qualified-vendor-package"
+      }
+    },
+    {
+      "slug": "mrn-hierarchical-menu-taxonomies",
+      "name": "MRN Hierarchical Menu Taxonomies",
+      "version": "0.1.1",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-hierarchical-menu-taxonomies.zip",
+      "package": "mrn-hierarchical-menu-taxonomies.zip",
+      "main_file": "mrn-hierarchical-menu-taxonomies/mrn-hierarchical-menu-taxonomies.php",
+      "sha256": "271ebc6b75a37402f9f932eaee0bf841b0e5ec340120eb538673d2dc481b3d96",
+      "size_bytes": 4513,
+      "source": {
+        "type": "git",
+        "repository": "mrn-hierarchical-menu-taxonomies",
+        "commit": "4f950323e35efb86335f7617a9f54b7823f99a55"
+      }
+    },
+    {
+      "slug": "mrn-layout-import-export",
+      "name": "MRN Layout Import/Export",
+      "version": "0.1.2",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-layout-import-export.zip",
+      "package": "mrn-layout-import-export.zip",
+      "main_file": "mrn-layout-import-export/mrn-layout-import-export.php",
+      "sha256": "7d063c6a143fc84706a1f07a16af0d49460068d003c4ddbcaa6a3465ec084a15",
+      "size_bytes": 18624,
+      "source": {
+        "type": "git",
+        "repository": "mrn-layout-import-export",
+        "commit": "e4ad7881114c5087537ca33e79a576f332ac3888"
+      }
+    },
+    {
+      "slug": "mrn-tokens",
+      "name": "MRN Tokens",
+      "version": "0.1.4",
+      "profile": "all",
+      "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-tokens.zip",
+      "package": "mrn-tokens.zip",
+      "main_file": "mrn-tokens/mrn-tokens.php",
+      "sha256": "20830ee1eddbb4cdd809d0be1a2847794a96bac9caddc41ce6f2b2513856b715",
+      "size_bytes": 10602,
+      "source": {
+        "type": "git",
+        "repository": "mrn-tokens",
+        "commit": "f257964af13d2b5f1e428c65ca2311c8f008f9e1"
+      }
+    }
+  ]
+}

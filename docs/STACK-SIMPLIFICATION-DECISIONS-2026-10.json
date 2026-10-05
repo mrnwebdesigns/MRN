@@ -273,7 +273,7 @@
     {
       "id": "D18",
       "decision": "Standardize Git-based site deployment with QA and explicit Dev/Live destinations.",
-      "consequences": "The explicit October 2 shared-system request sets push to main → exact-commit source QA → immutable build → verified backup → atomic Dev deployment → runtime verification. Live/Both remain manual in that written contract; manual Dev may use a selected branch.",
+      "consequences": "The explicit October 2 shared-system request sets push to main \u2192 exact-commit source QA \u2192 immutable build \u2192 verified backup \u2192 atomic Dev deployment \u2192 runtime verification. Live/Both remain manual in that written contract; manual Dev may use a selected branch.",
       "implementation": "Shared workflows, controller, templates and the explicit Dev/Live developer release path are merged. Prior Gloves and Doster deployment receipts are historical qualified-site evidence. Other destinations retain their own backup/access/runtime prerequisites; the current cleanup does not deploy sites.",
       "stack_follow_through": "Complete per-site adoption and developer instructions, preserve environment URLs and active phase branches, and reconcile remote edits before deployment. Keep site deployment separate from shared Fleet updates; do not infer automatic Live permission from a push.",
       "evidence": [
@@ -380,5 +380,16 @@
     "Automatic Live deployment from every push, or universal Clarity/Apollo/lead-form settings."
   ],
   "correction": "The previous audit repeated an early ecommerce checkpoint. Later October 2 evidence already demonstrates two real GA4 purchases; payload fidelity, coverage, rounding and reload qualification remain incomplete.",
-  "status_basis": "Source status reconciled on 2026-10-05. Site-specific observations below are historical evidence from the cited tasks; the no-existing-site-touch cleanup did not refresh them."
+  "status_basis": "Source status reconciled on 2026-10-05. Site-specific observations below are historical evidence from the cited tasks; the no-existing-site-touch cleanup did not refresh them.",
+  "completion_scope": {
+    "confirmed": "2026-10-05",
+    "deliverable": "Finalize the 33-plugin new-site Stack, exact packages, documentation, clean merged source and isolated QA; owner performs the new-site rollout test.",
+    "separate_work": [
+      "existing-site rollout and migration",
+      "advanced immutable cohort deployment transport",
+      "reCAPTCHA 0.2.0 external qualification",
+      "operations-service hosting/enrollment"
+    ],
+    "handoff": "Prepare the dedicated deployment task prompt after the new-site acceptance results are available."
+  }
 }

@@ -438,6 +438,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
                 "84b3aa6fb2d42316c04401d29e2a3a82a89c3014eec5a75fe7951c38fa398697",
             "2026.10.01-acf-field-defaults.json":
                 "67d5ac2814254add40d48fda005a3a00d002a1988f5aa405c2b68ebc60f2a468",
+            "2026.10.05-stack-recovery-r1.json":
+                "1f908b5fa6ef577b49c0565b1b276713224e57546c1b954e44409845dd5342b5",
             "2026.10.04-stack-simplification-r2.json":
                 "a98254bfbf34d7434b72d1979029d5bb409f79f0333964e496ad880ea57e261e",
         }
