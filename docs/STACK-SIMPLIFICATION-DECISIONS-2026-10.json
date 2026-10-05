@@ -177,12 +177,15 @@
     },
     {
       "id": "D12",
-      "decision": "Remove SendGrid as a default Stack dependency and provisioning assumption.",
-      "consequences": "New sites must not require automatic SendGrid setup. Preserve existing site provider accounts and delivery configurations until individually migrated.",
-      "implementation": "Already implemented in shared source: SendGrid Provisioning is catalog-only and automatic provisioning is opt-in (PRs 120/121).",
-      "stack_follow_through": "Preserve the completed change; check residual assumptions in the Post SMTP migration. Do not delete provider accounts, DNS or credentials as part of plugin-default cleanup.",
+      "decision": "Retire the custom SendGrid connector from active Stack integration, not only the default install.",
+      "consequences": "Remove bootstrap provisioning, management-key delivery, Config Helper sender-sync and settings links, and the CI checkout dependency. Preserve existing installations, provider accounts, saved data and source for restoration.",
+      "implementation": "Stack bootstrap and CI integration removed; Config Helper 0.1.71 removes its SendGrid call and settings card. The preserved connector is catalog-only with lifecycle retired.",
+      "stack_follow_through": "Qualify source and package only in this cleanup. No site, mail transport, provider account, DNS or credential changes. Restoration sources and verified archives are listed in stack/manifests/retired-capabilities.json.",
       "evidence": [
-        "E02"
+        "E02",
+        "E25",
+        "E26",
+        "E27"
       ],
       "workstreams": [
         "MAIL-02"
@@ -193,10 +196,11 @@
       "id": "D13",
       "decision": "Preserve custom components for reuse while removing them from the standard installation.",
       "consequences": "Simplification means a smaller supported default, with recoverable repositories, history, source and releases. It does not mean discarding prior engineering or client data.",
-      "implementation": "The original plan expressly preserves custom work. Much of the retired functionality remains catalog-only; the September planning files themselves are still uncommitted.",
+      "implementation": "Seven retired custom plugin repositories retained with exact commit/tree records, verified Git bundles and checksummed source archives. Restoration runbook identifies prior Stack and Config Helper integration commits; no existing-site data deletion.",
       "stack_follow_through": "Commit/reconcile the plan, archive recoverable refs and artifacts, document optional capabilities, and settle unique branches before cleanup. Preserve saved content/settings until a separate cleanup decision.",
       "evidence": [
-        "E04"
+        "E04",
+        "E27"
       ],
       "workstreams": [
         "EDITOR-01",

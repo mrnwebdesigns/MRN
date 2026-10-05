@@ -1,0 +1,292 @@
+{
+  "schema_version": 1,
+  "recorded_on": "2026-10-05",
+  "policy": "Retire active Stack integration; preserve source, history, saved data and a verifiable restoration path.",
+  "artifact_directory": "MRN-release-artifacts/2026-10-05-stack-finalization",
+  "integration_sources": {
+    "MRN": "ba7a06150b2ba8249ac50610c830344ecd4d005f",
+    "mrn-config-helper": "f16bedf0f87b5aeb7516f286e38fc4b70f569bef"
+  },
+  "capabilities": [
+    {
+      "slug": "mrn-seo-helper",
+      "repository": "https://github.com/mrnwebdesigns/mrn-seo-helper.git",
+      "source_commit": "056a2071781af613e73beed288e2e183af4647d7",
+      "source_tree": "81e7bea8eda09128fab143b0fe2193288d8a08c0",
+      "archive": {
+        "filename": "mrn-seo-helper-recovery.zip",
+        "sha256": "8e272f29b4a524c2097c7fb0277973ed1b70c915c13f5c0265012144648d2bed"
+      },
+      "bundle": {
+        "filename": "mrn-seo-helper-recovery.bundle",
+        "sha256": "338834c83df4b18c0cedef56b9b7a429f10863536f66091cd6d8a99a70579ec5"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "ACF",
+          "SmartCrawl",
+          "SEOPress",
+          "MRN Schema Bridge",
+          "MRN AI Assist"
+        ],
+        "release_group": "seo-provider-contract"
+      },
+      "retained_data": {
+        "options": [
+          "seed version",
+          "provider",
+          "force-fields settings",
+          "post-type allow-list"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": [
+          "SmartCrawl",
+          "SEOPress"
+        ],
+        "meta": [
+          "MRN and provider SEO post metadata"
+        ]
+      },
+      "restore_policy": "Opt-in restoration only after compatibility and ownership QA; no automatic installation or database deletion."
+    },
+    {
+      "slug": "mrn-acf-character-count",
+      "repository": "https://github.com/mrnwebdesigns/mrn-acf-character-count.git",
+      "source_commit": "0e9c4bb9a0a81d882b7f3b8e787d8bbd524b1a33",
+      "source_tree": "01cea375846011cd1b7f0daf9ef35405e5cd3049",
+      "archive": {
+        "filename": "mrn-acf-character-count-recovery.zip",
+        "sha256": "1984717bee9b3d7236cc323d39a9dfbb374f63b42879b514aff184c0635745a4"
+      },
+      "bundle": {
+        "filename": "mrn-acf-character-count-recovery.bundle",
+        "sha256": "64c9cea2e40900865b8af1612742435e122a97a8595e8d7942482efdc10c7ef5"
+      },
+      "dependencies": {
+        "hard": [
+          "ACF"
+        ],
+        "soft": [],
+        "release_group": null
+      },
+      "retained_data": {
+        "options": [
+          "mrn_acf_char_count_fields"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": []
+      },
+      "restore_policy": "Opt-in restoration only after compatibility and ownership QA; no automatic installation or database deletion."
+    },
+    {
+      "slug": "mrn-ai-assist",
+      "repository": "https://github.com/mrnwebdesigns/mrn-ai-assist.git",
+      "source_commit": "95df9e85ee7d154a7e477fec5be4f41ad8dea361",
+      "source_tree": "4ef58bece0998d05a64c7abd733fe3a42a6c9e7c",
+      "archive": {
+        "filename": "mrn-ai-assist-recovery.zip",
+        "sha256": "5f58f2c7f428101901946bdfcddfe501cfccd519494e129ae5a52362b2bcfdd0"
+      },
+      "bundle": {
+        "filename": "mrn-ai-assist-recovery.bundle",
+        "sha256": "1e884c4d3c71dc90aa70cc49f013bbe6cb66fd622a30134e71f56b16159948fb"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "MRN SEO Helper",
+          "SmartCrawl",
+          "ACF"
+        ],
+        "release_group": "seo-provider-contract"
+      },
+      "retained_data": {
+        "options": [
+          "mrn_ai_assist_settings",
+          "database version"
+        ],
+        "tables": [
+          "mrn_ai_assist_jobs",
+          "mrn_ai_assist_job_items",
+          "mrn_ai_assist_usage",
+          "mrn_ai_assist_changes"
+        ],
+        "cron": [
+          "mrn_ai_assist_alt_process_queue",
+          "scheduler tick"
+        ],
+        "routes": [
+          "nine privileged admin-post actions"
+        ],
+        "external_services": [
+          "OpenAI"
+        ]
+      },
+      "restore_policy": "Opt-in restoration only after compatibility and ownership QA; no automatic installation or database deletion."
+    },
+    {
+      "slug": "mrn-editor-tools",
+      "repository": "https://github.com/mrnwebdesigns/mrn-editor-tools.git",
+      "source_commit": "8e3b6cdbe2d47039faafa6c814b810d731f7dbb5",
+      "source_tree": "c72d8260e3b9570908128982b9c012448030f1d0",
+      "archive": {
+        "filename": "mrn-editor-tools-recovery.zip",
+        "sha256": "a66f6cea5fdda98524c57d30ac4e3841db2499392beee92b0fd42aeaca878899"
+      },
+      "bundle": {
+        "filename": "mrn-editor-tools-recovery.bundle",
+        "sha256": "31f10fabe495c9508d8cf90e67e5588815dfe198672012b24e9f70715ef84ce3"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress Classic Editor workflow"
+        ],
+        "soft": [
+          "ACF",
+          "MRN Shared Assets",
+          "MRN Universal Sticky Bar"
+        ],
+        "release_group": "editor-content-contract"
+      },
+      "retained_data": {
+        "options": [
+          "mrn_editor_tools_settings",
+          "legacy Advanced Editor Tools compatibility"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "one AJAX and two admin-post actions"
+        ],
+        "external_services": [
+          "bundled/shared Font Awesome assets"
+        ]
+      },
+      "restore_policy": "Opt-in restoration only after compatibility and ownership QA; no automatic installation or database deletion."
+    },
+    {
+      "slug": "mrn-cookie-consent",
+      "repository": "https://github.com/mrnwebdesigns/mrn-cookie-consent.git",
+      "source_commit": "e3e1737f1db325f3076025c341af55a1cd7318bc",
+      "source_tree": "bf08f78822a0dd2c9592d66c4dab2dad425cad96",
+      "archive": {
+        "filename": "mrn-cookie-consent-recovery.zip",
+        "sha256": "d569a0638fdd5fe6e89f9da69597d30d3528d0d3eecae08bbb15aa35fddbb853"
+      },
+      "bundle": {
+        "filename": "mrn-cookie-consent-recovery.bundle",
+        "sha256": "2728a71be4cb701aecd80cad35d0aeecd16c8bc85d587536bddc393a775d88d8"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress frontend"
+        ],
+        "soft": [
+          "MRN GTM Injector"
+        ],
+        "release_group": "consent-analytics-contract"
+      },
+      "retained_data": {
+        "options": [
+          "mrn_silktide_consent_settings",
+          "runtime status"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "privileged settings handlers"
+        ],
+        "external_services": [
+          "Silktide Consent Manager",
+          "Google Consent Mode"
+        ]
+      },
+      "restore_policy": "Opt-in restoration only after compatibility and ownership QA; no automatic installation or database deletion."
+    },
+    {
+      "slug": "mrn-gtm-injector",
+      "repository": "https://github.com/mrnwebdesigns/mrn-gtm-injector.git",
+      "source_commit": "1c8908013fa0b35581409c13502f9a98894a96a0",
+      "source_tree": "b21eefd8ec5bb5d87ca9df062790e31c2fbbe186",
+      "archive": {
+        "filename": "mrn-gtm-injector-recovery.zip",
+        "sha256": "b2b042fe24bfd580b5f747b0fc10696e8cc40b155fe0561fbb790676e66b8e15"
+      },
+      "bundle": {
+        "filename": "mrn-gtm-injector-recovery.bundle",
+        "sha256": "af521c5cb48ede3786fafbf39fa4d9c6b659cebd05fb9eee360db6df57bf5216"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress frontend"
+        ],
+        "soft": [
+          "MRN Cookie Consent"
+        ],
+        "release_group": "consent-analytics-contract"
+      },
+      "retained_data": {
+        "options": [
+          "mrn_gtm_settings",
+          "mrn_gtm_container_id"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [],
+        "external_services": [
+          "Google Tag Manager"
+        ]
+      },
+      "restore_policy": "Opt-in restoration only after compatibility and ownership QA; no automatic installation or database deletion."
+    },
+    {
+      "slug": "mrn-sendgrid-provisioning",
+      "repository": "https://github.com/mrnwebdesigns/mrn-sendgrid-provisioning.git",
+      "source_commit": "7465010230c23c1d901ba382b88be36e93dc0022",
+      "source_tree": "33eaf763336b45402c38a1248d59a2dd90c0eaef",
+      "archive": {
+        "filename": "mrn-sendgrid-provisioning-recovery.zip",
+        "sha256": "596853a36bf8ed30fca819a170e0cea2905bac340f4c4b45f40c9ed1e034b0c7"
+      },
+      "bundle": {
+        "filename": "mrn-sendgrid-provisioning-recovery.bundle",
+        "sha256": "77ad73a8ab3d3421b7ef6cafa199c9125d7f04fceab73815f495d97472747199"
+      },
+      "dependencies": {
+        "hard": [
+          "WordPress"
+        ],
+        "soft": [
+          "mrn-config-helper",
+          "Fluent SMTP"
+        ],
+        "release_group": "config-helper-decomposition"
+      },
+      "retained_data": {
+        "options": [
+          "mrn_sendgrid_provisioning_settings"
+        ],
+        "tables": [],
+        "cron": [],
+        "routes": [
+          "four privileged admin-post actions"
+        ],
+        "external_services": [
+          "SendGrid",
+          "Fluent SMTP"
+        ],
+        "meta": []
+      },
+      "restore_policy": "Opt-in restoration only after compatibility and ownership QA; no automatic installation or database deletion."
+    }
+  ]
+}

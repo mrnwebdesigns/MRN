@@ -2,6 +2,12 @@
 
 Owner approved implementation, commits, pushes, Git reconciliation and release qualification on October 4, 2026. Fleet readiness does not mean every existing site has been migrated. Site execution still uses an exact target, guarded plan, backup and verification.
 
+## October 5 execution boundary
+
+The owner requires that no existing site be touched during this cleanup. Continue source, package and isolated fixture work only. Existing-site parity and adoption are recorded rollout work, not permission to change sites. Removed capabilities must remain recoverable: preserve their repositories, exact source commits, checksummed bundles/archives and saved data.
+
+Config Helper 0.1.71 removes SendGrid sender synchronization and its settings card. Bootstrap loses the old provisioning opt-in and management-key delivery, and CI loses the connector checkout dependency. The connector remains preserved, catalog-only and retired. No provider credentials, DNS, accounts or existing mail configuration are changed.
+
 ## Added editor cleanup
 
 - Remove the **SEO Helper Content Types** settings section, including its post-type toggles, by retiring SEO Helper after metadata reconciliation.
@@ -23,7 +29,7 @@ Owner approved implementation, commits, pushes, Git reconciliation and release q
 | D09 | Preserve Business Information and Schema Bridge while changing SEO providers. |
 | D10 | Use SEOPress ecommerce tracking, with only the compatibility work demonstrated necessary. |
 | D11 | Replace FluentSMTP with Post SMTP in the default Stack. |
-| D12 | Remove SendGrid as a default Stack dependency and provisioning assumption. |
+| D12 | Retire the custom SendGrid connector and its remaining active Stack integration; preserve it for recovery. |
 | D13 | Preserve custom components for reuse while removing them from the standard installation. |
 | D14 | Let selected non-administrator roles view WordPress comments and WooCommerce reviews. |
 | D15 | Add per-site comment/review notification recipients to MRN Comment Management. |
@@ -66,6 +72,8 @@ The first locked candidate was assembled twice with identical package bytes, ins
 Existing site deployment receipts are historical evidence, not proof of this candidate. Hosted package parity, actual named-target deployment/verification and the shared asset adapter below remain required before release promotion.
 
 ## Preservation
+
+All seven retired custom capabilities now have verified full Git bundles and source ZIPs recorded in `stack/manifests/retired-capabilities.json`. The [restoration procedure](../stack/RESTORING-RETIRED-CAPABILITIES.md) explains source recovery, saved-data ownership and requalification. The artifacts live outside source under `MRN-release-artifacts/2026-10-05-stack-finalization`; remote source commits provide an additional recovery route.
 
 A verified pre-change Git bundle and exact copies of the September planning files are retained outside source in `MRN-release-artifacts/2026-10-04-stack-simplification`. Original source repositories and historical release locks remain available. No client database or secret values are included in this document.
 

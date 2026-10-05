@@ -6,7 +6,8 @@
 - Slug: `mrn-sendgrid-provisioning`
 - Type:
   - standard plugin
-- Current version: `0.1.0`
+- Preserved version: `0.1.0`
+- Lifecycle: retired from active Stack integration; recoverable source
 - Source path:
   - `/Users/khofmeyer/Development/MRN-plugins/mrn-sendgrid-provisioning`
 
@@ -15,7 +16,7 @@
 - Optionally provisions per-site SendGrid identity for sites that are separately approved to use a dedicated SendGrid Subuser.
 - Split out of `mrn-config-helper` on 2026-08-19 (`release_group: config-helper-decomposition` in `stack/manifests/component-catalog.json`) to isolate SendGrid credentials and the parent management key from general site configuration.
 - It is catalog-only: full Stack bootstrap and Fleet releases neither install it on absent sites nor remove or deactivate an existing installation.
-- Deliberately does not activate or configure FluentSMTP itself. An explicitly opted-in bootstrap can prepare the subuser, site key, and domain authentication ahead of launch; delivering the finished key into a live site's FluentSMTP connection is a separate, ops-owned go-live step outside this plugin.
+- The standalone connector remains preserved for possible reuse. The current Stack does not load it, deliver its management key, provision provider resources, or call its sender-sync function from Config Helper. Existing installations and provider resources are unchanged by this source cleanup.
 
 ## Admin Surface Area
 
@@ -31,11 +32,13 @@
 - Domain authentication is associated to the owning subuser (`POST /v3/whitelabel/domains/{id}/subuser`), never duplicated. An existing domain-auth record that doesn't match this site's subuser is surfaced on the settings page for an explicit reassociation action, not touched automatically.
 - New sites only: this plugin does not migrate sites that already have a flat API key/domain-auth on the parent account. That migration is a separate, ops-owned project (`/Users/khofmeyer/Development/MRN Infrastructure Ops/scripts/sendgrid-subuser-*`), whose proven policy (assigned-IP handling, associate-not-duplicate, required scopes) this plugin mirrors in PHP for server-side bootstrap use.
 
-## Bootstrap Contract
+## Retirement and recovery contract
 
-- `stack/scripts/site-bootstrap.sh` does not install this plugin and does not read or deliver its management key by default.
-- When the plugin has been separately installed and `STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION=1` is explicitly set, `provision_external_services()` calls `MRN_SendGrid_Provisioning::bootstrap_site_provisioning( home_url( '/' ) )`.
-- Idempotent: re-running bootstrap reuses an existing subuser/site key/domain-auth rather than recreating them.
+- Bootstrap contains no SendGrid provisioning or management-key delivery path. The former `STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION` switch no longer has an effect.
+- Config Helper 0.1.71 removes the connector settings card and sender-sync call. Its generic sender wrappers remain available for other integrations.
+- The Stack CI checkout no longer requires the connector repository. Its catalog record is retained as `retired` and `catalog-only`.
+- Nothing uninstalls an existing connector, deletes options, revokes keys, removes DNS, or changes live mail delivery.
+- See [Restoring retired capabilities](../RESTORING-RETIRED-CAPABILITIES.md) and the checksum/source manifest for restoration. The provisioning model below describes the preserved implementation, not an enabled Stack feature.
 
 ## Data / Storage
 

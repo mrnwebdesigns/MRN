@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.10.05-stack-retirement-r1 (candidate)
+
+- Remove the remaining custom SendGrid integration: bootstrap provisioning and management-key delivery, Config Helper sender-sync and settings link, and the CI checkout dependency. Config Helper 0.1.71 preserves generic sender helpers and saved identity values.
+- Preserve all seven retired custom capabilities with exact source/tree records, verified recovery bundles and archives, and a restoration runbook. No existing site, database, provider account, DNS or credential changes.
+- Correct stale contract tests for retired bootstrap plugins, qualified CAPTCHA package selection, Config Helper release history and preserved historical release-lock checksums.
+- Source/package qualification only. Shared parent/plugin immutable asset deployment and named runtime qualification remain incomplete; this candidate is not fleet-ready.
+
 ## 2026.10.04-stack-simplification-r2 (candidate)
 
 - Default installation uses SEOPress Free/PRO 10.3 and Post SMTP; SEO Helper, ACF Character Count, AI Assist and Editor Enhancements remain catalog-only.

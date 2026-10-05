@@ -433,6 +433,12 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
                 "0cd8fc2ffe52fcb8c8857ed765bd0144e5c0f61a40bae9d8d3b5e1e0cbfc8af3",
             "2026.09.25-approved-overlay-fleet.json":
                 "8e22223156b9b67fbd0ab0094138d844cdc6cdf8a3920da15f4d3b818bd72a8a",
+            "2026.09.29-updraft-retention.json":
+                "84b3aa6fb2d42316c04401d29e2a3a82a89c3014eec5a75fe7951c38fa398697",
+            "2026.10.01-acf-field-defaults.json":
+                "67d5ac2814254add40d48fda005a3a00d002a1988f5aa405c2b68ebc60f2a468",
+            "2026.10.04-stack-simplification-r2.json":
+                "a98254bfbf34d7434b72d1979029d5bb409f79f0333964e496ad880ea57e261e",
         }
 
         self.assertEqual(set(expected), {path.name for path in archive.glob("*.json")})
@@ -456,8 +462,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             if item["slug"] == "mrn-config-helper"
         }
 
-        self.assertEqual("0.1.68", entry["version"])
-        self.assertEqual({"0.1.59", "0.1.60", "0.1.61", "0.1.62", "0.1.63", "0.1.64", "0.1.65", "0.1.66", "0.1.68"}, set(versions))
+        self.assertEqual("0.1.71", entry["version"])
+        self.assertEqual({"0.1.59", "0.1.60", "0.1.61", "0.1.62", "0.1.63", "0.1.64", "0.1.65", "0.1.66", "0.1.68", "0.1.70", "0.1.71"}, set(versions))
         self.assertEqual(
             entry["version"],
             max(versions, key=lambda value: planner.version_tuple(value, "version")),
@@ -477,6 +483,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
         self.assertNotIn("legacy_supplements", versions["0.1.65"])
         self.assertNotIn("legacy_supplements", versions["0.1.66"])
         self.assertNotIn("legacy_supplements", versions["0.1.68"])
+        self.assertNotIn("legacy_supplements", versions["0.1.70"])
+        self.assertNotIn("legacy_supplements", versions["0.1.71"])
         self.assertEqual(2, len(versions["0.1.59"]["legacy_supplements"]))
         self.assertEqual(2, len(versions["0.1.60"]["legacy_supplements"]))
 

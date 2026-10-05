@@ -229,5 +229,27 @@
     "date": "2026-10-02",
     "source_path": "/Users/khofmeyer/Development/MRN-sites/gloves/reports/analytics-incident-2026-10-02/verification.json",
     "note": "Two real purchases reached GA4. Four other paid orders had no SEOPress generation marker. Consent history is unavailable; one received transaction has a one-cent rounding difference. Full payload/coverage/reload qualification remains incomplete."
+  },
+  {
+    "id": "E25",
+    "kind": "Current owner constraint",
+    "date": "2026-10-05",
+    "source": "Current Stack cleanup task",
+    "quote": "During this cleanup, no site should be couched.",
+    "interpretation": "No existing site changes during this cleanup; source, packages and isolated fixtures only."
+  },
+  {
+    "id": "E26",
+    "kind": "Current owner clarification",
+    "date": "2026-10-05",
+    "source": "Current Stack cleanup task",
+    "quote": "We also built into the stack a robust connector for sendgrid, I want to make sure the removal of that is part of this as well."
+  },
+  {
+    "id": "E27",
+    "kind": "Current owner clarification",
+    "date": "2026-10-05",
+    "source": "Current Stack cleanup task",
+    "quote": "Reminder, if need be we should always be able to bring back functionality we remove. Continue."
   }
 ]

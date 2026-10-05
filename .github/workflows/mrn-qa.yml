@@ -111,7 +111,6 @@ jobs:
             mrn-recaptcha-enterprise-manager
             mrn-reusable-block-library
             mrn-schema-bridge
-            mrn-sendgrid-provisioning
             mrn-seo-helper
             mrn-template-inspector
             mrn-tokens
@@ -124,7 +123,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$GITHUB_WORKSPACE/../MRN-plugins"
-          repos="background-video-popout-disabler mrn-acf-character-count mrn-acf-focal-point mrn-ai-assist mrn-ai-guardrails mrn-announcements mrn-comment-management mrn-config-helper mrn-contextual-content-editor mrn-cookie-consent mrn-database-retention mrn-editor-tools mrn-fontawesome-profile-manager mrn-google-fonts mrn-gtm-injector mrn-hierarchical-menu-taxonomies mrn-layout-import-export mrn-media-bulk-tools mrn-mega-menu mrn-recaptcha-enterprise-manager mrn-reusable-block-library mrn-schema-bridge mrn-sendgrid-provisioning mrn-seo-helper mrn-template-inspector mrn-tokens mrn-universal-sticky-bar"
+          repos="background-video-popout-disabler mrn-acf-character-count mrn-acf-focal-point mrn-ai-assist mrn-ai-guardrails mrn-announcements mrn-comment-management mrn-config-helper mrn-contextual-content-editor mrn-cookie-consent mrn-database-retention mrn-editor-tools mrn-fontawesome-profile-manager mrn-google-fonts mrn-gtm-injector mrn-hierarchical-menu-taxonomies mrn-layout-import-export mrn-media-bulk-tools mrn-mega-menu mrn-recaptcha-enterprise-manager mrn-reusable-block-library mrn-schema-bridge mrn-seo-helper mrn-template-inspector mrn-tokens mrn-universal-sticky-bar"
           for slug in $repos; do
             gh repo clone "mrnwebdesigns/${slug}" "$GITHUB_WORKSPACE/../MRN-plugins/${slug}" -- --depth 1
           done

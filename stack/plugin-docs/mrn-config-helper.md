@@ -6,9 +6,13 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.60`
+- Current version: `0.1.71`
 - Source path:
   - `/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper`
+
+## SendGrid retirement
+
+Version 0.1.71 removes the SendGrid settings card and sender-sync call. The generic sender identity helpers and saved settings remain. Mail transport is configured separately through its own plugin. Source recovery is documented in [Restoring retired capabilities](../RESTORING-RETIRED-CAPABILITIES.md). This release changes no existing site or provider resources during Stack cleanup.
 
 ## Purpose
 
