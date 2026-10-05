@@ -65,6 +65,11 @@ settings and external resources have not been deleted by this cleanup.
 
 ## Editor and schema recovery
 
+The manifest also pins Schema Bridge commit `89d1999381c2b94cad005835f133651a46f8eda2` before the
+SEO & Schema panel was removed. Its full bundle and source ZIP were verified
+and the bundle was cloned back to its recorded tree. Port only the panel/save
+handler if restoration is needed; keep current provider and schema behavior.
+
 Historical SEO and schema values remain stored. The guarded editor-retirement
 migration also provides conflict-aware rollback; see
 [`scripts/migrations/README.md`](scripts/migrations/README.md). Source recovery

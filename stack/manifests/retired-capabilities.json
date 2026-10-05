@@ -288,5 +288,26 @@
       },
       "restore_policy": "Opt-in restoration only after compatibility and ownership QA; no automatic installation or database deletion."
     }
+  ],
+  "retired_surfaces": [
+    {
+      "name": "SEO & Schema editor panel",
+      "repository": "https://github.com/mrnwebdesigns/mrn-schema-bridge.git",
+      "source_commit": "89d1999381c2b94cad005835f133651a46f8eda2",
+      "source_tree": "3eb06d11c6660fd73c07e0168873f999d8956e64",
+      "files": [
+        "mrn-schema-bridge.php"
+      ],
+      "archive": {
+        "filename": "mrn-schema-bridge-before-panel-removal.zip",
+        "sha256": "2014e2a703e2da6e530ec357228c18df39fe4c550ae5f732bc116e289a0644dc"
+      },
+      "bundle": {
+        "filename": "mrn-schema-bridge-before-panel-removal.bundle",
+        "sha256": "37f6fb51c78f937ebdc48a8a2fce0c3f73dab95e134fe5564732a1275fd2ce16"
+      },
+      "retained_behavior": "Schema Bridge remains supported. Existing schema mode, page intent and description metadata readers remain; only the panel and save handler were retired.",
+      "restore_policy": "Port the editor controls from this source into a newly qualified version; do not replace current schema/provider behavior with the older whole plugin."
+    }
   ]
 }
