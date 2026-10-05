@@ -273,7 +273,7 @@
     {
       "id": "D18",
       "decision": "Standardize Git-based site deployment with QA and explicit Dev/Live destinations.",
-      "consequences": "The explicit October 2 shared-system request sets push to main \u2192 exact-commit source QA \u2192 immutable build \u2192 verified backup \u2192 atomic Dev deployment \u2192 runtime verification. Live/Both remain manual in that written contract; manual Dev may use a selected branch.",
+      "consequences": "The explicit October 2 shared-system request sets push to main → exact-commit source QA → immutable build → verified backup → atomic Dev deployment → runtime verification. Live/Both remain manual in that written contract; manual Dev may use a selected branch.",
       "implementation": "Shared workflows/controller/templates are merged. Gloves and Doster have successful deployment evidence; other destinations have distinct prerequisites. Later discussion also asks for a simple developer-facing release path without requiring GitHub UI access.",
       "stack_follow_through": "Complete per-site adoption and developer instructions, preserve environment URLs and active phase branches, and reconcile remote edits before deployment. Keep site deployment separate from shared Fleet updates; do not infer automatic Live permission from a push.",
       "evidence": [
@@ -289,8 +289,8 @@
       "id": "D19",
       "decision": "Make CSS/JS URLs immutable and deployment/cache behavior predictable.",
       "consequences": "Build content hashes, synchronize minified files, never serve changed content at an old asset URL, retain assets for cached pages/rollback, atomically activate releases and invalidate only affected HTML.",
-      "implementation": "Implemented in the shared deployment work; the Gloves stale-CSS incident is the regression case. Adapter implementation does not qualify every host or plugin route.",
-      "stack_follow_through": "Verify each supported adapter and public asset checksum, including optional-plugin installation, rollback and retained asset URLs. Replace stale published packages through the same artifact contract.",
+      "implementation": "Child-theme deployment implements the immutable asset contract for its qualified adapters. Shared component packaging and an isolated plugin-loader candidate now have deterministic build, archive validation and real WordPress fixture coverage in tools/component-deploy. Parent adoption explicitly fails closed because WordPress theme discovery can bypass directory filters. Shared MainWP transport, native plugin inventory/lifecycle and public-serving qualification are still incomplete.",
+      "stack_follow_through": "Complete parent/child theme discovery, signed backup-gated MainWP adoption and atomic activation/rollback, plugin inventory/lifecycle integration, scoped HTML refresh and exact public URL/browser checks. Do not install the candidate MU loader or send the component ZIP to the ordinary plugin installer. Existing sites remain untouched.",
       "evidence": [
         "E16"
       ],

@@ -1,0 +1,15 @@
+
+> mrn-site-release-assets@1.0.0 test
+> node --test tests/assets.test.mjs
+
+✔ Gloves regression: warm old URL keeps old bytes; CSS edits get new URLs and synchronized minification (50.462083ms)
+✔ CSS dependency bytes change the generation and retain relative layout (10.406917ms)
+✔ Homepage alternatives are built into the release and other routes still require full CSS (21.159042ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 158.759

@@ -1,0 +1,20 @@
+[
+  {
+    "slug": "mrn-config-helper",
+    "source_sha": "5f22f06acda7ea445b32f03d79fe8cf5061c03cc",
+    "artifact_sha256": "d7d28d0ccdc8783ac14f023d5310e2511d6cc37b38ebef09e22f27421523424b",
+    "first_archive": "config-helper-test-rebuild.zip",
+    "second_archive": "mrn-config-helper-second-build.zip",
+    "identical_rebuild": true,
+    "runtime_qualified": false
+  },
+  {
+    "slug": "mrn-base-stack",
+    "source_sha": "3293fb01478a4606c3bd2ae02b9763df0b7f1712",
+    "artifact_sha256": "449f81b93df8ea013198b4fe1478969e40acf91c9d4dc503790f7917aba76a48",
+    "first_archive": "parent-test.zip",
+    "second_archive": "mrn-base-stack-second-build.zip",
+    "identical_rebuild": true,
+    "runtime_qualified": false
+  }
+]

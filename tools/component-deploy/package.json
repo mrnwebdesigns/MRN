@@ -1,0 +1,10 @@
+{
+  "name": "mrn-component-release-assets",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "acorn": "8.15.0",
+    "esbuild": "0.25.10"
+  }
+}

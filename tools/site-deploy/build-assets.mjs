@@ -10,23 +10,23 @@ import {validateStylesheetRoutes} from './stylesheet-routes.mjs';
 const hash = data => createHash('sha256').update(data).digest('hex');
 const staticExtensions = new Set(['.css', '.js', '.mjs', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.avif', '.ico', '.woff', '.woff2', '.ttf', '.otf', '.eot']);
 const excluded = new Set(['node_modules', 'vendor', 'tests', 'docs', 'scripts', 'qa']);
-async function inventory(root, prefix = '') {
+async function inventory(root, prefix = '', excludedDirectories = excluded) {
   const files = [];
   for (const entry of (await readdir(path.join(root, prefix), {withFileTypes: true})).sort((a,b) => a.name < b.name ? -1 : 1)) {
-    if (entry.name.startsWith('.') || excluded.has(entry.name)) continue;
+    if (entry.name.startsWith('.') || excludedDirectories.has(entry.name)) continue;
     const name = path.posix.join(prefix, entry.name);
     if (entry.isSymbolicLink()) throw new Error('Asset symlink is not allowed: ' + name);
-    if (entry.isDirectory()) files.push(...await inventory(root, name));
+    if (entry.isDirectory()) files.push(...await inventory(root, name, excludedDirectories));
     else if (entry.isFile() && staticExtensions.has(path.extname(name))) files.push(name);
   }
   return files;
 }
 
-export async function buildAssets({theme, output, slug, sourceSha}) {
+export async function buildAssets({theme, output, slug, sourceSha, excludedDirectories = excluded}) {
   if (!/^[a-z0-9_-]+$/.test(slug) || !/^[0-9a-f]{40}$/.test(sourceSha)) throw new Error('Invalid release identity');
   theme = path.resolve(theme); output = path.resolve(output);
   if (output === theme || output.startsWith(theme + path.sep)) throw new Error('Build output must be outside the theme');
-  const files = await inventory(theme), bodies = new Map(), entries = {};
+  const files = await inventory(theme, '', excludedDirectories), bodies = new Map(), entries = {};
   for (const file of files) bodies.set(file, await readFile(path.join(theme, file)));
   // Always regenerate a minified sibling when its editable source exists.
   // Vendor-only minified files remain exact, versioned dependencies.
