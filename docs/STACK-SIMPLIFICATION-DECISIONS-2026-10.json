@@ -1,7 +1,7 @@
 {
   "title": "MRN Stack: decisions and their consequences",
-  "date": "2026-10-04",
-  "basis": "Direct owner messages from September 23 through October 4, the current clarification, canonical policy, and recorded implementation evidence. An accepted product direction is distinct from permission to deploy a particular target.",
+  "date": "2026-10-05",
+  "basis": "Direct owner messages from September 23 through October 5, the current clarification, canonical policy, and recorded implementation evidence. An accepted product direction is distinct from permission to deploy a particular target.",
   "decisions": [
     {
       "id": "D01",
@@ -343,6 +343,20 @@
         "OPS-01"
       ],
       "group": "Other confirmed Stack work"
+    },
+    {
+      "id": "D23",
+      "decision": "Exclude Background Video Pop-Out Disabler from normal bootstrap; retain it as an optional, supported plugin.",
+      "consequences": "Neither bootstrap profile installs this plugin. Stack defaults decrease from 34 to 33 standard plugins; plain defaults remain at 32. Existing site installations and background-video content are unchanged.",
+      "implementation": "Removed the package from plugins.txt and changed both catalog and optional-release distribution to catalog-only. Preserve the 1.0.2 source commit, package checksum and upgrade-only policy.",
+      "stack_follow_through": "Publish and verify the updated bootstrap manifest during separately scoped hosted-bootstrap reconciliation. Install this optional plugin only for a deliberate site requirement.",
+      "evidence": [
+        "Direct owner instruction in this Stack task on 2026-10-05: background should not be in the normal stack bootstrap."
+      ],
+      "workstreams": [
+        "BOOTSTRAP-01"
+      ],
+      "group": "Product architecture"
     }
   ],
   "site_specific": [

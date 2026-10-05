@@ -76,7 +76,7 @@
       "slug": "background-video-popout-disabler",
       "version": "1.0.2",
       "target_tier": "optional-shared",
-      "current_distribution": "standard-bootstrap",
+      "current_distribution": "catalog-only",
       "source": {
         "repository": "mrnwebdesigns/background-video-popout-disabler",
         "path": "/Users/khofmeyer/Development/MRN-plugins/background-video-popout-disabler",
