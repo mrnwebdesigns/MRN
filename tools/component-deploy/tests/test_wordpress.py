@@ -10,9 +10,12 @@ import json
 import os
 from pathlib import Path
 import shutil
+import socket
 import subprocess
 import tempfile
+import time
 import unittest
+import urllib.request
 import zipfile
 
 import test_components as fixtures
@@ -27,6 +30,16 @@ ARCHIVES = {
 @unittest.skipUnless(all(os.environ.get(name) for name in ARCHIVES), 'Pinned WordPress/SQLite test archives not supplied')
 class WordPressBootstrap(unittest.TestCase):
     def test_real_plugin_loader_activation_assets_and_request_pinning(self):
+        self.qualify(False)
+
+    def test_real_parent_discovery_cohort_rollback_and_lifecycle(self):
+        self.qualify(True)
+
+    @unittest.skipUnless(os.environ.get('MRN_COMPONENT_BROWSER') == '1', 'Disposable HTTP/browser qualification not requested')
+    def test_real_http_browser_cache_assets_and_opcache(self):
+        self.qualify(True, public_probe=True)
+
+    def qualify(self, parent_selected, public_probe=False):
         fixtures.Components.setUpClass()
         self.addCleanup(fixtures.Components.tearDownClass)
         with tempfile.TemporaryDirectory(prefix='mrn-component-wordpress-') as temporary:
@@ -49,6 +62,7 @@ define('WP_HTTP_BLOCK_EXTERNAL',true); define('DISABLE_WP_CRON',true);
 define('WP_AUTO_UPDATE_CORE',false); define('AUTOMATIC_UPDATER_DISABLED',true);
 define('WP_HOME','http://127.0.0.1:9876'); define('WP_SITEURL','http://127.0.0.1:9876');
 define('WP_ENVIRONMENT_TYPE','local'); define('WP_DEBUG',false);
+define('FS_METHOD','direct');
 $table_prefix='fixture_'; if(!defined('ABSPATH')){define('ABSPATH',__DIR__.'/');} require ABSPATH.'wp-settings.php';
 ''')
             mu = public / 'wp-content/mu-plugins'
@@ -95,7 +109,12 @@ update_option('template','mrn-base-stack'); update_option('stylesheet','fixture-
 echo json_encode(['installed'=>is_blog_installed()]);
 ''', install=True)
             self.assertTrue(installed['installed'])
+            child_before = {path.name: path.read_bytes() for path in child.iterdir()}
+            if parent_selected:
+                view = fixtures.Components().add_theme_view(state, child, 'current.json', fixtures.Components.parent)
+                fixtures.Components().add_theme_view(state, child, 'next.json', fixtures.Components.new_parent)
             old_pointer = (state / 'current.json').read_bytes()
+            next_pointer = (state / 'next.json').read_bytes()
             result = php('''
 require_once ABSPATH.'wp-admin/includes/plugin.php';
 $entry=MRN_Component_Release_Runtime::entrypoint(WP_PLUGIN_DIR.'/mrn-fixture/mrn-fixture.php');
@@ -109,15 +128,45 @@ $result=['code'=>$GLOBALS['fixture_code'],'basename'=>plugin_basename($entry),
  'metadata'=>apply_filters('all_plugins',get_plugins())['mrn-fixture/mrn-fixture.php']['Version'],
  'native_metadata'=>get_plugins()['mrn-fixture/mrn-fixture.php']['Version'],
  'parent'=>$GLOBALS['untouched_parent']??false,'child'=>$GLOBALS['untouched_child']??false,
+ 'parent_code'=>$GLOBALS['parent_code']??null,
  'template'=>get_template_directory(),'stylesheet'=>get_stylesheet_directory(),
+ 'theme_version'=>wp_get_theme()->parent()->get('Version'),
+ 'theme_template'=>wp_get_theme()->get_template_directory(),
+ 'theme_stylesheet_uri'=>wp_get_theme()->parent()->get_stylesheet_directory_uri().'/style.css',
+ 'theme_child_uri'=>wp_get_theme()->get_stylesheet_directory_uri(),
+ 'template_uri'=>get_template_directory_uri(),
+ 'located'=>locate_template('index.php'),
+ 'block_template'=>get_theme_file_path('templates/index.html'),
+ 'themes'=>array_keys(wp_get_themes()),
+ 'parent_files'=>wp_get_theme()->parent()->get_files('php',1),
+ 'pattern'=>WP_Block_Patterns_Registry::get_instance()->get_registered('mrn-base-stack/fixture'),
+ 'saved_roots'=>get_option('_site_transient_theme_roots'),
  'wp_version'=>$GLOBALS['wp_version']];
 echo json_encode($result);
 ''' % (repr(str(state / 'next.json')), repr(str(state / 'current.json'))))
             self.assertEqual('old', result['code'])
             self.assertEqual('mrn-fixture/mrn-fixture.php', result['basename'])
-            for key in ('pinned', 'activation', 'active', 'parent', 'child'):
+            for key in ('pinned', 'activation', 'active', 'child'):
                 self.assertTrue(result[key], key)
-            self.assertEqual(str(parent), result['template'])
+            if parent_selected:
+                selected_parent = state / 'releases' / fixtures.Components.parent['artifact_sha256'] / 'component/mrn-base-stack'
+                self.assertEqual('old', result['parent_code'])
+                self.assertFalse(result['parent'])
+                self.assertEqual(str(selected_parent), result['template'])
+                self.assertEqual(str(view / 'mrn-base-stack'), result['theme_template'])
+                self.assertEqual('1.0.0', result['theme_version'])
+                self.assertEqual(str(selected_parent / 'index.php'), result['located'])
+                self.assertEqual(str(selected_parent / 'templates/index.html'), result['block_template'])
+                self.assertEqual(str(view / 'mrn-base-stack/functions.php'), result['parent_files']['functions.php'])
+                self.assertIn('Old parent pattern.', result['pattern']['content'])
+                self.assertIn('/mrn-assets/', result['template_uri'])
+                self.assertTrue(result['theme_stylesheet_uri'].endswith('/mrn-base-stack/style.css'))
+                self.assertEqual('http://127.0.0.1:9876/wp-content/themes/fixture-child', result['theme_child_uri'])
+                self.assertIn('twentytwentyfive', result['themes'])
+                self.assertNotIn(str(state), json.dumps(result['saved_roots']))
+            else:
+                self.assertTrue(result['parent'])
+                self.assertEqual(str(parent), result['template'])
             self.assertEqual(str(child), result['stylesheet'])
             self.assertEqual('1.0.0', result['metadata'])
             # A stable stub leaves raw get_plugins() metadata unchanged; signed
@@ -127,12 +176,189 @@ echo json_encode($result);
             self.assertTrue(result['asset'].endswith('/assets/site.min.css'))
             self.assertEqual('7.1.2', result['wp_version'])
             self.assertEqual('new', php("echo json_encode($GLOBALS['fixture_code']);"))
+            if parent_selected:
+                fresh = php("echo json_encode([$GLOBALS['parent_code'],wp_get_theme()->parent()->get('Version'),get_template_directory_uri()]);")
+                self.assertEqual(['new', '1.1.0'], fresh[:2])
+                self.assertNotEqual(result['template_uri'], fresh[2])
             # A fresh request following a pointer rollback gets old code again.
             (state / 'rollback.json').write_bytes(old_pointer)
             os.replace(state / 'rollback.json', state / 'current.json')
             self.assertEqual('old', php("echo json_encode($GLOBALS['fixture_code']);"))
+            if parent_selected:
+                self.assertEqual(['old', '1.0.0'], php("echo json_encode([$GLOBALS['parent_code'],wp_get_theme()->parent()->get('Version')]);"))
+            if public_probe:
+                self.qualify_public(public, state, old_pointer, next_pointer)
+            guarded = php('''
+require_once ABSPATH.'wp-admin/includes/plugin.php';
+require_once ABSPATH.'wp-admin/includes/file.php';
+require_once ABSPATH.'wp-admin/includes/theme.php';
+$blocked=[];
+foreach(['uninstall'=>static function(){uninstall_plugin('mrn-fixture/mrn-fixture.php');},
+ 'delete'=>static function(){delete_plugins(['mrn-fixture/mrn-fixture.php']);}] as $key=>$attempt){
+ try{$attempt();}catch(RuntimeException $e){$blocked[]=$key;}
+}
+if(isset($GLOBALS['parent_code'])){
+ foreach(['parent-delete'=>static function(){delete_theme('mrn-base-stack');},
+ 'child-delete'=>static function(){delete_theme('fixture-child');},
+ 'switch'=>static function(){update_option('stylesheet','twentytwentyfive');}] as $key=>$attempt){
+  try{$attempt();}catch(RuntimeException $e){$blocked[]=$key;}
+ }
+}
+echo json_encode($blocked);
+''')
+            self.assertEqual(['uninstall', 'delete'] + (['parent-delete', 'child-delete', 'switch'] if parent_selected else []), guarded)
+            upgrades = php('''
+require_once ABSPATH.'wp-admin/includes/plugin.php';
+require_once ABSPATH.'wp-admin/includes/file.php';
+require_once ABSPATH.'wp-admin/includes/class-wp-upgrader.php';
+$source=ABSPATH.'wp-content/upgrade/fixture/mrn-fixture';
+wp_mkdir_p($source);
+file_put_contents($source.'/mrn-fixture.php',"<?php /* Plugin Name: Overwrite */");
+$upgrader=new WP_Upgrader(new Automatic_Upgrader_Skin());
+$upgrader->fs_connect([WP_CONTENT_DIR,WP_PLUGIN_DIR]);
+$result=$upgrader->install_package(['source'=>dirname($source),'destination'=>WP_PLUGIN_DIR,
+ 'clear_destination'=>true,'hook_extra'=>['type'=>'plugin','action'=>'install']]);
+echo json_encode(['overwrite_error'=>is_wp_error($result)?$result->get_error_code():null,
+ 'stub_intact'=>str_contains(file_get_contents(WP_PLUGIN_DIR.'/mrn-fixture/mrn-fixture.php'),'MRN_Component_Release_Runtime'),
+ 'still_active'=>is_plugin_active('mrn-fixture/mrn-fixture.php')]);
+''')
+            self.assertEqual({'overwrite_error': 'mrn_component_managed_release', 'stub_intact': True, 'still_active': True}, upgrades)
+            if parent_selected:
+                refused = php('''
+add_filter('wp_die_handler',static function(){return static function($message){throw new RuntimeException('theme-switch-blocked');};});
+$before=get_option('theme_switch_menu_locations','absent');
+try{switch_theme('twentytwentyfive');}catch(RuntimeException $e){$blocked=true;}
+echo json_encode([$blocked??false,get_option('theme_switch_menu_locations','absent')===$before,get_stylesheet()]);
+''')
+                self.assertEqual([True, True, 'fixture-child'], refused)
             php("update_option('active_plugins',[]); echo json_encode(true);")
             self.assertFalse(php("echo json_encode(isset($GLOBALS['fixture_code']));"))
+            self.assertEqual(child_before, {path.name: path.read_bytes() for path in child.iterdir()})
+            if parent_selected:
+                link = view / 'mrn-base-stack'
+                original_link = link.readlink()
+                link.unlink()
+                link.symlink_to(parent, target_is_directory=True)
+                rejected = subprocess.run(['php'], input='<?php try { require ' + repr(str(public / 'wp-load.php')) +
+                    '; echo "UNSAFE"; } catch(RuntimeException $e) { echo $e->getMessage(); }', text=True, capture_output=True, check=True)
+                self.assertIn('does not match', rejected.stdout)
+                link.unlink()
+                link.symlink_to(original_link, target_is_directory=True)
+
+    def qualify_public(self, public, state, old_pointer, next_pointer):
+        """Serve only a new temporary fixture. This is not a hosting adapter."""
+        with socket.socket() as probe:
+            probe.bind(('127.0.0.1', 0))
+            port = probe.getsockname()[1]
+        base_url = f'http://127.0.0.1:{port}'
+        config = public / 'wp-config.php'
+        config.write_text(config.read_text().replace('http://127.0.0.1:9876', base_url))
+        (state / 'browser-old.json').write_bytes(old_pointer)
+        (state / 'browser-next.json').write_bytes(next_pointer)
+        assets = {}
+        for release in (state / 'releases').iterdir():
+            for path in (release / 'assets').rglob('*'):
+                if path.is_file():
+                    relative = path.relative_to(release / 'assets')
+                    destination = public / 'wp-content' / relative
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    if destination.exists():
+                        self.assertEqual(path.read_bytes(), destination.read_bytes())
+                    else:
+                        shutil.copyfile(path, destination)
+                    assets['/wp-content/' + relative.as_posix()] = fixtures.sha(path)
+        (public / 'fixture-page.php').write_text('''<?php
+require __DIR__.'/wp-load.php';
+header('Cache-Control: no-cache');
+$entry=MRN_Component_Release_Runtime::entrypoint(WP_PLUGIN_DIR.'/mrn-fixture/mrn-fixture.php');
+$style=plugins_url('assets/site.css',$entry);
+$script=plugins_url('assets/main.js',$entry);
+$parent_style=MRN_Component_Release_Runtime::asset_url(get_template_directory_uri().'/style.css');
+$opcache=function_exists('opcache_get_status')&&opcache_get_status(false)!==false;
+?><!doctype html><html lang="en"><head><meta charset="utf-8"><title>Component fixture</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="<?php echo esc_url($parent_style); ?>">
+<link rel="stylesheet" href="<?php echo esc_url($style); ?>">
+<script type="module" src="<?php echo esc_url($script); ?>"></script>
+</head><body><main><h1 class="fixture">Component fixture</h1>
+<p id="generation" data-opcache="<?php echo $opcache?'yes':'no'; ?>"><?php echo esc_html($GLOBALS['parent_code'].'/'.$GLOBALS['fixture_code']); ?></p>
+<a href="/sample-page/">Sample page</a></main></body></html>
+''')
+        router = state / 'fixture-router.php'
+        router.write_text('''<?php
+// Test-only serving policy, never a production server configuration.
+$path=parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH);
+if(str_starts_with($path,'/wp-content/mrn-assets/')){
+ $file=realpath($_SERVER['DOCUMENT_ROOT'].$path);
+ if(!$file||!str_starts_with($file,$_SERVER['DOCUMENT_ROOT'].'/wp-content/mrn-assets/')||!is_file($file)){http_response_code(404);return true;}
+ $types=['css'=>'text/css','js'=>'text/javascript','mjs'=>'text/javascript','svg'=>'image/svg+xml'];
+ header('Content-Type: '.($types[pathinfo($file,PATHINFO_EXTENSION)]??'application/octet-stream'));
+ header('Cache-Control: public, max-age=31536000, immutable');readfile($file);return true;
+}
+if($path==='/wp-json/'){$_GET['rest_route']='/';require $_SERVER['DOCUMENT_ROOT'].'/index.php';return true;}
+if(in_array($path,['/','/sample-page/'],true)){require $_SERVER['DOCUMENT_ROOT'].'/fixture-page.php';return true;}
+return false;
+''')
+        with tempfile.TemporaryFile(mode='w+') as server_log:
+            server = subprocess.Popen(['php', '-d', 'opcache.enable_cli=1', '-d', 'opcache.validate_timestamps=0',
+                                       '-S', f'127.0.0.1:{port}', '-t', str(public), str(router)],
+                                      stdout=server_log, stderr=server_log)
+            try:
+                for _ in range(100):
+                    if server.poll() is not None:
+                        server_log.seek(0)
+                        self.fail('Fixture server failed: ' + server_log.read())
+                    try:
+                        with urllib.request.urlopen(base_url + '/', timeout=1) as response:
+                            self.assertEqual(200, response.status)
+                        break
+                    except OSError:
+                        time.sleep(0.05)
+                else:
+                    self.fail('Fixture server did not become ready')
+                for path, checksum in assets.items():
+                    with urllib.request.urlopen(base_url + path, timeout=5) as response:
+                        self.assertEqual(checksum, hashlib.sha256(response.read()).hexdigest(), path)
+                        self.assertIn('immutable', response.headers['Cache-Control'])
+                        if path.endswith('.css'):
+                            self.assertEqual('text/css', response.headers.get_content_type())
+                        elif path.endswith(('.js', '.mjs')):
+                            self.assertEqual('text/javascript', response.headers.get_content_type())
+                result = subprocess.run(['node', str(fixtures.TOOLS / 'tests/browser.mjs'),
+                                         base_url, str(public), str(state)], capture_output=True, text=True, timeout=90)
+                self.assertEqual(0, result.returncode, result.stderr + result.stdout)
+                browser_report = json.loads(result.stdout)
+                self.assertEqual(['old/old', 'old/old', 'new/new', 'new/new', 'old/old', 'old/old'], browser_report['generations'])
+                self.assertTrue(browser_report['opcache_enabled'])
+                qa_output = os.environ.get('MRN_COMPONENT_QA_OUTPUT')
+                if qa_output:
+                    report = Path(qa_output).resolve()
+                    report.parent.mkdir(parents=True, exist_ok=True)
+                    report.with_suffix('.browser.json').write_text(json.dumps(browser_report, indent=2) + '\n')
+                    engine = Path(os.environ['MRN_COMPONENT_QA_ENGINE']).resolve()
+                    project = fixtures.TOOLS.parents[1]
+                    # The engine's ordinary Stack scope invokes a broad SSH
+                    # parity audit even in site-only mode. The task boundary
+                    # skips that audit; explicit runtime flags below still run.
+                    # Deny SSH as a second boundary if engine defaults change.
+                    guard_bin = state / 'qa-guard-bin'
+                    guard_bin.mkdir()
+                    ssh_guard = guard_bin / 'ssh'
+                    ssh_guard.write_text('#!/bin/sh\necho "Fixture QA forbids SSH" >&2\nexit 89\n')
+                    ssh_guard.chmod(0o700)
+                    env = {**os.environ, 'MRN_QA_SAMPLE_PATH': '/sample-page/', 'MRN_QA_PHPSTAN_STRICT': '1',
+                           'MRN_QA_COMMIT_GATE': '1', 'PATH': str(guard_bin) + os.pathsep + os.environ['PATH']}
+                    with report.with_suffix('.log').open('w') as log:
+                        result = subprocess.run([str(engine), 'run', '--project-root', str(project), '--stack-root', str(project),
+                            '--site-path', str(public), '--site-url', base_url, '--scope', 'site-only',
+                            '--run-smoke', 'always', '--run-accessibility', 'always', '--run-performance', 'always',
+                            '--run-api', 'always', '--run-cwv', 'always', '--run-phpcbf', 'never',
+                            '--smoke-strict', '1', '--output-file', str(report)], env=env, stdout=log, stderr=log, timeout=600)
+                    self.assertEqual(0, result.returncode, report.with_suffix('.log').read_text()[-8000:])
+            finally:
+                server.terminate()
+                server.wait(timeout=10)
 
 
 if __name__ == '__main__':

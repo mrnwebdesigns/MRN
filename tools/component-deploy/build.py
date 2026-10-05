@@ -96,6 +96,14 @@ def build(repo, commit, source, slug, kind, entrypoint, output):
         manifest_path = generated / 'mrn-assets.json'
         manifest = json.loads(manifest_path.read_text())
         manifest.update(scope=kind)
+        if kind == 'parent-theme':
+            # WP_Theme appends the stylesheet slug to theme_root_uri itself.
+            # Keep that native convention without a mutable public alias.
+            old_public = built / 'assets' / manifest['public_path']
+            manifest['public_path'] = f"mrn-assets/{manifest['generation']}/{slug}"
+            new_public = built / 'assets' / manifest['public_path']
+            new_public.parent.mkdir(parents=True, exist_ok=True)
+            old_public.rename(new_public)
         manifest_path.write_text(json.dumps(manifest, indent=2) + '\n')
         files = {}
         for directory, prefix in ((generated, f'component/{slug}'), (built / 'assets', 'assets')):

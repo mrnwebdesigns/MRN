@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "status": "disposable_runtime_qualified_not_fleet_ready",
+  "date": "2026-10-05",
+  "base_source": "7bb2c025e9399edf64e25d63d15017ff5e98f93b",
+  "component_tests": 19,
+  "wordpress": "7.1.2",
+  "sqlite_integration": "3.0.2",
+  "chromium_toolchain": "playwright 1.60.0",
+  "scope": "new temporary single-site WordPress, physical child, parent and plugin fixture components",
+  "default_stack_runtime_changed": false,
+  "sites_modified": [],
+  "read_only_scope_exception": "Initial MRN QA invocation unexpectedly ran development-site SSH parity. The audit only reads versions, owners and permissions; no site files, settings or database were changed. The isolated rerun disables parity via the task gate and blocks SSH.",
+  "public_checks": [
+    "asset SHA-256 and MIME",
+    "literal and dynamic module imports",
+    "computed CSS changes",
+    "18 actual browser cache responses",
+    "fresh and returning visitors",
+    "retained old HTML",
+    "pointer rollback",
+    "OPcache enabled with timestamp validation disabled"
+  ],
+  "qa": {
+    "source": "pass",
+    "rest_index": "pass",
+    "browser": "pass",
+    "accessibility": "pass on fixture page",
+    "performance": "pass on fixture page",
+    "cwv": "pass; sample-page INP not measured",
+    "fleet_parity": "intentionally excluded from isolated rerun",
+    "provider_edge": "not run",
+    "actual_component_consumers": "not qualified by synthetic fixtures"
+  },
+  "remaining": [
+    "signed MainWP backup-gated adoption and complete-cohort activation/rollback",
+    "authoritative plugin inventory and controlled unadoption",
+    "independently adopted child-loader and actual parent/plugin consumer qualification",
+    "provider-scoped HTML refresh and public acceptance",
+    "release-lock/package integration and hosted parity"
+  ],
+  "retirement_candidate_preserved": "2026.10.05-stack-retirement-r1",
+  "tested_files": {
+    "tools/component-deploy/runtime.php": "502afcb69c497b506b8f9234291ec0a6ca285b666bafa9779c1047e54ccf0e1d",
+    "tools/component-deploy/build.py": "adc02b6f5e99dc7345559563432c763c96c6c62b97200e38e4854c7d4a8815ee",
+    "tools/component-deploy/verify.py": "3bc8c795832d42f39350fe9db96b14696f56e27201627c9f17b65d91e0206579",
+    "tools/component-deploy/tests/browser.mjs": "f8afb78a027c7ff72f1cb36c38065e23771caec7038f02e4846a6134c4b5151b"
+  }
+}

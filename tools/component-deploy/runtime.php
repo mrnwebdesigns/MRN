@@ -1,6 +1,6 @@
 <?php
 /**
- * Read-only, early plugin selection for an isolated MRN release candidate.
+ * Read-only, early component selection for an isolated MRN release candidate.
  *
  * No network, database writes, activation or site discovery. One physical code
  * path and its asset manifest are captured before WordPress loads components.
@@ -16,6 +16,10 @@ final class MRN_Component_Release_Runtime {
 	private static $components = array();
 	/** @var bool Whether selection has already occurred. */
 	private static $booted = false;
+	/** @var array Request-scoped parent/child discovery view, when selected. */
+	private static $theme = array();
+	/** @var bool Recursion guard for reading the native transient. */
+	private static $reading_theme_roots = false;
 
 	/**
 	 * Read a small deployment-owned JSON artifact.
@@ -82,29 +86,25 @@ final class MRN_Component_Release_Runtime {
 				|| ( 'parent-theme' === $kind && ( 'mrn-base-stack' !== $slug || 'functions.php' !== $entrypoint ) ) ) {
 				throw new RuntimeException( 'Selected code does not match the component contract.' );
 			}
-			// WP_Theme discovers parent files without the template_directory
-			// filter. Accepting a parent here would mix public and pinned trees.
-			// Packaging a parent is supported; activating it is not qualified.
-			if ( 'parent-theme' === $kind ) {
-				throw new RuntimeException( 'Parent theme adoption requires qualified WordPress theme discovery.' );
-			}
 			$manifest_path = $directory . '/mrn-assets.json';
 			$manifest      = self::read_json( $manifest_path );
+			$generation    = $manifest['generation'] ?? '';
+			$public_path   = is_string( $generation ) ? ( 'parent-theme' === $kind ? 'mrn-assets/' . $generation . '/' . $slug : 'mrn-assets/' . $slug . '/' . $generation ) : '';
 			if ( ! hash_equals( $checksum, hash_file( 'sha256', $manifest_path ) )
 				|| ( $manifest['slug'] ?? null ) !== $slug || ( $manifest['scope'] ?? null ) !== $kind
 				|| ! is_string( $manifest['generation'] ?? null )
 				|| ! preg_match( '/^[a-f0-9]{64}$/D', $manifest['generation'] )
-				|| ( $manifest['public_path'] ?? null ) !== 'mrn-assets/' . $slug . '/' . $manifest['generation']
+				|| ( $manifest['public_path'] ?? null ) !== $public_path
 				|| ! is_array( $manifest['assets'] ?? null ) || ! is_array( $manifest['static_files'] ?? null ) ) {
 				throw new RuntimeException( 'Selected asset manifest does not match the code generation.' );
 			}
-			$public = WP_PLUGIN_DIR . '/' . $slug;
+			$public = ( 'parent-theme' === $kind ? WP_CONTENT_DIR . '/themes' : WP_PLUGIN_DIR ) . '/' . $slug;
 			if ( realpath( $public ) !== $public || ! is_dir( $public ) ) {
 				throw new RuntimeException( 'Adopted component public identity is unavailable or aliased.' );
 			}
 			// Capture unfiltered public roots before installing URL hooks. Calling
 			// plugins_url() from its own filter would recurse indefinitely.
-			$legacy_url = plugins_url( '', $public . '/' . $entrypoint );
+			$legacy_url = 'parent-theme' === $kind ? content_url( '/themes/' . $slug ) : plugins_url( '', $public . '/' . $entrypoint );
 			$components[ $slug ] = array(
 				'kind' => $kind, 'directory' => $directory, 'public' => $public,
 				'entrypoint' => $entrypoint, 'manifest' => $manifest,
@@ -112,8 +112,13 @@ final class MRN_Component_Release_Runtime {
 				'legacy_url' => $legacy_url,
 			);
 		}
+		$theme = array();
+		if ( isset( $components['mrn-base-stack'] ) ) {
+			$theme = self::validate_theme_view( $root, $selection, $components['mrn-base-stack'] );
+		}
 		// Install hooks only after the complete selection validates.
 		self::$components = $components;
+		self::$theme      = $theme;
 		self::$booted     = true;
 		foreach ( $components as $component ) {
 			if ( 'standard-plugin' === $component['kind'] ) {
@@ -127,7 +132,238 @@ final class MRN_Component_Release_Runtime {
 		add_filter( 'style_loader_src', array( __CLASS__, 'asset_url' ), PHP_INT_MAX );
 		add_filter( 'script_loader_src', array( __CLASS__, 'asset_url' ), PHP_INT_MAX );
 		add_filter( 'all_plugins', array( __CLASS__, 'plugin_metadata' ) );
-		add_filter( 'upgrader_pre_install', array( __CLASS__, 'guard_update' ), PHP_INT_MAX, 2 );
+		add_filter( 'upgrader_pre_install', array( __CLASS__, 'guard_update' ), -PHP_INT_MAX, 2 );
+		add_filter( 'upgrader_source_selection', array( __CLASS__, 'guard_install_source' ), PHP_INT_MAX, 4 );
+		// Core has actions (not short-circuit filters) before uninstall/delete.
+		// Throw before it can run uninstall callbacks or remove the stable stub.
+		add_action( 'pre_uninstall_plugin', array( __CLASS__, 'guard_plugin_removal' ), -PHP_INT_MAX );
+		add_action( 'delete_plugin', array( __CLASS__, 'guard_plugin_removal' ), -PHP_INT_MAX );
+		if ( $theme ) {
+			register_theme_directory( WP_CONTENT_DIR . '/themes' );
+			register_theme_directory( $theme['root'] );
+			add_filter( 'pre_option_template_root', array( __CLASS__, 'theme_root' ), PHP_INT_MAX );
+			add_filter( 'pre_option_stylesheet_root', array( __CLASS__, 'theme_root' ), PHP_INT_MAX );
+			add_filter( 'pre_site_transient_theme_roots', array( __CLASS__, 'theme_roots' ), PHP_INT_MAX );
+			add_filter( 'pre_set_site_transient_theme_roots', array( __CLASS__, 'persist_theme_roots' ), PHP_INT_MAX );
+			add_filter( 'wp_cache_themes_persistently', array( __CLASS__, 'theme_cache_policy' ), PHP_INT_MAX, 2 );
+			add_filter( 'theme_root_uri', array( __CLASS__, 'theme_root_uri' ), PHP_INT_MAX, 3 );
+			add_filter( 'template_directory', array( __CLASS__, 'template_directory' ), PHP_INT_MAX );
+			add_filter( 'stylesheet_directory', array( __CLASS__, 'stylesheet_directory' ), PHP_INT_MAX );
+			add_action( 'delete_theme', array( __CLASS__, 'guard_theme_removal' ), -PHP_INT_MAX );
+			add_filter( 'validate_theme_requirements', array( __CLASS__, 'guard_theme_switch' ), PHP_INT_MAX, 2 );
+			add_filter( 'pre_update_option_template', array( __CLASS__, 'guard_theme_option' ), -PHP_INT_MAX, 3 );
+			add_filter( 'pre_update_option_stylesheet', array( __CLASS__, 'guard_theme_option' ), -PHP_INT_MAX, 3 );
+			add_filter( 'pre_update_option_template_root', array( __CLASS__, 'guard_theme_option' ), -PHP_INT_MAX, 3 );
+			add_filter( 'pre_update_option_stylesheet_root', array( __CLASS__, 'guard_theme_option' ), -PHP_INT_MAX, 3 );
+		}
+	}
+
+	/**
+	 * Validate a deployment-owned immutable view before registering any hooks.
+	 * Only two explicit directory links are permitted. Core WP_Theme discovers
+	 * a parent in the child's root without using template_directory filters.
+	 * Both must therefore be in this same immutable discovery view.
+	 *
+	 * @param string $root Private state root.
+	 * @param array  $selection Captured pointer.
+	 * @param array  $parent Selected parent.
+	 * @return array
+	 */
+	private static function validate_theme_view( $root, $selection, $parent ) {
+		$id = $selection['theme_view'] ?? '';
+		if ( ! is_string( $id ) || ! preg_match( '/^[a-f0-9]{64}$/D', $id ) ) {
+			throw new RuntimeException( 'Parent theme adoption requires an immutable discovery view.' );
+		}
+		$base       = $root . '/theme-views/' . $id;
+		$descriptor = self::read_json( $base . '/view.json' );
+		$child      = $descriptor['child_stylesheet'] ?? '';
+		$view       = $base . '/themes';
+		$public     = WP_CONTENT_DIR . '/themes';
+		if ( ! hash_equals( $id, hash_file( 'sha256', $base . '/view.json' ) )
+			|| ( $descriptor['parent_artifact_sha256'] ?? '' ) !== $parent['artifact_sha256']
+			|| ! is_string( $child ) || ! preg_match( '/^[a-zA-Z0-9_-]+$/D', $child ) || 'mrn-base-stack' === $child
+			|| realpath( $view ) !== $view || realpath( $public . '/' . $child ) !== $public . '/' . $child
+			|| ! is_file( $public . '/' . $child . '/style.css' )
+			|| ! is_link( $view . '/mrn-base-stack' ) || realpath( $view . '/mrn-base-stack' ) !== $parent['directory']
+			|| ! is_link( $view . '/' . $child ) || realpath( $view . '/' . $child ) !== $public . '/' . $child
+			|| is_multisite() || get_option( 'template' ) !== 'mrn-base-stack' || get_option( 'stylesheet' ) !== $child ) {
+			throw new RuntimeException( 'Parent theme discovery view does not match this single-site parent/child pair.' );
+		}
+		$entries = array_values( array_diff( scandir( $view ), array( '.', '..' ) ) );
+		sort( $entries );
+		$expected = array( 'mrn-base-stack', $child );
+		sort( $expected );
+		if ( $entries !== $expected || array_diff( (array) ( $GLOBALS['wp_theme_directories'] ?? array() ), array( $public ) ) ) {
+			throw new RuntimeException( 'Additional theme roots require a qualified adapter.' );
+		}
+		$header = get_file_data( $public . '/' . $child . '/style.css', array( 'Template' => 'Template' ) );
+		if ( 'mrn-base-stack' !== $header['Template'] ) {
+			throw new RuntimeException( 'Child theme header differs from the selected parent.' );
+		}
+		return array( 'root' => $view, 'child' => $child, 'child_directory' => $public . '/' . $child );
+	}
+
+	/** @return string Request-pinned native discovery root. */
+	public static function theme_root() {
+		return self::$theme['root'];
+	}
+
+	/**
+	 * Preserve unrelated roots while overlaying the selected pair per request.
+	 *
+	 * @param mixed $roots A previous short circuit.
+	 * @return array
+	 */
+	public static function theme_roots( $roots ) {
+		if ( self::$reading_theme_roots ) {
+			return $roots;
+		}
+		if ( ! is_array( $roots ) ) {
+			self::$reading_theme_roots = true;
+			try {
+				$roots = get_site_transient( 'theme_roots' );
+			} finally {
+				self::$reading_theme_roots = false;
+			}
+		}
+		$roots = is_array( $roots ) ? $roots : array();
+		$roots['mrn-base-stack']     = self::$theme['root'];
+		$roots[ self::$theme['child'] ] = self::$theme['root'];
+		return $roots;
+	}
+
+	/**
+	 * Preserve native directory scans so unrelated installed themes stay visible.
+	 * WP_Theme caches are already isolated by the immutable view path.
+	 *
+	 * @param mixed  $policy Existing cache policy.
+	 * @param string $context WordPress cache consumer.
+	 * @return mixed
+	 */
+	public static function theme_cache_policy( $policy, $context ) {
+		return 'search_theme_directories' === $context ? false : $policy;
+	}
+
+	/**
+	 * Never persist a request's private view into the shared theme-root cache.
+	 *
+	 * @param array $roots Core's refreshed discovery cache.
+	 * @return array
+	 */
+	public static function persist_theme_roots( $roots ) {
+		$roots['mrn-base-stack']        = '/themes';
+		$roots[ self::$theme['child'] ] = '/themes';
+		return $roots;
+	}
+
+	/**
+	 * Match WP_Theme's native root/slug URL composition without leaking paths.
+	 *
+	 * @param string $uri Original URI.
+	 * @param string $siteurl WordPress site URL (unused).
+	 * @param string $slug Theme identity.
+	 * @return string
+	 */
+	public static function theme_root_uri( $uri, $siteurl, $slug ) {
+		if ( 'mrn-base-stack' === $slug ) {
+			return content_url( '/mrn-assets/' . self::$components[ $slug ]['manifest']['generation'] );
+		}
+		return self::$theme['child'] === $slug ? content_url( '/themes' ) : $uri;
+	}
+
+	/** @return string Physical immutable parent code, including relative requires. */
+	public static function template_directory() {
+		return self::$components['mrn-base-stack']['directory'];
+	}
+
+	/** @return string Unmodified physical child directory. */
+	public static function stylesheet_directory() {
+		return self::$theme['child_directory'];
+	}
+
+	/**
+	 * Refuse changing the qualified pair or persisting a private root.
+	 *
+	 * @param mixed  $value Requested option.
+	 * @param mixed  $old_value Previous option.
+	 * @param string $option Option identity.
+	 * @return mixed
+	 */
+	public static function guard_theme_option( $value, $old_value, $option ) {
+		$expected = 'template' === $option ? 'mrn-base-stack' : self::$theme['child'];
+		if ( in_array( $option, array( 'template_root', 'stylesheet_root' ), true ) ) {
+			return $old_value;
+		}
+		if ( $value !== $expected ) {
+			throw new RuntimeException( 'Changing the managed parent/child pair requires its qualified release workflow.' );
+		}
+		return $value;
+	}
+
+	/**
+	 * Block core removal before uninstall callbacks or filesystem mutation.
+	 *
+	 * @param string $plugin Plugin identity.
+	 * @return void
+	 */
+	public static function guard_plugin_removal( $plugin ) {
+		foreach ( self::$components as $slug => $component ) {
+			if ( 'standard-plugin' === $component['kind'] && dirname( $plugin ) === $slug ) {
+				throw new RuntimeException( 'Removing a managed plugin requires its qualified release workflow.' );
+			}
+		}
+	}
+
+	/**
+	 * Protect the selected pair, including the child link within its view.
+	 *
+	 * @param string $slug Theme identity.
+	 * @return void
+	 */
+	public static function guard_theme_removal( $slug ) {
+		if ( in_array( $slug, array( 'mrn-base-stack', self::$theme['child'] ), true ) ) {
+			throw new RuntimeException( 'Removing a managed theme requires its qualified release workflow.' );
+		}
+	}
+
+	/**
+	 * Stop core theme switching before widget/menu options can be migrated.
+	 *
+	 * @param mixed  $result Prior validation.
+	 * @param string $slug Requested theme.
+	 * @return mixed
+	 */
+	public static function guard_theme_switch( $result, $slug ) {
+		return self::$theme['child'] === $slug ? $result : new WP_Error( 'mrn_component_managed_release', 'Changing the managed theme requires its qualified release workflow.' );
+	}
+
+	/**
+	 * An uploaded overwrite ZIP has no plugin/theme identity in pre_install.
+	 * Core derives its final destination from the selected source basename.
+	 * Refuse that destination before core moves the existing tree to backup.
+	 *
+	 * @param mixed  $source Selected unpacked source or error.
+	 * @param string $remote_source Original unpacked root (unused).
+	 * @param object $upgrader Core upgrader (unused).
+	 * @param array  $extra Core operation identity.
+	 * @return mixed
+	 */
+	public static function guard_install_source( $source, $remote_source, $upgrader, $extra ) {
+		if ( ! is_string( $source ) ) {
+			return $source;
+		}
+		$slug = basename( rtrim( $source, '/\\' ) );
+		if ( isset( self::$components[ $slug ] ) ) {
+			$kind = self::$components[ $slug ]['kind'];
+			if ( ( 'standard-plugin' === $kind && ( $extra['type'] ?? '' ) === 'plugin' )
+				|| ( 'parent-theme' === $kind && ( $extra['type'] ?? '' ) === 'theme' ) ) {
+				return new WP_Error( 'mrn_component_managed_release', 'Overwriting a managed component requires its qualified release workflow.' );
+			}
+		}
+		if ( self::$theme && $slug === self::$theme['child'] && ( $extra['type'] ?? '' ) === 'theme' ) {
+			return new WP_Error( 'mrn_component_managed_release', 'The child theme requires its separate qualified release workflow.' );
+		}
+		return $source;
 	}
 
 	/**
@@ -169,6 +405,9 @@ final class MRN_Component_Release_Runtime {
 	 * @return mixed
 	 */
 	public static function guard_update( $response, $extra ) {
+		if ( self::$theme && ( $extra['theme'] ?? '' ) === self::$theme['child'] ) {
+			return new WP_Error( 'mrn_component_managed_release', 'The child theme requires its separate qualified release workflow.' );
+		}
 		foreach ( self::$components as $slug => $component ) {
 			if ( ( 'standard-plugin' === $component['kind'] && ( $extra['plugin'] ?? '' ) === $slug . '/' . $component['entrypoint'] )
 				|| ( 'parent-theme' === $component['kind'] && ( $extra['theme'] ?? '' ) === $slug ) ) {
