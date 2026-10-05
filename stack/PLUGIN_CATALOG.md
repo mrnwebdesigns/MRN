@@ -36,7 +36,7 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 
 | Slug | Version | Current distribution | Target tier | Responsibility |
 | --- | ---: | --- | --- | --- |
-| `background-video-popout-disabler` | 1.0.2 | Standard bootstrap; checksum-locked one-site release | Optional shared | Front-end helper for stack-profile background-video markup; suppresses browser picture-in-picture/pop-out controls on likely background videos. |
+| `background-video-popout-disabler` | 1.0.2 | Catalog-only; checksum-locked one-site release retained | Optional shared | Optional front-end helper that suppresses browser picture-in-picture/pop-out controls on likely background videos. Excluded from new-site bootstrap; existing installations are unchanged. |
 | `mrn-ai-assist` | 2.0.14 | Standard bootstrap | Optional shared | Queued AI-assisted content, SEO, and media-alt workflows. |
 | `mrn-announcements` | 1.8.2 | Standard bootstrap; checksum-locked one-site release | Optional shared | Scheduled and targeted announcement bars and modals. |
 | `mrn-editor-tools` | 1.8.25 | Standard bootstrap | Optional shared | Classic Editor, TinyMCE, and ACF WYSIWYG enhancements. |

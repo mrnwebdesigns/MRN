@@ -1,5 +1,9 @@
 # Stack Changelog
 
+## Unreleased bootstrap changes
+
+- Exclude Background Video Pop-Out Disabler from every new-site bootstrap profile. Keep its supported source and checksum-locked optional package for deliberate per-site use. The Stack profile now selects 33 standard plugins; the plain profile remains at 32. No existing-site uninstall or hosted bootstrap deployment is performed.
+
 ## 2026.10.05-stack-recovery-r1 (candidate)
 
 - Deployment Agent 0.2.6 verifies all pre-change snapshots before live directory moves, serializes deployment writers, and persists recovery intent. Interrupted apply/rollback can recover through the existing authenticated, backup-gated rollback operation.

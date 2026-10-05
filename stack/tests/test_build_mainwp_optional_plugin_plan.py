@@ -406,7 +406,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
         # Catalog source versions and qualified distribution versions may differ.
         # CAPTCHA 0.2.0 is preserved source; the qualified package remains 0.1.4.
         expected = {
-            "background-video-popout-disabler": ("1.0.2", "1.0.2", "standard-bootstrap"),
+            "background-video-popout-disabler": ("1.0.2", "1.0.2", "catalog-only"),
             "mrn-acf-character-count": ("1.1.9", "1.1.9", "catalog-only"),
             "mrn-announcements": ("1.8.2", "1.8.2", "standard-bootstrap"),
             "mrn-fontawesome-profile-manager": ("0.5.1", "0.5.1", "standard-bootstrap"),

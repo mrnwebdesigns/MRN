@@ -40,6 +40,7 @@ Config Helper 0.1.71 removes SendGrid sender synchronization and its settings ca
 | D20 | Use the shared Updraft retention, isolation and pre-write backup policy. |
 | D21 | Keep content-only CPTs useful: category/tag filtering, downloads, links and tokens must work. |
 | D22 | Build one conversational MRN operations tool around WordPress, the Stack and MainWP. |
+| D23 | Exclude Background Video Pop-Out Disabler from normal bootstrap; retain it as an optional, supported plugin. |
 
 ## Execution order
 

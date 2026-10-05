@@ -26,7 +26,6 @@
   - `mrn-updraft-backup-policy-loader` `0.6.1`
   - `mrn-updraft-local-retention` `0.6.1`
 - Standard plugins:
-  - `background-video-popout-disabler` `1.0.2`
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-announcements` `1.8.2`
   - `mrn-comment-management` `1.3.0`
@@ -45,6 +44,9 @@
 
 - Profile-gated standard plugins:
   - `mrn-reusable-block-library` `0.2.0` (`MRN_SITE_PROFILE=stack`)
+
+- Catalog-only optional plugins:
+  - `background-video-popout-disabler` `1.0.2` (excluded from bootstrap; source and qualified optional package retained)
 
 ## Stack Manifests
 - Plugins manifest: [`manifests/plugins.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/plugins.txt)
