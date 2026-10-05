@@ -390,7 +390,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             self.assertEqual(expected[slug]["commit"], release["source"]["git_commit"])
             self.assertEqual(expected[slug]["main_file"], release["package"]["main_file"])
 
-    def test_non_platform_bootstrap_plugins_have_independent_upgrade_releases(self):
+    def test_non_platform_plugins_preserve_upgrade_releases_and_retirement_policy(self):
         stack = Path(__file__).parents[1]
         catalog = json.loads(
             (stack / "manifests/component-catalog.json").read_text(encoding="utf-8")
@@ -403,29 +403,32 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
         manifest = (stack / "manifests/plugins.txt").read_text(encoding="utf-8")
         catalog_by_slug = {item["slug"]: item for item in catalog["components"]}
         release_by_slug = {item["slug"]: item for item in releases["releases"]}
+        # Catalog source versions and qualified distribution versions may differ.
+        # CAPTCHA 0.2.0 is preserved source; the qualified package remains 0.1.4.
         expected = {
-            "background-video-popout-disabler": "1.0.2",
-            "mrn-acf-character-count": "1.1.9",
-            "mrn-announcements": "1.8.2",
-            "mrn-fontawesome-profile-manager": "0.5.1",
-            "mrn-recaptcha-enterprise-manager": "0.1.2",
-            "mrn-reusable-block-library": "0.2.0",
-            "mrn-seo-helper": "0.5.0",
+            "background-video-popout-disabler": ("1.0.2", "1.0.2", "standard-bootstrap"),
+            "mrn-acf-character-count": ("1.1.9", "1.1.9", "catalog-only"),
+            "mrn-announcements": ("1.8.2", "1.8.2", "standard-bootstrap"),
+            "mrn-fontawesome-profile-manager": ("0.5.1", "0.5.1", "standard-bootstrap"),
+            "mrn-recaptcha-enterprise-manager": ("0.2.0", "0.1.4", "standard-bootstrap"),
+            "mrn-reusable-block-library": ("0.2.0", "0.2.0", "standard-bootstrap"),
+            "mrn-seo-helper": ("0.5.0", "0.5.0", "catalog-only"),
         }
 
-        for slug, version in expected.items():
-            entry = catalog_by_slug[slug]
-            release = release_by_slug[slug]
-            self.assertEqual(version, entry["version"])
-            self.assertEqual(version, release["version"])
-            self.assertEqual("standard-bootstrap", entry["current_distribution"])
-            self.assertEqual("standard-bootstrap", release["current_distribution"])
-            self.assertNotEqual("platform-required", entry["target_tier"])
-            self.assertEqual(entry["target_tier"], release["target_tier"])
-            self.assertEqual("upgrade-only", release["update_policy"]["mode"])
-            self.assertIn(f"{slug}.zip", manifest)
-            self.assertRegex(release["source"]["git_commit"], r"^[a-f0-9]{40}$")
-            self.assertRegex(release["package"]["sha256"], r"^[a-f0-9]{64}$")
+        for slug, (source_version, package_version, distribution) in expected.items():
+            with self.subTest(slug=slug):
+                entry = catalog_by_slug[slug]
+                release = release_by_slug[slug]
+                self.assertEqual(source_version, entry["version"])
+                self.assertEqual(package_version, release["version"])
+                self.assertEqual(distribution, entry["current_distribution"])
+                self.assertEqual(distribution, release["current_distribution"])
+                self.assertNotEqual("platform-required", entry["target_tier"])
+                self.assertEqual(entry["target_tier"], release["target_tier"])
+                self.assertEqual("upgrade-only", release["update_policy"]["mode"])
+                self.assertEqual(distribution == "standard-bootstrap", f"{slug}.zip" in manifest)
+                self.assertRegex(release["source"]["git_commit"], r"^[a-f0-9]{40}$")
+                self.assertRegex(release["package"]["sha256"], r"^[a-f0-9]{64}$")
 
         reusable_release = release_by_slug["mrn-reusable-block-library"]
         self.assertEqual(

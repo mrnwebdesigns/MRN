@@ -261,6 +261,7 @@ class PlatformComponentPolicyTests(unittest.TestCase):
         )
 
         self.assertEqual("integration-adapter", entry["classification"])
+        self.assertEqual("retired", entry["lifecycle"])
         self.assertEqual("catalog-only", entry["current_distribution"])
         self.assertEqual("optional-integration", entry["target_tier"])
         self.assertNotIn("mrn-sendgrid-provisioning.zip", manifest)

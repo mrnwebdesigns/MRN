@@ -1,4 +1,6 @@
 from pathlib import Path
+import os
+import subprocess
 import unittest
 
 
@@ -33,18 +35,43 @@ class SiteBootstrapContractTests(unittest.TestCase):
         self.assertIn("bootstrap_wpforms_recaptcha", self.bootstrap)
         self.assertIn('array("unchanged", "reused", "created")', self.bootstrap)
 
-    def test_sendgrid_installation_and_provisioning_are_opt_in(self):
+    def test_sendgrid_is_absent_even_with_old_opt_in_environment(self):
         manifest = (ROOT / "manifests/plugins.txt").read_text(encoding="utf-8")
-
         self.assertNotIn("mrn-sendgrid-provisioning.zip", manifest)
-        self.assertIn(
-            'AUTO_PROVISION_SENDGRID="${STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION:-0}"',
-            self.bootstrap,
-        )
-        self.assertIn(
-            'bootstrap_flag_enabled "${AUTO_PROVISION_SENDGRID}" && [[ -n "${SENDGRID_MANAGEMENT_API_KEY}" ]]',
-            self.bootstrap,
-        )
+        self.assertNotIn("sendgrid", self.bootstrap.lower())
+        defaults = self.bootstrap.split("apply_wp_defaults() {", 1)[1].split(
+            "reconcile_development_environment_policy() {", 1
+        )[0]
+        services = self.bootstrap.split("provision_external_services() {", 1)[1].split(
+            "ensure_updraft_local_retention_schedule() {", 1
+        )[0]
+        # Execute the actual functions with a WP recorder, never a site or provider.
+        fixture = """
+set -eu
+run_wp() { printf 'WP %s\\n' "$*"; }
+run_wp_config_set_quiet() { printf 'CONFIG %s\\n' "$*"; }
+add_warning() { printf 'WARNING %s\\n' "$*"; }
+bootstrap_flag_enabled() { test "$1" = 1; }
+SITE_PROFILE=stack
+AUTO_PROVISION_UPTIME_ROBOT=0
+RECAPTCHA_ENTERPRISE_PROJECT_ID=''
+RECAPTCHA_ENTERPRISE_SERVICE_ACCOUNT_EMAIL=''
+RECAPTCHA_ENTERPRISE_PRIVATE_KEY=''
+RECAPTCHA_ENTERPRISE_ALLOWED_DOMAINS=''
+RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE=''
+"""
+        fixture += "apply_wp_defaults() {" + defaults
+        fixture += "provision_external_services() {" + services
+        fixture += "apply_wp_defaults\nprovision_external_services\n"
+        environment = os.environ.copy()
+        environment["STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION"] = "1"
+        environment["MRN_SENDGRID_MANAGEMENT_API_KEY"] = "retired-provider-fixture"
+        result = subprocess.run(["bash", "--noprofile", "--norc"], input=fixture,
+                                text=True, capture_output=True, env=environment, check=True)
+        self.assertNotIn("sendgrid", result.stdout.lower())
+        self.assertNotIn("retired-provider-fixture", result.stdout)
+        self.assertIn("WP option update blog_public 0", result.stdout)
+        self.assertIn("UptimeRobot provisioning deferred", result.stdout)
 
     def test_bootstrap_invokes_importer_in_strict_mode(self):
         self.assertIn("STACK_IMPORTER_STRICT=1", self.bootstrap)

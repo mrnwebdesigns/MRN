@@ -1,0 +1,63 @@
+{
+  "existing_sites_contacted": false,
+  "capabilities": [
+    {
+      "slug": "mrn-seo-helper",
+      "commit": "056a2071781af613e73beed288e2e183af4647d7",
+      "sha256_verified": true,
+      "bundle_clone_tree_verified": true,
+      "zip_crc_verified": true
+    },
+    {
+      "slug": "mrn-acf-character-count",
+      "commit": "0e9c4bb9a0a81d882b7f3b8e787d8bbd524b1a33",
+      "sha256_verified": true,
+      "bundle_clone_tree_verified": true,
+      "zip_crc_verified": true
+    },
+    {
+      "slug": "mrn-ai-assist",
+      "commit": "95df9e85ee7d154a7e477fec5be4f41ad8dea361",
+      "sha256_verified": true,
+      "bundle_clone_tree_verified": true,
+      "zip_crc_verified": true
+    },
+    {
+      "slug": "mrn-editor-tools",
+      "commit": "8e3b6cdbe2d47039faafa6c814b810d731f7dbb5",
+      "sha256_verified": true,
+      "bundle_clone_tree_verified": true,
+      "zip_crc_verified": true
+    },
+    {
+      "slug": "mrn-cookie-consent",
+      "commit": "e3e1737f1db325f3076025c341af55a1cd7318bc",
+      "sha256_verified": true,
+      "bundle_clone_tree_verified": true,
+      "zip_crc_verified": true
+    },
+    {
+      "slug": "mrn-gtm-injector",
+      "commit": "1c8908013fa0b35581409c13502f9a98894a96a0",
+      "sha256_verified": true,
+      "bundle_clone_tree_verified": true,
+      "zip_crc_verified": true
+    },
+    {
+      "slug": "mrn-sendgrid-provisioning",
+      "commit": "7465010230c23c1d901ba382b88be36e93dc0022",
+      "sha256_verified": true,
+      "bundle_clone_tree_verified": true,
+      "zip_crc_verified": true
+    }
+  ],
+  "retired_surfaces": [
+    {
+      "name": "SEO & Schema editor panel",
+      "commit": "89d1999381c2b94cad005835f133651a46f8eda2",
+      "bundle_clone_tree_verified": true,
+      "bundle_sha256": "37f6fb51c78f937ebdc48a8a2fce0c3f73dab95e134fe5564732a1275fd2ce16",
+      "archive_sha256": "2014e2a703e2da6e530ec357228c18df39fe4c550ae5f732bc116e289a0644dc"
+    }
+  ]
+}

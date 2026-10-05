@@ -6,9 +6,13 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.60`
+- Current version: `0.1.71`
 - Source path:
   - `/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper`
+
+## SendGrid retirement
+
+Version 0.1.71 removes the SendGrid settings card and sender-sync call. The generic sender identity helpers and saved settings remain. Mail transport is configured separately through its own plugin. Source recovery is documented in [Restoring retired capabilities](../RESTORING-RETIRED-CAPABILITIES.md). This release changes no existing site or provider resources during Stack cleanup.
 
 ## Purpose
 
@@ -57,7 +61,7 @@
   - entity-aware mode creation for supported renderable items
   - field selection and ordering for mode output
   - a public saved-mode registry used by `Content`
-- SendGrid Subuser provisioning, the site sending key, and domain authentication moved to the independent `mrn-sendgrid-provisioning` plugin (`Settings -> SendGrid Provisioning`); the Integrations tab here now only links out to it. Config Helper still exposes `mrn_config_helper_get_site_sender_name()`/`_email()` for that plugin to sync sender identity into FluentSMTP.
+- The SendGrid settings card and sender-sync hook are retired. Config Helper retains `mrn_config_helper_get_site_sender_name()`/`_email()` as generic helpers; saving identity settings does not invoke the preserved connector or promise mail-plugin synchronization.
 - External APIs currently includes:
   - UptimeRobot API key storage fallback
   - a nonce-protected admin connection test against UptimeRobot's `getMonitors` API
@@ -173,7 +177,7 @@
 
 - `mrn-base-stack` and its theme helpers consume Config Helper through the public wrapper APIs for social links, hidden CPTs, display modes and styles, builder allowlists, breadcrumb settings, and ACF layout-picker metadata.
 - `mrn-disable-comments`, `mrn-editor-lockdown`, `mrn-reusable-block-library`, and `mrn-fontawesome-profile-manager` are supported downstream integrations that should keep using the public wrappers, hooks, and contracts instead of private implementation details.
-- `stack/scripts/site-bootstrap.sh` is a required launch-time consumer of `MRN_Config_Helper::bootstrap_uptime_robot_monitor()`. It calls `MRN_SendGrid_Provisioning::bootstrap_site_provisioning()` only when the optional `mrn-sendgrid-provisioning` plugin has been separately installed and automatic SendGrid provisioning is explicitly enabled.
+- `stack/scripts/site-bootstrap.sh` remains a consumer of `MRN_Config_Helper::bootstrap_uptime_robot_monitor()`. SendGrid provisioning and management-key delivery have been removed from that script, including the former opt-in switch.
 - Direct writes to `mrn_helper_settings` belong inside Config Helper. External consumers should prefer the public contract wherever possible.
 - `mrn-config-helper` is foundational MRN platform infrastructure, not a disposable utility plugin. Removing, deactivating, or omitting it from an MRN Stack site is unsupported and can break shared configuration, runtime behavior, and Stack provisioning.
 
@@ -240,7 +244,7 @@
     - enabled flag
     - legacy manual items
     - chip-based manual items
-- SendGrid management key resolution, subuser/domain-auth storage, and the stack-secret injection path are documented against `mrn-sendgrid-provisioning`, not here.
+- Historical SendGrid key resolution and subuser/domain-auth storage are documented against the preserved `mrn-sendgrid-provisioning` source. Current Stack bootstrap has no SendGrid secret-injection path.
 - UptimeRobot key resolution order:
   - constant `MRN_UPTIME_ROBOT_API_KEY`
   - environment variable `MRN_UPTIME_ROBOT_API_KEY`

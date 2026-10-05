@@ -53,9 +53,6 @@ SLACK_WEBHOOK_URL_FILE="${STACK_SLACK_WEBHOOK_URL_FILE:-${STACK_ROOT}/secrets/sl
 SLACK_CHANNEL="${STACK_SLACK_CHANNEL:-}"
 SLACK_USERNAME="${STACK_SLACK_USERNAME:-MRN Bootstrap}"
 SLACK_ICON_EMOJI="${STACK_SLACK_ICON_EMOJI:-:rocket:}"
-SENDGRID_MANAGEMENT_API_KEY="${MRN_SENDGRID_MANAGEMENT_API_KEY:-${STACK_SENDGRID_MANAGEMENT_API_KEY:-}}"
-SENDGRID_MANAGEMENT_API_KEY_FILE="${STACK_SENDGRID_MANAGEMENT_API_KEY_FILE:-${STACK_ROOT}/secrets/sendgrid-management-api-key.txt}"
-AUTO_PROVISION_SENDGRID="${STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION:-0}"
 AUTO_PROVISION_UPTIME_ROBOT="${STACK_BOOTSTRAP_UPTIME_ROBOT_AUTO_PROVISION:-0}"
 UPTIME_ROBOT_MONITOR_INTERVAL="${STACK_BOOTSTRAP_UPTIME_ROBOT_INTERVAL:-${STACK_UPTIME_ROBOT_MONITOR_INTERVAL:-300}}"
 UPTIME_ROBOT_API_KEY="${MRN_UPTIME_ROBOT_API_KEY:-${STACK_UPTIME_ROBOT_API_KEY:-${UPTIME_ROBOT_API_KEY:-}}}"
@@ -74,16 +71,6 @@ RECAPTCHA_ENTERPRISE_DEFAULT_INTEGRATION_TYPE_FILE="${STACK_RECAPTCHA_ENTERPRISE
 if [[ -z "${SLACK_WEBHOOK_URL}" && -f "${SLACK_WEBHOOK_URL_FILE}" ]]; then
   SLACK_WEBHOOK_URL="$(tr -d '\r\n' < "${SLACK_WEBHOOK_URL_FILE}")"
 fi
-
-case "${AUTO_PROVISION_SENDGRID}" in
-  0|false|False|FALSE|no|No|NO|off|Off|OFF)
-    ;;
-  *)
-    if [[ -z "${SENDGRID_MANAGEMENT_API_KEY}" && -f "${SENDGRID_MANAGEMENT_API_KEY_FILE}" ]]; then
-      SENDGRID_MANAGEMENT_API_KEY="$(tr -d '\r\n' < "${SENDGRID_MANAGEMENT_API_KEY_FILE}")"
-    fi
-    ;;
-esac
 
 if [[ -z "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" && -f "${RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE}" ]]; then
   RECAPTCHA_ENTERPRISE_PROJECT_ID="$(tr -d '\r\n' < "${RECAPTCHA_ENTERPRISE_PROJECT_ID_FILE}")"
@@ -1819,13 +1806,6 @@ apply_wp_defaults() {
   if ! run_wp config set WP_AUTO_UPDATE_CORE false --raw --type=constant; then
     add_warning "Failed to set WP_AUTO_UPDATE_CORE=false in wp-config.php"
   fi
-  # SendGrid is catalog-only. Deliver its management key only for an explicitly
-  # opted-in bootstrap; existing constants and installations remain untouched.
-  if bootstrap_flag_enabled "${AUTO_PROVISION_SENDGRID}" && [[ -n "${SENDGRID_MANAGEMENT_API_KEY}" ]]; then
-    if ! run_wp_config_set_quiet MRN_SENDGRID_MANAGEMENT_API_KEY "${SENDGRID_MANAGEMENT_API_KEY}" --type=constant; then
-      add_warning "Failed to set MRN_SENDGRID_MANAGEMENT_API_KEY in wp-config.php"
-    fi
-  fi
   # Expose stack-managed reCAPTCHA Enterprise credentials for code-locked plugin mode.
   if [[ -n "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" ]]; then
     if ! run_wp_config_set_quiet MRN_RECAPTCHA_ENTERPRISE_PROJECT_ID "${RECAPTCHA_ENTERPRISE_PROJECT_ID}" --type=constant; then
@@ -1880,8 +1860,7 @@ reconcile_development_environment_policy() {
   local plugin_slug hook
   # Mail transport stays inactive on dev/review bootstraps. Native SEOPress
   # editing remains active; MRN Environment Runtime suppresses its tracking
-  # and indexing output under the development policy. Optional SendGrid provisioning
-  # runs only after an explicit opt-in; reactivation and site-key delivery remain
+  # and indexing output under the development policy. Mail configuration remains
   # separate, ops-owned go-live work.
   local -a disabled_plugins=(
     wpmu-dev-seo
@@ -2127,36 +2106,7 @@ if (($templates["status"] ?? "error") === "error" || ($templates["status"] ?? "s
 }
 
 provision_external_services() {
-  local sendgrid_code uptime_code uptime_interval uptime_output uptime_warning_detail
-
-  if bootstrap_flag_enabled "${AUTO_PROVISION_SENDGRID}"; then
-    if ! run_wp plugin is-active mrn-sendgrid-provisioning >/dev/null 2>&1; then
-      add_warning "Skipped SendGrid provisioning: MRN SendGrid Provisioning is not active."
-    else
-      sendgrid_code="$(cat <<'PHP'
-if (!class_exists('MRN_SendGrid_Provisioning') || !method_exists('MRN_SendGrid_Provisioning', 'bootstrap_site_provisioning')) {
-    fwrite(STDERR, "MRN SendGrid Provisioning does not support bootstrap provisioning.\n");
-    exit(1);
-}
-
-$result = MRN_SendGrid_Provisioning::bootstrap_site_provisioning(home_url('/'));
-$status = isset($result['status']) ? (string) $result['status'] : 'unknown';
-$message = isset($result['message']) ? (string) $result['message'] : 'No message returned.';
-
-echo "SendGrid provisioning {$status}: {$message}\n";
-
-if (in_array($status, array('warning', 'skipped'), true)) {
-    exit(2);
-}
-PHP
-)"
-      if ! run_wp eval "${sendgrid_code}"; then
-        add_warning "SendGrid automatic provisioning did not complete cleanly."
-      fi
-    fi
-  else
-    echo "SendGrid automatic provisioning is opt-in; set STACK_BOOTSTRAP_SENDGRID_AUTO_PROVISION=1 to enable it."
-  fi
+  local uptime_code uptime_interval uptime_output uptime_warning_detail
 
   if ! run_wp plugin is-active mrn-config-helper >/dev/null 2>&1; then
     add_warning "Skipped UptimeRobot provisioning: MRN Config Helper is not active."

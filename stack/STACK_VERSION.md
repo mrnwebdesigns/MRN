@@ -1,8 +1,8 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.04-stack-simplification-r2`
-- Release date: `2026-10-04`
+- Stack release: `2026.10.05-stack-retirement-r1`
+- Release date: `2026-10-05`
 - Status: `locked release candidate; production promotion and optional integration qualification remain gated`
 
 ## Included MRN-Owned Components
@@ -30,7 +30,7 @@
   - `mrn-acf-focal-point` `1.1.2`
   - `mrn-announcements` `1.8.2`
   - `mrn-comment-management` `1.3.0`
-  - `mrn-config-helper` `0.1.70`
+  - `mrn-config-helper` `0.1.71`
   - `mrn-fontawesome-profile-manager` `0.5.1`
   - `mrn-google-fonts` `1.0.7`
   - `mrn-hierarchical-menu-taxonomies` `0.1.1`
