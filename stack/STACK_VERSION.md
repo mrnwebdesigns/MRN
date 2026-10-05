@@ -1,9 +1,9 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.05-stack-recovery-r1`
+- Stack release: `2026.10.05-stack-bootstrap-r1`
 - Release date: `2026-10-05`
-- Status: `locked release candidate; production promotion and optional integration qualification remain gated`
+- Status: `new-site bootstrap candidate; owner rollout acceptance is separate`
 
 ## Included MRN-Owned Components
 - Theme:
@@ -55,6 +55,11 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Candidate scope
+- October 5 bootstrap finalization reconciles all 33 standard plugin inputs,
+  pins community plugin versions, refreshes catalog documentation, and seals
+  the owner-test bundle. Deployment transport upgrades, CAPTCHA 0.2.0 and
+  operations-service hosting are separate workstreams.
+
 - October 5 recovery revision adds Deployment Agent 0.2.6: complete before-state
   snapshots, a shared writer lock, persisted interruption recovery and guarded
   resumable rollback. It preserves the retirement candidate and does not add

@@ -1,8 +1,10 @@
 # Stack Changelog
 
-## Unreleased bootstrap changes
+## 2026.10.05-stack-bootstrap-r1 (owner-test candidate)
 
 - Exclude Background Video Pop-Out Disabler from every new-site bootstrap profile. Keep its supported source and checksum-locked optional package for deliberate per-site use. The Stack profile now selects 33 standard plugins; the plain profile remains at 32. No existing-site uninstall or hosted bootstrap deployment is performed.
+
+- Pin all community-plugin versions and record every bootstrap plugin package by version, source and SHA-256. Reconcile the human catalog with actual distribution. Prepare a complete new-site bundle and separate deployment handoff; no existing sites are changed.
 
 ## 2026.10.05-stack-recovery-r1 (candidate)
 

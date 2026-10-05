@@ -1,10 +1,12 @@
 # MRN WordPress Component Catalog
 
-Last classified: 2026-09-24
+Last reconciled: 2026-10-05
 
 This is the human-readable index of MRN-owned WordPress components. The authoritative machine-readable source is [`manifests/component-catalog.json`](./manifests/component-catalog.json), and the rules governing it are in [`PLUGIN_GOVERNANCE.md`](./PLUGIN_GOVERNANCE.md).
 
 Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberately retaining the component. It does **not** mean the component should be installed on every website.
+
+The exact new-site selection and package versions are listed in [BOOTSTRAP_RELEASE.md](BOOTSTRAP_RELEASE.md) and `manifests/bootstrap-packages.lock.json`: 33 standard plugins for Stack, 32 for plain. Source candidate versions may differ from the qualified bootstrap package, notably reCAPTCHA 0.2.0 versus 0.1.4.
 
 `Current distribution` describes today's stack behavior. `Target tier` is the approved Phase 1 classification and does not itself change bootstrap, packaging, activation, deployment, or MU loading.
 
@@ -18,14 +20,14 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-dashboard-support` | 1.3.0 | MU loader | Platform required | Provides MRN support information, dashboard metadata, and the admin-only Notifications Center with unread/read views, per-admin read/remove controls, and centralized admin notices. |
 | `mrn-disable-comments` | 1.2.5 | MU loader | Platform required | Enforces the MRN no-comments policy. |
 | `mrn-editor-lockdown` | 1.0.33 | MU loader | Platform required | Applies shared editor, metabox, and capability policy. |
-| `mrn-environment-runtime` | 0.5.1 | MU loader | Platform required | Provides environment, runtime, and notification diagnostics. |
+| `mrn-environment-runtime` | 0.6.0 | MU loader | Platform required | Provides environment, runtime, and notification diagnostics. |
 | `mrn-public-security-hardening` | 0.4.3 | MU loader | Platform required | Applies shared public REST and discovery hardening and preserves AME decisions for the native Advanced admin menu. |
 | `mrn-shared-assets` | 0.2.1 | MU loader | Platform required | Provides shared asset and icon interfaces, including consumer-aware ACF admin asset detection. |
 | `mrn-site-colors` | 0.1.39 | MU loader | Platform required | Owns persistent site design tokens and CSS-variable output. |
-| `mrn-updraft-local-retention` | 0.6.0 | MU loader | Platform required | Enforces seven daily, four weekly, and twelve 30-day remote recovery points, uses a stable cross-environment S3 site slug, exposes MainWP compliance evidence, and routes backup-policy warnings to Notifications Center. |
-| `mrn-schema-bridge` | 0.6.0 | MU loader | Platform required | SEOPress identity synchronization, automatic Article template provisioning, JobPosting output, author policy, MRN supplemental schema, and migration-only SmartCrawl compatibility. |
+| `mrn-updraft-local-retention` | 0.6.1 | MU loader | Platform required | Enforces seven daily, four weekly, and twelve 30-day remote recovery points, uses a stable cross-environment S3 site slug, exposes MainWP compliance evidence, and routes backup-policy warnings to Notifications Center. |
+| `mrn-schema-bridge` | 0.7.0 | MU loader | Platform required | Normalizes provider and theme schema behavior, including automatic Article and visible-content JobPosting contracts. |
 | `mrn-active-style-guide` | 0.1.7 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
-| `mrn-config-helper` | 0.1.64 | Standard bootstrap | Platform required | Shared site configuration shell, MRN-owned visible breadcrumb and BreadcrumbList runtime, launch/admin integrations, managed-credential preservation, scoped layout-picker assets, and a commit-reproducible selective Fleet package. |
+| `mrn-config-helper` | 0.1.71 | Standard bootstrap | Platform required | Provides the shared site configuration shell, native SEOPress breadcrumb integration and launch/admin integrations; retired SendGrid provisioning is excluded. |
 | `mrn-media-bulk-tools` | 0.13.1 | Standard bootstrap | Platform required | Media audit, usage indexing, and bulk maintenance; exact version and tree are enforced by the full Stack release lock. |
 | `mrn-stack-deployment-agent` | 0.2.6 | Standard bootstrap | Platform required | Provides the MainWP-authenticated, checksum-verified Stack deployment target, exact child-theme preservation, and environment-aware secret-free managed-credential readiness. |
 | `mrn-universal-sticky-bar` | 1.1.10 | Standard bootstrap | Platform required | Provides the shared settings/editor action bar; independently released for non-Stack use. |
@@ -36,36 +38,36 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 
 | Slug | Version | Current distribution | Target tier | Responsibility |
 | --- | ---: | --- | --- | --- |
-| `background-video-popout-disabler` | 1.0.2 | Catalog-only; checksum-locked one-site release retained | Optional shared | Optional front-end helper that suppresses browser picture-in-picture/pop-out controls on likely background videos. Excluded from new-site bootstrap; existing installations are unchanged. |
-| `mrn-ai-assist` | 2.0.14 | Standard bootstrap | Optional shared | Queued AI-assisted content, SEO, and media-alt workflows. |
-| `mrn-announcements` | 1.8.2 | Standard bootstrap; checksum-locked one-site release | Optional shared | Scheduled and targeted announcement bars and modals. |
-| `mrn-editor-tools` | 1.8.25 | Standard bootstrap | Optional shared | Classic Editor, TinyMCE, and ACF WYSIWYG enhancements. |
+| `background-video-popout-disabler` | 1.0.2 | Catalog-only; retained for deliberate use | Optional shared | Optional front-end helper that suppresses browser picture-in-picture/pop-out controls on likely background videos. Excluded from new-site bootstrap; existing installations are unchanged. |
+| `mrn-ai-assist` | 2.0.14 | Catalog-only; retained for deliberate use | Optional shared | Queued AI-assisted content, SEO, and media-alt workflows. |
+| `mrn-announcements` | 1.8.2 | Standard bootstrap | Optional shared | Scheduled and targeted announcement bars and modals. |
+| `mrn-editor-tools` | 1.8.25 | Catalog-only; retained for deliberate use | Optional shared | Classic Editor, TinyMCE, and ACF WYSIWYG enhancements. |
 | `mrn-mega-menu` | 0.17.2 | Standard bootstrap | Optional shared | Accessible content-rich mega-menu administration and rendering. |
-| `mrn-reusable-block-library` | 0.2.0 | Independent repository (`mrnwebdesigns/mrn-reusable-block-library`) via MRN-plugins symlink; Stack-profile bootstrap plus checksum-locked one-site release | Optional shared | Shared reusable block content types and render helpers, including sanitized outer-layout classes. |
-| `mrn-tokens` | 0.1.4 | Independent repository (`mrnwebdesigns/mrn-tokens`) via MRN-plugins symlink | Platform required | Reusable content-token registry, shortcode, and authenticated REST API; required in bootstrap and full Fleet releases. |
+| `mrn-reusable-block-library` | 0.2.0 | Standard bootstrap | Optional shared | Shared reusable block content types and render helpers, including sanitized outer-layout classes. |
+| `mrn-tokens` | 0.1.4 | Standard bootstrap | Platform required | Reusable content-token registry, shortcode, and authenticated REST API; required in bootstrap and full Fleet releases. |
 
 ## Optional Integration Adapters
 
 | Slug | Version | Current distribution | Target tier | Integration |
 | --- | ---: | --- | --- | --- |
-| `mrn-acf-character-count` | 1.1.9 | Standard bootstrap; checksum-locked one-site release | Optional integration | ACF editor character counts with field-aware asset loading. |
+| `mrn-acf-character-count` | 1.1.9 | Catalog-only; retained for deliberate use | Optional integration | ACF editor character counts with field-aware asset loading. |
 | `mrn-acf-focal-point` | 1.1.2 | Standard bootstrap | Optional integration | ACF image focal-point metadata and rendering. |
-| `mrn-ai-guardrails` | 0.1.1 | Independent repository (`mrnwebdesigns/mrn-ai-guardrails`) via MRN-plugins symlink; catalog-only | Optional integration | SEOPress AI policy enforcement and human approval for generated image alt text. |
-| `mrn-cookie-consent` | 1.1.43 | Independent repository (`mrnwebdesigns/mrn-cookie-consent`); catalog-only with a merged checksum-locked release entry | Optional integration | Silktide and Google Consent Mode. |
-| `mrn-fontawesome-profile-manager` | 0.5.1 | Standard bootstrap; checksum-locked one-site release | Optional integration | Font Awesome profiles and local assets. |
-| `mrn-google-fonts` | 1.0.7 | Independent repository (`mrnwebdesigns/mrn-google-fonts`) via MRN-plugins symlink | Optional integration | Google/local fonts and Site Styles; existing site behavior is unchanged. |
-| `mrn-hierarchical-menu-taxonomies` | 0.1.1 | Independent repository (`mrnwebdesigns/mrn-hierarchical-menu-taxonomies`) via MRN-plugins symlink | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories; existing menu behavior is unchanged. The stable main-file path preserves activation during package replacement. |
-| `mrn-gtm-injector` | 1.0.14 | Independent repository (`mrnwebdesigns/mrn-gtm-injector`); catalog-only with a merged checksum-locked release entry | Optional integration | Google Tag Manager. |
-| `mrn-recaptcha-enterprise-manager` | 0.1.2 | Standard bootstrap; checksum-locked one-site release | Optional integration | reCAPTCHA Enterprise and idempotent WPForms provisioning; security and credential contracts retained. |
-| `mrn-relevanssi-ai-search` | 0.6.1 | Independent repository (`mrnwebdesigns/mrn-relevanssi-ai-search`); catalog-only | Optional integration | Guarded AI query interpretation and hybrid semantic matching for Relevanssi. |
-| `mrn-sendgrid-provisioning` | 0.1.0 | Independent repository and verified recovery bundle; catalog-only | Retired, recoverable | Connector, bootstrap provisioning, management-key delivery and Config Helper hooks removed from active Stack integration. Existing installations and saved data are retained. |
-| `mrn-seo-helper` | 0.5.0 | Standard bootstrap; checksum-locked one-site release | Optional integration | ACF SEO fields and supported SEO providers; administrator-managed post-type allow-list with WooCommerce internal order and coupon types hard-excluded. |
+| `mrn-ai-guardrails` | 0.1.1 | Catalog-only; retained for deliberate use | Optional integration | SEOPress AI policy enforcement and human approval for generated image alt text. |
+| `mrn-cookie-consent` | 1.1.43 | Catalog-only; retained for deliberate use | Optional integration | Silktide and Google Consent Mode. |
+| `mrn-fontawesome-profile-manager` | 0.5.1 | Standard bootstrap | Optional integration | Font Awesome profiles and local assets. |
+| `mrn-google-fonts` | 1.0.7 | Standard bootstrap | Optional integration | Google/local fonts and Site Styles; existing site behavior is unchanged. |
+| `mrn-hierarchical-menu-taxonomies` | 0.1.1 | Standard bootstrap | Optional integration | Expands classic menu-builder taxonomy panels for hierarchical terms such as WooCommerce product categories; existing menu behavior is unchanged. The stable main-file path preserves activation during package replacement. |
+| `mrn-gtm-injector` | 1.0.14 | Catalog-only; retained for deliberate use | Optional integration | Google Tag Manager. |
+| `mrn-recaptcha-enterprise-manager` | 0.2.0 source / 0.1.4 bootstrap | Standard bootstrap | Optional integration | reCAPTCHA Enterprise and idempotent WPForms provisioning; security and credential contracts retained. |
+| `mrn-relevanssi-ai-search` | 0.6.1 | Catalog-only; retained for deliberate use | Optional integration | Guarded AI query interpretation and hybrid semantic matching for Relevanssi. |
+| `mrn-sendgrid-provisioning` | 0.1.0 | Catalog-only; retained for deliberate use | Retired, recoverable | Retired from active Stack integration. Source and restoration references preserve per-site SendGrid Subuser, mail-only API key, domain authentication and legacy mail synchronization; no bootstrap, credential delivery or automatic site removal. |
+| `mrn-seo-helper` | 0.5.0 | Catalog-only; retained for deliberate use | Optional integration | ACF SEO fields and supported SEO providers; administrator-managed post-type allow-list with WooCommerce internal order and coupon types hard-excluded. |
 
 ## Dashboard-Only Operations
 
 | Slug | Version | Responsibility |
 | --- | ---: | --- |
-| `mrn-mainwp-operations-api` | 0.9.8 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only controller that records exact post-write Stack-plugin overlays, labels matching sites `current_with_approved_overlays`, preserves raw drift evidence, and fails changed or unrecorded artifacts back to hard drift; never installed on child sites. |
+| `mrn-mainwp-operations-api` | 0.9.9 | Independent repository (`mrnwebdesigns/mrn-mainwp-operations-api`); dashboard-only controller that records exact post-write Stack-plugin overlays, labels matching sites `current_with_approved_overlays`, preserves raw drift evidence, and fails changed or unrecorded artifacts back to hard drift; never installed on child sites. |
 | `mrn-wp-control` | 1.1.1 | Independent repository (`mrnwebdesigns/mrn-wp-control`); dashboard-only, not installed in client-site plugins. |
 | `mrn-wp-control-table-exporter` | 1.4.4 | Independent repository (`mrnwebdesigns/mrn-wp-control-table-exporter`); dashboard-only, not installed in client-site plugins. |
 | `mrn-mainwp-mcp` | 0.1.1 | Node MCP adapter exposing MainWP/WPControl workflows to Codex and Claude Code. Agent tooling only; never installed on a WordPress site. |
@@ -74,11 +76,11 @@ The machine catalog also records each tracked top-level MU wrapper as its own re
 
 | Slug | Version | Current distribution | Target tier | Responsibility |
 | --- | ---: | --- | --- | --- |
-| `mrn-template-inspector` | 0.2.7 | Independent repository (`mrnwebdesigns/mrn-template-inspector`) via MRN-plugins symlink | Development only | Template and request-context inspection; local-only opener scope retained. |
-| `mrn-dummy-content` | 0.3.1 | Independent repository (`mrnwebdesigns/mrn-dummy-content`); catalog-only | Development only | Development content fixtures; excluded from production bootstrap. |
-| `mrn-comment-management` | 1.1.7 | Standard bootstrap | Maintenance only | Explicit comment audit and deletion. |
-| `mrn-database-retention` | 1.1.1 | Independent repository (`mrnwebdesigns/mrn-database-retention`) via MRN-plugins symlink; catalog-only release registry | Maintenance only | Allowlisted third-party operational-data retention; existing installations may use the guarded optional-plugin upgrade plan. Defender support remains code-level legacy compatibility and is not a Stack dependency. FluentSMTP policy is transport-provider agnostic during the SendGrid transition. |
-| `mrn-layout-import-export` | 0.1.2 | Independent repository (`mrnwebdesigns/mrn-layout-import-export`) via MRN-plugins symlink | Maintenance only | ACF builder layout migration. |
+| `mrn-template-inspector` | 0.2.7 | Standard bootstrap | Development only | Template and request-context inspection; local-only opener scope retained. |
+| `mrn-dummy-content` | 0.3.1 | Catalog-only; retained for deliberate use | Development only | Development content fixtures; excluded from production bootstrap. |
+| `mrn-comment-management` | 1.3.0 | Standard bootstrap | Maintenance only | Audits and manages comments with administrator-selected role access, additional native email recipients, and confirmed maintenance cleanup. |
+| `mrn-database-retention` | 1.1.1 | Catalog-only; retained for deliberate use | Maintenance only | Allowlisted third-party operational-data retention; existing installations may use the guarded optional-plugin upgrade plan. Defender support remains code-level legacy compatibility and is not a Stack dependency. FluentSMTP policy is transport-provider agnostic during the SendGrid transition. |
+| `mrn-layout-import-export` | 0.1.2 | Standard bootstrap | Maintenance only | ACF builder layout migration. |
 
 ## Review Queue
 

@@ -93,7 +93,13 @@ The new source/package candidate retains the earlier retirement lock and ZIP.
 It still uses per-directory swaps; it does not close D19 whole-cohort activation.
 See [recovery qualification](releases/2026.10.05-stack-recovery-r1.md).
 
-## Remaining release boundaries
+## Current completion scope
+
+On October 5 the owner separated Stack finalization from deployment-system work. The deliverable is the reproducible 33-plugin new-site bootstrap, aligned source/catalog/packages, preserved recovery materials and QA evidence. The owner will roll out a new site for acceptance before handing fleet/deployment work to the dedicated task. See [bootstrap release](../stack/BOOTSTRAP_RELEASE.md).
+
+Advanced immutable cohort transport, existing-site adoption, CAPTCHA 0.2.0 and the operations service remain separate workstreams; they are not requirements to ship the selected bootstrap baseline. The historical list below remains as deployment/integration backlog, not an expanded Stack finish line.
+
+## Separate deployment and integration backlog
 
 - **Shared asset deployment:** [candidate component tooling](../tools/component-deploy/README.md) now tests a coherent parent/plugin generation through native WordPress theme discovery, templates, patterns, metadata, upgrade and rollback. Disposable HTTP/Chromium checks cover asset checksums/MIME, real warm-cache hits, retained old HTML and OPcache. Core overwrite, uninstall/delete and theme-switch bypasses are guarded. It remains excluded from normal Stack installation. Signed MainWP adoption/atomic transport, authoritative plugin inventory, actual parent/child consumer compatibility and provider HTML-cache acceptance are still open. The existing parent and optional-plugin overwrite routes do not meet this contract. These are engineering gates, not a missing owner approval of Stack simplification.
 - **CAPTCHA 0.2.0:** source is merged and its deterministic candidate is built, with 121 integration, 24 browser and 10 asset/loader assertions passing locally. Real Google assessment permission and synthetic remote staging submissions require the narrow approvals in the plugin's readiness plan. Existing protection stays active until cutover is qualified.
