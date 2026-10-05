@@ -391,6 +391,7 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
     def test_retained_release_locks_match_their_immutable_byte_checksums(self):
         archive = STACK_DIR / "manifests" / "release-locks"
         expected = {
+            "2026.10.05-stack-retirement-r1.json": "a994d60a2da651dfcd93001cc2a810289205f8e783a78ee008ff6d52672d1a03",
             "2026.09.11-mainwp-full-stack-fleet-canary-verified.json":
                 "99c8aa1b7b9f893ec61d20448487d5c3788c620d4b339250a485d6d547a3f4f4",
             "2026.09.14-media-bulk-platform-required.json":

@@ -140,6 +140,28 @@ class MainwpMuBuilderTest(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("does not match the release lock", result.stderr)
 
+    def test_packaged_loader_is_replaced_without_duplicate_legacy_removal(self):
+        wrapper = self.root / "stack/mu-plugins/mrn-example.php"
+        digest, count = BUILDER.tree_sha256(wrapper)
+        lock = json.loads(self.lock_path.read_text())
+        lock["components"].append({
+            "slug": "mrn-example-loader",
+            "runtime_type": "mu-loader",
+            "deployed_path": "mu-plugins/mrn-example.php",
+            "sha256": digest,
+            "file_count": count,
+            "source": {"repository": "MRN", "path": "stack/mu-plugins/mrn-example.php"},
+        })
+        self.lock_path.write_text(json.dumps(lock) + "\n")
+        result = self.run_builder()
+        self.assertEqual(0, result.returncode, result.stderr)
+        plan = json.loads((self.output / "plan.json").read_text())
+        component = next(item for item in plan["components"] if item["slug"] == "mrn-example")
+        self.assertEqual([], component["legacy_paths"])
+        targets = {item["target"] for item in plan["components"]}
+        self.assertIn("mu-plugins/mrn-example.php", targets)
+        self.assertFalse(targets & {path for item in plan["components"] for path in item["legacy_paths"]})
+
     def test_policy_excludes_component_and_requires_protected_replacement(self):
         policy = self.root / "policy.json"
         policy.write_text(
