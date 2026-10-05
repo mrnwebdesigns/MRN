@@ -77,6 +77,21 @@ All seven retired custom capabilities now have verified full Git bundles and sou
 
 A verified pre-change Git bundle and exact copies of the September planning files are retained outside source in `MRN-release-artifacts/2026-10-04-stack-simplification`. Original source repositories and historical release locks remain available. No client database or secret values are included in this document.
 
+## Deployment recovery qualification
+
+Deployment Agent 0.2.6 now serializes apply, rollback and marker reconciliation,
+verifies all before-state snapshots before the first live rename, and persists a
+recovery journal through interrupted apply and rollback. Live drift, damaged
+snapshots, path aliases/overlaps and newer rollout lineage block recovery.
+Seventeen disposable transaction scenarios and the existing full-platform
+regressions cover process termination, repeated rollback, empty directories,
+retained recovery evidence and unchanged child-theme paths. Full component MRN
+QA and staged QA pass. No existing site was used or modified in this pass.
+
+The new source/package candidate retains the earlier retirement lock and ZIP.
+It still uses per-directory swaps; it does not close D19 whole-cohort activation.
+See [recovery qualification](releases/2026.10.05-stack-recovery-r1.md).
+
 ## Remaining release boundaries
 
 - **Shared asset deployment:** [candidate component tooling](../tools/component-deploy/README.md) now tests a coherent parent/plugin generation through native WordPress theme discovery, templates, patterns, metadata, upgrade and rollback. Disposable HTTP/Chromium checks cover asset checksums/MIME, real warm-cache hits, retained old HTML and OPcache. Core overwrite, uninstall/delete and theme-switch bypasses are guarded. It remains excluded from normal Stack installation. Signed MainWP adoption/atomic transport, authoritative plugin inventory, actual parent/child consumer compatibility and provider HTML-cache acceptance are still open. The existing parent and optional-plugin overwrite routes do not meet this contract. These are engineering gates, not a missing owner approval of Stack simplification.

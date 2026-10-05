@@ -27,7 +27,7 @@ Catalog inclusion means that MRN owns, supports, is evaluating, or is deliberate
 | `mrn-active-style-guide` | 0.1.7 | MU loader | Platform required | Logged-in design-system reference and diagnostics. |
 | `mrn-config-helper` | 0.1.64 | Standard bootstrap | Platform required | Shared site configuration shell, MRN-owned visible breadcrumb and BreadcrumbList runtime, launch/admin integrations, managed-credential preservation, scoped layout-picker assets, and a commit-reproducible selective Fleet package. |
 | `mrn-media-bulk-tools` | 0.13.1 | Standard bootstrap | Platform required | Media audit, usage indexing, and bulk maintenance; exact version and tree are enforced by the full Stack release lock. |
-| `mrn-stack-deployment-agent` | 0.2.5 | Standard bootstrap | Platform required | Provides the MainWP-authenticated, checksum-verified Stack deployment target, exact child-theme preservation, and environment-aware secret-free managed-credential readiness. |
+| `mrn-stack-deployment-agent` | 0.2.6 | Standard bootstrap | Platform required | Provides the MainWP-authenticated, checksum-verified Stack deployment target, exact child-theme preservation, and environment-aware secret-free managed-credential readiness. |
 | `mrn-universal-sticky-bar` | 1.1.10 | Standard bootstrap | Platform required | Provides the shared settings/editor action bar; independently released for non-Stack use. |
 
 The machine catalog also records each tracked top-level MU wrapper as its own required loader artifact. Wrapper versions mirror the components they load, and `deployed_path` preserves the actual WordPress filename rather than deriving one from the catalog slug.

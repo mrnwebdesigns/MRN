@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.05-stack-retirement-r1`
+- Stack release: `2026.10.05-stack-recovery-r1`
 - Release date: `2026-10-05`
 - Status: `locked release candidate; production promotion and optional integration qualification remain gated`
 
@@ -38,7 +38,7 @@
   - `mrn-media-bulk-tools` `0.13.1`
   - `mrn-mega-menu` `0.17.2`
   - `mrn-recaptcha-enterprise-manager` `0.1.4` (qualified package retained; 0.2.0 source awaits operational qualification)
-  - `mrn-stack-deployment-agent` `0.2.5`
+  - `mrn-stack-deployment-agent` `0.2.6`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-tokens` `0.1.4` (platform-required)
   - `mrn-universal-sticky-bar` `1.1.10`
@@ -53,6 +53,10 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Candidate scope
+- October 5 recovery revision adds Deployment Agent 0.2.6: complete before-state
+  snapshots, a shared writer lock, persisted interruption recovery and guarded
+  resumable rollback. It preserves the retirement candidate and does not add
+  whole-cohort atomic activation or authorize site changes.
 - October 4 reconciles native SEOPress 10.3, Post SMTP, retired duplicate editors,
   metadata-preserving migration and development SEO controls. The prior verified
   release remains `2026.10.02-ame-menu-visibility` on its recorded target.

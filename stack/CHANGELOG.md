@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.10.05-stack-recovery-r1 (candidate)
+
+- Deployment Agent 0.2.6 verifies all pre-change snapshots before live directory moves, serializes deployment writers, and persists recovery intent. Interrupted apply/rollback can recover through the existing authenticated, backup-gated rollback operation.
+- Reject overlapping or aliased paths, changed live contents, corrupt snapshots and stale rollback lineage. Retain completed recovery journals and snapshots.
+- Source and disposable fixture qualification only; whole-cohort immutable activation, hosting/provider qualification and site acceptance remain open. Preserve `2026.10.05-stack-retirement-r1` unchanged.
+
 ## 2026.10.05-stack-retirement-r1 (candidate)
 
 - Remove the remaining custom SendGrid integration: bootstrap provisioning and management-key delivery, Config Helper sender-sync and settings link, and the CI checkout dependency. Config Helper 0.1.71 preserves generic sender helpers and saved identity values.
