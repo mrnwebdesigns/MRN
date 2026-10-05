@@ -23,6 +23,7 @@ class BuildMainWPStackReleaseTests(unittest.TestCase):
         self.artifacts = self.root / "artifacts"
         sources = {
             "mu-plugins/mrn-loader.php": "<?php /* Version: 1.0.0 */\n",
+            "mu-plugins/mrn-example.php": "<?php /* Version: 1.0.0 */\n",
             "mu-plugins/mrn-example/mrn-example.php": "<?php /* Version: 1.0.0 */\n",
             "plugins/mrn-required/mrn-required.php": "<?php /* Plugin Name: Required Version: 1.0.0 */\n",
             "plugins/mrn-stack-deployment-agent/mrn-stack-deployment-agent.php": "<?php /* Plugin Name: Agent Version: 0.2.0 */\n",
@@ -95,6 +96,9 @@ class BuildMainWPStackReleaseTests(unittest.TestCase):
                     "mrn-example", "mu-component", "mu-plugins/mrn-example"
                 ),
                 locked_component(
+                    "mrn-example-loader", "mu-loader", "mu-plugins/mrn-example.php"
+                ),
+                locked_component(
                     "mrn-required", "standard-plugin", "plugins/mrn-required"
                 ),
                 locked_component(
@@ -152,6 +156,9 @@ class BuildMainWPStackReleaseTests(unittest.TestCase):
         self.assertIn("themes/mrn-base-stack", targets)
         self.assertNotIn("themes/mrn-base-stack-child", targets)
         self.assertNotIn("plugins/mrn-stack-deployment-agent", targets)
+        self.assertIn("mu-plugins/mrn-example.php", targets)
+        legacy_paths = [path for item in plan["components"] for path in item["legacy_paths"]]
+        self.assertFalse(set(targets) & set(legacy_paths))
 
         with zipfile.ZipFile(first / receipt["package_filename"]) as package:
             names = package.namelist()
@@ -164,6 +171,17 @@ class BuildMainWPStackReleaseTests(unittest.TestCase):
                 for name in names
             )
         )
+
+    def test_retains_genuine_legacy_removal_without_a_locked_loader(self):
+        self.lock["components"] = [
+            item for item in self.lock["components"] if item["slug"] != "mrn-example-loader"
+        ]
+        self.lock_path.write_text(json.dumps(self.lock) + "\n")
+        output = self.root / "legacy-only"
+        builder.build_release(self.lock_path, self.artifacts, output, "legacy-only-fixture")
+        plan = json.loads((output / "plan.json").read_text())
+        component = next(item for item in plan["components"] if item["slug"] == "mrn-example")
+        self.assertEqual(["mu-plugins/mrn-example.php"], component["legacy_paths"])
 
     def test_generated_package_matches_dashboard_and_child_contracts(self):
         agent_root_value = os.environ.get("MRN_STACK_AGENT_ROOT")

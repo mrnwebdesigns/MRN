@@ -306,6 +306,12 @@ def build_release(
         }
     )
     payload[lock_source] = lock_bytes
+    # Explicitly packaged loaders are replaced once, never also removed as legacy.
+    targets = {component["target"] for component in components}
+    for component in components:
+        component["legacy_paths"] = [
+            path for path in component["legacy_paths"] if path not in targets
+        ]
     components.sort(key=lambda item: item["slug"])
     if not components or len(components) > MAX_COMPONENTS:
         raise BuildError("The MU component count is outside the deployment contract.")

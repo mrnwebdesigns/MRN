@@ -246,6 +246,14 @@ def build_release(
     )
     payload[lock_source] = lock_bytes
 
+    # A locked loader is a replacement target, not a legacy file to remove.
+    # Declaring both makes the journal ambiguous and can remove a new loader.
+    targets = {component["target"] for component in components}
+    for component in components:
+        component["legacy_paths"] = [
+            path for path in component["legacy_paths"] if path not in targets
+        ]
+
     if len(prerequisites) != 1:
         raise BuildError("The release lock must contain the deployment agent prerequisite")
     if not components or len(components) > MAX_COMPONENTS:
