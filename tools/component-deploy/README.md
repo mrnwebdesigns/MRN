@@ -5,7 +5,7 @@ does not enter the default Stack package. The ZIP format is deliberately not a
 WordPress plugin/theme installation ZIP. The normal MainWP installer must not
 receive it. Every receipt reports `runtime_qualified: false`.
 
-This implements the source/package and early plugin-selection portions of
+This implements the source/package and early component-selection portions of
 [D19](../../docs/MRN-ASSET-RELEASE-STANDARD.md). It does not complete the shared
 component deployment contract. Existing sites, installed plugin state, saved
 data and retired capability archives are untouched.
@@ -35,10 +35,28 @@ data and retired capability archives are untouched.
   complete selection before normal plugins load. Explicit public entrypoint
   stubs can then use `MRN_Component_Release_Runtime::entrypoint(__FILE__)` while
   retaining WordPress activation and hook identities. Inactive plugins stay
-  inactive. Normal overwrite updates of selected plugins are refused.
+  inactive. Core updates, uploaded overwrite ZIPs, uninstall callbacks and
+  deletion of selected plugins are refused before changing managed files.
+- A SHA-bound, immutable theme discovery view contains exactly two explicit
+  directory links: the selected private parent and the physical, preserved
+  child. Native `WP_Theme` discovers the same parent as template functions;
+  metadata, file inventories, block patterns and classic template lookup stay
+  pinned. Parent public assets use `mrn-assets/<generation>/mrn-base-stack`,
+  matching WordPress's native root/slug URI composition. Earlier parent-only
+  packaging candidates must be rebuilt for this layout; plugin paths do not
+  change. Private view paths never enter the persistent theme-roots cache.
+- The discovery fixture qualifies one ordinary single-site parent/child pair.
+  Core theme switches, removal and overwrite are guarded. Child files and
+  their normal public URL remain unchanged. Missing, substituted or aliased
+  views fail closed before hooks are installed.
 - Requests retain their selected physical code and asset manifest even after
   the fixture changes the pointer. New requests observe the new selection or
   rollback. No old code or assets are deleted by these tools.
+- Disposable HTTP/Chromium tests verify public asset SHA-256/MIME equality,
+  literal/dynamic module imports, changed computed CSS, actual browser cache
+  hits, fresh and returning visitors, retained old HTML, and rollback with
+  OPcache enabled and timestamp revalidation disabled. The test server's
+  explicit cache policy is a fixture, not a production hosting adapter.
 
 The runtime has no REST/AJAX/admin-post endpoint, installer, transport, database
 mutation, automatic enrollment or runtime discovery. It cannot authorize a
@@ -46,18 +64,22 @@ deployment. Do not manually install the MU template or entrypoint stubs.
 
 ## Required before any adoption
 
-1. **Parent theme discovery:** runtime selection explicitly rejects parent
-   themes. `template_directory` alone is insufficient: `WP_Theme` can discover
-   the public parent directly and bypass it. The `theme_root` filter receives
-   no theme slug and cannot safely redirect only the parent. A qualified
-   parent/child discovery design must cover templates, metadata, block and
-   classic consumers without rewriting child-theme content or paths.
+1. **Consumer qualification:** the ordinary physical-child discovery contract
+   is tested; multisite, additional theme roots, child release loaders,
+   optimizers, recovery mode and real fleet parent/child consumers are not
+   qualified by that fixture. The adoption adapter must validate the exact
+   child mode and compatibility pair before creating a view. It must refuse
+   an independently adopted child until its combined discovery/pinning
+   behavior is qualified. A core method explicitly given an old physical
+   theme root will still read that root; consumers bypassing normal WordPress
+   discovery need an adapter or must be refused.
 2. **Plugin inventory and lifecycle:** `all_plugins` updates the admin list's
    displayed version, but raw `get_plugins()` still reads stable stub headers.
    Signed MainWP preflight/readback must agree with the selected artifact.
-   Safe uninstall, deletion, translation/JSON assets, direct PHP endpoints,
-   preloads, bulk updates and component-specific native build steps remain
-   unqualified. A native plugin updater is not a release transport.
+   Controlled unadoption/data retirement, translation/JSON assets, direct PHP
+   endpoints, preloads and component-specific native build steps remain
+   unqualified. Core uninstall/delete is blocked, not implemented as a data
+   migration. A native plugin updater is not a release transport.
 3. **Guarded transport and adoption:** implement the existing signed MainWP
    agent/Dashboard contract, verified fresh DB backup, exact target/source/
    checksum binding, private recovery inventory, exclusive writer lock,
@@ -66,10 +88,10 @@ deployment. Do not manually install the MU template or entrypoint stubs.
    before changing the pointer. Keep all coupled components compatible or
    activate them together. The fixture's direct file writes are test setup,
    not a production transaction implementation.
-4. **Public serving and QA:** prove scoped HTML refresh, MIME/checksum equality
-   through the serving path, fresh/warm/returning browser behavior, retained
-   old HTML/assets, OPcache handling, accessibility/performance and failure
-   recovery on disposable runtime/provider fixtures. Real provider/site
+4. **Public serving and QA:** extend the passing disposable serving/browser
+   checks to exact provider adapters, scoped HTML refresh and failure recovery,
+   and run accessibility/performance against actual component consumers.
+   Passing the test page does not qualify fleet layouts. Real provider/site
    qualification remains separately scoped and is forbidden by the current
    no-existing-site-touch instruction.
 5. **Promotion:** integrate exact artifacts into Stack lock/preflight and
@@ -95,7 +117,7 @@ python3 tools/component-deploy/verify.py /private/artifacts/mrn-example.zip \
 
 Parent packaging uses `--kind parent-theme --slug mrn-base-stack --entrypoint
 functions.php --source stack/themes/mrn-base-stack` against the MRN repository.
-Artifact success never implies that parent activation is supported.
+Artifact success never authorizes parent adoption on a site.
 
 ## Tests and evidence
 
@@ -109,8 +131,18 @@ WordPress test. Its pinned inputs are WordPress 7.1.2 and SQLite Integration
 only those public development dependencies. The test creates a fresh temporary
 WordPress installation, blocks outgoing WordPress HTTP/mail and cron, uses a
 new SQLite file, and removes only that temporary tree when done. It never uses
-an existing database, site directory or listener. WordPress was exercised
-through PHP bootstrap; this is not browser/public-edge QA.
+an existing database, site directory or listener. Set `MRN_COMPONENT_BROWSER=1`
+to also start a temporary PHP server bound only to a freshly selected loopback
+port and exercise Chromium. Install the pinned browser with
+`tools/component-deploy/node_modules/.bin/playwright install chromium` first.
+CI runs this browser test; an omitted environment switch is an explicit skip.
+
+For MRN QA against that same temporary server, set `MRN_COMPONENT_QA_ENGINE`
+to the engine executable and `MRN_COMPONENT_QA_OUTPUT` to an external report
+path. The fixture then runs source/API/browser/axe/performance/CWV checks with
+an explicit temporary site path and URL before stopping its own server. Run
+this serially because the engine uses shared report filenames. These reports
+are fixture acceptance, not full Stack promotion or public-provider evidence.
 
 WordPress behavior references: [plugin identity mapping](https://developer.wordpress.org/reference/functions/plugin_basename/),
 [active plugin loading](https://developer.wordpress.org/reference/functions/wp_get_active_and_valid_plugins/),

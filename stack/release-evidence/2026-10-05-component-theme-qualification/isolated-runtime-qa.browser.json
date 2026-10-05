@@ -1,0 +1,22 @@
+{
+  "generations": [
+    "old/old",
+    "old/old",
+    "new/new",
+    "new/new",
+    "old/old",
+    "old/old"
+  ],
+  "opcache_enabled": true,
+  "failures": [],
+  "cached_responses": 18,
+  "old_assets": [
+    "http://127.0.0.1:55047/wp-content/mrn-assets/72b3e3fd9a4c76b456589568fb6845e629a41928603808e0c93446a91ab986b8/mrn-base-stack/style.min.css",
+    "http://127.0.0.1:55047/wp-content/mrn-assets/mrn-fixture/b3367a085ffa29748ac6ddd0b2e6c83874b1a656dc7655e44166b11766bf09d5/assets/site.min.css"
+  ],
+  "new_assets": [
+    "http://127.0.0.1:55047/wp-content/mrn-assets/ea38c6f12ca0a21b9edd8f4ba1ee95b6f8a4b4ab0286a4d3242445da0e9f5ba2/mrn-base-stack/style.min.css",
+    "http://127.0.0.1:55047/wp-content/mrn-assets/mrn-fixture/4fa385bfc7ab594f26e5c6050f731ec047120177d3c4f83535173c027936a286/assets/site.min.css"
+  ],
+  "boundary": "disposable loopback fixture; no provider qualification"
+}

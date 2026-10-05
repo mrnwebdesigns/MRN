@@ -1,0 +1,24 @@
+test_changed_bytes_change_generation (test_components.Components.test_changed_bytes_change_generation) ... ok
+test_debug_and_directory_urls_and_unowned_urls (test_components.Components.test_debug_and_directory_urls_and_unowned_urls) ... ok
+test_deterministic_rebuild (test_components.Components.test_deterministic_rebuild) ... ok
+test_duplicate_json_key_rejected (test_components.Components.test_duplicate_json_key_rejected) ... ok
+test_missing_asset_and_entrypoint_refuse_fallback (test_components.Components.test_missing_asset_and_entrypoint_refuse_fallback) ... ok
+test_ordinary_updates_guarded_and_metadata_keeps_basename (test_components.Components.test_ordinary_updates_guarded_and_metadata_keeps_basename) ... ok
+test_parent_rebuild_uses_native_theme_root_slug_layout (test_components.Components.test_parent_rebuild_uses_native_theme_root_slug_layout) ... ok
+test_refuses_overwrite (test_components.Components.test_refuses_overwrite) ... ok
+test_request_pins_code_and_assets_when_pointer_changes (test_components.Components.test_request_pins_code_and_assets_when_pointer_changes) ... ok
+test_stale_minified_bytes_rebuilt_and_dependencies_preserved (test_components.Components.test_stale_minified_bytes_rebuilt_and_dependencies_preserved) ... ok
+test_traversal_and_symlinks_rejected (test_components.Components.test_traversal_and_symlinks_rejected) ... ok
+test_unlisted_file_or_changed_payload_rejected (test_components.Components.test_unlisted_file_or_changed_payload_rejected) ... ok
+test_unqualified_parent_selection_fails_closed_before_any_hooks (test_components.Components.test_unqualified_parent_selection_fails_closed_before_any_hooks) ... ok
+test_unsupported_loader_and_missing_dependency_refused (test_components.Components.test_unsupported_loader_and_missing_dependency_refused) ... ok
+test_wrong_checksum (test_components.Components.test_wrong_checksum) ... ok
+test_wrong_source_or_kind (test_components.Components.test_wrong_source_or_kind) ... ok
+test_real_http_browser_cache_assets_and_opcache (test_wordpress.WordPressBootstrap.test_real_http_browser_cache_assets_and_opcache) ... ok
+test_real_parent_discovery_cohort_rollback_and_lifecycle (test_wordpress.WordPressBootstrap.test_real_parent_discovery_cohort_rollback_and_lifecycle) ... ok
+test_real_plugin_loader_activation_assets_and_request_pinning (test_wordpress.WordPressBootstrap.test_real_plugin_loader_activation_assets_and_request_pinning) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 16.957s
+
+OK

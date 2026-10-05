@@ -20,6 +20,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
+          extensions: sqlite3, pdo_sqlite, zip, opcache
       - uses: actions/setup-go@v5
         with:
           go-version: '1.24'
@@ -37,8 +38,10 @@ jobs:
         env:
           MRN_COMPONENT_WP_ARCHIVE: ${{ runner.temp }}/wordpress-7.1.2.zip
           MRN_COMPONENT_SQLITE_ARCHIVE: ${{ runner.temp }}/sqlite-database-integration.3.0.2.zip
+          MRN_COMPONENT_BROWSER: '1'
         run: |
           npm ci --ignore-scripts --prefix tools/component-deploy
+          tools/component-deploy/node_modules/.bin/playwright install --with-deps chromium
           curl --fail --silent --show-error --location https://wordpress.org/wordpress-7.1.2.zip --output "$MRN_COMPONENT_WP_ARCHIVE"
           curl --fail --silent --show-error --location https://downloads.wordpress.org/plugin/sqlite-database-integration.3.0.2.zip --output "$MRN_COMPONENT_SQLITE_ARCHIVE"
           python3 -m unittest discover -s tools/component-deploy/tests -v

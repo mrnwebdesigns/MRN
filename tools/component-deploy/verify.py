@@ -70,7 +70,8 @@ def verify(archive_path, expected_sha256, source_sha, source_path, slug, kind, e
     if release.get('manifest_sha256') != files[manifest_path]:
         raise ValueError('Manifest checksum mismatch')
     generation = check(manifest.get('generation', ''), r'[a-f0-9]{64}', 'generation')
-    public_path = f'mrn-assets/{slug}/{generation}'
+    public_path = (f'mrn-assets/{generation}/{slug}' if kind == 'parent-theme'
+                   else f'mrn-assets/{slug}/{generation}')
     expected = dict(schema=1, scope=kind, slug=slug, source_sha=source_sha, public_path=public_path)
     if any(manifest.get(key) != value for key, value in expected.items()):
         raise ValueError('Manifest identity mismatch')

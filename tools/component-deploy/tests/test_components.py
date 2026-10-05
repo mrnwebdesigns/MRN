@@ -48,6 +48,8 @@ class Components(unittest.TestCase):
             'parent/style.css': '/* Theme Name: Fixture parent\nVersion: 1.0.0\n*/\n.fixture { color: red; }',
             'parent/functions.php': "<?php $GLOBALS['parent_code'] = 'old';",
             'parent/index.php': '<?php // Template.',
+            'parent/templates/index.html': '<!-- wp:paragraph --><p>Old parent template.</p><!-- /wp:paragraph -->',
+            'parent/patterns/fixture.php': '<?php /* Title: Fixture\nSlug: mrn-base-stack/fixture\n*/ ?>Old parent pattern.',
         }
         for name, body in source.items():
             target = cls.repo / name
@@ -60,10 +62,14 @@ class Components(unittest.TestCase):
         cls.parent = cls.make('parent', cls.old_commit, parent=True)
         (cls.repo / 'plugin/mrn-fixture.php').write_text(source['plugin/mrn-fixture.php'].replace("'old'", "'new'").replace('1.0.0', '1.1.0'))
         (cls.repo / 'plugin/assets/site.css').write_text('.fixture { color: blue; }')
+        for name in ('style.css', 'functions.php', 'templates/index.html', 'patterns/fixture.php'):
+            path = cls.repo / 'parent' / name
+            path.write_text(path.read_text().replace('old', 'new').replace('Old', 'New').replace('1.0.0', '1.1.0'))
         git(cls.repo, 'add', '.')
         git(cls.repo, 'commit', '-qm', 'Fixture new')
         cls.new_commit = git(cls.repo, 'rev-parse', 'HEAD')
         cls.new = cls.make('new', cls.new_commit)
+        cls.new_parent = cls.make('new-parent', cls.new_commit, parent=True)
 
     @classmethod
     def tearDownClass(cls):
@@ -100,6 +106,13 @@ class Components(unittest.TestCase):
         self.assertEqual(self.old, receipt)
         self.assertEqual((self.root / 'old.zip').read_bytes(), (self.root / 'rebuilt.zip').read_bytes())
         self.assertFalse(self.verify()['runtime_qualified'])
+
+    def test_parent_rebuild_uses_native_theme_root_slug_layout(self):
+        receipt = self.make('parent-rebuilt', self.old_commit, parent=True)
+        self.assertEqual(self.parent, receipt)
+        result = verify(self.root / 'parent-rebuilt.zip', receipt['artifact_sha256'], self.old_commit,
+                        'parent', 'mrn-base-stack', 'parent-theme', 'functions.php')
+        self.assertEqual(f"mrn-assets/{result['generation']}/mrn-base-stack", result['public_path'])
 
     def test_stale_minified_bytes_rebuilt_and_dependencies_preserved(self):
         manifest = self.manifest()
@@ -170,7 +183,7 @@ class Components(unittest.TestCase):
         parent.mkdir(parents=True)
         state = root / 'state'
         state.mkdir(mode=0o700)
-        for label, receipt in (('old', self.old), ('new', self.new), ('parent', self.parent)):
+        for label, receipt in (('old', self.old), ('new', self.new), ('parent', self.parent), ('new-parent', self.new_parent)):
             destination = state / 'releases' / receipt['artifact_sha256']
             with zipfile.ZipFile(self.root / (label + '.zip')) as archive:
                 archive.extractall(destination)
@@ -180,6 +193,22 @@ class Components(unittest.TestCase):
         (state / 'next.json').write_text(json.dumps(selection(self.new)))
         return public, plugin, parent, state
 
+    def add_theme_view(self, state, child, pointer_name, parent_receipt):
+        descriptor = json.dumps({'schema': 1, 'parent_artifact_sha256': parent_receipt['artifact_sha256'],
+                                 'child_stylesheet': child.name}, sort_keys=True).encode()
+        identity = hashlib.sha256(descriptor).hexdigest()
+        view = state / 'theme-views' / identity
+        (view / 'themes').mkdir(parents=True)
+        (view / 'view.json').write_bytes(descriptor)
+        (view / 'themes' / child.name).symlink_to(child, target_is_directory=True)
+        (view / 'themes/mrn-base-stack').symlink_to(
+            state / 'releases' / parent_receipt['artifact_sha256'] / 'component/mrn-base-stack', target_is_directory=True)
+        pointer = json.loads((state / pointer_name).read_text())
+        pointer['components']['mrn-base-stack'] = {key: parent_receipt[key] for key in ('artifact_sha256', 'manifest_sha256')}
+        pointer['theme_view'] = identity
+        (state / pointer_name).write_text(json.dumps(pointer))
+        return view / 'themes'
+
     def run_php(self, public, state, body, debug=False):
         # Deliberately small unit doubles. A separate real-core probe is required
         # before a deployment adapter may qualify these mechanics for WordPress.
@@ -188,6 +217,7 @@ define('ABSPATH', %s . '/');
 define('WP_PLUGIN_DIR', ABSPATH . 'wp-content/plugins');
 define('SCRIPT_DEBUG', %s);
 function add_filter($name,$callback,$priority=10,$count=1){$GLOBALS['filters'][$name][]=$callback;}
+function add_action($name,$callback,$priority=10,$count=1){add_filter($name,$callback,$priority,$count);}
 function apply_filters($name,$value){foreach($GLOBALS['filters'][$name]??[] as $callback){$value=$callback($value);}return $value;}
 function wp_normalize_path($path){return $path;}
 function wp_parse_url($url){return parse_url($url);}
@@ -261,9 +291,10 @@ echo json_encode([MRN_Component_Release_Runtime::plugin_metadata($plugins), MRN_
             pointer['components']['mrn-base-stack'] = {key: self.parent[key] for key in ('artifact_sha256', 'manifest_sha256')}
             (state / 'current.json').write_text(json.dumps(pointer))
             program = '''<?php
-define('ABSPATH', %s . '/'); define('WP_PLUGIN_DIR', ABSPATH.'wp-content/plugins');
+define('ABSPATH', %s . '/'); define('WP_PLUGIN_DIR', ABSPATH.'wp-content/plugins'); define('WP_CONTENT_DIR', ABSPATH.'wp-content');
 function add_filter(){throw new RuntimeException('Hook installed before validation');}
 function plugins_url(){return 'https://fixture.invalid/wp-content/plugins/mrn-fixture';}
+function content_url($path){return 'https://fixture.invalid/wp-content'.$path;}
 require %s;
 try { MRN_Component_Release_Runtime::boot(%s); echo 'UNSAFE'; }
 catch(RuntimeException $e){echo $e->getMessage();}
