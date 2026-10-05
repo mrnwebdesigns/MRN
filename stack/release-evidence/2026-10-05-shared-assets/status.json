@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "date": "2026-10-05",
+  "status": "source_foundation_only_not_fleet_ready",
+  "sites_contacted": [],
+  "sites_modified": [],
+  "retirement_candidate_preserved": "2026.10.05-stack-retirement-r1",
+  "component_tests": 16,
+  "child_asset_tests": 3,
+  "source_qa": "pass",
+  "default_stack_runtime_changed": false,
+  "parent_runtime_adoption": "refused",
+  "plugin_runtime_qualification": "isolated PHP WordPress bootstrap only",
+  "public_browser_accessibility_performance_qa": "not run; no existing runtime target",
+  "required_remaining": [
+    "Qualified parent/child theme discovery",
+    "Signed MainWP backup-gated adoption, activation and rollback",
+    "Native plugin inventory, uninstall/deletion and asset consumer integration",
+    "Scoped HTML refresh and public URL/browser/cache checks",
+    "Release lock/package integration and named provider/site qualification"
+  ]
+}

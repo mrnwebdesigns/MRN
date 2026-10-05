@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - tools/site-deploy/**
+      - tools/component-deploy/**
       - .github/workflows/site-deploy-target.yml
       - .github/workflows/site-deploy.yml
       - .github/workflows/site-source-qa.yml
@@ -32,6 +33,15 @@ jobs:
         run: |
           python3 -m pip install -r tools/site-deploy/requirements-test.txt
           python3 -m unittest discover -s tools/site-deploy/tests -v
+      - name: Shared component artifact and WordPress loader tests
+        env:
+          MRN_COMPONENT_WP_ARCHIVE: ${{ runner.temp }}/wordpress-7.1.2.zip
+          MRN_COMPONENT_SQLITE_ARCHIVE: ${{ runner.temp }}/sqlite-database-integration.3.0.2.zip
+        run: |
+          npm ci --ignore-scripts --prefix tools/component-deploy
+          curl --fail --silent --show-error --location https://wordpress.org/wordpress-7.1.2.zip --output "$MRN_COMPONENT_WP_ARCHIVE"
+          curl --fail --silent --show-error --location https://downloads.wordpress.org/plugin/sqlite-database-integration.3.0.2.zip --output "$MRN_COMPONENT_SQLITE_ARCHIVE"
+          python3 -m unittest discover -s tools/component-deploy/tests -v
       - name: Validate shared and caller workflows
         run: |
           sed -e 's/TOOLING_SHA/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/g' \
