@@ -121,6 +121,27 @@ The site wrapper pins the shared workflow and tooling to the same reviewed
 40-character MRN commit. Its fixed source path and stylesheet slug are reviewed
 in the site PR. Do not let dispatch inputs choose arbitrary filesystem paths.
 
+### QA dependency isolation
+
+Both reusable QA jobs install Semgrep 1.179.0 into a private runner-temporary
+Python 3.11 virtual environment through `tools/site-deploy/install-qa-python.sh`.
+The QA Engine deliberately changes `HOME` while scanning. A user-site Python
+installation becomes invisible after that change and previously failed with
+`ModuleNotFoundError: No module named 'semgrep'`. Dependency setup now checks the
+scanner under a different `HOME` before exposing it to QA. CI also verifies that
+the real scanner rejects an unsafe PHP fixture and accepts a safe fixture there.
+Security scanning stays mandatory; a dependency failure blocks source acceptance.
+
+Existing consumers must update **both** their reusable-workflow `uses` revision
+and `tooling_ref` to the same reviewed MRN commit containing this fix. A template
+change alone does not update a pinned site. Use the adoption procedure below,
+preserving the site's URLs, secrets, providers, readiness flags and ordering
+history. For an already-qualified site, pause automatic signals during the pin
+change, rearm after merging, then test with an ordinary new source push. Verify
+source QA, backup, deployed SHA, asset checksums and runtime evidence from that
+new run before calling automatic Dev operational. No site theme, content or
+shared Stack plugin update is required for this dependency repair.
+
 ## Automatic Dev adoption
 
 Updating this repository or its template does **not** update consumers pinned to
