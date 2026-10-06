@@ -1,8 +1,8 @@
 # CloudPanel Dev deployment onboarding
 
 Status: merged implementation; the CloudPanel controller and source-QA tools
-are installed, and enrollment remains disabled. Credentials and a real new-site
-acceptance run are required before activation.
+are installed, and enrollment remains disabled. The GitHub credential is provisioned; a real new-site
+acceptance run is required before activation.
 The host status below distinguishes installed tooling from deployment readiness.
 
 ## What the owner and developers do
@@ -101,17 +101,28 @@ replace a site's currently installed workflow or rotate an existing identity.
    `/etc/mrn/dev-enrollment.known_hosts` (root-owned). Do not substitute a fresh
    unauthenticated `ssh-keyscan` result. The configured origin must support
    GitHub runner access under the correct site-owner identity.
-6. Configure a noninteractive MRN-business 1Password service identity using the
-   approved host secret delivery mechanism. It must access only the required
-   items in the `Production Hub` vault. Copy the credential-reference example to
-   `/etc/mrn/dev-enrollment-credentials.json` (root-owned, `0600`) and use actual
-   approved item references and the verified service account UUID. The broker checks
-   `op whoami` against that UUID and the business account URL before reading any
-   secret. It requires noninteractive service authentication, clears conflicting
-   Connect variables, and fixes the account to
-   `mrnwebdesigns.1password.com` and never falls back to a personal account.
-   A different approved central broker may be configured as an argument array;
-   its private stdout contract is the same JSON object.
+6. Use a dedicated MRN-business 1Password vault for enrollment. Put only the
+   approved enrollment GitHub token, the separate QA read token and generated
+   new-site SSH identities there. Grant a dedicated service identity
+   `read_items,write_items` on that vault only; 1Password service-account access
+   is vault-scoped, not item-scoped. Do not install MRN's broader automation
+   identity on the CloudPanel host. Keep its recovery token in the operator's
+   Production Hub vault, outside the service's own scope.
+   Copy the credential-reference example to
+   `/etc/mrn/dev-enrollment-credentials.json` (root-owned, `0600`) with the actual
+   vault UUID, item references and verified service account UUID. The broker
+   checks the business account URL and service UUID before any secret read and
+   rejects references outside the configured vault.
+   Deliver the service token through private stdin to `systemd-creds encrypt
+   --name=mrn-dev-enrollment - /etc/mrn/dev-enrollment-service.cred`, never in
+   command arguments, logs or source. Keep that encrypted file root-owned and
+   `0600`. The broker decrypts it inside its own process; WordPress, QA and the
+   controller do not inherit the token. Back up the recovery token in 1Password;
+   host-bound encryption is not a portable recovery copy. The isolated `op`
+   binary must be on the credential command's PATH.
+   A previously approved broker using `OP_SERVICE_ACCOUNT_TOKEN` and existing
+   `op://Production Hub/` identity references remains supported; it must not be
+   silently changed to new-site provisioning.
 7. Supply an MRN owner-authorized credential authorized to create private
    repositories and manage their contents/workflows, Dev environment settings,
    encrypted secrets, Actions runs/artifacts, variables and approved developer access.
@@ -122,13 +133,18 @@ replace a site's currently installed workflow or rotate an existing identity.
    as the unattended service credential or use an Actions job token.
    It must also read the pinned QA Engine source through the separate QA
    credential. Permissions must cover newly created repositories.
-8. The SSH reference resolves the approved deployment identity for each new
-   site owner. Missing identity blocks enrollment; no replacement key is
-   generated. After a verified database backup, enrollment adds its public key
-   while preserving existing authorized keys and creates private rollback
-   storage. The private key is used only in a `0600` temporary file for public
-   key derivation and in GitHub secret encryption, then the temporary file is
-   removed. It is not saved in source, state or logs.
+8. For new sites, enable `new_site_identity.mode: create-for-new-site` and
+   configure the exact CloudPanel SSH host. After the controller validates the
+   fresh site and private enrollment record, the broker creates one Ed25519
+   identity in the dedicated vault, bound to domain, site owner and host.
+   A retry reuses that exact identity. A failed lookup, duplicate title or
+   mismatched binding stops enrollment and never generates a replacement.
+   Existing identity-reference configurations retain their existing keys.
+   After a verified database backup, enrollment adds only the public key while
+   preserving existing authorized keys and creates private rollback storage.
+   The private key is used in a `0600` temporary file for public-key derivation
+   and in GitHub Dev-secret encryption, then the temporary file is removed.
+   It is not saved in source, enrollment state or logs.
 9. Publish the reviewed `site-bootstrap.sh`, `bootstrap-new-sites.sh` and
    `bootstrap-dev-enrollment.sh` together through the existing checksum-verified
    bootstrap-contract publication process. This does not install the central
@@ -239,18 +255,20 @@ checks the installed source-QA path; it is not a WordPress runtime or GitHub
 deployment qualification. The original bootstrap scripts and root cron are
 unchanged. No site or repository has been created by this enrollment.
 
-The MRN AI Automation service identity authenticated successfully against the
-business account. Production Hub's approved lookup found `MRN_QA_ENGINE_TOKEN`
-but reported `GITHUB_TOKEN` missing from `Production Hub - GitHub`. A separate
-owner-authorized enrollment credential still needs provisioning; existing
-QA-only tokens must retain their current scope. GitHub's fresh owner
-authentication completed, and a separate fine-grained enrollment token was
-prepared but not created. Its requested administration/contents/Actions/
-workflows/environments/secrets/variables permissions cover current and future
-MRN-owned repositories, with a January 4, 2027 expiration. Creation and secure
-storage await owner confirmation because this grants persistent access.
-Never paste credential values into chat or source. An open desktop vault does
-not prove that a separate CLI session is authenticated.
+The approved `MRN CloudPanel Dev Enrollment` GitHub token was created and
+stored in the existing business `Production Hub - GitHub` item. It expires on
+January 4, 2027. Existing QA credentials and their permissions were preserved.
+A dedicated `MRN Dev Enrollment` vault now holds the enrollment API credentials;
+its service identity was verified to see exactly one vault. The recovery token
+is stored in Production Hub. The broader MRN AI Automation identity is not
+installed on this host.
+
+Rotate the enrollment GitHub token before its expiration, update both the
+canonical Production Hub field and its dedicated enrollment copy, and verify
+new-site API access. Rotate the dedicated service credential before its 90-day
+expiration: save its replacement in the operator vault, encrypt it on the host,
+update the configured service UUID and verify the broker. Do not rotate site
+SSH keys or change existing GitHub deployment identities during this operation.
 
 The proposed isolated bootstrap pilot is `deployment-test.mrndev.io`. It has
 not been created or qualified. Existing client sites, including the previously
