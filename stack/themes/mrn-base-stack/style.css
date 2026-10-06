@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.5.1
+Version: 1.5.1.1
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -3289,6 +3289,24 @@ button.mrn-ui__link--button {
 
 .mrn-tabbed-layout--transition-fade .mrn-tabbed-layout__panel.is-active {
 	animation: mrn-tabbed-layout-fade-in 220ms ease;
+}
+
+.mrn-tabbed-layout--transition-text-swipe {
+	--mrn-tabbed-text-swipe-distance: 4rem;
+	--mrn-tabbed-text-swipe-edge: 2rem;
+}
+
+.mrn-tabbed-layout--transition-text-swipe .is-mrn-tab-text-swiping {
+	overflow: clip;
+	-webkit-mask-image: linear-gradient(to right, transparent, #000 var(--mrn-tabbed-text-swipe-edge), #000 calc(100% - var(--mrn-tabbed-text-swipe-edge)), transparent);
+	mask-image: linear-gradient(to right, transparent, #000 var(--mrn-tabbed-text-swipe-edge), #000 calc(100% - var(--mrn-tabbed-text-swipe-edge)), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mrn-tabbed-layout--transition-text-swipe .is-mrn-tab-text-swiping {
+		-webkit-mask-image: none;
+		mask-image: none;
+	}
 }
 
 @keyframes mrn-tabbed-layout-fade-in {
