@@ -2,6 +2,10 @@ name: MRN site deployment
 on:
   workflow_call:
     inputs:
+      qualify_dev:
+        description: Exact-commit first Dev qualification; dispatch only
+        type: boolean
+        default: false
       target:
         type: string
         default: dev
@@ -73,6 +77,7 @@ jobs:
       - name: Validate trigger and select the exact source commit
         id: source
         env:
+          QUALIFY_DEV: ${{ inputs.qualify_dev }}
           GH_TOKEN: ${{ github.token }}
           RELEASE_REQUESTS_AFTER: ${{ inputs.release_requests_after }}
           LIVE_ENABLED: ${{ inputs.live_enabled }}
@@ -82,7 +87,12 @@ jobs:
           DEV_MAIN_ENABLED: ${{ inputs.dev_main_enabled }}
           AUTO_DEV_BRANCH: ${{ inputs.auto_dev_branch }}
           AUTO_DEV_AFTER: ${{ inputs.auto_dev_after }}
-        run: python3 .mrn-deploy-tools/tools/site-deploy/deployment_request.py
+        run: |
+          set -euo pipefail
+          if [[ "$QUALIFY_DEV" == true ]]; then
+            [[ "$GITHUB_EVENT_NAME" == workflow_dispatch && "$TARGET" == dev && "$MODE" == deploy && "$SOURCE_BRANCH" == main ]]
+          fi
+          python3 .mrn-deploy-tools/tools/site-deploy/deployment_request.py
   source-qa:
     needs: request
     if: needs.request.outputs.enabled == 'true' && inputs.mode == 'deploy'
@@ -113,6 +123,7 @@ jobs:
     uses: ./.github/workflows/site-deploy-target.yml
     with:
       target: dev
+      qualify_dev: ${{ inputs.qualify_dev }}
       mode: ${{ inputs.mode }}
       source_sha: ${{ needs.request.outputs.source_sha }}
       qa_source_sha: ${{ needs.source-qa.outputs.source_sha }}

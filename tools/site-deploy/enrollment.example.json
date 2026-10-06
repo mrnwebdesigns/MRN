@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "enabled": false,
+  "organization": "mrnwebdesigns",
+  "tooling_ref": "REPLACE_WITH_REVIEWED_40_CHARACTER_MRN_COMMIT",
+  "state_root": "/var/lib/mrn-site-enrollment",
+  "sites_root": "/home",
+  "ssh_host": "REPLACE_WITH_VERIFIED_CLOUDPANEL_SSH_HOST",
+  "ssh_port": 22,
+  "known_hosts_file": "/etc/mrn/dev-enrollment.known_hosts",
+  "qa_bin": "/opt/mrn-qa-engine/bin/mrn-qa",
+  "team_slugs": [],
+  "credential_command": [
+    "/opt/mrn-site-deploy/venv/bin/python3",
+    "/opt/mrn-site-deploy/MRN/tools/site-deploy/enrollment_credentials.py",
+    "--config", "/etc/mrn/dev-enrollment-credentials.json"
+  ]
+}

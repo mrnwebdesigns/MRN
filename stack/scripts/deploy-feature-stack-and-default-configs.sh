@@ -266,6 +266,13 @@ fi
 run_rsync \
 	"${LOCAL_SITE_BOOTSTRAP}" \
 	"${SSH_HOST}:${STACK_ROOT_REMOTE}/scripts/site-bootstrap.sh"
+for helper in bootstrap-new-sites.sh bootstrap-dev-enrollment.sh; do
+	run_rsync "${REPO_ROOT}/stack/scripts/${helper}" "${SSH_HOST}:${STACK_ROOT_REMOTE}/scripts/${helper}"
+	if [[ "${DRY_RUN}" -eq 0 ]]; then
+		run_remote "${SSH_HOST}" "chmod 750 '${STACK_ROOT_REMOTE}/scripts/${helper}'"
+		verify_remote_file_sha256 "${REPO_ROOT}/stack/scripts/${helper}" "${STACK_ROOT_REMOTE}/scripts/${helper}"
+	fi
+done
 run_rsync \
 	"${LOCAL_STACK_EXPORT_IMPORTER}" \
 	"${SSH_HOST}:${STACK_ROOT_REMOTE}/configs/importers/stack-export-importer.sh"

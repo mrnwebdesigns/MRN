@@ -1,0 +1,2 @@
+# Operator-side enrollment only; never installed in a site/theme.
+PyNaCl==1.6.0

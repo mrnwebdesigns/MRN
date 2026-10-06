@@ -2,6 +2,8 @@ name: Site deployment tooling tests
 on:
   pull_request:
     paths:
+      - stack/scripts/*bootstrap*.sh
+      - stack/tests/test_dev_enrollment_bootstrap.py
       - tools/site-deploy/**
       - tools/component-deploy/**
       - .github/workflows/site-deploy-target.yml
@@ -35,8 +37,9 @@ jobs:
         run: npm ci --ignore-scripts && npm test
       - name: Deployment failure-path tests
         run: |
-          python3 -m pip install -r tools/site-deploy/requirements-test.txt
+          python3 -m pip install -r tools/site-deploy/requirements-test.txt -r tools/site-deploy/requirements-enrollment.txt
           python3 -m unittest discover -s tools/site-deploy/tests -v
+          python3 -m unittest discover -s stack/tests -p test_dev_enrollment_bootstrap.py -v
       - name: Install isolated source scanner
         run: bash tools/site-deploy/install-qa-python.sh
       - name: Scanner relocated-HOME regression

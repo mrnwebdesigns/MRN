@@ -3,6 +3,9 @@ name: MRN site deployment target
 on:
   workflow_call:
     inputs:
+      qualify_dev:
+        type: boolean
+        default: false
       target:
         type: string
         required: true
@@ -95,6 +98,8 @@ jobs:
       DEPLOY_TRANSPORT: ${{ vars.DEPLOY_TRANSPORT }}
       DEPLOY_BASELINE_TREE: ${{ vars.DEPLOY_BASELINE_TREE }}
       DEPLOY_READY: ${{ vars.DEPLOY_READY }}
+      DEPLOY_ENROLLMENT_SOURCE_SHA: ${{ vars.DEPLOY_ENROLLMENT_SOURCE_SHA }}
+      QUALIFY_DEV: ${{ inputs.qualify_dev }}
       DEPLOY_VERIFY_PAGES: ${{ vars.DEPLOY_VERIFY_PAGES }}
       MODE: ${{ inputs.mode }}
       TARGET: ${{ inputs.target }}
@@ -306,20 +311,20 @@ jobs:
       - name: Run runtime QA
         id: runtime
         if: success() && inputs.mode == 'deploy'
-        continue-on-error: ${{ inputs.target == 'dev' }}
+        continue-on-error: ${{ inputs.target == 'dev' && !inputs.qualify_dev }}
         run: |
           set -euo pipefail
           acceptance=()
           performance=never
           cwv=never
-          if [[ "$TARGET" == live ]]; then acceptance=(--mode release --smoke-strict 1); fi
-          if [[ "$TARGET" == live ]]; then performance=always; cwv=auto; fi
+          if [[ "$TARGET" == live || "${QUALIFY_DEV:-false}" == true ]]; then acceptance=(--mode release --smoke-strict 1); fi
+          if [[ "$TARGET" == live || "${QUALIFY_DEV:-false}" == true ]]; then performance=always; cwv=auto; fi
           "$RUNNER_TEMP/mrn-qa-engine/bin/mrn-qa" run "${acceptance[@]}" \
             --project-root "$GITHUB_WORKSPACE" --site-url "$DEPLOY_URL" --scope site-only \
             --run-api always --run-smoke always --run-accessibility always --run-performance "$performance" --run-cwv "$cwv" \
             --run-phpcbf never --output-file "$RUNNER_TEMP/site-runtime-qa.md"
-      - name: Restore the prior release if Live runtime acceptance fails
-        if: failure() && inputs.target == 'live' && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.runtime.outcome == 'failure'
+      - name: Restore the prior release if strict runtime acceptance fails
+        if: failure() && (inputs.target == 'live' || inputs.qualify_dev) && inputs.mode == 'deploy' && steps.activation.outcome == 'success' && steps.runtime.outcome == 'failure'
         env:
           DEPLOY_KINSTA_API_TOKEN: ${{ secrets.DEPLOY_KINSTA_API_TOKEN }}
           DEPLOY_KEY_FILE: ${{ runner.temp }}/site-deploy.key
@@ -332,6 +337,13 @@ jobs:
         env:
           QA_RESULT: ${{ steps.runtime.outcome }}
         run: |
+          python3 - <<'PY'
+          import json, os, pathlib
+          result = {key: os.environ[name] for key, name in (
+              ('outcome', 'QA_RESULT'), ('source_sha', 'SOURCE_SHA'),
+              ('environment', 'TARGET'), ('url', 'DEPLOY_URL'))}
+          (pathlib.Path(os.environ['RUNNER_TEMP']) / 'site-runtime-result.json').write_text(json.dumps(result) + '\n')
+          PY
           echo "Deployment target: $TARGET." >> "$GITHUB_STEP_SUMMARY"
           echo "Full runtime QA: $QA_RESULT. Review the retained report before approving any release." >> "$GITHUB_STEP_SUMMARY"
           if [[ "$QA_RESULT" != success ]]; then
@@ -348,6 +360,7 @@ jobs:
             ${{ runner.temp }}/site-artifact-verification.json
             ${{ runner.temp }}/site-rollback.json
             ${{ runner.temp }}/site-runtime-qa.md
+            ${{ runner.temp }}/site-runtime-result.json
             ${{ runner.temp }}/site-browser
             ${{ runner.temp }}/site-layout
           if-no-files-found: warn

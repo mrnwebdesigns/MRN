@@ -2282,6 +2282,12 @@ EOF
     fi
   fi
 
+  # WordPress is complete. Enrollment has independent state and retries; a
+  # GitHub failure must never rerun destructive plugin/theme bootstrap steps.
+  if ! bash "${STACK_ROOT}/scripts/bootstrap-dev-enrollment.sh" --enqueue --site-path "${WP_PATH}"; then
+    add_warning "Dev deployment enrollment is pending; inspect the separate enrollment state."
+  fi
+
   send_notification "MRN Bootstrap Success: ${domain}" "${body}"
   send_slack_notification "MRN Bootstrap Success: ${domain}" "${body}" "#1f883d"
 
