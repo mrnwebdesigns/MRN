@@ -71,8 +71,10 @@ def load_config(path):
     config = json.loads(private_path(path).read_text())
     if config.get('schema') != 1 or config.get('enabled') is not True:
         raise ValueError('Dev enrollment is not enabled in the operator configuration')
-    if config.get('organization') != 'mrnwebdesigns':
-        raise ValueError('Enrollment is restricted to the MRN organization')
+    if config.get('github_owner') != 'mrnwebdesigns':
+        raise ValueError('Enrollment is restricted to the MRN GitHub owner')
+    if config.get('github_owner_type') not in ('User', 'Organization'):
+        raise ValueError('Explicit GitHub owner type is required')
     check(config.get('tooling_ref'), r'[0-9a-f]{40}', 'immutable tooling revision')
     check(config.get('ssh_host'), r'[A-Za-z0-9][A-Za-z0-9.-]*', 'SSH hostname')
     if not isinstance(config.get('ssh_port'), int) or not 1 <= config['ssh_port'] <= 65535:
@@ -82,8 +84,7 @@ def load_config(path):
             raise ValueError('Absolute operator path required: ' + key)
     if not config.get('credential_command') or not all(isinstance(v, str) for v in config['credential_command']):
         raise ValueError('Operator credential command required')
-    if not config.get('team_slugs') or any(not re.fullmatch(r'[a-z0-9][a-z0-9-]*', v) for v in config['team_slugs']):
-        raise ValueError('At least one approved developer team slug is required')
+    validate_developer_access(config)
     root = Path(config['state_root'])
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
     private_path(root, directory=True)
@@ -96,6 +97,19 @@ def load_config(path):
     if command(['git', '-C', str(repo), 'status', '--porcelain', '--untracked-files=no'], text=True).strip():
         raise ValueError('Enrollment tooling checkout has local edits')
     return config
+
+
+def validate_developer_access(config):
+    teams, users = config.get('team_slugs', []), config.get('collaborators', [])
+    for values in (teams, users):
+        if not isinstance(values, list) or any(not isinstance(v, str) or not re.fullmatch(r'[a-z0-9][a-z0-9-]*', v) for v in values):
+            raise ValueError('Developer access must be explicit GitHub team slugs or collaborator logins')
+        if len(values) != len(set(values)):
+            raise ValueError('Duplicate developer access entry')
+    if not teams and not users:
+        raise ValueError('At least one approved developer team or collaborator is required')
+    if config['github_owner_type'] == 'User' and teams:
+        raise ValueError('GitHub user accounts use collaborators, not organization teams')
 
 
 def site_process_env():
@@ -138,7 +152,7 @@ def identify(root, config):
     if site['slug'] == site['template']:
         raise ValueError('Dev enrollment requires an active child theme')
     site['source_path'] = 'public/wp-content/themes/' + site['slug']
-    site['repository'] = config['organization'] + '/' + domain.removesuffix('.mrndev.io') + '-site'
+    site['repository'] = config['github_owner'] + '/' + domain.removesuffix('.mrndev.io') + '-site'
     site['state_dir'] = str(sites / user / '.mrn-site-deploy' / 'dev')
     return site
 
@@ -397,8 +411,10 @@ class Enrollment:
         elif stage == 'grant-access':
             if gh.head() != s['pilot_sha']:
                 raise ValueError('main changed before developer handoff')
-            gh.grant_teams(self.config['team_slugs'])
-            self.persist(stage='ready')
+            if gh.grant_access(self.config.get('team_slugs', []), self.config.get('collaborators', [])):
+                self.persist(stage='ready', access_pending=False)
+            else:
+                self.persist(access_pending=True)
         elif stage != 'ready':
             raise ValueError('Unknown enrollment stage')
 
@@ -439,7 +455,8 @@ def main():
             save(state_path, state)
         if args.resume and state['stage'] != 'ready':
             secrets = credentials(config, site)
-            enrollment = Enrollment(config, directory, state, GitHub(secrets['github_token'], site['repository']), secrets)
+            enrollment = Enrollment(config, directory, state,
+                GitHub(secrets['github_token'], site['repository'], config['github_owner_type']), secrets)
             try:
                 enrollment.tick()
                 state.pop('last_error', None)

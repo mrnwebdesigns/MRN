@@ -24,8 +24,11 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 class GitHub:
-    def __init__(self, token, repository):
+    def __init__(self, token, repository, owner_type='User'):
         self.token, self.repository = token, repository
+        if owner_type not in ('User', 'Organization'):
+            raise ValueError('Unsupported GitHub owner type')
+        self.owner_type = owner_type
         self.prefix = '/repos/' + repository
         self.opener = urllib.request.build_opener(NoRedirect)
 
@@ -53,16 +56,27 @@ class GitHub:
         repo = self.request('GET', self.prefix, missing=True)
         description = 'MRN Dev enrollment ' + binding
         if repo is None:
-            org, name = self.repository.split('/')
-            repo = self.request('POST', '/orgs/' + org + '/repos', {
+            owner, name = self.repository.split('/')
+            identity = self.request('GET', '/users/' + owner)
+            if identity.get('login', '').lower() != owner.lower() or identity.get('type') != self.owner_type:
+                raise ValueError('Configured GitHub owner type does not match its current identity')
+            if self.owner_type == 'User':
+                actor = self.request('GET', '/user')
+                if actor.get('login', '').lower() != owner.lower() or actor.get('type') != 'User':
+                    raise ValueError('User-owned repository creation requires the exact MRN owner identity')
+                path = '/user/repos'
+            else:
+                path = '/orgs/' + owner + '/repos'
+            repo = self.request('POST', path, {
                 'name': name, 'private': True, 'auto_init': True,
                 'description': description, 'has_wiki': False, 'has_projects': False})
         if (repo.get('full_name', '').lower() != self.repository.lower() or repo.get('private') is not True
-                or repo.get('description') != description or repo.get('fork') or repo.get('archived')):
+                or repo.get('description') != description or repo.get('fork') or repo.get('archived')
+                or repo.get('owner', {}).get('type') != self.owner_type):
             raise ValueError('Existing repository is not owned by this enrollment; no source or settings were replaced')
         if repo.get('default_branch') != 'main':
             # Only this freshly created/resumed repository is eligible; no branch renaming.
-            raise ValueError('Enrollment repository must use main as its organization default branch')
+            raise ValueError('Enrollment repository must use main as its default branch')
         head = self.head()
         commit = self.request('GET', self.prefix + '/git/commits/' + head)
         tree = self.request('GET', self.prefix + '/git/trees/' + commit['tree']['sha'] + '?recursive=1')
@@ -136,6 +150,31 @@ class GitHub:
             result = self.request('GET', path)
             if not result.get('permissions', {}).get('push'):
                 raise ValueError('Developer team access was not verified')
+
+    def grant_access(self, teams, collaborators):
+        if teams and self.owner_type != 'Organization':
+            raise ValueError('GitHub user accounts cannot grant organization team access')
+        self.grant_teams(teams)
+        ready = True
+        for login in collaborators:
+            path = self.prefix + '/collaborators/' + login
+            permission = self.request('GET', path + '/permission', missing=True)
+            if permission and permission.get('permission') in ('write', 'admin'):
+                continue
+            invitations = self.request('GET', self.prefix + '/invitations?per_page=100')
+            if len(invitations) >= 100:
+                raise ValueError('Invitation inventory exceeds the enrollment limit')
+            pending = [row for row in invitations if (row.get('invitee') or {}).get('login', '').lower() == login.lower()]
+            if len(pending) > 1 or (pending and pending[0].get('permissions') not in ('write', 'admin')):
+                raise ValueError('Unexpected pending developer invitation; operator review required')
+            if not pending:
+                self.request('PUT', path, {'permission': 'push'})
+            # An invitation is not access. Keep polling the same invitation;
+            # do not repeatedly send invitations or report ready before acceptance.
+            permission = self.request('GET', path + '/permission', missing=True)
+            if not permission or permission.get('permission') not in ('write', 'admin'):
+                ready = False
+        return ready
 
     def dispatch(self, enrollment_id):
         self.request('POST', self.prefix + '/actions/workflows/site-deploy.yml/dispatches', {

@@ -52,7 +52,8 @@ class FakeGitHub:
         if self.proof_error: raise ValueError(self.proof_error)
         if not self.proof_ready: return None
         return {'run_url':'https://github.com/mrnwebdesigns/example-site/actions/runs/99','source_sha':sha}
-    def grant_teams(self,teams): self.calls.append(('teams',teams))
+    def grant_access(self,teams,collaborators):
+        self.calls.append(('access',teams,collaborators));return True
 
 
 class EnrollmentFlow(unittest.TestCase):
@@ -60,7 +61,8 @@ class EnrollmentFlow(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory();self.root=Path(self.temp.name)
         self.site=site(self.root/'site');self.gh=FakeGitHub()
         self.state={'site':self.site,'stage':'queued','binding':'example-binding'}
-        self.config={'tooling_ref':SHA,'ssh_host':'ssh.example.invalid','ssh_port':22,'team_slugs':['developers']}
+        self.config={'tooling_ref':SHA,'ssh_host':'ssh.example.invalid','ssh_port':22,
+                     'github_owner_type':'User','team_slugs':[],'collaborators':['mrn-developer-collab']}
         self.e=enrollment.Enrollment(self.config,self.root,self.state,self.gh,
             {'deploy_private_key':'private-fixture','known_hosts':'hostkey-fixture','qa_engine_token':'qa-fixture'})
         self.patches=[patch.object(enrollment,'snapshot',return_value=({'public/wp-content/themes/example-child/style.css':b'css'},'d'*64)),
@@ -99,7 +101,7 @@ class EnrollmentFlow(unittest.TestCase):
         self.gh.proof_ready=True;self.e.tick();self.e.tick()
         self.assertEqual('ready',self.state['stage'])
         self.assertEqual(PILOT,self.state['deployed_sha'])
-        self.assertEqual(('teams',['developers']),self.gh.calls[-1])
+        self.assertEqual(('access',[],['mrn-developer-collab']),self.gh.calls[-1])
         calls=deepcopy(self.gh.calls);self.e.tick();self.assertEqual(calls,self.gh.calls)
         self.assertEqual(1,self.gh.dispatch_count)
         files=json.loads((self.root/'source.json').read_text())
@@ -135,6 +137,13 @@ class EnrollmentFlow(unittest.TestCase):
         self.advance(3);self.gh.current='e'*40
         with self.assertRaises(ValueError):self.e.tick()
         self.mocks[2].assert_not_called()
+    def test_pending_invitation_cannot_finish_handoff(self):
+        self.state.update(stage='grant-access',pilot_sha=PILOT)
+        self.gh.current=PILOT
+        with patch.object(self.gh,'grant_access',return_value=False):self.e.tick()
+        self.assertEqual('grant-access',self.state['stage']);self.assertTrue(self.state['access_pending'])
+        self.e.tick()
+        self.assertEqual('ready',self.state['stage']);self.assertFalse(self.state['access_pending'])
 
 
 class EvidenceTests(unittest.TestCase):
@@ -179,7 +188,7 @@ class EvidenceTests(unittest.TestCase):
             with self.assertRaises(ValueError):self.gh.ensure_repository('binding')
             self.assertEqual(1,api.call_count)
     def test_resumed_seed_with_unrelated_work_is_never_modified(self):
-        repo={'full_name':self.gh.repository,'private':True,'description':'MRN Dev enrollment binding','default_branch':'main'}
+        repo={'full_name':self.gh.repository,'private':True,'description':'MRN Dev enrollment binding','default_branch':'main','owner':{'type':'User'}}
         tree={'tree':[{'path':'README.md','type':'blob'},{'path':'.github/workflows/unrelated.yml','type':'blob'}]}
         with patch.object(self.gh,'request',side_effect=[repo,{'object':{'sha':SHA}},{'tree':{'sha':PILOT}},tree]) as api:
             with self.assertRaises(ValueError):self.gh.ensure_repository('binding')
@@ -188,6 +197,60 @@ class EvidenceTests(unittest.TestCase):
         with patch.object(self.gh,'head',return_value=PILOT),patch.object(self.gh,'request') as api:
             with self.assertRaises(ValueError):self.gh.publish('c'*40,SHA)
             api.assert_not_called()
+
+
+class GitHubOwnerTests(unittest.TestCase):
+    def test_creation_uses_verified_owner_type_and_exact_user_token_identity(self):
+        for owner_type, endpoint in (('User','/user/repos'),('Organization','/orgs/mrnwebdesigns/repos')):
+            gh=GitHub('fixture','mrnwebdesigns/example-site',owner_type)
+            owner={'login':'mrnwebdesigns','type':owner_type}
+            repo={'full_name':gh.repository,'private':True,'description':'MRN Dev enrollment binding',
+                  'default_branch':'main','owner':owner}
+            replies=[None,owner]+([owner] if owner_type=='User' else [])+[repo,{'object':{'sha':SHA}},
+                {'tree':{'sha':PILOT}},{'tree':[{'path':'README.md','type':'blob'}]}]
+            with self.subTest(owner_type=owner_type),patch.object(gh,'request',side_effect=replies) as api:
+                gh.ensure_repository('binding')
+                writes=[call.args for call in api.call_args_list if call.args[0]!='GET']
+                self.assertEqual(1,len(writes));self.assertEqual(endpoint,writes[0][1])
+                self.assertIs(writes[0][2]['private'],True)
+    def test_wrong_type_or_token_owner_cannot_create_repository(self):
+        gh=GitHub('fixture','mrnwebdesigns/example-site','User')
+        for replies in ([None,{'login':'mrnwebdesigns','type':'Organization'}],
+                        [None,{'login':'mrnwebdesigns','type':'User'},{'login':'some-other-user','type':'User'}]):
+            with self.subTest(replies=replies),patch.object(gh,'request',side_effect=replies) as api:
+                with self.assertRaises(ValueError):gh.ensure_repository('binding')
+                self.assertTrue(all(call.args[0]=='GET' for call in api.call_args_list))
+    def test_accepted_collaborator_is_not_reinvited(self):
+        gh=GitHub('fixture','mrnwebdesigns/example-site')
+        with patch.object(gh,'request',return_value={'permission':'write'}) as api:
+            self.assertTrue(gh.grant_access([],['developer']))
+            self.assertEqual(1,api.call_count);self.assertEqual('GET',api.call_args.args[0])
+    def test_new_invitation_waits_and_retry_does_not_resend(self):
+        gh=GitHub('fixture','mrnwebdesigns/example-site')
+        invitation={'invitee':{'login':'developer'},'permissions':'write'}
+        with patch.object(gh,'request',side_effect=[None,[],invitation,None]) as api:
+            self.assertFalse(gh.grant_access([],['developer']))
+            writes=[call.args for call in api.call_args_list if call.args[0]=='PUT']
+            self.assertEqual([('PUT','/repos/mrnwebdesigns/example-site/collaborators/developer',{'permission':'push'})],writes)
+        with patch.object(gh,'request',side_effect=[None,[invitation],None]) as api:
+            self.assertFalse(gh.grant_access([],['developer']))
+            self.assertTrue(all(call.args[0]=='GET' for call in api.call_args_list))
+    def test_user_cannot_grant_teams_and_org_team_access_remains_supported(self):
+        gh=GitHub('fixture','mrnwebdesigns/example-site')
+        with patch.object(gh,'request') as api:
+            with self.assertRaises(ValueError):gh.grant_access(['developers'],[])
+            api.assert_not_called()
+        gh=GitHub('fixture','mrnwebdesigns/example-site','Organization')
+        with patch.object(gh,'request',side_effect=[None,{'permissions':{'push':True}}]) as api:
+            self.assertTrue(gh.grant_access(['developers'],[]))
+            self.assertEqual('/orgs/mrnwebdesigns/teams/developers/repos/mrnwebdesigns/example-site',api.call_args.args[1])
+    def test_config_requires_appropriate_explicit_access(self):
+        enrollment.validate_developer_access({'github_owner_type':'User','collaborators':['developer']})
+        for config in ({'github_owner_type':'User','team_slugs':['developers']},
+                       {'github_owner_type':'User','collaborators':[]},
+                       {'github_owner_type':'User','collaborators':['developer','developer']},
+                       {'github_owner_type':'User','collaborators':'developer'}):
+            with self.subTest(config=config),self.assertRaises(ValueError):enrollment.validate_developer_access(config)
 
 
 class SourceAndCredentialTests(unittest.TestCase):
