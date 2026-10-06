@@ -277,6 +277,13 @@ See [WP Engine SSH storage](https://wpengine.com/support/ssh-gateway/) and
 
 ## First setup and server changes
 
+New CloudPanel sites can use the [post-bootstrap Dev enrollment controller](MRN-DEV-DEPLOYMENT-ONBOARDING.md).
+It creates the private site repository, installs these thin wrappers, qualifies
+Dev through the same shared pipeline, and proves an ordinary push before handing
+the repository to developers. Host installation and service credentials are
+required; this source capability does not enroll existing sites automatically.
+Live remains a separate, authorized qualification step.
+
 Deployment readiness belongs **before launch**, alongside DNS/TLS, backup,
 forms/mail, cron, indexability, cache, and runtime acceptance. For already-live sites, complete it as post-launch onboarding.
 

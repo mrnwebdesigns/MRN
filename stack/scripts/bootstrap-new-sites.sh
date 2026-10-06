@@ -173,7 +173,6 @@ scan_and_bootstrap() {
 
   if [[ "${total_targets}" -eq 0 ]]; then
     clear_bootstrap_status
-    return 0
   fi
 
   for domain_dir in "${domain_dirs[@]}"; do
@@ -184,6 +183,14 @@ scan_and_bootstrap() {
 
     marker="${domain_dir}/${MARKER_NAME}"
     if [[ -f "${marker}" ]]; then
+      if [[ "${DRY_RUN}" == "true" ]]; then
+        echo "Dry run: would check pending Dev enrollment for ${domain_dir}"
+        continue
+      fi
+      if ! bash "${STACK_ROOT}/scripts/bootstrap-dev-enrollment.sh" --resume --site-path "${domain_dir}"; then
+        failed_count=$((failed_count + 1))
+        write_bootstrap_status "1" "${current_index}" "${total_targets}" "${domain_dir}" "$(basename "${domain_dir}")" "deployment-pending"
+      fi
       continue
     fi
 

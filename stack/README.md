@@ -103,6 +103,12 @@ site-specific child, the provider-independent MainWP path in
 [`MAINWP_FLEET_ROLLOUT_PLAN.md`](MAINWP_FLEET_ROLLOUT_PLAN.md) applies the same
 immutable release one named site at a time.
 5. A marker file is created so the same site is not bootstrapped again.
+6. On a host configured for [Dev deployment enrollment](../docs/MRN-DEV-DEPLOYMENT-ONBOARDING.md),
+   a successful new-site bootstrap queues repository and Dev deployment setup.
+   Later scanner passes resume this independent stage without re-bootstrapping
+   WordPress. Handoff waits for `ready`, including an ordinary-push deployment
+   test. Existing marked sites are not automatically enrolled; Live stays disabled.
+
 
 ## First setup
 

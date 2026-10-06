@@ -1,4 +1,5 @@
 name: Deploy site
+run-name: "${{ inputs.qualify_dev && format('MRN Dev qualification {0}', inputs.enrollment_id) || 'Deploy site' }}"
 
 on:
   workflow_run:
@@ -18,6 +19,14 @@ on:
         options: [preflight, deploy]
         default: preflight
         required: true
+      qualify_dev:
+        description: Operator-only first Dev qualification
+        type: boolean
+        default: false
+      enrollment_id:
+        description: Operator enrollment correlation ID
+        type: string
+        default: ''
       source_branch:
         description: Same-repository branch (Dev only); Live/Both require main
         type: string
@@ -39,6 +48,7 @@ jobs:
       source_branch: ${{ inputs.source_branch || 'main' }}
       release_requests_after: ${{ vars.MRN_RELEASE_REQUESTS_AFTER }}
       live_enabled: true
+      qualify_dev: ${{ inputs.qualify_dev || false }}
       auto_dev_branch: main
       auto_dev_after: ${{ vars.MRN_AUTO_DEV_AFTER }}
     secrets: inherit

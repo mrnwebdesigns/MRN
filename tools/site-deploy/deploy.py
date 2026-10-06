@@ -95,6 +95,7 @@ def config(environ):
         raise ValueError('Unsupported transport')
     c['baseline'] = environ.get('DEPLOY_BASELINE_TREE', '')
     c['ready'] = environ.get('DEPLOY_READY') == '1'
+    c['enrollment_sha'] = environ.get('DEPLOY_ENROLLMENT_SOURCE_SHA', '')
     c['host_provider'] = environ.get('DEPLOY_HOST_PROVIDER', 'cloudpanel') or 'cloudpanel'
     if c['host_provider'] not in ('cloudpanel', 'nexcess', 'siteground', 'wpengine', 'kinsta'):
         raise ValueError('Unknown host provider')
@@ -316,10 +317,33 @@ def http_check(url, rest=False):
             raise RuntimeError('Homepage did not return HTML')
 
 
+def qualification_request(args, c, environ):
+    """A one-commit, Dev-only exception for first adoption, never routine pushes."""
+    if environ.get('QUALIFY_DEV', 'false') != 'true':
+        return False
+    from release_request import api
+    if (environ.get('GITHUB_ACTIONS') != 'true'
+            or environ.get('GITHUB_EVENT_NAME') != 'workflow_dispatch'
+            or environ.get('GITHUB_REF') != 'refs/heads/main'
+            or environ.get('SOURCE_BRANCH') != 'main'
+            or args.mode != 'deploy' or args.environment != 'dev'
+            or c.get('host_provider') != 'cloudpanel' or c.get('ready')
+            or c.get('backup_provider') != 'updraft'
+            or not re.fullmatch(r'[0-9a-f]{40}', args.sha)
+            or c.get('enrollment_sha') != args.sha
+            or environ.get('MRN_SOURCE_QA_SHA') != args.sha
+            or not re.fullmatch(r'[0-9a-f]{64}', c.get('baseline', ''))):
+        raise ValueError('Dev qualification requires the exact authorized enrollment commit and source QA')
+    if api(environ, 'git/ref/heads/main')['object']['sha'] != args.sha:
+        raise ValueError('Enrollment source is no longer current main')
+    return True
+
+
 def deploy(args, c):
     from deployment_request import github_order
     order = github_order(os.environ, args.sha, args.environment, args.mode)
     repository = check(os.environ['GITHUB_REPOSITORY'], r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', 'repository')
+    qualifying = qualification_request(args, c, os.environ)
     artifact_path = getattr(args, 'artifact', None)
     artifact_sha256 = getattr(args, 'artifact_sha256', None)
     artifact = None
@@ -354,12 +378,14 @@ def deploy(args, c):
         if args.mode == 'preflight':
             print(json.dumps(receipt, indent=2))
             return
-        if not c['ready']:
+        if not c['ready'] and not qualifying:
             raise ValueError('DEPLOY_READY is not enabled after target qualification')
         native = c.get('host_provider') == 'kinsta' and c.get('backup_provider') == 'kinsta'
         if (c.get('backup_provider') != 'updraft' and not native) or (args.environment == 'live' and c.get('host_provider', 'cloudpanel') == 'cloudpanel'):
             raise ValueError('Runtime writes disabled for Live: its provider adapter is not qualified')
-        if not before['state'] or before['state'].get('schema') != 1:
+        if qualifying and (before['state'] is not None or digest(before['files']) != c['baseline']):
+            raise ValueError('Enrollment target has changed or already been adopted; inspect recovery evidence')
+        if not qualifying and (not before['state'] or before['state'].get('schema') != 1):
             raise ValueError('Runtime writes disabled: first adoption requires separate host qualification')
         from atomic_runner import run as activate
         from cache_policy import canonical_pages
@@ -367,7 +393,9 @@ def deploy(args, c):
         plan = {'repository': repository, 'environment': args.environment, 'slug': args.slug,
                 'archive': str(Path(artifact_path).resolve()), 'artifact_sha256': artifact_sha256,
                 'source_sha': args.sha, 'source_path': args.source, 'pages': pages,
-                'expected_current': before['state'], 'adopt': False, 'deployment_order': order}
+                'expected_current': before['state'], 'adopt': qualifying, 'deployment_order': order}
+        if qualifying:
+            plan.update(baseline=c['baseline'], exercise_rollback=True)
         result = activate(plan, c)
         Path(args.receipt).write_text(json.dumps(result, indent=2) + '\n')
         if result['status'] != 'public-verified':
