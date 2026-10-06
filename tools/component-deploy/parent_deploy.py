@@ -106,6 +106,20 @@ def inspect(plan):
     return json.loads(ssh(plan['ssh_login'], shlex.join(['python3', '-c', program])))
 
 
+def transfer_program(state, job, payload, hashes):
+    """Explicit modes defeat a provider's inherited directory ACL mask."""
+    program = 'import base64,hashlib,pathlib,os;os.umask(0o077);state=pathlib.Path(' + repr(state) + ');root=pathlib.Path(' + repr(job) + ')\n'
+    program += "if state.resolve()!=state:raise ValueError('Private state is aliased')\n"
+    program += "if not state.exists():state.mkdir(parents=True,mode=0o700)\n"
+    program += "if state.stat().st_uid!=os.geteuid():raise ValueError('Private state has another owner')\n"
+    # First-transfer retries may leave only this adapter's verified private jobs.
+    # Never repair permissions on an unknown or already adopted state tree.
+    program += "if state.stat().st_mode&0o077:\n if set(p.name for p in state.iterdir())-{'jobs'}:raise ValueError('Unknown private state permissions')\n state.chmod(0o700)\n"
+    program += "root.mkdir(parents=True,mode=0o700);root.chmod(0o700)\nfiles=" + repr(payload) + ';hashes=' + repr(hashes) + '\n'
+    program += "for name,value in files.items():\n body=base64.b64decode(value);assert hashlib.sha256(body).hexdigest()==hashes[name];path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.open('xb').write(body)\n"
+    return program
+
+
 def run(plan, confirm=False):
     if not confirm:
         return {'status': 'read-only-preflight', **inspect(plan)}
@@ -136,8 +150,7 @@ def run(plan, confirm=False):
     if not plan.get('disable'):
         payload['component-deploy/release.zip'] = base64.b64encode(Path(plan['archive']).read_bytes()).decode()
     hashes = {name: hashlib.sha256(base64.b64decode(body)).hexdigest() for name, body in payload.items()}
-    transfer = 'import base64,hashlib,pathlib,os;os.umask(0o077);root=pathlib.Path(' + repr(job) + ');root.mkdir(parents=True,mode=0o700);files=' + repr(payload) + ';hashes=' + repr(hashes) + '\n'
-    transfer += "for name,value in files.items():\n body=base64.b64decode(value);assert hashlib.sha256(body).hexdigest()==hashes[name];path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.open('xb').write(body)\n"
+    transfer = transfer_program(plan['state'], job, payload, hashes)
     ssh(plan['ssh_login'], 'python3 -', transfer.encode())
     remote = {**plan, 'archive': job + '/component-deploy/release.zip'}
     command = shlex.join(['python3', job + '/component-deploy/parent_host.py'])

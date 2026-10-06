@@ -189,3 +189,19 @@ class ParentTransactions(unittest.TestCase):
             changed['mainwp'][key] = value
             with self.subTest(key=key), self.assertRaises(ValueError):
                 validate_target(changed)
+
+    def test_inherited_state_permissions_are_restricted_only_for_new_jobs(self):
+        from parent_deploy import transfer_program
+        state = self.root / 'transfer-state'
+        state.mkdir(mode=0o750)
+        (state / 'jobs').mkdir()
+        program = transfer_program(str(state), str(state / 'jobs/first'), {}, {})
+        subprocess = __import__('subprocess')
+        result = subprocess.run(['python3', '-c', program], capture_output=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(0, state.stat().st_mode & 0o077)
+        state.chmod(0o750)
+        (state / 'unknown.json').write_text('{}')
+        result = subprocess.run(['python3', '-c', transfer_program(str(state), str(state / 'jobs/second'), {}, {})], capture_output=True)
+        self.assertNotEqual(0, result.returncode)
+        self.assertEqual(0o750, state.stat().st_mode & 0o777)
