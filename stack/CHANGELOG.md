@@ -1,5 +1,12 @@
 # Stack Changelog
 
+## 2026.10.06-dev-enrollment-r1 (isolated pilot candidate)
+
+- Connect successful new-site CloudPanel bootstrap to the shared resumable Dev enrollment controller. Publish only reviewed bootstrap contracts; existing client runtimes and Live destinations remain outside this rollout.
+- Provision a separate vault-backed SSH identity for each new site using a service account scoped to one enrollment vault. Preserve existing keys and fail closed on ambiguous identity, backup, source or runtime evidence.
+- Reuse immutable releases, generated content-hashed CSS/JS, retained asset URLs, atomic activation, verified backups, rollback and runtime QA. Developers continue using ordinary Git pushes from any Git GUI.
+- All component versions and the October 5 plugin package input lock remain unchanged. Source acceptance is separate from the real new-site qualification and push-only acceptance run.
+
 ## 2026.10.05-stack-bootstrap-r1 (owner-test candidate)
 
 - Exclude Background Video Pop-Out Disabler from every new-site bootstrap profile. Keep its supported source and checksum-locked optional package for deliberate per-site use. The Stack profile now selects 33 standard plugins; the plain profile remains at 32. No existing-site uninstall or hosted bootstrap deployment is performed.
