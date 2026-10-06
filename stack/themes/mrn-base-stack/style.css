@@ -3291,6 +3291,24 @@ button.mrn-ui__link--button {
 	animation: mrn-tabbed-layout-fade-in 220ms ease;
 }
 
+.mrn-tabbed-layout--transition-text-swipe {
+	--mrn-tabbed-text-swipe-distance: 4rem;
+	--mrn-tabbed-text-swipe-edge: 2rem;
+}
+
+.mrn-tabbed-layout--transition-text-swipe .is-mrn-tab-text-swiping {
+	overflow: clip;
+	-webkit-mask-image: linear-gradient(to right, transparent, #000 var(--mrn-tabbed-text-swipe-edge), #000 calc(100% - var(--mrn-tabbed-text-swipe-edge)), transparent);
+	mask-image: linear-gradient(to right, transparent, #000 var(--mrn-tabbed-text-swipe-edge), #000 calc(100% - var(--mrn-tabbed-text-swipe-edge)), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mrn-tabbed-layout--transition-text-swipe .is-mrn-tab-text-swiping {
+		-webkit-mask-image: none;
+		mask-image: none;
+	}
+}
+
 @keyframes mrn-tabbed-layout-fade-in {
 	from {
 		opacity: 0;

@@ -41,6 +41,29 @@ Current implementation notes:
 - content-list pagination should append a row anchor so paging does not jump the browser back to the top of the page
 - any future reusable library CPT additions need to respect WordPress' 20-character post-type key limit
 
+## Tab Switch Animation
+
+Tabbed Layout's Effects tab exposes `Tab Animation` through the existing
+`tab_switch_effect` field. Existing `instant`, `fade`, and `slide` values retain
+their behavior. Select **Text Swipe + Edge Fade** (`text-swipe`) to animate only
+the panel's heading and body text; media, separate link controls, layout surfaces, and the tab
+controls stay still.
+
+The runtime targets `.mrn-ui__head` and `.mrn-ui__text` inside the protected text
+regions `.mrn-layout-content--text`, `.mrn-reusable-block__content`, and
+`.mrn-hero__content`. It does not move an entire panel when a text target is
+absent. Panels without these hooks use an instant switch.
+
+Later tabs send the current text left and bring the new text from the right;
+earlier tabs reverse the direction. Arrow-key wrapping preserves the key's
+direction. A 160ms exit precedes a 260ms entrance. Temporary edge masks and Web
+Animations are removed when the switch finishes, is superseded, or the viewport
+or motion preference changes. Reduced-motion visitors switch instantly.
+
+Child themes may tune `--mrn-tabbed-text-swipe-distance` (default `4rem`) and
+`--mrn-tabbed-text-swipe-edge` (default `2rem`) on the tabbed root. This option
+uses the existing tabs script and adds no animation library or new markup.
+
 ## Motion InView In The Stack
 
 The base theme now vendors Motion and exposes a small stack helper layer.

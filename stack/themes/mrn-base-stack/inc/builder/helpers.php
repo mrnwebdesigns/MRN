@@ -4371,9 +4371,10 @@ function mrn_base_stack_get_effects_tab_field_names() {
  */
 function mrn_base_stack_get_tab_switch_effect_choices() {
 	return array(
-		'instant' => 'Instant',
-		'fade'    => 'Fade',
-		'slide'   => 'Slide',
+		'instant'    => 'Instant',
+		'fade'       => 'Fade',
+		'slide'      => 'Slide',
+		'text-swipe' => 'Text Swipe + Edge Fade',
 	);
 }
 
