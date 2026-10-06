@@ -1,9 +1,9 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.05-stack-bootstrap-r1`
-- Release date: `2026-10-05`
-- Status: `new-site bootstrap candidate; owner rollout acceptance is separate`
+- Stack release: `2026.10.06-dev-enrollment-r1`
+- Release date: `2026-10-06`
+- Status: `new-site Dev enrollment candidate; isolated pilot qualification pending`
 
 ## Included MRN-Owned Components
 - Theme:
@@ -55,6 +55,13 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Candidate scope
+- October 6 adds automatic Dev deployment enrollment after successful new-site
+  bootstrap: private repository, isolated per-site SSH identity, thin shared
+  workflows, exact-source QA, backup, rollback qualification and ordinary-push
+  verification. Live/Both remain disabled; existing sites are not enrolled.
+  Parent, child, plugin and MU versions are unchanged. The checksum-locked
+  plugin input bundle remains `2026.10.05-stack-bootstrap-r1`.
+
 - October 5 bootstrap finalization reconciles all 33 standard plugin inputs,
   pins community plugin versions, refreshes catalog documentation, and seals
   the owner-test bundle. Deployment transport upgrades, CAPTCHA 0.2.0 and
