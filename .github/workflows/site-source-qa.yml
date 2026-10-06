@@ -57,13 +57,16 @@ jobs:
         with:
           php-version: '8.3'
           tools: composer:v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - name: Install source QA dependencies
         shell: bash
         run: |
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y ripgrep
-          python3 -m pip install semgrep
+          bash "$RUNNER_TEMP/mrn-deploy-tools/tools/site-deploy/install-qa-python.sh"
           composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer global require --no-interaction --no-progress squizlabs/php_codesniffer:^3.13 wp-coding-standards/wpcs:^3.0 dealerdirect/phpcodesniffer-composer-installer:^1.1
           echo "$(composer global config bin-dir --absolute)" >> "$GITHUB_PATH"
