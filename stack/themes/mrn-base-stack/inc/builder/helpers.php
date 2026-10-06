@@ -334,7 +334,11 @@ function mrn_base_stack_populate_after_content_builder_field( $field ) {
 	}
 
 	$field['layouts'] = mrn_base_stack_get_after_content_builder_layouts();
-	$field            = mrn_base_stack_apply_primary_layout_contract_to_flexible_layouts( $field );
+
+	// Public value formatting needs the layouts, but not rebuilt editor controls.
+	if ( mrn_base_stack_should_prepare_builder_editor_contracts() ) {
+		$field = mrn_base_stack_apply_primary_layout_contract_to_flexible_layouts( $field );
+	}
 
 	return $field;
 }

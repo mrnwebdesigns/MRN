@@ -9,8 +9,12 @@
  * @package mrn-base-stack
  */
 
+define( 'ABSPATH', __DIR__ . '/' );
+
 $GLOBALS['mrn_acf_clone_test_filters'] = array();
 $GLOBALS['mrn_acf_clone_test_fields']  = array();
+$GLOBALS['mrn_acf_clone_test_admin']   = false;
+$GLOBALS['mrn_acf_clone_test_ajax']    = true;
 $GLOBALS['mrn_acf_clone_test_posts']   = array(
 	array(
 		'ID'        => 101,
@@ -69,11 +73,31 @@ function wp_unslash( $value ) {
 }
 
 function wp_doing_ajax() {
-	return true;
+	return $GLOBALS['mrn_acf_clone_test_ajax'];
+}
+
+function is_admin() {
+	return $GLOBALS['mrn_acf_clone_test_admin'];
+}
+
+function __( $text, $domain = '' ) {
+	return $text;
+}
+
+function sanitize_title( $text ) {
+	return sanitize_key( str_replace( ' ', '-', $text ) );
 }
 
 function absint( $value ) {
 	return abs( (int) $value );
+}
+
+function mrn_base_stack_get_builder_layout_allowlist_post_id() {
+	return 64;
+}
+
+function mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, $field_name ) {
+	return array( 'legacy_saved_row' );
 }
 
 function acf_add_local_field( $field, $prepared = false ) {
@@ -219,6 +243,13 @@ $source_field = array(
 	),
 );
 
+$source_field['layouts']['layout_legacy_saved_row'] = array(
+	'key' => 'layout_legacy_saved_row',
+	'name' => 'legacy_saved_row',
+	'sub_fields' => array(
+		array( 'key' => 'field_legacy_content', 'name' => 'content', 'type' => 'text' ),
+	),
+);
 $GLOBALS['mrn_acf_clone_test_fields'][ $source_field['key'] ] = $source_field;
 foreach ( $source_field['layouts'] as $source_layout ) {
 	foreach ( $source_layout['sub_fields'] as $source_sub_field ) {
@@ -227,6 +258,7 @@ foreach ( $source_field['layouts'] as $source_layout ) {
 }
 
 require_once __DIR__ . '/../../inc/builder/acf-field-finalization.php';
+require_once __DIR__ . '/../../inc/display-styles.php';
 require_once __DIR__ . '/../../inc/builder/helpers.php';
 require_once __DIR__ . '/../../inc/builder/render.php';
 
@@ -273,3 +305,46 @@ mrn_acf_clone_test_assert( ! isset( $wpforms_args['post_status'] ), 'Published-o
 mrn_acf_clone_test_assert( $saved_before === $saved_values, 'Empty After Content rows and intentionally empty saved fields remain unchanged.' );
 
 echo "PASS: Cloned ACF AJAX field registration and reusable-block query contracts.\n";
+
+// After Content uses these same finalized layouts on public value reads.
+$GLOBALS['mrn_acf_clone_test_ajax'] = false;
+$field = array(
+	'key'     => 'field_mrn_page_after_content_rows',
+	'name'    => 'page_after_content_rows',
+	'type'    => 'flexible_content',
+	'value'   => array( array( 'acf_fc_layout' => 'reusable_block', 'block' => 101 ) ),
+	'layouts' => array(),
+);
+$runtime_layouts = mrn_base_stack_get_after_content_builder_layouts();
+mrn_acf_clone_test_assert( -1 === $runtime_layouts['layout_legacy_saved_row']['max'], 'A saved legacy layout remains available for existing rows without becoming newly insertable.' );
+mrn_acf_clone_test_assert( '' === $runtime_layouts['layout_legacy_saved_row']['sub_fields'][0]['maxlength'], 'Public cloned fields retain validator defaults.' );
+foreach ( array( 'acf/load_field/key=', 'acf/prepare_field/key=' ) as $hook_prefix ) {
+	$public = apply_filters( $hook_prefix . $field['key'], $field );
+	mrn_acf_clone_test_assert( $runtime_layouts === $public['layouts'], 'Public requests retain the complete finalized layout tree without rebuilding editor controls.' );
+	mrn_acf_clone_test_assert( $field['value'] === $public['value'], 'Public field preparation preserves saved values.' );
+	mrn_acf_clone_test_assert( ! isset( $public['_mrn_base_stack_contract_applied'] ), 'Public field preparation skips the editor contract.' );
+}
+mrn_acf_clone_test_assert( false === mrn_base_stack_populate_after_content_builder_field( false ), 'Hidden fields remain hidden.' );
+
+$GLOBALS['mrn_acf_clone_test_admin'] = true;
+$admin = apply_filters( 'acf/load_field/key=' . $field['key'], $field );
+mrn_acf_clone_test_assert( ! empty( $admin['_mrn_base_stack_contract_applied'] ), 'Admin requests still prepare the editor contract.' );
+mrn_acf_clone_test_assert( $field['value'] === $admin['value'], 'Editor preparation preserves saved values.' );
+mrn_acf_clone_test_assert( in_array( 'internal_name', array_column( $admin['layouts']['layout_mrn_reusable_block']['sub_fields'], 'name' ), true ), 'The editor retains its internal-name control.' );
+
+$GLOBALS['mrn_acf_clone_test_admin'] = false;
+$GLOBALS['mrn_acf_clone_test_ajax'] = true;
+$ajax = apply_filters( 'acf/prepare_field/key=' . $field['key'], $field );
+mrn_acf_clone_test_assert( $admin === $ajax, 'AJAX requests retain the same complete editor field tree.' );
+
+$GLOBALS['mrn_acf_clone_test_ajax'] = false;
+add_filter( 'mrn_base_stack_should_prepare_builder_editor_contracts', static function () { return true; } );
+$opted_in = apply_filters( 'acf/load_field/key=' . $field['key'], $field );
+mrn_acf_clone_test_assert( $admin === $opted_in, 'Frontend or REST editing integrations can opt into editor contracts.' );
+
+$GLOBALS['mrn_acf_clone_test_admin'] = true;
+add_filter( 'mrn_base_stack_should_prepare_builder_editor_contracts', static function () { return false; }, 20 );
+$opted_out = apply_filters( 'acf/prepare_field/key=' . $field['key'], $field );
+mrn_acf_clone_test_assert( $public === $opted_out, 'An explicit integration opt-out preserves the public field tree.' );
+
+echo "PASS: After Content public, admin, AJAX and integration field contracts.\n";
