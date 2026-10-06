@@ -838,15 +838,18 @@ install_plugins() {
 
     slug="${source}"
 
-    if [[ "${source}" == http* ]]; then
-      echo "Installing plugin from URL: ${source}"
+    # A local ZIP can contain an uncompressed Plugin Name header. WP-CLI's
+    # is-installed accepts that file path even though it is not in wp-content.
+    # Always install/resolve archives first, then check their real plugin slug.
+    if [[ "${source}" == http* || "${source}" == /* || "${source}" == *.zip ]]; then
+      echo "Installing plugin from package/source: ${source}"
       if ! installed_slug="$(infer_new_plugin_slug "${source}")"; then
-        add_warning "Failed to install plugin from URL: ${source}"
+        add_warning "Failed to install plugin package/source: ${source}"
         continue
       fi
       if ! run_wp plugin is-active "${installed_slug}" >/dev/null 2>&1; then
         if ! run_wp plugin activate "${installed_slug}"; then
-          add_warning "Installed but failed to activate plugin slug '${installed_slug}' from URL: ${source}"
+          add_warning "Installed but failed to activate plugin slug '${installed_slug}' from source: ${source}"
         fi
       fi
       continue
