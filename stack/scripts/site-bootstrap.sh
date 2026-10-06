@@ -838,9 +838,9 @@ install_plugins() {
 
     slug="${source}"
 
-    # A local ZIP can contain an uncompressed Plugin Name header. WP-CLI's
-    # is-installed accepts that file path even though it is not in wp-content.
-    # Always install/resolve archives first, then check their real plugin slug.
+    # Archive paths are installation sources, not WordPress plugin slugs.
+    # Resolve them through installation before checking the actual plugin;
+    # a source-path is-installed result does not prove the package is present.
     if [[ "${source}" == http* || "${source}" == /* || "${source}" == *.zip ]]; then
       echo "Installing plugin from package/source: ${source}"
       if ! installed_slug="$(infer_new_plugin_slug "${source}")"; then
