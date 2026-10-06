@@ -1,5 +1,11 @@
 # Stack Changelog
 
+## 2026.10.06-dev-enrollment-r2 (isolated pilot candidate)
+
+- Fix initial bootstrap when the site user cannot read the protected MRN Config Helper settings file. The operator opens the exact JSON input and supplies it through stdin; the source stays private and values stay out of process arguments.
+- Resolve archive inputs to their installed plugin slugs before checking activation. A local archive path must not be mistaken for an already-installed plugin; the pilot exposed this with HappyFiles.
+- Execute importer regressions for private payload delivery, preserved site settings, network options and rejected malformed input. Preserve all component/package versions and the bounded Dev-only pilot scope.
+
 ## 2026.10.06-dev-enrollment-r1 (isolated pilot candidate)
 
 - Connect successful new-site CloudPanel bootstrap to the shared resumable Dev enrollment controller. Publish only reviewed bootstrap contracts; existing client runtimes and Live destinations remain outside this rollout.

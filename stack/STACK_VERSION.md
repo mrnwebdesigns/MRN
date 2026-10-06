@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.06-dev-enrollment-r1`
+- Stack release: `2026.10.06-dev-enrollment-r2`
 - Release date: `2026-10-06`
 - Status: `new-site Dev enrollment candidate; isolated pilot qualification pending`
 
@@ -55,6 +55,11 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Candidate scope
+- The isolated pilot exposed a protected-settings import failure. Revision 2
+  passes JSON through operator-opened standard input to the site-owned WP-CLI
+  process without changing server-secret permissions or leaking values into
+  command arguments. Component and package versions remain unchanged.
+
 - October 6 adds automatic Dev deployment enrollment after successful new-site
   bootstrap: private repository, isolated per-site SSH identity, thin shared
   workflows, exact-source QA, backup, rollback qualification and ordinary-push
