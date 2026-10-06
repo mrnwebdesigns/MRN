@@ -181,7 +181,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: mrnwebdesigns/MRN-qa-engine
-          ref: 80b652be31149cc2ecdb47e634c4c085f859baa3
+          ref: c6ba43995e4bb37fb10feed35a71fca706f09dc5
           path: .mrn-qa-engine
           token: ${{ secrets.MRN_QA_ENGINE_TOKEN }}
           persist-credentials: false
