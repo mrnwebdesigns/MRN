@@ -1,8 +1,9 @@
 # CloudPanel Dev deployment onboarding
 
-Status: implementation candidate. Installation, MRN service credentials and a
-real new-site acceptance run are required before enabling this on a host. This
-document does not claim that the CloudPanel server has been updated.
+Status: merged implementation; the CloudPanel controller and source-QA tools
+are installed, and enrollment remains disabled. Credentials and a real new-site
+acceptance run are required before activation.
+The host status below distinguishes installed tooling from deployment readiness.
 
 ## What the owner and developers do
 
@@ -68,10 +69,18 @@ replace a site's currently installed workflow or rotate an existing identity.
 1. Install a clean checkout of the reviewed MRN commit under
    `/opt/mrn-site-deploy/MRN`; pin `tooling_ref` to its complete 40-character SHA.
    The workflow and tooling must both exist at that same published revision.
-2. Install Python 3.11+, Git, Node 22, PHP, WP-CLI, the pinned MRN QA Engine and
+2. Install Python 3.11+ with virtual-environment support, Git, Node 22, PHP, WP-CLI, the pinned MRN QA Engine and
    its documented source-analysis dependencies. The enrollment process invokes
    the installed QA Engine before publishing the initial child source. GitHub
    repeats source QA for the exact committed source before any deployment.
+   On Ubuntu, check the package-manager plan before installing `python3-venv`:
+   it may also upgrade the system Python packages. An isolated environment
+   created with `--without-pip`, then bootstrapped from a pinned, checksum-verified
+   PyPI pip wheel, avoids unrelated system upgrades. Keep source QA's Semgrep
+   installation outside user-site packages because QA intentionally changes
+   `HOME`. Make the isolated Node, Semgrep and PHPCS binaries available in the
+   QA launcher's `PATH`; an interactive administrator's shell is not the cron
+   environment.
 3. Create the isolated Python environment:
 
    ```bash
@@ -204,27 +213,50 @@ teams. Replace that field with `github_owner` and `github_owner_type`, and
 configure `collaborators` for MRN's current User owner. Old configuration is
 rejected explicitly; no existing host configuration is rewritten automatically.
 
-## Host readiness checked on 2026-10-06
+## Host installation status on 2026-10-06
 
-Read-only inspection confirmed that CloudPanel is reachable through the
-configured MRN SSH identities. Python 3.12, Git, PHP, Composer and WP-CLI are
-available. The enrollment controller, QA installation and `/etc/mrn` configuration
-are absent; Node and 1Password CLI were not found in the manager's PATH.
-The configured `kyle` administrator has general sudo rights that require
-authentication. The operations and Stack-manager identities have limited
-passwordless commands; those permissions must not be repurposed to install
-sudo rules or other access bypasses.
+Authenticated administration of `mrndev` succeeded using the existing MRN
+business credential for `kyle`; no access rules or SSH identities were changed.
+The following are installed outside WordPress roots:
 
-Production Hub's approved MRN-business lookup found `MRN_QA_ENGINE_TOKEN` but
-reported `GITHUB_TOKEN` missing from `Production Hub - GitHub`. Provide the
-approved owner credential through that secure account, plus the unattended
-1Password service identity and target deployment identity, before enrollment.
-Do not paste credential values into the chat or repository. No host files,
-repositories or client runtimes were changed during this inspection.
+- Clean detached MRN checkout at
+  `5f8cf544ab36b00914f4617dcc70bb27e4b82fc3` under
+  `/opt/mrn-site-deploy/MRN`.
+- Isolated Python environment with PyNaCl 1.6.0.
+- Node 22.23.3 verified against the official distribution checksum.
+- 1Password CLI 2.39.0 verified against the vendor's signing key.
+- Root-private enrollment directories and a `0600` configuration with the
+  verified tooling revision, SSH address and isolated QA launcher. Credentials
+  and collaborator configuration are still pending; `enabled` remains `false`.
+- SSH host keys captured through authenticated administrator access and stored
+  in the root-private known-hosts file.
 
-An existing `nethues-sandbox.mrndev.io` install is already bootstrapped and is
-not automatically selected as this task's pilot. A fresh approved Dev target
-is still required for the bootstrap acceptance test.
+The QA Engine is installed at immutable commit
+`c6ba43995e4bb37fb10feed35a71fca706f09dc5`, with isolated Semgrep 1.179.0 and
+PHPCS/WPCS dependencies. The controller's real `source_qa` operation passed
+against a generated child-theme fixture and thin workflows on the host. This
+checks the installed source-QA path; it is not a WordPress runtime or GitHub
+deployment qualification. The original bootstrap scripts and root cron are
+unchanged. No site or repository has been created by this enrollment.
+
+The MRN AI Automation service identity authenticated successfully against the
+business account. Production Hub's approved lookup found `MRN_QA_ENGINE_TOKEN`
+but reported `GITHUB_TOKEN` missing from `Production Hub - GitHub`. A separate
+owner-authorized enrollment credential still needs provisioning; existing
+QA-only tokens must retain their current scope. GitHub's fresh owner
+authentication completed, and a separate fine-grained enrollment token was
+prepared but not created. Its requested administration/contents/Actions/
+workflows/environments/secrets/variables permissions cover current and future
+MRN-owned repositories, with a January 4, 2027 expiration. Creation and secure
+storage await owner confirmation because this grants persistent access.
+Never paste credential values into chat or source. An open desktop vault does
+not prove that a separate CLI session is authenticated.
+
+The proposed isolated bootstrap pilot is `deployment-test.mrndev.io`. It has
+not been created or qualified. Existing client sites, including the previously
+bootstrapped sandbox, have not been enrolled or changed. The merged bootstrap
+contracts still need release-lock reconciliation, controlled publication and
+pilot evidence before this feature can be called current.
 
 ## GitHub API references
 
