@@ -96,7 +96,10 @@ def validate_target(plan):
 
 def inspect(plan):
     validate_target(plan)
-    encoded = base64.b64encode((json.dumps(plan) + '\n').encode()).decode()
+    # A bound plan can contain thousands of inventory records. Only these
+    # identity fields are needed remotely; keep it below per-argument limits.
+    target = {key: plan[key] for key in ('root', 'url', 'state', 'child', 'child_state')}
+    encoded = base64.b64encode((json.dumps(target) + '\n').encode()).decode()
     # The program and plan are literals passed to Python; no request strings are
     # interpolated into executable shell syntax without shlex quoting.
     program = 'import base64,io,sys;sys.stdin=io.StringIO(base64.b64decode(' + repr(encoded) + ').decode());exec(' + repr(INSPECT) + ')'

@@ -170,6 +170,20 @@ class ParentTransactions(unittest.TestCase):
             changed = {**plan, key: value}
             with self.subTest(key=key), self.assertRaises(ValueError):
                 validate_target(changed)
+
+    def test_large_bound_plan_does_not_enter_ssh_arguments(self):
+        from datetime import datetime, timezone
+        from unittest.mock import patch
+        from parent_deploy import inspect
+        plan = {'environment': 'dev', 'url': 'https://fixture.mrndev.io', 'ssh_login': 'fixture@mrndev-site-owner',
+                'root': '/home/fixture/htdocs/fixture.mrndev.io', 'state': '/home/fixture/.local/parent',
+                'child_state': '/home/fixture/.local/child', 'child': 'fixture-child',
+                'other_stack': {str(i): 'a' * 64 for i in range(10000)},
+                'mainwp': {'connected': True, 'dashboardHost': 'wpcontrol.mrndev.io', 'abilitiesCount': 84,
+                'site_id': 7, 'site_url': 'https://fixture.mrndev.io/', 'synced_at': datetime.now(timezone.utc).isoformat()}}
+        with patch('parent_deploy.ssh', return_value=b'{}') as remote:
+            inspect(plan)
+        self.assertLess(len(remote.call_args.args[1]), 10000)
         for key, value in [('dashboardHost', 'wrong.example'), ('synced_at', '2020-01-01T00:00:00+00:00')]:
             changed = copy.deepcopy(plan)
             changed['mainwp'][key] = value
