@@ -1,9 +1,10 @@
 # CloudPanel Dev deployment onboarding
 
-Status: merged implementation; the CloudPanel controller and source-QA tools
-are installed, and enrollment remains disabled. The GitHub credential is provisioned; a real new-site
-acceptance run is required before activation.
-The host status below distinguishes installed tooling from deployment readiness.
+Status: shared implementation and corrected bootstrap candidate
+`2026.10.06-dev-enrollment-r2` are merged. The CloudPanel controller, source QA,
+credentials and checksum-verified bootstrap scripts are installed. The isolated
+pilot exists; full deployment qualification and push-only acceptance are still
+pending. General new-site enrollment remains disabled until that proof passes.
 
 ## What the owner and developers do
 
@@ -26,6 +27,35 @@ Live/Both remain disabled. Changing `WP_ENVIRONMENT_TYPE` does not enable Live,
 change a deployment URL, migrate data or publish code. A later Live feature can
 record a request for operator qualification when the environment changes; it
 must verify the production identity, approved source and authorization separately.
+
+## Copy-ready instructions for remote developers
+
+```text
+1. Accept the repository invitation if one arrives, then clone the supplied
+   repository using your usual Git app. No GitHub CLI is needed.
+2. Before starting work, Pull the latest main branch.
+3. Make your child-theme code changes. Commit them with a short description.
+4. Push main. This requests Dev deployment automatically.
+5. Wait for the Deploy site result, then open the supplied Dev URL and check
+   your change. The earlier MRN source push result alone is not deployment proof.
+6. If QA or deployment fails, keep the failed run link and report it. Do not
+   upload files directly to the server or repeatedly push the same change.
+
+CSS and JavaScript cache busting is automatic. Edit the source files; the build
+creates synchronized minified files and content-hashed asset URLs. You do not
+need to change version numbers or clear every cache.
+
+This new-site setup deploys child-theme code to Dev only. Live and Both become
+available after a separate Live setup and qualification. A normal push never
+publishes to Live. Database content, media, plugins and the shared parent theme
+have separate deployment processes.
+```
+
+A developer can also use their Git app to create and push a fresh
+`deploy-dev-YYYYMMDD-1` tag on a committed same-repository branch when deliberately
+requesting Dev testing without pushing that work to `main`. Increment the final
+number for another request; never move or reuse a deployment tag. The shared
+controller resolves and checks the exact tagged commit before deployment.
 
 ## Ownership and boundaries
 
@@ -236,14 +266,15 @@ business credential for `kyle`; no access rules or SSH identities were changed.
 The following are installed outside WordPress roots:
 
 - Clean detached MRN checkout at
-  `5f8cf544ab36b00914f4617dcc70bb27e4b82fc3` under
+  `b3eaf2b15c17566fc9f703e1074ab8cc027c363f` under
   `/opt/mrn-site-deploy/MRN`.
 - Isolated Python environment with PyNaCl 1.6.0.
 - Node 22.23.3 verified against the official distribution checksum.
 - 1Password CLI 2.39.0 verified against the vendor's signing key.
 - Root-private enrollment directories and a `0600` configuration with the
-  verified tooling revision, SSH address and isolated QA launcher. Credentials
-  and collaborator configuration are still pending; `enabled` remains `false`.
+  verified tooling revision, SSH address, isolated QA launcher and approved
+  `mrn-developer-collab` collaborator. General configuration remains disabled;
+  a separate enabled configuration is restricted to the isolated pilot.
 - SSH host keys captured through authenticated administrator access and stored
   in the root-private known-hosts file.
 
@@ -252,8 +283,12 @@ The QA Engine is installed at immutable commit
 PHPCS/WPCS dependencies. The controller's real `source_qa` operation passed
 against a generated child-theme fixture and thin workflows on the host. This
 checks the installed source-QA path; it is not a WordPress runtime or GitHub
-deployment qualification. The original bootstrap scripts and root cron are
-unchanged. No site or repository has been created by this enrollment.
+deployment qualification. The corrected bootstrap scripts have been published
+and checked against their committed bytes; the existing root scanner cadence
+is unchanged. The new isolated WordPress pilot has been provisioned at
+`https://deployment-test.mrndev.io` under owner `deployment-test-stack`. HTTPS,
+WordPress core checksums and a remotely verified Updraft database backup have
+passed. Existing client sites have not been enrolled or modified.
 
 The approved `MRN CloudPanel Dev Enrollment` GitHub token was created and
 stored in the existing business `Production Hub - GitHub` item. It expires on
@@ -270,11 +305,23 @@ expiration: save its replacement in the operator vault, encrypt it on the host,
 update the configured service UUID and verify the broker. Do not rotate site
 SSH keys or change existing GitHub deployment identities during this operation.
 
-The proposed isolated bootstrap pilot is `deployment-test.mrndev.io`. It has
-not been created or qualified. Existing client sites, including the previously
-bootstrapped sandbox, have not been enrolled or changed. The merged bootstrap
-contracts still need release-lock reconciliation, controlled publication and
-pilot evidence before this feature can be called current.
+Pilot acceptance must still prove the first qualified GitHub deployment,
+rollback exercise, exact deployed SHA, CSS/JS asset checksums, responsive browser
+rendering, runtime QA, and the subsequent ordinary `main` push. A public HTTP
+success or a verified backup alone is not deployment readiness. Record the run
+URLs and final state here once qualification completes.
+
+Bootstrap recovery uncovered and corrected two shared defects: protected JSON
+settings now reach the site-owned WP process through stdin, and a package path
+is resolved to its installed plugin slug before activation. Their regression
+tests and shared contract/QA checks pass. The merged release lock's candidate
+check and GitHub promotion reconciliation also pass.
+
+Host prerequisites include valid PEM formatting for the existing reCAPTCHA
+Enterprise private key. A secret export containing literal `\n` characters is
+not a PEM file: verify it with OpenSSL and normalize the storage format while
+preserving the original and the same key identity. Do not rotate credentials or
+skip the required credential gate to work around this configuration error.
 
 ## GitHub API references
 
