@@ -2,8 +2,10 @@
 from pathlib import Path
 import tempfile
 import unittest
+import sys
 from unittest.mock import patch, MagicMock
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import parent_host
 
 
@@ -21,9 +23,12 @@ class HostGates(unittest.TestCase):
 
     def test_retained_inactive_pointer_recovers_to_the_actual_legacy_runtime(self):
         with tempfile.TemporaryDirectory(prefix='mrn-parent-host-') as temporary:
-            state = Path(temporary)
+            base = Path(temporary).resolve()
+            root, state = base / 'public', base / 'state'
+            root.mkdir()
+            state.mkdir(mode=0o700)
             old = {'components': {'mrn-base-stack': {'artifact_sha256': 'b' * 64}}}
-            plan = {'root': str(state), 'state': str(state), 'url': 'https://fixture.mrndev.io',
+            plan = {'root': str(root), 'state': str(state), 'url': 'https://fixture.mrndev.io',
                     'environment': 'dev', 'child': 'child', 'child_state': str(state),
                     'backup_nonce': 'a' * 12, 'expected_current': old, 'archive': 'fixture.zip',
                     'artifact_sha256': 'b' * 64, 'source_sha': 'c' * 40, 'source_path': 'parent'}
@@ -32,7 +37,7 @@ class HostGates(unittest.TestCase):
             store.activate.return_value = old
             store.bootstrap.is_file.return_value = False
             store.bootstrap.exists.return_value = True
-            with patch.object(parent_host, 'preflight', return_value=(state, state, {})), \
+            with patch.object(parent_host, 'preflight', return_value=(root, root, {})), \
                  patch.object(parent_host, 'wp', return_value={'valid': True, 'nonce': 'a' * 12}), \
                  patch.object(parent_host, 'ParentStore', return_value=store), \
                  patch.object(parent_host, 'other_stack', return_value={}), \
