@@ -50,6 +50,9 @@ function mrn_base_stack_render_hero_builder( $post_id = null ) {
 		return false;
 	}
 
+	if ( mrn_base_stack_builder_field_is_empty( 'page_hero_rows', $post_id ) ) {
+		return false;
+	}
 	$rows = get_field( 'page_hero_rows', $post_id );
 	if ( ! is_array( $rows ) || empty( $rows ) ) {
 		return false;
@@ -1513,6 +1516,9 @@ function mrn_base_stack_render_builder_field( $field_name, $post_id = null, $wra
 		return false;
 	}
 
+	if ( mrn_base_stack_builder_field_is_empty( $field_name, $post_id ) ) {
+		return false;
+	}
 	$rows = get_field( $field_name, $post_id );
 	if ( ! is_array( $rows ) || empty( $rows ) ) {
 		return false;

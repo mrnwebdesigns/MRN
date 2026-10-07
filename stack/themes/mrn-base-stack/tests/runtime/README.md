@@ -29,6 +29,25 @@ Run `node tests/js/lazy-layouts.cjs` from the parent theme to check failed or
 malformed requests, retry, pending-save guards, conversion completion, and a
 layout limit reached by another editor action during an in-flight request.
 
+## Empty builders, 404 options and repeater safeguards
+
+On Platform's resolved `.localhost` runtime, run `builder-performance.php check`
+through `wp eval-file`. It requires empty Hero and After Content on the front
+page and performs process-local checks only: no catalog growth, custom-hook,
+default/cache/metadata/preview fallbacks, pagination and legacy-row preservation.
+`request` accepts `valid`, `nonce`, `capability`, `target`, `input`, or `layout`
+for the actual 404 options AJAX endpoint.
+
+For native browser qualification, set `MRN_PERFORMANCE_FIXTURE` to an unused
+private scratch JSON path and run `setup`. It creates tagged draft Page and FAQ
+records, with 55 nested Stats and 25 standalone FAQ rows, and snapshots the exact
+404 options namespace. In the editor, edit/save row 55, navigate to FAQ page two,
+edit/save row 25, and add/save a 404 Text row containing the unique text
+`MRN performance fixture`. Run `readback` to verify counts and saved content.
+Run `cleanup` to restore the 404 snapshot and move the owned drafts to Trash.
+Do not run this fixture against concurrently edited 404 settings. Keep the
+snapshot until restoration is verified, then archive evidence outside source.
+
 ## Reference Content integration checks
 
 Resolve a Local Hub WordPress path and its `.localhost` URL before running these

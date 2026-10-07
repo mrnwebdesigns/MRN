@@ -8,18 +8,19 @@
  */
 
 /**
- * Enqueue the adapter only for Classic Editor post screens with ACF Pro.
+ * Enqueue the adapter for Classic Editor posts and the owned 404 options screen.
  *
  * @param string $hook_suffix Current admin page.
  * @return void
  */
 function mrn_base_stack_enqueue_lazy_builder_layouts( $hook_suffix ) {
-	if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ), true ) || ! class_exists( '\ACF\Pro\Fields\FlexibleContent\Layout' ) || ! function_exists( 'mrn_base_stack_admin_is_safe_acf_editor_helper_screen' ) ) {
+	$options_editor = str_ends_with( $hook_suffix, '_page_mrn-404-page' ) && current_user_can( 'edit_theme_options' );
+	if ( ( ! $options_editor && ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ), true ) ) || ! class_exists( '\ACF\Pro\Fields\FlexibleContent\Layout' ) || ! function_exists( 'mrn_base_stack_admin_is_safe_acf_editor_helper_screen' ) ) {
 		return;
 	}
 
 	$screen = get_current_screen();
-	if ( ! mrn_base_stack_admin_is_safe_acf_editor_helper_screen( $screen ) ) {
+	if ( ! $options_editor && ! mrn_base_stack_admin_is_safe_acf_editor_helper_screen( $screen ) ) {
 		return;
 	}
 
@@ -89,9 +90,11 @@ add_filter( 'acf/prepare_field', 'mrn_base_stack_prepare_lazy_builder_layout', -
  */
 function mrn_base_stack_ajax_builder_layout() {
 	$field_key = isset( $_POST['field_key'] ) && is_string( $_POST['field_key'] ) ? sanitize_key( wp_unslash( $_POST['field_key'] ) ) : '';
-	$post_id   = isset( $_POST['post_id'] ) && is_scalar( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0;
+	$target    = isset( $_POST['post_id'] ) && is_scalar( $_POST['post_id'] ) ? sanitize_text_field( (string) wp_unslash( $_POST['post_id'] ) ) : '';
+	$post_id   = 'options' === $target ? 'options' : ( ctype_digit( $target ) ? absint( $target ) : 0 );
 	$nonce     = isset( $_POST['nonce'] ) && is_string( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
-	if ( ! wp_verify_nonce( $nonce, 'acf_field_flexible_content_' . $field_key ) || ! $post_id || ! current_user_can( 'edit_post', $post_id ) ) {
+	$can_edit  = 'options' === $post_id ? current_user_can( 'edit_theme_options' ) : ( $post_id && current_user_can( 'edit_post', $post_id ) );
+	if ( ! wp_verify_nonce( $nonce, 'acf_field_flexible_content_' . $field_key ) || ! $can_edit ) {
 		wp_send_json_error( array( 'message' => __( 'You cannot load this layout.', 'mrn-base-stack' ) ), 403 );
 	}
 	if ( ! function_exists( 'acf_set_form_data' ) || ! function_exists( 'acf_get_store' ) || ! function_exists( 'acf_get_field' ) || ! function_exists( 'acf_prepare_field' ) ) {
@@ -103,6 +106,9 @@ function mrn_base_stack_ajax_builder_layout() {
 	$layout_name = isset( $_POST['layout'] ) && is_string( $_POST['layout'] ) ? sanitize_key( wp_unslash( $_POST['layout'] ) ) : '';
 	if ( strlen( $input_name ) > 2048 || ! preg_match( '/^acf(?:\[[a-zA-Z0-9_-]+\])+$/D', $input_name ) || ! str_ends_with( $input_name, '[' . $field_key . ']' ) ) {
 		wp_send_json_error( array( 'message' => __( 'Invalid layout field.', 'mrn-base-stack' ) ), 400 );
+	}
+	if ( 'options' === $post_id && ( ! preg_match( '/^acf\[field_mrn_404_content_rows\](?:\[|$)/D', $input_name ) || ( 'field_mrn_404_content_rows' !== $field_key && ! str_starts_with( $field_key, 'not_found_' ) ) ) ) {
+		wp_send_json_error( array( 'message' => __( 'Invalid options layout field.', 'mrn-base-stack' ) ), 403 );
 	}
 
 	acf_set_form_data( 'post_id', $post_id );
