@@ -1,4 +1,35 @@
-# Reference Content integration checks
+# Builder integration checks
+
+## Deferred builder layout templates
+
+On an explicitly resolved Local Hub `.localhost` runtime with the candidate
+parent theme, set `MRN_LAZY_FIXTURE` to a private scratch JSON path. Run
+`wp eval-file <theme>/tests/runtime/lazy-layouts.php setup`, then `block` to
+create an owned draft page and a reusable-block picker fixture. The state file
+records hashes of published page content and metadata before qualification.
+
+Run `block-data` to seed the owned reusable block for conversion testing.
+Use the native Classic Editor to add Hero and After Content layouts, nested
+column layouts, duplicate/reorder rows, convert a reusable block into a
+page-specific block, open the image picker, and save/reload the draft. Try saving
+while a layout is loading: the editor must wait and retain the existing rows.
+The `request` mode exercises the actual layout handler with `nonce`,
+`capability`, `input`, `layout`, or `valid` cases. `check` reads back the draft
+and refuses changed published page content/metadata. `cleanup` verifies fixture
+ownership and moves the owned records to Trash; it never deletes client data.
+Retain results outside tracked source and remove the scratch directory afterward.
+
+The standalone `tests/php/lazy-layouts.php` test covers suppression boundaries
+for saved rows, repeater templates, nested layout requests, defaults, unrelated
+fields, and non-editor requests. Existing cloned-AJAX and field-finalization
+tests remain required. This qualification changes no ACF vendor files and
+does not constitute a Stack release or remote deployment.
+
+Run `node tests/js/lazy-layouts.cjs` from the parent theme to check failed or
+malformed requests, retry, pending-save guards, conversion completion, and a
+layout limit reached by another editor action during an in-flight request.
+
+## Reference Content integration checks
 
 Resolve a Local Hub WordPress path and its `.localhost` URL before running these
 tests. They require ACF Pro, the current parent theme, and the Stack Content Only
