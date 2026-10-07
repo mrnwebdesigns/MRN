@@ -79,10 +79,10 @@ if ( 'check' === $fixture_mode ) {
 			'pagination'       => (bool) $field['pagination'],
 			'max_with_55_rows' => $prepared['max'],
 		);
-		mrn_performance_expect( ! empty( $field['pagination'] ) || 55 === $prepared['max'], 'Legacy repeater rows were restricted.' );
+		mrn_performance_expect( 55 === $prepared['max'], 'Legacy repeater rows were restricted.' );
 		$field['value'] = array();
 		$prepared       = acf_prepare_field( $field );
-		mrn_performance_expect( ! empty( $field['pagination'] ) || 50 === $prepared['max'], 'Unbounded nested repeater remains.' );
+		mrn_performance_expect( empty( $field['pagination'] ) && 5 === $prepared['max'], 'Repeater ceiling was not applied.' );
 	}
 	// An inherited paginated definition must lose pagination when nested in a group.
 	acf_get_store( 'local-fields' )->set(
@@ -93,9 +93,10 @@ if ( 'check' === $fixture_mode ) {
 			'parent_layout' => 'layout_qa',
 		)
 	);
-	$nested = mrn_base_stack_paginate_repeater(
+	$nested = mrn_base_stack_limit_repeater_definition(
 		array(
 			'key'        => 'field_mrn_qa_nested',
+			'type'       => 'repeater',
 			'parent'     => 'field_mrn_qa_group',
 			'pagination' => 1,
 		)
@@ -148,6 +149,8 @@ if ( in_array( $fixture_mode, array( 'setup', 'readback', 'cleanup' ), true ) ) 
 				);
 			}
 		}
+		// Seed historical data only; normal ACF writes must obey the current ceiling.
+		remove_filter( 'acf/pre_update_value', 'mrn_base_stack_guard_repeater_write', 5 );
 		update_field(
 			'field_mrn_page_content_rows',
 			array(
@@ -159,6 +162,7 @@ if ( in_array( $fixture_mode, array( 'setup', 'readback', 'cleanup' ), true ) ) 
 			$state['page']
 		);
 		update_field( 'field_mrn_faq_items', $faqs, $state['mrn_reusable_faq'] );
+		add_filter( 'acf/pre_update_value', 'mrn_base_stack_guard_repeater_write', 5, 4 );
 		// Back up only the exact 404 options namespace before its native editor test.
 		global $wpdb;
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Read-only exact local fixture namespace snapshot.
@@ -182,7 +186,7 @@ if ( in_array( $fixture_mode, array( 'setup', 'readback', 'cleanup' ), true ) ) 
 		$rows = get_field( 'page_content_rows', $state['page'] );
 		$faqs = get_field( 'faq_items', $state['mrn_reusable_faq'] );
 		mrn_performance_expect( 55 === count( $rows[0]['stat_items'] ), 'Legacy rows were lost.' );
-		mrn_performance_expect( 25 === count( $faqs ), 'Paginated frontend values were truncated.' );
+		mrn_performance_expect( 25 === count( $faqs ), 'Legacy frontend values were truncated.' );
 		WP_CLI::line(
 			wp_json_encode(
 				array(

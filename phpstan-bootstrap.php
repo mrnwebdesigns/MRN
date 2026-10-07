@@ -56,6 +56,45 @@ if ( ! function_exists( 'get_field' ) ) {
 	}
 }
 
+// ACF runtime APIs used by the Stack repeater write policy.
+if ( ! function_exists( 'acf_get_metadata_by_field' ) ) {
+	/**
+	 * @param int|string           $post_id
+	 * @param array<string, mixed> $field
+	 * @return mixed
+	 */
+	function acf_get_metadata_by_field( $post_id, array $field, bool $hidden = false ) {
+		return null;
+	}
+}
+
+if ( ! function_exists( 'acf_get_form_data' ) ) {
+	/** @return mixed */
+	function acf_get_form_data( string $name = '' ) {
+		return null;
+	}
+}
+
+if ( ! function_exists( 'acf_request_arg' ) ) {
+	/**
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	function acf_request_arg( string $name, $default = false ) {
+		return $default;
+	}
+}
+
+if ( ! function_exists( 'acf_get_valid_post_id' ) ) {
+	/**
+	 * @param mixed $post_id
+	 * @return int|string
+	 */
+	function acf_get_valid_post_id( $post_id = 0, bool $allow_revision = true ) {
+		return 0;
+	}
+}
+
 if ( ! function_exists( 'get_sub_field' ) ) {
 	/**
 	 * @param mixed $selector
