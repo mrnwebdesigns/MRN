@@ -164,6 +164,9 @@ echo function_exists( 'mrn_base_stack_get_builder_anchor_markup' ) ? mrn_base_st
 							<a
 									class="mrn-ui__link"
 								href="<?php echo esc_url( $url ); ?>"
+								<?php if ( '' !== trim( wp_strip_all_tags( $link_title ) ) ) : ?>
+									aria-label="<?php echo esc_attr( wp_strip_all_tags( $link_title ) ); ?>"
+								<?php endif; ?>
 								<?php if ( '' !== $link_target ) : ?>
 									target="<?php echo esc_attr( $link_target ); ?>"
 								<?php endif; ?>

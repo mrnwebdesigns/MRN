@@ -9,7 +9,7 @@
  */
 
 if ( ! defined( 'ABSPATH' ) || ! function_exists( 'acf_get_field' ) || ! function_exists( 'acf_get_field_type' ) ) {
-	fwrite( STDERR, "FAIL: WordPress with ACF PRO is required.\n" );
+	fwrite( STDERR, "FAIL: WordPress with ACF PRO is required.\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- CLI regression diagnostics use STDERR.
 	exit( 1 );
 }
 
@@ -25,7 +25,7 @@ function mrn_acf_field_defaults_runtime_assert( $condition, $message ) {
 		return;
 	}
 
-	fwrite( STDERR, "FAIL: {$message}\n" );
+	fwrite( STDERR, "FAIL: {$message}\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- CLI regression diagnostics use STDERR.
 	exit( 1 );
 }
 
@@ -91,7 +91,7 @@ foreach ( $runtime_cases as $case ) {
 	mrn_acf_field_defaults_runtime_assert( array_key_exists( $case['default_key'], $field ), $case['field_key'] . ' includes ' . $case['default_key'] );
 
 	$warnings = array();
-	set_error_handler(
+	set_error_handler( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- This regression intentionally captures ACF validator warnings.
 		static function ( $severity, $message, $file, $line ) use ( &$warnings ) {
 			$warnings[] = array(
 				'severity' => $severity,
