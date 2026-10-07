@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.07-text-swipe-fleet-r1`
+- Stack release: `2026.10.07-acf-performance-fleet-r1`
 - Release date: `2026-10-07`
-- Status: `cumulative candidate; Trilliant local qualification; remote rollout pending`
+- Status: `cumulative candidate; Platform local qualification; remote rollout pending`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.5.5`
+  - `mrn-base-stack` `1.5.6`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -55,6 +55,13 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Candidate scope
+- October 7 ACF performance promotion includes PR #219: deferred unused editor
+  layouts, the 404 editor adapter, conservative empty-public-builder shortcuts,
+  and five-row Stack repeater limits enforced in native editing and ACF writes.
+  Tighter existing limits and historical oversized values are preserved. Parent
+  1.5.6 retains the complete Text Swipe baseline. Platform local is the named
+  qualification target; existing client sites remain separately deployed.
+  See `docs/releases/2026.10.07-acf-builder-editor.md`.
 - October 7 reconciles the forward Text Swipe + Edge Fade implementation and
   shared choice-registry renderer with the current merged Stack baseline. Parent
   1.5.5 retains the October 1 Events links, ACF validator defaults and all current
