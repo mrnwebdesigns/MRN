@@ -1,5 +1,50 @@
 # Stack Changelog
 
+## 2026.10.07-acf-performance-fleet-r1 (Platform qualification candidate)
+
+- Parent 1.5.6 incorporates all three ACF performance commits from PR #219.
+- Render unused flexible-content editor templates when selected; preserve native
+  saved-row editing, media, conversion, validation and 404 options behavior.
+- Avoid derived field catalog hydration for safely empty public Hero/After
+  Content areas. Custom value/default/filter behavior retains the native path.
+- Cap Stack repeaters at five rows, retaining tighter limits. Validate complete
+  submitted trees before ACF writes; preserve legacy content without growth.
+- Expose authored Showcase image-link text as the accessible link name. Document
+  intentional CLI diagnostics in the nested-field regression fixture.
+- Preserve every existing plugin/MU version, child theme, content store and
+  qualified bootstrap plugin package. PR #200 remains separately owned.
+- Reconcile exact merged source into the Stack lock and deterministic Fleet
+  artifacts. Platform local qualification does not establish client-site parity.
+
+## 2026.10.07-text-swipe-fleet-r1 (local qualification candidate)
+
+- Parent 1.5.5 includes Text Swipe + Edge Fade and validates saved tab effects
+  against the same registry used by ACF. Existing Instant, Fade and Slide values
+  remain supported; reduced motion uses an immediate switch.
+- Reconcile the forward Stack feature with current merged source instead of
+  replacing it with the older published parent during a cumulative update.
+- Include the locked Local Hub Stack updater and code recovery tooling. Preserve
+  the active child, saved content, active plugins and private child selection.
+- Audit recent source, bootstrap inputs and unmerged tasks. After Content PR
+  #200, parent-only transport PR #202 and the unmerged CAPTCHA cutover remain
+  separately identified; they are not silently included or called released.
+- Preserve all current plugin/MU versions, the qualified CAPTCHA 0.1.4 package
+  and the October 5 plugin input bundle. Local runtime verification is required;
+  this candidate does not authorize or establish a remote Fleet rollout.
+
+## 2026.10.06-dev-enrollment-r2 (isolated pilot candidate)
+
+- Fix initial bootstrap when the site user cannot read the protected MRN Config Helper settings file. The operator opens the exact JSON input and supplies it through stdin; the source stays private and values stay out of process arguments.
+- Resolve archive inputs to their installed plugin slugs before checking activation. A local archive path must not be mistaken for an already-installed plugin; the pilot exposed this with HappyFiles.
+- Execute importer regressions for private payload delivery, preserved site settings, network options and rejected malformed input. Preserve all component/package versions and the bounded Dev-only pilot scope.
+
+## 2026.10.06-dev-enrollment-r1 (isolated pilot candidate)
+
+- Connect successful new-site CloudPanel bootstrap to the shared resumable Dev enrollment controller. Publish only reviewed bootstrap contracts; existing client runtimes and Live destinations remain outside this rollout.
+- Provision a separate vault-backed SSH identity for each new site using a service account scoped to one enrollment vault. Preserve existing keys and fail closed on ambiguous identity, backup, source or runtime evidence.
+- Reuse immutable releases, generated content-hashed CSS/JS, retained asset URLs, atomic activation, verified backups, rollback and runtime QA. Developers continue using ordinary Git pushes from any Git GUI.
+- All component versions and the October 5 plugin package input lock remain unchanged. Source acceptance is separate from the real new-site qualification and push-only acceptance run.
+
 ## 2026.10.05-stack-bootstrap-r1 (owner-test candidate)
 
 - Exclude Background Video Pop-Out Disabler from every new-site bootstrap profile. Keep its supported source and checksum-locked optional package for deliberate per-site use. The Stack profile now selects 33 standard plugins; the plain profile remains at 32. No existing-site uninstall or hosted bootstrap deployment is performed.

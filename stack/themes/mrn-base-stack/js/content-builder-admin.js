@@ -140,7 +140,7 @@
 	}
 
 	function ensureConversionActions( context ) {
-		$( context || document ).find( '.layout' ).filter( function() {
+		$( context || document ).find( '.layout' ).add( $( context || document ).filter( '.layout' ) ).not( '.acf-clone' ).filter( function() {
 			var $row = $( this );
 			var $flexField = $row.closest( '.acf-field-flexible-content' );
 
@@ -1080,12 +1080,7 @@
 			return;
 		}
 
-		flexibleField.add( {
-			layout: payload.layout,
-			before: $row
-		} );
-
-		window.setTimeout( function() {
+		function completeConversion() {
 			var $newRow = findNewRow( $flexField, originalIds, payload.layout, $row );
 
 			if ( ! $newRow.length ) {
@@ -1097,7 +1092,16 @@
 			removeRow( flexibleField, $row, $newRow );
 			showNotice( config.successText, 'success' );
 			$newRow.find( '.acf-fc-layout-handle' ).first().trigger( 'focus' );
-		}, 80 );
+		}
+
+		flexibleField.add( {
+			layout: payload.layout,
+			before: $row,
+			mrnComplete: flexibleField.mrnLazyInstalled ? completeConversion : null
+		} );
+		if ( ! flexibleField.mrnLazyInstalled ) {
+			window.setTimeout( completeConversion, 80 );
+		}
 	}
 
 	function bootBuilderAdminUiOnce( context ) {

@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -65,7 +66,7 @@ class EnrollmentFlow(unittest.TestCase):
                      'github_owner_type':'User','team_slugs':[],'collaborators':['mrn-developer-collab']}
         self.e=enrollment.Enrollment(self.config,self.root,self.state,self.gh,
             {'deploy_private_key':'private-fixture','known_hosts':'hostkey-fixture','qa_engine_token':'qa-fixture'})
-        self.patches=[patch.object(enrollment,'snapshot',return_value=({'public/wp-content/themes/example-child/style.css':b'css'},'d'*64)),
+        self.patches=[patch.object(enrollment,'snapshot',return_value=({'public/wp-content/themes/example-child/style.css':b'/*\nVersion: 1.1.0\n*/'},'d'*64)),
                       patch.object(enrollment,'source_qa'),patch.object(enrollment,'runtime_prepare',return_value={'valid':True}),
                       patch.object(enrollment,'timestamp',return_value='2026-10-06T10:00:05Z')]
         self.mocks=[p.start() for p in self.patches]
@@ -159,9 +160,9 @@ class EvidenceTests(unittest.TestCase):
         names=('Bind successful QA to this commit','Verify browser-loaded assets and responsive layout contracts','Run runtime QA')
         self.jobs={'jobs':[{'steps':[{'name':n,'conclusion':'success'} for n in names]}]}
         self.artifacts={'artifacts':[{'id':12,'name':'site-deployment-dev-'+SHA,'expired':False}]}
-    def prove(self,qualification=False):
+    def prove(self,qualification=False,prior_release=None):
         with patch.object(self.gh,'request',side_effect=[self.jobs,self.artifacts]),patch.object(self.gh,'evidence',return_value=(self.receipt,self.browser,self.runtime)):
-            return self.gh.proof(self.run,SHA,'https://example.mrndev.io','example-child',qualification=qualification,signal_number=None if qualification else 4)
+            return self.gh.proof(self.run,SHA,'https://example.mrndev.io','example-child',qualification=qualification,signal_number=None if qualification else 4,prior_release=prior_release)
     def test_passes_exact_receipts(self):self.assertEqual(SHA,self.prove(True)['source_sha']);self.prove()
     def test_green_workflow_with_advisory_runtime_failure_is_not_ready(self):
         self.jobs['jobs'][0]['steps'][-1]['conclusion']='failure'
@@ -180,6 +181,14 @@ class EvidenceTests(unittest.TestCase):
     def test_qualification_requires_rollback_and_all_backups(self):
         self.receipt['steps']=[s for s in self.receipt['steps'] if s['operation']!='rollback-test']
         with self.assertRaises(ValueError):self.prove(True)
+    def test_requalification_requires_authorized_prior_and_repeated_rollback(self):
+        self.receipt['steps']=[s for s in self.receipt['steps'] if s['operation']!='adopt']
+        self.receipt['previous']={'release_id':'e'*64}
+        with self.assertRaises(ValueError):self.prove(True)
+        self.prove(True,prior_release='e'*64)
+        with self.assertRaises(ValueError):self.prove(True,prior_release='d'*64)
+        self.receipt['steps']=[s for s in self.receipt['steps'] if s['operation']!='rollback-test']
+        with self.assertRaises(ValueError):self.prove(True,prior_release='e'*64)
     def test_rejects_stale_or_incomplete_browser_assets(self):
         self.browser[0]['errors']=['wrong asset hash']
         with self.assertRaises(ValueError):self.prove()
@@ -200,6 +209,24 @@ class EvidenceTests(unittest.TestCase):
 
 
 class GitHubOwnerTests(unittest.TestCase):
+    def test_clearing_authorization_deletes_and_verifies_the_variable(self):
+        gh=GitHub('fixture','mrnwebdesigns/example-site')
+        for environment in ('dev',None):
+            with self.subTest(environment=environment),patch.object(gh,'request',side_effect=[{'value':SHA},None,None]) as api:
+                gh.variable('DEPLOY_ENROLLMENT_SOURCE_SHA','',environment)
+                self.assertEqual(['GET','DELETE','GET'],[c.args[0] for c in api.call_args_list])
+                self.assertTrue(api.call_args.kwargs['missing'])
+                self.assertTrue(all(len(c.args)==2 for c in api.call_args_list))
+    def test_retrying_a_cleared_variable_does_not_create_an_empty_value(self):
+        gh=GitHub('fixture','mrnwebdesigns/example-site')
+        with patch.object(gh,'request',return_value=None) as api:
+            gh.variable('DEPLOY_ENROLLMENT_PRIOR_RELEASE','','dev')
+            self.assertEqual(['GET','GET'],[c.args[0] for c in api.call_args_list])
+    def test_failed_variable_deletion_readback_blocks_arming(self):
+        gh=GitHub('fixture','mrnwebdesigns/example-site')
+        with patch.object(gh,'request',side_effect=[{'value':SHA},None,{'value':SHA}]):
+            with self.assertRaisesRegex(ValueError,'deletion readback'):gh.variable('DEPLOY_ENROLLMENT_SOURCE_SHA','','dev')
+
     def test_creation_uses_verified_owner_type_and_exact_user_token_identity(self):
         for owner_type, endpoint in (('User','/user/repos'),('Organization','/orgs/mrnwebdesigns/repos')):
             gh=GitHub('fixture','mrnwebdesigns/example-site',owner_type)
@@ -254,6 +281,44 @@ class GitHubOwnerTests(unittest.TestCase):
 
 
 class SourceAndCredentialTests(unittest.TestCase):
+    def test_generated_release_metadata_matches_child_version_and_preserves_authored_notes(self):
+        s = site(Path('/site'))
+        css = s['source_path'] + '/style.css'
+        readme = s['source_path'] + '/readme.txt'
+        files = {css:b'/*\nVersion: 1.2.3\n*/'}
+        self.assertIn(b'Stable tag: 1.2.3\n', enrollment.release_metadata(s, files)[readme])
+        self.assertNotIn(readme, files)
+        authored = {**files, readme:b'Authored release notes'}
+        self.assertEqual(authored, enrollment.release_metadata(s, authored))
+        with self.assertRaisesRegex(ValueError, 'Version header'):
+            enrollment.release_metadata(s, {css:b'/* no version */'})
+
+    def test_generated_scaffold_keeps_its_wordpress_file_documentation_first(self):
+        scaffold = Path(enrollment.__file__).parents[2] / 'stack/themes/mrn-base-stack-child'
+        with tempfile.TemporaryDirectory() as temp:
+            s = site(Path(temp).resolve())
+            theme = Path(s['root']) / 'wp-content/themes/example-child'
+            theme.mkdir(parents=True)
+            for name in ('functions.php', 'style.css'):
+                (theme / name).write_bytes((scaffold / name).read_bytes())
+            files, baseline = enrollment.snapshot(s)
+            output = theme / 'functions.php'
+            generated = files[s['source_path'] + '/functions.php']
+            output.write_bytes(generated)
+            code = '''
+foreach (token_get_all(file_get_contents($argv[1])) as $token) {
+    if (is_array($token) && in_array($token[0], [T_OPEN_TAG, T_WHITESPACE], true)) { continue; }
+    echo is_array($token) ? token_name($token[0]) . "\\n" . $token[1] : $token;
+    break;
+}
+'''
+            result = subprocess.run(['php', '-r', code, str(output)], capture_output=True, text=True, check=True)
+            self.assertTrue(result.stdout.startswith('T_DOC_COMMENT\n'))
+            self.assertIn('@package mrn-base-stack-child', result.stdout)
+            # Retrying source capture must not duplicate the opt-in.
+            repeated, _ = enrollment.snapshot(s)
+            self.assertEqual(generated, repeated[s['source_path'] + '/functions.php'])
+
     def test_snapshot_excludes_runtime_data_and_retains_baseline_before_optin(self):
         with tempfile.TemporaryDirectory() as temp:
             temp=str(Path(temp).resolve());s=site(Path(temp));theme=Path(temp)/'wp-content/themes/example-child';theme.mkdir(parents=True)

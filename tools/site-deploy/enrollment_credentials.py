@@ -14,8 +14,10 @@ from enroll_dev import ACCOUNT, private_path
 
 
 def op_json(arguments, env):
+    # The broker receives its request on stdin. Do not let op interpret that
+    # inherited pipe as an item template; SSH key creation rejects piped input.
     result = subprocess.run(['op', *arguments, '--format=json'], env=env,
-                            capture_output=True, text=True, timeout=60)
+                            stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=60)
     if result.returncode:
         raise ValueError('MRN credential operation failed; provider output withheld')
     return json.loads(result.stdout)
@@ -54,14 +56,17 @@ def deployment_identity(config, request, env):
     if not re.fullmatch(r'[a-z0-9]{26}', item_id):
         raise ValueError('Invalid deployment identity item')
     item = op_json(['item', 'get', item_id, '--vault', vault], env)
-    fields = {field['id']: field.get('value', '') for field in item.get('fields', [])}
+    fields = {field['id']: field for field in item.get('fields', [])}
     labels = {field.get('label'): field.get('value', '') for field in item.get('fields', [])}
     if (item.get('vault', {}).get('id') != vault or item.get('title') != title
             or item.get('category') != 'SSH_KEY'
             or any(labels.get(key) != value for key, value in binding.items())):
         raise ValueError('Deployment identity does not match this new site')
-    key = fields.get('private_key', '')
-    if not key.startswith('-----BEGIN OPENSSH PRIVATE KEY-----'):
+    private = fields.get('private_key', {})
+    # Current op JSON stores PKCS#8 in value and its OpenSSH export here.
+    # Read the export from the same validated item; never replace the identity.
+    key = private.get('ssh_formats', {}).get('openssh', {}).get('value', private.get('value', ''))
+    if not isinstance(key, str) or not key.startswith('-----BEGIN OPENSSH PRIVATE KEY-----'):
         raise ValueError('Deployment private key unavailable; existing identity preserved')
     return key.strip()
 

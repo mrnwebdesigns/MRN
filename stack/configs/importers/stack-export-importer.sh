@@ -207,15 +207,17 @@ apply_option_json() {
   local storage="$1"
   local file_path="$2"
   local option_name="$3"
-  local escaped_file escaped_name code
+  local escaped_name code
 
-  escaped_file="${file_path//\\/\\\\}"
-  escaped_file="${escaped_file//\'/\\\'}"
+  if [[ ! -r "${file_path}" ]]; then
+    echo "JSON config file is unavailable to the bootstrap operator." >&2
+    return 1
+  fi
   escaped_name="${option_name//\\/\\\\}"
   escaped_name="${escaped_name//\'/\\\'}"
-  code='$file = '\'''"${escaped_file}"''\'';
-if (!is_file($file)) { fwrite(STDERR, "JSON config file not found.\n"); exit(1); }
-$json = file_get_contents($file);
+  # Open the protected source as the operator and pass only this payload to
+  # the site user. Never broaden source permissions or put secrets in argv.
+  code='$json = file_get_contents("php://stdin");
 if (!is_string($json) || $json === "") { fwrite(STDERR, "JSON config file is empty or unreadable.\n"); exit(1); }
 $data = json_decode($json, true);
 if (!is_array($data)) { fwrite(STDERR, "Invalid JSON config payload.\n"); exit(1); }
@@ -231,7 +233,7 @@ if ("'"${storage}"'" === "site_option_json") {
     update_option($name, $data);
 }
 echo "Imported JSON option: {$name}\n";'
-  run_wp eval "${code}"
+  run_wp eval "${code}" < "${file_path}"
 }
 
 apply_advanced_editor_tools_json() {

@@ -46,6 +46,21 @@ class DevQualification(unittest.TestCase):
             self.assertFalse(deploy.qualification_request(self.args, self.c, {}))
             api.assert_not_called()
 
+    def test_requalification_requires_exact_authorized_existing_pointer(self):
+        before = {'state':{'schema':1, 'release_id':'d'*64}, 'files':{}}
+        with self.assertRaises(ValueError):deploy.qualification_target(self.c, before)
+        c = {**self.c, 'enrollment_prior_release':'d'*64}
+        deploy.qualification_target(c, before)
+        for state in (None, {'schema':1,'release_id':'e'*64}, {'schema':2,'release_id':'d'*64}):
+            with self.subTest(state=state),self.assertRaises(ValueError):
+                deploy.qualification_target(c, {**before,'state':state})
+        with patch('release_request.api', return_value={'object':{'sha':SHA}}):
+            self.assertTrue(deploy.qualification_request(self.args,c,self.env))
+            with self.assertRaises(ValueError):
+                deploy.qualification_request(self.args,{**c,'enrollment_prior_release':'bad'},self.env)
+            with self.assertRaises(ValueError):
+                deploy.qualification_request(self.args,c,{**self.env,'GITHUB_EVENT_NAME':'workflow_run'})
+
     def test_both_and_automatic_requests_cannot_enter_qualification(self):
         workflow=(Path(__file__).parents[3]/'.github/workflows/site-deploy.yml').read_text()
         section=workflow.split('      - name: Validate trigger',1)[1].split('  source-qa:',1)[0]
@@ -93,6 +108,12 @@ class DevQualification(unittest.TestCase):
             activate.reset_mock()
             with self.assertRaises(ValueError):deploy.deploy(args,c)
             activate.assert_not_called()
+            before['state']={'schema':1,'release_id':'d'*64}
+            c['enrollment_prior_release']='d'*64
+            deploy.deploy(args,c)
+            plan=activate.call_args.args[0]
+            self.assertFalse(plan['adopt']);self.assertTrue(plan['exercise_rollback']);self.assertTrue(plan['qualification'])
+            self.assertEqual(before['state'],plan['expected_current'])
 
     def test_runtime_receipt_preserves_actual_advisory_outcome(self):
         workflow=(Path(__file__).parents[3]/'.github/workflows/site-deploy-target.yml').read_text()

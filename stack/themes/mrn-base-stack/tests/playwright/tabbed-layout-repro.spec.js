@@ -1,9 +1,11 @@
 const { test, expect } = require('@playwright/test');
 
-const vendorCssPath = '/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/css/vendor/splide.min.css';
-const themeCssPath = '/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/style.css';
-const splideJsPath = '/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/vendor/splide.min.js';
-const tabsJsPath = '/Users/khofmeyer/Development/MRN/stack/themes/mrn-base-stack/js/front-end-tabs.js';
+const path = require('node:path');
+const themeRoot = path.resolve(__dirname, '../..');
+const vendorCssPath = path.join(themeRoot, 'css/vendor/splide.min.css');
+const themeCssPath = path.join(themeRoot, 'style.css');
+const splideJsPath = path.join(themeRoot, 'js/vendor/splide.min.js');
+const tabsJsPath = path.join(themeRoot, 'js/front-end-tabs.js');
 
 test('tabbed slide mode mounts slider and applies equal height', async ({ page }) => {
 	await page.setContent(`

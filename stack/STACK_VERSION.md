@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.05-stack-bootstrap-r1`
-- Release date: `2026-10-05`
-- Status: `new-site bootstrap candidate; owner rollout acceptance is separate`
+- Stack release: `2026.10.07-acf-performance-fleet-r1`
+- Release date: `2026-10-07`
+- Status: `cumulative candidate; Platform local qualification; remote rollout pending`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.5.3`
+  - `mrn-base-stack` `1.5.6`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -55,6 +55,35 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Candidate scope
+- October 7 ACF performance promotion includes PR #219: deferred unused editor
+  layouts, the 404 editor adapter, conservative empty-public-builder shortcuts,
+  and five-row Stack repeater limits enforced in native editing and ACF writes.
+  Tighter existing limits and historical oversized values are preserved. Parent
+  1.5.6 retains the complete Text Swipe baseline. Platform local is the named
+  qualification target; existing client sites remain separately deployed.
+  See `docs/releases/2026.10.07-acf-builder-editor.md`.
+- October 7 reconciles the forward Text Swipe + Edge Fade implementation and
+  shared choice-registry renderer with the current merged Stack baseline. Parent
+  1.5.5 retains the October 1 Events links, ACF validator defaults and all current
+  parent contracts. Version 1.5.4 remains the separate, unqualified After Content
+  draft; that performance change is not included in 1.5.5.
+- The checksum-bound local Stack updater is now part of shared deployment
+  tooling. The plugin input bundle remains `2026.10.05-stack-bootstrap-r1`.
+  Qualification targets Trilliant local only. Existing site QA findings and
+  remote rollout remain separate gates; this candidate is not fleet-current.
+  See `docs/releases/2026.10.07-stack-fleet-reconciliation.md`.
+- The isolated pilot exposed a protected-settings import failure. Revision 2
+  passes JSON through operator-opened standard input to the site-owned WP-CLI
+  process without changing server-secret permissions or leaking values into
+  command arguments. Component and package versions remain unchanged.
+
+- October 6 adds automatic Dev deployment enrollment after successful new-site
+  bootstrap: private repository, isolated per-site SSH identity, thin shared
+  workflows, exact-source QA, backup, rollback qualification and ordinary-push
+  verification. Live/Both remain disabled; existing sites are not enrolled.
+  Parent, child, plugin and MU versions are unchanged. The checksum-locked
+  plugin input bundle remains `2026.10.05-stack-bootstrap-r1`.
+
 - October 5 bootstrap finalization reconciles all 33 standard plugin inputs,
   pins community plugin versions, refreshes catalog documentation, and seals
   the owner-test bundle. Deployment transport upgrades, CAPTCHA 0.2.0 and

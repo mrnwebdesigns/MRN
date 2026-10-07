@@ -111,6 +111,14 @@ class GitHub:
     def variable(self, name, value, environment=None):
         prefix = self.prefix + ('/environments/' + environment if environment else '/actions') + '/variables'
         prior = self.request('GET', prefix + '/' + name, missing=True)
+        # GitHub rejects empty variable values. Absence is the workflow's empty
+        # default, so clear one-commit authorization with a verified deletion.
+        if value == '':
+            if prior:
+                self.request('DELETE', prefix + '/' + name)
+            if self.request('GET', prefix + '/' + name, missing=True) is not None:
+                raise ValueError('GitHub variable deletion readback mismatch: ' + name)
+            return
         if prior and prior.get('value') == value:
             return
         self.request('PATCH' if prior else 'POST', prefix + ('/' + name if prior else ''),
@@ -188,7 +196,14 @@ class GitHub:
         return self.request('GET', self.prefix + '/actions/workflows/' + workflow + '/runs?' +
                             urllib.parse.urlencode(query))['workflow_runs']
 
-    def proof(self, run, sha, url, slug, qualification=False, signal_number=None):
+    def deployment_evidence(self, run, sha):
+        artifacts = self.request('GET', self.prefix + '/actions/runs/' + str(run['id']) + '/artifacts?per_page=100')['artifacts']
+        matches = [row for row in artifacts if row['name'] == 'site-deployment-dev-' + sha and not row.get('expired')]
+        if len(matches) != 1:
+            raise ValueError('Exact deployment evidence artifact is missing or ambiguous')
+        return self.evidence(matches[0]['id'])
+
+    def proof(self, run, sha, url, slug, qualification=False, signal_number=None, prior_release=None):
         if run.get('status') != 'completed':
             return None
         if run.get('conclusion') != 'success':
@@ -198,12 +213,7 @@ class GitHub:
         for name in ('Bind successful QA to this commit', 'Verify browser-loaded assets and responsive layout contracts', 'Run runtime QA'):
             if names.get(name) != 'success':
                 raise ValueError('Enrollment requires passing source, browser and runtime QA: ' + name)
-        artifacts = self.request('GET', self.prefix + '/actions/runs/' + str(run['id']) + '/artifacts?per_page=100')['artifacts']
-        expected = 'site-deployment-dev-' + sha
-        matches = [row for row in artifacts if row['name'] == expected and not row.get('expired')]
-        if len(matches) != 1:
-            raise ValueError('Exact deployment evidence artifact is missing or ambiguous')
-        receipt, browser, runtime = self.evidence(matches[0]['id'])
+        receipt, browser, runtime = self.deployment_evidence(run, sha)
         if runtime != {'outcome': 'success', 'source_sha': sha, 'environment': 'dev', 'url': url}:
             raise ValueError('Runtime acceptance did not pass for the enrolled site and commit')
         if (receipt.get('status') != 'public-verified' or receipt.get('source_sha') != sha
@@ -217,6 +227,10 @@ class GitHub:
                 or str(order.get('run_id')) != str(run['id']) or order.get('source_branch') != 'main'):
             raise ValueError('Push pilot receipt does not belong to the expected automatic source signal')
         required = {'adopt', 'stage', 'activate', 'rollback-test', 'reactivate'} if qualification else {'stage', 'activate'}
+        if prior_release:
+            if not qualification or receipt.get('previous', {}).get('release_id') != prior_release:
+                raise ValueError('Requalification did not start from the authorized retained release')
+            required.remove('adopt')
         steps = {row['operation']: row.get('backup', {}).get('valid') for row in receipt.get('steps', [])}
         if not all(steps.get(key) is True for key in required):
             raise ValueError('Missing verified backups or rollback exercise')
