@@ -522,7 +522,7 @@
     {
       "slug": "mrn-stack-deployment-agent",
       "name": "MRN Stack Deployment Agent",
-      "version": "0.2.6",
+      "version": "0.3.2",
       "runtime_type": "standard-plugin",
       "classification": "operations-agent",
       "lifecycle": "supported",
@@ -648,7 +648,7 @@
     {
       "slug": "mrn-recaptcha-enterprise-manager",
       "name": "MRN reCAPTCHA Enterprise Manager",
-      "version": "0.2.0",
+      "version": "0.2.2",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",
@@ -774,7 +774,7 @@
     {
       "slug": "mrn-mainwp-operations-api",
       "name": "MRN MainWP Operations API",
-      "version": "0.9.9",
+      "version": "0.10.0",
       "runtime_type": "standard-plugin",
       "classification": "integration-adapter",
       "lifecycle": "supported",

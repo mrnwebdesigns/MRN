@@ -1,5 +1,22 @@
 # Stack Changelog
 
+## 2026.10.07-stack-gap-fleet-r1 (unpublished candidate)
+
+- Parent 1.5.7 adds the qualified After Content keyed request guard to the ACF
+  performance and Text Swipe baseline; Classic Editor save/reload and lazy row
+  insertion passed, with byte-identical public Home/Services output.
+- Accept parent-only Dev transport and coordinated CAPTCHA source/recovery
+  dependencies. Agent 0.3.2 is pinned in Fleet prerequisites and new bootstrap
+  inputs. The Dashboard controller remains independently seeded; no site write
+  is authorized by this release.
+- Add distribution parity checks for platform trees, Fleet payloads, all default
+  package paths and theme archives. Preserve previous immutable IDs/artifacts.
+- CAPTCHA 0.1.4 remains the qualified default. The 0.2.2 Gloves pilot source and
+  exact artifact are accepted, while generic native-controller qualification,
+  provider configuration and existing-site cutovers remain separately gated.
+- Whole-site contrast, child coding/whitespace and timing findings remain visible
+  blockers. This candidate is not Fleet ready or remotely adopted.
+
 ## 2026.10.07-acf-performance-fleet-r1 (Platform qualification candidate)
 
 - Parent 1.5.6 incorporates all three ACF performance commits from PR #219.

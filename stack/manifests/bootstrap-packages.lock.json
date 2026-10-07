@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "release_id": "2026.10.05-stack-bootstrap-r1",
+  "release_id": "2026.10.07-stack-gap-bootstrap-r1",
   "scope": "new-site-bootstrap-inputs",
   "stack_plugin_count": 33,
   "plain_plugin_count": 32,
@@ -257,17 +257,17 @@
     {
       "slug": "mrn-stack-deployment-agent",
       "name": "MRN Stack Deployment Agent",
-      "version": "0.2.6",
+      "version": "0.3.2",
       "profile": "all",
       "manifest_source": "/home/mrndev-stack-manager/stack/packages/mrn-stack-deployment-agent.zip",
       "package": "mrn-stack-deployment-agent.zip",
       "main_file": "mrn-stack-deployment-agent/mrn-stack-deployment-agent.php",
-      "sha256": "3a5d00be54eba8537341b61dc70cfb76b4ca7e8831d96a9219d5801c627127f2",
-      "size_bytes": 43217,
+      "sha256": "834e1716a2ba74fccfe3205d8944fcfac4a8b685e1edfd1366ae9b42da5f766f",
+      "size_bytes": 62383,
       "source": {
         "type": "git",
         "repository": "mrn-stack-deployment-agent",
-        "commit": "6e07902c9b4397c86775de9c82156e6911381a9d"
+        "commit": "e1d0dc07e8abc81640b76bd04883456900dc7d01"
       }
     },
     {
