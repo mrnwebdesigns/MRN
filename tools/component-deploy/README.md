@@ -5,12 +5,14 @@ adapter.** Standard-plugin adoption remains a candidate. No automatic site
 adoption, Live deployment, or native Dashboard parent installer is enabled.
 This directory does not enter the default Stack package. The ZIP format is deliberately not a
 WordPress plugin/theme installation ZIP. The normal MainWP installer must not
-receive it. Every receipt reports `runtime_qualified: false`.
+receive it. Build receipts report `runtime_qualified: false`; the authorized
+operator transaction produces separate target-specific runtime evidence.
 
 This implements the source/package and early component-selection portions of
 [D19](../../docs/MRN-ASSET-RELEASE-STANDARD.md). It does not complete the shared
-component deployment contract. Existing sites, installed plugin state, saved
-data and retired capability archives are untouched.
+component deployment contract. It does not automatically enroll existing sites,
+change installed plugin state, or replace retired capability archives. The
+explicit Dev qualification below is the only supported existing-site write.
 
 ## Implemented and tested
 
@@ -152,9 +154,10 @@ updates, actual warm browser cache, retained old HTML and OPcache rollback.
 4. **Public serving and QA:** extend the passing disposable serving/browser
    checks to exact provider adapters, scoped HTML refresh and failure recovery,
    and run accessibility/performance against actual component consumers.
-   Passing the test page does not qualify fleet layouts. Real provider/site
-   qualification remains separately scoped and is forbidden by the current
-   no-existing-site-touch instruction.
+   Passing the test page does not qualify fleet layouts. Parent-only CloudPanel
+   Dev qualification requires explicit owner authorization through the adapter
+   above. Standard-plugin adoption, other providers, and Live remain outside
+   that authorization and unqualified.
 5. **Promotion:** integrate exact artifacts into Stack lock/preflight and
    optional-plugin plans, verify clean source, hosted package parity and the
    required release/runtime checks. The current retirement candidate remains
