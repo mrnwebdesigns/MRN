@@ -14,8 +14,10 @@ from enroll_dev import ACCOUNT, private_path
 
 
 def op_json(arguments, env):
+    # The broker receives its request on stdin. Do not let op interpret that
+    # inherited pipe as an item template; SSH key creation rejects piped input.
     result = subprocess.run(['op', *arguments, '--format=json'], env=env,
-                            capture_output=True, text=True, timeout=60)
+                            stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=60)
     if result.returncode:
         raise ValueError('MRN credential operation failed; provider output withheld')
     return json.loads(result.stdout)

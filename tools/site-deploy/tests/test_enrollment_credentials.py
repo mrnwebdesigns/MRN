@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import subprocess
 import tempfile
 from types import SimpleNamespace
 import unittest
@@ -72,6 +73,25 @@ class NewSiteIdentity(unittest.TestCase):
 
 
 class BrokerIsolation(unittest.TestCase):
+    def test_item_commands_do_not_inherit_the_broker_request_pipe(self):
+        with tempfile.TemporaryDirectory() as temp:
+            executable = Path(temp) / 'op'
+            executable.write_text('#!' + sys.executable + '\n' + '''
+import json, os, stat, sys
+if stat.S_ISFIFO(os.fstat(0).st_mode):
+    sys.exit("SSH items cannot be created from piped input")
+print(json.dumps({"created": True}))
+''')
+            executable.chmod(0o700)
+            code = '''
+import os, enrollment_credentials as broker
+assert broker.op_json(['item', 'create', '--category=SSH Key'], os.environ) == {'created': True}
+'''
+            result = subprocess.run([sys.executable, '-c', code], input='{"domain":"example.mrndev.io"}',
+                                    text=True, capture_output=True, env={**os.environ, 'PATH': temp,
+                                    'PYTHONPATH': str(Path(broker.__file__).parent)}, timeout=10)
+            self.assertEqual(0, result.returncode, result.stderr)
+
     def config(self, directory, **updates):
         value = {'account': broker.ACCOUNT, 'service_account_id': 'service', 'vault_id': VAULT,
                  'references': {name: 'op://' + VAULT + '/item/' + name for name in
