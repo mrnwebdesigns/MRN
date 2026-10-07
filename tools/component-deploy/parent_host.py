@@ -5,6 +5,7 @@ verified the exact fresh MainWP backup before transferring this control code.
 The host independently verifies that same backup before any release mutation.
 """
 import hashlib
+from html.parser import HTMLParser
 import json
 import os
 from pathlib import Path
@@ -16,9 +17,25 @@ from parent_store import ParentStore, BOOTSTRAP, inventory, physical
 from atomic_store import durable_replace
 from cache_policy import canonical_pages, verify_cloudpanel_origin, verify_uncached_html
 from deploy import http_check, check
-from verify_public_assets import verify as verify_public
+from verify_public_assets import verify as verify_public, fetch
 
 TOOLS = Path(__file__).resolve().parent
+
+
+def rendered_tab_effects(html):
+    class Roots(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.effects = []
+
+        def handle_starttag(self, tag, attributes):
+            attributes = dict(attributes)
+            if 'data-mrn-tabbed-layout' in attributes:
+                prefix = 'mrn-tabbed-layout--transition-'
+                self.effects.extend(value[len(prefix):] for value in attributes.get('class', '').split() if value.startswith(prefix))
+    parser = Roots()
+    parser.feed(html)
+    return parser.effects
 
 
 def wp(root, body, nonce=None, skip_themes=True):
@@ -79,6 +96,12 @@ def public_check(plan, store, selected):
         store.release(identity)
         manifest = store.read(store.state / 'releases' / identity / 'component/mrn-base-stack/mrn-assets.json')
         assets = verify_public(manifest, plan['pages'])
+        if identity == plan['artifact_sha256'] and plan.get('required_rendered_effect'):
+            effect = check(plan['required_rendered_effect'], r'[a-z-]+', 'rendered tab effect')
+            for page in canonical_pages(plan['url'], plan['effect_pages']):
+                html = fetch(page, {'text/html'}).decode('utf-8')
+                if rendered_tab_effects(html) != [effect]:
+                    raise ValueError('The saved tab animation did not reach the public renderer')
         # Theme functions load for this readback; unlike recovery checks, this
         # request must execute the selected parent and original child release.
         environment = dict(os.environ)

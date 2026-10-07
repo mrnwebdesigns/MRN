@@ -10,6 +10,11 @@ import parent_host
 
 
 class HostGates(unittest.TestCase):
+    def test_rendered_mode_must_be_on_the_real_tab_root(self):
+        markup = '<script>"mrn-tabbed-layout--transition-text-swipe"</script><div data-mrn-tabbed-layout class="mrn-tabbed-layout--transition-instant"></div>'
+        self.assertEqual(['instant'], parent_host.rendered_tab_effects(markup))
+        self.assertEqual(['text-swipe'], parent_host.rendered_tab_effects('<div data-mrn-tabbed-layout class="mrn-tabbed-layout mrn-tabbed-layout--transition-text-swipe"></div>'))
+
     def test_failed_backup_leaves_no_private_or_public_release_state(self):
         with tempfile.TemporaryDirectory(prefix='mrn-parent-host-') as temporary:
             root = Path(temporary)
