@@ -44,6 +44,21 @@ class NewSiteIdentity(unittest.TestCase):
             self.assertEqual(2, call.call_count)
             self.assertNotIn('create', json.dumps(call.call_args_list))
 
+    def test_current_cli_item_uses_its_openssh_export_without_replacing_key(self):
+        record = item()
+        record['fields'][0].update(value='-----BEGIN PRIVATE KEY-----\npkcs8-fixture',
+                                   ssh_formats={'openssh': {'value': KEY}})
+        with patch.object(broker, 'op_json', side_effect=[[{'id': ITEM, 'title': TITLE}], record]) as call:
+            self.assertEqual(KEY, broker.deployment_identity(CONFIG, REQUEST, {}))
+            self.assertEqual(2, call.call_count)
+
+    def test_pkcs8_without_openssh_export_stops_without_replacement(self):
+        record = item(); record['fields'][0]['value'] = '-----BEGIN PRIVATE KEY-----\npkcs8-fixture'
+        with patch.object(broker, 'op_json', side_effect=[[{'id': ITEM, 'title': TITLE}], record]) as call:
+            with self.assertRaisesRegex(ValueError, 'existing identity preserved'):
+                broker.deployment_identity(CONFIG, REQUEST, {})
+            self.assertEqual(2, call.call_count)
+
     def test_failed_inventory_does_not_create_replacement(self):
         with patch.object(broker, 'op_json', side_effect=ValueError('unavailable')) as call:
             with self.assertRaises(ValueError): broker.deployment_identity(CONFIG, REQUEST, {})
