@@ -9,6 +9,8 @@
   Content areas. Custom value/default/filter behavior retains the native path.
 - Cap Stack repeaters at five rows, retaining tighter limits. Validate complete
   submitted trees before ACF writes; preserve legacy content without growth.
+- Expose authored Showcase image-link text as the accessible link name. Document
+  intentional CLI diagnostics in the nested-field regression fixture.
 - Preserve every existing plugin/MU version, child theme, content store and
   qualified bootstrap plugin package. PR #200 remains separately owned.
 - Reconcile exact merged source into the Stack lock and deterministic Fleet
