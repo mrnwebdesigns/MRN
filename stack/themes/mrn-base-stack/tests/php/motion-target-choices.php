@@ -64,4 +64,10 @@ mrn_motion_target_test_assert_same(
 	'Unknown extension fields retain the complete compatibility catalog.'
 );
 
-echo "Contextual motion target choice tests passed.\n";
+mrn_motion_target_test_assert_same(
+	array( 'instant', 'fade', 'slide', 'text-swipe' ),
+	array_keys( mrn_base_stack_get_tab_switch_effect_choices() ),
+	'Tab animation retains its saved-value contract while adding text-only swipe.'
+);
+
+echo "Contextual motion target and tab animation choice tests passed.\n";

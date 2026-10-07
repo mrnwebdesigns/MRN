@@ -110,7 +110,8 @@ if ( ! in_array( $tab_style, array( 'link', 'text-dividers', 'underline', 'under
 	$tab_style = 'pill';
 }
 
-if ( ! in_array( $switch_effect, array( 'instant', 'fade', 'slide' ), true ) ) {
+$switch_effect_choices = mrn_base_stack_get_tab_switch_effect_choices();
+if ( ! isset( $switch_effect_choices[ $switch_effect ] ) ) {
 	$switch_effect = 'instant';
 }
 

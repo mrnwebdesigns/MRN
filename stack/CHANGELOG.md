@@ -1,5 +1,21 @@
 # Stack Changelog
 
+## 2026.10.07-text-swipe-fleet-r1 (local qualification candidate)
+
+- Parent 1.5.5 includes Text Swipe + Edge Fade and validates saved tab effects
+  against the same registry used by ACF. Existing Instant, Fade and Slide values
+  remain supported; reduced motion uses an immediate switch.
+- Reconcile the forward Stack feature with current merged source instead of
+  replacing it with the older published parent during a cumulative update.
+- Include the locked Local Hub Stack updater and code recovery tooling. Preserve
+  the active child, saved content, active plugins and private child selection.
+- Audit recent source, bootstrap inputs and unmerged tasks. After Content PR
+  #200, parent-only transport PR #202 and the unmerged CAPTCHA cutover remain
+  separately identified; they are not silently included or called released.
+- Preserve all current plugin/MU versions, the qualified CAPTCHA 0.1.4 package
+  and the October 5 plugin input bundle. Local runtime verification is required;
+  this candidate does not authorize or establish a remote Fleet rollout.
+
 ## 2026.10.06-dev-enrollment-r2 (isolated pilot candidate)
 
 - Fix initial bootstrap when the site user cannot read the protected MRN Config Helper settings file. The operator opens the exact JSON input and supplies it through stdin; the source stays private and values stay out of process arguments.

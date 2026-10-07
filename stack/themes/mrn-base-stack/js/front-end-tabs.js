@@ -34,6 +34,10 @@
 			return 'fade';
 		}
 
+		if ( root.classList.contains( 'mrn-tabbed-layout--transition-text-swipe' ) ) {
+			return 'text-swipe';
+		}
+
 		return 'instant';
 	}
 
@@ -219,6 +223,116 @@
 		root.setAttribute( 'data-mrn-panel-height-bound', 'true' );
 	}
 
+	function getTextSwipeGroups( panel ) {
+		var regionSelector = '.mrn-layout-content--text, .mrn-reusable-block__content, .mrn-hero__content';
+		var textSelector = '.mrn-ui__head, .mrn-ui__text';
+		var groups = [];
+
+		if ( ! panel ) {
+			return groups;
+		}
+
+		panel.querySelectorAll( regionSelector ).forEach( function( region ) {
+			var targets = Array.prototype.filter.call( region.querySelectorAll( textSelector ), function( target ) {
+				return target.closest( regionSelector ) === region && ! target.parentElement.closest( textSelector );
+			} );
+
+			if ( targets.length ) {
+				groups.push( { region: region, targets: targets } );
+			}
+		} );
+
+		return groups;
+	}
+
+	function finishTextSwipe( root ) {
+		var transition = root.mrnTabTextSwipe;
+
+		if ( ! transition ) {
+			return;
+		}
+
+		delete root.mrnTabTextSwipe;
+		transition.animations.forEach( function( animation ) {
+			animation.cancel();
+		} );
+		transition.regions.forEach( function( region ) {
+			region.classList.remove( 'is-mrn-tab-text-swiping' );
+		} );
+		syncTabPanels( root, transition.nextIndex );
+		measurePanelHeight( root );
+	}
+
+	function animateTextSwipePhase( root, transition, groups, direction, entering ) {
+		var animations = [];
+
+		groups.forEach( function( group ) {
+			var style = window.getComputedStyle( group.region );
+			var distance = style.getPropertyValue( '--mrn-tabbed-text-swipe-distance' ).trim() || '4rem';
+			var offset = ( entering ? direction : -direction ) < 0 ? 'calc(-1 * ' + distance + ') 0' : distance + ' 0';
+
+			group.region.classList.add( 'is-mrn-tab-text-swiping' );
+			transition.regions.push( group.region );
+			group.targets.forEach( function( target ) {
+				var animation = target.animate(
+					entering ? [ { translate: offset, opacity: 0 }, { translate: '0 0', opacity: 1 } ] : [ { translate: '0 0', opacity: 1 }, { translate: offset, opacity: 0 } ],
+					{ duration: entering ? 260 : 160, easing: entering ? 'ease-out' : 'ease-in', fill: 'forwards' }
+				);
+				animations.push( animation );
+				transition.animations.push( animation );
+			} );
+		} );
+
+		return Promise.all( animations.map( function( animation ) {
+			return animation.finished.catch( function() {} );
+		} ) ).then( function() {
+			return root.mrnTabTextSwipe === transition;
+		} );
+	}
+
+	function activateTextSwipe( root, nextIndex, moveFocus, preferredDirection ) {
+		finishTextSwipe( root );
+
+		var buttons = getTabButtons( root );
+		var panels = getTabPanels( root );
+		var currentIndex = getCurrentTabIndex( buttons, panels );
+		var reducedMotion = window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+		var outgoingGroups = getTextSwipeGroups( panels[ currentIndex ] );
+
+		updateTabButtons( buttons, nextIndex );
+		if ( moveFocus && buttons[ nextIndex ] ) {
+			buttons[ nextIndex ].focus();
+		}
+
+		if ( currentIndex === nextIndex || reducedMotion || ! outgoingGroups.length || typeof outgoingGroups[ 0 ].targets[ 0 ].animate !== 'function' ) {
+			syncTabPanels( root, nextIndex );
+			measurePanelHeight( root );
+			return;
+		}
+
+		var direction = preferredDirection || ( nextIndex > currentIndex ? 1 : -1 );
+		var transition = { nextIndex: nextIndex, animations: [], regions: [] };
+		root.mrnTabTextSwipe = transition;
+
+		animateTextSwipePhase( root, transition, outgoingGroups, direction, false ).then( function( isCurrent ) {
+			if ( ! isCurrent ) {
+				return false;
+			}
+
+			syncTabPanels( root, nextIndex );
+			measurePanelHeight( root );
+			return animateTextSwipePhase( root, transition, getTextSwipeGroups( panels[ nextIndex ] ), direction, true );
+		} ).then( function( isCurrent ) {
+			if ( isCurrent ) {
+				finishTextSwipe( root );
+			}
+		} ).catch( function() {
+			if ( root.mrnTabTextSwipe === transition ) {
+				finishTextSwipe( root );
+			}
+		} );
+	}
+
 	function mountTabSlider( root, initialIndex ) {
 		var sliderElement = getTabSliderElement( root );
 		var sliderOptions;
@@ -270,12 +384,17 @@
 		return true;
 	}
 
-	function activateTab( root, nextIndex, moveFocus ) {
+	function activateTab( root, nextIndex, moveFocus, preferredDirection ) {
 		var buttons = getTabButtons( root );
 		var panels = getTabPanels( root );
 		var slider = getMountedSlider( root );
 
 		if ( ! buttons.length || buttons.length !== panels.length ) {
+			return;
+		}
+
+		if ( getTransitionEffect( root ) === 'text-swipe' ) {
+			activateTextSwipe( root, nextIndex, moveFocus, preferredDirection );
 			return;
 		}
 
@@ -300,6 +419,7 @@
 		var buttons = getTabButtons( root );
 		var currentIndex = Array.prototype.indexOf.call( buttons, button );
 		var nextIndex = currentIndex;
+		var direction = 0;
 
 		if ( ! buttons.length || currentIndex < 0 ) {
 			return;
@@ -309,10 +429,12 @@
 			case 'ArrowRight':
 			case 'ArrowDown':
 				nextIndex = ( currentIndex + 1 ) % buttons.length;
+				direction = 1;
 				break;
 			case 'ArrowLeft':
 			case 'ArrowUp':
 				nextIndex = ( currentIndex - 1 + buttons.length ) % buttons.length;
+				direction = -1;
 				break;
 			case 'Home':
 				nextIndex = 0;
@@ -325,7 +447,7 @@
 		}
 
 		event.preventDefault();
-		activateTab( root, nextIndex, true );
+		activateTab( root, nextIndex, true, direction );
 	}
 
 	function mountTabbedLayout( root ) {
@@ -353,6 +475,19 @@
 		} );
 
 		bindPanelHeightRecalculation( root );
+		if ( getTransitionEffect( root ) === 'text-swipe' ) {
+			window.addEventListener( 'resize', function() {
+				finishTextSwipe( root );
+			} );
+			if ( window.matchMedia ) {
+				var motionPreference = window.matchMedia( '(prefers-reduced-motion: reduce)' );
+				if ( typeof motionPreference.addEventListener === 'function' ) {
+					motionPreference.addEventListener( 'change', function() {
+						finishTextSwipe( root );
+					} );
+				}
+			}
+		}
 
 		if ( ! isSlideEffect( root ) ) {
 			measurePanelHeight( root );
