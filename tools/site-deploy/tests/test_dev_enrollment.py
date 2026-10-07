@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -254,6 +255,32 @@ class GitHubOwnerTests(unittest.TestCase):
 
 
 class SourceAndCredentialTests(unittest.TestCase):
+    def test_generated_scaffold_keeps_its_wordpress_file_documentation_first(self):
+        scaffold = Path(enrollment.__file__).parents[2] / 'stack/themes/mrn-base-stack-child'
+        with tempfile.TemporaryDirectory() as temp:
+            s = site(Path(temp).resolve())
+            theme = Path(s['root']) / 'wp-content/themes/example-child'
+            theme.mkdir(parents=True)
+            for name in ('functions.php', 'style.css'):
+                (theme / name).write_bytes((scaffold / name).read_bytes())
+            files, baseline = enrollment.snapshot(s)
+            output = theme / 'functions.php'
+            generated = files[s['source_path'] + '/functions.php']
+            output.write_bytes(generated)
+            code = '''
+foreach (token_get_all(file_get_contents($argv[1])) as $token) {
+    if (is_array($token) && in_array($token[0], [T_OPEN_TAG, T_WHITESPACE], true)) { continue; }
+    echo is_array($token) ? token_name($token[0]) . "\\n" . $token[1] : $token;
+    break;
+}
+'''
+            result = subprocess.run(['php', '-r', code, str(output)], capture_output=True, text=True, check=True)
+            self.assertTrue(result.stdout.startswith('T_DOC_COMMENT\n'))
+            self.assertIn('@package mrn-base-stack-child', result.stdout)
+            # Retrying source capture must not duplicate the opt-in.
+            repeated, _ = enrollment.snapshot(s)
+            self.assertEqual(generated, repeated[s['source_path'] + '/functions.php'])
+
     def test_snapshot_excludes_runtime_data_and_retains_baseline_before_optin(self):
         with tempfile.TemporaryDirectory() as temp:
             temp=str(Path(temp).resolve());s=site(Path(temp));theme=Path(temp)/'wp-content/themes/example-child';theme.mkdir(parents=True)
