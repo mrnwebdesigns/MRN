@@ -1,17 +1,19 @@
 # CloudPanel Dev deployment onboarding
 
-Status on October 7, 2026: the shared implementation is installed, and the isolated
-pilot passed strict deployment/rollback qualification and ordinary-push Dev
-acceptance. The developer invitation is pending acceptance. General new-site
-enrollment remains disabled pending operator credential closeout and developer
-handoff. Existing sites and Live were not enrolled by this pilot.
+Status on October 7, 2026: new-site Dev enrollment is enabled on `mrndev`.
+The isolated pilot passed strict deployment/rollback qualification and an
+ordinary-push Dev deployment. Developer Write access is accepted, the controller
+reports `ready`, and credential closeout is complete. Existing sites and Live
+were not enrolled by this pilot.
 
 ## What the owner and developers do
 
 1. Create the new WordPress site in CloudPanel as usual.
 2. MRN's bootstrap sets up WordPress, then queues Dev deployment enrollment.
 3. The existing bootstrap scanner advances enrollment on subsequent passes.
-4. Hand the repository to developers only when enrollment reports `ready`.
+4. The configured developers accept their GitHub repository invitation. The
+   controller verifies access and reports `ready`; then hand over the repository
+   and Dev URL for daily work.
 5. Developers clone with their Git app, pull before editing, commit and push
    `main`. QA, versioned assets, verified backup, atomic deployment and runtime
    checks run through the shared deployment system. GitHub CLI is unnecessary.
@@ -22,6 +24,12 @@ The final record supplies the Dev URL, private GitHub repository, deployed SHA,
 qualification run, ordinary-push run and recovery evidence. `DEPLOYMENT.md` in
 that repository contains the short developer instructions. Default repository
 name: `mrnwebdesigns/<dev-subdomain>-site`.
+
+On the current host, the existing scanner runs at minutes 23 and 53 each hour.
+Setup advances over multiple passes and waits for GitHub QA/deployment results
+and invitation acceptance. A working WordPress page alone does not mean
+deployment setup has finished. Operators check the enrollment state and run
+links; developers need only their usual Git app and the supplied Dev URL.
 
 Live/Both remain disabled. Changing `WP_ENVIRONMENT_TYPE` does not enable Live,
 change a deployment URL, migrate data or publish code. A later Live feature can
@@ -293,8 +301,9 @@ The following are installed outside WordPress roots:
 - 1Password CLI 2.39.0 verified against the vendor's signing key.
 - Root-private enrollment directories and a `0600` configuration with the
   verified tooling revision, SSH address, isolated QA launcher and approved
-  `mrn-developer-collab` collaborator. General configuration remains disabled;
-  a separate enabled configuration is restricted to the isolated pilot.
+  `mrn-developer-collab` collaborator. General new-site configuration was enabled
+  at `2026-10-07T14:22:19Z` after the pilot and accepted-access checks passed.
+  The separate pilot configuration is retained as recovery evidence.
 - SSH host keys captured through authenticated administrator access and stored
   in the root-private known-hosts file.
 
@@ -310,9 +319,16 @@ is unchanged. The new isolated WordPress pilot has been provisioned at
 WordPress core checksums and a remotely verified Updraft database backup have
 passed. Existing client sites have not been enrolled or modified.
 
-The approved `MRN CloudPanel Dev Enrollment` GitHub token was created and
-stored in the existing business `Production Hub - GitHub` item. It expires on
-January 4, 2027. Existing QA credentials and their permissions were preserved.
+The active `MRN CloudPanel Enrollment 20261007` GitHub token is stored in the
+existing business `Production Hub - GitHub` item and its dedicated enrollment
+copy. It expires on January 4, 2027. The separate `MRN QA Checkout 20261007`
+token reads only the private QA Engine source and expires on November 25, 2026.
+Both replaced credentials were revoked and verified to return HTTP 401; their
+replacements passed the actual host broker and required GitHub API checks.
+The six existing QA-secret consumers were updated without changing source or
+deployment identities. The stale webhook credential was reconciled with the
+working verifier; the verifier rejects the stale value. Credential recovery
+evidence remains encrypted in the operator vault.
 A dedicated `MRN Dev Enrollment` vault now holds the enrollment API credentials;
 its service identity was verified to see exactly one vault. The recovery token
 is stored in Production Hub. The broader MRN AI Automation identity is not
@@ -320,7 +336,9 @@ installed on this host.
 
 Rotate the enrollment GitHub token before its expiration, update both the
 canonical Production Hub field and its dedicated enrollment copy, and verify
-new-site API access. Rotate the dedicated service credential before its 90-day
+new-site API access. Rotate the QA checkout token before its expiration and
+update both vault copies and the existing repository-secret consumers. Rotate
+the dedicated service credential before its 90-day
 expiration: save its replacement in the operator vault, encrypt it on the host,
 update the configured service UUID and verify the broker. Do not rotate site
 SSH keys or change existing GitHub deployment identities during this operation.
@@ -344,11 +362,18 @@ variable fix does not change that qualified workflow. The following passed:
 
 The ordinary-push immutable artifact/release is
 `2bc72d69d821ed9fdaec9a0ad9eeed5a65f6584c2c9ae08b8c4085806f827b39`.
-The controller verified its receipts and reached `grant-access`; the existing
-`mrn-developer-collab` account must accept its Write invitation before the next
-resume can report `ready`. Only the `dev` GitHub environment exists. General
-configuration remains disabled until operator credential closeout; do not infer
-fleet adoption or Live readiness from this successful pilot.
+The controller verified its receipts and accepted Write access for
+`mrn-developer-collab`, then advanced from `grant-access` to `ready`. Only the
+`dev` GitHub environment exists. The guarded activation verified the immutable
+controller and three installed bootstrap scripts, the two pilot receipts,
+the current release pointer, accepted access and the queue containing only the
+pilot. It backed up and checksum-verified the root-private configuration before
+atomically enabling new-site enrollment, then loaded the configuration again.
+The configuration remains mode `0600`; activation evidence is retained in
+`/var/lib/mrn-site-enrollment/de28bf70bbc271ef85efcaf4/default-activation.json`.
+No existing-site adoption, Live enablement, database/content migration or new
+code deployment was performed during activation. Previously pinned site
+consumers still require their separate, explicitly scoped migration.
 
 The first attempt exposed missing generated child release metadata, recovery
 being incorrectly blocked by forward-deployment readiness, and GitHub rejecting
