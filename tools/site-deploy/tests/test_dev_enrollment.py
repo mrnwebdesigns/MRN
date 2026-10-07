@@ -209,6 +209,24 @@ class EvidenceTests(unittest.TestCase):
 
 
 class GitHubOwnerTests(unittest.TestCase):
+    def test_clearing_authorization_deletes_and_verifies_the_variable(self):
+        gh=GitHub('fixture','mrnwebdesigns/example-site')
+        for environment in ('dev',None):
+            with self.subTest(environment=environment),patch.object(gh,'request',side_effect=[{'value':SHA},None,None]) as api:
+                gh.variable('DEPLOY_ENROLLMENT_SOURCE_SHA','',environment)
+                self.assertEqual(['GET','DELETE','GET'],[c.args[0] for c in api.call_args_list])
+                self.assertTrue(api.call_args.kwargs['missing'])
+                self.assertTrue(all(len(c.args)==2 for c in api.call_args_list))
+    def test_retrying_a_cleared_variable_does_not_create_an_empty_value(self):
+        gh=GitHub('fixture','mrnwebdesigns/example-site')
+        with patch.object(gh,'request',return_value=None) as api:
+            gh.variable('DEPLOY_ENROLLMENT_PRIOR_RELEASE','','dev')
+            self.assertEqual(['GET','GET'],[c.args[0] for c in api.call_args_list])
+    def test_failed_variable_deletion_readback_blocks_arming(self):
+        gh=GitHub('fixture','mrnwebdesigns/example-site')
+        with patch.object(gh,'request',side_effect=[{'value':SHA},None,{'value':SHA}]):
+            with self.assertRaisesRegex(ValueError,'deletion readback'):gh.variable('DEPLOY_ENROLLMENT_SOURCE_SHA','','dev')
+
     def test_creation_uses_verified_owner_type_and_exact_user_token_identity(self):
         for owner_type, endpoint in (('User','/user/repos'),('Organization','/orgs/mrnwebdesigns/repos')):
             gh=GitHub('fixture','mrnwebdesigns/example-site',owner_type)

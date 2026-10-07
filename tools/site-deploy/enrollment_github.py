@@ -111,6 +111,14 @@ class GitHub:
     def variable(self, name, value, environment=None):
         prefix = self.prefix + ('/environments/' + environment if environment else '/actions') + '/variables'
         prior = self.request('GET', prefix + '/' + name, missing=True)
+        # GitHub rejects empty variable values. Absence is the workflow's empty
+        # default, so clear one-commit authorization with a verified deletion.
+        if value == '':
+            if prior:
+                self.request('DELETE', prefix + '/' + name)
+            if self.request('GET', prefix + '/' + name, missing=True) is not None:
+                raise ValueError('GitHub variable deletion readback mismatch: ' + name)
+            return
         if prior and prior.get('value') == value:
             return
         self.request('PATCH' if prior else 'POST', prefix + ('/' + name if prior else ''),

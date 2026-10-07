@@ -219,6 +219,8 @@ multiple passes; WordPress can be bootstrapped while deployment is still pending
    GitHub's advisory step is allowed to continue.
 7. Clear the one-commit qualification authorization, enable Dev readiness and
    set automatic/release cutoffs later than the known installation signal.
+   Clearing uses GitHub's variable DELETE operation and verifies absence;
+   GitHub rejects saving an empty variable value.
 8. Publish a docs-only ordinary `main` commit using the same child-theme bytes.
    Verify that push actually triggers the shared pipeline; bind its exact SHA,
    source signal sequence, backups and browser/asset evidence.
