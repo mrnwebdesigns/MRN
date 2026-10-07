@@ -65,7 +65,9 @@ def verify(manifest, pages, fetcher=fetch):
     results = []
     routes = stylesheet_routes(manifest)
     legacy = '/wp-content/themes/' + manifest['slug'] + '/'
+    parent = manifest.get('scope') == 'parent-theme'
     owned = '/wp-content/mrn-assets/' + manifest['slug'] + '/'
+    parent_owned = r'^/wp-content/mrn-assets/[a-f0-9]{64}/' + re.escape(manifest['slug']) + '/'
     prefix = '/wp-content/' + manifest['public_path'] + '/'
     for page in pages:
         if urllib.parse.urlsplit(page).query or not page.startswith('https://'):
@@ -79,7 +81,7 @@ def verify(manifest, pages, fetcher=fetch):
                 parsed = urllib.parse.urlsplit(url)
                 if parsed.path.startswith(legacy) and re.search(r'\.(css|m?js)$', parsed.path):
                     raise ValueError('Public HTML still references a mutable child asset: ' + url)
-                if not parsed.path.startswith(owned):
+                if not (re.match(parent_owned, parsed.path) if parent else parsed.path.startswith(owned)):
                     continue
                 executable = bool(re.search(r'\.(css|m?js)$', parsed.path))
                 # Existing image/font preload query strings do not defeat a
@@ -103,7 +105,7 @@ def verify(manifest, pages, fetcher=fetch):
             stylesheets = {prefix + manifest['assets'][source]['file'] for source in sources}
             linked = {urllib.parse.urljoin(page, raw) for raw in parser.stylesheets}
             if not any(url in linked and urllib.parse.urlsplit(url).path in stylesheets for url in verified):
-                raise ValueError('Page did not reference the released child stylesheet: ' + page)
+                raise ValueError('Page did not reference the released ' + ('parent' if parent else 'child') + ' stylesheet: ' + page)
             results.append({'page': page, 'phase': phase, 'assets': verified})
     return {'status': 'public-html-assets-verified', 'generation': manifest['generation'], 'pages': results,
             'remaining_acceptance': 'Browser-loaded dependencies and applicable MRN runtime QA require separate evidence.'}

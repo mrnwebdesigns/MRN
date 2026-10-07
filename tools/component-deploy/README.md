@@ -1,14 +1,18 @@
 # Shared component release foundation
 
-**Candidate tooling; no site deployment or adoption is enabled.** This directory
-does not enter the default Stack package. The ZIP format is deliberately not a
+**Source tooling with an explicit parent-only CloudPanel Dev qualification
+adapter.** Standard-plugin adoption remains a candidate. No automatic site
+adoption, Live deployment, or native Dashboard parent installer is enabled.
+This directory does not enter the default Stack package. The ZIP format is deliberately not a
 WordPress plugin/theme installation ZIP. The normal MainWP installer must not
-receive it. Every receipt reports `runtime_qualified: false`.
+receive it. Build receipts report `runtime_qualified: false`; the authorized
+operator transaction produces separate target-specific runtime evidence.
 
 This implements the source/package and early component-selection portions of
 [D19](../../docs/MRN-ASSET-RELEASE-STANDARD.md). It does not complete the shared
-component deployment contract. Existing sites, installed plugin state, saved
-data and retired capability archives are untouched.
+component deployment contract. It does not automatically enroll existing sites,
+change installed plugin state, or replace retired capability archives. The
+explicit Dev qualification below is the only supported existing-site write.
 
 ## Implemented and tested
 
@@ -58,19 +62,78 @@ data and retired capability archives are untouched.
   OPcache enabled and timestamp revalidation disabled. The test server's
   explicit cache policy is a fixture, not a production hosting adapter.
 
-The runtime has no REST/AJAX/admin-post endpoint, installer, transport, database
-mutation, automatic enrollment or runtime discovery. It cannot authorize a
-deployment. Do not manually install the MU template or entrypoint stubs.
+The runtime has no REST/AJAX/admin-post endpoint, database mutation or automatic
+enrollment. It cannot authorize a deployment. Do not manually install the MU
+template or entrypoint stubs. The operator adapter below is an explicit
+backup-gated transaction, not a normal WordPress installer.
 
-## Required before any adoption
+## Parent-only CloudPanel Dev adapter
+
+`parent_deploy.py` accepts one canonical `https://<site>.mrndev.io` target,
+fresh exact-site MainWP resolution/sync evidence and an explicitly selected
+site-owner SSH transport. The current Dashboard has no parent-only installer
+ability; this is a disclosed operator route, not a replacement MainWP server.
+It refuses Live, cross-Dashboard or stale inventory, changed preflight trees,
+unverified/unlabeled/local-only backups, aliases and unknown transaction outcomes.
+
+Use the existing canonical labeled Updraft pre-deploy helper when the MainWP
+start ability cannot provide the required label. MainWP must verify completion;
+the host independently verifies that exact nonce, remote upload, DB checksum,
+label and freshness before even transferring private control tools.
+
+The public parent and child remain byte-identical. Code, synchronized minified
+assets and manifests are staged privately. Assets publish under a retained
+immutable generation before an atomic pointer selects the parent. A stable early
+MU bootstrap installs native parent discovery; a physical child stays unchanged.
+For an already adopted child, the exact existing loader is verified and its
+current private functions/assets are pinned before either theme loads. Native
+child metadata retains the stable public identity, matching that child loader's
+existing behavior. A later child release is picked up by the next request.
+
+Parent transactions share the existing child deployment lock, use exact
+compare-and-switch checks and durable intent/receipt records. First adoption
+requires an explicitly authorized Dev qualification with public rollback and
+reactivation. Verification failure returns to the original untouched parent.
+Interrupted/unknown outcomes block automatic retry until the actual pointer,
+bootstrap, code, assets and preserved trees are inspected. No release or old
+asset is deleted. Shell-only recovery bypasses selection for backup commands;
+HTTP parameters cannot enable that recovery path.
+
+The old full Stack lock remains unchanged. Its signed runtime report shows the
+actual private parent version/tree/source/generation and intentional parent
+variance. Ordinary parent overwrite, theme switching and legacy full Stack
+apply/rollback are blocked while this selection is active. Before a later full
+Stack rollout, use the same fresh-backup-gated adapter with `disable: true` to
+return to the original public parent, then follow the normal Stack workflow.
+This adapter does not add a Dashboard-approved overlay ledger record.
+
+A read-only preflight uses:
+
+```sh
+python3 tools/component-deploy/parent_deploy.py /private/one-site-plan.json \
+  --receipt /private/preflight.json
+```
+
+Review the returned preserved parent/child/pointer and other-Stack inventories,
+then bind those exact values, the source/artifact checksums and the fresh backup
+nonce into the confirmed plan. First adoption sets `qualify_dev: true` and
+`exercise_rollback: true`. Confirmed execution uses the same command with
+`--confirm`. Every target must separately qualify its provider and actual
+parent/child consumers; passing the disposable fixture is not site adoption.
+
+Disposable coverage includes package/CAS/writer conflicts, preserved trees,
+immutable-byte drift, private-path aliases, backup failure before writes,
+WordPress parent discovery with an independently released child, existing child
+updates, actual warm browser cache, retained old HTML and OPcache rollback.
+
+## Remaining shared-component adoption work
 
 1. **Consumer qualification:** the ordinary physical-child discovery contract
    is tested; multisite, additional theme roots, child release loaders,
    optimizers, recovery mode and real fleet parent/child consumers are not
    qualified by that fixture. The adoption adapter must validate the exact
-   child mode and compatibility pair before creating a view. It must refuse
-   an independently adopted child until its combined discovery/pinning
-   behavior is qualified. A core method explicitly given an old physical
+   child mode and compatibility pair before creating a view. The parent Dev adapter tests an independently adopted single-site child;
+   every actual pair still requires the explicit target qualification above. A core method explicitly given an old physical
    theme root will still read that root; consumers bypassing normal WordPress
    discovery need an adapter or must be refused.
 2. **Plugin inventory and lifecycle:** `all_plugins` updates the admin list's
@@ -91,9 +154,10 @@ deployment. Do not manually install the MU template or entrypoint stubs.
 4. **Public serving and QA:** extend the passing disposable serving/browser
    checks to exact provider adapters, scoped HTML refresh and failure recovery,
    and run accessibility/performance against actual component consumers.
-   Passing the test page does not qualify fleet layouts. Real provider/site
-   qualification remains separately scoped and is forbidden by the current
-   no-existing-site-touch instruction.
+   Passing the test page does not qualify fleet layouts. Parent-only CloudPanel
+   Dev qualification requires explicit owner authorization through the adapter
+   above. Standard-plugin adoption, other providers, and Live remain outside
+   that authorization and unqualified.
 5. **Promotion:** integrate exact artifacts into Stack lock/preflight and
    optional-plugin plans, verify clean source, hosted package parity and the
    required release/runtime checks. The current retirement candidate remains

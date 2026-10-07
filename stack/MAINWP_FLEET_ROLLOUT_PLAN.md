@@ -27,6 +27,18 @@ documented in
 [`MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md`](./MAINWP_STACK_PLUGIN_ROLLOUT_PLAN.md).
 MU components, shared runtime, and themes remain atomic schema-2 targets.
 
+## Explicit parent-only Dev qualification
+
+A requested theme-only patch can retain a site's installed Stack baseline using
+[the CloudPanel Dev parent adapter](../tools/component-deploy/README.md#parent-only-cloudpanel-dev-adapter).
+This is one exact site, with fresh MainWP scope/sync/backup evidence and an
+explicit site-owner transport. It is separate from the Dashboard's native full
+Stack installer; no native theme-only ability is claimed. It stages immutable
+parent assets/code, preserves the public parent and site-owned child, qualifies
+their loader pair and exercises rollback. Live remains disabled. The signed
+runtime report retains the old Stack lock and reports the selected parent
+variance until a later complete release absorbs the change.
+
 ## Qualification And Fleet Membership
 
 `Full Stack` is an owner-approved MainWP cohort, not a guess derived from a

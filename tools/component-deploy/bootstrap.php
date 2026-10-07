@@ -8,6 +8,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// Shell-only recovery can obtain a backup even if a selected theme is broken.
+// An HTTP parameter cannot enable this branch.
+if ( defined( 'WP_CLI' ) && WP_CLI && '1' === getenv( 'MRN_COMPONENT_RECOVERY' ) ) {
+	return;
+}
+
 $mrn_component_root   = realpath( ABSPATH . '__MRN_COMPONENT_STATE_RELATIVE__' );
 $mrn_component_public = realpath( ABSPATH );
 if ( false === $mrn_component_root || false === $mrn_component_public

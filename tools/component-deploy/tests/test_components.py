@@ -193,9 +193,11 @@ class Components(unittest.TestCase):
         (state / 'next.json').write_text(json.dumps(selection(self.new)))
         return public, plugin, parent, state
 
-    def add_theme_view(self, state, child, pointer_name, parent_receipt):
-        descriptor = json.dumps({'schema': 1, 'parent_artifact_sha256': parent_receipt['artifact_sha256'],
-                                 'child_stylesheet': child.name}, sort_keys=True).encode()
+    def add_theme_view(self, state, child, pointer_name, parent_receipt, child_state=None):
+        data = {'schema': 1, 'parent_artifact_sha256': parent_receipt['artifact_sha256'], 'child_stylesheet': child.name}
+        if child_state is not None:
+            data['child_release_root'] = str(child_state)
+        descriptor = json.dumps(data, sort_keys=True).encode()
         identity = hashlib.sha256(descriptor).hexdigest()
         view = state / 'theme-views' / identity
         (view / 'themes').mkdir(parents=True)
