@@ -149,6 +149,15 @@ final class MRN_Component_Release_Runtime {
 			add_filter( 'theme_root_uri', array( __CLASS__, 'theme_root_uri' ), PHP_INT_MAX, 3 );
 			add_filter( 'template_directory', array( __CLASS__, 'template_directory' ), PHP_INT_MAX );
 			add_filter( 'stylesheet_directory', array( __CLASS__, 'stylesheet_directory' ), PHP_INT_MAX );
+			add_filter( 'stylesheet_directory_uri', array( __CLASS__, 'stylesheet_uri' ), PHP_INT_MAX, 2 );
+			add_filter( 'mrn_loader_runtime_report', array( __CLASS__, 'runtime_report' ), PHP_INT_MAX );
+			add_filter( 'mainwp_child_extra_execution', array( __CLASS__, 'guard_stack_write' ), -PHP_INT_MAX, 2 );
+			if ( isset( $theme['child_release_id'] ) && ! headers_sent() ) {
+				header( 'X-MRN-Site-Release: ' . $theme['child_release_id'] );
+			}
+			if ( ! headers_sent() ) {
+				header( 'X-MRN-Parent-Release: ' . $components['mrn-base-stack']['artifact_sha256'] );
+			}
 			add_action( 'delete_theme', array( __CLASS__, 'guard_theme_removal' ), -PHP_INT_MAX );
 			add_filter( 'validate_theme_requirements', array( __CLASS__, 'guard_theme_switch' ), PHP_INT_MAX, 2 );
 			add_filter( 'pre_update_option_template', array( __CLASS__, 'guard_theme_option' ), -PHP_INT_MAX, 3 );
@@ -200,7 +209,83 @@ final class MRN_Component_Release_Runtime {
 		if ( 'mrn-base-stack' !== $header['Template'] ) {
 			throw new RuntimeException( 'Child theme header differs from the selected parent.' );
 		}
-		return array( 'root' => $view, 'child' => $child, 'child_directory' => $public . '/' . $child );
+		$result = array( 'root' => $view, 'child' => $child, 'child_directory' => $public . '/' . $child );
+		if ( isset( $descriptor['child_release_root'] ) ) {
+			$child_root = $descriptor['child_release_root'];
+			$wordpress  = realpath( ABSPATH );
+			if ( ! is_string( $child_root ) || realpath( $child_root ) !== $child_root || ! is_dir( $child_root )
+				|| ( fileperms( $child_root ) & 0077 ) || $child_root === $wordpress
+				|| 0 === strpos( $child_root, $wordpress . DIRECTORY_SEPARATOR ) ) {
+				throw new RuntimeException( 'Child release storage is unavailable or public.' );
+			}
+			$adoption = self::read_json( $child_root . '/adoption.json' );
+			if ( ( $adoption['slug'] ?? '' ) !== $child || ! is_string( $adoption['bootstrap_sha256'] ?? null )
+				|| ! hash_equals( $adoption['bootstrap_sha256'], hash_file( 'sha256', $public . '/' . $child . '/functions.php' ) ) ) {
+				throw new RuntimeException( 'Independent child release loader is unrecognized or changed.' );
+			}
+			$pointer = self::read_json( $child_root . '/current.json' );
+			$child_id = $pointer['release_id'] ?? '';
+			$path     = $pointer['public_path'] ?? '';
+			if ( ( $pointer['slug'] ?? '' ) !== $child || ! is_string( $child_id ) || ! preg_match( '/^[a-f0-9]{64}$/D', $child_id )
+				|| ! is_string( $path ) || ! preg_match( '~^mrn-assets/' . preg_quote( $child, '~' ) . '/[a-f0-9]{64}$~D', $path ) ) {
+				throw new RuntimeException( 'Independent child release selection is invalid.' );
+			}
+			$directory = $child_root . '/releases/' . $child_id . '/theme';
+			$installed = self::read_json( $child_root . '/releases/' . $child_id . '/installed.json' );
+			$manifest  = self::read_json( $directory . '/mrn-assets.json' );
+			$checksum  = $installed['theme_files']['mrn-assets.json'] ?? '';
+			if ( realpath( $directory ) !== $directory || ( $installed['slug'] ?? '' ) !== $child
+				|| ( $installed['release_id'] ?? '' ) !== $child_id || ( $installed['public_path'] ?? '' ) !== $path
+				|| ( $manifest['public_path'] ?? '' ) !== $path || ( $manifest['slug'] ?? '' ) !== $child
+				|| ! is_string( $checksum ) || ! hash_equals( $checksum, hash_file( 'sha256', $directory . '/mrn-assets.json' ) )
+				|| ! is_readable( $directory . '/functions.php' ) ) {
+				throw new RuntimeException( 'Independent child code and manifest differ.' );
+			}
+			$result['child_directory']  = $directory;
+			$result['child_public_path'] = $path;
+			$result['child_release_id']  = $child_id;
+		}
+		return $result;
+	}
+
+	/** Resolve the independently pinned child's existing public generation. */
+	public static function stylesheet_uri( $uri, $stylesheet ) {
+		return self::$theme['child'] === $stylesheet && isset( self::$theme['child_public_path'] )
+			? content_url( '/' . self::$theme['child_public_path'] ) : $uri;
+	}
+
+	/** Preserve the old Stack lock while reporting the actual loaded parent. */
+	public static function runtime_report( $report ) {
+		$parent = self::$components['mrn-base-stack'];
+		if ( ! function_exists( 'mrn_loader_tree_hash' ) || ! is_array( $report ) ) {
+			return $report;
+		}
+		$hash = mrn_loader_tree_hash( $parent['directory'] );
+		foreach ( $report['themes'] as &$theme ) {
+			if ( 'mrn-base-stack' === ( $theme['slug'] ?? '' ) ) {
+				$theme['version']         = $parent['version'];
+				$theme['sha256']          = $hash['sha256'];
+				$theme['file_count']      = $hash['file_count'];
+				$theme['matches_release'] = false;
+				$theme['artifact_sha256'] = $parent['artifact_sha256'];
+				$theme['asset_generation'] = $parent['manifest']['generation'];
+				$theme['source_sha']      = $parent['manifest']['source_sha'];
+				$theme['path']            = 'component-release/' . $parent['artifact_sha256'] . '/mrn-base-stack';
+			}
+		}
+		unset( $theme );
+		$report['drifted_required'][] = 'mrn-base-stack';
+		$report['drifted_required']   = array_values( array_unique( $report['drifted_required'] ) );
+		$report['parent_release']     = array( 'artifact_sha256' => $parent['artifact_sha256'], 'asset_generation' => $parent['manifest']['generation'] );
+		return $report;
+	}
+
+	/** Fail closed before a legacy full Stack writer can bypass this selection. */
+	public static function guard_stack_write( $information, $post ) {
+		if ( is_array( $post ) && in_array( $post['mrn_stack_deployment_action'] ?? '', array( 'apply', 'rollback' ), true ) ) {
+			throw new RuntimeException( 'Release the managed parent selection through its qualified workflow before a full Stack write.' );
+		}
+		return $information;
 	}
 
 	/** @return string Request-pinned native discovery root. */

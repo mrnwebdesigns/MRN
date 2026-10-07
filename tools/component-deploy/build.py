@@ -129,7 +129,8 @@ def build(repo, commit, source, slug, kind, entrypoint, output):
                 entry.external_attr = 0o100644 << 16
                 archive.writestr(entry, body)
         receipt = {key: value for key, value in release.items() if key != 'files'}
-        receipt.update(artifact_sha256=hashlib.sha256(output.read_bytes()).hexdigest(),
+        receipt.update(generation=manifest['generation'], public_path=manifest['public_path'],
+                       artifact_sha256=hashlib.sha256(output.read_bytes()).hexdigest(),
                        package_bytes=output.stat().st_size, runtime_qualified=False)
         from verify import verify
         verify(output, receipt['artifact_sha256'], commit, source, slug, kind, entrypoint)

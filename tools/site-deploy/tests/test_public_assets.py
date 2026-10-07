@@ -77,3 +77,22 @@ class PublicAssetEvidence(unittest.TestCase):
             self.manifest['stylesheet_routes'] = routes
             with self.subTest(routes=routes), self.assertRaisesRegex(ValueError, 'Invalid stylesheet route'):
                 public.verify(self.manifest, [self.page], lambda url, types: b'')
+
+    def test_parent_native_root_slug_layout_verifies_its_assets_and_preserves_child(self):
+        generation = 'a' * 64
+        self.manifest.update(scope='parent-theme', slug='mrn-base-stack', generation=generation,
+                             public_path='mrn-assets/' + generation + '/mrn-base-stack')
+        parent = self.page + 'wp-content/' + self.manifest['public_path'] + '/style.min.css'
+        child = self.page + 'wp-content/mrn-assets/child/kept/style.min.css'
+        calls = []
+        def fetch(url, types):
+            calls.append(url)
+            if url == self.page:
+                return ('<link rel="stylesheet" href="' + parent + '"><link rel="stylesheet" href="' + child + '">').encode()
+            return self.body
+        result = public.verify(self.manifest, [self.page], fetch)
+        self.assertIn(parent, result['pages'][0]['assets'])
+        self.assertNotIn(child, calls)
+        old = parent.replace(generation, 'b' * 64)
+        with self.assertRaisesRegex(ValueError, 'different asset generation'):
+            public.verify(self.manifest, [self.page], lambda url, types: ('<link rel="stylesheet" href="' + old + '">').encode())
