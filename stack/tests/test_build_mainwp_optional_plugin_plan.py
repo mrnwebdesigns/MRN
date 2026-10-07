@@ -347,7 +347,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             for item in catalog["components"]
             if item["slug"] == "mrn-mainwp-operations-api"
         )
-        self.assertEqual("0.9.9", controller["version"])
+        self.assertEqual("0.10.0", controller["version"])
         self.assertEqual("dashboard-only", controller["target_tier"])
         self.assertIn("twenty-two mrn-mainwp WordPress Abilities", controller["data"]["routes"])
         self.assertNotIn("Defender (legacy compatibility only)", entry["dependencies"]["soft"])
@@ -404,13 +404,13 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
         catalog_by_slug = {item["slug"]: item for item in catalog["components"]}
         release_by_slug = {item["slug"]: item for item in releases["releases"]}
         # Catalog source versions and qualified distribution versions may differ.
-        # CAPTCHA 0.2.0 is preserved source; the qualified package remains 0.1.4.
+        # CAPTCHA 0.2.2 pilot source is accepted; the generic default remains 0.1.4.
         expected = {
             "background-video-popout-disabler": ("1.0.2", "1.0.2", "catalog-only"),
             "mrn-acf-character-count": ("1.1.9", "1.1.9", "catalog-only"),
             "mrn-announcements": ("1.8.2", "1.8.2", "standard-bootstrap"),
             "mrn-fontawesome-profile-manager": ("0.5.1", "0.5.1", "standard-bootstrap"),
-            "mrn-recaptcha-enterprise-manager": ("0.2.0", "0.1.4", "standard-bootstrap"),
+            "mrn-recaptcha-enterprise-manager": ("0.2.2", "0.1.4", "standard-bootstrap"),
             "mrn-reusable-block-library": ("0.2.0", "0.2.0", "standard-bootstrap"),
             "mrn-seo-helper": ("0.5.0", "0.5.0", "catalog-only"),
         }

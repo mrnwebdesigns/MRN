@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.07-acf-performance-fleet-r1`
+- Stack release: `2026.10.07-stack-gap-fleet-r1`
 - Release date: `2026-10-07`
 - Status: `cumulative candidate; Platform local qualification; remote rollout pending`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.5.6`
+  - `mrn-base-stack` `1.5.7`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -36,8 +36,8 @@
   - `mrn-layout-import-export` `0.1.2`
   - `mrn-media-bulk-tools` `0.13.1`
   - `mrn-mega-menu` `0.17.2`
-  - `mrn-recaptcha-enterprise-manager` `0.1.4` (qualified package retained; 0.2.0 source awaits operational qualification)
-  - `mrn-stack-deployment-agent` `0.2.6`
+  - `mrn-recaptcha-enterprise-manager` `0.1.4` (qualified default retained; 0.2.2 pilot source accepted; native Dashboard route and broader adoption remain gated)
+  - `mrn-stack-deployment-agent` `0.3.2`
   - `mrn-template-inspector` `0.2.7`
   - `mrn-tokens` `0.1.4` (platform-required)
   - `mrn-universal-sticky-bar` `1.1.10`
@@ -55,6 +55,14 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Candidate scope
+- October 7 gap successor includes the qualified keyed After Content request guard,
+  accepted parent-only Dev adapter and CAPTCHA preparation/recovery dependencies.
+  Parent 1.5.7 retains ACF performance and Text Swipe. Deployment Agent 0.3.2 is
+  checksum-bound across platform/Fleet prerequisites and the new
+  `2026.10.07-stack-gap-bootstrap-r1` inputs. CAPTCHA 0.1.4 remains the default;
+  0.2.2 is accepted source with exact Gloves pilot evidence, not a generic rollout.
+  Publication and remote adoption require separate authorization. Whole-site
+  accessibility, child source and timing findings remain release blockers.
 - October 7 ACF performance promotion includes PR #219: deferred unused editor
   layouts, the 404 editor adapter, conservative empty-public-builder shortcuts,
   and five-row Stack repeater limits enforced in native editing and ACF writes.
@@ -222,7 +230,7 @@ they do not establish deployment or qualification of the October 4 candidate.
   without failing that production-only gate. It also distinguishes the stock
   canonical child from an exact derived child that remains safe for full Stack
   Fleet plans.
-- `mrn-recaptcha-enterprise-manager` `0.1.4` (qualified package retained; 0.2.0 source awaits operational qualification) provides idempotent, fail-closed
+- `mrn-recaptcha-enterprise-manager` `0.1.4` (qualified default retained; 0.2.2 pilot source accepted; native Dashboard route and broader adoption remain gated) provides idempotent, fail-closed
   WPForms reCAPTCHA provisioning for Stack bootstrap and is available only as
   an upgrade of an existing installation through its checksum-locked Fleet
   record.

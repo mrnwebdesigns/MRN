@@ -442,6 +442,10 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
                 "1f908b5fa6ef577b49c0565b1b276713224e57546c1b954e44409845dd5342b5",
             "2026.10.04-stack-simplification-r2.json":
                 "a98254bfbf34d7434b72d1979029d5bb409f79f0333964e496ad880ea57e261e",
+            "2026.10.07-text-swipe-fleet-r1.json":
+                "c4d83c56bcf0f5e3e214514f0c00cf8ce64b5af3174f07e5842a70a65557be72",
+            "2026.10.07-acf-performance-fleet-r1.json":
+                "ff9e9f6af278dfc41dc44d6edd3e753e06ba741fa50e2e482d03bbe1931725ee",
         }
 
         self.assertEqual(set(expected), {path.name for path in archive.glob("*.json")})
@@ -507,8 +511,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             if item["slug"] == "mrn-stack-deployment-agent"
         }
 
-        self.assertEqual("0.2.6", entry["version"])
-        self.assertEqual({"0.2.2", "0.2.3", "0.2.4", "0.2.5", "0.2.6"}, set(versions))
+        self.assertEqual("0.3.2", entry["version"])
+        self.assertEqual({"0.2.2", "0.2.3", "0.2.4", "0.2.5", "0.2.6", "0.3.2"}, set(versions))
         self.assertEqual(
             entry["version"],
             max(versions, key=lambda value: planner.version_tuple(value, "version")),
