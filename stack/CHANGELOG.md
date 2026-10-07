@@ -1,5 +1,19 @@
 # Stack Changelog
 
+## 2026.10.07-acf-performance-fleet-r1 (Platform qualification candidate)
+
+- Parent 1.5.6 incorporates all three ACF performance commits from PR #219.
+- Render unused flexible-content editor templates when selected; preserve native
+  saved-row editing, media, conversion, validation and 404 options behavior.
+- Avoid derived field catalog hydration for safely empty public Hero/After
+  Content areas. Custom value/default/filter behavior retains the native path.
+- Cap Stack repeaters at five rows, retaining tighter limits. Validate complete
+  submitted trees before ACF writes; preserve legacy content without growth.
+- Preserve every existing plugin/MU version, child theme, content store and
+  qualified bootstrap plugin package. PR #200 remains separately owned.
+- Reconcile exact merged source into the Stack lock and deterministic Fleet
+  artifacts. Platform local qualification does not establish client-site parity.
+
 ## 2026.10.07-text-swipe-fleet-r1 (local qualification candidate)
 
 - Parent 1.5.5 includes Text Swipe + Edge Fade and validates saved tab effects
