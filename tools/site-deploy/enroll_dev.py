@@ -267,12 +267,27 @@ def handoff(site):
 
 
 def source_files(site, config, files):
+    files = release_metadata(site, files)
     wrapper = (TOOLS / 'site-deploy.yml.template').read_text().replace('TOOLING_SHA', config['tooling_ref'])
     wrapper = wrapper.replace('SOURCE_PATH', site['source_path']).replace('THEME_SLUG', site['slug']).replace('live_enabled: true', 'live_enabled: false')
     return {**files, '.github/workflows/site-deploy.yml': wrapper.encode(),
             '.github/workflows/site-push.yml': (TOOLS / 'site-push.yml.template').read_bytes(),
             'DEPLOYMENT.md': handoff(site), '.mrn-qa.env': b'MRN_QA_SAMPLE_PATH=/\n', '.gitignore': b'.DS_Store\n.env*\nnode_modules/\nvendor/\n',
             'README.md': ('# ' + site['domain'] + '\n\nSite-owned child-theme source. See DEPLOYMENT.md.\n').encode()}
+
+
+def release_metadata(site, files):
+    """Complete a new child scaffold without replacing authored release notes."""
+    files = dict(files)
+    readme = site['source_path'] + '/readme.txt'
+    if readme not in files:
+        style = files[site['source_path'] + '/style.css'].decode('utf-8')
+        version = re.search(r'^\s*Version:\s*([0-9][A-Za-z0-9.+-]*)\s*$', style, re.MULTILINE)
+        if not version:
+            raise ValueError('Child theme requires a valid Version header before enrollment')
+        files[readme] = (f"=== {site['slug']} ===\nStable tag: {version[1]}\n\n"
+                        "Site-owned child theme. Deployment instructions are in DEPLOYMENT.md.\n").encode()
+    return files
 
 
 def source_qa(config, files, destination):
@@ -317,10 +332,72 @@ class Enrollment:
             raise ValueError('Source signal failed')
         return runs[0]
 
+    def recover_qualification(self):
+        """Explicit operator repair only; ordinary scanner retries cannot enter."""
+        s, gh, site = self.state, self.github, self.site
+        if s['stage'] != 'qualification-dispatched' or gh.head() != s['source_sha']:
+            raise ValueError('Recovery requires the unchanged failed first-qualification source')
+        runs = [row for row in gh.runs('site-deploy.yml', s['source_sha'])
+                if row.get('event') == 'workflow_dispatch' and row.get('display_title') == 'MRN Dev qualification ' + s['binding']]
+        if len(runs) != 1 or runs[0].get('status') != 'completed' or runs[0].get('conclusion') != 'failure':
+            raise ValueError('Recovery requires one completed failed qualification, never an unknown outcome')
+        run = runs[0]
+        for name, expected in (('DEPLOY_READY', '0'), ('DEPLOY_ENROLLMENT_SOURCE_SHA', s['source_sha'])):
+            actual = gh.request('GET', gh.prefix + '/environments/dev/variables/' + name)
+            if actual.get('value') != expected:
+                raise ValueError('Recovery requires Dev to remain disarmed for the failed qualification')
+        for name in ('MRN_AUTO_DEV_AFTER', 'MRN_RELEASE_REQUESTS_AFTER'):
+            actual = gh.request('GET', gh.prefix + '/actions/variables/' + name, missing=True)
+            if actual and actual.get('value'):
+                raise ValueError('Recovery cannot change an armed deployment consumer')
+        receipt, browser, runtime = gh.deployment_evidence(run, s['source_sha'])
+        if (receipt.get('status') != 'public-verified' or receipt.get('source_sha') != s['source_sha']
+                or any(receipt.get(key) != value for key, value in {
+                    'repository':site['repository'], 'environment':'dev', 'url':site['url'], 'slug':site['slug']}.items())
+                or receipt.get('transfer_backup', {}).get('valid') is not True):
+            raise ValueError('Failed qualification lacks a verified exact-site activation receipt')
+        order = receipt.get('deployment_order', {})
+        if str(order.get('run_id')) != str(run['id']) or order.get('event') != 'workflow_dispatch':
+            raise ValueError('Recovery receipt does not belong to the failed qualification run')
+        required = {'stage', 'activate', 'rollback-test', 'reactivate'}
+        if not s.get('recovery_prior_release'):
+            required.add('adopt')
+        backups = {row['operation']:row.get('backup', {}).get('valid') for row in receipt.get('steps', [])}
+        if any(backups.get(key) is not True for key in required):
+            raise ValueError('Recovery requires the retained adoption and rollback backup evidence')
+        # Read as the site owner; operator credentials are never inherited.
+        pointer = json.loads(command(['sudo', '-u', site['user'], '--', 'cat', site['state_dir'] + '/current.json'],
+                                     text=True, env=site_process_env()))
+        if pointer not in (receipt.get('current'), receipt.get('previous')) or pointer.get('schema') != 1:
+            raise ValueError('Runtime changed since failed qualification; recovery requires inspection')
+        prior = check(pointer.get('release_id'), r'[0-9a-f]{64}', 'retained recovery release')
+        files = {key:base64.b64decode(value) for key,value in json.loads((self.directory / 'source.json').read_text()).items()}
+        files = source_files(site, self.config, files)
+        source_qa(self.config, files, self.directory / ('recovery-source-' + str(time.time_ns())))
+        recovery_id = str(time.time_ns())
+        save(self.directory / ('recovery-' + recovery_id + '.json'), {
+            'state':dict(s), 'failed_run':run, 'receipt':receipt, 'browser':browser, 'runtime':runtime, 'pointer':pointer})
+        save(self.directory / ('recovery-' + recovery_id + '-source.json'), {
+            key:base64.b64encode(value).decode() for key,value in files.items()})
+        self.persist(stage='recover-source', recovery_id=recovery_id, recovery_prior_release=prior,
+                     tooling_ref=self.config['tooling_ref'])
+
     def tick(self):
         s, site, gh = self.state, self.site, self.github
         stage = s['stage']
-        if stage == 'queued':
+        if stage == 'recover-source':
+            files = {key:base64.b64decode(value) for key,value in json.loads(
+                (self.directory / ('recovery-' + s['recovery_id'] + '-source.json')).read_text()).items()}
+            if gh.head() != s['source_sha']:
+                raise ValueError('Source advanced during recovery')
+            sha = gh.make_commit(s['source_sha'], files, 'Repair generated enrollment source and requalify Dev')
+            self.persist(stage='recover-publish', recovery_base=s['source_sha'], source_sha=sha)
+        elif stage == 'recover-publish':
+            gh.publish(s['recovery_base'], s['source_sha'])
+            gh.variable('DEPLOY_ENROLLMENT_PRIOR_RELEASE', s['recovery_prior_release'], 'dev')
+            gh.variable('DEPLOY_ENROLLMENT_SOURCE_SHA', s['source_sha'], 'dev')
+            self.persist(stage='wait-install-signal')
+        elif stage == 'queued':
             files, baseline = snapshot(site)
             files = source_files(site, self.config, files)
             source_qa(self.config, files, self.directory / ('source-' + str(time.time_ns())))
@@ -345,7 +422,8 @@ class Enrollment:
                 'DEPLOY_TEMPLATE': site['template'], 'DEPLOY_STATE_DIR': site['state_dir'],
                 'DEPLOY_VERIFY_PAGES': json.dumps([site['url'] + '/']),
                 'DEPLOY_TRANSPORT': 'rsync', 'DEPLOY_HOST_PROVIDER': 'cloudpanel', 'DEPLOY_BACKUP_PROVIDER': 'updraft',
-                'DEPLOY_BASELINE_TREE': s['baseline'], 'DEPLOY_READY': '0', 'DEPLOY_ENROLLMENT_SOURCE_SHA': s['source_sha']}
+                'DEPLOY_BASELINE_TREE': s['baseline'], 'DEPLOY_READY': '0', 'DEPLOY_ENROLLMENT_SOURCE_SHA': s['source_sha'],
+                'DEPLOY_ENROLLMENT_PRIOR_RELEASE': ''}
             gh.configure(variables, {'DEPLOY_SSH_PRIVATE_KEY': self.secrets['deploy_private_key'],
                 'DEPLOY_SSH_KNOWN_HOSTS': self.secrets['known_hosts'], 'MRN_QA_ENGINE_TOKEN': self.secrets['qa_engine_token']})
             self.persist(stage='wait-install-signal', setup_backup=backup)
@@ -365,7 +443,8 @@ class Enrollment:
                 if age.total_seconds() > 900:
                     raise ValueError('Qualification dispatch outcome is unknown; do not blindly dispatch again')
                 return
-            proof = gh.proof(runs[0], s['source_sha'], site['url'], site['slug'], qualification=True)
+            proof = gh.proof(runs[0], s['source_sha'], site['url'], site['slug'], qualification=True,
+                             prior_release=s.get('recovery_prior_release'))
             if proof:
                 save(self.directory / 'qualification.json', proof)
                 self.persist(stage='arm-dev', qualification_run=proof['run_url'])
@@ -379,6 +458,7 @@ class Enrollment:
             cutoff = s.get('activation_cutoff') or timestamp()
             self.persist(activation_cutoff=cutoff)
             gh.variable('DEPLOY_ENROLLMENT_SOURCE_SHA', '', 'dev')
+            gh.variable('DEPLOY_ENROLLMENT_PRIOR_RELEASE', '', 'dev')
             gh.variable('DEPLOY_READY', '1', 'dev')
             gh.variable('MRN_AUTO_DEV_AFTER', cutoff)
             gh.variable('MRN_RELEASE_REQUESTS_AFTER', cutoff)
@@ -427,13 +507,14 @@ def main():
     parser.add_argument('--site-path', required=True)
     parser.add_argument('--enqueue', action='store_true', help='Only after successful new-site bootstrap')
     parser.add_argument('--resume', action='store_true', help='Advance an existing enrollment; never adopt old sites')
+    parser.add_argument('--recover-qualification', action='store_true', help='Operator-only repair after inspecting a failed qualification; preserve all evidence')
     args = parser.parse_args()
-    if args.enqueue == args.resume:
-        parser.error('Choose enqueue or resume')
+    if sum((args.enqueue, args.resume, args.recover_qualification)) != 1:
+        parser.error('Choose enqueue, resume or recover-qualification')
     config = load_config(args.config)
     binding = hashlib.sha256(args.site_path.encode()).hexdigest()[:24]
     directory = Path(config['state_root']) / binding
-    if not directory.exists() and args.resume:
+    if not directory.exists() and not args.enqueue:
         print(json.dumps({'status': 'not-enrolled', 'action': 'none'})); return
     directory.mkdir(mode=0o700, exist_ok=True)
     private_path(directory, directory=True)
@@ -449,18 +530,21 @@ def main():
         site = identify(args.site_path, config)
         if state_path.exists():
             state = json.loads(private_path(state_path).read_text())
-            if state['site'] != site or state['tooling_ref'] != config['tooling_ref']:
+            if state['site'] != site or (state['tooling_ref'] != config['tooling_ref'] and not args.recover_qualification):
                 raise ValueError('Enrollment identity or tooling changed; operator review required')
         else:
             state = {'schema': 1, 'binding': binding, 'site': site, 'tooling_ref': config['tooling_ref'],
                      'stage': 'queued', 'created_at': timestamp()}
             save(state_path, state)
-        if args.resume and state['stage'] != 'ready':
+        if (args.resume or args.recover_qualification) and state['stage'] != 'ready':
             secrets = credentials(config, site)
             enrollment = Enrollment(config, directory, state,
                 GitHub(secrets['github_token'], site['repository'], config['github_owner_type']), secrets)
             try:
-                enrollment.tick()
+                if args.recover_qualification:
+                    enrollment.recover_qualification()
+                else:
+                    enrollment.tick()
                 state.pop('last_error', None)
                 save(state_path, state)
             except (ValueError, RuntimeError) as error:

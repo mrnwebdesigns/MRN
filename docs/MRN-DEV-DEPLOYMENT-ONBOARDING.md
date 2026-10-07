@@ -86,7 +86,9 @@ controller resolves and checks the exact tagged commit before deployment.
   Existing sites/repositories use the separate deployment adoption runbook.
 - This captures only the child theme. It does not copy plugins, the parent
   theme, uploads, database, credentials, hidden files or deployment output.
-  The only generated theme change opts into the existing immutable asset adapter.
+  Generated theme changes opt into the existing immutable asset adapter and add
+  a missing `readme.txt` with a Stable tag matching the child theme's Version.
+  Existing authored release notes are preserved and checked by source QA.
 - The canonical GitHub credential is operator-side. Deployment credentials are
   stored as encrypted Dev environment secrets; the QA read credential is a
   repository secret. No account-wide GitHub credential is placed in WordPress.
@@ -247,6 +249,22 @@ re-adoption of a changed runtime. Correct the underlying issue and deliberately
 reconcile/requalify the exact target before resuming. A pilot failure after
 arming Dev is not `ready`; pause automatic requests through the existing cutoff
 control while diagnosing. No developer access is granted until proof passes.
+
+For a failed first qualification caused by generated enrollment source/tooling,
+an operator can install the reviewed correction and explicitly run
+`enroll_dev.py --config <operator-config> --site-path <exact-root>
+--recover-qualification`. This is not a scanner action. It requires the unchanged
+enrollment source, exactly one completed failed qualification, verified adoption
+and rollback backups, a matching runtime pointer, and disabled automatic/tag
+requests. It preserves the original state, source and failure receipts, reruns
+source QA, and publishes corrected generated metadata/workflows. Subsequent
+`--resume` passes authorize only the new commit and exact retained prior release.
+The job stages and activates normally, repeats rollback/reactivation, and must
+pass strict runtime QA. It never re-adopts the site or bypasses readiness.
+Unknown outcomes, changed source/runtime and failures before verified activation
+remain inspection stops. Rollback to a retained release stays available while
+forward deployment is disabled, with the original run binding, exact-pointer
+check, ordering and fresh backup gate intact.
 
 Rerunning `--enqueue` does not replace an existing state. `--resume` alone never
 creates a new enrollment. Existing sites are not silently enrolled when this

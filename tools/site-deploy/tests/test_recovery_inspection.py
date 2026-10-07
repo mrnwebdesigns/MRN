@@ -32,6 +32,37 @@ class RecoveryInspection(unittest.TestCase):
                 atomic_runner.run(plan, config)
             constructor.return_value.inspect.assert_called_once_with('child', skip_themes=True)
 
+    def test_rollback_remains_available_when_forward_deployment_is_disarmed(self):
+        plan = {'environment':'dev','slug':'child','expected_current':{'release_id':'new'},'rollback_to':'old'}
+        config = {'backup_provider':'updraft','url':'https://site.mrndev.io','ready':False}
+        with patch.object(atomic_runner,'Target') as target,patch.object(atomic_runner,'transfer_backup') as backup:
+            target.return_value.inspect.side_effect = ValueError('identity mismatch')
+            with self.assertRaisesRegex(ValueError,'identity mismatch'):atomic_runner.run(plan,config)
+            target.return_value.inspect.assert_called_once_with('child',skip_themes=True)
+            backup.assert_not_called()
+            with self.assertRaisesRegex(ValueError,'DEPLOY_READY'):
+                atomic_runner.run({key:value for key,value in plan.items() if key != 'rollback_to'},config)
+
+    def test_untrusted_qualification_plan_cannot_bypass_readiness(self):
+        plan = {'environment':'dev','source_sha':'a'*40,'qualification':True}
+        config = {'backup_provider':'updraft','url':'https://site.mrndev.io','ready':False}
+        with patch.dict('os.environ',{},clear=True),patch.object(atomic_runner,'Target') as target:
+            with self.assertRaisesRegex(ValueError,'authorized manual qualification'):atomic_runner.run(plan,config)
+            target.assert_not_called()
+
+    def test_disarmed_rollback_still_requires_backup_before_any_transfer(self):
+        pointer = {'release_id':'a'*64}
+        plan = {'environment':'dev','slug':'child','expected_current':pointer,'rollback_to':'b'*64}
+        config = {'backup_provider':'updraft','url':'https://site.mrndev.io','ready':False}
+        with patch.object(atomic_runner,'Target') as target, patch.object(atomic_runner,'verify_identity'), \
+                patch.object(atomic_runner,'verify_state_privacy'), patch.object(atomic_runner,'transfer_backup') as backup:
+            target.return_value.inspect.return_value={'state':pointer,'git':False}
+            backup.side_effect=ValueError('remote backup not verified')
+            with self.assertRaisesRegex(ValueError,'remote backup not verified'):atomic_runner.run(plan,config)
+            backup.assert_called_once_with(target.return_value)
+            target.return_value.shell.assert_not_called()
+            target.return_value.controller.assert_not_called()
+
     def test_native_controller_keeps_credentials_out_of_arguments_and_returns_failed_receipt(self):
         target = Target({'root': '/site', 'key_file': '/key', 'port': '22',
                          'known_hosts_file': '/hosts', 'user': 'owner', 'host': 'host', 'state_dir': '/private'})

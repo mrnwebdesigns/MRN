@@ -96,6 +96,7 @@ def config(environ):
     c['baseline'] = environ.get('DEPLOY_BASELINE_TREE', '')
     c['ready'] = environ.get('DEPLOY_READY') == '1'
     c['enrollment_sha'] = environ.get('DEPLOY_ENROLLMENT_SOURCE_SHA', '')
+    c['enrollment_prior_release'] = environ.get('DEPLOY_ENROLLMENT_PRIOR_RELEASE', '')
     c['host_provider'] = environ.get('DEPLOY_HOST_PROVIDER', 'cloudpanel') or 'cloudpanel'
     if c['host_provider'] not in ('cloudpanel', 'nexcess', 'siteground', 'wpengine', 'kinsta'):
         raise ValueError('Unknown host provider')
@@ -334,9 +335,21 @@ def qualification_request(args, c, environ):
             or environ.get('MRN_SOURCE_QA_SHA') != args.sha
             or not re.fullmatch(r'[0-9a-f]{64}', c.get('baseline', ''))):
         raise ValueError('Dev qualification requires the exact authorized enrollment commit and source QA')
+    if c.get('enrollment_prior_release') and not re.fullmatch(r'[0-9a-f]{64}', c['enrollment_prior_release']):
+        raise ValueError('Invalid operator-authorized qualification recovery release')
     if api(environ, 'git/ref/heads/main')['object']['sha'] != args.sha:
         raise ValueError('Enrollment source is no longer current main')
     return True
+
+
+def qualification_target(c, before):
+    """Recovery is separately authorized to one retained pointer; never re-adopt."""
+    prior = c.get('enrollment_prior_release')
+    if prior:
+        if not before['state'] or before['state'].get('schema') != 1 or before['state'].get('release_id') != prior:
+            raise ValueError('Qualification recovery target differs from the authorized release')
+    elif before['state'] is not None or digest(before['files']) != c['baseline']:
+        raise ValueError('Enrollment target has changed or already been adopted; inspect recovery evidence')
 
 
 def deploy(args, c):
@@ -383,8 +396,8 @@ def deploy(args, c):
         native = c.get('host_provider') == 'kinsta' and c.get('backup_provider') == 'kinsta'
         if (c.get('backup_provider') != 'updraft' and not native) or (args.environment == 'live' and c.get('host_provider', 'cloudpanel') == 'cloudpanel'):
             raise ValueError('Runtime writes disabled for Live: its provider adapter is not qualified')
-        if qualifying and (before['state'] is not None or digest(before['files']) != c['baseline']):
-            raise ValueError('Enrollment target has changed or already been adopted; inspect recovery evidence')
+        if qualifying:
+            qualification_target(c, before)
         if not qualifying and (not before['state'] or before['state'].get('schema') != 1):
             raise ValueError('Runtime writes disabled: first adoption requires separate host qualification')
         from atomic_runner import run as activate
@@ -393,7 +406,8 @@ def deploy(args, c):
         plan = {'repository': repository, 'environment': args.environment, 'slug': args.slug,
                 'archive': str(Path(artifact_path).resolve()), 'artifact_sha256': artifact_sha256,
                 'source_sha': args.sha, 'source_path': args.source, 'pages': pages,
-                'expected_current': before['state'], 'adopt': qualifying, 'deployment_order': order}
+                'expected_current': before['state'], 'adopt': qualifying and before['state'] is None,
+                'qualification': qualifying, 'deployment_order': order}
         if qualifying:
             plan.update(baseline=c['baseline'], exercise_rollback=True)
         result = activate(plan, c)

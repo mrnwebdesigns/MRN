@@ -10,7 +10,7 @@ import shlex
 import subprocess
 import time
 
-from deploy import Target, check, config, digest, verify_identity, verify_state_privacy, verify_git_privacy
+from deploy import Target, check, config, digest, verify_identity, verify_state_privacy, verify_git_privacy, qualification_request, qualification_target
 from deployment_request import check_order, github_order, require_current_push
 from verify_release import verify
 
@@ -47,7 +47,14 @@ def run(plan, c):
         raise ValueError('No qualified activation adapter for this backup provider')
     if c.get('host_provider', 'cloudpanel') == 'cloudpanel' and (plan['environment'] != 'dev' or not c['url'].endswith('.mrndev.io')):
         raise ValueError('Live activation remains disabled for the CloudPanel Dev adapter')
-    if not plan.get('adopt') and not c.get('ready'):
+    qualifying = False
+    if plan.get('qualification'):
+        qualifying = qualification_request(argparse.Namespace(sha=plan['source_sha'], mode='deploy', environment=plan['environment']), c, os.environ)
+        if not qualifying:
+            raise ValueError('Qualification plan requires authorized manual qualification')
+    # Readiness disarms forward deployment, not restoration of a retained release.
+    # Receipt provenance, exact current pointer and ordering still bind rollback.
+    if not plan.get('adopt') and not qualifying and not plan.get('rollback_to') and not c.get('ready'):
         raise ValueError('DEPLOY_READY must be enabled after qualification')
     if not plan.get('rollback_to'):
         verify(plan['archive'], plan['artifact_sha256'], plan['source_sha'], plan['source_path'], plan['slug'])
@@ -61,6 +68,8 @@ def run(plan, c):
         verify_git_privacy(c, before)
     if before['state'] != plan.get('expected_current'):
         raise ValueError('Target changed before backup and transfer')
+    if qualifying:
+        qualification_target(c, before)
     if plan.get('adopt') and digest(before['files']) != plan['baseline']:
         raise ValueError('Target differs from reviewed adoption baseline')
     order = plan.get('deployment_order')
