@@ -1,10 +1,10 @@
 # CloudPanel Dev deployment onboarding
 
-Status: shared implementation and corrected bootstrap candidate
-`2026.10.06-dev-enrollment-r2` are merged. The CloudPanel controller, source QA,
-credentials and checksum-verified bootstrap scripts are installed. The isolated
-pilot exists; full deployment qualification and push-only acceptance are still
-pending. General new-site enrollment remains disabled until that proof passes.
+Status on October 7, 2026: the shared implementation is installed, and the isolated
+pilot passed strict deployment/rollback qualification and ordinary-push Dev
+acceptance. The developer invitation is pending acceptance. General new-site
+enrollment remains disabled pending operator credential closeout and developer
+handoff. Existing sites and Live were not enrolled by this pilot.
 
 ## What the owner and developers do
 
@@ -279,14 +279,14 @@ teams. Replace that field with `github_owner` and `github_owner_type`, and
 configure `collaborators` for MRN's current User owner. Old configuration is
 rejected explicitly; no existing host configuration is rewritten automatically.
 
-## Host installation status on 2026-10-06
+## Host installation and pilot acceptance on 2026-10-07
 
 Authenticated administration of `mrndev` succeeded using the existing MRN
 business credential for `kyle`; no access rules or SSH identities were changed.
 The following are installed outside WordPress roots:
 
 - Clean detached MRN checkout at
-  `b3eaf2b15c17566fc9f703e1074ab8cc027c363f` under
+  `50096e5b62a4b97eeab8aaef2410311ac9f9f825` under
   `/opt/mrn-site-deploy/MRN`.
 - Isolated Python environment with PyNaCl 1.6.0.
 - Node 22.23.3 verified against the official distribution checksum.
@@ -325,11 +325,36 @@ expiration: save its replacement in the operator vault, encrypt it on the host,
 update the configured service UUID and verify the broker. Do not rotate site
 SSH keys or change existing GitHub deployment identities during this operation.
 
-Pilot acceptance must still prove the first qualified GitHub deployment,
-rollback exercise, exact deployed SHA, CSS/JS asset checksums, responsive browser
-rendering, runtime QA, and the subsequent ordinary `main` push. A public HTTP
-success or a verified backup alone is not deployment readiness. Record the run
-URLs and final state here once qualification completes.
+The pilot repository is [deployment-test-site](https://github.com/mrnwebdesigns/deployment-test-site).
+Its thin workflow pins shared workflow revision
+`db503e6bd5b8473475c64880e0bdf35c0e1feb39`; the later controller-only GitHub
+variable fix does not change that qualified workflow. The following passed:
+
+- [Strict qualification](https://github.com/mrnwebdesigns/deployment-test-site/actions/runs/37619202558)
+  for `c020bb78fd0ecd3f47b120e1a71d298d84366a81`: exact-source QA,
+  immutable build, verified Updraft backups, activation, rollback/reactivation,
+  desktop/tablet/mobile asset checks, REST, accessibility and performance.
+- [Ordinary main push deployment](https://github.com/mrnwebdesigns/deployment-test-site/actions/runs/37621092166)
+  for `f77ee2f450bbeba2f51930561f3fe2ef69fe2e95`: automatically triggered
+  by the push, passing QA, fresh verified backups, atomic activation, browser
+  asset checks and runtime QA. No workflow dispatch requested this deployment.
+- Independent public readback: the released CSS and JavaScript URLs appear in
+  HTML, return matching SHA-256 checksums, execute/render in Chrome, and retain
+  the prior URLs unchanged. The homepage and REST index return HTTP 200.
+
+The ordinary-push immutable artifact/release is
+`2bc72d69d821ed9fdaec9a0ad9eeed5a65f6584c2c9ae08b8c4085806f827b39`.
+The controller verified its receipts and reached `grant-access`; the existing
+`mrn-developer-collab` account must accept its Write invitation before the next
+resume can report `ready`. Only the `dev` GitHub environment exists. General
+configuration remains disabled until operator credential closeout; do not infer
+fleet adoption or Live readiness from this successful pilot.
+
+The first attempt exposed missing generated child release metadata, recovery
+being incorrectly blocked by forward-deployment readiness, and GitHub rejecting
+empty variable values during arming. All three shared fixes are merged and
+covered by the 172-test deployment suite and MRN/GitHub gates. Original failed
+run and recovery evidence were retained; no site state was reset to bypass QA.
 
 Bootstrap recovery uncovered and corrected two shared defects: protected JSON
 settings now reach the site-owned WP process through stdin, and a package path
