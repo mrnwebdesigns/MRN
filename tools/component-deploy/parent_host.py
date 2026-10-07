@@ -116,6 +116,7 @@ def execute(plan):
                'status': 'in-progress', 'source_sha': plan.get('source_sha'), 'artifact_sha256': plan.get('artifact_sha256')}
     with store.lock():
         before = store.pointer()
+        active_before = store.bootstrap.is_file()
         if before != plan.get('expected_current'):
             raise ValueError('Parent pointer changed since plan approval')
         binding = {key: plan[key] for key in ['url', 'environment', 'root', 'child', 'child_state']}
@@ -139,9 +140,15 @@ def execute(plan):
                     # The verified backup protects this bounded code transaction.
                     # The public parent was never overwritten; removing the MU
                     # selection returns to the exact original request behavior.
-                    store.disable(selected, preserved)
-                    receipt['rollback'] = public_check(plan, store, None)
-                    selected = store.activate(plan['artifact_sha256'], selected, preserved, restore_managed=True)
+                    if active_before:
+                        previous_id = before['components']['mrn-base-stack']['artifact_sha256']
+                        restored = store.activate(previous_id, selected, preserved)
+                        receipt['rollback'] = public_check(plan, store, restored)
+                        selected = store.activate(plan['artifact_sha256'], restored, preserved)
+                    else:
+                        store.disable(selected, preserved)
+                        receipt['rollback'] = public_check(plan, store, None)
+                        selected = store.activate(plan['artifact_sha256'], selected, preserved, restore_managed=True)
                     receipt['reactivation'] = public_check(plan, store, selected)
                 receipt['status'] = 'public-verified'
             store.unchanged(preserved)
@@ -151,7 +158,7 @@ def execute(plan):
             receipt['error'] = type(error).__name__ + ': ' + str(error)
             try:
                 if selected and store.bootstrap.exists():
-                    if before is None:
+                    if before is None or not active_before:
                         store.disable(selected, preserved)
                         receipt['recovery'] = public_check(plan, store, None)
                     else:

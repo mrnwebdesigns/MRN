@@ -2,7 +2,7 @@
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import parent_host
 
@@ -18,3 +18,26 @@ class HostGates(unittest.TestCase):
                  self.assertRaisesRegex(ValueError, 'backup'):
                 parent_host.execute(plan)
             self.assertFalse(state.exists())
+
+    def test_retained_inactive_pointer_recovers_to_the_actual_legacy_runtime(self):
+        with tempfile.TemporaryDirectory(prefix='mrn-parent-host-') as temporary:
+            state = Path(temporary)
+            old = {'components': {'mrn-base-stack': {'artifact_sha256': 'b' * 64}}}
+            plan = {'root': str(state), 'state': str(state), 'url': 'https://fixture.mrndev.io',
+                    'environment': 'dev', 'child': 'child', 'child_state': str(state),
+                    'backup_nonce': 'a' * 12, 'expected_current': old, 'archive': 'fixture.zip',
+                    'artifact_sha256': 'b' * 64, 'source_sha': 'c' * 40, 'source_path': 'parent'}
+            store = MagicMock()
+            store.pointer.return_value = old
+            store.activate.return_value = old
+            store.bootstrap.is_file.return_value = False
+            store.bootstrap.exists.return_value = True
+            with patch.object(parent_host, 'preflight', return_value=(state, state, {})), \
+                 patch.object(parent_host, 'wp', return_value={'valid': True, 'nonce': 'a' * 12}), \
+                 patch.object(parent_host, 'ParentStore', return_value=store), \
+                 patch.object(parent_host, 'other_stack', return_value={}), \
+                 patch.object(parent_host, 'public_check', side_effect=[ValueError('forced verification failure'), {'legacy': True}]):
+                result = parent_host.execute({**plan, 'other_stack': {}})
+            self.assertEqual('failed-recovered', result['status'])
+            store.disable.assert_called_once_with(old, {})
+            self.assertEqual(1, store.activate.call_count)
