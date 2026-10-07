@@ -39,7 +39,10 @@ class WordPressBootstrap(unittest.TestCase):
     def test_real_http_browser_cache_assets_and_opcache(self):
         self.qualify(True, public_probe=True)
 
-    def qualify(self, parent_selected, public_probe=False):
+    def test_real_parent_with_independent_child_release_loader(self):
+        self.qualify(True, atomic_child=True)
+
+    def qualify(self, parent_selected, public_probe=False, atomic_child=False):
         fixtures.Components.setUpClass()
         self.addCleanup(fixtures.Components.tearDownClass)
         with tempfile.TemporaryDirectory(prefix='mrn-component-wordpress-') as temporary:
@@ -109,10 +112,31 @@ update_option('template','mrn-base-stack'); update_option('stylesheet','fixture-
 echo json_encode(['installed'=>is_blog_installed()]);
 ''', install=True)
             self.assertTrue(installed['installed'])
+            child_state = None
+            if atomic_child:
+                child_state = root / 'child-state'
+                child_state.mkdir(mode=0o700)
+                for label, code in [('a', 'old'), ('b', 'new')]:
+                    identity = label * 64
+                    directory = child_state / 'releases' / identity / 'theme'
+                    directory.mkdir(parents=True)
+                    shutil.copyfile(child / 'style.css', directory / 'style.css')
+                    (directory / 'functions.php').write_text("<?php $GLOBALS['untouched_child']=true; $GLOBALS['released_child']='" + code + "';")
+                    public_path = 'mrn-assets/fixture-child/' + identity
+                    manifest = {'schema': 1, 'slug': 'fixture-child', 'public_path': public_path}
+                    (directory / 'mrn-assets.json').write_text(json.dumps(manifest))
+                    metadata = {'schema': 1, 'slug': 'fixture-child', 'release_id': identity,
+                                'public_path': public_path, 'theme_files': {'mrn-assets.json': fixtures.sha(directory / 'mrn-assets.json')}}
+                    (directory.parent / 'installed.json').write_text(json.dumps(metadata))
+                    pointer = {'schema': 1, 'slug': 'fixture-child', 'release_id': identity, 'public_path': public_path}
+                    (child_state / ('current.json' if label == 'a' else 'next.json')).write_text(json.dumps(pointer))
+                bootstrap = (fixtures.TOOLS.parent / 'site-deploy/release-bootstrap.php').read_text()
+                (child / 'functions.php').write_text(bootstrap.replace('__MRN_STATE_RELATIVE__', os.path.relpath(child_state, public)))
+                (child_state / 'adoption.json').write_text(json.dumps({'schema': 1, 'slug': 'fixture-child', 'bootstrap_sha256': fixtures.sha(child / 'functions.php')}))
             child_before = {path.name: path.read_bytes() for path in child.iterdir()}
             if parent_selected:
-                view = fixtures.Components().add_theme_view(state, child, 'current.json', fixtures.Components.parent)
-                fixtures.Components().add_theme_view(state, child, 'next.json', fixtures.Components.new_parent)
+                view = fixtures.Components().add_theme_view(state, child, 'current.json', fixtures.Components.parent, child_state=child_state)
+                fixtures.Components().add_theme_view(state, child, 'next.json', fixtures.Components.new_parent, child_state=child_state)
             old_pointer = (state / 'current.json').read_bytes()
             next_pointer = (state / 'next.json').read_bytes()
             result = php('''
@@ -141,7 +165,7 @@ $result=['code'=>$GLOBALS['fixture_code'],'basename'=>plugin_basename($entry),
  'parent_files'=>wp_get_theme()->parent()->get_files('php',1),
  'pattern'=>WP_Block_Patterns_Registry::get_instance()->get_registered('mrn-base-stack/fixture'),
  'saved_roots'=>get_option('_site_transient_theme_roots'),
- 'wp_version'=>$GLOBALS['wp_version']];
+ 'wp_version'=>$GLOBALS['wp_version'],'released_child'=>$GLOBALS['released_child']??null];
 echo json_encode($result);
 ''' % (repr(str(state / 'next.json')), repr(str(state / 'current.json'))))
             self.assertEqual('old', result['code'])
@@ -161,13 +185,22 @@ echo json_encode($result);
                 self.assertIn('Old parent pattern.', result['pattern']['content'])
                 self.assertIn('/mrn-assets/', result['template_uri'])
                 self.assertTrue(result['theme_stylesheet_uri'].endswith('/mrn-base-stack/style.css'))
-                self.assertEqual('http://127.0.0.1:9876/wp-content/themes/fixture-child', result['theme_child_uri'])
+                child_url = 'http://127.0.0.1:9876/wp-content/themes/fixture-child'
+                self.assertEqual(child_url, result['theme_child_uri'])
                 self.assertIn('twentytwentyfive', result['themes'])
                 self.assertNotIn(str(state), json.dumps(result['saved_roots']))
             else:
                 self.assertTrue(result['parent'])
                 self.assertEqual(str(parent), result['template'])
-            self.assertEqual(str(child), result['stylesheet'])
+            expected_child = child_state / 'releases' / ('a' * 64) / 'theme' if atomic_child else child
+            self.assertEqual(str(expected_child), result['stylesheet'])
+            if atomic_child:
+                self.assertEqual('old', result['released_child'])
+                subprocess.run(['mv', str(child_state / 'next.json'), str(child_state / 'current.json')], check=True)
+                fresh_child = php("echo json_encode([$GLOBALS['released_child'],get_stylesheet_directory(),get_stylesheet_directory_uri()]);")
+                self.assertEqual('new', fresh_child[0])
+                self.assertEqual(str(child_state / 'releases' / ('b' * 64) / 'theme'), fresh_child[1])
+                self.assertTrue(fresh_child[2].endswith('/mrn-assets/fixture-child/' + 'b' * 64))
             self.assertEqual('1.0.0', result['metadata'])
             # A stable stub leaves raw get_plugins() metadata unchanged; signed
             # inventory/readback integration is a required promotion gate.
