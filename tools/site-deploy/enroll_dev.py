@@ -248,7 +248,9 @@ def snapshot(site):
         if not original.startswith(b'<?php'):
             raise ValueError('Unexpected child PHP entry point')
         optin = b"\n// The trusted MRN build supplies the immutable asset adapter.\nif ( is_file( __DIR__ . '/mrn-release-assets.php' ) ) {\n\trequire_once __DIR__ . '/mrn-release-assets.php';\n}\n"
-        files[functions] = original[:5] + optin + original[5:]
+        header = re.match(rb'<\?php\s*/\*\*.*?\*/', original, re.DOTALL)
+        insertion = header.end() if header else 5
+        files[functions] = original[:insertion] + (b'\n' if header else b'') + optin + original[insertion:]
     return files, digest(baseline)
 
 
