@@ -1,4 +1,63 @@
-# Reference Content integration checks
+# Builder integration checks
+
+## Deferred builder layout templates
+
+On an explicitly resolved Local Hub `.localhost` runtime with the candidate
+parent theme, set `MRN_LAZY_FIXTURE` to a private scratch JSON path. Run
+`wp eval-file <theme>/tests/runtime/lazy-layouts.php setup`, then `block` to
+create an owned draft page and a reusable-block picker fixture. The state file
+records hashes of published page content and metadata before qualification.
+
+Run `block-data` to seed the owned reusable block for conversion testing.
+Use the native Classic Editor to add Hero and After Content layouts, nested
+column layouts, duplicate/reorder rows, convert a reusable block into a
+page-specific block, open the image picker, and save/reload the draft. Try saving
+while a layout is loading: the editor must wait and retain the existing rows.
+The `request` mode exercises the actual layout handler with `nonce`,
+`capability`, `input`, `layout`, or `valid` cases. `check` reads back the draft
+and refuses changed published page content/metadata. `cleanup` verifies fixture
+ownership and moves the owned records to Trash; it never deletes client data.
+Retain results outside tracked source and remove the scratch directory afterward.
+
+The standalone `tests/php/lazy-layouts.php` test covers suppression boundaries
+for saved rows, repeater templates, nested layout requests, defaults, unrelated
+fields, and non-editor requests. Existing cloned-AJAX and field-finalization
+tests remain required. This qualification changes no ACF vendor files and
+does not constitute a Stack release or remote deployment.
+
+Run `node tests/js/lazy-layouts.cjs` from the parent theme to check failed or
+malformed requests, retry, pending-save guards, conversion completion, and a
+layout limit reached by another editor action during an in-flight request.
+
+## Empty builders, 404 options and repeater safeguards
+
+On Platform's resolved `.localhost` runtime, run `builder-performance.php check`
+through `wp eval-file`. It requires empty Hero and After Content on the front
+page and performs process-local checks only: no catalog growth, custom-hook,
+default/cache/metadata/preview fallbacks, five-row limits and legacy-row preservation.
+`request` accepts `valid`, `nonce`, `capability`, `target`, `input`, or `layout`
+for the actual 404 options AJAX endpoint.
+
+For native browser qualification, set `MRN_PERFORMANCE_FIXTURE` to an unused
+private scratch JSON path and run `setup`. It creates tagged draft Page and FAQ
+records, with 55 nested Stats and 25 standalone FAQ rows, and snapshots the exact
+404 options namespace. It temporarily removes the ACF write guard only while
+seeding historical oversized fixture values. In the editor, edit/save row 55,
+edit/save FAQ row 25, and add/save a 404 Text row containing the unique text
+`MRN performance fixture`. Run `readback` to verify counts and saved content.
+Run `cleanup` to restore the 404 snapshot and move the owned drafts to Trash.
+Do not run this fixture against concurrently edited 404 settings. Keep the
+snapshot until restoration is verified, then archive evidence outside source.
+
+Run `repeater-limits.php` through `wp eval-file` on `platform.localhost` to check
+the five-row write policy against real ACF APIs. It creates an owned draft and
+private options fixture, checks complete-tree rejection, nested/group/options
+fields, REST schemas, row additions and legacy reorder, then trashes the draft
+and deletes only its options fixture. The optional `browser` argument retains
+the draft for native editing: attempt Add Item at five rows, edit/save the fifth
+row, and verify it after reload. Move that tagged draft to Trash after readback.
+
+## Reference Content integration checks
 
 Resolve a Local Hub WordPress path and its `.localhost` URL before running these
 tests. They require ACF Pro, the current parent theme, and the Stack Content Only

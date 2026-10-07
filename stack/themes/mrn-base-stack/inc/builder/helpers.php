@@ -95,6 +95,18 @@ function mrn_base_stack_register_cloned_acf_ajax_fields() {
 		return;
 	}
 
+	mrn_base_stack_register_cloned_acf_field_key( $field_key );
+}
+add_action( 'acf/init', 'mrn_base_stack_register_cloned_acf_ajax_fields', 30 );
+
+/**
+ * Make a derived builder field key resolvable through its existing factory.
+ *
+ * @param string $field_key Derived ACF field key.
+ * @return void
+ */
+function mrn_base_stack_register_cloned_acf_field_key( $field_key ) {
+
 	$clone_factories = array(
 		'after_content_'           => 'mrn_base_stack_get_after_content_builder_layouts',
 		'field_mrn_hero_'          => 'mrn_base_stack_get_hero_builder_layouts',
@@ -113,7 +125,6 @@ function mrn_base_stack_register_cloned_acf_ajax_fields() {
 		break;
 	}
 }
-add_action( 'acf/init', 'mrn_base_stack_register_cloned_acf_ajax_fields', 30 );
 
 /**
  * Hydrate shallow ACF local flexible-content layouts with their local subfields.
