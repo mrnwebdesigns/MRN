@@ -7,13 +7,15 @@ progress at the same time. A change in one task must not make an unrelated task
 uncommittable, and isolating feature work must not allow the shared stack or the
 fleet to drift behind merged source.
 
-This policy separates two gates that solve different problems:
+This policy separates three gates that solve different problems:
 
 - the **task acceptance gate** proves that one task's proposed change is safe;
 - the **stack promotion gate** proves that merged deployable source forms one
-  coherent, reproducible stack release and has reached its intended runtimes.
+  coherent, qualified, reproducible release available to Fleet;
+- the **site rollout gate** proves that a selected release has reached an
+  explicitly authorized site and passes its installed and user-visible checks.
 
-Passing either gate never implies that the other gate passed.
+Passing one gate never implies that the others passed.
 
 ## Concurrent Task Isolation
 
@@ -68,6 +70,11 @@ standalone repositories are compared with their merged default branches through
 the existing read-only MRN CI GitHub App, so cross-repository drift cannot remain
 hidden behind an older locked commit.
 
+That workflow currently audits only. It does not implement automatic release
+qualification, package construction, or publication. The required source
+workflow is defined in `MRN-FLEET-READINESS-AUTOMATION.md`; do not describe the
+audit workflow as automatic Fleet readiness.
+
 ## Component and Full QA
 
 The owner or release process may explicitly request broader QA:
@@ -85,10 +92,14 @@ promotion.
 
 ## Stack Promotion Gate
 
-The stack promotion gate answers: "Does clean, merged source define one complete
-release, and has that exact release reached the approved targets?"
+The stack promotion gate answers: "Does clean, merged source define one complete,
+qualified release, and are its verified distributions available to Fleet?"
 
-Only a dedicated release task may promote the stack. It must:
+A dedicated release process owns promotion. Automation is the intended normal
+owner; an agent may carry out the same process while the automated publisher is
+being implemented. Promotion must continue from accepted source without asking
+the owner to initiate another task, choose a canary, or approve a site write just
+to finish source publication. The process must:
 
 1. Start from a clean, current checkout of merged `main`; feature worktrees and
    unmerged branches are not release inputs.
@@ -101,7 +112,7 @@ Only a dedicated release task may promote the stack. It must:
 3. Synchronize component versions, catalog records, manifests, stack version,
    and release notes for the complete promotion scope.
 4. Run required full component, repository, contract, runtime, accessibility,
-   performance, and rollout QA for that release. Baseline debt that was
+   performance, and source-distribution QA for that release. Baseline debt that was
    non-blocking for a feature commit is blocking when it affects the promoted
    release or its required runtime checks.
 5. Generate `stack/manifests/stack-release.lock.json` only after all release
@@ -111,15 +122,27 @@ Only a dedicated release task may promote the stack. It must:
    current merged `origin/main` and the prior committed lock.
 6. Build deterministic artifacts from the exact lock and preserve their
    checksums, source commits, plan, and rollout identity.
-7. Deploy through the approved backup and authorization gates.
-8. Read back installed versions/hashes and compare runtime inventory with the
-   release lock. A successful transport is not deployment verification.
-9. Mark the release current only when the source, catalog, lock, artifacts,
-   deployment evidence, and target inventory agree.
+7. Verify matching source in platform payloads, Fleet packages, bootstrap
+   packages and theme archives, default installer inputs, and hosted inputs
+   where applicable. Preserve private/licensed distribution boundaries.
+8. Publish and read back immutable artifacts and their checksums. Mark the
+   release **Fleet ready** only when source qualification, catalog, lock,
+   artifacts, distribution parity, and publication evidence agree.
+
+Site backup, deployment, and verification are a separate, explicitly initiated
+operation. Apply the approved target's backup and authorization gates, then
+read back installed versions/hashes and run its applicable user-visible checks.
+A successful transport is not deployment verification. Mark a site **current**
+only when its observed inventory and required checks match the selected release.
+A live canary or fleet-wide adoption is not required merely to publish qualified
+source for Fleet. Qualification of a new provider/deployment adapter can still
+require its own controlled recovery trial before that adapter is used.
 
 If promotion is blocked, feature development may continue in isolated
-worktrees. The blocked release remains visibly unreleased; do not relabel the
-fleet or stack baseline to conceal drift.
+worktrees. The blocked source release remains visibly unavailable; do not
+relabel it to conceal failed required checks. A site's intentional rollout lag
+must not be reported as missing source or a failure of an otherwise qualified
+distribution.
 
 ## Status Language
 
@@ -129,8 +152,11 @@ Use these states precisely:
 - **accepted**: task QA passed and the change is committed/reviewable;
 - **merged**: source is on `main`, but may not be in a stack release;
 - **release candidate**: clean merged source has a complete lock and artifacts,
-  but deployment verification is incomplete;
-- **current**: the immutable release is verified on every declared target;
+  but required source/package qualification or publication is incomplete;
+- **Fleet ready**: the qualified immutable release is published, its applicable
+  distributions agree, and Fleet can use it for an explicitly requested rollout;
+- **current**: a named site's selected immutable release is installed and
+  verified; use **fleet current** only after every declared target is verified;
 - **drifted**: target inventory differs from the declared release lock.
 
 Never use "all up to date," "rolled out," "current," or "production ready"
@@ -140,7 +166,7 @@ based only on a commit, merge, QA pass, package upload, or deployment command.
 
 - Each task records its branch, worktree, repositories, required QA, and release
   impact in its handoff or pull request.
-- A release task owns the cross-repository inventory and promotion evidence; an
+- The release process owns the cross-repository inventory and promotion evidence; an
   individual feature task does not need to remain open until fleet rollout.
 - Emergency/checkpoint commits follow the canonical exception policy and are
   explicitly not accepted or release-ready.
