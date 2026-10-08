@@ -54,7 +54,7 @@ export async function prepared(f) {
   return { inspection, finding, op };
 }
 export async function execute(f, op) {
-  f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest });
+  await f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest });
   await f.service.execute(actor, { operationId: op.id });
   await f.service.jobs.get(op.id);
   return f.service.get(actor, op.id);

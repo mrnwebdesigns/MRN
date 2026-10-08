@@ -12,11 +12,15 @@ export class FixtureMainwp {
   async readResource() {
     return { contents: [{ uri: 'mainwp://status', text: JSON.stringify({ connected: true, dashboardHost: this.data.host || 'wpcontrol.mrndev.io', abilitiesCount: 84 }) }] };
   }
-  async listTools() { return { tools: Object.values(toolNames).filter(n => !(this.data.missing || []).includes(n)).map(name => ({ name, inputSchema: { type: 'object', properties: {} } })) }; }
+  async listTools() { return { tools: [...Object.values(toolNames), ...(this.data.directory ? ['get_sites_basic_v1'] : [])].filter(n => !(this.data.missing || []).includes(n)).map(name => ({ name, inputSchema: { type: 'object', properties: {} } })) }; }
   async callTool({ name, arguments: a }) {
     this.data.calls.push(name);
     if (name === this.data.fail) throw new Error('DOWNSTREAM FAILURE private-token-sentinel');
-    if (name === toolNames.site) return response({ id: this.data.id, url: this.data.url, status: 'connected', last_sync: this.data.lastSync || '2000-01-01T00:00:00Z' });
+    if (name === 'get_sites_basic_v1') return response({ items: this.data.directory.slice((a.page - 1) * a.per_page, a.page * a.per_page), page: a.page, per_page: a.per_page, total: this.data.directory.length });
+    if (name === toolNames.site) {
+      const selected = this.data.directory?.find(s => s.url === a.site_id_or_domain) || { id: this.data.id, url: this.data.url, name: 'Example' };
+      return response({ ...selected, status: 'connected', last_sync: this.data.lastSync || '2000-01-01T00:00:00Z' });
+    }
     if (name === toolNames.sync) {
       if (!this.data.stale) this.data.lastSync = new Date().toISOString();
       this.persist();
@@ -67,6 +71,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const fixture = new FixtureMainwp(state, () => writeFileSync(file, JSON.stringify(state)));
   const server = new McpServer({ name: 'controlled-mainwp-fixture', version: '1.0.0' });
   server.registerResource('status', 'mainwp://status', {}, () => fixture.readResource());
-  for (const name of Object.values(toolNames)) server.registerTool(name, { inputSchema: z.object({}).passthrough() }, args => fixture.callTool({ name, arguments: args }));
+  for (const name of [...Object.values(toolNames), ...(state.directory ? ['get_sites_basic_v1'] : [])]) server.registerTool(name, { inputSchema: z.object({}).passthrough() }, args => fixture.callTool({ name, arguments: args }));
   await server.connect(new StdioServerTransport());
 }

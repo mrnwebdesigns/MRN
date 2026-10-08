@@ -8,7 +8,7 @@
     "jwksUrl": "https://identity.example.invalid/.well-known/jwks.json"
   },
   "allowedOrigins": [],
-  "registryPath": "/etc/mrn-operations/websites.json",
+  "discovery": {"localHubRoots": ["/srv/mrn-records/MRN-sites"]},
   "policyPath": "/etc/mrn-operations/permissions.json",
   "qualificationsPath": "/etc/mrn-operations/qualifications.json",
   "recoveryEvidencePath": "/etc/mrn-operations/recovery-evidence.json",

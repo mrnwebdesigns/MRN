@@ -476,6 +476,10 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
   [MRN-WEBSITE-OPERATIONS.md](MRN-WEBSITE-OPERATIONS.md).
 - It reuses the approved MainWP MCP, Fleet and QA workflows. Service credentials
   do not replace individual site/environment/operation permissions.
+- Discover managed websites from MainWP and enrich exact URLs from existing MRN
+  records. Do not require a second per-site enrollment to inspect a website.
+  Unknown facts and conflicting environment mappings remain explicit; write
+  permission and operation qualification are separate from directory discovery.
 - Service enrollment, hosted identity acceptance and coordinated site-writer
   locks are separate gates. The initial implementation is not an activated or
   team-ready deployment. No existing production route is implicitly enrolled.

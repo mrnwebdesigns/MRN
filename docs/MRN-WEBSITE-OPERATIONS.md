@@ -11,8 +11,15 @@ never expands that person's authority. Every downstream call rechecks permission
 and preserves the requester in the audit record. Identity, authentication or
 permission failures stop that route; never silently change credentials or use SSH.
 
-Website enrollment records intended knowledge, sources and freshness separately
-from observed runtime evidence. Credentials remain references to approved services.
+MainWP supplies the website directory; existing managed websites must not require
+duplicate enrollment in Operations. Existing MRN records enrich exact URLs and
+explicit environment relationships, preserving source and freshness separately
+from observed runtime evidence. Missing facts stay unknown and only block actions
+that need them. Source-wide read/test permissions are explicit; repair and release
+authority remain scoped. Optional website overrides supply missing facts or
+reviewed operation prerequisites, never a second mandatory inventory. Credentials
+remain references to approved services. See
+[discovery and knowledge](../tools/operations/DISCOVERY.md).
 MainWP IDs are fresh-resolved from exact URLs and narrowly synchronized before
 inventory is treated as current. Empty selections are rejected, not interpreted as
 all sites. Older/partial Stack sites require qualification; missing components are

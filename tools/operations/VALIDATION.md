@@ -1,5 +1,41 @@
 # Operations validation
 
+## Automatic discovery and MRN knowledge — 2026-10-08
+
+Continuation on `codex/operations-recovery-20261008`, after `fdfeb72`; included in
+the same draft PR #236. Existing MainWP websites no longer require a duplicate
+Operations registry entry. Hosted configuration enables discovery and the optional
+website override example is empty.
+
+- 90 service tests passed, including discovery/inspection from an empty registry,
+  authenticated HTTP and real stdio MCP, scoped URL grants without bulk access,
+  revocation between pages, incomplete/duplicate inventory, changing site IDs,
+  additions/removals, exact-URL knowledge joins, name/environment conflicts,
+  unknown write prerequisites, Local Hub-only routes, credential exclusion,
+  symlink boundaries, partial overrides, unrelated-site isolation and all prior
+  repair/recovery regressions.
+- Direct ESLint, all five example schemas and whitespace checks passed. Production
+  dependency audit reported no vulnerabilities. Existing Fleet tests: 13/13.
+- The configured live MainWP MCP reported the expected Dashboard and 84 abilities.
+  Its basic directory returned 107 identities across two pages. This was directory
+  metadata only: no individual-site runtime call, sync, backup or write. The live
+  shape matches the adapter's tested protocol contract; hosted identity acceptance
+  and the hosted service credential remain unconfigured.
+- A read-only diagnostic using the new importer processed 27 existing Local Hub
+  manifests into 50 environment URLs, with no source issues and no credential
+  fields imported. No manifest was changed. These are saved intended facts, not
+  proof of those environments' current runtime health.
+- MRN staged task acceptance passed; the commit hook requires a matching proof
+  for the final staged tree, and the PR Code gate checks the review snapshot.
+  Direct JS lint and local
+  protocol tests cover `.mjs`, which MRN QA's WordPress scanners do not classify.
+
+PHP/WordPress API-runtime, public browser, axe accessibility, frontend performance,
+parity and deployment-readiness rows are inapplicable to this Node backend change
+and were not run against unrelated sites. No service was deployed. Production Hub
+API enrichment, deployment-record imports and the other workflow adapters remain
+documented gaps; automatic directory visibility grants no repair/release rights.
+
 ## Interrupted-operation recovery — 2026-10-08
 
 Branch: `codex/operations-recovery-20261008`.

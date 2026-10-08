@@ -18,7 +18,7 @@ function withoutSecrets(value) {
   return Object.fromEntries(Object.entries(value).filter(([key]) => !/(password|secret|token|credential|authorization|cookie|package_base64|^nonce$|^receipt$)/i.test(key)).map(([key, item]) => [key, withoutSecrets(item)]));
 }
 
-function integrationError(error) {
+export function integrationError(error) {
   if (error instanceof OpsError) return error;
   // Classify privately, without reflecting arbitrary remote text or credentials.
   const message = String(error?.message || '');

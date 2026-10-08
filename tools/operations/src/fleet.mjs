@@ -66,6 +66,7 @@ export class FleetAdapter {
     return checks;
   }
   async plan(target, finding, session, operation) {
+    requireThat(target.environment !== 'unknown' && target.backup !== 'unknown', 'KNOWLEDGE_REQUIRED', 'Resolve the environment and provider-approved backup route from authoritative MRN records before preparing this change.');
     requireThat(target.management === 'mainwp' && target.backup === 'updraft', 'ROUTE_UNAVAILABLE', 'This Fleet repair requires a MainWP-managed site with the approved Updraft backup path. Provider-native backup sites need their qualified adapter.');
     const dir = join(this.stateDir, operation, 'plan');
     const summary = await runFleetUpdate(this.options(target, finding.component, dir), {

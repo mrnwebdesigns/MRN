@@ -59,7 +59,7 @@ test('failed backup reconciles prior code, never marks deployment successful, an
 
 test('a restart preserves the running lock; reviewed reconciliation works through a second SQLite connection', async t => {
   const f = setup(); t.after(() => f.close()); const { op } = await prepared(f);
-  f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest }); f.store.claim(op.id, actor);
+  await f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest }); f.store.claim(op.id, actor);
   const proof = enrollRecovery(f, op.id); const second = new Store(join(f.root, 'state/operations.sqlite'));
   try {
     const restarted = new Operations({ ...f.service, store: second, writesEnabled: false });
@@ -189,7 +189,7 @@ test('concurrent recovery requests resolve once and never overwrite an execution
   assert.equal(locked(f), 0);
   f.state.loseResponse = false; f.state.updated = false;
   const next = (await prepared(f)).op;
-  f.service.approve(actor, { operationId: next.id, planDigest: next.planDigest }); f.store.claim(next.id, actor); enrollRecovery(f, next.id);
+  await f.service.approve(actor, { operationId: next.id, planDigest: next.planDigest }); f.store.claim(next.id, actor); enrollRecovery(f, next.id);
   let first = true;
   f.fleet.publicProbe = async (...args) => {
     if (first) { first = false; f.store.finish(next.id, 'uncertain', { error: { code: 'LATEST_EXECUTION' } }, actor); }

@@ -27,10 +27,10 @@ for (const stale of ['html', 'bytes', 'rest']) test(`stale ${stale} cannot be re
 
 test('uncoordinated deployment routes and expired plans remain blocked', async t => {
   const f = setup(); t.after(() => f.close()); delete f.registryData.websites[0].environments[0].coordination;
-  const { op } = await prepared(f); f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest });
+  const { op } = await prepared(f); await f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest });
   await assert.rejects(() => f.service.execute(actor, { operationId: op.id }), { code: 'COORDINATION_REQUIRED' });
   const stored = f.store.get(op.id); stored.expiresAt = 0; stored.status = 'prepared'; f.store.save(stored);
-  assert.throws(() => f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest }), { code: 'PLAN_EXPIRED' });
+  await assert.rejects(() => f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest }), { code: 'PLAN_EXPIRED' });
 });
 
 test('request keys are bound to the exact finding and operation', async t => {

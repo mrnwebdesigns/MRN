@@ -17,6 +17,10 @@ export function runtimeEvidence(report) {
 export async function inspectTarget({ target, session, catalog, publicProbe, authorize, previous = null }) {
   const evidence = []; const coverage = []; const findings = [];
   const add = (code, description, data, repairable = false) => findings.push({ code, description, confidence: 'confirmed', repairable, ...data });
+  evidence.push({ source: 'mrn:website-knowledge', environment: target.environment, backup: target.backup,
+    issues: target.knowledgeIssues || [], facts: (target.facts || []).map(f => ({ ...f, stale: Date.parse(f.expiresAt) <= Date.now() })) });
+  coverage.push({ check: 'website_knowledge', status: target.environment === 'unknown' || target.backup === 'unknown' || target.knowledgeIssues?.length ? 'incomplete' : 'recorded',
+    interpretation: 'Saved facts describe intended configuration. Missing or conflicting write prerequisites do not prevent read-only inspection.' });
   if (target.management === 'mainwp') {
     const site = await session.fresh(); evidence.push({ source: 'mainwp:exact-site-sync', ...site });
     for (const [name, check] of [[toolNames.runtime, 'stack'], [toolNames.security, 'security'], [toolNames.updates, 'updates'], [toolNames.themes, 'themes'], [toolNames.changes, 'recent_changes']]) {

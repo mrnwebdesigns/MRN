@@ -4,6 +4,11 @@ Working first version of the shared MRN operations service. This is an HTTP MCP
 backend for conversational clients, not a WordPress plugin or a new MainWP
 implementation. It is **not yet hosted or team-ready**. Real writes default off.
 
+Existing MainWP websites appear automatically for authorized team members. There
+is no second website enrollment or required Operations website list. Existing
+Local Hub records add explicit remote/local relationships and deployment facts;
+missing facts remain unknown and are requested only when an action needs them.
+
 A user can name an accessible website, inspect it, refer to a recorded finding,
 prepare an installed standard-plugin repair, authorize its exact plan, execute
 through Fleet, inspect verification evidence, and prepare code rollback.
@@ -37,7 +42,8 @@ service-wide per-site locks, and an MCP interface over those services.
 | --- | --- | --- |
 | Individual HTTP authentication | Issuer/JWKS/audience/expiry/algorithm/scope checks; no shared-user bypass | Real signed-token local HTTP tests; actual team identity provider not configured |
 | Site/operation authorization | Explicit subject, site and environment grants, checked before every downstream call | Revocation, denied roles, inaccessible sites and cross-site requests tested |
-| Discovery | Registry aliases and exact environment URLs; fresh MainWP site ID resolution | Real internal-client connection/status and all 84 capabilities verified; no live site inventory calls were made |
+| Discovery | Paginated MainWP basic directory, exact-URL grants, optional Local Hub record enrichment; no duplicate website list | Authenticated HTTP/stdio tests start from an empty registry. Live basic-directory response schema verified; directory identity is separate from fresh runtime inventory |
+| Website knowledge | Exact-URL joins, explicit local/remote links, source/freshness, repository/provider facts, unknown/conflicting metadata | Reads a narrow allowlist from existing `.mrn-site.json` files; no credentials, SSH targets, notes or commands imported. Production Hub provider API and site deployment record adapters remain future work |
 | Inspection | Runtime inventory, installed-plugin catalog comparison, qualification cases, capability coverage, public timing/basic HTML checks, history | Controlled fixtures; MainWP security/themes/updates/change queries are inventory only, not a comprehensive interpretation or security audit |
 | Performance | Bounded public GET and prior sample comparison | Does not claim daily regression or root cause from isolated measurements |
 | Repair and code rollback | One installed standard-plugin update through existing Fleet; exact retained rollback through MainWP | Controlled end-to-end backup/confirmation/runtime/public verification; no real site mutation |
@@ -106,7 +112,7 @@ the source of validation for ZIP/source/baseline construction.
    in the service secret environment. Require user confirmation and disable
    downstream automatic retries. Never disable TLS verification. The service
    does not read Codex configuration or inherit a chat application's connectors.
-4. Put reviewed copies of the five example configuration files in
+4. Put reviewed service, permissions, qualifications and recovery configuration in
    `/etc/mrn-operations`, owned by the operator and read-only to the service. Set
    paths, identity and policy explicitly. Store credential references only.
    Create the private MainWP working directory named in configuration. Systemd
@@ -117,20 +123,23 @@ the source of validation for ZIP/source/baseline construction.
    credential path before qualification. The Python builder still enforces clean
    source, merged exact commits, package/tree checksums and rollback availability.
    The adapter never fetches arbitrary repositories or commits from chat inputs.
-6. Enroll websites and environments through reviewed `websites.json` changes.
-   Exact MainWP IDs are discovered, never stored as authority. Dedicated Dev
-   environments may remain outside MainWP. Record management and backup routes,
-   and facts for ownership, contacts, Stack adoption/exceptions, hosting, DNS,
-   CDN/cache, monitoring, repositories/branches/release method, forms/integrations,
-   test recipients/procedures, recovery and access references. Every fact requires
-   source, observed/expiry timestamps and intended/observed classification.
-   Runtime observations live separately in operation records. Updating a registry
-   fact never changes a site's configuration or installs a component.
+6. Enable `discovery` and point `localHubRoots` at read-only mounted copies of the
+   existing `MRN-sites` parent directories (or use `[]` for MainWP only). The
+   hosted service needs explicit source access; it does not inherit laptop files
+   or chat connectors. MainWP names/URLs are discovered automatically. Local Hub
+   manifests supply saved relationships and deployment facts. `registryPath` is
+   optional and reserved for reviewed missing-fact corrections or operation
+   prerequisites; `websites.example.json` is intentionally empty. Never copy the
+   MainWP inventory into it. See [discovery and knowledge](DISCOVERY.md).
 7. Assign immutable IdP subjects explicit grants. Actions are independent:
    `read`, `test`, `repair`, `deploy_development`, `release_production`. A normal
    repairer needs `read` + `repair`; production execution additionally needs
-   `release_production`. No wildcard sites, default administrator or implicit
-   role escalation exists. Removing a grant takes effect on the next call.
+   `release_production`. `portfolio` can grant read/test access to MainWP and/or
+   Local Hub sources, including future discovered sites, without listing each
+   site. Repair/release grants remain explicit by exact URL or legacy website ID.
+   A restricted URL grant uses exact-site discovery and never fetches the full
+   directory. No default administrator or implicit role escalation exists.
+   Removing a grant takes effect before the next downstream call.
 8. Verify real identity login, wrong-site denial, a controlled read-only site,
    artifact provisioning, storage recovery and service supervision. Keep
    `writesEnabled: false` until these pass. Add qualified source/runtime QA records
@@ -156,6 +165,11 @@ The identity provider, hosting destination, initial member/site grants, service
 credential, repository/artifact provisioning and writer enrollment remain owner
 setup decisions. Configuration and tests are ready for review; none of these
 acceptance steps is implied by a passing code test.
+
+Discovery alone needs no release artifacts, source checkouts, QA qualification,
+writer-coordination record or backup route. Those prerequisites apply when the
+requested inspection/test/change actually uses them. Unknown environment and
+backup facts do not prevent read-only inspection; they cannot authorize a write.
 
 ## Conversation contract
 

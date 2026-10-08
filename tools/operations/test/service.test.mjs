@@ -9,7 +9,7 @@ import { publicAddress } from '../src/probe.mjs';
 
 test('discover -> evidence -> revalidate -> concrete plan -> approve -> existing Fleet -> verify -> code rollback', async t => {
   const f = setup(); t.after(() => f.close());
-  assert.equal(f.service.list(actor)[0].websiteId, 'example');
+  assert.equal((await f.service.list(actor))[0].websiteId, 'example');
   const { op, inspection } = await prepared(f);
   assert.equal(op.status, 'prepared', JSON.stringify(op.error));
   assert.equal(op.plan.sourceCommit, 'c'.repeat(40)); assert.equal(f.state.mutations, 0); assert.equal(f.state.backups, 0);
@@ -23,7 +23,7 @@ test('discover -> evidence -> revalidate -> concrete plan -> approve -> existing
   assert.equal(restored.status, 'verified', JSON.stringify(restored.error)); assert.equal(restored.result.version, '1.0.0');
   assert.equal(f.state.backups, 2); assert.equal(f.state.mutations, 2);
   const audit = JSON.stringify(f.store.db.prepare('SELECT * FROM audit').all());
-  const output = JSON.stringify(f.service.history(actor, 'example', 'development'));
+  const output = JSON.stringify(await f.service.history(actor, 'example', 'development'));
   assert.ok(!/fixture-private|package_base64|confirmation_token/.test(audit + output));
   assert.match(audit, /team-member/);
 });
@@ -37,7 +37,7 @@ test('authorization is applied before metadata/discovery and before every downst
   const count = f.state.calls.length;
   await assert.rejects(() => session.runtime(), { code: 'FORBIDDEN' });
   assert.equal(f.state.calls.length, count);
-  assert.throws(() => f.service.list({ subject: actor.subject, expiresAt: 0 }), { code: 'AUTH_REQUIRED' });
+  await assert.rejects(() => f.service.list({ subject: actor.subject, expiresAt: 0 }), { code: 'AUTH_REQUIRED' });
 });
 
 test('read-only user cannot prepare, approve or execute; inaccessible environments stay hidden', async t => {
@@ -45,10 +45,10 @@ test('read-only user cannot prepare, approve or execute; inaccessible environmen
   const { op, inspection, finding } = await prepared(f);
   const reader = { subject: 'reader', expiresAt: actor.expiresAt };
   await assert.rejects(() => f.service.prepare(reader, { inspectionId: inspection.id, findingId: finding.id, requestKey: 'reader' }), { code: 'FORBIDDEN' });
-  assert.throws(() => f.service.approve(reader, { operationId: op.id, planDigest: op.planDigest }), { code: 'FORBIDDEN' });
+  await assert.rejects(() => f.service.approve(reader, { operationId: op.id, planDigest: op.planDigest }), { code: 'FORBIDDEN' });
   await assert.rejects(() => f.service.execute(reader, { operationId: op.id }), { code: 'FORBIDDEN' });
   f.registryData.websites[0].environments.push({ name: 'production', url: 'https://live.example.test', management: 'mainwp', backup: 'updraft' });
-  assert.equal(f.service.list(reader).length, 1);
+  assert.equal((await f.service.list(reader)).length, 1);
   assert.throws(() => f.registry.resolve(actor, 'example'), { code: 'TARGET_AMBIGUOUS' });
   assert.throws(() => f.registry.resolve(reader, 'live.example.test'), { code: 'TARGET_UNAVAILABLE' });
 });
@@ -99,7 +99,7 @@ test('capability discovery precedes unavailable results; dedicated development d
   assert.equal(report.coverage.find(c => c.check === 'security').status, 'unavailable');
   f.registryData.websites[0].environments[0].management = 'dedicated'; f.state.calls.length = 0;
   const dedicated = await f.service.inspect(actor, { website: 'example' });
-  assert.equal(f.state.calls.length, 0); assert.equal(dedicated.evidence[0].source, 'public:sample');
+  assert.equal(f.state.calls.length, 0); assert.ok(dedicated.evidence.some(e => e.source === 'public:sample'));
 });
 
 test('a finding must still apply; changed source/target/package/approval is never silently accepted', async t => {
@@ -108,7 +108,7 @@ test('a finding must still apply; changed source/target/package/approval is neve
   const blocked = await f.service.prepare(actor, { inspectionId: report.id, findingId: report.findings[0].id, requestKey: 'changed-finding' });
   assert.equal(blocked.error.code, 'FINDING_CHANGED');
   f.state.updated = false; const { op } = await prepared(f);
-  assert.throws(() => f.service.approve(actor, { operationId: op.id, planDigest: 'f'.repeat(64) }), { code: 'PLAN_CHANGED' });
+  await assert.rejects(() => f.service.approve(actor, { operationId: op.id, planDigest: 'f'.repeat(64) }), { code: 'PLAN_CHANGED' });
   writeFileSync(f.artifacts.target.package.path, 'changed package bytes');
   const result = await execute(f, op);
   assert.equal(result.status, 'failed'); assert.equal(f.state.backups, 0); assert.equal(f.state.mutations, 0);
@@ -119,7 +119,7 @@ test('idempotency survives retries and is scoped to exact input; execution is cl
   const again = await f.service.prepare(actor, { inspectionId: inspection.id, findingId: finding.id, requestKey: `prepare-${inspection.id}` });
   assert.equal(again.id, op.id);
   await assert.rejects(() => f.service.prepare(actor, { inspectionId: inspection.id, findingId: finding.id, requestKey: `prepare-${inspection.id}`.slice(0, 130) + '-bad*' }), { code: 'REQUEST_KEY_REQUIRED' });
-  f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest }); f.state.delay = 10;
+  await f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest }); f.state.delay = 10;
   await Promise.all([f.service.execute(actor, { operationId: op.id }), f.service.execute(actor, { operationId: op.id })]);
   await f.service.jobs.get(op.id); await f.service.execute(actor, { operationId: op.id });
   assert.equal(f.state.mutations, 1); assert.equal(f.state.backups, 1);
@@ -127,7 +127,7 @@ test('idempotency survives retries and is scoped to exact input; execution is cl
 
 test('durable shared site lock excludes a concurrent site deployment and survives process/database reopen', async t => {
   const f = setup(); t.after(() => f.close()); const { op } = await prepared(f);
-  f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest });
+  await f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest });
   const stored = f.store.get(op.id); const peer = new Store(join(f.root, 'state/operations.sqlite')); t.after(() => peer.close());
   const siteDeploy = peer.create('operation', actor, stored.target, { status: 'approved', expiresAt: Date.now() + 60000, plan: { kind: 'site_code' } });
   f.store.claim(op.id, actor);
@@ -147,7 +147,7 @@ for (const failure of ['backupFailed', 'loseResponse', 'badVerification']) test(
 
 test('safe mode, disabled writes, unenrolled writers, expired plans and target changes are hard stops', async t => {
   const f = setup(); t.after(() => f.close()); const { op } = await prepared(f);
-  f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest });
+  await f.service.approve(actor, { operationId: op.id, planDigest: op.planDigest });
   f.service.writesEnabled = false; await assert.rejects(() => f.service.execute(actor, { operationId: op.id }), { code: 'WRITES_DISABLED' });
   f.service.writesEnabled = true; f.state.safeMode = true;
   await f.service.execute(actor, { operationId: op.id }); await f.service.jobs.get(op.id);

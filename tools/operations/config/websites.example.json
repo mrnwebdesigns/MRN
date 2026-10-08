@@ -1,39 +1,4 @@
 {
   "version": 1,
-  "websites": [
-    {
-      "id": "example-client",
-      "name": "Example Client (replace during enrollment)",
-      "aliases": ["Example"],
-      "facts": [
-        {
-          "key": "ownership",
-          "value": {"owner": "Client owner", "contactRef": "production-hub:clients/example-client"},
-          "source": "reviewed enrollment record",
-          "observedAt": "2026-09-30T00:00:00Z",
-          "expiresAt": "2026-10-01T00:00:00Z",
-          "kind": "intended"
-        }
-      ],
-      "environments": [
-        {
-          "name": "development",
-          "url": "https://example-client.example.invalid",
-          "management": "dedicated",
-          "backup": "updraft",
-          "accessRefs": ["production-hub:example-client:development"],
-          "facts": [
-            {
-              "key": "forms.contact",
-              "value": {"pagePath": "/contact/", "procedureRef": "reviewed-form-test-procedure", "submissionApproved": false},
-              "source": "client-reviewed forms inventory",
-              "observedAt": "2026-09-30T00:00:00Z",
-              "expiresAt": "2026-10-01T00:00:00Z",
-              "kind": "intended"
-            }
-          ]
-        }
-      ]
-    }
-  ]
+  "websites": []
 }

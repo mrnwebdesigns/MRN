@@ -1,13 +1,14 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { safeError, sha } from './contracts.mjs';
+import { safeError, sha, environmentNames } from './contracts.mjs';
 
 const target = { website: z.string().min(1).max(200).describe('Website name, alias or exact URL from list_websites.'),
-  environment: z.enum(['local', 'development', 'staging', 'production']).optional() };
+  environment: z.enum(environmentNames).optional() };
 const requestKey = z.string().min(1).max(120).describe('Stable unique key for this logical request. Reuse only when retrying the same request.');
 const id = z.string().uuid();
 export const guide = `MRN Website Operations is the shared conversational interface for the MRN WordPress Stack.
-Use list_websites to resolve accessible exact environments; ask only if ambiguous.
+Use list_websites to discover the accessible MainWP directory and existing MRN environment records. Websites do not need to be added again. Discovery returns websites plus source coverage and unresolved issues.
+Resolve accessible exact environments; ask only if ambiguous or a requested action actually requires missing knowledge. Unknown environment or backup information does not prevent inspection, but cannot authorize a change. Directory discovery does not prove current site health; inspection performs exact-site synchronization.
 Use inspect_website for ordinary requests such as why is the site slow, what needs attention, or what changed.
 Explain confirmed findings using evidence and coverage; never treat missing checks as passed or one timing sample as yesterday's baseline.
 For fix that issue, use its inspection and finding IDs with prepare_repair. Present the concrete plan.
@@ -27,7 +28,7 @@ export function createMcp(service, actor) {
     try { const result = await fn(args); return { content: [{ type: 'text', text: JSON.stringify(result) }] }; }
     catch (error) { return { isError: true, content: [{ type: 'text', text: JSON.stringify({ error: safeError(error) }) }] }; }
   });
-  register('list_websites', 'List websites and environments this team member can inspect; registry facts include source and freshness.', {}, true, () => service.list(actor));
+  register('list_websites', 'Discover accessible websites from MainWP and existing MRN records. Returns websites, source coverage and unresolved knowledge; no duplicate site setup or bulk sync.', {}, true, () => service.list(actor));
   register('inspect_website', 'Inspect one website, fresh-sync MainWP, measure public behavior and record evidenced findings with explicit coverage limits.', target, true, args => service.inspect(actor, args));
   register('test_website', 'Run the configured read-only MRN QA Engine against the exact environment. Does not submit forms, charge payments or prove delivery.', target, true, args => service.test(actor, args));
   register('prepare_repair', 'Revalidate one recorded finding and prepare a concrete repair through the established MRN workflow. Does not deploy.', { inspectionId: id, findingId: id, requestKey }, true, args => service.prepare(actor, args));
