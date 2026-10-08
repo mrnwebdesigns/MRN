@@ -1,5 +1,13 @@
 # Stack Changelog
 
+## 2026.10.08-fleet-readiness-r1
+
+- Parent 1.5.8 fixes mobile drawer action palette precedence, including hover and focus, while preserving the desktop header and Text Swipe behavior.
+- Strict Stack PHPStan now resolves Announcements runtime constants through the existing analysis bootstrap.
+- Retain the qualified Agent 0.3.2 and CAPTCHA 0.1.4 defaults and archive the previous immutable release lock unchanged.
+- Qualify and publish cumulative inputs independently of existing-site adoption. Trilliant is deferred; the documented legacy production canary and Live asset activation remain gated.
+
+
 ## 2026.10.07-stack-gap-fleet-r1 (unpublished candidate)
 
 - Parent 1.5.7 adds the qualified After Content keyed request guard to the ACF
