@@ -446,6 +446,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
                 "c4d83c56bcf0f5e3e214514f0c00cf8ce64b5af3174f07e5842a70a65557be72",
             "2026.10.07-acf-performance-fleet-r1.json":
                 "ff9e9f6af278dfc41dc44d6edd3e753e06ba741fa50e2e482d03bbe1931725ee",
+            "2026.10.07-stack-gap-fleet-r1.json":
+                "8cb585b8754f62a49c05c4d28a192c5c06752cc568fc7435b1ead828c1957ab2",
         }
 
         self.assertEqual(set(expected), {path.name for path in archive.glob("*.json")})

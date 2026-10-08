@@ -7,6 +7,7 @@ const path = require('node:path');
 const theme = path.resolve(__dirname, '../..');
 const controller = fs.readFileSync(path.join(theme, 'js/mobile-navigation.js'), 'utf8');
 const styles = fs.readFileSync(path.join(theme, 'css/mobile-navigation.css'), 'utf8');
+const desktopStyles = fs.readFileSync(path.join(theme, 'style.css'), 'utf8');
 let server;
 let origin;
 
@@ -15,14 +16,16 @@ test.beforeAll(async () => {
 		const url = new URL(request.url, 'http://localhost');
 		const late = url.searchParams.has('late');
 		const missing = url.searchParams.has('missing');
+		const headerAction = url.searchParams.has('header-action');
+		const dark = url.searchParams.has('dark');
 		response.writeHead(200, { 'content-type': 'text/html', 'cache-control': 'no-store' });
 		response.write(`<!doctype html><html lang="en"><head><meta charset="utf-8">
 			<meta name="viewport" content="width=device-width, initial-scale=1"><title>Navigation fixture</title>
-			<style>${styles}body{margin:0;font:16px Arial}header{height:80px}.menu{margin:0;list-style:none;padding:0}.menu a{display:block;padding:16px}.sub-menu{display:none}main{background:#eee;min-height:600px}h1{margin:0;padding:20px}.mrn-mobile-navigation:not([data-mrn-mobile-active="true"]) .menu-toggle{display:none}</style>
-			${late ? '' : `<script>${controller}</script>`}</head><body><header>Site header</header>
-			<nav class="mrn-mobile-navigation" aria-label="Primary" data-mrn-mobile-navigation style="--mrn-mobile-menu-breakpoint:900px">
+			<style>${headerAction ? desktopStyles : ''}${styles}body{margin:0;font:16px Arial}header{height:80px}.menu{margin:0;list-style:none;padding:0}.menu a{display:block;padding:16px}.sub-menu{display:none}main{background:#eee;min-height:600px}h1{margin:0;padding:20px}.mrn-mobile-navigation:not([data-mrn-mobile-active="true"]) .menu-toggle{display:none}</style>
+			${late ? '' : `<script>${controller}</script>`}</head><body${dark ? ' data-mrn-surface="dark"' : ''}><header>Site header</header>
+			<nav class="main-navigation mrn-site-primary-navigation mrn-mobile-navigation" aria-label="Primary" data-mrn-mobile-navigation style="--mrn-mobile-menu-breakpoint:900px;--mrn-theme-hf-link-color:#fff;--mrn-mobile-menu-link:#1c222b">
 			<button class="menu-toggle" aria-expanded="false" aria-label="Open navigation" aria-controls="panel" data-close-label="Close navigation">Menu</button>
-			<div class="mrn-mobile-navigation__panel" id="panel">${missing ? '' : `<ul class="menu"><li class="menu-item-has-children"><a href="#content">Products</a><ul class="sub-menu"><li><a href="#content">Gloves</a></li></ul></li><li><a href="#content">Contact</a></li></ul>`}</div></nav>
+			<div class="mrn-mobile-navigation__panel" id="panel">${headerAction ? '<div class="mrn-mobile-navigation__drawer-header"><div class="mrn-mobile-navigation__header-action"><a class="mrn-mobile-navigation__header-action-link mrn-mobile-navigation__header-action-link--token" href="tel:9195550100">Call our team</a></div></div>' : ''}${missing ? '' : `<ul class="menu"><li class="menu-item-has-children"><a href="#content">Products</a><ul class="sub-menu"><li><a href="#content">Gloves</a></li></ul></li><li><a href="#content">Contact</a></li></ul>`}</div></nav>
 			<main id="content"><h1>Visible page content</h1></main>`);
 		// A slow response tail reproduces the period when the old expanded
 		// fallback could paint before footer scripts initialized the drawer.
@@ -140,3 +143,26 @@ test('incomplete navigation falls back to its unenhanced state', async ({ page }
 	await page.goto(`${origin}/?missing=1`);
 	await expect(page.locator('nav')).not.toHaveAttribute('data-mrn-mobile-active');
 });
+
+
+for (const width of [390, 900]) {
+	for (const dark of [false, true]) {
+		test(`drawer action keeps its palette ahead of desktop header styles at ${width}px (${dark ? 'dark' : 'light'} surface)`, async ({ page }) => {
+			await page.setViewportSize({ width, height: 844 });
+			await page.goto(`${origin}/?header-action=1${dark ? '&dark=1' : ''}`);
+			const nav = page.locator('nav');
+			await nav.locator(':scope > .menu-toggle').click();
+			const action = nav.getByRole('link', { name: 'Call our team' });
+			await expect(action).toBeVisible();
+			await expect(action).toHaveCSS('color', 'rgb(28, 34, 43)');
+			await action.focus();
+			await expect(action).toHaveCSS('color', 'rgb(28, 34, 43)');
+			await action.hover();
+			await expect(action).toHaveCSS('color', 'rgb(28, 34, 43)');
+			await nav.evaluate(el => el.style.setProperty('--mrn-mobile-menu-link-hover', '#000000'));
+			await expect(action).toHaveCSS('color', 'rgb(0, 0, 0)');
+			const result = await new AxeBuilder({ page }).include('nav').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+			expect(result.violations).toEqual([]);
+		});
+	}
+}

@@ -1,7 +1,7 @@
 # Stack deployment task handoff
 
 Use this handoff after the owner has created and accepted a new test site from
-`2026.10.05-stack-bootstrap-r1`. Record that site's exact URL and its test results
+`2026.10.08-fleet-readiness-r1`. Record that site's exact URL and its test results
 before starting existing-site adoption. This file does not authorize site writes.
 
 ## Stack deliverable
@@ -16,9 +16,13 @@ before starting existing-site adoption. This file does not authorize site writes
 - SendGrid provisioning/key delivery and Config Helper integration are retired.
   Existing mail services, credentials, DNS and saved settings remain untouched.
 - Background Video Pop-Out Disabler is optional and excluded from bootstrap.
-- reCAPTCHA remains on qualified 0.1.4. Its 0.2.0 candidate and the operations
+- reCAPTCHA remains on qualified 0.1.4. Its accepted 0.2.2 pilot source and the operations
   service are separate releases. The immutable component transport prototype
   is excluded from this bootstrap and is not a prerequisite for owner testing.
+- Parent 1.5.8 retains After Content, ACF performance and Text Swipe, and fixes
+  drawer action palette precedence. Agent 0.3.2 is a separately seeded prerequisite.
+  Trilliant site qualification is explicitly deferred and is not an approved
+  remote target in this release preparation.
 - Plugin package identities are in `stack/manifests/bootstrap-packages.lock.json`.
   Platform sources, theme pair and MU hashes are in `stack-release.lock.json`.
   Recovery material is indexed in `retired-capabilities.json` and the restoration
@@ -27,7 +31,7 @@ before starting existing-site adoption. This file does not authorize site writes
 ## Copy-ready prompt for the deployment task
 
 ```text
-Continue from MRN Stack release 2026.10.05-stack-bootstrap-r1 after the owner
+Continue from MRN Stack release 2026.10.08-fleet-readiness-r1 after the owner
 supplies the accepted new-site test URL and results. Read
 stack/BOOTSTRAP_RELEASE.md, both current release/package locks,
 docs/STACK-SIMPLIFICATION-2026-10.md, stack/RESTORING-RETIRED-CAPABILITIES.md,
@@ -35,7 +39,7 @@ and the final bootstrap release receipt. Confirm the exact merged source,
 package SHA-256 values and hosted installer publication receipt before planning.
 
 Treat this as deployment/adoption work. Do not redesign the Stack, enable
-CAPTCHA 0.2.0, install the immutable component prototype, or host the operations
+CAPTCHA 0.2.2, install the immutable component prototype, or host the operations
 service as an incidental dependency. Report an actual blocker before proposing
 a source change in the dedicated Stack task.
 

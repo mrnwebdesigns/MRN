@@ -1,6 +1,6 @@
 # New-site Stack bootstrap release
 
-Platform candidate: `2026.10.07-stack-gap-fleet-r1`; plugin input bundle: `2026.10.07-stack-gap-bootstrap-r1`. Scope: complete new-site installation inputs for the owner test. Existing-site deployment and the advanced deployment transport remain separate.
+Platform candidate: `2026.10.08-fleet-readiness-r1`; plugin input bundle: `2026.10.07-stack-gap-bootstrap-r1`. Scope: complete new-site installation inputs for the owner test. Existing-site deployment and the advanced deployment transport remain separate.
 
 The Stack profile selects **33 standard plugins**. The plain profile selects **32**, excluding only Reusable Block Library. Community versions are pinned in `plugins.txt`; every plugin archive is checksum-bound in `manifests/bootstrap-packages.lock.json`. The MRN platform lock separately covers the parent/child pair, MU components and shared runtime.
 
@@ -44,7 +44,7 @@ The Stack profile selects **33 standard plugins**. The plain profile selects **3
 
 ## Environment and ownership
 
-- Activate the MRN Base Stack Child 1.1.0 over parent 1.5.7. Child content remains site-owned.
+- Activate the MRN Base Stack Child 1.1.0 over parent 1.5.8. Child content remains site-owned.
 - Keep SEOPress Free/PRO 10.3 active for native editing. Development disables indexing, tracking and external jobs.
 - Post SMTP 4.0.2 is installed and inactive in development. Provider configuration and verified delivery belong to launch.
 - reCAPTCHA uses qualified 0.1.4. The 0.2.2 Gloves pilot source is accepted, but generic native-controller qualification and broader adoption remain gated.
