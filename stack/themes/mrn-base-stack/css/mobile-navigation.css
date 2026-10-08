@@ -174,9 +174,18 @@
 	text-align: right;
 }
 
+.mrn-mobile-navigation[data-mrn-mobile-active="true"] .mrn-mobile-navigation__header-action {
+	color: var(--mrn-mobile-menu-link);
+}
+
+/* Drawer actions use their own palette, ahead of desktop header link rules. */
+.mrn-mobile-navigation[data-mrn-mobile-active="true"] .mrn-mobile-navigation__header-action .mrn-mobile-navigation__header-action-link,
+.mrn-mobile-navigation[data-mrn-mobile-active="true"] .mrn-mobile-navigation__header-action .mrn-mobile-navigation__header-action-text {
+	color: var(--mrn-mobile-menu-link);
+}
+
 .mrn-mobile-navigation__header-action-link,
 .mrn-mobile-navigation__header-action-text {
-	color: var(--mrn-mobile-menu-link);
 	font-size: 0.9375rem;
 	line-height: 1.3;
 }
@@ -185,8 +194,8 @@
 	text-decoration: none;
 }
 
-.mrn-mobile-navigation__header-action-link:hover,
-.mrn-mobile-navigation__header-action-link:focus {
+.mrn-mobile-navigation[data-mrn-mobile-active="true"] .mrn-mobile-navigation__header-action .mrn-mobile-navigation__header-action-link:hover,
+.mrn-mobile-navigation[data-mrn-mobile-active="true"] .mrn-mobile-navigation__header-action .mrn-mobile-navigation__header-action-link:focus {
 	color: var(--mrn-mobile-menu-link-hover);
 }
 

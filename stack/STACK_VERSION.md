@@ -1,13 +1,13 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.07-stack-gap-fleet-r1`
-- Release date: `2026-10-07`
-- Status: `cumulative candidate; Platform local qualification; remote rollout pending`
+- Stack release: `2026.10.08-fleet-readiness-r1`
+- Release date: `2026-10-08`
+- Status: `signoff candidate; Trilliant deferred; site adoption separately gated`
 
 ## Included MRN-Owned Components
 - Theme:
-  - `mrn-base-stack` `1.5.7`
+  - `mrn-base-stack` `1.5.8`
   - `mrn-base-stack-child` `1.1.0`
 - MU plugins:
   - `mrn-loader` `1.6.1`
@@ -55,6 +55,11 @@
 - Importer manifest: [`manifests/importers.txt`](/Users/khofmeyer/Development/MRN/stack/manifests/importers.txt)
 
 ## Candidate scope
+- October 8 adds the mobile drawer palette cascade fix and complete strict
+  PHPStan symbol discovery. New parent 1.5.8 preserves the October 7 changes.
+  Trilliant is deferred by owner instruction; its existing report remains visible.
+  This promotion qualifies and publishes the release inputs. Existing-site
+  updates, production canary acceptance and optional CAPTCHA cutover stay separate.
 - October 7 gap successor includes the qualified keyed After Content request guard,
   accepted parent-only Dev adapter and CAPTCHA preparation/recovery dependencies.
   Parent 1.5.7 retains ACF performance and Text Swipe. Deployment Agent 0.3.2 is
