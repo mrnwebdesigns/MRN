@@ -12,6 +12,10 @@
  * @package mrn-base-stack
  */
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 get_header();
 ?>
 
