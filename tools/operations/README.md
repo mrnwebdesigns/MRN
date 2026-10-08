@@ -6,7 +6,7 @@ implementation. It is **not yet hosted or team-ready**. Real writes default off.
 
 ## Team experience and acceptance
 
-The team-facing product must be: **add the MRN plugin in the team's chat app,
+The team-facing product must be: **add the MRN plugin in ChatGPT,
 sign in with an individual MRN account, and ask for website work in ordinary
 language**. Team members must not need Codex, a terminal, a local repository,
 manual MCP configuration, API keys or a personal background service. Existing
@@ -15,11 +15,13 @@ again. Findings, progress, necessary approvals and verified results stay in chat
 
 Service hosting, credentials, source connections and operational administration
 are MRN operator responsibilities. The operator setup below is not team
-onboarding. The chosen chat platform determines the installable integration and
-OAuth sign-in requirements; that platform choice is still pending. The existing
-MCP backend is reusable, but is not itself a packaged, installable chat plugin.
+onboarding. ChatGPT is the selected platform. The portable plugin manifest and
+package builder are in `chatgpt/`; per-tool OAuth declarations and reconnect
+challenges are exposed by the service. The hosted endpoint, real MRN identity
+provider, workspace publishing and ChatGPT acceptance remain outstanding. See
+[ChatGPT delivery and setup](CHATGPT.md).
 
-Acceptance requires an ordinary team member, using only the chosen chat app, to
+Acceptance requires an ordinary team member, using only ChatGPT, to
 add the integration, sign in, discover permitted sites, request an inspection and
 receive evidence and coverage in the same conversation. Wrong-account access,
 revoked access and denied actions must be enforced by the hosted service. Before

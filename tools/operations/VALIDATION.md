@@ -1,5 +1,29 @@
 # Operations validation
 
+## ChatGPT plugin delivery — 2026-10-08
+
+ChatGPT is the selected team surface: install the workspace plugin, sign in, and
+work in chat. This increment supplies its remote-only portable package and the
+service-side connection metadata; it does not provision or publish the service.
+
+- 96 Operations tests passed, including raw HTTP verification of top-level and
+  mirrored OAuth declarations for all 11 tools, operation-effect annotations,
+  expired-identity reconnect challenges, denied identity hints, audience/resource
+  binding, deterministic ZIP contents, no-overwrite behavior and invalid endpoint
+  rejection. Existing signed-token HTTP, stdio, discovery, repair and recovery
+  regressions remain passing. Direct ESLint and whitespace checks passed.
+- MRN staged task acceptance passed; the final staged tree needs its matching
+  proof before commit. Direct JS tests cover the protocol; the package tests
+  execute the Python builder. No new dependency was introduced.
+- A preview ZIP was built using the proposed example hostname, with SHA-256
+  `cdc54e31074c50de0de9dfb3ad18c89fafb91ba2de06b8d9c67025b6d6d42adc`.
+  It contains only `plugin.json` and `mcp.json`; it is not a live connection.
+- Live ChatGPT installation, OAuth consent/token refresh, identity-provider
+  configuration and workspace publishing remain unverified. No site or service
+  was changed remotely. WordPress API-runtime, browser accessibility, frontend
+  performance, parity and deployment checks are inapplicable to these backend
+  and packaging changes; actual ChatGPT acceptance is still required.
+
 ## Automatic discovery and MRN knowledge — 2026-10-08
 
 Continuation on `codex/operations-recovery-20261008`, after `fdfeb72`; included in

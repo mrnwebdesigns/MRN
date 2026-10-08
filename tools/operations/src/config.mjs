@@ -17,7 +17,7 @@ export const configSchema = z.object({
   mainwp: z.object({ command: absolute, args: z.array(z.string()).min(1), cwd: absolute,
     envRefs: z.record(z.string(), z.object({ env: z.string() }).strict()) }).strict(),
   qa: z.object({ executable: absolute }).strict().optional(),
-}).strict();
+}).strict().refine(config => config.auth.audience === config.publicUrl, { path: ['auth', 'audience'], message: 'The access-token audience must equal the published MCP resource URL.' });
 export function loadConfig(file) {
   const config = configSchema.parse(readJson(file));
   requireThat(new URL(config.auth.jwksUrl).origin === new URL(config.auth.issuer).origin, 'AUTH_CONFIG', 'Pin JWKS to the configured issuer origin.');

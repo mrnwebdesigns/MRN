@@ -48,6 +48,7 @@ test('hosted HTTP MCP authenticates each request and keeps concurrent identities
   assert.equal((await metadata.json()).resource, `${base}/mcp`);
   const unauthorized = await fetch(`${base}/mcp`, { method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: '{}' });
   assert.equal(unauthorized.status, 401); assert.match(unauthorized.headers.get('www-authenticate'), /resource_metadata/);
+  assert.match(unauthorized.headers.get('www-authenticate'), /error="invalid_token".*error_description=.*scope="mrn:operations"/);
   assert.equal((await fetch(`http://localhost:${port}/healthz`)).status, 403);
   assert.equal((await fetch(`${base}/healthz`, { headers: { ...headers, Origin: 'https://evil.test' } })).status, 403);
   const clients = [];
