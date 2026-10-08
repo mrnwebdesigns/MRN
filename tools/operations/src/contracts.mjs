@@ -49,12 +49,21 @@ export const registrySchema = z.object({
   }).strict()),
 }).strict();
 export const actions = ['read', 'test', 'repair', 'deploy_development', 'release_production'];
+const portfolioSchema = z.object({ sources: z.array(z.enum(['mainwp', 'local-hub'])).min(1), actions: z.array(z.enum(['read', 'test'])).min(1) }).strict();
 export const policySchema = z.object({ version: z.literal(1), members: z.array(z.object({
   subject: z.string().min(1), enabled: z.boolean(),
   // Directory-wide read/test access is explicit and never grants repair/release.
-  portfolio: z.object({ sources: z.array(z.enum(['mainwp', 'local-hub'])).min(1), actions: z.array(z.enum(['read', 'test'])).min(1) }).strict().optional(),
+  portfolio: portfolioSchema.optional(),
   grants: z.array(z.object({ website: z.union([identifier, httpsUrl]), environments: z.array(z.enum(environmentNames)).min(1), actions: z.array(z.enum(actions)).min(1) }).strict()).default([]),
-}).strict()) }).strict();
+}).strict()), emailDomains: z.array(z.object({
+  domain: z.string().max(253).regex(/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/),
+  enabled: z.boolean(), portfolio: portfolioSchema,
+}).strict()).default([]) }).strict().superRefine((policy, ctx) => {
+  for (const [field, key] of [['members', 'subject'], ['emailDomains', 'domain']]) {
+    const values = policy[field].map(record => record[key]);
+    if (new Set(values).size !== values.length) ctx.addIssue({ code: z.ZodIssueCode.custom, path: [field], message: 'Duplicate permission identity.' });
+  }
+});
 
 // Observations can refresh without changing an approved target. Configuration,
 // identity, management, backup and coordination still participate in its binding.
@@ -106,9 +115,17 @@ export class Registry {
   }
   member(actor) {
     requireThat(actor?.subject && Number.isFinite(actor.expiresAt) && actor.expiresAt > Date.now(), 'AUTH_REQUIRED', 'Individual authentication is missing or expired.');
-    const matches = policySchema.parse(this.loadPolicy()).members.filter(m => m.subject === actor.subject && m.enabled);
-    requireThat(matches.length === 1, 'FORBIDDEN', 'Your account does not have access to MRN Operations.');
-    return matches[0];
+    const policy = policySchema.parse(this.loadPolicy());
+    const explicit = policy.members.find(m => m.subject === actor.subject);
+    // Explicit restrictions and revocations override a broader domain grant.
+    if (explicit) {
+      requireThat(explicit.enabled, 'FORBIDDEN', 'Your account does not have access to MRN Operations.');
+      return explicit;
+    }
+    const domain = typeof actor.verifiedEmail === 'string' ? actor.verifiedEmail.split('@')[1] : undefined;
+    const grant = policy.emailDomains.find(d => d.enabled && d.domain === domain);
+    requireThat(grant, 'FORBIDDEN', 'Your account does not have access to MRN Operations.');
+    return { subject: actor.subject, enabled: true, portfolio: grant.portfolio, grants: [] };
   }
   authorize(actor, target, action) {
     const member = this.member(actor);

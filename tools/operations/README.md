@@ -98,7 +98,7 @@ it does not introduce a REST, extension, UI or SSH fallback.
 ## Run and test
 
 Requires Node 22.13+ (built-in SQLite), Python 3, Git and the MRN repository layout.
-Use Node 22 LTS on the service host; SQLite may emit an experimental warning.
+The selected MRN Apps host has Node 24; SQLite may emit an experimental warning.
 
 ```bash
 cd tools/operations
@@ -120,7 +120,7 @@ the source of validation for ZIP/source/baseline construction.
 
 ## Operator setup for the hosted service
 
-1. Choose the service host and public hostname. The proposed
+1. The owner selected the existing DigitalOcean MRN Apps server. The proposed
    `operations.mrnwebdesigns.com` is a placeholder, not a provisioned service.
    Select the MRN identity provider's issuer, JWKS endpoint and audience. It must
    support MCP-client OAuth authorization, PKCE and `mrn:operations` access tokens.
@@ -156,7 +156,14 @@ the source of validation for ZIP/source/baseline construction.
    optional and reserved for reviewed missing-fact corrections or operation
    prerequisites; `websites.example.json` is intentionally empty. Never copy the
    MainWP inventory into it. See [discovery and knowledge](DISCOVERY.md).
-7. Assign immutable IdP subjects explicit grants. Actions are independent:
+7. Assign immutable IdP subjects explicit grants, or configure an approved
+   `emailDomains` read/test policy with `auth.verifiedEmailClaims: true`. Only
+   signed `${audience}/email` and boolean `${audience}/email_verified` claims
+   qualify, after full signature/issuer/audience validation. Match the exact
+   domain, never a suffix or subdomain. Explicit subject entries override domain
+   access, including `enabled: false` revocation. Domain policies cannot grant
+   repair or release. See [MRN Apps staff policy](deploy/MRN-APPS.md).
+   Actions are independent:
    `read`, `test`, `repair`, `deploy_development`, `release_production`. A normal
    repairer needs `read` + `repair`; production execution additionally needs
    `release_production`. `portfolio` can grant read/test access to MainWP and/or
@@ -186,10 +193,11 @@ the source of validation for ZIP/source/baseline construction.
     to this Fleet adapter: it refuses that route. Local content/code workflows
     will use the documented Local Hub exception once implemented.
 
-The identity provider, hosting destination, initial member/site grants, service
-credential, repository/artifact provisioning and writer enrollment remain owner
-setup decisions. Configuration and tests are ready for review; none of these
-acceptance steps is implied by a passing code test.
+The initial MRN Apps host, existing Auth0 identity provider and staff read policy
+are selected. OAuth registration, service credential provisioning, deployment and
+real ChatGPT acceptance remain delivery work. Artifact provisioning and writer
+coordination apply later when qualifying executable changes. Passing code tests
+does not establish any of these live acceptance steps.
 
 Discovery alone needs no release artifacts, source checkouts, QA qualification,
 writer-coordination record or backup route. Those prerequisites apply when the

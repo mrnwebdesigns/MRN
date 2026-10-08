@@ -1,5 +1,27 @@
 # Operations validation
 
+## MRN Apps and verified staff access — 2026-10-08
+
+- Owner selected DigitalOcean MRN-Apps and all verified `@mrnwebdesigns.com`
+  staff. Live read-only host inspection confirmed droplet `571721080`, the
+  existing private SSH route, Node 24.15.0, Nginx and available loopback port 8812.
+  Auth0's API list and public OIDC metadata confirmed the existing MRN tenant.
+- 100 Operations tests passed. New coverage verifies resource-specific signed
+  email claims, strict boolean verification, exact domain matching, foreign and
+  malformed identities rejected before downstream calls, explicit revocation
+  and restriction precedence, machine-token denial, duplicate policy rejection,
+  domain write-grant rejection and isolation of the new Auth0 Action from other
+  API audiences. Direct ESLint, both deployment JSON schemas and diff checks pass.
+- The separate Nginx vhost, systemd-compatible service configuration, staff read
+  policy and Auth0 Action are prepared. No dependency was added. The host's
+  Nginx configuration has not been changed or reloaded; its new vhost needs live
+  syntax and TLS verification during activation.
+- MRN staged task acceptance passed (100% of applicable checks).
+  WordPress runtime/API, public browser, accessibility, frontend performance and
+  Stack parity checks are inapplicable to these backend and deployment files.
+  Live identity, ChatGPT connection/refresh, SQLite restore and workspace
+  publication checks remain outstanding. No live service or client site changed.
+
 ## ChatGPT plugin delivery — 2026-10-08
 
 ChatGPT is the selected team surface: install the workspace plugin, sign in, and

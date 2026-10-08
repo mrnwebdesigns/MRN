@@ -7,7 +7,7 @@ const secureUrl = z.string().url().refine(s => { const u = new URL(s); return u.
 export const configSchema = z.object({
   version: z.literal(1), publicUrl: secureUrl.refine(s => new URL(s).pathname === '/mcp'),
   listen: z.object({ host: z.literal('127.0.0.1'), port: z.number().int().min(1024).max(65535) }).strict(),
-  auth: z.object({ issuer: secureUrl, audience: z.string().min(1), jwksUrl: secureUrl }).strict(),
+  auth: z.object({ issuer: secureUrl, audience: z.string().min(1), jwksUrl: secureUrl, verifiedEmailClaims: z.boolean().default(false) }).strict(),
   allowedOrigins: z.array(secureUrl).default([]),
   registryPath: absolute.optional(), policyPath: absolute, qualificationsPath: absolute, stateDir: absolute, repositoryRoot: absolute,
   discovery: z.object({ localHubRoots: z.array(absolute).max(10).default([]) }).strict().optional(),

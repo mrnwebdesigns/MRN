@@ -6,5 +6,5 @@ try {
   const policy = policySchema.parse(readJson(config.policyPath));
   if (config.recoveryEvidencePath) recoverySchema.parse(readJson(config.recoveryEvidencePath));
   process.stdout.write(JSON.stringify({ valid: true, websiteOverrides: registry.data().websites.length, discoveryEnabled: Boolean(config.discovery), members: policy.members.length,
-    writesEnabled: config.writesEnabled, hostingVerified: false }) + '\n');
+    emailDomains: policy.emailDomains.length, writesEnabled: config.writesEnabled, hostingVerified: false }) + '\n');
 } catch { process.stderr.write('Configuration validation failed. Check required fields, absolute paths, exact environment identities and issuer URLs.\n'); process.exitCode = 1; }

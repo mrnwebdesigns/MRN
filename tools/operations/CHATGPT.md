@@ -24,9 +24,15 @@ The service exposes OAuth metadata, per-tool security declarations and reconnect
 challenges. A valid sign-in still needs the member's server-enforced permissions.
 Platform-supplied user or organization metadata is not an authorization source.
 
+The owner selected the existing DigitalOcean **MRN-Apps** server and approved
+access for all verified `@mrnwebdesigns.com` staff on October 8, 2026. Reuse the
+existing MRN Auth0 tenant with a separate Operations API and audience-bound
+verified email claims. The reviewed initial policy grants MainWP reads only.
+See the [MRN Apps delivery record](deploy/MRN-APPS.md) for the exact deployment.
+
 This is a local implementation and test candidate, not an installed ChatGPT
-plugin. A real hosted endpoint and MRN sign-in provider are not configured.
-The example hostname is proposed, not provisioned. Workspace publishing and
+plugin. The new endpoint and Auth0 API are not yet active.
+The hostname is proposed, not provisioned. Workspace publishing and
 end-to-end ChatGPT sign-in have not been performed. No private-directory listing,
 public-directory approval or user entitlement is implied by the package.
 
@@ -55,7 +61,7 @@ settings in `service.json` and the chosen identity provider:
 | OAuth | Authorization code with PKCE S256 and scope `mrn:operations` |
 | Client registration | The provider's supported CIMD, DCR or predefined client route |
 | Callback | Copy the exact URI shown by ChatGPT into the provider's allowlist |
-| Member policy | Immutable issuer subject mapped to explicit MRN site/action permissions |
+| Member policy | Verified MRN email-domain read access; explicit subject overrides and write permissions |
 
 Use an established identity provider; this service does not implement a new
 password store or authorization server. An upstream Google/Microsoft login alone
@@ -107,5 +113,7 @@ authorized repair, verified backup, execution, post-change verification and
 recovery through the same conversation. Existing QA, backup, lock and release
 gates remain required. The local HTTP/stdio fixtures do not replace this test.
 
-The remaining setup inputs are the MRN sign-in provider, approved service host
-and target ChatGPT workspace. These are operator decisions, not team onboarding.
+The host, existing MRN identity provider and staff audience are identified.
+The remaining delivery work is deployment, Operations-specific OAuth registration,
+real ChatGPT acceptance and publication to MRN's workspace. Team members do none
+of this setup.
