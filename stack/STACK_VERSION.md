@@ -1,7 +1,7 @@
 # Stack Version
 
 ## Candidate Release
-- Stack release: `2026.10.08-fleet-readiness-r1`
+- Stack release: `2026.10.08-fleet-readiness-r2`
 - Release date: `2026-10-08`
 - Status: `signoff candidate; Trilliant deferred; site adoption separately gated`
 
