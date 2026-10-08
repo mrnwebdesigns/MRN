@@ -4,6 +4,29 @@ Working first version of the shared MRN operations service. This is an HTTP MCP
 backend for conversational clients, not a WordPress plugin or a new MainWP
 implementation. It is **not yet hosted or team-ready**. Real writes default off.
 
+## Team experience and acceptance
+
+The team-facing product must be: **add the MRN plugin in the team's chat app,
+sign in with an individual MRN account, and ask for website work in ordinary
+language**. Team members must not need Codex, a terminal, a local repository,
+manual MCP configuration, API keys or a personal background service. Existing
+website access follows their account permissions; they do not register sites
+again. Findings, progress, necessary approvals and verified results stay in chat.
+
+Service hosting, credentials, source connections and operational administration
+are MRN operator responsibilities. The operator setup below is not team
+onboarding. The chosen chat platform determines the installable integration and
+OAuth sign-in requirements; that platform choice is still pending. The existing
+MCP backend is reusable, but is not itself a packaged, installable chat plugin.
+
+Acceptance requires an ordinary team member, using only the chosen chat app, to
+add the integration, sign in, discover permitted sites, request an inspection and
+receive evidence and coverage in the same conversation. Wrong-account access,
+revoked access and denied actions must be enforced by the hosted service. Before
+claiming change workflows usable, repeat the authorized repair and verification
+flow in a controlled environment through that same chat experience. Fixture
+tests or developer configuration alone do not satisfy this acceptance.
+
 Existing MainWP websites appear automatically for authorized team members. There
 is no second website enrollment or required Operations website list. Existing
 Local Hub records add explicit remote/local relationships and deployment facts;
@@ -93,7 +116,7 @@ simulated package bytes and an injected plan builder; the real adapter uses the
 canonical Python builder. Existing Fleet and source-builder contract tests remain
 the source of validation for ZIP/source/baseline construction.
 
-## Hosted onboarding
+## Operator setup for the hosted service
 
 1. Choose the service host and public hostname. The proposed
    `operations.mrnwebdesigns.com` is a placeholder, not a provisioned service.

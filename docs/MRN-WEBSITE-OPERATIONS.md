@@ -5,6 +5,13 @@ existing workflows through MCP; it does not own a competing MainWP implementatio
 or replace Fleet, site deployments, content migrations, QA Engine or provider
 backup policy. The first version is a review candidate, not an activated service.
 
+The team-facing experience is to add the MRN plugin in the team's chat app, sign
+in individually, and use ordinary conversation. It must not require Codex,
+terminal commands, local code or manual connection/credential configuration from
+team members. Hosting and integration setup belong to MRN operators. The
+installable chat integration, real sign-in and chat-only acceptance are required
+delivery work; a tested MCP backend alone is not the finished team product.
+
 The requesting team member must authenticate individually. Server policy grants
 access by website, environment and operation. A downstream service credential
 never expands that person's authority. Every downstream call rechecks permissions
