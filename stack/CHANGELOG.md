@@ -1,6 +1,10 @@
 # Stack Changelog
 
-## 2026.10.08-fleet-readiness-r2
+## 2026.10.08-fleet-readiness-r3
+
+- Clear Post SMTP 4.0.2 browser onboarding only after activation, with its loader skipped for that single option write. Prevent its next-request exit from silently skipping the next bootstrap command. Stop if that cleanup fails. Retain mail settings and vendor package bytes unchanged.
+
+## 2026.10.08-fleet-readiness-r2 (superseded qualification prerelease)
 
 - Re-seal the unchanged parent 1.5.8 after including its release changelog in the clean merged source snapshot. Preserve the r1 lock and artifacts as a superseded unpublished candidate.
 

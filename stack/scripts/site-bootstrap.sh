@@ -802,6 +802,18 @@ activate_theme_with_starter_rename() {
   fi
 }
 
+clear_post_smtp_activation_redirect() {
+  [[ "${1:-}" == "post-smtp" ]] || return 0
+
+  # Post SMTP 4.0.2 exits the next request even in WP-CLI when this
+  # browser-onboarding flag is set. Skip only its loader while clearing
+  # the flag, so the next installation/configuration command can execute.
+  if ! run_wp eval 'delete_option("post_smtp_activation_redirect");' --skip-plugins=post-smtp; then
+    echo "Failed to clear Post SMTP activation redirect; stopping bootstrap." >&2
+    return 1
+  fi
+}
+
 install_plugins() {
   if [[ ! -f "${PLUGINS_FILE}" ]]; then
     echo "Plugin manifest not found: ${PLUGINS_FILE}. Skipping plugin install."
@@ -852,6 +864,7 @@ install_plugins() {
           add_warning "Installed but failed to activate plugin slug '${installed_slug}' from source: ${source}"
         fi
       fi
+      clear_post_smtp_activation_redirect "${installed_slug}"
       continue
     fi
 
@@ -886,6 +899,7 @@ install_plugins() {
         add_warning "Installed but failed to activate plugin: ${slug}"
       fi
     fi
+    clear_post_smtp_activation_redirect "${slug}"
   done < "${PLUGINS_FILE}"
 }
 
@@ -973,6 +987,7 @@ ensure_all_plugins_active() {
       add_warning "Failed to activate plugin before licenses/imports: ${plugin_slug}"
       continue
     fi
+    clear_post_smtp_activation_redirect "${plugin_slug}"
     echo "Activated plugin: ${plugin_slug}"
   done
 }
