@@ -160,6 +160,8 @@ if ( ! function_exists( 'mrn_site_colors_get_css_var' ) ) {
 // Runtime-defined plugin paths and wp-config values for static analysis only.
 foreach ( array(
 	'DB_NAME' => 'static-analysis',
+	'MRN_ANNOUNCEMENTS_PATH' => __DIR__ . '/plugins/mrn-announcements/',
+	'MRN_ANNOUNCEMENTS_URL' => '',
 	'MRN_LAYOUT_IMPORT_EXPORT_DIR' => __DIR__ . '/plugins/mrn-layout-import-export/',
 	'MRN_LAYOUT_IMPORT_EXPORT_URL' => '',
 	'MRN_TOKENS_DIR' => __DIR__ . '/plugins/mrn-tokens/',
