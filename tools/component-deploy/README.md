@@ -1,8 +1,10 @@
 # Shared component release foundation
 
 **Source tooling with an explicit parent-only CloudPanel Dev qualification
-adapter.** Standard-plugin adoption remains a candidate. No automatic site
-adoption, Live deployment, or native Dashboard parent installer is enabled.
+adapter and a manual Nexcess Live qualification candidate.** Standard-plugin
+adoption remains a candidate. No automatic site adoption or native Dashboard
+parent installer is enabled. Live acceptance requires its separate exact-target
+qualification; see the [candidate gates](../../docs/releases/2026.10.08-parent-live-qualification.md).
 This directory does not enter the default Stack package. The ZIP format is deliberately not a
 WordPress plugin/theme installation ZIP. The normal MainWP installer must not
 receive it. Build receipts report `runtime_qualified: false`; the authorized
@@ -12,7 +14,8 @@ This implements the source/package and early component-selection portions of
 [D19](../../docs/MRN-ASSET-RELEASE-STANDARD.md). It does not complete the shared
 component deployment contract. It does not automatically enroll existing sites,
 change installed plugin state, or replace retired capability archives. The
-explicit Dev qualification below is the only supported existing-site write.
+explicit Dev qualification and the reviewed Nexcess Live candidate are the
+available operator routes; neither authorizes a site write by itself.
 
 ## Implemented and tested
 

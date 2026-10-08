@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One-site parent-only Dev adapter, using fresh MainWP evidence and owner SSH.
+"""Parent-only Dev adapter and explicit Nexcess Live qualification candidate.
 
 MainWP has no parent-only install ability. This explicitly selected operator
 adapter is not a silent fallback or a new Dashboard API. Preflight is read-only;
@@ -19,13 +19,14 @@ import time
 from urllib.parse import urlsplit
 
 from verify import verify
+from parent_target import validate_route
 
 TOOLS = Path(__file__).resolve().parent
 SHARED = TOOLS.parent / 'site-deploy'
 FILES = {'component-deploy/' + name: TOOLS / name for name in
-         ('parent_host.py', 'parent_store.py', 'runtime.php', 'bootstrap.php', 'verify.py', 'verify_backup.php')}
+         ('parent_host.py', 'parent_target.py', 'parent_store.py', 'runtime.php', 'bootstrap.php', 'verify.py', 'verify_backup.php')}
 FILES.update({'site-deploy/' + name: SHARED / name for name in
-              ('atomic_store.py', 'cache_policy.py', 'deploy.py', 'verify_release.py', 'verify_public_assets.py')})
+              ('atomic_store.py', 'cache_policy.py', 'deploy.py', 'verify_release.py', 'verify_public_assets.py', 'html_cache.php')})
 
 
 def ssh(login, command, body=None, allow_result=False):
@@ -47,12 +48,13 @@ def tree(root):
   if path.is_symlink():raise ValueError('Unexpected alias')
   if path.is_file():out[path.relative_to(root).as_posix()]=hashlib.sha256(path.read_bytes()).hexdigest()
  return out
-program="echo 'MRN_RESULT='.wp_json_encode(array('url'=>untrailingslashit(get_option('home')),'template'=>get_template(),'child'=>get_stylesheet(),'root'=>realpath(ABSPATH)));"
+program="echo 'MRN_RESULT='.wp_json_encode(array('url'=>untrailingslashit(get_option('home')),'template'=>get_template(),'child'=>get_stylesheet(),'root'=>realpath(ABSPATH),'environment_type'=>wp_get_environment_type()));"
 r=subprocess.run(['wp','--path='+p['root'],'--skip-themes','eval',program],stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=dict(os.environ,MRN_COMPONENT_RECOVERY='1'),universal_newlines=True)
 lines=[x[11:] for x in r.stdout.splitlines() if x.startswith('MRN_RESULT=')]
 if r.returncode or len(lines)!=1:raise ValueError('Identity unavailable')
 identity=json.loads(lines[0])
 if any(identity[k]!=p[k] for k in ['url','root','child']) or identity['template']!='mrn-base-stack':raise ValueError('Exact target differs')
+if p['environment']=='live' and identity['environment_type']!='production':raise ValueError('Live WordPress environment is not production')
 state=pathlib.Path(p['state']);childstate=pathlib.Path(p['child_state']) if p.get('child_state') else None
 for path in [root,content,content/'themes/mrn-base-stack',content/'themes'/p['child']]+([childstate] if childstate else []):
  if path.resolve()!=path or not path.is_dir():raise ValueError('Physical target required')
@@ -66,21 +68,26 @@ for directory in [content/'mu-plugins']+[x for x in (content/'plugins').iterdir(
   if key!='mu-plugins/000-mrn-parent-release.php':others[key]=sha
 current=json.loads((state/'current.json').read_text()) if (state/'current.json').is_file() else None
 intent=json.loads((state/'intent.json').read_text()) if (state/'intent.json').is_file() else None
-print(json.dumps({'preserved':{'parent':parent,'child':child,'child_pointer':pointer},'other_stack':others,'expected_current':current,'intent':intent}))
+runtime=state/'control/runtime.php'
+html_scope=None
+if p['environment']=='live':
+ request={'url':p['url'],'provider':'nexcess','action':'inspect','urls':p['pages']}
+ cache=subprocess.run(['wp','--path='+p['root'],'eval',p['html_cache_code']],input=json.dumps(request),stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=dict(os.environ,MRN_HTML_CACHE_STDIN='1'),universal_newlines=True)
+ results=[x[11:] for x in cache.stdout.splitlines() if x.startswith('MRN_RESULT=')]
+ if cache.returncode or len(results)!=1:raise ValueError('Live HTML scope unavailable')
+ html_scope=json.loads(results[0])['urls']
+print(json.dumps({'preserved':{'parent':parent,'child':child,'child_pointer':pointer},'other_stack':others,'expected_current':current,'intent':intent,'html_scope':html_scope,'control_runtime_sha256':hashlib.sha256(runtime.read_bytes()).hexdigest() if runtime.is_file() else None}))
 '''
 
 
 def validate_target(plan):
     url = urlsplit(plan['url'])
-    if (plan.get('environment') != 'dev' or url.scheme != 'https' or not url.hostname
-            or not url.hostname.endswith('.mrndev.io') or url.netloc != url.hostname
-            or url.path or url.query or url.fragment):
-        raise ValueError('Only one canonical Dev URL is supported')
+    provider = validate_route(plan)
     login = plan['ssh_login']
     user = login.split('@')[0]
-    if plan['root'] != '/home/' + user + '/htdocs/' + url.hostname:
+    if provider == 'cloudpanel' and plan['root'] != '/home/' + user + '/htdocs/' + url.hostname:
         raise ValueError('CloudPanel owner, hostname and WordPress root must agree')
-    for key in ('state', 'child_state'):
+    for key in ['state'] + (['child_state'] if plan.get('child_state') else []):
         if not re.fullmatch(r'/[a-zA-Z0-9_./-]+', plan.get(key, '')) or '/..' in plan[key]:
             raise ValueError('Explicit physical private storage required')
     mainwp = plan.get('mainwp', {})
@@ -98,7 +105,9 @@ def inspect(plan):
     validate_target(plan)
     # A bound plan can contain thousands of inventory records. Only these
     # identity fields are needed remotely; keep it below per-argument limits.
-    target = {key: plan[key] for key in ('root', 'url', 'state', 'child', 'child_state')}
+    target = {key: plan[key] for key in ('root', 'url', 'state', 'child', 'child_state', 'environment')}
+    if plan['environment'] == 'live':
+        target.update(pages=plan['pages'], html_cache_code=(SHARED / 'html_cache.php').read_text()[5:])
     encoded = base64.b64encode((json.dumps(target) + '\n').encode()).decode()
     # The program and plan are literals passed to Python; no request strings are
     # interpolated into executable shell syntax without shlex quoting.
@@ -128,9 +137,14 @@ def run(plan, confirm=False):
     for name in ('preserved', 'other_stack', 'expected_current'):
         if before[name] != plan.get(name):
             raise ValueError('Target changed after the reviewed preflight')
+    if plan['environment'] == 'live' and before.get('html_scope') != plan.get('html_urls'):
+        raise ValueError('Live HTML scope changed after the reviewed preflight')
+    if (plan['environment'] == 'live' and before['expected_current'] is not None
+            and before.get('control_runtime_sha256') != hashlib.sha256((TOOLS / 'runtime.php').read_bytes()).hexdigest()):
+        raise ValueError('Existing Live parent control requires separate runtime qualification')
     if (before.get('intent') or {}).get('status') == 'in-progress' and not plan.get('recover_verified_outcome'):
         raise ValueError('An unfinished transaction requires explicit outcome inspection')
-    if before['expected_current'] is None and (not plan.get('qualify_dev') or not plan.get('exercise_rollback')):
+    if before['expected_current'] is None and plan['environment'] == 'dev' and (not plan.get('qualify_dev') or not plan.get('exercise_rollback')):
         raise ValueError('First adoption requires explicit Dev qualification and rollback exercise')
     if not plan.get('disable'):
         verify(plan['archive'], plan['artifact_sha256'], plan['source_sha'], plan['source_path'],

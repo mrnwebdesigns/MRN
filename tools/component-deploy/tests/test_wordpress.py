@@ -146,7 +146,9 @@ $asset=plugins_url('assets/site.css',$entry);
 register_activation_hook($entry,static function(){$GLOBALS['activation_identity']=true;});
 do_action('activate_mrn-fixture/mrn-fixture.php');
 rename(%s,%s);
+ob_start(); do_action('wp_head'); $parent_head=ob_get_clean();
 $result=['code'=>$GLOBALS['fixture_code'],'basename'=>plugin_basename($entry),
+ 'parent_head'=>$parent_head,
  'pinned'=>plugins_url('assets/site.css',$entry)===$asset,'asset'=>$asset,
  'activation'=>$GLOBALS['activation_identity']??false,'active'=>is_plugin_active('mrn-fixture/mrn-fixture.php'),
  'metadata'=>apply_filters('all_plugins',get_plugins())['mrn-fixture/mrn-fixture.php']['Version'],
@@ -175,6 +177,8 @@ echo json_encode($result);
             if parent_selected:
                 selected_parent = state / 'releases' / fixtures.Components.parent['artifact_sha256'] / 'component/mrn-base-stack'
                 self.assertEqual('old', result['parent_code'])
+                self.assertIn('<meta name="mrn-parent-release" content="' + fixtures.Components.parent['artifact_sha256'] + '">', result['parent_head'])
+                self.assertNotIn(fixtures.Components.new_parent['artifact_sha256'], result['parent_head'])
                 self.assertFalse(result['parent'])
                 self.assertEqual(str(selected_parent), result['template'])
                 self.assertEqual(str(view / 'mrn-base-stack'), result['theme_template'])
@@ -314,6 +318,7 @@ $opcache=function_exists('opcache_get_status')&&opcache_get_status(false)!==fals
 <link rel="stylesheet" href="<?php echo esc_url($parent_style); ?>">
 <link rel="stylesheet" href="<?php echo esc_url($style); ?>">
 <script type="module" src="<?php echo esc_url($script); ?>"></script>
+<?php do_action('wp_head'); ?>
 </head><body><main><h1 class="fixture">Component fixture</h1>
 <p id="generation" data-opcache="<?php echo $opcache?'yes':'no'; ?>"><?php echo esc_html($GLOBALS['parent_code'].'/'.$GLOBALS['fixture_code']); ?></p>
 <a href="/sample-page/">Sample page</a></main></body></html>

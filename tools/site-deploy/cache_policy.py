@@ -43,7 +43,7 @@ def head(url):
         if response.status != 200 or response.url != url:
             raise ValueError('Canonical HTML cache check returned a redirect or error')
         retained = {'content-type', 'cache-control', 'cf-cache-status', 'age', 'x-cache',
-                    'x-cache-age', 'x-cache-nxaccel', 'x-mrn-site-release'}
+                    'x-cache-age', 'x-cache-nxaccel', 'x-mrn-site-release', 'x-mrn-parent-release'}
         return {name.lower(): value for name, value in response.headers.items() if name.lower() in retained}
 
 
