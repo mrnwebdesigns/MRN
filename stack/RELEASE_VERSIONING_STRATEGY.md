@@ -34,6 +34,13 @@
   - plugin header and runtime constants where the component defines them
 
 ## Release Flow (Going Forward)
+
+This is the source release process the coordinator must execute automatically
+after accepted default-branch pushes/merges. The owner should not need to start
+a separate release task or choose a deployment target. See
+[`MRN-FLEET-READINESS-AUTOMATION.md`](../docs/MRN-FLEET-READINESS-AUTOMATION.md).
+The current drift workflow does not yet implement automatic publication.
+
 1. Create a dedicated release worktree from clean, current, merged `main`. Do
    not promote from a feature worktree, a dirty canonical checkout, or an
    unmerged branch.
@@ -86,11 +93,15 @@
      exclusions
    - use the generated `checksums.json`, exact `plan.json`, and ZIP as the
      preflight/apply identity; never hand-author the plan or package
-11. Deploy in stack-first order for stack-owned runtime changes, then rollout
-    surfaces.
-12. Read back target component versions/hashes and compare them with the release
-    lock. Do not mark the stack current until source, catalog, lock, artifacts,
-    deployment evidence, and target inventory agree.
+11. Verify all applicable distribution paths, publish immutable artifacts, and
+    read back their checksums. Source, catalog, lock, packages, qualification,
+    and publication must agree before the release is **Fleet ready**.
+
+Site rollout follows only when separately initiated and authorized. Deploy in
+Stack-first order for Stack-owned runtime changes, pass the applicable backup
+gate, then read back installed component versions/hashes and user-visible
+behavior. This establishes a named site as **current**; it is not a prerequisite
+for publishing an independently qualified source release.
 
 ## Release Lock
 
@@ -131,7 +142,10 @@ and clone-style sites continue through the per-site resolved deployment flow.
   - required QA scripts for the affected surfaces were skipped without explicit reason
   - the release worktree is dirty or is not based on current merged `main`
   - a deployable change since the prior lock is missing from the release inventory
-  - runtime/fleet inventory differs from the generated release lock
+  - the qualified reference runtime or applicable distribution differs from the lock
+
+A selected site's inventory drift blocks that site's rollout/current status,
+not publication of an otherwise qualified source release.
 
 Feature acceptance and stack promotion follow
 `docs/MRN-CONCURRENT-DEVELOPMENT-POLICY.md`. An unrelated baseline finding does
