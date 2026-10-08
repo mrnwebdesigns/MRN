@@ -52,7 +52,7 @@ export class FleetAdapter {
   }
   async smoke(target, session, qualification) {
     const result = await this.publicProbe(target.url, () => session.authorize(), { references: qualification.assets.map(a => a.url) });
-    const api = await this.publicProbe(`${target.url}/wp-json/`, () => session.authorize());
+    const api = await this.publicProbe(`${target.url}/wp-json/`, () => session.authorize(), { checkRest: true });
     requireThat(result.status === 200 && api.status === 200 && api.restHealthy === true, 'PUBLIC_VERIFICATION', 'The public website and WordPress REST root must return healthy responses after the operation.');
     const checks = [{ path: '/', status: result.status, ok: true, measuredAt: result.measuredAt },
       { path: '/wp-json/', status: api.status, restHealthy: true, ok: true, measuredAt: api.measuredAt }];

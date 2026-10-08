@@ -156,7 +156,18 @@ The first attempt guessed production despite the discovered environment being
 unknown; retrying the discovered target without that guess succeeded. Tool input
 guidance now explicitly forbids that inference. No permission matching was relaxed.
 
-Outstanding acceptance: token-expiry refresh, non-admin staff installation, real
+Automatic token renewal passed on the original owner connection after its initial
+one-hour login expired. ChatGPT retrieved the saved inspection, and Auth0 recorded
+successful refresh-token exchanges at `2026-10-08T19:12:29Z`. The directory now
+shows Manage and Try in chat for the connected owner account.
+
+The initial inspection's REST verdict came from parsing homepage HTML and must
+not be used as API-health evidence. The inspection correction performs a separate
+REST-root request. Missing Stack reports can use read-only qualification with
+exact-site checks; MRN's site returned an agent-upgrade requirement, not a verified
+release baseline. See `../VALIDATION.md` and PR #236 for candidate acceptance.
+
+Outstanding acceptance: non-admin staff installation, real
 outsider identity and live revocation. These denial/revocation behaviors pass
 controlled tests. Scheduled off-host state backup coverage is not established.
 Repair workflows remain disabled and unqualified.

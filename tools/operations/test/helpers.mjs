@@ -8,6 +8,7 @@ import { FleetAdapter } from '../src/fleet.mjs';
 import { FixtureMainwp } from './fixtures/mainwp.mjs';
 import { Qualifications } from '../src/qualification.mjs';
 import { RecoveryEvidence } from '../src/recovery.mjs';
+import { responseEvidence } from '../src/probe.mjs';
 
 export const actor = { subject: 'team-member', expiresAt: Date.now() + 3600000 };
 export function setup() {
@@ -30,7 +31,12 @@ export function setup() {
   const client = new FixtureMainwp(state);
   const catalog = { components: [{ slug: 'mrn-test', version: '1.1.0', runtime_type: 'standard-plugin', target_tier: 'platform-required', current_distribution: 'standard-bootstrap' }] };
   const releases = { releases: Object.values(artifacts).map(a => ({ slug: 'mrn-test', ...a })) };
-  const publicProbe = async () => ({ status: 200, restHealthy: true, ttfbMs: 100, totalMs: 120, bytes: 400, titlePresent: true, langPresent: true, noindex: false, forms: 1, measuredAt: new Date().toISOString(), sourceUrl: state.url });
+  const publicProbe = async (url, authorize, options) => {
+    authorize();
+    const body = url.endsWith('/wp-json/') ? '{"namespaces":["wp/v2"],"routes":{"/wp/v2":{}}}'
+      : '<html lang="en"><head><title>Example</title></head><body><form></form></body></html>';
+    return responseEvidence(url, 200, Buffer.from(body), { ttfbMs: 100, totalMs: 120 }, options);
+  };
   const qualificationData = { version: 1, records: Object.values(artifacts).map(a => ({ siteUrl: state.url, environment: 'development', sourceCommit: a.source.git_commit,
     artifactSha256: a.package.sha256, verifiedBy: 'fixture-test-runner', verifiedAt: new Date().toISOString(), validUntil: new Date(Date.now() + 3600000).toISOString(),
     sourceQa: { status: 'passed', reportRef: 'fixture/source', reportSha256: 'a'.repeat(64) }, runtimeQa: { status: 'passed', reportRef: 'fixture/runtime', reportSha256: 'a'.repeat(64) }, frontend: 'none', assets: [] })) };

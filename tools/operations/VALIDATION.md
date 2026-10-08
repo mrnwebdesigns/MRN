@@ -1,5 +1,39 @@
 # Operations validation
 
+## Inspection evidence correction and login renewal — 2026-10-08
+
+- The initial pilot's REST verdict was invalid: the probe attempted to parse
+  homepage HTML as REST JSON, and inspection never requested `/wp-json/`.
+  That historical verdict is not evidence of a broken website API. New
+  inspections request the exact site's REST root separately and retain its URL,
+  time, HTTP status and bounded JSON-structure result. HTML and asset evidence
+  no longer includes a REST verdict. Fleet verification explicitly requests the
+  REST check and still rejects unsuccessful HTTP or malformed responses.
+- A missing Stack runtime report can now use the existing read-only MainWP
+  qualification capability. Authentication/permission failures never take this
+  path. Exact site ID and URL are verified; only allowlisted classification,
+  blockers, agent version and availability are retained. No site update or
+  automatic installation is performed. On MRN's own website, live qualification
+  identified agent `0.1.7`, `deployment_agent_upgrade_required` and
+  `site_theme_shape_unavailable`; this is qualification evidence, not proof of
+  a healthy or deployable Stack.
+- All 126 Operations tests and direct ESLint pass locally, including realistic
+  HTML/REST separation, subdirectory sites, invalid/denied/unreachable REST
+  responses, expired/revoked identity, wrong-site qualification, secret exclusion
+  and retained Fleet smoke gates. Hosted acceptance for the qualified candidate
+  is recorded on PR #236.
+- The original ChatGPT connection reopened the stored inspection after the
+  one-hour access-token lifetime. Auth0 logs at `2026-10-08T19:12:29Z` show
+  successful refresh-token exchanges for the configured ChatGPT client. No
+  reconnect or new account connection was needed for this check.
+- A teammate's unrelated Google GA4 MCP report was mistakenly investigated here.
+  No source, service configuration, DNS, Auth0 setting or permission changed
+  during that investigation. The extra owner test connection was disconnected
+  and the disposable test chat archived. The original connection, accepted
+  pilot and audit records were retained.
+- WordPress PHP, frontend axe/performance and Stack parity suites remain
+  inapplicable to this backend patch. No managed-site runtime was changed.
+
 ## Hosted ChatGPT staff pilot — 2026-10-08
 
 - Exact candidate `b070501ef0026430b4dab2df60f8d23b506e66cc` installed on the
@@ -30,14 +64,14 @@
   Target authorization and exact-match behavior are unchanged. All 29 focused
   ChatGPT/discovery tests and direct ESLint pass for that follow-up. MRN staged
   task acceptance passed all applicable rows.
-- Inspection correctly reported limits: Stack inspection failed through MainWP,
-  REST health was unhealthy, and accessibility, full security, forms delivery,
+- Inspection reported limits: Stack inspection failed through MainWP,
+  REST health was incorrectly inferred from HTML (corrected above), and accessibility, full security, forms delivery,
   backups and Core Web Vitals remained unverified. This verifies the tool flow,
   not a clean health assessment or release qualification for the website.
 - Consistent SQLite backup and isolated restored-copy integrity/row comparisons
   passed both before use and with one inspection and 61 audit records. No live
   database was replaced. Scheduled off-host backup coverage is not established.
-- Still unverified live: token-expiry refresh, a non-admin staff member's first
+- Still unverified live: a non-admin staff member's first
   install, outsider sign-in and explicit revocation. Controlled identity tests
   cover wrong domain, false verification, machine identity and revocation.
 - The source follow-up changes tool descriptions and deployment evidence only;
