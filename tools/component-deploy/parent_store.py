@@ -1,4 +1,4 @@
-"""Dev-only parent release transaction. Callers establish backup and target QA.
+"""Parent release transaction. Callers establish route, backup and target QA.
 
 The public parent and child remain byte-identical. One early MU loader selects
 private parent code; a separate child release loader is captured before either

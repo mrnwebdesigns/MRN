@@ -158,6 +158,16 @@ final class MRN_Component_Release_Runtime {
 			if ( ! headers_sent() ) {
 				header( 'X-MRN-Parent-Release: ' . $components['mrn-base-stack']['artifact_sha256'] );
 			}
+			// Static HTML caches retain body metadata even when PHP headers are absent.
+			// Capture this request's selection; never reread the mutable pointer here.
+			$parent_artifact = $components['mrn-base-stack']['artifact_sha256'];
+			add_action(
+				'wp_head',
+				static function () use ( $parent_artifact ) {
+					echo '<meta name="mrn-parent-release" content="' . esc_attr( $parent_artifact ) . '">' . "\n";
+				},
+				0
+			);
 			add_action( 'delete_theme', array( __CLASS__, 'guard_theme_removal' ), -PHP_INT_MAX );
 			add_filter( 'validate_theme_requirements', array( __CLASS__, 'guard_theme_switch' ), PHP_INT_MAX, 2 );
 			add_filter( 'pre_update_option_template', array( __CLASS__, 'guard_theme_option' ), -PHP_INT_MAX, 3 );
