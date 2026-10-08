@@ -1,5 +1,50 @@
 # Operations validation
 
+## Hosted ChatGPT staff pilot — 2026-10-08
+
+- Exact candidate `b070501ef0026430b4dab2df60f8d23b506e66cc` installed on the
+  verified MRN Apps droplet. All 100 Operations tests passed on Node 24.15.0;
+  both candidate GitHub checks passed. Systemd is active and enabled.
+- New exact-host DNS, TLS and Nginx vhost are active. Public health/metadata pass;
+  anonymous MCP receives 401. Hosted MainWP status confirms the intended
+  dashboard and 84 abilities. The exact-certificate renewal hook passes shell
+  syntax and a live Nginx validation/reload.
+- Separate Auth0 API and verified-email Login Action are active. Existing Login
+  Actions, callbacks and other API grants were preserved. The public ChatGPT
+  client has this API's single user scope; machine access remains denied.
+- The workspace plugin is published and enabled with four tools: discovery,
+  inspection, saved results and history. Future tools require review. No shared
+  account connection, public Sites access or website mutation tool is enabled.
+- Real ChatGPT OAuth consent, signed-in account and authenticated tool discovery
+  succeeded. The plugin is selectable through chat's mention menu. Settings
+  confirms the connected account even though the directory still displays Install.
+- [Live chat acceptance](https://chatgpt.com/c/6ac7dd09-3954-83ea-8828-7242ab82f805)
+  discovered 107 websites, then resolved and freshly synced only
+  `https://mrnwebdesigns.com`. The stored inspection is bound to the signed-in
+  user's immutable subject. Public sample: HTTP 200, approximately 115 ms TTFB,
+  three forms detected. No form submission or website mutation was performed.
+- The initial model call guessed `production` for an `unknown` environment and
+  failed closed. Retrying with the discovered URL and no invented environment
+  succeeded. The follow-up changes tool/schema guidance to require the discovered
+  environment and makes clear this error does not require site enrollment.
+  Target authorization and exact-match behavior are unchanged. All 29 focused
+  ChatGPT/discovery tests and direct ESLint pass for that follow-up. MRN staged
+  task acceptance passed all applicable rows.
+- Inspection correctly reported limits: Stack inspection failed through MainWP,
+  REST health was unhealthy, and accessibility, full security, forms delivery,
+  backups and Core Web Vitals remained unverified. This verifies the tool flow,
+  not a clean health assessment or release qualification for the website.
+- Consistent SQLite backup and isolated restored-copy integrity/row comparisons
+  passed both before use and with one inspection and 61 audit records. No live
+  database was replaced. Scheduled off-host backup coverage is not established.
+- Still unverified live: token-expiry refresh, a non-admin staff member's first
+  install, outsider sign-in and explicit revocation. Controlled identity tests
+  cover wrong domain, false verification, machine identity and revocation.
+- The source follow-up changes tool descriptions and deployment evidence only;
+  no WordPress PHP, frontend or Stack runtime is modified. WordPress API-runtime,
+  axe, frontend performance and parity suites are inapplicable to this patch.
+  No unrelated website is a QA target. This pilot is not a full Stack promotion.
+
 ## MRN Apps and verified staff access — 2026-10-08
 
 - Owner selected DigitalOcean MRN-Apps and all verified `@mrnwebdesigns.com`

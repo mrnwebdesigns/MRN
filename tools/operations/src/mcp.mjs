@@ -6,12 +6,13 @@ import { safeError, sha, environmentNames } from './contracts.mjs';
 import { securitySchemes, oauthChallenge } from './auth.mjs';
 
 const target = { website: z.string().min(1).max(200).describe('Website name, alias or exact URL from list_websites.'),
-  environment: z.enum(environmentNames).optional() };
+  environment: z.enum(environmentNames).optional().describe('Copy the environment returned by list_websites. If unknown, omit this argument or use unknown. Never infer production from a public URL.') };
 const requestKey = z.string().min(1).max(120).describe('Stable unique key for this logical request. Reuse only when retrying the same request.');
 const id = z.string().uuid();
 export const guide = `MRN Website Operations lets the MRN team manage its WordPress websites through ChatGPT. Team members add this plugin, sign in, and chat. Resolve their permitted websites automatically; do not ask for terminal commands, Codex, API keys, MCP configuration, or duplicate website enrollment. Report evidence, limits and verified outcomes in ordinary language. MRN services enforce permissions and change safeguards; this plugin cannot bypass them.
 Use list_websites to discover the accessible MainWP directory and existing MRN environment records. Websites do not need to be added again. Discovery returns websites plus source coverage and unresolved issues.
 Resolve accessible exact environments; ask only if ambiguous or a requested action actually requires missing knowledge. Unknown environment or backup information does not prevent inspection, but cannot authorize a change. Directory discovery does not prove current site health; inspection performs exact-site synchronization.
+Copy the discovered URL and environment exactly. When the directory reports unknown environment, omit the optional environment argument or pass unknown; never substitute production merely because a URL is public. A mismatched guessed environment is not evidence that a website needs enrollment.
 Use inspect_website for ordinary requests such as why is the site slow, what needs attention, or what changed.
 Explain confirmed findings using evidence and coverage; never treat missing checks as passed or one timing sample as yesterday's baseline.
 For fix that issue, use its inspection and finding IDs with prepare_repair. Present the concrete plan.

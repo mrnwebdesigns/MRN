@@ -30,11 +30,12 @@ existing MRN Auth0 tenant with a separate Operations API and audience-bound
 verified email claims. The reviewed initial policy grants MainWP reads only.
 See the [MRN Apps delivery record](deploy/MRN-APPS.md) for the exact deployment.
 
-This is a local implementation and test candidate, not an installed ChatGPT
-plugin. The new endpoint and Auth0 API are not yet active.
-The hostname is proposed, not provisioned. Workspace publishing and
-end-to-end ChatGPT sign-in have not been performed. No private-directory listing,
-public-directory approval or user entitlement is implied by the package.
+The read-only service is now hosted on MRN Apps and the OAuth-connected plugin
+is published in MRN's workspace. [Install MRN Website Operations](https://chatgpt.com/plugins/plugin_asdk_app_6ac7db7356f88191b866093a01c368f2?account_id=23322f52-5246-4432-b36a-668ec67a1a94).
+ChatGPT sign-in and tool discovery passed. The workspace enables website
+listing, inspection, recorded results and history; repairs and deployment are
+disabled. See `VALIDATION.md` for remaining acceptance limits. This workspace
+publication does not imply public-directory approval or a full Stack release.
 
 ## MRN operator delivery
 
@@ -114,6 +115,7 @@ recovery through the same conversation. Existing QA, backup, lock and release
 gates remain required. The local HTTP/stdio fixtures do not replace this test.
 
 The host, existing MRN identity provider and staff audience are identified.
-The remaining delivery work is deployment, Operations-specific OAuth registration,
-real ChatGPT acceptance and publication to MRN's workspace. Team members do none
-of this setup.
+The host, Operations OAuth registration and MRN workspace publication are active.
+Remaining acceptance is listed in the deployment record. Team members use the
+published plugin and their own work-account sign-in; they do none of the service
+or identity-provider setup.
