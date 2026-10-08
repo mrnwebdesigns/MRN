@@ -36,6 +36,20 @@ This policy does not claim existing production writers have been enrolled.
 Do not automatically retry a mutation whose outcome is unknown. Keep its lock and
 operation evidence until exact state and downstream quiescence are established.
 Service restart does not itself authorize recovery, re-execution or unlocking.
+For the installed-plugin Fleet adapter, `reconcile_operation` accepts only an
+operation ID and requires operator-enrolled, current quiescence evidence bound to
+the exact saved operation. It performs fresh runtime/public/asset verification
+and atomically records `reconciled` before releasing that operation's lock.
+Unknown code, changed state, active workers, missing QA or stale evidence retain
+the lock. A reconciled code state never establishes the original backup,
+execution attribution, database or media outcome. Follow the
+[recovery runbook](../tools/operations/RECOVERY.md); neither the chat nor a service
+restart may fabricate worker termination or downstream-idle evidence.
+
+A missing MCP tool or REST endpoint describes integration coverage, not MainWP
+product capability. Assess both primary routes and relevant official extension
+readiness before qualifying a different route. Authentication, safe mode, backup,
+authorization and verification gates apply to extension/UI workflows as well.
 
 Use [the service onboarding and capability matrix](../tools/operations/README.md)
 for implemented adapters, operational acceptance, pending hosting/identity choices

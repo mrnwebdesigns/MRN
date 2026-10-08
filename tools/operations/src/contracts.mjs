@@ -91,6 +91,16 @@ export class Registry {
     requireThat(current.websiteId === saved.websiteId && digest(current) === digest(saved), 'TARGET_CHANGED', 'Website configuration changed. Prepare a fresh plan.');
     return current;
   }
+  recoveryCurrent(actor, saved, action) {
+    this.authorize(actor, saved, action);
+    const current = this.resolve(actor, saved.url, saved.environment, action);
+    // A recovery may outlive its writer-exclusion enrollment. Renewing only
+    // that evidence must not strand its lock or rewrite the approved plan.
+    const { coordination: _savedCoordination, ...before } = saved;
+    const { coordination: _currentCoordination, ...after } = current;
+    requireThat(digest(before) === digest(after), 'TARGET_CHANGED', 'Only writer-coordination enrollment may be renewed during recovery; other website configuration changed.');
+    return current;
+  }
   list(actor) {
     const result = [];
     for (const w of this.data().websites) for (const e of w.environments) {

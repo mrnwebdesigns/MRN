@@ -10,6 +10,7 @@ export const configSchema = z.object({
   auth: z.object({ issuer: secureUrl, audience: z.string().min(1), jwksUrl: secureUrl }).strict(),
   allowedOrigins: z.array(secureUrl).default([]),
   registryPath: absolute, policyPath: absolute, qualificationsPath: absolute, stateDir: absolute, repositoryRoot: absolute,
+  recoveryEvidencePath: absolute.optional(),
   artifactRoots: z.array(absolute).min(1), writesEnabled: z.boolean().default(false),
   sourceRepositories: z.record(z.string(), absolute),
   mainwp: z.object({ command: absolute, args: z.array(z.string()).min(1), cwd: absolute,

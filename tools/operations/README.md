@@ -44,6 +44,7 @@ service-wide per-site locks, and an MCP interface over those services.
 | QA | Required trusted source/runtime qualification for execution; optional MRN QA runtime command | Adapter command contract tested; no client runtime QA invoked by this task |
 | Assets | Qualified immutable same-origin URLs must appear in public HTML and served bytes must match checksums | Stale HTML, stale CSS/JS and bad REST responses tested. Qualify representative pages separately with existing asset/browser tooling |
 | Locks/retries | SQLite transactions, one canonical URL lock across operation kinds, durable idempotency, no repeated mutations after uncertain outcomes | Concurrent stores and database reopen tested; external writers are not yet enrolled |
+| Interrupted-operation recovery | `reconcile_operation` checks exact runtime and public assets under operator-enrolled quiescence evidence, then atomically records the outcome and releases the lock | Controlled lost-response, restart, concurrent recovery, late-worker and stale-evidence tests; no automatic retry, force unlock or retrospective backup claim |
 | Forms | Explicit unrun coverage, recorded procedure references | Rendering/validation/submission/delivery/CRM/payment workflows remain unimplemented; no real form was submitted |
 | Other repairs | Explanatory routing boundary | Source authoring, content/media migrations, provider repairs and arbitrary configuration changes are not implemented |
 | Site releases / full Stack | Ownership preserved by rejecting unsupported routes | No GitHub dispatch, child-theme deployment, full Stack install or native Kinsta Fleet adapter in this version |
@@ -54,6 +55,14 @@ MainWP MCP. Missing capability, authentication and identity failures are reporte
 there is no silent REST/SSH credential fallback. A future REST adapter must use
 the existing approved MRN client and Production Hub's `MAINWP_REST_API_KEY`
 contract, not the MCP application password.
+
+A missing tool is an integration limitation, not proof that MainWP lacks the
+product capability. Before admitting another route, assess both primary routes
+and the relevant official extension's installed, active and usable state on the
+intended Dashboard. UI-only extension workflows require their own qualified
+adapter. They never bypass authentication, safe mode, authorization, backup or
+verification gates. Recovery currently needs only the existing MCP read surface;
+it does not introduce a REST, extension, UI or SSH fallback.
 
 ## Run and test
 
@@ -97,7 +106,7 @@ the source of validation for ZIP/source/baseline construction.
    in the service secret environment. Require user confirmation and disable
    downstream automatic retries. Never disable TLS verification. The service
    does not read Codex configuration or inherit a chat application's connectors.
-4. Put reviewed copies of the four example configuration files in
+4. Put reviewed copies of the five example configuration files in
    `/etc/mrn-operations`, owned by the operator and read-only to the service. Set
    paths, identity and policy explicitly. Store credential references only.
    Create the private MainWP working directory named in configuration. Systemd
@@ -165,6 +174,8 @@ embedded model with permission to execute arbitrary commands.
 “Undo that deployment.”
   prepare_rollback(operationId, requestKey) -> exact reviewed code plan
   -> approve_operation -> execute_operation -> get_operation
+“What happened to that interrupted repair?”
+  get_operation -> operator quiescence evidence -> reconcile_operation
 ```
 
 Plan approval is recorded separately from execution so existing authorization can
@@ -191,12 +202,26 @@ regardless of Fleet versus future site/content/provider ownership. Provider and
 child-controller checks remain additional gates, never replacements.
 
 After a backup or mutation attempt, a missing/failed verification yields
-`uncertain`; the lock remains indefinitely. A crash can leave `running` or
-`preparing` records. Restart never resumes or retries those automatically. Stop
-new admission, verify no downstream job is running, exact-readback site state,
-inspect private receipts and perform a reviewed operator reconciliation. There is
-no chat tool to force-unlock a site. An automated reconciliation/unlock workflow
-is a remaining operational gap; do not label a restart as a recovered deployment.
+`uncertain`; the lock remains. A crash can leave `running` or `preparing` records.
+Restart never resumes or retries those automatically. For `running`/`uncertain`
+Fleet operations, [the recovery runbook](RECOVERY.md) describes operator-owned
+quiescence evidence and the `reconcile_operation` workflow. It requires current
+release permission, exact source/artifact QA, fresh targeted runtime evidence
+before and after public/REST/asset checks, and an atomic unchanged-record/lock
+check. An active worker, stale proof, changed target or unknown code keeps the
+lock. A late worker cannot perform another downstream call or finish the old
+operation after reconciliation. Infrastructure-level worker termination and
+downstream-idle verification remain operator responsibilities.
+
+The terminal `reconciled` state reports `intended_code_verified` or
+`prior_code_verified` separately from the original execution error. It never
+claims the earlier backup completed, attributes the installed code to the failed
+request, or assesses database/media recovery. Repeated reconciliation returns the
+saved result; repeated execution cannot replay the original mutation. A verified
+reconciled update can enter normal code-rollback planning with fresh gates.
+Unknown/mixed code, absent artifacts, changed baseline or unrelated drift require
+operator investigation; there is no force-unlock tool. `preparing` records never
+held a write lock: inspect again and prepare with a new request key.
 
 Audit rows contain subject, operation, target, event, timestamp and outcome only.
 Tool arguments, secrets, bearer/confirmation tokens and backup receipts are not

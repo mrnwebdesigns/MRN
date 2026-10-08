@@ -1,4 +1,49 @@
-# Operations v0.1 validation
+# Operations validation
+
+## Interrupted-operation recovery — 2026-10-08
+
+Branch: `codex/operations-recovery-20261008`.
+Base: merged MRN `main` at `e43d6a2` (the original PR #147 is merged).
+
+- 66 operations tests passed on local Node v26.0.0. Includes authenticated HTTP
+  recovery and an actual stdio MCP child process with a lost rollback response;
+  worker interruption/restart, two SQLite connections racing recovery, stale or
+  withdrawn quiescence evidence, permission revocation, changed target, renewed
+  writer enrollment, missing capability, wrong Dashboard, stale runtime, mixed
+  trees, missing QA, stale HTML/assets and late-worker fencing.
+- Recovery fixtures proved zero additional backup/update/rollback calls. Applied
+  code and prior code produce separate `reconciled` outcomes; neither claims the
+  original backup or data state was verified. Normal rollback after a reconciled
+  update still passes new backup/approval/verification gates.
+- Direct ESLint, whitespace validation and all five example configuration
+  schemas passed. Configuration without the optional recovery-evidence path
+  remains accepted, with recovery unavailable until enrolled.
+- Existing Fleet updater: 13/13 tests passed. Existing standard-plugin Python
+  package-builder: 17/17 passed. The historical retained-lock failure below no
+  longer reproduces on this base.
+- Locked production dependency audit: zero reported vulnerabilities.
+- Live `mainwp://status`: connected to `wpcontrol.mrndev.io`, 84 abilities.
+  This continuation made no managed-site inventory, sync, backup, update or
+  deployment calls; service recovery was exercised only with controlled fixtures.
+- MRN staged task acceptance passed. The matching final staged-tree proof is
+  required again by the commit hook. The Operations CI workflow separately
+  checks the protocol suite on Node 22; hosted acceptance remains independent.
+
+This increment changes a Node service, its configuration, tests and operating
+documentation. No PHP, WordPress markup, browser UI or frontend assets changed.
+PHP/API scanners and public-site browser, axe accessibility, performance, parity
+and deployment-readiness rows are inapplicable here and were not pointed at an
+unrelated WordPress runtime. Direct JS lint and local authenticated HTTP/stdio
+integration tests cover the changed backend; MRN QA's WordPress scanners do not
+classify `.mjs` as WordPress/PHP source.
+
+Hosting, real team IdP/OAuth acceptance, site/member/service-credential enrollment,
+independent-writer exclusion, state backup/restore and real controlled-environment
+recovery acceptance remain outstanding. Operator attestations bind and expire;
+the service does not itself kill workers or verify the referenced reports.
+Writes remain disabled by default. No service or website was deployed.
+
+## Historical first version — 2026-09-30
 
 Date: 2026-09-30. Branch: `codex/mrn-operations-tool`.
 Base: MRN merged `main` at `2c486af`.

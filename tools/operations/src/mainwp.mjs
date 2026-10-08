@@ -59,11 +59,11 @@ export async function connectMainwp(config, environment = process.env) {
 // This is the ONLY MainWP access surface given to workflow adapters. The service
 // credential's broad access never replaces the requesting person's permissions.
 export class MainwpSession {
-  constructor(client, registry, store, actor, target, { action = 'read', operation = '', onMutation = () => {} } = {}) {
-    Object.assign(this, { client, registry, store, actor, target, action, operation, onMutation });
+  constructor(client, registry, store, actor, target, { action = 'read', operation = '', onMutation = () => {}, checkAdmission = () => {} } = {}) {
+    Object.assign(this, { client, registry, store, actor, target, action, operation, onMutation, checkAdmission });
     this.siteId = null; this.names = null;
   }
-  authorize() { this.registry.current(this.actor, this.target, this.action); }
+  authorize() { this.registry.current(this.actor, this.target, this.action); this.checkAdmission(); }
   async guarded(event, fn) {
     this.authorize();
     this.store.audit(this.actor, this.target, this.operation, event, 'attempted');

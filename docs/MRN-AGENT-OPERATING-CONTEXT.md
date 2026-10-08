@@ -482,3 +482,8 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
 - Recorded findings, exact source/artifact plans, verified backups and public
   runtime evidence remain required. Unknown mutation outcomes retain their lock
   and must not be retried automatically.
+- Interrupted Fleet work can use `reconcile_operation` only after operator-owned
+  evidence establishes worker/downstream quiescence. Fresh exact-code and public
+  verification precede atomic lock release. Follow
+  [the recovery runbook](../tools/operations/RECOVERY.md); `reconciled` does not
+  retroactively verify the original backup, execution, database or media state.

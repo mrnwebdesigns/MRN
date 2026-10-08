@@ -11,6 +11,7 @@
   "registryPath": "/etc/mrn-operations/websites.json",
   "policyPath": "/etc/mrn-operations/permissions.json",
   "qualificationsPath": "/etc/mrn-operations/qualifications.json",
+  "recoveryEvidencePath": "/etc/mrn-operations/recovery-evidence.json",
   "stateDir": "/var/lib/mrn-operations",
   "repositoryRoot": "/opt/mrn-operations/MRN",
   "artifactRoots": ["/srv/mrn-artifacts"],

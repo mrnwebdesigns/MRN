@@ -7,6 +7,7 @@ import { Operations } from '../src/service.mjs';
 import { FleetAdapter } from '../src/fleet.mjs';
 import { FixtureMainwp } from './fixtures/mainwp.mjs';
 import { Qualifications } from '../src/qualification.mjs';
+import { RecoveryEvidence } from '../src/recovery.mjs';
 
 export const actor = { subject: 'team-member', expiresAt: Date.now() + 3600000 };
 export function setup() {
@@ -57,4 +58,15 @@ export async function execute(f, op) {
   await f.service.execute(actor, { operationId: op.id });
   await f.service.jobs.get(op.id);
   return f.service.get(actor, op.id);
+}
+export function enrollRecovery(f, operationId) {
+  const op = f.store.get(operationId);
+  const proof = { operationId, operationDigest: digest(op), siteUrl: op.target.url, environment: op.target.environment,
+    verifiedBy: 'fixture-recovery-operator', verifiedAt: new Date().toISOString(), validUntil: new Date(Date.now() + 600000).toISOString(),
+    workersStopped: { reportRef: 'fixture/stopped-workers', reportSha256: 'a'.repeat(64) },
+    downstreamIdle: { reportRef: 'fixture/idle-mainwp', reportSha256: 'b'.repeat(64) },
+    independentWritersExcluded: { reportRef: 'fixture/writer-exclusion', reportSha256: 'c'.repeat(64) } };
+  const data = { version: 1, records: [proof] };
+  f.service.recoveryEvidence = new RecoveryEvidence(() => data);
+  return data;
 }

@@ -7,7 +7,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createServer as reservePort } from 'node:net';
-import { setup, actor } from './helpers.mjs';
+import { setup, actor, prepared, execute, enrollRecovery } from './helpers.mjs';
 import { createAuthenticator } from '../src/auth.mjs';
 import { createHttpServer } from '../src/http.mjs';
 import { connectMainwp } from '../src/mainwp.mjs';
@@ -57,12 +57,25 @@ test('hosted HTTP MCP authenticates each request and keeps concurrent identities
   assert.ok((await owner.listTools()).tools.some(t => t.name === 'prepare_repair'));
   const [yes, no] = await Promise.all([owner.callTool({ name: 'list_websites', arguments: {} }), denied.callTool({ name: 'list_websites', arguments: {} })]);
   assert.equal(JSON.parse(yes.content[0].text).length, 1); assert.deepEqual(JSON.parse(no.content[0].text), []);
+  const recoveryTool = (await owner.listTools()).tools.find(t => t.name === 'reconcile_operation');
+  assert.equal(recoveryTool.annotations.readOnlyHint, false); // Can release local locks.
+  assert.deepEqual(Object.keys(recoveryTool.inputSchema.properties), ['operationId']);
+  const { op } = await prepared(f); f.state.loseResponse = true; await execute(f, op); enrollRecovery(f, op.id);
+  const reader = await connect('reader'); const calls = f.state.calls.length;
+  const forbidden = await reader.callTool({ name: 'reconcile_operation', arguments: { operationId: op.id } });
+  assert.equal(forbidden.isError, true); assert.equal(JSON.parse(forbidden.content[0].text).error.code, 'FORBIDDEN');
+  assert.equal(f.state.calls.length, calls);
+  const reconciled = await owner.callTool({ name: 'reconcile_operation', arguments: { operationId: op.id } });
+  assert.equal(JSON.parse(reconciled.content[0].text).reconciliation.outcome, 'intended_code_verified');
+  assert.ok(!/fixture-private|secret-sentinel|package_base64/.test(reconciled.content[0].text));
+  assert.equal(f.state.mutations, 1); assert.equal(f.state.backups, 1);
   f.policy.members[0].enabled = false;
+  const afterRecovery = f.state.calls.length;
   const revoked = await owner.callTool({ name: 'inspect_website', arguments: { website: 'example' } });
-  assert.equal(revoked.isError, true); assert.equal(f.state.calls.length, 0);
+  assert.equal(revoked.isError, true); assert.equal(f.state.calls.length, afterRecovery);
 });
 
-test('actual stdio downstream MCP supports inspection, existing Fleet execution and durable result through the internal client', async t => {
+test('actual stdio downstream MCP supports Fleet execution and recovery after a lost rollback response', async t => {
   const f = setup(); t.after(() => f.close()); const stateFile = join(f.root, 'mainwp-state.json'); writeFileSync(stateFile, JSON.stringify(f.state));
   f.service.connect = async () => {
     const client = new Client({ name: 'mrn-ops-integration', version: '1' });
@@ -77,6 +90,13 @@ test('actual stdio downstream MCP supports inspection, existing Fleet execution 
   await f.service.execute(actor, { operationId: plan.id }); await f.service.jobs.get(plan.id);
   assert.equal(f.service.get(actor, plan.id).status, 'verified');
   assert.equal(JSON.parse(readFileSync(stateFile)).mutations, 1);
+  const rollback = await f.service.prepareRollback(actor, { operationId: plan.id, requestKey: 'protocol-rollback' });
+  const state = JSON.parse(readFileSync(stateFile)); state.loseResponse = true; writeFileSync(stateFile, JSON.stringify(state));
+  assert.equal((await execute(f, rollback)).status, 'uncertain'); enrollRecovery(f, rollback.id);
+  const result = await f.service.reconcile(actor, { operationId: rollback.id });
+  assert.equal(result.status, 'reconciled'); assert.equal(result.reconciliation.outcome, 'intended_code_verified');
+  assert.equal(result.reconciliation.version, '1.0.0');
+  const recovered = JSON.parse(readFileSync(stateFile)); assert.equal(recovered.mutations, 2); assert.equal(recovered.backups, 2);
 });
 
 test('hosted configuration cannot silently inherit an interactive downstream credential', async () => {
