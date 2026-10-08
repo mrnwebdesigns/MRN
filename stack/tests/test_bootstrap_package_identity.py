@@ -8,6 +8,7 @@ import unittest
 
 SCRIPT = (Path(__file__).parents[1] / 'scripts/site-bootstrap.sh').read_text()
 INFER = 'infer_new_plugin_slug() {' + SCRIPT.split('infer_new_plugin_slug() {', 1)[1].split('\nderive_site_theme_slug()', 1)[0]
+CLEAR = 'clear_post_smtp_activation_redirect() {' + SCRIPT.split('clear_post_smtp_activation_redirect() {', 1)[1].split('\ninstall_plugins()', 1)[0]
 INSTALL = 'install_plugins() {' + SCRIPT.split('install_plugins() {', 1)[1].split('\nreset_standard_plugins()', 1)[0]
 
 
@@ -29,7 +30,7 @@ run_wp() {
     activate) test "$3" = happyfiles-pro ;;
   esac
 }
-''' + INFER + INSTALL + '\ninstall_plugins\n'
+''' + INFER + CLEAR + INSTALL + '\ninstall_plugins\n'
             result = subprocess.run(['bash'], input=script, text=True, capture_output=True,
                                     env={**os.environ, 'TEST_ROOT': str(root), 'PLUGINS_FILE': str(manifest)})
             self.assertEqual(0, result.returncode, result.stderr)
