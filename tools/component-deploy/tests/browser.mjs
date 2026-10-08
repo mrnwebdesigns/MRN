@@ -13,6 +13,7 @@ const browser = await chromium.launch({ args: ['--host-resolver-rules=MAP * ~NOT
 const contexts = [];
 const failures = [];
 const generations = [];
+const parentReleases = [];
 let cachedResponses = 0;
 async function context() {
   const ctx = await browser.newContext({ serviceWorkers: 'block' });
@@ -36,6 +37,7 @@ async function visit(ctx, route = '/') {
   assert.equal(await page.evaluate(() => window.fixtureDependency), 1);
   assert.equal(await page.evaluate(() => window.fixtureLazy), 1);
   generations.push(await page.locator('#generation').textContent());
+  parentReleases.push(await page.locator('meta[name="mrn-parent-release"]').getAttribute('content'));
   return page;
 }
 async function select(name) {
@@ -63,9 +65,12 @@ try {
   const rollback = await visit(returning);
   assert.deepEqual(await rollback.locator('link[rel=stylesheet]').evaluateAll(nodes => nodes.map(node => node.href)), oldAssets);
   assert.deepEqual(generations, ['old/old', 'old/old', 'new/new', 'new/new', 'old/old', 'old/old']);
+  const oldParent = JSON.parse(await readFile(path.join(state, 'browser-old.json'))).components['mrn-base-stack'].artifact_sha256;
+  const newParent = JSON.parse(await readFile(path.join(state, 'browser-next.json'))).components['mrn-base-stack'].artifact_sha256;
+  assert.deepEqual(parentReleases, [oldParent, oldParent, newParent, newParent, oldParent, oldParent]);
   assert.deepEqual(failures, []);
   assert.ok(cachedResponses > 0, 'Browser must actually serve warm immutable assets from cache');
-  process.stdout.write(JSON.stringify({ generations, opcache_enabled: opcacheEnabled, failures,
+  process.stdout.write(JSON.stringify({ generations, parent_releases: parentReleases, opcache_enabled: opcacheEnabled, failures,
     cached_responses: cachedResponses,
     old_assets: oldAssets, new_assets: newAssets, boundary: 'disposable loopback fixture; no provider qualification' }));
 } finally {

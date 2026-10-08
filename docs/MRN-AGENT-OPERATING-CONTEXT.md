@@ -404,9 +404,12 @@ Use the repo-level QA instructions in `AGENTS.md` as the detailed QA rule set; t
   unstaged files do not block that task's commit.
 - Explicit component, repository, release, parity, and fleet QA may be broader.
   Failures block the broader operation requested, not unrelated task acceptance.
-- Merging source is not stack promotion. A release is current only after clean
-  merged `main` produces an immutable release lock and deterministic artifacts,
-  and deployed inventory is read back and verified against that lock.
+- Merged Stack/plugin source must continue into qualification and publication
+  without a separate routine action from the owner. Follow
+  `docs/MRN-FLEET-READINESS-AUTOMATION.md`. Fleet ready means clean merged source
+  is qualified, immutably locked, packaged, published, and distribution-verified.
+  Site backup, deployment, and installed verification remain separately
+  initiated and authorized; only that evidence establishes a site as current.
 
 ### B. WordPress operations orchestration
 

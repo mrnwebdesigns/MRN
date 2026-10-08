@@ -7,8 +7,13 @@ Scope:
   task; do not develop in a dirty canonical checkout or another task's worktree.
 - Follow `docs/MRN-CONCURRENT-DEVELOPMENT-POLICY.md`. Task acceptance and stack
   promotion are separate gates: unrelated work must not block a feature commit,
-  and a merge must not be called released until clean `main` is locked, deployed,
-  and verified.
+  and a merge must not be called Fleet ready until clean merged source is
+  qualified, locked, packaged, published, and distribution checks pass.
+- Follow `docs/MRN-FLEET-READINESS-AUTOMATION.md`: source qualification and
+  publication are the automatic continuation of accepted Stack/plugin work.
+  The owner should not need to initiate a separate release task or select a
+  site just to make accepted source Fleet ready. Site backup, deployment, and
+  installed verification remain separately initiated and authorized.
 
 Implementation:
 - Prefer existing helpers, APIs, and contracts

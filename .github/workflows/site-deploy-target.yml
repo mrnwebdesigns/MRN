@@ -258,6 +258,18 @@ jobs:
           umask 077
           printf '%s\n' "$SSH_KEY" > "$RUNNER_TEMP/site-deploy.key"
           printf '%s\n' "$KNOWN_HOSTS" > "$RUNNER_TEMP/site-deploy.known_hosts"
+          if [[ "$DEPLOY_HOST_PROVIDER" == wpengine ]]; then
+            [[ "$DEPLOY_HOST" =~ ^[A-Za-z0-9.-]+$ ]]
+            mkdir -p "$RUNNER_TEMP/mrn-wpe-control" "$HOME/.ssh"
+            chmod 700 "$RUNNER_TEMP/mrn-wpe-control" "$HOME/.ssh"
+            cat >> "$HOME/.ssh/config" <<EOF
+          Host $DEPLOY_HOST
+            ControlMaster auto
+            ControlPersist 60
+            ControlPath $RUNNER_TEMP/mrn-wpe-control/%C
+          EOF
+            chmod 600 "$HOME/.ssh/config"
+          fi
           if [[ "$DEPLOY_BACKUP_PROVIDER" != kinsta ]]; then
             if ! ssh-keygen -y -P '' -f "$RUNNER_TEMP/site-deploy.key" >/dev/null 2>&1; then
               echo '::error::Deployment SSH secret is not a valid noninteractive private key.'

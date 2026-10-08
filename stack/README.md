@@ -2,6 +2,15 @@
 
 This folder is a reusable bootstrap stack for new CloudPanel WordPress sites.
 
+## Source release and site rollout
+
+Accepted Stack/plugin default-branch pushes must continue through automatic
+qualification, immutable packaging, and verified publication with no separate
+routine action from the owner. This makes the release **Fleet ready**. Site
+backup, deployment, and installed verification remain separately initiated and
+authorized. See the [source readiness contract](../docs/MRN-FLEET-READINESS-AUTOMATION.md)
+for the required workflow and the current audit-only implementation boundary.
+
 ## Environment and installation ownership
 
 The future hosting platform owns site and environment selection. Its canonical vocabulary is the `stack` or `plain` site profile combined with the `dev`, `staging`, or `production` environment. This repository owns WordPress component source, release metadata, package inputs, and compatibility contracts; it does not define a competing environment-profile system.

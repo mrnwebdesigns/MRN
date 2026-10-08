@@ -1,4 +1,4 @@
-"""Qualified CloudPanel Dev host controller; no Live or full Stack activation.
+"""CloudPanel Dev controller and manual Nexcess Live qualification candidate.
 
 Consumes one trusted, source/checksum/target-bound plan. Its operator must have
 verified the exact fresh MainWP backup before transferring this control code.
@@ -14,8 +14,9 @@ import sys
 from urllib.parse import urlsplit
 
 from parent_store import ParentStore, BOOTSTRAP, inventory, physical
+from parent_target import validate_route
 from atomic_store import durable_replace
-from cache_policy import canonical_pages, verify_cloudpanel_origin, verify_uncached_html
+from cache_policy import canonical_pages, verify_cloudpanel_origin, verify_uncached_html, head
 from deploy import http_check, check
 from verify_public_assets import verify as verify_public, fetch
 
@@ -38,12 +39,14 @@ def rendered_tab_effects(html):
     return parser.effects
 
 
-def wp(root, body, nonce=None, skip_themes=True):
+def wp(root, body, nonce=None, skip_themes=True, stdin=None):
     environment = {**os.environ, 'WP_CLI_PHP_ARGS': '-d memory_limit=512M', 'MRN_COMPONENT_RECOVERY': '1'}
     if nonce:
         environment['MRN_PARENT_BACKUP_NONCE'] = nonce
+    if stdin is not None:
+        environment['MRN_HTML_CACHE_STDIN'] = '1'
     result = subprocess.run(['wp', '--path=' + root] + (['--skip-themes'] if skip_themes else []) + ['eval', body],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environment, universal_newlines=True)
+                            input=stdin, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=environment, universal_newlines=True)
     lines = [line[11:] for line in result.stdout.splitlines() if line.startswith('MRN_RESULT=')]
     if result.returncode or len(lines) != 1:
         raise RuntimeError('WordPress identity or backup verification failed; no raw diagnostic output disclosed')
@@ -60,11 +63,63 @@ def other_stack(content):
     return files
 
 
+def html_cache(plan, action):
+    request = {'url': plan['url'], 'provider': 'nexcess', 'action': action,
+               'urls': plan.get('_html_scope', plan['pages'])}
+    return wp(plan['root'], (TOOLS.parent / 'site-deploy/html_cache.php').read_text()[5:],
+              skip_themes=action != 'inspect', stdin=json.dumps(request))
+
+
+def live_html_scope(plan):
+    scope = html_cache(plan, 'inspect')
+    urls = scope.get('urls')
+    if not isinstance(urls, list) or not urls or len(urls) > 20000 or len(set(urls)) != len(urls):
+        raise ValueError('Live HTML inventory must be bounded, nonempty and unique')
+    for start in range(0, len(urls), 500):
+        canonical_pages(plan['url'], urls[start:start + 500])
+    if scope['urls'] != plan.get('html_urls'):
+        raise ValueError('Live HTML inventory differs from the reviewed scope')
+    plan['_html_scope'] = scope['urls']
+    return scope
+
+
+def live_public_cache(plan, selected):
+    receipt = html_cache(plan, 'refresh')
+    if receipt.get('refreshed_urls') != plan['_html_scope']:
+        raise ValueError('Live HTML refresh did not cover the reviewed scope')
+    expected = selected['components']['mrn-base-stack']['artifact_sha256'] if selected else None
+    samples = []
+    for page in plan['pages']:
+        for phase in ('first', 'warm'):
+            headers = head(page)
+            if 'text/html' not in headers.get('content-type', '').lower():
+                raise ValueError('Live public verification expected HTML')
+            html = fetch(page, {'text/html'}).decode('utf-8')
+            if parent_attestations(html) != ([expected] if expected else []):
+                raise ValueError('Live public HTML did not select the expected parent')
+            if headers.get('x-mrn-parent-release') not in (None, expected):
+                raise ValueError('Live response header and HTML disagree about the selected parent')
+            samples.append({'url': page, 'phase': phase, 'headers': headers})
+    return {**receipt, 'samples': samples}
+
+
+def parent_attestations(html):
+    class Metadata(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.releases = []
+
+        def handle_starttag(self, tag, attributes):
+            values = dict(attributes)
+            if tag == 'meta' and values.get('name') == 'mrn-parent-release':
+                self.releases.append(values.get('content'))
+    metadata = Metadata()
+    metadata.feed(html)
+    return metadata.releases
+
+
 def preflight(plan):
-    host = urlsplit(plan['url'])
-    if (plan.get('environment') != 'dev' or host.scheme != 'https' or not host.hostname.endswith('.mrndev.io')
-            or host.netloc != host.hostname or host.path or host.query or host.fragment):
-        raise ValueError('Only an explicit canonical CloudPanel Dev target is qualified')
+    provider = validate_route(plan)
     canonical_pages(plan['url'], plan['pages'])
     root = physical(plan['root'])
     content = physical(root / 'wp-content')
@@ -72,13 +127,19 @@ def preflight(plan):
 $plugins=(array)get_option('active_plugins',array());
 echo 'MRN_RESULT='.wp_json_encode(array('url'=>untrailingslashit(get_option('home')),
 'template'=>get_template(),'child'=>get_stylesheet(),'root'=>realpath(ABSPATH),
+'environment_type'=>wp_get_environment_type(),
 'wp_cache'=>defined('WP_CACHE')&&WP_CACHE,'advanced_cache'=>file_exists(WP_CONTENT_DIR.'/advanced-cache.php'),
 'cache_plugins'=>array_values(array_filter($plugins,static function($p){return (bool)preg_match('/cache|rocket|autoptimize|perfmatters|nitropack|breeze|hummingbird/i',$p);} ))));
 ''')
     if any(identity.get(key) != plan[key] for key in ['url', 'root', 'child']) or identity['template'] != 'mrn-base-stack':
         raise ValueError('Exact WordPress identity changed')
-    verify_cloudpanel_origin(Path.home() / '.varnish-cache/settings.json', identity)
-    verify_uncached_html(plan['url'], plan['pages'])
+    if provider == 'cloudpanel':
+        verify_cloudpanel_origin(Path.home() / '.varnish-cache/settings.json', identity)
+        verify_uncached_html(plan['url'], plan['pages'])
+    else:
+        if identity.get('environment_type') != 'production':
+            raise ValueError('Live requires the exact production WordPress environment')
+        live_html_scope(plan)
     parent = inventory(content / 'themes/mrn-base-stack')
     child = inventory(content / 'themes' / plan['child'])
     child_pointer = json.loads((physical(plan['child_state'], private=True) / 'current.json').read_text()) if plan.get('child_state') else None
@@ -89,7 +150,7 @@ echo 'MRN_RESULT='.wp_json_encode(array('url'=>untrailingslashit(get_option('hom
 
 
 def public_check(plan, store, selected):
-    cache = verify_uncached_html(plan['url'], plan['pages'])
+    cache = live_public_cache(plan, selected) if plan.get('environment') == 'live' else verify_uncached_html(plan['url'], plan['pages'])
     http_check(plan['url'] + '/wp-json/', rest=True)
     if selected:
         identity = selected['components']['mrn-base-stack']['artifact_sha256']
@@ -135,7 +196,9 @@ def execute(plan):
     if not state.exists():
         state.mkdir(parents=True, mode=0o700)
     store = ParentStore(root, state, plan['child'], plan.get('child_state'))
-    receipt = {'schema': 1, 'url': plan['url'], 'environment': 'dev', 'backup': backup,
+    receipt = {'schema': 1, 'url': plan['url'], 'environment': plan['environment'], 'backup': backup,
+               'host_provider': plan.get('host_provider', 'cloudpanel'),
+               'runtime_qualification': 'target-specific; separate browser/release signoff required',
                'status': 'in-progress', 'source_sha': plan.get('source_sha'), 'artifact_sha256': plan.get('artifact_sha256')}
     with store.lock():
         before = store.pointer()

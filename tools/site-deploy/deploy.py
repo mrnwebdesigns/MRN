@@ -50,6 +50,7 @@ def run(args, **kwargs):
                 ('Permission denied', 'site-owner authentication was refused'),
                 ('Connection timed out', 'connection timed out'),
                 ('Connection refused', 'connection was refused'),
+                ('Failed to create shell', 'WP Engine gateway could not create a shell'),
                 ('Connection closed', 'connection was closed by the remote endpoint'),
             )
             for marker, explanation in categories:
