@@ -1,6 +1,10 @@
 # Stack Changelog
 
-## 2026.10.08-fleet-readiness-r1
+## 2026.10.08-fleet-readiness-r2
+
+- Re-seal the unchanged parent 1.5.8 after including its release changelog in the clean merged source snapshot. Preserve the r1 lock and artifacts as a superseded unpublished candidate.
+
+## 2026.10.08-fleet-readiness-r1 (superseded unpublished candidate)
 
 - Parent 1.5.8 fixes mobile drawer action palette precedence, including hover and focus, while preserving the desktop header and Text Swipe behavior.
 - Strict Stack PHPStan now resolves Announcements runtime constants through the existing analysis bootstrap.
