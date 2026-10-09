@@ -61,8 +61,10 @@ def sha(path):
 
 def allowed(name):
     path = PurePosixPath(name)
+    metadata = {'.gitignore', '.mrn-qa.env', '.eslintrc', '.stylelintrc.json'}
     if (name != path.as_posix() or path.is_absolute() or '..' in path.parts
-            or any(v.startswith('.') or v == 'secrets' for v in path.parts)):
+            or any((v.startswith('.') and (v not in metadata or i != len(path.parts) - 1))
+                   or v == 'secrets' for i, v in enumerate(path.parts))):
         raise PublicationError('Unsafe source path')
     if name in ALLOWED_FILES or name in ALLOWED_CONFIGS or name in SCRIPTS:
         return path

@@ -50,5 +50,10 @@ export function loadPublishedFleetSource(repositoryRoot, override = '') {
       !path.isAbsolute(index.artifact_root || '')) {
     throw new Error('Published Fleet source qualification/publication binding differs.');
   }
+  for (const [slug, hold] of Object.entries(qualification.held_defaults || {})) {
+    if (registry.releases?.some(row => row.slug === slug && row.version !== hold.version)) {
+      throw new Error('Published Fleet source exposes an unqualified held version.');
+    }
+  }
   return { catalog, registry, artifactRoot: index.artifact_root, releaseId: index.release_id };
 }

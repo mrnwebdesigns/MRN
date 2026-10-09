@@ -64,7 +64,7 @@ def package_files(path, slug):
             if item.is_dir():
                 continue
             name = str(relative(item.filename))
-            if not name.startswith(slug + '/') or name in files:
+            if not name.startswith(slug + '/') or name[len(slug) + 1:] in files:
                 raise ReleaseError('Invalid plugin package member')
             if item.external_attr >> 16 & 0o170000 == 0o120000:
                 raise ReleaseError('Plugin package contains a symlink')

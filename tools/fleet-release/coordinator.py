@@ -312,6 +312,11 @@ def install_local_index(settings, repo, standalone, job, built, qualified, publi
     repo, standalone, job = Path(repo), Path(standalone), Path(job)
     catalog = read(repo / 'stack/manifests/component-catalog.json')
     registry = read(repo / 'stack/manifests/stack-plugin-releases.json')
+    holds = qualified.get('held_defaults', {})
+    # The tracked registry/history is retained exactly. The current qualified
+    # input map must not expose a newer held version as an upgrade target.
+    registry['releases'] = [row for row in registry['releases']
+                            if row['slug'] not in holds or row['version'] == holds[row['slug']]['version']]
     for row in registry['releases']:
         name = repository_name(row['source']['repository'])
         mirror = standalone / name
@@ -342,6 +347,7 @@ def install_local_index(settings, repo, standalone, job, built, qualified, publi
              'publication_path': str(control / 'publication.json'),
              'publication_sha256': file_hash(control / 'publication.json'),
              'artifact_root': str(repo), 'site_adoption_verified': False, 'site_writes': False}
+    index['held_defaults'] = holds
     write(Path(settings['canonical_repo']) / 'releases/fleet-ready/current.json', index)
     return index
 
@@ -385,7 +391,12 @@ def dependencies(repo, standalone, settings):
         if row['repository'] != 'MRN':
             link = Path(repo) / 'plugins' / row['slug']
             link.parent.mkdir(exist_ok=True)
-            link.symlink_to(standalone / row['repository'] / row['relative_source'], target_is_directory=True)
+            target = standalone / row['repository'] / row['relative_source']
+            if link.is_symlink() and link.resolve() == target.resolve():
+                continue  # Preserve an already portable tracked source link.
+            if link.exists() or link.is_symlink():
+                raise ReleaseError('Existing plugin source link is not the dedicated mirror: ' + row['slug'])
+            link.symlink_to(target, target_is_directory=True)
     if (Path(repo) / 'composer.lock').exists():
         run([settings['qualification']['composer'], 'install', '--no-interaction', '--prefer-dist',
              '--no-progress'], cwd=repo, timeout=900)

@@ -218,6 +218,16 @@ class GitFixture:
 
 
 class PromotionTests(unittest.TestCase):
+    def test_standalone_link_change_is_a_contract_and_runtime_files_stay_components(self):
+        catalog = {"components": [{"slug": "example", "target_tier": "platform-required",
+                    "runtime_type": "standard-plugin",
+                    "source": {"repository": "example", "path": "/owner/example"}}]}
+        link = promotion.classify_changes(["plugins/example"], catalog, {"themes": []})
+        self.assertEqual(link["deployment_contracts"], ["plugins/example"])
+        self.assertEqual(link["required_components"], [])
+        runtime = promotion.classify_changes(["plugins/example/example.php"], catalog, {"themes": []})
+        self.assertEqual([v["slug"] for v in runtime["required_components"]], ["example"])
+
     def test_change_classification_separates_release_units(self):
         catalog = {
             "components": [
