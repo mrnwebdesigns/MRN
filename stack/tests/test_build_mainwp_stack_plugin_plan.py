@@ -461,7 +461,7 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             self.assertEqual(path.stem, lock["release_id"])
             relative = path.relative_to(STACK_DIR.parent).as_posix()
             additions = run("git", "log", "--format=%H", "--diff-filter=A", "--", relative,
-                            cwd=STACK_DIR.parent).stdout.splitlines()
+                            cwd=STACK_DIR.parent).splitlines()
             self.assertTrue(additions, "Historical lock must have committed provenance")
             original = subprocess.run(["git", "show", additions[-1] + ":" + relative],
                                       cwd=STACK_DIR.parent, capture_output=True, check=True).stdout
