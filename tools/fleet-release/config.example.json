@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "state_root": "/Users/OWNER/Library/Application Support/MRN/fleet-source",
+  "qualified_packages": "/Users/OWNER/Development/MRN-release-artifacts/QUALIFIED/bootstrap/packages",
+  "canonical_repo": "/Users/OWNER/Development/MRN",
+  "source_host": "mrndev-stack-manager",
+  "publish": false,
+  "report_failures": true,
+  "qualification": {
+    "composer": "/opt/homebrew/bin/composer",
+    "php": "/opt/homebrew/opt/php/bin/php",
+    "node": "/opt/homebrew/bin/node",
+    "wp_cli": "/Users/OWNER/.local/share/wp-cli/wp-cli-nightly.phar",
+    "wordpress_archive": "/Users/OWNER/Development/MRN-release-artifacts/2026-10-05-shared-assets/wordpress-7.1.2.zip",
+    "sqlite_archive": "/Users/OWNER/Development/MRN-release-artifacts/2026-10-05-shared-assets/sqlite-database-integration.3.0.2.zip",
+    "qa_engine": "/Users/OWNER/Development/MRN-qa-engine/bin/mrn-qa",
+    "qa_engine_root": "/Users/OWNER/Development/MRN-qa-engine"
+  }
+}

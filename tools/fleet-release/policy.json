@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "held_defaults": {
+    "mrn-recaptcha-enterprise-manager": {
+      "version": "0.1.4",
+      "reason": "Genuine Google assessment, coordinated native controller and protection cutover qualification remain pending. Preserve the previously qualified package and legacy protection.",
+      "required_qualification": [
+        "genuine-google-assessment",
+        "coordinated-native-controllers",
+        "legacy-protection-cutover"
+      ]
+    }
+  },
+  "retired_source": "stack/manifests/retired-capabilities.json",
+  "publication_scope": "source-distribution-only",
+  "site_writes": false
+}

@@ -16,6 +16,8 @@ class BootstrapEnrollment(unittest.TestCase):
             site=root/'home/owner/htdocs/example.mrndev.io';site.mkdir(parents=True)
             (site/'wp-config.php').touch()
             if marked: (site/'.mrn_bootstrapped').touch()
+            # Lease contention/protocol are covered by source-controller tests.
+            (scripts/'source-distribution-lease.sh').write_text('mrn_source_distribution_lease() { return 0; }\n')
             log=root/'calls'
             bootstrap=scripts/'site-bootstrap.sh'
             bootstrap.write_text('#!/bin/bash\nprintf "bootstrap\\n" >> "$CALL_LOG"\n'+('exit 1\n' if bootstrap_failure else 'touch "$2/.mrn_bootstrapped"\n'))

@@ -31,6 +31,7 @@ releases/mu-plugins/
 releases/plugins/
 releases/stack-plugins/
 releases/stack/
+releases/fleet-ready/
 releases/*.zip
 outputs/stack-promotion-*.json
 stack/configs/exports/*.bak-*

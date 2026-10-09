@@ -67,6 +67,10 @@ if [[ -z "${STACK_ROOT}" ]]; then
   STACK_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fi
 
+# Keep the scanner and every child bootstrap on one complete source generation.
+source "${STACK_ROOT}/scripts/source-distribution-lease.sh"
+mrn_source_distribution_lease "${STACK_ROOT}"
+
 SITE_PROFILE="$(printf '%s' "${SITE_PROFILE}" | tr '[:upper:]' '[:lower:]' | xargs)"
 case "${SITE_PROFILE}" in
   stack|plain)
