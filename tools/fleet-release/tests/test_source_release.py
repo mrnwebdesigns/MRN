@@ -38,9 +38,12 @@ class SourcePublication(unittest.TestCase):
         self.manifest = host.sha(source / 'bootstrap-bundle.json')
         fleet = self.job / ('mrn-stack-release-' + self.release + '.zip')
         fleet.write_bytes(b'private fleet fixture')
+        optional = self.job / 'optional-plugins.tar'
+        optional.write_bytes(b'private optional fixture')
         self.proof = {'status': 'pass', 'release_id': self.release,
                       'lock_sha256': self.new['release_lock_sha256'],
                       'bootstrap_sha256': self.archive, 'fleet_sha256': host.sha(fleet),
+                      'optional_sha256': host.sha(optional),
                       'source_vector_sha256': 'a' * 64, 'coverage': sorted(host.COVERAGE),
                       'site_writes': False}
         common.write(self.job / 'qualification.json', self.proof)
@@ -233,6 +236,68 @@ class QualificationContracts(unittest.TestCase):
 
 
 class CoordinatorBoundaries(unittest.TestCase):
+    def test_nonbootstrap_source_is_packaged_registered_and_cannot_rebind_a_version(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            repo=Path(temporary)/'repo';job=Path(temporary)/'job'
+            manifests=repo/'stack/manifests';manifests.mkdir(parents=True);job.mkdir()
+            common.write(manifests/'stack-plugin-releases.json',{'releases':[]})
+            common.write(manifests/'optional-plugin-releases.json',{'releases':[]})
+            common.write(manifests/'bootstrap-packages.lock.json',{'plugins':[]})
+            entry={'slug':'mrn-example','version':'1.0.0','runtime_type':'standard-plugin',
+                   'target_tier':'optional-shared','current_distribution':'catalog-only',
+                   'source':{'path':'plugins/mrn-example'}}
+            common.write(manifests/'component-catalog.json',{'catalog_updated':'2026-10-09','components':[entry]})
+            row={**entry,'repository':'MRN','relative_source':'plugins/mrn-example'}
+            files={'mrn-example.php':b'<?php /* Plugin Name: Fixture\nVersion: 1.0.0 */'}
+            with patch.object(coordinator,'roster',return_value=[row]), \
+                 patch.object(coordinator,'git',return_value='a'*40), \
+                 patch.object(coordinator,'git_files',return_value=files):
+                coordinator.prepare_registry(repo,Path(temporary),job)
+                registry=common.read(manifests/'stack-plugin-releases.json')
+                record=registry['releases'][0]
+                self.assertEqual(record['current_distribution'],'catalog-only')
+                self.assertEqual(build.package_files(repo/record['package']['path'],'mrn-example'),files)
+                self.assertEqual(common.read(manifests/'optional-plugin-releases.json')['releases'],[record])
+                # Re-run on the same bytes preserves the immutable envelope.
+                coordinator.prepare_registry(repo,Path(temporary),job,repo)
+                self.assertEqual(common.read(manifests/'stack-plugin-releases.json'),registry)
+                files['mrn-example.php']+=b' changed'
+                with self.assertRaises(common.ReleaseError):coordinator.prepare_registry(repo,Path(temporary),job,repo)
+
+    def test_missing_optional_distribution_cannot_be_published(self):
+        # A matching Fleet/default bundle cannot substitute for omitted
+        # independently released plugin bytes.
+        with tempfile.TemporaryDirectory() as temporary:
+            first=Path(temporary)/'a';second=Path(temporary)/'b'
+            first.write_bytes(b'same');second.write_bytes(b'different')
+            with self.assertRaises(common.ReleaseError):
+                coordinator.deterministic({'fleet':first,'bootstrap_archive':first,'optional_archive':first},
+                    {'fleet':first,'bootstrap_archive':first,'optional_archive':second})
+
+    def test_superseded_worker_proposal_is_closed_but_foreign_proposal_is_preserved(self):
+        for own in (True,False):
+            with tempfile.TemporaryDirectory() as temporary:
+                state=Path(temporary);job=state/'jobs/test';job.mkdir(parents=True)
+                common.write(state/'active.json',{'job':str(job)})
+                progress={'phase':'proposed','repo':'fixture','pr':123,
+                          'metadata':{'snapshot':{'source_vector_sha256':'a'*64}}}
+                common.write(job/'progress.json',progress)
+                proposal={'state':'OPEN','headRefOid':('b'*40 if own else 'c'*40),
+                          'body':'MRN_FLEET_SOURCE_VECTOR='+'a'*64}
+                with patch.object(coordinator,'verify_seal'),patch.object(coordinator,'git',return_value='b'*40), \
+                     patch.object(coordinator,'run',return_value=json.dumps(proposal)) as calls:
+                    if own:
+                        coordinator.failure({'state_root':str(state),'report_failures':False},
+                            common.ReleaseError('superseded: newer accepted source'))
+                        self.assertFalse((state/'active.json').exists())
+                        self.assertEqual(calls.call_args_list[-1].args[0][:3],['gh','pr','close'])
+                        self.assertTrue((job/'superseded.json').is_file())
+                    else:
+                        with self.assertRaises(common.ReleaseError):
+                            coordinator.failure({'state_root':str(state),'report_failures':False},
+                                common.ReleaseError('superseded: newer accepted source'))
+                        self.assertTrue((state/'active.json').exists());self.assertEqual(calls.call_count,1)
+
     def test_remote_default_ref_is_resolved_and_mrn_main_is_enforced(self):
         with patch.object(coordinator, 'git_network', return_value='ref: refs/heads/main\tHEAD\n'+'a'*40+'\tHEAD'):
             self.assertEqual(coordinator.remote_refs(['MRN']), {'MRN':'a'*40})
@@ -258,14 +323,16 @@ class CoordinatorBoundaries(unittest.TestCase):
             job=state/'jobs/example';job.mkdir(parents=True)
             repo=job/'repos/MRN';(repo/'stack/manifests').mkdir(parents=True)
             bootstrap=job/'bootstrap';bootstrap.mkdir()
-            for path in (job/'fleet.zip',job/'bootstrap.tar',bootstrap/'bootstrap-bundle.json',repo/'stack/manifests/stack-release.lock.json'):
+            for path in (job/'fleet.zip',job/'bootstrap.tar',job/'optional.tar',bootstrap/'bootstrap-bundle.json',repo/'stack/manifests/stack-release.lock.json'):
                 path.write_bytes(b'fixture')
             checksum=common.file_hash(job/'fleet.zip')
             progress={'phase':'qualified','repo':str(repo),'standalone':str(job/'repos/MRN-plugins'),
                       'metadata':{'snapshot':{'refs':{}},'release_id':'fixture'},
                       'built':{'fleet':str(job/'fleet.zip'),'bootstrap_archive':str(job/'bootstrap.tar'),
+                               'optional_archive':str(job/'optional.tar'),
                                'bootstrap':str(bootstrap),'proof':{'lock_sha256':checksum}},
-                      'qualified':{'status':'pass','fleet_sha256':checksum,'bootstrap_sha256':checksum,'lock_sha256':checksum}}
+                      'qualified':{'status':'pass','fleet_sha256':checksum,'bootstrap_sha256':checksum,
+                                   'optional_sha256':checksum,'lock_sha256':checksum}}
             coordinator.seal(job,progress);common.write(state/'active.json',{'job':str(job)})
             with patch.object(coordinator,'publish') as publish, patch.object(coordinator,'build_all') as build:
                 result=coordinator.once({'state_root':str(state),'qualification':{},'publish':False})

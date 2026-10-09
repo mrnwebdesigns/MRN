@@ -14,6 +14,7 @@
     "wordpress_archive": "/Users/OWNER/Development/MRN-release-artifacts/2026-10-05-shared-assets/wordpress-7.1.2.zip",
     "mysql_server": "/opt/homebrew/opt/mysql@8.4/bin/mysqld",
     "mysql_client": "/opt/homebrew/opt/mysql@8.4/bin/mysql",
+    "mainwp_archive": "/Users/OWNER/Development/MRN-release-artifacts/qualification-inputs/mainwp.6.2.2.zip",
     "qa_engine": "/Users/OWNER/Development/MRN-qa-engine/bin/mrn-qa",
     "qa_engine_root": "/Users/OWNER/Development/MRN-qa-engine"
   }

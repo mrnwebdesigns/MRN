@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import shutil
 import tarfile
+import urllib.request
 import zipfile
 
 from common import (ReleaseError, assembly, canonical, digest, distribution,
@@ -168,10 +169,30 @@ def default_packages(repo, standalone, policy, inputs, output, registry_inputs=N
             item['sha256'], item['size_bytes'] = file_hash(destination), destination.stat().st_size
         else:
             source = Path(inputs) / str(relative(item['package']))
-            if (file_hash(source) != item['sha256']
+            if (not source.is_file() or file_hash(source) != item['sha256']) and registry_inputs:
+                # Accepted licensed-input work stages its immutable ZIP here;
+                # the manifest's checksum is the only lookup key. No credential
+                # or mutable site/plugin checkout becomes a package input.
+                source = Path(registry_inputs) / 'releases/vendor-inputs' / (item['sha256'] + '.zip')
+            if not source.is_file() and item['source']['type'] == 'wordpress.org':
+                url = item['source'].get('url', '')
+                if not re.fullmatch(r'https://downloads\.wordpress\.org/plugin/[a-z0-9.-]+\.zip', url):
+                    raise ReleaseError('Unsupported pinned WordPress package URL: ' + slug)
+                with urllib.request.urlopen(url, timeout=60) as response:
+                    if not response.geturl().startswith('https://downloads.wordpress.org/plugin/'):
+                        raise ReleaseError('Pinned package redirected outside WordPress distribution')
+                    data = response.read(128 * 1024**2 + 1)
+                if len(data) > 128 * 1024**2 or digest(data) != item['sha256']:
+                    raise ReleaseError('Downloaded pinned vendor input checksum differs: ' + slug)
+                source = output / (slug + '.verified-input.zip')
+                source.write_bytes(data)
+            if (not source.is_file() or source.is_symlink()
+                    or file_hash(source) != item['sha256']
                     or source.stat().st_size != item['size_bytes']):
                 raise ReleaseError('Qualified vendor/held input checksum differs: ' + slug)
             shutil.copyfile(source, destination)
+            if source.parent == output and source.name.endswith('.verified-input.zip'):
+                source.unlink()
     return packages
 
 
@@ -364,5 +385,32 @@ def build_all(repo, standalone, job, suffix):
     archive = next((job / ('fleet-' + suffix)).glob('*.zip'))
     proof = distribution.verify(platform, bootstrap, archive)
     write(job / ('distribution-' + suffix + '.json'), proof)
+    # Optional/Dashboard components keep their own installation status. They
+    # receive private qualified packages, never an implicit bootstrap install.
+    additional = job / ('optional-' + suffix)
+    additional.mkdir()
+    catalog = read(repo / 'stack/manifests/component-catalog.json')
+    registered = read(repo / 'stack/manifests/stack-plugin-releases.json')['releases']
+    defaults = {r['slug'] for r in read(repo / 'stack/manifests/bootstrap-packages.lock.json')['plugins']}
+    eligible = {r['slug'] for r in roster(repo)}
+    records = []
+    for entry in catalog['components']:
+        if (entry['slug'] not in eligible or entry['runtime_type'] != 'standard-plugin'
+                or entry['slug'] in defaults):
+            continue
+        matches = [r for r in registered if r['slug'] == entry['slug'] and r['version'] == entry['version']]
+        if len(matches) != 1:
+            raise ReleaseError('Non-bootstrap plugin lacks a unique qualified package: ' + entry['slug'])
+        record = copy.deepcopy(matches[0])
+        source = repo / str(relative(record['package']['path']))
+        if file_hash(source) != record['package']['sha256']:
+            raise ReleaseError('Additional plugin package differs: ' + entry['slug'])
+        target = additional / record['package']['filename']
+        shutil.copyfile(source, target)
+        record['package']['path'] = target.name
+        records.append(record)
+    write(additional / 'manifest.json', {'release_id': lock['release_id'], 'plugins': records})
+    archive_tree(additional, job / ('optional-' + suffix + '.tar'))
     return {'platform': platform, 'bootstrap': bootstrap, 'fleet': archive,
-            'bootstrap_archive': job / ('bootstrap-' + suffix + '.tar'), 'proof': proof}
+            'bootstrap_archive': job / ('bootstrap-' + suffix + '.tar'),
+            'optional': additional, 'optional_archive': job / ('optional-' + suffix + '.tar'), 'proof': proof}

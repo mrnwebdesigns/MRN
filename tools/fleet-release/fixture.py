@@ -14,9 +14,10 @@ import time
 import urllib.request
 import zipfile
 
-from common import ReleaseError, file_hash, read, write
+from common import ReleaseError, file_hash, read, relative, write
 
 CORE_SHA = '8fc96c59a78b7219e4a130222b7fadb51b03e503e8b0123beaa7e28961c21ce2'
+MAINWP_SHA = 'a7c97d3bdbf9c39deee84db05d17d1284a5f0ef94f121b27fe685af0f4c195e5'
 
 
 def extract(archive, destination, *, expected=None, prefix=None):
@@ -44,7 +45,7 @@ def extract(archive, destination, *, expected=None, prefix=None):
 
 
 class WordPressFixture:
-    def __init__(self, bootstrap, root, settings):
+    def __init__(self, bootstrap, root, settings, *, additional=None):
         self.bootstrap, self.root, self.settings = Path(bootstrap), Path(root), settings
         self.public = self.root / 'wordpress'
         self.content = self.public / 'wp-content'
@@ -54,6 +55,7 @@ class WordPressFixture:
         self.database_root = None
         self.database_log = None
         self.password = secrets.token_urlsafe(32)
+        self.additional = Path(additional) if additional else None
         with socket.socket() as probe:
             probe.bind(('127.0.0.1', 0))
             self.port = probe.getsockname()[1]
@@ -164,6 +166,25 @@ add_action('doing_it_wrong_run', static function ($function) {
         for item in packages:
             extract(self.bootstrap / 'packages' / item['package'], self.content / 'plugins',
                     expected=item['sha256'], prefix=item['slug'])
+        packages = list(packages)
+        if self.additional:
+            addons = read(self.additional / 'manifest.json')['plugins']
+            if any(r['target_tier'] == 'dashboard-only' for r in addons):
+                extract(self.settings['mainwp_archive'], self.content / 'plugins',
+                        expected=MAINWP_SHA, prefix='mainwp')
+                packages.append({'slug': 'mainwp', 'main_file': 'mainwp/mainwp.php', 'version': '6.2.2'})
+            for record in addons:
+                package = record['package']
+                extract(self.additional / str(relative(package['path'])), self.content / 'plugins',
+                        expected=package['sha256'], prefix=record['slug'])
+                packages.append({'slug': record['slug'], 'main_file': package['main_file'],
+                                 'version': record['version']})
+            if any(r['slug'] == 'mrn-wp-control' for r in addons):
+                # This is a disposable local account, not a Dashboard or site
+                # credential. The complete fixture tree is removed on exit.
+                (self.content / 'plugins/mrn-wp-control/bootstrap-config.php').write_text(
+                    "<?php define('MRN_WP_CONTROL_BOOTSTRAP_PASSWORD', "
+                    + repr(secrets.token_urlsafe(32)) + ');\n')
         for directory in ('mu-plugins', 'shared', 'themes'):
             shutil.copytree(self.bootstrap / directory, self.content / directory, dirs_exist_ok=True)
         entries = json.dumps([item['main_file'] for item in packages])
@@ -220,6 +241,7 @@ add_action('doing_it_wrong_run', static function ($function) {
 
     def browser_input(self):
         return {'url': self.url, 'username': 'fleet-admin', 'password': self.password,
+                'dashboard': self.additional is not None,
                 'login_url': self.inventory['login_url'],
                 'ids': self.ids, 'engine_root': self.settings['qa_engine_root'],
                 'output': str(self.root / 'browser.json')}

@@ -24,7 +24,7 @@ ROOT = Path('/home/mrndev-stack-manager/stack')
 DEPOT = Path('/home/mrndev-stack-manager/stack-release-artifacts')
 ID = re.compile(r'^\d{4}\.\d{2}\.\d{2}-fleet-auto-[a-f0-9]{12}$')
 HASH = re.compile(r'^[a-f0-9]{64}$')
-COVERAGE = {'source', 'contracts', 'installed-default-packages', 'no-woocommerce',
+COVERAGE = {'source', 'contracts', 'installed-default-packages', 'installed-optional-packages', 'no-woocommerce',
             'native-editor', 'native-wpforms', 'api', 'browser', 'accessibility',
             'performance', 'core-web-vitals', 'distribution'}
 ALLOWED_FILES = {'BOOTSTRAP_RELEASE.md', 'STACK_VERSION.md',
@@ -167,7 +167,7 @@ class SourceStore:
 
     def verify_artifact(self, release, filename, checksum):
         if (not ID.fullmatch(release) or not HASH.fullmatch(checksum)
-                or not re.fullmatch(r'(mrn-stack-release-[A-Za-z0-9.-]+\.zip|qualification\.json|bootstrap\.tar|source\.tar)', filename)):
+                or not re.fullmatch(r'(mrn-stack-release-[A-Za-z0-9.-]+\.zip|qualification\.json|bootstrap\.tar|source\.tar|optional-plugins\.tar)', filename)):
             raise PublicationError('Artifact outside private source distribution scope')
         path = self.depot / release / filename
         if (path.is_symlink() or not path.is_file() or path.stat().st_uid != os.geteuid()
@@ -187,7 +187,7 @@ class SourceStore:
             temporary.unlink(missing_ok=True)
             return result
         # Validate the lexical name before touching any received bytes.
-        if not re.fullmatch(r'(mrn-stack-release-[A-Za-z0-9.-]+\.zip|qualification\.json|bootstrap\.tar|source\.tar)', filename):
+        if not re.fullmatch(r'(mrn-stack-release-[A-Za-z0-9.-]+\.zip|qualification\.json|bootstrap\.tar|source\.tar|optional-plugins\.tar)', filename):
             raise PublicationError('Invalid private artifact name')
         if (temporary.is_symlink() or not temporary.is_file()
                 or temporary.stat().st_uid != os.geteuid() or sha(temporary) != checksum
@@ -215,6 +215,7 @@ class SourceStore:
         if len(fleet) != 1:
             raise PublicationError('Private Fleet artifact is ambiguous/missing')
         self.verify_artifact(manifest['release_id'], fleet[0].name, proof['fleet_sha256'])
+        self.verify_artifact(manifest['release_id'], 'optional-plugins.tar', proof.get('optional_sha256', ''))
         return proof
 
     def enrollment(self):

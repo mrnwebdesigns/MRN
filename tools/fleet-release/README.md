@@ -3,7 +3,9 @@
 `coordinator.py` is the source release worker. It polls accepted default refs in
 MRN and the catalog's participating WordPress repositories, creates isolated
 mirrors, reconciles versions and immutable release records, runs native local
-qualification with all default packages and no WooCommerce, builds twice,
+qualification with all default packages and no WooCommerce, separately packages
+and qualifies eligible non-bootstrap plugins on a native fixture (including a
+pinned, isolated MainWP Dashboard with no connected sites), builds twice,
 opens a promotion PR, waits for its normal Code gate, qualifies clean merged
 source, publishes private/public distributions, and verifies their checksums.
 It never calls MainWP, site installers, site deployment, or provider APIs.
@@ -45,6 +47,14 @@ assets. Fleet and vendor/bootstrap ZIPs remain in the private source depot.
 `published-fleet-source.mjs` binds the later explicit Fleet command to the
 qualified catalog, registry and artifact map. Site backup, deployment and
 installed verification remain that command's separately authorized gates.
+The optional-plan builder uses the same verified source index; optional packages
+remain private and never become automatic new installs. Retired packages remain
+outside the eligible source map. Historical ZIP/version records stay immutable.
+
+Pinned WordPress.org inputs can be downloaded only from the recorded official
+URL and must match the accepted checksum and size. Licensed input updates stage
+their ZIP as `releases/vendor-inputs/<sha256>.zip` as part of that source task;
+the worker discovers it without a separate release request or credential lookup.
 
 CAPTCHA's default stays at 0.1.4 until genuine provider/controller/protection
 cutover evidence exists. Retired capabilities remain excluded. Optional

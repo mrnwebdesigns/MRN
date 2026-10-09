@@ -17,7 +17,7 @@ import tempfile
 import time
 
 from build import (build_all, default_packages, generate_lock, git_files, main_file,
-                   prepare_metadata, snapshot)
+                   prepare_metadata, snapshot, package_files)
 from common import (COMMIT, SHA256, ReleaseError, canonical, clean_main, digest,
                     file_hash, fleet, git, lock_tool, promotion, read,
                     repository_name, roster, run, write)
@@ -98,6 +98,7 @@ def commit(repo, message, epoch, settings, evidence):
            'GIT_COMMITTER_DATE': str(epoch) + ' +0000'}
     git(repo, 'add', '--', 'stack/manifests/component-catalog.json',
         'stack/manifests/bootstrap-packages.lock.json', 'stack/manifests/stack-plugin-releases.json',
+        'stack/manifests/optional-plugin-releases.json',
         'stack/manifests/release-locks', 'stack/BOOTSTRAP_RELEASE.md', 'stack/STACK_VERSION.md', 'stack/CHANGELOG.md')
     if git(repo, 'diff', '--cached', '--name-only'):
         staged_gate(repo, settings, evidence)
@@ -107,62 +108,83 @@ def commit(repo, message, epoch, settings, evidence):
     return git(repo, 'rev-parse', 'HEAD')
 
 
-def prepare_registry(repo, standalone, job):
-    """Publish current platform-plugin ZIP records and retain historical records."""
+def prepare_registry(repo, standalone, job, registry_inputs=None):
+    """Build every eligible standard plugin; retain immutable version records."""
     repo, standalone, job = Path(repo), Path(standalone), Path(job)
     path = repo / 'stack/manifests/stack-plugin-releases.json'
     registry = read(path)
-    bootstrap = read(repo / 'stack/manifests/bootstrap-packages.lock.json')
-    packages = {row['slug']: row for row in bootstrap['plugins']}
+    optional_path = repo / 'stack/manifests/optional-plugin-releases.json'
+    optional = read(optional_path)
+    packages = {row['slug']: row for row in read(
+        repo / 'stack/manifests/bootstrap-packages.lock.json')['plugins']}
     source_rows = {row['slug']: row for row in roster(repo)}
     catalog = read(repo / 'stack/manifests/component-catalog.json')
+    holds = read(Path(__file__).with_name('policy.json'))['held_defaults']
     for entry in catalog['components']:
-        if (entry['runtime_type'] != 'standard-plugin' or entry['slug'] not in packages
-                or packages[entry['slug']]['source']['type'] != 'git'
-                or packages[entry['slug']]['version'] != entry['version']):
-            continue
         slug = entry['slug']
+        if entry['runtime_type'] != 'standard-plugin' or slug not in source_rows or slug in holds:
+            continue
         row = source_rows[slug]
         source = repo if row['repository'] == 'MRN' else standalone / row['repository']
         sha = git(source, 'rev-parse', 'HEAD')
         files = git_files(row, repo, standalone)
         tree, count = lock_tool.bytes_tree_sha256(files.items())
         version = entry['version']
+        main = slug + '/' + main_file(files, slug)
         matches = [r for r in registry['releases'] if r['slug'] == slug and r['version'] == version]
         if len(matches) > 1:
-            raise ReleaseError('Ambiguous platform-plugin release version: ' + slug)
+            raise ReleaseError('Ambiguous immutable plugin release version: ' + slug)
         if matches and matches[0]['tree']['sha256'] != tree:
             raise ReleaseError('An immutable plugin version cannot be rebound to new source: ' + slug)
-        package = packages[slug]
-        if matches:
-            old = matches[0]
+        # Old optional records predate the cumulative registry. Preserve their
+        # qualified ZIP envelope only after comparing it with accepted source.
+        old = matches[0] if matches else next((r for r in optional['releases']
+            if r['slug'] == slug and r['version'] == version), None)
+        package = packages.get(slug)
+        if package:
+            if package['source']['type'] != 'git' or package['version'] != version:
+                raise ReleaseError('Default package does not match accepted plugin source: ' + slug)
             origin = job / 'packages' / package['package']
-            if file_hash(origin) != old['package']['sha256']:
-                raise ReleaseError('Immutable plugin ZIP differs: ' + slug)
-            artifact = repo / old['package']['path']
-            artifact.parent.mkdir(parents=True, exist_ok=True)
-            if artifact.exists() and file_hash(artifact) != old['package']['sha256']:
-                raise ReleaseError('Historical plugin artifact changed: ' + slug)
-            if not artifact.exists():
-                shutil.copyfile(origin, artifact)
-            continue
-        filename = slug + '-' + version + '-' + sha[:12] + '.zip'
-        artifact = repo / 'releases/stack-plugins' / filename
+        elif old:
+            origin = Path(old['package']['path'])
+            if not origin.is_absolute():
+                origin = Path(registry_inputs or repo) / origin
+        else:
+            origin = job / 'additional-packages' / (slug + '.zip')
+            origin.parent.mkdir(parents=True, exist_ok=True)
+            fleet.deterministic_zip(origin, {slug + '/' + k: v for k, v in files.items()})
+        if (not origin.is_file() or origin.is_symlink()
+                or package_files(origin, slug) != files
+                or (old and file_hash(origin) != old['package']['sha256'])):
+            raise ReleaseError('Qualified immutable plugin input is missing or differs: ' + slug)
+        filename = (Path(old['package']['path']).name if matches else
+                    slug + '-' + version + '-' + sha[:12] + '.zip')
+        relative_artifact = (old['package']['path'] if matches else 'releases/stack-plugins/' + filename)
+        artifact = repo / relative_artifact
         artifact.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(job / 'packages' / package['package'], artifact)
-        record = {'slug': slug, 'version': version, 'runtime_type': 'standard-plugin',
-                  'target_tier': entry['target_tier'], 'current_distribution': 'standard-bootstrap',
-                  'source': {'repository': 'mrnwebdesigns/' + row['repository'],
-                             'path': entry['source']['path'], 'git_commit': sha},
-                  'package': {'path': 'releases/stack-plugins/' + filename, 'filename': filename,
-                              'main_file': package['main_file'], 'size_bytes': artifact.stat().st_size,
-                              'sha256': file_hash(artifact)},
-                  'tree': {'hash_algorithm': 'sha256-tree-v1', 'sha256': tree, 'file_count': count},
-                  'update_policy': {'mode': 'upgrade-only', 'preserve_active_state': True,
-                                    'new_install': 'requires-separate-owner-authorization-and-plan'}}
-        registry['releases'].append(record)
-    registry['catalog_updated'] = read(repo / 'stack/manifests/component-catalog.json')['catalog_updated']
-    write(path, registry)
+        if artifact.exists() and file_hash(artifact) != file_hash(origin):
+            raise ReleaseError('Historical plugin artifact changed: ' + slug)
+        if not artifact.exists():
+            shutil.copyfile(origin, artifact)
+        record = old if matches else {
+            'slug': slug, 'version': version, 'runtime_type': 'standard-plugin',
+            'target_tier': entry['target_tier'], 'current_distribution': entry['current_distribution'],
+            'source': {'repository': 'mrnwebdesigns/' + row['repository'],
+                       'path': entry['source']['path'], 'git_commit': sha},
+            'package': {'path': relative_artifact, 'filename': filename,
+                        'main_file': main, 'size_bytes': artifact.stat().st_size,
+                        'sha256': file_hash(artifact)},
+            'tree': {'hash_algorithm': 'sha256-tree-v1', 'sha256': tree, 'file_count': count},
+            'update_policy': {'mode': 'upgrade-only', 'preserve_active_state': True,
+                              'new_install': 'requires-separate-owner-authorization-and-plan'},
+        }
+        if not matches:
+            registry['releases'].append(record)
+        if entry['target_tier'] != 'platform-required':
+            optional['releases'] = [r for r in optional['releases'] if r['slug'] != slug] + [record]
+    for value, target in ((registry, path), (optional, optional_path)):
+        value['catalog_updated'] = catalog['catalog_updated']
+        write(target, value)
 
 
 def propose(repo, job, metadata):
@@ -247,8 +269,10 @@ def publish(settings, repo, job, built, qualified, metadata, merged):
     # licensed bootstrap/Fleet payload is uploaded to the public GitHub repo.
     write(Path(job) / 'qualification.json', qualified)
     transfer(settings, base, release, built['fleet'], Path(built['fleet']).name)
+    transfer(settings, base, release, built['optional_archive'], 'optional-plugins.tar')
     transfer(settings, base, release, Path(job) / 'qualification.json', 'qualification.json')
     remote_host(settings, 'verify-artifact', release, Path(built['fleet']).name, file_hash(built['fleet']))
+    remote_host(settings, 'verify-artifact', release, 'optional-plugins.tar', file_hash(built['optional_archive']))
     remote_host(settings, 'verify-artifact', release, 'qualification.json', file_hash(Path(job) / 'qualification.json'))
     parent = next(v for v in read(Path(repo) / 'stack/manifests/stack-release.lock.json')['themes']
                   if v['slug'] == 'mrn-base-stack')
@@ -313,6 +337,8 @@ def install_local_index(settings, repo, standalone, job, built, qualified, publi
     repo, standalone, job = Path(repo), Path(standalone), Path(job)
     catalog = read(repo / 'stack/manifests/component-catalog.json')
     registry = read(repo / 'stack/manifests/stack-plugin-releases.json')
+    optional = read(repo / 'stack/manifests/optional-plugin-releases.json')
+    eligible = {row['slug'] for row in roster(repo)}
     holds = qualified.get('held_defaults', {})
     # The tracked registry/history is retained exactly. The current qualified
     # input map must not expose a newer held version as an upgrade target.
@@ -331,9 +357,22 @@ def install_local_index(settings, repo, standalone, job, built, qualified, publi
                 shutil.copyfile(historical, artifact)
         if artifact.is_file():
             row['package']['path'] = str(artifact)
+    records = {(row['slug'], row['version']): row for row in registry['releases']}
+    optional['releases'] = [copy.deepcopy(records[(row['slug'], row['version'])])
+        for row in optional['releases'] if row['slug'] in eligible
+        and (row['slug'], row['version']) in records]
+    for row in optional['releases']:
+        # The current proof was run on these clean accepted mirrors. Preserve
+        # immutable packaging provenance separately from the current source
+        # checkpoint required by the existing optional-plan validator.
+        mirror = standalone / repository_name(row['source']['repository'])
+        row['packaging_source'] = copy.deepcopy(row['source'])
+        row['source']['path'] = str(mirror)
+        row['source']['git_commit'] = clean_main(mirror)
     control = job / 'published-control'
     write(control / 'component-catalog.json', catalog)
     write(control / 'stack-plugin-releases.json', registry)
+    write(control / 'optional-plugin-releases.json', optional)
     write(control / 'qualification.json', qualified)
     write(control / 'publication.json', publication)
     index = {'schema_version': 1, 'status': 'fleet_ready', 'release_id': built['proof']['release_id'],
@@ -343,6 +382,8 @@ def install_local_index(settings, repo, standalone, job, built, qualified, publi
              'catalog_sha256': file_hash(control / 'component-catalog.json'),
              'registry_path': str(control / 'stack-plugin-releases.json'),
              'registry_sha256': file_hash(control / 'stack-plugin-releases.json'),
+             'optional_registry_path': str(control / 'optional-plugin-releases.json'),
+             'optional_registry_sha256': file_hash(control / 'optional-plugin-releases.json'),
              'qualification_path': str(control / 'qualification.json'),
              'qualification_sha256': file_hash(control / 'qualification.json'),
              'publication_path': str(control / 'publication.json'),
@@ -365,7 +406,7 @@ def paths(value):
 
 def seal(job, value):
     """Resume only checksum-bound completed phases; never repeat uncertain writes."""
-    files = [Path(value['built'][key]) for key in ('fleet', 'bootstrap_archive')]
+    files = [Path(value['built'][key]) for key in ('fleet', 'bootstrap_archive', 'optional_archive')]
     files += [Path(value['built']['bootstrap']) / 'bootstrap-bundle.json',
               Path(value['repo']) / 'stack/manifests/stack-release.lock.json']
     value['sealed'] = {str(p): file_hash(p) for p in files}
@@ -381,6 +422,7 @@ def verify_seal(value):
     proof, built = value['qualified'], value['built']
     if (proof.get('status') != 'pass' or proof['fleet_sha256'] != file_hash(built['fleet'])
             or proof['bootstrap_sha256'] != file_hash(built['bootstrap_archive'])
+            or proof['optional_sha256'] != file_hash(built['optional_archive'])
             or proof['lock_sha256'] != built['proof']['lock_sha256']):
         raise ReleaseError('Completed qualification binding differs')
 
@@ -486,7 +528,7 @@ def once(settings):
                 write(job / 'selected-source.json', selected)
                 metadata = prepare_metadata(repo, standalone, policy, settings['qualified_packages'],
                                             job, selected, settings['canonical_repo'])
-                prepare_registry(repo, standalone, job)
+                prepare_registry(repo, standalone, job, settings['canonical_repo'])
                 commit(repo, 'Reconcile cumulative Fleet source metadata ' + metadata['release_id'],
                        metadata['epoch'] + 1, settings, job / 'metadata-commit-qa.log')
                 generate_lock(repo, standalone)
@@ -566,7 +608,8 @@ def once(settings):
 
 
 def deterministic(first, second):
-    if any(file_hash(first[key]) != file_hash(second[key]) for key in ('fleet', 'bootstrap_archive')):
+    if any(file_hash(first[key]) != file_hash(second[key])
+           for key in ('fleet', 'bootstrap_archive', 'optional_archive')):
         raise ReleaseError('Independent deterministic rebuilds differ')
 
 
@@ -584,6 +627,18 @@ def failure(settings, error):
             # A superseded accepted snapshot is read-only. Never abandon an
             # unknown publication; its host receipt must be reconciled first.
             safe = progress['phase'] in ('qualified', 'merged')
+            if progress['phase'] == 'proposed':
+                proposal = json.loads(run(['gh', 'pr', 'view', str(progress['pr']), '--repo', REPOSITORY,
+                    '--json', 'state,headRefOid,body']))
+                marker = 'MRN_FLEET_SOURCE_VECTOR=' + progress['metadata']['snapshot']['source_vector_sha256']
+                if (proposal['headRefOid'] != git(progress['repo'], 'rev-parse', 'HEAD')
+                        or marker not in proposal['body']):
+                    raise ReleaseError('Superseded promotion ownership differs; preserve it for review')
+                if proposal['state'] == 'OPEN':
+                    # Only the worker's exact obsolete proposal is closed. Its
+                    # branch, artifacts and evidence remain recovery history.
+                    run(['gh', 'pr', 'close', str(progress['pr']), '--repo', REPOSITORY])
+                safe = True
             if progress['phase'] == 'ready':
                 safe = remote_host(settings, 'receipt', progress['metadata']['release_id'])['status'] == 'not_started'
             if safe:
