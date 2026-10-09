@@ -152,6 +152,7 @@ def catalog_sources(catalog):
                 "target_tier": entry.get("target_tier"),
                 "runtime_type": entry.get("runtime_type"),
                 "path": source_path,
+                "external_source": bool(source.get("repository") and source.get("repository") != "MRN"),
             }
         )
     return sorted(sources, key=lambda item: len(item["path"]), reverse=True)
@@ -196,7 +197,11 @@ def classify_changes(paths, catalog, lock_payload):
 
     for path in paths:
         matched = next((source for source in sources if path_matches(path, source["path"])), None)
-        if matched:
+        if matched and matched.get("external_source") and path == matched["path"]:
+            # A tracked standalone-repository link is a distribution contract.
+            # Runtime bytes and versions come from the separately locked source.
+            contracts.append(path)
+        elif matched:
             target = components if matched["target_tier"] == "platform-required" else optional
             record = target.setdefault(
                 matched["slug"],
