@@ -3,21 +3,20 @@
   "publicUrl": "https://operations.mrnwebdesigns.com/mcp",
   "listen": {"host": "127.0.0.1", "port": 8812},
   "auth": {
-    "issuer": "https://identity.example.invalid",
+    "issuer": "https://dev-bhbm2z074birs7aj.us.auth0.com/",
     "audience": "https://operations.mrnwebdesigns.com/mcp",
-    "jwksUrl": "https://identity.example.invalid/.well-known/jwks.json"
+    "jwksUrl": "https://dev-bhbm2z074birs7aj.us.auth0.com/.well-known/jwks.json",
+    "verifiedEmailClaims": true
   },
   "allowedOrigins": [],
-  "discovery": {"localHubRoots": ["/srv/mrn-records/MRN-sites"]},
+  "discovery": {"localHubRoots": []},
   "policyPath": "/etc/mrn-operations/permissions.json",
   "qualificationsPath": "/etc/mrn-operations/qualifications.json",
   "recoveryEvidencePath": "/etc/mrn-operations/recovery-evidence.json",
   "stateDir": "/var/lib/mrn-operations",
   "repositoryRoot": "/opt/mrn-operations/MRN",
   "artifactRoots": ["/srv/mrn-artifacts"],
-  "sourceRepositories": {
-    "mrnwebdesigns/mrn-config-helper": "/srv/mrn-source/mrn-config-helper"
-  },
+  "sourceRepositories": {},
   "writesEnabled": false,
   "mainwp": {
     "command": "/usr/bin/node",
@@ -30,6 +29,5 @@
       "MAINWP_SAFE_MODE": {"env": "OPS_MAINWP_SAFE_MODE"},
       "HOME": {"env": "OPS_MAINWP_HOME"}
     }
-  },
-  "qa": {"executable": "/opt/mrn-qa-engine/bin/mrn-qa"}
+  }
 }

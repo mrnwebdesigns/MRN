@@ -4,6 +4,36 @@ Working first version of the shared MRN operations service. This is an HTTP MCP
 backend for conversational clients, not a WordPress plugin or a new MainWP
 implementation. It is **not yet hosted or team-ready**. Real writes default off.
 
+## Team experience and acceptance
+
+The team-facing product must be: **add the MRN plugin in ChatGPT,
+sign in with an individual MRN account, and ask for website work in ordinary
+language**. Team members must not need Codex, a terminal, a local repository,
+manual MCP configuration, API keys or a personal background service. Existing
+website access follows their account permissions; they do not register sites
+again. Findings, progress, necessary approvals and verified results stay in chat.
+
+Service hosting, credentials, source connections and operational administration
+are MRN operator responsibilities. The operator setup below is not team
+onboarding. ChatGPT is the selected platform. The portable plugin manifest and
+package builder are in `chatgpt/`; per-tool OAuth declarations and reconnect
+challenges are exposed by the service. The hosted endpoint, real MRN identity
+provider, workspace publishing and ChatGPT acceptance remain outstanding. See
+[ChatGPT delivery and setup](CHATGPT.md).
+
+Acceptance requires an ordinary team member, using only ChatGPT, to
+add the integration, sign in, discover permitted sites, request an inspection and
+receive evidence and coverage in the same conversation. Wrong-account access,
+revoked access and denied actions must be enforced by the hosted service. Before
+claiming change workflows usable, repeat the authorized repair and verification
+flow in a controlled environment through that same chat experience. Fixture
+tests or developer configuration alone do not satisfy this acceptance.
+
+Existing MainWP websites appear automatically for authorized team members. There
+is no second website enrollment or required Operations website list. Existing
+Local Hub records add explicit remote/local relationships and deployment facts;
+missing facts remain unknown and are requested only when an action needs them.
+
 A user can name an accessible website, inspect it, refer to a recorded finding,
 prepare an installed standard-plugin repair, authorize its exact plan, execute
 through Fleet, inspect verification evidence, and prepare code rollback.
@@ -37,13 +67,15 @@ service-wide per-site locks, and an MCP interface over those services.
 | --- | --- | --- |
 | Individual HTTP authentication | Issuer/JWKS/audience/expiry/algorithm/scope checks; no shared-user bypass | Real signed-token local HTTP tests; actual team identity provider not configured |
 | Site/operation authorization | Explicit subject, site and environment grants, checked before every downstream call | Revocation, denied roles, inaccessible sites and cross-site requests tested |
-| Discovery | Registry aliases and exact environment URLs; fresh MainWP site ID resolution | Real internal-client connection/status and all 84 capabilities verified; no live site inventory calls were made |
+| Discovery | Paginated MainWP basic directory, exact-URL grants, optional Local Hub record enrichment; no duplicate website list | Authenticated HTTP/stdio tests start from an empty registry. Live basic-directory response schema verified; directory identity is separate from fresh runtime inventory |
+| Website knowledge | Exact-URL joins, explicit local/remote links, source/freshness, repository/provider facts, unknown/conflicting metadata | Reads a narrow allowlist from existing `.mrn-site.json` files; no credentials, SSH targets, notes or commands imported. Production Hub provider API and site deployment record adapters remain future work |
 | Inspection | Runtime inventory, installed-plugin catalog comparison, qualification cases, capability coverage, public timing/basic HTML checks, history | Controlled fixtures; MainWP security/themes/updates/change queries are inventory only, not a comprehensive interpretation or security audit |
 | Performance | Bounded public GET and prior sample comparison | Does not claim daily regression or root cause from isolated measurements |
 | Repair and code rollback | One installed standard-plugin update through existing Fleet; exact retained rollback through MainWP | Controlled end-to-end backup/confirmation/runtime/public verification; no real site mutation |
 | QA | Required trusted source/runtime qualification for execution; optional MRN QA runtime command | Adapter command contract tested; no client runtime QA invoked by this task |
 | Assets | Qualified immutable same-origin URLs must appear in public HTML and served bytes must match checksums | Stale HTML, stale CSS/JS and bad REST responses tested. Qualify representative pages separately with existing asset/browser tooling |
 | Locks/retries | SQLite transactions, one canonical URL lock across operation kinds, durable idempotency, no repeated mutations after uncertain outcomes | Concurrent stores and database reopen tested; external writers are not yet enrolled |
+| Interrupted-operation recovery | `reconcile_operation` checks exact runtime and public assets under operator-enrolled quiescence evidence, then atomically records the outcome and releases the lock | Controlled lost-response, restart, concurrent recovery, late-worker and stale-evidence tests; no automatic retry, force unlock or retrospective backup claim |
 | Forms | Explicit unrun coverage, recorded procedure references | Rendering/validation/submission/delivery/CRM/payment workflows remain unimplemented; no real form was submitted |
 | Other repairs | Explanatory routing boundary | Source authoring, content/media migrations, provider repairs and arbitrary configuration changes are not implemented |
 | Site releases / full Stack | Ownership preserved by rejecting unsupported routes | No GitHub dispatch, child-theme deployment, full Stack install or native Kinsta Fleet adapter in this version |
@@ -55,10 +87,18 @@ there is no silent REST/SSH credential fallback. A future REST adapter must use
 the existing approved MRN client and Production Hub's `MAINWP_REST_API_KEY`
 contract, not the MCP application password.
 
+A missing tool is an integration limitation, not proof that MainWP lacks the
+product capability. Before admitting another route, assess both primary routes
+and the relevant official extension's installed, active and usable state on the
+intended Dashboard. UI-only extension workflows require their own qualified
+adapter. They never bypass authentication, safe mode, authorization, backup or
+verification gates. Recovery currently needs only the existing MCP read surface;
+it does not introduce a REST, extension, UI or SSH fallback.
+
 ## Run and test
 
 Requires Node 22.13+ (built-in SQLite), Python 3, Git and the MRN repository layout.
-Use Node 22 LTS on the service host; SQLite may emit an experimental warning.
+The selected MRN Apps host has Node 24; SQLite may emit an experimental warning.
 
 ```bash
 cd tools/operations
@@ -78,9 +118,9 @@ simulated package bytes and an injected plan builder; the real adapter uses the
 canonical Python builder. Existing Fleet and source-builder contract tests remain
 the source of validation for ZIP/source/baseline construction.
 
-## Hosted onboarding
+## Operator setup for the hosted service
 
-1. Choose the service host and public hostname. The proposed
+1. The owner selected the existing DigitalOcean MRN Apps server. The proposed
    `operations.mrnwebdesigns.com` is a placeholder, not a provisioned service.
    Select the MRN identity provider's issuer, JWKS endpoint and audience. It must
    support MCP-client OAuth authorization, PKCE and `mrn:operations` access tokens.
@@ -97,7 +137,7 @@ the source of validation for ZIP/source/baseline construction.
    in the service secret environment. Require user confirmation and disable
    downstream automatic retries. Never disable TLS verification. The service
    does not read Codex configuration or inherit a chat application's connectors.
-4. Put reviewed copies of the four example configuration files in
+4. Put reviewed service, permissions, qualifications and recovery configuration in
    `/etc/mrn-operations`, owned by the operator and read-only to the service. Set
    paths, identity and policy explicitly. Store credential references only.
    Create the private MainWP working directory named in configuration. Systemd
@@ -108,20 +148,30 @@ the source of validation for ZIP/source/baseline construction.
    credential path before qualification. The Python builder still enforces clean
    source, merged exact commits, package/tree checksums and rollback availability.
    The adapter never fetches arbitrary repositories or commits from chat inputs.
-6. Enroll websites and environments through reviewed `websites.json` changes.
-   Exact MainWP IDs are discovered, never stored as authority. Dedicated Dev
-   environments may remain outside MainWP. Record management and backup routes,
-   and facts for ownership, contacts, Stack adoption/exceptions, hosting, DNS,
-   CDN/cache, monitoring, repositories/branches/release method, forms/integrations,
-   test recipients/procedures, recovery and access references. Every fact requires
-   source, observed/expiry timestamps and intended/observed classification.
-   Runtime observations live separately in operation records. Updating a registry
-   fact never changes a site's configuration or installs a component.
-7. Assign immutable IdP subjects explicit grants. Actions are independent:
+6. Enable `discovery` and point `localHubRoots` at read-only mounted copies of the
+   existing `MRN-sites` parent directories (or use `[]` for MainWP only). The
+   hosted service needs explicit source access; it does not inherit laptop files
+   or chat connectors. MainWP names/URLs are discovered automatically. Local Hub
+   manifests supply saved relationships and deployment facts. `registryPath` is
+   optional and reserved for reviewed missing-fact corrections or operation
+   prerequisites; `websites.example.json` is intentionally empty. Never copy the
+   MainWP inventory into it. See [discovery and knowledge](DISCOVERY.md).
+7. Assign immutable IdP subjects explicit grants, or configure an approved
+   `emailDomains` read/test policy with `auth.verifiedEmailClaims: true`. Only
+   signed `${audience}/email` and boolean `${audience}/email_verified` claims
+   qualify, after full signature/issuer/audience validation. Match the exact
+   domain, never a suffix or subdomain. Explicit subject entries override domain
+   access, including `enabled: false` revocation. Domain policies cannot grant
+   repair or release. See [MRN Apps staff policy](deploy/MRN-APPS.md).
+   Actions are independent:
    `read`, `test`, `repair`, `deploy_development`, `release_production`. A normal
    repairer needs `read` + `repair`; production execution additionally needs
-   `release_production`. No wildcard sites, default administrator or implicit
-   role escalation exists. Removing a grant takes effect on the next call.
+   `release_production`. `portfolio` can grant read/test access to MainWP and/or
+   Local Hub sources, including future discovered sites, without listing each
+   site. Repair/release grants remain explicit by exact URL or legacy website ID.
+   A restricted URL grant uses exact-site discovery and never fetches the full
+   directory. No default administrator or implicit role escalation exists.
+   Removing a grant takes effect before the next downstream call.
 8. Verify real identity login, wrong-site denial, a controlled read-only site,
    artifact provisioning, storage recovery and service supervision. Keep
    `writesEnabled: false` until these pass. Add qualified source/runtime QA records
@@ -143,10 +193,16 @@ the source of validation for ZIP/source/baseline construction.
     to this Fleet adapter: it refuses that route. Local content/code workflows
     will use the documented Local Hub exception once implemented.
 
-The identity provider, hosting destination, initial member/site grants, service
-credential, repository/artifact provisioning and writer enrollment remain owner
-setup decisions. Configuration and tests are ready for review; none of these
-acceptance steps is implied by a passing code test.
+The initial MRN Apps host, existing Auth0 identity provider and staff read policy
+are selected. OAuth registration, service credential provisioning, deployment and
+real ChatGPT acceptance remain delivery work. Artifact provisioning and writer
+coordination apply later when qualifying executable changes. Passing code tests
+does not establish any of these live acceptance steps.
+
+Discovery alone needs no release artifacts, source checkouts, QA qualification,
+writer-coordination record or backup route. Those prerequisites apply when the
+requested inspection/test/change actually uses them. Unknown environment and
+backup facts do not prevent read-only inspection; they cannot authorize a write.
 
 ## Conversation contract
 
@@ -165,6 +221,8 @@ embedded model with permission to execute arbitrary commands.
 “Undo that deployment.”
   prepare_rollback(operationId, requestKey) -> exact reviewed code plan
   -> approve_operation -> execute_operation -> get_operation
+“What happened to that interrupted repair?”
+  get_operation -> operator quiescence evidence -> reconcile_operation
 ```
 
 Plan approval is recorded separately from execution so existing authorization can
@@ -191,12 +249,26 @@ regardless of Fleet versus future site/content/provider ownership. Provider and
 child-controller checks remain additional gates, never replacements.
 
 After a backup or mutation attempt, a missing/failed verification yields
-`uncertain`; the lock remains indefinitely. A crash can leave `running` or
-`preparing` records. Restart never resumes or retries those automatically. Stop
-new admission, verify no downstream job is running, exact-readback site state,
-inspect private receipts and perform a reviewed operator reconciliation. There is
-no chat tool to force-unlock a site. An automated reconciliation/unlock workflow
-is a remaining operational gap; do not label a restart as a recovered deployment.
+`uncertain`; the lock remains. A crash can leave `running` or `preparing` records.
+Restart never resumes or retries those automatically. For `running`/`uncertain`
+Fleet operations, [the recovery runbook](RECOVERY.md) describes operator-owned
+quiescence evidence and the `reconcile_operation` workflow. It requires current
+release permission, exact source/artifact QA, fresh targeted runtime evidence
+before and after public/REST/asset checks, and an atomic unchanged-record/lock
+check. An active worker, stale proof, changed target or unknown code keeps the
+lock. A late worker cannot perform another downstream call or finish the old
+operation after reconciliation. Infrastructure-level worker termination and
+downstream-idle verification remain operator responsibilities.
+
+The terminal `reconciled` state reports `intended_code_verified` or
+`prior_code_verified` separately from the original execution error. It never
+claims the earlier backup completed, attributes the installed code to the failed
+request, or assesses database/media recovery. Repeated reconciliation returns the
+saved result; repeated execution cannot replay the original mutation. A verified
+reconciled update can enter normal code-rollback planning with fresh gates.
+Unknown/mixed code, absent artifacts, changed baseline or unrelated drift require
+operator investigation; there is no force-unlock tool. `preparing` records never
+held a write lock: inspect again and prepare with a new request key.
 
 Audit rows contain subject, operation, target, event, timestamp and outcome only.
 Tool arguments, secrets, bearer/confirmation tokens and backup receipts are not

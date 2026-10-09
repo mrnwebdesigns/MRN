@@ -18,12 +18,13 @@ function withoutSecrets(value) {
   return Object.fromEntries(Object.entries(value).filter(([key]) => !/(password|secret|token|credential|authorization|cookie|package_base64|^nonce$|^receipt$)/i.test(key)).map(([key, item]) => [key, withoutSecrets(item)]));
 }
 
-function integrationError(error) {
+export function integrationError(error) {
   if (error instanceof OpsError) return error;
   // Classify privately, without reflecting arbitrary remote text or credentials.
   const message = String(error?.message || '');
   if (/timeout|timed out/i.test(message)) return new OpsError('DOWNSTREAM_TIMEOUT', 'MainWP timed out. Read back exact state before retrying any mutation.');
   if (/401|403|authentication|permission|unauthoriz/i.test(message)) return new OpsError('MAINWP_ACCESS', 'MainWP rejected authentication or permission. Repair the approved connection; no fallback was attempted.');
+  if (/\bmrn_mainwp_stack_report_unavailable\b/.test(message)) return new OpsError('STACK_REPORT_UNAVAILABLE', 'The child site did not return a Stack runtime report. Read-only qualification may explain what is missing.');
   return new OpsError('MAINWP_FAILED', 'The approved MainWP connection failed or returned an unsupported response.');
 }
 export function payload(result, { allowError = false } = {}) {
@@ -59,11 +60,11 @@ export async function connectMainwp(config, environment = process.env) {
 // This is the ONLY MainWP access surface given to workflow adapters. The service
 // credential's broad access never replaces the requesting person's permissions.
 export class MainwpSession {
-  constructor(client, registry, store, actor, target, { action = 'read', operation = '', onMutation = () => {} } = {}) {
-    Object.assign(this, { client, registry, store, actor, target, action, operation, onMutation });
+  constructor(client, registry, store, actor, target, { action = 'read', operation = '', onMutation = () => {}, checkAdmission = () => {} } = {}) {
+    Object.assign(this, { client, registry, store, actor, target, action, operation, onMutation, checkAdmission });
     this.siteId = null; this.names = null;
   }
-  authorize() { this.registry.current(this.actor, this.target, this.action); }
+  authorize() { this.registry.current(this.actor, this.target, this.action); this.checkAdmission(); }
   async guarded(event, fn) {
     this.authorize();
     this.store.audit(this.actor, this.target, this.operation, event, 'attempted');
@@ -134,6 +135,11 @@ export class MainwpSession {
     const data = await this.call(toolNames.runtime, { site_id: this.siteId });
     requireThat(Number(data.site_id) === this.siteId && normalizeSiteUrl(data.site_url || '') === this.target.url, 'TARGET_MISMATCH', 'Runtime evidence belongs to a different website.');
     return data.report;
+  }
+  async qualification() {
+    const data = await this.call(toolNames.qualify, { site_id: this.siteId });
+    requireThat(Number(data.site_id) === this.siteId && normalizeSiteUrl(data.site_url || '') === this.target.url, 'TARGET_MISMATCH', 'Qualification evidence belongs to a different website.');
+    return data;
   }
   async close() { await this.client.close(); }
 }

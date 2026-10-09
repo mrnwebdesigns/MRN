@@ -4,6 +4,16 @@ import { toolNames } from './mainwp.mjs';
 
 const slug = v => typeof v === 'string' && /^[a-z0-9_.-]{1,160}$/.test(v) ? v : 'unknown';
 const version = v => typeof v === 'string' && /^[a-zA-Z0-9.+_-]{1,60}$/.test(v) ? v : 'unknown';
+const fatal = error => ['MAINWP_ACCESS', 'MAINWP_IDENTITY', 'FORBIDDEN', 'AUTH_REQUIRED', 'TARGET_MISMATCH', 'TARGET_CHANGED'].includes(error.code);
+const qualificationStates = new Set(['deployment_agent_unavailable', 'deployment_agent_upgrade_required', 'site_theme_shape_unavailable',
+  'incompatible_theme_shape', 'incomplete_rollout_requires_reconciliation', 'deployment_storage_not_ready', 'managed_credentials_not_ready', 'ready_for_release_preflight']);
+function qualificationEvidence(data) {
+  const boolean = value => typeof value === 'boolean' ? value : null;
+  return { classification: qualificationStates.has(data.classification) ? data.classification : 'unknown',
+    blockers: [...new Set((Array.isArray(data.blockers) ? data.blockers : []).filter(b => qualificationStates.has(b) && b !== 'ready_for_release_preflight'))],
+    agentVersion: version(data.agent?.version), agentAvailable: boolean(data.agent?.available), runtimeAvailable: boolean(data.runtime?.available),
+    interpretation: 'Read-only deployment qualification explains missing evidence; it does not establish a verified release baseline or authorize a change.' };
+}
 export function runtimeEvidence(report) {
   return { schema: report?.schema_version ?? null,
     release: report?.release_lock?.valid === true ? version(report.release_lock.release_id) : null,
@@ -17,6 +27,10 @@ export function runtimeEvidence(report) {
 export async function inspectTarget({ target, session, catalog, publicProbe, authorize, previous = null }) {
   const evidence = []; const coverage = []; const findings = [];
   const add = (code, description, data, repairable = false) => findings.push({ code, description, confidence: 'confirmed', repairable, ...data });
+  evidence.push({ source: 'mrn:website-knowledge', environment: target.environment, backup: target.backup,
+    issues: target.knowledgeIssues || [], facts: (target.facts || []).map(f => ({ ...f, stale: Date.parse(f.expiresAt) <= Date.now() })) });
+  coverage.push({ check: 'website_knowledge', status: target.environment === 'unknown' || target.backup === 'unknown' || target.knowledgeIssues?.length ? 'incomplete' : 'recorded',
+    interpretation: 'Saved facts describe intended configuration. Missing or conflicting write prerequisites do not prevent read-only inspection.' });
   if (target.management === 'mainwp') {
     const site = await session.fresh(); evidence.push({ source: 'mainwp:exact-site-sync', ...site });
     for (const [name, check] of [[toolNames.runtime, 'stack'], [toolNames.security, 'security'], [toolNames.updates, 'updates'], [toolNames.themes, 'themes'], [toolNames.changes, 'recent_changes']]) {
@@ -47,7 +61,19 @@ export async function inspectTarget({ target, session, catalog, publicProbe, aut
           coverage.push({ check, status: 'queried', interpretation: 'Inventory only; not a comprehensive scan.' });
         }
       } catch (error) {
-        if (['MAINWP_ACCESS', 'MAINWP_IDENTITY', 'FORBIDDEN', 'AUTH_REQUIRED', 'TARGET_MISMATCH', 'TARGET_CHANGED'].includes(error.code)) throw error;
+        if (fatal(error)) throw error;
+        if (check === 'stack' && error.code === 'STACK_REPORT_UNAVAILABLE' && await session.supports(toolNames.qualify)) {
+          try {
+            const qualification = qualificationEvidence(await session.qualification());
+            evidence.push({ source: 'mainwp:stack-qualification', observedAt: new Date().toISOString(), ...qualification });
+            coverage.push({ check, status: 'qualification_required', ...safeError(error) });
+            add('STACK_QUALIFICATION', 'The child site returned no Stack runtime report. Read-only qualification details are recorded; a verified release baseline is still required. No site change was made.', {});
+            continue;
+          } catch (qualificationError) {
+            if (fatal(qualificationError)) throw qualificationError;
+            coverage.push({ check: 'stack_qualification', status: 'blocked', ...safeError(qualificationError) });
+          }
+        }
         coverage.push({ check, status: 'blocked', ...safeError(error) });
       }
     }
@@ -65,7 +91,22 @@ export async function inspectTarget({ target, session, catalog, publicProbe, aut
     if (before && before.status === measured.status && before.sourceUrl === measured.sourceUrl) evidence.push({ source: 'public:comparison', previousInspection: previous.id,
       previousMeasuredAt: before.measuredAt, currentMeasuredAt: measured.measuredAt, ttfbDeltaMs: measured.ttfbMs - before.ttfbMs,
       interpretation: 'Two individual samples; not comparable daily aggregates and not proof of causation.' });
-  } catch (error) { coverage.push({ check: 'public_performance', status: 'blocked', ...safeError(error) }); }
+  } catch (error) {
+    if (fatal(error)) throw error;
+    coverage.push({ check: 'public_performance', status: 'blocked', ...safeError(error) });
+  }
+  try {
+    const measured = await publicProbe(`${target.url}/wp-json/`, authorize, { checkRest: true });
+    const healthy = measured.status === 200 && measured.restHealthy === true;
+    evidence.push({ source: 'public:wordpress-rest', sourceUrl: measured.sourceUrl, measuredAt: measured.measuredAt,
+      status: measured.status, restHealthy: healthy });
+    coverage.push({ check: 'wordpress_rest', status: healthy ? 'checked' : 'unhealthy',
+      scope: 'One public GET of /wp-json/ checks HTTP 200 and WordPress REST-root JSON structure. It does not verify every route or authenticated API access.' });
+    if (!healthy) add('REST_ROOT_CHECK_FAILED', 'The public WordPress REST-root check did not return HTTP 200 with the expected JSON structure. Access policy or endpoint configuration may explain this; the cause and other REST routes remain unverified.', { condition: { status: measured.status } });
+  } catch (error) {
+    if (fatal(error)) throw error;
+    coverage.push({ check: 'wordpress_rest', status: 'blocked', ...safeError(error) });
+  }
   for (const check of ['accessibility_axe', 'functional_browser', 'broken_assets', 'forms_validation', 'forms_submission', 'forms_delivery', 'technical_seo_full']) coverage.push({ check, status: 'not_run', reason: check.startsWith('forms_') ? 'Requires a recorded form procedure and approved destinations. No submission or external effect was initiated.' : 'Requires the configured site-specific QA workflow.' });
   return { evidence, coverage, findings, explanation: findings.length
     ? 'The recorded findings are supported by the checks listed below. Unavailable and unrun checks remain unresolved.'

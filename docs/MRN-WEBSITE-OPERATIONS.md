@@ -5,14 +5,32 @@ existing workflows through MCP; it does not own a competing MainWP implementatio
 or replace Fleet, site deployments, content migrations, QA Engine or provider
 backup policy. The first version is a review candidate, not an activated service.
 
+The selected team-facing experience is to add the MRN plugin in ChatGPT, sign
+in individually, and use ordinary conversation. It must not require Codex,
+terminal commands, local code or manual connection/credential configuration from
+team members. Hosting and integration setup belong to MRN operators. The
+installable chat integration, real sign-in and chat-only acceptance are required
+delivery work; a tested MCP backend alone is not the finished team product.
+The package must contain only the remote service connection and presentation
+metadata. Sign-in tokens identify the member; ChatGPT's user/workspace hints do
+not grant access. Operator setup and workspace publishing remain separate from
+the team's install, sign-in and chat experience.
+
 The requesting team member must authenticate individually. Server policy grants
 access by website, environment and operation. A downstream service credential
 never expands that person's authority. Every downstream call rechecks permissions
 and preserves the requester in the audit record. Identity, authentication or
 permission failures stop that route; never silently change credentials or use SSH.
 
-Website enrollment records intended knowledge, sources and freshness separately
-from observed runtime evidence. Credentials remain references to approved services.
+MainWP supplies the website directory; existing managed websites must not require
+duplicate enrollment in Operations. Existing MRN records enrich exact URLs and
+explicit environment relationships, preserving source and freshness separately
+from observed runtime evidence. Missing facts stay unknown and only block actions
+that need them. Source-wide read/test permissions are explicit; repair and release
+authority remain scoped. Optional website overrides supply missing facts or
+reviewed operation prerequisites, never a second mandatory inventory. Credentials
+remain references to approved services. See
+[discovery and knowledge](../tools/operations/DISCOVERY.md).
 MainWP IDs are fresh-resolved from exact URLs and narrowly synchronized before
 inventory is treated as current. Empty selections are rejected, not interpreted as
 all sites. Older/partial Stack sites require qualification; missing components are
@@ -36,6 +54,20 @@ This policy does not claim existing production writers have been enrolled.
 Do not automatically retry a mutation whose outcome is unknown. Keep its lock and
 operation evidence until exact state and downstream quiescence are established.
 Service restart does not itself authorize recovery, re-execution or unlocking.
+For the installed-plugin Fleet adapter, `reconcile_operation` accepts only an
+operation ID and requires operator-enrolled, current quiescence evidence bound to
+the exact saved operation. It performs fresh runtime/public/asset verification
+and atomically records `reconciled` before releasing that operation's lock.
+Unknown code, changed state, active workers, missing QA or stale evidence retain
+the lock. A reconciled code state never establishes the original backup,
+execution attribution, database or media outcome. Follow the
+[recovery runbook](../tools/operations/RECOVERY.md); neither the chat nor a service
+restart may fabricate worker termination or downstream-idle evidence.
+
+A missing MCP tool or REST endpoint describes integration coverage, not MainWP
+product capability. Assess both primary routes and relevant official extension
+readiness before qualifying a different route. Authentication, safe mode, backup,
+authorization and verification gates apply to extension/UI workflows as well.
 
 Use [the service onboarding and capability matrix](../tools/operations/README.md)
 for implemented adapters, operational acceptance, pending hosting/identity choices
