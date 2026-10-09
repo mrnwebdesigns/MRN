@@ -241,7 +241,7 @@ add_action('doing_it_wrong_run', static function ($function) {
 
     def browser_input(self):
         return {'url': self.url, 'username': 'fleet-admin', 'password': self.password,
-                'dashboard': self.additional is not None,
+                'dashboard': 'mainwp/mainwp.php' in self.inventory['plugins'],
                 'login_url': self.inventory['login_url'],
                 'ids': self.ids, 'engine_root': self.settings['qa_engine_root'],
                 'output': str(self.root / 'browser.json')}

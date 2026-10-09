@@ -57,9 +57,18 @@ const { createRequire } = require('node:module');
     const editorUrl = `${input.url}/wp-admin/post.php?post=${input.ids.home}&action=edit`;
     // Native WPForms consumes a one-time welcome redirect on the first admin
     // request. Follow that workflow, then require the actual privileged editor.
-    for (let attempt = 0; attempt < 2; attempt++) {
+    for (let attempt = 0; attempt < 4; attempt++) {
       await page.goto(editorUrl, { waitUntil: 'domcontentloaded' });
-      if (new URL(page.url()).searchParams.get('page') !== 'wpforms-getting-started') break;
+      const onboarding = new URL(page.url()).searchParams.get('page');
+      if (onboarding === 'wpforms-getting-started') continue;
+      if (input.dashboard && onboarding === 'mainwp-setup') {
+        // Use MainWP's supported empty-Dashboard workflow. Qualification must
+        // never enroll a real site just to reach its native admin screens.
+        await page.getByRole('link', {name: 'Skip the Setup Wizard', exact: true}).click();
+        await page.waitForLoadState('domcontentloaded');
+        continue;
+      }
+      break;
     }
     await expect(page.locator('#post')).toBeVisible();
     checks.push('native administrator login and privileged editor access');
