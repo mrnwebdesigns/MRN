@@ -2237,6 +2237,10 @@ sync_shared_runtime() {
 
 main() {
   local domain body
+  # A source release publisher takes the exclusive side of this lease. Read
+  # one complete bundle throughout bootstrap, including its package/lock files.
+  source "${STACK_ROOT}/scripts/source-distribution-lease.sh"
+  mrn_source_distribution_lease "${STACK_ROOT}"
   echo "Bootstrapping site: ${SITE_PATH} (owner: ${SITE_USER}, profile: ${SITE_PROFILE})"
   ensure_site_owner_direct_ssh
   reset_standard_plugins

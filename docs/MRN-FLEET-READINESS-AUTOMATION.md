@@ -69,22 +69,27 @@ an owner hold blocks that site's rollout; it does not invalidate an independentl
 qualified and published source distribution. A new adapter's genuine provider
 and recovery qualification remains required before use of that adapter.
 
-## Current implementation boundary
+## Implementation and activation
 
-`.github/workflows/stack-promotion-drift.yml` currently checks MRN `main` plus six
-platform-required standalone default branches. It runs after MRN main pushes,
-daily, or on dispatch and preserves an inventory report. It is read-only and
-does not build, qualify, or publish a release. It also does not yet reconcile all
-independently released plugin sources.
+`tools/fleet-release/` implements an owner-local coordinator, clean source
+mirrors, native qualification, deterministic builds, normal promotion PR gates,
+private publication/recovery and verified Fleet source selection. Its LaunchAgent
+polls accepted refs every five minutes, including standalone plugin changes.
+The launcher reads current accepted controller code without changing task
+worktrees. Public Actions test its contracts but never receive licensed packages
+or publishing credentials. See `tools/fleet-release/README.md` for configuration,
+service limitations, failure recovery and the one-time source-consumer lease
+enrollment required on the canonical static source host.
 
-Existing lock, assembly, Fleet plan, package, and distribution verification
-tools remain the implementation authority. The automatic coordinator, qualified
-runtime runner, private artifact publisher, cross-repository triggers, and
-failure reporting must be connected and tested before automatic readiness can
-be claimed. Updating these workflow rules alone does not activate that pipeline.
+Implementation, service activation and a successful first publication are
+separate evidence. Installing a worker does not make a failing candidate ready.
+The current source selection stays in place while a required source/runtime or
+publication gate is blocked. Authentication remains through the approved GitHub
+CLI account and business SSH agent; a failure never triggers credential fallback.
 
-Until that implementation is operational, agents carrying out authorized Stack
-release work must continue the source/package/publication steps themselves and
-report any concrete remaining integration blocker. Do not replace the missing
-automation with a recurring request for owner release bookkeeping or a site
-deployment approval.
+The existing `stack-promotion-drift.yml` remains an independent read-only audit.
+Source fixtures test default installation without WooCommerce and native
+editor/forms, API, accessibility and performance. Genuine provider assessment,
+recovery and installed site adoption remain explicit separate qualifications.
+The documented CAPTCHA hold and retired exclusions are not automatically lifted
+by a source merge or generic fixture result.

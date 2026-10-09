@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { loadPublishedFleetSource } from "./published-fleet-source.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPOSITORY_ROOT = path.resolve(SCRIPT_DIR, "../..");
@@ -968,7 +969,10 @@ export async function runFleetUpdate(args, dependencies = {}) {
   }
   const catalogPath = path.join(REPOSITORY_ROOT, "stack", "manifests", "component-catalog.json");
   const registryPath = path.join(REPOSITORY_ROOT, "stack", "manifests", "stack-plugin-releases.json");
+  const publishedSource = dependencies.catalog || dependencies.registry ? null :
+    loadPublishedFleetSource(canonicalRepositoryRoot(), process.env.MRN_FLEET_SOURCE_INDEX || "");
   const artifactRoots = dependencies.artifactRoots || [
+    publishedSource?.artifactRoot || "",
     REPOSITORY_ROOT,
     process.env.MRN_RELEASE_ARTIFACT_ROOT || "",
     canonicalRepositoryRoot(),
@@ -981,8 +985,8 @@ export async function runFleetUpdate(args, dependencies = {}) {
     const syncStarted = new Date();
     const refreshed = await freshSync(client, site, syncStarted);
     const runtimeReport = await readRuntimeReport(client, refreshed);
-    const catalog = dependencies.catalog || readJson(catalogPath);
-    const registry = dependencies.registry || readJson(registryPath);
+    const catalog = dependencies.catalog || publishedSource?.catalog || readJson(catalogPath);
+    const registry = dependencies.registry || publishedSource?.registry || readJson(registryPath);
     const context = selectReleaseContext({
       catalog,
       registry,

@@ -144,6 +144,12 @@ jobs:
             fi
           done
 
+      - name: Test source distribution and recovery contracts
+        run: |
+          python3 -m unittest discover -s tools/fleet-release/tests -v
+          node --test tools/fleet-release/tests/published-source.test.mjs
+          bash -n stack/scripts/source-distribution-lease.sh
+
       - name: Run MRN static QA gate
         run: |
           mkdir -p reports
