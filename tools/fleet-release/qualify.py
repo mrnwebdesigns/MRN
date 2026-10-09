@@ -90,6 +90,7 @@ def qualify(repo, standalone, built, settings, evidence, selected):
                  'source_vector_sha256': selected['source_vector_sha256'],
                  'material_sha256': selected['material_sha256'],
                  'toolchain': toolchain,
+                 'held_defaults': read(Path(__file__).with_name('policy.json'))['held_defaults'],
                  'lock_sha256': built['proof']['lock_sha256'],
                  'fleet_sha256': file_hash(built['fleet']),
                  'bootstrap_sha256': file_hash(built['bootstrap_archive']),

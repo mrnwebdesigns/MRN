@@ -312,6 +312,11 @@ def install_local_index(settings, repo, standalone, job, built, qualified, publi
     repo, standalone, job = Path(repo), Path(standalone), Path(job)
     catalog = read(repo / 'stack/manifests/component-catalog.json')
     registry = read(repo / 'stack/manifests/stack-plugin-releases.json')
+    holds = qualified.get('held_defaults', {})
+    # The tracked registry/history is retained exactly. The current qualified
+    # input map must not expose a newer held version as an upgrade target.
+    registry['releases'] = [row for row in registry['releases']
+                            if row['slug'] not in holds or row['version'] == holds[row['slug']]['version']]
     for row in registry['releases']:
         name = repository_name(row['source']['repository'])
         mirror = standalone / name
@@ -342,6 +347,7 @@ def install_local_index(settings, repo, standalone, job, built, qualified, publi
              'publication_path': str(control / 'publication.json'),
              'publication_sha256': file_hash(control / 'publication.json'),
              'artifact_root': str(repo), 'site_adoption_verified': False, 'site_writes': False}
+    index['held_defaults'] = holds
     write(Path(settings['canonical_repo']) / 'releases/fleet-ready/current.json', index)
     return index
 

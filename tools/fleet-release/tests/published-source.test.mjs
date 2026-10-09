@@ -65,3 +65,16 @@ test('missing no-Woo coverage and mismatched publication bindings block', () => 
     assert.throws(() => loadPublishedFleetSource(f.root, f.filename), /binding/);
   } finally { f.cleanup(); }
 });
+test('pending CAPTCHA qualification cannot expose its newer source as a Fleet target', () => {
+  const f = fixture();
+  try {
+    f.values.qualification.held_defaults = {'mrn-recaptcha-enterprise-manager': {version: '0.1.4'}};
+    f.values.registry.releases = [{slug: 'mrn-recaptcha-enterprise-manager', version: '0.2.2'}];
+    for (const kind of ['qualification','registry']) {
+      fs.writeFileSync(f.index[kind + '_path'], JSON.stringify(f.values[kind]));
+      f.index[kind + '_sha256'] = hash(f.index[kind + '_path']);
+    }
+    f.save();
+    assert.throws(() => loadPublishedFleetSource(f.root, f.filename), /held version/);
+  } finally { f.cleanup(); }
+});
