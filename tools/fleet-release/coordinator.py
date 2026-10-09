@@ -145,11 +145,14 @@ def prepare_registry(repo, standalone, job, registry_inputs=None):
             if package['source']['type'] != 'git' or package['version'] != version:
                 raise ReleaseError('Default package does not match accepted plugin source: ' + slug)
             origin = job / 'packages' / package['package']
-        elif old:
-            origin = Path(old['package']['path'])
-            if not origin.is_absolute():
-                origin = Path(registry_inputs or repo) / origin
-        else:
+        if old:
+            legacy = Path(old['package']['path'])
+            choices = [legacy] if legacy.is_absolute() else [repo / legacy, Path(registry_inputs or repo) / legacy]
+            if package:
+                choices.append(origin)
+            origin = next((p for p in choices if p.is_file() and not p.is_symlink()
+                           and file_hash(p) == old['package']['sha256']), choices[0])
+        elif not package:
             origin = job / 'additional-packages' / (slug + '.zip')
             origin.parent.mkdir(parents=True, exist_ok=True)
             fleet.deterministic_zip(origin, {slug + '/' + k: v for k, v in files.items()})
@@ -356,6 +359,18 @@ def install_local_index(settings, repo, standalone, job, built, qualified, publi
                 artifact.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(historical, artifact)
         if artifact.is_file():
+            if file_hash(artifact) != row['package']['sha256']:
+                raise ReleaseError('Published plugin artifact differs from its immutable registration')
+            registered_path = Path(row['package']['path'])
+            if not registered_path.is_absolute():
+                if registered_path.parts[:2] not in (('releases', 'stack-plugins'), ('releases', 'plugins')):
+                    raise ReleaseError('Registered plugin cache must stay in the ignored release store')
+                cached = Path(settings['canonical_repo']) / registered_path
+                cached.parent.mkdir(parents=True, exist_ok=True)
+                if cached.exists() and (cached.is_symlink() or file_hash(cached) != row['package']['sha256']):
+                    raise ReleaseError('Immutable local plugin cache differs; preserve and inspect it')
+                if not cached.exists():
+                    shutil.copyfile(artifact, cached)
             row['package']['path'] = str(artifact)
     records = {(row['slug'], row['version']): row for row in registry['releases']}
     optional['releases'] = [copy.deepcopy(records[(row['slug'], row['version'])])

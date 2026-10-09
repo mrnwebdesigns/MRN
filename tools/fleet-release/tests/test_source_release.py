@@ -236,6 +236,32 @@ class QualificationContracts(unittest.TestCase):
 
 
 class CoordinatorBoundaries(unittest.TestCase):
+    def test_same_source_with_different_zip_envelopes_preserves_registered_optional_bytes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);repo=root/'repo';job=root/'job';manifests=repo/'stack/manifests'
+            manifests.mkdir(parents=True);(job/'packages').mkdir(parents=True)
+            files={'mrn-example.php':b'<?php /* Plugin Name: Fixture\nVersion: 1.0.0 */'}
+            legacy=root/'legacy.zip';current=job/'packages/default.zip'
+            with zipfile.ZipFile(legacy,'w',compression=zipfile.ZIP_DEFLATED) as archive:
+                archive.writestr('mrn-example/mrn-example.php',files['mrn-example.php'])
+            build.fleet.deterministic_zip(current,{'mrn-example/'+k:v for k,v in files.items()})
+            self.assertNotEqual(common.file_hash(current),common.file_hash(legacy))
+            entry={'slug':'mrn-example','version':'1.0.0','runtime_type':'standard-plugin',
+                   'target_tier':'optional-shared','current_distribution':'standard-bootstrap',
+                   'source':{'path':'plugins/mrn-example'}}
+            common.write(manifests/'component-catalog.json',{'catalog_updated':'2026-10-09','components':[entry]})
+            common.write(manifests/'stack-plugin-releases.json',{'releases':[]})
+            common.write(manifests/'optional-plugin-releases.json',{'releases':[
+                {'slug':'mrn-example','version':'1.0.0','package':{'path':str(legacy),'sha256':common.file_hash(legacy)}}]})
+            common.write(manifests/'bootstrap-packages.lock.json',{'plugins':[
+                {'slug':'mrn-example','version':'1.0.0','source':{'type':'git'},'package':'default.zip'}]})
+            with patch.object(coordinator,'roster',return_value=[{**entry,'repository':'MRN'}]), \
+                 patch.object(coordinator,'git',return_value='a'*40),patch.object(coordinator,'git_files',return_value=files):
+                coordinator.prepare_registry(repo,root,job)
+            record=common.read(manifests/'stack-plugin-releases.json')['releases'][0]
+            self.assertEqual((repo/record['package']['path']).read_bytes(),legacy.read_bytes())
+            self.assertEqual(build.package_files(current,'mrn-example'),files)
+
     def test_nonbootstrap_source_is_packaged_registered_and_cannot_rebind_a_version(self):
         with tempfile.TemporaryDirectory() as temporary:
             repo=Path(temporary)/'repo';job=Path(temporary)/'job'
