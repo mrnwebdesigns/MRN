@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-10-05",
+  "catalog_updated": "2026-10-09",
   "authority": "This file is the authoritative inventory and classification source for MRN-owned WordPress plugins and MU components. Inclusion does not imply installation.",
   "product_model": {
     "platform-required": "Installed on a production MRN stack because it provides mandatory platform behavior.",
@@ -494,7 +494,7 @@
     {
       "slug": "mrn-config-helper",
       "name": "MRN Config Helper",
-      "version": "0.1.71",
+      "version": "0.1.72",
       "runtime_type": "standard-plugin",
       "classification": "platform-shared-hybrid",
       "lifecycle": "supported",
@@ -503,7 +503,7 @@
       "source": {"repository": "mrn-config-helper", "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper", "state": "confirmed-symlinked"},
       "dependencies": {"hard": ["WordPress"], "soft": ["ACF", "WPForms", "WooCommerce", "SmartCrawl", "SEOPress", "MRN Shared Assets"], "release_group": "config-helper-decomposition"},
       "data": {"options": ["mrn_helper_settings", "selected third-party settings"], "tables": [], "cron": [], "routes": ["four privileged admin-post actions", "three media AJAX integrations"], "external_services": ["UptimeRobot", "WPForms", "WooCommerce", "SEO providers"], "meta": ["breadcrumb and media-related metadata"]},
-      "purpose": "Provides the shared site configuration shell, native SEOPress breadcrumb integration and launch/admin integrations; retired SendGrid provisioning is excluded."
+      "purpose": "Provides the shared site configuration shell, native SEOPress breadcrumb integration and launch/admin integrations; retired SendGrid and GTM Injector controls and synchronization are excluded."
     },
     {
       "slug": "mrn-sendgrid-provisioning",

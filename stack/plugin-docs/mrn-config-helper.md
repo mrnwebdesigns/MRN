@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.71`
+- Current version: `0.1.72`
 - Source path:
   - `/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper`
 
@@ -14,10 +14,14 @@
 
 Version 0.1.71 removes the SendGrid settings card and sender-sync call. The generic sender identity helpers and saved settings remain. Mail transport is configured separately through its own plugin. Source recovery is documented in [Restoring retired capabilities](../RESTORING-RETIRED-CAPABILITIES.md). This release changes no existing site or provider resources during Stack cleanup.
 
+## GTM retirement
+
+Version 0.1.72 removes the Google Tag Manager card and automatic GTM Injector settings synchronization. SEOPress owns tracking configuration in the simplified Stack. Existing Config Helper container values and both GTM Injector options remain stored for recovery; generic settings saves ignore submissions for the retired field. Source before this change is retained at Config Helper commit `5f22f06acda7ea445b32f03d79fe8cf5061c03cc`.
+
 ## Purpose
 
 - Centralizes common site configuration that would otherwise be scattered across plugins or user-specific admin settings.
-- Gives admins one place to manage sender identity, notification email behavior, GTM, dashboard lock roles, and site-wide social links.
+- Gives admins one place to manage sender identity, notification email behavior, dashboard lock roles, and site-wide social links.
 - It is primarily:
   - admin utility
   - stack configuration
@@ -38,7 +42,6 @@ Version 0.1.71 removes the SendGrid settings card and sender-sync call. The gene
 - Current settings areas include:
   - Site Identity
   - WPForms Notifications
-  - Google Tag Manager
   - External APIs
   - Social Media
   - Breadcrumbs
@@ -217,13 +220,13 @@ Version 0.1.71 removes the SendGrid settings card and sender-sync call. The gene
 
 - Main option:
   - `mrn_helper_settings`
-- Also syncs into other plugin options when configured:
+- Historical tracking values are retained without synchronization:
   - GTM Injector option: `mrn_gtm_settings`
   - legacy GTM option: `mrn_gtm_container_id`
+  - retired `gtm_container_id` key in `mrn_helper_settings`
 - Current `mrn_helper_settings` areas include:
   - sender name/email
   - site notification email
-  - GTM container ID
   - UptimeRobot API key fallback
   - dashboard lock roles
   - disabled admin CPT/reusable-library post types
@@ -264,7 +267,6 @@ Version 0.1.71 removes the SendGrid settings card and sender-sync call. The gene
 - WordPress settings API
 - WordPress media modal
 - Fluent SMTP
-- GTM Injector
 - WPForms
 - shared MRN sticky settings toolbar helper
 - `mrn-admin-data-post-types` MU-plugin (optional): the Admin -> Content Types
