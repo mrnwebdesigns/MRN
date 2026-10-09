@@ -473,8 +473,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             if item["slug"] == "mrn-config-helper"
         }
 
-        self.assertEqual("0.1.71", entry["version"])
-        self.assertEqual({"0.1.59", "0.1.60", "0.1.61", "0.1.62", "0.1.63", "0.1.64", "0.1.65", "0.1.66", "0.1.68", "0.1.70", "0.1.71"}, set(versions))
+        self.assertEqual("0.1.72", entry["version"])
+        self.assertEqual({"0.1.59", "0.1.60", "0.1.61", "0.1.62", "0.1.63", "0.1.64", "0.1.65", "0.1.66", "0.1.68", "0.1.70", "0.1.71", "0.1.72"}, set(versions))
         self.assertEqual(
             entry["version"],
             max(versions, key=lambda value: planner.version_tuple(value, "version")),
