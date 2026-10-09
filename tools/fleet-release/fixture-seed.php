@@ -53,6 +53,9 @@ $form['id'] = (string) $ids['form'];
 if ( ! $ids['form'] || ! wpforms()->obj( 'form' )->update( $ids['form'], $form ) ) {
 	throw new RuntimeException( 'Native WPForms creation/save failed.' );
 }
-wp_update_post( array( 'ID' => $ids['contact'], 'post_content' => '[wpforms id="' . $ids['form'] . '"]' ) );
+update_field( 'field_mrn_page_content_rows', array(
+	array( 'acf_fc_layout' => 'wpforms', 'heading' => 'Contact the fixture',
+		'form' => $ids['form'] ),
+), $ids['contact'] );
 flush_rewrite_rules( false );
 echo wp_json_encode( $ids );

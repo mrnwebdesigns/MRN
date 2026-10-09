@@ -16,6 +16,7 @@ const { createRequire } = require('node:module');
   const checks = [];
   const scans = [];
   const requests = [];
+  let loginState;
   let activePage;
   try {
     const context = await browser.newContext({ reducedMotion: 'reduce' });
@@ -35,8 +36,19 @@ const { createRequire } = require('node:module');
     page.setDefaultTimeout(30000);
     page.setDefaultNavigationTimeout(120000);
     await page.goto(input.login_url || `${input.url}/wp-login.php`, { waitUntil: 'domcontentloaded' });
+    // WordPress schedules a delayed username autofocus. Settle its native
+    // login page before entering credentials, then verify the submitted fields.
+    await page.waitForLoadState('networkidle');
     await page.locator('#user_login').fill(input.username);
     await page.locator('#user_pass').fill(input.password);
+    assert.equal(await page.locator('#user_login').inputValue(), input.username);
+    assert.equal(await page.locator('#user_pass').inputValue() === input.password, true);
+    loginState = await page.locator('#loginform').evaluate(form => ({
+      action: form.action, valid: form.checkValidity(),
+      fields: Array.from(form.elements).map(field => ({name: field.name, type: field.type,
+        valid: field.validity?.valid, message: field.validationMessage, disabled: field.disabled,
+        length: ['log', 'pwd'].includes(field.name) ? field.value.length : undefined})),
+    }));
     const loginPath = new URL(page.url()).pathname;
     await Promise.all([
       page.waitForURL(value => value.pathname !== loginPath, { waitUntil: 'domcontentloaded', timeout: 30000 }),
@@ -51,14 +63,26 @@ const { createRequire } = require('node:module');
     }
     await expect(page.locator('#post')).toBeVisible();
     checks.push('native administrator login and privileged editor access');
-    await expect(page.locator('#content')).toHaveCount(1);
+    await expect(page.locator('#title')).toHaveCount(1);
+    await expect(page.locator('.block-editor')).toHaveCount(0);
     await expect(page.locator('.acf-field[data-name="page_after_content_rows"]').first()).toBeVisible();
     await expect(page.locator('.acf-field[data-name="page_after_content_rows"] .layout:not(.acf-clone)')).toHaveCount(2);
-    await page.locator('#publish').click();
-    await expect(page.locator('#message.updated, .notice-success').first()).toBeVisible();
+    const heading = page.locator('.acf-field[data-name="page_after_content_rows"] .layout:not(.acf-clone)')
+      .first().locator('.acf-field[data-name="heading"] input').first();
+    await expect(heading).toHaveValue('Fleet After Content');
+    await heading.fill('Fleet editor saved After Content');
+    const [saved] = await Promise.all([
+      page.waitForResponse(response => response.request().method() === 'POST'
+        && new URL(response.url()).pathname === '/wp-admin/post.php', {timeout: 120000}),
+      page.locator('#publish').click(),
+    ]);
+    assert.equal(saved.status(), 302, 'native editor save must redirect successfully');
+    await page.waitForURL(value => value.searchParams.get('message') === '1',
+      {waitUntil: 'domcontentloaded', timeout: 120000});
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.locator('.acf-field[data-name="page_after_content_rows"] .layout:not(.acf-clone)')).toHaveCount(2);
-    checks.push('Classic Editor save/reload retains both native After Content rows');
+    await expect(heading).toHaveValue('Fleet editor saved After Content');
+    checks.push('Classic Editor save/reload persists edited heading and both native After Content rows');
     await context.close();
     for (const width of [1440, 768, 390]) {
       const publicContext = await browser.newContext({ viewport: { width, height: 1000 }, reducedMotion: 'reduce' });
@@ -107,7 +131,7 @@ const { createRequire } = require('node:module');
       location = activePage.url();
     }
     fs.writeFileSync(input.output, JSON.stringify({status: 'fail', error: error.message,
-      url: location, visible, requests, checks, scans}, null, 2) + '\n');
+      url: location, visible, loginState, requests, checks, scans}, null, 2) + '\n');
     throw error;
   } finally {
     await browser.close();

@@ -9,6 +9,7 @@ import secrets
 import shutil
 import socket
 import subprocess
+import tempfile
 import time
 import urllib.request
 import zipfile
@@ -16,7 +17,6 @@ import zipfile
 from common import ReleaseError, file_hash, read, write
 
 CORE_SHA = '8fc96c59a78b7219e4a130222b7fadb51b03e503e8b0123beaa7e28961c21ce2'
-SQLITE_SHA = '1602e75577ad9b3a7e3e4a6a44a81b9541cdee2124d48928faf61c6fd3cd4f74'
 
 
 def extract(archive, destination, *, expected=None, prefix=None):
@@ -50,11 +50,54 @@ class WordPressFixture:
         self.content = self.public / 'wp-content'
         self.process = None
         self.log = None
+        self.database = None
+        self.database_root = None
+        self.database_log = None
         self.password = secrets.token_urlsafe(32)
         with socket.socket() as probe:
             probe.bind(('127.0.0.1', 0))
             self.port = probe.getsockname()[1]
         self.url = 'http://127.0.0.1:' + str(self.port)
+
+    def start_database(self):
+        # A short, private path keeps the Unix socket below its platform limit.
+        # No defaults, TCP listener, global service or shared database is used.
+        self.database_root = tempfile.TemporaryDirectory(prefix='mrn-fleet-db-')
+        private = Path(self.database_root.name)
+        self.database_socket = private / 'mysql.sock'
+        self.database_log = (self.root / 'mysql-process.log').open('w')
+        server = [self.settings['mysql_server'], '--no-defaults',
+                  '--datadir=' + str(private / 'data')]
+        initialization = subprocess.run(server + ['--initialize-insecure'],
+                                        stdout=self.database_log, stderr=self.database_log,
+                                        timeout=180, check=False, cwd=private)
+        if initialization.returncode:
+            raise ReleaseError('Private fixture database initialization failed')
+        self.database = subprocess.Popen(server + [
+            '--socket=' + str(self.database_socket), '--skip-networking', '--mysqlx=OFF',
+            '--pid-file=' + str(private / 'mysql.pid'),
+            '--log-error=' + str(self.root / 'mysql-server.log'),
+            '--performance-schema=OFF', '--max-connections=10',
+        ], stdout=self.database_log, stderr=self.database_log, cwd=private)
+        client = [self.settings['mysql_client'], '--no-defaults',
+                  '--socket=' + str(self.database_socket), '--user=root',
+                  '--batch', '--skip-column-names']
+        for _ in range(100):
+            if self.database.poll() is not None:
+                raise ReleaseError('Private fixture database exited; see mysql-server.log')
+            result = subprocess.run(client, input='SELECT 1;\n', capture_output=True,
+                                    text=True, timeout=5, check=False, cwd=private)
+            if result.returncode == 0 and result.stdout.strip() == '1':
+                break
+            time.sleep(0.1)
+        else:
+            raise ReleaseError('Private fixture database did not become ready')
+        result = subprocess.run(client, input=(
+            'CREATE DATABASE mrn_fleet CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\n'),
+            stdout=self.database_log, stderr=self.database_log, text=True,
+            timeout=10, check=False, cwd=private)
+        if result.returncode:
+            raise ReleaseError('Private fixture database creation failed')
 
     def php(self, body, *, installing=False, skip_smtp=False):
         if installing:
@@ -85,15 +128,11 @@ class WordPressFixture:
     def start(self):
         self.root.mkdir()
         extract(self.settings['wordpress_archive'], self.root, expected=CORE_SHA, prefix='wordpress')
-        extract(self.settings['sqlite_archive'], self.root, expected=SQLITE_SHA,
-                prefix='sqlite-database-integration')
-        sqlite = self.root / 'sqlite-database-integration'
-        (self.content / 'db.php').write_text((sqlite / 'db.copy').read_text().replace(
-            '{SQLITE_IMPLEMENTATION_FOLDER_PATH}', str(sqlite)))
+        self.start_database()
         (self.public / 'wp-config.php').write_text("<?php\n" + "\n".join([
-            "define('DB_NAME', 'fleet_qualification');", "define('DB_USER', '');",
-            "define('DB_PASSWORD', '');", "define('DB_HOST', '');",
-            "define('DB_ENGINE', 'sqlite');", "define('DB_DIR', __DIR__.'/wp-content/database/');",
+            "define('DB_NAME', 'mrn_fleet');", "define('DB_USER', 'root');",
+            "define('DB_PASSWORD', '');", "define('DB_CHARSET', 'utf8mb4');",
+            "define('DB_HOST', " + repr('localhost:' + str(self.database_socket)) + ');',
             "define('WP_HTTP_BLOCK_EXTERNAL', true);", "define('DISABLE_WP_CRON', true);",
             "define('WP_AUTO_UPDATE_CORE', false);", "define('AUTOMATIC_UPDATER_DISABLED', true);",
             "define('WP_ENVIRONMENT_TYPE', 'local');", "define('MRN_SITE_PROFILE', 'stack');",
@@ -173,6 +212,7 @@ add_action('doing_it_wrong_run', static function ($function) {
         else:
             raise ReleaseError('Loopback fixture REST health failed')
         write(self.root / 'qualification.json', {'status': 'pass', 'packages_activated': len(packages),
+                                                'database': 'private MySQL Unix socket; TCP disabled',
                                                 'woocommerce': False, 'ids': self.ids,
                                                 'inventory': self.inventory,
                                                 'scope': 'disposable loopback fixture; no delivery/provider/site writes'})
@@ -199,10 +239,21 @@ add_action('doing_it_wrong_run', static function ($function) {
                 self.process.wait()
         if self.log:
             self.log.close()
+        if self.database:
+            self.database.terminate()
+            with contextlib.suppress(subprocess.TimeoutExpired):
+                self.database.wait(timeout=15)
+            if self.database.poll() is None:
+                self.database.kill()
+                self.database.wait()
+        if self.database_log:
+            self.database_log.close()
+        if self.database_root:
+            self.database_root.cleanup()
         self.password = ''
         # Keep only diagnostic evidence; remove the database and temporary
         # configuration containing disposable credentials even on failures.
-        for item in ('wordpress', 'sqlite-database-integration'):
+        for item in ('wordpress',):
             path = self.root / item
             if item == 'wordpress' and (path / 'wp-content/debug.log').exists():
                 shutil.copyfile(path / 'wp-content/debug.log', self.root / 'php-diagnostics.log')

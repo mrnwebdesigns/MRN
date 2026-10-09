@@ -38,7 +38,11 @@ def qualify(repo, standalone, built, settings, evidence, selected):
     evidence = Path(evidence)
     evidence.mkdir(parents=True, exist_ok=True)
     toolchain = {'qa_engine_commit': clean_main(settings['qa_engine_root']),
-                 'wp_cli_sha256': file_hash(settings['wp_cli'])}
+                 'wp_cli_sha256': file_hash(settings['wp_cli']),
+                 'mysql_server_sha256': file_hash(settings['mysql_server']),
+                 'mysql_server_version': subprocess.run(
+                     [settings['mysql_server'], '--no-defaults', '--version'],
+                     capture_output=True, text=True, check=True).stdout.strip()}
     execute([settings['node'], '--test', str(Path(repo) / 'tools/fleet-release/tests/published-source.test.mjs')],
             evidence / 'published-source-contracts.log', cwd=repo)
     execute(['python3', '-m', 'unittest', 'discover', '-s', str(Path(repo) / 'tools/fleet-release/tests')],
