@@ -136,6 +136,15 @@ class SourcePublication(unittest.TestCase):
         (self.root / 'shared/escape.php').symlink_to(self.base / 'outside')
         with self.assertRaises(host.PublicationError): host.safe(self.root, 'shared/escape.php')
 
+    def test_existing_qualified_source_metadata_is_allowed_but_credentials_are_not(self):
+        self.assertEqual(str(host.allowed('mu-plugins/component/.mrn-qa.env')),
+                         'mu-plugins/component/.mrn-qa.env')
+        self.assertEqual(str(host.allowed('themes/mrn-base-stack/.stylelintrc.json')),
+                         'themes/mrn-base-stack/.stylelintrc.json')
+        for name in ('mu-plugins/component/.env','themes/mrn-base-stack/.git/config',
+                     'shared/.npmrc','secrets/settings.json'):
+            with self.assertRaises(host.PublicationError): host.allowed(name)
+
     def test_private_transfer_cannot_rebind_immutable_destination(self):
         filename = 'source.tar'; target = self.job / filename; target.write_bytes(b'old')
         checksum = hashlib.sha256(b'new').hexdigest()

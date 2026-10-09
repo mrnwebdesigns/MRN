@@ -385,7 +385,12 @@ def dependencies(repo, standalone, settings):
         if row['repository'] != 'MRN':
             link = Path(repo) / 'plugins' / row['slug']
             link.parent.mkdir(exist_ok=True)
-            link.symlink_to(standalone / row['repository'] / row['relative_source'], target_is_directory=True)
+            target = standalone / row['repository'] / row['relative_source']
+            if link.is_symlink() and link.resolve() == target.resolve():
+                continue  # Preserve an already portable tracked source link.
+            if link.exists() or link.is_symlink():
+                raise ReleaseError('Existing plugin source link is not the dedicated mirror: ' + row['slug'])
+            link.symlink_to(target, target_is_directory=True)
     if (Path(repo) / 'composer.lock').exists():
         run([settings['qualification']['composer'], 'install', '--no-interaction', '--prefer-dist',
              '--no-progress'], cwd=repo, timeout=900)
