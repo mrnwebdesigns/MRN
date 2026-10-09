@@ -56,6 +56,7 @@ class SourcePublication(unittest.TestCase):
         lock = root / 'manifests/stack-release.lock.json'; lock.parent.mkdir()
         lock.write_bytes(value)
         plugin = root / 'shared/runtime.php'; plugin.parent.mkdir(); plugin.write_bytes(value)
+        lock.chmod(0o644); plugin.chmod(0o644)
         records = [{'path': p.relative_to(root).as_posix(), 'sha256': host.sha(p),
                     'size': p.stat().st_size, 'mode': 0o644} for p in (lock, plugin)]
         manifest = {'release_id': release, 'release_lock_sha256': host.sha(lock), 'files': records}
@@ -201,6 +202,58 @@ class QualificationContracts(unittest.TestCase):
                  patch.object(build.lock_tool, 'read_header_version', return_value='1.0.0'):
                 with self.assertRaises(common.ReleaseError):
                     build.default_packages(root, root, {'held_defaults':{}}, inputs, root/'out')
+
+
+
+class CoordinatorBoundaries(unittest.TestCase):
+    def test_remote_default_ref_is_resolved_and_mrn_main_is_enforced(self):
+        with patch.object(coordinator, 'git_network', return_value='ref: refs/heads/main\tHEAD\n'+'a'*40+'\tHEAD'):
+            self.assertEqual(coordinator.remote_refs(['MRN']), {'MRN':'a'*40})
+        with patch.object(coordinator, 'git_network', return_value='ref: refs/heads/feature\tHEAD\n'+'a'*40+'\tHEAD'):
+            with self.assertRaises(common.ReleaseError): coordinator.remote_refs(['MRN'])
+
+    def test_normal_pr_gates_cannot_be_skipped_or_bypassed(self):
+        payload={'state':'OPEN','headRefOid':'a'*40,'statusCheckRollup':[
+                 {'name':'Code gate','status':'COMPLETED','conclusion':'FAILURE'}]}
+        with patch.object(coordinator,'run',return_value=json.dumps(payload)) as run, \
+             patch.object(coordinator,'assert_refs'):
+            with self.assertRaises(common.ReleaseError): coordinator.accept_proposal(Path('.'), 1, {})
+            self.assertEqual(run.call_count,1)
+        payload['statusCheckRollup'][0]['name']='Unrelated gate';payload['statusCheckRollup'][0]['conclusion']='SUCCESS'
+        with patch.object(coordinator,'run',return_value=json.dumps(payload)) as run, \
+             patch.object(coordinator,'assert_refs'):
+            with self.assertRaises(common.ReleaseError): coordinator.accept_proposal(Path('.'),1,{})
+            self.assertEqual(run.call_count,1)
+
+    def test_completed_rehearsal_resumes_without_rebuilding_or_publishing(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            state=Path(temporary);state.chmod(0o700)
+            job=state/'jobs/example';job.mkdir(parents=True)
+            repo=job/'repos/MRN';(repo/'stack/manifests').mkdir(parents=True)
+            bootstrap=job/'bootstrap';bootstrap.mkdir()
+            for path in (job/'fleet.zip',job/'bootstrap.tar',bootstrap/'bootstrap-bundle.json',repo/'stack/manifests/stack-release.lock.json'):
+                path.write_bytes(b'fixture')
+            checksum=common.file_hash(job/'fleet.zip')
+            progress={'phase':'qualified','repo':str(repo),'standalone':str(job/'repos/MRN-plugins'),
+                      'metadata':{'snapshot':{'refs':{}},'release_id':'fixture'},
+                      'built':{'fleet':str(job/'fleet.zip'),'bootstrap_archive':str(job/'bootstrap.tar'),
+                               'bootstrap':str(bootstrap),'proof':{'lock_sha256':checksum}},
+                      'qualified':{'status':'pass','fleet_sha256':checksum,'bootstrap_sha256':checksum,'lock_sha256':checksum}}
+            coordinator.seal(job,progress);common.write(state/'active.json',{'job':str(job)})
+            with patch.object(coordinator,'publish') as publish, patch.object(coordinator,'build_all') as build:
+                result=coordinator.once({'state_root':str(state),'qualification':{},'publish':False})
+                self.assertEqual(result['status'],'qualified_rehearsal');publish.assert_not_called();build.assert_not_called()
+            (job/'fleet.zip').write_bytes(b'changed')
+            with self.assertRaises(common.ReleaseError): coordinator.once({'state_root':str(state),'qualification':{},'publish':True})
+
+    def test_launchagent_runs_only_the_source_launcher(self):
+        import importlib.util
+        spec=importlib.util.spec_from_file_location('fleet_install',Path(__file__).resolve().parents[1]/'install.py')
+        install=importlib.util.module_from_spec(spec);spec.loader.exec_module(install)
+        value=install.definition('/python','/launcher','/config',Path('/state'),'/bin')
+        self.assertEqual(value['StartInterval'],300)
+        self.assertEqual(value['ProgramArguments'],['/python','/launcher','/config'])
+        self.assertNotIn('site',json.dumps(value))
 
 
 if __name__ == '__main__': unittest.main()
