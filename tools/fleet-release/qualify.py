@@ -89,6 +89,33 @@ def qualify(repo, standalone, built, settings, evidence, selected):
             if not observed or observed.get('matches_release') is not True:
                 raise ReleaseError('Reference runtime component differs: ' + item['slug'])
         fixture.close()
+        additional_fixture = WordPressFixture(built['bootstrap'], evidence / 'optional-fixture',
+                                               settings, additional=built['optional'])
+        try:
+            additional_fixture.start()
+            additional_fixture.assert_clean_diagnostics()
+            execute([settings['node'], Path(__file__).with_name('fixture-browser.cjs')],
+                    evidence / 'optional-browser.log', stdin=json.dumps(additional_fixture.browser_input()),
+                    timeout=900, cwd=repo)
+            # Inspect each non-bootstrap source with its own full component QA,
+            # against the isolated runtime. Shared native/browser/API/AA/timing
+            # coverage above still binds the cumulative default distribution.
+            for record in read(Path(built['optional']) / 'manifest.json')['plugins']:
+                name = record['source']['repository'].removeprefix('mrnwebdesigns/')
+                source = Path(standalone) / name
+                report = evidence / ('component-' + record['slug'] + '.md')
+                component_env = {**env, 'MRN_QA_SITE_PATH': str(additional_fixture.public),
+                                 'MRN_QA_SITE_URL': additional_fixture.url}
+                execute([settings['qa_engine'], 'run', '--project-root', source, '--mode', 'release',
+                         '--site-path', additional_fixture.public, '--site-url', additional_fixture.url,
+                         '--run-smoke', 'never', '--run-accessibility', 'never', '--run-performance', 'never',
+                         '--run-cwv', 'never', '--output-file', report],
+                        evidence / ('component-' + record['slug'] + '.log'), env=component_env,
+                        timeout=1800, cwd=source)
+                require_engine_pass(report, runtime=False)
+            additional_fixture.assert_clean_diagnostics()
+        finally:
+            additional_fixture.close()
         proof = {'schema_version': 1, 'status': 'pass',
                  'release_id': built['proof']['release_id'],
                  'source_vector_sha256': selected['source_vector_sha256'],
@@ -98,7 +125,9 @@ def qualify(repo, standalone, built, settings, evidence, selected):
                  'lock_sha256': built['proof']['lock_sha256'],
                  'fleet_sha256': file_hash(built['fleet']),
                  'bootstrap_sha256': file_hash(built['bootstrap_archive']),
+                 'optional_sha256': file_hash(built['optional_archive']),
                  'coverage': ['source', 'contracts', 'installed-default-packages', 'no-woocommerce',
+                              'installed-optional-packages',
                               'native-editor', 'native-wpforms', 'api', 'browser',
                               'accessibility', 'performance', 'core-web-vitals', 'distribution'],
                  'evidence': {p.relative_to(evidence).as_posix(): file_hash(p)

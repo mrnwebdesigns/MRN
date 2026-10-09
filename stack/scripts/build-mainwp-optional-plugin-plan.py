@@ -338,8 +338,16 @@ def build_plan(
     if max_inventory_age_seconds < 60 or max_inventory_age_seconds > 3600:
         raise PlanError("max inventory age must be between 60 and 3600 seconds")
 
-    catalog = read_json(catalog_path)
-    releases = read_json(releases_path)
+    published = None
+    if (Path(catalog_path) == DEFAULT_CATALOG and Path(releases_path) == DEFAULT_RELEASES
+            and (REPOSITORY_ROOT / 'releases/fleet-ready/current.json').exists()):
+        result = subprocess.run(['node', str(SCRIPT_DIR / 'published-fleet-source.mjs'),
+                                 str(REPOSITORY_ROOT)], capture_output=True, text=True, check=False, timeout=30)
+        if result.returncode:
+            raise PlanError('Published optional source evidence could not be verified')
+        published = json.loads(result.stdout)
+    catalog = published['catalog'] if published else read_json(catalog_path)
+    releases = published['optionalRegistry'] if published else read_json(releases_path)
     inventory = read_json(inventory_path)
     catalog_entry = find_entry(catalog, "components", plugin_slug, "Component catalog")
     release = find_entry(releases, "releases", plugin_slug, "Release registry")

@@ -12,10 +12,10 @@ function fixture() {
   const index = {schema_version: 1, status: 'fleet_ready', release_id: release,
     lock_sha256: 'a'.repeat(64), source_vector_sha256: 'b'.repeat(64),
     site_writes: false, site_adoption_verified: false, artifact_root: root};
-  const values = {catalog: {components: []}, registry: {releases: []},
+  const values = {catalog: {components: []}, registry: {releases: []}, optional_registry: {releases: []},
     qualification: {status: 'pass', release_id: release, lock_sha256: index.lock_sha256,
       source_vector_sha256: index.source_vector_sha256,
-      coverage: ['source','contracts','installed-default-packages','no-woocommerce','native-editor',
+      coverage: ['source','contracts','installed-default-packages','installed-optional-packages','no-woocommerce','native-editor',
         'native-wpforms','api','browser','accessibility','performance','core-web-vitals','distribution']},
     publication: {status: 'pass', site_writes: false, hosted: {status: 'published_verified',
       release_id: release, lock_sha256: index.lock_sha256}}};

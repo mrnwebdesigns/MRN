@@ -83,6 +83,14 @@ const { createRequire } = require('node:module');
     await expect(page.locator('.acf-field[data-name="page_after_content_rows"] .layout:not(.acf-clone)')).toHaveCount(2);
     await expect(heading).toHaveValue('Fleet editor saved After Content');
     checks.push('Classic Editor save/reload persists edited heading and both native After Content rows');
+    if (input.dashboard) {
+      const dashboard = await page.goto(`${input.url}/wp-admin/admin.php?page=mainwp_tab`,
+        {waitUntil: 'domcontentloaded'});
+      assert.equal(dashboard.status(), 200, 'native MainWP page must render');
+      assert(['mainwp_tab', 'mainwp-setup'].includes(new URL(page.url()).searchParams.get('page')));
+      assert((await page.locator('#wpbody-content').innerText()).includes('MainWP'));
+      checks.push('native isolated MainWP Dashboard with no connected sites or provider writes');
+    }
     await context.close();
     for (const width of [1440, 768, 390]) {
       const publicContext = await browser.newContext({ viewport: { width, height: 1000 }, reducedMotion: 'reduce' });
