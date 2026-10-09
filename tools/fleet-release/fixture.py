@@ -72,7 +72,7 @@ class WordPressFixture:
                 command += ['--skip-plugins=post-smtp']
             stdin = None
         result = subprocess.run(command, input=stdin, capture_output=True, text=True,
-                                timeout=180, check=False)
+                                cwd=self.public, timeout=180, check=False)
         with (self.root / 'native.log').open('a') as output:
             output.write(result.stdout + '\n' + result.stderr + '\n')
         if result.returncode:
