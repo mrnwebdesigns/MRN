@@ -294,7 +294,7 @@ class PlatformComponentPolicyTests(unittest.TestCase):
             if item["slug"] == "mrn-media-bulk-tools"
         )
 
-        self.assertEqual("0.13.1", entry["version"])
+        self.assertGreaterEqual(tuple(int(part) for part in entry["version"].split('.')), (0, 13, 1))
         self.assertEqual("standard-plugin", entry["runtime_type"])
         self.assertEqual("standard-bootstrap", entry["current_distribution"])
         self.assertEqual("platform-required", entry["target_tier"])

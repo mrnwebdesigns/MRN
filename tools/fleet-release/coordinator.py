@@ -20,7 +20,7 @@ from build import (build_all, default_packages, generate_lock, git_files, main_f
                    prepare_metadata, snapshot, package_files)
 from common import (COMMIT, SHA256, ReleaseError, canonical, clean_main, digest,
                     file_hash, fleet, git, lock_tool, promotion, read,
-                    repository_name, roster, run, write)
+                    relative, repository_name, roster, run, write)
 from qualify import qualify
 from launcher import service_environment
 
@@ -363,9 +363,15 @@ def install_local_index(settings, repo, standalone, job, built, qualified, publi
                 raise ReleaseError('Published plugin artifact differs from its immutable registration')
             registered_path = Path(row['package']['path'])
             if not registered_path.is_absolute():
+                relative(registered_path.as_posix())
                 if registered_path.parts[:2] not in (('releases', 'stack-plugins'), ('releases', 'plugins')):
                     raise ReleaseError('Registered plugin cache must stay in the ignored release store')
                 cached = Path(settings['canonical_repo']) / registered_path
+                for parent in cached.parents:
+                    if parent == Path(settings['canonical_repo']):
+                        break
+                    if parent.is_symlink():
+                        raise ReleaseError('Immutable plugin cache parents may not be symlinks')
                 cached.parent.mkdir(parents=True, exist_ok=True)
                 if cached.exists() and (cached.is_symlink() or file_hash(cached) != row['package']['sha256']):
                     raise ReleaseError('Immutable local plugin cache differs; preserve and inspect it')

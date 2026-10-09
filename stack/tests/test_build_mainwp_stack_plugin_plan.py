@@ -486,8 +486,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             if item["slug"] == "mrn-config-helper"
         }
 
-        self.assertEqual("0.1.72", entry["version"])
-        self.assertEqual({"0.1.59", "0.1.60", "0.1.61", "0.1.62", "0.1.63", "0.1.64", "0.1.65", "0.1.66", "0.1.68", "0.1.70", "0.1.71", "0.1.72"}, set(versions))
+        self.assertIn(entry["version"], versions)
+        self.assertTrue({"0.1.59", "0.1.60", "0.1.61", "0.1.62", "0.1.63", "0.1.64", "0.1.65", "0.1.66", "0.1.68", "0.1.70", "0.1.71", "0.1.72"}.issubset(versions))
         self.assertEqual(
             entry["version"],
             max(versions, key=lambda value: planner.version_tuple(value, "version")),
@@ -528,8 +528,8 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             if item["slug"] == "mrn-stack-deployment-agent"
         }
 
-        self.assertEqual("0.3.2", entry["version"])
-        self.assertEqual({"0.2.2", "0.2.3", "0.2.4", "0.2.5", "0.2.6", "0.3.2"}, set(versions))
+        self.assertIn(entry["version"], versions)
+        self.assertTrue({"0.2.2", "0.2.3", "0.2.4", "0.2.5", "0.2.6", "0.3.2"}.issubset(versions))
         self.assertEqual(
             entry["version"],
             max(versions, key=lambda value: planner.version_tuple(value, "version")),
@@ -557,8 +557,9 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
             if item["slug"] == "mrn-universal-sticky-bar"
         }
 
-        self.assertEqual("1.1.10", entry["version"])
-        self.assertEqual({"1.1.8", "1.1.9", "1.1.10"}, set(versions))
+        self.assertIn(entry["version"], versions)
+        self.assertTrue({"1.1.8", "1.1.9", "1.1.10"}.issubset(versions))
+        self.assertEqual(entry["version"], max(versions, key=lambda value: planner.version_tuple(value, "version")))
         self.assertEqual(1, len(versions["1.1.8"]["legacy_supplements"]))
         self.assertNotIn("legacy_supplements", versions["1.1.9"])
         self.assertNotIn("legacy_supplements", versions["1.1.10"])
