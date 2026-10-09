@@ -246,6 +246,14 @@ class CoordinatorBoundaries(unittest.TestCase):
             (job/'fleet.zip').write_bytes(b'changed')
             with self.assertRaises(common.ReleaseError): coordinator.once({'state_root':str(state),'qualification':{},'publish':True})
 
+    def test_service_does_not_inherit_app_credentials_or_site_overrides(self):
+        import importlib.util
+        spec=importlib.util.spec_from_file_location('fleet_launcher',Path(__file__).resolve().parents[1]/'launcher.py')
+        launcher=importlib.util.module_from_spec(spec);spec.loader.exec_module(launcher)
+        env=launcher.service_environment({'HOME':'/owner','PATH':'/bin','CONNECTOR_KEY':'fixture',
+                 'MRN_QA_SITE_URL':'https://example.invalid','GH_TOKEN':'fixture'})
+        self.assertEqual(env,{'HOME':'/owner','PATH':'/bin'})
+
     def test_launchagent_runs_only_the_source_launcher(self):
         import importlib.util
         spec=importlib.util.spec_from_file_location('fleet_install',Path(__file__).resolve().parents[1]/'install.py')
