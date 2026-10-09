@@ -102,7 +102,7 @@ def snapshot(repo, standalone, policy):
                  for name in BOOTSTRAP_FILES if name not in generated}
     # Accepted deployment/release helpers are also distributed source inputs.
     # Read tracked files only; caches and another task's work never participate.
-    for name in git(repo, 'ls-files', 'stack/scripts', 'tools/fleet-release').splitlines():
+    for name in git(repo, 'ls-files', 'stack/scripts', 'stack/tests', 'tools/fleet-release').splitlines():
         contracts[name] = file_hash(repo / name)
     vendor = read(repo / 'stack/manifests/bootstrap-packages.lock.json')
     packages = [{key: item.get(key) for key in ('slug', 'version', 'sha256', 'package', 'source')}

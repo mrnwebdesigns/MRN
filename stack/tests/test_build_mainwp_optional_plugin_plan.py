@@ -327,7 +327,7 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
         )
         manifest = (stack / "manifests/plugins.txt").read_text(encoding="utf-8")
 
-        self.assertEqual("1.1.1", entry["version"])
+        self.assertGreaterEqual(planner.version_tuple(entry["version"], "version"), (1, 1, 1))
         self.assertEqual("maintenance-only", entry["target_tier"])
         self.assertEqual("catalog-only", entry["current_distribution"])
         self.assertEqual(entry["version"], release["version"])
@@ -347,9 +347,9 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             for item in catalog["components"]
             if item["slug"] == "mrn-mainwp-operations-api"
         )
-        self.assertEqual("0.10.0", controller["version"])
+        self.assertGreaterEqual(planner.version_tuple(controller["version"], "version"), (0, 10, 0))
         self.assertEqual("dashboard-only", controller["target_tier"])
-        self.assertIn("twenty-two mrn-mainwp WordPress Abilities", controller["data"]["routes"])
+        self.assertIn("mrn-mainwp WordPress Abilities", " ".join(controller["data"]["routes"]))
         self.assertNotIn("Defender (legacy compatibility only)", entry["dependencies"]["soft"])
 
     def test_consent_integrations_are_registered_but_stay_out_of_bootstrap(self):
@@ -419,8 +419,15 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
             with self.subTest(slug=slug):
                 entry = catalog_by_slug[slug]
                 release = release_by_slug[slug]
-                self.assertEqual(source_version, entry["version"])
-                self.assertEqual(package_version, release["version"])
+                if slug in {"background-video-popout-disabler", "mrn-announcements",
+                            "mrn-fontawesome-profile-manager", "mrn-reusable-block-library"}:
+                    self.assertGreaterEqual(planner.version_tuple(entry["version"], "version"),
+                                            planner.version_tuple(source_version, "baseline"))
+                    self.assertEqual(entry["version"], release["version"])
+                else:
+                    # Retired inputs and the explicit CAPTCHA hold stay pinned.
+                    self.assertEqual(source_version, entry["version"])
+                    self.assertEqual(package_version, release["version"])
                 self.assertEqual(distribution, entry["current_distribution"])
                 self.assertEqual(distribution, release["current_distribution"])
                 self.assertNotEqual("platform-required", entry["target_tier"])
@@ -430,7 +437,18 @@ class OptionalReleaseCatalogTests(unittest.TestCase):
                 self.assertRegex(release["source"]["git_commit"], r"^[a-f0-9]{40}$")
                 self.assertRegex(release["package"]["sha256"], r"^[a-f0-9]{64}$")
 
-        reusable_release = release_by_slug["mrn-reusable-block-library"]
+        # Preserve the original immutable record in Git history while allowing
+        # the current qualified optional target to advance automatically.
+        registry_path = "stack/manifests/optional-plugin-releases.json"
+        repository = stack.parent
+        reusable_release = None
+        for revision in run("git", "log", "--format=%H", "--", registry_path, cwd=repository).splitlines():
+            historical = json.loads(run("git", "show", revision + ":" + registry_path, cwd=repository))
+            reusable_release = next((row for row in historical["releases"]
+                if row["slug"] == "mrn-reusable-block-library" and row["version"] == "0.2.0"), None)
+            if reusable_release:
+                break
+        self.assertIsNotNone(reusable_release)
         self.assertEqual(
             "ef45cee815dbcc88b9d87050812f0951e1e51281",
             reusable_release["source"]["git_commit"],
