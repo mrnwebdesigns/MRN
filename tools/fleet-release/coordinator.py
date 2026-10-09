@@ -22,6 +22,7 @@ from common import (COMMIT, SHA256, ReleaseError, canonical, clean_main, digest,
                     file_hash, fleet, git, lock_tool, promotion, read,
                     repository_name, roster, run, write)
 from qualify import qualify
+from launcher import service_environment
 
 REPOSITORY = 'mrnwebdesigns/MRN'
 HELPER = '!gh auth git-credential'
@@ -97,7 +98,7 @@ def commit(repo, message, epoch, settings, evidence):
            'GIT_COMMITTER_DATE': str(epoch) + ' +0000'}
     git(repo, 'add', '--', 'stack/manifests/component-catalog.json',
         'stack/manifests/bootstrap-packages.lock.json', 'stack/manifests/stack-plugin-releases.json',
-        'stack/manifests/release-locks', 'stack/STACK_VERSION.md', 'stack/CHANGELOG.md')
+        'stack/manifests/release-locks', 'stack/BOOTSTRAP_RELEASE.md', 'stack/STACK_VERSION.md', 'stack/CHANGELOG.md')
     if git(repo, 'diff', '--cached', '--name-only'):
         staged_gate(repo, settings, evidence)
         # Full source/runtime qualification and normal PR checks still precede
@@ -590,6 +591,9 @@ def failure(settings, error):
 
 
 def main():
+    environment = service_environment(os.environ)
+    os.environ.clear()
+    os.environ.update(environment)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', type=Path, required=True)
     args = parser.parse_args()

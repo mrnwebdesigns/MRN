@@ -452,7 +452,20 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
                 "8cb585b8754f62a49c05c4d28a192c5c06752cc568fc7435b1ead828c1957ab2",
         }
 
-        self.assertEqual(set(expected), {path.name for path in archive.glob("*.json")})
+        self.assertLessEqual(set(expected), {path.name for path in archive.glob("*.json")})
+        # Additional automatically retained locks are valid. Their first Git
+        # addition establishes immutable bytes, without hand-editing this list
+        # for every successor release.
+        for path in archive.glob("*.json"):
+            lock = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(path.stem, lock["release_id"])
+            relative = path.relative_to(STACK_DIR.parent).as_posix()
+            additions = run("git", "log", "--format=%H", "--diff-filter=A", "--", relative,
+                            cwd=STACK_DIR.parent).splitlines()
+            self.assertTrue(additions, "Historical lock must have committed provenance")
+            original = subprocess.run(["git", "show", additions[-1] + ":" + relative],
+                                      cwd=STACK_DIR.parent, capture_output=True, check=True).stdout
+            self.assertEqual(hashlib.sha256(original).hexdigest(), checksum(path))
         for filename, expected_sha in expected.items():
             path = archive / filename
             lock = json.loads(path.read_text(encoding="utf-8"))

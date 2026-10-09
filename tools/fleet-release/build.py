@@ -229,6 +229,23 @@ def prepare_metadata(repo, standalone, policy, inputs, job, selected, registry_i
     packages = default_packages(repo, standalone, policy, inputs, job / 'packages', registry_inputs)
     packages['release_id'] = release_id
     write(repo / 'stack/manifests/bootstrap-packages.lock.json', packages)
+    bootstrap_doc = repo / 'stack/BOOTSTRAP_RELEASE.md'
+    bootstrap_text = bootstrap_doc.read_text()
+    bootstrap_text = re.sub(r'^Platform candidate: .*',
+        'Platform candidate: `' + release_id + '`; plugin input bundle: `' + release_id
+        + '`. Scope: qualified source installation inputs; site deployment remains separate.',
+        bootstrap_text, flags=re.M)
+    for item in packages['plugins']:
+        pattern = r'^(\|.*`' + re.escape(item['slug']) + r'`.*?\| )[^|]+(\|)'
+        bootstrap_text = re.sub(pattern, lambda match, version=item['version']:
+                                match[1] + version + ' ' + match[2], bootstrap_text, flags=re.M)
+    theme_versions = {item['slug']: lock_tool.read_header_version(
+        repo / 'stack/themes' / item['slug'] / 'style.css') for item in old_lock['themes']}
+    bootstrap_text = re.sub(r'^- Activate the MRN Base Stack Child .*',
+        '- Activate the MRN Base Stack Child ' + theme_versions['mrn-base-stack-child']
+        + ' over parent ' + theme_versions['mrn-base-stack'] + '. Child content remains site-owned.',
+        bootstrap_text, flags=re.M)
+    bootstrap_doc.write_text(bootstrap_text)
     version_path = repo / 'stack/STACK_VERSION.md'
     version_text = version_path.read_text()
     version_text = re.sub(r'^- Stack release: `[^`]+`',
