@@ -266,6 +266,22 @@ class CoordinatorBoundaries(unittest.TestCase):
             (job/'fleet.zip').write_bytes(b'changed')
             with self.assertRaises(common.ReleaseError): coordinator.once({'state_root':str(state),'qualification':{},'publish':True})
 
+    def test_known_mirror_links_are_local_state_without_hiding_source_changes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            repo=Path(temporary)/'repo';repo.mkdir()
+            subprocess=__import__('subprocess')
+            subprocess.run(['git','init','-q',str(repo)],check=True)
+            standalone=Path(temporary)/'plugins';(standalone/'example').mkdir(parents=True)
+            rows=[{'repository':'example','slug':'example','relative_source':'.'}]
+            with patch.object(coordinator,'roster',return_value=rows):
+                coordinator.link_mirrors(repo,standalone)
+            self.assertEqual(common.git(repo,'status','--porcelain'),'')
+            (repo/'unrelated.txt').write_text('preserve')
+            self.assertIn('unrelated.txt',common.git(repo,'status','--porcelain'))
+            with patch.object(coordinator,'roster',return_value=rows):
+                coordinator.link_mirrors(repo,standalone)
+            self.assertEqual((repo/'unrelated.txt').read_text(),'preserve')
+
     def test_service_does_not_inherit_app_credentials_or_site_overrides(self):
         import importlib.util
         spec=importlib.util.spec_from_file_location('fleet_launcher',Path(__file__).resolve().parents[1]/'launcher.py')

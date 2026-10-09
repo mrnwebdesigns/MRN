@@ -385,7 +385,7 @@ def verify_seal(value):
         raise ReleaseError('Completed qualification binding differs')
 
 
-def dependencies(repo, standalone, settings):
+def link_mirrors(repo, standalone):
     # These links belong only to the clean controller mirrors. They are ignored
     # by MRN; never point a QA run at the owner's mutable plugin checkout.
     for row in roster(repo):
@@ -393,11 +393,23 @@ def dependencies(repo, standalone, settings):
             link = Path(repo) / 'plugins' / row['slug']
             link.parent.mkdir(exist_ok=True)
             target = standalone / row['repository'] / row['relative_source']
-            if link.is_symlink() and link.resolve() == target.resolve():
-                continue  # Preserve an already portable tracked source link.
-            if link.exists() or link.is_symlink():
+            existing = link.is_symlink() and link.resolve() == target.resolve()
+            if (link.exists() or link.is_symlink()) and not existing:
                 raise ReleaseError('Existing plugin source link is not the dedicated mirror: ' + row['slug'])
-            link.symlink_to(target, target_is_directory=True)
+            # Exact tooling links are local clone state. Exclude only the new
+            # untracked link; never suppress a tracked change or unknown file.
+            exclude = Path(git(repo, 'rev-parse', '--git-path', 'info/exclude'))
+            if not exclude.is_absolute():
+                exclude = Path(repo) / exclude
+            exclude.parent.mkdir(parents=True, exist_ok=True)
+            with exclude.open('a') as stream:
+                stream.write('\n/plugins/' + row['slug'] + '\n')
+            if not existing:
+                link.symlink_to(target, target_is_directory=True)
+
+
+def dependencies(repo, standalone, settings):
+    link_mirrors(repo, standalone)
     if (Path(repo) / 'composer.lock').exists():
         run([settings['qualification']['composer'], 'install', '--no-interaction', '--prefer-dist',
              '--no-progress'], cwd=repo, timeout=900)

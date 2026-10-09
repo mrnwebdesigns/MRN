@@ -132,6 +132,8 @@ def roster(repo):
         if item.get('runtime_type') not in ('standard-plugin', 'mu-component',
                                            'mu-loader', 'shared-runtime'):
             continue
+        if not SLUG.fullmatch(str(item.get('slug', ''))):
+            raise ReleaseError('Invalid catalog component slug')
         row = dict(item)
         row['repository'] = repository_name(source['repository'])
         # Catalog absolute workspace paths are documentary ownership references.
