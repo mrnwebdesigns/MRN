@@ -196,6 +196,17 @@ class QualificationContracts(unittest.TestCase):
             self.assertEqual(result, lock)
             self.assertEqual((root / 'out/example.zip').read_bytes(), source.read_bytes())
 
+    def test_duplicate_plugin_archive_members_are_rejected(self):
+        import warnings
+        with tempfile.TemporaryDirectory() as temporary:
+            path=Path(temporary)/'duplicate.zip'
+            with warnings.catch_warnings(record=True) as observed:
+                with zipfile.ZipFile(path,'w') as archive:
+                    archive.writestr('example/plugin.php',b'first')
+                    archive.writestr('example/plugin.php',b'second')
+                self.assertTrue(observed)
+            with self.assertRaises(common.ReleaseError): build.package_files(path,'example')
+
     def test_changed_same_version_package_is_rejected(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary); inputs = root / 'inputs'; inputs.mkdir()
