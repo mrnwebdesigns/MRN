@@ -11,10 +11,10 @@ from common import ReleaseError, canonical, clean_main, digest, file_hash, read,
 from fixture import WordPressFixture
 
 
-def execute(command, evidence, *, env=None, stdin=None, timeout=3600):
+def execute(command, evidence, *, env=None, stdin=None, timeout=3600, cwd=None):
     with Path(evidence).open('w') as log:
         result = subprocess.run([str(v) for v in command], input=stdin, text=True,
-                                env=env, stdout=log, stderr=subprocess.STDOUT,
+                                env=env, cwd=cwd, stdout=log, stderr=subprocess.STDOUT,
                                 timeout=timeout, check=False)
     if result.returncode:
         raise ReleaseError('Qualification failed: ' + Path(evidence).name)
@@ -40,14 +40,14 @@ def qualify(repo, standalone, built, settings, evidence, selected):
     toolchain = {'qa_engine_commit': clean_main(settings['qa_engine_root']),
                  'wp_cli_sha256': file_hash(settings['wp_cli'])}
     execute([settings['node'], '--test', str(Path(repo) / 'tools/fleet-release/tests/published-source.test.mjs')],
-            evidence / 'published-source-contracts.log')
+            evidence / 'published-source-contracts.log', cwd=repo)
     execute(['python3', '-m', 'unittest', 'discover', '-s', str(Path(repo) / 'tools/fleet-release/tests')],
-            evidence / 'source-release-contracts.log')
+            evidence / 'source-release-contracts.log', cwd=repo)
     execute(['python3', '-m', 'unittest', 'discover', '-s', str(Path(repo) / 'stack/tests')],
             evidence / 'stack-contracts.log', env={**os.environ,
             'MRN_STANDALONE_PLUGINS_ROOT': str(standalone),
             'MRN_STACK_AGENT_ROOT': str(Path(standalone) / 'mrn-stack-deployment-agent'),
-            'MRN_MAINWP_OPERATIONS_ROOT': str(Path(standalone) / 'mrn-mainwp-operations-api')}, timeout=1800)
+            'MRN_MAINWP_OPERATIONS_ROOT': str(Path(standalone) / 'mrn-mainwp-operations-api')}, timeout=1800, cwd=repo)
     fixture = WordPressFixture(built['bootstrap'], evidence / 'native-fixture', settings)
     try:
         fixture.start()
@@ -55,7 +55,7 @@ def qualify(repo, standalone, built, settings, evidence, selected):
         browser = fixture.browser_input()
         browser['login_url'] = fixture.inventory['login_url']
         execute([settings['node'], Path(__file__).with_name('fixture-browser.cjs')],
-                evidence / 'native-browser.log', stdin=json.dumps(browser), timeout=900)
+                evidence / 'native-browser.log', stdin=json.dumps(browser), timeout=900, cwd=repo)
         env = {**os.environ, 'MRN_QA_SITE_PATH': str(fixture.public),
                'MRN_QA_SITE_URL': fixture.url, 'MRN_QA_STACK_ROOT': str(repo),
                'MRN_STANDALONE_PLUGINS_ROOT': str(standalone),
@@ -67,7 +67,7 @@ def qualify(repo, standalone, built, settings, evidence, selected):
         execute([settings['qa_engine'], 'run', '--project-root', repo, '--mode', 'release',
                  '--site-path', fixture.public, '--site-url', fixture.url,
                  '--smoke-strict', '1', '--output-file', report],
-                evidence / 'mrn-release-qa.log', env=env, timeout=7200)
+                evidence / 'mrn-release-qa.log', env=env, timeout=7200, cwd=repo)
         require_engine_pass(report, runtime=True)
         fixture.assert_clean_diagnostics()
         installed = fixture.inventory['runtime']

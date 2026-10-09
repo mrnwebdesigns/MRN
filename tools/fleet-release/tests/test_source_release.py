@@ -154,6 +154,13 @@ class SourcePublication(unittest.TestCase):
 
 
 class QualificationContracts(unittest.TestCase):
+    def test_qualification_runs_in_its_own_project_directory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary)
+            qualify.execute([sys.executable,'-c',"from pathlib import Path; Path('marker').write_text('owned')"],
+                            root/'check.log',cwd=root)
+            self.assertEqual((root/'marker').read_text(),'owned')
+
     def test_required_runtime_rows_cannot_be_skipped(self):
         with tempfile.TemporaryDirectory() as temporary:
             report = Path(temporary) / 'qa.md'
