@@ -49,7 +49,9 @@ installed verification remain that command's separately authorized gates.
 CAPTCHA's default stays at 0.1.4 until genuine provider/controller/protection
 cutover evidence exists. Retired capabilities remain excluded. Optional
 components stay optional: their presence in a source inventory does not imply
-installation. Native qualification uses synthetic content, blocks HTTP/mail,
+installation. Native qualification uses synthetic content and a disposable MySQL
+database on a private Unix socket with TCP disabled. It starts no global database
+service, retains diagnostic logs, removes its private database on exit, blocks HTTP/mail,
 and makes no claim about provider delivery, CAPTCHA assessment, client-site
 adoption or a new deployment adapter's genuine provider recovery qualification.
 Required diagnostics, native editor, API, whole-page AA, timing and CWV failures
