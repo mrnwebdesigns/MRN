@@ -51,6 +51,7 @@ def qualify(repo, standalone, built, settings, evidence, selected):
     fixture = WordPressFixture(built['bootstrap'], evidence / 'native-fixture', settings)
     try:
         fixture.start()
+        fixture.assert_clean_diagnostics()
         browser = fixture.browser_input()
         browser['login_url'] = fixture.inventory['login_url']
         execute([settings['node'], Path(__file__).with_name('fixture-browser.cjs')],

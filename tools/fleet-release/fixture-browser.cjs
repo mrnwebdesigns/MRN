@@ -15,6 +15,7 @@ const { createRequire } = require('node:module');
   const browser = await chromium.launch({ headless: true });
   const checks = [];
   const scans = [];
+  const requests = [];
   let activePage;
   try {
     const context = await browser.newContext({ reducedMotion: 'reduce' });
@@ -25,6 +26,12 @@ const { createRequire } = require('node:module');
     });
     const page = await context.newPage();
     activePage = page;
+    page.on('request', request => {
+      if (request.method() === 'POST') requests.push({method: 'POST', path: new URL(request.url()).pathname});
+    });
+    page.on('response', response => {
+      if (response.request().method() === 'POST') requests.push({status: response.status(), path: new URL(response.url()).pathname});
+    });
     page.setDefaultTimeout(30000);
     page.setDefaultNavigationTimeout(120000);
     await page.goto(input.login_url || `${input.url}/wp-login.php`, { waitUntil: 'domcontentloaded' });
@@ -100,7 +107,7 @@ const { createRequire } = require('node:module');
       location = activePage.url();
     }
     fs.writeFileSync(input.output, JSON.stringify({status: 'fail', error: error.message,
-      url: location, visible, checks, scans}, null, 2) + '\n');
+      url: location, visible, requests, checks, scans}, null, 2) + '\n');
     throw error;
   } finally {
     await browser.close();
