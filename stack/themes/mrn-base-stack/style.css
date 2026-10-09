@@ -4,7 +4,7 @@ Theme URI: https://mrndev.io/
 Author: MRN Web Designs
 Author URI: https://mrndev.io/
 Description: Stack starter theme for MRN sites. Includes builder-aware templates, reusable-block support, and a clean development shell for site builds.
-Version: 1.5.9
+Version: 1.5.10
 Tested up to: 6.8
 Requires PHP: 8.0
 License: GNU General Public License v2 or later
@@ -3512,6 +3512,13 @@ button.mrn-ui__link--button {
 .wpforms-form input[type="submit"]:focus-visible,
 .wpforms-form .wpforms-submit:focus-visible {
 	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
+/* Keep keyboard focus visible after WPForms' modern field/button resets. */
+.mrn-wpforms-row__form div.wpforms-container.wpforms-container-full .wpforms-form :is(input, select, textarea, button):focus-visible {
+	box-shadow: 0 0 0 4px var(--mrn-shell-bg, #fff);
+	outline: 2px solid var(--mrn-shell-accent, #1c222b);
 	outline-offset: 2px;
 }
 

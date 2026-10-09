@@ -121,8 +121,15 @@ const { createRequire } = require('node:module');
           await expect(publicPage.locator(`#wpforms-form-${input.ids.form}`)).toBeVisible();
           await expect(publicPage.getByLabel('Fixture message', { exact: false })).toBeVisible();
           await publicPage.getByLabel('Fixture message', { exact: false }).focus();
+          const visibleFocus = () => publicPage.evaluate(() => {
+            const style = getComputedStyle(document.activeElement);
+            return parseFloat(style.outlineWidth) >= 2 && style.outlineStyle === 'solid'
+              && !['transparent', 'rgba(0, 0, 0, 0)'].includes(style.outlineColor);
+          });
+          assert(await visibleFocus(), 'native WPForms field must show keyboard focus');
           await publicPage.keyboard.press('Tab');
           assert(await publicPage.evaluate(() => document.activeElement !== document.body));
+          assert(await visibleFocus(), 'native WPForms submit must show keyboard focus');
         }
       }
       assert.deepEqual(failures, [], 'no browser errors or missing local assets');
