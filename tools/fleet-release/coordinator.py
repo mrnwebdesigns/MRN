@@ -22,6 +22,7 @@ from common import (COMMIT, SHA256, ReleaseError, canonical, clean_main, digest,
                     file_hash, fleet, git, lock_tool, promotion, read,
                     repository_name, roster, run, write)
 from qualify import qualify
+from launcher import service_environment
 
 REPOSITORY = 'mrnwebdesigns/MRN'
 HELPER = '!gh auth git-credential'
@@ -590,6 +591,9 @@ def failure(settings, error):
 
 
 def main():
+    environment = service_environment(os.environ)
+    os.environ.clear()
+    os.environ.update(environment)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', type=Path, required=True)
     args = parser.parse_args()
