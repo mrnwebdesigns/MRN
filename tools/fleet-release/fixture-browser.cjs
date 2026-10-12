@@ -61,6 +61,11 @@ const { createRequire } = require('node:module');
       await page.goto(editorUrl, { waitUntil: 'domcontentloaded' });
       const onboarding = new URL(page.url()).searchParams.get('page');
       if (onboarding === 'wpforms-getting-started') continue;
+      if (onboarding === 'seopress-setup') {
+        await page.getByRole('link', {name: 'Skip for now', exact: true}).click();
+        await page.waitForLoadState('domcontentloaded');
+        continue;
+      }
       if (input.dashboard && onboarding === 'mainwp-setup') {
         // Use MainWP's supported empty-Dashboard workflow. Qualification must
         // never enroll a real site just to reach its native admin screens.
