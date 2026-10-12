@@ -128,8 +128,8 @@
       "name": "MRN Announcements",
       "package": "mrn-announcements.zip",
       "profile": "all",
-      "sha256": "943404df9c4649d04e71e654d3ffe4e4b06c669b5596a9ed93937a232152a185",
-      "size_bytes": 33109,
+      "sha256": "4e184f5cc8724631cfa112cc6a98b0144e5c2c7faaca2a55192b93394d02f349",
+      "size_bytes": 34133,
       "slug": "mrn-announcements",
       "source": {
         "commit": "284b1ae8a171daad55781c161cfb263fff289433",
@@ -144,8 +144,8 @@
       "name": "MRN Comment Management",
       "package": "mrn-comment-management.zip",
       "profile": "all",
-      "sha256": "ef576dc663e019716c6145f4e73893063f010aa305ec6f9c8c028d5daa316481",
-      "size_bytes": 27470,
+      "sha256": "a87742769c154f8054128366a92e26dd3e72faca707231afedd2673a63789904",
+      "size_bytes": 28627,
       "slug": "mrn-comment-management",
       "source": {
         "commit": "582188ccc22cbae6b05807c8ce990efad66cba3e",
@@ -160,8 +160,8 @@
       "name": "MRN Font Awesome Profile Manager",
       "package": "mrn-fontawesome-profile-manager.zip",
       "profile": "all",
-      "sha256": "93752bf6a2b34d8413c56187c8cf17b2c2cb09a30a3d917ea9829185841f079a",
-      "size_bytes": 26858,
+      "sha256": "d99439fec3c77fcd87f54215f134231e1367a1cf8ab85adee4edd09eb9b59d6a",
+      "size_bytes": 27401,
       "slug": "mrn-fontawesome-profile-manager",
       "source": {
         "commit": "ab46ed996cd6d7c02d7bc5ba93badda2587dbeb5",
@@ -192,15 +192,15 @@
       "name": "MRN Config Helper",
       "package": "mrn-config-helper.zip",
       "profile": "all",
-      "sha256": "2cb9e3f8b8a75c87cadf007983636224dbd67e8e75cdce89b31e862f8c4710bc",
-      "size_bytes": 120602,
+      "sha256": "cdee274d8465a0f22d242ad4cfaff8c333d1f2ab8a26080b5ccbb039a26f77c1",
+      "size_bytes": 121641,
       "slug": "mrn-config-helper",
       "source": {
-        "commit": "eb9fbb151be714f7d782ff072da5dafe03190352",
+        "commit": "eb167abaa68efd75c28593598d6a5d0b8dc1152c",
         "repository": "mrn-config-helper",
         "type": "git"
       },
-      "version": "0.1.73"
+      "version": "0.1.74"
     },
     {
       "main_file": "mrn-media-bulk-tools/mrn-media-bulk-tools.php",
@@ -513,7 +513,7 @@
       "version": "0.1.4"
     }
   ],
-  "release_id": "2026.10.12-fleet-auto-9c26b35530de",
+  "release_id": "2026.10.12-fleet-auto-ebd48881d0b6",
   "schema_version": 1,
   "scope": "new-site-bootstrap-inputs",
   "stack_plugin_count": 33

@@ -232,7 +232,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "1.0.33"
+      "version": "1.0.34"
     },
     {
       "classification": "platform",
@@ -333,7 +333,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.2.1"
+      "version": "0.2.2"
     },
     {
       "classification": "platform",
@@ -467,7 +467,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "1.0.33"
+      "version": "1.0.34"
     },
     {
       "classification": "platform-loader",
@@ -591,7 +591,7 @@
         "state": "confirmed"
       },
       "target_tier": "platform-required",
-      "version": "0.2.1"
+      "version": "0.2.2"
     },
     {
       "classification": "platform-loader",
@@ -1189,7 +1189,7 @@
         "state": "confirmed-symlinked"
       },
       "target_tier": "platform-required",
-      "version": "0.1.73"
+      "version": "0.1.74"
     },
     {
       "classification": "integration-adapter",
