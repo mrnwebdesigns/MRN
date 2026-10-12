@@ -10,6 +10,7 @@
 
 function add_action( ...$args ) {}
 function add_filter( ...$args ) {}
+function wp_doing_ajax() { return false; }
 function wp_script_is( ...$args ) { return $GLOBALS['mrn_lazy_enqueued']; }
 
 require dirname( __DIR__, 2 ) . '/inc/builder/lazy-layouts.php';
@@ -29,6 +30,11 @@ $root = array(
 	'value' => array( array( 'acf_fc_layout' => 'basic', 'field_child' => 'saved value' ) ),
 	'wrapper' => array( 'class' => 'existing-style' ),
 );
+$unused = array( 'name' => 'unused', 'label' => 'Unused', 'min' => 0, 'max' => 5, 'sub_fields' => array( array( 'key' => 'field_unused', 'required' => 1 ) ) );
+$root['layouts'][] = $unused;
+$catalog = mrn_base_stack_prepare_builder_picker_catalog( $root );
+mrn_lazy_expect( $catalog['layouts'][0] === $root['layouts'][0] && $catalog['value'] === $root['value'], 'Saved row definitions and values must remain complete.' );
+mrn_lazy_expect( array() === $catalog['layouts'][1]['sub_fields'] && 'Unused' === $catalog['layouts'][1]['label'] && 5 === $catalog['layouts'][1]['max'], 'Unused forms retain picker metadata and limits without their control trees.' );
 $prepared = mrn_base_stack_prepare_lazy_builder_layout( $root );
 mrn_lazy_expect( $prepared['layouts'] === $root['layouts'] && $prepared['value'] === $root['value'], 'Catalog definitions and saved values must remain unchanged.' );
 mrn_lazy_expect( false !== strpos( $prepared['wrapper']['class'], 'existing-style' ), 'Stable wrapper classes must survive.' );

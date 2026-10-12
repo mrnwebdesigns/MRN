@@ -9,6 +9,16 @@ therefore rejected by WordPress even for administrators. The lock defaults to
 enabled if Config Helper is unavailable. Other theme-management capabilities
 and the Plugin File Editor are not changed.
 
+Classic Editor screens start without a loading overlay. The legacy loading
+feedback filters remain available as explicit opt-ins. The command palette keeps
+its native toolbar button and keyboard shortcut, but downloads its exclusive
+libraries when first opened. Libraries used by other enqueued features still
+load normally, with WordPress settings, translations and CSP attributes intact.
+The Gutenberg pre-publish checklist is omitted on Classic Editor screens; Post
+Duplicator uses its existing Classic Editor media picker there. Set the
+`mrn_editor_lockdown_defer_command_palette` filter to false to restore the
+unchanged optional-asset loading path.
+
 ## QA Engine
 
 Run plugin-scoped QA with full static analysis:

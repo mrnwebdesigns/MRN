@@ -6,7 +6,7 @@
  */
 
 /**
- * Get builder flexible-content fields that use per-entry allowlists.
+ * Get builder flexible-content areas with site/section eligibility rules.
  *
  * @return array<string, array<string, string>>
  */
@@ -282,7 +282,7 @@ function mrn_base_stack_is_builder_layout_allowlist_context( $post_id = 0 ) {
  * Clear cached top-level builder field definitions for editor screens.
  *
  * This prevents pre-screen ACF cache warm-ups from locking in stale layout
- * sets before per-entry allowlist filtering runs.
+ * sets before site/section eligibility filtering runs.
  *
  * @param WP_Screen $screen Current screen.
  * @return void
@@ -372,21 +372,25 @@ function mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name ) {
 		return $cache[ $field_name ];
 	}
 
-	if ( 'page_content_rows' === $field_name ) {
-		$cache[ $field_name ] = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field(
-			mrn_base_stack_get_builder_layout_allowlist_field_definition( $field_name )
-		);
-
-		return $cache[ $field_name ];
-	}
-
 	$content_catalog = array();
-	if ( function_exists( 'mrn_base_stack_get_content_builder_source_layouts' ) ) {
+	// ACF's shallow local layout records already contain names and labels.
+	// Do not hydrate thousands of child controls just to build a picker catalog.
+	if ( function_exists( 'acf_get_local_field' ) ) {
+		$content_field   = acf_get_local_field( 'field_mrn_page_content_rows' );
+		$content_catalog = is_array( $content_field )
+			? mrn_base_stack_get_builder_layout_allowlist_catalog_from_field( $content_field )
+			: array();
+	}
+	if ( empty( $content_catalog ) && function_exists( 'mrn_base_stack_get_content_builder_source_layouts' ) ) {
 		$content_catalog = mrn_base_stack_get_builder_layout_allowlist_catalog_from_field(
 			array(
 				'layouts' => mrn_base_stack_get_content_builder_source_layouts(),
 			)
 		);
+	}
+	if ( 'page_content_rows' === $field_name && ! empty( $content_catalog ) ) {
+		$cache[ $field_name ] = $content_catalog;
+		return $cache[ $field_name ];
 	}
 
 	$source_names = array();
@@ -1013,33 +1017,9 @@ function mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name,
  * @return array<int, string>
  */
 function mrn_base_stack_get_builder_layout_allowlist_configured_names( $post_id, $field_name, array $catalog ) {
-	$post_id            = absint( $post_id );
-	$field_name         = sanitize_key( (string) $field_name );
-	$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog, $field_name );
-	$configured_names   = mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, $catalog );
-
-	if (
-		$post_id > 0
-		&& mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id )
-		&& metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() )
-		&& mrn_base_stack_builder_layout_allowlist_saved_field_exists( $post_id, $field_name )
-	) {
-		$saved_settings   = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
-		$configured_names = isset( $saved_settings[ $field_name ] ) && is_array( $saved_settings[ $field_name ] )
-			? $saved_settings[ $field_name ]
-			: array();
-	}
-
-	return array_values(
-		array_unique(
-			array_intersect(
-				array_filter(
-					array_map( 'sanitize_key', $configured_names )
-				),
-				$configurable_names
-			)
-		)
-	);
+	// Per-entry selections are retired; Add Row exposes every eligible layout.
+	// Retain stored metadata for rollback without reading or rewriting it.
+	return mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog, $field_name );
 }
 
 /**
@@ -1124,7 +1104,7 @@ function mrn_base_stack_get_builder_layout_allowlist_effective_names( $post_id, 
 }
 
 /**
- * Apply per-entry allowlist filtering to builder flexible-content field layouts.
+ * Apply site/section eligibility once, retaining existing excluded rows.
  *
  * @param array<string, mixed> $field ACF field definition.
  * @return array<string, mixed>
@@ -1155,15 +1135,13 @@ function mrn_base_stack_filter_builder_layout_allowlist_field_layouts( $field ) 
 		return $field;
 	}
 
-	$existing_only_names  = mrn_base_stack_get_builder_layout_allowlist_existing_only_names( $post_id, $field_name, $catalog );
-	$existing_only_lookup = ! empty( $existing_only_names ) ? array_fill_keys( $existing_only_names, true ) : array();
-
-	$effective_names = mrn_base_stack_get_builder_layout_allowlist_effective_names( $post_id, $field_name, $catalog );
-	if ( empty( $effective_names ) ) {
-		return $field;
-	}
-
-	$effective_lookup = array_fill_keys( $effective_names, true );
+	// Resolve policy/catalog consumers once instead of repeating them for each
+	// configured/effective/existing-only calculation. Entry metadata is retired.
+	$eligible_names       = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog, $field_name );
+	$used_names           = $post_id > 0 ? mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, $field_name ) : array();
+	$existing_only_names  = array_diff( $used_names, $eligible_names );
+	$existing_only_lookup = array_fill_keys( $existing_only_names, true );
+	$effective_lookup     = array_fill_keys( array_merge( $eligible_names, $used_names ), true );
 	$filtered_layouts = array();
 
 	foreach ( $field['layouts'] as $layout_key => $layout ) {
@@ -1184,15 +1162,14 @@ function mrn_base_stack_filter_builder_layout_allowlist_field_layouts( $field ) 
 		$filtered_layouts[ $layout_key ] = $layout;
 	}
 
-	if ( ! empty( $filtered_layouts ) ) {
-		$field['layouts'] = $filtered_layouts;
-	}
+	// An explicit empty site policy must not fall back to offering all layouts.
+	$field['layouts'] = $filtered_layouts;
 
 	return $field;
 }
 
 /**
- * Apply per-entry allowlist filtering to a loaded ACF field-group field list.
+ * Apply site/section eligibility to a loaded ACF field-group field list.
  *
  * Local field groups can hand ACF a full flexible-content source field before
  * individual field filters hydrate the render-time clone store. This pass keeps
@@ -1262,601 +1239,3 @@ function mrn_base_stack_print_builder_layout_allowlist_existing_only_styles() {
 	<?php
 }
 add_action( 'acf/input/admin_head', 'mrn_base_stack_print_builder_layout_allowlist_existing_only_styles' );
-
-/**
- * Register a classic-editor metabox for per-entry builder layout allowlists.
- *
- * @return void
- */
-function mrn_base_stack_register_builder_layout_allowlist_meta_box() {
-	if ( ! is_admin() || ! function_exists( 'add_meta_box' ) ) {
-		return;
-	}
-
-	foreach ( mrn_base_stack_get_singular_shell_post_types() as $post_type ) {
-		add_meta_box(
-			'mrn-builder-layout-allowlist',
-			'Available Builder Layout Types',
-			'mrn_base_stack_render_builder_layout_allowlist_meta_box',
-			$post_type,
-			'side',
-			'default'
-		);
-	}
-}
-add_action( 'add_meta_boxes', 'mrn_base_stack_register_builder_layout_allowlist_meta_box' );
-
-/**
- * Render the per-entry builder layout allowlist metabox.
- *
- * @param WP_Post $post Current post object.
- * @return void
- */
-function mrn_base_stack_render_builder_layout_allowlist_meta_box( $post ) {
-	if ( ! $post instanceof WP_Post ) {
-		return;
-	}
-
-	$post_id                = (int) $post->ID;
-	$post_type              = sanitize_key( (string) $post->post_type );
-	$targets                = mrn_base_stack_get_builder_layout_allowlist_targets();
-	$has_saved              = mrn_base_stack_builder_layout_allowlist_should_use_saved_settings( $post_id ) && metadata_exists( 'post', $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key() );
-	$saved                  = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
-	$sitewide_allowed_names = mrn_base_stack_get_sitewide_allowed_builder_layout_names();
-
-	wp_nonce_field( 'mrn_base_stack_builder_layout_allowlist_save', 'mrn_base_stack_builder_layout_allowlist_nonce' );
-	?>
-	<p>Choose which layout types are available in Add Row for this entry.</p>
-	<input type="hidden" class="mrn-builder-layout-allowlist-payload" value="" />
-	<?php
-
-	foreach ( $targets as $field_name => $target ) {
-		if ( ! mrn_base_stack_should_render_builder_layout_allowlist_target( $field_name, $post_type ) ) {
-			continue;
-		}
-
-		$catalog            = mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name );
-		$configurable_names = mrn_base_stack_get_builder_layout_allowlist_configurable_names( $catalog, $field_name );
-		$label              = isset( $target['label'] ) ? (string) $target['label'] : ucfirst( str_replace( array( '-', '_' ), ' ', $field_name ) );
-
-		if ( empty( $catalog ) ) {
-			continue;
-		}
-
-		$selected       = $has_saved && mrn_base_stack_builder_layout_allowlist_saved_field_exists( $post_id, $field_name )
-			? ( isset( $saved[ $field_name ] ) && is_array( $saved[ $field_name ] ) ? $saved[ $field_name ] : array() )
-			: mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, $catalog );
-		$selected       = array_fill_keys(
-			array_values(
-				array_unique(
-					array_intersect(
-						array_filter(
-							array_map( 'sanitize_key', $selected )
-						),
-						$configurable_names
-					)
-				)
-			),
-			true
-		);
-		$selected_count = count( $selected );
-		$total_count    = count( $configurable_names );
-
-		$used_names         = mrn_base_stack_get_builder_layout_allowlist_used_layout_names( $post_id, $field_name );
-		$used_nonselectable = array();
-
-		foreach ( $used_names as $used_name ) {
-			if ( is_array( $sitewide_allowed_names ) && ! in_array( $used_name, $sitewide_allowed_names, true ) ) {
-				continue;
-			}
-
-			if ( in_array( $used_name, $configurable_names, true ) ) {
-				continue;
-			}
-
-			$used_nonselectable[] = $used_name;
-		}
-		?>
-		<hr />
-		<p><strong><?php echo esc_html( $label ); ?></strong></p>
-		<?php if ( empty( $configurable_names ) ) : ?>
-			<p><em>No selectable layouts are available for this section.</em></p>
-		<?php else : ?>
-			<input
-				type="hidden"
-				name="mrn_builder_layout_allowlist_catalog[<?php echo esc_attr( $field_name ); ?>]"
-				value="<?php echo esc_attr( implode( ',', $configurable_names ) ); ?>"
-			/>
-			<p style="margin: 0 0 8px;">
-				<em><?php echo esc_html( sprintf( 'Selected %1$d of %2$d layouts. Scroll to view all.', $selected_count, $total_count ) ); ?></em>
-			</p>
-			<div style="max-height: 180px; overflow: auto; border: 1px solid #dcdcde; padding: 8px;">
-				<?php foreach ( $configurable_names as $layout_name ) : ?>
-					<?php
-					$layout_label = isset( $catalog[ $layout_name ]['label'] ) ? (string) $catalog[ $layout_name ]['label'] : $layout_name;
-					?>
-					<label style="display:block; margin: 0 0 6px;">
-						<input
-							type="checkbox"
-							name="mrn_builder_layout_allowlist[<?php echo esc_attr( $field_name ); ?>][]"
-							value="<?php echo esc_attr( $layout_name ); ?>"
-							<?php checked( isset( $selected[ $layout_name ] ) ); ?>
-						/>
-						<?php echo esc_html( $layout_label ); ?>
-					</label>
-				<?php endforeach; ?>
-			</div>
-		<?php endif; ?>
-
-		<?php if ( ! empty( $used_nonselectable ) ) : ?>
-			<p style="margin-top:8px;"><em>Already used and forced-available:</em> <?php echo esc_html( implode( ', ', $used_nonselectable ) ); ?></p>
-		<?php endif; ?>
-		<?php
-	}
-	?>
-	<script>
-		( function( $, window, document ) {
-			'use strict';
-
-			$( function() {
-				var payloadFieldName = 'mrn_builder_layout_allowlist_payload';
-				var $metabox = $( '#mrn-builder-layout-allowlist' );
-				var $postForm = $( '#post' );
-
-				function getMetaboxPayloadField() {
-					var $payloadField = $metabox.find( '.mrn-builder-layout-allowlist-payload' ).first();
-
-					if ( ! $payloadField.length ) {
-						$payloadField = $( '<input />', {
-							type: 'hidden',
-							'class': 'mrn-builder-layout-allowlist-payload',
-							value: ''
-						} );
-						$metabox.prepend( $payloadField );
-					}
-
-					return $payloadField;
-				}
-
-				function getTopLevelPayloadField() {
-					var $payloadField = $postForm.find( '#mrn-builder-allowlist-payload' ).first();
-
-					if ( ! $payloadField.length && $postForm.length ) {
-						$payloadField = $( '<input />', {
-							type: 'hidden',
-							name: payloadFieldName,
-							id: 'mrn-builder-allowlist-payload',
-							value: ''
-						} );
-						$postForm.prepend( $payloadField );
-					}
-
-					return $payloadField;
-				}
-
-				function collectAllowlistPayload() {
-					var payload = {
-						allowlist: {},
-						catalog: {}
-					};
-					var $scope = $metabox.length ? $metabox : $( document );
-
-					$scope.find( 'input[name^="mrn_builder_layout_allowlist_catalog["]' ).each( function() {
-						var fieldName = '';
-						var nameMatch = ( $( this ).attr( 'name' ) || '' ).match( /^mrn_builder_layout_allowlist_catalog\[([^\]]+)\]$/ );
-						if ( nameMatch && nameMatch[1] ) {
-							fieldName = nameMatch[1];
-						}
-
-						if ( ! fieldName ) {
-							return;
-						}
-
-						payload.catalog[ fieldName ] = $( this ).val() || '';
-						payload.allowlist[ fieldName ] = [];
-					} );
-
-					$scope.find( 'input[type="checkbox"][name^="mrn_builder_layout_allowlist["]:checked' ).each( function() {
-						var fieldName = '';
-						var nameMatch = ( $( this ).attr( 'name' ) || '' ).match( /^mrn_builder_layout_allowlist\[([^\]]+)\]\[\]$/ );
-						if ( nameMatch && nameMatch[1] ) {
-							fieldName = nameMatch[1];
-						}
-
-						if ( ! fieldName ) {
-							return;
-						}
-
-						if ( ! Object.prototype.hasOwnProperty.call( payload.allowlist, fieldName ) ) {
-							payload.allowlist[ fieldName ] = [];
-						}
-
-						payload.allowlist[ fieldName ].push( $( this ).val() || '' );
-					} );
-
-					return JSON.stringify( payload );
-				}
-
-				function syncPayloadField() {
-					if ( ! $metabox.length && ! $postForm.length ) {
-						return;
-					}
-
-					var payloadValue = collectAllowlistPayload();
-					getMetaboxPayloadField().val( payloadValue );
-					getTopLevelPayloadField().val( payloadValue );
-				}
-
-				// Keep payload current for save flows that gather metabox FormData directly.
-				$( document ).on( 'change', '#mrn-builder-layout-allowlist input[type="checkbox"][name^="mrn_builder_layout_allowlist["]', syncPayloadField );
-				$( document ).on( 'submit', '#post, .metabox-base-form, #metaboxes .metabox-location-normal, #metaboxes .metabox-location-side, #metaboxes .metabox-location-advanced', syncPayloadField );
-				$( document ).on( 'click', '#save-post, #publish, .editor-post-save-draft, .editor-post-publish-button, .editor-post-publish-panel__toggle, .editor-post-publish-button__button', syncPayloadField );
-
-				syncPayloadField();
-			} );
-		} )( jQuery, window, document );
-	</script>
-	<?php
-}
-
-/**
- * Capture one raw request field for allowlist parsing.
- *
- * @param array<string, mixed> $parsed Parsed payload accumulator.
- * @param string               $name Field name.
- * @param string               $value Field value.
- * @return array<string, mixed>
- */
-function mrn_base_stack_capture_builder_layout_allowlist_raw_request_field( array $parsed, $name, $value ) {
-	$name  = (string) $name;
-	$value = (string) $value;
-
-	if ( 'mrn_builder_layout_allowlist_payload' === $name ) {
-		$parsed['payload'] = $value;
-		return $parsed;
-	}
-
-	if ( preg_match( '/^mrn_builder_layout_allowlist_catalog\[([^\]]+)\]$/', $name, $catalog_match ) ) {
-		$field_name = sanitize_key( (string) $catalog_match[1] );
-		if ( '' !== $field_name ) {
-			$parsed['catalog'][ $field_name ] = $value;
-		}
-
-		return $parsed;
-	}
-
-	if ( preg_match( '/^mrn_builder_layout_allowlist\[([^\]]+)\]\[\]$/', $name, $allowlist_match ) ) {
-		$field_name = sanitize_key( (string) $allowlist_match[1] );
-		if ( '' === $field_name ) {
-			return $parsed;
-		}
-
-		if ( ! isset( $parsed['allowlist'][ $field_name ] ) || ! is_array( $parsed['allowlist'][ $field_name ] ) ) {
-			$parsed['allowlist'][ $field_name ] = array();
-		}
-
-		$parsed['allowlist'][ $field_name ][] = $value;
-	}
-
-	return $parsed;
-}
-
-/**
- * Parse builder allowlist fields from a raw request body.
- *
- * @param string $raw_body Raw request body.
- * @param string $content_type Request content type.
- * @return array<string, mixed>
- */
-function mrn_base_stack_parse_builder_layout_allowlist_raw_body( $raw_body, $content_type ) {
-	$parsed = array(
-		'allowlist' => array(),
-		'catalog'   => array(),
-		'payload'   => '',
-	);
-
-	$raw_body         = is_string( $raw_body ) ? $raw_body : '';
-	$content_type_raw = is_string( $content_type ) ? $content_type : '';
-	$content_type_lc  = strtolower( $content_type_raw );
-
-	if ( '' === $raw_body ) {
-		return $parsed;
-	}
-
-	if ( false !== strpos( $content_type_lc, 'multipart/form-data' ) ) {
-		$boundary = '';
-		if ( preg_match( '/boundary=(?:"([^"]+)"|([^;]+))/i', $content_type_raw, $boundary_match ) ) {
-			$boundary = isset( $boundary_match[1] ) && '' !== $boundary_match[1]
-				? (string) $boundary_match[1]
-				: ( isset( $boundary_match[2] ) ? (string) $boundary_match[2] : '' );
-		}
-
-		if ( '' === $boundary ) {
-			return $parsed;
-		}
-
-		$parts = explode( '--' . $boundary, $raw_body );
-		foreach ( $parts as $part ) {
-			$part = ltrim( (string) $part, "\r\n" );
-			if ( '' === $part || '--' === $part ) {
-				continue;
-			}
-
-			$segments = explode( "\r\n\r\n", $part, 2 );
-			if ( 2 !== count( $segments ) ) {
-				continue;
-			}
-
-			$headers = (string) $segments[0];
-			$body    = (string) $segments[1];
-			$body    = (string) preg_replace( "/\r\n$/", '', $body );
-			$body    = (string) preg_replace( "/\r\n--$/", '', $body );
-			$name    = '';
-
-			foreach ( explode( "\r\n", $headers ) as $header_line ) {
-				$header_line = trim( (string) $header_line );
-				if ( 0 === stripos( $header_line, 'content-disposition:' ) && preg_match( '/name="([^"]+)"/', $header_line, $name_match ) ) {
-					$name = isset( $name_match[1] ) ? (string) $name_match[1] : '';
-					break;
-				}
-			}
-
-			if ( '' === $name ) {
-				continue;
-			}
-
-			$parsed = mrn_base_stack_capture_builder_layout_allowlist_raw_request_field( $parsed, $name, $body );
-		}
-
-		return $parsed;
-	}
-
-	foreach ( explode( '&', $raw_body ) as $pair ) {
-		if ( '' === $pair ) {
-			continue;
-		}
-
-		$segments = explode( '=', $pair, 2 );
-		$name     = urldecode( str_replace( '+', ' ', (string) $segments[0] ) );
-		$value    = urldecode( str_replace( '+', ' ', isset( $segments[1] ) ? (string) $segments[1] : '' ) );
-
-		if ( '' === $name ) {
-			continue;
-		}
-
-		$parsed = mrn_base_stack_capture_builder_layout_allowlist_raw_request_field( $parsed, $name, $value );
-	}
-
-	return $parsed;
-}
-
-/**
- * Get builder allowlist inputs parsed from the raw request body.
- *
- * @return array<string, mixed>
- */
-function mrn_base_stack_get_builder_layout_allowlist_raw_request_payload() {
-	static $parsed = null;
-
-	if ( null !== $parsed ) {
-		return $parsed;
-	}
-
-	$content_type = isset( $_SERVER['CONTENT_TYPE'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Sanitized immediately.
-		? sanitize_text_field( wp_unslash( (string) $_SERVER['CONTENT_TYPE'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Read-only server context.
-		: '';
-	$raw_body     = file_get_contents( 'php://input' );
-
-	$parsed = mrn_base_stack_parse_builder_layout_allowlist_raw_body(
-		is_string( $raw_body ) ? $raw_body : '',
-		$content_type
-	);
-
-	return $parsed;
-}
-
-/**
- * Get a sanitized allowlist request array from POST.
- *
- * @param string $key POST field key.
- * @return array<string, mixed>
- */
-function mrn_base_stack_get_builder_layout_allowlist_post_array( $key ) {
-	if ( ! isset( $_POST[ $key ] ) || ! is_array( $_POST[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce/capability verified by caller.
-		return array();
-	}
-
-	$input = wp_unslash( $_POST[ $key ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce/capability verified by caller; values sanitized before use.
-	if ( ! is_array( $input ) ) {
-		return array();
-	}
-
-	return map_deep( $input, 'sanitize_text_field' );
-}
-
-/**
- * Get a sanitized allowlist request string from POST.
- *
- * @param string $key POST field key.
- * @return string
- */
-function mrn_base_stack_get_builder_layout_allowlist_post_string( $key ) {
-	if ( ! isset( $_POST[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce/capability verified by caller.
-		return '';
-	}
-
-	$input = wp_unslash( $_POST[ $key ] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce/capability verified by caller; value sanitized before use.
-	if ( is_array( $input ) ) {
-		$input = reset( $input );
-	}
-
-	return is_string( $input ) ? sanitize_textarea_field( $input ) : '';
-}
-
-/**
- * Save per-entry builder layout allowlist selections.
- *
- * @param int     $post_id Post ID.
- * @param WP_Post $post Post object.
- * @return void
- */
-function mrn_base_stack_save_builder_layout_allowlist_meta_box( $post_id, $post ) {
-	$post_id = absint( $post_id );
-
-	if ( $post_id < 1 || ! $post instanceof WP_Post ) {
-		return;
-	}
-
-	$has_allowlist_nonce = isset( $_POST['mrn_base_stack_builder_layout_allowlist_nonce'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
-		&& wp_verify_nonce(
-			sanitize_text_field( wp_unslash( $_POST['mrn_base_stack_builder_layout_allowlist_nonce'] ) ), // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
-			'mrn_base_stack_builder_layout_allowlist_save'
-		);
-	$has_core_post_nonce = isset( $_POST['_wpnonce'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
-		&& (
-			wp_verify_nonce(
-				sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
-				'update-post_' . $post_id
-			)
-			|| wp_verify_nonce(
-				sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verification handled inline.
-				'add-post'
-			)
-		);
-
-	if ( ! $has_allowlist_nonce && ! $has_core_post_nonce ) {
-		return;
-	}
-
-	if ( wp_is_post_revision( $post_id ) || ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ) {
-		return;
-	}
-
-	$post_type = sanitize_key( (string) $post->post_type );
-	if ( '' === $post_type || ! in_array( $post_type, mrn_base_stack_get_singular_shell_post_types(), true ) ) {
-		return;
-	}
-
-	if ( ! current_user_can( 'edit_post', $post_id ) ) {
-		return;
-	}
-
-	$has_allowlist_payload_inputs = isset( $_POST['mrn_builder_layout_allowlist'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce/capability verified above.
-		|| isset( $_POST['mrn_builder_layout_allowlist_catalog'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce/capability verified above.
-		|| isset( $_POST['mrn_builder_layout_allowlist_payload'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce/capability verified above.
-
-	if ( ! $has_allowlist_nonce && ! $has_allowlist_payload_inputs ) {
-		return;
-	}
-
-	$input           = mrn_base_stack_get_builder_layout_allowlist_post_array( 'mrn_builder_layout_allowlist' );
-	$catalog_input   = mrn_base_stack_get_builder_layout_allowlist_post_array( 'mrn_builder_layout_allowlist_catalog' );
-	$payload_input   = mrn_base_stack_get_builder_layout_allowlist_post_string( 'mrn_builder_layout_allowlist_payload' );
-	$decoded_payload = null;
-
-	if ( '' !== $payload_input ) {
-		$decoded_payload = json_decode( $payload_input, true );
-	}
-
-	$needs_raw_fallback = (
-		( ! is_array( $decoded_payload ) && '' !== $payload_input )
-		|| ( '' === $payload_input && ( empty( $input ) || empty( $catalog_input ) ) )
-	);
-
-	if ( $needs_raw_fallback ) {
-		/*
-		 * Raw-body parsing is a fallback for max_input_vars truncation recovery.
-		 *
-		 * Parsing full php://input on every save is expensive on large builder
-		 * submissions, so only do it when the compact payload is missing/invalid
-		 * or the expected allowlist/catalog arrays are absent.
-		 */
-		$raw_payload = mrn_base_stack_get_builder_layout_allowlist_raw_request_payload();
-
-		if ( isset( $raw_payload['allowlist'] ) && is_array( $raw_payload['allowlist'] ) && ! empty( $raw_payload['allowlist'] ) ) {
-			$input = $raw_payload['allowlist'];
-		}
-
-		if ( isset( $raw_payload['catalog'] ) && is_array( $raw_payload['catalog'] ) && ! empty( $raw_payload['catalog'] ) ) {
-			$catalog_input = $raw_payload['catalog'];
-		}
-
-		if ( isset( $raw_payload['payload'] ) && is_string( $raw_payload['payload'] ) && '' !== $raw_payload['payload'] ) {
-			$payload_input = $raw_payload['payload'];
-			$decoded       = json_decode( $payload_input, true );
-
-			if ( is_array( $decoded ) ) {
-				$decoded_payload = $decoded;
-			}
-		}
-	}
-
-	if ( is_array( $decoded_payload ) ) {
-		/*
-		 * Prefer payload data when available.
-		 *
-		 * Large classic-editor submissions can hit max_input_vars and deliver
-		 * partially truncated checkbox arrays. The payload is a compact snapshot
-		 * captured at submit time and avoids per-field truncation loss.
-		 */
-		if ( isset( $decoded_payload['allowlist'] ) && is_array( $decoded_payload['allowlist'] ) ) {
-			$input = $decoded_payload['allowlist'];
-		}
-
-		if ( isset( $decoded_payload['catalog'] ) && is_array( $decoded_payload['catalog'] ) ) {
-			$catalog_input = $decoded_payload['catalog'];
-		}
-	}
-
-	$allowlists = mrn_base_stack_build_sanitized_builder_layout_allowlist_payload( $input, $catalog_input );
-	$targets    = mrn_base_stack_get_builder_layout_allowlist_targets();
-	$existing   = mrn_base_stack_get_builder_layout_allowlist_saved_settings( $post_id );
-	$active     = array();
-
-	foreach ( $targets as $field_name => $target ) {
-		if ( mrn_base_stack_should_render_builder_layout_allowlist_target( $field_name, $post_type ) ) {
-			$active[ $field_name ] = true;
-			continue;
-		}
-
-		unset( $allowlists[ $field_name ] );
-	}
-
-	/*
-	 * Preserve previously saved field selections when a field-specific catalog
-	 * marker is missing from POST. This avoids accidental clears when large
-	 * editor payloads omit trailing metabox arrays.
-	 */
-	foreach ( $targets as $field_name => $target ) {
-		if ( ! isset( $active[ $field_name ] ) ) {
-			continue;
-		}
-
-		$has_catalog_marker = array_key_exists( $field_name, $catalog_input );
-		$has_field_input    = isset( $input[ $field_name ] ) && is_array( $input[ $field_name ] );
-
-		if ( $has_catalog_marker || $has_field_input ) {
-			continue;
-		}
-
-		if ( mrn_base_stack_builder_layout_allowlist_saved_field_exists( $post_id, $field_name ) ) {
-			$allowlists[ $field_name ] = isset( $existing[ $field_name ] ) && is_array( $existing[ $field_name ] )
-				? array_values(
-					array_unique(
-						array_filter(
-							array_map( 'sanitize_key', $existing[ $field_name ] )
-						)
-					)
-				)
-				: array();
-			continue;
-		}
-
-		$catalog                   = mrn_base_stack_get_builder_layout_allowlist_catalog( $field_name );
-		$allowlists[ $field_name ] = mrn_base_stack_get_builder_layout_allowlist_default_names( $field_name, $catalog );
-	}
-
-	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_meta_key(), $allowlists );
-	update_post_meta( $post_id, mrn_base_stack_get_builder_layout_allowlist_initialized_meta_key(), 1 );
-}
-add_action( 'save_post', 'mrn_base_stack_save_builder_layout_allowlist_meta_box', 10, 2 );
