@@ -1,5 +1,9 @@
 # Stack Changelog
 
+## Unreleased — parent 1.5.12
+
+- Apply `Name - Original layout name` titles to nested left/right columns, card rows, and tab panel rows, including ACF AJAX refreshes.
+
 ## 2026-10-12 Config Helper 0.1.73 selective Fleet update
 
 - Register the exact merged Config Helper 0.1.73 source and deterministic package for upgrade-only Fleet plans. Remove the custom Breadcrumb Trail editor and save handler for every provider while preserving stored overrides, native SEOPress editing and frontend output.
