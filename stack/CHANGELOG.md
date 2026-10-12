@@ -1,5 +1,14 @@
 # Stack Changelog
 
+## Unreleased — parent 1.5.12
+
+- Apply `Name - Original layout name` titles to nested left/right columns, card rows, and tab panel rows, including ACF AJAX refreshes.
+
+## 2026-10-12 Config Helper 0.1.73 selective Fleet update
+
+- Register the exact merged Config Helper 0.1.73 source and deterministic package for upgrade-only Fleet plans. Remove the custom Breadcrumb Trail editor and save handler for every provider while preserving stored overrides, native SEOPress editing and frontend output.
+- Retain Config Helper 0.1.72 and all historical release records for rollback. The cumulative Stack/bootstrap locks remain unchanged; this registration does not deploy any site.
+
 ## Unreleased — parent 1.5.11
 
 - Show named builder rows as `Name - Original layout name` in the editor and ACF AJAX title refreshes. Preserve the configured layout label, unnamed-row fallbacks, and HTML escaping.

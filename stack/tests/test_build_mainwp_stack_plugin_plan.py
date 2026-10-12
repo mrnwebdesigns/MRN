@@ -487,7 +487,7 @@ class StackPluginReleaseRegistryTests(unittest.TestCase):
         }
 
         self.assertIn(entry["version"], versions)
-        self.assertTrue({"0.1.59", "0.1.60", "0.1.61", "0.1.62", "0.1.63", "0.1.64", "0.1.65", "0.1.66", "0.1.68", "0.1.70", "0.1.71", "0.1.72"}.issubset(versions))
+        self.assertTrue({"0.1.59", "0.1.60", "0.1.61", "0.1.62", "0.1.63", "0.1.64", "0.1.65", "0.1.66", "0.1.68", "0.1.70", "0.1.71", "0.1.72", "0.1.73"}.issubset(versions))
         self.assertEqual(
             entry["version"],
             max(versions, key=lambda value: planner.version_tuple(value, "version")),
