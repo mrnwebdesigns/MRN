@@ -26,66 +26,6 @@
 		return;
 	}
 
-	var config = window.mrnBaseStackBuilderAdmin || {};
-
-	function isInitialRepeaterCollapseEnabled() {
-		return !! ( config && config.initialRepeaterCollapseEnabled );
-	}
-
-	function getInitialCollapseDelayMs() {
-		var value = config && typeof config.initialCollapseDelayMs !== 'undefined' ? parseInt( config.initialCollapseDelayMs, 10 ) : 900;
-
-		return ! isNaN( value ) && value >= 0 ? value : 900;
-	}
-
-	function scheduleInitialCollapseStart( callback ) {
-		window.setTimeout( function() {
-			if ( hasEditorInteracted ) {
-				markRepeaterPrecollapseReady();
-				return;
-			}
-
-			if ( typeof window.requestIdleCallback === 'function' ) {
-				window.requestIdleCallback( function() {
-					if ( hasEditorInteracted ) {
-						markRepeaterPrecollapseReady();
-						return;
-					}
-
-					callback();
-				}, { timeout: 1400 } );
-				return;
-			}
-
-			callback();
-		}, getInitialCollapseDelayMs() );
-	}
-
-	function resetInitialCollapseDirtyState() {
-		if ( hasEditorInteracted || ! initialRepeaterCollapseMutated ) {
-			return;
-		}
-
-		initialRepeaterCollapseMutated = false;
-
-		resetAcfUnloadDirtyState();
-		window.setTimeout( resetAcfUnloadDirtyState, 120 );
-	}
-
-	function resetAcfUnloadDirtyState() {
-		if ( hasEditorInteracted ) {
-			return;
-		}
-
-		if (
-			window.acf &&
-			window.acf.unload &&
-			typeof window.acf.unload.reset === 'function'
-		) {
-			window.acf.unload.reset();
-		}
-	}
-
 	function getRepeaterFields( context ) {
 		var $context = $( context || document );
 
@@ -101,28 +41,6 @@
 
 	function getRepeaterRows( $field ) {
 		return $field.find( '> .acf-input > .acf-repeater > .acf-table > tbody > .acf-row, > .acf-input > .acf-repeater > .acf-table > .acf-tbody > .acf-row, > .acf-input > .acf-repeater > table > tbody > .acf-row, > .acf-input > .acf-repeater > .values > .acf-row' ).not( '.acf-clone' );
-	}
-
-	function markInitialPrecollapseReady( attributeName ) {
-		var root = document.documentElement;
-
-		if ( ! root || ! attributeName ) {
-			return;
-		}
-
-		root.setAttribute( attributeName, 'done' );
-
-		if ( root.getAttribute( 'data-mrn-builder-precollapse' ) !== 'done' ) {
-			return;
-		}
-
-		if ( root.getAttribute( 'data-mrn-repeater-precollapse' ) !== 'done' ) {
-			return;
-		}
-
-		root.classList.remove( 'mrn-base-stack-admin-precollapse' );
-		root.removeAttribute( 'data-mrn-builder-precollapse' );
-		root.removeAttribute( 'data-mrn-repeater-precollapse' );
 	}
 
 	function getRepeaterCloneRows( $field ) {
@@ -394,156 +312,6 @@
 		syncRowBodyState( $row );
 	}
 
-	function isClassicPostEditorScreen() {
-		var body = document.body;
-
-		return !! body &&
-			! isUnsafeAcfEditorContext() &&
-			( body.classList.contains( 'post-php' ) || body.classList.contains( 'post-new-php' ) );
-	}
-
-	function isInitialRepeaterFieldEligible( $field ) {
-		if ( ! $field || ! $field.length ) {
-			return false;
-		}
-
-		return ! $field.closest( '.layout, .acf-row, .acf-clone' ).length;
-	}
-
-		var initialRepeaterCollapseQueue = [];
-		var initialRepeaterCollapseScheduled = false;
-		var initialRepeaterPrecollapseReadyMarked = false;
-		var initialRepeaterCollapseMutated = false;
-		var deferCollapseUntil = 0;
-		var hasEditorInteracted = false;
-		var interactionQuietPeriodMs = 900;
-		var interactionRetryDelayMs = 220;
-		var inputEditingRetryDelayMs = 260;
-		var configuredMaxInitialRepeaterCollapseRows = config && typeof config.initialRepeaterCollapseMaxRows !== 'undefined' ? parseInt( config.initialRepeaterCollapseMaxRows, 10 ) : 160;
-		var maxInitialRepeaterCollapseRows = ! isNaN( configuredMaxInitialRepeaterCollapseRows ) && configuredMaxInitialRepeaterCollapseRows >= 0 ? configuredMaxInitialRepeaterCollapseRows : 160;
-
-	function markEditorInteraction() {
-		var now = window.performance && typeof window.performance.now === 'function'
-			? window.performance.now()
-			: Date.now();
-
-		hasEditorInteracted = true;
-		deferCollapseUntil = now + interactionQuietPeriodMs;
-
-		// Stop background initial collapsing after first user interaction.
-		if ( initialRepeaterCollapseQueue.length ) {
-			initialRepeaterCollapseQueue.length = 0;
-			markRepeaterPrecollapseReady();
-		}
-	}
-
-	function shouldDeferCollapseForInteraction() {
-		var now = window.performance && typeof window.performance.now === 'function'
-			? window.performance.now()
-			: Date.now();
-
-		return deferCollapseUntil > now;
-	}
-
-	function isEditingInputControl() {
-		var active = document.activeElement;
-
-		if ( ! active ) {
-			return false;
-		}
-
-		if ( active.isContentEditable ) {
-			return true;
-		}
-
-		return /^(INPUT|TEXTAREA|SELECT)$/.test( active.tagName || '' );
-	}
-
-	function markRepeaterPrecollapseReady() {
-		if ( initialRepeaterPrecollapseReadyMarked ) {
-			return;
-		}
-
-		initialRepeaterPrecollapseReadyMarked = true;
-		markInitialPrecollapseReady( 'data-mrn-repeater-precollapse' );
-		resetInitialCollapseDirtyState();
-	}
-
-	function scheduleInitialRepeaterCollapse() {
-		if ( initialRepeaterCollapseScheduled ) {
-			return;
-		}
-
-		initialRepeaterCollapseScheduled = true;
-
-		if ( typeof window.requestAnimationFrame === 'function' ) {
-			window.requestAnimationFrame( processInitialRepeaterCollapseQueue );
-			return;
-		}
-
-		window.setTimeout( processInitialRepeaterCollapseQueue, 0 );
-	}
-
-	function processInitialRepeaterCollapseQueue() {
-		var processed = 0;
-		var maxPerPass = 3;
-		var start = window.performance && typeof window.performance.now === 'function' ? window.performance.now() : 0;
-		var maxDuration = 4;
-
-		initialRepeaterCollapseScheduled = false;
-
-		if ( ! initialRepeaterCollapseQueue.length ) {
-			markRepeaterPrecollapseReady();
-			return;
-		}
-
-		if ( hasEditorInteracted ) {
-			initialRepeaterCollapseQueue.length = 0;
-			markRepeaterPrecollapseReady();
-			return;
-		}
-
-		if ( shouldDeferCollapseForInteraction() ) {
-			window.setTimeout( scheduleInitialRepeaterCollapse, interactionRetryDelayMs );
-			return;
-		}
-
-		if ( isEditingInputControl() ) {
-			window.setTimeout( scheduleInitialRepeaterCollapse, inputEditingRetryDelayMs );
-			return;
-		}
-
-		while ( initialRepeaterCollapseQueue.length ) {
-			var rowElement = initialRepeaterCollapseQueue.shift();
-			var $row = $( rowElement );
-
-			if ( ! $row.length || isRowCollapsed( $row ) ) {
-				continue;
-			}
-
-			// Use ACF's own toggle path so collapsed state remains consistent.
-			setRowCollapsed( $row, true );
-			initialRepeaterCollapseMutated = true;
-
-			processed += 1;
-
-			if ( processed >= maxPerPass ) {
-				break;
-			}
-
-			if ( start && window.performance.now() - start >= maxDuration ) {
-				break;
-			}
-		}
-
-		if ( initialRepeaterCollapseQueue.length ) {
-			scheduleInitialRepeaterCollapse();
-			return;
-		}
-
-		markRepeaterPrecollapseReady();
-	}
-
 	function setRowCollapsed( $row, collapsed ) {
 		var $toggle;
 
@@ -567,65 +335,6 @@
 
 		restoreRowBodies( $row );
 	}
-
-	function collapseInitialRows( context ) {
-		var queueCapped = false;
-
-		if ( ! isInitialRepeaterCollapseEnabled() ) {
-			markRepeaterPrecollapseReady();
-			return;
-		}
-
-		if ( ! isClassicPostEditorScreen() ) {
-			markRepeaterPrecollapseReady();
-			return;
-		}
-
-		if ( hasEditorInteracted || maxInitialRepeaterCollapseRows <= 0 ) {
-			markRepeaterPrecollapseReady();
-			return;
-		}
-
-		getRepeaterFields( context ).each( function () {
-			var $field = $( this );
-
-			if ( ! isInitialRepeaterFieldEligible( $field ) ) {
-				return;
-			}
-
-			if ( $field.data( 'mrnInitialCollapseDone' ) ) {
-				return;
-			}
-
-			$field.data( 'mrnInitialCollapseDone', true );
-
-			getRepeaterRows( $field ).each( function () {
-				var $row = $( this );
-
-					if ( isRowCollapsed( $row ) ) {
-						return;
-					}
-
-					if ( initialRepeaterCollapseQueue.length >= maxInitialRepeaterCollapseRows ) {
-						queueCapped = true;
-						return false;
-					}
-
-					initialRepeaterCollapseQueue.push( this );
-				} );
-
-				if ( queueCapped ) {
-					return false;
-				}
-			} );
-
-			if ( initialRepeaterCollapseQueue.length ) {
-				scheduleInitialRepeaterCollapse();
-				return;
-			}
-
-			markRepeaterPrecollapseReady();
-		}
 
 	function ensureToolbar( $field ) {
 		var $label = $field.children( '.acf-label' ).first();
@@ -800,9 +509,6 @@
 	} );
 
 	$( function () {
-		scheduleInitialCollapseStart( function () {
-			collapseInitialRows( document );
-		} );
 		refreshToolbars( document );
 		syncCloneRowBodyStates( document );
 	} );
@@ -815,15 +521,4 @@
 		refreshToolbars( context );
 	} );
 
-	$( document ).on(
-		'mousedown touchstart keydown',
-		'#post input, #post textarea, #post select, #post [contenteditable="true"]',
-		function () {
-			markEditorInteraction();
-		}
-	);
-
-	$( document ).on( 'mouseenter', '.acf-field[data-type="repeater"]', function () {
-		ensureToolbar( $( this ) );
-	} );
 }( jQuery, window.acf ) );

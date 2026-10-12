@@ -52,6 +52,34 @@ function mrn_shared_assets_acf_field_tree_matches( $fields, $predicate ) {
 }
 
 /**
+ * Check registered local records before expanding dynamic editor field trees.
+ *
+ * A positive match conservatively enqueues an asset. Unknown/dynamic/clone
+ * definitions still use the fully loaded discovery fallback below.
+ *
+ * @param string   $parent    Local group or field key.
+ * @param callable $predicate Consumer's field matcher.
+ * @param array    $visited   Already visited parent keys.
+ * @return bool
+ */
+function mrn_shared_assets_acf_local_tree_matches( $parent, $predicate, &$visited ) {
+	if ( ! function_exists( 'acf_get_local_fields' ) || isset( $visited[ $parent ] ) ) {
+		return false;
+	}
+	$visited[ $parent ] = true;
+	foreach ( (array) acf_get_local_fields( $parent ) as $field ) {
+		if ( ! is_array( $field ) ) {
+			continue;
+		}
+		if ( mrn_shared_assets_acf_field_tree_matches( array( $field ), $predicate )
+			|| ( ! empty( $field['key'] ) && mrn_shared_assets_acf_local_tree_matches( $field['key'], $predicate, $visited ) ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
  * Does this post editor contain (or allow ACF to insert) a matching field?
  *
  * @param callable $predicate Consumer's field matcher.
@@ -75,19 +103,31 @@ function mrn_shared_assets_acf_editor_has_field( $predicate ) {
 	$post_id = $post instanceof WP_Post ? $post->ID : 0;
 	$context = array( 'post_type' => $screen->post_type, 'post_id' => $post_id );
 	static $field_trees = array();
+	static $matching_groups = array();
 	$cache_key = $screen->id . ':' . $post_id;
-	if ( ! isset( $field_trees[ $cache_key ] ) ) {
+	if ( ! isset( $matching_groups[ $cache_key ] ) ) {
 		// Never leave the broader asset-only location match active for rendering.
 		add_filter( 'acf/location/rule_match', 'mrn_shared_assets_acf_asset_location_match', PHP_INT_MAX, 2 );
 		try {
-			$groups = acf_get_field_groups( $context );
+			$matching_groups[ $cache_key ] = acf_get_field_groups( $context );
 		} finally {
 			remove_filter( 'acf/location/rule_match', 'mrn_shared_assets_acf_asset_location_match', PHP_INT_MAX );
 		}
-		$field_trees[ $cache_key ] = array();
-		foreach ( $groups as $group ) {
-			$field_trees[ $cache_key ] = array_merge( $field_trees[ $cache_key ], (array) acf_get_fields( $group ) );
+	}
+	$visited = array();
+	foreach ( $matching_groups[ $cache_key ] as $group ) {
+		if ( mrn_shared_assets_acf_local_tree_matches( $group['key'], $predicate, $visited ) ) {
+			return true;
 		}
 	}
-	return mrn_shared_assets_acf_field_tree_matches( $field_trees[ $cache_key ], $predicate );
+	foreach ( $matching_groups[ $cache_key ] as $group ) {
+		$key = $cache_key . ':' . $group['key'];
+		if ( ! isset( $field_trees[ $key ] ) ) {
+			$field_trees[ $key ] = (array) acf_get_fields( $group );
+		}
+		if ( mrn_shared_assets_acf_field_tree_matches( $field_trees[ $key ], $predicate ) ) {
+			return true;
+		}
+	}
+	return false;
 }

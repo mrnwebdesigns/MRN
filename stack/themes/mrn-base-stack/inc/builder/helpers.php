@@ -141,6 +141,12 @@ function mrn_base_stack_get_hydrated_local_flexible_layouts( array $field ) {
 	if ( empty( $field['layouts'] ) || ! is_array( $field['layouts'] ) || ! function_exists( 'acf_get_fields' ) ) {
 		return array();
 	}
+	if ( function_exists( 'mrn_base_stack_get_initial_builder_source_layouts' ) ) {
+		$initial_layouts = mrn_base_stack_get_initial_builder_source_layouts( $field );
+		if ( null !== $initial_layouts ) {
+			return $initial_layouts;
+		}
+	}
 
 	$sub_fields = acf_get_fields( $field );
 	if ( ! is_array( $sub_fields ) ) {
