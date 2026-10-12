@@ -236,6 +236,37 @@ class QualificationContracts(unittest.TestCase):
 
 
 class CoordinatorBoundaries(unittest.TestCase):
+    def test_qualified_cache_retains_bytes_without_advancing_fleet_and_rejects_rebinding(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);repo=root/'repo';canonical=root/'canonical'
+            manifests=repo/'stack/manifests';manifests.mkdir(parents=True);canonical.mkdir()
+            artifact=repo/'releases/stack-plugins/example.zip';artifact.parent.mkdir(parents=True)
+            artifact.write_bytes(b'qualified immutable bytes')
+            package={'path':'releases/stack-plugins/example.zip','sha256':common.file_hash(artifact)}
+            common.write(manifests/'stack-plugin-releases.json',{'releases':[{'package':package}]})
+            settings={'canonical_repo':str(canonical)}
+            with self.assertRaises(common.ReleaseError):
+                coordinator.cache_qualified_packages(settings,repo,{'status':'fail'})
+            coordinator.cache_qualified_packages(settings,repo,{'status':'pass'})
+            cached=canonical/package['path']
+            self.assertEqual(cached.read_bytes(),artifact.read_bytes())
+            self.assertFalse((canonical/'releases/fleet-ready/current.json').exists())
+            coordinator.cache_qualified_packages(settings,repo,{'status':'pass'})
+            cached.write_bytes(b'foreign bytes')
+            with self.assertRaises(common.ReleaseError):
+                coordinator.cache_qualified_packages(settings,repo,{'status':'pass'})
+            self.assertEqual(cached.read_bytes(),b'foreign bytes')
+
+    def test_cache_rejects_unregistered_bytes_and_paths_outside_release_store(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root=Path(temporary);artifact=root/'source.zip';artifact.write_bytes(b'qualified')
+            settings={'canonical_repo':str(root/'canonical')}
+            for package in ({'path':'releases/stack-plugins/example.zip','sha256':'0'*64},
+                            {'path':'wp-content/plugins/example.zip','sha256':common.file_hash(artifact)}):
+                with self.assertRaises(common.ReleaseError):
+                    coordinator.cache_registered_package(settings,artifact,package)
+            self.assertFalse((root/'canonical').exists())
+
     def test_same_source_with_different_zip_envelopes_preserves_registered_optional_bytes(self):
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary);repo=root/'repo';job=root/'job';manifests=repo/'stack/manifests'
