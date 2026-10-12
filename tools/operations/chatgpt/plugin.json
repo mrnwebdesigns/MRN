@@ -1,0 +1,26 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "mrn-website-operations",
+  "version": "0.1.0",
+  "description": "Inspect MRN WordPress websites, understand findings, and request authorized maintenance through ChatGPT.",
+  "author": { "name": "MRN Web Designs", "url": "https://mrnwebdesigns.com" },
+  "repository": "https://github.com/mrnwebdesigns/MRN",
+  "keywords": ["mrn", "wordpress", "website-operations"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "MRN Website Operations",
+        "shortDescription": "Website help in ChatGPT",
+        "longDescription": "Sign in with your MRN account to inspect accessible websites, review findings and previous work, and request authorized maintenance in chat. Available actions depend on your permissions and the site's supported workflows. The service explains what it checked and what remains unverified.",
+        "developerName": "MRN Web Designs",
+        "category": "Productivity",
+        "websiteURL": "https://mrnwebdesigns.com",
+        "defaultPrompt": [
+          "Which MRN websites can I work on?",
+          "Inspect this website and explain what needs attention.",
+          "What changed before this website's problem started?"
+        ]
+      }
+    }
+  }
+}
