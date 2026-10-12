@@ -555,31 +555,31 @@
     {
       "current_distribution": "catalog-only",
       "package": {
-        "filename": "mrn-mainwp-operations-api-0.10.0-032b3e52e5e1.zip",
+        "filename": "mrn-mainwp-operations-api-0.13.0-dbdde23f182b.zip",
         "main_file": "mrn-mainwp-operations-api/mrn-mainwp-operations-api.php",
-        "path": "releases/stack-plugins/mrn-mainwp-operations-api-0.10.0-032b3e52e5e1.zip",
-        "sha256": "5bf4740a13fc28322daa5a7457cd071695c604fcdde5febe5fd018858954a9c6",
-        "size_bytes": 54152
+        "path": "releases/stack-plugins/mrn-mainwp-operations-api-0.13.0-dbdde23f182b.zip",
+        "sha256": "0c5141773eec4f710fc3fa6e7fecef0515c19ccf508cf90a5f788abf10c3f5f5",
+        "size_bytes": 117102
       },
       "runtime_type": "standard-plugin",
       "slug": "mrn-mainwp-operations-api",
       "source": {
-        "git_commit": "032b3e52e5e1c7788009083022f927f1b43631b9",
+        "git_commit": "dbdde23f182b9f741a80f55a08b09ee7f2e2f57d",
         "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-mainwp-operations-api",
         "repository": "mrnwebdesigns/mrn-mainwp-operations-api"
       },
       "target_tier": "dashboard-only",
       "tree": {
-        "file_count": 9,
+        "file_count": 34,
         "hash_algorithm": "sha256-tree-v1",
-        "sha256": "ceb425d9a0c05772fdc3992af5834830cfa4ca4ef1776f7a0bc27818ba850dc3"
+        "sha256": "9d6324fcd204d3ea71c78cf6c9deac54359877b50d5a608c307d149b18b1d795"
       },
       "update_policy": {
         "mode": "upgrade-only",
         "new_install": "requires-separate-owner-authorization-and-plan",
         "preserve_active_state": true
       },
-      "version": "0.10.0"
+      "version": "0.13.0"
     },
     {
       "current_distribution": "catalog-only",
