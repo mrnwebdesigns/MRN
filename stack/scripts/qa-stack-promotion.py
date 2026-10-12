@@ -218,6 +218,9 @@ def classify_changes(paths, catalog, lock_payload):
             metadata.append(path)
         elif any(path_matches(path, prefix) for prefix in DEPLOYMENT_CONTRACT_PREFIXES):
             contracts.append(path)
+        elif path == "stack/mu-plugins/README.md":
+            # The directory index documents MU loaders; it is not a runtime unit.
+            other.append(path)
         elif path == "stack/mu-plugins/mrn-loader.php" or path.startswith(DEPLOYABLE_ROOTS):
             untracked.append(path)
         else:

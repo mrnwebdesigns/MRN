@@ -218,6 +218,16 @@ class GitFixture:
 
 
 class PromotionTests(unittest.TestCase):
+    def test_mu_directory_readme_is_documentation_and_unknown_runtime_stays_blocked(self):
+        inventory = promotion.classify_changes(
+            ["stack/mu-plugins/README.md", "stack/mu-plugins/unknown.php",
+             "stack/mu-plugins/unknown/README.md"],
+            {"components": []}, {"themes": []},
+        )
+        self.assertEqual(inventory["other_changes"], ["stack/mu-plugins/README.md"])
+        self.assertEqual(inventory["untracked_deployables"],
+                         ["stack/mu-plugins/unknown.php", "stack/mu-plugins/unknown/README.md"])
+
     def test_standalone_link_change_is_a_contract_and_runtime_files_stay_components(self):
         catalog = {"components": [{"slug": "example", "target_tier": "platform-required",
                     "runtime_type": "standard-plugin",
