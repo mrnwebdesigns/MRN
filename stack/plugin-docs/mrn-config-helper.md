@@ -6,7 +6,7 @@
 - Slug: `mrn-config-helper`
 - Type:
   - standard plugin
-- Current version: `0.1.72`
+- Current version: `0.1.73`
 - Source path:
   - `/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper`
 
@@ -17,6 +17,10 @@ Version 0.1.71 removes the SendGrid settings card and sender-sync call. The gene
 ## GTM retirement
 
 Version 0.1.72 removes the Google Tag Manager card and automatic GTM Injector settings synchronization. SEOPress owns tracking configuration in the simplified Stack. Existing Config Helper container values and both GTM Injector options remain stored for recovery; generic settings saves ignore submissions for the retired field. Source before this change is retained at Config Helper commit `5f22f06acda7ea445b32f03d79fe8cf5061c03cc`.
+
+## Breadcrumb editor retirement
+
+Version 0.1.73 removes the custom Breadcrumb Trail meta box and save handler from every content editor, including sites retaining the legacy breadcrumb provider. Historical overrides remain stored and readable by legacy rendering. Native SEOPress editing and frontend breadcrumb/schema output remain unchanged. The former public editor methods remain inert for compatibility. The selective Fleet update is upgrade-only and retains 0.1.72 for rollback.
 
 ## Purpose
 
@@ -58,7 +62,7 @@ Version 0.1.72 removes the Google Tag Manager card and automatic GTM Injector se
   - `Output`
   - `Instructions`
 - Classic Editor support:
-  - Adds a `Breadcrumb Trail` metabox on supported post types for per-entry manual overrides.
+  - The custom `Breadcrumb Trail` meta box is retired for all providers; native SEOPress controls remain available.
 - Display Modes currently includes:
   - list-first management UI with search, filters, sort, and row editing
   - entity-aware mode creation for supported renderable items
@@ -158,21 +162,21 @@ Version 0.1.72 removes the Google Tag Manager card and automatic GTM Injector se
 
 - `Dynamic only`
   - Stack builds breadcrumb trail from current request context + selected view type.
-  - Per-page custom chips are saved but ignored for front-end rendering.
+  - Previously saved per-page custom chips are retained but ignored for front-end rendering.
 - `Dynamic with per-page manual override`
   - Dynamic remains the default.
-  - On singular entries only, if `Use manual breadcrumb override` is checked and valid chips exist, chips take precedence.
+  - On singular entries only, if a previously saved manual override is enabled and valid chips exist, chips take precedence.
 - Fallback behavior
   - If override mode is on but override is disabled/empty/invalid for that entry, stack falls back to dynamic output.
 - Precedence
   - Global mode controls whether overrides are allowed.
-  - Per-entry checkbox + saved chips control whether that one entry uses a custom trail.
+  - Previously saved per-entry overrides and chips control whether that one entry uses a custom trail.
 
 ### Why Custom Breadcrumbs May Not Show
 
 - `Trail Mode` is still set to `Dynamic only`.
-- Per-entry `Use manual breadcrumb override` is not checked.
-- No valid chips were saved in the entry metabox.
+- No manual override was previously enabled for the entry.
+- No valid custom chips were previously saved for the entry.
 - Current context or placement is disabled in Breadcrumb `Behavior` settings.
 - Template area does not call breadcrumb render helper for that request type.
 

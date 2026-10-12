@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "catalog_updated": "2026-10-09",
+  "catalog_updated": "2026-10-12",
   "authority": "Checksum- and tree-locked standard-plugin releases available to explicit one-site Stack component plans. Registration never authorizes a site write or changes the immutable Stack release identity.",
   "releases": [
     {
@@ -606,6 +606,35 @@
       "tree": {
         "hash_algorithm": "sha256-tree-v1",
         "sha256": "e189af68c5e02facc7137773c0ce9b2e86f12340377ea11232cb195722fba832",
+        "file_count": 29
+      },
+      "update_policy": {
+        "mode": "upgrade-only",
+        "preserve_active_state": true,
+        "new_install": "requires-separate-owner-authorization-and-plan"
+      }
+    },
+    {
+      "slug": "mrn-config-helper",
+      "version": "0.1.73",
+      "runtime_type": "standard-plugin",
+      "target_tier": "platform-required",
+      "current_distribution": "standard-bootstrap",
+      "source": {
+        "repository": "mrnwebdesigns/mrn-config-helper",
+        "path": "/Users/khofmeyer/Development/MRN-plugins/mrn-config-helper",
+        "git_commit": "eb9fbb151be714f7d782ff072da5dafe03190352"
+      },
+      "package": {
+        "path": "releases/stack-plugins/mrn-config-helper-0.1.73.zip",
+        "filename": "mrn-config-helper-0.1.73.zip",
+        "main_file": "mrn-config-helper/mrn-config-helper.php",
+        "size_bytes": 120602,
+        "sha256": "2cb9e3f8b8a75c87cadf007983636224dbd67e8e75cdce89b31e862f8c4710bc"
+      },
+      "tree": {
+        "hash_algorithm": "sha256-tree-v1",
+        "sha256": "4bbe3081b173aeefeb050fd6b3b9bd96f798dad96641524cac3a897921d42590",
         "file_count": 29
       },
       "update_policy": {
