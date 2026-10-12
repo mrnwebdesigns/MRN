@@ -1133,7 +1133,10 @@ function mrn_base_stack_filter_builder_layout_title( $title, $field, $layout, $i
 	}
 
 	if ( '' !== $internal ) {
-		return esc_html( wp_strip_all_tags( $internal ) );
+		$layout_label = isset( $layout['label'] ) ? trim( wp_strip_all_tags( (string) $layout['label'] ) ) : '';
+		$layout_label = '' !== $layout_label ? $layout_label : trim( wp_strip_all_tags( $title ) );
+
+		return esc_html( wp_strip_all_tags( $internal ) . ( '' !== $layout_label ? ' - ' . $layout_label : '' ) );
 	}
 
 	/*
