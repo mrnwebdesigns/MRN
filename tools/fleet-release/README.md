@@ -68,6 +68,12 @@ Required diagnostics, native editor, API, whole-page AA, timing and CWV failures
 block source publication. Site-specific contrast/content/provider failures and
 holds remain rollout blockers in their own evidence.
 
+Each native fixture retains `php-diagnostics.json` with counts and plugin-relative
+early-translation origins. `php-diagnostics.log` and `translation-trace.log` stay
+in the private evidence directory after the disposable runtime is removed.
+WordPress early-translation warnings block qualification even when vendor code
+filters their PHP error emission. No exception or log filter qualifies an input.
+
 Run the offline publication/recovery tests with:
 
 ```bash

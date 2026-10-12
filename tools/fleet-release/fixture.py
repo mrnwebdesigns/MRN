@@ -5,6 +5,7 @@ import contextlib
 import json
 import os
 from pathlib import Path, PurePosixPath
+import re
 import secrets
 import shutil
 import socket
@@ -18,6 +19,38 @@ from common import ReleaseError, file_hash, read, relative, write
 
 CORE_SHA = '8fc96c59a78b7219e4a130222b7fadb51b03e503e8b0123beaa7e28961c21ce2'
 MAINWP_SHA = 'a7c97d3bdbf9c39deee84db05d17d1284a5f0ef94f121b27fe685af0f4c195e5'
+
+
+def diagnostic_summary(debug, trace):
+    """Keep non-emitted WordPress warnings blocking, without publishing raw traces."""
+    log_rows = sum(bool(line.strip()) for line in debug.read_text().splitlines()) if debug.exists() else 0
+    translations = {}
+    invalid = False
+    for line in trace.read_text().splitlines() if trace.exists() else []:
+        if not line.strip():
+            continue
+        try:
+            frames = json.loads(line)
+            if not isinstance(frames, list) or not frames or not all(isinstance(f, dict) for f in frames):
+                raise ValueError('Invalid translation trace')
+            origin = ('unknown', '', 0)
+            for frame in frames:
+                filename = frame.get('file', '')
+                suffix = filename.partition('/wp-content/plugins/')[2] if isinstance(filename, str) else ''
+                if re.fullmatch(r'[a-zA-Z0-9_.\-/]+', suffix) and '..' not in PurePosixPath(suffix).parts:
+                    number = frame.get('line', 0)
+                    if not isinstance(number, int) or number < 0:
+                        raise ValueError('Invalid trace line')
+                    origin = (suffix.split('/')[0], 'plugins/' + suffix, number)
+                    break
+            translations[origin] = translations.get(origin, 0) + 1
+        except (ValueError, TypeError):
+            invalid = True
+    return {'schema_version': 1, 'status': 'blocked' if log_rows or translations or invalid else 'pass',
+            'php_log_rows': log_rows, 'invalid_translation_trace': invalid,
+            'early_translations': [{'plugin': plugin, 'file': filename, 'line': number, 'count': count}
+                                   for (plugin, filename, number), count in sorted(translations.items())],
+            'site_writes': False}
 
 
 def extract(archive, destination, *, expected=None, prefix=None):
@@ -248,8 +281,15 @@ add_action('doing_it_wrong_run', static function ($function) {
 
     def assert_clean_diagnostics(self):
         debug = self.content / 'debug.log'
-        if debug.exists() and debug.read_text().strip():
-            raise ReleaseError('Fixture PHP diagnostics must be resolved; see private debug.log')
+        trace = self.root / 'translation-trace.log'
+        diagnostics = diagnostic_summary(debug, trace)
+        write(self.root / 'php-diagnostics.json', diagnostics)
+        if diagnostics['status'] != 'pass':
+            plugins = sorted({row['plugin'] for row in diagnostics['early_translations']})
+            detail = ', '.join(plugins) if plugins else 'PHP log or invalid diagnostic trace'
+            raise ReleaseError('Fixture PHP diagnostics block: ' + detail
+                               + '; see ' + self.root.name + '/php-diagnostics.json'
+                               + ' and retained php-diagnostics.log/translation-trace.log')
 
     def close(self):
         if self.process:
