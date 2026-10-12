@@ -4,7 +4,8 @@
     {
       "subject": "replace-with-immutable-identity-provider-subject",
       "enabled": true,
-      "grants": [{"website": "example-client", "environments": ["development"], "actions": ["read"]}]
+      "portfolio": {"sources": ["mainwp", "local-hub"], "actions": ["read"]},
+      "grants": []
     }
   ]
 }

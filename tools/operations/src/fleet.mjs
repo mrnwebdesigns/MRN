@@ -52,16 +52,21 @@ export class FleetAdapter {
   }
   async smoke(target, session, qualification) {
     const result = await this.publicProbe(target.url, () => session.authorize(), { references: qualification.assets.map(a => a.url) });
-    const api = await this.publicProbe(`${target.url}/wp-json/`, () => session.authorize());
+    const api = await this.publicProbe(`${target.url}/wp-json/`, () => session.authorize(), { checkRest: true });
     requireThat(result.status === 200 && api.status === 200 && api.restHealthy === true, 'PUBLIC_VERIFICATION', 'The public website and WordPress REST root must return healthy responses after the operation.');
+    const checks = [{ path: '/', status: result.status, ok: true, measuredAt: result.measuredAt },
+      { path: '/wp-json/', status: api.status, restHealthy: true, ok: true, measuredAt: api.measuredAt }];
     for (const asset of qualification.assets) {
       requireThat(result.references?.some(r => r.url === asset.url && r.present === true), 'STALE_HTML', 'The public page does not reference the approved immutable asset URL.');
       const served = await this.publicProbe(asset.url, () => session.authorize());
       requireThat(served.status === 200 && served.contentSha256 === asset.sha256, 'STALE_ASSET', 'The publicly served asset does not match the approved checksum.');
+      checks.push({ path: new URL(asset.url).pathname, url: asset.url, status: served.status, ok: true,
+        referencedByPage: true, contentSha256: served.contentSha256, measuredAt: served.measuredAt });
     }
-    return [{ path: '/', status: result.status, ok: true, measuredAt: result.measuredAt }, { path: '/wp-json/', status: api.status, ok: true }];
+    return checks;
   }
   async plan(target, finding, session, operation) {
+    requireThat(target.environment !== 'unknown' && target.backup !== 'unknown', 'KNOWLEDGE_REQUIRED', 'Resolve the environment and provider-approved backup route from authoritative MRN records before preparing this change.');
     requireThat(target.management === 'mainwp' && target.backup === 'updraft', 'ROUTE_UNAVAILABLE', 'This Fleet repair requires a MainWP-managed site with the approved Updraft backup path. Provider-native backup sites need their qualified adapter.');
     const dir = join(this.stateDir, operation, 'plan');
     const summary = await runFleetUpdate(this.options(target, finding.component, dir), {
@@ -114,6 +119,42 @@ export class FleetAdapter {
     });
     requireThat(result.status === 'verified' && result.backup_verified === true && result.runtime_verified === true && result.smoke_verified === true, 'VERIFICATION_FAILED', 'Execution did not prove the approved runtime and public result.');
     return { backup: 'verified', runtime: 'verified', public: 'verified', version: result.to_version, artifactSha256: plan.artifactSha256,
+      qualification: { verifiedBy: qualification.verifiedBy, sourceQa: qualification.sourceQa, runtimeQa: qualification.runtimeQa } };
+  }
+  async reconcile(op, session) {
+    const { plan, target } = op;
+    requireThat(plan.kind === 'fleet_plugin' && ['update', 'rollback'].includes(plan.direction), 'RECOVERY_UNAVAILABLE', 'Only the installed-plugin Fleet workflow has a qualified reconciliation adapter.');
+    requireThat(this.qualifications, 'QA_REQUIRED', 'Exact artifact QA qualification is required for reconciliation.');
+    const expected = plan.binding;
+    const readback = async () => {
+      const inventory = await session.fresh();
+      requireThat(inventory.id === expected.site_id && inventory.url === expected.site_url, 'TARGET_MISMATCH', 'The recovered MainWP identity differs from the approved operation.');
+      const runtime = await session.runtime();
+      requireThat(['current', 'current_with_approved_overlays'].includes(runtime?.fleet_state)
+        && Array.isArray(runtime.unknown_drifted_required) && runtime.unknown_drifted_required.length === 0
+        && Array.isArray(runtime.stale_approved_overlays) && runtime.stale_approved_overlays.length === 0,
+      'RECOVERY_RUNTIME_UNQUALIFIED', 'Unknown Stack drift or stale overlays require investigation before releasing the lock.');
+      return { inventory, runtime };
+    };
+    const first = await readback();
+    const matches = ['target', 'rollback'].filter(key => {
+      try { this.verifyComponent(first.runtime, plan.component, expected[key], expected.baseline); return true; }
+      catch (error) { if (error.code === 'RUNTIME_MISMATCH') return false; throw error; }
+    });
+    requireThat(matches.length === 1, 'RECOVERY_RUNTIME_MISMATCH', 'Fresh runtime must match exactly the approved code or its retained prior release. Unknown or mixed code keeps the website locked.');
+    const key = matches[0]; const artifact = expected[key];
+    const observedPlan = { sourceCommit: plan.fleetPlan.plugin[key].source.git_commit, artifactSha256: artifact.package_sha256 };
+    const qualification = this.qualifications.find(target, observedPlan);
+    const publicChecks = await this.smoke(target, session, qualification);
+    // An observed match before public probes alone cannot close the operation.
+    const last = await readback();
+    this.verifyComponent(last.runtime, plan.component, artifact, expected.baseline);
+    requireThat(digest(this.qualifications.find(target, observedPlan)) === digest(qualification), 'QA_CHANGED', 'Artifact qualification changed during recovery.');
+    const intended = plan.direction === 'update' ? 'target' : 'rollback';
+    return { outcome: key === intended ? 'intended_code_verified' : 'prior_code_verified',
+      runtime: 'verified', public: 'verified', backup: 'not_reverified', databaseAndMedia: 'not_assessed',
+      version: artifact.version, sourceCommit: observedPlan.sourceCommit, artifactSha256: artifact.package_sha256,
+      treeSha256: artifact.tree_sha256, fileCount: artifact.file_count, inventory: last.inventory, publicChecks,
       qualification: { verifiedBy: qualification.verifiedBy, sourceQa: qualification.sourceQa, runtimeQa: qualification.runtimeQa } };
   }
   async rollbackPlan(previous, session) {

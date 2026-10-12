@@ -65,7 +65,7 @@ export class Store {
   claim(id, actor) {
     return this.transaction(() => {
       const op = this.get(id);
-      if (['running', 'verified', 'uncertain', 'failed', 'blocked'].includes(op.status)) return { record: op, claimed: false };
+      if (['running', 'verified', 'reconciled', 'uncertain', 'failed', 'blocked'].includes(op.status)) return { record: op, claimed: false };
       requireThat(op.status === 'approved' && op.expiresAt > Date.now(), 'APPROVAL_REQUIRED', 'A current exact-plan approval is required.');
       try { this.db.prepare('INSERT INTO locks VALUES(?,?)').run(targetKey(op.target), id); }
       catch { throw new OpsError('SITE_BUSY', 'Another workflow holds this website lock. An uncertain operation requires reconciliation before another write.'); }
@@ -76,10 +76,35 @@ export class Store {
   }
   finish(id, status, body, actor) {
     return this.transaction(() => {
-      const op = this.get(id);
+      const op = this.assertRunning(id);
+      requireThat(['verified', 'uncertain', 'failed'].includes(status), 'STATE_CONFLICT', 'Invalid execution outcome.');
       Object.assign(op, body, { status });
       if (status !== 'uncertain') this.db.prepare('DELETE FROM locks WHERE operation=?').run(id);
       this.audit(actor, op.target, id, 'execute', status); return this.save(op);
+    });
+  }
+  assertLocked(op) {
+    requireThat(this.db.prepare('SELECT operation FROM locks WHERE target=?').get(targetKey(op.target))?.operation === op.id,
+      'LOCK_CHANGED', 'The operation no longer owns this website lock.');
+  }
+  assertRunning(id) {
+    const op = this.get(id);
+    requireThat(op.status === 'running', 'EXECUTION_FENCED', 'Execution is no longer admitted for this operation.');
+    this.assertLocked(op); return op;
+  }
+  reconcile(id, snapshotDigest, evidence, actor) {
+    return this.transaction(() => {
+      const op = this.get(id);
+      requireThat(digest(op) === snapshotDigest && ['running', 'uncertain'].includes(op.status),
+        'RECOVERY_STATE_CHANGED', 'The operation changed during reconciliation. Keep its current state and inspect again.');
+      this.assertLocked(op);
+      op.reconciliation = { ...evidence, previousStatus: op.status, reconciledBy: actor.subject, reconciledAt: new Date().toISOString() };
+      op.status = 'reconciled';
+      // State, lock release and audit are one transaction. A late original
+      // worker cannot finish or obtain permission for another downstream call.
+      this.db.prepare('DELETE FROM locks WHERE operation=?').run(id);
+      this.audit(actor, op.target, id, 'reconcile', evidence.outcome);
+      return this.save(op);
     });
   }
 }

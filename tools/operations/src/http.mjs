@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createMcp } from './mcp.mjs';
 import { OpsError, requireThat, safeError } from './contracts.mjs';
+import { operationsScope, oauthChallenge } from './auth.mjs';
 
 async function readBody(req) {
   let size = 0; const chunks = [];
@@ -18,7 +19,7 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
       requireThat(req.headers.host === canonical.host, 'HOST_DENIED', 'Unexpected Host header.');
       requireThat(!req.headers.origin || origins.includes(req.headers.origin), 'ORIGIN_DENIED', 'Origin is not allowed.');
       if (req.method === 'GET' && ['/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/mcp'].includes(req.url)) {
-        return json(res, 200, { resource: publicUrl, authorization_servers: [issuer], scopes_supported: ['mrn:operations'], bearer_methods_supported: ['header'] });
+        return json(res, 200, { resource: publicUrl, authorization_servers: [issuer], scopes_supported: [operationsScope], bearer_methods_supported: ['header'] });
       }
       if (req.method === 'GET' && req.url === '/healthz') return json(res, 200, { status: 'ok', version: '0.1.0' });
       requireThat(req.url === '/mcp', 'NOT_FOUND', 'Route not found.');
@@ -33,14 +34,14 @@ export function createHttpServer({ service, authenticate, publicUrl, issuer, ori
       active++; admitted = true;
       const body = await readBody(req);
       // Never share an MCP server/transport across authenticated requests.
-      const mcp = createMcp(service, actor);
+      const mcp = createMcp(service, actor, { publicUrl });
       const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
       res.on('close', () => { void transport.close(); void mcp.close(); });
       await mcp.connect(transport); await transport.handleRequest(req, res, body);
     } catch (error) {
       const safe = safeError(error);
       const status = safe.code === 'AUTH_REQUIRED' ? 401 : safe.code === 'NOT_FOUND' ? 404 : safe.code === 'RATE_LIMIT' ? 429 : ['HOST_DENIED', 'ORIGIN_DENIED', 'FORBIDDEN'].includes(safe.code) ? 403 : 400;
-      if (status === 401) res.setHeader('WWW-Authenticate', `Bearer resource_metadata="${canonical.origin}/.well-known/oauth-protected-resource/mcp"`);
+      if (status === 401) res.setHeader('WWW-Authenticate', oauthChallenge(publicUrl));
       if (!res.headersSent) json(res, status, { error: safe }); else res.destroy();
     } finally { if (admitted) active--; }
   });

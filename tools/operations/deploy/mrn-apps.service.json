@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "publicUrl": "https://operations.mrnwebdesigns.com/mcp",
+  "listen": {"host": "127.0.0.1", "port": 8812},
+  "auth": {
+    "issuer": "https://dev-bhbm2z074birs7aj.us.auth0.com/",
+    "audience": "https://operations.mrnwebdesigns.com/mcp",
+    "jwksUrl": "https://dev-bhbm2z074birs7aj.us.auth0.com/.well-known/jwks.json",
+    "verifiedEmailClaims": true
+  },
+  "allowedOrigins": [],
+  "discovery": {"localHubRoots": []},
+  "policyPath": "/etc/mrn-operations/permissions.json",
+  "qualificationsPath": "/etc/mrn-operations/qualifications.json",
+  "recoveryEvidencePath": "/etc/mrn-operations/recovery-evidence.json",
+  "stateDir": "/var/lib/mrn-operations",
+  "repositoryRoot": "/opt/mrn-operations/MRN",
+  "artifactRoots": ["/srv/mrn-artifacts"],
+  "sourceRepositories": {},
+  "writesEnabled": false,
+  "mainwp": {
+    "command": "/usr/bin/node",
+    "args": ["/opt/mainwp-mcp/3249bde643f52f29b7b18db41f4c3c7bb88d2434/dist/index.js"],
+    "cwd": "/var/lib/mrn-operations/mainwp",
+    "envRefs": {
+      "MAINWP_URL": {"env": "OPS_MAINWP_URL"},
+      "MAINWP_USER": {"env": "OPS_MAINWP_USER"},
+      "MAINWP_APP_PASSWORD": {"env": "OPS_MAINWP_APP_PASSWORD"},
+      "MAINWP_SAFE_MODE": {"env": "OPS_MAINWP_SAFE_MODE"},
+      "HOME": {"env": "OPS_MAINWP_HOME"}
+    }
+  }
+}
