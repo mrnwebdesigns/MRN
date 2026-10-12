@@ -254,6 +254,7 @@ def remote_host(settings, operation, *arguments):
 
 
 def publish(settings, repo, job, built, qualified, metadata, merged):
+    bootstrap = Path(built['bootstrap'])
     saved = remote_host(settings, 'receipt', metadata['release_id'])
     if saved['status'] == 'not_started':
         assert_refs({**metadata['snapshot']['refs'], 'MRN': merged})
@@ -265,7 +266,7 @@ def publish(settings, repo, job, built, qualified, metadata, merged):
     run(['ssh', '-o', 'BatchMode=yes', settings['source_host'],
          'mkdir', '-m', '700', '-p', base])
     transfer(settings, base, release, built['bootstrap_archive'], 'bootstrap.tar')
-    manifest_sha = file_hash(built['bootstrap'] / 'bootstrap-bundle.json')
+    manifest_sha = file_hash(bootstrap / 'bootstrap-bundle.json')
     archive_sha = file_hash(built['bootstrap_archive'])
     remote_host(settings, 'stage', release, archive_sha, manifest_sha)
     # Private artifact distribution includes Fleet bytes and qualification. No
@@ -280,7 +281,7 @@ def publish(settings, repo, job, built, qualified, metadata, merged):
     parent = next(v for v in read(Path(repo) / 'stack/manifests/stack-release.lock.json')['themes']
                   if v['slug'] == 'mrn-base-stack')
     public_zip = Path(job) / ('mrn-base-stack-' + parent['version'] + '.zip')
-    shutil.copyfile(built['bootstrap'] / 'themes/mrn-base-stack.zip', public_zip)
+    shutil.copyfile(bootstrap / 'themes/mrn-base-stack.zip', public_zip)
     public_lock = Path(job) / 'stack-release.lock.json'
     shutil.copyfile(Path(repo) / 'stack/manifests/stack-release.lock.json', public_lock)
     public_files = [public_zip, public_lock]

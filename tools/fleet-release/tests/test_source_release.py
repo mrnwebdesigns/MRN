@@ -236,6 +236,46 @@ class QualificationContracts(unittest.TestCase):
 
 
 class CoordinatorBoundaries(unittest.TestCase):
+    def test_publication_accepts_sealed_json_paths_and_verifies_public_readback(self):
+        for serialized in (False, True):
+            with self.subTest(serialized=serialized), tempfile.TemporaryDirectory() as temporary:
+                root=Path(temporary);repo=root/'repo';job=root/'job';bootstrap=root/'bootstrap'
+                (repo/'stack/manifests').mkdir(parents=True);job.mkdir();(bootstrap/'themes').mkdir(parents=True)
+                common.write(repo/'stack/manifests/stack-release.lock.json',
+                             {'themes':[{'slug':'mrn-base-stack','version':'1.0.0'}]})
+                (bootstrap/'bootstrap-bundle.json').write_bytes(b'{}')
+                (bootstrap/'themes/mrn-base-stack.zip').write_bytes(b'ordinary parent fixture')
+                built={'bootstrap':bootstrap,'proof':{'lock_sha256':'a'*64}}
+                for key in ('bootstrap_archive','fleet','optional_archive'):
+                    built[key]=root/(key+'.tar');built[key].write_bytes(key.encode())
+                if serialized:
+                    built={k:str(v) if isinstance(v,Path) else v for k,v in built.items()}
+                merged='b'*40;metadata={'release_id':'2026.10.12-fleet-auto-123456abcdef',
+                                       'snapshot':{'refs':{'MRN':merged}}}
+                def remote(settings,operation,*args):
+                    if operation=='receipt':return {'status':'not_started'}
+                    if operation=='preflight':return {'manifest_sha256':'c'*64}
+                    if operation=='publish':return {'status':'published_verified','lock_sha256':'a'*64}
+                    return {}
+                def command(arguments,**kwargs):
+                    if arguments[:2]==['gh','api']:return json.dumps({'object':{'sha':merged}})
+                    if arguments[:3]==['gh','release','download']:
+                        destination=Path(arguments[arguments.index('--dir')+1])
+                        for name in ('mrn-base-stack-1.0.0.zip','stack-release.lock.json','SHA256SUMS.txt'):
+                            (destination/name).write_bytes((job/name).read_bytes())
+                    return ''
+                with patch.object(coordinator,'remote_host',side_effect=remote), \
+                     patch.object(coordinator,'assert_refs'),patch.object(coordinator,'transfer'), \
+                     patch.object(coordinator,'run',side_effect=command), \
+                     patch.object(coordinator.subprocess,'run',return_value=type('Result',(),{'returncode':1})()):
+                    result=coordinator.publish({'source_host':'mrndev-stack-manager'},repo,job,built,
+                                               {'status':'pass'},metadata,merged)
+                self.assertEqual(result['status'],'published_verified')
+                publication=common.read(job/'publication.json')
+                self.assertEqual(publication['status'],'pass')
+                self.assertEqual(set(publication['public_checksums']),
+                                 {'mrn-base-stack-1.0.0.zip','stack-release.lock.json','SHA256SUMS.txt'})
+
     def test_qualified_cache_retains_bytes_without_advancing_fleet_and_rejects_rebinding(self):
         with tempfile.TemporaryDirectory() as temporary:
             root=Path(temporary);repo=root/'repo';canonical=root/'canonical'
