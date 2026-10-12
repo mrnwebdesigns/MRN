@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Editor Lockdown
  * Description: Enforces MRN classic editor metabox ordering for posts, pages, and reusable block library screens across the stack.
- * Version: 1.0.33
+ * Version: 1.0.34
  *
  * @package MRNEditorLockdown
  */
@@ -67,8 +67,10 @@ function mrn_editor_lockdown_is_loading_mask_enabled() {
  * @return bool
  */
 function mrn_editor_lockdown_is_loading_indicator_enabled() {
-	return (bool) apply_filters( 'mrn_editor_lockdown_loading_indicator_enabled', true );
+	return (bool) apply_filters( 'mrn_editor_lockdown_loading_indicator_enabled', false );
 }
+
+require_once __DIR__ . '/includes/editor-assets.php';
 
 /**
  * SEO Helper ACF metabox ID.
@@ -1486,6 +1488,7 @@ function mrn_editor_lockdown_admin_js() {
 	if ( ! mrn_editor_lockdown_is_classic_post_screen( $screen ) ) {
 		return;
 	}
+	$loading_feedback_enabled = mrn_editor_lockdown_is_loading_mask_enabled() || mrn_editor_lockdown_is_loading_indicator_enabled();
 	?>
 	<script id="mrn-editor-lockdown-js">
 		jQuery(function($) {
@@ -1507,6 +1510,7 @@ function mrn_editor_lockdown_admin_js() {
 			var distractionFreeIcon;
 			var adminMenuCollapseButton;
 			var restoreTimer;
+			<?php if ( $loading_feedback_enabled ) : ?>
 			var loadingFallbackTimer;
 			var loadingReadyTimer;
 			var loadingMessageTimer;
@@ -1695,6 +1699,7 @@ function mrn_editor_lockdown_admin_js() {
 				loadingFallbackTimer = window.setTimeout(markEditorPageReady, 7000);
 			}
 
+			<?php endif; ?>
 			function isAdminMenuCollapsed() {
 				return !!body && body.classList.contains('folded');
 			}
@@ -1908,7 +1913,13 @@ function mrn_editor_lockdown_admin_js() {
 				$('.meta-box-sortables .hndle, .meta-box-sortables .handlediv').css('cursor', 'default');
 			}
 
+			<?php if ( $loading_feedback_enabled ) : ?>
 			initEditorLoadingMask();
+			<?php else : ?>
+			if (body) {
+				body.classList.add('mrn-editor-page-ready');
+			}
+			<?php endif; ?>
 			initSidebarToggle();
 			if (<?php echo wp_json_encode( mrn_editor_lockdown_is_supported_screen( $screen ) ); ?>) {
 				lockMetaboxSorting();

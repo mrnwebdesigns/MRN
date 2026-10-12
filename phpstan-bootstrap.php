@@ -56,7 +56,24 @@ if ( ! function_exists( 'get_field' ) ) {
 	}
 }
 
-// ACF runtime APIs used by the Stack repeater write policy.
+// ACF runtime APIs used by the Stack builder and repeater write policy.
+if ( ! function_exists( 'acf_get_field' ) ) {
+	/**
+	 * @param int|string|WP_Post $id Field ID, key, name, or post object.
+	 * @return array<string, mixed>|false
+	 */
+	function acf_get_field( $id = 0 ) {
+		return false;
+	}
+}
+
+if ( ! function_exists( 'acf_get_field_type' ) ) {
+	/** @return object|false */
+	function acf_get_field_type( $name ) {
+		return false;
+	}
+}
+
 if ( ! function_exists( 'acf_get_metadata_by_field' ) ) {
 	/**
 	 * @param int|string           $post_id

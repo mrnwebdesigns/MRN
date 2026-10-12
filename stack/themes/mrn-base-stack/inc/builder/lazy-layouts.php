@@ -84,6 +84,49 @@ function mrn_base_stack_prepare_lazy_builder_layout( $field ) {
 add_filter( 'acf/prepare_field', 'mrn_base_stack_prepare_lazy_builder_layout', -10 );
 
 /**
+ * Keep only picker metadata for unused layouts in the initial render copy.
+ *
+ * ACF has loaded the saved value by this point. Its stored field definition and
+ * value/schema/save consumers retain the complete tree; template AJAX resolves
+ * a fresh full field. Pruning this copy avoids repeated contract/default walks
+ * and child preparation for layouts that cannot render on the initial page.
+ *
+ * @param array<string, mixed>|false $field Prepared flexible-content field.
+ * @return array<string, mixed>|false
+ */
+function mrn_base_stack_prepare_builder_picker_catalog( $field ) {
+	if ( ! is_array( $field ) || ! mrn_base_stack_is_lazy_builder_field( $field )
+		|| ! empty( $GLOBALS['mrn_builder_layout_request'] ) || wp_doing_ajax()
+		|| ! wp_script_is( 'mrn-base-stack-lazy-layouts', 'enqueued' )
+		|| ! array_key_exists( 'value', $field ) || ! is_array( $field['layouts'] ?? null ) ) {
+		return $field;
+	}
+	if ( ! empty( $field['value'] ) && ! is_array( $field['value'] ) ) {
+		return $field;
+	}
+	$used = array();
+	foreach ( is_array( $field['value'] ) ? $field['value'] : array() as $row ) {
+		if ( ! is_array( $row ) || ! isset( $row['acf_fc_layout'] ) || ! is_string( $row['acf_fc_layout'] ) ) {
+			// Unknown value shapes retain native definitions and behavior.
+			return $field;
+		}
+		$used[ $row['acf_fc_layout'] ] = true;
+	}
+	foreach ( $field['layouts'] as &$layout ) {
+		if ( is_array( $layout ) && ! isset( $used[ $layout['name'] ?? '' ] ) ) {
+			$layout['sub_fields'] = array();
+		}
+	}
+	unset( $layout );
+	return $field;
+}
+add_filter( 'acf/prepare_field/type=flexible_content', 'mrn_base_stack_prepare_builder_picker_catalog', 20 );
+foreach ( array( 'field_mrn_page_hero_rows', 'field_mrn_page_content_rows', 'field_mrn_page_after_content_rows', 'field_mrn_sidebar_rows', 'field_mrn_page_template_sidebar_rows' ) as $mrn_picker_field_key ) {
+	add_filter( 'acf/prepare_field/key=' . $mrn_picker_field_key, 'mrn_base_stack_prepare_builder_picker_catalog', 20 );
+}
+unset( $mrn_picker_field_key );
+
+/**
  * Render one empty layout using ACF's native renderer after authorization.
  *
  * @return void

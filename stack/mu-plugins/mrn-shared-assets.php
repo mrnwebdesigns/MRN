@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MRN Shared Assets
  * Description: Loads the MRN Shared Assets MU plugin from its subfolder.
- * Version: 0.2.1
+ * Version: 0.2.2
  *
  * Bootstrap loader for the Shared Assets MU plugin.
  */
