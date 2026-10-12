@@ -1,5 +1,34 @@
 # Operations validation
 
+## Named update inventory — 2026-10-12
+
+- A staff member successfully used the installed plugin, as reported by the
+  owner, but asking for pending plugins returned only an update count. The
+  MainWP response contained the names and versions; Operations discarded them.
+  Inspection now retains a bounded allowlist of type, name, slug and
+  installed/available version pairs, with separate type totals and explicit
+  incomplete/truncated coverage. No package URL, credential or raw plugin payload
+  is retained. Saved inspections/history preserve the same sanitized detail.
+- Live read-only discovery verified `mainwp://status` against the intended
+  Dashboard with 95 abilities. Exact resolution found
+  `https://www.amishmike.com/`; one-site synchronization/readback completed at
+  `2026-10-12T15:47:18Z`. MainWP returned nine plugin updates and zero core, theme
+  or translation updates, including installed and available versions for each.
+  No WordPress update, backup, installation or settings change was performed.
+- All 138 Operations tests, 13 current Fleet contracts, direct ESLint and diff
+  checks pass locally. New coverage includes the nine-plugin scenario with
+  public REST 403 and missing Stack agent, mixed/empty/malformed inventories,
+  missing fields, inconsistent totals, output limits, wrong-site rows/envelopes,
+  revocation, saved evidence and actual HTTP tool output with secret exclusion.
+- This is backend-only. WordPress PHP/API-runtime, frontend axe/performance and
+  Stack parity suites are inapplicable; no unrelated site is a QA target. The
+  applicable staged MRN task gate is required before commit. This source change
+  does not enable website-changing tools or alter access policy.
+- Hosted deployment and real ChatGPT verification are separate acceptance
+  checks, recorded on the follow-up PR. Initial MRN Apps SSH preflight was
+  rejected after the 1Password agent failed to sign; no alternate credential or
+  access route was attempted and no live service changed during that attempt.
+
 ## Inspection evidence correction and login renewal — 2026-10-08
 
 - The initial pilot's REST verdict was invalid: the probe attempted to parse

@@ -27,6 +27,10 @@ export class FixtureMainwp {
       if (this.data.syncTimeout) throw new Error('Request timed out');
       return response({ success: true });
     }
+    if (name === toolNames.updates) return response(this.data.updateInventory ?? {
+      site_id: this.data.id, site_url: this.data.url, updates: [],
+      summary: { core: 0, plugins: 0, themes: 0, translations: 0, total: 0 },
+    });
     const forward = this.data.artifacts.target; const old = this.data.artifacts.rollback;
     const current = this.data.updated ? forward : old;
     if (name === toolNames.runtime) return response({ site_id: this.data.id, site_url: this.data.url, report: {

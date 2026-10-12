@@ -1,6 +1,7 @@
 import { compareVersions } from '../../../stack/scripts/mrn-fleet-update.mjs';
 import { safeError } from './contracts.mjs';
 import { toolNames } from './mainwp.mjs';
+import { updateEvidence } from './updates.mjs';
 
 const slug = v => typeof v === 'string' && /^[a-z0-9_.-]{1,160}$/.test(v) ? v : 'unknown';
 const version = v => typeof v === 'string' && /^[a-zA-Z0-9.+_-]{1,60}$/.test(v) ? v : 'unknown';
@@ -52,8 +53,16 @@ export async function inspectTarget({ target, session, catalog, publicProbe, aut
           if (runtime.fleetState === 'drifted') add('STACK_DRIFT', 'Installed Stack files differ from the installed release baseline. Inspect component evidence before planning a repair.', {});
         } else {
           const result = await session.call(name, { site_id_or_domain: session.siteId });
+          if (check === 'updates') {
+            const updates = updateEvidence(result, session.siteId, target.url);
+            evidence.push(updates);
+            coverage.push({ check, status: updates.complete ? 'queried' : 'incomplete',
+              interpretation: 'Named updates and installed/available versions from MainWP; compatibility and release readiness are not assessed.' });
+            if (updates.records > 0) add('UPDATES_AVAILABLE', 'MainWP returned available updates. Report the named items and versions by type; availability alone does not establish that an update is safe.', { summary: updates.summary });
+            continue;
+          }
           // Inventory may contain private addresses, credentials or arbitrary plugin
-          // data. Persist only counts, never whole MainWP payloads.
+          // data. Other checks retain counts, never whole MainWP payloads.
           const collection = result[check] ?? result.items ?? result.themes ?? result.changes;
           evidence.push({ source: `mainwp:${check}`, observedAt: new Date().toISOString(),
             records: Array.isArray(collection) ? collection.length : null,
