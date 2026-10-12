@@ -184,6 +184,20 @@ add_filter('pre_wp_mail', '__return_false');
 add_filter('pre_http_request', static function () {
     return new WP_Error('fleet_fixture_network_disabled');
 });
+// Provider update checks are outside this offline fixture's qualification.
+// Disable their scheduled triggers, rather than inventing successful responses
+// or suppressing the errors that blocked HTTP would otherwise produce.
+add_action('plugins_loaded', static function () {
+    foreach (['admin_init', 'load-plugins.php', 'load-update.php', 'load-update-core.php'] as $hook) {
+        foreach (['_maybe_update_core', '_maybe_update_plugins', '_maybe_update_themes',
+                  'wp_version_check', 'wp_update_plugins', 'wp_update_themes'] as $callback) {
+            remove_action($hook, $callback);
+        }
+    }
+}, PHP_INT_MAX);
+foreach (['admin-menu-editor-pro', 'ame-branding-add-on', 'wp-toolbar-editor', 'updraftplus'] as $slug) {
+    add_filter('puc_check_now-'.$slug, '__return_false');
+}
 add_action('doing_it_wrong_run', static function ($function) {
     if ('_load_textdomain_just_in_time' === $function) {
         file_put_contents(dirname(ABSPATH).'/translation-trace.log',

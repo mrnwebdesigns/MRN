@@ -2,14 +2,75 @@
 /**
  * Plugin Name: MRN Loader
  * Description: Loads MRN MU plugins from known subfolders in /wp-content/mu-plugins.
- * Version: 1.6.1
+ * Version: 1.6.2
  */
 
 defined('ABSPATH') || exit;
 
-define('MRN_LOADER_VERSION', '1.6.1');
+define('MRN_LOADER_VERSION', '1.6.2');
 define('MRN_LOADER_RUNTIME_REPORT_SCHEMA_VERSION', 1);
 define('MRN_LOADER_HASH_ALGORITHM', 'sha256-tree-v1');
+
+/**
+ * Supply machine-readable intervals before vendors translate their UI labels.
+ *
+ * These vendor callbacks already leave an existing key alone. At init and
+ * later the original callbacks supply their normal localized display labels.
+ * This does not change event hooks, recurrence, or the vendor ZIPs.
+ *
+ * @param array $schedules Existing cron schedules.
+ * @return array
+ */
+function mrn_loader_early_vendor_schedules($schedules) {
+    if (did_action('init')) {
+        return $schedules;
+    }
+    if (defined('SEOPRESS_PRO_VERSION') && SEOPRESS_PRO_VERSION === '10.3'
+        && function_exists('seopress_site_audit_watchdog_interval')
+        && !isset($schedules['seopress_site_audit_watchdog_interval'])) {
+        $schedules['seopress_site_audit_watchdog_interval'] = array(
+            'interval' => 5 * MINUTE_IN_SECONDS,
+            'display'  => 'SEOPress Site Audit watchdog (every 5 minutes)',
+        );
+    }
+    if (defined('SEOPRESS_PRO_VERSION') && SEOPRESS_PRO_VERSION === '10.3'
+        && function_exists('seopress_broken_links_watchdog_interval')
+        && !isset($schedules['seopress_broken_links_watchdog_interval'])) {
+        $schedules['seopress_broken_links_watchdog_interval'] = array(
+            'interval' => 5 * MINUTE_IN_SECONDS,
+            'display'  => 'SEOPress Broken Links watchdog (every 5 minutes)',
+        );
+    }
+    if (!isset($schedules['minute'])
+        && function_exists('MainWP\\Dashboard\\SystemMonitor\\bootstrap')
+        && mrn_loader_read_version_header(WP_PLUGIN_DIR . '/mainwp/mainwp.php') === '6.2.2') {
+        $schedules['minute'] = array('interval' => MINUTE_IN_SECONDS, 'display' => 'Every Minute');
+    }
+    return $schedules;
+}
+add_filter('cron_schedules', 'mrn_loader_early_vendor_schedules', -100);
+
+/**
+ * Initialize retained WPForms services when localized labels are safe.
+ *
+ * WPForms 1.10.2.1 translates overview and field labels during objects(). Move
+ * its public bootstrap callback as one unit so service dependencies preserve
+ * their internal order. It runs before other init callbacks and native admin
+ * hooks. Unknown versions or hook registrations remain untouched.
+ *
+ * @return void
+ */
+function mrn_loader_defer_wpforms_objects() {
+    if (!defined('WPFORMS_VERSION') || WPFORMS_VERSION !== '1.10.2.1'
+        || !function_exists('wpforms') || did_action('init')) {
+        return;
+    }
+    $callback = array(wpforms(), 'objects');
+    if (is_callable($callback) && remove_action('plugins_loaded', $callback, 10)) {
+        add_action('init', $callback, PHP_INT_MIN);
+    }
+}
+add_action('plugins_loaded', 'mrn_loader_defer_wpforms_objects', -100);
 
 /**
  * Return the only MU component entrypoints the loader may execute.

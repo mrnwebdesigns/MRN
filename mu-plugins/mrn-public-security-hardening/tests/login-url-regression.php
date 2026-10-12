@@ -18,6 +18,15 @@ file_put_contents(
 	<<<'PHP'
 <?php
 $GLOBALS['mrn_test_login_screen_loaded'] = true;
+$action = 'login';
+$interim_login = false;
+$user_login = 'native login value';
+$error = 'native login error';
+function mrn_test_core_login_header() {
+    global $action, $interim_login, $user_login, $error;
+    $GLOBALS['mrn_test_core_login_globals'] = array( $action, $interim_login, $user_login, $error );
+}
+mrn_test_core_login_header();
 PHP
 );
 
@@ -796,6 +805,7 @@ $GLOBALS['mrn_test_state']['options']['active_plugins'] = array();
 
 $GLOBALS['mrn_test_login_screen_loaded'] = false;
 $served = mrn_public_security_maybe_serve_custom_login_request( false );
+mrn_test_same( array( 'login', false, 'native login value', 'native login error' ), $GLOBALS['mrn_test_core_login_globals'], 'Core login header must share native globals through the custom route callback.' );
 mrn_test_assert( true === $served, 'Custom login route did not load the login screen.' );
 mrn_test_assert( true === $GLOBALS['mrn_test_login_screen_loaded'], 'Custom login screen file was not required.' );
 

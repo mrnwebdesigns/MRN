@@ -2,14 +2,14 @@
 /**
  * Plugin Name: MRN Public Security Hardening
  * Description: Shared public hardening for MRN brochure/client sites.
- * Version: 0.4.3
+ * Version: 0.4.4
  * Author: MRN
  */
 
 defined( 'ABSPATH' ) || exit;
 
 if ( ! defined( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION' ) ) {
-	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.4.3' );
+	define( 'MRN_PUBLIC_SECURITY_HARDENING_VERSION', '0.4.4' );
 }
 
 /**
@@ -1649,6 +1649,11 @@ function mrn_public_security_add_login_landmark( $html ) {
  * @return bool
  */
 function mrn_public_security_maybe_serve_custom_login_request( $exit = true ) {
+	// Core's login_header()/login_footer() share these variables with wp-login.php.
+	// The custom route includes that file inside this callback's scope.
+	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- Native WordPress login template globals.
+	global $error, $interim_login, $action, $user_login;
+
 	if ( ! mrn_public_security_is_custom_login_request() ) {
 		return false;
 	}

@@ -73,6 +73,10 @@ early-translation origins. `php-diagnostics.log` and `translation-trace.log` sta
 in the private evidence directory after the disposable runtime is removed.
 WordPress early-translation warnings block qualification even when vendor code
 filters their PHP error emission. No exception or log filter qualifies an input.
+Automatic WordPress/vendor update checks are explicitly disabled in the
+disposable offline fixture using their normal hooks. They are external provider
+operations outside this qualification; the fixture supplies no fake update
+responses and leaves all runtime diagnostic reporting enabled.
 
 Run the offline publication/recovery tests with:
 
