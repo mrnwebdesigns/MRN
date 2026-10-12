@@ -1300,6 +1300,11 @@ Use ACF's native flexible content title filter where possible:
 
 - `acf/fields/flexible_content/layout_title`
 
+When `Name (admin use only)` is populated, display `Name - Original layout name`
+using the layout's configured label, including during ACF AJAX title refreshes.
+For example: `About Us Section Text - Text`. Keep the existing title fallback
+when Name is blank.
+
 Prefer meaningful collapsed titles such as:
 
 - `Reusable Block: Frog`

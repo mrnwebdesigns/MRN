@@ -1,5 +1,9 @@
 # Stack Changelog
 
+## Unreleased — parent 1.5.11
+
+- Show named builder rows as `Name - Original layout name` in the editor and ACF AJAX title refreshes. Preserve the configured layout label, unnamed-row fallbacks, and HTML escaping.
+
 ## 2026.10.08-fleet-readiness-r3
 
 - Clear Post SMTP 4.0.2 browser onboarding only after activation, with its loader skipped for that single option write. Prevent its next-request exit from silently skipping the next bootstrap command. Stop if that cleanup fails. Retain mail settings and vendor package bytes unchanged.
