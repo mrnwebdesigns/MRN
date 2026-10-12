@@ -32,6 +32,10 @@ exact previous source before any new attempt. No failed release advances the
 owner-local Fleet index. A retained public release may exist before the hosted
 pointer changes; only a fully verified publication is selected as latest.
 
+Qualified plugin ZIPs are retained in the private immutable local cache before
+their promotion records merge, so a superseding release can recover those exact
+inputs. Caching inputs does not advance the Fleet-ready index.
+
 The host publisher accepts only the canonical source-owner/root/depot. It
 requires one-time source-lease enrollment before replacing the bootstrap bundle.
 Pause legacy source consumers and verify no installer is running before that

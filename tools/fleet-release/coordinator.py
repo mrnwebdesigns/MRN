@@ -335,6 +335,50 @@ def transfer(settings, base, release, source, filename):
     remote_host(settings, 'accept-artifact', release, filename, checksum)
 
 
+def cache_registered_package(settings, artifact, package):
+    """Retain immutable qualified inputs before their records can merge."""
+    artifact = Path(artifact)
+    if artifact.is_symlink() or file_hash(artifact) != package['sha256']:
+        raise ReleaseError('Qualified plugin artifact differs from its immutable registration')
+    registered = Path(package['path'])
+    if registered.is_absolute():
+        return
+    relative(registered.as_posix())
+    if registered.parts[:2] not in (('releases', 'stack-plugins'), ('releases', 'plugins')):
+        raise ReleaseError('Registered plugin cache must stay in the ignored release store')
+    canonical_repo = Path(settings['canonical_repo'])
+    cached = canonical_repo / registered
+    for parent in cached.parents:
+        if parent == canonical_repo:
+            break
+        if parent.is_symlink():
+            raise ReleaseError('Immutable plugin cache parents may not be symlinks')
+    cached.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(dir=cached.parent, prefix='.qualified-', delete=False) as stream:
+        temporary = Path(stream.name)
+    try:
+        shutil.copyfile(artifact, temporary)
+        if file_hash(temporary) != package['sha256']:
+            raise ReleaseError('Qualified plugin artifact changed while caching')
+        try:
+            os.link(temporary, cached)
+        except FileExistsError:
+            if cached.is_symlink() or file_hash(cached) != package['sha256']:
+                raise ReleaseError('Immutable local plugin cache differs; preserve and inspect it')
+    finally:
+        temporary.unlink()
+
+
+def cache_qualified_packages(settings, repo, qualified):
+    if qualified.get('status') != 'pass':
+        raise ReleaseError('Only qualified package inputs may be retained')
+    registry = read(Path(repo) / 'stack/manifests/stack-plugin-releases.json')
+    for row in registry['releases']:
+        artifact = Path(repo) / row['package']['path']
+        if artifact.is_file():
+            cache_registered_package(settings, artifact, row['package'])
+
+
 def install_local_index(settings, repo, standalone, job, built, qualified, publication):
     """Owner-local immutable source map for the existing explicit Fleet command."""
     repo, standalone, job = Path(repo), Path(standalone), Path(job)
@@ -359,24 +403,7 @@ def install_local_index(settings, repo, standalone, job, built, qualified, publi
                 artifact.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(historical, artifact)
         if artifact.is_file():
-            if file_hash(artifact) != row['package']['sha256']:
-                raise ReleaseError('Published plugin artifact differs from its immutable registration')
-            registered_path = Path(row['package']['path'])
-            if not registered_path.is_absolute():
-                relative(registered_path.as_posix())
-                if registered_path.parts[:2] not in (('releases', 'stack-plugins'), ('releases', 'plugins')):
-                    raise ReleaseError('Registered plugin cache must stay in the ignored release store')
-                cached = Path(settings['canonical_repo']) / registered_path
-                for parent in cached.parents:
-                    if parent == Path(settings['canonical_repo']):
-                        break
-                    if parent.is_symlink():
-                        raise ReleaseError('Immutable plugin cache parents may not be symlinks')
-                cached.parent.mkdir(parents=True, exist_ok=True)
-                if cached.exists() and (cached.is_symlink() or file_hash(cached) != row['package']['sha256']):
-                    raise ReleaseError('Immutable local plugin cache differs; preserve and inspect it')
-                if not cached.exists():
-                    shutil.copyfile(artifact, cached)
+            cache_registered_package(settings, artifact, row['package'])
             row['package']['path'] = str(artifact)
     records = {(row['slug'], row['version']): row for row in registry['releases']}
     optional['releases'] = [copy.deepcopy(records[(row['slug'], row['version'])])
@@ -580,6 +607,7 @@ def once(settings):
             return {'status': 'qualified_rehearsal', 'job': str(job), 'site_writes': False}
         if progress['phase'] == 'qualified':
             assert_refs(refs)
+            cache_qualified_packages(settings, repo, progress['qualified'])
             progress['pr'] = propose(repo, job, metadata)
             progress['phase'] = 'proposed'
             seal(job, progress)
