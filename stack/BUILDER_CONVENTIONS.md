@@ -1302,6 +1302,7 @@ Use ACF's native flexible content title filter where possible:
 
 When `Name (admin use only)` is populated, display `Name - Original layout name`
 using the layout's configured label, including during ACF AJAX title refreshes.
+Apply the same rule to nested left/right columns, card rows, and tab panel rows.
 For example: `About Us Section Text - Text`. Keep the existing title fallback
 when Name is blank.
 
