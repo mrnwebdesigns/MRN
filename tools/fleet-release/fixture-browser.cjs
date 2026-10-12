@@ -81,8 +81,12 @@ const { createRequire } = require('node:module');
     await expect(page.locator('.block-editor')).toHaveCount(0);
     await expect(page.locator('.acf-field[data-name="page_after_content_rows"]').first()).toBeVisible();
     await expect(page.locator('.acf-field[data-name="page_after_content_rows"] .layout:not(.acf-clone)')).toHaveCount(2);
-    const heading = page.locator('.acf-field[data-name="page_after_content_rows"] .layout:not(.acf-clone)')
-      .first().locator('.acf-field[data-name="heading"] input').first();
+    const firstAfterRow = page.locator('.acf-field[data-name="page_after_content_rows"] .layout:not(.acf-clone)').first();
+    await expect(firstAfterRow).toHaveClass(/-collapsed/);
+    await firstAfterRow.locator('.acf-fc-layout-handle').first().click();
+    await expect(firstAfterRow).not.toHaveClass(/-collapsed/);
+    const heading = firstAfterRow.locator('.acf-field[data-name="heading"] input').first();
+    await expect(heading).toBeVisible();
     await expect(heading).toHaveValue('Fleet After Content');
     await heading.fill('Fleet editor saved After Content');
     const [saved] = await Promise.all([
@@ -95,8 +99,11 @@ const { createRequire } = require('node:module');
       {waitUntil: 'domcontentloaded', timeout: 120000});
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.locator('.acf-field[data-name="page_after_content_rows"] .layout:not(.acf-clone)')).toHaveCount(2);
+    await expect(firstAfterRow).toHaveClass(/-collapsed/);
     await expect(heading).toHaveValue('Fleet editor saved After Content');
-    checks.push('Classic Editor save/reload persists edited heading and both native After Content rows');
+    await firstAfterRow.locator('.acf-fc-layout-handle').first().click();
+    await expect(heading).toBeVisible();
+    checks.push('Classic Editor starts rows closed, opens native controls and persists edited heading and both After Content rows');
     const forms = await page.goto(`${input.url}/wp-admin/admin.php?page=wpforms-overview`,
       {waitUntil: 'domcontentloaded'});
     assert.equal(forms.status(), 200, 'native WPForms overview must render');
