@@ -1,5 +1,10 @@
 # Stack Changelog
 
+## 2026.10.12-fleet-auto-9c26b35530de
+
+- Automatic cumulative release from accepted source vector `a8928165e46ce1bd50ce3a17a263b4769746a3837ea55d702e4cce626d80f718`.
+- Matching platform, Fleet and bootstrap distributions; site rollout remains separate.
+
 ## Unreleased — parent 1.5.12
 
 - Apply `Name - Original layout name` titles to nested left/right columns, card rows, and tab panel rows, including ACF AJAX refreshes.
