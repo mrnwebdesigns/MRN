@@ -206,6 +206,42 @@ class QualificationContracts(unittest.TestCase):
             self.assertEqual(result, lock)
             self.assertEqual((root / 'out/example.zip').read_bytes(), source.read_bytes())
 
+    def test_missing_or_stale_git_input_recovers_only_exact_locked_zip(self):
+        for state in ('missing', 'stale', 'changed-source', 'legacy-envelope'):
+            with self.subTest(state=state), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary); inputs = root / 'inputs'; inputs.mkdir()
+                files = {'example.php': b'<?php /* Plugin Name: Example\nVersion: 1.0.0 */'}
+                locked = root / 'locked.zip'
+                if state == 'legacy-envelope':
+                    with zipfile.ZipFile(locked, 'w') as archive:
+                        archive.writestr('example/example.php', files['example.php'])
+                else:
+                    common.fleet.deterministic_zip(locked, {'example/' + k: v for k, v in files.items()})
+                lock = {'plugins': [{'slug': 'example', 'version': '1.0.0', 'package': 'example.zip',
+                    'main_file': 'example/example.php', 'source': {'type': 'git', 'commit': 'a' * 40},
+                    'sha256': common.file_hash(locked), 'size_bytes': locked.stat().st_size}]}
+                if state == 'stale':
+                    (inputs / 'example.zip').write_bytes(b'older qualified input')
+                if state == 'changed-source':
+                    files['example.php'] += b'\n// changed without version bump'
+                def read(path):
+                    return lock if Path(path).name == 'bootstrap-packages.lock.json' else {'releases': []}
+                with patch.object(build, 'read', side_effect=read), \
+                     patch.object(build, 'roster', return_value=[{'slug': 'example', 'repository': 'MRN',
+                                                               'relative_source': 'example'}]), \
+                     patch.object(build, 'git_files', return_value=files), \
+                     patch.object(build.lock_tool, 'read_header_version', return_value='1.0.0'):
+                    if state in ('changed-source', 'legacy-envelope'):
+                        with self.assertRaisesRegex(common.ReleaseError, 'cannot reproduce locked bytes'):
+                            build.default_packages(root, root, {'held_defaults': {}}, inputs, root / 'out')
+                        self.assertFalse((root / 'out/example.zip').exists())
+                    else:
+                        result = build.default_packages(root, root, {'held_defaults': {}}, inputs, root / 'out')
+                        self.assertEqual(result, lock)
+                        self.assertEqual((root / 'out/example.zip').read_bytes(), locked.read_bytes())
+                if state == 'stale':
+                    self.assertEqual((inputs / 'example.zip').read_bytes(), b'older qualified input')
+
     def test_duplicate_plugin_archive_members_are_rejected(self):
         import warnings
         with tempfile.TemporaryDirectory() as temporary:

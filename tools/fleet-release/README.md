@@ -50,6 +50,10 @@ installed verification remain that command's separately authorized gates.
 The optional-plan builder uses the same verified source index; optional packages
 remain private and never become automatic new installs. Retired packages remain
 outside the eligible source map. Historical ZIP/version records stay immutable.
+If the configured input depot predates a promoted Git package, the worker can
+recover it from accepted source only when the rebuilt ZIP exactly matches its
+locked checksum. It preserves the original version/provenance and input depot;
+unrecoverable or changed bytes still block qualification.
 
 Pinned WordPress.org inputs can be downloaded only from the recorded official
 URL and must match the accepted checksum and size. Licensed input updates stage

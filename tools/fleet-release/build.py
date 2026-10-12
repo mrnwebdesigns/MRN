@@ -155,6 +155,16 @@ def default_packages(repo, standalone, policy, inputs, output, registry_inputs=N
             prior = Path(inputs) / str(relative(item['package']))
             known = prior.is_file() and file_hash(prior) == item['sha256']
             same = known and package_files(prior, slug) == files
+            if item['version'] == version and not known:
+                # Promotion advances the lock before the configured input depot
+                # necessarily contains its new Git packages. Recover only the
+                # exact locked ZIP; neither source nor provenance may be rebound.
+                fleet.deterministic_zip(destination, {slug + '/' + k: v for k, v in files.items()})
+                if file_hash(destination) == item['sha256']:
+                    continue
+                destination.unlink()
+                raise ReleaseError('Qualified package input missing or checksum mismatch; '
+                                   'accepted source cannot reproduce locked bytes: ' + slug)
             if item['version'] == version and not same:
                 raise ReleaseError('Changed package source requires a version bump: ' + slug)
             if same and item['version'] == version:
