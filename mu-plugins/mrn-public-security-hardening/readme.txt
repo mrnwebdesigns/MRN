@@ -1,6 +1,6 @@
 === MRN Public Security Hardening ===
 Contributors: mrnwebdesigns
-Stable tag: 0.4.3
+Stable tag: 0.4.4
 Tested up to: 7.1
 
 Shared MRN must-use plugin for public security policy and configurable login routing.
@@ -11,6 +11,9 @@ Distributed through the shared MRN Stack loader. See README.md for configuration
 compatibility, regression tests and the component QA workflow.
 
 == Changelog ==
+
+= 0.4.4 =
+* Preserve the native core login globals when serving the custom login route.
 
 = 0.4.3 =
 * Respect Admin Menu Editor's finalized visibility, access, labels, and placement for Advanced and Public Security.

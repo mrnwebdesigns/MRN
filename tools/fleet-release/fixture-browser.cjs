@@ -92,6 +92,33 @@ const { createRequire } = require('node:module');
     await expect(page.locator('.acf-field[data-name="page_after_content_rows"] .layout:not(.acf-clone)')).toHaveCount(2);
     await expect(heading).toHaveValue('Fleet editor saved After Content');
     checks.push('Classic Editor save/reload persists edited heading and both native After Content rows');
+    const forms = await page.goto(`${input.url}/wp-admin/admin.php?page=wpforms-overview`,
+      {waitUntil: 'domcontentloaded'});
+    assert.equal(forms.status(), 200, 'native WPForms overview must render');
+    await expect(page.locator('#wpbody-content')).toContainText('Fleet native form');
+    await page.locator('#show-settings-link').click();
+    await expect(page.locator('#screen-options-wrap')).toContainText('Number of forms per page:');
+    checks.push('native WPForms forms overview and localized screen options remain available after init');
+    const builder = await page.goto(`${input.url}/wp-admin/admin.php?page=wpforms-builder&view=fields&form_id=${input.ids.form}`,
+      {waitUntil: 'domcontentloaded'});
+    assert.equal(builder.status(), 200, 'native WPForms builder must render');
+    await expect(page.locator('#wpforms-builder')).toBeVisible();
+    await page.locator('#wpforms-field-1').click();
+    const formLabel = page.locator('#wpforms-field-option-1-label');
+    await expect(formLabel).toHaveValue('Fixture message');
+    await formLabel.fill('Fixture message qualified');
+    const [formSave] = await Promise.all([
+      page.waitForResponse(response => response.request().method() === 'POST'
+        && new URL(response.url()).pathname === '/wp-admin/admin-ajax.php'
+        && response.request().postData()?.includes('wpforms_save_form'), {timeout: 120000}),
+      page.locator('#wpforms-save').click(),
+    ]);
+    assert.equal(formSave.status(), 200, 'native WPForms save must succeed');
+    assert.equal((await formSave.json()).success, true, 'native WPForms save must be accepted');
+    await page.reload({waitUntil: 'domcontentloaded'});
+    await page.locator('#wpforms-field-1').click();
+    await expect(formLabel).toHaveValue('Fixture message qualified');
+    checks.push('native WPForms builder AJAX save/reload persists field labels without WooCommerce');
     if (input.dashboard) {
       const dashboard = await page.goto(`${input.url}/wp-admin/admin.php?page=mainwp_tab`,
         {waitUntil: 'domcontentloaded'});

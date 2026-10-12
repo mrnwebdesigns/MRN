@@ -6,6 +6,15 @@ deployed to the stack server under `/home/mrndev-stack-manager/stack/mu-plugins/
 Canonical MU plugin source lives in `/Users/khofmeyer/Development/MRN/mu-plugins`.
 The `mrn-loader.php` file owns the explicit subfolder load order.
 
+Loader 1.6.2 also qualifies the retained SEOPress PRO 10.3, MainWP Dashboard
+6.2.2 and WPForms Pro 1.10.2.1 initialization contracts. Before `init`, it
+supplies only nonlocalized cron interval metadata; the vendor callbacks supply
+their normal translated labels after `init`. It moves the original
+WPForms public `objects()` bootstrap to the first `init` priority, preserving
+its internal service order before other `init` and native admin callbacks. These compatibility paths are restricted to the named
+versions. Vendor ZIPs and diagnostic reporting remain unchanged; unknown
+versions/registrations still require normal qualification.
+
 ## Runtime Report
 
 Loader `1.5.1` exposes a read-only stack report for parity verification:
